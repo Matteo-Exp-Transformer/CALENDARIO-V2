@@ -1,0 +1,997 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react'
+import FullCalendar from '@fullcalendar/react'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import timeGridPlugin from '@fullcalendar/timegrid'
+import interactionPlugin from '@fullcalendar/interaction'
+import listPlugin from '@fullcalendar/list'
+import { Calendar, Users, Sunrise, Sun, Moon, Mail, Phone, Clock, UtensilsCrossed, Tag, ScrollText, StickyNote, MapPin } from 'lucide-react'
+import { format } from 'date-fns'
+import { it } from 'date-fns/locale'
+import type { BookingRequest } from '@/types/booking'
+import { transformBookingsToCalendarEvents } from '../utils/bookingEventTransform'
+import { BookingDetailsModal } from './BookingDetailsModal'
+import { calculateDailyCapacity, getStartSlotForBooking } from '../utils/capacityCalculator'
+import { CollapsibleCard } from '@/components/ui/CollapsibleCard'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
+
+import { extractDateFromISO, getAccurateStartTime, getAccurateEndTime } from '../utils/dateUtils'
+import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
+import { getMenuPriceDisplayFromBooking } from '../utils/menuPricing'
+
+interface BookingCalendarProps {
+  bookings: BookingRequest[]
+  initialDate?: string | null
+}
+
+export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, initialDate }) => {
+  const calendarRef = useRef<FullCalendar>(null)
+  const [selectedBooking, setSelectedBooking] = useState<BookingRequest | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    // Set today's date as default, or initialDate if provided
+    return initialDate || new Date().toISOString().split('T')[0]
+  })
+  const [currentView, setCurrentView] = useState<'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek'>('dayGridMonth')
+
+  // Aggiorna il selectedBooking quando i bookings cambiano (dopo modifica)
+  useEffect(() => {
+    if (selectedBooking && isModalOpen) {
+      const updatedBooking = bookings.find(b => b.id === selectedBooking.id)
+      if (updatedBooking) {
+        // Aggiorna sempre selectedBooking quando viene trovato un booking aggiornato
+        // Questo assicura che il modal mostri sempre i dati più recenti
+        setSelectedBooking(updatedBooking)
+      }
+    }
+  }, [bookings, isModalOpen])
+
+  // Navigate to initialDate when it changes (from Archive)
+  useEffect(() => {
+    if (initialDate && calendarRef.current) {
+      try {
+        const calendarApi = calendarRef.current.getApi()
+        const [year, month, day] = initialDate.split('-').map(Number)
+        const targetDate = new Date(year, month - 1, day)
+        calendarApi.gotoDate(targetDate)
+        setSelectedDate(initialDate)
+      } catch (error) {
+        console.error('Error navigating to calendar date:', error)
+      }
+    }
+  }, [initialDate])
+
+  const events = transformBookingsToCalendarEvents(bookings)
+
+  const handleEventClick = (clickInfo: any) => {
+    const booking = clickInfo.event.extendedProps as BookingRequest
+    
+    if (!booking) {
+      return
+    }
+    
+    setSelectedBooking(booking)
+    setIsModalOpen(true)
+  }
+
+  const handleDateClick = (clickInfo: any) => {
+    // ✅ Fix: Normalizza la data per evitare problemi di timezone
+    // Ignora dateStr e forza l'estrazione locale dai metodi get* dell'oggetto Date
+    const d = new Date(clickInfo.date)
+    
+    // Usa i metodi locali per evitare conversioni UTC
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    const date = `${year}-${month}-${day}`
+
+    setSelectedDate(date)
+  }
+
+  // Get bookings and capacity for selected date
+  const selectedDateData = useMemo(() => {
+    const acceptedBookings = bookings.filter(b => b.status === 'accepted')
+    const dayCapacity = calculateDailyCapacity(selectedDate, acceptedBookings)
+    
+    const dayBookings = acceptedBookings.filter((booking) => {
+      if (!booking.confirmed_start) return false
+      const bookingDate = extractDateFromISO(booking.confirmed_start)
+      return bookingDate === selectedDate
+    })
+
+    // Group bookings by time slot
+    const morningBookings: BookingRequest[] = []
+    const afternoonBookings: BookingRequest[] = []
+    const eveningBookings: BookingRequest[] = []
+
+    for (const booking of dayBookings) {
+      if (!booking.confirmed_start || !booking.confirmed_end) continue
+
+      // ✅ Use centralized helper to avoid timezone discrepancies
+      const startTime = getAccurateStartTime(booking)
+
+      // Create a fake ISO string with the correct local time for getStartSlotForBooking
+      const fakeISOStart = `2025-01-01T${startTime}:00`
+
+      // Display booking only in the slot where it STARTS
+      const startSlot = getStartSlotForBooking(fakeISOStart)
+
+      if (startSlot === 'morning') morningBookings.push(booking)
+      else if (startSlot === 'afternoon') afternoonBookings.push(booking)
+      else if (startSlot === 'evening') eveningBookings.push(booking)
+    }
+
+    return {
+      date: selectedDate,
+      capacity: dayCapacity,
+      morningBookings,
+      afternoonBookings,
+      eveningBookings,
+    }
+  }, [selectedDate, bookings])
+
+  const config = {
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
+    initialView: currentView,
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: '',
+    },
+    height: 'auto',
+    locale: 'it',
+    firstDay: 1, // Monday
+    slotMinTime: '08:00:00',
+    slotMaxTime: '24:00:00',
+    businessHours: {
+      daysOfWeek: [1, 2, 3, 4, 5, 6], // Monday - Saturday
+      startTime: '08:00',
+      endTime: '22:00',
+    },
+    eventClick: handleEventClick,
+    dateClick: handleDateClick,
+    eventDisplay: 'block',
+    eventTextColor: '#fff',
+    eventCursor: 'pointer',
+    eventTimeFormat: {
+      hour: '2-digit' as const,
+      minute: '2-digit' as const,
+    },
+    // Ensure events don't overflow to other days in month view
+    dayMaxEvents: 3,
+    moreLinkClick: 'popover',
+    // Highlight today and selected date
+    dayCellDidMount: (arg: any) => {
+      // ✅ Fix: Estrai date string usando metodi locali per evitare problemi di timezone
+      const d = new Date(arg.date)
+      const year = d.getFullYear()
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      const cellDateStr = `${year}-${month}-${day}`
+      
+      // Confronta oggi usando metodi locali
+      const today = new Date()
+      const todayYear = today.getFullYear()
+      const todayMonth = String(today.getMonth() + 1).padStart(2, '0')
+      const todayDay = String(today.getDate()).padStart(2, '0')
+      const todayStr = `${todayYear}-${todayMonth}-${todayDay}`
+      
+      const isToday = cellDateStr === todayStr
+      const isSelected = cellDateStr === selectedDate
+      
+      // Remove FullCalendar's default today class
+      arg.el.classList.remove('fc-day-today')
+      
+      // Clear any previous styles
+      arg.el.style.cssText = ''
+      
+      if (isToday && isSelected) {
+        // Today + Selected: blue darker for selected on today
+        arg.el.style.cssText = `
+          background-color: #93c5fd !important;
+          border: 3px solid #1d4ed8 !important;
+          border-radius: 10px !important;
+          font-weight: bold !important;
+          box-shadow: 0 4px 8px rgba(29, 78, 216, 0.5) !important;
+          transform: scale(1.02) !important;
+          z-index: 10 !important;
+        `
+      } else if (isToday) {
+        // Today only - YELLOW background (not blue!)
+        arg.el.style.cssText = `
+          background-color: #fef9c3 !important;
+          border: 3px solid #f59e0b !important;
+          border-radius: 8px !important;
+          font-weight: bold !important;
+        `
+      } else if (isSelected) {
+        // Selected only - DARKER blue background
+        arg.el.style.cssText = `
+          background-color: #60a5fa !important;
+          border: 3px solid #1e40af !important;
+          border-radius: 8px !important;
+          box-shadow: 0 2px 8px rgba(30, 64, 175, 0.4) !important;
+          transform: scale(1.01) !important;
+          z-index: 9 !important;
+        `
+      }
+    },
+    // Custom event rendering per card eventi migliorate
+    eventContent: (arg: any) => {
+      const booking = arg.event.extendedProps as BookingRequest
+
+      return (
+        <div className="px-2 py-1.5 rounded-lg text-white text-xs hover:opacity-90 transition-opacity cursor-pointer overflow-hidden">
+          {/* Nome cliente */}
+          <div className="flex items-center gap-1.5 font-semibold truncate mb-1">
+            <Users className="w-3 h-3 flex-shrink-0" />
+            <span className="truncate">{booking.client_name}</span>
+          </div>
+          
+          {/* Dati in fila sotto */}
+          <div className="flex items-center gap-2 text-xs opacity-90 truncate">
+            <span>{booking.num_guests} ospiti</span>
+            {booking.menu && (
+              <>
+                <span>•</span>
+                <span className="truncate">{booking.menu}</span>
+              </>
+            )}
+            {(booking.desired_time || booking.confirmed_start) && (
+              <>
+                <span>•</span>
+                <span>{getAccurateStartTime(booking)}</span>
+              </>
+            )}
+          </div>
+        </div>
+      )
+    },
+  }
+
+  const handleViewChange = (view: typeof currentView) => {
+    setCurrentView(view)
+    const calendarApi = calendarRef.current?.getApi()
+    if (calendarApi) {
+      calendarApi.changeView(view)
+    }
+  }
+
+  const viewButtonClass = (view: typeof currentView) => {
+    const isActive = currentView === view
+    return `px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+      isActive
+        ? 'bg-warm-wood text-white shadow-md'
+        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+    }`
+  }
+
+  return (
+    <>
+      <div className="space-y-6">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-warm-beige">
+          {/* Header Responsive */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-6">
+            {/* Icona + Titolo */}
+            <div className="flex items-center gap-4 flex-1">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-warm-wood to-warm-orange flex items-center justify-center shadow-md">
+                <Calendar className="h-7 w-7 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-warm-wood">
+                  Calendario Prenotazioni
+                </h2>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                  Vista completa delle prenotazioni accettate
+                </p>
+              </div>
+            </div>
+
+            {/* Badge + View Controls */}
+            <div className="flex items-center justify-between gap-6 sm:gap-8 w-full sm:w-auto">
+              {/* Badge conteggio */}
+              <span className="px-4 py-2 bg-gradient-to-r from-olive-green to-warm-wood text-white rounded-xl text-sm font-semibold shadow-md">
+                {bookings.length} prenotazioni
+              </span>
+
+              {/* Dropdown Vista - Mobile only */}
+              <Select value={currentView} onValueChange={handleViewChange}>
+                <SelectTrigger className="w-[140px] md:hidden">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent
+                  className="bg-white !bg-white bg-opacity-100"
+                  style={{ backgroundColor: '#ffffff', opacity: 1, zIndex: 9999 }}
+                >
+                  <SelectItem value="dayGridMonth">Mese</SelectItem>
+                  <SelectItem value="timeGridWeek">Settimana</SelectItem>
+                  <SelectItem value="timeGridDay">Giorno</SelectItem>
+                  <SelectItem value="listWeek">Lista</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Pulsanti Vista - Desktop only */}
+              <div className="hidden md:flex gap-2">
+                <button onClick={() => handleViewChange('dayGridMonth')} className={viewButtonClass('dayGridMonth')}>
+                  Mese
+                </button>
+                <button onClick={() => handleViewChange('timeGridWeek')} className={viewButtonClass('timeGridWeek')}>
+                  Settimana
+                </button>
+                <button onClick={() => handleViewChange('timeGridDay')} className={viewButtonClass('timeGridDay')}>
+                  Giorno
+                </button>
+                <button onClick={() => handleViewChange('listWeek')} className={viewButtonClass('listWeek')}>
+                  Lista
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <FullCalendar ref={calendarRef} {...config} events={events} />
+        </div>
+
+        {/* Sezione Disponibilità */}
+        <div>
+          {/* Header con data */}
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-serif font-bold text-warm-wood mb-2">
+              Disponibilità
+            </h3>
+            <p className="text-lg text-gray-600">
+              {format(new Date(selectedDateData.date), 'EEEE, dd MMMM yyyy', { locale: it })}
+            </p>
+          </div>
+
+          {/* Mattina CollapsibleCard */}
+          <div 
+            className="rounded-lg overflow-hidden shadow-lg"
+            style={{
+              border: '4px solid rgb(34, 197, 94)',
+              backgroundColor: 'rgba(209, 250, 229, 0.85)',
+              marginBottom: '32px',
+            }}
+          >
+            <CollapsibleCard
+              title="Mattina"
+              subtitle="10:00 - 14:30"
+              icon={Sunrise}
+              defaultExpanded={true}
+              collapseDisabled={false}
+              counter={{
+                available: selectedDateData.capacity.morning.available,
+                capacity: selectedDateData.capacity.morning.capacity
+              }}
+              headerClassName="bg-green-100 hover:bg-green-200 border-b-2 border-green-300"
+              className="!bg-transparent !border-transparent !shadow-none"
+            >
+              <div className="px-4 sm:px-6 py-4" style={{ backgroundColor: 'rgba(187, 247, 208, 0.8)' }}>
+                {selectedDateData.morningBookings.length > 0 ? (
+                  selectedDateData.morningBookings.map((booking, index) => {
+                    const eventTypeLabel = getBookingEventTypeLabel(booking)
+                    let menuPriceDisplay = getMenuPriceDisplayFromBooking(booking)
+                    if (menuPriceDisplay && booking.booking_type === 'rinfresco_laurea' && booking.menu_selection?.items) {
+                      const baseTotal = booking.menu_selection.items
+                        .filter((item) => !item.name.toLowerCase().includes('tiramis'))
+                        .reduce((sum, item) => sum + (item.totalPrice || item.price), 0)
+                      const tiramisuTotal = booking.menu_selection.tiramisu_total || 0
+                      const totalBooking = baseTotal * (booking.num_guests || 0) + tiramisuTotal
+
+                      menuPriceDisplay = {
+                        prezzoMenu: baseTotal,
+                        prezzoMenuLabel: `€${baseTotal.toFixed(2)}/persona`,
+                        breakdownLabel: undefined,
+                        prezzoTotale: totalBooking,
+                        prezzoTotaleLabel: `€${totalBooking.toFixed(2)}`,
+                        totalLabel: `€${baseTotal.toFixed(2)}/persona`,
+                        totalPerPerson: baseTotal,
+                        basePerPerson: baseTotal
+                      }
+                    }
+                    return (
+                      <React.Fragment key={booking.id}>
+                      {index > 0 && (
+                        <div className="my-8 flex items-center">
+                          <div 
+                            className="w-full"
+                            style={{
+                              height: '3px',
+                              background: 'linear-gradient(to right, transparent, rgba(34, 197, 94, 0.4) 5%, rgba(34, 197, 94, 0.8) 20%, rgba(34, 197, 94, 1) 50%, rgba(34, 197, 94, 0.8) 80%, rgba(34, 197, 94, 0.4) 95%, transparent)',
+                              borderRadius: '2px',
+                              boxShadow: '0 2px 4px rgba(34, 197, 94, 0.2)',
+                            }}
+                          ></div>
+                        </div>
+                      )}
+                      <div
+                        className="bg-white/98 backdrop-blur-sm p-5 rounded-modern relative"
+                        style={{
+                          border: '3px solid rgba(255, 255, 255, 0.9)',
+                          boxShadow: '0 0 0 1px rgba(255, 255, 255, 1), 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 0 3px rgba(255, 255, 255, 0.5), inset 0 2px 8px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.08)',
+                          transform: 'translateY(-2px)',
+                        }}
+                      >
+                      <div className="grid grid-cols-2 gap-4 md:gap-6">
+                        {/* Colonna Contatti */}
+                        <div className="space-y-3 md:space-y-4">
+                          <div>
+                            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-green-800 bg-green-50 px-3 py-1 rounded-full">
+                              Contatti
+                            </span>
+                            <div className="mt-3 pb-3 border-b border-gray-200 flex items-center gap-3">
+                              <Users className="w-5 h-5 text-green-700 flex-shrink-0" />
+                              <h4 className="font-bold text-lg md:text-xl text-gray-900">
+                                {booking.client_name}
+                              </h4>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-4 md:gap-6">
+                            <Mail className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 flex items-start gap-2">
+                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Email:</span>
+                              <span className="text-sm md:text-base text-gray-700 font-medium break-words">{booking.client_email}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-4 md:gap-6">
+                            <UtensilsCrossed className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 flex items-start gap-2">
+                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Evento:</span>
+                              <span className="text-sm md:text-base text-gray-700 font-semibold uppercase tracking-wide">
+                                {eventTypeLabel || 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {booking.placement && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <MapPin className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Posizionamento:</span>
+                                <span className="text-sm md:text-base text-gray-700 font-medium">{booking.placement}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {booking.client_phone && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <Phone className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Telefono:</span>
+                                <span className="text-sm md:text-base text-gray-700 font-medium">{booking.client_phone}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Colonna Prenotazione */}
+                        <div className="space-y-3 md:space-y-4">
+                          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-green-800 bg-green-100 px-3 py-1 rounded-full">
+                            Prenotazione
+                          </span>
+
+                          {(booking.desired_time || booking.confirmed_start) && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <Clock className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Orario:</span>
+                                <span className="text-sm md:text-base text-gray-800 font-semibold">
+                                  {getAccurateStartTime(booking)} - {getAccurateEndTime(booking)}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-start gap-4 md:gap-6">
+                            <Users className="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 flex items-start gap-2">
+                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Ospiti:</span>
+                              <span className="text-sm md:text-base font-bold text-green-800">{booking.num_guests}</span>
+                            </div>
+                          </div>
+
+
+                          {menuPriceDisplay && (
+                            <>
+                              <div className="flex items-start gap-4 md:gap-6">
+                                <Tag className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                                <div className="flex-1 flex items-start gap-2">
+                                  <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Prezzo Menù:</span>
+                                  <span className="text-sm md:text-base font-semibold text-gray-900">
+                                    €{menuPriceDisplay.prezzoMenu.toFixed(2)}
+                                  </span>
+                                </div>
+                              </div>
+                              {menuPriceDisplay.prezzoTotaleLabel && (
+                                <div className="flex items-start gap-4 md:gap-6">
+                                  <Tag className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                                  <div className="flex-1 flex items-start gap-2">
+                                    <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Prezzo Totale:</span>
+                                    <span className="text-sm md:text-base font-semibold text-gray-900">
+                                      {menuPriceDisplay.prezzoTotaleLabel}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          )}
+
+                          {booking.menu && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <ScrollText className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Menù:</span>
+                                <span className="text-sm md:text-base text-gray-700 leading-snug line-clamp-3">{booking.menu}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {booking.special_requests && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <StickyNote className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Note speciali:</span>
+                                <span className="text-sm md:text-base text-gray-700 italic leading-snug">{booking.special_requests}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      </div>
+                      </React.Fragment>
+                    )
+                  })
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-green-100 flex items-center justify-center">
+                      <Sunrise className="w-8 h-8 text-green-500" />
+                    </div>
+                    <p className="text-sm text-gray-500 italic">Nessuna prenotazione per questa fascia oraria</p>
+                  </div>
+                )}
+              </div>
+            </CollapsibleCard>
+          </div>
+
+          {/* Pomeriggio CollapsibleCard */}
+          <div 
+            className="rounded-lg overflow-hidden shadow-lg"
+            style={{
+              border: '4px solid rgb(234, 179, 8)',
+              backgroundColor: 'rgba(254, 243, 199, 0.8)',
+              marginTop: '32px',
+              marginBottom: '32px',
+            }}
+          >
+            <CollapsibleCard
+              title="Pomeriggio"
+              subtitle="14:31 - 18:30"
+              icon={Sun}
+              defaultExpanded={true}
+              collapseDisabled={false}
+              counter={{
+                available: selectedDateData.capacity.afternoon.available,
+                capacity: selectedDateData.capacity.afternoon.capacity
+              }}
+              headerClassName="bg-yellow-100 hover:bg-yellow-200 border-b-2 border-yellow-300"
+              className="!bg-transparent !border-transparent !shadow-none"
+            >
+              <div className="px-4 sm:px-6 py-4" style={{ backgroundColor: 'rgba(253, 230, 138, 0.75)' }}>
+                {selectedDateData.afternoonBookings.length > 0 ? (
+                  selectedDateData.afternoonBookings.map((booking, index) => {
+                    const eventTypeLabel = getBookingEventTypeLabel(booking)
+                    let menuPriceDisplay = getMenuPriceDisplayFromBooking(booking)
+                    if (menuPriceDisplay && booking.booking_type === 'rinfresco_laurea' && booking.menu_selection?.items) {
+                      const baseTotal = booking.menu_selection.items
+                        .filter((item) => !item.name.toLowerCase().includes('tiramis'))
+                        .reduce((sum, item) => sum + (item.totalPrice || item.price), 0)
+                      const tiramisuTotal = booking.menu_selection.tiramisu_total || 0
+                      const totalBooking = baseTotal * (booking.num_guests || 0) + tiramisuTotal
+
+                      menuPriceDisplay = {
+                        prezzoMenu: baseTotal,
+                        prezzoMenuLabel: `€${baseTotal.toFixed(2)}/persona`,
+                        breakdownLabel: undefined,
+                        prezzoTotale: totalBooking,
+                        prezzoTotaleLabel: `€${totalBooking.toFixed(2)}`,
+                        totalLabel: `€${baseTotal.toFixed(2)}/persona`,
+                        totalPerPerson: baseTotal,
+                        basePerPerson: baseTotal
+                      }
+                    }
+                    return (
+                      <React.Fragment key={booking.id}>
+                      {index > 0 && (
+                        <div className="my-8 flex items-center">
+                          <div 
+                            className="w-full"
+                            style={{
+                              height: '3px',
+                              background: 'linear-gradient(to right, transparent, rgba(234, 179, 8, 0.4) 5%, rgba(234, 179, 8, 0.8) 20%, rgba(234, 179, 8, 1) 50%, rgba(234, 179, 8, 0.8) 80%, rgba(234, 179, 8, 0.4) 95%, transparent)',
+                              borderRadius: '2px',
+                              boxShadow: '0 2px 4px rgba(234, 179, 8, 0.2)',
+                            }}
+                          ></div>
+                        </div>
+                      )}
+                      <div
+                        className="bg-white/98 backdrop-blur-sm p-5 rounded-modern relative"
+                        style={{
+                          border: '3px solid rgba(255, 255, 255, 0.9)',
+                          boxShadow: '0 0 0 1px rgba(255, 255, 255, 1), 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 0 3px rgba(255, 255, 255, 0.5), inset 0 2px 8px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.08)',
+                          transform: 'translateY(-2px)',
+                        }}
+                      >
+                      <div className="grid grid-cols-2 gap-4 md:gap-6">
+                        {/* Colonna Contatti */}
+                        <div className="space-y-3 md:space-y-4">
+                          <div>
+                            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-yellow-800 bg-yellow-50 px-3 py-1 rounded-full">
+                              Contatti
+                            </span>
+                            <div className="mt-3 pb-3 border-b border-gray-200 flex items-center gap-3">
+                              <Users className="w-5 h-5 text-yellow-700 flex-shrink-0" />
+                              <h4 className="font-bold text-lg md:text-xl text-gray-900">
+                                {booking.client_name}
+                              </h4>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-4 md:gap-6">
+                            <Mail className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 flex items-start gap-2">
+                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Email:</span>
+                              <span className="text-sm md:text-base text-gray-700 font-medium break-words">{booking.client_email}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-4 md:gap-6">
+                            <UtensilsCrossed className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 flex items-start gap-2">
+                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Evento:</span>
+                              <span className="text-sm md:text-base text-gray-700 font-semibold uppercase tracking-wide">
+                                {eventTypeLabel || 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {booking.placement && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <MapPin className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Posizionamento:</span>
+                                <span className="text-sm md:text-base text-gray-700 font-medium">{booking.placement}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {booking.client_phone && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <Phone className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Telefono:</span>
+                                <span className="text-sm md:text-base text-gray-700 font-medium">{booking.client_phone}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Colonna Prenotazione */}
+                        <div className="space-y-3 md:space-y-4">
+                          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-yellow-800 bg-yellow-100 px-3 py-1 rounded-full">
+                            Prenotazione
+                          </span>
+
+                          {(booking.desired_time || booking.confirmed_start) && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <Clock className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Orario:</span>
+                                <span className="text-sm md:text-base text-gray-800 font-semibold">
+                                  {getAccurateStartTime(booking)} - {getAccurateEndTime(booking)}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-start gap-4 md:gap-6">
+                            <Users className="w-5 h-5 text-yellow-700 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 flex items-start gap-2">
+                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Ospiti:</span>
+                              <span className="text-sm md:text-base font-bold text-yellow-800">{booking.num_guests}</span>
+                            </div>
+                          </div>
+
+
+                          {menuPriceDisplay && (
+                            <>
+                              <div className="flex items-start gap-4 md:gap-6">
+                                <Tag className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                                <div className="flex-1 flex items-start gap-2">
+                                  <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Prezzo Menù:</span>
+                                  <span className="text-sm md:text-base font-semibold text-gray-900">
+                                    €{menuPriceDisplay.prezzoMenu.toFixed(2)}
+                                  </span>
+                                </div>
+                              </div>
+                              {menuPriceDisplay.prezzoTotaleLabel && (
+                                <div className="flex items-start gap-4 md:gap-6">
+                                  <Tag className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                                  <div className="flex-1 flex items-start gap-2">
+                                    <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Prezzo Totale:</span>
+                                    <span className="text-sm md:text-base font-semibold text-gray-900">
+                                      {menuPriceDisplay.prezzoTotaleLabel}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          )}
+
+                          {booking.menu && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <ScrollText className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Menù:</span>
+                                <span className="text-sm md:text-base text-gray-700 leading-snug line-clamp-3">{booking.menu}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {booking.special_requests && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <StickyNote className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Note speciali:</span>
+                                <span className="text-sm md:text-base text-gray-700 italic leading-snug">{booking.special_requests}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      </div>
+                      </React.Fragment>
+                    )
+                  })
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-yellow-100 flex items-center justify-center">
+                      <Sun className="w-8 h-8 text-yellow-500" />
+                    </div>
+                    <p className="text-sm text-gray-500 italic">Nessuna prenotazione per questa fascia oraria</p>
+                  </div>
+                )}
+              </div>
+            </CollapsibleCard>
+          </div>
+
+          {/* Sera CollapsibleCard */}
+          <div 
+            className="rounded-lg overflow-hidden shadow-lg"
+            style={{
+              border: '4px solid rgb(59, 130, 246)',
+              backgroundColor: 'rgba(191, 219, 254, 0.85)',
+              marginTop: '32px',
+            }}
+          >
+            <CollapsibleCard
+              title="Sera"
+              subtitle="18:31 - 23:30"
+              icon={Moon}
+              defaultExpanded={true}
+              collapseDisabled={false}
+              counter={{
+                available: selectedDateData.capacity.evening.available,
+                capacity: selectedDateData.capacity.evening.capacity
+              }}
+              headerClassName="bg-blue-100 hover:bg-blue-200 border-b-2 border-blue-300"
+              className="!bg-transparent !border-transparent !shadow-none"
+            >
+              <div className="px-4 sm:px-6 py-4" style={{ backgroundColor: 'rgba(147, 197, 253, 0.8)' }}>
+                {selectedDateData.eveningBookings.length > 0 ? (
+                  selectedDateData.eveningBookings.map((booking, index) => {
+                    const eventTypeLabel = getBookingEventTypeLabel(booking)
+                    let menuPriceDisplay = getMenuPriceDisplayFromBooking(booking)
+                    if (menuPriceDisplay && booking.booking_type === 'rinfresco_laurea' && booking.menu_selection?.items) {
+                      const baseTotal = booking.menu_selection.items
+                        .filter((item) => !item.name.toLowerCase().includes('tiramis'))
+                        .reduce((sum, item) => sum + (item.totalPrice || item.price), 0)
+                      const tiramisuTotal = booking.menu_selection.tiramisu_total || 0
+                      const totalBooking = baseTotal * (booking.num_guests || 0) + tiramisuTotal
+
+                      menuPriceDisplay = {
+                        prezzoMenu: baseTotal,
+                        prezzoMenuLabel: `€${baseTotal.toFixed(2)}/persona`,
+                        breakdownLabel: undefined,
+                        prezzoTotale: totalBooking,
+                        prezzoTotaleLabel: `€${totalBooking.toFixed(2)}`,
+                        totalLabel: `€${baseTotal.toFixed(2)}/persona`,
+                        totalPerPerson: baseTotal,
+                        basePerPerson: baseTotal
+                      }
+                    }
+                    return (
+                      <React.Fragment key={booking.id}>
+                      {index > 0 && (
+                        <div className="my-8 flex items-center">
+                          <div 
+                            className="w-full"
+                            style={{
+                              height: '3px',
+                              background: 'linear-gradient(to right, transparent, rgba(59, 130, 246, 0.4) 5%, rgba(59, 130, 246, 0.8) 20%, rgba(59, 130, 246, 1) 50%, rgba(59, 130, 246, 0.8) 80%, rgba(59, 130, 246, 0.4) 95%, transparent)',
+                              borderRadius: '2px',
+                              boxShadow: '0 2px 4px rgba(59, 130, 246, 0.2)',
+                            }}
+                          ></div>
+                        </div>
+                      )}
+                      <div
+                        className="bg-white/98 backdrop-blur-sm p-5 rounded-modern relative"
+                        style={{
+                          border: '3px solid rgba(255, 255, 255, 0.9)',
+                          boxShadow: '0 0 0 1px rgba(255, 255, 255, 1), 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 0 3px rgba(255, 255, 255, 0.5), inset 0 2px 8px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.08)',
+                          transform: 'translateY(-2px)',
+                        }}
+                      >
+                      <div className="grid grid-cols-2 gap-4 md:gap-6">
+                        {/* Colonna Contatti */}
+                        <div className="space-y-3 md:space-y-4">
+                          <div>
+                            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-blue-800 bg-blue-50 px-3 py-1 rounded-full">
+                              Contatti
+                            </span>
+                            <div className="mt-3 pb-3 border-b border-gray-200 flex items-center gap-3">
+                              <Users className="w-5 h-5 text-blue-700 flex-shrink-0" />
+                              <h4 className="font-bold text-lg md:text-xl text-gray-900">
+                                {booking.client_name}
+                              </h4>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-4 md:gap-6">
+                            <Mail className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 flex items-start gap-2">
+                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Email:</span>
+                              <span className="text-sm md:text-base text-gray-700 font-medium break-words">{booking.client_email}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-4 md:gap-6">
+                            <UtensilsCrossed className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 flex items-start gap-2">
+                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Evento:</span>
+                              <span className="text-sm md:text-base text-gray-700 font-semibold uppercase tracking-wide">
+                                {eventTypeLabel || 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {booking.placement && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Posizionamento:</span>
+                                <span className="text-sm md:text-base text-gray-700 font-medium">{booking.placement}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {booking.client_phone && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <Phone className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Telefono:</span>
+                                <span className="text-sm md:text-base text-gray-700 font-medium">{booking.client_phone}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Colonna Prenotazione */}
+                        <div className="space-y-3 md:space-y-4">
+                          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-blue-800 bg-blue-100 px-3 py-1 rounded-full">
+                            Prenotazione
+                          </span>
+
+                          {(booking.desired_time || booking.confirmed_start) && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <Clock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Orario:</span>
+                                <span className="text-sm md:text-base text-gray-800 font-semibold">
+                                  {getAccurateStartTime(booking)} - {getAccurateEndTime(booking)}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-start gap-4 md:gap-6">
+                            <Users className="w-5 h-5 text-blue-700 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 flex items-start gap-2">
+                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Ospiti:</span>
+                              <span className="text-sm md:text-base font-bold text-blue-800">{booking.num_guests}</span>
+                            </div>
+                          </div>
+
+
+                          {menuPriceDisplay && (
+                            <>
+                              <div className="flex items-start gap-4 md:gap-6">
+                                <Tag className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                                <div className="flex-1 flex items-start gap-2">
+                                  <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Prezzo Menù:</span>
+                                  <span className="text-sm md:text-base font-semibold text-gray-900">
+                                    €{menuPriceDisplay.prezzoMenu.toFixed(2)}
+                                  </span>
+                                </div>
+                              </div>
+                              {menuPriceDisplay.prezzoTotaleLabel && (
+                                <div className="flex items-start gap-4 md:gap-6">
+                                  <Tag className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                                  <div className="flex-1 flex items-start gap-2">
+                                    <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Prezzo Totale:</span>
+                                    <span className="text-sm md:text-base font-semibold text-gray-900">
+                                      {menuPriceDisplay.prezzoTotaleLabel}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          )}
+
+                          {booking.menu && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <ScrollText className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Menù:</span>
+                                <span className="text-sm md:text-base text-gray-700 leading-snug line-clamp-3">{booking.menu}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {booking.special_requests && (
+                            <div className="flex items-start gap-4 md:gap-6">
+                              <StickyNote className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1 flex items-start gap-2">
+                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Note speciali:</span>
+                                <span className="text-sm md:text-base text-gray-700 italic leading-snug">{booking.special_requests}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      </div>
+                      </React.Fragment>
+                    )
+                  })
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-blue-100 flex items-center justify-center">
+                      <Moon className="w-8 h-8 text-blue-500" />
+                    </div>
+                    <p className="text-sm text-gray-500 italic">Nessuna prenotazione per questa fascia oraria</p>
+                  </div>
+                )}
+              </div>
+            </CollapsibleCard>
+          </div>
+        </div>
+
+
+      </div>
+
+      {/* Modal */}
+      {selectedBooking && (
+        <BookingDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false)
+            setSelectedBooking(null)
+          }}
+          booking={selectedBooking}
+        />
+      )}
+    </>
+  )
+}
+

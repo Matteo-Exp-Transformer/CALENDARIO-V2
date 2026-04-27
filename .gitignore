@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment files (NEVER commit these)
+.env.local
+.env.local.test
+.env.*.local
+
+# Editor / OS
+.DS_Store
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test results
+test-results/
+playwright-report/
+
+# Vite cache
+.vite/
+
+# TypeScript
+*.tsbuildinfo

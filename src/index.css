@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ──────────────────────────────────────────────
+   CSS Variables — Tema Blu/Indaco Professionale
+   ────────────────────────────────────────────── */
+:root {
+  /* Palette primaria */
+  --color-primary:       #4F46E5;
+  --color-primary-light: #818CF8;
+  --color-primary-dark:  #3730A3;
+  --color-primary-bg:    #EEF2FF;
+
+  /* Surface / Background */
+  --color-bg:            #F8FAFC;
+  --color-surface:       #FFFFFF;
+  --color-surface-2:     #F1F5F9;
+
+  /* Bordi */
+  --color-border:        #E2E8F0;
+  --color-border-strong: #CBD5E1;
+
+  /* Testo */
+  --color-text:          #0F172A;
+  --color-text-muted:    #64748B;
+  --color-text-light:    #94A3B8;
+
+  /* Feedback */
+  --color-success:       #10B981;
+  --color-warning:       #F59E0B;
+  --color-danger:        #EF4444;
+  --color-info:          #3B82F6;
+
+  /* Shadows */
+  --shadow-sm:   0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md:   0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg:   0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-xl:   0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+
+  /* Tema admin nav */
+  --theme-surface-nav-active:   #EEF2FF;
+  --theme-border-nav-active:    #4F46E5;
+  --theme-text-nav-active:      #3730A3;
+  --theme-surface-nav-inactive: #FFFFFF;
+  --theme-border-nav-inactive:  #E2E8F0;
+  --theme-text-nav-inactive:    #475569;
+  --theme-surface-hover:        #F1F5F9;
+  --theme-border-strong:        #CBD5E1;
+  --theme-text-secondary:       #64748B;
+  --theme-accent-primary:       #4F46E5;
+  --theme-shadow-sm:            0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+/* Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar personalizzata */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-surface-2); }
+::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-light); }
+
+/* Animazioni */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+.animate-spin {
+  animation: spin 0.8s linear infinite;
+}
+
+/* FullCalendar override */
+.fc {
+  --fc-border-color: var(--color-border);
+  --fc-button-bg-color: var(--color-primary);
+  --fc-button-border-color: var(--color-primary);
+  --fc-button-hover-bg-color: var(--color-primary-dark);
+  --fc-button-active-bg-color: var(--color-primary-dark);
+  --fc-today-bg-color: #EEF2FF;
+}
