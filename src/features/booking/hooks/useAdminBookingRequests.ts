@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
+import { useTenantContext } from '@/contexts/TenantContext'
 import { supabase } from '@/lib/supabase'
 import type { BookingRequest, BookingRequestInput } from '@/types/booking'
 import { toast } from 'react-toastify'
@@ -6,9 +7,13 @@ import { createBookingDateTime, calculateEndTimeFromStart } from '../utils/dateU
 
 // Hook for creating booking requests directly as ACCEPTED (admin only)
 export const useCreateAdminBooking = () => {
+  const { tenantId } = useTenantContext()
   return useMutation({
     mutationFn: async (data: BookingRequestInput) => {
-      
+      if (!tenantId) {
+        throw new Error('Tenant non disponibile: effettuare nuovamente il login')
+      }
+
       // Normalizza desired_time a formato HH:MM (rimuove secondi se presenti)
       const normalizedTime = data.desired_time 
         ? data.desired_time.split(':').slice(0, 2).join(':')
@@ -22,6 +27,7 @@ export const useCreateAdminBooking = () => {
       const confirmedEnd = createBookingDateTime(data.desired_date, endTime, false, startTime)
       
       const insertData = {
+        tenant_id: tenantId,
         client_name: data.client_name,
         client_email: data.client_email,
         client_phone: data.client_phone || null,

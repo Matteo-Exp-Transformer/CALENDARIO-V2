@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Modal, Input, Label, Button } from '@/components/ui'
+import { useTenantContext } from '@/contexts/TenantContext'
 import { sendAndLogEmail } from '@/lib/email'
 import { toast } from 'react-toastify'
 import { Mail, Loader2, CheckCircle, XCircle } from 'lucide-react'
@@ -10,6 +11,7 @@ interface TestEmailModalProps {
 }
 
 export const TestEmailModal: React.FC<TestEmailModalProps> = ({ isOpen, onClose }) => {
+  const { tenantId } = useTenantContext()
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null)
@@ -19,6 +21,10 @@ export const TestEmailModal: React.FC<TestEmailModalProps> = ({ isOpen, onClose 
       toast.error('Inserisci un indirizzo email valido')
       return
     }
+    if (!tenantId) {
+      toast.error('Tenant non disponibile')
+      return
+    }
 
     setIsLoading(true)
     setResult(null)
@@ -26,6 +32,7 @@ export const TestEmailModal: React.FC<TestEmailModalProps> = ({ isOpen, onClose 
     try {
       const result = await sendAndLogEmail(
         {
+          tenantId,
           to: email,
           subject: 'Test Email - Al Ritrovo Prenotazioni',
           html: `

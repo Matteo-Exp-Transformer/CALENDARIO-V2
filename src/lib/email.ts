@@ -5,6 +5,7 @@
 // Environment variables are configured in Supabase Secrets, not used directly in this file
 
 interface SendEmailOptions {
+  tenantId: string
   to: string | string[] // Support both single email and array (max 50 recipients)
   subject: string
   html: string
@@ -13,6 +14,7 @@ interface SendEmailOptions {
 }
 
 interface EmailLog {
+  tenant_id: string
   booking_id?: string
   email_type: string
   recipient_email: string
@@ -83,6 +85,7 @@ export const logEmailToDatabase = async (log: EmailLog): Promise<void> => {
     const { supabase } = await import('./supabase')
 
     const logData = {
+      tenant_id: log.tenant_id,
       booking_id: log.booking_id || null,
       email_type: log.email_type,
       recipient_email: log.recipient_email,
@@ -114,6 +117,7 @@ export const sendAndLogEmail = async (
   const recipientEmail = Array.isArray(options.to) ? options.to.join(', ') : options.to
   
   const log: EmailLog = {
+    tenant_id: options.tenantId,
     booking_id: options.bookingId,
     email_type: emailType,
     recipient_email: recipientEmail,
@@ -121,6 +125,7 @@ export const sendAndLogEmail = async (
   }
 
   const emailOptions = {
+    tenantId: options.tenantId,
     to: options.to,
     subject: options.subject,
     html: options.html,

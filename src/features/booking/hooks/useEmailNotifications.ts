@@ -15,6 +15,7 @@ export const sendBookingAcceptedEmail = async (booking: BookingRequest): Promise
 
     const result = await sendAndLogEmail(
       {
+        tenantId: booking.tenant_id,
         to: booking.client_email,
         subject,
         html,
@@ -39,6 +40,7 @@ export const sendBookingRejectedEmail = async (booking: BookingRequest): Promise
 
     const result = await sendAndLogEmail(
       {
+        tenantId: booking.tenant_id,
         to: booking.client_email,
         subject,
         html,
@@ -63,6 +65,7 @@ export const sendBookingCancelledEmail = async (booking: BookingRequest): Promis
 
     const result = await sendAndLogEmail(
       {
+        tenantId: booking.tenant_id,
         to: booking.client_email,
         subject,
         html,

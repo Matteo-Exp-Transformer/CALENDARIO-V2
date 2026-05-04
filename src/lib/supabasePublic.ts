@@ -13,6 +13,12 @@ export const supabasePublic = createClient<Database>(supabaseUrl, supabaseAnonKe
   auth: {
     persistSession: false,
     autoRefreshToken: false,
+    storageKey: 'sb-public-no-session',
+    storage: {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    },
   },
   global: {
     headers: { 'X-Client-Info': 'booking-public' },

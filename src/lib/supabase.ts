@@ -37,9 +37,3 @@ export async function getCurrentUser() {
   if (error) return null
   return user
 }
-
-/** Imposta il tenant corrente per le policy RLS */
-export async function setCurrentTenant(tenantId: string) {
-  const { error } = await (supabase.rpc as any)('set_tenant', { tid: tenantId })
-  if (error) console.error('Errore impostazione tenant:', error)
-}

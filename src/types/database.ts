@@ -1,6 +1,3 @@
-// Supabase generated types
-// This file defines the database schema for TypeScript
-
 export type Json =
   | string
   | number
@@ -9,304 +6,431 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_users_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_requests: {
         Row: {
-          id: string
-          created_at: string
-          updated_at: string
-          client_name: string
-          client_email: string
-          client_phone: string | null
-          event_type: string | null
+          booking_source: string
           booking_type: string | null
-          desired_date: string
-          desired_time: string | null
-          num_guests: number | null
-          special_requests: string | null
-          menu: string | null
-          menu_selection: Json | null
-          menu_total_per_person: number | null
-          menu_total_booking: number | null
-          preset_menu: string | null
-          dietary_restrictions: Json | null
-          status: string
-          confirmed_start: string | null
-          confirmed_end: string | null
-          rejection_reason: string | null
           cancellation_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
+          client_email: string
+          client_name: string
+          client_phone: string | null
+          confirmed_end: string | null
+          confirmed_start: string | null
+          created_at: string
+          desired_date: string
+          desired_time: string | null
+          dietary_restrictions: Json | null
+          event_type: string | null
+          id: string
+          menu: string | null
+          menu_selection: Json | null
+          menu_total_booking: number | null
+          menu_total_per_person: number | null
+          num_guests: number | null
           placement: string | null
-          booking_source: string
+          preset_menu: string | null
+          rejection_reason: string | null
+          special_requests: string | null
+          status: string
           tenant_id: string
+          updated_at: string
         }
         Insert: {
-          id?: string
-          created_at?: string
-          updated_at?: string
-          client_name: string
-          client_email: string
-          client_phone?: string | null
-          event_type?: string | null
+          booking_source?: string
           booking_type?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          client_email?: string
+          client_name: string
+          client_phone?: string | null
+          confirmed_end?: string | null
+          confirmed_start?: string | null
+          created_at?: string
           desired_date: string
           desired_time?: string | null
-          num_guests?: number | null
-          special_requests?: string | null
+          dietary_restrictions?: Json | null
+          event_type?: string | null
+          id?: string
           menu?: string | null
           menu_selection?: Json | null
-          menu_total_per_person?: number | null
           menu_total_booking?: number | null
-          dietary_restrictions?: Json | null
-          status?: string
-          confirmed_start?: string | null
-          confirmed_end?: string | null
+          menu_total_per_person?: number | null
+          num_guests?: number | null
+          placement?: string | null
+          preset_menu?: string | null
           rejection_reason?: string | null
+          special_requests?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          booking_source?: string
+          booking_type?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
-          placement?: string | null
-          booking_source?: string
-          tenant_id?: string
-        }
-        Update: {
-          id?: string
-          created_at?: string
-          updated_at?: string
-          client_name?: string
           client_email?: string
+          client_name?: string
           client_phone?: string | null
-          event_type?: string | null
-          booking_type?: string | null
+          confirmed_end?: string | null
+          confirmed_start?: string | null
+          created_at?: string
           desired_date?: string
           desired_time?: string | null
-          num_guests?: number | null
-          special_requests?: string | null
+          dietary_restrictions?: Json | null
+          event_type?: string | null
+          id?: string
           menu?: string | null
           menu_selection?: Json | null
-          menu_total_per_person?: number | null
           menu_total_booking?: number | null
-          dietary_restrictions?: Json | null
-          status?: string
-          confirmed_start?: string | null
-          confirmed_end?: string | null
-          rejection_reason?: string | null
-          cancellation_reason?: string | null
-          cancelled_at?: string | null
-          cancelled_by?: string | null
+          menu_total_per_person?: number | null
+          num_guests?: number | null
           placement?: string | null
-          booking_source?: string
+          preset_menu?: string | null
+          rejection_reason?: string | null
+          special_requests?: string | null
+          status?: string
           tenant_id?: string
-        }
-      }
-      menu_items: {
-        Row: {
-          id: string
-          created_at: string
-          updated_at: string
-          name: string
-          category: string
-          price: number
-          description: string | null
-          sort_order: number
-          tenant_id: string
-        }
-        Insert: {
-          id?: string
-          created_at?: string
           updated_at?: string
-          name: string
-          category: string
-          price: number
-          description?: string | null
-          sort_order?: number
-          tenant_id?: string
         }
-        Update: {
-          id?: string
-          created_at?: string
-          updated_at?: string
-          name?: string
-          category?: string
-          price?: number
-          description?: string | null
-          sort_order?: number
-          tenant_id?: string
-        }
-      }
-      admin_users: {
-        Row: {
-          id: string
-          email: string
-          name: string | null
-          created_at: string
-          updated_at: string
-          tenant_id: string
-        }
-        Insert: {
-          id?: string
-          email: string
-          name?: string | null
-          created_at?: string
-          updated_at?: string
-          tenant_id?: string
-        }
-        Update: {
-          id?: string
-          email?: string
-          name?: string | null
-          created_at?: string
-          updated_at?: string
-          tenant_id?: string
-        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_logs: {
         Row: {
-          id: string
           booking_id: string | null
           email_type: string
+          error_message: string | null
+          id: string
+          provider_response: Json | null
           recipient_email: string
           sent_at: string
           status: string
-          provider_response: Json | null
-          error_message: string | null
           tenant_id: string
         }
         Insert: {
-          id?: string
           booking_id?: string | null
           email_type: string
+          error_message?: string | null
+          id?: string
+          provider_response?: Json | null
           recipient_email: string
           sent_at?: string
           status?: string
-          provider_response?: Json | null
-          error_message?: string | null
-          tenant_id?: string
+          tenant_id: string
         }
         Update: {
-          id?: string
           booking_id?: string | null
           email_type?: string
+          error_message?: string | null
+          id?: string
+          provider_response?: Json | null
           recipient_email?: string
           sent_at?: string
           status?: string
-          provider_response?: Json | null
-          error_message?: string | null
           tenant_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invite_tokens: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string | null
+          expires_at: string
+          id: string
+          organization_id: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          expires_at: string
+          id?: string
+          organization_id: string
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          expires_at?: string
+          id?: string
+          organization_id?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invite_tokens_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          price: number
+          sort_order: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          price: number
+          sort_order?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price?: number
+          sort_order?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          max_booking_requests_per_year: number
+          max_bookings_per_year: number
+          name: string
+          plan: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_booking_requests_per_year?: number
+          max_bookings_per_year?: number
+          name: string
+          plan?: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_booking_requests_per_year?: number
+          max_bookings_per_year?: number
+          name?: string
+          plan?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          endpoint: string
+          id: string
+          ip_address: string
+          requested_at: string
+        }
+        Insert: {
+          endpoint: string
+          id?: string
+          ip_address: string
+          requested_at?: string
+        }
+        Update: {
+          endpoint?: string
+          id?: string
+          ip_address?: string
+          requested_at?: string
+        }
+        Relationships: []
       }
       restaurant_settings: {
         Row: {
           id: string
           setting_key: string
           setting_value: Json
-          updated_at: string
           tenant_id: string
+          updated_at: string
         }
         Insert: {
           id?: string
           setting_key: string
           setting_value: Json
+          tenant_id: string
           updated_at?: string
-          tenant_id?: string
         }
         Update: {
           id?: string
           setting_key?: string
           setting_value?: Json
-          updated_at?: string
           tenant_id?: string
-        }
-      }
-      organizations: {
-        Row: {
-          id: string
-          name: string
-          slug: string
-          plan: string
-          max_bookings_per_year: number
-          max_booking_requests_per_year: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          slug: string
-          plan?: string
-          max_bookings_per_year?: number
-          max_booking_requests_per_year?: number
-          created_at?: string
           updated_at?: string
         }
-        Update: {
-          id?: string
-          name?: string
-          slug?: string
-          plan?: string
-          max_bookings_per_year?: number
-          max_booking_requests_per_year?: number
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      invite_tokens: {
-        Row: {
-          id: string
-          organization_id: string
-          token: string
-          email: string | null
-          expires_at: string
-          used_at: string | null
-          created_at: string
-          created_by: string | null
-        }
-        Insert: {
-          id?: string
-          organization_id: string
-          token: string
-          email?: string | null
-          expires_at: string
-          used_at?: string | null
-          created_at?: string
-          created_by?: string | null
-        }
-        Update: {
-          id?: string
-          organization_id?: string
-          token?: string
-          email?: string | null
-          expires_at?: string
-          used_at?: string | null
-          created_at?: string
-          created_by?: string | null
-        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tenant_usage: {
         Row: {
+          booking_requests_count: number
+          bookings_count: number
           id: string
           organization_id: string
           year: number
-          bookings_count: number
-          booking_requests_count: number
         }
         Insert: {
+          booking_requests_count?: number
+          bookings_count?: number
           id?: string
           organization_id: string
           year: number
-          bookings_count?: number
-          booking_requests_count?: number
         }
         Update: {
+          booking_requests_count?: number
+          bookings_count?: number
           id?: string
           organization_id?: string
           year?: number
-          bookings_count?: number
-          booking_requests_count?: number
         }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -315,19 +439,145 @@ export interface Database {
     Functions: {
       check_admin_email: {
         Args: { check_email: string }
-        Returns: { name: string; tenant_id: string }[]
+        Returns: {
+          name: string
+          tenant_id: string
+        }[]
       }
-      set_tenant: {
-        Args: { tid: string }
-        Returns: undefined
-      }
-      cleanup_rate_limits: {
-        Args: Record<string, never>
-        Returns: undefined
-      }
+      cleanup_rate_limits: { Args: never; Returns: undefined }
+      current_admin_tenant_id: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
     }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
 }
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {},
+  },
+} as const

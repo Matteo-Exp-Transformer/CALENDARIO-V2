@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react'
-import { supabase } from '../lib/supabase'
 import { supabasePublic } from '../lib/supabasePublic'
 
 interface TenantContextType {
@@ -78,9 +77,6 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       setTenantId(resolvedTenantId)
       setTenantSlug(orgData?.slug || null)
       setOrganizationName(orgData?.name || null)
-
-      // Imposta la variabile di sessione RLS
-      await (supabase.rpc as any)('set_tenant', { tid: resolvedTenantId })
     } catch (err) {
       console.error('Errore setTenantFromAdmin:', err)
       setTenantId(null)

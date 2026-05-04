@@ -57,7 +57,7 @@ export interface BookingRequest {
   booking_source?: 'public' | 'admin'
 
   // Multi-tenant
-  tenant_id?: string
+  tenant_id: string
 }
 
 export interface BookingRequestInput {
