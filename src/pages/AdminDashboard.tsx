@@ -81,7 +81,10 @@ const STAT_CARD_SURFACE: Record<StatCardTone, React.CSSProperties> = {
 }
 
 const StatCard: React.FC<{ label: string; value: number; tone: StatCardTone }> = ({ label, value, tone }) => (
-  <div className="rounded-xl p-4 text-center shadow-sm" style={STAT_CARD_SURFACE[tone]}>
+  <div
+    className="rounded-xl border-2 p-4 text-center shadow-sm"
+    style={STAT_CARD_SURFACE[tone]}
+  >
     <p className="text-2xl font-black text-slate-800">{value}</p>
     <p className="text-xs font-medium text-slate-600 mt-0.5">{label}</p>
   </div>
