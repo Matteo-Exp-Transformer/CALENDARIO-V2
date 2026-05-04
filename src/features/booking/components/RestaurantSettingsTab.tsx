@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Store, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -30,7 +30,10 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [bookingWindowDays, setBookingWindowDays] = useState<number | ''>(60)
   const [businessHours, setBusinessHours] = useState<BusinessHours>(() => getDefaultBusinessHours())
 
+  const hydratedRef = useRef(false)
+
   useEffect(() => {
+    hydratedRef.current = false
     setDirty(false)
   }, [tenantId])
 
@@ -41,13 +44,13 @@ export const RestaurantSettingsTab: React.FC = () => {
     hoursQuery.isSuccess
 
   useEffect(() => {
-    if (dirty || !allSuccess) return
+    if (!allSuccess || hydratedRef.current) return
     setRestaurantName(nameQuery.data)
     setTimezone(timezoneQuery.data)
     setBookingWindowDays(windowQuery.data)
     setBusinessHours(hoursQuery.data)
+    hydratedRef.current = true
   }, [
-    dirty,
     allSuccess,
     nameQuery.data,
     timezoneQuery.data,
@@ -77,6 +80,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         { key: 'booking_window_days', value: bookingWindowDays },
         { key: 'business_hours', value: businessHours },
       ])
+      hydratedRef.current = false
       await queryClient.refetchQueries({
         queryKey: ['restaurant_settings'],
         type: 'active',
