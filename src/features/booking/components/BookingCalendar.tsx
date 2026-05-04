@@ -18,11 +18,11 @@ import { extractDateFromISO, getAccurateStartTime, getAccurateEndTime } from '..
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
 import { getMenuPriceDisplayFromBooking } from '../utils/menuPricing'
 
-/** Stesso gradiente / bordo della brand strip in AdminDashboard (header “nome locale + Dashboard Admin”) */
+/** Sfondo sezione calendario: arancio chiarissimo → giallo chiarissimo, più tenue del top bar admin */
 const CALENDAR_SECTION_WARM_SURFACE: React.CSSProperties = {
   backgroundImage:
-    'linear-gradient(90deg, rgb(255 237 213) 0%, rgb(255 247 237) 42%, rgb(254 249 195) 100%)',
-  borderColor: 'rgba(253, 186, 116, 0.55)',
+    'linear-gradient(90deg, rgb(255 241 232) 0%, rgb(255 247 240) 48%, rgb(255 252 236) 100%)',
+  borderColor: 'rgba(251, 191, 160, 0.32)',
 }
 
 interface BookingCalendarProps {
