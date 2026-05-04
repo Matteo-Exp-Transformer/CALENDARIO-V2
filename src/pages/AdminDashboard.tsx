@@ -30,6 +30,12 @@ type Tab =
   | 'settings-system'
   | 'settings-restaurant'
 
+const ADMIN_WARM_GRADIENT_SURFACE: React.CSSProperties = {
+  backgroundImage:
+    'linear-gradient(90deg, rgb(255 237 213) 0%, rgb(255 247 237) 42%, rgb(254 249 195) 100%)',
+  borderColor: 'rgba(253, 186, 116, 0.55)'
+}
+
 /* ─── NavItem ─── */
 interface NavItemProps {
   icon: React.ElementType
@@ -43,18 +49,22 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, badge, onC
   <button
     type="button"
     onClick={onClick}
-    className={`relative flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-medium
-      transition-all duration-150 min-h-[40px] cursor-pointer
-      ${active
-        ? 'bg-white text-primary-700 border border-primary-200/90 shadow-sm'
-        : 'text-slate-900 hover:bg-white/40 border border-transparent'
-      }`}
+    className="relative w-full min-h-[44px] flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border px-2 sm:px-3 py-2.5 text-sm font-medium text-slate-900 transition-all duration-150 cursor-pointer hover:border-amber-500/45"
+    style={{
+      ...ADMIN_WARM_GRADIENT_SURFACE,
+      ...(active
+        ? {
+            boxShadow:
+              'inset 0 0 0 2px rgba(255, 255, 255, 0.88), 0 1px 6px rgba(180, 83, 9, 0.18)'
+          }
+        : {})
+    }}
   >
-    <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-primary-600' : 'text-slate-700'}`} />
-    <span className="hidden sm:inline">{label}</span>
-    <span className="sm:hidden">{label.split(' ')[0]}</span>
+    <Icon className={`h-4 w-4 flex-shrink-0 ${active ? 'text-primary-900' : 'text-slate-800'}`} />
+    <span className="hidden min-w-0 truncate text-center sm:inline">{label}</span>
+    <span className="min-w-0 truncate text-center sm:hidden">{label.split(' ')[0]}</span>
     {badge != null && badge > 0 && (
-      <span className="ml-1 inline-flex items-center justify-center min-w-[20px] h-5 text-xs font-bold px-1.5 rounded-full bg-primary-600 text-white">
+      <span className="inline-flex flex-shrink-0 items-center justify-center min-w-[20px] h-5 text-xs font-bold px-1.5 rounded-full bg-primary-600 text-white">
         {badge}
       </span>
     )}
@@ -108,11 +118,7 @@ export const AdminDashboard: React.FC = () => {
           {/* Top bar */}
           <div
             className="flex items-center justify-between h-16 rounded-xl shadow-sm border"
-            style={{
-              backgroundImage:
-                'linear-gradient(90deg, rgb(255 237 213) 0%, rgb(255 247 237) 42%, rgb(254 249 195) 100%)',
-              borderColor: 'rgba(253, 186, 116, 0.55)'
-            }}
+            style={ADMIN_WARM_GRADIENT_SURFACE}
           >
             {/* Brand */}
             <div className="flex items-center gap-3">
@@ -158,15 +164,7 @@ export const AdminDashboard: React.FC = () => {
               <StatCard label="Rifiutate" value={stats?.rejected || 0} tone="rejected" />
             </div>
 
-            {/* Nav */}
-            <nav
-              className="flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 shadow-sm"
-              style={{
-                backgroundImage:
-                  'linear-gradient(100deg, rgb(15 23 42) 0%, rgb(30 58 138) 18%, rgb(37 99 235) 36%, rgb(96 165 250) 58%, rgb(191 219 254) 78%, rgb(239 246 255) 100%)',
-                borderColor: 'rgba(255, 255, 255, 0.28)'
-              }}
-            >
+            <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
               <NavItem icon={Calendar} label="Calendario"          active={activeTab === 'calendar'} onClick={() => setActiveTab('calendar')} />
               <NavItem icon={Clock}    label="Prenotazioni Pendenti" active={activeTab === 'pending'}  badge={stats?.pending} onClick={() => setActiveTab('pending')} />
               <NavItem icon={Archive}  label="Archivio"             active={activeTab === 'archive'}  onClick={() => setActiveTab('archive')} />
@@ -192,17 +190,21 @@ export const AdminDashboard: React.FC = () => {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-6 space-y-4">
 
         {/* Pannello nuova prenotazione collassabile */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-emerald-200/80 shadow-sm overflow-hidden bg-white">
           <button
+            type="button"
             onClick={() => setShowNewBookingPanel(p => !p)}
-            className="w-full flex items-center justify-between px-5 py-4 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+            className="w-full flex items-center justify-between px-5 py-4 text-sm font-semibold text-white
+              bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-100
+              hover:from-emerald-700 hover:via-emerald-600 hover:to-emerald-200
+              transition-all duration-200 rounded-t-xl"
           >
-            <span className="flex items-center gap-2">
-              <Plus className="w-4 h-4 text-primary-600" />
+            <span className="flex items-center gap-2 drop-shadow-sm">
+              <Plus className="w-4 h-4 text-emerald-50" />
               Inserisci nuova prenotazione
             </span>
             <ChevronDown
-              className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${showNewBookingPanel ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 text-emerald-900/75 transition-transform duration-200 ${showNewBookingPanel ? 'rotate-180' : ''}`}
             />
           </button>
           {showNewBookingPanel && (
