@@ -363,6 +363,14 @@ Eseguita query su **`public.email_logs`**: per il tenant A risultano righe con *
 
 Riverificare S2.14 in incognito (POST **201**); usare i due PROMPT per sbloccare S2.9 e S2.10 in UI; opzionale rimozione warning FullCalendar (`eventCursor`).
 
+### 21.6 Follow-up — `create-booking` 500 (email opzionale vuota)
+
+**Sintomo:** `POST …/create-booking` → **500**, messaggio generico «Errore durante il salvataggio della prenotazione».
+
+**Causa:** colonna **`client_email`** su `booking_requests` è **NOT NULL** (default `''`). Il payload usava `client_email || null`: in JavaScript la stringa vuota è falsy → si inviava **NULL** a Postgres → violazione vincolo.
+
+**Fix:** normalizzazione a stringa (trim) in `supabase/functions/create-booking/index.ts` e in `useBookingRequests.ts` (`(data.client_email ?? '').trim()`). Rideploy funzione. **Commit:** `8ef077c`.
+
 ---
 
-*Report aggiornato: 7 maggio 2026 — §21 form pubblico, deploy `create-booking`, checklist e prompt Knowledge Base (commit `5b0037e`).*
+*Report aggiornato: 7 maggio 2026 — §21 form pubblico, deploy `create-booking`, checklist e prompt (commit `5b0037e`); §21.6 fix `client_email` / 500 (commit `8ef077c`).*
