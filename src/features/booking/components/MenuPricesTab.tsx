@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { toast } from 'react-toastify'
 import { Button, Input } from '@/components/ui'
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react'
 import { useMenuItems, useCreateMenuItem, useUpdateMenuItem, useDeleteMenuItem } from '../hooks/useMenuItems'
@@ -77,11 +78,11 @@ export const MenuPricesTab: React.FC = () => {
 
   const handleSave = () => {
     if (!formData.name.trim()) {
-      alert('Il nome è obbligatorio')
+      toast.error('Il nome è obbligatorio')
       return
     }
     if (formData.price < 0) {
-      alert('Il prezzo non può essere negativo')
+      toast.error('Il prezzo non può essere negativo')
       return
     }
 
@@ -110,10 +111,10 @@ export const MenuPricesTab: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-serif font-bold text-warm-wood mb-2">
-            Gestione Prezzi Menu
+            Menu
           </h2>
           <p className="text-gray-600">
-            Aggiungi, modifica o elimina i prodotti del menu e i loro prezzi
+            Aggiungi, modifica o elimina le voci del menu e i prezzi
           </p>
         </div>
         <Button

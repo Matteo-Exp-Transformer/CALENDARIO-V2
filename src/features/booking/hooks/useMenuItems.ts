@@ -4,6 +4,21 @@ import type { MenuItem, MenuItemInput } from '@/types/menu'
 import { toast } from 'react-toastify'
 import { useTenantContext } from '@/contexts/TenantContext'
 
+const DUPLICATE_MENU_ITEM_MSG =
+  'Esiste già un prodotto con lo stesso nome in questa categoria'
+
+function getMenuItemMutationError(error: unknown): string {
+  if (
+    error &&
+    typeof error === 'object' &&
+    'code' in error &&
+    (error as { code: string }).code === '23505'
+  ) {
+    return DUPLICATE_MENU_ITEM_MSG
+  }
+  return handleSupabaseError(error)
+}
+
 // Hook for fetching all menu items
 export const useMenuItems = () => {
   const { tenantId } = useTenantContext()
@@ -33,7 +48,7 @@ export const useMenuItemsByCategory = (category?: string) => {
   const { tenantId } = useTenantContext()
 
   return useQuery({
-    queryKey: ['menu-items', category, tenantId],
+    queryKey: ['menu-items', 'by-category', category, tenantId],
     queryFn: async () => {
       let query = (supabase
         .from('menu_items') as any)
@@ -78,7 +93,7 @@ export const useCreateMenuItem = () => {
         .single()
 
       if (error) {
-        throw new Error(handleSupabaseError(error))
+        throw new Error(getMenuItemMutationError(error))
       }
 
       return data as MenuItem
@@ -112,7 +127,7 @@ export const useUpdateMenuItem = () => {
         .single()
 
       if (error) {
-        throw new Error(handleSupabaseError(error))
+        throw new Error(getMenuItemMutationError(error))
       }
 
       return data as MenuItem

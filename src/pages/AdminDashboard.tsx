@@ -4,11 +4,12 @@ import { PendingRequestsTab } from '@/features/booking/components/PendingRequest
 import { ArchiveTab } from '@/features/booking/components/ArchiveTab'
 import { BookingCalendarTab } from '@/features/booking/components/BookingCalendarTab'
 import { AdminBookingForm } from '@/features/booking/components/AdminBookingForm'
-import { Calendar, Clock, Archive, Plus, User, LogOut, ChevronDown } from 'lucide-react'
+import { MenuPricesTab } from '@/features/booking/components/MenuPricesTab'
+import { Calendar, Clock, Archive, Plus, User, LogOut, ChevronDown, UtensilsCrossed } from 'lucide-react'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useTenantContext } from '@/contexts/TenantContext'
 
-type Tab = 'calendar' | 'pending' | 'archive'
+type Tab = 'calendar' | 'pending' | 'archive' | 'menu'
 
 /* ─── NavItem ─── */
 interface NavItemProps {
@@ -121,6 +122,7 @@ export const AdminDashboard: React.FC = () => {
               <NavItem icon={Calendar} label="Calendario"          active={activeTab === 'calendar'} onClick={() => setActiveTab('calendar')} />
               <NavItem icon={Clock}    label="Prenotazioni Pendenti" active={activeTab === 'pending'}  badge={stats?.pending} onClick={() => setActiveTab('pending')} />
               <NavItem icon={Archive}  label="Archivio"             active={activeTab === 'archive'}  onClick={() => setActiveTab('archive')} />
+              <NavItem icon={UtensilsCrossed} label="Menu" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
             </nav>
           </div>
         </div>
@@ -155,6 +157,7 @@ export const AdminDashboard: React.FC = () => {
           {activeTab === 'calendar' && <BookingCalendarTab initialDate={calendarTargetDate} />}
           {activeTab === 'pending'  && <PendingRequestsTab />}
           {activeTab === 'archive'  && <ArchiveTab onViewInCalendar={handleViewInCalendar} />}
+          {activeTab === 'menu'     && <MenuPricesTab />}
         </div>
       </main>
 

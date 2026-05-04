@@ -37,7 +37,7 @@
 | Query / azione | Query key attuale | Comportamento |
 |----------------|-------------------|---------------|
 | `useMenuItems` | `['menu-items', tenantId]` | Lista completa ordinata per `category`, `sort_order` |
-| `useMenuItemsByCategory` | `['menu-items', category, tenantId]` | Filtro opzionale per `category` |
+| `useMenuItemsByCategory` | `['menu-items', 'by-category', category, tenantId]` | Filtro opzionale per `category` |
 | Post-mutation (create/update/delete) | `invalidateQueries({ queryKey: ['menu-items'] })` | In TanStack Query, prefisso **`['menu-items']`** invalida **entrambe** le varianti di key sotto lo stesso prefisso → coerenza dati ok |
 
 **Correzione difensiva (scope approvato):**  
@@ -94,7 +94,7 @@ Eseguire dopo implementazione (una PR, checklist in description), tenant noto.
 
 - `src/pages/AdminDashboard.tsx` — tipo tab, nav, contenuto `menu`.
 - `src/features/booking/components/MenuPricesTab.tsx` — toast al posto degli `alert`; titoli/copy verso “Menu” se necessario.
-- `src/features/booking/hooks/useMenuItems.ts` — sola riga queryKey in `useMenuItemsByCategory`.
+- `src/features/booking/hooks/useMenuItems.ts` — queryKey in `useMenuItemsByCategory`; messaggio dedicato per `23505` (UNIQUE) in create/update.
 
 Nessuna migration DB attesa per questa user story.
 
@@ -107,7 +107,8 @@ Nessuna migration DB attesa per questa user story.
 | `SettingsTab` orfano | Accettato per ora; ripresa con task “impostazioni ristorante / sistema” |
 | Copy misti “Prezzi” / “Menu” | Allineare nella stessa PR nella vista principale admin |
 | `useMenuItemsByCategory` non usato | Cambio key a rischio zero funzionale se nessun consumer |
+| **Basso — UNIQUE `(tenant_id, name, category)`** (`001_schema_completo.sql:139`): create/update con coppia duplicata → Postgres `23505`; senza gestione l’utente vede solo il toast generico da `handleSupabaseError` | In `useCreateMenuItem` / `useUpdateMenuItem`, se `error.code === '23505'`, mostrare messaggio leggibile: *«Esiste già un prodotto con lo stesso nome in questa categoria»* |
 
 ---
 
-*Fine piano. Implementazione solo dopo approvazione esplicita.*
+*Piano approvato; implementazione nella PR applicativa associata.*
