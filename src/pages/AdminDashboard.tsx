@@ -75,11 +75,11 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, badge, onC
 type StatCardTone = 'metrics' | 'rejected'
 
 const STAT_CARD_SURFACE: Record<StatCardTone, React.CSSProperties> = {
-  /** Allineato a `.admin-new-booking-collapse-trigger` (index.css) */
+  /** Allineato a `.admin-new-booking-collapse-trigger` (index.css); cornice arancio warm come brand strip */
   metrics: {
     backgroundImage:
       'linear-gradient(90deg, rgb(52 211 153) 0%, rgb(16 185 129) 34%, rgb(52 211 153) 68%, rgb(74 222 128) 100%)',
-    borderColor: 'rgba(45, 212, 191, 0.55)',
+    borderColor: 'rgba(251, 146, 60, 0.85)',
   },
   rejected: {
     backgroundImage:
