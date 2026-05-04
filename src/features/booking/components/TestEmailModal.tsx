@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Modal, Input, Label, Button } from '@/components/ui'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { sendAndLogEmail } from '@/lib/email'
+import { areEmailNotificationsEnabled } from '@/features/booking/hooks/useEmailNotifications'
 import { toast } from 'react-toastify'
 import { Mail, Loader2, CheckCircle, XCircle } from 'lucide-react'
 
@@ -17,6 +18,12 @@ export const TestEmailModal: React.FC<TestEmailModalProps> = ({ isOpen, onClose 
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null)
 
   const handleTestEmail = async () => {
+    if (!areEmailNotificationsEnabled()) {
+      toast.info(
+        'Invio email da browser disattivato. Imposta VITE_ENABLE_SEND_EMAIL=true in .env.local e verifica che la Edge send-email sia deployata.'
+      )
+      return
+    }
     if (!email || !email.includes('@')) {
       toast.error('Inserisci un indirizzo email valido')
       return

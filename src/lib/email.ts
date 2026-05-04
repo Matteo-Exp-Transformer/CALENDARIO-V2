@@ -45,35 +45,54 @@ export const sendEmail = async (options: SendEmailOptions): Promise<{ success: b
     }
 
 
-    // Call Supabase Edge Function for email sending
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? ''
+
     const response = await fetch(edgeFunctionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        Authorization: `Bearer ${anonKey}`,
+        apikey: anonKey,
       },
       body: JSON.stringify(payload),
     })
 
-
-    const data = await response.json()
-
-
-    if (!response.ok) {
-      console.error('[Email] Edge Function error:', data)
-      return { success: false, error: data.error || data.message || 'Failed to send email' }
+    const text = await response.text()
+    let data: Record<string, unknown> = {}
+    if (text) {
+      try {
+        data = JSON.parse(text) as Record<string, unknown>
+      } catch {
+        data = { error: text.slice(0, 200) }
+      }
     }
 
-    // Check if Resend API returned an error
+    if (!response.ok) {
+      const errMsg =
+        (typeof data.error === 'string' && data.error) ||
+        (typeof data.message === 'string' && data.message) ||
+        `HTTP ${response.status}`
+      if (import.meta.env.DEV) {
+        console.warn('[Email] Edge send-email:', errMsg)
+      }
+      return { success: false, error: errMsg }
+    }
+
     if (data.error) {
-      console.error('[Email] Resend API error:', data.error)
-      return { success: false, error: data.error }
+      const err = String(data.error)
+      if (import.meta.env.DEV) {
+        console.warn('[Email] Provider error:', err)
+      }
+      return { success: false, error: err }
     }
 
     return { success: true }
   } catch (error) {
-    console.error('[Email] Exception:', error)
-    return { success: false, error: String(error) }
+    const msg = error instanceof Error ? error.message : String(error)
+    if (import.meta.env.DEV) {
+      console.warn('[Email] send-email non raggiungibile (funzione assente o rete):', msg)
+    }
+    return { success: false, error: msg }
   }
 }
 
@@ -141,7 +160,9 @@ export const sendAndLogEmail = async (
   } else {
     log.status = 'failed'
     log.error_message = result.error
-    console.error('❌ [sendAndLogEmail] Email failed:', result.error)
+    if (import.meta.env.DEV) {
+      console.warn('[sendAndLogEmail] invio non riuscito:', result.error)
+    }
   }
 
   await logEmailToDatabase(log)

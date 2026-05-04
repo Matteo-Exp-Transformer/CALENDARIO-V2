@@ -37,7 +37,7 @@ Aggiorna la **tabella stato** sotto a fine sessione, così si vede subito cosa r
 | S2.5 | Accettare richiesta pending (+ traccia in `email_logs`) | ✅ | UI ok. **DB (MCP):** per tenant A compaiono righe `email_type = booking_accepted` con `booking_id`; `status` può essere `failed` se l’invio SMTP/Resend non è configurato — conta la **traccia** in tabella. |
 | S2.6 | Rifiutare richiesta **pending** | ✅ | **Rifiuta** su richiesta in attesa: messaggio di **rifiuto** corretto; la richiesta finisce correttamente in **archivio** (non resta in pending). |
 | S2.7 | **Eliminare** prenotazione accettata (dal calendario) | ✅ | Nel pannello l’azione è **eliminazione** / rimozione dal calendario, non “annullamento” (termine fuorviante qui). QA: eliminazione riuscita. |
-| S2.8 | Test email manuale dal pannello | **N/A** | Piano **Supabase Free**: invio reale / SMTP spesso non disponibile come “prova”; resta solo invio **invite** utente. Saltare S2.8 finché non c’è provider email in produzione. |
+| S2.8 | Test email manuale dal pannello | **N/A** | Invio da browser **disattivato di default** (`VITE_ENABLE_SEND_EMAIL` ≠ `true`): senza Edge **`send-email`** si evitano errori in console. Per provare: `VITE_ENABLE_SEND_EMAIL=true` + funzione deployata. |
 | S2.9 | Impostazioni ristorante (persistenza) | ⏳ | **Manca UI** dedicata per l’operatore: usare il prompt **`PROMPT_plan_UI_impostazioni_ristorante.md`** per un piano di modifica. |
 | S2.10 | Menu / listino CRUD | ⏳ | CRUD solo da Supabase; **prompt piano UI:** **`PROMPT_plan_UI_menu_ingredienti_admin.md`**. |
 | S2.11 | Elenco email solo del proprio tenant | **N/A** | **Schermata non presente** in UI; rinviare dopo eventuale pagina “Log email”. |

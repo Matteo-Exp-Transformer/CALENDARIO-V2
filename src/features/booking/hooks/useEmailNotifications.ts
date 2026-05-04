@@ -11,6 +11,10 @@ import type { BookingRequest } from '@/types/booking'
  */
 export const sendBookingAcceptedEmail = async (booking: BookingRequest): Promise<{ success: boolean }> => {
   try {
+    if (!booking.client_email?.trim()) {
+      return { success: false }
+    }
+
     const { subject, html } = getBookingAcceptedEmail(booking)
 
     const result = await sendAndLogEmail(
@@ -36,6 +40,10 @@ export const sendBookingAcceptedEmail = async (booking: BookingRequest): Promise
  */
 export const sendBookingRejectedEmail = async (booking: BookingRequest): Promise<{ success: boolean }> => {
   try {
+    if (!booking.client_email?.trim()) {
+      return { success: false }
+    }
+
     const { subject, html } = getBookingRejectedEmail(booking)
 
     const result = await sendAndLogEmail(
@@ -61,6 +69,10 @@ export const sendBookingRejectedEmail = async (booking: BookingRequest): Promise
  */
 export const sendBookingCancelledEmail = async (booking: BookingRequest): Promise<{ success: boolean }> => {
   try {
+    if (!booking.client_email?.trim()) {
+      return { success: false }
+    }
+
     const { subject, html } = getBookingCancelledEmail(booking)
 
     const result = await sendAndLogEmail(
@@ -82,11 +94,11 @@ export const sendBookingCancelledEmail = async (booking: BookingRequest): Promis
 }
 
 /**
- * Check if email notifications are enabled
+ * Abilita chiamate alla Edge `send-email` dal browser (accetta/rifiuta/test).
+ * Default: **false** — senza Edge deployata si ottiene "Failed to fetch" e rumore in console.
+ * Imposta `VITE_ENABLE_SEND_EMAIL=true` in `.env.local` quando `send-email` è deployata e configurata.
  */
 export const areEmailNotificationsEnabled = (): boolean => {
-  // In production, this should check restaurant_settings table
-  // For now, return true if RESEND_API_KEY is configured
-  return true
+  return import.meta.env.VITE_ENABLE_SEND_EMAIL === 'true'
 }
 

@@ -151,7 +151,6 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     dateClick: handleDateClick,
     eventDisplay: 'block',
     eventTextColor: '#fff',
-    eventCursor: 'pointer',
     eventTimeFormat: {
       hour: '2-digit' as const,
       minute: '2-digit' as const,
@@ -327,7 +326,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
             </div>
           </div>
 
-          <FullCalendar ref={calendarRef} {...config} events={events} />
+          <div className="booking-calendar-fc [&_.fc-event]:cursor-pointer">
+            <FullCalendar ref={calendarRef} {...config} events={events} />
+          </div>
         </div>
 
         {/* Sezione Disponibilità */}

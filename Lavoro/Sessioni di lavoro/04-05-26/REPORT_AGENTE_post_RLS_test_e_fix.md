@@ -300,9 +300,9 @@ Durante stress e test sono stati creati record di comodo (es. `client_email` `st
 
 **Causa radice:** il codice assumeva `client_email` nullable; lo schema PostgreSQL la mantiene obbligatoria.
 
-### 18.3 Avvisi console ancora possibili (non risolti in questo fix)
+### 18.3 Avvisi console (aggiornamento)
 
-- **`Unknown option 'eventCursor'`** (FullCalendar / `@fullcalendar/react`): opzione non riconosciuta dalla versione in uso; compare in `BookingCalendar.tsx` (config `eventCursor: 'pointer'`). È un warning di libreria, distinto dal bug DB sopra. Correzione consigliata futura: rimuovere `eventCursor` dal config e applicare `cursor: pointer` via CSS sugli eventi `.fc-event`.
+- **`Unknown option 'eventCursor'`** — **risolto** in commit successivo: rimosso da `BookingCalendar.tsx`, cursore su eventi con classe wrapper + Tailwind `[&_.fc-event]:cursor-pointer`.
 - Messaggi **CursorBrowser** / **React DevTools**: informativi in dev, non errori applicativi.
 
 ---
@@ -371,6 +371,11 @@ Riverificare S2.14 in incognito (POST **201**); usare i due PROMPT per sbloccare
 
 **Fix:** normalizzazione a stringa (trim) in `supabase/functions/create-booking/index.ts` e in `useBookingRequests.ts` (`(data.client_email ?? '').trim()`). Rideploy funzione. **Commit:** `8ef077c`.
 
+### 21.7 Console — FullCalendar `eventCursor` e `Failed to fetch` su send-email
+
+- **Warning `Unknown option 'eventCursor'`:** rimosso da `BookingCalendar.tsx`; cursore con wrapper Tailwind su `.fc-event`.
+- **Accetta prenotazione + `TypeError: Failed to fetch` in `email.ts`:** la Edge **`send-email`** non è deployata / non raggiungibile; `areEmailNotificationsEnabled()` restituiva sempre `true`. Ora è **opt-in** con **`VITE_ENABLE_SEND_EMAIL=true`** (default: nessuna chiamata fetch). Stesso gate sul **Test email** modal; log dev in `warn` se si prova comunque.
+
 ---
 
-*Report aggiornato: 7 maggio 2026 — §21 form pubblico, deploy `create-booking`, checklist e prompt (commit `5b0037e`); §21.6 fix `client_email` / 500 (commit `8ef077c`).*
+*Report aggiornato: 7 maggio 2026 — §21–21.7 (form pubblico, create-booking, email opt-in, FullCalendar).*

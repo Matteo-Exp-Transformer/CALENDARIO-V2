@@ -93,7 +93,7 @@ export const useAcceptBooking = () => {
         try {
           await sendBookingAcceptedEmail(booking)
         } catch (error) {
-          console.error('❌ [useAcceptBooking] Email error:', error)
+          console.warn('[useAcceptBooking] Email opzionale non inviata:', error)
         }
       } else {
       }
@@ -142,7 +142,11 @@ export const useRejectBooking = () => {
       
       // Send email notification
       if (areEmailNotificationsEnabled()) {
-        await sendBookingRejectedEmail(booking)
+        try {
+          await sendBookingRejectedEmail(booking)
+        } catch (error) {
+          console.warn('[useRejectBooking] Email opzionale non inviata:', error)
+        }
       }
     },
     onError: (error: Error) => {
