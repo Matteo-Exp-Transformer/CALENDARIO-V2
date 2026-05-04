@@ -197,18 +197,24 @@ export const AdminDashboard: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowNewBookingPanel(p => !p)}
-              className="admin-new-booking-collapse-trigger relative flex w-full items-center justify-center rounded-t-xl px-4 py-[1.333rem] text-white transition-[background-image,transform] duration-200 md:px-6 md:py-[1.667rem]"
+              className="admin-new-booking-collapse-trigger grid w-full grid-cols-[auto,minmax(0,1fr),auto] items-center gap-3 rounded-t-xl px-4 py-[1.333rem] text-white transition-[background-image,transform] duration-200 md:gap-4 md:px-6 md:py-[1.667rem]"
             >
               <Plus
-                className="pointer-events-none absolute left-4 top-1/2 z-10 h-6 w-6 -translate-y-1/2 text-white/95 md:left-6 md:h-7 md:w-7"
+                className="h-6 w-6 shrink-0 text-white/95 md:h-7 md:w-7"
                 aria-hidden
               />
-              <span className="w-full px-12 text-center text-xl font-semibold leading-tight tracking-tight drop-shadow-sm md:px-20 md:text-2xl md:leading-tight">
+              <span
+                className="min-w-0 text-center font-semibold tracking-tight text-white drop-shadow-sm"
+                style={{
+                  fontSize: 'clamp(1.125rem, 0.9rem + 1.1vw, 1.625rem)',
+                  lineHeight: 1.35,
+                }}
+              >
                 Inserisci nuova prenotazione
               </span>
               <ChevronDown
                 aria-hidden
-                className={`pointer-events-none absolute right-4 top-1/2 z-10 h-6 w-6 -translate-y-1/2 text-[rgba(6,64,50,0.88)] transition-transform duration-200 md:right-6 md:h-7 md:w-7 ${showNewBookingPanel ? 'rotate-180' : ''}`}
+                className={`h-6 w-6 shrink-0 text-[rgba(6,64,50,0.88)] transition-transform md:h-7 md:w-7 ${showNewBookingPanel ? 'rotate-180' : ''}`}
               />
             </button>
             {showNewBookingPanel && (
