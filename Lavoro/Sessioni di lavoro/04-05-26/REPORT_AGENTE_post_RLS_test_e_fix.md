@@ -77,7 +77,9 @@ Nota di sicurezza: password deboli solo per ambiente di test QA.
 
 **Problema:** chiamata `POST /functions/v1/create-booking` → `404 NOT_FOUND` (funzione non deployata).
 
-**Azione:** deploy tramite MCP Supabase della funzione dal sorgente `supabase/functions/create-booking/index.ts`, con `verify_jwt: true`.
+**Azione (primo deploy):** deploy tramite MCP Supabase della funzione dal sorgente `supabase/functions/create-booking/index.ts`, con `verify_jwt: true`.
+
+**Aggiornamento (7 maggio 2026, §21):** per il **form pubblico** il client invoca la funzione con **solo la chiave anon**; il gateway Supabase poteva rispondere **401** se la verifica JWT restava forzata. È stata aggiunta in repo la sezione **`[functions.create-booking] verify_jwt = false`** in `supabase/config.toml`, è stato eseguito **`npx supabase functions deploy create-booking --project-ref rwuxgvldzrkabglkasym --no-verify-jwt`**, e nel client (`useBookingRequests.ts`) l’header **`apikey`** oltre a **`Authorization`**. L’autorizzazione applicativa resta su **slug tenant + rate limit** dentro la funzione (service role).
 
 **Esito:** `201 Created` / `{ success: true, booking: { … tenant_id corretto } }` su slug `al-ritrovo`.
 
@@ -327,4 +329,40 @@ Durante stress e test sono stati creati record di comodo (es. `client_email` `st
 
 Versionati in commit dedicato: fix modifica prenotazione (`BookingDetailsModal`, `useBookingMutations`), **`REPORT_AGENTE_post_RLS_test_e_fix.md`**, cartella **`Lavoro/Knowledge Base/`** (checklist Suite 2, utenti test, **`Guida.md`**, **`dati db calendario V.2.txt`** — unica sede per questi file).
 
-*Report aggiornato: QA Suite 2 parziale, fix `client_email`, verifica multi-tenant manuale admin B, commit/push.*
+---
+
+## 21. Aggiornamento — form pubblico `/prenota`, checklist Suite 2, MCP `email_logs` (7 maggio 2026)
+
+### 21.1 Contesto
+
+In QA browser comparivano **`406`** su `restaurant_settings` (chiave `business_hours`, `.single()` senza riga) e **`401`** su `POST /functions/v1/create-booking` con invio dal form. Inoltre il dropdown **Tipologia di prenotazione** era commentato in UI: restava implicito solo **Rinfresco di Laurea** senza percorso chiaro **“Prenota un tavolo”**.
+
+### 21.2 Lavoro svolto dall’agente (codice e deploy)
+
+| File / azione | Modifica |
+|---------------|----------|
+| `src/hooks/useBusinessHours.ts` | `.single()` → **`.maybeSingle()`** sulla lettura `business_hours` per tenant: evita **406** quando la riga non esiste (si usano orari di default). |
+| `src/features/booking/hooks/useBookingRequests.ts` | Chiamata Edge: header **`apikey`** uguale alla chiave anon, oltre a **`Authorization: Bearer <anon>`**. |
+| `supabase/config.toml` | Sezione **`[functions.create-booking] verify_jwt = false`** documentata in repo. |
+| Deploy remoto | `npx supabase functions deploy create-booking --project-ref rwuxgvldzrkabglkasym --no-verify-jwt`. |
+| `src/features/booking/components/BookingRequestForm.tsx` | Default **`booking_type: 'tavolo'`**; **select “Tipologia di Prenotazione”** riattivato (opzioni tavolo senza menù / Rinfresco con menù); al passaggio a tavolo si azzerano menù, totali e intolleranze; rimosso `useEffect` non necessario. |
+| `npm run build` | **OK** dopo le modifiche. |
+
+**Commit di riferimento (già su `main`):** `5b0037e` — messaggio: `fix(booking): form pubblico tavolo default; maybeSingle settings; create-booking anon headers; Edge JWT off in config`.
+
+### 21.3 Verifica DB tramite MCP (traccia S2.5)
+
+Eseguita query su **`public.email_logs`**: per il tenant A risultano righe con **`email_type = booking_accepted`** e **`booking_id`** valorizzato; **`status`** può risultare **`failed`** se l’invio reale non è configurato — per la checklist è sufficiente la **presenza della riga** (traccia evento). S2.5 in **`CHECKLIST_Suite2_browser_semplice.md`** portata a **completata** con questa nota.
+
+### 21.4 Documentazione Knowledge Base
+
+- **`CHECKLIST_Suite2_browser_semplice.md`:** legenda **N/A**; stati aggiornati (S2.5 ✅, S2.8/S2.11 N/A con motivazione piano free / assenza UI, S2.12–S2.13 ✅, S2.14 🟡 da riverificare in browser); sezione istruzioni e troubleshooting **401/406**.
+- **`PROMPT_plan_UI_impostazioni_ristorante.md`** e **`PROMPT_plan_UI_menu_ingredienti_admin.md`:** prompt pronti per agenti che devono pianificare UI **Impostazioni** (S2.9) e **menu/listino** admin (S2.10).
+
+### 21.5 Prossimi passi (invariati dal piano generale)
+
+Riverificare S2.14 in incognito (POST **201**); usare i due PROMPT per sbloccare S2.9 e S2.10 in UI; opzionale rimozione warning FullCalendar (`eventCursor`).
+
+---
+
+*Report aggiornato: 7 maggio 2026 — §21 form pubblico, deploy `create-booking`, checklist e prompt Knowledge Base (commit `5b0037e`).*
