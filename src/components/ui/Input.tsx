@@ -4,12 +4,13 @@ import { cn } from '@/lib/utils'
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement>
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, ...props }, ref) => (
+  ({ className, type, dir, ...props }, ref) => (
     <input
       type={type}
       ref={ref}
+      dir={dir ?? 'ltr'}
       className={cn(
-        'flex w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900',
+        'block w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900',
         'placeholder:text-slate-400',
         'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-400',
         'disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500',
