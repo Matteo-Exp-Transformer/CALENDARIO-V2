@@ -75,21 +75,19 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, badge, onC
 type StatCardTone = 'metrics' | 'rejected'
 
 const STAT_CARD_SURFACE: Record<StatCardTone, React.CSSProperties> = {
-  /** Allineato a `.admin-new-booking-collapse-trigger` (index.css). Contorno = `fc-button-primary` / `--color-primary`. */
+  /** Allineato a `.admin-new-booking-collapse-trigger` (index.css) */
   metrics: {
     backgroundImage:
       'linear-gradient(90deg, rgb(52 211 153) 0%, rgb(16 185 129) 34%, rgb(52 211 153) 68%, rgb(74 222 128) 100%)',
-    borderColor: 'var(--color-primary)',
   },
   rejected: {
     backgroundImage:
       'linear-gradient(165deg, rgb(255 255 255) 0%, rgb(254 242 242) 35%, rgb(254 202 202) 72%, rgb(252 165 165) 100%)',
-    borderColor: 'var(--color-primary)',
   },
 }
 
 const StatCard: React.FC<{ label: string; value: number; tone: StatCardTone }> = ({ label, value, tone }) => (
-  <div className="rounded-xl border-2 p-4 text-center shadow-sm" style={STAT_CARD_SURFACE[tone]}>
+  <div className="rounded-xl p-4 text-center shadow-sm" style={STAT_CARD_SURFACE[tone]}>
     <p className="text-2xl font-black text-slate-800">{value}</p>
     <p className="text-xs font-medium text-slate-600 mt-0.5">{label}</p>
   </div>
