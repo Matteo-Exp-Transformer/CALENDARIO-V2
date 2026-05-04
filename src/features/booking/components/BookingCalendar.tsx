@@ -18,6 +18,13 @@ import { extractDateFromISO, getAccurateStartTime, getAccurateEndTime } from '..
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
 import { getMenuPriceDisplayFromBooking } from '../utils/menuPricing'
 
+/** Stesso sfondo del brand strip in AdminDashboard (`ADMIN_WARM_GRADIENT_SURFACE`) */
+const CALENDAR_HEADER_WARM_SURFACE: React.CSSProperties = {
+  backgroundImage:
+    'linear-gradient(90deg, rgb(255 237 213) 0%, rgb(255 247 237) 42%, rgb(254 249 195) 100%)',
+  borderColor: 'rgba(253, 186, 116, 0.55)',
+}
+
 interface BookingCalendarProps {
   bookings: BookingRequest[]
   initialDate?: string | null
@@ -268,8 +275,11 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     <>
       <div className="space-y-6">
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-warm-beige">
-          {/* Header Responsive */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-6">
+          {/* Header Responsive — superficie allineata al top bar AdminDashboard */}
+          <div
+            className="mb-6 flex flex-col items-start gap-3 rounded-xl border px-4 py-4 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4"
+            style={CALENDAR_HEADER_WARM_SURFACE}
+          >
             {/* Icona + Titolo */}
             <div className="flex items-center gap-4 flex-1">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-warm-wood to-warm-orange flex items-center justify-center shadow-md">
