@@ -13,9 +13,9 @@
   --color-primary-bg:    #EEF2FF;
 
   /* Surface / Background (leggermente più chiari per ridurre sensazione di “pesantezza”) */
-  --color-bg:            #FCFCFD;
+  --color-bg:            #FEFEFE;
   --color-surface:       #FFFFFF;
-  --color-surface-2:     #F5F7FA;
+  --color-surface-2:     #F8F9FA;
 
   /* Bordi */
   --color-border:        #E2E8F0;
