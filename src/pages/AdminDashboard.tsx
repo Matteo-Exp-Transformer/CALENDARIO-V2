@@ -75,10 +75,11 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, badge, onC
 type StatCardTone = 'metrics' | 'rejected'
 
 const STAT_CARD_SURFACE: Record<StatCardTone, React.CSSProperties> = {
+  /** Allineato a `.admin-new-booking-collapse-trigger` (index.css) */
   metrics: {
     backgroundImage:
-      'linear-gradient(145deg, rgb(224 242 254) 0%, rgb(219 234 254) 40%, rgb(220 252 231) 100%)',
-    borderColor: 'rgba(56, 189, 248, 0.45)'
+      'linear-gradient(90deg, rgb(52 211 153) 0%, rgb(16 185 129) 34%, rgb(52 211 153) 68%, rgb(74 222 128) 100%)',
+    borderColor: 'rgba(45, 212, 191, 0.55)',
   },
   rejected: {
     backgroundImage:
