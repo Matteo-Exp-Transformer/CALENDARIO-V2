@@ -5,11 +5,30 @@ import { ArchiveTab } from '@/features/booking/components/ArchiveTab'
 import { BookingCalendarTab } from '@/features/booking/components/BookingCalendarTab'
 import { AdminBookingForm } from '@/features/booking/components/AdminBookingForm'
 import { MenuPricesTab } from '@/features/booking/components/MenuPricesTab'
-import { Calendar, Clock, Archive, Plus, User, LogOut, ChevronDown, UtensilsCrossed } from 'lucide-react'
+import {
+  Calendar,
+  Clock,
+  Archive,
+  Plus,
+  User,
+  LogOut,
+  ChevronDown,
+  UtensilsCrossed,
+  SlidersHorizontal,
+  Store,
+} from 'lucide-react'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useTenantContext } from '@/contexts/TenantContext'
+import { SettingsTab } from '@/features/booking/components/SettingsTab'
+import { RestaurantSettingsTab } from '@/features/booking/components/RestaurantSettingsTab'
 
-type Tab = 'calendar' | 'pending' | 'archive' | 'menu'
+type Tab =
+  | 'calendar'
+  | 'pending'
+  | 'archive'
+  | 'menu'
+  | 'settings-system'
+  | 'settings-restaurant'
 
 /* ─── NavItem ─── */
 interface NavItemProps {
@@ -72,7 +91,14 @@ export const AdminDashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 md:px-6">
 
           {/* Top bar */}
-          <div className="flex items-center justify-between h-16">
+          <div
+            className="flex items-center justify-between h-16 rounded-xl shadow-sm border"
+            style={{
+              backgroundImage:
+                'linear-gradient(90deg, rgb(255 237 213) 0%, rgb(255 247 237) 42%, rgb(254 249 195) 100%)',
+              borderColor: 'rgba(253, 186, 116, 0.55)'
+            }}
+          >
             {/* Brand */}
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
@@ -123,6 +149,18 @@ export const AdminDashboard: React.FC = () => {
               <NavItem icon={Clock}    label="Prenotazioni Pendenti" active={activeTab === 'pending'}  badge={stats?.pending} onClick={() => setActiveTab('pending')} />
               <NavItem icon={Archive}  label="Archivio"             active={activeTab === 'archive'}  onClick={() => setActiveTab('archive')} />
               <NavItem icon={UtensilsCrossed} label="Menu" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
+              <NavItem
+                icon={SlidersHorizontal}
+                label="Impostazioni sistema"
+                active={activeTab === 'settings-system'}
+                onClick={() => setActiveTab('settings-system')}
+              />
+              <NavItem
+                icon={Store}
+                label="Impostazioni locale"
+                active={activeTab === 'settings-restaurant'}
+                onClick={() => setActiveTab('settings-restaurant')}
+              />
             </nav>
           </div>
         </div>
@@ -157,7 +195,9 @@ export const AdminDashboard: React.FC = () => {
           {activeTab === 'calendar' && <BookingCalendarTab initialDate={calendarTargetDate} />}
           {activeTab === 'pending'  && <PendingRequestsTab />}
           {activeTab === 'archive'  && <ArchiveTab onViewInCalendar={handleViewInCalendar} />}
-          {activeTab === 'menu'     && <MenuPricesTab />}
+          {activeTab === 'menu' && <MenuPricesTab />}
+          {activeTab === 'settings-system' && <SettingsTab />}
+          {activeTab === 'settings-restaurant' && <RestaurantSettingsTab />}
         </div>
       </main>
 

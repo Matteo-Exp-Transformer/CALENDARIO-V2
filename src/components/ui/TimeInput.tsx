@@ -7,6 +7,7 @@ interface TimeInputProps {
   required?: boolean
   id?: string
   hasError?: boolean // Support for error state
+  disabled?: boolean
 }
 
 export const TimeInput: React.FC<TimeInputProps> = ({
@@ -16,6 +17,7 @@ export const TimeInput: React.FC<TimeInputProps> = ({
   required = false,
   id,
   hasError = false,
+  disabled = false,
 }) => {
   // Parse current value
   const [hours, minutes] = value ? value.split(':').map(Number) : [0, 0]
@@ -46,6 +48,7 @@ export const TimeInput: React.FC<TimeInputProps> = ({
           value={hours.toString().padStart(2, '0')}
           onChange={handleHourChange}
           required={required}
+          disabled={disabled}
           aria-label="Ora"
         >
           {Array.from({ length: 24 }, (_, i) => (
@@ -60,6 +63,7 @@ export const TimeInput: React.FC<TimeInputProps> = ({
           value={normalizedMinutes.toString().padStart(2, '0')}
           onChange={handleMinuteChange}
           required={required}
+          disabled={disabled}
           aria-label="Minuti"
         >
           <option value="00">00</option>
