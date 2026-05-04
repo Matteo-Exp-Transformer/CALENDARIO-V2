@@ -20,18 +20,19 @@ Aggiorna la **tabella stato** sotto a fine sessione, così si vede subito cosa r
 
 ### Stato test (aggiorna data dopo ogni giro)
 
-*Ultimo aggiornamento tabella: 2026-05-05*
+*Ultimo aggiornamento tabella: 2026-05-06*
 
 | Codice | Argomento | Stato | Note brevi |
 |--------|-----------|-------|------------|
 | — | Prima di partire (dev locale) | ✅ | `npm run dev`, `localhost:5173` usati in QA. |
 | S2.1 | Login admin, console “pulita” | ✅ | Nessun blocco post-login evidente. |
 | S2.2 | Dashboard / Rete senza 403 su booking | ✅ | |
-| Extra | Isolamento tenant (admin A vs B) | ✅ | Admin B vede solo dati tenant B. |
-| S2.3 | Creare prenotazione da admin | ✅ | |
+| Extra A | Isolamento tenant (admin A vs B) | ✅ | Admin B vede solo dati tenant B. |
+| Extra B | Tipologia con **menu / ingredienti** (riepilogo → calendario → dettaglio) | ✅ | Esempio **Rinfresco di Laurea** (*Tipologia di Prenotazione*): menu visibile, scelte ingredienti, **prezzo e riepilogo** corretti; su calendario e in **modale dettaglio** dopo inserimento tutto coerente. |
+| S2.3 | Creare prenotazione da admin | ✅ | Vedi anche riga “Tipologia con menu” per percorso con ingredienti e prezzo in riepilogo. |
 | S2.4 | Modificare prenotazione esistente | ✅ | Fix `client_email` null; salvataggio ok. |
 | S2.5 | Accettare richiesta pending (+ traccia email) | 🟡 | Flusso accettazione e calendario ok; controllare in Supabase **`email_logs`** se serve prova completa. |
-| S2.6 | Rifiutare / cancellare richiesta già in elenco | ✅ | Flusso su prenotazione già inserita: messaggio di **rifiuto** in UI corretto e coerente. |
+| S2.6 | Rifiutare richiesta **pending** | ✅ | **Rifiuta** su richiesta in attesa: messaggio di **rifiuto** corretto; la richiesta finisce correttamente in **archivio** (non resta in pending). |
 | S2.7 | Annullare prenotazione accettata | ⏳ | |
 | S2.8 | Test email manuale dal pannello | ⏳ | |
 | S2.9 | Impostazioni ristorante (persistenza) | ⏳ | |
@@ -98,6 +99,8 @@ Poi puoi uscire di nuovo e rientrare con **admin A** per continuare il resto del
 
 **In pratica:** come se telefonasse il titolare e tu registrassi la prenotazione: deve restarci traccia subito.
 
+**Esito QA (tipologia con menu):** con **Tipologia di Prenotazione** (es. *Rinfresco di Laurea*): compare il **menu**; selezionando **ingredienti**, nel **riepilogo scelte** risultano **prezzo** e **voci scelte** corrette. Dopo l’inserimento, sul **calendario** la prenotazione mostra il menu in modo corretto e, cliccando per il **dettaglio**, ingredienti e riepilogo restano allineati a quanto scelto in fase di creazione.
+
 ---
 
 ## S2.4 — Modificare una prenotazione già in elenco
@@ -132,7 +135,7 @@ Poi puoi uscire di nuovo e rientrare con **admin A** per continuare il resto del
 
 **In pratica:** “non possiamo” → deve restare memoria nell’email log.
 
-**Esito QA confermato:** su richiesta già presente in elenco, il rifiuto / annulla lato richiesta in attesa funziona e il **messaggio mostrato all’utente** è quello di rifiuto atteso (testo corretto).
+**Esito QA confermato:** richiesta in stato **pending**, azione **Rifiuta**: il **messaggio di rifiuto** in UI è quello atteso; la richiesta **non** resta tra le in attesa e compare correttamente nell’**archivio** (flusso rifiuto → archivio verificato).
 
 ---
 
