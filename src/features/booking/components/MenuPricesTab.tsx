@@ -117,7 +117,7 @@ export const MenuPricesTab: React.FC = () => {
           </p>
         </div>
         <Button
-          variant="solid"
+          variant="primary"
           size="lg"
           onClick={handleStartAdd}
           className="bg-gradient-to-r from-warm-wood to-warm-wood-dark"

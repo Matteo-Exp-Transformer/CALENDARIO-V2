@@ -138,7 +138,7 @@ export const SettingsTab: React.FC = () => {
         <h3 className="text-lg font-bold text-indigo-900 mb-4">Azioni Disponibili</h3>
         <div className="flex gap-3 flex-wrap">
           <Button
-            variant="solid"
+            variant="primary"
             size="lg"
             onClick={() => setShowTestEmail(true)}
             className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:scale-105 transition-all"
@@ -146,7 +146,7 @@ export const SettingsTab: React.FC = () => {
             📧 Test Email Notifications
           </Button>
           <Button
-            variant="solid"
+            variant="primary"
             size="lg"
             onClick={() => {
               setShowEmailLogs(true)
@@ -164,7 +164,7 @@ export const SettingsTab: React.FC = () => {
             💾 Export Settings
           </Button>
           <Button
-            variant="solid"
+            variant="primary"
             size="lg"
             onClick={() => setShowMenuPrices(true)}
             className="bg-gradient-to-r from-warm-wood to-warm-wood-dark text-white shadow-lg hover:scale-105 transition-all"

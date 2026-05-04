@@ -13,6 +13,7 @@ Allineare il progetto al piano `c-users-matte-mio-cursor-plans-debug-rls-shiny-p
 ## Commit chiave eseguiti
 1. `a98989a` - Migrazione DB RLS (`supabase/migrations/002_rls_admin_users.sql`).
 2. `129414e` - Allineamento client + rigenerazione tipi + baseline lint.
+3. `3762b45` - Recupero e commit della documentazione operativa da stash (`Lavoro/...`).
 
 ## Esecuzione Plan (sintesi tecnica)
 - Migrazione RLS applicata al progetto Supabase via MCP (`apply_migration`).
@@ -46,21 +47,17 @@ Allineare il progetto al piano `c-users-matte-mio-cursor-plans-debug-rls-shiny-p
 ## Deviazioni rispetto al TASK
 - PR non aperta: repository remoto inizialmente vuoto/non collegato; si e scelto di pubblicare direttamente su `main` per bootstrap del progetto.
 - Golden path browser (7 step) e test negativi (2 step) non ancora eseguiti in questa fase; da eseguire ora su base `main` consolidata.
+- Recupero stash: le modifiche UI/app non correlate al piano RLS sono state revisionate e scartate (non integrate), mantenendo backup in stash.
 
 ## Stato operativo attuale
-- Branch unico operativo: `main`, allineato a `origin/main`.
-- Restano modifiche locali preesistenti non incluse nel lavoro RLS:
-  - `src/features/booking/components/BookingRequestCard.tsx`
-  - `src/features/booking/components/MenuPricesTab.tsx`
-  - `src/features/booking/components/PendingRequestsTab.tsx`
-  - `src/features/booking/components/SettingsTab.tsx`
-  - `src/features/booking/hooks/useAdminAuth.ts`
-  - `src/index.css`
-  - `src/pages/AdminDashboard.tsx`
-  - `src/pages/BookingRequestPage.tsx`
-  - `vite.config.ts.timestamp-1777293387746-188a878cdde69.mjs` (artifact)
+- Branch unico operativo: `main`.
+- Working tree pulita (`git status`: clean).
+- `main` e `origin/main` allineati sul piano RLS; localmente presente 1 commit documentazione (`3762b45`) da push.
+- Stash backup ancora disponibile: `stash@{0} - cleanup-before-tests-2026-05-04`.
+- `.claude/` esclusa localmente tramite `.git/info/exclude` (non versionata).
 
 ## Prossimi passi consigliati
-1. Pulizia working tree (stash o commit separato delle modifiche preesistenti).
-2. Esecuzione test manuali golden path e negativi.
-3. Eventuali fix incrementali direttamente su `main` (oppure nuovo branch `fix/post-plan-tests` se preferisci mantenere isolamento).
+1. Pubblicare il commit documentazione: `git push origin main`.
+2. Eseguire test manuali golden path e negativi (come da TASK).
+3. Aprire eventuale branch `fix/post-plan-tests` solo se emergono regressioni.
+4. Quando confermato tutto stabile, valutare `git stash drop stash@{0}`.

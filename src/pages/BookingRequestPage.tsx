@@ -2,8 +2,6 @@ import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { BookingRequestForm } from '@/features/booking/components/BookingRequestForm'
 import { UtensilsCrossed, MapPin, Clock, Phone, Mail } from 'lucide-react'
-import bgImage from '@/assets/IMG20241127235924.jpg'
-import mobileVintageBg from '@/assets/mobile-vintage-bg.png'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { formatHours, getDefaultBusinessHours } from '@/lib/businessHours'
 import { useTenantContext } from '@/contexts/TenantContext'
@@ -23,11 +21,11 @@ export const BookingRequestPage: React.FC = () => {
   const { data: businessHours, isLoading } = useBusinessHours()
   const hours = businessHours || getDefaultBusinessHours()
 
-  // Set background image (only when tenant is resolved)
+  // Set a deterministic background (no missing local assets)
   useEffect(() => {
     if (isTenantLoading || !tenantId) return
 
-    document.documentElement.style.backgroundImage = `url("${bgImage}")`;
+    document.documentElement.style.backgroundImage = 'linear-gradient(135deg, #2d2013 0%, #5a3c24 45%, #8b5f3c 100%)';
     document.documentElement.style.backgroundSize = 'cover';
     document.documentElement.style.backgroundPosition = 'center';
     document.documentElement.style.backgroundRepeat = 'no-repeat';
@@ -127,7 +125,7 @@ export const BookingRequestPage: React.FC = () => {
       <div
         className="fixed bottom-0 left-0 right-0 z-0 md:hidden"
         style={{
-          backgroundImage: `url("${mobileVintageBg}")`,
+          backgroundImage: 'linear-gradient(180deg, rgba(63, 40, 22, 0.55) 0%, rgba(22, 14, 8, 0.8) 100%)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
