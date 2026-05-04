@@ -105,7 +105,7 @@ export const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[var(--color-bg)]">
 
       {/* ── Header ── */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
@@ -131,7 +131,7 @@ export const AdminDashboard: React.FC = () => {
 
             {/* User menu */}
             <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200/90 bg-white/90">
                 <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center">
                   <User className="w-3.5 h-3.5 text-primary-600" />
                 </div>

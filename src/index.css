@@ -12,10 +12,10 @@
   --color-primary-dark:  #3730A3;
   --color-primary-bg:    #EEF2FF;
 
-  /* Surface / Background */
-  --color-bg:            #F8FAFC;
+  /* Surface / Background (leggermente più chiari per ridurre sensazione di “pesantezza”) */
+  --color-bg:            #FCFCFD;
   --color-surface:       #FFFFFF;
-  --color-surface-2:     #F1F5F9;
+  --color-surface-2:     #F5F7FA;
 
   /* Bordi */
   --color-border:        #E2E8F0;
