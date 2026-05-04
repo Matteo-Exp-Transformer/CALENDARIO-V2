@@ -688,7 +688,15 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
                 const isSelected = selectedItems.some(selected => selected.id === item.id)
                 const isTiramisu = isTiramisuItem(item.name)
                 return (
-                  <div key={item.id} className="w-full flex flex-col items-stretch gap-2">
+                  <div
+                    key={item.id}
+                    className="flex w-full flex-col items-stretch gap-2"
+                    style={{
+                      maxWidth: 'min(560px, calc(100% - 16px))',
+                      marginLeft: 'auto',
+                      marginRight: 'auto'
+                    }}
+                  >
                     <label
                       className={`
                         flex items-center gap-4 rounded-xl border-2 cursor-pointer w-full menu-card-mobile
