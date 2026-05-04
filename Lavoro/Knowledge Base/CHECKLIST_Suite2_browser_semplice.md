@@ -243,6 +243,7 @@ Poi puoi uscire di nuovo e rientrare con **admin A** per continuare il resto del
 - **Prenotazione admin non si crea** → era legato ai contatori DB: in repo c’è la migrazione **003** sui trigger (dovrebbe essere già applicata sul progetto di test).
 - **Email sempre in errore** → può essere normale se Resend non è configurato; importante che **email_logs** registri comunque il tentativo.
 - **401 su `create-booking`** (form pubblico) → la funzione va pubblicata con **JWT verification disattivata** per questo endpoint (solo chiave anon + `apikey` nel client). In repo: `supabase/config.toml` sezione `[functions.create-booking]` e comando deploy `npx supabase functions deploy create-booking --project-ref <REF> --no-verify-jwt`.
+- **500 su `create-booking`** con email lasciata vuota → fino al fix `8ef077c` si poteva inviare `client_email: null` mentre il DB richiede **NOT NULL**; ora si normalizza a stringa vuota `''`. Se persiste, controllare i log Edge in dashboard.
 - **406 su `restaurant_settings?...business_hours`** → spesso assenza di riga unica: il client ora usa **`maybeSingle()`**; opzionale creare riga `business_hours` per il tenant in Supabase.
 
 ---
