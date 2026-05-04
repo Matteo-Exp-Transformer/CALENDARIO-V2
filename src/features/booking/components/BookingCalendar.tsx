@@ -307,7 +307,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
 
               {/* Dropdown Vista - Mobile only */}
               <Select value={currentView} onValueChange={handleViewChange}>
-                <SelectTrigger className="w-[140px] md:hidden">
+                <SelectTrigger
+                  className={[
+                    'w-[140px] md:hidden !border-[var(--color-primary)] !bg-[var(--color-primary)] !text-white shadow-sm',
+                    'hover:!border-[var(--color-primary-dark)] hover:!bg-[var(--color-primary-dark)] hover:shadow-md',
+                    'focus:!border-[var(--color-primary-dark)] focus:ring-4 focus:ring-white/30 focus:ring-offset-0',
+                    '[&_svg]:!text-white/90 disabled:!opacity-60',
+                  ].join(' ')}
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent
