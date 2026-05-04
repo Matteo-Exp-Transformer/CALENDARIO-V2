@@ -211,7 +211,7 @@ export const AdminDashboard: React.FC = () => {
                   className="shrink-0 translate-y-[0.06em] text-white/95"
                   style={{ width: '1.05em', height: '1.05em' }}
                 />
-                <span className="min-w-0 truncate drop-shadow-sm">Inserisci nuova prenotazione</span>
+                <span className="min-w-0 truncate drop-shadow-sm">Inserisci Nuova Prenotazione</span>
               </div>
               <ChevronDown
                 aria-hidden
