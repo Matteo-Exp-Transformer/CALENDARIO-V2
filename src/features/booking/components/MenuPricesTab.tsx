@@ -23,6 +23,8 @@ export const MenuPricesTab: React.FC = () => {
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
+  /** Stringa controllata per l’input prezzo: evita lo 0 “incollato” con `parseFloat(...) || 0` su campo vuoto. */
+  const [priceInput, setPriceInput] = useState('')
   const [formData, setFormData] = useState<MenuItemInput>({
     name: '',
     category: 'bevande',
@@ -49,12 +51,14 @@ export const MenuPricesTab: React.FC = () => {
       description: item.description || '',
       sort_order: item.sort_order
     })
+    setPriceInput(item.price === 0 ? '' : String(item.price))
     setIsAdding(false)
   }
 
   const handleStartAdd = () => {
     setIsAdding(true)
     setEditingId(null)
+    setPriceInput('')
     setFormData({
       name: '',
       category: 'bevande',
@@ -67,6 +71,7 @@ export const MenuPricesTab: React.FC = () => {
   const handleCancel = () => {
     setIsAdding(false)
     setEditingId(null)
+    setPriceInput('')
     setFormData({
       name: '',
       category: 'bevande',
@@ -81,15 +86,28 @@ export const MenuPricesTab: React.FC = () => {
       toast.error('Il nome è obbligatorio')
       return
     }
-    if (formData.price < 0) {
+
+    const rawPrice = priceInput.trim().replace(',', '.')
+    if (rawPrice === '') {
+      toast.error('Il prezzo è obbligatorio')
+      return
+    }
+    const parsedPrice = parseFloat(rawPrice)
+    if (Number.isNaN(parsedPrice)) {
+      toast.error('Inserisci un prezzo valido')
+      return
+    }
+    if (parsedPrice < 0) {
       toast.error('Il prezzo non può essere negativo')
       return
     }
 
+    const payload = { ...formData, price: parsedPrice }
+
     if (editingId) {
-      updateMutation.mutate({ id: editingId, ...formData })
+      updateMutation.mutate({ id: editingId, ...payload })
     } else {
-      createMutation.mutate(formData)
+      createMutation.mutate(payload)
     }
 
     handleCancel()
@@ -184,8 +202,8 @@ export const MenuPricesTab: React.FC = () => {
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                value={priceInput}
+                onChange={(e) => setPriceInput(e.target.value)}
                 placeholder="es: 4.50"
                 className="w-full"
               />
