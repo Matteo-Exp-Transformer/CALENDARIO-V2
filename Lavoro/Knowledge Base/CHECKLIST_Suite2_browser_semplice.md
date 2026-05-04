@@ -20,7 +20,7 @@ Aggiorna la **tabella stato** sotto a fine sessione, così si vede subito cosa r
 
 ### Stato test (aggiorna data dopo ogni giro)
 
-*Ultimo aggiornamento tabella: 2026-05-06*
+*Ultimo aggiornamento tabella: 2026-05-07*
 
 | Codice | Argomento | Stato | Note brevi |
 |--------|-----------|-------|------------|
@@ -33,7 +33,7 @@ Aggiorna la **tabella stato** sotto a fine sessione, così si vede subito cosa r
 | S2.4 | Modificare prenotazione esistente | ✅ | Fix `client_email` null; salvataggio ok. |
 | S2.5 | Accettare richiesta pending (+ traccia email) | 🟡 | Flusso accettazione e calendario ok; controllare in Supabase **`email_logs`** se serve prova completa. |
 | S2.6 | Rifiutare richiesta **pending** | ✅ | **Rifiuta** su richiesta in attesa: messaggio di **rifiuto** corretto; la richiesta finisce correttamente in **archivio** (non resta in pending). |
-| S2.7 | Annullare prenotazione accettata | ⏳ | |
+| S2.7 | **Eliminare** prenotazione accettata (dal calendario) | ✅ | Nel pannello l’azione è **eliminazione** / rimozione dal calendario, non “annullamento” (termine fuorviante qui). QA: eliminazione riuscita. |
 | S2.8 | Test email manuale dal pannello | ⏳ | |
 | S2.9 | Impostazioni ristorante (persistenza) | ⏳ | |
 | S2.10 | Menu / listino CRUD | ⏳ | |
@@ -139,13 +139,15 @@ Poi puoi uscire di nuovo e rientrare con **admin A** per continuare il resto del
 
 ---
 
-## S2.7 — Annullare una prenotazione già accettata
+## S2.7 — Eliminare una prenotazione già accettata (dal calendario)
 
-1. Prendi una prenotazione **già accettata**.
-2. Usa **Annulla** (o azione equivalente nel pannello).
-3. Verifica **email_logs** per un evento tipo **cancellazione**.
+1. Prendi una prenotazione **già accettata** e visibile sul **calendario**.
+2. Usa l’azione di **eliminazione** / **rimozione** prevista dal pannello (etichetta tipo **Elimina**, **Rimuovi**, ecc. — non confondere con “annulla”, che in altri contesti significa solo chiudere un modale senza salvare).
+3. Verifica **email_logs** per un evento legato alla **cancellazione** / rimozione, se il flusso invia notifiche.
 
-**In pratica:** cliente cancella dopo il sì → traccia nel registro.
+**In pratica:** la prenotazione confermata viene **tolta dal calendario** (eliminata dal gestionale secondo le regole del prodotto), con esito chiaro in interfaccia.
+
+**Esito QA confermato:** eliminazione da calendario su prenotazione accettata **completata con successo**.
 
 ---
 
