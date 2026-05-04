@@ -273,7 +273,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
 
   return (
     <>
-      <div className="space-y-6">
+      <div
+        className="space-y-6 rounded-xl border-2 p-4 shadow-sm md:p-6"
+        style={CALENDAR_HEADER_STAT_METRICS_SURFACE}
+      >
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-warm-beige">
           {/* Header Responsive — superficie come StatCard metriche (dashboard) */}
           <div
