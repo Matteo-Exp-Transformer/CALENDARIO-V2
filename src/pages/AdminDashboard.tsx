@@ -186,35 +186,39 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </header>
 
-      {/* ── Main ── */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-6 space-y-4">
-
-        {/* Pannello nuova prenotazione collassabile */}
-        <div className="rounded-xl border border-emerald-200/80 shadow-sm overflow-hidden bg-white">
-          <button
-            type="button"
-            onClick={() => setShowNewBookingPanel(p => !p)}
-            className="w-full flex items-center justify-between px-5 py-4 text-sm font-semibold text-white
-              bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-100
-              hover:from-emerald-700 hover:via-emerald-600 hover:to-emerald-200
-              transition-all duration-200 rounded-t-xl"
+      {/* ── Main: collapse più largo (~2× max-w-7xl); area tab resta max-w-7xl ── */}
+      <main className="flex-1 w-full py-6 space-y-4">
+        {/* Pannello nuova prenotazione collassabile — larghezza fino a 160rem (doppio di 7xl), centrato */}
+        <div className="flex w-full justify-center px-4 md:px-6">
+          <div
+            className="w-full overflow-hidden rounded-xl border-2 border-[rgba(45,212,191,0.55)] bg-white shadow-md"
+            style={{ maxWidth: 'min(100%, 160rem)' }}
           >
-            <span className="flex items-center gap-2 drop-shadow-sm">
-              <Plus className="w-4 h-4 text-emerald-50" />
-              Inserisci nuova prenotazione
-            </span>
-            <ChevronDown
-              className={`w-4 h-4 text-emerald-900/75 transition-transform duration-200 ${showNewBookingPanel ? 'rotate-180' : ''}`}
-            />
-          </button>
-          {showNewBookingPanel && (
-            <div className="border-t border-slate-100 px-5 py-5">
-              <AdminBookingForm />
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={() => setShowNewBookingPanel(p => !p)}
+              className="admin-new-booking-collapse-trigger w-full rounded-t-xl px-5 py-4 text-left text-sm font-semibold text-white transition-[background-image,transform] duration-200"
+            >
+              <span className="flex w-full items-center justify-between gap-3">
+                <span className="flex min-w-0 items-center gap-2 drop-shadow-sm">
+                  <Plus className="h-4 w-4 shrink-0 text-white/95" />
+                  <span className="truncate">Inserisci nuova prenotazione</span>
+                </span>
+                <ChevronDown
+                  className={`h-4 w-4 shrink-0 text-[rgba(6,64,50,0.82)] transition-transform duration-200 ${showNewBookingPanel ? 'rotate-180' : ''}`}
+                />
+              </span>
+            </button>
+            {showNewBookingPanel && (
+              <div className="border-t border-slate-200 bg-white px-5 py-5">
+                <AdminBookingForm />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Tab content */}
+        <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 md:p-7 min-h-[500px]">
           {activeTab === 'calendar' && <BookingCalendarTab initialDate={calendarTargetDate} />}
           {activeTab === 'pending'  && <PendingRequestsTab />}
@@ -222,6 +226,7 @@ export const AdminDashboard: React.FC = () => {
           {activeTab === 'menu' && <MenuPricesTab />}
           {activeTab === 'settings-system' && <SettingsTab />}
           {activeTab === 'settings-restaurant' && <RestaurantSettingsTab />}
+        </div>
         </div>
       </main>
 

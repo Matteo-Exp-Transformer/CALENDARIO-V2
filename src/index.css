@@ -90,6 +90,26 @@ body {
   animation: spin 0.8s linear infinite;
 }
 
+/* Admin dashboard — header collassabile “Nuova prenotazione” (gradiente affidabile, non solo utility Tailwind) */
+.admin-new-booking-collapse-trigger {
+  background-image: linear-gradient(
+    90deg,
+    rgb(4 120 87) 0%,
+    rgb(5 150 105) 38%,
+    rgb(52 211 153) 62%,
+    rgb(209 250 229) 100%
+  );
+}
+.admin-new-booking-collapse-trigger:hover {
+  background-image: linear-gradient(
+    90deg,
+    rgb(6 95 70) 0%,
+    rgb(5 120 85) 35%,
+    rgb(16 185 129) 55%,
+    rgb(236 253 245) 100%
+  );
+}
+
 /* FullCalendar override */
 .fc {
   --fc-border-color: var(--color-border);
