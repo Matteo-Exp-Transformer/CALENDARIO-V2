@@ -1,6 +1,45 @@
 # Checklist Suite 2 — “Tutto il percorso admin e il form cliente”
 
-Guida in linguaggio semplice. Se apri gli strumenti del browser (**F12**), usa le schede **Console** (messaggi e avvisi) e **Rete** (chiamate al server). Le credenziali sono in **`Utenti per test.md`**.
+Guida in linguaggio semplice. Se apri gli strumenti del browser (**F12**), usa le schede **Console** (messaggi e avvisi) e **Rete** (chiamate al server).
+
+**File nella stessa cartella (`Lavoro/Knowledge Base/`):**
+
+- **`Utenti per test.md`** — credenziali e account di prova.
+- **`Guida.md`** — contesto operativo e procedure lunghe.
+- **`dati db calendario V.2.txt`** — appunti / export dati DB (placeholder se vuoto).
+
+Aggiorna la **tabella stato** sotto a fine sessione, così si vede subito cosa resta da fare.
+
+### Legenda stato
+
+| Simbolo | Significato |
+|--------|-------------|
+| ✅ | Testato in QA, esito ok (o problema risolto e riverificato). |
+| 🟡 | Parziale: flusso UI ok ma manca verifica accessoria (es. riga in `email_logs`, screenshot). |
+| ⏳ | Non ancora eseguito / da rifare dopo modifiche importanti. |
+
+### Stato test (aggiorna data dopo ogni giro)
+
+*Ultimo aggiornamento tabella: 2026-05-04*
+
+| Codice | Argomento | Stato | Note brevi |
+|--------|-----------|-------|------------|
+| — | Prima di partire (dev locale) | ✅ | `npm run dev`, `localhost:5173` usati in QA. |
+| S2.1 | Login admin, console “pulita” | ✅ | Nessun blocco post-login evidente. |
+| S2.2 | Dashboard / Rete senza 403 su booking | ✅ | |
+| Extra | Isolamento tenant (admin A vs B) | ✅ | Admin B vede solo dati tenant B. |
+| S2.3 | Creare prenotazione da admin | ✅ | |
+| S2.4 | Modificare prenotazione esistente | ✅ | Fix `client_email` null; salvataggio ok. |
+| S2.5 | Accettare richiesta pending (+ traccia email) | 🟡 | Flusso accettazione e calendario ok; controllare in Supabase **`email_logs`** se serve prova completa. |
+| S2.6 | Rifiutare richiesta | ⏳ | |
+| S2.7 | Annullare prenotazione accettata | ⏳ | |
+| S2.8 | Test email manuale dal pannello | ⏳ | |
+| S2.9 | Impostazioni ristorante (persistenza) | ⏳ | |
+| S2.10 | Menu / listino CRUD | ⏳ | |
+| S2.11 | Elenco email solo del proprio tenant | ⏳ | |
+| S2.12 | Logout pulito | ⏳ | |
+| S2.13 | Rientro dopo logout | ⏳ | |
+| S2.14 | Form pubblico `/prenota/...` | ⏳ | |
 
 ---
 

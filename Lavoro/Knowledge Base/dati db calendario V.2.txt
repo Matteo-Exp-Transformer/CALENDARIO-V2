@@ -1,0 +1,2 @@
+# Riferimento dati DB calendario (V.2)
+# Popolare o sostituire con export/annotazioni operative; vedi anche Guida.md nella stessa cartella.

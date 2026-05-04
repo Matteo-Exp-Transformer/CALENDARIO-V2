@@ -261,7 +261,7 @@ Durante stress e test sono stati creati record di comodo (es. `client_email` `st
 
 ## 16. Aggiornamento completamento repository (sessione successiva)
 
-- Ripristinati in git **`Lavoro/Sessioni di lavoro/02-05-26/Guida.md`** e **`dati db calendario V.2.txt`** (non perdere il riferimento operativo).
+- Documentazione operativa **`Guida.md`** e **`dati db calendario V.2.txt`**: unica posizione prevista **`Lavoro/Knowledge Base/`** (non più sotto `02-05-26`).
 - Report esecuzione piano spostato sotto **`Lavoro/Sessioni di lavoro/04-05-26/`**; rimossa copia obsoleta da `Lavoro/04-05-26/` se presente in indice git.
 - **`validate-invite`** deployata con CLI: `npx supabase functions deploy validate-invite --project-ref rwuxgvldzrkabglkasym`.
 
@@ -307,7 +307,7 @@ Durante stress e test sono stati creati record di comodo (es. `client_email` `st
 
 ## 19. Come proseguire (ordine consigliato)
 
-**Già coperto in questa sessione (commit):** fix modifica prenotazione (`client_email`), aggiornamento report, checklist e utenti test in Knowledge Base, ripristino `Guida.md` / `dati db` sotto `02-05-26` se risultavano eliminati.
+**Già coperto in questa sessione (commit):** fix modifica prenotazione (`client_email`), aggiornamento report, checklist e utenti test in Knowledge Base, documentazione **`Guida.md`** / **`dati db calendario V.2.txt`** consolidata solo in **`Lavoro/Knowledge Base/`** (rimossi duplicati da `02-05-26`).
 
 1. **Completare Suite 2**  
    Continuare con **`CHECKLIST_Suite2_browser_semplice.md`** (accetta/rifiuta, email log, test email, menu, logout, form pubblico incognito). Annotare OK/KO come da **`TEST_PLAN_post_RLS.md`** se serve traccia formale.
@@ -325,6 +325,6 @@ Durante stress e test sono stati creati record di comodo (es. `client_email` `st
 
 ## 20. Chiusura commit (riferimento operativo)
 
-Versionati in commit dedicato: fix modifica prenotazione (`BookingDetailsModal`, `useBookingMutations`), **`REPORT_AGENTE_post_RLS_test_e_fix.md`**, cartella **`Lavoro/Knowledge Base/`** (checklist Suite 2, utenti test, eventuale `Guida.md` locale in KB), ripristino **`Lavoro/Sessioni di lavoro/02-05-26/Guida.md`** e **`dati db calendario V.2.txt`** nel repo principale se necessario.
+Versionati in commit dedicato: fix modifica prenotazione (`BookingDetailsModal`, `useBookingMutations`), **`REPORT_AGENTE_post_RLS_test_e_fix.md`**, cartella **`Lavoro/Knowledge Base/`** (checklist Suite 2, utenti test, **`Guida.md`**, **`dati db calendario V.2.txt`** — unica sede per questi file).
 
 *Report aggiornato: QA Suite 2 parziale, fix `client_email`, verifica multi-tenant manuale admin B, commit/push.*
