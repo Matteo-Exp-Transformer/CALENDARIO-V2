@@ -197,15 +197,15 @@ export const AdminDashboard: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowNewBookingPanel(p => !p)}
-              className="admin-new-booking-collapse-trigger w-full rounded-t-xl px-5 py-4 text-left text-sm font-semibold text-white transition-[background-image,transform] duration-200"
+              className="admin-new-booking-collapse-trigger flex w-full min-h-[5.5rem] items-center rounded-t-xl px-6 py-8 text-left text-base font-semibold text-white transition-[background-image,transform] duration-200 md:min-h-[6.25rem] md:px-8 md:py-10"
             >
-              <span className="flex w-full items-center justify-between gap-3">
-                <span className="flex min-w-0 items-center gap-2 drop-shadow-sm">
-                  <Plus className="h-4 w-4 shrink-0 text-white/95" />
+              <span className="flex w-full items-center justify-between gap-4">
+                <span className="flex min-w-0 items-center gap-3 drop-shadow-sm">
+                  <Plus className="h-6 w-6 shrink-0 text-white/95 md:h-7 md:w-7" />
                   <span className="truncate">Inserisci nuova prenotazione</span>
                 </span>
                 <ChevronDown
-                  className={`h-4 w-4 shrink-0 text-[rgba(6,64,50,0.82)] transition-transform duration-200 ${showNewBookingPanel ? 'rotate-180' : ''}`}
+                  className={`h-6 w-6 shrink-0 text-[rgba(6,64,50,0.82)] transition-transform duration-200 md:h-7 md:w-7 ${showNewBookingPanel ? 'rotate-180' : ''}`}
                 />
               </span>
             </button>
