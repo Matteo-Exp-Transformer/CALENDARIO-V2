@@ -3,12 +3,14 @@ import { useParams } from 'react-router-dom'
 import { BookingRequestForm } from '@/features/booking/components/BookingRequestForm'
 import { UtensilsCrossed, MapPin, Clock, Phone, Mail } from 'lucide-react'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
+import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { formatHours, getDefaultBusinessHours } from '@/lib/businessHours'
 import { useTenantContext } from '@/contexts/TenantContext'
 
 export const BookingRequestPage: React.FC = () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>()
-  const { tenantId, organizationName, isLoading: isTenantLoading, setTenantFromSlug } = useTenantContext()
+  const { tenantId, isLoading: isTenantLoading, setTenantFromSlug } = useTenantContext()
+  const restaurantName = useRestaurantName()
 
   // Resolve tenant from URL slug on mount
   useEffect(() => {
@@ -84,8 +86,8 @@ export const BookingRequestPage: React.FC = () => {
 
   const groupedHours = getGroupedHours()
 
-  // Display name: use organization name from tenant context, fallback to "Al Ritrovo"
-  const displayName = organizationName || 'Al Ritrovo'
+  // Display name: prefer restaurant_settings.restaurant_name, fallback a organizations.name → "Al Ritrovo"
+  const displayName = restaurantName || 'Al Ritrovo'
 
   // Show loading while resolving tenant
   if (isTenantLoading) {

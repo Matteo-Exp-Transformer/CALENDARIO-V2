@@ -18,7 +18,7 @@ import {
   Store,
 } from 'lucide-react'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
-import { useTenantContext } from '@/contexts/TenantContext'
+import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { SettingsTab } from '@/features/booking/components/SettingsTab'
 import { RestaurantSettingsTab } from '@/features/booking/components/RestaurantSettingsTab'
 
@@ -46,11 +46,11 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, badge, onC
     className={`relative flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-medium
       transition-all duration-150 min-h-[40px] cursor-pointer
       ${active
-        ? 'bg-primary-50 text-primary-700 border border-primary-200 shadow-sm'
-        : 'text-slate-600 hover:bg-slate-100 border border-transparent'
+        ? 'bg-white text-primary-700 border border-primary-200/90 shadow-sm'
+        : 'text-slate-900 hover:bg-white/40 border border-transparent'
       }`}
   >
-    <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-primary-600' : 'text-slate-400'}`} />
+    <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-primary-600' : 'text-slate-700'}`} />
     <span className="hidden sm:inline">{label}</span>
     <span className="sm:hidden">{label.split(' ')[0]}</span>
     {badge != null && badge > 0 && (
@@ -62,10 +62,25 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, badge, onC
 )
 
 /* ─── StatCard ─── */
-const StatCard: React.FC<{ label: string; value: number; color: string }> = ({ label, value, color }) => (
-  <div className={`bg-white rounded-xl border-2 ${color} p-4 text-center`}>
+type StatCardTone = 'metrics' | 'rejected'
+
+const STAT_CARD_SURFACE: Record<StatCardTone, React.CSSProperties> = {
+  metrics: {
+    backgroundImage:
+      'linear-gradient(145deg, rgb(224 242 254) 0%, rgb(219 234 254) 40%, rgb(220 252 231) 100%)',
+    borderColor: 'rgba(56, 189, 248, 0.45)'
+  },
+  rejected: {
+    backgroundImage:
+      'linear-gradient(165deg, rgb(255 255 255) 0%, rgb(254 242 242) 35%, rgb(254 202 202) 72%, rgb(252 165 165) 100%)',
+    borderColor: 'rgba(248 113 113, 0.65)'
+  }
+}
+
+const StatCard: React.FC<{ label: string; value: number; tone: StatCardTone }> = ({ label, value, tone }) => (
+  <div className="rounded-xl border-2 p-4 text-center shadow-sm" style={STAT_CARD_SURFACE[tone]}>
     <p className="text-2xl font-black text-slate-800">{value}</p>
-    <p className="text-xs font-medium text-slate-500 mt-0.5">{label}</p>
+    <p className="text-xs font-medium text-slate-600 mt-0.5">{label}</p>
   </div>
 )
 
@@ -76,7 +91,7 @@ export const AdminDashboard: React.FC = () => {
   const [showNewBookingPanel, setShowNewBookingPanel] = useState(false)
   const { data: stats } = useBookingStats()
   const { user, logout } = useAdminAuth()
-  const { organizationName } = useTenantContext()
+  const restaurantName = useRestaurantName()
 
   const handleViewInCalendar = (date: string) => {
     setCalendarTargetDate(date)
@@ -106,7 +121,7 @@ export const AdminDashboard: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-base font-bold text-slate-800 leading-tight">
-                  {organizationName || 'Booking SaaS'}
+                  {restaurantName || 'Booking SaaS'}
                 </h1>
                 <p className="text-xs text-slate-400">Dashboard Admin</p>
               </div>
@@ -137,14 +152,21 @@ export const AdminDashboard: React.FC = () => {
           <div className="pb-4 space-y-4">
             {/* Stats */}
             <div className="grid grid-cols-4 gap-3">
-              <StatCard label="Oggi" value={stats?.totalDay || 0} color="border-cyan-200" />
-              <StatCard label="Settimana" value={stats?.totalWeek || 0} color="border-violet-200" />
-              <StatCard label="Mese" value={stats?.totalMonth || 0} color="border-blue-200" />
-              <StatCard label="Rifiutate" value={stats?.rejected || 0} color="border-rose-200" />
+              <StatCard label="Oggi" value={stats?.totalDay || 0} tone="metrics" />
+              <StatCard label="Settimana" value={stats?.totalWeek || 0} tone="metrics" />
+              <StatCard label="Mese" value={stats?.totalMonth || 0} tone="metrics" />
+              <StatCard label="Rifiutate" value={stats?.rejected || 0} tone="rejected" />
             </div>
 
             {/* Nav */}
-            <nav className="flex flex-wrap items-center gap-2">
+            <nav
+              className="flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 shadow-sm"
+              style={{
+                backgroundImage:
+                  'linear-gradient(100deg, rgb(15 23 42) 0%, rgb(30 58 138) 18%, rgb(37 99 235) 36%, rgb(96 165 250) 58%, rgb(191 219 254) 78%, rgb(239 246 255) 100%)',
+                borderColor: 'rgba(255, 255, 255, 0.28)'
+              }}
+            >
               <NavItem icon={Calendar} label="Calendario"          active={activeTab === 'calendar'} onClick={() => setActiveTab('calendar')} />
               <NavItem icon={Clock}    label="Prenotazioni Pendenti" active={activeTab === 'pending'}  badge={stats?.pending} onClick={() => setActiveTab('pending')} />
               <NavItem icon={Archive}  label="Archivio"             active={activeTab === 'archive'}  onClick={() => setActiveTab('archive')} />
@@ -202,7 +224,7 @@ export const AdminDashboard: React.FC = () => {
       </main>
 
       <footer className="py-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white">
-        Booking SaaS v2.0 — {organizationName}
+        Booking SaaS v2.0 — {restaurantName}
       </footer>
     </div>
   )
