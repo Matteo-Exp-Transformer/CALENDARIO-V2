@@ -20,7 +20,7 @@ export const useBusinessHours = () => {
         .select('setting_value')
         .eq('setting_key', 'business_hours')
         .eq('tenant_id', tenantId)
-        .single()
+        .maybeSingle()
 
       if (error) {
         return getDefaultBusinessHours()

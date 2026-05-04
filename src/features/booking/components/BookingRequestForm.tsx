@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Input } from '@/components/ui'
 import { DateInput } from '@/components/ui/DateInput'
@@ -35,7 +35,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
     client_name: '',
     client_email: '',
     client_phone: '',
-    booking_type: 'rinfresco_laurea',
+    booking_type: 'tavolo',
     desired_date: getCurrentDate(),
     desired_time: '16:00',
     num_guests: 0,
@@ -282,17 +282,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
       menu_total_booking: totalPerPerson * numGuests + tiramisuTotal
     })
   }
-
-  // Reset preset quando cambia booking_type
-  useEffect(() => {
-    if (formData.booking_type !== 'rinfresco_laurea') {
-      setSelectedPreset(null)
-      setFormData(prev => ({
-        ...prev,
-        preset_menu: null
-      }))
-    }
-  }, [formData.booking_type])
 
   const { mutate, isPending } = useCreateBookingRequest()
   const { checkRateLimit, isBlocked } = useRateLimit({
@@ -686,9 +675,9 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
           Dettagli Prenotazione
         </h2>
 
-        {/* Tipologia di Prenotazione - DROPDOWN: disabilitato, sempre rinfresco di laurea
         <div style={{ marginBottom: '0' }}>
           <label
+            htmlFor="booking_type"
             className="block text-base md:text-lg text-warm-wood mb-2"
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.85)',
@@ -700,14 +689,28 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
               marginBottom: '0.5rem'
             }}
           >
-            Tipo di prenotazione *
+            Tipologia di Prenotazione *
           </label>
           <select
             id="booking_type"
             value={formData.booking_type}
             onChange={(e) => {
-              setFormData({ ...formData, booking_type: e.target.value as 'tavolo' | 'rinfresco_laurea' })
-              setErrors({ ...errors, booking_type: '' })
+              const booking_type = e.target.value as 'tavolo' | 'rinfresco_laurea'
+              if (booking_type === 'tavolo') {
+                setSelectedPreset(null)
+                setFormData({
+                  ...formData,
+                  booking_type,
+                  preset_menu: null,
+                  menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
+                  menu_total_per_person: undefined,
+                  menu_total_booking: undefined,
+                  dietary_restrictions: []
+                })
+              } else {
+                setFormData({ ...formData, booking_type })
+              }
+              setErrors({ ...errors, booking_type: '', menu: '' })
             }}
             className="block rounded-full border shadow-sm transition-all"
             style={{
@@ -721,17 +724,16 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
               color: 'black',
               width: '100%'
             }}
-            onFocus={(e) => (e.target as HTMLSelectElement).style.borderColor = '#8B6914'}
-            onBlur={(e) => (e.target as HTMLSelectElement).style.borderColor = 'rgba(0,0,0,0.2)'}
+            onFocus={(e) => ((e.target as HTMLSelectElement).style.borderColor = '#8B6914')}
+            onBlur={(e) => ((e.target as HTMLSelectElement).style.borderColor = 'rgba(0,0,0,0.2)')}
           >
-            <option value="tavolo">Prenota un Tavolo</option>
-            <option value="rinfresco_laurea">Rinfresco di Laurea</option>
+            <option value="tavolo">Prenota un tavolo (senza menù)</option>
+            <option value="rinfresco_laurea">Rinfresco di Laurea (menù e ingredienti)</option>
           </select>
           {errors.booking_type && (
             <p className="text-sm text-red-500">{errors.booking_type}</p>
           )}
         </div>
-        */}
 
         {/* Data */}
         <div className="space-y-3" style={{ paddingTop: '0.5rem' }}>

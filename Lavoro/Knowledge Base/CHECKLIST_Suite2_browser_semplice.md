@@ -7,6 +7,8 @@ Guida in linguaggio semplice. Se apri gli strumenti del browser (**F12**), usa l
 - **`Utenti per test.md`** — credenziali e account di prova.
 - **`Guida.md`** — contesto operativo e procedure lunghe.
 - **`dati db calendario V.2.txt`** — appunti / export dati DB (placeholder se vuoto).
+- **`PROMPT_plan_UI_impostazioni_ristorante.md`** — prompt per un agente che deve pianificare la UI **Impostazioni** (S2.9).
+- **`PROMPT_plan_UI_menu_ingredienti_admin.md`** — prompt per un agente che deve pianificare la UI **menu / listino** admin (S2.10).
 
 Aggiorna la **tabella stato** sotto a fine sessione, così si vede subito cosa resta da fare.
 
@@ -15,12 +17,13 @@ Aggiorna la **tabella stato** sotto a fine sessione, così si vede subito cosa r
 | Simbolo | Significato |
 |--------|-------------|
 | ✅ | Testato in QA, esito ok (o problema risolto e riverificato). |
-| 🟡 | Parziale: flusso UI ok ma manca verifica accessoria (es. riga in `email_logs`, screenshot). |
+| 🟡 | Parziale: flusso UI ok ma manca verifica accessoria (es. screenshot). |
 | ⏳ | Non ancora eseguito / da rifare dopo modifiche importanti. |
+| **N/A** | Non applicabile o bloccato da **limite piano** / **mancanza UI** — vedi colonna note. |
 
 ### Stato test (aggiorna data dopo ogni giro)
 
-*Ultimo aggiornamento tabella: 2026-05-07*
+*Ultimo aggiornamento tabella: 2026-05-07 (fix form pubblico + Edge `create-booking` + checklist)*
 
 | Codice | Argomento | Stato | Note brevi |
 |--------|-----------|-------|------------|
@@ -31,16 +34,16 @@ Aggiorna la **tabella stato** sotto a fine sessione, così si vede subito cosa r
 | Extra B | Tipologia con **menu / ingredienti** (riepilogo → calendario → dettaglio) | ✅ | Esempio **Rinfresco di Laurea** (*Tipologia di Prenotazione*): menu visibile, scelte ingredienti, **prezzo e riepilogo** corretti; su calendario e in **modale dettaglio** dopo inserimento tutto coerente. |
 | S2.3 | Creare prenotazione da admin | ✅ | Vedi anche riga “Tipologia con menu” per percorso con ingredienti e prezzo in riepilogo. |
 | S2.4 | Modificare prenotazione esistente | ✅ | Fix `client_email` null; salvataggio ok. |
-| S2.5 | Accettare richiesta pending (+ traccia email) | 🟡 | Flusso accettazione e calendario ok; controllare in Supabase **`email_logs`** se serve prova completa. |
+| S2.5 | Accettare richiesta pending (+ traccia in `email_logs`) | ✅ | UI ok. **DB (MCP):** per tenant A compaiono righe `email_type = booking_accepted` con `booking_id`; `status` può essere `failed` se l’invio SMTP/Resend non è configurato — conta la **traccia** in tabella. |
 | S2.6 | Rifiutare richiesta **pending** | ✅ | **Rifiuta** su richiesta in attesa: messaggio di **rifiuto** corretto; la richiesta finisce correttamente in **archivio** (non resta in pending). |
 | S2.7 | **Eliminare** prenotazione accettata (dal calendario) | ✅ | Nel pannello l’azione è **eliminazione** / rimozione dal calendario, non “annullamento” (termine fuorviante qui). QA: eliminazione riuscita. |
-| S2.8 | Test email manuale dal pannello | ⏳ | |
-| S2.9 | Impostazioni ristorante (persistenza) | ⏳ | |
-| S2.10 | Menu / listino CRUD | ⏳ | |
-| S2.11 | Elenco email solo del proprio tenant | ⏳ | |
-| S2.12 | Logout pulito | ⏳ | |
-| S2.13 | Rientro dopo logout | ⏳ | |
-| S2.14 | Form pubblico `/prenota/...` | ⏳ | |
+| S2.8 | Test email manuale dal pannello | **N/A** | Piano **Supabase Free**: invio reale / SMTP spesso non disponibile come “prova”; resta solo invio **invite** utente. Saltare S2.8 finché non c’è provider email in produzione. |
+| S2.9 | Impostazioni ristorante (persistenza) | ⏳ | **Manca UI** dedicata per l’operatore: usare il prompt **`PROMPT_plan_UI_impostazioni_ristorante.md`** per un piano di modifica. |
+| S2.10 | Menu / listino CRUD | ⏳ | CRUD solo da Supabase; **prompt piano UI:** **`PROMPT_plan_UI_menu_ingredienti_admin.md`**. |
+| S2.11 | Elenco email solo del proprio tenant | **N/A** | **Schermata non presente** in UI; rinviare dopo eventuale pagina “Log email”. |
+| S2.12 | Logout pulito | ✅ | Esci → login senza errori. |
+| S2.13 | Rientro dopo logout | ✅ | Rilogin admin A: calendario e dettagli ok. |
+| S2.14 | Form pubblico `/prenota/...` | 🟡 | Default **“Prenota un tavolo (senza menù)”**; **Rinfresco** opzionale dal menu a tendina. Fix tecnici: **`create-booking`** ridistribuita con JWT gateway disattivato + header **`apikey`**; **`restaurant_settings`** lettura con `maybeSingle` (niente 406 se manca `business_hours`). **Da riverificare** tu in browser (POST 201, niente 401). |
 
 ---
 
@@ -119,10 +122,12 @@ Poi puoi uscire di nuovo e rientrare con **admin A** per continuare il resto del
 1. Ti serve una prenotazione in stato **in attesa** (pending). Se non ce n’è, chiedila dal **form pubblico** (vedi S2.14) oppure usa una che hai già in elenco.
 2. Nella scheda delle **richieste in attesa**, premi **Accetta**.
 3. Scheda **Rete**: dovresti vedere un aggiornamento della prenotazione andato a buon fine; potrebbe esserci anche un invio verso **send-email** (se l’email non è configurata, può fallire l’invio ma **non** deve “rompere” tutto il pannello).
-4. In Supabase, tabella **email_logs**: deve esserci una **nuova riga** legata al tuo ristorante, tipo “prenotazione accettata”, con riferimento alla prenotazione.
+4. In Supabase, tabella **email_logs**: deve esserci una **nuova riga** legata al tuo ristorante, con `email_type` coerente (es. **`booking_accepted`**), collegata al `booking_id`. Il campo **`status`** può essere `failed` se l’SMTP non è configurato: per la checklist conta che la **riga esista** (traccia dell’evento).
 5. **Console:** niente errori rossi sul salvataggio dei log email.
 
 **In pratica:** sì alla prenotazione del cliente → nel registro email del sistema deve comparire una traccia.
+
+**Verifica agente (DB):** su progetto di test risultano righe `booking_accepted` per `tenant_id` del ristorante A (`1de53854-4cbe-4065-9dbd-1ae84cac4f6d`) con `booking_id` valorizzato; invio reale può fallire senza provider.
 
 **Nota:** una volta accettata, la richiesta **non** resta tra le “in attesa”: diventa **accettata** e, con data e orario confermati, **compare nel calendario** nel giorno/slot giusti. Puoi rivederla anche dall’**archivio**: calendario e archivio sono due modi di consultare le stesse prenotazioni accettate, non si escludono a vicenda.
 
@@ -215,12 +220,13 @@ Poi puoi uscire di nuovo e rientrare con **admin A** per continuare il resto del
 
 1. Apri una **finestra in incognito**.
 2. Vai su **http://localhost:5173/prenota/al-ritrovo** (slug del ristorante di test A).
-3. Compila il modulo come un cliente (nome, email, data, persone…), invia.
-4. Scheda **Rete**: l’invio della prenotazione deve andare a buon fine (risposta di **successo**; tecnicamente spesso è “201 creato”).
-5. In Supabase, la nuova riga deve essere **dal pubblico**, in **attesa** (pending), del **ristorante giusto**.
-6. **Console:** niente avvisi strani tipo “due client Supabase”.
+3. Sotto **Tipologia di Prenotazione**, scegli **“Prenota un tavolo (senza menù)”** oppure **“Rinfresco di Laurea”** se vuoi testare menù e ingredienti.
+4. Compila il modulo come un cliente (telefono obbligatorio; privacy se richiesta), invia.
+5. Scheda **Rete**: `POST .../functions/v1/create-booking` → **201** (non **401**). Eventuale GET `restaurant_settings` non deve più dare **406** se manca la riga orari (il client usa lettura “0 o 1 riga”).
+6. In Supabase, la nuova riga in **`booking_requests`** deve essere **pending**, **booking_source** pubblico, **tenant** dello slug.
+7. **Console:** niente errori rossi sull’invio.
 
-**In pratica:** amico che prenota dal cellulare → richiesta arriva in coda senza che debba avere password admin.
+**In pratica:** amico che prenota dal cellulare → richiesta arriva in coda senza password admin; può essere solo tavolo o menù completo.
 
 ---
 
@@ -236,5 +242,16 @@ Poi puoi uscire di nuovo e rientrare con **admin A** per continuare il resto del
 - **403** ovunque in dashboard → problema permessi / sessione; controlla di essere **admin.a** e che l’email sia in **admin_users**.
 - **Prenotazione admin non si crea** → era legato ai contatori DB: in repo c’è la migrazione **003** sui trigger (dovrebbe essere già applicata sul progetto di test).
 - **Email sempre in errore** → può essere normale se Resend non è configurato; importante che **email_logs** registri comunque il tentativo.
+- **401 su `create-booking`** (form pubblico) → la funzione va pubblicata con **JWT verification disattivata** per questo endpoint (solo chiave anon + `apikey` nel client). In repo: `supabase/config.toml` sezione `[functions.create-booking]` e comando deploy `npx supabase functions deploy create-booking --project-ref <REF> --no-verify-jwt`.
+- **406 su `restaurant_settings?...business_hours`** → spesso assenza di riga unica: il client ora usa **`maybeSingle()`**; opzionale creare riga `business_hours` per il tenant in Supabase.
+
+---
+
+## Istruzioni rapide (dopo aggiornamento codice 2026-05-07)
+
+1. **Pull** del repo, `npm install` se serve, `npm run dev`.
+2. **Form pubblico:** incognito → `/prenota/al-ritrovo` → prova prima **solo tavolo**, poi **Rinfresco** con ingredienti; in Rete verifica **201** su `create-booking`.
+3. **S2.9 / S2.10:** incolla in un nuovo chat agente il contenuto dei file **`PROMPT_plan_UI_impostazioni_ristorante.md`** e **`PROMPT_plan_UI_menu_ingredienti_admin.md`** (uno alla volta) per ottenere piani di implementazione.
+4. **Deploy Edge** (se crei un nuovo progetto Supabase): non dimenticare `--no-verify-jwt` su `create-booking` per il traffico anonimo del sito pubblico.
 
 Fine checklist.
