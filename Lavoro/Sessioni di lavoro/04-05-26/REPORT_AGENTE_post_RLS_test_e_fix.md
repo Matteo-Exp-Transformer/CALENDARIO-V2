@@ -267,4 +267,64 @@ Durante stress e test sono stati creati record di comodo (es. `client_email` `st
 
 ---
 
-*Fine report.*
+## 17. Aggiornamento — documentazione Knowledge Base e Suite 2 (agente)
+
+| Attività | Dettaglio |
+|----------|-----------|
+| Checklist Suite 2 in linguaggio semplice | Creato **`Lavoro/Knowledge Base/CHECKLIST_Suite2_browser_semplice.md`** (passi S2.1–S2.14 con esempi pratici, riferimento a credenziali e slug `al-ritrovo`). |
+| Credenziali QA | Creato / aggiornato **`Lavoro/Knowledge Base/Utenti per test.md`** (admin A/B, outsider, link rapidi). |
+| Nota su calendario vs archivio | In checklist **S2.5**: chiarito che dopo l’accettazione le prenotazioni **compaiono nel calendario** (slot confermati) e restano consultabili anche dall’**archivio** — due viste complementari. |
+
+*Cartella **`Lavoro/Knowledge Base/`** versionata nel commit successivo (checklist, utenti test, eventuali altre note operative).*
+
+---
+
+## 18. Aggiornamento — bug modifica prenotazione e verifica utente (maggio 2026)
+
+### 18.1 Lavoro svolto dall’utente (QA manuale)
+
+- Esecuzione **Suite 2** in ambiente locale (`npm run dev`), login **admin A**.
+- Segnalazione console: errore in **salvataggio modifica** prenotazione (`useUpdateBooking` / `BookingDetailsModal`), messaggio DB **`null value in column "client_email"`** (vincolo NOT NULL).
+- Chiarimento comportamento: le richieste **accettate** risultano **presenti nel calendario** (dopo un primo dubbio su archivio vs calendario).
+- Conferma post-fix: **«ok ora funziona»** — modifica prenotazione riuscita.
+- **Isolamento multi-tenant (verifica manuale):** accesso con **account diverso** (admin del **ristorante B**, `admin.b.rls@example.com`). Confermato in QA: si vedono **solo** le prenotazioni del tenant B; **non** compaiono le prenotazioni del tenant A — coerente con le policy RLS e con la Suite 1 già validata via API.
+
+### 18.2 Lavoro svolto dall’agente (fix codice)
+
+| File | Modifica |
+|------|----------|
+| `src/features/booking/hooks/useBookingMutations.ts` | In `useUpdateBooking`, `client_email` non viene più inviato come `null`: si usa sempre stringa (trim), stringa vuota `''` se assente — allineato a colonna **NOT NULL** con default `''` in DB. |
+| `src/features/booking/components/BookingDetailsModal.tsx` | In `performSave`, `client_email` passato come `(formData.client_email ?? '').trim()` invece di `null`. |
+
+**Causa radice:** il codice assumeva `client_email` nullable; lo schema PostgreSQL la mantiene obbligatoria.
+
+### 18.3 Avvisi console ancora possibili (non risolti in questo fix)
+
+- **`Unknown option 'eventCursor'`** (FullCalendar / `@fullcalendar/react`): opzione non riconosciuta dalla versione in uso; compare in `BookingCalendar.tsx` (config `eventCursor: 'pointer'`). È un warning di libreria, distinto dal bug DB sopra. Correzione consigliata futura: rimuovere `eventCursor` dal config e applicare `cursor: pointer` via CSS sugli eventi `.fc-event`.
+- Messaggi **CursorBrowser** / **React DevTools**: informativi in dev, non errori applicativi.
+
+---
+
+## 19. Come proseguire (ordine consigliato)
+
+**Già coperto in questa sessione (commit):** fix modifica prenotazione (`client_email`), aggiornamento report, checklist e utenti test in Knowledge Base, ripristino `Guida.md` / `dati db` sotto `02-05-26` se risultavano eliminati.
+
+1. **Completare Suite 2**  
+   Continuare con **`CHECKLIST_Suite2_browser_semplice.md`** (accetta/rifiuta, email log, test email, menu, logout, form pubblico incognito). Annotare OK/KO come da **`TEST_PLAN_post_RLS.md`** se serve traccia formale.
+
+2. **Smoke S3.10** (`/invite/:token`)  
+   Con `validate-invite` già deployata: generare token in SQL, flusso incognito, verifica `admin_users` + `invite_tokens.used_at`.
+
+3. **Pulizia QA e sicurezza**  
+   Eseguire o adattare **`cleanup_qa_test_data.sql`**; prima del go-live rimuovere o rinforzare password utenti `*.rls@example.com`.
+
+4. **Opzionale — rumore FullCalendar**  
+   Rimuovere `eventCursor` dalla config e spostare lo stile su CSS per eliminare i warning in console.
+
+---
+
+## 20. Chiusura commit (riferimento operativo)
+
+Versionati in commit dedicato: fix modifica prenotazione (`BookingDetailsModal`, `useBookingMutations`), **`REPORT_AGENTE_post_RLS_test_e_fix.md`**, cartella **`Lavoro/Knowledge Base/`** (checklist Suite 2, utenti test, eventuale `Guida.md` locale in KB), ripristino **`Lavoro/Sessioni di lavoro/02-05-26/Guida.md`** e **`dati db calendario V.2.txt`** nel repo principale se necessario.
+
+*Report aggiornato: QA Suite 2 parziale, fix `client_email`, verifica multi-tenant manuale admin B, commit/push.*

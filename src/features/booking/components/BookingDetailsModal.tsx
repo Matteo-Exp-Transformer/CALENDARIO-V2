@@ -578,7 +578,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
         bookingId: booking.id,
         booking_type: formData.booking_type,
         client_name: formData.client_name,
-        client_email: formData.client_email?.trim() === '' ? null : (formData.client_email?.trim() || null),
+        client_email: (formData.client_email ?? '').trim(),
         client_phone: formData.client_phone?.trim() === '' ? null : (formData.client_phone || null),
         confirmedStart,
         confirmedEnd,

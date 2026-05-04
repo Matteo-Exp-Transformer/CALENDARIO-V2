@@ -172,13 +172,11 @@ export const useUpdateBooking = () => {
         updateData.client_name = input.client_name
       }
       if (input.client_email !== undefined) {
-        // Permetti di salvare email vuota/null (ora che il campo è nullable)
-        // Se è null, salviamo null (email cancellata)
-        // Se è stringa vuota, salviamo null
-        // Se è una stringa valida, salviamo quella
-        updateData.client_email = input.client_email === null || input.client_email === '' 
-          ? null 
-          : input.client_email.trim() || null
+        // DB: client_email è NOT NULL (default ''). Non inviare mai null.
+        const raw = input.client_email === null || input.client_email === undefined
+          ? ''
+          : String(input.client_email).trim()
+        updateData.client_email = raw
       }
       if (input.client_phone !== undefined) {
         updateData.client_phone = input.client_phone || null
