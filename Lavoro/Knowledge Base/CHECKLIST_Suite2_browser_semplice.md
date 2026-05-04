@@ -20,7 +20,7 @@ Aggiorna la **tabella stato** sotto a fine sessione, così si vede subito cosa r
 
 ### Stato test (aggiorna data dopo ogni giro)
 
-*Ultimo aggiornamento tabella: 2026-05-04*
+*Ultimo aggiornamento tabella: 2026-05-05*
 
 | Codice | Argomento | Stato | Note brevi |
 |--------|-----------|-------|------------|
@@ -31,7 +31,7 @@ Aggiorna la **tabella stato** sotto a fine sessione, così si vede subito cosa r
 | S2.3 | Creare prenotazione da admin | ✅ | |
 | S2.4 | Modificare prenotazione esistente | ✅ | Fix `client_email` null; salvataggio ok. |
 | S2.5 | Accettare richiesta pending (+ traccia email) | 🟡 | Flusso accettazione e calendario ok; controllare in Supabase **`email_logs`** se serve prova completa. |
-| S2.6 | Rifiutare richiesta | ⏳ | |
+| S2.6 | Rifiutare / cancellare richiesta già in elenco | ✅ | Flusso su prenotazione già inserita: messaggio di **rifiuto** in UI corretto e coerente. |
 | S2.7 | Annullare prenotazione accettata | ⏳ | |
 | S2.8 | Test email manuale dal pannello | ⏳ | |
 | S2.9 | Impostazioni ristorante (persistenza) | ⏳ | |
@@ -131,6 +131,8 @@ Poi puoi uscire di nuovo e rientrare con **admin A** per continuare il resto del
 2. In **email_logs** cerca una riga coerente con **rifiuto** (tipo rifiutata).
 
 **In pratica:** “non possiamo” → deve restare memoria nell’email log.
+
+**Esito QA confermato:** su richiesta già presente in elenco, il rifiuto / annulla lato richiesta in attesa funziona e il **messaggio mostrato all’utente** è quello di rifiuto atteso (testo corretto).
 
 ---
 
