@@ -87,7 +87,7 @@ export const useCreateBookingRequest = () => {
           body: JSON.stringify({
             tenantSlug: data.tenantSlug,
             client_name: data.client_name,
-            client_email: data.client_email || null,
+            client_email: (data.client_email ?? '').trim(),
             client_phone: data.client_phone || null,
             desired_date: data.desired_date,
             desired_time: data.desired_time || null,

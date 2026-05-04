@@ -46,6 +46,10 @@ Deno.serve(async (req: Request) => {
       placement,
     } = body;
 
+    // DB: client_email è NOT NULL (default ''). Non usare `|| null`: stringa vuota è falsy e diventerebbe NULL.
+    const clientEmailNormalized =
+      typeof client_email === "string" ? client_email.trim() : "";
+
     // --- Validation ---
     if (!tenantSlug) {
       return new Response(
@@ -141,7 +145,7 @@ Deno.serve(async (req: Request) => {
     const insertData: Record<string, unknown> = {
       tenant_id: orgId,
       client_name,
-      client_email: client_email || null,
+      client_email: clientEmailNormalized,
       client_phone: client_phone || null,
       desired_date,
       desired_time: desired_time || null,
