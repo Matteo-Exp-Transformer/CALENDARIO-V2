@@ -197,25 +197,29 @@ export const AdminDashboard: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowNewBookingPanel(p => !p)}
-              className="admin-new-booking-collapse-trigger grid w-full grid-cols-[auto,minmax(0,1fr),auto] items-center gap-3 rounded-t-xl px-4 py-[1.333rem] text-white transition-[background-image,transform] duration-200 md:gap-4 md:px-6 md:py-[1.667rem]"
+              className="admin-new-booking-collapse-trigger grid w-full grid-cols-[1fr_auto_1fr] items-center gap-x-2 rounded-t-xl px-4 py-[1.333rem] text-white transition-[background-image,transform] duration-200 md:gap-x-3 md:px-6 md:py-[1.667rem]"
             >
-              <Plus
-                className="h-6 w-6 shrink-0 text-white/95 md:h-7 md:w-7"
-                aria-hidden
-              />
-              <span
-                className="min-w-0 text-center font-semibold tracking-tight text-white drop-shadow-sm"
+              <div className="min-w-0" aria-hidden />
+              <div
+                className="flex min-w-0 max-w-full items-baseline justify-center gap-2.5 font-semibold tracking-tight text-white"
                 style={{
-                  fontSize: 'clamp(1.125rem, 0.9rem + 1.1vw, 1.625rem)',
+                  fontSize: 'calc(clamp(1.125rem, 0.9rem + 1.1vw, 1.625rem) * 2 / 3)',
                   lineHeight: 1.35,
                 }}
               >
-                Inserisci nuova prenotazione
-              </span>
-              <ChevronDown
-                aria-hidden
-                className={`h-6 w-6 shrink-0 text-[rgba(6,64,50,0.88)] transition-transform md:h-7 md:w-7 ${showNewBookingPanel ? 'rotate-180' : ''}`}
-              />
+                <Plus
+                  aria-hidden
+                  className="shrink-0 translate-y-[0.06em] text-white/95"
+                  style={{ width: '1.05em', height: '1.05em' }}
+                />
+                <span className="min-w-0 truncate drop-shadow-sm">Inserisci nuova prenotazione</span>
+              </div>
+              <div className="flex min-w-0 justify-end">
+                <ChevronDown
+                  aria-hidden
+                  className={`h-5 w-5 shrink-0 text-[rgba(6,64,50,0.88)] transition-transform md:h-6 md:w-6 ${showNewBookingPanel ? 'rotate-180' : ''}`}
+                />
+              </div>
             </button>
             {showNewBookingPanel && (
               <div className="border-t border-slate-200 bg-white px-5 py-5">
