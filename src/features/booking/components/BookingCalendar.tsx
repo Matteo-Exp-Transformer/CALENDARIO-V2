@@ -18,11 +18,11 @@ import { extractDateFromISO, getAccurateStartTime, getAccurateEndTime } from '..
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
 import { getMenuPriceDisplayFromBooking } from '../utils/menuPricing'
 
-/** Stesso sfondo del brand strip in AdminDashboard (`ADMIN_WARM_GRADIENT_SURFACE`) */
-const CALENDAR_HEADER_WARM_SURFACE: React.CSSProperties = {
+/** Stesso gradiente / bordo delle StatCard “metriche” in AdminDashboard (Oggi / Settimana / Mese) */
+const CALENDAR_HEADER_STAT_METRICS_SURFACE: React.CSSProperties = {
   backgroundImage:
-    'linear-gradient(90deg, rgb(255 237 213) 0%, rgb(255 247 237) 42%, rgb(254 249 195) 100%)',
-  borderColor: 'rgba(253, 186, 116, 0.55)',
+    'linear-gradient(145deg, rgb(224 242 254) 0%, rgb(219 234 254) 40%, rgb(220 252 231) 100%)',
+  borderColor: 'rgba(56, 189, 248, 0.45)',
 }
 
 interface BookingCalendarProps {
@@ -275,10 +275,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     <>
       <div className="space-y-6">
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-warm-beige">
-          {/* Header Responsive — superficie allineata al top bar AdminDashboard */}
+          {/* Header Responsive — superficie come StatCard metriche (dashboard) */}
           <div
-            className="mb-6 flex flex-col items-start gap-3 rounded-xl border px-4 py-4 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4"
-            style={CALENDAR_HEADER_WARM_SURFACE}
+            className="mb-6 flex flex-col items-start gap-3 rounded-xl border-2 px-4 py-4 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4"
+            style={CALENDAR_HEADER_STAT_METRICS_SURFACE}
           >
             {/* Icona + Titolo */}
             <div className="flex items-center gap-4 flex-1">

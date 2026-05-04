@@ -90,21 +90,23 @@ body {
   animation: spin 0.8s linear infinite;
 }
 
-/* Admin dashboard — collassabile “Nuova prenotazione”: stesso gradiente delle StatCard metriche */
+/* Admin dashboard — collassabile “Nuova prenotazione” (verde) */
 .admin-new-booking-collapse-trigger {
   background-image: linear-gradient(
-    145deg,
-    rgb(224 242 254) 0%,
-    rgb(219 234 254) 40%,
-    rgb(220 252 231) 100%
+    90deg,
+    rgb(52 211 153) 0%,
+    rgb(16 185 129) 34%,
+    rgb(52 211 153) 68%,
+    rgb(74 222 128) 100%
   );
 }
 .admin-new-booking-collapse-trigger:hover {
   background-image: linear-gradient(
-    145deg,
-    rgb(199 233 254) 0%,
-    rgb(191 219 254) 42%,
-    rgb(196 241 208) 100%
+    90deg,
+    rgb(45 212 191) 0%,
+    rgb(52 211 153) 30%,
+    rgb(34 197 94) 62%,
+    rgb(110 231 183) 100%
   );
 }
 

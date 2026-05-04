@@ -191,16 +191,16 @@ export const AdminDashboard: React.FC = () => {
         {/* Pannello nuova prenotazione collassabile — larghezza fino a 160rem (doppio di 7xl), centrato */}
         <div className="flex w-full justify-center px-4 md:px-6">
           <div
-            className="w-full overflow-hidden rounded-xl border-2 border-[rgba(56,189,248,0.45)] bg-white shadow-md"
+            className="w-full overflow-hidden rounded-xl border-2 border-[rgba(45,212,191,0.55)] bg-white shadow-md"
             style={{ maxWidth: 'min(100%, 160rem)' }}
           >
             <button
               type="button"
               onClick={() => setShowNewBookingPanel(p => !p)}
-              className="admin-new-booking-collapse-trigger flex w-full items-center justify-between gap-3 rounded-t-xl px-4 py-[1.333rem] text-slate-800 transition-[background-image,transform] duration-200 md:gap-4 md:px-6 md:py-[1.667rem]"
+              className="admin-new-booking-collapse-trigger flex w-full items-center justify-between gap-3 rounded-t-xl px-4 py-[1.333rem] text-white transition-[background-image,transform] duration-200 md:gap-4 md:px-6 md:py-[1.667rem]"
             >
               <div
-                className="flex min-w-0 flex-1 items-baseline justify-start gap-2.5 font-semibold tracking-tight text-slate-800"
+                className="flex min-w-0 flex-1 items-baseline justify-start gap-2.5 font-semibold tracking-tight text-white"
                 style={{
                   fontSize: 'calc(clamp(1.125rem, 0.9rem + 1.1vw, 1.625rem) * 2 / 3)',
                   lineHeight: 1.35,
@@ -208,14 +208,14 @@ export const AdminDashboard: React.FC = () => {
               >
                 <Plus
                   aria-hidden
-                  className="shrink-0 translate-y-[0.06em] text-primary-700"
+                  className="shrink-0 translate-y-[0.06em] text-white/95"
                   style={{ width: '1.05em', height: '1.05em' }}
                 />
-                <span className="min-w-0 truncate">Inserisci Nuova Prenotazione</span>
+                <span className="min-w-0 truncate drop-shadow-sm">Inserisci Nuova Prenotazione</span>
               </div>
               <ChevronDown
                 aria-hidden
-                className={`h-5 w-5 shrink-0 text-slate-600 transition-transform md:h-6 md:w-6 ${showNewBookingPanel ? 'rotate-180' : ''}`}
+                className={`h-5 w-5 shrink-0 text-[rgba(6,64,50,0.88)] transition-transform md:h-6 md:w-6 ${showNewBookingPanel ? 'rotate-180' : ''}`}
               />
             </button>
             {showNewBookingPanel && (
