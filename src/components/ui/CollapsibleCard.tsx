@@ -1,4 +1,4 @@
-import React, { ReactNode, useId, useMemo, useState } from 'react'
+import React, { ReactNode, useEffect, useId, useMemo, useState } from 'react'
 
 export interface CollapsibleCardCounterData {
   available: number
@@ -99,9 +99,32 @@ export const CollapsibleCard = ({
   }, [defaultExpanded, defaultOpen, expanded])
 
   const [internalExpanded, setInternalExpanded] = useState(initialExpanded)
+  const [shouldRenderContent, setShouldRenderContent] = useState(initialExpanded)
+  const [isClosing, setIsClosing] = useState(false)
 
   const isControlled = expanded !== undefined
   const isExpanded = isControlled ? expanded : internalExpanded
+
+  useEffect(() => {
+    let closeTimer: number | undefined
+
+    if (isExpanded) {
+      setShouldRenderContent(true)
+      setIsClosing(false)
+    } else if (shouldRenderContent) {
+      setIsClosing(true)
+      closeTimer = window.setTimeout(() => {
+        setShouldRenderContent(false)
+        setIsClosing(false)
+      }, 220)
+    }
+
+    return () => {
+      if (closeTimer !== undefined) {
+        window.clearTimeout(closeTimer)
+      }
+    }
+  }, [isExpanded, shouldRenderContent])
 
   const toggleExpanded = () => {
     if (collapseDisabled) {
@@ -378,12 +401,15 @@ export const CollapsibleCard = ({
       </div>
 
       {/* Content */}
-      {isExpanded && (
+      {shouldRenderContent && (
         <div
           id={contentId}
-          className="border-t border-gray-200 transition-all duration-300 ease-in-out"
+          className={`border-t border-gray-200 transition-all duration-300 ease-in-out ${
+            isClosing ? 'collapsible-content-leave' : 'collapsible-content-enter'
+          }`}
           role="region"
           aria-labelledby={headerId}
+          aria-hidden={!isExpanded}
           data-state={
             resolvedLoading
               ? 'loading'

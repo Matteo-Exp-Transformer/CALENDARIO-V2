@@ -49,9 +49,8 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, badge, onC
   <button
     type="button"
     onClick={onClick}
-    className="relative w-full min-h-[44px] flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border px-2 sm:px-3 py-2.5 text-sm font-medium text-slate-900 transition-all duration-150 cursor-pointer hover:border-amber-500/45"
+    className="admin-nav-item relative w-full min-h-[44px] flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border px-2 sm:px-3 py-2.5 text-sm font-medium text-slate-900 transition-all duration-150 cursor-pointer"
     style={{
-      ...ADMIN_WARM_GRADIENT_SURFACE,
       ...(active
         ? {
             boxShadow:
@@ -113,29 +112,27 @@ export const AdminDashboard: React.FC = () => {
 
           {/* Top bar */}
           <div
-            className="flex items-center justify-between h-16 rounded-xl shadow-sm border"
+            className="relative flex items-center justify-between h-[106px] rounded-xl shadow-sm border"
             style={ADMIN_WARM_GRADIENT_SURFACE}
           >
-            {/* Brand */}
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <h1 className="text-base font-bold text-slate-800 leading-tight">
-                  {restaurantName || 'Booking SaaS'}
-                </h1>
-                <p className="text-xs text-slate-400">Dashboard Admin</p>
-              </div>
+            <div className="pl-4 md:pl-5 text-xs sm:text-sm font-semibold text-slate-700">
+              Sistema Gestionale Prenotazioni
+            </div>
+
+            {/* Brand centered */}
+            <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-center">
+              <h1 className="text-base font-semibold italic font-serif tracking-wide text-slate-800 leading-tight">
+                {restaurantName || 'Booking SaaS'}
+              </h1>
             </div>
 
             {/* User menu */}
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200/90 bg-white/90">
+            <div className="flex items-center gap-3 pr-4 md:pr-5">
+              <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center">
                   <User className="w-3.5 h-3.5 text-primary-600" />
                 </div>
-                <span className="text-xs text-slate-600 font-medium max-w-[140px] truncate">
+                <span className="text-xs text-slate-600 font-medium whitespace-nowrap">
                   {user?.email}
                 </span>
               </div>
@@ -145,7 +142,7 @@ export const AdminDashboard: React.FC = () => {
                   text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Esci</span>
+                <span>Log-out</span>
               </button>
             </div>
           </div>

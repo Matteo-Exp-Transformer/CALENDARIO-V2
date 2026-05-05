@@ -165,61 +165,24 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     // Ensure events don't overflow to other days in month view
     dayMaxEvents: 3,
     moreLinkClick: 'popover',
-    // Highlight today and selected date
-    dayCellDidMount: (arg: any) => {
-      // ✅ Fix: Estrai date string usando metodi locali per evitare problemi di timezone
+    // Highlight today and selected date with stable CSS classes
+    dayCellClassNames: (arg: any) => {
       const d = new Date(arg.date)
       const year = d.getFullYear()
       const month = String(d.getMonth() + 1).padStart(2, '0')
       const day = String(d.getDate()).padStart(2, '0')
       const cellDateStr = `${year}-${month}-${day}`
-      
-      // Confronta oggi usando metodi locali
+
       const today = new Date()
       const todayYear = today.getFullYear()
       const todayMonth = String(today.getMonth() + 1).padStart(2, '0')
       const todayDay = String(today.getDate()).padStart(2, '0')
       const todayStr = `${todayYear}-${todayMonth}-${todayDay}`
-      
-      const isToday = cellDateStr === todayStr
-      const isSelected = cellDateStr === selectedDate
-      
-      // Remove FullCalendar's default today class
-      arg.el.classList.remove('fc-day-today')
-      
-      // Clear any previous styles
-      arg.el.style.cssText = ''
-      
-      if (isToday && isSelected) {
-        // Today + Selected: blue darker for selected on today
-        arg.el.style.cssText = `
-          background-color: #93c5fd !important;
-          border: 3px solid #1d4ed8 !important;
-          border-radius: 10px !important;
-          font-weight: bold !important;
-          box-shadow: 0 4px 8px rgba(29, 78, 216, 0.5) !important;
-          transform: scale(1.02) !important;
-          z-index: 10 !important;
-        `
-      } else if (isToday) {
-        // Today only - YELLOW background (not blue!)
-        arg.el.style.cssText = `
-          background-color: #fef9c3 !important;
-          border: 3px solid #f59e0b !important;
-          border-radius: 8px !important;
-          font-weight: bold !important;
-        `
-      } else if (isSelected) {
-        // Selected only - DARKER blue background
-        arg.el.style.cssText = `
-          background-color: #60a5fa !important;
-          border: 3px solid #1e40af !important;
-          border-radius: 8px !important;
-          box-shadow: 0 2px 8px rgba(30, 64, 175, 0.4) !important;
-          transform: scale(1.01) !important;
-          z-index: 9 !important;
-        `
-      }
+
+      return [
+        cellDateStr === todayStr ? 'calendar-day-today' : '',
+        cellDateStr === selectedDate ? 'calendar-day-selected' : '',
+      ].filter(Boolean)
     },
     // Custom event rendering per card eventi migliorate
     eventContent: (arg: any) => {
@@ -376,13 +339,13 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
               title="Mattina"
               subtitle="10:00 - 14:30"
               icon={Sunrise}
-              defaultExpanded={true}
+              defaultExpanded={false}
               collapseDisabled={false}
               counter={{
                 available: selectedDateData.capacity.morning.available,
                 capacity: selectedDateData.capacity.morning.capacity
               }}
-              headerClassName="bg-green-100 hover:bg-green-200 border-b-2 border-green-300"
+              headerClassName="admin-collapse-header admin-collapse-header--green bg-green-100 hover:bg-green-200 border-b-2 border-green-300"
               className="!bg-transparent !border-transparent !shadow-none"
             >
               <div className="px-4 sm:px-6 py-4" style={{ backgroundColor: 'rgba(187, 247, 208, 0.8)' }}>
@@ -588,13 +551,13 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
               title="Pomeriggio"
               subtitle="14:31 - 18:30"
               icon={Sun}
-              defaultExpanded={true}
+              defaultExpanded={false}
               collapseDisabled={false}
               counter={{
                 available: selectedDateData.capacity.afternoon.available,
                 capacity: selectedDateData.capacity.afternoon.capacity
               }}
-              headerClassName="bg-yellow-100 hover:bg-yellow-200 border-b-2 border-yellow-300"
+              headerClassName="admin-collapse-header admin-collapse-header--yellow bg-yellow-100 hover:bg-yellow-200 border-b-2 border-yellow-300"
               className="!bg-transparent !border-transparent !shadow-none"
             >
               <div className="px-4 sm:px-6 py-4" style={{ backgroundColor: 'rgba(253, 230, 138, 0.75)' }}>
@@ -799,13 +762,13 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
               title="Sera"
               subtitle="18:31 - 23:30"
               icon={Moon}
-              defaultExpanded={true}
+              defaultExpanded={false}
               collapseDisabled={false}
               counter={{
                 available: selectedDateData.capacity.evening.available,
                 capacity: selectedDateData.capacity.evening.capacity
               }}
-              headerClassName="bg-blue-100 hover:bg-blue-200 border-b-2 border-blue-300"
+              headerClassName="admin-collapse-header admin-collapse-header--blue bg-blue-100 hover:bg-blue-200 border-b-2 border-blue-300"
               className="!bg-transparent !border-transparent !shadow-none"
             >
               <div className="px-4 sm:px-6 py-4" style={{ backgroundColor: 'rgba(147, 197, 253, 0.8)' }}>

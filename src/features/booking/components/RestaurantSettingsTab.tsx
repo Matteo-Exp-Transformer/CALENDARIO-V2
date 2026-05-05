@@ -71,6 +71,10 @@ export const RestaurantSettingsTab: React.FC = () => {
     hoursQuery.error
 
   const markDirty = () => setDirty(true)
+  const handleRestaurantNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    markDirty()
+    setRestaurantName(event.target.value)
+  }
 
   const handleSave = async () => {
     try {
@@ -127,15 +131,18 @@ export const RestaurantSettingsTab: React.FC = () => {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="restaurant_name">Nome ristorante (visualizzato)</Label>
-            <Input
+            <input
               id="restaurant_name"
-              value={restaurantName}
+              name="restaurant_name"
+              type="text"
+              dir="ltr"
+              autoComplete="off"
+              value={typeof restaurantName === 'string' ? restaurantName : ''}
               disabled={upsert.isPending}
-              onChange={(e) => {
-                markDirty()
-                setRestaurantName(e.target.value)
-              }}
+              onChange={handleRestaurantNameChange}
               placeholder="Nome del locale"
+              className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-400 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 transition-colors duration-150"
+              style={{ direction: 'ltr', unicodeBidi: 'plaintext' }}
             />
           </div>
           <div className="space-y-2">
