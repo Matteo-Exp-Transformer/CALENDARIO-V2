@@ -112,36 +112,14 @@ export const AdminDashboard: React.FC = () => {
 
           {/* Top bar */}
           <div
-            className="relative flex items-center justify-between h-[106px] rounded-xl shadow-sm border"
+            className="relative flex items-center justify-center h-[106px] rounded-xl shadow-sm border px-4 md:px-6"
             style={ADMIN_WARM_GRADIENT_SURFACE}
           >
-            <div className="flex h-[78px] flex-col items-start justify-between pl-4 md:pl-5">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center">
-                  <User className="w-3.5 h-3.5 text-primary-600" />
-                </div>
-                <span className="text-xs text-slate-600 font-medium whitespace-nowrap">
-                  {user?.email}
-                </span>
-              </div>
-              <button
-                onClick={logout}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
-                  text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Log-out</span>
-              </button>
-            </div>
-
-            {/* Brand centered */}
-            <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-center">
+            <div className="text-center pointer-events-none">
               <h1 className="text-base font-semibold italic font-serif tracking-wide text-slate-800 leading-tight">
                 {restaurantName || 'Booking SaaS'}
               </h1>
             </div>
-
-            <div className="w-0 pr-4 md:pr-5" />
           </div>
 
           {/* Stats + Nav */}
@@ -177,7 +155,7 @@ export const AdminDashboard: React.FC = () => {
       </header>
 
       {/* ── Main: collapse più largo (~2× max-w-7xl); area tab resta max-w-7xl ── */}
-      <main className="flex-1 w-full py-6 space-y-4">
+      <main className="flex-1 w-full pt-6 pb-12 md:pb-16 space-y-4">
         {/* Pannello nuova prenotazione collassabile — larghezza fino a 160rem (doppio di 7xl), centrato */}
         <div className="flex w-full justify-center px-4 md:px-6">
           <div
@@ -229,8 +207,27 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </main>
 
-      <footer className="py-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white">
-        Booking SaaS v2.0 — {restaurantName}
+      <footer className="pt-5 pb-4 border-t border-slate-100 bg-white">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 flex w-full items-center justify-between gap-4">
+          <div
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border shadow-sm px-4 py-3 md:px-6"
+            style={ADMIN_WARM_GRADIENT_SURFACE}
+          >
+            <div className="w-6 h-6 shrink-0 rounded-full bg-primary-100 flex items-center justify-center">
+              <User className="w-3.5 h-3.5 text-primary-600" />
+            </div>
+            <span className="truncate text-xs text-slate-600 font-medium">{user?.email}</span>
+          </div>
+          <button
+            type="button"
+            onClick={logout}
+            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+              text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Log-out</span>
+          </button>
+        </div>
       </footer>
     </div>
   )

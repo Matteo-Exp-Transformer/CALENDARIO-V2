@@ -9,7 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       injectRegister: 'auto',
-      includeAssets: ['favicon.svg', 'icons/favicon.ico', 'icons/apple-touch-icon.png'],
+      includeAssets: ['icons/favicon-v2.ico', 'icons/apple-touch-icon-v2.png'],
       manifest: {
         name: 'CalendarBackup',
         short_name: 'CalBackup',
@@ -21,17 +21,17 @@ export default defineConfig({
         background_color: '#ffffff',
         icons: [
           {
-            src: '/icons/icon-192.png',
+            src: '/icons/icon-192-v2.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/icons/icon-512.png',
+            src: '/icons/icon-512-v2.png',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: '/icons/apple-touch-icon.png',
+            src: '/icons/apple-touch-icon-v2.png',
             sizes: '180x180',
             type: 'image/png'
           }

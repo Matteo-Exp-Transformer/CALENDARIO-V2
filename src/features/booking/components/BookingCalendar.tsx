@@ -265,7 +265,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
             {/* Icona + Titolo */}
             <div
               className="relative flex w-full items-center py-3 sm:flex-1"
-              style={{ minHeight: '48px' }}
+              style={{ minHeight: 'calc(48px * 6 / 5 * 6 / 5)' }}
             >
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-warm-wood to-warm-orange flex items-center justify-center shadow-md">
                 <Calendar className="h-7 w-7 text-white" />
@@ -282,7 +282,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                 <Select value={currentView} onValueChange={handleViewChange}>
                   <SelectTrigger
                     className={[
-                      'w-[140px] !border-[var(--color-primary)] !bg-[var(--color-primary)] !text-white shadow-sm [&>span]:!text-white [&_[data-placeholder]]:!text-white',
+                      'w-[calc(70px*4/3*6/5)] min-w-0 max-w-[calc(70px*4/3*6/5)] shrink-0 px-2 !border-[var(--color-primary)] !bg-[var(--color-primary)] !text-white shadow-sm [&>span]:!truncate [&>span]:!text-white [&_[data-placeholder]]:!text-white',
                       'hover:!border-[var(--color-primary-dark)] hover:!bg-[var(--color-primary-dark)] hover:shadow-md',
                       'focus:!border-[var(--color-primary-dark)] focus:ring-4 focus:ring-white/30 focus:ring-offset-0',
                       '[&_svg]:!text-white/90 disabled:!opacity-60',
