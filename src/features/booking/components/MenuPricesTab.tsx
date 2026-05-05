@@ -128,29 +128,32 @@ export const MenuPricesTab: React.FC = () => {
     <div className="flex flex-col gap-6 md:gap-7">
       <section
         aria-labelledby="menu-prices-heading"
-        className="flex flex-col items-center justify-center gap-2 rounded-xl border shadow-sm px-4 py-3 text-center md:gap-2.5 md:px-5 md:py-3.5"
+        className="grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 rounded-xl border shadow-sm px-4 py-2 md:gap-x-5 md:px-5 md:py-2"
         style={ADMIN_WARM_GRADIENT_SURFACE}
       >
-        <div className="flex max-w-xl flex-col items-center gap-1 sm:gap-1.5">
-          <h2
-            id="menu-prices-heading"
-            className="font-serif text-base font-bold leading-none text-warm-wood sm:text-lg"
-          >
-            Menu
-          </h2>
-          <p className="text-xs leading-snug text-gray-600 sm:text-sm">
-            Aggiungi, modifica o elimina le voci del menu e i prezzi
-          </p>
-        </div>
-        <Button
-          variant="success"
-          size="sm"
-          onClick={handleStartAdd}
-          className="h-8 gap-1.5 px-3 py-0 text-xs"
+        <h2
+          id="menu-prices-heading"
+          className="justify-self-start font-serif text-base font-bold leading-none text-warm-wood sm:text-lg"
         >
-          <Plus className="h-3.5 w-3.5" />
-          Aggiungi Prodotto
-        </Button>
+          Menu
+        </h2>
+        <p
+          className="min-w-0 justify-self-center px-1 text-center text-xs leading-snug text-gray-600 sm:px-2 sm:text-sm"
+          title="Aggiungi, modifica o elimina le voci del menu e i prezzi"
+        >
+          Aggiungi, modifica o elimina le voci del menu e i prezzi
+        </p>
+        <div className="justify-self-end">
+          <Button
+            variant="success"
+            size="sm"
+            onClick={handleStartAdd}
+            className="h-8 shrink-0 gap-1.5 px-3 py-0 text-xs"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Aggiungi Prodotto
+          </Button>
+        </div>
       </section>
 
       {/* Form Aggiunta/Modifica */}
