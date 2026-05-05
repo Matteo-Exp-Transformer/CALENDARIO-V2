@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { toast } from 'react-toastify'
+import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { Button, Input } from '@/components/ui'
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react'
 import { useMenuItems, useCreateMenuItem, useUpdateMenuItem, useDeleteMenuItem } from '../hooks/useMenuItems'
@@ -124,27 +125,33 @@ export const MenuPricesTab: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-serif font-bold text-warm-wood mb-2">
+    <div className="flex flex-col gap-6 md:gap-7">
+      <section
+        aria-labelledby="menu-prices-heading"
+        className="flex flex-col items-center justify-center gap-2 rounded-xl border shadow-sm px-4 py-3 text-center md:gap-2.5 md:px-5 md:py-3.5"
+        style={ADMIN_WARM_GRADIENT_SURFACE}
+      >
+        <div className="flex max-w-xl flex-col items-center gap-1 sm:gap-1.5">
+          <h2
+            id="menu-prices-heading"
+            className="font-serif text-base font-bold leading-none text-warm-wood sm:text-lg"
+          >
             Menu
           </h2>
-          <p className="text-gray-600">
+          <p className="text-xs leading-snug text-gray-600 sm:text-sm">
             Aggiungi, modifica o elimina le voci del menu e i prezzi
           </p>
         </div>
         <Button
-          variant="primary"
-          size="lg"
+          variant="success"
+          size="sm"
           onClick={handleStartAdd}
-          className="bg-gradient-to-r from-warm-wood to-warm-wood-dark"
+          className="h-8 gap-1.5 px-3 py-0 text-xs"
         >
-          <Plus className="h-5 w-5 mr-2" />
+          <Plus className="h-3.5 w-3.5" />
           Aggiungi Prodotto
         </Button>
-      </div>
+      </section>
 
       {/* Form Aggiunta/Modifica */}
       {(isAdding || editingId) && (
@@ -240,28 +247,29 @@ export const MenuPricesTab: React.FC = () => {
         </div>
       )}
 
-      {/* Lista Prodotti per Categoria */}
+      {/* Lista prodotti per categoria */}
+      <div className="menu-prices-category-list-wrap flex flex-col items-center gap-[28px]">
       {Object.entries(CATEGORY_LABELS).map(([category, label]) => {
         const items = itemsByCategory[category as MenuCategory] || []
         if (items.length === 0 && !isAdding && !editingId) return null
 
         return (
-          <div key={category} className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-warm-wood to-warm-wood-dark px-6 py-4">
+          <div key={category} className="menu-prices-category-card bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="bg-gradient-to-r from-warm-wood to-warm-wood-dark px-6 py-4 text-center">
               <h3 className="text-xl font-serif font-bold text-white">{label}</h3>
             </div>
-            <div className="p-6">
+            <div className="flex flex-col items-center p-6 text-center">
               {items.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">Nessun prodotto in questa categoria</p>
+                <p className="text-gray-500 py-4">Nessun prodotto in questa categoria</p>
               ) : (
-                <div className="space-y-3">
+                <div className="flex w-full max-w-full flex-col items-center gap-[12px]">
                   {items.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all"
+                      className="menu-prices-item-row"
                     >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
+                      <div className="menu-prices-item-text overflow-hidden">
+                        <div className="flex flex-wrap items-center justify-center gap-x-[12px] gap-y-1">
                           <h4 className="font-semibold text-gray-900">{item.name}</h4>
                           <span className="text-lg font-bold text-warm-wood">
                             €{item.price.toFixed(2)}
@@ -271,16 +279,20 @@ export const MenuPricesTab: React.FC = () => {
                           <p className="text-sm text-gray-600 mt-1">{item.description}</p>
                         )}
                       </div>
-                      <div className="flex gap-2">
+                      <div className="menu-prices-item-actions shrink-0">
                         <button
+                          type="button"
                           onClick={() => handleStartEdit(item)}
-                          className="p-2 border-2 border-warm-wood text-warm-wood rounded-lg hover:bg-warm-wood hover:text-white transition-all focus:outline-none focus:ring-4 focus:ring-warm-wood/30"
+                          className="menu-prices-icon-btn menu-prices-icon-btn--edit"
+                          aria-label={`Modifica ${item.name}`}
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => handleDelete(item.id, item.name)}
-                          className="p-2 border-2 border-terracotta text-terracotta rounded-lg hover:bg-terracotta hover:text-white transition-all focus:outline-none focus:ring-4 focus:ring-terracotta/30"
+                          className="menu-prices-icon-btn menu-prices-icon-btn--delete"
+                          aria-label={`Elimina ${item.name}`}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -293,6 +305,7 @@ export const MenuPricesTab: React.FC = () => {
           </div>
         )
       })}
+      </div>
     </div>
   )
 }

@@ -21,6 +21,8 @@ import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { SettingsTab } from '@/features/booking/components/SettingsTab'
 import { RestaurantSettingsTab } from '@/features/booking/components/RestaurantSettingsTab'
+import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
+import { cn } from '@/lib/utils'
 
 type Tab =
   | 'calendar'
@@ -29,12 +31,6 @@ type Tab =
   | 'menu'
   | 'settings-system'
   | 'settings-restaurant'
-
-const ADMIN_WARM_GRADIENT_SURFACE: React.CSSProperties = {
-  backgroundImage:
-    'linear-gradient(90deg, rgb(255 237 213) 0%, rgb(255 247 237) 42%, rgb(254 249 195) 100%)',
-  borderColor: 'rgba(253, 186, 116, 0.55)'
-}
 
 /* ─── NavItem ─── */
 interface NavItemProps {
@@ -196,7 +192,12 @@ export const AdminDashboard: React.FC = () => {
 
         {/* Tab content */}
         <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 md:p-7 min-h-[500px]">
+        <div
+          className={cn(
+            'rounded-xl border border-slate-200 bg-white shadow-sm p-5 md:p-7',
+            activeTab !== 'menu' && 'min-h-[500px]'
+          )}
+        >
           {activeTab === 'calendar' && <BookingCalendarTab initialDate={calendarTargetDate} />}
           {activeTab === 'pending'  && <PendingRequestsTab />}
           {activeTab === 'archive'  && <ArchiveTab onViewInCalendar={handleViewInCalendar} />}
