@@ -307,6 +307,20 @@ export const useRestoreBooking = () => {
 
   return useMutation({
     mutationFn: async (bookingId: string) => {
+      const { data: bookingToRestore, error: fetchError } = await (supabase
+        .from('booking_requests') as any)
+        .select('id, confirmed_start, confirmed_end')
+        .eq('id', bookingId)
+        .eq('tenant_id', tenantId!)
+        .single()
+
+      if (fetchError) {
+        throw new Error(handleSupabaseError(fetchError))
+      }
+
+      if (!bookingToRestore?.confirmed_start || !bookingToRestore?.confirmed_end) {
+        throw new Error('Impossibile reinserire: mancano orario di inizio/fine confermati.')
+      }
 
       const { data, error } = await (supabase
         .from('booking_requests') as any)

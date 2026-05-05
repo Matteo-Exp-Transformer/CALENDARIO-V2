@@ -105,7 +105,10 @@ export function extractDateFromISO(isoString: string | null | undefined): string
  */
 export function extractTimeFromISO(isoString: string | null | undefined): string {
   if (!isoString) return ''
-  const match = isoString.match(/T(\d{2}):(\d{2})/)
+  // Accept both ISO separator styles:
+  // - 2026-05-08T16:00:00+00:00
+  // - 2026-05-08 16:00:00+00
+  const match = isoString.match(/[T\s](\d{2}):(\d{2})/)
   return match ? `${match[1]}:${match[2]}` : ''
 }
 

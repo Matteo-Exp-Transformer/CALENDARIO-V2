@@ -27,6 +27,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         .from('organizations') as any)
         .select('id, name, slug')
         .eq('slug', slug)
+        .eq('is_active', true)
         .single()
 
       if (error || !data) {

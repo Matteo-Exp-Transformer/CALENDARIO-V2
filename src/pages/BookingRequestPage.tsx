@@ -101,13 +101,13 @@ export const BookingRequestPage: React.FC = () => {
     )
   }
 
-  // Show error if tenant not found after loading
+  // Show error if tenant not found or tenant is inactive
   if (!tenantId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Ristorante non trovato</h1>
-          <p className="text-gray-600">Il ristorante richiesto non esiste o l&apos;indirizzo non e&apos; corretto.</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Prenotazioni temporaneamente non disponibili</h1>
+          <p className="text-gray-600">Il ristorante richiesto non esiste, e&apos; inattivo o l&apos;indirizzo non e&apos; corretto.</p>
         </div>
       </div>
     )

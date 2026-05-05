@@ -3,6 +3,9 @@ import { supabase, handleSupabaseError } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { useTenantContext } from '@/contexts/TenantContext'
 
+const AUTH_REVOKED_REASON_KEY = 'auth_revoked_reason'
+const SUBSCRIPTION_INACTIVE_REASON = 'subscription_inactive'
+
 interface AdminAuthUser {
   id: string
   email: string
@@ -28,6 +31,30 @@ export const useAdminAuth = (): UseAdminAuthReturn => {
     checkSession()
   }, [])
 
+  const setSubscriptionRevokedReason = () => {
+    sessionStorage.setItem(AUTH_REVOKED_REASON_KEY, SUBSCRIPTION_INACTIVE_REASON)
+  }
+
+  const ensureActiveSubscription = async (tenantId?: string): Promise<boolean> => {
+    if (!tenantId) {
+      return false
+    }
+
+    const { data: organization, error } = await (supabase
+      .from('organizations') as any)
+      .select('is_active')
+      .eq('id', tenantId)
+      .single()
+
+    if (error || !organization || !organization.is_active) {
+      await supabase.auth.signOut()
+      setSubscriptionRevokedReason()
+      return false
+    }
+
+    return true
+  }
+
   const checkSession = async () => {
     try {
       // Check if user is authenticated with Supabase
@@ -49,11 +76,19 @@ export const useAdminAuth = (): UseAdminAuthReturn => {
       // Verify user exists in admin_users table
       const { data: adminUser, error: adminError } = await (supabase
         .from('admin_users') as any)
-        .select('name')
+        .select('name, tenant_id')
         .eq('email', session.user.email)
         .single()
 
       if (adminError || !adminUser) {
+        setUser(null)
+        setIsLoading(false)
+        return
+      }
+
+      const hasActiveSubscription = await ensureActiveSubscription((adminUser as any).tenant_id)
+      if (!hasActiveSubscription) {
+        clearTenant()
         setUser(null)
         setIsLoading(false)
         return
@@ -103,7 +138,7 @@ export const useAdminAuth = (): UseAdminAuthReturn => {
       // Verify user exists in admin_users table
       const { data: adminUser, error: adminError } = await (supabase
         .from('admin_users') as any)
-        .select('name')
+        .select('name, tenant_id')
         .eq('email', authData.user.email || '')
         .single()
 
@@ -112,6 +147,16 @@ export const useAdminAuth = (): UseAdminAuthReturn => {
         return {
           success: false,
           error: 'Utente non autorizzato'
+        }
+      }
+
+      const hasActiveSubscription = await ensureActiveSubscription((adminUser as any).tenant_id)
+      if (!hasActiveSubscription) {
+        clearTenant()
+        setUser(null)
+        return {
+          success: false,
+          error: 'Abbonamento non attivo. Contatta il supporto.'
         }
       }
 

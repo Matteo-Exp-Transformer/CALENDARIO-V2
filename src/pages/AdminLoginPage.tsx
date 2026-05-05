@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
@@ -10,9 +10,18 @@ export const AdminLoginPage: React.FC = () => {
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showSubscriptionBanner, setShowSubscriptionBanner] = useState(false)
 
   const { login } = useAdminAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const revokedReason = sessionStorage.getItem('auth_revoked_reason')
+    if (revokedReason === 'subscription_inactive') {
+      setShowSubscriptionBanner(true)
+      sessionStorage.removeItem('auth_revoked_reason')
+    }
+  }, [])
 
   const validate = (): boolean => {
     const newErrors: { email?: string; password?: string } = {}
@@ -67,6 +76,11 @@ export const AdminLoginPage: React.FC = () => {
 
           {/* Form */}
           <div className="px-8 py-8">
+            {showSubscriptionBanner && (
+              <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                Abbonamento non attivo. Contatta il supporto.
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-5">
 
               <div className="space-y-1.5">

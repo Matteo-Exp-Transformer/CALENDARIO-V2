@@ -8,6 +8,7 @@ interface BookingCalendarTabProps {
 
 export const BookingCalendarTab: React.FC<BookingCalendarTabProps> = ({ initialDate }) => {
   const { data: acceptedBookings, isLoading, error } = useAcceptedBookings()
+  const bookings = acceptedBookings ?? []
 
   if (isLoading) {
     return (
@@ -29,20 +30,6 @@ export const BookingCalendarTab: React.FC<BookingCalendarTabProps> = ({ initialD
     )
   }
 
-  if (!acceptedBookings || acceptedBookings.length === 0) {
-    return (
-      <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-        <div className="text-6xl mb-4">📅</div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-          Nessuna prenotazione nel calendario
-        </h3>
-        <p className="text-gray-500">
-          Le prenotazioni accettate appariranno qui nel calendario.
-        </p>
-      </div>
-    )
-  }
-
-  return <BookingCalendar bookings={acceptedBookings} initialDate={initialDate} />
+  return <BookingCalendar bookings={bookings} initialDate={initialDate} />
 }
 
