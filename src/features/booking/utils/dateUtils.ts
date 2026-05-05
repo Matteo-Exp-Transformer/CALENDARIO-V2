@@ -132,6 +132,16 @@ export function calculateEndTimeFromStart(startTime: string, hoursToAdd: number 
  * Returns the most accurate start time for a booking, preferring desired_time (TIME)
  * to avoid timezone conversions. Falls back to confirmed_start if needed.
  */
+/** Minuti dalla mezzanotte per ordinare gli orari (gestisce anche "9:30" senza zero iniziale). */
+export function startTimeToMinutesSinceMidnight(time: string | null | undefined): number | null {
+  if (time == null || !String(time).trim()) return null
+  const [hRaw, mRaw = '0'] = String(time).trim().split(':')
+  const h = parseInt(hRaw, 10)
+  const m = parseInt(mRaw, 10)
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return null
+  return h * 60 + m
+}
+
 export function getAccurateStartTime(booking: BookingRequest): string {
   if (booking.desired_time) {
     return booking.desired_time.split(':').slice(0, 2).join(':')

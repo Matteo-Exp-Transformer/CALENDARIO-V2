@@ -8,13 +8,21 @@ import { Calendar, Users, Sunrise, Sun, Moon, Mail, Phone, Clock, UtensilsCrosse
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import type { BookingRequest } from '@/types/booking'
-import { transformBookingsToCalendarEvents } from '../utils/bookingEventTransform'
+import {
+  transformBookingsToCalendarEvents,
+  transformBookingToCalendarEvent,
+} from '../utils/bookingEventTransform'
 import { BookingDetailsModal } from './BookingDetailsModal'
 import { calculateDailyCapacity, getStartSlotForBooking } from '../utils/capacityCalculator'
 import { CollapsibleCard } from '@/components/ui/CollapsibleCard'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 
-import { extractDateFromISO, getAccurateStartTime, getAccurateEndTime } from '../utils/dateUtils'
+import {
+  extractDateFromISO,
+  getAccurateStartTime,
+  getAccurateEndTime,
+  startTimeToMinutesSinceMidnight,
+} from '../utils/dateUtils'
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
 import { getMenuPriceDisplayFromBooking } from '../utils/menuPricing'
 
@@ -136,6 +144,18 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       eveningBookings,
     }
   }, [selectedDate, bookings])
+
+  /** Stessi criteri del calendario: accettate con inizio/fine; ordinate per orario di inizio */
+  const selectedDayDigestBookings = useMemo(() => {
+    return bookings
+      .filter((b) => b.status === 'accepted' && b.confirmed_start && b.confirmed_end)
+      .filter((b) => extractDateFromISO(b.confirmed_start!) === selectedDate)
+      .sort((a, b) => {
+        const ma = startTimeToMinutesSinceMidnight(getAccurateStartTime(a)) ?? 24 * 60
+        const mb = startTimeToMinutesSinceMidnight(getAccurateStartTime(b)) ?? 24 * 60
+        return ma - mb
+      })
+  }, [bookings, selectedDate])
 
   const config = {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
@@ -337,16 +357,66 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
           </div>
         </div>
 
-        {/* Sezione Disponibilità */}
+        {/* Giornata selezionata: elenco prenotazioni e fasce */}
         <div>
-          {/* Header con data */}
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-serif font-bold text-warm-wood mb-2">
-              Disponibilità
-            </h3>
-            <p className="text-lg text-gray-600">
-              {format(new Date(selectedDateData.date), 'EEEE, dd MMMM yyyy', { locale: it })}
-            </p>
+          <div className="mb-8 max-w-3xl mx-auto">
+            <h4 className="text-center text-base font-semibold text-warm-wood mb-3 leading-snug">
+              Prenotazioni del giorno:{' '}
+              <span className="font-normal text-gray-600">
+                {format(new Date(selectedDateData.date), 'EEEE, dd MMMM yyyy', { locale: it })} ={' '}
+                {selectedDayDigestBookings.length}{' '}
+                {selectedDayDigestBookings.length === 1 ? 'Prenotazione' : 'Prenotazioni'}
+              </span>
+            </h4>
+            {selectedDayDigestBookings.length > 0 ? (
+              <div className="max-h-[min(420px,50vh)] overflow-y-auto space-y-2 rounded-xl border border-slate-200 bg-white/80 p-3 shadow-inner">
+                {selectedDayDigestBookings.map((booking) => {
+                  const calEv = transformBookingToCalendarEvent(booking)
+                  return (
+                    <button
+                      key={booking.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedBooking(booking)
+                        setIsModalOpen(true)
+                      }}
+                      className="w-full rounded-lg border text-left transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-warm-wood focus:ring-offset-2"
+                      style={{
+                        backgroundColor: calEv.backgroundColor,
+                        borderColor: calEv.borderColor,
+                        color: calEv.textColor ?? '#fff',
+                      }}
+                    >
+                      <div className="px-2 py-1.5 text-xs overflow-hidden">
+                        <div className="flex items-center gap-1.5 font-semibold truncate mb-1">
+                          <Users className="w-3 h-3 flex-shrink-0" />
+                          <span className="truncate">{booking.client_name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs opacity-90 truncate">
+                          <span>{booking.num_guests} ospiti</span>
+                          {booking.menu && (
+                            <>
+                              <span>•</span>
+                              <span className="truncate">{booking.menu}</span>
+                            </>
+                          )}
+                          {(booking.desired_time || booking.confirmed_start) && (
+                            <>
+                              <span>•</span>
+                              <span>{getAccurateStartTime(booking)}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="text-center text-sm text-gray-500 italic py-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/80">
+                Nessuna prenotazione accettata per questa data.
+              </p>
+            )}
           </div>
 
           {/* Mattina CollapsibleCard */}
