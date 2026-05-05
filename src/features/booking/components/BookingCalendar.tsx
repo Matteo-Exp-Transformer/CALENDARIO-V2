@@ -46,10 +46,13 @@ function DigestBookingListRow({
   booking,
   onOpen,
   showMenuPricing = false,
+  compactGrid = false,
 }: {
   booking: BookingRequest
   onOpen: (b: BookingRequest) => void
   showMenuPricing?: boolean
+  /** Card strette per griglia a 3 colonie (digest calendario). */
+  compactGrid?: boolean
 }) {
   const calEv = transformBookingToCalendarEvent(booking)
   const menuPriceRow = showMenuPricing ? getResolvedMenuPriceDisplay(booking) : null
@@ -58,44 +61,99 @@ function DigestBookingListRow({
     <button
       type="button"
       onClick={() => onOpen(booking)}
-      className="w-full rounded-lg border text-left transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-warm-wood focus:ring-offset-2"
+      className={`min-h-0 w-full min-w-0 rounded-lg border-2 text-left transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-warm-wood focus:ring-offset-2 ${
+        compactGrid ? 'flex w-full min-h-[4.253472rem] flex-col shadow-sm' : ''
+      }`}
       style={{
         backgroundColor: calEv.backgroundColor,
         borderColor: calEv.borderColor,
         color: calEv.textColor ?? '#fff',
       }}
     >
-      <div className="px-2 py-1.5 text-xs overflow-hidden">
-        <div className="flex items-center gap-1.5 font-semibold truncate mb-1">
-          <Users className="w-3 h-3 flex-shrink-0" />
-          <span className="truncate">{booking.client_name}</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs opacity-90 truncate">
-          <span>{booking.num_guests} ospiti</span>
-          {booking.menu && (
-            <>
-              <span>•</span>
-              <span className="truncate">{booking.menu}</span>
-            </>
-          )}
-          {(booking.desired_time || booking.confirmed_start) && (
-            <>
-              <span>•</span>
-              <span>{getAccurateStartTime(booking)}</span>
-            </>
-          )}
-        </div>
-        {menuPriceRow && (
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-white/25 pt-1.5 text-xs font-semibold opacity-95 leading-snug">
-            <span className="inline-flex items-center gap-1">
+      <div
+        className={`flex min-h-0 flex-col overflow-hidden ${compactGrid ? 'items-start justify-start gap-0.5 px-2 py-1 text-left text-[13px] leading-tight sm:text-[15px]' : 'flex-1 px-2 py-1.5 text-xs'}`}
+      >
+        {!compactGrid ? (
+          <div className="mb-1 flex w-full items-center gap-1.5 truncate font-semibold leading-snug">
+            <Users className="flex-shrink-0 h-3 w-3" />
+            <span className="min-w-0 truncate">{booking.client_name}</span>
+          </div>
+        ) : (
+          <div className="flex min-w-0 w-full items-start text-left leading-tight">
+            <Users className="mt-0 h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" aria-hidden />
+            <span
+              className="min-w-0 flex-1 line-clamp-2 break-words"
+              style={{ marginLeft: 10 }}
+            >
+              <span className="font-semibold">{booking.client_name}</span>
+              <span className="font-normal opacity-90">
+                {' - '}
+                {booking.num_guests} osp.
+                {(booking.desired_time || booking.confirmed_start) && (
+                  <>
+                    {' - '}
+                    <span className="font-medium">{getAccurateStartTime(booking)}</span>
+                  </>
+                )}
+              </span>
+            </span>
+          </div>
+        )}
+        {!compactGrid ? (
+          <div className="flex items-center gap-2 text-xs opacity-90 truncate">
+            <span>{booking.num_guests} ospiti</span>
+            {booking.menu && (
+              <>
+                <span>•</span>
+                <span className="truncate">{booking.menu}</span>
+              </>
+            )}
+            {(booking.desired_time || booking.confirmed_start) && (
+              <>
+                <span>•</span>
+                <span>{getAccurateStartTime(booking)}</span>
+              </>
+            )}
+          </div>
+        ) : (
+          <>
+            {menuPriceRow && (
+              <div className="flex w-full flex-wrap items-center justify-start gap-x-1.5 gap-y-0 text-left opacity-90">
+                <span className="inline-flex min-w-0 items-center gap-0.5 font-semibold opacity-95">
+                  <Tag
+                    className="h-3.5 w-3.5 flex-shrink-0 opacity-90 sm:h-4 sm:w-4"
+                    aria-hidden
+                  />
+                  <span className="truncate">{menuPriceRow.prezzoMenuLabel}</span>
+                </span>
+                {menuPriceRow.prezzoTotaleLabel && (
+                  <>
+                    <span className="opacity-60">•</span>
+                    <span className="min-w-0 truncate font-semibold opacity-95">
+                      Tot. {menuPriceRow.prezzoTotaleLabel}
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
+            {booking.menu && (
+              <p className="line-clamp-2 w-full break-words text-left opacity-85" title={booking.menu}>
+                {booking.menu}
+              </p>
+            )}
+          </>
+        )}
+        {menuPriceRow && !compactGrid && (
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-white/25 pt-1.5 text-xs font-semibold leading-snug opacity-95">
+            <span className="inline-flex min-w-0 items-center gap-0.5">
               <Tag className="h-3.5 w-3.5 flex-shrink-0 opacity-90" aria-hidden />
-              <span>{menuPriceRow.prezzoMenuLabel}</span>
+              <span className="truncate">{menuPriceRow.prezzoMenuLabel}</span>
             </span>
             {menuPriceRow.prezzoTotaleLabel && (
-              <>
+              <span className="inline-flex min-w-0 items-center gap-1">
                 <span className="opacity-75">·</span>
-                <span>Tot. {menuPriceRow.prezzoTotaleLabel}</span>
-              </>
+                <span className="truncate">Tot. {menuPriceRow.prezzoTotaleLabel}</span>
+              </span>
             )}
           </div>
         )}
@@ -440,7 +498,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
 
         {/* Giornata selezionata: elenco prenotazioni e fasce */}
         <div>
-          <div className="mb-8 max-w-3xl mx-auto">
+          <div className="mb-8 w-full max-w-7xl mx-auto">
             <h4 className="text-center text-base font-semibold text-warm-wood mb-3 leading-snug">
               Prenotazioni del giorno:{' '}
               <span className="font-normal text-gray-600">
@@ -461,14 +519,16 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                     </h5>
                   </div>
                   {digestWithMenu.length > 0 ? (
-                    <div className="max-h-[min(320px,44vh)] overflow-y-auto space-y-2 rounded-xl border border-slate-200 bg-white/80 p-3 shadow-inner">
+                    <div className="max-h-[min(420px,52vh)] overflow-y-auto rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner grid grid-cols-3 max-[640px]:grid-cols-1 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
                       {digestWithMenu.map((booking) => (
-                        <DigestBookingListRow
-                          key={booking.id}
-                          booking={booking}
-                          onOpen={openDigestBooking}
-                          showMenuPricing
-                        />
+                        <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                          <DigestBookingListRow
+                            booking={booking}
+                            onOpen={openDigestBooking}
+                            showMenuPricing
+                            compactGrid
+                          />
+                        </div>
                       ))}
                     </div>
                   ) : (
@@ -490,9 +550,15 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                     </h5>
                   </div>
                   {digestTableOnly.length > 0 ? (
-                    <div className="max-h-[min(320px,44vh)] overflow-y-auto space-y-2 rounded-xl border border-slate-200 bg-white/80 p-3 shadow-inner">
+                    <div className="max-h-[min(420px,52vh)] overflow-y-auto rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner grid grid-cols-3 max-[640px]:grid-cols-1 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
                       {digestTableOnly.map((booking) => (
-                        <DigestBookingListRow key={booking.id} booking={booking} onOpen={openDigestBooking} />
+                        <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                          <DigestBookingListRow
+                            booking={booking}
+                            onOpen={openDigestBooking}
+                            compactGrid
+                          />
+                        </div>
                       ))}
                     </div>
                   ) : (
