@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Modal } from '@/components/ui'
+import { Modal, TimePicker24h } from '@/components/ui'
 import type { BookingRequest } from '@/types/booking'
 import { format } from 'date-fns'
 import { useCapacityCheck } from '../hooks/useCapacityCheck'
@@ -189,14 +189,14 @@ export const AcceptBookingModal: React.FC<AcceptBookingModalProps> = ({
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Orario inizio *</label>
-            <input
-              type="time"
+            <TimePicker24h
+              id="accept_start_time"
               value={formData.startTime}
-              onChange={(e) => {
-                setFormData({ ...formData, startTime: e.target.value })
+              onChange={(v) => {
+                setFormData({ ...formData, startTime: v })
                 setErrors({ ...errors, startTime: '' })
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-al-ritrovo-primary"
+              className="rounded-md border-gray-300 bg-white px-3 py-2 text-gray-900 focus-within:ring-al-ritrovo-primary"
               required
             />
             {errors.startTime && <p className="text-sm text-red-500">{errors.startTime}</p>}
@@ -204,14 +204,14 @@ export const AcceptBookingModal: React.FC<AcceptBookingModalProps> = ({
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Orario fine *</label>
-            <input
-              type="time"
+            <TimePicker24h
+              id="accept_end_time"
               value={formData.endTime}
-              onChange={(e) => {
-                setFormData({ ...formData, endTime: e.target.value })
+              onChange={(v) => {
+                setFormData({ ...formData, endTime: v })
                 setErrors({ ...errors, endTime: '' })
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-al-ritrovo-primary"
+              className="rounded-md border-gray-300 bg-white px-3 py-2 text-gray-900 focus-within:ring-al-ritrovo-primary"
               required
             />
             {errors.endTime && <p className="text-sm text-red-500">{errors.endTime}</p>}

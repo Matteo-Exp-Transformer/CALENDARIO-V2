@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Input } from '@/components/ui'
+import { Input, TimePicker24h } from '@/components/ui'
 import type { BookingRequestInput } from '@/types/booking'
 import { useCreateAdminBooking } from '../hooks/useAdminBookingRequests'
 import { useQueryClient } from '@tanstack/react-query'
@@ -17,6 +17,79 @@ import { CapacityWarningModal } from './CapacityWarningModal'
 
 interface AdminBookingFormProps {
   onSubmit?: () => void
+}
+
+/** Stesso sfondo/header brand di AdminDashboard (strip “Al Ritrovo”). */
+const ADMIN_BOOKING_WARM_SURFACE: React.CSSProperties = {
+  backgroundImage:
+    'linear-gradient(90deg, rgb(255 237 213) 0%, rgb(255 247 237) 42%, rgb(254 249 195) 100%)',
+  borderColor: 'rgba(253, 186, 116, 0.55)',
+  boxSizing: 'border-box',
+}
+
+/** Raggio angoli (px) via style inline: evita che le utility Tailwind non risultino applicate nel build. */
+const ADMIN_CARD_RADIUS = 16
+const ADMIN_INPUT_RADIUS = 12
+/** Sfondo bianco esplicito sui campi sopra il pannello warm (stesso elenco punti dell’UX). */
+const ADMIN_INPUT_FIELD_SURFACE: React.CSSProperties = {
+  borderRadius: ADMIN_INPUT_RADIUS,
+  backgroundColor: '#ffffff',
+}
+const ADMIN_SECTION_TITLE_RADIUS = 16
+/** Margine interno card sinistro/destro (px) — solo inline style, come raggio e gap. */
+const ADMIN_CARD_PAD_X = 44
+
+/** Spazio (px) fra select Tipologia e blocco card Data/Ora/… — inline per essere sempre visibile. */
+const ADMIN_GAP_TIPOLOGIA_TO_CARDS_PX = 28
+
+/** Larghezza blocco (~1/3 schermo dopo riduzione di 2/3), centrato nella colonna. */
+const ADMIN_FORM_NARROW_COLUMN_STYLE = {
+  width: '33vw',
+  maxWidth: '100%',
+  marginLeft: 'auto',
+  marginRight: 'auto',
+  boxSizing: 'border-box' as const,
+} satisfies React.CSSProperties
+
+/** Campo racchiuso in card con fascia titolo attaccata in alto. */
+function AdminFormFieldCard({
+  title,
+  children,
+}: {
+  title: React.ReactNode
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      className="border border-slate-200 bg-white shadow-sm"
+      style={{ borderRadius: ADMIN_CARD_RADIUS, overflow: 'hidden' }}
+    >
+      <div
+        className="border-b border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.18)] via-teal-50/70 to-white"
+        style={{
+          paddingLeft: ADMIN_CARD_PAD_X,
+          paddingRight: ADMIN_CARD_PAD_X,
+          paddingTop: 13,
+          paddingBottom: 13,
+          boxSizing: 'border-box',
+        }}
+      >
+        <div className="text-sm font-semibold tracking-wide text-warm-wood">{title}</div>
+      </div>
+      <div
+        className="space-y-2 bg-white"
+        style={{
+          paddingLeft: ADMIN_CARD_PAD_X,
+          paddingRight: ADMIN_CARD_PAD_X,
+          paddingTop: 20,
+          paddingBottom: 22,
+          boxSizing: 'border-box',
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  )
 }
 
 export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) => {
@@ -406,15 +479,14 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
       {/* Layout a 2 Colonne su schermi grandi */}
       <div className="grid md:grid-cols-2 gap-6 md:gap-8">
         {/* COLONNA SINISTRA: Dati Personali */}
-        <div className="space-y-6">
+        <div
+          className="flex w-full flex-col items-center rounded-xl border shadow-sm px-3 py-4 md:px-5 md:py-5"
+          style={ADMIN_BOOKING_WARM_SURFACE}
+        >
+          <div className="space-y-6 w-full min-w-0" style={ADMIN_FORM_NARROW_COLUMN_STYLE}>
           <h2
-            className="text-3xl font-serif font-bold text-warm-wood mb-4 pb-3 border-b-2 border-warm-beige"
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              backdropFilter: 'blur(6px)',
-              padding: '12px 20px',
-              borderRadius: '12px'
-            }}
+            className="mb-4 border-b-2 border-warm-beige bg-white/50 px-5 py-3 pb-3 text-3xl font-serif font-bold text-warm-wood shadow-sm backdrop-blur-sm"
+            style={{ borderRadius: ADMIN_SECTION_TITLE_RADIUS }}
           >
             Dati Personali
           </h2>
@@ -431,6 +503,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
               placeholder="Nome Completo *"
               required
               className={errors.client_name ? '!border-red-500' : ''}
+              style={ADMIN_INPUT_FIELD_SURFACE}
             />
             {errors.client_name && (
               <p className="text-sm text-red-500">{errors.client_name}</p>
@@ -449,6 +522,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
               }}
               placeholder="Email (Opzionale)"
               className={errors.client_email ? '!border-red-500' : ''}
+              style={ADMIN_INPUT_FIELD_SURFACE}
             />
             {errors.client_email && (
               <p className="text-sm text-red-500">{errors.client_email}</p>
@@ -468,23 +542,24 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
               placeholder="Telefono *"
               required
               className={errors.client_phone ? '!border-red-500' : ''}
+              style={ADMIN_INPUT_FIELD_SURFACE}
             />
             {errors.client_phone && (
               <p className="text-sm text-red-500">{errors.client_phone}</p>
             )}
           </div>
+          </div>
         </div>
 
         {/* COLONNA DESTRA: Dettagli Prenotazione */}
-        <div className="space-y-6">
+        <div
+          className="flex w-full flex-col items-center rounded-xl border shadow-sm px-3 py-4 md:px-5 md:py-5"
+          style={ADMIN_BOOKING_WARM_SURFACE}
+        >
+          <div className="space-y-6 w-full min-w-0" style={ADMIN_FORM_NARROW_COLUMN_STYLE}>
           <h2
-            className="text-3xl font-serif font-bold text-warm-wood mb-4 pb-3 border-b-2 border-warm-beige"
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              backdropFilter: 'blur(6px)',
-              padding: '12px 20px',
-              borderRadius: '12px'
-            }}
+            className="mb-4 border-b-2 border-warm-beige bg-white/50 px-5 py-3 pb-3 text-3xl font-serif font-bold text-warm-wood shadow-sm backdrop-blur-sm"
+            style={{ borderRadius: ADMIN_SECTION_TITLE_RADIUS }}
           >
             Dettagli Prenotazione
           </h2>
@@ -510,18 +585,20 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
                 setFormData({ ...formData, booking_type: e.target.value as 'tavolo' | 'rinfresco_laurea' })
                 setErrors({ ...errors, booking_type: '' })
               }}
-              className="block rounded-full border bg-white/50 backdrop-blur-[6px] shadow-sm transition-all"
+              className="block rounded-full border bg-white shadow-sm transition-all"
               style={{
                 borderColor: 'rgba(0,0,0,0.2)',
                 height: '56px',
                 padding: '16px',
                 fontSize: '16px',
                 fontWeight: '500',
-                backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                backdropFilter: 'blur(6px)',
+                backgroundColor: '#ffffff',
+                backdropFilter: 'none',
                 color: 'black',
-                width: 'auto',
-                minWidth: '280px'
+                width: '100%',
+                maxWidth: '100%',
+                minWidth: 0,
+                boxSizing: 'border-box',
               }}
               onFocus={(e) => (e.target as HTMLSelectElement).style.borderColor = '#8B6914'}
               onBlur={(e) => (e.target as HTMLSelectElement).style.borderColor = 'rgba(0,0,0,0.2)'}
@@ -534,112 +611,125 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
             )}
           </div>
 
-          {/* Data */}
-          <div className="space-y-3">
-            <Input
-              id="desired_date"
-              type="date"
-              value={formData.desired_date}
-              onChange={(e) => {
-                setFormData({ ...formData, desired_date: e.target.value })
-                setErrors({ ...errors, desired_date: '' })
-              }}
-              required
-              className={errors.desired_date ? '!border-red-500' : ''}
-            />
-            {errors.desired_date && (
-              <p className="text-sm text-red-500">{errors.desired_date}</p>
-            )}
-          </div>
+          <div
+            className="bg-white"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              marginTop: ADMIN_GAP_TIPOLOGIA_TO_CARDS_PX,
+              boxSizing: 'border-box',
+            }}
+          >
+            {/* Data */}
+            <AdminFormFieldCard title="Data">
+              <Input
+                id="desired_date"
+                type="date"
+                value={formData.desired_date}
+                onChange={(e) => {
+                  setFormData({ ...formData, desired_date: e.target.value })
+                  setErrors({ ...errors, desired_date: '' })
+                }}
+                required
+                className={errors.desired_date ? '!border-red-500' : ''}
+                style={ADMIN_INPUT_FIELD_SURFACE}
+              />
+              {errors.desired_date && (
+                <p className="text-sm text-red-500">{errors.desired_date}</p>
+              )}
+            </AdminFormFieldCard>
 
-          {/* Ora */}
-          <div className="space-y-3">
-            <Input
-              id="desired_time"
-              type="time"
-              value={formData.desired_time || ''}
-              onChange={(e) => {
-                setFormData({ ...formData, desired_time: e.target.value })
-                setErrors({ ...errors, desired_time: '' })
-              }}
-              required
-              className={errors.desired_time ? '!border-red-500' : ''}
-            />
-            {errors.desired_time && (
-              <p className="text-sm text-red-500">{errors.desired_time}</p>
-            )}
-          </div>
+            {/* Ora (24h) */}
+            <AdminFormFieldCard title="Ora">
+              <TimePicker24h
+                id="desired_time"
+                value={formData.desired_time || ''}
+                onChange={(v) => {
+                  setFormData({ ...formData, desired_time: v })
+                  setErrors({ ...errors, desired_time: '' })
+                }}
+                required
+                hasError={!!errors.desired_time}
+                style={ADMIN_INPUT_FIELD_SURFACE}
+              />
+              {errors.desired_time && (
+                <p className="text-sm text-red-500">{errors.desired_time}</p>
+              )}
+            </AdminFormFieldCard>
 
-          {/* Numero Ospiti */}
-          <div className="space-y-3">
-            <Input
-              id="num_guests"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoComplete="off"
-              value={formData.num_guests > 0 ? formData.num_guests.toString() : ''}
-              onChange={handleNumGuestsChange}
-              onKeyPress={handleNumGuestsKeyPress}
-              required
-              placeholder="Numero Ospiti * (es: 15)"
-              className={errors.num_guests ? '!border-red-500' : ''}
-            />
-            {errors.num_guests && (
-              <p className="text-sm text-red-500">{errors.num_guests}</p>
-            )}
-            {/* Capacity Warning - mostra solo se data, ora e numero ospiti sono compilati */}
-            {capacityCheck.errorMessage && formData.desired_date && formData.desired_time && formData.num_guests > 0 && (
-              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4 mt-2 isolate">
-                <div className="flex items-start gap-2">
-                  <span className="text-2xl">⚠️</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-red-800 mb-1">
-                      Capacità insufficiente
-                    </p>
-                    <p className="text-sm text-red-700">
-                      {capacityCheck.errorMessage}
-                    </p>
+            {/* Numero ospiti */}
+            <AdminFormFieldCard title="Numero ospiti">
+              <Input
+                id="num_guests"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="off"
+                value={formData.num_guests > 0 ? formData.num_guests.toString() : ''}
+                onChange={handleNumGuestsChange}
+                onKeyPress={handleNumGuestsKeyPress}
+                required
+                placeholder="Es. 15"
+                className={errors.num_guests ? '!border-red-500' : ''}
+                style={ADMIN_INPUT_FIELD_SURFACE}
+              />
+              {errors.num_guests && (
+                <p className="text-sm text-red-500">{errors.num_guests}</p>
+              )}
+              {/* Capacity Warning - mostra solo se data, ora e numero ospiti sono compilati */}
+              {capacityCheck.errorMessage &&
+                formData.desired_date &&
+                formData.desired_time &&
+                formData.num_guests > 0 && (
+                  <div className="mt-3 rounded-lg border-2 border-red-300 bg-red-50 p-4 isolate">
+                    <div className="flex items-start gap-2">
+                      <span className="text-2xl">⚠️</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="mb-1 text-sm font-semibold text-red-800">Capacità insufficiente</p>
+                        <p className="text-sm text-red-700">{capacityCheck.errorMessage}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
+                )}
+            </AdminFormFieldCard>
+
+            {/* Posizionamento */}
+            <AdminFormFieldCard
+              title={
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+                  Posizionamento
+                </span>
+              }
+            >
+              <Select
+                value={formData.placement || 'none'}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, placement: value === 'none' ? '' : value })
+                }
+              >
+                <SelectTrigger
+                  id="placement"
+                  className="w-full border-gray-200"
+                  style={{
+                    ...ADMIN_INPUT_FIELD_SURFACE,
+                    border: '1px solid rgb(229 231 235)',
+                  }}
+                >
+                  <SelectValue placeholder="Seleziona sala (opzionale)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nessuna preferenza</SelectItem>
+                  <SelectItem value="Sala A">Sala A</SelectItem>
+                  <SelectItem value="Sala B">Sala B</SelectItem>
+                  <SelectItem value="Deorr">Deorr</SelectItem>
+                </SelectContent>
+              </Select>
+            </AdminFormFieldCard>
           </div>
 
-          {/* Posizionamento */}
-          <div className="space-y-3" style={{ paddingTop: '0.5rem' }}>
-            <label
-              htmlFor="placement"
-              className="block text-base md:text-lg text-warm-wood mb-2 flex items-center gap-2"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(1px)',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                display: 'inline-flex',
-                fontWeight: '700',
-                marginBottom: '0.5rem'
-              }}
-            >
-              <MapPin className="w-4 h-4" />
-              Posizionamento (opzionale)
-            </label>
-            <Select
-              value={formData.placement || 'none'}
-              onValueChange={(value) => setFormData({ ...formData, placement: value === 'none' ? '' : value })}
-            >
-              <SelectTrigger id="placement">
-                <SelectValue placeholder="Seleziona sala (opzionale)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Nessuna preferenza</SelectItem>
-                <SelectItem value="Sala A">Sala A</SelectItem>
-                <SelectItem value="Sala B">Sala B</SelectItem>
-                <SelectItem value="Deorr">Deorr</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
-
         </div>
       </div>
 
@@ -714,23 +804,18 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
       )}
 
       {/* Nota campi obbligatori */}
-      <div className="flex items-center justify-start gap-4 mt-4">
-        <p
-          className="text-xs text-gray-600"
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.5)',
-            backdropFilter: 'blur(6px)',
-            padding: '8px 16px',
-            borderRadius: '12px',
-            display: 'inline-block'
-          }}
-        >
-          * I campi contrassegnati sono obbligatori.
-        </p>
+      <div
+        className="mt-4 flex w-full items-center justify-start gap-4 rounded-xl border px-4 py-3 shadow-sm md:px-5"
+        style={ADMIN_BOOKING_WARM_SURFACE}
+      >
+        <p className="text-xs font-medium text-slate-800">* I campi contrassegnati sono obbligatori.</p>
       </div>
 
       {/* Submit Button - Responsive: full-width mobile, auto-width desktop */}
-      <div className="flex justify-center items-center mt-8 w-full">
+      <div
+        className="mt-8 flex w-full items-center justify-center rounded-xl border px-4 py-5 shadow-sm md:px-6"
+        style={ADMIN_BOOKING_WARM_SURFACE}
+      >
         <button
           type="submit"
           disabled={isPending}

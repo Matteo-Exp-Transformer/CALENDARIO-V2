@@ -44,6 +44,7 @@ Deno.serve(async (req: Request) => {
       dietary_restrictions,
       preset_menu,
       placement,
+      menu,
     } = body;
 
     // DB: client_email è NOT NULL (default ''). Non usare `|| null`: stringa vuota è falsy e diventerebbe NULL.
@@ -153,6 +154,7 @@ Deno.serve(async (req: Request) => {
       special_requests: special_requests || null,
       booking_type: booking_type || null,
       event_type: event_type || null,
+      menu: menu || null,
       menu_selection: menu_selection || null,
       menu_total_per_person: menu_total_per_person ?? null,
       menu_total_booking: menu_total_booking ?? null,

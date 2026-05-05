@@ -3,6 +3,7 @@ import type { BookingRequest } from '@/types/booking'
 import { formatBookingDateTime } from '../utils/formatDateTime'
 import { MapPin } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
+import { TimePicker24h } from '@/components/ui'
 
 interface Props {
   booking: BookingRequest
@@ -165,22 +166,22 @@ export const DetailsTab: React.FC<Props> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-gray-700">Ora Inizio</label>
-                <input
-                  type="time"
+                <TimePicker24h
+                  id="detail_start_time"
                   value={formData.startTime}
-                  onChange={(e) => onFormDataChange('startTime', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(v) => onFormDataChange('startTime', v)}
+                  className="rounded-lg border-gray-300 bg-white text-gray-900 focus-within:ring-blue-500 focus-within:border-transparent"
                   required
                 />
               </div>
 
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-gray-700">Ora Fine</label>
-                <input
-                  type="time"
+                <TimePicker24h
+                  id="detail_end_time"
                   value={formData.endTime}
-                  onChange={(e) => onFormDataChange('endTime', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(v) => onFormDataChange('endTime', v)}
+                  className="rounded-lg border-gray-300 bg-white text-gray-900 focus-within:ring-blue-500 focus-within:border-transparent"
                   required
                 />
               </div>
