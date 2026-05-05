@@ -24,13 +24,84 @@ import {
   startTimeToMinutesSinceMidnight,
 } from '../utils/dateUtils'
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
-import { getMenuPriceDisplayFromBooking } from '../utils/menuPricing'
+import { getMenuPriceDisplayFromBooking, getResolvedMenuPriceDisplay } from '../utils/menuPricing'
 
 /** Sfondo sezione calendario: arancio chiarissimo → giallo chiarissimo, più tenue del top bar admin */
 const CALENDAR_SECTION_WARM_SURFACE: React.CSSProperties = {
   backgroundImage:
     'linear-gradient(90deg, rgb(255 241 232) 0%, rgb(255 247 240) 48%, rgb(255 252 236) 100%)',
   borderColor: 'rgba(251, 191, 160, 0.32)',
+}
+
+/** True se la prenotazione prevede menù / rinfresco (non “solo tavolo”). */
+function digestBookingHasMenuContext(booking: BookingRequest): boolean {
+  if (booking.menu?.trim()) return true
+  if (booking.booking_type === 'rinfresco_laurea') return true
+  if (booking.preset_menu) return true
+  if ((booking.menu_total_per_person ?? 0) > 0) return true
+  return !!(booking.menu_selection?.items && booking.menu_selection.items.length > 0)
+}
+
+function DigestBookingListRow({
+  booking,
+  onOpen,
+  showMenuPricing = false,
+}: {
+  booking: BookingRequest
+  onOpen: (b: BookingRequest) => void
+  showMenuPricing?: boolean
+}) {
+  const calEv = transformBookingToCalendarEvent(booking)
+  const menuPriceRow = showMenuPricing ? getResolvedMenuPriceDisplay(booking) : null
+
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(booking)}
+      className="w-full rounded-lg border text-left transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-warm-wood focus:ring-offset-2"
+      style={{
+        backgroundColor: calEv.backgroundColor,
+        borderColor: calEv.borderColor,
+        color: calEv.textColor ?? '#fff',
+      }}
+    >
+      <div className="px-2 py-1.5 text-xs overflow-hidden">
+        <div className="flex items-center gap-1.5 font-semibold truncate mb-1">
+          <Users className="w-3 h-3 flex-shrink-0" />
+          <span className="truncate">{booking.client_name}</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs opacity-90 truncate">
+          <span>{booking.num_guests} ospiti</span>
+          {booking.menu && (
+            <>
+              <span>•</span>
+              <span className="truncate">{booking.menu}</span>
+            </>
+          )}
+          {(booking.desired_time || booking.confirmed_start) && (
+            <>
+              <span>•</span>
+              <span>{getAccurateStartTime(booking)}</span>
+            </>
+          )}
+        </div>
+        {menuPriceRow && (
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-white/25 pt-1.5 text-xs font-semibold opacity-95 leading-snug">
+            <span className="inline-flex items-center gap-1">
+              <Tag className="h-3.5 w-3.5 flex-shrink-0 opacity-90" aria-hidden />
+              <span>{menuPriceRow.prezzoMenuLabel}</span>
+            </span>
+            {menuPriceRow.prezzoTotaleLabel && (
+              <>
+                <span className="opacity-75">·</span>
+                <span>Tot. {menuPriceRow.prezzoTotaleLabel}</span>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </button>
+  )
 }
 
 interface BookingCalendarProps {
@@ -145,9 +216,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     }
   }, [selectedDate, bookings])
 
-  /** Stessi criteri del calendario: accettate con inizio/fine; ordinate per orario di inizio */
-  const selectedDayDigestBookings = useMemo(() => {
-    return bookings
+  /** Stessi criteri del calendario: accettate con inizio/fine; ordinate per ora di inizio; divise menù vs solo tavolo */
+  const { selectedDayDigestBookings, digestWithMenu, digestTableOnly } = useMemo(() => {
+    const sorted = bookings
       .filter((b) => b.status === 'accepted' && b.confirmed_start && b.confirmed_end)
       .filter((b) => extractDateFromISO(b.confirmed_start!) === selectedDate)
       .sort((a, b) => {
@@ -155,7 +226,17 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
         const mb = startTimeToMinutesSinceMidnight(getAccurateStartTime(b)) ?? 24 * 60
         return ma - mb
       })
+    return {
+      selectedDayDigestBookings: sorted,
+      digestWithMenu: sorted.filter(digestBookingHasMenuContext),
+      digestTableOnly: sorted.filter((b) => !digestBookingHasMenuContext(b)),
+    }
   }, [bookings, selectedDate])
+
+  const openDigestBooking = (booking: BookingRequest) => {
+    setSelectedBooking(booking)
+    setIsModalOpen(true)
+  }
 
   const config = {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
@@ -369,48 +450,57 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
               </span>
             </h4>
             {selectedDayDigestBookings.length > 0 ? (
-              <div className="max-h-[min(420px,50vh)] overflow-y-auto space-y-2 rounded-xl border border-slate-200 bg-white/80 p-3 shadow-inner">
-                {selectedDayDigestBookings.map((booking) => {
-                  const calEv = transformBookingToCalendarEvent(booking)
-                  return (
-                    <button
-                      key={booking.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedBooking(booking)
-                        setIsModalOpen(true)
-                      }}
-                      className="w-full rounded-lg border text-left transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-warm-wood focus:ring-offset-2"
-                      style={{
-                        backgroundColor: calEv.backgroundColor,
-                        borderColor: calEv.borderColor,
-                        color: calEv.textColor ?? '#fff',
-                      }}
-                    >
-                      <div className="px-2 py-1.5 text-xs overflow-hidden">
-                        <div className="flex items-center gap-1.5 font-semibold truncate mb-1">
-                          <Users className="w-3 h-3 flex-shrink-0" />
-                          <span className="truncate">{booking.client_name}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs opacity-90 truncate">
-                          <span>{booking.num_guests} ospiti</span>
-                          {booking.menu && (
-                            <>
-                              <span>•</span>
-                              <span className="truncate">{booking.menu}</span>
-                            </>
-                          )}
-                          {(booking.desired_time || booking.confirmed_start) && (
-                            <>
-                              <span>•</span>
-                              <span>{getAccurateStartTime(booking)}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  )
-                })}
+              <div className="space-y-8">
+                <section aria-labelledby="digest-with-menu-heading">
+                  <div
+                    id="digest-with-menu-heading"
+                    className="mb-3 rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2 text-center shadow-sm"
+                  >
+                    <h5 className="text-sm font-semibold tracking-wide text-amber-950">
+                      Prenotazioni con menù
+                    </h5>
+                  </div>
+                  {digestWithMenu.length > 0 ? (
+                    <div className="max-h-[min(320px,44vh)] overflow-y-auto space-y-2 rounded-xl border border-slate-200 bg-white/80 p-3 shadow-inner">
+                      {digestWithMenu.map((booking) => (
+                        <DigestBookingListRow
+                          key={booking.id}
+                          booking={booking}
+                          onOpen={openDigestBooking}
+                          showMenuPricing
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-sm text-gray-500 italic py-6 rounded-xl border border-dashed border-slate-200 bg-slate-50/80">
+                      Nessuna prenotazione con menù per questa data.
+                    </p>
+                  )}
+                </section>
+
+                <div className="border-t-2 border-slate-200 pt-8 mt-2" aria-hidden />
+
+                <section aria-labelledby="digest-table-only-heading">
+                  <div
+                    id="digest-table-only-heading"
+                    className="mb-3 rounded-lg border border-slate-300 bg-slate-100/95 px-3 py-2 text-center shadow-sm"
+                  >
+                    <h5 className="text-sm font-semibold tracking-wide text-slate-800">
+                      Solo tavolo
+                    </h5>
+                  </div>
+                  {digestTableOnly.length > 0 ? (
+                    <div className="max-h-[min(320px,44vh)] overflow-y-auto space-y-2 rounded-xl border border-slate-200 bg-white/80 p-3 shadow-inner">
+                      {digestTableOnly.map((booking) => (
+                        <DigestBookingListRow key={booking.id} booking={booking} onOpen={openDigestBooking} />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-sm text-gray-500 italic py-6 rounded-xl border border-dashed border-slate-200 bg-slate-50/80">
+                      Nessuna prenotazione solo tavolo per questa data.
+                    </p>
+                  )}
+                </section>
               </div>
             ) : (
               <p className="text-center text-sm text-gray-500 italic py-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/80">
