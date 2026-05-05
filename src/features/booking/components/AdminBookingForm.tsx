@@ -42,10 +42,11 @@ const ADMIN_CARD_PAD_X = 44
 /** Spazio (px) fra select Tipologia e blocco card Data/Ora/… — inline per essere sempre visibile. */
 const ADMIN_GAP_TIPOLOGIA_TO_CARDS_PX = 28
 
-/** Larghezza blocco (~1/3 schermo dopo riduzione di 2/3), centrato nella colonna. */
+/** Larghezza blocco nominale ~1/3 viewport; pavimento 18.75rem (~300px) così non collassa come solo 33vw su schermi stretti (es. ~99px). */
 const ADMIN_FORM_NARROW_COLUMN_STYLE = {
-  width: '33vw',
+  width: 'min(100%, max(33vw, 18.75rem))',
   maxWidth: '100%',
+  minWidth: 'min(100%, 18.75rem)',
   marginLeft: 'auto',
   marginRight: 'auto',
   boxSizing: 'border-box' as const,
