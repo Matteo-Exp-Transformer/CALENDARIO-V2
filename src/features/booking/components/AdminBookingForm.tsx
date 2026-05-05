@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { cn } from '@/lib/utils'
 import { Input, TimePicker24h } from '@/components/ui'
 import type { BookingRequestInput } from '@/types/booking'
 import { useCreateAdminBooking } from '../hooks/useAdminBookingRequests'
@@ -38,9 +39,6 @@ const ADMIN_INPUT_FIELD_SURFACE: React.CSSProperties = {
 const ADMIN_SECTION_TITLE_RADIUS = 16
 /** Margine interno card sinistro/destro (px) — solo inline style, come raggio e gap. */
 const ADMIN_CARD_PAD_X = 44
-
-/** Spazio (px) fra select Tipologia e blocco card Data/Ora/… — inline per essere sempre visibile. */
-const ADMIN_GAP_TIPOLOGIA_TO_CARDS_PX = 28
 
 /** Larghezza blocco nominale ~1/3 viewport; pavimento 18.75rem (~300px) così non collassa come solo 33vw su schermi stretti (es. ~99px). */
 const ADMIN_FORM_NARROW_COLUMN_STYLE = {
@@ -565,63 +563,48 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
             Dettagli Prenotazione
           </h2>
 
-          {/* Tipologia di Prenotazione - DROPDOWN */}
-          <div className="space-y-3">
-            <label
-              className="block text-base md:text-lg font-medium text-warm-wood mb-2"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                backdropFilter: 'blur(6px)',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                display: 'inline-block'
-              }}
-            >
-              Tipologia di Prenotazione *
-            </label>
-            <select
-              id="booking_type"
-              value={formData.booking_type}
-              onChange={(e) => {
-                setFormData({ ...formData, booking_type: e.target.value as 'tavolo' | 'rinfresco_laurea' })
-                setErrors({ ...errors, booking_type: '' })
-              }}
-              className="block rounded-full border bg-white shadow-sm transition-all"
-              style={{
-                borderColor: 'rgba(0,0,0,0.2)',
-                height: '56px',
-                padding: '16px',
-                fontSize: '16px',
-                fontWeight: '500',
-                backgroundColor: '#ffffff',
-                backdropFilter: 'none',
-                color: 'black',
-                width: '100%',
-                maxWidth: '100%',
-                minWidth: 0,
-                boxSizing: 'border-box',
-              }}
-              onFocus={(e) => (e.target as HTMLSelectElement).style.borderColor = '#8B6914'}
-              onBlur={(e) => (e.target as HTMLSelectElement).style.borderColor = 'rgba(0,0,0,0.2)'}
-            >
-              <option value="tavolo">Prenota un Tavolo</option>
-              <option value="rinfresco_laurea">Rinfresco di Laurea</option>
-            </select>
-            {errors.booking_type && (
-              <p className="text-sm text-red-500">{errors.booking_type}</p>
-            )}
-          </div>
-
           <div
             className="bg-white"
             style={{
               display: 'flex',
               flexDirection: 'column',
               gap: '14px',
-              marginTop: ADMIN_GAP_TIPOLOGIA_TO_CARDS_PX,
               boxSizing: 'border-box',
             }}
           >
+            <AdminFormFieldCard title="Tipologia di Prenotazione *">
+              <label htmlFor="booking_type" className="sr-only">
+                Tipologia di Prenotazione
+              </label>
+              <select
+                id="booking_type"
+                value={formData.booking_type}
+                onChange={(e) => {
+                  setFormData({ ...formData, booking_type: e.target.value as 'tavolo' | 'rinfresco_laurea' })
+                  setErrors({ ...errors, booking_type: '' })
+                }}
+                required
+                aria-required="true"
+                className={cn(
+                  'block w-full cursor-pointer border border-slate-200 bg-white px-4 py-3 shadow-sm transition-colors duration-150',
+                  'text-base font-medium text-slate-900',
+                  'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-400',
+                  errors.booking_type && '!border-red-500 focus:!ring-red-500'
+                )}
+                style={{
+                  ...ADMIN_INPUT_FIELD_SURFACE,
+                  minHeight: '48px',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <option value="tavolo">Prenota un Tavolo</option>
+                <option value="rinfresco_laurea">Rinfresco di Laurea</option>
+              </select>
+              {errors.booking_type && (
+                <p className="text-sm text-red-500">{errors.booking_type}</p>
+              )}
+            </AdminFormFieldCard>
+
             {/* Data */}
             <AdminFormFieldCard title="Data">
               <Input
