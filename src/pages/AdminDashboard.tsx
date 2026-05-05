@@ -115,19 +115,7 @@ export const AdminDashboard: React.FC = () => {
             className="relative flex items-center justify-between h-[106px] rounded-xl shadow-sm border"
             style={ADMIN_WARM_GRADIENT_SURFACE}
           >
-            <div className="pl-4 md:pl-5 text-xs sm:text-sm font-semibold text-slate-700">
-              Sistema Gestionale Prenotazioni
-            </div>
-
-            {/* Brand centered */}
-            <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-center">
-              <h1 className="text-base font-semibold italic font-serif tracking-wide text-slate-800 leading-tight">
-                {restaurantName || 'Booking SaaS'}
-              </h1>
-            </div>
-
-            {/* User menu */}
-            <div className="flex items-center gap-3 pr-4 md:pr-5">
+            <div className="flex h-[78px] flex-col items-start justify-between pl-4 md:pl-5">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center">
                   <User className="w-3.5 h-3.5 text-primary-600" />
@@ -145,6 +133,15 @@ export const AdminDashboard: React.FC = () => {
                 <span>Log-out</span>
               </button>
             </div>
+
+            {/* Brand centered */}
+            <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-center">
+              <h1 className="text-base font-semibold italic font-serif tracking-wide text-slate-800 leading-tight">
+                {restaurantName || 'Booking SaaS'}
+              </h1>
+            </div>
+
+            <div className="w-0 pr-4 md:pr-5" />
           </div>
 
           {/* Stats + Nav */}
