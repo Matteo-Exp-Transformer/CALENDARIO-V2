@@ -34,6 +34,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   const calendarRef = useRef<FullCalendar>(null)
   const [selectedBooking, setSelectedBooking] = useState<BookingRequest | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const currentDateLabel = format(new Date(), 'dd/MM/yy')
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     // Set today's date as default, or initialDate if provided
     return initialDate || new Date().toISOString().split('T')[0]
@@ -140,9 +141,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
     initialView: currentView,
     headerToolbar: {
-      left: 'prev,next today',
+      left: '',
       center: 'title',
-      right: '',
+      right: 'prev,next',
     },
     height: 'auto',
     locale: 'it',
@@ -225,6 +226,21 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     }
   }
 
+  const handleGoToToday = () => {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    const todayStr = `${year}-${month}-${day}`
+
+    setSelectedDate(todayStr)
+
+    const calendarApi = calendarRef.current?.getApi()
+    if (calendarApi) {
+      calendarApi.gotoDate(today)
+    }
+  }
+
   const viewButtonClass = (view: typeof currentView) => {
     const isActive = currentView === view
     return `px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
@@ -243,56 +259,55 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-warm-beige">
           {/* Header Responsive — stesso warm del top bar AdminDashboard */}
           <div
-            className="mb-6 flex flex-col items-start gap-3 rounded-xl border px-4 py-4 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4"
+            className="mb-6 flex flex-col items-center gap-3 rounded-xl border px-4 py-4 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4"
             style={CALENDAR_SECTION_WARM_SURFACE}
           >
             {/* Icona + Titolo */}
-            <div className="flex items-center gap-4 flex-1">
+            <div
+              className="relative flex w-full items-center py-3 sm:flex-1"
+              style={{ minHeight: '48px' }}
+            >
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-warm-wood to-warm-orange flex items-center justify-center shadow-md">
                 <Calendar className="h-7 w-7 text-white" />
               </div>
-              <div>
+              <span className="ml-3 text-sm font-semibold text-warm-wood sm:text-base">
+                {currentDateLabel}
+              </span>
+              <div className="absolute left-1/2 -translate-x-1/2 text-center">
                 <h2 className="text-2xl sm:text-3xl font-serif font-bold text-warm-wood">
                   Calendario Prenotazioni
                 </h2>
-                <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                  Vista completa delle prenotazioni accettate
-                </p>
+              </div>
+              <div className="ml-auto md:hidden">
+                <Select value={currentView} onValueChange={handleViewChange}>
+                  <SelectTrigger
+                    className={[
+                      'w-[140px] !border-[var(--color-primary)] !bg-[var(--color-primary)] !text-white shadow-sm [&>span]:!text-white [&_[data-placeholder]]:!text-white',
+                      'hover:!border-[var(--color-primary-dark)] hover:!bg-[var(--color-primary-dark)] hover:shadow-md',
+                      'focus:!border-[var(--color-primary-dark)] focus:ring-4 focus:ring-white/30 focus:ring-offset-0',
+                      '[&_svg]:!text-white/90 disabled:!opacity-60',
+                    ].join(' ')}
+                    style={{ color: '#ffffff' }}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent
+                    className="bg-white !bg-white bg-opacity-100"
+                    style={{ backgroundColor: '#ffffff', opacity: 1, zIndex: 9999 }}
+                  >
+                    <SelectItem value="dayGridMonth">Mese</SelectItem>
+                    <SelectItem value="timeGridWeek">Settimana</SelectItem>
+                    <SelectItem value="timeGridDay">Giorno</SelectItem>
+                    <SelectItem value="listWeek">Lista</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            {/* Badge + View Controls */}
-            <div className="flex items-center justify-between gap-6 sm:gap-8 w-full sm:w-auto">
-              {/* Badge conteggio */}
-              <span className="px-4 py-2 bg-gradient-to-r from-olive-green to-warm-wood text-white rounded-xl text-sm font-semibold shadow-md">
-                {bookings.length} prenotazioni
-              </span>
-
-              {/* Dropdown Vista - Mobile only */}
-              <Select value={currentView} onValueChange={handleViewChange}>
-                <SelectTrigger
-                  className={[
-                    'w-[140px] md:hidden !border-[var(--color-primary)] !bg-[var(--color-primary)] !text-white shadow-sm',
-                    'hover:!border-[var(--color-primary-dark)] hover:!bg-[var(--color-primary-dark)] hover:shadow-md',
-                    'focus:!border-[var(--color-primary-dark)] focus:ring-4 focus:ring-white/30 focus:ring-offset-0',
-                    '[&_svg]:!text-white/90 disabled:!opacity-60',
-                  ].join(' ')}
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent
-                  className="bg-white !bg-white bg-opacity-100"
-                  style={{ backgroundColor: '#ffffff', opacity: 1, zIndex: 9999 }}
-                >
-                  <SelectItem value="dayGridMonth">Mese</SelectItem>
-                  <SelectItem value="timeGridWeek">Settimana</SelectItem>
-                  <SelectItem value="timeGridDay">Giorno</SelectItem>
-                  <SelectItem value="listWeek">Lista</SelectItem>
-                </SelectContent>
-              </Select>
-
+            {/* View Controls */}
+            <div className="hidden md:flex items-center justify-end w-full sm:w-auto">
               {/* Pulsanti Vista - Desktop only */}
-              <div className="hidden md:flex gap-2">
+              <div className="flex gap-2">
                 <button onClick={() => handleViewChange('dayGridMonth')} className={viewButtonClass('dayGridMonth')}>
                   Mese
                 </button>
@@ -309,7 +324,15 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
             </div>
           </div>
 
-          <div className="booking-calendar-fc [&_.fc-event]:cursor-pointer">
+          <div className="booking-calendar-fc relative [&_.fc-event]:cursor-pointer">
+            <button
+              type="button"
+              onClick={handleGoToToday}
+              className="absolute left-0 top-0 z-20 inline-flex items-center justify-center rounded-lg border border-[var(--color-primary)] bg-[var(--color-primary)] text-sm font-medium leading-none text-white shadow-sm transition-colors hover:border-[var(--color-primary-dark)] hover:bg-[var(--color-primary-dark)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2"
+              style={{ height: 40, minHeight: 40, minWidth: 88, padding: '0 14px', borderRadius: 12, color: '#ffffff' }}
+            >
+              Oggi
+            </button>
             <FullCalendar ref={calendarRef} {...config} events={events} />
           </div>
         </div>
