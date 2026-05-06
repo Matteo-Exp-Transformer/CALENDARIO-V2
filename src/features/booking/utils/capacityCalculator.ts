@@ -1,6 +1,7 @@
 import type { BookingRequest, TimeSlot, TimeSlotCapacity, DailyCapacity } from '@/types/booking'
 import { CAPACITY_CONFIG } from '../constants/capacity'
 import { extractDateFromISO } from './dateUtils'
+import { DEFAULT_BOOKING_TIME_SLOTS, type BookingTimeSlots } from './bookingTimeSlots'
 
 // Helper: parse time string to minutes
 function parseTime(time: string): number {
@@ -27,19 +28,23 @@ function extractTimeFromISO(isoString: string): string {
 
 // Get slots occupied by a booking
 // A booking occupies a time slot if it overlaps with that slot's time range
-export function getSlotsOccupiedByBooking(start: string, end: string): TimeSlot[] {
+export function getSlotsOccupiedByBooking(
+  start: string,
+  end: string,
+  slotConfig: BookingTimeSlots = DEFAULT_BOOKING_TIME_SLOTS
+): TimeSlot[] {
   const startTime = extractTimeFromISO(start)
   const endTime = extractTimeFromISO(end)
   
   const startMinutes = parseTime(startTime)
   const endMinutes = parseTime(endTime)
   
-  const morningStart = parseTime(CAPACITY_CONFIG.MORNING_START)
-  const morningEnd = parseTime(CAPACITY_CONFIG.MORNING_END)
-  const afternoonStart = parseTime(CAPACITY_CONFIG.AFTERNOON_START)
-  const afternoonEnd = parseTime(CAPACITY_CONFIG.AFTERNOON_END)
-  const eveningStart = parseTime(CAPACITY_CONFIG.EVENING_START)
-  const eveningEnd = parseTime(CAPACITY_CONFIG.EVENING_END)
+  const morningStart = parseTime(slotConfig.morningStart)
+  const morningEnd = parseTime(slotConfig.morningEnd)
+  const afternoonStart = parseTime(slotConfig.afternoonStart)
+  const afternoonEnd = parseTime(slotConfig.afternoonEnd)
+  const eveningStart = parseTime(slotConfig.eveningStart)
+  const eveningEnd = parseTime(slotConfig.eveningEnd)
   
   const slots: TimeSlot[] = []
   
@@ -67,14 +72,17 @@ export function getSlotsOccupiedByBooking(start: string, end: string): TimeSlot[
 // Get the time slot where a booking STARTS (for display purposes only)
 // Unlike getSlotsOccupiedByBooking, this returns only ONE slot based on start time
 // Capacity calculations should continue using getSlotsOccupiedByBooking
-export function getStartSlotForBooking(start: string): TimeSlot {
+export function getStartSlotForBooking(
+  start: string,
+  slotConfig: BookingTimeSlots = DEFAULT_BOOKING_TIME_SLOTS
+): TimeSlot {
   const startTime = extractTimeFromISO(start)
   const startMinutes = parseTime(startTime)
 
-  const morningStart = parseTime(CAPACITY_CONFIG.MORNING_START) // 10:00
-  const morningEnd = parseTime(CAPACITY_CONFIG.MORNING_END) // 14:30
-  const afternoonStart = parseTime(CAPACITY_CONFIG.AFTERNOON_START) // 14:31
-  const afternoonEnd = parseTime(CAPACITY_CONFIG.AFTERNOON_END) // 18:30
+  const morningStart = parseTime(slotConfig.morningStart)
+  const morningEnd = parseTime(slotConfig.morningEnd)
+  const afternoonStart = parseTime(slotConfig.afternoonStart)
+  const afternoonEnd = parseTime(slotConfig.afternoonEnd)
 
   // Check which slot the booking starts in
   // Morning: 10:00 - 14:30
@@ -93,7 +101,11 @@ export function getStartSlotForBooking(start: string): TimeSlot {
 }
 
 // Calculate daily capacity for a specific date
-export function calculateDailyCapacity(date: string, bookings: BookingRequest[]): DailyCapacity {
+export function calculateDailyCapacity(
+  date: string,
+  bookings: BookingRequest[],
+  slotConfig: BookingTimeSlots = DEFAULT_BOOKING_TIME_SLOTS
+): DailyCapacity {
   const morning: TimeSlotCapacity = { 
     slot: 'morning', 
     capacity: CAPACITY_CONFIG.MORNING_CAPACITY, 
@@ -121,7 +133,7 @@ export function calculateDailyCapacity(date: string, bookings: BookingRequest[])
 
   for (const booking of dayBookings) {
     if (!booking.confirmed_start || !booking.confirmed_end) continue
-    const slots = getSlotsOccupiedByBooking(booking.confirmed_start, booking.confirmed_end)
+    const slots = getSlotsOccupiedByBooking(booking.confirmed_start, booking.confirmed_end, slotConfig)
     const numGuests = booking.num_guests || 0
     for (const slot of slots) {
       if (slot === 'morning') { morning.occupied += numGuests }

@@ -2,12 +2,18 @@ import { z } from 'zod'
 import type { Json } from '@/types/database'
 import type { BusinessHours, BusinessHourSlot } from '@/lib/businessHours'
 import { getDefaultBusinessHours, parseBusinessHours } from '@/lib/businessHours'
+import {
+  DEFAULT_BOOKING_TIME_SLOTS,
+  type BookingTimeSlots,
+  validateBookingTimeSlots,
+} from '@/features/booking/utils/bookingTimeSlots'
 
 export const RESTAURANT_SETTING_KEYS_V1 = [
   'restaurant_name',
   'timezone',
   'booking_window_days',
   'daily_guest_limit',
+  'booking_time_slots',
   'business_hours',
   'contact_email',
   'contact_phone',
@@ -62,6 +68,14 @@ const dailyGuestLimitSchema = z.coerce
   .int('Deve essere un intero')
   .min(1, 'Minimo 1 ospite')
   .max(1000, 'Massimo 1000 ospiti')
+const bookingTimeSlotsSchema = z.object({
+  morningStart: timeHm,
+  morningEnd: timeHm,
+  afternoonStart: timeHm,
+  afternoonEnd: timeHm,
+  eveningStart: timeHm,
+  eveningEnd: timeHm,
+})
 
 function parseJsonScalarString(raw: unknown): string {
   if (raw == null) return ''
@@ -98,11 +112,20 @@ function parseBusinessHoursFromDb(raw: unknown): BusinessHours {
   return getDefaultBusinessHours()
 }
 
+function parseBookingTimeSlotsFromDb(raw: unknown): BookingTimeSlots {
+  const parsed = bookingTimeSlotsSchema.safeParse(raw)
+  if (!parsed.success) return DEFAULT_BOOKING_TIME_SLOTS
+  const error = validateBookingTimeSlots(parsed.data)
+  if (error) return DEFAULT_BOOKING_TIME_SLOTS
+  return parsed.data
+}
+
 export type RestaurantSettingValueMap = {
   restaurant_name: string
   timezone: string
   booking_window_days: number
   daily_guest_limit: number
+  booking_time_slots: BookingTimeSlots
   business_hours: BusinessHours
   contact_email: string
   contact_phone: string
@@ -153,6 +176,16 @@ export const restaurantSettingRegistry: {
     validate: (value) => {
       const r = dailyGuestLimitSchema.safeParse(value)
       return r.success ? null : r.error.issues[0]?.message ?? 'Valore non valido'
+    },
+  },
+  booking_time_slots: {
+    key: 'booking_time_slots',
+    parseFromDb: (raw) => parseBookingTimeSlotsFromDb(raw),
+    serializeToDb: (value) => value as Json,
+    validate: (value) => {
+      const r = bookingTimeSlotsSchema.safeParse(value)
+      if (!r.success) return r.error.issues[0]?.message ?? 'Fasce orarie non valide'
+      return validateBookingTimeSlots(r.data)
     },
   },
   business_hours: {

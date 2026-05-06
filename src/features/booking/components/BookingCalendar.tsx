@@ -23,6 +23,11 @@ import {
   startTimeToMinutesSinceMidnight,
 } from '../utils/dateUtils'
 import { getResolvedMenuPriceDisplay } from '../utils/menuPricing'
+import {
+  DEFAULT_BOOKING_TIME_SLOTS,
+  getBookingTimeSlotLabel,
+} from '../utils/bookingTimeSlots'
+import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 
 /** Sfondo sezione calendario: arancio chiarissimo → giallo chiarissimo, più tenue del top bar admin */
 const CALENDAR_SECTION_WARM_SURFACE: React.CSSProperties = {
@@ -176,6 +181,9 @@ interface BookingCalendarProps {
 }
 
 export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, initialDate }) => {
+  const bookingSlotsQuery = useRestaurantSetting('booking_time_slots')
+  const bookingSlots = bookingSlotsQuery.data ?? DEFAULT_BOOKING_TIME_SLOTS
+
   const splitDigestBySlot = (digestBookings: BookingRequest[]) => {
     const morning: BookingRequest[] = []
     const afternoon: BookingRequest[] = []
@@ -184,7 +192,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     for (const booking of digestBookings) {
       const startTime = getAccurateStartTime(booking)
       const fakeISOStart = `2025-01-01T${startTime}:00`
-      const startSlot = getStartSlotForBooking(fakeISOStart)
+      const startSlot = getStartSlotForBooking(fakeISOStart, bookingSlots)
 
       if (startSlot === 'morning') morning.push(booking)
       else if (startSlot === 'afternoon') afternoon.push(booking)
@@ -261,7 +269,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   // Get bookings and capacity for selected date
   const selectedDateData = useMemo(() => {
     const acceptedBookings = bookings.filter(b => b.status === 'accepted')
-    const dayCapacity = calculateDailyCapacity(selectedDate, acceptedBookings)
+    const dayCapacity = calculateDailyCapacity(selectedDate, acceptedBookings, bookingSlots)
     
     const dayBookings = acceptedBookings.filter((booking) => {
       if (!booking.confirmed_start) return false
@@ -284,7 +292,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       const fakeISOStart = `2025-01-01T${startTime}:00`
 
       // Display booking only in the slot where it STARTS
-      const startSlot = getStartSlotForBooking(fakeISOStart)
+      const startSlot = getStartSlotForBooking(fakeISOStart, bookingSlots)
 
       if (startSlot === 'morning') morningBookings.push(booking)
       else if (startSlot === 'afternoon') afternoonBookings.push(booking)
@@ -298,7 +306,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       afternoonBookings,
       eveningBookings,
     }
-  }, [selectedDate, bookings])
+  }, [selectedDate, bookings, bookingSlots])
 
   /** Stessi criteri del calendario: accettate con inizio/fine; ordinate per ora di inizio; divise menù vs solo tavolo */
   const { selectedDayDigestBookings, digestWithMenu, digestTableOnly } = useMemo(() => {
@@ -316,8 +324,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       digestTableOnly: sorted.filter((b) => !digestBookingHasMenuContext(b)),
     }
   }, [bookings, selectedDate])
-  const digestWithMenuBySlot = useMemo(() => splitDigestBySlot(digestWithMenu), [digestWithMenu])
-  const digestTableOnlyBySlot = useMemo(() => splitDigestBySlot(digestTableOnly), [digestTableOnly])
+  const digestWithMenuBySlot = useMemo(() => splitDigestBySlot(digestWithMenu), [digestWithMenu, bookingSlots])
+  const digestTableOnlyBySlot = useMemo(() => splitDigestBySlot(digestTableOnly), [digestTableOnly, bookingSlots])
 
   const openDigestBooking = (booking: BookingRequest) => {
     setSelectedBooking(booking)
@@ -553,19 +561,19 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           className="flex items-center justify-center px-3 text-center shadow-sm"
                           style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
                         >
-                          Mattina 10:00 - 14:30
+                          {getBookingTimeSlotLabel('morning', bookingSlots)}
                         </h6>
                         <h6
                           className="flex items-center justify-center px-3 text-center shadow-sm"
                           style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(249, 115, 22)', border: '1px solid rgb(194, 65, 12)', color: '#ffffff' }}
                         >
-                          Pomeriggio 14:31 - 18:30
+                          {getBookingTimeSlotLabel('afternoon', bookingSlots)}
                         </h6>
                         <h6
                           className="flex items-center justify-center px-3 text-center shadow-sm"
                           style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(56, 189, 248)', border: '1px solid rgb(2, 132, 199)', color: '#ffffff' }}
                         >
-                          Sera 18:31 - 23:30
+                          {getBookingTimeSlotLabel('evening', bookingSlots)}
                         </h6>
                       </div>
                       <div className="mt-2 hidden min-[641px]:block">
@@ -617,7 +625,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                             className="flex items-center justify-center px-3 text-center shadow-sm"
                             style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
                           >
-                            Mattina 10:00 - 14:30
+                            {getBookingTimeSlotLabel('morning', bookingSlots)}
                           </h6>
                           {digestWithMenuBySlot.morning.map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
@@ -636,7 +644,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                             className="flex items-center justify-center px-3 text-center shadow-sm"
                             style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(249, 115, 22)', border: '1px solid rgb(194, 65, 12)', color: '#ffffff' }}
                           >
-                            Pomeriggio 14:31 - 18:30
+                            {getBookingTimeSlotLabel('afternoon', bookingSlots)}
                           </h6>
                           {digestWithMenuBySlot.afternoon.map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
@@ -655,7 +663,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                             className="flex items-center justify-center px-3 text-center shadow-sm"
                             style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(56, 189, 248)', border: '1px solid rgb(2, 132, 199)', color: '#ffffff' }}
                           >
-                            Sera 18:31 - 23:30
+                            {getBookingTimeSlotLabel('evening', bookingSlots)}
                           </h6>
                           {digestWithMenuBySlot.evening.map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
@@ -696,19 +704,19 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           className="flex items-center justify-center px-3 text-center shadow-sm"
                           style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
                         >
-                          Mattina 10:00 - 14:30
+                          {getBookingTimeSlotLabel('morning', bookingSlots)}
                         </h6>
                         <h6
                           className="flex items-center justify-center px-3 text-center shadow-sm"
                           style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(249, 115, 22)', border: '1px solid rgb(194, 65, 12)', color: '#ffffff' }}
                         >
-                          Pomeriggio 14:31 - 18:30
+                          {getBookingTimeSlotLabel('afternoon', bookingSlots)}
                         </h6>
                         <h6
                           className="flex items-center justify-center px-3 text-center shadow-sm"
                           style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(56, 189, 248)', border: '1px solid rgb(2, 132, 199)', color: '#ffffff' }}
                         >
-                          Sera 18:31 - 23:30
+                          {getBookingTimeSlotLabel('evening', bookingSlots)}
                         </h6>
                       </div>
                       <div className="mt-2 hidden min-[641px]:block">
@@ -757,7 +765,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                             className="flex items-center justify-center px-3 text-center shadow-sm"
                             style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
                           >
-                            Mattina 10:00 - 14:30
+                            {getBookingTimeSlotLabel('morning', bookingSlots)}
                           </h6>
                           {digestTableOnlyBySlot.morning.map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
@@ -775,7 +783,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                             className="flex items-center justify-center px-3 text-center shadow-sm"
                             style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(249, 115, 22)', border: '1px solid rgb(194, 65, 12)', color: '#ffffff' }}
                           >
-                            Pomeriggio 14:31 - 18:30
+                            {getBookingTimeSlotLabel('afternoon', bookingSlots)}
                           </h6>
                           {digestTableOnlyBySlot.afternoon.map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
@@ -793,7 +801,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                             className="flex items-center justify-center px-3 text-center shadow-sm"
                             style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(56, 189, 248)', border: '1px solid rgb(2, 132, 199)', color: '#ffffff' }}
                           >
-                            Sera 18:31 - 23:30
+                            {getBookingTimeSlotLabel('evening', bookingSlots)}
                           </h6>
                           {digestTableOnlyBySlot.evening.map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">

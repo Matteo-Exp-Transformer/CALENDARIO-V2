@@ -3,6 +3,7 @@ import type { BookingRequest, TimeSlot, AvailabilityCheck } from '@/types/bookin
 import { CAPACITY_CONFIG } from '../constants/capacity'
 import { extractDateFromISO } from '../utils/dateUtils'
 import { useRestaurantSetting } from './useRestaurantSetting'
+import { DEFAULT_BOOKING_TIME_SLOTS, type BookingTimeSlots } from '../utils/bookingTimeSlots'
 
 interface UseCapacityCheckParams {
   date: string
@@ -21,16 +22,20 @@ function parseTime(time: string): number {
 
 // Get slots occupied by a booking based on time strings (HH:MM format)
 // A booking occupies a time slot if it overlaps with that slot's time range
-function getSlotsOccupiedByTimeString(startTime: string, endTime: string): TimeSlot[] {
+function getSlotsOccupiedByTimeString(
+  startTime: string,
+  endTime: string,
+  slotConfig: BookingTimeSlots
+): TimeSlot[] {
   const startMinutes = parseTime(startTime)
   const endMinutes = parseTime(endTime)
   
-  const morningStart = parseTime(CAPACITY_CONFIG.MORNING_START)
-  const morningEnd = parseTime(CAPACITY_CONFIG.MORNING_END)
-  const afternoonStart = parseTime(CAPACITY_CONFIG.AFTERNOON_START)
-  const afternoonEnd = parseTime(CAPACITY_CONFIG.AFTERNOON_END)
-  const eveningStart = parseTime(CAPACITY_CONFIG.EVENING_START)
-  const eveningEnd = parseTime(CAPACITY_CONFIG.EVENING_END)
+  const morningStart = parseTime(slotConfig.morningStart)
+  const morningEnd = parseTime(slotConfig.morningEnd)
+  const afternoonStart = parseTime(slotConfig.afternoonStart)
+  const afternoonEnd = parseTime(slotConfig.afternoonEnd)
+  const eveningStart = parseTime(slotConfig.eveningStart)
+  const eveningEnd = parseTime(slotConfig.eveningEnd)
 
   const slots: TimeSlot[] = []
 
@@ -58,7 +63,9 @@ function getSlotsOccupiedByTimeString(startTime: string, endTime: string): TimeS
 export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCheck {
   const { date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId } = params
   const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
+  const bookingSlotsQuery = useRestaurantSetting('booking_time_slots')
   const dailyGuestLimit = dailyGuestLimitQuery.data ?? CAPACITY_CONFIG.MORNING_CAPACITY
+  const bookingSlots = bookingSlotsQuery.data ?? DEFAULT_BOOKING_TIME_SLOTS
 
   return useMemo(() => {
     // Initialize slot capacities
@@ -94,7 +101,7 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
         endTimeStr = booking.confirmed_end.split('T')[1].substring(0, 5)
       }
       
-      const slots = getSlotsOccupiedByTimeString(startTimeStr, endTimeStr)
+      const slots = getSlotsOccupiedByTimeString(startTimeStr, endTimeStr, bookingSlots)
       const guests = booking.num_guests || 0
 
       for (const slot of slots) {
@@ -148,5 +155,5 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
       errorMessage: errorMessages.length > 0 ? errorMessages.join('\n') : undefined,
       exceededSlots: exceededSlots.length > 0 ? exceededSlots : undefined,
     }
-  }, [date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId, dailyGuestLimit])
+  }, [date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId, dailyGuestLimit, bookingSlots])
 }
