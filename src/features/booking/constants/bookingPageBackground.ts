@@ -1,4 +1,4 @@
-/** Tile PNG in `public/booking/tiles/` (nome file = id + `.png`). Estendibile senza modifiche al tipo. */
+/** Tile PNG in `public/booking/tiles/` (nome file = id + `.png`). */
 export const BOOKING_PAGE_TILE_IDS = [
   'tile-01',
   'tile-02',
@@ -19,46 +19,143 @@ export const BOOKING_PAGE_TILE_IDS = [
 
 export type BookingPageTileId = (typeof BOOKING_PAGE_TILE_IDS)[number]
 
-/**
- * Sfondo neutro se uno slot gradiente e selezionato ma `css` e ancora `null`
- * (anteprima admin + pagina Prenota).
- */
-export const BOOKING_PAGE_GRADIENT_PLACEHOLDER_CSS =
-  'linear-gradient(180deg, #e2e8f0 0%, #f8fafc 100%)'
-
-/** Gradienti CSS salvati come id stringa (stesso setting `public_booking_page_background`). */
-export const BOOKING_PAGE_GRADIENT_PRESETS = [
-  { id: 'gradient-01', css: null as string | null },
-  { id: 'gradient-02', css: null as string | null },
-  { id: 'gradient-03', css: null as string | null },
-  { id: 'gradient-04', css: null as string | null },
-  { id: 'gradient-05', css: null as string | null },
-  { id: 'gradient-06', css: null as string | null },
-  { id: 'gradient-07', css: null as string | null },
-  { id: 'gradient-08', css: null as string | null },
-  { id: 'gradient-09', css: null as string | null },
-  { id: 'gradient-10', css: null as string | null },
-  { id: 'gradient-11', css: null as string | null },
-  { id: 'gradient-12', css: null as string | null },
+/** Preset gradienti pagina Prenota: `previewCss` per miniature; `fullCss` per anteprima grande e pagina pubblica. */
+export const prenotaGradientPresets = [
+  {
+    id: 'noce-classico',
+    name: 'Noce classico',
+    mood: 'Scuro, elegante, classico da ristorante tradizionale.',
+    safe: 'molto sicuro',
+    previewCss: 'linear-gradient(180deg, #2a1b12 0%, #5b3a25 55%, #8b6242 100%)',
+    fullCss:
+      'linear-gradient(180deg, #24170f 0%, #3a2417 22%, #5b3a25 58%, #8b6242 100%)',
+  },
+  {
+    id: 'terracotta-viva',
+    name: 'Terracotta viva',
+    mood: 'Caldo, mediterraneo, più accogliente e solare.',
+    safe: 'sicuro',
+    previewCss: 'linear-gradient(135deg, #5a2f22 0%, #a65d3f 52%, #ddb18c 100%)',
+    fullCss:
+      'radial-gradient(circle at 78% 72%, rgba(255,214,182,0.18) 0%, transparent 28%), linear-gradient(135deg, #4c281d 0%, #8f4d35 38%, #b96d49 70%, #e0b48f 100%)',
+  },
+  {
+    id: 'vino-velluto',
+    name: 'Vino velluto',
+    mood: 'Più raffinato, con tono borgogna smorzato.',
+    safe: 'sicuro',
+    previewCss: 'linear-gradient(135deg, #2d1718 0%, #6b3b40 55%, #b1908e 100%)',
+    fullCss:
+      'radial-gradient(circle at 25% 25%, rgba(245,220,210,0.22) 0%, transparent 22%), linear-gradient(135deg, #241314 0%, #4a292c 28%, #6c3f44 58%, #b79a94 100%)',
+  },
+  {
+    id: 'oliva-mediterranea',
+    name: 'Oliva mediterranea',
+    mood: 'Rustico-chic, naturale, con richiami erbe/ulivo.',
+    safe: 'sicuro',
+    previewCss: 'linear-gradient(135deg, #2d261d 0%, #6b6444 50%, #c1b693 100%)',
+    fullCss:
+      'radial-gradient(circle at 18% 78%, rgba(153,150,101,0.28) 0%, transparent 20%), linear-gradient(135deg, #262016 0%, #4a402d 30%, #6f6848 58%, #c2b894 100%)',
+  },
+  {
+    id: 'crema-bistrot',
+    name: 'Crema bistrot',
+    mood: 'Più chiaro, pulito, morbido, con look ospitale.',
+    safe: 'medio',
+    previewCss: 'linear-gradient(180deg, #8a6548 0%, #c69b74 52%, #ead5bf 100%)',
+    fullCss:
+      'radial-gradient(circle at 50% 15%, rgba(255,244,226,0.30) 0%, transparent 24%), linear-gradient(180deg, #7a583f 0%, #b1825b 42%, #d8b391 72%, #f0dfcd 100%)',
+  },
+  {
+    id: 'fumo-e-rame',
+    name: 'Fumo e rame',
+    mood: 'Scuro, contemporaneo, da pub serale elegante.',
+    safe: 'molto sicuro',
+    previewCss: 'linear-gradient(135deg, #16110f 0%, #4a2f25 42%, #8c5a43 100%)',
+    fullCss:
+      'radial-gradient(circle at 72% 25%, rgba(194,126,89,0.22) 0%, transparent 22%), linear-gradient(135deg, #14100e 0%, #241917 22%, #4b3025 52%, #7f523d 100%)',
+  },
+  {
+    id: 'pergamena-calda',
+    name: 'Pergamena calda',
+    mood: 'Chiaro e materico, più soft, quasi da menu elegante.',
+    safe: 'medio',
+    previewCss: 'linear-gradient(180deg, #b18a64 0%, #d9bf9f 55%, #f3eadf 100%)',
+    fullCss:
+      'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.20) 0%, transparent 18%), linear-gradient(180deg, #9f7a58 0%, #c9a583 38%, #e1c8ad 68%, #f4ece3 100%)',
+  },
+  {
+    id: 'ambra-serale',
+    name: 'Ambra serale',
+    mood: 'Caldo serale, tra whisky, legno e luce soffusa.',
+    safe: 'molto sicuro',
+    previewCss: 'linear-gradient(135deg, #24160f 0%, #6a3d20 48%, #c08a4e 100%)',
+    fullCss:
+      'radial-gradient(circle at 50% 85%, rgba(255,191,104,0.16) 0%, transparent 25%), linear-gradient(135deg, #20130d 0%, #3a2116 24%, #6a3d20 54%, #b67c42 82%, #d8b07c 100%)',
+  },
+  {
+    id: 'cioccolato-moka',
+    name: 'Cioccolato moka',
+    mood: 'Molto scuro, premium, intenso ma accogliente.',
+    safe: 'molto sicuro',
+    previewCss: 'linear-gradient(180deg, #18100c 0%, #3b261b 50%, #6a4935 100%)',
+    fullCss:
+      'radial-gradient(circle at 80% 18%, rgba(150,110,84,0.18) 0%, transparent 18%), linear-gradient(180deg, #140d0a 0%, #231711 22%, #3c271c 52%, #674834 100%)',
+  },
+  {
+    id: 'rame-rosato',
+    name: 'Rame rosato',
+    mood: 'Più morbido e moderno, con terracotta rosata.',
+    safe: 'sicuro',
+    previewCss: 'linear-gradient(135deg, #4a2621 0%, #8c5a4e 52%, #d6b0a0 100%)',
+    fullCss:
+      'radial-gradient(circle at 82% 20%, rgba(244,210,195,0.20) 0%, transparent 20%), linear-gradient(135deg, #40211d 0%, #6a4038 34%, #986456 62%, #d7b3a3 100%)',
+  },
+  {
+    id: 'sabbia-e-oliva',
+    name: 'Sabbia e oliva',
+    mood: 'Naturale, luminoso ma non freddo, molto mediterraneo.',
+    safe: 'medio',
+    previewCss: 'linear-gradient(135deg, #5b4c36 0%, #a89b71 48%, #e8dcc1 100%)',
+    fullCss:
+      'radial-gradient(circle at 22% 72%, rgba(168,166,107,0.22) 0%, transparent 18%), linear-gradient(135deg, #4a3f2d 0%, #76684a 28%, #ada277 58%, #eadfc6 100%)',
+  },
+  {
+    id: 'notte-bistrot',
+    name: 'Notte bistrot',
+    mood: 'Più drammatico, da locale serale con luci basse.',
+    safe: 'molto sicuro',
+    previewCss: 'linear-gradient(135deg, #120d0c 0%, #35201d 42%, #6f4438 100%)',
+    fullCss:
+      'radial-gradient(circle at 50% 18%, rgba(205,164,122,0.18) 0%, transparent 16%), linear-gradient(135deg, #100c0b 0%, #1c1413 18%, #392321 48%, #6d4337 100%)',
+  },
 ] as const
 
-export type BookingPageGradientPreset = (typeof BOOKING_PAGE_GRADIENT_PRESETS)[number]
+/** Alias storico nel codice: stessi dati di `prenotaGradientPresets`. */
+export const BOOKING_PAGE_GRADIENT_PRESETS = prenotaGradientPresets
+
+export type BookingPageGradientPreset = (typeof prenotaGradientPresets)[number]
 export type BookingPageGradientId = BookingPageGradientPreset['id']
 
-export const BOOKING_PAGE_GRADIENT_IDS = BOOKING_PAGE_GRADIENT_PRESETS.map((g) => g.id)
+export const BOOKING_PAGE_GRADIENT_IDS = prenotaGradientPresets.map((g) => g.id)
 
 export type BookingPageBackgroundId = BookingPageTileId | BookingPageGradientId
 
-/** Default uguale alla prima texture del preset (ordine alfabetico UUID). */
+/** Default: prima texture immagine. */
 export const DEFAULT_BOOKING_PAGE_TILE: BookingPageTileId = 'tile-01'
 export const DEFAULT_BOOKING_PAGE_BACKGROUND: BookingPageBackgroundId = DEFAULT_BOOKING_PAGE_TILE
+
+export const BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR = '#2d2013'
+
+const FALLBACK_GRADIENT =
+  'linear-gradient(135deg, #2d2013 0%, #5a3923 45%, #8b5f3c 100%)'
 
 export function isBookingPageTileId(value: string): value is BookingPageTileId {
   return (BOOKING_PAGE_TILE_IDS as readonly string[]).includes(value)
 }
 
 export function isBookingPageGradientId(value: string): value is BookingPageGradientId {
-  return (BOOKING_PAGE_GRADIENT_IDS as readonly string[]).includes(value)
+  return (prenotaGradientPresets as readonly { id: string }[]).some((p) => p.id === value)
 }
 
 export function isBookingPageBackgroundId(value: string): value is BookingPageBackgroundId {
@@ -68,22 +165,33 @@ export function isBookingPageBackgroundId(value: string): value is BookingPageBa
 export function parseBookingPageBackgroundFromDb(raw: unknown): BookingPageBackgroundId {
   if (typeof raw !== 'string' || raw.trim() === '') return DEFAULT_BOOKING_PAGE_BACKGROUND
   const v = raw.trim().toLowerCase()
-  if (isBookingPageBackgroundId(v)) return v
+  if (isBookingPageBackgroundId(v)) return v as BookingPageBackgroundId
   return DEFAULT_BOOKING_PAGE_BACKGROUND
 }
 
-/** @deprecated Preferisci `parseBookingPageBackgroundFromDb`; restituisce solo tile note o default tile. */
+/** @deprecated Usa parseBookingPageBackgroundFromDb */
 export function parseBookingPageTileFromDb(raw: unknown): BookingPageTileId {
   const bg = parseBookingPageBackgroundFromDb(raw)
   return isBookingPageTileId(bg) ? bg : DEFAULT_BOOKING_PAGE_TILE
 }
 
+/** CSS a più strati per pagina pubblica e anteprima grande (`fullCss`). */
 export function bookingPageGradientCss(id: BookingPageGradientId): string {
-  const preset = BOOKING_PAGE_GRADIENT_PRESETS.find((p) => p.id === id)
-  return (preset?.css && preset.css.trim() !== '') ? preset.css : BOOKING_PAGE_GRADIENT_PLACEHOLDER_CSS
+  const preset = prenotaGradientPresets.find((p) => p.id === id)
+  return preset?.fullCss?.trim() ? preset.fullCss : FALLBACK_GRADIENT
 }
 
-/** Allinea a `import.meta.env.BASE_URL` (es. `/` o `/sottopath/`). */
+/** CSS semplificato per miniature nella griglia admin (`previewCss`). */
+export function bookingPageGradientPreviewCss(id: BookingPageGradientId): string {
+  const preset = prenotaGradientPresets.find((p) => p.id === id)
+  return preset?.previewCss?.trim() ? preset.previewCss : FALLBACK_GRADIENT
+}
+
+/** @deprecated Usa bookingPageGradientPreviewCss */
+export function bookingPageGradientThumbCss(id: BookingPageGradientId): string {
+  return bookingPageGradientPreviewCss(id)
+}
+
 export function bookingPageTilePublicHref(id: BookingPageTileId, viteBase: string): string {
   return `${viteBase}booking/tiles/${id}.png`
 }

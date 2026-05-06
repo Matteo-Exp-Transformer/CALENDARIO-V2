@@ -8,6 +8,7 @@ import { formatHours, getDefaultBusinessHours } from '@/lib/businessHours'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 import {
+  BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
   DEFAULT_BOOKING_PAGE_BACKGROUND,
   bookingPageGradientCss,
   bookingPageTilePublicHref,
@@ -53,15 +54,15 @@ export const BookingRequestPage: React.FC = () => {
     body.style.backgroundColor = 'transparent'
 
     if (isBookingPageGradientId(bgId)) {
-      root.style.backgroundColor = '#0f172a'
+      root.style.backgroundColor = BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR
       root.style.backgroundImage = bookingPageGradientCss(bgId)
-      root.style.backgroundSize = '100% 100%'
-      root.style.backgroundPosition = 'center top'
+      root.style.backgroundSize = 'cover'
+      root.style.backgroundPosition = 'center'
       root.style.backgroundRepeat = 'no-repeat'
       root.style.backgroundAttachment = 'scroll'
     } else {
       const tileUrl = bookingPageTilePublicHref(bgId, import.meta.env.BASE_URL)
-      root.style.backgroundColor = '#2d2013'
+      root.style.backgroundColor = BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR
       root.style.backgroundImage = `url("${tileUrl}")`
       root.style.backgroundSize = '100% auto'
       root.style.backgroundPosition = 'top center'

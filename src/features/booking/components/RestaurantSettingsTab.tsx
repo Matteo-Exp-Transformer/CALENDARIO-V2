@@ -24,9 +24,11 @@ import {
 } from '@/features/booking/utils/bookingTimeSlots'
 import {
   BOOKING_PAGE_GRADIENT_PRESETS,
+  BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
   BOOKING_PAGE_TILE_IDS,
-  DEFAULT_BOOKING_PAGE_TILE,
+  DEFAULT_BOOKING_PAGE_BACKGROUND,
   bookingPageGradientCss,
+  bookingPageGradientPreviewCss,
   bookingPageTilePublicHref,
   isBookingPageGradientId,
   type BookingPageBackgroundId,
@@ -156,7 +158,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [contactPhone, setContactPhone] = useState('3505362538')
   const [contactAddress, setContactAddress] = useState('Via Centotrecento 1/1B - Bologna, 40126')
   const [bookingPageBackground, setBookingPageBackground] =
-    useState<BookingPageBackgroundId>(DEFAULT_BOOKING_PAGE_TILE)
+    useState<BookingPageBackgroundId>(DEFAULT_BOOKING_PAGE_BACKGROUND)
   const [bookingBgTextureTab, setBookingBgTextureTab] = useState<'images' | 'gradients'>('images')
   /** Dopo «Conferma» la griglia resta bloccata finche non si cambia selezione o non va a buon fine «Salva modifiche». */
   const [bookingBgSelectionLocked, setBookingBgSelectionLocked] = useState(false)
@@ -204,7 +206,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         contactAddressQuery.data || 'Via Centotrecento 1/1B - Bologna, 40126'
       )
     )
-    const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_TILE
+    const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
     setBookingPageBackground(resolvedBg)
     setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
     setBookingBgSelectionLocked(false)
@@ -243,7 +245,7 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const markDirty = () => setDirty(true)
 
-  const savedBookingPageBackground = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_TILE
+  const savedBookingPageBackground = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
   /** Selezione diversa dal valore gia salvato su DB (solo «Salva modifiche» aggiorna il DB). */
   const bookingBgHasUnsavedChoice = bookingPageBackground !== savedBookingPageBackground
 
@@ -765,7 +767,7 @@ export const RestaurantSettingsTab: React.FC = () => {
           </div>
         ) : (
           <div className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5">
-            {BOOKING_PAGE_GRADIENT_PRESETS.map((preset, index) => (
+            {BOOKING_PAGE_GRADIENT_PRESETS.map((preset) => (
               <button
                 key={preset.id}
                 type="button"
@@ -777,19 +779,17 @@ export const RestaurantSettingsTab: React.FC = () => {
                 }}
               >
                 <div
-                  className={
-                    preset.css && preset.css.trim() !== ''
-                      ? 'pointer-events-none aspect-[4/3] w-full rounded-md border border-slate-200/80 bg-white'
-                      : 'pointer-events-none aspect-[4/3] w-full rounded-md border-2 border-dashed border-slate-300 bg-slate-50'
-                  }
-                  style={
-                    preset.css && preset.css.trim() !== ''
-                      ? { backgroundImage: preset.css }
-                      : undefined
-                  }
+                  className="pointer-events-none aspect-[4/3] w-full rounded-md border border-slate-200/80"
+                  style={{
+                    backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
+                    backgroundImage: bookingPageGradientPreviewCss(preset.id),
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                  }}
                 />
-                <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-500 sm:text-[11px]">
-                  Gradiente {index + 1}
+                <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]">
+                  {preset.name}
                 </span>
               </button>
             ))}
@@ -800,7 +800,10 @@ export const RestaurantSettingsTab: React.FC = () => {
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Anteprima
           </p>
-          <div className="relative mx-auto w-full max-w-xl overflow-hidden rounded-2xl border-2 border-slate-400/80 bg-[#2d2013] shadow-inner">
+          <div
+            className="relative mx-auto w-full max-w-xl overflow-hidden rounded-2xl border-2 border-slate-400/80 shadow-inner"
+            style={{ backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR }}
+          >
             <div className="relative h-[min(48vh,26rem)] w-full overflow-hidden">
               {bookingPagePreviewTileSrc ? (
                 <img
@@ -822,11 +825,13 @@ export const RestaurantSettingsTab: React.FC = () => {
                 isBookingPageGradientId(bookingPageBackground) && (
                   <div
                     key={bookingPageBackground}
-                    className="pointer-events-none absolute left-0 top-0 h-full min-h-full w-full select-none"
+                    className="pointer-events-none absolute inset-0 h-full min-h-full w-full select-none"
                     style={{
+                      backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
                       backgroundImage: bookingPageGradientCss(bookingPageBackground),
-                      backgroundSize: '100% 100%',
-                      backgroundPosition: 'center top',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat',
                     }}
                   />
                 )
