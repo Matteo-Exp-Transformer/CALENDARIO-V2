@@ -1,5 +1,13 @@
 import type { BookingRequest } from '@/types/booking'
 
+/** Importi tipo 1'234'000.39 — apostrofo ogni 3 cifre, punto sulle decimali */
+export function formatEuroAmountForDisplay(amount: number): string {
+  const [intRaw, dec] = Math.abs(amount).toFixed(2).split('.')
+  const sign = amount < 0 ? '-' : ''
+  const intWithSep = intRaw.replace(/\B(?=(\d{3})+(?!\d))/g, "'")
+  return `${sign}${intWithSep}.${dec}`
+}
+
 export interface MenuPriceDisplay {
   // Prezzo Menù: prezzo a persona
   prezzoMenu: number
@@ -27,12 +35,12 @@ export const buildMenuPriceDisplay = (
   const prezzoMenu = menu_total_per_person
   const basePerPerson = prezzoMenu
   
-  const prezzoMenuLabel = `€${prezzoMenu.toFixed(2)}/persona`
+  const prezzoMenuLabel = `€${formatEuroAmountForDisplay(prezzoMenu)}/persona`
   const breakdownLabel = undefined
 
   const prezzoTotale = menu_total_booking ?? null
   const prezzoTotaleLabel = prezzoTotale !== null
-    ? `€${prezzoTotale.toFixed(2)}`
+    ? `€${formatEuroAmountForDisplay(prezzoTotale)}`
     : null
 
   return {
@@ -68,11 +76,11 @@ export function getResolvedMenuPriceDisplay(booking: BookingRequest): MenuPriceD
 
     const overlay = {
       prezzoMenu: baseTotal,
-      prezzoMenuLabel: `€${baseTotal.toFixed(2)}/persona`,
+      prezzoMenuLabel: `€${formatEuroAmountForDisplay(baseTotal)}/persona`,
       breakdownLabel: undefined,
       prezzoTotale: totalBooking,
-      prezzoTotaleLabel: `€${totalBooking.toFixed(2)}`,
-      totalLabel: `€${baseTotal.toFixed(2)}/persona`,
+      prezzoTotaleLabel: `€${formatEuroAmountForDisplay(totalBooking)}`,
+      totalLabel: `€${formatEuroAmountForDisplay(baseTotal)}/persona`,
       totalPerPerson: baseTotal,
       basePerPerson: baseTotal,
     }
