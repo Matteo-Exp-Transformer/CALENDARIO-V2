@@ -60,6 +60,9 @@ function DigestBookingListRow({
 }) {
   const calEv = transformBookingToCalendarEvent(booking)
   const menuPriceRow = showMenuPricing ? getResolvedMenuPriceDisplay(booking) : null
+  const bookingTimeLabel =
+    booking.desired_time || booking.confirmed_start ? getAccurateStartTime(booking) : null
+  const hasMenuBookingContext = digestBookingHasMenuContext(booking)
   const hasSpecialNote = !!booking.special_requests?.trim()
   const [showNoteHint, setShowNoteHint] = useState(false)
   const slotColors =
@@ -105,10 +108,10 @@ function DigestBookingListRow({
                 <span className="font-normal opacity-90">
                   {' - '}
                   {booking.num_guests} osp.
-                  {(booking.desired_time || booking.confirmed_start) && (
+                  {bookingTimeLabel && (
                     <>
                       {' - '}
-                      <span className="font-medium">{getAccurateStartTime(booking)}</span>
+                      <span className="font-medium">{bookingTimeLabel}</span>
                     </>
                   )}
                 </span>
@@ -119,7 +122,7 @@ function DigestBookingListRow({
         {!compactGrid ? (
           <div className="flex items-center gap-2 text-xs opacity-90 truncate">
             <span>{booking.num_guests} ospiti</span>
-            {booking.menu && (
+            {booking.menu && !hasMenuBookingContext && (
               <>
                 <span>•</span>
                 <span className="truncate">{booking.menu}</span>
@@ -142,14 +145,11 @@ function DigestBookingListRow({
                   aria-hidden
                 />
                 <div className="flex w-full items-center justify-center text-center font-semibold opacity-95">
-                  <span className="block max-w-full truncate px-1">
-                    {menuPriceRow.prezzoMenuLabel}
-                    {menuPriceRow.prezzoTotaleLabel && <> • Tot. {menuPriceRow.prezzoTotaleLabel}</>}
-                  </span>
+                  <span className="block max-w-full truncate px-1">{menuPriceRow.prezzoMenuLabel}</span>
                 </div>
               </div>
             )}
-            {booking.menu && (
+            {booking.menu && !hasMenuBookingContext && (
               <p className="line-clamp-2 w-full break-words text-center opacity-85 text-[0.98em]" title={booking.menu}>
                 {booking.menu}
               </p>
@@ -437,7 +437,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
           {/* Dati in fila sotto */}
           <div className="flex items-center gap-2 text-xs opacity-90 truncate">
             <span>{booking.num_guests} ospiti</span>
-            {booking.menu && (
+            {booking.menu && !digestBookingHasMenuContext(booking) && (
               <>
                 <span>•</span>
                 <span className="truncate">{booking.menu}</span>
