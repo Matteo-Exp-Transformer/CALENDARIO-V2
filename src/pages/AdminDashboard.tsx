@@ -207,7 +207,10 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </main>
 
-      <footer className="pt-5 pb-4 border-t border-slate-100 bg-white">
+      <footer
+        className="min-h-[62px] py-3 border-t border-slate-100 flex items-center"
+        style={ADMIN_WARM_GRADIENT_SURFACE}
+      >
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex w-full items-center justify-between gap-4">
           <div
             className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border shadow-sm px-4 py-3 md:px-6"
@@ -222,10 +225,11 @@ export const AdminDashboard: React.FC = () => {
             type="button"
             onClick={logout}
             className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
-              text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+              bg-[#1e3a8a] !text-white hover:bg-[#1e40af] transition-colors"
+            style={{ color: '#ffffff' }}
           >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Log-out</span>
+            <LogOut className="w-3.5 h-3.5 !text-white" />
+            <span className="!text-white" style={{ color: '#ffffff' }}>Log-out</span>
           </button>
         </div>
       </footer>
