@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { useAllBookings } from '../hooks/useBookingQueries'
-import { useRestoreBooking } from '../hooks/useBookingMutations'
+import { useRestoreBooking, useRequeueRejectedBooking } from '../hooks/useBookingMutations'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { Calendar, Clock, Users, Tag, Mail, Phone, MessageSquare, ChevronDown, ChevronUp, User, UtensilsCrossed, Wine, PartyPopper, GraduationCap, Archive, CheckCircle, XCircle, Trash2, RotateCcw } from 'lucide-react'
@@ -33,6 +33,7 @@ interface ArchiveBookingCardProps {
   booking: any
   onViewInCalendar?: (date: string) => void
   onRestore?: (bookingId: string) => void
+  onRequeueToPending?: (bookingId: string) => void
 }
 
 /** Stesso aspetto della strip digest calendario (`#digest-with-menu-heading`). */
@@ -45,7 +46,12 @@ const ARCHIVE_CARD_DIGEST_SURFACE: CSSProperties = {
     'linear-gradient(90deg, rgba(45, 212, 191, 0.38) 0%, rgba(204, 251, 241, 0.9) 50%, rgb(255, 255, 255) 100%)',
 }
 
-const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({ booking, onViewInCalendar, onRestore }) => {
+const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
+  booking,
+  onViewInCalendar,
+  onRestore,
+  onRequeueToPending,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const formatDate = (dateStr: string) => {
@@ -317,10 +323,11 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({ booking, onView
             </div>
           )}
 
-          {/* Pulsante Reinserisci - Solo per prenotazioni eliminate */}
+          {/* Pulsante Reinserisci — solo eliminate (torna accepted in calendario se ha slot confermati) */}
           {booking.status === 'deleted' && onRestore && (
             <div className="flex gap-2 md:gap-4 pt-3 md:pt-4 border-t border-warm-orange/20 mt-4 md:mt-6">
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation()
                   onRestore(booking.id)
@@ -330,6 +337,24 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({ booking, onView
               >
                 <RotateCcw className="w-4 h-4 md:w-5 md:h-5" />
                 <span>Reinserisci</span>
+              </button>
+            </div>
+          )}
+
+          {/* Rifiutata → pending (richieste in attesa), stesso look del Reinserisci */}
+          {booking.status === 'rejected' && onRequeueToPending && (
+            <div className="flex gap-2 md:gap-4 pt-3 md:pt-4 border-t border-warm-orange/20 mt-4 md:mt-6">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRequeueToPending(booking.id)
+                }}
+                style={{ backgroundColor: '#0891b2', color: 'white' }}
+                className="flex-1 flex items-center justify-center gap-2 px-4 md:px-6 py-3 md:py-4 hover:bg-cyan-700 font-bold text-sm md:text-lg shadow-xl rounded-xl transition-all"
+              >
+                <RotateCcw className="w-4 h-4 md:w-5 md:h-5" />
+                <span>Riporta in attesa</span>
               </button>
             </div>
           )}
@@ -375,6 +400,7 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar }) => {
   const [filter, setFilter] = useState<ArchiveFilter>('all')
   const [sortOrder, setSortOrder] = useState<SortOrder>('booking_date')
   const restoreBooking = useRestoreBooking()
+  const requeueRejectedBooking = useRequeueRejectedBooking()
 
   const handleRestore = async (bookingId: string) => {
     if (!confirm('Sei sicuro di voler reinserire questa prenotazione?')) return
@@ -383,6 +409,16 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar }) => {
       await restoreBooking.mutateAsync(bookingId)
     } catch (error) {
       console.error('Error restoring booking:', error)
+    }
+  }
+
+  const handleRequeueToPending = async (bookingId: string) => {
+    if (!confirm('Riportare questa prenotazione tra le richieste in attesa?')) return
+
+    try {
+      await requeueRejectedBooking.mutateAsync(bookingId)
+    } catch (error) {
+      console.error('Error requeueing rejected booking:', error)
     }
   }
 
@@ -548,7 +584,15 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar }) => {
         ) : (
           <div className="grid gap-[30px]">
             {filteredBookings.map((booking) => {
-              return <ArchiveBookingCard key={booking.id} booking={booking} onViewInCalendar={onViewInCalendar} onRestore={handleRestore} />
+              return (
+                <ArchiveBookingCard
+                  key={booking.id}
+                  booking={booking}
+                  onViewInCalendar={onViewInCalendar}
+                  onRestore={handleRestore}
+                  onRequeueToPending={handleRequeueToPending}
+                />
+              )
             })}
           </div>
         )}

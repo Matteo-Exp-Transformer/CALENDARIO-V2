@@ -353,6 +353,47 @@ export const useRestoreBooking = () => {
   })
 }
 
+/** Rifiutata → pending (sezione richieste in attesa), senza reinserimento in calendario. */
+export const useRequeueRejectedBooking = () => {
+  const queryClient = useQueryClient()
+  const { tenantId } = useTenantContext()
+
+  return useMutation({
+    mutationFn: async (bookingId: string) => {
+      const { data, error } = await (supabase
+        .from('booking_requests') as any)
+        .update({
+          status: 'pending',
+          rejection_reason: null,
+          updated_at: new Date().toISOString(),
+        } as any)
+        .eq('id', bookingId)
+        .eq('tenant_id', tenantId!)
+        .eq('status', 'rejected')
+        .select()
+        .single()
+
+      if (error) {
+        throw new Error(handleSupabaseError(error))
+      }
+
+      return data as BookingRequest
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['bookings'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
+      ])
+      toast.success('Prenotazione riportata tra le richieste in attesa')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Impossibile riportare la prenotazione in attesa')
+    },
+  })
+}
+
 // Mutation per cancellare una prenotazione
 export const useCancelBooking = () => {
   const queryClient = useQueryClient()
