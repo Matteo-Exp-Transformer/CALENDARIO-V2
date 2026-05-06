@@ -420,15 +420,10 @@ body {
   color: #fff;
 }
 
-/* Restaurant settings — footer salvataggio: forza bianco sopra gradient (override inheritance / browser quirks) */
-.restaurant-settings-save-footer {
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-}
-
+/* Restaurant settings — footer salvataggio: pulsante sempre bianco; messaggio “non salvato” leggibile sul gradient */
 .restaurant-settings-save-footer-msg {
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
+  color: var(--color-text) !important;
+  -webkit-text-fill-color: var(--color-text) !important;
 }
 
 .restaurant-settings-save-submit {

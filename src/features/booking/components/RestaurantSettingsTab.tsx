@@ -642,7 +642,6 @@ export const RestaurantSettingsTab: React.FC = () => {
         className="restaurant-settings-save-footer flex min-h-[4.75rem] w-full max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7"
         style={{
           ...ADMIN_WARM_GRADIENT_SURFACE,
-          color: '#ffffff',
         }}
       >
         <Button
@@ -662,10 +661,10 @@ export const RestaurantSettingsTab: React.FC = () => {
         </Button>
         {dirty && !upsert.isPending && (
           <span
-            className="restaurant-settings-save-footer-msg max-w-xl text-center text-base font-semibold leading-snug drop-shadow-[0_1px_2px_rgba(0,0,0,0.28)]"
-            style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
+            className="restaurant-settings-save-footer-msg max-w-xl text-center text-base font-semibold leading-snug text-slate-900"
+            style={{ color: 'var(--color-text)', WebkitTextFillColor: 'var(--color-text)' }}
           >
-            Modifiche non salvate. I dati non sono ancora stati salvati.
+            Modifiche non salvate.
           </span>
         )}
       </div>
