@@ -94,6 +94,7 @@ export const AdminDashboard: React.FC = () => {
   const { user, logout } = useAdminAuth()
   const restaurantName = useRestaurantName()
   const { tenantSlug } = useTenantContext()
+  const appIconSrc = `${import.meta.env.BASE_URL}icons/icon-192-v2-transparent.png`
 
   const handleViewInCalendar = (date: string) => {
     setCalendarTargetDate(date)
@@ -112,6 +113,22 @@ export const AdminDashboard: React.FC = () => {
             className="relative flex items-center justify-center h-[106px] rounded-xl shadow-sm border px-4 md:px-6"
             style={ADMIN_WARM_GRADIENT_SURFACE}
           >
+            <div
+              className="absolute flex items-center rounded-lg p-1 shadow-sm"
+              style={{
+                ...ADMIN_WARM_GRADIENT_SURFACE,
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+              }}
+            >
+              <img
+                src={appIconSrc}
+                alt="Icona app"
+                className="object-cover"
+                style={{ width: 66, height: 66 }}
+              />
+            </div>
             <div className="text-center pointer-events-none">
               <h1 className="text-base font-semibold italic font-serif tracking-wide text-slate-800 leading-tight">
                 {restaurantName || 'Booking SaaS'}
