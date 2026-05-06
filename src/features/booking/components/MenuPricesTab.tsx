@@ -27,6 +27,8 @@ const slugifyCategory = (value: string): string =>
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '')
 
+const MENU_ACTION_BTN_COL = 'w-[280px] max-w-full'
+
 type MenuViewMode = 'menu' | 'products' | 'categories' | 'preset_menus'
 
 export const MenuPricesTab: React.FC = () => {
@@ -375,12 +377,15 @@ export const MenuPricesTab: React.FC = () => {
         >
           Aggiungi, modifica o elimina le voci del menu e i prezzi
         </p>
-        <div className="justify-self-end flex flex-col items-end gap-4" style={{ rowGap: '16px' }}>
+        <div
+          className={`justify-self-end flex flex-col items-stretch ${MENU_ACTION_BTN_COL}`}
+          style={{ gap: 'calc((1rem + 8px) * 2 / 3)' }}
+        >
           <Button
             variant="success"
             size="sm"
             onClick={handleStartAdd}
-            className="h-8 shrink-0 gap-1.5 px-3 py-0 text-xs"
+            className="h-8 w-full shrink-0 gap-1.5 px-3 py-0 text-xs"
           >
             <Plus className="h-3.5 w-3.5" />
             Aggiungi / Modifica Prodotto
@@ -389,8 +394,8 @@ export const MenuPricesTab: React.FC = () => {
             variant="secondary"
             size="sm"
             onClick={handleStartAddCategory}
-            className="h-8 shrink-0 gap-1.5 px-3 py-0 text-xs"
-            style={{ marginTop: '8px', backgroundColor: '#60a5fa', borderColor: '#3b82f6', color: '#000000' }}
+            className="h-8 w-full shrink-0 gap-1.5 px-3 py-0 text-xs"
+            style={{ backgroundColor: '#60a5fa', borderColor: '#3b82f6', color: '#000000' }}
           >
             <Plus className="h-3.5 w-3.5" />
             Aggiungi / Modifica Categoria
@@ -575,11 +580,11 @@ export const MenuPricesTab: React.FC = () => {
 
       {viewMode === 'menu' && (
       <>
-      <div className="flex w-full max-w-[min(920px,calc(100%-8px))] mx-auto flex-row flex-wrap items-center justify-between gap-4 px-2 sm:px-1">
-        <label className="flex cursor-pointer items-start gap-2.5 text-left text-xs font-semibold text-gray-800 sm:text-sm shrink min-w-[140px] max-w-[min(100%,420px)] leading-snug">
+      <div className="flex w-full min-w-0 flex-row flex-nowrap items-center gap-3 overflow-x-auto sm:gap-4 sm:overflow-visible">
+        <label className="flex min-h-0 min-w-0 max-w-[min(100%,420px)] flex-1 cursor-pointer items-center gap-2.5 text-left text-xs font-semibold leading-snug text-gray-800 sm:text-sm">
           <input
             type="checkbox"
-            className="mt-1 h-4 w-4 shrink-0 rounded border-gray-400"
+            className="h-4 w-4 shrink-0 rounded border-gray-400"
             checked={staffPresetsVisible}
             disabled={staffPresetVisibleLoading || upsertRestaurantSetting.isPending}
             onChange={(e) =>
@@ -591,12 +596,14 @@ export const MenuPricesTab: React.FC = () => {
           Mostra sulla pagina prenota il menu a tendina dei menù consigliati
         </label>
         <Button
-          variant="secondary"
+          variant="ghost"
           size="sm"
           onClick={openPresetMenusSection}
-          className="h-8 shrink-0 gap-1.5 px-3 py-0 text-xs whitespace-normal text-center leading-tight sm:max-w-[220px]"
-          style={{ marginTop: '8px', backgroundColor: '#60a5fa', borderColor: '#3b82f6', color: '#000000' }}
+          aria-label="Aggiungi / Modifica Menù preselezionati"
+          title="Aggiungi / Modifica Menù preselezionati"
+          className={`ml-auto h-8 shrink-0 gap-1.5 overflow-hidden rounded-lg border border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white px-3 py-0 text-center text-xs font-semibold text-amber-950 shadow-sm truncate hover:bg-transparent hover:brightness-[0.97] ${MENU_ACTION_BTN_COL}`}
         >
+          <Plus className="h-3.5 w-3.5 shrink-0" />
           Aggiungi / Modifica Menù preselezionati
         </Button>
       </div>
