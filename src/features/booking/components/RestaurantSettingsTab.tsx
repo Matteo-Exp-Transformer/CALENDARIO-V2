@@ -395,14 +395,28 @@ export const RestaurantSettingsTab: React.FC = () => {
       .filter(Boolean)
       .join(' ')
 
+  const bookingBgNavyToggleButtonStyle: React.CSSProperties = {
+    boxSizing: 'border-box',
+    paddingInline: 'calc(0.875rem * 4 / 3)',
+    paddingBlock: 'calc(0.5rem * 5 / 4)',
+    minWidth: 'calc(4.375rem * 4 / 3)',
+    minHeight: 'calc(2.25rem * 5 / 4)',
+    color: '#ffffff',
+    WebkitTextFillColor: '#ffffff',
+  }
+
   const bookingBgNavyToggleClass = (active: boolean) =>
     [
-      'rounded-lg px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#3b82f6] disabled:pointer-events-none disabled:opacity-65',
-      active ? 'bg-[#172554] ring-2 ring-white/50' : 'bg-[#1e3a8a] hover:bg-[#1e40af]',
+      'rounded-lg text-sm font-semibold shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#93c5fd] disabled:pointer-events-none disabled:opacity-65',
+      active
+        ? 'bg-[#3b82f6] ring-2 ring-white/70 hover:bg-[#2563eb]'
+        : 'bg-[#172554] hover:bg-[#1e3a8a]',
     ].join(' ')
 
   const bookingBgSectionClass =
     'w-full max-w-3xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
+  const bookingBgGridTopSpacingStyle: React.CSSProperties = { marginTop: '1.375rem' }
+  const bookingBgTextureTabRowStyle: React.CSSProperties = { gap: '1rem' }
 
   return (
     <div className="flex w-full flex-col items-center gap-8">
@@ -715,33 +729,42 @@ export const RestaurantSettingsTab: React.FC = () => {
       </section>
 
       <section className={bookingBgSectionClass} style={sectionSurfaceStyle}>
-        <div className="flex w-full justify-end">
-          <div className="flex flex-shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
-            <button
-              type="button"
-              disabled={upsert.isPending}
-              className={bookingBgNavyToggleClass(bookingBgTextureTab === 'images')}
-              onClick={() => setBookingBgTextureTab('images')}
-            >
-              Immagini
-            </button>
-            <button
-              type="button"
-              disabled={upsert.isPending}
-              className={bookingBgNavyToggleClass(bookingBgTextureTab === 'gradients')}
-              onClick={() => setBookingBgTextureTab('gradients')}
-            >
-              Gradienti
-            </button>
-          </div>
-        </div>
         <h3 className="text-lg font-semibold text-slate-800">Sfondo pagina Prenota</h3>
         <p className="text-sm text-slate-600">
           Scegli una texture, guarda anteprima (in basso), conferma la tua scelta e salva le modifiche.
         </p>
+        <div className="flex w-full flex-col">
+          <div className="flex w-full justify-end">
+            <div
+              className="flex flex-shrink-0 flex-row flex-nowrap items-center"
+              style={bookingBgTextureTabRowStyle}
+            >
+              <button
+                type="button"
+                disabled={upsert.isPending}
+                className={bookingBgNavyToggleClass(bookingBgTextureTab === 'images')}
+                style={bookingBgNavyToggleButtonStyle}
+                onClick={() => setBookingBgTextureTab('images')}
+              >
+                Immagini
+              </button>
+              <button
+                type="button"
+                disabled={upsert.isPending}
+                className={bookingBgNavyToggleClass(bookingBgTextureTab === 'gradients')}
+                style={bookingBgNavyToggleButtonStyle}
+                onClick={() => setBookingBgTextureTab('gradients')}
+              >
+                Gradienti
+              </button>
+            </div>
+          </div>
 
-        {bookingBgTextureTab === 'images' ? (
-          <div className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5">
+          {bookingBgTextureTab === 'images' ? (
+          <div
+            className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
+            style={bookingBgGridTopSpacingStyle}
+          >
             {BOOKING_PAGE_TILE_IDS.map((id, index) => (
               <button
                 key={id}
@@ -766,7 +789,10 @@ export const RestaurantSettingsTab: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5">
+          <div
+            className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
+            style={bookingBgGridTopSpacingStyle}
+          >
             {BOOKING_PAGE_GRADIENT_PRESETS.map((preset) => (
               <button
                 key={preset.id}
@@ -794,7 +820,8 @@ export const RestaurantSettingsTab: React.FC = () => {
               </button>
             ))}
           </div>
-        )}
+          )}
+        </div>
 
         <div className="w-full space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
