@@ -7,6 +7,11 @@ import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { formatHours, getDefaultBusinessHours } from '@/lib/businessHours'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
+import {
+  DEFAULT_BOOKING_PAGE_TILE,
+  bookingPageTilePublicHref,
+  type BookingPageTileId,
+} from '@/features/booking/constants/bookingPageBackground'
 
 export const BookingRequestPage: React.FC = () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>()
@@ -26,25 +31,43 @@ export const BookingRequestPage: React.FC = () => {
   const { data: contactEmail } = useRestaurantSetting('contact_email')
   const { data: contactPhone } = useRestaurantSetting('contact_phone')
   const { data: contactAddress } = useRestaurantSetting('contact_address')
+  const { data: publicBookingBg, isPending: isPublicBookingBgPending } = useRestaurantSetting(
+    'public_booking_page_background'
+  )
 
-  // Set a deterministic background (no missing local assets)
+  /**
+   * Texture verticale da impostazioni (`public/booking/tiles/tile-XX.png`).
+   * Il body di default e opaco e coprirebbe lo sfondo su :root → qui lo rendiamo trasparente.
+   */
   useEffect(() => {
     if (isTenantLoading || !tenantId) return
 
-    document.documentElement.style.backgroundImage = 'linear-gradient(135deg, #2d2013 0%, #5a3c24 45%, #8b5f3c 100%)';
-    document.documentElement.style.backgroundSize = 'cover';
-    document.documentElement.style.backgroundPosition = 'center';
-    document.documentElement.style.backgroundRepeat = 'no-repeat';
-    document.documentElement.style.backgroundAttachment = 'fixed';
+    const root = document.documentElement
+    const body = document.body
+    const tileId: BookingPageTileId = isPublicBookingBgPending
+      ? DEFAULT_BOOKING_PAGE_TILE
+      : (publicBookingBg ?? DEFAULT_BOOKING_PAGE_TILE)
+    const tileUrl = bookingPageTilePublicHref(tileId, import.meta.env.BASE_URL)
+    const prevBodyBg = body.style.backgroundColor
+    body.style.backgroundColor = 'transparent'
+
+    root.style.backgroundColor = '#2d2013'
+    root.style.backgroundImage = `url("${tileUrl}")`
+    root.style.backgroundSize = '100% auto'
+    root.style.backgroundPosition = 'top center'
+    root.style.backgroundRepeat = 'repeat-y'
+    root.style.backgroundAttachment = 'scroll'
 
     return () => {
-      document.documentElement.style.backgroundImage = '';
-      document.documentElement.style.backgroundSize = '';
-      document.documentElement.style.backgroundPosition = '';
-      document.documentElement.style.backgroundRepeat = '';
-      document.documentElement.style.backgroundAttachment = '';
-    };
-  }, [isTenantLoading, tenantId]);
+      body.style.backgroundColor = prevBodyBg
+      root.style.backgroundColor = ''
+      root.style.backgroundImage = ''
+      root.style.backgroundSize = ''
+      root.style.backgroundPosition = ''
+      root.style.backgroundRepeat = ''
+      root.style.backgroundAttachment = ''
+    }
+  }, [isTenantLoading, tenantId, isPublicBookingBgPending, publicBookingBg])
 
   // Format day name for display
   const formatDayName = (day: string): string => {

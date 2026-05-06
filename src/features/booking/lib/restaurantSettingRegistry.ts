@@ -7,6 +7,11 @@ import {
   type BookingTimeSlots,
   validateBookingTimeSlots,
 } from '@/features/booking/utils/bookingTimeSlots'
+import {
+  BOOKING_PAGE_TILE_IDS,
+  type BookingPageTileId,
+  parseBookingPageTileFromDb,
+} from '@/features/booking/constants/bookingPageBackground'
 
 export const RESTAURANT_SETTING_KEYS_V1 = [
   'restaurant_name',
@@ -18,6 +23,7 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'contact_email',
   'contact_phone',
   'contact_address',
+  'public_booking_page_background',
 ] as const
 
 export type RestaurantSettingKeyV1 = (typeof RESTAURANT_SETTING_KEYS_V1)[number]
@@ -130,6 +136,7 @@ export type RestaurantSettingValueMap = {
   contact_email: string
   contact_phone: string
   contact_address: string
+  public_booking_page_background: BookingPageTileId
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -241,6 +248,17 @@ export const restaurantSettingRegistry: {
     validate: (value) => {
       const r = genericTextSchema.safeParse(value)
       return r.success ? null : r.error.issues[0]?.message ?? 'Valore non valido'
+    },
+  },
+  public_booking_page_background: {
+    key: 'public_booking_page_background',
+    parseFromDb: (raw) => parseBookingPageTileFromDb(raw),
+    serializeToDb: (value) => String(value).trim().toLowerCase() as Json,
+    validate: (value) => {
+      if (typeof value !== 'string') return 'Seleziona uno sfondo valido'
+      const normalized = value.trim().toLowerCase()
+      if ((BOOKING_PAGE_TILE_IDS as readonly string[]).includes(normalized)) return null
+      return 'Sfondo pagina non valido'
     },
   },
 }

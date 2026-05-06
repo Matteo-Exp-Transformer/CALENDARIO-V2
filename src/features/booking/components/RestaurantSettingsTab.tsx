@@ -22,6 +22,12 @@ import {
   slotRangesOverlap,
   type BookingTimeSlots,
 } from '@/features/booking/utils/bookingTimeSlots'
+import {
+  BOOKING_PAGE_TILE_IDS,
+  DEFAULT_BOOKING_PAGE_TILE,
+  bookingPageTilePublicHref,
+  type BookingPageTileId,
+} from '@/features/booking/constants/bookingPageBackground'
 
 type SlotFieldKey =
   | 'morningStart'
@@ -125,6 +131,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const contactEmailQuery = useRestaurantSetting('contact_email')
   const contactPhoneQuery = useRestaurantSetting('contact_phone')
   const contactAddressQuery = useRestaurantSetting('contact_address')
+  const publicBookingPageBgQuery = useRestaurantSetting('public_booking_page_background')
 
   const upsert = useUpsertRestaurantSetting()
 
@@ -145,6 +152,10 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [contactEmail, setContactEmail] = useState('Alritrovobologna@gmail.com')
   const [contactPhone, setContactPhone] = useState('3505362538')
   const [contactAddress, setContactAddress] = useState('Via Centotrecento 1/1B - Bologna, 40126')
+  const [bookingPageBackground, setBookingPageBackground] =
+    useState<BookingPageTileId>(DEFAULT_BOOKING_PAGE_TILE)
+  /** Dopo «Conferma» la griglia resta bloccata finche non si cambia selezione o non va a buon fine «Salva modifiche». */
+  const [bookingBgSelectionLocked, setBookingBgSelectionLocked] = useState(false)
 
   const hydratedRef = useRef(false)
   const slotFieldRefs = useRef<Record<SlotFieldKey, HTMLDivElement | null>>({
@@ -159,6 +170,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   useEffect(() => {
     hydratedRef.current = false
     setDirty(false)
+    setBookingBgSelectionLocked(false)
   }, [tenantId])
 
   const allSuccess =
@@ -168,7 +180,8 @@ export const RestaurantSettingsTab: React.FC = () => {
     hoursQuery.isSuccess &&
     contactEmailQuery.isSuccess &&
     contactPhoneQuery.isSuccess &&
-    contactAddressQuery.isSuccess
+    contactAddressQuery.isSuccess &&
+    publicBookingPageBgQuery.isSuccess
 
   useEffect(() => {
     if (!allSuccess || hydratedRef.current) return
@@ -187,6 +200,8 @@ export const RestaurantSettingsTab: React.FC = () => {
         contactAddressQuery.data || 'Via Centotrecento 1/1B - Bologna, 40126'
       )
     )
+    setBookingPageBackground(publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_TILE)
+    setBookingBgSelectionLocked(false)
     hydratedRef.current = true
   }, [
     allSuccess,
@@ -197,6 +212,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactEmailQuery.data,
     contactPhoneQuery.data,
     contactAddressQuery.data,
+    publicBookingPageBgQuery.data,
   ])
 
   const loading =
@@ -206,7 +222,8 @@ export const RestaurantSettingsTab: React.FC = () => {
     hoursQuery.isPending ||
     contactEmailQuery.isPending ||
     contactPhoneQuery.isPending ||
-    contactAddressQuery.isPending
+    contactAddressQuery.isPending ||
+    publicBookingPageBgQuery.isPending
 
   const loadError =
     nameQuery.error ||
@@ -215,9 +232,28 @@ export const RestaurantSettingsTab: React.FC = () => {
     hoursQuery.error ||
     contactEmailQuery.error ||
     contactPhoneQuery.error ||
-    contactAddressQuery.error
+    contactAddressQuery.error ||
+    publicBookingPageBgQuery.error
 
   const markDirty = () => setDirty(true)
+
+  const savedBookingPageTile = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_TILE
+  /** Selezione diversa dal valore gia salvato su DB (solo «Salva modifiche» aggiorna il DB). */
+  const bookingBgHasUnsavedChoice = bookingPageBackground !== savedBookingPageTile
+
+  const handleBookingBgConfirmOrCancel = () => {
+    if (!tenantId || upsert.isPending) return
+    if (bookingBgSelectionLocked) {
+      setBookingBgSelectionLocked(false)
+      return
+    }
+    if (!bookingBgHasUnsavedChoice) return
+    setBookingBgSelectionLocked(true)
+    toast.success(
+      'Selezione confermata e bloccata. Usa «Salva modifiche» in fondo per pubblicarla sulla pagina Prenota.'
+    )
+  }
+
   const handleRestaurantNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     markDirty()
     setRestaurantName(
@@ -246,6 +282,13 @@ export const RestaurantSettingsTab: React.FC = () => {
       return
     }
 
+    if (bookingPageBackground !== savedBookingPageTile && !bookingBgSelectionLocked) {
+      toast.error(
+        'Conferma la selezione dello sfondo con il pulsante dedicato, poi usa Salva modifiche in fondo.'
+      )
+      return
+    }
+
     try {
       const safeName = stripDirectionalFormattingChars(restaurantName).slice(0, RESTAURANT_NAME_MAX_LENGTH)
       const safeEmail = stripDirectionalFormattingChars(contactEmail)
@@ -265,6 +308,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         { key: 'contact_email', value: safeEmail },
         { key: 'contact_phone', value: safePhone },
         { key: 'contact_address', value: safeAddress },
+        { key: 'public_booking_page_background', value: bookingPageBackground },
       ])
       // Keep local form state as source of truth after save.
       // Resetting hydration before refetch can reapply stale cached values.
@@ -282,6 +326,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         eveningEnd: false,
       })
       setDirty(false)
+      setBookingBgSelectionLocked(false)
     } catch {
       /* toast gestito da useUpsertRestaurantSetting.onError */
     }
@@ -327,6 +372,21 @@ export const RestaurantSettingsTab: React.FC = () => {
   const anagraficaFieldStackStyle: React.CSSProperties = { marginTop: '1.75rem' }
   const anagraficaInputClassName =
     'block w-full min-h-[3.667rem] rounded-[1.25rem] border-2 border-slate-200 bg-white px-4 py-2.5 text-center text-xl font-medium leading-snug text-slate-900 shadow-sm outline-none placeholder:text-slate-400 placeholder:text-xl transition-colors duration-150 focus:border-primary-400 focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-white disabled:text-slate-500 disabled:opacity-80'
+
+  const bookingBgBase = import.meta.env.BASE_URL
+  const bookingPagePreviewSrc = bookingPageTilePublicHref(bookingPageBackground, bookingBgBase)
+
+  const bookingBgPickButtonClass = (selected: boolean) =>
+    [
+      'flex min-h-0 flex-col gap-1 rounded-lg border-2 bg-white/85 p-1.5 text-center shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 sm:focus-visible:ring-offset-2',
+      selected ? 'border-emerald-600 ring-2 ring-emerald-600/80 ring-offset-1 sm:ring-offset-2' : 'border-slate-200 hover:border-slate-300',
+      upsert.isPending ? 'pointer-events-none opacity-65' : '',
+    ]
+      .filter(Boolean)
+      .join(' ')
+
+  const bookingBgSectionClass =
+    'w-full max-w-3xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
 
   return (
     <div className="flex w-full flex-col items-center gap-8">
@@ -447,6 +507,102 @@ export const RestaurantSettingsTab: React.FC = () => {
               placeholder="Via ..., Citta, CAP"
             />
           </div>
+        </div>
+      </section>
+
+      <section className={bookingBgSectionClass} style={sectionSurfaceStyle}>
+        <h3 className="text-lg font-semibold text-slate-800">Sfondo pagina Prenota</h3>
+        <p className="text-sm text-slate-600">
+          Scegli una texture, guarda anteprima (in basso), conferma la tua scelta e salva le modifiche.
+        </p>
+
+        <div className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5">
+          {BOOKING_PAGE_TILE_IDS.map((id, index) => (
+            <button
+              key={id}
+              type="button"
+              disabled={upsert.isPending || bookingBgSelectionLocked}
+              className={bookingBgPickButtonClass(bookingPageBackground === id)}
+              onClick={() => {
+                setBookingPageBackground(id)
+                markDirty()
+              }}
+            >
+              <img
+                src={bookingPageTilePublicHref(id, bookingBgBase)}
+                alt=""
+                className="pointer-events-none aspect-[4/3] h-auto w-full rounded-md border border-slate-200/80 object-cover"
+                loading="lazy"
+              />
+              <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]">
+                Texture {index + 1}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <div className="w-full space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Anteprima
+          </p>
+          <div className="relative mx-auto w-full max-w-xl overflow-hidden rounded-2xl border-2 border-slate-400/80 bg-[#2d2013] shadow-inner">
+            <div className="relative h-[min(48vh,26rem)] w-full overflow-hidden">
+              <img
+                key={bookingPageBackground}
+                src={bookingPagePreviewSrc}
+                alt=""
+                className="pointer-events-none absolute left-0 top-0 h-auto min-h-full w-full max-w-none select-none"
+                decoding="async"
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  minHeight: '100%',
+                  objectFit: 'cover',
+                  objectPosition: 'top center',
+                  display: 'block',
+                }}
+              />
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{ backgroundColor: 'rgba(0, 0, 0, 0.26)' }}
+                aria-hidden
+              />
+              <div
+                className="relative z-10 mx-auto mt-6 max-w-[85%] rounded-lg px-4 py-3 shadow-md backdrop-blur-[14px]"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                }}
+              >
+                <p className="text-sm font-serif font-bold text-[#5a3923]">{restaurantName || 'Nome locale'}</p>
+                <p className="text-xs font-semibold text-[#6b4830]">Richiesta prenotazione</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto flex w-full max-w-md flex-col items-center gap-2 pt-1">
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleBookingBgConfirmOrCancel}
+            disabled={
+              upsert.isPending ||
+              !tenantId ||
+              (!bookingBgSelectionLocked && !bookingBgHasUnsavedChoice)
+            }
+            style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
+            className="min-h-[2.875rem] w-full max-w-xs border-0 !bg-[#1e3a8a] px-6 py-2.5 !text-white shadow-md transition-colors duration-150 hover:!bg-[#1e40af] hover:shadow-lg focus:ring-[#3b82f6] disabled:pointer-events-none disabled:!bg-[#1e3a8a] [&_svg]:!text-white"
+          >
+            {bookingBgSelectionLocked ? 'Annulla selezione sfondo' : 'Conferma selezione sfondo'}
+          </Button>
+          {bookingBgSelectionLocked && bookingBgHasUnsavedChoice && (
+            <p className="text-xs font-semibold leading-snug text-emerald-800">
+              Selezione confermata. Salva modifiche in fondo per pubblicarla sulla pagina Prenota.
+            </p>
+          )}
+          {!bookingBgHasUnsavedChoice && !bookingBgSelectionLocked && (
+            <p className="text-xs font-medium text-slate-600">Questo sfondo e gia pubblicato sulla pagina Prenota.</p>
+          )}
         </div>
       </section>
 
