@@ -1,13 +1,6 @@
 // Type definitions for Menu Items
 
-export type MenuCategory =
-  | 'bevande'
-  | 'pizza'
-  | 'antipasti'
-  | 'fritti'
-  | 'primi'
-  | 'secondi'
-  | 'dolci'
+export type MenuCategory = string
 
 export interface MenuItem {
   id: string

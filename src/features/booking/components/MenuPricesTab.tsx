@@ -1,13 +1,14 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { Button, Input } from '@/components/ui'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react'
 import { useMenuItems, useCreateMenuItem, useUpdateMenuItem, useDeleteMenuItem } from '../hooks/useMenuItems'
-import type { MenuItem, MenuItemInput, MenuCategory } from '@/types/menu'
+import { useCreateMenuCategory, useMenuCategories } from '../hooks/useMenuCategories'
+import type { MenuItem, MenuItemInput } from '@/types/menu'
 
-const CATEGORY_LABELS: Record<MenuCategory, string> = {
+const DEFAULT_CATEGORY_LABELS: Record<string, string> = {
   bevande: 'Bevande',
   pizza: 'Pizza',
   antipasti: 'Antipasti',
@@ -17,19 +18,51 @@ const CATEGORY_LABELS: Record<MenuCategory, string> = {
   dolci: 'Dolci'
 }
 
+const DEFAULT_CATEGORY_ORDER = Object.keys(DEFAULT_CATEGORY_LABELS)
+
+const slugifyCategory = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+
 export const MenuPricesTab: React.FC = () => {
   const { data: menuItems = [], isLoading } = useMenuItems()
+  const { data: dbCategories = [] } = useMenuCategories()
   const createMutation = useCreateMenuItem()
+  const createCategoryMutation = useCreateMenuCategory()
   const updateMutation = useUpdateMenuItem()
   const deleteMutation = useDeleteMenuItem()
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
+  const [isAddingCategory, setIsAddingCategory] = useState(false)
+  const [newCategoryLabel, setNewCategoryLabel] = useState('')
   /** Stringa controllata per l’input prezzo: evita lo 0 “incollato” con `parseFloat(...) || 0` su campo vuoto. */
   const [priceInput, setPriceInput] = useState('')
+  const mergedCategoryEntries = useMemo(() => {
+    const map = new Map<string, string>()
+    DEFAULT_CATEGORY_ORDER.forEach((key) => {
+      map.set(key, DEFAULT_CATEGORY_LABELS[key])
+    })
+    dbCategories.forEach((category) => {
+      map.set(category.key, category.label)
+    })
+    return Array.from(map.entries())
+  }, [dbCategories])
+
+
+  const categoryKeys = useMemo(
+    () => mergedCategoryEntries.map(([key]) => key),
+    [mergedCategoryEntries]
+  )
+
   const [formData, setFormData] = useState<MenuItemInput>({
     name: '',
-    category: 'bevande',
+    category: categoryKeys[0] ?? 'bevande',
     price: 0,
     description: '',
     sort_order: 0
@@ -42,7 +75,7 @@ export const MenuPricesTab: React.FC = () => {
     }
     acc[item.category].push(item)
     return acc
-  }, {} as Record<MenuCategory, MenuItem[]>)
+  }, {} as Record<string, MenuItem[]>)
 
   const handleStartEdit = (item: MenuItem) => {
     setEditingId(item.id)
@@ -63,7 +96,7 @@ export const MenuPricesTab: React.FC = () => {
     setPriceInput('')
     setFormData({
       name: '',
-      category: 'bevande',
+      category: categoryKeys[0] ?? 'bevande',
       price: 0,
       description: '',
       sort_order: 0
@@ -76,11 +109,41 @@ export const MenuPricesTab: React.FC = () => {
     setPriceInput('')
     setFormData({
       name: '',
-      category: 'bevande',
+      category: categoryKeys[0] ?? 'bevande',
       price: 0,
       description: '',
       sort_order: 0
     })
+  }
+
+  const handleAddCategory = () => {
+    const rawLabel = newCategoryLabel.trim()
+    if (!rawLabel) {
+      toast.error('Inserisci il nome della categoria')
+      return
+    }
+
+    const key = slugifyCategory(rawLabel)
+    if (!key) {
+      toast.error('Nome categoria non valido')
+      return
+    }
+
+    if (categoryKeys.includes(key)) {
+      toast.error('Categoria già presente')
+      return
+    }
+
+    createCategoryMutation.mutate(
+      { key, label: rawLabel, sort_order: 999 },
+      {
+        onSuccess: () => {
+          setIsAddingCategory(false)
+          setNewCategoryLabel('')
+          setFormData((prev) => ({ ...prev, category: key }))
+        }
+      }
+    )
   }
 
   const handleSave = () => {
@@ -129,7 +192,7 @@ export const MenuPricesTab: React.FC = () => {
     <div className="flex flex-col gap-6 md:gap-7">
       <section
         aria-labelledby="menu-prices-heading"
-        className="grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 rounded-xl border shadow-sm px-4 py-2 md:gap-x-5 md:px-5 md:py-2"
+        className="grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 rounded-xl shadow-sm px-4 py-2 md:gap-x-5 md:px-5 md:py-2 min-h-[88px]"
         style={ADMIN_WARM_GRADIENT_SURFACE}
       >
         <h2
@@ -144,7 +207,7 @@ export const MenuPricesTab: React.FC = () => {
         >
           Aggiungi, modifica o elimina le voci del menu e i prezzi
         </p>
-        <div className="justify-self-end">
+        <div className="justify-self-end flex flex-col items-end gap-4" style={{ rowGap: '16px' }}>
           <Button
             variant="success"
             size="sm"
@@ -154,8 +217,73 @@ export const MenuPricesTab: React.FC = () => {
             <Plus className="h-3.5 w-3.5" />
             Aggiungi Prodotto
           </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsAddingCategory((current) => !current)}
+            className="h-8 shrink-0 gap-1.5 px-3 py-0 text-xs"
+            style={{ marginTop: '8px', backgroundColor: '#60a5fa', borderColor: '#3b82f6', color: '#000000' }}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Aggiungi Categoria
+          </Button>
         </div>
       </section>
+      {isAddingCategory && (
+        <>
+          <div
+            className="w-full"
+            style={{
+              height: '24px',
+              backgroundImage: ADMIN_WARM_GRADIENT_SURFACE.backgroundImage
+            }}
+          />
+          <div
+            className="relative w-full rounded-2xl border-t-2 p-4 shadow-lg"
+            style={ADMIN_WARM_GRADIENT_SURFACE}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setIsAddingCategory(false)
+                setNewCategoryLabel('')
+              }}
+              className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-warm-wood/40 bg-white/90 text-warm-wood shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+              aria-label="Chiudi inserimento categoria"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="mx-auto w-2/3">
+              <Input
+                value={newCategoryLabel}
+                onChange={(e) => setNewCategoryLabel(e.target.value)}
+                placeholder="Nuova categoria ingredienti"
+                className="h-14 w-full rounded-2xl pl-6"
+                style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+              />
+            </div>
+            <Button
+              variant="success"
+              size="md"
+              onClick={handleAddCategory}
+              disabled={createCategoryMutation.isPending}
+              className="shrink-0"
+              style={{
+                position: 'absolute',
+                right: '16px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                height: '50px',
+                minWidth: '74px',
+                backgroundColor: '#16a34a',
+                color: '#ffffff'
+              }}
+            >
+              Salva
+            </Button>
+          </div>
+        </>
+      )}
 
       {/* Form Aggiunta/Modifica */}
       {(isAdding || editingId) && (
@@ -197,7 +325,7 @@ export const MenuPricesTab: React.FC = () => {
                   onValueChange={(value) =>
                     setFormData({
                       ...formData,
-                      category: value as MenuCategory
+                      category: value
                     })
                   }
                 >
@@ -217,7 +345,7 @@ export const MenuPricesTab: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
-                    {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
+                    {mergedCategoryEntries.map(([value, label]) => (
                       <SelectItem key={value} value={value}>
                         {label}
                       </SelectItem>
@@ -278,8 +406,8 @@ export const MenuPricesTab: React.FC = () => {
 
       {/* Lista prodotti per categoria */}
       <div className="menu-prices-category-list-wrap flex flex-col items-center gap-[28px]">
-      {Object.entries(CATEGORY_LABELS).map(([category, label]) => {
-        const items = itemsByCategory[category as MenuCategory] || []
+      {mergedCategoryEntries.map(([category, label]) => {
+        const items = itemsByCategory[category] || []
         if (items.length === 0 && !isAdding && !editingId) return null
 
         return (
