@@ -19,7 +19,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   extractDateFromISO,
   getAccurateStartTime,
-  getAccurateEndTime,
   startTimeToMinutesSinceMidnight,
 } from '../utils/dateUtils'
 import { getResolvedMenuPriceDisplay } from '../utils/menuPricing'

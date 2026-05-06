@@ -246,9 +246,11 @@ export const BookingRequestPage: React.FC = () => {
                     </h3>
                   </div>
                 </div>
-                <div className="flex items-center justify-end gap-3">
+                <div className="flex min-w-0 items-center justify-end gap-3">
                   <Mail className="w-5 h-5 text-warm-orange flex-shrink-0" />
-                  <span className="text-base text-warm-wood-dark font-medium">{displayContactEmail}</span>
+                  <span className="min-w-0 break-all text-right text-base text-warm-wood-dark font-medium">
+                    {displayContactEmail}
+                  </span>
                 </div>
                 <div className="flex items-center justify-end gap-3">
                   <Phone className="w-5 h-5 text-warm-orange flex-shrink-0" />
