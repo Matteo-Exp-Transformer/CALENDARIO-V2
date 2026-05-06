@@ -256,7 +256,7 @@ export const MenuPricesTab: React.FC = () => {
           Menu
         </h2>
         <p
-          className="min-w-0 justify-self-center px-1 text-center text-xs leading-snug text-gray-600 sm:px-2 sm:text-sm"
+          className="min-w-0 justify-self-center px-1 text-center text-xs leading-snug text-gray-600 max-[729px]:hidden sm:px-2 sm:text-sm"
           title="Aggiungi, modifica o elimina le voci del menu e i prezzi"
         >
           Aggiungi, modifica o elimina le voci del menu e i prezzi
