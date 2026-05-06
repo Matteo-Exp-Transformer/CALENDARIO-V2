@@ -5,7 +5,12 @@ import { Button, Input } from '@/components/ui'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react'
 import { useMenuItems, useCreateMenuItem, useUpdateMenuItem, useDeleteMenuItem } from '../hooks/useMenuItems'
-import { useCreateMenuCategory, useMenuCategories } from '../hooks/useMenuCategories'
+import {
+  useCreateMenuCategory,
+  useDeleteMenuCategory,
+  useMenuCategories,
+  useUpdateMenuCategory
+} from '../hooks/useMenuCategories'
 import type { MenuItem, MenuItemInput } from '@/types/menu'
 
 const DEFAULT_CATEGORY_LABELS: Record<string, string> = {
@@ -29,14 +34,19 @@ const slugifyCategory = (value: string): string =>
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '')
 
+type MenuViewMode = 'menu' | 'products' | 'categories'
+
 export const MenuPricesTab: React.FC = () => {
   const { data: menuItems = [], isLoading } = useMenuItems()
   const { data: dbCategories = [] } = useMenuCategories()
   const createMutation = useCreateMenuItem()
   const createCategoryMutation = useCreateMenuCategory()
+  const updateCategoryMutation = useUpdateMenuCategory()
+  const deleteCategoryMutation = useDeleteMenuCategory()
   const updateMutation = useUpdateMenuItem()
   const deleteMutation = useDeleteMenuItem()
 
+  const [viewMode, setViewMode] = useState<MenuViewMode>('menu')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isAddingCategory, setIsAddingCategory] = useState(false)
@@ -59,6 +69,10 @@ export const MenuPricesTab: React.FC = () => {
     () => mergedCategoryEntries.map(([key]) => key),
     [mergedCategoryEntries]
   )
+  const dbCategoryByKey = useMemo(
+    () => new Map(dbCategories.map((category) => [category.key, category])),
+    [dbCategories]
+  )
 
   const [formData, setFormData] = useState<MenuItemInput>({
     name: '',
@@ -78,6 +92,7 @@ export const MenuPricesTab: React.FC = () => {
   }, {} as Record<string, MenuItem[]>)
 
   const handleStartEdit = (item: MenuItem) => {
+    setViewMode('products')
     setEditingId(item.id)
     setFormData({
       name: item.name,
@@ -91,6 +106,8 @@ export const MenuPricesTab: React.FC = () => {
   }
 
   const handleStartAdd = () => {
+    setViewMode('products')
+    setIsAddingCategory(false)
     setIsAdding(true)
     setEditingId(null)
     setPriceInput('')
@@ -104,6 +121,7 @@ export const MenuPricesTab: React.FC = () => {
   }
 
   const handleCancel = () => {
+    setViewMode('menu')
     setIsAdding(false)
     setEditingId(null)
     setPriceInput('')
@@ -138,12 +156,48 @@ export const MenuPricesTab: React.FC = () => {
       { key, label: rawLabel, sort_order: 999 },
       {
         onSuccess: () => {
+          setViewMode('menu')
           setIsAddingCategory(false)
           setNewCategoryLabel('')
           setFormData((prev) => ({ ...prev, category: key }))
         }
       }
     )
+  }
+
+  const handleEditCategory = (categoryKey: string, currentLabel: string) => {
+    const dbCategory = dbCategoryByKey.get(categoryKey)
+    if (!dbCategory) {
+      toast.error('Categoria non modificabile')
+      return
+    }
+
+    const newLabel = prompt('Nuovo nome categoria', currentLabel)?.trim()
+    if (!newLabel || newLabel === currentLabel) {
+      return
+    }
+
+    updateCategoryMutation.mutate({ id: dbCategory.id, label: newLabel })
+  }
+
+  const handleDeleteCategory = (categoryKey: string, label: string) => {
+    const dbCategory = dbCategoryByKey.get(categoryKey)
+    if (!dbCategory) {
+      toast.error('Categoria non eliminabile')
+      return
+    }
+
+    const itemsInCategory = itemsByCategory[categoryKey]?.length ?? 0
+    if (itemsInCategory > 0) {
+      toast.error('Elimina prima i prodotti presenti in questa categoria')
+      return
+    }
+
+    if (!confirm(`Sei sicuro di voler eliminare la categoria "${label}"?`)) {
+      return
+    }
+
+    deleteCategoryMutation.mutate(dbCategory.id)
   }
 
   const handleSave = () => {
@@ -215,21 +269,26 @@ export const MenuPricesTab: React.FC = () => {
             className="h-8 shrink-0 gap-1.5 px-3 py-0 text-xs"
           >
             <Plus className="h-3.5 w-3.5" />
-            Aggiungi Prodotto
+            Aggiungi / Modifica Prodotto
           </Button>
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => setIsAddingCategory((current) => !current)}
+            onClick={() => {
+              setViewMode('categories')
+              setIsAdding(false)
+              setEditingId(null)
+              setIsAddingCategory(true)
+            }}
             className="h-8 shrink-0 gap-1.5 px-3 py-0 text-xs"
             style={{ marginTop: '8px', backgroundColor: '#60a5fa', borderColor: '#3b82f6', color: '#000000' }}
           >
             <Plus className="h-3.5 w-3.5" />
-            Aggiungi Categoria
+            Aggiungi / Modifica Categoria
           </Button>
         </div>
       </section>
-      {isAddingCategory && (
+      {viewMode === 'categories' && isAddingCategory && (
         <>
           <div
             className="w-full"
@@ -245,6 +304,7 @@ export const MenuPricesTab: React.FC = () => {
             <button
               type="button"
               onClick={() => {
+                setViewMode('menu')
                 setIsAddingCategory(false)
                 setNewCategoryLabel('')
               }}
@@ -286,7 +346,7 @@ export const MenuPricesTab: React.FC = () => {
       )}
 
       {/* Form Aggiunta/Modifica */}
-      {(isAdding || editingId) && (
+      {viewMode === 'products' && (isAdding || editingId) && (
         <div
           className="relative w-full rounded-2xl border-2 p-6 shadow-lg"
           style={ADMIN_WARM_GRADIENT_SURFACE}
@@ -404,7 +464,7 @@ export const MenuPricesTab: React.FC = () => {
         </div>
       )}
 
-      {/* Lista prodotti per categoria */}
+      {viewMode === 'menu' && (
       <div className="menu-prices-category-list-wrap flex flex-col items-center gap-[28px]">
       {mergedCategoryEntries.map(([category, label]) => {
         const items = itemsByCategory[category] || []
@@ -463,6 +523,104 @@ export const MenuPricesTab: React.FC = () => {
         )
       })}
       </div>
+      )}
+      {viewMode === 'products' && (
+        <div className="menu-prices-category-list-wrap flex flex-col items-center gap-[28px]">
+          <div className="menu-prices-category-card bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="bg-gradient-to-r from-warm-wood to-warm-wood-dark px-6 py-4 text-center">
+              <h3 className="text-xl font-serif font-bold text-white">Prodotti Menu</h3>
+            </div>
+            <div className="flex flex-col items-center p-6 text-center">
+              {menuItems.length === 0 ? (
+                <p className="text-gray-500 py-4">Nessun prodotto inserito</p>
+              ) : (
+                <div className="flex w-full max-w-full flex-col items-center gap-[12px]">
+                  {menuItems.map((item) => (
+                    <div key={item.id} className="menu-prices-item-row">
+                      <div className="menu-prices-item-text overflow-hidden">
+                        <div className="flex flex-wrap items-center justify-center gap-x-[12px] gap-y-1">
+                          <h4 className="font-semibold text-gray-900">{item.name}</h4>
+                          <span className="text-lg font-bold text-warm-wood">
+                            €{item.price.toFixed(2)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {mergedCategoryEntries.find(([key]) => key === item.category)?.[1] ?? item.category}
+                        </p>
+                        {item.description && (
+                          <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                        )}
+                      </div>
+                      <div className="menu-prices-item-actions shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleStartEdit(item)}
+                          className="menu-prices-icon-btn menu-prices-icon-btn--edit"
+                          aria-label={`Modifica ${item.name}`}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(item.id, item.name)}
+                          className="menu-prices-icon-btn menu-prices-icon-btn--delete"
+                          aria-label={`Elimina ${item.name}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {viewMode === 'categories' && (
+        <div className="menu-prices-category-list-wrap flex flex-col items-center gap-[28px]">
+          <div className="menu-prices-category-card bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="bg-gradient-to-r from-warm-wood to-warm-wood-dark px-6 py-4 text-center">
+              <h3 className="text-xl font-serif font-bold text-white">Categorie Menu</h3>
+            </div>
+            <div className="flex flex-col items-center p-6 text-center">
+              <div className="flex w-full max-w-full flex-col items-center gap-[12px]">
+                {mergedCategoryEntries.map(([key, label]) => (
+                  <div
+                    key={key}
+                    className="menu-prices-item-row"
+                    style={{ padding: '0.5rem 1rem', minHeight: '72px' }}
+                  >
+                    <div className="menu-prices-item-text overflow-hidden">
+                      <div className="flex flex-wrap items-center justify-center gap-x-[12px] gap-y-1">
+                        <h4 className="font-semibold text-gray-900">{label}</h4>
+                      </div>
+                    </div>
+                    <div className="menu-prices-item-actions shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleEditCategory(key, label)}
+                        className="menu-prices-icon-btn menu-prices-icon-btn--edit"
+                        aria-label={`Modifica ${label}`}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCategory(key, label)}
+                        className="menu-prices-icon-btn menu-prices-icon-btn--delete"
+                        aria-label={`Elimina ${label}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

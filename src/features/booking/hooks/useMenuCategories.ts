@@ -19,6 +19,11 @@ export interface MenuCategoryInput {
   sort_order?: number
 }
 
+interface MenuCategoryUpdateInput {
+  id: string
+  label: string
+}
+
 const DUPLICATE_CATEGORY_MSG = 'Esiste già una categoria con questo nome'
 
 function getMenuCategoryMutationError(error: unknown): string {
@@ -87,6 +92,67 @@ export const useCreateMenuCategory = () => {
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Errore nell\'aggiunta della categoria')
+    }
+  })
+}
+
+export const useUpdateMenuCategory = () => {
+  const queryClient = useQueryClient()
+  const { tenantId } = useTenantContext()
+
+  return useMutation({
+    mutationFn: async ({ id, label }: MenuCategoryUpdateInput) => {
+      const { data, error } = await ((supabase
+        .from('menu_categories') as any) as any)
+        .update({
+          label,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .eq('tenant_id', tenantId!)
+        .select()
+        .single()
+
+      if (error) {
+        throw new Error(getMenuCategoryMutationError(error))
+      }
+
+      return data as MenuCategoryRecord
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-categories'] })
+      toast.success('Categoria aggiornata con successo')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Errore nell\'aggiornamento della categoria')
+    }
+  })
+}
+
+export const useDeleteMenuCategory = () => {
+  const queryClient = useQueryClient()
+  const { tenantId } = useTenantContext()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase
+        .from('menu_categories') as any)
+        .delete()
+        .eq('id', id)
+        .eq('tenant_id', tenantId!)
+
+      if (error) {
+        throw new Error(handleSupabaseError(error))
+      }
+
+      return id
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-categories'] })
+      toast.success('Categoria eliminata con successo')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Errore nell\'eliminazione della categoria')
     }
   })
 }
