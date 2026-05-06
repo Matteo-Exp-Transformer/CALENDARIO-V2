@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { BookingRequestForm } from '@/features/booking/components/BookingRequestForm'
-import { UtensilsCrossed, MapPin, Clock, Phone, Mail } from 'lucide-react'
+import { MapPin, Clock, Phone, Mail } from 'lucide-react'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { formatHours, getDefaultBusinessHours } from '@/lib/businessHours'
@@ -136,7 +136,18 @@ export const BookingRequestPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen relative font-bold">
+    <div className="booking-request-page min-h-screen relative font-bold">
+      <style>{`
+        .booking-request-header-inner {
+          box-sizing: border-box;
+          padding: 7px 13px !important;
+        }
+        @media (min-width: 768px) {
+          .booking-request-header-inner {
+            padding: 8px 29px !important;
+          }
+        }
+      `}</style>
       {/* Overlay scuro per leggibilita */}
       <div
         className="fixed inset-0 z-0"
@@ -162,43 +173,62 @@ export const BookingRequestPage: React.FC = () => {
       <div className="relative z-10 min-h-screen">
         <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
 
-          {/* Header semi-trasparente in alto */}
-          <div className="pt-2 md:pt-3 pb-2">
+          {/* Header compatto */}
+          <div style={{ paddingTop: 6, paddingBottom: 6 }}>
             <div
-              className="rounded-lg shadow-md px-4 py-2 md:px-8 md:py-2 animate-fade-in"
+              className="booking-request-header-inner rounded-lg shadow-md animate-fade-in"
               style={{
                 backgroundColor: 'rgba(255, 255, 255, 0.3)',
                 backdropFilter: 'blur(16px)',
+                maxWidth: '100%',
               }}
             >
-              <div className="flex flex-col items-center justify-center gap-2 text-center">
-                {/* In alto: Nome ristorante con icona */}
-                <div className="flex items-center gap-1.5">
-                  <div className="flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full bg-warm-cream shadow-md">
-                    <UtensilsCrossed className="w-3 h-3 md:w-3.5 md:h-3.5 text-warm-wood" />
-                  </div>
-                  <h1
-                    className="text-2xl md:text-3xl font-serif text-warm-wood"
-                    style={{ fontWeight: '700' }}
-                  >
-                    {displayName}
-                  </h1>
-                </div>
+              <div
+                className="text-center"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}
+              >
+                <h1
+                  className="font-serif text-warm-wood"
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 'clamp(1.4rem, calc(2.8vw * 4 / 3), 1.8rem)',
+                    lineHeight: 1.2,
+                    margin: 0,
+                    padding: 0,
+                  }}
+                >
+                  {displayName}
+                </h1>
 
-                {/* Sotto: Richiesta Prenotazione Tavolo */}
-                <div className="flex items-center justify-center">
-                  <h2
-                    className="text-xl md:text-2xl font-serif text-warm-wood"
-                    style={{ fontWeight: '700' }}
-                  >
-                    Richiesta Prenotazione Tavolo
-                  </h2>
-                </div>
+                <h2
+                  className="font-serif text-warm-wood"
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 'clamp(1.27rem, calc(2.5vw * 4 / 3), 1.53rem)',
+                    lineHeight: 1.2,
+                    margin: 0,
+                    padding: 0,
+                  }}
+                >
+                  Richiesta Prenotazione Tavolo
+                </h2>
 
-                {/* Nota esplicativa */}
                 <p
-                  className="text-sm md:text-base text-warm-wood-dark leading-relaxed max-w-3xl md:max-w-4xl px-3 md:px-8 opacity-90"
-                  style={{ fontWeight: 700 }}
+                  className="text-warm-wood-dark opacity-90"
+                  style={{
+                    fontWeight: 700,
+                    fontSize: '0.917rem',
+                    lineHeight: 1.42,
+                    margin: 0,
+                    padding: '0 6px',
+                    maxWidth: '42rem',
+                  }}
                 >
                   Compilando questo form invierai una richiesta allo staff. Ti contatteremo al pi&ugrave; presto per comunicarti l&apos;esito della richiesta!
                 </p>
