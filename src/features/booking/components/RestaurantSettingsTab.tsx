@@ -100,7 +100,8 @@ export const RestaurantSettingsTab: React.FC = () => {
         { key: 'contact_phone', value: contactPhone },
         { key: 'contact_address', value: contactAddress },
       ])
-      hydratedRef.current = false
+      // Keep local form state as source of truth after save.
+      // Resetting hydration before refetch can reapply stale cached values.
       await queryClient.refetchQueries({
         queryKey: ['restaurant_settings'],
         type: 'active',
