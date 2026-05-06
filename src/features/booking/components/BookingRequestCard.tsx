@@ -7,7 +7,7 @@ import { Calendar, Clock, Users, Tag, MessageSquare, CheckCircle, XCircle, Utens
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
 import { getPresetMenuLabel } from '../constants/presetMenus'
 import type { PresetMenuType } from '../constants/presetMenus'
-import { getMenuPriceDisplayFromBooking } from '../utils/menuPricing'
+import { getMenuPriceDisplayFromBooking, getResolvedMenuPriceDisplay } from '../utils/menuPricing'
 import { formatBookingDateTime } from '../utils/formatDateTime'
 import { ADMIN_WARM_BORDER, ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { cn } from '@/lib/utils'
@@ -16,14 +16,6 @@ interface BookingRequestCardProps {
   booking: BookingRequest
   onAccept: (booking: BookingRequest) => void
   onReject: (booking: BookingRequest) => void
-}
-
-const EVENT_TYPE_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  drink_caraffe: { label: 'Drink/Caraffe', icon: UtensilsCrossed, color: 'bg-blue-500' },
-  drink_rinfresco_leggero: { label: 'Drink/Caraffe + rinfresco leggero', icon: UtensilsCrossed, color: 'bg-cyan-500' },
-  drink_rinfresco_completo: { label: 'Drink/Caraffe + rinfresco completo', icon: UtensilsCrossed, color: 'bg-teal-500' },
-  drink_rinfresco_completo_primo: { label: 'Drink/Caraffe + rinfresco completo + primo piatto', icon: UtensilsCrossed, color: 'bg-emerald-500' },
-  menu_pranzo_cena: { label: 'Menu Pranzo / Menù Cena', icon: UtensilsCrossed, color: 'bg-amber-500' },
 }
 
 const STATUS_CONFIG: Record<string, { label: string; bgColor: string; textColor: string }> = {
@@ -66,14 +58,10 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
   }
 
   const eventTypeLabel = getBookingEventTypeLabel(booking)
-  // Usa eventConfig solo se event_type è valido, altrimenti usa valori di default per l'icona
-  const eventConfig = booking.event_type && EVENT_TYPE_CONFIG[booking.event_type] 
-    ? EVENT_TYPE_CONFIG[booking.event_type] 
-    : null
-  const EventIcon = eventConfig?.icon || UtensilsCrossed
-  const eventIconColor = eventConfig?.color || 'bg-gray-500'
   const statusConfig = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
   const menuPriceDisplay = getMenuPriceDisplayFromBooking(booking)
+  const digestMenuPrice =
+    booking.booking_type === 'rinfresco_laurea' ? getResolvedMenuPriceDisplay(booking) : null
   const creationDateLabel = formatBookingDateTime(booking.created_at)
 
   return (
@@ -103,75 +91,72 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
           )}
         >
         <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4 flex-1">
-            {/* Icona Tipo Evento */}
-            <div className={`
-              w-16 h-16 rounded-xl flex items-center justify-center
-              ${eventIconColor} shadow-md flex-shrink-0
-            `}>
-              <EventIcon className="w-8 h-8 text-white" />
-            </div>
-
-            {/* TUTTI I DATI in formato 2 colonne */}
-            <div className="text-left flex-1">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-                                {/* Colonna Sinistra */}
-                <div className="space-y-3">
-                  {/* Tipo Evento - Mostra solo se esiste un valore valido */}
+          <div className="flex min-w-0 flex-1 items-start gap-4">
+            {/* Digest: due metà affiancate (flex-1 basis-0); sotto ~480px colonna singola */}
+            <div className="w-full min-w-0 flex-1 text-left">
+              <div className="flex w-full flex-col gap-y-3 gap-x-6 min-[480px]:flex-row min-[480px]:items-start">
+                <div className="min-w-0 flex-1 basis-0 space-y-3">
                   {eventTypeLabel && (
-                    <div className="flex items-center gap-2">
-                      <Tag className="w-4 h-4 text-gray-500 flex-shrink-0" />     
-                      <span className="text-sm font-semibold text-gray-900">{eventTypeLabel}</span>                                                            
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Tag className="w-4 h-4 flex-shrink-0 text-gray-500" />
+                      <span className="truncate text-sm font-semibold text-gray-900">{eventTypeLabel}</span>
                     </div>
                   )}
 
-                  {/* Nome Cliente */}
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                    <span className="text-sm font-medium text-gray-900">{booking.client_name}</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <User className="w-4 h-4 flex-shrink-0 text-gray-500" />
+                    <span className="truncate text-sm font-medium text-gray-900">{booking.client_name}</span>
                   </div>
 
-                  {/* Email */}
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-600 truncate">{booking.client_email}</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Calendar className="w-4 h-4 flex-shrink-0 text-gray-500" />
+                    <span className="truncate text-sm font-medium text-gray-900">
+                      {formatDate(booking.desired_date)}
+                    </span>
                   </div>
 
-                  {/* Telefono */}
-                  {booking.client_phone && (
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                      <span className="text-sm text-gray-600">{booking.client_phone}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Clock className="w-4 h-4 flex-shrink-0 text-gray-500" />
+                    <span className="truncate text-sm font-medium text-gray-900">
+                      {formatTime(booking.desired_time)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Users className="w-4 h-4 flex-shrink-0 text-gray-500" />
+                    <span className="truncate text-sm font-medium text-gray-900">
+                      {booking.num_guests} ospiti
+                    </span>
+                  </div>
                 </div>
 
-                {/* Colonna Destra */}
-                <div className="space-y-3">
-                  {/* Data */}
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                    <span className="text-sm font-medium text-gray-900">{formatDate(booking.desired_date)}</span>
+                <div className="min-w-0 flex-1 basis-0 space-y-3" aria-label="Contatti e note">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Mail className="w-4 h-4 flex-shrink-0 text-gray-500" />
+                    <span className="min-w-0 truncate text-sm text-gray-600">{booking.client_email}</span>
                   </div>
 
-                  {/* Ora */}
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                    <span className="text-sm font-medium text-gray-900">{formatTime(booking.desired_time)}</span>
-                  </div>
+                  {booking.client_phone && (
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Phone className="w-4 h-4 flex-shrink-0 text-gray-500" />
+                      <span className="truncate text-sm text-gray-600">{booking.client_phone}</span>
+                    </div>
+                  )}
 
-                  {/* Ospiti */}
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                    <span className="text-sm font-medium text-gray-900">{booking.num_guests} ospiti</span>
-                  </div>
-
-                  {/* Note preview se presenti */}
                   {booking.special_requests && (
-                    <div className="flex items-start gap-2">
-                      <MessageSquare className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-gray-600 line-clamp-2 italic">
+                    <div className="flex items-start gap-2 min-w-0">
+                      <MessageSquare className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-500" />
+                      <span className="line-clamp-3 min-w-0 break-words text-sm italic text-gray-600">
                         {booking.special_requests}
+                      </span>
+                    </div>
+                  )}
+
+                  {digestMenuPrice && (
+                    <div className="flex items-center gap-2 min-w-0">
+                      <UtensilsCrossed className="h-4 w-4 shrink-0 text-gray-500" aria-hidden />
+                      <span className="min-w-0 translate-y-[1px] break-words text-sm leading-snug text-gray-700">
+                        Menù : {digestMenuPrice.prezzoMenuLabel}
                       </span>
                     </div>
                   )}
