@@ -661,21 +661,6 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
               {errors.num_guests && (
                 <p className="text-sm text-red-500">{errors.num_guests}</p>
               )}
-              {/* Capacity Warning - mostra solo se data, ora e numero ospiti sono compilati */}
-              {capacityCheck.errorMessage &&
-                formData.desired_date &&
-                formData.desired_time &&
-                formData.num_guests > 0 && (
-                  <div className="mt-3 rounded-lg border-2 border-red-300 bg-red-50 p-4 isolate">
-                    <div className="flex items-start gap-2">
-                      <span className="text-2xl">⚠️</span>
-                      <div className="min-w-0 flex-1">
-                        <p className="mb-1 text-sm font-semibold text-red-800">Capacità insufficiente</p>
-                        <p className="text-sm text-red-700">{capacityCheck.errorMessage}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
             </AdminFormFieldCard>
 
             {/* Posizionamento */}
@@ -854,7 +839,14 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
         if (affectedSlot) {
           const totalOccupied = affectedSlot.occupied + (formData.num_guests || 0)
           const exceededBy = totalOccupied - affectedSlot.capacity
-          const slotName = affectedSlot.slot === 'morning' ? 'mattina' : affectedSlot.slot === 'afternoon' ? 'pomeriggio' : 'sera'
+          const slotName =
+            affectedSlot.slot === 'morning'
+              ? 'mattina'
+              : affectedSlot.slot === 'afternoon'
+                ? 'pomeriggio'
+                : affectedSlot.slot === 'evening'
+                  ? 'sera'
+                  : 'giornata'
           
           exceededSlot = {
             exceededBy,

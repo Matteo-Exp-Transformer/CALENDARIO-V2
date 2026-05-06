@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import type { BookingRequest, TimeSlot, AvailabilityCheck } from '@/types/booking'
 import { CAPACITY_CONFIG } from '../constants/capacity'
 import { extractDateFromISO } from '../utils/dateUtils'
+import { useRestaurantSetting } from './useRestaurantSetting'
 
 interface UseCapacityCheckParams {
   date: string
@@ -56,6 +57,8 @@ function getSlotsOccupiedByTimeString(startTime: string, endTime: string): TimeS
 
 export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCheck {
   const { date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId } = params
+  const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
+  const dailyGuestLimit = dailyGuestLimitQuery.data ?? CAPACITY_CONFIG.MORNING_CAPACITY
 
   return useMemo(() => {
     // Initialize slot capacities
@@ -111,10 +114,7 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
       return { isAvailable: true, slotsStatus: [morning, afternoon, evening] }
     }
 
-    // Calculate which slots the new booking would occupy
-    const newBookingSlots = getSlotsOccupiedByTimeString(startTime, endTime)
-    
-    // Check if there's enough capacity in all affected slots
+    // Check if daily limit is exceeded by adding this booking
     let isAvailable = true
     const errorMessages: string[] = []
     const exceededSlots: Array<{
@@ -125,30 +125,21 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
       capacity: number
     }> = []
 
-    for (const slot of newBookingSlots) {
-      const slotData = slot === 'morning' ? morning : slot === 'afternoon' ? afternoon : evening
-      const totalOccupied = slotData.occupied + numGuests
-      
-      if (slotData.available < numGuests) {
-        isAvailable = false
-        const slotName = slot === 'morning' ? 'mattina' : slot === 'afternoon' ? 'pomeriggio' : 'sera'
-        const exceededBy = totalOccupied - slotData.capacity
-        
-        errorMessages.push(
-          `Fascia ${slotName}: ${slotData.available} posti disponibili su ${slotData.capacity} (richiesti: ${numGuests})`
-        )
-        
-        // If total exceeds capacity, add to exceeded slots
-        if (totalOccupied > slotData.capacity) {
-          exceededSlots.push({
-            slot,
-            slotName,
-            exceededBy,
-            totalOccupied,
-            capacity: slotData.capacity,
-          })
-        }
-      }
+    const totalGuestsForDay = dayBookings.reduce((acc, booking) => acc + (booking.num_guests || 0), 0)
+    const totalWithNewBooking = totalGuestsForDay + numGuests
+    if (totalWithNewBooking > dailyGuestLimit) {
+      isAvailable = false
+      const exceededBy = totalWithNewBooking - dailyGuestLimit
+      errorMessages.push(
+        `Limite giornaliero: ${dailyGuestLimit} coperti (totale con prenotazione: ${totalWithNewBooking})`
+      )
+      exceededSlots.push({
+        slot: 'daily',
+        slotName: 'giornata',
+        exceededBy,
+        totalOccupied: totalWithNewBooking,
+        capacity: dailyGuestLimit,
+      })
     }
 
     return {
@@ -157,5 +148,5 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
       errorMessage: errorMessages.length > 0 ? errorMessages.join('\n') : undefined,
       exceededSlots: exceededSlots.length > 0 ? exceededSlots : undefined,
     }
-  }, [date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId])
+  }, [date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId, dailyGuestLimit])
 }

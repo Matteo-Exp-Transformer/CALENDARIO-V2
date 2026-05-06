@@ -158,7 +158,7 @@ export const CapacityWarningModal: React.FC<CapacityWarningModalProps> = ({
                 </p>
                 <div className="space-y-1 text-sm text-red-700">
                   <p>
-                    <strong className="font-semibold">Fascia oraria:</strong> {slotName}
+                    <strong className="font-semibold">Riferimento:</strong> {slotName}
                   </p>
                   <p>
                     <strong className="font-semibold">Capienza massima:</strong> {capacity} coperti
@@ -177,7 +177,7 @@ export const CapacityWarningModal: React.FC<CapacityWarningModalProps> = ({
           {/* Info Box */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 shadow-sm">
             <p className="text-sm text-yellow-800">
-              <strong className="font-semibold">Nota:</strong> Se procedi, la fascia oraria verrà visualizzata in rosso nel calendario per indicare che la capienza è stata superata.
+              <strong className="font-semibold">Nota:</strong> Se procedi, la prenotazione verrà salvata anche con limite coperti superato.
             </p>
           </div>
 

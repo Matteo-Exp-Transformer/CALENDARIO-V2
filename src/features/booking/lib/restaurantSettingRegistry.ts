@@ -7,6 +7,7 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'restaurant_name',
   'timezone',
   'booking_window_days',
+  'daily_guest_limit',
   'business_hours',
   'contact_email',
   'contact_phone',
@@ -56,6 +57,11 @@ const bookingWindowDaysSchema = z.coerce
   .int('Deve essere un intero')
   .min(1, 'Minimo 1 giorno')
   .max(365, 'Massimo 365 giorni')
+const dailyGuestLimitSchema = z.coerce
+  .number()
+  .int('Deve essere un intero')
+  .min(1, 'Minimo 1 ospite')
+  .max(1000, 'Massimo 1000 ospiti')
 
 function parseJsonScalarString(raw: unknown): string {
   if (raw == null) return ''
@@ -74,6 +80,16 @@ function parseBookingWindowDaysFromDb(raw: unknown): number {
   return 60
 }
 
+function parseDailyGuestLimitFromDb(raw: unknown): number {
+  if (raw == null) return 75
+  if (typeof raw === 'number' && Number.isFinite(raw)) return raw
+  if (typeof raw === 'string') {
+    const n = parseInt(raw, 10)
+    if (!Number.isNaN(n)) return n
+  }
+  return 75
+}
+
 function parseBusinessHoursFromDb(raw: unknown): BusinessHours {
   const parsed = parseBusinessHours(raw)
   if (parsed) return parsed
@@ -86,6 +102,7 @@ export type RestaurantSettingValueMap = {
   restaurant_name: string
   timezone: string
   booking_window_days: number
+  daily_guest_limit: number
   business_hours: BusinessHours
   contact_email: string
   contact_phone: string
@@ -126,6 +143,15 @@ export const restaurantSettingRegistry: {
     serializeToDb: (value) => value as Json,
     validate: (value) => {
       const r = bookingWindowDaysSchema.safeParse(value)
+      return r.success ? null : r.error.issues[0]?.message ?? 'Valore non valido'
+    },
+  },
+  daily_guest_limit: {
+    key: 'daily_guest_limit',
+    parseFromDb: (raw) => parseDailyGuestLimitFromDb(raw),
+    serializeToDb: (value) => value as Json,
+    validate: (value) => {
+      const r = dailyGuestLimitSchema.safeParse(value)
       return r.success ? null : r.error.issues[0]?.message ?? 'Valore non valido'
     },
   },

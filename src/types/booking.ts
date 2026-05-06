@@ -156,7 +156,7 @@ export interface PaginatedResponse<T> {
 }
 
 // Capacity management types
-export type TimeSlot = 'morning' | 'afternoon' | 'evening'
+export type TimeSlot = 'morning' | 'afternoon' | 'evening' | 'daily'
 
 export interface TimeSlotCapacity {
   slot: TimeSlot

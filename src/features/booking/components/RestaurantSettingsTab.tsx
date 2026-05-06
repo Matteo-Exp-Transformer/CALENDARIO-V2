@@ -18,7 +18,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const { tenantId } = useTenantContext()
 
   const nameQuery = useRestaurantSetting('restaurant_name')
-  const windowQuery = useRestaurantSetting('booking_window_days')
+  const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
   const hoursQuery = useRestaurantSetting('business_hours')
   const contactEmailQuery = useRestaurantSetting('contact_email')
   const contactPhoneQuery = useRestaurantSetting('contact_phone')
@@ -28,7 +28,7 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const [dirty, setDirty] = useState(false)
   const [restaurantName, setRestaurantName] = useState('')
-  const [bookingWindowDays, setBookingWindowDays] = useState<number | ''>(60)
+  const [dailyGuestLimit, setDailyGuestLimit] = useState<number | ''>(75)
   const [businessHours, setBusinessHours] = useState<BusinessHours>(() => getDefaultBusinessHours())
   const [contactEmail, setContactEmail] = useState('Alritrovobologna@gmail.com')
   const [contactPhone, setContactPhone] = useState('3505362538')
@@ -43,7 +43,7 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const allSuccess =
     nameQuery.isSuccess &&
-    windowQuery.isSuccess &&
+    dailyGuestLimitQuery.isSuccess &&
     hoursQuery.isSuccess &&
     contactEmailQuery.isSuccess &&
     contactPhoneQuery.isSuccess &&
@@ -52,7 +52,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   useEffect(() => {
     if (!allSuccess || hydratedRef.current) return
     setRestaurantName(nameQuery.data)
-    setBookingWindowDays(windowQuery.data)
+    setDailyGuestLimit(dailyGuestLimitQuery.data)
     setBusinessHours(hoursQuery.data)
     setContactEmail(contactEmailQuery.data || 'Alritrovobologna@gmail.com')
     setContactPhone(contactPhoneQuery.data || '3505362538')
@@ -61,7 +61,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   }, [
     allSuccess,
     nameQuery.data,
-    windowQuery.data,
+    dailyGuestLimitQuery.data,
     hoursQuery.data,
     contactEmailQuery.data,
     contactPhoneQuery.data,
@@ -70,7 +70,7 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const loading =
     nameQuery.isPending ||
-    windowQuery.isPending ||
+    dailyGuestLimitQuery.isPending ||
     hoursQuery.isPending ||
     contactEmailQuery.isPending ||
     contactPhoneQuery.isPending ||
@@ -78,7 +78,7 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const loadError =
     nameQuery.error ||
-    windowQuery.error ||
+    dailyGuestLimitQuery.error ||
     hoursQuery.error ||
     contactEmailQuery.error ||
     contactPhoneQuery.error ||
@@ -94,7 +94,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     try {
       await upsert.mutateAsync([
         { key: 'restaurant_name', value: restaurantName },
-        { key: 'booking_window_days', value: bookingWindowDays },
+        { key: 'daily_guest_limit', value: dailyGuestLimit },
         { key: 'business_hours', value: businessHours },
         { key: 'contact_email', value: contactEmail },
         { key: 'contact_phone', value: contactPhone },
@@ -163,23 +163,23 @@ export const RestaurantSettingsTab: React.FC = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="booking_window_days">Finestra prenotazione (giorni)</Label>
+            <Label htmlFor="daily_guest_limit">Limite coperti giornaliero</Label>
             <Input
-              id="booking_window_days"
+              id="daily_guest_limit"
               type="number"
               min={1}
-              max={365}
-              value={bookingWindowDays}
+              max={1000}
+              value={dailyGuestLimit}
               disabled={upsert.isPending}
               onChange={(e) => {
                 markDirty()
                 const raw = e.target.value
                 if (raw === '') {
-                  setBookingWindowDays('')
+                  setDailyGuestLimit('')
                   return
                 }
                 const n = parseInt(raw, 10)
-                if (!Number.isNaN(n)) setBookingWindowDays(n)
+                if (!Number.isNaN(n)) setDailyGuestLimit(n)
               }}
             />
           </div>
