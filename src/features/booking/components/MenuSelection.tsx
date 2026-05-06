@@ -3,7 +3,11 @@ import { Check, X } from 'lucide-react'
 import { useMenuItems } from '../hooks/useMenuItems'
 import { useMenuCategories } from '../hooks/useMenuCategories'
 import type { SelectedMenuItem } from '@/types/menu'
-import type { PresetMenuType } from '../constants/presetMenus'
+import {
+  customPresetStorageId,
+  type CustomStaffPreset,
+  type PresetMenuType,
+} from '../constants/presetMenus'
 import { isCaraffeDrinkPremium, isCaraffeDrinkStandard } from '../utils/caraffePricing'
 
 interface MenuSelectionProps {
@@ -18,6 +22,10 @@ interface MenuSelectionProps {
   presetMenu?: PresetMenuType
   onPresetMenuChange?: (preset: PresetMenuType) => void
   bookingType?: 'tavolo' | 'rinfresco_laurea'
+  /** Se false, nasconde il menu a tendina dei menù consigliati (impostazione admin). Default: true */
+  staffPresetsDropdownVisible?: boolean
+  /** Menù personalizzati dallo staff (da restaurant_settings). */
+  customStaffPresets?: CustomStaffPreset[]
 }
 
 type NormalizedMenuItem = {
@@ -72,7 +80,9 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   onMenuChange,
   presetMenu,
   onPresetMenuChange,
-  bookingType
+  bookingType,
+  staffPresetsDropdownVisible = true,
+  customStaffPresets = [],
 }) => {
   const { data: menuItems = [], isLoading, error } = useMenuItems()
   const { data: dbCategories = [] } = useMenuCategories()
@@ -490,7 +500,9 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       </h2>
 
       {/* Menù Consigliati dallo Staff - Solo per Rinfresco di Laurea */}
-      {bookingType === 'rinfresco_laurea' && onPresetMenuChange && (
+      {bookingType === 'rinfresco_laurea' &&
+        onPresetMenuChange &&
+        staffPresetsDropdownVisible && (
         <div 
           className="w-full flex flex-col items-center px-1 sm:px-2"
           style={{ 
@@ -544,6 +556,11 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             <option value="menu_2">Menù 2 Rinfresco Completo</option>
             <option value="menu_3">Menù 3 Pranzo o Cena</option>
             <option value="menu_4">Menù 4 Gourmet</option>
+            {customStaffPresets.map((p) => (
+              <option key={p.id} value={customPresetStorageId(p.id)}>
+                {p.name}
+              </option>
+            ))}
           </select>
         </div>
       )}
@@ -578,7 +595,10 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         }
 
         // Padding condizionale: prima categoria (Bevande) ha padding extra se c'è dropdown sopra
-        const hasDropdownAbove = bookingType === 'rinfresco_laurea' && onPresetMenuChange
+        const hasDropdownAbove =
+          bookingType === 'rinfresco_laurea' &&
+          onPresetMenuChange &&
+          staffPresetsDropdownVisible
         const isFirstCategory = index === 0
         
         // Calcola padding top: se è la prima categoria e c'è dropdown, padding extra

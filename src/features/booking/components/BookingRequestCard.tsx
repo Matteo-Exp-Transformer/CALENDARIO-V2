@@ -11,6 +11,7 @@ import { getMenuPriceDisplayFromBooking, getResolvedMenuPriceDisplay } from '../
 import { formatBookingDateTime } from '../utils/formatDateTime'
 import { ADMIN_WARM_BORDER, ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { cn } from '@/lib/utils'
+import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 
 interface BookingRequestCardProps {
   booking: BookingRequest
@@ -48,6 +49,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
   onReject,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
 
   const formatDate = (dateStr: string) => {
     try {
@@ -222,7 +224,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                 <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="font-semibold text-blue-700">
                     📋 Menu Predefinito:{AFTER_COLON}
-                    {getPresetMenuLabel(booking.preset_menu as PresetMenuType)}
+                    {getPresetMenuLabel(booking.preset_menu as PresetMenuType, customStaffPresets)}
                   </p>
                 </div>
               )}

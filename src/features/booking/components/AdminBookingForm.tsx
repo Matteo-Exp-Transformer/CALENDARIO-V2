@@ -10,7 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MenuSelection } from './MenuSelection'
 import { DietaryRestrictionsSection } from './DietaryRestrictionsSection'
 import { useMenuItems } from '../hooks/useMenuItems'
-import { getPresetMenu, type PresetMenuType } from '../constants/presetMenus'
+import type { PresetMenuType } from '../constants/presetMenus'
+import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
+import {
+  applyPresetTypeToBookingFormPayload,
+  computeMenuTotalsFromItems,
+  presetSelectionStillMatchesStoredPreset,
+} from '../utils/buildPresetMenuSelection'
 import { useAcceptedBookings } from '../hooks/useBookingQueries'
 import { useCapacityCheck } from '../hooks/useCapacityCheck'
 import { CapacityWarningModal } from './CapacityWarningModal'
@@ -118,6 +124,8 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
   const { mutate, isPending } = useCreateAdminBooking()
   const queryClient = useQueryClient()
   const { data: menuItems = [] } = useMenuItems()
+  const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
+  const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
   const { data: acceptedBookings = [] } = useAcceptedBookings()
 
   // Convert desired_time to startTime and endTime for capacity check
@@ -192,118 +200,47 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
   // Gestione selezione menu predefinito
   const handlePresetMenuChange = (presetType: PresetMenuType) => {
     setSelectedPreset(presetType)
-    
+
     if (!presetType) {
-      // Reset menu se nessun preset
       setFormData({
         ...formData,
         preset_menu: null,
         menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
         menu_total_per_person: 0,
-        menu_total_booking: 0
+        menu_total_booking: 0,
       })
       return
     }
 
-    const preset = getPresetMenu(presetType)
-    if (!preset) return
-
-    // Helper per normalizzare i nomi per il matching (case-insensitive, ignora spazi extra)
-    const normalizeName = (name: string): string => {
-      return name.toLowerCase().trim().replace(/\s+/g, ' ').replace(/\//g, '/').replace(/\/\s*/g, '/').replace(/\s*\/\s*/g, '/')
+    const resolved = applyPresetTypeToBookingFormPayload(presetType, menuItems, customStaffPresets)
+    if (!resolved) {
+      toast.error('Menù consigliato non disponibile. Aggiorna la pagina o scegli un altro menù.')
+      setSelectedPreset(null)
+      setFormData({
+        ...formData,
+        preset_menu: null,
+        menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
+        menu_total_per_person: 0,
+        menu_total_booking: 0,
+      })
+      return
     }
 
-    // Helper per match flessibile - cerca anche varianti comuni
-    const matchesName = (itemName: string, presetName: string): boolean => {
-      const normalizedItem = normalizeName(itemName)
-      const normalizedPreset = normalizeName(presetName)
-      
-      // Match esatto normalizzato
-      if (normalizedItem === normalizedPreset) return true
-      
-      // Match per "Caraffe" - gestisci PRIMA il match parziale per evitare match errati
-      // IMPORTANTE: Gestire questo caso PRIMA del match parziale generico
-      const presetHasCaraffe = normalizedPreset.includes('caraffe')
-      const presetHasDrink = normalizedPreset.includes('drink')
-      const presetHasPremium = normalizedPreset.includes('premium')
-      
-      if (presetHasCaraffe) {
-        const hasCaraffe = normalizedItem.includes('caraffe')
-        const hasDrink = normalizedItem.includes('drink')
-        const hasPremium = normalizedItem.includes('premium')
-        
-        // Caso 1: Preset ha "Caraffe Premium" (senza "drink") - matcha "Caraffe Drink Premium" o "Caraffe / Drink Premium"
-        if (presetHasPremium && !presetHasDrink) {
-          if (hasCaraffe && hasPremium) return true
-          // NON matchare se l'item non ha premium
-          return false
-        }
-        
-        // Caso 2: Preset ha "Caraffe/Drink" (con "drink", senza premium) - matcha SOLO items senza premium
-        if (presetHasDrink && !presetHasPremium) {
-          if (hasCaraffe && hasDrink && !hasPremium) return true
-          // NON matchare se l'item ha premium
-          return false
-        }
-        
-        // Caso 3: Preset ha "Caraffe/Drink Premium" (con "drink" e "premium") - matcha SOLO items con premium
-        if (presetHasDrink && presetHasPremium) {
-          if (hasCaraffe && hasDrink && hasPremium) return true
-          // NON matchare se l'item non ha premium
-          return false
-        }
-      }
-      
-      // Match parziale per altri items (solo se non è un caso Caraffe)
-      if (normalizedItem.includes(normalizedPreset) || normalizedPreset.includes(normalizedItem)) return true
-      
-      return false
-    }
-
-    // Trova gli items nel database per nome (matching flessibile)
-    const selectedItems = menuItems
-      .filter(item => {
-        const matches = preset.itemNames.some(presetName => matchesName(item.name, presetName))
-        
-        // Log per debug Caraffe/Drink
-        if (matches && (normalizeName(item.name).includes('caraffe') || normalizeName(item.name).includes('drink'))) {
-        }
-        
-        return matches
-      })
-      .map(item => {
-        const isTiramisu = item.name.toLowerCase().includes('tiramis')
-        return {
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          category: item.category,
-          quantity: isTiramisu ? 1 : undefined,
-          totalPrice: isTiramisu ? item.price : item.price
-        }
-      })
-
-
-    // Calcola totale (solo somma prezzi schede, nessun surcharge)
-    const totalPerPerson = selectedItems
-      .filter(item => !item.name.toLowerCase().includes('tiramis'))
-      .reduce((sum, item) => sum + item.price, 0)
+    const { items } = resolved
     const numGuests = formData.num_guests || 0
-    const tiramisuSelection = selectedItems.find((item) => item.name.toLowerCase().includes('tiramis'))
-    const tiramisuUnitPrice = tiramisuSelection?.price || 0
-    const tiramisuKg = tiramisuSelection?.quantity || 0
-    const tiramisuTotal = tiramisuKg > 0 ? tiramisuUnitPrice * tiramisuKg : 0
+    const { totalPerPerson, tiramisuTotal, tiramisuKg, menu_total_booking } =
+      computeMenuTotalsFromItems(items, numGuests)
 
     setFormData({
       ...formData,
       preset_menu: presetType,
       menu_selection: {
-        items: selectedItems,
+        items,
         tiramisu_total: tiramisuTotal,
-        tiramisu_kg: tiramisuKg
+        tiramisu_kg: tiramisuKg,
       },
       menu_total_per_person: totalPerPerson,
-      menu_total_booking: totalPerPerson * numGuests + tiramisuTotal
+      menu_total_booking,
     })
   }
 
@@ -725,29 +662,22 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
             numGuests={formData.num_guests || 0}
             bookingType={formData.booking_type}
             presetMenu={selectedPreset}
+            staffPresetsDropdownVisible={staffPresetsDropdownVisible}
+            customStaffPresets={customStaffPresets}
             onPresetMenuChange={handlePresetMenuChange}
             onMenuChange={({ items, totalPerPerson, tiramisuTotal, tiramisuKg }) => {
               const numGuests = formData.num_guests || 0
-              // Mantieni preset_menu se gli items corrispondono ancora al preset
               const currentPreset = selectedPreset
               let updatedPreset: PresetMenuType = currentPreset
-              
-              // Verifica se gli items corrispondono ancora al preset selezionato
-              if (currentPreset) {
-                const preset = getPresetMenu(currentPreset)
-                if (preset) {
-                  const presetItemNames = preset.itemNames.sort()
-                  const selectedItemNames = items.map(i => i.name).sort()
-                  
-                  // Se gli items non corrispondono più, rimuovi il preset
-                  if (presetItemNames.length !== selectedItemNames.length || 
-                      !presetItemNames.every((name, idx) => name === selectedItemNames[idx])) {
-                    updatedPreset = null
-                    setSelectedPreset(null)
-                  }
-                }
+
+              if (
+                currentPreset &&
+                !presetSelectionStillMatchesStoredPreset(currentPreset, items, customStaffPresets)
+              ) {
+                updatedPreset = null
+                setSelectedPreset(null)
               }
-              
+
               setFormData({
                 ...formData,
                 preset_menu: updatedPreset,

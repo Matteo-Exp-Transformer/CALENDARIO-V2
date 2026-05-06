@@ -1,16 +1,29 @@
 /**
  * Menu Predefiniti per Rinfresco di Laurea
- * 
+ *
  * Definizioni dei menu predefiniti che possono essere selezionati
  * dall'admin per velocizzare la creazione di prenotazioni.
+ * I menù configurati dall'admin sono salvati in `restaurant_settings`
+ * (`booking_custom_staff_presets`) e referenziati come `custom:<uuid>`.
  */
 
-export type PresetMenuType = 'menu_1' | 'menu_2' | 'menu_3' | 'menu_4' | null
+export const CUSTOM_PRESET_PREFIX = 'custom:' as const
+
+export type BuiltinPresetMenuType = 'menu_1' | 'menu_2' | 'menu_3' | 'menu_4'
+
+/** Valore salvato in `preset_menu`: built-in menu_1…4 oppure chiave custom */
+export type PresetMenuType = BuiltinPresetMenuType | `${typeof CUSTOM_PRESET_PREFIX}${string}` | null
+
+export interface CustomStaffPreset {
+  id: string
+  name: string
+  item_ids: string[]
+}
 
 export interface PresetMenu {
-  id: Exclude<PresetMenuType, null>
+  id: BuiltinPresetMenuType
   label: string
-  itemNames: string[] // Nomi esatti degli items come nel database
+  itemNames: string[] // Nomi degli items come nel database (match flessibile lato client)
 }
 
 /**
@@ -79,13 +92,30 @@ export const MENU_4: PresetMenu = {
 }
 
 /**
- * Mappa di tutti i menu predefiniti (senza null)
+ * Mappa di tutti i menu predefiniti staff (built-in)
  */
-export const PRESET_MENUS: Record<Exclude<PresetMenuType, null>, PresetMenu> = {
+export const PRESET_MENUS: Record<BuiltinPresetMenuType, PresetMenu> = {
   menu_1: MENU_1,
   menu_2: MENU_2,
   menu_3: MENU_3,
   menu_4: MENU_4
+}
+
+export function isBuiltinPresetMenuType(v: string | null | undefined): v is BuiltinPresetMenuType {
+  return v === 'menu_1' || v === 'menu_2' || v === 'menu_3' || v === 'menu_4'
+}
+
+export function isCustomPresetMenuType(v: string | null | undefined): v is `${typeof CUSTOM_PRESET_PREFIX}${string}` {
+  return typeof v === 'string' && v.startsWith(CUSTOM_PRESET_PREFIX)
+}
+
+export function getCustomPresetUuid(v: string): string | null {
+  if (!isCustomPresetMenuType(v)) return null
+  return v.slice(CUSTOM_PRESET_PREFIX.length)
+}
+
+export function customPresetStorageId(uuid: string): `${typeof CUSTOM_PRESET_PREFIX}${string}` {
+  return `${CUSTOM_PRESET_PREFIX}${uuid}`
 }
 
 /**
@@ -94,17 +124,22 @@ export const PRESET_MENUS: Record<Exclude<PresetMenuType, null>, PresetMenu> = {
 export const PRESET_MENUS_ARRAY: PresetMenu[] = [MENU_1, MENU_2, MENU_3, MENU_4]
 
 /**
- * Helper per ottenere un preset menu per tipo
+ * Helper per ottenere un preset menu built-in per tipo
  */
 export const getPresetMenu = (type: PresetMenuType): PresetMenu | null => {
-  if (!type) return null
-  return PRESET_MENUS[type] || null
+  if (!type || isCustomPresetMenuType(type)) return null
+  return PRESET_MENUS[type] ?? null
 }
 
 /**
- * Helper per ottenere label di un preset menu
+ * Label per UI (form, card, dettaglio)
  */
-export const getPresetMenuLabel = (type: PresetMenuType): string => {
+export const getPresetMenuLabel = (type: PresetMenuType, customPresets?: CustomStaffPreset[]): string => {
   if (!type) return 'Scegli un menu predefinito'
-  return PRESET_MENUS[type].label || 'Menu Sconosciuto'
+  if (isCustomPresetMenuType(type)) {
+    const uuid = getCustomPresetUuid(type)
+    const found = uuid ? customPresets?.find((p) => p.id === uuid) : undefined
+    return found?.name ?? 'Menù consigliato personalizzato'
+  }
+  return getPresetMenu(type)?.label ?? 'Menu Sconosciuto'
 }

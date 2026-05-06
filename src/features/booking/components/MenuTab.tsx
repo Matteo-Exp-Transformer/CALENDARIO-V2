@@ -2,8 +2,7 @@ import React, { useMemo } from 'react'
 import { CollapsibleSection } from './CollapsibleSection'
 import { MenuSelection } from './MenuSelection'
 import type { SelectedMenuItem } from '@/types/menu'
-import { getPresetMenuLabel } from '../constants/presetMenus'
-import type { PresetMenuType } from '../constants/presetMenus'
+import { getPresetMenuLabel, type CustomStaffPreset, type PresetMenuType } from '../constants/presetMenus'
 
 interface MenuTabProps {
   booking: any
@@ -15,6 +14,8 @@ interface MenuTabProps {
   }
   numGuests: number
   presetMenu?: string | null
+  staffPresetsDropdownVisible?: boolean
+  customStaffPresets?: CustomStaffPreset[]
   isMenuExpanded: boolean
   onMenuExpandToggle: () => void
   onMenuChange: (payload: {
@@ -52,6 +53,8 @@ export const MenuTab: React.FC<MenuTabProps> = ({
   menuSelection,
   numGuests,
   presetMenu,
+  staffPresetsDropdownVisible = true,
+  customStaffPresets = [],
   isMenuExpanded,
   onMenuExpandToggle,
   onMenuChange,
@@ -122,7 +125,9 @@ export const MenuTab: React.FC<MenuTabProps> = ({
       selectedItems={menuSelection?.items || []}
       numGuests={numGuests}
       onMenuChange={onMenuChange}
-      presetMenu={presetMenu as any}
+      presetMenu={presetMenu as PresetMenuType}
+      staffPresetsDropdownVisible={staffPresetsDropdownVisible}
+      customStaffPresets={customStaffPresets}
       onPresetMenuChange={onPresetMenuChange}
       bookingType="rinfresco_laurea"
     />
@@ -212,7 +217,8 @@ export const MenuTab: React.FC<MenuTabProps> = ({
       {presetMenu && (
         <div>
           <p className="text-sm font-semibold text-gray-900">
-            📋 Menu Predefinito: <span>{getPresetMenuLabel(presetMenu as PresetMenuType)}</span>
+            📋 Menu Predefinito:{' '}
+            <span>{getPresetMenuLabel(presetMenu as PresetMenuType, customStaffPresets)}</span>
           </p>
         </div>
       )}

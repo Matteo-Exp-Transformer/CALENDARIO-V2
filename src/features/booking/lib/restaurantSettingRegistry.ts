@@ -12,6 +12,7 @@ import {
   isBookingPageBackgroundId,
   parseBookingPageBackgroundFromDb,
 } from '@/features/booking/constants/bookingPageBackground'
+import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
 
 export const RESTAURANT_SETTING_KEYS_V1 = [
   'restaurant_name',
@@ -24,6 +25,10 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'contact_phone',
   'contact_address',
   'public_booking_page_background',
+  /** Mostra nel form pubblico il menu a tendina “menù consigliati” (built-in + personalizzati) */
+  'booking_staff_presets_visible',
+  /** Menù predefiniti creati dall’admin (nome + lista id voci) */
+  'booking_custom_staff_presets',
 ] as const
 
 export type RestaurantSettingKeyV1 = (typeof RESTAURANT_SETTING_KEYS_V1)[number]
@@ -126,6 +131,28 @@ function parseBookingTimeSlotsFromDb(raw: unknown): BookingTimeSlots {
   return parsed.data
 }
 
+const customStaffPresetRowSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().trim().min(1).max(200),
+  item_ids: z.array(z.string().uuid()).max(160),
+})
+
+const bookingCustomStaffPresetsSchema = z.array(customStaffPresetRowSchema).max(40)
+
+function parseBookingStaffPresetsVisibleFromDb(raw: unknown): boolean {
+  if (raw == null) return true
+  if (typeof raw === 'boolean') return raw
+  if (raw === 'false' || raw === false) return false
+  if (raw === 'true' || raw === true) return true
+  return true
+}
+
+function parseBookingCustomStaffPresetsFromDb(raw: unknown): CustomStaffPreset[] {
+  const parsed = bookingCustomStaffPresetsSchema.safeParse(raw)
+  if (!parsed.success) return []
+  return parsed.data
+}
+
 export type RestaurantSettingValueMap = {
   restaurant_name: string
   timezone: string
@@ -137,6 +164,8 @@ export type RestaurantSettingValueMap = {
   contact_phone: string
   contact_address: string
   public_booking_page_background: BookingPageBackgroundId
+  booking_staff_presets_visible: boolean
+  booking_custom_staff_presets: CustomStaffPreset[]
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -259,6 +288,23 @@ export const restaurantSettingRegistry: {
       const normalized = value.trim().toLowerCase()
       if (isBookingPageBackgroundId(normalized)) return null
       return 'Sfondo pagina non valido'
+    },
+  },
+  booking_staff_presets_visible: {
+    key: 'booking_staff_presets_visible',
+    parseFromDb: (raw) => parseBookingStaffPresetsVisibleFromDb(raw),
+    serializeToDb: (value) => value as Json,
+    validate: (value) => {
+      return typeof value === 'boolean' ? null : 'Valore non valido'
+    },
+  },
+  booking_custom_staff_presets: {
+    key: 'booking_custom_staff_presets',
+    parseFromDb: (raw) => parseBookingCustomStaffPresetsFromDb(raw),
+    serializeToDb: (value) => value as unknown as Json,
+    validate: (value) => {
+      const r = bookingCustomStaffPresetsSchema.safeParse(value)
+      return r.success ? null : r.error.issues[0]?.message ?? 'Menù preselezionati non validi'
     },
   },
 }

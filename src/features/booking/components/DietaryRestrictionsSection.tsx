@@ -171,7 +171,22 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                   value={otherNotes}
                   onChange={(e) => setOtherNotes(e.target.value)}
                   placeholder="Descrivi l'intolleranza o esigenza"
-                  className="w-full"
+                  className="w-full rounded-2xl border shadow-sm text-black placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+                  style={{
+                    borderColor: 'rgba(0,0,0,0.2)',
+                    minHeight: '56px',
+                    padding: '16px',
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                    backdropFilter: 'blur(1px)',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#8B6914'
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'rgba(0,0,0,0.2)'
+                  }}
                 />
               </div>
             )}
@@ -203,6 +218,22 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                   const value = e.target.value === '' ? 0 : parseInt(e.target.value) || 0
                   setGuestCount(value)
                 }}
+                className="w-full rounded-full border shadow-sm text-black placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+                style={{
+                  borderColor: 'rgba(0,0,0,0.2)',
+                  height: '56px',
+                  padding: '16px',
+                  fontSize: '16px',
+                  fontWeight: '700',
+                  backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                  backdropFilter: 'blur(1px)',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#8B6914'
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(0,0,0,0.2)'
+                }}
               />
             </div>
           </div>
@@ -212,10 +243,10 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
           <button
             type="button"
             onClick={handleAdd}
-            className="flex items-center justify-center gap-3 text-lg text-white rounded-full bg-green-600 hover:bg-green-700 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500/30"
-            style={{ fontWeight: '700', backgroundColor: '#16a34a', paddingTop: '20px', paddingBottom: '20px', paddingLeft: '40px', paddingRight: '40px' }}
+            className="flex items-center justify-center gap-2 text-sm text-white rounded-full bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500/30"
+            style={{ fontWeight: '700', backgroundColor: '#16a34a', paddingTop: '8px', paddingBottom: '8px', paddingLeft: '24px', paddingRight: '24px' }}
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-4 w-4" />
             {editingIndex !== null ? 'Salva Modifiche' : 'Aggiungi'}
           </button>
           {editingIndex !== null && (
@@ -322,7 +353,22 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
           onChange={(e) => onSpecialRequestsChange(e.target.value)}
           rows={4}
           placeholder="Inserisci eventuali richieste particolari..."
-          className="w-full"
+          className="w-full rounded-2xl border shadow-sm text-black placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+          style={{
+            borderColor: 'rgba(0,0,0,0.2)',
+            padding: '16px',
+            fontSize: '16px',
+            fontWeight: '700',
+            backgroundColor: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(1px)',
+            minHeight: '120px',
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = '#8B6914'
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = 'rgba(0,0,0,0.2)'
+          }}
         />
       </div>
 

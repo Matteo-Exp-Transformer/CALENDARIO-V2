@@ -12,6 +12,11 @@ import {
   useUpdateMenuCategory
 } from '../hooks/useMenuCategories'
 import type { MenuItem, MenuItemInput } from '@/types/menu'
+import type { SelectedMenuItem } from '@/types/menu'
+import type { CustomStaffPreset } from '../constants/presetMenus'
+import { useRestaurantSetting, useUpsertRestaurantSetting } from '../hooks/useRestaurantSetting'
+import { selectedItemsFromMenuItemIds } from '../utils/buildPresetMenuSelection'
+import { PresetMenuBuilder } from './PresetMenuBuilder'
 
 const slugifyCategory = (value: string): string =>
   value
@@ -22,7 +27,7 @@ const slugifyCategory = (value: string): string =>
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '')
 
-type MenuViewMode = 'menu' | 'products' | 'categories'
+type MenuViewMode = 'menu' | 'products' | 'categories' | 'preset_menus'
 
 export const MenuPricesTab: React.FC = () => {
   const { data: menuItems = [], isLoading, refetch: refetchMenuItems } = useMenuItems()
@@ -34,6 +39,12 @@ export const MenuPricesTab: React.FC = () => {
   const updateMutation = useUpdateMenuItem()
   const deleteMutation = useDeleteMenuItem()
 
+  const { data: staffPresetsVisible = true, isLoading: staffPresetVisibleLoading } = useRestaurantSetting(
+    'booking_staff_presets_visible',
+  )
+  const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
+  const upsertRestaurantSetting = useUpsertRestaurantSetting()
+
   const [viewMode, setViewMode] = useState<MenuViewMode>('menu')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
@@ -42,6 +53,79 @@ export const MenuPricesTab: React.FC = () => {
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
   /** Stringa controllata per l’input prezzo: evita lo 0 “incollato” con `parseFloat(...) || 0` su campo vuoto. */
   const [priceInput, setPriceInput] = useState('')
+  const [presetEditorMode, setPresetEditorMode] = useState<'list' | 'editor'>('list')
+  const [presetName, setPresetName] = useState('')
+  const [presetSelectedItems, setPresetSelectedItems] = useState<SelectedMenuItem[]>([])
+  const [editingCustomPresetId, setEditingCustomPresetId] = useState<string | null>(null)
+
+  const resetPresetEditor = () => {
+    setPresetEditorMode('list')
+    setPresetName('')
+    setPresetSelectedItems([])
+    setEditingCustomPresetId(null)
+  }
+
+  const openPresetMenusSection = () => {
+    resetPresetEditor()
+    setPresetEditorMode('list')
+    setViewMode('preset_menus')
+  }
+
+  const closePresetMenusSection = () => {
+    resetPresetEditor()
+    setViewMode('menu')
+  }
+
+  const startNewCustomPreset = () => {
+    setEditingCustomPresetId(null)
+    setPresetName('')
+    setPresetSelectedItems([])
+    setPresetEditorMode('editor')
+  }
+
+  const startEditCustomPreset = (preset: CustomStaffPreset) => {
+    setEditingCustomPresetId(preset.id)
+    setPresetName(preset.name)
+    setPresetSelectedItems(selectedItemsFromMenuItemIds(menuItems, preset.item_ids))
+    setPresetEditorMode('editor')
+  }
+
+  const handleSaveCustomPreset = async () => {
+    const name = presetName.trim()
+    if (!name) {
+      toast.error('Inserisci il nome del menù')
+      return
+    }
+    const ids = presetSelectedItems.map((i) => i.id).filter(Boolean)
+    if (!ids.length) {
+      toast.error('Seleziona almeno un ingrediente')
+      return
+    }
+
+    const next: CustomStaffPreset[] =
+      editingCustomPresetId !== null
+        ? customStaffPresets.map((p) =>
+            p.id === editingCustomPresetId ? { ...p, name, item_ids: ids } : p,
+          )
+        : [...customStaffPresets, { id: crypto.randomUUID(), name, item_ids: ids }]
+
+    try {
+      await upsertRestaurantSetting.mutateAsync([{ key: 'booking_custom_staff_presets', value: next }])
+      resetPresetEditor()
+      setPresetEditorMode('list')
+    } catch {
+      //
+    }
+  }
+
+  const handleDeleteCustomPreset = (presetId: string, label: string) => {
+    if (!confirm(`Eliminare il menù preselezionato "${label}"?`)) {
+      return
+    }
+    const next = customStaffPresets.filter((p) => p.id !== presetId)
+    upsertRestaurantSetting.mutate([{ key: 'booking_custom_staff_presets', value: next }])
+  }
+
   const categoryEntries = useMemo(
     () => dbCategories.map((category) => [category.key, category.label] as const),
     [dbCategories]
@@ -490,6 +574,32 @@ export const MenuPricesTab: React.FC = () => {
       )}
 
       {viewMode === 'menu' && (
+      <>
+      <div className="flex w-full max-w-[min(920px,calc(100%-8px))] mx-auto flex-row flex-wrap items-center justify-between gap-4 px-2 sm:px-1">
+        <label className="flex cursor-pointer items-start gap-2.5 text-left text-xs font-semibold text-gray-800 sm:text-sm shrink min-w-[140px] max-w-[min(100%,420px)] leading-snug">
+          <input
+            type="checkbox"
+            className="mt-1 h-4 w-4 shrink-0 rounded border-gray-400"
+            checked={staffPresetsVisible}
+            disabled={staffPresetVisibleLoading || upsertRestaurantSetting.isPending}
+            onChange={(e) =>
+              upsertRestaurantSetting.mutate([
+                { key: 'booking_staff_presets_visible', value: e.target.checked },
+              ])
+            }
+          />
+          Mostra sulla pagina prenota il menu a tendina dei menù consigliati
+        </label>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={openPresetMenusSection}
+          className="h-8 shrink-0 gap-1.5 px-3 py-0 text-xs whitespace-normal text-center leading-tight sm:max-w-[220px]"
+          style={{ marginTop: '8px', backgroundColor: '#60a5fa', borderColor: '#3b82f6', color: '#000000' }}
+        >
+          Aggiungi / Modifica Menù preselezionati
+        </Button>
+      </div>
       <div className="menu-prices-category-list-wrap flex flex-col items-center gap-[28px]">
       {categoryEntries.map(([category, label]) => {
         const items = itemsByCategory[category] || []
@@ -548,7 +658,146 @@ export const MenuPricesTab: React.FC = () => {
         )
       })}
       </div>
+      </>
       )}
+
+      {viewMode === 'preset_menus' && (
+        <>
+          <div
+            className="w-full"
+            style={{
+              height: '24px',
+              backgroundImage: ADMIN_WARM_GRADIENT_SURFACE.backgroundImage,
+            }}
+          />
+          <div
+            className="relative w-full rounded-2xl border-2 p-4 md:p-6 shadow-lg"
+            style={ADMIN_WARM_GRADIENT_SURFACE}
+          >
+            <button
+              type="button"
+              onClick={closePresetMenusSection}
+              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-warm-wood/40 bg-white/90 text-warm-wood shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+              aria-label="Chiudi menù preselezionati"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="mx-auto max-w-3xl pb-12 pr-10">
+              <h3 className="text-center font-serif text-lg font-bold text-warm-wood md:text-xl">
+                Menù preselezionati (pagina prenota)
+              </h3>
+              <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
+                Compila un nome, seleziona gli ingredienti come in prenotazione e salva: compariranno nel menu a
+                tendina insieme ai quattro menù classici (se la casella sopra è attiva).
+              </p>
+
+              {presetEditorMode === 'list' && (
+                <div className="mt-8 flex flex-col items-stretch gap-4">
+                  <Button
+                    variant="success"
+                    size="sm"
+                    type="button"
+                    onClick={startNewCustomPreset}
+                    className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs self-center sm:self-end"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Nuovo menù preselezionato
+                  </Button>
+                  {customStaffPresets.length === 0 ? (
+                    <p className="rounded-xl border border-dashed border-gray-300 bg-white/60 py-12 text-center text-sm text-gray-600">
+                      Nessun menù personalizzato. Crea il primo con il pulsante sopra.
+                    </p>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {customStaffPresets.map((preset) => (
+                        <div
+                          key={preset.id}
+                          className="menu-prices-item-row flex-wrap gap-y-3"
+                          style={{ padding: '0.75rem 1rem', minHeight: '72px' }}
+                        >
+                          <div className="menu-prices-item-text min-w-[120px]">
+                            <h4 className="text-left font-semibold text-gray-900">{preset.name}</h4>
+                            <p className="text-left text-xs text-gray-500">
+                              {preset.item_ids.length}{' '}
+                              {preset.item_ids.length === 1 ? 'ingrediente' : 'ingredienti'}
+                            </p>
+                          </div>
+                          <div className="menu-prices-item-actions shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => startEditCustomPreset(preset)}
+                              className="menu-prices-icon-btn menu-prices-icon-btn--edit"
+                              aria-label={`Modifica ${preset.name}`}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCustomPreset(preset.id, preset.name)}
+                              className="menu-prices-icon-btn menu-prices-icon-btn--delete"
+                              aria-label={`Elimina ${preset.name}`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {presetEditorMode === 'editor' && (
+                <div className="mt-8 space-y-6">
+                  <div className="mx-auto flex w-full max-w-md flex-col gap-2">
+                    <label className="text-center text-sm font-medium text-gray-700">
+                      Nome menù consigliato *
+                    </label>
+                    <Input
+                      value={presetName}
+                      onChange={(e) => setPresetName(e.target.value)}
+                      placeholder="es. Menù laurea Vegan"
+                      className="mx-auto h-14 w-full rounded-2xl pl-6 text-center sm:text-left"
+                      style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                    />
+                  </div>
+                  <div className="rounded-xl bg-white/50 p-4">
+                    <PresetMenuBuilder
+                      selectedItems={presetSelectedItems}
+                      onSelectionChange={setPresetSelectedItems}
+                    />
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetPresetEditor()
+                        setPresetEditorMode('list')
+                      }}
+                      className="flex items-center gap-2 rounded-xl border-2 px-6 py-3 font-semibold text-red-600 transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
+                      style={{ borderColor: '#dc2626', color: '#dc2626' }}
+                    >
+                      <X className="h-4 w-4" />
+                      Indietro
+                    </button>
+                    <button
+                      type="button"
+                      disabled={upsertRestaurantSetting.isPending}
+                      onClick={handleSaveCustomPreset}
+                      className="flex items-center gap-2 rounded-xl px-6 py-3 font-semibold text-black transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-60"
+                      style={{ background: '#16a34a', color: '#000000' }}
+                    >
+                      <Save className="h-4 w-4" />
+                      Salva menù
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
       {viewMode === 'products' && (
         <div className="menu-prices-category-list-wrap flex flex-col items-center gap-[28px]">
           <div className="menu-prices-category-card bg-white rounded-xl shadow-md overflow-hidden">
