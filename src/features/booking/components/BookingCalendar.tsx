@@ -549,14 +549,23 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                   {digestWithMenu.length > 0 ? (
                     <div className="rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner">
                       <div className="hidden min-[641px]:grid grid-cols-3 gap-2">
-                        <h6 className="rounded-md bg-green-100 border border-green-300 px-2 py-1 text-xs font-semibold text-green-900 text-center shadow-sm">
-                          Mattina (10:00 - 14:30)
+                        <h6
+                          className="flex items-center justify-center px-3 text-center shadow-sm"
+                          style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
+                        >
+                          Mattina 10:00 - 14:30
                         </h6>
-                        <h6 className="rounded-md bg-orange-100 border border-orange-300 px-2 py-1 text-xs font-semibold text-orange-900 text-center shadow-sm">
-                          Pomeriggio (14:31 - 18:30)
+                        <h6
+                          className="flex items-center justify-center px-3 text-center shadow-sm"
+                          style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(249, 115, 22)', border: '1px solid rgb(194, 65, 12)', color: '#ffffff' }}
+                        >
+                          Pomeriggio 14:31 - 18:30
                         </h6>
-                        <h6 className="rounded-md bg-blue-100 border border-blue-300 px-2 py-1 text-xs font-semibold text-blue-900 text-center shadow-sm">
-                          Sera (18:31 - 23:30)
+                        <h6
+                          className="flex items-center justify-center px-3 text-center shadow-sm"
+                          style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(56, 189, 248)', border: '1px solid rgb(2, 132, 199)', color: '#ffffff' }}
+                        >
+                          Sera 18:31 - 23:30
                         </h6>
                       </div>
                       <div className="mt-2 hidden min-[641px]:block">
@@ -604,8 +613,11 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                       </div>
                       <div className="min-[641px]:hidden space-y-3">
                         <div className="space-y-2">
-                          <h6 className="rounded-md bg-green-100 border border-green-300 px-2 py-1 text-xs font-semibold text-green-900 text-center shadow-sm">
-                            Mattina (10:00 - 14:30)
+                          <h6
+                            className="flex items-center justify-center px-3 text-center shadow-sm"
+                            style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
+                          >
+                            Mattina 10:00 - 14:30
                           </h6>
                           {digestWithMenuBySlot.morning.map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
@@ -620,8 +632,11 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           ))}
                         </div>
                         <div className="space-y-2">
-                          <h6 className="rounded-md bg-orange-100 border border-orange-300 px-2 py-1 text-xs font-semibold text-orange-900 text-center shadow-sm">
-                            Pomeriggio (14:31 - 18:30)
+                          <h6
+                            className="flex items-center justify-center px-3 text-center shadow-sm"
+                            style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(249, 115, 22)', border: '1px solid rgb(194, 65, 12)', color: '#ffffff' }}
+                          >
+                            Pomeriggio 14:31 - 18:30
                           </h6>
                           {digestWithMenuBySlot.afternoon.map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
@@ -636,8 +651,11 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           ))}
                         </div>
                         <div className="space-y-2">
-                          <h6 className="rounded-md bg-blue-100 border border-blue-300 px-2 py-1 text-xs font-semibold text-blue-900 text-center shadow-sm">
-                            Sera (18:31 - 23:30)
+                          <h6
+                            className="flex items-center justify-center px-3 text-center shadow-sm"
+                            style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(56, 189, 248)', border: '1px solid rgb(2, 132, 199)', color: '#ffffff' }}
+                          >
+                            Sera 18:31 - 23:30
                           </h6>
                           {digestWithMenuBySlot.evening.map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
@@ -674,14 +692,23 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                   {digestTableOnly.length > 0 ? (
                     <div className="rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner">
                       <div className="hidden min-[641px]:grid grid-cols-3 gap-2">
-                        <h6 className="rounded-md bg-green-100 border border-green-300 px-2 py-1 text-xs font-semibold text-green-900 text-center shadow-sm">
-                          Mattina (10:00 - 14:30)
+                        <h6
+                          className="flex items-center justify-center px-3 text-center shadow-sm"
+                          style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
+                        >
+                          Mattina 10:00 - 14:30
                         </h6>
-                        <h6 className="rounded-md bg-orange-100 border border-orange-300 px-2 py-1 text-xs font-semibold text-orange-900 text-center shadow-sm">
-                          Pomeriggio (14:31 - 18:30)
+                        <h6
+                          className="flex items-center justify-center px-3 text-center shadow-sm"
+                          style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(249, 115, 22)', border: '1px solid rgb(194, 65, 12)', color: '#ffffff' }}
+                        >
+                          Pomeriggio 14:31 - 18:30
                         </h6>
-                        <h6 className="rounded-md bg-blue-100 border border-blue-300 px-2 py-1 text-xs font-semibold text-blue-900 text-center shadow-sm">
-                          Sera (18:31 - 23:30)
+                        <h6
+                          className="flex items-center justify-center px-3 text-center shadow-sm"
+                          style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(56, 189, 248)', border: '1px solid rgb(2, 132, 199)', color: '#ffffff' }}
+                        >
+                          Sera 18:31 - 23:30
                         </h6>
                       </div>
                       <div className="mt-2 hidden min-[641px]:block">
@@ -726,8 +753,11 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                       </div>
                       <div className="min-[641px]:hidden space-y-3">
                         <div className="space-y-2">
-                          <h6 className="rounded-md bg-green-100 border border-green-300 px-2 py-1 text-xs font-semibold text-green-900 text-center shadow-sm">
-                            Mattina (10:00 - 14:30)
+                          <h6
+                            className="flex items-center justify-center px-3 text-center shadow-sm"
+                            style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
+                          >
+                            Mattina 10:00 - 14:30
                           </h6>
                           {digestTableOnlyBySlot.morning.map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
@@ -741,8 +771,11 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           ))}
                         </div>
                         <div className="space-y-2">
-                          <h6 className="rounded-md bg-orange-100 border border-orange-300 px-2 py-1 text-xs font-semibold text-orange-900 text-center shadow-sm">
-                            Pomeriggio (14:31 - 18:30)
+                          <h6
+                            className="flex items-center justify-center px-3 text-center shadow-sm"
+                            style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(249, 115, 22)', border: '1px solid rgb(194, 65, 12)', color: '#ffffff' }}
+                          >
+                            Pomeriggio 14:31 - 18:30
                           </h6>
                           {digestTableOnlyBySlot.afternoon.map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
@@ -756,8 +789,11 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           ))}
                         </div>
                         <div className="space-y-2">
-                          <h6 className="rounded-md bg-blue-100 border border-blue-300 px-2 py-1 text-xs font-semibold text-blue-900 text-center shadow-sm">
-                            Sera (18:31 - 23:30)
+                          <h6
+                            className="flex items-center justify-center px-3 text-center shadow-sm"
+                            style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(56, 189, 248)', border: '1px solid rgb(2, 132, 199)', color: '#ffffff' }}
+                          >
+                            Sera 18:31 - 23:30
                           </h6>
                           {digestTableOnlyBySlot.evening.map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
