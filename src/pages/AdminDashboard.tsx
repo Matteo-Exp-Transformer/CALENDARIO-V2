@@ -14,12 +14,10 @@ import {
   LogOut,
   ChevronDown,
   UtensilsCrossed,
-  SlidersHorizontal,
   Store,
 } from 'lucide-react'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
-import { SettingsTab } from '@/features/booking/components/SettingsTab'
 import { RestaurantSettingsTab } from '@/features/booking/components/RestaurantSettingsTab'
 import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { cn } from '@/lib/utils'
@@ -29,7 +27,6 @@ type Tab =
   | 'pending'
   | 'archive'
   | 'menu'
-  | 'settings-system'
   | 'settings-restaurant'
 
 /* ─── NavItem ─── */
@@ -133,18 +130,21 @@ export const AdminDashboard: React.FC = () => {
               <NavItem icon={Clock}    label="Prenotazioni Pendenti" active={activeTab === 'pending'}  badge={stats?.pending} onClick={() => setActiveTab('pending')} />
               <NavItem icon={Archive}  label="Archivio"             active={activeTab === 'archive'}  onClick={() => setActiveTab('archive')} />
               <NavItem icon={UtensilsCrossed} label="Menu" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
-              <NavItem
-                icon={SlidersHorizontal}
-                label="Impostazioni sistema"
-                active={activeTab === 'settings-system'}
-                onClick={() => setActiveTab('settings-system')}
-              />
-              <NavItem
-                icon={Store}
-                label="Impostazioni locale"
-                active={activeTab === 'settings-restaurant'}
-                onClick={() => setActiveTab('settings-restaurant')}
-              />
+              <div className="col-span-2 sm:col-span-3 lg:col-span-6">
+                <div
+                  className="rounded-xl border px-2 py-1 sm:px-3"
+                  style={ADMIN_WARM_GRADIENT_SURFACE}
+                >
+                  <div className="mx-auto w-1/2 sm:w-1/3 lg:w-1/6">
+                    <NavItem
+                      icon={Store}
+                      label="Impostazioni locale"
+                      active={activeTab === 'settings-restaurant'}
+                      onClick={() => setActiveTab('settings-restaurant')}
+                    />
+                  </div>
+                </div>
+              </div>
             </nav>
           </div>
         </div>
@@ -202,7 +202,6 @@ export const AdminDashboard: React.FC = () => {
           {activeTab === 'pending'  && <PendingRequestsTab />}
           {activeTab === 'archive'  && <ArchiveTab onViewInCalendar={handleViewInCalendar} />}
           {activeTab === 'menu' && <MenuPricesTab />}
-          {activeTab === 'settings-system' && <SettingsTab />}
           {activeTab === 'settings-restaurant' && <RestaurantSettingsTab />}
         </div>
         </div>
