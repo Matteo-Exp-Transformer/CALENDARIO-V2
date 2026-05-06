@@ -117,20 +117,21 @@ export const AdminDashboard: React.FC = () => {
               className="absolute flex items-center rounded-lg p-1 shadow-sm"
               style={{
                 ...ADMIN_WARM_GRADIENT_SURFACE,
-                left: 10,
+                left: 8,
                 top: '50%',
                 transform: 'translateY(-50%)',
+                zIndex: 2,
               }}
             >
               <img
                 src={appIconSrc}
                 alt="Icona app"
-                className="rounded-lg object-cover"
-                style={{ ...ADMIN_WARM_GRADIENT_SURFACE, width: 103, height: 103 }}
+                className="h-[72px] w-[72px] rounded-lg object-cover md:h-[94px] md:w-[94px]"
+                style={ADMIN_WARM_GRADIENT_SURFACE}
               />
             </div>
-            <div className="text-center pointer-events-none">
-              <h1 className="text-base font-semibold italic font-serif tracking-wide text-slate-800 leading-tight">
+            <div className="w-full px-20 md:px-28 text-center pointer-events-none">
+              <h1 className="truncate text-base font-semibold italic font-serif tracking-wide text-slate-800 leading-tight">
                 {restaurantName || 'Booking SaaS'}
               </h1>
             </div>
