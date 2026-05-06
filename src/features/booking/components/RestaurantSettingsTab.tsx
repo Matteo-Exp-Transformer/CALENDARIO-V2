@@ -9,7 +9,7 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import type { BusinessHours } from '@/lib/businessHours'
 import { getDefaultBusinessHours } from '@/lib/businessHours'
 import { stripDirectionalFormattingChars } from '@/lib/utils'
-import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
+import { ADMIN_WARM_BORDER, ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { BusinessHoursEditor } from './BusinessHoursEditor'
 import { toast } from 'react-toastify'
 import {
@@ -323,8 +323,10 @@ export const RestaurantSettingsTab: React.FC = () => {
   const sectionSurfaceStyle: React.CSSProperties = ADMIN_WARM_GRADIENT_SURFACE
   /** Circa 1/3 della larghezza massima della card sezione (~max-w-2xl / 3) */
   const anagraficaFieldWrapClass = 'mx-auto w-full min-w-0 max-w-[14rem] space-y-2'
+  /** Spazio verticale tra i blocchi (inline: non dipende dalle utilities Tailwind arbitrary). */
+  const anagraficaFieldStackStyle: React.CSSProperties = { marginTop: '1.75rem' }
   const anagraficaInputClassName =
-    'block w-full min-h-[5.5rem] rounded-[1.25rem] border-2 border-slate-200 bg-white px-4 py-4 text-left text-base text-slate-900 shadow-sm outline-none placeholder:text-slate-400 transition-colors duration-150 focus:border-primary-400 focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-white disabled:text-slate-500 disabled:opacity-80'
+    'block w-full min-h-[3.667rem] rounded-[1.25rem] border-2 border-slate-200 bg-white px-4 py-2.5 text-center text-xl font-medium leading-snug text-slate-900 shadow-sm outline-none placeholder:text-slate-400 placeholder:text-xl transition-colors duration-150 focus:border-primary-400 focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-white disabled:text-slate-500 disabled:opacity-80'
 
   return (
     <div className="flex w-full flex-col items-center gap-8">
@@ -345,14 +347,14 @@ export const RestaurantSettingsTab: React.FC = () => {
         <div className="min-w-0 text-center">
           <h2 className="text-2xl font-bold text-slate-900">Impostazioni locale</h2>
           <p className="text-sm text-slate-600">
-            Nome, prenotazioni e orari salvati in Supabase per questo tenant.
+            Modifica i dati visualizzati nella pagina Prenotazioni e nel Calendario.
           </p>
         </div>
       </div>
 
       <section className={sectionSurfaceClass} style={sectionSurfaceStyle}>
         <h3 className="text-lg font-semibold text-slate-800">Anagrafica e prenotazioni</h3>
-        <div className="flex w-full flex-col items-center gap-4">
+        <div className="flex w-full flex-col items-center">
           <div className={anagraficaFieldWrapClass}>
             <Label htmlFor="restaurant_name" className="block w-full text-center">
               Nome ristorante
@@ -372,7 +374,7 @@ export const RestaurantSettingsTab: React.FC = () => {
               style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
             />
           </div>
-          <div className={anagraficaFieldWrapClass}>
+          <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
             <Label htmlFor="daily_guest_limit" className="block w-full text-center">
               Limite coperti giornaliero
             </Label>
@@ -396,9 +398,9 @@ export const RestaurantSettingsTab: React.FC = () => {
               }}
             />
           </div>
-          <div className={anagraficaFieldWrapClass}>
+          <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
             <Label htmlFor="contact_email" className="block w-full text-center">
-              Email contatto (pagina prenota)
+              Email contatto
             </Label>
             <Input
               id="contact_email"
@@ -413,9 +415,9 @@ export const RestaurantSettingsTab: React.FC = () => {
               placeholder="ristorante@example.com"
             />
           </div>
-          <div className={anagraficaFieldWrapClass}>
+          <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
             <Label htmlFor="contact_phone" className="block w-full text-center">
-              Telefono contatto (pagina prenota)
+              Telefono contatto
             </Label>
             <Input
               id="contact_phone"
@@ -429,9 +431,9 @@ export const RestaurantSettingsTab: React.FC = () => {
               placeholder="+39 ..."
             />
           </div>
-          <div className={anagraficaFieldWrapClass}>
+          <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
             <Label htmlFor="contact_address" className="block w-full text-center">
-              Indirizzo contatto (pagina prenota)
+              Indirizzo contatto
             </Label>
             <Input
               id="contact_address"
@@ -451,7 +453,7 @@ export const RestaurantSettingsTab: React.FC = () => {
       <section className={sectionSurfaceClass} style={sectionSurfaceStyle}>
         <h3 className="text-lg font-semibold text-slate-800">Imposta Fasce Orarie</h3>
         <p className="text-sm text-slate-600">
-          Personalizza le fasce usate nel calendario (Mattina/Pomeriggio/Sera). Le fasce non possono sovrapporsi.
+          Cambia le fasce orarie in cui vengono raggruppate le prenotazioni nel calendario.
         </p>
 
         <div className="flex w-full flex-col items-center gap-4">
@@ -460,13 +462,16 @@ export const RestaurantSettingsTab: React.FC = () => {
               {slotValidationError}
             </div>
           )}
-          <div className="w-full rounded-xl border border-emerald-300/70 bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]">
+          <div
+            className="w-full rounded-xl border bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]"
+            style={{ borderColor: ADMIN_WARM_BORDER }}
+          >
             <p className="mb-3 text-sm font-semibold text-emerald-900">
               {getBookingTimeSlotLabel('morning', bookingTimeSlots)}
             </p>
-            <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
+            <div className="flex w-full flex-row flex-nowrap items-end justify-center gap-4 overflow-x-auto py-1 [scrollbar-width:thin] md:gap-8">
               <div
-                className={`w-full max-w-[11.5rem] space-y-1.5 text-center ${slotFieldClass('morningStart')}`}
+                className={`w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center ${slotFieldClass('morningStart')}`}
                 style={slotFieldStyle('morningStart')}
                 ref={(el) => {
                   slotFieldRefs.current.morningStart = el
@@ -487,7 +492,7 @@ export const RestaurantSettingsTab: React.FC = () => {
                 />
               </div>
               <div
-                className={`w-full max-w-[11.5rem] space-y-1.5 text-center ${slotFieldClass('morningEnd')}`}
+                className={`w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center ${slotFieldClass('morningEnd')}`}
                 style={slotFieldStyle('morningEnd')}
                 ref={(el) => {
                   slotFieldRefs.current.morningEnd = el
@@ -510,13 +515,16 @@ export const RestaurantSettingsTab: React.FC = () => {
             </div>
           </div>
 
-          <div className="w-full rounded-xl border border-orange-300/70 bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]">
+          <div
+            className="w-full rounded-xl border bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]"
+            style={{ borderColor: ADMIN_WARM_BORDER }}
+          >
             <p className="mb-3 text-sm font-semibold text-orange-900">
               {getBookingTimeSlotLabel('afternoon', bookingTimeSlots)}
             </p>
-            <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
+            <div className="flex w-full flex-row flex-nowrap items-end justify-center gap-4 overflow-x-auto py-1 [scrollbar-width:thin] md:gap-8">
               <div
-                className={`w-full max-w-[11.5rem] space-y-1.5 text-center ${slotFieldClass('afternoonStart')}`}
+                className={`w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center ${slotFieldClass('afternoonStart')}`}
                 style={slotFieldStyle('afternoonStart')}
                 ref={(el) => {
                   slotFieldRefs.current.afternoonStart = el
@@ -537,7 +545,7 @@ export const RestaurantSettingsTab: React.FC = () => {
                 />
               </div>
               <div
-                className={`w-full max-w-[11.5rem] space-y-1.5 text-center ${slotFieldClass('afternoonEnd')}`}
+                className={`w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center ${slotFieldClass('afternoonEnd')}`}
                 style={slotFieldStyle('afternoonEnd')}
                 ref={(el) => {
                   slotFieldRefs.current.afternoonEnd = el
@@ -560,13 +568,16 @@ export const RestaurantSettingsTab: React.FC = () => {
             </div>
           </div>
 
-          <div className="w-full rounded-xl border border-sky-300/70 bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]">
+          <div
+            className="w-full rounded-xl border bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]"
+            style={{ borderColor: ADMIN_WARM_BORDER }}
+          >
             <p className="mb-3 text-sm font-semibold text-sky-900">
               {getBookingTimeSlotLabel('evening', bookingTimeSlots)}
             </p>
-            <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
+            <div className="flex w-full flex-row flex-nowrap items-end justify-center gap-4 overflow-x-auto py-1 [scrollbar-width:thin] md:gap-8">
               <div
-                className={`w-full max-w-[11.5rem] space-y-1.5 text-center ${slotFieldClass('eveningStart')}`}
+                className={`w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center ${slotFieldClass('eveningStart')}`}
                 style={slotFieldStyle('eveningStart')}
                 ref={(el) => {
                   slotFieldRefs.current.eveningStart = el
@@ -587,7 +598,7 @@ export const RestaurantSettingsTab: React.FC = () => {
                 />
               </div>
               <div
-                className={`w-full max-w-[11.5rem] space-y-1.5 text-center ${slotFieldClass('eveningEnd')}`}
+                className={`w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center ${slotFieldClass('eveningEnd')}`}
                 style={slotFieldStyle('eveningEnd')}
                 ref={(el) => {
                   slotFieldRefs.current.eveningEnd = el
@@ -627,15 +638,22 @@ export const RestaurantSettingsTab: React.FC = () => {
         />
       </section>
 
-      <div className="flex w-full max-w-2xl flex-wrap items-center justify-center gap-3">
+      <div
+        className="restaurant-settings-save-footer flex min-h-[4.75rem] w-full max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7"
+        style={{
+          ...ADMIN_WARM_GRADIENT_SURFACE,
+          color: '#ffffff',
+        }}
+      >
         <Button
           type="button"
           onClick={handleSave}
           disabled={upsert.isPending || !tenantId}
+          className="restaurant-settings-save-submit min-h-[3.75rem] bg-[#1e3a8a] px-10 py-5 text-base shadow-md hover:bg-[#1e40af] hover:shadow-lg focus:ring-[#3b82f6] disabled:pointer-events-none disabled:bg-[#1e3a8a]"
         >
           {upsert.isPending ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="h-6 w-6 shrink-0 animate-spin" />
               Salvataggio…
             </>
           ) : (
@@ -643,7 +661,12 @@ export const RestaurantSettingsTab: React.FC = () => {
           )}
         </Button>
         {dirty && !upsert.isPending && (
-          <span className="text-sm text-amber-700">Modifiche non salvate</span>
+          <span
+            className="restaurant-settings-save-footer-msg max-w-xl text-center text-base font-semibold leading-snug drop-shadow-[0_1px_2px_rgba(0,0,0,0.28)]"
+            style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
+          >
+            Modifiche non salvate. I dati non sono ancora stati salvati.
+          </span>
         )}
       </div>
     </div>

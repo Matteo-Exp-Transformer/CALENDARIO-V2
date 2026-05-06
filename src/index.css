@@ -348,11 +348,15 @@ body {
   text-align: center;
   background-color: #f9fafb;
   border-radius: 1.25rem;
-  transition: box-shadow 0.2s ease;
+  border: 2px solid rgba(15, 23, 42, 0.1);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .menu-prices-item-row:hover {
   box-shadow: var(--shadow-md);
+  border-color: rgba(15, 23, 42, 0.16);
 }
 
 .menu-prices-item-row .menu-prices-item-text {
@@ -414,4 +418,25 @@ body {
   background-color: #c2410c;
   border-color: #c2410c;
   color: #fff;
+}
+
+/* Restaurant settings — footer salvataggio: forza bianco sopra gradient (override inheritance / browser quirks) */
+.restaurant-settings-save-footer {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.restaurant-settings-save-footer-msg {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.restaurant-settings-save-submit {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.restaurant-settings-save-submit svg {
+  color: inherit !important;
+  stroke: currentColor !important;
 }

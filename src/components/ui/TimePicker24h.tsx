@@ -71,10 +71,14 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
           ...(style as React.CSSProperties | undefined),
         }}
         className={cn(
-          '[color-scheme:light] isolate flex min-h-[3.5rem] w-full items-center gap-2 rounded-[1.25rem] border-2 border-slate-200 !bg-white px-4 py-3 text-sm text-slate-900 shadow-sm',
+          '[color-scheme:light] isolate flex min-h-[3.5rem] w-full items-center gap-2 rounded-[1.25rem] !bg-white px-4 py-3 text-sm text-slate-900 shadow-sm',
+          // Stessi spessori/colori border di TimeInput (.time-input-container)
+          hasError ? 'border-2 !border-red-500' : 'border border-[rgba(0,0,0,0.2)]',
           '[&_select]:!bg-white [&_select]:text-slate-900',
-          'focus-within:border-primary-400 focus-within:outline-none focus-within:ring-2 focus-within:ring-primary-500',
-          hasError && '!border-red-500 focus-within:!ring-red-500',
+          'focus-within:outline-none',
+          !hasError && 'focus-within:border-[#8B6914]',
+          hasError &&
+            'focus-within:border-red-600 focus-within:!border-red-600 focus-within:ring-2 focus-within:ring-red-500/35',
           disabled && '!cursor-not-allowed',
           className
         )}

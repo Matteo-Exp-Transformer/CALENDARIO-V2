@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { ADMIN_WARM_BORDER } from '@/lib/adminWarmGradientSurface'
 import { cn } from '@/lib/utils'
 import type { BusinessHours, BusinessHourSlot } from '@/lib/businessHours'
 import { Button } from '@/components/ui/Button'
@@ -105,7 +106,8 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
         return (
           <div
             key={day}
-            className="w-full space-y-3 rounded-xl border border-slate-300/60 bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]"
+            className="w-full space-y-3 rounded-xl border bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]"
+            style={{ borderColor: ADMIN_WARM_BORDER }}
           >
             <div className="flex w-full min-w-0 flex-row flex-wrap items-center justify-between gap-x-12 gap-y-3 px-5 sm:px-10 md:px-14 lg:px-20 xl:px-24">
               <strong className="shrink-0 text-sm font-extrabold !font-extrabold text-slate-900 tracking-tight">
@@ -117,7 +119,8 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
                   checked={closed}
                   disabled={disabled}
                   onChange={(e) => toggleClosed(day, e.target.checked)}
-                  className="rounded-md border-slate-300"
+                  className="rounded-md border"
+                  style={{ borderColor: ADMIN_WARM_BORDER }}
                 />
                 Chiuso
               </label>
