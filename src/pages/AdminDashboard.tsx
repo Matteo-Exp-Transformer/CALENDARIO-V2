@@ -114,10 +114,10 @@ export const AdminDashboard: React.FC = () => {
             style={ADMIN_WARM_GRADIENT_SURFACE}
           >
             <div
-              className="absolute flex items-center rounded-lg p-1 shadow-sm"
+              className="absolute flex items-center rounded-lg p-0 shadow-sm"
               style={{
                 ...ADMIN_WARM_GRADIENT_SURFACE,
-                right: 8,
+                right: 0,
                 top: '50%',
                 transform: 'translateY(-50%)',
                 zIndex: 2,
@@ -126,14 +126,14 @@ export const AdminDashboard: React.FC = () => {
               <img
                 src={appIconSrc}
                 alt="Icona app"
-                className="h-[72px] w-[72px] rounded-lg object-cover md:h-[94px] md:w-[94px]"
+                className="h-[103px] w-[103px] rounded-lg object-cover md:h-[136px] md:w-[136px]"
                 style={ADMIN_WARM_GRADIENT_SURFACE}
               />
             </div>
             <div className="w-full px-20 md:px-28 max-[615px]:pl-2 max-[615px]:pr-16 max-[615px]:text-left text-center pointer-events-none">
               <h1
                 className="truncate font-semibold italic font-serif tracking-wide text-slate-800 leading-tight"
-                style={{ fontSize: 'clamp(1.44rem, 3.072vw, 1.92rem)' }}
+                style={{ fontSize: 'clamp(1.297rem, 2.767vw, 1.729rem)' }}
               >
                 {restaurantName || 'Booking SaaS'}
               </h1>

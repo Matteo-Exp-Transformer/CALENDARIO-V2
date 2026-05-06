@@ -29,6 +29,8 @@ type SlotFieldKey =
   | 'eveningStart'
   | 'eveningEnd'
 
+const RESTAURANT_NAME_MAX_LENGTH = 26
+
 function validateBookingTimeSlotsDetailed(config: BookingTimeSlots): {
   message: string | null
   fields: SlotFieldKey[]
@@ -208,7 +210,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const markDirty = () => setDirty(true)
   const handleRestaurantNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     markDirty()
-    setRestaurantName(event.target.value)
+    setRestaurantName(event.target.value.slice(0, RESTAURANT_NAME_MAX_LENGTH))
   }
 
   const handleSave = async () => {
@@ -321,11 +323,12 @@ export const RestaurantSettingsTab: React.FC = () => {
         <h3 className="text-lg font-semibold text-slate-800">Anagrafica e prenotazioni</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="restaurant_name">Nome ristorante (visualizzato)</Label>
+            <Label htmlFor="restaurant_name">Nome ristorante (max 26 caratteri)</Label>
             <input
               id="restaurant_name"
               name="restaurant_name"
               type="text"
+              maxLength={RESTAURANT_NAME_MAX_LENGTH}
               dir="ltr"
               autoComplete="off"
               value={typeof restaurantName === 'string' ? restaurantName : ''}
