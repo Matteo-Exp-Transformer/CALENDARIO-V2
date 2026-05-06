@@ -180,8 +180,7 @@ export const RejectBookingModal: React.FC<RejectBookingModalProps> = ({
                 lineHeight: '1.5'
               }}>
                 <strong>Attenzione:</strong> Stai per rifiutare la prenotazione di{' '}
-                <strong style={{ color: '#78350f' }}>{booking.client_name}</strong>. 
-                Questa azione può essere reversibile solo manualmente.
+                <strong style={{ color: '#78350f' }}>{booking.client_name}</strong>.
               </p>
             </div>
 

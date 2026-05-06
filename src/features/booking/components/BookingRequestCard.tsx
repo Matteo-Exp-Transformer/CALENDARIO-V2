@@ -369,7 +369,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
             <button
               type="button"
               onClick={() => onReject(booking)}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] rounded-lg font-medium text-white shadow-sm transition-all duration-200 active:scale-95 bg-red-500 hover:bg-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
+              className="booking-request-reject-booking-btn flex-1 flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] rounded-lg font-semibold shadow-sm transition-colors duration-200 active:scale-[0.98] focus:outline-none"
             >
               <XCircle className="w-5 h-5" />
               Rifiuta

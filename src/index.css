@@ -305,21 +305,18 @@ body {
   color: #ffffff !important;
 }
 
-/* BookingRequestCard — shell: lift + ombra + saturazione sempre visibile (Tailwind translate/hover non sempre anima bene in v4) */
+/* BookingRequestCard — shell: lift + ombra (niente filter sul wrapper: altrimenti attenua i colori dei pulsanti dentro) */
 .booking-request-card-shell {
   box-shadow: var(--shadow-sm);
   transform: translateY(0);
-  filter: saturate(1);
   transition:
     transform 230ms cubic-bezier(0.33, 1, 0.68, 1),
-    box-shadow 230ms cubic-bezier(0.33, 1, 0.68, 1),
-    filter 230ms cubic-bezier(0.33, 1, 0.68, 1);
+    box-shadow 230ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .booking-request-card-shell:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
-  filter: saturate(1.18);
 }
 
 .booking-request-card-shell:active {
@@ -333,7 +330,6 @@ body {
   .booking-request-card-shell:hover,
   .booking-request-card-shell:active {
     transform: none;
-    filter: saturate(1);
   }
 
   .booking-request-card-shell:hover {
@@ -359,6 +355,33 @@ body {
   .booking-request-collapse-header:hover .booking-request-collapse-header-gradient {
     filter: none;
   }
+}
+
+/*
+ * “Rifiuta” su superficie warm/gradient: alcuni browser o layer Tailwind lasciano sfondo grigio/neutro.
+ * Colore pieno qui (nessun background-image) così il rosso resta sempre visibile.
+ */
+button.booking-request-reject-booking-btn {
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  border-style: none;
+  background-image: none !important;
+  background-color: #dc2626;
+  color: #fff;
+}
+
+button.booking-request-reject-booking-btn:hover {
+  background-color: #b91c1c;
+}
+
+button.booking-request-reject-booking-btn:active {
+  background-color: #991b1b;
+}
+
+button.booking-request-reject-booking-btn:focus-visible {
+  outline: 2px solid #f87171;
+  outline-offset: 2px;
 }
 
 /* Fascia liste categorie menu admin — stesso filo cromatico della strip header dashboard */
