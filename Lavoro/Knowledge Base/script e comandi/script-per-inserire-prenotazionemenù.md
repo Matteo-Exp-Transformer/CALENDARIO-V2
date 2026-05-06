@@ -1,0 +1,1 @@
+npm run seed:booking-menu-full

@@ -25,6 +25,7 @@ npm-debug.log*
 # Test results
 test-results/
 playwright-report/
+.playwright-mcp/
 
 # Vite cache
 .vite/

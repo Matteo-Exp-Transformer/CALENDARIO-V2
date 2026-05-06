@@ -1,93 +1,72 @@
 /**
- * Crea una prenotazione "Rinfresco di Laurea" con tutti i `menu_items` del tenant selezionato.
+ * Rinfresco di Laurea — selezione casuale di voci dal menù (`menu_items`) del tenant.
+ * Non dipende da nomi fissi di categorie o piatti (solo logica speciale «tiramisù» come nel form admin).
  *
- * Data fissa predefinita: 2026-05-08 (override: FIXED_BOOKING_DATE=YYYY-MM-DD).
+ * Data predefinita: FIXED_BOOKING_DATE in bookingSeedShared (override env).
  *
- * Uso (dalla root del repo):
- *   node --env-file=.env.local scripts/seed-full-menu-booking.mjs
+ * Uso:
+ *   npm run seed:booking-menu-full
  *
- * Variabili obbligatorie:
- *   - VITE_SUPABASE_URL (o SUPABASE_URL)
- *   - VITE_SUPABASE_ANON_KEY — per leggere organizations + menu_items e (senza service role)
- *       chiamare l'edge function `create-booking`
- *   - TENANT_SLUG (o VITE_TENANT_SLUG) — slug in organizations.slug (= parte URL /prenota/<slug>)
+ * Variabili random (opzionali):
+ *   RANDOM_MENU_MIN — numero minimo di voci estratte (default 3)
+ *   RANDOM_MENU_MAX — numero massimo di voci estratte (default 12, mai oltre le voci disponibili)
  *
- * Opzionale (consigliato per QA calendario: prenotazione subito ACCEPTED):
- *   - SUPABASE_SERVICE_ROLE_KEY — INSERT diretta come admin (status accepted + confirmed_*)
- *
- * Altri override opzionali:
- *   - NUM_GUESTS (default 12)
- *   - DESIRED_TIME (default 20:00)
- *   - CLIENT_NAME, CLIENT_EMAIL, CLIENT_PHONE
+ * Credenziali: VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY, TENANT_SLUG.
+ * Se la lettura anon di menu_items resta vuota (RLS sul progetto remoto), usa anche
+ * SUPABASE_SERVICE_ROLE_KEY: lo script la usa per caricare organizations + menu_items e per INSERT PENDING.
  */
 
-import { readFileSync, existsSync } from 'fs'
-import { dirname, join } from 'path'
-import { fileURLToPath } from 'url'
 import { createClient } from '@supabase/supabase-js'
+import {
+  FIXED_BOOKING_DATE,
+  PLACEHOLDER_SLUGS,
+  resolveTenantSlugFromEnv,
+  parseTenantSlugFromProjectRoot,
+  resolveServiceRoleKey,
+  serviceRoleKeyOrigin,
+  normalizeTime,
+  fetchOrgBySlug,
+  fetchMenuItemsForTenant,
+} from './bookingSeedShared.mjs'
 
-const FIXED_BOOKING_DATE = process.env.FIXED_BOOKING_DATE || '2026-05-08'
-
-/** Legge TENANT_SLUG da .env.local / .env nella root del repo (priorità sulla sessione shell / Node --env-file). */
-function parseTenantSlugFromProjectRoot() {
-  const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-  for (const name of ['.env.local', '.env']) {
-    const p = join(root, name)
-    if (!existsSync(p)) continue
-    let text = readFileSync(p, 'utf8')
-    if (text.charCodeAt(0) === 0xfeff) text = text.slice(1)
-    for (let line of text.split(/\r?\n/)) {
-      line = line.trim()
-      if (!line || line.startsWith('#')) continue
-      const m = /^(?:export\s+)?(TENANT_SLUG|VITE_TENANT_SLUG)\s*=\s*(.*)$/.exec(line)
-      if (!m) continue
-      let v = m[2].trim()
-      if (
-        (v.startsWith('"') && v.endsWith('"')) ||
-        (v.startsWith("'") && v.endsWith("'"))
-      ) {
-        v = v.slice(1, -1)
-      }
-      const slug = v.trim()
-      if (slug) return slug
-    }
+function shuffleInPlace(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
   }
-  return null
+  return arr
 }
 
-function createBookingDateTime(dateStr, timeStr, isStart = true, startTime) {
-  const [year, month, day] = dateStr.split('-').map(Number)
-  const [hours, minutes] = timeStr.split(':').map(Number)
-  let finalYear = year
-  let finalMonth = month
-  let finalDay = day
-  let finalHours = hours
-  let finalMinutes = minutes
-  if (!isStart && startTime) {
-    const [startHours] = startTime.split(':').map(Number)
-    if (hours < startHours || (hours === startHours && startHours >= 22)) {
-      const d = new Date(year, month - 1, day)
-      d.setDate(d.getDate() + 1)
-      finalYear = d.getFullYear()
-      finalMonth = d.getMonth() + 1
-      finalDay = d.getDate()
-    }
+/** Estrae un numero casuale di righe fra RANDOM_MENU_MIN e RANDOM_MENU_MAX (clamp su lunghezza elenco). */
+function pickRandomMenuRows(menuRows) {
+  if (!menuRows.length) return []
+
+  let rawMin = parseInt(process.env.RANDOM_MENU_MIN || '3', 10)
+  let rawMax = parseInt(process.env.RANDOM_MENU_MAX || '12', 10)
+  if (Number.isNaN(rawMin) || rawMin < 1) rawMin = 3
+  if (Number.isNaN(rawMax) || rawMax < 1) rawMax = 12
+  rawMax = Math.max(rawMin, rawMax)
+
+  const effectiveMax = Math.min(menuRows.length, rawMax)
+  const effectiveMin = Math.min(rawMin, effectiveMax)
+  const count =
+    effectiveMin + Math.floor(Math.random() * (effectiveMax - effectiveMin + 1))
+
+  const copy = [...menuRows]
+  shuffleInPlace(copy)
+  const picked = copy.slice(0, count)
+
+  const hasNonTiramisuBase = picked.some((r) => !r.name.toLowerCase().includes('tiramis'))
+  const poolNonTiramisu = menuRows.filter((r) => !r.name.toLowerCase().includes('tiramis'))
+  if (!hasNonTiramisuBase && poolNonTiramisu.length > 0) {
+    shuffleInPlace(poolNonTiramisu)
+    picked.push(poolNonTiramisu[0])
+    console.log(
+      '[seed-full-menu-booking] Aggiunta una voce non-tiramisù al campione perché serve menu_total_per_person > 0.',
+    )
   }
-  return `${String(finalYear).padStart(4, '0')}-${String(finalMonth).padStart(2, '0')}-${String(finalDay).padStart(2, '0')}T${String(finalHours).padStart(2, '0')}:${String(finalMinutes).padStart(2, '0')}:00+00:00`
-}
 
-function calculateEndTimeFromStart(startTime, hoursToAdd = 3) {
-  const [hours, minutes] = startTime.split(':').map(Number)
-  const totalMinutes = hours * 60 + minutes + hoursToAdd * 60
-  const wrapped = ((totalMinutes % (24 * 60)) + 24 * 60) % (24 * 60)
-  const endH = Math.floor(wrapped / 60)
-  const endM = wrapped % 60
-  return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`
-}
-
-function normalizeTime(t) {
-  if (!t) return '20:00'
-  return t.split(':').slice(0, 2).join(':')
+  return picked
 }
 
 function buildMenuSelection(menuRows) {
@@ -143,27 +122,19 @@ function buildMenuSelection(menuRows) {
   }
 }
 
-const PLACEHOLDER_SLUGS = new Set([
-  'nome-del-tuo-slug',
-  'il-tuo-slug',
-  'your-slug',
-  'YOUR_SLUG_HERE',
-])
-
 async function main() {
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL
   const anonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const serviceKey = resolveServiceRoleKey()
 
   const slugFromFile = parseTenantSlugFromProjectRoot()
-  const tenantSlug = (
-    slugFromFile ||
-    process.env.TENANT_SLUG ||
-    process.env.VITE_TENANT_SLUG ||
-    ''
-  ).trim()
+  const tenantSlug = resolveTenantSlugFromEnv()
 
   console.log('[seed-full-menu-booking] slug risolto:', JSON.stringify(tenantSlug || '(vuoto)'))
+  console.log(
+    '[seed-full-menu-booking] SUPABASE_SERVICE_ROLE_KEY:',
+    serviceKey ? `presente — origine ${serviceRoleKeyOrigin()}` : `assente — ${serviceRoleKeyOrigin()}`,
+  )
   if (slugFromFile) {
     console.log('[seed-full-menu-booking] (tenant da .env.local / .env nel repo, ignora TENANT_SLUG ereditato dalla shell)')
   }
@@ -193,9 +164,6 @@ Se hai già aggiornato .env.local ma vedi ancora il placeholder:
 Aggiungi in .env.local (stesso folder del progetto) una di queste righe:
   TENANT_SLUG=il-tuo-slug
 
-oppure:
-  VITE_TENANT_SLUG=il-tuo-slug
-
 Il valore è il campo slug in Supabase → Table Editor → organizations,
 (o la parte dopo /prenota/ nell’URL pubblico di prenotazione).
 
@@ -205,52 +173,118 @@ Esempio solo per questa shell (PowerShell):
     process.exit(1)
   }
 
-  const supabaseAnon = createClient(supabaseUrl, anonKey)
+  /** Client per SELECT: la service role vede sempre `menu_items` (anon può essere bloccato da RLS sul DB remoto). */
+  const supabaseDb =
+    serviceKey != null && String(serviceKey).trim() !== ''
+      ? createClient(supabaseUrl, serviceKey)
+      : createClient(supabaseUrl, anonKey)
 
-  const { data: org, error: orgErr } = await supabaseAnon
-    .from('organizations')
-    .select('id, name')
-    .eq('slug', tenantSlug)
-    .maybeSingle()
+  if (serviceKey != null && String(serviceKey).trim() !== '') {
+    console.log(
+      '[seed-full-menu-booking] Lettura organizations + menu_items con SUPABASE_SERVICE_ROLE_KEY (aggira RLS).',
+    )
+  }
+
+  const { org, orgErr } = await fetchOrgBySlug(supabaseDb, tenantSlug)
 
   if (orgErr || !org) {
     console.error('Organizzazione non trovata per slug:', tenantSlug, orgErr?.message || '')
     process.exit(1)
   }
 
-  const { data: menuRows, error: menuErr } = await supabaseAnon
-    .from('menu_items')
-    .select('id,name,price,category,sort_order')
-    .eq('tenant_id', org.id)
-    .order('category', { ascending: true })
-    .order('sort_order', { ascending: true })
+  const { menuRows: allMenuRows, menuErr } = await fetchMenuItemsForTenant(
+    supabaseDb,
+    org.id,
+  )
 
   if (menuErr) {
     console.error('Errore lettura menu_items:', menuErr.message)
     process.exit(1)
   }
 
-  if (!menuRows?.length) {
-    console.error('Nessun menu_items per questo tenant. Aggiungi prodotti dall’admin prima di eseguire lo script.')
+  if (!allMenuRows.length) {
+    let diagnostica = ''
+    if (serviceKey) {
+      const { count: totalAll } = await supabaseDb
+        .from('menu_items')
+        .select('*', { count: 'exact', head: true })
+      const { count: forOrg } = await supabaseDb
+        .from('menu_items')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', org.id)
+      diagnostica = `
+Diagnostica (service role):
+  organization.id = ${org.id}
+  menu_items in tutta la tabella: ${totalAll ?? 'n/d'}
+  menu_items con questo tenant_id: ${forOrg ?? 'n/d'}
+`
+      if ((totalAll ?? 0) > 0 && (forOrg ?? 0) === 0) {
+        const { data: idRows } = await supabaseDb.from('menu_items').select('tenant_id')
+        const distinctTenantIds = [...new Set((idRows ?? []).map((r) => r.tenant_id).filter(Boolean))]
+        const inList = distinctTenantIds.map((id) => `'${id}'`).join(', ')
+        diagnostica += `
+I prodotti ci sono ma il campo menu_items.tenant_id non corrisponde a organization.id sopra (spesso dati creati con un altro tenant o copiati a mano).
+
+tenant_id attualmente presenti in menu_items:
+  ${distinctTenantIds.length ? distinctTenantIds.map((id) => `- ${id}`).join('\n  ') : '(nessuno — controlla dati corrotti)'}
+
+${
+          distinctTenantIds.length
+            ? `Se tutte le righe devono essere del locale «${tenantSlug}», incolla in SQL Editor (Supabase → SQL) e avvia UNA volta:
+
+  update public.menu_items
+  set tenant_id = '${org.id}'
+  where tenant_id in (${inList});
+
+Poi rilancia questo script.`
+            : 'Apri Table Editor su menu_items e imposta tenant_id uguale all’organization.id sopra (non è stato possibile suggerire uno UPDATE automatico).'
+        }
+
+In alternativa modifica a mano tenant_id per ogni riga in Table Editor.
+`
+      }
+    } else {
+      diagnostica = `
+Service role non caricata. Nel file .env.local (root del repo) usa il nome esatto:
+  SUPABASE_SERVICE_ROLE_KEY=<Dashboard → Settings → API → service_role>
+(non usare il prefisso VITE_ per questa chiave).
+
+Se l’hai già messa: salva il file, rilancia da quella stessa cartella; su Windows evita spazi attorno a «=» nella riga.
+`
+    }
+
+    console.error(`
+Nessuna riga in menu_items per tenant_id dell’organizzazione «${tenantSlug}».
+${diagnostica}
+• Se l’admin è vuoto: crea le voci menù dall’admin.
+
+• Se vedi prodotti in admin ma conteggio 0 qui: solitamente slug/tenant_id non coincidono con le righe in menu_items.
+`)
     process.exit(1)
   }
+
+  const sampledRows = pickRandomMenuRows(allMenuRows)
+  console.log(
+    `[seed-full-menu-booking] estratte ${sampledRows.length} voci su ${allMenuRows.length} disponibili (RANDOM_MENU_MIN/MAX).`,
+  )
 
   const numGuests = Math.max(1, parseInt(process.env.NUM_GUESTS || '12', 10))
   const desiredTime = normalizeTime(process.env.DESIRED_TIME || '20:00')
   const clientName =
     process.env.CLIENT_NAME ||
-    `[Script] Rinfresco menù completo ${new Date().toISOString().slice(0, 19)}`
+    `[Script] Rinfresco casuale ${new Date().toISOString().slice(0, 19)}`
   const clientEmail = (process.env.CLIENT_EMAIL || 'script-menu-test@example.invalid').trim()
   const clientPhone = process.env.CLIENT_PHONE || '3400000000'
 
-  const { menu_selection, menu_total_per_person } = buildMenuSelection(menuRows)
-  const menu_total_booking = menu_total_per_person * numGuests + (menu_selection.tiramisu_total || 0)
+  const { menu_selection, menu_total_per_person } = buildMenuSelection(sampledRows)
+  const menu_total_booking =
+    menu_total_per_person * numGuests + (menu_selection.tiramisu_total || 0)
 
-  const menuDescription = menuRows
+  const menuDescription = sampledRows
     .map((r) => r.name)
     .slice(0, 25)
     .join(', ')
-    .concat(menuRows.length > 25 ? ` … (+${menuRows.length - 25} voci)` : '')
+    .concat(sampledRows.length > 25 ? ` … (+${sampledRows.length - 25} voci)` : '')
 
   const basePayload = {
     client_name: clientName,
@@ -259,7 +293,7 @@ Esempio solo per questa shell (PowerShell):
     desired_date: FIXED_BOOKING_DATE,
     desired_time: desiredTime,
     num_guests: numGuests,
-    special_requests: `Generato da scripts/seed-full-menu-booking.mjs — ${menuRows.length} voci menù.`,
+    special_requests: `Generato da scripts/seed-full-menu-booking.mjs — ${sampledRows.length} voci estratte casualmente.`,
     booking_type: 'rinfresco_laurea',
     event_type: 'laurea',
     menu: menuDescription,
@@ -273,18 +307,12 @@ Esempio solo per questa shell (PowerShell):
 
   if (serviceKey) {
     const supabaseAdmin = createClient(supabaseUrl, serviceKey)
-    const startTime = desiredTime
-    const endTime = calculateEndTimeFromStart(startTime, 3)
-    const confirmed_start = createBookingDateTime(FIXED_BOOKING_DATE, startTime, true)
-    const confirmed_end = createBookingDateTime(FIXED_BOOKING_DATE, endTime, false, startTime)
 
     const insertData = {
       tenant_id: org.id,
       ...basePayload,
-      booking_source: 'admin',
-      status: 'accepted',
-      confirmed_start,
-      confirmed_end,
+      booking_source: 'public',
+      status: 'pending',
     }
 
     const { data: row, error: insErr } = await supabaseAdmin
@@ -298,7 +326,10 @@ Esempio solo per questa shell (PowerShell):
       process.exit(1)
     }
 
-    console.log('OK — prenotazione ACCEPTED (service role):', JSON.stringify(row, null, 2))
+    console.log('OK — prenotazione PENDING (service role, come create-booking):', JSON.stringify(row, null, 2))
+    console.log(`
+Richiesta in sospeso: approvala dall’admin per vederla nel calendario con orari confermati.
+`)
     return
   }
 
@@ -333,13 +364,7 @@ Esempio solo per questa shell (PowerShell):
   console.log('OK — creata tramite Edge Function:', JSON.stringify(booking, null, 2))
   console.log(`
 --- Calendario admin ---
-Il calendario mostra solo prenotazioni ACCEPTED (con orari confermati).
-Questa richiesta è PENDING: la vedi in «Richieste in sospeso» / approvazione, non nel calendario finché non la accetti.
-
-Per generarne una già visibile il giorno ${FIXED_BOOKING_DATE}:
-  • aggiungi SUPABASE_SERVICE_ROLE_KEY in .env.local (Dashboard Supabase → Settings → API), poi rilancia lo script,
-  oppure
-  • accetta manualmente questa richiesta dall’admin dopo il seed.
+Richiesta PENDING: compare in «Richieste in sospeso» finché non la accetti con orari confermati.
 `)
 }
 
