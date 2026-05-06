@@ -663,6 +663,21 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
               )}
             </AdminFormFieldCard>
 
+            {formData.booking_type === 'tavolo' && (
+              <AdminFormFieldCard title="Note">
+                <Input
+                  id="special_requests_tavolo"
+                  type="text"
+                  value={formData.special_requests || ''}
+                  onChange={(e) => {
+                    setFormData({ ...formData, special_requests: e.target.value })
+                  }}
+                  placeholder="Inserisci note (opzionale)"
+                  style={ADMIN_INPUT_FIELD_SURFACE}
+                />
+              </AdminFormFieldCard>
+            )}
+
             {/* Posizionamento */}
             <AdminFormFieldCard
               title={
