@@ -38,6 +38,17 @@ function getMenuCategoryMutationError(error: unknown): string {
   return handleSupabaseError(error)
 }
 
+function isMenuCategoriesMissingError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const pgError = error as { code?: string; status?: number; message?: string }
+  return (
+    pgError.code === '42P01' ||
+    pgError.code === 'PGRST205' ||
+    pgError.status === 404 ||
+    (typeof pgError.message === 'string' && pgError.message.toLowerCase().includes('menu_categories'))
+  )
+}
+
 export const useMenuCategories = () => {
   const { tenantId } = useTenantContext()
 
@@ -51,7 +62,7 @@ export const useMenuCategories = () => {
         .order('label', { ascending: true })
 
       if (error) {
-        if ((error as { code?: string }).code === '42P01') {
+        if (isMenuCategoriesMissingError(error)) {
           return []
         }
         throw new Error(handleSupabaseError(error))
@@ -60,6 +71,10 @@ export const useMenuCategories = () => {
       return (data ?? []) as MenuCategoryRecord[]
     },
     enabled: !!tenantId,
+    retry: (failureCount, error) => {
+      if (isMenuCategoriesMissingError(error)) return false
+      return failureCount < 3
+    },
   })
 }
 
