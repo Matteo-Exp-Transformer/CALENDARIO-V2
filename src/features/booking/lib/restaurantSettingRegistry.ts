@@ -8,9 +8,9 @@ import {
   validateBookingTimeSlots,
 } from '@/features/booking/utils/bookingTimeSlots'
 import {
-  BOOKING_PAGE_TILE_IDS,
-  type BookingPageTileId,
-  parseBookingPageTileFromDb,
+  type BookingPageBackgroundId,
+  isBookingPageBackgroundId,
+  parseBookingPageBackgroundFromDb,
 } from '@/features/booking/constants/bookingPageBackground'
 
 export const RESTAURANT_SETTING_KEYS_V1 = [
@@ -136,7 +136,7 @@ export type RestaurantSettingValueMap = {
   contact_email: string
   contact_phone: string
   contact_address: string
-  public_booking_page_background: BookingPageTileId
+  public_booking_page_background: BookingPageBackgroundId
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -252,12 +252,12 @@ export const restaurantSettingRegistry: {
   },
   public_booking_page_background: {
     key: 'public_booking_page_background',
-    parseFromDb: (raw) => parseBookingPageTileFromDb(raw),
+    parseFromDb: (raw) => parseBookingPageBackgroundFromDb(raw),
     serializeToDb: (value) => String(value).trim().toLowerCase() as Json,
     validate: (value) => {
       if (typeof value !== 'string') return 'Seleziona uno sfondo valido'
       const normalized = value.trim().toLowerCase()
-      if ((BOOKING_PAGE_TILE_IDS as readonly string[]).includes(normalized)) return null
+      if (isBookingPageBackgroundId(normalized)) return null
       return 'Sfondo pagina non valido'
     },
   },

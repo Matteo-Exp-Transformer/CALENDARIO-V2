@@ -23,10 +23,13 @@ import {
   type BookingTimeSlots,
 } from '@/features/booking/utils/bookingTimeSlots'
 import {
+  BOOKING_PAGE_GRADIENT_PRESETS,
   BOOKING_PAGE_TILE_IDS,
   DEFAULT_BOOKING_PAGE_TILE,
+  bookingPageGradientCss,
   bookingPageTilePublicHref,
-  type BookingPageTileId,
+  isBookingPageGradientId,
+  type BookingPageBackgroundId,
 } from '@/features/booking/constants/bookingPageBackground'
 
 type SlotFieldKey =
@@ -153,7 +156,8 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [contactPhone, setContactPhone] = useState('3505362538')
   const [contactAddress, setContactAddress] = useState('Via Centotrecento 1/1B - Bologna, 40126')
   const [bookingPageBackground, setBookingPageBackground] =
-    useState<BookingPageTileId>(DEFAULT_BOOKING_PAGE_TILE)
+    useState<BookingPageBackgroundId>(DEFAULT_BOOKING_PAGE_TILE)
+  const [bookingBgTextureTab, setBookingBgTextureTab] = useState<'images' | 'gradients'>('images')
   /** Dopo «Conferma» la griglia resta bloccata finche non si cambia selezione o non va a buon fine «Salva modifiche». */
   const [bookingBgSelectionLocked, setBookingBgSelectionLocked] = useState(false)
 
@@ -200,7 +204,9 @@ export const RestaurantSettingsTab: React.FC = () => {
         contactAddressQuery.data || 'Via Centotrecento 1/1B - Bologna, 40126'
       )
     )
-    setBookingPageBackground(publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_TILE)
+    const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_TILE
+    setBookingPageBackground(resolvedBg)
+    setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
     setBookingBgSelectionLocked(false)
     hydratedRef.current = true
   }, [
@@ -237,9 +243,9 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const markDirty = () => setDirty(true)
 
-  const savedBookingPageTile = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_TILE
+  const savedBookingPageBackground = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_TILE
   /** Selezione diversa dal valore gia salvato su DB (solo «Salva modifiche» aggiorna il DB). */
-  const bookingBgHasUnsavedChoice = bookingPageBackground !== savedBookingPageTile
+  const bookingBgHasUnsavedChoice = bookingPageBackground !== savedBookingPageBackground
 
   const handleBookingBgConfirmOrCancel = () => {
     if (!tenantId || upsert.isPending) return
@@ -282,7 +288,7 @@ export const RestaurantSettingsTab: React.FC = () => {
       return
     }
 
-    if (bookingPageBackground !== savedBookingPageTile && !bookingBgSelectionLocked) {
+    if (bookingPageBackground !== savedBookingPageBackground && !bookingBgSelectionLocked) {
       toast.error(
         'Conferma la selezione dello sfondo con il pulsante dedicato, poi usa Salva modifiche in fondo.'
       )
@@ -374,7 +380,9 @@ export const RestaurantSettingsTab: React.FC = () => {
     'block w-full min-h-[3.667rem] rounded-[1.25rem] border-2 border-slate-200 bg-white px-4 py-2.5 text-center text-xl font-medium leading-snug text-slate-900 shadow-sm outline-none placeholder:text-slate-400 placeholder:text-xl transition-colors duration-150 focus:border-primary-400 focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-white disabled:text-slate-500 disabled:opacity-80'
 
   const bookingBgBase = import.meta.env.BASE_URL
-  const bookingPagePreviewSrc = bookingPageTilePublicHref(bookingPageBackground, bookingBgBase)
+  const bookingPagePreviewTileSrc = isBookingPageGradientId(bookingPageBackground)
+    ? null
+    : bookingPageTilePublicHref(bookingPageBackground, bookingBgBase)
 
   const bookingBgPickButtonClass = (selected: boolean) =>
     [
@@ -384,6 +392,12 @@ export const RestaurantSettingsTab: React.FC = () => {
     ]
       .filter(Boolean)
       .join(' ')
+
+  const bookingBgNavyToggleClass = (active: boolean) =>
+    [
+      'rounded-lg px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#3b82f6] disabled:pointer-events-none disabled:opacity-65',
+      active ? 'bg-[#172554] ring-2 ring-white/50' : 'bg-[#1e3a8a] hover:bg-[#1e40af]',
+    ].join(' ')
 
   const bookingBgSectionClass =
     'w-full max-w-3xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
@@ -507,102 +521,6 @@ export const RestaurantSettingsTab: React.FC = () => {
               placeholder="Via ..., Citta, CAP"
             />
           </div>
-        </div>
-      </section>
-
-      <section className={bookingBgSectionClass} style={sectionSurfaceStyle}>
-        <h3 className="text-lg font-semibold text-slate-800">Sfondo pagina Prenota</h3>
-        <p className="text-sm text-slate-600">
-          Scegli una texture, guarda anteprima (in basso), conferma la tua scelta e salva le modifiche.
-        </p>
-
-        <div className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5">
-          {BOOKING_PAGE_TILE_IDS.map((id, index) => (
-            <button
-              key={id}
-              type="button"
-              disabled={upsert.isPending || bookingBgSelectionLocked}
-              className={bookingBgPickButtonClass(bookingPageBackground === id)}
-              onClick={() => {
-                setBookingPageBackground(id)
-                markDirty()
-              }}
-            >
-              <img
-                src={bookingPageTilePublicHref(id, bookingBgBase)}
-                alt=""
-                className="pointer-events-none aspect-[4/3] h-auto w-full rounded-md border border-slate-200/80 object-cover"
-                loading="lazy"
-              />
-              <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]">
-                Texture {index + 1}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        <div className="w-full space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Anteprima
-          </p>
-          <div className="relative mx-auto w-full max-w-xl overflow-hidden rounded-2xl border-2 border-slate-400/80 bg-[#2d2013] shadow-inner">
-            <div className="relative h-[min(48vh,26rem)] w-full overflow-hidden">
-              <img
-                key={bookingPageBackground}
-                src={bookingPagePreviewSrc}
-                alt=""
-                className="pointer-events-none absolute left-0 top-0 h-auto min-h-full w-full max-w-none select-none"
-                decoding="async"
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  minHeight: '100%',
-                  objectFit: 'cover',
-                  objectPosition: 'top center',
-                  display: 'block',
-                }}
-              />
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{ backgroundColor: 'rgba(0, 0, 0, 0.26)' }}
-                aria-hidden
-              />
-              <div
-                className="relative z-10 mx-auto mt-6 max-w-[85%] rounded-lg px-4 py-3 shadow-md backdrop-blur-[14px]"
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                }}
-              >
-                <p className="text-sm font-serif font-bold text-[#5a3923]">{restaurantName || 'Nome locale'}</p>
-                <p className="text-xs font-semibold text-[#6b4830]">Richiesta prenotazione</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mx-auto flex w-full max-w-md flex-col items-center gap-2 pt-1">
-          <Button
-            type="button"
-            variant="primary"
-            onClick={handleBookingBgConfirmOrCancel}
-            disabled={
-              upsert.isPending ||
-              !tenantId ||
-              (!bookingBgSelectionLocked && !bookingBgHasUnsavedChoice)
-            }
-            style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
-            className="min-h-[2.875rem] w-full max-w-xs border-0 !bg-[#1e3a8a] px-6 py-2.5 !text-white shadow-md transition-colors duration-150 hover:!bg-[#1e40af] hover:shadow-lg focus:ring-[#3b82f6] disabled:pointer-events-none disabled:!bg-[#1e3a8a] [&_svg]:!text-white"
-          >
-            {bookingBgSelectionLocked ? 'Annulla selezione sfondo' : 'Conferma selezione sfondo'}
-          </Button>
-          {bookingBgSelectionLocked && bookingBgHasUnsavedChoice && (
-            <p className="text-xs font-semibold leading-snug text-emerald-800">
-              Selezione confermata. Salva modifiche in fondo per pubblicarla sulla pagina Prenota.
-            </p>
-          )}
-          {!bookingBgHasUnsavedChoice && !bookingBgSelectionLocked && (
-            <p className="text-xs font-medium text-slate-600">Questo sfondo e gia pubblicato sulla pagina Prenota.</p>
-          )}
         </div>
       </section>
 
@@ -792,6 +710,169 @@ export const RestaurantSettingsTab: React.FC = () => {
             setBusinessHours(next)
           }}
         />
+      </section>
+
+      <section className={bookingBgSectionClass} style={sectionSurfaceStyle}>
+        <div className="flex w-full justify-end">
+          <div className="flex flex-shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+            <button
+              type="button"
+              disabled={upsert.isPending}
+              className={bookingBgNavyToggleClass(bookingBgTextureTab === 'images')}
+              onClick={() => setBookingBgTextureTab('images')}
+            >
+              Immagini
+            </button>
+            <button
+              type="button"
+              disabled={upsert.isPending}
+              className={bookingBgNavyToggleClass(bookingBgTextureTab === 'gradients')}
+              onClick={() => setBookingBgTextureTab('gradients')}
+            >
+              Gradienti
+            </button>
+          </div>
+        </div>
+        <h3 className="text-lg font-semibold text-slate-800">Sfondo pagina Prenota</h3>
+        <p className="text-sm text-slate-600">
+          Scegli una texture, guarda anteprima (in basso), conferma la tua scelta e salva le modifiche.
+        </p>
+
+        {bookingBgTextureTab === 'images' ? (
+          <div className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5">
+            {BOOKING_PAGE_TILE_IDS.map((id, index) => (
+              <button
+                key={id}
+                type="button"
+                disabled={upsert.isPending || bookingBgSelectionLocked}
+                className={bookingBgPickButtonClass(bookingPageBackground === id)}
+                onClick={() => {
+                  setBookingPageBackground(id)
+                  markDirty()
+                }}
+              >
+                <img
+                  src={bookingPageTilePublicHref(id, bookingBgBase)}
+                  alt=""
+                  className="pointer-events-none aspect-[4/3] h-auto w-full rounded-md border border-slate-200/80 object-cover"
+                  loading="lazy"
+                />
+                <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]">
+                  Texture {index + 1}
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5">
+            {BOOKING_PAGE_GRADIENT_PRESETS.map((preset, index) => (
+              <button
+                key={preset.id}
+                type="button"
+                disabled={upsert.isPending || bookingBgSelectionLocked}
+                className={bookingBgPickButtonClass(bookingPageBackground === preset.id)}
+                onClick={() => {
+                  setBookingPageBackground(preset.id)
+                  markDirty()
+                }}
+              >
+                <div
+                  className={
+                    preset.css && preset.css.trim() !== ''
+                      ? 'pointer-events-none aspect-[4/3] w-full rounded-md border border-slate-200/80 bg-white'
+                      : 'pointer-events-none aspect-[4/3] w-full rounded-md border-2 border-dashed border-slate-300 bg-slate-50'
+                  }
+                  style={
+                    preset.css && preset.css.trim() !== ''
+                      ? { backgroundImage: preset.css }
+                      : undefined
+                  }
+                />
+                <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-500 sm:text-[11px]">
+                  Gradiente {index + 1}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="w-full space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Anteprima
+          </p>
+          <div className="relative mx-auto w-full max-w-xl overflow-hidden rounded-2xl border-2 border-slate-400/80 bg-[#2d2013] shadow-inner">
+            <div className="relative h-[min(48vh,26rem)] w-full overflow-hidden">
+              {bookingPagePreviewTileSrc ? (
+                <img
+                  key={bookingPageBackground}
+                  src={bookingPagePreviewTileSrc}
+                  alt=""
+                  className="pointer-events-none absolute left-0 top-0 h-auto min-h-full w-full max-w-none select-none"
+                  decoding="async"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    minHeight: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'top center',
+                    display: 'block',
+                  }}
+                />
+              ) : (
+                isBookingPageGradientId(bookingPageBackground) && (
+                  <div
+                    key={bookingPageBackground}
+                    className="pointer-events-none absolute left-0 top-0 h-full min-h-full w-full select-none"
+                    style={{
+                      backgroundImage: bookingPageGradientCss(bookingPageBackground),
+                      backgroundSize: '100% 100%',
+                      backgroundPosition: 'center top',
+                    }}
+                  />
+                )
+              )}
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{ backgroundColor: 'rgba(0, 0, 0, 0.26)' }}
+                aria-hidden
+              />
+              <div
+                className="relative z-10 mx-auto mt-6 max-w-[85%] rounded-lg px-4 py-3 shadow-md backdrop-blur-[14px]"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                }}
+              >
+                <p className="text-sm font-serif font-bold text-[#5a3923]">{restaurantName || 'Nome locale'}</p>
+                <p className="text-xs font-semibold text-[#6b4830]">Richiesta prenotazione</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto flex w-full max-w-md flex-col items-center gap-2 pt-1">
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleBookingBgConfirmOrCancel}
+            disabled={
+              upsert.isPending ||
+              !tenantId ||
+              (!bookingBgSelectionLocked && !bookingBgHasUnsavedChoice)
+            }
+            style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
+            className="min-h-[2.875rem] w-full max-w-xs border-0 !bg-[#1e3a8a] px-6 py-2.5 !text-white shadow-md transition-colors duration-150 hover:!bg-[#1e40af] hover:shadow-lg focus:ring-[#3b82f6] disabled:pointer-events-none disabled:!bg-[#1e3a8a] [&_svg]:!text-white"
+          >
+            {bookingBgSelectionLocked ? 'Annulla selezione sfondo' : 'Conferma selezione sfondo'}
+          </Button>
+          {bookingBgSelectionLocked && bookingBgHasUnsavedChoice && (
+            <p className="text-xs font-semibold leading-snug text-emerald-800">
+              Selezione confermata. Salva modifiche in fondo per pubblicarla sulla pagina Prenota.
+            </p>
+          )}
+          {!bookingBgHasUnsavedChoice && !bookingBgSelectionLocked && (
+            <p className="text-xs font-medium text-slate-600">Questo sfondo e gia pubblicato sulla pagina Prenota.</p>
+          )}
+        </div>
       </section>
 
       <div

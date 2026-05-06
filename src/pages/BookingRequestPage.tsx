@@ -8,9 +8,11 @@ import { formatHours, getDefaultBusinessHours } from '@/lib/businessHours'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 import {
-  DEFAULT_BOOKING_PAGE_TILE,
+  DEFAULT_BOOKING_PAGE_BACKGROUND,
+  bookingPageGradientCss,
   bookingPageTilePublicHref,
-  type BookingPageTileId,
+  isBookingPageGradientId,
+  type BookingPageBackgroundId,
 } from '@/features/booking/constants/bookingPageBackground'
 
 export const BookingRequestPage: React.FC = () => {
@@ -44,19 +46,28 @@ export const BookingRequestPage: React.FC = () => {
 
     const root = document.documentElement
     const body = document.body
-    const tileId: BookingPageTileId = isPublicBookingBgPending
-      ? DEFAULT_BOOKING_PAGE_TILE
-      : (publicBookingBg ?? DEFAULT_BOOKING_PAGE_TILE)
-    const tileUrl = bookingPageTilePublicHref(tileId, import.meta.env.BASE_URL)
+    const bgId: BookingPageBackgroundId = isPublicBookingBgPending
+      ? DEFAULT_BOOKING_PAGE_BACKGROUND
+      : (publicBookingBg ?? DEFAULT_BOOKING_PAGE_BACKGROUND)
     const prevBodyBg = body.style.backgroundColor
     body.style.backgroundColor = 'transparent'
 
-    root.style.backgroundColor = '#2d2013'
-    root.style.backgroundImage = `url("${tileUrl}")`
-    root.style.backgroundSize = '100% auto'
-    root.style.backgroundPosition = 'top center'
-    root.style.backgroundRepeat = 'repeat-y'
-    root.style.backgroundAttachment = 'scroll'
+    if (isBookingPageGradientId(bgId)) {
+      root.style.backgroundColor = '#0f172a'
+      root.style.backgroundImage = bookingPageGradientCss(bgId)
+      root.style.backgroundSize = '100% 100%'
+      root.style.backgroundPosition = 'center top'
+      root.style.backgroundRepeat = 'no-repeat'
+      root.style.backgroundAttachment = 'scroll'
+    } else {
+      const tileUrl = bookingPageTilePublicHref(bgId, import.meta.env.BASE_URL)
+      root.style.backgroundColor = '#2d2013'
+      root.style.backgroundImage = `url("${tileUrl}")`
+      root.style.backgroundSize = '100% auto'
+      root.style.backgroundPosition = 'top center'
+      root.style.backgroundRepeat = 'repeat-y'
+      root.style.backgroundAttachment = 'scroll'
+    }
 
     return () => {
       body.style.backgroundColor = prevBodyBg
