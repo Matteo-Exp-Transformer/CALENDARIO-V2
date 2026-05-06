@@ -54,6 +54,16 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false) // Stato per triggerare re-render e disabilitare button
   const [selectedPreset, setSelectedPreset] = useState<PresetMenuType>(null)
+
+  const bookingFrostedControlSurface: React.CSSProperties = {
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backdropFilter: 'blur(1px)',
+    padding: '10px 16px',
+    borderRadius: '12px',
+    fontWeight: 500,
+  }
+  const bookingFrostedTextInputClassName =
+    '!border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 rounded-[12px] focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
   
   // Ref per prevenire doppi submit (anche con React StrictMode)
   const isSubmittingRef = useRef(false)
@@ -615,7 +625,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             }}
             placeholder="Nome Completo *"
             required
-            className={errors.client_name ? '!border-red-500' : ''}
+            style={bookingFrostedControlSurface}
+            className={`${bookingFrostedTextInputClassName} ${errors.client_name ? '!border-red-500' : ''}`}
           />
           {errors.client_name && (
             <p className="text-sm text-red-500">{errors.client_name}</p>
@@ -633,7 +644,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
               setErrors({ ...errors, client_email: '' })
             }}
             placeholder="Email (Opzionale)"
-            className={errors.client_email ? '!border-red-500' : ''}
+            style={bookingFrostedControlSurface}
+            className={`${bookingFrostedTextInputClassName} ${errors.client_email ? '!border-red-500' : ''}`}
           />
           {errors.client_email && (
             <p className="text-sm text-red-500">{errors.client_email}</p>
@@ -652,7 +664,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             }}
             placeholder="Telefono *"
             required
-            className={errors.client_phone ? '!border-red-500' : ''}
+            style={bookingFrostedControlSurface}
+            className={`${bookingFrostedTextInputClassName} ${errors.client_phone ? '!border-red-500' : ''}`}
           />
           {errors.client_phone && (
             <p className="text-sm text-red-500">{errors.client_phone}</p>
@@ -675,63 +688,26 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
           Dettagli Prenotazione
         </h2>
 
-        <div style={{ marginBottom: '0' }}>
-          <label
-            htmlFor="booking_type"
-            className="block text-base md:text-lg text-warm-wood mb-2"
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(1px)',
-              padding: '8px 16px',
-              borderRadius: '12px',
-              display: 'inline-block',
-              fontWeight: '700',
-              marginBottom: '0.5rem'
-            }}
-          >
-            Tipologia di Prenotazione *
-          </label>
-          <select
-            id="booking_type"
-            value={formData.booking_type}
-            onChange={(e) => {
-              const booking_type = e.target.value as 'tavolo' | 'rinfresco_laurea'
-              if (booking_type === 'tavolo') {
-                setSelectedPreset(null)
-                setFormData({
-                  ...formData,
-                  booking_type,
-                  preset_menu: null,
-                  menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
-                  menu_total_per_person: undefined,
-                  menu_total_booking: undefined,
-                  dietary_restrictions: []
-                })
-              } else {
-                setFormData({ ...formData, booking_type })
-              }
-              setErrors({ ...errors, booking_type: '', menu: '' })
-            }}
-            className="block rounded-full border shadow-sm transition-all"
-            style={{
-              borderColor: 'rgba(0,0,0,0.2)',
-              height: '56px',
-              padding: '16px',
-              fontSize: '16px',
-              fontWeight: '700',
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(1px)',
-              color: 'black',
-              width: '100%'
-            }}
-            onFocus={(e) => ((e.target as HTMLSelectElement).style.borderColor = '#8B6914')}
-            onBlur={(e) => ((e.target as HTMLSelectElement).style.borderColor = 'rgba(0,0,0,0.2)')}
-          >
-            <option value="tavolo">Prenota un tavolo (senza menù)</option>
-            <option value="rinfresco_laurea">Rinfresco di Laurea (menù e ingredienti)</option>
-          </select>
-          {errors.booking_type && (
-            <p className="text-sm text-red-500">{errors.booking_type}</p>
+        {/* Numero Ospiti */}
+        <div className="space-y-3 guest-card-container">
+          <div className="guest-card-mobile">
+            <Input
+              id="num_guests"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="off"
+              value={formData.num_guests > 0 ? formData.num_guests.toString() : ''}
+              onChange={handleNumGuestsChange}
+              onKeyPress={handleNumGuestsKeyPress}
+              required
+              placeholder="Numero Ospiti * (es: 15)"
+              style={bookingFrostedControlSurface}
+              className={`${bookingFrostedTextInputClassName} ${errors.num_guests ? '!border-red-500' : ''}`}
+            />
+          </div>
+          {errors.num_guests && (
+            <p className="text-sm text-red-500">{errors.num_guests}</p>
           )}
         </div>
 
@@ -795,7 +771,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
         </div>
 
         {/* Ora */}
-        <div className="space-y-3" style={{ paddingTop: '0.5rem' }}>
+        <div className="space-y-3 pb-8" style={{ paddingTop: '0.5rem' }}>
           <label
             htmlFor="desired_time"
             className="block text-base md:text-lg text-warm-wood mb-2"
@@ -853,25 +829,64 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
           )}
         </div>
 
-        {/* Numero Ospiti */}
-        <div className="space-y-3 guest-card-container" style={{ paddingTop: '0.5rem' }}>
-          <div className="guest-card-mobile">
-            <Input
-              id="num_guests"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoComplete="off"
-              value={formData.num_guests > 0 ? formData.num_guests.toString() : ''}
-              onChange={handleNumGuestsChange}
-              onKeyPress={handleNumGuestsKeyPress}
-              required
-              placeholder="Numero Ospiti * (es: 15)"
-              className={errors.num_guests ? '!border-red-500' : ''}
-            />
-          </div>
-          {errors.num_guests && (
-            <p className="text-sm text-red-500">{errors.num_guests}</p>
+        {/* Tipologia di prenotazione (sotto Data / Ora) */}
+        <div style={{ marginTop: '1.75rem', marginBottom: 0 }}>
+          <label
+            htmlFor="booking_type"
+            className="block text-base md:text-lg text-warm-wood mb-2"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(1px)',
+              padding: '8px 16px',
+              borderRadius: '12px',
+              display: 'inline-block',
+              fontWeight: '700',
+              marginBottom: '0.5rem'
+            }}
+          >
+            Tipologia di Prenotazione *
+          </label>
+          <select
+            id="booking_type"
+            value={formData.booking_type}
+            onChange={(e) => {
+              const booking_type = e.target.value as 'tavolo' | 'rinfresco_laurea'
+              if (booking_type === 'tavolo') {
+                setSelectedPreset(null)
+                setFormData({
+                  ...formData,
+                  booking_type,
+                  preset_menu: null,
+                  menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
+                  menu_total_per_person: undefined,
+                  menu_total_booking: undefined,
+                  dietary_restrictions: []
+                })
+              } else {
+                setFormData({ ...formData, booking_type })
+              }
+              setErrors({ ...errors, booking_type: '', menu: '' })
+            }}
+            className="block rounded-full border shadow-sm transition-all"
+            style={{
+              borderColor: 'rgba(0,0,0,0.2)',
+              height: '56px',
+              padding: '16px',
+              fontSize: '16px',
+              fontWeight: '700',
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(1px)',
+              color: 'black',
+              width: '100%'
+            }}
+            onFocus={(e) => ((e.target as HTMLSelectElement).style.borderColor = '#8B6914')}
+            onBlur={(e) => ((e.target as HTMLSelectElement).style.borderColor = 'rgba(0,0,0,0.2)')}
+          >
+            <option value="tavolo">Prenota un tavolo (senza menù)</option>
+            <option value="rinfresco_laurea">Rinfresco di Laurea (menù e ingredienti)</option>
+          </select>
+          {errors.booking_type && (
+            <p className="text-sm text-red-500">{errors.booking_type}</p>
           )}
         </div>
 
@@ -959,7 +974,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
 
       {/* Privacy Policy - Solo per Prenota un Tavolo (per Rinfresco di Laurea è dentro DietaryRestrictionsSection) */}
       {formData.booking_type !== 'rinfresco_laurea' && (
-        <div className="space-y-2">
+        <div className="space-y-2" style={{ marginTop: '2.5rem' }}>
           <div className="flex items-center gap-3">
             <div className="relative flex-shrink-0">
               <input
@@ -1024,7 +1039,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
       )}
 
       {/* Submit Button */}
-      <div className="flex justify-center items-center mt-8 w-full">
+      <div className="flex w-full justify-center items-center" style={{ marginTop: '3rem' }}>
         <button
             type="submit"
             disabled={isPending || isBlocked || isSubmitting}
