@@ -547,54 +547,110 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                     </h5>
                   </div>
                   {digestWithMenu.length > 0 ? (
-                    <div className="max-h-[min(420px,52vh)] overflow-y-auto rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner grid grid-cols-3 max-[640px]:grid-cols-1 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
-                      <div className="flex min-w-0 w-full flex-col gap-2">
-                        <h6 className="rounded-md bg-green-100 border border-green-300 px-2 py-1 text-xs font-semibold text-green-900 text-center">
+                    <div className="rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner">
+                      <div className="hidden min-[641px]:grid grid-cols-3 gap-2">
+                        <h6 className="rounded-md bg-green-100 border border-green-300 px-2 py-1 text-xs font-semibold text-green-900 text-center shadow-sm">
                           Mattina (10:00 - 14:30)
                         </h6>
-                        {digestWithMenuBySlot.morning.map((booking) => (
-                          <div key={booking.id} className="flex min-w-0 w-full flex-col">
-                            <DigestBookingListRow
-                              booking={booking}
-                              onOpen={openDigestBooking}
-                              showMenuPricing
-                              compactGrid
-                              slot="morning"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <div className="flex min-w-0 w-full flex-col gap-2">
-                        <h6 className="rounded-md bg-orange-100 border border-orange-300 px-2 py-1 text-xs font-semibold text-orange-900 text-center">
+                        <h6 className="rounded-md bg-orange-100 border border-orange-300 px-2 py-1 text-xs font-semibold text-orange-900 text-center shadow-sm">
                           Pomeriggio (14:31 - 18:30)
                         </h6>
-                        {digestWithMenuBySlot.afternoon.map((booking) => (
-                          <div key={booking.id} className="flex min-w-0 w-full flex-col">
-                            <DigestBookingListRow
-                              booking={booking}
-                              onOpen={openDigestBooking}
-                              showMenuPricing
-                              compactGrid
-                              slot="afternoon"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <div className="flex min-w-0 w-full flex-col gap-2">
-                        <h6 className="rounded-md bg-blue-100 border border-blue-300 px-2 py-1 text-xs font-semibold text-blue-900 text-center">
+                        <h6 className="rounded-md bg-blue-100 border border-blue-300 px-2 py-1 text-xs font-semibold text-blue-900 text-center shadow-sm">
                           Sera (18:31 - 23:30)
                         </h6>
-                        {digestWithMenuBySlot.evening.map((booking) => (
-                          <div key={booking.id} className="flex min-w-0 w-full flex-col">
-                            <DigestBookingListRow
-                              booking={booking}
-                              onOpen={openDigestBooking}
-                              showMenuPricing
-                              compactGrid
-                              slot="evening"
-                            />
+                      </div>
+                      <div className="mt-2 hidden min-[641px]:block">
+                        <div className="grid grid-cols-3 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
+                          <div className="flex min-w-0 w-full flex-col gap-2">
+                            {digestWithMenuBySlot.morning.map((booking) => (
+                              <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                                <DigestBookingListRow
+                                  booking={booking}
+                                  onOpen={openDigestBooking}
+                                  showMenuPricing
+                                  compactGrid
+                                  slot="morning"
+                                />
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                          <div className="flex min-w-0 w-full flex-col gap-2">
+                            {digestWithMenuBySlot.afternoon.map((booking) => (
+                              <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                                <DigestBookingListRow
+                                  booking={booking}
+                                  onOpen={openDigestBooking}
+                                  showMenuPricing
+                                  compactGrid
+                                  slot="afternoon"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex min-w-0 w-full flex-col gap-2">
+                            {digestWithMenuBySlot.evening.map((booking) => (
+                              <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                                <DigestBookingListRow
+                                  booking={booking}
+                                  onOpen={openDigestBooking}
+                                  showMenuPricing
+                                  compactGrid
+                                  slot="evening"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="min-[641px]:hidden space-y-3">
+                        <div className="space-y-2">
+                          <h6 className="rounded-md bg-green-100 border border-green-300 px-2 py-1 text-xs font-semibold text-green-900 text-center shadow-sm">
+                            Mattina (10:00 - 14:30)
+                          </h6>
+                          {digestWithMenuBySlot.morning.map((booking) => (
+                            <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                              <DigestBookingListRow
+                                booking={booking}
+                                onOpen={openDigestBooking}
+                                showMenuPricing
+                                compactGrid
+                                slot="morning"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="space-y-2">
+                          <h6 className="rounded-md bg-orange-100 border border-orange-300 px-2 py-1 text-xs font-semibold text-orange-900 text-center shadow-sm">
+                            Pomeriggio (14:31 - 18:30)
+                          </h6>
+                          {digestWithMenuBySlot.afternoon.map((booking) => (
+                            <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                              <DigestBookingListRow
+                                booking={booking}
+                                onOpen={openDigestBooking}
+                                showMenuPricing
+                                compactGrid
+                                slot="afternoon"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="space-y-2">
+                          <h6 className="rounded-md bg-blue-100 border border-blue-300 px-2 py-1 text-xs font-semibold text-blue-900 text-center shadow-sm">
+                            Sera (18:31 - 23:30)
+                          </h6>
+                          {digestWithMenuBySlot.evening.map((booking) => (
+                            <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                              <DigestBookingListRow
+                                booking={booking}
+                                onOpen={openDigestBooking}
+                                showMenuPricing
+                                compactGrid
+                                slot="evening"
+                              />
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -616,51 +672,104 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                     </h5>
                   </div>
                   {digestTableOnly.length > 0 ? (
-                    <div className="max-h-[min(420px,52vh)] overflow-y-auto rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner grid grid-cols-3 max-[640px]:grid-cols-1 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
-                      <div className="flex min-w-0 w-full flex-col gap-2">
-                        <h6 className="rounded-md bg-green-100 border border-green-300 px-2 py-1 text-xs font-semibold text-green-900 text-center">
+                    <div className="rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner">
+                      <div className="hidden min-[641px]:grid grid-cols-3 gap-2">
+                        <h6 className="rounded-md bg-green-100 border border-green-300 px-2 py-1 text-xs font-semibold text-green-900 text-center shadow-sm">
                           Mattina (10:00 - 14:30)
                         </h6>
-                        {digestTableOnlyBySlot.morning.map((booking) => (
-                          <div key={booking.id} className="flex min-w-0 w-full flex-col">
-                            <DigestBookingListRow
-                              booking={booking}
-                              onOpen={openDigestBooking}
-                              compactGrid
-                              slot="morning"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <div className="flex min-w-0 w-full flex-col gap-2">
-                        <h6 className="rounded-md bg-orange-100 border border-orange-300 px-2 py-1 text-xs font-semibold text-orange-900 text-center">
+                        <h6 className="rounded-md bg-orange-100 border border-orange-300 px-2 py-1 text-xs font-semibold text-orange-900 text-center shadow-sm">
                           Pomeriggio (14:31 - 18:30)
                         </h6>
-                        {digestTableOnlyBySlot.afternoon.map((booking) => (
-                          <div key={booking.id} className="flex min-w-0 w-full flex-col">
-                            <DigestBookingListRow
-                              booking={booking}
-                              onOpen={openDigestBooking}
-                              compactGrid
-                              slot="afternoon"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <div className="flex min-w-0 w-full flex-col gap-2">
-                        <h6 className="rounded-md bg-blue-100 border border-blue-300 px-2 py-1 text-xs font-semibold text-blue-900 text-center">
+                        <h6 className="rounded-md bg-blue-100 border border-blue-300 px-2 py-1 text-xs font-semibold text-blue-900 text-center shadow-sm">
                           Sera (18:31 - 23:30)
                         </h6>
-                        {digestTableOnlyBySlot.evening.map((booking) => (
-                          <div key={booking.id} className="flex min-w-0 w-full flex-col">
-                            <DigestBookingListRow
-                              booking={booking}
-                              onOpen={openDigestBooking}
-                              compactGrid
-                              slot="evening"
-                            />
+                      </div>
+                      <div className="mt-2 hidden min-[641px]:block">
+                        <div className="grid grid-cols-3 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
+                          <div className="flex min-w-0 w-full flex-col gap-2">
+                            {digestTableOnlyBySlot.morning.map((booking) => (
+                              <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                                <DigestBookingListRow
+                                  booking={booking}
+                                  onOpen={openDigestBooking}
+                                  compactGrid
+                                  slot="morning"
+                                />
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                          <div className="flex min-w-0 w-full flex-col gap-2">
+                            {digestTableOnlyBySlot.afternoon.map((booking) => (
+                              <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                                <DigestBookingListRow
+                                  booking={booking}
+                                  onOpen={openDigestBooking}
+                                  compactGrid
+                                  slot="afternoon"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex min-w-0 w-full flex-col gap-2">
+                            {digestTableOnlyBySlot.evening.map((booking) => (
+                              <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                                <DigestBookingListRow
+                                  booking={booking}
+                                  onOpen={openDigestBooking}
+                                  compactGrid
+                                  slot="evening"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="min-[641px]:hidden space-y-3">
+                        <div className="space-y-2">
+                          <h6 className="rounded-md bg-green-100 border border-green-300 px-2 py-1 text-xs font-semibold text-green-900 text-center shadow-sm">
+                            Mattina (10:00 - 14:30)
+                          </h6>
+                          {digestTableOnlyBySlot.morning.map((booking) => (
+                            <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                              <DigestBookingListRow
+                                booking={booking}
+                                onOpen={openDigestBooking}
+                                compactGrid
+                                slot="morning"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="space-y-2">
+                          <h6 className="rounded-md bg-orange-100 border border-orange-300 px-2 py-1 text-xs font-semibold text-orange-900 text-center shadow-sm">
+                            Pomeriggio (14:31 - 18:30)
+                          </h6>
+                          {digestTableOnlyBySlot.afternoon.map((booking) => (
+                            <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                              <DigestBookingListRow
+                                booking={booking}
+                                onOpen={openDigestBooking}
+                                compactGrid
+                                slot="afternoon"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="space-y-2">
+                          <h6 className="rounded-md bg-blue-100 border border-blue-300 px-2 py-1 text-xs font-semibold text-blue-900 text-center shadow-sm">
+                            Sera (18:31 - 23:30)
+                          </h6>
+                          {digestTableOnlyBySlot.evening.map((booking) => (
+                            <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                              <DigestBookingListRow
+                                booking={booking}
+                                onOpen={openDigestBooking}
+                                compactGrid
+                                slot="evening"
+                              />
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   ) : (
