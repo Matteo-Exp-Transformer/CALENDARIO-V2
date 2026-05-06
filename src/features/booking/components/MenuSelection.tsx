@@ -5,6 +5,10 @@ import { useMenuCategories } from '../hooks/useMenuCategories'
 import type { SelectedMenuItem } from '@/types/menu'
 import {
   customPresetStorageId,
+  getPresetMenu,
+  getPresetMenuLabel,
+  isBuiltinPresetMenuType,
+  isCustomPresetMenuType,
   type CustomStaffPreset,
   type PresetMenuType,
 } from '../constants/presetMenus'
@@ -90,6 +94,28 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   const formatPrice = (item: NormalizedMenuItem) =>
     `€${item.price.toFixed(2)}${item.priceSuffix ?? ''}`
   const formatCurrency = (value: number) => `€${value.toFixed(2)}`
+
+  const showStaffPresetDropdown = useMemo(() => {
+    if (bookingType !== 'rinfresco_laurea' || !onPresetMenuChange || !staffPresetsDropdownVisible) {
+      return false
+    }
+    if (customStaffPresets.length > 0) return true
+    if (presetMenu != null && isBuiltinPresetMenuType(presetMenu)) return true
+    if (
+      presetMenu != null &&
+      isCustomPresetMenuType(presetMenu) &&
+      !customStaffPresets.some((p) => customPresetStorageId(p.id) === presetMenu)
+    ) {
+      return true
+    }
+    return false
+  }, [
+    bookingType,
+    onPresetMenuChange,
+    staffPresetsDropdownVisible,
+    customStaffPresets,
+    presetMenu,
+  ])
 
   const normalizedMenuItems = useMemo<NormalizedMenuItem[]>(() => {
     return menuItems.map<NormalizedMenuItem>((item) => {
@@ -500,9 +526,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       </h2>
 
       {/* Menù Consigliati dallo Staff - Solo per Rinfresco di Laurea */}
-      {bookingType === 'rinfresco_laurea' &&
-        onPresetMenuChange &&
-        staffPresetsDropdownVisible && (
+      {showStaffPresetDropdown && (
         <div 
           className="w-full flex flex-col items-center px-1 sm:px-2"
           style={{ 
@@ -533,7 +557,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             value={presetMenu || ''}
             onChange={(e) => {
               const value = e.target.value
-              onPresetMenuChange(value === '' ? null : (value as Exclude<PresetMenuType, null>))
+              onPresetMenuChange?.(value === '' ? null : (value as Exclude<PresetMenuType, null>))
             }}
             className="block rounded-full border shadow-sm transition-all w-full"
             style={{
@@ -552,10 +576,16 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             onBlur={(e) => (e.target as HTMLSelectElement).style.borderColor = 'rgba(0,0,0,0.2)'}
           >
             <option value="">Scegli un menù consigliato dallo staff</option>
-            <option value="menu_1">Menù 1 Rinfresco Leggero</option>
-            <option value="menu_2">Menù 2 Rinfresco Completo</option>
-            <option value="menu_3">Menù 3 Pranzo o Cena</option>
-            <option value="menu_4">Menù 4 Gourmet</option>
+            {presetMenu != null && isBuiltinPresetMenuType(presetMenu) && (
+              <option value={presetMenu}>{getPresetMenu(presetMenu)?.label ?? presetMenu}</option>
+            )}
+            {presetMenu != null &&
+              isCustomPresetMenuType(presetMenu) &&
+              !customStaffPresets.some((p) => customPresetStorageId(p.id) === presetMenu) && (
+                <option value={presetMenu}>
+                  {getPresetMenuLabel(presetMenu, customStaffPresets)}
+                </option>
+              )}
             {customStaffPresets.map((p) => (
               <option key={p.id} value={customPresetStorageId(p.id)}>
                 {p.name}
@@ -595,10 +625,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         }
 
         // Padding condizionale: prima categoria (Bevande) ha padding extra se c'è dropdown sopra
-        const hasDropdownAbove =
-          bookingType === 'rinfresco_laurea' &&
-          onPresetMenuChange &&
-          staffPresetsDropdownVisible
+        const hasDropdownAbove = showStaffPresetDropdown
         const isFirstCategory = index === 0
         
         // Calcola padding top: se è la prima categoria e c'è dropdown, padding extra

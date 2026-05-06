@@ -1,10 +1,8 @@
 /**
- * Menu Predefiniti per Rinfresco di Laurea
+ * Preset menù Rinfresco di Laurea
  *
- * Definizioni dei menu predefiniti che possono essere selezionati
- * dall'admin per velocizzare la creazione di prenotazioni.
- * I menù configurati dall'admin sono salvati in `restaurant_settings`
- * (`booking_custom_staff_presets`) e referenziati come `custom:<uuid>`.
+ * L’elenco selezionabile in UI usa solo `booking_custom_staff_presets` (restaurant_settings).
+ * Le definizioni `menu_1`…`menu_4` restano per compatibilità con prenotazioni già salvate in DB.
  */
 
 export const CUSTOM_PRESET_PREFIX = 'custom:' as const
@@ -117,11 +115,6 @@ export function getCustomPresetUuid(v: string): string | null {
 export function customPresetStorageId(uuid: string): `${typeof CUSTOM_PRESET_PREFIX}${string}` {
   return `${CUSTOM_PRESET_PREFIX}${uuid}`
 }
-
-/**
- * Array di menu predefiniti disponibili
- */
-export const PRESET_MENUS_ARRAY: PresetMenu[] = [MENU_1, MENU_2, MENU_3, MENU_4]
 
 /**
  * Helper per ottenere un preset menu built-in per tipo
