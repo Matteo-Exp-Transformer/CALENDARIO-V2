@@ -74,7 +74,7 @@ function DigestBookingListRow({
       type="button"
       onClick={() => onOpen(booking)}
       className={`min-h-0 w-full min-w-0 rounded-lg border-2 text-left transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-warm-wood focus:ring-offset-2 ${
-        compactGrid ? 'flex w-full min-h-[4.253472rem] flex-col shadow-sm' : ''
+        compactGrid ? 'flex w-full min-h-[2.938775rem] flex-col shadow-sm' : ''
       }`}
       style={{
         backgroundColor: slotColors?.backgroundColor ?? calEv.backgroundColor,
@@ -83,7 +83,7 @@ function DigestBookingListRow({
       }}
     >
       <div
-        className={`flex min-h-0 flex-col overflow-hidden ${compactGrid ? 'items-start justify-start gap-0.5 px-2 py-1 text-left text-[13px] leading-tight sm:text-[15px]' : 'flex-1 px-2 py-1.5 text-xs'}`}
+        className={`flex min-h-0 flex-col overflow-hidden ${compactGrid ? 'items-stretch justify-center gap-0.5 px-2 py-1 text-center text-[16px] leading-tight sm:text-[18px]' : 'flex-1 px-2 py-1.5 text-xs'}`}
       >
         {!compactGrid ? (
           <div className="mb-1 flex w-full items-center gap-1.5 truncate font-semibold leading-snug">
@@ -91,24 +91,27 @@ function DigestBookingListRow({
             <span className="min-w-0 truncate">{booking.client_name}</span>
           </div>
         ) : (
-          <div className="flex min-w-0 w-full items-start text-left leading-tight">
-            <Users className="mt-0 h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" aria-hidden />
-            <span
-              className="min-w-0 flex-1 line-clamp-2 break-words"
-              style={{ marginLeft: 10 }}
-            >
-              <span className="font-semibold">{booking.client_name}</span>
-              <span className="font-normal opacity-90">
-                {' - '}
-                {booking.num_guests} osp.
-                {(booking.desired_time || booking.confirmed_start) && (
-                  <>
-                    {' - '}
-                    <span className="font-medium">{getAccurateStartTime(booking)}</span>
-                  </>
-                )}
+          <div className="relative w-full min-h-[1.25rem]">
+            <Users
+              className="absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 opacity-90 sm:h-4 sm:w-4"
+              style={{ left: 0 }}
+              aria-hidden
+            />
+            <div className="flex w-full items-center justify-center text-center leading-tight">
+              <span className="block max-w-full truncate px-1">
+                <span className="font-semibold">{booking.client_name}</span>
+                <span className="font-normal opacity-90">
+                  {' - '}
+                  {booking.num_guests} osp.
+                  {(booking.desired_time || booking.confirmed_start) && (
+                    <>
+                      {' - '}
+                      <span className="font-medium">{getAccurateStartTime(booking)}</span>
+                    </>
+                  )}
+                </span>
               </span>
-            </span>
+            </div>
           </div>
         )}
         {!compactGrid ? (
@@ -130,26 +133,22 @@ function DigestBookingListRow({
         ) : (
           <>
             {menuPriceRow && (
-              <div className="flex w-full flex-wrap items-center justify-start gap-x-1.5 gap-y-0 text-left opacity-90">
-                <span className="inline-flex min-w-0 items-center gap-0.5 font-semibold opacity-95">
-                  <Tag
-                    className="h-3.5 w-3.5 flex-shrink-0 opacity-90 sm:h-4 sm:w-4"
-                    aria-hidden
-                  />
-                  <span className="truncate">{menuPriceRow.prezzoMenuLabel}</span>
-                </span>
-                {menuPriceRow.prezzoTotaleLabel && (
-                  <>
-                    <span className="opacity-60">•</span>
-                    <span className="min-w-0 truncate font-semibold opacity-95">
-                      Tot. {menuPriceRow.prezzoTotaleLabel}
-                    </span>
-                  </>
-                )}
+              <div className="relative w-full min-h-[1.25rem] opacity-90 text-[0.98em]">
+                <Tag
+                  className="absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 opacity-90 sm:h-4 sm:w-4"
+                  style={{ left: 0 }}
+                  aria-hidden
+                />
+                <div className="flex w-full items-center justify-center text-center font-semibold opacity-95">
+                  <span className="block max-w-full truncate px-1">
+                    {menuPriceRow.prezzoMenuLabel}
+                    {menuPriceRow.prezzoTotaleLabel && <> • Tot. {menuPriceRow.prezzoTotaleLabel}</>}
+                  </span>
+                </div>
               </div>
             )}
             {booking.menu && (
-              <p className="line-clamp-2 w-full break-words text-left opacity-85" title={booking.menu}>
+              <p className="line-clamp-2 w-full break-words text-center opacity-85 text-[0.98em]" title={booking.menu}>
                 {booking.menu}
               </p>
             )}
