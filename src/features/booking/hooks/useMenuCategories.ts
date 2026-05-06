@@ -44,7 +44,7 @@ export const useMenuCategories = () => {
   return useQuery({
     queryKey: ['menu-categories', tenantId],
     queryFn: async () => {
-      const { data, error } = await (supabase.from('menu_categories') as any)
+      const { data, error } = await ((supabase as any).from('menu_categories') as any)
         .select('*')
         .eq('tenant_id', tenantId)
         .order('sort_order', { ascending: true })
@@ -69,7 +69,7 @@ export const useCreateMenuCategory = () => {
 
   return useMutation({
     mutationFn: async (category: MenuCategoryInput) => {
-      const { data, error } = await ((supabase
+      const { data, error } = await (((supabase as any)
         .from('menu_categories') as any) as any)
         .insert({
           tenant_id: tenantId,
@@ -102,7 +102,7 @@ export const useUpdateMenuCategory = () => {
 
   return useMutation({
     mutationFn: async ({ id, label }: MenuCategoryUpdateInput) => {
-      const { data, error } = await ((supabase
+      const { data, error } = await (((supabase as any)
         .from('menu_categories') as any) as any)
         .update({
           label,
@@ -135,7 +135,7 @@ export const useDeleteMenuCategory = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase
+      const { error } = await ((supabase as any)
         .from('menu_categories') as any)
         .delete()
         .eq('id', id)
