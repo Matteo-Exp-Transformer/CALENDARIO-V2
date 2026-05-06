@@ -336,12 +336,12 @@ body {
 }
 
 .booking-request-card-shell:hover {
-  transform: translateY(-6px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
 
 .booking-request-card-shell:active {
-  transform: translateY(-2px);
+  transform: translateY(0);
   box-shadow: var(--shadow-md);
   transition-duration: 140ms;
 }
@@ -537,4 +537,43 @@ button.booking-request-reject-booking-btn:focus-visible {
 .restaurant-settings-save-submit svg {
   color: inherit !important;
   stroke: currentColor !important;
+}
+
+/* Archive tab — filtri: bordo colore fisso (no border-current scuro da utility / stacking ring-shadow) */
+button.archive-tab-filter-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  border-style: solid;
+  border-width: 2px;
+  outline: none;
+  box-shadow: none;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-offset-shadow: 0 0 #0000;
+}
+
+button.archive-tab-filter-btn.archive-tab-filter-btn--idle {
+  border-color: #99f6e4;
+}
+
+@media (hover: hover) {
+  button.archive-tab-filter-btn.archive-tab-filter-btn--idle:hover {
+    border-color: #5eead4;
+  }
+}
+
+button.archive-tab-filter-btn.archive-tab-filter-btn--selected {
+  border-color: #15803d !important;
+  box-shadow:
+    inset 0 0 0 2px rgb(187 247 208 / 0.95),
+    0 4px 14px -2px rgb(34 197 94 / 0.38),
+    0 0 0 1px rgb(22 163 74 / 0.35);
+}
+
+button.archive-tab-filter-btn:focus-visible {
+  outline: 2px solid #16a34a;
+  outline-offset: 2px;
+}
+
+button.archive-tab-filter-btn:focus:not(:focus-visible) {
+  outline: none;
 }

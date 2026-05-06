@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import type { CSSProperties } from 'react'
 import { useAllBookings } from '../hooks/useBookingQueries'
 import { useRestoreBooking } from '../hooks/useBookingMutations'
 import { format } from 'date-fns'
@@ -6,6 +7,10 @@ import { it } from 'date-fns/locale'
 import { Calendar, Clock, Users, Tag, Mail, Phone, MessageSquare, ChevronDown, ChevronUp, User, UtensilsCrossed, Wine, PartyPopper, GraduationCap, Archive, CheckCircle, XCircle, Trash2, RotateCcw } from 'lucide-react'
 import { extractTimeFromISO } from '../utils/dateUtils'
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
+import { ADMIN_WARM_BORDER, ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
+import { cn } from '@/lib/utils'
+
+const AFTER_COLON = '\u2002'
 
 type ArchiveFilter = 'all' | 'accepted' | 'rejected' | 'deleted'
 type SortOrder = 'created_at' | 'booking_date'
@@ -28,6 +33,16 @@ interface ArchiveBookingCardProps {
   booking: any
   onViewInCalendar?: (date: string) => void
   onRestore?: (bookingId: string) => void
+}
+
+/** Stesso aspetto della strip digest calendario (`#digest-with-menu-heading`). */
+const DIGEST_MENU_HEADING_GRADIENT_BG =
+  'bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white'
+
+/** Come `BookingRequestCard` DIGEST_BOOKING_HEADER_SURFACE — hover saturate in `.booking-request-collapse-header-gradient`. */
+const ARCHIVE_CARD_DIGEST_SURFACE: CSSProperties = {
+  backgroundImage:
+    'linear-gradient(90deg, rgba(45, 212, 191, 0.38) 0%, rgba(204, 251, 241, 0.9) 50%, rgb(255, 255, 255) 100%)',
 }
 
 const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({ booking, onViewInCalendar, onRestore }) => {
@@ -55,6 +70,15 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({ booking, onView
     }
   }
 
+  const formatRequestSubmittedAt = (dateStr?: string) => {
+    if (!dateStr) return 'Non disponibile'
+    try {
+      return format(new Date(dateStr), 'd MMMM yyyy, HH:mm', { locale: it })
+    } catch {
+      return dateStr
+    }
+  }
+
 
   const eventTypeLabel = getBookingEventTypeLabel(booking)
   // Usa eventConfig solo se event_type è valido, altrimenti usa valori di default
@@ -77,31 +101,38 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({ booking, onView
       {/* Badge Data Creazione - Esterno, in alto a sinistra, completamente fuori dalla card */}
       {booking.created_at && (
         <div className="mb-2">
-          <span 
-            style={{
-              background: 'linear-gradient(to bottom right, rgba(240, 244, 255, 0.9), rgba(224, 231, 255, 0.9), rgba(216, 220, 254, 0.9))',
-              border: '3px solid rgba(129, 140, 248, 0.6)',
-              boxShadow: '0 4px 12px -2px rgba(129, 140, 248, 0.2)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-            }}
-            className="inline-block px-4 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap text-indigo-900 transition-all duration-300">
-            Data Creazione : {formatDateTime(booking.created_at)}
+          <span
+            className={`inline-block whitespace-nowrap rounded-lg border-0 px-4 py-2 text-xs font-semibold text-slate-800 shadow-none transition-all duration-300 ${DIGEST_MENU_HEADING_GRADIENT_BG}`}
+          >
+            Richiesta effettuata il :{AFTER_COLON}
+            {formatRequestSubmittedAt(booking.created_at)}
           </span>
         </div>
       )}
-      <div style={{
-        background: 'linear-gradient(to bottom right, rgba(240, 244, 255, 0.9), rgba(224, 231, 255, 0.9), rgba(216, 220, 254, 0.9))',
-        border: '3px solid rgba(129, 140, 248, 0.6)',
-        boxShadow: '0 4px 12px -2px rgba(129, 140, 248, 0.2)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-      }} className="rounded-2xl hover:shadow-2xl transition-all duration-300">
+      <div
+        className="booking-request-card-shell overflow-hidden rounded-2xl border-0 border-b-[3px] border-solid shadow-none"
+        style={{ borderBottomColor: ADMIN_WARM_BORDER }}
+      >
+        <div
+          className={cn('booking-request-collapse-header', !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl')}
+        >
+          <div
+            className={cn(
+              'booking-request-collapse-header-gradient',
+              !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl'
+            )}
+            style={ARCHIVE_CARD_DIGEST_SURFACE}
+          >
       {/* Header Collapsible */}
       <button
+        type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        style={{ background: 'linear-gradient(to right, #F0F4FF, #E0E7FF)' }}
-        className="w-full p-6 hover:opacity-90 transition-all"
+        className={cn(
+          'booking-request-digest-trigger relative z-0 w-full cursor-pointer border-0 bg-transparent p-6 text-left outline-none ring-0',
+          'transition-colors duration-[220ms] hover:bg-white/55 active:scale-[0.995]',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
+          !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl'
+        )}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4 flex-1">
@@ -191,10 +222,12 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({ booking, onView
           </div>
         </div>
       </button>
+          </div>
+        </div>
 
       {/* Contenuto Espandibile */}
       {isExpanded && (
-        <div className="p-4 md:p-6 bg-white border-t-2 border-warm-orange/10 animate-slideDown">
+        <div className="animate-slideDown rounded-b-2xl border-t-2 border-warm-orange/10 bg-white p-4 md:p-6">
           {/* Dati Organizzati - Responsive: 1 colonna su mobile, 2 su desktop */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 md:gap-y-3">
             {/* Nome */}
@@ -421,36 +454,30 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar }) => {
 
   return (
     <div className="space-y-6">
-      {/* Filters - Stile Allineato */}
-      <div style={{
-        background: 'linear-gradient(to bottom right, rgba(240, 244, 255, 0.9), rgba(224, 231, 255, 0.9), rgba(216, 220, 254, 0.9))',
-        border: '3px solid rgba(129, 140, 248, 0.6)',
-        boxShadow: '0 4px 12px -2px rgba(129, 140, 248, 0.2)',
-      }} className="rounded-2xl p-6 space-y-6">
+      {/* Filters — bordi chiari (no ombre nere), coerenti col digest teal */}
+      <div
+        className={`rounded-2xl p-6 space-y-6 shadow-none ${DIGEST_MENU_HEADING_GRADIENT_BG}`}
+      >
         {/* Filtro per Status */}
-        <div>
-          <label className="text-base font-bold text-warm-wood uppercase tracking-wide mb-4 block">
+        <div className="border-0 shadow-none outline-none">
+          <label
+            className="mb-4 flex min-h-[4.5rem] w-full items-center justify-center rounded-xl border-2 border-solid px-4 text-center text-base font-bold uppercase tracking-wide text-warm-wood shadow-none outline-none"
+            style={ADMIN_WARM_GRADIENT_SURFACE}
+          >
             Filtra per Status
           </label>
 
-          <div className="flex gap-4">
+          <div className="flex gap-4 border-0 shadow-none outline-none">
             {(['all', 'accepted', 'rejected', 'deleted'] as ArchiveFilter[]).map((f) => (
               <button
+                type="button"
                 key={f}
                 data-filter={f}
                 onClick={() => setFilter(f)}
                 className={`
-                  flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl border-2 shadow-lg hover:shadow-xl transition-all font-bold uppercase tracking-wide
-                  ${filter === f
-                    ? f === 'all'
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-indigo-500'
-                      : f === 'accepted'
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white border-green-500'
-                      : f === 'rejected'
-                      ? 'bg-gradient-to-r from-rose-500 to-red-600 text-white border-rose-500'
-                      : 'bg-gradient-to-r from-gray-500 to-gray-700 text-white border-gray-500'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
-                  }
+                  archive-tab-filter-btn flex-1 flex items-center justify-center gap-2 px-6 py-4 font-bold uppercase tracking-wide rounded-xl transition-[border-color,box-shadow] duration-150
+                  ${DIGEST_MENU_HEADING_GRADIENT_BG} text-slate-800
+                  ${filter === f ? 'archive-tab-filter-btn--selected' : 'archive-tab-filter-btn--idle'}
                 `}
               >
                 {f === 'all' && <Archive className="w-5 h-5" />}
@@ -464,12 +491,15 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar }) => {
         </div>
 
         {/* Selettore Ordinamento */}
-        <div>
-          <label className="text-base font-bold text-warm-wood uppercase tracking-wide mb-4 block">
+        <div className="border-0 shadow-none outline-none">
+          <label
+            className="mb-4 flex min-h-[4.5rem] w-full items-center justify-center rounded-xl border-2 border-solid px-4 text-center text-base font-bold uppercase tracking-wide text-warm-wood shadow-none outline-none"
+            style={ADMIN_WARM_GRADIENT_SURFACE}
+          >
             Ordina per
           </label>
 
-          <div className="flex gap-4">
+          <div className="flex gap-4 border-0 shadow-none outline-none">
             {([
               { value: 'booking_date' as SortOrder, label: 'Data Prenotazione', icon: Calendar },
               { value: 'created_at' as SortOrder, label: 'Data Creazione', icon: Clock }
@@ -477,14 +507,13 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar }) => {
               const Icon = option.icon
               return (
                 <button
+                  type="button"
                   key={option.value}
                   onClick={() => setSortOrder(option.value)}
                   className={`
-                    flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl border-2 shadow-lg hover:shadow-xl transition-all font-bold uppercase tracking-wide
-                    ${sortOrder === option.value
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white border-blue-500'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
-                    }
+                    archive-tab-filter-btn flex-1 flex items-center justify-center gap-2 px-6 py-4 font-bold uppercase tracking-wide rounded-xl transition-[border-color,box-shadow] duration-150
+                    ${DIGEST_MENU_HEADING_GRADIENT_BG} text-slate-800
+                    ${sortOrder === option.value ? 'archive-tab-filter-btn--selected' : 'archive-tab-filter-btn--idle'}
                   `}
                 >
                   <Icon className="w-5 h-5" />
