@@ -3,7 +3,12 @@ import type { BookingRequest, TimeSlot, AvailabilityCheck } from '@/types/bookin
 import { CAPACITY_CONFIG } from '../constants/capacity'
 import { extractDateFromISO } from '../utils/dateUtils'
 import { useRestaurantSetting } from './useRestaurantSetting'
-import { DEFAULT_BOOKING_TIME_SLOTS, type BookingTimeSlots } from '../utils/bookingTimeSlots'
+import {
+  DEFAULT_BOOKING_TIME_SLOTS,
+  parseHmToMinutes,
+  slotRangesOverlap,
+  type BookingTimeSlots,
+} from '../utils/bookingTimeSlots'
 
 interface UseCapacityCheckParams {
   date: string
@@ -14,12 +19,6 @@ interface UseCapacityCheckParams {
   excludeBookingId?: string
 }
 
-// Helper: parse time string to minutes
-function parseTime(time: string): number {
-  const [hours, minutes] = time.split(':').map(Number)
-  return hours * 60 + minutes
-}
-
 // Get slots occupied by a booking based on time strings (HH:MM format)
 // A booking occupies a time slot if it overlaps with that slot's time range
 function getSlotsOccupiedByTimeString(
@@ -27,33 +26,29 @@ function getSlotsOccupiedByTimeString(
   endTime: string,
   slotConfig: BookingTimeSlots
 ): TimeSlot[] {
-  const startMinutes = parseTime(startTime)
-  const endMinutes = parseTime(endTime)
-  
-  const morningStart = parseTime(slotConfig.morningStart)
-  const morningEnd = parseTime(slotConfig.morningEnd)
-  const afternoonStart = parseTime(slotConfig.afternoonStart)
-  const afternoonEnd = parseTime(slotConfig.afternoonEnd)
-  const eveningStart = parseTime(slotConfig.eveningStart)
-  const eveningEnd = parseTime(slotConfig.eveningEnd)
+  const startMinutes = parseHmToMinutes(startTime)
+  const endMinutes = parseHmToMinutes(endTime)
+  const bookingCrossesMidnight = endMinutes < startMinutes
 
   const slots: TimeSlot[] = []
 
-  // Check if booking overlaps with morning slot (10:00 - 14:30)
-  // Overlap occurs when: startMinutes < morningEnd && endMinutes > morningStart
-  if (startMinutes < morningEnd && endMinutes > morningStart) {
+  const overlaps = (slotStart: string, slotEnd: string) => {
+    if (bookingCrossesMidnight) {
+      return (
+        slotRangesOverlap(startTime, '23:59', slotStart, slotEnd) ||
+        slotRangesOverlap('00:00', endTime, slotStart, slotEnd)
+      )
+    }
+    return slotRangesOverlap(startTime, endTime, slotStart, slotEnd)
+  }
+
+  if (overlaps(slotConfig.morningStart, slotConfig.morningEnd)) {
     slots.push('morning')
   }
-  
-  // Check if booking overlaps with afternoon slot (14:31 - 18:30)
-  // Overlap occurs when: startMinutes < afternoonEnd && endMinutes > afternoonStart
-  if (startMinutes < afternoonEnd && endMinutes > afternoonStart) {
+  if (overlaps(slotConfig.afternoonStart, slotConfig.afternoonEnd)) {
     slots.push('afternoon')
   }
-  
-  // Check if booking overlaps with evening slot (18:31 - 23:30)
-  // Overlap occurs when: startMinutes < eveningEnd && endMinutes > eveningStart
-  if (startMinutes < eveningEnd && endMinutes > eveningStart) {
+  if (overlaps(slotConfig.eveningStart, slotConfig.eveningEnd)) {
     slots.push('evening')
   }
 

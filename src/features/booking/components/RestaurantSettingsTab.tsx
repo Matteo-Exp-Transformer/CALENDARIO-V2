@@ -17,7 +17,7 @@ import {
 import {
   DEFAULT_BOOKING_TIME_SLOTS,
   getBookingTimeSlotLabel,
-  parseHmToMinutes,
+  slotRangesOverlap,
   type BookingTimeSlots,
 } from '@/features/booking/utils/bookingTimeSlots'
 
@@ -49,41 +49,61 @@ function validateBookingTimeSlotsDetailed(config: BookingTimeSlots): {
     }
   }
 
-  const morningStart = parseHmToMinutes(config.morningStart)
-  const morningEnd = parseHmToMinutes(config.morningEnd)
-  const afternoonStart = parseHmToMinutes(config.afternoonStart)
-  const afternoonEnd = parseHmToMinutes(config.afternoonEnd)
-  const eveningStart = parseHmToMinutes(config.eveningStart)
-  const eveningEnd = parseHmToMinutes(config.eveningEnd)
-
-  if (morningStart >= morningEnd) {
+  if (config.morningStart === config.morningEnd) {
     return {
-      message: 'La fascia Mattina non e valida: inizio deve essere prima della fine',
+      message: 'La fascia Mattina non e valida: inizio e fine coincidono',
       fields: ['morningStart', 'morningEnd'],
     }
   }
-  if (afternoonStart >= afternoonEnd) {
+  if (config.afternoonStart === config.afternoonEnd) {
     return {
-      message: 'La fascia Pomeriggio non e valida: inizio deve essere prima della fine',
+      message: 'La fascia Pomeriggio non e valida: inizio e fine coincidono',
       fields: ['afternoonStart', 'afternoonEnd'],
     }
   }
-  if (eveningStart >= eveningEnd) {
+  if (config.eveningStart === config.eveningEnd) {
     return {
-      message: 'La fascia Sera non e valida: inizio deve essere prima della fine',
+      message: 'La fascia Sera non e valida: inizio e fine coincidono',
       fields: ['eveningStart', 'eveningEnd'],
     }
   }
-  if (afternoonStart <= morningEnd) {
+  if (
+    slotRangesOverlap(
+      config.morningStart,
+      config.morningEnd,
+      config.afternoonStart,
+      config.afternoonEnd
+    )
+  ) {
     return {
       message: 'Le fasce Mattina e Pomeriggio si sovrappongono',
       fields: ['morningEnd', 'afternoonStart'],
     }
   }
-  if (eveningStart <= afternoonEnd) {
+  if (
+    slotRangesOverlap(
+      config.afternoonStart,
+      config.afternoonEnd,
+      config.eveningStart,
+      config.eveningEnd
+    )
+  ) {
     return {
       message: 'Le fasce Pomeriggio e Sera si sovrappongono',
       fields: ['afternoonEnd', 'eveningStart'],
+    }
+  }
+  if (
+    slotRangesOverlap(
+      config.morningStart,
+      config.morningEnd,
+      config.eveningStart,
+      config.eveningEnd
+    )
+  ) {
+    return {
+      message: 'Le fasce Mattina e Sera si sovrappongono',
+      fields: ['morningStart', 'eveningEnd'],
     }
   }
 

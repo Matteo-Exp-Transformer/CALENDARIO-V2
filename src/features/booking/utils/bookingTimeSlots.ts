@@ -25,6 +25,44 @@ export function parseHmToMinutes(value: string): number {
   return h * 60 + m
 }
 
+type MinuteRange = [number, number]
+
+function toDaySegments(start: number, end: number): MinuteRange[] {
+  // Fascia che attraversa la mezzanotte: es. 18:00 -> 03:00
+  if (end < start) return [[start, 24 * 60], [0, end]]
+  return [[start, end]]
+}
+
+function rangesOverlap(a: MinuteRange, b: MinuteRange): boolean {
+  return a[0] < b[1] && b[0] < a[1]
+}
+
+export function slotRangesOverlap(
+  aStart: string,
+  aEnd: string,
+  bStart: string,
+  bEnd: string
+): boolean {
+  const aSegments = toDaySegments(parseHmToMinutes(aStart), parseHmToMinutes(aEnd))
+  const bSegments = toDaySegments(parseHmToMinutes(bStart), parseHmToMinutes(bEnd))
+  for (const a of aSegments) {
+    for (const b of bSegments) {
+      if (rangesOverlap(a, b)) return true
+    }
+  }
+  return false
+}
+
+export function isTimeInsideSlot(time: string, slotStart: string, slotEnd: string): boolean {
+  const t = parseHmToMinutes(time)
+  const start = parseHmToMinutes(slotStart)
+  const end = parseHmToMinutes(slotEnd)
+  if (end < start) {
+    return t >= start || t <= end
+  }
+  return t >= start && t <= end
+}
+
 export function getBookingTimeSlotLabel(
   slot: 'morning' | 'afternoon' | 'evening',
   config: BookingTimeSlots
@@ -57,15 +95,39 @@ export function validateBookingTimeSlots(config: BookingTimeSlots): string | nul
   const eveningStart = parseHmToMinutes(config.eveningStart)
   const eveningEnd = parseHmToMinutes(config.eveningEnd)
 
-  if (morningStart >= morningEnd) return 'La fascia Mattina non e valida: inizio deve essere prima della fine'
-  if (afternoonStart >= afternoonEnd) return 'La fascia Pomeriggio non e valida: inizio deve essere prima della fine'
-  if (eveningStart >= eveningEnd) return 'La fascia Sera non e valida: inizio deve essere prima della fine'
+  if (morningStart === morningEnd) return 'La fascia Mattina non e valida: inizio e fine coincidono'
+  if (afternoonStart === afternoonEnd) return 'La fascia Pomeriggio non e valida: inizio e fine coincidono'
+  if (eveningStart === eveningEnd) return 'La fascia Sera non e valida: inizio e fine coincidono'
 
-  if (afternoonStart <= morningEnd) {
+  if (
+    slotRangesOverlap(
+      config.morningStart,
+      config.morningEnd,
+      config.afternoonStart,
+      config.afternoonEnd
+    )
+  ) {
     return 'Le fasce Mattina e Pomeriggio si sovrappongono'
   }
-  if (eveningStart <= afternoonEnd) {
+  if (
+    slotRangesOverlap(
+      config.afternoonStart,
+      config.afternoonEnd,
+      config.eveningStart,
+      config.eveningEnd
+    )
+  ) {
     return 'Le fasce Pomeriggio e Sera si sovrappongono'
+  }
+  if (
+    slotRangesOverlap(
+      config.morningStart,
+      config.morningEnd,
+      config.eveningStart,
+      config.eveningEnd
+    )
+  ) {
+    return 'Le fasce Mattina e Sera si sovrappongono'
   }
 
   return null
