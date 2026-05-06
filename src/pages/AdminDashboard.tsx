@@ -15,12 +15,14 @@ import {
   ChevronDown,
   UtensilsCrossed,
   Store,
+  ExternalLink,
 } from 'lucide-react'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { RestaurantSettingsTab } from '@/features/booking/components/RestaurantSettingsTab'
 import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { cn } from '@/lib/utils'
+import { useTenantContext } from '@/contexts/TenantContext'
 
 type Tab =
   | 'calendar'
@@ -36,9 +38,10 @@ interface NavItemProps {
   active?: boolean
   badge?: number
   onClick: () => void
+  mobileLabel?: string
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, badge, onClick }) => (
+const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, badge, onClick, mobileLabel }) => (
   <button
     type="button"
     onClick={onClick}
@@ -54,7 +57,7 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, badge, onC
   >
     <Icon className={`h-4 w-4 flex-shrink-0 ${active ? 'text-primary-900' : 'text-slate-800'}`} />
     <span className="hidden min-w-0 truncate text-center sm:inline">{label}</span>
-    <span className="min-w-0 truncate text-center sm:hidden">{label.split(' ')[0]}</span>
+    <span className="min-w-0 truncate text-center sm:hidden">{mobileLabel ?? label.split(' ')[0]}</span>
     {badge != null && badge > 0 && (
       <span className="inline-flex flex-shrink-0 items-center justify-center min-w-[20px] h-5 text-xs font-bold px-1.5 rounded-full bg-primary-600 text-white">
         {badge}
@@ -90,6 +93,7 @@ export const AdminDashboard: React.FC = () => {
   const { data: stats } = useBookingStats()
   const { user, logout } = useAdminAuth()
   const restaurantName = useRestaurantName()
+  const { tenantSlug } = useTenantContext()
 
   const handleViewInCalendar = (date: string) => {
     setCalendarTargetDate(date)
@@ -130,21 +134,22 @@ export const AdminDashboard: React.FC = () => {
               <NavItem icon={Clock}    label="Prenotazioni Pendenti" active={activeTab === 'pending'}  badge={stats?.pending} onClick={() => setActiveTab('pending')} />
               <NavItem icon={Archive}  label="Archivio"             active={activeTab === 'archive'}  onClick={() => setActiveTab('archive')} />
               <NavItem icon={UtensilsCrossed} label="Menu" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
-              <div className="col-span-2 sm:col-span-3 lg:col-span-6">
-                <div
-                  className="rounded-xl border px-2 py-1 sm:px-3"
-                  style={ADMIN_WARM_GRADIENT_SURFACE}
-                >
-                  <div className="mx-auto w-1/2 sm:w-1/3 lg:w-1/6">
-                    <NavItem
-                      icon={Store}
-                      label="Impostazioni locale"
-                      active={activeTab === 'settings-restaurant'}
-                      onClick={() => setActiveTab('settings-restaurant')}
-                    />
-                  </div>
-                </div>
-              </div>
+              <NavItem
+                icon={Store}
+                label="Impostazioni locale"
+                active={activeTab === 'settings-restaurant'}
+                onClick={() => setActiveTab('settings-restaurant')}
+                mobileLabel="Impostazioni"
+              />
+              <NavItem
+                icon={ExternalLink}
+                label="Visualizza Form Pubblico"
+                mobileLabel="Visualizza Form Pubblico"
+                onClick={() => {
+                  if (!tenantSlug) return
+                  window.location.href = `/prenota/${tenantSlug}`
+                }}
+              />
             </nav>
           </div>
         </div>
