@@ -198,10 +198,17 @@ function DigestBookingListRow({
           </span>
           {showNoteHint && (
             <div
-              className="absolute z-30 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white shadow-lg"
-              style={{ right: 2, bottom: 'calc(100% + 2px)' }}
+              className="absolute z-[80] max-w-[min(calc(100vw-16px),20rem)] rounded-md bg-slate-900 px-2.5 py-1.5 text-white shadow-lg sm:max-w-none sm:whitespace-nowrap"
+              style={{
+                right: 2,
+                bottom: 'calc(100% + 2px)',
+                fontSize: '0.875rem',
+                lineHeight: 1.35,
+                fontWeight: 500,
+              }}
+              role="tooltip"
             >
-              C&apos;e una nota salvata
+              C&apos;è una nota salvata
             </div>
           )}
         </>
