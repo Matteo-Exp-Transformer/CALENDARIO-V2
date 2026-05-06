@@ -216,7 +216,7 @@ export const BookingRequestPage: React.FC = () => {
                       const isOpen = !!dayHours && dayHours.length > 0
                       return (
                         <div key={day} className="font-medium text-base text-warm-wood-dark ml-8">
-                          {formatDayName(day)}: {isOpen ? `Aperto (${formatHours(dayHours)})` : 'Chiuso'}
+                          {formatDayName(day)}: {isOpen ? formatHours(dayHours) : 'Chiuso'}
                         </div>
                       )
                     })
