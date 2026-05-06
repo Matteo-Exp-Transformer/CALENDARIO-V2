@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import type { CSSProperties } from 'react'
 import type { BookingRequest } from '@/types/booking'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
@@ -8,6 +9,8 @@ import { getPresetMenuLabel } from '../constants/presetMenus'
 import type { PresetMenuType } from '../constants/presetMenus'
 import { getMenuPriceDisplayFromBooking } from '../utils/menuPricing'
 import { formatBookingDateTime } from '../utils/formatDateTime'
+import { ADMIN_WARM_BORDER, ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
+import { cn } from '@/lib/utils'
 
 interface BookingRequestCardProps {
   booking: BookingRequest
@@ -23,11 +26,21 @@ const EVENT_TYPE_CONFIG: Record<string, { label: string; icon: React.ElementType
   menu_pranzo_cena: { label: 'Menu Pranzo / Menù Cena', icon: UtensilsCrossed, color: 'bg-amber-500' },
 }
 
-const STATUS_CONFIG: Record<string, { label: string; bgColor: string; textColor: string; borderColor: string }> = {
-  pending: { label: 'Pendente', bgColor: 'bg-yellow-50', textColor: 'text-yellow-700', borderColor: 'border-yellow-400' },
-  accepted: { label: 'Accettata', bgColor: 'bg-green-50', textColor: 'text-green-700', borderColor: 'border-green-500' },
-  rejected: { label: 'Rifiutata', bgColor: 'bg-red-50', textColor: 'text-red-700', borderColor: 'border-red-500' },
+const STATUS_CONFIG: Record<string, { label: string; bgColor: string; textColor: string }> = {
+  pending: { label: 'In Attesa', bgColor: 'bg-yellow-50', textColor: 'text-yellow-700' },
+  accepted: { label: 'Accettata', bgColor: 'bg-green-50', textColor: 'text-green-700' },
+  rejected: { label: 'Rifiutata', bgColor: 'bg-red-50', textColor: 'text-red-700' },
 }
+
+/** Digest calendario `#digest-with-menu-heading` — strip chiusa con dati principali. Inline = ok su tutti i browser. */
+const DIGEST_BOOKING_HEADER_SURFACE: CSSProperties = {
+  backgroundImage:
+    'linear-gradient(90deg, rgba(45, 212, 191, 0.38) 0%, rgba(204, 251, 241, 0.9) 50%, rgb(255, 255, 255) 100%)',
+}
+
+/** Cornice contenitore — movimento/sat hover in `.booking-request-card-shell` (`index.css`). */
+const BOOKING_REQUEST_CARD_SHELL =
+  'booking-request-card-shell overflow-hidden rounded-lg border'
 
 // InfoItem component was removed as it's not used
 
@@ -64,12 +77,31 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
   const creationDateLabel = formatBookingDateTime(booking.created_at)
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
-      {/* Header Collapsible - MOSTRA TUTTI I DATI */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-6 text-left rounded-t-lg hover:bg-gray-50 transition-all duration-200 active:scale-[0.995]"
+    <div
+      className={BOOKING_REQUEST_CARD_SHELL}
+      style={{
+        borderColor: 'var(--admin-warm-wrap-border)',
+        borderWidth: 'var(--admin-warm-wrap-border-width)',
+        borderStyle: 'solid',
+      }}
+    >
+      {/* Header chiuso = digest teal; con pannello aperto rimane fascia superiore teal. */}
+      <div
+        className={cn('booking-request-collapse-header', !isExpanded ? 'rounded-lg' : 'rounded-t-lg')}
       >
+        <div
+          className={cn('booking-request-collapse-header-gradient', !isExpanded ? 'rounded-lg' : 'rounded-t-lg')}
+          style={DIGEST_BOOKING_HEADER_SURFACE}
+        >
+        <button
+          type="button"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className={cn(
+            'w-full cursor-pointer border-0 p-6 text-left bg-transparent transition-colors duration-[220ms] hover:bg-white/55 active:scale-[0.995]',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
+            !isExpanded ? 'rounded-lg' : 'rounded-t-lg'
+          )}
+        >
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4 flex-1">
             {/* Icona Tipo Evento */}
@@ -150,10 +182,13 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
           {/* Badge Status + Icona Expand */}
           <div className="flex flex-col items-end gap-3 flex-shrink-0">
-            <span className={`
-              px-3 py-1 rounded text-sm font-medium whitespace-nowrap border-l-4
-              ${statusConfig.bgColor} ${statusConfig.textColor} ${statusConfig.borderColor}
-            `}>
+            <span
+              className={cn(
+                'px-3 py-1 rounded text-sm font-medium whitespace-nowrap',
+                statusConfig.bgColor,
+                statusConfig.textColor
+              )}
+            >
               {statusConfig.label}
             </span>
             <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'rotate-0'}`}>
@@ -161,11 +196,19 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
             </div>
           </div>
         </div>
-      </button>
+        </button>
+        </div>
+      </div>
 
-      {/* Contenuto Espandibile - DATI COMPLETI ORGANIZZATI IN 2 COLONNE */}
+      {/* Pannello espanso = strip brand dashboard (ADMIN_WARM_GRADIENT_SURFACE) */}
       {isExpanded && (
-        <div className="p-6 bg-gray-50 border-t border-gray-200 transition-all duration-300 ease-in-out">
+        <div
+          className="rounded-b-lg border-t p-6 transition-all duration-300 ease-in-out"
+          style={{
+            ...ADMIN_WARM_GRADIENT_SURFACE,
+            borderTopColor: 'rgb(226 232 240)',
+          }}
+        >
           {/* Dati Organizzati - Griglia a 2 colonne con più spazio */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
             {/* Colonna 1 */}
@@ -217,15 +260,17 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                 </span>
               </div>
             )}
-            <div className="flex items-start gap-3 py-3 sm:col-span-2">
-              <span className="text-xs text-gray-500 w-24 font-medium uppercase tracking-wide">Data Creazione:</span>
-              <span className="text-sm font-medium text-gray-900">{creationDateLabel}</span>
+            <div className="flex flex-wrap items-start gap-x-3 gap-y-1 py-3 sm:col-span-2">
+              <span className="text-xs text-gray-500 font-medium leading-snug shrink-0">
+                Richiesta di prenotazione effettuata il :
+              </span>
+              <span className="text-sm font-medium text-gray-900 min-w-0">{creationDateLabel}</span>
             </div>
           </div>
 
           {/* Menu Info - Solo per Rinfresco di Laurea */}
           {booking.booking_type === 'rinfresco_laurea' && booking.menu_selection && (
-            <div className="pt-6 mt-6 border-t border-gray-200">
+            <div className="pt-6 mt-6 border-t" style={{ borderTopColor: ADMIN_WARM_BORDER }}>
               <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-3">Menu Selezionato</p>
               
               {/* Mostra Menu Predefinito se presente */}
@@ -286,7 +331,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
           {/* Intolleranze - Solo per Rinfresco di Laurea */}
           {booking.booking_type === 'rinfresco_laurea' && booking.dietary_restrictions && Array.isArray(booking.dietary_restrictions) && booking.dietary_restrictions.length > 0 && (
-            <div className="pt-6 mt-6 border-t border-gray-200">
+            <div className="pt-6 mt-6 border-t" style={{ borderTopColor: ADMIN_WARM_BORDER }}>
               <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-3">Intolleranze Alimentari</p>
               <div className="space-y-2">
                 {booking.dietary_restrictions.map((restriction: any, idx: number) => (
@@ -303,7 +348,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
           {/* Note Richieste Speciali - Fuori dalla griglia */}
           {booking.special_requests && (
-            <div className="pt-6 mt-6 border-t border-gray-200">
+            <div className="pt-6 mt-6 border-t" style={{ borderTopColor: ADMIN_WARM_BORDER }}>
               <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-3">Richieste Speciali</p>
               <p className="text-sm text-gray-700 leading-relaxed">
                 {booking.special_requests}
@@ -312,11 +357,11 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
           )}
 
           {/* Azioni con Bottoni Moderni */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-6 mt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row gap-3 pt-6 mt-6 border-t" style={{ borderTopColor: ADMIN_WARM_BORDER }}>
             <button
               type="button"
               onClick={() => onAccept(booking)}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 active:scale-95 min-h-[44px]"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] rounded-lg font-medium text-white shadow-sm transition-all duration-200 active:scale-95 bg-[var(--color-success)] hover:bg-[#059669] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-success)] focus-visible:ring-offset-2"
             >
               <CheckCircle className="w-5 h-5" />
               Accetta Prenotazione
@@ -324,7 +369,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
             <button
               type="button"
               onClick={() => onReject(booking)}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 active:scale-95 min-h-[44px]"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] rounded-lg font-medium text-white shadow-sm transition-all duration-200 active:scale-95 bg-red-500 hover:bg-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
             >
               <XCircle className="w-5 h-5" />
               Rifiuta

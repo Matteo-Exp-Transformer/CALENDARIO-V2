@@ -9,6 +9,7 @@ import type { BookingRequest } from '@/types/booking'
 import { getSlotsOccupiedByBooking } from '../utils/capacityCalculator'
 import { CAPACITY_CONFIG } from '../constants/capacity'
 import { createBookingDateTime, extractDateFromISO, calculateEndTimeFromStart } from '../utils/dateUtils'
+import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 
 export const PendingRequestsTab: React.FC = () => {
   const { data: pendingBookings, isLoading, error, refetch } = usePendingBookings()
@@ -220,7 +221,7 @@ export const PendingRequestsTab: React.FC = () => {
 
   if (!uniquePendingBookings || uniquePendingBookings.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+      <div className="rounded-lg border shadow-sm p-12 text-center" style={ADMIN_WARM_GRADIENT_SURFACE}>
         <div className="text-6xl mb-4">✅</div>
         <h3 className="text-xl font-semibold text-gray-900 mb-2">
           Nessuna richiesta in attesa
@@ -240,7 +241,10 @@ export const PendingRequestsTab: React.FC = () => {
           </h3>
         </div>
 
-      <div className="flex flex-col">
+      <div
+        className="flex flex-col rounded-lg border shadow-sm p-3 md:p-4"
+        style={ADMIN_WARM_GRADIENT_SURFACE}
+      >
         {uniquePendingBookings.map((booking) => (
           <div key={booking.id} style={{ marginBottom: '24px' }}>
             <BookingRequestCard

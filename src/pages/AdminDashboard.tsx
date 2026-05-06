@@ -20,7 +20,7 @@ import {
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { RestaurantSettingsTab } from '@/features/booking/components/RestaurantSettingsTab'
-import { ADMIN_WARM_BORDER, ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
+import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { cn } from '@/lib/utils'
 import { useTenantContext } from '@/contexts/TenantContext'
 
@@ -227,10 +227,10 @@ export const AdminDashboard: React.FC = () => {
         <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
         <div
           className={cn(
-            'rounded-xl border bg-white shadow-sm p-5 md:p-7',
+            'rounded-xl border shadow-sm p-5 md:p-7',
             activeTab !== 'menu' && 'min-h-[500px]'
           )}
-          style={{ borderColor: ADMIN_WARM_BORDER }}
+          style={ADMIN_WARM_GRADIENT_SURFACE}
         >
           {activeTab === 'calendar' && <BookingCalendarTab initialDate={calendarTargetDate} />}
           {activeTab === 'pending'  && <PendingRequestsTab />}
