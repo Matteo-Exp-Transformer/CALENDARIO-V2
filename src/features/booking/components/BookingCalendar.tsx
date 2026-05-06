@@ -4,7 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import listPlugin from '@fullcalendar/list'
-import { Calendar, Users, Sunrise, Sun, Moon, Mail, Phone, Clock, UtensilsCrossed, Tag, ScrollText, StickyNote, MapPin } from 'lucide-react'
+import { Calendar, Users, Tag } from 'lucide-react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import type { BookingRequest } from '@/types/booking'
@@ -14,7 +14,6 @@ import {
 } from '../utils/bookingEventTransform'
 import { BookingDetailsModal } from './BookingDetailsModal'
 import { calculateDailyCapacity, getStartSlotForBooking } from '../utils/capacityCalculator'
-import { CollapsibleCard } from '@/components/ui/CollapsibleCard'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 
 import {
@@ -23,8 +22,7 @@ import {
   getAccurateEndTime,
   startTimeToMinutesSinceMidnight,
 } from '../utils/dateUtils'
-import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
-import { getMenuPriceDisplayFromBooking, getResolvedMenuPriceDisplay } from '../utils/menuPricing'
+import { getResolvedMenuPriceDisplay } from '../utils/menuPricing'
 
 /** Sfondo sezione calendario: arancio chiarissimo → giallo chiarissimo, più tenue del top bar admin */
 const CALENDAR_SECTION_WARM_SURFACE: React.CSSProperties = {
@@ -47,15 +45,25 @@ function DigestBookingListRow({
   onOpen,
   showMenuPricing = false,
   compactGrid = false,
+  slot,
 }: {
   booking: BookingRequest
   onOpen: (b: BookingRequest) => void
   showMenuPricing?: boolean
   /** Card strette per griglia a 3 colonie (digest calendario). */
   compactGrid?: boolean
+  slot?: 'morning' | 'afternoon' | 'evening'
 }) {
   const calEv = transformBookingToCalendarEvent(booking)
   const menuPriceRow = showMenuPricing ? getResolvedMenuPriceDisplay(booking) : null
+  const slotColors =
+    slot === 'morning'
+      ? { backgroundColor: 'rgb(16, 185, 129)', borderColor: 'rgb(5, 150, 105)' }
+      : slot === 'afternoon'
+        ? { backgroundColor: 'rgb(251, 146, 60)', borderColor: 'rgb(234, 88, 12)' }
+        : slot === 'evening'
+          ? { backgroundColor: 'rgb(147, 197, 253)', borderColor: 'rgb(96, 165, 250)' }
+          : null
 
   return (
     <button
@@ -65,8 +73,8 @@ function DigestBookingListRow({
         compactGrid ? 'flex w-full min-h-[4.253472rem] flex-col shadow-sm' : ''
       }`}
       style={{
-        backgroundColor: calEv.backgroundColor,
-        borderColor: calEv.borderColor,
+        backgroundColor: slotColors?.backgroundColor ?? calEv.backgroundColor,
+        borderColor: slotColors?.borderColor ?? calEv.borderColor,
         color: calEv.textColor ?? '#fff',
       }}
     >
@@ -168,6 +176,24 @@ interface BookingCalendarProps {
 }
 
 export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, initialDate }) => {
+  const splitDigestBySlot = (digestBookings: BookingRequest[]) => {
+    const morning: BookingRequest[] = []
+    const afternoon: BookingRequest[] = []
+    const evening: BookingRequest[] = []
+
+    for (const booking of digestBookings) {
+      const startTime = getAccurateStartTime(booking)
+      const fakeISOStart = `2025-01-01T${startTime}:00`
+      const startSlot = getStartSlotForBooking(fakeISOStart)
+
+      if (startSlot === 'morning') morning.push(booking)
+      else if (startSlot === 'afternoon') afternoon.push(booking)
+      else if (startSlot === 'evening') evening.push(booking)
+    }
+
+    return { morning, afternoon, evening }
+  }
+
   const calendarRef = useRef<FullCalendar>(null)
   const [selectedBooking, setSelectedBooking] = useState<BookingRequest | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -290,6 +316,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       digestTableOnly: sorted.filter((b) => !digestBookingHasMenuContext(b)),
     }
   }, [bookings, selectedDate])
+  const digestWithMenuBySlot = useMemo(() => splitDigestBySlot(digestWithMenu), [digestWithMenu])
+  const digestTableOnlyBySlot = useMemo(() => splitDigestBySlot(digestTableOnly), [digestTableOnly])
 
   const openDigestBooking = (booking: BookingRequest) => {
     setSelectedBooking(booking)
@@ -520,16 +548,54 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                   </div>
                   {digestWithMenu.length > 0 ? (
                     <div className="max-h-[min(420px,52vh)] overflow-y-auto rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner grid grid-cols-3 max-[640px]:grid-cols-1 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
-                      {digestWithMenu.map((booking) => (
-                        <div key={booking.id} className="flex min-w-0 w-full flex-col">
-                          <DigestBookingListRow
-                            booking={booking}
-                            onOpen={openDigestBooking}
-                            showMenuPricing
-                            compactGrid
-                          />
-                        </div>
-                      ))}
+                      <div className="flex min-w-0 w-full flex-col gap-2">
+                        <h6 className="rounded-md bg-green-100 border border-green-300 px-2 py-1 text-xs font-semibold text-green-900 text-center">
+                          Mattina (10:00 - 14:30)
+                        </h6>
+                        {digestWithMenuBySlot.morning.map((booking) => (
+                          <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                            <DigestBookingListRow
+                              booking={booking}
+                              onOpen={openDigestBooking}
+                              showMenuPricing
+                              compactGrid
+                              slot="morning"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex min-w-0 w-full flex-col gap-2">
+                        <h6 className="rounded-md bg-orange-100 border border-orange-300 px-2 py-1 text-xs font-semibold text-orange-900 text-center">
+                          Pomeriggio (14:31 - 18:30)
+                        </h6>
+                        {digestWithMenuBySlot.afternoon.map((booking) => (
+                          <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                            <DigestBookingListRow
+                              booking={booking}
+                              onOpen={openDigestBooking}
+                              showMenuPricing
+                              compactGrid
+                              slot="afternoon"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex min-w-0 w-full flex-col gap-2">
+                        <h6 className="rounded-md bg-blue-100 border border-blue-300 px-2 py-1 text-xs font-semibold text-blue-900 text-center">
+                          Sera (18:31 - 23:30)
+                        </h6>
+                        {digestWithMenuBySlot.evening.map((booking) => (
+                          <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                            <DigestBookingListRow
+                              booking={booking}
+                              onOpen={openDigestBooking}
+                              showMenuPricing
+                              compactGrid
+                              slot="evening"
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ) : (
                     <p className="text-center text-sm text-gray-500 italic py-6 rounded-xl border border-dashed border-slate-200 bg-slate-50/80">
@@ -551,15 +617,51 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                   </div>
                   {digestTableOnly.length > 0 ? (
                     <div className="max-h-[min(420px,52vh)] overflow-y-auto rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner grid grid-cols-3 max-[640px]:grid-cols-1 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
-                      {digestTableOnly.map((booking) => (
-                        <div key={booking.id} className="flex min-w-0 w-full flex-col">
-                          <DigestBookingListRow
-                            booking={booking}
-                            onOpen={openDigestBooking}
-                            compactGrid
-                          />
-                        </div>
-                      ))}
+                      <div className="flex min-w-0 w-full flex-col gap-2">
+                        <h6 className="rounded-md bg-green-100 border border-green-300 px-2 py-1 text-xs font-semibold text-green-900 text-center">
+                          Mattina (10:00 - 14:30)
+                        </h6>
+                        {digestTableOnlyBySlot.morning.map((booking) => (
+                          <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                            <DigestBookingListRow
+                              booking={booking}
+                              onOpen={openDigestBooking}
+                              compactGrid
+                              slot="morning"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex min-w-0 w-full flex-col gap-2">
+                        <h6 className="rounded-md bg-orange-100 border border-orange-300 px-2 py-1 text-xs font-semibold text-orange-900 text-center">
+                          Pomeriggio (14:31 - 18:30)
+                        </h6>
+                        {digestTableOnlyBySlot.afternoon.map((booking) => (
+                          <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                            <DigestBookingListRow
+                              booking={booking}
+                              onOpen={openDigestBooking}
+                              compactGrid
+                              slot="afternoon"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex min-w-0 w-full flex-col gap-2">
+                        <h6 className="rounded-md bg-blue-100 border border-blue-300 px-2 py-1 text-xs font-semibold text-blue-900 text-center">
+                          Sera (18:31 - 23:30)
+                        </h6>
+                        {digestTableOnlyBySlot.evening.map((booking) => (
+                          <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                            <DigestBookingListRow
+                              booking={booking}
+                              onOpen={openDigestBooking}
+                              compactGrid
+                              slot="evening"
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ) : (
                     <p className="text-center text-sm text-gray-500 italic py-6 rounded-xl border border-dashed border-slate-200 bg-slate-50/80">
@@ -575,639 +677,6 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
             )}
           </div>
 
-          {/* Mattina CollapsibleCard */}
-          <div 
-            className="rounded-lg overflow-hidden shadow-lg"
-            style={{
-              border: '4px solid rgb(34, 197, 94)',
-              backgroundColor: 'rgba(209, 250, 229, 0.85)',
-              marginBottom: '32px',
-            }}
-          >
-            <CollapsibleCard
-              title="Mattina"
-              subtitle="10:00 - 14:30"
-              icon={Sunrise}
-              defaultExpanded={false}
-              collapseDisabled={false}
-              counter={{
-                available: selectedDateData.capacity.morning.available,
-                capacity: selectedDateData.capacity.morning.capacity
-              }}
-              headerClassName="admin-collapse-header admin-collapse-header--green bg-green-100 hover:bg-green-200 border-b-2 border-green-300"
-              className="!bg-transparent !border-transparent !shadow-none"
-            >
-              <div className="px-4 sm:px-6 py-4" style={{ backgroundColor: 'rgba(187, 247, 208, 0.8)' }}>
-                {selectedDateData.morningBookings.length > 0 ? (
-                  selectedDateData.morningBookings.map((booking, index) => {
-                    const eventTypeLabel = getBookingEventTypeLabel(booking)
-                    let menuPriceDisplay = getMenuPriceDisplayFromBooking(booking)
-                    if (menuPriceDisplay && booking.booking_type === 'rinfresco_laurea' && booking.menu_selection?.items) {
-                      const baseTotal = booking.menu_selection.items
-                        .filter((item) => !item.name.toLowerCase().includes('tiramis'))
-                        .reduce((sum, item) => sum + (item.totalPrice || item.price), 0)
-                      const tiramisuTotal = booking.menu_selection.tiramisu_total || 0
-                      const totalBooking = baseTotal * (booking.num_guests || 0) + tiramisuTotal
-
-                      menuPriceDisplay = {
-                        prezzoMenu: baseTotal,
-                        prezzoMenuLabel: `€${baseTotal.toFixed(2)}/persona`,
-                        breakdownLabel: undefined,
-                        prezzoTotale: totalBooking,
-                        prezzoTotaleLabel: `€${totalBooking.toFixed(2)}`,
-                        totalLabel: `€${baseTotal.toFixed(2)}/persona`,
-                        totalPerPerson: baseTotal,
-                        basePerPerson: baseTotal
-                      }
-                    }
-                    return (
-                      <React.Fragment key={booking.id}>
-                      {index > 0 && (
-                        <div className="my-8 flex items-center">
-                          <div 
-                            className="w-full"
-                            style={{
-                              height: '3px',
-                              background: 'linear-gradient(to right, transparent, rgba(34, 197, 94, 0.4) 5%, rgba(34, 197, 94, 0.8) 20%, rgba(34, 197, 94, 1) 50%, rgba(34, 197, 94, 0.8) 80%, rgba(34, 197, 94, 0.4) 95%, transparent)',
-                              borderRadius: '2px',
-                              boxShadow: '0 2px 4px rgba(34, 197, 94, 0.2)',
-                            }}
-                          ></div>
-                        </div>
-                      )}
-                      <div
-                        className="bg-white/98 backdrop-blur-sm p-5 rounded-modern relative"
-                        style={{
-                          border: '3px solid rgba(255, 255, 255, 0.9)',
-                          boxShadow: '0 0 0 1px rgba(255, 255, 255, 1), 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 0 3px rgba(255, 255, 255, 0.5), inset 0 2px 8px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.08)',
-                          transform: 'translateY(-2px)',
-                        }}
-                      >
-                      <div className="grid grid-cols-2 gap-4 md:gap-6">
-                        {/* Colonna Contatti */}
-                        <div className="space-y-3 md:space-y-4">
-                          <div>
-                            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-green-800 bg-green-50 px-3 py-1 rounded-full">
-                              Contatti
-                            </span>
-                            <div className="mt-3 pb-3 border-b border-gray-200 flex items-center gap-3">
-                              <Users className="w-5 h-5 text-green-700 flex-shrink-0" />
-                              <h4 className="font-bold text-lg md:text-xl text-gray-900">
-                                {booking.client_name}
-                              </h4>
-                            </div>
-                          </div>
-
-                          <div className="flex items-start gap-4 md:gap-6">
-                            <Mail className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 flex items-start gap-2">
-                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Email:</span>
-                              <span className="text-sm md:text-base text-gray-700 font-medium break-words">{booking.client_email}</span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-start gap-4 md:gap-6">
-                            <UtensilsCrossed className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 flex items-start gap-2">
-                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Evento:</span>
-                              <span className="text-sm md:text-base text-gray-700 font-semibold uppercase tracking-wide">
-                                {eventTypeLabel || 'N/A'}
-                              </span>
-                            </div>
-                          </div>
-
-                          {booking.placement && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <MapPin className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Posizionamento:</span>
-                                <span className="text-sm md:text-base text-gray-700 font-medium">{booking.placement}</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {booking.client_phone && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <Phone className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Telefono:</span>
-                                <span className="text-sm md:text-base text-gray-700 font-medium">{booking.client_phone}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Colonna Prenotazione */}
-                        <div className="space-y-3 md:space-y-4">
-                          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-green-800 bg-green-100 px-3 py-1 rounded-full">
-                            Prenotazione
-                          </span>
-
-                          {(booking.desired_time || booking.confirmed_start) && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <Clock className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Orario:</span>
-                                <span className="text-sm md:text-base text-gray-800 font-semibold">
-                                  {getAccurateStartTime(booking)} - {getAccurateEndTime(booking)}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="flex items-start gap-4 md:gap-6">
-                            <Users className="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 flex items-start gap-2">
-                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Ospiti:</span>
-                              <span className="text-sm md:text-base font-bold text-green-800">{booking.num_guests}</span>
-                            </div>
-                          </div>
-
-
-                          {menuPriceDisplay && (
-                            <>
-                              <div className="flex items-start gap-4 md:gap-6">
-                                <Tag className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                                <div className="flex-1 flex items-start gap-2">
-                                  <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Prezzo Menù:</span>
-                                  <span className="text-sm md:text-base font-semibold text-gray-900">
-                                    €{menuPriceDisplay.prezzoMenu.toFixed(2)}
-                                  </span>
-                                </div>
-                              </div>
-                              {menuPriceDisplay.prezzoTotaleLabel && (
-                                <div className="flex items-start gap-4 md:gap-6">
-                                  <Tag className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                                  <div className="flex-1 flex items-start gap-2">
-                                    <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Prezzo Totale:</span>
-                                    <span className="text-sm md:text-base font-semibold text-gray-900">
-                                      {menuPriceDisplay.prezzoTotaleLabel}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                            </>
-                          )}
-
-                          {booking.menu && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <ScrollText className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Menù:</span>
-                                <span className="text-sm md:text-base text-gray-700 leading-snug line-clamp-3">{booking.menu}</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {booking.special_requests && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <StickyNote className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Note speciali:</span>
-                                <span className="text-sm md:text-base text-gray-700 italic leading-snug">{booking.special_requests}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      </div>
-                      </React.Fragment>
-                    )
-                  })
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-green-100 flex items-center justify-center">
-                      <Sunrise className="w-8 h-8 text-green-500" />
-                    </div>
-                    <p className="text-sm text-gray-500 italic">Nessuna prenotazione per questa fascia oraria</p>
-                  </div>
-                )}
-              </div>
-            </CollapsibleCard>
-          </div>
-
-          {/* Pomeriggio CollapsibleCard */}
-          <div 
-            className="rounded-lg overflow-hidden shadow-lg"
-            style={{
-              border: '4px solid rgb(234, 179, 8)',
-              backgroundColor: 'rgba(254, 243, 199, 0.8)',
-              marginTop: '32px',
-              marginBottom: '32px',
-            }}
-          >
-            <CollapsibleCard
-              title="Pomeriggio"
-              subtitle="14:31 - 18:30"
-              icon={Sun}
-              defaultExpanded={false}
-              collapseDisabled={false}
-              counter={{
-                available: selectedDateData.capacity.afternoon.available,
-                capacity: selectedDateData.capacity.afternoon.capacity
-              }}
-              headerClassName="admin-collapse-header admin-collapse-header--yellow bg-yellow-100 hover:bg-yellow-200 border-b-2 border-yellow-300"
-              className="!bg-transparent !border-transparent !shadow-none"
-            >
-              <div className="px-4 sm:px-6 py-4" style={{ backgroundColor: 'rgba(253, 230, 138, 0.75)' }}>
-                {selectedDateData.afternoonBookings.length > 0 ? (
-                  selectedDateData.afternoonBookings.map((booking, index) => {
-                    const eventTypeLabel = getBookingEventTypeLabel(booking)
-                    let menuPriceDisplay = getMenuPriceDisplayFromBooking(booking)
-                    if (menuPriceDisplay && booking.booking_type === 'rinfresco_laurea' && booking.menu_selection?.items) {
-                      const baseTotal = booking.menu_selection.items
-                        .filter((item) => !item.name.toLowerCase().includes('tiramis'))
-                        .reduce((sum, item) => sum + (item.totalPrice || item.price), 0)
-                      const tiramisuTotal = booking.menu_selection.tiramisu_total || 0
-                      const totalBooking = baseTotal * (booking.num_guests || 0) + tiramisuTotal
-
-                      menuPriceDisplay = {
-                        prezzoMenu: baseTotal,
-                        prezzoMenuLabel: `€${baseTotal.toFixed(2)}/persona`,
-                        breakdownLabel: undefined,
-                        prezzoTotale: totalBooking,
-                        prezzoTotaleLabel: `€${totalBooking.toFixed(2)}`,
-                        totalLabel: `€${baseTotal.toFixed(2)}/persona`,
-                        totalPerPerson: baseTotal,
-                        basePerPerson: baseTotal
-                      }
-                    }
-                    return (
-                      <React.Fragment key={booking.id}>
-                      {index > 0 && (
-                        <div className="my-8 flex items-center">
-                          <div 
-                            className="w-full"
-                            style={{
-                              height: '3px',
-                              background: 'linear-gradient(to right, transparent, rgba(234, 179, 8, 0.4) 5%, rgba(234, 179, 8, 0.8) 20%, rgba(234, 179, 8, 1) 50%, rgba(234, 179, 8, 0.8) 80%, rgba(234, 179, 8, 0.4) 95%, transparent)',
-                              borderRadius: '2px',
-                              boxShadow: '0 2px 4px rgba(234, 179, 8, 0.2)',
-                            }}
-                          ></div>
-                        </div>
-                      )}
-                      <div
-                        className="bg-white/98 backdrop-blur-sm p-5 rounded-modern relative"
-                        style={{
-                          border: '3px solid rgba(255, 255, 255, 0.9)',
-                          boxShadow: '0 0 0 1px rgba(255, 255, 255, 1), 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 0 3px rgba(255, 255, 255, 0.5), inset 0 2px 8px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.08)',
-                          transform: 'translateY(-2px)',
-                        }}
-                      >
-                      <div className="grid grid-cols-2 gap-4 md:gap-6">
-                        {/* Colonna Contatti */}
-                        <div className="space-y-3 md:space-y-4">
-                          <div>
-                            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-yellow-800 bg-yellow-50 px-3 py-1 rounded-full">
-                              Contatti
-                            </span>
-                            <div className="mt-3 pb-3 border-b border-gray-200 flex items-center gap-3">
-                              <Users className="w-5 h-5 text-yellow-700 flex-shrink-0" />
-                              <h4 className="font-bold text-lg md:text-xl text-gray-900">
-                                {booking.client_name}
-                              </h4>
-                            </div>
-                          </div>
-
-                          <div className="flex items-start gap-4 md:gap-6">
-                            <Mail className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 flex items-start gap-2">
-                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Email:</span>
-                              <span className="text-sm md:text-base text-gray-700 font-medium break-words">{booking.client_email}</span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-start gap-4 md:gap-6">
-                            <UtensilsCrossed className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 flex items-start gap-2">
-                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Evento:</span>
-                              <span className="text-sm md:text-base text-gray-700 font-semibold uppercase tracking-wide">
-                                {eventTypeLabel || 'N/A'}
-                              </span>
-                            </div>
-                          </div>
-
-                          {booking.placement && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <MapPin className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Posizionamento:</span>
-                                <span className="text-sm md:text-base text-gray-700 font-medium">{booking.placement}</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {booking.client_phone && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <Phone className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Telefono:</span>
-                                <span className="text-sm md:text-base text-gray-700 font-medium">{booking.client_phone}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Colonna Prenotazione */}
-                        <div className="space-y-3 md:space-y-4">
-                          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-yellow-800 bg-yellow-100 px-3 py-1 rounded-full">
-                            Prenotazione
-                          </span>
-
-                          {(booking.desired_time || booking.confirmed_start) && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <Clock className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Orario:</span>
-                                <span className="text-sm md:text-base text-gray-800 font-semibold">
-                                  {getAccurateStartTime(booking)} - {getAccurateEndTime(booking)}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="flex items-start gap-4 md:gap-6">
-                            <Users className="w-5 h-5 text-yellow-700 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 flex items-start gap-2">
-                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Ospiti:</span>
-                              <span className="text-sm md:text-base font-bold text-yellow-800">{booking.num_guests}</span>
-                            </div>
-                          </div>
-
-
-                          {menuPriceDisplay && (
-                            <>
-                              <div className="flex items-start gap-4 md:gap-6">
-                                <Tag className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                                <div className="flex-1 flex items-start gap-2">
-                                  <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Prezzo Menù:</span>
-                                  <span className="text-sm md:text-base font-semibold text-gray-900">
-                                    €{menuPriceDisplay.prezzoMenu.toFixed(2)}
-                                  </span>
-                                </div>
-                              </div>
-                              {menuPriceDisplay.prezzoTotaleLabel && (
-                                <div className="flex items-start gap-4 md:gap-6">
-                                  <Tag className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                                  <div className="flex-1 flex items-start gap-2">
-                                    <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Prezzo Totale:</span>
-                                    <span className="text-sm md:text-base font-semibold text-gray-900">
-                                      {menuPriceDisplay.prezzoTotaleLabel}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                            </>
-                          )}
-
-                          {booking.menu && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <ScrollText className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Menù:</span>
-                                <span className="text-sm md:text-base text-gray-700 leading-snug line-clamp-3">{booking.menu}</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {booking.special_requests && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <StickyNote className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Note speciali:</span>
-                                <span className="text-sm md:text-base text-gray-700 italic leading-snug">{booking.special_requests}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      </div>
-                      </React.Fragment>
-                    )
-                  })
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-yellow-100 flex items-center justify-center">
-                      <Sun className="w-8 h-8 text-yellow-500" />
-                    </div>
-                    <p className="text-sm text-gray-500 italic">Nessuna prenotazione per questa fascia oraria</p>
-                  </div>
-                )}
-              </div>
-            </CollapsibleCard>
-          </div>
-
-          {/* Sera CollapsibleCard */}
-          <div 
-            className="rounded-lg overflow-hidden shadow-lg"
-            style={{
-              border: '4px solid rgb(59, 130, 246)',
-              backgroundColor: 'rgba(191, 219, 254, 0.85)',
-              marginTop: '32px',
-            }}
-          >
-            <CollapsibleCard
-              title="Sera"
-              subtitle="18:31 - 23:30"
-              icon={Moon}
-              defaultExpanded={false}
-              collapseDisabled={false}
-              counter={{
-                available: selectedDateData.capacity.evening.available,
-                capacity: selectedDateData.capacity.evening.capacity
-              }}
-              headerClassName="admin-collapse-header admin-collapse-header--blue bg-blue-100 hover:bg-blue-200 border-b-2 border-blue-300"
-              className="!bg-transparent !border-transparent !shadow-none"
-            >
-              <div className="px-4 sm:px-6 py-4" style={{ backgroundColor: 'rgba(147, 197, 253, 0.8)' }}>
-                {selectedDateData.eveningBookings.length > 0 ? (
-                  selectedDateData.eveningBookings.map((booking, index) => {
-                    const eventTypeLabel = getBookingEventTypeLabel(booking)
-                    let menuPriceDisplay = getMenuPriceDisplayFromBooking(booking)
-                    if (menuPriceDisplay && booking.booking_type === 'rinfresco_laurea' && booking.menu_selection?.items) {
-                      const baseTotal = booking.menu_selection.items
-                        .filter((item) => !item.name.toLowerCase().includes('tiramis'))
-                        .reduce((sum, item) => sum + (item.totalPrice || item.price), 0)
-                      const tiramisuTotal = booking.menu_selection.tiramisu_total || 0
-                      const totalBooking = baseTotal * (booking.num_guests || 0) + tiramisuTotal
-
-                      menuPriceDisplay = {
-                        prezzoMenu: baseTotal,
-                        prezzoMenuLabel: `€${baseTotal.toFixed(2)}/persona`,
-                        breakdownLabel: undefined,
-                        prezzoTotale: totalBooking,
-                        prezzoTotaleLabel: `€${totalBooking.toFixed(2)}`,
-                        totalLabel: `€${baseTotal.toFixed(2)}/persona`,
-                        totalPerPerson: baseTotal,
-                        basePerPerson: baseTotal
-                      }
-                    }
-                    return (
-                      <React.Fragment key={booking.id}>
-                      {index > 0 && (
-                        <div className="my-8 flex items-center">
-                          <div 
-                            className="w-full"
-                            style={{
-                              height: '3px',
-                              background: 'linear-gradient(to right, transparent, rgba(59, 130, 246, 0.4) 5%, rgba(59, 130, 246, 0.8) 20%, rgba(59, 130, 246, 1) 50%, rgba(59, 130, 246, 0.8) 80%, rgba(59, 130, 246, 0.4) 95%, transparent)',
-                              borderRadius: '2px',
-                              boxShadow: '0 2px 4px rgba(59, 130, 246, 0.2)',
-                            }}
-                          ></div>
-                        </div>
-                      )}
-                      <div
-                        className="bg-white/98 backdrop-blur-sm p-5 rounded-modern relative"
-                        style={{
-                          border: '3px solid rgba(255, 255, 255, 0.9)',
-                          boxShadow: '0 0 0 1px rgba(255, 255, 255, 1), 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 0 3px rgba(255, 255, 255, 0.5), inset 0 2px 8px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.08)',
-                          transform: 'translateY(-2px)',
-                        }}
-                      >
-                      <div className="grid grid-cols-2 gap-4 md:gap-6">
-                        {/* Colonna Contatti */}
-                        <div className="space-y-3 md:space-y-4">
-                          <div>
-                            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-blue-800 bg-blue-50 px-3 py-1 rounded-full">
-                              Contatti
-                            </span>
-                            <div className="mt-3 pb-3 border-b border-gray-200 flex items-center gap-3">
-                              <Users className="w-5 h-5 text-blue-700 flex-shrink-0" />
-                              <h4 className="font-bold text-lg md:text-xl text-gray-900">
-                                {booking.client_name}
-                              </h4>
-                            </div>
-                          </div>
-
-                          <div className="flex items-start gap-4 md:gap-6">
-                            <Mail className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 flex items-start gap-2">
-                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Email:</span>
-                              <span className="text-sm md:text-base text-gray-700 font-medium break-words">{booking.client_email}</span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-start gap-4 md:gap-6">
-                            <UtensilsCrossed className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 flex items-start gap-2">
-                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Evento:</span>
-                              <span className="text-sm md:text-base text-gray-700 font-semibold uppercase tracking-wide">
-                                {eventTypeLabel || 'N/A'}
-                              </span>
-                            </div>
-                          </div>
-
-                          {booking.placement && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Posizionamento:</span>
-                                <span className="text-sm md:text-base text-gray-700 font-medium">{booking.placement}</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {booking.client_phone && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <Phone className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Telefono:</span>
-                                <span className="text-sm md:text-base text-gray-700 font-medium">{booking.client_phone}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Colonna Prenotazione */}
-                        <div className="space-y-3 md:space-y-4">
-                          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-blue-800 bg-blue-100 px-3 py-1 rounded-full">
-                            Prenotazione
-                          </span>
-
-                          {(booking.desired_time || booking.confirmed_start) && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <Clock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Orario:</span>
-                                <span className="text-sm md:text-base text-gray-800 font-semibold">
-                                  {getAccurateStartTime(booking)} - {getAccurateEndTime(booking)}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="flex items-start gap-4 md:gap-6">
-                            <Users className="w-5 h-5 text-blue-700 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 flex items-start gap-2">
-                              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Ospiti:</span>
-                              <span className="text-sm md:text-base font-bold text-blue-800">{booking.num_guests}</span>
-                            </div>
-                          </div>
-
-
-                          {menuPriceDisplay && (
-                            <>
-                              <div className="flex items-start gap-4 md:gap-6">
-                                <Tag className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                                <div className="flex-1 flex items-start gap-2">
-                                  <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Prezzo Menù:</span>
-                                  <span className="text-sm md:text-base font-semibold text-gray-900">
-                                    €{menuPriceDisplay.prezzoMenu.toFixed(2)}
-                                  </span>
-                                </div>
-                              </div>
-                              {menuPriceDisplay.prezzoTotaleLabel && (
-                                <div className="flex items-start gap-4 md:gap-6">
-                                  <Tag className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                                  <div className="flex-1 flex items-start gap-2">
-                                    <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Prezzo Totale:</span>
-                                    <span className="text-sm md:text-base font-semibold text-gray-900">
-                                      {menuPriceDisplay.prezzoTotaleLabel}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                            </>
-                          )}
-
-                          {booking.menu && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <ScrollText className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Menù:</span>
-                                <span className="text-sm md:text-base text-gray-700 leading-snug line-clamp-3">{booking.menu}</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {booking.special_requests && (
-                            <div className="flex items-start gap-4 md:gap-6">
-                              <StickyNote className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1 flex items-start gap-2">
-                                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold min-w-[80px] shrink-0">Note speciali:</span>
-                                <span className="text-sm md:text-base text-gray-700 italic leading-snug">{booking.special_requests}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      </div>
-                      </React.Fragment>
-                    )
-                  })
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-blue-100 flex items-center justify-center">
-                      <Moon className="w-8 h-8 text-blue-500" />
-                    </div>
-                    <p className="text-sm text-gray-500 italic">Nessuna prenotazione per questa fascia oraria</p>
-                  </div>
-                )}
-              </div>
-            </CollapsibleCard>
-          </div>
         </div>
 
 
