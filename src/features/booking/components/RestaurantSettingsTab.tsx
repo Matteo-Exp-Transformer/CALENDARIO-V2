@@ -615,7 +615,7 @@ export const RestaurantSettingsTab: React.FC = () => {
       <section className={sectionSurfaceClass} style={sectionSurfaceStyle}>
         <h3 className="text-lg font-semibold text-slate-800">Orari di apertura</h3>
         <p className="text-sm text-slate-600">
-          Modifiche visibili sul form pubblico dopo il salvataggio (stesso tenant).
+          Modifica gli orari visibili al pubblico nella pagina di Prenotazione.
         </p>
         <BusinessHoursEditor
           value={businessHours}
