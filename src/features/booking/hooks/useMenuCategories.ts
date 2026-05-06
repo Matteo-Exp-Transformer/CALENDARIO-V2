@@ -21,6 +21,8 @@ export interface MenuCategoryInput {
 
 interface MenuCategoryUpdateInput {
   id: string
+  key: string
+  previousKey: string
   label: string
 }
 
@@ -116,12 +118,15 @@ export const useUpdateMenuCategory = () => {
   const { tenantId } = useTenantContext()
 
   return useMutation({
-    mutationFn: async ({ id, label }: MenuCategoryUpdateInput) => {
-      const { data, error } = await (((supabase as any)
-        .from('menu_categories') as any) as any)
+    mutationFn: async ({ id, key, previousKey, label }: MenuCategoryUpdateInput) => {
+      const now = new Date().toISOString()
+      const supabaseAny = supabase as any
+
+      const { data, error } = await ((supabaseAny.from('menu_categories') as any) as any)
         .update({
+          key,
           label,
-          updated_at: new Date().toISOString()
+          updated_at: now
         })
         .eq('id', id)
         .eq('tenant_id', tenantId!)
@@ -130,6 +135,20 @@ export const useUpdateMenuCategory = () => {
 
       if (error) {
         throw new Error(getMenuCategoryMutationError(error))
+      }
+
+      if (previousKey !== key) {
+        const { error: menuItemsError } = await ((supabaseAny.from('menu_items') as any) as any)
+          .update({
+            category: key,
+            updated_at: now
+          })
+          .eq('tenant_id', tenantId!)
+          .eq('category', previousKey)
+
+        if (menuItemsError) {
+          throw new Error(handleSupabaseError(menuItemsError))
+        }
       }
 
       return data as MenuCategoryRecord

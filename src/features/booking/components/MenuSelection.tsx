@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { Check, X } from 'lucide-react'
 import { useMenuItems } from '../hooks/useMenuItems'
-import type { MenuCategory, SelectedMenuItem } from '@/types/menu'
+import { useMenuCategories } from '../hooks/useMenuCategories'
+import type { SelectedMenuItem } from '@/types/menu'
 import type { PresetMenuType } from '../constants/presetMenus'
 import { isCaraffeDrinkPremium, isCaraffeDrinkStandard } from '../utils/caraffePricing'
 
@@ -23,60 +24,18 @@ type NormalizedMenuItem = {
   id: string
   name: string
   price: number
-  category: MenuCategory
+  category: string
   description?: string
   sort_order: number
   priceSuffix?: string
 }
 
-const ORDERED_CATEGORIES: MenuCategory[] = [
-  'bevande',
-  'pizza',
-  'antipasti',
-  'fritti',
-  'primi',
-  'secondi',
-  'dolci'
-]
-
-const CATEGORY_LABELS: Record<MenuCategory, string> = {
-  bevande: 'Bevande',
-  pizza: 'Pizza',
-  antipasti: 'Antipasti',
-  fritti: 'Fritti',
-  primi: 'Primi Piatti',
-  secondi: 'Secondi Piatti',
-  dolci: 'Dolci'
-}
-
-const CATEGORY_LIMITS: Partial<Record<MenuCategory, number>> = {
+const CATEGORY_LIMITS: Partial<Record<string, number>> = {
   bevande: 1,
-  pizza: 1,
   antipasti: 3,
-  fritti: 3,
   primi: 1,
   secondi: 3
 }
-
-const FALLBACK_DESSERT_ITEMS: NormalizedMenuItem[] = [
-  {
-    id: 'fallback-dolci-cannoli',
-    name: 'Cannoli siciliani',
-    price: 3,
-    category: 'dolci',
-    description: undefined,
-    sort_order: 1000
-  },
-  {
-    id: 'fallback-dolci-tiramisu',
-    name: 'Tiramisù',
-    price: 20,
-    category: 'dolci',
-    description: 'Consigliato 1Kg x 10 Persone',
-    sort_order: 1010,
-    priceSuffix: ' al Kg'
-  }
-]
 
 const isTiramisuItem = (itemName: string): boolean =>
   itemName.toLowerCase().includes('tiramis')
@@ -107,16 +66,6 @@ const clampTiramisuQuantity = (qty: number): number => {
   return Math.min(TIRAMISU_MAX_KG, Math.max(TIRAMISU_MIN_KG, qty))
 }
 
-const PIZZA_ITEM_NAMES = ['Pizza Margherita', 'Pizza rossa', 'Focaccia Rosmarino']
-
-const isPizzaOrFocaccia = (itemName: string): boolean => {
-  const nameLower = itemName.toLowerCase()
-  return PIZZA_ITEM_NAMES.some(item => nameLower.includes(item.toLowerCase()))
-}
-
-const isKnownCategory = (category: string): category is MenuCategory =>
-  ORDERED_CATEGORIES.includes(category as MenuCategory)
-
 export const MenuSelection: React.FC<MenuSelectionProps> = ({
   selectedItems,
   numGuests,
@@ -126,21 +75,17 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   bookingType
 }) => {
   const { data: menuItems = [], isLoading, error } = useMenuItems()
+  const { data: dbCategories = [] } = useMenuCategories()
 
   const formatPrice = (item: NormalizedMenuItem) =>
     `€${item.price.toFixed(2)}${item.priceSuffix ?? ''}`
   const formatCurrency = (value: number) => `€${value.toFixed(2)}`
 
   const normalizedMenuItems = useMemo<NormalizedMenuItem[]>(() => {
-    const mapped = menuItems.map<NormalizedMenuItem>((item) => {
-      const category = isPizzaOrFocaccia(item.name)
-        ? 'pizza'
-        : isKnownCategory(item.category)
-          ? item.category
-          : 'antipasti'
+    return menuItems.map<NormalizedMenuItem>((item) => {
       const lowerName = item.name.toLowerCase()
       const priceSuffix =
-        lowerName.includes('tiramis') && category === 'dolci'
+        lowerName.includes('tiramis') && item.category === 'dolci'
           ? ' al Kg'
           : undefined
 
@@ -148,26 +93,35 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         id: item.id,
         name: item.name,
         price: item.price,
-        category,
+        category: item.category,
         description: item.description ?? undefined,
         sort_order: item.sort_order ?? 0,
         priceSuffix
       }
     })
+  }, [menuItems])
 
-    const existingNames = new Set(
-      mapped.map((item) => item.name.toLowerCase().trim())
-    )
-
-    FALLBACK_DESSERT_ITEMS.forEach((fallback) => {
-      const fallbackKey = fallback.name.toLowerCase().trim()
-      if (!existingNames.has(fallbackKey)) {
-        mapped.push({ ...fallback })
+  const orderedCategories = useMemo(() => {
+    const fromDb = dbCategories.map((category) => category.key)
+    const withItems = normalizedMenuItems
+      .map((item) => item.category)
+      .filter((category, idx, arr) => arr.indexOf(category) === idx)
+    const merged = [...fromDb]
+    withItems.forEach((category) => {
+      if (!merged.includes(category)) {
+        merged.push(category)
       }
     })
+    return merged
+  }, [dbCategories, normalizedMenuItems])
 
-    return mapped
-  }, [menuItems])
+  const categoryLabels = useMemo(() => {
+    const map = new Map<string, string>()
+    dbCategories.forEach((category) => {
+      map.set(category.key, category.label)
+    })
+    return map
+  }, [dbCategories])
 
   const tiramisuUnitPrice = useMemo(() => {
     const tiramisuItem = normalizedMenuItems.find((item) => isTiramisuItem(item.name))
@@ -176,10 +130,10 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
 
   // Raggruppa per categoria
   const itemsByCategory = useMemo(() => {
-    const grouped = ORDERED_CATEGORIES.reduce((acc, category) => {
+    const grouped = orderedCategories.reduce((acc, category) => {
       acc[category] = []
       return acc
-    }, {} as Record<MenuCategory, NormalizedMenuItem[]>)
+    }, {} as Record<string, NormalizedMenuItem[]>)
 
     normalizedMenuItems.forEach((item) => {
       if (!grouped[item.category]) {
@@ -188,7 +142,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       grouped[item.category].push(item)
     })
 
-    ORDERED_CATEGORIES.forEach((category) => {
+    orderedCategories.forEach((category) => {
       grouped[category]?.sort((a, b) => {
         if (a.sort_order === b.sort_order) {
           return a.name.localeCompare(b.name)
@@ -198,7 +152,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     })
 
     return grouped
-  }, [normalizedMenuItems])
+  }, [orderedCategories, normalizedMenuItems])
 
   const { totalPerPerson, tiramisuKg, tiramisuTotal } = useMemo(() => {
     const tiramisuSelection = selectedItems.find((item) => isTiramisuItem(item.name))
@@ -342,30 +296,14 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       }
     }
 
-    // === FRITTI RULES ===
-    if (item.category === 'fritti') {
-      const frittiCount = selectedItems.filter(s => s.category === 'fritti').length
-      if (frittiCount >= 3) {
-        alert('Puoi scegliere massimo 3 fritti')
-        return
-      }
-    }
-
-    // === PIZZA RULES ===
-    if (item.category === 'pizza') {
-      updatedItems = updatedItems.filter(selected => selected.category !== 'pizza')
-    }
-
-    // === PRIMI RULES ===
-    if (item.category === 'primi') {
-      updatedItems = updatedItems.filter(selected => selected.category !== 'primi')
-    }
-
-    // === SECONDI RULES ===
-    if (item.category === 'secondi') {
-      const secondiCount = selectedItems.filter(s => s.category === 'secondi').length
-      if (secondiCount >= 3) {
-        alert('Puoi scegliere massimo 3 secondi')
+    // Regole generiche per categoria guidate da limite configurato
+    const limit = CATEGORY_LIMITS[item.category]
+    if (typeof limit === 'number') {
+      const categoryCount = updatedItems.filter(s => s.category === item.category).length
+      if (limit === 1) {
+        updatedItems = updatedItems.filter(selected => selected.category !== item.category)
+      } else if (categoryCount >= limit) {
+        alert(`Puoi scegliere massimo ${limit} elementi in questa categoria`)
         return
       }
     }
@@ -611,8 +549,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       )}
 
       {/* Lista per Categoria */}
-      {ORDERED_CATEGORIES.map((category, index) => {
-        const label = CATEGORY_LABELS[category]
+      {orderedCategories.map((category, index) => {
+        const label = categoryLabels.get(category) ?? category
         const items = itemsByCategory[category] || []
         if (!items || items.length === 0) return null
 

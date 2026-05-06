@@ -13,18 +13,6 @@ import {
 } from '../hooks/useMenuCategories'
 import type { MenuItem, MenuItemInput } from '@/types/menu'
 
-const DEFAULT_CATEGORY_LABELS: Record<string, string> = {
-  bevande: 'Bevande',
-  pizza: 'Pizza',
-  antipasti: 'Antipasti',
-  fritti: 'Fritti',
-  primi: 'Primi Piatti',
-  secondi: 'Secondi Piatti',
-  dolci: 'Dolci'
-}
-
-const DEFAULT_CATEGORY_ORDER = Object.keys(DEFAULT_CATEGORY_LABELS)
-
 const slugifyCategory = (value: string): string =>
   value
     .normalize('NFD')
@@ -37,8 +25,8 @@ const slugifyCategory = (value: string): string =>
 type MenuViewMode = 'menu' | 'products' | 'categories'
 
 export const MenuPricesTab: React.FC = () => {
-  const { data: menuItems = [], isLoading } = useMenuItems()
-  const { data: dbCategories = [] } = useMenuCategories()
+  const { data: menuItems = [], isLoading, refetch: refetchMenuItems } = useMenuItems()
+  const { data: dbCategories = [], refetch: refetchCategories } = useMenuCategories()
   const createMutation = useCreateMenuItem()
   const createCategoryMutation = useCreateMenuCategory()
   const updateCategoryMutation = useUpdateMenuCategory()
@@ -51,23 +39,18 @@ export const MenuPricesTab: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false)
   const [isAddingCategory, setIsAddingCategory] = useState(false)
   const [newCategoryLabel, setNewCategoryLabel] = useState('')
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
   /** Stringa controllata per l’input prezzo: evita lo 0 “incollato” con `parseFloat(...) || 0` su campo vuoto. */
   const [priceInput, setPriceInput] = useState('')
-  const mergedCategoryEntries = useMemo(() => {
-    const map = new Map<string, string>()
-    DEFAULT_CATEGORY_ORDER.forEach((key) => {
-      map.set(key, DEFAULT_CATEGORY_LABELS[key])
-    })
-    dbCategories.forEach((category) => {
-      map.set(category.key, category.label)
-    })
-    return Array.from(map.entries())
-  }, [dbCategories])
+  const categoryEntries = useMemo(
+    () => dbCategories.map((category) => [category.key, category.label] as const),
+    [dbCategories]
+  )
 
 
   const categoryKeys = useMemo(
-    () => mergedCategoryEntries.map(([key]) => key),
-    [mergedCategoryEntries]
+    () => categoryEntries.map(([key]) => key),
+    [categoryEntries]
   )
   const dbCategoryByKey = useMemo(
     () => new Map(dbCategories.map((category) => [category.key, category])),
@@ -76,7 +59,7 @@ export const MenuPricesTab: React.FC = () => {
 
   const [formData, setFormData] = useState<MenuItemInput>({
     name: '',
-    category: categoryKeys[0] ?? 'bevande',
+    category: categoryKeys[0] ?? '',
     price: 0,
     description: '',
     sort_order: 0
@@ -113,7 +96,7 @@ export const MenuPricesTab: React.FC = () => {
     setPriceInput('')
     setFormData({
       name: '',
-      category: categoryKeys[0] ?? 'bevande',
+      category: categoryKeys[0] ?? '',
       price: 0,
       description: '',
       sort_order: 0
@@ -127,42 +110,73 @@ export const MenuPricesTab: React.FC = () => {
     setPriceInput('')
     setFormData({
       name: '',
-      category: categoryKeys[0] ?? 'bevande',
+      category: categoryKeys[0] ?? '',
       price: 0,
       description: '',
       sort_order: 0
     })
   }
 
-  const handleAddCategory = () => {
+  const handleSaveCategory = async () => {
     const rawLabel = newCategoryLabel.trim()
     if (!rawLabel) {
       toast.error('Inserisci il nome della categoria')
       return
     }
 
-    const key = slugifyCategory(rawLabel)
-    if (!key) {
-      toast.error('Nome categoria non valido')
-      return
-    }
-
-    if (categoryKeys.includes(key)) {
-      toast.error('Categoria già presente')
-      return
-    }
-
-    createCategoryMutation.mutate(
-      { key, label: rawLabel, sort_order: 999 },
-      {
-        onSuccess: () => {
-          setViewMode('menu')
-          setIsAddingCategory(false)
-          setNewCategoryLabel('')
-          setFormData((prev) => ({ ...prev, category: key }))
+    try {
+      if (editingCategoryId) {
+        const editingCategory = dbCategories.find((category) => category.id === editingCategoryId)
+        if (!editingCategory) {
+          toast.error('Categoria non trovata')
+          return
         }
+
+        const newKey = slugifyCategory(rawLabel)
+        if (!newKey) {
+          toast.error('Nome categoria non valido')
+          return
+        }
+
+        const duplicateCategory = dbCategories.find(
+          (category) => category.key === newKey && category.id !== editingCategoryId
+        )
+        if (duplicateCategory) {
+          toast.error('Categoria già presente')
+          return
+        }
+
+        await updateCategoryMutation.mutateAsync({
+          id: editingCategoryId,
+          key: newKey,
+          previousKey: editingCategory.key,
+          label: rawLabel
+        })
+      } else {
+        const key = slugifyCategory(rawLabel)
+        if (!key) {
+          toast.error('Nome categoria non valido')
+          return
+        }
+
+        if (categoryKeys.includes(key)) {
+          toast.error('Categoria già presente')
+          return
+        }
+
+        await createCategoryMutation.mutateAsync({ key, label: rawLabel, sort_order: 999 })
+        setFormData((prev) => ({ ...prev, category: key }))
       }
-    )
+
+      await refetchCategories()
+      await refetchMenuItems()
+      setViewMode('menu')
+      setIsAddingCategory(false)
+      setNewCategoryLabel('')
+      setEditingCategoryId(null)
+    } catch {
+      // errore già gestito dalla mutation con toast
+    }
   }
 
   const handleEditCategory = (categoryKey: string, currentLabel: string) => {
@@ -171,13 +185,10 @@ export const MenuPricesTab: React.FC = () => {
       toast.error('Categoria non modificabile')
       return
     }
-
-    const newLabel = prompt('Nuovo nome categoria', currentLabel)?.trim()
-    if (!newLabel || newLabel === currentLabel) {
-      return
-    }
-
-    updateCategoryMutation.mutate({ id: dbCategory.id, label: newLabel })
+    setViewMode('categories')
+    setIsAddingCategory(true)
+    setEditingCategoryId(dbCategory.id)
+    setNewCategoryLabel(currentLabel)
   }
 
   const handleDeleteCategory = (categoryKey: string, label: string) => {
@@ -200,9 +211,22 @@ export const MenuPricesTab: React.FC = () => {
     deleteCategoryMutation.mutate(dbCategory.id)
   }
 
-  const handleSave = () => {
+  const handleStartAddCategory = () => {
+    setViewMode('categories')
+    setIsAdding(false)
+    setEditingId(null)
+    setIsAddingCategory(true)
+    setEditingCategoryId(null)
+    setNewCategoryLabel('')
+  }
+
+  const handleSave = async () => {
     if (!formData.name.trim()) {
       toast.error('Il nome è obbligatorio')
+      return
+    }
+    if (!formData.category) {
+      toast.error('Seleziona una categoria')
       return
     }
 
@@ -223,13 +247,19 @@ export const MenuPricesTab: React.FC = () => {
 
     const payload = { ...formData, price: parsedPrice }
 
-    if (editingId) {
-      updateMutation.mutate({ id: editingId, ...payload })
-    } else {
-      createMutation.mutate(payload)
-    }
+    try {
+      if (editingId) {
+        await updateMutation.mutateAsync({ id: editingId, ...payload })
+      } else {
+        await createMutation.mutateAsync(payload)
+      }
 
-    handleCancel()
+      await refetchMenuItems()
+      await refetchCategories()
+      handleCancel()
+    } catch {
+      // errore già gestito dalla mutation con toast
+    }
   }
 
   const handleDelete = (id: string, name: string) => {
@@ -274,12 +304,7 @@ export const MenuPricesTab: React.FC = () => {
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => {
-              setViewMode('categories')
-              setIsAdding(false)
-              setEditingId(null)
-              setIsAddingCategory(true)
-            }}
+            onClick={handleStartAddCategory}
             className="h-8 shrink-0 gap-1.5 px-3 py-0 text-xs"
             style={{ marginTop: '8px', backgroundColor: '#60a5fa', borderColor: '#3b82f6', color: '#000000' }}
           >
@@ -307,6 +332,7 @@ export const MenuPricesTab: React.FC = () => {
                 setViewMode('menu')
                 setIsAddingCategory(false)
                 setNewCategoryLabel('')
+                setEditingCategoryId(null)
               }}
               className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-warm-wood/40 bg-white/90 text-warm-wood shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
               aria-label="Chiudi inserimento categoria"
@@ -325,8 +351,8 @@ export const MenuPricesTab: React.FC = () => {
             <Button
               variant="success"
               size="md"
-              onClick={handleAddCategory}
-              disabled={createCategoryMutation.isPending}
+              onClick={handleSaveCategory}
+              disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}
               className="absolute top-1/2 -translate-y-1/2 shrink-0"
               style={{
                 position: 'absolute',
@@ -338,7 +364,7 @@ export const MenuPricesTab: React.FC = () => {
                 color: '#ffffff'
               }}
             >
-              Salva
+              {editingCategoryId ? 'Aggiorna' : 'Salva'}
             </Button>
           </div>
         </>
@@ -404,7 +430,7 @@ export const MenuPricesTab: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
-                    {mergedCategoryEntries.map(([value, label]) => (
+                    {categoryEntries.map(([value, label]) => (
                       <SelectItem key={value} value={value}>
                         {label}
                       </SelectItem>
@@ -465,7 +491,7 @@ export const MenuPricesTab: React.FC = () => {
 
       {viewMode === 'menu' && (
       <div className="menu-prices-category-list-wrap flex flex-col items-center gap-[28px]">
-      {mergedCategoryEntries.map(([category, label]) => {
+      {categoryEntries.map(([category, label]) => {
         const items = itemsByCategory[category] || []
         if (items.length === 0 && !isAdding && !editingId) return null
 
@@ -544,7 +570,7 @@ export const MenuPricesTab: React.FC = () => {
                           </span>
                         </div>
                         <p className="text-xs text-slate-500 mt-1">
-                          {mergedCategoryEntries.find(([key]) => key === item.category)?.[1] ?? item.category}
+                          {categoryEntries.find(([key]) => key === item.category)?.[1] ?? item.category}
                         </p>
                         {item.description && (
                           <p className="text-sm text-gray-600 mt-1">{item.description}</p>
@@ -584,7 +610,7 @@ export const MenuPricesTab: React.FC = () => {
             </div>
             <div className="flex flex-col items-center p-6 text-center">
               <div className="flex w-full max-w-full flex-col items-center gap-[12px]">
-                {mergedCategoryEntries.map(([key, label]) => (
+                {categoryEntries.map(([key, label]) => (
                   <div
                     key={key}
                     className="menu-prices-item-row"
