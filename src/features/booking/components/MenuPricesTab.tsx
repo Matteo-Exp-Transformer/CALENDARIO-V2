@@ -313,7 +313,7 @@ export const MenuPricesTab: React.FC = () => {
             >
               <X className="h-4 w-4" />
             </button>
-            <div className="mx-auto w-2/3">
+            <div className="mx-auto w-[60%] sm:w-2/3">
               <Input
                 value={newCategoryLabel}
                 onChange={(e) => setNewCategoryLabel(e.target.value)}
@@ -327,12 +327,11 @@ export const MenuPricesTab: React.FC = () => {
               size="md"
               onClick={handleAddCategory}
               disabled={createCategoryMutation.isPending}
-              className="shrink-0"
+              className="absolute top-1/2 -translate-y-1/2 shrink-0"
               style={{
                 position: 'absolute',
-                right: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
+                left: 'auto',
+                right: 'clamp(8px, 2vw, 16px)',
                 height: '50px',
                 minWidth: '74px',
                 backgroundColor: '#16a34a',
