@@ -130,10 +130,18 @@ export const AdminDashboard: React.FC = () => {
                 style={ADMIN_WARM_GRADIENT_SURFACE}
               />
             </div>
-            <div className="w-full px-20 md:px-28 max-[615px]:pl-2 max-[615px]:pr-16 max-[615px]:text-left text-center pointer-events-none">
+            <div className="w-full px-4 md:px-28 text-center pointer-events-none">
               <h1
-                className="truncate font-semibold italic font-serif tracking-wide text-slate-800 leading-tight"
-                style={{ fontSize: 'clamp(1.297rem, 2.767vw, 1.729rem)' }}
+                className="mx-auto max-w-[calc(100%-9rem)] md:max-w-[calc(100%-11rem)] overflow-hidden break-words font-semibold italic font-serif tracking-wide text-slate-800 leading-tight"
+                style={{
+                  fontSize: 'clamp(1.297rem, 2.767vw, 1.729rem)',
+                  position: 'relative',
+                  left: '-64px',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflowWrap: 'anywhere',
+                }}
               >
                 {restaurantName || 'Booking SaaS'}
               </h1>
