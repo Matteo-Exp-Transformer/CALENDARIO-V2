@@ -546,15 +546,15 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                 <section aria-labelledby="digest-with-menu-heading">
                   <div
                     id="digest-with-menu-heading"
-                    className="mb-3 rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2 text-center shadow-sm"
+                    className="mb-3 rounded-lg border border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white px-3 py-2 text-center shadow-sm"
                   >
-                    <h5 className="text-sm font-semibold tracking-wide text-amber-950">
+                    <h5 className="!text-[19px] font-semibold tracking-wide text-amber-950">
                       Prenotazioni con menù
                     </h5>
                   </div>
                   {digestWithMenu.length > 0 ? (
                     <div className="rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner">
-                      <div className="hidden min-[641px]:grid grid-cols-3 gap-2">
+                      <div className="hidden min-[819px]:grid grid-cols-3 gap-2">
                         <h6
                           className="flex items-center justify-center px-3 text-center shadow-sm"
                           style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
@@ -574,7 +574,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           {getBookingTimeSlotLabel('evening', bookingSlots)}
                         </h6>
                       </div>
-                      <div className="mt-2 hidden min-[641px]:block">
+                      <div className="mt-2 hidden min-[819px]:block">
                         <div className="grid grid-cols-3 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
                           <div className="flex min-w-0 w-full flex-col gap-2">
                             {digestWithMenuBySlot.morning.map((booking) => (
@@ -617,7 +617,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           </div>
                         </div>
                       </div>
-                      <div className="min-[641px]:hidden space-y-3">
+                      <div className="min-[819px]:hidden space-y-3">
                         <div className="space-y-2">
                           <h6
                             className="flex items-center justify-center px-3 text-center shadow-sm"
@@ -689,15 +689,15 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                 <section aria-labelledby="digest-table-only-heading">
                   <div
                     id="digest-table-only-heading"
-                    className="mb-3 rounded-lg border border-slate-300 bg-slate-100/95 px-3 py-2 text-center shadow-sm"
+                    className="mb-3 rounded-lg border border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white px-3 py-2 text-center shadow-sm"
                   >
-                    <h5 className="text-sm font-semibold tracking-wide text-slate-800">
+                    <h5 className="!text-[19px] font-semibold tracking-wide text-slate-800">
                       Solo tavolo
                     </h5>
                   </div>
                   {digestTableOnly.length > 0 ? (
                     <div className="rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner">
-                      <div className="hidden min-[641px]:grid grid-cols-3 gap-2">
+                      <div className="hidden min-[819px]:grid grid-cols-3 gap-2">
                         <h6
                           className="flex items-center justify-center px-3 text-center shadow-sm"
                           style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
@@ -717,7 +717,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           {getBookingTimeSlotLabel('evening', bookingSlots)}
                         </h6>
                       </div>
-                      <div className="mt-2 hidden min-[641px]:block">
+                      <div className="mt-2 hidden min-[819px]:block">
                         <div className="grid grid-cols-3 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
                           <div className="flex min-w-0 w-full flex-col gap-2">
                             {digestTableOnlyBySlot.morning.map((booking) => (
@@ -757,7 +757,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           </div>
                         </div>
                       </div>
-                      <div className="min-[641px]:hidden space-y-3">
+                      <div className="min-[819px]:hidden space-y-3">
                         <div className="space-y-2">
                           <h6
                             className="flex items-center justify-center px-3 text-center shadow-sm"
