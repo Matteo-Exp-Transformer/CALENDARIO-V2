@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { toast } from 'react-toastify'
 import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { Button, Input } from '@/components/ui'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react'
 import { useMenuItems, useCreateMenuItem, useUpdateMenuItem, useDeleteMenuItem } from '../hooks/useMenuItems'
 import type { MenuItem, MenuItemInput, MenuCategory } from '@/types/menu'
@@ -158,94 +159,119 @@ export const MenuPricesTab: React.FC = () => {
 
       {/* Form Aggiunta/Modifica */}
       {(isAdding || editingId) && (
-        <div className="bg-gradient-to-br from-warm-cream/50 to-warm-beige/30 rounded-2xl p-6 border-2 border-warm-beige shadow-lg">
-          <h3 className="text-xl font-bold text-warm-wood mb-4">
-            {editingId ? 'Modifica Prodotto' : 'Nuovo Prodotto'}
-          </h3>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nome Prodotto *
-              </label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="es: Pizza Margherita"
-                className="w-full"
-              />
+        <div
+          className="relative w-full rounded-2xl border-2 p-6 shadow-lg"
+          style={ADMIN_WARM_GRADIENT_SURFACE}
+        >
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-warm-wood/40 bg-white/90 text-warm-wood shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+            aria-label="Chiudi inserimento prodotto"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <div className="mx-auto w-2/3 text-center">
+            <h3 className="text-xl font-bold text-warm-wood mb-4">
+              {editingId ? 'Modifica Prodotto' : 'Nuovo Prodotto'}
+            </h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="flex flex-col items-center">
+                <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                  Nome Prodotto *
+                </label>
+                <Input
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="es: Pizza Margherita"
+                  className="mx-auto w-2/3 rounded-2xl pl-6"
+                  style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                />
+              </div>
+              <div className="flex flex-col items-center">
+                <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                  Categoria *
+                </label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      category: value as MenuCategory
+                    })
+                  }
+                >
+                  <SelectTrigger
+                    className="mx-auto h-14 w-2/3 rounded-2xl border text-gray-600 shadow-sm"
+                    style={{
+                      borderColor: 'rgba(0,0,0,0.2)',
+                      height: '56px',
+                      minHeight: '56px',
+                      fontSize: '16px',
+                      backgroundColor: '#ffffff',
+                      borderRadius: '18px',
+                      paddingLeft: '24px',
+                      paddingRight: '24px'
+                    }}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl">
+                    {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col items-center">
+                <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                  Prezzo (€) *
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={priceInput}
+                  onChange={(e) => setPriceInput(e.target.value)}
+                  placeholder="es: 4.50"
+                  className="mx-auto w-2/3 rounded-2xl pl-6"
+                  style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                />
+              </div>
+              <div className="flex flex-col items-center">
+                <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                  Descrizione (opzionale)
+                </label>
+                <Input
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="es: 2 tranci a persona"
+                  className="mx-auto w-2/3 rounded-2xl pl-6"
+                  style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Categoria *
-              </label>
-              <select
-                value={formData.category}
-                onChange={(e) => {
-                  const category = e.target.value as MenuCategory
-                  setFormData({
-                    ...formData,
-                    category
-                  })
-                }}
-                className="flex rounded-full border bg-white/50 backdrop-blur-[6px] shadow-sm transition-all text-gray-600 w-full"
-                style={{ 
-                  borderColor: 'rgba(0,0,0,0.2)', 
-                  height: '56px',
-                  padding: '16px',
-                  fontSize: '16px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                  backdropFilter: 'blur(6px)'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#8B6914'}
-                onBlur={(e) => e.target.style.borderColor = 'rgba(0,0,0,0.2)'}
+            <div className="mt-10 flex justify-center gap-3" style={{ marginTop: '40px' }}>
+              <button
+                onClick={handleSave}
+                disabled={createMutation.isPending || updateMutation.isPending}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ background: '#16a34a', color: '#000000' }}
               >
-                {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
+                <Save className="h-4 w-4" />
+                {editingId ? 'Salva Modifiche' : 'Aggiungi'}
+              </button>
+              <button
+                onClick={handleCancel}
+                className="flex items-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
+                style={{ borderColor: '#dc2626', color: '#dc2626' }}
+              >
+                <X className="h-4 w-4" />
+                Annulla
+              </button>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Prezzo (€) *
-              </label>
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                value={priceInput}
-                onChange={(e) => setPriceInput(e.target.value)}
-                placeholder="es: 4.50"
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Descrizione (opzionale)
-              </label>
-              <Input
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="es: 2 tranci a persona"
-                className="w-full"
-              />
-            </div>
-          </div>
-          <div className="flex gap-3 mt-6">
-            <button
-              onClick={handleSave}
-              disabled={createMutation.isPending || updateMutation.isPending}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-warm-wood to-warm-wood-dark text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-warm-wood/30 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              <Save className="h-4 w-4" />
-              {editingId ? 'Salva Modifiche' : 'Aggiungi'}
-            </button>
-            <button
-              onClick={handleCancel}
-              className="flex items-center gap-2 px-6 py-3 border-2 border-warm-wood text-warm-wood font-semibold rounded-xl transition-all duration-300 hover:bg-warm-wood hover:text-white focus:outline-none focus:ring-4 focus:ring-warm-wood/30"
-            >
-              <X className="h-4 w-4" />
-              Annulla
-            </button>
           </div>
         </div>
       )}
