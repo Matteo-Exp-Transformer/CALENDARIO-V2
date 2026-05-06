@@ -94,7 +94,7 @@ export const AdminDashboard: React.FC = () => {
   const { user, logout } = useAdminAuth()
   const restaurantName = useRestaurantName()
   const { tenantSlug } = useTenantContext()
-  const appIconSrc = `${import.meta.env.BASE_URL}icons/icon-192-v2-transparent.png`
+  const appIconSrc = `${import.meta.env.BASE_URL}icons/chatgpt-icon-no-bg.png`
 
   const handleViewInCalendar = (date: string) => {
     setCalendarTargetDate(date)
@@ -125,8 +125,8 @@ export const AdminDashboard: React.FC = () => {
               <img
                 src={appIconSrc}
                 alt="Icona app"
-                className="object-cover"
-                style={{ width: 66, height: 66 }}
+                className="rounded-lg object-cover"
+                style={{ ...ADMIN_WARM_GRADIENT_SURFACE, width: 103, height: 103 }}
               />
             </div>
             <div className="text-center pointer-events-none">
