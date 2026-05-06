@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase, handleSupabaseError } from '@/lib/supabase'
+import { supabase, handleSupabaseError, isInvalidStoredRefreshTokenError } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { useTenantContext } from '@/contexts/TenantContext'
 
@@ -61,7 +61,11 @@ export const useAdminAuth = (): UseAdminAuthReturn => {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       
       if (sessionError) {
-        console.error('Session check error:', sessionError)
+        if (isInvalidStoredRefreshTokenError(sessionError)) {
+          await supabase.auth.signOut({ scope: 'local' })
+        } else {
+          console.error('Session check error:', sessionError)
+        }
         setUser(null)
         setIsLoading(false)
         return

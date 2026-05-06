@@ -691,7 +691,7 @@ export const MenuPricesTab: React.FC = () => {
             </button>
             <div className="mx-auto max-w-3xl pb-12 pr-10">
               <h3 className="text-center font-serif text-lg font-bold text-warm-wood md:text-xl">
-                Menù preselezionati (pagina prenota)
+                Menù preselezionati
               </h3>
               <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
                 Compila un nome, seleziona gli ingredienti come in prenotazione e salva: compariranno nel menu a
