@@ -41,6 +41,7 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
       hourAriaLabel = 'Ora (formato 24 ore)',
       minuteAriaLabel = 'Minuti',
       className,
+      style,
       ...divProps
     },
     ref
@@ -59,16 +60,22 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
     }
 
     const selectBase =
-      'min-w-0 flex-1 cursor-pointer rounded-md border-0 bg-transparent py-1 text-sm text-slate-900 outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50'
+      'min-w-0 flex-1 cursor-pointer rounded-md border-0 bg-white py-2 text-sm font-medium text-slate-900 outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-75'
 
     return (
       <div
         ref={ref}
+        style={{
+          backgroundColor: '#ffffff',
+          colorScheme: 'light',
+          ...(style as React.CSSProperties | undefined),
+        }}
         className={cn(
-          'flex w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900',
+          '[color-scheme:light] isolate flex min-h-[3.5rem] w-full items-center gap-2 rounded-[1.25rem] border-2 border-slate-200 !bg-white px-4 py-3 text-sm text-slate-900 shadow-sm',
+          '[&_select]:!bg-white [&_select]:text-slate-900',
           'focus-within:border-primary-400 focus-within:outline-none focus-within:ring-2 focus-within:ring-primary-500',
           hasError && '!border-red-500 focus-within:!ring-red-500',
-          disabled && 'cursor-not-allowed bg-slate-50 opacity-80',
+          disabled && '!cursor-not-allowed',
           className
         )}
         {...divProps}

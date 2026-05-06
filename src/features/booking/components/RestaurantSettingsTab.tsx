@@ -8,6 +8,8 @@ import { TimePicker24h } from '@/components/ui/TimePicker24h'
 import { useTenantContext } from '@/contexts/TenantContext'
 import type { BusinessHours } from '@/lib/businessHours'
 import { getDefaultBusinessHours } from '@/lib/businessHours'
+import { stripDirectionalFormattingChars } from '@/lib/utils'
+import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { BusinessHoursEditor } from './BusinessHoursEditor'
 import { toast } from 'react-toastify'
 import {
@@ -29,7 +31,7 @@ type SlotFieldKey =
   | 'eveningStart'
   | 'eveningEnd'
 
-const RESTAURANT_NAME_MAX_LENGTH = 26
+const RESTAURANT_NAME_MAX_LENGTH = 40
 
 function validateBookingTimeSlotsDetailed(config: BookingTimeSlots): {
   message: string | null
@@ -170,13 +172,21 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   useEffect(() => {
     if (!allSuccess || hydratedRef.current) return
-    setRestaurantName(nameQuery.data)
+    setRestaurantName(
+      stripDirectionalFormattingChars(String(nameQuery.data ?? '')).slice(0, RESTAURANT_NAME_MAX_LENGTH)
+    )
     setDailyGuestLimit(dailyGuestLimitQuery.data)
     setBookingTimeSlots(bookingTimeSlotsQuery.data)
     setBusinessHours(hoursQuery.data)
-    setContactEmail(contactEmailQuery.data || 'Alritrovobologna@gmail.com')
-    setContactPhone(contactPhoneQuery.data || '3505362538')
-    setContactAddress(contactAddressQuery.data || 'Via Centotrecento 1/1B - Bologna, 40126')
+    setContactEmail(
+      stripDirectionalFormattingChars(contactEmailQuery.data || 'Alritrovobologna@gmail.com')
+    )
+    setContactPhone(stripDirectionalFormattingChars(contactPhoneQuery.data || '3505362538'))
+    setContactAddress(
+      stripDirectionalFormattingChars(
+        contactAddressQuery.data || 'Via Centotrecento 1/1B - Bologna, 40126'
+      )
+    )
     hydratedRef.current = true
   }, [
     allSuccess,
@@ -210,7 +220,9 @@ export const RestaurantSettingsTab: React.FC = () => {
   const markDirty = () => setDirty(true)
   const handleRestaurantNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     markDirty()
-    setRestaurantName(event.target.value.slice(0, RESTAURANT_NAME_MAX_LENGTH))
+    setRestaurantName(
+      stripDirectionalFormattingChars(event.target.value).slice(0, RESTAURANT_NAME_MAX_LENGTH)
+    )
   }
 
   const handleSave = async () => {
@@ -235,14 +247,24 @@ export const RestaurantSettingsTab: React.FC = () => {
     }
 
     try {
+      const safeName = stripDirectionalFormattingChars(restaurantName).slice(0, RESTAURANT_NAME_MAX_LENGTH)
+      const safeEmail = stripDirectionalFormattingChars(contactEmail)
+      const safePhone = stripDirectionalFormattingChars(contactPhone)
+      const safeAddress = stripDirectionalFormattingChars(contactAddress)
+
+      setRestaurantName(safeName)
+      setContactEmail(safeEmail)
+      setContactPhone(safePhone)
+      setContactAddress(safeAddress)
+
       await upsert.mutateAsync([
-        { key: 'restaurant_name', value: restaurantName },
+        { key: 'restaurant_name', value: safeName },
         { key: 'daily_guest_limit', value: dailyGuestLimit },
         { key: 'booking_time_slots', value: bookingTimeSlots },
         { key: 'business_hours', value: businessHours },
-        { key: 'contact_email', value: contactEmail },
-        { key: 'contact_phone', value: contactPhone },
-        { key: 'contact_address', value: contactAddress },
+        { key: 'contact_email', value: safeEmail },
+        { key: 'contact_phone', value: safePhone },
+        { key: 'contact_address', value: safeAddress },
       ])
       // Keep local form state as source of truth after save.
       // Resetting hydration before refetch can reapply stale cached values.
@@ -287,9 +309,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   }
 
   const slotFieldClass = (field: SlotFieldKey) =>
-    slotFieldsAttention[field]
-      ? 'rounded-lg'
-      : ''
+    slotFieldsAttention[field] ? 'rounded-[1.25rem]' : ''
   const slotFieldStyle = (field: SlotFieldKey): React.CSSProperties | undefined =>
     slotFieldsAttention[field]
       ? {
@@ -298,8 +318,16 @@ export const RestaurantSettingsTab: React.FC = () => {
         }
       : undefined
 
+  const sectionSurfaceClass =
+    'w-full max-w-2xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
+  const sectionSurfaceStyle: React.CSSProperties = ADMIN_WARM_GRADIENT_SURFACE
+  /** Circa 1/3 della larghezza massima della card sezione (~max-w-2xl / 3) */
+  const anagraficaFieldWrapClass = 'mx-auto w-full min-w-0 max-w-[14rem] space-y-2'
+  const anagraficaInputClassName =
+    'block w-full min-h-[5.5rem] rounded-[1.25rem] border-2 border-slate-200 bg-white px-4 py-4 text-left text-base text-slate-900 shadow-sm outline-none placeholder:text-slate-400 transition-colors duration-150 focus:border-primary-400 focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-white disabled:text-slate-500 disabled:opacity-80'
+
   return (
-    <div className="space-y-8">
+    <div className="flex w-full flex-col items-center gap-8">
       <style>{`
         @keyframes slotErrorBlink {
           0% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.95), 0 0 18px rgba(239, 68, 68, 0.55); }
@@ -307,23 +335,28 @@ export const RestaurantSettingsTab: React.FC = () => {
           100% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.95), 0 0 18px rgba(239, 68, 68, 0.55); }
         }
       `}</style>
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-lg">
+      <div
+        className={`${sectionSurfaceClass} flex flex-col items-center gap-3 sm:flex-row sm:justify-center`}
+        style={sectionSurfaceStyle}
+      >
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 shadow-lg">
           <Store className="h-7 w-7 text-white" />
         </div>
-        <div>
+        <div className="min-w-0 text-center">
           <h2 className="text-2xl font-bold text-slate-900">Impostazioni locale</h2>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-600">
             Nome, prenotazioni e orari salvati in Supabase per questo tenant.
           </p>
         </div>
       </div>
 
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className={sectionSurfaceClass} style={sectionSurfaceStyle}>
         <h3 className="text-lg font-semibold text-slate-800">Anagrafica e prenotazioni</h3>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="restaurant_name">Nome ristorante (max 26 caratteri)</Label>
+        <div className="flex w-full flex-col items-center gap-4">
+          <div className={anagraficaFieldWrapClass}>
+            <Label htmlFor="restaurant_name" className="block w-full text-center">
+              Nome ristorante
+            </Label>
             <input
               id="restaurant_name"
               name="restaurant_name"
@@ -335,12 +368,14 @@ export const RestaurantSettingsTab: React.FC = () => {
               disabled={upsert.isPending}
               onChange={handleRestaurantNameChange}
               placeholder="Nome del locale"
-              className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-400 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 transition-colors duration-150"
-              style={{ direction: 'ltr', unicodeBidi: 'plaintext' }}
+              className={anagraficaInputClassName}
+              style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="daily_guest_limit">Limite coperti giornaliero</Label>
+          <div className={anagraficaFieldWrapClass}>
+            <Label htmlFor="daily_guest_limit" className="block w-full text-center">
+              Limite coperti giornaliero
+            </Label>
             <Input
               id="daily_guest_limit"
               type="number"
@@ -348,6 +383,7 @@ export const RestaurantSettingsTab: React.FC = () => {
               max={1000}
               value={dailyGuestLimit}
               disabled={upsert.isPending}
+              className={`${anagraficaInputClassName} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
               onChange={(e) => {
                 markDirty()
                 const raw = e.target.value
@@ -360,42 +396,51 @@ export const RestaurantSettingsTab: React.FC = () => {
               }}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="contact_email">Email contatto (pagina prenota)</Label>
+          <div className={anagraficaFieldWrapClass}>
+            <Label htmlFor="contact_email" className="block w-full text-center">
+              Email contatto (pagina prenota)
+            </Label>
             <Input
               id="contact_email"
               type="email"
               value={contactEmail}
               disabled={upsert.isPending}
+              className={anagraficaInputClassName}
               onChange={(e) => {
                 markDirty()
-                setContactEmail(e.target.value)
+                setContactEmail(stripDirectionalFormattingChars(e.target.value))
               }}
               placeholder="ristorante@example.com"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="contact_phone">Telefono contatto (pagina prenota)</Label>
+          <div className={anagraficaFieldWrapClass}>
+            <Label htmlFor="contact_phone" className="block w-full text-center">
+              Telefono contatto (pagina prenota)
+            </Label>
             <Input
               id="contact_phone"
               value={contactPhone}
               disabled={upsert.isPending}
+              className={anagraficaInputClassName}
               onChange={(e) => {
                 markDirty()
-                setContactPhone(e.target.value)
+                setContactPhone(stripDirectionalFormattingChars(e.target.value))
               }}
               placeholder="+39 ..."
             />
           </div>
-          <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="contact_address">Indirizzo contatto (pagina prenota)</Label>
+          <div className={anagraficaFieldWrapClass}>
+            <Label htmlFor="contact_address" className="block w-full text-center">
+              Indirizzo contatto (pagina prenota)
+            </Label>
             <Input
               id="contact_address"
               value={contactAddress}
               disabled={upsert.isPending}
+              className={anagraficaInputClassName}
               onChange={(e) => {
                 markDirty()
-                setContactAddress(e.target.value)
+                setContactAddress(stripDirectionalFormattingChars(e.target.value))
               }}
               placeholder="Via ..., Citta, CAP"
             />
@@ -403,32 +448,34 @@ export const RestaurantSettingsTab: React.FC = () => {
         </div>
       </section>
 
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className={sectionSurfaceClass} style={sectionSurfaceStyle}>
         <h3 className="text-lg font-semibold text-slate-800">Imposta Fasce Orarie</h3>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-600">
           Personalizza le fasce usate nel calendario (Mattina/Pomeriggio/Sera). Le fasce non possono sovrapporsi.
         </p>
 
-        <div className="grid gap-4">
+        <div className="flex w-full flex-col items-center gap-4">
           {slotValidationError && (
-            <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-800">
+            <div className="mx-auto w-full max-w-[14rem] rounded-[1.25rem] border-2 border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-800 shadow-sm">
               {slotValidationError}
             </div>
           )}
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-4">
+          <div className="w-full rounded-xl border border-emerald-300/70 bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]">
             <p className="mb-3 text-sm font-semibold text-emerald-900">
               {getBookingTimeSlotLabel('morning', bookingTimeSlots)}
             </p>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
               <div
-                className={`space-y-1.5 ${slotFieldClass('morningStart')}`}
+                className={`w-full max-w-[11.5rem] space-y-1.5 text-center ${slotFieldClass('morningStart')}`}
                 style={slotFieldStyle('morningStart')}
                 ref={(el) => {
                   slotFieldRefs.current.morningStart = el
                 }}
                 onClick={() => clearSlotAttention('morningStart')}
               >
-                <Label htmlFor="slot_morning_start">Inizio mattina</Label>
+                <Label htmlFor="slot_morning_start" className="block w-full text-center">
+                  Inizio mattina
+                </Label>
                 <TimePicker24h
                   id="slot_morning_start"
                   value={bookingTimeSlots.morningStart}
@@ -440,14 +487,16 @@ export const RestaurantSettingsTab: React.FC = () => {
                 />
               </div>
               <div
-                className={`space-y-1.5 ${slotFieldClass('morningEnd')}`}
+                className={`w-full max-w-[11.5rem] space-y-1.5 text-center ${slotFieldClass('morningEnd')}`}
                 style={slotFieldStyle('morningEnd')}
                 ref={(el) => {
                   slotFieldRefs.current.morningEnd = el
                 }}
                 onClick={() => clearSlotAttention('morningEnd')}
               >
-                <Label htmlFor="slot_morning_end">Fine mattina</Label>
+                <Label htmlFor="slot_morning_end" className="block w-full text-center">
+                  Fine mattina
+                </Label>
                 <TimePicker24h
                   id="slot_morning_end"
                   value={bookingTimeSlots.morningEnd}
@@ -461,20 +510,22 @@ export const RestaurantSettingsTab: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-lg border border-orange-200 bg-orange-50/60 p-4">
+          <div className="w-full rounded-xl border border-orange-300/70 bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]">
             <p className="mb-3 text-sm font-semibold text-orange-900">
               {getBookingTimeSlotLabel('afternoon', bookingTimeSlots)}
             </p>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
               <div
-                className={`space-y-1.5 ${slotFieldClass('afternoonStart')}`}
+                className={`w-full max-w-[11.5rem] space-y-1.5 text-center ${slotFieldClass('afternoonStart')}`}
                 style={slotFieldStyle('afternoonStart')}
                 ref={(el) => {
                   slotFieldRefs.current.afternoonStart = el
                 }}
                 onClick={() => clearSlotAttention('afternoonStart')}
               >
-                <Label htmlFor="slot_afternoon_start">Inizio pomeriggio</Label>
+                <Label htmlFor="slot_afternoon_start" className="block w-full text-center">
+                  Inizio pomeriggio
+                </Label>
                 <TimePicker24h
                   id="slot_afternoon_start"
                   value={bookingTimeSlots.afternoonStart}
@@ -486,14 +537,16 @@ export const RestaurantSettingsTab: React.FC = () => {
                 />
               </div>
               <div
-                className={`space-y-1.5 ${slotFieldClass('afternoonEnd')}`}
+                className={`w-full max-w-[11.5rem] space-y-1.5 text-center ${slotFieldClass('afternoonEnd')}`}
                 style={slotFieldStyle('afternoonEnd')}
                 ref={(el) => {
                   slotFieldRefs.current.afternoonEnd = el
                 }}
                 onClick={() => clearSlotAttention('afternoonEnd')}
               >
-                <Label htmlFor="slot_afternoon_end">Fine pomeriggio</Label>
+                <Label htmlFor="slot_afternoon_end" className="block w-full text-center">
+                  Fine pomeriggio
+                </Label>
                 <TimePicker24h
                   id="slot_afternoon_end"
                   value={bookingTimeSlots.afternoonEnd}
@@ -507,20 +560,22 @@ export const RestaurantSettingsTab: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-4">
+          <div className="w-full rounded-xl border border-sky-300/70 bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]">
             <p className="mb-3 text-sm font-semibold text-sky-900">
               {getBookingTimeSlotLabel('evening', bookingTimeSlots)}
             </p>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
               <div
-                className={`space-y-1.5 ${slotFieldClass('eveningStart')}`}
+                className={`w-full max-w-[11.5rem] space-y-1.5 text-center ${slotFieldClass('eveningStart')}`}
                 style={slotFieldStyle('eveningStart')}
                 ref={(el) => {
                   slotFieldRefs.current.eveningStart = el
                 }}
                 onClick={() => clearSlotAttention('eveningStart')}
               >
-                <Label htmlFor="slot_evening_start">Inizio sera</Label>
+                <Label htmlFor="slot_evening_start" className="block w-full text-center">
+                  Inizio sera
+                </Label>
                 <TimePicker24h
                   id="slot_evening_start"
                   value={bookingTimeSlots.eveningStart}
@@ -532,14 +587,16 @@ export const RestaurantSettingsTab: React.FC = () => {
                 />
               </div>
               <div
-                className={`space-y-1.5 ${slotFieldClass('eveningEnd')}`}
+                className={`w-full max-w-[11.5rem] space-y-1.5 text-center ${slotFieldClass('eveningEnd')}`}
                 style={slotFieldStyle('eveningEnd')}
                 ref={(el) => {
                   slotFieldRefs.current.eveningEnd = el
                 }}
                 onClick={() => clearSlotAttention('eveningEnd')}
               >
-                <Label htmlFor="slot_evening_end">Fine sera</Label>
+                <Label htmlFor="slot_evening_end" className="block w-full text-center">
+                  Fine sera
+                </Label>
                 <TimePicker24h
                   id="slot_evening_end"
                   value={bookingTimeSlots.eveningEnd}
@@ -555,9 +612,9 @@ export const RestaurantSettingsTab: React.FC = () => {
         </div>
       </section>
 
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className={sectionSurfaceClass} style={sectionSurfaceStyle}>
         <h3 className="text-lg font-semibold text-slate-800">Orari di apertura</h3>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-600">
           Modifiche visibili sul form pubblico dopo il salvataggio (stesso tenant).
         </p>
         <BusinessHoursEditor
@@ -570,7 +627,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         />
       </section>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex w-full max-w-2xl flex-wrap items-center justify-center gap-3">
         <Button
           type="button"
           onClick={handleSave}

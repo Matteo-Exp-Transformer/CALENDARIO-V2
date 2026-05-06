@@ -78,7 +78,7 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex w-full flex-col items-center gap-5">
       {DAY_ORDER.map((day) => {
         const slots = value[day]
         const closed = isDayClosed(slots)
@@ -86,31 +86,33 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
         return (
           <div
             key={day}
-            className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 space-y-3"
+            className="w-full space-y-3 rounded-xl border border-slate-300/60 bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]"
           >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className="text-sm font-semibold text-slate-800">{DAY_LABEL[day]}</span>
-              <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
+            <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-6">
+              <strong className="block text-sm font-extrabold !font-extrabold text-slate-900 tracking-tight">
+                {DAY_LABEL[day]}
+              </strong>
+              <label className="flex cursor-pointer select-none items-center gap-2 text-sm text-slate-600">
                 <input
                   type="checkbox"
                   checked={closed}
                   disabled={disabled}
                   onChange={(e) => toggleClosed(day, e.target.checked)}
-                  className="rounded border-slate-300"
+                  className="rounded-md border-slate-300"
                 />
                 Chiuso
               </label>
             </div>
 
             {!closed && slots && (
-              <div className="space-y-3">
+              <div className="flex flex-col items-center gap-3">
                 {slots.map((slot, index) => (
                   <div
                     key={`${day}-${index}`}
-                    className="flex flex-wrap items-end gap-3"
+                    className="flex flex-wrap items-end justify-center gap-3"
                   >
-                    <div className="space-y-1">
-                      <span className="text-xs font-medium text-slate-500">Apertura</span>
+                    <div className="space-y-1 text-center">
+                      <span className="block text-xs font-medium text-slate-500">Apertura</span>
                       <TimeInput
                         value={slot.open}
                         onChange={(v) => updateSlot(day, index, { open: v })}
@@ -118,8 +120,8 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
                         id={`${day}-open-${index}`}
                       />
                     </div>
-                    <div className="space-y-1">
-                      <span className="text-xs font-medium text-slate-500">Chiusura</span>
+                    <div className="space-y-1 text-center">
+                      <span className="block text-xs font-medium text-slate-500">Chiusura</span>
                       <TimeInput
                         value={slot.close}
                         onChange={(v) => updateSlot(day, index, { close: v })}
@@ -142,11 +144,11 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
                 ))}
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="success"
                   size="sm"
                   disabled={disabled}
                   onClick={() => addSlot(day)}
-                  className="gap-1.5"
+                  className="gap-1.5 shadow-sm"
                 >
                   <Plus className="w-4 h-4" />
                   Aggiungi fascia
