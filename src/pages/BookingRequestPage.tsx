@@ -6,6 +6,7 @@ import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { formatHours, getDefaultBusinessHours } from '@/lib/businessHours'
 import { useTenantContext } from '@/contexts/TenantContext'
+import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 
 export const BookingRequestPage: React.FC = () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>()
@@ -22,6 +23,9 @@ export const BookingRequestPage: React.FC = () => {
   // Fetch business hours for display (fallback to defaults if unavailable)
   const { data: businessHours, isLoading } = useBusinessHours()
   const hours = businessHours || getDefaultBusinessHours()
+  const { data: contactEmail } = useRestaurantSetting('contact_email')
+  const { data: contactPhone } = useRestaurantSetting('contact_phone')
+  const { data: contactAddress } = useRestaurantSetting('contact_address')
 
   // Set a deterministic background (no missing local assets)
   useEffect(() => {
@@ -56,38 +60,21 @@ export const BookingRequestPage: React.FC = () => {
     return dayMap[day] || day
   }
 
-  // Group consecutive days with same hours
-  const getGroupedHours = () => {
-    const dayOrder: (keyof typeof hours)[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-    const groups: Array<{ days: string[], hours: string }> = []
-
-    let currentGroup: { days: string[], hours: string } | null = null
-
-    dayOrder.forEach((day) => {
-      const dayHours = hours[day]
-      const hoursStr = dayHours ? formatHours(dayHours) : 'Chiuso'
-
-      if (!currentGroup || currentGroup.hours !== hoursStr) {
-        if (currentGroup) {
-          groups.push(currentGroup)
-        }
-        currentGroup = { days: [formatDayName(day)], hours: hoursStr }
-      } else {
-        currentGroup.days.push(formatDayName(day))
-      }
-    })
-
-    if (currentGroup) {
-      groups.push(currentGroup)
-    }
-
-    return groups
-  }
-
-  const groupedHours = getGroupedHours()
+  const dayOrder: (keyof typeof hours)[] = [
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
+  ]
 
   // Display name: prefer restaurant_settings.restaurant_name, fallback a organizations.name → "Al Ritrovo"
   const displayName = restaurantName || 'Al Ritrovo'
+  const displayContactEmail = contactEmail || 'Alritrovobologna@gmail.com'
+  const displayContactPhone = contactPhone || '3505362538'
+  const displayContactAddress = contactAddress || 'Via Centotrecento 1/1B - Bologna, 40126'
 
   // Show loading while resolving tenant
   if (isTenantLoading) {
@@ -197,14 +184,14 @@ export const BookingRequestPage: React.FC = () => {
               backdropFilter: 'blur(16px)',
             }}
           >
-            <div className="grid gap-6 grid-2cols-desktop">
-              {/* Colonna 1: Contatti */}
-              <div className="space-y-3">
-                <div className="flex items-start gap-4 md:gap-6 mb-4">
-                  <div className="flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center bg-gradient-to-br from-terracotta to-warm-orange shadow-lg">
+            <div className="grid grid-cols-2 gap-6 items-start">
+              {/* Colonna 1: Orari */}
+              <div className="space-y-3 justify-self-start text-left">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-terracotta to-warm-orange shadow-lg">
                     <Clock className="w-7 h-7 text-white" />
                   </div>
-                  <div className="flex-1">
+                  <div className="text-left">
                     <h3
                       className="text-lg md:text-xl font-serif text-warm-wood"
                       style={{
@@ -216,45 +203,64 @@ export const BookingRequestPage: React.FC = () => {
                         fontWeight: '700'
                       }}
                     >
-                      Orari e Contatti
+                      Orari
                     </h3>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Mail className="w-5 h-5 text-warm-orange flex-shrink-0" />
-                  <span className="text-base text-warm-wood-dark font-medium">Alritrovobologna@gmail.com</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="w-5 h-5 text-warm-orange flex-shrink-0" />
-                  <span className="text-base text-warm-wood-dark font-medium">3505362538</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-5 h-5 text-warm-orange flex-shrink-0" />
-                  <span className="text-base text-warm-wood-dark font-bold" style={{ fontWeight: '700' }}>Via Centotrecento 1/1B - Bologna, 40126</span>
-                </div>
-              </div>
-
-              {/* Colonna 2: Orari */}
-              <div className="space-y-2 orario-padding-top">
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-warm-orange flex-shrink-0" />
-                  <span className="text-base text-warm-wood-dark font-medium">Orario:</span>
                 </div>
                 <div className="space-y-1">
                   {isLoading ? (
                     <div className="font-medium text-base text-warm-wood-dark ml-8">Caricamento orari...</div>
                   ) : (
-                    groupedHours.map((group, index) => (
-                      <div key={index} className="font-medium text-base text-warm-wood-dark ml-8">
-                        {group.days.length === 1
-                          ? `${group.days[0]}: ${group.hours}`
-                          : `${group.days[0]} - ${group.days[group.days.length - 1]}: ${group.hours}`}
-                      </div>
-                    ))
+                    dayOrder.map((day) => {
+                      const dayHours = hours[day]
+                      const isOpen = !!dayHours && dayHours.length > 0
+                      return (
+                        <div key={day} className="font-medium text-base text-warm-wood-dark ml-8">
+                          {formatDayName(day)}: {isOpen ? `Aperto (${formatHours(dayHours)})` : 'Chiuso'}
+                        </div>
+                      )
+                    })
                   )}
                 </div>
               </div>
+
+              {/* Colonna 2: Contatti */}
+              <div className="space-y-3 justify-self-end text-right">
+                <div className="flex items-center justify-end gap-3 mb-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-terracotta to-warm-orange shadow-lg">
+                    <MapPin className="w-7 h-7 text-white" />
+                  </div>
+                  <div className="text-right">
+                    <h3
+                      className="text-lg md:text-xl font-serif text-warm-wood"
+                      style={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                        backdropFilter: 'blur(6px)',
+                        padding: '8px 16px',
+                        borderRadius: '12px',
+                        display: 'inline-block',
+                        fontWeight: '700'
+                      }}
+                    >
+                      Contatti e Indirizzo
+                    </h3>
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-3">
+                  <Mail className="w-5 h-5 text-warm-orange flex-shrink-0" />
+                  <span className="text-base text-warm-wood-dark font-medium">{displayContactEmail}</span>
+                </div>
+                <div className="flex items-center justify-end gap-3">
+                  <Phone className="w-5 h-5 text-warm-orange flex-shrink-0" />
+                  <span className="text-base text-warm-wood-dark font-medium">{displayContactPhone}</span>
+                </div>
+                <div className="flex items-center justify-end gap-3">
+                  <MapPin className="w-5 h-5 text-warm-orange flex-shrink-0" />
+                  <span className="text-base text-warm-wood-dark font-bold" style={{ fontWeight: '700' }}>{displayContactAddress}</span>
+                </div>
+              </div>
             </div>
+
           </div>
         </div>
       </div>

@@ -18,17 +18,21 @@ export const RestaurantSettingsTab: React.FC = () => {
   const { tenantId } = useTenantContext()
 
   const nameQuery = useRestaurantSetting('restaurant_name')
-  const timezoneQuery = useRestaurantSetting('timezone')
   const windowQuery = useRestaurantSetting('booking_window_days')
   const hoursQuery = useRestaurantSetting('business_hours')
+  const contactEmailQuery = useRestaurantSetting('contact_email')
+  const contactPhoneQuery = useRestaurantSetting('contact_phone')
+  const contactAddressQuery = useRestaurantSetting('contact_address')
 
   const upsert = useUpsertRestaurantSetting()
 
   const [dirty, setDirty] = useState(false)
   const [restaurantName, setRestaurantName] = useState('')
-  const [timezone, setTimezone] = useState('')
   const [bookingWindowDays, setBookingWindowDays] = useState<number | ''>(60)
   const [businessHours, setBusinessHours] = useState<BusinessHours>(() => getDefaultBusinessHours())
+  const [contactEmail, setContactEmail] = useState('Alritrovobologna@gmail.com')
+  const [contactPhone, setContactPhone] = useState('3505362538')
+  const [contactAddress, setContactAddress] = useState('Via Centotrecento 1/1B - Bologna, 40126')
 
   const hydratedRef = useRef(false)
 
@@ -39,36 +43,46 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const allSuccess =
     nameQuery.isSuccess &&
-    timezoneQuery.isSuccess &&
     windowQuery.isSuccess &&
-    hoursQuery.isSuccess
+    hoursQuery.isSuccess &&
+    contactEmailQuery.isSuccess &&
+    contactPhoneQuery.isSuccess &&
+    contactAddressQuery.isSuccess
 
   useEffect(() => {
     if (!allSuccess || hydratedRef.current) return
     setRestaurantName(nameQuery.data)
-    setTimezone(timezoneQuery.data)
     setBookingWindowDays(windowQuery.data)
     setBusinessHours(hoursQuery.data)
+    setContactEmail(contactEmailQuery.data || 'Alritrovobologna@gmail.com')
+    setContactPhone(contactPhoneQuery.data || '3505362538')
+    setContactAddress(contactAddressQuery.data || 'Via Centotrecento 1/1B - Bologna, 40126')
     hydratedRef.current = true
   }, [
     allSuccess,
     nameQuery.data,
-    timezoneQuery.data,
     windowQuery.data,
     hoursQuery.data,
+    contactEmailQuery.data,
+    contactPhoneQuery.data,
+    contactAddressQuery.data,
   ])
 
   const loading =
     nameQuery.isPending ||
-    timezoneQuery.isPending ||
     windowQuery.isPending ||
-    hoursQuery.isPending
+    hoursQuery.isPending ||
+    contactEmailQuery.isPending ||
+    contactPhoneQuery.isPending ||
+    contactAddressQuery.isPending
 
   const loadError =
     nameQuery.error ||
-    timezoneQuery.error ||
     windowQuery.error ||
-    hoursQuery.error
+    hoursQuery.error ||
+    contactEmailQuery.error ||
+    contactPhoneQuery.error ||
+    contactAddressQuery.error
 
   const markDirty = () => setDirty(true)
   const handleRestaurantNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,9 +94,11 @@ export const RestaurantSettingsTab: React.FC = () => {
     try {
       await upsert.mutateAsync([
         { key: 'restaurant_name', value: restaurantName },
-        { key: 'timezone', value: timezone },
         { key: 'booking_window_days', value: bookingWindowDays },
         { key: 'business_hours', value: businessHours },
+        { key: 'contact_email', value: contactEmail },
+        { key: 'contact_phone', value: contactPhone },
+        { key: 'contact_address', value: contactAddress },
       ])
       hydratedRef.current = false
       await queryClient.refetchQueries({
@@ -146,19 +162,6 @@ export const RestaurantSettingsTab: React.FC = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="timezone">Fuso orario (IANA)</Label>
-            <Input
-              id="timezone"
-              value={timezone}
-              disabled={upsert.isPending}
-              onChange={(e) => {
-                markDirty()
-                setTimezone(e.target.value)
-              }}
-              placeholder="Europe/Rome"
-            />
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="booking_window_days">Finestra prenotazione (giorni)</Label>
             <Input
               id="booking_window_days"
@@ -177,6 +180,46 @@ export const RestaurantSettingsTab: React.FC = () => {
                 const n = parseInt(raw, 10)
                 if (!Number.isNaN(n)) setBookingWindowDays(n)
               }}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="contact_email">Email contatto (pagina prenota)</Label>
+            <Input
+              id="contact_email"
+              type="email"
+              value={contactEmail}
+              disabled={upsert.isPending}
+              onChange={(e) => {
+                markDirty()
+                setContactEmail(e.target.value)
+              }}
+              placeholder="ristorante@example.com"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="contact_phone">Telefono contatto (pagina prenota)</Label>
+            <Input
+              id="contact_phone"
+              value={contactPhone}
+              disabled={upsert.isPending}
+              onChange={(e) => {
+                markDirty()
+                setContactPhone(e.target.value)
+              }}
+              placeholder="+39 ..."
+            />
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="contact_address">Indirizzo contatto (pagina prenota)</Label>
+            <Input
+              id="contact_address"
+              value={contactAddress}
+              disabled={upsert.isPending}
+              onChange={(e) => {
+                markDirty()
+                setContactAddress(e.target.value)
+              }}
+              placeholder="Via ..., Citta, CAP"
             />
           </div>
         </div>

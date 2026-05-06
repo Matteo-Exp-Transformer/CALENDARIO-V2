@@ -8,6 +8,9 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'timezone',
   'booking_window_days',
   'business_hours',
+  'contact_email',
+  'contact_phone',
+  'contact_address',
 ] as const
 
 export type RestaurantSettingKeyV1 = (typeof RESTAURANT_SETTING_KEYS_V1)[number]
@@ -45,6 +48,9 @@ export const businessHoursSettingSchema = z
 
 const restaurantNameSchema = z.string().trim().min(1, 'Il nome è obbligatorio').max(200)
 const timezoneSchema = z.string().trim().min(1, 'Il fuso orario è obbligatorio').max(80)
+const genericTextSchema = z.string().trim().min(1, 'Campo obbligatorio').max(200)
+const emailSchema = z.string().trim().email('Email non valida').max(200)
+const phoneSchema = z.string().trim().min(3, 'Telefono non valido').max(50)
 const bookingWindowDaysSchema = z.coerce
   .number()
   .int('Deve essere un intero')
@@ -81,6 +87,9 @@ export type RestaurantSettingValueMap = {
   timezone: string
   booking_window_days: number
   business_hours: BusinessHours
+  contact_email: string
+  contact_phone: string
+  contact_address: string
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -146,6 +155,33 @@ export const restaurantSettingRegistry: {
       if (!r.success) return r.error.issues[0]?.message ?? 'Orari non validi'
       const parsed = parseBusinessHours(r.data)
       return parsed ? null : 'Struttura orari non valida'
+    },
+  },
+  contact_email: {
+    key: 'contact_email',
+    parseFromDb: (raw) => parseJsonScalarString(raw),
+    serializeToDb: (value) => value as Json,
+    validate: (value) => {
+      const r = emailSchema.safeParse(value)
+      return r.success ? null : r.error.issues[0]?.message ?? 'Valore non valido'
+    },
+  },
+  contact_phone: {
+    key: 'contact_phone',
+    parseFromDb: (raw) => parseJsonScalarString(raw),
+    serializeToDb: (value) => value as Json,
+    validate: (value) => {
+      const r = phoneSchema.safeParse(value)
+      return r.success ? null : r.error.issues[0]?.message ?? 'Valore non valido'
+    },
+  },
+  contact_address: {
+    key: 'contact_address',
+    parseFromDb: (raw) => parseJsonScalarString(raw),
+    serializeToDb: (value) => value as Json,
+    validate: (value) => {
+      const r = genericTextSchema.safeParse(value)
+      return r.success ? null : r.error.issues[0]?.message ?? 'Valore non valido'
     },
   },
 }
