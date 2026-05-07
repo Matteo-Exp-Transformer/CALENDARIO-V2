@@ -41,9 +41,14 @@ const ADMIN_CARD_RADIUS = 16
 const ADMIN_INPUT_RADIUS = 12
 /** Sfondo bianco esplicito sui campi sopra il pannello warm (stesso elenco punti dell’UX). */
 const ADMIN_INPUT_FIELD_SURFACE: React.CSSProperties = {
-  borderRadius: ADMIN_INPUT_RADIUS,
-  backgroundColor: '#ffffff',
+  backgroundColor: 'rgba(255, 255, 255, 0.85)',
+  backdropFilter: 'blur(1px)',
+  padding: '10px 16px',
+  borderRadius: `${ADMIN_INPUT_RADIUS}px`,
+  fontWeight: 500,
 }
+const ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME =
+  '!border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 rounded-[12px] focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
 const ADMIN_SECTION_TITLE_RADIUS = 16
 /** Margine interno card sinistro/destro (px) — solo inline style, come raggio e gap. */
 const ADMIN_CARD_PAD_X = 44
@@ -427,7 +432,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
         >
           <div className="space-y-6 w-full min-w-0" style={ADMIN_FORM_NARROW_COLUMN_STYLE}>
           <h2
-            className="mb-4 border-b-2 border-warm-beige bg-white/50 px-5 py-3 pb-3 text-3xl font-serif font-bold text-warm-wood shadow-sm backdrop-blur-sm"
+            className="mb-4 border-b-2 border-warm-beige bg-white/50 px-5 py-3 pb-3 text-center text-3xl font-serif font-bold text-warm-wood shadow-sm backdrop-blur-sm"
             style={{ borderRadius: ADMIN_SECTION_TITLE_RADIUS }}
           >
             Dati Personali
@@ -444,7 +449,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
               }}
               placeholder="Nome Completo *"
               required
-              className={errors.client_name ? '!border-red-500' : ''}
+              className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} ${errors.client_name ? '!border-red-500' : ''}`}
               style={ADMIN_INPUT_FIELD_SURFACE}
             />
             {errors.client_name && (
@@ -463,7 +468,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
                 setErrors({ ...errors, client_email: '' })
               }}
               placeholder="Email (Opzionale)"
-              className={errors.client_email ? '!border-red-500' : ''}
+              className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} ${errors.client_email ? '!border-red-500' : ''}`}
               style={ADMIN_INPUT_FIELD_SURFACE}
             />
             {errors.client_email && (
@@ -483,7 +488,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
               }}
               placeholder="Telefono *"
               required
-              className={errors.client_phone ? '!border-red-500' : ''}
+              className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} ${errors.client_phone ? '!border-red-500' : ''}`}
               style={ADMIN_INPUT_FIELD_SURFACE}
             />
             {errors.client_phone && (
@@ -500,7 +505,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
         >
           <div className="space-y-6 w-full min-w-0" style={ADMIN_FORM_NARROW_COLUMN_STYLE}>
           <h2
-            className="mb-4 border-b-2 border-warm-beige bg-white/50 px-5 py-3 pb-3 text-3xl font-serif font-bold text-warm-wood shadow-sm backdrop-blur-sm"
+            className="mb-4 border-b-2 border-warm-beige bg-white/50 px-5 py-3 pb-3 text-center text-3xl font-serif font-bold text-warm-wood shadow-sm backdrop-blur-sm"
             style={{ borderRadius: ADMIN_SECTION_TITLE_RADIUS }}
           >
             Dettagli Prenotazione
