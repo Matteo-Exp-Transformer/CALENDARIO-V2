@@ -27,7 +27,6 @@ import {
   BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
   BOOKING_PAGE_TILE_IDS,
   DEFAULT_BOOKING_PAGE_BACKGROUND,
-  bookingPageGradientCss,
   bookingPageGradientPreviewCss,
   bookingPageTilePublicHref,
   isBookingPageGradientId,
@@ -438,9 +437,6 @@ export const RestaurantSettingsTab: React.FC = () => {
     'block w-full min-h-[3.667rem] rounded-[1.25rem] border-2 border-slate-200 bg-white px-4 py-2.5 text-center text-xl font-medium leading-snug text-slate-900 shadow-sm outline-none placeholder:text-slate-400 placeholder:text-xl transition-colors duration-150 focus:border-primary-400 focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-white disabled:text-slate-500 disabled:opacity-80'
 
   const bookingBgBase = import.meta.env.BASE_URL
-  const bookingPagePreviewTileSrc = isBookingPageGradientId(bookingPageBackground)
-    ? null
-    : bookingPageTilePublicHref(bookingPageBackground, bookingBgBase)
 
   const bookingBgPickButtonClass = (selected: boolean) =>
     [
