@@ -9,7 +9,11 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['icons/favicon-v2.ico', 'icons/apple-touch-icon-v2.png'],
+      includeAssets: [
+        'icons/favicon-v2.ico',
+        'icons/apple-touch-icon-v2.png',
+        'login/admin-login-bg.png',
+      ],
       manifest: {
         name: 'CalendarBackup',
         short_name: 'CalBackup',
