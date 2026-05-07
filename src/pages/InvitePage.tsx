@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useParams, useNavigate, Link } from 'react-router-dom'
 import { Input, Button, Label } from '@/components/ui'
-import { Building2, ArrowRight, Lock, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+import { ArrowRight, Lock, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 
 interface TokenValidationResult {
   valid: boolean
@@ -182,7 +182,11 @@ export const InvitePage: React.FC = () => {
       {/* Header */}
       <div className="text-center mb-6">
         <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-          <Building2 className="w-6 h-6 text-primary-600" />
+          <img
+            src={`${import.meta.env.BASE_URL}icons/icon-192-v2.png`}
+            alt="Logo app"
+            className="w-4 h-4 object-cover shrink-0 rounded-full overflow-hidden"
+          />
         </div>
         <h2 className="text-xl font-bold text-slate-800">
           Registrati per {tokenData?.organizationName || 'il ristorante'}

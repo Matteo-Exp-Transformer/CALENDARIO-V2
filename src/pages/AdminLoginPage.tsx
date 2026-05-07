@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { Input, Button, Label } from '@/components/ui'
-import { Building2, ArrowRight, Lock } from 'lucide-react'
+import { ArrowRight, Lock } from 'lucide-react'
 
 export const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState('')
@@ -14,6 +14,18 @@ export const AdminLoginPage: React.FC = () => {
 
   const { login } = useAdminAuth()
   const navigate = useNavigate()
+  const loginPageBgStyle: React.CSSProperties = {
+    backgroundImage: `url(${import.meta.env.BASE_URL}login/admin-login-bg.png)`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+  }
+  const loginSubmitStyle = {
+    backgroundColor: 'rgba(255, 255, 255, 0.72)',
+    borderColor: 'rgba(255, 255, 255, 0.9)',
+    color: '#0f172a',
+    WebkitTextFillColor: '#0f172a',
+  }
 
   useEffect(() => {
     const revokedReason = sessionStorage.getItem('auth_revoked_reason')
@@ -59,19 +71,25 @@ export const AdminLoginPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-indigo-50 flex items-center justify-center p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={loginPageBgStyle}
+    >
       <div className="w-full max-w-md animate-fade-in">
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
 
           {/* Header strip */}
-          <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-8 py-8 text-center">
-            <div className="inline-flex items-center justify-center w-14 h-14 bg-white/20 rounded-xl mb-4">
-              <Building2 className="w-7 h-7 text-white" />
+          <div className="bg-white px-8 py-8 text-center">
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-slate-100 rounded-xl mb-4">
+              <img
+                src={`${import.meta.env.BASE_URL}icons/icon-192-v2.png`}
+                alt="Logo app"
+                className="w-4 h-4 object-cover shrink-0 rounded-full overflow-hidden"
+              />
             </div>
-            <h1 className="text-2xl font-bold text-white">Booking SaaS</h1>
-            <p className="text-primary-200 text-sm mt-1">Accedi al pannello admin</p>
+            <h1 className="text-2xl font-bold text-slate-900">Sistema Gestionale Prenotazioni</h1>
           </div>
 
           {/* Form */}
@@ -81,10 +99,12 @@ export const AdminLoginPage: React.FC = () => {
                 Abbonamento non attivo. Contatta il supporto.
               </div>
             )}
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5 flex flex-col items-center">
 
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email</Label>
+              <div className="w-full max-w-[14rem] space-y-2 text-center">
+                <Label htmlFor="email" className="block text-center">
+                  Email
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -92,13 +112,15 @@ export const AdminLoginPage: React.FC = () => {
                   onChange={(e) => { setEmail(e.target.value); setErrors(p => ({ ...p, email: undefined })) }}
                   placeholder="admin@tuoristorante.it"
                   disabled={isSubmitting}
-                  className={errors.email ? 'border-red-400 focus:ring-red-400' : ''}
+                  className={`min-h-[3.667rem] rounded-[1.25rem] border-2 border-white/90 !bg-white/72 px-4 py-2.5 text-center text-xl font-medium leading-snug shadow-sm backdrop-blur-[1px] placeholder:text-slate-500 ${errors.email ? 'border-red-400 focus:ring-red-400 focus:border-red-400' : ''}`}
                 />
-                {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+                {errors.email && <p className="text-xs text-red-500 text-center">{errors.email}</p>}
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="password">Password</Label>
+              <div className="w-full max-w-[14rem] space-y-2 text-center">
+                <Label htmlFor="password" className="block text-center">
+                  Password
+                </Label>
                 <Input
                   id="password"
                   type="password"
@@ -106,21 +128,21 @@ export const AdminLoginPage: React.FC = () => {
                   onChange={(e) => { setPassword(e.target.value); setErrors(p => ({ ...p, password: undefined })) }}
                   placeholder="••••••••"
                   disabled={isSubmitting}
-                  className={errors.password ? 'border-red-400 focus:ring-red-400' : ''}
+                  className={`min-h-[3.667rem] rounded-[1.25rem] border-2 border-white/90 !bg-white/72 px-4 py-2.5 text-center text-xl font-medium leading-snug shadow-sm backdrop-blur-[1px] placeholder:text-slate-500 ${errors.password ? 'border-red-400 focus:ring-red-400 focus:border-red-400' : ''}`}
                 />
-                {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
+                {errors.password && <p className="text-xs text-red-500 text-center">{errors.password}</p>}
               </div>
 
               <Button
                 type="submit"
-                fullWidth
                 size="lg"
                 disabled={isSubmitting}
-                className="mt-2 group"
+                className="mt-2 w-2/3 group border !shadow-sm font-bold hover:bg-white/80 focus:ring-teal-500/40 focus:ring-offset-transparent"
+                style={loginSubmitStyle}
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-slate-400/50 border-t-slate-700 rounded-full animate-spin" />
                     Accesso in corso...
                   </span>
                 ) : (
@@ -133,16 +155,13 @@ export const AdminLoginPage: React.FC = () => {
             </form>
 
             {/* Footer */}
-            <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-400">
+            <div className="mt-6 pt-5 flex items-center justify-center gap-2 text-xs text-slate-400">
               <Lock className="w-3.5 h-3.5" />
               <span>Area riservata — accesso protetto</span>
             </div>
           </div>
         </div>
 
-        <p className="text-center text-xs text-slate-400 mt-6">
-          Hai dimenticato la password? Contatta l'amministratore del sistema.
-        </p>
       </div>
     </div>
   )
