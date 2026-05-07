@@ -577,3 +577,49 @@ button.archive-tab-filter-btn:focus-visible {
 button.archive-tab-filter-btn:focus:not(:focus-visible) {
   outline: none;
 }
+
+@media (max-width: 595px) {
+  .booking-section-title-mobile.booking-mobile-heading {
+    font-size: 1rem !important;
+    line-height: 1.3 !important;
+    padding: 10px 12px !important;
+  }
+
+  .booking-section-title-mobile.booking-mobile-subheading {
+    font-size: 0.95rem !important;
+    line-height: 1.3 !important;
+    padding: 8px 12px !important;
+  }
+
+  .booking-mobile-heading-meta {
+    font-size: 0.7rem !important;
+  }
+
+  .booking-mobile-counter {
+    font-size: 0.75rem !important;
+  }
+
+  .menu-card-mobile {
+    min-height: 106px !important;
+  }
+
+  .booking-mobile-card-title {
+    font-size: 0.95rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .booking-mobile-card-description {
+    font-size: 0.9rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .booking-mobile-price {
+    font-size: 0.82rem !important;
+  }
+}
+
+@media (max-width: 444px) {
+  .booking-form-mobile {
+    max-width: 68.75vw !important;
+  }
+}
