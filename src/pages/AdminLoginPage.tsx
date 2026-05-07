@@ -99,7 +99,7 @@ export const AdminLoginPage: React.FC = () => {
                 Abbonamento non attivo. Contatta il supporto.
               </div>
             )}
-            <form onSubmit={handleSubmit} className="space-y-5 flex flex-col items-center">
+            <form onSubmit={handleSubmit} className="flex flex-col items-center gap-5">
 
               <div className="w-full max-w-[14rem] space-y-2 text-center">
                 <Label htmlFor="email" className="block text-center">
@@ -137,8 +137,8 @@ export const AdminLoginPage: React.FC = () => {
                 type="submit"
                 size="lg"
                 disabled={isSubmitting}
-                className="mt-2 w-2/3 group border !shadow-sm font-bold hover:bg-white/80 focus:ring-teal-500/40 focus:ring-offset-transparent"
-                style={loginSubmitStyle}
+                className="w-full max-w-[14rem] rounded-[1.25rem] group border !shadow-sm font-bold hover:bg-white/80 focus:ring-teal-500/40 focus:ring-offset-transparent"
+                style={{ ...loginSubmitStyle, marginTop: '2.5rem' }}
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">

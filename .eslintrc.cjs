@@ -37,5 +37,8 @@ module.exports = {
     '*.config.js',
     '*.config.ts',
     '*.mjs',
+    'tests/**',
+    'e2e/**',
+    '**/__tests__/**',
   ],
 }

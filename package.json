@@ -9,6 +9,15 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "validate": "npm run lint && npm run typecheck && npm run test",
+    "prepare": "husky",
     "db:login": "supabase login",
     "db:link": "supabase link",
     "db:push": "supabase db push",
@@ -18,6 +27,11 @@
     "db:types:linked": "supabase gen types typescript --linked > src/types/database.ts",
     "seed:booking-menu-full": "node --env-file=.env.local scripts/seed-full-menu-booking.mjs",
     "seed:booking-table": "node --env-file=.env.local scripts/seed-table-booking.mjs"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix"
+    ]
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.19",
@@ -40,22 +54,33 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4.1.16",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^14.3.1",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vercel/node": "^3.0.21",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^2.1.9",
+    "@vitest/ui": "^2.1.9",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "husky": "^9.1.7",
+    "jsdom": "^24.1.3",
+    "lint-staged": "^15.5.2",
+    "msw": "^2.14.4",
     "postcss": "^8.5.6",
     "supabase": "^2.98.1",
     "tailwindcss": "^4.1.16",
     "typescript": "^5.2.2",
     "vite": "^5.0.8",
-    "vite-plugin-pwa": "^1.2.0"
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^2.1.9"
   }
 }
