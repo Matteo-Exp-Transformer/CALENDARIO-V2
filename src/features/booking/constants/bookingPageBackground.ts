@@ -176,6 +176,11 @@ export const BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR = '#2d2013'
 
 const FALLBACK_GRADIENT =
   'linear-gradient(135deg, #2d2013 0%, #5a3923 45%, #8b5f3c 100%)'
+/**
+ * Versione cache degli asset tile pubblici.
+ * Incrementa quando sostituisci i PNG con lo stesso nome (`tile-XX.png`).
+ */
+const BOOKING_PAGE_TILE_ASSETS_VERSION = '2026-05-07-1'
 
 export function isBookingPageTileId(value: string): value is BookingPageTileId {
   return (BOOKING_PAGE_TILE_IDS as readonly string[]).includes(value)
@@ -230,6 +235,6 @@ export function bookingPageTilePublicHref(
   cacheBust?: string
 ): string {
   const baseHref = `${viteBase}booking/tiles/${id}.png`
-  if (!cacheBust) return baseHref
-  return `${baseHref}?v=${encodeURIComponent(cacheBust)}`
+  const effectiveCacheBust = cacheBust ?? BOOKING_PAGE_TILE_ASSETS_VERSION
+  return `${baseHref}?v=${encodeURIComponent(effectiveCacheBust)}`
 }
