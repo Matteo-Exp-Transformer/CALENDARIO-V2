@@ -13,7 +13,7 @@ In pratica:
 - Il ristorante ha una **dashboard admin** privata per gestire le richieste (accettare, rifiutare, modificare) e visualizzare il calendario
 - Un'unica installazione del software serve più ristoranti contemporaneamente, i cui dati restano completamente isolati
 
-Il nome "CalendarBackup" è il nome del repository — il nome prodotto interno è "Restaurant Booking SaaS".
+Il nome "CalendarBackup" è il nome del repository — il nome prodotto interno è "Sistema Gestionale Prenotazioni".
 
 ---
 
