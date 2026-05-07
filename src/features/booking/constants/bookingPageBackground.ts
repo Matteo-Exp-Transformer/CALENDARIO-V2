@@ -33,9 +33,6 @@ export type BookingPageTileId = (typeof BOOKING_PAGE_TILE_IDS)[number]
  * automaticamente sullo sfondo di default (vedi `parseBookingPageBackgroundFromDb`).
  */
 export const BOOKING_PAGE_TILE_PLACEHOLDER_IDS: readonly BookingPageTileId[] = [
-  'tile-11',
-  'tile-12',
-  'tile-13',
   'tile-14',
 ]
 
@@ -252,6 +249,12 @@ export function bookingPageGradientThumbCss(id: BookingPageGradientId): string {
   return bookingPageGradientPreviewCss(id)
 }
 
-export function bookingPageTilePublicHref(id: BookingPageTileId, viteBase: string): string {
-  return `${viteBase}booking/tiles/${id}.png`
+export function bookingPageTilePublicHref(
+  id: BookingPageTileId,
+  viteBase: string,
+  cacheBust?: string
+): string {
+  const baseHref = `${viteBase}booking/tiles/${id}.png`
+  if (!cacheBust) return baseHref
+  return `${baseHref}?v=${encodeURIComponent(cacheBust)}`
 }

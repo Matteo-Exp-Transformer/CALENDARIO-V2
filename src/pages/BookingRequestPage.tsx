@@ -61,7 +61,7 @@ export const BookingRequestPage: React.FC = () => {
       root.style.backgroundRepeat = 'no-repeat'
       root.style.backgroundAttachment = 'scroll'
     } else {
-      const tileUrl = bookingPageTilePublicHref(bgId, import.meta.env.BASE_URL)
+      const tileUrl = bookingPageTilePublicHref(bgId, import.meta.env.BASE_URL, String(Date.now()))
       root.style.backgroundColor = BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR
       root.style.backgroundImage = `url("${tileUrl}")`
       root.style.backgroundSize = '100% auto'
