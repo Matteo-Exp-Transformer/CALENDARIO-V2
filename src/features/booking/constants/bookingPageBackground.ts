@@ -33,7 +33,6 @@ export type BookingPageTileId = (typeof BOOKING_PAGE_TILE_IDS)[number]
  * automaticamente sullo sfondo di default (vedi `parseBookingPageBackgroundFromDb`).
  */
 export const BOOKING_PAGE_TILE_PLACEHOLDER_IDS: readonly BookingPageTileId[] = [
-  'tile-14',
 ]
 
 export function isBookingPageTilePlaceholder(value: string): boolean {
