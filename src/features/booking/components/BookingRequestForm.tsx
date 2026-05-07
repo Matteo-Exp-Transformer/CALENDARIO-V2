@@ -20,6 +20,7 @@ import {
   computeMenuTotalsFromItems,
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
+import { DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } from '../constants/volAuVentPromo'
 
 
 interface BookingRequestFormProps {
@@ -243,6 +244,10 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
   const { data: menuItems = [] } = useMenuItems()
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
+  const { data: volAuVentPromoVisible = true } = useRestaurantSetting('booking_vol_au_vent_promo_visible')
+  const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
+    'booking_vol_au_vent_promo_message',
+  )
 
   // Fetch business hours (non-blocking - form works even if loading/fails)
   const { data: businessHours, isLoading: isLoadingHours, error: hoursError } = useBusinessHours()
@@ -849,6 +854,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             presetMenu={selectedPreset}
             staffPresetsDropdownVisible={staffPresetsDropdownVisible}
             customStaffPresets={customStaffPresets}
+            volAuVentPromoVisible={volAuVentPromoVisible}
+            volAuVentPromoMessage={volAuVentPromoMessage}
             onPresetMenuChange={handlePresetMenuChange}
             onMenuChange={({ items, totalPerPerson, tiramisuTotal, tiramisuKg }) => {
               const numGuests = formData.num_guests || 0

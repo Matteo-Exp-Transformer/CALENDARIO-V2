@@ -34,40 +34,50 @@ export const Modal: React.FC<ModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) return
+    const html = document.documentElement
+    const prevHtmlOverflow = html.style.overflow
+    const prevBodyOverflow = document.body.style.overflow
+    html.style.overflow = 'hidden'
     document.body.style.overflow = 'hidden'
     const handleEscape = (e: KeyboardEvent) => {
       if (closeOnEscape && e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', handleEscape)
     return () => {
-      document.body.style.overflow = ''
+      html.style.overflow = prevHtmlOverflow
+      document.body.style.overflow = prevBodyOverflow
       document.removeEventListener('keydown', handleEscape)
     }
   }, [isOpen, closeOnEscape, onClose])
 
   if (!isOpen) return null
 
+  /** Sopra overlay admin (z-50), sotto ToastContainer (~100000). Scroll esterno se il dialog è più alto del viewport. */
+  const shellZ = 'z-[10050]'
+
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className={`fixed inset-0 ${shellZ} overflow-y-auto overscroll-contain`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={closeOnOverlayClick ? onClose : undefined}
-      />
+      <div className="flex min-h-full items-center justify-center p-4 py-8 sm:py-10">
+        {/* Overlay */}
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+          aria-hidden
+          onClick={closeOnOverlayClick ? onClose : undefined}
+        />
 
-      {/* Dialog */}
-      <div
-        ref={modalRef}
-        tabIndex={-1}
-        className={`relative z-10 w-full ${sizeClasses[size]} bg-white rounded-2xl shadow-xl
-          animate-fade-in max-h-[90vh] overflow-y-auto`}
-        role="document"
-      >
+        {/* Dialog */}
+        <div
+          ref={modalRef}
+          tabIndex={-1}
+          className={`relative z-10 my-auto w-full ${sizeClasses[size]} bg-white rounded-2xl shadow-xl
+            animate-fade-in max-h-[min(90vh,calc(100dvh-4rem))] overflow-y-auto`}
+          role="document"
+        >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <h2 id="modal-title" className="text-lg font-semibold text-slate-800">
@@ -87,6 +97,7 @@ export const Modal: React.FC<ModalProps> = ({
         {/* Body */}
         <div className="px-6 py-5">
           {children}
+        </div>
         </div>
       </div>
     </div>,

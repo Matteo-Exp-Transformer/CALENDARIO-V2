@@ -13,6 +13,10 @@ import {
   type PresetMenuType,
 } from '../constants/presetMenus'
 import { isCaraffeDrinkPremium, isCaraffeDrinkStandard } from '../utils/caraffePricing'
+import {
+  DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
+  VOL_AU_VENT_THRESHOLD_EUR,
+} from '../constants/volAuVentPromo'
 
 interface MenuSelectionProps {
   selectedItems: SelectedMenuItem[]
@@ -30,6 +34,10 @@ interface MenuSelectionProps {
   staffPresetsDropdownVisible?: boolean
   /** Menù personalizzati dallo staff (da restaurant_settings). */
   customStaffPresets?: CustomStaffPreset[]
+  /** Banner sopra al menu a tendina (omaggio Mini Rustici). Default: true */
+  volAuVentPromoVisible?: boolean
+  /** Testo del banner (da restaurant_settings). */
+  volAuVentPromoMessage?: string
 }
 
 type NormalizedMenuItem = {
@@ -58,7 +66,6 @@ const DEFAULT_TIRAMISU_KG = 1
 
 // Virtual promotional item for Vol-au-vent
 const VIRTUAL_VOL_AU_VENT_ID = 'virtual-vol-au-vent-promo'
-const VOL_AU_VENT_THRESHOLD_EUR = 17.00
 
 const createVirtualVolAuVentItem = (): SelectedMenuItem => ({
   id: VIRTUAL_VOL_AU_VENT_ID,
@@ -87,6 +94,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   bookingType,
   staffPresetsDropdownVisible = true,
   customStaffPresets = [],
+  volAuVentPromoVisible = true,
+  volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
 }) => {
   const { data: menuItems = [], isLoading, error } = useMenuItems()
   const { data: dbCategories = [] } = useMenuCategories()
@@ -525,33 +534,36 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         </span>
       </h2>
 
-      {/* Menù Consigliati dallo Staff - Solo per Rinfresco di Laurea */}
-      {showStaffPresetDropdown && (
-        <div 
+      {/* Banner omaggio + menu a tendina menù consigliati — solo Rinfresco di Laurea */}
+      {(volAuVentPromoVisible || showStaffPresetDropdown) && bookingType === 'rinfresco_laurea' && (
+        <div
           className="w-full flex flex-col items-center px-1 sm:px-2"
-          style={{ 
-            paddingTop: '1rem', 
+          style={{
+            paddingTop: '1rem',
             paddingBottom: '0',
             marginTop: '0',
-            marginBottom: '0'
+            marginBottom: '0',
           }}
         >
-          <label
-            className="block text-base md:text-lg text-warm-wood mb-2 w-full"
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(1px)',
-              padding: '8px 16px',
-              borderRadius: '12px',
-              display: 'inline-block',
-              fontWeight: '700',
-              maxWidth: 'min(560px, calc(100% - 16px))',
-              margin: '0 auto',
-              marginBottom: '0.5rem'
-            }}
-          >
-            {`Raggiungi ${VOL_AU_VENT_THRESHOLD_EUR} euro a persona e ti omaggiamo dei Mini Rustici Misti!`}
-          </label>
+          {volAuVentPromoVisible && (
+            <label
+              className="block text-base md:text-lg text-warm-wood mb-2 w-full"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                backdropFilter: 'blur(1px)',
+                padding: '8px 16px',
+                borderRadius: '12px',
+                display: 'inline-block',
+                fontWeight: '700',
+                maxWidth: 'min(560px, calc(100% - 16px))',
+                margin: '0 auto',
+                marginBottom: showStaffPresetDropdown ? '0.5rem' : '0',
+              }}
+            >
+              {volAuVentPromoMessage}
+            </label>
+          )}
+          {showStaffPresetDropdown && (
           <select
             id="preset_menu"
             value={presetMenu || ''}
@@ -592,6 +604,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
               </option>
             ))}
           </select>
+          )}
         </div>
       )}
 

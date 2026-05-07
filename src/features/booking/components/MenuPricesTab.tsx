@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
-import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
-import { Button, Input } from '@/components/ui'
+import { ADMIN_WARM_BORDER, ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
+import { Button, Input, Textarea } from '@/components/ui'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react'
 import { useMenuItems, useCreateMenuItem, useUpdateMenuItem, useDeleteMenuItem } from '../hooks/useMenuItems'
@@ -17,6 +17,7 @@ import type { CustomStaffPreset } from '../constants/presetMenus'
 import { useRestaurantSetting, useUpsertRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { selectedItemsFromMenuItemIds } from '../utils/buildPresetMenuSelection'
 import { PresetMenuBuilder } from './PresetMenuBuilder'
+import { DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } from '../constants/volAuVentPromo'
 
 const slugifyCategory = (value: string): string =>
   value
@@ -45,7 +46,13 @@ export const MenuPricesTab: React.FC = () => {
     'booking_staff_presets_visible',
   )
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
+  const { data: volAuVentPromoVisible = true, isLoading: volAuVentVisLoading } = useRestaurantSetting(
+    'booking_vol_au_vent_promo_visible',
+  )
+  const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE, isLoading: volAuVentMsgLoading } =
+    useRestaurantSetting('booking_vol_au_vent_promo_message')
   const upsertRestaurantSetting = useUpsertRestaurantSetting()
+  const volAuVentPromoLoading = volAuVentVisLoading || volAuVentMsgLoading
 
   const [viewMode, setViewMode] = useState<MenuViewMode>('menu')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -59,6 +66,28 @@ export const MenuPricesTab: React.FC = () => {
   const [presetName, setPresetName] = useState('')
   const [presetSelectedItems, setPresetSelectedItems] = useState<SelectedMenuItem[]>([])
   const [editingCustomPresetId, setEditingCustomPresetId] = useState<string | null>(null)
+  const [promoEditorOpen, setPromoEditorOpen] = useState(false)
+  const [promoDraft, setPromoDraft] = useState('')
+  const volAuVentMsgLoadingPrev = useRef(volAuVentMsgLoading)
+  const promoEditorPanelRef = useRef<HTMLDivElement>(null)
+
+  /** Se il pannello è aperto e il messaggio arriva dopo dal server, aggiorna il testo in bozza. */
+  useEffect(() => {
+    const finishedLoading =
+      promoEditorOpen && volAuVentMsgLoadingPrev.current && !volAuVentMsgLoading
+    volAuVentMsgLoadingPrev.current = volAuVentMsgLoading
+    if (finishedLoading) {
+      setPromoDraft(volAuVentPromoMessage)
+    }
+  }, [promoEditorOpen, volAuVentMsgLoading, volAuVentPromoMessage])
+
+  const openPromoEditor = () => {
+    setPromoDraft(volAuVentPromoMessage)
+    setPromoEditorOpen(true)
+    queueMicrotask(() =>
+      promoEditorPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }),
+    )
+  }
 
   const resetPresetEditor = () => {
     setPresetEditorMode('list')
@@ -115,6 +144,22 @@ export const MenuPricesTab: React.FC = () => {
       await upsertRestaurantSetting.mutateAsync([{ key: 'booking_custom_staff_presets', value: next }])
       resetPresetEditor()
       setPresetEditorMode('list')
+    } catch {
+      //
+    }
+  }
+
+  const handleSaveVolAuVentPromoMessage = async () => {
+    const trimmed = promoDraft.trim()
+    if (!trimmed) {
+      toast.error('Il messaggio non può essere vuoto')
+      return
+    }
+    try {
+      await upsertRestaurantSetting.mutateAsync([
+        { key: 'booking_vol_au_vent_promo_message', value: trimmed },
+      ])
+      setPromoEditorOpen(false)
     } catch {
       //
     }
@@ -593,7 +638,7 @@ export const MenuPricesTab: React.FC = () => {
               ])
             }
           />
-          Mostra sulla pagina prenota il menu a tendina dei menù consigliati
+          Mostra nella pagina prenota i menù consigliati dallo staff
         </label>
         <Button
           variant="ghost"
@@ -607,6 +652,96 @@ export const MenuPricesTab: React.FC = () => {
           Aggiungi / Modifica Menù preselezionati
         </Button>
       </div>
+      <div className="flex w-full min-w-0 flex-row flex-nowrap items-center gap-3 overflow-x-auto sm:gap-4 sm:overflow-visible">
+        <label className="flex min-h-0 min-w-0 max-w-[min(100%,420px)] flex-1 cursor-pointer items-center gap-2.5 text-left text-xs font-semibold leading-snug text-gray-800 sm:text-sm">
+          <input
+            type="checkbox"
+            className="h-4 w-4 shrink-0 rounded border-gray-400"
+            checked={volAuVentPromoVisible}
+            disabled={volAuVentPromoLoading || upsertRestaurantSetting.isPending}
+            onChange={(e) =>
+              upsertRestaurantSetting.mutate([
+                { key: 'booking_vol_au_vent_promo_visible', value: e.target.checked },
+              ])
+            }
+          />
+          Mostra nella pagina prenota un&apos;offerta per incentivare la scelta di più ingredienti nel menù
+        </label>
+        <Button
+          variant="ghost"
+          size="sm"
+          type="button"
+          onClick={openPromoEditor}
+          disabled={volAuVentPromoLoading || upsertRestaurantSetting.isPending}
+          aria-label="Aggiungi / Modifica promo menù"
+          title="Aggiungi / Modifica promo menù"
+          className={`ml-auto min-h-8 shrink-0 gap-1.5 whitespace-normal rounded-lg border border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white px-3 py-1.5 text-center text-xs font-semibold leading-snug text-amber-950 shadow-sm hover:bg-transparent hover:brightness-[0.97] ${MENU_ACTION_BTN_COL}`}
+        >
+          <Edit className="h-3.5 w-3.5 shrink-0" />
+          Aggiungi / Modifica promo menù
+        </Button>
+      </div>
+
+      {promoEditorOpen && (
+        <div
+          ref={promoEditorPanelRef}
+          className="mt-4 w-full rounded-xl border-2 bg-white p-4 shadow-sm md:p-5"
+          style={{ borderColor: ADMIN_WARM_BORDER }}
+          role="region"
+          aria-label="Editor testo promo pagina prenotazione"
+        >
+          <div className="mb-4 flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+            <h3 className="text-base font-semibold text-slate-800 md:text-lg">
+              Testo della promo sulla pagina prenotazione
+            </h3>
+            <button
+              type="button"
+              onClick={() => setPromoEditorOpen(false)}
+              className="shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+              aria-label="Chiudi editor promo"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          {!volAuVentPromoVisible && (
+            <p className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+              La checkbox &quot;Mostra nella pagina prenota un&apos;offerta…&quot; è disattivata: questo testo non sarà
+              visibile finché non la riattivi.
+            </p>
+          )}
+          <label
+            htmlFor="vol-au-vent-promo-textarea"
+            className="mb-1 mt-2 block text-xs font-semibold text-gray-700"
+          >
+            Inserisci il testo della promozione
+          </label>
+          <Textarea
+            id="vol-au-vent-promo-textarea"
+            value={promoDraft}
+            onChange={(e) => setPromoDraft(e.target.value)}
+            rows={6}
+            maxLength={500}
+            className="min-h-[140px] resize-y border-slate-300 bg-white text-slate-900"
+            aria-label="Inserisci il testo della promozione"
+          />
+          <p className="mt-1 text-xs text-gray-500">{promoDraft.length}/500</p>
+          <div className="mt-5 flex flex-wrap justify-end gap-2">
+            <Button variant="ghost" size="sm" type="button" onClick={() => setPromoEditorOpen(false)}>
+              Chiudi
+            </Button>
+            <Button
+              variant="success"
+              size="sm"
+              type="button"
+              disabled={upsertRestaurantSetting.isPending}
+              onClick={() => void handleSaveVolAuVentPromoMessage()}
+            >
+              Salva
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="menu-prices-category-list-wrap flex flex-col items-center gap-[28px]">
       {categoryEntries.map(([category, label]) => {
         const items = itemsByCategory[category] || []

@@ -3,6 +3,7 @@ import { CollapsibleSection } from './CollapsibleSection'
 import { MenuSelection } from './MenuSelection'
 import type { SelectedMenuItem } from '@/types/menu'
 import { getPresetMenuLabel, type CustomStaffPreset, type PresetMenuType } from '../constants/presetMenus'
+import { DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } from '../constants/volAuVentPromo'
 
 interface MenuTabProps {
   booking: any
@@ -16,6 +17,8 @@ interface MenuTabProps {
   presetMenu?: string | null
   staffPresetsDropdownVisible?: boolean
   customStaffPresets?: CustomStaffPreset[]
+  volAuVentPromoVisible?: boolean
+  volAuVentPromoMessage?: string
   isMenuExpanded: boolean
   onMenuExpandToggle: () => void
   onMenuChange: (payload: {
@@ -55,6 +58,8 @@ export const MenuTab: React.FC<MenuTabProps> = ({
   presetMenu,
   staffPresetsDropdownVisible = true,
   customStaffPresets = [],
+  volAuVentPromoVisible = true,
+  volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
   isMenuExpanded,
   onMenuExpandToggle,
   onMenuChange,
@@ -128,6 +133,8 @@ export const MenuTab: React.FC<MenuTabProps> = ({
       presetMenu={presetMenu as PresetMenuType}
       staffPresetsDropdownVisible={staffPresetsDropdownVisible}
       customStaffPresets={customStaffPresets}
+      volAuVentPromoVisible={volAuVentPromoVisible}
+      volAuVentPromoMessage={volAuVentPromoMessage}
       onPresetMenuChange={onPresetMenuChange}
       bookingType="rinfresco_laurea"
     />

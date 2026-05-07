@@ -20,6 +20,7 @@ import {
   computeMenuTotalsFromItems,
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
+import { DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } from '../constants/volAuVentPromo'
 import { CapacityWarningModal } from './CapacityWarningModal'
 
 
@@ -122,6 +123,10 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const { data: menuItems = [] } = useMenuItems()
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
+  const { data: volAuVentPromoVisible = true } = useRestaurantSetting('booking_vol_au_vent_promo_visible')
+  const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
+    'booking_vol_au_vent_promo_message',
+  )
 
   // Initialize form data from booking
   const [formData, setFormData] = useState(() => {
@@ -782,6 +787,8 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                 presetMenu={formData.preset_menu}
                 staffPresetsDropdownVisible={staffPresetsDropdownVisible}
                 customStaffPresets={customStaffPresets}
+                volAuVentPromoVisible={volAuVentPromoVisible}
+                volAuVentPromoMessage={volAuVentPromoMessage}
                 isMenuExpanded={isMenuExpanded}
                 onMenuExpandToggle={() => setIsMenuExpanded(!isMenuExpanded)}
                 onMenuChange={handleMenuChange}

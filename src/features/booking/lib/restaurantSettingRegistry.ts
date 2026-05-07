@@ -13,6 +13,7 @@ import {
   parseBookingPageBackgroundFromDb,
 } from '@/features/booking/constants/bookingPageBackground'
 import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
+import { DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } from '@/features/booking/constants/volAuVentPromo'
 
 export const RESTAURANT_SETTING_KEYS_V1 = [
   'restaurant_name',
@@ -29,6 +30,10 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'booking_staff_presets_visible',
   /** Menù predefiniti creati dall’admin (nome + lista id voci) */
   'booking_custom_staff_presets',
+  /** Banner sopra al menu a tendina: omaggio Mini Rustici sopra soglia €/persona */
+  'booking_vol_au_vent_promo_visible',
+  /** Testo del banner (admin) */
+  'booking_vol_au_vent_promo_message',
 ] as const
 
 export type RestaurantSettingKeyV1 = (typeof RESTAURANT_SETTING_KEYS_V1)[number]
@@ -153,6 +158,22 @@ function parseBookingCustomStaffPresetsFromDb(raw: unknown): CustomStaffPreset[]
   return parsed.data
 }
 
+function parseBookingVolAuVentPromoVisibleFromDb(raw: unknown): boolean {
+  if (raw == null) return true
+  if (typeof raw === 'boolean') return raw
+  if (raw === 'false' || raw === false) return false
+  if (raw === 'true' || raw === true) return true
+  return true
+}
+
+const volAuVentPromoMessageSchema = z.string().trim().min(1).max(500)
+
+function parseBookingVolAuVentPromoMessageFromDb(raw: unknown): string {
+  const s = parseJsonScalarString(raw).trim()
+  if (!s) return DEFAULT_VOL_AU_VENT_PROMO_MESSAGE
+  return s
+}
+
 export type RestaurantSettingValueMap = {
   restaurant_name: string
   timezone: string
@@ -166,6 +187,8 @@ export type RestaurantSettingValueMap = {
   public_booking_page_background: BookingPageBackgroundId
   booking_staff_presets_visible: boolean
   booking_custom_staff_presets: CustomStaffPreset[]
+  booking_vol_au_vent_promo_visible: boolean
+  booking_vol_au_vent_promo_message: string
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -305,6 +328,23 @@ export const restaurantSettingRegistry: {
     validate: (value) => {
       const r = bookingCustomStaffPresetsSchema.safeParse(value)
       return r.success ? null : r.error.issues[0]?.message ?? 'Menù preselezionati non validi'
+    },
+  },
+  booking_vol_au_vent_promo_visible: {
+    key: 'booking_vol_au_vent_promo_visible',
+    parseFromDb: (raw) => parseBookingVolAuVentPromoVisibleFromDb(raw),
+    serializeToDb: (value) => value as Json,
+    validate: (value) => {
+      return typeof value === 'boolean' ? null : 'Valore non valido'
+    },
+  },
+  booking_vol_au_vent_promo_message: {
+    key: 'booking_vol_au_vent_promo_message',
+    parseFromDb: (raw) => parseBookingVolAuVentPromoMessageFromDb(raw),
+    serializeToDb: (value) => value as Json,
+    validate: (value) => {
+      const r = volAuVentPromoMessageSchema.safeParse(value)
+      return r.success ? null : r.error.issues[0]?.message ?? 'Messaggio non valido'
     },
   },
 }
