@@ -498,6 +498,7 @@ export const MenuPricesTab: React.FC = () => {
                 color: '#ffffff'
               }}
             >
+              <Save className="h-4 w-4" />
               Salva
             </Button>
           </div>
@@ -733,6 +734,7 @@ export const MenuPricesTab: React.FC = () => {
               className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
             >
+              <Save className="h-4 w-4" />
               Salva
             </button>
           </div>
