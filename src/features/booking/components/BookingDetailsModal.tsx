@@ -703,41 +703,38 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
         >
           {/* Header - Sticky */}
           <div className="bg-blue-50 border-b-2 border-blue-200 flex-shrink-0" style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '12px', paddingBottom: '12px', overflow: 'hidden' }}>
-            <div className="flex items-center gap-2" style={{ width: '100%' }}>
-              <div className="flex-1 min-w-0" style={{ maxWidth: 'calc(100% - 40px)' }}>
-                <h2 className="text-sm sm:text-lg font-bold text-gray-900 truncate">
+            <div style={{ width: '100%' }}>
+              <div className="grid grid-cols-[32px_minmax(0,1fr)_32px] items-center gap-2">
+                <span aria-hidden="true" />
+                <h2 className="text-center text-sm sm:text-lg font-bold text-gray-900 truncate">
                   Dettagli Prenotazione
                 </h2>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-xs sm:text-sm text-gray-600 truncate">
-                    #{booking.id.slice(0, 8)}
-                  </p>
+                <button
+                  onClick={onClose}
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition-all shadow-sm border border-gray-300 bg-white flex-shrink-0"
+                  aria-label="Chiudi"
+                  style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <X className="h-4 w-4 text-gray-600" />
+                </button>
+              </div>
+              <div className="mt-1 mb-3 flex items-center justify-between gap-2">
                   {/* Badge origine prenotazione */}
                   <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
                     booking.booking_source === 'admin' 
                       ? 'bg-green-100 text-green-700' 
                       : 'bg-blue-100 text-blue-700'
                   }`}>
-                    {booking.booking_source === 'admin' ? '👤 Admin' : '📞 Prenota'}
+                    {booking.booking_source === 'admin'
+                      ? '👤 Prenotazione inserita da Admin'
+                      : '📞 Prenotazione arrivata da cliente'}
                   </span>
-                </div>
+                  <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">
+                    ✓ Confermata
+                  </span>
               </div>
-              <button
-                onClick={onClose}
-                className="p-1.5 hover:bg-gray-100 rounded-full transition-all shadow-sm border border-gray-300 bg-white flex-shrink-0"
-                aria-label="Chiudi"
-                style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                <X className="h-4 w-4 text-gray-600" />
-              </button>
             </div>
 
-            {/* Status Badge */}
-            <div className="flex items-center mt-2">
-              <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs sm:text-sm font-medium">
-                ✓ Confermata
-              </span>
-            </div>
           </div>
 
           {/* Tab Navigation - Sticky */}

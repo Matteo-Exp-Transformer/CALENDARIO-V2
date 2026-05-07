@@ -259,7 +259,6 @@ export const DetailsTab: React.FC<Props> = ({
               value={`${formData.numGuests} ${formData.numGuests === 1 ? 'ospite' : 'ospiti'}`}
             />
             <InfoRow
-              icon={MapPin}
               label="Posizionamento"
               value={booking.placement || 'Non specificato'}
             />
