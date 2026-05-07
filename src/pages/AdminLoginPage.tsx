@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { Input, Button, Label } from '@/components/ui'
-import { ArrowRight, Lock } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 export const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState('')
@@ -99,7 +99,7 @@ export const AdminLoginPage: React.FC = () => {
                 Abbonamento non attivo. Contatta il supporto.
               </div>
             )}
-            <form onSubmit={handleSubmit} className="flex flex-col items-center gap-5">
+            <form onSubmit={handleSubmit} className="flex flex-col items-center gap-6">
 
               <div className="w-full max-w-[14rem] space-y-2 text-center">
                 <Label htmlFor="email" className="block text-center">
@@ -117,7 +117,7 @@ export const AdminLoginPage: React.FC = () => {
                 {errors.email && <p className="text-xs text-red-500 text-center">{errors.email}</p>}
               </div>
 
-              <div className="w-full max-w-[14rem] space-y-2 text-center">
+              <div className="w-full max-w-[14rem] space-y-2 text-center" style={{ marginTop: '0.5rem' }}>
                 <Label htmlFor="password" className="block text-center">
                   Password
                 </Label>
@@ -138,7 +138,7 @@ export const AdminLoginPage: React.FC = () => {
                 size="lg"
                 disabled={isSubmitting}
                 className="w-full max-w-[14rem] rounded-[1.25rem] group border !shadow-sm font-bold hover:bg-white/80 focus:ring-teal-500/40 focus:ring-offset-transparent"
-                style={{ ...loginSubmitStyle, marginTop: '2.5rem' }}
+                style={{ ...loginSubmitStyle, marginTop: '1.25rem' }}
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
@@ -154,11 +154,6 @@ export const AdminLoginPage: React.FC = () => {
               </Button>
             </form>
 
-            {/* Footer */}
-            <div className="mt-6 pt-5 flex items-center justify-center gap-2 text-xs text-slate-400">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Area riservata — accesso protetto</span>
-            </div>
           </div>
         </div>
 
