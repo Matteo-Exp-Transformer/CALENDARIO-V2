@@ -105,6 +105,16 @@ export const BookingRequestPage: React.FC = () => {
     'sunday',
   ]
 
+  /** Prima colonna 4 giorni, seconda colonna 3 — layout affiancato */
+  type WeekdayKey = (typeof dayOrder)[number]
+  const openingHoursColumns: [WeekdayKey[], WeekdayKey[]] = [
+    dayOrder.slice(0, 4),
+    dayOrder.slice(4),
+  ]
+
+  /** Rientro simmetrico nella card info: sinistra Orari, destra Contatti */
+  const openingHoursInsetLeft = 'clamp(0.4rem, 2vw, 1rem)'
+
   // Display name: prefer restaurant_settings.restaurant_name, fallback a organizations.name → "Al Ritrovo"
   const displayName = restaurantName || 'Al Ritrovo'
   const displayContactEmail = contactEmail || 'Alritrovobologna@gmail.com'
@@ -171,7 +181,13 @@ export const BookingRequestPage: React.FC = () => {
 
       {/* Main Content */}
       <div className="relative z-10 min-h-screen">
-        <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
+        <div
+          className="w-full max-w-6xl mx-auto px-4 md:px-8"
+          style={{
+            /* Come il wrapper dell’header (`paddingTop: 6`): stesso inset dal bordo inferiore della colonna */
+            paddingBottom: 6,
+          }}
+        >
 
           {/* Header compatto */}
           <div style={{ paddingTop: 6, paddingBottom: 6 }}>
@@ -243,27 +259,35 @@ export const BookingRequestPage: React.FC = () => {
 
           {/* Info Box Ridisegnata */}
           <div
-            className="rounded-2xl shadow-xl px-6 md:px-8 py-6 md:py-8 animate-fade-in"
+            className="rounded-2xl shadow-xl px-3 md:px-5 animate-fade-in"
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.3)',
               backdropFilter: 'blur(16px)',
+              paddingTop: 'clamp(0.4rem, 1.2vw, 0.7rem)',
+              paddingBottom: 'clamp(0.5rem, 1.6vmin, 0.9rem)',
+              /* Card più in basso sul flusso; il margine esterno sotto è sul contenitore (6px come sopra l’header) */
+              marginTop: 'clamp(2rem, 6vmin, 3.5rem)',
+              marginBottom: 0,
             }}
           >
-            <div className="grid grid-cols-2 gap-6 items-start">
-              {/* Colonna 1: Orari */}
-              <div className="space-y-3 justify-self-start text-left">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-terracotta to-warm-orange shadow-lg">
-                    <Clock className="w-7 h-7 text-white" />
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1 md:gap-x-4 items-start">
+              {/* Colonna 1: Orari — w-full evita shrink-wrap da justify-self-start che incollava tutto a sinistra */}
+              <div className="min-w-0 w-full space-y-1 text-left pr-1.5">
+                <div
+                  className="flex items-center gap-1.5 mb-1"
+                  style={{ paddingLeft: openingHoursInsetLeft }}
+                >
+                  <div className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-gradient-to-br from-terracotta to-warm-orange shadow-md">
+                    <Clock className="w-[14px] h-[14px] text-white" />
                   </div>
                   <div className="text-left">
                     <h3
-                      className="text-lg md:text-xl font-serif text-warm-wood"
+                      className="text-xs md:text-sm font-serif text-warm-wood leading-tight"
                       style={{
                         backgroundColor: 'rgba(255, 255, 255, 0.5)',
                         backdropFilter: 'blur(6px)',
-                        padding: '8px 16px',
-                        borderRadius: '12px',
+                        padding: '3px 8px',
+                        borderRadius: '6px',
                         display: 'inline-block',
                         fontWeight: '700'
                       }}
@@ -272,37 +296,52 @@ export const BookingRequestPage: React.FC = () => {
                     </h3>
                   </div>
                 </div>
-                <div className="space-y-1">
+                <div
+                  className="flex flex-wrap items-start gap-y-0 leading-tight"
+                  style={{
+                    paddingLeft: openingHoursInsetLeft,
+                    columnGap: 'clamp(1.2rem, 6.4vw, 3.2rem)',
+                  }}
+                >
                   {isLoading ? (
-                    <div className="font-medium text-base text-warm-wood-dark ml-8">Caricamento orari...</div>
+                    <div className="w-full font-medium text-xs text-warm-wood-dark">
+                      Caricamento orari...
+                    </div>
                   ) : (
-                    dayOrder.map((day) => {
-                      const dayHours = hours[day]
-                      const isOpen = !!dayHours && dayHours.length > 0
-                      return (
-                        <div key={day} className="font-medium text-base text-warm-wood-dark ml-8">
-                          {formatDayName(day)}: {isOpen ? formatHours(dayHours) : 'Chiuso'}
-                        </div>
-                      )
-                    })
+                    openingHoursColumns.map((columnDays, colIdx) => (
+                      <div key={colIdx} className="shrink-0 space-y-0">
+                        {columnDays.map((day) => {
+                          const dayHours = hours[day]
+                          const isOpen = !!dayHours && dayHours.length > 0
+                          return (
+                            <div key={day} className="font-medium text-xs text-warm-wood-dark leading-tight">
+                              {formatDayName(day)}: {isOpen ? formatHours(dayHours) : 'Chiuso'}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ))
                   )}
                 </div>
               </div>
 
               {/* Colonna 2: Contatti */}
-              <div className="space-y-3 justify-self-end text-right">
-                <div className="flex items-center justify-end gap-3 mb-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-terracotta to-warm-orange shadow-lg">
-                    <MapPin className="w-7 h-7 text-white" />
+              <div
+                className="min-w-0 space-y-0.5 justify-self-end text-right"
+                style={{ paddingRight: openingHoursInsetLeft }}
+              >
+                <div className="flex items-center justify-end gap-1.5 mb-1">
+                  <div className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-gradient-to-br from-terracotta to-warm-orange shadow-md">
+                    <MapPin className="w-[14px] h-[14px] text-white" />
                   </div>
                   <div className="text-right">
                     <h3
-                      className="text-lg md:text-xl font-serif text-warm-wood"
+                      className="text-xs md:text-sm font-serif text-warm-wood leading-tight"
                       style={{
                         backgroundColor: 'rgba(255, 255, 255, 0.5)',
                         backdropFilter: 'blur(6px)',
-                        padding: '8px 16px',
-                        borderRadius: '12px',
+                        padding: '3px 8px',
+                        borderRadius: '6px',
                         display: 'inline-block',
                         fontWeight: '700'
                       }}
@@ -311,23 +350,22 @@ export const BookingRequestPage: React.FC = () => {
                     </h3>
                   </div>
                 </div>
-                <div className="flex min-w-0 items-center justify-end gap-3">
-                  <Mail className="w-5 h-5 text-warm-orange flex-shrink-0" />
-                  <span className="min-w-0 break-all text-right text-base text-warm-wood-dark font-medium">
+                <div className="flex min-w-0 items-center justify-end gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-warm-orange flex-shrink-0" />
+                  <span className="min-w-0 break-all text-right text-xs text-warm-wood-dark font-medium leading-tight">
                     {displayContactEmail}
                   </span>
                 </div>
-                <div className="flex items-center justify-end gap-3">
-                  <Phone className="w-5 h-5 text-warm-orange flex-shrink-0" />
-                  <span className="text-base text-warm-wood-dark font-medium">{displayContactPhone}</span>
+                <div className="flex items-center justify-end gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-warm-orange flex-shrink-0" />
+                  <span className="text-xs text-warm-wood-dark font-medium leading-tight">{displayContactPhone}</span>
                 </div>
-                <div className="flex items-center justify-end gap-3">
-                  <MapPin className="w-5 h-5 text-warm-orange flex-shrink-0" />
-                  <span className="text-base text-warm-wood-dark font-bold" style={{ fontWeight: '700' }}>{displayContactAddress}</span>
+                <div className="flex items-center justify-end gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-warm-orange flex-shrink-0" />
+                  <span className="text-xs text-warm-wood-dark font-bold leading-tight" style={{ fontWeight: '700' }}>{displayContactAddress}</span>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>
