@@ -132,6 +132,41 @@ export function normalizeTime(t) {
   return t.split(':').slice(0, 2).join(':')
 }
 
+/** Nomi da persona per prenotazioni create dagli script di seed (QA). */
+const SEED_QA_PERSON_NAMES = [
+  'Giulia Romano',
+  'Marco Ferraro',
+  'Chiara Conti',
+  'Luca Moretti',
+  'Francesca Gallo',
+  'Andrea Ricci',
+  'Sara Lombardi',
+  'Matteo Costa',
+  'Elisa Fontana',
+  'Davide Marchetti',
+  'Valentina Serra',
+  'Simone Caruso',
+  'Martina De Luca',
+  'Federico Greco',
+  'Elena Rizzo',
+  'Alessandro Bruno',
+  'Giorgia Vitale',
+  'Tommaso Leone',
+  'Beatrice Fabbri',
+  'Niccolò Pellegrini',
+]
+
+/**
+ * `client_name` per gli insert seed: se `CLIENT_NAME` è valorizzato in env si usa quello,
+ * altrimenti un nome tra persona scelto casualmente dall’elenco.
+ */
+export function resolveSeedClientName() {
+  const fromEnv = (process.env.CLIENT_NAME || '').trim()
+  if (fromEnv) return fromEnv
+  const i = Math.floor(Math.random() * SEED_QA_PERSON_NAMES.length)
+  return SEED_QA_PERSON_NAMES[i]
+}
+
 export async function fetchOrgBySlug(supabaseAnon, tenantSlug) {
   const { data: org, error: orgErr } = await supabaseAnon
     .from('organizations')

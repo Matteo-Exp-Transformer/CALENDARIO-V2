@@ -12,6 +12,7 @@
  *   RANDOM_MENU_MAX — numero massimo di voci estratte (default 12, mai oltre le voci disponibili)
  *
  * Credenziali: VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY, TENANT_SLUG.
+ * Nome prenotazione: env CLIENT_NAME oppure nome persona casuale (lista in bookingSeedShared).
  * Se la lettura anon di menu_items resta vuota (RLS sul progetto remoto), usa anche
  * SUPABASE_SERVICE_ROLE_KEY: lo script la usa per caricare organizations + menu_items e per INSERT PENDING.
  */
@@ -27,6 +28,7 @@ import {
   normalizeTime,
   fetchOrgBySlug,
   fetchMenuItemsForTenant,
+  resolveSeedClientName,
 } from './bookingSeedShared.mjs'
 
 function shuffleInPlace(arr) {
@@ -270,9 +272,7 @@ ${diagnostica}
 
   const numGuests = Math.max(1, parseInt(process.env.NUM_GUESTS || '12', 10))
   const desiredTime = normalizeTime(process.env.DESIRED_TIME || '20:00')
-  const clientName =
-    process.env.CLIENT_NAME ||
-    `[Script] Rinfresco casuale ${new Date().toISOString().slice(0, 19)}`
+  const clientName = resolveSeedClientName()
   const clientEmail = (process.env.CLIENT_EMAIL || 'script-menu-test@example.invalid').trim()
   const clientPhone = process.env.CLIENT_PHONE || '3400000000'
 

@@ -8,7 +8,7 @@
  *
  * Stesse variabili di scripts/seed-full-menu-booking.mjs:
  *   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, TENANT_SLUG
- * Opzionale: SUPABASE_SERVICE_ROLE_KEY (solo lettura org + insert PENDING come il form pubblico), NUM_GUESTS, DESIRED_TIME, CLIENT_*
+ * Opzionale: SUPABASE_SERVICE_ROLE_KEY (solo lettura org + insert PENDING come il form pubblico), NUM_GUESTS, DESIRED_TIME, CLIENT_* (CLIENT_NAME = nome esplicito; altrimenti nome persona casuale da bookingSeedShared).
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -20,6 +20,7 @@ import {
   resolveServiceRoleKey,
   normalizeTime,
   fetchOrgBySlug,
+  resolveSeedClientName,
 } from './bookingSeedShared.mjs'
 
 async function main() {
@@ -61,9 +62,7 @@ async function main() {
 
   const numGuests = Math.max(1, parseInt(process.env.NUM_GUESTS || '4', 10))
   const desiredTime = normalizeTime(process.env.DESIRED_TIME || '20:00')
-  const clientName =
-    process.env.CLIENT_NAME ||
-    `[Script] Solo tavolo ${new Date().toISOString().slice(0, 19)}`
+  const clientName = resolveSeedClientName()
   const clientEmail = (process.env.CLIENT_EMAIL || 'script-table-test@example.invalid').trim()
   const clientPhone = process.env.CLIENT_PHONE || '3400000000'
 
