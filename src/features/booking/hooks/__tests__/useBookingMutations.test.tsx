@@ -3,11 +3,10 @@ import { renderHook, act } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
 
-const { mockUpdate, mockFrom } = vi.hoisted(() => {
-  const mockUpdate = vi.fn()
-  const mockFrom = vi.fn()
-  return { mockUpdate, mockFrom }
-})
+// clearAllMocks preserva le implementazioni; resetAllMocks le azzera (romperebbe useTenantContext mock)
+const { mockFrom } = vi.hoisted(() => ({
+  mockFrom: vi.fn(),
+}))
 
 vi.mock('@/lib/supabase', () => ({
   supabase: { from: mockFrom },
@@ -21,12 +20,10 @@ vi.mock('@/contexts/TenantContext', () => ({
   useTenantContext: vi.fn(() => ({ tenantId: 'tenant-1' })),
 }))
 
-// Sopprime i toast nei test
 vi.mock('react-toastify', () => ({
   toast: { success: vi.fn(), error: vi.fn(), warn: vi.fn() },
 }))
 
-// Sopprime le notifiche email
 vi.mock('../useEmailNotifications', () => ({
   areEmailNotificationsEnabled: vi.fn(() => false),
   sendBookingAcceptedEmail: vi.fn(),
@@ -53,7 +50,7 @@ function makeWrapper() {
   )
 }
 
-const BOOKING_ACCEPTED = {
+const BOOKING_BASE = {
   id: 'booking-1',
   status: 'accepted',
   confirmed_start: '2026-05-10T12:00:00',
@@ -65,11 +62,11 @@ const BOOKING_ACCEPTED = {
 
 describe('useAcceptBooking', () => {
   beforeEach(() => {
-    vi.resetAllMocks()
+    vi.clearAllMocks()
   })
 
-  it('chiama supabase.update con status accepted e invalida le query', async () => {
-    const chain = buildUpdateChain({ data: BOOKING_ACCEPTED, error: null })
+  it('chiama supabase.update con status accepted', async () => {
+    const chain = buildUpdateChain({ data: BOOKING_BASE, error: null })
     mockFrom.mockReturnValue(chain)
 
     const { result } = renderHook(() => useAcceptBooking(), { wrapper: makeWrapper() })
@@ -84,8 +81,8 @@ describe('useAcceptBooking', () => {
     })
 
     expect(mockFrom).toHaveBeenCalledWith('booking_requests')
-    const updateCall = (chain['update'] as ReturnType<typeof vi.fn>).mock.calls[0][0]
-    expect(updateCall.status).toBe('accepted')
+    const updateArg = (chain['update'] as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    expect(updateArg.status).toBe('accepted')
   })
 
   it('propaga l\'errore se il DB rifiuta l\'aggiornamento', async () => {
@@ -107,10 +104,10 @@ describe('useAcceptBooking', () => {
 })
 
 describe('useRejectBooking', () => {
-  beforeEach(() => vi.resetAllMocks())
+  beforeEach(() => vi.clearAllMocks())
 
-  it('chiama supabase.update con status rejected', async () => {
-    const chain = buildUpdateChain({ data: { ...BOOKING_ACCEPTED, status: 'rejected' }, error: null })
+  it('chiama supabase.update con status rejected e motivo', async () => {
+    const chain = buildUpdateChain({ data: { ...BOOKING_BASE, status: 'rejected' }, error: null })
     mockFrom.mockReturnValue(chain)
 
     const { result } = renderHook(() => useRejectBooking(), { wrapper: makeWrapper() })
@@ -119,17 +116,17 @@ describe('useRejectBooking', () => {
       await result.current.mutateAsync({ bookingId: 'booking-1', rejectionReason: 'Locale chiuso' })
     })
 
-    const updateCall = (chain['update'] as ReturnType<typeof vi.fn>).mock.calls[0][0]
-    expect(updateCall.status).toBe('rejected')
-    expect(updateCall.rejection_reason).toBe('Locale chiuso')
+    const updateArg = (chain['update'] as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    expect(updateArg.status).toBe('rejected')
+    expect(updateArg.rejection_reason).toBe('Locale chiuso')
   })
 })
 
-describe('useCancelBooking (soft-delete)', () => {
-  beforeEach(() => vi.resetAllMocks())
+describe('useCancelBooking — soft-delete', () => {
+  beforeEach(() => vi.clearAllMocks())
 
-  it('chiama supabase.update con status deleted (soft-delete)', async () => {
-    const chain = buildUpdateChain({ data: { ...BOOKING_ACCEPTED, status: 'deleted' }, error: null })
+  it('chiama supabase.update con status deleted', async () => {
+    const chain = buildUpdateChain({ data: { ...BOOKING_BASE, status: 'deleted' }, error: null })
     mockFrom.mockReturnValue(chain)
 
     const { result } = renderHook(() => useCancelBooking(), { wrapper: makeWrapper() })
@@ -138,8 +135,8 @@ describe('useCancelBooking (soft-delete)', () => {
       await result.current.mutateAsync({ bookingId: 'booking-1', cancellationReason: 'Cliente disdetto' })
     })
 
-    const updateCall = (chain['update'] as ReturnType<typeof vi.fn>).mock.calls[0][0]
-    expect(updateCall.status).toBe('deleted')
-    expect(updateCall.cancellation_reason).toBe('Cliente disdetto')
+    const updateArg = (chain['update'] as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    expect(updateArg.status).toBe('deleted')
+    expect(updateArg.cancellation_reason).toBe('Cliente disdetto')
   })
 })

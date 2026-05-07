@@ -35,18 +35,6 @@ const CAT_LIST = [
   { id: 'cat-2', tenant_id: 'tenant-1', key: 'primi', label: 'Primi', sort_order: 2, created_at: '', updated_at: '' },
 ]
 
-function buildReadChain(data: unknown[]) {
-  const chain: Record<string, unknown> = {}
-  chain['select'] = vi.fn(() => chain)
-  chain['eq'] = vi.fn(() => chain)
-  chain['order'] = vi.fn(() => chain)
-  // La query finisce con la seconda .order() — restituisce direttamente la Promise
-  ;(chain['order'] as ReturnType<typeof vi.fn>)
-    .mockReturnValueOnce(chain)
-    .mockResolvedValueOnce({ data, error: null })
-  return chain
-}
-
 function buildMutationChain(result: { data: unknown; error: null | { message: string; code?: string } }) {
   const chain: Record<string, unknown> = {}
   chain['insert'] = vi.fn(() => chain)
@@ -69,28 +57,25 @@ function makeWrapper() {
 
 describe('useMenuCategories', () => {
   beforeEach(() => {
-    vi.resetAllMocks()
+    vi.clearAllMocks()
     mockTenantId.value = 'tenant-1'
   })
 
-  it('query disabilitata se tenantId è null', () => {
+  it('query disabilitata (idle) se tenantId è null', () => {
     mockTenantId.value = null
     const { result } = renderHook(() => useMenuCategories(), { wrapper: makeWrapper() })
-    // Con enabled: false la query non parte → fetchStatus idle
     expect(result.current.fetchStatus).toBe('idle')
   })
 
   it('restituisce le categorie filtrate per tenant', async () => {
-    // Simula la chain: .select().eq().order().order() → { data: CAT_LIST }
     const chain: Record<string, unknown> = {}
     chain['select'] = vi.fn(() => chain)
     chain['eq'] = vi.fn(() => chain)
-    // Prima .order() → chain, seconda .order() → Promise con risultato
-    let orderCallCount = 0
+    // .order() chiamata 2 volte: la prima restituisce chain, la seconda la Promise
+    let callCount = 0
     chain['order'] = vi.fn(() => {
-      orderCallCount++
-      if (orderCallCount < 2) return chain
-      return Promise.resolve({ data: CAT_LIST, error: null })
+      callCount++
+      return callCount < 2 ? chain : Promise.resolve({ data: CAT_LIST, error: null })
     })
     mockFrom.mockReturnValue(chain)
 
@@ -104,7 +89,7 @@ describe('useMenuCategories', () => {
 
 describe('useCreateMenuCategory', () => {
   beforeEach(() => {
-    vi.resetAllMocks()
+    vi.clearAllMocks()
     mockTenantId.value = 'tenant-1'
   })
 
@@ -120,10 +105,10 @@ describe('useCreateMenuCategory', () => {
     })
 
     expect(mockFrom).toHaveBeenCalledWith('menu_categories')
-    const insertCall = (chain['insert'] as ReturnType<typeof vi.fn>).mock.calls[0][0]
-    expect(insertCall.key).toBe('dolci')
-    expect(insertCall.label).toBe('Dolci')
-    expect(insertCall.tenant_id).toBe('tenant-1')
+    const insertArg = (chain['insert'] as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    expect(insertArg.key).toBe('dolci')
+    expect(insertArg.label).toBe('Dolci')
+    expect(insertArg.tenant_id).toBe('tenant-1')
   })
 
   it('propaga errore di duplicato con messaggio leggibile', async () => {
@@ -142,11 +127,11 @@ describe('useCreateMenuCategory', () => {
 
 describe('useUpdateMenuCategory', () => {
   beforeEach(() => {
-    vi.resetAllMocks()
+    vi.clearAllMocks()
     mockTenantId.value = 'tenant-1'
   })
 
-  it('chiama supabase.update su menu_categories', async () => {
+  it('chiama supabase.update su menu_categories con la label aggiornata', async () => {
     const updated = { ...CAT_LIST[0], label: 'Antipasti e stuzzichini' }
     const chain = buildMutationChain({ data: updated, error: null })
     mockFrom.mockReturnValue(chain)
@@ -163,7 +148,7 @@ describe('useUpdateMenuCategory', () => {
     })
 
     expect(mockFrom).toHaveBeenCalledWith('menu_categories')
-    const updateCall = (chain['update'] as ReturnType<typeof vi.fn>).mock.calls[0][0]
-    expect(updateCall.label).toBe('Antipasti e stuzzichini')
+    const updateArg = (chain['update'] as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    expect(updateArg.label).toBe('Antipasti e stuzzichini')
   })
 })

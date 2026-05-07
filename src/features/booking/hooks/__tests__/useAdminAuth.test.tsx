@@ -58,8 +58,8 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 
 describe('useAdminAuth', () => {
   beforeEach(() => {
-    vi.resetAllMocks()
-    // Nessuna sessione attiva all'avvio
+    // clearAllMocks mantiene le implementazioni dei vi.mock factories (useTenantContext etc.)
+    vi.clearAllMocks()
     mockGetSession.mockResolvedValue({ data: { session: null }, error: null })
     mockSignOut.mockResolvedValue({ error: null })
   })
