@@ -59,7 +59,8 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
   const { date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId } = params
   const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
   const bookingSlotsQuery = useRestaurantSetting('booking_time_slots')
-  const dailyGuestLimit = dailyGuestLimitQuery.data ?? CAPACITY_CONFIG.MORNING_CAPACITY
+  // `null` (o assente) = nessun limite giornaliero impostato → skip del controllo
+  const dailyGuestLimit = dailyGuestLimitQuery.data ?? null
   const bookingSlots = bookingSlotsQuery.data ?? DEFAULT_BOOKING_TIME_SLOTS
 
   return useMemo(() => {
@@ -129,7 +130,9 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
 
     const totalGuestsForDay = dayBookings.reduce((acc, booking) => acc + (booking.num_guests || 0), 0)
     const totalWithNewBooking = totalGuestsForDay + numGuests
-    if (totalWithNewBooking > dailyGuestLimit) {
+    // Applica il limite giornaliero solo se l'admin ne ha impostato uno.
+    // `dailyGuestLimit === null` significa «nessun limite» → niente vincolo sul totale del giorno.
+    if (dailyGuestLimit != null && totalWithNewBooking > dailyGuestLimit) {
       isAvailable = false
       const exceededBy = totalWithNewBooking - dailyGuestLimit
       errorMessages.push(

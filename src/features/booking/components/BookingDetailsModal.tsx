@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom'
 import { X, Edit, Trash2, Save } from 'lucide-react'
 import { useUpdateBooking, useCancelBooking } from '../hooks/useBookingMutations'
 import { useAcceptedBookings } from '../hooks/useBookingQueries'
-import type { BookingRequest } from '@/types/booking'
+import type { BookingRequest, BookingType } from '@/types/booking'
+import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { extractDateFromISO, createBookingDateTime, getAccurateStartTime, getAccurateEndTime, calculateEndTimeFromStart } from '../utils/dateUtils'
 import { getSlotsOccupiedByBooking } from '../utils/capacityCalculator'
 import { CAPACITY_CONFIG } from '../constants/capacity'
@@ -47,7 +48,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const [isEditMode, setIsEditMode] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [showTypeChangeWarning, setShowTypeChangeWarning] = useState(false)
-  const [pendingBookingType, setPendingBookingType] = useState<'tavolo' | 'rinfresco_laurea'>('tavolo')
+  const [pendingBookingType, setPendingBookingType] = useState<BookingType>('tavolo')
   const [activeTab, setActiveTab] = useState<TabId>('details')
   const [isMenuExpanded, setIsMenuExpanded] = useState(false)
   const [cancellationReason, setCancellationReason] = useState('')
@@ -135,7 +136,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       const endTime = getAccurateEndTime(booking)
 
       return {
-        booking_type: (booking.booking_type || 'tavolo') as 'tavolo' | 'rinfresco_laurea',
+        booking_type: (booking.booking_type || 'tavolo') as BookingType,
         client_name: booking.client_name || '',
         client_email: booking.client_email || '',
         client_phone: booking.client_phone || '',
@@ -153,7 +154,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       console.error('[BookingDetailsModal] Error initializing form data:', error)
       // Return default values if initialization fails
       return {
-        booking_type: 'tavolo' as 'tavolo' | 'rinfresco_laurea',
+        booking_type: 'tavolo' as BookingType,
         client_name: booking.client_name || '',
         client_email: booking.client_email || '',
         client_phone: booking.client_phone || '',
@@ -189,7 +190,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       const endTime = getAccurateEndTime(booking)
 
       setFormData({
-        booking_type: (booking.booking_type || 'tavolo') as 'tavolo' | 'rinfresco_laurea',
+        booking_type: (booking.booking_type || 'tavolo') as BookingType,
         client_name: booking.client_name || '',
         client_email: booking.client_email || '', // Può essere null/undefined, quindi stringa vuota
         client_phone: booking.client_phone || '',
@@ -219,7 +220,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       { id: 'details', label: 'Dettagli', icon: '📋' }
     ]
 
-    if (formData.booking_type === 'rinfresco_laurea') {
+    if (bookingTypeUsesMenuSelections(formData.booking_type)) {
       baseTabs.push(
         { id: 'menu', label: 'Menu e Prezzi', icon: '🍽️' },
         { id: 'dietary', label: 'Intolleranze e Note', icon: '⚠️' }
@@ -418,13 +419,13 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     }
   }
 
-  const handleBookingTypeChange = (newType: 'tavolo' | 'rinfresco_laurea') => {
-    if (formData.booking_type === 'rinfresco_laurea' && newType === 'tavolo') {
+  const handleBookingTypeChange = (newType: BookingType) => {
+    if (bookingTypeUsesMenuSelections(formData.booking_type) && newType === 'tavolo') {
       setShowTypeChangeWarning(true)
       setPendingBookingType(newType)
     } else {
-      // Quando si cambia a rinfresco_laurea, inizializza menu_selection se non esiste
-      if (newType === 'rinfresco_laurea' && !formData.menu_selection) {
+      // Tipologie con menù: inizializza menu_selection se non esiste
+      if (bookingTypeUsesMenuSelections(newType) && !formData.menu_selection) {
         setFormData(prev => ({
           ...prev,
           booking_type: newType,
@@ -524,7 +525,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
     let menuTotalPerPerson = undefined
     let menuTotalBooking = undefined
-    if (formData.booking_type === 'rinfresco_laurea' && formData.menu_selection) {
+    if (bookingTypeUsesMenuSelections(formData.booking_type) && formData.menu_selection) {
       const baseTotal = formData.menu_selection.items
         .filter((item: any) => !item.name.toLowerCase().includes('tiramis'))
         .reduce((sum: number, item: any) => sum + item.price, 0)
@@ -545,11 +546,15 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
         numGuests: formData.numGuests,
         specialRequests: formData.specialRequests?.trim() === '' ? null : (formData.specialRequests || null),
         desiredTime: formData.startTime,
-        menu_selection: formData.booking_type === 'rinfresco_laurea' ? formData.menu_selection : undefined,
+        menu_selection: bookingTypeUsesMenuSelections(formData.booking_type) ? formData.menu_selection : undefined,
         menu_total_per_person: menuTotalPerPerson,
         menu_total_booking: menuTotalBooking,
-        dietary_restrictions: formData.booking_type === 'rinfresco_laurea' ? formData.dietary_restrictions : undefined,
-        preset_menu: formData.booking_type === 'rinfresco_laurea' ? (formData.preset_menu || undefined) : undefined,
+        dietary_restrictions: bookingTypeUsesMenuSelections(formData.booking_type)
+          ? formData.dietary_restrictions
+          : undefined,
+        preset_menu: bookingTypeUsesMenuSelections(formData.booking_type)
+          ? (formData.preset_menu || undefined)
+          : undefined,
         placement: formData.placement?.trim() === '' ? null : (formData.placement || null)
       },
       {
@@ -778,13 +783,14 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
               />
             )}
 
-            {activeTab === 'menu' && formData.booking_type === 'rinfresco_laurea' && (
+            {activeTab === 'menu' && bookingTypeUsesMenuSelections(formData.booking_type) && (
               <MenuTab
                 booking={booking}
                 isEditMode={isEditMode}
                 menuSelection={formData.menu_selection}
                 numGuests={formData.numGuests}
                 presetMenu={formData.preset_menu}
+                menuFlowBookingType={formData.booking_type}
                 staffPresetsDropdownVisible={staffPresetsDropdownVisible}
                 customStaffPresets={customStaffPresets}
                 volAuVentPromoVisible={volAuVentPromoVisible}
@@ -796,7 +802,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
               />
             )}
 
-            {activeTab === 'dietary' && formData.booking_type === 'rinfresco_laurea' && (
+            {activeTab === 'dietary' && bookingTypeUsesMenuSelections(formData.booking_type) && (
               <DietaryTab
                 booking={booking}
                 isEditMode={isEditMode}

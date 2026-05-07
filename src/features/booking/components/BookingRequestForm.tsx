@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { Input } from '@/components/ui'
 import { DateInput } from '@/components/ui/DateInput'
 import { TimeInput } from '@/components/ui/TimeInput'
-import type { BookingRequestInput } from '@/types/booking'
+import type { BookingRequestInput, BookingType } from '@/types/booking'
+import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { useCreateBookingRequest } from '../hooks/useBookingRequests'
 import { useRateLimit } from '@/hooks/useRateLimit'
 import { Check, Send, Loader2, CheckCircle } from 'lucide-react'
@@ -397,8 +398,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
       if (!firstErrorKey) firstErrorKey = 'booking_type'
     }
 
-    // Menu validation for Rinfresco di Laurea
-    if (formData.booking_type === 'rinfresco_laurea') {
+    // Menu validation (Rinfresco di Laurea / menù a prezzo fisso)
+    if (bookingTypeUsesMenuSelections(formData.booking_type)) {
       if (!formData.menu_selection || !formData.menu_selection.items || formData.menu_selection.items.length === 0) {
         newErrors.menu = 'Seleziona almeno un prodotto dal menù'
         isValid = false
@@ -799,7 +800,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             id="booking_type"
             value={formData.booking_type}
             onChange={(e) => {
-              const booking_type = e.target.value as 'tavolo' | 'rinfresco_laurea'
+              const booking_type = e.target.value as BookingType
               if (booking_type === 'tavolo') {
                 setSelectedPreset(null)
                 setFormData({
@@ -831,8 +832,9 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             onFocus={(e) => ((e.target as HTMLSelectElement).style.borderColor = '#8B6914')}
             onBlur={(e) => ((e.target as HTMLSelectElement).style.borderColor = 'rgba(0,0,0,0.2)')}
           >
-            <option value="tavolo">Prenota un tavolo (senza menù)</option>
-            <option value="rinfresco_laurea">Rinfresco di Laurea (menù e ingredienti)</option>
+            <option value="tavolo">Prenota un tavolo</option>
+            <option value="rinfresco_laurea">Rinfresco di Laurea</option>
+            <option value="menu_prezzo_fisso">Menu a prezzo fisso</option>
           </select>
           {errors.booking_type && (
             <p className="text-sm text-red-500">{errors.booking_type}</p>
@@ -841,7 +843,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
 
       </div>
       {/* Menu Selection - Solo per Rinfresco di Laurea */}
-      {formData.booking_type === 'rinfresco_laurea' && (
+      {bookingTypeUsesMenuSelections(formData.booking_type) && (
         <div 
           id="menu-section" 
           className="space-y-6"
@@ -897,7 +899,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
           Il num_guests è il totale ospiti della prenotazione.
           I guest_count nelle intolleranze indicano solo quante persone hanno quella specifica intolleranza.
           NON vengono sommati al totale. */}
-      {formData.booking_type === 'rinfresco_laurea' && (
+      {bookingTypeUsesMenuSelections(formData.booking_type) && (
         <div className="space-y-6">
           <DietaryRestrictionsSection
             restrictions={formData.dietary_restrictions || []}
@@ -919,7 +921,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
       )}
 
       {/* Privacy Policy - Solo per Prenota un Tavolo (per Rinfresco di Laurea è dentro DietaryRestrictionsSection) */}
-      {formData.booking_type !== 'rinfresco_laurea' && (
+      {!bookingTypeUsesMenuSelections(formData.booking_type) && (
         <div className="space-y-2" style={{ marginTop: '2.5rem' }}>
           <div className="flex items-center gap-3">
             <div className="relative flex-shrink-0">

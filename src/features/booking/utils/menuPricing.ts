@@ -1,4 +1,5 @@
 import type { BookingRequest } from '@/types/booking'
+import { bookingTypeUsesMenuSelections } from './bookingTypeMenu'
 
 /** Importi tipo 1'234'000.39 — apostrofo ogni 3 cifre, punto sulle decimali */
 export function formatEuroAmountForDisplay(amount: number): string {
@@ -67,7 +68,7 @@ export const getMenuPriceDisplayFromBooking = (booking: BookingRequest): MenuPri
 export function getResolvedMenuPriceDisplay(booking: BookingRequest): MenuPriceDisplay | null {
   const fromDb = getMenuPriceDisplayFromBooking(booking)
 
-  if (booking.booking_type === 'rinfresco_laurea' && booking.menu_selection?.items) {
+  if (bookingTypeUsesMenuSelections(booking.booking_type) && booking.menu_selection?.items) {
     const baseTotal = booking.menu_selection.items
       .filter((item) => !item.name.toLowerCase().includes('tiramis'))
       .reduce((sum, item) => sum + (item.totalPrice || item.price), 0)

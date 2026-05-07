@@ -110,14 +110,21 @@ function parseBookingWindowDaysFromDb(raw: unknown): number {
   return 60
 }
 
-function parseDailyGuestLimitFromDb(raw: unknown): number {
-  if (raw == null) return 75
+/**
+ * `daily_guest_limit` può essere assente/`null` per indicare «nessun limite».
+ * Restituisce `null` quando il valore non è impostato o non è un numero valido,
+ * così l'app sa che non deve applicare alcun cap giornaliero.
+ */
+function parseDailyGuestLimitFromDb(raw: unknown): number | null {
+  if (raw == null) return null
   if (typeof raw === 'number' && Number.isFinite(raw)) return raw
   if (typeof raw === 'string') {
-    const n = parseInt(raw, 10)
+    const trimmed = raw.trim()
+    if (trimmed === '') return null
+    const n = parseInt(trimmed, 10)
     if (!Number.isNaN(n)) return n
   }
-  return 75
+  return null
 }
 
 function parseBusinessHoursFromDb(raw: unknown): BusinessHours {
@@ -178,7 +185,7 @@ export type RestaurantSettingValueMap = {
   restaurant_name: string
   timezone: string
   booking_window_days: number
-  daily_guest_limit: number
+  daily_guest_limit: number | null
   booking_time_slots: BookingTimeSlots
   business_hours: BusinessHours
   contact_email: string
@@ -231,8 +238,14 @@ export const restaurantSettingRegistry: {
   daily_guest_limit: {
     key: 'daily_guest_limit',
     parseFromDb: (raw) => parseDailyGuestLimitFromDb(raw),
-    serializeToDb: (value) => value as Json,
+    serializeToDb: (value) => {
+      // `null` / stringa vuota = nessun limite giornaliero
+      if (value == null || value === '') return null as unknown as Json
+      return value as Json
+    },
     validate: (value) => {
+      // Campo opzionale: vuoto/null = nessun limite, sempre valido
+      if (value == null || value === '') return null
       const r = dailyGuestLimitSchema.safeParse(value)
       return r.success ? null : r.error.issues[0]?.message ?? 'Valore non valido'
     },

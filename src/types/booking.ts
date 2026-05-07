@@ -3,6 +3,9 @@ import type { SelectedMenuItem } from './menu'
 import type { PresetMenuType } from '../features/booking/constants/presetMenus'
 
 export type BookingStatus = 'pending' | 'accepted' | 'rejected' | 'deleted'
+
+/** Tipologia prenotazione: tavolo senza menù; le altre due condividono selezione menù e intolleranze. */
+export type BookingType = 'tavolo' | 'rinfresco_laurea' | 'menu_prezzo_fisso'
 export type EventType = 'cena' | 'aperitivo' | 'evento' | 'laurea' | 'drink_caraffe' | 'drink_rinfresco_leggero' | 'drink_rinfresco_completo' | 'drink_rinfresco_completo_primo' | 'menu_pranzo_cena'
 
 export interface DietaryRestriction {
@@ -29,8 +32,8 @@ export interface BookingRequest {
   special_requests?: string
   menu?: string
 
-  // Extended properties for Rinfresco di Laurea
-  booking_type?: 'tavolo' | 'rinfresco_laurea'
+  // Extended properties for Rinfresco di Laurea / menù a prezzo fisso
+  booking_type?: BookingType
   menu_selection?: {
     items: SelectedMenuItem[]
     tiramisu_total: number
@@ -69,8 +72,8 @@ export interface BookingRequestInput {
   desired_time?: string
   num_guests: number
   special_requests?: string
-  // Extended properties for Rinfresco di Laurea
-  booking_type?: 'tavolo' | 'rinfresco_laurea'
+  // Extended properties for Rinfresco di Laurea / menù a prezzo fisso
+  booking_type?: BookingType
   menu_selection?: {
     items: SelectedMenuItem[]
     tiramisu_total: number

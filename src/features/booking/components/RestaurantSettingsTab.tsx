@@ -142,7 +142,7 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const [dirty, setDirty] = useState(false)
   const [restaurantName, setRestaurantName] = useState('')
-  const [dailyGuestLimit, setDailyGuestLimit] = useState<number | ''>(75)
+  const [dailyGuestLimit, setDailyGuestLimit] = useState<number | ''>('')
   const [bookingTimeSlots, setBookingTimeSlots] = useState<BookingTimeSlots>(DEFAULT_BOOKING_TIME_SLOTS)
   const [slotValidationError, setSlotValidationError] = useState<string | null>(null)
   const [slotFieldsAttention, setSlotFieldsAttention] = useState<Record<SlotFieldKey, boolean>>({
@@ -154,9 +154,9 @@ export const RestaurantSettingsTab: React.FC = () => {
     eveningEnd: false,
   })
   const [businessHours, setBusinessHours] = useState<BusinessHours>(() => getDefaultBusinessHours())
-  const [contactEmail, setContactEmail] = useState('Alritrovobologna@gmail.com')
-  const [contactPhone, setContactPhone] = useState('3505362538')
-  const [contactAddress, setContactAddress] = useState('Via Centotrecento 1/1B - Bologna, 40126')
+  const [contactEmail, setContactEmail] = useState('')
+  const [contactPhone, setContactPhone] = useState('')
+  const [contactAddress, setContactAddress] = useState('')
   const [bookingPageBackground, setBookingPageBackground] =
     useState<BookingPageBackgroundId>(DEFAULT_BOOKING_PAGE_BACKGROUND)
   const [bookingBgTextureTab, setBookingBgTextureTab] = useState<'images' | 'gradients'>('images')
@@ -194,18 +194,12 @@ export const RestaurantSettingsTab: React.FC = () => {
     setRestaurantName(
       stripDirectionalFormattingChars(String(nameQuery.data ?? '')).slice(0, RESTAURANT_NAME_MAX_LENGTH)
     )
-    setDailyGuestLimit(dailyGuestLimitQuery.data)
+    setDailyGuestLimit(dailyGuestLimitQuery.data ?? '')
     setBookingTimeSlots(bookingTimeSlotsQuery.data)
     setBusinessHours(hoursQuery.data)
-    setContactEmail(
-      stripDirectionalFormattingChars(contactEmailQuery.data || 'Alritrovobologna@gmail.com')
-    )
-    setContactPhone(stripDirectionalFormattingChars(contactPhoneQuery.data || '3505362538'))
-    setContactAddress(
-      stripDirectionalFormattingChars(
-        contactAddressQuery.data || 'Via Centotrecento 1/1B - Bologna, 40126'
-      )
-    )
+    setContactEmail(stripDirectionalFormattingChars(contactEmailQuery.data ?? ''))
+    setContactPhone(stripDirectionalFormattingChars(contactPhoneQuery.data ?? ''))
+    setContactAddress(stripDirectionalFormattingChars(contactAddressQuery.data ?? ''))
     const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
     setBookingPageBackground(resolvedBg)
     setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
@@ -310,7 +304,7 @@ export const RestaurantSettingsTab: React.FC = () => {
 
       await upsert.mutateAsync([
         { key: 'restaurant_name', value: safeName },
-        { key: 'daily_guest_limit', value: dailyGuestLimit },
+        { key: 'daily_guest_limit', value: dailyGuestLimit === '' ? null : dailyGuestLimit },
         { key: 'booking_time_slots', value: bookingTimeSlots },
         { key: 'business_hours', value: businessHours },
         { key: 'contact_email', value: safeEmail },
@@ -475,6 +469,7 @@ export const RestaurantSettingsTab: React.FC = () => {
               max={1000}
               value={dailyGuestLimit}
               disabled={upsert.isPending}
+              placeholder="Nessun limite"
               className={`${anagraficaInputClassName} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
               onChange={(e) => {
                 markDirty()
@@ -538,6 +533,21 @@ export const RestaurantSettingsTab: React.FC = () => {
             />
           </div>
         </div>
+      </section>
+
+      <section className={sectionSurfaceClass} style={sectionSurfaceStyle}>
+        <h3 className="text-lg font-semibold text-slate-800">Orari di apertura</h3>
+        <p className="text-sm text-slate-600">
+          Modifica gli orari visibili al pubblico nella pagina di Prenotazione.
+        </p>
+        <BusinessHoursEditor
+          value={businessHours}
+          disabled={upsert.isPending}
+          onChange={(next) => {
+            markDirty()
+            setBusinessHours(next)
+          }}
+        />
       </section>
 
       <section className={sectionSurfaceClass} style={sectionSurfaceStyle}>
@@ -711,21 +721,6 @@ export const RestaurantSettingsTab: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
-
-      <section className={sectionSurfaceClass} style={sectionSurfaceStyle}>
-        <h3 className="text-lg font-semibold text-slate-800">Orari di apertura</h3>
-        <p className="text-sm text-slate-600">
-          Modifica gli orari visibili al pubblico nella pagina di Prenotazione.
-        </p>
-        <BusinessHoursEditor
-          value={businessHours}
-          disabled={upsert.isPending}
-          onChange={(next) => {
-            markDirty()
-            setBusinessHours(next)
-          }}
-        />
       </section>
 
       <section className={bookingBgSectionClass} style={sectionSurfaceStyle}>

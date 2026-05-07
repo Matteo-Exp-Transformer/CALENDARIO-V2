@@ -1,5 +1,6 @@
 import React from 'react'
-import type { BookingRequest } from '@/types/booking'
+import type { BookingRequest, BookingType } from '@/types/booking'
+import { BOOKING_TYPE_EVENT_LABELS } from '../utils/eventTypeLabels'
 import { formatBookingDateTime } from '../utils/formatDateTime'
 import { MapPin } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
@@ -9,7 +10,7 @@ interface Props {
   booking: BookingRequest
   isEditMode: boolean
   formData: {
-    booking_type: 'tavolo' | 'rinfresco_laurea'
+    booking_type: BookingType
     client_name: string
     client_email: string
     client_phone: string
@@ -21,7 +22,7 @@ interface Props {
     placement?: string | null
   }
   onFormDataChange: (field: string, value: any) => void
-  onBookingTypeChange: (newType: 'tavolo' | 'rinfresco_laurea') => void
+  onBookingTypeChange: (newType: BookingType) => void
 }
 
 // Helper to capitalize first letter of date string
@@ -78,15 +79,16 @@ export const DetailsTab: React.FC<Props> = ({
         {isEditMode ? (
           <select
             value={formData.booking_type}
-            onChange={(e) => onBookingTypeChange(e.target.value as 'tavolo' | 'rinfresco_laurea')}
+            onChange={(e) => onBookingTypeChange(e.target.value as BookingType)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="tavolo">Prenota un Tavolo</option>
             <option value="rinfresco_laurea">Rinfresco di Laurea</option>
+            <option value="menu_prezzo_fisso">Menu a prezzo fisso</option>
           </select>
         ) : (
           <p className="text-gray-900 font-medium">
-            {formData.booking_type === 'tavolo' ? 'Prenota un Tavolo' : 'Rinfresco di Laurea'}
+            {BOOKING_TYPE_EVENT_LABELS[formData.booking_type] ?? formData.booking_type}
           </p>
         )}
       </div>

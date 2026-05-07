@@ -1,5 +1,6 @@
 const BOOKING_TYPE_LABELS: Record<string, string> = {
   rinfresco_laurea: 'Rinfresco di Laurea',
+  menu_prezzo_fisso: 'Menu a prezzo fisso',
   tavolo: 'Prenota un Tavolo'
 }
 

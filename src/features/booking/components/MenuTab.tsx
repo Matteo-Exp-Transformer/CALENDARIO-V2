@@ -2,11 +2,15 @@ import React, { useMemo } from 'react'
 import { CollapsibleSection } from './CollapsibleSection'
 import { MenuSelection } from './MenuSelection'
 import type { SelectedMenuItem } from '@/types/menu'
+import type { BookingType } from '@/types/booking'
+import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { getPresetMenuLabel, type CustomStaffPreset, type PresetMenuType } from '../constants/presetMenus'
 import { DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } from '../constants/volAuVentPromo'
 
 interface MenuTabProps {
   booking: any
+  /** Tipologia effettiva in modifica (es. menù a prezzo fisso); default da `booking.booking_type`. */
+  menuFlowBookingType?: BookingType
   isEditMode: boolean
   menuSelection?: {
     items: SelectedMenuItem[]
@@ -52,6 +56,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export const MenuTab: React.FC<MenuTabProps> = ({
   booking,
+  menuFlowBookingType,
   isEditMode,
   menuSelection,
   numGuests,
@@ -65,6 +70,9 @@ export const MenuTab: React.FC<MenuTabProps> = ({
   onMenuChange,
   onPresetMenuChange
 }) => {
+  const resolvedMenuBookingType: BookingType =
+    menuFlowBookingType ??
+    (bookingTypeUsesMenuSelections(booking?.booking_type) ? booking.booking_type : 'rinfresco_laurea')
   // Group menu items by category
   const groupedItems = useMemo(() => {
     if (!menuSelection?.items) return {}
@@ -136,7 +144,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
       volAuVentPromoVisible={volAuVentPromoVisible}
       volAuVentPromoMessage={volAuVentPromoMessage}
       onPresetMenuChange={onPresetMenuChange}
-      bookingType="rinfresco_laurea"
+      bookingType={resolvedMenuBookingType}
     />
   ) : (
     <div className="space-y-4">

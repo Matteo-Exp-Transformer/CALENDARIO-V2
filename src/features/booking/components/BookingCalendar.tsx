@@ -27,6 +27,7 @@ import {
   getBookingTimeSlotLabel,
 } from '../utils/bookingTimeSlots'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
+import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 
 /** Sfondo sezione calendario: arancio chiarissimo → giallo chiarissimo, più tenue del top bar admin */
 const CALENDAR_SECTION_WARM_SURFACE: React.CSSProperties = {
@@ -38,7 +39,7 @@ const CALENDAR_SECTION_WARM_SURFACE: React.CSSProperties = {
 /** True se la prenotazione prevede menù / rinfresco (non “solo tavolo”). */
 function digestBookingHasMenuContext(booking: BookingRequest): boolean {
   if (booking.menu?.trim()) return true
-  if (booking.booking_type === 'rinfresco_laurea') return true
+  if (bookingTypeUsesMenuSelections(booking.booking_type)) return true
   if (booking.preset_menu) return true
   if ((booking.menu_total_per_person ?? 0) > 0) return true
   return !!(booking.menu_selection?.items && booking.menu_selection.items.length > 0)

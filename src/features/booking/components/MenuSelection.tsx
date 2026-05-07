@@ -17,6 +17,8 @@ import {
   DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
   VOL_AU_VENT_THRESHOLD_EUR,
 } from '../constants/volAuVentPromo'
+import type { BookingType } from '@/types/booking'
+import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 
 interface MenuSelectionProps {
   selectedItems: SelectedMenuItem[]
@@ -29,7 +31,7 @@ interface MenuSelectionProps {
   }) => void
   presetMenu?: PresetMenuType
   onPresetMenuChange?: (preset: PresetMenuType) => void
-  bookingType?: 'tavolo' | 'rinfresco_laurea'
+  bookingType?: BookingType
   /** Se false, nasconde il menu a tendina dei menù consigliati (impostazione admin). Default: true */
   staffPresetsDropdownVisible?: boolean
   /** Menù personalizzati dallo staff (da restaurant_settings). */
@@ -105,7 +107,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   const formatCurrency = (value: number) => `€${value.toFixed(2)}`
 
   const showStaffPresetDropdown = useMemo(() => {
-    if (bookingType !== 'rinfresco_laurea' || !onPresetMenuChange || !staffPresetsDropdownVisible) {
+    if (!bookingTypeUsesMenuSelections(bookingType) || !onPresetMenuChange || !staffPresetsDropdownVisible) {
       return false
     }
     if (customStaffPresets.length > 0) return true
@@ -223,7 +225,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   }, [totalPerPerson])
 
   const shouldHaveVolAuVent = useMemo(() => {
-    if (bookingType !== 'rinfresco_laurea') return false
+    if (!bookingTypeUsesMenuSelections(bookingType)) return false
     return meetsVolAuVentThreshold
   }, [meetsVolAuVentThreshold, bookingType])
 
@@ -535,7 +537,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       </h2>
 
       {/* Banner omaggio + menu a tendina menù consigliati — solo Rinfresco di Laurea */}
-      {(volAuVentPromoVisible || showStaffPresetDropdown) && bookingType === 'rinfresco_laurea' && (
+      {(volAuVentPromoVisible || showStaffPresetDropdown) && bookingTypeUsesMenuSelections(bookingType) && (
         <div
           className="w-full flex flex-col items-center px-1 sm:px-2"
           style={{

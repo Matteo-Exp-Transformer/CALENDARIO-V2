@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase, handleSupabaseError } from '@/lib/supabase'
-import type { BookingRequest } from '@/types/booking'
+import type { BookingRequest, BookingType } from '@/types/booking'
 import { toast } from 'react-toastify'
 import {
   sendBookingAcceptedEmail,
@@ -25,7 +25,7 @@ interface RejectBookingInput {
 
 interface UpdateBookingInput {
   bookingId: string
-  booking_type?: 'tavolo' | 'rinfresco_laurea'
+  booking_type?: BookingType
   client_name?: string
   client_email?: string | null
   client_phone?: string | null

@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { Calendar, Clock, Users, Tag, MessageSquare, CheckCircle, XCircle, UtensilsCrossed, ChevronDown, User, Mail, Phone } from 'lucide-react'
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
+import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { getPresetMenuLabel } from '../constants/presetMenus'
 import type { PresetMenuType } from '../constants/presetMenus'
 import { getMenuPriceDisplayFromBooking, getResolvedMenuPriceDisplay } from '../utils/menuPricing'
@@ -69,7 +70,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
   const statusConfig = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
   const menuPriceDisplay = getMenuPriceDisplayFromBooking(booking)
   const digestMenuPrice =
-    booking.booking_type === 'rinfresco_laurea' ? getResolvedMenuPriceDisplay(booking) : null
+    bookingTypeUsesMenuSelections(booking.booking_type) ? getResolvedMenuPriceDisplay(booking) : null
   const creationDateLabel = formatBookingDateTime(booking.created_at)
 
   return (
@@ -215,7 +216,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
           </p>
 
           {/* Menu Info - Solo per Rinfresco di Laurea */}
-          {booking.booking_type === 'rinfresco_laurea' && booking.menu_selection && (
+          {bookingTypeUsesMenuSelections(booking.booking_type) && booking.menu_selection && (
             <div className="pt-6 mt-6 border-t" style={{ borderTopColor: ADMIN_WARM_BORDER }}>
               <p className="mb-3 text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Menu Selezionato</p>
               
@@ -283,7 +284,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
           )}
 
           {/* Intolleranze - Solo per Rinfresco di Laurea */}
-          {booking.booking_type === 'rinfresco_laurea' && booking.dietary_restrictions && Array.isArray(booking.dietary_restrictions) && booking.dietary_restrictions.length > 0 && (
+          {bookingTypeUsesMenuSelections(booking.booking_type) && booking.dietary_restrictions && Array.isArray(booking.dietary_restrictions) && booking.dietary_restrictions.length > 0 && (
             <div className="pt-6 mt-6 border-t" style={{ borderTopColor: ADMIN_WARM_BORDER }}>
               <p className="mb-3 text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Intolleranze Alimentari</p>
               <div className="space-y-2">

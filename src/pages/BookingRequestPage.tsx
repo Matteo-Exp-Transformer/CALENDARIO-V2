@@ -117,9 +117,9 @@ export const BookingRequestPage: React.FC = () => {
 
   // Display name: prefer restaurant_settings.restaurant_name, fallback a organizations.name → "Al Ritrovo"
   const displayName = restaurantName || 'Al Ritrovo'
-  const displayContactEmail = contactEmail || 'Alritrovobologna@gmail.com'
-  const displayContactPhone = contactPhone || '3505362538'
-  const displayContactAddress = contactAddress || 'Via Centotrecento 1/1B - Bologna, 40126'
+  const displayContactEmail = (contactEmail ?? '').trim()
+  const displayContactPhone = (contactPhone ?? '').trim()
+  const displayContactAddress = (contactAddress ?? '').trim()
 
   // Show loading while resolving tenant
   if (isTenantLoading) {
@@ -350,20 +350,26 @@ export const BookingRequestPage: React.FC = () => {
                     </h3>
                   </div>
                 </div>
-                <div className="flex min-w-0 items-center justify-end gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-warm-orange flex-shrink-0" />
-                  <span className="min-w-0 break-all text-right text-xs text-warm-wood-dark font-medium leading-tight">
-                    {displayContactEmail}
-                  </span>
-                </div>
-                <div className="flex items-center justify-end gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-warm-orange flex-shrink-0" />
-                  <span className="text-xs text-warm-wood-dark font-medium leading-tight">{displayContactPhone}</span>
-                </div>
-                <div className="flex items-center justify-end gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-warm-orange flex-shrink-0" />
-                  <span className="text-xs text-warm-wood-dark font-bold leading-tight" style={{ fontWeight: '700' }}>{displayContactAddress}</span>
-                </div>
+                {displayContactEmail && (
+                  <div className="flex min-w-0 items-center justify-end gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-warm-orange flex-shrink-0" />
+                    <span className="min-w-0 break-all text-right text-xs text-warm-wood-dark font-medium leading-tight">
+                      {displayContactEmail}
+                    </span>
+                  </div>
+                )}
+                {displayContactPhone && (
+                  <div className="flex items-center justify-end gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-warm-orange flex-shrink-0" />
+                    <span className="text-xs text-warm-wood-dark font-medium leading-tight">{displayContactPhone}</span>
+                  </div>
+                )}
+                {displayContactAddress && (
+                  <div className="flex items-center justify-end gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-warm-orange flex-shrink-0" />
+                    <span className="text-xs text-warm-wood-dark font-bold leading-tight" style={{ fontWeight: '700' }}>{displayContactAddress}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { Input, TimePicker24h } from '@/components/ui'
-import type { BookingRequestInput } from '@/types/booking'
+import type { BookingRequestInput, BookingType } from '@/types/booking'
+import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { useCreateAdminBooking } from '../hooks/useAdminBookingRequests'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
@@ -251,7 +252,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
 
   // Reset preset quando cambia booking_type
   useEffect(() => {
-    if (formData.booking_type !== 'rinfresco_laurea') {
+    if (!bookingTypeUsesMenuSelections(formData.booking_type)) {
       setSelectedPreset(null)
       setFormData(prev => ({
         ...prev,
@@ -315,8 +316,8 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
       isValid = false
     }
 
-    // Menu validation for Rinfresco di Laurea
-    if (formData.booking_type === 'rinfresco_laurea') {
+    // Menu validation (Rinfresco / menù a prezzo fisso)
+    if (bookingTypeUsesMenuSelections(formData.booking_type)) {
       if (!formData.menu_selection || !formData.menu_selection.items || formData.menu_selection.items.length === 0) {
         newErrors.menu = 'Seleziona almeno un prodotto dal menù'
         isValid = false
@@ -522,7 +523,21 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
                 id="booking_type"
                 value={formData.booking_type}
                 onChange={(e) => {
-                  setFormData({ ...formData, booking_type: e.target.value as 'tavolo' | 'rinfresco_laurea' })
+                  const booking_type = e.target.value as BookingType
+                  if (booking_type === 'tavolo') {
+                    setSelectedPreset(null)
+                    setFormData({
+                      ...formData,
+                      booking_type,
+                      preset_menu: null,
+                      menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
+                      menu_total_per_person: undefined,
+                      menu_total_booking: undefined,
+                      dietary_restrictions: []
+                    })
+                  } else {
+                    setFormData({ ...formData, booking_type })
+                  }
                   setErrors({ ...errors, booking_type: '' })
                 }}
                 required
@@ -541,6 +556,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
               >
                 <option value="tavolo">Prenota un Tavolo</option>
                 <option value="rinfresco_laurea">Rinfresco di Laurea</option>
+                <option value="menu_prezzo_fisso">Menu a prezzo fisso</option>
               </select>
               {errors.booking_type && (
                 <p className="text-sm text-red-500">{errors.booking_type}</p>
@@ -659,8 +675,8 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
         </div>
       </div>
 
-      {/* Menu Selection - Solo per Rinfresco di Laurea */}
-      {formData.booking_type === 'rinfresco_laurea' && (
+      {/* Menu Selection — Rinfresco di Laurea / menù a prezzo fisso */}
+      {bookingTypeUsesMenuSelections(formData.booking_type) && (
         <div className="space-y-6">
           <MenuSelection
             selectedItems={formData.menu_selection?.items || []}
@@ -705,8 +721,8 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
         </div>
       )}
 
-      {/* Intolleranze Alimentari - Solo per Rinfresco di Laurea */}
-      {formData.booking_type === 'rinfresco_laurea' && (
+      {/* Intolleranze — stesso flusso del menù */}
+      {bookingTypeUsesMenuSelections(formData.booking_type) && (
         <div className="space-y-6">
           <DietaryRestrictionsSection
             restrictions={formData.dietary_restrictions || []}
