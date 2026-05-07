@@ -1,5 +1,16 @@
 # Changelog
 
+## v2.1.0 — Maggio 2026
+
+Infrastruttura per consegna a sviluppatore esterno.
+
+- Documentazione completa (`README.md`, `ONBOARDING.md`, `docs/`, `CONTRIBUTING.md`, `CLAUDE.md`)
+- Logger custom in `src/lib/logger.ts` (sostituzione console.log dev-only)
+- Test setup completo: 29 test Vitest + 5 spec Playwright e2e
+- CI GitHub Actions (lint + typecheck + test) su push/PR a `main`
+- Husky + lint-staged come pre-commit hook
+- Pulizia root: cartelle locali (`Lavoro/`, `Immagini-sfondo/`, `icone-nuove/`) spostate fuori repo
+
 ## v2.0.0 — Aprile 2026
 
 Riscrittura completa a partire dal progetto originale `CalendarBackup/`.

@@ -1,26 +1,26 @@
-# Testing — Stack e guida alla scrittura dei test
+# Testing — Stack e guida ai test
 
-> **Nota (Maggio 2026):** Il tooling di test non è ancora installato in questo repo. Questo documento descrive lo stack pianificato e le istruzioni per chi vuole configurarlo. Vedi la Fase 3 del piano di consegna per i dettagli.
+Stato: tooling installato e funzionante. **29 test Vitest verdi**, suite Playwright pronta (richiede Supabase staging).
 
-## Stack pianificato
+## Stack di test
 
 | Strumento | Tipo | Scopo |
 |-----------|------|-------|
-| **Vitest** | Unit / integration | Test veloci su singole funzioni e hook React |
+| **Vitest** | Unit / integration | Test veloci su funzioni e hook React |
 | **Testing Library** | Utility Vitest | Render componenti, query DOM, eventi utente |
-| **MSW (Mock Service Worker)** | Mock | Simula le risposte Supabase senza DB reale |
-| **Playwright** | End-to-end | Simula un utente vero nel browser |
-| **Husky + lint-staged** | Pre-commit hook | Blocca commit se lint fallisce |
-| **GitHub Actions** | CI | Esegue lint + typecheck + test ad ogni push |
+| **MSW (Mock Service Worker)** | Mock | Safety net per chiamate Supabase non mockate |
+| **Playwright** | End-to-end | Simula un utente vero nel browser Chromium |
+| **Husky + lint-staged** | Pre-commit hook | Esegue `eslint --fix` sui file staged |
+| **GitHub Actions** | CI | Esegue lint + typecheck + test su push/PR a main |
 
-## Comandi (dopo l'installazione del tooling)
+## Comandi
 
 ```bash
-npm run test              # esegue tutti i test Vitest
+npm run test              # esegue tutti i test Vitest (run mode)
 npm run test:watch        # modalità watch (riesegue al salvataggio)
 npm run test:ui           # interfaccia grafica Vitest nel browser
-npm run test:coverage     # report copertura (soglia minima 50%)
-npm run test:e2e          # test Playwright (richiede dev server attivo)
+npm run test:coverage     # report copertura (soglia 50%)
+npm run test:e2e          # test Playwright (richiede dev server attivo + staging)
 npm run test:e2e:ui       # Playwright con interfaccia grafica
 npm run validate          # lint + typecheck + test (da eseguire prima di ogni PR)
 ```
@@ -29,87 +29,108 @@ npm run validate          # lint + typecheck + test (da eseguire prima di ogni P
 
 ```
 src/
+├── lib/__tests__/
+│   └── supabase.test.ts                   (11 test)
+├── contexts/__tests__/
+│   └── TenantContext.test.tsx             (5 test)
 └── features/booking/hooks/__tests__/
-    ├── useAdminAuth.test.tsx
-    ├── useBookingMutations.test.tsx
-    └── useMenuCategories.test.tsx
-src/
-├── lib/__tests__/supabase.test.ts
-└── contexts/__tests__/TenantContext.test.tsx
+    ├── useAdminAuth.test.tsx              (4 test)
+    ├── useBookingMutations.test.tsx       (4 test)
+    └── useMenuCategories.test.tsx         (5 test)
+
 e2e/
 ├── public-booking.spec.ts
 ├── admin-login.spec.ts
 ├── admin-booking-mgmt.spec.ts
 ├── menu-crud.spec.ts
 └── invite-flow.spec.ts
+
 tests/
-└── setup.ts              # configurazione globale Vitest
+└── setup.ts                               # MSW server + jest-dom + cleanup
+
+vitest.config.ts                           # jsdom, globals, env vars fake Supabase
+playwright.config.ts                       # chromium, baseURL :5173, webServer auto-start
+.husky/pre-commit                          # esegue lint-staged
+.github/workflows/ci.yml                   # lint + typecheck + test su push/PR
 ```
 
-## Come scrivere un test Vitest (esempio)
+## Strategia di mocking
+
+I test Vitest usano `vi.mock()` per sostituire `@supabase/supabase-js` direttamente nei test, in modo da controllare le risposte. **MSW** è configurato in `tests/setup.ts` come safety net: se una chiamata HTTP a `test.supabase.co` sfugge ai mock, MSW restituisce risposte vuote di default e segnala un warning.
+
+Per gli hook React si usa il pattern:
+```ts
+vi.clearAllMocks()  // preferito a resetAllMocks per preservare i factory mocks
+```
+
+## Come scrivere un test Vitest
 
 ```tsx
-// src/lib/__tests__/supabase.test.ts
-import { describe, it, expect, vi } from 'vitest'
+// src/features/booking/hooks/__tests__/useExample.test.tsx
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { renderHook, act } from '@testing-library/react'
 
-describe('supabase client', () => {
-  it('crea il client con le variabili d\'ambiente corrette', () => {
-    // Il client viene creato al momento dell'import,
-    // quindi testiamo che le env vars siano state lette
-    expect(import.meta.env.VITE_SUPABASE_URL).toBeDefined()
-    expect(import.meta.env.VITE_SUPABASE_ANON_KEY).toBeDefined()
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    from: vi.fn(),
+  },
+}))
+
+describe('useExample', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('comportamento atteso', async () => {
+    // arrange / act / assert
   })
 })
 ```
 
-Per mockare Supabase con MSW:
+## Test Playwright e2e
 
-```tsx
-// tests/handlers.ts
-import { http, HttpResponse } from 'msw'
+I test e2e richiedono un **progetto Supabase staging dedicato** (separato dalla produzione). Variabili in `.env.local.test` (gitignored):
 
-export const handlers = [
-  http.get('*/organizations*', () => {
-    return HttpResponse.json([
-      { id: 'uuid-123', name: 'Test Ristorante', slug: 'test', is_active: true }
-    ])
-  }),
-]
+```
+VITE_SUPABASE_URL=https://<staging-project>.supabase.co
+VITE_SUPABASE_ANON_KEY=<staging-anon-key>
+E2E_ADMIN_EMAIL=admin@test.it
+E2E_ADMIN_PASSWORD=<password-staging>
+E2E_TENANT_SLUG=test-ristorante
+E2E_VALID_INVITE_TOKEN=<token-creato-manualmente>
 ```
 
-## Come scrivere un test Playwright (esempio)
-
-```ts
-// e2e/admin-login.spec.ts
-import { test, expect } from '@playwright/test'
-
-test('redirect a /login se non autenticato', async ({ page }) => {
-  await page.goto('/admin')
-  await expect(page).toHaveURL('/login')
-})
-
-test('login con credenziali corrette', async ({ page }) => {
-  await page.goto('/login')
-  await page.fill('[name="email"]', process.env.TEST_ADMIN_EMAIL!)
-  await page.fill('[name="password"]', process.env.TEST_ADMIN_PASSWORD!)
-  await page.click('[type="submit"]')
-  await expect(page).toHaveURL('/admin')
-})
+Esecuzione:
+```bash
+npm run test:e2e
+# il webServer di Playwright avvia automaticamente npm run dev su :5173
 ```
 
 ## CI con GitHub Actions
 
-Il file `.github/workflows/ci.yml` (da creare nella Fase 3) esegue ad ogni push/PR:
+Il file [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) esegue ad ogni push/PR su `main`:
 
 ```yaml
 - npm ci
 - npm run lint
-- npm run build       # include TypeScript check
+- npm run typecheck
 - npm run test
 ```
 
-I test Playwright in CI richiedono un Supabase staging separato con dati di test stabili (vedi note in `docs/MANUAL_TEST_PLAN.md`).
+I test Playwright **non sono in CI** perché richiedono il progetto Supabase staging configurato. Da abilitare aggiungendo le secrets del repo (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, ecc.) e un job dedicato.
+
+## Pre-commit hook
+
+Husky è configurato per eseguire `lint-staged` ad ogni commit. La config in `package.json`:
+
+```json
+"lint-staged": {
+  "*.{ts,tsx}": ["eslint --fix"]
+}
+```
+
+Se ESLint trova errori non auto-fixabili, il commit viene bloccato.
 
 ## Note sui mock MSW
 
-MSW intercetta le chiamate HTTP del client Supabase a livello di fetch. Se viene aggiornata la versione di `@supabase/supabase-js`, verificare che i mock corrispondano ai nuovi endpoint/header — la firma delle richieste può cambiare tra versioni major.
+MSW intercetta le chiamate fetch del client Supabase. Se viene aggiornata la versione di `@supabase/supabase-js`, verificare che gli endpoint mockati in `tests/setup.ts` corrispondano ai nuovi (la firma può cambiare tra versioni major).

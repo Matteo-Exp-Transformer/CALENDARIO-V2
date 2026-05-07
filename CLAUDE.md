@@ -16,6 +16,11 @@ Questo file orienta le sessioni Claude Code su questo progetto.
 | `supabase/functions/validate-invite/index.ts` | Edge Function per registrazione admin |
 | `src/types/database.ts` | Tipi generati dal DB — rigenera con `npm run db:types:linked` |
 | `src/lib/email.ts` | Chiama Edge Function `send-email` che non esiste ancora |
+| `vitest.config.ts` | Config Vitest (jsdom, globals, env Supabase fake, exclude e2e) |
+| `playwright.config.ts` | Config Playwright (chromium, webServer, baseURL) |
+| `tests/setup.ts` | MSW server + jest-dom + cleanup automatico |
+| `.husky/pre-commit` | Esegue lint-staged sui file staged |
+| `.github/workflows/ci.yml` | CI: lint + typecheck + test su push/PR a main |
 
 ## Comandi principali
 
@@ -24,6 +29,11 @@ npm run dev                  # dev server su :5173
 npm run build                # TypeScript check + Vite build
 npm run lint                 # ESLint, zero warning tollerati
 npm run lint:fix             # Fix automatico ESLint
+npm run typecheck            # tsc --noEmit
+npm run test                 # 29 test Vitest (run mode)
+npm run test:watch           # Vitest in watch mode
+npm run test:e2e             # Playwright e2e (richiede staging Supabase)
+npm run validate             # lint + typecheck + test (pre-PR)
 npm run db:types:linked      # Rigenera src/types/database.ts dal DB remoto
 npm run seed:booking-menu-full   # Popola DB con prenotazione con menu
 npm run seed:booking-table       # Popola DB con prenotazione tavolo

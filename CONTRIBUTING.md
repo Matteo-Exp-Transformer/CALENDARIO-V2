@@ -46,15 +46,17 @@ Crea un branch dal `main` aggiornato prima di iniziare a lavorare.
 ## Comandi pre-PR
 
 ```bash
-npm run lint          # zero warning
-npm run build         # nessun errore TypeScript + build OK
-# (test non ancora configurati — vedi docs/TESTING.md)
+npm run validate      # lint + typecheck + test (raccomandato)
+npm run test:e2e      # opzionale, richiede staging Supabase + dev server
+npm run build         # build di produzione
 ```
+
+`npm run validate` è equivalente a `npm run lint && npm run typecheck && npm run test`. Il pre-commit hook (husky + lint-staged) esegue automaticamente `eslint --fix` sui file staged.
 
 ## Code review checklist
 
-- [ ] Il codice compila senza errori TypeScript
-- [ ] ESLint non segnala warning
+- [ ] `npm run validate` passa (lint + typecheck + 29 test)
+- [ ] I nuovi hook/funzioni hanno test corrispondenti in `__tests__/`
 - [ ] I `console.log` sono stati sostituiti con `logger.debug` (vedi `src/lib/logger.ts`)
 - [ ] Le modifiche al DB hanno una migrazione corrispondente in `supabase/migrations/`
 - [ ] Le nuove Edge Functions hanno documentazione in `docs/EDGE_FUNCTIONS.md`
