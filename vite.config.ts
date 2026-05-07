@@ -13,6 +13,7 @@ export default defineConfig({
         'icons/favicon-v2.ico',
         'icons/apple-touch-icon-v2.png',
         'login/admin-login-bg.png',
+        'login/admin-login-bg-mobile.png',
       ],
       manifest: {
         name: 'CalendarBackup',

@@ -14,8 +14,20 @@ export const AdminLoginPage: React.FC = () => {
 
   const { login } = useAdminAuth()
   const navigate = useNavigate()
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)')
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  const bgFile = isMobile ? 'login/admin-login-bg-mobile.png' : 'login/admin-login-bg.png'
   const loginPageBgStyle: React.CSSProperties = {
-    backgroundImage: `url(${import.meta.env.BASE_URL}login/admin-login-bg.png)`,
+    backgroundImage: `url(${import.meta.env.BASE_URL}${bgFile})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
