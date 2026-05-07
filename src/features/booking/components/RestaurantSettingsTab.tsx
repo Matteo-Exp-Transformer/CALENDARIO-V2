@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Store, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Store, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -26,13 +26,10 @@ import {
   BOOKING_PAGE_GRADIENT_PRESETS,
   BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
   BOOKING_PAGE_TILE_IDS,
-  BOOKING_PAGE_TILE_PAGE_COUNT,
   DEFAULT_BOOKING_PAGE_BACKGROUND,
   bookingPageGradientCss,
   bookingPageGradientPreviewCss,
   bookingPageTilePublicHref,
-  getBookingPageTilePageIndex,
-  getBookingPageTilesForPage,
   isBookingPageGradientId,
   isBookingPageTilePlaceholder,
   type BookingPageBackgroundId,
@@ -164,8 +161,6 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [bookingPageBackground, setBookingPageBackground] =
     useState<BookingPageBackgroundId>(DEFAULT_BOOKING_PAGE_BACKGROUND)
   const [bookingBgTextureTab, setBookingBgTextureTab] = useState<'images' | 'gradients'>('images')
-  /** Pagina (0-based) della griglia texture: pagina 1 → originali, pagina 2 → nuove. */
-  const [bookingBgImagePage, setBookingBgImagePage] = useState<number>(0)
   /** Dopo «Conferma» la griglia resta bloccata finche non si cambia selezione o non va a buon fine «Salva modifiche». */
   const [bookingBgSelectionLocked, setBookingBgSelectionLocked] = useState(false)
 
@@ -208,9 +203,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     setContactAddress(stripDirectionalFormattingChars(contactAddressQuery.data ?? ''))
     const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
     setBookingPageBackground(resolvedBg)
-    const isGradient = isBookingPageGradientId(resolvedBg)
-    setBookingBgTextureTab(isGradient ? 'gradients' : 'images')
-    setBookingBgImagePage(isGradient ? 0 : getBookingPageTilePageIndex(resolvedBg))
+    setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
     setBookingBgSelectionLocked(false)
     hydratedRef.current = true
   }, [
@@ -419,15 +412,6 @@ export const RestaurantSettingsTab: React.FC = () => {
     'w-full max-w-3xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
   const bookingBgGridTopSpacingStyle: React.CSSProperties = { marginTop: '1.375rem' }
   const bookingBgTextureTabRowStyle: React.CSSProperties = { gap: '1rem' }
-
-  /**
-   * Texture visibili nella pagina corrente; nella tab «Gradienti» l'array non viene
-   * usato (la griglia gradienti ignora la pagination).
-   */
-  const bookingBgVisibleTiles = getBookingPageTilesForPage(bookingBgImagePage)
-
-  const bookingBgPaginationButtonClass =
-    'inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-40'
 
   return (
     <div className="flex w-full flex-col items-center gap-8">
@@ -773,102 +757,55 @@ export const RestaurantSettingsTab: React.FC = () => {
           </div>
 
           {bookingBgTextureTab === 'images' ? (
-            <>
-              {BOOKING_PAGE_TILE_PAGE_COUNT > 1 && (
-                <div
-                  className="mx-auto flex w-full max-w-3xl items-center justify-center gap-3"
-                  style={bookingBgGridTopSpacingStyle}
-                >
-                  <button
-                    type="button"
-                    aria-label="Pagina precedente"
-                    disabled={
-                      upsert.isPending ||
-                      bookingBgSelectionLocked ||
-                      bookingBgImagePage <= 0
-                    }
-                    onClick={() => setBookingBgImagePage((p) => Math.max(0, p - 1))}
-                    className={bookingBgPaginationButtonClass}
-                  >
-                    <ChevronLeft className="h-5 w-5" aria-hidden />
-                  </button>
-                  <span className="select-none text-xs font-semibold uppercase tracking-wide text-slate-600">
-                    Pagina {bookingBgImagePage + 1} / {BOOKING_PAGE_TILE_PAGE_COUNT}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label="Pagina successiva"
-                    disabled={
-                      upsert.isPending ||
-                      bookingBgSelectionLocked ||
-                      bookingBgImagePage >= BOOKING_PAGE_TILE_PAGE_COUNT - 1
-                    }
-                    onClick={() =>
-                      setBookingBgImagePage((p) =>
-                        Math.min(BOOKING_PAGE_TILE_PAGE_COUNT - 1, p + 1)
-                      )
-                    }
-                    className={bookingBgPaginationButtonClass}
-                  >
-                    <ChevronRight className="h-5 w-5" aria-hidden />
-                  </button>
-                </div>
-              )}
-              <div
-                className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
-                style={
-                  BOOKING_PAGE_TILE_PAGE_COUNT > 1
-                    ? { marginTop: '0.75rem' }
-                    : bookingBgGridTopSpacingStyle
-                }
-              >
-                {bookingBgVisibleTiles.map((id) => {
-                  const overallIndex = BOOKING_PAGE_TILE_IDS.indexOf(id)
-                  const isPlaceholder = isBookingPageTilePlaceholder(id)
-                  if (isPlaceholder) {
-                    return (
-                      <div
-                        key={id}
-                        aria-disabled
-                        className="flex min-h-0 flex-col gap-1 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-1.5 text-center shadow-sm opacity-80"
-                      >
-                        <div
-                          className="pointer-events-none flex aspect-[4/3] w-full items-center justify-center rounded-md border border-dashed border-slate-300 bg-white text-[0.625rem] font-medium uppercase tracking-wide text-slate-400 sm:text-[11px]"
-                          aria-hidden
-                        >
-                          Vuoto
-                        </div>
-                        <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-500 sm:text-[11px]">
-                          Texture {overallIndex + 1} · da sostituire
-                        </span>
-                      </div>
-                    )
-                  }
+            <div
+              className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
+              style={bookingBgGridTopSpacingStyle}
+            >
+              {BOOKING_PAGE_TILE_IDS.map((id, index) => {
+                const isPlaceholder = isBookingPageTilePlaceholder(id)
+                if (isPlaceholder) {
                   return (
-                    <button
+                    <div
                       key={id}
-                      type="button"
-                      disabled={upsert.isPending || bookingBgSelectionLocked}
-                      className={bookingBgPickButtonClass(bookingPageBackground === id)}
-                      onClick={() => {
-                        setBookingPageBackground(id)
-                        markDirty()
-                      }}
+                      aria-disabled
+                      className="flex min-h-0 flex-col gap-1 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-1.5 text-center shadow-sm opacity-80"
                     >
-                      <img
-                        src={bookingPageTilePublicHref(id, bookingBgBase)}
-                        alt=""
-                        className="pointer-events-none aspect-[4/3] h-auto w-full rounded-md border border-slate-200/80 object-cover"
-                        loading="lazy"
-                      />
-                      <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]">
-                        Texture {overallIndex + 1}
+                      <div
+                        className="pointer-events-none flex aspect-[4/3] w-full items-center justify-center rounded-md border border-dashed border-slate-300 bg-white text-[0.625rem] font-medium uppercase tracking-wide text-slate-400 sm:text-[11px]"
+                        aria-hidden
+                      >
+                        Vuoto
+                      </div>
+                      <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-500 sm:text-[11px]">
+                        Texture {index + 1} · da sostituire
                       </span>
-                    </button>
+                    </div>
                   )
-                })}
-              </div>
-            </>
+                }
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    disabled={upsert.isPending || bookingBgSelectionLocked}
+                    className={bookingBgPickButtonClass(bookingPageBackground === id)}
+                    onClick={() => {
+                      setBookingPageBackground(id)
+                      markDirty()
+                    }}
+                  >
+                    <img
+                      src={bookingPageTilePublicHref(id, bookingBgBase)}
+                      alt=""
+                      className="pointer-events-none aspect-[4/3] h-auto w-full rounded-md border border-slate-200/80 object-cover"
+                      loading="lazy"
+                    />
+                    <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]">
+                      Texture {index + 1}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           ) : (
           <div
             className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"

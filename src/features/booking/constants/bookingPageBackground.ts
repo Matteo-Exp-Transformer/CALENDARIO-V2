@@ -33,41 +33,17 @@ export type BookingPageTileId = (typeof BOOKING_PAGE_TILE_IDS)[number]
  * automaticamente sullo sfondo di default (vedi `parseBookingPageBackgroundFromDb`).
  */
 export const BOOKING_PAGE_TILE_PLACEHOLDER_IDS: readonly BookingPageTileId[] = [
+  'tile-04',
+  'tile-11',
+  'tile-16',
+  'tile-18',
+  'tile-19',
+  'tile-20',
+  'tile-21',
 ]
 
 export function isBookingPageTilePlaceholder(value: string): boolean {
   return (BOOKING_PAGE_TILE_PLACEHOLDER_IDS as readonly string[]).includes(value)
-}
-
-/**
- * Numero di texture mostrate per pagina nella griglia admin.
- * Pagina 1: tile-01..15 (le 15 originali).
- * Pagina 2: tile-16..21 (le 6 aggiunte).
- * Il valore corrisponde al conteggio originale per non spostare le selezioni già salvate.
- */
-export const BOOKING_PAGE_TILE_PAGE_SIZE = 15
-
-/** Numero totale di pagine necessarie per coprire `BOOKING_PAGE_TILE_IDS`. */
-export const BOOKING_PAGE_TILE_PAGE_COUNT = Math.max(
-  1,
-  Math.ceil(BOOKING_PAGE_TILE_IDS.length / BOOKING_PAGE_TILE_PAGE_SIZE)
-)
-
-/** Indice 0-based della pagina che contiene `tileId` (0 se non trovato). */
-export function getBookingPageTilePageIndex(tileId: string): number {
-  const idx = (BOOKING_PAGE_TILE_IDS as readonly string[]).indexOf(tileId)
-  if (idx < 0) return 0
-  return Math.floor(idx / BOOKING_PAGE_TILE_PAGE_SIZE)
-}
-
-/** Slice degli id texture per una pagina (0-based). */
-export function getBookingPageTilesForPage(pageIndex: number): readonly BookingPageTileId[] {
-  const safePage = Math.min(
-    Math.max(pageIndex, 0),
-    BOOKING_PAGE_TILE_PAGE_COUNT - 1
-  )
-  const start = safePage * BOOKING_PAGE_TILE_PAGE_SIZE
-  return BOOKING_PAGE_TILE_IDS.slice(start, start + BOOKING_PAGE_TILE_PAGE_SIZE)
 }
 
 /** Preset gradienti pagina Prenota: `previewCss` per miniature; `fullCss` per anteprima grande e pagina pubblica. */
