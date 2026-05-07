@@ -52,6 +52,7 @@ const ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME =
 const ADMIN_SECTION_TITLE_RADIUS = 16
 /** Margine interno card sinistro/destro (px) — solo inline style, come raggio e gap. */
 const ADMIN_CARD_PAD_X = 44
+const DEFAULT_PLACEMENT_AREAS = ['Sala A', 'Sala B', 'Deorr'] as const
 
 /** Larghezza blocco nominale ~1/3 viewport; pavimento 18.75rem (~300px) così non collassa come solo 33vw su schermi stretti (es. ~99px). */
 const ADMIN_FORM_NARROW_COLUMN_STYLE = {
@@ -133,6 +134,15 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
   const { data: menuItems = [] } = useMenuItems()
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
+  const { data: placementAreasSetting = DEFAULT_PLACEMENT_AREAS } = useRestaurantSetting('booking_placement_areas')
+
+  const placementAreas = Array.isArray(placementAreasSetting)
+    ? placementAreasSetting
+        .map((item) => String(item ?? '').trim())
+        .filter((item) => item.length > 0)
+    : [...DEFAULT_PLACEMENT_AREAS]
+  const normalizedPlacementAreas =
+    placementAreas.length > 0 ? placementAreas : [...DEFAULT_PLACEMENT_AREAS]
   const { data: volAuVentPromoVisible = true } = useRestaurantSetting('booking_vol_au_vent_promo_visible')
   const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
     'booking_vol_au_vent_promo_message',
@@ -668,9 +678,11 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nessuna preferenza</SelectItem>
-                  <SelectItem value="Sala A">Sala A</SelectItem>
-                  <SelectItem value="Sala B">Sala B</SelectItem>
-                  <SelectItem value="Deorr">Deorr</SelectItem>
+                  {normalizedPlacementAreas.map((area) => (
+                    <SelectItem key={area} value={area}>
+                      {area}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </AdminFormFieldCard>

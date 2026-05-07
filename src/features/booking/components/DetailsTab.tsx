@@ -5,6 +5,7 @@ import { formatBookingDateTime } from '../utils/formatDateTime'
 import { MapPin } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { TimePicker24h } from '@/components/ui'
+import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 
 interface Props {
   booking: BookingRequest
@@ -41,6 +42,7 @@ const FROSTED_CONTROL_SURFACE: React.CSSProperties = {
 
 const FROSTED_TEXT_INPUT_CLASS_NAME =
   'block w-full border border-slate-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-400 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 transition-colors duration-150 !border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 rounded-[12px] focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
+const DEFAULT_PLACEMENT_AREAS = ['Sala A', 'Sala B', 'Deorr'] as const
 
 // Reusable component for label:value inline display
 const InfoRow: React.FC<{
@@ -62,6 +64,18 @@ export const DetailsTab: React.FC<Props> = ({
   onFormDataChange,
   onBookingTypeChange
 }) => {
+  const { data: placementAreasSetting = DEFAULT_PLACEMENT_AREAS } = useRestaurantSetting('booking_placement_areas')
+  const placementAreas = Array.isArray(placementAreasSetting)
+    ? placementAreasSetting
+        .map((item) => String(item ?? '').trim())
+        .filter((item) => item.length > 0)
+    : [...DEFAULT_PLACEMENT_AREAS]
+  const normalizedPlacementAreas =
+    placementAreas.length > 0 ? placementAreas : [...DEFAULT_PLACEMENT_AREAS]
+  const currentPlacement = formData.placement && !normalizedPlacementAreas.includes(formData.placement)
+    ? formData.placement
+    : null
+
   // Format date with capitalized first letter
   const formatDate = (dateString: string): string => {
     try {
@@ -239,9 +253,14 @@ export const DetailsTab: React.FC<Props> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nessuna preferenza</SelectItem>
-                  <SelectItem value="Sala A">Sala A</SelectItem>
-                  <SelectItem value="Sala B">Sala B</SelectItem>
-                  <SelectItem value="Deorr">Deorr</SelectItem>
+                  {currentPlacement && (
+                    <SelectItem value={currentPlacement}>{currentPlacement}</SelectItem>
+                  )}
+                  {normalizedPlacementAreas.map((area) => (
+                    <SelectItem key={area} value={area}>
+                      {area}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

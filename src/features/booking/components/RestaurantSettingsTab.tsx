@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Store, Loader2 } from 'lucide-react'
+import { Store, Loader2, Plus, Edit3, Save, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -44,6 +44,18 @@ type SlotFieldKey =
   | 'eveningEnd'
 
 const RESTAURANT_NAME_MAX_LENGTH = 40
+const DEFAULT_PLACEMENT_AREAS = ['Sala A', 'Sala B', 'Deorr'] as const
+const PLACEMENT_AREA_MAX_LENGTH = 40
+
+const normalizePlacementAreas = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [...DEFAULT_PLACEMENT_AREAS]
+  const cleaned = value
+    .map((item) => stripDirectionalFormattingChars(String(item ?? '')).trim())
+    .filter((item) => item.length > 0)
+    .map((item) => item.slice(0, PLACEMENT_AREA_MAX_LENGTH))
+  const unique = cleaned.filter((item, index) => cleaned.indexOf(item) === index)
+  return unique.length > 0 ? unique : [...DEFAULT_PLACEMENT_AREAS]
+}
 
 function validateBookingTimeSlotsDetailed(config: BookingTimeSlots): {
   message: string | null
@@ -138,6 +150,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const contactPhoneQuery = useRestaurantSetting('contact_phone')
   const contactAddressQuery = useRestaurantSetting('contact_address')
   const publicBookingPageBgQuery = useRestaurantSetting('public_booking_page_background')
+  const placementAreasQuery = useRestaurantSetting('booking_placement_areas')
 
   const upsert = useUpsertRestaurantSetting()
 
@@ -163,6 +176,9 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [bookingBgTextureTab, setBookingBgTextureTab] = useState<'images' | 'gradients'>('images')
   /** Dopo «Conferma» la griglia resta bloccata finche non si cambia selezione o non va a buon fine «Salva modifiche». */
   const [bookingBgSelectionLocked, setBookingBgSelectionLocked] = useState(false)
+  const [placementAreas, setPlacementAreas] = useState<string[]>([...DEFAULT_PLACEMENT_AREAS])
+  const [editingPlacementAreaIndex, setEditingPlacementAreaIndex] = useState<number | null>(null)
+  const [editingPlacementAreaDraft, setEditingPlacementAreaDraft] = useState('')
 
   const hydratedRef = useRef(false)
   const slotFieldRefs = useRef<Record<SlotFieldKey, HTMLDivElement | null>>({
@@ -188,7 +204,8 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactEmailQuery.isSuccess &&
     contactPhoneQuery.isSuccess &&
     contactAddressQuery.isSuccess &&
-    publicBookingPageBgQuery.isSuccess
+    publicBookingPageBgQuery.isSuccess &&
+    placementAreasQuery.isSuccess
 
   useEffect(() => {
     if (!allSuccess || hydratedRef.current) return
@@ -201,10 +218,13 @@ export const RestaurantSettingsTab: React.FC = () => {
     setContactEmail(stripDirectionalFormattingChars(contactEmailQuery.data ?? ''))
     setContactPhone(stripDirectionalFormattingChars(contactPhoneQuery.data ?? ''))
     setContactAddress(stripDirectionalFormattingChars(contactAddressQuery.data ?? ''))
+    setPlacementAreas(normalizePlacementAreas(placementAreasQuery.data))
     const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
     setBookingPageBackground(resolvedBg)
     setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
     setBookingBgSelectionLocked(false)
+    setEditingPlacementAreaIndex(null)
+    setEditingPlacementAreaDraft('')
     hydratedRef.current = true
   }, [
     allSuccess,
@@ -215,6 +235,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactEmailQuery.data,
     contactPhoneQuery.data,
     contactAddressQuery.data,
+    placementAreasQuery.data,
     publicBookingPageBgQuery.data,
   ])
 
@@ -226,7 +247,8 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactEmailQuery.isPending ||
     contactPhoneQuery.isPending ||
     contactAddressQuery.isPending ||
-    publicBookingPageBgQuery.isPending
+    publicBookingPageBgQuery.isPending ||
+    placementAreasQuery.isPending
 
   const loadError =
     nameQuery.error ||
@@ -236,7 +258,8 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactEmailQuery.error ||
     contactPhoneQuery.error ||
     contactAddressQuery.error ||
-    publicBookingPageBgQuery.error
+    publicBookingPageBgQuery.error ||
+    placementAreasQuery.error
 
   const markDirty = () => setDirty(true)
 
@@ -312,6 +335,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         { key: 'contact_phone', value: safePhone },
         { key: 'contact_address', value: safeAddress },
         { key: 'public_booking_page_background', value: bookingPageBackground },
+        { key: 'booking_placement_areas', value: placementAreas },
       ])
       // Keep local form state as source of truth after save.
       // Resetting hydration before refetch can reapply stale cached values.
@@ -330,9 +354,46 @@ export const RestaurantSettingsTab: React.FC = () => {
       })
       setDirty(false)
       setBookingBgSelectionLocked(false)
+      setEditingPlacementAreaIndex(null)
+      setEditingPlacementAreaDraft('')
     } catch {
       /* toast gestito da useUpsertRestaurantSetting.onError */
     }
+  }
+
+  const handleAddPlacementArea = () => {
+    markDirty()
+    const candidateBase = 'Nuova area'
+    const nextLabel =
+      placementAreas.includes(candidateBase)
+        ? `${candidateBase} ${placementAreas.length + 1}`
+        : candidateBase
+    setPlacementAreas((prev) => [...prev, nextLabel])
+    setEditingPlacementAreaIndex(placementAreas.length)
+    setEditingPlacementAreaDraft(nextLabel)
+  }
+
+  const handleStartEditPlacementArea = (index: number) => {
+    setEditingPlacementAreaIndex(index)
+    setEditingPlacementAreaDraft(placementAreas[index] ?? '')
+  }
+
+  const handleCancelEditPlacementArea = () => {
+    setEditingPlacementAreaIndex(null)
+    setEditingPlacementAreaDraft('')
+  }
+
+  const handleSavePlacementArea = (index: number) => {
+    const nextValue = stripDirectionalFormattingChars(editingPlacementAreaDraft).trim()
+    if (!nextValue) {
+      toast.error('Il nome dell area non puo essere vuoto')
+      return
+    }
+    const capped = nextValue.slice(0, PLACEMENT_AREA_MAX_LENGTH)
+    markDirty()
+    setPlacementAreas((prev) => prev.map((item, itemIndex) => (itemIndex === index ? capped : item)))
+    setEditingPlacementAreaIndex(null)
+    setEditingPlacementAreaDraft('')
   }
 
   if (loadError) {
@@ -728,7 +789,7 @@ export const RestaurantSettingsTab: React.FC = () => {
       <section className={bookingBgSectionClass} style={sectionSurfaceStyle}>
         <h3 className="text-lg font-semibold text-slate-800">Sfondo pagina Prenota</h3>
         <p className="text-sm text-slate-600">
-          Scegli una texture, guarda anteprima (in basso), conferma la tua scelta e salva le modifiche.
+          Scegli una texture, conferma la tua scelta e salva le modifiche.
         </p>
         <div className="flex w-full flex-col">
           <div className="flex w-full justify-end">
@@ -823,87 +884,120 @@ export const RestaurantSettingsTab: React.FC = () => {
           )}
         </div>
 
-        <div className="w-full space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Anteprima
-          </p>
+        {(bookingBgHasUnsavedChoice || bookingBgSelectionLocked) && (
+          <div className="mx-auto flex w-full max-w-md flex-col items-center gap-2 pt-1">
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handleBookingBgConfirmOrCancel}
+              disabled={upsert.isPending || !tenantId}
+              style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
+              className="min-h-[2.875rem] w-full max-w-xs border-0 !bg-[#1e3a8a] px-6 py-2.5 !text-white shadow-md transition-colors duration-150 hover:!bg-[#1e40af] hover:shadow-lg focus:ring-[#3b82f6] disabled:pointer-events-none disabled:!bg-[#1e3a8a] [&_svg]:!text-white"
+            >
+              {bookingBgSelectionLocked ? 'Annulla selezione sfondo' : 'Conferma selezione sfondo'}
+            </Button>
+            {bookingBgSelectionLocked && bookingBgHasUnsavedChoice && (
+              <p className="text-xs font-semibold leading-snug text-emerald-800">
+                Selezione confermata. Salva modifiche in fondo per pubblicarla sulla pagina Prenota.
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="w-full pt-4">
           <div
-            className="relative mx-auto w-full max-w-xl overflow-hidden rounded-2xl border-2 border-slate-400/80 shadow-inner"
-            style={{ backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR }}
+            className="grid w-full min-w-0 grid-cols-1 items-center gap-y-3 rounded-xl border px-4 py-3 shadow-sm md:px-5 md:py-3 min-h-[88px]"
+            style={{ borderColor: ADMIN_WARM_BORDER }}
           >
-            <div className="relative h-[min(48vh,26rem)] w-full overflow-hidden">
-              {bookingPagePreviewTileSrc ? (
-                <img
-                  key={bookingPageBackground}
-                  src={bookingPagePreviewTileSrc}
-                  alt=""
-                  className="pointer-events-none absolute left-0 top-0 h-auto min-h-full w-full max-w-none select-none"
-                  decoding="async"
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    minHeight: '100%',
-                    objectFit: 'cover',
-                    objectPosition: 'top center',
-                    display: 'block',
-                  }}
-                />
-              ) : (
-                isBookingPageGradientId(bookingPageBackground) && (
-                  <div
-                    key={bookingPageBackground}
-                    className="pointer-events-none absolute inset-0 h-full min-h-full w-full select-none"
-                    style={{
-                      backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
-                      backgroundImage: bookingPageGradientCss(bookingPageBackground),
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat',
-                    }}
-                  />
-                )
-              )}
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{ backgroundColor: 'rgba(0, 0, 0, 0.26)' }}
-                aria-hidden
-              />
-              <div
-                className="relative z-10 mx-auto mt-6 max-w-[85%] rounded-lg px-4 py-3 shadow-md backdrop-blur-[14px]"
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                }}
+            <h4 className="text-center text-base font-semibold text-slate-800">Aree di posizionamento</h4>
+            <p className="mx-auto max-w-2xl text-center text-xs text-slate-600">
+              Inserisci o modifica aree della tua attività per indicare il posizionamento delle prenotazioni
+            </p>
+            <div className="mx-auto flex w-full max-w-[280px] flex-col items-stretch">
+              <Button
+                variant="secondary"
+                size="sm"
+                type="button"
+                onClick={handleAddPlacementArea}
+                disabled={upsert.isPending}
+                className="h-16 w-full shrink-0 gap-2 px-3 py-0 text-sm"
+                style={{ backgroundColor: '#60a5fa', borderColor: '#3b82f6', color: '#000000' }}
               >
-                <p className="text-sm font-serif font-bold text-[#5a3923]">{restaurantName || 'Nome locale'}</p>
-                <p className="text-xs font-semibold text-[#6b4830]">Richiesta prenotazione</p>
-              </div>
+                <Plus className="h-4 w-4 shrink-0" />
+                Aggiungi nuova area
+              </Button>
             </div>
           </div>
-        </div>
 
-        <div className="mx-auto flex w-full max-w-md flex-col items-center gap-2 pt-1">
-          <Button
-            type="button"
-            variant="primary"
-            onClick={handleBookingBgConfirmOrCancel}
-            disabled={
-              upsert.isPending ||
-              !tenantId ||
-              (!bookingBgSelectionLocked && !bookingBgHasUnsavedChoice)
-            }
-            style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
-            className="min-h-[2.875rem] w-full max-w-xs border-0 !bg-[#1e3a8a] px-6 py-2.5 !text-white shadow-md transition-colors duration-150 hover:!bg-[#1e40af] hover:shadow-lg focus:ring-[#3b82f6] disabled:pointer-events-none disabled:!bg-[#1e3a8a] [&_svg]:!text-white"
-          >
-            {bookingBgSelectionLocked ? 'Annulla selezione sfondo' : 'Conferma selezione sfondo'}
-          </Button>
-          {bookingBgSelectionLocked && bookingBgHasUnsavedChoice && (
-            <p className="text-xs font-semibold leading-snug text-emerald-800">
-              Selezione confermata. Salva modifiche in fondo per pubblicarla sulla pagina Prenota.
-            </p>
-          )}
-          {!bookingBgHasUnsavedChoice && !bookingBgSelectionLocked && (
-            <p className="text-xs font-medium text-slate-600">Questo sfondo e gia pubblicato sulla pagina Prenota.</p>
-          )}
+          <div className="menu-prices-category-list-wrap mt-4 flex flex-col items-center gap-[28px]">
+            {placementAreas.map((area, index) => {
+              const isEditing = editingPlacementAreaIndex === index
+              return (
+                <div key={`${area}-${index}`} className="menu-prices-category-card bg-white rounded-xl shadow-md overflow-hidden w-full max-w-md">
+                  <div className="flex flex-col items-center p-6 text-center">
+                    <div className="flex w-full max-w-full flex-col items-center gap-[12px]">
+                      <div className="menu-prices-item-row w-full flex items-center justify-between gap-3">
+                        {isEditing ? (
+                          <Input
+                            value={editingPlacementAreaDraft}
+                            onChange={(event) =>
+                              setEditingPlacementAreaDraft(
+                                stripDirectionalFormattingChars(event.target.value).slice(
+                                  0,
+                                  PLACEMENT_AREA_MAX_LENGTH
+                                )
+                              )
+                            }
+                            maxLength={PLACEMENT_AREA_MAX_LENGTH}
+                            className="w-full rounded-xl border border-slate-300 text-center focus-visible:outline-none focus:ring-1 focus:ring-[#93c5fd] focus:border-[#3b82f6]"
+                            placeholder="Nome area"
+                            autoFocus
+                          />
+                        ) : (
+                          <span className="text-base font-semibold text-slate-800">{area}</span>
+                        )}
+                      </div>
+
+                      <div className="menu-prices-item-row w-full flex items-center justify-center gap-2">
+                        {isEditing ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleSavePlacementArea(index)}
+                              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30"
+                              style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
+                            >
+                              <Save className="h-4 w-4" />
+                              Salva
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleCancelEditPlacementArea}
+                              className="flex items-center gap-2 px-4 py-2 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
+                              style={{ borderColor: '#dc2626', color: '#dc2626' }}
+                            >
+                              <X className="h-4 w-4" />
+                              Annulla
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleStartEditPlacementArea(index)}
+                            className="flex items-center gap-2 rounded-lg border-2 border-[#2563eb] px-3 py-1.5 text-xs font-medium bg-[#3b82f6] text-white hover:bg-[#60a5fa] hover:border-[#3b82f6] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#93c5fd]"
+                            style={{ color: '#ffffff' }}
+                          >
+                            <Edit3 className="h-4 w-4" />
+                            Modifica
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </section>
 
@@ -917,7 +1011,7 @@ export const RestaurantSettingsTab: React.FC = () => {
           type="button"
           onClick={handleSave}
           disabled={upsert.isPending || !tenantId}
-          className="restaurant-settings-save-submit min-h-[3.75rem] bg-[#1e3a8a] px-10 py-5 text-base shadow-md hover:bg-[#1e40af] hover:shadow-lg focus:ring-[#3b82f6] disabled:pointer-events-none disabled:bg-[#1e3a8a]"
+          className="restaurant-settings-save-submit min-h-[3.75rem] border-2 border-[#2563eb] bg-[#3b82f6] px-10 py-5 text-base shadow-md hover:bg-[#60a5fa] hover:border-[#3b82f6] hover:shadow-lg focus:ring-[#93c5fd] disabled:pointer-events-none disabled:border-[#2563eb] disabled:bg-[#3b82f6]"
         >
           {upsert.isPending ? (
             <>

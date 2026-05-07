@@ -34,6 +34,8 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'booking_vol_au_vent_promo_visible',
   /** Testo del banner (admin) */
   'booking_vol_au_vent_promo_message',
+  /** Elenco aree di posizionamento prenotazioni (es. Sala A, Sala B, Deorr) */
+  'booking_placement_areas',
 ] as const
 
 export type RestaurantSettingKeyV1 = (typeof RESTAURANT_SETTING_KEYS_V1)[number]
@@ -183,11 +185,20 @@ function parseBookingVolAuVentPromoVisibleFromDb(raw: unknown): boolean {
 }
 
 const volAuVentPromoMessageSchema = z.string().trim().min(1).max(500)
+const placementAreaLabelSchema = z.string().trim().min(1).max(40)
+const bookingPlacementAreasSchema = z.array(placementAreaLabelSchema).min(1).max(30)
 
 function parseBookingVolAuVentPromoMessageFromDb(raw: unknown): string {
   const s = parseJsonScalarString(raw).trim()
   if (!s) return DEFAULT_VOL_AU_VENT_PROMO_MESSAGE
   return s
+}
+
+function parseBookingPlacementAreasFromDb(raw: unknown): string[] {
+  const parsed = bookingPlacementAreasSchema.safeParse(raw)
+  if (!parsed.success) return ['Sala A', 'Sala B', 'Deorr']
+  const unique = parsed.data.filter((item, index, arr) => arr.indexOf(item) === index)
+  return unique.length > 0 ? unique : ['Sala A', 'Sala B', 'Deorr']
 }
 
 export type RestaurantSettingValueMap = {
@@ -205,6 +216,7 @@ export type RestaurantSettingValueMap = {
   booking_custom_staff_presets: CustomStaffPreset[]
   booking_vol_au_vent_promo_visible: boolean
   booking_vol_au_vent_promo_message: string
+  booking_placement_areas: string[]
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -367,6 +379,17 @@ export const restaurantSettingRegistry: {
     validate: (value) => {
       const r = volAuVentPromoMessageSchema.safeParse(value)
       return r.success ? null : r.error.issues[0]?.message ?? 'Messaggio non valido'
+    },
+  },
+  booking_placement_areas: {
+    key: 'booking_placement_areas',
+    parseFromDb: (raw) => parseBookingPlacementAreasFromDb(raw),
+    serializeToDb: (value) => value as unknown as Json,
+    validate: (value) => {
+      const r = bookingPlacementAreasSchema.safeParse(value)
+      if (!r.success) return r.error.issues[0]?.message ?? 'Aree di posizionamento non valide'
+      const unique = r.data.filter((item, index, arr) => arr.indexOf(item) === index)
+      return unique.length === r.data.length ? null : 'Le aree di posizionamento devono essere univoche'
     },
   },
 }
