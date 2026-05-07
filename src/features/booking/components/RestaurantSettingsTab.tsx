@@ -412,6 +412,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     'w-full max-w-3xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
   const bookingBgGridTopSpacingStyle: React.CSSProperties = { marginTop: '1.375rem' }
   const bookingBgTextureTabRowStyle: React.CSSProperties = { gap: '1rem' }
+  const bookingBgAvailableTileIds = BOOKING_PAGE_TILE_IDS.filter((id) => !isBookingPageTilePlaceholder(id))
 
   return (
     <div className="flex w-full flex-col items-center gap-8">
@@ -761,27 +762,8 @@ export const RestaurantSettingsTab: React.FC = () => {
               className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
               style={bookingBgGridTopSpacingStyle}
             >
-              {BOOKING_PAGE_TILE_IDS.map((id, index) => {
-                const isPlaceholder = isBookingPageTilePlaceholder(id)
-                if (isPlaceholder) {
-                  return (
-                    <div
-                      key={id}
-                      aria-disabled
-                      className="flex min-h-0 flex-col gap-1 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-1.5 text-center shadow-sm opacity-80"
-                    >
-                      <div
-                        className="pointer-events-none flex aspect-[4/3] w-full items-center justify-center rounded-md border border-dashed border-slate-300 bg-white text-[0.625rem] font-medium uppercase tracking-wide text-slate-400 sm:text-[11px]"
-                        aria-hidden
-                      >
-                        Vuoto
-                      </div>
-                      <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-500 sm:text-[11px]">
-                        Texture {index + 1} · da sostituire
-                      </span>
-                    </div>
-                  )
-                }
+              {bookingBgAvailableTileIds.map((id) => {
+                const overallIndex = BOOKING_PAGE_TILE_IDS.indexOf(id)
                 return (
                   <button
                     key={id}
@@ -800,7 +782,7 @@ export const RestaurantSettingsTab: React.FC = () => {
                       loading="lazy"
                     />
                     <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]">
-                      Texture {index + 1}
+                      Texture {overallIndex + 1}
                     </span>
                   </button>
                 )
