@@ -96,7 +96,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   bookingType,
   staffPresetsDropdownVisible = true,
   customStaffPresets = [],
-  volAuVentPromoVisible = true,
+  volAuVentPromoVisible = false,
   volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
 }) => {
   const { data: menuItems = [], isLoading, error } = useMenuItems()
@@ -509,6 +509,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     )
   }
 
+  const hasPromoLabel = volAuVentPromoMessage.trim().length > 0
+
   return (
     <div className="isolate">
       {/* Titolo Sezione */}
@@ -538,7 +540,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       </h2>
 
       {/* Banner omaggio + menu a tendina menù consigliati — solo Rinfresco di Laurea */}
-      {(volAuVentPromoVisible || showStaffPresetDropdown) && bookingTypeUsesMenuSelections(bookingType) && (
+      {((volAuVentPromoVisible && hasPromoLabel) || showStaffPresetDropdown) && bookingTypeUsesMenuSelections(bookingType) && (
         <div
           className="w-full flex flex-col items-center px-1 sm:px-2"
           style={{
@@ -548,7 +550,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             marginBottom: '0',
           }}
         >
-          {volAuVentPromoVisible && (
+          {volAuVentPromoVisible && hasPromoLabel && (
             <label
               className="block text-base md:text-lg text-warm-wood mb-2 w-full"
               style={{

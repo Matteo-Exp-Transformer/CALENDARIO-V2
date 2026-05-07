@@ -63,7 +63,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
   presetMenu,
   staffPresetsDropdownVisible = true,
   customStaffPresets = [],
-  volAuVentPromoVisible = true,
+  volAuVentPromoVisible = false,
   volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
   isMenuExpanded,
   onMenuExpandToggle,

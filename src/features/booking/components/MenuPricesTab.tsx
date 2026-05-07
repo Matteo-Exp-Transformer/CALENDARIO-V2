@@ -17,7 +17,10 @@ import type { CustomStaffPreset } from '../constants/presetMenus'
 import { useRestaurantSetting, useUpsertRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { selectedItemsFromMenuItemIds } from '../utils/buildPresetMenuSelection'
 import { PresetMenuBuilder } from './PresetMenuBuilder'
-import { DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } from '../constants/volAuVentPromo'
+import {
+  DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
+  VOL_AU_VENT_PROMO_PLACEHOLDER,
+} from '../constants/volAuVentPromo'
 
 const slugifyCategory = (value: string): string =>
   value
@@ -46,7 +49,7 @@ export const MenuPricesTab: React.FC = () => {
     'booking_staff_presets_visible',
   )
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
-  const { data: volAuVentPromoVisible = true, isLoading: volAuVentVisLoading } = useRestaurantSetting(
+  const { data: volAuVentPromoVisible = false, isLoading: volAuVentVisLoading } = useRestaurantSetting(
     'booking_vol_au_vent_promo_visible',
   )
   const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE, isLoading: volAuVentMsgLoading } =
@@ -151,10 +154,6 @@ export const MenuPricesTab: React.FC = () => {
 
   const handleSaveVolAuVentPromoMessage = async () => {
     const trimmed = promoDraft.trim()
-    if (!trimmed) {
-      toast.error('Il messaggio non può essere vuoto')
-      return
-    }
     try {
       await upsertRestaurantSetting.mutateAsync([
         { key: 'booking_vol_au_vent_promo_message', value: trimmed },
@@ -735,6 +734,7 @@ export const MenuPricesTab: React.FC = () => {
             id="vol-au-vent-promo-textarea"
             value={promoDraft}
             onChange={(e) => setPromoDraft(e.target.value)}
+            placeholder={VOL_AU_VENT_PROMO_PLACEHOLDER}
             rows={6}
             maxLength={500}
             className="min-h-[140px] resize-y border-slate-300 bg-white text-slate-900"

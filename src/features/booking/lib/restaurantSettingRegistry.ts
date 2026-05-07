@@ -13,7 +13,6 @@ import {
   parseBookingPageBackgroundFromDb,
 } from '@/features/booking/constants/bookingPageBackground'
 import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
-import { DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } from '@/features/booking/constants/volAuVentPromo'
 
 export const RESTAURANT_SETTING_KEYS_V1 = [
   'restaurant_name',
@@ -177,20 +176,20 @@ function parseBookingCustomStaffPresetsFromDb(raw: unknown): CustomStaffPreset[]
 }
 
 function parseBookingVolAuVentPromoVisibleFromDb(raw: unknown): boolean {
-  if (raw == null) return true
+  if (raw == null) return false
   if (typeof raw === 'boolean') return raw
   if (raw === 'false' || raw === false) return false
   if (raw === 'true' || raw === true) return true
-  return true
+  return false
 }
 
-const volAuVentPromoMessageSchema = z.string().trim().min(1).max(500)
+const volAuVentPromoMessageSchema = z.string().trim().max(500)
 const placementAreaLabelSchema = z.string().trim().min(1).max(40)
 const bookingPlacementAreasSchema = z.array(placementAreaLabelSchema).min(1).max(30)
 
 function parseBookingVolAuVentPromoMessageFromDb(raw: unknown): string {
   const s = parseJsonScalarString(raw).trim()
-  if (!s) return DEFAULT_VOL_AU_VENT_PROMO_MESSAGE
+  if (!s) return ''
   return s
 }
 

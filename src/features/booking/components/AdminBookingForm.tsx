@@ -143,7 +143,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
     : [...DEFAULT_PLACEMENT_AREAS]
   const normalizedPlacementAreas =
     placementAreas.length > 0 ? placementAreas : [...DEFAULT_PLACEMENT_AREAS]
-  const { data: volAuVentPromoVisible = true } = useRestaurantSetting('booking_vol_au_vent_promo_visible')
+  const { data: volAuVentPromoVisible = false } = useRestaurantSetting('booking_vol_au_vent_promo_visible')
   const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
     'booking_vol_au_vent_promo_message',
   )
