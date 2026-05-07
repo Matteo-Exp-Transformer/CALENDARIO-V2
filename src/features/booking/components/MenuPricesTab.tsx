@@ -393,6 +393,20 @@ export const MenuPricesTab: React.FC = () => {
     }
   }
 
+  const handlePriceInputChange = (value: string) => {
+    // Consente solo cifre con separatore decimale opzionale (max 2 decimali).
+    if (/^\d*([.,]\d{0,2})?$/.test(value)) {
+      setPriceInput(value)
+    }
+  }
+
+  const handlePriceInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    // Blocca notazione scientifica e segni su input numerico.
+    if (['e', 'E', '+', '-'].includes(event.key)) {
+      event.preventDefault()
+    }
+  }
+
   const handleDelete = (id: string, name: string) => {
     if (confirm(`Sei sicuro di voler eliminare "${name}"?`)) {
       deleteMutation.mutate(id)
@@ -582,7 +596,8 @@ export const MenuPricesTab: React.FC = () => {
                   step="0.01"
                   min="0"
                   value={priceInput}
-                  onChange={(e) => setPriceInput(e.target.value)}
+                  onChange={(e) => handlePriceInputChange(e.target.value)}
+                  onKeyDown={handlePriceInputKeyDown}
                   placeholder="es: 4.50"
                   className="mx-auto w-2/3 rounded-2xl pl-6"
                   style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}

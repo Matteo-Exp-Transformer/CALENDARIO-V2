@@ -821,26 +821,29 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                 {isEditMode ? (
                   <>
                     <button
-                      onClick={() => setIsEditMode(false)}
-                      className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-all shadow hover:shadow-md flex items-center justify-center gap-1 sm:gap-2 font-semibold text-xs sm:text-base"
-                    >
-                      <X className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                      <span className="truncate">Annulla</span>
-                    </button>
-                    <button
                       onClick={handleSave}
-                      className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 bg-al-ritrovo-primary text-white rounded-lg hover:bg-al-ritrovo-primary-dark transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-1 sm:gap-2 font-semibold text-xs sm:text-base"
+                      className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
+                      style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
                       disabled={updateMutation.isPending}
                     >
                       <Save className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                       <span className="truncate">{updateMutation.isPending ? 'Salvataggio...' : 'Salva'}</span>
+                    </button>
+                    <button
+                      onClick={() => setIsEditMode(false)}
+                      className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30 shadow-md hover:shadow-lg flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
+                      style={{ borderColor: '#dc2626', color: '#dc2626' }}
+                    >
+                      <X className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                      <span className="truncate">Annulla</span>
                     </button>
                   </>
                 ) : (
                   <>
                     <button
                       onClick={() => setIsEditMode(true)}
-                      className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 bg-blue-400 text-white rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-1 sm:gap-2 font-semibold text-xs sm:text-base min-h-[44px] sm:min-h-[56px]"
+                      className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 bg-[#244a9e] rounded-xl transition-colors shadow-md hover:shadow-lg hover:bg-[#2b57b6] flex items-center justify-center gap-1 sm:gap-2 font-semibold text-xs sm:text-base min-h-[44px] sm:min-h-[56px]"
+                      style={{ color: '#ffffff' }}
                     >
                       <Edit className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                       <span className="truncate">Modifica</span>
@@ -849,7 +852,8 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                       onClick={() => {
                         setShowCancelConfirm(true)
                       }}
-                      className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 bg-red-500 text-white rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-1 sm:gap-2 font-semibold text-xs sm:text-base min-h-[44px] sm:min-h-[56px]"
+                      className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30 shadow-md hover:shadow-lg flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base min-h-[44px] sm:min-h-[56px]"
+                      style={{ borderColor: '#dc2626', color: '#dc2626' }}
                     >
                       <Trash2 className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                       <span className="truncate">Elimina</span>

@@ -243,8 +243,8 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
           <button
             type="button"
             onClick={handleAdd}
-            className="flex items-center justify-center gap-2 text-sm text-white rounded-full bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500/30"
-            style={{ fontWeight: '700', backgroundColor: '#16a34a', paddingTop: '8px', paddingBottom: '8px', paddingLeft: '24px', paddingRight: '24px' }}
+            className="flex items-center justify-center gap-2 text-sm text-white rounded-full border-2 border-green-700 bg-green-600 hover:bg-green-500 active:scale-[0.995] transition-all duration-[220ms] focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            style={{ fontWeight: '700', backgroundColor: '#16a34a', borderColor: '#15803d', paddingTop: '8px', paddingBottom: '8px', paddingLeft: '24px', paddingRight: '24px', outline: 'none' }}
           >
             <Plus className="h-4 w-4" />
             {editingIndex !== null ? 'Salva Modifiche' : 'Aggiungi'}
@@ -296,15 +296,16 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
           {restrictions.map((restriction, index) => (
             <div
               key={index}
-              className="flex flex-col md:flex-row items-start md:items-center gap-4 p-8 rounded-xl border-2 border-warm-beige hover:shadow-md transition-all w-full"
+              className="flex flex-col md:flex-row items-start md:items-center gap-4 p-8 rounded-xl border hover:shadow-md transition-all w-full"
               style={{
                 padding: '28px 32px',
                 borderRadius: '16px',
                 marginBottom: '4px',
                 minHeight: '64px',
                 maxWidth: '100%',
-                backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                backdropFilter: 'blur(6px)'
+                borderColor: 'rgba(0, 0, 0, 0.2)',
+                backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                backdropFilter: 'blur(1px)'
               }}
             >
               <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 flex-1 min-w-0">

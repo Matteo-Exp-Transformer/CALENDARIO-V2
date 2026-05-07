@@ -31,6 +31,17 @@ const capitalizeFirst = (str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
+const FROSTED_CONTROL_SURFACE: React.CSSProperties = {
+  backgroundColor: 'rgba(255, 255, 255, 0.85)',
+  backdropFilter: 'blur(1px)',
+  padding: '10px 16px',
+  borderRadius: '12px',
+  fontWeight: 500,
+}
+
+const FROSTED_TEXT_INPUT_CLASS_NAME =
+  'block w-full border border-slate-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-400 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 transition-colors duration-150 !border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 rounded-[12px] focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
+
 // Reusable component for label:value inline display
 const InfoRow: React.FC<{
   label: string;
@@ -77,15 +88,18 @@ export const DetailsTab: React.FC<Props> = ({
           Tipo Prenotazione
         </h3>
         {isEditMode ? (
-          <select
-            value={formData.booking_type}
-            onChange={(e) => onBookingTypeChange(e.target.value as BookingType)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="tavolo">Prenota un Tavolo</option>
-            <option value="rinfresco_laurea">Rinfresco di Laurea</option>
-            <option value="menu_prezzo_fisso">Menu a prezzo fisso</option>
-          </select>
+          <div className="w-full max-w-[55vw] mx-auto">
+            <select
+              value={formData.booking_type}
+              onChange={(e) => onBookingTypeChange(e.target.value as BookingType)}
+              className={FROSTED_TEXT_INPUT_CLASS_NAME}
+              style={FROSTED_CONTROL_SURFACE}
+            >
+              <option value="tavolo">Prenota un Tavolo</option>
+              <option value="rinfresco_laurea">Rinfresco di Laurea</option>
+              <option value="menu_prezzo_fisso">Menu a prezzo fisso</option>
+            </select>
+          </div>
         ) : (
           <p className="text-gray-900 font-medium">
             {BOOKING_TYPE_EVENT_LABELS[formData.booking_type] ?? formData.booking_type}
@@ -99,7 +113,7 @@ export const DetailsTab: React.FC<Props> = ({
           Informazioni Cliente
         </h3>
         {isEditMode ? (
-          <div className="space-y-4">
+          <div className="space-y-4 w-full max-w-[55vw] mx-auto">
             {/* Edit mode - vertical layout for usability */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-700">Nome</label>
@@ -107,7 +121,8 @@ export const DetailsTab: React.FC<Props> = ({
                 type="text"
                 value={formData.client_name}
                 onChange={(e) => onFormDataChange('client_name', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={FROSTED_TEXT_INPUT_CLASS_NAME}
+                style={FROSTED_CONTROL_SURFACE}
                 required
               />
             </div>
@@ -120,7 +135,8 @@ export const DetailsTab: React.FC<Props> = ({
                 type="email"
                 value={formData.client_email}
                 onChange={(e) => onFormDataChange('client_email', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={FROSTED_TEXT_INPUT_CLASS_NAME}
+                style={FROSTED_CONTROL_SURFACE}
                 placeholder="opzionale"
               />
             </div>
@@ -131,7 +147,8 @@ export const DetailsTab: React.FC<Props> = ({
                 type="tel"
                 value={formData.client_phone}
                 onChange={(e) => onFormDataChange('client_phone', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={FROSTED_TEXT_INPUT_CLASS_NAME}
+                style={FROSTED_CONTROL_SURFACE}
                 placeholder="Opzionale"
               />
             </div>
@@ -152,7 +169,7 @@ export const DetailsTab: React.FC<Props> = ({
           Dettagli Evento
         </h3>
         {isEditMode ? (
-          <div className="space-y-4">
+          <div className="space-y-4 w-full max-w-[55vw] mx-auto">
             {/* Edit mode - vertical layout */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-700">Data</label>
@@ -160,7 +177,8 @@ export const DetailsTab: React.FC<Props> = ({
                 type="date"
                 value={formData.date}
                 onChange={(e) => onFormDataChange('date', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={FROSTED_TEXT_INPUT_CLASS_NAME}
+                style={FROSTED_CONTROL_SURFACE}
                 required
               />
             </div>
@@ -172,7 +190,7 @@ export const DetailsTab: React.FC<Props> = ({
                   id="detail_start_time"
                   value={formData.startTime}
                   onChange={(v) => onFormDataChange('startTime', v)}
-                  className="rounded-lg border-gray-300 bg-white text-gray-900 focus-within:ring-blue-500 focus-within:border-transparent"
+                  className="rounded-[12px] border-black/20 bg-white/85 text-warm-wood focus-within:!border-warm-wood focus-within:!ring-2 focus-within:!ring-warm-wood/40"
                   required
                 />
               </div>
@@ -183,7 +201,7 @@ export const DetailsTab: React.FC<Props> = ({
                   id="detail_end_time"
                   value={formData.endTime}
                   onChange={(v) => onFormDataChange('endTime', v)}
-                  className="rounded-lg border-gray-300 bg-white text-gray-900 focus-within:ring-blue-500 focus-within:border-transparent"
+                  className="rounded-[12px] border-black/20 bg-white/85 text-warm-wood focus-within:!border-warm-wood focus-within:!ring-2 focus-within:!ring-warm-wood/40"
                   required
                 />
               </div>
@@ -201,7 +219,8 @@ export const DetailsTab: React.FC<Props> = ({
                   const value = e.target.value === '' ? 0 : parseInt(e.target.value) || 0
                   onFormDataChange('numGuests', value)
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={FROSTED_TEXT_INPUT_CLASS_NAME}
+                style={FROSTED_CONTROL_SURFACE}
                 required
               />
             </div>
@@ -215,7 +234,7 @@ export const DetailsTab: React.FC<Props> = ({
                 value={formData.placement || 'none'}
                 onValueChange={(value) => onFormDataChange('placement', value === 'none' ? null : value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className={FROSTED_TEXT_INPUT_CLASS_NAME} style={FROSTED_CONTROL_SURFACE}>
                   <SelectValue placeholder="Seleziona sala" />
                 </SelectTrigger>
                 <SelectContent>

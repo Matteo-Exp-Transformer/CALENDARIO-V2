@@ -682,66 +682,77 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
 
       {/* Menu Selection — Rinfresco di Laurea / menù a prezzo fisso */}
       {bookingTypeUsesMenuSelections(formData.booking_type) && (
-        <div className="space-y-6">
-          <MenuSelection
-            selectedItems={formData.menu_selection?.items || []}
-            numGuests={formData.num_guests || 0}
-            bookingType={formData.booking_type}
-            presetMenu={selectedPreset}
-            staffPresetsDropdownVisible={staffPresetsDropdownVisible}
-            customStaffPresets={customStaffPresets}
-            volAuVentPromoVisible={volAuVentPromoVisible}
-            volAuVentPromoMessage={volAuVentPromoMessage}
-            onPresetMenuChange={handlePresetMenuChange}
-            onMenuChange={({ items, totalPerPerson, tiramisuTotal, tiramisuKg }) => {
-              const numGuests = formData.num_guests || 0
-              const currentPreset = selectedPreset
-              let updatedPreset: PresetMenuType = currentPreset
+        <div
+          id="menu-section"
+          className="space-y-6 rounded-xl border px-3 py-4 shadow-sm md:px-5 md:py-5"
+          style={ADMIN_BOOKING_WARM_SURFACE}
+        >
+          <div className="w-full max-w-[55vw] mx-auto px-2 md:px-6 space-y-6">
+            <MenuSelection
+              selectedItems={formData.menu_selection?.items || []}
+              numGuests={formData.num_guests || 0}
+              bookingType={formData.booking_type}
+              presetMenu={selectedPreset}
+              staffPresetsDropdownVisible={staffPresetsDropdownVisible}
+              customStaffPresets={customStaffPresets}
+              volAuVentPromoVisible={volAuVentPromoVisible}
+              volAuVentPromoMessage={volAuVentPromoMessage}
+              onPresetMenuChange={handlePresetMenuChange}
+              onMenuChange={({ items, totalPerPerson, tiramisuTotal, tiramisuKg }) => {
+                const numGuests = formData.num_guests || 0
+                const currentPreset = selectedPreset
+                let updatedPreset: PresetMenuType = currentPreset
 
-              if (
-                currentPreset &&
-                !presetSelectionStillMatchesStoredPreset(currentPreset, items, customStaffPresets)
-              ) {
-                updatedPreset = null
-                setSelectedPreset(null)
-              }
+                if (
+                  currentPreset &&
+                  !presetSelectionStillMatchesStoredPreset(currentPreset, items, customStaffPresets)
+                ) {
+                  updatedPreset = null
+                  setSelectedPreset(null)
+                }
 
-              setFormData({
-                ...formData,
-                preset_menu: updatedPreset,
-                menu_selection: {
-                  items,
-                  tiramisu_total: tiramisuTotal,
-                  tiramisu_kg: tiramisuKg
-                },
-                menu_total_per_person: totalPerPerson,
-                menu_total_booking: totalPerPerson * numGuests + tiramisuTotal
-              })
-              setErrors({ ...errors, menu: '' })
-            }}
-          />
-          {errors.menu && (
-            <p className="text-sm text-red-500">{errors.menu}</p>
-          )}
+                setFormData({
+                  ...formData,
+                  preset_menu: updatedPreset,
+                  menu_selection: {
+                    items,
+                    tiramisu_total: tiramisuTotal,
+                    tiramisu_kg: tiramisuKg
+                  },
+                  menu_total_per_person: totalPerPerson,
+                  menu_total_booking: totalPerPerson * numGuests + tiramisuTotal
+                })
+                setErrors({ ...errors, menu: '' })
+              }}
+            />
+            {errors.menu && (
+              <p className="text-sm text-red-500">{errors.menu}</p>
+            )}
+          </div>
         </div>
       )}
 
       {/* Intolleranze — stesso flusso del menù */}
       {bookingTypeUsesMenuSelections(formData.booking_type) && (
-        <div className="space-y-6">
-          <DietaryRestrictionsSection
-            restrictions={formData.dietary_restrictions || []}
-            onRestrictionsChange={(restrictions) => {
-              setFormData({
-                ...formData,
-                dietary_restrictions: restrictions
-              })
-            }}
-            specialRequests={formData.special_requests || ''}
-            onSpecialRequestsChange={(value) => {
-              setFormData({ ...formData, special_requests: value })
-            }}
-          />
+        <div
+          className="space-y-6 rounded-xl border px-3 py-4 shadow-sm md:px-5 md:py-5"
+          style={ADMIN_BOOKING_WARM_SURFACE}
+        >
+          <div className="w-full max-w-[55vw] mx-auto px-2 md:px-6 space-y-6">
+            <DietaryRestrictionsSection
+              restrictions={formData.dietary_restrictions || []}
+              onRestrictionsChange={(restrictions) => {
+                setFormData({
+                  ...formData,
+                  dietary_restrictions: restrictions
+                })
+              }}
+              specialRequests={formData.special_requests || ''}
+              onSpecialRequestsChange={(value) => {
+                setFormData({ ...formData, special_requests: value })
+              }}
+            />
+          </div>
         </div>
       )}
 
