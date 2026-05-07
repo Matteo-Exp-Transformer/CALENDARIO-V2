@@ -498,7 +498,7 @@ export const MenuPricesTab: React.FC = () => {
                 color: '#ffffff'
               }}
             >
-              {editingCategoryId ? 'Aggiorna' : 'Salva'}
+              Salva
             </Button>
           </div>
         </>
@@ -604,11 +604,11 @@ export const MenuPricesTab: React.FC = () => {
               <button
                 onClick={handleSave}
                 disabled={createMutation.isPending || updateMutation.isPending}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{ background: '#16a34a', color: '#000000' }}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
               >
                 <Save className="h-4 w-4" />
-                {editingId ? 'Salva Modifiche' : 'Aggiungi'}
+                Salva
               </button>
               <button
                 onClick={handleCancel}
@@ -725,19 +725,16 @@ export const MenuPricesTab: React.FC = () => {
             aria-label="Inserisci il testo della promozione"
           />
           <p className="mt-1 text-xs text-gray-500">{promoDraft.length}/500</p>
-          <div className="mt-5 flex flex-wrap justify-end gap-2">
-            <Button variant="ghost" size="sm" type="button" onClick={() => setPromoEditorOpen(false)}>
-              Chiudi
-            </Button>
-            <Button
-              variant="success"
-              size="sm"
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            <button
               type="button"
               disabled={upsertRestaurantSetting.isPending}
               onClick={() => void handleSaveVolAuVentPromoMessage()}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
             >
               Salva
-            </Button>
+            </button>
           </div>
         </div>
       )}
@@ -912,25 +909,25 @@ export const MenuPricesTab: React.FC = () => {
                   <div className="flex flex-wrap justify-center gap-3">
                     <button
                       type="button"
+                      disabled={upsertRestaurantSetting.isPending}
+                      onClick={handleSaveCustomPreset}
+                      className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                      style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
+                    >
+                      <Save className="h-4 w-4" />
+                      Salva menù
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => {
                         resetPresetEditor()
                         setPresetEditorMode('list')
                       }}
-                      className="flex items-center gap-2 rounded-xl border-2 px-6 py-3 font-semibold text-red-600 transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
+                      className="flex items-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
                       style={{ borderColor: '#dc2626', color: '#dc2626' }}
                     >
                       <X className="h-4 w-4" />
                       Indietro
-                    </button>
-                    <button
-                      type="button"
-                      disabled={upsertRestaurantSetting.isPending}
-                      onClick={handleSaveCustomPreset}
-                      className="flex items-center gap-2 rounded-xl px-6 py-3 font-semibold text-black transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-60"
-                      style={{ background: '#16a34a', color: '#000000' }}
-                    >
-                      <Save className="h-4 w-4" />
-                      Salva menù
                     </button>
                   </div>
                 </div>

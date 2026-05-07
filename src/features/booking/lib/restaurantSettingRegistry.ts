@@ -84,6 +84,9 @@ const dailyGuestLimitSchema = z.coerce
   .int('Deve essere un intero')
   .min(1, 'Minimo 1 ospite')
   .max(1000, 'Massimo 1000 ospiti')
+
+/** Valore JSON salvato su `restaurant_settings.setting_value` quando non c’è limite giornaliero (la colonna è NOT NULL). */
+export const DAILY_GUEST_LIMIT_UNLIMITED_DB_VALUE = -1
 const bookingTimeSlotsSchema = z.object({
   morningStart: timeHm,
   morningEnd: timeHm,
@@ -117,12 +120,18 @@ function parseBookingWindowDaysFromDb(raw: unknown): number {
  */
 function parseDailyGuestLimitFromDb(raw: unknown): number | null {
   if (raw == null) return null
-  if (typeof raw === 'number' && Number.isFinite(raw)) return raw
+  if (typeof raw === 'number' && Number.isFinite(raw)) {
+    if (raw === DAILY_GUEST_LIMIT_UNLIMITED_DB_VALUE) return null
+    return raw
+  }
   if (typeof raw === 'string') {
     const trimmed = raw.trim()
     if (trimmed === '') return null
     const n = parseInt(trimmed, 10)
-    if (!Number.isNaN(n)) return n
+    if (!Number.isNaN(n)) {
+      if (n === DAILY_GUEST_LIMIT_UNLIMITED_DB_VALUE) return null
+      return n
+    }
   }
   return null
 }
@@ -239,8 +248,8 @@ export const restaurantSettingRegistry: {
     key: 'daily_guest_limit',
     parseFromDb: (raw) => parseDailyGuestLimitFromDb(raw),
     serializeToDb: (value) => {
-      // `null` / stringa vuota = nessun limite giornaliero
-      if (value == null || value === '') return null as unknown as Json
+      // La colonna DB è NOT NULL: usiamo -1 come sentinella per «nessun limite».
+      if (value == null) return DAILY_GUEST_LIMIT_UNLIMITED_DB_VALUE as unknown as Json
       return value as Json
     },
     validate: (value) => {

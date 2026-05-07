@@ -15,9 +15,64 @@ export const BOOKING_PAGE_TILE_IDS = [
   'tile-13',
   'tile-14',
   'tile-15',
+  'tile-16',
+  'tile-17',
+  'tile-18',
+  'tile-19',
+  'tile-20',
+  'tile-21',
 ] as const
 
 export type BookingPageTileId = (typeof BOOKING_PAGE_TILE_IDS)[number]
+
+/**
+ * Tile «placeholder»: lo slot resta nella griglia per mantenere l'indice/posizione
+ * (es. «Texture 11»), ma il file PNG non e piu in `public/booking/tiles/`.
+ * In admin la card viene mostrata vuota e disabilitata.
+ * Sulla pagina pubblica un eventuale valore salvato come placeholder ricade
+ * automaticamente sullo sfondo di default (vedi `parseBookingPageBackgroundFromDb`).
+ */
+export const BOOKING_PAGE_TILE_PLACEHOLDER_IDS: readonly BookingPageTileId[] = [
+  'tile-11',
+  'tile-12',
+  'tile-13',
+  'tile-14',
+]
+
+export function isBookingPageTilePlaceholder(value: string): boolean {
+  return (BOOKING_PAGE_TILE_PLACEHOLDER_IDS as readonly string[]).includes(value)
+}
+
+/**
+ * Numero di texture mostrate per pagina nella griglia admin.
+ * Pagina 1: tile-01..15 (le 15 originali).
+ * Pagina 2: tile-16..21 (le 6 aggiunte).
+ * Il valore corrisponde al conteggio originale per non spostare le selezioni già salvate.
+ */
+export const BOOKING_PAGE_TILE_PAGE_SIZE = 15
+
+/** Numero totale di pagine necessarie per coprire `BOOKING_PAGE_TILE_IDS`. */
+export const BOOKING_PAGE_TILE_PAGE_COUNT = Math.max(
+  1,
+  Math.ceil(BOOKING_PAGE_TILE_IDS.length / BOOKING_PAGE_TILE_PAGE_SIZE)
+)
+
+/** Indice 0-based della pagina che contiene `tileId` (0 se non trovato). */
+export function getBookingPageTilePageIndex(tileId: string): number {
+  const idx = (BOOKING_PAGE_TILE_IDS as readonly string[]).indexOf(tileId)
+  if (idx < 0) return 0
+  return Math.floor(idx / BOOKING_PAGE_TILE_PAGE_SIZE)
+}
+
+/** Slice degli id texture per una pagina (0-based). */
+export function getBookingPageTilesForPage(pageIndex: number): readonly BookingPageTileId[] {
+  const safePage = Math.min(
+    Math.max(pageIndex, 0),
+    BOOKING_PAGE_TILE_PAGE_COUNT - 1
+  )
+  const start = safePage * BOOKING_PAGE_TILE_PAGE_SIZE
+  return BOOKING_PAGE_TILE_IDS.slice(start, start + BOOKING_PAGE_TILE_PAGE_SIZE)
+}
 
 /** Preset gradienti pagina Prenota: `previewCss` per miniature; `fullCss` per anteprima grande e pagina pubblica. */
 export const prenotaGradientPresets = [
@@ -165,8 +220,13 @@ export function isBookingPageBackgroundId(value: string): value is BookingPageBa
 export function parseBookingPageBackgroundFromDb(raw: unknown): BookingPageBackgroundId {
   if (typeof raw !== 'string' || raw.trim() === '') return DEFAULT_BOOKING_PAGE_BACKGROUND
   const v = raw.trim().toLowerCase()
-  if (isBookingPageBackgroundId(v)) return v as BookingPageBackgroundId
-  return DEFAULT_BOOKING_PAGE_BACKGROUND
+  if (!isBookingPageBackgroundId(v)) return DEFAULT_BOOKING_PAGE_BACKGROUND
+  /**
+   * Se il valore salvato e ora un placeholder (immagine spostata in
+   * «Immagini da sistemare/»), evita un 404 sulla pagina pubblica usando il default.
+   */
+  if (isBookingPageTilePlaceholder(v)) return DEFAULT_BOOKING_PAGE_BACKGROUND
+  return v as BookingPageBackgroundId
 }
 
 /** @deprecated Usa parseBookingPageBackgroundFromDb */
