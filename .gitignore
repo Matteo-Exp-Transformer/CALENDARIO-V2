@@ -32,3 +32,8 @@ playwright-report/
 
 # TypeScript
 *.tsbuildinfo
+
+# Cartelle locali di lavoro (mai committate)
+Lavoro/
+Immagini-sfondo/
+icone-nuove/

@@ -15,6 +15,7 @@ module.exports = {
   },
   plugins: ['react-refresh'],
   rules: {
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-unused-vars': [
       'warn',
