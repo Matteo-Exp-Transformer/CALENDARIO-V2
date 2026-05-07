@@ -74,10 +74,9 @@ La dashboard è organizzata in tab:
 - **Pendenti** — richieste di prenotazione in attesa (accept/reject/create)
 - **Calendario** — prenotazioni accettate su FullCalendar
 - **Archivio** — storico prenotazioni
-- **Menu** — gestione voci menu e categorie
-- **Prezzi** — gestione prezzi menu
-- **Diete** — gestione restrizioni alimentari
+- **Menu** — gestione voci e prezzi menu e categorie
 - **Impostazioni** — orari, capienza, impostazioni ristorante
+- **Visualizza Form Pubblico** _ link diretto alla pagina prenota visualizzata da clienti  
 
 Tutti i dati vengono da React Query e vengono invalidati automaticamente dopo ogni mutazione.
 
