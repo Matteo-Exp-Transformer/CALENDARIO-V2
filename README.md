@@ -1,71 +1,48 @@
 # CalendarBackup-v2
 
-SaaS multi-tenant per la gestione delle prenotazioni di ristoranti. Un ristorante (tenant) ottiene una pagina pubblica di prenotazione e una dashboard admin privata.
+SaaS multi-tenant per prenotazioni ristorante: ogni ristorante (tenant) ottiene una pagina pubblica `/prenota/<slug>` per ricevere richieste, e una dashboard admin privata `/admin` per gestirle.
 
-## Stack
-
-| Layer | Tecnologia |
-|-------|-----------|
-| Frontend | React 18 + Vite + TypeScript |
-| Stile | TailwindCSS v4 |
-| Database | Supabase (PostgreSQL + RLS) |
-| Auth | Supabase Auth |
-| Query | TanStack React Query v5 |
-| Routing | React Router v7 |
-| Calendario | FullCalendar v6 |
-| Deploy | Vercel (SPA) + Supabase Edge Functions (Deno) |
-| PWA | vite-plugin-pwa + Workbox |
-
-## Prerequisiti
-
-- Node.js 20+
-- npm 10+
-- Supabase CLI (`npm i -g supabase`)
-- Account Supabase (gratuito)
-- Account Vercel (gratuito)
+**Stack:** React 18 + Vite + TypeScript · TailwindCSS v4 · Supabase (Postgres + RLS + Edge Functions Deno) · TanStack Query v5 · React Router v7 · Vercel + PWA.
 
 ## Setup rapido
 
 ```bash
-# 1. Installa dipendenze
 npm install
-
-# 2. Crea variabili ambiente
-cp .env.example .env.local
-# Modifica .env.local con le credenziali Supabase
-
-# 3. Collega Supabase e applica migrazioni
-supabase link
-supabase db push
-
-# 4. Avvia in locale
-npm run dev
-# → http://localhost:5173
+cp .env.example .env.local   # poi inserisci le credenziali Supabase
+npm run dev                  # → http://localhost:5173
 ```
 
-Per la guida completa vedi [docs/SETUP.md](docs/SETUP.md).
+Guida completa con prerequisiti, link Supabase CLI, deploy e troubleshooting → [docs/SETUP.md](docs/SETUP.md).
 
-## Comandi npm
+## Da dove iniziare
 
-| Comando | Descrizione |
-|---------|-------------|
-| `npm run dev` | Server di sviluppo |
-| `npm run build` | Build di produzione |
-| `npm run preview` | Anteprima della build |
-| `npm run lint` | Controllo ESLint |
-| `npm run lint:fix` | Fix automatico ESLint |
-| `db:types:linked` | Rigenera tipi TypeScript dal DB remoto |
-| `seed:booking-menu-full` | Popola DB con prenotazione con menu |
-| `seed:booking-table` | Popola DB con prenotazione tavolo |
+Per orientarti nel progetto leggi i file in quest'ordine. Ognuno ha uno scopo preciso:
 
-## Documentazione
+| File | A cosa serve |
+|------|------|
+| [ONBOARDING.md](ONBOARDING.md) | **Inizia qui.** Guida narrativa 360°: cosa fa l'app, mappa del repo, pagina per pagina (quali file/hook fanno cosa), come l'app parla col DB, dove guardare se qualcosa non funziona, criticità note. |
+| [docs/SETUP.md](docs/SETUP.md) | Setup ambiente locale e produzione: prerequisiti, variabili d'ambiente, Supabase CLI, deploy Vercel, troubleshooting. |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architettura tecnica: layer, routing, state management (React Query), multi-tenancy via TenantContext, auth flow admin, perché ci sono due client Supabase. |
+| [docs/DATABASE.md](docs/DATABASE.md) | Schema DB completo: tabelle, RLS, funzioni (`current_admin_tenant_id`, `check_admin_email`), trigger, indici, come applicare migrazioni e rigenerare i tipi TS. |
+| [docs/EDGE_FUNCTIONS.md](docs/EDGE_FUNCTIONS.md) | Edge Functions Supabase: `create-booking` e `validate-invite` (input/output, logica), specifica della `send-email` mancante. |
+| [docs/MANUAL_TEST_PLAN.md](docs/MANUAL_TEST_PLAN.md) | Checklist di smoke test manuale (~30 voci su 10 aree) da eseguire prima di ogni deploy. |
+| [docs/TESTING.md](docs/TESTING.md) | Stack di test pianificato (Vitest + Playwright). **Tooling non ancora installato**, vedi piano Fase 3. |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Convenzioni commit (Conventional Commits), branching, workflow PR, code review checklist. |
+| [CLAUDE.md](CLAUDE.md) | Orientamento per sessioni AI future: file critici, comandi, convenzioni, zone delicate. |
+| [CHANGELOG.md](CHANGELOG.md) | Storico versioni (v2.0.0 + link al report dettagliato in `docs/CHANGELOG_v2.md`). |
 
-- [ONBOARDING.md](ONBOARDING.md) — Guida completa all'esplorazione del progetto (**inizia qui**)
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Architettura, layer, pattern
-- [docs/DATABASE.md](docs/DATABASE.md) — Schema DB, RLS, funzioni, migrazioni
-- [docs/EDGE_FUNCTIONS.md](docs/EDGE_FUNCTIONS.md) — Edge Functions Supabase
-- [docs/SETUP.md](docs/SETUP.md) — Setup ambiente locale e produzione
-- [docs/TESTING.md](docs/TESTING.md) — Stack di test e come contribuire test
-- [docs/MANUAL_TEST_PLAN.md](docs/MANUAL_TEST_PLAN.md) — Checklist smoke test manuale
-- [CONTRIBUTING.md](CONTRIBUTING.md) — Come contribuire al progetto
-- [CHANGELOG.md](CHANGELOG.md) — Storico versioni
+## Issue noti (non bloccanti)
+
+- **Email non inviate:** la Edge Function `send-email` è referenziata in `src/lib/email.ts` ma non esiste. Le prenotazioni vengono salvate, ma il cliente non riceve email. Specifica in [docs/EDGE_FUNCTIONS.md](docs/EDGE_FUNCTIONS.md).
+- **Doppio prefisso `003_*`** sulle migrazioni: entrambe già applicate al remoto, nessun impatto. Documentato in [docs/DATABASE.md](docs/DATABASE.md).
+- **Disallineamento nomi migrazioni locale/remoto:** vedere sezione dedicata in [docs/DATABASE.md](docs/DATABASE.md) prima di eseguire `supabase db push`.
+
+## Comandi principali
+
+```bash
+npm run dev                # dev server
+npm run build              # typecheck + build produzione
+npm run lint               # ESLint, zero warning tollerati
+npm run lint:fix           # autofix ESLint
+npm run db:types:linked    # rigenera src/types/database.ts dal DB remoto
+```
