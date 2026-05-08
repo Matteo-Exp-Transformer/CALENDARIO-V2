@@ -407,48 +407,50 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
       {/* Privacy Policy - Solo se privacyAccepted e onPrivacyChange sono forniti */}
       {privacyAccepted !== undefined && onPrivacyChange && (
         <div style={{ paddingTop: '0.5rem' }}>
-          <div className="flex items-start gap-3">
-            <div className="group relative size-5 shrink-0">
-              <input
-                type="checkbox"
-                id="privacy-consent-dietary"
-                checked={privacyAccepted}
-                onChange={(e) => onPrivacyChange(e.target.checked)}
-                required
-                className="peer absolute inset-0 z-10 size-5 cursor-pointer appearance-none opacity-0 focus:outline-none"
-              />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 flex items-center justify-center rounded border-2 border-warm-wood/40 bg-white shadow-sm transition-all duration-300 group-hover:border-warm-wood group-hover:shadow-md peer-checked:border-warm-orange peer-checked:bg-warm-orange peer-checked:shadow-lg peer-focus-visible:ring-4 peer-focus-visible:ring-warm-wood/20"
-              >
-                <Check
-                  className={`h-3.5 w-3.5 text-white transition-all duration-300 ${
-                    privacyAccepted ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
-                  }`}
-                  strokeWidth={3}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex min-w-0 flex-1 items-start gap-3">
+              <div className="group relative size-5 shrink-0">
+                <input
+                  type="checkbox"
+                  id="privacy-consent-dietary"
+                  checked={privacyAccepted}
+                  onChange={(e) => onPrivacyChange(e.target.checked)}
+                  required
+                  className="peer absolute inset-0 z-10 size-5 cursor-pointer appearance-none opacity-0 focus:outline-none"
                 />
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 flex items-center justify-center rounded border-2 border-warm-wood/40 bg-white shadow-sm transition-all duration-300 group-hover:border-warm-wood group-hover:shadow-md peer-checked:border-warm-orange peer-checked:bg-warm-orange peer-checked:shadow-lg peer-focus-visible:ring-4 peer-focus-visible:ring-warm-wood/20"
+                >
+                  <Check
+                    className={`h-3.5 w-3.5 text-white transition-all duration-300 ${
+                      privacyAccepted ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                    }`}
+                    strokeWidth={3}
+                  />
+                </div>
               </div>
-            </div>
-            <label
-              htmlFor="privacy-consent-dietary"
-              className="cursor-pointer text-sm text-gray-700"
-              style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '8px 16px', borderRadius: '8px', backdropFilter: 'blur(1px)' }}
-            >
-              Accetto la{' '}
-              <Link
-                to="/privacy"
-                target="_blank"
-                className="font-semibold text-warm-orange underline decoration-warm-orange hover:text-warm-orange hover:decoration-warm-orange"
-                onClick={(e) => e.stopPropagation()}
+              <label
+                htmlFor="privacy-consent-dietary"
+                className="cursor-pointer text-sm text-gray-700"
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '8px 16px', borderRadius: '8px', backdropFilter: 'blur(1px)' }}
               >
-                Privacy Policy
-              </Link>
-              {' '}*
-            </label>
+                Accetto la{' '}
+                <Link
+                  to="/privacy"
+                  target="_blank"
+                  className="font-semibold text-warm-orange underline decoration-warm-orange hover:text-warm-orange hover:decoration-warm-orange"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Privacy Policy
+                </Link>
+                {' '}*
+              </label>
+            </div>
+            <p className="inline-flex shrink-0 items-center self-end rounded-md border border-warm-wood/20 bg-white px-2.5 py-1 text-sm font-semibold text-warm-wood-dark shadow-sm sm:self-center">
+              * I campi contrassegnati sono obbligatori
+            </p>
           </div>
-          <p className="ml-8 mt-2 inline-flex items-center rounded-md border border-warm-wood/20 bg-white px-2.5 py-1 text-sm font-semibold text-warm-wood-dark shadow-sm">
-            * I campi contrassegnati sono obbligatori
-          </p>
         </div>
       )}
     </div>

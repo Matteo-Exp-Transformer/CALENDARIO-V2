@@ -536,6 +536,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       >
         <span style={{ flexShrink: 0 }}>Menù</span>
         <span
+          className="text-xl font-serif text-warm-wood md:text-2xl max-[595px]:!text-base"
           style={{
             whiteSpace: 'normal',
             wordBreak: 'break-word',
