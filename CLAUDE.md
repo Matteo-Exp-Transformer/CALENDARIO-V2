@@ -56,6 +56,8 @@ supabase migration list --linked # Verifica stato migrazioni
 - **Due client Supabase**: `supabase` mantiene la sessione in localStorage (admin), `supabasePublic` non la mantiene mai (form pubblici). Non mischiare gli usi.
 - **Migrazioni 003_\***: esistono due migrazioni con prefisso `003_` (entrambe già applicate al remoto). Non rinominarle — documentato in `docs/DATABASE.md`.
 - **send-email mancante**: `src/lib/email.ts` chiama `${SUPABASE_URL}/functions/v1/send-email` che non esiste. I flussi email falliscono silenziosamente in produzione.
+- **Tailwind v4 + @config**: il progetto usa Tailwind v4 (`^4.1.16`). In v4 il file `tailwind.config.js` NON viene caricato automaticamente — è necessaria la direttiva `@config "../tailwind.config.js"` in `src/index.css` (già presente). Senza di essa tutti i token custom (`bg-primary-600`, `bg-status-*`, ecc.) non generano CSS e i componenti appaiono privi di colore.
+- **Button — NON aggiungere CSS in index.css**: i variant disponibili (`primary`, `secondary`, `danger`, `success`, `ghost`, `outline`) coprono tutti i casi. Per modificare un bottone cambia il `variant` o `size` nel file chiamante. Tailwind JIT richiede stringhe letterali statiche — costruire classi dinamicamente (es. `` `bg-${color}-600` ``) non genera CSS. Se un bottone non si vede correttamente verifica prima che `@config` sia presente in `index.css`.
 
 ## Struttura cartelle src/
 

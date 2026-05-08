@@ -376,19 +376,18 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
       {/* Privacy Policy - Solo se privacyAccepted e onPrivacyChange sono forniti */}
       {privacyAccepted !== undefined && onPrivacyChange && (
         <div className="flex items-start gap-3" style={{ paddingTop: '0.5rem' }}>
-          <div className="relative flex-shrink-0">
+          <div className="group relative size-5 shrink-0">
             <input
               type="checkbox"
               id="privacy-consent-dietary"
               checked={privacyAccepted}
               onChange={(e) => onPrivacyChange(e.target.checked)}
               required
-              className="peer sr-only"
+              className="peer absolute inset-0 z-10 size-5 cursor-pointer appearance-none opacity-0 focus:outline-none"
             />
-            <label
-              htmlFor="privacy-consent-dietary"
-              className="flex h-5 w-5 cursor-pointer items-center justify-center border-2 border-warm-wood/40 shadow-sm transition-all duration-300 hover:border-warm-wood hover:shadow-md peer-checked:border-warm-orange peer-checked:shadow-lg peer-focus-visible:ring-4 peer-focus-visible:ring-warm-wood/20"
-              style={{ backgroundColor: privacyAccepted ? '#D2691E' : 'white' }}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 flex items-center justify-center rounded border-2 border-warm-wood/40 bg-white shadow-sm transition-all duration-300 group-hover:border-warm-wood group-hover:shadow-md peer-checked:border-warm-orange peer-checked:bg-warm-orange peer-checked:shadow-lg peer-focus-visible:ring-4 peer-focus-visible:ring-warm-wood/20"
             >
               <Check
                 className={`h-3.5 w-3.5 text-white transition-all duration-300 ${
@@ -396,7 +395,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                 }`}
                 strokeWidth={3}
               />
-            </label>
+            </div>
           </div>
           <label
             htmlFor="privacy-consent-dietary"

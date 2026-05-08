@@ -39,7 +39,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
     return `${year}-${month}-${day}`
   }
 
-  const [formData, setFormData] = useState<BookingRequestInput>({
+  const createInitialFormData = (): BookingRequestInput => ({
     client_name: '',
     client_email: '',
     client_phone: '',
@@ -56,6 +56,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
     dietary_restrictions: [],
     preset_menu: null
   })
+
+  const [formData, setFormData] = useState<BookingRequestInput>(createInitialFormData)
 
   const [privacyAccepted, setPrivacyAccepted] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -544,16 +546,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
     <form onSubmit={handleSubmit} className="w-full max-w-[55vw] mx-auto px-2 md:px-6 space-y-8 font-bold booking-form-mobile">
       {/* Sezione: Dati Personali */}
       <div className="space-y-6">
-        <h2
-          className="booking-section-title text-lg md:text-xl font-serif text-warm-wood mb-4 pb-3 border-b-2 border-warm-beige"
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(1px)',
-            padding: '12px 24px',
-            borderRadius: '16px',
-            fontWeight: '700'
-          }}
-        >
+        <h2 className="text-lg md:text-xl font-serif font-bold text-warm-wood mb-4 bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
           Dati Personali
         </h2>
 
@@ -721,33 +714,17 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             hasError={!!errors.desired_time}
           />
           {errors.desired_time && (
-            <div
-              className="text-sm text-red-600 p-3 rounded-lg"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(1px)',
-                border: '1px solid rgba(239, 68, 68, 0.3)'
-              }}
-            >
+            <div className="text-sm text-red-600 p-3 rounded-lg bg-white/85 backdrop-blur-[1px] border border-red-500/30">
               {errors.desired_time}
             </div>
           )}
         </div>
 
         {/* Tipologia di prenotazione (sotto Data / Ora) */}
-        <div style={{ marginTop: '1.75rem', marginBottom: 0 }}>
+        <div className="mt-7">
           <label
             htmlFor="booking_type"
-            className="block text-base md:text-lg text-warm-wood mb-2"
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(1px)',
-              padding: '8px 16px',
-              borderRadius: '12px',
-              display: 'inline-block',
-              fontWeight: '700',
-              marginBottom: '0.5rem'
-            }}
+            className="inline-block text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
           >
             Tipologia di Prenotazione *
           </label>
@@ -772,20 +749,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
               }
               setErrors({ ...errors, booking_type: '', menu: '' })
             }}
-            className="block rounded-full border shadow-sm transition-all"
-            style={{
-              borderColor: 'rgba(0,0,0,0.2)',
-              height: '56px',
-              padding: '16px',
-              fontSize: '16px',
-              fontWeight: '700',
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(1px)',
-              color: 'black',
-              width: '100%'
-            }}
-            onFocus={(e) => ((e.target as HTMLSelectElement).style.borderColor = '#8B6914')}
-            onBlur={(e) => ((e.target as HTMLSelectElement).style.borderColor = 'rgba(0,0,0,0.2)')}
+            className="block w-full h-14 rounded-full border border-black/20 shadow-sm transition-all px-4 text-base font-bold bg-white/85 backdrop-blur-[1px] text-black focus:border-warm-wood focus:outline-none"
           >
             <option value="tavolo">Prenota un tavolo</option>
             <option value="rinfresco_laurea">Rinfresco di Laurea</option>
@@ -799,11 +763,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
       </div>
       {/* Menu Selection - Solo per Rinfresco di Laurea */}
       {bookingTypeUsesMenuSelections(formData.booking_type) && (
-        <div 
-          id="menu-section" 
-          className="space-y-6"
-          style={{ paddingTop: '1.5rem', paddingBottom: '0', marginTop: '0', marginBottom: '0' }}
-        >
+        <div id="menu-section" className="space-y-6 pt-6">
           <MenuSelection
             selectedItems={formData.menu_selection?.items || []}
             numGuests={formData.num_guests || 0}
@@ -877,9 +837,9 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
 
       {/* Privacy Policy - Solo per Prenota un Tavolo (per Rinfresco di Laurea è dentro DietaryRestrictionsSection) */}
       {!bookingTypeUsesMenuSelections(formData.booking_type) && (
-        <div className="space-y-2" style={{ marginTop: '2.5rem' }}>
+        <div className="space-y-2 mt-10">
           <div className="flex items-center gap-3">
-            <div className="relative flex-shrink-0">
+            <div className="group relative size-5 shrink-0">
               <input
                 type="checkbox"
                 id="privacy-consent"
@@ -892,16 +852,15 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
                   }
                 }}
                 required
-                className="peer sr-only"
+                className="peer absolute inset-0 z-10 size-5 cursor-pointer appearance-none opacity-0 focus:outline-none"
               />
-              <label
-                htmlFor="privacy-consent"
-                className={`flex h-5 w-5 cursor-pointer items-center justify-center border-2 shadow-sm transition-all duration-300 hover:shadow-md peer-checked:border-warm-orange peer-checked:shadow-lg peer-focus-visible:ring-4 peer-focus-visible:ring-warm-wood/20 ${
-                  errors.privacyAccepted 
-                    ? 'border-red-500 hover:border-red-600' 
-                    : 'border-warm-wood/40 hover:border-warm-wood'
+              <div
+                aria-hidden="true"
+                className={`pointer-events-none absolute inset-0 flex items-center justify-center rounded border-2 bg-white shadow-sm transition-all duration-300 group-hover:shadow-md peer-checked:border-warm-orange peer-checked:bg-warm-orange peer-checked:shadow-lg peer-focus-visible:ring-4 peer-focus-visible:ring-warm-wood/20 ${
+                  errors.privacyAccepted
+                    ? 'border-red-500 group-hover:border-red-600'
+                    : 'border-warm-wood/40 group-hover:border-warm-wood'
                 }`}
-                style={{ backgroundColor: 'white' }}
               >
                 <Check
                   className={`h-3.5 w-3.5 text-white transition-all duration-300 ${
@@ -909,18 +868,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
                   }`}
                   strokeWidth={3}
                 />
-              </label>
+              </div>
             </div>
             <label
               htmlFor="privacy-consent"
-              className="cursor-pointer text-sm text-warm-wood-dark font-medium leading-relaxed"
-              style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.85)', 
-                backdropFilter: 'blur(1px)',
-                padding: '8px 16px', 
-                borderRadius: '12px',
-                maxWidth: '600px' 
-              }}
+              className="cursor-pointer text-sm text-warm-wood-dark font-medium leading-relaxed bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl max-w-[600px]"
             >
               Accetto la{' '}
               <Link
@@ -942,12 +894,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
       )}
 
       {/* Submit Button */}
-      <div className="flex w-full justify-center items-center" style={{ marginTop: '3rem' }}>
+      <div className="flex w-full justify-center items-center mt-12">
         <button
             type="submit"
             disabled={isPending || isBlocked || isSubmitting}
-            className="group relative overflow-hidden px-12 md:px-20 text-xl md:text-2xl uppercase tracking-wide text-white rounded-full bg-green-600 hover:bg-green-700 shadow-2xl hover:shadow-[0_20px_40px_rgba(34,197,94,0.4)] hover:-translate-y-1 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-2xl w-full md:w-auto max-w-md md:max-w-2xl"
-            style={{ fontWeight: '700', backgroundColor: '#16a34a', paddingTop: '28px', paddingBottom: '28px' }}
+            className="group relative overflow-hidden px-12 md:px-20 py-7 text-xl md:text-2xl uppercase tracking-wide font-bold text-white rounded-full bg-green-600 hover:bg-green-700 shadow-2xl hover:shadow-[0_20px_40px_rgba(34,197,94,0.4)] hover:-translate-y-1 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-2xl w-full md:w-auto max-w-md md:max-w-2xl"
           >
             {/* Glow effect on hover */}
             <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-r from-transparent via-emerald-200/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
@@ -979,36 +930,29 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
 
     {/* Modal di Conferma Successo */}
     {showSuccessModal && (
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '8px', maxWidth: '500px', textAlign: 'center' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+      <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50">
+        <div className="bg-white p-10 rounded-lg max-w-[500px] text-center">
+          <div className="flex justify-center mb-5">
             <CheckCircle className="h-16 w-16 text-green-600" />
           </div>
-          <h3 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '15px' }}>
+          <h3 className="text-2xl font-bold mb-4">
             Richiesta di Prenotazione Inviata!
           </h3>
-          <p style={{ fontSize: '18px', marginBottom: '20px' }}>
+          <p className="text-lg mb-5">
             La tua richiesta di prenotazione è stata inoltrata correttamente.<br />
             Ti contatteremo a breve per confermare i dettagli.
           </p>
           <button
             onClick={() => {
               setShowSuccessModal(false)
-              setTimeout(() => {
-                // Reindirizza al sito Wix di Al Ritrovo
-                window.location.href = 'https://alritrovobologna.wixsite.com/alritrovobologna'
-              }, 300)
+              setFormData(createInitialFormData())
+              setPrivacyAccepted(false)
+              setErrors({})
+              setSelectedPreset(null)
+              // Redirect disabilitato su richiesta:
+              // window.location.href = 'https://alritrovobologna.wixsite.com/alritrovobologna'
             }}
-            style={{
-              padding: '12px 32px',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              color: 'white',
-              backgroundColor: '#22c55e',
-              border: 'none',
-              borderRadius: '999px',
-              cursor: 'pointer'
-            }}
+            className="py-3 px-8 text-lg font-bold text-white bg-green-500 rounded-full cursor-pointer border-none"
           >
             Chiudi
           </button>

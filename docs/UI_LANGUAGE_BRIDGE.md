@@ -6,6 +6,60 @@
 
 ---
 
+## 0. "Rendi questo bottone un primary button" — definizione esatta
+
+Quando un agente sente questa frase deve fare **una sola cosa**: cambiare il prop `variant` nel file chiamante.
+
+```tsx
+// PRIMA (qualsiasi variant)
+<Button variant="success" size="sm" ...>Testo</Button>
+
+// DOPO
+<Button variant="primary" size="sm" ...>Testo</Button>
+```
+
+**Non toccare `Button.tsx`, non toccare `index.css`.**
+
+### Come appare un primary button
+
+- Sfondo: indigo `#4F46E5` (`bg-primary-600`)
+- Hover: indigo scuro `#4338CA` (`hover:bg-primary-700`)
+- Testo: bianco (`text-white`)
+- Angoli: molto arrotondati (`rounded-xl` = 12px)
+- Font: grassetto (`font-semibold`)
+- Ombra: `shadow-md`, cresce a `hover:shadow-lg`
+- Click: si schiaccia leggermente (`active:scale-[0.98]`)
+- Focus: anello indigo (`focus:ring-primary-500`)
+
+### Classi complete generate da `variant="primary"`
+
+```
+// base (sempre applicato)
+inline-flex items-center justify-center font-semibold rounded-xl
+transition-all duration-200 focus:outline-none focus:ring-2
+focus:ring-offset-2 active:scale-[0.98]
+
+// variant primary
+bg-primary-600 hover:bg-primary-700 text-white
+focus:ring-primary-500 shadow-md hover:shadow-lg
+
+// size md (default)
+px-4 py-2.5 text-sm gap-2
+
+// size sm
+px-3 py-1.5 text-sm gap-1.5
+
+// size lg
+px-6 py-3 text-base gap-2
+```
+
+> **Come funziona il colore**: `bg-primary-600` è definito in `@theme` dentro `src/index.css`
+> (Tailwind v4 — non leggere `tailwind.config.js` automaticamente).
+> Il valore è `#4F46E5`. Se il bottone appare grigio, verificare che
+> `@import "tailwindcss"` e il blocco `@theme` siano presenti in `src/index.css`.
+
+---
+
 ## 1. Come si chiama quello che voglio fare?
 
 | Tu dici | Si chiama | Note |

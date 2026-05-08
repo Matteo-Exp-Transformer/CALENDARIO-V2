@@ -171,11 +171,11 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
               <div className="flex w-full min-w-0 justify-end self-stretch">
                 <Button
                   type="button"
-                  variant="success"
+                  variant="primary"
                   size="sm"
                   disabled={disabled || closed}
                   onClick={() => addSlot(day)}
-                  className="gap-1.5 shadow-sm"
+                  className="gap-1.5"
                 >
                   <Plus className="w-4 h-4" />
                   Aggiungi fascia
