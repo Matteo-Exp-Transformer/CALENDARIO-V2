@@ -20,7 +20,7 @@ import {
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { RestaurantSettingsTab } from '@/features/booking/components/RestaurantSettingsTab'
-import { NotifyNavShinyLayers, ShimmerButton } from '@/components/ui'
+import { NotifyNavShinyLayers } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { useTenantContext } from '@/contexts/TenantContext'
 
@@ -70,22 +70,20 @@ const NavItem: React.FC<NavItemProps> = ({
 
   if (active) {
     const activeBtn = (
-      <ShimmerButton
+      <button
+        type="button"
         onClick={onClick}
-        borderRadius="0.75rem"
-        background="var(--admin-warm-gradient)"
-        shimmerColor="rgba(255, 255, 255, 1)"
-        shimmerDuration="5s"
         className={cn(
-          'admin-nav-item w-full min-h-11 gap-1.5 px-2 py-2.5 text-sm font-medium text-slate-900 sm:gap-2 sm:px-3',
-          'border border-[color:var(--admin-warm-wrap-border)] shadow-[inset_0_0_0_2px_rgba(255,255,255,0.88),0_1px_6px_rgba(180,83,9,0.18)]'
+          'admin-nav-item admin-nav-tab-active relative w-full min-h-11 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl px-2 sm:px-3 py-2.5 text-sm font-semibold text-slate-900 cursor-pointer',
+          '[background-image:none] bg-orange-200',
+          'border-solid border-4 shadow-none'
         )}
       >
         {showNotifyDecor && <NotifyNavShinyLayers />}
         <span className="relative z-10 flex min-w-0 w-full items-center justify-center gap-1.5 sm:gap-2">
           {inner}
         </span>
-      </ShimmerButton>
+      </button>
     )
     if (showNotifyDecor) {
       return <div className="admin-nav-notify-pulse-wrap w-full rounded-xl">{activeBtn}</div>

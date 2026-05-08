@@ -69,13 +69,16 @@
   --admin-warm-wrap-border: rgba(253, 186, 116, 0.45);
   --admin-warm-wrap-border-width: 1.5px;
 
-  /** Superficie warm (nav tab, stat card header, ShimmerButton tab attiva) — vedi docs/STYLING_AGENT_CONTEXT.md */
+  /** Superficie warm (nav tab, stat card header) — vedi docs/STYLING_AGENT_CONTEXT.md */
   --admin-warm-gradient: linear-gradient(
     90deg,
     rgb(255 237 213) 0%,
     rgb(255 247 237) 42%,
     rgb(254 249 195) 100%
   );
+
+  /** Tab nav admin selezionato — stesso arancione del brand (`text-warm-orange` / checkbox: @theme --color-warm-orange) */
+  --admin-nav-tab-active-border: #f97316;
 
   /* Testo */
   --color-text:          #0F172A;
@@ -186,43 +189,6 @@ body {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-@keyframes shimmer-perimeter-rotate {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.shimmer-perimeter-ring {
-  padding: 3px;
-  opacity: 1;
-  will-change: transform;
-  background:
-    conic-gradient(
-      from 0deg,
-      transparent 0deg,
-      rgba(255, 255, 255, 0.35) 6deg,
-      var(--shimmer-color) 16deg,
-      rgba(255, 255, 255, 1) 26deg,
-      var(--shimmer-color) 38deg,
-      rgba(255, 255, 255, 0.45) 50deg,
-      transparent 82deg,
-      transparent 360deg
-    );
-  animation: shimmer-perimeter-rotate var(--speed, 4.5s) linear infinite;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  box-shadow:
-    0 0 14px rgba(255, 255, 255, 0.55),
-    inset 0 0 12px rgba(255, 255, 255, 0.15);
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
 }
 
 /*
@@ -359,7 +325,8 @@ body {
     transform 200ms ease;
 }
 
-.admin-nav-item:hover {
+/* Hover solo su tab non selezionati — il selezionato non deve cambiare al passaggio del mouse */
+.admin-nav-item:hover:not(.admin-nav-tab-active) {
   background-image: linear-gradient(
     90deg,
     rgb(255 247 237) 0%,
@@ -371,6 +338,14 @@ body {
     inset 0 0 0 1px rgba(255, 255, 255, 0.92),
     0 0 0 1px rgba(251, 146, 60, 0.24),
     0 8px 16px rgba(251, 146, 60, 0.18);
+}
+
+/* Tab selezionato: Preflight azzera `border` sui <button> — serve style+width espliciti oltre al colore */
+button.admin-nav-item.admin-nav-tab-active {
+  box-shadow: none;
+  border-style: solid;
+  border-width: 4px;
+  border-color: var(--admin-nav-tab-active-border);
 }
 
 /* Admin dashboard — collapsible headers hover illumination */

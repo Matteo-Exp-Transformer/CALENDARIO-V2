@@ -880,7 +880,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
                 to="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-warm-orange hover:text-terracotta underline decoration-2 underline-offset-2 transition-colors"
+                className="font-semibold text-warm-orange underline decoration-warm-orange decoration-2 underline-offset-2 hover:text-warm-orange hover:decoration-warm-orange transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
                 Privacy Policy

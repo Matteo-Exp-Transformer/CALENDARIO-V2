@@ -427,7 +427,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
               <Link
                 to="/privacy"
                 target="_blank"
-                className="text-warm-orange hover:text-terracotta underline font-medium"
+                className="font-semibold text-warm-orange underline decoration-warm-orange hover:text-warm-orange hover:decoration-warm-orange"
                 onClick={(e) => e.stopPropagation()}
               >
                 Privacy Policy

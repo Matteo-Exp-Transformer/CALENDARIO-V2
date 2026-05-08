@@ -115,6 +115,7 @@ Quando devi cambiare un bottone: **cambia solo il `variant` nel file chiamante**
 | `<SectionHeader>` | `src/components/ui/SectionHeader.tsx` | titolo sezione con azioni |
 | `<Separator>` | `src/components/ui/Separator.tsx` | linea divisoria |
 | `<CollapsibleCard>` | `src/components/ui/CollapsibleCard.tsx` | **LOCKED — non toccare** |
+| `<NotifyNavShinyLayers>` | `src/components/ui/NotifyNavShinyLayers.tsx` | Solo **tab Prenotazioni con badge** nella nav admin (shiny + bordo). Interno al `button` del `NavItem`. |
 
 ### Utility
 
@@ -146,7 +147,7 @@ import { cn } from '@/lib/utils'   // clsx + tailwind-merge — sempre usare que
 1. **Bottone**: cambia `variant` o `size` nel file chiamante. Fine.
 2. **Colore su elemento**: usa token Tailwind (`bg-primary-600`, `text-warm-wood`) o CSS var (`bg-[var(--color-success)]`). Non aggiungere CSS in `index.css`.
 3. **Spacing/layout**: usa classi Tailwind standard (`px-4`, `gap-3`, `rounded-xl`).
-4. **Animazione**: usa `animate-fade-in` (definita in `index.css`) o classi Tailwind native.
+4. **Animazione**: usa `animate-fade-in` (definita in `index.css`) o classi Tailwind native. Per la nav admin, effetti notify (shiny/pulse) sono in `index.css` (classi `admin-nav-notify-*`).
 
 ### Anti-pattern da evitare
 
@@ -167,7 +168,16 @@ className="bg-white/30"                                 // ✅
 
 // ✅ USA style={{}} solo per valori senza equivalente Tailwind
 style={{ fontSize: 'clamp(1.4rem, 2.8vw, 1.8rem)' }}  // ✅ clamp non ha token
+
 ```
+
+### Tab nav admin (dashboard)
+
+- Stato **attivo**: `<button>` con classi Tailwind / `.admin-nav-item` come in `AdminDashboard`, non varianti inventate su `<Button>`.
+- Bordo warm allineato al resto dell’admin: `border-[color:var(--admin-warm-wrap-border)]` da `:root` in `index.css`, non RGB hardcoded nel TSX se esiste già la variabile.
+- Sfondo tab: classe `.admin-nav-item` e `--admin-warm-gradient` in `:root` per coerenza con le altre superfici warm.
+- Icona attiva: token `text-primary-900`; badge conteggio: `bg-primary-600` (vedi tabella **Dashboard admin** sopra).
+- Tab **Prenotazioni** con notifiche: `notifyHighlight` + `<NotifyNavShinyLayers />` e `admin-nav-notify-pulse-wrap` (vedi `AdminDashboard`).
 
 ### Pattern corretti
 
