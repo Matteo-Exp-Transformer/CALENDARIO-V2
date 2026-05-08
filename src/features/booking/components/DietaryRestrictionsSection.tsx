@@ -19,6 +19,8 @@ interface DietaryRestrictionsSectionProps {
   onSpecialRequestsChange: (value: string) => void
   privacyAccepted?: boolean
   onPrivacyChange?: (value: boolean) => void
+  /** Nasconde il blocco "Altre Richieste" (es. renderizzato sotto la griglia in AdminBookingForm) */
+  omitSpecialRequestsSection?: boolean
 }
 
 export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProps> = ({
@@ -27,7 +29,8 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
   specialRequests,
   onSpecialRequestsChange,
   privacyAccepted,
-  onPrivacyChange
+  onPrivacyChange,
+  omitSpecialRequestsSection = false
 }) => {
   const [selectedRestriction, setSelectedRestriction] = useState<RestrictionChoice>('')
   const [guestCount, setGuestCount] = useState<number>(0)
@@ -99,7 +102,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
     <div className="space-y-6">
       {/* Titolo Sezione */}
       <h2
-        className="booking-section-title text-lg md:text-xl font-serif text-warm-wood mb-4 pb-3 border-b-2 border-warm-beige"
+        className="booking-section-title w-full text-center text-lg md:text-xl font-serif text-warm-wood mb-4 pb-3 border-b-2 border-warm-beige"
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.85)',
           backdropFilter: 'blur(1px)',
@@ -359,45 +362,47 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
       )}
 
       {/* Note o Richieste Speciali */}
-      <div className="space-y-3 mt-10" style={{ marginTop: '40px' }}>
-        <label
-          className="block text-base md:text-lg text-warm-wood mb-2"
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(1px)',
-            padding: '8px 16px',
-            borderRadius: '12px',
-            display: 'inline-block',
-            fontWeight: '700',
-            marginBottom: '0.5rem'
-          }}
-        >
-          Altre Richieste
-        </label>
-        <Textarea
-          id="special_requests"
-          value={specialRequests}
-          onChange={(e) => onSpecialRequestsChange(e.target.value)}
-          rows={4}
-          placeholder="Inserisci eventuali richieste particolari..."
-          className="w-full rounded-2xl border shadow-sm text-black placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
-          style={{
-            borderColor: 'rgba(0,0,0,0.2)',
-            padding: '16px',
-            fontSize: '16px',
-            fontWeight: '700',
-            backgroundColor: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(1px)',
-            minHeight: '120px',
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = '#8B6914'
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = 'rgba(0,0,0,0.2)'
-          }}
-        />
-      </div>
+      {!omitSpecialRequestsSection && (
+        <div className="space-y-3 mt-10" style={{ marginTop: '40px' }}>
+          <label
+            className="block text-base md:text-lg text-warm-wood mb-2"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(1px)',
+              padding: '8px 16px',
+              borderRadius: '12px',
+              display: 'inline-block',
+              fontWeight: '700',
+              marginBottom: '0.5rem'
+            }}
+          >
+            Altre Richieste
+          </label>
+          <Textarea
+            id="special_requests"
+            value={specialRequests}
+            onChange={(e) => onSpecialRequestsChange(e.target.value)}
+            rows={4}
+            placeholder="Inserisci eventuali richieste particolari..."
+            className="w-full rounded-2xl border shadow-sm text-black placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+            style={{
+              borderColor: 'rgba(0,0,0,0.2)',
+              padding: '16px',
+              fontSize: '16px',
+              fontWeight: '700',
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(1px)',
+              minHeight: '120px',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#8B6914'
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = 'rgba(0,0,0,0.2)'
+            }}
+          />
+        </div>
+      )}
 
       {/* Privacy Policy - Solo se privacyAccepted e onPrivacyChange sono forniti */}
       {privacyAccepted !== undefined && onPrivacyChange && (

@@ -567,9 +567,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                 <section aria-labelledby="digest-with-menu-heading">
                   <div
                     id="digest-with-menu-heading"
-                    className="mb-3 rounded-lg border border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white px-3 py-2 text-center shadow-sm"
+                    className="admin-warm-surface mb-3 flex items-center justify-center rounded-xl border px-3 py-2 text-center shadow-sm"
                   >
-                    <h5 className="!text-[19px] font-semibold tracking-wide text-amber-950">
+                    <h5 className="!text-[19px] font-semibold tracking-wide text-warm-wood">
                       Prenotazioni con menù
                     </h5>
                   </div>
@@ -710,9 +710,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                 <section aria-labelledby="digest-table-only-heading">
                   <div
                     id="digest-table-only-heading"
-                    className="mb-3 rounded-lg border border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white px-3 py-2 text-center shadow-sm"
+                    className="admin-warm-surface mb-3 flex items-center justify-center rounded-xl border px-3 py-2 text-center shadow-sm"
                   >
-                    <h5 className="!text-[19px] font-semibold tracking-wide text-slate-800">
+                    <h5 className="!text-[19px] font-semibold tracking-wide text-warm-wood">
                       Solo tavolo
                     </h5>
                   </div>

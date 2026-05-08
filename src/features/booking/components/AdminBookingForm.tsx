@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
-import { Input, TimePicker24h } from '@/components/ui'
+import { Input, Textarea, TimePicker24h } from '@/components/ui'
 import type { BookingRequestInput, BookingType } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { useCreateAdminBooking } from '../hooks/useAdminBookingRequests'
@@ -446,35 +446,22 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
             )}
           </div>
 
-          <div className="space-y-3 pt-2">
-            <label
-              htmlFor="placement"
-              className="inline-flex items-center gap-1.5 text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
-            >
-              <MapPin className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
-              Posizionamento
-            </label>
-            <Select
-              value={formData.placement || 'none'}
-              onValueChange={(value) =>
-                setFormData({ ...formData, placement: value === 'none' ? '' : value })
-              }
-            >
-              <SelectTrigger
-                id="placement"
-                className="w-full h-14 rounded-full border border-black/20 shadow-sm transition-all px-4 text-base font-bold bg-white/85 backdrop-blur-[1px] text-black focus:border-warm-wood focus:outline-none"
-              >
-                <SelectValue placeholder="Seleziona sala (opzionale)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Nessuna preferenza</SelectItem>
-                {normalizedPlacementAreas.map((area) => (
-                  <SelectItem key={area} value={area}>
-                    {area}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Sempre visibile in admin (anche con "Prenota un tavolo"): in pubblico compare solo con menù */}
+          <div className="w-full space-y-6 pt-4 border-t border-warm-beige/40">
+            <DietaryRestrictionsSection
+              omitSpecialRequestsSection
+              restrictions={formData.dietary_restrictions || []}
+              onRestrictionsChange={(restrictions) => {
+                setFormData({
+                  ...formData,
+                  dietary_restrictions: restrictions
+                })
+              }}
+              specialRequests={formData.special_requests || ''}
+              onSpecialRequestsChange={(value) => {
+                setFormData({ ...formData, special_requests: value })
+              }}
+            />
           </div>
           </div>
         </div>
@@ -576,26 +563,77 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
             )}
           </div>
 
-          {formData.booking_type === 'tavolo' && (
-            <div className="space-y-3 pt-2">
-              <label
-                htmlFor="special_requests_tavolo"
-                className="inline-block text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
+          <div className="space-y-3 pt-2">
+            <label
+              htmlFor="placement"
+              className="inline-flex items-center gap-1.5 text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
+            >
+              <MapPin className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+              Posizionamento
+            </label>
+            <Select
+              value={formData.placement || 'none'}
+              onValueChange={(value) =>
+                setFormData({ ...formData, placement: value === 'none' ? '' : value })
+              }
+            >
+              <SelectTrigger
+                id="placement"
+                className="w-full h-14 rounded-full border border-black/20 shadow-sm transition-all px-4 text-base font-bold bg-white/85 backdrop-blur-[1px] text-black focus:border-warm-wood focus:outline-none"
               >
-                Note
-              </label>
-              <Input
-                id="special_requests_tavolo"
-                type="text"
-                value={formData.special_requests || ''}
-                onChange={(e) => {
-                  setFormData({ ...formData, special_requests: e.target.value })
-                }}
-                placeholder="Inserisci note"
-                className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} bg-white/85 backdrop-blur-[1px] py-[10px] px-4`}
-              />
-            </div>
-          )}
+                <SelectValue placeholder="Seleziona sala (opzionale)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nessuna preferenza</SelectItem>
+                {normalizedPlacementAreas.map((area) => (
+                  <SelectItem key={area} value={area}>
+                    {area}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <label
+              htmlFor="special_requests_admin"
+              className="block text-base md:text-lg text-warm-wood mb-2"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                backdropFilter: 'blur(1px)',
+                padding: '8px 16px',
+                borderRadius: '12px',
+                display: 'inline-block',
+                fontWeight: '700',
+                marginBottom: '0.5rem'
+              }}
+            >
+              Altre Richieste
+            </label>
+            <Textarea
+              id="special_requests_admin"
+              value={formData.special_requests || ''}
+              onChange={(e) => setFormData({ ...formData, special_requests: e.target.value })}
+              rows={4}
+              placeholder="Inserisci eventuali richieste particolari..."
+              className="w-full rounded-2xl border shadow-sm text-black placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+              style={{
+                borderColor: 'rgba(0,0,0,0.2)',
+                padding: '16px',
+                fontSize: '16px',
+                fontWeight: '700',
+                backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                backdropFilter: 'blur(1px)',
+                minHeight: '120px',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#8B6914'
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'rgba(0,0,0,0.2)'
+              }}
+            />
+          </div>
 
         </div>
         </div>
@@ -648,27 +686,6 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
             {errors.menu && (
               <p className="text-sm text-red-500">{errors.menu}</p>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* Intolleranze — stesso flusso del menù */}
-      {bookingTypeUsesMenuSelections(formData.booking_type) && (
-        <div className="space-y-6 rounded-xl border px-3 py-4 shadow-sm md:px-5 md:py-5 admin-warm-surface box-border">
-          <div className="w-full max-w-full md:max-w-[55vw] mx-auto px-2 md:px-6 space-y-6">
-            <DietaryRestrictionsSection
-              restrictions={formData.dietary_restrictions || []}
-              onRestrictionsChange={(restrictions) => {
-                setFormData({
-                  ...formData,
-                  dietary_restrictions: restrictions
-                })
-              }}
-              specialRequests={formData.special_requests || ''}
-              onSpecialRequestsChange={(value) => {
-                setFormData({ ...formData, special_requests: value })
-              }}
-            />
           </div>
         </div>
       )}

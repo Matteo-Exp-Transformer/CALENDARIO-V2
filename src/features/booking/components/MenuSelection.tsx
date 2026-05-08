@@ -515,26 +515,36 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     <div className="isolate">
       {/* Titolo Sezione */}
       <h2
-        className="booking-section-title booking-section-title-mobile booking-mobile-heading text-lg md:text-xl font-serif text-warm-wood mb-4 pb-3 border-b-2 border-warm-beige"
+        className="booking-section-title booking-section-title-mobile booking-mobile-heading text-2xl md:text-3xl max-[595px]:!text-lg font-serif text-warm-wood mb-4 pb-3 border-b-2 border-warm-beige"
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.85)',
           backdropFilter: 'blur(1px)',
-          padding: '12px 16px',
-          borderRadius: '16px',
+          padding: '18px 24px',
+          borderRadius: '18px',
           fontWeight: '700',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '12px',
+          gap: '14px',
           width: '100%',
           maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
           margin: '0 auto',
           boxSizing: 'border-box',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          minHeight: '58px'
         }}
       >
         <span style={{ flexShrink: 0 }}>Menù</span>
-        <span className="booking-mobile-heading-meta text-base font-sans font-semibold text-warm-wood/80 md:text-lg" style={{ whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word', flexShrink: 1, minWidth: 0, textAlign: 'right' }}>
+        <span
+          style={{
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+            flexShrink: 1,
+            minWidth: 0,
+            textAlign: 'right'
+          }}
+        >
           € a Persona
         </span>
       </h2>
