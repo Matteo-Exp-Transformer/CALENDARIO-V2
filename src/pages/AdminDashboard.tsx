@@ -22,6 +22,7 @@ import {
   User,
   LogOut,
   ChevronDown,
+  ChevronUp,
   UtensilsCrossed,
   Store,
   ExternalLink,
@@ -171,16 +172,29 @@ export const AdminDashboard: React.FC = () => {
     setActiveTab('calendar')
   }
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  /** Stessi h-9 w-9 del tasto «Torna in alto»; stato attivo come tab header (arancio). */
+  const footerQuickNavBtnClass = (isActive: boolean) =>
+    cn(
+      'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-slate-800 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
+      isActive
+        ? '[background-image:none] border-4 border-solid border-[color:var(--admin-nav-tab-active-border)] bg-orange-200'
+        : 'border border-slate-200 bg-white hover:bg-slate-50',
+    )
+
+  const openPublicBookingForm = () => {
+    if (!tenantSlug) return
+    window.location.href = `/prenota/${tenantSlug}`
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-bg)]">
 
-      {/* ── Header: senza sticky col form lungo aperto (evita mega-blocco incollato in alto + scroll sporco) ── */}
-      <header
-        className={cn(
-          'z-30 border-b border-slate-200 bg-white shadow-sm',
-          showNewBookingPanel ? 'relative' : 'sticky top-0',
-        )}
-      >
+      {/* ── Header in flusso documento: scrolla via insieme al contenuto (nessun ancoraggio sticky in alto) ── */}
+      <header className="relative z-30 border-b border-slate-200 bg-white shadow-sm">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 pt-4 md:gap-5 md:px-6 md:pt-6">
 
           {/* Top bar */}
@@ -341,21 +355,116 @@ export const AdminDashboard: React.FC = () => {
 
       <footer className="flex min-h-[62px] items-center border-t border-slate-100 bg-white py-3">
         <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
-          <div className="admin-warm-surface flex min-w-0 w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 shadow-sm md:px-6">
-            <div className="flex min-w-0 flex-1 items-center gap-2">
+          <div className="admin-warm-surface flex min-w-0 w-full flex-col items-stretch gap-3 rounded-xl border px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-2 md:gap-3 md:px-6">
+            <div className="flex min-w-0 shrink-0 items-center gap-2 sm:max-w-[min(40%,18rem)]">
               <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-100">
                 <User className="h-3.5 w-3.5 text-primary-600" />
               </div>
               <span className="truncate text-xs font-medium text-slate-600">{user?.email}</span>
             </div>
-            <button
-              type="button"
-              onClick={logout}
-              className={cn('flex shrink-0 items-center gap-1.5', adminBlueCtaSurfaceClass)}
+
+            <nav
+              className="flex flex-1 flex-wrap items-center justify-center gap-2"
+              aria-label="Scorciatoie sezioni dashboard"
             >
-              <LogOut className="h-3.5 w-3.5 text-white" />
-              <span className="text-white">Log-out</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('calendar')}
+                className={footerQuickNavBtnClass(activeTab === 'calendar')}
+                aria-label="Calendario"
+                title="Calendario"
+              >
+                <Calendar
+                  className={cn('h-4 w-4 shrink-0', activeTab === 'calendar' ? 'text-primary-900' : 'text-slate-800')}
+                  aria-hidden
+                />
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('pending')}
+                className={footerQuickNavBtnClass(activeTab === 'pending')}
+                aria-label="Prenotazioni"
+                title="Prenotazioni"
+              >
+                <Clock
+                  className={cn('h-4 w-4 shrink-0', activeTab === 'pending' ? 'text-primary-900' : 'text-slate-800')}
+                  aria-hidden
+                />
+                {stats != null && stats.pending != null && stats.pending > 0 ? (
+                  <span className="pointer-events-none absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-primary-600 px-0.5 text-[10px] font-bold text-white">
+                    {stats.pending > 99 ? '99+' : stats.pending}
+                  </span>
+                ) : null}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('archive')}
+                className={footerQuickNavBtnClass(activeTab === 'archive')}
+                aria-label="Archivio"
+                title="Archivio"
+              >
+                <Archive
+                  className={cn('h-4 w-4 shrink-0', activeTab === 'archive' ? 'text-primary-900' : 'text-slate-800')}
+                  aria-hidden
+                />
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('menu')}
+                className={footerQuickNavBtnClass(activeTab === 'menu')}
+                aria-label="Menu"
+                title="Menu"
+              >
+                <UtensilsCrossed
+                  className={cn('h-4 w-4 shrink-0', activeTab === 'menu' ? 'text-primary-900' : 'text-slate-800')}
+                  aria-hidden
+                />
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('settings-restaurant')}
+                className={footerQuickNavBtnClass(activeTab === 'settings-restaurant')}
+                aria-label="Impostazioni locale"
+                title="Impostazioni locale"
+              >
+                <Store
+                  className={cn(
+                    'h-4 w-4 shrink-0',
+                    activeTab === 'settings-restaurant' ? 'text-primary-900' : 'text-slate-800',
+                  )}
+                  aria-hidden
+                />
+              </button>
+              <button
+                type="button"
+                onClick={openPublicBookingForm}
+                className={footerQuickNavBtnClass(false)}
+                aria-label="Visualizza form pubblico prenotazioni"
+                title="Visualizza Form Pubblico"
+              >
+                <ExternalLink className="h-4 w-4 shrink-0 text-slate-800" aria-hidden />
+              </button>
+            </nav>
+
+            <div className="flex shrink-0 items-center justify-center gap-2 sm:justify-end">
+              <button
+                type="button"
+                onClick={scrollToTop}
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                aria-label="Torna in alto"
+                title="Torna in alto"
+              >
+                <ChevronUp className="h-5 w-5" aria-hidden />
+              </button>
+              <button
+                type="button"
+                onClick={logout}
+                className={cn('flex shrink-0 items-center gap-1.5', adminBlueCtaSurfaceClass)}
+              >
+                <LogOut className="h-3.5 w-3.5 text-white" />
+                <span className="text-white">Log-out</span>
+              </button>
+            </div>
           </div>
         </div>
       </footer>
