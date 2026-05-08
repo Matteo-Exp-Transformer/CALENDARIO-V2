@@ -592,8 +592,8 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar, filter
     <div className="space-y-6">
       {/* Results */}
       <div>
-        <div className="mb-4">
-          <p className="text-sm font-bold text-indigo-900 bg-indigo-50 rounded-lg px-4 py-2 inline-block">
+        <div className="mb-4 text-right">
+          <p className="inline-block text-sm font-bold text-indigo-900 bg-indigo-50 rounded-lg px-4 py-2">
             📊 Mostrando {filteredBookings.length} prenotazioni
           </p>
         </div>

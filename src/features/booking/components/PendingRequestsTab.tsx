@@ -233,22 +233,21 @@ export const PendingRequestsTab: React.FC = () => {
   }
 
   return (
-      <div className="space-y-4">
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">
-            📋 Richieste in Attesa ({uniquePendingBookings.length})
-          </h3>
-        </div>
+    <div className="space-y-4">
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">
+          📋 Richieste in Attesa ({uniquePendingBookings.length})
+        </h3>
+      </div>
 
-      <div className="flex flex-col rounded-lg border shadow-sm p-3 md:p-4 admin-warm-surface">
+      <div className="space-y-6">
         {uniquePendingBookings.map((booking) => (
-          <div key={booking.id} className="mb-6">
-            <BookingRequestCard
-              booking={booking}
-              onAccept={handleAccept}
-              onReject={handleReject}
-            />
-          </div>
+          <BookingRequestCard
+            key={booking.id}
+            booking={booking}
+            onAccept={handleAccept}
+            onReject={handleReject}
+          />
         ))}
       </div>
 
@@ -308,7 +307,6 @@ export const PendingRequestsTab: React.FC = () => {
         onConfirm={handleRejectConfirm}
         isLoading={rejectMutation.isPending}
       />
-      
     </div>
   )
 }
