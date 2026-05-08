@@ -243,11 +243,13 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
           <button
             type="button"
             onClick={handleAdd}
-            className="flex items-center justify-center gap-2 text-sm text-white rounded-full border-2 border-green-700 bg-green-600 hover:bg-green-500 active:scale-[0.995] transition-all duration-[220ms] focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-            style={{ fontWeight: '700', backgroundColor: '#16a34a', borderColor: '#15803d', paddingTop: '8px', paddingBottom: '8px', paddingLeft: '24px', paddingRight: '24px', outline: 'none' }}
+            className="group relative overflow-hidden flex items-center justify-center rounded-full border-2 border-green-700 bg-green-600 px-6 py-2 text-sm font-bold text-white shadow-xl hover:bg-green-700 hover:shadow-[0_12px_28px_rgba(34,197,94,0.35)] hover:-translate-y-0.5 active:scale-[0.995] transition-all duration-300 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
           >
-            <Plus className="h-4 w-4" />
-            {editingIndex !== null ? 'Salva Modifiche' : 'Aggiungi'}
+            <div className="absolute inset-0 z-0 pointer-events-none bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            <span className="relative z-10 inline-flex items-center justify-center gap-2">
+              <Plus className="h-4 w-4" />
+              {editingIndex !== null ? 'Salva Modifiche' : 'Aggiungi'}
+            </span>
           </button>
           {editingIndex !== null && (
             <button
@@ -375,51 +377,51 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
 
       {/* Privacy Policy - Solo se privacyAccepted e onPrivacyChange sono forniti */}
       {privacyAccepted !== undefined && onPrivacyChange && (
-        <div className="flex items-start gap-3" style={{ paddingTop: '0.5rem' }}>
-          <div className="group relative size-5 shrink-0">
-            <input
-              type="checkbox"
-              id="privacy-consent-dietary"
-              checked={privacyAccepted}
-              onChange={(e) => onPrivacyChange(e.target.checked)}
-              required
-              className="peer absolute inset-0 z-10 size-5 cursor-pointer appearance-none opacity-0 focus:outline-none"
-            />
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 flex items-center justify-center rounded border-2 border-warm-wood/40 bg-white shadow-sm transition-all duration-300 group-hover:border-warm-wood group-hover:shadow-md peer-checked:border-warm-orange peer-checked:bg-warm-orange peer-checked:shadow-lg peer-focus-visible:ring-4 peer-focus-visible:ring-warm-wood/20"
-            >
-              <Check
-                className={`h-3.5 w-3.5 text-white transition-all duration-300 ${
-                  privacyAccepted ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
-                }`}
-                strokeWidth={3}
+        <div style={{ paddingTop: '0.5rem' }}>
+          <div className="flex items-start gap-3">
+            <div className="group relative size-5 shrink-0">
+              <input
+                type="checkbox"
+                id="privacy-consent-dietary"
+                checked={privacyAccepted}
+                onChange={(e) => onPrivacyChange(e.target.checked)}
+                required
+                className="peer absolute inset-0 z-10 size-5 cursor-pointer appearance-none opacity-0 focus:outline-none"
               />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 flex items-center justify-center rounded border-2 border-warm-wood/40 bg-white shadow-sm transition-all duration-300 group-hover:border-warm-wood group-hover:shadow-md peer-checked:border-warm-orange peer-checked:bg-warm-orange peer-checked:shadow-lg peer-focus-visible:ring-4 peer-focus-visible:ring-warm-wood/20"
+              >
+                <Check
+                  className={`h-3.5 w-3.5 text-white transition-all duration-300 ${
+                    privacyAccepted ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                  }`}
+                  strokeWidth={3}
+                />
+              </div>
             </div>
-          </div>
-          <label
-            htmlFor="privacy-consent-dietary"
-            className="cursor-pointer text-sm text-gray-700"
-            style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '8px 16px', borderRadius: '8px', backdropFilter: 'blur(1px)' }}
-          >
-            Accetto la{' '}
-            <Link
-              to="/privacy"
-              target="_blank"
-              className="text-primary-600 hover:text-primary-700 underline font-medium"
-              onClick={(e) => e.stopPropagation()}
+            <label
+              htmlFor="privacy-consent-dietary"
+              className="cursor-pointer text-sm text-gray-700"
+              style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '8px 16px', borderRadius: '8px', backdropFilter: 'blur(1px)' }}
             >
-              Privacy Policy
-            </Link>
-            {' '}*
-          </label>
+              Accetto la{' '}
+              <Link
+                to="/privacy"
+                target="_blank"
+                className="text-warm-orange hover:text-terracotta underline font-medium"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Privacy Policy
+              </Link>
+              {' '}*
+            </label>
+          </div>
+          <p className="ml-8 mt-2 inline-flex items-center rounded-md border border-warm-wood/20 bg-white px-2.5 py-1 text-sm font-semibold text-warm-wood-dark shadow-sm">
+            * I campi contrassegnati sono obbligatori
+          </p>
         </div>
       )}
-
-      {/* Campi obbligatori */}
-      <p className="text-xs text-gray-500 italic">
-        * I campi contrassegnati sono obbligatori
-      </p>
     </div>
   )
 }

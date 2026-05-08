@@ -28,41 +28,9 @@ interface AdminBookingFormProps {
   onSubmit?: () => void
 }
 
-/** Stesso sfondo/header brand di AdminDashboard (strip “Al Ritrovo”). */
-const ADMIN_BOOKING_WARM_SURFACE: React.CSSProperties = {
-  backgroundImage:
-    'linear-gradient(90deg, rgb(255 237 213) 0%, rgb(255 247 237) 42%, rgb(254 249 195) 100%)',
-  borderColor: 'rgba(253, 186, 116, 0.55)',
-  boxSizing: 'border-box',
-}
-
-/** Raggio angoli (px) via style inline: evita che le utility Tailwind non risultino applicate nel build. */
-const ADMIN_CARD_RADIUS = 16
-const ADMIN_INPUT_RADIUS = 12
-/** Sfondo bianco esplicito sui campi sopra il pannello warm (stesso elenco punti dell’UX). */
-const ADMIN_INPUT_FIELD_SURFACE: React.CSSProperties = {
-  backgroundColor: 'rgba(255, 255, 255, 0.85)',
-  backdropFilter: 'blur(1px)',
-  padding: '10px 16px',
-  borderRadius: `${ADMIN_INPUT_RADIUS}px`,
-  fontWeight: 500,
-}
 const ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME =
   '!border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 rounded-[12px] focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
-const ADMIN_SECTION_TITLE_RADIUS = 16
-/** Margine interno card sinistro/destro (px) — solo inline style, come raggio e gap. */
-const ADMIN_CARD_PAD_X = 44
 const DEFAULT_PLACEMENT_AREAS = ['Sala A', 'Sala B', 'Deorr'] as const
-
-/** Larghezza blocco nominale ~1/3 viewport; pavimento 18.75rem (~300px) così non collassa come solo 33vw su schermi stretti (es. ~99px). */
-const ADMIN_FORM_NARROW_COLUMN_STYLE = {
-  width: 'min(100%, max(33vw, 18.75rem))',
-  maxWidth: '100%',
-  minWidth: 'min(100%, 18.75rem)',
-  marginLeft: 'auto',
-  marginRight: 'auto',
-  boxSizing: 'border-box' as const,
-} satisfies React.CSSProperties
 
 /** Campo racchiuso in card con fascia titolo attaccata in alto. */
 function AdminFormFieldCard({
@@ -73,32 +41,11 @@ function AdminFormFieldCard({
   children: React.ReactNode
 }) {
   return (
-    <div
-      className="border border-slate-200 bg-white shadow-sm"
-      style={{ borderRadius: ADMIN_CARD_RADIUS, overflow: 'hidden' }}
-    >
-      <div
-        className="border-b border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.18)] via-teal-50/70 to-white"
-        style={{
-          paddingLeft: ADMIN_CARD_PAD_X,
-          paddingRight: ADMIN_CARD_PAD_X,
-          paddingTop: 13,
-          paddingBottom: 13,
-          boxSizing: 'border-box',
-        }}
-      >
+    <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 bg-linear-to-r from-[rgba(45,212,191,0.18)] via-teal-50/70 to-white px-4 min-[470px]:px-8 md:px-11 py-[13px] box-border">
         <div className="text-sm font-semibold tracking-wide text-warm-wood">{title}</div>
       </div>
-      <div
-        className="space-y-2 bg-white"
-        style={{
-          paddingLeft: ADMIN_CARD_PAD_X,
-          paddingRight: ADMIN_CARD_PAD_X,
-          paddingTop: 20,
-          paddingBottom: 22,
-          boxSizing: 'border-box',
-        }}
-      >
+      <div className="space-y-2 bg-white px-4 min-[470px]:px-8 md:px-11 pt-5 pb-[22px] box-border">
         {children}
       </div>
     </div>
@@ -153,15 +100,15 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
   // Default endTime is startTime + 3 hours (same as AcceptBookingModal)
   const getTimeRange = (desiredTime: string): { startTime: string; endTime: string } => {
     if (!desiredTime) return { startTime: '', endTime: '' }
-    
+
     const [startHours, startMinutes] = desiredTime.split(':').map(Number)
     const normalizedStartMinutes = startMinutes === 0 || startMinutes === 30 ? startMinutes : 0
     const startTime = `${startHours.toString().padStart(2, '0')}:${normalizedStartMinutes.toString().padStart(2, '0')}`
-    
+
     // Calculate end time (default +3 hours) with normalized minutes
     const endHours = (startHours + 3) % 24
     const endTime = `${endHours.toString().padStart(2, '0')}:${normalizedStartMinutes.toString().padStart(2, '0')}`
-    
+
     return { startTime, endTime }
   }
 
@@ -187,7 +134,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
       setErrors({ ...errors, num_guests: '' })
       return
     }
-    
+
     // Only process if it's a valid number
     if (/^\d+$/.test(inputValue)) {
       const value = parseInt(inputValue, 10)
@@ -356,19 +303,19 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
 
     // Check capacity before submitting - show modal if capacity exceeded
     if (!capacityCheck.isAvailable) {
-      
+
       // Check if we have exceeded slots info
       if (capacityCheck.exceededSlots && capacityCheck.exceededSlots.length > 0) {
         setShowCapacityWarning(true)
         return
       }
-      
+
       // Fallback: calculate exceeded slots from slotsStatus if not available
       const affectedSlots = capacityCheck.slotsStatus.filter(slot => {
         const totalOccupied = slot.occupied + (formData.num_guests || 0)
         return totalOccupied > slot.capacity
       })
-      
+
       if (affectedSlots.length > 0) {
         setShowCapacityWarning(true)
         return
@@ -410,7 +357,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
         })
         setSelectedPreset(null)
         setErrors({})
-        
+
         // Invalidate and refetch all booking-related queries
         // This will refresh the calendar automatically
         await Promise.all([
@@ -420,7 +367,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
           queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
           queryClient.invalidateQueries({ queryKey: ['bookings', 'all'], refetchType: 'all' }),
         ])
-        
+
         onSubmit?.()
       },
       onError: (error) => {
@@ -436,15 +383,9 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
       {/* Layout a 2 Colonne su schermi grandi */}
       <div className="grid md:grid-cols-2 gap-6 md:gap-8">
         {/* COLONNA SINISTRA: Dati Personali */}
-        <div
-          className="flex w-full flex-col items-center rounded-xl border shadow-sm px-3 py-4 md:px-5 md:py-5"
-          style={ADMIN_BOOKING_WARM_SURFACE}
-        >
-          <div className="space-y-6 w-full min-w-0" style={ADMIN_FORM_NARROW_COLUMN_STYLE}>
-          <h2
-            className="mb-4 border-b-2 border-warm-beige bg-white/50 px-5 py-3 pb-3 text-center text-3xl font-serif font-bold text-warm-wood shadow-sm backdrop-blur-sm"
-            style={{ borderRadius: ADMIN_SECTION_TITLE_RADIUS }}
-          >
+        <div className="flex w-full flex-col items-center rounded-xl border shadow-sm px-3 py-4 md:px-5 md:py-5 admin-warm-surface box-border">
+          <div className="space-y-6 w-full max-w-full md:w-[min(100%,max(33vw,18.75rem))] md:min-w-[min(100%,18.75rem)] mx-auto box-border">
+          <h2 className="mb-4 border-b-2 border-warm-beige bg-white/50 px-4 py-3 pb-3 text-center text-xl min-[470px]:text-2xl md:text-3xl font-serif font-bold text-warm-wood shadow-sm backdrop-blur-sm rounded-2xl">
             Dati Personali
           </h2>
 
@@ -459,8 +400,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
               }}
               placeholder="Nome Completo *"
               required
-              className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} ${errors.client_name ? '!border-red-500' : ''}`}
-              style={ADMIN_INPUT_FIELD_SURFACE}
+              className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} bg-white/85 backdrop-blur-[1px] py-[10px] px-4 ${errors.client_name ? 'border-red-500!' : ''}`}
             />
             {errors.client_name && (
               <p className="text-sm text-red-500">{errors.client_name}</p>
@@ -478,8 +418,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
                 setErrors({ ...errors, client_email: '' })
               }}
               placeholder="Email (Opzionale)"
-              className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} ${errors.client_email ? '!border-red-500' : ''}`}
-              style={ADMIN_INPUT_FIELD_SURFACE}
+              className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} bg-white/85 backdrop-blur-[1px] py-[10px] px-4 ${errors.client_email ? 'border-red-500!' : ''}`}
             />
             {errors.client_email && (
               <p className="text-sm text-red-500">{errors.client_email}</p>
@@ -498,8 +437,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
               }}
               placeholder="Telefono *"
               required
-              className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} ${errors.client_phone ? '!border-red-500' : ''}`}
-              style={ADMIN_INPUT_FIELD_SURFACE}
+              className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} bg-white/85 backdrop-blur-[1px] py-[10px] px-4 ${errors.client_phone ? 'border-red-500!' : ''}`}
             />
             {errors.client_phone && (
               <p className="text-sm text-red-500">{errors.client_phone}</p>
@@ -509,27 +447,13 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
         </div>
 
         {/* COLONNA DESTRA: Dettagli Prenotazione */}
-        <div
-          className="flex w-full flex-col items-center rounded-xl border shadow-sm px-3 py-4 md:px-5 md:py-5"
-          style={ADMIN_BOOKING_WARM_SURFACE}
-        >
-          <div className="space-y-6 w-full min-w-0" style={ADMIN_FORM_NARROW_COLUMN_STYLE}>
-          <h2
-            className="mb-4 border-b-2 border-warm-beige bg-white/50 px-5 py-3 pb-3 text-center text-3xl font-serif font-bold text-warm-wood shadow-sm backdrop-blur-sm"
-            style={{ borderRadius: ADMIN_SECTION_TITLE_RADIUS }}
-          >
+        <div className="flex w-full flex-col items-center rounded-xl border shadow-sm px-3 py-4 md:px-5 md:py-5 admin-warm-surface box-border">
+          <div className="space-y-6 w-full max-w-full md:w-[min(100%,max(33vw,18.75rem))] md:min-w-[min(100%,18.75rem)] mx-auto box-border">
+          <h2 className="mb-4 border-b-2 border-warm-beige bg-white/50 px-4 py-3 pb-3 text-center text-xl min-[470px]:text-2xl md:text-3xl font-serif font-bold text-warm-wood shadow-sm backdrop-blur-sm rounded-2xl">
             Dettagli Prenotazione
           </h2>
 
-          <div
-            className="bg-white"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '14px',
-              boxSizing: 'border-box',
-            }}
-          >
+          <div className="bg-white flex flex-col gap-[14px] box-border">
             <AdminFormFieldCard title="Tipologia di Prenotazione *">
               <label htmlFor="booking_type" className="sr-only">
                 Tipologia di Prenotazione
@@ -558,16 +482,12 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
                 required
                 aria-required="true"
                 className={cn(
-                  'block w-full cursor-pointer border border-slate-200 bg-white px-4 py-3 shadow-sm transition-colors duration-150',
+                  'block w-full cursor-pointer border border-slate-200 bg-white/85 backdrop-blur-[1px] px-4 py-[10px] rounded-xl shadow-sm transition-colors duration-150',
                   'text-base font-medium text-slate-900',
                   'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-400',
-                  errors.booking_type && '!border-red-500 focus:!ring-red-500'
+                  'min-h-[48px] box-border',
+                  errors.booking_type && 'border-red-500! focus:ring-red-500!'
                 )}
-                style={{
-                  ...ADMIN_INPUT_FIELD_SURFACE,
-                  minHeight: '48px',
-                  boxSizing: 'border-box',
-                }}
               >
                 <option value="tavolo">Prenota un Tavolo</option>
                 <option value="rinfresco_laurea">Rinfresco di Laurea</option>
@@ -589,8 +509,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
                   setErrors({ ...errors, desired_date: '' })
                 }}
                 required
-                className={errors.desired_date ? '!border-red-500' : ''}
-                style={ADMIN_INPUT_FIELD_SURFACE}
+                className={cn('bg-white/85 backdrop-blur-[1px] py-[10px] px-4 rounded-xl font-medium', errors.desired_date && 'border-red-500!')}
               />
               {errors.desired_date && (
                 <p className="text-sm text-red-500">{errors.desired_date}</p>
@@ -608,7 +527,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
                 }}
                 required
                 hasError={!!errors.desired_time}
-                style={ADMIN_INPUT_FIELD_SURFACE}
+                className="bg-white/85 backdrop-blur-[1px] py-[10px] px-4 rounded-xl font-medium"
               />
               {errors.desired_time && (
                 <p className="text-sm text-red-500">{errors.desired_time}</p>
@@ -628,8 +547,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
                 onKeyPress={handleNumGuestsKeyPress}
                 required
                 placeholder="Es. 15"
-                className={errors.num_guests ? '!border-red-500' : ''}
-                style={ADMIN_INPUT_FIELD_SURFACE}
+                className={cn('bg-white/85 backdrop-blur-[1px] py-[10px] px-4 rounded-xl font-medium', errors.num_guests && 'border-red-500!')}
               />
               {errors.num_guests && (
                 <p className="text-sm text-red-500">{errors.num_guests}</p>
@@ -646,7 +564,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
                     setFormData({ ...formData, special_requests: e.target.value })
                   }}
                   placeholder="Inserisci note (opzionale)"
-                  style={ADMIN_INPUT_FIELD_SURFACE}
+                  className="bg-white/85 backdrop-blur-[1px] py-[10px] px-4 rounded-xl font-medium"
                 />
               </AdminFormFieldCard>
             )}
@@ -668,11 +586,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
               >
                 <SelectTrigger
                   id="placement"
-                  className="w-full border-gray-200"
-                  style={{
-                    ...ADMIN_INPUT_FIELD_SURFACE,
-                    border: '1px solid rgb(229 231 235)',
-                  }}
+                  className="w-full bg-white/85 backdrop-blur-[1px] py-[10px] px-4 rounded-xl font-medium border border-gray-200"
                 >
                   <SelectValue placeholder="Seleziona sala (opzionale)" />
                 </SelectTrigger>
@@ -696,10 +610,9 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
       {bookingTypeUsesMenuSelections(formData.booking_type) && (
         <div
           id="menu-section"
-          className="space-y-6 rounded-xl border px-3 py-4 shadow-sm md:px-5 md:py-5"
-          style={ADMIN_BOOKING_WARM_SURFACE}
+          className="space-y-6 rounded-xl border px-3 py-4 shadow-sm md:px-5 md:py-5 admin-warm-surface box-border"
         >
-          <div className="w-full max-w-[55vw] mx-auto px-2 md:px-6 space-y-6">
+          <div className="w-full max-w-full md:max-w-[55vw] mx-auto px-2 md:px-6 space-y-6">
             <MenuSelection
               selectedItems={formData.menu_selection?.items || []}
               numGuests={formData.num_guests || 0}
@@ -746,11 +659,8 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
 
       {/* Intolleranze — stesso flusso del menù */}
       {bookingTypeUsesMenuSelections(formData.booking_type) && (
-        <div
-          className="space-y-6 rounded-xl border px-3 py-4 shadow-sm md:px-5 md:py-5"
-          style={ADMIN_BOOKING_WARM_SURFACE}
-        >
-          <div className="w-full max-w-[55vw] mx-auto px-2 md:px-6 space-y-6">
+        <div className="space-y-6 rounded-xl border px-3 py-4 shadow-sm md:px-5 md:py-5 admin-warm-surface box-border">
+          <div className="w-full max-w-full md:max-w-[55vw] mx-auto px-2 md:px-6 space-y-6">
             <DietaryRestrictionsSection
               restrictions={formData.dietary_restrictions || []}
               onRestrictionsChange={(restrictions) => {
@@ -769,26 +679,19 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
       )}
 
       {/* Nota campi obbligatori */}
-      <div
-        className="mt-4 flex w-full items-center justify-start gap-4 rounded-xl border px-4 py-3 shadow-sm md:px-5"
-        style={ADMIN_BOOKING_WARM_SURFACE}
-      >
+      <div className="mt-4 flex w-full items-center justify-start gap-4 rounded-xl border px-4 py-3 shadow-sm md:px-5 admin-warm-surface box-border">
         <p className="text-xs font-medium text-slate-800">* I campi contrassegnati sono obbligatori.</p>
       </div>
 
       {/* Submit Button - Responsive: full-width mobile, auto-width desktop */}
-      <div
-        className="mt-8 flex w-full items-center justify-center rounded-xl border px-4 py-5 shadow-sm md:px-6"
-        style={ADMIN_BOOKING_WARM_SURFACE}
-      >
+      <div className="mt-8 flex w-full items-center justify-center rounded-xl border px-4 py-5 shadow-sm md:px-6 admin-warm-surface box-border">
         <button
           type="submit"
           disabled={isPending}
-          className="group relative overflow-hidden px-12 md:px-20 text-xl md:text-2xl uppercase tracking-wide text-white rounded-full bg-green-600 hover:bg-green-700 shadow-2xl hover:shadow-[0_20px_40px_rgba(34,197,94,0.4)] hover:-translate-y-1 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-2xl w-full md:w-auto max-w-md md:max-w-2xl"
-          style={{ fontWeight: '700', backgroundColor: '#16a34a', paddingTop: '28px', paddingBottom: '28px' }}
+          className="group relative overflow-hidden px-12 md:px-20 py-7 text-xl md:text-2xl uppercase tracking-wide font-bold text-white rounded-full bg-green-600 hover:bg-green-700 shadow-2xl hover:shadow-[0_20px_40px_rgba(34,197,94,0.4)] hover:-translate-y-1 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-2xl w-full md:w-auto max-w-md md:max-w-2xl"
         >
           {/* Glow effect on hover */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+          <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
           {/* Content */}
           <div className="relative flex items-center justify-center gap-3 whitespace-nowrap">
@@ -807,7 +710,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
 
           {/* Animated border glow */}
           <div className="absolute inset-0 rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-            <div className="absolute inset-[-2px] rounded-full bg-gradient-to-r from-warm-wood via-warm-orange to-terracotta blur-sm"></div>
+            <div className="absolute inset-[-2px] rounded-full bg-linear-to-r from-warm-wood via-warm-orange to-terracotta blur-sm"></div>
           </div>
         </button>
       </div>
@@ -818,11 +721,11 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
       if (!showCapacityWarning) {
         return null
       }
-      
-      
+
+
       // Get exceeded slot info from capacityCheck or calculate it
       let exceededSlot = null
-      
+
       if (capacityCheck.exceededSlots && capacityCheck.exceededSlots.length > 0) {
         exceededSlot = capacityCheck.exceededSlots[0]
       } else if (!capacityCheck.isAvailable && capacityCheck.slotsStatus) {
@@ -831,7 +734,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
           const totalOccupied = slot.occupied + (formData.num_guests || 0)
           return totalOccupied > slot.capacity
         })
-        
+
         if (affectedSlot) {
           const totalOccupied = affectedSlot.occupied + (formData.num_guests || 0)
           const exceededBy = totalOccupied - affectedSlot.capacity
@@ -843,7 +746,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
                 : affectedSlot.slot === 'evening'
                   ? 'sera'
                   : 'giornata'
-          
+
           exceededSlot = {
             exceededBy,
             slotName,
@@ -852,12 +755,12 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
           }
         }
       }
-      
+
       if (!exceededSlot) {
         return null
       }
-      
-      
+
+
       return (
         <CapacityWarningModal
           isOpen={showCapacityWarning}

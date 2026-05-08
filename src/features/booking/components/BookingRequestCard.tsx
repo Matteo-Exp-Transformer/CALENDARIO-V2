@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import type { CSSProperties } from 'react'
 import type { BookingRequest } from '@/types/booking'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
@@ -10,7 +9,6 @@ import { getPresetMenuLabel } from '../constants/presetMenus'
 import type { PresetMenuType } from '../constants/presetMenus'
 import { getMenuPriceDisplayFromBooking, getResolvedMenuPriceDisplay } from '../utils/menuPricing'
 import { formatBookingDateTime } from '../utils/formatDateTime'
-import { ADMIN_WARM_BORDER, ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { cn } from '@/lib/utils'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 
@@ -26,11 +24,6 @@ const STATUS_CONFIG: Record<string, { label: string; bgColor: string; textColor:
   rejected: { label: 'Rifiutata', bgColor: 'bg-red-50', textColor: 'text-red-700' },
 }
 
-/** Digest calendario `#digest-with-menu-heading` — strip chiusa con dati principali. Inline = ok su tutti i browser. */
-const DIGEST_BOOKING_HEADER_SURFACE: CSSProperties = {
-  backgroundImage:
-    'linear-gradient(90deg, rgba(45, 212, 191, 0.38) 0%, rgba(204, 251, 241, 0.9) 50%, rgb(255, 255, 255) 100%)',
-}
 
 /** Cornice contenitore — movimento/sat hover in `.booking-request-card-shell` (`index.css`). */
 const BOOKING_REQUEST_CARD_SHELL =
@@ -75,20 +68,17 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
   return (
     <div
-      className={BOOKING_REQUEST_CARD_SHELL}
-      style={{
-        borderColor: 'var(--admin-warm-wrap-border)',
-        borderWidth: 'var(--admin-warm-wrap-border-width)',
-        borderStyle: 'solid',
-      }}
+      className={cn(
+        BOOKING_REQUEST_CARD_SHELL,
+        'border-solid border-(--admin-warm-wrap-border) [border-width:var(--admin-warm-wrap-border-width)]'
+      )}
     >
       {/* Header chiuso = digest teal; con pannello aperto rimane fascia superiore teal. */}
       <div
         className={cn('booking-request-collapse-header', !isExpanded ? 'rounded-lg' : 'rounded-t-lg')}
       >
         <div
-          className={cn('booking-request-collapse-header-gradient', !isExpanded ? 'rounded-lg' : 'rounded-t-lg')}
-          style={DIGEST_BOOKING_HEADER_SURFACE}
+          className={cn('booking-request-collapse-header-gradient admin-teal-surface', !isExpanded ? 'rounded-lg' : 'rounded-t-lg')}
         >
         <button
           type="button"
@@ -200,13 +190,9 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
       {isExpanded && (
         <div
           className={cn(
-            'booking-request-expanded-panel rounded-b-lg border-t transition-all duration-300 ease-in-out',
+            'booking-request-expanded-panel admin-warm-surface rounded-b-lg border-t border-t-slate-200 transition-all duration-300 ease-in-out',
             CARD_INNER_PADDING
           )}
-          style={{
-            ...ADMIN_WARM_GRADIENT_SURFACE,
-            borderTopColor: 'rgb(226 232 240)',
-          }}
         >
           {/* Dati anagrafici solo nel digest; qui resta quando è stata inviata la richiesta */}
           <p className="pb-3 text-[1em] leading-normal">
@@ -217,7 +203,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
           {/* Menu Info - Solo per Rinfresco di Laurea */}
           {bookingTypeUsesMenuSelections(booking.booking_type) && booking.menu_selection && (
-            <div className="pt-6 mt-6 border-t" style={{ borderTopColor: ADMIN_WARM_BORDER }}>
+            <div className="pt-6 mt-6 border-t border-t-[rgba(253,186,116,0.55)]">
               <p className="mb-3 text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Menu Selezionato</p>
               
               {/* Mostra Menu Predefinito se presente */}
@@ -285,7 +271,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
           {/* Intolleranze - Solo per Rinfresco di Laurea */}
           {bookingTypeUsesMenuSelections(booking.booking_type) && booking.dietary_restrictions && Array.isArray(booking.dietary_restrictions) && booking.dietary_restrictions.length > 0 && (
-            <div className="pt-6 mt-6 border-t" style={{ borderTopColor: ADMIN_WARM_BORDER }}>
+            <div className="pt-6 mt-6 border-t border-t-[rgba(253,186,116,0.55)]">
               <p className="mb-3 text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Intolleranze Alimentari</p>
               <div className="space-y-2">
                 {booking.dietary_restrictions.map((restriction: any, idx: number) => (
@@ -302,7 +288,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
           {/* Note Richieste Speciali - Fuori dalla griglia */}
           {booking.special_requests && (
-            <div className="pt-6 mt-6 border-t" style={{ borderTopColor: ADMIN_WARM_BORDER }}>
+            <div className="pt-6 mt-6 border-t border-t-[rgba(253,186,116,0.55)]">
               <p className="mb-3 text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Richieste Speciali</p>
               <p className="leading-snug text-gray-700">
                 {booking.special_requests}
@@ -311,7 +297,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
           )}
 
           {/* Azioni con Bottoni Moderni */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-6 mt-6 border-t" style={{ borderTopColor: ADMIN_WARM_BORDER }}>
+          <div className="flex flex-col sm:flex-row gap-3 pt-6 mt-6 border-t border-t-[rgba(253,186,116,0.55)]">
             <button
               type="button"
               onClick={() => onAccept(booking)}

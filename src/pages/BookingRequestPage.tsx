@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { BookingRequestForm } from '@/features/booking/components/BookingRequestForm'
-import { MapPin, Clock, Phone, Mail } from 'lucide-react'
+import { MapPin, Clock, Phone, Mail, ChevronDown } from 'lucide-react'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { formatHours, getDefaultBusinessHours } from '@/lib/businessHours'
@@ -28,6 +28,7 @@ export const BookingRequestPage: React.FC = () => {
   }, [tenantSlug, setTenantFromSlug])
 
   const { data: businessHours, isLoading } = useBusinessHours()
+  const [mobileInfoOpen, setMobileInfoOpen] = useState<'hours' | 'contacts'>('hours')
   const hours = businessHours || getDefaultBusinessHours()
   const { data: contactEmail } = useRestaurantSetting('contact_email')
   const { data: contactPhone } = useRestaurantSetting('contact_phone')
@@ -162,7 +163,7 @@ export const BookingRequestPage: React.FC = () => {
           <BookingRequestForm tenantSlug={tenantSlug} />
 
           <div className="rounded-2xl shadow-xl px-3 md:px-5 bg-white/30 backdrop-blur-[16px] pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-[clamp(2rem,6vmin,3.5rem)] animate-fade-in">
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1 md:gap-x-4 items-start">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1 md:gap-x-4 items-start max-[480px]:hidden">
 
               <div className="min-w-0 w-full space-y-1 text-left pr-1.5">
                 <div className="flex items-center gap-1.5 mb-1" style={{ paddingLeft: hoursInset }}>
@@ -230,6 +231,87 @@ export const BookingRequestPage: React.FC = () => {
                 )}
               </div>
 
+            </div>
+
+            <div className="hidden max-[480px]:block space-y-2">
+              <div className="rounded-xl bg-white/35 backdrop-blur-sm">
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-between px-3 py-2"
+                  onClick={() => setMobileInfoOpen('hours')}
+                  aria-expanded={mobileInfoOpen === 'hours'}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <div className="shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-gradient-to-br from-terracotta to-warm-orange shadow-md">
+                      <Clock className="w-[14px] h-[14px] text-white" />
+                    </div>
+                    <h3 className="text-xs font-serif text-warm-wood leading-tight font-bold bg-white/50 backdrop-blur-sm px-2 py-0.5 rounded-md inline-block">
+                      Orari
+                    </h3>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-warm-wood transition-transform ${mobileInfoOpen === 'hours' ? 'rotate-180' : ''}`} />
+                </button>
+                {mobileInfoOpen === 'hours' && (
+                  <div className="px-3 pb-2 space-y-0.5">
+                    {isLoading ? (
+                      <div className="font-medium text-xs text-warm-wood-dark">Caricamento orari...</div>
+                    ) : (
+                      dayOrder.map((day) => {
+                        const dayHours = hours[day]
+                        const isOpen = !!dayHours && dayHours.length > 0
+                        return (
+                          <div key={day} className="font-medium text-xs text-warm-wood-dark leading-tight">
+                            {formatDayName(day)}: {isOpen ? formatHours(dayHours) : 'Chiuso'}
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-xl bg-white/35 backdrop-blur-sm">
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-between px-3 py-2"
+                  onClick={() => setMobileInfoOpen('contacts')}
+                  aria-expanded={mobileInfoOpen === 'contacts'}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <div className="shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-gradient-to-br from-terracotta to-warm-orange shadow-md">
+                      <MapPin className="w-[14px] h-[14px] text-white" />
+                    </div>
+                    <h3 className="text-xs font-serif text-warm-wood leading-tight font-bold bg-white/50 backdrop-blur-sm px-2 py-0.5 rounded-md inline-block">
+                      Contatti e Indirizzo
+                    </h3>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-warm-wood transition-transform ${mobileInfoOpen === 'contacts' ? 'rotate-180' : ''}`} />
+                </button>
+                {mobileInfoOpen === 'contacts' && (
+                  <div className="px-3 pb-2 space-y-0.5 text-left">
+                    {displayContactEmail && (
+                      <div className="flex min-w-0 items-center justify-start gap-1.5">
+                        <Mail className="w-3.5 h-3.5 text-warm-orange shrink-0" />
+                        <span className="min-w-0 break-all text-left text-xs text-warm-wood-dark font-medium leading-tight">
+                          {displayContactEmail}
+                        </span>
+                      </div>
+                    )}
+                    {displayContactPhone && (
+                      <div className="flex items-center justify-start gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-warm-orange shrink-0" />
+                        <span className="text-xs text-warm-wood-dark font-medium leading-tight">{displayContactPhone}</span>
+                      </div>
+                    )}
+                    {displayContactAddress && (
+                      <div className="flex items-center justify-start gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-warm-orange shrink-0" />
+                        <span className="text-xs text-warm-wood-dark font-bold leading-tight">{displayContactAddress}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

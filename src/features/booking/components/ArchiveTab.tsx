@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import type { CSSProperties } from 'react'
 import { useAllBookings } from '../hooks/useBookingQueries'
 import { useRestoreBooking, useRequeueRejectedBooking } from '../hooks/useBookingMutations'
 import { format } from 'date-fns'
@@ -7,7 +6,6 @@ import { it } from 'date-fns/locale'
 import { Calendar, Clock, Users, Tag, Mail, Phone, MessageSquare, ChevronDown, ChevronUp, User, UtensilsCrossed, Wine, PartyPopper, GraduationCap, Archive, CheckCircle, XCircle, Trash2, RotateCcw } from 'lucide-react'
 import { extractTimeFromISO } from '../utils/dateUtils'
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
-import { ADMIN_WARM_BORDER, ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { cn } from '@/lib/utils'
 
 const AFTER_COLON = '\u2002'
@@ -40,11 +38,6 @@ interface ArchiveBookingCardProps {
 const DIGEST_MENU_HEADING_GRADIENT_BG =
   'bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white'
 
-/** Come `BookingRequestCard` DIGEST_BOOKING_HEADER_SURFACE — hover saturate in `.booking-request-collapse-header-gradient`. */
-const ARCHIVE_CARD_DIGEST_SURFACE: CSSProperties = {
-  backgroundImage:
-    'linear-gradient(90deg, rgba(45, 212, 191, 0.38) 0%, rgba(204, 251, 241, 0.9) 50%, rgb(255, 255, 255) 100%)',
-}
 
 const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
   booking,
@@ -116,18 +109,16 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
         </div>
       )}
       <div
-        className="booking-request-card-shell overflow-hidden rounded-2xl border-0 border-b-[3px] border-solid shadow-none"
-        style={{ borderBottomColor: ADMIN_WARM_BORDER }}
+        className="booking-request-card-shell overflow-hidden rounded-2xl border-0 border-b-[3px] border-solid border-b-[rgba(253,186,116,0.55)] shadow-none"
       >
         <div
           className={cn('booking-request-collapse-header', !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl')}
         >
           <div
             className={cn(
-              'booking-request-collapse-header-gradient',
+              'booking-request-collapse-header-gradient admin-teal-surface',
               !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl'
             )}
-            style={ARCHIVE_CARD_DIGEST_SURFACE}
           >
       {/* Header Collapsible */}
       <button
@@ -497,8 +488,7 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar }) => {
         {/* Filtro per Status */}
         <div className="border-0 shadow-none outline-none">
           <label
-            className="mb-4 flex min-h-[4.5rem] w-full items-center justify-center rounded-xl border-2 border-solid px-4 text-center text-base font-bold uppercase tracking-wide text-warm-wood shadow-none outline-none"
-            style={ADMIN_WARM_GRADIENT_SURFACE}
+            className="admin-warm-surface mb-4 flex min-h-18 w-full items-center justify-center rounded-xl border-2 border-solid px-4 text-center text-base font-bold uppercase tracking-wide text-warm-wood shadow-none outline-none"
           >
             Filtra per Status
           </label>
@@ -529,8 +519,7 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar }) => {
         {/* Selettore Ordinamento */}
         <div className="border-0 shadow-none outline-none">
           <label
-            className="mb-4 flex min-h-[4.5rem] w-full items-center justify-center rounded-xl border-2 border-solid px-4 text-center text-base font-bold uppercase tracking-wide text-warm-wood shadow-none outline-none"
-            style={ADMIN_WARM_GRADIENT_SURFACE}
+            className="admin-warm-surface mb-4 flex min-h-18 w-full items-center justify-center rounded-xl border-2 border-solid px-4 text-center text-base font-bold uppercase tracking-wide text-warm-wood shadow-none outline-none"
           >
             Ordina per
           </label>

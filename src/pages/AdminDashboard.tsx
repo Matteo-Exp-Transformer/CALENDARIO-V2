@@ -20,7 +20,6 @@ import {
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { RestaurantSettingsTab } from '@/features/booking/components/RestaurantSettingsTab'
-import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { cn } from '@/lib/utils'
 import { useTenantContext } from '@/contexts/TenantContext'
 
@@ -45,15 +44,10 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, badge, onC
   <button
     type="button"
     onClick={onClick}
-    className="admin-nav-item relative w-full min-h-[44px] flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border px-2 sm:px-3 py-2.5 text-sm font-medium text-slate-900 transition-all duration-150 cursor-pointer"
-    style={{
-      ...(active
-        ? {
-            boxShadow:
-              'inset 0 0 0 2px rgba(255, 255, 255, 0.88), 0 1px 6px rgba(180, 83, 9, 0.18)'
-          }
-        : {})
-    }}
+    className={cn(
+      'admin-nav-item relative w-full min-h-11 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border px-2 sm:px-3 py-2.5 text-sm font-medium text-slate-900 transition-all duration-150 cursor-pointer',
+      active && 'shadow-[inset_0_0_0_2px_rgba(255,255,255,0.88),0_1px_6px_rgba(180,83,9,0.18)]'
+    )}
   >
     <Icon className={`h-4 w-4 flex-shrink-0 ${active ? 'text-primary-900' : 'text-slate-800'}`} />
     <span className="hidden min-w-0 truncate text-center sm:inline">{label}</span>
@@ -67,19 +61,8 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, badge, onC
 )
 
 /* ─── StatCard ─── */
-type StatCardTone = 'metrics' | 'rejected'
-
-/** Stesso sfondo della strip brand in header (nome locale + “Dashboard Admin”) */
-const STAT_CARD_SURFACE: Record<StatCardTone, React.CSSProperties> = {
-  metrics: { ...ADMIN_WARM_GRADIENT_SURFACE },
-  rejected: { ...ADMIN_WARM_GRADIENT_SURFACE },
-}
-
-const StatCard: React.FC<{ label: string; value: number; tone: StatCardTone }> = ({ label, value, tone }) => (
-  <div
-    className="rounded-xl border-2 p-4 text-center shadow-sm"
-    style={STAT_CARD_SURFACE[tone]}
-  >
+const StatCard: React.FC<{ label: string; value: number }> = ({ label, value }) => (
+  <div className="admin-warm-surface rounded-xl border-2 p-4 text-center shadow-sm">
     <p className="text-2xl font-black text-slate-800">{value}</p>
     <p className="text-xs font-medium text-slate-600 mt-0.5">{label}</p>
   </div>
@@ -109,20 +92,8 @@ export const AdminDashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 md:px-6">
 
           {/* Top bar */}
-          <div
-            className="relative flex items-center justify-center h-[106px] rounded-xl shadow-sm border px-4 md:px-6"
-            style={ADMIN_WARM_GRADIENT_SURFACE}
-          >
-            <div
-              className="absolute flex h-[103px] w-[103px] items-center rounded-xl overflow-hidden p-3 shadow-sm md:h-[136px] md:w-[136px] md:p-4"
-              style={{
-                ...ADMIN_WARM_GRADIENT_SURFACE,
-                right: 0,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                zIndex: 2,
-              }}
-            >
+          <div className="admin-warm-surface relative flex items-center justify-center h-[106px] rounded-xl shadow-sm border px-4 md:px-6">
+            <div className="admin-warm-surface absolute right-0 top-1/2 z-2 flex h-[103px] w-[103px] -translate-y-1/2 items-center rounded-xl overflow-hidden p-3 shadow-sm md:h-[136px] md:w-[136px] md:p-4">
               <img
                 src={appIconSrc}
                 alt="Icona app"
@@ -131,16 +102,8 @@ export const AdminDashboard: React.FC = () => {
             </div>
             <div className="w-full px-4 md:px-28 text-center pointer-events-none">
               <h1
-                className="mx-auto max-w-[calc(100%-9rem)] md:max-w-[calc(100%-11rem)] overflow-hidden break-words font-semibold italic font-serif tracking-wide text-slate-800 leading-tight"
-                style={{
-                  fontSize: 'clamp(1.297rem, 2.767vw, 1.729rem)',
-                  position: 'relative',
-                  left: '-64px',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflowWrap: 'anywhere',
-                }}
+                className="relative -left-16 mx-auto max-w-[calc(100%-9rem)] md:max-w-[calc(100%-11rem)] overflow-hidden line-clamp-2 wrap-anywhere font-semibold italic font-serif tracking-wide text-slate-800 leading-tight"
+                style={{ fontSize: 'clamp(1.297rem, 2.767vw, 1.729rem)' }}
               >
                 {restaurantName || 'Booking SaaS'}
               </h1>
@@ -150,11 +113,11 @@ export const AdminDashboard: React.FC = () => {
           {/* Stats + Nav */}
           <div className="pb-4 space-y-4">
             {/* Stats */}
-            <div className="grid grid-cols-4 gap-3">
-              <StatCard label="Oggi" value={stats?.totalDay || 0} tone="metrics" />
-              <StatCard label="Settimana" value={stats?.totalWeek || 0} tone="metrics" />
-              <StatCard label="Mese" value={stats?.totalMonth || 0} tone="metrics" />
-              <StatCard label="Rifiutate" value={stats?.rejected || 0} tone="rejected" />
+            <div className="grid grid-cols-2 min-[470px]:grid-cols-4 gap-2 md:gap-3">
+              <StatCard label="Oggi" value={stats?.totalDay || 0} />
+              <StatCard label="Settimana" value={stats?.totalWeek || 0} />
+              <StatCard label="Mese" value={stats?.totalMonth || 0} />
+              <StatCard label="Rifiutate" value={stats?.rejected || 0} />
             </div>
 
             <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
@@ -172,7 +135,7 @@ export const AdminDashboard: React.FC = () => {
               <NavItem
                 icon={ExternalLink}
                 label="Visualizza Form Pubblico"
-                mobileLabel="Visualizza Form Pubblico"
+                mobileLabel="Form"
                 onClick={() => {
                   if (!tenantSlug) return
                   window.location.href = `/prenota/${tenantSlug}`
@@ -188,8 +151,7 @@ export const AdminDashboard: React.FC = () => {
         {/* Pannello nuova prenotazione collassabile — larghezza fino a 160rem (doppio di 7xl), centrato */}
         <div className="flex w-full justify-center px-4 md:px-6">
           <div
-            className="w-full overflow-hidden rounded-xl border-2 border-[rgba(45,212,191,0.55)] bg-white shadow-md"
-            style={{ maxWidth: 'min(100%, 160rem)' }}
+            className="w-full max-w-[min(100%,160rem)] overflow-hidden rounded-xl border-2 border-[rgba(45,212,191,0.55)] bg-white shadow-md"
           >
             <button
               type="button"
@@ -197,16 +159,12 @@ export const AdminDashboard: React.FC = () => {
               className="admin-new-booking-collapse-trigger flex w-full items-center justify-between gap-3 rounded-t-xl px-4 py-[1.333rem] text-white transition-[background-image,transform] duration-200 md:gap-4 md:px-6 md:py-[1.667rem]"
             >
               <div
-                className="flex min-w-0 flex-1 items-baseline justify-start gap-2.5 font-semibold tracking-tight text-white"
-                style={{
-                  fontSize: 'calc(clamp(1.125rem, 0.9rem + 1.1vw, 1.625rem) * 2 / 3)',
-                  lineHeight: 1.35,
-                }}
+                className="flex min-w-0 flex-1 items-baseline justify-start gap-2.5 font-semibold tracking-tight text-white leading-[1.35]"
+                style={{ fontSize: 'calc(clamp(1.125rem, 0.9rem + 1.1vw, 1.625rem) * 2 / 3)' }}
               >
                 <Plus
                   aria-hidden
-                  className="shrink-0 translate-y-[0.06em] text-white/95"
-                  style={{ width: '1.05em', height: '1.05em' }}
+                  className="w-[1.05em] h-[1.05em] shrink-0 translate-y-[0.06em] text-white/95"
                 />
                 <span className="min-w-0 truncate drop-shadow-sm">Inserisci Nuova Prenotazione</span>
               </div>
@@ -227,10 +185,9 @@ export const AdminDashboard: React.FC = () => {
         <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
         <div
           className={cn(
-            'rounded-xl border shadow-sm p-5 md:p-7',
+            'admin-warm-surface rounded-xl border shadow-sm p-5 md:p-7',
             activeTab !== 'menu' && 'min-h-[500px]'
           )}
-          style={ADMIN_WARM_GRADIENT_SURFACE}
         >
           {activeTab === 'calendar' && <BookingCalendarTab initialDate={calendarTargetDate} />}
           {activeTab === 'pending'  && <PendingRequestsTab />}
@@ -242,13 +199,11 @@ export const AdminDashboard: React.FC = () => {
       </main>
 
       <footer
-        className="min-h-[62px] py-3 border-t border-slate-100 flex items-center"
-        style={ADMIN_WARM_GRADIENT_SURFACE}
+        className="admin-warm-surface min-h-[62px] py-3 border-t border-slate-100 flex items-center"
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex w-full items-center justify-between gap-4">
           <div
-            className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border shadow-sm px-4 py-3 md:px-6"
-            style={ADMIN_WARM_GRADIENT_SURFACE}
+            className="admin-warm-surface flex min-w-0 flex-1 items-center gap-2 rounded-xl border shadow-sm px-4 py-3 md:px-6"
           >
             <div className="w-6 h-6 shrink-0 rounded-full bg-primary-100 flex items-center justify-center">
               <User className="w-3.5 h-3.5 text-primary-600" />
@@ -258,12 +213,10 @@ export const AdminDashboard: React.FC = () => {
           <button
             type="button"
             onClick={logout}
-            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
-              bg-[#1e3a8a] !text-white hover:bg-[#1e40af] transition-colors"
-            style={{ color: '#ffffff' }}
+            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1e3a8a] text-white hover:bg-[#1e40af] transition-colors"
           >
-            <LogOut className="w-3.5 h-3.5 !text-white" />
-            <span className="!text-white" style={{ color: '#ffffff' }}>Log-out</span>
+            <LogOut className="w-3.5 h-3.5 text-white" />
+            <span className="text-white">Log-out</span>
           </button>
         </div>
       </footer>

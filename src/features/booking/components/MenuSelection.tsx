@@ -650,7 +650,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         const paddingTop = isFirstCategory && hasDropdownAbove
           ? '0.75rem' // Padding extra per prima categoria (Bevande) se c'è dropdown sopra
           : isFirstCategory
-          ? '0' // Nessun padding se è la prima e non c'è dropdown
+          ? '0.5rem' // Mantiene un gap visivo tra titolo sezione e prima categoria (utile su mobile)
           : '1.5rem' // Padding normale per altre categorie
 
         return (
@@ -662,7 +662,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             <h3
               className="text-lg md:text-xl border-b border-gray-300 pb-2 flex items-center justify-between w-full booking-section-title-mobile booking-mobile-subheading"
               style={{
-                color: '#2563EB',
+                color: '#6B4226',
                 backgroundColor: 'rgba(255, 255, 255, 0.85)',
                 backdropFilter: 'blur(1px)',
                 padding: '8px 16px',
