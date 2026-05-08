@@ -692,7 +692,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
             bottom: 0,
             width: '100%',
             maxWidth: modalMaxWidth,
-            backgroundColor: '#fef3c7',
+            backgroundColor: '#ffffff',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
             display: 'flex',
             flexDirection: 'column',
@@ -761,7 +761,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
           {/* Content Area - Scrollable */}
           <div
-            className="flex-1 bg-amber-100"
+            className="flex-1 bg-blue-50"
             style={{
               paddingLeft: '12px',
               paddingRight: '12px',
@@ -814,14 +814,13 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
           {/* Footer Actions - Sticky */}
           {!showCancelConfirm && (
-            <div className="border-t-2 border-gray-200 bg-amber-100 flex-shrink-0" style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '8px', paddingBottom: '8px' }}>
+            <div className="border-t-2 border-gray-200 bg-white flex-shrink-0" style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '8px', paddingBottom: '8px' }}>
               <div className="flex gap-1.5">
                 {isEditMode ? (
                   <>
                     <button
                       onClick={handleSave}
-                      className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
-                      style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
+                      className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-emerald-500/35 hover:from-emerald-400 hover:to-emerald-500 hover:border-emerald-600 hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 disabled:hover:border-emerald-700 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
                       disabled={updateMutation.isPending}
                     >
                       <Save className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
@@ -830,7 +829,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                     <button
                       onClick={() => setIsEditMode(false)}
                       className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30 shadow-md hover:shadow-lg flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
-                      style={{ borderColor: '#dc2626', color: '#dc2626' }}
                     >
                       <X className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                       <span className="truncate">Annulla</span>
@@ -854,7 +852,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                         setShowCancelConfirm(true)
                       }}
                       className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30 shadow-md hover:shadow-lg flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base min-h-[44px] sm:min-h-[56px]"
-                      style={{ borderColor: '#dc2626', color: '#dc2626' }}
                     >
                       <Trash2 className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                       <span className="truncate">Elimina</span>
