@@ -196,22 +196,23 @@ body {
   si fermava a metà. Qui si anima `left` (rispetto al genitore) e si lascia lunga pausa tra un passaggio e l’altro.
 */
 /* Un passaggio ogni 2s (--notify-shiny-period); la scia attraversa ~28% del ciclo (~0,56s), poi pausa fino al giro dopo */
+/* Percorsi percentuali sul genitore `.admin-nav-notify-shiny-fill`: restano dentro il pulsante grazie a overflow-hidden */
 @keyframes admin-nav-notify-shiny-sweep {
   0%,
   100% {
-    left: -72%;
+    left: -48%;
     opacity: 0;
   }
   2% {
     opacity: 0.97;
   }
   30% {
-    left: 138%;
+    left: 108%;
     opacity: 0.97;
   }
   33%,
   99.9% {
-    left: 138%;
+    left: 108%;
     opacity: 0;
   }
 }
@@ -220,10 +221,9 @@ body {
 .admin-nav-notify-shiny-fill::before {
   content: '';
   position: absolute;
-  top: -22%;
-  bottom: -22%;
+  inset: 0;
   left: -65%;
-  width: 52%;
+  width: 44%;
   background: linear-gradient(
     90deg,
     transparent 0%,
@@ -232,7 +232,7 @@ body {
     rgba(255, 255, 255, 0.28) 78%,
     transparent 100%
   );
-  box-shadow: 0 0 18px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.42);
   filter: blur(0.1px);
   animation: admin-nav-notify-shiny-sweep var(--notify-shiny-period, 2s) linear infinite;
 }
@@ -260,15 +260,16 @@ body {
 @keyframes admin-nav-notify-pulse-ring {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.42);
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.38);
   }
   55% {
-    box-shadow: 0 0 0 6px rgba(79, 70, 229, 0.08);
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.06);
   }
 }
 
 .admin-nav-notify-pulse-wrap {
   animation: admin-nav-notify-pulse-ring 1.45s ease-out infinite;
+  isolation: isolate;
 }
 
 .animate-fade-in {

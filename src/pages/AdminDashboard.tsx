@@ -89,7 +89,8 @@ const NavItem: React.FC<NavItemProps> = ({
         className={cn(
           'admin-nav-item admin-nav-tab-active relative w-full min-h-11 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl px-2 sm:px-3 py-2.5 text-sm font-semibold text-slate-900 cursor-pointer',
           '[background-image:none] bg-orange-200',
-          'border-solid border-4 shadow-none'
+          'border-solid border-4 shadow-none',
+          showNotifyDecor && 'overflow-hidden'
         )}
       >
         {showNotifyDecor && <NotifyNavShinyLayers />}
@@ -99,7 +100,11 @@ const NavItem: React.FC<NavItemProps> = ({
       </button>
     )
     if (showNotifyDecor) {
-      return <div className="admin-nav-notify-pulse-wrap w-full rounded-xl">{activeBtn}</div>
+      return (
+        <div className="admin-nav-notify-pulse-wrap min-w-0 max-w-full w-full rounded-xl overflow-hidden">
+          {activeBtn}
+        </div>
+      )
     }
     return activeBtn
   }
@@ -125,7 +130,11 @@ const NavItem: React.FC<NavItemProps> = ({
   )
 
   if (showNotifyDecor) {
-    return <div className="admin-nav-notify-pulse-wrap w-full rounded-xl">{inactiveBtn}</div>
+    return (
+      <div className="admin-nav-notify-pulse-wrap min-w-0 max-w-full w-full rounded-xl overflow-hidden">
+        {inactiveBtn}
+      </div>
+    )
   }
   return inactiveBtn
 }
