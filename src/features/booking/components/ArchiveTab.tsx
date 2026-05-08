@@ -125,6 +125,15 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
 
   const showDigestStrip = Boolean(eventTypeLabel)
 
+  const phoneDigestRow = booking.client_phone ? (
+    <div className="flex items-center gap-2">
+      <Phone className="h-4 w-4 shrink-0 text-warm-orange" />
+      <span className="min-w-0 break-words text-base font-semibold text-warm-wood-dark">
+        {booking.client_phone}
+      </span>
+    </div>
+  ) : null
+
   return (
     <div className="relative">
       {showDigestStrip && (
@@ -174,7 +183,7 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
                 </div>
 
                 <div className="flex w-full min-w-0 flex-col gap-3">
-                  <div className="flex min-w-0 w-full items-start gap-4 pr-[7.25rem]">
+                  <div className="flex min-w-0 w-full items-start gap-4 pr-29">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-orange-200/90 bg-white shadow-md">
                       <DigestIcon className="h-4 w-4 text-warm-orange" aria-hidden />
                     </div>
@@ -205,27 +214,31 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
                               {booking.num_guests} ospiti
                             </span>
                           </div>
+                          {phoneDigestRow ? (
+                            <div className="min-[659px]:hidden">{phoneDigestRow}</div>
+                          ) : null}
                         </div>
 
-                        <div className="min-w-0 space-y-3">
-                          {booking.client_phone && (
-                            <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4 shrink-0 text-warm-orange" />
-                              <span className="min-w-0 break-words text-base font-semibold text-warm-wood-dark">
-                                {booking.client_phone}
-                              </span>
-                            </div>
+                        <div
+                          className={cn(
+                            'min-w-0 space-y-3',
+                            /* Mobile: recupera inset digest (icona+gutter) + stessa fascia del pr-29 della row, così email/note larghi come Ricevuta */
+                            'max-[599px]:-ml-12 max-[599px]:w-[calc(100%+3rem+7.25rem)]',
                           )}
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 shrink-0 text-warm-orange" />
-                            <span className="min-w-0 break-words text-base font-semibold text-warm-wood-dark">
+                        >
+                          {phoneDigestRow ? (
+                            <div className="hidden min-[659px]:block">{phoneDigestRow}</div>
+                          ) : null}
+                          <div className="flex min-w-0 w-full items-start gap-2">
+                            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" />
+                            <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 flex-1 break-words text-sm italic text-gray-700">
                               {booking.client_email}
                             </span>
                           </div>
                           {booking.special_requests && (
-                            <div className="flex min-w-0 items-start gap-2">
+                            <div className="flex min-w-0 w-full items-start gap-2">
                               <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" />
-                              <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 text-sm italic text-gray-700">
+                              <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 flex-1 text-sm italic text-gray-700">
                                 {booking.special_requests}
                               </span>
                             </div>
