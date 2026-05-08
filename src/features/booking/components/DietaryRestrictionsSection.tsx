@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import { Plus, Trash2, X, Check } from 'lucide-react'
 import { DIETARY_RESTRICTIONS, type DietaryRestrictionType } from '@/types/menu'
 
+type RestrictionChoice = '' | DietaryRestrictionType | 'Altro'
+
 interface DietaryRestriction {
   restriction: string
   guest_count: number
@@ -27,13 +29,18 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
   privacyAccepted,
   onPrivacyChange
 }) => {
-  const [selectedRestriction, setSelectedRestriction] = useState<DietaryRestrictionType | 'Altro'>('No Lattosio')
+  const [selectedRestriction, setSelectedRestriction] = useState<RestrictionChoice>('')
   const [guestCount, setGuestCount] = useState<number>(0)
   const [otherNotes, setOtherNotes] = useState<string>('')
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [addCrossBurst, setAddCrossBurst] = useState(0)
 
   const handleAdd = () => {
+    if (!selectedRestriction) {
+      alert("Seleziona un'intolleranza o esigenza dall'elenco")
+      return
+    }
+
     if (guestCount < 1) {
       alert('Il numero di ospiti deve essere almeno 1')
       return
@@ -48,7 +55,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
     // Questo numero serve solo per associare quante persone hanno questa specifica intolleranza
     // e non viene sommato al totale ospiti della prenotazione.
     const newRestriction: DietaryRestriction = {
-      restriction: selectedRestriction,
+      restriction: selectedRestriction as DietaryRestrictionType | 'Altro',
       guest_count: guestCount,
       notes: selectedRestriction === 'Altro' ? otherNotes.trim() : undefined
     }
@@ -65,8 +72,8 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
     }
 
     // Reset form
-    setSelectedRestriction('No Lattosio')
-    setGuestCount(1)
+    setSelectedRestriction('')
+    setGuestCount(0)
     setOtherNotes('')
   }
 
@@ -75,16 +82,16 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
     onRestrictionsChange(updated)
     if (editingIndex === index) {
       setEditingIndex(null)
-      setSelectedRestriction('No Lattosio')
-      setGuestCount(1)
+      setSelectedRestriction('')
+      setGuestCount(0)
       setOtherNotes('')
     }
   }
 
   const handleCancel = () => {
     setEditingIndex(null)
-    setSelectedRestriction('No Lattosio')
-    setGuestCount(1)
+    setSelectedRestriction('')
+    setGuestCount(0)
     setOtherNotes('')
   }
 
@@ -106,123 +113,76 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
 
       {/* Form Aggiunta/Modifica */}
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-full">
-          <div className="space-y-4">
-            <div>
+        <div
+          className={`grid max-w-full grid-cols-1 gap-4 md:gap-x-8 md:gap-y-2 ${selectedRestriction !== '' ? 'md:grid-cols-2' : ''}`}
+        >
+          {/* Ordine DOM: mobile = label, select, altro?, label ospiti, input. Su md le placement allineano select e input sulla stessa riga anche se la label destra va a capo. */}
+          <label
+            className="md:col-start-1 md:row-start-1 flex min-h-[4.5rem] w-full items-center justify-center text-center text-base leading-snug md:text-lg text-warm-wood"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(1px)',
+              padding: '10px 16px',
+              borderRadius: '12px',
+              fontWeight: '700',
+              marginBottom: '0.5rem'
+            }}
+          >
+            Intolleranza / Esigenza *
+          </label>
+          <select
+            value={selectedRestriction}
+            onChange={(e) => {
+              const value = e.target.value as RestrictionChoice
+              setSelectedRestriction(value)
+              if (value === '') {
+                setGuestCount(0)
+                setOtherNotes('')
+              } else if (value !== 'Altro') {
+                setOtherNotes('')
+              }
+            }}
+            className={`md:col-start-1 md:row-start-2 flex w-full rounded-full border shadow-sm transition-all text-center ${selectedRestriction === '' ? 'text-slate-400' : 'text-gray-600'}`}
+            style={{
+              borderColor: 'rgba(0,0,0,0.2)',
+              height: '56px',
+              padding: '16px',
+              fontSize: '16px',
+              fontWeight: '700',
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(1px)',
+              marginBottom: '0'
+            }}
+            onFocus={(e) => e.target.style.borderColor = '#8B6914'}
+            onBlur={(e) => e.target.style.borderColor = 'rgba(0,0,0,0.2)'}
+          >
+            <option value="">Seleziona…</option>
+            {DIETARY_RESTRICTIONS.map((restriction) => (
+              <option key={restriction} value={restriction}>{restriction}</option>
+            ))}
+          </select>
+          {selectedRestriction === 'Altro' && (
+            <div className="md:col-span-1 md:col-start-1 md:row-start-3 space-y-2">
               <label
-                className="block text-base md:text-lg text-warm-wood mb-2"
+                className="mb-2 block w-full text-center text-base md:text-lg text-warm-wood"
                 style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.85)',
                   backdropFilter: 'blur(1px)',
                   padding: '8px 16px',
                   borderRadius: '12px',
-                  display: 'inline-block',
-                  fontWeight: '700',
-                  marginBottom: '0.5rem'
+                  fontWeight: '700'
                 }}
               >
-                Intolleranza / Esigenza *
+                Specifica intolleranza / esigenza *
               </label>
-              <select
-                value={selectedRestriction}
-                onChange={(e) => {
-                  const value = e.target.value as DietaryRestrictionType | 'Altro'
-                  setSelectedRestriction(value)
-                  if (value !== 'Altro') {
-                    setOtherNotes('')
-                  }
-                }}
-                className="flex rounded-full border shadow-sm transition-all text-gray-600 w-full"
-                style={{
-                  borderColor: 'rgba(0,0,0,0.2)',
-                  height: '56px',
-                  padding: '16px',
-                  fontSize: '16px',
-                  fontWeight: '700',
-                  backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                  backdropFilter: 'blur(1px)',
-                  marginBottom: '15px'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#8B6914'}
-                onBlur={(e) => e.target.style.borderColor = 'rgba(0,0,0,0.2)'}
-              >
-                {DIETARY_RESTRICTIONS.map((restriction) => (
-                  <option key={restriction} value={restriction}>{restriction}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Campo Altro - appare subito sotto il dropdown */}
-            {selectedRestriction === 'Altro' && (
-              <div>
-                <label
-                  className="block text-base md:text-lg text-warm-wood mb-2"
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                    backdropFilter: 'blur(1px)',
-                    padding: '8px 16px',
-                    borderRadius: '12px',
-                    display: 'inline-block',
-                    fontWeight: '700'
-                  }}
-                >
-                  Specifica intolleranza / esigenza *
-                </label>
-                <Input
-                  value={otherNotes}
-                  onChange={(e) => setOtherNotes(e.target.value)}
-                  placeholder="Descrivi l'intolleranza o esigenza"
-                  className="w-full rounded-2xl border shadow-sm text-black placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
-                  style={{
-                    borderColor: 'rgba(0,0,0,0.2)',
-                    minHeight: '56px',
-                    padding: '16px',
-                    fontSize: '16px',
-                    fontWeight: '700',
-                    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                    backdropFilter: 'blur(1px)',
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#8B6914'
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'rgba(0,0,0,0.2)'
-                  }}
-                />
-              </div>
-            )}
-          </div>
-
-          <div style={{ marginTop: '15px' }} className="guest-card-container">
-            <label
-              className="block text-base md:text-lg text-warm-wood mb-2"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(1px)',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                display: 'inline-block',
-                fontWeight: '700',
-                marginBottom: '0.5rem'
-              }}
-            >
-              Numero ospiti con intolleranze alimentari *
-            </label>
-            <div className="guest-card-mobile" style={{ marginTop: '0.5rem' }}>
               <Input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                autoComplete="off"
-                value={guestCount > 0 ? guestCount.toString() : ''}
-                onChange={(e) => {
-                  const value = e.target.value === '' ? 0 : parseInt(e.target.value) || 0
-                  setGuestCount(value)
-                }}
-                className="w-full rounded-full border shadow-sm text-black placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+                value={otherNotes}
+                onChange={(e) => setOtherNotes(e.target.value)}
+                placeholder="Descrivi l'intolleranza o esigenza"
+                className="w-full rounded-2xl border shadow-sm text-black placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
                 style={{
                   borderColor: 'rgba(0,0,0,0.2)',
-                  height: '56px',
+                  minHeight: '56px',
                   padding: '16px',
                   fontSize: '16px',
                   fontWeight: '700',
@@ -237,10 +197,56 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                 }}
               />
             </div>
-          </div>
+          )}
+          {selectedRestriction !== '' && (
+            <>
+              <label
+                className="md:col-start-2 md:row-start-1 flex min-h-[4.5rem] w-full items-center justify-center text-center text-base leading-snug md:text-lg text-warm-wood"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                  backdropFilter: 'blur(1px)',
+                  padding: '10px 16px',
+                  borderRadius: '12px',
+                  fontWeight: '700',
+                  marginBottom: '0.5rem'
+                }}
+              >
+                Quante persone?
+              </label>
+              <div className="guest-card-container md:col-start-2 md:row-start-2">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="off"
+                  value={guestCount > 0 ? guestCount.toString() : ''}
+                  onChange={(e) => {
+                    const value = e.target.value === '' ? 0 : parseInt(e.target.value) || 0
+                    setGuestCount(value)
+                  }}
+                  className="w-full rounded-full border text-center shadow-sm text-black placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+                  style={{
+                    borderColor: 'rgba(0,0,0,0.2)',
+                    height: '56px',
+                    padding: '16px',
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                    backdropFilter: 'blur(1px)',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#8B6914'
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'rgba(0,0,0,0.2)'
+                  }}
+                />
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="flex gap-3" style={{ paddingTop: '0.5rem' }}>
+        <div className="flex flex-wrap justify-center gap-3" style={{ paddingTop: '0.5rem' }}>
           <button
             type="button"
             onClick={handleAdd}
@@ -252,7 +258,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                 setAddCrossBurst((v) => v + 1)
               }
             }}
-            className="booking-cross-shine-btn group relative overflow-hidden flex items-center justify-center rounded-full border-2 border-green-700 bg-green-600 px-6 py-2 text-sm font-bold text-white shadow-xl hover:bg-green-700 hover:shadow-[0_12px_28px_rgba(34,197,94,0.35)] hover:-translate-y-0.5 active:scale-[0.995] transition-all duration-300 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            className="booking-cross-shine-btn group relative min-w-[11.5rem] overflow-hidden flex items-center justify-center rounded-full border-2 border-green-700 bg-green-600 px-8 py-2 text-sm font-bold text-white shadow-xl hover:bg-green-700 hover:shadow-[0_12px_28px_rgba(34,197,94,0.35)] hover:-translate-y-0.5 active:scale-[0.995] transition-all duration-300 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
           >
             <div className="booking-cross-shine-mount pointer-events-none absolute inset-0 z-[7] overflow-hidden rounded-[inherit]" aria-hidden>
               <div className="booking-cross-shine-beam booking-cross-shine-beam-desktop" />

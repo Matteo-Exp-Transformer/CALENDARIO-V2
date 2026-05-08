@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react'
-import { Check } from 'lucide-react'
 import { useMenuItems } from '../hooks/useMenuItems'
 import { useMenuCategories } from '../hooks/useMenuCategories'
 import type { SelectedMenuItem } from '@/types/menu'
@@ -358,9 +357,12 @@ export const PresetMenuBuilder: React.FC<PresetMenuBuilderProps> = ({
                 const isTiramisu = isTiramisuItem(item.name)
                 return (
                   <div key={item.id} className="flex w-full flex-col items-stretch gap-2 max-w-[560px]">
-                    <label
+                    <button
+                      type="button"
+                      onClick={() => handleItemToggle(item)}
+                      aria-pressed={isSelected}
                       className={`
-                        flex items-center gap-4 rounded-xl border-2 cursor-pointer w-full transition-all duration-200
+                        flex w-full cursor-pointer items-center rounded-xl border-2 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-warm-wood/50 focus-visible:ring-offset-2
                         ${isTiramisu && isSelected ? 'border-warm-orange/60' : ''}
                       `}
                       style={{
@@ -371,20 +373,7 @@ export const PresetMenuBuilder: React.FC<PresetMenuBuilderProps> = ({
                         borderRadius: '16px',
                       }}
                     >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleItemToggle(item)}
-                        className="peer sr-only"
-                      />
-                      <div
-                        className={`flex h-6 w-6 flex-shrink-0 items-center justify-center border-2 shadow-sm transition-all duration-300 ${
-                          isSelected ? 'border-warm-orange bg-warm-orange shadow-lg' : 'border-warm-wood/40 bg-white'
-                        }`}
-                      >
-                        {isSelected && <Check className="h-4 w-4 text-white" strokeWidth={3} />}
-                      </div>
-                      <div className="flex-1 flex flex-col gap-1 md:flex-row md:items-center md:justify-between min-w-0">
+                      <div className="flex min-w-0 flex-1 flex-col gap-1 md:flex-row md:items-center md:justify-between">
                         <span className="font-bold text-base text-gray-800 break-words">{item.name}</span>
                         {item.description ? (
                           <p className="text-sm md:text-base font-semibold text-gray-600 leading-snug break-words">
@@ -393,7 +382,7 @@ export const PresetMenuBuilder: React.FC<PresetMenuBuilderProps> = ({
                         ) : null}
                         <span className="font-bold text-warm-wood whitespace-nowrap">{formatPrice(item)}</span>
                       </div>
-                    </label>
+                    </button>
                     {isTiramisu && isSelected && (
                       <div className="w-full border-2 rounded-xl px-4 py-3 bg-white/90" style={{ borderColor: 'rgba(0,0,0,0.2)' }}>
                         <label htmlFor="admin-tiramisu-qty" className="text-sm font-semibold text-warm-wood block mb-2">

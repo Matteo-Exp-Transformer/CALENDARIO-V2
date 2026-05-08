@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
-import { Check, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { useMenuItems } from '../hooks/useMenuItems'
 import { useMenuCategories } from '../hooks/useMenuCategories'
 import type { SelectedMenuItem } from '@/types/menu'
@@ -534,7 +534,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         }}
       >
         <span style={{ flexShrink: 0 }}>Menù</span>
-        <span className="booking-mobile-heading-meta text-xs md:text-sm font-sans font-semibold text-warm-wood/80" style={{ whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word', flexShrink: 1, minWidth: 0, textAlign: 'right' }}>
+        <span className="booking-mobile-heading-meta text-base font-sans font-semibold text-warm-wood/80 md:text-lg" style={{ whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word', flexShrink: 1, minWidth: 0, textAlign: 'right' }}>
           € a Persona
         </span>
       </h2>
@@ -682,7 +682,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
               ) : null}
             </h3>
             <div
-              className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full justify-items-center md:max-w-5xl mx-auto"
+              className="flex w-full max-w-5xl flex-col items-stretch gap-4 mx-auto"
               style={{ paddingTop: '0.5rem', marginTop: '0' }}
             >
               {items
@@ -700,11 +700,14 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
                       marginRight: 'auto'
                     }}
                   >
-                    <label
+                    <button
+                      type="button"
+                      onClick={() => handleItemToggle(item)}
+                      aria-pressed={isSelected}
                       className={`
-                        flex items-center gap-4 rounded-xl border-2 cursor-pointer w-full menu-card-mobile
+                        flex w-full cursor-pointer items-center rounded-xl border-2 text-left menu-card-mobile
                         ${isTiramisu && isSelected ? 'menu-card-with-ingredient' : ''}
-                        transition-all duration-200
+                        transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-warm-wood/50 focus-visible:ring-offset-2
                       `}
                       style={{
                         minHeight: item.description ? '80px' : '80px',
@@ -725,55 +728,50 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
                         overflow: 'hidden'
                       }}
                     >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleItemToggle(item)}
-                        className="peer sr-only"
-                      />
-                      <div className={`
-                        flex h-6 w-6 flex-shrink-0 items-center justify-center
-                        border-2 shadow-sm transition-all duration-300
-                        ${isSelected
-                          ? 'border-warm-orange bg-warm-orange shadow-lg'
-                          : 'border-warm-wood/40 bg-white hover:border-warm-wood'
-                        }
-                      `}>
-                        {isSelected && (
-                          <Check className="h-4 w-4 text-white" strokeWidth={3} />
-                        )}
-                      </div>
                       <div
-                        className="flex-1 w-full flex flex-col gap-2 md:flex-row md:items-center md:gap-4 md:justify-between"
-                        style={{ paddingLeft: '12px', paddingRight: '12px', paddingTop: '0px', paddingBottom: '0px', minWidth: 0, height: '100%', overflow: 'hidden' }}
+                        className={`flex min-w-0 flex-1 flex-row flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap sm:gap-x-3 ${!item.description ? 'justify-between' : ''}`}
+                        style={{
+                          paddingLeft: '4px',
+                          paddingRight: '12px',
+                          paddingTop: '0px',
+                          paddingBottom: '0px',
+                          height: '100%',
+                          overflow: 'hidden',
+                        }}
                       >
-                        <div className="flex items-center justify-between gap-2 md:gap-4 md:w-[180px] md:flex-shrink-0" style={{ minWidth: 0, flex: '1 1 auto' }}>
-                          <span className={`booking-mobile-card-title font-bold text-base md:text-lg ${isSelected ? 'text-warm-wood' : 'text-gray-700'} md:whitespace-nowrap`} style={{ fontWeight: '700', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word', flex: '1 1 auto', minWidth: 0 }}>
-                            {item.name}
-                          </span>
-                          <span
-                            className="booking-mobile-price text-sm font-bold text-warm-wood whitespace-nowrap md:hidden"
-                            style={{ fontWeight: '700', textAlign: 'right' }}
-                          >
-                            {formatPrice(item)}
-                          </span>
-                        </div>
+                        <span
+                          className={`booking-mobile-card-title font-bold text-base md:text-lg ${isSelected ? 'text-warm-wood' : 'text-gray-700'} ${item.description ? 'min-w-0 max-w-[40%] shrink sm:max-w-[13rem]' : 'min-w-0 flex-1'}`}
+                          style={{
+                            fontWeight: '700',
+                            whiteSpace: 'normal',
+                            wordBreak: 'break-word',
+                            overflowWrap: 'break-word',
+                          }}
+                        >
+                          {item.name}
+                        </span>
                         {item.description ? (
                           <p
-                            className="booking-mobile-card-description text-base md:text-lg font-bold text-gray-600 leading-snug md:text-center md:flex-1"
-                            style={{ wordBreak: 'break-word', overflowWrap: 'break-word', lineHeight: '1.3', width: '100%', margin: 0, hyphens: 'auto' }}
+                            className="booking-mobile-card-description min-w-0 flex-1 basis-0 text-center text-base font-bold leading-snug text-gray-600 md:text-lg"
+                            style={{
+                              wordBreak: 'break-word',
+                              overflowWrap: 'break-word',
+                              lineHeight: '1.3',
+                              margin: 0,
+                              hyphens: 'auto',
+                            }}
                           >
                             {item.description}
                           </p>
                         ) : null}
                         <span
-                          className="booking-mobile-price hidden md:block text-base md:text-lg font-bold text-warm-wood whitespace-nowrap"
+                          className="booking-mobile-price shrink-0 text-sm font-bold text-warm-wood whitespace-nowrap md:text-lg"
                           style={{ fontWeight: '700', textAlign: 'right' }}
                         >
                           {formatPrice(item)}
                         </span>
                       </div>
-                    </label>
+                    </button>
                     {isTiramisu && isSelected && (
                       <div
                         className="w-full max-w-[746px] bg-white/85 border-2 rounded-xl px-4 py-3 flex flex-col gap-2 tiramisu-ingredient-card transition-all duration-200"
