@@ -21,6 +21,12 @@ import {
   DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
   VOL_AU_VENT_PROMO_PLACEHOLDER,
 } from '../constants/volAuVentPromo'
+import { cn } from '@/lib/utils'
+
+/** Fascia lista categorie: griglia 2 colonne da sm — classi Tailwind qui (STYLING_AGENT_CONTEXT §4). */
+const menuPricesCategoryListWrapClass = cn(
+  'menu-prices-category-list-wrap grid grid-cols-1 items-start gap-[28px] sm:grid-cols-2'
+)
 
 const slugifyCategory = (value: string): string =>
   value
@@ -31,7 +37,215 @@ const slugifyCategory = (value: string): string =>
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '')
 
-const MENU_ACTION_BTN_COL = 'w-[280px] max-w-full'
+/** Allineato a MenuSelection — larghezza massima card ingredienti */
+const MENU_CARD_MAX_WIDTH_PX = 746
+
+const adminMenuCategoryTitleStyle: React.CSSProperties = {
+  color: '#6B4226',
+  backgroundColor: 'rgba(255, 255, 255, 0.85)',
+  backdropFilter: 'blur(1px)',
+  padding: '8px 16px',
+  borderRadius: '12px',
+  width: '100%',
+  maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
+  margin: '0 auto',
+  boxSizing: 'border-box',
+  fontWeight: '700',
+}
+
+type AdminMenuIngredientCardProps = {
+  item: MenuItem
+  onEdit: () => void
+  onDelete: () => void
+  /** Es. nome categoria (vista elenco prodotti) */
+  metaLine?: string
+}
+
+const AdminMenuIngredientCard: React.FC<AdminMenuIngredientCardProps> = ({
+  item,
+  onEdit,
+  onDelete,
+  metaLine,
+}) => {
+  const hasDesc = Boolean(item.description?.trim())
+  return (
+    <div
+      className="flex w-full flex-col items-stretch gap-2"
+      style={{
+        maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+      }}
+    >
+      <div
+        className="flex w-full items-center rounded-xl border-2 text-left menu-card-mobile transition-all duration-200"
+        style={{
+          minHeight: '80px',
+          maxHeight: 'none',
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(1px)',
+          borderColor: 'rgba(0,0,0,0.2)',
+          paddingTop: '6px',
+          paddingBottom: '6px',
+          paddingLeft: '8px',
+          paddingRight: '8px',
+          borderRadius: '16px',
+          marginBottom: '4px',
+          width: '100%',
+          maxWidth: `${MENU_CARD_MAX_WIDTH_PX}px`,
+          height: hasDesc ? 'auto' : '80px',
+          boxSizing: 'border-box',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className={`flex min-w-0 flex-1 flex-row flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap sm:gap-x-3 ${!hasDesc ? 'justify-between' : ''}`}
+          style={{
+            paddingLeft: '4px',
+            paddingRight: '12px',
+            paddingTop: '0px',
+            paddingBottom: '0px',
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+          }}
+        >
+          <span
+            className={`booking-mobile-card-title font-bold text-base md:text-lg text-gray-700 ${hasDesc ? 'min-w-0 max-w-[40%] shrink sm:max-w-[13rem]' : 'min-w-0 flex-1'}`}
+            style={{
+              fontWeight: '700',
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+            }}
+          >
+            {item.name}
+          </span>
+          {hasDesc ? (
+            <p
+              className="booking-mobile-card-description min-w-0 flex-1 basis-0 text-center text-base font-bold leading-snug text-gray-600 md:text-lg"
+              style={{
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                lineHeight: '1.3',
+                margin: 0,
+                hyphens: 'auto',
+              }}
+            >
+              {item.description}
+            </p>
+          ) : null}
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <span
+              className="booking-mobile-price text-sm font-bold text-warm-wood whitespace-nowrap md:text-lg"
+              style={{ fontWeight: '700', textAlign: 'right' }}
+            >
+              €{item.price.toFixed(2)}
+            </span>
+            <div className="menu-prices-item-actions flex gap-2">
+              <button
+                type="button"
+                onClick={onEdit}
+                className="menu-prices-icon-btn menu-prices-icon-btn--edit"
+                aria-label={`Modifica ${item.name}`}
+              >
+                <Edit className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={onDelete}
+                className="menu-prices-icon-btn menu-prices-icon-btn--delete"
+                aria-label={`Elimina ${item.name}`}
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {metaLine ? (
+        <p className="px-1 text-center text-xs text-slate-500 sm:text-left">{metaLine}</p>
+      ) : null}
+    </div>
+  )
+}
+
+type AdminMenuCategoryLabelCardProps = {
+  label: string
+  onEdit: () => void
+  onDelete: () => void
+}
+
+const AdminMenuCategoryLabelCard: React.FC<AdminMenuCategoryLabelCardProps> = ({
+  label,
+  onEdit,
+  onDelete,
+}) => (
+  <div
+    className="flex w-full flex-col items-stretch gap-2"
+    style={{
+      maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
+      marginLeft: 'auto',
+      marginRight: 'auto',
+    }}
+  >
+    <div
+      className="flex w-full min-h-[80px] items-center rounded-xl border-2 text-left menu-card-mobile transition-all duration-200"
+      style={{
+        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+        backdropFilter: 'blur(1px)',
+        borderColor: 'rgba(0,0,0,0.2)',
+        paddingTop: '6px',
+        paddingBottom: '6px',
+        paddingLeft: '8px',
+        paddingRight: '8px',
+        borderRadius: '16px',
+        marginBottom: '4px',
+        width: '100%',
+        maxWidth: `${MENU_CARD_MAX_WIDTH_PX}px`,
+        boxSizing: 'border-box',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        className="flex min-w-0 w-full flex-1 items-center justify-between gap-3"
+        style={{
+          paddingLeft: '4px',
+          paddingRight: '12px',
+        }}
+      >
+        <span
+          className="booking-mobile-card-title min-w-0 flex-1 font-bold text-base text-gray-700 md:text-lg"
+          style={{
+            fontWeight: '700',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+          }}
+        >
+          {label}
+        </span>
+        <div className="menu-prices-item-actions flex shrink-0 gap-2">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="menu-prices-icon-btn menu-prices-icon-btn--edit"
+            aria-label={`Modifica ${label}`}
+          >
+            <Edit className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="menu-prices-icon-btn menu-prices-icon-btn--delete"
+            aria-label={`Elimina ${label}`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)
 
 type MenuViewMode = 'menu' | 'products' | 'categories' | 'preset_menus'
 
@@ -420,45 +634,107 @@ export const MenuPricesTab: React.FC = () => {
     <div className="flex flex-col gap-6 md:gap-7">
       <section
         aria-labelledby="menu-prices-heading"
-        className="grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 rounded-xl shadow-sm px-4 py-2 md:gap-x-5 md:px-5 md:py-2 min-h-[88px]"
+        className="flex w-full min-w-0 flex-col gap-4 rounded-xl shadow-sm px-4 py-4 md:gap-5 md:px-5 md:py-5 min-h-[148px]"
         style={ADMIN_WARM_GRADIENT_SURFACE}
       >
-        <h2
-          id="menu-prices-heading"
-          className="justify-self-start font-serif text-base font-bold leading-none text-warm-wood sm:text-lg"
-        >
-          Menu
-        </h2>
-        <p
-          className="min-w-0 justify-self-center px-1 text-center text-xs leading-snug text-gray-600 max-[729px]:hidden sm:px-2 sm:text-sm"
-          title="Aggiungi, modifica o elimina le voci del menu e i prezzi"
-        >
-          Aggiungi, modifica o elimina le voci del menu e i prezzi
-        </p>
-        <div
-          className={`justify-self-end flex flex-col items-stretch ${MENU_ACTION_BTN_COL}`}
-          style={{ gap: 'calc((1rem + 8px) * 2 / 3)' }}
-        >
-          <Button
-            variant="success"
-            size="sm"
-            onClick={handleStartAdd}
-            className="h-8 w-full shrink-0 gap-1.5 px-3 py-0 text-xs"
+        <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+          <h2
+            id="menu-prices-heading"
+            className="shrink-0 font-serif text-base font-bold leading-tight text-warm-wood sm:text-lg"
           >
-            <Plus className="h-3.5 w-3.5" />
-            Aggiungi / Modifica Prodotto
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleStartAddCategory}
-            className="h-8 w-full shrink-0 gap-1.5 px-3 py-0 text-xs"
-            style={{ backgroundColor: '#60a5fa', borderColor: '#3b82f6', color: '#000000' }}
+            Menu
+          </h2>
+          <p
+            className="min-w-0 flex-1 px-1 text-center text-xs leading-snug text-gray-600 sm:px-2 sm:text-sm max-[729px]:hidden"
+            title="Aggiungi, modifica o elimina le voci del menu e i prezzi"
           >
-            <Plus className="h-3.5 w-3.5" />
-            Aggiungi / Modifica Categoria
-          </Button>
+            Aggiungi, modifica o elimina le voci del menu e i prezzi
+          </p>
         </div>
+
+        <div className="w-full border-t border-[color:var(--admin-warm-wrap-border)] pt-3">
+          <div className="grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2 xl:grid-cols-4">
+            <Button
+              variant="success"
+              size="sm"
+              type="button"
+              onClick={handleStartAdd}
+              className="h-9 min-h-9 w-full shrink-0 gap-1.5 px-2 py-0 text-xs"
+            >
+              <Plus className="h-3.5 w-3.5 shrink-0" />
+              Crea / Modifica Prodotto
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              type="button"
+              onClick={handleStartAddCategory}
+              className="h-9 min-h-9 w-full shrink-0 gap-1.5 px-2 py-0 text-xs"
+              style={{ backgroundColor: '#60a5fa', borderColor: '#3b82f6', color: '#000000' }}
+            >
+              <Plus className="h-3.5 w-3.5 shrink-0" />
+              Crea / Modifica Categoria
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              type="button"
+              onClick={openPresetMenusSection}
+              aria-label="Crea / Modifica Menù preselezionati"
+              title="Crea / Modifica Menù preselezionati"
+              className="h-9 min-h-9 w-full shrink-0 gap-1.5 overflow-hidden rounded-lg border border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white px-2 py-0 text-center text-xs font-semibold text-amber-950 shadow-sm truncate hover:bg-transparent hover:brightness-[0.97]"
+            >
+              <Plus className="h-3.5 w-3.5 shrink-0" />
+              Crea / Modifica Menù preselezionati
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              type="button"
+              onClick={openPromoEditor}
+              disabled={volAuVentPromoLoading || upsertRestaurantSetting.isPending}
+              aria-label="Crea / Modifica promo menù"
+              title="Crea / Modifica promo menù"
+              className="h-9 min-h-9 w-full shrink-0 gap-1.5 whitespace-normal rounded-lg border border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white px-2 py-0 text-center text-xs font-semibold leading-snug text-amber-950 shadow-sm hover:bg-transparent hover:brightness-[0.97] disabled:opacity-60"
+            >
+              <Edit className="h-3.5 w-3.5 shrink-0" />
+              Crea / Modifica promo menù
+            </Button>
+          </div>
+        </div>
+
+        {viewMode === 'menu' && (
+          <div className="mt-auto flex flex-col gap-3 border-t border-[color:var(--admin-warm-wrap-border)] pt-3">
+            <label className="flex cursor-pointer items-start gap-2.5 text-left text-xs font-semibold leading-snug text-gray-800 sm:items-center sm:text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-400 sm:mt-0"
+                checked={staffPresetsVisible}
+                disabled={staffPresetVisibleLoading || upsertRestaurantSetting.isPending}
+                onChange={(e) =>
+                  upsertRestaurantSetting.mutate([
+                    { key: 'booking_staff_presets_visible', value: e.target.checked },
+                  ])
+                }
+              />
+              Mostra nella pagina prenota i menù consigliati dallo staff
+            </label>
+            <label className="flex cursor-pointer items-start gap-2.5 text-left text-xs font-semibold leading-snug text-gray-800 sm:items-center sm:text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-400 sm:mt-0"
+                checked={volAuVentPromoVisible}
+                disabled={volAuVentPromoLoading || upsertRestaurantSetting.isPending}
+                onChange={(e) =>
+                  upsertRestaurantSetting.mutate([
+                    { key: 'booking_vol_au_vent_promo_visible', value: e.target.checked },
+                  ])
+                }
+              />
+              Mostra nella pagina prenota un&apos;offerta per incentivare la scelta di più ingredienti nel menù
+            </label>
+          </div>
+        )}
       </section>
       {viewMode === 'categories' && isAddingCategory && (
         <>
@@ -640,63 +916,6 @@ export const MenuPricesTab: React.FC = () => {
 
       {viewMode === 'menu' && (
       <>
-      <div className="flex w-full min-w-0 flex-row flex-nowrap items-center gap-3 overflow-x-auto sm:gap-4 sm:overflow-visible">
-        <label className="flex min-h-0 min-w-0 max-w-[min(100%,420px)] flex-1 cursor-pointer items-center gap-2.5 text-left text-xs font-semibold leading-snug text-gray-800 sm:text-sm">
-          <input
-            type="checkbox"
-            className="h-4 w-4 shrink-0 rounded border-gray-400"
-            checked={staffPresetsVisible}
-            disabled={staffPresetVisibleLoading || upsertRestaurantSetting.isPending}
-            onChange={(e) =>
-              upsertRestaurantSetting.mutate([
-                { key: 'booking_staff_presets_visible', value: e.target.checked },
-              ])
-            }
-          />
-          Mostra nella pagina prenota i menù consigliati dallo staff
-        </label>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={openPresetMenusSection}
-          aria-label="Aggiungi / Modifica Menù preselezionati"
-          title="Aggiungi / Modifica Menù preselezionati"
-          className={`ml-auto h-8 shrink-0 gap-1.5 overflow-hidden rounded-lg border border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white px-3 py-0 text-center text-xs font-semibold text-amber-950 shadow-sm truncate hover:bg-transparent hover:brightness-[0.97] ${MENU_ACTION_BTN_COL}`}
-        >
-          <Plus className="h-3.5 w-3.5 shrink-0" />
-          Aggiungi / Modifica Menù preselezionati
-        </Button>
-      </div>
-      <div className="flex w-full min-w-0 flex-row flex-nowrap items-center gap-3 overflow-x-auto sm:gap-4 sm:overflow-visible">
-        <label className="flex min-h-0 min-w-0 max-w-[min(100%,420px)] flex-1 cursor-pointer items-center gap-2.5 text-left text-xs font-semibold leading-snug text-gray-800 sm:text-sm">
-          <input
-            type="checkbox"
-            className="h-4 w-4 shrink-0 rounded border-gray-400"
-            checked={volAuVentPromoVisible}
-            disabled={volAuVentPromoLoading || upsertRestaurantSetting.isPending}
-            onChange={(e) =>
-              upsertRestaurantSetting.mutate([
-                { key: 'booking_vol_au_vent_promo_visible', value: e.target.checked },
-              ])
-            }
-          />
-          Mostra nella pagina prenota un&apos;offerta per incentivare la scelta di più ingredienti nel menù
-        </label>
-        <Button
-          variant="ghost"
-          size="sm"
-          type="button"
-          onClick={openPromoEditor}
-          disabled={volAuVentPromoLoading || upsertRestaurantSetting.isPending}
-          aria-label="Aggiungi / Modifica promo menù"
-          title="Aggiungi / Modifica promo menù"
-          className={`ml-auto min-h-8 shrink-0 gap-1.5 whitespace-normal rounded-lg border border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white px-3 py-1.5 text-center text-xs font-semibold leading-snug text-amber-950 shadow-sm hover:bg-transparent hover:brightness-[0.97] ${MENU_ACTION_BTN_COL}`}
-        >
-          <Edit className="h-3.5 w-3.5 shrink-0" />
-          Aggiungi / Modifica promo menù
-        </Button>
-      </div>
-
       {promoEditorOpen && (
         <div
           ref={promoEditorPanelRef}
@@ -756,58 +975,37 @@ export const MenuPricesTab: React.FC = () => {
         </div>
       )}
 
-      <div className="menu-prices-category-list-wrap flex flex-col items-center gap-[28px]">
+      <div className={menuPricesCategoryListWrapClass}>
       {categoryEntries.map(([category, label]) => {
         const items = itemsByCategory[category] || []
         if (items.length === 0 && !isAdding && !editingId) return null
 
         return (
-          <div key={category} className="menu-prices-category-card bg-white rounded-xl shadow-md overflow-hidden">
-            <div className="bg-gradient-to-r from-warm-wood to-warm-wood-dark px-6 py-4 text-center">
-              <h3 className="text-xl font-serif font-bold text-white">{label}</h3>
-            </div>
-            <div className="flex flex-col items-center p-6 text-center">
+          <div
+            key={category}
+            className="menu-prices-category-block flex w-full flex-col items-center px-1 sm:px-2"
+          >
+            <h3
+              className="booking-section-title-mobile booking-mobile-subheading flex w-full items-center justify-center border-b border-gray-300 pb-2 text-center text-lg md:text-xl"
+              style={adminMenuCategoryTitleStyle}
+            >
+              {label}
+            </h3>
+            <div
+              className="mx-auto flex w-full max-w-5xl flex-col items-stretch gap-4"
+              style={{ marginTop: '0', paddingTop: '0.5rem' }}
+            >
               {items.length === 0 ? (
-                <p className="text-gray-500 py-4">Nessun prodotto in questa categoria</p>
+                <p className="py-4 text-center text-gray-500">Nessun prodotto in questa categoria</p>
               ) : (
-                <div className="flex w-full max-w-full flex-col items-center gap-[12px]">
-                  {items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="menu-prices-item-row"
-                    >
-                      <div className="menu-prices-item-text overflow-hidden">
-                        <div className="flex flex-wrap items-center justify-center gap-x-[12px] gap-y-1">
-                          <h4 className="font-semibold text-gray-900">{item.name}</h4>
-                          <span className="text-lg font-bold text-warm-wood">
-                            €{item.price.toFixed(2)}
-                          </span>
-                        </div>
-                        {item.description && (
-                          <p className="text-sm text-gray-600 mt-1">{item.description}</p>
-                        )}
-                      </div>
-                      <div className="menu-prices-item-actions shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => handleStartEdit(item)}
-                          className="menu-prices-icon-btn menu-prices-icon-btn--edit"
-                          aria-label={`Modifica ${item.name}`}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(item.id, item.name)}
-                          className="menu-prices-icon-btn menu-prices-icon-btn--delete"
-                          aria-label={`Elimina ${item.name}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                items.map((item) => (
+                  <AdminMenuIngredientCard
+                    key={item.id}
+                    item={item}
+                    onEdit={() => handleStartEdit(item)}
+                    onDelete={() => handleDelete(item.id, item.name)}
+                  />
+                ))
               )}
             </div>
           </div>
@@ -955,98 +1153,58 @@ export const MenuPricesTab: React.FC = () => {
       )}
 
       {viewMode === 'products' && (
-        <div className="menu-prices-category-list-wrap flex flex-col items-center gap-[28px]">
-          <div className="menu-prices-category-card bg-white rounded-xl shadow-md overflow-hidden">
-            <div className="bg-gradient-to-r from-warm-wood to-warm-wood-dark px-6 py-4 text-center">
-              <h3 className="text-xl font-serif font-bold text-white">Prodotti Menu</h3>
-            </div>
-            <div className="flex flex-col items-center p-6 text-center">
+        <div className={menuPricesCategoryListWrapClass}>
+          <div className="menu-prices-category-block flex w-full flex-col items-center px-1 sm:px-2 md:col-span-2">
+            <h3
+              className="booking-section-title-mobile booking-mobile-subheading flex w-full items-center justify-center border-b border-gray-300 pb-2 text-center text-lg md:text-xl"
+              style={adminMenuCategoryTitleStyle}
+            >
+              Prodotti Menu
+            </h3>
+            <div
+              className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-2"
+              style={{ marginTop: '0', paddingTop: '0.5rem' }}
+            >
               {menuItems.length === 0 ? (
-                <p className="text-gray-500 py-4">Nessun prodotto inserito</p>
+                <p className="col-span-full py-4 text-center text-gray-500">Nessun prodotto inserito</p>
               ) : (
-                <div className="flex w-full max-w-full flex-col items-center gap-[12px]">
-                  {menuItems.map((item) => (
-                    <div key={item.id} className="menu-prices-item-row">
-                      <div className="menu-prices-item-text overflow-hidden">
-                        <div className="flex flex-wrap items-center justify-center gap-x-[12px] gap-y-1">
-                          <h4 className="font-semibold text-gray-900">{item.name}</h4>
-                          <span className="text-lg font-bold text-warm-wood">
-                            €{item.price.toFixed(2)}
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-500 mt-1">
-                          {categoryEntries.find(([key]) => key === item.category)?.[1] ?? item.category}
-                        </p>
-                        {item.description && (
-                          <p className="text-sm text-gray-600 mt-1">{item.description}</p>
-                        )}
-                      </div>
-                      <div className="menu-prices-item-actions shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => handleStartEdit(item)}
-                          className="menu-prices-icon-btn menu-prices-icon-btn--edit"
-                          aria-label={`Modifica ${item.name}`}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(item.id, item.name)}
-                          className="menu-prices-icon-btn menu-prices-icon-btn--delete"
-                          aria-label={`Elimina ${item.name}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                menuItems.map((item) => (
+                  <AdminMenuIngredientCard
+                    key={item.id}
+                    item={item}
+                    onEdit={() => handleStartEdit(item)}
+                    onDelete={() => handleDelete(item.id, item.name)}
+                    metaLine={
+                      categoryEntries.find(([key]) => key === item.category)?.[1] ?? item.category
+                    }
+                  />
+                ))
               )}
             </div>
           </div>
         </div>
       )}
       {viewMode === 'categories' && (
-        <div className="menu-prices-category-list-wrap flex flex-col items-center gap-[28px]">
-          <div className="menu-prices-category-card bg-white rounded-xl shadow-md overflow-hidden">
-            <div className="bg-gradient-to-r from-warm-wood to-warm-wood-dark px-6 py-4 text-center">
-              <h3 className="text-xl font-serif font-bold text-white">Categorie Menu</h3>
-            </div>
-            <div className="flex flex-col items-center p-6 text-center">
-              <div className="flex w-full max-w-full flex-col items-center gap-[12px]">
-                {categoryEntries.map(([key, label]) => (
-                  <div
-                    key={key}
-                    className="menu-prices-item-row"
-                    style={{ padding: '0.5rem 1rem', minHeight: '72px' }}
-                  >
-                    <div className="menu-prices-item-text overflow-hidden">
-                      <div className="flex flex-wrap items-center justify-center gap-x-[12px] gap-y-1">
-                        <h4 className="font-semibold text-gray-900">{label}</h4>
-                      </div>
-                    </div>
-                    <div className="menu-prices-item-actions shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleEditCategory(key, label)}
-                        className="menu-prices-icon-btn menu-prices-icon-btn--edit"
-                        aria-label={`Modifica ${label}`}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteCategory(key, label)}
-                        className="menu-prices-icon-btn menu-prices-icon-btn--delete"
-                        aria-label={`Elimina ${label}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+        <div className={menuPricesCategoryListWrapClass}>
+          <div className="menu-prices-category-block flex w-full flex-col items-center px-1 sm:px-2 md:col-span-2">
+            <h3
+              className="booking-section-title-mobile booking-mobile-subheading flex w-full items-center justify-center border-b border-gray-300 pb-2 text-center text-lg md:text-xl"
+              style={adminMenuCategoryTitleStyle}
+            >
+              Categorie Menu
+            </h3>
+            <div
+              className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-2"
+              style={{ marginTop: '0', paddingTop: '0.5rem' }}
+            >
+              {categoryEntries.map(([key, label]) => (
+                <AdminMenuCategoryLabelCard
+                  key={key}
+                  label={label}
+                  onEdit={() => handleEditCategory(key, label)}
+                  onDelete={() => handleDeleteCategory(key, label)}
+                />
+              ))}
             </div>
           </div>
         </div>

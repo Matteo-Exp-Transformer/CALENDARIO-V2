@@ -642,7 +642,7 @@ button.booking-request-reject-booking-btn:focus-visible {
   outline-offset: 2px;
 }
 
-/* Fascia liste categorie menu admin — stesso filo cromatico della strip header dashboard */
+/* Fascia liste categorie menu admin — bordo/sfondo warm; layout griglia = classi Tailwind in MenuPricesTab (STYLING_AGENT_CONTEXT) */
 .menu-prices-category-list-wrap {
   box-sizing: border-box;
   width: 100%;
@@ -657,19 +657,11 @@ button.booking-request-reject-booking-btn:focus-visible {
   );
 }
 
-/* Admin menu — card categoria ~1/3 larghezza, centrata */
-.menu-prices-category-card {
+/* Blocco categoria dentro la griglia — una cella, larghezza piena */
+.menu-prices-category-block {
   box-sizing: border-box;
   width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-@media (min-width: 768px) {
-  .menu-prices-category-card {
-    width: 33.333333%;
-    max-width: 33.333333%;
-  }
+  min-width: 0;
 }
 
 /* Righe prodotto dentro la card: larghezza piena del contenitore, contenuto centrato */
