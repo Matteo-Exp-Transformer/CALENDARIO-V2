@@ -63,15 +63,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
   const [isSubmitting, setIsSubmitting] = useState(false) // Stato per triggerare re-render e disabilitare button
   const [selectedPreset, setSelectedPreset] = useState<PresetMenuType>(null)
 
-  const bookingFrostedControlSurface: React.CSSProperties = {
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    backdropFilter: 'blur(1px)',
-    padding: '10px 16px',
-    borderRadius: '12px',
-    fontWeight: 500,
-  }
-  const bookingFrostedTextInputClassName =
-    '!border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 rounded-[12px] focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
+  const frostedInputCn =
+    'bg-white/85 backdrop-blur-[1px] px-4 rounded-xl !border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
   
   // Ref per prevenire doppi submit (anche con React StrictMode)
   const isSubmittingRef = useRef(false)
@@ -575,8 +568,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             }}
             placeholder="Nome Completo *"
             required
-            style={bookingFrostedControlSurface}
-            className={`${bookingFrostedTextInputClassName} ${errors.client_name ? '!border-red-500' : ''}`}
+            className={`${frostedInputCn} ${errors.client_name ? 'border-red-500!' : ''}`}
           />
           {errors.client_name && (
             <p className="text-sm text-red-500">{errors.client_name}</p>
@@ -584,7 +576,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
         </div>
 
         {/* Email */}
-        <div className="space-y-3" style={{ paddingTop: '0.5rem' }}>
+        <div className="space-y-3 pt-2">
           <Input
             id="client_email"
             type="email"
@@ -594,8 +586,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
               setErrors({ ...errors, client_email: '' })
             }}
             placeholder="Email (Opzionale)"
-            style={bookingFrostedControlSurface}
-            className={`${bookingFrostedTextInputClassName} ${errors.client_email ? '!border-red-500' : ''}`}
+            className={`${frostedInputCn} ${errors.client_email ? 'border-red-500!' : ''}`}
           />
           {errors.client_email && (
             <p className="text-sm text-red-500">{errors.client_email}</p>
@@ -603,7 +594,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
         </div>
 
         {/* Telefono */}
-        <div className="space-y-3" style={{ paddingTop: '0.5rem' }}>
+        <div className="space-y-3 pt-2">
           <Input
             id="client_phone"
             type="tel"
@@ -614,8 +605,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             }}
             placeholder="Telefono *"
             required
-            style={bookingFrostedControlSurface}
-            className={`${bookingFrostedTextInputClassName} ${errors.client_phone ? '!border-red-500' : ''}`}
+            className={`${frostedInputCn} ${errors.client_phone ? 'border-red-500!' : ''}`}
           />
           {errors.client_phone && (
             <p className="text-sm text-red-500">{errors.client_phone}</p>
@@ -625,22 +615,13 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
 
       {/* Sezione: Dettagli Prenotazione */}
       <div className="space-y-6">
-        <h2
-          className="booking-section-title text-lg md:text-xl font-serif text-warm-wood mb-4 pb-3 border-b-2 border-warm-beige"
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(1px)',
-            padding: '12px 24px',
-            borderRadius: '16px',
-            fontWeight: '700'
-          }}
-        >
+        <h2 className="text-lg md:text-xl font-serif font-bold text-warm-wood mb-4 bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
           Dettagli Prenotazione
         </h2>
 
         {/* Numero Ospiti */}
-        <div className="space-y-3 guest-card-container">
-          <div className="guest-card-mobile">
+        <div className="space-y-3">
+          <div>
             <Input
               id="num_guests"
               type="text"
@@ -652,8 +633,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
               onKeyPress={handleNumGuestsKeyPress}
               required
               placeholder="Numero Ospiti * (es: 15)"
-              style={bookingFrostedControlSurface}
-              className={`${bookingFrostedTextInputClassName} ${errors.num_guests ? '!border-red-500' : ''}`}
+              className={`${frostedInputCn} ${errors.num_guests ? 'border-red-500!' : ''}`}
             />
           </div>
           {errors.num_guests && (
