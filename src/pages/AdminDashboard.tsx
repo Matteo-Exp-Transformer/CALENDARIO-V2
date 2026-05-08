@@ -146,15 +146,15 @@ export const AdminDashboard: React.FC = () => {
 
       {/* ── Header ── */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 pt-4 md:gap-5 md:px-6 md:pt-6">
 
           {/* Top bar */}
-          <div className="admin-warm-surface relative flex items-center justify-center h-[106px] rounded-xl shadow-sm border px-4 md:px-6">
-            <div className="admin-warm-surface absolute right-0 top-1/2 z-2 flex h-[103px] w-[103px] -translate-y-1/2 items-center rounded-xl overflow-hidden p-3 shadow-sm md:h-[136px] md:w-[136px] md:p-4">
+          <div className="admin-warm-surface relative flex h-[106px] items-center justify-center overflow-hidden rounded-xl border shadow-sm px-4 md:px-6">
+            <div className="absolute right-2 top-1/2 z-2 flex h-[100px] w-[100px] shrink-0 -translate-y-1/2 items-center justify-center overflow-hidden rounded-xl bg-transparent p-0 md:right-3">
               <img
                 src={appIconSrc}
                 alt="Icona app"
-                className="h-full w-full rounded-lg object-contain"
+                className="h-full w-full min-h-0 min-w-0 shrink-0 rounded-lg object-contain"
               />
             </div>
             <div className="w-full px-4 md:px-28 text-center pointer-events-none">
@@ -260,26 +260,24 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </main>
 
-      <footer
-        className="admin-warm-surface min-h-[62px] py-3 border-t border-slate-100 flex items-center"
-      >
-        <div className="max-w-7xl mx-auto px-4 md:px-6 flex w-full items-center justify-between gap-4">
-          <div
-            className="admin-warm-surface flex min-w-0 flex-1 items-center gap-2 rounded-xl border shadow-sm px-4 py-3 md:px-6"
-          >
-            <div className="w-6 h-6 shrink-0 rounded-full bg-primary-100 flex items-center justify-center">
-              <User className="w-3.5 h-3.5 text-primary-600" />
+      <footer className="flex min-h-[62px] items-center border-t border-slate-100 bg-white py-3">
+        <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
+          <div className="admin-warm-surface flex min-w-0 w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 shadow-sm md:px-6">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-100">
+                <User className="h-3.5 w-3.5 text-primary-600" />
+              </div>
+              <span className="truncate text-xs font-medium text-slate-600">{user?.email}</span>
             </div>
-            <span className="truncate text-xs text-slate-600 font-medium">{user?.email}</span>
+            <button
+              type="button"
+              onClick={logout}
+              className="flex shrink-0 items-center gap-1.5 rounded-lg bg-[#1e3a8a] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#1e40af]"
+            >
+              <LogOut className="h-3.5 w-3.5 text-white" />
+              <span className="text-white">Log-out</span>
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={logout}
-            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1e3a8a] text-white hover:bg-[#1e40af] transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5 text-white" />
-            <span className="text-white">Log-out</span>
-          </button>
         </div>
       </footer>
     </div>
