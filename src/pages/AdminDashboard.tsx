@@ -75,7 +75,7 @@ const NavItem: React.FC<NavItemProps> = ({
       <span className="hidden min-w-0 truncate text-center sm:inline">{label}</span>
       <span className="min-w-0 truncate text-center sm:hidden">{mobileLabel ?? label.split(' ')[0]}</span>
       {badge != null && badge > 0 && (
-        <span className="inline-flex flex-shrink-0 items-center justify-center min-w-[20px] h-5 text-xs font-bold px-1.5 rounded-full bg-primary-600 text-white">
+        <span className="inline-flex flex-shrink-0 items-center justify-center min-w-[20px] h-5 text-xs font-bold px-1.5 rounded-full border border-indigo-200 bg-indigo-50 text-indigo-900">
           {badge}
         </span>
       )}
@@ -102,7 +102,7 @@ const NavItem: React.FC<NavItemProps> = ({
     )
     if (showNotifyDecor) {
       return (
-        <div className="admin-nav-notify-pulse-wrap min-w-0 max-w-full w-full rounded-xl overflow-hidden">
+        <div className="admin-nav-notify-pulse-wrap min-w-0 max-w-full w-full rounded-xl">
           {activeBtn}
         </div>
       )
@@ -132,7 +132,7 @@ const NavItem: React.FC<NavItemProps> = ({
 
   if (showNotifyDecor) {
     return (
-      <div className="admin-nav-notify-pulse-wrap min-w-0 max-w-full w-full rounded-xl overflow-hidden">
+      <div className="admin-nav-notify-pulse-wrap min-w-0 max-w-full w-full rounded-xl">
         {inactiveBtn}
       </div>
     )
@@ -220,7 +220,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="space-y-4 pb-4">
             {!showNewBookingPanel && (
               <>
-                <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+                <nav className="grid grid-cols-2 items-start gap-2 sm:grid-cols-3 lg:grid-cols-6">
                   <NavItem icon={Calendar} label="Calendario" active={activeTab === 'calendar'} onClick={() => setActiveTab('calendar')} />
                   <NavItem
                     icon={Clock}
@@ -391,7 +391,7 @@ export const AdminDashboard: React.FC = () => {
                   aria-hidden
                 />
                 {stats != null && stats.pending != null && stats.pending > 0 ? (
-                  <span className="pointer-events-none absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-primary-600 px-0.5 text-[10px] font-bold text-white">
+                  <span className="pointer-events-none absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 px-0.5 text-[10px] font-bold text-indigo-900">
                     {stats.pending > 99 ? '99+' : stats.pending}
                   </span>
                 ) : null}

@@ -484,7 +484,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       // Stesso intervallo della card toolbar / FC (~537): evita scroll + “fascia” solo tra 423 e 537 px
       'max-[537px]:px-3 max-[537px]:py-1.5 max-[537px]:text-[13px] max-[537px]:leading-tight',
       currentView === view
-        ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-white hover:border-[var(--color-primary-dark)] hover:bg-[var(--color-primary-dark)]'
+        ? 'border-indigo-200 bg-indigo-50 text-indigo-900 hover:border-indigo-300 hover:bg-indigo-100'
         : 'border-slate-200 bg-gray-100 text-gray-800 hover:bg-gray-200'
     )
 
@@ -507,8 +507,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                 </h2>
               </div>
               <div className="flex shrink-0 items-center">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[var(--color-primary)] bg-[var(--color-primary)] shadow-sm max-[537px]:h-9 max-[537px]:w-9">
-                  <Calendar className="h-7 w-7 text-white max-[537px]:h-5 max-[537px]:w-5" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 shadow-sm max-[537px]:h-9 max-[537px]:w-9">
+                  <Calendar className="h-7 w-7 text-indigo-900 max-[537px]:h-5 max-[537px]:w-5" />
                 </div>
                 <span className="ml-3 text-sm font-semibold tabular-nums text-slate-800 max-[537px]:ml-2 max-[537px]:text-xs sm:text-base">
                   {currentDateLabel}
@@ -538,9 +538,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
               type="button"
               onClick={handleGoToToday}
               className={cn(
-                'absolute left-0 top-0 z-20 inline-flex items-center justify-center rounded-xl border border-[var(--color-primary)] bg-[var(--color-primary)] text-sm font-medium leading-none text-white shadow-sm transition-colors',
-                'hover:border-[var(--color-primary-dark)] hover:bg-[var(--color-primary-dark)]',
-                'focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2',
+                'absolute left-0 top-0 z-20 inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-sm font-medium leading-none text-indigo-900 shadow-sm transition-colors',
+                'hover:border-indigo-300 hover:bg-indigo-100',
+                'focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-2',
                 'h-10 min-h-10 min-w-[88px] px-3.5',
                 'max-[537px]:h-8 max-[537px]:min-h-8 max-[537px]:min-w-[4.75rem] max-[537px]:rounded-lg max-[537px]:px-2 max-[537px]:text-xs'
               )}

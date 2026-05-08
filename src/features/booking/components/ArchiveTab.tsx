@@ -51,7 +51,8 @@ const STATUS_LABELS: Record<string, { label: string; bgColor: string; textColor:
   pending: { label: 'Pendente', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800' },
   accepted: { label: 'Accettata', bgColor: 'bg-green-100', textColor: 'text-green-800' },
   rejected: { label: 'Rifiutata', bgColor: 'bg-red-100', textColor: 'text-red-800' },
-  deleted: { label: 'Rimossa', bgColor: 'bg-gray-100', textColor: 'text-gray-800' },
+  /** Stesso linguaggio cromatico di «Rifiutata» (digest + badge). */
+  deleted: { label: 'Rimossa', bgColor: 'bg-red-100', textColor: 'text-red-800' },
 }
 
 interface ArchiveBookingCardProps {
@@ -125,10 +126,15 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
 
   const showDigestStrip = Boolean(eventTypeLabel)
 
+  const deletedDigest = booking.status === 'deleted'
+  const digestBodyText = deletedDigest ? 'text-red-800' : 'text-warm-wood-dark'
+  const digestBodyIcon = deletedDigest ? 'text-red-700' : 'text-warm-orange'
+  const digestSecondaryText = deletedDigest ? 'text-red-800' : 'text-gray-700'
+
   const phoneDigestRow = booking.client_phone ? (
     <div className="flex items-center gap-2">
-      <Phone className="h-4 w-4 shrink-0 text-warm-orange" />
-      <span className="min-w-0 break-words text-base font-semibold text-warm-wood-dark">
+      <Phone className={cn('h-4 w-4 shrink-0', digestBodyIcon)} />
+      <span className={cn('min-w-0 break-words text-base font-semibold', digestBodyText)}>
         {booking.client_phone}
       </span>
     </div>
@@ -183,34 +189,44 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
                 </div>
 
                 <div className="flex w-full min-w-0 flex-col gap-3">
-                  <div className="flex min-w-0 w-full items-start gap-4 pr-29">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-orange-200/90 bg-white shadow-md">
-                      <DigestIcon className="h-4 w-4 text-warm-orange" aria-hidden />
+                  <div
+                    className={cn(
+                      'flex min-w-0 w-full items-start gap-4 pr-29',
+                      deletedDigest && 'rounded-[999px] bg-red-100 px-4 py-3 sm:px-5'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-white shadow-md',
+                        deletedDigest ? 'border-red-200/90' : 'border-orange-200/90'
+                      )}
+                    >
+                      <DigestIcon className={cn('h-4 w-4', digestBodyIcon)} aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1 text-left">
                       <div className="grid grid-cols-1 gap-x-6 gap-y-3 min-[659px]:grid-cols-2">
                         <div className="space-y-3">
                           <div className="flex min-w-0 items-center gap-2">
-                            <User className="h-4 w-4 shrink-0 text-warm-orange" />
-                            <span className="min-w-0 break-words text-base font-semibold text-warm-wood-dark">
+                            <User className={cn('h-4 w-4 shrink-0', digestBodyIcon)} />
+                            <span className={cn('min-w-0 break-words text-base font-semibold', digestBodyText)}>
                               {booking.client_name}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 shrink-0 text-warm-orange" />
-                            <span className="text-base font-semibold text-warm-wood-dark">
+                            <Calendar className={cn('h-4 w-4 shrink-0', digestBodyIcon)} />
+                            <span className={cn('text-base font-semibold', digestBodyText)}>
                               {formatDate(displayDate)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 shrink-0 text-warm-orange" />
-                            <span className="text-base font-semibold text-warm-wood-dark">
+                            <Clock className={cn('h-4 w-4 shrink-0', digestBodyIcon)} />
+                            <span className={cn('text-base font-semibold', digestBodyText)}>
                               {formatTime(displayTime)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 shrink-0 text-warm-orange" />
-                            <span className="text-base font-semibold text-warm-wood-dark">
+                            <Users className={cn('h-4 w-4 shrink-0', digestBodyIcon)} />
+                            <span className={cn('text-base font-semibold', digestBodyText)}>
                               {booking.num_guests} ospiti
                             </span>
                           </div>
@@ -230,15 +246,25 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
                             <div className="hidden min-[659px]:block">{phoneDigestRow}</div>
                           ) : null}
                           <div className="flex min-w-0 w-full items-start gap-2">
-                            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" />
-                            <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 flex-1 break-words text-sm italic text-gray-700">
+                            <Mail className={cn('mt-0.5 h-4 w-4 shrink-0', digestBodyIcon)} />
+                            <span
+                              className={cn(
+                                'line-clamp-2 max-[599px]:line-clamp-none min-w-0 flex-1 break-words text-sm italic',
+                                digestSecondaryText
+                              )}
+                            >
                               {booking.client_email}
                             </span>
                           </div>
                           {booking.special_requests && (
                             <div className="flex min-w-0 w-full items-start gap-2">
-                              <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" />
-                              <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 flex-1 text-sm italic text-gray-700">
+                              <MessageSquare className={cn('mt-0.5 h-4 w-4 shrink-0', digestBodyIcon)} />
+                              <span
+                                className={cn(
+                                  'line-clamp-2 max-[599px]:line-clamp-none min-w-0 flex-1 text-sm italic',
+                                  digestSecondaryText
+                                )}
+                              >
                                 {booking.special_requests}
                               </span>
                             </div>

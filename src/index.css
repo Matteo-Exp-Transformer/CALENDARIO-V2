@@ -256,20 +256,43 @@ body {
   mask-composite: exclude;
 }
 
-/* Pulsazione attorno al tab Prenotazioni con badge (da pattern pulsating-button; non usa animate-pulse globale) */
+/*
+ * Pulsazione attorno al tab Prenotazioni con badge.
+ * Ring sul ::before così coincide col perimetro rounded-xl senza essere tagliato da overflow-hidden sul wrap;
+ * tonalità come `adminBlueCtaSurfaceClass` (#3b82f6 — “Aggiungi fascia”, ecc.).
+ */
 @keyframes admin-nav-notify-pulse-ring {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.38);
+    box-shadow: 0 0 0 0 rgb(59 130 246 / 0.42);
   }
   55% {
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.06);
+    box-shadow: 0 0 0 5px rgb(59 130 246 / 0.14);
   }
 }
 
 .admin-nav-notify-pulse-wrap {
-  animation: admin-nav-notify-pulse-ring 1.45s ease-out infinite;
+  position: relative;
   isolation: isolate;
+  /* Grid default stretch allunga la cella all’altezza della riga: il ::before riempie quel vuoto e l’alone sembra “cadere” sotto il bottone */
+  align-self: start;
+  height: fit-content;
+}
+
+.admin-nav-notify-pulse-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-sizing: border-box;
+  animation: admin-nav-notify-pulse-ring 1.45s ease-out infinite;
+}
+
+.admin-nav-notify-pulse-wrap > button.admin-nav-item {
+  position: relative;
+  z-index: 1;
 }
 
 .animate-fade-in {
@@ -479,36 +502,36 @@ button.admin-nav-item.admin-nav-tab-active {
 
 .booking-calendar-fc .fc .fc-toolbar .fc-button,
 .booking-calendar-fc .fc .fc-toolbar .fc-button:disabled {
-  color: #ffffff !important;
+  color: #312e81 !important;
 }
 
 .booking-calendar-fc .fc .fc-toolbar .fc-button .fc-icon,
 .booking-calendar-fc .fc .fc-toolbar .fc-button .fc-icon::before {
-  color: #ffffff !important;
+  color: #312e81 !important;
 }
 
-/* FullCalendar override */
-.fc {
+/* FullCalendar — stesso linguaggio del chip archivio (indigo-50 / indigo-900), solo sotto .booking-calendar-fc */
+.booking-calendar-fc .fc {
   --fc-border-color: var(--color-border);
-  --fc-button-bg-color: var(--color-primary);
-  --fc-button-border-color: var(--color-primary);
-  --fc-button-text-color: #ffffff;
-  --fc-button-hover-bg-color: var(--color-primary-dark);
-  --fc-button-hover-text-color: #ffffff;
-  --fc-button-active-bg-color: var(--color-primary-dark);
-  --fc-button-active-text-color: #ffffff;
-  --fc-today-bg-color: #EEF2FF;
+  --fc-button-bg-color: #eef2ff;
+  --fc-button-border-color: #c7d2fe;
+  --fc-button-text-color: #312e81;
+  --fc-button-hover-bg-color: #e0e7ff;
+  --fc-button-hover-text-color: #312e81;
+  --fc-button-active-bg-color: #e0e7ff;
+  --fc-button-active-text-color: #312e81;
+  --fc-today-bg-color: #eef2ff;
 }
 
 .booking-calendar-fc .fc .fc-prev-button,
 .booking-calendar-fc .fc .fc-next-button,
 .booking-calendar-fc .fc .fc-today-button {
-  color: #ffffff !important;
+  color: #312e81 !important;
 }
 
 .booking-calendar-fc .fc .fc-prev-button .fc-icon::before,
 .booking-calendar-fc .fc .fc-next-button .fc-icon::before {
-  color: #ffffff !important;
+  color: #312e81 !important;
 }
 
 /* Booking calendar — viewport stretto: toolbar FullCalendar + nav compatte */

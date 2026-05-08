@@ -36,10 +36,11 @@ interface BookingRequestCardProps {
   onReject: (booking: BookingRequest) => void
 }
 
+/** Badge digest allineato ad ArchiveTab / ArchiveBookingCard */
 const STATUS_CONFIG: Record<string, { label: string; bgColor: string; textColor: string }> = {
-  pending: { label: 'In Attesa', bgColor: 'bg-yellow-50', textColor: 'text-yellow-700' },
-  accepted: { label: 'Accettata', bgColor: 'bg-green-50', textColor: 'text-green-700' },
-  rejected: { label: 'Rifiutata', bgColor: 'bg-red-50', textColor: 'text-red-700' },
+  pending: { label: 'Pendente', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800' },
+  accepted: { label: 'Accettata', bgColor: 'bg-green-100', textColor: 'text-green-800' },
+  rejected: { label: 'Rifiutata', bgColor: 'bg-red-100', textColor: 'text-red-800' },
 }
 
 
@@ -109,6 +110,15 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
   const showDigestStrip = Boolean(eventTypeLabel)
 
+  const phoneDigestRow = booking.client_phone ? (
+    <div className="flex items-center gap-2">
+      <Phone className="h-4 w-4 shrink-0 text-warm-orange" />
+      <span className="min-w-0 break-words text-base font-semibold text-warm-wood-dark">
+        {booking.client_phone}
+      </span>
+    </div>
+  ) : null
+
   return (
     <div className="relative">
       {showDigestStrip && (
@@ -160,73 +170,67 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                 </div>
 
                 <div className="flex w-full min-w-0 flex-col gap-3">
-                  {/* Riserva spazio in alto a destra così le prime righe non si sovrappongono al badge */}
-                  <div className="flex min-w-0 w-full items-start gap-4 pr-[7.25rem]">
-                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-orange-200/90 bg-white shadow-md">
+                  <div className="flex min-w-0 w-full items-start gap-4 pr-29">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-orange-200/90 bg-white shadow-md">
                       <DigestIcon className="h-4 w-4 text-warm-orange" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1 text-left">
                       <div className="grid grid-cols-1 gap-x-6 gap-y-3 min-[659px]:grid-cols-2">
                         <div className="space-y-3">
                           <div className="flex min-w-0 items-center gap-2">
-                            <User className="h-4 w-4 flex-shrink-0 text-warm-orange" />
+                            <User className="h-4 w-4 shrink-0 text-warm-orange" />
                             <span className="min-w-0 break-words text-base font-semibold text-warm-wood-dark">
                               {booking.client_name}
                             </span>
                           </div>
-
                           <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 flex-shrink-0 text-warm-orange" />
+                            <Calendar className="h-4 w-4 shrink-0 text-warm-orange" />
                             <span className="text-base font-semibold text-warm-wood-dark">
                               {formatDate(booking.desired_date)}
                             </span>
                           </div>
-
                           <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 flex-shrink-0 text-warm-orange" />
+                            <Clock className="h-4 w-4 shrink-0 text-warm-orange" />
                             <span className="text-base font-semibold text-warm-wood-dark">
                               {formatTime(booking.desired_time)}
                             </span>
                           </div>
-
                           <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 flex-shrink-0 text-warm-orange" />
+                            <Users className="h-4 w-4 shrink-0 text-warm-orange" />
                             <span className="text-base font-semibold text-warm-wood-dark">
                               {booking.num_guests} ospiti
                             </span>
                           </div>
+                          {phoneDigestRow ? <div className="min-[659px]:hidden">{phoneDigestRow}</div> : null}
                         </div>
 
                         <div
                           className={cn(
                             'min-w-0 space-y-3',
-                            'max-[599px]:-ml-12 max-[599px]:w-[calc(100%+3rem)]',
+                            'max-[599px]:-ml-12 max-[599px]:w-[calc(100%+3rem+7.25rem)]',
                           )}
                         >
-                          {booking.client_phone && (
-                            <div className="flex min-w-0 items-center gap-2">
-                              <Phone className="h-4 w-4 flex-shrink-0 text-warm-orange" />
-                              <span className="min-w-0 text-sm font-medium text-gray-700">{booking.client_phone}</span>
-                            </div>
-                          )}
-                          <div className="flex min-w-0 items-center gap-2">
-                            <Mail className="h-4 w-4 flex-shrink-0 text-warm-orange" />
-                            <span className="min-w-0 break-words text-sm font-medium text-gray-700">{booking.client_email}</span>
+                          {phoneDigestRow ? (
+                            <div className="hidden min-[659px]:block">{phoneDigestRow}</div>
+                          ) : null}
+                          <div className="flex min-w-0 w-full items-start gap-2">
+                            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" />
+                            <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 flex-1 break-words text-sm italic text-gray-700">
+                              {booking.client_email}
+                            </span>
                           </div>
-
                           {booking.special_requests && (
-                            <div className="flex min-w-0 items-start gap-2">
-                              <MessageSquare className="mt-0.5 h-4 w-4 flex-shrink-0 text-warm-orange" />
-                              <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 text-sm italic text-gray-700">
+                            <div className="flex min-w-0 w-full items-start gap-2">
+                              <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" />
+                              <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 flex-1 text-sm italic text-gray-700">
                                 {booking.special_requests}
                               </span>
                             </div>
                           )}
-
                           {digestMenuPrice && (
-                            <div className="flex min-w-0 w-full items-center gap-2">
-                              <UtensilsCrossed className="h-4 w-4 shrink-0 text-warm-orange" aria-hidden />
-                              <span className="min-w-0 flex-1 break-words text-sm leading-snug text-gray-700">
+                            <div className="flex min-w-0 w-full items-start gap-2">
+                              <UtensilsCrossed className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" aria-hidden />
+                              <span className="min-w-0 flex-1 break-words text-sm italic leading-snug text-gray-700">
                                 Menù :{AFTER_COLON}
                                 {digestMenuPrice.prezzoMenuLabel}
                               </span>
