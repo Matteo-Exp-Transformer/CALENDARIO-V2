@@ -444,11 +444,7 @@ export const RestaurantSettingsTab: React.FC = () => {
       : undefined
 
   const sectionSurfaceClass =
-    'w-full max-w-2xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
-  const sectionSurfaceStyle: React.CSSProperties = {
-    backgroundColor: '#ffffff',
-    borderColor: ADMIN_WARM_BORDER,
-  }
+    'admin-warm-surface w-full max-w-2xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
   /** Larghezza campi anagrafica: base 14rem, due incrementi +1/3 → ×(4/3)² = ×16/9 */
   const anagraficaFieldWrapClass =
     'mx-auto w-full min-w-0 max-w-[calc(14rem_*_16_/_9)] space-y-2'
@@ -488,7 +484,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     ].join(' ')
 
   const bookingBgSectionClass =
-    'w-full max-w-3xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
+    'admin-warm-surface w-full max-w-3xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
   const bookingBgGridTopSpacingStyle: React.CSSProperties = { marginTop: '1.375rem' }
   const bookingBgTextureTabRowStyle: React.CSSProperties = { gap: '1rem' }
   const bookingBgAvailableTileIds = BOOKING_PAGE_TILE_IDS.filter((id) => !isBookingPageTilePlaceholder(id))
@@ -504,7 +500,6 @@ export const RestaurantSettingsTab: React.FC = () => {
       `}</style>
       <div
         className={`${sectionSurfaceClass} flex flex-col items-center gap-3 sm:flex-row sm:justify-center`}
-        style={sectionSurfaceStyle}
       >
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 shadow-lg">
           <Store className="h-7 w-7 text-white" />
@@ -517,7 +512,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         </div>
       </div>
 
-      <section className={sectionSurfaceClass} style={sectionSurfaceStyle}>
+      <section className={sectionSurfaceClass}>
         <h3 className="text-lg font-semibold text-slate-800">Anagrafica e prenotazioni</h3>
         <div className="flex w-full flex-col items-center">
           <div className={anagraficaFieldWrapClass}>
@@ -616,7 +611,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         </div>
       </section>
 
-      <section className={sectionSurfaceClass} style={sectionSurfaceStyle}>
+      <section className={sectionSurfaceClass}>
         <h3 className="text-lg font-semibold text-slate-800">Orari di apertura</h3>
         <p className="text-sm text-slate-600">
           Modifica gli orari visibili al pubblico nella pagina di Prenotazione.
@@ -631,7 +626,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         />
       </section>
 
-      <section className={sectionSurfaceClass} style={sectionSurfaceStyle}>
+      <section className={sectionSurfaceClass}>
         <h3 className="text-lg font-semibold text-slate-800">Imposta Fasce Orarie</h3>
         <p className="text-sm text-slate-600">
           Cambia le fasce orarie in cui vengono raggruppate le prenotazioni nel calendario.
@@ -804,7 +799,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         </div>
       </section>
 
-      <section className={bookingBgSectionClass} style={sectionSurfaceStyle} aria-labelledby="placement-areas-heading">
+      <section className={bookingBgSectionClass} aria-labelledby="placement-areas-heading">
         <h3 id="placement-areas-heading" className="text-lg font-semibold text-slate-800">
           Aree di posizionamento
         </h3>
@@ -827,7 +822,7 @@ export const RestaurantSettingsTab: React.FC = () => {
           </Button>
         </div>
 
-        <div className="flex w-full flex-col items-center gap-[28px] bg-white">
+        <div className="flex w-full flex-col items-center gap-[28px]">
           {placementAreas.map((area, index) => {
             const isEditing = editingPlacementAreaIndex === index
             return (
@@ -903,7 +898,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         </div>
       </section>
 
-      <section className={bookingBgSectionClass} style={sectionSurfaceStyle}>
+      <section className={bookingBgSectionClass}>
         <h3 className="text-lg font-semibold text-slate-800">Sfondo pagina Prenota</h3>
         <p className="text-sm text-slate-600">
           Scegli una texture, conferma la tua scelta e salva le modifiche.
@@ -1022,10 +1017,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         )}
       </section>
 
-      <div
-        className="restaurant-settings-save-footer flex min-h-[4.75rem] w-full max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border bg-white px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7"
-        style={{ borderColor: ADMIN_WARM_BORDER }}
-      >
+      <div className="restaurant-settings-save-footer admin-warm-surface flex min-h-[4.75rem] w-full max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7">
         <Button
           type="button"
           onClick={handleSave}
