@@ -8,6 +8,8 @@ interface TimeInputProps {
   id?: string
   hasError?: boolean // Support for error state
   disabled?: boolean
+  /** Densità ridotta (es. griglia a 2 colonne nel booking form) */
+  compact?: boolean
 }
 
 export const TimeInput: React.FC<TimeInputProps> = ({
@@ -18,6 +20,7 @@ export const TimeInput: React.FC<TimeInputProps> = ({
   id,
   hasError = false,
   disabled = false,
+  compact = false,
 }) => {
   // Parse current value
   const [hours, minutes] = value ? value.split(':').map(Number) : [0, 0]
@@ -38,7 +41,7 @@ export const TimeInput: React.FC<TimeInputProps> = ({
     onChange(newValue)
   }
 
-  const containerClass = `time-input-container ${hasError ? 'error' : ''} ${className}`
+  const containerClass = `time-input-container ${hasError ? 'error' : ''} ${compact ? 'time-input-container--compact' : ''} ${className}`.trim()
 
   return (
     <>
@@ -131,6 +134,44 @@ export const TimeInput: React.FC<TimeInputProps> = ({
           }
         }
         /* Full-width expansion on very small screens (< 510px) */
+        .time-input-container--compact {
+          height: 50px;
+          gap: 8px;
+          padding: 0 14px;
+          font-size: 16px;
+          max-width: 100%;
+        }
+        .time-input-container--compact select {
+          font-size: 16px;
+          font-weight: 500;
+          min-width: 0;
+        }
+        .time-input-container--compact span {
+          font-size: 16px;
+        }
+        @media (max-width: 767px) {
+          .time-input-container--compact {
+            height: 54px;
+            font-size: 17px;
+          }
+          .time-input-container--compact select {
+            font-size: 17px;
+          }
+          .time-input-container--compact span {
+            font-size: 16px;
+          }
+        }
+        @media (max-width: 640px) {
+          .time-input-container--compact {
+            font-size: 18px;
+          }
+          .time-input-container--compact select {
+            font-size: 18px;
+          }
+          .time-input-container--compact span {
+            font-size: 17px;
+          }
+        }
         @media (max-width: 510px) {
           .time-input-container {
             max-width: 100% !important;

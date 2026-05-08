@@ -7,6 +7,8 @@ interface DateInputProps {
   required?: boolean
   id?: string
   hasError?: boolean // Support for error state
+  /** Densità ridotta (es. griglia a 2 colonne stretta nel booking form) */
+  compact?: boolean
 }
 
 export const DateInput: React.FC<DateInputProps> = ({
@@ -16,6 +18,7 @@ export const DateInput: React.FC<DateInputProps> = ({
   required = false,
   id,
   hasError = false,
+  compact = false,
 }) => {
   // Parse current value or use defaults
   const [year, month, day] = value
@@ -77,7 +80,7 @@ export const DateInput: React.FC<DateInputProps> = ({
     onChange(newValue)
   }
 
-  const containerClass = `date-input-container ${hasError ? 'error' : ''} ${className}`
+  const containerClass = `date-input-container ${hasError ? 'error' : ''} ${compact ? 'date-input-container--compact' : ''} ${className}`.trim()
 
   return (
     <>
@@ -185,6 +188,44 @@ export const DateInput: React.FC<DateInputProps> = ({
           }
         }
         /* Full-width expansion on very small screens (< 510px) */
+        .date-input-container--compact {
+          height: 50px;
+          gap: 6px;
+          padding: 0 12px;
+          font-size: 16px;
+          max-width: 100%;
+        }
+        .date-input-container--compact select {
+          font-size: 16px;
+          font-weight: 500;
+          min-width: 0;
+        }
+        .date-input-container--compact span {
+          font-size: 16px;
+        }
+        @media (max-width: 767px) {
+          .date-input-container--compact {
+            height: 54px;
+            font-size: 17px;
+          }
+          .date-input-container--compact select {
+            font-size: 17px;
+          }
+          .date-input-container--compact span {
+            font-size: 16px;
+          }
+        }
+        @media (max-width: 640px) {
+          .date-input-container--compact {
+            font-size: 18px;
+          }
+          .date-input-container--compact select {
+            font-size: 18px;
+          }
+          .date-input-container--compact span {
+            font-size: 17px;
+          }
+        }
         @media (max-width: 510px) {
           .date-input-container {
             max-width: 100% !important;

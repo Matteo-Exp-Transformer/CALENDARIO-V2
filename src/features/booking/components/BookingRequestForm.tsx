@@ -547,7 +547,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
     <form onSubmit={handleSubmit} className="w-full max-w-[55vw] mx-auto px-2 md:px-6 space-y-8 font-bold booking-form-mobile">
       {/* Sezione: Dati Personali */}
       <div className="space-y-6">
-        <h2 className="text-lg md:text-xl font-serif font-bold text-warm-wood mb-4 bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
+        <h2 className="text-center text-lg md:text-xl font-serif font-bold text-warm-wood mb-4 bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
           Dati Personali
         </h2>
 
@@ -609,7 +609,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
 
       {/* Sezione: Dettagli Prenotazione */}
       <div className="space-y-6">
-        <h2 className="text-lg md:text-xl font-serif font-bold text-warm-wood mb-4 bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
+        <h2 className="text-center text-lg md:text-xl font-serif font-bold text-warm-wood mb-4 bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
           Dettagli Prenotazione
         </h2>
 
@@ -635,97 +635,101 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
           )}
         </div>
 
-        {/* Data */}
-        <div className="space-y-3 pt-2">
-          <label
-            htmlFor="desired_date"
-            className="inline-block text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
-          >
-            Data prenotazione *
-          </label>
-          <DateInput
-            id="desired_date"
-            value={formData.desired_date}
-            onChange={(newDate) => {
-              setFormData({ ...formData, desired_date: newDate })
+        <div className="grid grid-cols-1 gap-4 pt-2 pb-0 md:grid-cols-2 md:gap-5 md:items-start">
+          {/* Data */}
+          <div className="min-w-0 space-y-3">
+            <label
+              htmlFor="desired_date"
+              className="mx-auto block w-fit max-w-full text-center text-sm font-bold text-warm-wood md:text-base bg-white/85 backdrop-blur-[1px] px-3 py-1.5 md:px-4 md:py-2 rounded-xl mb-2"
+            >
+              Data prenotazione *
+            </label>
+            <DateInput
+              id="desired_date"
+              compact
+              value={formData.desired_date}
+              onChange={(newDate) => {
+                setFormData({ ...formData, desired_date: newDate })
 
-              // Real-time validation for business hours
-              const timeError = newDate && formData.desired_time
-                ? validateBusinessHours(newDate, formData.desired_time)
-                : null
+                // Real-time validation for business hours
+                const timeError = newDate && formData.desired_time
+                  ? validateBusinessHours(newDate, formData.desired_time)
+                  : null
 
-              if (timeError) {
-                // Check if it's a day closure error
-                const dayName = businessHours ? getDayOfWeek(newDate) : null
-                const dayHours = businessHours && dayName ? businessHours[dayName] : null
+                if (timeError) {
+                  // Check if it's a day closure error
+                  const dayName = businessHours ? getDayOfWeek(newDate) : null
+                  const dayHours = businessHours && dayName ? businessHours[dayName] : null
 
-                if (dayHours === null || (Array.isArray(dayHours) && dayHours.length === 0)) {
-                  setErrors({ ...errors, desired_date: timeError, desired_time: '' })
+                  if (dayHours === null || (Array.isArray(dayHours) && dayHours.length === 0)) {
+                    setErrors({ ...errors, desired_date: timeError, desired_time: '' })
+                  } else {
+                    setErrors({ ...errors, desired_date: '', desired_time: timeError })
+                  }
                 } else {
-                  setErrors({ ...errors, desired_date: '', desired_time: timeError })
+                  setErrors({ ...errors, desired_date: '', desired_time: '' })
                 }
-              } else {
-                setErrors({ ...errors, desired_date: '', desired_time: '' })
-              }
-            }}
-            required
-            hasError={!!errors.desired_date}
-          />
-          {errors.desired_date && (
-            <div className="text-sm text-red-600 p-3 rounded-lg bg-white/85 backdrop-blur-[1px] border border-red-500/30">
-              {errors.desired_date}
-            </div>
-          )}
-        </div>
+              }}
+              required
+              hasError={!!errors.desired_date}
+            />
+            {errors.desired_date && (
+              <div className="text-sm text-red-600 p-3 rounded-lg bg-white/85 backdrop-blur-[1px] border border-red-500/30">
+                {errors.desired_date}
+              </div>
+            )}
+          </div>
 
-        {/* Ora */}
-        <div className="space-y-3 pb-8 pt-2">
-          <label
-            htmlFor="desired_time"
-            className="inline-block text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
-          >
-            Ora prenotazione *
-          </label>
-          <TimeInput
-            id="desired_time"
-            value={formData.desired_time || '16:00'}
-            onChange={(newTime) => {
-              setFormData({ ...formData, desired_time: newTime })
+          {/* Ora */}
+          <div className="min-w-0 space-y-3">
+            <label
+              htmlFor="desired_time"
+              className="mx-auto block w-fit max-w-full text-center text-sm font-bold text-warm-wood md:text-base bg-white/85 backdrop-blur-[1px] px-3 py-1.5 md:px-4 md:py-2 rounded-xl mb-2"
+            >
+              Ora prenotazione *
+            </label>
+            <TimeInput
+              id="desired_time"
+              compact
+              value={formData.desired_time || '16:00'}
+              onChange={(newTime) => {
+                setFormData({ ...formData, desired_time: newTime })
 
-              // Real-time validation for business hours
-              const timeError = formData.desired_date && newTime
-                ? validateBusinessHours(formData.desired_date, newTime)
-                : null
+                // Real-time validation for business hours
+                const timeError = formData.desired_date && newTime
+                  ? validateBusinessHours(formData.desired_date, newTime)
+                  : null
 
-              if (timeError) {
-                // Check if it's a day closure error
-                const dayName = businessHours && formData.desired_date ? getDayOfWeek(formData.desired_date) : null
-                const dayHours = businessHours && dayName ? businessHours[dayName] : null
+                if (timeError) {
+                  // Check if it's a day closure error
+                  const dayName = businessHours && formData.desired_date ? getDayOfWeek(formData.desired_date) : null
+                  const dayHours = businessHours && dayName ? businessHours[dayName] : null
 
-                if (dayHours === null || (Array.isArray(dayHours) && dayHours.length === 0)) {
-                  setErrors({ ...errors, desired_date: timeError, desired_time: '' })
+                  if (dayHours === null || (Array.isArray(dayHours) && dayHours.length === 0)) {
+                    setErrors({ ...errors, desired_date: timeError, desired_time: '' })
+                  } else {
+                    setErrors({ ...errors, desired_date: '', desired_time: timeError })
+                  }
                 } else {
-                  setErrors({ ...errors, desired_date: '', desired_time: timeError })
+                  setErrors({ ...errors, desired_date: '', desired_time: '' })
                 }
-              } else {
-                setErrors({ ...errors, desired_date: '', desired_time: '' })
-              }
-            }}
-            required
-            hasError={!!errors.desired_time}
-          />
-          {errors.desired_time && (
-            <div className="text-sm text-red-600 p-3 rounded-lg bg-white/85 backdrop-blur-[1px] border border-red-500/30">
-              {errors.desired_time}
-            </div>
-          )}
+              }}
+              required
+              hasError={!!errors.desired_time}
+            />
+            {errors.desired_time && (
+              <div className="text-sm text-red-600 p-3 rounded-lg bg-white/85 backdrop-blur-[1px] border border-red-500/30">
+                {errors.desired_time}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Tipologia di prenotazione (sotto Data / Ora) */}
-        <div className="mt-7">
+        <div className="mt-2">
           <label
             htmlFor="booking_type"
-            className="inline-block text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
+            className="mx-auto block w-fit max-w-full text-center text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
           >
             Tipologia di Prenotazione *
           </label>
