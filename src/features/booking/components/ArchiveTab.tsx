@@ -3,7 +3,27 @@ import { useAllBookings } from '../hooks/useBookingQueries'
 import { useRestoreBooking, useRequeueRejectedBooking } from '../hooks/useBookingMutations'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { Calendar, Clock, Users, Tag, Mail, Phone, MessageSquare, ChevronDown, ChevronUp, User, UtensilsCrossed, Wine, PartyPopper, GraduationCap, Archive, CheckCircle, XCircle, Trash2, RotateCcw } from 'lucide-react'
+import {
+  Calendar,
+  CalendarClock,
+  Clock,
+  Users,
+  Mail,
+  Phone,
+  MessageSquare,
+  ChevronDown,
+  ChevronUp,
+  User,
+  UtensilsCrossed,
+  Wine,
+  PartyPopper,
+  GraduationCap,
+  Archive,
+  CheckCircle,
+  XCircle,
+  Trash2,
+  RotateCcw,
+} from 'lucide-react'
 import { extractTimeFromISO } from '../utils/dateUtils'
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
 import { cn } from '@/lib/utils'
@@ -13,11 +33,11 @@ const AFTER_COLON = '\u2002'
 type ArchiveFilter = 'all' | 'accepted' | 'rejected' | 'deleted'
 type SortOrder = 'created_at' | 'booking_date'
 
-const EVENT_TYPE_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  cena: { label: 'Cena', icon: UtensilsCrossed, color: 'bg-booking-cena' },
-  aperitivo: { label: 'Aperitivo', icon: Wine, color: 'bg-booking-aperitivo' },
-  evento: { label: 'Evento Privato', icon: PartyPopper, color: 'bg-booking-evento' },
-  laurea: { label: 'Laurea', icon: GraduationCap, color: 'bg-booking-laurea' },
+const EVENT_TYPE_CONFIG: Record<string, { icon: React.ElementType }> = {
+  cena: { icon: UtensilsCrossed },
+  aperitivo: { icon: Wine },
+  evento: { icon: PartyPopper },
+  laurea: { icon: GraduationCap },
 }
 
 const STATUS_LABELS: Record<string, { label: string; bgColor: string; textColor: string }> = {
@@ -85,7 +105,6 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
     ? EVENT_TYPE_CONFIG[booking.event_type] 
     : null
   const EventIcon = eventConfig?.icon || UtensilsCrossed
-  const eventIconColor = eventConfig?.color || 'bg-gray-500'
   const statusConfig = STATUS_LABELS[booking.status] || STATUS_LABELS.pending
 
   const displayDate = booking.confirmed_start || booking.desired_date
@@ -95,16 +114,16 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
     ? extractTimeFromISO(booking.confirmed_start)
     : booking.desired_time || 'Non specificato'
 
+  const showDigestStrip = Boolean(eventTypeLabel)
+
   return (
     <div className="relative">
-      {/* Badge Data Creazione - Esterno, in alto a sinistra, completamente fuori dalla card */}
-      {booking.created_at && (
+      {showDigestStrip && (
         <div className="mb-2">
           <span
-            className={`inline-block whitespace-nowrap rounded-lg border-0 px-4 py-2 text-xs font-semibold text-slate-800 shadow-none transition-all duration-300 ${DIGEST_MENU_HEADING_GRADIENT_BG}`}
+            className={`inline-block max-w-full whitespace-normal rounded-lg border-0 px-4 py-2 text-xs font-semibold text-slate-800 shadow-none transition-all duration-300 ${DIGEST_MENU_HEADING_GRADIENT_BG}`}
           >
-            Richiesta effettuata il :{AFTER_COLON}
-            {formatRequestSubmittedAt(booking.created_at)}
+            <span className="block text-sm font-semibold text-slate-900">{eventTypeLabel}</span>
           </span>
         </div>
       )}
@@ -131,93 +150,89 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
           !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl'
         )}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4 flex-1">
-            {/* Icona Tipo Evento */}
-            <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${eventIconColor} shadow-md flex-shrink-0`}>
-              <EventIcon className="w-8 h-8 text-white" />
-            </div>
-
-            {/* Layout 2 colonne come BookingRequestCard */}
-            <div className="text-left flex-1">
-              <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                                {/* Colonna Sinistra */}
-                <div className="space-y-3">
-                  {/* Tipo Evento - Mostra solo se esiste un valore valido */}
-                  {eventTypeLabel && (
-                    <div className="flex items-center gap-2">
-                      <Tag className="w-4 h-4 text-warm-orange flex-shrink-0" />  
-                      <span className="text-base font-bold text-warm-wood">{eventTypeLabel}</span>                                                             
-                    </div>
-                  )}
-
-                  {/* Nome Cliente */}
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-warm-orange flex-shrink-0" />
-                    <span className="text-base font-semibold text-warm-wood-dark">{booking.client_name}</span>
-                  </div>
-
-                  {/* Email */}
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-warm-orange flex-shrink-0" />
-                    <span className="text-sm text-gray-600 truncate">{booking.client_email}</span>
-                  </div>
-
-                  {/* Telefono */}
-                  {booking.client_phone && (
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-warm-orange flex-shrink-0" />
-                      <span className="text-sm text-gray-600">{booking.client_phone}</span>
-                    </div>
+              <div className="relative w-full min-w-0">
+                <div className="pointer-events-none absolute right-0 top-0 z-10 flex flex-col items-end gap-2">
+                  <span
+                    className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ${statusConfig.bgColor} ${statusConfig.textColor}`}
+                  >
+                    {statusConfig.label}
+                  </span>
+                  {isExpanded ? (
+                    <ChevronUp className="h-6 w-6 text-warm-wood" aria-hidden />
+                  ) : (
+                    <ChevronDown className="h-6 w-6 text-warm-wood" aria-hidden />
                   )}
                 </div>
 
-                {/* Colonna Destra */}
-                <div className="space-y-3">
-                  {/* Data */}
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-warm-orange flex-shrink-0" />
-                    <span className="text-base font-semibold text-warm-wood-dark">{formatDate(displayDate)}</span>
+                <div className="flex w-full min-w-0 flex-col gap-3">
+                  <div className="flex min-w-0 w-full items-start gap-4 pr-[7.25rem]">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-orange-200/90 bg-white shadow-md">
+                      <EventIcon className="h-4 w-4 text-warm-orange" />
+                    </div>
+                    <div className="min-w-0 flex-1 text-left">
+                      <div className="grid grid-cols-1 gap-x-6 gap-y-3 min-[659px]:grid-cols-2">
+                        <div className="space-y-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <User className="h-4 w-4 shrink-0 text-warm-orange" />
+                            <span className="min-w-0 break-words text-base font-semibold text-warm-wood-dark">
+                              {booking.client_name}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 shrink-0 text-warm-orange" />
+                            <span className="text-base font-semibold text-warm-wood-dark">
+                              {formatDate(displayDate)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 shrink-0 text-warm-orange" />
+                            <span className="text-base font-semibold text-warm-wood-dark">
+                              {formatTime(displayTime)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 shrink-0 text-warm-orange" />
+                            <span className="text-base font-semibold text-warm-wood-dark">
+                              {booking.num_guests} ospiti
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="min-w-0 space-y-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <Mail className="h-4 w-4 shrink-0 text-warm-orange" />
+                            <span className="min-w-0 break-words text-sm text-gray-600">{booking.client_email}</span>
+                          </div>
+                          {booking.client_phone && (
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 shrink-0 text-warm-orange" />
+                              <span className="text-sm text-gray-600">{booking.client_phone}</span>
+                            </div>
+                          )}
+                          {booking.special_requests && (
+                            <div className="flex items-start gap-2">
+                              <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" />
+                              <span className="line-clamp-2 text-sm italic text-gray-600">
+                                {booking.special_requests}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Ora */}
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-warm-orange flex-shrink-0" />
-                    <span className="text-base font-semibold text-warm-wood-dark">{formatTime(displayTime)}</span>
-                  </div>
-
-                  {/* Ospiti */}
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-warm-orange flex-shrink-0" />
-                    <span className="text-base font-semibold text-warm-wood-dark">{booking.num_guests} ospiti</span>
-                  </div>
-
-                  {/* Note preview se presenti */}
-                  {booking.special_requests && (
-                    <div className="flex items-start gap-2">
-                      <MessageSquare className="w-4 h-4 text-warm-orange flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-gray-600 line-clamp-2 italic">
-                        {booking.special_requests}
-                      </span>
+                  {booking.created_at && (
+                    <div className="flex min-w-0 w-full items-start gap-2">
+                      <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" aria-hidden />
+                      <div className="min-w-0 flex-1 basis-0 text-sm leading-normal break-normal text-gray-600">
+                        <span className="font-medium text-gray-500">Ricevuta il :{AFTER_COLON}</span>
+                        <span className="text-gray-600">{formatRequestSubmittedAt(booking.created_at)}</span>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Badge Status + Chevron */}
-          <div className="flex flex-col items-end gap-2 flex-shrink-0">
-            <span className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${statusConfig.bgColor} ${statusConfig.textColor}`}>
-              {statusConfig.label}
-            </span>
-            {isExpanded ? (
-              <ChevronUp className="w-6 h-6 text-warm-wood" />
-            ) : (
-              <ChevronDown className="w-6 h-6 text-warm-wood" />
-            )}
-          </div>
-        </div>
       </button>
           </div>
         </div>
@@ -481,35 +496,42 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar }) => {
 
   return (
     <div className="space-y-6">
-      {/* Filters — bordi chiari (no ombre nere), coerenti col digest teal */}
-      <div
-        className={`rounded-2xl p-6 space-y-6 shadow-none ${DIGEST_MENU_HEADING_GRADIENT_BG}`}
-      >
+      {/* Filtri: card bianca; pulsanti stile tab nav admin (warm / arancione attivo) */}
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
         {/* Filtro per Status */}
         <div className="border-0 shadow-none outline-none">
           <label
-            className="admin-warm-surface mb-4 flex min-h-18 w-full items-center justify-center rounded-xl border-2 border-solid px-4 text-center text-base font-bold uppercase tracking-wide text-warm-wood shadow-none outline-none"
+            className="admin-warm-surface mb-2 flex min-h-10 w-full items-center justify-center rounded-lg border-2 border-solid px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-slate-800 shadow-none outline-none"
           >
             Filtra per Status
           </label>
 
-          <div className="flex gap-4 border-0 shadow-none outline-none">
+          <div className="flex gap-2 border-0 shadow-none outline-none">
             {(['all', 'accepted', 'rejected', 'deleted'] as ArchiveFilter[]).map((f) => (
               <button
                 type="button"
                 key={f}
                 data-filter={f}
                 onClick={() => setFilter(f)}
-                className={`
-                  archive-tab-filter-btn flex-1 flex items-center justify-center gap-2 px-6 py-4 font-bold uppercase tracking-wide rounded-xl transition-[border-color,box-shadow] duration-150
-                  ${DIGEST_MENU_HEADING_GRADIENT_BG} text-slate-800
-                  ${filter === f ? 'archive-tab-filter-btn--selected' : 'archive-tab-filter-btn--idle'}
-                `}
+                className={cn(
+                  'archive-tab-filter-btn admin-nav-item relative flex min-h-9 flex-1 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-900 transition-all duration-150 cursor-pointer',
+                  filter === f
+                    ? 'admin-nav-tab-active border-solid shadow-none bg-none bg-orange-200'
+                    : 'border border-solid',
+                )}
               >
-                {f === 'all' && <Archive className="w-5 h-5" />}
-                {f === 'accepted' && <CheckCircle className="w-5 h-5" />}
-                {f === 'rejected' && <XCircle className="w-5 h-5" />}
-                {f === 'deleted' && <Trash2 className="w-5 h-5" />}
+                {f === 'all' && (
+                  <Archive className={cn('h-3.5 w-3.5 shrink-0', filter === f ? 'text-primary-900' : 'text-slate-800')} />
+                )}
+                {f === 'accepted' && (
+                  <CheckCircle className={cn('h-3.5 w-3.5 shrink-0', filter === f ? 'text-primary-900' : 'text-slate-800')} />
+                )}
+                {f === 'rejected' && (
+                  <XCircle className={cn('h-3.5 w-3.5 shrink-0', filter === f ? 'text-primary-900' : 'text-slate-800')} />
+                )}
+                {f === 'deleted' && (
+                  <Trash2 className={cn('h-3.5 w-3.5 shrink-0', filter === f ? 'text-primary-900' : 'text-slate-800')} />
+                )}
                 {f === 'all' ? 'Tutte' : f === 'accepted' ? 'Accettate' : f === 'rejected' ? 'Rifiutate' : 'Rimosse'}
               </button>
             ))}
@@ -519,12 +541,12 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar }) => {
         {/* Selettore Ordinamento */}
         <div className="border-0 shadow-none outline-none">
           <label
-            className="admin-warm-surface mb-4 flex min-h-18 w-full items-center justify-center rounded-xl border-2 border-solid px-4 text-center text-base font-bold uppercase tracking-wide text-warm-wood shadow-none outline-none"
+            className="admin-warm-surface mb-2 flex min-h-10 w-full items-center justify-center rounded-lg border-2 border-solid px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-slate-800 shadow-none outline-none"
           >
             Ordina per
           </label>
 
-          <div className="flex gap-4 border-0 shadow-none outline-none">
+          <div className="flex gap-2 border-0 shadow-none outline-none">
             {([
               { value: 'booking_date' as SortOrder, label: 'Data Prenotazione', icon: Calendar },
               { value: 'created_at' as SortOrder, label: 'Data Creazione', icon: Clock }
@@ -535,13 +557,19 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar }) => {
                   type="button"
                   key={option.value}
                   onClick={() => setSortOrder(option.value)}
-                  className={`
-                    archive-tab-filter-btn flex-1 flex items-center justify-center gap-2 px-6 py-4 font-bold uppercase tracking-wide rounded-xl transition-[border-color,box-shadow] duration-150
-                    ${DIGEST_MENU_HEADING_GRADIENT_BG} text-slate-800
-                    ${sortOrder === option.value ? 'archive-tab-filter-btn--selected' : 'archive-tab-filter-btn--idle'}
-                  `}
+                  className={cn(
+                    'archive-tab-filter-btn admin-nav-item relative flex min-h-9 flex-1 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-900 transition-all duration-150 cursor-pointer',
+                    sortOrder === option.value
+                      ? 'admin-nav-tab-active border-solid shadow-none bg-none bg-orange-200'
+                      : 'border border-solid',
+                  )}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon
+                    className={cn(
+                      'h-3.5 w-3.5 shrink-0',
+                      sortOrder === option.value ? 'text-primary-900' : 'text-slate-800',
+                    )}
+                  />
                   {option.label}
                 </button>
               )

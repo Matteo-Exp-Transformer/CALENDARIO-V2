@@ -646,12 +646,12 @@ export const MenuPricesTab: React.FC = () => {
         <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
           <h2
             id="menu-prices-heading"
-            className="shrink-0 font-serif text-base font-bold leading-tight text-warm-wood sm:text-lg"
+            className="shrink-0 font-serif text-lg font-bold leading-tight text-warm-wood md:text-xl"
           >
             Menu
           </h2>
           <p
-            className="min-w-0 flex-1 px-1 text-center text-xs leading-snug text-gray-600 sm:px-2 sm:text-sm max-[729px]:hidden"
+            className="min-w-0 flex-1 px-1 text-center text-sm leading-snug text-gray-600 sm:px-2 sm:text-base max-[729px]:hidden"
             title="Aggiungi, modifica o elimina le voci del menu e i prezzi"
           >
             Aggiungi, modifica o elimina le voci del menu e i prezzi

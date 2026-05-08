@@ -145,8 +145,13 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-bg)]">
 
-      {/* ── Header ── */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+      {/* ── Header: senza sticky col form lungo aperto (evita mega-blocco incollato in alto + scroll sporco) ── */}
+      <header
+        className={cn(
+          'z-30 border-b border-slate-200 bg-white shadow-sm',
+          showNewBookingPanel ? 'relative' : 'sticky top-0',
+        )}
+      >
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 pt-4 md:gap-5 md:px-6 md:pt-6">
 
           {/* Top bar */}
@@ -168,89 +173,97 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Stats + Nav */}
-          <div className="pb-4 space-y-4">
-            {/* Stats */}
-            <div className="grid grid-cols-2 min-[470px]:grid-cols-4 gap-2 md:gap-3">
-              <StatCard label="Oggi" value={stats?.totalDay || 0} />
-              <StatCard label="Settimana" value={stats?.totalWeek || 0} />
-              <StatCard label="Mese" value={stats?.totalMonth || 0} />
-              <StatCard label="Rifiutate" value={stats?.rejected || 0} />
-            </div>
+          {/* Stats + nav nascoste con “Nuova prenotazione” aperta → scroll naturale sugli hero + collapse card */}
+          <div className="space-y-4 pb-4">
+            {!showNewBookingPanel && (
+              <>
+                <div className="grid grid-cols-2 min-[470px]:grid-cols-4 gap-2 md:gap-3">
+                  <StatCard label="Oggi" value={stats?.totalDay || 0} />
+                  <StatCard label="Settimana" value={stats?.totalWeek || 0} />
+                  <StatCard label="Mese" value={stats?.totalMonth || 0} />
+                  <StatCard label="Rifiutate" value={stats?.rejected || 0} />
+                </div>
 
-            <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-              <NavItem icon={Calendar} label="Calendario"          active={activeTab === 'calendar'} onClick={() => setActiveTab('calendar')} />
-              <NavItem
-                icon={Clock}
-                label="Prenotazioni Pendenti"
-                active={activeTab === 'pending'}
-                badge={stats?.pending}
-                notifyHighlight
-                onClick={() => setActiveTab('pending')}
-              />
-              <NavItem icon={Archive}  label="Archivio"             active={activeTab === 'archive'}  onClick={() => setActiveTab('archive')} />
-              <NavItem icon={UtensilsCrossed} label="Menu" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
-              <NavItem
-                icon={Store}
-                label="Impostazioni locale"
-                active={activeTab === 'settings-restaurant'}
-                onClick={() => setActiveTab('settings-restaurant')}
-                mobileLabel="Impostazioni"
-              />
-              <NavItem
-                icon={ExternalLink}
-                label="Visualizza Form Pubblico"
-                mobileLabel="Form"
-                onClick={() => {
-                  if (!tenantSlug) return
-                  window.location.href = `/prenota/${tenantSlug}`
-                }}
-              />
-            </nav>
+                <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+                  <NavItem icon={Calendar} label="Calendario" active={activeTab === 'calendar'} onClick={() => setActiveTab('calendar')} />
+                  <NavItem
+                    icon={Clock}
+                    label="Prenotazioni Pendenti"
+                    active={activeTab === 'pending'}
+                    badge={stats?.pending}
+                    notifyHighlight
+                    onClick={() => setActiveTab('pending')}
+                  />
+                  <NavItem icon={Archive} label="Archivio" active={activeTab === 'archive'} onClick={() => setActiveTab('archive')} />
+                  <NavItem icon={UtensilsCrossed} label="Menu" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
+                  <NavItem
+                    icon={Store}
+                    label="Impostazioni locale"
+                    active={activeTab === 'settings-restaurant'}
+                    onClick={() => setActiveTab('settings-restaurant')}
+                    mobileLabel="Impostazioni"
+                  />
+                  <NavItem
+                    icon={ExternalLink}
+                    label="Visualizza Form Pubblico"
+                    mobileLabel="Form"
+                    onClick={() => {
+                      if (!tenantSlug) return
+                      window.location.href = `/prenota/${tenantSlug}`
+                    }}
+                  />
+                </nav>
+              </>
+            )}
+
+            {/* Nuova prenotazione: quando chiuso sotto nav; quando aperta dopo il titolo */}
+            <div className="w-full overflow-hidden rounded-xl border-2 border-[rgba(45,212,191,0.55)] bg-white shadow-md min-h-0">
+              <button
+                type="button"
+                onClick={() => setShowNewBookingPanel((p) => !p)}
+                className="admin-new-booking-collapse-trigger flex w-full items-center justify-between gap-3 rounded-t-xl px-4 py-[1.333rem] text-white transition-[background-image,transform] duration-200 md:gap-4 md:px-6 md:py-[1.667rem]"
+              >
+                <div
+                  className="flex min-w-0 flex-1 items-baseline justify-start gap-2.5 font-semibold tracking-tight text-white leading-[1.35]"
+                  style={{ fontSize: 'calc(clamp(1.125rem, 0.9rem + 1.1vw, 1.625rem) * 2 / 3)' }}
+                >
+                  <Plus
+                    aria-hidden
+                    className="w-[1.05em] h-[1.05em] shrink-0 translate-y-[0.06em] text-white/95"
+                  />
+                  <span className="min-w-0 truncate drop-shadow-sm">Inserisci Nuova Prenotazione</span>
+                </div>
+                <ChevronDown
+                  aria-hidden
+                  className={`h-5 w-5 shrink-0 text-[rgba(6,64,50,0.88)] transition-transform md:h-6 md:w-6 ${showNewBookingPanel ? 'rotate-180' : ''}`}
+                />
+              </button>
+              {showNewBookingPanel && (
+                <div className="border-t border-slate-200 bg-white px-5 py-5">
+                  <AdminBookingForm />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
 
-      {/* ── Main: collapse più largo (~2× max-w-7xl); area tab resta max-w-7xl ── */}
-      <main className="flex-1 w-full pt-6 pb-12 md:pb-16 space-y-4">
-        {/* Pannello nuova prenotazione collassabile — larghezza fino a 160rem (doppio di 7xl), centrato */}
-        <div className="flex w-full justify-center px-4 md:px-6">
-          <div
-            className="w-full max-w-[min(100%,160rem)] overflow-hidden rounded-xl border-2 border-[rgba(45,212,191,0.55)] bg-white shadow-md"
-          >
-            <button
-              type="button"
-              onClick={() => setShowNewBookingPanel(p => !p)}
-              className="admin-new-booking-collapse-trigger flex w-full items-center justify-between gap-3 rounded-t-xl px-4 py-[1.333rem] text-white transition-[background-image,transform] duration-200 md:gap-4 md:px-6 md:py-[1.667rem]"
-            >
-              <div
-                className="flex min-w-0 flex-1 items-baseline justify-start gap-2.5 font-semibold tracking-tight text-white leading-[1.35]"
-                style={{ fontSize: 'calc(clamp(1.125rem, 0.9rem + 1.1vw, 1.625rem) * 2 / 3)' }}
-              >
-                <Plus
-                  aria-hidden
-                  className="w-[1.05em] h-[1.05em] shrink-0 translate-y-[0.06em] text-white/95"
-                />
-                <span className="min-w-0 truncate drop-shadow-sm">Inserisci Nuova Prenotazione</span>
-              </div>
-              <ChevronDown
-                aria-hidden
-                className={`h-5 w-5 shrink-0 text-[rgba(6,64,50,0.88)] transition-transform md:h-6 md:w-6 ${showNewBookingPanel ? 'rotate-180' : ''}`}
-              />
-            </button>
-            {showNewBookingPanel && (
-              <div className="border-t border-slate-200 bg-white px-5 py-5">
-                <AdminBookingForm />
-              </div>
-            )}
-          </div>
-        </div>
-
+      {/* ── Main: tolto dal flusso con form lungo aperto (solo hero + collapse + footer nella pagina) ── */}
+      <main
+        className={cn(
+          'flex-1 w-full space-y-4 pb-12 md:pb-16',
+          /* Archivio: meno vuoto sopra il blocco filtri rispetto all’header */
+          activeTab === 'archive' ? 'pt-3 md:pt-4' : 'pt-6',
+          showNewBookingPanel && 'hidden',
+        )}
+      >
         {/* Tab content */}
         <div
           className={cn(
-            'mx-auto w-full max-w-7xl px-4 md:px-6 py-5 md:py-7',
-            activeTab !== 'menu' && 'min-h-[500px]'
+            'mx-auto w-full max-w-7xl px-4 md:px-6',
+            activeTab === 'archive' ? 'pb-6 pt-3 md:pb-7 md:pt-4' : 'py-5 md:py-7',
+            /* Nessun min-h sulla tab Pendenti: lista vuota resta corta così il footer è in vista senza scroll */
+            activeTab !== 'menu' && activeTab !== 'pending' && 'min-h-[500px]'
           )}
         >
           {activeTab === 'calendar' && <BookingCalendarTab initialDate={calendarTargetDate} />}

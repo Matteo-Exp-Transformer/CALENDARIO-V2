@@ -2,7 +2,24 @@ import React, { useState } from 'react'
 import type { BookingRequest } from '@/types/booking'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { Calendar, Clock, Users, Tag, MessageSquare, CheckCircle, XCircle, UtensilsCrossed, ChevronDown, User, Mail, Phone } from 'lucide-react'
+import {
+  Calendar,
+  Clock,
+  Users,
+  MessageSquare,
+  CheckCircle,
+  XCircle,
+  UtensilsCrossed,
+  ChevronDown,
+  ChevronUp,
+  User,
+  Mail,
+  Phone,
+  Wine,
+  PartyPopper,
+  GraduationCap,
+  CalendarClock,
+} from 'lucide-react'
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { getPresetMenuLabel } from '../constants/presetMenus'
@@ -25,17 +42,19 @@ const STATUS_CONFIG: Record<string, { label: string; bgColor: string; textColor:
 }
 
 
-/** Cornice contenitore — movimento/sat hover in `.booking-request-card-shell` (`index.css`). */
-const BOOKING_REQUEST_CARD_SHELL =
-  'booking-request-card-shell overflow-hidden rounded-lg border'
+/** Stesso aspetto della strip digest calendario / ArchiveTab. */
+const DIGEST_MENU_HEADING_GRADIENT_BG =
+  'bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white'
 
-/** Padding fascia digest + pannello espanso; py include ancora fattore 6/7 (−1/7 altezza) */
-const CARD_INNER_PADDING = 'px-[1.6875rem] py-[calc(1.6875rem_*_0.81_*_6_/7)]'
+const EVENT_TYPE_CONFIG: Record<string, { icon: typeof UtensilsCrossed }> = {
+  cena: { icon: UtensilsCrossed },
+  aperitivo: { icon: Wine },
+  evento: { icon: PartyPopper },
+  laurea: { icon: GraduationCap },
+}
 
 /** Spazio dopo «:» (EN SPACE ≈ metà di EM) */
 const AFTER_COLON = '\u2002'
-
-// InfoItem component was removed as it's not used
 
 export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
   booking,
@@ -66,140 +85,176 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
     bookingTypeUsesMenuSelections(booking.booking_type) ? getResolvedMenuPriceDisplay(booking) : null
   const creationDateLabel = formatBookingDateTime(booking.created_at)
 
+  const formatRequestSubmittedAt = (dateStr?: string | null) => {
+    if (!dateStr) return ''
+    try {
+      return format(new Date(dateStr), 'd MMMM yyyy, HH:mm', { locale: it })
+    } catch {
+      return String(dateStr)
+    }
+  }
+
+  const eventConfig =
+    booking.event_type && EVENT_TYPE_CONFIG[booking.event_type] ? EVENT_TYPE_CONFIG[booking.event_type] : null
+  const EventIcon = eventConfig?.icon ?? UtensilsCrossed
+
+  const showDigestStrip = Boolean(eventTypeLabel)
+
   return (
-    <div
-      className={cn(
-        BOOKING_REQUEST_CARD_SHELL,
-        'border-solid border-(--admin-warm-wrap-border) [border-width:var(--admin-warm-wrap-border-width)]'
+    <div className="relative">
+      {showDigestStrip && (
+        <div className="mb-2">
+          <span
+            className={`inline-block max-w-full whitespace-normal rounded-lg border-0 px-4 py-2 text-xs font-semibold text-slate-800 shadow-none transition-all duration-300 ${DIGEST_MENU_HEADING_GRADIENT_BG}`}
+          >
+            <span className="block text-sm font-semibold text-slate-900">{eventTypeLabel}</span>
+          </span>
+        </div>
       )}
-    >
-      {/* Header chiuso = digest teal; con pannello aperto rimane fascia superiore teal. */}
-      <div
-        className={cn('booking-request-collapse-header', !isExpanded ? 'rounded-lg' : 'rounded-t-lg')}
-      >
+
+      <div className="booking-request-card-shell overflow-hidden rounded-2xl border-0 border-b-[3px] border-solid border-b-[rgba(253,186,116,0.55)] shadow-none">
         <div
-          className={cn('booking-request-collapse-header-gradient admin-teal-surface', !isExpanded ? 'rounded-lg' : 'rounded-t-lg')}
-        >
-        <button
-          type="button"
-          onClick={() => setIsExpanded(!isExpanded)}
           className={cn(
-            'booking-request-digest-trigger w-full cursor-pointer border-0 text-left bg-transparent transition-colors duration-[220ms] hover:bg-white/55 active:scale-[0.995]',
-            CARD_INNER_PADDING,
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
-            !isExpanded ? 'rounded-lg' : 'rounded-t-lg'
+            'booking-request-collapse-header',
+            !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl',
           )}
         >
-        <div className="flex items-start justify-between gap-6">
-          <div className="flex min-w-0 flex-1 items-start gap-6">
-            {/* Digest: due metà affiancate (flex-1 basis-0); sotto ~480px colonna singola */}
-            <div className="w-full min-w-0 flex-1 text-left">
-              <div className="flex w-full flex-col gap-x-8 gap-y-[calc(1.75rem_*_4_/9_*_0.81_*_6_/7)] min-[480px]:flex-row min-[480px]:items-start min-[480px]:gap-y-0 min-[480px]:gap-x-[calc(1.25rem_*_4_/9_*_0.81_*_6_/7)]">
-                <div className="booking-request-digest-row-stack min-w-0 flex-1 basis-0">
-                  {eventTypeLabel && (
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <Tag className="h-5 w-5 flex-shrink-0 text-gray-500" />
-                      <span className="truncate font-semibold text-gray-900">{eventTypeLabel}</span>
-                    </div>
+          <div
+            className={cn(
+              'booking-request-collapse-header-gradient admin-teal-surface',
+              !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl',
+            )}
+          >
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className={cn(
+                'booking-request-digest-trigger relative z-0 w-full cursor-pointer border-0 bg-transparent p-6 text-left outline-none ring-0',
+                'transition-colors duration-[220ms] hover:bg-white/55 active:scale-[0.995]',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
+                !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl',
+              )}
+            >
+              <div className="relative w-full min-w-0">
+                {/* Badge+chevron fuori dal flusso: il testo digest usa tutta la larghezza e può andare sotto quest’area */}
+                <div className="pointer-events-none absolute right-0 top-0 z-10 flex flex-col items-end gap-2">
+                  <span
+                    className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ${statusConfig.bgColor} ${statusConfig.textColor}`}
+                  >
+                    {statusConfig.label}
+                  </span>
+                  {isExpanded ? (
+                    <ChevronUp className="h-6 w-6 text-warm-wood" aria-hidden />
+                  ) : (
+                    <ChevronDown className="h-6 w-6 text-warm-wood" aria-hidden />
                   )}
-
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <User className="h-5 w-5 flex-shrink-0 text-gray-500" />
-                    <span className="truncate font-medium text-gray-900">{booking.client_name}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Calendar className="h-5 w-5 flex-shrink-0 text-gray-500" />
-                    <span className="truncate font-medium text-gray-900">
-                      {formatDate(booking.desired_date)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Clock className="h-5 w-5 flex-shrink-0 text-gray-500" />
-                    <span className="truncate font-medium text-gray-900">
-                      {formatTime(booking.desired_time)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Users className="h-5 w-5 flex-shrink-0 text-gray-500" />
-                    <span className="truncate font-medium text-gray-900">
-                      {booking.num_guests} ospiti
-                    </span>
-                  </div>
                 </div>
 
-                <div className="booking-request-digest-row-stack min-w-0 flex-1 basis-0" aria-label="Contatti e note">
-                  {booking.client_phone && (
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <Phone className="h-5 w-5 flex-shrink-0 text-gray-500" />
-                      <span className="truncate text-gray-600">{booking.client_phone}</span>
+                <div className="flex w-full min-w-0 flex-col gap-3">
+                  {/* Riserva spazio in alto a destra così le prime righe non si sovrappongono al badge */}
+                  <div className="flex min-w-0 w-full items-start gap-4 pr-[7.25rem]">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-orange-200/90 bg-white shadow-md">
+                      <EventIcon className="h-4 w-4 text-warm-orange" />
                     </div>
-                  )}
+                    <div className="min-w-0 flex-1 text-left">
+                      <div className="grid grid-cols-1 gap-x-6 gap-y-3 min-[659px]:grid-cols-2">
+                        <div className="space-y-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <User className="h-4 w-4 flex-shrink-0 text-warm-orange" />
+                            <span className="min-w-0 break-words text-base font-semibold text-warm-wood-dark">
+                              {booking.client_name}
+                            </span>
+                          </div>
 
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Mail className="h-5 w-5 flex-shrink-0 text-gray-500" />
-                    <span className="min-w-0 truncate text-gray-600">{booking.client_email}</span>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 flex-shrink-0 text-warm-orange" />
+                            <span className="text-base font-semibold text-warm-wood-dark">
+                              {formatDate(booking.desired_date)}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 flex-shrink-0 text-warm-orange" />
+                            <span className="text-base font-semibold text-warm-wood-dark">
+                              {formatTime(booking.desired_time)}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 flex-shrink-0 text-warm-orange" />
+                            <span className="text-base font-semibold text-warm-wood-dark">
+                              {booking.num_guests} ospiti
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="min-w-0 space-y-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <Mail className="h-4 w-4 flex-shrink-0 text-warm-orange" />
+                            <span className="min-w-0 break-words text-sm text-gray-600">{booking.client_email}</span>
+                          </div>
+
+                          {booking.client_phone && (
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 flex-shrink-0 text-warm-orange" />
+                              <span className="text-sm text-gray-600">{booking.client_phone}</span>
+                            </div>
+                          )}
+
+                          {booking.special_requests && (
+                            <div className="flex items-start gap-2">
+                              <MessageSquare className="mt-0.5 h-4 w-4 flex-shrink-0 text-warm-orange" />
+                              <span className="line-clamp-2 text-sm italic text-gray-600">
+                                {booking.special_requests}
+                              </span>
+                            </div>
+                          )}
+
+                          {digestMenuPrice && (
+                            <div className="flex min-w-0 w-full items-center gap-2">
+                              <UtensilsCrossed className="h-4 w-4 shrink-0 text-warm-orange" aria-hidden />
+                              <span className="min-w-0 flex-1 break-words text-sm leading-snug text-gray-700">
+                                Menù :{AFTER_COLON}
+                                {digestMenuPrice.prezzoMenuLabel}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  {booking.special_requests && (
-                    <div className="flex items-start gap-2.5 min-w-0">
-                      <MessageSquare className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />
-                      <span className="line-clamp-3 min-w-0 break-words text-[1em] italic leading-snug text-gray-600">
-                        {booking.special_requests}
-                      </span>
-                    </div>
-                  )}
-
-                  {digestMenuPrice && (
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <UtensilsCrossed className="h-5 w-5 shrink-0 text-gray-500" aria-hidden />
-                      <span className="min-w-0 translate-y-[1px] break-words text-[1em] leading-none text-gray-700">
-                        Menù :{AFTER_COLON}
-                        {digestMenuPrice.prezzoMenuLabel}
-                      </span>
+                  {booking.created_at && (
+                    <div className="flex min-w-0 w-full items-start gap-2">
+                      <CalendarClock
+                        className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange"
+                        aria-hidden
+                      />
+                      {/* basis-0 + min-w-0: il flex misura tutta la larghezza utile così il testo non va a capo “a metà card” */}
+                      <div className="min-w-0 flex-1 basis-0 text-sm leading-normal break-normal text-gray-600">
+                        <span className="font-medium text-gray-500">
+                          Ricevuta il :{AFTER_COLON}
+                        </span>
+                        <span className="text-gray-600">{formatRequestSubmittedAt(booking.created_at)}</span>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Badge Status + Icona Expand */}
-          <div className="flex flex-shrink-0 flex-col items-end gap-3">
-            <span
-              className={cn(
-                'rounded px-4 py-1.5 text-[0.95em] font-medium whitespace-nowrap',
-                statusConfig.bgColor,
-                statusConfig.textColor
-              )}
-            >
-              {statusConfig.label}
-            </span>
-            <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'rotate-0'}`}>
-              <ChevronDown className="h-7 w-7 text-gray-500" />
-            </div>
+            </button>
           </div>
         </div>
-        </button>
-        </div>
-      </div>
 
       {/* Pannello espanso = strip brand dashboard (ADMIN_WARM_GRADIENT_SURFACE) */}
       {isExpanded && (
-        <div
-          className={cn(
-            'booking-request-expanded-panel admin-warm-surface rounded-b-lg border-t border-t-slate-200 transition-all duration-300 ease-in-out',
-            CARD_INNER_PADDING
+        <div className="booking-request-expanded-panel admin-warm-surface rounded-b-2xl border-t border-t-slate-200 p-4 transition-all duration-300 ease-in-out md:p-6">
+          {!booking.created_at && creationDateLabel && (
+            <p className="pb-3 text-[1em] leading-normal">
+              <span className="font-medium text-gray-500">Richiesta di prenotazione effettuata il :</span>
+              {AFTER_COLON}
+              <span className="font-medium text-gray-900">{creationDateLabel}</span>
+            </p>
           )}
-        >
-          {/* Dati anagrafici solo nel digest; qui resta quando è stata inviata la richiesta */}
-          <p className="pb-3 text-[1em] leading-normal">
-            <span className="font-medium text-gray-500">Richiesta di prenotazione effettuata il :</span>
-            {AFTER_COLON}
-            <span className="font-medium text-gray-900">{creationDateLabel}</span>
-          </p>
 
           {/* Menu Info - Solo per Rinfresco di Laurea */}
           {bookingTypeUsesMenuSelections(booking.booking_type) && booking.menu_selection && (
@@ -317,6 +372,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }

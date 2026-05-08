@@ -220,12 +220,12 @@ export const PendingRequestsTab: React.FC = () => {
 
   if (!uniquePendingBookings || uniquePendingBookings.length === 0) {
     return (
-      <div className="rounded-lg border shadow-sm p-12 text-center admin-warm-surface">
-        <div className="text-6xl mb-4">✅</div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+      <div className="rounded-lg border shadow-sm px-6 py-6 text-center admin-warm-surface">
+        <div className="mb-1 text-4xl leading-none">✅</div>
+        <h3 className="mb-0.5 text-base font-semibold text-gray-900">
           Nessuna richiesta in attesa
         </h3>
-        <p className="text-gray-500">
+        <p className="text-xs text-gray-500">
           Non ci sono prenotazioni pendenti al momento.
         </p>
       </div>
