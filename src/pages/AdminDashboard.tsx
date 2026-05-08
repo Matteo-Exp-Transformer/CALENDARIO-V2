@@ -22,6 +22,7 @@ import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { RestaurantSettingsTab } from '@/features/booking/components/RestaurantSettingsTab'
 import { NotifyNavShinyLayers } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
 import { useTenantContext } from '@/contexts/TenantContext'
 
 type Tab =
@@ -272,7 +273,7 @@ export const AdminDashboard: React.FC = () => {
             <button
               type="button"
               onClick={logout}
-              className="flex shrink-0 items-center gap-1.5 rounded-lg bg-[#1e3a8a] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#1e40af]"
+              className={cn('flex shrink-0 items-center gap-1.5', adminBlueCtaSurfaceClass)}
             >
               <LogOut className="h-3.5 w-3.5 text-white" />
               <span className="text-white">Log-out</span>

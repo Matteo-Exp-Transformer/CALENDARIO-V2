@@ -44,16 +44,18 @@ const FROSTED_TEXT_INPUT_CLASS_NAME =
   'block w-full border border-slate-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-400 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 transition-colors duration-150 !border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 rounded-[12px] focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
 const DEFAULT_PLACEMENT_AREAS = ['Sala A', 'Sala B', 'Deorr'] as const
 
-// Reusable component for label:value inline display
+// Label colonna fissa | valore (allineati come tabella; niente wrap dell'etichetta sotto al valore)
 const InfoRow: React.FC<{
-  label: string;
-  value: string | React.ReactNode;
-  icon?: React.ComponentType<{ className?: string }>;
+  label: string
+  value: string | React.ReactNode
+  icon?: React.ComponentType<{ className?: string }>
 }> = ({ label, value, icon: Icon }) => (
-  <div className="flex gap-2 min-w-0">
-    {Icon && <Icon className="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" />}
-    <span className="font-semibold text-gray-700 flex-shrink-0">{label}:</span>
-    <span className="text-gray-900 break-words overflow-wrap-anywhere min-w-0">{value}</span>
+  <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 text-sm leading-snug md:text-base">
+    <span className="inline-flex shrink-0 items-start gap-2 pt-0.5 font-semibold text-gray-700">
+      {Icon ? <Icon className="mt-0.5 h-5 w-5 shrink-0 text-gray-600" /> : null}
+      <span className="whitespace-nowrap">{label}:</span>
+    </span>
+    <span className="min-w-0 break-words text-gray-900">{value}</span>
   </div>
 )
 
@@ -95,10 +97,11 @@ export const DetailsTab: React.FC<Props> = ({
   const creationDateLabel = formatBookingDateTime(booking.created_at)
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 gap-6 text-sm leading-relaxed md:grid-cols-2 md:gap-8 md:items-start md:text-base">
+      <div className="flex min-w-0 flex-col gap-6">
       {/* Section 1: Booking Type */}
       <div className="space-y-3">
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-gray-900 md:text-base">
           Tipo Prenotazione
         </h3>
         {isEditMode ? (
@@ -115,7 +118,7 @@ export const DetailsTab: React.FC<Props> = ({
             </select>
           </div>
         ) : (
-          <p className="text-gray-900 font-medium">
+          <p className="font-medium text-gray-900 md:text-lg">
             {BOOKING_TYPE_EVENT_LABELS[formData.booking_type] ?? formData.booking_type}
           </p>
         )}
@@ -123,14 +126,14 @@ export const DetailsTab: React.FC<Props> = ({
 
       {/* Section 2: Client Information */}
       <div className="space-y-3">
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-gray-900 md:text-base">
           Informazioni Cliente
         </h3>
         {isEditMode ? (
           <div className="space-y-4 w-full max-w-[55vw] mx-auto">
             {/* Edit mode - vertical layout for usability */}
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Nome</label>
+              <label className="block text-sm font-medium text-gray-700 md:text-base">Nome</label>
               <input
                 type="text"
                 value={formData.client_name}
@@ -142,8 +145,8 @@ export const DetailsTab: React.FC<Props> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Email <span className="text-gray-500 font-normal text-xs">(opzionale)</span>
+              <label className="block text-sm font-medium text-gray-700 md:text-base">
+                Email <span className="text-xs font-normal text-gray-500 md:text-sm">(opzionale)</span>
               </label>
               <input
                 type="email"
@@ -156,7 +159,7 @@ export const DetailsTab: React.FC<Props> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Telefono</label>
+              <label className="block text-sm font-medium text-gray-700 md:text-base">Telefono</label>
               <input
                 type="tel"
                 value={formData.client_phone}
@@ -168,25 +171,57 @@ export const DetailsTab: React.FC<Props> = ({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
-            {/* View mode - grid layout without box */}
+          <div className="grid min-w-0 grid-cols-1 gap-3">
+            {/* Una colonna: Nome → Email → Telefono impilati (Email non più in “seconda colonna” del sotto-griglia) */}
             <InfoRow label="Nome" value={formData.client_name} />
-            <InfoRow label="Email" value={formData.client_email} />
-            <InfoRow label="Telefono" value={formData.client_phone || 'Non fornito'} />
+            <InfoRow label="Email" value={formData.client_email ?? ''} />
+            <InfoRow label="Telefono" value={formData.client_phone ?? ''} />
           </div>
         )}
       </div>
 
+      {/* Section 4: Data Creazione */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-gray-900 md:text-base">
+          Data Creazione
+        </h3>
+        <p className="font-medium text-gray-900 md:text-lg">{creationDateLabel}</p>
+      </div>
+
+      {/* Section 5: Special Notes (tavolo only) */}
+      {formData.booking_type === 'tavolo' && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-gray-900 md:text-base">
+            Note Speciali
+          </h3>
+          {isEditMode ? (
+            <textarea
+              value={formData.specialRequests}
+              onChange={(e) => onFormDataChange('specialRequests', e.target.value)}
+              rows={4}
+              className="w-full resize-vertical rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 md:text-base"
+              placeholder="Inserisci eventuali richieste particolari..."
+            />
+          ) : (
+            <p className="whitespace-pre-wrap text-gray-900 md:text-lg">
+              {formData.specialRequests || 'Nessuna nota aggiunta'}
+            </p>
+          )}
+        </div>
+      )}
+      </div>
+
+      <div className="flex min-w-0 flex-col gap-6">
       {/* Section 3: Event Details */}
       <div className="space-y-3">
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-gray-900 md:text-base">
           Dettagli Evento
         </h3>
         {isEditMode ? (
           <div className="space-y-4 w-full max-w-[55vw] mx-auto">
             {/* Edit mode - vertical layout */}
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Data</label>
+              <label className="block text-sm font-medium text-gray-700 md:text-base">Data</label>
               <input
                 type="date"
                 value={formData.date}
@@ -199,7 +234,7 @@ export const DetailsTab: React.FC<Props> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Ora Inizio</label>
+                <label className="block text-sm font-medium text-gray-700 md:text-base">Ora Inizio</label>
                 <TimePicker24h
                   id="detail_start_time"
                   value={formData.startTime}
@@ -210,7 +245,7 @@ export const DetailsTab: React.FC<Props> = ({
               </div>
 
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Ora Fine</label>
+                <label className="block text-sm font-medium text-gray-700 md:text-base">Ora Fine</label>
                 <TimePicker24h
                   id="detail_end_time"
                   value={formData.endTime}
@@ -222,7 +257,7 @@ export const DetailsTab: React.FC<Props> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Numero Ospiti</label>
+              <label className="block text-sm font-medium text-gray-700 md:text-base">Numero Ospiti</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -240,8 +275,8 @@ export const DetailsTab: React.FC<Props> = ({
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-                <MapPin className="w-4 h-4" />
+              <label className="mb-1 flex items-center gap-2 text-sm font-medium text-gray-700 md:text-base">
+                <MapPin className="h-5 w-5 shrink-0" />
                 Posizionamento
               </label>
               <Select
@@ -284,36 +319,7 @@ export const DetailsTab: React.FC<Props> = ({
           </div>
         )}
       </div>
-
-      {/* Section 4: Data Creazione */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
-          Data Creazione
-        </h3>
-        <p className="text-gray-900 font-medium">{creationDateLabel}</p>
       </div>
-
-      {/* Section 5: Special Notes (tavolo only) */}
-      {formData.booking_type === 'tavolo' && (
-        <div className="space-y-3">
-          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
-            Note Speciali
-          </h3>
-          {isEditMode ? (
-            <textarea
-              value={formData.specialRequests}
-              onChange={(e) => onFormDataChange('specialRequests', e.target.value)}
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
-              placeholder="Inserisci eventuali richieste particolari..."
-            />
-          ) : (
-            <p className="text-gray-900 whitespace-pre-wrap">
-              {formData.specialRequests || 'Nessuna nota aggiunta'}
-            </p>
-          )}
-        </div>
-      )}
     </div>
   )
 }

@@ -22,10 +22,16 @@ import {
   VOL_AU_VENT_PROMO_PLACEHOLDER,
 } from '../constants/volAuVentPromo'
 import { cn } from '@/lib/utils'
+import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
 
 /** Fascia lista categorie: griglia 2 colonne da sm — classi Tailwind qui (STYLING_AGENT_CONTEXT §4). */
 const menuPricesCategoryListWrapClass = cn(
   'menu-prices-category-list-wrap grid grid-cols-1 items-start gap-[28px] sm:grid-cols-2'
+)
+
+const menuPricesHeaderCtaButtonClass = cn(
+  adminBlueCtaSurfaceClass,
+  'h-9 min-h-9 w-full shrink-0 gap-1.5 min-w-0'
 )
 
 const slugifyCategory = (value: string): string =>
@@ -655,24 +661,23 @@ export const MenuPricesTab: React.FC = () => {
         <div className="w-full border-t border-[color:var(--admin-warm-wrap-border)] pt-3">
           <div className="grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2 xl:grid-cols-4">
             <Button
-              variant="success"
+              variant="ghost"
               size="sm"
               type="button"
               onClick={handleStartAdd}
-              className="h-9 min-h-9 w-full shrink-0 gap-1.5 px-2 py-0 text-xs"
+              className={cn(menuPricesHeaderCtaButtonClass)}
             >
-              <Plus className="h-3.5 w-3.5 shrink-0" />
+              <Plus className="h-3.5 w-3.5" />
               Crea / Modifica Prodotto
             </Button>
             <Button
-              variant="secondary"
+              variant="ghost"
               size="sm"
               type="button"
               onClick={handleStartAddCategory}
-              className="h-9 min-h-9 w-full shrink-0 gap-1.5 px-2 py-0 text-xs"
-              style={{ backgroundColor: '#60a5fa', borderColor: '#3b82f6', color: '#000000' }}
+              className={cn(menuPricesHeaderCtaButtonClass)}
             >
-              <Plus className="h-3.5 w-3.5 shrink-0" />
+              <Plus className="h-3.5 w-3.5" />
               Crea / Modifica Categoria
             </Button>
             <Button
@@ -682,9 +687,9 @@ export const MenuPricesTab: React.FC = () => {
               onClick={openPresetMenusSection}
               aria-label="Crea / Modifica Menù preselezionati"
               title="Crea / Modifica Menù preselezionati"
-              className="h-9 min-h-9 w-full shrink-0 gap-1.5 overflow-hidden rounded-lg border border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white px-2 py-0 text-center text-xs font-semibold text-amber-950 shadow-sm truncate hover:bg-transparent hover:brightness-[0.97]"
+              className={cn(menuPricesHeaderCtaButtonClass, 'truncate')}
             >
-              <Plus className="h-3.5 w-3.5 shrink-0" />
+              <Plus className="h-3.5 w-3.5" />
               Crea / Modifica Menù preselezionati
             </Button>
             <Button
@@ -695,9 +700,9 @@ export const MenuPricesTab: React.FC = () => {
               disabled={volAuVentPromoLoading || upsertRestaurantSetting.isPending}
               aria-label="Crea / Modifica promo menù"
               title="Crea / Modifica promo menù"
-              className="h-9 min-h-9 w-full shrink-0 gap-1.5 whitespace-normal rounded-lg border border-slate-200 bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white px-2 py-0 text-center text-xs font-semibold leading-snug text-amber-950 shadow-sm hover:bg-transparent hover:brightness-[0.97] disabled:opacity-60"
+              className={cn(menuPricesHeaderCtaButtonClass, 'whitespace-normal leading-snug')}
             >
-              <Edit className="h-3.5 w-3.5 shrink-0" />
+              <Edit className="h-3.5 w-3.5" />
               Crea / Modifica promo menù
             </Button>
           </div>

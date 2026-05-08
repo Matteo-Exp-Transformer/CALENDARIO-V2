@@ -23,7 +23,8 @@ import {
 } from '../utils/buildPresetMenuSelection'
 import { DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } from '../constants/volAuVentPromo'
 import { CapacityWarningModal } from './CapacityWarningModal'
-
+import { cn } from '@/lib/utils'
+import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
 
 interface BookingDetailsModalProps {
   isOpen: boolean
@@ -838,9 +839,12 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                 ) : (
                   <>
                     <button
+                      type="button"
                       onClick={() => setIsEditMode(true)}
-                      className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 bg-[#244a9e] rounded-xl transition-colors shadow-md hover:shadow-lg hover:bg-[#2b57b6] flex items-center justify-center gap-1 sm:gap-2 font-semibold text-xs sm:text-base min-h-[44px] sm:min-h-[56px]"
-                      style={{ color: '#ffffff' }}
+                      className={cn(
+                        adminBlueCtaSurfaceClass,
+                        'flex flex-1 items-center justify-center gap-1 rounded-xl px-2 py-2.5 font-semibold text-xs shadow-md hover:shadow-lg sm:gap-2 sm:px-6 sm:py-3 sm:text-base min-h-[44px] sm:min-h-[56px]'
+                      )}
                     >
                       <Edit className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                       <span className="truncate">Modifica</span>
