@@ -30,8 +30,8 @@ import { cn } from '@/lib/utils'
 
 const AFTER_COLON = '\u2002'
 
-type ArchiveFilter = 'all' | 'accepted' | 'rejected' | 'deleted'
-type SortOrder = 'created_at' | 'booking_date'
+export type ArchiveFilter = 'all' | 'accepted' | 'rejected' | 'deleted'
+export type SortOrder = 'created_at' | 'booking_date'
 
 const EVENT_TYPE_CONFIG: Record<string, { icon: React.ElementType }> = {
   cena: { icon: UtensilsCrossed },
@@ -397,14 +397,108 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
   )
 }
 
-interface ArchiveTabProps {
-  onViewInCalendar?: (date: string) => void
+export interface ArchiveFiltersCardProps {
+  filter: ArchiveFilter
+  sortOrder: SortOrder
+  onFilterChange: (filter: ArchiveFilter) => void
+  onSortOrderChange: (sortOrder: SortOrder) => void
 }
 
-export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar }) => {
+/** Filtri archivio: riutilizzabile nella fascia sticky della dashboard e nel tab. */
+export const ArchiveFiltersCard: React.FC<ArchiveFiltersCardProps> = ({
+  filter,
+  sortOrder,
+  onFilterChange,
+  onSortOrderChange,
+}) => (
+  <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+    <div className="border-0 shadow-none outline-none">
+      <label
+        className="admin-warm-surface mb-2 flex min-h-10 w-full items-center justify-center rounded-lg border-2 border-solid px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-slate-800 shadow-none outline-none"
+      >
+        Filtra per Status
+      </label>
+
+      <div className="flex gap-2 border-0 shadow-none outline-none">
+        {(['all', 'accepted', 'rejected', 'deleted'] as ArchiveFilter[]).map((f) => (
+          <button
+            type="button"
+            key={f}
+            data-filter={f}
+            onClick={() => onFilterChange(f)}
+            className={cn(
+              'archive-tab-filter-btn admin-nav-item relative flex min-h-9 flex-1 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-900 transition-all duration-150 cursor-pointer',
+              filter === f
+                ? 'admin-nav-tab-active border-solid shadow-none bg-none bg-orange-200'
+                : 'border border-solid',
+            )}
+          >
+            {f === 'all' && (
+              <Archive className={cn('h-3.5 w-3.5 shrink-0', filter === f ? 'text-primary-900' : 'text-slate-800')} />
+            )}
+            {f === 'accepted' && (
+              <CheckCircle className={cn('h-3.5 w-3.5 shrink-0', filter === f ? 'text-primary-900' : 'text-slate-800')} />
+            )}
+            {f === 'rejected' && (
+              <XCircle className={cn('h-3.5 w-3.5 shrink-0', filter === f ? 'text-primary-900' : 'text-slate-800')} />
+            )}
+            {f === 'deleted' && (
+              <Trash2 className={cn('h-3.5 w-3.5 shrink-0', filter === f ? 'text-primary-900' : 'text-slate-800')} />
+            )}
+            {f === 'all' ? 'Tutte' : f === 'accepted' ? 'Accettate' : f === 'rejected' ? 'Rifiutate' : 'Rimosse'}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div className="border-0 shadow-none outline-none">
+      <label
+        className="admin-warm-surface mb-2 flex min-h-10 w-full items-center justify-center rounded-lg border-2 border-solid px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-slate-800 shadow-none outline-none"
+      >
+        Ordina per
+      </label>
+
+      <div className="flex gap-2 border-0 shadow-none outline-none">
+        {([
+          { value: 'booking_date' as SortOrder, label: 'Data Prenotazione', icon: Calendar },
+          { value: 'created_at' as SortOrder, label: 'Data Creazione', icon: Clock },
+        ]).map((option) => {
+          const Icon = option.icon
+          return (
+            <button
+              type="button"
+              key={option.value}
+              onClick={() => onSortOrderChange(option.value)}
+              className={cn(
+                'archive-tab-filter-btn admin-nav-item relative flex min-h-9 flex-1 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-900 transition-all duration-150 cursor-pointer',
+                sortOrder === option.value
+                  ? 'admin-nav-tab-active border-solid shadow-none bg-none bg-orange-200'
+                  : 'border border-solid',
+              )}
+            >
+              <Icon
+                className={cn(
+                  'h-3.5 w-3.5 shrink-0',
+                  sortOrder === option.value ? 'text-primary-900' : 'text-slate-800',
+                )}
+              />
+              {option.label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  </div>
+)
+
+interface ArchiveTabProps {
+  onViewInCalendar?: (date: string) => void
+  filter: ArchiveFilter
+  sortOrder: SortOrder
+}
+
+export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar, filter, sortOrder }) => {
   const { data: allBookings, isLoading, error } = useAllBookings()
-  const [filter, setFilter] = useState<ArchiveFilter>('all')
-  const [sortOrder, setSortOrder] = useState<SortOrder>('booking_date')
   const restoreBooking = useRestoreBooking()
   const requeueRejectedBooking = useRequeueRejectedBooking()
 
@@ -496,88 +590,6 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar }) => {
 
   return (
     <div className="space-y-6">
-      {/* Filtri: card bianca; pulsanti stile tab nav admin (warm / arancione attivo) */}
-      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-        {/* Filtro per Status */}
-        <div className="border-0 shadow-none outline-none">
-          <label
-            className="admin-warm-surface mb-2 flex min-h-10 w-full items-center justify-center rounded-lg border-2 border-solid px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-slate-800 shadow-none outline-none"
-          >
-            Filtra per Status
-          </label>
-
-          <div className="flex gap-2 border-0 shadow-none outline-none">
-            {(['all', 'accepted', 'rejected', 'deleted'] as ArchiveFilter[]).map((f) => (
-              <button
-                type="button"
-                key={f}
-                data-filter={f}
-                onClick={() => setFilter(f)}
-                className={cn(
-                  'archive-tab-filter-btn admin-nav-item relative flex min-h-9 flex-1 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-900 transition-all duration-150 cursor-pointer',
-                  filter === f
-                    ? 'admin-nav-tab-active border-solid shadow-none bg-none bg-orange-200'
-                    : 'border border-solid',
-                )}
-              >
-                {f === 'all' && (
-                  <Archive className={cn('h-3.5 w-3.5 shrink-0', filter === f ? 'text-primary-900' : 'text-slate-800')} />
-                )}
-                {f === 'accepted' && (
-                  <CheckCircle className={cn('h-3.5 w-3.5 shrink-0', filter === f ? 'text-primary-900' : 'text-slate-800')} />
-                )}
-                {f === 'rejected' && (
-                  <XCircle className={cn('h-3.5 w-3.5 shrink-0', filter === f ? 'text-primary-900' : 'text-slate-800')} />
-                )}
-                {f === 'deleted' && (
-                  <Trash2 className={cn('h-3.5 w-3.5 shrink-0', filter === f ? 'text-primary-900' : 'text-slate-800')} />
-                )}
-                {f === 'all' ? 'Tutte' : f === 'accepted' ? 'Accettate' : f === 'rejected' ? 'Rifiutate' : 'Rimosse'}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Selettore Ordinamento */}
-        <div className="border-0 shadow-none outline-none">
-          <label
-            className="admin-warm-surface mb-2 flex min-h-10 w-full items-center justify-center rounded-lg border-2 border-solid px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-slate-800 shadow-none outline-none"
-          >
-            Ordina per
-          </label>
-
-          <div className="flex gap-2 border-0 shadow-none outline-none">
-            {([
-              { value: 'booking_date' as SortOrder, label: 'Data Prenotazione', icon: Calendar },
-              { value: 'created_at' as SortOrder, label: 'Data Creazione', icon: Clock }
-            ]).map((option) => {
-              const Icon = option.icon
-              return (
-                <button
-                  type="button"
-                  key={option.value}
-                  onClick={() => setSortOrder(option.value)}
-                  className={cn(
-                    'archive-tab-filter-btn admin-nav-item relative flex min-h-9 flex-1 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-900 transition-all duration-150 cursor-pointer',
-                    sortOrder === option.value
-                      ? 'admin-nav-tab-active border-solid shadow-none bg-none bg-orange-200'
-                      : 'border border-solid',
-                  )}
-                >
-                  <Icon
-                    className={cn(
-                      'h-3.5 w-3.5 shrink-0',
-                      sortOrder === option.value ? 'text-primary-900' : 'text-slate-800',
-                    )}
-                  />
-                  {option.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
       {/* Results */}
       <div>
         <div className="mb-4">

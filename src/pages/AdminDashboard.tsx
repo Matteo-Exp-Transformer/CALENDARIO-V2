@@ -1,10 +1,19 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useBookingStats } from '@/features/booking/hooks/useBookingQueries'
 import { PendingRequestsTab } from '@/features/booking/components/PendingRequestsTab'
-import { ArchiveTab } from '@/features/booking/components/ArchiveTab'
+import {
+  ArchiveFiltersCard,
+  ArchiveTab,
+  type ArchiveFilter,
+  type SortOrder,
+} from '@/features/booking/components/ArchiveTab'
 import { BookingCalendarTab } from '@/features/booking/components/BookingCalendarTab'
 import { AdminBookingForm } from '@/features/booking/components/AdminBookingForm'
-import { MenuPricesTab } from '@/features/booking/components/MenuPricesTab'
+import {
+  MenuPricesHeroToolbar,
+  MenuPricesTab,
+  type MenuPricesTabHandle,
+} from '@/features/booking/components/MenuPricesTab'
 import {
   Calendar,
   Clock,
@@ -19,7 +28,10 @@ import {
 } from 'lucide-react'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
-import { RestaurantSettingsTab } from '@/features/booking/components/RestaurantSettingsTab'
+import {
+  RestaurantSettingsIntro,
+  RestaurantSettingsTab,
+} from '@/features/booking/components/RestaurantSettingsTab'
 import { NotifyNavShinyLayers } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
@@ -131,7 +143,15 @@ export const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
   const [calendarTargetDate, setCalendarTargetDate] = useState<string | null>(null)
   const [showNewBookingPanel, setShowNewBookingPanel] = useState(false)
+  const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>('all')
+  const [archiveSortOrder, setArchiveSortOrder] = useState<SortOrder>('booking_date')
+  const [menuToolbarPromoDisabled, setMenuToolbarPromoDisabled] = useState(false)
+  const menuPricesTabRef = useRef<MenuPricesTabHandle>(null)
   const { data: stats } = useBookingStats()
+
+  useEffect(() => {
+    if (activeTab !== 'pending') setShowNewBookingPanel(false)
+  }, [activeTab])
   const { user, logout } = useAdminAuth()
   const restaurantName = useRestaurantName()
   const { tenantSlug } = useTenantContext()
@@ -173,22 +193,15 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Stats + nav nascoste con “Nuova prenotazione” aperta → scroll naturale sugli hero + collapse card */}
+          {/* Nav + fascia contestuale nascosti solo con form nuova prenotazione aperto (tab Pendenti). Il collapse è solo sul tab Pendenti, allo stesso posto della vecchia fascia. */}
           <div className="space-y-4 pb-4">
             {!showNewBookingPanel && (
               <>
-                <div className="grid grid-cols-2 min-[470px]:grid-cols-4 gap-2 md:gap-3">
-                  <StatCard label="Oggi" value={stats?.totalDay || 0} />
-                  <StatCard label="Settimana" value={stats?.totalWeek || 0} />
-                  <StatCard label="Mese" value={stats?.totalMonth || 0} />
-                  <StatCard label="Rifiutate" value={stats?.rejected || 0} />
-                </div>
-
                 <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
                   <NavItem icon={Calendar} label="Calendario" active={activeTab === 'calendar'} onClick={() => setActiveTab('calendar')} />
                   <NavItem
                     icon={Clock}
-                    label="Prenotazioni Pendenti"
+                    label="Prenotazioni"
                     active={activeTab === 'pending'}
                     badge={stats?.pending}
                     notifyHighlight
@@ -213,37 +226,68 @@ export const AdminDashboard: React.FC = () => {
                     }}
                   />
                 </nav>
+
+                {activeTab === 'calendar' && (
+                  <div className="grid grid-cols-2 min-[470px]:grid-cols-4 gap-2 md:gap-3">
+                    <StatCard label="Oggi" value={stats?.totalDay || 0} />
+                    <StatCard label="Settimana" value={stats?.totalWeek || 0} />
+                    <StatCard label="Mese" value={stats?.totalMonth || 0} />
+                    <StatCard label="Rifiutate" value={stats?.rejected || 0} />
+                  </div>
+                )}
+
+                {activeTab === 'archive' && (
+                  <ArchiveFiltersCard
+                    filter={archiveFilter}
+                    sortOrder={archiveSortOrder}
+                    onFilterChange={setArchiveFilter}
+                    onSortOrderChange={setArchiveSortOrder}
+                  />
+                )}
+
+                {activeTab === 'menu' && (
+                  <MenuPricesHeroToolbar
+                    promoDisabled={menuToolbarPromoDisabled}
+                    onAddProduct={() => menuPricesTabRef.current?.startAddProduct()}
+                    onAddCategory={() => menuPricesTabRef.current?.startAddCategory()}
+                    onPresetMenus={() => menuPricesTabRef.current?.openPresetMenus()}
+                    onPromo={() => menuPricesTabRef.current?.openPromo()}
+                  />
+                )}
+
+                {activeTab === 'settings-restaurant' && <RestaurantSettingsIntro />}
               </>
             )}
 
-            {/* Nuova prenotazione: quando chiuso sotto nav; quando aperta dopo il titolo */}
-            <div className="w-full overflow-hidden rounded-xl border-2 border-[rgba(45,212,191,0.55)] bg-white shadow-md min-h-0">
-              <button
-                type="button"
-                onClick={() => setShowNewBookingPanel((p) => !p)}
-                className="admin-new-booking-collapse-trigger flex w-full items-center justify-between gap-3 rounded-t-xl px-4 py-[1.333rem] text-white transition-[background-image,transform] duration-200 md:gap-4 md:px-6 md:py-[1.667rem]"
-              >
-                <div
-                  className="flex min-w-0 flex-1 items-baseline justify-start gap-2.5 font-semibold tracking-tight text-white leading-[1.35]"
-                  style={{ fontSize: 'calc(clamp(1.125rem, 0.9rem + 1.1vw, 1.625rem) * 2 / 3)' }}
+            {activeTab === 'pending' && (
+              <div className="w-full overflow-hidden rounded-xl border-2 border-[rgba(45,212,191,0.55)] bg-white shadow-md min-h-0">
+                <button
+                  type="button"
+                  onClick={() => setShowNewBookingPanel((p) => !p)}
+                  className="admin-new-booking-collapse-trigger flex w-full items-center justify-between gap-3 rounded-t-xl px-4 py-[1.333rem] text-white transition-[background-image,transform] duration-200 md:gap-4 md:px-6 md:py-[1.667rem]"
                 >
-                  <Plus
+                  <div
+                    className="flex min-w-0 flex-1 items-baseline justify-start gap-2.5 font-semibold tracking-tight text-white leading-[1.35]"
+                    style={{ fontSize: 'calc(clamp(1.125rem, 0.9rem + 1.1vw, 1.625rem) * 2 / 3)' }}
+                  >
+                    <Plus
+                      aria-hidden
+                      className="w-[1.05em] h-[1.05em] shrink-0 translate-y-[0.06em] text-white/95"
+                    />
+                    <span className="min-w-0 truncate drop-shadow-sm">Inserisci Nuova Prenotazione</span>
+                  </div>
+                  <ChevronDown
                     aria-hidden
-                    className="w-[1.05em] h-[1.05em] shrink-0 translate-y-[0.06em] text-white/95"
+                    className={`h-5 w-5 shrink-0 text-[rgba(6,64,50,0.88)] transition-transform md:h-6 md:w-6 ${showNewBookingPanel ? 'rotate-180' : ''}`}
                   />
-                  <span className="min-w-0 truncate drop-shadow-sm">Inserisci Nuova Prenotazione</span>
-                </div>
-                <ChevronDown
-                  aria-hidden
-                  className={`h-5 w-5 shrink-0 text-[rgba(6,64,50,0.88)] transition-transform md:h-6 md:w-6 ${showNewBookingPanel ? 'rotate-180' : ''}`}
-                />
-              </button>
-              {showNewBookingPanel && (
-                <div className="border-t border-slate-200 bg-white px-5 py-5">
-                  <AdminBookingForm />
-                </div>
-              )}
-            </div>
+                </button>
+                {showNewBookingPanel && (
+                  <div className="border-t border-slate-200 bg-white px-5 py-5">
+                    <AdminBookingForm />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -268,8 +312,20 @@ export const AdminDashboard: React.FC = () => {
         >
           {activeTab === 'calendar' && <BookingCalendarTab initialDate={calendarTargetDate} />}
           {activeTab === 'pending'  && <PendingRequestsTab />}
-          {activeTab === 'archive'  && <ArchiveTab onViewInCalendar={handleViewInCalendar} />}
-          {activeTab === 'menu' && <MenuPricesTab />}
+          {activeTab === 'archive' && (
+            <ArchiveTab
+              onViewInCalendar={handleViewInCalendar}
+              filter={archiveFilter}
+              sortOrder={archiveSortOrder}
+            />
+          )}
+          {activeTab === 'menu' && (
+            <MenuPricesTab
+              ref={menuPricesTabRef}
+              omitHeroSection
+              onToolbarPromoDisabled={setMenuToolbarPromoDisabled}
+            />
+          )}
           {activeTab === 'settings-restaurant' && <RestaurantSettingsTab />}
         </div>
       </main>

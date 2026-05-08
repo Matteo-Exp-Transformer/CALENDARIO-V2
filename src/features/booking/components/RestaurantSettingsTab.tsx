@@ -137,6 +137,26 @@ function validateBookingTimeSlotsDetailed(config: BookingTimeSlots): {
   return { message: null, fields: [] }
 }
 
+const restaurantSettingsIntroCardClass =
+  'admin-warm-surface w-full max-w-2xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center flex flex-col items-center gap-3 sm:flex-row sm:justify-center'
+
+/** Titolo introduttivo spostabile nello sticky header della dashboard */
+export function RestaurantSettingsIntro() {
+  return (
+    <div className={restaurantSettingsIntroCardClass}>
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 shadow-lg">
+        <Store className="h-7 w-7 text-white" />
+      </div>
+      <div className="min-w-0 text-center">
+        <h2 className="text-2xl font-bold text-slate-900">Impostazioni locale</h2>
+        <p className="text-sm text-slate-600">
+          Modifica i dati visualizzati nella pagina Prenotazioni e nel Calendario.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export const RestaurantSettingsTab: React.FC = () => {
   const queryClient = useQueryClient()
   const { tenantId } = useTenantContext()
@@ -498,20 +518,6 @@ export const RestaurantSettingsTab: React.FC = () => {
           100% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.95), 0 0 18px rgba(239, 68, 68, 0.55); }
         }
       `}</style>
-      <div
-        className={`${sectionSurfaceClass} flex flex-col items-center gap-3 sm:flex-row sm:justify-center`}
-      >
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 shadow-lg">
-          <Store className="h-7 w-7 text-white" />
-        </div>
-        <div className="min-w-0 text-center">
-          <h2 className="text-2xl font-bold text-slate-900">Impostazioni locale</h2>
-          <p className="text-sm text-slate-600">
-            Modifica i dati visualizzati nella pagina Prenotazioni e nel Calendario.
-          </p>
-        </div>
-      </div>
-
       <section className={sectionSurfaceClass}>
         <h3 className="text-lg font-semibold text-slate-800">Anagrafica e prenotazioni</h3>
         <div className="flex w-full flex-col items-center">

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import { ADMIN_WARM_BORDER, ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { Button, Input, Textarea } from '@/components/ui'
@@ -33,6 +33,109 @@ const menuPricesHeaderCtaButtonClass = cn(
   adminBlueCtaSurfaceClass,
   'h-9 min-h-9 w-full shrink-0 gap-1.5 min-w-0'
 )
+
+export type MenuPricesHeroToolbarProps = {
+  promoDisabled: boolean
+  onAddProduct: () => void
+  onAddCategory: () => void
+  onPresetMenus: () => void
+  onPromo: () => void
+}
+
+/** Fascia «Menu» con CTA: riutilizzabile nello sticky header della dashboard. */
+export function MenuPricesHeroToolbar({
+  promoDisabled,
+  onAddProduct,
+  onAddCategory,
+  onPresetMenus,
+  onPromo,
+}: MenuPricesHeroToolbarProps) {
+  return (
+    <section
+      aria-labelledby="menu-prices-heading"
+      className="flex w-full min-w-0 flex-col gap-4 rounded-xl shadow-sm px-4 py-4 md:gap-5 md:px-5 md:py-5 min-h-[148px]"
+      style={ADMIN_WARM_GRADIENT_SURFACE}
+    >
+      <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <h2
+          id="menu-prices-heading"
+          className="shrink-0 font-serif text-lg font-bold leading-tight text-warm-wood md:text-xl"
+        >
+          Menu
+        </h2>
+        <p
+          className="min-w-0 flex-1 px-1 text-center text-sm leading-snug text-gray-600 sm:px-2 sm:text-base max-[729px]:hidden"
+          title="Aggiungi, modifica o elimina le voci del menu e i prezzi"
+        >
+          Aggiungi, modifica o elimina le voci del menu e i prezzi
+        </p>
+      </div>
+
+      <div className="w-full border-t border-[color:var(--admin-warm-wrap-border)] pt-3">
+        <div className="grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2 xl:grid-cols-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            type="button"
+            onClick={onAddProduct}
+            className={cn(menuPricesHeaderCtaButtonClass)}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Crea / Modifica Prodotto
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            type="button"
+            onClick={onAddCategory}
+            className={cn(menuPricesHeaderCtaButtonClass)}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Crea / Modifica Categoria
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            type="button"
+            onClick={onPresetMenus}
+            aria-label="Crea / Modifica Menù preselezionati"
+            title="Crea / Modifica Menù preselezionati"
+            className={cn(menuPricesHeaderCtaButtonClass, 'truncate')}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Crea / Modifica Menù preselezionati
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            type="button"
+            onClick={onPromo}
+            disabled={promoDisabled}
+            aria-label="Crea / Modifica promo menù"
+            title="Crea / Modifica promo menù"
+            className={cn(menuPricesHeaderCtaButtonClass, 'whitespace-normal leading-snug')}
+          >
+            <Edit className="h-3.5 w-3.5" />
+            Crea / Modifica promo menù
+          </Button>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export type MenuPricesTabHandle = {
+  startAddProduct: () => void
+  startAddCategory: () => void
+  openPresetMenus: () => void
+  openPromo: () => void
+}
+
+export type MenuPricesTabProps = {
+  /** Toolbar principale spostata nello sticky header AdminDashboard */
+  omitHeroSection?: boolean
+  onToolbarPromoDisabled?: (disabled: boolean) => void
+}
 
 const slugifyCategory = (value: string): string =>
   value
@@ -255,7 +358,10 @@ const AdminMenuCategoryLabelCard: React.FC<AdminMenuCategoryLabelCardProps> = ({
 
 type MenuViewMode = 'menu' | 'products' | 'categories' | 'preset_menus'
 
-export const MenuPricesTab: React.FC = () => {
+export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>(function MenuPricesTab(
+  { omitHeroSection = false, onToolbarPromoDisabled },
+  ref,
+) {
   const { data: menuItems = [], isLoading, refetch: refetchMenuItems } = useMenuItems()
   const { data: dbCategories = [], refetch: refetchCategories } = useMenuCategories()
   const createMutation = useCreateMenuItem()
@@ -570,6 +676,17 @@ export const MenuPricesTab: React.FC = () => {
     setNewCategoryLabel('')
   }
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      startAddProduct: handleStartAdd,
+      startAddCategory: handleStartAddCategory,
+      openPresetMenus: openPresetMenusSection,
+      openPromo: openPromoEditor,
+    }),
+    [handleStartAdd, handleStartAddCategory, openPresetMenusSection, openPromoEditor],
+  )
+
   const handleSave = async () => {
     if (!formData.name.trim()) {
       toast.error('Il nome è obbligatorio')
@@ -632,12 +749,65 @@ export const MenuPricesTab: React.FC = () => {
     }
   }
 
+  useEffect(() => {
+    onToolbarPromoDisabled?.(volAuVentPromoLoading || upsertRestaurantSetting.isPending)
+  }, [onToolbarPromoDisabled, volAuVentPromoLoading, upsertRestaurantSetting.isPending])
+
+  const menuVisibilityToggles =
+    viewMode === 'menu' ? (
+      <div
+        className={cn(
+          'flex flex-col gap-3',
+          omitHeroSection ? '' : 'mt-auto border-t border-[color:var(--admin-warm-wrap-border)] pt-3',
+        )}
+      >
+        <label className="flex cursor-pointer items-start gap-2.5 text-left text-xs font-semibold leading-snug text-gray-800 sm:items-center sm:text-sm">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-400 sm:mt-0"
+            checked={staffPresetsVisible}
+            disabled={staffPresetVisibleLoading || upsertRestaurantSetting.isPending}
+            onChange={(e) =>
+              upsertRestaurantSetting.mutate([
+                { key: 'booking_staff_presets_visible', value: e.target.checked },
+              ])
+            }
+          />
+          Mostra nella pagina prenota i menù consigliati dallo staff
+        </label>
+        <label className="flex cursor-pointer items-start gap-2.5 text-left text-xs font-semibold leading-snug text-gray-800 sm:items-center sm:text-sm">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-400 sm:mt-0"
+            checked={volAuVentPromoVisible}
+            disabled={volAuVentPromoLoading || upsertRestaurantSetting.isPending}
+            onChange={(e) =>
+              upsertRestaurantSetting.mutate([
+                { key: 'booking_vol_au_vent_promo_visible', value: e.target.checked },
+              ])
+            }
+          />
+          Mostra nella pagina prenota un&apos;offerta per incentivare la scelta di più ingredienti nel menù
+        </label>
+      </div>
+    ) : null
+
   if (isLoading) {
     return <div className="text-center py-8">Caricamento menu...</div>
   }
 
   return (
     <div className="flex flex-col gap-6 md:gap-7">
+      {omitHeroSection && viewMode === 'menu' && (
+        <div
+          className="flex w-full min-w-0 flex-col gap-3 rounded-xl border px-4 py-4 shadow-sm md:px-5 md:py-5"
+          style={ADMIN_WARM_GRADIENT_SURFACE}
+        >
+          {menuVisibilityToggles}
+        </div>
+      )}
+
+      {!omitHeroSection && (
       <section
         aria-labelledby="menu-prices-heading"
         className="flex w-full min-w-0 flex-col gap-4 rounded-xl shadow-sm px-4 py-4 md:gap-5 md:px-5 md:py-5 min-h-[148px]"
@@ -708,39 +878,9 @@ export const MenuPricesTab: React.FC = () => {
           </div>
         </div>
 
-        {viewMode === 'menu' && (
-          <div className="mt-auto flex flex-col gap-3 border-t border-[color:var(--admin-warm-wrap-border)] pt-3">
-            <label className="flex cursor-pointer items-start gap-2.5 text-left text-xs font-semibold leading-snug text-gray-800 sm:items-center sm:text-sm">
-              <input
-                type="checkbox"
-                className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-400 sm:mt-0"
-                checked={staffPresetsVisible}
-                disabled={staffPresetVisibleLoading || upsertRestaurantSetting.isPending}
-                onChange={(e) =>
-                  upsertRestaurantSetting.mutate([
-                    { key: 'booking_staff_presets_visible', value: e.target.checked },
-                  ])
-                }
-              />
-              Mostra nella pagina prenota i menù consigliati dallo staff
-            </label>
-            <label className="flex cursor-pointer items-start gap-2.5 text-left text-xs font-semibold leading-snug text-gray-800 sm:items-center sm:text-sm">
-              <input
-                type="checkbox"
-                className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-400 sm:mt-0"
-                checked={volAuVentPromoVisible}
-                disabled={volAuVentPromoLoading || upsertRestaurantSetting.isPending}
-                onChange={(e) =>
-                  upsertRestaurantSetting.mutate([
-                    { key: 'booking_vol_au_vent_promo_visible', value: e.target.checked },
-                  ])
-                }
-              />
-              Mostra nella pagina prenota un&apos;offerta per incentivare la scelta di più ingredienti nel menù
-            </label>
-          </div>
-        )}
+        {menuVisibilityToggles}
       </section>
+      )}
       {viewMode === 'categories' && isAddingCategory && (
         <>
           <div
@@ -1216,4 +1356,6 @@ export const MenuPricesTab: React.FC = () => {
       )}
     </div>
   )
-}
+})
+
+MenuPricesTab.displayName = 'MenuPricesTab'
