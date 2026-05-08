@@ -642,19 +642,10 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
         </div>
 
         {/* Data */}
-        <div className="space-y-3" style={{ paddingTop: '0.5rem' }}>
+        <div className="space-y-3 pt-2">
           <label
             htmlFor="desired_date"
-            className="block text-base md:text-lg text-warm-wood mb-2"
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(1px)',
-              padding: '8px 16px',
-              borderRadius: '12px',
-              display: 'inline-block',
-              fontWeight: '700',
-              marginBottom: '0.5rem'
-            }}
+            className="inline-block text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
           >
             Data prenotazione *
           </label>
@@ -687,33 +678,17 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             hasError={!!errors.desired_date}
           />
           {errors.desired_date && (
-            <div
-              className="text-sm text-red-600 p-3 rounded-lg"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(1px)',
-                border: '1px solid rgba(239, 68, 68, 0.3)'
-              }}
-            >
+            <div className="text-sm text-red-600 p-3 rounded-lg bg-white/85 backdrop-blur-[1px] border border-red-500/30">
               {errors.desired_date}
             </div>
           )}
         </div>
 
         {/* Ora */}
-        <div className="space-y-3 pb-8" style={{ paddingTop: '0.5rem' }}>
+        <div className="space-y-3 pb-8 pt-2">
           <label
             htmlFor="desired_time"
-            className="block text-base md:text-lg text-warm-wood mb-2"
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(1px)',
-              padding: '8px 16px',
-              borderRadius: '12px',
-              display: 'inline-block',
-              fontWeight: '700',
-              marginBottom: '0.5rem'
-            }}
+            className="inline-block text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
           >
             Ora prenotazione *
           </label>
@@ -975,10 +950,10 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             style={{ fontWeight: '700', backgroundColor: '#16a34a', paddingTop: '28px', paddingBottom: '28px' }}
           >
             {/* Glow effect on hover */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+            <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-r from-transparent via-emerald-200/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
             {/* Content */}
-            <div className="relative flex items-center justify-center gap-3 whitespace-nowrap">
+            <div className="relative z-10 flex items-center justify-center gap-3 whitespace-nowrap">
               {isPending ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -995,8 +970,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             </div>
 
             {/* Animated border glow */}
-            <div className="absolute inset-0 rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-              <div className="absolute inset-[-2px] rounded-full bg-gradient-to-r from-warm-wood via-warm-orange to-terracotta blur-sm"></div>
+            <div className="absolute inset-0 z-0 pointer-events-none rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              <div className="absolute inset-[-2px] rounded-full bg-gradient-to-r from-emerald-500 via-lime-400 to-green-600 blur-sm"></div>
             </div>
           </button>
         </div>
