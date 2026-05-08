@@ -44,6 +44,7 @@
 
   --shadow-soft:   0 2px 15px -3px rgba(0,0,0,0.07), 0 10px 20px -2px rgba(0,0,0,0.04);
   --shadow-medium: 0 4px 25px -5px rgba(0,0,0,0.10), 0 10px 10px -5px rgba(0,0,0,0.04);
+
 }
 
 /* ──────────────────────────────────────────────
@@ -67,6 +68,14 @@
   /** Fascia liste menu + shell `BookingRequestCard` — stesso bordo warm, spessore leggermente sopra 1px. */
   --admin-warm-wrap-border: rgba(253, 186, 116, 0.45);
   --admin-warm-wrap-border-width: 1.5px;
+
+  /** Superficie warm (nav tab, stat card header, ShimmerButton tab attiva) — vedi docs/STYLING_AGENT_CONTEXT.md */
+  --admin-warm-gradient: linear-gradient(
+    90deg,
+    rgb(255 237 213) 0%,
+    rgb(255 247 237) 42%,
+    rgb(254 249 195) 100%
+  );
 
   /* Testo */
   --color-text:          #0F172A;
@@ -179,6 +188,123 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes shimmer-perimeter-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.shimmer-perimeter-ring {
+  padding: 3px;
+  opacity: 1;
+  will-change: transform;
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(255, 255, 255, 0.35) 6deg,
+      var(--shimmer-color) 16deg,
+      rgba(255, 255, 255, 1) 26deg,
+      var(--shimmer-color) 38deg,
+      rgba(255, 255, 255, 0.45) 50deg,
+      transparent 82deg,
+      transparent 360deg
+    );
+  animation: shimmer-perimeter-rotate var(--speed, 4.5s) linear infinite;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  box-shadow:
+    0 0 14px rgba(255, 255, 255, 0.55),
+    inset 0 0 12px rgba(255, 255, 255, 0.15);
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+/*
+  Shiny sweep (tab Prenotazioni + badge): translateX(%) è relativo al beam, non al pulsante — la scia
+  si fermava a metà. Qui si anima `left` (rispetto al genitore) e si lascia lunga pausa tra un passaggio e l’altro.
+*/
+/* Un passaggio ogni 2s (--notify-shiny-period); la scia attraversa ~28% del ciclo (~0,56s), poi pausa fino al giro dopo */
+@keyframes admin-nav-notify-shiny-sweep {
+  0%,
+  100% {
+    left: -72%;
+    opacity: 0;
+  }
+  2% {
+    opacity: 0.97;
+  }
+  30% {
+    left: 138%;
+    opacity: 0.97;
+  }
+  33%,
+  99.9% {
+    left: 138%;
+    opacity: 0;
+  }
+}
+
+/* Shiny solo tab Prenotazioni con badge > 0 */
+.admin-nav-notify-shiny-fill::before {
+  content: '';
+  position: absolute;
+  top: -22%;
+  bottom: -22%;
+  left: -65%;
+  width: 52%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 22%,
+    rgba(255, 255, 255, 0.98) 50%,
+    rgba(255, 255, 255, 0.28) 78%,
+    transparent 100%
+  );
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.5);
+  filter: blur(0.1px);
+  animation: admin-nav-notify-shiny-sweep var(--notify-shiny-period, 2s) linear infinite;
+}
+
+.admin-nav-notify-shiny-edge {
+  padding: 1px;
+  background:
+    linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.28) 0%,
+      rgba(255, 255, 255, 0.9) 42%,
+      rgba(255, 255, 255, 0.32) 100%
+    );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Pulsazione attorno al tab Prenotazioni con badge (da pattern pulsating-button; non usa animate-pulse globale) */
+@keyframes admin-nav-notify-pulse-ring {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.42);
+  }
+  55% {
+    box-shadow: 0 0 0 6px rgba(79, 70, 229, 0.08);
+  }
+}
+
+.admin-nav-notify-pulse-wrap {
+  animation: admin-nav-notify-pulse-ring 1.45s ease-out infinite;
+}
+
 .animate-fade-in {
   animation: fadeIn 0.25s ease-out forwards;
 }
@@ -208,12 +334,7 @@ body {
 
 /* Admin dashboard — superficie warm (gradiente arancio/beige + bordo) */
 .admin-warm-surface {
-  background-image: linear-gradient(
-    90deg,
-    rgb(255 237 213) 0%,
-    rgb(255 247 237) 42%,
-    rgb(254 249 195) 100%
-  );
+  background-image: var(--admin-warm-gradient);
   border-color: rgba(253, 186, 116, 0.55);
 }
 
@@ -229,12 +350,7 @@ body {
 
 /* Admin dashboard — nav tab warm gradient + hover illumination */
 .admin-nav-item {
-  background-image: linear-gradient(
-    90deg,
-    rgb(255 237 213) 0%,
-    rgb(255 247 237) 42%,
-    rgb(254 249 195) 100%
-  );
+  background-image: var(--admin-warm-gradient);
   border-color: rgba(253, 186, 116, 0.55);
   transition:
     background-image 200ms ease,

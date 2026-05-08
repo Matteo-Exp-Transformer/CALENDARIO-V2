@@ -20,6 +20,7 @@ import {
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { RestaurantSettingsTab } from '@/features/booking/components/RestaurantSettingsTab'
+import { NotifyNavShinyLayers, ShimmerButton } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { useTenantContext } from '@/contexts/TenantContext'
 
@@ -36,29 +37,87 @@ interface NavItemProps {
   label: string
   active?: boolean
   badge?: number
+  /** Solo tab Prenotazioni: shiny + pulse quando badge ≥ 1 (anche se tab attiva) */
+  notifyHighlight?: boolean
   onClick: () => void
   mobileLabel?: string
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, badge, onClick, mobileLabel }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={cn(
-      'admin-nav-item relative w-full min-h-11 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border px-2 sm:px-3 py-2.5 text-sm font-medium text-slate-900 transition-all duration-150 cursor-pointer',
-      active && 'shadow-[inset_0_0_0_2px_rgba(255,255,255,0.88),0_1px_6px_rgba(180,83,9,0.18)]'
-    )}
-  >
-    <Icon className={`h-4 w-4 flex-shrink-0 ${active ? 'text-primary-900' : 'text-slate-800'}`} />
-    <span className="hidden min-w-0 truncate text-center sm:inline">{label}</span>
-    <span className="min-w-0 truncate text-center sm:hidden">{mobileLabel ?? label.split(' ')[0]}</span>
-    {badge != null && badge > 0 && (
-      <span className="inline-flex flex-shrink-0 items-center justify-center min-w-[20px] h-5 text-xs font-bold px-1.5 rounded-full bg-primary-600 text-white">
-        {badge}
-      </span>
-    )}
-  </button>
-)
+const NavItem: React.FC<NavItemProps> = ({
+  icon: Icon,
+  label,
+  active,
+  badge,
+  notifyHighlight,
+  onClick,
+  mobileLabel,
+}) => {
+  const hasBadge = badge != null && badge > 0
+  const showNotifyDecor = Boolean(notifyHighlight && hasBadge)
+
+  const inner = (
+    <>
+      <Icon className={cn('h-4 w-4 flex-shrink-0', active ? 'text-primary-900' : 'text-slate-800')} />
+      <span className="hidden min-w-0 truncate text-center sm:inline">{label}</span>
+      <span className="min-w-0 truncate text-center sm:hidden">{mobileLabel ?? label.split(' ')[0]}</span>
+      {badge != null && badge > 0 && (
+        <span className="inline-flex flex-shrink-0 items-center justify-center min-w-[20px] h-5 text-xs font-bold px-1.5 rounded-full bg-primary-600 text-white">
+          {badge}
+        </span>
+      )}
+    </>
+  )
+
+  if (active) {
+    const activeBtn = (
+      <ShimmerButton
+        onClick={onClick}
+        borderRadius="0.75rem"
+        background="var(--admin-warm-gradient)"
+        shimmerColor="rgba(255, 255, 255, 1)"
+        shimmerDuration="5s"
+        className={cn(
+          'admin-nav-item w-full min-h-11 gap-1.5 px-2 py-2.5 text-sm font-medium text-slate-900 sm:gap-2 sm:px-3',
+          'border border-[color:var(--admin-warm-wrap-border)] shadow-[inset_0_0_0_2px_rgba(255,255,255,0.88),0_1px_6px_rgba(180,83,9,0.18)]'
+        )}
+      >
+        {showNotifyDecor && <NotifyNavShinyLayers />}
+        <span className="relative z-10 flex min-w-0 w-full items-center justify-center gap-1.5 sm:gap-2">
+          {inner}
+        </span>
+      </ShimmerButton>
+    )
+    if (showNotifyDecor) {
+      return <div className="admin-nav-notify-pulse-wrap w-full rounded-xl">{activeBtn}</div>
+    }
+    return activeBtn
+  }
+
+  const inactiveBtn = (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'admin-nav-item relative w-full min-h-11 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border px-2 sm:px-3 py-2.5 text-sm font-medium text-slate-900 transition-all duration-150 cursor-pointer',
+        showNotifyDecor && 'overflow-hidden'
+      )}
+    >
+      {showNotifyDecor && <NotifyNavShinyLayers />}
+      {showNotifyDecor ? (
+        <span className="relative z-10 flex min-w-0 w-full items-center justify-center gap-1.5 sm:gap-2">
+          {inner}
+        </span>
+      ) : (
+        inner
+      )}
+    </button>
+  )
+
+  if (showNotifyDecor) {
+    return <div className="admin-nav-notify-pulse-wrap w-full rounded-xl">{inactiveBtn}</div>
+  }
+  return inactiveBtn
+}
 
 /* ─── StatCard ─── */
 const StatCard: React.FC<{ label: string; value: number }> = ({ label, value }) => (
@@ -122,7 +181,14 @@ export const AdminDashboard: React.FC = () => {
 
             <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
               <NavItem icon={Calendar} label="Calendario"          active={activeTab === 'calendar'} onClick={() => setActiveTab('calendar')} />
-              <NavItem icon={Clock}    label="Prenotazioni Pendenti" active={activeTab === 'pending'}  badge={stats?.pending} onClick={() => setActiveTab('pending')} />
+              <NavItem
+                icon={Clock}
+                label="Prenotazioni Pendenti"
+                active={activeTab === 'pending'}
+                badge={stats?.pending}
+                notifyHighlight
+                onClick={() => setActiveTab('pending')}
+              />
               <NavItem icon={Archive}  label="Archivio"             active={activeTab === 'archive'}  onClick={() => setActiveTab('archive')} />
               <NavItem icon={UtensilsCrossed} label="Menu" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
               <NavItem
