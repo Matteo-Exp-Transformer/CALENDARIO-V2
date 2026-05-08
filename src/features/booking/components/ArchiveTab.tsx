@@ -23,6 +23,7 @@ import {
   XCircle,
   Trash2,
   RotateCcw,
+  BookOpen,
 } from 'lucide-react'
 import { extractTimeFromISO } from '../utils/dateUtils'
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
@@ -38,6 +39,12 @@ const EVENT_TYPE_CONFIG: Record<string, { icon: React.ElementType }> = {
   aperitivo: { icon: Wine },
   evento: { icon: PartyPopper },
   laurea: { icon: GraduationCap },
+}
+
+/** Digest: solo booking_type con icona dedicata; tavolo → come prima (event_type / posate). */
+const BOOKING_TYPE_DIGEST_ICON: Record<string, React.ElementType> = {
+  menu_prezzo_fisso: BookOpen,
+  rinfresco_laurea: GraduationCap,
 }
 
 const STATUS_LABELS: Record<string, { label: string; bgColor: string; textColor: string }> = {
@@ -105,6 +112,8 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
     ? EVENT_TYPE_CONFIG[booking.event_type] 
     : null
   const EventIcon = eventConfig?.icon || UtensilsCrossed
+  const DigestIcon =
+    (booking.booking_type && BOOKING_TYPE_DIGEST_ICON[booking.booking_type]) || EventIcon
   const statusConfig = STATUS_LABELS[booking.status] || STATUS_LABELS.pending
 
   const displayDate = booking.confirmed_start || booking.desired_date
@@ -167,7 +176,7 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
                 <div className="flex w-full min-w-0 flex-col gap-3">
                   <div className="flex min-w-0 w-full items-start gap-4 pr-[7.25rem]">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-orange-200/90 bg-white shadow-md">
-                      <EventIcon className="h-4 w-4 text-warm-orange" />
+                      <DigestIcon className="h-4 w-4 text-warm-orange" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1 text-left">
                       <div className="grid grid-cols-1 gap-x-6 gap-y-3 min-[659px]:grid-cols-2">
@@ -199,20 +208,24 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
                         </div>
 
                         <div className="min-w-0 space-y-3">
-                          <div className="flex min-w-0 items-center gap-2">
-                            <Mail className="h-4 w-4 shrink-0 text-warm-orange" />
-                            <span className="min-w-0 break-words text-sm text-gray-600">{booking.client_email}</span>
-                          </div>
                           {booking.client_phone && (
                             <div className="flex items-center gap-2">
                               <Phone className="h-4 w-4 shrink-0 text-warm-orange" />
-                              <span className="text-sm text-gray-600">{booking.client_phone}</span>
+                              <span className="min-w-0 break-words text-base font-semibold text-warm-wood-dark">
+                                {booking.client_phone}
+                              </span>
                             </div>
                           )}
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 shrink-0 text-warm-orange" />
+                            <span className="min-w-0 break-words text-base font-semibold text-warm-wood-dark">
+                              {booking.client_email}
+                            </span>
+                          </div>
                           {booking.special_requests && (
-                            <div className="flex items-start gap-2">
+                            <div className="flex min-w-0 items-start gap-2">
                               <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" />
-                              <span className="line-clamp-2 text-sm italic text-gray-600">
+                              <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 text-sm italic text-gray-700">
                                 {booking.special_requests}
                               </span>
                             </div>

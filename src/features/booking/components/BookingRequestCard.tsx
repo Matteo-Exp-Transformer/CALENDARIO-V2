@@ -19,6 +19,7 @@ import {
   PartyPopper,
   GraduationCap,
   CalendarClock,
+  BookOpen,
 } from 'lucide-react'
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
@@ -51,6 +52,12 @@ const EVENT_TYPE_CONFIG: Record<string, { icon: typeof UtensilsCrossed }> = {
   aperitivo: { icon: Wine },
   evento: { icon: PartyPopper },
   laurea: { icon: GraduationCap },
+}
+
+/** menu_prezzo_fisso → libro aperto; tavolo → icona da event_type (come prima). */
+const BOOKING_TYPE_DIGEST_ICON: Record<string, React.ElementType> = {
+  menu_prezzo_fisso: BookOpen,
+  rinfresco_laurea: GraduationCap,
 }
 
 /** Spazio dopo «:» (EN SPACE ≈ metà di EM) */
@@ -97,6 +104,8 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
   const eventConfig =
     booking.event_type && EVENT_TYPE_CONFIG[booking.event_type] ? EVENT_TYPE_CONFIG[booking.event_type] : null
   const EventIcon = eventConfig?.icon ?? UtensilsCrossed
+  const DigestIcon =
+    (booking.booking_type && BOOKING_TYPE_DIGEST_ICON[booking.booking_type]) ?? EventIcon
 
   const showDigestStrip = Boolean(eventTypeLabel)
 
@@ -154,7 +163,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                   {/* Riserva spazio in alto a destra così le prime righe non si sovrappongono al badge */}
                   <div className="flex min-w-0 w-full items-start gap-4 pr-[7.25rem]">
                     <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-orange-200/90 bg-white shadow-md">
-                      <EventIcon className="h-4 w-4 text-warm-orange" />
+                      <DigestIcon className="h-4 w-4 text-warm-orange" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1 text-left">
                       <div className="grid grid-cols-1 gap-x-6 gap-y-3 min-[659px]:grid-cols-2">
@@ -188,23 +197,27 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                           </div>
                         </div>
 
-                        <div className="min-w-0 space-y-3">
-                          <div className="flex min-w-0 items-center gap-2">
-                            <Mail className="h-4 w-4 flex-shrink-0 text-warm-orange" />
-                            <span className="min-w-0 break-words text-sm text-gray-600">{booking.client_email}</span>
-                          </div>
-
+                        <div
+                          className={cn(
+                            'min-w-0 space-y-3',
+                            'max-[599px]:-ml-12 max-[599px]:w-[calc(100%+3rem)]',
+                          )}
+                        >
                           {booking.client_phone && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex min-w-0 items-center gap-2">
                               <Phone className="h-4 w-4 flex-shrink-0 text-warm-orange" />
-                              <span className="text-sm text-gray-600">{booking.client_phone}</span>
+                              <span className="min-w-0 text-sm font-medium text-gray-700">{booking.client_phone}</span>
                             </div>
                           )}
+                          <div className="flex min-w-0 items-center gap-2">
+                            <Mail className="h-4 w-4 flex-shrink-0 text-warm-orange" />
+                            <span className="min-w-0 break-words text-sm font-medium text-gray-700">{booking.client_email}</span>
+                          </div>
 
                           {booking.special_requests && (
-                            <div className="flex items-start gap-2">
+                            <div className="flex min-w-0 items-start gap-2">
                               <MessageSquare className="mt-0.5 h-4 w-4 flex-shrink-0 text-warm-orange" />
-                              <span className="line-clamp-2 text-sm italic text-gray-600">
+                              <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 text-sm italic text-gray-700">
                                 {booking.special_requests}
                               </span>
                             </div>
@@ -230,7 +243,6 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                         className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange"
                         aria-hidden
                       />
-                      {/* basis-0 + min-w-0: il flex misura tutta la larghezza utile così il testo non va a capo “a metà card” */}
                       <div className="min-w-0 flex-1 basis-0 text-sm leading-normal break-normal text-gray-600">
                         <span className="font-medium text-gray-500">
                           Ricevuta il :{AFTER_COLON}
