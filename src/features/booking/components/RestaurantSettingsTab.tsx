@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Store, Loader2, Plus, Edit3, Save, X } from 'lucide-react'
+import { Store, Loader2, Plus, Edit, Trash2, Save, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -8,8 +8,8 @@ import { TimePicker24h } from '@/components/ui/TimePicker24h'
 import { useTenantContext } from '@/contexts/TenantContext'
 import type { BusinessHours } from '@/lib/businessHours'
 import { getDefaultBusinessHours } from '@/lib/businessHours'
-import { stripDirectionalFormattingChars } from '@/lib/utils'
-import { ADMIN_WARM_BORDER, ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
+import { cn, stripDirectionalFormattingChars } from '@/lib/utils'
+import { ADMIN_WARM_BORDER } from '@/lib/adminWarmGradientSurface'
 import { BusinessHoursEditor } from './BusinessHoursEditor'
 import { toast } from 'react-toastify'
 import {
@@ -395,6 +395,23 @@ export const RestaurantSettingsTab: React.FC = () => {
     setEditingPlacementAreaDraft('')
   }
 
+  const handleRemovePlacementArea = (index: number) => {
+    if (placementAreas.length <= 1) {
+      toast.warn("Serve almeno un'area di posizionamento")
+      return
+    }
+    markDirty()
+    const wasEditingThis = editingPlacementAreaIndex === index
+    setPlacementAreas((prev) => prev.filter((_, i) => i !== index))
+    setEditingPlacementAreaIndex((current) => {
+      if (current === null) return null
+      if (current === index) return null
+      if (current > index) return current - 1
+      return current
+    })
+    if (wasEditingThis) setEditingPlacementAreaDraft('')
+  }
+
   if (loadError) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-800">
@@ -428,13 +445,18 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const sectionSurfaceClass =
     'w-full max-w-2xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
-  const sectionSurfaceStyle: React.CSSProperties = ADMIN_WARM_GRADIENT_SURFACE
-  /** Circa 1/3 della larghezza massima della card sezione (~max-w-2xl / 3) */
-  const anagraficaFieldWrapClass = 'mx-auto w-full min-w-0 max-w-[14rem] space-y-2'
+  const sectionSurfaceStyle: React.CSSProperties = {
+    backgroundColor: '#ffffff',
+    borderColor: ADMIN_WARM_BORDER,
+  }
+  /** Larghezza campi anagrafica: base 14rem, due incrementi +1/3 → ×(4/3)² = ×16/9 */
+  const anagraficaFieldWrapClass =
+    'mx-auto w-full min-w-0 max-w-[calc(14rem_*_16_/_9)] space-y-2'
   /** Spazio verticale tra i blocchi (inline: non dipende dalle utilities Tailwind arbitrary). */
   const anagraficaFieldStackStyle: React.CSSProperties = { marginTop: '1.75rem' }
+  /** text-xl (1.25rem) ridotto di 1/6 → calc(1.25rem * 5/6) */
   const anagraficaInputClassName =
-    'block w-full min-h-[3.667rem] rounded-[1.25rem] border-2 border-slate-200 bg-white px-4 py-2.5 text-center text-xl font-medium leading-snug text-slate-900 shadow-sm outline-none placeholder:text-slate-400 placeholder:text-xl transition-colors duration-150 focus:border-primary-400 focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-white disabled:text-slate-500 disabled:opacity-80'
+    'block w-full min-h-[3.667rem] rounded-[1.25rem] border-2 border-slate-200 bg-white px-4 py-2.5 text-center text-[calc(1.25rem_*_5_/_6)] font-medium leading-snug text-slate-900 shadow-sm outline-none placeholder:text-slate-400 placeholder:text-[calc(1.25rem_*_5_/_6)] transition-colors duration-150 focus:border-primary-400 focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-white disabled:text-slate-500 disabled:opacity-80'
 
   const bookingBgBase = import.meta.env.BASE_URL
 
@@ -782,6 +804,105 @@ export const RestaurantSettingsTab: React.FC = () => {
         </div>
       </section>
 
+      <section className={bookingBgSectionClass} style={sectionSurfaceStyle} aria-labelledby="placement-areas-heading">
+        <h3 id="placement-areas-heading" className="text-lg font-semibold text-slate-800">
+          Aree di posizionamento
+        </h3>
+        <p className="text-sm text-slate-600">
+          Inserisci o modifica aree della tua attività per indicare il posizionamento delle prenotazioni.
+        </p>
+        <div className="mx-auto flex w-full max-w-[280px] flex-col items-stretch">
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={handleAddPlacementArea}
+            disabled={upsert.isPending}
+            className={cn(
+              'h-16 w-full shrink-0 gap-2 rounded-lg border-2 border-[#2563eb] bg-[#3b82f6] px-3 py-0 text-sm font-medium text-white shadow-none transition-colors hover:bg-[#60a5fa] hover:border-[#3b82f6] hover:shadow-none focus:ring-[#93c5fd]'
+            )}
+          >
+            <Plus className="h-4 w-4 shrink-0" />
+            Aggiungi nuova area
+          </Button>
+        </div>
+
+        <div className="flex w-full flex-col items-center gap-[28px] bg-white">
+          {placementAreas.map((area, index) => {
+            const isEditing = editingPlacementAreaIndex === index
+            return (
+              <React.Fragment key={`${area}-${index}`}>
+                {isEditing ? (
+                  <div className="flex w-full max-w-md flex-col items-center gap-3">
+                    <Input
+                      value={editingPlacementAreaDraft}
+                      onChange={(event) =>
+                        setEditingPlacementAreaDraft(
+                          stripDirectionalFormattingChars(event.target.value).slice(
+                            0,
+                            PLACEMENT_AREA_MAX_LENGTH
+                          )
+                        )
+                      }
+                      maxLength={PLACEMENT_AREA_MAX_LENGTH}
+                      className="w-full rounded-xl border border-slate-300 text-center focus-visible:outline-none focus:ring-1 focus:ring-[#93c5fd] focus:border-[#3b82f6]"
+                      placeholder="Nome area"
+                      autoFocus
+                    />
+                    <div className="flex w-full flex-wrap items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleSavePlacementArea(index)}
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30"
+                        style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
+                      >
+                        <Save className="h-4 w-4" />
+                        Salva
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelEditPlacementArea}
+                        className="flex items-center gap-2 px-4 py-2 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
+                        style={{ borderColor: '#dc2626', color: '#dc2626' }}
+                      >
+                        <X className="h-4 w-4" />
+                        Annulla
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="menu-prices-item-row w-full max-w-md">
+                    <div className="menu-prices-item-text overflow-hidden">
+                      <h4 className="font-semibold text-gray-900">{area}</h4>
+                    </div>
+                    <div className="menu-prices-item-actions shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleStartEditPlacementArea(index)}
+                        disabled={upsert.isPending}
+                        className="menu-prices-icon-btn menu-prices-icon-btn--edit"
+                        aria-label={`Modifica ${area}`}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePlacementArea(index)}
+                        disabled={upsert.isPending || placementAreas.length <= 1}
+                        className="menu-prices-icon-btn menu-prices-icon-btn--delete"
+                        aria-label={`Elimina ${area}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </React.Fragment>
+            )
+          })}
+        </div>
+      </section>
+
       <section className={bookingBgSectionClass} style={sectionSurfaceStyle}>
         <h3 className="text-lg font-semibold text-slate-800">Sfondo pagina Prenota</h3>
         <p className="text-sm text-slate-600">
@@ -899,109 +1020,11 @@ export const RestaurantSettingsTab: React.FC = () => {
             )}
           </div>
         )}
-
-        <div className="w-full pt-4">
-          <div
-            className="grid w-full min-w-0 grid-cols-1 items-center gap-y-3 rounded-xl border px-4 py-3 shadow-sm md:px-5 md:py-3 min-h-[88px]"
-            style={{ borderColor: ADMIN_WARM_BORDER }}
-          >
-            <h4 className="text-center text-base font-semibold text-slate-800">Aree di posizionamento</h4>
-            <p className="mx-auto max-w-2xl text-center text-xs text-slate-600">
-              Inserisci o modifica aree della tua attività per indicare il posizionamento delle prenotazioni
-            </p>
-            <div className="mx-auto flex w-full max-w-[280px] flex-col items-stretch">
-              <Button
-                variant="secondary"
-                size="sm"
-                type="button"
-                onClick={handleAddPlacementArea}
-                disabled={upsert.isPending}
-                className="h-16 w-full shrink-0 gap-2 px-3 py-0 text-sm"
-                style={{ backgroundColor: '#60a5fa', borderColor: '#3b82f6', color: '#000000' }}
-              >
-                <Plus className="h-4 w-4 shrink-0" />
-                Aggiungi nuova area
-              </Button>
-            </div>
-          </div>
-
-          <div className="menu-prices-category-list-wrap mt-4 flex flex-col items-center gap-[28px]">
-            {placementAreas.map((area, index) => {
-              const isEditing = editingPlacementAreaIndex === index
-              return (
-                <div key={`${area}-${index}`} className="menu-prices-category-card bg-white rounded-xl shadow-md overflow-hidden w-full max-w-md">
-                  <div className="flex flex-col items-center p-6 text-center">
-                    <div className="flex w-full max-w-full flex-col items-center gap-[12px]">
-                      <div className="menu-prices-item-row w-full flex items-center justify-between gap-3">
-                        {isEditing ? (
-                          <Input
-                            value={editingPlacementAreaDraft}
-                            onChange={(event) =>
-                              setEditingPlacementAreaDraft(
-                                stripDirectionalFormattingChars(event.target.value).slice(
-                                  0,
-                                  PLACEMENT_AREA_MAX_LENGTH
-                                )
-                              )
-                            }
-                            maxLength={PLACEMENT_AREA_MAX_LENGTH}
-                            className="w-full rounded-xl border border-slate-300 text-center focus-visible:outline-none focus:ring-1 focus:ring-[#93c5fd] focus:border-[#3b82f6]"
-                            placeholder="Nome area"
-                            autoFocus
-                          />
-                        ) : (
-                          <span className="text-base font-semibold text-slate-800">{area}</span>
-                        )}
-                      </div>
-
-                      <div className="menu-prices-item-row w-full flex items-center justify-center gap-2">
-                        {isEditing ? (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => handleSavePlacementArea(index)}
-                              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30"
-                              style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
-                            >
-                              <Save className="h-4 w-4" />
-                              Salva
-                            </button>
-                            <button
-                              type="button"
-                              onClick={handleCancelEditPlacementArea}
-                              className="flex items-center gap-2 px-4 py-2 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
-                              style={{ borderColor: '#dc2626', color: '#dc2626' }}
-                            >
-                              <X className="h-4 w-4" />
-                              Annulla
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleStartEditPlacementArea(index)}
-                            className="flex items-center gap-2 rounded-lg border-2 border-[#2563eb] px-3 py-1.5 text-xs font-medium bg-[#3b82f6] text-white hover:bg-[#60a5fa] hover:border-[#3b82f6] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#93c5fd]"
-                            style={{ color: '#ffffff' }}
-                          >
-                            <Edit3 className="h-4 w-4" />
-                            Modifica
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
       </section>
 
       <div
-        className="restaurant-settings-save-footer flex min-h-[4.75rem] w-full max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7"
-        style={{
-          ...ADMIN_WARM_GRADIENT_SURFACE,
-        }}
+        className="restaurant-settings-save-footer flex min-h-[4.75rem] w-full max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border bg-white px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7"
+        style={{ borderColor: ADMIN_WARM_BORDER }}
       >
         <Button
           type="button"

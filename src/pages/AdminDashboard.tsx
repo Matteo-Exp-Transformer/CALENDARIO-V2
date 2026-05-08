@@ -246,10 +246,9 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Tab content */}
-        <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
         <div
           className={cn(
-            'admin-warm-surface rounded-xl border shadow-sm p-5 md:p-7',
+            'mx-auto w-full max-w-7xl px-4 md:px-6 py-5 md:py-7',
             activeTab !== 'menu' && 'min-h-[500px]'
           )}
         >
@@ -258,7 +257,6 @@ export const AdminDashboard: React.FC = () => {
           {activeTab === 'archive'  && <ArchiveTab onViewInCalendar={handleViewInCalendar} />}
           {activeTab === 'menu' && <MenuPricesTab />}
           {activeTab === 'settings-restaurant' && <RestaurantSettingsTab />}
-        </div>
         </div>
       </main>
 

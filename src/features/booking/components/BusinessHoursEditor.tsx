@@ -109,8 +109,8 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
             className="w-full space-y-3 rounded-xl border bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]"
             style={{ borderColor: ADMIN_WARM_BORDER }}
           >
-            <div className="flex w-full min-w-0 flex-row flex-wrap items-center justify-between gap-x-12 gap-y-3 px-5 sm:px-10 md:px-14 lg:px-20 xl:px-24">
-              <strong className="shrink-0 text-sm font-extrabold !font-extrabold text-slate-900 tracking-tight">
+            <div className="flex w-full min-w-0 flex-row flex-wrap items-start justify-between gap-x-4 gap-y-2">
+              <strong className="min-w-0 flex-1 text-left text-lg font-extrabold text-slate-900 tracking-tight md:text-xl">
                 {DAY_LABEL[day]}
               </strong>
               <label className="flex shrink-0 cursor-pointer select-none items-center gap-2 text-sm text-slate-600">
@@ -168,14 +168,16 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
                   </Button>
                 </div>
               ))}
-              <div className="flex w-full min-w-0 justify-end self-stretch">
+              <div className="flex w-full min-w-0 justify-center self-stretch">
                 <Button
                   type="button"
                   variant="primary"
                   size="sm"
                   disabled={disabled || closed}
                   onClick={() => addSlot(day)}
-                  className="gap-1.5"
+                  className={cn(
+                    'gap-2 rounded-lg border-2 border-[#2563eb] bg-[#3b82f6] px-3 py-1.5 text-xs font-medium text-white shadow-none transition-colors hover:bg-[#60a5fa] hover:border-[#3b82f6] hover:shadow-none focus:ring-[#93c5fd]'
+                  )}
                 >
                   <Plus className="w-4 h-4" />
                   Aggiungi fascia
