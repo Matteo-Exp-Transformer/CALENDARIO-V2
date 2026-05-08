@@ -258,7 +258,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                 setAddCrossBurst((v) => v + 1)
               }
             }}
-            className="booking-cross-shine-btn group relative min-w-[11.5rem] overflow-hidden flex items-center justify-center rounded-full border-2 border-green-700 bg-green-600 px-8 py-2 text-sm font-bold text-white shadow-xl hover:bg-green-700 hover:shadow-[0_12px_28px_rgba(34,197,94,0.35)] hover:-translate-y-0.5 active:scale-[0.995] transition-all duration-300 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            className="booking-cross-shine-btn group relative min-h-[50px] min-w-[15.33rem] overflow-hidden flex items-center justify-center rounded-full border-2 border-green-700 bg-green-600 px-10 py-2.5 text-sm font-bold text-white shadow-xl hover:bg-green-700 hover:shadow-[0_12px_28px_rgba(34,197,94,0.35)] hover:-translate-y-0.5 active:scale-[0.995] transition-all duration-300 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
           >
             <div className="booking-cross-shine-mount pointer-events-none absolute inset-0 z-[7] overflow-hidden rounded-[inherit]" aria-hidden>
               <div className="booking-cross-shine-beam booking-cross-shine-beam-desktop" />
