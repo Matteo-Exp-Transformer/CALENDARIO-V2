@@ -31,6 +31,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
   const [guestCount, setGuestCount] = useState<number>(0)
   const [otherNotes, setOtherNotes] = useState<string>('')
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [addCrossBurst, setAddCrossBurst] = useState(0)
 
   const handleAdd = () => {
     if (guestCount < 1) {
@@ -243,8 +244,25 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
           <button
             type="button"
             onClick={handleAdd}
-            className="group relative overflow-hidden flex items-center justify-center rounded-full border-2 border-green-700 bg-green-600 px-6 py-2 text-sm font-bold text-white shadow-xl hover:bg-green-700 hover:shadow-[0_12px_28px_rgba(34,197,94,0.35)] hover:-translate-y-0.5 active:scale-[0.995] transition-all duration-300 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            onPointerDown={(e) => {
+              if (
+                typeof window !== 'undefined' &&
+                (e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches)
+              ) {
+                setAddCrossBurst((v) => v + 1)
+              }
+            }}
+            className="booking-cross-shine-btn group relative overflow-hidden flex items-center justify-center rounded-full border-2 border-green-700 bg-green-600 px-6 py-2 text-sm font-bold text-white shadow-xl hover:bg-green-700 hover:shadow-[0_12px_28px_rgba(34,197,94,0.35)] hover:-translate-y-0.5 active:scale-[0.995] transition-all duration-300 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
           >
+            <div className="booking-cross-shine-mount pointer-events-none absolute inset-0 z-[7] overflow-hidden rounded-[inherit]" aria-hidden>
+              <div className="booking-cross-shine-beam booking-cross-shine-beam-desktop" />
+              {addCrossBurst > 0 ? (
+                <div
+                  key={addCrossBurst}
+                  className="booking-cross-shine-beam booking-cross-shine-touch-burst"
+                />
+              ) : null}
+            </div>
             <div className="absolute inset-0 z-0 pointer-events-none bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <span className="relative z-10 inline-flex items-center justify-center gap-2">
               <Plus className="h-4 w-4" />

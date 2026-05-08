@@ -126,6 +126,55 @@ body {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* Fascia luminosa diagonale (form pubblico / pulsanti verdi) — hover desktop + burst al tap senza hover */
+@keyframes booking-cross-shine {
+  0% {
+    transform: translate3d(-135%, 0, 0) skewX(-22deg);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(230%, 0, 0) skewX(-22deg);
+    opacity: 0;
+  }
+}
+
+@media (hover: hover) {
+  .booking-cross-shine-btn:hover:not(:disabled) > .booking-cross-shine-mount > .booking-cross-shine-beam-desktop {
+    animation: booking-cross-shine 0.72s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+}
+
+.booking-cross-shine-touch-burst.booking-cross-shine-beam {
+  animation: booking-cross-shine 0.72s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.booking-cross-shine-beam-desktop {
+  opacity: 0;
+}
+
+.booking-cross-shine-beam {
+  position: absolute;
+  top: -25%;
+  bottom: -25%;
+  left: -40%;
+  width: 52%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 32%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(255, 255, 255, 0.08) 68%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 12px rgba(255, 255, 255, 0.45),
+    0 0 28px rgba(187, 247, 208, 0.35);
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -368,6 +417,38 @@ body {
 .booking-calendar-fc .fc .fc-prev-button .fc-icon::before,
 .booking-calendar-fc .fc .fc-next-button .fc-icon::before {
   color: #ffffff !important;
+}
+
+/* Booking calendar — viewport stretto: toolbar FullCalendar + nav compatte */
+@media (max-width: 537px) {
+  .booking-calendar-fc .fc .fc-toolbar-title {
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+  }
+
+  .booking-calendar-fc .fc .fc-header-toolbar.fc-toolbar {
+    margin-top: 0.125rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+
+  .booking-calendar-fc .fc .fc-toolbar.fc-header-toolbar .fc-button {
+    padding: 0.125rem 0.3rem !important;
+    font-size: 0.65rem !important;
+    min-height: 1.875rem !important;
+    line-height: 1 !important;
+  }
+
+  .booking-calendar-fc .fc .fc-prev-button,
+  .booking-calendar-fc .fc .fc-next-button {
+    width: 1.875rem !important;
+    min-width: 1.875rem !important;
+    height: 1.875rem !important;
+  }
+
+  .booking-calendar-fc .fc .fc-icon {
+    font-size: 0.8em !important;
+  }
 }
 
 /* BookingRequestCard — shell: lift + ombra (niente filter sul wrapper: altrimenti attenua i colori dei pulsanti dentro) */

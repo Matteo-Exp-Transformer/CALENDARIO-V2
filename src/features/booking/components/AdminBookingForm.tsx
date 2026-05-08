@@ -32,26 +32,6 @@ const ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME =
   '!border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 rounded-[12px] focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
 const DEFAULT_PLACEMENT_AREAS = ['Sala A', 'Sala B', 'Deorr'] as const
 
-/** Campo racchiuso in card con fascia titolo attaccata in alto. */
-function AdminFormFieldCard({
-  title,
-  children,
-}: {
-  title: React.ReactNode
-  children: React.ReactNode
-}) {
-  return (
-    <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 bg-linear-to-r from-[rgba(45,212,191,0.18)] via-teal-50/70 to-white px-4 min-[470px]:px-8 md:px-11 py-[13px] box-border">
-        <div className="text-sm font-semibold tracking-wide text-warm-wood">{title}</div>
-      </div>
-      <div className="space-y-2 bg-white px-4 min-[470px]:px-8 md:px-11 pt-5 pb-[22px] box-border">
-        {children}
-      </div>
-    </div>
-  )
-}
-
 export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) => {
   const [formData, setFormData] = useState<BookingRequestInput>({
     client_name: '',
@@ -75,6 +55,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [selectedPreset, setSelectedPreset] = useState<PresetMenuType>(null)
   const [showCapacityWarning, setShowCapacityWarning] = useState(false)
+  const [touchCrossBurst, setTouchCrossBurst] = useState(0)
 
   const { mutate, isPending } = useCreateAdminBooking()
   const queryClient = useQueryClient()
@@ -443,6 +424,58 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
               <p className="text-sm text-red-500">{errors.client_phone}</p>
             )}
           </div>
+
+          {/* Numero ospiti — stesso gruppo dei dati cliente, sotto il telefono */}
+          <div className="space-y-3 pt-2">
+            <Input
+              id="num_guests"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="off"
+              value={formData.num_guests > 0 ? formData.num_guests.toString() : ''}
+              onChange={handleNumGuestsChange}
+              onKeyPress={handleNumGuestsKeyPress}
+              required
+              aria-label="Numero ospiti (obbligatorio)"
+              placeholder="Numero Ospiti * (es: 15)"
+              className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} bg-white/85 backdrop-blur-[1px] py-[10px] px-4 ${errors.num_guests ? 'border-red-500!' : ''}`}
+            />
+            {errors.num_guests && (
+              <p className="text-sm text-red-500">{errors.num_guests}</p>
+            )}
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <label
+              htmlFor="placement"
+              className="inline-flex items-center gap-1.5 text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
+            >
+              <MapPin className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+              Posizionamento
+            </label>
+            <Select
+              value={formData.placement || 'none'}
+              onValueChange={(value) =>
+                setFormData({ ...formData, placement: value === 'none' ? '' : value })
+              }
+            >
+              <SelectTrigger
+                id="placement"
+                className="w-full h-14 rounded-full border border-black/20 shadow-sm transition-all px-4 text-base font-bold bg-white/85 backdrop-blur-[1px] text-black focus:border-warm-wood focus:outline-none"
+              >
+                <SelectValue placeholder="Seleziona sala (opzionale)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nessuna preferenza</SelectItem>
+                {normalizedPlacementAreas.map((area) => (
+                  <SelectItem key={area} value={area}>
+                    {area}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           </div>
         </div>
 
@@ -453,156 +486,118 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
             Dettagli Prenotazione
           </h2>
 
-          <div className="bg-white flex flex-col gap-[14px] box-border">
-            <AdminFormFieldCard title="Tipologia di Prenotazione *">
-              <label htmlFor="booking_type" className="sr-only">
-                Tipologia di Prenotazione
-              </label>
-              <select
-                id="booking_type"
-                value={formData.booking_type}
-                onChange={(e) => {
-                  const booking_type = e.target.value as BookingType
-                  if (booking_type === 'tavolo') {
-                    setSelectedPreset(null)
-                    setFormData({
-                      ...formData,
-                      booking_type,
-                      preset_menu: null,
-                      menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
-                      menu_total_per_person: undefined,
-                      menu_total_booking: undefined,
-                      dietary_restrictions: []
-                    })
-                  } else {
-                    setFormData({ ...formData, booking_type })
-                  }
-                  setErrors({ ...errors, booking_type: '' })
-                }}
-                required
-                aria-required="true"
-                className={cn(
-                  'block w-full cursor-pointer border border-slate-200 bg-white/85 backdrop-blur-[1px] px-4 py-[10px] rounded-xl shadow-sm transition-colors duration-150',
-                  'text-base font-medium text-slate-900',
-                  'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-400',
-                  'min-h-[48px] box-border',
-                  errors.booking_type && 'border-red-500! focus:ring-red-500!'
-                )}
-              >
-                <option value="tavolo">Prenota un Tavolo</option>
-                <option value="rinfresco_laurea">Rinfresco di Laurea</option>
-                <option value="menu_prezzo_fisso">Menu a prezzo fisso</option>
-              </select>
-              {errors.booking_type && (
-                <p className="text-sm text-red-500">{errors.booking_type}</p>
-              )}
-            </AdminFormFieldCard>
-
-            {/* Data */}
-            <AdminFormFieldCard title="Data">
-              <Input
-                id="desired_date"
-                type="date"
-                value={formData.desired_date}
-                onChange={(e) => {
-                  setFormData({ ...formData, desired_date: e.target.value })
-                  setErrors({ ...errors, desired_date: '' })
-                }}
-                required
-                className={cn('bg-white/85 backdrop-blur-[1px] py-[10px] px-4 rounded-xl font-medium', errors.desired_date && 'border-red-500!')}
-              />
-              {errors.desired_date && (
-                <p className="text-sm text-red-500">{errors.desired_date}</p>
-              )}
-            </AdminFormFieldCard>
-
-            {/* Ora (24h) */}
-            <AdminFormFieldCard title="Ora">
-              <TimePicker24h
-                id="desired_time"
-                value={formData.desired_time || ''}
-                onChange={(v) => {
-                  setFormData({ ...formData, desired_time: v })
-                  setErrors({ ...errors, desired_time: '' })
-                }}
-                required
-                hasError={!!errors.desired_time}
-                className="bg-white/85 backdrop-blur-[1px] py-[10px] px-4 rounded-xl font-medium"
-              />
-              {errors.desired_time && (
-                <p className="text-sm text-red-500">{errors.desired_time}</p>
-              )}
-            </AdminFormFieldCard>
-
-            {/* Numero ospiti */}
-            <AdminFormFieldCard title="Numero ospiti">
-              <Input
-                id="num_guests"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                autoComplete="off"
-                value={formData.num_guests > 0 ? formData.num_guests.toString() : ''}
-                onChange={handleNumGuestsChange}
-                onKeyPress={handleNumGuestsKeyPress}
-                required
-                placeholder="Es. 15"
-                className={cn('bg-white/85 backdrop-blur-[1px] py-[10px] px-4 rounded-xl font-medium', errors.num_guests && 'border-red-500!')}
-              />
-              {errors.num_guests && (
-                <p className="text-sm text-red-500">{errors.num_guests}</p>
-              )}
-            </AdminFormFieldCard>
-
-            {formData.booking_type === 'tavolo' && (
-              <AdminFormFieldCard title="Note">
-                <Input
-                  id="special_requests_tavolo"
-                  type="text"
-                  value={formData.special_requests || ''}
-                  onChange={(e) => {
-                    setFormData({ ...formData, special_requests: e.target.value })
-                  }}
-                  placeholder="Inserisci note (opzionale)"
-                  className="bg-white/85 backdrop-blur-[1px] py-[10px] px-4 rounded-xl font-medium"
-                />
-              </AdminFormFieldCard>
-            )}
-
-            {/* Posizionamento */}
-            <AdminFormFieldCard
-              title={
-                <span className="inline-flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
-                  Posizionamento
-                </span>
-              }
+          <div className="space-y-3">
+            <label
+              htmlFor="booking_type"
+              className="inline-block text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
             >
-              <Select
-                value={formData.placement || 'none'}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, placement: value === 'none' ? '' : value })
+              Tipologia di Prenotazione *
+            </label>
+            <select
+              id="booking_type"
+              value={formData.booking_type}
+              onChange={(e) => {
+                const booking_type = e.target.value as BookingType
+                if (booking_type === 'tavolo') {
+                  setSelectedPreset(null)
+                  setFormData({
+                    ...formData,
+                    booking_type,
+                    preset_menu: null,
+                    menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
+                    menu_total_per_person: undefined,
+                    menu_total_booking: undefined,
+                    dietary_restrictions: []
+                  })
+                } else {
+                  setFormData({ ...formData, booking_type })
                 }
-              >
-                <SelectTrigger
-                  id="placement"
-                  className="w-full bg-white/85 backdrop-blur-[1px] py-[10px] px-4 rounded-xl font-medium border border-gray-200"
-                >
-                  <SelectValue placeholder="Seleziona sala (opzionale)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nessuna preferenza</SelectItem>
-                  {normalizedPlacementAreas.map((area) => (
-                    <SelectItem key={area} value={area}>
-                      {area}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </AdminFormFieldCard>
+                setErrors({ ...errors, booking_type: '' })
+              }}
+              required
+              aria-required="true"
+              className={cn(
+                'block w-full h-14 rounded-full border border-black/20 shadow-sm transition-all px-4 text-base font-bold bg-white/85 backdrop-blur-[1px] text-black focus:border-warm-wood focus:outline-none',
+                errors.booking_type && 'border-red-500!'
+              )}
+            >
+              <option value="tavolo">Prenota un tavolo</option>
+              <option value="rinfresco_laurea">Rinfresco di Laurea</option>
+              <option value="menu_prezzo_fisso">Menu a prezzo fisso</option>
+            </select>
+            {errors.booking_type && (
+              <p className="text-sm text-red-500">{errors.booking_type}</p>
+            )}
           </div>
 
+          <div className="space-y-3">
+            <label
+              htmlFor="desired_date"
+              className="inline-block text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
+            >
+              Data *
+            </label>
+            <Input
+              id="desired_date"
+              type="date"
+              value={formData.desired_date}
+              onChange={(e) => {
+                setFormData({ ...formData, desired_date: e.target.value })
+                setErrors({ ...errors, desired_date: '' })
+              }}
+              required
+              className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} bg-white/85 backdrop-blur-[1px] py-[10px] px-4 ${errors.desired_date ? 'border-red-500!' : ''}`}
+            />
+            {errors.desired_date && (
+              <p className="text-sm text-red-500">{errors.desired_date}</p>
+            )}
           </div>
+
+          <div className="space-y-3">
+            <label
+              htmlFor="desired_time"
+              className="inline-block text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
+            >
+              Ora *
+            </label>
+            <TimePicker24h
+              id="desired_time"
+              value={formData.desired_time || ''}
+              onChange={(v) => {
+                setFormData({ ...formData, desired_time: v })
+                setErrors({ ...errors, desired_time: '' })
+              }}
+              required
+              hasError={!!errors.desired_time}
+              className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} bg-white/85 backdrop-blur-[1px] py-[10px] px-4`}
+            />
+            {errors.desired_time && (
+              <p className="text-sm text-red-500">{errors.desired_time}</p>
+            )}
+          </div>
+
+          {formData.booking_type === 'tavolo' && (
+            <div className="space-y-3 pt-2">
+              <label
+                htmlFor="special_requests_tavolo"
+                className="inline-block text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
+              >
+                Note
+              </label>
+              <Input
+                id="special_requests_tavolo"
+                type="text"
+                value={formData.special_requests || ''}
+                onChange={(e) => {
+                  setFormData({ ...formData, special_requests: e.target.value })
+                }}
+                placeholder="Inserisci note"
+                className={`${ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME} bg-white/85 backdrop-blur-[1px] py-[10px] px-4`}
+              />
+            </div>
+          )}
+
+        </div>
         </div>
       </div>
 
@@ -678,23 +673,39 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
         </div>
       )}
 
-      {/* Nota campi obbligatori */}
-      <div className="mt-4 flex w-full items-center justify-start gap-4 rounded-xl border px-4 py-3 shadow-sm md:px-5 admin-warm-surface box-border">
-        <p className="text-xs font-medium text-slate-800">* I campi contrassegnati sono obbligatori.</p>
-      </div>
-
-      {/* Submit Button - Responsive: full-width mobile, auto-width desktop */}
-      <div className="mt-8 flex w-full items-center justify-center rounded-xl border px-4 py-5 shadow-sm md:px-6 admin-warm-surface box-border">
+      {/* Submit + nota campi obbligatori */}
+      <div className="mt-8 flex w-full flex-col items-center gap-4 rounded-xl border px-4 py-5 shadow-sm md:px-6 admin-warm-surface box-border">
+        <p className="w-full text-center text-xs font-medium text-slate-800 md:text-left">
+          * I campi contrassegnati sono obbligatori.
+        </p>
         <button
           type="submit"
           disabled={isPending}
-          className="group relative overflow-hidden px-12 md:px-20 py-7 text-xl md:text-2xl uppercase tracking-wide font-bold text-white rounded-full bg-green-600 hover:bg-green-700 shadow-2xl hover:shadow-[0_20px_40px_rgba(34,197,94,0.4)] hover:-translate-y-1 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-2xl w-full md:w-auto max-w-md md:max-w-2xl"
+          className="booking-cross-shine-btn group relative overflow-hidden px-12 md:px-20 py-7 text-xl md:text-2xl uppercase tracking-wide font-bold text-white rounded-full bg-green-600 hover:bg-green-700 shadow-2xl hover:shadow-[0_20px_40px_rgba(34,197,94,0.4)] hover:-translate-y-1 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-2xl w-full md:w-auto max-w-md md:max-w-2xl"
+          onPointerDown={(e) => {
+            if (isPending) return
+            if (
+              typeof window !== 'undefined' &&
+              (e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches)
+            ) {
+              setTouchCrossBurst((v) => v + 1)
+            }
+          }}
         >
-          {/* Glow effect on hover */}
-          <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+          <div className="booking-cross-shine-mount pointer-events-none absolute inset-0 z-[7] overflow-hidden rounded-[inherit]" aria-hidden>
+            <div className="booking-cross-shine-beam booking-cross-shine-beam-desktop" />
+            {touchCrossBurst > 0 ? (
+              <div
+                key={touchCrossBurst}
+                className="booking-cross-shine-beam booking-cross-shine-touch-burst"
+              />
+            ) : null}
+          </div>
+          {/* Glow effect on hover (stesso pubblico BookingRequestForm) */}
+          <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-r from-transparent via-emerald-200/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
           {/* Content */}
-          <div className="relative flex items-center justify-center gap-3 whitespace-nowrap">
+          <div className="relative z-10 flex items-center justify-center gap-3 whitespace-nowrap">
             {isPending ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -708,9 +719,9 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
             )}
           </div>
 
-          {/* Animated border glow */}
-          <div className="absolute inset-0 rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-            <div className="absolute inset-[-2px] rounded-full bg-linear-to-r from-warm-wood via-warm-orange to-terracotta blur-sm"></div>
+          {/* Animated border glow — gradienti verdi come pagina prenota pubblica */}
+          <div className="absolute inset-0 z-0 pointer-events-none rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            <div className="absolute inset-[-2px] rounded-full bg-gradient-to-r from-emerald-500 via-lime-400 to-green-600 blur-sm"></div>
           </div>
         </button>
       </div>

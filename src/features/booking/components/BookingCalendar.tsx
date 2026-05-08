@@ -14,8 +14,6 @@ import {
 } from '../utils/bookingEventTransform'
 import { BookingDetailsModal } from './BookingDetailsModal'
 import { calculateDailyCapacity, getStartSlotForBooking } from '../utils/capacityCalculator'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
-
 import {
   extractDateFromISO,
   getAccurateStartTime,
@@ -28,6 +26,7 @@ import {
 } from '../utils/bookingTimeSlots'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
+import { cn } from '@/lib/utils'
 
 /** Sfondo sezione calendario: arancio chiarissimo → giallo chiarissimo, più tenue del top bar admin */
 const CALENDAR_SECTION_WARM_SURFACE: React.CSSProperties = {
@@ -479,95 +478,72 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     }
   }
 
-  const viewButtonClass = (view: typeof currentView) => {
-    const isActive = currentView === view
-    return `px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-      isActive
-        ? 'bg-warm-wood text-white shadow-md'
-        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-    }`
-  }
+  const viewButtonClass = (view: typeof currentView) =>
+    cn(
+      'shrink-0 rounded-lg border px-4 py-2 text-sm font-semibold shadow-sm transition-colors',
+      // Stesso intervallo della card toolbar / FC (~537): evita scroll + “fascia” solo tra 423 e 537 px
+      'max-[537px]:px-3 max-[537px]:py-1.5 max-[537px]:text-[13px] max-[537px]:leading-tight',
+      currentView === view
+        ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-white hover:border-[var(--color-primary-dark)] hover:bg-[var(--color-primary-dark)]'
+        : 'border-slate-200 bg-gray-100 text-gray-800 hover:bg-gray-200'
+    )
 
   return (
     <>
-      <div
-        className="space-y-6 rounded-xl border p-4 shadow-sm md:p-6"
-        style={CALENDAR_SECTION_WARM_SURFACE}
-      >
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-warm-beige">
-          {/* Header Responsive — stesso warm del top bar AdminDashboard */}
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4">
           <div
-            className="mb-6 flex flex-col items-center gap-3 rounded-xl border px-4 py-4 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4"
+            className="w-full rounded-xl border px-4 py-4 shadow-sm max-[537px]:px-3 max-[537px]:py-3 sm:px-5 sm:py-4"
             style={CALENDAR_SECTION_WARM_SURFACE}
           >
-            {/* Icona + Titolo */}
+            {/* Titolo a sinistra, icona + data a destra (stesso su ogni breakpoint) */}
             <div
-              className="relative flex w-full items-center py-3 sm:flex-1"
+              className="flex w-full items-center justify-between gap-3 py-3"
               style={{ minHeight: 'calc(48px * 6 / 5 * 6 / 5)' }}
             >
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-warm-wood to-warm-orange flex items-center justify-center shadow-md">
-                <Calendar className="h-7 w-7 text-white" />
-              </div>
-              <span className="ml-3 text-sm font-semibold text-warm-wood sm:text-base">
-                {currentDateLabel}
-              </span>
-              <div className="absolute left-1/2 -translate-x-1/2 text-center">
-                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-warm-wood">
+              <div className="min-w-0 flex-1 pr-2 text-left sm:pr-4">
+                <h2 className="break-words font-serif font-bold text-slate-800 max-[440px]:text-[1.5rem] max-[440px]:leading-tight min-[441px]:max-sm:text-[2rem] min-[441px]:max-sm:leading-tight sm:text-2xl sm:leading-snug md:text-3xl">
                   Calendario Prenotazioni
                 </h2>
               </div>
-              <div className="ml-auto md:hidden">
-                <Select value={currentView} onValueChange={handleViewChange}>
-                  <SelectTrigger
-                    className={[
-                      'w-[calc(70px*4/3*6/5)] min-w-0 max-w-[calc(70px*4/3*6/5)] shrink-0 px-2 !border-[var(--color-primary)] !bg-[var(--color-primary)] !text-white shadow-sm [&>span]:!truncate [&>span]:!text-white [&_[data-placeholder]]:!text-white',
-                      'hover:!border-[var(--color-primary-dark)] hover:!bg-[var(--color-primary-dark)] hover:shadow-md',
-                      'focus:!border-[var(--color-primary-dark)] focus:ring-4 focus:ring-white/30 focus:ring-offset-0',
-                      '[&_svg]:!text-white/90 disabled:!opacity-60',
-                    ].join(' ')}
-                    style={{ color: '#ffffff' }}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent
-                    className="bg-white !bg-white bg-opacity-100"
-                    style={{ backgroundColor: '#ffffff', opacity: 1, zIndex: 9999 }}
-                  >
-                    <SelectItem value="dayGridMonth">Mese</SelectItem>
-                    <SelectItem value="timeGridWeek">Settimana</SelectItem>
-                    <SelectItem value="timeGridDay">Giorno</SelectItem>
-                    <SelectItem value="listWeek">Lista</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex shrink-0 items-center">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[var(--color-primary)] bg-[var(--color-primary)] shadow-sm max-[537px]:h-9 max-[537px]:w-9">
+                  <Calendar className="h-7 w-7 text-white max-[537px]:h-5 max-[537px]:w-5" />
+                </div>
+                <span className="ml-3 text-sm font-semibold tabular-nums text-slate-800 max-[537px]:ml-2 max-[537px]:text-xs sm:text-base">
+                  {currentDateLabel}
+                </span>
               </div>
             </div>
+          </div>
 
-            {/* View Controls */}
-            <div className="hidden md:flex items-center justify-end w-full sm:w-auto">
-              {/* Pulsanti Vista - Desktop only */}
-              <div className="flex gap-2">
-                <button onClick={() => handleViewChange('dayGridMonth')} className={viewButtonClass('dayGridMonth')}>
-                  Mese
-                </button>
-                <button onClick={() => handleViewChange('timeGridWeek')} className={viewButtonClass('timeGridWeek')}>
-                  Settimana
-                </button>
-                <button onClick={() => handleViewChange('timeGridDay')} className={viewButtonClass('timeGridDay')}>
-                  Giorno
-                </button>
-                <button onClick={() => handleViewChange('listWeek')} className={viewButtonClass('listWeek')}>
-                  Lista
-                </button>
-              </div>
-            </div>
+          {/* Pulsanti vista — sotto la barra titolo, stessi stili su tutte le larghezze */}
+          <div className="flex w-full max-w-full flex-nowrap items-center justify-center gap-2 overflow-x-auto pb-0.5">
+            <button type="button" onClick={() => handleViewChange('dayGridMonth')} className={viewButtonClass('dayGridMonth')}>
+              Mese
+            </button>
+            <button type="button" onClick={() => handleViewChange('timeGridWeek')} className={viewButtonClass('timeGridWeek')}>
+              Settimana
+            </button>
+            <button type="button" onClick={() => handleViewChange('timeGridDay')} className={viewButtonClass('timeGridDay')}>
+              Giorno
+            </button>
+            <button type="button" onClick={() => handleViewChange('listWeek')} className={viewButtonClass('listWeek')}>
+              Lista
+            </button>
           </div>
 
           <div className="booking-calendar-fc relative [&_.fc-event]:cursor-pointer">
             <button
               type="button"
               onClick={handleGoToToday}
-              className="absolute left-0 top-0 z-20 inline-flex items-center justify-center rounded-lg border border-[var(--color-primary)] bg-[var(--color-primary)] text-sm font-medium leading-none text-white shadow-sm transition-colors hover:border-[var(--color-primary-dark)] hover:bg-[var(--color-primary-dark)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2"
-              style={{ height: 40, minHeight: 40, minWidth: 88, padding: '0 14px', borderRadius: 12, color: '#ffffff' }}
+              className={cn(
+                'absolute left-0 top-0 z-20 inline-flex items-center justify-center rounded-xl border border-[var(--color-primary)] bg-[var(--color-primary)] text-sm font-medium leading-none text-white shadow-sm transition-colors',
+                'hover:border-[var(--color-primary-dark)] hover:bg-[var(--color-primary-dark)]',
+                'focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2',
+                'h-10 min-h-10 min-w-[88px] px-3.5',
+                'max-[537px]:h-8 max-[537px]:min-h-8 max-[537px]:min-w-[4.75rem] max-[537px]:rounded-lg max-[537px]:px-2 max-[537px]:text-xs'
+              )}
             >
               Oggi
             </button>
@@ -874,8 +850,6 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
           </div>
 
         </div>
-
-
       </div>
 
       {/* Modal */}

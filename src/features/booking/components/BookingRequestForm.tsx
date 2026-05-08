@@ -64,6 +64,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false) // Stato per triggerare re-render e disabilitare button
   const [selectedPreset, setSelectedPreset] = useState<PresetMenuType>(null)
+  const [touchCrossBurst, setTouchCrossBurst] = useState(0)
 
   const frostedInputCn =
     'bg-white/85 backdrop-blur-[1px] px-4 rounded-xl !border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
@@ -898,8 +899,26 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
         <button
             type="submit"
             disabled={isPending || isBlocked || isSubmitting}
-            className="group relative overflow-hidden px-12 md:px-20 py-7 text-xl md:text-2xl uppercase tracking-wide font-bold text-white rounded-full bg-green-600 hover:bg-green-700 shadow-2xl hover:shadow-[0_20px_40px_rgba(34,197,94,0.4)] hover:-translate-y-1 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-2xl w-full md:w-auto max-w-md md:max-w-2xl"
+            className="booking-cross-shine-btn group relative overflow-hidden px-12 md:px-20 py-7 text-xl md:text-2xl uppercase tracking-wide font-bold text-white rounded-full bg-green-600 hover:bg-green-700 shadow-2xl hover:shadow-[0_20px_40px_rgba(34,197,94,0.4)] hover:-translate-y-1 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-2xl w-full md:w-auto max-w-md md:max-w-2xl"
+            onPointerDown={(e) => {
+              if (isPending || isBlocked || isSubmitting) return
+              if (
+                typeof window !== 'undefined' &&
+                (e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches)
+              ) {
+                setTouchCrossBurst((v) => v + 1)
+              }
+            }}
           >
+            <div className="booking-cross-shine-mount pointer-events-none absolute inset-0 z-[7] overflow-hidden rounded-[inherit]" aria-hidden>
+              <div className="booking-cross-shine-beam booking-cross-shine-beam-desktop" />
+              {touchCrossBurst > 0 ? (
+                <div
+                  key={touchCrossBurst}
+                  className="booking-cross-shine-beam booking-cross-shine-touch-burst"
+                />
+              ) : null}
+            </div>
             {/* Glow effect on hover */}
             <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-r from-transparent via-emerald-200/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
