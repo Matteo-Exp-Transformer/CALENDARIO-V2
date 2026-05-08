@@ -36,6 +36,20 @@ export default {
           evento:   '#8B5CF6',   // violet
           laurea:   '#10B981',   // emerald
         },
+        'al-ritrovo': {
+          primary: '#4F46E5',
+          'primary-dark': '#4338CA',
+        },
+        warm: {
+          wood: '#6b4226',
+          'wood-dark': '#4a2d19',
+          orange: '#f97316',
+          beige: '#fef3c7',
+          stone: '#d4c4b0',
+        },
+        terracotta: '#c2410c',
+        muted: '#f1f5f9',
+        background: '#ffffff',
       },
       fontFamily: {
         sans:    ['Inter', 'system-ui', '-apple-system', 'sans-serif'],

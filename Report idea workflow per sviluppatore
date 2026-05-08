@@ -1,0 +1,168 @@
+L’idea è questa:
+
+Magic UI = reference/componenti belli
+v0 = genera/adatta codice React + Tailwind
+Cursor = integra nel tuo progetto vero
+
+v0 genera UI React usando spesso convenzioni shadcn/ui + Tailwind, quindi è molto adatto a componenti moderni riusabili. Magic UI invece segue un processo compatibile con shadcn: installazione via shadcn CLI e componenti importabili nel progetto.
+
+Workflow consigliato
+1. Scegli il componente su Magic UI
+
+Vai su Magic UI e scegli, per esempio:
+
+Magic Card
+Animated Gradient Border
+Bento Grid
+Marquee
+Number Ticker
+Shimmer Button
+
+Salvati:
+
+nome componente;
+link;
+screenshot;
+codice se disponibile;
+effetto che ti piace.
+2. Vai su v0 e chiedi una versione compatibile con la tua app
+
+Prompt tipo:
+
+Create a React + TypeScript + Tailwind CSS v4 component inspired by Magic UI's [COMPONENT NAME].
+
+Project context:
+- React 18 + Vite + TypeScript
+- Tailwind CSS v4
+- Existing app has src/components/ui
+- Use className overrides
+- Use cn() from "@/lib/utils"
+- Do not use Next.js APIs
+- Do not use server components
+- Do not use app router
+- Do not use external paid libraries
+- Keep the component reusable and isolated
+
+Generate:
+1. The component file
+2. Required dependencies
+3. Example usage
+4. Notes for integration in an existing Vite app
+
+Questo è fondamentale perché v0 tende spesso a ragionare in stile Next.js/shadcn. Tu devi dirgli chiaramente: Vite app, non Next.js.
+
+3. Fai generare un componente “isolato”
+
+Meglio chiedere file così:
+
+src/components/ui/MagicCard.tsx
+
+oppure:
+
+src/components/ui/AnimatedCard.tsx
+
+Non farlo intervenire subito su BookingRequestCard.
+
+Prima devi avere un componente piccolo, testabile, riusabile.
+
+4. Porta il codice in Cursor
+
+Poi in Cursor dai questo prompt:
+
+Integrate this new UI component into the existing project.
+
+Rules:
+- Do not change business logic.
+- Do not change Supabase, TenantContext, hooks, routes, or database code.
+- Keep the current props of existing feature components.
+- Place reusable UI components in src/components/ui.
+- Use cn() from src/lib/utils.ts.
+- Avoid inline <style> blocks.
+- Avoid new global CSS unless strictly necessary.
+- Run npm run validate and npm run build.
+5. Solo dopo lo applichi alle card vere
+
+Quando il componente funziona, allora chiedi a Cursor:
+
+Refactor BookingRequestCard to use the new AnimatedCard component.
+
+Keep:
+- same props
+- same data
+- same actions
+- same status behavior
+- same accessibility
+
+Change only:
+- visual layout
+- spacing
+- card structure
+- hover/focus states
+La cosa più importante
+
+Non devi dire a v0:
+
+Integrate Magic UI in my whole app
+
+Devi dirgli:
+
+Recreate this specific Magic UI-style component for my Vite React Tailwind app.
+Attenzione alle dipendenze
+
+Magic UI spesso usa:
+
+framer-motion / motion
+lucide-react
+clsx
+tailwind-merge
+shadcn conventions
+
+Nel tuo progetto lucide-react, clsx e tailwind-merge ci sono già. Se v0 propone nuove dipendenze, falle approvare da Cursor una per una, non installare tutto alla cieca.
+
+Prompt super pronto per v0
+I need a production-ready React component inspired by Magic UI, but adapted for an existing Vite + React 18 + TypeScript + Tailwind CSS v4 app.
+
+Component to recreate:
+[PASTE MAGIC UI COMPONENT NAME + LINK + SHORT DESCRIPTION]
+
+Constraints:
+- Do not use Next.js APIs.
+- Do not use server components.
+- Do not use app router.
+- Use React 18 compatible code.
+- Use TypeScript.
+- Use Tailwind CSS classes.
+- Use cn() from "@/lib/utils".
+- Component must accept className.
+- Component must be reusable inside src/components/ui.
+- Avoid global CSS.
+- Avoid inline <style> unless absolutely necessary.
+- Keep dependencies minimal.
+- If animation is needed, prefer CSS/Tailwind first; use framer-motion only if really necessary.
+
+Output:
+1. Full component code.
+2. Required dependencies.
+3. Example usage.
+4. Integration notes for Cursor.
+Prompt pronto per Cursor
+You are integrating a v0-generated UI component into an existing React 18 + Vite + TypeScript + Tailwind CSS v4 app.
+
+Project rules:
+- Do not modify Supabase, TenantContext, router, database, or business logic.
+- Do not rewrite feature logic.
+- Add reusable UI files only under src/components/ui.
+- Use existing cn() from src/lib/utils.ts.
+- Keep imports compatible with Vite.
+- Avoid Next.js-specific imports.
+- Avoid global CSS unless strictly required.
+- Preserve existing component props when refactoring feature cards.
+- Run npm run validate and npm run build.
+
+Task:
+1. Add the new component from v0.
+2. Create one demo usage inside a low-risk admin component.
+3. Replace only one existing card as a proof of concept.
+4. Report changed files, dependencies added, and any visual conflicts found.
+
+Quindi: Magic UI per scegliere, v0 per adattare/generare, Cursor per integrare con cautela.

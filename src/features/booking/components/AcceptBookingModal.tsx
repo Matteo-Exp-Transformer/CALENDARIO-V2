@@ -178,7 +178,7 @@ export const AcceptBookingModal: React.FC<AcceptBookingModalProps> = ({
               setFormData({ ...formData, date: e.target.value })
               setErrors({ ...errors, date: '' })
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-al-ritrovo-primary"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-600"
             required
           />
           {errors.date && <p className="text-sm text-red-500">{errors.date}</p>}
@@ -194,7 +194,7 @@ export const AcceptBookingModal: React.FC<AcceptBookingModalProps> = ({
                 setFormData({ ...formData, startTime: v })
                 setErrors({ ...errors, startTime: '' })
               }}
-              className="rounded-md border-gray-300 bg-white px-3 py-2 text-gray-900 focus-within:ring-al-ritrovo-primary"
+              className="rounded-md border-gray-300 bg-white px-3 py-2 text-gray-900 focus-within:ring-primary-600"
               required
             />
             {errors.startTime && <p className="text-sm text-red-500">{errors.startTime}</p>}
@@ -209,7 +209,7 @@ export const AcceptBookingModal: React.FC<AcceptBookingModalProps> = ({
                 setFormData({ ...formData, endTime: v })
                 setErrors({ ...errors, endTime: '' })
               }}
-              className="rounded-md border-gray-300 bg-white px-3 py-2 text-gray-900 focus-within:ring-al-ritrovo-primary"
+              className="rounded-md border-gray-300 bg-white px-3 py-2 text-gray-900 focus-within:ring-primary-600"
               required
             />
             {errors.endTime && <p className="text-sm text-red-500">{errors.endTime}</p>}
@@ -229,7 +229,7 @@ export const AcceptBookingModal: React.FC<AcceptBookingModalProps> = ({
               setFormData({ ...formData, numGuests: value })
               setErrors({ ...errors, numGuests: '' })
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-al-ritrovo-primary"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-600"
             required
           />
           {errors.numGuests && <p className="text-sm text-red-500">{errors.numGuests}</p>}
@@ -263,7 +263,7 @@ export const AcceptBookingModal: React.FC<AcceptBookingModalProps> = ({
           </button>
           <button
             type="submit"
-            className="flex-1 px-4 py-2 bg-al-ritrovo-primary text-white rounded-md hover:bg-al-ritrovo-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isLoading}
           >
             {isLoading ? 'Conferma...' : '✅ Conferma Prenotazione'}

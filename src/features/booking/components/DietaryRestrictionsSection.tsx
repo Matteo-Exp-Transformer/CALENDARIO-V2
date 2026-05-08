@@ -407,7 +407,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
             <Link
               to="/privacy"
               target="_blank"
-              className="text-al-ritrovo-primary hover:text-al-ritrovo-primary-dark underline font-medium"
+              className="text-primary-600 hover:text-primary-700 underline font-medium"
               onClick={(e) => e.stopPropagation()}
             >
               Privacy Policy

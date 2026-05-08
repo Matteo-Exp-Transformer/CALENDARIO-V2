@@ -22,7 +22,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      'flex h-12 w-full items-center justify-between rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 ring-offset-background transition-all duration-300 focus:border-al-ritrovo-primary focus:outline-none focus:ring-4 focus:ring-al-ritrovo-primary/20 hover:border-gray-300 hover:shadow-md focus:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50 shadow-sm',
+      'flex h-12 w-full items-center justify-between rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 ring-offset-white transition-all duration-300 focus:border-primary-600 focus:outline-none focus:ring-4 focus:ring-primary-600/20 hover:border-gray-300 hover:shadow-md focus:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50 shadow-sm',
       className
     )}
     {...props}
@@ -136,7 +136,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex w-full cursor-pointer select-none items-center rounded-lg py-2.5 text-sm font-medium outline-none transition-colors bg-white hover:bg-al-ritrovo-primary/10 focus:bg-al-ritrovo-primary/10 focus:text-al-ritrovo-primary data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      'relative flex w-full cursor-pointer select-none items-center rounded-lg py-2.5 text-sm font-medium outline-none transition-colors bg-white hover:bg-primary-600/10 focus:bg-primary-600/10 focus:text-primary-600 data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className
     )}
     style={{
@@ -153,7 +153,7 @@ const SelectItem = React.forwardRef<
     </SelectPrimitive.ItemText>
     <span className="ml-4 flex h-4 w-4 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4 text-al-ritrovo-primary" />
+        <Check className="h-4 w-4 text-primary-600" />
       </SelectPrimitive.ItemIndicator>
     </span>
   </SelectPrimitive.Item>
@@ -166,7 +166,7 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={cn('-mx-1 my-1 h-px bg-muted', className)}
+    className={cn('-mx-1 my-1 h-px bg-slate-100', className)}
     {...props}
   />
 ))

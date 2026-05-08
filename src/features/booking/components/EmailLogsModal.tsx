@@ -58,7 +58,7 @@ export const EmailLogsModal: React.FC<EmailLogsModalProps> = ({ isOpen, onClose 
       <div className="max-h-[70vh] overflow-y-auto">
         {isLoading && (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-al-ritrovo-primary" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
           </div>
         )}
 
@@ -80,7 +80,7 @@ export const EmailLogsModal: React.FC<EmailLogsModalProps> = ({ isOpen, onClose 
             {logs.map((log) => (
               <div
                 key={log.id}
-                className="bg-white border border-gray-200 rounded-lg p-4 hover:border-al-ritrovo-primary transition-colors"
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:border-primary-600 transition-colors"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
