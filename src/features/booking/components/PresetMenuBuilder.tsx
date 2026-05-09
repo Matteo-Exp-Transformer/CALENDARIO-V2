@@ -362,26 +362,33 @@ export const PresetMenuBuilder: React.FC<PresetMenuBuilderProps> = ({
                       onClick={() => handleItemToggle(item)}
                       aria-pressed={isSelected}
                       className={`
-                        flex w-full cursor-pointer items-center rounded-xl border-2 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-warm-wood/50 focus-visible:ring-offset-2
+                        flex w-full cursor-pointer flex-col items-stretch rounded-xl border-2 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-warm-wood/50 focus-visible:ring-offset-2
                         ${isTiramisu && isSelected ? 'border-warm-orange/60' : ''}
                       `}
                       style={{
                         minHeight: '80px',
+                        height: item.description ? 'auto' : '80px',
                         backgroundColor: isSelected ? 'rgba(245, 222, 179, 0.85)' : 'rgba(255, 255, 255, 0.92)',
                         borderColor: isSelected ? '#8B4513' : 'rgba(0,0,0,0.2)',
                         padding: '8px',
                         borderRadius: '16px',
+                        justifyContent: item.description ? undefined : 'center',
+                        overflow: 'hidden',
                       }}
                     >
-                      <div className="flex min-w-0 flex-1 flex-col gap-1 md:flex-row md:items-center md:justify-between">
-                        <span className="font-bold text-base text-gray-800 break-words">{item.name}</span>
-                        {item.description ? (
-                          <p className="text-sm md:text-base font-semibold text-gray-600 leading-snug break-words">
-                            {item.description}
-                          </p>
-                        ) : null}
-                        <span className="font-bold text-warm-wood whitespace-nowrap">{formatPrice(item)}</span>
+                      <div className="flex min-w-0 w-full flex-row flex-nowrap items-center justify-between gap-2">
+                        <span className="min-w-0 flex-1 font-bold text-base break-words text-gray-800">
+                          {item.name}
+                        </span>
+                        <span className="shrink-0 font-bold text-warm-wood whitespace-nowrap">
+                          {formatPrice(item)}
+                        </span>
                       </div>
+                      {item.description ? (
+                        <p className="mt-0.5 w-full min-w-0 text-left text-sm font-semibold leading-snug break-words text-gray-600 md:text-base">
+                          {item.description}
+                        </p>
+                      ) : null}
                     </button>
                     {isTiramisu && isSelected && (
                       <div className="w-full border-2 rounded-xl px-4 py-3 bg-white/90" style={{ borderColor: 'rgba(0,0,0,0.2)' }}>

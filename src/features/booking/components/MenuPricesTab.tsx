@@ -257,7 +257,7 @@ const AdminMenuIngredientCard: React.FC<AdminMenuIngredientCardProps> = ({
       }}
     >
       <div
-        className="flex w-full items-center rounded-xl border-2 text-left menu-card-mobile transition-all duration-200"
+        className="flex w-full flex-col items-stretch rounded-xl border-2 text-left menu-card-mobile transition-all duration-200"
         style={{
           minHeight: '80px',
           maxHeight: 'none',
@@ -275,22 +275,21 @@ const AdminMenuIngredientCard: React.FC<AdminMenuIngredientCardProps> = ({
           height: hasDesc ? 'auto' : '80px',
           boxSizing: 'border-box',
           overflow: 'hidden',
+          justifyContent: hasDesc ? undefined : 'center',
         }}
       >
         <div
-          className={`flex min-w-0 flex-1 flex-row flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap sm:gap-x-3 ${!hasDesc ? 'justify-between' : ''}`}
+          className="flex min-h-0 w-full min-w-0 flex-1 flex-row flex-nowrap items-center justify-between gap-x-2 sm:gap-x-3"
           style={{
             paddingLeft: '4px',
             paddingRight: '12px',
             paddingTop: '0px',
-            paddingBottom: '0px',
-            width: '100%',
-            height: '100%',
+            paddingBottom: hasDesc ? '2px' : '0px',
             overflow: 'hidden',
           }}
         >
           <span
-            className={`booking-mobile-card-title font-bold text-base md:text-lg text-gray-700 ${hasDesc ? 'min-w-0 max-w-[40%] shrink sm:max-w-[13rem]' : 'min-w-0 flex-1'}`}
+            className="booking-mobile-card-title min-w-0 flex-1 font-bold text-base md:text-lg text-gray-700"
             style={{
               fontWeight: '700',
               whiteSpace: 'normal',
@@ -300,20 +299,6 @@ const AdminMenuIngredientCard: React.FC<AdminMenuIngredientCardProps> = ({
           >
             {item.name}
           </span>
-          {hasDesc ? (
-            <p
-              className="booking-mobile-card-description min-w-0 flex-1 basis-0 text-center text-base font-bold leading-snug text-gray-600 md:text-lg"
-              style={{
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
-                lineHeight: '1.3',
-                margin: 0,
-                hyphens: 'auto',
-              }}
-            >
-              {item.description}
-            </p>
-          ) : null}
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <span
               className="booking-mobile-price text-sm font-bold text-warm-wood whitespace-nowrap md:text-lg"
@@ -343,6 +328,20 @@ const AdminMenuIngredientCard: React.FC<AdminMenuIngredientCardProps> = ({
             ) : null}
           </div>
         </div>
+        {hasDesc ? (
+          <p
+            className="booking-mobile-card-description w-full min-w-0 px-1 pb-0 pt-0.5 text-left text-sm font-semibold leading-snug text-gray-600 md:text-base"
+            style={{
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              lineHeight: '1.35',
+              margin: 0,
+              hyphens: 'auto',
+            }}
+          >
+            {item.description}
+          </p>
+        ) : null}
       </div>
       {footer}
       {metaLine ? (
