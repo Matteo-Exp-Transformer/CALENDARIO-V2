@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -37,6 +37,8 @@ import { cn } from '@/lib/utils'
 
 /** Sotto questa larghezza (inclusa), la vista FullCalendar predefinita è lista invece del mese */
 const CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX = 630
+/** Nei blocchi evento: sotto questa larghezza mostra solo l’icona tipologia (il nome resta in title per hover/tooltip). */
+const CALENDAR_EVENT_ICON_ONLY_MAX_WIDTH_PX = 500
 
 type FullCalendarViewId = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek'
 
@@ -50,6 +52,11 @@ function getDefaultCalendarViewForViewport(): FullCalendarViewId {
 function getInitialCalendarNarrowViewport(): boolean {
   if (typeof window === 'undefined') return false
   return window.matchMedia(`(max-width: ${CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX}px)`).matches
+}
+
+function getInitialCalendarEventIconOnly(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia(`(max-width: ${CALENDAR_EVENT_ICON_ONLY_MAX_WIDTH_PX}px)`).matches
 }
 
 /** Sfondo sezione calendario: arancio chiarissimo → giallo chiarissimo, più tenue del top bar admin */
@@ -338,12 +345,23 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   const [currentView, setCurrentView] = useState<FullCalendarViewId>(getDefaultCalendarViewForViewport)
   const [isCalendarNarrowViewport, setIsCalendarNarrowViewport] =
     useState(getInitialCalendarNarrowViewport)
+  const [isCalendarEventIconOnly, setIsCalendarEventIconOnly] =
+    useState(getInitialCalendarEventIconOnly)
 
   useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX}px)`)
-    const onChange = () => setIsCalendarNarrowViewport(mql.matches)
-    mql.addEventListener('change', onChange)
-    return () => mql.removeEventListener('change', onChange)
+    const mql630 = window.matchMedia(`(max-width: ${CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX}px)`)
+    const mql500 = window.matchMedia(`(max-width: ${CALENDAR_EVENT_ICON_ONLY_MAX_WIDTH_PX}px)`)
+    const sync = () => {
+      setIsCalendarNarrowViewport(mql630.matches)
+      setIsCalendarEventIconOnly(mql500.matches)
+    }
+    sync()
+    mql630.addEventListener('change', sync)
+    mql500.addEventListener('change', sync)
+    return () => {
+      mql630.removeEventListener('change', sync)
+      mql500.removeEventListener('change', sync)
+    }
   }, [])
 
   // Aggiorna il selectedBooking quando i bookings cambiano (dopo modifica)
@@ -386,19 +404,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     setIsModalOpen(true)
   }
 
-  const handleDateClick = (clickInfo: any) => {
-    // ✅ Fix: Normalizza la data per evitare problemi di timezone
-    // Ignora dateStr e forza l'estrazione locale dai metodi get* dell'oggetto Date
+  const handleDateClick = useCallback((clickInfo: any) => {
     const d = new Date(clickInfo.date)
-    
-    // Usa i metodi locali per evitare conversioni UTC
     const year = d.getFullYear()
     const month = String(d.getMonth() + 1).padStart(2, '0')
     const day = String(d.getDate()).padStart(2, '0')
     const date = `${year}-${month}-${day}`
-
     setSelectedDate(date)
-  }
+  }, [])
 
   // Get bookings and capacity for selected date
   const selectedDateData = useMemo(() => {
@@ -492,9 +505,23 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       hour: '2-digit' as const,
       minute: '2-digit' as const,
     },
-    // Ensure events don't overflow to other days in month view
-    dayMaxEvents: 3,
-    moreLinkClick: 'popover',
+    // Mobile: max 3 eventi in cella + «···» se ce ne sono altri (click = come dateClick sul giorno)
+    dayMaxEvents: isCalendarNarrowViewport ? 3 : false,
+    ...(isCalendarNarrowViewport
+      ? {
+          moreLinkText: () => '···',
+          moreLinkHint: (num: number) =>
+            num === 1
+              ? 'C’è un’altra prenotazione. Tocca per selezionare il giorno.'
+              : `Ci sono altre ${num} prenotazioni. Tocca per selezionare il giorno.`,
+          moreLinkClassNames: 'booking-calendar-more-dots',
+          moreLinkClick: (info: { date: Date }) => {
+            handleDateClick({ date: info.date })
+            const t = calendarRef.current?.getApi()?.view.type
+            return typeof t === 'string' ? t : 'dayGridMonth'
+          },
+        }
+      : {}),
     // Highlight today and selected date with stable CSS classes
     dayCellClassNames: (arg: any) => {
       const d = new Date(arg.date)
@@ -517,8 +544,24 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     // Custom event rendering per card eventi migliorate
     eventContent: (arg: any) => {
       const booking = arg.event.extendedProps as BookingRequest
+      const viewType = arg.view?.type as string | undefined
+      const iconOnlyInGrid =
+        isCalendarEventIconOnly && viewType !== 'listWeek' && viewType !== 'listDay'
 
       if (isCalendarNarrowViewport) {
+        if (iconOnlyInGrid) {
+          return (
+            <div
+              className="flex cursor-pointer justify-center overflow-hidden rounded-lg px-0.5 py-0.5 text-neutral-900 transition-opacity hover:opacity-90"
+              title={booking.client_name}
+            >
+              <DigestBookingTypeIcon
+                booking={booking}
+                className="h-3.5 w-3.5 shrink-0 text-neutral-900"
+              />
+            </div>
+          )
+        }
         return (
           <div className="flex cursor-pointer flex-col items-center gap-0.5 overflow-hidden rounded-lg px-1 py-1 text-center text-xs text-neutral-900 transition-opacity hover:opacity-90">
             <div className="flex w-full justify-center">

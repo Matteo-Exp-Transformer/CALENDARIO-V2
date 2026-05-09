@@ -484,6 +484,44 @@ button.admin-nav-item.admin-nav-tab-active {
     0 10px 18px rgba(29, 78, 216, 0.32);
 }
 
+/* Vista mese: respiro sotto l’ultima card evento rispetto al bordo inferiore della cella */
+.booking-calendar-fc .fc .fc-dayGridMonth-view .fc-daygrid-day .fc-daygrid-day-frame {
+  padding-bottom: 0.375rem;
+}
+
+/* Mobile: link «···» — solo i puntini, niente chip/sfondo (override stili FC sul more-link) */
+.booking-calendar-fc .fc .fc-dayGridMonth-view a.booking-calendar-more-dots.fc-daygrid-more-link {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-size: 0.7rem;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  padding: 0.125rem 0 0.2rem;
+  margin: 0;
+  color: #64748b;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.booking-calendar-fc .fc .fc-dayGridMonth-view a.booking-calendar-more-dots.fc-daygrid-more-link:hover,
+.booking-calendar-fc .fc .fc-dayGridMonth-view a.booking-calendar-more-dots.fc-daygrid-more-link:focus,
+.booking-calendar-fc .fc .fc-dayGridMonth-view a.booking-calendar-more-dots.fc-daygrid-more-link:focus-visible {
+  color: #475569;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
 /* Booking calendar — align FullCalendar title with section heading center */
 .booking-calendar-fc .fc .fc-header-toolbar {
   position: relative;
