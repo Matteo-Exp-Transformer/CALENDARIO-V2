@@ -16,6 +16,7 @@ import {
 import { isCaraffeDrinkPremium, isCaraffeDrinkStandard } from '../utils/caraffePricing'
 import { VOL_AU_VENT_THRESHOLD_EUR } from '../constants/volAuVentPromo'
 import type { BookingType } from '@/types/booking'
+import { normalizeMenuItemBookingTypes } from '@/types/menu'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 
 interface MenuSelectionProps {
@@ -136,24 +137,32 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   ])
 
   const normalizedMenuItems = useMemo<NormalizedMenuItem[]>(() => {
-    return menuItems.map<NormalizedMenuItem>((item) => {
-      const lowerName = item.name.toLowerCase()
-      const priceSuffix =
-        lowerName.includes('tiramis') && item.category === 'dolci'
-          ? ' al Kg'
-          : undefined
+    return menuItems
+      .filter((item) => {
+        if (!bookingTypeUsesMenuSelections(bookingType)) {
+          return true
+        }
+        const types = normalizeMenuItemBookingTypes(item.booking_types)
+        return bookingType ? types.includes(bookingType) : true
+      })
+      .map<NormalizedMenuItem>((item) => {
+        const lowerName = item.name.toLowerCase()
+        const priceSuffix =
+          lowerName.includes('tiramis') && item.category === 'dolci'
+            ? ' al Kg'
+            : undefined
 
-      return {
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        category: item.category,
-        description: item.description ?? undefined,
-        sort_order: item.sort_order ?? 0,
-        priceSuffix
-      }
-    })
-  }, [menuItems])
+        return {
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          category: item.category,
+          description: item.description ?? undefined,
+          sort_order: item.sort_order ?? 0,
+          priceSuffix,
+        }
+      })
+  }, [menuItems, bookingType])
 
   const orderedCategories = useMemo(() => {
     const fromDb = dbCategories.map((category) => category.key)

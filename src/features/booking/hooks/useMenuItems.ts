@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase, handleSupabaseError } from '@/lib/supabase'
 import type { MenuItem, MenuItemInput } from '@/types/menu'
+import { MENU_ITEM_BOOKING_TYPE_VALUES } from '@/types/menu'
 import { toast } from 'react-toastify'
 import { useTenantContext } from '@/contexts/TenantContext'
 
@@ -87,7 +88,8 @@ export const useCreateMenuItem = () => {
           category: item.category,
           price: item.price,
           description: item.description || null,
-          sort_order: item.sort_order || 0
+          sort_order: item.sort_order || 0,
+          booking_types: item.booking_types ?? MENU_ITEM_BOOKING_TYPE_VALUES,
         })
         .select()
         .single()
