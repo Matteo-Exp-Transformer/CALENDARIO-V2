@@ -440,6 +440,7 @@ export const restaurantSettingRegistry: {
       return unique.length === r.data.length ? null : 'Le aree di posizionamento devono essere univoche'
     },
   },
+  /** Valori ammessi: `APP_THEME_IDS` in `constants/appTheme.ts` (+ token CSS `data-admin-theme` in `index.css`). */
   app_theme: {
     key: 'app_theme',
     parseFromDb: (raw) => parseAppThemeFromDb(raw),

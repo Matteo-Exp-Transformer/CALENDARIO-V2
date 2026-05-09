@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Tema navy / blu (primary #1E3A5F, secondary #4F7CAC, accent #7CC6FE)
+        // Default build-time fallback (Midnight). Altri temi admin (`theme-2` … `warm-sand-pro`): scala `--color-primary-*` da `:root[data-admin-theme]` in `src/index.css`.
         primary: {
           50:  '#EEF6FC',
           100: '#D6ECFE',

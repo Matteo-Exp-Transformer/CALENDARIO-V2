@@ -401,6 +401,291 @@
   --admin-new-booking-trigger-hover: #7F9A80;
 }
 
+/*
+ * Theme 4 — «Soft Graphite & Mint»: mint premium + grafite (mockup prodotto).
+ */
+:root[data-admin-theme='soft-graphite-mint'] {
+  --color-primary-50:  #ECFDF5;
+  --color-primary-100: #D1FAE5;
+  --color-primary-200: #A7F3D0;
+  --color-primary-300: #6EE7B7;
+  --color-primary-400: #2DD4BF;
+  --color-primary-500: #34D399;
+  --color-primary-600: #10B981;
+  --color-primary-700: #059669;
+  --color-primary-800: #1F2937;
+  --color-primary-900: #111827;
+
+  --color-status-pending:  #D97706;
+  --color-status-accepted: #059669;
+  --color-status-rejected: #DC2626;
+  --color-status-deleted:  #6B7280;
+
+  --color-booking-cena:      #1F2937;
+  --color-booking-aperitivo: #D97706;
+  --color-booking-evento:    #7C3AED;
+  --color-booking-laurea:    #059669;
+
+  --color-muted:      #E5E7EB;
+  --color-background: #F1F5F4;
+  --color-surface:    #FFFFFF;
+
+  --color-al-ritrovo-primary:      #10B981;
+  --color-al-ritrovo-primary-dark: #059669;
+
+  --color-warm-wood:      #1F2937;
+  --color-warm-wood-dark: #111827;
+  --color-warm-orange:    #34D399;
+  --color-warm-beige:     #D1FAE5;
+  --color-warm-stone:     #E5E7EB;
+  --color-terracotta:     #059669;
+
+  --color-primary:       #10B981;
+  --color-primary-light: #34D399;
+  --color-primary-dark:  #059669;
+  --color-primary-bg:    #ECFDF5;
+
+  --color-bg:        #F1F5F4;
+  --color-surface:   #FFFFFF;
+  --color-surface-2: #ECFDF5;
+
+  --color-border:        #E5E7EB;
+  --color-border-strong: #D1D5DB;
+  --admin-warm-wrap-border: #E5E7EB;
+  --admin-warm-wrap-border-width: 1.5px;
+
+  --admin-warm-gradient: linear-gradient(
+    90deg,
+    rgb(241 245 244) 0%,
+    rgb(255 255 255) 48%,
+    rgb(236 253 245) 100%
+  );
+
+  --admin-nav-tab-active-border: #34D399;
+  --color-accent-selected:       #D1FAE5;
+
+  --color-text:       #1F2937;
+  --color-text-muted: #4B5563;
+  --color-text-light: #9CA3AF;
+
+  --color-success: #059669;
+  --color-warning: #D97706;
+  --color-danger:  #DC2626;
+  --color-info:    #34D399;
+
+  --shadow-sm:   0 1px 2px 0 rgb(31 41 55 / 0.05);
+  --shadow-md:   0 4px 6px -1px rgb(31 41 55 / 0.07), 0 2px 4px -2px rgb(31 41 55 / 0.05);
+  --shadow-lg:   0 10px 15px -3px rgb(31 41 55 / 0.08), 0 4px 6px -4px rgb(31 41 55 / 0.05);
+  --shadow-xl:   0 20px 25px -5px rgb(31 41 55 / 0.1), 0 8px 10px -6px rgb(31 41 55 / 0.05);
+
+  --theme-surface-nav-active:   #ECFDF5;
+  --theme-border-nav-active:    #34D399;
+  --theme-text-nav-active:      #1F2937;
+  --theme-surface-nav-inactive: #FFFFFF;
+  --theme-border-nav-inactive:  #E5E7EB;
+  --theme-text-nav-inactive:    #4B5563;
+  --theme-surface-hover:        #ECFDF5;
+  --theme-border-strong:        #D1D5DB;
+  --theme-text-secondary:       #4B5563;
+  --theme-accent-primary:       #10B981;
+  --theme-shadow-sm:            0 1px 2px 0 rgb(31 41 55 / 0.05);
+
+  --admin-nav-pulse-ring-a:     rgb(52 211 153 / 0.42);
+  --admin-nav-pulse-ring-b:     rgb(52 211 153 / 0.14);
+  --admin-new-booking-trigger-bg:    #10B981;
+  --admin-new-booking-trigger-hover: #059669;
+}
+
+/*
+ * Theme 5 — «Pearl Blue Minimal»: blu affidabile su fondo perla (mockup prodotto).
+ */
+:root[data-admin-theme='pearl-blue-minimal'] {
+  --color-primary-50:  #EFF6FF;
+  --color-primary-100: #DBEAFE;
+  --color-primary-200: #BFDBFE;
+  --color-primary-300: #93C5FD;
+  --color-primary-400: #60A5FA;
+  --color-primary-500: #3B82F6;
+  --color-primary-600: #2563EB;
+  --color-primary-700: #1D4ED8;
+  --color-primary-800: #1E40AF;
+  --color-primary-900: #0F172A;
+
+  --color-status-pending:  #F59E0B;
+  --color-status-accepted: #10B981;
+  --color-status-rejected: #EF4444;
+  --color-status-deleted:  #64748B;
+
+  --color-booking-cena:      #2563EB;
+  --color-booking-aperitivo: #F59E0B;
+  --color-booking-evento:    #8B5CF6;
+  --color-booking-laurea:    #10B981;
+
+  --color-muted:      #F1F5F9;
+  --color-background: #F8FAFC;
+  --color-surface:    #FFFFFF;
+
+  --color-al-ritrovo-primary:      #2563EB;
+  --color-al-ritrovo-primary-dark: #1D4ED8;
+
+  --color-warm-wood:      #0F172A;
+  --color-warm-wood-dark: #020617;
+  --color-warm-orange:    #3B82F6;
+  --color-warm-beige:     #DBEAFE;
+  --color-warm-stone:     #E2E8F0;
+  --color-terracotta:     #2563EB;
+
+  --color-primary:       #2563EB;
+  --color-primary-light: #3B82F6;
+  --color-primary-dark:  #1D4ED8;
+  --color-primary-bg:    #EFF6FF;
+
+  --color-bg:        #F8FAFC;
+  --color-surface:   #FFFFFF;
+  --color-surface-2: #EFF6FF;
+
+  --color-border:        #E2E8F0;
+  --color-border-strong: #CBD5E1;
+  --admin-warm-wrap-border: #E2E8F0;
+  --admin-warm-wrap-border-width: 1.5px;
+
+  --admin-warm-gradient: linear-gradient(
+    90deg,
+    rgb(248 250 252) 0%,
+    rgb(255 255 255) 50%,
+    rgb(239 246 255) 100%
+  );
+
+  --admin-nav-tab-active-border: #2563EB;
+  --color-accent-selected:       #DBEAFE;
+
+  --color-text:       #0F172A;
+  --color-text-muted: #64748B;
+  --color-text-light: #94A3B8;
+
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger:  #EF4444;
+  --color-info:    #3B82F6;
+
+  --shadow-sm:   0 1px 2px 0 rgb(15 23 42 / 0.05);
+  --shadow-md:   0 4px 6px -1px rgb(15 23 42 / 0.07), 0 2px 4px -2px rgb(15 23 42 / 0.05);
+  --shadow-lg:   0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.05);
+  --shadow-xl:   0 20px 25px -5px rgb(15 23 42 / 0.1), 0 8px 10px -6px rgb(15 23 42 / 0.05);
+
+  --theme-surface-nav-active:   #EFF6FF;
+  --theme-border-nav-active:    #2563EB;
+  --theme-text-nav-active:      #0F172A;
+  --theme-surface-nav-inactive: #FFFFFF;
+  --theme-border-nav-inactive:  #E2E8F0;
+  --theme-text-nav-inactive:    #64748B;
+  --theme-surface-hover:        #EFF6FF;
+  --theme-border-strong:        #CBD5E1;
+  --theme-text-secondary:       #64748B;
+  --theme-accent-primary:       #2563EB;
+  --theme-shadow-sm:            0 1px 2px 0 rgb(15 23 42 / 0.05);
+
+  --admin-nav-pulse-ring-a:     rgb(59 130 246 / 0.42);
+  --admin-nav-pulse-ring-b:     rgb(59 130 246 / 0.14);
+  --admin-new-booking-trigger-bg:    #2563EB;
+  --admin-new-booking-trigger-hover: #1D4ED8;
+}
+
+/*
+ * Theme 6 — «Warm Sand Pro»: terracotta professionale su crema/sabbia (palette prodotto).
+ */
+:root[data-admin-theme='warm-sand-pro'] {
+  --color-primary-50:  #FFF9F5;
+  --color-primary-100: #F7EDE6;
+  --color-primary-200: #ECD9CB;
+  --color-primary-300: #DEB89F;
+  --color-primary-400: #D08962;
+  --color-primary-500: #C96B43;
+  --color-primary-600: #B95F3C;
+  --color-primary-700: #9E5034;
+  --color-primary-800: #6F3A27;
+  --color-primary-900: #3E332C;
+
+  --color-status-pending:  #D8A24A;
+  --color-status-accepted: #8FA27A;
+  --color-status-rejected: #D97A6C;
+  --color-status-deleted:  #8E827B;
+
+  --color-booking-cena:      #C96B43;
+  --color-booking-aperitivo: #D8A24A;
+  --color-booking-evento:    #8E7A9C;
+  --color-booking-laurea:    #8FA27A;
+
+  --color-muted:      #EFE8E2;
+  --color-background: #FAF5F0;
+  --color-surface:    #FFF8F1;
+
+  --color-al-ritrovo-primary:      #C96B43;
+  --color-al-ritrovo-primary-dark: #6F3A27;
+
+  --color-warm-wood:      #3E332C;
+  --color-warm-wood-dark: #2A231F;
+  --color-warm-orange:    #C96B43;
+  --color-warm-beige:     #EAD8C8;
+  --color-warm-stone:     #D4C4B8;
+  --color-terracotta:     #C96B43;
+
+  --color-primary:       #C96B43;
+  --color-primary-light: #D08962;
+  --color-primary-dark:  #6F3A27;
+  --color-primary-bg:    #F7EDE6;
+
+  --color-bg:        #FAF5F0;
+  --color-surface:   #FFF8F1;
+  --color-surface-2: #F3EBE4;
+
+  --color-border:        #E8DDD2;
+  --color-border-strong: #D9CDC2;
+  --admin-warm-wrap-border: #E8DDD2;
+  --admin-warm-wrap-border-width: 1.5px;
+
+  --admin-warm-gradient: linear-gradient(
+    90deg,
+    rgb(250 245 240) 0%,
+    rgb(255 248 241) 50%,
+    rgb(243 235 228) 100%
+  );
+
+  --admin-nav-tab-active-border: #C96B43;
+  --color-accent-selected:       #EAD8C8;
+
+  --color-text:       #3E332C;
+  --color-text-muted: #8E827B;
+  --color-text-light: #A89E96;
+
+  --color-success: #8FA27A;
+  --color-warning: #D8A24A;
+  --color-danger:  #D97A6C;
+  --color-info:    #D08962;
+
+  --shadow-sm:   0 1px 2px 0 rgb(62 51 44 / 0.06);
+  --shadow-md:   0 4px 6px -1px rgb(62 51 44 / 0.08), 0 2px 4px -2px rgb(62 51 44 / 0.05);
+  --shadow-lg:   0 10px 15px -3px rgb(62 51 44 / 0.09), 0 4px 6px -4px rgb(62 51 44 / 0.05);
+  --shadow-xl:   0 20px 25px -5px rgb(62 51 44 / 0.1), 0 8px 10px -6px rgb(62 51 44 / 0.05);
+
+  --theme-surface-nav-active:   #F7EDE6;
+  --theme-border-nav-active:    #C96B43;
+  --theme-text-nav-active:      #3E332C;
+  --theme-surface-nav-inactive: #FFF8F1;
+  --theme-border-nav-inactive:  #E8DDD2;
+  --theme-text-nav-inactive:    #6B5E56;
+  --theme-surface-hover:        #F3EBE4;
+  --theme-border-strong:        #D9CDC2;
+  --theme-text-secondary:       #8E827B;
+  --theme-accent-primary:       #C96B43;
+  --theme-shadow-sm:            0 1px 2px 0 rgb(62 51 44 / 0.06);
+
+  --admin-nav-pulse-ring-a:     rgb(201 107 67 / 0.42);
+  --admin-nav-pulse-ring-b:     rgb(201 107 67 / 0.14);
+  --admin-new-booking-trigger-bg:    #C96B43;
+  --admin-new-booking-trigger-hover: #B55F3A;
+}
+
 /* Base */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -849,7 +1134,7 @@ button.admin-nav-item.admin-nav-tab-active.archive-tab-filter-btn {
   color: var(--color-primary-900) !important;
 }
 
-/* FullCalendar — token tema (Midnight / Terracotta via `data-admin-theme`) */
+/* FullCalendar — token tema (tutti gli id `data-admin-theme` in admin) */
 .booking-calendar-fc .fc {
   --fc-border-color: var(--color-border);
   --fc-button-bg-color: var(--color-primary-bg);
@@ -1106,9 +1391,9 @@ button.booking-request-reject-booking-btn:focus-visible {
   gap: 12px;
   padding: 1rem 1.25rem;
   text-align: left;
-  background-color: #f9fafb;
+  background-color: color-mix(in srgb, var(--color-surface-2) 92%, var(--color-bg));
   border-radius: 1.25rem;
-  border: 2px solid rgba(15, 23, 42, 0.1);
+  border: 2px solid color-mix(in srgb, var(--color-text) 10%, transparent);
   transition:
     box-shadow 0.2s ease,
     border-color 0.2s ease;
@@ -1116,7 +1401,7 @@ button.booking-request-reject-booking-btn:focus-visible {
 
 .menu-prices-item-row:hover {
   box-shadow: var(--shadow-md);
-  border-color: rgba(15, 23, 42, 0.16);
+  border-color: color-mix(in srgb, var(--color-text) 16%, transparent);
 }
 
 .menu-prices-item-row .menu-prices-item-text {
@@ -1184,24 +1469,24 @@ button.booking-request-reject-booking-btn:focus-visible {
 }
 
 .menu-prices-icon-btn--visibility-visible {
-  border-color: #b8defd;
-  color: #18324a;
-  background-color: #eef6fc;
+  border-color: var(--color-primary-200);
+  color: var(--color-primary-900);
+  background-color: var(--color-primary-50);
 }
 
 .menu-prices-icon-btn--visibility-visible:hover {
-  background-color: #d6ecfe;
-  color: #18324a;
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-900);
 }
 
 .menu-prices-icon-btn--visibility-hidden {
-  border-color: rgb(203 213 225);
-  color: rgb(100 116 139);
-  background-color: rgb(255 255 255);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  background-color: var(--color-surface);
 }
 
 .menu-prices-icon-btn--visibility-hidden:hover {
-  background-color: rgb(248 250 252);
+  background-color: var(--color-surface-2);
 }
 
 /* Restaurant settings — footer salvataggio: pulsante sempre bianco; messaggio “non salvato” leggibile sul gradient */

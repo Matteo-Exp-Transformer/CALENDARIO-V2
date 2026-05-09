@@ -121,7 +121,7 @@ function DigestBookingListRow({
     <button
       type="button"
       onClick={() => onOpen(booking)}
-      className={`relative min-h-0 w-full min-w-0 rounded-lg border-2 text-left transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-warm-wood focus:ring-offset-2 ${
+      className={`relative min-h-0 w-full min-w-0 rounded-lg border-2 text-left transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
         compactGrid ? 'flex w-full min-h-[2.938775rem] flex-col shadow-sm' : ''
       }`}
       style={{
@@ -677,8 +677,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       // Stesso intervallo della card toolbar / FC (~537): evita scroll + “fascia” solo tra 423 e 537 px
       'max-[537px]:px-3 max-[537px]:py-1.5 max-[537px]:text-[13px] max-[537px]:leading-tight',
       currentView === view
-        ? 'border-emerald-200 bg-emerald-50 text-emerald-900 hover:border-emerald-300 hover:bg-emerald-100'
-        : 'border-slate-200 bg-gray-100 text-gray-800 hover:bg-gray-200'
+        ? 'border-primary-200 bg-primary-50 text-primary-900 hover:border-primary-300 hover:bg-primary-100'
+        : 'border-[var(--color-border)] bg-[var(--color-surface-2)] text-primary-900 hover:bg-[var(--color-muted)]'
     )
 
   return (
@@ -728,9 +728,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
               type="button"
               onClick={handleGoToToday}
               className={cn(
-                'absolute left-0 top-0 z-20 inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-sm font-medium leading-none text-emerald-900 shadow-sm transition-colors',
-                'hover:border-emerald-300 hover:bg-emerald-100',
-                'focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:ring-offset-2',
+                'absolute left-0 top-0 z-20 inline-flex items-center justify-center rounded-xl border border-primary-200 bg-primary-50 text-sm font-medium leading-none text-primary-900 shadow-sm transition-colors',
+                'hover:border-primary-300 hover:bg-primary-100',
+                'focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:ring-offset-2',
                 'h-10 min-h-10 min-w-[88px] px-3.5',
                 'max-[537px]:h-8 max-[537px]:min-h-8 max-[537px]:min-w-[4.75rem] max-[537px]:rounded-lg max-[537px]:px-2 max-[537px]:text-xs'
               )}
@@ -744,9 +744,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
         {/* Giornata selezionata: elenco prenotazioni e fasce */}
         <div>
           <div className="mb-8 w-full max-w-7xl mx-auto">
-            <h4 className="text-center text-base font-semibold text-warm-wood mb-3 leading-snug">
+            <h4 className="text-center text-base font-semibold text-primary-900 mb-3 leading-snug">
               Prenotazioni del giorno:{' '}
-              <span className="font-normal text-gray-600">
+              <span className="font-normal text-[var(--color-text-muted)]">
                 {format(new Date(selectedDateData.date), 'EEEE, dd MMMM yyyy', { locale: it })} ={' '}
                 {selectedDayDigestBookings.length}{' '}
                 {selectedDayDigestBookings.length === 1 ? 'Prenotazione' : 'Prenotazioni'}
@@ -759,12 +759,12 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                     id="digest-with-menu-heading"
                     className="admin-warm-surface mb-3 flex items-center justify-center rounded-xl border px-3 py-2 text-center shadow-sm"
                   >
-                    <h5 className="!text-[19px] font-semibold tracking-wide text-warm-wood">
+                    <h5 className="!text-[19px] font-semibold tracking-wide text-primary-900">
                       Prenotazioni con menù
                     </h5>
                   </div>
                   {digestWithMenu.length > 0 ? (
-                    <div className="rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner">
+                    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/90 p-2 shadow-inner">
                       <div className="hidden min-[819px]:grid grid-cols-3 gap-2">
                         <h6
                           className="flex items-center justify-center px-3 text-center shadow-sm"
@@ -889,25 +889,25 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                       </div>
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-gray-500 italic py-6 rounded-xl border border-dashed border-slate-200 bg-slate-50/80">
+                    <p className="text-center text-sm text-[var(--color-text-muted)] italic py-6 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-2)]/80">
                       Nessuna prenotazione con menù per questa data.
                     </p>
                   )}
                 </section>
 
-                <div className="border-t-2 border-slate-200 pt-8 mt-2" aria-hidden />
+                <div className="border-t-2 border-[var(--color-border)] pt-8 mt-2" aria-hidden />
 
                 <section aria-labelledby="digest-table-only-heading">
                   <div
                     id="digest-table-only-heading"
                     className="admin-warm-surface mb-3 flex items-center justify-center rounded-xl border px-3 py-2 text-center shadow-sm"
                   >
-                    <h5 className="!text-[19px] font-semibold tracking-wide text-warm-wood">
+                    <h5 className="!text-[19px] font-semibold tracking-wide text-primary-900">
                       Solo tavolo
                     </h5>
                   </div>
                   {digestTableOnly.length > 0 ? (
-                    <div className="rounded-xl border border-slate-200 bg-white/80 p-2 shadow-inner">
+                    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/90 p-2 shadow-inner">
                       <div className="hidden min-[819px]:grid grid-cols-3 gap-2">
                         <h6
                           className="flex items-center justify-center px-3 text-center shadow-sm"
@@ -1026,14 +1026,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                       </div>
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-gray-500 italic py-6 rounded-xl border border-dashed border-slate-200 bg-slate-50/80">
+                    <p className="text-center text-sm text-[var(--color-text-muted)] italic py-6 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-2)]/80">
                       Nessuna prenotazione solo tavolo per questa data.
                     </p>
                   )}
                 </section>
               </div>
             ) : (
-              <p className="text-center text-sm text-gray-500 italic py-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/80">
+              <p className="text-center text-sm text-[var(--color-text-muted)] italic py-4 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-2)]/80">
                 Nessuna prenotazione accettata per questa data.
               </p>
             )}

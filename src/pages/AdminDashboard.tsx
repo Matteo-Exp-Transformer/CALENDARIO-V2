@@ -191,7 +191,7 @@ export const AdminDashboard: React.FC = () => {
       'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
       isActive
         ? 'border-2 border-primary-600 bg-primary-600 text-white'
-        : 'border border-[var(--color-border)] bg-[var(--color-surface)] text-slate-800 hover:bg-[var(--color-surface-2)]',
+        : 'border border-[var(--color-border)] bg-[var(--color-surface)] text-primary-900 hover:bg-[var(--color-surface-2)]',
     )
 
   const openPublicBookingForm = () => {

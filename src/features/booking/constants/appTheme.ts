@@ -1,5 +1,12 @@
 /** Tema dashboard admin (persistito in `restaurant_settings.app_theme`). Aggiungere nuovi id qui e in `restaurantSettingRegistry`. */
-export const APP_THEME_IDS = ['midnight-blue', 'theme-2', 'theme-3'] as const
+export const APP_THEME_IDS = [
+  'midnight-blue',
+  'theme-2',
+  'theme-3',
+  'soft-graphite-mint',
+  'pearl-blue-minimal',
+  'warm-sand-pro',
+] as const
 
 export type AppThemeId = (typeof APP_THEME_IDS)[number]
 
@@ -27,6 +34,21 @@ export const APP_THEME_OPTIONS: AppThemeOption[] = [
   { id: 'midnight-blue', label: 'Midnight Blue', previewSrc: previewHref('midnight-blue.png') },
   { id: 'theme-2', label: 'Terracotta & Sand', previewSrc: previewHref('theme-2.png') },
   { id: 'theme-3', label: 'Sage & Stone', previewSrc: previewHref('theme-3.png') },
+  {
+    id: 'soft-graphite-mint',
+    label: 'Soft Graphite & Mint',
+    previewSrc: previewHref('soft-graphite-mint.png'),
+  },
+  {
+    id: 'pearl-blue-minimal',
+    label: 'Pearl Blue Minimal',
+    previewSrc: previewHref('pearl-blue-minimal.png'),
+  },
+  {
+    id: 'warm-sand-pro',
+    label: 'Warm Sand Pro',
+    previewSrc: previewHref('warm-sand-pro.png'),
+  },
 ]
 
 export function parseAppThemeFromDb(raw: unknown): AppThemeId {
