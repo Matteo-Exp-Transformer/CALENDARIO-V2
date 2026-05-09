@@ -176,7 +176,7 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
                   disabled={disabled || closed}
                   onClick={() => addSlot(day)}
                   className={cn(
-                    'gap-2 rounded-lg border-2 border-[#2563eb] bg-[#3b82f6] px-3 py-1.5 text-xs font-medium text-white shadow-none transition-colors hover:bg-[#60a5fa] hover:border-[#3b82f6] hover:shadow-none focus:ring-[#93c5fd]'
+                    'gap-2 rounded-lg border-2 border-primary-700 bg-primary-600 px-3 py-1.5 text-xs font-medium text-white shadow-none transition-colors hover:bg-primary-500 hover:border-primary-600 hover:shadow-none focus:ring-primary-300'
                   )}
                 >
                   <Plus className="w-4 h-4" />

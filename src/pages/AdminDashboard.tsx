@@ -116,7 +116,7 @@ const NavItem: React.FC<NavItemProps> = ({
       type="button"
       onClick={onClick}
       className={cn(
-        'admin-nav-item relative w-full min-h-11 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border px-2 sm:px-3 py-2.5 text-sm font-medium text-slate-900 transition-all duration-150 cursor-pointer',
+        'admin-nav-item relative w-full min-h-11 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border px-2 sm:px-3 py-2.5 text-sm font-medium text-primary-900 transition-all duration-150 cursor-pointer',
         showNotifyDecor && 'overflow-hidden'
       )}
     >

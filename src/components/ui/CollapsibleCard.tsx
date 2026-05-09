@@ -181,10 +181,10 @@ export const CollapsibleCard = ({
           {loadingContent ?? (
             <>
               <div
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-b-transparent border-blue-600/60"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-b-transparent border-primary-600/60"
                 aria-hidden="true"
               >
-                <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-600"></div>
+                <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary-600"></div>
               </div>
               <span>{loadingMessage}</span>
             </>
@@ -257,7 +257,7 @@ export const CollapsibleCard = ({
                 e.stopPropagation()
                 onEmptyAction()
               }}
-              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="inline-flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             >
               {emptyActionLabel}
             </button>
@@ -482,7 +482,7 @@ export const CardActionButton = ({
     'inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors'
   const variantClasses = {
     default: 'text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-50',
-    primary: 'text-blue-700 bg-blue-100 hover:bg-blue-200 disabled:opacity-50',
+    primary: 'text-primary-800 bg-primary-100 hover:bg-primary-200 disabled:opacity-50',
     danger: 'text-red-700 bg-red-100 hover:bg-red-200 disabled:opacity-50',
   }
 

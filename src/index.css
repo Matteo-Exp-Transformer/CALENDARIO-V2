@@ -113,43 +113,181 @@
   --theme-text-secondary:       #5A6F84;
   --theme-accent-primary:       #1E3A5F;
   --theme-shadow-sm:            0 1px 2px 0 rgb(0 0 0 / 0.05);
+
+  /* Condiviso: keyframes pulse tab Prenotazioni + CTA collasso Nuova prenotazione */
+  --admin-nav-pulse-ring-a:     rgb(79 124 172 / 0.42);
+  --admin-nav-pulse-ring-b:     rgb(79 124 172 / 0.14);
+  --admin-new-booking-trigger-bg:    #4f7cac;
+  --admin-new-booking-trigger-hover: #4576a8;
 }
 
 /*
- * Solo dashboard (`data-admin-theme` da AdminDashboard): midnight-blue coincide con `:root`.
- * Qui stessi token di Midnight come base per theme-2 / theme-3 finché non si introduce una palette dedicata.
+ * Dashboard — Theme 4 «Terracotta & Sand»: token @theme (+ :root semantics) così Tailwind usa la scala corretta.
  */
-:root:is([data-admin-theme='theme-2'], [data-admin-theme='theme-3']) {
+:root[data-admin-theme='theme-2'] {
+  --color-primary-50:  #FFF8F4;
+  --color-primary-100: #F5E8DC;
+  --color-primary-200: #EBC9A6;
+  --color-primary-300: #DC9D75;
+  --color-primary-400: #D1845B;
+  --color-primary-500: #B86447;
+  --color-primary-600: #A8573B;
+  --color-primary-700: #8F4A32;
+  --color-primary-800: #6D371F;
+  --color-primary-900: #3F2D24;
+
+  --color-status-pending:  #D9A441;
+  --color-status-accepted: #5A9E76;
+  --color-status-rejected: #C85F57;
+  --color-status-deleted:  #887569;
+
+  --color-booking-cena:      #A8573B;
+  --color-booking-aperitivo: #D9A441;
+  --color-booking-evento:    #8B5CF6;
+  --color-booking-laurea:    #5A9E76;
+
+  --color-muted:      #EDE4DC;
+  --color-background: #FAF5F0;
+  --color-surface:    #FFFDF9;
+
+  --color-al-ritrovo-primary:      #A8573B;
+  --color-al-ritrovo-primary-dark: #6D371F;
+
+  /* Allinea `warm-*` (form admin/booking ancora wired a questi token) alla palette sabbiata */
+  --color-warm-wood:      #6D371F;
+  --color-warm-wood-dark: #3F2D24;
+  --color-warm-orange:    #D1845B;
+  --color-warm-beige:     #EBC9A6;
+  --color-warm-stone:     #D4BFAD;
+  --color-terracotta:     #A8573B;
+
+  --color-primary:       #A8573B;
+  --color-primary-light: #D1845B;
+  --color-primary-dark:  #6D371F;
+  --color-primary-bg:    #F5E8DC;
+
+  --color-bg:        #FAF5F0;
+  --color-surface:   #FFFDF9;
+  --color-surface-2: #F5EDE4;
+
+  --color-border:        #E6D5C5;
+  --color-border-strong: #D4BEA8;
+  --admin-warm-wrap-border: #E6D5C5;
+  --admin-warm-wrap-border-width: 1.5px;
+
+  --admin-warm-gradient: linear-gradient(
+    90deg,
+    rgb(253 246 239) 0%,
+    rgb(255 252 247) 50%,
+    rgb(247 237 229) 100%
+  );
+
+  --admin-nav-tab-active-border: #A8573B;
+  --color-accent-selected:       #EBC9A6;
+
+  --color-text:       #3F2D24;
+  --color-text-muted: #6B5A4F;
+  --color-text-light: #8A7B70;
+
+  --color-success: #5A9E76;
+  --color-warning: #D9A441;
+  --color-danger:  #C85F57;
+  --color-info:    #D1845B;
+
+  --theme-surface-nav-active:   #F5E8DC;
+  --theme-border-nav-active:    #A8573B;
+  --theme-text-nav-active:      #3F2D24;
+  --theme-surface-nav-inactive: #FFFDF9;
+  --theme-border-nav-inactive:  #E6D5C5;
+  --theme-text-nav-inactive:    #5C4A3E;
+  --theme-surface-hover:        #F5EDE4;
+  --theme-border-strong:        #D4BEA8;
+  --theme-text-secondary:       #6B5A4F;
+  --theme-accent-primary:       #A8573B;
+
+  --admin-nav-pulse-ring-a:     rgb(209 132 91 / 0.42);
+  --admin-nav-pulse-ring-b:     rgb(209 132 91 / 0.14);
+  --admin-new-booking-trigger-bg:    #D1845B;
+  --admin-new-booking-trigger-hover: #C46F48;
+}
+
+/*
+ * Midnight Blue (`midnight-blue` salvato): stessa specificità di theme-2 / theme-3.
+ */
+:root[data-admin-theme='midnight-blue'] {
+  --color-primary-50:  #EEF6FC;
+  --color-primary-100: #D6ECFE;
+  --color-primary-200: #B8DEFD;
+  --color-primary-300: #7CC6FE;
+  --color-primary-400: #4F7CAC;
+  --color-primary-500: #386891;
+  --color-primary-600: #1E3A5F;
+  --color-primary-700: #183049;
+  --color-primary-800: #122538;
+  --color-primary-900: #18324A;
+
+  --color-status-pending:  #F59E0B;
+  --color-status-accepted: #10B981;
+  --color-status-rejected: #EF4444;
+  --color-status-deleted:  #6B7280;
+
+  --color-booking-cena:      #1E3A5F;
+  --color-booking-aperitivo: #F59E0B;
+  --color-booking-evento:    #8B5CF6;
+  --color-booking-laurea:    #10B981;
+
+  --color-warm-wood:      #6b4226;
+  --color-warm-wood-dark: #4a2d19;
+  --color-warm-orange:    #f97316;
+  --color-warm-beige:     #fef3c7;
+  --color-warm-stone:     #d4c4b0;
+
+  --color-terracotta: #c2410c;
+  --color-muted:      #EDF2F7;
+  --color-background: #ffffff;
+  --color-surface:    #f6f8fb;
+
+  --color-al-ritrovo-primary:      #1E3A5F;
+  --color-al-ritrovo-primary-dark: #183049;
+
   --color-primary:       #1E3A5F;
   --color-primary-light: #4F7CAC;
   --color-primary-dark:  #122538;
   --color-primary-bg:    #EEF6FC;
-  --color-bg:            #ffffff;
-  --color-surface:       #f6f8fb;
-  --color-surface-2:     #EDF2F7;
+
+  --color-bg:        #ffffff;
+  --color-surface:     #f6f8fb;
+  --color-surface-2:   #EDF2F7;
+
   --color-border:        #D8E1EA;
   --color-border-strong: #B9C9DA;
   --admin-warm-wrap-border: #D8E1EA;
   --admin-warm-wrap-border-width: 1.5px;
+
   --admin-warm-gradient: linear-gradient(
     90deg,
     rgb(255 237 213) 0%,
     rgb(255 247 237) 42%,
     rgb(254 249 195) 100%
   );
+
   --admin-nav-tab-active-border: #1E3A5F;
-  --color-accent-selected: #7CC6FE;
-  --color-text:          #18324A;
-  --color-text-muted:    #5A6F84;
-  --color-text-light:    #8899AA;
-  --color-success:       #10B981;
-  --color-warning:       #F59E0B;
-  --color-danger:        #EF4444;
-  --color-info:          #4F7CAC;
+  --color-accent-selected:       #7CC6FE;
+
+  --color-text:       #18324A;
+  --color-text-muted: #5A6F84;
+  --color-text-light: #8899AA;
+
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger:  #EF4444;
+  --color-info:    #4F7CAC;
+
   --shadow-sm:   0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md:   0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
   --shadow-lg:   0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
   --shadow-xl:   0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+
   --theme-surface-nav-active:   #EEF6FC;
   --theme-border-nav-active:    #1E3A5F;
   --theme-text-nav-active:      #18324A;
@@ -161,6 +299,106 @@
   --theme-text-secondary:       #5A6F84;
   --theme-accent-primary:       #1E3A5F;
   --theme-shadow-sm:            0 1px 2px 0 rgb(0 0 0 / 0.05);
+
+  --admin-nav-pulse-ring-a:     rgb(79 124 172 / 0.42);
+  --admin-nav-pulse-ring-b:     rgb(79 124 172 / 0.14);
+  --admin-new-booking-trigger-bg:    #4f7cac;
+  --admin-new-booking-trigger-hover: #4576a8;
+}
+
+/*
+ * Theme 3 — «Sage & Stone»: verde salvia calmato + crema/pietra (mockup prodotto).
+ */
+:root[data-admin-theme='theme-3'] {
+  --color-primary-50:  #F1F5F0;
+  --color-primary-100: #DEE8D4;
+  --color-primary-200: #C9DBB6;
+  --color-primary-300: #ACBEA3;
+  --color-primary-400: #8FA88F;
+  --color-primary-500: #6F8F74;
+  --color-primary-600: #5D7A63;
+  --color-primary-700: #4F6854;
+  --color-primary-800: #3F5448;
+  --color-primary-900: #2F3A33;
+
+  --color-status-pending:  #D5A94C;
+  --color-status-accepted: #4FA36C;
+  --color-status-rejected: #C86665;
+  --color-status-deleted:  #6F7B72;
+
+  --color-booking-cena:      #5D7A63;
+  --color-booking-aperitivo: #D5A94C;
+  --color-booking-evento:    #7C73A8;
+  --color-booking-laurea:    #4FA36C;
+
+  --color-muted:      #EDEAE2;
+  --color-background: #F7F5EF;
+  --color-surface:    #FFFDF8;
+
+  --color-al-ritrovo-primary:      #5D7A63;
+  --color-al-ritrovo-primary-dark: #3F5448;
+
+  --color-warm-wood:      #3F5448;
+  --color-warm-wood-dark: #2F3A33;
+  --color-warm-orange:    #D5A94C;
+  --color-warm-beige:     #DDD7C8;
+  --color-warm-stone:     #C9C2B3;
+  --color-terracotta:     #8FA88F;
+
+  --color-primary:       #5D7A63;
+  --color-primary-light: #8FA88F;
+  --color-primary-dark:  #3F5448;
+  --color-primary-bg:    #E8EDE5;
+
+  --color-bg:        #F7F5EF;
+  --color-surface:   #FFFDF8;
+  --color-surface-2: #F0EDE6;
+
+  --color-border:        #DDD7C8;
+  --color-border-strong: #C9C1B4;
+  --admin-warm-wrap-border: #DDD7C8;
+  --admin-warm-wrap-border-width: 1.5px;
+
+  --admin-warm-gradient: linear-gradient(
+    90deg,
+    rgb(247 245 239) 0%,
+    rgb(255 253 248) 50%,
+    rgb(239 237 229) 100%
+  );
+
+  --admin-nav-tab-active-border: #5D7A63;
+  --color-accent-selected:       #C9DBB6;
+
+  --color-text:       #2F3A33;
+  --color-text-muted: #5A6760;
+  --color-text-light: #7A867E;
+
+  --color-success: #4FA36C;
+  --color-warning: #D5A94C;
+  --color-danger:  #C86665;
+  --color-info:    #8FA88F;
+
+  --shadow-sm:   0 1px 2px 0 rgb(47 58 51 / 0.06);
+  --shadow-md:   0 4px 6px -1px rgb(47 58 51 / 0.08), 0 2px 4px -2px rgb(47 58 51 / 0.05);
+  --shadow-lg:   0 10px 15px -3px rgb(47 58 51 / 0.09), 0 4px 6px -4px rgb(47 58 51 / 0.05);
+  --shadow-xl:   0 20px 25px -5px rgb(47 58 51 / 0.1), 0 8px 10px -6px rgb(47 58 51 / 0.05);
+
+  --theme-surface-nav-active:   #E8EDE5;
+  --theme-border-nav-active:    #5D7A63;
+  --theme-text-nav-active:      #2F3A33;
+  --theme-surface-nav-inactive: #FFFDF8;
+  --theme-border-nav-inactive:  #DDD7C8;
+  --theme-text-nav-inactive:    #4A574F;
+  --theme-surface-hover:        #F0EDE6;
+  --theme-border-strong:        #C9C1B4;
+  --theme-text-secondary:       #5A6760;
+  --theme-accent-primary:       #5D7A63;
+  --theme-shadow-sm:            0 1px 2px 0 rgb(47 58 51 / 0.06);
+
+  --admin-nav-pulse-ring-a:     rgb(143 168 143 / 0.45);
+  --admin-nav-pulse-ring-b:     rgb(143 168 143 / 0.14);
+  --admin-new-booking-trigger-bg:    #8FA88F;
+  --admin-new-booking-trigger-hover: #7F9A80;
 }
 
 /* Base */
@@ -310,16 +548,16 @@ body {
 
 /*
  * Pulsazione attorno al tab Prenotazioni con badge.
- * Ring sul ::before così coincide col perimetro rounded-xl senza essere tagliato da overflow-hidden sul wrap;
- * tonalità come il brand secondary (#4F7CAC — CTA blu admin).
+ * Ring sul ::before così coincide col perimetro rounded-xl senza essere tagliato da overflow-hidden sul wrap.
+ * Toni da `--admin-nav-pulse-ring-*` sul tema attivo (ice vs terracotta).
  */
 @keyframes admin-nav-notify-pulse-ring {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgb(79 124 172 / 0.42);
+    box-shadow: 0 0 0 0 var(--admin-nav-pulse-ring-a);
   }
   55% {
-    box-shadow: 0 0 0 5px rgb(79 124 172 / 0.14);
+    box-shadow: 0 0 0 5px var(--admin-nav-pulse-ring-b);
   }
 }
 
@@ -354,13 +592,13 @@ body {
   animation: spin 0.8s linear infinite;
 }
 
-/* Admin — CTA “Nuova prenotazione” (secondary tema ice) */
+/* Admin — CTA “Nuova prenotazione” (secondary brand; variabile per tema) */
 .admin-new-booking-collapse-trigger {
   background-image: none;
-  background-color: #4f7cac;
+  background-color: var(--admin-new-booking-trigger-bg);
 }
 .admin-new-booking-collapse-trigger:hover {
-  background-color: #4576a8;
+  background-color: var(--admin-new-booking-trigger-hover);
 }
 
 /*
@@ -373,12 +611,12 @@ body {
   border-color: var(--color-border);
 }
 
-/* Admin dashboard — superficie teal (digest header prenotazioni) */
+/* Digest header liste prenotazioni: alone basato sul verde stato / superficie tema */
 .admin-teal-surface {
   background-image: linear-gradient(
     90deg,
-    rgba(45, 212, 191, 0.38) 0%,
-    rgba(204, 251, 241, 0.9) 50%,
+    color-mix(in srgb, var(--color-success) 28%, transparent) 0%,
+    color-mix(in srgb, var(--color-surface) 88%, white) 50%,
     rgb(255, 255, 255) 100%
   );
 }
@@ -400,7 +638,7 @@ body {
   border-color: var(--color-border-strong);
   box-shadow:
     inset 0 0 0 1px rgb(255 255 255 / 0.9),
-    0 1px 2px rgb(24 50 74 / 0.06);
+    0 1px 2px color-mix(in srgb, var(--color-text) 10%, transparent);
 }
 
 /* Tab fascia principale selezionata */
@@ -468,14 +706,14 @@ button.admin-nav-item.admin-nav-tab-active.archive-tab-filter-btn {
 .admin-collapse-header--blue:hover {
   background-image: linear-gradient(
     90deg,
-    rgba(219, 234, 254, 0.96) 0%,
-    rgba(191, 219, 254, 0.96) 50%,
-    rgba(147, 197, 253, 0.96) 100%
+    color-mix(in srgb, var(--color-primary-100) 96%, white) 0%,
+    color-mix(in srgb, var(--color-primary-200) 93%, white) 50%,
+    color-mix(in srgb, var(--color-primary-300) 90%, white) 100%
   );
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.92),
-    0 0 0 1px rgba(59, 130, 246, 0.28),
-    0 12px 22px rgba(59, 130, 246, 0.28);
+    0 0 0 1px color-mix(in srgb, var(--color-primary-400) 32%, transparent),
+    0 12px 22px color-mix(in srgb, var(--color-primary-600) 24%, transparent);
 }
 
 @keyframes collapsibleContentEnter {
@@ -508,33 +746,43 @@ button.admin-nav-item.admin-nav-tab-active.archive-tab-filter-btn {
   animation: collapsibleContentLeave 220ms ease-in forwards;
 }
 
-/* Booking calendar — selected day memory aid */
+/* Booking calendar — selected day memory aid (gradient da token tema) */
 .booking-calendar-fc .fc .fc-daygrid-day.calendar-day-today .fc-daygrid-day-frame {
-  background-color: #fef9c3;
-  box-shadow: inset 0 0 0 2px #f59e0b;
+  background-color: color-mix(in srgb, var(--color-warning) 22%, white);
+  box-shadow: inset 0 0 0 2px var(--color-warning);
   border-radius: 10px;
 }
 
 .booking-calendar-fc .fc .fc-daygrid-day.calendar-day-selected .fc-daygrid-day-frame {
-  background: linear-gradient(135deg, #cfe9fe 0%, #7cc6fe 45%, #4f7cac 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-bg) 0%,
+    var(--color-primary-200) 45%,
+    var(--color-primary-500) 100%
+  );
   box-shadow:
-    inset 0 0 0 2px #1e3a5f,
-    0 8px 16px rgba(30, 58, 95, 0.28);
+    inset 0 0 0 2px var(--color-primary-600),
+    0 8px 16px color-mix(in srgb, var(--color-primary-600) 30%, transparent);
   border-radius: 10px;
   transform: translateY(-1px);
   transition: all 160ms ease;
 }
 
 .booking-calendar-fc .fc .fc-daygrid-day.calendar-day-selected .fc-daygrid-day-number {
-  color: #18324a;
+  color: var(--color-primary-900);
   font-weight: 800;
 }
 
 .booking-calendar-fc .fc .fc-daygrid-day.calendar-day-today.calendar-day-selected .fc-daygrid-day-frame {
-  background: linear-gradient(135deg, #e3ecfe 0%, #b8defb 42%, #7cc6fe 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-primary-100) 85%, white) 0%,
+    var(--color-primary-200) 42%,
+    var(--color-primary-400) 100%
+  );
   box-shadow:
-    inset 0 0 0 2px #1e3a5f,
-    0 10px 18px rgba(24, 50, 74, 0.32);
+    inset 0 0 0 2px var(--color-primary-600),
+    0 10px 18px color-mix(in srgb, var(--color-primary-900) 24%, transparent);
 }
 
 /* Vista mese: respiro sotto l’ultima card evento rispetto al bordo inferiore della cella */
@@ -552,7 +800,7 @@ button.admin-nav-item.admin-nav-tab-active.archive-tab-filter-btn {
   letter-spacing: 0.12em;
   padding: 0.125rem 0 0.2rem;
   margin: 0;
-  color: #64748b;
+  color: var(--color-text-muted);
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
@@ -567,7 +815,7 @@ button.admin-nav-item.admin-nav-tab-active.archive-tab-filter-btn {
 .booking-calendar-fc .fc .fc-dayGridMonth-view a.booking-calendar-more-dots.fc-daygrid-more-link:hover,
 .booking-calendar-fc .fc .fc-dayGridMonth-view a.booking-calendar-more-dots.fc-daygrid-more-link:focus,
 .booking-calendar-fc .fc .fc-dayGridMonth-view a.booking-calendar-more-dots.fc-daygrid-more-link:focus-visible {
-  color: #475569;
+  color: var(--color-text-light);
   background: transparent !important;
   background-color: transparent !important;
   border: none !important;
@@ -593,36 +841,36 @@ button.admin-nav-item.admin-nav-tab-active.archive-tab-filter-btn {
 
 .booking-calendar-fc .fc .fc-toolbar .fc-button,
 .booking-calendar-fc .fc .fc-toolbar .fc-button:disabled {
-  color: #18324a !important;
+  color: var(--color-primary-900) !important;
 }
 
 .booking-calendar-fc .fc .fc-toolbar .fc-button .fc-icon,
 .booking-calendar-fc .fc .fc-toolbar .fc-button .fc-icon::before {
-  color: #18324a !important;
+  color: var(--color-primary-900) !important;
 }
 
-/* FullCalendar — allineato a primary / accent tema navy */
+/* FullCalendar — token tema (Midnight / Terracotta via `data-admin-theme`) */
 .booking-calendar-fc .fc {
   --fc-border-color: var(--color-border);
-  --fc-button-bg-color: #eef6fc;
-  --fc-button-border-color: #b8defd;
-  --fc-button-text-color: #18324a;
-  --fc-button-hover-bg-color: #d6ecfe;
-  --fc-button-hover-text-color: #18324a;
-  --fc-button-active-bg-color: #d6ecfe;
-  --fc-button-active-text-color: #18324a;
-  --fc-today-bg-color: #eef6fc;
+  --fc-button-bg-color: var(--color-primary-bg);
+  --fc-button-border-color: var(--color-primary-200);
+  --fc-button-text-color: var(--color-primary-900);
+  --fc-button-hover-bg-color: var(--color-primary-100);
+  --fc-button-hover-text-color: var(--color-primary-900);
+  --fc-button-active-bg-color: var(--color-primary-100);
+  --fc-button-active-text-color: var(--color-primary-900);
+  --fc-today-bg-color: var(--color-primary-bg);
 }
 
 .booking-calendar-fc .fc .fc-prev-button,
 .booking-calendar-fc .fc .fc-next-button,
 .booking-calendar-fc .fc .fc-today-button {
-  color: #18324a !important;
+  color: var(--color-primary-900) !important;
 }
 
 .booking-calendar-fc .fc .fc-prev-button .fc-icon::before,
 .booking-calendar-fc .fc .fc-next-button .fc-icon::before {
-  color: #18324a !important;
+  color: var(--color-primary-900) !important;
 }
 
 /* Booking calendar — viewport stretto: toolbar FullCalendar + nav compatte */

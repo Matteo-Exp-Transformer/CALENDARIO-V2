@@ -197,12 +197,12 @@ const AppThemePreviewPick: React.FC<AppThemePreviewPickProps> = ({
 export function RestaurantSettingsIntro() {
   return (
     <div className={restaurantSettingsIntroCardClass}>
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-[#2563eb] bg-[#3b82f6] shadow-lg">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-primary-700 bg-primary-600 shadow-lg">
         <Store className="h-7 w-7 text-white" />
       </div>
       <div className="min-w-0 text-center">
-        <h2 className="text-2xl font-bold text-slate-900">Impostazioni locale</h2>
-        <p className="text-sm text-slate-600">
+        <h2 className="text-2xl font-bold text-[var(--color-text)]">Impostazioni locale</h2>
+        <p className="text-sm text-[var(--color-text-muted)]">
           Modifica i dati visualizzati nella pagina Prenotazioni e nel Calendario.
         </p>
       </div>
@@ -558,10 +558,10 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const bookingBgNavyToggleClass = (active: boolean) =>
     [
-      'rounded-lg text-sm font-semibold shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#93c5fd] disabled:pointer-events-none disabled:opacity-65',
+      'rounded-lg text-sm font-semibold shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-300 disabled:pointer-events-none disabled:opacity-65',
       active
-        ? 'bg-[#3b82f6] ring-2 ring-white/70 hover:bg-[#2563eb]'
-        : 'bg-[#172554] hover:bg-[#1e3a8a]',
+        ? 'bg-primary-600 ring-2 ring-white/70 hover:bg-primary-700'
+        : 'bg-primary-900 hover:bg-primary-800',
     ].join(' ')
 
   const bookingBgSectionClass =
@@ -881,7 +881,7 @@ export const RestaurantSettingsTab: React.FC = () => {
             onClick={handleAddPlacementArea}
             disabled={upsert.isPending}
             className={cn(
-              'h-16 w-full shrink-0 gap-2 rounded-lg border-2 border-[#2563eb] bg-[#3b82f6] px-3 py-0 text-sm font-medium text-white shadow-none transition-colors hover:bg-[#60a5fa] hover:border-[#3b82f6] hover:shadow-none focus:ring-[#93c5fd]'
+              'h-16 w-full shrink-0 gap-2 rounded-lg border-2 border-primary-700 bg-primary-600 px-3 py-0 text-sm font-medium text-white shadow-none transition-colors hover:bg-primary-500 hover:border-primary-600 hover:shadow-none focus:ring-primary-300'
             )}
           >
             <Plus className="h-4 w-4 shrink-0" />
@@ -907,7 +907,7 @@ export const RestaurantSettingsTab: React.FC = () => {
                         )
                       }
                       maxLength={PLACEMENT_AREA_MAX_LENGTH}
-                      className="w-full rounded-xl border border-slate-300 text-center focus-visible:outline-none focus:ring-1 focus:ring-[#93c5fd] focus:border-[#3b82f6]"
+                      className="w-full rounded-xl border border-slate-300 text-center focus-visible:outline-none focus:ring-1 focus:ring-primary-300 focus:border-primary-500"
                       placeholder="Nome area"
                       autoFocus
                     />
@@ -1071,7 +1071,7 @@ export const RestaurantSettingsTab: React.FC = () => {
               onClick={handleBookingBgConfirmOrCancel}
               disabled={upsert.isPending || !tenantId}
               style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
-              className="min-h-[2.875rem] w-full max-w-xs border-0 !bg-[#1e3a8a] px-6 py-2.5 !text-white shadow-md transition-colors duration-150 hover:!bg-[#1e40af] hover:shadow-lg focus:ring-[#3b82f6] disabled:pointer-events-none disabled:!bg-[#1e3a8a] [&_svg]:!text-white"
+              className="min-h-[2.875rem] w-full max-w-xs border-0 bg-primary-800 px-6 py-2.5 text-white shadow-md transition-colors duration-150 hover:bg-primary-700 hover:shadow-lg focus:ring-primary-400 disabled:pointer-events-none disabled:bg-primary-800 [&_svg]:text-white"
             >
               {bookingBgSelectionLocked ? 'Annulla selezione sfondo' : 'Conferma selezione sfondo'}
             </Button>
@@ -1117,7 +1117,7 @@ export const RestaurantSettingsTab: React.FC = () => {
           type="button"
           onClick={handleSave}
           disabled={upsert.isPending || !tenantId}
-          className="restaurant-settings-save-submit min-h-[3.75rem] border-2 border-[#2563eb] bg-[#3b82f6] px-10 py-5 text-base shadow-md hover:bg-[#60a5fa] hover:border-[#3b82f6] hover:shadow-lg focus:ring-[#93c5fd] disabled:pointer-events-none disabled:border-[#2563eb] disabled:bg-[#3b82f6]"
+          className="restaurant-settings-save-submit min-h-[3.75rem] border-2 border-primary-700 bg-primary-600 px-10 py-5 text-base shadow-md hover:bg-primary-500 hover:border-primary-600 hover:shadow-lg focus:ring-primary-300 disabled:pointer-events-none disabled:border-primary-700 disabled:bg-primary-600"
         >
           {upsert.isPending ? (
             <>

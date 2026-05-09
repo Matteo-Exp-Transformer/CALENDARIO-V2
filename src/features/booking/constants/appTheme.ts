@@ -25,8 +25,8 @@ export type AppThemeOption = {
 
 export const APP_THEME_OPTIONS: AppThemeOption[] = [
   { id: 'midnight-blue', label: 'Midnight Blue', previewSrc: previewHref('midnight-blue.png') },
-  { id: 'theme-2', label: 'Tema 2', previewSrc: previewHref('theme-2.png') },
-  { id: 'theme-3', label: 'Tema 3', previewSrc: previewHref('theme-3.png') },
+  { id: 'theme-2', label: 'Terracotta & Sand', previewSrc: previewHref('theme-2.png') },
+  { id: 'theme-3', label: 'Sage & Stone', previewSrc: previewHref('theme-3.png') },
 ]
 
 export function parseAppThemeFromDb(raw: unknown): AppThemeId {
