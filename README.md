@@ -14,6 +14,10 @@ npm run dev                  # → http://localhost:5173
 
 Guida completa con prerequisiti, link Supabase CLI, deploy e troubleshooting → [docs/SETUP.md](docs/SETUP.md).
 
+### Fine riga (Git e editor)
+
+Il repo è impostato con **LF** nelle revisioni. In radice trovi **`.gitattributes`** (tipi di file testuali con `eol=lf`, artefatti binari esclusi) e **`.editorconfig`** (UTF-8, fine riga LF, newline finale). Così si limitano diff fantasma solo per CRLF/LF. Su Windows, con `core.autocrlf=true` (tipico), la working copy può usare CRLF mentre gli **commit restano LF**; è il comportamento atteso di Git.
+
 ## Da dove iniziare
 
 Per orientarti nel progetto leggi i file in quest'ordine. Ognuno ha uno scopo preciso:
