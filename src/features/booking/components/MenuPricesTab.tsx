@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type ReactNode,
 } from 'react'
 import { toast } from 'react-toastify'
 import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
@@ -126,25 +127,16 @@ export function MenuPricesHeroToolbar({
 }: MenuPricesHeroToolbarProps) {
   return (
     <section
-      aria-labelledby="menu-prices-heading"
+      aria-label="Gestione menu e prezzi"
       className="flex w-full min-w-0 flex-col gap-4 rounded-xl shadow-sm px-4 py-4 md:gap-5 md:px-5 md:py-5 min-h-[148px]"
       style={ADMIN_WARM_GRADIENT_SURFACE}
     >
-      <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-        <h2
-          id="menu-prices-heading"
-          className="shrink-0 font-serif text-lg font-bold leading-tight text-warm-wood md:text-xl"
-        >
-          Menu
-        </h2>
-        <p
-          className="min-w-0 flex-1 px-1 text-center text-sm leading-snug text-gray-600 sm:px-2 sm:text-base max-[729px]:hidden"
-          title="Aggiungi, modifica o elimina le voci del menu e i prezzi"
-        >
-          Aggiungi, modifica o elimina le voci del menu e i prezzi
-        </p>
-      </div>
-
+      <p
+        className="min-w-0 w-full px-1 text-center text-sm leading-snug text-gray-600 sm:px-2 sm:text-base max-[729px]:hidden"
+        title="Aggiungi, modifica, nascondi o elimina gli elementi del menù"
+      >
+        Aggiungi, modifica, nascondi o elimina gli elementi del menù
+      </p>
       <div className="w-full border-t border-[color:var(--admin-warm-wrap-border)] pt-3">
         <div className="grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2 xl:grid-cols-4">
           <Button
@@ -223,25 +215,16 @@ const slugifyCategory = (value: string): string =>
 /** Allineato a MenuSelection — larghezza massima card ingredienti */
 const MENU_CARD_MAX_WIDTH_PX = 746
 
-const adminMenuCategoryTitleStyle: React.CSSProperties = {
-  color: '#6B4226',
-  backgroundColor: 'rgba(255, 255, 255, 0.85)',
-  backdropFilter: 'blur(1px)',
-  padding: '8px 16px',
-  borderRadius: '12px',
-  width: '100%',
-  maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
-  margin: '0 auto',
-  boxSizing: 'border-box',
-  fontWeight: '700',
-}
-
 type AdminMenuIngredientCardProps = {
   item: MenuItem
   onEdit: () => void
   onDelete: () => void
   /** Es. nome categoria (vista elenco prodotti) */
   metaLine?: string
+  /** Sotto la card bianca (es. tipologie prenotazione in modifica prodotto). */
+  footer?: ReactNode
+  /** Vista menu senza «Crea / Modifica Prodotto»: solo nome/prezzo, senza icone azione. */
+  showActions?: boolean
 }
 
 const AdminMenuIngredientCard: React.FC<AdminMenuIngredientCardProps> = ({
@@ -249,6 +232,8 @@ const AdminMenuIngredientCard: React.FC<AdminMenuIngredientCardProps> = ({
   onEdit,
   onDelete,
   metaLine,
+  footer,
+  showActions = true,
 }) => {
   const hasDesc = Boolean(item.description?.trim())
   return (
@@ -325,30 +310,67 @@ const AdminMenuIngredientCard: React.FC<AdminMenuIngredientCardProps> = ({
             >
               €{item.price.toFixed(2)}
             </span>
-            <div className="menu-prices-item-actions flex gap-2">
-              <button
-                type="button"
-                onClick={onEdit}
-                className="menu-prices-icon-btn menu-prices-icon-btn--edit"
-                aria-label={`Modifica ${item.name}`}
-              >
-                <Edit className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={onDelete}
-                className="menu-prices-icon-btn menu-prices-icon-btn--delete"
-                aria-label={`Elimina ${item.name}`}
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
+            {showActions ? (
+              <div className="menu-prices-item-actions flex gap-2">
+                <button
+                  type="button"
+                  onClick={onEdit}
+                  className="menu-prices-icon-btn menu-prices-icon-btn--edit"
+                  aria-label={`Modifica ${item.name}`}
+                >
+                  <Edit className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={onDelete}
+                  className="menu-prices-icon-btn menu-prices-icon-btn--delete"
+                  aria-label={`Elimina ${item.name}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
+      {footer}
       {metaLine ? (
         <p className="px-1 text-center text-xs text-slate-500 sm:text-left">{metaLine}</p>
       ) : null}
+    </div>
+  )
+}
+
+type MenuItemBookingTypesPanelProps = {
+  item: MenuItem
+  disabled: boolean
+  onToggle: (item: MenuItem, bt: BookingType, checked: boolean) => void | Promise<void>
+}
+
+function MenuItemBookingTypesPanel({ item, disabled, onToggle }: MenuItemBookingTypesPanelProps) {
+  const bookingTypes = normalizeMenuItemBookingTypes(item.booking_types)
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white/80 p-3">
+      <span className="mx-auto mb-2 block w-full text-center text-xs font-bold text-warm-wood sm:text-sm">
+        Tipologie di prenotazione
+      </span>
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
+        {VOL_AU_VENT_PROMO_BOOKING_TYPE_OPTIONS.map(({ value, label: btLabel }) => (
+          <label
+            key={value}
+            className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm"
+          >
+            <input
+              type="checkbox"
+              className="h-4 w-4 shrink-0 rounded border-gray-400"
+              checked={bookingTypes.includes(value)}
+              disabled={disabled}
+              onChange={(e) => void onToggle(item, value, e.target.checked)}
+            />
+            {btLabel}
+          </label>
+        ))}
+      </div>
     </div>
   )
 }
@@ -430,7 +452,7 @@ const AdminMenuCategoryLabelCard: React.FC<AdminMenuCategoryLabelCardProps> = ({
   </div>
 )
 
-type MenuViewMode = 'menu' | 'products' | 'categories' | 'preset_menus'
+type MenuViewMode = 'menu' | 'categories' | 'preset_menus'
 
 export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>(function MenuPricesTab(
   { omitHeroSection = false, onToolbarPromoDisabled },
@@ -481,32 +503,14 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const productFormCardRef = useRef<HTMLDivElement>(null)
   const scrollProductFormIntoViewAfterEditRef = useRef(false)
 
+  /** Attivo dopo «Crea / Modifica Prodotto» (toolbar): form sopra la lista e ingredienti con azioni + tipologie. */
+  const [productToolbarFlowActive, setProductToolbarFlowActive] = useState(false)
+
   const resetVolAuVentPromoEditorDraft = () => {
     setPromoEditorMode('list')
     setEditingVolAuVentPromoId(null)
     setPromoDraftMessage('')
     setPromoDraftBookingTypes(['rinfresco_laurea', 'menu_prezzo_fisso'])
-  }
-
-  const openPromoEditor = () => {
-    resetVolAuVentPromoEditorDraft()
-    resetPresetEditor()
-    setViewMode('menu')
-    setIsAdding(false)
-    setEditingId(null)
-    setPriceInput('')
-    setFormData({
-      name: '',
-      category: categoryKeys[0] ?? '',
-      price: 0,
-      description: '',
-      sort_order: 0,
-    })
-    setIsAddingCategory(false)
-    setEditingCategoryId(null)
-    setNewCategoryLabel('')
-    setPromoEditorOpen(true)
-    setPromoEditorMode('list')
   }
 
   useLayoutEffect(() => {
@@ -601,12 +605,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setEditingCustomPresetId(null)
   }
 
-  const openPresetMenusSection = () => {
-    resetPresetEditor()
-    setPresetEditorMode('list')
-    setViewMode('preset_menus')
-  }
-
   const closePresetMenusSection = () => {
     resetPresetEditor()
     setViewMode('menu')
@@ -692,6 +690,39 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     sort_order: 0
   })
 
+  const resetProductFormState = () => {
+    setProductToolbarFlowActive(false)
+    setIsAdding(false)
+    setEditingId(null)
+    setPriceInput('')
+    setFormData({
+      name: '',
+      category: categoryKeys[0] ?? '',
+      price: 0,
+      description: '',
+      sort_order: 0,
+    })
+  }
+
+  const openPromoEditor = () => {
+    resetVolAuVentPromoEditorDraft()
+    resetPresetEditor()
+    setViewMode('menu')
+    resetProductFormState()
+    setIsAddingCategory(false)
+    setEditingCategoryId(null)
+    setNewCategoryLabel('')
+    setPromoEditorOpen(true)
+    setPromoEditorMode('list')
+  }
+
+  const openPresetMenusSection = () => {
+    resetPresetEditor()
+    resetProductFormState()
+    setPresetEditorMode('list')
+    setViewMode('preset_menus')
+  }
+
   // Raggruppa per categoria
   const itemsByCategory = menuItems.reduce((acc, item) => {
     if (!acc[item.category]) {
@@ -701,8 +732,13 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     return acc
   }, {} as Record<string, MenuItem[]>)
 
+  const categoryEntriesWithItems = useMemo(
+    () => categoryEntries.filter(([key]) => (itemsByCategory[key]?.length ?? 0) > 0),
+    [categoryEntries, itemsByCategory],
+  )
+
   const handleStartEdit = (item: MenuItem) => {
-    setViewMode('products')
+    setProductToolbarFlowActive(true)
     setEditingId(item.id)
     setFormData({
       name: item.name,
@@ -717,8 +753,11 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   }
 
   const handleStartAdd = () => {
-    setViewMode('products')
+    setViewMode('menu')
+    setPromoEditorOpen(false)
+    resetVolAuVentPromoEditorDraft()
     setIsAddingCategory(false)
+    setProductToolbarFlowActive(true)
     setIsAdding(true)
     setEditingId(null)
     setPriceInput('')
@@ -729,20 +768,12 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       description: '',
       sort_order: 0
     })
+    scrollProductFormIntoViewAfterEditRef.current = true
   }
 
   const handleCancel = () => {
     setViewMode('menu')
-    setIsAdding(false)
-    setEditingId(null)
-    setPriceInput('')
-    setFormData({
-      name: '',
-      category: categoryKeys[0] ?? '',
-      price: 0,
-      description: '',
-      sort_order: 0
-    })
+    resetProductFormState()
   }
 
   const handleSaveCategory = async () => {
@@ -810,6 +841,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       toast.error('Categoria non modificabile')
       return
     }
+    resetProductFormState()
     setViewMode('categories')
     setIsAddingCategory(true)
     setEditingCategoryId(dbCategory.id)
@@ -838,8 +870,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
 
   const handleStartAddCategory = () => {
     setViewMode('categories')
-    setIsAdding(false)
-    setEditingId(null)
+    resetProductFormState()
     setIsAddingCategory(true)
     setEditingCategoryId(null)
     setNewCategoryLabel('')
@@ -962,15 +993,12 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   }
 
   useLayoutEffect(() => {
-    if (!scrollProductFormIntoViewAfterEditRef.current) {
-      return
-    }
-    if (viewMode !== 'products' || (!editingId && !isAdding)) {
-      return
-    }
+    if (!scrollProductFormIntoViewAfterEditRef.current) return
+    if (viewMode !== 'menu' || promoEditorOpen) return
+    if (!editingId && !isAdding) return
     scrollProductFormIntoViewAfterEditRef.current = false
-    productFormCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }, [viewMode, isAdding, editingId])
+    productFormCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [viewMode, promoEditorOpen, isAdding, editingId])
 
   useEffect(() => {
     onToolbarPromoDisabled?.(volAuVentPromoLoading || upsertRestaurantSetting.isPending)
@@ -984,25 +1012,16 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     <div className="flex flex-col gap-6 md:gap-7">
       {!omitHeroSection && (
       <section
-        aria-labelledby="menu-prices-heading"
+        aria-label="Gestione menu e prezzi"
         className="flex w-full min-w-0 flex-col gap-4 rounded-xl shadow-sm px-4 py-4 md:gap-5 md:px-5 md:py-5 min-h-[148px]"
         style={ADMIN_WARM_GRADIENT_SURFACE}
       >
-        <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-          <h2
-            id="menu-prices-heading"
-            className="shrink-0 font-serif text-lg font-bold leading-tight text-warm-wood md:text-xl"
-          >
-            Menu
-          </h2>
-          <p
-            className="min-w-0 flex-1 px-1 text-center text-sm leading-snug text-gray-600 sm:px-2 sm:text-base max-[729px]:hidden"
-            title="Aggiungi, modifica o elimina le voci del menu e i prezzi"
-          >
-            Aggiungi, modifica o elimina le voci del menu e i prezzi
-          </p>
-        </div>
-
+        <p
+          className="min-w-0 w-full px-1 text-center text-sm leading-snug text-gray-600 sm:px-2 sm:text-base max-[729px]:hidden"
+          title="Aggiungi, modifica, nascondi o elimina gli elementi del menù"
+        >
+          Aggiungi, modifica, nascondi o elimina gli elementi del menù
+        </p>
         <div className="w-full border-t border-[color:var(--admin-warm-wrap-border)] pt-3">
           <div className="grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2 xl:grid-cols-4">
             <Button
@@ -1239,9 +1258,11 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           </div>
         </div>
       )}
-      {/* Form Aggiunta/Modifica + panoramica ingredienti */}
-      {viewMode === 'products' && (isAdding || editingId) && (
-        <>
+      {viewMode === 'menu' && (
+      <>
+      {!promoEditorOpen && (
+      <>
+      {(isAdding || editingId) && (
           <div
             ref={productFormCardRef}
             className="relative w-full scroll-mt-24 rounded-2xl border-2 p-6 shadow-lg md:scroll-mt-28"
@@ -1359,154 +1380,77 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
               </div>
             </div>
           </div>
-
-          <div
-            className="relative w-full rounded-2xl border-2 p-4 md:p-6 shadow-lg"
-            style={ADMIN_WARM_GRADIENT_SURFACE}
-            role="region"
-            aria-label="Panoramica ingredienti per categoria"
-          >
-            <h3 className="text-center font-serif text-lg font-bold text-warm-wood md:text-xl">
-              Ingredienti salvati
-            </h3>
-            <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
-              Per ogni ingrediente: modifica, elimina o scegli per quali tipologie di prenotazione è disponibile nel menu
-              pubblico (come in Promo Menù).
-            </p>
-
-            {menuItems.length === 0 ? (
-              <p className="mt-8 text-center text-sm text-gray-600">Nessun ingrediente ancora.</p>
-            ) : (
-              <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {categoryEntries
-                  .filter(([key]) => (itemsByCategory[key]?.length ?? 0) > 0)
-                  .map(([categoryKey, categoryLabel]) => (
-                    <CollapsibleCard
-                      key={categoryKey}
-                      title={categoryLabel}
-                      subtitle={`${itemsByCategory[categoryKey]?.length ?? 0} ingredienti`}
-                      defaultExpanded={false}
-                      className="h-fit border-amber-200/80 shadow-md"
-                      headerClassName="min-h-[48px] bg-white/85 hover:bg-white border-amber-100"
-                      contentClassName="bg-transparent p-0"
-                    >
-                      <div className="flex flex-col gap-3 px-2 pb-4 pt-1 sm:px-3">
-                        {(itemsByCategory[categoryKey] ?? []).map((item) => {
-                          const bookingTypes = normalizeMenuItemBookingTypes(item.booking_types)
-                          return (
-                            <div
-                              key={item.id}
-                              className="menu-prices-item-row flex-col gap-3 !items-stretch border-amber-100/80 py-3"
-                              style={{ padding: '0.75rem 1rem' }}
-                            >
-                              <div className="flex w-full flex-wrap items-start justify-between gap-3">
-                                <div className="menu-prices-item-text min-w-[120px]">
-                                  <h4 className="text-left font-semibold text-gray-900">{item.name}</h4>
-                                  <p className="text-left text-xs text-gray-500">
-                                    €{item.price.toFixed(2)}
-                                    {item.description?.trim() ? ` · ${item.description.trim()}` : ''}
-                                  </p>
-                                </div>
-                                <div className="menu-prices-item-actions shrink-0">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleStartEdit(item)}
-                                    className="menu-prices-icon-btn menu-prices-icon-btn--edit"
-                                    aria-label={`Modifica ${item.name}`}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDelete(item.id, item.name)}
-                                    className="menu-prices-icon-btn menu-prices-icon-btn--delete"
-                                    aria-label={`Elimina ${item.name}`}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </div>
-                              <div className="rounded-xl border border-gray-200 bg-white/80 p-3">
-                                <span className="mx-auto mb-2 block w-full text-center text-xs font-bold text-warm-wood sm:text-sm">
-                                  Tipologie di prenotazione
-                                </span>
-                                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
-                                  {VOL_AU_VENT_PROMO_BOOKING_TYPE_OPTIONS.map(({ value, label: btLabel }) => (
-                                    <label
-                                      key={value}
-                                      className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm"
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        className="h-4 w-4 shrink-0 rounded border-gray-400"
-                                        checked={bookingTypes.includes(value)}
-                                        disabled={updateMutation.isPending}
-                                        onChange={(e) =>
-                                          void handleToggleMenuItemBookingType(item, value, e.target.checked)
-                                        }
-                                      />
-                                      {btLabel}
-                                    </label>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </CollapsibleCard>
-                  ))}
-              </div>
-            )}
-          </div>
-        </>
       )}
-
-      {viewMode === 'menu' && (
-      <>
-      {!promoEditorOpen && (
       <div
         className="relative w-full rounded-2xl border-2 p-4 md:p-6 shadow-lg"
         style={ADMIN_WARM_GRADIENT_SURFACE}
+        role="region"
+        aria-labelledby="menu-prices-ingredient-overview-heading"
       >
-      <div className={menuPricesCategoryListWrapClass}>
-      {categoryEntries.map(([category, label]) => {
-        const items = itemsByCategory[category] || []
-        if (items.length === 0 && !isAdding && !editingId) return null
-
-        return (
-          <div
-            key={category}
-            className="menu-prices-category-block flex w-full flex-col items-center px-1 sm:px-2"
+        <h3
+          id="menu-prices-ingredient-overview-heading"
+          className="text-center font-serif text-lg font-bold leading-tight text-warm-wood md:text-xl"
+        >
+          Menu
+        </h3>
+        {productToolbarFlowActive ? (
+          <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
+            Per ogni ingrediente: modifica, elimina o scegli per quali tipologie di prenotazione è disponibile nel menu
+            pubblico.
+          </p>
+        ) : null}
+        {menuItems.length === 0 ? (
+          <p
+            className={cn(
+              'py-8 text-center text-sm text-gray-600',
+              productToolbarFlowActive ? 'mt-8' : 'mt-6',
+            )}
           >
-            <h3
-              className="booking-section-title-mobile booking-mobile-subheading flex w-full items-center justify-center border-b border-gray-300 pb-2 text-center text-lg md:text-xl"
-              style={adminMenuCategoryTitleStyle}
-            >
-              {label}
-            </h3>
-            <div
-              className="mx-auto flex w-full max-w-5xl flex-col items-stretch gap-4"
-              style={{ marginTop: '0', paddingTop: '0.5rem' }}
-            >
-              {items.length === 0 ? (
-                <p className="py-4 text-center text-gray-500">Nessun prodotto in questa categoria</p>
-              ) : (
-                items.map((item) => (
-                  <AdminMenuIngredientCard
-                    key={item.id}
-                    item={item}
-                    onEdit={() => handleStartEdit(item)}
-                    onDelete={() => handleDelete(item.id, item.name)}
-                  />
-                ))
-              )}
-            </div>
+            Nessun ingrediente ancora.
+          </p>
+        ) : (
+          <div
+            className={cn(
+              'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3',
+              productToolbarFlowActive ? 'mt-8' : 'mt-6',
+            )}
+          >
+            {categoryEntriesWithItems.map(([categoryKey, categoryLabel]) => (
+              <CollapsibleCard
+                key={categoryKey}
+                title={categoryLabel}
+                subtitle={`${itemsByCategory[categoryKey]?.length ?? 0} ingredienti`}
+                defaultExpanded={false}
+                className="h-fit border-amber-200/80 shadow-md"
+                headerClassName="min-h-[48px] bg-white/85 hover:bg-white border-amber-100"
+                contentClassName="bg-transparent p-0"
+              >
+                <div className="flex flex-col gap-3 px-2 pb-4 pt-1 sm:px-3">
+                  {(itemsByCategory[categoryKey] ?? []).map((item) => (
+                    <AdminMenuIngredientCard
+                      key={item.id}
+                      item={item}
+                      onEdit={() => handleStartEdit(item)}
+                      onDelete={() => handleDelete(item.id, item.name)}
+                      showActions={productToolbarFlowActive}
+                      footer={
+                        productToolbarFlowActive ? (
+                          <MenuItemBookingTypesPanel
+                            item={item}
+                            disabled={updateMutation.isPending}
+                            onToggle={handleToggleMenuItemBookingType}
+                          />
+                        ) : undefined
+                      }
+                    />
+                  ))}
+                </div>
+              </CollapsibleCard>
+            ))}
           </div>
-        )
-      })}
+        )}
       </div>
-      </div>
+      </>
       )}
       </>
       )}
