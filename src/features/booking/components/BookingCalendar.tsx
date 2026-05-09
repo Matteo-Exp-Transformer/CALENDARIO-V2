@@ -490,8 +490,31 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     height: 'auto',
     locale: 'it',
     firstDay: 1, // Monday
+    views: {
+      timeGridWeek: {
+        dayHeaderFormat: isCalendarNarrowViewport
+          ? { weekday: 'short' as const, day: 'numeric' as const }
+          : { weekday: 'short' as const, day: '2-digit' as const, month: '2-digit' as const },
+      },
+      timeGridDay: {
+        dayHeaderFormat: isCalendarNarrowViewport
+          ? {
+              weekday: 'short' as const,
+              day: 'numeric' as const,
+              month: 'short' as const,
+            }
+          : {
+              weekday: 'long' as const,
+              day: 'numeric' as const,
+              month: 'long' as const,
+              year: 'numeric' as const,
+            },
+      },
+    },
     slotMinTime: '08:00:00',
     slotMaxTime: '24:00:00',
+    /** Su mobile niente segmenti affiancati (evita scala a sinistra e sovrapposizioni) */
+    slotEventOverlap: !isCalendarNarrowViewport,
     businessHours: {
       daysOfWeek: [1, 2, 3, 4, 5, 6], // Monday - Saturday
       startTime: '08:00',
@@ -545,14 +568,39 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     eventContent: (arg: any) => {
       const booking = arg.event.extendedProps as BookingRequest
       const viewType = arg.view?.type as string | undefined
-      const iconOnlyInGrid =
-        isCalendarEventIconOnly && viewType !== 'listWeek' && viewType !== 'listDay'
+      /** Solo vista mese: cella minuscola → solo icona sotto ~500px */
+      const iconOnlyMonthCell = isCalendarEventIconOnly && viewType === 'dayGridMonth'
+      const isTimeGridView = viewType === 'timeGridDay' || viewType === 'timeGridWeek'
+      const bookingTimeLabel =
+        booking.desired_time || booking.confirmed_start ? getAccurateStartTime(booking) : null
 
       if (isCalendarNarrowViewport) {
-        if (iconOnlyInGrid) {
+        if (isTimeGridView) {
           return (
             <div
-              className="flex cursor-pointer justify-center overflow-hidden rounded-lg px-0.5 py-0.5 text-neutral-900 transition-opacity hover:opacity-90"
+              data-booking-calendar-timegrid-narrow="true"
+              className="flex h-full min-h-0 w-full min-w-0 max-w-full cursor-pointer flex-col items-center gap-0.5 overflow-hidden rounded-md px-1 py-0.5 text-center text-[10px] leading-snug text-neutral-900 transition-opacity hover:opacity-90"
+            >
+              <div className="flex w-full min-w-0 justify-center">
+                <div className="flex min-w-0 max-w-full items-center justify-center gap-1">
+                  <DigestBookingTypeIcon booking={booking} className="h-3 w-3 shrink-0 text-neutral-900" />
+                  <span className="min-w-0 truncate font-semibold text-neutral-950">
+                    {booking.client_name}
+                  </span>
+                </div>
+              </div>
+              <div className="w-full min-w-0 truncate text-[11px] leading-snug text-neutral-800 tabular-nums">
+                {booking.num_guests} ospiti
+                {bookingTimeLabel ? ` · ${bookingTimeLabel}` : ''}
+              </div>
+            </div>
+          )
+        }
+
+        if (iconOnlyMonthCell) {
+          return (
+            <div
+              className="flex h-full min-h-[1.75rem] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg px-0.5 py-0.5 text-neutral-900 transition-opacity hover:opacity-90 [&>svg]:block"
               title={booking.client_name}
             >
               <DigestBookingTypeIcon
@@ -564,7 +612,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
         }
         return (
           <div className="flex cursor-pointer flex-col items-center gap-0.5 overflow-hidden rounded-lg px-1 py-1 text-center text-xs text-neutral-900 transition-opacity hover:opacity-90">
-            <div className="flex w-full justify-center">
+            <div className="flex w-full shrink-0 items-center justify-center [&>svg]:block">
               <DigestBookingTypeIcon
                 booking={booking}
                 className="h-3.5 w-3.5 shrink-0 text-neutral-900"

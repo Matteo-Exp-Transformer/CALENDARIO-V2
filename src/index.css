@@ -604,6 +604,75 @@ button.admin-nav-item.admin-nav-tab-active {
   }
 }
 
+/* Vista settimana/giorno: intestazioni colonne compatte su larghezze ridotte */
+@media (max-width: 768px) {
+  .booking-calendar-fc .fc .fc-timegrid th.fc-col-header-cell .fc-col-header-cell-cushion {
+    font-size: 0.7rem !important;
+    line-height: 1.15 !important;
+    font-weight: 600 !important;
+    padding: 0.2rem 0.125rem !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    text-align: center !important;
+  }
+
+  .booking-calendar-fc .fc .fc-timegrid th.fc-col-header-cell {
+    vertical-align: middle !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-calendar-fc .fc .fc-timegrid th.fc-col-header-cell .fc-col-header-cell-cushion {
+    font-size: 0.62rem !important;
+    line-height: 1.1 !important;
+    padding: 0.15rem 0.1rem !important;
+    letter-spacing: -0.02em !important;
+  }
+}
+
+/*
+ * Time grid: NON impostare position su .fc-timegrid-event-harness — FullCalendar usa posizionamento assoluto;
+ * position: relative sul harness rompeva l’allineamento e creava effetto “scala” verso destra.
+ * Con slotEventOverlap disattivato su mobile gli eventi non sono più affiancati; resta z sul .fc-v-event per hover.
+ */
+.booking-calendar-fc .fc .fc-timegrid-event-harness > .fc-timegrid-event.fc-v-event {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.booking-calendar-fc .fc .fc-timegrid-event-harness:hover > .fc-timegrid-event.fc-v-event,
+.booking-calendar-fc .fc .fc-timegrid-event-harness:focus-within > .fc-timegrid-event.fc-v-event {
+  z-index: 20;
+}
+
+.booking-calendar-fc .fc .fc-timegrid-col {
+  min-width: 0;
+}
+
+.booking-calendar-fc .fc .fc-timegrid-col-frame {
+  overflow-x: hidden;
+}
+
+/* Time grid (layout mobile stretto): contenuto centrato in orizzontale nella card */
+.booking-calendar-fc .fc-v-event .fc-event-main:has([data-booking-calendar-timegrid-narrow='true']) {
+  display: flex !important;
+  height: 100%;
+  min-height: 0;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem;
+  overflow: hidden;
+}
+
+.booking-calendar-fc .fc-v-event .fc-event-main:has([data-booking-calendar-timegrid-narrow='true']) > * {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+
 /* BookingRequestCard — shell: lift + ombra (niente filter sul wrapper: altrimenti attenua i colori dei pulsanti dentro) */
 .booking-request-card-shell {
   box-shadow: var(--shadow-sm);
