@@ -33,6 +33,11 @@ import {
   isBookingPageTilePlaceholder,
   type BookingPageBackgroundId,
 } from '@/features/booking/constants/bookingPageBackground'
+import {
+  APP_THEME_OPTIONS,
+  DEFAULT_APP_THEME,
+  type AppThemeId,
+} from '@/features/booking/constants/appTheme'
 
 type SlotFieldKey =
   | 'morningStart'
@@ -141,6 +146,54 @@ const restaurantSettingsIntroCardClass =
   'admin-warm-surface w-full max-w-2xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center flex flex-col items-center gap-3 sm:flex-row sm:justify-center'
 
 /** Titolo introduttivo spostabile nello sticky header della dashboard */
+type AppThemePreviewPickProps = {
+  previewSrc: string
+  label: string
+  selected: boolean
+  disabled: boolean
+  pickButtonClass: (selected: boolean) => string
+  onPick: () => void
+}
+
+const AppThemePreviewPick: React.FC<AppThemePreviewPickProps> = ({
+  previewSrc,
+  label,
+  selected,
+  disabled,
+  pickButtonClass,
+  onPick,
+}) => {
+  const [imgFailed, setImgFailed] = useState(false)
+
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      className={cn(pickButtonClass(selected), 'group')}
+      onClick={onPick}
+    >
+      <div className="pointer-events-none relative aspect-[5/3] w-full overflow-hidden rounded-md border border-slate-200/80 bg-slate-100">
+        {imgFailed ? (
+          <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-100 to-slate-200 px-2 text-center text-[0.625rem] font-semibold leading-snug text-slate-500 sm:text-[11px]">
+            Anteprima in arrivo
+          </div>
+        ) : (
+          <img
+            src={previewSrc}
+            alt=""
+            className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+            loading="lazy"
+            onError={() => setImgFailed(true)}
+          />
+        )}
+      </div>
+      <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]">
+        {label}
+      </span>
+    </button>
+  )
+}
+
 export function RestaurantSettingsIntro() {
   return (
     <div className={restaurantSettingsIntroCardClass}>
@@ -170,6 +223,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const contactAddressQuery = useRestaurantSetting('contact_address')
   const publicBookingPageBgQuery = useRestaurantSetting('public_booking_page_background')
   const placementAreasQuery = useRestaurantSetting('booking_placement_areas')
+  const appThemeQuery = useRestaurantSetting('app_theme')
 
   const upsert = useUpsertRestaurantSetting()
 
@@ -198,6 +252,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [placementAreas, setPlacementAreas] = useState<string[]>([...DEFAULT_PLACEMENT_AREAS])
   const [editingPlacementAreaIndex, setEditingPlacementAreaIndex] = useState<number | null>(null)
   const [editingPlacementAreaDraft, setEditingPlacementAreaDraft] = useState('')
+  const [appTheme, setAppTheme] = useState<AppThemeId>(DEFAULT_APP_THEME)
 
   const hydratedRef = useRef(false)
   const slotFieldRefs = useRef<Record<SlotFieldKey, HTMLDivElement | null>>({
@@ -224,7 +279,8 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactPhoneQuery.isSuccess &&
     contactAddressQuery.isSuccess &&
     publicBookingPageBgQuery.isSuccess &&
-    placementAreasQuery.isSuccess
+    placementAreasQuery.isSuccess &&
+    appThemeQuery.isSuccess
 
   useEffect(() => {
     if (!allSuccess || hydratedRef.current) return
@@ -244,6 +300,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     setBookingBgSelectionLocked(false)
     setEditingPlacementAreaIndex(null)
     setEditingPlacementAreaDraft('')
+    setAppTheme(appThemeQuery.data ?? DEFAULT_APP_THEME)
     hydratedRef.current = true
   }, [
     allSuccess,
@@ -256,6 +313,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactAddressQuery.data,
     placementAreasQuery.data,
     publicBookingPageBgQuery.data,
+    appThemeQuery.data,
   ])
 
   const loading =
@@ -267,7 +325,8 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactPhoneQuery.isPending ||
     contactAddressQuery.isPending ||
     publicBookingPageBgQuery.isPending ||
-    placementAreasQuery.isPending
+    placementAreasQuery.isPending ||
+    appThemeQuery.isPending
 
   const loadError =
     nameQuery.error ||
@@ -278,7 +337,8 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactPhoneQuery.error ||
     contactAddressQuery.error ||
     publicBookingPageBgQuery.error ||
-    placementAreasQuery.error
+    placementAreasQuery.error ||
+    appThemeQuery.error
 
   const markDirty = () => setDirty(true)
 
@@ -355,6 +415,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         { key: 'contact_address', value: safeAddress },
         { key: 'public_booking_page_background', value: bookingPageBackground },
         { key: 'booking_placement_areas', value: placementAreas },
+        { key: 'app_theme', value: appTheme },
       ])
       // Keep local form state as source of truth after save.
       // Resetting hydration before refetch can reapply stale cached values.
@@ -1021,6 +1082,34 @@ export const RestaurantSettingsTab: React.FC = () => {
             )}
           </div>
         )}
+      </section>
+
+      <section className={bookingBgSectionClass} aria-labelledby="app-theme-heading">
+        <h3 id="app-theme-heading" className="text-lg font-semibold text-slate-800">
+          Selezione tema app
+        </h3>
+        <p className="text-sm text-slate-600">
+          Scegli un tema e salva le modifiche per applicarlo alla dashboard.
+        </p>
+        <div
+          className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
+          style={bookingBgGridTopSpacingStyle}
+        >
+          {APP_THEME_OPTIONS.map((opt) => (
+            <AppThemePreviewPick
+              key={opt.id}
+              previewSrc={opt.previewSrc}
+              label={opt.label}
+              selected={appTheme === opt.id}
+              disabled={upsert.isPending}
+              pickButtonClass={bookingBgPickButtonClass}
+              onPick={() => {
+                setAppTheme(opt.id)
+                markDirty()
+              }}
+            />
+          ))}
+        </div>
       </section>
 
       <div className="restaurant-settings-save-footer admin-warm-surface flex min-h-[4.75rem] w-full max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7">

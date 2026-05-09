@@ -7,18 +7,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Palette professionale Blu/Indaco
+        // Tema navy / blu (primary #1E3A5F, secondary #4F7CAC, accent #7CC6FE)
         primary: {
-          50:  '#EEF2FF',
-          100: '#E0E7FF',
-          200: '#C7D2FE',
-          300: '#A5B4FC',
-          400: '#818CF8',
-          500: '#6366F1',
-          600: '#4F46E5',
-          700: '#4338CA',
-          800: '#3730A3',
-          900: '#312E81',
+          50:  '#EEF6FC',
+          100: '#D6ECFE',
+          200: '#B8DEFD',
+          300: '#7CC6FE',
+          400: '#4F7CAC',
+          500: '#386891',
+          600: '#1E3A5F',
+          700: '#183049',
+          800: '#122538',
+          900: '#18324A',
         },
 
         // Stato prenotazioni
@@ -31,14 +31,14 @@ export default {
 
         // Colori eventi calendario
         booking: {
-          cena:     '#4F46E5',   // indigo
+          cena:     '#1E3A5F',   // primary
           aperitivo:'#F59E0B',   // amber
           evento:   '#8B5CF6',   // violet
           laurea:   '#10B981',   // emerald
         },
         'al-ritrovo': {
-          primary: '#4F46E5',
-          'primary-dark': '#4338CA',
+          primary: '#1E3A5F',
+          'primary-dark': '#183049',
         },
         warm: {
           wood: '#6b4226',
@@ -48,7 +48,7 @@ export default {
           stone: '#d4c4b0',
         },
         terracotta: '#c2410c',
-        muted: '#f1f5f9',
+        muted: '#EDF2F7',
         background: '#ffffff',
       },
       fontFamily: {

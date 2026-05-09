@@ -62,9 +62,9 @@ interface ArchiveBookingCardProps {
   onRequeueToPending?: (bookingId: string) => void
 }
 
-/** Stesso aspetto della strip digest calendario (`#digest-with-menu-heading`). */
+/** Strip tipo evento sopra card archivio — tema ice (coerente digest calendario). */
 const DIGEST_MENU_HEADING_GRADIENT_BG =
-  'bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white'
+  'border border-primary-200/90 bg-gradient-to-r from-primary-50 via-white to-primary-50/40'
 
 
 const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
@@ -127,8 +127,8 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
   const showDigestStrip = Boolean(eventTypeLabel)
 
   const deletedDigest = booking.status === 'deleted'
-  const digestBodyText = deletedDigest ? 'text-red-800' : 'text-warm-wood-dark'
-  const digestBodyIcon = deletedDigest ? 'text-red-700' : 'text-warm-orange'
+  const digestBodyText = deletedDigest ? 'text-red-800' : 'text-primary-900'
+  const digestBodyIcon = deletedDigest ? 'text-red-700' : 'text-primary-500'
   const digestSecondaryText = deletedDigest ? 'text-red-800' : 'text-gray-700'
 
   const phoneDigestRow = booking.client_phone ? (
@@ -145,21 +145,19 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
       {showDigestStrip && (
         <div className="mb-2">
           <span
-            className={`inline-block max-w-full whitespace-normal rounded-lg border-0 px-4 py-2 text-xs font-semibold text-slate-800 shadow-none transition-all duration-300 ${DIGEST_MENU_HEADING_GRADIENT_BG}`}
+            className={`inline-block max-w-full whitespace-normal px-4 py-2 text-xs font-semibold shadow-none transition-all duration-300 ${DIGEST_MENU_HEADING_GRADIENT_BG}`}
           >
-            <span className="block text-sm font-semibold text-slate-900">{eventTypeLabel}</span>
+            <span className="block text-sm font-semibold text-primary-900">{eventTypeLabel}</span>
           </span>
         </div>
       )}
-      <div
-        className="booking-request-card-shell overflow-hidden rounded-2xl border-0 border-b-[3px] border-solid border-b-[rgba(253,186,116,0.55)] shadow-none"
-      >
+      <div className="booking-request-card-shell overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
         <div
           className={cn('booking-request-collapse-header', !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl')}
         >
           <div
             className={cn(
-              'booking-request-collapse-header-gradient admin-teal-surface',
+              'booking-request-collapse-header-gradient bg-gradient-to-br from-primary-50/90 via-white to-[var(--color-surface-2)]',
               !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl'
             )}
           >
@@ -169,8 +167,8 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
         onClick={() => setIsExpanded(!isExpanded)}
         className={cn(
           'booking-request-digest-trigger relative z-0 w-full cursor-pointer border-0 bg-transparent p-6 text-left outline-none ring-0',
-          'transition-colors duration-[220ms] hover:bg-white/55 active:scale-[0.995]',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
+          'transition-colors duration-[220ms] hover:bg-[var(--color-surface-2)]/85 active:scale-[0.995]',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/45 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
           !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl'
         )}
       >
@@ -182,9 +180,9 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
                     {statusConfig.label}
                   </span>
                   {isExpanded ? (
-                    <ChevronUp className="h-6 w-6 text-warm-wood" aria-hidden />
+                    <ChevronUp className="h-6 w-6 text-primary-700" aria-hidden />
                   ) : (
-                    <ChevronDown className="h-6 w-6 text-warm-wood" aria-hidden />
+                    <ChevronDown className="h-6 w-6 text-primary-700" aria-hidden />
                   )}
                 </div>
 
@@ -192,8 +190,8 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
                   <div className="flex min-w-0 w-full items-start gap-4 pr-29">
                     <div
                       className={cn(
-                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-white shadow-md',
-                        deletedDigest ? 'border-red-200/90' : 'border-orange-200/90'
+                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-[var(--color-bg)] shadow-md',
+                        deletedDigest ? 'border-red-200/90' : 'border-primary-200'
                       )}
                     >
                       <DigestIcon className={cn('h-4 w-4', digestBodyIcon)} aria-hidden />
@@ -271,7 +269,7 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
 
                   {booking.created_at && (
                     <div className="flex min-w-0 w-full items-start gap-2">
-                      <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" aria-hidden />
+                      <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" aria-hidden />
                       <div className="min-w-0 flex-1 basis-0 text-sm leading-normal break-normal text-gray-600">
                         <span className="font-medium text-gray-500">Ricevuta il :{AFTER_COLON}</span>
                         <span className="text-gray-600">{formatRequestSubmittedAt(booking.created_at)}</span>
@@ -286,52 +284,52 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
 
       {/* Contenuto Espandibile */}
       {isExpanded && (
-        <div className="animate-slideDown rounded-b-2xl border-t-2 border-warm-orange/10 bg-white p-4 md:p-6">
+        <div className="animate-slideDown rounded-b-2xl border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:p-6">
           {/* Dati Organizzati - Responsive: 1 colonna su mobile, 2 su desktop */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 md:gap-y-3">
             {/* Nome */}
             <div className="flex flex-row items-start gap-3 py-1.5 md:py-2">
               <span className="text-xs text-gray-500 w-24 md:w-28 font-medium uppercase tracking-wide flex-shrink-0">Nome:</span>
-              <span className="text-sm md:text-base font-semibold text-warm-wood-dark break-words">{booking.client_name}</span>
+              <span className="text-sm md:text-base font-semibold text-primary-900 break-words">{booking.client_name}</span>
             </div>
 
             {/* Email */}
             <div className="flex flex-row items-start gap-3 py-1.5 md:py-2">
               <span className="text-xs text-gray-500 w-24 md:w-28 font-medium uppercase tracking-wide flex-shrink-0">Email:</span>
-              <span className="text-sm md:text-base font-semibold text-warm-wood-dark break-all">{booking.client_email}</span>
+              <span className="text-sm md:text-base font-semibold text-primary-900 break-all">{booking.client_email}</span>
             </div>
 
             {/* Telefono */}
             {booking.client_phone && (
               <div className="flex flex-row items-start gap-3 py-1.5 md:py-2">
                 <span className="text-xs text-gray-500 w-24 md:w-28 font-medium uppercase tracking-wide flex-shrink-0">Telefono:</span>
-                <span className="text-sm md:text-base font-semibold text-warm-wood-dark">{booking.client_phone}</span>
+                <span className="text-sm md:text-base font-semibold text-primary-900">{booking.client_phone}</span>
               </div>
             )}
 
             {/* Data */}
             <div className="flex flex-row items-start gap-3 py-1.5 md:py-2">
               <span className="text-xs text-gray-500 w-24 md:w-28 font-medium uppercase tracking-wide flex-shrink-0">Data:</span>
-              <span className="text-sm md:text-base font-semibold text-warm-wood-dark">{formatDate(displayDate)}</span>
+              <span className="text-sm md:text-base font-semibold text-primary-900">{formatDate(displayDate)}</span>
             </div>
 
             {/* Orario */}
             <div className="flex flex-row items-start gap-3 py-1.5 md:py-2">
               <span className="text-xs text-gray-500 w-24 md:w-28 font-medium uppercase tracking-wide flex-shrink-0">Orario:</span>
-              <span className="text-sm md:text-base font-semibold text-warm-wood-dark">{formatTime(displayTime)}</span>
+              <span className="text-sm md:text-base font-semibold text-primary-900">{formatTime(displayTime)}</span>
             </div>
 
             {/* Pax */}
             <div className="flex flex-row items-start gap-3 py-1.5 md:py-2">
               <span className="text-xs text-gray-500 w-24 md:w-28 font-medium uppercase tracking-wide flex-shrink-0">Pax:</span>
-              <span className="text-sm md:text-base font-semibold text-warm-wood-dark">{booking.num_guests}</span>
+              <span className="text-sm md:text-base font-semibold text-primary-900">{booking.num_guests}</span>
             </div>
 
                         {/* Tipo - Mostra solo se esiste un valore valido */}
             {eventTypeLabel && (
               <div className="flex flex-row items-start gap-3 py-1.5 md:py-2">  
                 <span className="text-xs text-gray-500 w-24 md:w-28 font-medium uppercase tracking-wide flex-shrink-0">Tipo:</span>
-                <span className="text-sm md:text-base font-semibold text-warm-wood-dark">{eventTypeLabel}</span>
+                <span className="text-sm md:text-base font-semibold text-primary-900">{eventTypeLabel}</span>
               </div>
             )}
 
@@ -339,7 +337,7 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
 
           {/* Note Richieste Speciali - Fuori dalla griglia */}
           {booking.special_requests && (
-            <div className="pt-4 md:pt-6 mt-4 md:mt-6 border-t border-warm-orange/20">
+            <div className="pt-4 md:pt-6 mt-4 md:mt-6 border-t border-[var(--color-border)]">
               <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2 md:mb-3">Richieste Speciali</p>
               <p className="text-sm md:text-base text-gray-700 leading-relaxed break-words">
                 {booking.special_requests}
@@ -378,7 +376,7 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
 
           {/* Pulsante Reinserisci — solo eliminate (torna accepted in calendario se ha slot confermati) */}
           {booking.status === 'deleted' && onRestore && (
-            <div className="flex gap-2 md:gap-4 pt-3 md:pt-4 border-t border-warm-orange/20 mt-4 md:mt-6">
+            <div className="flex gap-2 md:gap-4 pt-3 md:pt-4 border-t border-[var(--color-border)] mt-4 md:mt-6">
               <button
                 type="button"
                 onClick={(e) => {
@@ -396,7 +394,7 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
 
           {/* Rifiutata → pending (richieste in attesa), stesso look del Reinserisci */}
           {booking.status === 'rejected' && onRequeueToPending && (
-            <div className="flex gap-2 md:gap-4 pt-3 md:pt-4 border-t border-warm-orange/20 mt-4 md:mt-6">
+            <div className="flex gap-2 md:gap-4 pt-3 md:pt-4 border-t border-[var(--color-border)] mt-4 md:mt-6">
               <button
                 type="button"
                 onClick={(e) => {
@@ -421,7 +419,7 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
             if (!dateStr) return null
 
             return (
-              <div className="flex gap-2 md:gap-4 pt-3 md:pt-4 border-t border-warm-orange/20 mt-4 md:mt-6">
+              <div className="flex gap-2 md:gap-4 pt-3 md:pt-4 border-t border-[var(--color-border)] mt-4 md:mt-6">
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
@@ -458,10 +456,10 @@ export const ArchiveFiltersCard: React.FC<ArchiveFiltersCardProps> = ({
   onFilterChange,
   onSortOrderChange,
 }) => (
-  <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+  <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-sm">
     <div className="border-0 shadow-none outline-none">
       <label
-        className="admin-warm-surface mb-2 flex min-h-10 w-full items-center justify-center rounded-lg border-2 border-solid px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-slate-800 shadow-none outline-none"
+        className="admin-warm-surface mb-2 flex min-h-10 w-full items-center justify-center rounded-lg border-2 border-solid border-[var(--color-border)] px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-primary-900 shadow-none outline-none"
       >
         Filtra per Status
       </label>
@@ -476,7 +474,7 @@ export const ArchiveFiltersCard: React.FC<ArchiveFiltersCardProps> = ({
             className={cn(
               'archive-tab-filter-btn admin-nav-item relative flex min-h-9 w-full min-[506px]:flex-1 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-900 transition-all duration-150 cursor-pointer',
               filter === f
-                ? 'admin-nav-tab-active border-solid shadow-none bg-none bg-orange-200'
+                ? 'admin-nav-tab-active border-solid shadow-none'
                 : 'border border-solid',
             )}
           >
@@ -500,7 +498,7 @@ export const ArchiveFiltersCard: React.FC<ArchiveFiltersCardProps> = ({
 
     <div className="border-0 shadow-none outline-none">
       <label
-        className="admin-warm-surface mb-2 flex min-h-10 w-full items-center justify-center rounded-lg border-2 border-solid px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-slate-800 shadow-none outline-none"
+        className="admin-warm-surface mb-2 flex min-h-10 w-full items-center justify-center rounded-lg border-2 border-solid border-[var(--color-border)] px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-primary-900 shadow-none outline-none"
       >
         Ordina per
       </label>
@@ -519,7 +517,7 @@ export const ArchiveFiltersCard: React.FC<ArchiveFiltersCardProps> = ({
               className={cn(
                 'archive-tab-filter-btn admin-nav-item relative flex min-h-9 w-full min-[506px]:flex-1 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-900 transition-all duration-150 cursor-pointer',
                 sortOrder === option.value
-                  ? 'admin-nav-tab-active border-solid shadow-none bg-none bg-orange-200'
+                  ? 'admin-nav-tab-active border-solid shadow-none'
                   : 'border border-solid',
               )}
             >

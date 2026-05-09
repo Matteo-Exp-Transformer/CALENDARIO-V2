@@ -12,6 +12,11 @@ import {
   isBookingPageBackgroundId,
   parseBookingPageBackgroundFromDb,
 } from '@/features/booking/constants/bookingPageBackground'
+import {
+  type AppThemeId,
+  isAppThemeId,
+  parseAppThemeFromDb,
+} from '@/features/booking/constants/appTheme'
 import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
 import type { VolAuVentPromo } from '@/features/booking/constants/volAuVentPromo'
 
@@ -38,6 +43,8 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'booking_vol_au_vent_promos',
   /** Elenco aree di posizionamento prenotazioni (es. Sala A, Sala B, Deorr) */
   'booking_placement_areas',
+  /** Tema visivo dashboard admin (solo /admin); non influenza la pagina pubblica Prenota */
+  'app_theme',
 ] as const
 
 export type RestaurantSettingKeyV1 = (typeof RESTAURANT_SETTING_KEYS_V1)[number]
@@ -248,6 +255,7 @@ export type RestaurantSettingValueMap = {
   booking_vol_au_vent_promo_message: string
   booking_vol_au_vent_promos: VolAuVentPromo[]
   booking_placement_areas: string[]
+  app_theme: AppThemeId
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -430,6 +438,17 @@ export const restaurantSettingRegistry: {
       if (!r.success) return r.error.issues[0]?.message ?? 'Aree di posizionamento non valide'
       const unique = r.data.filter((item, index, arr) => arr.indexOf(item) === index)
       return unique.length === r.data.length ? null : 'Le aree di posizionamento devono essere univoche'
+    },
+  },
+  app_theme: {
+    key: 'app_theme',
+    parseFromDb: (raw) => parseAppThemeFromDb(raw),
+    serializeToDb: (value) => String(value).trim().toLowerCase() as Json,
+    validate: (value) => {
+      if (typeof value !== 'string') return 'Seleziona un tema valido'
+      const normalized = value.trim().toLowerCase()
+      if (isAppThemeId(normalized)) return null
+      return 'Tema app non valido'
     },
   },
 }

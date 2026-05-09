@@ -699,6 +699,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       >
         {/* Modal Content */}
         <div
+          className="flex flex-col overflow-x-hidden bg-[var(--color-surface)] shadow-2xl"
           style={{
             position: 'absolute',
             right: 0,
@@ -706,40 +707,40 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
             bottom: 0,
             width: '100%',
             maxWidth: modalMaxWidth,
-            backgroundColor: '#ffffff',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflowX: 'hidden',
-            // Disable pointer events when cancel confirmation modal is open
-            pointerEvents: showCancelConfirm ? 'none' : 'auto'
+            pointerEvents: showCancelConfirm ? 'none' : 'auto',
           }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header - Sticky */}
-          <div className="bg-blue-50 border-b-2 border-blue-200 flex-shrink-0" style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '12px', paddingBottom: '12px', overflow: 'hidden' }}>
+          <div
+            className="flex-shrink-0 border-b-2 border-[var(--color-border)] bg-primary-50"
+            style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '12px', paddingBottom: '12px', overflow: 'hidden' }}
+          >
             <div style={{ width: '100%' }}>
               <div className="grid grid-cols-[32px_minmax(0,1fr)_32px] items-center gap-2">
                 <span aria-hidden="true" />
-                <h2 className="text-center text-sm sm:text-lg font-bold text-gray-900 truncate">
+                <h2 className="truncate text-center text-sm font-bold text-primary-900 sm:text-lg">
                   Dettagli Prenotazione
                 </h2>
                 <button
                   onClick={onClose}
-                  className="p-1.5 hover:bg-gray-100 rounded-full transition-all shadow-sm border border-gray-300 bg-white flex-shrink-0"
+                  className="flex flex-shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] p-1.5 shadow-sm transition-all hover:bg-[var(--color-surface-2)]"
                   aria-label="Chiudi"
-                  style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  style={{ width: '32px', height: '32px' }}
                 >
-                  <X className="h-4 w-4 text-gray-600" />
+                  <X className="h-4 w-4 text-[var(--color-text-muted)]" />
                 </button>
               </div>
               <div className="mt-1 mb-3 flex items-center justify-between gap-2">
                   {/* Badge origine prenotazione */}
-                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                    booking.booking_source === 'admin' 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-blue-100 text-blue-700'
-                  }`}>
+                  <span
+                    className={cn(
+                      'rounded-full px-2 py-0.5 text-xs font-medium',
+                      booking.booking_source === 'admin'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-primary-100 text-primary-800',
+                    )}
+                  >
                     {booking.booking_source === 'admin'
                       ? '👤 Prenotazione inserita da Admin'
                       : '📞 Prenotazione arrivata da cliente'}
@@ -753,17 +754,22 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
           </div>
 
           {/* Tab Navigation - Sticky */}
-          <div className="bg-white border-b-2 border-gray-200 flex-shrink-0" style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '8px', paddingBottom: '8px' }}>
+          <div
+            className="flex-shrink-0 border-b-2 border-[var(--color-border)] bg-[var(--color-bg)]"
+            style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '8px', paddingBottom: '8px' }}
+          >
             <div className="flex gap-1">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all min-h-[40px] sm:min-h-[44px] flex items-center justify-center gap-1 ${
+                  type="button"
+                  className={cn(
+                    'flex min-h-[40px] flex-1 items-center justify-center gap-1 rounded-lg px-2 py-2 text-xs font-semibold transition-all sm:min-h-[44px] sm:px-3 sm:text-sm',
                     activeTab === tab.id
-                      ? 'bg-blue-500 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                      ? 'bg-primary-600 text-white shadow-md hover:bg-primary-500'
+                      : 'border border-transparent bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-[var(--color-surface-2)]',
+                  )}
                   title={tab.label}
                 >
                   <span className="text-base flex-shrink-0">{tab.icon}</span>
@@ -775,7 +781,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
           {/* Content Area - Scrollable */}
           <div
-            className="flex-1 bg-blue-50"
+            className="flex-1 bg-[var(--color-bg)]"
             style={{
               paddingLeft: '12px',
               paddingRight: '12px',
@@ -828,7 +834,10 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
           {/* Footer Actions - Sticky */}
           {!showCancelConfirm && (
-            <div className="border-t-2 border-gray-200 bg-white flex-shrink-0" style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '8px', paddingBottom: '8px' }}>
+            <div
+              className="flex-shrink-0 border-t-2 border-[var(--color-border)] bg-[var(--color-surface)]"
+              style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '8px', paddingBottom: '8px' }}
+            >
               <div className="flex gap-1.5">
                 {isEditMode ? (
                   <>
@@ -882,14 +891,14 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       {showTypeChangeWarning && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/75" onClick={() => setShowTypeChangeWarning(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4 border-2 border-gray-300">
+          <div className="relative mx-4 max-w-lg w-full rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-2xl">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
                 <span className="text-2xl">⚠️</span>
               </div>
               <div>
-                <h3 className="text-xl font-bold text-gray-900">Attenzione!</h3>
-                <p className="text-sm text-gray-600 mt-1">Cambio tipo prenotazione</p>
+                <h3 className="text-xl font-bold text-primary-900">Attenzione!</h3>
+                <p className="mt-1 text-sm text-[var(--color-text-muted)]">Cambio tipo prenotazione</p>
               </div>
             </div>
             
@@ -908,14 +917,16 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
             
             <div className="flex gap-4">
               <button
+                type="button"
                 onClick={() => setShowTypeChangeWarning(false)}
-                className="flex-1 px-6 py-4 bg-gray-200 text-gray-800 rounded-xl hover:bg-gray-300 font-bold text-lg transition-colors flex items-center justify-center gap-2"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--color-surface-2)] px-6 py-4 text-lg font-bold text-[var(--color-text)] transition-colors hover:bg-[var(--color-border)]/40"
               >
                 Annulla
               </button>
               <button
+                type="button"
                 onClick={confirmBookingTypeChange}
-                className="flex-1 px-6 py-4 bg-red-600 text-white rounded-xl hover:bg-red-700 font-bold text-lg transition-colors flex items-center justify-center gap-2"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 px-6 py-4 text-lg font-bold text-white transition-colors hover:bg-red-700"
               >
                 Conferma
               </button>
@@ -955,55 +966,52 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
         onClick={() => setShowCancelConfirm(false)} 
       />
       {/* Dialog box con ombra forte e bordo marcato */}
-      <div 
-        className="relative rounded-2xl p-8 max-w-lg w-full mx-4" 
+      <div
+        className="relative z-[1] mx-4 max-w-lg w-full rounded-2xl border-2 border-[var(--color-border-strong)] bg-[var(--color-surface)] p-8 shadow-2xl"
         style={{
-          backgroundColor: '#ffffff',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.1)',
-          border: '2px solid rgba(0, 0, 0, 0.15)',
-          zIndex: 1,
-          opacity: 1
+          boxShadow: '0 25px 50px -12px rgba(24, 50, 74, 0.35)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header con icona e titolo */}
-        <div className="flex items-center gap-4 mb-6 pb-4 border-b-2 border-gray-200">
+        <div className="mb-6 flex items-center gap-4 border-b-2 border-[var(--color-border)] pb-4">
           <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 shadow-md">
             <span className="text-2xl">⚠️</span>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-gray-900">Elimina Prenotazione Accettata</h3>
-            <p className="text-sm text-gray-600 mt-1">Potrà essere reinserita dall'archivio</p>
+            <h3 className="text-xl font-bold text-primary-900">Elimina Prenotazione Accettata</h3>
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">Potrà essere reinserita dall&apos;archivio</p>
           </div>
         </div>
 
         {/* Messaggio di conferma */}
         <div className="mb-6">
-          <p className="text-sm text-gray-800 font-medium mb-2">
+          <p className="mb-2 text-sm font-medium text-[var(--color-text)]">
             Sei sicuro di voler eliminare questa prenotazione?
           </p>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-[var(--color-text-muted)]">
             La prenotazione verrà spostata nell'archivio e potrà essere reinserita in seguito.
           </p>
         </div>
 
         {/* Textarea per motivazione */}
         <div className="mb-6">
-          <label htmlFor="cancellation-reason" className="block text-sm font-semibold text-gray-700 mb-2">
-            Motivazione eliminazione <span className="text-gray-500 font-normal">(facoltativa)</span>
+          <label htmlFor="cancellation-reason" className="mb-2 block text-sm font-semibold text-[var(--color-text)]">
+            Motivazione eliminazione{' '}
+            <span className="font-normal text-[var(--color-text-muted)]">(facoltativa)</span>
           </label>
           <textarea
             id="cancellation-reason"
             value={cancellationReason}
             onChange={(e) => setCancellationReason(e.target.value)}
             placeholder="Esempio: Cliente ha richiesto cancellazione, cambio programma..."
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-vertical min-h-[100px] transition-all"
+            className="min-h-[100px] w-full resize-y rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 transition-all focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
             rows={4}
           />
         </div>
 
         {/* Bottoni azione */}
-        <div className="flex gap-4 pt-4 border-t-2 border-gray-200">
+        <div className="flex gap-4 border-t-2 border-[var(--color-border)] pt-4">
           <button
             onClick={() => setShowCancelConfirm(false)}
             className="flex-1 px-6 py-4 bg-green-600 text-white hover:bg-green-700 font-bold text-lg rounded-xl transition-colors flex items-center justify-center gap-2"

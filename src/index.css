@@ -3,25 +3,26 @@
 /* ──────────────────────────────────────────────
    Tailwind v4 @theme — token custom (primary, status, booking, warm)
    Sostituisce tailwind.config.js che v4 non legge automaticamente.
+   Tema navy / blu: primary #1E3A5F, secondary mid #4F7CAC, accent #7CC6FE.
    ────────────────────────────────────────────── */
 @theme {
-  --color-primary-50:  #EEF2FF;
-  --color-primary-100: #E0E7FF;
-  --color-primary-200: #C7D2FE;
-  --color-primary-300: #A5B4FC;
-  --color-primary-400: #818CF8;
-  --color-primary-500: #6366F1;
-  --color-primary-600: #4F46E5;
-  --color-primary-700: #4338CA;
-  --color-primary-800: #3730A3;
-  --color-primary-900: #312E81;
+  --color-primary-50:  #EEF6FC;
+  --color-primary-100: #D6ECFE;
+  --color-primary-200: #B8DEFD;
+  --color-primary-300: #7CC6FE;
+  --color-primary-400: #4F7CAC;
+  --color-primary-500: #386891;
+  --color-primary-600: #1E3A5F;
+  --color-primary-700: #183049;
+  --color-primary-800: #122538;
+  --color-primary-900: #18324A;
 
   --color-status-pending:  #F59E0B;
   --color-status-accepted: #10B981;
   --color-status-rejected: #EF4444;
   --color-status-deleted:  #6B7280;
 
-  --color-booking-cena:      #4F46E5;
+  --color-booking-cena:      #1E3A5F;
   --color-booking-aperitivo: #F59E0B;
   --color-booking-evento:    #8B5CF6;
   --color-booking-laurea:    #10B981;
@@ -33,11 +34,13 @@
   --color-warm-stone:     #d4c4b0;
 
   --color-terracotta: #c2410c;
-  --color-muted:      #f1f5f9;
+  --color-muted:      #EDF2F7;
+  /** Pagina bianca; superfici contenuto = --color-surface (stesso valore di :root) */
   --color-background: #ffffff;
+  --color-surface:      #f6f8fb;
 
-  --color-al-ritrovo-primary:      #4F46E5;
-  --color-al-ritrovo-primary-dark: #4338CA;
+  --color-al-ritrovo-primary:      #1E3A5F;
+  --color-al-ritrovo-primary-dark: #183049;
 
   --font-family-sans:    'Inter', system-ui, -apple-system, sans-serif;
   --font-family-display: 'Poppins', sans-serif;
@@ -52,21 +55,21 @@
    ────────────────────────────────────────────── */
 :root {
   /* Palette primaria */
-  --color-primary:       #4F46E5;
-  --color-primary-light: #818CF8;
-  --color-primary-dark:  #3730A3;
-  --color-primary-bg:    #EEF2FF;
+  --color-primary:       #1E3A5F;
+  --color-primary-light: #4F7CAC;
+  --color-primary-dark:  #122538;
+  --color-primary-bg:    #EEF6FC;
 
-  /* Surface / Background (leggermente più chiari per ridurre sensazione di “pesantezza”) */
-  --color-bg:            #FEFEFE;
-  --color-surface:       #FFFFFF;
-  --color-surface-2:     #F8F9FA;
+  /* Pagina (#FFFFFF); superfici card / tab inattive / blocchi chiari (#F6F8FB) */
+  --color-bg:            #ffffff;
+  --color-surface:       #f6f8fb;
+  --color-surface-2:     #EDF2F7;
 
   /* Bordi */
-  --color-border:        #E2E8F0;
-  --color-border-strong: #CBD5E1;
+  --color-border:        #D8E1EA;
+  --color-border-strong: #B9C9DA;
   /** Fascia liste menu + shell `BookingRequestCard` — stesso bordo warm, spessore leggermente sopra 1px. */
-  --admin-warm-wrap-border: rgba(253, 186, 116, 0.45);
+  --admin-warm-wrap-border: #D8E1EA;
   --admin-warm-wrap-border-width: 1.5px;
 
   /** Superficie warm (nav tab, stat card header) — vedi docs/STYLING_AGENT_CONTEXT.md */
@@ -77,19 +80,20 @@
     rgb(254 249 195) 100%
   );
 
-  /** Tab nav admin selezionato — stesso arancione del brand (`text-warm-orange` / checkbox: @theme --color-warm-orange) */
-  --admin-nav-tab-active-border: #f97316;
+  /** Tab dashboard attivo + bordo filtri accent */
+  --admin-nav-tab-active-border: #1E3A5F;
+  --color-accent-selected: #7CC6FE;
 
   /* Testo */
-  --color-text:          #0F172A;
-  --color-text-muted:    #64748B;
-  --color-text-light:    #94A3B8;
+  --color-text:          #18324A;
+  --color-text-muted:    #5A6F84;
+  --color-text-light:    #8899AA;
 
   /* Feedback */
   --color-success:       #10B981;
   --color-warning:       #F59E0B;
   --color-danger:        #EF4444;
-  --color-info:          #3B82F6;
+  --color-info:          #4F7CAC;
 
   /* Shadows */
   --shadow-sm:   0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -98,16 +102,64 @@
   --shadow-xl:   0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.05);
 
   /* Tema admin nav */
-  --theme-surface-nav-active:   #EEF2FF;
-  --theme-border-nav-active:    #4F46E5;
-  --theme-text-nav-active:      #3730A3;
-  --theme-surface-nav-inactive: #FFFFFF;
-  --theme-border-nav-inactive:  #E2E8F0;
+  --theme-surface-nav-active:   #EEF6FC;
+  --theme-border-nav-active:    #1E3A5F;
+  --theme-text-nav-active:      #18324A;
+  --theme-surface-nav-inactive: #f6f8fb;
+  --theme-border-nav-inactive:  #D8E1EA;
   --theme-text-nav-inactive:    #475569;
-  --theme-surface-hover:        #F1F5F9;
-  --theme-border-strong:        #CBD5E1;
-  --theme-text-secondary:       #64748B;
-  --theme-accent-primary:       #4F46E5;
+  --theme-surface-hover:        #EDF2F7;
+  --theme-border-strong:        #B9C9DA;
+  --theme-text-secondary:       #5A6F84;
+  --theme-accent-primary:       #1E3A5F;
+  --theme-shadow-sm:            0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+/*
+ * Solo dashboard (`data-admin-theme` da AdminDashboard): midnight-blue coincide con `:root`.
+ * Qui stessi token di Midnight come base per theme-2 / theme-3 finché non si introduce una palette dedicata.
+ */
+:root:is([data-admin-theme='theme-2'], [data-admin-theme='theme-3']) {
+  --color-primary:       #1E3A5F;
+  --color-primary-light: #4F7CAC;
+  --color-primary-dark:  #122538;
+  --color-primary-bg:    #EEF6FC;
+  --color-bg:            #ffffff;
+  --color-surface:       #f6f8fb;
+  --color-surface-2:     #EDF2F7;
+  --color-border:        #D8E1EA;
+  --color-border-strong: #B9C9DA;
+  --admin-warm-wrap-border: #D8E1EA;
+  --admin-warm-wrap-border-width: 1.5px;
+  --admin-warm-gradient: linear-gradient(
+    90deg,
+    rgb(255 237 213) 0%,
+    rgb(255 247 237) 42%,
+    rgb(254 249 195) 100%
+  );
+  --admin-nav-tab-active-border: #1E3A5F;
+  --color-accent-selected: #7CC6FE;
+  --color-text:          #18324A;
+  --color-text-muted:    #5A6F84;
+  --color-text-light:    #8899AA;
+  --color-success:       #10B981;
+  --color-warning:       #F59E0B;
+  --color-danger:        #EF4444;
+  --color-info:          #4F7CAC;
+  --shadow-sm:   0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md:   0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg:   0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-xl:   0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+  --theme-surface-nav-active:   #EEF6FC;
+  --theme-border-nav-active:    #1E3A5F;
+  --theme-text-nav-active:      #18324A;
+  --theme-surface-nav-inactive: #f6f8fb;
+  --theme-border-nav-inactive:  #D8E1EA;
+  --theme-text-nav-inactive:    #475569;
+  --theme-surface-hover:        #EDF2F7;
+  --theme-border-strong:        #B9C9DA;
+  --theme-text-secondary:       #5A6F84;
+  --theme-accent-primary:       #1E3A5F;
   --theme-shadow-sm:            0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
@@ -259,15 +311,15 @@ body {
 /*
  * Pulsazione attorno al tab Prenotazioni con badge.
  * Ring sul ::before così coincide col perimetro rounded-xl senza essere tagliato da overflow-hidden sul wrap;
- * tonalità come `adminBlueCtaSurfaceClass` (#3b82f6 — “Aggiungi fascia”, ecc.).
+ * tonalità come il brand secondary (#4F7CAC — CTA blu admin).
  */
 @keyframes admin-nav-notify-pulse-ring {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgb(59 130 246 / 0.42);
+    box-shadow: 0 0 0 0 rgb(79 124 172 / 0.42);
   }
   55% {
-    box-shadow: 0 0 0 5px rgb(59 130 246 / 0.14);
+    box-shadow: 0 0 0 5px rgb(79 124 172 / 0.14);
   }
 }
 
@@ -302,30 +354,23 @@ body {
   animation: spin 0.8s linear infinite;
 }
 
-/* Admin dashboard — collassabile “Nuova prenotazione” (verde) */
+/* Admin — CTA “Nuova prenotazione” (secondary tema ice) */
 .admin-new-booking-collapse-trigger {
-  background-image: linear-gradient(
-    90deg,
-    rgb(52 211 153) 0%,
-    rgb(16 185 129) 34%,
-    rgb(52 211 153) 68%,
-    rgb(74 222 128) 100%
-  );
+  background-image: none;
+  background-color: #4f7cac;
 }
 .admin-new-booking-collapse-trigger:hover {
-  background-image: linear-gradient(
-    90deg,
-    rgb(45 212 191) 0%,
-    rgb(52 211 153) 30%,
-    rgb(34 197 94) 62%,
-    rgb(110 231 183) 100%
-  );
+  background-color: #4576a8;
 }
 
-/* Admin dashboard — superficie warm (gradiente arancio/beige + bordo) */
+/*
+ * Superfici secondarie admin (card footer, pannelli form, etichette filtri).
+ * Nome storico `admin-warm-surface`: ora tinta neutra sul background app, non gradient arancio.
+ */
 .admin-warm-surface {
-  background-image: var(--admin-warm-gradient);
-  border-color: rgba(253, 186, 116, 0.55);
+  background-color: var(--color-surface-2);
+  background-image: none;
+  border-color: var(--color-border);
 }
 
 /* Admin dashboard — superficie teal (digest header prenotazioni) */
@@ -338,38 +383,46 @@ body {
   );
 }
 
-/* Admin dashboard — nav tab warm gradient + hover illumination */
+/* Admin — tab nav: inattivi su --color-surface; attivi primary + testo bianco */
 .admin-nav-item {
-  background-image: var(--admin-warm-gradient);
-  border-color: rgba(253, 186, 116, 0.55);
+  background-color: var(--color-surface);
+  background-image: none;
+  border-color: var(--color-border);
   transition:
-    background-image 200ms ease,
+    background-color 200ms ease,
     border-color 200ms ease,
     box-shadow 200ms ease,
     transform 200ms ease;
 }
 
-/* Hover solo su tab non selezionati — il selezionato non deve cambiare al passaggio del mouse */
 .admin-nav-item:hover:not(.admin-nav-tab-active) {
-  background-image: linear-gradient(
-    90deg,
-    rgb(255 247 237) 0%,
-    rgb(254 243 199) 42%,
-    rgb(253 230 138) 100%
-  );
-  border-color: rgba(251, 146, 60, 0.7);
+  background-color: var(--color-surface-2);
+  border-color: var(--color-border-strong);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.92),
-    0 0 0 1px rgba(251, 146, 60, 0.24),
-    0 8px 16px rgba(251, 146, 60, 0.18);
+    inset 0 0 0 1px rgb(255 255 255 / 0.9),
+    0 1px 2px rgb(24 50 74 / 0.06);
 }
 
-/* Tab selezionato: Preflight azzera `border` sui <button> — serve style+width espliciti oltre al colore */
-button.admin-nav-item.admin-nav-tab-active {
+/* Tab fascia principale selezionata */
+button.admin-nav-item.admin-nav-tab-active:not(.archive-tab-filter-btn) {
   box-shadow: none;
   border-style: solid;
-  border-width: 4px;
-  border-color: var(--admin-nav-tab-active-border);
+  border-width: 2px;
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+  background-image: none;
+  color: #ffffff;
+}
+
+/* Filtri archivio / ordinamento: stato selezionato = accent */
+button.admin-nav-item.admin-nav-tab-active.archive-tab-filter-btn {
+  box-shadow: none;
+  border-style: solid;
+  border-width: 2px;
+  border-color: var(--color-primary);
+  background-color: var(--color-accent-selected);
+  background-image: none;
+  color: var(--color-text);
 }
 
 /* Admin dashboard — collapsible headers hover illumination */
@@ -463,25 +516,25 @@ button.admin-nav-item.admin-nav-tab-active {
 }
 
 .booking-calendar-fc .fc .fc-daygrid-day.calendar-day-selected .fc-daygrid-day-frame {
-  background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 55%, #3b82f6 100%);
+  background: linear-gradient(135deg, #cfe9fe 0%, #7cc6fe 45%, #4f7cac 100%);
   box-shadow:
-    inset 0 0 0 2px #1e40af,
-    0 8px 16px rgba(30, 64, 175, 0.28);
+    inset 0 0 0 2px #1e3a5f,
+    0 8px 16px rgba(30, 58, 95, 0.28);
   border-radius: 10px;
   transform: translateY(-1px);
   transition: all 160ms ease;
 }
 
 .booking-calendar-fc .fc .fc-daygrid-day.calendar-day-selected .fc-daygrid-day-number {
-  color: #0b2f7a;
+  color: #18324a;
   font-weight: 800;
 }
 
 .booking-calendar-fc .fc .fc-daygrid-day.calendar-day-today.calendar-day-selected .fc-daygrid-day-frame {
-  background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 55%, #60a5fa 100%);
+  background: linear-gradient(135deg, #e3ecfe 0%, #b8defb 42%, #7cc6fe 100%);
   box-shadow:
-    inset 0 0 0 2px #1d4ed8,
-    0 10px 18px rgba(29, 78, 216, 0.32);
+    inset 0 0 0 2px #1e3a5f,
+    0 10px 18px rgba(24, 50, 74, 0.32);
 }
 
 /* Vista mese: respiro sotto l’ultima card evento rispetto al bordo inferiore della cella */
@@ -540,36 +593,36 @@ button.admin-nav-item.admin-nav-tab-active {
 
 .booking-calendar-fc .fc .fc-toolbar .fc-button,
 .booking-calendar-fc .fc .fc-toolbar .fc-button:disabled {
-  color: #312e81 !important;
+  color: #18324a !important;
 }
 
 .booking-calendar-fc .fc .fc-toolbar .fc-button .fc-icon,
 .booking-calendar-fc .fc .fc-toolbar .fc-button .fc-icon::before {
-  color: #312e81 !important;
+  color: #18324a !important;
 }
 
-/* FullCalendar — stesso linguaggio del chip archivio (indigo-50 / indigo-900), solo sotto .booking-calendar-fc */
+/* FullCalendar — allineato a primary / accent tema navy */
 .booking-calendar-fc .fc {
   --fc-border-color: var(--color-border);
-  --fc-button-bg-color: #eef2ff;
-  --fc-button-border-color: #c7d2fe;
-  --fc-button-text-color: #312e81;
-  --fc-button-hover-bg-color: #e0e7ff;
-  --fc-button-hover-text-color: #312e81;
-  --fc-button-active-bg-color: #e0e7ff;
-  --fc-button-active-text-color: #312e81;
-  --fc-today-bg-color: #eef2ff;
+  --fc-button-bg-color: #eef6fc;
+  --fc-button-border-color: #b8defd;
+  --fc-button-text-color: #18324a;
+  --fc-button-hover-bg-color: #d6ecfe;
+  --fc-button-hover-text-color: #18324a;
+  --fc-button-active-bg-color: #d6ecfe;
+  --fc-button-active-text-color: #18324a;
+  --fc-today-bg-color: #eef6fc;
 }
 
 .booking-calendar-fc .fc .fc-prev-button,
 .booking-calendar-fc .fc .fc-next-button,
 .booking-calendar-fc .fc .fc-today-button {
-  color: #312e81 !important;
+  color: #18324a !important;
 }
 
 .booking-calendar-fc .fc .fc-prev-button .fc-icon::before,
 .booking-calendar-fc .fc .fc-next-button .fc-icon::before {
-  color: #312e81 !important;
+  color: #18324a !important;
 }
 
 /* Booking calendar — viewport stretto: toolbar FullCalendar + nav compatte */
@@ -773,19 +826,15 @@ button.booking-request-reject-booking-btn:focus-visible {
   outline-offset: 2px;
 }
 
-/* Fascia liste categorie menu admin — bordo/sfondo warm; layout griglia = classi Tailwind in MenuPricesTab (STYLING_AGENT_CONTEXT) */
+/* Fascia liste categorie menu admin — tema ice (layout griglia in MenuPricesTab) */
 .menu-prices-category-list-wrap {
   box-sizing: border-box;
   width: 100%;
   padding: 1.25rem 1rem 1.5rem;
   border-radius: 0.875rem;
   border: var(--admin-warm-wrap-border-width) solid var(--admin-warm-wrap-border);
-  background-image: linear-gradient(
-    90deg,
-    rgb(255 237 213) 0%,
-    rgb(255 247 237) 42%,
-    rgb(254 249 195) 100%
-  );
+  background-color: var(--color-surface);
+  background-image: none;
 }
 
 /* Blocco categoria dentro la griglia — una cella, larghezza piena */
@@ -887,14 +936,14 @@ button.booking-request-reject-booking-btn:focus-visible {
 }
 
 .menu-prices-icon-btn--visibility-visible {
-  border-color: rgb(199 210 254);
-  color: rgb(49 46 129);
-  background-color: rgb(238 242 255);
+  border-color: #b8defd;
+  color: #18324a;
+  background-color: #eef6fc;
 }
 
 .menu-prices-icon-btn--visibility-visible:hover {
-  background-color: rgb(224 231 255);
-  color: rgb(49 46 129);
+  background-color: #d6ecfe;
+  color: #18324a;
 }
 
 .menu-prices-icon-btn--visibility-hidden {
@@ -940,9 +989,8 @@ button.archive-tab-filter-btn:focus-visible {
   outline-offset: 2px;
 }
 
-/* Più compatto delle tab dashboard: stesso tratto nav ma bordo 3px invece di 4px */
 button.archive-tab-filter-btn.admin-nav-item.admin-nav-tab-active {
-  border-width: 3px;
+  border-width: 2px;
 }
 
 button.archive-tab-filter-btn:focus:not(:focus-visible) {

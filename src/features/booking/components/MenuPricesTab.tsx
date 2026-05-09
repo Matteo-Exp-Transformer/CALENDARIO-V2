@@ -129,7 +129,7 @@ export function MenuPricesHeroToolbar({
   return (
     <section
       aria-label="Gestione menu e prezzi"
-      className="flex w-full min-w-0 flex-col gap-4 rounded-xl shadow-sm px-4 py-4 md:gap-5 md:px-5 md:py-5 min-h-[148px]"
+      className="flex w-full min-w-0 flex-col gap-4 rounded-xl border border-solid px-4 py-4 shadow-sm md:gap-5 md:px-5 md:py-5 min-h-[148px]"
       style={ADMIN_WARM_GRADIENT_SURFACE}
     >
       <p
@@ -138,7 +138,7 @@ export function MenuPricesHeroToolbar({
       >
         Aggiungi, modifica, nascondi o elimina gli elementi del menù
       </p>
-      <div className="w-full border-t border-[color:var(--admin-warm-wrap-border)] pt-3">
+      <div className="w-full border-t border-[var(--color-border)] pt-3">
         <div className="grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2 xl:grid-cols-4">
           <Button
             variant="ghost"
@@ -1016,7 +1016,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       {!omitHeroSection && (
       <section
         aria-label="Gestione menu e prezzi"
-        className="flex w-full min-w-0 flex-col gap-4 rounded-xl shadow-sm px-4 py-4 md:gap-5 md:px-5 md:py-5 min-h-[148px]"
+        className="flex w-full min-w-0 flex-col gap-4 rounded-xl border border-solid px-4 py-4 shadow-sm md:gap-5 md:px-5 md:py-5 min-h-[148px]"
         style={ADMIN_WARM_GRADIENT_SURFACE}
       >
         <p
@@ -1025,7 +1025,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
         >
           Aggiungi, modifica, nascondi o elimina gli elementi del menù
         </p>
-        <div className="w-full border-t border-[color:var(--admin-warm-wrap-border)] pt-3">
+        <div className="w-full border-t border-[var(--color-border)] pt-3">
           <div className="grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2 xl:grid-cols-4">
             <Button
               variant="ghost"
@@ -1385,14 +1385,14 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           </div>
       )}
       <div
-        className="relative w-full rounded-2xl border-2 p-4 md:p-6 shadow-lg"
+        className="relative w-full rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-lg md:p-6"
         style={ADMIN_WARM_GRADIENT_SURFACE}
         role="region"
         aria-labelledby="menu-prices-ingredient-overview-heading"
       >
         <h3
           id="menu-prices-ingredient-overview-heading"
-          className="text-center font-serif text-lg font-bold leading-tight text-warm-wood md:text-xl"
+          className="text-center font-serif text-lg font-bold leading-tight text-primary-900 md:text-xl"
         >
           Menu
         </h3>
@@ -1424,8 +1424,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                 title={categoryLabel}
                 subtitle={`${itemsByCategory[categoryKey]?.length ?? 0} ingredienti`}
                 defaultExpanded={false}
-                className="h-fit border-amber-200/80 shadow-md"
-                headerClassName="min-h-[48px] bg-white/85 hover:bg-white border-amber-100"
+                className="h-fit border-[var(--color-border)] shadow-md"
+                headerClassName="min-h-[48px] border-b border-[var(--color-border)] bg-[var(--color-bg)]/95 hover:bg-[var(--color-bg)]"
                 contentClassName="bg-transparent p-0"
                 titleClassName={cn(MENU_CATEGORY_LABEL_TITLE_CLASS, 'break-words')}
                 titleStyle={MENU_CATEGORY_LABEL_TITLE_STYLE}

@@ -59,13 +59,6 @@ function getInitialCalendarEventIconOnly(): boolean {
   return window.matchMedia(`(max-width: ${CALENDAR_EVENT_ICON_ONLY_MAX_WIDTH_PX}px)`).matches
 }
 
-/** Sfondo sezione calendario: arancio chiarissimo → giallo chiarissimo, più tenue del top bar admin */
-const CALENDAR_SECTION_WARM_SURFACE: React.CSSProperties = {
-  backgroundImage:
-    'linear-gradient(90deg, rgb(255 241 232) 0%, rgb(255 247 240) 48%, rgb(255 252 236) 100%)',
-  borderColor: 'rgba(251, 191, 160, 0.32)',
-}
-
 /** Icona lucide per la tipologia prenotazione (digest / card compatte). */
 function DigestBookingTypeIcon({
   booking,
@@ -692,25 +685,22 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     <>
       <div className="space-y-6">
         <div className="flex flex-col gap-4">
-          <div
-            className="w-full rounded-xl border px-4 py-4 shadow-sm max-[537px]:px-3 max-[537px]:py-3 sm:px-5 sm:py-4"
-            style={CALENDAR_SECTION_WARM_SURFACE}
-          >
+          <div className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 shadow-sm max-[537px]:px-3 max-[537px]:py-3 sm:px-5 sm:py-4">
             {/* Titolo a sinistra, icona + data a destra (stesso su ogni breakpoint) */}
             <div
               className="flex w-full items-center justify-between gap-3 py-3"
               style={{ minHeight: 'calc(48px * 6 / 5 * 6 / 5)' }}
             >
               <div className="min-w-0 flex-1 pr-2 text-left sm:pr-4">
-                <h2 className="break-words font-serif font-bold text-slate-800 max-[440px]:text-[1.5rem] max-[440px]:leading-tight min-[441px]:max-sm:text-[2rem] min-[441px]:max-sm:leading-tight sm:text-2xl sm:leading-snug md:text-3xl">
+                <h2 className="break-words font-serif font-bold text-primary-900 max-[440px]:text-[1.5rem] max-[440px]:leading-tight min-[441px]:max-sm:text-[2rem] min-[441px]:max-sm:leading-tight sm:text-2xl sm:leading-snug md:text-3xl">
                   Calendario Prenotazioni
                 </h2>
               </div>
               <div className="flex shrink-0 items-center">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-[#2563eb] bg-[#3b82f6] shadow-lg max-[537px]:h-9 max-[537px]:w-9">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-primary-700 bg-primary-600 shadow-lg max-[537px]:h-9 max-[537px]:w-9">
                   <Calendar className="h-7 w-7 text-white max-[537px]:h-5 max-[537px]:w-5" />
                 </div>
-                <span className="ml-3 text-sm font-semibold tabular-nums text-slate-800 max-[537px]:ml-2 max-[537px]:text-xs sm:text-base">
+                <span className="ml-3 text-sm font-semibold tabular-nums text-primary-900 max-[537px]:ml-2 max-[537px]:text-xs sm:text-base">
                   {currentDateLabel}
                 </span>
               </div>

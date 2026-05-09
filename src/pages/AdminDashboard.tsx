@@ -29,6 +29,8 @@ import {
 } from 'lucide-react'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
+import { DEFAULT_APP_THEME } from '@/features/booking/constants/appTheme'
+import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 import {
   RestaurantSettingsIntro,
   RestaurantSettingsTab,
@@ -71,11 +73,11 @@ const NavItem: React.FC<NavItemProps> = ({
 
   const inner = (
     <>
-      <Icon className={cn('h-4 w-4 flex-shrink-0', active ? 'text-primary-900' : 'text-slate-800')} />
+      <Icon className={cn('h-4 w-4 flex-shrink-0', active ? 'text-white' : 'text-primary-900')} />
       <span className="hidden min-w-0 truncate text-center sm:inline">{label}</span>
       <span className="min-w-0 truncate text-center sm:hidden">{mobileLabel ?? label.split(' ')[0]}</span>
       {badge != null && badge > 0 && (
-        <span className="inline-flex flex-shrink-0 items-center justify-center min-w-[20px] h-5 text-xs font-bold px-1.5 rounded-full border border-indigo-200 bg-indigo-50 text-indigo-900">
+        <span className="inline-flex flex-shrink-0 items-center justify-center min-w-[20px] h-5 text-xs font-bold px-1.5 rounded-full border border-primary-200 bg-primary-100 text-primary-900">
           {badge}
         </span>
       )}
@@ -88,9 +90,8 @@ const NavItem: React.FC<NavItemProps> = ({
         type="button"
         onClick={onClick}
         className={cn(
-          'admin-nav-item admin-nav-tab-active relative w-full min-h-11 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl px-2 sm:px-3 py-2.5 text-sm font-semibold text-slate-900 cursor-pointer',
-          '[background-image:none] bg-orange-200',
-          'border-solid border-4 shadow-none',
+          'admin-nav-item admin-nav-tab-active relative w-full min-h-11 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl px-2 sm:px-3 py-2.5 text-sm font-semibold text-white cursor-pointer',
+          'border-solid shadow-none',
           showNotifyDecor && 'overflow-hidden'
         )}
       >
@@ -142,9 +143,9 @@ const NavItem: React.FC<NavItemProps> = ({
 
 /* ─── StatCard ─── */
 const StatCard: React.FC<{ label: string; value: number }> = ({ label, value }) => (
-  <div className="admin-warm-surface rounded-xl border-2 p-4 text-center shadow-sm">
-    <p className="text-2xl font-black text-slate-800">{value}</p>
-    <p className="text-xs font-medium text-slate-600 mt-0.5">{label}</p>
+  <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 text-center shadow-sm">
+    <p className="text-2xl font-black text-primary-900">{value}</p>
+    <p className="text-xs font-medium text-[var(--color-text-muted)] mt-0.5">{label}</p>
   </div>
 )
 
@@ -166,6 +167,14 @@ export const AdminDashboard: React.FC = () => {
   const restaurantName = useRestaurantName()
   const { tenantSlug } = useTenantContext()
   const appIconSrc = `${import.meta.env.BASE_URL}icons/Icona-per-adminPage-no-bg.png`
+  const { data: savedAppTheme = DEFAULT_APP_THEME, isPending: isAppThemePending } =
+    useRestaurantSetting('app_theme')
+
+  useEffect(() => {
+    const resolved = isAppThemePending ? DEFAULT_APP_THEME : savedAppTheme
+    document.documentElement.setAttribute('data-admin-theme', resolved)
+    return () => document.documentElement.removeAttribute('data-admin-theme')
+  }, [savedAppTheme, isAppThemePending])
 
   const handleViewInCalendar = (date: string) => {
     setCalendarTargetDate(date)
@@ -176,13 +185,13 @@ export const AdminDashboard: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  /** Stessi h-9 w-9 del tasto «Torna in alto»; stato attivo come tab header (arancio). */
+  /** Stessi h-9 w-9 del tasto «Torna in alto»; attivo = primary come tab header. */
   const footerQuickNavBtnClass = (isActive: boolean) =>
     cn(
-      'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-slate-800 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
+      'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
       isActive
-        ? '[background-image:none] border-4 border-solid border-[color:var(--admin-nav-tab-active-border)] bg-orange-200'
-        : 'border border-slate-200 bg-white hover:bg-slate-50',
+        ? 'border-2 border-primary-600 bg-primary-600 text-white'
+        : 'border border-[var(--color-border)] bg-[var(--color-surface)] text-slate-800 hover:bg-[var(--color-surface-2)]',
     )
 
   const openPublicBookingForm = () => {
@@ -194,11 +203,11 @@ export const AdminDashboard: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-[var(--color-bg)]">
 
       {/* ── Header in flusso documento: scrolla via insieme al contenuto (nessun ancoraggio sticky in alto) ── */}
-      <header className="relative z-30 border-b border-slate-200 bg-white shadow-sm">
+      <header className="relative z-30 border-b border-[var(--color-border)] bg-[var(--color-bg)] shadow-sm">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 pt-4 md:gap-5 md:px-6 md:pt-6">
 
           {/* Top bar */}
-          <div className="admin-warm-surface relative flex h-[106px] items-center justify-center overflow-hidden rounded-xl border shadow-sm px-4 md:px-6">
+          <div className="relative flex h-[106px] items-center justify-center overflow-hidden rounded-xl border border-primary-700/25 bg-primary-600 px-4 shadow-md md:px-6">
             <div className="absolute right-2 top-1/2 z-2 flex h-[100px] w-[100px] shrink-0 -translate-y-1/2 items-center justify-center overflow-hidden rounded-xl bg-transparent p-0 md:right-3">
               <img
                 src={appIconSrc}
@@ -208,7 +217,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
             <div className="w-full px-4 md:px-28 text-center pointer-events-none">
               <h1
-                className="relative -left-16 mx-auto max-w-[calc(100%-9rem)] md:max-w-[calc(100%-11rem)] overflow-hidden line-clamp-2 wrap-anywhere font-semibold italic font-serif tracking-wide text-slate-800 leading-tight"
+                className="relative -left-16 mx-auto max-w-[calc(100%-9rem)] md:max-w-[calc(100%-11rem)] overflow-hidden line-clamp-2 wrap-anywhere font-semibold italic font-serif tracking-wide text-white drop-shadow-sm leading-tight"
                 style={{ fontSize: 'clamp(1.297rem, 2.767vw, 1.729rem)' }}
               >
                 {restaurantName || 'Booking SaaS'}
@@ -283,7 +292,7 @@ export const AdminDashboard: React.FC = () => {
             )}
 
             {activeTab === 'pending' && (
-              <div className="w-full overflow-hidden rounded-xl border-2 border-[rgba(45,212,191,0.55)] bg-white shadow-md min-h-0">
+              <div className="w-full overflow-hidden rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] shadow-md min-h-0">
                 <button
                   type="button"
                   onClick={() => setShowNewBookingPanel((p) => !p)}
@@ -301,11 +310,11 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                   <ChevronDown
                     aria-hidden
-                    className={`h-5 w-5 shrink-0 text-[rgba(6,64,50,0.88)] transition-transform md:h-6 md:w-6 ${showNewBookingPanel ? 'rotate-180' : ''}`}
+                    className={`h-5 w-5 shrink-0 text-white/90 transition-transform md:h-6 md:w-6 ${showNewBookingPanel ? 'rotate-180' : ''}`}
                   />
                 </button>
                 {showNewBookingPanel && (
-                  <div className="border-t border-slate-200 bg-white px-5 py-5">
+                  <div className="border-t border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-5">
                     <AdminBookingForm />
                   </div>
                 )}
@@ -353,14 +362,14 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </main>
 
-      <footer className="flex min-h-[62px] items-center border-t border-slate-100 bg-white py-3">
+      <footer className="flex min-h-[62px] items-center border-t border-[var(--color-border)] bg-[var(--color-bg)] py-3">
         <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
-          <div className="admin-warm-surface flex min-w-0 w-full flex-col items-stretch gap-3 rounded-xl border px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-2 md:gap-3 md:px-6">
+          <div className="flex min-w-0 w-full flex-col items-stretch gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-2 md:gap-3 md:px-6">
             <div className="flex min-w-0 shrink-0 items-center gap-2 sm:max-w-[min(40%,18rem)]">
               <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-100">
                 <User className="h-3.5 w-3.5 text-primary-600" />
               </div>
-              <span className="truncate text-xs font-medium text-slate-600">{user?.email}</span>
+              <span className="truncate text-xs font-medium text-[var(--color-text-muted)]">{user?.email}</span>
             </div>
 
             <nav
@@ -375,7 +384,7 @@ export const AdminDashboard: React.FC = () => {
                 title="Calendario"
               >
                 <Calendar
-                  className={cn('h-4 w-4 shrink-0', activeTab === 'calendar' ? 'text-primary-900' : 'text-slate-800')}
+                  className={cn('h-4 w-4 shrink-0', activeTab === 'calendar' ? 'text-white' : 'text-slate-800')}
                   aria-hidden
                 />
               </button>
@@ -387,11 +396,11 @@ export const AdminDashboard: React.FC = () => {
                 title="Prenotazioni"
               >
                 <Clock
-                  className={cn('h-4 w-4 shrink-0', activeTab === 'pending' ? 'text-primary-900' : 'text-slate-800')}
+                  className={cn('h-4 w-4 shrink-0', activeTab === 'pending' ? 'text-white' : 'text-slate-800')}
                   aria-hidden
                 />
                 {stats != null && stats.pending != null && stats.pending > 0 ? (
-                  <span className="pointer-events-none absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 px-0.5 text-[10px] font-bold text-indigo-900">
+                  <span className="pointer-events-none absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center rounded-full border border-primary-200 bg-primary-100 px-0.5 text-[10px] font-bold text-primary-900">
                     {stats.pending > 99 ? '99+' : stats.pending}
                   </span>
                 ) : null}
@@ -404,7 +413,7 @@ export const AdminDashboard: React.FC = () => {
                 title="Archivio"
               >
                 <Archive
-                  className={cn('h-4 w-4 shrink-0', activeTab === 'archive' ? 'text-primary-900' : 'text-slate-800')}
+                  className={cn('h-4 w-4 shrink-0', activeTab === 'archive' ? 'text-white' : 'text-slate-800')}
                   aria-hidden
                 />
               </button>
@@ -416,7 +425,7 @@ export const AdminDashboard: React.FC = () => {
                 title="Menu"
               >
                 <UtensilsCrossed
-                  className={cn('h-4 w-4 shrink-0', activeTab === 'menu' ? 'text-primary-900' : 'text-slate-800')}
+                  className={cn('h-4 w-4 shrink-0', activeTab === 'menu' ? 'text-white' : 'text-slate-800')}
                   aria-hidden
                 />
               </button>
@@ -430,7 +439,7 @@ export const AdminDashboard: React.FC = () => {
                 <Store
                   className={cn(
                     'h-4 w-4 shrink-0',
-                    activeTab === 'settings-restaurant' ? 'text-primary-900' : 'text-slate-800',
+                    activeTab === 'settings-restaurant' ? 'text-white' : 'text-slate-800',
                   )}
                   aria-hidden
                 />
@@ -450,7 +459,7 @@ export const AdminDashboard: React.FC = () => {
               <button
                 type="button"
                 onClick={scrollToTop}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-slate-700 shadow-sm transition-colors hover:bg-[var(--color-surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
                 aria-label="Torna in alto"
                 title="Torna in alto"
               >

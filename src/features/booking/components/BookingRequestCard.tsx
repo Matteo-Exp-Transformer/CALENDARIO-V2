@@ -44,9 +44,9 @@ const STATUS_CONFIG: Record<string, { label: string; bgColor: string; textColor:
 }
 
 
-/** Stesso aspetto della strip digest calendario / ArchiveTab. */
+/** Stesso tema ice delle card archivio / digest calendario. */
 const DIGEST_MENU_HEADING_GRADIENT_BG =
-  'bg-gradient-to-r from-[rgba(45,212,191,0.38)] via-teal-100/90 to-white'
+  'border border-primary-200/90 bg-gradient-to-r from-primary-50 via-white to-primary-50/40'
 
 const EVENT_TYPE_CONFIG: Record<string, { icon: typeof UtensilsCrossed }> = {
   cena: { icon: UtensilsCrossed },
@@ -112,8 +112,8 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
   const phoneDigestRow = booking.client_phone ? (
     <div className="flex items-center gap-2">
-      <Phone className="h-4 w-4 shrink-0 text-warm-orange" />
-      <span className="min-w-0 break-words text-base font-semibold text-warm-wood-dark">
+      <Phone className="h-4 w-4 shrink-0 text-primary-500" />
+      <span className="min-w-0 break-words text-base font-semibold text-primary-900">
         {booking.client_phone}
       </span>
     </div>
@@ -124,14 +124,14 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
       {showDigestStrip && (
         <div className="mb-2">
           <span
-            className={`inline-block max-w-full whitespace-normal rounded-lg border-0 px-4 py-2 text-xs font-semibold text-slate-800 shadow-none transition-all duration-300 ${DIGEST_MENU_HEADING_GRADIENT_BG}`}
+            className={`inline-block max-w-full whitespace-normal px-4 py-2 text-xs font-semibold shadow-none transition-all duration-300 ${DIGEST_MENU_HEADING_GRADIENT_BG}`}
           >
-            <span className="block text-sm font-semibold text-slate-900">{eventTypeLabel}</span>
+            <span className="block text-sm font-semibold text-primary-900">{eventTypeLabel}</span>
           </span>
         </div>
       )}
 
-      <div className="booking-request-card-shell overflow-hidden rounded-2xl border-0 border-b-[3px] border-solid border-b-[rgba(253,186,116,0.55)] shadow-none">
+      <div className="booking-request-card-shell overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
         <div
           className={cn(
             'booking-request-collapse-header',
@@ -140,7 +140,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
         >
           <div
             className={cn(
-              'booking-request-collapse-header-gradient admin-teal-surface',
+              'booking-request-collapse-header-gradient bg-gradient-to-br from-primary-50/90 via-white to-[var(--color-surface-2)]',
               !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl',
             )}
           >
@@ -149,8 +149,8 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
               onClick={() => setIsExpanded(!isExpanded)}
               className={cn(
                 'booking-request-digest-trigger relative z-0 w-full cursor-pointer border-0 bg-transparent p-6 text-left outline-none ring-0',
-                'transition-colors duration-[220ms] hover:bg-white/55 active:scale-[0.995]',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
+                'transition-colors duration-[220ms] hover:bg-[var(--color-surface-2)]/85 active:scale-[0.995]',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/45 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
                 !isExpanded ? 'rounded-2xl' : 'rounded-t-2xl',
               )}
             >
@@ -163,41 +163,41 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                     {statusConfig.label}
                   </span>
                   {isExpanded ? (
-                    <ChevronUp className="h-6 w-6 text-warm-wood" aria-hidden />
+                    <ChevronUp className="h-6 w-6 text-primary-700" aria-hidden />
                   ) : (
-                    <ChevronDown className="h-6 w-6 text-warm-wood" aria-hidden />
+                    <ChevronDown className="h-6 w-6 text-primary-700" aria-hidden />
                   )}
                 </div>
 
                 <div className="flex w-full min-w-0 flex-col gap-3">
                   <div className="flex min-w-0 w-full items-start gap-4 pr-29">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-orange-200/90 bg-white shadow-md">
-                      <DigestIcon className="h-4 w-4 text-warm-orange" aria-hidden />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-primary-200 bg-[var(--color-bg)] shadow-md">
+                      <DigestIcon className="h-4 w-4 text-primary-500" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1 text-left">
                       <div className="grid grid-cols-1 gap-x-6 gap-y-3 min-[659px]:grid-cols-2">
                         <div className="space-y-3">
                           <div className="flex min-w-0 items-center gap-2">
-                            <User className="h-4 w-4 shrink-0 text-warm-orange" />
-                            <span className="min-w-0 break-words text-base font-semibold text-warm-wood-dark">
+                            <User className="h-4 w-4 shrink-0 text-primary-500" />
+                            <span className="min-w-0 break-words text-base font-semibold text-primary-900">
                               {booking.client_name}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 shrink-0 text-warm-orange" />
-                            <span className="text-base font-semibold text-warm-wood-dark">
+                            <Calendar className="h-4 w-4 shrink-0 text-primary-500" />
+                            <span className="text-base font-semibold text-primary-900">
                               {formatDate(booking.desired_date)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 shrink-0 text-warm-orange" />
-                            <span className="text-base font-semibold text-warm-wood-dark">
+                            <Clock className="h-4 w-4 shrink-0 text-primary-500" />
+                            <span className="text-base font-semibold text-primary-900">
                               {formatTime(booking.desired_time)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 shrink-0 text-warm-orange" />
-                            <span className="text-base font-semibold text-warm-wood-dark">
+                            <Users className="h-4 w-4 shrink-0 text-primary-500" />
+                            <span className="text-base font-semibold text-primary-900">
                               {booking.num_guests} ospiti
                             </span>
                           </div>
@@ -214,14 +214,14 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                             <div className="hidden min-[659px]:block">{phoneDigestRow}</div>
                           ) : null}
                           <div className="flex min-w-0 w-full items-start gap-2">
-                            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" />
+                            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
                             <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 flex-1 break-words text-sm italic text-gray-700">
                               {booking.client_email}
                             </span>
                           </div>
                           {booking.special_requests && (
                             <div className="flex min-w-0 w-full items-start gap-2">
-                              <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" />
+                              <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
                               <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 flex-1 text-sm italic text-gray-700">
                                 {booking.special_requests}
                               </span>
@@ -229,7 +229,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                           )}
                           {digestMenuPrice && (
                             <div className="flex min-w-0 w-full items-start gap-2">
-                              <UtensilsCrossed className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange" aria-hidden />
+                              <UtensilsCrossed className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" aria-hidden />
                               <span className="min-w-0 flex-1 break-words text-sm italic leading-snug text-gray-700">
                                 Menù :{AFTER_COLON}
                                 {digestMenuPrice.prezzoMenuLabel}
@@ -244,7 +244,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                   {booking.created_at && (
                     <div className="flex min-w-0 w-full items-start gap-2">
                       <CalendarClock
-                        className="mt-0.5 h-4 w-4 shrink-0 text-warm-orange"
+                        className="mt-0.5 h-4 w-4 shrink-0 text-primary-500"
                         aria-hidden
                       />
                       <div className="min-w-0 flex-1 basis-0 text-sm leading-normal break-normal text-gray-600">
@@ -261,9 +261,8 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
           </div>
         </div>
 
-      {/* Pannello espanso = strip brand dashboard (ADMIN_WARM_GRADIENT_SURFACE) */}
       {isExpanded && (
-        <div className="booking-request-expanded-panel admin-warm-surface rounded-b-2xl border-t border-t-slate-200 p-4 transition-all duration-300 ease-in-out md:p-6">
+        <div className="booking-request-expanded-panel rounded-b-2xl border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 transition-all duration-300 ease-in-out md:p-6">
           {!booking.created_at && creationDateLabel && (
             <p className="pb-3 text-[1em] leading-normal">
               <span className="font-medium text-gray-500">Richiesta di prenotazione effettuata il :</span>
@@ -274,13 +273,13 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
           {/* Menu Info - Solo per Rinfresco di Laurea */}
           {bookingTypeUsesMenuSelections(booking.booking_type) && booking.menu_selection && (
-            <div className="pt-6 mt-6 border-t border-t-[rgba(253,186,116,0.55)]">
+            <div className="pt-6 mt-6 border-t border-[var(--color-border)]">
               <p className="mb-3 text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Menu Selezionato</p>
               
               {/* Mostra Menu Predefinito se presente */}
               {booking.preset_menu && (
-                <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="font-semibold text-blue-700">
+                <div className="mb-3 rounded-lg border border-primary-200 bg-primary-50 p-2">
+                  <p className="font-semibold text-primary-800">
                     📋 Menu Predefinito:{AFTER_COLON}
                     {getPresetMenuLabel(booking.preset_menu as PresetMenuType, customStaffPresets)}
                   </p>
@@ -290,12 +289,12 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
               <div className="space-y-2">
                 {menuPriceDisplay && (
                   <>
-                    <p className="font-bold text-warm-wood">
+                    <p className="font-bold text-primary-900">
                       <span className="text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">
                         Prezzo Menù:
                       </span>
                       {AFTER_COLON}
-                      <span className="text-warm-wood">
+                      <span className="text-primary-900">
                         {menuPriceDisplay.prezzoMenuLabel}
                         {menuPriceDisplay.breakdownLabel && (
                           <span className="text-gray-600 ml-2">{menuPriceDisplay.breakdownLabel}</span>
@@ -303,12 +302,12 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                       </span>
                     </p>
                     {menuPriceDisplay.prezzoTotaleLabel && (
-                      <p className="font-bold text-warm-wood">
+                      <p className="font-bold text-primary-900">
                         <span className="text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">
                           Prezzo Totale:
                         </span>
                         {AFTER_COLON}
-                        <span className="text-warm-wood">{menuPriceDisplay.prezzoTotaleLabel}</span>
+                        <span className="text-primary-900">{menuPriceDisplay.prezzoTotaleLabel}</span>
                       </p>
                     )}
                   </>
@@ -342,7 +341,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
           {/* Intolleranze - Solo per Rinfresco di Laurea */}
           {bookingTypeUsesMenuSelections(booking.booking_type) && booking.dietary_restrictions && Array.isArray(booking.dietary_restrictions) && booking.dietary_restrictions.length > 0 && (
-            <div className="pt-6 mt-6 border-t border-t-[rgba(253,186,116,0.55)]">
+            <div className="pt-6 mt-6 border-t border-[var(--color-border)]">
               <p className="mb-3 text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Intolleranze Alimentari</p>
               <div className="space-y-2">
                 {booking.dietary_restrictions.map((restriction: any, idx: number) => (
@@ -359,7 +358,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
           {/* Note Richieste Speciali - Fuori dalla griglia */}
           {booking.special_requests && (
-            <div className="pt-6 mt-6 border-t border-t-[rgba(253,186,116,0.55)]">
+            <div className="pt-6 mt-6 border-t border-[var(--color-border)]">
               <p className="mb-3 text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Richieste Speciali</p>
               <p className="leading-snug text-gray-700">
                 {booking.special_requests}
@@ -368,7 +367,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
           )}
 
           {/* Azioni con Bottoni Moderni */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-6 mt-6 border-t border-t-[rgba(253,186,116,0.55)]">
+          <div className="flex flex-col sm:flex-row gap-3 pt-6 mt-6 border-t border-[var(--color-border)]">
             <button
               type="button"
               onClick={() => onAccept(booking)}
