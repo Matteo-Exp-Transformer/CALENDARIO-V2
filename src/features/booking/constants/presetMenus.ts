@@ -16,6 +16,12 @@ export interface CustomStaffPreset {
   id: string
   name: string
   item_ids: string[]
+  /** Se `false`, il preset non compare nella pagina Prenota (default: visibile). */
+  visible_on_booking?: boolean
+}
+
+export function isStaffPresetVisibleOnBooking(p: CustomStaffPreset): boolean {
+  return p.visible_on_booking !== false
 }
 
 export interface PresetMenu {

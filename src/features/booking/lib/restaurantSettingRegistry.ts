@@ -13,6 +13,7 @@ import {
   parseBookingPageBackgroundFromDb,
 } from '@/features/booking/constants/bookingPageBackground'
 import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
+import type { VolAuVentPromo } from '@/features/booking/constants/volAuVentPromo'
 
 export const RESTAURANT_SETTING_KEYS_V1 = [
   'restaurant_name',
@@ -31,8 +32,10 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'booking_custom_staff_presets',
   /** Banner sopra al menu a tendina: omaggio Mini Rustici sopra soglia €/persona */
   'booking_vol_au_vent_promo_visible',
-  /** Testo del banner (admin) */
+  /** Testo del banner (admin) — fallback se `booking_vol_au_vent_promos` è vuoto */
   'booking_vol_au_vent_promo_message',
+  /** Promo multipla con associazione a tipologie di prenotazione */
+  'booking_vol_au_vent_promos',
   /** Elenco aree di posizionamento prenotazioni (es. Sala A, Sala B, Deorr) */
   'booking_placement_areas',
 ] as const
@@ -157,6 +160,7 @@ const customStaffPresetRowSchema = z.object({
   id: z.string().uuid(),
   name: z.string().trim().min(1).max(200),
   item_ids: z.array(z.string().uuid()).max(160),
+  visible_on_booking: z.boolean().optional(),
 })
 
 const bookingCustomStaffPresetsSchema = z.array(customStaffPresetRowSchema).max(40)
@@ -172,7 +176,12 @@ function parseBookingStaffPresetsVisibleFromDb(raw: unknown): boolean {
 function parseBookingCustomStaffPresetsFromDb(raw: unknown): CustomStaffPreset[] {
   const parsed = bookingCustomStaffPresetsSchema.safeParse(raw)
   if (!parsed.success) return []
-  return parsed.data
+  return parsed.data.map((row) => ({
+    id: row.id,
+    name: row.name,
+    item_ids: row.item_ids,
+    ...(row.visible_on_booking === false ? { visible_on_booking: false as const } : {}),
+  }))
 }
 
 function parseBookingVolAuVentPromoVisibleFromDb(raw: unknown): boolean {
@@ -184,6 +193,28 @@ function parseBookingVolAuVentPromoVisibleFromDb(raw: unknown): boolean {
 }
 
 const volAuVentPromoMessageSchema = z.string().trim().max(500)
+
+const bookingTypeForPromoSchema = z.enum(['tavolo', 'rinfresco_laurea', 'menu_prezzo_fisso'])
+
+const volAuVentPromoRowSchema = z.object({
+  id: z.string().uuid(),
+  message: z.string().trim().max(500),
+  booking_types: z.array(bookingTypeForPromoSchema).min(1).max(3),
+  visible_on_booking: z.boolean().optional(),
+})
+
+const bookingVolAuVentPromosSchema = z.array(volAuVentPromoRowSchema).max(24)
+
+function parseBookingVolAuVentPromosFromDb(raw: unknown): VolAuVentPromo[] {
+  const parsed = bookingVolAuVentPromosSchema.safeParse(raw)
+  if (!parsed.success) return []
+  return parsed.data.map((row) => ({
+    id: row.id,
+    message: row.message,
+    booking_types: row.booking_types,
+    ...(row.visible_on_booking === false ? { visible_on_booking: false as const } : {}),
+  }))
+}
 const placementAreaLabelSchema = z.string().trim().min(1).max(40)
 const bookingPlacementAreasSchema = z.array(placementAreaLabelSchema).min(1).max(30)
 
@@ -215,6 +246,7 @@ export type RestaurantSettingValueMap = {
   booking_custom_staff_presets: CustomStaffPreset[]
   booking_vol_au_vent_promo_visible: boolean
   booking_vol_au_vent_promo_message: string
+  booking_vol_au_vent_promos: VolAuVentPromo[]
   booking_placement_areas: string[]
 }
 
@@ -378,6 +410,15 @@ export const restaurantSettingRegistry: {
     validate: (value) => {
       const r = volAuVentPromoMessageSchema.safeParse(value)
       return r.success ? null : r.error.issues[0]?.message ?? 'Messaggio non valido'
+    },
+  },
+  booking_vol_au_vent_promos: {
+    key: 'booking_vol_au_vent_promos',
+    parseFromDb: (raw) => parseBookingVolAuVentPromosFromDb(raw),
+    serializeToDb: (value) => value as unknown as Json,
+    validate: (value) => {
+      const r = bookingVolAuVentPromosSchema.safeParse(value)
+      return r.success ? null : r.error.issues[0]?.message ?? 'Promo menù non valide'
     },
   },
   booking_placement_areas: {

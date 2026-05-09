@@ -693,15 +693,15 @@ button.booking-request-reject-booking-btn:focus-visible {
   box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  align-self: center;
+  justify-content: flex-start;
+  align-items: flex-start;
+  align-self: stretch;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   gap: 12px;
   padding: 1rem 1.25rem;
-  text-align: center;
+  text-align: left;
   background-color: #f9fafb;
   border-radius: 1.25rem;
   border: 2px solid rgba(15, 23, 42, 0.1);
@@ -717,15 +717,18 @@ button.booking-request-reject-booking-btn:focus-visible {
 
 .menu-prices-item-row .menu-prices-item-text {
   flex: 1 1 auto;
-  min-width: min(100%, 12rem);
-  text-align: center;
+  min-width: 0;
+  max-width: 100%;
+  text-align: left;
 }
 
 .menu-prices-item-row .menu-prices-item-actions {
   flex: 0 0 auto;
   display: flex;
   gap: 8px;
-  justify-content: center;
+  justify-content: flex-end;
+  margin-left: auto;
+  align-self: flex-start;
 }
 
 /* Icon edit / elimina nel menu admin */
@@ -774,6 +777,27 @@ button.booking-request-reject-booking-btn:focus-visible {
   background-color: #c2410c;
   border-color: #c2410c;
   color: #fff;
+}
+
+.menu-prices-icon-btn--visibility-visible {
+  border-color: rgb(199 210 254);
+  color: rgb(49 46 129);
+  background-color: rgb(238 242 255);
+}
+
+.menu-prices-icon-btn--visibility-visible:hover {
+  background-color: rgb(224 231 255);
+  color: rgb(49 46 129);
+}
+
+.menu-prices-icon-btn--visibility-hidden {
+  border-color: rgb(203 213 225);
+  color: rgb(100 116 139);
+  background-color: rgb(255 255 255);
+}
+
+.menu-prices-icon-btn--visibility-hidden:hover {
+  background-color: rgb(248 250 252);
 }
 
 /* Restaurant settings — footer salvataggio: pulsante sempre bianco; messaggio “non salvato” leggibile sul gradient */

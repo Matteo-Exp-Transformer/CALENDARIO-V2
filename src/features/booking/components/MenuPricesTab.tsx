@@ -1,9 +1,17 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { toast } from 'react-toastify'
-import { ADMIN_WARM_BORDER, ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
+import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { Button, Input, Textarea } from '@/components/ui'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
-import { Plus, Edit, Trash2, Save, X } from 'lucide-react'
+import { Plus, Edit, Trash2, Save, X, Eye, EyeOff } from 'lucide-react'
 import { useMenuItems, useCreateMenuItem, useUpdateMenuItem, useDeleteMenuItem } from '../hooks/useMenuItems'
 import {
   useCreateMenuCategory,
@@ -13,13 +21,17 @@ import {
 } from '../hooks/useMenuCategories'
 import type { MenuItem, MenuItemInput } from '@/types/menu'
 import type { SelectedMenuItem } from '@/types/menu'
-import type { CustomStaffPreset } from '../constants/presetMenus'
+import type { BookingType } from '@/types/booking'
+import { type CustomStaffPreset, isStaffPresetVisibleOnBooking } from '../constants/presetMenus'
 import { useRestaurantSetting, useUpsertRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { selectedItemsFromMenuItemIds } from '../utils/buildPresetMenuSelection'
 import { PresetMenuBuilder } from './PresetMenuBuilder'
 import {
   DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
+  VOL_AU_VENT_PROMO_BOOKING_TYPE_OPTIONS,
   VOL_AU_VENT_PROMO_PLACEHOLDER,
+  type VolAuVentPromo,
+  isVolAuVentPromoVisibleOnBooking,
 } from '../constants/volAuVentPromo'
 import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
@@ -33,6 +45,68 @@ const menuPricesHeaderCtaButtonClass = cn(
   adminBlueCtaSurfaceClass,
   'h-9 min-h-9 w-full shrink-0 gap-1.5 min-w-0'
 )
+
+function bookingTypeLabelsJoined(types: BookingType[]): string {
+  return types
+    .map((t) => VOL_AU_VENT_PROMO_BOOKING_TYPE_OPTIONS.find((o) => o.value === t)?.label ?? t)
+    .join(', ')
+}
+
+function promoMessageSummary(message: string): string {
+  const line = message.trim().split(/\n/)[0] ?? ''
+  if (!line) return 'Promo senza testo'
+  return line.length > 72 ? `${line.slice(0, 72)}…` : line
+}
+
+type StaffPresetsVisibilityIconButtonProps = {
+  visible: boolean
+  disabled: boolean
+  onToggle: () => void
+  /** `volPromo`: testi per singola riga promo (non preset staff). */
+  variant?: 'staffPresets' | 'volPromo'
+}
+
+/** Occhio tra Modifica ed Elimina nella lista menù preselezionati — stessa hit-area degli altri `.menu-prices-icon-btn`. */
+function StaffPresetsVisibilityIconButton({
+  visible,
+  disabled,
+  onToggle,
+  variant = 'staffPresets',
+}: StaffPresetsVisibilityIconButtonProps) {
+  const title =
+    variant === 'volPromo'
+      ? visible
+        ? 'Promo visibile in Prenota: clic per nascondere'
+        : 'Promo nascosta in Prenota: clic per mostrare'
+      : visible
+        ? 'Visibili nella pagina Prenota: clic per nascondere'
+        : 'Nascosti nella pagina Prenota: clic per mostrare'
+  const ariaLabel =
+    variant === 'volPromo'
+      ? visible
+        ? 'Nascondi questa promo nella pagina Prenota'
+        : 'Mostra questa promo nella pagina Prenota'
+      : visible
+        ? 'Nascondi i menù consigliati nella pagina Prenota'
+        : 'Mostra i menù consigliati nella pagina Prenota'
+
+  return (
+    <button
+      type="button"
+      aria-pressed={visible}
+      title={title}
+      aria-label={ariaLabel}
+      disabled={disabled}
+      onClick={onToggle}
+      className={cn(
+        'menu-prices-icon-btn',
+        visible ? 'menu-prices-icon-btn--visibility-visible' : 'menu-prices-icon-btn--visibility-hidden',
+      )}
+    >
+      {visible ? <Eye className="h-4 w-4 shrink-0" aria-hidden /> : <EyeOff className="h-4 w-4 shrink-0" aria-hidden />}
+    </button>
+  )
+}
 
 export type MenuPricesHeroToolbarProps = {
   promoDisabled: boolean
@@ -98,12 +172,12 @@ export function MenuPricesHeroToolbar({
             size="sm"
             type="button"
             onClick={onPresetMenus}
-            aria-label="Crea / Modifica Menù preselezionati"
-            title="Crea / Modifica Menù preselezionati"
+            aria-label="Crea / Modifica Menù Preselezionati"
+            title="Crea / Modifica Menù Preselezionati"
             className={cn(menuPricesHeaderCtaButtonClass, 'truncate')}
           >
             <Plus className="h-3.5 w-3.5" />
-            Crea / Modifica Menù preselezionati
+            Crea / Modifica Menù Preselezionati
           </Button>
           <Button
             variant="ghost"
@@ -111,12 +185,12 @@ export function MenuPricesHeroToolbar({
             type="button"
             onClick={onPromo}
             disabled={promoDisabled}
-            aria-label="Crea / Modifica promo menù"
-            title="Crea / Modifica promo menù"
+            aria-label="Crea / Modifica Promo Menù"
+            title="Crea / Modifica Promo Menù"
             className={cn(menuPricesHeaderCtaButtonClass, 'whitespace-normal leading-snug')}
           >
             <Edit className="h-3.5 w-3.5" />
-            Crea / Modifica promo menù
+            Crea / Modifica Promo Menù
           </Button>
         </div>
       </div>
@@ -371,17 +445,17 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const updateMutation = useUpdateMenuItem()
   const deleteMutation = useDeleteMenuItem()
 
-  const { data: staffPresetsVisible = true, isLoading: staffPresetVisibleLoading } = useRestaurantSetting(
-    'booking_staff_presets_visible',
-  )
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
   const { data: volAuVentPromoVisible = false, isLoading: volAuVentVisLoading } = useRestaurantSetting(
     'booking_vol_au_vent_promo_visible',
   )
   const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE, isLoading: volAuVentMsgLoading } =
     useRestaurantSetting('booking_vol_au_vent_promo_message')
+  const { data: volAuVentPromos = [], isLoading: volAuVentPromosLoading } = useRestaurantSetting(
+    'booking_vol_au_vent_promos',
+  )
   const upsertRestaurantSetting = useUpsertRestaurantSetting()
-  const volAuVentPromoLoading = volAuVentVisLoading || volAuVentMsgLoading
+  const volAuVentPromoLoading = volAuVentVisLoading || volAuVentMsgLoading || volAuVentPromosLoading
 
   const [viewMode, setViewMode] = useState<MenuViewMode>('menu')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -396,26 +470,126 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const [presetSelectedItems, setPresetSelectedItems] = useState<SelectedMenuItem[]>([])
   const [editingCustomPresetId, setEditingCustomPresetId] = useState<string | null>(null)
   const [promoEditorOpen, setPromoEditorOpen] = useState(false)
-  const [promoDraft, setPromoDraft] = useState('')
-  const volAuVentMsgLoadingPrev = useRef(volAuVentMsgLoading)
+  const [promoEditorMode, setPromoEditorMode] = useState<'list' | 'editor'>('list')
+  const [editingVolAuVentPromoId, setEditingVolAuVentPromoId] = useState<string | null>(null)
+  const [promoDraftMessage, setPromoDraftMessage] = useState('')
+  const [promoDraftBookingTypes, setPromoDraftBookingTypes] = useState<BookingType[]>([
+    'rinfresco_laurea',
+    'menu_prezzo_fisso',
+  ])
   const promoEditorPanelRef = useRef<HTMLDivElement>(null)
 
-  /** Se il pannello è aperto e il messaggio arriva dopo dal server, aggiorna il testo in bozza. */
-  useEffect(() => {
-    const finishedLoading =
-      promoEditorOpen && volAuVentMsgLoadingPrev.current && !volAuVentMsgLoading
-    volAuVentMsgLoadingPrev.current = volAuVentMsgLoading
-    if (finishedLoading) {
-      setPromoDraft(volAuVentPromoMessage)
-    }
-  }, [promoEditorOpen, volAuVentMsgLoading, volAuVentPromoMessage])
+  const resetVolAuVentPromoEditorDraft = () => {
+    setPromoEditorMode('list')
+    setEditingVolAuVentPromoId(null)
+    setPromoDraftMessage('')
+    setPromoDraftBookingTypes(['rinfresco_laurea', 'menu_prezzo_fisso'])
+  }
 
   const openPromoEditor = () => {
-    setPromoDraft(volAuVentPromoMessage)
+    resetVolAuVentPromoEditorDraft()
+    resetPresetEditor()
+    setViewMode('menu')
+    setIsAdding(false)
+    setEditingId(null)
+    setPriceInput('')
+    setFormData({
+      name: '',
+      category: categoryKeys[0] ?? '',
+      price: 0,
+      description: '',
+      sort_order: 0,
+    })
+    setIsAddingCategory(false)
+    setEditingCategoryId(null)
+    setNewCategoryLabel('')
     setPromoEditorOpen(true)
-    queueMicrotask(() =>
-      promoEditorPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }),
+    setPromoEditorMode('list')
+  }
+
+  useLayoutEffect(() => {
+    if (!promoEditorOpen || viewMode !== 'menu') return
+    promoEditorPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [promoEditorOpen, viewMode])
+
+  const startNewVolAuVentPromo = () => {
+    setEditingVolAuVentPromoId(null)
+    setPromoDraftMessage('')
+    setPromoDraftBookingTypes(['rinfresco_laurea', 'menu_prezzo_fisso'])
+    setPromoEditorMode('editor')
+  }
+
+  const startEditVolAuVentPromo = (row: VolAuVentPromo) => {
+    setEditingVolAuVentPromoId(row.id)
+    setPromoDraftMessage(row.message)
+    setPromoDraftBookingTypes([...row.booking_types])
+    setPromoEditorMode('editor')
+  }
+
+  const togglePromoDraftBookingType = (bt: BookingType) => {
+    setPromoDraftBookingTypes((prev) =>
+      prev.includes(bt) ? prev.filter((x) => x !== bt) : [...prev, bt],
     )
+  }
+
+  const handleSaveVolAuVentPromoRow = async () => {
+    const trimmed = promoDraftMessage.trim()
+    if (!trimmed) {
+      toast.error('Inserisci il testo della promozione')
+      return
+    }
+    if (promoDraftBookingTypes.length === 0) {
+      toast.error('Seleziona almeno una tipologia di prenotazione')
+      return
+    }
+
+    const existing =
+      editingVolAuVentPromoId !== null
+        ? volAuVentPromos.find((p) => p.id === editingVolAuVentPromoId)
+        : undefined
+    if (editingVolAuVentPromoId !== null && !existing) {
+      toast.error('Promo non trovata')
+      return
+    }
+
+    const nextRow: VolAuVentPromo =
+      editingVolAuVentPromoId !== null && existing
+        ? { ...existing, message: trimmed, booking_types: promoDraftBookingTypes }
+        : {
+            id: crypto.randomUUID(),
+            message: trimmed,
+            booking_types: promoDraftBookingTypes,
+            visible_on_booking: true,
+          }
+
+    const next: VolAuVentPromo[] =
+      editingVolAuVentPromoId !== null
+        ? volAuVentPromos.map((p) => (p.id === editingVolAuVentPromoId ? nextRow : p))
+        : [...volAuVentPromos, nextRow]
+
+    try {
+      await upsertRestaurantSetting.mutateAsync([{ key: 'booking_vol_au_vent_promos', value: next }])
+      setPromoEditorMode('list')
+      setEditingVolAuVentPromoId(null)
+      setPromoDraftMessage('')
+    } catch {
+      //
+    }
+  }
+
+  const handleDeleteVolAuVentPromo = (promoId: string, summary: string) => {
+    if (!confirm(`Eliminare la promo "${summary}"?`)) {
+      return
+    }
+    const next = volAuVentPromos.filter((p) => p.id !== promoId)
+    upsertRestaurantSetting.mutate([{ key: 'booking_vol_au_vent_promos', value: next }])
+  }
+
+  const toggleVolAuVentPromoBookingVisibility = (promoId: string) => {
+    const next = volAuVentPromos.map((p) =>
+      p.id === promoId ? { ...p, visible_on_booking: !isVolAuVentPromoVisibleOnBooking(p) } : p,
+    )
+    upsertRestaurantSetting.mutate([{ key: 'booking_vol_au_vent_promos', value: next }])
   }
 
   const resetPresetEditor = () => {
@@ -467,7 +641,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
         ? customStaffPresets.map((p) =>
             p.id === editingCustomPresetId ? { ...p, name, item_ids: ids } : p,
           )
-        : [...customStaffPresets, { id: crypto.randomUUID(), name, item_ids: ids }]
+        : [...customStaffPresets, { id: crypto.randomUUID(), name, item_ids: ids, visible_on_booking: true }]
 
     try {
       await upsertRestaurantSetting.mutateAsync([{ key: 'booking_custom_staff_presets', value: next }])
@@ -478,23 +652,18 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     }
   }
 
-  const handleSaveVolAuVentPromoMessage = async () => {
-    const trimmed = promoDraft.trim()
-    try {
-      await upsertRestaurantSetting.mutateAsync([
-        { key: 'booking_vol_au_vent_promo_message', value: trimmed },
-      ])
-      setPromoEditorOpen(false)
-    } catch {
-      //
-    }
-  }
-
   const handleDeleteCustomPreset = (presetId: string, label: string) => {
     if (!confirm(`Eliminare il menù preselezionato "${label}"?`)) {
       return
     }
     const next = customStaffPresets.filter((p) => p.id !== presetId)
+    upsertRestaurantSetting.mutate([{ key: 'booking_custom_staff_presets', value: next }])
+  }
+
+  const toggleStaffPresetBookingVisibility = (presetId: string) => {
+    const next = customStaffPresets.map((p) =>
+      p.id === presetId ? { ...p, visible_on_booking: !isStaffPresetVisibleOnBooking(p) } : p,
+    )
     upsertRestaurantSetting.mutate([{ key: 'booking_custom_staff_presets', value: next }])
   }
 
@@ -753,60 +922,12 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     onToolbarPromoDisabled?.(volAuVentPromoLoading || upsertRestaurantSetting.isPending)
   }, [onToolbarPromoDisabled, volAuVentPromoLoading, upsertRestaurantSetting.isPending])
 
-  const menuVisibilityToggles =
-    viewMode === 'menu' ? (
-      <div
-        className={cn(
-          'flex flex-col gap-3',
-          omitHeroSection ? '' : 'mt-auto border-t border-[color:var(--admin-warm-wrap-border)] pt-3',
-        )}
-      >
-        <label className="flex cursor-pointer items-start gap-2.5 text-left text-xs font-semibold leading-snug text-gray-800 sm:items-center sm:text-sm">
-          <input
-            type="checkbox"
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-400 sm:mt-0"
-            checked={staffPresetsVisible}
-            disabled={staffPresetVisibleLoading || upsertRestaurantSetting.isPending}
-            onChange={(e) =>
-              upsertRestaurantSetting.mutate([
-                { key: 'booking_staff_presets_visible', value: e.target.checked },
-              ])
-            }
-          />
-          Mostra nella pagina prenota i menù consigliati dallo staff
-        </label>
-        <label className="flex cursor-pointer items-start gap-2.5 text-left text-xs font-semibold leading-snug text-gray-800 sm:items-center sm:text-sm">
-          <input
-            type="checkbox"
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-400 sm:mt-0"
-            checked={volAuVentPromoVisible}
-            disabled={volAuVentPromoLoading || upsertRestaurantSetting.isPending}
-            onChange={(e) =>
-              upsertRestaurantSetting.mutate([
-                { key: 'booking_vol_au_vent_promo_visible', value: e.target.checked },
-              ])
-            }
-          />
-          Mostra nella pagina prenota un&apos;offerta per incentivare la scelta di più ingredienti nel menù
-        </label>
-      </div>
-    ) : null
-
   if (isLoading) {
     return <div className="text-center py-8">Caricamento menu...</div>
   }
 
   return (
     <div className="flex flex-col gap-6 md:gap-7">
-      {omitHeroSection && viewMode === 'menu' && (
-        <div
-          className="flex w-full min-w-0 flex-col gap-3 rounded-xl border px-4 py-4 shadow-sm md:px-5 md:py-5"
-          style={ADMIN_WARM_GRADIENT_SURFACE}
-        >
-          {menuVisibilityToggles}
-        </div>
-      )}
-
       {!omitHeroSection && (
       <section
         aria-labelledby="menu-prices-heading"
@@ -855,12 +976,12 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
               size="sm"
               type="button"
               onClick={openPresetMenusSection}
-              aria-label="Crea / Modifica Menù preselezionati"
-              title="Crea / Modifica Menù preselezionati"
+              aria-label="Crea / Modifica Menù Preselezionati"
+              title="Crea / Modifica Menù Preselezionati"
               className={cn(menuPricesHeaderCtaButtonClass, 'truncate')}
             >
               <Plus className="h-3.5 w-3.5" />
-              Crea / Modifica Menù preselezionati
+              Crea / Modifica Menù Preselezionati
             </Button>
             <Button
               variant="ghost"
@@ -868,28 +989,204 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
               type="button"
               onClick={openPromoEditor}
               disabled={volAuVentPromoLoading || upsertRestaurantSetting.isPending}
-              aria-label="Crea / Modifica promo menù"
-              title="Crea / Modifica promo menù"
+              aria-label="Crea / Modifica Promo Menù"
+              title="Crea / Modifica Promo Menù"
               className={cn(menuPricesHeaderCtaButtonClass, 'whitespace-normal leading-snug')}
             >
               <Edit className="h-3.5 w-3.5" />
-              Crea / Modifica promo menù
+              Crea / Modifica Promo Menù
             </Button>
           </div>
         </div>
-
-        {menuVisibilityToggles}
       </section>
+      )}
+      {viewMode === 'menu' && promoEditorOpen && (
+        <div className="w-full">
+          <div
+            ref={promoEditorPanelRef}
+            className="relative w-full scroll-mt-24 rounded-2xl border-2 p-4 md:p-6 shadow-lg md:scroll-mt-28"
+            style={ADMIN_WARM_GRADIENT_SURFACE}
+            role="region"
+            aria-label="Editor promozioni menù pagina prenotazione"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setPromoEditorOpen(false)
+                resetVolAuVentPromoEditorDraft()
+              }}
+              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-warm-wood/40 bg-white/90 text-warm-wood shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+              aria-label="Chiudi promozioni menù"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="mx-auto max-w-3xl pb-12 pr-10">
+              <h3 className="text-center font-serif text-lg font-bold text-warm-wood md:text-xl">
+                Promozioni Menù
+              </h3>
+              <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
+                Crea una o più promo e associale alle tipologie di prenotazione del form pubblico.
+              </p>
+
+              {!volAuVentPromoVisible && (
+                <p className="mb-3 mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+                  La visibilità promo in pagina Prenota è disattivata a livello di impostazione: le promo non saranno
+                  mostrate nel form pubblico finché resta così.
+                </p>
+              )}
+
+              {volAuVentPromoMessage.trim().length > 0 && volAuVentPromos.length === 0 && (
+                <p className="mb-3 mt-4 rounded-lg border border-slate-200 bg-white/70 px-3 py-2 text-xs text-slate-700">
+                  È ancora salvato un messaggio dalla versione precedente dell&apos;editor: viene usato in pagina Prenota
+                  finché non aggiungi promo in questa lista.
+                </p>
+              )}
+
+              {promoEditorMode === 'list' && (
+                <div className="mt-8 flex flex-col items-stretch gap-4">
+                  <Button
+                    variant="success"
+                    size="sm"
+                    type="button"
+                    onClick={startNewVolAuVentPromo}
+                    disabled={volAuVentPromoLoading || upsertRestaurantSetting.isPending}
+                    className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs self-center sm:self-end"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Nuova Promo Menù
+                  </Button>
+                  {volAuVentPromos.length === 0 ? (
+                    <p className="rounded-xl border border-dashed border-gray-300 bg-white/60 py-12 text-center text-sm text-gray-600">
+                      Nessuna promo. Creane una con il pulsante sopra.
+                    </p>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {volAuVentPromos.map((row) => (
+                        <div
+                          key={row.id}
+                          className="menu-prices-item-row flex-wrap gap-y-3"
+                          style={{ padding: '0.75rem 1rem', minHeight: '72px' }}
+                        >
+                          <div className="menu-prices-item-text min-w-[120px]">
+                            <h4 className="text-left font-semibold text-gray-900">
+                              {promoMessageSummary(row.message)}
+                            </h4>
+                            <p className="text-left text-xs text-gray-500">
+                              {bookingTypeLabelsJoined(row.booking_types)}
+                            </p>
+                          </div>
+                          <div className="menu-prices-item-actions shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => startEditVolAuVentPromo(row)}
+                              className="menu-prices-icon-btn menu-prices-icon-btn--edit"
+                              aria-label={`Modifica promo`}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </button>
+                            <StaffPresetsVisibilityIconButton
+                              variant="volPromo"
+                              visible={isVolAuVentPromoVisibleOnBooking(row)}
+                              disabled={upsertRestaurantSetting.isPending}
+                              onToggle={() => toggleVolAuVentPromoBookingVisibility(row.id)}
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDeleteVolAuVentPromo(row.id, promoMessageSummary(row.message))
+                              }
+                              className="menu-prices-icon-btn menu-prices-icon-btn--delete"
+                              aria-label={`Elimina promo`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {promoEditorMode === 'editor' && (
+                <div className="mt-8 space-y-6">
+                  <div>
+                    <label
+                      htmlFor="vol-au-vent-promo-textarea"
+                      className="mb-1 block text-xs font-semibold text-gray-700"
+                    >
+                      Inserisci il testo della promozione
+                    </label>
+                    <Textarea
+                      id="vol-au-vent-promo-textarea"
+                      value={promoDraftMessage}
+                      onChange={(e) => setPromoDraftMessage(e.target.value)}
+                      placeholder={VOL_AU_VENT_PROMO_PLACEHOLDER}
+                      rows={6}
+                      maxLength={500}
+                      className="min-h-[140px] resize-y border-slate-300 bg-white text-slate-900"
+                      aria-label="Inserisci il testo della promozione"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">{promoDraftMessage.length}/500</p>
+                  </div>
+
+                  <div className="rounded-xl border border-gray-200 bg-white/80 p-4">
+                    <span className="mx-auto mb-3 block w-fit max-w-full text-center text-sm font-bold text-warm-wood md:text-base">
+                      Tipologia di Prenotazione *
+                    </span>
+                    <p className="mb-3 text-center text-xs text-gray-600">
+                      Seleziona una o più tipologie: il testo comparirà quando il cliente sceglie una di queste opzioni
+                      (come nel form pubblico).
+                    </p>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
+                      {VOL_AU_VENT_PROMO_BOOKING_TYPE_OPTIONS.map(({ value, label }) => (
+                        <label
+                          key={value}
+                          className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 shrink-0 rounded border-gray-400"
+                            checked={promoDraftBookingTypes.includes(value)}
+                            onChange={() => togglePromoDraftBookingType(value)}
+                          />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap justify-center gap-3">
+                    <button
+                      type="button"
+                      disabled={upsertRestaurantSetting.isPending}
+                      onClick={() => void handleSaveVolAuVentPromoRow()}
+                      className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-emerald-500/35 hover:from-emerald-400 hover:to-emerald-500 hover:border-emerald-600 hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 disabled:hover:border-emerald-700"
+                    >
+                      <Save className="h-4 w-4" />
+                      Salva promo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPromoEditorMode('list')
+                        setEditingVolAuVentPromoId(null)
+                        setPromoDraftMessage('')
+                      }}
+                      className="flex items-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
+                    >
+                      <X className="h-4 w-4" />
+                      Indietro
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
       {viewMode === 'categories' && isAddingCategory && (
         <>
-          <div
-            className="w-full"
-            style={{
-              height: '24px',
-              backgroundImage: ADMIN_WARM_GRADIENT_SURFACE.backgroundImage
-            }}
-          />
           <div
             className="relative w-full rounded-2xl border-t-2 p-4 shadow-lg"
             style={ADMIN_WARM_GRADIENT_SURFACE}
@@ -907,34 +1204,27 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
             >
               <X className="h-4 w-4" />
             </button>
-            <div className="mx-auto w-[60%] sm:w-2/3">
-              <Input
-                value={newCategoryLabel}
-                onChange={(e) => setNewCategoryLabel(e.target.value)}
-                placeholder="Nuova categoria ingredienti"
-                className="h-14 w-full rounded-2xl pl-6"
-                style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
-              />
+            <div className="mx-auto flex w-full max-w-3xl flex-row items-center gap-3 sm:max-w-4xl">
+              <Button
+                variant="success"
+                size="md"
+                onClick={handleSaveCategory}
+                disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}
+                className="h-[50px] min-w-[74px] shrink-0"
+              >
+                <Save className="h-4 w-4" />
+                Salva
+              </Button>
+              <div className="min-w-0 flex-1">
+                <Input
+                  value={newCategoryLabel}
+                  onChange={(e) => setNewCategoryLabel(e.target.value)}
+                  placeholder="Nuova categoria ingredienti"
+                  className="h-14 w-full rounded-2xl pl-6"
+                  style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                />
+              </div>
             </div>
-            <Button
-              variant="success"
-              size="md"
-              onClick={handleSaveCategory}
-              disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}
-              className="absolute top-1/2 -translate-y-1/2 shrink-0"
-              style={{
-                position: 'absolute',
-                left: 'auto',
-                right: 'clamp(8px, 2vw, 16px)',
-                height: '50px',
-                minWidth: '74px',
-                backgroundColor: '#16a34a',
-                color: '#ffffff'
-              }}
-            >
-              <Save className="h-4 w-4" />
-              Salva
-            </Button>
           </div>
         </>
       )}
@@ -1061,65 +1351,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
 
       {viewMode === 'menu' && (
       <>
-      {promoEditorOpen && (
-        <div
-          ref={promoEditorPanelRef}
-          className="mt-4 w-full rounded-xl border-2 bg-white p-4 shadow-sm md:p-5"
-          style={{ borderColor: ADMIN_WARM_BORDER }}
-          role="region"
-          aria-label="Editor testo promo pagina prenotazione"
-        >
-          <div className="mb-4 flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
-            <h3 className="text-base font-semibold text-slate-800 md:text-lg">
-              Testo della promo sulla pagina prenotazione
-            </h3>
-            <button
-              type="button"
-              onClick={() => setPromoEditorOpen(false)}
-              className="shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-              aria-label="Chiudi editor promo"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-          {!volAuVentPromoVisible && (
-            <p className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
-              La checkbox &quot;Mostra nella pagina prenota un&apos;offerta…&quot; è disattivata: questo testo non sarà
-              visibile finché non la riattivi.
-            </p>
-          )}
-          <label
-            htmlFor="vol-au-vent-promo-textarea"
-            className="mb-1 mt-2 block text-xs font-semibold text-gray-700"
-          >
-            Inserisci il testo della promozione
-          </label>
-          <Textarea
-            id="vol-au-vent-promo-textarea"
-            value={promoDraft}
-            onChange={(e) => setPromoDraft(e.target.value)}
-            placeholder={VOL_AU_VENT_PROMO_PLACEHOLDER}
-            rows={6}
-            maxLength={500}
-            className="min-h-[140px] resize-y border-slate-300 bg-white text-slate-900"
-            aria-label="Inserisci il testo della promozione"
-          />
-          <p className="mt-1 text-xs text-gray-500">{promoDraft.length}/500</p>
-          <div className="mt-5 flex flex-wrap justify-center gap-2">
-            <button
-              type="button"
-              disabled={upsertRestaurantSetting.isPending}
-              onClick={() => void handleSaveVolAuVentPromoMessage()}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
-              style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
-            >
-              <Save className="h-4 w-4" />
-              Salva
-            </button>
-          </div>
-        </div>
-      )}
-
+      {!promoEditorOpen && (
       <div className={menuPricesCategoryListWrapClass}>
       {categoryEntries.map(([category, label]) => {
         const items = itemsByCategory[category] || []
@@ -1157,18 +1389,12 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
         )
       })}
       </div>
+      )}
       </>
       )}
 
       {viewMode === 'preset_menus' && (
         <>
-          <div
-            className="w-full"
-            style={{
-              height: '24px',
-              backgroundImage: ADMIN_WARM_GRADIENT_SURFACE.backgroundImage,
-            }}
-          />
           <div
             className="relative w-full rounded-2xl border-2 p-4 md:p-6 shadow-lg"
             style={ADMIN_WARM_GRADIENT_SURFACE}
@@ -1186,8 +1412,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                 Menù preselezionati
               </h3>
               <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
-                Compila un nome, seleziona gli ingredienti come in prenotazione e salva: compariranno nel menu a
-                tendina insieme ai quattro menù classici (se la casella sopra è attiva).
+                Compila un nome, seleziona gli ingredienti come in prenotazione e salva: in pagina Prenota comparirà
+                solo se l&apos;occhio su quella riga è aperto (visibilità per singolo menù).
               </p>
 
               {presetEditorMode === 'list' && (
@@ -1230,6 +1456,11 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                             >
                               <Edit className="h-4 w-4" />
                             </button>
+                            <StaffPresetsVisibilityIconButton
+                              visible={isStaffPresetVisibleOnBooking(preset)}
+                              disabled={upsertRestaurantSetting.isPending}
+                              onToggle={() => toggleStaffPresetBookingVisibility(preset.id)}
+                            />
                             <button
                               type="button"
                               onClick={() => handleDeleteCustomPreset(preset.id, preset.name)}
@@ -1271,8 +1502,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                       type="button"
                       disabled={upsertRestaurantSetting.isPending}
                       onClick={handleSaveCustomPreset}
-                      className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
-                      style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
+                      className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-emerald-500/35 hover:from-emerald-400 hover:to-emerald-500 hover:border-emerald-600 hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 disabled:hover:border-emerald-700"
                     >
                       <Save className="h-4 w-4" />
                       Salva menù
@@ -1283,8 +1513,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                         resetPresetEditor()
                         setPresetEditorMode('list')
                       }}
-                      className="flex items-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
-                      style={{ borderColor: '#dc2626', color: '#dc2626' }}
+                      className="flex items-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
                     >
                       <X className="h-4 w-4" />
                       Indietro
@@ -1297,38 +1526,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
         </>
       )}
 
-      {viewMode === 'products' && (
-        <div className={menuPricesCategoryListWrapClass}>
-          <div className="menu-prices-category-block flex w-full flex-col items-center px-1 sm:px-2 md:col-span-2">
-            <h3
-              className="booking-section-title-mobile booking-mobile-subheading flex w-full items-center justify-center border-b border-gray-300 pb-2 text-center text-lg md:text-xl"
-              style={adminMenuCategoryTitleStyle}
-            >
-              Prodotti Menu
-            </h3>
-            <div
-              className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-2"
-              style={{ marginTop: '0', paddingTop: '0.5rem' }}
-            >
-              {menuItems.length === 0 ? (
-                <p className="col-span-full py-4 text-center text-gray-500">Nessun prodotto inserito</p>
-              ) : (
-                menuItems.map((item) => (
-                  <AdminMenuIngredientCard
-                    key={item.id}
-                    item={item}
-                    onEdit={() => handleStartEdit(item)}
-                    onDelete={() => handleDelete(item.id, item.name)}
-                    metaLine={
-                      categoryEntries.find(([key]) => key === item.category)?.[1] ?? item.category
-                    }
-                  />
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
       {viewMode === 'categories' && (
         <div className={menuPricesCategoryListWrapClass}>
           <div className="menu-prices-category-block flex w-full flex-col items-center px-1 sm:px-2 md:col-span-2">

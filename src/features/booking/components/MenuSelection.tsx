@@ -9,14 +9,12 @@ import {
   getPresetMenuLabel,
   isBuiltinPresetMenuType,
   isCustomPresetMenuType,
+  isStaffPresetVisibleOnBooking,
   type CustomStaffPreset,
   type PresetMenuType,
 } from '../constants/presetMenus'
 import { isCaraffeDrinkPremium, isCaraffeDrinkStandard } from '../utils/caraffePricing'
-import {
-  DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
-  VOL_AU_VENT_THRESHOLD_EUR,
-} from '../constants/volAuVentPromo'
+import { VOL_AU_VENT_THRESHOLD_EUR } from '../constants/volAuVentPromo'
 import type { BookingType } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 
@@ -36,10 +34,6 @@ interface MenuSelectionProps {
   staffPresetsDropdownVisible?: boolean
   /** Menù personalizzati dallo staff (da restaurant_settings). */
   customStaffPresets?: CustomStaffPreset[]
-  /** Banner sopra al menu a tendina (omaggio Mini Rustici). Default: true */
-  volAuVentPromoVisible?: boolean
-  /** Testo del banner (da restaurant_settings). */
-  volAuVentPromoMessage?: string
 }
 
 type NormalizedMenuItem = {
@@ -96,8 +90,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   bookingType,
   staffPresetsDropdownVisible = true,
   customStaffPresets = [],
-  volAuVentPromoVisible = false,
-  volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
 }) => {
   const { data: menuItems = [], isLoading, error } = useMenuItems()
   const { data: dbCategories = [] } = useMenuCategories()
@@ -107,12 +99,25 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     `€${item.price.toFixed(2)}${item.priceSuffix ?? ''}`
   const formatCurrency = (value: number) => `€${value.toFixed(2)}`
 
+  const selectableStaffPresets = useMemo(
+    () => customStaffPresets.filter(isStaffPresetVisibleOnBooking),
+    [customStaffPresets],
+  )
+
   const showStaffPresetDropdown = useMemo(() => {
     if (!bookingTypeUsesMenuSelections(bookingType) || !onPresetMenuChange || !staffPresetsDropdownVisible) {
       return false
     }
-    if (customStaffPresets.length > 0) return true
+    if (selectableStaffPresets.length > 0) return true
     if (presetMenu != null && isBuiltinPresetMenuType(presetMenu)) return true
+    if (
+      presetMenu != null &&
+      isCustomPresetMenuType(presetMenu) &&
+      customStaffPresets.some((p) => customPresetStorageId(p.id) === presetMenu) &&
+      !selectableStaffPresets.some((p) => customPresetStorageId(p.id) === presetMenu)
+    ) {
+      return true
+    }
     if (
       presetMenu != null &&
       isCustomPresetMenuType(presetMenu) &&
@@ -126,6 +131,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     onPresetMenuChange,
     staffPresetsDropdownVisible,
     customStaffPresets,
+    selectableStaffPresets,
     presetMenu,
   ])
 
@@ -509,8 +515,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     )
   }
 
-  const hasPromoLabel = volAuVentPromoMessage.trim().length > 0
-
   return (
     <div className="isolate">
       {/* Titolo Sezione */}
@@ -551,7 +555,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       </h2>
 
       {/* Banner omaggio + menu a tendina menù consigliati — solo Rinfresco di Laurea */}
-      {((volAuVentPromoVisible && hasPromoLabel) || showStaffPresetDropdown) && bookingTypeUsesMenuSelections(bookingType) && (
+      {showStaffPresetDropdown && bookingTypeUsesMenuSelections(bookingType) && (
         <div
           className="w-full flex flex-col items-center px-1 sm:px-2"
           style={{
@@ -561,25 +565,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             marginBottom: '0',
           }}
         >
-          {volAuVentPromoVisible && hasPromoLabel && (
-            <label
-              className="block text-base md:text-lg text-warm-wood mb-2 w-full"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(1px)',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                display: 'inline-block',
-                fontWeight: '700',
-                maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
-                margin: '0 auto',
-                marginBottom: showStaffPresetDropdown ? '0.5rem' : '0',
-              }}
-            >
-              {volAuVentPromoMessage}
-            </label>
-          )}
-          {showStaffPresetDropdown && (
           <select
             id="preset_menu"
             value={presetMenu || ''}
@@ -609,18 +594,25 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             )}
             {presetMenu != null &&
               isCustomPresetMenuType(presetMenu) &&
+              customStaffPresets.some((p) => customPresetStorageId(p.id) === presetMenu) &&
+              !selectableStaffPresets.some((p) => customPresetStorageId(p.id) === presetMenu) && (
+                <option value={presetMenu}>
+                  {getPresetMenuLabel(presetMenu, customStaffPresets)}
+                </option>
+              )}
+            {presetMenu != null &&
+              isCustomPresetMenuType(presetMenu) &&
               !customStaffPresets.some((p) => customPresetStorageId(p.id) === presetMenu) && (
                 <option value={presetMenu}>
                   {getPresetMenuLabel(presetMenu, customStaffPresets)}
                 </option>
               )}
-            {customStaffPresets.map((p) => (
+            {selectableStaffPresets.map((p) => (
               <option key={p.id} value={customPresetStorageId(p.id)}>
                 {p.name}
               </option>
             ))}
           </select>
-          )}
         </div>
       )}
 

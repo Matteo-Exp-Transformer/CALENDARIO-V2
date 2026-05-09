@@ -5,7 +5,7 @@ import type { SelectedMenuItem } from '@/types/menu'
 import type { BookingType } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { getPresetMenuLabel, type CustomStaffPreset, type PresetMenuType } from '../constants/presetMenus'
-import { DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } from '../constants/volAuVentPromo'
+import { VolAuVentPromoBannerCards } from './VolAuVentPromoBannerCards'
 
 interface MenuTabProps {
   booking: any
@@ -22,7 +22,8 @@ interface MenuTabProps {
   staffPresetsDropdownVisible?: boolean
   customStaffPresets?: CustomStaffPreset[]
   volAuVentPromoVisible?: boolean
-  volAuVentPromoMessage?: string
+  /** Testi promo per la tipologia in modifica (stesse card del form pubblico). */
+  volAuVentPromoMessages?: string[]
   isMenuExpanded: boolean
   onMenuExpandToggle: () => void
   onMenuChange: (payload: {
@@ -64,7 +65,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
   staffPresetsDropdownVisible = true,
   customStaffPresets = [],
   volAuVentPromoVisible = false,
-  volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
+  volAuVentPromoMessages = [],
   isMenuExpanded,
   onMenuExpandToggle,
   onMenuChange,
@@ -134,18 +135,21 @@ export const MenuTab: React.FC<MenuTabProps> = ({
 
   // Menu expanded content (view mode)
   const menuContent = isEditMode ? (
-    <MenuSelection
-      selectedItems={menuSelection?.items || []}
-      numGuests={numGuests}
-      onMenuChange={onMenuChange}
-      presetMenu={presetMenu as PresetMenuType}
-      staffPresetsDropdownVisible={staffPresetsDropdownVisible}
-      customStaffPresets={customStaffPresets}
-      volAuVentPromoVisible={volAuVentPromoVisible}
-      volAuVentPromoMessage={volAuVentPromoMessage}
-      onPresetMenuChange={onPresetMenuChange}
-      bookingType={resolvedMenuBookingType}
-    />
+    <>
+      {volAuVentPromoVisible && volAuVentPromoMessages.length > 0 && (
+        <VolAuVentPromoBannerCards messages={volAuVentPromoMessages} className="mb-4" />
+      )}
+      <MenuSelection
+        selectedItems={menuSelection?.items || []}
+        numGuests={numGuests}
+        onMenuChange={onMenuChange}
+        presetMenu={presetMenu as PresetMenuType}
+        staffPresetsDropdownVisible={staffPresetsDropdownVisible}
+        customStaffPresets={customStaffPresets}
+        onPresetMenuChange={onPresetMenuChange}
+        bookingType={resolvedMenuBookingType}
+      />
+    </>
   ) : (
     <div className="space-y-4">
       {Object.entries(groupedItems).map(([category, items]) => {

@@ -21,7 +21,10 @@ import {
   computeMenuTotalsFromItems,
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
-import { DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } from '../constants/volAuVentPromo'
+import {
+  DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
+  listVolAuVentPromoMessagesForBookingType,
+} from '../constants/volAuVentPromo'
 import { CapacityWarningModal } from './CapacityWarningModal'
 import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
@@ -129,6 +132,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
     'booking_vol_au_vent_promo_message',
   )
+  const { data: volAuVentPromos = [] } = useRestaurantSetting('booking_vol_au_vent_promos')
 
   // Initialize form data from booking
   const [formData, setFormData] = useState(() => {
@@ -230,6 +234,16 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
     return baseTabs
   }, [formData.booking_type])
+
+  const volAuVentPromoMessagesForTab = useMemo(
+    () =>
+      listVolAuVentPromoMessagesForBookingType(
+        formData.booking_type,
+        volAuVentPromos,
+        volAuVentPromoMessage,
+      ),
+    [formData.booking_type, volAuVentPromos, volAuVentPromoMessage],
+  )
 
   // Auto-reset active tab if no longer available
   useEffect(() => {
@@ -792,7 +806,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                 staffPresetsDropdownVisible={staffPresetsDropdownVisible}
                 customStaffPresets={customStaffPresets}
                 volAuVentPromoVisible={volAuVentPromoVisible}
-                volAuVentPromoMessage={volAuVentPromoMessage}
+                volAuVentPromoMessages={volAuVentPromoMessagesForTab}
                 isMenuExpanded={isMenuExpanded}
                 onMenuExpandToggle={() => setIsMenuExpanded(!isMenuExpanded)}
                 onMenuChange={handleMenuChange}

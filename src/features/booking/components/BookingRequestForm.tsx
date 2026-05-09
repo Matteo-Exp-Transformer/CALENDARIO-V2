@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Input } from '@/components/ui'
 import { DateInput } from '@/components/ui/DateInput'
@@ -21,7 +21,11 @@ import {
   computeMenuTotalsFromItems,
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
-import { DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } from '../constants/volAuVentPromo'
+import {
+  DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
+  listVolAuVentPromoMessagesForBookingType,
+} from '../constants/volAuVentPromo'
+import { VolAuVentPromoBannerCards } from './VolAuVentPromoBannerCards'
 
 
 interface BookingRequestFormProps {
@@ -244,6 +248,17 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
   const { data: volAuVentPromoVisible = false } = useRestaurantSetting('booking_vol_au_vent_promo_visible')
   const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
     'booking_vol_au_vent_promo_message',
+  )
+  const { data: volAuVentPromos = [] } = useRestaurantSetting('booking_vol_au_vent_promos')
+
+  const volAuVentPromoBannerMessages = useMemo(
+    () =>
+      listVolAuVentPromoMessagesForBookingType(
+        formData.booking_type ?? 'tavolo',
+        volAuVentPromos,
+        volAuVentPromoMessage,
+      ),
+    [formData.booking_type, volAuVentPromos, volAuVentPromoMessage],
   )
 
   // Fetch business hours (non-blocking - form works even if loading/fails)
@@ -763,6 +778,12 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
           {errors.booking_type && (
             <p className="text-sm text-red-500">{errors.booking_type}</p>
           )}
+          {volAuVentPromoVisible && volAuVentPromoBannerMessages.length > 0 && (
+            <VolAuVentPromoBannerCards
+              messages={volAuVentPromoBannerMessages}
+              className="mt-3"
+            />
+          )}
         </div>
 
       </div>
@@ -776,8 +797,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             presetMenu={selectedPreset}
             staffPresetsDropdownVisible={staffPresetsDropdownVisible}
             customStaffPresets={customStaffPresets}
-            volAuVentPromoVisible={volAuVentPromoVisible}
-            volAuVentPromoMessage={volAuVentPromoMessage}
             onPresetMenuChange={handlePresetMenuChange}
             onMenuChange={({ items, totalPerPerson, tiramisuTotal, tiramisuKg }) => {
               const numGuests = formData.num_guests || 0

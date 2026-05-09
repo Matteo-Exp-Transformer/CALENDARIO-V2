@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Input, Textarea, TimePicker24h } from '@/components/ui'
 import type { BookingRequestInput, BookingType } from '@/types/booking'
@@ -18,7 +18,11 @@ import {
   computeMenuTotalsFromItems,
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
-import { DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } from '../constants/volAuVentPromo'
+import {
+  DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
+  listVolAuVentPromoMessagesForBookingType,
+} from '../constants/volAuVentPromo'
+import { VolAuVentPromoBannerCards } from './VolAuVentPromoBannerCards'
 import { useAcceptedBookings } from '../hooks/useBookingQueries'
 import { useCapacityCheck } from '../hooks/useCapacityCheck'
 import { CapacityWarningModal } from './CapacityWarningModal'
@@ -75,6 +79,18 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
   const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
     'booking_vol_au_vent_promo_message',
   )
+  const { data: volAuVentPromos = [] } = useRestaurantSetting('booking_vol_au_vent_promos')
+
+  const volAuVentPromoBannerMessages = useMemo(
+    () =>
+      listVolAuVentPromoMessagesForBookingType(
+        formData.booking_type ?? 'tavolo',
+        volAuVentPromos,
+        volAuVentPromoMessage,
+      ),
+    [formData.booking_type, volAuVentPromos, volAuVentPromoMessage],
+  )
+
   const { data: acceptedBookings = [] } = useAcceptedBookings()
 
   // Convert desired_time to startTime and endTime for capacity check
@@ -515,6 +531,12 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
             {errors.booking_type && (
               <p className="text-sm text-red-500">{errors.booking_type}</p>
             )}
+            {volAuVentPromoVisible && volAuVentPromoBannerMessages.length > 0 && (
+              <VolAuVentPromoBannerCards
+                messages={volAuVentPromoBannerMessages}
+                className="mt-1"
+              />
+            )}
           </div>
 
           <div className="space-y-3">
@@ -653,8 +675,6 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
               presetMenu={selectedPreset}
               staffPresetsDropdownVisible={staffPresetsDropdownVisible}
               customStaffPresets={customStaffPresets}
-              volAuVentPromoVisible={volAuVentPromoVisible}
-              volAuVentPromoMessage={volAuVentPromoMessage}
               onPresetMenuChange={handlePresetMenuChange}
               onMenuChange={({ items, totalPerPerson, tiramisuTotal, tiramisuKg }) => {
                 const numGuests = formData.num_guests || 0
