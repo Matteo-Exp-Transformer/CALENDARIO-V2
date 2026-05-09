@@ -35,6 +35,23 @@ import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { cn } from '@/lib/utils'
 
+/** Sotto questa larghezza (inclusa), la vista FullCalendar predefinita è lista invece del mese */
+const CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX = 630
+
+type FullCalendarViewId = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek'
+
+function getDefaultCalendarViewForViewport(): FullCalendarViewId {
+  if (typeof window === 'undefined') return 'dayGridMonth'
+  return window.matchMedia(`(max-width: ${CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX}px)`).matches
+    ? 'listWeek'
+    : 'dayGridMonth'
+}
+
+function getInitialCalendarNarrowViewport(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia(`(max-width: ${CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX}px)`).matches
+}
+
 /** Sfondo sezione calendario: arancio chiarissimo → giallo chiarissimo, più tenue del top bar admin */
 const CALENDAR_SECTION_WARM_SURFACE: React.CSSProperties = {
   backgroundImage:
@@ -318,7 +335,16 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     // Set today's date as default, or initialDate if provided
     return initialDate || new Date().toISOString().split('T')[0]
   })
-  const [currentView, setCurrentView] = useState<'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek'>('dayGridMonth')
+  const [currentView, setCurrentView] = useState<FullCalendarViewId>(getDefaultCalendarViewForViewport)
+  const [isCalendarNarrowViewport, setIsCalendarNarrowViewport] =
+    useState(getInitialCalendarNarrowViewport)
+
+  useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX}px)`)
+    const onChange = () => setIsCalendarNarrowViewport(mql.matches)
+    mql.addEventListener('change', onChange)
+    return () => mql.removeEventListener('change', onChange)
+  }, [])
 
   // Aggiorna il selectedBooking quando i bookings cambiano (dopo modifica)
   useEffect(() => {
@@ -492,9 +518,24 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     eventContent: (arg: any) => {
       const booking = arg.event.extendedProps as BookingRequest
 
+      if (isCalendarNarrowViewport) {
+        return (
+          <div className="flex cursor-pointer flex-col items-center gap-0.5 overflow-hidden rounded-lg px-1 py-1 text-center text-xs text-neutral-900 transition-opacity hover:opacity-90">
+            <div className="flex w-full justify-center">
+              <DigestBookingTypeIcon
+                booking={booking}
+                className="h-3.5 w-3.5 shrink-0 text-neutral-900"
+              />
+            </div>
+            <div className="w-full min-w-0 truncate font-semibold leading-tight text-neutral-950">
+              {booking.client_name}
+            </div>
+          </div>
+        )
+      }
+
       return (
-        <div className="px-2 py-1.5 rounded-lg text-xs text-neutral-900 transition-opacity hover:opacity-90 cursor-pointer overflow-hidden">
-          {/* Nome cliente */}
+        <div className="cursor-pointer overflow-hidden rounded-lg px-2 py-1.5 text-xs text-neutral-900 transition-opacity hover:opacity-90">
           <div className="mb-1 flex items-center gap-1.5 truncate font-semibold text-neutral-950">
             <DigestBookingTypeIcon
               booking={booking}
@@ -503,7 +544,6 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
             <span className="truncate">{booking.client_name}</span>
           </div>
 
-          {/* Dati in fila sotto */}
           <div className="flex items-center gap-2 truncate text-xs text-neutral-800">
             <span>{booking.num_guests} ospiti</span>
             {booking.menu && !digestBookingHasMenuContext(booking) && (
@@ -524,7 +564,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     },
   }
 
-  const handleViewChange = (view: typeof currentView) => {
+  const handleViewChange = (view: FullCalendarViewId) => {
     setCurrentView(view)
     const calendarApi = calendarRef.current?.getApi()
     if (calendarApi) {
@@ -547,7 +587,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     }
   }
 
-  const viewButtonClass = (view: typeof currentView) =>
+  const viewButtonClass = (view: FullCalendarViewId) =>
     cn(
       'shrink-0 rounded-lg border px-4 py-2 text-sm font-semibold shadow-sm transition-colors',
       // Stesso intervallo della card toolbar / FC (~537): evita scroll + “fascia” solo tra 423 e 537 px
