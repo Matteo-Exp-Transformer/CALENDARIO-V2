@@ -9,7 +9,7 @@ import React, {
 } from 'react'
 import { toast } from 'react-toastify'
 import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
-import { Button, Input, Textarea } from '@/components/ui'
+import { Button, CollapsibleCard, Input, Textarea } from '@/components/ui'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { Plus, Edit, Trash2, Save, X, Eye, EyeOff } from 'lucide-react'
 import { useMenuItems, useCreateMenuItem, useUpdateMenuItem, useDeleteMenuItem } from '../hooks/useMenuItems'
@@ -20,6 +20,7 @@ import {
   useUpdateMenuCategory
 } from '../hooks/useMenuCategories'
 import type { MenuItem, MenuItemInput } from '@/types/menu'
+import { normalizeMenuItemBookingTypes } from '@/types/menu'
 import type { SelectedMenuItem } from '@/types/menu'
 import type { BookingType } from '@/types/booking'
 import { type CustomStaffPreset, isStaffPresetVisibleOnBooking } from '../constants/presetMenus'
@@ -933,6 +934,29 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const handleDelete = (id: string, name: string) => {
     if (confirm(`Sei sicuro di voler eliminare "${name}"?`)) {
       deleteMutation.mutate(id)
+    }
+  }
+
+  const handleToggleMenuItemBookingType = async (
+    item: MenuItem,
+    bookingType: BookingType,
+    checked: boolean,
+  ) => {
+    const current = normalizeMenuItemBookingTypes(item.booking_types)
+    const next = checked
+      ? current.includes(bookingType)
+        ? current
+        : [...current, bookingType]
+      : current.filter((t) => t !== bookingType)
+    if (next.length === 0) {
+      toast.error('Seleziona almeno una tipologia di prenotazione')
+      return
+    }
+    try {
+      await updateMutation.mutateAsync({ id: item.id, booking_types: next })
+      await refetchMenuItems()
+    } catch {
+      //
     }
   }
 
