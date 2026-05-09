@@ -187,6 +187,35 @@ export const TimeInput: React.FC<TimeInputProps> = ({
             border-radius: 12px !important;
           }
         }
+        /* Schermi molto stretti: card leggermente più compatta (sopra i breakpoint mobile che ingrandiscono il touch) */
+        @media (max-width: 409px) {
+          .time-input-container {
+            height: 48px;
+            padding: 0 10px;
+            gap: 5px;
+            font-size: 14px;
+            border-radius: 12px;
+          }
+          .time-input-container select {
+            font-size: 14px;
+            min-width: 44px;
+          }
+          .time-input-container span {
+            font-size: 14px;
+          }
+          .time-input-container--compact {
+            height: 44px;
+            padding: 0 8px;
+            gap: 4px;
+            font-size: 14px;
+          }
+          .time-input-container--compact select {
+            font-size: 14px;
+          }
+          .time-input-container--compact span {
+            font-size: 13px;
+          }
+        }
       `}</style>
     </>
   )

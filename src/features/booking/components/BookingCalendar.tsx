@@ -707,7 +707,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                 </h2>
               </div>
               <div className="flex shrink-0 items-center">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 shadow-lg max-[537px]:h-9 max-[537px]:w-9">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-[#2563eb] bg-[#3b82f6] shadow-lg max-[537px]:h-9 max-[537px]:w-9">
                   <Calendar className="h-7 w-7 text-white max-[537px]:h-5 max-[537px]:w-5" />
                 </div>
                 <span className="ml-3 text-sm font-semibold tabular-nums text-slate-800 max-[537px]:ml-2 max-[537px]:text-xs sm:text-base">

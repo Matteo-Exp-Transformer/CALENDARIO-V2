@@ -144,7 +144,7 @@ const restaurantSettingsIntroCardClass =
 export function RestaurantSettingsIntro() {
   return (
     <div className={restaurantSettingsIntroCardClass}>
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 shadow-lg">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-[#2563eb] bg-[#3b82f6] shadow-lg">
         <Store className="h-7 w-7 text-white" />
       </div>
       <div className="min-w-0 text-center">
