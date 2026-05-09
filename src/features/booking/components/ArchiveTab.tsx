@@ -189,12 +189,7 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
                 </div>
 
                 <div className="flex w-full min-w-0 flex-col gap-3">
-                  <div
-                    className={cn(
-                      'flex min-w-0 w-full items-start gap-4 pr-29',
-                      deletedDigest && 'rounded-[999px] bg-red-100 px-4 py-3 sm:px-5'
-                    )}
-                  >
+                  <div className="flex min-w-0 w-full items-start gap-4 pr-29">
                     <div
                       className={cn(
                         'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-white shadow-md',
