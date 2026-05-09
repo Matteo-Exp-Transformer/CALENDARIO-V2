@@ -795,10 +795,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
 
       await refetchCategories()
       await refetchMenuItems()
-      setViewMode('menu')
-      setIsAddingCategory(false)
-      setNewCategoryLabel('')
-      setEditingCategoryId(null)
+      cancelCategoryForm()
     } catch {
       // errore già gestito dalla mutation con toast
     }
@@ -845,6 +842,12 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setNewCategoryLabel('')
   }
 
+  const cancelCategoryForm = () => {
+    setIsAddingCategory(false)
+    setNewCategoryLabel('')
+    setEditingCategoryId(null)
+  }
+
   useImperativeHandle(
     ref,
     () => ({
@@ -886,13 +889,28 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     try {
       if (editingId) {
         await updateMutation.mutateAsync({ id: editingId, ...payload })
+        await refetchMenuItems()
+        await refetchCategories()
+        setFormData({
+          ...formData,
+          ...payload,
+        })
+        setPriceInput(parsedPrice === 0 ? '' : String(parsedPrice))
       } else {
         await createMutation.mutateAsync(payload)
+        await refetchMenuItems()
+        await refetchCategories()
+        setPriceInput('')
+        setFormData({
+          name: '',
+          category: categoryKeys[0] ?? '',
+          price: 0,
+          description: '',
+          sort_order: 0,
+        })
+        setIsAdding(true)
+        setEditingId(null)
       }
-
-      await refetchMenuItems()
-      await refetchCategories()
-      handleCancel()
     } catch {
       // errore già gestito dalla mutation con toast
     }
@@ -1173,9 +1191,9 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                         setEditingVolAuVentPromoId(null)
                         setPromoDraftMessage('')
                       }}
-                      className="flex items-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
+                      className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="h-4 w-4 flex-shrink-0" />
                       Indietro
                     </button>
                   </div>
@@ -1185,50 +1203,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           </div>
         </div>
       )}
-      {viewMode === 'categories' && isAddingCategory && (
-        <>
-          <div
-            className="relative w-full rounded-2xl border-t-2 p-4 shadow-lg"
-            style={ADMIN_WARM_GRADIENT_SURFACE}
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setViewMode('menu')
-                setIsAddingCategory(false)
-                setNewCategoryLabel('')
-                setEditingCategoryId(null)
-              }}
-              className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-warm-wood/40 bg-white/90 text-warm-wood shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
-              aria-label="Chiudi inserimento categoria"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <div className="mx-auto flex w-full max-w-3xl flex-row items-center gap-3 sm:max-w-4xl">
-              <Button
-                variant="success"
-                size="md"
-                onClick={handleSaveCategory}
-                disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}
-                className="h-[50px] min-w-[74px] shrink-0"
-              >
-                <Save className="h-4 w-4" />
-                Salva
-              </Button>
-              <div className="min-w-0 flex-1">
-                <Input
-                  value={newCategoryLabel}
-                  onChange={(e) => setNewCategoryLabel(e.target.value)}
-                  placeholder="Nuova categoria ingredienti"
-                  className="h-14 w-full rounded-2xl pl-6"
-                  style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
-                />
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
       {/* Form Aggiunta/Modifica */}
       {viewMode === 'products' && (isAdding || editingId) && (
         <div
@@ -1328,20 +1302,20 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
             </div>
             <div className="mt-10 flex justify-center gap-3" style={{ marginTop: '40px' }}>
               <button
+                type="button"
                 onClick={handleSave}
                 disabled={createMutation.isPending || updateMutation.isPending}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-emerald-500/35 hover:from-emerald-400 hover:to-emerald-500 hover:border-emerald-600 hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 disabled:hover:border-emerald-700"
               >
-                <Save className="h-4 w-4" />
+                <Save className="h-4 w-4 flex-shrink-0" />
                 Salva
               </button>
               <button
+                type="button"
                 onClick={handleCancel}
-                className="flex items-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
-                style={{ borderColor: '#dc2626', color: '#dc2626' }}
+                className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4 flex-shrink-0" />
                 Annulla
               </button>
             </div>
@@ -1352,6 +1326,10 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       {viewMode === 'menu' && (
       <>
       {!promoEditorOpen && (
+      <div
+        className="relative w-full rounded-2xl border-2 p-4 md:p-6 shadow-lg"
+        style={ADMIN_WARM_GRADIENT_SURFACE}
+      >
       <div className={menuPricesCategoryListWrapClass}>
       {categoryEntries.map(([category, label]) => {
         const items = itemsByCategory[category] || []
@@ -1388,6 +1366,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           </div>
         )
       })}
+      </div>
       </div>
       )}
       </>
@@ -1513,9 +1492,9 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                         resetPresetEditor()
                         setPresetEditorMode('list')
                       }}
-                      className="flex items-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
+                      className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="h-4 w-4 flex-shrink-0" />
                       Indietro
                     </button>
                   </div>
@@ -1527,26 +1506,96 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       )}
 
       {viewMode === 'categories' && (
-        <div className={menuPricesCategoryListWrapClass}>
-          <div className="menu-prices-category-block flex w-full flex-col items-center px-1 sm:px-2 md:col-span-2">
-            <h3
-              className="booking-section-title-mobile booking-mobile-subheading flex w-full items-center justify-center border-b border-gray-300 pb-2 text-center text-lg md:text-xl"
-              style={adminMenuCategoryTitleStyle}
-            >
+        <div
+          className="relative w-full rounded-2xl border-2 p-4 md:p-6 shadow-lg"
+          style={ADMIN_WARM_GRADIENT_SURFACE}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setViewMode('menu')
+              cancelCategoryForm()
+            }}
+            className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-warm-wood/40 bg-white/90 text-warm-wood shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+            aria-label="Chiudi gestione categorie"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <div className="mx-auto max-w-3xl pb-12 pr-10">
+            <h3 className="text-center font-serif text-lg font-bold text-warm-wood md:text-xl">
               Categorie Menu
             </h3>
-            <div
-              className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-2"
-              style={{ marginTop: '0', paddingTop: '0.5rem' }}
-            >
-              {categoryEntries.map(([key, label]) => (
-                <AdminMenuCategoryLabelCard
-                  key={key}
-                  label={label}
-                  onEdit={() => handleEditCategory(key, label)}
-                  onDelete={() => handleDeleteCategory(key, label)}
-                />
-              ))}
+            <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
+              Aggiungi, rinomina o elimina le categorie degli ingredienti. Per eliminare una categoria non devono esserci
+              prodotti al suo interno.
+            </p>
+
+            {isAddingCategory ? (
+              <div className="mt-8 flex flex-col gap-4">
+                <div className="mx-auto w-full max-w-3xl">
+                  <Input
+                    value={newCategoryLabel}
+                    onChange={(e) => setNewCategoryLabel(e.target.value)}
+                    placeholder="Nuova categoria ingredienti"
+                    className="h-14 w-full rounded-2xl pl-6"
+                    style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                  />
+                </div>
+                <div className="mt-10 flex justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => void handleSaveCategory()}
+                    disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}
+                    className="flex items-center justify-center gap-2 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-emerald-500/35 hover:from-emerald-400 hover:to-emerald-500 hover:border-emerald-600 hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 disabled:hover:border-emerald-700"
+                  >
+                    <Save className="h-4 w-4 shrink-0" />
+                    Salva
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelCategoryForm}
+                    className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
+                  >
+                    <X className="h-4 w-4 shrink-0" />
+                    Annulla
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-8 flex flex-col items-stretch gap-4">
+                <Button
+                  variant="success"
+                  size="sm"
+                  type="button"
+                  onClick={() => {
+                    setIsAddingCategory(true)
+                    setEditingCategoryId(null)
+                    setNewCategoryLabel('')
+                  }}
+                  className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs self-center sm:self-end"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Nuova Categoria Ingredienti
+                </Button>
+              </div>
+            )}
+
+            <div className={cn(menuPricesCategoryListWrapClass, 'mt-8')}>
+              <div className="menu-prices-category-block flex w-full flex-col items-center px-1 sm:px-2 md:col-span-2">
+                <div
+                  className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-2"
+                  style={{ marginTop: '0', paddingTop: '0.5rem' }}
+                >
+                  {categoryEntries.map(([key, label]) => (
+                    <AdminMenuCategoryLabelCard
+                      key={key}
+                      label={label}
+                      onEdit={() => handleEditCategory(key, label)}
+                      onDelete={() => handleDeleteCategory(key, label)}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
