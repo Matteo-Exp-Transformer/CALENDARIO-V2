@@ -466,7 +466,7 @@ export const ArchiveFiltersCard: React.FC<ArchiveFiltersCardProps> = ({
         Filtra per Status
       </label>
 
-      <div className="flex gap-2 border-0 shadow-none outline-none">
+      <div className="grid grid-cols-2 gap-2 border-0 shadow-none outline-none min-[506px]:flex min-[506px]:flex-row">
         {(['all', 'accepted', 'rejected', 'deleted'] as ArchiveFilter[]).map((f) => (
           <button
             type="button"
@@ -474,7 +474,7 @@ export const ArchiveFiltersCard: React.FC<ArchiveFiltersCardProps> = ({
             data-filter={f}
             onClick={() => onFilterChange(f)}
             className={cn(
-              'archive-tab-filter-btn admin-nav-item relative flex min-h-9 flex-1 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-900 transition-all duration-150 cursor-pointer',
+              'archive-tab-filter-btn admin-nav-item relative flex min-h-9 w-full min-[506px]:flex-1 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-900 transition-all duration-150 cursor-pointer',
               filter === f
                 ? 'admin-nav-tab-active border-solid shadow-none bg-none bg-orange-200'
                 : 'border border-solid',
@@ -505,7 +505,7 @@ export const ArchiveFiltersCard: React.FC<ArchiveFiltersCardProps> = ({
         Ordina per
       </label>
 
-      <div className="flex gap-2 border-0 shadow-none outline-none">
+      <div className="grid grid-cols-2 gap-2 border-0 shadow-none outline-none min-[506px]:flex min-[506px]:flex-row">
         {([
           { value: 'booking_date' as SortOrder, label: 'Data Prenotazione', icon: Calendar },
           { value: 'created_at' as SortOrder, label: 'Data Creazione', icon: Clock },
@@ -517,7 +517,7 @@ export const ArchiveFiltersCard: React.FC<ArchiveFiltersCardProps> = ({
               key={option.value}
               onClick={() => onSortOrderChange(option.value)}
               className={cn(
-                'archive-tab-filter-btn admin-nav-item relative flex min-h-9 flex-1 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-900 transition-all duration-150 cursor-pointer',
+                'archive-tab-filter-btn admin-nav-item relative flex min-h-9 w-full min-[506px]:flex-1 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-900 transition-all duration-150 cursor-pointer',
                 sortOrder === option.value
                   ? 'admin-nav-tab-active border-solid shadow-none bg-none bg-orange-200'
                   : 'border border-solid',
