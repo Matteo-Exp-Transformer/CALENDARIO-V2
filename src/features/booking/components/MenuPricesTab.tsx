@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from 'react'
 import { toast } from 'react-toastify'
@@ -215,6 +216,16 @@ const slugifyCategory = (value: string): string =>
 /** Allineato a MenuSelection — larghezza massima card ingredienti */
 const MENU_CARD_MAX_WIDTH_PX = 746
 
+/** Titolo categoria: stesso aspetto tra card gestione categorie e header CollapsibleCard panoramica ingredienti. */
+const MENU_CATEGORY_LABEL_TITLE_CLASS =
+  'booking-mobile-card-title min-w-0 flex-1 font-bold text-base text-gray-700 md:text-lg'
+
+const MENU_CATEGORY_LABEL_TITLE_STYLE: CSSProperties = {
+  fontWeight: 700,
+  wordBreak: 'break-word',
+  overflowWrap: 'break-word',
+}
+
 type AdminMenuIngredientCardProps = {
   item: MenuItem
   onEdit: () => void
@@ -419,14 +430,7 @@ const AdminMenuCategoryLabelCard: React.FC<AdminMenuCategoryLabelCardProps> = ({
           paddingRight: '12px',
         }}
       >
-        <span
-          className="booking-mobile-card-title min-w-0 flex-1 font-bold text-base text-gray-700 md:text-lg"
-          style={{
-            fontWeight: '700',
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word',
-          }}
-        >
+        <span className={MENU_CATEGORY_LABEL_TITLE_CLASS} style={MENU_CATEGORY_LABEL_TITLE_STYLE}>
           {label}
         </span>
         <div className="menu-prices-item-actions flex shrink-0 gap-2">
@@ -871,7 +875,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const handleStartAddCategory = () => {
     setViewMode('categories')
     resetProductFormState()
-    setIsAddingCategory(true)
+    setIsAddingCategory(false)
     setEditingCategoryId(null)
     setNewCategoryLabel('')
   }
@@ -1249,7 +1253,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                       className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
                     >
                       <X className="h-4 w-4 flex-shrink-0" />
-                      Indietro
+                      Annulla
                     </button>
                   </div>
                 </div>
@@ -1424,6 +1428,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                 className="h-fit border-amber-200/80 shadow-md"
                 headerClassName="min-h-[48px] bg-white/85 hover:bg-white border-amber-100"
                 contentClassName="bg-transparent p-0"
+                titleClassName={cn(MENU_CATEGORY_LABEL_TITLE_CLASS, 'break-words')}
+                titleStyle={MENU_CATEGORY_LABEL_TITLE_STYLE}
               >
                 <div className="flex flex-col gap-3 px-2 pb-4 pt-1 sm:px-3">
                   {(itemsByCategory[categoryKey] ?? []).map((item) => (
@@ -1578,7 +1584,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                       className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
                     >
                       <X className="h-4 w-4 flex-shrink-0" />
-                      Indietro
+                      Annulla
                     </button>
                   </div>
                 </div>
@@ -1645,7 +1651,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                 </div>
               </div>
             ) : (
-              <div className="mt-8 flex flex-col items-stretch gap-4">
+              <div className="mt-8 flex w-full justify-end">
                 <Button
                   variant="success"
                   size="sm"
@@ -1655,10 +1661,10 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                     setEditingCategoryId(null)
                     setNewCategoryLabel('')
                   }}
-                  className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs self-center sm:self-end"
+                  className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  Nuova Categoria Ingredienti
+                  Nuova categoria ingredienti
                 </Button>
               </div>
             )}

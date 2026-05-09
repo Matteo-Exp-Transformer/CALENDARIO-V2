@@ -4,10 +4,17 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import listPlugin from '@fullcalendar/list'
-import { Calendar, Users, Tag, PenLine } from 'lucide-react'
+import {
+  BookOpen,
+  Calendar,
+  GraduationCap,
+  PenLine,
+  Tag,
+  UtensilsCrossed,
+} from 'lucide-react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import type { BookingRequest } from '@/types/booking'
+import type { BookingRequest, BookingType } from '@/types/booking'
 import {
   transformBookingsToCalendarEvents,
   transformBookingToCalendarEvent,
@@ -33,6 +40,25 @@ const CALENDAR_SECTION_WARM_SURFACE: React.CSSProperties = {
   backgroundImage:
     'linear-gradient(90deg, rgb(255 241 232) 0%, rgb(255 247 240) 48%, rgb(255 252 236) 100%)',
   borderColor: 'rgba(251, 191, 160, 0.32)',
+}
+
+/** Icona lucide per la tipologia prenotazione (digest / card compatte). */
+function DigestBookingTypeIcon({
+  booking,
+  className,
+}: {
+  booking: BookingRequest
+  className?: string
+}) {
+  const t = (booking.booking_type ?? 'tavolo') as BookingType
+  const iconClass = cn('shrink-0', className)
+  if (t === 'rinfresco_laurea') {
+    return <GraduationCap className={iconClass} aria-hidden />
+  }
+  if (t === 'menu_prezzo_fisso') {
+    return <BookOpen className={iconClass} aria-hidden />
+  }
+  return <UtensilsCrossed className={iconClass} aria-hidden />
 }
 
 /** True se la prenotazione prevede menù / rinfresco (non “solo tavolo”). */
@@ -92,18 +118,19 @@ function DigestBookingListRow({
       >
         {!compactGrid ? (
           <div className="mb-1 flex w-full items-center gap-1.5 truncate font-semibold leading-snug">
-            <Users className="flex-shrink-0 h-3 w-3" />
+            <DigestBookingTypeIcon booking={booking} className="h-3 w-3 flex-shrink-0" />
             <span className="min-w-0 truncate">{booking.client_name}</span>
           </div>
         ) : (
           <div className="relative w-full min-h-[1.25rem]">
-            <Users
+            <DigestBookingTypeIcon
+              booking={booking}
               className="absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 opacity-90 sm:h-4 sm:w-4"
-              style={{ left: 0 }}
-              aria-hidden
             />
             <div className="flex w-full items-center justify-center text-center leading-tight">
-              <span className={`block max-w-full truncate px-1 ${hasSpecialNote ? 'pr-6' : ''}`}>
+              <span
+                className={`block max-w-full truncate px-1 ${hasSpecialNote && !menuPriceRow ? 'pr-6' : ''}`}
+              >
                 <span className="font-semibold">{booking.client_name}</span>
                 <span className="font-normal opacity-90">
                   {' - '}
@@ -139,11 +166,37 @@ function DigestBookingListRow({
           <>
             {menuPriceRow && (
               <div className="relative w-full min-h-[1.25rem] opacity-90 text-[0.98em]">
-                <Tag
-                  className="absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 opacity-90 sm:h-4 sm:w-4"
-                  style={{ left: 0 }}
-                  aria-hidden
-                />
+                {hasSpecialNote ? (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowNoteHint((prev) => !prev)
+                    }}
+                    onMouseEnter={() => setShowNoteHint(true)}
+                    onMouseLeave={() => setShowNoteHint(false)}
+                    onBlur={() => setShowNoteHint(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setShowNoteHint((prev) => !prev)
+                      }
+                    }}
+                    className="absolute left-0 top-1/2 z-10 inline-flex cursor-pointer -translate-y-1/2 text-slate-800/95"
+                    style={{ left: 0 }}
+                    aria-label="Questa prenotazione ha una nota salvata"
+                  >
+                    <PenLine className="h-3.5 w-3.5 opacity-90 sm:h-4 sm:w-4" />
+                  </span>
+                ) : (
+                  <PenLine
+                    className="pointer-events-none absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 opacity-90 sm:h-4 sm:w-4"
+                    style={{ left: 0 }}
+                    aria-hidden
+                  />
+                )}
                 <div className="flex w-full items-center justify-center text-center font-semibold opacity-95">
                   <span className="block max-w-full truncate px-1">{menuPriceRow.prezzoMenuLabel}</span>
                 </div>
@@ -173,39 +226,52 @@ function DigestBookingListRow({
       </div>
       {hasSpecialNote && compactGrid && (
         <>
-          <span
-            role="button"
-            tabIndex={0}
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowNoteHint((prev) => !prev)
-            }}
-            onMouseEnter={() => setShowNoteHint(true)}
-            onMouseLeave={() => setShowNoteHint(false)}
-            onBlur={() => setShowNoteHint(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
+          {/* Pen + tooltip sulla riga prezzo se c’è prezzo menù; altrimenti solo angolo in alto a destra */}
+          {!menuPriceRow && (
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
                 e.stopPropagation()
                 setShowNoteHint((prev) => !prev)
-              }
-            }}
-            className="absolute top-1 z-20 cursor-pointer text-slate-800/95"
-            style={{ right: 2, left: 'auto' }}
-            aria-label="Questa prenotazione ha una nota salvata"
-          >
-            <PenLine className="h-3 w-3" />
-          </span>
+              }}
+              onMouseEnter={() => setShowNoteHint(true)}
+              onMouseLeave={() => setShowNoteHint(false)}
+              onBlur={() => setShowNoteHint(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setShowNoteHint((prev) => !prev)
+                }
+              }}
+              className="absolute top-1 z-20 cursor-pointer text-slate-800/95"
+              style={{ right: 2, left: 'auto' }}
+              aria-label="Questa prenotazione ha una nota salvata"
+            >
+              <PenLine className="h-3 w-3" />
+            </span>
+          )}
           {showNoteHint && (
             <div
               className="absolute z-[80] max-w-[min(calc(100vw-16px),20rem)] rounded-md bg-slate-900 px-2.5 py-1.5 text-white shadow-lg sm:max-w-none sm:whitespace-nowrap"
-              style={{
-                right: 2,
-                bottom: 'calc(100% + 2px)',
-                fontSize: '0.875rem',
-                lineHeight: 1.35,
-                fontWeight: 500,
-              }}
+              style={
+                menuPriceRow
+                  ? {
+                      left: 2,
+                      bottom: 'calc(100% + 2px)',
+                      fontSize: '0.875rem',
+                      lineHeight: 1.35,
+                      fontWeight: 500,
+                    }
+                  : {
+                      right: 2,
+                      bottom: 'calc(100% + 2px)',
+                      fontSize: '0.875rem',
+                      lineHeight: 1.35,
+                      fontWeight: 500,
+                    }
+              }
               role="tooltip"
             >
               C&apos;è una nota salvata
@@ -395,7 +461,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     eventClick: handleEventClick,
     dateClick: handleDateClick,
     eventDisplay: 'block',
-    eventTextColor: '#fff',
+    eventTextColor: '#000000',
     eventTimeFormat: {
       hour: '2-digit' as const,
       minute: '2-digit' as const,
@@ -427,15 +493,18 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       const booking = arg.event.extendedProps as BookingRequest
 
       return (
-        <div className="px-2 py-1.5 rounded-lg text-white text-xs hover:opacity-90 transition-opacity cursor-pointer overflow-hidden">
+        <div className="px-2 py-1.5 rounded-lg text-xs text-neutral-900 transition-opacity hover:opacity-90 cursor-pointer overflow-hidden">
           {/* Nome cliente */}
-          <div className="flex items-center gap-1.5 font-semibold truncate mb-1">
-            <Users className="w-3 h-3 flex-shrink-0" />
+          <div className="mb-1 flex items-center gap-1.5 truncate font-semibold text-neutral-950">
+            <DigestBookingTypeIcon
+              booking={booking}
+              className="h-3 w-3 shrink-0 text-neutral-900"
+            />
             <span className="truncate">{booking.client_name}</span>
           </div>
-          
+
           {/* Dati in fila sotto */}
-          <div className="flex items-center gap-2 text-xs opacity-90 truncate">
+          <div className="flex items-center gap-2 truncate text-xs text-neutral-800">
             <span>{booking.num_guests} ospiti</span>
             {booking.menu && !digestBookingHasMenuContext(booking) && (
               <>
@@ -484,7 +553,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       // Stesso intervallo della card toolbar / FC (~537): evita scroll + “fascia” solo tra 423 e 537 px
       'max-[537px]:px-3 max-[537px]:py-1.5 max-[537px]:text-[13px] max-[537px]:leading-tight',
       currentView === view
-        ? 'border-indigo-200 bg-indigo-50 text-indigo-900 hover:border-indigo-300 hover:bg-indigo-100'
+        ? 'border-emerald-200 bg-emerald-50 text-emerald-900 hover:border-emerald-300 hover:bg-emerald-100'
         : 'border-slate-200 bg-gray-100 text-gray-800 hover:bg-gray-200'
     )
 
@@ -507,8 +576,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                 </h2>
               </div>
               <div className="flex shrink-0 items-center">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 shadow-sm max-[537px]:h-9 max-[537px]:w-9">
-                  <Calendar className="h-7 w-7 text-indigo-900 max-[537px]:h-5 max-[537px]:w-5" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 shadow-lg max-[537px]:h-9 max-[537px]:w-9">
+                  <Calendar className="h-7 w-7 text-white max-[537px]:h-5 max-[537px]:w-5" />
                 </div>
                 <span className="ml-3 text-sm font-semibold tabular-nums text-slate-800 max-[537px]:ml-2 max-[537px]:text-xs sm:text-base">
                   {currentDateLabel}
@@ -538,9 +607,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
               type="button"
               onClick={handleGoToToday}
               className={cn(
-                'absolute left-0 top-0 z-20 inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-sm font-medium leading-none text-indigo-900 shadow-sm transition-colors',
-                'hover:border-indigo-300 hover:bg-indigo-100',
-                'focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-2',
+                'absolute left-0 top-0 z-20 inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-sm font-medium leading-none text-emerald-900 shadow-sm transition-colors',
+                'hover:border-emerald-300 hover:bg-emerald-100',
+                'focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:ring-offset-2',
                 'h-10 min-h-10 min-w-[88px] px-3.5',
                 'max-[537px]:h-8 max-[537px]:min-h-8 max-[537px]:min-w-[4.75rem] max-[537px]:rounded-lg max-[537px]:px-2 max-[537px]:text-xs'
               )}

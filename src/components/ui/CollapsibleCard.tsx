@@ -1,4 +1,5 @@
-import React, { ReactNode, useEffect, useId, useMemo, useState } from 'react'
+import React, { type CSSProperties, ReactNode, useEffect, useId, useMemo, useState } from 'react'
+import { cn } from '@/lib/utils'
 
 export interface CollapsibleCardCounterData {
   available: number
@@ -35,6 +36,9 @@ export interface CollapsibleCardProps extends React.HTMLAttributes<HTMLDivElemen
   onEmptyAction?: () => void
   collapseDisabled?: boolean
   id?: string
+  /** Sostituisce le classi di default dell’`h3` titolo (es. allineamento tipografico ad altre card menu). */
+  titleClassName?: string
+  titleStyle?: CSSProperties
 }
 
 export const CollapsibleCard = ({
@@ -67,6 +71,8 @@ export const CollapsibleCard = ({
   onEmptyAction,
   collapseDisabled = false,
   id,
+  titleClassName,
+  titleStyle,
   style,
   ...restProps
 }: CollapsibleCardProps) => {
@@ -299,7 +305,13 @@ export const CollapsibleCard = ({
           )}
           <div className="flex flex-col justify-center gap-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <h3 className="text-lg font-semibold text-gray-900 break-words">
+              <h3
+                className={cn(
+                  'text-lg font-semibold text-gray-900 break-words',
+                  titleClassName,
+                )}
+                style={titleStyle}
+              >
                 {title}
               </h3>
             </div>
