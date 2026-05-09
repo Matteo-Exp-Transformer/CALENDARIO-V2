@@ -26,28 +26,48 @@ function previewHref(filename: string): string {
 export type AppThemeOption = {
   id: AppThemeId
   label: string
-  /** URL assoluta per `<img src>` (public/) */
+  /** Miniatura griglia impostazioni (JPEG in `public/theme-previews/`) */
   previewSrc: string
+  /** Immagine ingrandita nel modal (stesso tema, risoluzione maggiore) */
+  previewModalSrc: string
 }
 
 export const APP_THEME_OPTIONS: AppThemeOption[] = [
-  { id: 'midnight-blue', label: 'Midnight Blue', previewSrc: previewHref('midnight-blue.png') },
-  { id: 'theme-2', label: 'Terracotta & Sand', previewSrc: previewHref('theme-2.png') },
-  { id: 'theme-3', label: 'Sage & Stone', previewSrc: previewHref('theme-3.png') },
+  {
+    id: 'midnight-blue',
+    label: 'Midnight Blue',
+    previewSrc: previewHref('midnight-blue-card.jpg'),
+    previewModalSrc: previewHref('midnight-blue-modal.jpg'),
+  },
+  {
+    id: 'theme-2',
+    label: 'Terracotta & Sand',
+    previewSrc: previewHref('theme-2-card.jpg'),
+    previewModalSrc: previewHref('theme-2-modal.jpg'),
+  },
+  {
+    id: 'theme-3',
+    label: 'Sage & Stone',
+    previewSrc: previewHref('theme-3-card.jpg'),
+    previewModalSrc: previewHref('theme-3-modal.jpg'),
+  },
   {
     id: 'soft-graphite-mint',
     label: 'Soft Graphite & Mint',
-    previewSrc: previewHref('soft-graphite-mint.png'),
+    previewSrc: previewHref('soft-graphite-mint-card.jpg'),
+    previewModalSrc: previewHref('soft-graphite-mint-modal.jpg'),
   },
   {
     id: 'pearl-blue-minimal',
     label: 'Pearl Blue Minimal',
-    previewSrc: previewHref('pearl-blue-minimal.png'),
+    previewSrc: previewHref('pearl-blue-minimal-card.jpg'),
+    previewModalSrc: previewHref('pearl-blue-minimal-modal.jpg'),
   },
   {
     id: 'warm-sand-pro',
     label: 'Warm Sand Pro',
-    previewSrc: previewHref('warm-sand-pro.png'),
+    previewSrc: previewHref('warm-sand-pro-card.jpg'),
+    previewModalSrc: previewHref('warm-sand-pro-modal.jpg'),
   },
 ]
 

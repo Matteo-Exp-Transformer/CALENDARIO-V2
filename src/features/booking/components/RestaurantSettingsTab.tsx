@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Store, Loader2, Plus, Edit, Trash2, Save, X } from 'lucide-react'
+import { Store, Loader2, Plus, Edit, Trash2, Save, X, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { TimePicker24h } from '@/components/ui/TimePicker24h'
@@ -148,6 +149,7 @@ const restaurantSettingsIntroCardClass =
 /** Titolo introduttivo spostabile nello sticky header della dashboard */
 type AppThemePreviewPickProps = {
   previewSrc: string
+  previewModalSrc: string
   label: string
   selected: boolean
   disabled: boolean
@@ -155,8 +157,12 @@ type AppThemePreviewPickProps = {
   onPick: () => void
 }
 
+const themePreviewFocusRingClass =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 sm:focus-visible:ring-offset-2'
+
 const AppThemePreviewPick: React.FC<AppThemePreviewPickProps> = ({
   previewSrc,
+  previewModalSrc,
   label,
   selected,
   disabled,
@@ -164,33 +170,145 @@ const AppThemePreviewPick: React.FC<AppThemePreviewPickProps> = ({
   onPick,
 }) => {
   const [imgFailed, setImgFailed] = useState(false)
+  const [modalImgFailed, setModalImgFailed] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
+
+  useEffect(() => {
+    if (previewOpen) setModalImgFailed(false)
+  }, [previewOpen])
 
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      className={cn(pickButtonClass(selected), 'group')}
-      onClick={onPick}
-    >
-      <div className="pointer-events-none relative aspect-[5/3] w-full overflow-hidden rounded-md border border-slate-200/80 bg-slate-100">
-        {imgFailed ? (
-          <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-100 to-slate-200 px-2 text-center text-[0.625rem] font-semibold leading-snug text-slate-500 sm:text-[11px]">
-            Anteprima in arrivo
-          </div>
-        ) : (
-          <img
-            src={previewSrc}
-            alt=""
-            className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
-            loading="lazy"
-            onError={() => setImgFailed(true)}
+    <>
+      <div className={cn(pickButtonClass(selected), 'group')}>
+        <div className="relative aspect-[5/3] w-full overflow-hidden rounded-md border border-slate-200/80 bg-slate-100">
+          {imgFailed ? (
+            <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-100 to-slate-200 px-2 text-center text-[0.625rem] font-semibold leading-snug text-slate-500 sm:text-[11px]">
+              Anteprima in arrivo
+            </div>
+          ) : (
+            <img
+              src={previewSrc}
+              alt=""
+              className={cn(
+                'h-full w-full object-cover transition-transform duration-300 ease-out',
+                '[@media(hover:hover)]:group-hover:scale-105',
+              )}
+              loading="lazy"
+              onError={() => setImgFailed(true)}
+            />
+          )}
+
+          {!imgFailed && (
+            <div
+              className="pointer-events-none absolute inset-0 z-[5] bg-black/35 opacity-0 transition-opacity duration-200 [@media(hover:hover)]:group-hover:opacity-100"
+              aria-hidden
+            />
+          )}
+
+          <button
+            type="button"
+            disabled={disabled}
+            className={cn(
+              'absolute inset-0 z-[1] cursor-pointer border-0 bg-transparent p-0',
+              themePreviewFocusRingClass,
+              disabled && 'cursor-not-allowed',
+            )}
+            aria-label={`Seleziona tema usando anteprima: ${label}`}
+            onClick={onPick}
           />
-        )}
+
+          {!imgFailed && (
+            <button
+              type="button"
+              disabled={disabled}
+              className={cn(
+                'absolute left-1/2 top-1/2 z-[10] flex min-h-11 min-w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-0 bg-black/50 text-white shadow-md transition-opacity duration-200 sm:min-h-[3rem] sm:min-w-[3rem]',
+                themePreviewFocusRingClass,
+                /* Desktop con hover: occhio e hit solo sopra hover (il centro altrimenti seleziona via layer sotto) */
+                'pointer-events-none opacity-0 [@media(hover:hover)]:group-hover:pointer-events-auto [@media(hover:hover)]:group-hover:opacity-100',
+                /* Touch (telefono/tablet): occhio sempre visibile anche sopra breakpoint sm */
+                'max-sm:pointer-events-auto max-sm:opacity-100 max-sm:bg-black/45 [@media(pointer:coarse)]:pointer-events-auto [@media(pointer:coarse)]:opacity-100 [@media(pointer:coarse)]:bg-black/45',
+                disabled && 'cursor-not-allowed opacity-40',
+              )}
+              aria-haspopup="dialog"
+              aria-expanded={previewOpen}
+              aria-label={`Ingrandisci anteprima: ${label}`}
+              onClick={(e) => {
+                e.stopPropagation()
+                setPreviewOpen(true)
+              }}
+            >
+              <Eye
+                className="size-3 shrink-0 sm:size-5 [@media(pointer:coarse)]:size-3"
+                strokeWidth={2}
+                aria-hidden
+              />
+            </button>
+          )}
+        </div>
+
+        <button
+          type="button"
+          disabled={disabled}
+          className={cn(
+            'line-clamp-2 min-h-[1.5em] w-full cursor-pointer border-0 bg-transparent px-px text-center text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]',
+            themePreviewFocusRingClass,
+            disabled && 'cursor-not-allowed opacity-65',
+          )}
+          aria-label={`Seleziona tema: ${label}`}
+          onClick={onPick}
+        >
+          {label}
+        </button>
       </div>
-      <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]">
-        {label}
-      </span>
-    </button>
+
+      <Modal
+        isOpen={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        title={label}
+        size="2xl"
+        showCloseButton
+        closeOnOverlayClick
+        closeOnEscape
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">
+            Anteprima a schermo intero. Puoi applicare il tema dalla finestra o chiudere e sceglierne un altro.
+          </p>
+          <div className="flex justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+            {modalImgFailed ? (
+              <div className="flex min-h-[12rem] w-full items-center justify-center px-4 py-10 text-center text-sm font-semibold text-slate-500">
+                Anteprima non disponibile
+              </div>
+            ) : (
+              <img
+                src={previewModalSrc}
+                alt=""
+                className="max-h-[min(78vh,880px)] w-full object-contain"
+                loading="eager"
+                onError={() => setModalImgFailed(true)}
+              />
+            )}
+          </div>
+          <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
+            <Button type="button" variant="outline" onClick={() => setPreviewOpen(false)}>
+              Chiudi
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              disabled={disabled}
+              onClick={() => {
+                onPick()
+                setPreviewOpen(false)
+              }}
+            >
+              Usa questo tema
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   )
 }
 
@@ -1089,7 +1207,9 @@ export const RestaurantSettingsTab: React.FC = () => {
           Selezione tema app
         </h3>
         <p className="text-sm text-slate-600">
-          Scegli un tema e salva le modifiche per applicarlo alla dashboard.
+          Tocca l&apos;immagine o il nome del tema per selezionarlo subito. Tocca l&apos;icona occhio al centro per l&apos;anteprima
+          grande (su desktop compare passando il mouse sull&apos;immagine). Nella finestra puoi usare «Usa questo tema», poi
+          salva in fondo per applicare alla dashboard.
         </p>
         <div
           className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
@@ -1099,6 +1219,7 @@ export const RestaurantSettingsTab: React.FC = () => {
             <AppThemePreviewPick
               key={opt.id}
               previewSrc={opt.previewSrc}
+              previewModalSrc={opt.previewModalSrc}
               label={opt.label}
               selected={appTheme === opt.id}
               disabled={upsert.isPending}
