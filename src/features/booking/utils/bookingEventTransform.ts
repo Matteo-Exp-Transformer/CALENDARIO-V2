@@ -1,7 +1,7 @@
 import type { BookingRequest } from '@/types/booking'
 import type { CalendarEvent } from '@/types/booking'
 
-import { CAPACITY_CONFIG } from '../constants/capacity'
+import { BOOKING_SLOT_TIME_DEFAULTS } from '../constants/capacity'
 import { extractDateFromISO, getAccurateStartTime, getAccurateEndTime } from './dateUtils'
 
 // Colori in base alla fascia oraria (delicati e leggibili)
@@ -24,12 +24,12 @@ function getTimeSlotColor(startDate: Date): { bg: string; border: string; text: 
   const totalMinutes = hour * 60 + minute
   
   // Parse capacity config boundaries
-  const [morningStartHour, morningStartMin] = CAPACITY_CONFIG.MORNING_START.split(':').map(Number)
-  const [morningEndHour, morningEndMin] = CAPACITY_CONFIG.MORNING_END.split(':').map(Number)
-  const [afternoonStartHour, afternoonStartMin] = CAPACITY_CONFIG.AFTERNOON_START.split(':').map(Number)
-  const [afternoonEndHour, afternoonEndMin] = CAPACITY_CONFIG.AFTERNOON_END.split(':').map(Number)
-  const [eveningStartHour, eveningStartMin] = CAPACITY_CONFIG.EVENING_START.split(':').map(Number)
-  const [eveningEndHour, eveningEndMin] = CAPACITY_CONFIG.EVENING_END.split(':').map(Number)
+  const [morningStartHour, morningStartMin] = BOOKING_SLOT_TIME_DEFAULTS.MORNING_START.split(':').map(Number)
+  const [morningEndHour, morningEndMin] = BOOKING_SLOT_TIME_DEFAULTS.MORNING_END.split(':').map(Number)
+  const [afternoonStartHour, afternoonStartMin] = BOOKING_SLOT_TIME_DEFAULTS.AFTERNOON_START.split(':').map(Number)
+  const [afternoonEndHour, afternoonEndMin] = BOOKING_SLOT_TIME_DEFAULTS.AFTERNOON_END.split(':').map(Number)
+  const [eveningStartHour, eveningStartMin] = BOOKING_SLOT_TIME_DEFAULTS.EVENING_START.split(':').map(Number)
+  const [eveningEndHour, eveningEndMin] = BOOKING_SLOT_TIME_DEFAULTS.EVENING_END.split(':').map(Number)
   
   const morningStart = morningStartHour * 60 + morningStartMin  // 10:00 = 600
   const morningEnd = morningEndHour * 60 + morningEndMin         // 14:30 = 870

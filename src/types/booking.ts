@@ -163,9 +163,11 @@ export type TimeSlot = 'morning' | 'afternoon' | 'evening' | 'daily'
 
 export interface TimeSlotCapacity {
   slot: TimeSlot
-  capacity: number
+  /** null = nessun tetto configurato per questa fascia */
+  capacity: number | null
   occupied: number
-  available: number
+  /** null quando non c’è cap (`capacity === null`) */
+  available: number | null
 }
 
 export interface DailyCapacity {

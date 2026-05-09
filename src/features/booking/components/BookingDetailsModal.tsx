@@ -7,7 +7,11 @@ import type { BookingRequest, BookingType } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { extractDateFromISO, createBookingDateTime, getAccurateStartTime, getAccurateEndTime, calculateEndTimeFromStart } from '../utils/dateUtils'
 import { getSlotsOccupiedByBooking } from '../utils/capacityCalculator'
-import { CAPACITY_CONFIG } from '../constants/capacity'
+import { DEFAULT_BOOKING_TIME_SLOTS } from '../utils/bookingTimeSlots'
+import {
+  DEFAULT_SLOT_GUEST_CAPACITIES,
+  type SlotGuestCapacities,
+} from '../lib/restaurantSettingRegistry'
 import { toast } from 'react-toastify'
 import { DetailsTab } from './DetailsTab'
 import { MenuTab } from './MenuTab'
@@ -133,6 +137,9 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     'booking_vol_au_vent_promo_message',
   )
   const { data: volAuVentPromos = [] } = useRestaurantSetting('booking_vol_au_vent_promos')
+  const { data: bookingTimeSlots = DEFAULT_BOOKING_TIME_SLOTS } = useRestaurantSetting('booking_time_slots')
+  const { data: slotGuestCapacities = DEFAULT_SLOT_GUEST_CAPACITIES } =
+    useRestaurantSetting('slot_guest_capacities')
 
   // Initialize form data from booking
   const [formData, setFormData] = useState(() => {
@@ -290,6 +297,13 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     }
   }, [showCancelConfirm])
 
+  const resolveSlotCapacity = (slotGuestCapacities: SlotGuestCapacities, slot: string): number | null => {
+    if (slot === 'morning') return slotGuestCapacities.morning
+    if (slot === 'afternoon') return slotGuestCapacities.afternoon
+    if (slot === 'evening') return slotGuestCapacities.evening
+    return null
+  }
+
   // Capacity check function
   const checkCapacity = (date: string, startTime: string, endTime: string, numGuests: number): boolean => {
     const dayBookings = acceptedBookings.filter((b) => {
@@ -301,16 +315,20 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
     const confirmedStart = `${date}T${startTime}:00`
     const confirmedEnd = `${date}T${endTime}:00`
-    const newBookingSlots = getSlotsOccupiedByBooking(confirmedStart, confirmedEnd)
-    
-    const morning = { capacity: CAPACITY_CONFIG.MORNING_CAPACITY, occupied: 0 }
-    const afternoon = { capacity: CAPACITY_CONFIG.AFTERNOON_CAPACITY, occupied: 0 }
-    const evening = { capacity: CAPACITY_CONFIG.EVENING_CAPACITY, occupied: 0 }
+    const newBookingSlots = getSlotsOccupiedByBooking(confirmedStart, confirmedEnd, bookingTimeSlots)
+
+    const morning = { capacity: slotGuestCapacities.morning, occupied: 0 }
+    const afternoon = { capacity: slotGuestCapacities.afternoon, occupied: 0 }
+    const evening = { capacity: slotGuestCapacities.evening, occupied: 0 }
 
     for (const existingBooking of dayBookings) {
       if (!existingBooking.confirmed_start || !existingBooking.confirmed_end) continue
-      
-      const slots = getSlotsOccupiedByBooking(existingBooking.confirmed_start, existingBooking.confirmed_end)
+
+      const slots = getSlotsOccupiedByBooking(
+        existingBooking.confirmed_start,
+        existingBooking.confirmed_end,
+        bookingTimeSlots,
+      )
       const guests = existingBooking.num_guests || 0
 
       for (const slot of slots) {
@@ -321,14 +339,17 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     }
 
     for (const slot of newBookingSlots) {
+      const cap = resolveSlotCapacity(slotGuestCapacities, slot)
+      if (cap == null) continue
+
       let available: number
-      
+
       if (slot === 'morning') {
-        available = morning.capacity - morning.occupied
+        available = cap - morning.occupied
       } else if (slot === 'afternoon') {
-        available = afternoon.capacity - afternoon.occupied
+        available = cap - afternoon.occupied
       } else if (slot === 'evening') {
-        available = evening.capacity - evening.occupied
+        available = cap - evening.occupied
       } else {
         continue
       }
@@ -357,16 +378,20 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
     const confirmedStart = `${date}T${startTime}:00`
     const confirmedEnd = `${date}T${endTime}:00`
-    const newBookingSlots = getSlotsOccupiedByBooking(confirmedStart, confirmedEnd)
+    const newBookingSlots = getSlotsOccupiedByBooking(confirmedStart, confirmedEnd, bookingTimeSlots)
 
-    const morning = { capacity: CAPACITY_CONFIG.MORNING_CAPACITY, occupied: 0 }
-    const afternoon = { capacity: CAPACITY_CONFIG.AFTERNOON_CAPACITY, occupied: 0 }
-    const evening = { capacity: CAPACITY_CONFIG.EVENING_CAPACITY, occupied: 0 }
+    const morning = { capacity: slotGuestCapacities.morning, occupied: 0 }
+    const afternoon = { capacity: slotGuestCapacities.afternoon, occupied: 0 }
+    const evening = { capacity: slotGuestCapacities.evening, occupied: 0 }
 
     for (const existingBooking of dayBookings) {
       if (!existingBooking.confirmed_start || !existingBooking.confirmed_end) continue
 
-      const slots = getSlotsOccupiedByBooking(existingBooking.confirmed_start, existingBooking.confirmed_end)
+      const slots = getSlotsOccupiedByBooking(
+        existingBooking.confirmed_start,
+        existingBooking.confirmed_end,
+        bookingTimeSlots,
+      )
       const guests = existingBooking.num_guests || 0
 
       for (const slot of slots) {
@@ -378,7 +403,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
     for (const slot of newBookingSlots) {
       let occupied: number
-      let capacity: number
+      let capacity: number | null
       let slotName: string
 
       if (slot === 'morning') {
@@ -398,7 +423,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       }
 
       const totalOccupied = occupied + numGuests
-      if (totalOccupied > capacity) {
+      if (capacity != null && totalOccupied > capacity) {
         return {
           slotName,
           totalOccupied,

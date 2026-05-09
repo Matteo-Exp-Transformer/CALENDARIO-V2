@@ -32,6 +32,9 @@ import {
   getBookingTimeSlotLabel,
 } from '../utils/bookingTimeSlots'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
+import {
+  DEFAULT_SLOT_GUEST_CAPACITIES,
+} from '@/features/booking/lib/restaurantSettingRegistry'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { cn } from '@/lib/utils'
 
@@ -308,6 +311,8 @@ interface BookingCalendarProps {
 export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, initialDate }) => {
   const bookingSlotsQuery = useRestaurantSetting('booking_time_slots')
   const bookingSlots = bookingSlotsQuery.data ?? DEFAULT_BOOKING_TIME_SLOTS
+  const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities')
+  const slotGuestCapacities = slotGuestCapacitiesQuery.data ?? DEFAULT_SLOT_GUEST_CAPACITIES
 
   const splitDigestBySlot = (digestBookings: BookingRequest[]) => {
     const morning: BookingRequest[] = []
@@ -409,7 +414,12 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   // Get bookings and capacity for selected date
   const selectedDateData = useMemo(() => {
     const acceptedBookings = bookings.filter(b => b.status === 'accepted')
-    const dayCapacity = calculateDailyCapacity(selectedDate, acceptedBookings, bookingSlots)
+    const dayCapacity = calculateDailyCapacity(
+      selectedDate,
+      acceptedBookings,
+      bookingSlots,
+      slotGuestCapacities,
+    )
     
     const dayBookings = acceptedBookings.filter((booking) => {
       if (!booking.confirmed_start) return false
@@ -446,7 +456,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       afternoonBookings,
       eveningBookings,
     }
-  }, [selectedDate, bookings, bookingSlots])
+  }, [selectedDate, bookings, bookingSlots, slotGuestCapacities])
 
   /** Stessi criteri del calendario: accettate con inizio/fine; ordinate per ora di inizio; divise menù vs solo tavolo */
   const { selectedDayDigestBookings, digestWithMenu, digestTableOnly } = useMemo(() => {

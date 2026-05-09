@@ -1,5 +1,8 @@
 import type { BookingRequest, TimeSlot, TimeSlotCapacity, DailyCapacity } from '@/types/booking'
-import { CAPACITY_CONFIG } from '../constants/capacity'
+import {
+  DEFAULT_SLOT_GUEST_CAPACITIES,
+  type SlotGuestCapacities,
+} from '@/features/booking/lib/restaurantSettingRegistry'
 import { extractDateFromISO } from './dateUtils'
 import {
   DEFAULT_BOOKING_TIME_SLOTS,
@@ -85,25 +88,26 @@ export function getStartSlotForBooking(
 export function calculateDailyCapacity(
   date: string,
   bookings: BookingRequest[],
-  slotConfig: BookingTimeSlots = DEFAULT_BOOKING_TIME_SLOTS
+  slotConfig: BookingTimeSlots = DEFAULT_BOOKING_TIME_SLOTS,
+  slotGuestCapacities: SlotGuestCapacities = DEFAULT_SLOT_GUEST_CAPACITIES
 ): DailyCapacity {
-  const morning: TimeSlotCapacity = { 
-    slot: 'morning', 
-    capacity: CAPACITY_CONFIG.MORNING_CAPACITY, 
-    occupied: 0, 
-    available: CAPACITY_CONFIG.MORNING_CAPACITY 
+  const morning: TimeSlotCapacity = {
+    slot: 'morning',
+    capacity: slotGuestCapacities.morning,
+    occupied: 0,
+    available: slotGuestCapacities.morning,
   }
-  const afternoon: TimeSlotCapacity = { 
-    slot: 'afternoon', 
-    capacity: CAPACITY_CONFIG.AFTERNOON_CAPACITY, 
-    occupied: 0, 
-    available: CAPACITY_CONFIG.AFTERNOON_CAPACITY 
+  const afternoon: TimeSlotCapacity = {
+    slot: 'afternoon',
+    capacity: slotGuestCapacities.afternoon,
+    occupied: 0,
+    available: slotGuestCapacities.afternoon,
   }
-  const evening: TimeSlotCapacity = { 
-    slot: 'evening', 
-    capacity: CAPACITY_CONFIG.EVENING_CAPACITY, 
-    occupied: 0, 
-    available: CAPACITY_CONFIG.EVENING_CAPACITY 
+  const evening: TimeSlotCapacity = {
+    slot: 'evening',
+    capacity: slotGuestCapacities.evening,
+    occupied: 0,
+    available: slotGuestCapacities.evening,
   }
 
   const dayBookings = bookings.filter((booking) => {
@@ -123,10 +127,12 @@ export function calculateDailyCapacity(
     }
   }
 
-  // Available can be negative if capacity is exceeded
-  morning.available = morning.capacity - morning.occupied
-  afternoon.available = afternoon.capacity - afternoon.occupied
-  evening.available = evening.capacity - evening.occupied
+  morning.available =
+    morning.capacity == null ? null : morning.capacity - morning.occupied
+  afternoon.available =
+    afternoon.capacity == null ? null : afternoon.capacity - afternoon.occupied
+  evening.available =
+    evening.capacity == null ? null : evening.capacity - evening.occupied
   
   return { date, morning, afternoon, evening }
 }

@@ -308,7 +308,8 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
       }
 
       // Fallback: calculate exceeded slots from slotsStatus if not available
-      const affectedSlots = capacityCheck.slotsStatus.filter(slot => {
+      const affectedSlots = capacityCheck.slotsStatus.filter((slot) => {
+        if (slot.capacity == null) return false
         const totalOccupied = slot.occupied + (formData.num_guests || 0)
         return totalOccupied > slot.capacity
       })
@@ -778,12 +779,13 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
         exceededSlot = capacityCheck.exceededSlots[0]
       } else if (!capacityCheck.isAvailable && capacityCheck.slotsStatus) {
         // Calculate from slotsStatus as fallback
-        const affectedSlot = capacityCheck.slotsStatus.find(slot => {
+        const affectedSlot = capacityCheck.slotsStatus.find((slot) => {
+          if (slot.capacity == null) return false
           const totalOccupied = slot.occupied + (formData.num_guests || 0)
           return totalOccupied > slot.capacity
         })
 
-        if (affectedSlot) {
+        if (affectedSlot && affectedSlot.capacity != null) {
           const totalOccupied = affectedSlot.occupied + (formData.num_guests || 0)
           const exceededBy = totalOccupied - affectedSlot.capacity
           const slotName =

@@ -1,6 +1,9 @@
 import { useMemo } from 'react'
 import type { BookingRequest, TimeSlot, AvailabilityCheck } from '@/types/booking'
-import { CAPACITY_CONFIG } from '../constants/capacity'
+import {
+  DEFAULT_SLOT_GUEST_CAPACITIES,
+  type SlotGuestCapacities,
+} from '@/features/booking/lib/restaurantSettingRegistry'
 import { extractDateFromISO } from '../utils/dateUtils'
 import { useRestaurantSetting } from './useRestaurantSetting'
 import {
@@ -59,15 +62,32 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
   const { date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId } = params
   const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
   const bookingSlotsQuery = useRestaurantSetting('booking_time_slots')
+  const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities')
   // `null` (o assente) = nessun limite giornaliero impostato → skip del controllo
   const dailyGuestLimit = dailyGuestLimitQuery.data ?? null
   const bookingSlots = bookingSlotsQuery.data ?? DEFAULT_BOOKING_TIME_SLOTS
+  const slotGuestCapacities: SlotGuestCapacities =
+    slotGuestCapacitiesQuery.data ?? DEFAULT_SLOT_GUEST_CAPACITIES
 
   return useMemo(() => {
-    // Initialize slot capacities
-    const morning = { slot: 'morning' as TimeSlot, capacity: CAPACITY_CONFIG.MORNING_CAPACITY, occupied: 0, available: CAPACITY_CONFIG.MORNING_CAPACITY }
-    const afternoon = { slot: 'afternoon' as TimeSlot, capacity: CAPACITY_CONFIG.AFTERNOON_CAPACITY, occupied: 0, available: CAPACITY_CONFIG.AFTERNOON_CAPACITY }
-    const evening = { slot: 'evening' as TimeSlot, capacity: CAPACITY_CONFIG.EVENING_CAPACITY, occupied: 0, available: CAPACITY_CONFIG.EVENING_CAPACITY }
+    const morning = {
+      slot: 'morning' as TimeSlot,
+      capacity: slotGuestCapacities.morning,
+      occupied: 0,
+      available: slotGuestCapacities.morning,
+    }
+    const afternoon = {
+      slot: 'afternoon' as TimeSlot,
+      capacity: slotGuestCapacities.afternoon,
+      occupied: 0,
+      available: slotGuestCapacities.afternoon,
+    }
+    const evening = {
+      slot: 'evening' as TimeSlot,
+      capacity: slotGuestCapacities.evening,
+      occupied: 0,
+      available: slotGuestCapacities.evening,
+    }
 
     // Get bookings for the same date
     const dayBookings = acceptedBookings.filter((booking) => {
@@ -107,10 +127,12 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
       }
     }
 
-    // Update available seats (can be negative if capacity is exceeded)
-    morning.available = morning.capacity - morning.occupied
-    afternoon.available = afternoon.capacity - afternoon.occupied
-    evening.available = evening.capacity - evening.occupied
+    morning.available =
+      morning.capacity == null ? null : morning.capacity - morning.occupied
+    afternoon.available =
+      afternoon.capacity == null ? null : afternoon.capacity - afternoon.occupied
+    evening.available =
+      evening.capacity == null ? null : evening.capacity - evening.occupied
 
     // If no date/time selected, return available
     if (!date || !startTime || !endTime || numGuests === 0) {
@@ -153,5 +175,15 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
       errorMessage: errorMessages.length > 0 ? errorMessages.join('\n') : undefined,
       exceededSlots: exceededSlots.length > 0 ? exceededSlots : undefined,
     }
-  }, [date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId, dailyGuestLimit, bookingSlots])
+  }, [
+    date,
+    startTime,
+    endTime,
+    numGuests,
+    acceptedBookings,
+    excludeBookingId,
+    dailyGuestLimit,
+    bookingSlots,
+    slotGuestCapacities,
+  ])
 }

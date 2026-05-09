@@ -1,4 +1,4 @@
-import { CAPACITY_CONFIG } from '@/features/booking/constants/capacity'
+import { BOOKING_SLOT_TIME_DEFAULTS } from '@/features/booking/constants/capacity'
 
 export type BookingTimeSlots = {
   morningStart: string
@@ -10,12 +10,12 @@ export type BookingTimeSlots = {
 }
 
 export const DEFAULT_BOOKING_TIME_SLOTS: BookingTimeSlots = {
-  morningStart: CAPACITY_CONFIG.MORNING_START,
-  morningEnd: CAPACITY_CONFIG.MORNING_END,
-  afternoonStart: CAPACITY_CONFIG.AFTERNOON_START,
-  afternoonEnd: CAPACITY_CONFIG.AFTERNOON_END,
-  eveningStart: CAPACITY_CONFIG.EVENING_START,
-  eveningEnd: CAPACITY_CONFIG.EVENING_END,
+  morningStart: BOOKING_SLOT_TIME_DEFAULTS.MORNING_START,
+  morningEnd: BOOKING_SLOT_TIME_DEFAULTS.MORNING_END,
+  afternoonStart: BOOKING_SLOT_TIME_DEFAULTS.AFTERNOON_START,
+  afternoonEnd: BOOKING_SLOT_TIME_DEFAULTS.AFTERNOON_END,
+  eveningStart: BOOKING_SLOT_TIME_DEFAULTS.EVENING_START,
+  eveningEnd: BOOKING_SLOT_TIME_DEFAULTS.EVENING_END,
 }
 
 const HH_MM = /^([01]\d|2[0-3]):[0-5]\d$/

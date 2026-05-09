@@ -7,12 +7,19 @@ import { CapacityWarningModal } from './CapacityWarningModal'
 import { toast } from 'react-toastify'
 import type { BookingRequest } from '@/types/booking'
 import { getSlotsOccupiedByBooking } from '../utils/capacityCalculator'
-import { CAPACITY_CONFIG } from '../constants/capacity'
+import { DEFAULT_BOOKING_TIME_SLOTS } from '../utils/bookingTimeSlots'
+import {
+  DEFAULT_SLOT_GUEST_CAPACITIES,
+} from '../lib/restaurantSettingRegistry'
+import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { createBookingDateTime, extractDateFromISO, calculateEndTimeFromStart } from '../utils/dateUtils'
 
 export const PendingRequestsTab: React.FC = () => {
   const { data: pendingBookings, isLoading, error, refetch } = usePendingBookings()
   const { data: acceptedBookings = [] } = useAcceptedBookings()
+  const { data: bookingTimeSlots = DEFAULT_BOOKING_TIME_SLOTS } = useRestaurantSetting('booking_time_slots')
+  const { data: slotGuestCapacities = DEFAULT_SLOT_GUEST_CAPACITIES } =
+    useRestaurantSetting('slot_guest_capacities')
   const acceptMutation = useAcceptBooking()
   const rejectMutation = useRejectBooking()
 
@@ -60,15 +67,19 @@ export const PendingRequestsTab: React.FC = () => {
 
     const confirmedStart = `${date}T${startTime}:00`
     const confirmedEnd = `${date}T${endTime}:00`
-    const newBookingSlots = getSlotsOccupiedByBooking(confirmedStart, confirmedEnd)
+    const newBookingSlots = getSlotsOccupiedByBooking(confirmedStart, confirmedEnd, bookingTimeSlots)
 
-    const morning = { capacity: CAPACITY_CONFIG.MORNING_CAPACITY, occupied: 0 }
-    const afternoon = { capacity: CAPACITY_CONFIG.AFTERNOON_CAPACITY, occupied: 0 }
-    const evening = { capacity: CAPACITY_CONFIG.EVENING_CAPACITY, occupied: 0 }
+    const morning = { capacity: slotGuestCapacities.morning, occupied: 0 }
+    const afternoon = { capacity: slotGuestCapacities.afternoon, occupied: 0 }
+    const evening = { capacity: slotGuestCapacities.evening, occupied: 0 }
 
     for (const existingBooking of dayBookings) {
       if (!existingBooking.confirmed_start || !existingBooking.confirmed_end) continue
-      const slots = getSlotsOccupiedByBooking(existingBooking.confirmed_start, existingBooking.confirmed_end)
+      const slots = getSlotsOccupiedByBooking(
+        existingBooking.confirmed_start,
+        existingBooking.confirmed_end,
+        bookingTimeSlots,
+      )
       const guests = existingBooking.num_guests || 0
       for (const slot of slots) {
         if (slot === 'morning') morning.occupied += guests
@@ -78,14 +89,14 @@ export const PendingRequestsTab: React.FC = () => {
     }
 
     for (const slot of newBookingSlots) {
-      let occupied: number, capacity: number, slotName: string
+      let occupied: number, capacity: number | null, slotName: string
       if (slot === 'morning') { occupied = morning.occupied; capacity = morning.capacity; slotName = 'mattina' }
       else if (slot === 'afternoon') { occupied = afternoon.occupied; capacity = afternoon.capacity; slotName = 'pomeriggio' }
       else if (slot === 'evening') { occupied = evening.occupied; capacity = evening.capacity; slotName = 'sera' }
       else continue
 
       const totalOccupied = occupied + numGuests
-      if (totalOccupied > capacity) {
+      if (capacity != null && totalOccupied > capacity) {
         return { slotName, totalOccupied, capacity, exceededBy: totalOccupied - capacity }
       }
     }

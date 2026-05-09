@@ -2,8 +2,8 @@ import React, { type CSSProperties, ReactNode, useEffect, useId, useMemo, useSta
 import { cn } from '@/lib/utils'
 
 export interface CollapsibleCardCounterData {
-  available: number
-  capacity: number
+  available: number | null
+  capacity: number | null
 }
 
 export interface CollapsibleCardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -336,33 +336,38 @@ export const CollapsibleCard = ({
 
               if (isCapacityObject) {
                 const { available, capacity } = counter
-                const isExceeded = available < 0
-                
-                // Debug log
-                if (isExceeded) {
-                }
-                
+                const hasFiniteCap =
+                  typeof capacity === 'number' &&
+                  capacity > 0 &&
+                  typeof available === 'number'
+                const isExceeded = hasFiniteCap && available < 0
+
                 // If capacity is exceeded, show negative available value (e.g., -18)
                 // Otherwise, use percentage-based colors
-                const percentage = capacity > 0 ? (available / capacity) * 100 : 0
+                const percentage =
+                  hasFiniteCap && capacity > 0 ? (available / capacity) * 100 : 0
 
                 // Determine color based on capacity exceeded or availability percentage
                 // Use stronger red colors when capacity is exceeded
-                const colorClasses = isExceeded
-                  ? 'bg-red-200 border-red-600 text-red-950' // Capacity exceeded - Stronger red
-                  : percentage > 70
-                    ? 'bg-green-100 border-green-400 text-green-800' // High availability - Green (more vivid)
-                    : percentage >= 30
-                      ? 'bg-yellow-100 border-yellow-400 text-yellow-800' // Medium availability - Yellow (more vivid)
-                      : 'bg-red-100 border-red-400 text-red-800' // Low availability - Red (more vivid)
+                const colorClasses = !hasFiniteCap
+                  ? 'bg-slate-100 border-slate-300 text-slate-800'
+                  : isExceeded
+                    ? 'bg-red-200 border-red-600 text-red-950'
+                    : percentage > 70
+                      ? 'bg-green-100 border-green-400 text-green-800'
+                      : percentage >= 30
+                        ? 'bg-yellow-100 border-yellow-400 text-yellow-800'
+                        : 'bg-red-100 border-red-400 text-red-800'
 
-                const labelColorClasses = isExceeded
-                  ? 'text-red-950 font-bold'
-                  : percentage > 70
-                    ? 'text-green-700'
-                    : percentage >= 30
-                      ? 'text-yellow-700'
-                      : 'text-red-700'
+                const labelColorClasses = !hasFiniteCap
+                  ? 'text-slate-600'
+                  : isExceeded
+                    ? 'text-red-950 font-bold'
+                    : percentage > 70
+                      ? 'text-green-700'
+                      : percentage >= 30
+                        ? 'text-yellow-700'
+                        : 'text-red-700'
 
                 return (
                   <div
@@ -372,15 +377,19 @@ export const CollapsibleCard = ({
                       borderColor: '#dc2626',
                       color: '#1f2937'
                     } : undefined}
-                    aria-label={isExceeded 
-                      ? `Capienza superata: ${available} disponibili (eccedenza di ${Math.abs(available)} posti su ${capacity} totali)`
-                      : `${available} posti disponibili su ${capacity} totali`}
+                    aria-label={
+                      !hasFiniteCap
+                        ? 'Nessun limite capienza configurato per questa fascia'
+                        : isExceeded
+                          ? `Capienza superata: ${available} disponibili (eccedenza di ${Math.abs(available)} posti su ${capacity} totali)`
+                          : `${available} posti disponibili su ${capacity} totali`
+                    }
                   >
                     <span className={`text-sm font-semibold ${isExceeded ? 'text-red-950' : ''}`} style={isExceeded ? { color: '#7f1d1d', fontWeight: 'bold' } : undefined}>
-                      {available}/{capacity}
+                      {hasFiniteCap ? `${available}/${capacity}` : '—'}
                     </span>
                     <span className={`text-xs font-medium ${labelColorClasses}`} style={isExceeded ? { color: '#7f1d1d', fontWeight: 'bold' } : undefined}>
-                      disponibili
+                      {hasFiniteCap ? 'disponibili' : 'nessun limite'}
                     </span>
                   </div>
                 )

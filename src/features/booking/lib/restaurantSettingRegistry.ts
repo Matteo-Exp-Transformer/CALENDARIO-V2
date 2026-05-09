@@ -25,6 +25,8 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'timezone',
   'booking_window_days',
   'daily_guest_limit',
+  /** Capienza massima coperti per fascia; null per fascia = nessun limite (no default numerico in app). */
+  'slot_guest_capacities',
   'booking_time_slots',
   'business_hours',
   'contact_email',
@@ -95,6 +97,43 @@ const dailyGuestLimitSchema = z.coerce
   .int('Deve essere un intero')
   .min(1, 'Minimo 1 ospite')
   .max(1000, 'Massimo 1000 ospiti')
+
+const optionalSlotCapSchema = z.union([
+  z.coerce.number().int().min(1, 'Minimo 1').max(5000, 'Massimo 5000'),
+  z.null(),
+])
+
+export type SlotGuestCapacities = {
+  morning: number | null
+  afternoon: number | null
+  evening: number | null
+}
+
+const slotGuestCapacitiesSchema = z
+  .object({
+    morning: optionalSlotCapSchema.optional(),
+    afternoon: optionalSlotCapSchema.optional(),
+    evening: optionalSlotCapSchema.optional(),
+  })
+  .transform(
+    (raw): SlotGuestCapacities => ({
+      morning: raw.morning ?? null,
+      afternoon: raw.afternoon ?? null,
+      evening: raw.evening ?? null,
+    }),
+  )
+
+export const DEFAULT_SLOT_GUEST_CAPACITIES: SlotGuestCapacities = {
+  morning: null,
+  afternoon: null,
+  evening: null,
+}
+
+function parseSlotGuestCapacitiesFromDb(raw: unknown): SlotGuestCapacities {
+  const parsed = slotGuestCapacitiesSchema.safeParse(raw)
+  if (!parsed.success) return { ...DEFAULT_SLOT_GUEST_CAPACITIES }
+  return parsed.data
+}
 
 /** Valore JSON salvato su `restaurant_settings.setting_value` quando non c’è limite giornaliero (la colonna è NOT NULL). */
 export const DAILY_GUEST_LIMIT_UNLIMITED_DB_VALUE = -1
@@ -243,6 +282,7 @@ export type RestaurantSettingValueMap = {
   timezone: string
   booking_window_days: number
   daily_guest_limit: number | null
+  slot_guest_capacities: SlotGuestCapacities
   booking_time_slots: BookingTimeSlots
   business_hours: BusinessHours
   contact_email: string
@@ -308,6 +348,15 @@ export const restaurantSettingRegistry: {
       if (value == null || value === '') return null
       const r = dailyGuestLimitSchema.safeParse(value)
       return r.success ? null : r.error.issues[0]?.message ?? 'Valore non valido'
+    },
+  },
+  slot_guest_capacities: {
+    key: 'slot_guest_capacities',
+    parseFromDb: (raw) => parseSlotGuestCapacitiesFromDb(raw),
+    serializeToDb: (value) => value as unknown as Json,
+    validate: (value) => {
+      const r = slotGuestCapacitiesSchema.safeParse(value)
+      return r.success ? null : r.error.issues[0]?.message ?? 'Capienze fascia non valide'
     },
   },
   booking_time_slots: {

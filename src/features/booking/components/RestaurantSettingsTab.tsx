@@ -334,6 +334,7 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const nameQuery = useRestaurantSetting('restaurant_name')
   const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
+  const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities')
   const bookingTimeSlotsQuery = useRestaurantSetting('booking_time_slots')
   const hoursQuery = useRestaurantSetting('business_hours')
   const contactEmailQuery = useRestaurantSetting('contact_email')
@@ -348,6 +349,9 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [dirty, setDirty] = useState(false)
   const [restaurantName, setRestaurantName] = useState('')
   const [dailyGuestLimit, setDailyGuestLimit] = useState<number | ''>('')
+  const [slotCapMorning, setSlotCapMorning] = useState<number | ''>('')
+  const [slotCapAfternoon, setSlotCapAfternoon] = useState<number | ''>('')
+  const [slotCapEvening, setSlotCapEvening] = useState<number | ''>('')
   const [bookingTimeSlots, setBookingTimeSlots] = useState<BookingTimeSlots>(DEFAULT_BOOKING_TIME_SLOTS)
   const [slotValidationError, setSlotValidationError] = useState<string | null>(null)
   const [slotFieldsAttention, setSlotFieldsAttention] = useState<Record<SlotFieldKey, boolean>>({
@@ -391,6 +395,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const allSuccess =
     nameQuery.isSuccess &&
     dailyGuestLimitQuery.isSuccess &&
+    slotGuestCapacitiesQuery.isSuccess &&
     bookingTimeSlotsQuery.isSuccess &&
     hoursQuery.isSuccess &&
     contactEmailQuery.isSuccess &&
@@ -406,6 +411,10 @@ export const RestaurantSettingsTab: React.FC = () => {
       stripDirectionalFormattingChars(String(nameQuery.data ?? '')).slice(0, RESTAURANT_NAME_MAX_LENGTH)
     )
     setDailyGuestLimit(dailyGuestLimitQuery.data ?? '')
+    const sg = slotGuestCapacitiesQuery.data
+    setSlotCapMorning(sg?.morning ?? '')
+    setSlotCapAfternoon(sg?.afternoon ?? '')
+    setSlotCapEvening(sg?.evening ?? '')
     setBookingTimeSlots(bookingTimeSlotsQuery.data)
     setBusinessHours(hoursQuery.data)
     setContactEmail(stripDirectionalFormattingChars(contactEmailQuery.data ?? ''))
@@ -424,6 +433,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     allSuccess,
     nameQuery.data,
     dailyGuestLimitQuery.data,
+    slotGuestCapacitiesQuery.data,
     bookingTimeSlotsQuery.data,
     hoursQuery.data,
     contactEmailQuery.data,
@@ -437,6 +447,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const loading =
     nameQuery.isPending ||
     dailyGuestLimitQuery.isPending ||
+    slotGuestCapacitiesQuery.isPending ||
     bookingTimeSlotsQuery.isPending ||
     hoursQuery.isPending ||
     contactEmailQuery.isPending ||
@@ -449,6 +460,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const loadError =
     nameQuery.error ||
     dailyGuestLimitQuery.error ||
+    slotGuestCapacitiesQuery.error ||
     bookingTimeSlotsQuery.error ||
     hoursQuery.error ||
     contactEmailQuery.error ||
@@ -526,6 +538,14 @@ export const RestaurantSettingsTab: React.FC = () => {
       await upsert.mutateAsync([
         { key: 'restaurant_name', value: safeName },
         { key: 'daily_guest_limit', value: dailyGuestLimit === '' ? null : dailyGuestLimit },
+        {
+          key: 'slot_guest_capacities',
+          value: {
+            morning: slotCapMorning === '' ? null : slotCapMorning,
+            afternoon: slotCapAfternoon === '' ? null : slotCapAfternoon,
+            evening: slotCapEvening === '' ? null : slotCapEvening,
+          },
+        },
         { key: 'booking_time_slots', value: bookingTimeSlots },
         { key: 'business_hours', value: businessHours },
         { key: 'contact_email', value: safeEmail },
@@ -743,6 +763,88 @@ export const RestaurantSettingsTab: React.FC = () => {
                 if (!Number.isNaN(n)) setDailyGuestLimit(n)
               }}
             />
+          </div>
+          <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
+            <p className="mx-auto max-w-md text-center text-sm text-slate-600">
+              Coperti massimi per fascia oraria (opzionale). Vuoto = nessun tetto sulla fascia.
+            </p>
+            <div className="mx-auto grid w-full max-w-xl grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="space-y-1">
+                <Label htmlFor="slot_cap_morning" className="block w-full text-center text-sm">
+                  Mattina
+                </Label>
+                <Input
+                  id="slot_cap_morning"
+                  type="number"
+                  min={1}
+                  max={5000}
+                  value={slotCapMorning}
+                  disabled={upsert.isPending}
+                  placeholder="Nessun limite"
+                  className={`${anagraficaInputClassName} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  onChange={(e) => {
+                    markDirty()
+                    const raw = e.target.value
+                    if (raw === '') {
+                      setSlotCapMorning('')
+                      return
+                    }
+                    const n = parseInt(raw, 10)
+                    if (!Number.isNaN(n)) setSlotCapMorning(n)
+                  }}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="slot_cap_afternoon" className="block w-full text-center text-sm">
+                  Pomeriggio
+                </Label>
+                <Input
+                  id="slot_cap_afternoon"
+                  type="number"
+                  min={1}
+                  max={5000}
+                  value={slotCapAfternoon}
+                  disabled={upsert.isPending}
+                  placeholder="Nessun limite"
+                  className={`${anagraficaInputClassName} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  onChange={(e) => {
+                    markDirty()
+                    const raw = e.target.value
+                    if (raw === '') {
+                      setSlotCapAfternoon('')
+                      return
+                    }
+                    const n = parseInt(raw, 10)
+                    if (!Number.isNaN(n)) setSlotCapAfternoon(n)
+                  }}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="slot_cap_evening" className="block w-full text-center text-sm">
+                  Sera
+                </Label>
+                <Input
+                  id="slot_cap_evening"
+                  type="number"
+                  min={1}
+                  max={5000}
+                  value={slotCapEvening}
+                  disabled={upsert.isPending}
+                  placeholder="Nessun limite"
+                  className={`${anagraficaInputClassName} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                  onChange={(e) => {
+                    markDirty()
+                    const raw = e.target.value
+                    if (raw === '') {
+                      setSlotCapEvening('')
+                      return
+                    }
+                    const n = parseInt(raw, 10)
+                    if (!Number.isNaN(n)) setSlotCapEvening(n)
+                  }}
+                />
+              </div>
+            </div>
           </div>
           <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
             <Label htmlFor="contact_email" className="block w-full text-center">
