@@ -19,8 +19,7 @@ import {
   useMenuCategories,
   useUpdateMenuCategory
 } from '../hooks/useMenuCategories'
-import type { MenuItem, MenuItemInput } from '@/types/menu'
-import { normalizeMenuItemBookingTypes } from '@/types/menu'
+import { normalizeMenuItemBookingTypes, type MenuItem, type MenuItemInput } from '@/types/menu'
 import type { SelectedMenuItem } from '@/types/menu'
 import type { BookingType } from '@/types/booking'
 import { type CustomStaffPreset, isStaffPresetVisibleOnBooking } from '../constants/presetMenus'
@@ -479,6 +478,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     'menu_prezzo_fisso',
   ])
   const promoEditorPanelRef = useRef<HTMLDivElement>(null)
+  const productFormCardRef = useRef<HTMLDivElement>(null)
+  const scrollProductFormIntoViewAfterEditRef = useRef(false)
 
   const resetVolAuVentPromoEditorDraft = () => {
     setPromoEditorMode('list')
@@ -712,6 +713,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     })
     setPriceInput(item.price === 0 ? '' : String(item.price))
     setIsAdding(false)
+    scrollProductFormIntoViewAfterEditRef.current = true
   }
 
   const handleStartAdd = () => {
@@ -954,11 +956,21 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     }
     try {
       await updateMutation.mutateAsync({ id: item.id, booking_types: next })
-      await refetchMenuItems()
     } catch {
       //
     }
   }
+
+  useLayoutEffect(() => {
+    if (!scrollProductFormIntoViewAfterEditRef.current) {
+      return
+    }
+    if (viewMode !== 'products' || (!editingId && !isAdding)) {
+      return
+    }
+    scrollProductFormIntoViewAfterEditRef.current = false
+    productFormCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [viewMode, isAdding, editingId])
 
   useEffect(() => {
     onToolbarPromoDisabled?.(volAuVentPromoLoading || upsertRestaurantSetting.isPending)
@@ -1227,124 +1239,227 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           </div>
         </div>
       )}
-      {/* Form Aggiunta/Modifica */}
+      {/* Form Aggiunta/Modifica + panoramica ingredienti */}
       {viewMode === 'products' && (isAdding || editingId) && (
-        <div
-          className="relative w-full rounded-2xl border-2 p-6 shadow-lg"
-          style={ADMIN_WARM_GRADIENT_SURFACE}
-        >
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-warm-wood/40 bg-white/90 text-warm-wood shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
-            aria-label="Chiudi inserimento prodotto"
+        <>
+          <div
+            ref={productFormCardRef}
+            className="relative w-full scroll-mt-24 rounded-2xl border-2 p-6 shadow-lg md:scroll-mt-28"
+            style={ADMIN_WARM_GRADIENT_SURFACE}
           >
-            <X className="h-4 w-4" />
-          </button>
-          <div className="mx-auto w-2/3 text-center">
-            <h3 className="text-xl font-bold text-warm-wood mb-4">
-              {editingId ? 'Modifica Prodotto' : 'Nuovo Prodotto'}
-            </h3>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="flex flex-col items-center">
-                <label className="mb-1 block text-center text-sm font-medium text-gray-700">
-                  Nome Prodotto *
-                </label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="es: Pizza Margherita"
-                  className="mx-auto w-2/3 rounded-2xl pl-6"
-                  style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
-                />
-              </div>
-              <div className="flex flex-col items-center">
-                <label className="mb-1 block text-center text-sm font-medium text-gray-700">
-                  Categoria *
-                </label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
-                      category: value
-                    })
-                  }
-                >
-                  <SelectTrigger
-                    className="mx-auto h-14 w-2/3 rounded-2xl border text-gray-600 shadow-sm"
-                    style={{
-                      borderColor: 'rgba(0,0,0,0.2)',
-                      height: '56px',
-                      minHeight: '56px',
-                      fontSize: '16px',
-                      backgroundColor: '#ffffff',
-                      borderRadius: '18px',
-                      paddingLeft: '24px',
-                      paddingRight: '24px'
-                    }}
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-warm-wood/40 bg-white/90 text-warm-wood shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+              aria-label="Chiudi inserimento prodotto"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="mx-auto w-2/3 text-center">
+              <h3 className="text-xl font-bold text-warm-wood mb-4">
+                {editingId ? 'Modifica Prodotto' : 'Nuovo Prodotto'}
+              </h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="flex flex-col items-center">
+                  <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                    Nome Prodotto *
+                  </label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="es: Pizza Margherita"
+                    className="mx-auto w-2/3 rounded-2xl pl-6"
+                    style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                  />
+                </div>
+                <div className="flex flex-col items-center">
+                  <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                    Categoria *
+                  </label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        category: value
+                      })
+                    }
                   >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-2xl">
-                    {categoryEntries.map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                    <SelectTrigger
+                      className="mx-auto h-14 w-2/3 rounded-2xl border text-gray-600 shadow-sm"
+                      style={{
+                        borderColor: 'rgba(0,0,0,0.2)',
+                        height: '56px',
+                        minHeight: '56px',
+                        fontSize: '16px',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '18px',
+                        paddingLeft: '24px',
+                        paddingRight: '24px'
+                      }}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl">
+                      {categoryEntries.map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col items-center">
+                  <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                    Prezzo (€) *
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={priceInput}
+                    onChange={(e) => handlePriceInputChange(e.target.value)}
+                    onKeyDown={handlePriceInputKeyDown}
+                    placeholder="es: 4.50"
+                    className="mx-auto w-2/3 rounded-2xl pl-6"
+                    style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                  />
+                </div>
+                <div className="flex flex-col items-center">
+                  <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                    Descrizione (opzionale)
+                  </label>
+                  <Input
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="es: 2 tranci a persona"
+                    className="mx-auto w-2/3 rounded-2xl pl-6"
+                    style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                  />
+                </div>
               </div>
-              <div className="flex flex-col items-center">
-                <label className="mb-1 block text-center text-sm font-medium text-gray-700">
-                  Prezzo (€) *
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={priceInput}
-                  onChange={(e) => handlePriceInputChange(e.target.value)}
-                  onKeyDown={handlePriceInputKeyDown}
-                  placeholder="es: 4.50"
-                  className="mx-auto w-2/3 rounded-2xl pl-6"
-                  style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
-                />
+              <div className="mt-10 flex justify-center gap-3" style={{ marginTop: '40px' }}>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-emerald-500/35 hover:from-emerald-400 hover:to-emerald-500 hover:border-emerald-600 hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 disabled:hover:border-emerald-700"
+                >
+                  <Save className="h-4 w-4 flex-shrink-0" />
+                  Salva
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
+                >
+                  <X className="h-4 w-4 flex-shrink-0" />
+                  Annulla
+                </button>
               </div>
-              <div className="flex flex-col items-center">
-                <label className="mb-1 block text-center text-sm font-medium text-gray-700">
-                  Descrizione (opzionale)
-                </label>
-                <Input
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="es: 2 tranci a persona"
-                  className="mx-auto w-2/3 rounded-2xl pl-6"
-                  style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
-                />
-              </div>
-            </div>
-            <div className="mt-10 flex justify-center gap-3" style={{ marginTop: '40px' }}>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={createMutation.isPending || updateMutation.isPending}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-emerald-500/35 hover:from-emerald-400 hover:to-emerald-500 hover:border-emerald-600 hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 disabled:hover:border-emerald-700"
-              >
-                <Save className="h-4 w-4 flex-shrink-0" />
-                Salva
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
-              >
-                <X className="h-4 w-4 flex-shrink-0" />
-                Annulla
-              </button>
             </div>
           </div>
-        </div>
+
+          <div
+            className="relative w-full rounded-2xl border-2 p-4 md:p-6 shadow-lg"
+            style={ADMIN_WARM_GRADIENT_SURFACE}
+            role="region"
+            aria-label="Panoramica ingredienti per categoria"
+          >
+            <h3 className="text-center font-serif text-lg font-bold text-warm-wood md:text-xl">
+              Ingredienti salvati
+            </h3>
+            <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
+              Per ogni ingrediente: modifica, elimina o scegli per quali tipologie di prenotazione è disponibile nel menu
+              pubblico (come in Promo Menù).
+            </p>
+
+            {menuItems.length === 0 ? (
+              <p className="mt-8 text-center text-sm text-gray-600">Nessun ingrediente ancora.</p>
+            ) : (
+              <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {categoryEntries
+                  .filter(([key]) => (itemsByCategory[key]?.length ?? 0) > 0)
+                  .map(([categoryKey, categoryLabel]) => (
+                    <CollapsibleCard
+                      key={categoryKey}
+                      title={categoryLabel}
+                      subtitle={`${itemsByCategory[categoryKey]?.length ?? 0} ingredienti`}
+                      defaultExpanded={false}
+                      className="h-fit border-amber-200/80 shadow-md"
+                      headerClassName="min-h-[48px] bg-white/85 hover:bg-white border-amber-100"
+                      contentClassName="bg-transparent p-0"
+                    >
+                      <div className="flex flex-col gap-3 px-2 pb-4 pt-1 sm:px-3">
+                        {(itemsByCategory[categoryKey] ?? []).map((item) => {
+                          const bookingTypes = normalizeMenuItemBookingTypes(item.booking_types)
+                          return (
+                            <div
+                              key={item.id}
+                              className="menu-prices-item-row flex-col gap-3 !items-stretch border-amber-100/80 py-3"
+                              style={{ padding: '0.75rem 1rem' }}
+                            >
+                              <div className="flex w-full flex-wrap items-start justify-between gap-3">
+                                <div className="menu-prices-item-text min-w-[120px]">
+                                  <h4 className="text-left font-semibold text-gray-900">{item.name}</h4>
+                                  <p className="text-left text-xs text-gray-500">
+                                    €{item.price.toFixed(2)}
+                                    {item.description?.trim() ? ` · ${item.description.trim()}` : ''}
+                                  </p>
+                                </div>
+                                <div className="menu-prices-item-actions shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleStartEdit(item)}
+                                    className="menu-prices-icon-btn menu-prices-icon-btn--edit"
+                                    aria-label={`Modifica ${item.name}`}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDelete(item.id, item.name)}
+                                    className="menu-prices-icon-btn menu-prices-icon-btn--delete"
+                                    aria-label={`Elimina ${item.name}`}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="rounded-xl border border-gray-200 bg-white/80 p-3">
+                                <span className="mx-auto mb-2 block w-full text-center text-xs font-bold text-warm-wood sm:text-sm">
+                                  Tipologie di prenotazione
+                                </span>
+                                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
+                                  {VOL_AU_VENT_PROMO_BOOKING_TYPE_OPTIONS.map(({ value, label: btLabel }) => (
+                                    <label
+                                      key={value}
+                                      className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        className="h-4 w-4 shrink-0 rounded border-gray-400"
+                                        checked={bookingTypes.includes(value)}
+                                        disabled={updateMutation.isPending}
+                                        onChange={(e) =>
+                                          void handleToggleMenuItemBookingType(item, value, e.target.checked)
+                                        }
+                                      />
+                                      {btLabel}
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </CollapsibleCard>
+                  ))}
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {viewMode === 'menu' && (

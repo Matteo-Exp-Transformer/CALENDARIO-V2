@@ -147,6 +147,20 @@ export const CollapsibleCard = ({
     }
   }
 
+  /** Evita il focus al click del mouse sul disclosure: senza questo il browser scrolla per portare il header in vista alla chiusura. */
+  const handleHeaderMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (collapseDisabled) {
+      return
+    }
+    const target = event.target as HTMLElement
+    if (target.closest('button, a, input, select, textarea')) {
+      return
+    }
+    if (event.button === 0) {
+      event.preventDefault()
+    }
+  }
+
   const renderStateContent = () => {
     if (resolvedLoading) {
       return (
@@ -255,7 +269,7 @@ export const CollapsibleCard = ({
   return (
     <div
       className={`bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden ${className}`}
-      style={style}
+      style={{ overflowAnchor: 'none', ...style }}
       data-expanded={isExpanded}
       role="region"
       aria-labelledby={headerId}
@@ -268,6 +282,7 @@ export const CollapsibleCard = ({
           'bg-gray-50 hover:bg-gray-100 border-b border-gray-200'
         } transition-colors duration-200 active:scale-[0.99] min-h-[44px]`}
         onClick={toggleExpanded}
+        onMouseDown={handleHeaderMouseDown}
         role="button"
         tabIndex={0}
         onKeyDown={handleHeaderKeyDown}
