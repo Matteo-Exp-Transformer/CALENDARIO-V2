@@ -20,6 +20,8 @@
 **Sezione**: `section === 'crm'` → `<CrmPage />`  
 **Stato**: implementato e stabile.
 
+**Accesso UX**: dalla sidebar la voce **Form Pubblico** apre il form prenotazioni pubblico (`/prenota/:slug`). Il CRM resta raggiungibile dal bottone **CRM Clienti** nella nav a griglia / footer quick-nav di `AdminDashboard` (callback `onOpenCrm` dalla shell).
+
 ### File chiave
 
 | File | Ruolo |
@@ -110,26 +112,24 @@ customer.email === searchTerm  // case-sensitive, manca trim
 
 ## Home
 
-**Sezione**: `section === 'home'` → `<AdminHomePage />`  
-**Stato**: placeholder — da implementare.
+**Sezione**: `section === 'home'` → `<AdminDashboard />` (stesso componente di `prenotazioni`; default all’ingresso `/admin`).  
+**Stato**: la shell mostra la dashboard operativa (calendario, tab, ecc.). Una **Home riassuntiva** dedicata resta da definire in `AdminHomePage.tsx` (placeholder, non montata dalla shell su questa sezione).
 
 ### File chiave
 
 | File | Ruolo |
 |------|-------|
-| `src/pages/AdminHomePage.tsx` | Entry point sezione |
+| `src/pages/AdminDashboard.tsx` | Vista principale dopo login e sezione Home |
+| `src/pages/AdminHomePage.tsx` | Placeholder per futura dashboard «inizio turno» / metriche |
 
-### Obiettivo previsto
+### Obiettivo previsto (fase 2)
 
-Dashboard riassuntiva: metriche rapide, prossime prenotazioni, stato ristorante.
+Dashboard riassuntiva: metriche rapide, prossime prenotazioni, stato ristorante — vedi piano prodotto; non duplicare il calendario completo già in `AdminDashboard`.
 
-### Note per implementazione futura
+### Note
 
-- Usare componenti `<Card>`, `<Badge>`, `<SectionHeader>` da `src/components/ui/`
-- Query hook in `src/features/booking/hooks/` con queryKey `['admin-home', tenantId]`
-- Non duplicare logica già in `AdminDashboard` (prenotazioni, calendario) — la Home
-  mostra un riepilogo, non la gestione completa
-- Aggiornare questo paragrafo quando la pagina viene implementata
+- Da sidebar, **Impostazioni** imposta `sessionStorage` `admin-open-tab` / segnale verso `AdminDashboard` per aprire il tab Impostazioni locale (`RestaurantSettingsTab`).
+- Aggiornare questo paragrafo quando `AdminHomePage` diventa entrypoint o blocco dedicato.
 
 ---
 
