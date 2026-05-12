@@ -890,58 +890,56 @@ body {
 }
 
 /*
- * Tab header «Prenotazioni» inattivo + badge: fascio bianco su --color-surface quasi invisibile
- * (sembra comparire soprattutto in hover). Sweep e bordo tintati col primary del tema, come il footer.
+ * Tab header «Prenotazioni» inattivo + badge: tocco primary leggero (meno denso del bianco pieno su surface).
  */
 .admin-nav-item.admin-nav-notify-shiny-on-inactive .admin-nav-notify-shiny-fill::before {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    color-mix(in srgb, var(--color-primary-600) 28%, transparent) 18%,
-    color-mix(in srgb, var(--color-primary-400) 42%, white 58%) 50%,
-    color-mix(in srgb, var(--color-primary-600) 26%, transparent) 82%,
+    color-mix(in srgb, var(--color-primary-600) 12%, transparent) 20%,
+    color-mix(in srgb, var(--color-primary-400) 18%, white 82%) 50%,
+    color-mix(in srgb, var(--color-primary-600) 12%, transparent) 80%,
     transparent 100%
   );
   box-shadow:
-    0 0 10px color-mix(in srgb, var(--color-primary-500) 36%, transparent),
-    0 0 20px color-mix(in srgb, var(--color-primary-200) 45%, transparent);
-  filter: blur(0.12px);
+    0 0 7px color-mix(in srgb, var(--color-primary-500) 18%, transparent),
+    0 0 14px color-mix(in srgb, var(--color-primary-200) 22%, transparent);
+  filter: blur(0.1px);
 }
 
 .admin-nav-item.admin-nav-notify-shiny-on-inactive .admin-nav-notify-shiny-edge {
   background: linear-gradient(
     115deg,
-    color-mix(in srgb, var(--color-primary-600) 22%, transparent) 0%,
-    color-mix(in srgb, var(--color-primary-300) 40%, white 60%) 42%,
-    color-mix(in srgb, var(--color-primary-600) 20%, transparent) 100%
+    color-mix(in srgb, var(--color-primary-600) 10%, transparent) 0%,
+    color-mix(in srgb, var(--color-primary-300) 20%, white 80%) 42%,
+    color-mix(in srgb, var(--color-primary-600) 9%, transparent) 100%
   );
 }
 
 /*
- * Footer quick-nav «Prenotazioni» con badge: stesso markup shiny del tab, ma su superficie chiara
- * il fascio bianco non si vede — sweep e bordo tintati col primary del tema attivo.
+ * Footer quick-nav «Prenotazioni» con badge: stesso principio — sweep soft su superficie chiara.
  */
 .footer-nav-notify-btn.footer-nav-notify-shiny-on-light .admin-nav-notify-shiny-fill::before {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    color-mix(in srgb, var(--color-primary-600) 28%, transparent) 18%,
-    color-mix(in srgb, var(--color-primary-400) 42%, white 58%) 50%,
-    color-mix(in srgb, var(--color-primary-600) 26%, transparent) 82%,
+    color-mix(in srgb, var(--color-primary-600) 12%, transparent) 20%,
+    color-mix(in srgb, var(--color-primary-400) 18%, white 82%) 50%,
+    color-mix(in srgb, var(--color-primary-600) 12%, transparent) 80%,
     transparent 100%
   );
   box-shadow:
-    0 0 10px color-mix(in srgb, var(--color-primary-500) 36%, transparent),
-    0 0 20px color-mix(in srgb, var(--color-primary-200) 45%, transparent);
-  filter: blur(0.12px);
+    0 0 7px color-mix(in srgb, var(--color-primary-500) 18%, transparent),
+    0 0 14px color-mix(in srgb, var(--color-primary-200) 22%, transparent);
+  filter: blur(0.1px);
 }
 
 .footer-nav-notify-btn.footer-nav-notify-shiny-on-light .admin-nav-notify-shiny-edge {
   background: linear-gradient(
     115deg,
-    color-mix(in srgb, var(--color-primary-600) 22%, transparent) 0%,
-    color-mix(in srgb, var(--color-primary-300) 40%, white 60%) 42%,
-    color-mix(in srgb, var(--color-primary-600) 20%, transparent) 100%
+    color-mix(in srgb, var(--color-primary-600) 10%, transparent) 0%,
+    color-mix(in srgb, var(--color-primary-300) 20%, white 80%) 42%,
+    color-mix(in srgb, var(--color-primary-600) 9%, transparent) 100%
   );
 }
 
