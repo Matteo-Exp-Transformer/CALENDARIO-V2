@@ -1,6 +1,6 @@
 import type { FC } from 'react'
 import { useMemo, useState } from 'react'
-import { Eye, Pencil } from 'lucide-react'
+import { Eye, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import type { CustomerProfile } from '@/types/customer'
@@ -13,6 +13,7 @@ interface CustomerListTableProps {
   onSelect: (profile: CustomerProfile) => void
   onOpenDetail: (profile: CustomerProfile) => void
   onEdit: (profile: CustomerProfile) => void
+  onDelete: (profile: CustomerProfile) => void
 }
 
 const sortLabel: Record<SortKey, string> = {
@@ -29,6 +30,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = ({
   onSelect,
   onOpenDetail,
   onEdit,
+  onDelete,
 }) => {
   const [sortKey, setSortKey] = useState<SortKey>('last_booking_date')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
@@ -175,6 +177,20 @@ export const CustomerListTable: FC<CustomerListTableProps> = ({
                       }}
                     >
                       <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Elimina"
+                      title="Elimina cliente"
+                      className="text-[color:var(--color-danger)] hover:bg-[color:var(--color-danger)]/10"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onDelete(p)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </td>
