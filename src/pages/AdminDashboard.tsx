@@ -173,7 +173,8 @@ export const AdminDashboard: React.FC = () => {
   useEffect(() => {
     const resolved = isAppThemePending ? DEFAULT_APP_THEME : savedAppTheme
     document.documentElement.setAttribute('data-admin-theme', resolved)
-    return () => document.documentElement.removeAttribute('data-admin-theme')
+    // nessun cleanup: il tema deve persistere per tutta la sessione admin
+    // (AdminDashboard è mountato/smontato dalla shell al cambio sezione)
   }, [savedAppTheme, isAppThemePending])
 
   const handleViewInCalendar = (date: string) => {
@@ -203,7 +204,7 @@ export const AdminDashboard: React.FC = () => {
     stats != null && stats.pending != null && stats.pending > 0
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--color-bg)]">
+    <div className="min-h-0 flex flex-1 flex-col bg-[var(--color-bg)]">
 
       {/* ── Header in flusso documento: scrolla via insieme al contenuto (nessun ancoraggio sticky in alto) ── */}
       <header className="relative z-30 border-b border-[var(--color-border)] bg-[var(--color-bg)] shadow-sm">

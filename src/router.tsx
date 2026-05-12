@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
 import { BookingRequestPage } from './pages/BookingRequestPage'
 import { AdminLoginPage } from './pages/AdminLoginPage'
-import { AdminDashboard } from './pages/AdminDashboard'
+import { AdminShell } from './components/layout/AdminShell'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage'
 import { InvitePage } from './pages/InvitePage'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -69,7 +69,7 @@ export const router = createBrowserRouter([
         path: '/admin',
         element: (
           <ProtectedRoute>
-            <AdminDashboard />
+            <AdminShell />
           </ProtectedRoute>
         )
       },
