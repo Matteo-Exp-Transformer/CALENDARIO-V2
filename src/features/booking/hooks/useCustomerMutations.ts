@@ -183,23 +183,87 @@ export function useUpdateCustomer() {
   })
 }
 
+export interface DeleteCustomerInput {
+  /** Riga `customers` da rimuovere (manual o synced). Null se profilo solo da booking. */
+  customerRowId: string | null
+  /** Email del cliente (qualsiasi casing — verrà normalizzata). */
+  email: string
+  /** UUID dell'admin che effettua l'azione (per audit `cancelled_by` — campo UUID nel DB). */
+  adminId?: string | null
+}
+
+export interface DeleteCustomerResult {
+  bookingsArchived: number
+  customerRowDeleted: boolean
+}
+
+/**
+ * Eliminazione cliente "completa":
+ *  - tutte le prenotazioni attive con quell'email vengono soft-deleted
+ *    (`status='deleted'`, `cancellation_reason='customer_deleted'`, `cancelled_at`, `cancelled_by`)
+ *  - se esiste la riga `customers` viene rimossa fisicamente
+ * Risultato: il cliente sparisce dalla CRM (filtra `status != 'deleted'`) e i dati
+ * restano archiviati su DB come storico.
+ */
 export function useDeleteCustomer() {
   const { tenantId } = useTenantContext()
   const queryClient = useQueryClient()
 
-  return useMutation({
-    mutationFn: async (customerRowId: string) => {
+  return useMutation<DeleteCustomerResult, Error, DeleteCustomerInput>({
+    mutationFn: async (input) => {
       if (!tenantId) throw new Error('Tenant mancante')
-      const { error } = await supabase.from('customers').delete().eq('id', customerRowId).eq('tenant_id', tenantId)
-      if (error) throw new Error(error.message)
+      const emailKey = normalizeCustomerEmail(input.email)
+      if (!emailKey) throw new Error('Email non valida')
+
+      const bookingIds = await bookingIdsMatchingEmail(tenantId, emailKey)
+
+      if (bookingIds.length > 0) {
+        const nowIso = new Date().toISOString()
+        const { error: archiveErr } = await supabase
+          .from('booking_requests')
+          .update({
+            status: 'deleted',
+            cancelled_at: nowIso,
+            cancelled_by: input.adminId ?? null,
+            cancellation_reason: 'customer_deleted',
+          })
+          .in('id', bookingIds)
+
+        if (archiveErr) throw new Error(archiveErr.message)
+      }
+
+      let customerRowDeleted = false
+      if (input.customerRowId) {
+        const { error: delErr } = await supabase
+          .from('customers')
+          .delete()
+          .eq('id', input.customerRowId)
+          .eq('tenant_id', tenantId)
+
+        if (delErr) throw new Error(delErr.message)
+        customerRowDeleted = true
+      }
+
+      return { bookingsArchived: bookingIds.length, customerRowDeleted }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: [CRM_QUERY_KEY, tenantId] })
-      toast.success('Profilo manuale rimosso')
+      void queryClient.invalidateQueries({ queryKey: ['bookings'], refetchType: 'all' })
+      void queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'], refetchType: 'all' })
+      void queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' })
+      void queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' })
+
+      if (result.bookingsArchived > 0) {
+        toast.success(
+          `Cliente eliminato · ${result.bookingsArchived} prenotazion${result.bookingsArchived === 1 ? 'e' : 'i'} archiviat${result.bookingsArchived === 1 ? 'a' : 'e'}`,
+        )
+      } else {
+        toast.success('Cliente eliminato')
+      }
     },
     onError: (e: Error) => {
       logger.error('[useDeleteCustomer]', e)
-      toast.error(e.message || 'Errore eliminazione')
+      toast.error(e.message || 'Errore eliminazione cliente')
     },
   })
 }

@@ -2,19 +2,25 @@ import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui'
 import { useCustomers } from '@/features/booking/hooks/useCustomers'
+import { useDeleteCustomer } from '@/features/booking/hooks/useCustomerMutations'
+import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import type { CustomerProfile } from '@/types/customer'
 import { CustomerSearchBar } from '@/features/booking/components/crm/CustomerSearchBar'
 import { CustomerListTable } from '@/features/booking/components/crm/CustomerListTable'
 import { CustomerDetailPanel } from '@/features/booking/components/crm/CustomerDetailPanel'
 import { CustomerFormModal } from '@/features/booking/components/crm/CustomerFormModal'
+import { CustomerDeleteConfirm } from '@/features/booking/components/crm/CustomerDeleteConfirm'
 
 export const CrmPage: FC = () => {
   const { customers, isLoading, error, searchQuery, setSearchQuery, dateFilter, setDateFilter } = useCustomers()
+  const { user } = useAdminAuth()
+  const deleteCustomer = useDeleteCustomer()
   const [selected, setSelected] = useState<CustomerProfile | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create')
   const [formProfile, setFormProfile] = useState<CustomerProfile | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<CustomerProfile | null>(null)
 
   const openCreate = () => {
     setFormMode('create')
@@ -35,6 +41,30 @@ export const CrmPage: FC = () => {
 
   const handleRowSelect = (p: CustomerProfile) => {
     setSelected(p)
+  }
+
+  const openDelete = (p: CustomerProfile) => {
+    setDeleteTarget(p)
+  }
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return
+    deleteCustomer.mutate(
+      {
+        customerRowId: deleteTarget.manual_id ?? null,
+        email: deleteTarget.email,
+        adminId: user?.id ?? null,
+      },
+      {
+        onSuccess: () => {
+          if (selected?.email === deleteTarget.email) {
+            setPanelOpen(false)
+            setSelected(null)
+          }
+          setDeleteTarget(null)
+        },
+      },
+    )
   }
 
   useEffect(() => {
@@ -88,6 +118,7 @@ export const CrmPage: FC = () => {
             onSelect={handleRowSelect}
             onOpenDetail={openDetail}
             onEdit={openEdit}
+            onDelete={openDelete}
           />
         )}
       </div>
@@ -104,6 +135,14 @@ export const CrmPage: FC = () => {
         onClose={() => setFormOpen(false)}
         mode={formMode}
         initialProfile={formProfile}
+      />
+
+      <CustomerDeleteConfirm
+        profile={deleteTarget}
+        isOpen={deleteTarget !== null}
+        isBusy={deleteCustomer.isPending}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
       />
     </div>
   )
