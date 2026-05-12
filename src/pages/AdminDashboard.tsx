@@ -53,7 +53,7 @@ interface NavItemProps {
   label: string
   active?: boolean
   badge?: number
-  /** Solo tab Prenotazioni: shiny + pulse quando badge ≥ 1 (anche se tab attiva) */
+  /** Solo tab Prenotazioni (header): shiny + pulse attorno al bottone quando badge ≥ 1. Il footer quick-nav non usa il pulse. */
   notifyHighlight?: boolean
   onClick: () => void
   mobileLabel?: string
@@ -103,7 +103,7 @@ const NavItem: React.FC<NavItemProps> = ({
     )
     if (showNotifyDecor) {
       return (
-        <div className="admin-nav-notify-pulse-wrap min-w-0 max-w-full w-full rounded-xl">
+        <div className="admin-nav-notify-pulse-wrap admin-nav-notify-pulse-wrap--header-ring min-w-0 max-w-full w-full rounded-xl">
           {activeBtn}
         </div>
       )
@@ -117,7 +117,7 @@ const NavItem: React.FC<NavItemProps> = ({
       onClick={onClick}
       className={cn(
         'admin-nav-item relative w-full min-h-11 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border px-2 sm:px-3 py-2.5 text-sm font-medium text-primary-900 transition-all duration-150 cursor-pointer',
-        showNotifyDecor && 'overflow-hidden'
+        showNotifyDecor && 'overflow-hidden admin-nav-notify-shiny-on-inactive',
       )}
     >
       {showNotifyDecor && <NotifyNavShinyLayers />}
@@ -133,7 +133,7 @@ const NavItem: React.FC<NavItemProps> = ({
 
   if (showNotifyDecor) {
     return (
-      <div className="admin-nav-notify-pulse-wrap min-w-0 max-w-full w-full rounded-xl">
+      <div className="admin-nav-notify-pulse-wrap admin-nav-notify-pulse-wrap--header-ring min-w-0 max-w-full w-full rounded-xl">
         {inactiveBtn}
       </div>
     )
@@ -198,6 +198,9 @@ export const AdminDashboard: React.FC = () => {
     if (!tenantSlug) return
     window.location.href = `/prenota/${tenantSlug}`
   }
+
+  const footerPendingNotify =
+    stats != null && stats.pending != null && stats.pending > 0
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-bg)]">
@@ -388,23 +391,51 @@ export const AdminDashboard: React.FC = () => {
                   aria-hidden
                 />
               </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('pending')}
-                className={footerQuickNavBtnClass(activeTab === 'pending')}
-                aria-label="Prenotazioni"
-                title="Prenotazioni"
-              >
-                <Clock
-                  className={cn('h-4 w-4 shrink-0', activeTab === 'pending' ? 'text-white' : 'text-slate-800')}
-                  aria-hidden
-                />
-                {stats != null && stats.pending != null && stats.pending > 0 ? (
-                  <span className="pointer-events-none absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center rounded-full border border-primary-200 bg-primary-100 px-0.5 text-[10px] font-bold text-primary-900">
-                    {stats.pending > 99 ? '99+' : stats.pending}
-                  </span>
-                ) : null}
-              </button>
+              {footerPendingNotify ? (
+                <div className="admin-nav-notify-pulse-wrap shrink-0 self-center rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('pending')}
+                    className={cn(
+                      footerQuickNavBtnClass(activeTab === 'pending'),
+                      'footer-nav-notify-btn overflow-hidden',
+                      activeTab !== 'pending' && 'footer-nav-notify-shiny-on-light',
+                    )}
+                    aria-label="Prenotazioni"
+                    title="Prenotazioni"
+                  >
+                    <NotifyNavShinyLayers />
+                    <span className="relative z-10 flex h-full w-full items-center justify-center">
+                      <Clock
+                        className={cn(
+                          'h-4 w-4 shrink-0',
+                          activeTab === 'pending' ? 'text-white' : 'text-slate-800',
+                        )}
+                        aria-hidden
+                      />
+                      <span className="pointer-events-none absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center rounded-full border border-primary-200 bg-primary-100 px-0.5 text-[10px] font-bold text-primary-900">
+                        {stats.pending > 99 ? '99+' : stats.pending}
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('pending')}
+                  className={footerQuickNavBtnClass(activeTab === 'pending')}
+                  aria-label="Prenotazioni"
+                  title="Prenotazioni"
+                >
+                  <Clock
+                    className={cn(
+                      'h-4 w-4 shrink-0',
+                      activeTab === 'pending' ? 'text-white' : 'text-slate-800',
+                    )}
+                    aria-hidden
+                  />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setActiveTab('archive')}

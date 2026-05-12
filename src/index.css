@@ -114,7 +114,7 @@
   --theme-accent-primary:       #1E3A5F;
   --theme-shadow-sm:            0 1px 2px 0 rgb(0 0 0 / 0.05);
 
-  /* Condiviso: keyframes pulse tab Prenotazioni + CTA collasso Nuova prenotazione */
+  /* Alone pulsante: solo tab header «Prenotazioni» con badge (il footer non usa --header-ring) */
   --admin-nav-pulse-ring-a:     rgb(79 124 172 / 0.42);
   --admin-nav-pulse-ring-b:     rgb(79 124 172 / 0.14);
   --admin-new-booking-trigger-bg:    #4f7cac;
@@ -890,10 +890,73 @@ body {
 }
 
 /*
- * Pulsazione attorno al tab Prenotazioni con badge.
- * Ring sul ::before così coincide col perimetro rounded-xl senza essere tagliato da overflow-hidden sul wrap.
- * Toni da `--admin-nav-pulse-ring-*` sul tema attivo (ice vs terracotta).
+ * Tab header «Prenotazioni» inattivo + badge: fascio bianco su --color-surface quasi invisibile
+ * (sembra comparire soprattutto in hover). Sweep e bordo tintati col primary del tema, come il footer.
  */
+.admin-nav-item.admin-nav-notify-shiny-on-inactive .admin-nav-notify-shiny-fill::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-primary-600) 28%, transparent) 18%,
+    color-mix(in srgb, var(--color-primary-400) 42%, white 58%) 50%,
+    color-mix(in srgb, var(--color-primary-600) 26%, transparent) 82%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--color-primary-500) 36%, transparent),
+    0 0 20px color-mix(in srgb, var(--color-primary-200) 45%, transparent);
+  filter: blur(0.12px);
+}
+
+.admin-nav-item.admin-nav-notify-shiny-on-inactive .admin-nav-notify-shiny-edge {
+  background: linear-gradient(
+    115deg,
+    color-mix(in srgb, var(--color-primary-600) 22%, transparent) 0%,
+    color-mix(in srgb, var(--color-primary-300) 40%, white 60%) 42%,
+    color-mix(in srgb, var(--color-primary-600) 20%, transparent) 100%
+  );
+}
+
+/*
+ * Footer quick-nav «Prenotazioni» con badge: stesso markup shiny del tab, ma su superficie chiara
+ * il fascio bianco non si vede — sweep e bordo tintati col primary del tema attivo.
+ */
+.footer-nav-notify-btn.footer-nav-notify-shiny-on-light .admin-nav-notify-shiny-fill::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-primary-600) 28%, transparent) 18%,
+    color-mix(in srgb, var(--color-primary-400) 42%, white 58%) 50%,
+    color-mix(in srgb, var(--color-primary-600) 26%, transparent) 82%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--color-primary-500) 36%, transparent),
+    0 0 20px color-mix(in srgb, var(--color-primary-200) 45%, transparent);
+  filter: blur(0.12px);
+}
+
+.footer-nav-notify-btn.footer-nav-notify-shiny-on-light .admin-nav-notify-shiny-edge {
+  background: linear-gradient(
+    115deg,
+    color-mix(in srgb, var(--color-primary-600) 22%, transparent) 0%,
+    color-mix(in srgb, var(--color-primary-300) 40%, white 60%) 42%,
+    color-mix(in srgb, var(--color-primary-600) 20%, transparent) 100%
+  );
+}
+
+/*
+ * Wrapper tab/footer «Prenotazioni» con badge: stacking per NotifyNavShinyLayers.
+ * Pulsazione attorno: solo se anche `admin-nav-notify-pulse-wrap--header-ring` (solo NavItem header).
+ */
+.admin-nav-notify-pulse-wrap {
+  position: relative;
+  isolation: isolate;
+  /* Grid default stretch allunga la cella all’altezza della riga: senza align-self:start il wrap si allunga */
+  align-self: start;
+  height: fit-content;
+}
+
 @keyframes admin-nav-notify-pulse-ring {
   0%,
   100% {
@@ -904,15 +967,7 @@ body {
   }
 }
 
-.admin-nav-notify-pulse-wrap {
-  position: relative;
-  isolation: isolate;
-  /* Grid default stretch allunga la cella all’altezza della riga: il ::before riempie quel vuoto e l’alone sembra “cadere” sotto il bottone */
-  align-self: start;
-  height: fit-content;
-}
-
-.admin-nav-notify-pulse-wrap::before {
+.admin-nav-notify-pulse-wrap.admin-nav-notify-pulse-wrap--header-ring::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -923,7 +978,8 @@ body {
   animation: admin-nav-notify-pulse-ring 1.45s ease-out infinite;
 }
 
-.admin-nav-notify-pulse-wrap > button.admin-nav-item {
+.admin-nav-notify-pulse-wrap > button.admin-nav-item,
+.admin-nav-notify-pulse-wrap > button.footer-nav-notify-btn {
   position: relative;
   z-index: 1;
 }
