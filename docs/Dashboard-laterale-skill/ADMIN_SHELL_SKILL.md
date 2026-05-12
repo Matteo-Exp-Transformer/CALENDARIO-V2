@@ -53,7 +53,8 @@ LOCK  Modal.tsx  z-[10050]          — stack z-index calibrato
 RULE  CRM_QUERY_KEY: importare da useCustomers.ts, mai ridichiarare
 RULE  Email CRM: sempre normalizeCustomerEmail() prima di confronto o scrittura
 RULE  UUID vs email: verified in database.ts — cancelled_by è UUID, non email
-RULE  NAV array AdminShell: NON aggiungere 'prenotazioni' — ha il suo pulsante
+RULE  `SIDEBAR_NAV`: NON aggiungere 'home' o 'prenotazioni' — coperti dal pulsante Home in cima
+RULE  Form Pubblico: window.open('...', '_blank', 'noopener,noreferrer') — MAI location.href
 RULE  data-admin-theme effect: nessun cleanup — il tema deve persistere
 RULE  Classi Tailwind letterali — mai `bg-${x}-600` (non genera CSS)
 RULE  cn() da @/lib/utils — mai clsx() o twMerge() direttamente

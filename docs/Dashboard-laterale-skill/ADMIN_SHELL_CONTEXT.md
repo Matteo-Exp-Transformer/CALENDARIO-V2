@@ -11,21 +11,24 @@
 AdminShell (src/components/layout/AdminShell.tsx)
 │
 ├── <aside> sidebar sinistra — routing state-based (NO cambio URL)
-│   ├── Pulsante "Calendario / Prenotazioni" (in cima → sezione 'prenotazioni')
-│   ├── NAV: Home · CRM Clienti · Servizio · Analytics
+│   ├── Pulsante "Home" (icona Home, in cima → sezione 'home')   ← DEFAULT
+│   ├── SIDEBAR_NAV (3 voci):
+│   │   ├── Form Pubblico  (ExternalLink → window.open '/prenota/:slug', _blank)
+│   │   ├── Impostazioni   (Store → 'home' + sessionStorage + restaurantSettingsSignal)
+│   │   └── Analytics      (BarChart3 → sezione 'analytics')
 │   └── Bottom dock: avatar utente + logout
 │
 └── <main> contenuto — switch su `section` state
-    ├── 'prenotazioni' → <AdminDashboard />   ← DEFAULT
-    ├── 'home'         → <AdminHomePage />
-    ├── 'crm'          → <CrmPage />
-    ├── 'servizio'     → <ServizioPage />
-    └── 'analytics'    → <AnalyticsPage />
+    ├── 'home' | 'prenotazioni' → <AdminDashboard />   ← DEFAULT = 'home'
+    ├── 'crm'                  → <CrmPage />
+    ├── 'servizio'             → <ServizioPage />
+    └── 'analytics'            → <AnalyticsPage />
 ```
 
-**Regola cardine**: `'prenotazioni'` NON compare nel `NAV` array. È raggiungibile solo dal
-pulsante Calendario. `AdminDashboard` ha già la propria nav a tab — duplicarla in sidebar
-causerebbe conflitti.
+**Regole cardine sidebar**:
+- `'home'` NON compare nel `SIDEBAR_NAV` — è coperto dal pulsante Home in cima
+- `'prenotazioni'` NON compare nel `SIDEBAR_NAV` — stesso pulsante Home (section 'home' e 'prenotazioni' montano entrambi AdminDashboard)
+- **Form Pubblico**: usa sempre `window.open(..., '_blank', 'noopener,noreferrer')` — MAI `window.location.href` (navigherebbe via dalla dashboard admin)
 
 ---
 
@@ -34,7 +37,7 @@ causerebbe conflitti.
 | File | Ruolo |
 |------|-------|
 | `src/components/layout/AdminShell.tsx` | Layout: sidebar + main, routing state |
-| `src/pages/AdminHomePage.tsx` | Placeholder Home |
+| `src/pages/AdminHomePage.tsx` | Placeholder per futura dashboard riassuntiva (non montata dalla shell su `home`) |
 | `src/pages/ServizioPage.tsx` | Placeholder Servizio |
 | `src/pages/AnalyticsPage.tsx` | Placeholder Analytics |
 
@@ -72,10 +75,11 @@ da `AdminDashboard` al primo mount e non viene mai rimosso.
 
 | Breakpoint | Stato default | Toggle |
 |-----------|---------------|--------|
-| `< 1024px` | Collapsed `w-16` solo icone | → expanded `w-56` |
+| `< 645px` | Rail `w-16`; menu espanso = **drawer** `fixed` `w-56` + backdrop (`z-[7999]`) — chiusura con bottone, click backdrop o `Escape` | chevron |
+| `< 1024px` (e ≥ 645px) | Collapsed `w-16` solo icone | → expanded `w-56` |
 | `≥ 1024px` | Expanded `w-56` icone + label | → collapsed `w-16` |
 
-Logica: `useIsLg()` + stati separati `narrowExpanded` / `wideCollapsed` (preserva la
+Logica: `useIsNarrow()` (`max-width: 644px`) + `useIsLg()` + stati separati `narrowExpanded` / `wideCollapsed` (preserva la
 preferenza al cambio breakpoint). **No hover-to-expand**: solo bottone chevron.
 
 ---
@@ -84,7 +88,9 @@ preferenza al cambio breakpoint). **No hover-to-expand**: solo bottone chevron.
 
 | Layer | Z-index | Cosa |
 |-------|---------|------|
-| Sidebar aside | normale | — |
+| Sidebar backdrop (solo drawer stretto) | `z-[7999]` | overlay scuro chiudibile |
+| Sidebar drawer (`< 645px` espanso) | `z-[8000]` | pannello `fixed` |
+| Sidebar aside (flusso normale / desktop) | normale | — |
 | CustomerDetailPanel overlay | `z-[8999]` | sfondo scuro |
 | CustomerDetailPanel drawer | `z-[9000]` | pannello slide-in CRM |
 | Modal (`<Modal>`) | `z-[10050]` | **non toccare mai** |
@@ -96,10 +102,19 @@ chiuderlo — comportamento atteso.
 
 ## 6. Anti-pattern comuni (errori già commessi in tutte le sezioni)
 
-### ❌ Aggiungere 'prenotazioni' nel NAV array
+### ❌ Aggiungere 'home' o 'prenotazioni' al SIDEBAR_NAV
 ```typescript
-// ❌ crea duplicato del pulsante Calendario
-const NAV = [{ section: 'prenotazioni', label: 'Prenotazioni', ... }]
+// ❌ duplica il pulsante Home in cima
+const SIDEBAR_NAV = [{ section: 'home', ... }, { section: 'prenotazioni', ... }]
+```
+
+### ❌ window.location.href per Form Pubblico
+```typescript
+// ❌ naviga via dalla dashboard, l'admin perde la sessione corrente
+window.location.href = `/prenota/${tenantSlug}`
+
+// ✅ apre nuova tab senza abbandonare la dashboard
+window.open(`/prenota/${tenantSlug}`, '_blank', 'noopener,noreferrer')
 ```
 
 ### ❌ Cleanup al useEffect di data-admin-theme
@@ -119,7 +134,7 @@ const cls = `bg-${color}-600`  // ❌ Tailwind v4 non genera questa classe
 
 ### Procedura (5 passi)
 1. Aggiungere `AdminShellSection` type in `AdminShell.tsx`
-2. Aggiungere voce in `NAV` (icona Lucide + label italiano)
+2. Aggiungere voce in `SIDEBAR_NAV` / array nav (icona Lucide + label italiano) — **non** aggiungere `'prenotazioni'`
 3. Aggiungere render condizionale in `<main>` della shell
 4. Creare page in `src/pages/NomePaginaPage.tsx`
 5. Importare e usare in `AdminShell.tsx`
