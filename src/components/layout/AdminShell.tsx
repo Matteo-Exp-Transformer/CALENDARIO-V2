@@ -1,8 +1,7 @@
 import type { FC } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import {
-  LayoutDashboard,
-  CalendarDays,
+  Home,
   BarChart3,
   ChevronLeft,
   ChevronRight,
@@ -72,10 +71,9 @@ type SidebarNavAction =
 const SIDEBAR_NAV: {
   id: string
   label: string
-  icon: typeof LayoutDashboard
+  icon: typeof Home
   action: SidebarNavAction
 }[] = [
-  { id: 'home', label: 'Home', icon: LayoutDashboard, action: { type: 'section', section: 'home' } },
   { id: 'form', label: 'Form Pubblico', icon: ExternalLink, action: { type: 'public-form' } },
   { id: 'settings', label: 'Impostazioni', icon: Store, action: { type: 'open-settings' } },
   { id: 'analytics', label: 'Analytics', icon: BarChart3, action: { type: 'section', section: 'analytics' } },
@@ -171,26 +169,26 @@ export const AdminShell: FC = () => {
         aria-expanded={isNarrow ? narrowExpanded : sidebarExpanded}
       >
         <div className="flex flex-1 flex-col gap-1 px-2">
-          {/* Icona calendario — torna alla gestione prenotazioni (vista default) */}
+          {/* Pulsante Home — accesso principale alla dashboard prenotazioni */}
           <div className={cn('mb-1 flex', sidebarExpanded ? 'items-center justify-between gap-1 px-1' : 'justify-center')}>
             <button
               type="button"
               onClick={() => {
-                setSection('prenotazioni')
+                setSection('home')
                 closeNarrowDrawer()
               }}
-              title="Calendario prenotazioni"
-              aria-label="Calendario prenotazioni"
+              title="Home"
+              aria-label="Home"
               className={cn(
                 'flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
-                section === 'prenotazioni'
+                section === 'home' || section === 'prenotazioni'
                   ? 'bg-primary-600 text-white'
                   : 'text-primary-900 hover:bg-primary-50',
                 !sidebarExpanded && 'justify-center px-0 w-10',
               )}
             >
-              <CalendarDays className={cn('h-5 w-5 shrink-0', section === 'prenotazioni' ? 'text-white' : 'text-primary-900')} aria-hidden />
-              {sidebarExpanded && <span className="truncate">Prenotazioni</span>}
+              <Home className={cn('h-5 w-5 shrink-0', section === 'home' || section === 'prenotazioni' ? 'text-white' : 'text-primary-900')} aria-hidden />
+              {sidebarExpanded && <span className="truncate">Home</span>}
             </button>
             {sidebarExpanded && (
               <Button
