@@ -19,6 +19,7 @@ import { Button } from '@/components/ui'
 import { useTenantContext } from '@/contexts/TenantContext'
 
 export type AdminShellSection = 'home' | 'prenotazioni' | 'crm' | 'servizio' | 'analytics'
+type SidebarActiveItem = 'home' | 'form' | 'settings' | 'analytics' | null
 
 /** Voci sidebar visibili — "prenotazioni" non compare: la gestione prenotazioni
  *  è la vista di default (accessibile dall'icona calendario in cima). */
@@ -85,6 +86,7 @@ export const AdminShell: FC = () => {
   const [narrowExpanded, setNarrowExpanded] = useState(false)
   const [wideCollapsed, setWideCollapsed] = useState(false)
   const [section, setSection] = useState<AdminShellSection>('home')
+  const [activeSidebarItem, setActiveSidebarItem] = useState<SidebarActiveItem>('home')
   const [restaurantSettingsSignal, setRestaurantSettingsSignal] = useState(0)
   const { user, logout } = useAdminAuth()
   const { tenantSlug } = useTenantContext()
@@ -108,16 +110,19 @@ export const AdminShell: FC = () => {
       closeNarrowDrawer()
       if (action.type === 'section') {
         setSection(action.section)
+        setActiveSidebarItem(action.section === 'analytics' ? 'analytics' : null)
         return
       }
       if (action.type === 'open-settings') {
         setSection('home')
+        setActiveSidebarItem('settings')
         sessionStorage.setItem('admin-open-tab', 'settings-restaurant')
         setRestaurantSettingsSignal((n) => n + 1)
         return
       }
       if (action.type === 'public-form') {
         if (!tenantSlug) return
+        setActiveSidebarItem('form')
         window.open(`/prenota/${tenantSlug}`, '_blank', 'noopener,noreferrer')
       }
     },
@@ -137,10 +142,12 @@ export const AdminShell: FC = () => {
     onOpenServizio: () => {
       closeNarrowDrawer()
       setSection('servizio')
+      setActiveSidebarItem(null)
     },
     onOpenCrm: () => {
       closeNarrowDrawer()
       setSection('crm')
+      setActiveSidebarItem(null)
     },
     restaurantSettingsSignal,
   }
@@ -148,19 +155,19 @@ export const AdminShell: FC = () => {
   const narrowDrawerOpen = isNarrow && narrowExpanded
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden bg-[var(--color-bg)]">
+    <div className="flex h-dvh overflow-hidden bg-(--color-bg)">
       {narrowDrawerOpen && (
         <button
           type="button"
-          className="fixed inset-0 z-[7999] cursor-default border-0 bg-black/40 p-0"
+          className="fixed inset-0 z-7999 cursor-default border-0 bg-black/40 p-0"
           aria-label="Chiudi menu"
           onClick={() => setNarrowExpanded(false)}
         />
       )}
       <aside
         className={cn(
-          'flex h-full shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)] py-4 transition-[width] duration-200 ease-out',
-          narrowDrawerOpen && 'fixed inset-y-0 left-0 z-[8000] w-56 shadow-xl',
+          'flex h-full shrink-0 flex-col border-r border-(--color-border) bg-surface py-4 transition-[width] duration-200 ease-out',
+          narrowDrawerOpen && 'fixed inset-y-0 left-0 z-8000 w-56 shadow-xl',
           isNarrow && !narrowDrawerOpen && 'relative w-16',
           !isNarrow && sidebarExpanded && 'w-56',
           !isNarrow && !sidebarExpanded && 'w-16',
@@ -175,19 +182,28 @@ export const AdminShell: FC = () => {
               type="button"
               onClick={() => {
                 setSection('home')
+                setActiveSidebarItem('home')
                 closeNarrowDrawer()
               }}
               title="Home"
               aria-label="Home"
               className={cn(
                 'flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
-                section === 'home' || section === 'prenotazioni'
+                activeSidebarItem === 'home' || (!activeSidebarItem && (section === 'home' || section === 'prenotazioni'))
                   ? 'bg-primary-600 text-white'
                   : 'text-primary-900 hover:bg-primary-50',
                 !sidebarExpanded && 'justify-center px-0 w-10',
               )}
             >
-              <Home className={cn('h-5 w-5 shrink-0', section === 'home' || section === 'prenotazioni' ? 'text-white' : 'text-primary-900')} aria-hidden />
+              <Home
+                className={cn(
+                  'h-5 w-5 shrink-0',
+                  activeSidebarItem === 'home' || (!activeSidebarItem && (section === 'home' || section === 'prenotazioni'))
+                    ? 'text-white'
+                    : 'text-primary-900',
+                )}
+                aria-hidden
+              />
               {sidebarExpanded && <span className="truncate">Home</span>}
             </button>
             {sidebarExpanded && (
@@ -224,7 +240,9 @@ export const AdminShell: FC = () => {
           <div className="my-1 border-t border-(--color-border)" />
           {SIDEBAR_NAV.map(({ id, label, icon: Icon, action }) => {
             const active =
-              action.type === 'section' ? section === action.section : false
+              action.type === 'section'
+                ? activeSidebarItem === action.section || (!activeSidebarItem && section === action.section)
+                : activeSidebarItem === id
             return (
               <button
                 key={id}
@@ -236,7 +254,7 @@ export const AdminShell: FC = () => {
                   active
                     ? 'bg-primary-600 text-white'
                     : 'text-primary-900 hover:bg-primary-50',
-                  !sidebarExpanded && 'justify-center px-0',
+                  !sidebarExpanded && 'mx-auto w-10 justify-center px-0',
                 )}
               >
                 <Icon className={cn('h-5 w-5 shrink-0', active ? 'text-white' : 'text-primary-900')} aria-hidden />
@@ -246,7 +264,7 @@ export const AdminShell: FC = () => {
           })}
         </div>
 
-        <div className="mt-auto flex flex-col gap-2 border-t border-[var(--color-border)] px-2 pt-3">
+        <div className="mt-auto flex flex-col gap-2 border-t border-(--color-border) px-2 pt-3">
           {user && (
             <div
               className={cn(
@@ -262,7 +280,7 @@ export const AdminShell: FC = () => {
                 {initials(user)}
               </span>
               {sidebarExpanded && (
-                <span className="min-w-0 truncate text-xs font-medium text-[var(--color-text-muted)]">
+                <span className="min-w-0 truncate text-xs font-medium text-(--color-text-muted)">
                   {user.email}
                 </span>
               )}
