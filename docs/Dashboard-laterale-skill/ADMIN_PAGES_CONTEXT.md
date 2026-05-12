@@ -159,23 +159,27 @@ Gestione tavoli, sale, configurazione servizio (turni, capienza per slot, ecc.).
 ## Analytics
 
 **Sezione**: `section === 'analytics'` → `<AnalyticsPage />`  
-**Stato**: placeholder — da implementare.
+**Stato**: implementato (F1 — KPI + trend su `booking_requests`, range 7g/30g).
 
 ### File chiave
 
 | File | Ruolo |
 |------|-------|
-| `src/pages/AnalyticsPage.tsx` | Entry point sezione |
+| `src/pages/AnalyticsPage.tsx` | Orchestratore: toggle range, KPI, trend, empty/loading |
+| `src/features/booking/hooks/useAnalytics.ts` | Query TanStack su `booking_requests`, `ANALYTICS_QUERY_KEY`, aggregazioni lato client |
+| `src/features/booking/components/analytics/AnalyticsKpiCard.tsx` | Card KPI riusabile |
+| `src/features/booking/components/analytics/AnalyticsTrendChart.tsx` | Grafico a barre (Recharts), solo dati normalizzati `AnalyticsTrendPoint[]` |
 
-### Obiettivo previsto
+### Contenuto F1
 
-Statistiche prenotazioni: trend, coperti per periodo, menu più richiesti, clienti abituali.
+- Tre KPI: prenotazioni totali, coperti totali, tasso conferma (`accepted` / totali × 100, esclusi `deleted`).
+- Trend giornaliero: prenotazioni e coperti per giorno (calendario), giorni senza dati a zero; grafico Recharts dietro layer dedicato.
+- Toggle **7g** / **30g** (stato locale in pagina). No-show e metriche avanzate: fasi successive.
 
-### Note per implementazione futura
+### Note
 
-- Query aggregate su `booking_requests` filtrate per `tenant_id` + range date
-- Considerare query pesanti: paginare o aggregare lato Supabase con RPC
-- Aggiornare questo paragrafo quando la pagina viene implementata
+- Dati da `booking_requests` (`status`, `num_guests`, `created_at`) con client `supabase` autenticato; nessuna migrazione dedicata.
+- Per volumi molto alti valutare in futuro RPC/aggregazioni lato Supabase.
 
 ---
 
