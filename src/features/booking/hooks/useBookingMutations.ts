@@ -7,6 +7,7 @@ import {
   sendBookingRejectedEmail,
   areEmailNotificationsEnabled,
 } from './useEmailNotifications'
+import { ANALYTICS_QUERY_ROOT } from './useAnalytics'
 import { useTenantContext } from '@/contexts/TenantContext'
 
 interface AcceptBookingInput {
@@ -84,6 +85,7 @@ export const useAcceptBooking = () => {
         queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
       ])
 
       // Send email notification
@@ -138,6 +140,7 @@ export const useRejectBooking = () => {
         queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
       ])
       
       // Send email notification
@@ -291,6 +294,7 @@ export const useUpdateBooking = () => {
       await queryClient.invalidateQueries({ queryKey: ['bookings'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'] })
+      await queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId] })
       toast.success('Prenotazione aggiornata con successo!')
     },
     onError: (error: Error) => {
@@ -345,6 +349,7 @@ export const useRestoreBooking = () => {
       await queryClient.invalidateQueries({ queryKey: ['bookings'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'] })
+      await queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId] })
       toast.success('Prenotazione reinserita con successo!')
     },
     onError: (error: Error) => {
@@ -385,6 +390,7 @@ export const useRequeueRejectedBooking = () => {
         queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
       ])
       toast.success('Prenotazione riportata tra le richieste in attesa')
     },
@@ -427,6 +433,7 @@ export const useCancelBooking = () => {
       await queryClient.invalidateQueries({ queryKey: ['bookings'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'] })
+      await queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId] })
       toast.success('Prenotazione cancellata con successo!')
     },
     onError: (error: Error) => {

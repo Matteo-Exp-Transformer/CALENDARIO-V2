@@ -17,21 +17,21 @@ export const AnalyticsKpiCard: FC<AnalyticsKpiCardProps> = ({
 }) => (
   <div
     className={cn(
-      'rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-sm',
+      'rounded-xl border border-(--color-border) bg-surface p-4 shadow-sm',
       'md:p-5',
     )}
   >
-    <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)] md:text-sm">
+    <p className="text-xs font-medium uppercase tracking-wide text-(--color-text-muted) md:text-sm">
       {label}
     </p>
-    <div className="mt-2 flex min-h-[2rem] items-baseline gap-1 md:min-h-[2.25rem]">
+    <div className="mt-2 flex min-h-8 items-baseline gap-1 md:min-h-9">
       {isLoading ? (
         <Loader2 className="h-6 w-6 shrink-0 animate-spin text-primary-600" aria-hidden />
       ) : (
         <>
           <span className="text-2xl font-bold tabular-nums text-primary-900 md:text-3xl">{value}</span>
           {suffix ? (
-            <span className="text-sm font-medium text-[var(--color-text-muted)] md:text-base">{suffix}</span>
+            <span className="text-sm font-medium text-(--color-text-muted) md:text-base">{suffix}</span>
           ) : null}
         </>
       )}

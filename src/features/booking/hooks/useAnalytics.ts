@@ -24,8 +24,10 @@ export interface AnalyticsData {
   hasData: boolean
 }
 
+export const ANALYTICS_QUERY_ROOT = 'analytics'
+
 export const ANALYTICS_QUERY_KEY = (tenantId: string, range: DateRange) =>
-  ['analytics', tenantId, range] as const
+  [ANALYTICS_QUERY_ROOT, tenantId, range] as const
 
 type AnalyticsRow = {
   status: string

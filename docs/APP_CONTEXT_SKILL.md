@@ -50,7 +50,7 @@ Il routing admin è **state-based** (nessun cambio URL). `AdminShell.tsx` gestis
 | `'prenotazioni'` | `<AdminDashboard />` | stabile (pulsante Calendario) |
 | `'crm'` | `<CrmPage />` | stabile |
 | `'servizio'` | `<ServizioPage />` | placeholder — in sviluppo |
-| `'analytics'` | `<AnalyticsPage />` | placeholder — in sviluppo |
+| `'analytics'` | `<AnalyticsPage />` | implementato F1 — KPI + trend |
 
 File di dettaglio per ogni sezione: `docs/Dashboard-laterale-skill/ADMIN_PAGES_CONTEXT.md`.
 
