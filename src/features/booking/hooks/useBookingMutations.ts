@@ -8,7 +8,9 @@ import {
   areEmailNotificationsEnabled,
 } from './useEmailNotifications'
 import { ANALYTICS_QUERY_ROOT } from './useAnalytics'
+import { HOME_STATS_QUERY_KEY } from './useHomeStats'
 import { useTenantContext } from '@/contexts/TenantContext'
+import { logger } from '@/lib/logger'
 
 interface AcceptBookingInput {
   bookingId: string
@@ -86,6 +88,7 @@ export const useAcceptBooking = () => {
         queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId], refetchType: 'all' }),
       ])
 
       // Send email notification
@@ -95,14 +98,13 @@ export const useAcceptBooking = () => {
         try {
           await sendBookingAcceptedEmail(booking)
         } catch (error) {
-          console.warn('[useAcceptBooking] Email opzionale non inviata:', error)
+          logger.warn('[useAcceptBooking] Email opzionale non inviata', error)
         }
       } else {
       }
     },
     onError: (error: Error) => {
-      console.error('❌ [useAcceptBooking] Mutation error:', error)
-      // Toast error già gestito nel componente
+      logger.error('[useAcceptBooking] mutation error', error)
     },
   })
 }
@@ -141,20 +143,20 @@ export const useRejectBooking = () => {
         queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId], refetchType: 'all' }),
       ])
-      
+
       // Send email notification
       if (areEmailNotificationsEnabled()) {
         try {
           await sendBookingRejectedEmail(booking)
         } catch (error) {
-          console.warn('[useRejectBooking] Email opzionale non inviata:', error)
+          logger.warn('[useRejectBooking] Email opzionale non inviata', error)
         }
       }
     },
     onError: (error: Error) => {
-      console.error('❌ [useRejectBooking] Mutation error:', error)
-      // Toast error già gestito nel componente
+      logger.error('[useRejectBooking] mutation error', error)
     },
   })
 }
@@ -239,7 +241,7 @@ export const useUpdateBooking = () => {
         .single()
 
       if (error) {
-        console.error('❌ [useUpdateBooking] Error:', error)
+        logger.error('[useUpdateBooking] DB error', error)
         throw new Error(handleSupabaseError(error))
       }
 
@@ -295,10 +297,11 @@ export const useUpdateBooking = () => {
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'] })
       await queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId] })
+      await queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId] })
       toast.success('Prenotazione aggiornata con successo!')
     },
     onError: (error: Error) => {
-      console.error('❌ [useUpdateBooking] onError:', error)
+      logger.error('[useUpdateBooking] mutation error', error)
       toast.error(error.message || 'Errore nell\'aggiornamento della prenotazione')
     },
   })
@@ -338,7 +341,7 @@ export const useRestoreBooking = () => {
         .single()
 
       if (error) {
-        console.error('❌ [useRestoreBooking] Error:', error)
+        logger.error('[useRestoreBooking] DB error', error)
         throw new Error(handleSupabaseError(error))
       }
 
@@ -350,6 +353,7 @@ export const useRestoreBooking = () => {
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'] })
       await queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId] })
+      await queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId] })
       toast.success('Prenotazione reinserita con successo!')
     },
     onError: (error: Error) => {
@@ -422,7 +426,7 @@ export const useCancelBooking = () => {
         .single()
 
       if (error) {
-        console.error('❌ [useCancelBooking] Error:', error)
+        logger.error('[useCancelBooking] DB error', error)
         throw new Error(handleSupabaseError(error))
       }
 
@@ -434,6 +438,7 @@ export const useCancelBooking = () => {
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'] })
       await queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId] })
+      await queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId] })
       toast.success('Prenotazione cancellata con successo!')
     },
     onError: (error: Error) => {

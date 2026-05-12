@@ -1,5 +1,7 @@
 import type { FC } from 'react'
 import { useCallback, useEffect, useState } from 'react'
+import { DEFAULT_APP_THEME } from '@/features/booking/constants/appTheme'
+import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 import {
   Home,
   BarChart3,
@@ -12,6 +14,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { AdminDashboard } from '@/pages/AdminDashboard'
+import { AdminHomePage } from '@/pages/AdminHomePage'
 import { CrmPage } from '@/pages/CrmPage'
 import { ServizioPage } from '@/pages/ServizioPage'
 import { AnalyticsPage } from '@/pages/AnalyticsPage'
@@ -91,6 +94,15 @@ export const AdminShell: FC = () => {
   const { user, logout } = useAdminAuth()
   const { tenantSlug } = useTenantContext()
 
+  const { data: savedAppTheme = DEFAULT_APP_THEME, isPending: isAppThemePending } =
+    useRestaurantSetting('app_theme')
+  useEffect(() => {
+    const resolved = isAppThemePending ? DEFAULT_APP_THEME : savedAppTheme
+    document.documentElement.setAttribute('data-admin-theme', resolved)
+    // nessun cleanup: il tema deve persistere per tutta la sessione admin
+    // (il tema è applicato dalla shell così da coprire tutte le sezioni, home inclusa)
+  }, [savedAppTheme, isAppThemePending])
+
   const sidebarExpanded = isLg ? !wideCollapsed : narrowExpanded
 
   const closeNarrowDrawer = useCallback(() => {
@@ -114,7 +126,7 @@ export const AdminShell: FC = () => {
         return
       }
       if (action.type === 'open-settings') {
-        setSection('home')
+        setSection('prenotazioni')
         setActiveSidebarItem('settings')
         sessionStorage.setItem('admin-open-tab', 'settings-restaurant')
         setRestaurantSettingsSignal((n) => n + 1)
@@ -147,6 +159,11 @@ export const AdminShell: FC = () => {
     onOpenCrm: () => {
       closeNarrowDrawer()
       setSection('crm')
+      setActiveSidebarItem(null)
+    },
+    onOpenPrenotazioni: () => {
+      closeNarrowDrawer()
+      setSection('prenotazioni')
       setActiveSidebarItem(null)
     },
     restaurantSettingsSignal,
@@ -304,7 +321,14 @@ export const AdminShell: FC = () => {
       </aside>
 
       <main className="min-h-0 flex-1 overflow-y-auto">
-        {(section === 'home' || section === 'prenotazioni') && <AdminDashboard {...dashboardShellProps} />}
+        {section === 'home' && (
+          <AdminHomePage
+            onOpenPrenotazioni={dashboardShellProps.onOpenPrenotazioni}
+            onOpenCrm={dashboardShellProps.onOpenCrm}
+            onOpenServizio={dashboardShellProps.onOpenServizio}
+          />
+        )}
+        {section === 'prenotazioni' && <AdminDashboard {...dashboardShellProps} />}
         {section === 'crm' && <CrmPage />}
         {section === 'servizio' && <ServizioPage />}
         {section === 'analytics' && <AnalyticsPage />}

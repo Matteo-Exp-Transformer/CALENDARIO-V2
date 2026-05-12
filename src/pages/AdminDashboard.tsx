@@ -200,7 +200,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const resolved = isAppThemePending ? DEFAULT_APP_THEME : savedAppTheme
     document.documentElement.setAttribute('data-admin-theme', resolved)
     // nessun cleanup: il tema deve persistere per tutta la sessione admin
-    // (AdminDashboard è mountato/smontato dalla shell al cambio sezione)
+    // (AdminDashboard è montato solo su section === 'prenotazioni')
   }, [savedAppTheme, isAppThemePending])
 
   const handleViewInCalendar = (date: string) => {

@@ -112,47 +112,87 @@ customer.email === searchTerm  // case-sensitive, manca trim
 
 ## Home
 
-**Sezione**: `section === 'home'` → `<AdminDashboard />` (stesso componente di `prenotazioni`; default all’ingresso `/admin`).  
-**Stato**: la shell mostra la dashboard operativa (calendario, tab, ecc.). Una **Home riassuntiva** dedicata resta da definire in `AdminHomePage.tsx` (placeholder, non montata dalla shell su questa sezione).
+**Sezione**: `section === 'home'` → `<AdminHomePage />` (default all’ingresso `/admin`).  
+`section === 'prenotazioni'` → `<AdminDashboard />` (montata anche dal pulsante Calendario nella Home).  
+**Stato**: implementato — quick-nav + KPI del giorno + lista prossime prenotazioni (3h).
 
 ### File chiave
 
 | File | Ruolo |
 |------|-------|
-| `src/pages/AdminDashboard.tsx` | Vista principale dopo login e sezione Home |
-| `src/pages/AdminHomePage.tsx` | Placeholder per futura dashboard «inizio turno» / metriche |
+| `src/pages/AdminHomePage.tsx` | Home riassuntiva: quick-nav (Calendario / CRM / Servizio), 3 stat card, lista prossime 3h |
+| `src/features/booking/hooks/useHomeStats.ts` | Query TanStack su `booking_requests`, `HOME_STATS_QUERY_KEY`, calcolo lato client |
+| `src/pages/AdminDashboard.tsx` | Vista operativa montata da `section === 'prenotazioni'` |
 
-### Obiettivo previsto (fase 2)
+### Architettura dati
 
-Dashboard riassuntiva: metriche rapide, prossime prenotazioni, stato ristorante — vedi piano prodotto; non duplicare il calendario completo già in `AdminDashboard`.
+- `useHomeStats` legge `booking_requests` (status, num_guests, desired_date, desired_time, confirmed_start, confirmed_end, client_name) con il client `supabase` autenticato.
+- Filtro DB: `tenant_id = tenantId`, `status in ('pending','accepted')` — `rejected`/`deleted` esclusi a monte.
+- **Data evento**: `confirmed_start` (porzione data, estratta senza conversione fuso) per accepted; `desired_date` per pending.
+- KPI di oggi:
+  - **Prenotazioni oggi**: pending + accepted con data evento = oggi.
+  - **Coperti confermati**: somma `num_guests` per accepted con data evento = oggi.
+  - **In attesa di conferma**: pending con `desired_date` = oggi.
+- **Prossime 3 ore**: accepted con `confirmed_start ∈ [now, now+3h]`, ordinate cronologicamente.
+- `staleTime: 2 * 60 * 1000` (più frequente di Analytics: la Home è operativa).
+
+### Regole critiche Home
+
+- Per estrarre la data da `confirmed_start` (ISO con TZ) usare il regex `(\d{4})-(\d{2})-(\d{2})` — coerente con `useBookingStats`, evita drift di fuso.
+- La sidebar mantiene il bottone **Home** attivo sia su `section === 'home'` che `section === 'prenotazioni'` (logica `activeSidebarItem === 'home' || (!activeSidebarItem && (section === 'home' || section === 'prenotazioni'))`).
+- Le callback quick-nav (Calendario, CRM, Servizio) provengono dalla shell tramite `dashboardShellProps.onOpenPrenotazioni / onOpenCrm / onOpenServizio` — non leggere lo state della shell direttamente.
 
 ### Note
 
-- Da sidebar, **Impostazioni** imposta `sessionStorage` `admin-open-tab` / segnale verso `AdminDashboard` per aprire il tab Impostazioni locale (`RestaurantSettingsTab`).
-- Aggiornare questo paragrafo quando `AdminHomePage` diventa entrypoint o blocco dedicato.
+- Da sidebar, **Impostazioni** imposta `sessionStorage` `admin-open-tab` / segnale verso `AdminDashboard` per aprire il tab Impostazioni locale (`RestaurantSettingsTab`). Da quando `section === 'home'` monta `<AdminHomePage />`, l’azione `open-settings` setta `section === 'prenotazioni'` per montare `AdminDashboard` (che è l’unico componente che consuma il segnale `restaurantSettingsSignal`).
 
 ---
 
 ## Servizio
 
 **Sezione**: `section === 'servizio'` → `<ServizioPage />`  
-**Stato**: placeholder — da implementare.
+**Stato**: implementato F1 — CRUD tavoli per sala.
 
 ### File chiave
 
 | File | Ruolo |
 |------|-------|
-| `src/pages/ServizioPage.tsx` | Entry point sezione |
+| `src/pages/ServizioPage.tsx` | Orchestratore: lista tavoli per sala, modal add/edit, conferma delete |
+| `src/features/booking/hooks/useServizioTables.ts` | `useTables`, `useCreateTable`, `useUpdateTable`, `useDeleteTable`, `TABLES_QUERY_KEY` |
+| `src/features/booking/components/servizio/TableFormModal.tsx` | Modal form aggiungi/modifica tavolo |
+| `supabase/migrations/007_tables.sql` | Schema tabella `tables`, trigger, RLS |
 
-### Obiettivo previsto
+### Architettura dati
 
-Gestione tavoli, sale, configurazione servizio (turni, capienza per slot, ecc.).
+- **Sale**: lette da `restaurant_settings` tramite `useRestaurantSetting('booking_placement_areas')` — array di stringhe. Nessuna tabella separata.
+- **Tavoli**: tabella `tables` con `id, tenant_id, name, capacity, placement (text), active (bool), created_at, updated_at`.
+- **Soft delete**: `useDeleteTable()` imposta `active = false`; `useTables()` filtra solo `active = true`.
+- **Ordinamento**: per `placement` ASC poi `name` ASC.
+- **staleTime**: 5 minuti.
 
-### Note per implementazione futura
+```
+restaurant_settings (booking_placement_areas) → lista sale [string[]]
+tables (active=true, tenant_id)               → RestaurantTable[]
+```
 
-- Schema DB: creare migrazione `007_*` o superiore (verificare ultimo numero in `supabase/migrations/`)
-- Non toccare migrazioni già applicate
-- Aggiornare questo paragrafo quando la pagina viene implementata
+### Regole critiche Servizio
+
+- `TABLES_QUERY_KEY = 'servizio-tables'` — dichiarato in `useServizioTables.ts`, importato da chiunque lo invalida.
+- La tabella `tables` non è ancora in `src/types/database.ts` (richiede `npm run db:types:linked` dopo `supabase db push`). Le query usano `(supabase.from('tables') as any)` per bypassare il typecheck fino alla rigenerazione.
+- Non costruire classi dinamiche nelle TableCard: usare solo classi letterali statiche Tailwind.
+
+### State locale ServizioPage
+
+- `modal: { open, initial, defaultPlacement }` — controlla apertura modal e pre-compilazione.
+- `confirmDelete` — stato locale dentro `TableCard` (non in ServizioPage).
+
+### Anti-pattern specifici Servizio
+
+```typescript
+// ❌ non rigenerare database.ts manualmente — usare npm run db:types:linked
+// ❌ non mischiare supabase ↔ supabasePublic nelle query tavoli
+// ❌ non costruire classi dinamiche: `bg-${color}-600` non genera CSS con JIT
+```
 
 ---
 
