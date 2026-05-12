@@ -24,8 +24,8 @@ import {
   ChevronDown,
   ChevronUp,
   UtensilsCrossed,
-  Store,
-  ExternalLink,
+  ConciergeBell,
+  Users,
 } from 'lucide-react'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
@@ -38,7 +38,6 @@ import {
 import { NotifyNavShinyLayers } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
-import { useTenantContext } from '@/contexts/TenantContext'
 
 type Tab =
   | 'calendar'
@@ -149,8 +148,19 @@ const StatCard: React.FC<{ label: string; value: number }> = ({ label, value }) 
   </div>
 )
 
+export type AdminDashboardProps = {
+  onOpenServizio?: () => void
+  onOpenCrm?: () => void
+  /** Incrementato da AdminShell quando si apre Impostazioni dalla sidebar (stesso mount tra home e prenotazioni). */
+  restaurantSettingsSignal?: number
+}
+
 /* ─── Dashboard ─── */
-export const AdminDashboard: React.FC = () => {
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({
+  onOpenServizio,
+  onOpenCrm,
+  restaurantSettingsSignal = 0,
+}) => {
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
   const [calendarTargetDate, setCalendarTargetDate] = useState<string | null>(null)
   const [showNewBookingPanel, setShowNewBookingPanel] = useState(false)
@@ -161,11 +171,27 @@ export const AdminDashboard: React.FC = () => {
   const { data: stats } = useBookingStats()
 
   useEffect(() => {
+    const tab = sessionStorage.getItem('admin-open-tab')
+    if (tab === 'settings-restaurant') {
+      setActiveTab('settings-restaurant')
+      sessionStorage.removeItem('admin-open-tab')
+    }
+  }, [])
+
+  useEffect(() => {
+    if (restaurantSettingsSignal === 0) return
+    const tab = sessionStorage.getItem('admin-open-tab')
+    if (tab === 'settings-restaurant') {
+      setActiveTab('settings-restaurant')
+      sessionStorage.removeItem('admin-open-tab')
+    }
+  }, [restaurantSettingsSignal])
+
+  useEffect(() => {
     if (activeTab !== 'pending') setShowNewBookingPanel(false)
   }, [activeTab])
   const { user, logout } = useAdminAuth()
   const restaurantName = useRestaurantName()
-  const { tenantSlug } = useTenantContext()
   const appIconSrc = `${import.meta.env.BASE_URL}icons/Icona-per-adminPage-no-bg.png`
   const { data: savedAppTheme = DEFAULT_APP_THEME, isPending: isAppThemePending } =
     useRestaurantSetting('app_theme')
@@ -195,11 +221,6 @@ export const AdminDashboard: React.FC = () => {
         : 'border border-[var(--color-border)] bg-[var(--color-surface)] text-primary-900 hover:bg-[var(--color-surface-2)]',
     )
 
-  const openPublicBookingForm = () => {
-    if (!tenantSlug) return
-    window.location.href = `/prenota/${tenantSlug}`
-  }
-
   const footerPendingNotify =
     stats != null && stats.pending != null && stats.pending > 0
 
@@ -221,7 +242,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
             <div className="w-full px-4 md:px-28 text-center pointer-events-none">
               <h1
-                className="relative -left-16 mx-auto max-w-[calc(100%-9rem)] md:max-w-[calc(100%-11rem)] overflow-hidden line-clamp-2 wrap-anywhere font-semibold italic font-serif tracking-wide text-white drop-shadow-sm leading-tight"
+                className="relative -left-16 mx-auto max-w-[calc(100%-9rem)] max-[645px]:left-0 max-[645px]:mx-auto max-[645px]:max-w-[min(100%,calc(100vw-2rem))] md:max-w-[calc(100%-11rem)] overflow-hidden line-clamp-2 wrap-anywhere font-semibold italic font-serif tracking-wide text-white drop-shadow-sm leading-tight"
                 style={{ fontSize: 'clamp(1.297rem, 2.767vw, 1.729rem)' }}
               >
                 {restaurantName || 'Booking SaaS'}
@@ -246,20 +267,16 @@ export const AdminDashboard: React.FC = () => {
                   <NavItem icon={Archive} label="Archivio" active={activeTab === 'archive'} onClick={() => setActiveTab('archive')} />
                   <NavItem icon={UtensilsCrossed} label="Menu" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
                   <NavItem
-                    icon={Store}
-                    label="Impostazioni locale"
-                    active={activeTab === 'settings-restaurant'}
-                    onClick={() => setActiveTab('settings-restaurant')}
-                    mobileLabel="Impostazioni"
+                    icon={ConciergeBell}
+                    label="Servizio"
+                    onClick={() => onOpenServizio?.()}
+                    mobileLabel="Servizio"
                   />
                   <NavItem
-                    icon={ExternalLink}
-                    label="Visualizza Form Pubblico"
-                    mobileLabel="Form"
-                    onClick={() => {
-                      if (!tenantSlug) return
-                      window.location.href = `/prenota/${tenantSlug}`
-                    }}
+                    icon={Users}
+                    label="CRM Clienti"
+                    onClick={() => onOpenCrm?.()}
+                    mobileLabel="CRM"
                   />
                 </nav>
 
@@ -463,27 +480,21 @@ export const AdminDashboard: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('settings-restaurant')}
-                className={footerQuickNavBtnClass(activeTab === 'settings-restaurant')}
-                aria-label="Impostazioni locale"
-                title="Impostazioni locale"
+                onClick={() => onOpenServizio?.()}
+                className={footerQuickNavBtnClass(false)}
+                aria-label="Servizio"
+                title="Servizio"
               >
-                <Store
-                  className={cn(
-                    'h-4 w-4 shrink-0',
-                    activeTab === 'settings-restaurant' ? 'text-white' : 'text-slate-800',
-                  )}
-                  aria-hidden
-                />
+                <ConciergeBell className="h-4 w-4 shrink-0 text-slate-800" aria-hidden />
               </button>
               <button
                 type="button"
-                onClick={openPublicBookingForm}
+                onClick={() => onOpenCrm?.()}
                 className={footerQuickNavBtnClass(false)}
-                aria-label="Visualizza form pubblico prenotazioni"
-                title="Visualizza Form Pubblico"
+                aria-label="CRM Clienti"
+                title="CRM Clienti"
               >
-                <ExternalLink className="h-4 w-4 shrink-0 text-slate-800" aria-hidden />
+                <Users className="h-4 w-4 shrink-0 text-slate-800" aria-hidden />
               </button>
             </nav>
 
