@@ -43,6 +43,19 @@ const CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX = 630
 /** Nei blocchi evento: sotto questa larghezza mostra solo l’icona tipologia (il nome resta in title per hover/tooltip). */
 const CALENDAR_EVENT_ICON_ONLY_MAX_WIDTH_PX = 500
 
+type DigestSlotId = 'morning' | 'afternoon' | 'evening'
+
+/** Intestazioni fasce digest + token in `index.css` per `data-admin-theme`. */
+function digestSlotHeaderChromeStyle(slot: DigestSlotId): React.CSSProperties {
+  return {
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: `var(--booking-digest-slot-${slot}-bg)`,
+    border: `1px solid var(--booking-digest-slot-${slot}-border)`,
+    color: 'var(--booking-digest-slot-heading-text)',
+  }
+}
+
 type FullCalendarViewId = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek'
 
 function getDefaultCalendarViewForViewport(): FullCalendarViewId {
@@ -113,11 +126,20 @@ function DigestBookingListRow({
   const [showNoteHint, setShowNoteHint] = useState(false)
   const slotColors =
     slot === 'morning'
-      ? { backgroundColor: 'rgb(16, 185, 129)', borderColor: 'rgb(5, 150, 105)' }
+      ? {
+          backgroundColor: 'var(--booking-digest-slot-morning-bg)',
+          borderColor: 'var(--booking-digest-slot-morning-border)',
+        }
       : slot === 'afternoon'
-        ? { backgroundColor: 'rgb(251, 146, 60)', borderColor: 'rgb(234, 88, 12)' }
+        ? {
+            backgroundColor: 'var(--booking-digest-slot-afternoon-bg)',
+            borderColor: 'var(--booking-digest-slot-afternoon-border)',
+          }
         : slot === 'evening'
-          ? { backgroundColor: 'rgb(147, 197, 253)', borderColor: 'rgb(96, 165, 250)' }
+          ? {
+              backgroundColor: 'var(--booking-digest-slot-evening-bg)',
+              borderColor: 'var(--booking-digest-slot-evening-border)',
+            }
           : null
 
   return (
@@ -130,7 +152,10 @@ function DigestBookingListRow({
       style={{
         backgroundColor: slotColors?.backgroundColor ?? calEv.backgroundColor,
         borderColor: slotColors?.borderColor ?? calEv.borderColor,
-        color: calEv.textColor ?? '#fff',
+        color:
+          slotColors != null
+            ? 'var(--booking-digest-slot-heading-text)'
+            : (calEv.textColor ?? '#fff'),
       }}
     >
       <div
@@ -151,7 +176,7 @@ function DigestBookingListRow({
               <span
                 className={`block max-w-full truncate px-1 ${hasSpecialNote && !menuPriceRow ? 'pr-6' : ''}`}
               >
-                <span className="font-semibold">{booking.client_name}</span>
+                <span>{booking.client_name}</span>
                 <span className="font-normal opacity-90">
                   {' - '}
                   {booking.num_guests} osp.
@@ -217,7 +242,7 @@ function DigestBookingListRow({
                     aria-hidden
                   />
                 )}
-                <div className="flex w-full items-center justify-center text-center font-semibold opacity-95">
+                <div className="flex w-full items-center justify-center text-center font-normal opacity-95">
                   <span className="block max-w-full truncate px-1">{menuPriceRow.prezzoMenuLabel}</span>
                 </div>
               </div>
@@ -777,20 +802,20 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/90 p-2 shadow-inner">
                       <div className="hidden min-[819px]:grid grid-cols-3 gap-2">
                         <h6
-                          className="flex items-center justify-center px-3 text-center shadow-sm"
-                          style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
+                          className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
+                          style={digestSlotHeaderChromeStyle('morning')}
                         >
                           {getBookingTimeSlotLabel('morning', bookingSlots)}
                         </h6>
                         <h6
-                          className="flex items-center justify-center px-3 text-center shadow-sm"
-                          style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(249, 115, 22)', border: '1px solid rgb(194, 65, 12)', color: '#ffffff' }}
+                          className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
+                          style={digestSlotHeaderChromeStyle('afternoon')}
                         >
                           {getBookingTimeSlotLabel('afternoon', bookingSlots)}
                         </h6>
                         <h6
-                          className="flex items-center justify-center px-3 text-center shadow-sm"
-                          style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(56, 189, 248)', border: '1px solid rgb(2, 132, 199)', color: '#ffffff' }}
+                          className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
+                          style={digestSlotHeaderChromeStyle('evening')}
                         >
                           {getBookingTimeSlotLabel('evening', bookingSlots)}
                         </h6>
@@ -841,8 +866,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                       <div className="min-[819px]:hidden space-y-3">
                         <div className="space-y-2">
                           <h6
-                            className="flex items-center justify-center px-3 text-center shadow-sm"
-                            style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
+                            className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
+                            style={digestSlotHeaderChromeStyle('morning')}
                           >
                             {getBookingTimeSlotLabel('morning', bookingSlots)}
                           </h6>
@@ -860,8 +885,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         </div>
                         <div className="space-y-2">
                           <h6
-                            className="flex items-center justify-center px-3 text-center shadow-sm"
-                            style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(249, 115, 22)', border: '1px solid rgb(194, 65, 12)', color: '#ffffff' }}
+                            className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
+                            style={digestSlotHeaderChromeStyle('afternoon')}
                           >
                             {getBookingTimeSlotLabel('afternoon', bookingSlots)}
                           </h6>
@@ -879,8 +904,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         </div>
                         <div className="space-y-2">
                           <h6
-                            className="flex items-center justify-center px-3 text-center shadow-sm"
-                            style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(56, 189, 248)', border: '1px solid rgb(2, 132, 199)', color: '#ffffff' }}
+                            className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
+                            style={digestSlotHeaderChromeStyle('evening')}
                           >
                             {getBookingTimeSlotLabel('evening', bookingSlots)}
                           </h6>
@@ -920,20 +945,20 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/90 p-2 shadow-inner">
                       <div className="hidden min-[819px]:grid grid-cols-3 gap-2">
                         <h6
-                          className="flex items-center justify-center px-3 text-center shadow-sm"
-                          style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
+                          className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
+                          style={digestSlotHeaderChromeStyle('morning')}
                         >
                           {getBookingTimeSlotLabel('morning', bookingSlots)}
                         </h6>
                         <h6
-                          className="flex items-center justify-center px-3 text-center shadow-sm"
-                          style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(249, 115, 22)', border: '1px solid rgb(194, 65, 12)', color: '#ffffff' }}
+                          className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
+                          style={digestSlotHeaderChromeStyle('afternoon')}
                         >
                           {getBookingTimeSlotLabel('afternoon', bookingSlots)}
                         </h6>
                         <h6
-                          className="flex items-center justify-center px-3 text-center shadow-sm"
-                          style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(56, 189, 248)', border: '1px solid rgb(2, 132, 199)', color: '#ffffff' }}
+                          className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
+                          style={digestSlotHeaderChromeStyle('evening')}
                         >
                           {getBookingTimeSlotLabel('evening', bookingSlots)}
                         </h6>
@@ -981,8 +1006,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                       <div className="min-[819px]:hidden space-y-3">
                         <div className="space-y-2">
                           <h6
-                            className="flex items-center justify-center px-3 text-center shadow-sm"
-                            style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(16, 185, 129)', border: '1px solid rgb(5, 150, 105)', color: '#ffffff' }}
+                            className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
+                            style={digestSlotHeaderChromeStyle('morning')}
                           >
                             {getBookingTimeSlotLabel('morning', bookingSlots)}
                           </h6>
@@ -999,8 +1024,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         </div>
                         <div className="space-y-2">
                           <h6
-                            className="flex items-center justify-center px-3 text-center shadow-sm"
-                            style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(249, 115, 22)', border: '1px solid rgb(194, 65, 12)', color: '#ffffff' }}
+                            className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
+                            style={digestSlotHeaderChromeStyle('afternoon')}
                           >
                             {getBookingTimeSlotLabel('afternoon', bookingSlots)}
                           </h6>
@@ -1017,8 +1042,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         </div>
                         <div className="space-y-2">
                           <h6
-                            className="flex items-center justify-center px-3 text-center shadow-sm"
-                            style={{ height: 56, borderRadius: 16, fontSize: 18, fontWeight: 800, lineHeight: 1, backgroundColor: 'rgb(56, 189, 248)', border: '1px solid rgb(2, 132, 199)', color: '#ffffff' }}
+                            className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
+                            style={digestSlotHeaderChromeStyle('evening')}
                           >
                             {getBookingTimeSlotLabel('evening', bookingSlots)}
                           </h6>

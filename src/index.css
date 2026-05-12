@@ -119,6 +119,15 @@
   --admin-nav-pulse-ring-b:     rgb(79 124 172 / 0.14);
   --admin-new-booking-trigger-bg:    #4f7cac;
   --admin-new-booking-trigger-hover: #4576a8;
+
+  /* Digest calendario admin — intestazioni fasce Mattina / Pomeriggio / Sera (+ card compatte) */
+  --booking-digest-slot-heading-text: #000000;
+  --booking-digest-slot-morning-bg: #10b981;
+  --booking-digest-slot-morning-border: #059669;
+  --booking-digest-slot-afternoon-bg: #f59e0b;
+  --booking-digest-slot-afternoon-border: #d97706;
+  --booking-digest-slot-evening-bg: #4f7cac;
+  --booking-digest-slot-evening-border: #386891;
 }
 
 /*
@@ -209,6 +218,14 @@
   --admin-nav-pulse-ring-b:     rgb(209 132 91 / 0.14);
   --admin-new-booking-trigger-bg:    #D1845B;
   --admin-new-booking-trigger-hover: #C46F48;
+
+  --booking-digest-slot-heading-text: #000000;
+  --booking-digest-slot-morning-bg: #5a9e76;
+  --booking-digest-slot-morning-border: #3f7355;
+  --booking-digest-slot-afternoon-bg: #d9a441;
+  --booking-digest-slot-afternoon-border: #b8892e;
+  --booking-digest-slot-evening-bg: #a8573b;
+  --booking-digest-slot-evening-border: #7a3f2a;
 }
 
 /*
@@ -304,6 +321,14 @@
   --admin-nav-pulse-ring-b:     rgb(79 124 172 / 0.14);
   --admin-new-booking-trigger-bg:    #4f7cac;
   --admin-new-booking-trigger-hover: #4576a8;
+
+  --booking-digest-slot-heading-text: #000000;
+  --booking-digest-slot-morning-bg: #10b981;
+  --booking-digest-slot-morning-border: #059669;
+  --booking-digest-slot-afternoon-bg: #f59e0b;
+  --booking-digest-slot-afternoon-border: #d97706;
+  --booking-digest-slot-evening-bg: #4f7cac;
+  --booking-digest-slot-evening-border: #386891;
 }
 
 /*
@@ -399,6 +424,14 @@
   --admin-nav-pulse-ring-b:     rgb(143 168 143 / 0.14);
   --admin-new-booking-trigger-bg:    #8FA88F;
   --admin-new-booking-trigger-hover: #7F9A80;
+
+  --booking-digest-slot-heading-text: #000000;
+  --booking-digest-slot-morning-bg: #4fa36c;
+  --booking-digest-slot-morning-border: #3a7a50;
+  --booking-digest-slot-afternoon-bg: #d5a94c;
+  --booking-digest-slot-afternoon-border: #a88438;
+  --booking-digest-slot-evening-bg: #6b6199;
+  --booking-digest-slot-evening-border: #4f4775;
 }
 
 /*
@@ -494,6 +527,15 @@
   --admin-nav-pulse-ring-b:     rgb(52 211 153 / 0.14);
   --admin-new-booking-trigger-bg:    #10B981;
   --admin-new-booking-trigger-hover: #059669;
+
+  --booking-digest-slot-heading-text: #000000;
+  --booking-digest-slot-morning-bg: #059669;
+  --booking-digest-slot-morning-border: #047857;
+  --booking-digest-slot-afternoon-bg: #d97706;
+  --booking-digest-slot-afternoon-border: #b45309;
+  /* Sfondo sera più chiaro: testo nero su grafite #1f2937 era illeggibile */
+  --booking-digest-slot-evening-bg: #e5e7eb;
+  --booking-digest-slot-evening-border: #4b5563;
 }
 
 /*
@@ -589,6 +631,14 @@
   --admin-nav-pulse-ring-b:     rgb(59 130 246 / 0.14);
   --admin-new-booking-trigger-bg:    #2563EB;
   --admin-new-booking-trigger-hover: #1D4ED8;
+
+  --booking-digest-slot-heading-text: #000000;
+  --booking-digest-slot-morning-bg: #10b981;
+  --booking-digest-slot-morning-border: #059669;
+  --booking-digest-slot-afternoon-bg: #f59e0b;
+  --booking-digest-slot-afternoon-border: #d97706;
+  --booking-digest-slot-evening-bg: #2563eb;
+  --booking-digest-slot-evening-border: #1d4ed8;
 }
 
 /*
@@ -684,6 +734,14 @@
   --admin-nav-pulse-ring-b:     rgb(201 107 67 / 0.14);
   --admin-new-booking-trigger-bg:    #C96B43;
   --admin-new-booking-trigger-hover: #B55F3A;
+
+  --booking-digest-slot-heading-text: #000000;
+  --booking-digest-slot-morning-bg: #6f7d5a;
+  --booking-digest-slot-morning-border: #555f47;
+  --booking-digest-slot-afternoon-bg: #c4923a;
+  --booking-digest-slot-afternoon-border: #9a7229;
+  --booking-digest-slot-evening-bg: #b95f3c;
+  --booking-digest-slot-evening-border: #8a4529;
 }
 
 /* Base */
