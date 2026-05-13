@@ -1,15 +1,26 @@
 import type { FC } from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Loader2, Pencil, Trash2, Plus } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { TableFormModal } from '@/features/booking/components/servizio/TableFormModal'
+import { RoomTabs } from '@/features/booking/components/servizio/RoomTabs'
+import { RoomConfigModal } from '@/features/booking/components/servizio/RoomConfigModal'
+import { TableMap } from '@/features/booking/components/servizio/TableMap'
 import { useTables, useDeleteTable, type RestaurantTable } from '@/features/booking/hooks/useServizioTables'
-import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
+import { useRooms, type Room } from '@/features/booking/hooks/useRooms'
+import { cn } from '@/lib/utils'
+
+type ViewMode = 'list' | 'map'
 
 interface ModalState {
   open: boolean
   initial: { id: string; name: string; capacity: number; placement: string } | null
   defaultPlacement?: string
+}
+
+interface RoomModalState {
+  open: boolean
+  initial: Room | null
 }
 
 interface TableCardProps {
@@ -82,14 +93,28 @@ const TableCard: FC<TableCardProps> = ({ table, onEdit, onDelete, isDeleting }) 
 }
 
 export const ServizioPage: FC = () => {
-  const { data: placementsRaw = [], isLoading: loadingPlacements } = useRestaurantSetting('booking_placement_areas')
   const { data: tables = [], isLoading: loadingTables, error } = useTables()
+  const { data: rooms = [], isLoading: loadingRooms } = useRooms()
   const deleteTable = useDeleteTable()
 
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
   const [modal, setModal] = useState<ModalState>({ open: false, initial: null })
+  const [roomModal, setRoomModal] = useState<RoomModalState>({ open: false, initial: null })
 
-  const isLoading = loadingPlacements || loadingTables
-  const placementList: string[] = Array.isArray(placementsRaw) ? (placementsRaw as string[]) : []
+  const isLoading = loadingTables || loadingRooms
+
+  // Seleziona automaticamente la prima sala disponibile quando le sale cambiano
+  useEffect(() => {
+    if (rooms.length > 0 && !selectedRoomId) {
+      setSelectedRoomId(rooms[0].id)
+    }
+    // Se la sala selezionata è stata eliminata, reset alla prima
+    if (selectedRoomId && rooms.length > 0 && !rooms.find((r) => r.id === selectedRoomId)) {
+      setSelectedRoomId(rooms[0].id)
+    }
+    if (rooms.length === 0) setSelectedRoomId(null)
+  }, [rooms, selectedRoomId])
 
   function openAdd(defaultPlacement?: string) {
     setModal({ open: true, initial: null, defaultPlacement })
@@ -115,19 +140,57 @@ export const ServizioPage: FC = () => {
     deleteTable.mutate(id)
   }
 
+  const selectedRoom = rooms.find((r) => r.id === selectedRoomId) ?? null
+
+  // Conteggio tavoli per sala selezionata (per soft-block eliminazione sala)
+  const tablesInSelectedRoom = selectedRoom
+    ? tables.filter((t) => t.room_id === selectedRoom.id).length
+    : 0
+
   return (
     <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-6 md:px-6">
       <div className="mx-auto max-w-6xl space-y-6">
-        {/* Header */}
+        {/* Header con tab Lista / Mappa */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-xl font-bold text-primary-900 md:text-2xl">Servizio</h1>
             <p className="mt-0.5 text-sm text-(--color-text-muted)">Gestisci i tavoli del ristorante per sala</p>
           </div>
-          <Button type="button" variant="primary" size="sm" onClick={() => openAdd()}>
-            <Plus className="h-4 w-4" aria-hidden />
-            Aggiungi tavolo
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Toggle Lista / Mappa */}
+            <div className="flex rounded-lg border border-(--color-border) bg-surface p-0.5">
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={cn(
+                  'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+                  viewMode === 'list'
+                    ? 'bg-primary-600 text-white'
+                    : 'text-(--color-text) hover:text-primary-600',
+                )}
+              >
+                Lista
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('map')}
+                className={cn(
+                  'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+                  viewMode === 'map'
+                    ? 'bg-primary-600 text-white'
+                    : 'text-(--color-text) hover:text-primary-600',
+                )}
+              >
+                Mappa
+              </button>
+            </div>
+            {viewMode === 'list' && (
+              <Button type="button" variant="primary" size="sm" onClick={() => openAdd()}>
+                <Plus className="h-4 w-4" aria-hidden />
+                Aggiungi tavolo
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Errore */}
@@ -150,86 +213,125 @@ export const ServizioPage: FC = () => {
           </div>
         )}
 
-        {/* Nessuna sala configurata */}
-        {!isLoading && !error && placementList.length === 0 && (
-          <div className="rounded-xl border border-(--color-border) bg-surface px-6 py-10 text-center shadow-sm">
-            <p className="font-semibold text-primary-900">Nessuna sala configurata.</p>
-            <p className="mt-2 text-sm text-(--color-text-muted)">
-              Vai in <strong>Impostazioni → Aree di posizionamento</strong> per aggiungere le sale.
-            </p>
-          </div>
+        {/* ========================= TAB LISTA ========================= */}
+        {!isLoading && !error && viewMode === 'list' && (
+          <>
+            {rooms.length === 0 ? (
+              <div className="rounded-xl border border-(--color-border) bg-surface px-6 py-10 text-center shadow-sm">
+                <p className="font-semibold text-primary-900">Nessuna sala configurata.</p>
+                <p className="mt-2 text-sm text-(--color-text-muted)">
+                  Passa alla tab <strong>Mappa</strong> e crea la prima sala con il pulsante "Nuova sala".
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {rooms.map((room) => {
+                  const roomTables = tables.filter((t) => t.room_id === room.id)
+                  return (
+                    <section key={room.id}>
+                      <h2 className="mb-3 text-base font-semibold text-primary-900">{room.name}</h2>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                        {roomTables.length === 0 && (
+                          <p className="col-span-full text-sm text-(--color-text-muted)">
+                            Nessun tavolo in questa sala.
+                          </p>
+                        )}
+                        {roomTables.map((table) => (
+                          <TableCard
+                            key={table.id}
+                            table={table}
+                            onEdit={openEdit}
+                            onDelete={handleDelete}
+                            isDeleting={deleteTable.isPending}
+                          />
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => openAdd(room.name)}
+                          className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-(--color-border) px-4 py-4 text-sm text-(--color-text-muted) transition-colors hover:border-primary-400 hover:text-primary-600"
+                        >
+                          <Plus className="h-4 w-4" aria-hidden />
+                          Aggiungi tavolo in questa sala
+                        </button>
+                      </div>
+                    </section>
+                  )
+                })}
+
+                {/* Tavoli orfani: room_id null o sala eliminata */}
+                {(() => {
+                  const roomIds = new Set(rooms.map((r) => r.id))
+                  const orphaned = tables.filter((t) => !t.room_id || !roomIds.has(t.room_id))
+                  if (orphaned.length === 0) return null
+                  return (
+                    <section>
+                      <h2 className="mb-3 text-base font-semibold text-primary-900">Senza sala</h2>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                        {orphaned.map((table) => (
+                          <TableCard
+                            key={table.id}
+                            table={table}
+                            onEdit={openEdit}
+                            onDelete={handleDelete}
+                            isDeleting={deleteTable.isPending}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  )
+                })()}
+              </div>
+            )}
+          </>
         )}
 
-        {/* Sezioni per sala */}
-        {!isLoading && !error && placementList.length > 0 && (
-          <div className="space-y-8">
-            {placementList.map((placement) => {
-              const sectionTables = tables.filter((t) => t.placement === placement)
+        {/* ========================= TAB MAPPA ========================= */}
+        {!isLoading && !error && viewMode === 'map' && (
+          <div className="space-y-4">
+            <RoomTabs
+              rooms={rooms}
+              selectedRoomId={selectedRoomId}
+              onSelectRoom={setSelectedRoomId}
+              onAddRoom={() => setRoomModal({ open: true, initial: null })}
+              onConfigureRoom={(room) => setRoomModal({ open: true, initial: room })}
+            />
 
-              return (
-                <section key={placement}>
-                  <h2 className="mb-3 text-base font-semibold text-primary-900">{placement}</h2>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-                    {sectionTables.length === 0 && (
-                      <p className="col-span-full text-sm text-(--color-text-muted)">
-                        Nessun tavolo in questa sala.
-                      </p>
-                    )}
-                    {sectionTables.map((table) => (
-                      <TableCard
-                        key={table.id}
-                        table={table}
-                        onEdit={openEdit}
-                        onDelete={handleDelete}
-                        isDeleting={deleteTable.isPending}
-                      />
-                    ))}
-                    {/* Bottone inline per aggiungere tavolo precompilato con questa sala */}
-                    <button
-                      type="button"
-                      onClick={() => openAdd(placement)}
-                      className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-(--color-border) px-4 py-4 text-sm text-(--color-text-muted) transition-colors hover:border-primary-400 hover:text-primary-600"
-                    >
-                      <Plus className="h-4 w-4" aria-hidden />
-                      Aggiungi tavolo in questa sala
-                    </button>
-                  </div>
-                </section>
-              )
-            })}
+            {rooms.length === 0 && (
+              <div className="rounded-xl border border-(--color-border) bg-surface px-6 py-10 text-center shadow-sm">
+                <p className="font-semibold text-primary-900">Nessuna sala creata.</p>
+                <p className="mt-2 text-sm text-(--color-text-muted)">
+                  Usa il pulsante "Nuova sala" per creare la prima sala.
+                </p>
+              </div>
+            )}
 
-            {/* Tavoli orfani: placement non più presente nella lista sale */}
-            {(() => {
-              const orphaned = tables.filter((t) => t.placement === '' || !placementList.includes(t.placement))
-              if (orphaned.length === 0) return null
-              return (
-                <section>
-                  <h2 className="mb-3 text-base font-semibold text-primary-900">Senza sala</h2>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-                    {orphaned.map((table) => (
-                      <TableCard
-                        key={table.id}
-                        table={table}
-                        onEdit={openEdit}
-                        onDelete={handleDelete}
-                        isDeleting={deleteTable.isPending}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )
-            })()}
+            {selectedRoom && (
+              <TableMap
+                room={selectedRoom}
+                tables={tables}
+                onEditTable={openEdit}
+                onAddTable={() => openAdd()}
+              />
+            )}
           </div>
         )}
       </div>
 
-      {/* Modal aggiungi/modifica */}
+      {/* Modal aggiungi/modifica tavolo */}
       <TableFormModal
         isOpen={modal.open}
         onClose={closeModal}
-        placements={placementList}
+        placements={rooms.map((r) => r.name)}
         defaultPlacement={modal.defaultPlacement}
         initial={modal.initial}
+      />
+
+      {/* Modal configura/crea sala */}
+      <RoomConfigModal
+        isOpen={roomModal.open}
+        onClose={() => setRoomModal({ open: false, initial: null })}
+        initial={roomModal.initial}
+        tableCount={tablesInSelectedRoom}
       />
     </div>
   )
