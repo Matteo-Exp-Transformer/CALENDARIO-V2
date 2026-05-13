@@ -1,14 +1,17 @@
 import type { FC } from 'react'
 import { useState } from 'react'
-import { Calendar, ConciergeBell, Loader2, Users, Clock, UserPlus, Printer } from 'lucide-react'
+import { ConciergeBell, Loader2, Clock, UserPlus, Printer } from 'lucide-react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui'
 import { useHomeStats } from '@/features/booking/hooks/useHomeStats'
+import { useBookingStats } from '@/features/booking/hooks/useBookingQueries'
 import { WalkInModal } from '@/features/booking/components/home/WalkInModal'
 import { ShiftBriefingModal } from '@/features/booking/components/home/ShiftBriefingModal'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
+import { NotifyNavShinyLayers } from '@/components/ui'
+import { ADMIN_FEATURES } from '@/lib/adminFeatures'
 
 export interface AdminHomePageProps {
   onOpenPrenotazioni: () => void
@@ -17,7 +20,7 @@ export interface AdminHomePageProps {
 }
 
 interface QuickNavButtonProps {
-  icon: typeof Calendar
+  icon: typeof ConciergeBell
   label: string
   description: string
   onClick: () => void
@@ -55,14 +58,22 @@ interface StatCardProps {
   label: string
   value: number
   isLoading?: boolean
+  /** Mostra effetto shiny+pulse quando true */
+  highlight?: boolean
 }
 
-const StatCard: FC<StatCardProps> = ({ label, value, isLoading }) => (
-  <div className="rounded-xl border border-(--color-border) bg-surface p-4 shadow-sm md:p-5">
-    <p className="text-xs font-medium uppercase tracking-wide text-(--color-text-muted) md:text-sm">
+const StatCard: FC<StatCardProps> = ({ label, value, isLoading, highlight }) => (
+  <div
+    className={cn(
+      'relative overflow-hidden rounded-xl border border-(--color-border) bg-surface p-4 shadow-sm md:p-5',
+      highlight && 'admin-nav-notify-pulse-wrap',
+    )}
+  >
+    {highlight && <NotifyNavShinyLayers />}
+    <p className="relative z-10 text-xs font-medium uppercase tracking-wide text-(--color-text-muted) md:text-sm">
       {label}
     </p>
-    <div className="mt-2 flex min-h-8 items-baseline gap-1 md:min-h-9">
+    <div className="relative z-10 mt-2 flex min-h-8 items-baseline gap-1 md:min-h-9">
       {isLoading ? (
         <Loader2 className="h-6 w-6 shrink-0 animate-spin text-primary-600" aria-hidden />
       ) : (
@@ -76,16 +87,18 @@ const StatCard: FC<StatCardProps> = ({ label, value, isLoading }) => (
 
 export const AdminHomePage: FC<AdminHomePageProps> = ({
   onOpenPrenotazioni,
-  onOpenCrm,
+  onOpenCrm: _onOpenCrm,
   onOpenServizio,
 }) => {
-  const { stats, upcoming, isLoading, error } = useHomeStats()
+  const { stats: homeStats, upcoming, isLoading, error } = useHomeStats()
+  const { data: globalStats } = useBookingStats()
   const { data: businessHoursRaw } = useRestaurantSetting('business_hours')
 
   const [walkInOpen, setWalkInOpen] = useState(false)
   const [briefingOpen, setBriefingOpen] = useState(false)
 
-  const pendingCount = stats.pendingToday
+  // Count globale pending (stesso valore del tab header "Prenotazioni")
+  const pendingGlobal = globalStats?.pending ?? 0
 
   return (
     <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-6 md:px-6">
@@ -98,10 +111,11 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
         </header>
 
         {/* Banner alert richieste in attesa */}
-        {!isLoading && pendingCount > 0 && (
+        {!isLoading && pendingGlobal > 0 && (
           <div className="flex items-center justify-between gap-3 rounded-xl border border-(--color-warning) bg-warning-50 px-4 py-3">
             <p className="text-sm font-medium text-warning-900">
-              Hai {pendingCount} {pendingCount === 1 ? 'richiesta in attesa' : 'richieste in attesa'} di conferma
+              Hai {pendingGlobal}{' '}
+              {pendingGlobal === 1 ? 'richiesta in attesa' : 'richieste in attesa'} di conferma
             </p>
             <Button
               type="button"
@@ -114,29 +128,19 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
           </div>
         )}
 
-        {/* Quick-nav: 5 pulsanti su 2-3 colonne */}
+        {/* Quick-nav: Servizio (pro), Walk-in, Briefing */}
         <nav
           aria-label="Scorciatoie sezioni dashboard"
           className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
         >
-          <QuickNavButton
-            icon={Calendar}
-            label="Calendario"
-            description="Prenotazioni e tab operativi"
-            onClick={onOpenPrenotazioni}
-          />
-          <QuickNavButton
-            icon={Users}
-            label="CRM Clienti"
-            description="Anagrafica e storico"
-            onClick={onOpenCrm}
-          />
-          <QuickNavButton
-            icon={ConciergeBell}
-            label="Servizio"
-            description="Gestione tavoli e sale"
-            onClick={onOpenServizio}
-          />
+          {ADMIN_FEATURES.service && (
+            <QuickNavButton
+              icon={ConciergeBell}
+              label="Servizio"
+              description="Gestione tavoli e sale"
+              onClick={onOpenServizio}
+            />
+          )}
           <QuickNavButton
             icon={UserPlus}
             label="Aggiungi walk-in"
@@ -156,16 +160,21 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
           aria-label="Statistiche di oggi"
           className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4"
         >
-          <StatCard label="Prenotazioni oggi" value={stats.totalToday} isLoading={isLoading} />
+          <StatCard
+            label="Prenotazioni oggi"
+            value={homeStats.totalToday}
+            isLoading={isLoading}
+          />
           <StatCard
             label="Coperti confermati"
-            value={stats.confirmedCoversToday}
+            value={homeStats.confirmedCoversToday}
             isLoading={isLoading}
           />
           <StatCard
             label="In attesa di conferma"
-            value={stats.pendingToday}
+            value={pendingGlobal}
             isLoading={isLoading}
+            highlight={pendingGlobal > 0}
           />
         </section>
 

@@ -1,6 +1,8 @@
 import type { FC } from 'react'
 import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { format } from 'date-fns'
+import { it } from 'date-fns/locale'
 import { Button } from '@/components/ui'
 import { AnalyticsKpiCard } from '@/features/booking/components/analytics/AnalyticsKpiCard'
 import { AnalyticsTrendChart } from '@/features/booking/components/analytics/AnalyticsTrendChart'
@@ -11,6 +13,7 @@ import {
   useAnalyticsComparison,
   computeKpiDelta,
   computeOccupancyRate,
+  getPeriodBounds,
   type DateRange,
   type ShiftFilter,
 } from '@/features/booking/hooks/useAnalytics'
@@ -24,9 +27,21 @@ const RANGE_LABELS: { value: DateRange; label: string }[] = [
   { value: 'year', label: 'Anno' },
 ]
 
+function periodLabel(range: DateRange, offset: number): string {
+  const { startDay, endDay } = getPeriodBounds(range, offset)
+  if (range === 'week') {
+    return `${format(startDay, 'd MMM', { locale: it })} – ${format(endDay, 'd MMM', { locale: it })}`
+  }
+  if (range === 'month') {
+    return format(startDay, 'MMMM yyyy', { locale: it })
+  }
+  return format(startDay, 'yyyy')
+}
+
 export const AnalyticsPage: FC = () => {
   const [range, setRange] = useState<DateRange>('month')
   const [shift, setShift] = useState<ShiftFilter>('all')
+  const [offset, setOffset] = useState(0)
 
   const { data: businessHoursRaw } = useRestaurantSetting('business_hours')
   const { data: rooms = [] } = useRooms()
@@ -34,8 +49,8 @@ export const AnalyticsPage: FC = () => {
 
   const totalSeats = tables.filter((t) => t.active).reduce((sum, t) => sum + t.capacity, 0)
 
-  const { data, isLoading, error } = useAnalytics(range, shift, businessHoursRaw)
-  const { data: prevData } = useAnalyticsComparison(range, shift, businessHoursRaw)
+  const { data, isLoading, error } = useAnalytics(range, shift, businessHoursRaw, offset)
+  const { data: prevData } = useAnalyticsComparison(range, shift, businessHoursRaw, offset)
 
   const kpi = data?.kpi
   const prevKpi = prevData?.kpi
@@ -44,9 +59,14 @@ export const AnalyticsPage: FC = () => {
 
   const roomsConfigured = rooms.length > 0 && totalSeats > 0
   const occupancyRate =
-    roomsConfigured && kpi ? computeOccupancyRate(kpi.totalCovers, totalSeats, range, businessHoursRaw) : null
+    roomsConfigured && kpi ? computeOccupancyRate(kpi.totalCovers, totalSeats, range, businessHoursRaw, offset) : null
   const prevOccupancyRate =
-    roomsConfigured && prevKpi ? computeOccupancyRate(prevKpi.totalCovers, totalSeats, range, businessHoursRaw) : null
+    roomsConfigured && prevKpi ? computeOccupancyRate(prevKpi.totalCovers, totalSeats, range, businessHoursRaw, offset - 1) : null
+
+  const handleRangeChange = (r: DateRange) => {
+    setRange(r)
+    setOffset(0)
+  }
 
   return (
     <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-6 md:px-6">
@@ -67,11 +87,37 @@ export const AnalyticsPage: FC = () => {
                 type="button"
                 variant={range === value ? 'primary' : 'ghost'}
                 size="sm"
-                onClick={() => setRange(value)}
+                onClick={() => handleRangeChange(value)}
               >
                 {label}
               </Button>
             ))}
+          </div>
+
+          {/* Navigator periodo */}
+          <div className="flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setOffset((o) => o - 1)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-(--color-border) bg-surface text-primary-900 shadow-sm transition-colors hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+              aria-label="Periodo precedente"
+              title="Periodo precedente"
+            >
+              <ChevronLeft className="h-4 w-4" aria-hidden />
+            </button>
+            <span className="min-w-[160px] text-center text-sm font-semibold capitalize text-primary-900">
+              {periodLabel(range, offset)}
+            </span>
+            <button
+              type="button"
+              onClick={() => setOffset((o) => o + 1)}
+              disabled={offset >= 0}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-(--color-border) bg-surface text-primary-900 shadow-sm transition-colors hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Periodo successivo"
+              title="Periodo successivo"
+            >
+              <ChevronRight className="h-4 w-4" aria-hidden />
+            </button>
           </div>
         </div>
 

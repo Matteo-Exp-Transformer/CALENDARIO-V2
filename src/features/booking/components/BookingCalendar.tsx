@@ -7,6 +7,8 @@ import listPlugin from '@fullcalendar/list'
 import {
   BookOpen,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
   GraduationCap,
   PenLine,
   Tag,
@@ -37,6 +39,9 @@ import {
   DEFAULT_SLOT_GUEST_CAPACITIES,
 } from '@/features/booking/lib/restaurantSettingRegistry'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
+import { useServiceSlots } from '../hooks/useServiceSlots'
+import { useTableAssignments, type BookingTableAssignment } from '../hooks/useTableAssignments'
+import { ADMIN_FEATURES } from '@/lib/adminFeatures'
 import { cn } from '@/lib/utils'
 
 /** Sotto questa larghezza (inclusa), la vista FullCalendar predefinita è lista invece del mese */
@@ -113,6 +118,7 @@ function DigestBookingListRow({
   showMenuPricing = false,
   compactGrid = false,
   slot,
+  unassigned = false,
 }: {
   booking: BookingRequest
   onOpen: (b: BookingRequest) => void
@@ -120,6 +126,8 @@ function DigestBookingListRow({
   /** Card strette per griglia a 3 colonie (digest calendario). */
   compactGrid?: boolean
   slot?: 'morning' | 'afternoon' | 'evening'
+  /** Pro: prenotazione accettata senza tavolo assegnato. */
+  unassigned?: boolean
 }) {
   const calEv = transformBookingToCalendarEvent(booking)
   const menuPriceRow = showMenuPricing ? getResolvedMenuPriceDisplay(booking) : null
@@ -169,6 +177,11 @@ function DigestBookingListRow({
           <div className="mb-1 flex w-full items-center gap-1.5 truncate font-semibold leading-snug">
             <DigestBookingTypeIcon booking={booking} className="h-3 w-3 flex-shrink-0" />
             <span className="min-w-0 truncate">{booking.client_name}</span>
+            {unassigned && (
+              <span className="ml-auto shrink-0 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
+                Da assegnare
+              </span>
+            )}
           </div>
         ) : (
           <div className="relative w-full min-h-[1.25rem]">
@@ -176,6 +189,13 @@ function DigestBookingListRow({
               booking={booking}
               className="absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 opacity-90 sm:h-4 sm:w-4"
             />
+            {unassigned && (
+              <div className="mb-0.5 flex w-full items-center justify-center">
+                <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
+                  Da assegnare
+                </span>
+              </div>
+            )}
             <div className="flex w-full items-center justify-center text-center leading-tight">
               <span
                 className={`block max-w-full truncate px-1 ${hasSpecialNote && !menuPriceRow ? 'pr-6' : ''}`}
@@ -332,6 +352,45 @@ function DigestBookingListRow({
   )
 }
 
+/** Navigazione turni: freccia sx, count centrale, freccia dx */
+function DigestTurnNav({
+  turn,
+  maxTurn,
+  onPrev,
+  onNext,
+}: {
+  turn: number
+  maxTurn: number
+  onPrev: () => void
+  onNext: () => void
+}) {
+  return (
+    <div className="flex items-center justify-center gap-2 py-1">
+      <button
+        type="button"
+        onClick={onPrev}
+        disabled={turn <= 1}
+        aria-label="Turno precedente"
+        className="flex h-7 w-7 items-center justify-center rounded-lg border border-(--color-border) bg-surface text-primary-900 shadow-sm transition-colors hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        <ChevronLeft className="h-4 w-4" aria-hidden />
+      </button>
+      <span className="min-w-16 text-center text-sm font-semibold text-primary-900 tabular-nums">
+        Turno {turn} / {maxTurn}
+      </span>
+      <button
+        type="button"
+        onClick={onNext}
+        disabled={turn >= maxTurn}
+        aria-label="Turno successivo"
+        className="flex h-7 w-7 items-center justify-center rounded-lg border border-(--color-border) bg-surface text-primary-900 shadow-sm transition-colors hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        <ChevronRight className="h-4 w-4" aria-hidden />
+      </button>
+    </div>
+  )
+}
+
 interface BookingCalendarProps {
   bookings: BookingRequest[]
   initialDate?: string | null
@@ -342,6 +401,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   const bookingSlots = bookingSlotsQuery.data ?? DEFAULT_BOOKING_TIME_SLOTS
   const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities')
   const slotGuestCapacities = slotGuestCapacitiesQuery.data ?? DEFAULT_SLOT_GUEST_CAPACITIES
+
+  // Pro: service_slots e assignments per navigazione turni
+  const { data: serviceSlots = [] } = useServiceSlots()
+  const hasTurnsFeature = ADMIN_FEATURES.serviceSlots && serviceSlots.length > 0
 
   const splitDigestBySlot = (digestBookings: BookingRequest[]) => {
     const morning: BookingRequest[] = []
@@ -366,9 +429,11 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   const [isModalOpen, setIsModalOpen] = useState(false)
   const currentDateLabel = format(new Date(), 'dd/MM/yy')
   const [selectedDate, setSelectedDate] = useState<string>(() => {
-    // Set today's date as default, or initialDate if provided
     return initialDate || new Date().toISOString().split('T')[0]
   })
+  // Pro: navigazione turni nel digest — si resetta a 1 quando cambia data
+  const [activeTurn, setActiveTurn] = useState(1)
+  const { data: tableAssignments = [] } = useTableAssignments(selectedDate)
   const [currentView, setCurrentView] = useState<FullCalendarViewId>(getDefaultCalendarViewForViewport)
   const [isCalendarNarrowViewport, setIsCalendarNarrowViewport] =
     useState(getInitialCalendarNarrowViewport)
@@ -390,6 +455,11 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       mql500.removeEventListener('change', sync)
     }
   }, [])
+
+  // Resetta il turno attivo quando cambia la data selezionata
+  useEffect(() => {
+    setActiveTurn(1)
+  }, [selectedDate])
 
   // Aggiorna il selectedBooking quando i bookings cambiano (dopo modifica)
   useEffect(() => {
@@ -507,6 +577,53 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   }, [bookings, selectedDate])
   const digestWithMenuBySlot = useMemo(() => splitDigestBySlot(digestWithMenu), [digestWithMenu, bookingSlots])
   const digestTableOnlyBySlot = useMemo(() => splitDigestBySlot(digestTableOnly), [digestTableOnly, bookingSlots])
+
+  // Pro: set di booking_id con almeno un assignment attivo per la data selezionata
+  const assignedBookingIds = useMemo<Set<string>>(() => {
+    if (!hasTurnsFeature) return new Set()
+    const s = new Set<string>()
+    for (const a of tableAssignments as BookingTableAssignment[]) {
+      if (a.checked_out_at === null) s.add(a.booking_id)
+    }
+    return s
+  }, [hasTurnsFeature, tableAssignments])
+
+  // Pro: mappa booking_id → turn_number per la data selezionata
+  const turnByBookingId = useMemo<Record<string, number>>(() => {
+    if (!hasTurnsFeature) return {}
+    const map: Record<string, number> = {}
+    for (const a of tableAssignments as BookingTableAssignment[]) {
+      // Usa il turn_number più basso (turno attivo) per ogni prenotazione
+      if (map[a.booking_id] === undefined || a.turn_number < map[a.booking_id]) {
+        map[a.booking_id] = a.turn_number
+      }
+    }
+    return map
+  }, [hasTurnsFeature, tableAssignments])
+
+  // Turno massimo rilevato dagli assignments della data selezionata
+  const maxTurnFromAssignments = useMemo(() => {
+    if (!hasTurnsFeature || tableAssignments.length === 0) return 1
+    return Math.max(...(tableAssignments as BookingTableAssignment[]).map((a) => a.turn_number))
+  }, [hasTurnsFeature, tableAssignments])
+
+  const maxTurn = Math.max(activeTurn, maxTurnFromAssignments)
+
+  /** Filtra prenotazioni per turno attivo.
+   *  - Con feature pro: mostra solo quelle assegnate al turno corrente.
+   *    Le prenotazioni senza assignment (non ancora assegnate) appaiono al turno 1.
+   *  - Senza feature pro: restituisce tutto invariato. */
+  const filterByTurn = useCallback(
+    (list: BookingRequest[]): BookingRequest[] => {
+      if (!hasTurnsFeature) return list
+      return list.filter((b) => {
+        const t = turnByBookingId[b.id]
+        // Prenotazione senza assignment → sempre turno 1
+        return (t ?? 1) === activeTurn
+      })
+    },
+    [hasTurnsFeature, turnByBookingId, activeTurn],
+  )
 
   const openDigestBooking = (booking: BookingRequest) => {
     setSelectedBooking(booking)
@@ -795,6 +912,15 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
             </h4>
             {selectedDayDigestBookings.length > 0 ? (
               <div className="space-y-8">
+                {/* Navigazione turni — visibile solo in versione pro con service_slots configurati */}
+                {hasTurnsFeature && (
+                  <DigestTurnNav
+                    turn={activeTurn}
+                    maxTurn={maxTurn}
+                    onPrev={() => setActiveTurn((t) => Math.max(1, t - 1))}
+                    onNext={() => setActiveTurn((t) => Math.min(maxTurn, t + 1))}
+                  />
+                )}
                 <section aria-labelledby="digest-with-menu-heading">
                   <div
                     id="digest-with-menu-heading"
@@ -806,7 +932,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                   </div>
                   {digestWithMenu.length > 0 ? (
                     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/90 p-2 shadow-inner">
-                      <div className="hidden min-[819px]:grid grid-cols-3 gap-2">
+                      <div className="hidden min-[1390px]:grid grid-cols-3 gap-2">
                         <h6
                           className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
                           style={digestSlotHeaderChromeStyle('morning')}
@@ -826,10 +952,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           {getBookingTimeSlotLabel('evening', bookingSlots)}
                         </h6>
                       </div>
-                      <div className="mt-2 hidden min-[819px]:block">
+                      <div className="mt-2 hidden min-[1390px]:block">
                         <div className="grid grid-cols-3 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
                           <div className="flex min-w-0 w-full flex-col gap-2">
-                            {digestWithMenuBySlot.morning.map((booking) => (
+                            {filterByTurn(digestWithMenuBySlot.morning).map((booking) => (
                               <div key={booking.id} className="flex min-w-0 w-full flex-col">
                                 <DigestBookingListRow
                                   booking={booking}
@@ -837,12 +963,13 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                   showMenuPricing
                                   compactGrid
                                   slot="morning"
+                                  unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
                                 />
                               </div>
                             ))}
                           </div>
                           <div className="flex min-w-0 w-full flex-col gap-2">
-                            {digestWithMenuBySlot.afternoon.map((booking) => (
+                            {filterByTurn(digestWithMenuBySlot.afternoon).map((booking) => (
                               <div key={booking.id} className="flex min-w-0 w-full flex-col">
                                 <DigestBookingListRow
                                   booking={booking}
@@ -850,12 +977,13 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                   showMenuPricing
                                   compactGrid
                                   slot="afternoon"
+                                  unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
                                 />
                               </div>
                             ))}
                           </div>
                           <div className="flex min-w-0 w-full flex-col gap-2">
-                            {digestWithMenuBySlot.evening.map((booking) => (
+                            {filterByTurn(digestWithMenuBySlot.evening).map((booking) => (
                               <div key={booking.id} className="flex min-w-0 w-full flex-col">
                                 <DigestBookingListRow
                                   booking={booking}
@@ -863,13 +991,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                   showMenuPricing
                                   compactGrid
                                   slot="evening"
+                                  unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
                                 />
                               </div>
                             ))}
                           </div>
                         </div>
                       </div>
-                      <div className="min-[819px]:hidden space-y-3">
+                      <div className="min-[1390px]:hidden space-y-3">
                         <div className="space-y-2">
                           <h6
                             className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
@@ -877,7 +1006,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           >
                             {getBookingTimeSlotLabel('morning', bookingSlots)}
                           </h6>
-                          {digestWithMenuBySlot.morning.map((booking) => (
+                          {filterByTurn(digestWithMenuBySlot.morning).map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
                               <DigestBookingListRow
                                 booking={booking}
@@ -885,6 +1014,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                 showMenuPricing
                                 compactGrid
                                 slot="morning"
+                                unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
                               />
                             </div>
                           ))}
@@ -896,7 +1026,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           >
                             {getBookingTimeSlotLabel('afternoon', bookingSlots)}
                           </h6>
-                          {digestWithMenuBySlot.afternoon.map((booking) => (
+                          {filterByTurn(digestWithMenuBySlot.afternoon).map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
                               <DigestBookingListRow
                                 booking={booking}
@@ -904,6 +1034,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                 showMenuPricing
                                 compactGrid
                                 slot="afternoon"
+                                unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
                               />
                             </div>
                           ))}
@@ -915,7 +1046,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           >
                             {getBookingTimeSlotLabel('evening', bookingSlots)}
                           </h6>
-                          {digestWithMenuBySlot.evening.map((booking) => (
+                          {filterByTurn(digestWithMenuBySlot.evening).map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
                               <DigestBookingListRow
                                 booking={booking}
@@ -923,6 +1054,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                 showMenuPricing
                                 compactGrid
                                 slot="evening"
+                                unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
                               />
                             </div>
                           ))}
@@ -949,7 +1081,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                   </div>
                   {digestTableOnly.length > 0 ? (
                     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/90 p-2 shadow-inner">
-                      <div className="hidden min-[819px]:grid grid-cols-3 gap-2">
+                      <div className="hidden min-[1390px]:grid grid-cols-3 gap-2">
                         <h6
                           className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
                           style={digestSlotHeaderChromeStyle('morning')}
@@ -969,47 +1101,50 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           {getBookingTimeSlotLabel('evening', bookingSlots)}
                         </h6>
                       </div>
-                      <div className="mt-2 hidden min-[819px]:block">
+                      <div className="mt-2 hidden min-[1390px]:block">
                         <div className="grid grid-cols-3 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
                           <div className="flex min-w-0 w-full flex-col gap-2">
-                            {digestTableOnlyBySlot.morning.map((booking) => (
+                            {filterByTurn(digestTableOnlyBySlot.morning).map((booking) => (
                               <div key={booking.id} className="flex min-w-0 w-full flex-col">
                                 <DigestBookingListRow
                                   booking={booking}
                                   onOpen={openDigestBooking}
                                   compactGrid
                                   slot="morning"
+                                  unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
                                 />
                               </div>
                             ))}
                           </div>
                           <div className="flex min-w-0 w-full flex-col gap-2">
-                            {digestTableOnlyBySlot.afternoon.map((booking) => (
+                            {filterByTurn(digestTableOnlyBySlot.afternoon).map((booking) => (
                               <div key={booking.id} className="flex min-w-0 w-full flex-col">
                                 <DigestBookingListRow
                                   booking={booking}
                                   onOpen={openDigestBooking}
                                   compactGrid
                                   slot="afternoon"
+                                  unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
                                 />
                               </div>
                             ))}
                           </div>
                           <div className="flex min-w-0 w-full flex-col gap-2">
-                            {digestTableOnlyBySlot.evening.map((booking) => (
+                            {filterByTurn(digestTableOnlyBySlot.evening).map((booking) => (
                               <div key={booking.id} className="flex min-w-0 w-full flex-col">
                                 <DigestBookingListRow
                                   booking={booking}
                                   onOpen={openDigestBooking}
                                   compactGrid
                                   slot="evening"
+                                  unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
                                 />
                               </div>
                             ))}
                           </div>
                         </div>
                       </div>
-                      <div className="min-[819px]:hidden space-y-3">
+                      <div className="min-[1390px]:hidden space-y-3">
                         <div className="space-y-2">
                           <h6
                             className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
@@ -1017,13 +1152,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           >
                             {getBookingTimeSlotLabel('morning', bookingSlots)}
                           </h6>
-                          {digestTableOnlyBySlot.morning.map((booking) => (
+                          {filterByTurn(digestTableOnlyBySlot.morning).map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
                               <DigestBookingListRow
                                 booking={booking}
                                 onOpen={openDigestBooking}
                                 compactGrid
                                 slot="morning"
+                                unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
                               />
                             </div>
                           ))}
@@ -1035,13 +1171,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           >
                             {getBookingTimeSlotLabel('afternoon', bookingSlots)}
                           </h6>
-                          {digestTableOnlyBySlot.afternoon.map((booking) => (
+                          {filterByTurn(digestTableOnlyBySlot.afternoon).map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
                               <DigestBookingListRow
                                 booking={booking}
                                 onOpen={openDigestBooking}
                                 compactGrid
                                 slot="afternoon"
+                                unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
                               />
                             </div>
                           ))}
@@ -1053,13 +1190,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                           >
                             {getBookingTimeSlotLabel('evening', bookingSlots)}
                           </h6>
-                          {digestTableOnlyBySlot.evening.map((booking) => (
+                          {filterByTurn(digestTableOnlyBySlot.evening).map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
                               <DigestBookingListRow
                                 booking={booking}
                                 onOpen={openDigestBooking}
                                 compactGrid
                                 slot="evening"
+                                unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
                               />
                             </div>
                           ))}

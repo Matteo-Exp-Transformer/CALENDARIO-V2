@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { DEFAULT_APP_THEME } from '@/features/booking/constants/appTheme'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 import {
@@ -8,8 +8,10 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Store,
   ExternalLink,
+  ConciergeBell,
+  Users,
+  X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
@@ -20,40 +22,21 @@ import { ServizioPage } from '@/pages/ServizioPage'
 import { AnalyticsPage } from '@/pages/AnalyticsPage'
 import { Button } from '@/components/ui'
 import { useTenantContext } from '@/contexts/TenantContext'
+import { ADMIN_FEATURES } from '@/lib/adminFeatures'
 
 export type AdminShellSection = 'home' | 'prenotazioni' | 'crm' | 'servizio' | 'analytics'
-type SidebarActiveItem = 'home' | 'form' | 'settings' | 'analytics' | null
-
-/** Voci sidebar visibili — "prenotazioni" non compare: la gestione prenotazioni
- *  è la vista di default (accessibile dall'icona calendario in cima). */
-
-function useIsLg() {
-  const [lg, setLg] = useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : true,
-  )
-
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)')
-    const onChange = () => setLg(mq.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-
-  return lg
-}
+type SidebarActiveItem = 'home' | 'form' | 'analytics' | 'servizio' | 'crm' | 'settings' | 'dashboard-tab' | null
 
 function useIsNarrow() {
   const [narrow, setNarrow] = useState(() =>
     typeof window !== 'undefined' ? window.matchMedia('(max-width: 644px)').matches : false,
   )
-
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 644px)')
     const onChange = () => setNarrow(mq.matches)
     mq.addEventListener('change', onChange)
     return () => mq.removeEventListener('change', onChange)
   }, [])
-
   return narrow
 }
 
@@ -69,166 +52,185 @@ function initials(user: { name?: string; email: string }): string {
 
 type SidebarNavAction =
   | { type: 'section'; section: AdminShellSection }
-  | { type: 'open-settings' }
   | { type: 'public-form' }
+  | { type: 'settings' }
 
 const SIDEBAR_NAV: {
   id: string
   label: string
   icon: typeof Home
   action: SidebarNavAction
+  featureEnabled?: boolean
 }[] = [
   { id: 'form', label: 'Form Pubblico', icon: ExternalLink, action: { type: 'public-form' } },
-  { id: 'settings', label: 'Impostazioni', icon: Store, action: { type: 'open-settings' } },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3, action: { type: 'section', section: 'analytics' } },
+  {
+    id: 'servizio',
+    label: 'Servizio',
+    icon: ConciergeBell,
+    action: { type: 'section', section: 'servizio' },
+    featureEnabled: ADMIN_FEATURES.service,
+  },
+  {
+    id: 'crm',
+    label: 'CRM Clienti',
+    icon: Users,
+    action: { type: 'section', section: 'crm' },
+    featureEnabled: ADMIN_FEATURES.crm,
+  },
+  {
+    id: 'analytics',
+    label: 'Analytics',
+    icon: BarChart3,
+    action: { type: 'section', section: 'analytics' },
+  },
 ]
 
 export const AdminShell: FC = () => {
-  const isLg = useIsLg()
   const isNarrow = useIsNarrow()
-  const [narrowExpanded, setNarrowExpanded] = useState(false)
-  const [wideCollapsed, setWideCollapsed] = useState(false)
+  // Sidebar sempre chiusa all'avvio — si apre solo al click sul pulsante
+  const [expanded, setExpanded] = useState(false)
   const [section, setSection] = useState<AdminShellSection>('home')
   const [activeSidebarItem, setActiveSidebarItem] = useState<SidebarActiveItem>('home')
   const [restaurantSettingsSignal, setRestaurantSettingsSignal] = useState(0)
   const { user, logout } = useAdminAuth()
   const { tenantSlug } = useTenantContext()
+  const asideRef = useRef<HTMLDivElement | null>(null)
 
   const { data: savedAppTheme = DEFAULT_APP_THEME, isPending: isAppThemePending } =
     useRestaurantSetting('app_theme')
+
   useEffect(() => {
     const resolved = isAppThemePending ? DEFAULT_APP_THEME : savedAppTheme
     document.documentElement.setAttribute('data-admin-theme', resolved)
     // nessun cleanup: il tema deve persistere per tutta la sessione admin
-    // (il tema è applicato dalla shell così da coprire tutte le sezioni, home inclusa)
   }, [savedAppTheme, isAppThemePending])
 
-  const sidebarExpanded = isLg ? !wideCollapsed : narrowExpanded
+  // Click-outside: chiude la sidebar quando si clicca fuori dall'aside
+  useEffect(() => {
+    if (!expanded) return
+    const handlePointerDown = (e: PointerEvent) => {
+      if (asideRef.current && !asideRef.current.contains(e.target as Node)) {
+        setExpanded(false)
+      }
+    }
+    // 'capture: true' intercetta prima che altri handler possano fermare la propagazione
+    document.addEventListener('pointerdown', handlePointerDown, { capture: true })
+    return () => document.removeEventListener('pointerdown', handlePointerDown, { capture: true })
+  }, [expanded])
 
-  const closeNarrowDrawer = useCallback(() => {
-    if (isNarrow) setNarrowExpanded(false)
-  }, [isNarrow])
+  // Escape chiude la sidebar
+  useEffect(() => {
+    if (!expanded) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setExpanded(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [expanded])
 
   const toggleSidebar = useCallback(() => {
-    if (isLg) {
-      setWideCollapsed((c) => !c)
-    } else {
-      setNarrowExpanded((e) => !e)
-    }
-  }, [isLg])
+    setExpanded((e) => !e)
+  }, [])
 
   const runSidebarAction = useCallback(
     (action: SidebarNavAction) => {
-      closeNarrowDrawer()
       if (action.type === 'section') {
-        setSection(action.section)
-        setActiveSidebarItem(action.section === 'analytics' ? 'analytics' : null)
-        return
-      }
-      if (action.type === 'open-settings') {
-        setSection('prenotazioni')
-        setActiveSidebarItem('settings')
-        sessionStorage.setItem('admin-open-tab', 'settings-restaurant')
-        setRestaurantSettingsSignal((n) => n + 1)
+        const item: SidebarActiveItem =
+          action.section === 'analytics' ? 'analytics'
+          : action.section === 'servizio' ? 'servizio'
+          : action.section === 'crm' ? 'crm'
+          : null
+        openSection(action.section, item)
         return
       }
       if (action.type === 'public-form') {
         if (!tenantSlug) return
+        if (isNarrow) setExpanded(false)
         setActiveSidebarItem('form')
         window.open(`/prenota/${tenantSlug}`, '_blank', 'noopener,noreferrer')
+        return
+      }
+      if (action.type === 'settings') {
+        openSection('prenotazioni', 'settings')
+        setRestaurantSettingsSignal((n) => n + 1)
       }
     },
-    [closeNarrowDrawer, tenantSlug],
+    [isNarrow, tenantSlug],
   )
 
-  useEffect(() => {
-    if (!isNarrow || !narrowExpanded) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setNarrowExpanded(false)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [isNarrow, narrowExpanded])
-
-  const dashboardShellProps = {
-    onOpenServizio: () => {
-      closeNarrowDrawer()
-      setSection('servizio')
-      setActiveSidebarItem(null)
-    },
-    onOpenCrm: () => {
-      closeNarrowDrawer()
-      setSection('crm')
-      setActiveSidebarItem(null)
-    },
-    onOpenPrenotazioni: () => {
-      closeNarrowDrawer()
-      setSection('prenotazioni')
-      setActiveSidebarItem(null)
-    },
-    restaurantSettingsSignal,
+  const openSection = (s: AdminShellSection, sidebarItem: SidebarActiveItem = null) => {
+    if (isNarrow) setExpanded(false)
+    setSection(s)
+    setActiveSidebarItem(sidebarItem)
   }
 
-  const narrowDrawerOpen = isNarrow && narrowExpanded
+  // Narrow drawer: sidebar si comporta come overlay
+  const isNarrowDrawerOpen = isNarrow && expanded
 
   return (
     <div className="flex h-dvh overflow-hidden bg-(--color-bg)">
-      {narrowDrawerOpen && (
+      {/* Overlay per narrow drawer */}
+      {isNarrowDrawerOpen && (
         <button
           type="button"
           className="fixed inset-0 z-7999 cursor-default border-0 bg-black/40 p-0"
           aria-label="Chiudi menu"
-          onClick={() => setNarrowExpanded(false)}
+          onClick={() => setExpanded(false)}
         />
       )}
+
       <aside
+        ref={asideRef as unknown as React.Ref<HTMLElement>}
         className={cn(
           'flex h-full shrink-0 flex-col border-r border-(--color-border) bg-surface py-4 transition-[width] duration-200 ease-out',
-          narrowDrawerOpen && 'fixed inset-y-0 left-0 z-8000 w-56 shadow-xl',
-          isNarrow && !narrowDrawerOpen && 'relative w-16',
-          !isNarrow && sidebarExpanded && 'w-56',
-          !isNarrow && !sidebarExpanded && 'w-16',
+          isNarrowDrawerOpen && 'fixed inset-y-0 left-0 z-8000 w-56 shadow-xl',
+          isNarrow && !isNarrowDrawerOpen && 'relative w-16',
+          !isNarrow && expanded && 'w-56',
+          !isNarrow && !expanded && 'w-16',
         )}
         aria-label="Navigazione principale"
-        aria-expanded={isNarrow ? narrowExpanded : sidebarExpanded}
+        aria-expanded={expanded}
       >
         <div className="flex flex-1 flex-col gap-1 px-2">
-          {/* Pulsante Home — accesso principale alla dashboard prenotazioni */}
-          <div className={cn('mb-1 flex', sidebarExpanded ? 'items-center justify-between gap-1 px-1' : 'justify-center')}>
+          {/* Home — voce principale */}
+          <div
+            className={cn(
+              'mb-1 flex',
+              expanded ? 'items-center justify-between gap-1 px-1' : 'justify-center',
+            )}
+          >
             <button
               type="button"
               onClick={() => {
                 setSection('home')
                 setActiveSidebarItem('home')
-                closeNarrowDrawer()
+                if (isNarrow) setExpanded(false)
               }}
               title="Home"
               aria-label="Home"
               className={cn(
                 'flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
-                activeSidebarItem === 'home' || (!activeSidebarItem && (section === 'home' || section === 'prenotazioni'))
+                activeSidebarItem === 'home'
                   ? 'bg-primary-600 text-white'
                   : 'text-primary-900 hover:bg-primary-50',
-                !sidebarExpanded && 'justify-center px-0 w-10',
+                !expanded && 'w-10 justify-center px-0',
               )}
             >
               <Home
                 className={cn(
                   'h-5 w-5 shrink-0',
-                  activeSidebarItem === 'home' || (!activeSidebarItem && (section === 'home' || section === 'prenotazioni'))
-                    ? 'text-white'
-                    : 'text-primary-900',
+                  activeSidebarItem === 'home' ? 'text-white' : 'text-primary-900',
                 )}
                 aria-hidden
               />
-              {sidebarExpanded && <span className="truncate">Home</span>}
+              {expanded && <span className="truncate">Home</span>}
             </button>
-            {sidebarExpanded && (
+            {expanded && (
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-expanded={sidebarExpanded}
+                aria-expanded={expanded}
                 aria-label="Comprimi menu"
                 title="Comprimi menu"
                 onClick={toggleSidebar}
@@ -238,13 +240,52 @@ export const AdminShell: FC = () => {
               </Button>
             )}
           </div>
-          {!sidebarExpanded && (
-            <div className="mb-1 flex justify-center">
+
+          <div className="my-1 border-t border-(--color-border)" />
+
+          {/* Voci nav */}
+          {SIDEBAR_NAV.filter((item) => item.featureEnabled !== false).map(
+            ({ id, label, icon: Icon, action }) => {
+              const active =
+                action.type === 'section'
+                  ? activeSidebarItem === id ||
+                    (!activeSidebarItem && section === action.section)
+                  : activeSidebarItem === id
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => runSidebarAction(action)}
+                  title={label}
+                  className={cn(
+                    'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+                    active
+                      ? 'bg-primary-600 text-white'
+                      : 'text-primary-900 hover:bg-primary-50',
+                    !expanded && 'mx-auto w-10 justify-center px-0',
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      'h-5 w-5 shrink-0',
+                      active ? 'text-white' : 'text-primary-900',
+                    )}
+                    aria-hidden
+                  />
+                  {expanded && <span className="truncate">{label}</span>}
+                </button>
+              )
+            },
+          )}
+
+          {/* Pulsante Espandi — sotto tutte le voci nav */}
+          {!expanded && (
+            <div className="mt-1 flex justify-center">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-expanded={sidebarExpanded}
+                aria-expanded={false}
                 aria-label="Espandi menu"
                 title="Espandi menu"
                 onClick={toggleSidebar}
@@ -254,39 +295,15 @@ export const AdminShell: FC = () => {
               </Button>
             </div>
           )}
-          <div className="my-1 border-t border-(--color-border)" />
-          {SIDEBAR_NAV.map(({ id, label, icon: Icon, action }) => {
-            const active =
-              action.type === 'section'
-                ? activeSidebarItem === action.section || (!activeSidebarItem && section === action.section)
-                : activeSidebarItem === id
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => runSidebarAction(action)}
-                title={label}
-                className={cn(
-                  'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
-                  active
-                    ? 'bg-primary-600 text-white'
-                    : 'text-primary-900 hover:bg-primary-50',
-                  !sidebarExpanded && 'mx-auto w-10 justify-center px-0',
-                )}
-              >
-                <Icon className={cn('h-5 w-5 shrink-0', active ? 'text-white' : 'text-primary-900')} aria-hidden />
-                {sidebarExpanded && <span className="truncate">{label}</span>}
-              </button>
-            )
-          })}
         </div>
 
+        {/* Footer sidebar: utente + logout */}
         <div className="mt-auto flex flex-col gap-2 border-t border-(--color-border) px-2 pt-3">
           {user && (
             <div
               className={cn(
                 'flex items-center gap-2 rounded-xl px-2 py-1.5 text-primary-900',
-                !sidebarExpanded && 'justify-center px-0',
+                !expanded && 'justify-center px-0',
               )}
               title={user.email}
             >
@@ -296,7 +313,7 @@ export const AdminShell: FC = () => {
               >
                 {initials(user)}
               </span>
-              {sidebarExpanded && (
+              {expanded && (
                 <span className="min-w-0 truncate text-xs font-medium text-(--color-text-muted)">
                   {user.email}
                 </span>
@@ -306,32 +323,52 @@ export const AdminShell: FC = () => {
           <Button
             type="button"
             variant="ghost"
-            size={sidebarExpanded ? 'sm' : 'icon'}
+            size={expanded ? 'sm' : 'icon'}
             className={cn(
               'w-full text-primary-900',
-              sidebarExpanded ? 'justify-start gap-2' : 'justify-center',
+              expanded ? 'justify-start gap-2' : 'justify-center',
             )}
             onClick={() => void logout()}
             title="Esci"
           >
             <LogOut className="h-4 w-4 shrink-0" aria-hidden />
-            {sidebarExpanded && <span className="truncate">Esci</span>}
+            {expanded && <span className="truncate">Esci</span>}
           </Button>
         </div>
       </aside>
 
       <main className="min-h-0 flex-1 overflow-y-auto">
-        {section === 'home' && (
-          <AdminHomePage
-            onOpenPrenotazioni={dashboardShellProps.onOpenPrenotazioni}
-            onOpenCrm={dashboardShellProps.onOpenCrm}
-            onOpenServizio={dashboardShellProps.onOpenServizio}
-          />
+        {section === 'prenotazioni' && (
+          <AdminDashboard restaurantSettingsSignal={restaurantSettingsSignal} />
         )}
-        {section === 'prenotazioni' && <AdminDashboard {...dashboardShellProps} />}
-        {section === 'crm' && <CrmPage />}
-        {section === 'servizio' && <ServizioPage />}
-        {section === 'analytics' && <AnalyticsPage />}
+
+        {section !== 'prenotazioni' && (
+          <div className="flex flex-col">
+            {/* Barra X — in flusso normale, spinge il contenuto in basso */}
+            <div className="flex justify-end px-3 pt-3">
+              <button
+                type="button"
+                onClick={() => openSection('prenotazioni', null)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-(--color-border) bg-surface text-primary-900 shadow-sm transition-colors hover:border-primary-300 hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                aria-label="Torna alla dashboard"
+                title="Torna alla dashboard"
+              >
+                <X className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
+
+            {section === 'home' && (
+              <AdminHomePage
+                onOpenPrenotazioni={() => openSection('prenotazioni', null)}
+                onOpenCrm={() => openSection('crm', 'crm')}
+                onOpenServizio={() => openSection('servizio', 'servizio')}
+              />
+            )}
+            {section === 'crm' && ADMIN_FEATURES.crm && <CrmPage />}
+            {section === 'servizio' && ADMIN_FEATURES.service && <ServizioPage />}
+            {section === 'analytics' && <AnalyticsPage />}
+          </div>
+        )}
       </main>
     </div>
   )
