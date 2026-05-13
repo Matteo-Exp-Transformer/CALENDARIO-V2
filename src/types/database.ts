@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       admin_users: {
@@ -149,6 +174,71 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "booking_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_table_assignments: {
+        Row: {
+          booking_id: string
+          checked_out_at: string | null
+          created_at: string
+          date: string
+          id: string
+          service_slot_id: string
+          table_id: string
+          tenant_id: string
+          turn_number: number
+        }
+        Insert: {
+          booking_id: string
+          checked_out_at?: string | null
+          created_at?: string
+          date: string
+          id?: string
+          service_slot_id: string
+          table_id: string
+          tenant_id: string
+          turn_number?: number
+        }
+        Update: {
+          booking_id?: string
+          checked_out_at?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          service_slot_id?: string
+          table_id?: string
+          tenant_id?: string
+          turn_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_table_assignments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_table_assignments_service_slot_id_fkey"
+            columns: ["service_slot_id"]
+            isOneToOne: false
+            referencedRelation: "service_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_table_assignments_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_table_assignments_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -507,6 +597,50 @@ export type Database = {
           },
         ]
       }
+      service_slots: {
+        Row: {
+          created_at: string
+          display_order: number
+          end_time: string
+          id: string
+          max_turns: number | null
+          name: string
+          start_time: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          end_time: string
+          id?: string
+          max_turns?: number | null
+          name: string
+          start_time: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          end_time?: string
+          id?: string
+          max_turns?: number | null
+          name?: string
+          start_time?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_slots_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tables: {
         Row: {
           active: boolean
@@ -744,6 +878,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
