@@ -6,6 +6,7 @@ import { TableFormModal } from '@/features/booking/components/servizio/TableForm
 import { RoomTabs } from '@/features/booking/components/servizio/RoomTabs'
 import { RoomConfigModal } from '@/features/booking/components/servizio/RoomConfigModal'
 import { TableMap } from '@/features/booking/components/servizio/TableMap'
+import { ServiceSlotsManager } from '@/features/booking/components/servizio/ServiceSlotsManager'
 import { useTables, useDeleteTable, type RestaurantTable } from '@/features/booking/hooks/useServizioTables'
 import { useRooms, type Room } from '@/features/booking/hooks/useRooms'
 import { cn } from '@/lib/utils'
@@ -285,6 +286,13 @@ export const ServizioPage: FC = () => {
           </>
         )}
 
+        {/* Fasce orarie — visibili in entrambe le view */}
+        {!isLoading && !error && viewMode === 'list' && (
+          <div className="border-t border-(--color-border) pt-6">
+            <ServiceSlotsManager />
+          </div>
+        )}
+
         {/* ========================= TAB MAPPA ========================= */}
         {!isLoading && !error && viewMode === 'map' && (
           <div className="space-y-4">
@@ -313,6 +321,10 @@ export const ServizioPage: FC = () => {
                 onAddTable={() => openAdd(selectedRoom.id)}
               />
             )}
+
+            <div className="mt-8 border-t border-(--color-border) pt-6">
+              <ServiceSlotsManager />
+            </div>
           </div>
         )}
       </div>
