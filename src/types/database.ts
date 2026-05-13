@@ -71,10 +71,12 @@ export type Database = {
           menu_selection: Json | null
           menu_total_booking: number | null
           menu_total_per_person: number | null
+          no_show: boolean
           num_guests: number | null
           placement: string | null
           preset_menu: string | null
           rejection_reason: string | null
+          source: string
           special_requests: string | null
           status: string
           tenant_id: string
@@ -101,10 +103,12 @@ export type Database = {
           menu_selection?: Json | null
           menu_total_booking?: number | null
           menu_total_per_person?: number | null
+          no_show?: boolean
           num_guests?: number | null
           placement?: string | null
           preset_menu?: string | null
           rejection_reason?: string | null
+          source?: string
           special_requests?: string | null
           status?: string
           tenant_id: string
@@ -131,10 +135,12 @@ export type Database = {
           menu_selection?: Json | null
           menu_total_booking?: number | null
           menu_total_per_person?: number | null
+          no_show?: boolean
           num_guests?: number | null
           placement?: string | null
           preset_menu?: string | null
           rejection_reason?: string | null
+          source?: string
           special_requests?: string | null
           status?: string
           tenant_id?: string

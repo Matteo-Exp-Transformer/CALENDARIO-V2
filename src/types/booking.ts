@@ -58,6 +58,10 @@ export interface BookingRequest {
 
   // Booking source tracking
   booking_source?: 'public' | 'admin'
+  source?: 'public_form' | 'manual' | 'walk_in' | 'phone' | 'google'
+
+  // No-show tracking (migrazione 009)
+  no_show?: boolean
 
   // Multi-tenant
   tenant_id: string

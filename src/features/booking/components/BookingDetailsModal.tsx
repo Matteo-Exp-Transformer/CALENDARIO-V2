@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { X, Edit, Trash2, Save } from 'lucide-react'
-import { useUpdateBooking, useCancelBooking } from '../hooks/useBookingMutations'
+import { useUpdateBooking, useCancelBooking, useMarkNoShow } from '../hooks/useBookingMutations'
 import { useAcceptedBookings } from '../hooks/useBookingQueries'
 import type { BookingRequest, BookingType } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
@@ -128,6 +128,14 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
   const updateMutation = useUpdateBooking()
   const cancelMutation = useCancelBooking()
+  const markNoShowMutation = useMarkNoShow()
+
+  // Visibile se: accepted, confirmed_start nel passato, no_show=false
+  const canMarkNoShow =
+    booking.status === 'accepted' &&
+    !booking.no_show &&
+    !!booking.confirmed_start &&
+    new Date(booking.confirmed_start) < new Date()
   const { data: acceptedBookings = [] } = useAcceptedBookings()
   const { data: menuItems = [] } = useMenuItems()
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
@@ -904,6 +912,16 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                       <Trash2 className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                       <span className="truncate">Elimina</span>
                     </button>
+                    {canMarkNoShow && (
+                      <button
+                        type="button"
+                        onClick={() => markNoShowMutation.mutate(booking.id)}
+                        disabled={markNoShowMutation.isPending}
+                        className="flex-1 px-2 sm:px-4 py-2.5 sm:py-3 border-2 border-amber-500 text-amber-700 font-semibold rounded-xl transition-all duration-300 hover:bg-amber-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-amber-500/30 shadow-md hover:shadow-lg flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm min-h-[44px] sm:min-h-[56px] disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        <span className="truncate">{markNoShowMutation.isPending ? '…' : 'No-show'}</span>
+                      </button>
+                    )}
                   </>
                 )}
               </div>

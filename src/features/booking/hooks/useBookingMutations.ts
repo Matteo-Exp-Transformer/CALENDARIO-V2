@@ -404,6 +404,44 @@ export const useRequeueRejectedBooking = () => {
   })
 }
 
+/** Segna una prenotazione come no-show. Visibile solo se status='accepted', confirmed_start < now, no_show=false. */
+export const useMarkNoShow = () => {
+  const queryClient = useQueryClient()
+  const { tenantId } = useTenantContext()
+
+  return useMutation({
+    mutationFn: async (bookingId: string) => {
+      const { data, error } = await supabase
+        .from('booking_requests')
+        .update({ no_show: true, updated_at: new Date().toISOString() })
+        .eq('id', bookingId)
+        .eq('tenant_id', tenantId!)
+        .select()
+        .single()
+
+      if (error) {
+        logger.error('[useMarkNoShow] DB error', error)
+        throw new Error(error.message)
+      }
+
+      return data
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['bookings'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId], refetchType: 'all' }),
+      ])
+      toast.success('Prenotazione segnata come no-show')
+    },
+    onError: (error: Error) => {
+      logger.error('[useMarkNoShow] mutation error', error)
+      toast.error(error.message || 'Errore nel segnare come no-show')
+    },
+  })
+}
+
 // Mutation per cancellare una prenotazione
 export const useCancelBooking = () => {
   const queryClient = useQueryClient()

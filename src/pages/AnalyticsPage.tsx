@@ -4,38 +4,64 @@ import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { AnalyticsKpiCard } from '@/features/booking/components/analytics/AnalyticsKpiCard'
 import { AnalyticsTrendChart } from '@/features/booking/components/analytics/AnalyticsTrendChart'
-import { useAnalytics, type DateRange } from '@/features/booking/hooks/useAnalytics'
+import { ShiftToggle } from '@/features/booking/components/analytics/ShiftToggle'
+import { BookedByChart } from '@/features/booking/components/analytics/BookedByChart'
+import {
+  useAnalytics,
+  useAnalyticsComparison,
+  computeKpiDelta,
+  type DateRange,
+  type ShiftFilter,
+} from '@/features/booking/hooks/useAnalytics'
+import { useRooms } from '@/features/booking/hooks/useRooms'
+import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 
 export const AnalyticsPage: FC = () => {
   const [range, setRange] = useState<DateRange>('7d')
-  const { data, isLoading, error } = useAnalytics(range)
+  const [shift, setShift] = useState<ShiftFilter>('all')
+
+  const { data: businessHoursRaw } = useRestaurantSetting('business_hours')
+  const { data: rooms = [] } = useRooms()
+
+  const { data, isLoading, error } = useAnalytics(range, shift, businessHoursRaw)
+  const { data: prevData } = useAnalyticsComparison(range, shift, businessHoursRaw)
 
   const kpi = data?.kpi
+  const prevKpi = prevData?.kpi
   const trend = data?.trend ?? []
   const hasData = data?.hasData ?? false
+
+  const roomsConfigured = rooms.length > 0
 
   return (
     <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-6 md:px-6">
       <div className="mx-auto max-w-6xl space-y-6">
+        {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-xl font-bold text-primary-900 md:text-2xl">Analytics</h1>
-          <div className="flex shrink-0 gap-2">
-            <Button
-              type="button"
-              variant={range === '7d' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => setRange('7d')}
-            >
-              7g
-            </Button>
-            <Button
-              type="button"
-              variant={range === '30d' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => setRange('30d')}
-            >
-              30g
-            </Button>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {/* Toggle turno */}
+            <ShiftToggle value={shift} onChange={setShift} />
+
+            {/* Toggle range */}
+            <div className="flex gap-1">
+              <Button
+                type="button"
+                variant={range === '7d' ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => setRange('7d')}
+              >
+                7g
+              </Button>
+              <Button
+                type="button"
+                variant={range === '30d' ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => setRange('30d')}
+              >
+                30g
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -46,25 +72,51 @@ export const AnalyticsPage: FC = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {/* KPI grid — 5 card su 2 righe */}
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
               <AnalyticsKpiCard
-                label="Prenotazioni totali"
+                label="Prenotazioni"
                 value={kpi?.totalBookings ?? 0}
                 isLoading={isLoading}
+                delta={kpi && prevKpi ? computeKpiDelta(kpi.totalBookings, prevKpi.totalBookings) : null}
               />
               <AnalyticsKpiCard
                 label="Coperti totali"
                 value={kpi?.totalCovers ?? 0}
                 isLoading={isLoading}
+                delta={kpi && prevKpi ? computeKpiDelta(kpi.totalCovers, prevKpi.totalCovers) : null}
               />
               <AnalyticsKpiCard
                 label="Tasso conferma"
                 value={kpi?.confirmationRate ?? 0}
                 suffix="%"
                 isLoading={isLoading}
+                delta={kpi && prevKpi ? computeKpiDelta(kpi.confirmationRate, prevKpi.confirmationRate) : null}
+              />
+              <AnalyticsKpiCard
+                label="Media coperti/booking"
+                value={kpi?.avgPartySize ?? 0}
+                isLoading={isLoading}
+                delta={kpi && prevKpi ? computeKpiDelta(kpi.avgPartySize, prevKpi.avgPartySize) : null}
+              />
+              <AnalyticsKpiCard
+                label="Tasso no-show"
+                value={kpi?.noShowRate ?? 0}
+                suffix="%"
+                isLoading={isLoading}
+                delta={kpi && prevKpi ? computeKpiDelta(kpi.noShowRate, prevKpi.noShowRate) : null}
               />
             </div>
 
+            {/* Card tasso occupazione — disabilitata finché non ci sono sale */}
+            <AnalyticsKpiCard
+              label="Tasso occupazione"
+              value="—"
+              disabled={!roomsConfigured}
+              disabledTooltip="Disponibile dopo configurazione sala"
+            />
+
+            {/* Trend */}
             <div className="space-y-3">
               <h2 className="text-sm font-semibold text-primary-900 md:text-base">Trend prenotazioni e coperti</h2>
 
@@ -86,6 +138,9 @@ export const AnalyticsPage: FC = () => {
                 </p>
               )}
             </div>
+
+            {/* Booked By chart */}
+            <BookedByChart data={kpi?.bookedBy ?? []} isLoading={isLoading} />
           </>
         )}
       </div>
