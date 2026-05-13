@@ -22,8 +22,10 @@ Leggi il task ricevuto e applica questa tabella:
 | AdminShell / sidebar / nav / sezioni / routing admin | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
 | CRM / clienti / customer / useCustomers / CustomerProfile | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
 | UI / className / Tailwind / layout / componenti / tema / colori / index.css | `docs/per-ui-design/UI_EDIT_SKILL.md` |
-| Task che tocca sia layout shell che stile Tailwind | **entrambi** i skill sopra |
-| Non è chiaro di quale area si tratti | Leggi `CLAUDE.md` + `docs/ARCHITECTURE.md`, poi usa questa tabella |
+| DB / schema / migrazioni / RLS / policy / tabelle / trigger / tipi database.ts | `docs/Database-Skill/DB_SKILL.md` |
+| Task che tocca sia layout shell che stile Tailwind | **entrambi** ADMIN_SHELL + UI_EDIT |
+| Task che tocca sia DB che UI o shell | **entrambi** DB + skill area corrispondente |
+| Non è chiaro di quale area si tratti | Leggi `CLAUDE.md`, poi usa questa tabella |
 
 Carica il skill indicato **prima** di aprire qualsiasi file da modificare.
 
