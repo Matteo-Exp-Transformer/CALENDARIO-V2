@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRef } from 'react'
 import { toast } from 'react-toastify'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabase } from '@/lib/supabase'
@@ -13,6 +14,11 @@ export interface RestaurantTable {
   capacity: number
   placement: string
   active: boolean
+  room_id: string | null
+  position_x: number
+  position_y: number
+  shape: 'round' | 'square' | 'rect'
+  rotation: number
   created_at: string
   updated_at: string
 }
@@ -21,6 +27,11 @@ export interface TableInput {
   name: string
   capacity: number
   placement: string
+  room_id?: string | null
+  position_x?: number
+  position_y?: number
+  shape?: 'round' | 'square' | 'rect'
+  rotation?: number
 }
 
 export function useTables() {
@@ -146,4 +157,47 @@ export function useDeleteTable() {
       toast.error(e.message || 'Errore rimozione tavolo')
     },
   })
+}
+
+/**
+ * Aggiorna la posizione di un tavolo nella mappa con debounce 300ms.
+ * Il debounce è gestito con un ref al timer per evitare re-render inutili.
+ * Non mostra toast: il drag è un'operazione frequente e silenziosa.
+ */
+export function useUpdateTablePosition() {
+  const { tenantId } = useTenantContext()
+  const queryClient = useQueryClient()
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const mutation = useMutation({
+    mutationFn: async ({ id, x, y }: { id: string; x: number; y: number }) => {
+      if (!tenantId) throw new Error('Tenant mancante')
+
+      const { error } = await supabase.from('tables')
+        .update({ position_x: x, position_y: y })
+        .eq('id', id)
+        .eq('tenant_id', tenantId)
+
+      if (error) {
+        logger.error('[useServizioTables] useUpdateTablePosition', error)
+        throw new Error(error.message)
+      }
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [TABLES_QUERY_KEY, tenantId] })
+    },
+    onError: (e: Error) => {
+      logger.error('[useServizioTables] useUpdateTablePosition onError', e)
+      toast.error(e.message || 'Errore salvataggio posizione tavolo')
+    },
+  })
+
+  function debouncedUpdate(id: string, x: number, y: number) {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => {
+      mutation.mutate({ id, x, y })
+    }, 300)
+  }
+
+  return { debouncedUpdate, isPending: mutation.isPending }
 }

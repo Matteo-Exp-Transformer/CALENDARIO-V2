@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       admin_users: {
@@ -485,6 +460,47 @@ export type Database = {
           },
         ]
       }
+      rooms: {
+        Row: {
+          created_at: string
+          display_order: number
+          height: number
+          id: string
+          name: string
+          tenant_id: string
+          updated_at: string
+          width: number
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          height?: number
+          id?: string
+          name: string
+          tenant_id: string
+          updated_at?: string
+          width?: number
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          height?: number
+          id?: string
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+          width?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rooms_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tables: {
         Row: {
           active: boolean
@@ -493,6 +509,11 @@ export type Database = {
           id: string
           name: string
           placement: string
+          position_x: number
+          position_y: number
+          room_id: string | null
+          rotation: number
+          shape: string
           tenant_id: string
           updated_at: string
         }
@@ -503,6 +524,11 @@ export type Database = {
           id?: string
           name: string
           placement?: string
+          position_x?: number
+          position_y?: number
+          room_id?: string | null
+          rotation?: number
+          shape?: string
           tenant_id: string
           updated_at?: string
         }
@@ -513,10 +539,22 @@ export type Database = {
           id?: string
           name?: string
           placement?: string
+          position_x?: number
+          position_y?: number
+          room_id?: string | null
+          rotation?: number
+          shape?: string
           tenant_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tables_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tables_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -700,9 +738,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
