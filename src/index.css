@@ -1687,3 +1687,29 @@ button.archive-tab-filter-btn:focus:not(:focus-visible) {
     max-width: 68.75vw !important;
   }
 }
+
+/* ───────────────────────────────────────────
+   Stampa briefing turno: nasconde la shell,
+   mostra solo la print-area.
+   ─────────────────────────────────────────── */
+@media print {
+  body > *:not(.print-portal) {
+    display: none !important;
+  }
+
+  .print-area {
+    display: block !important;
+  }
+
+  .print-area table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .print-area th,
+  .print-area td {
+    border: 1px solid #ccc;
+    padding: 4px 8px;
+    font-size: 11pt;
+  }
+}

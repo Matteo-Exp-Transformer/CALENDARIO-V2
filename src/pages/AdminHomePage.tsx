@@ -1,9 +1,14 @@
 import type { FC } from 'react'
-import { Calendar, ConciergeBell, Loader2, Users, Clock } from 'lucide-react'
+import { useState } from 'react'
+import { Calendar, ConciergeBell, Loader2, Users, Clock, UserPlus, Printer } from 'lucide-react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui'
 import { useHomeStats } from '@/features/booking/hooks/useHomeStats'
+import { WalkInModal } from '@/features/booking/components/home/WalkInModal'
+import { ShiftBriefingModal } from '@/features/booking/components/home/ShiftBriefingModal'
+import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 
 export interface AdminHomePageProps {
   onOpenPrenotazioni: () => void
@@ -75,6 +80,12 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
   onOpenServizio,
 }) => {
   const { stats, upcoming, isLoading, error } = useHomeStats()
+  const { data: businessHoursRaw } = useRestaurantSetting('business_hours')
+
+  const [walkInOpen, setWalkInOpen] = useState(false)
+  const [briefingOpen, setBriefingOpen] = useState(false)
+
+  const pendingCount = stats.pendingToday
 
   return (
     <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-6 md:px-6">
@@ -86,9 +97,27 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
           </p>
         </header>
 
+        {/* Banner alert richieste in attesa */}
+        {!isLoading && pendingCount > 0 && (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-(--color-warning) bg-warning-50 px-4 py-3">
+            <p className="text-sm font-medium text-warning-900">
+              Hai {pendingCount} {pendingCount === 1 ? 'richiesta in attesa' : 'richieste in attesa'} di conferma
+            </p>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={onOpenPrenotazioni}
+            >
+              Vai a Prenotazioni
+            </Button>
+          </div>
+        )}
+
+        {/* Quick-nav: 5 pulsanti su 2-3 colonne */}
         <nav
           aria-label="Scorciatoie sezioni dashboard"
-          className="grid grid-cols-1 gap-3 sm:grid-cols-3"
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
         >
           <QuickNavButton
             icon={Calendar}
@@ -108,8 +137,21 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
             description="Gestione tavoli e sale"
             onClick={onOpenServizio}
           />
+          <QuickNavButton
+            icon={UserPlus}
+            label="Aggiungi walk-in"
+            description="Cliente senza prenotazione"
+            onClick={() => setWalkInOpen(true)}
+          />
+          <QuickNavButton
+            icon={Printer}
+            label="Briefing turno"
+            description="Stampa o scarica PDF"
+            onClick={() => setBriefingOpen(true)}
+          />
         </nav>
 
+        {/* Stat card */}
         <section
           aria-label="Statistiche di oggi"
           className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4"
@@ -127,6 +169,7 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
           />
         </section>
 
+        {/* Prossime 3 ore */}
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary-700" aria-hidden />
@@ -177,6 +220,13 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
           )}
         </section>
       </div>
+
+      <WalkInModal isOpen={walkInOpen} onClose={() => setWalkInOpen(false)} />
+      <ShiftBriefingModal
+        isOpen={briefingOpen}
+        onClose={() => setBriefingOpen(false)}
+        businessHoursRaw={businessHoursRaw}
+      />
     </div>
   )
 }
