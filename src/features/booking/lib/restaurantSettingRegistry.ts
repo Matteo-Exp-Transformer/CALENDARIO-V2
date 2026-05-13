@@ -47,6 +47,8 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'booking_placement_areas',
   /** Tema visivo dashboard admin (solo /admin); non influenza la pagina pubblica Prenota */
   'app_theme',
+  /** Numero massimo coperti accettati in un singolo walk-in (default 20) */
+  'walk_in_max_guests',
 ] as const
 
 export type RestaurantSettingKeyV1 = (typeof RESTAURANT_SETTING_KEYS_V1)[number]
@@ -296,6 +298,7 @@ export type RestaurantSettingValueMap = {
   booking_vol_au_vent_promos: VolAuVentPromo[]
   booking_placement_areas: string[]
   app_theme: AppThemeId
+  walk_in_max_guests: number
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -499,6 +502,23 @@ export const restaurantSettingRegistry: {
       const normalized = value.trim().toLowerCase()
       if (isAppThemeId(normalized)) return null
       return 'Tema app non valido'
+    },
+  },
+  walk_in_max_guests: {
+    key: 'walk_in_max_guests',
+    parseFromDb: (raw) => {
+      if (typeof raw === 'number' && Number.isFinite(raw) && raw > 0) return raw
+      if (typeof raw === 'string') {
+        const n = parseInt(raw, 10)
+        if (!Number.isNaN(n) && n > 0) return n
+      }
+      return 20
+    },
+    serializeToDb: (value) => value as Json,
+    validate: (value) => {
+      const n = Number(value)
+      if (!Number.isInteger(n) || n < 1 || n > 200) return 'Deve essere un intero tra 1 e 200'
+      return null
     },
   },
 }

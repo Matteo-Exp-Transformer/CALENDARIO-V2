@@ -16,8 +16,14 @@ import {
 import { useRooms } from '@/features/booking/hooks/useRooms'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 
+const RANGE_LABELS: { value: DateRange; label: string }[] = [
+  { value: 'week', label: 'Settimana' },
+  { value: 'month', label: 'Mese' },
+  { value: 'year', label: 'Anno' },
+]
+
 export const AnalyticsPage: FC = () => {
-  const [range, setRange] = useState<DateRange>('7d')
+  const [range, setRange] = useState<DateRange>('month')
   const [shift, setShift] = useState<ShiftFilter>('all')
 
   const { data: businessHoursRaw } = useRestaurantSetting('business_hours')
@@ -37,31 +43,26 @@ export const AnalyticsPage: FC = () => {
     <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-6 md:px-6">
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-xl font-bold text-primary-900 md:text-2xl">Analytics</h1>
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            {/* Toggle turno */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold text-primary-900 md:text-2xl">Analytics</h1>
+            {/* Toggle turno — a destra del titolo */}
             <ShiftToggle value={shift} onChange={setShift} />
+          </div>
 
-            {/* Toggle range */}
-            <div className="flex gap-1">
+          {/* Toggle range — centrato */}
+          <div className="flex justify-center gap-2">
+            {RANGE_LABELS.map(({ value, label }) => (
               <Button
+                key={value}
                 type="button"
-                variant={range === '7d' ? 'primary' : 'ghost'}
+                variant={range === value ? 'primary' : 'ghost'}
                 size="sm"
-                onClick={() => setRange('7d')}
+                onClick={() => setRange(value)}
               >
-                7g
+                {label}
               </Button>
-              <Button
-                type="button"
-                variant={range === '30d' ? 'primary' : 'ghost'}
-                size="sm"
-                onClick={() => setRange('30d')}
-              >
-                30g
-              </Button>
-            </div>
+            ))}
           </div>
         </div>
 

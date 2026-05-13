@@ -343,12 +343,14 @@ export const RestaurantSettingsTab: React.FC = () => {
   const publicBookingPageBgQuery = useRestaurantSetting('public_booking_page_background')
   const placementAreasQuery = useRestaurantSetting('booking_placement_areas')
   const appThemeQuery = useRestaurantSetting('app_theme')
+  const walkInMaxGuestsQuery = useRestaurantSetting('walk_in_max_guests')
 
   const upsert = useUpsertRestaurantSetting()
 
   const [dirty, setDirty] = useState(false)
   const [restaurantName, setRestaurantName] = useState('')
   const [dailyGuestLimit, setDailyGuestLimit] = useState<number | ''>('')
+  const [walkInMaxGuests, setWalkInMaxGuests] = useState<number | ''>(20)
   const [slotCapMorning, setSlotCapMorning] = useState<number | ''>('')
   const [slotCapAfternoon, setSlotCapAfternoon] = useState<number | ''>('')
   const [slotCapEvening, setSlotCapEvening] = useState<number | ''>('')
@@ -403,7 +405,8 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactAddressQuery.isSuccess &&
     publicBookingPageBgQuery.isSuccess &&
     placementAreasQuery.isSuccess &&
-    appThemeQuery.isSuccess
+    appThemeQuery.isSuccess &&
+    walkInMaxGuestsQuery.isSuccess
 
   useEffect(() => {
     if (!allSuccess || hydratedRef.current) return
@@ -428,6 +431,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     setEditingPlacementAreaIndex(null)
     setEditingPlacementAreaDraft('')
     setAppTheme(appThemeQuery.data ?? DEFAULT_APP_THEME)
+    setWalkInMaxGuests(walkInMaxGuestsQuery.data ?? 20)
     hydratedRef.current = true
   }, [
     allSuccess,
@@ -442,6 +446,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     placementAreasQuery.data,
     publicBookingPageBgQuery.data,
     appThemeQuery.data,
+    walkInMaxGuestsQuery.data,
   ])
 
   const loading =
@@ -554,6 +559,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         { key: 'public_booking_page_background', value: bookingPageBackground },
         { key: 'booking_placement_areas', value: placementAreas },
         { key: 'app_theme', value: appTheme },
+        { key: 'walk_in_max_guests', value: walkInMaxGuests === '' ? 20 : walkInMaxGuests },
       ])
       // Keep local form state as source of truth after save.
       // Resetting hydration before refetch can reapply stale cached values.
@@ -761,6 +767,31 @@ export const RestaurantSettingsTab: React.FC = () => {
                 }
                 const n = parseInt(raw, 10)
                 if (!Number.isNaN(n)) setDailyGuestLimit(n)
+              }}
+            />
+          </div>
+          <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
+            <Label htmlFor="walk_in_max_guests" className="block w-full text-center">
+              Limite coperti walk-in
+            </Label>
+            <Input
+              id="walk_in_max_guests"
+              type="number"
+              min={1}
+              max={200}
+              value={walkInMaxGuests}
+              disabled={upsert.isPending}
+              placeholder="20"
+              className={`${anagraficaInputClassName} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+              onChange={(e) => {
+                markDirty()
+                const raw = e.target.value
+                if (raw === '') {
+                  setWalkInMaxGuests('')
+                  return
+                }
+                const n = parseInt(raw, 10)
+                if (!Number.isNaN(n)) setWalkInMaxGuests(n)
               }}
             />
           </div>

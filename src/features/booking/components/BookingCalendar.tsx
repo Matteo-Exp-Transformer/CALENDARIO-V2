@@ -11,6 +11,7 @@ import {
   PenLine,
   Tag,
   UtensilsCrossed,
+  UserRound,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
@@ -85,6 +86,9 @@ function DigestBookingTypeIcon({
 }) {
   const t = (booking.booking_type ?? 'tavolo') as BookingType
   const iconClass = cn('shrink-0', className)
+  if (booking.source === 'walk_in') {
+    return <UserRound className={iconClass} aria-hidden />
+  }
   if (t === 'rinfresco_laurea') {
     return <GraduationCap className={iconClass} aria-hidden />
   }
@@ -414,7 +418,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     }
   }, [initialDate])
 
-  const events = transformBookingsToCalendarEvents(bookings)
+  // I no-show restano nel DB per gli analytics ma non vengono mostrati nel calendario
+  const visibleBookings = bookings.filter((b) => !b.no_show)
+  const events = transformBookingsToCalendarEvents(visibleBookings)
 
   const handleEventClick = (clickInfo: any) => {
     const booking = clickInfo.event.extendedProps as BookingRequest
@@ -438,7 +444,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
 
   // Get bookings and capacity for selected date
   const selectedDateData = useMemo(() => {
-    const acceptedBookings = bookings.filter(b => b.status === 'accepted')
+    const acceptedBookings = bookings.filter(b => b.status === 'accepted' && !b.no_show)
     const dayCapacity = calculateDailyCapacity(
       selectedDate,
       acceptedBookings,
@@ -483,10 +489,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     }
   }, [selectedDate, bookings, bookingSlots, slotGuestCapacities])
 
-  /** Stessi criteri del calendario: accettate con inizio/fine; ordinate per ora di inizio; divise menù vs solo tavolo */
+  /** Stessi criteri del calendario: accettate con inizio/fine; no-show escluse; ordinate per ora di inizio; divise menù vs solo tavolo */
   const { selectedDayDigestBookings, digestWithMenu, digestTableOnly } = useMemo(() => {
     const sorted = bookings
-      .filter((b) => b.status === 'accepted' && b.confirmed_start && b.confirmed_end)
+      .filter((b) => b.status === 'accepted' && !b.no_show && b.confirmed_start && b.confirmed_end)
       .filter((b) => extractDateFromISO(b.confirmed_start!) === selectedDate)
       .sort((a, b) => {
         const ma = startTimeToMinutesSinceMidnight(getAccurateStartTime(a)) ?? 24 * 60

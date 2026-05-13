@@ -130,9 +130,10 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const cancelMutation = useCancelBooking()
   const markNoShowMutation = useMarkNoShow()
 
-  // Visibile se: accepted, confirmed_start nel passato, no_show=false
+  // Visibile se: accepted, non walk-in, confirmed_start nel passato, no_show=false
   const canMarkNoShow =
     booking.status === 'accepted' &&
+    booking.source !== 'walk_in' &&
     !booking.no_show &&
     !!booking.confirmed_start &&
     new Date(booking.confirmed_start) < new Date()

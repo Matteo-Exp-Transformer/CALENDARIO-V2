@@ -40,7 +40,7 @@ export const AnalyticsTrendChart: FC<AnalyticsTrendChartProps> = ({ data, range,
             dataKey="date"
             tick={tickStyle}
             tickFormatter={xTickFormatter}
-            interval={range === '30d' ? 2 : 0}
+            interval={range === 'month' ? 2 : range === 'year' ? 29 : 0}
           />
           <YAxis allowDecimals={false} tick={tickStyle} width={36} />
           <Tooltip

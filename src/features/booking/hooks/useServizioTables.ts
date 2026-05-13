@@ -27,7 +27,7 @@ export interface TableInput {
   name: string
   capacity: number
   placement: string
-  room_id?: string | null
+  room_id: string
   position_x?: number
   position_y?: number
   shape?: 'round' | 'square' | 'rect'
@@ -75,6 +75,7 @@ export function useCreateTable() {
           name: input.name.trim(),
           capacity: input.capacity,
           placement: input.placement,
+          room_id: input.room_id,
         })
         .select('id')
         .single()
@@ -110,6 +111,7 @@ export function useUpdateTable() {
           name: input.name.trim(),
           capacity: input.capacity,
           placement: input.placement,
+          room_id: input.room_id,
         })
         .eq('id', id)
         .eq('tenant_id', tenantId)

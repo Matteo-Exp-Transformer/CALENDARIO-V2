@@ -14,8 +14,8 @@ type ViewMode = 'list' | 'map'
 
 interface ModalState {
   open: boolean
-  initial: { id: string; name: string; capacity: number; placement: string } | null
-  defaultPlacement?: string
+  initial: { id: string; name: string; capacity: number; room_id: string } | null
+  defaultRoomId?: string
 }
 
 interface RoomModalState {
@@ -116,8 +116,8 @@ export const ServizioPage: FC = () => {
     if (rooms.length === 0) setSelectedRoomId(null)
   }, [rooms, selectedRoomId])
 
-  function openAdd(defaultPlacement?: string) {
-    setModal({ open: true, initial: null, defaultPlacement })
+  function openAdd(defaultRoomId?: string) {
+    setModal({ open: true, initial: null, defaultRoomId })
   }
 
   function openEdit(table: RestaurantTable) {
@@ -127,7 +127,7 @@ export const ServizioPage: FC = () => {
         id: table.id,
         name: table.name,
         capacity: table.capacity,
-        placement: table.placement,
+        room_id: table.room_id ?? '',
       },
     })
   }
@@ -247,7 +247,7 @@ export const ServizioPage: FC = () => {
                         ))}
                         <button
                           type="button"
-                          onClick={() => openAdd(room.name)}
+                          onClick={() => openAdd(room.id)}
                           className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-(--color-border) px-4 py-4 text-sm text-(--color-text-muted) transition-colors hover:border-primary-400 hover:text-primary-600"
                         >
                           <Plus className="h-4 w-4" aria-hidden />
@@ -310,7 +310,7 @@ export const ServizioPage: FC = () => {
                 room={selectedRoom}
                 tables={tables}
                 onEditTable={openEdit}
-                onAddTable={() => openAdd()}
+                onAddTable={() => openAdd(selectedRoom.id)}
               />
             )}
           </div>
@@ -321,8 +321,8 @@ export const ServizioPage: FC = () => {
       <TableFormModal
         isOpen={modal.open}
         onClose={closeModal}
-        placements={rooms.map((r) => r.name)}
-        defaultPlacement={modal.defaultPlacement}
+        rooms={rooms}
+        defaultRoomId={modal.defaultRoomId}
         initial={modal.initial}
       />
 

@@ -11,6 +11,7 @@ export interface WalkInInput {
   client_name?: string
   num_guests: number
   table_id?: string | null
+  placement?: string
 }
 
 /**
@@ -44,6 +45,7 @@ export function useWalkInMutation() {
           source: 'walk_in',
           confirmed_start: confirmedStart,
           confirmed_end: confirmedEnd,
+          ...(input.placement ? { placement: input.placement } : {}),
         })
         .select('id')
         .single()
