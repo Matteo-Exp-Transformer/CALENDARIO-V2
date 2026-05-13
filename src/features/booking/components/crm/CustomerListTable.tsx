@@ -85,7 +85,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = ({
     p.customer_db_source === 'manual' && p.booking_count === 0
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+    <div className="overflow-x-auto rounded-xl border border-(--color-border) bg-(--color-surface) shadow-sm">
       <table className="min-w-full divide-y divide-[var(--color-border)] text-left text-sm">
         <thead className="bg-primary-50 text-primary-900">
           <tr>
@@ -109,7 +109,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = ({
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[var(--color-border)] bg-[var(--color-bg)]">
+        <tbody className="divide-y divide-(--color-border) bg-(--color-bg)">
           {sorted.length === 0 && (
             <tr>
               <td colSpan={6} className="px-4 py-8 text-center text-sm text-(--color-text-muted)">
@@ -140,16 +140,16 @@ export const CustomerListTable: FC<CustomerListTableProps> = ({
                   <div className="flex flex-wrap items-center gap-2">
                     <span>{p.name || '—'}</span>
                     {showManualBadge(p) && (
-                      <span className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-1.5 py-0.5 text-xs font-medium text-[var(--color-text-muted)]">
+                      <span className="rounded-md border border-(--color-border) bg-(--color-bg) px-1.5 py-0.5 text-xs font-medium text-(--color-text-muted)">
                         Manuale
                       </span>
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-3 text-[var(--color-text)]">{p.email}</td>
-                <td className="px-4 py-3 text-[var(--color-text-muted)]">{p.phone ?? '—'}</td>
-                <td className="px-4 py-3 text-[var(--color-text)]">{p.booking_count}</td>
-                <td className="px-4 py-3 text-[var(--color-text-muted)]">{p.last_booking_date ?? '—'}</td>
+                <td className="px-4 py-3 text-(--color-text)">{p.email}</td>
+                <td className="px-4 py-3 text-(--color-text-muted)">{p.phone ?? '—'}</td>
+                <td className="px-4 py-3 text-(--color-text)">{p.booking_count}</td>
+                <td className="px-4 py-3 text-(--color-text-muted)">{p.last_booking_date ?? '—'}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-1">
                     <Button
@@ -184,7 +184,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = ({
                       size="icon"
                       aria-label="Elimina"
                       title="Elimina cliente"
-                      className="text-[color:var(--color-danger)] hover:bg-[color:var(--color-danger)]/10"
+                      className="text-(--color-danger) hover:bg-(--color-danger)/10"
                       onClick={(e) => {
                         e.stopPropagation()
                         onDelete(p)

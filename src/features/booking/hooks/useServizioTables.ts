@@ -76,7 +76,7 @@ export function useCreateTable() {
       return data
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: [TABLES_QUERY_KEY] })
+      void queryClient.invalidateQueries({ queryKey: [TABLES_QUERY_KEY, tenantId] })
       toast.success('Tavolo aggiunto')
     },
     onError: (e: Error) => {
@@ -109,7 +109,7 @@ export function useUpdateTable() {
       }
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: [TABLES_QUERY_KEY] })
+      void queryClient.invalidateQueries({ queryKey: [TABLES_QUERY_KEY, tenantId] })
       toast.success('Tavolo aggiornato')
     },
     onError: (e: Error) => {
@@ -138,7 +138,7 @@ export function useDeleteTable() {
       }
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: [TABLES_QUERY_KEY] })
+      void queryClient.invalidateQueries({ queryKey: [TABLES_QUERY_KEY, tenantId] })
       toast.success('Tavolo rimosso')
     },
     onError: (e: Error) => {

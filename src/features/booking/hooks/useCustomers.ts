@@ -144,7 +144,7 @@ export function useCustomers() {
       const [bookingsRes, customersRes] = await Promise.all([
         supabase
           .from('booking_requests')
-          .select('*')
+          .select('id, client_email, client_name, client_phone, desired_date, updated_at, status, num_guests, cancelled_at, booking_type, event_type')
           .eq('tenant_id', tenantId)
           .neq('status', 'deleted'),
         supabase.from('customers').select('id,name,email,phone,notes,source').eq('tenant_id', tenantId),

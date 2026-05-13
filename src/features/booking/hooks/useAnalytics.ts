@@ -33,6 +33,20 @@ type AnalyticsRow = {
   status: string
   num_guests: number | null
   created_at: string
+  confirmed_start: string | null
+  desired_date: string | null
+}
+
+/**
+ * Restituisce la data effettiva della prenotazione per i KPI.
+ * Usiamo confirmed_start (data reale confermata) se disponibile, altrimenti
+ * desired_date (intenzione del cliente), altrimenti created_at come fallback.
+ * Questo evita di attribuire prenotazioni al giorno di creazione anziché
+ * al giorno in cui il servizio viene effettivamente erogato.
+ */
+function bookingDate(r: AnalyticsRow): string {
+  const raw = r.confirmed_start ?? r.desired_date ?? r.created_at
+  return format(parseISO(raw), 'yyyy-MM-dd')
 }
 
 function computeAnalytics(rows: AnalyticsRow[], range: DateRange): AnalyticsData {
@@ -44,7 +58,7 @@ function computeAnalytics(rows: AnalyticsRow[], range: DateRange): AnalyticsData
 
   const active = rows.filter((r) => r.status !== 'deleted')
   const inWindow = active.filter((r) => {
-    const day = format(parseISO(r.created_at), 'yyyy-MM-dd')
+    const day = bookingDate(r)
     return day >= startStr && day <= endStr
   })
 
@@ -61,7 +75,7 @@ function computeAnalytics(rows: AnalyticsRow[], range: DateRange): AnalyticsData
 
   const byDay = new Map<string, { bookings: number; covers: number }>()
   for (const r of inWindow) {
-    const day = format(parseISO(r.created_at), 'yyyy-MM-dd')
+    const day = bookingDate(r)
     const prev = byDay.get(day) ?? { bookings: 0, covers: 0 }
     prev.bookings += 1
     prev.covers += r.num_guests ?? 0
@@ -97,7 +111,7 @@ export function useAnalytics(range: DateRange) {
 
       const res = await supabase
         .from('booking_requests')
-        .select('status, num_guests, created_at')
+        .select('status, num_guests, created_at, confirmed_start, desired_date')
         .eq('tenant_id', tenantId)
         .gte('created_at', startDay.toISOString())
 

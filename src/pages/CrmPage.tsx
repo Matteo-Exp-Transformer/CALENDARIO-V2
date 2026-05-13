@@ -87,7 +87,7 @@ export const CrmPage: FC = () => {
   }, [customers])
 
   return (
-    <div className="min-h-0 flex-1 bg-[var(--color-bg)] px-4 py-6 md:px-6">
+    <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-6 md:px-6">
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-xl font-bold text-primary-900 md:text-2xl">CRM Clienti</h1>
@@ -110,7 +110,7 @@ export const CrmPage: FC = () => {
         )}
 
         {isLoading ? (
-          <p className="text-sm text-[var(--color-text-muted)]">Caricamento…</p>
+          <p className="text-sm text-(--color-text-muted)">Caricamento…</p>
         ) : (
           <CustomerListTable
             rows={customers}

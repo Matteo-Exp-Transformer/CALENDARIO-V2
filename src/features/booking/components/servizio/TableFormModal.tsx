@@ -89,7 +89,7 @@ export const TableFormModal: FC<TableFormModalProps> = ({ isOpen, onClose, place
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         {/* Nome tavolo */}
         <div className="space-y-1">
-          <label htmlFor="table-name" className="block text-sm font-medium text-slate-700">
+          <label htmlFor="table-name" className="block text-sm font-medium text-primary-900">
             Nome tavolo
           </label>
           <Input
@@ -105,7 +105,7 @@ export const TableFormModal: FC<TableFormModalProps> = ({ isOpen, onClose, place
 
         {/* Capienza */}
         <div className="space-y-1">
-          <label htmlFor="table-capacity" className="block text-sm font-medium text-slate-700">
+          <label htmlFor="table-capacity" className="block text-sm font-medium text-primary-900">
             Capienza (posti)
           </label>
           <Input
@@ -123,7 +123,7 @@ export const TableFormModal: FC<TableFormModalProps> = ({ isOpen, onClose, place
         {/* Sala */}
         {placements.length > 0 && (
           <div className="space-y-1">
-            <label htmlFor="table-placement" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="table-placement" className="block text-sm font-medium text-primary-900">
               Sala
             </label>
             <select
