@@ -44,9 +44,9 @@ export const AnalyticsPage: FC = () => {
 
   const roomsConfigured = rooms.length > 0 && totalSeats > 0
   const occupancyRate =
-    roomsConfigured && kpi ? computeOccupancyRate(kpi.totalCovers, totalSeats, range) : null
+    roomsConfigured && kpi ? computeOccupancyRate(kpi.totalCovers, totalSeats, range, businessHoursRaw) : null
   const prevOccupancyRate =
-    roomsConfigured && prevKpi ? computeOccupancyRate(prevKpi.totalCovers, totalSeats, range) : null
+    roomsConfigured && prevKpi ? computeOccupancyRate(prevKpi.totalCovers, totalSeats, range, businessHoursRaw) : null
 
   return (
     <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-6 md:px-6">

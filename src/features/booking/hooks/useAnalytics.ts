@@ -16,6 +16,7 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import { supabase } from '@/lib/supabase'
 import { logger } from '@/lib/logger'
 import { getShiftRanges, type ShiftFilter } from '@/features/booking/utils/shifts'
+import { parseBusinessHours, getDayOfWeek } from '@/lib/businessHours'
 
 export type DateRange = 'week' | 'month' | 'year'
 export type { ShiftFilter }
@@ -214,12 +215,14 @@ function computeAnalytics(
 
 /**
  * Calcola il tasso di occupazione come percentuale di coperti rispetto alla capacità totale del periodo.
- * Denominatore: posti × giorni nel periodo. Restituisce null se i dati non sono disponibili.
+ * Denominatore: posti × giorni aperti nel periodo (esclude i giorni in cui il locale è chiuso).
+ * Se business_hours non è disponibile, usa tutti i giorni come fallback.
  */
 export function computeOccupancyRate(
   totalCovers: number,
   totalSeats: number,
   range: DateRange,
+  businessHoursRaw?: unknown,
 ): number | null {
   if (totalSeats <= 0) return null
   const now = new Date()
@@ -235,8 +238,19 @@ export function computeOccupancyRate(
     startDay = startOfYear(now)
     endDay = endOfYear(now)
   }
-  const numDays = eachDayOfInterval({ start: startDay, end: endDay }).length
-  const maxCovers = totalSeats * numDays
+
+  const days = eachDayOfInterval({ start: startDay, end: endDay })
+  const businessHours = parseBusinessHours(businessHoursRaw)
+
+  const openDays = businessHours
+    ? days.filter((d) => {
+        const dayName = getDayOfWeek(format(d, 'yyyy-MM-dd'))
+        const slots = businessHours[dayName]
+        return slots != null && slots.length > 0
+      }).length
+    : days.length
+
+  const maxCovers = totalSeats * openDays
   return maxCovers > 0 ? Math.round((totalCovers / maxCovers) * 100) : null
 }
 
