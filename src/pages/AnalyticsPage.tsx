@@ -10,10 +10,12 @@ import {
   useAnalytics,
   useAnalyticsComparison,
   computeKpiDelta,
+  computeOccupancyRate,
   type DateRange,
   type ShiftFilter,
 } from '@/features/booking/hooks/useAnalytics'
 import { useRooms } from '@/features/booking/hooks/useRooms'
+import { useTables } from '@/features/booking/hooks/useServizioTables'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 
 const RANGE_LABELS: { value: DateRange; label: string }[] = [
@@ -28,6 +30,9 @@ export const AnalyticsPage: FC = () => {
 
   const { data: businessHoursRaw } = useRestaurantSetting('business_hours')
   const { data: rooms = [] } = useRooms()
+  const { data: tables = [] } = useTables()
+
+  const totalSeats = tables.filter((t) => t.active).reduce((sum, t) => sum + t.capacity, 0)
 
   const { data, isLoading, error } = useAnalytics(range, shift, businessHoursRaw)
   const { data: prevData } = useAnalyticsComparison(range, shift, businessHoursRaw)
@@ -37,7 +42,11 @@ export const AnalyticsPage: FC = () => {
   const trend = data?.trend ?? []
   const hasData = data?.hasData ?? false
 
-  const roomsConfigured = rooms.length > 0
+  const roomsConfigured = rooms.length > 0 && totalSeats > 0
+  const occupancyRate =
+    roomsConfigured && kpi ? computeOccupancyRate(kpi.totalCovers, totalSeats, range) : null
+  const prevOccupancyRate =
+    roomsConfigured && prevKpi ? computeOccupancyRate(prevKpi.totalCovers, totalSeats, range) : null
 
   return (
     <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-6 md:px-6">
@@ -109,12 +118,19 @@ export const AnalyticsPage: FC = () => {
               />
             </div>
 
-            {/* Card tasso occupazione — disabilitata finché non ci sono sale */}
+            {/* Card tasso occupazione — coperti / (posti × giorni periodo) */}
             <AnalyticsKpiCard
               label="Tasso occupazione"
-              value="—"
+              value={occupancyRate != null ? occupancyRate : '—'}
+              suffix={occupancyRate != null ? '%' : undefined}
+              isLoading={isLoading && roomsConfigured}
               disabled={!roomsConfigured}
-              disabledTooltip="Disponibile dopo configurazione sala"
+              disabledTooltip="Configura sala e tavoli per attivare questo KPI"
+              delta={
+                occupancyRate != null && prevOccupancyRate != null
+                  ? computeKpiDelta(occupancyRate, prevOccupancyRate)
+                  : null
+              }
             />
 
             {/* Trend */}

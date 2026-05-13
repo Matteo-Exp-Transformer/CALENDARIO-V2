@@ -212,6 +212,34 @@ function computeAnalytics(
   }
 }
 
+/**
+ * Calcola il tasso di occupazione come percentuale di coperti rispetto alla capacità totale del periodo.
+ * Denominatore: posti × giorni nel periodo. Restituisce null se i dati non sono disponibili.
+ */
+export function computeOccupancyRate(
+  totalCovers: number,
+  totalSeats: number,
+  range: DateRange,
+): number | null {
+  if (totalSeats <= 0) return null
+  const now = new Date()
+  let startDay: Date
+  let endDay: Date
+  if (range === 'week') {
+    startDay = startOfWeek(now, { weekStartsOn: 1 })
+    endDay = endOfWeek(now, { weekStartsOn: 1 })
+  } else if (range === 'month') {
+    startDay = startOfMonth(now)
+    endDay = endOfMonth(now)
+  } else {
+    startDay = startOfYear(now)
+    endDay = endOfYear(now)
+  }
+  const numDays = eachDayOfInterval({ start: startDay, end: endDay }).length
+  const maxCovers = totalSeats * numDays
+  return maxCovers > 0 ? Math.round((totalCovers / maxCovers) * 100) : null
+}
+
 export function useAnalytics(range: DateRange, shift: ShiftFilter = 'all', businessHoursRaw?: unknown) {
   const { tenantId } = useTenantContext()
 
