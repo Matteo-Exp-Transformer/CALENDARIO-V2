@@ -311,6 +311,44 @@ export type Database = {
           },
         ]
       }
+      menu_categories: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          label: string
+          sort_order: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          label: string
+          sort_order?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          label?: string
+          sort_order?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_items: {
         Row: {
           booking_types: string[]
@@ -440,6 +478,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "restaurant_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tables: {
+        Row: {
+          active: boolean
+          capacity: number
+          created_at: string
+          id: string
+          name: string
+          placement: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          capacity: number
+          created_at?: string
+          id?: string
+          name: string
+          placement?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          capacity?: number
+          created_at?: string
+          id?: string
+          name?: string
+          placement?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tables_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "organizations"

@@ -33,7 +33,7 @@ export function useTables() {
     queryFn: async () => {
       if (!tenantId) throw new Error('Tenant mancante')
 
-      const { data, error } = await (supabase as any).from('tables')
+      const { data, error } = await supabase.from('tables')
         .select('*')
         .eq('tenant_id', tenantId)
         .eq('active', true)
@@ -58,7 +58,7 @@ export function useCreateTable() {
     mutationFn: async (input: TableInput) => {
       if (!tenantId) throw new Error('Tenant mancante')
 
-      const { data, error } = await (supabase as any).from('tables')
+      const { data, error } = await supabase.from('tables')
         .insert({
           tenant_id: tenantId,
           name: input.name.trim(),
@@ -94,7 +94,7 @@ export function useUpdateTable() {
     mutationFn: async ({ id, input }: { id: string; input: TableInput }) => {
       if (!tenantId) throw new Error('Tenant mancante')
 
-      const { error } = await (supabase as any).from('tables')
+      const { error } = await supabase.from('tables')
         .update({
           name: input.name.trim(),
           capacity: input.capacity,
@@ -127,7 +127,7 @@ export function useDeleteTable() {
     mutationFn: async (id: string) => {
       if (!tenantId) throw new Error('Tenant mancante')
 
-      const { error } = await (supabase as any).from('tables')
+      const { error } = await supabase.from('tables')
         .update({ active: false })
         .eq('id', id)
         .eq('tenant_id', tenantId)
