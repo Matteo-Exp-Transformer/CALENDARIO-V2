@@ -7,6 +7,7 @@ import { RoomTabs } from '@/features/booking/components/servizio/RoomTabs'
 import { RoomConfigModal } from '@/features/booking/components/servizio/RoomConfigModal'
 import { TableMap } from '@/features/booking/components/servizio/TableMap'
 import { ServiceSlotsManager } from '@/features/booking/components/servizio/ServiceSlotsManager'
+import { AssignmentMapPanel } from '@/features/booking/components/servizio/AssignmentMapPanel'
 import { useTables, useDeleteTable, type RestaurantTable } from '@/features/booking/hooks/useServizioTables'
 import { useRooms, type Room } from '@/features/booking/hooks/useRooms'
 import { cn } from '@/lib/utils'
@@ -321,6 +322,9 @@ export const ServizioPage: FC = () => {
                 onAddTable={() => openAdd(selectedRoom.id)}
               />
             )}
+
+            {/* Assignment prenotazioni → tavoli (DndContext separato dal riposizionamento) */}
+            <AssignmentMapPanel rooms={rooms} tables={tables} />
 
             <div className="mt-8 border-t border-(--color-border) pt-6">
               <ServiceSlotsManager />
