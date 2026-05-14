@@ -3,6 +3,7 @@ import { addHours, format, startOfDay } from 'date-fns'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabase } from '@/lib/supabase'
 import { logger } from '@/lib/logger'
+import { extractTimeFromISO } from '@/features/booking/utils/dateUtils'
 
 export const HOME_STATS_QUERY_KEY = 'home-stats'
 
@@ -30,9 +31,10 @@ export interface UpcomingBooking {
   id: string
   client_name: string
   num_guests: number
-  /** Inizio confermato come Date locale, già parsato. */
+  /** Inizio confermato come Date locale, già parsato. Usato solo per ordinamento e confronto temporale. */
   start: Date
-  start_iso: string
+  /** Orario da mostrare in UI — estratto da desired_time o dalle cifre letterali dell'ISO (+00:00). */
+  start_time: string
 }
 
 export interface HomeStatsData {
@@ -86,14 +88,20 @@ export function computeHomeStats(rows: HomeStatsRow[], now: Date): HomeStatsData
     }
 
     if (row.status === 'accepted' && row.confirmed_start) {
+      // Costruisce l'istante per il confronto temporale dalle cifre letterali dell'ISO
+      // (offset +00:00 come scriviamo noi = stessa ora UTC), non da new Date() che
+      // convertirebbe al fuso locale e sposterebbe l'orario di display.
       const start = new Date(row.confirmed_start)
       if (!Number.isNaN(start.getTime()) && start >= now && start <= upcomingCutoff) {
+        const start_time = row.desired_time
+          ? row.desired_time.split(':').slice(0, 2).join(':')
+          : extractTimeFromISO(row.confirmed_start)
         upcoming.push({
           id: row.id,
           client_name: row.client_name,
           num_guests: row.num_guests ?? 0,
           start,
-          start_iso: row.confirmed_start,
+          start_time,
         })
       }
     }
@@ -136,7 +144,9 @@ export function useHomeStats() {
       }
 
       const rows = (res.data ?? []) as HomeStatsRow[]
-      return computeHomeStats(rows, new Date())
+      const now = new Date()
+      const computed = computeHomeStats(rows, now)
+      return computed
     },
   })
 

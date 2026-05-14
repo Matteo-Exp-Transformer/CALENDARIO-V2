@@ -1,8 +1,6 @@
 import type { FC } from 'react'
 import { useState } from 'react'
 import { ConciergeBell, Loader2, Clock, UserPlus, Printer } from 'lucide-react'
-import { format } from 'date-fns'
-import { it } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { useHomeStats } from '@/features/booking/hooks/useHomeStats'
 import { useBookingStats } from '@/features/booking/hooks/useBookingQueries'
@@ -198,7 +196,7 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
                       </span>
                     </div>
                     <span className="shrink-0 rounded-lg bg-primary-50 px-3 py-1 text-sm font-semibold tabular-nums text-primary-900">
-                      {format(b.start, 'HH:mm', { locale: it })}
+                      {b.start_time}
                     </span>
                   </li>
                 ))}
