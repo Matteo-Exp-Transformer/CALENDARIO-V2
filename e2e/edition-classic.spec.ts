@@ -23,10 +23,19 @@ async function loginAsClassicAdmin(page: import('@playwright/test').Page) {
   await page.getByLabel(/email/i).fill(ADMIN_EMAIL)
   await page.getByLabel(/password/i).fill(ADMIN_PASSWORD)
   await page.getByRole('button', { name: /accedi|login/i }).click()
-  // Attende che la dashboard sia visibile
+  // Attende che la dashboard sia visibile (Classic: sidebar assente)
   await expect(page.getByRole('navigation', { name: /navigazione principale/i })).not.toBeVisible({
     timeout: 10000,
   })
+}
+
+/**
+ * Restituisce il locator dei NavItem dell'header AdminDashboard.
+ * Scende nel <nav> del header per evitare ambiguità con bottoni omonimi
+ * presenti in altri tab (es. "Calendario" in ArchiveTab su mobile).
+ */
+function dashboardNav(page: import('@playwright/test').Page) {
+  return page.locator('header nav')
 }
 
 test.describe('Edition Classic — UI base', () => {
@@ -39,31 +48,31 @@ test.describe('Edition Classic — UI base', () => {
     page,
   }) => {
     await loginAsClassicAdmin(page)
-    // I 5 NavItem di AdminDashboard devono essere presenti
-    await expect(page.getByRole('button', { name: /calendario/i })).toBeVisible()
-    await expect(page.getByRole('button', { name: /prenotazioni/i })).toBeVisible()
-    await expect(page.getByRole('button', { name: /archivio/i })).toBeVisible()
-    await expect(page.getByRole('button', { name: /menu/i })).toBeVisible()
-    await expect(page.getByRole('button', { name: /impostazioni/i })).toBeVisible()
+    const nav = dashboardNav(page)
+    await expect(nav.getByRole('button', { name: /calendario/i })).toBeVisible()
+    await expect(nav.getByRole('button', { name: /prenotazioni/i })).toBeVisible()
+    await expect(nav.getByRole('button', { name: /archivio/i })).toBeVisible()
+    await expect(nav.getByRole('button', { name: /menu/i })).toBeVisible()
+    await expect(nav.getByRole('button', { name: /impostazioni/i })).toBeVisible()
   })
 
   test('click Calendario mostra la vista calendario', async ({ page }) => {
     await loginAsClassicAdmin(page)
-    await page.getByRole('button', { name: /calendario/i }).click()
+    await dashboardNav(page).getByRole('button', { name: /calendario/i }).click()
     // Il calendario è visibile (cerca il contenitore del BookingCalendar)
     await expect(page.locator('[data-testid="booking-calendar"], .booking-calendar, [class*="calendar"]').first()).toBeVisible({ timeout: 5000 })
   })
 
   test('nessuna icona walk-in nel calendario', async ({ page }) => {
     await loginAsClassicAdmin(page)
-    await page.getByRole('button', { name: /calendario/i }).click()
+    await dashboardNav(page).getByRole('button', { name: /calendario/i }).click()
     // L'icona walk-in (gated da features.walkIn) non deve apparire
     await expect(page.locator('[aria-label*="walk"i], [title*="walk"i]')).not.toBeVisible()
   })
 
   test('nessun bottone no-show nel modal dettagli prenotazione', async ({ page }) => {
     await loginAsClassicAdmin(page)
-    await page.getByRole('button', { name: /prenotazioni/i }).click()
+    await dashboardNav(page).getByRole('button', { name: /prenotazioni/i }).click()
     // Clicca la prima prenotazione se esiste
     const firstBooking = page.locator('tr[role="row"], [data-testid="booking-row"]').first()
     if (await firstBooking.isVisible()) {

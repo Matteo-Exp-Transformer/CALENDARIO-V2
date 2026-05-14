@@ -1,0 +1,97 @@
+---
+name: testing-context
+description: >-
+  Mappa completa dei test post-sessione 14-05-26, setup MSW, staging Supabase.
+  Caricare insieme a TESTING_SKILL.md quando si lavora sui test.
+---
+
+# Testing Context
+
+## 1. Mappa test post-sessione 14-05-26
+
+### Vitest (54 test, 7 file)
+
+| File | Flusso coperto | # test | Stato |
+|------|---------------|--------|-------|
+| `src/lib/__tests__/supabase.test.ts` | Init client, auth, query | 11 | ✅ pass |
+| `src/contexts/__tests__/TenantContext.test.tsx` | setTenantFromSlug, setTenantFromAdmin, clearTenant, edition | 5 | ✅ pass |
+| `src/config/__tests__/features.test.ts` | buildFeatures — tutte e 3 le edition, tutti i flag | 22 | ✅ pass |
+| `src/hooks/__tests__/useFeatures.test.tsx` | useFeatures → flag corretti per edition | 3 | ✅ pass |
+| `src/features/booking/hooks/__tests__/useAdminAuth.test.tsx` | login, session check | 4 | ✅ pass |
+| `src/features/booking/hooks/__tests__/useMenuCategories.test.tsx` | CRUD categorie menu | 5 | ✅ pass |
+| `src/features/booking/hooks/__tests__/useBookingMutations.test.tsx` | accept, reject, restore, no-show | 4 | ✅ pass |
+
+### Playwright E2E (8 spec file)
+
+| File | Flusso coperto | Stato |
+|------|---------------|-------|
+| `e2e/admin-login.spec.ts` | Login, redirect, logout | attivo |
+| `e2e/admin-booking-mgmt.spec.ts` | Accetta/rifiuta prenotazione | attivo |
+| `e2e/public-booking.spec.ts` | Form prenotazione pubblica | attivo |
+| `e2e/menu-crud.spec.ts` | CRUD voci menu | attivo |
+| `e2e/invite-flow.spec.ts` | Flusso invito nuovo admin | attivo |
+| `e2e/edition-classic.spec.ts` | Classic: no sidebar, 5 tab, no walk-in, no no-show (5 test) | ✅ 5 pass (fix B02: selettori scopati a `header nav`) |
+| `e2e/edition-classic-data-protection.spec.ts` | RLS blocca customers per Classic | ✅ pass |
+| `e2e/edition-upgrade.spec.ts` | Classic→Pro: sidebar appare dopo reload | ✅ pass (fix B03: timeout 15s + wait esplicito post-login) |
+
+---
+
+## 2. Setup MSW (tests/setup.ts)
+
+MSW funge da safety net per le chiamate HTTP Supabase non intercettate da `vi.mock`.
+
+```ts
+// Pattern handler MSW
+http.get('https://test.supabase.co/rest/v1/:table', () => HttpResponse.json([]))
+http.post('https://test.supabase.co/rest/v1/:table', () => HttpResponse.json({}))
+```
+
+I test unit usano `vi.mock('@/lib/supabase', ...)` per mockare il client prima di MSW.
+MSW intercetta solo le chiamate che sfuggono al mock.
+
+**URL Supabase nei test**: `https://test.supabase.co` (fake, configurato in `vitest.config.ts`).
+**Mai** usare l'URL staging o produzione nei test Vitest.
+
+---
+
+## 3. Staging Supabase — stato attuale
+
+Progetto: `docnnernvpyrbwuzzach` (separato da produzione `rwuxgvldzrkabglkasym`)
+
+**Migrazioni applicate**: 001 → 015 (tutte, incluso doppio 003)
+
+**Tenant di test**:
+
+| ID | Nome | Edition | Admin |
+|----|------|---------|-------|
+| `11111111-1111-1111-1111-111111111111` | Ristorante Test Pro | `pro` | `admin-pro@test.local` |
+| `22222222-2222-2222-2222-222222222222` | Ristorante Test Classic | `classic` | `admin-classic@test.local` |
+
+Password: `TestE2E2026!`
+
+**Dati presenti**:
+- Tenant Pro: 3 clienti in `customers`
+- Tenant Classic: 3 prenotazioni in `booking_requests` (2 pending, 1 accepted)
+
+**Come ricreare**: vedi `tests/README.md` § "Ricreare i tenant di test"
+
+---
+
+## 4. Bug risolti nei test E2E
+
+| Bug | Test | Causa | Fix applicato |
+|-----|------|-------|---------------|
+| B02 | `edition-classic.spec.ts` (4 test) | `getByRole('button', { name: /calendario/i })` trovava 2 elementi: NavItem header + span `sm:hidden` "Calendario" in ArchiveTab | Selettori scopati a `page.locator('header nav')` via helper `dashboardNav()` |
+| B03 | `edition-upgrade.spec.ts` | `waitForLoadState('networkidle')` terminava prima del re-render React post-checkSession | Rimosso networkidle, aggiunto wait esplicito sulla sidebar + timeout 15s |
+
+---
+
+## 5. Checklist pre-PR testing
+
+```
+□ npm run validate (lint + typecheck + 54 Vitest) → tutto green
+□ npm run test:e2e -- --grep edition → 7 pass (RLS + 5 Classic + upgrade)
+□ Nessun nuovo test tocca produzione
+□ Nuovi test Vitest usano mock, non URL reali
+□ Nuovi spec Playwright usano variabili E2E_*, non credenziali hardcoded
+```

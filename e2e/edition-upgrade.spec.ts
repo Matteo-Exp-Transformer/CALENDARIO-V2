@@ -59,7 +59,11 @@ test.describe('Edition Upgrade — Classic → Pro', () => {
     await page.getByLabel(/email/i).fill(ADMIN_EMAIL)
     await page.getByLabel(/password/i).fill(ADMIN_PASSWORD)
     await page.getByRole('button', { name: /accedi|login/i }).click()
-    await page.waitForLoadState('networkidle')
+
+    // Attende che la dashboard Classic sia pronta (sidebar assente = caricamento completato)
+    await expect(page.getByRole('navigation', { name: /navigazione principale/i })).not.toBeVisible({
+      timeout: 10000,
+    })
 
     // 3. Verifica che la sidebar NON sia visibile (edition Classic)
     await expect(page.getByRole('navigation', { name: /navigazione principale/i })).not.toBeVisible()
@@ -67,13 +71,13 @@ test.describe('Edition Upgrade — Classic → Pro', () => {
     // 4. Upgrade a Pro via API (simula cambio in Supabase Studio)
     await setTenantEdition('pro')
 
-    // 5. Ricarica la pagina — il TenantContext rilegge l'edition
+    // 5. Ricarica la pagina — useAdminAuth.checkSession rilegge l'edition via check_admin_email RPC
     await page.reload()
-    await page.waitForLoadState('networkidle')
 
-    // 6. La sidebar deve comparire (edition Pro)
+    // 6. La sidebar deve comparire (edition Pro).
+    // Timeout generoso: reload → auth session check → RPC check_admin_email → React re-render.
     await expect(page.getByRole('navigation', { name: /navigazione principale/i })).toBeVisible({
-      timeout: 10000,
+      timeout: 15000,
     })
 
     // 7. Le sezioni Pro devono essere accessibili nella sidebar

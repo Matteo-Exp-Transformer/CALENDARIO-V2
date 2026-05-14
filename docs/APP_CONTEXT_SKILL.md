@@ -28,6 +28,7 @@ Leggi il task ricevuto e applica questa tabella:
 | Task che tocca admin classica + qualsiasi altra cosa | **ADMIN_CLASSIC sempre + skill area** |
 | Task che tocca sia layout shell che stile Tailwind | **entrambi** ADMIN_SHELL + UI_EDIT |
 | Task che tocca sia DB che UI o shell | **entrambi** DB + skill area corrispondente |
+| **Test / Vitest / Playwright / staging Supabase / CI / copertura** | `docs/Testing-Skill/TESTING_SKILL.md` |
 | Non è chiaro di quale area si tratti | Leggi `CLAUDE.md`, poi usa questa tabella |
 
 Carica il skill indicato **prima** di aprire qualsiasi file da modificare.
