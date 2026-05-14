@@ -779,6 +779,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
 
     <PastStartTimeWarningModal
       isOpen={showPastStartWarning}
+      variant="new_booking"
       desiredDate={formData.desired_date}
       startTimeHHmm={trimTimeToHHmm(formData.desired_time || '')}
       onClose={() => setShowPastStartWarning(false)}

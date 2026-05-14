@@ -181,6 +181,10 @@ export function trimTimeToHHmm(time: string): string {
  * True se data (calendario locale) + ora a muro sono **strettamente** prima di `Date.now()`.
  * Usa il fuso del browser (stesso orologio che vede il ristoratore in dashboard).
  * Input non validi → false (nessun alert: si lascia il flusso normale).
+ *
+ * Nota: confronto su istante (millisecondi). Se inizio e orologio coincidono nello stesso
+ * millisecondo, restituisce false (nessun alert). Appena `Date.now()` supera l’istante
+ * d’inizio (anche di 1 ms), restituisce true.
  */
 export function isWallClockStartBeforeNow(desiredDate: string, startTimeHHmm: string): boolean {
   const dateStr = String(desiredDate ?? '').trim()

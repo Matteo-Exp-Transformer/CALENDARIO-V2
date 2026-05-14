@@ -703,6 +703,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     <>
       <PastStartTimeWarningModal
         isOpen={showPastStartWarning}
+        variant="edit_booking"
         desiredDate={formData.date}
         startTimeHHmm={trimTimeToHHmm(formData.startTime)}
         onClose={() => setShowPastStartWarning(false)}

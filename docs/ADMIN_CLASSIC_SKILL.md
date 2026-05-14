@@ -207,7 +207,7 @@ Branch `Sviluppo-Dashboard-laterale` rispetto a `main`:
 
 - **AdminDashboard.tsx**: integrato in AdminShell. Layout `min-h-0 flex-1`. Aggiunte due prop opzionali: `bodyOverride?: React.ReactNode` (mostra contenuto alternativo nel corpo, Header+NavItem restano visibili) e `onBodyOverrideExit?: () => void` (chiamata al click NavItem quando bodyOverride è attivo). `handleTabClick()` wrappa `setActiveTab` e chiama `onBodyOverrideExit` se necessario.
 - **BookingCalendar.tsx**: feature opt-in ora **gated** con `useFeatures()` — icona walk-in condizionata a `features.walkIn`, turni/badge "Da assegnare" condizionati a `features.servizio`.
-- **BookingDetailsModal.tsx**: bottone No-show gated con `features.noShow && canMarkNoShow`.
+- **BookingDetailsModal.tsx**: bottone No-show gated con `features.noShow && canMarkNoShow`. Avviso «orario già trascorso» su **Salva** (`PastStartTimeWarningModal` + `isWallClockStartBeforeNow`): modifica al file LOCK effettuata con **conferma esplicita dell’utente in chat** (conforme §0 — spiegazione preventiva + ok).
 - **useBookingMutations.ts**: aggiunte invalidazioni per `HOME_STATS_QUERY_KEY` e `ANALYTICS_QUERY_ROOT` — no-op in edition Classic, **safe**. ⚠️ **Fix orario**: `useAcceptBooking` ora scrive sempre `desired_time` nel DB — se il chiamante non lo passa, lo deriva da `confirmedStart` con `extractTimeFromISO` (che è ancora nella forma `+00:00` prima del round-trip). Senza questa garanzia, il display potrebbe mostrare l'orario sbagliato (es. +2h in CEST).
 - **Bug Home risolto**: cliccando Home nella sidebar, Header e NavItem restano visibili. Il contenuto Home passa via `bodyOverride`.
 - **AdminHomePage.tsx**: sezione "prossime 3 ore" ora mostra `b.start_time` (stringa HH:mm sicura) invece di `format(b.start, 'HH:mm')` su oggetto Date — eliminato il +2h in CEST. Import `format`/`it` da date-fns rimossi.
@@ -242,7 +242,7 @@ PostgreSQL `timestamptz` non conserva il "testo dell'orario" — conserva un ist
 - **MAI** usare `new Date(isoString).toISOString()` per costruire `confirmed_start` — produce offset `Z` invece di `+00:00` e rompe `extractTimeFromISO` su alcuni driver.
 - **MAI** omettere `desired_time` quando si accetta o modifica una prenotazione.
 - **Ogni nuova mutation** che scrive `confirmed_start` DEVE anche scrivere `desired_time`.
-- Il test di non-regressione è `src/features/booking/utils/__tests__/CONTROLLA_ORARIO-PRENOTAZIONI.test.ts` (27 test). Se fallisce, c'è un bug di orario.
+- Il test di non-regressione è `src/features/booking/utils/__tests__/CONTROLLA_ORARIO-PRENOTAZIONI.test.ts` (28 test). Se fallisce, c'è un bug di orario.
 
 ---
 

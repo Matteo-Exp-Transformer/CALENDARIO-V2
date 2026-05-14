@@ -7,6 +7,17 @@ import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 import { logger } from '@/lib/logger'
 
+export type PastStartTimeWarningVariant = 'accept_pending' | 'edit_booking' | 'new_booking'
+
+const VARIANT_SECOND_LINE: Record<PastStartTimeWarningVariant, string> = {
+  accept_pending:
+    'Puoi comunque procedere per accettare la richiesta (es. recupero ritardi o correzione manuale).',
+  edit_booking:
+    'Puoi comunque procedere per salvare le modifiche (es. recupero ritardi o correzione manuale).',
+  new_booking:
+    'Puoi comunque procedere per creare la prenotazione (es. recupero ritardi o correzione manuale).',
+}
+
 export interface PastStartTimeWarningModalProps {
   isOpen: boolean
   onClose: () => void
@@ -16,6 +27,8 @@ export interface PastStartTimeWarningModalProps {
   desiredDate: string
   /** HH:mm (secondi opzionali ignorati dal testo mostrato) */
   startTimeHHmm: string
+  /** Testo del secondo paragrafo aderente al flusso (default: accettazione richiesta in attesa). */
+  variant?: PastStartTimeWarningVariant
 }
 
 function parseWallParts(desiredDate: string, startTimeHHmm: string): { y: number; m: number; d: number; h: number; min: number } | null {
@@ -42,6 +55,7 @@ export const PastStartTimeWarningModal: React.FC<PastStartTimeWarningModalProps>
   onCancel,
   desiredDate,
   startTimeHHmm,
+  variant = 'accept_pending',
 }) => {
   useEffect(() => {
     if (isOpen) {
@@ -131,9 +145,7 @@ export const PastStartTimeWarningModal: React.FC<PastStartTimeWarningModalProps>
                 La prenotazione è impostata per <strong className="font-semibold">{bookingStartLabel}</strong>, che è
                 precedente all&apos;ora attuale ({nowLabel}).
               </p>
-              <p className="text-[var(--color-text-muted)]">
-                Puoi comunque procedere se vuoi accettarla o salvarla (es. recupero ritardi o correzione manuale).
-              </p>
+              <p className="text-[var(--color-text-muted)]">{VARIANT_SECOND_LINE[variant]}</p>
             </div>
           </div>
 

@@ -245,6 +245,12 @@ describe('E) isWallClockStartBeforeNow — confronto locale (fake timers)', () =
     expect(isWallClockStartBeforeNow('2026-05-14', '16:00')).toBe(false)
   })
 
+  it('stesso giorno: un millisecondo dopo l’orario di inizio → true', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 4, 14, 16, 0, 0, 1))
+    expect(isWallClockStartBeforeNow('2026-05-14', '16:00')).toBe(true)
+  })
+
   it('giorno precedente → true', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(2026, 4, 14, 10, 0, 0))

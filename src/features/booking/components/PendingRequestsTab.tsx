@@ -141,7 +141,7 @@ export const PendingRequestsTab: React.FC = () => {
     )
   }
 
-  /** Dopo conferma orario passato (e senza ramo capienza): capienza → eventuale modale → mutate. */
+  /** Dopo conferma orario passato: controllo capienza (eventuale CapacityWarningModal) poi mutate. */
   const continueAcceptAfterPastStart = (booking: BookingRequest, startTimeFormatted: string, confirmedStart: string, confirmedEnd: string) => {
     const endTimeFormatted = calculateEndTimeFromStart(startTimeFormatted)
     const exceededInfo = getExceededSlotInfo(booking, startTimeFormatted, endTimeFormatted)
@@ -299,6 +299,7 @@ export const PendingRequestsTab: React.FC = () => {
 
       <PastStartTimeWarningModal
         isOpen={showPastStartWarning}
+        variant="accept_pending"
         desiredDate={pastStartPendingBooking?.desired_date ?? ''}
         startTimeHHmm={
           pastStartPendingBooking?.desired_time
