@@ -15,10 +15,13 @@
 | `name` | TEXT NOT NULL | Nome ristorante |
 | `slug` | TEXT UNIQUE NOT NULL | Parte URL: `/prenota/<slug>` |
 | `plan` | TEXT | Default `'starter'` |
+| `edition` | TEXT NOT NULL | Default `'pro'` — valori: `'classic'` · `'pro'` · `'enterprise'` |
 | `max_bookings_per_year` | INTEGER | Default 3600 |
 | `max_booking_requests_per_year` | INTEGER | Default 5000 |
 | `is_active` | BOOLEAN | `false` blocca login admin |
 | `created_at`, `updated_at` | TIMESTAMPTZ | |
+
+`edition` controlla quali feature sono attive per il tenant (letto da `TenantContext` → `useFeatures()`). Migrazione: `013_tenants_edition.sql`.
 
 Indici: `idx_organizations_slug`, `idx_organizations_active` (partial su `is_active = true`).
 **RLS:** nessuna policy — letta via service role o `supabasePublic`.

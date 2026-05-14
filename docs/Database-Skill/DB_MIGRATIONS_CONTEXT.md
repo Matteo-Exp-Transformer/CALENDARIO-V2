@@ -4,7 +4,7 @@
 
 ---
 
-## 1. Stato migrazioni (aggiornato 2026-05-13)
+## 1. Stato migrazioni (aggiornato 2026-05-14)
 
 ```
  Local | Remote | File
@@ -17,9 +17,17 @@
  005   | 005    | 005_menu_items_booking_types.sql
  006   | 006    | 006_customers_crm.sql
  007   | 007    | 007_tables.sql
+ 008   | 008    | 008_rooms_and_table_layout.sql
+ 009   | 009    | 009_booking_source_and_noshow.sql
+ 010   | 010    | 010_service_slots.sql
+ 011   | 011    | 011_booking_table_assignments.sql
+ 012   | 012    | 012_service_slots_preset_signup.sql
+ 013   | 013*   | 013_tenants_edition.sql  ← applicata via MCP (2026-05-14)
 ```
 
-Tutte le migrazioni 001–007 sono **applicate al DB remoto**. La prossima migrazione deve essere `008_*.sql`.
+*La 013 è applicata sul DB remoto ma potrebbe non risultare nel registro CLI (vedi § 4b).
+
+Tutte le migrazioni 001–013 sono **applicate al DB remoto**. La prossima migrazione deve essere `014_*.sql`.
 
 ---
 
@@ -27,10 +35,14 @@ Tutte le migrazioni 001–007 sono **applicate al DB remoto**. La prossima migra
 
 ```bash
 # 1. Crea il file (naming numerico progressivo)
-# supabase/migrations/008_nome_descrittivo.sql
+# supabase/migrations/014_nome_descrittivo.sql
 
-# 2. Applica al DB remoto
+# 2a. Prova prima con CLI
 npx supabase db push
+
+# 2b. Se CLI fallisce (disallineamento versioni) → usa MCP Supabase
+#     apply_migration(name, query)  — applica DDL direttamente sul DB remoto
+#     Poi: npx supabase migration repair --status applied 013  (allinea registro)
 
 # 3. Rigenera i tipi TypeScript
 npm run db:types:linked
@@ -56,7 +68,26 @@ Due file locali hanno prefisso `003`:
 
 ---
 
-## 4. Storico alignment (2026-05-13)
+## 4. Limite noto — CLI `db push` e disallineamento post-013 (2026-05-14)
+
+A partire dalla 013, la CLI `npx supabase db push` restituisce:
+```
+Remote migration versions not found in local migrations directory.
+Make sure your local git repo is up-to-date.
+```
+
+**Causa**: la 013 è stata applicata via MCP `apply_migration` senza passare dal registro CLI, lasciando le versioni remote non allineate con quelle locali.
+
+**Soluzione per riallineare**:
+```bash
+npx supabase migration repair --status applied 013
+```
+
+**Soluzione alternativa permanente**: continuare ad applicare DDL via MCP `apply_migration` + creare il file `.sql` localmente come documentazione + eseguire `repair` dopo ogni migrazione.
+
+---
+
+## 4b. Storico alignment (2026-05-13)
 
 Il DB remoto fu inizializzato con naming **timestamped** (20260504181204–20260513010545) prima di adottare il naming numerico. Il disallineamento è stato risolto in due passi:
 

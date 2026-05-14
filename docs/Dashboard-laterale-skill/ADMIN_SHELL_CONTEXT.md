@@ -10,25 +10,52 @@
 ```
 AdminShell (src/components/layout/AdminShell.tsx)
 │
-├── <aside> sidebar sinistra — routing state-based (NO cambio URL)
-│   ├── Pulsante "Home" (icona Home, in cima → sezione 'home')   ← DEFAULT
-│   ├── SIDEBAR_NAV (3 voci):
-│   │   ├── Form Pubblico  (ExternalLink → window.open '/prenota/:slug', _blank)
-│   │   ├── Impostazioni   (Store → 'home' + sessionStorage + restaurantSettingsSignal)
-│   │   └── Analytics      (BarChart3 → sezione 'analytics')
-│   └── Bottom dock: avatar utente + logout
+├── [se !features.sidebar → edition Classic]
+│   └── <div className="min-h-screen"> <AdminDashboard /> </div>  ← standalone, nessuna sidebar
 │
-└── <main> contenuto — switch su `section` state
-    ├── 'home' | 'prenotazioni' → <AdminDashboard />   ← DEFAULT = 'home'
-    ├── 'crm'                  → <CrmPage />
-    ├── 'servizio'             → <ServizioPage />
-    └── 'analytics'            → <AnalyticsPage />
+└── [se features.sidebar → edition Pro/Enterprise]
+    ├── <aside> sidebar sinistra — routing state-based (NO cambio URL)
+    │   ├── Pulsante "Home" (icona Home, in cima → sezione 'home')   ← DEFAULT Pro/Enterprise
+    │   ├── SIDEBAR_NAV_ITEMS (4 voci, filtrate per features):
+    │   │   ├── Form Pubblico  (ExternalLink → window.open '/prenota/:slug', _blank)
+    │   │   ├── Servizio       (ConciergeBell → sezione 'servizio',  featureKey: 'servizio')
+    │   │   ├── CRM Clienti    (Users → sezione 'crm',              featureKey: 'crm')
+    │   │   └── Analytics      (BarChart3 → sezione 'analytics',    featureKey: 'analytics')
+    │   └── Bottom dock: avatar utente + logout
+    │
+    └── <main> contenuto — switch su `section` state
+        ├── 'home'         → <AdminDashboard bodyOverride={<AdminHomePage />} />
+        ├── 'prenotazioni' → <AdminDashboard />                    ← DEFAULT Classic
+        ├── 'crm'          → <CrmPage />          [solo se features.crm]
+        ├── 'servizio'     → <ServizioPage />      [solo se features.servizio]
+        └── 'analytics'    → <AnalyticsPage />     [solo se features.analytics]
 ```
 
 **Regole cardine sidebar**:
-- `'home'` NON compare nel `SIDEBAR_NAV` — è coperto dal pulsante Home in cima
-- `'prenotazioni'` NON compare nel `SIDEBAR_NAV` — stesso pulsante Home (section 'home' e 'prenotazioni' montano entrambi AdminDashboard)
-- **Form Pubblico**: usa sempre `window.open(..., '_blank', 'noopener,noreferrer')` — MAI `window.location.href` (navigherebbe via dalla dashboard admin)
+- `'home'` NON compare in `SIDEBAR_NAV_ITEMS` — è coperto dal pulsante Home in cima
+- `'prenotazioni'` NON compare in `SIDEBAR_NAV_ITEMS` — cliccando un tab da Home si passa a 'prenotazioni' via `onBodyOverrideExit`
+- **Form Pubblico**: usa sempre `window.open(..., '_blank', 'noopener,noreferrer')` — MAI `window.location.href`
+- **Edition Classic** (`!features.sidebar`): AdminShell fa un return anticipato — nessun aside, nessun wrapper sidebar. AdminDashboard occupa tutta la pagina. Section default = `'prenotazioni'`.
+- **Edition Pro/Enterprise** (`features.sidebar`): layout completo con sidebar. Section default = `'home'`.
+
+### Sistema Edition e Feature Flags
+
+```typescript
+// src/config/features.ts
+buildFeatures(edition: TenantEdition): FeatureFlags
+// Letto via: const features = useFeatures()  (src/hooks/useFeatures.ts)
+// Sorgente: organizations.edition (letto in TenantContext.setTenantFromAdmin)
+
+// Classic → sidebar/home/crm/analytics/servizio/walkIn/noShow/tableAssignments = false
+// Pro     → tutti true
+// Enterprise → tutti true
+```
+
+### bodyOverride — come funziona la sezione Home
+
+AdminDashboard accetta due prop opzionali aggiunte il 2026-05-14:
+- `bodyOverride?: React.ReactNode` — se presente, il `<main>` di AdminDashboard mostra questo contenuto invece dei tab. **Header e 5 NavItem restano sempre visibili.**
+- `onBodyOverrideExit?: () => void` — chiamata quando l'utente clicca un NavItem mentre Home è attiva. AdminShell la usa per passare `section → 'prenotazioni'` e deselezionare Home dalla sidebar.
 
 ---
 
@@ -36,10 +63,13 @@ AdminShell (src/components/layout/AdminShell.tsx)
 
 | File | Ruolo |
 |------|-------|
-| `src/components/layout/AdminShell.tsx` | Layout: sidebar + main, routing state |
-| `src/pages/AdminHomePage.tsx` | Placeholder per futura dashboard riassuntiva (non montata dalla shell su `home`) |
-| `src/pages/ServizioPage.tsx` | Placeholder Servizio |
-| `src/pages/AnalyticsPage.tsx` | Placeholder Analytics |
+| `src/components/layout/AdminShell.tsx` | Layout: sidebar + main, routing state, gating edition |
+| `src/hooks/useFeatures.ts` | Hook: legge `edition` da TenantContext, ritorna `FeatureFlags` |
+| `src/config/features.ts` | `buildFeatures(edition)` — fonte unica di tutti i feature flag |
+| `src/types/edition.ts` | Tipo `TenantEdition = 'classic' \| 'pro' \| 'enterprise'` |
+| `src/pages/AdminHomePage.tsx` | Home page (KPI giorno + quick-nav). Montata via `bodyOverride` in AdminDashboard |
+| `src/pages/ServizioPage.tsx` | Sezione Servizio (CRUD tavoli/sale) — gated `features.servizio` |
+| `src/pages/AnalyticsPage.tsx` | Sezione Analytics (KPI + trend) — gated `features.analytics` |
 
 Per file specifici di CRM e altre sezioni → vedi `ADMIN_PAGES_CONTEXT.md`.
 
@@ -132,12 +162,12 @@ const cls = `bg-${color}-600`  // ❌ Tailwind v4 non genera questa classe
 
 ## 7. Pattern per nuove sezioni
 
-### Procedura (5 passi)
+### Procedura (6 passi)
 1. Aggiungere `AdminShellSection` type in `AdminShell.tsx`
-2. Aggiungere voce in `SIDEBAR_NAV` / array nav (icona Lucide + label italiano) — **non** aggiungere `'prenotazioni'`
-3. Aggiungere render condizionale in `<main>` della shell
-4. Creare page in `src/pages/NomePaginaPage.tsx`
-5. Importare e usare in `AdminShell.tsx`
+2. Aggiungere flag in `FeatureFlags` (`src/config/features.ts`) e in `buildFeatures()`
+3. Aggiungere voce in `SIDEBAR_NAV_ITEMS` con `featureKey` corrispondente — **non** aggiungere `'home'` o `'prenotazioni'`
+4. Aggiungere render condizionale in `<main>` gated con `features.nomeFlag`
+5. Creare page in `src/pages/NomePaginaPage.tsx`
 6. **Aggiungere sezione in `ADMIN_PAGES_CONTEXT.md`** con file chiave, pattern e note
 
 ### Scheletro pagina placeholder

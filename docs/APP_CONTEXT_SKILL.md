@@ -19,10 +19,13 @@ Leggi il task ricevuto e applica questa tabella:
 
 | Il task riguarda… | Skill da caricare |
 |-------------------|-------------------|
+| **AdminDashboard / BookingCalendar / BookingForm / BookingsList / BookingDetailsModal / useBookingMutations / pagina admin classica / tab Calendario-Prenotazioni-Settings** | `docs/ADMIN_CLASSIC_SKILL.md` ⚠️ **OBBLIGATORIO PRIMA DI MODIFICARE** |
 | AdminShell / sidebar / nav / sezioni / routing admin | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
 | CRM / clienti / customer / useCustomers / CustomerProfile | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
+| Edition / FEATURES flag / useFeatures / features.sidebar / buildFeatures | `docs/APP_CONTEXT_SKILL.md` § 2 + `src/config/features.ts` + `src/hooks/useFeatures.ts` |
 | UI / className / Tailwind / layout / componenti / tema / colori / index.css | `docs/per-ui-design/UI_EDIT_SKILL.md` |
 | DB / schema / migrazioni / RLS / policy / tabelle / trigger / tipi database.ts | `docs/Database-Skill/DB_SKILL.md` |
+| Task che tocca admin classica + qualsiasi altra cosa | **ADMIN_CLASSIC sempre + skill area** |
 | Task che tocca sia layout shell che stile Tailwind | **entrambi** ADMIN_SHELL + UI_EDIT |
 | Task che tocca sia DB che UI o shell | **entrambi** DB + skill area corrispondente |
 | Non è chiaro di quale area si tratti | Leggi `CLAUDE.md`, poi usa questa tabella |
@@ -46,13 +49,22 @@ Non mischiare mai i due client. `supabase` è per operazioni admin autenticate; 
 
 Il routing admin è **state-based** (nessun cambio URL). `AdminShell.tsx` gestisce uno stato `section` e monta il componente corretto.
 
-| `section` | Componente montato | Stato |
-|-----------|-------------------|-------|
-| `'home'` ← DEFAULT | `<AdminHomePage />` | stabile — quick-nav + KPI giorno + prossime 3h |
-| `'prenotazioni'` | `<AdminDashboard />` | stabile (pulsante Calendario) |
-| `'crm'` | `<CrmPage />` | stabile |
-| `'servizio'` | `<ServizioPage />` | implementato F1 — CRUD tavoli per sala |
-| `'analytics'` | `<AnalyticsPage />` | implementato F1 — KPI + trend |
+**Il comportamento varia in base all'edition del tenant** (letto da `useFeatures()`):
+
+| Edition | Section default | Layout |
+|---------|----------------|--------|
+| `classic` | `'prenotazioni'` | Nessuna sidebar — AdminDashboard standalone |
+| `pro` / `enterprise` | `'home'` | Sidebar completa + sezioni avanzate |
+
+| `section` | Componente montato | Visibile in |
+|-----------|-------------------|-------------|
+| `'home'` ← DEFAULT Pro | `<AdminDashboard bodyOverride={<AdminHomePage />} />` | Pro, Enterprise |
+| `'prenotazioni'` ← DEFAULT Classic | `<AdminDashboard />` | tutte le edition |
+| `'crm'` | `<CrmPage />` | Pro, Enterprise |
+| `'servizio'` | `<ServizioPage />` | Pro, Enterprise |
+| `'analytics'` | `<AnalyticsPage />` | Pro, Enterprise |
+
+**Nota sezione Home**: AdminDashboard viene sempre montata anche per `section='home'`. AdminHomePage viene passata come `bodyOverride` — Header e 5 NavItem restano visibili. Cliccando un NavItem da Home, la sezione passa a `'prenotazioni'`.
 
 File di dettaglio per ogni sezione: `docs/Dashboard-laterale-skill/ADMIN_PAGES_CONTEXT.md`.
 
@@ -64,16 +76,18 @@ File di dettaglio per ogni sezione: `docs/Dashboard-laterale-skill/ADMIN_PAGES_C
 src/
 ├── components/layout/   AdminShell.tsx
 ├── components/ui/       Button, Input, Modal, Card, Badge, Alert, EmptyState, Spinner…
-├── contexts/            TenantContext.tsx  ← LOCKED
+├── config/              features.ts  ← buildFeatures(edition) → FeatureFlags
+├── contexts/            TenantContext.tsx  ← LOCKED (eccezione: campo edition)
 ├── features/booking/
 │   ├── components/      componenti dashboard (BookingCalendar, CRM, ecc.)
 │   ├── hooks/           useAdminAuth, useBookingMutations, useCustomers, ecc.
 │   ├── lib/             restaurantSettingRegistry
 │   └── utils/           helper puri (date, prezzi)
+├── hooks/               useFeatures.ts, useBusinessHours.ts, useRateLimit.ts…
 ├── lib/                 supabase.ts, supabasePublic.ts, email.ts, logger.ts, utils.ts
 ├── pages/               AdminDashboard, AdminHomePage, CrmPage, ServizioPage, AnalyticsPage…
 ├── router.tsx           ← solo su esplicita richiesta
-└── types/               database.ts (generato), booking.ts, customer.ts
+└── types/               database.ts (generato), booking.ts, customer.ts, edition.ts
 ```
 
 ---
@@ -83,10 +97,30 @@ src/
 ```
 LOCK  CollapsibleCard.tsx          — 57 test — mai toccare
 LOCK  Modal.tsx  z-[10050]         — stack calibrato con Toast z-100000
-LOCK  TenantContext.tsx            — core multi-tenancy — MAI
+LOCK  TenantContext.tsx            — core multi-tenancy — MAI (eccezione: campo edition)
 LOCK  src/lib/supabase.ts          — client autenticato — MAI
 LOCK  supabase/migrations/         — DB remoto già applicato — MAI
 LOCK  src/router.tsx               — solo su esplicita richiesta
+
+LOCK  ADMIN CLASSICA — vedi docs/ADMIN_CLASSIC_SKILL.md
+      • src/pages/AdminDashboard.tsx
+      • src/features/booking/components/BookingCalendar.tsx
+      • src/features/booking/components/BookingForm.tsx
+      • src/features/booking/components/BookingsList.tsx
+      • src/features/booking/components/BookingDetailsModal.tsx
+      • src/features/booking/components/RestaurantSettingsTab.tsx
+      • src/features/booking/hooks/useBookingMutations.ts
+      • src/features/booking/hooks/useCustomers.ts (parte base)
+
+      → Prima di toccare uno di questi file l'agente DEVE produrre
+        spiegazione preventiva (5 punti) e attendere conferma utente.
+        Vedi sezione 0 di ADMIN_CLASSIC_SKILL.md.
+
+RULE  Sidebar features non importano da admin classica senza interfacce pubbliche
+RULE  Nuove feature in admin classica SEMPRE dietro FEATURES flag — usare useFeatures(), mai ADMIN_FEATURES hardcoded
+RULE  Prop aggiunte ad AdminDashboard sempre OPTIONAL con default sensati
+RULE  Edition Classic = !features.sidebar → AdminShell fa return anticipato, nessuna sidebar
+RULE  Per aggiungere una feature gated: 1) flag in FeatureFlags+buildFeatures 2) featureKey in SIDEBAR_NAV_ITEMS 3) gating nel render
 
 RULE  Classi Tailwind: solo stringhe letterali statiche — mai `bg-${x}-600`
 RULE  cn() da @/lib/utils — mai clsx() o twMerge() direttamente
@@ -117,3 +151,40 @@ npm run validate      # lint + typecheck + test (usare pre-PR)
 - **TanStack Query**: query server-state nei hook in `src/features/booking/hooks/`
 - **Commit**: `feat(scope):` · `fix(scope):` · `update(scope):`
 - **Import alias**: `@/` → `src/`
+
+---
+
+## 7. Obbligo fine sessione — Report + Allineamento skill
+
+Al termine di ogni sessione di lavoro l'agente DEVE:
+
+### 7.1 Scrivere il report
+
+Creare un file `Report-*.md` in `docs/Sessioni di lavoro/GG-MM-AA/` (creando la cartella se non esiste).
+
+Il report deve contenere:
+- Cosa è stato fatto (in ordine cronologico)
+- File toccati e perché (linguaggio utente — non "ho modificato X" ma "ora Mario vede Y")
+- Domande poste all'utente e risposte ricevute
+- Test eseguiti e risultato (`npm run validate`)
+- Cosa resta per la prossima sessione
+- Eventuali deviazioni dal plan con motivazione
+
+### 7.2 Allineare i file di skill
+
+Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le regole d'uso, l'agente DEVE aggiornare i file di skill corrispondenti **nella stessa sessione**, non in una successiva.
+
+**Regola**: se hai toccato un file → aggiorna il skill che lo documenta.
+
+| Se hai modificato… | Aggiorna anche… |
+|--------------------|-----------------|
+| `AdminShell.tsx` (routing, sezioni, edition) | `ADMIN_SHELL_CONTEXT.md` |
+| `AdminDashboard.tsx` (prop, tab, layout) | `ADMIN_CLASSIC_SKILL.md` sezione "stato attuale" |
+| `TenantContext.tsx` | `APP_CONTEXT_SKILL.md` §4 invarianti |
+| `src/config/features.ts` o `src/hooks/useFeatures.ts` | `APP_CONTEXT_SKILL.md` §2 e §4 |
+| `supabase/migrations/` (nuova migrazione) | `docs/DATABASE.md` + `DB_MIGRATIONS_CONTEXT.md` + `DB_SCHEMA_CONTEXT.md` |
+| Nuova pagina/sezione admin | `ADMIN_PAGES_CONTEXT.md` + `ADMIN_SHELL_CONTEXT.md` §7 |
+| Struttura cartelle `src/` | `APP_CONTEXT_SKILL.md` §3 |
+| Qualsiasi file LOCK | Aggiorna sezione "stato attuale" nello skill di area |
+
+**Come verificare**: prima di chiudere la sessione, rileggere la lista LOCK in `ADMIN_CLASSIC_SKILL.md` §4 e confrontarla con i file toccati. Se c'è discrepanza, aggiornare.

@@ -1,0 +1,228 @@
+---
+name: admin-classic
+description: >-
+  Skill di blindatura per la pagina Admin Classica (AdminDashboard e suoi componenti core booking).
+  Carica questo skill PRIMA di modificare qualsiasi file della lista LOCK qui sotto, o quando un task
+  potrebbe avere side-effects sull'admin classica. Definisce cosa è intoccabile, perché, e come spiegarlo
+  all'utente prima di proporre modifiche.
+---
+
+# Admin Classic Skill — Pagina Admin blindata
+
+> **Scopo commerciale**: l'app è venduta in edition differenziate (Classic, Pro, Enterprise) decise dal campo `tenants.edition` in Supabase. La pagina Admin Classica è il **prodotto base** che TUTTI i clienti vedono, anche chi non paga niente di più. Romperla = rompere il prodotto per ogni cliente.
+
+---
+
+## 0. Regola d'oro per gli agenti
+
+**Prima di modificare qualsiasi file della LOCK list qui sotto, l'agente DEVE produrre questa spiegazione preventiva all'utente e attendere conferma:**
+
+1. **File coinvolti**: elenco completo dei path che verranno toccati.
+2. **A cosa servono**: spiegazione in linguaggio utente di cosa fa ciascun file. Esempio: "questa è la pagina che il ristoratore vede quando apre la dashboard al mattino" — non "questo è un componente React che renderizza un layout flex".
+3. **Flusso utente reale**: descrivere un caso d'uso concreto che mostra perché il cambio è necessario. Esempio: "Mario apre l'app, clicca su Calendario, oggi vede X, dovrebbe vedere Y, ecco perché modifichiamo questo file".
+4. **Edition impattate**: indicare se il cambio tocca Classic, Pro, Enterprise o tutte.
+5. **Cosa potrebbe rompersi**: lista realistica dei rischi, in linguaggio utente. Esempio: "se sbagliamo, Mario apre il calendario e non vede le prenotazioni di oggi".
+
+**Senza queste 5 cose comunicate prima, l'agente NON modifica nessun file LOCK.**
+
+---
+
+## 1. LOCK list — file blindati
+
+### `src/pages/AdminDashboard.tsx` — LOCK strutturale
+**A cosa serve**: è la pagina principale che il ristoratore vede dopo il login. Contiene l'Header in alto, i 5 NavItem button (Calendario, Prenotazioni, CRM tab, ecc.), e il corpo che cambia in base al tab selezionato. È **l'unica pagina che vedono i clienti edition Classic**.
+
+**Cosa si rompe se la tocchi senza criterio**:
+> Mario è un ristoratore con versione Classic. Al mattino apre l'app per vedere le prenotazioni del giorno. Se questo file è rotto, vede una pagina bianca o un layout sballato e non può lavorare. Non ha altre pagine, non ha sidebar, ha solo questo. Se rompi questo, rompi il prodotto base.
+
+**Modifiche permesse**:
+- Aggiungere nuove **prop opzionali** con default sensati
+- Wrapper esterni che la avvolgono senza modificare il contenuto
+- Bug fix isolati con test di non-regressione
+
+**Modifiche vietate senza spiegazione preventiva approvata**:
+- Rimuovere o modificare i tab esistenti
+- Cambiare la logica del calendario o delle form
+- Hardcodare feature avanzate (CRM esteso, walk-in, analytics) dentro il file
+- Aggiungere prop obbligatorie (rompono la versione standalone)
+- Modificare il sistema di gestione tema (`data-admin-theme`)
+
+---
+
+### `src/features/booking/components/BookingCalendar.tsx` — LOCK core
+**A cosa serve**: è il calendario che mostra le prenotazioni del ristorante per giorno/settimana/mese. È il **cuore operativo** della giornata del ristoratore.
+
+**Cosa si rompe se la tocchi senza criterio**:
+> Luigi gestisce la sala. Apre l'app, clicca Calendario, vuole vedere tutti i tavoli prenotati per stasera. Se questo file è rotto: o non vede le prenotazioni, o le vede ma non può cliccarci sopra per modificarle, o la pagina crasha. Conseguenza: Luigi non sa chi viene a cena stasera. Disastro operativo.
+
+**Modifiche permesse**:
+- Feature opt-in **gated da FEATURES flag** (es. `if (features.walkIn) ...`)
+- Bug fix isolati
+
+**Modifiche vietate senza spiegazione preventiva**:
+- Cambiare il modello dati di una prenotazione
+- Rimuovere stati esistenti (accepted, pending, ecc.)
+- Aggiungere logica che assume feature avanzate sempre attive
+
+---
+
+### `src/features/booking/components/BookingForm.tsx` — LOCK core
+**A cosa serve**: form per creare/modificare una prenotazione. Usata sia dal ristoratore (admin) sia dal cliente finale (form pubblico).
+
+**Cosa si rompe se la tocchi senza criterio**:
+> Una cliente, Anna, va sul sito del ristorante per prenotare un tavolo per il suo anniversario. Se la form è rotta, non può prenotare. Il ristorante perde il cliente, l'app non funziona per la sua promessa base.
+
+**Modifiche permesse**: bug fix, validazioni più precise (non meno).
+**Modifiche vietate**: rimuovere campi richiesti dal DB, cambiare logica di submit.
+
+---
+
+### `src/features/booking/components/BookingsList.tsx` — LOCK core
+**A cosa serve**: lista tabellare delle prenotazioni con filtri e azioni rapide. Vista alternativa al calendario.
+
+**Cosa si rompe**: il ristoratore non vede l'elenco prenotazioni, non può accettarle/rifiutarle in massa.
+
+---
+
+### `src/features/booking/components/BookingDetailsModal.tsx` — LOCK strutturale
+**A cosa serve**: finestra che si apre cliccando una prenotazione, mostra dettagli + bottoni azione (accetta/rifiuta/modifica/no-show).
+
+**Cosa si rompe**:
+> Mario clicca su una prenotazione per vedere il numero di telefono del cliente e accettarla. Se questo modal è rotto, o non si apre o non mostra il bottone "Accetta" → Mario non riesce a confermare la prenotazione.
+
+**Modifiche permesse**: bottoni aggiuntivi gated (es. No-show già gated).
+**Modifiche vietate**: rimuovere bottoni core (Accetta/Rifiuta/Modifica).
+
+---
+
+### `src/features/booking/components/RestaurantSettingsTab.tsx` — LOCK strutturale
+**A cosa serve**: tab impostazioni ristorante (orari, capacità, preferenze).
+
+**Cosa si rompe**: il ristoratore non può configurare il suo ristorante. Onboarding bloccato.
+
+---
+
+### `src/features/booking/hooks/useBookingMutations.ts` — LOCK core
+**A cosa serve**: contiene le funzioni che modificano lo stato delle prenotazioni nel database (accetta, rifiuta, modifica, cancella, segna no-show). È il **motore di tutte le azioni** sulla dashboard.
+
+**Cosa si rompe**:
+> Mario accetta una prenotazione cliccando il bottone verde. Se questo hook è rotto, il click non fa niente, oppure cambia lo stato in DB ma la UI non si aggiorna, oppure peggio: cambia lo stato sbagliato. Il ristoratore non si fida più dell'app.
+
+**Modifiche permesse**:
+- Aggiungere `queryClient.invalidateQueries` per nuove query keys (no-op se la query non esiste, **non rompe Classic**)
+- Migliorare error handling
+- Cambiare `console.log` in `logger.xxx`
+
+**Modifiche vietate**:
+- Cambiare la signature pubblica delle mutation
+- Rimuovere mutation esistenti
+- Cambiare logica transazionale senza spiegazione preventiva
+
+---
+
+### `src/features/booking/hooks/useCustomers.ts` — LOCK parziale
+**A cosa serve**: gestisce i dati dei clienti (lettura/scrittura tabella `customers`). Usata dal CRM tab classico **e** dal CRM esteso (sidebar).
+
+**Cosa si rompe**:
+> Mario sta scrivendo una prenotazione, l'app dovrebbe suggerirgli i clienti già registrati con quel nome. Se questo hook è rotto, non vede suggerimenti, deve riscrivere tutto a mano.
+
+**Regola speciale**: le funzioni base usate dall'admin classica sono LOCK. Le funzioni avanzate (filtri, export, segmentazione) usate solo dal CRM esteso possono essere modificate liberamente.
+
+---
+
+### `src/contexts/TenantContext.tsx` — LOCK ASSOLUTO + eccezione edition
+**A cosa serve**: identifica QUALE ristorante sta usando l'app in questo momento. Senza questo, l'app non sa di chi mostrare i dati.
+
+**Cosa si rompe**:
+> Mario fa login ma l'app non capisce che lui è "Pizzeria da Mario" → gli mostra dati di un altro ristorante, o niente. **Data leak gravissimo** o app inutilizzabile.
+
+**Modifiche permesse SOLO**:
+- Aggiungere il campo `edition` letto dalla query tenant (parte del Plan Edition System)
+
+**Tutto il resto è LOCK ASSOLUTO**. Non toccare logica di risoluzione tenant, non toccare gestione sessione.
+
+---
+
+### `src/lib/supabase.ts` / `src/lib/supabasePublic.ts` — LOCK ASSOLUTO
+**A cosa servono**: connessione al database. `supabase` per admin loggato, `supabasePublic` per form pubblici.
+
+**Cosa si rompe**: l'app non parla più col database. Nulla funziona.
+
+**Modifiche permesse**: nessuna senza esplicita richiesta dell'utente con motivazione.
+
+---
+
+## 2. Regola di separazione: sidebar non sporca admin classica
+
+Le feature sidebar (CRM esteso, Servizio, Analytics, Home) NON devono:
+
+1. **Importare codice dai file LOCK** se non tramite interfacce pubbliche (prop, hook esposti).
+2. **Modificare hooks booking core** (`useBookingMutations`, `useCustomers` parte base) senza gating via FEATURES flag.
+3. **Aggiungere prop obbligatorie** ad AdminDashboard o suoi sotto-componenti core (rompe la versione standalone Classic).
+
+**Esempio scorretto**:
+> Stai aggiungendo una nuova feature "report mensile" in Analytics e per pigrizia modifichi `BookingCalendar` per esporre un nuovo dato. → **VIETATO**. Crea un nuovo hook che legge dal DB e lo usa Analytics, senza toccare BookingCalendar.
+
+**Esempio corretto**:
+> Stai aggiungendo "no-show" che è una feature Pro. Modifichi `BookingDetailsModal` aggiungendo il bottone, MA il bottone è dentro `if (features.noShow)`. Risultato: edition Classic non vede il bottone, modal funziona come prima.
+
+---
+
+## 3. Quando un agente sta per modificare un file LOCK
+
+**Workflow obbligatorio**:
+
+```
+1. Agente legge il task
+2. Identifica i file da toccare
+3. Verifica se almeno uno è in LOCK list
+4. SE SÌ:
+   → Produce spiegazione preventiva (5 punti del paragrafo 0)
+   → Aspetta conferma utente
+   → SOLO DOPO conferma, scrive codice
+5. SE NO:
+   → Procede normalmente
+```
+
+**Esempio di spiegazione preventiva ben fatta** (template da usare):
+
+> Per implementare X devo toccare questi file:
+>
+> - `src/pages/AdminDashboard.tsx` — è la pagina principale che vede ogni cliente, anche Classic.
+> - `src/features/booking/components/BookingCalendar.tsx` — è il calendario delle prenotazioni.
+>
+> **Flusso utente**: oggi Mario clicca il tab Calendario e vede le prenotazioni in lista. Vogliamo aggiungere un filtro "solo confermate". Quindi nel calendario aggiungiamo un toggle in alto, e quando attivo nasconde le prenotazioni pending.
+>
+> **Edition impattate**: tutte (Classic, Pro, Enterprise). È una feature base.
+>
+> **Cosa potrebbe rompersi**: se sbagliamo il filtro, Mario potrebbe non vedere prenotazioni che esistono → pensa di avere meno coperti del reale → disastro. Quindi aggiungo anche un test che verifica che il default mostri TUTTE le prenotazioni (toggle off).
+>
+> **Confermi che procedo?**
+
+---
+
+## 4. Stato attuale (snapshot 14-05-26 — post Fase 0/2/3)
+
+Branch `Sviluppo-Dashboard-laterale` rispetto a `main`:
+
+- **AdminDashboard.tsx**: integrato in AdminShell. Layout `min-h-0 flex-1`. Aggiunte due prop opzionali: `bodyOverride?: React.ReactNode` (mostra contenuto alternativo nel corpo, Header+NavItem restano visibili) e `onBodyOverrideExit?: () => void` (chiamata al click NavItem quando bodyOverride è attivo). `handleTabClick()` wrappa `setActiveTab` e chiama `onBodyOverrideExit` se necessario.
+- **BookingCalendar.tsx**: feature opt-in ora **gated** con `useFeatures()` — icona walk-in condizionata a `features.walkIn`, turni/badge "Da assegnare" condizionati a `features.servizio`.
+- **BookingDetailsModal.tsx**: bottone No-show gated con `features.noShow && canMarkNoShow`.
+- **useBookingMutations.ts**: aggiunte invalidazioni per `HOME_STATS_QUERY_KEY` e `ANALYTICS_QUERY_ROOT` — no-op in edition Classic, **safe**.
+- **Bug Home risolto**: cliccando Home nella sidebar, Header e NavItem restano visibili. Il contenuto Home passa via `bodyOverride`.
+
+**Riferimento completo**: `docs/Sessioni di lavoro/14-05-26/Report-esecuzione-blindatura-edition.md`.
+
+---
+
+## 5. Quick reference per agenti
+
+```
+FILE LOCK STRUTTURALE  → spiegazione preventiva obbligatoria, mods solo via prop/wrapper
+FILE LOCK CORE         → spiegazione preventiva obbligatoria, mods solo con FEATURES gating
+FILE LOCK ASSOLUTO     → NON toccare senza esplicita richiesta utente con motivazione
+
+REGOLA INVALIDAZIONI   → aggiungere invalidateQueries di query keys di altre edition è OK (no-op)
+REGOLA NUOVE FEATURE   → SEMPRE dietro FEATURES flag, mai hardcoded ON
+REGOLA PROP            → aggiungere prop ad AdminDashboard sempre OPTIONAL con default
+```
