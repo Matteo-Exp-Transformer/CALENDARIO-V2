@@ -37,6 +37,8 @@ npm run validate          # lint + typecheck + test (obbligatorio pre-PR)
 
 ## Test E2E esistenti (Playwright)
 
+### Admin Classic (credenziali: `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD`)
+
 | File | Flusso coperto | Stato |
 |------|---------------|-------|
 | `e2e/admin-login.spec.ts` | Login admin, redirect, logout | attivo |
@@ -47,6 +49,18 @@ npm run validate          # lint + typecheck + test (obbligatorio pre-PR)
 | `e2e/edition-classic.spec.ts` | Classic: no sidebar, 5 tab, no walk-in, no no-show | attivo (staging) |
 | `e2e/edition-classic-data-protection.spec.ts` | RLS blocca CRM per tenant Classic | attivo (staging) |
 | `e2e/edition-upgrade.spec.ts` | Classic→Pro via DB: sidebar appare dopo reload | attivo (staging) |
+| `e2e/admin-classic-tabs.spec.ts` | Tab Archivio, Tab Impostazioni, cancella prenotazione | attivo (staging) |
+
+### Admin Pro (credenziali: `E2E_PRO_ADMIN_EMAIL` / `E2E_PRO_ADMIN_PASSWORD`)
+
+I test in `e2e/pro/` si saltano automaticamente se `E2E_PRO_ADMIN_EMAIL` non è impostato.
+
+| File | Flusso coperto | Stato |
+|------|---------------|-------|
+| `e2e/pro/pro-login.spec.ts` | Login Pro, redirect con sidebar, credenziali errate | attivo (staging) |
+| `e2e/pro/pro-sidebar-nav.spec.ts` | Sidebar 5 bottoni, navigazione Home/CRM/Servizio/Analytics | attivo (staging) |
+| `e2e/pro/pro-crm.spec.ts` | CRM accessibile dalla sidebar, lista ≥3 clienti | attivo (staging) |
+| `e2e/pro/pro-home.spec.ts` | Home default Pro, bodyOverride, navigazione sidebar stabile | attivo (staging) |
 
 ---
 
@@ -63,11 +77,16 @@ VITE_SUPABASE_URL=https://docnnernvpyrbwuzzach.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon-key-staging>
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key-staging>
 
+# Admin Classic (richiesto dalla maggior parte dei test E2E)
 E2E_ADMIN_EMAIL=admin-classic@test.local
 E2E_ADMIN_PASSWORD=TestE2E2026!
 E2E_TENANT_SLUG=ristorante-test-classic
 E2E_CLASSIC_TENANT_ID=22222222-2222-2222-2222-222222222222
 E2E_SUPABASE_SERVICE_KEY=<service-role-key-staging>
+
+# Admin Pro (richiesto solo dai test in e2e/pro/ — ometti per saltarli)
+E2E_PRO_ADMIN_EMAIL=admin-pro@test.local
+E2E_PRO_ADMIN_PASSWORD=TestE2E2026!
 ```
 
 `playwright.config.ts` carica automaticamente questo file se presente.

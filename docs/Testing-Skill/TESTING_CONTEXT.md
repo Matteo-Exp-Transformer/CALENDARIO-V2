@@ -9,7 +9,7 @@ description: >-
 
 ## 1. Mappa test post-sessione 14-05-26
 
-### Vitest (54 test, 7 file)
+### Vitest (58 test, 8 file)
 
 | File | Flusso coperto | # test | Stato |
 |------|---------------|--------|-------|
@@ -20,8 +20,9 @@ description: >-
 | `src/features/booking/hooks/__tests__/useAdminAuth.test.tsx` | login, session check | 4 | ✅ pass |
 | `src/features/booking/hooks/__tests__/useMenuCategories.test.tsx` | CRUD categorie menu | 5 | ✅ pass |
 | `src/features/booking/hooks/__tests__/useBookingMutations.test.tsx` | accept, reject, restore, no-show | 4 | ✅ pass |
+| `src/features/booking/utils/__tests__/createBookingCustomerUpsert.test.ts` | upsert customers da form pubblico (fix B01) | 4 | ✅ pass |
 
-### Playwright E2E (8 spec file)
+### Playwright E2E (13 spec file)
 
 | File | Flusso coperto | Stato |
 |------|---------------|-------|
@@ -33,6 +34,11 @@ description: >-
 | `e2e/edition-classic.spec.ts` | Classic: no sidebar, 5 tab, no walk-in, no no-show (5 test) | ✅ 5 pass (fix B02: selettori scopati a `header nav`) |
 | `e2e/edition-classic-data-protection.spec.ts` | RLS blocca customers per Classic | ✅ pass |
 | `e2e/edition-upgrade.spec.ts` | Classic→Pro: sidebar appare dopo reload | ✅ pass (fix B03: timeout 15s + wait esplicito post-login) |
+| `e2e/admin-classic-tabs.spec.ts` | Tab Archivio, Tab Impostazioni, cancella prenotazione (soft-delete) | aggiunto sessione 14-05-26 |
+| `e2e/pro/pro-login.spec.ts` | Login Pro, redirect con sidebar, credenziali errate | aggiunto sessione 14-05-26 |
+| `e2e/pro/pro-sidebar-nav.spec.ts` | Sidebar 5 bottoni, navigazione Home/CRM/Servizio/Analytics | aggiunto sessione 14-05-26 |
+| `e2e/pro/pro-crm.spec.ts` | CRM accessibile, lista ≥3 clienti nel DB staging | aggiunto sessione 14-05-26 |
+| `e2e/pro/pro-home.spec.ts` | Home default Pro, bodyOverride, navigazione sidebar stabile | aggiunto sessione 14-05-26 |
 
 ---
 
@@ -86,11 +92,29 @@ Password: `TestE2E2026!`
 
 ---
 
-## 5. Checklist pre-PR testing
+## 5. Variabili E2E per i test Pro
+
+I test in `e2e/pro/` usano credenziali separate dalle Classic:
+
+| Variabile | Valore staging | Usata da |
+|-----------|---------------|----------|
+| `E2E_PRO_ADMIN_EMAIL` | `admin-pro@test.local` | tutti gli spec in `e2e/pro/` |
+| `E2E_PRO_ADMIN_PASSWORD` | `TestE2E2026!` | tutti gli spec in `e2e/pro/` |
+
+I test Pro si auto-saltano se `E2E_PRO_ADMIN_EMAIL` non è impostato:
+```ts
+test.skip(!process.env.E2E_PRO_ADMIN_EMAIL, 'richiede staging Pro configurato')
+```
+
+---
+
+## 6. Checklist pre-PR testing
 
 ```
-□ npm run validate (lint + typecheck + 54 Vitest) → tutto green
+□ npm run validate (lint + typecheck + 58 Vitest) → tutto green
 □ npm run test:e2e -- --grep edition → 7 pass (RLS + 5 Classic + upgrade)
+□ npm run test:e2e -- --grep "Admin Classic" → 5+ pass (tabs + soft-delete)
+□ npm run test:e2e -- --grep "Admin Pro" → pass se E2E_PRO_ADMIN_EMAIL configurato
 □ Nessun nuovo test tocca produzione
 □ Nuovi test Vitest usano mock, non URL reali
 □ Nuovi spec Playwright usano variabili E2E_*, non credenziali hardcoded

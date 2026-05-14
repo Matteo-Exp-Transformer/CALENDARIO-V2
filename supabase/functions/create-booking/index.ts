@@ -179,6 +179,33 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // --- Upsert customer in CRM ---
+    // service_role bypassa RLS; il trigger enforce_customer_tenant salta il check
+    // se auth.role() != 'authenticated', quindi l'insert è sicuro da Edge Function.
+    if (clientEmailNormalized) {
+      const { data: existingCustomer } = await supabaseAdmin
+        .from("customers")
+        .select("id")
+        .eq("tenant_id", orgId)
+        .eq("email", clientEmailNormalized.toLowerCase())
+        .maybeSingle();
+
+      if (existingCustomer) {
+        await supabaseAdmin
+          .from("customers")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", existingCustomer.id);
+      } else {
+        await supabaseAdmin.from("customers").insert({
+          tenant_id: orgId,
+          name: client_name,
+          email: clientEmailNormalized,
+          phone: client_phone || null,
+          source: "synced",
+        });
+      }
+    }
+
     // --- Record IP in rate_limits ---
     await supabaseAdmin.from("rate_limits").insert({
       ip_address: ip,
