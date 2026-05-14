@@ -164,6 +164,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [archiveSortOrder, setArchiveSortOrder] = useState<SortOrder>('booking_date')
   const [menuToolbarPromoDisabled, setMenuToolbarPromoDisabled] = useState(false)
   const menuPricesTabRef = useRef<MenuPricesTabHandle>(null)
+  const dashboardRootRef = useRef<HTMLDivElement>(null)
   const { data: stats } = useBookingStats()
 
   useEffect(() => {
@@ -193,6 +194,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }
 
   const scrollToTop = () => {
+    /** In layout Pro lo scroll è sul `<main>` di AdminShell, non sulla window. */
+    const shellMain = dashboardRootRef.current?.closest('main')
+    if (shellMain) {
+      shellMain.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -215,7 +222,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const showTabSecondaryChrome = !bodyOverride
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-[var(--color-bg)]">
+    <div ref={dashboardRootRef} className="flex min-h-0 flex-1 flex-col bg-[var(--color-bg)]">
 
       {/* Header */}
       <header className="relative z-30 border-b border-[var(--color-border)] bg-[var(--color-bg)] shadow-sm">
