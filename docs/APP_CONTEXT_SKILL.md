@@ -28,10 +28,13 @@ Leggi il task ricevuto e applica questa tabella:
 | Task che tocca admin classica + qualsiasi altra cosa | **ADMIN_CLASSIC sempre + skill area** |
 | Task che tocca sia layout shell che stile Tailwind | **entrambi** ADMIN_SHELL + UI_EDIT |
 | Task che tocca sia DB che UI o shell | **entrambi** DB + skill area corrispondente |
+| **data/ora prenotazioni / dateUtils / createBookingDateTime / extractTimeFromISO / desired_time / confirmed_start / orario display** | `docs/ADMIN_CLASSIC_SKILL.md` §4b — leggere **prima** di toccare qualsiasi logica orario |
 | **Test / Vitest / Playwright / staging Supabase / CI / copertura** | `docs/Testing-Skill/TESTING_SKILL.md` |
 | Non è chiaro di quale area si tratti | Leggi `CLAUDE.md`, poi usa questa tabella |
 
 Carica il skill indicato **prima** di aprire qualsiasi file da modificare.
+
+> **Regola sub-task**: ogni volta che un agente scompone il lavoro in sotto-task (a se stesso o a un sub-agente), deve ripetere questa domanda per ciascun sotto-task. Un task iniziale fuori dall'area booking può diventare un sub-task che tocca `useBookingMutations` o `dateUtils` — in quel momento scatta l'obbligo di caricare lo skill corrispondente prima di procedere. "L'ho già letto all'inizio" non è sufficiente se il sotto-task cambia area.
 
 ---
 
@@ -190,3 +193,10 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | Qualsiasi file LOCK | Aggiorna sezione "stato attuale" nello skill di area |
 
 **Come verificare**: prima di chiudere la sessione, rileggere la lista LOCK in `ADMIN_CLASSIC_SKILL.md` §4 e confrontarla con i file toccati. Se c'è discrepanza, aggiornare.
+
+**Aggiornare anche se il task era un sub-task**: se il sotto-task ha toccato file di un'area diversa da quella del task principale (es. task di debug UI che ha finito per modificare `useBookingMutations`), aggiornare lo skill dell'area realmente toccata — non solo quello del task originale.
+
+| Se hai modificato… | Aggiorna anche… |
+|--------------------|-----------------|
+| `useBookingMutations.ts` / `useWalkInMutation.ts` / qualsiasi mutation che scrive `confirmed_start` o `desired_time` | `ADMIN_CLASSIC_SKILL.md` §4 + §4b |
+| `dateUtils.ts` (createBookingDateTime, extractTimeFromISO, getAccurateStartTime) | `ADMIN_CLASSIC_SKILL.md` §4b + `TESTING_CONTEXT.md` se cambiano i test |
