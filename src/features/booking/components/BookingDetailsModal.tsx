@@ -41,6 +41,7 @@ import {
 import { CapacityWarningModal } from './CapacityWarningModal'
 import { PastStartTimeWarningModal } from './PastStartTimeWarningModal'
 import { cn } from '@/lib/utils'
+import { logger } from '@/lib/logger'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
 
 interface BookingDetailsModalProps {
@@ -184,7 +185,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
         placement: booking.placement || ''
       }
     } catch (error) {
-      console.error('[BookingDetailsModal] Error initializing form data:', error)
+      logger.error('[BookingDetailsModal] Error initializing form data:', error)
       // Return default values if initialization fails
       return {
         booking_type: 'tavolo' as BookingType,
@@ -238,7 +239,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
         placement: booking.placement || ''
       })
     } catch (error) {
-      console.error('[BookingDetailsModal] Error updating form data:', error)
+      logger.error('[BookingDetailsModal] Error updating form data:', error)
     }
   }, [booking, isEditMode])
 
@@ -627,7 +628,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
           toast.success('Prenotazione modificata con successo!')
         },
         onError: (error) => {
-          console.error('❌ [BookingDetailsModal] Save failed:', error)
+          logger.error('❌ [BookingDetailsModal] Save failed:', error)
         },
       }
     )
@@ -644,7 +645,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
         return
       }
       // No slot details available, but never block — proceed with warning
-      console.warn('⚠️ [BookingDetailsModal] Capacity exceeded but no slot details, proceeding anyway')
+      logger.warn('⚠️ [BookingDetailsModal] Capacity exceeded but no slot details, proceeding anyway')
       toast.warn(`⚠️ Attenzione: la capienza potrebbe essere superata. La modifica verrà comunque salvata.`)
     }
 

@@ -28,6 +28,7 @@ import { useCapacityCheck } from '../hooks/useCapacityCheck'
 import { CapacityWarningModal } from './CapacityWarningModal'
 import { PastStartTimeWarningModal } from './PastStartTimeWarningModal'
 import { isWallClockStartBeforeNow, trimTimeToHHmm } from '../utils/dateUtils'
+import { logger } from '@/lib/logger'
 
 
 interface AdminBookingFormProps {
@@ -315,7 +316,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
     }
 
     if (!capacityCheck.isAvailable) {
-      console.warn('⚠️ [AdminBookingForm] Capacity check failed but no slot details available, proceeding anyway')
+      logger.warn('⚠️ [AdminBookingForm] Capacity check failed but no slot details available, proceeding anyway')
       toast.warn(`⚠️ Attenzione: la capienza potrebbe essere superata. La prenotazione verrà comunque creata.`)
     }
 
@@ -381,7 +382,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
         onSubmit?.()
       },
       onError: (error) => {
-        console.error('Error creating booking:', error)
+        logger.error('Error creating booking:', error)
         toast.error('Errore nella creazione della prenotazione')
       }
     })

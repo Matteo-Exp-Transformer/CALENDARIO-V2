@@ -18,7 +18,9 @@ import {
   extractDateFromISO,
   calculateEndTimeFromStart,
   isWallClockStartBeforeNow,
+  trimTimeToHHmm,
 } from '../utils/dateUtils'
+import { logger } from '@/lib/logger'
 
 export const PendingRequestsTab: React.FC = () => {
   const { data: pendingBookings, isLoading, error, refetch } = usePendingBookings()
@@ -134,7 +136,7 @@ export const PendingRequestsTab: React.FC = () => {
           await refetch()
         },
         onError: (error) => {
-          console.error('❌ [PendingRequestsTab] Accept mutation error:', error)
+          logger.error('❌ [PendingRequestsTab] Accept mutation error:', error)
           toast.error('Errore nell\'accettazione della prenotazione')
         },
       }
@@ -172,7 +174,7 @@ export const PendingRequestsTab: React.FC = () => {
 
     // ✅ VALIDAZIONE: desired_time deve essere presente
     if (!booking.desired_time || booking.desired_time.trim() === '') {
-      console.error('❌ [PendingRequestsTab] No desired_time found for booking:', booking.id)
+      logger.error('❌ [PendingRequestsTab] No desired_time found for booking:', booking.id)
       toast.error('Errore: Orario di prenotazione non specificato. Impossibile accettare la prenotazione.')
       return
     }
@@ -213,7 +215,7 @@ export const PendingRequestsTab: React.FC = () => {
   // Conferma il rifiuto con il motivo inserito dall'admin
   const handleRejectConfirm = async (rejectionReason: string) => {
     if (!selectedBookingForReject) {
-      console.error('❌ [PendingRequestsTab] No booking selected for rejection')
+      logger.error('❌ [PendingRequestsTab] No booking selected for rejection')
       return
     }
 
@@ -233,7 +235,7 @@ export const PendingRequestsTab: React.FC = () => {
       // Forza il refetch delle richieste pending
       await refetch()
     } catch (error) {
-      console.error('❌ [PendingRequestsTab] Reject mutation error:', error)
+      logger.error('❌ [PendingRequestsTab] Reject mutation error:', error)
       toast.error('Errore nel rifiuto della prenotazione')
     }
   }
@@ -301,13 +303,7 @@ export const PendingRequestsTab: React.FC = () => {
         isOpen={showPastStartWarning}
         variant="accept_pending"
         desiredDate={pastStartPendingBooking?.desired_date ?? ''}
-        startTimeHHmm={
-          pastStartPendingBooking?.desired_time
-            ? pastStartPendingBooking.desired_time.includes(':')
-              ? pastStartPendingBooking.desired_time.split(':').slice(0, 2).join(':')
-              : pastStartPendingBooking.desired_time
-            : ''
-        }
+        startTimeHHmm={trimTimeToHHmm(pastStartPendingBooking?.desired_time ?? '')}
         onClose={() => {
           setShowPastStartWarning(false)
           setPastStartPendingBooking(null)
@@ -321,13 +317,10 @@ export const PendingRequestsTab: React.FC = () => {
           setShowPastStartWarning(false)
           setPastStartPendingBooking(null)
           if (!b?.desired_time?.trim()) return
-          const date = b.desired_date
-          const startTimeFormatted = b.desired_time.includes(':')
-            ? b.desired_time.split(':').slice(0, 2).join(':')
-            : b.desired_time
+          const startTimeFormatted = trimTimeToHHmm(b.desired_time)
           const endTimeFormatted = calculateEndTimeFromStart(startTimeFormatted)
-          const confirmedStart = createBookingDateTime(date, startTimeFormatted, true)
-          const confirmedEnd = createBookingDateTime(date, endTimeFormatted, false, startTimeFormatted)
+          const confirmedStart = createBookingDateTime(b.desired_date, startTimeFormatted, true)
+          const confirmedEnd = createBookingDateTime(b.desired_date, endTimeFormatted, false, startTimeFormatted)
           continueAcceptAfterPastStart(b, startTimeFormatted, confirmedStart, confirmedEnd)
         }}
       />

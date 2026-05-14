@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
+import { useMemo, useState, useEffect } from 'react'
 import { addHours, format, startOfDay } from 'date-fns'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabase } from '@/lib/supabase'
 import { logger } from '@/lib/logger'
-import { extractTimeFromISO } from '@/features/booking/utils/dateUtils'
+import { extractTimeFromISO, trimTimeToHHmm } from '@/features/booking/utils/dateUtils'
 
 export const HOME_STATS_QUERY_KEY = 'home-stats'
 
@@ -40,6 +41,7 @@ export interface UpcomingBooking {
 export interface HomeStatsData {
   stats: HomeStatValues
   upcoming: UpcomingBooking[]
+  rawRows: HomeStatsRow[]
 }
 
 const EMPTY_STATS: HomeStatValues = {
@@ -66,14 +68,50 @@ function eventDateFor(row: HomeStatsRow): string | null {
   return null
 }
 
+/**
+ * Costruisce un Date locale (wall clock) dalle cifre letterali dell'ISO string,
+ * ignorando l'offset. Necessario perché confirmedStart è salvato con +00:00 ma
+ * le cifre rappresentano l'orario a muro inserito dall'utente (non UTC reale).
+ * Usare `new Date(isoString)` convertirebbe al fuso locale e sposterebbe il confronto.
+ */
+function wallClockDateFromISO(iso: string): Date | null {
+  const m = iso.match(/(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/)
+  if (!m) return null
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), 0, 0)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
+/** Calcola upcoming dalla lista grezza con il `now` passato — chiamabile anche da un tick locale. */
+export function computeUpcoming(rows: HomeStatsRow[], now: Date): UpcomingBooking[] {
+  const upcomingCutoff = addHours(now, 3)
+  const result: UpcomingBooking[] = []
+
+  for (const row of rows) {
+    if (row.status !== 'accepted' || !row.confirmed_start) continue
+    const start = wallClockDateFromISO(row.confirmed_start)
+    if (start && start >= now && start <= upcomingCutoff) {
+      result.push({
+        id: row.id,
+        client_name: row.client_name,
+        num_guests: row.num_guests ?? 0,
+        start,
+        start_time: row.desired_time
+          ? trimTimeToHHmm(row.desired_time)
+          : extractTimeFromISO(row.confirmed_start),
+      })
+    }
+  }
+
+  result.sort((a, b) => a.start.getTime() - b.start.getTime())
+  return result
+}
+
 export function computeHomeStats(rows: HomeStatsRow[], now: Date): HomeStatsData {
   const today = format(startOfDay(now), 'yyyy-MM-dd')
-  const upcomingCutoff = addHours(now, 3)
 
   let totalToday = 0
   let confirmedCoversToday = 0
   let pendingToday = 0
-  const upcoming: UpcomingBooking[] = []
 
   for (const row of rows) {
     const eventDate = eventDateFor(row)
@@ -86,37 +124,24 @@ export function computeHomeStats(rows: HomeStatsRow[], now: Date): HomeStatsData
         confirmedCoversToday += row.num_guests ?? 0
       }
     }
-
-    if (row.status === 'accepted' && row.confirmed_start) {
-      // Costruisce l'istante per il confronto temporale dalle cifre letterali dell'ISO
-      // (offset +00:00 come scriviamo noi = stessa ora UTC), non da new Date() che
-      // convertirebbe al fuso locale e sposterebbe l'orario di display.
-      const start = new Date(row.confirmed_start)
-      if (!Number.isNaN(start.getTime()) && start >= now && start <= upcomingCutoff) {
-        const start_time = row.desired_time
-          ? row.desired_time.split(':').slice(0, 2).join(':')
-          : extractTimeFromISO(row.confirmed_start)
-        upcoming.push({
-          id: row.id,
-          client_name: row.client_name,
-          num_guests: row.num_guests ?? 0,
-          start,
-          start_time,
-        })
-      }
-    }
   }
-
-  upcoming.sort((a, b) => a.start.getTime() - b.start.getTime())
 
   return {
     stats: { totalToday, confirmedCoversToday, pendingToday },
-    upcoming,
+    upcoming: computeUpcoming(rows, now),
+    rawRows: rows,
   }
 }
 
 export function useHomeStats() {
   const { tenantId } = useTenantContext()
+
+  // Tick ogni 60s per ricalcolare upcoming senza refetch al DB
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000)
+    return () => clearInterval(id)
+  }, [])
 
   const query = useQuery({
     queryKey: [HOME_STATS_QUERY_KEY, tenantId],
@@ -143,16 +168,22 @@ export function useHomeStats() {
         throw new Error(res.error.message)
       }
 
-      const rows = (res.data ?? []) as HomeStatsRow[]
-      const now = new Date()
-      const computed = computeHomeStats(rows, now)
-      return computed
+      return (res.data ?? []) as HomeStatsRow[]
     },
   })
 
+  const rawRows = query.data ?? []
+
+  const stats = useMemo(() => {
+    if (!rawRows.length) return EMPTY_STATS
+    return computeHomeStats(rawRows, now).stats
+  }, [rawRows, now])
+
+  const upcoming = useMemo(() => computeUpcoming(rawRows, now), [rawRows, now])
+
   return {
-    stats: query.data?.stats ?? EMPTY_STATS,
-    upcoming: query.data?.upcoming ?? [],
+    stats,
+    upcoming,
     isLoading: query.isLoading,
     error: query.error as Error | null,
     refetch: query.refetch,
