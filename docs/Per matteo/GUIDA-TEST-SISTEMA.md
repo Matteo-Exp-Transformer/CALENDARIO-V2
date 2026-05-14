@@ -471,6 +471,11 @@ npm run test:e2e -- --grep "Admin Pro — Home"
 4. Navigazione CRM → Servizio → Home → la sidebar rimane sempre visibile
 
 ---
+### 2.14 - test per controllare flusso orario da pagina prenotazione e da pagina admin:
+ 
+src\features\booking\utils\__tests__\CONTROLLA_ORARIO-PRENOTAZIONI.test.ts
+
+---
 
 ## Parte 3 — Copertura attuale e lacune
 
