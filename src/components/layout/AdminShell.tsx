@@ -189,7 +189,7 @@ export const AdminShell: FC = () => {
   // Edition Classic: nessuna sidebar, AdminDashboard occupa tutta la pagina
   if (!features.sidebar) {
     return (
-      <div className="min-h-screen">
+      <div className="flex min-h-screen flex-col">
         <AdminDashboard restaurantSettingsSignal={restaurantSettingsSignal} />
       </div>
     )
@@ -366,7 +366,7 @@ export const AdminShell: FC = () => {
         </div>
       </aside>
 
-      <main className="min-h-0 flex-1 overflow-y-auto">
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         {(section === 'prenotazioni' || section === 'home') && (
           <AdminDashboard
             restaurantSettingsSignal={restaurantSettingsSignal}

@@ -215,7 +215,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const showTabSecondaryChrome = !bodyOverride
 
   return (
-    <div className="min-h-0 flex flex-1 flex-col bg-[var(--color-bg)]">
+    <div className="flex min-h-0 flex-1 flex-col bg-[var(--color-bg)]">
 
       {/* Header */}
       <header className="relative z-30 border-b border-[var(--color-border)] bg-[var(--color-bg)] shadow-sm">
