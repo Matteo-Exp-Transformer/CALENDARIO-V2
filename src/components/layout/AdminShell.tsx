@@ -22,7 +22,7 @@ import { ServizioPage } from '@/pages/ServizioPage'
 import { AnalyticsPage } from '@/pages/AnalyticsPage'
 import { Button } from '@/components/ui'
 import { useTenantContext } from '@/contexts/TenantContext'
-import { ADMIN_FEATURES } from '@/lib/adminFeatures'
+import { useFeatures } from '@/hooks/useFeatures'
 
 export type AdminShellSection = 'home' | 'prenotazioni' | 'crm' | 'servizio' | 'analytics'
 type SidebarActiveItem = 'home' | 'form' | 'analytics' | 'servizio' | 'crm' | 'settings' | 'dashboard-tab' | null
@@ -55,12 +55,12 @@ type SidebarNavAction =
   | { type: 'public-form' }
   | { type: 'settings' }
 
-const SIDEBAR_NAV: {
+const SIDEBAR_NAV_ITEMS: {
   id: string
   label: string
   icon: typeof Home
   action: SidebarNavAction
-  featureEnabled?: boolean
+  featureKey?: 'servizio' | 'crm' | 'analytics'
 }[] = [
   { id: 'form', label: 'Form Pubblico', icon: ExternalLink, action: { type: 'public-form' } },
   {
@@ -68,29 +68,35 @@ const SIDEBAR_NAV: {
     label: 'Servizio',
     icon: ConciergeBell,
     action: { type: 'section', section: 'servizio' },
-    featureEnabled: ADMIN_FEATURES.service,
+    featureKey: 'servizio',
   },
   {
     id: 'crm',
     label: 'CRM Clienti',
     icon: Users,
     action: { type: 'section', section: 'crm' },
-    featureEnabled: ADMIN_FEATURES.crm,
+    featureKey: 'crm',
   },
   {
     id: 'analytics',
     label: 'Analytics',
     icon: BarChart3,
     action: { type: 'section', section: 'analytics' },
+    featureKey: 'analytics',
   },
 ]
 
 export const AdminShell: FC = () => {
   const isNarrow = useIsNarrow()
+  const features = useFeatures()
   // Sidebar sempre chiusa all'avvio — si apre solo al click sul pulsante
   const [expanded, setExpanded] = useState(false)
-  const [section, setSection] = useState<AdminShellSection>('home')
-  const [activeSidebarItem, setActiveSidebarItem] = useState<SidebarActiveItem>('home')
+  const [section, setSection] = useState<AdminShellSection>(() =>
+    features.sidebar ? 'home' : 'prenotazioni',
+  )
+  const [activeSidebarItem, setActiveSidebarItem] = useState<SidebarActiveItem>(() =>
+    features.sidebar ? 'home' : null,
+  )
   const [restaurantSettingsSignal, setRestaurantSettingsSignal] = useState(0)
   const { user, logout } = useAdminAuth()
   const { tenantSlug } = useTenantContext()
@@ -166,6 +172,15 @@ export const AdminShell: FC = () => {
 
   // Narrow drawer: sidebar si comporta come overlay
   const isNarrowDrawerOpen = isNarrow && expanded
+
+  // Edition Classic: nessuna sidebar, AdminDashboard occupa tutta la pagina
+  if (!features.sidebar) {
+    return (
+      <div className="min-h-screen">
+        <AdminDashboard restaurantSettingsSignal={restaurantSettingsSignal} />
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-dvh overflow-hidden bg-(--color-bg)">
@@ -244,8 +259,9 @@ export const AdminShell: FC = () => {
           <div className="my-1 border-t border-(--color-border)" />
 
           {/* Voci nav */}
-          {SIDEBAR_NAV.filter((item) => item.featureEnabled !== false).map(
-            ({ id, label, icon: Icon, action }) => {
+          {SIDEBAR_NAV_ITEMS.filter((item) =>
+            item.featureKey ? features[item.featureKey] : true,
+          ).map(({ id, label, icon: Icon, action }) => {
               const active =
                 action.type === 'section'
                   ? activeSidebarItem === id ||
@@ -338,11 +354,23 @@ export const AdminShell: FC = () => {
       </aside>
 
       <main className="min-h-0 flex-1 overflow-y-auto">
-        {section === 'prenotazioni' && (
-          <AdminDashboard restaurantSettingsSignal={restaurantSettingsSignal} />
+        {(section === 'prenotazioni' || section === 'home') && (
+          <AdminDashboard
+            restaurantSettingsSignal={restaurantSettingsSignal}
+            bodyOverride={
+              section === 'home' ? (
+                <AdminHomePage
+                  onOpenPrenotazioni={() => openSection('prenotazioni', null)}
+                  onOpenCrm={() => openSection('crm', 'crm')}
+                  onOpenServizio={() => openSection('servizio', 'servizio')}
+                />
+              ) : undefined
+            }
+            onBodyOverrideExit={() => openSection('prenotazioni', null)}
+          />
         )}
 
-        {section !== 'prenotazioni' && (
+        {section !== 'prenotazioni' && section !== 'home' && (
           <div className="flex flex-col">
             {/* Barra X — in flusso normale, spinge il contenuto in basso */}
             <div className="flex justify-end px-3 pt-3">
@@ -357,16 +385,9 @@ export const AdminShell: FC = () => {
               </button>
             </div>
 
-            {section === 'home' && (
-              <AdminHomePage
-                onOpenPrenotazioni={() => openSection('prenotazioni', null)}
-                onOpenCrm={() => openSection('crm', 'crm')}
-                onOpenServizio={() => openSection('servizio', 'servizio')}
-              />
-            )}
-            {section === 'crm' && ADMIN_FEATURES.crm && <CrmPage />}
-            {section === 'servizio' && ADMIN_FEATURES.service && <ServizioPage />}
-            {section === 'analytics' && <AnalyticsPage />}
+            {section === 'crm' && features.crm && <CrmPage />}
+            {section === 'servizio' && features.servizio && <ServizioPage />}
+            {section === 'analytics' && features.analytics && <AnalyticsPage />}
           </div>
         )}
       </main>

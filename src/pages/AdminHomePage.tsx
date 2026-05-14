@@ -11,7 +11,7 @@ import { WalkInModal } from '@/features/booking/components/home/WalkInModal'
 import { ShiftBriefingModal } from '@/features/booking/components/home/ShiftBriefingModal'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 import { NotifyNavShinyLayers } from '@/components/ui'
-import { ADMIN_FEATURES } from '@/lib/adminFeatures'
+import { useFeatures } from '@/hooks/useFeatures'
 
 export interface AdminHomePageProps {
   onOpenPrenotazioni: () => void
@@ -90,6 +90,7 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
   onOpenCrm: _onOpenCrm,
   onOpenServizio,
 }) => {
+  const features = useFeatures()
   const { stats: homeStats, upcoming, isLoading, error } = useHomeStats()
   const { data: globalStats } = useBookingStats()
   const { data: businessHoursRaw } = useRestaurantSetting('business_hours')
@@ -133,7 +134,7 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
           aria-label="Scorciatoie sezioni dashboard"
           className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
         >
-          {ADMIN_FEATURES.service && (
+          {features.servizio && (
             <QuickNavButton
               icon={ConciergeBell}
               label="Servizio"

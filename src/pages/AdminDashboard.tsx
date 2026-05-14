@@ -145,11 +145,17 @@ const StatCard: React.FC<{ label: string; value: number }> = ({ label, value }) 
 export type AdminDashboardProps = {
   /** Incrementato da AdminShell quando si apre Impostazioni dalla sidebar. */
   restaurantSettingsSignal?: number
+  /** Se passato, sostituisce il corpo dei tab con il contenuto fornito (es. AdminHomePage). Header e NavItem restano visibili. */
+  bodyOverride?: React.ReactNode
+  /** Chiamato quando si clicca un NavItem mentre bodyOverride è attivo — segnala ad AdminShell di uscire dalla Home. */
+  onBodyOverrideExit?: () => void
 }
 
 /* ─── Dashboard ─── */
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   restaurantSettingsSignal = 0,
+  bodyOverride,
+  onBodyOverrideExit,
 }) => {
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
   const [calendarTargetDate, setCalendarTargetDate] = useState<string | null>(null)
@@ -200,6 +206,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const footerPendingNotify = stats != null && stats.pending != null && stats.pending > 0
 
+  const handleTabClick = (tab: Tab) => {
+    if (bodyOverride) onBodyOverrideExit?.()
+    setActiveTab(tab)
+  }
+
   return (
     <div className="min-h-0 flex flex-1 flex-col bg-[var(--color-bg)]">
 
@@ -236,7 +247,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     icon={Calendar}
                     label="Calendario"
                     active={activeTab === 'calendar'}
-                    onClick={() => setActiveTab('calendar')}
+                    onClick={() => handleTabClick('calendar')}
                   />
                   <NavItem
                     icon={Clock}
@@ -244,26 +255,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     active={activeTab === 'pending'}
                     badge={stats?.pending}
                     notifyHighlight
-                    onClick={() => setActiveTab('pending')}
+                    onClick={() => handleTabClick('pending')}
                   />
                   <NavItem
                     icon={Archive}
                     label="Archivio"
                     active={activeTab === 'archive'}
-                    onClick={() => setActiveTab('archive')}
+                    onClick={() => handleTabClick('archive')}
                   />
                   <NavItem
                     icon={UtensilsCrossed}
                     label="Menu"
                     active={activeTab === 'menu'}
-                    onClick={() => setActiveTab('menu')}
+                    onClick={() => handleTabClick('menu')}
                   />
                   <NavItem
                     icon={Store}
                     label="Impostazioni"
                     mobileLabel="Impost."
                     active={activeTab === 'settings-restaurant'}
-                    onClick={() => setActiveTab('settings-restaurant')}
+                    onClick={() => handleTabClick('settings-restaurant')}
                   />
                 </nav>
 
@@ -339,31 +350,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           showNewBookingPanel && 'hidden',
         )}
       >
-        <div
-          className={cn(
-            'mx-auto w-full max-w-7xl px-4 md:px-6',
-            activeTab === 'archive' ? 'pb-6 pt-3 md:pb-7 md:pt-4' : 'py-5 md:py-7',
-            activeTab !== 'menu' && activeTab !== 'pending' && 'min-h-[500px]',
-          )}
-        >
-          {activeTab === 'calendar' && <BookingCalendarTab initialDate={calendarTargetDate} />}
-          {activeTab === 'pending' && <PendingRequestsTab />}
-          {activeTab === 'archive' && (
-            <ArchiveTab
-              onViewInCalendar={handleViewInCalendar}
-              filter={archiveFilter}
-              sortOrder={archiveSortOrder}
-            />
-          )}
-          {activeTab === 'menu' && (
-            <MenuPricesTab
-              ref={menuPricesTabRef}
-              omitHeroSection
-              onToolbarPromoDisabled={setMenuToolbarPromoDisabled}
-            />
-          )}
-          {activeTab === 'settings-restaurant' && <RestaurantSettingsTab />}
-        </div>
+        {bodyOverride ?? (
+          <div
+            className={cn(
+              'mx-auto w-full max-w-7xl px-4 md:px-6',
+              activeTab === 'archive' ? 'pb-6 pt-3 md:pb-7 md:pt-4' : 'py-5 md:py-7',
+              activeTab !== 'menu' && activeTab !== 'pending' && 'min-h-[500px]',
+            )}
+          >
+            {activeTab === 'calendar' && <BookingCalendarTab initialDate={calendarTargetDate} />}
+            {activeTab === 'pending' && <PendingRequestsTab />}
+            {activeTab === 'archive' && (
+              <ArchiveTab
+                onViewInCalendar={handleViewInCalendar}
+                filter={archiveFilter}
+                sortOrder={archiveSortOrder}
+              />
+            )}
+            {activeTab === 'menu' && (
+              <MenuPricesTab
+                ref={menuPricesTabRef}
+                omitHeroSection
+                onToolbarPromoDisabled={setMenuToolbarPromoDisabled}
+              />
+            )}
+            {activeTab === 'settings-restaurant' && <RestaurantSettingsTab />}
+          </div>
+        )}
       </main>
 
       <footer className="flex min-h-[62px] items-center border-t border-[var(--color-border)] bg-[var(--color-bg)] py-3">
@@ -382,7 +395,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             >
               <button
                 type="button"
-                onClick={() => setActiveTab('calendar')}
+                onClick={() => handleTabClick('calendar')}
                 className={footerQuickNavBtnClass(activeTab === 'calendar')}
                 aria-label="Calendario"
                 title="Calendario"
@@ -396,7 +409,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div className="admin-nav-notify-pulse-wrap shrink-0 self-center rounded-lg">
                   <button
                     type="button"
-                    onClick={() => setActiveTab('pending')}
+                    onClick={() => handleTabClick('pending')}
                     className={cn(
                       footerQuickNavBtnClass(activeTab === 'pending'),
                       'footer-nav-notify-btn overflow-hidden',
@@ -423,7 +436,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               ) : (
                 <button
                   type="button"
-                  onClick={() => setActiveTab('pending')}
+                  onClick={() => handleTabClick('pending')}
                   className={footerQuickNavBtnClass(activeTab === 'pending')}
                   aria-label="Prenotazioni"
                   title="Prenotazioni"
@@ -439,7 +452,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               )}
               <button
                 type="button"
-                onClick={() => setActiveTab('archive')}
+                onClick={() => handleTabClick('archive')}
                 className={footerQuickNavBtnClass(activeTab === 'archive')}
                 aria-label="Archivio"
                 title="Archivio"
@@ -451,7 +464,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('menu')}
+                onClick={() => handleTabClick('menu')}
                 className={footerQuickNavBtnClass(activeTab === 'menu')}
                 aria-label="Menu"
                 title="Menu"

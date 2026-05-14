@@ -41,7 +41,7 @@ import {
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { useServiceSlots } from '../hooks/useServiceSlots'
 import { useTableAssignments, type BookingTableAssignment } from '../hooks/useTableAssignments'
-import { ADMIN_FEATURES } from '@/lib/adminFeatures'
+import { useFeatures } from '@/hooks/useFeatures'
 import { cn } from '@/lib/utils'
 
 /** Sotto questa larghezza (inclusa), la vista FullCalendar predefinita è lista invece del mese */
@@ -89,9 +89,10 @@ function DigestBookingTypeIcon({
   booking: BookingRequest
   className?: string
 }) {
+  const features = useFeatures()
   const t = (booking.booking_type ?? 'tavolo') as BookingType
   const iconClass = cn('shrink-0', className)
-  if (booking.source === 'walk_in') {
+  if (features.walkIn && booking.source === 'walk_in') {
     return <UserRound className={iconClass} aria-hidden />
   }
   if (t === 'rinfresco_laurea') {
@@ -397,6 +398,7 @@ interface BookingCalendarProps {
 }
 
 export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, initialDate }) => {
+  const features = useFeatures()
   const bookingSlotsQuery = useRestaurantSetting('booking_time_slots')
   const bookingSlots = bookingSlotsQuery.data ?? DEFAULT_BOOKING_TIME_SLOTS
   const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities')
@@ -404,7 +406,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
 
   // Pro: service_slots e assignments per navigazione turni
   const { data: serviceSlots = [] } = useServiceSlots()
-  const hasTurnsFeature = ADMIN_FEATURES.serviceSlots && serviceSlots.length > 0
+  const hasTurnsFeature = features.servizio && serviceSlots.length > 0
 
   const splitDigestBySlot = (digestBookings: BookingRequest[]) => {
     const morning: BookingRequest[] = []

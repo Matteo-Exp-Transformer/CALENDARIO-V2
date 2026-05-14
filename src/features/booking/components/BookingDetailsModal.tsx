@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { useFeatures } from '@/hooks/useFeatures'
 import { createPortal } from 'react-dom'
 import { X, Edit, Trash2, Save } from 'lucide-react'
 import { useUpdateBooking, useCancelBooking, useMarkNoShow } from '../hooks/useBookingMutations'
@@ -126,6 +127,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     }
   }, [isOpen])
 
+  const features = useFeatures()
   const updateMutation = useUpdateBooking()
   const cancelMutation = useCancelBooking()
   const markNoShowMutation = useMarkNoShow()
@@ -913,7 +915,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                       <Trash2 className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                       <span className="truncate">Elimina</span>
                     </button>
-                    {canMarkNoShow && (
+                    {features.noShow && canMarkNoShow && (
                       <button
                         type="button"
                         onClick={() => markNoShowMutation.mutate(booking.id)}

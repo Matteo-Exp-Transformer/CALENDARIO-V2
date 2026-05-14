@@ -470,6 +470,7 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string
+          edition: string
           id: string
           is_active: boolean
           max_booking_requests_per_year: number
@@ -481,6 +482,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          edition?: string
           id?: string
           is_active?: boolean
           max_booking_requests_per_year?: number
@@ -492,6 +494,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          edition?: string
           id?: string
           is_active?: boolean
           max_booking_requests_per_year?: number
