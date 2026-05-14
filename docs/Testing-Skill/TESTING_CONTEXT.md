@@ -1,13 +1,13 @@
 ---
 name: testing-context
 description: >-
-  Mappa completa dei test post-sessione 14-05-26, setup MSW, staging Supabase.
+  Mappa completa dei test post-sessione 15-05-26, setup MSW, staging Supabase.
   Caricare insieme a TESTING_SKILL.md quando si lavora sui test.
 ---
 
 # Testing Context
 
-## 1. Mappa test post-sessione 14-05-26
+## 1. Mappa test post-sessione 15-05-26
 
 ### Vitest (77 test, 9 file)
 

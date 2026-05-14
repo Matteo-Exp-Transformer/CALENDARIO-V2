@@ -210,6 +210,8 @@ Branch `Sviluppo-Dashboard-laterale` rispetto a `main`:
 - **BookingDetailsModal.tsx**: bottone No-show gated con `features.noShow && canMarkNoShow`.
 - **useBookingMutations.ts**: aggiunte invalidazioni per `HOME_STATS_QUERY_KEY` e `ANALYTICS_QUERY_ROOT` — no-op in edition Classic, **safe**. ⚠️ **Fix orario**: `useAcceptBooking` ora scrive sempre `desired_time` nel DB — se il chiamante non lo passa, lo deriva da `confirmedStart` con `extractTimeFromISO` (che è ancora nella forma `+00:00` prima del round-trip). Senza questa garanzia, il display potrebbe mostrare l'orario sbagliato (es. +2h in CEST).
 - **Bug Home risolto**: cliccando Home nella sidebar, Header e NavItem restano visibili. Il contenuto Home passa via `bodyOverride`.
+- **AdminHomePage.tsx**: sezione "prossime 3 ore" ora mostra `b.start_time` (stringa HH:mm sicura) invece di `format(b.start, 'HH:mm')` su oggetto Date — eliminato il +2h in CEST. Import `format`/`it` da date-fns rimossi.
+- **useHomeStats.ts**: `UpcomingBooking` espone `start_time: string` (da `desired_time` o `extractTimeFromISO`) in luogo di `start_iso`. Rimosso codice di diagnostica agente esterno (fetch verso 127.0.0.1:7934).
 
 **Riferimento completo**: `docs/Sessioni di lavoro/14-05-26/Report-esecuzione-blindatura-edition.md`.
 
