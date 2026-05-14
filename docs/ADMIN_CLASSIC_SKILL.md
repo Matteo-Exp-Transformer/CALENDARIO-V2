@@ -212,6 +212,7 @@ Branch `Sviluppo-Dashboard-laterale` rispetto a `main`:
 - **Bug Home risolto**: cliccando Home nella sidebar, Header e NavItem restano visibili. Il contenuto Home passa via `bodyOverride`.
 - **AdminHomePage.tsx**: sezione "prossime 3 ore" ora mostra `b.start_time` (stringa HH:mm sicura) invece di `format(b.start, 'HH:mm')` su oggetto Date — eliminato il +2h in CEST. Import `format`/`it` da date-fns rimossi.
 - **useHomeStats.ts**: `UpcomingBooking` espone `start_time: string` (da `desired_time` o `extractTimeFromISO`) in luogo di `start_iso`. Rimosso codice di diagnostica agente esterno (fetch verso 127.0.0.1:7934).
+- **PastStartTimeWarningModal** + `isWallClockStartBeforeNow` in `dateUtils.ts`: prima di accettare dalla tab *Richieste in attesa*, di salvare modifiche in **BookingDetailsModal**, o di inviare **AdminBookingForm** (“Inserisci Nuova Prenotazione”), se data e ora di inizio (orologio locale) sono già nel passato si mostra un dialog di conferma; dopo OK si ripete la catena capienza → `CapacityWarningModal` → mutate/salvataggio/creazione come prima.
 
 **Riferimento completo**: `docs/Sessioni di lavoro/14-05-26/Report-esecuzione-blindatura-edition.md`.
 
@@ -235,12 +236,13 @@ PostgreSQL `timestamptz` non conserva il "testo dell'orario" — conserva un ist
 | `extractTimeFromISO(iso)` | `dateUtils.ts` | Legge HH:mm dalla stringa — sicuro solo con offset `+00:00` |
 | `getAccurateStartTime(booking)` | `dateUtils.ts` | Preferisce `desired_time`, fallback su `extractTimeFromISO(confirmed_start)` |
 | `getAccurateEndTime(booking)` | `dateUtils.ts` | Stessa logica per l'orario di fine |
+| `isWallClockStartBeforeNow(date, HH:mm)` | `dateUtils.ts` | Solo UX: confronta `(anno,mese,giorno,ora,min)` locale con `Date.now()` — **non** sostituisce `createBookingDateTime` per scritture DB |
 
 ### Regole operative
 - **MAI** usare `new Date(isoString).toISOString()` per costruire `confirmed_start` — produce offset `Z` invece di `+00:00` e rompe `extractTimeFromISO` su alcuni driver.
 - **MAI** omettere `desired_time` quando si accetta o modifica una prenotazione.
 - **Ogni nuova mutation** che scrive `confirmed_start` DEVE anche scrivere `desired_time`.
-- Il test di non-regressione è `src/features/booking/utils/__tests__/CONTROLLA_ORARIO-PRENOTAZIONI.test.ts` (19 test). Se fallisce, c'è un bug di orario.
+- Il test di non-regressione è `src/features/booking/utils/__tests__/CONTROLLA_ORARIO-PRENOTAZIONI.test.ts` (27 test). Se fallisce, c'è un bug di orario.
 
 ---
 

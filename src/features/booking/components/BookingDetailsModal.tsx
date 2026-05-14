@@ -6,7 +6,15 @@ import { useUpdateBooking, useCancelBooking, useMarkNoShow } from '../hooks/useB
 import { useAcceptedBookings } from '../hooks/useBookingQueries'
 import type { BookingRequest, BookingType } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
-import { extractDateFromISO, createBookingDateTime, getAccurateStartTime, getAccurateEndTime, calculateEndTimeFromStart } from '../utils/dateUtils'
+import {
+  extractDateFromISO,
+  createBookingDateTime,
+  getAccurateStartTime,
+  getAccurateEndTime,
+  calculateEndTimeFromStart,
+  isWallClockStartBeforeNow,
+  trimTimeToHHmm,
+} from '../utils/dateUtils'
 import { getSlotsOccupiedByBooking } from '../utils/capacityCalculator'
 import { DEFAULT_BOOKING_TIME_SLOTS } from '../utils/bookingTimeSlots'
 import {
@@ -31,6 +39,7 @@ import {
   listVolAuVentPromoMessagesForBookingType,
 } from '../constants/volAuVentPromo'
 import { CapacityWarningModal } from './CapacityWarningModal'
+import { PastStartTimeWarningModal } from './PastStartTimeWarningModal'
 import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
 
@@ -70,6 +79,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     capacity: number
     exceededBy: number
   } | null>(null)
+  const [showPastStartWarning, setShowPastStartWarning] = useState(false)
 
   // Ref to track previous booking ID to prevent unnecessary recalculations
   const previousBookingIdRef = React.useRef<string>(booking.id)
@@ -623,6 +633,24 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     )
   }
 
+  const runCapacityCheckAndSave = () => {
+    const hasCapacity = checkCapacity(formData.date, formData.startTime, formData.endTime, formData.numGuests)
+
+    if (!hasCapacity) {
+      const exceededInfo = getExceededSlotInfo(formData.date, formData.startTime, formData.endTime, formData.numGuests)
+      if (exceededInfo) {
+        setOverbookingSlotInfo(exceededInfo)
+        setShowOverbookingConfirm(true)
+        return
+      }
+      // No slot details available, but never block — proceed with warning
+      console.warn('⚠️ [BookingDetailsModal] Capacity exceeded but no slot details, proceeding anyway')
+      toast.warn(`⚠️ Attenzione: la capienza potrebbe essere superata. La modifica verrà comunque salvata.`)
+    }
+
+    performSave()
+  }
+
   const handleSave = () => {
     if (!booking.confirmed_start) return
 
@@ -642,21 +670,13 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       return
     }
 
-    const hasCapacity = checkCapacity(formData.date, formData.startTime, formData.endTime, formData.numGuests)
-
-    if (!hasCapacity) {
-      const exceededInfo = getExceededSlotInfo(formData.date, formData.startTime, formData.endTime, formData.numGuests)
-      if (exceededInfo) {
-        setOverbookingSlotInfo(exceededInfo)
-        setShowOverbookingConfirm(true)
-        return
-      }
-      // No slot details available, but never block — proceed with warning
-      console.warn('⚠️ [BookingDetailsModal] Capacity exceeded but no slot details, proceeding anyway')
-      toast.warn(`⚠️ Attenzione: la capienza potrebbe essere superata. La modifica verrà comunque salvata.`)
+    const startNorm = trimTimeToHHmm(formData.startTime)
+    if (isWallClockStartBeforeNow(formData.date, startNorm)) {
+      setShowPastStartWarning(true)
+      return
     }
 
-    performSave()
+    runCapacityCheckAndSave()
   }
 
   const handleCancelBooking = () => {
@@ -681,6 +701,17 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
   const modalContent = (
     <>
+      <PastStartTimeWarningModal
+        isOpen={showPastStartWarning}
+        desiredDate={formData.date}
+        startTimeHHmm={trimTimeToHHmm(formData.startTime)}
+        onClose={() => setShowPastStartWarning(false)}
+        onCancel={() => setShowPastStartWarning(false)}
+        onConfirm={() => {
+          setShowPastStartWarning(false)
+          runCapacityCheckAndSave()
+        }}
+      />
       {overbookingSlotInfo && (
         <CapacityWarningModal
           isOpen={showOverbookingConfirm}

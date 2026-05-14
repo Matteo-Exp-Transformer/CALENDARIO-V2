@@ -4,6 +4,7 @@ import { useAcceptBooking, useRejectBooking } from '../hooks/useBookingMutations
 import { BookingRequestCard } from './BookingRequestCard'
 import { RejectBookingModal } from './RejectBookingModal'
 import { CapacityWarningModal } from './CapacityWarningModal'
+import { PastStartTimeWarningModal } from './PastStartTimeWarningModal'
 import { toast } from 'react-toastify'
 import type { BookingRequest } from '@/types/booking'
 import { getSlotsOccupiedByBooking } from '../utils/capacityCalculator'
@@ -12,7 +13,12 @@ import {
   DEFAULT_SLOT_GUEST_CAPACITIES,
 } from '../lib/restaurantSettingRegistry'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
-import { createBookingDateTime, extractDateFromISO, calculateEndTimeFromStart } from '../utils/dateUtils'
+import {
+  createBookingDateTime,
+  extractDateFromISO,
+  calculateEndTimeFromStart,
+  isWallClockStartBeforeNow,
+} from '../utils/dateUtils'
 
 export const PendingRequestsTab: React.FC = () => {
   const { data: pendingBookings, isLoading, error, refetch } = usePendingBookings()
@@ -36,6 +42,9 @@ export const PendingRequestsTab: React.FC = () => {
     bookingId: string; confirmedStart: string; confirmedEnd: string;
     desiredTime: string; numGuests: number
   } | null>(null)
+
+  const [showPastStartWarning, setShowPastStartWarning] = useState(false)
+  const [pastStartPendingBooking, setPastStartPendingBooking] = useState<BookingRequest | null>(null)
 
   // ✅ FIX: Deduplicazione prenotazioni pending per evitare visualizzazioni doppie
   // Usa Set per tracciare ID già visti e filtra duplicati
@@ -104,6 +113,61 @@ export const PendingRequestsTab: React.FC = () => {
     return null
   }
 
+  const runAcceptMutate = (payload: {
+    bookingId: string
+    confirmedStart: string
+    confirmedEnd: string
+    desiredTime: string
+    numGuests: number
+  }) => {
+    acceptMutation.mutate(
+      {
+        bookingId: payload.bookingId,
+        confirmedStart: payload.confirmedStart,
+        confirmedEnd: payload.confirmedEnd,
+        desiredTime: payload.desiredTime,
+        numGuests: payload.numGuests,
+      },
+      {
+        onSuccess: async () => {
+          toast.success('Prenotazione accettata con successo!')
+          await refetch()
+        },
+        onError: (error) => {
+          console.error('❌ [PendingRequestsTab] Accept mutation error:', error)
+          toast.error('Errore nell\'accettazione della prenotazione')
+        },
+      }
+    )
+  }
+
+  /** Dopo conferma orario passato (e senza ramo capienza): capienza → eventuale modale → mutate. */
+  const continueAcceptAfterPastStart = (booking: BookingRequest, startTimeFormatted: string, confirmedStart: string, confirmedEnd: string) => {
+    const endTimeFormatted = calculateEndTimeFromStart(startTimeFormatted)
+    const exceededInfo = getExceededSlotInfo(booking, startTimeFormatted, endTimeFormatted)
+
+    if (exceededInfo) {
+      setPendingAcceptData({
+        bookingId: booking.id,
+        confirmedStart,
+        confirmedEnd,
+        desiredTime: startTimeFormatted,
+        numGuests: booking.num_guests,
+      })
+      setOverbookingSlotInfo(exceededInfo)
+      setShowOverbookingConfirm(true)
+      return
+    }
+
+    runAcceptMutate({
+      bookingId: booking.id,
+      confirmedStart,
+      confirmedEnd,
+      desiredTime: startTimeFormatted,
+      numGuests: booking.num_guests,
+    })
+  }
+
   const handleAccept = (booking: BookingRequest) => {
 
     // ✅ VALIDAZIONE: desired_time deve essere presente
@@ -126,43 +190,14 @@ export const PendingRequestsTab: React.FC = () => {
     // Create ISO strings handling midnight crossover
     const confirmedStart = createBookingDateTime(date, startTimeFormatted, true)
     const confirmedEnd = createBookingDateTime(date, endTimeFormatted, false, startTimeFormatted)
-    // ✅ CHECK CAPACITY - show warning modal if exceeded, but never block
-    const exceededInfo = getExceededSlotInfo(booking, startTimeFormatted, endTimeFormatted)
 
-    if (exceededInfo) {
-      // Store data for later use when user confirms via modal
-      setPendingAcceptData({
-        bookingId: booking.id,
-        confirmedStart,
-        confirmedEnd,
-        desiredTime: startTimeFormatted,
-        numGuests: booking.num_guests,
-      })
-      setOverbookingSlotInfo(exceededInfo)
-      setShowOverbookingConfirm(true)
+    if (isWallClockStartBeforeNow(date, startTimeFormatted)) {
+      setPastStartPendingBooking(booking)
+      setShowPastStartWarning(true)
       return
     }
 
-    acceptMutation.mutate(
-      {
-        bookingId: booking.id,
-        confirmedStart,
-        confirmedEnd,
-        desiredTime: startTimeFormatted, // ✅ Preserva l'orario originale del cliente
-        numGuests: booking.num_guests,
-      },
-      {
-        onSuccess: async () => {
-          toast.success('Prenotazione accettata con successo!')
-          // Forza il refetch delle richieste pending
-          await refetch()
-        },
-        onError: (error) => {
-          console.error('❌ [PendingRequestsTab] Accept mutation error:', error)
-          toast.error('Errore nell\'accettazione della prenotazione')
-        },
-      }
-    )
+    continueAcceptAfterPastStart(booking, startTimeFormatted, confirmedStart, confirmedEnd)
   }
 
   // Apre il modal quando si clicca su "Rifiuta"
@@ -262,6 +297,40 @@ export const PendingRequestsTab: React.FC = () => {
         ))}
       </div>
 
+      <PastStartTimeWarningModal
+        isOpen={showPastStartWarning}
+        desiredDate={pastStartPendingBooking?.desired_date ?? ''}
+        startTimeHHmm={
+          pastStartPendingBooking?.desired_time
+            ? pastStartPendingBooking.desired_time.includes(':')
+              ? pastStartPendingBooking.desired_time.split(':').slice(0, 2).join(':')
+              : pastStartPendingBooking.desired_time
+            : ''
+        }
+        onClose={() => {
+          setShowPastStartWarning(false)
+          setPastStartPendingBooking(null)
+        }}
+        onCancel={() => {
+          setShowPastStartWarning(false)
+          setPastStartPendingBooking(null)
+        }}
+        onConfirm={() => {
+          const b = pastStartPendingBooking
+          setShowPastStartWarning(false)
+          setPastStartPendingBooking(null)
+          if (!b?.desired_time?.trim()) return
+          const date = b.desired_date
+          const startTimeFormatted = b.desired_time.includes(':')
+            ? b.desired_time.split(':').slice(0, 2).join(':')
+            : b.desired_time
+          const endTimeFormatted = calculateEndTimeFromStart(startTimeFormatted)
+          const confirmedStart = createBookingDateTime(date, startTimeFormatted, true)
+          const confirmedEnd = createBookingDateTime(date, endTimeFormatted, false, startTimeFormatted)
+          continueAcceptAfterPastStart(b, startTimeFormatted, confirmedStart, confirmedEnd)
+        }}
+      />
+
       {/* Modal per overbooking (solo avviso, non blocca) */}
       {overbookingSlotInfo && (
         <CapacityWarningModal
@@ -273,25 +342,7 @@ export const PendingRequestsTab: React.FC = () => {
           }}
           onConfirm={() => {
             if (pendingAcceptData) {
-              acceptMutation.mutate(
-                {
-                  bookingId: pendingAcceptData.bookingId,
-                  confirmedStart: pendingAcceptData.confirmedStart,
-                  confirmedEnd: pendingAcceptData.confirmedEnd,
-                  desiredTime: pendingAcceptData.desiredTime,
-                  numGuests: pendingAcceptData.numGuests,
-                },
-                {
-                  onSuccess: async () => {
-                    toast.success('Prenotazione accettata con successo!')
-                    await refetch()
-                  },
-                  onError: (error) => {
-                    console.error('❌ [PendingRequestsTab] Accept mutation error:', error)
-                    toast.error('Errore nell\'accettazione della prenotazione')
-                  },
-                }
-              )
+              runAcceptMutate(pendingAcceptData)
             }
             setShowOverbookingConfirm(false)
             setOverbookingSlotInfo(null)

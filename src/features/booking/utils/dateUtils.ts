@@ -171,3 +171,36 @@ export function getAccurateEndTime(booking: BookingRequest): string {
   return ''
 }
 
+/** Normalizza "HH:mm" o "HH:mm:ss" a "HH:mm" per confronti e display coerente. */
+export function trimTimeToHHmm(time: string): string {
+  if (!time || !String(time).includes(':')) return String(time ?? '').trim()
+  return String(time).split(':').slice(0, 2).join(':')
+}
+
+/**
+ * True se data (calendario locale) + ora a muro sono **strettamente** prima di `Date.now()`.
+ * Usa il fuso del browser (stesso orologio che vede il ristoratore in dashboard).
+ * Input non validi → false (nessun alert: si lascia il flusso normale).
+ */
+export function isWallClockStartBeforeNow(desiredDate: string, startTimeHHmm: string): boolean {
+  const dateStr = String(desiredDate ?? '').trim()
+  const timeStr = trimTimeToHHmm(String(startTimeHHmm ?? '').trim())
+  const dm = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!dm) return false
+  const year = Number(dm[1])
+  const month = Number(dm[2])
+  const day = Number(dm[3])
+  const tm = timeStr.match(/^(\d{1,2}):(\d{2})$/)
+  if (!tm) return false
+  const hours = Number(tm[1])
+  const minutes = Number(tm[2])
+  if (![year, month, day, hours, minutes].every(Number.isFinite)) return false
+  if (month < 1 || month > 12 || day < 1 || day > 31) return false
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return false
+
+  const wall = new Date(year, month - 1, day, hours, minutes, 0, 0)
+  if (Number.isNaN(wall.getTime())) return false
+
+  return wall.getTime() < Date.now()
+}
+

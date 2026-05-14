@@ -1,8 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import {
   createBookingDateTime,
   extractTimeFromISO,
   getAccurateStartTime,
+  isWallClockStartBeforeNow,
+  trimTimeToHHmm,
 } from '../dateUtils'
 import type { BookingRequest } from '@/types/booking'
 
@@ -214,5 +216,60 @@ describe('D) Invariante — regole che non devono mai cambiare', () => {
       const b = makeBooking(desiredTime, confirmedStart)
       expect(getAccurateStartTime(b), `fallisce con confirmed_start=${confirmedStart}`).toBe(desiredTime)
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// E) Orario a muro vs "adesso" — alert accettazione / salvataggio
+// ---------------------------------------------------------------------------
+describe('E) isWallClockStartBeforeNow — confronto locale (fake timers)', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('stesso giorno: inizio prima di ora → true', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 4, 14, 16, 0, 0))
+    expect(isWallClockStartBeforeNow('2026-05-14', '14:00')).toBe(true)
+  })
+
+  it('stesso giorno: inizio dopo ora → false', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 4, 14, 16, 0, 0))
+    expect(isWallClockStartBeforeNow('2026-05-14', '18:00')).toBe(false)
+  })
+
+  it('stesso giorno: stessa ora (minuto) → false', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 4, 14, 16, 0, 0))
+    expect(isWallClockStartBeforeNow('2026-05-14', '16:00')).toBe(false)
+  })
+
+  it('giorno precedente → true', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 4, 14, 10, 0, 0))
+    expect(isWallClockStartBeforeNow('2026-05-13', '23:30')).toBe(true)
+  })
+
+  it('mezzanotte: inizio a 00:00 con ora attuale 00:30 → true', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 4, 14, 0, 30, 0))
+    expect(isWallClockStartBeforeNow('2026-05-14', '00:00')).toBe(true)
+  })
+
+  it('data non valida → false', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 4, 14, 12, 0, 0))
+    expect(isWallClockStartBeforeNow('not-a-date', '12:00')).toBe(false)
+  })
+
+  it('ora non valida → false', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 4, 14, 12, 0, 0))
+    expect(isWallClockStartBeforeNow('2026-05-14', '99:00')).toBe(false)
+  })
+
+  it('trimTimeToHHmm accetta HH:mm:ss', () => {
+    expect(trimTimeToHHmm('14:30:59')).toBe('14:30')
   })
 })
