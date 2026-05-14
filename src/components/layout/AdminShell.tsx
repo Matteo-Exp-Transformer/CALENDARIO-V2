@@ -374,7 +374,6 @@ export const AdminShell: FC = () => {
               section === 'home' ? (
                 <Suspense fallback={<SectionFallback />}>
                   <AdminHomePage
-                    onOpenPrenotazioni={() => openSection('prenotazioni', null)}
                     onOpenCrm={() => openSection('crm', 'crm')}
                     onOpenServizio={() => openSection('servizio', 'servizio')}
                   />

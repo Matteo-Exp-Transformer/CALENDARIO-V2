@@ -4,7 +4,6 @@ import { ConciergeBell, Loader2, Clock, UserPlus, Printer } from 'lucide-react'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui'
 import { useHomeStats } from '@/features/booking/hooks/useHomeStats'
 import { useBookingStats } from '@/features/booking/hooks/useBookingQueries'
 import { WalkInModal } from '@/features/booking/components/home/WalkInModal'
@@ -14,7 +13,6 @@ import { NotifyNavShinyLayers } from '@/components/ui'
 import { useFeatures } from '@/hooks/useFeatures'
 
 export interface AdminHomePageProps {
-  onOpenPrenotazioni: () => void
   onOpenCrm: () => void
   onOpenServizio: () => void
 }
@@ -86,7 +84,6 @@ const StatCard: FC<StatCardProps> = ({ label, value, isLoading, highlight }) => 
 )
 
 export const AdminHomePage: FC<AdminHomePageProps> = ({
-  onOpenPrenotazioni,
   onOpenCrm: _onOpenCrm,
   onOpenServizio,
 }) => {
@@ -110,24 +107,6 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
             Riepilogo della giornata e accesso rapido alle sezioni principali.
           </p>
         </header>
-
-        {/* Banner alert richieste in attesa */}
-        {!isLoading && pendingGlobal > 0 && (
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-(--color-warning) bg-warning-50 px-4 py-3">
-            <p className="text-sm font-medium text-warning-900">
-              Hai {pendingGlobal}{' '}
-              {pendingGlobal === 1 ? 'richiesta in attesa' : 'richieste in attesa'} di conferma
-            </p>
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              onClick={onOpenPrenotazioni}
-            >
-              Vai a Prenotazioni
-            </Button>
-          </div>
-        )}
 
         {/* Quick-nav: Servizio (pro), Walk-in, Briefing */}
         <nav
