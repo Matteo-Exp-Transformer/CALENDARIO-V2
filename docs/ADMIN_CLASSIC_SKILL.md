@@ -201,17 +201,44 @@ Le feature sidebar (CRM esteso, Servizio, Analytics, Home) NON devono:
 
 ---
 
-## 4. Stato attuale (snapshot 14-05-26 — post Fase 0/2/3)
+## 4. Stato attuale (snapshot 14-05-26 — post Fase 0/2/3 + fix orario)
 
 Branch `Sviluppo-Dashboard-laterale` rispetto a `main`:
 
 - **AdminDashboard.tsx**: integrato in AdminShell. Layout `min-h-0 flex-1`. Aggiunte due prop opzionali: `bodyOverride?: React.ReactNode` (mostra contenuto alternativo nel corpo, Header+NavItem restano visibili) e `onBodyOverrideExit?: () => void` (chiamata al click NavItem quando bodyOverride è attivo). `handleTabClick()` wrappa `setActiveTab` e chiama `onBodyOverrideExit` se necessario.
 - **BookingCalendar.tsx**: feature opt-in ora **gated** con `useFeatures()` — icona walk-in condizionata a `features.walkIn`, turni/badge "Da assegnare" condizionati a `features.servizio`.
 - **BookingDetailsModal.tsx**: bottone No-show gated con `features.noShow && canMarkNoShow`.
-- **useBookingMutations.ts**: aggiunte invalidazioni per `HOME_STATS_QUERY_KEY` e `ANALYTICS_QUERY_ROOT` — no-op in edition Classic, **safe**.
+- **useBookingMutations.ts**: aggiunte invalidazioni per `HOME_STATS_QUERY_KEY` e `ANALYTICS_QUERY_ROOT` — no-op in edition Classic, **safe**. ⚠️ **Fix orario**: `useAcceptBooking` ora scrive sempre `desired_time` nel DB — se il chiamante non lo passa, lo deriva da `confirmedStart` con `extractTimeFromISO` (che è ancora nella forma `+00:00` prima del round-trip). Senza questa garanzia, il display potrebbe mostrare l'orario sbagliato (es. +2h in CEST).
 - **Bug Home risolto**: cliccando Home nella sidebar, Header e NavItem restano visibili. Il contenuto Home passa via `bodyOverride`.
 
 **Riferimento completo**: `docs/Sessioni di lavoro/14-05-26/Report-esecuzione-blindatura-edition.md`.
+
+---
+
+## 4b. Modello orario prenotazioni — REGOLA CRITICA
+
+> Leggere questa sezione prima di toccare qualsiasi logica di data/ora nelle prenotazioni.
+
+### Il problema di fondo
+PostgreSQL `timestamptz` non conserva il "testo dell'orario" — conserva un istante assoluto. Se si salva `20:15+00:00` e il server ha fuso `+02:00`, la SELECT restituisce `22:15+02:00`. Leggere le cifre letterali dalla stringa ISO (come fa `extractTimeFromISO`) darebbe `22:15` invece di `20:15`.
+
+### Soluzione adottata (due pilastri)
+1. **`desired_time`** (campo `TIME` di Postgres) — non subisce conversioni di fuso. È l'**ancora primaria** per il display. `getAccurateStartTime` lo preferisce sempre su `confirmed_start`.
+2. **Garanzia di scrittura** — ogni mutation che scrive `confirmed_start` deve scrivere anche `desired_time`. In `useAcceptBooking` questo è ora forzato: se `desiredTime` non arriva dal chiamante, viene derivato da `confirmedStart` **prima** che PostgreSQL lo tocchi (quando ha ancora offset `+00:00`).
+
+### Funzioni coinvolte
+| Funzione | File | Ruolo |
+|----------|------|-------|
+| `createBookingDateTime(date, time)` | `dateUtils.ts` | Scrive l'orario con offset `+00:00` — mai usare `toISOString()` |
+| `extractTimeFromISO(iso)` | `dateUtils.ts` | Legge HH:mm dalla stringa — sicuro solo con offset `+00:00` |
+| `getAccurateStartTime(booking)` | `dateUtils.ts` | Preferisce `desired_time`, fallback su `extractTimeFromISO(confirmed_start)` |
+| `getAccurateEndTime(booking)` | `dateUtils.ts` | Stessa logica per l'orario di fine |
+
+### Regole operative
+- **MAI** usare `new Date(isoString).toISOString()` per costruire `confirmed_start` — produce offset `Z` invece di `+00:00` e rompe `extractTimeFromISO` su alcuni driver.
+- **MAI** omettere `desired_time` quando si accetta o modifica una prenotazione.
+- **Ogni nuova mutation** che scrive `confirmed_start` DEVE anche scrivere `desired_time`.
+- Il test di non-regressione è `src/features/booking/utils/__tests__/CONTROLLA_ORARIO-PRENOTAZIONI.test.ts` (19 test). Se fallisce, c'è un bug di orario.
 
 ---
 

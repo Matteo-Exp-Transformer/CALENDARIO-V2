@@ -112,6 +112,7 @@ export function extractTimeFromISO(isoString: string | null | undefined): string
   return match ? `${match[1]}:${match[2]}` : ''
 }
 
+
 /**
  * Calculates the end time string starting from startTime adding a number of hours.
  * Keeps the result within the same 24h window (wraps if it crosses midnight).

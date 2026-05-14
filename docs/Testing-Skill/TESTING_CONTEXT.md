@@ -9,7 +9,7 @@ description: >-
 
 ## 1. Mappa test post-sessione 14-05-26
 
-### Vitest (58 test, 8 file)
+### Vitest (77 test, 9 file)
 
 | File | Flusso coperto | # test | Stato |
 |------|---------------|--------|-------|
@@ -21,6 +21,9 @@ description: >-
 | `src/features/booking/hooks/__tests__/useMenuCategories.test.tsx` | CRUD categorie menu | 5 | ✅ pass |
 | `src/features/booking/hooks/__tests__/useBookingMutations.test.tsx` | accept, reject, restore, no-show | 4 | ✅ pass |
 | `src/features/booking/utils/__tests__/createBookingCustomerUpsert.test.ts` | upsert customers da form pubblico (fix B01) | 4 | ✅ pass |
+| `src/features/booking/utils/__tests__/CONTROLLA_ORARIO-PRENOTAZIONI.test.ts` | contratto orario: scrittura ISO, lettura display, ciclo completo, invarianti | 19 | ✅ pass |
+
+**Nota**: il test `CONTROLLA_ORARIO-PRENOTAZIONI` è il **test di non-regressione del modello orario**. Deve passare dopo ogni modifica a `dateUtils.ts`, `useBookingMutations.ts`, `useWalkInMutation.ts` o qualsiasi mutation che scrive `confirmed_start`/`desired_time`.
 
 ### Playwright E2E (13 spec file)
 
@@ -111,7 +114,7 @@ test.skip(!process.env.E2E_PRO_ADMIN_EMAIL, 'richiede staging Pro configurato')
 ## 6. Checklist pre-PR testing
 
 ```
-□ npm run validate (lint + typecheck + 58 Vitest) → tutto green
+□ npm run validate (lint + typecheck + 77 Vitest) → tutto green
 □ npm run test:e2e -- --grep edition → 7 pass (RLS + 5 Classic + upgrade)
 □ npm run test:e2e -- --grep "Admin Classic" → 5+ pass (tabs + soft-delete)
 □ npm run test:e2e -- --grep "Admin Pro" → pass se E2E_PRO_ADMIN_EMAIL configurato
