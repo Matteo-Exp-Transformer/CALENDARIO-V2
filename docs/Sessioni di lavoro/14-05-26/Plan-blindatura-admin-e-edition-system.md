@@ -85,7 +85,7 @@ Le pagine CRM/Servizio/Analytics/Home vengono importate con `React.lazy()` e car
 
 ---
 
-## 3. Piano operativo — 5 fasi
+## 3. Piano operativo — 7 fasi
 
 ### Fase 0 — Fix bug Home (1-2 ore)
 
@@ -209,37 +209,144 @@ Questo dà ad AdminDashboard l'altezza piena che le serve, senza bisogno di modi
 
 **Obiettivo**: protezione dati lato server + ottimizzazione bundle.
 
-**RLS**:
-- Migrazione nuova con policies su tabelle `customers`, `service_slots`, `booking_table_assignments`, `booking_walk_ins` (se esiste), `booking_no_shows` (se esiste)
+**4a — RLS Supabase (bloccante per vendita Classic)**
+
+Flusso utente:
+> Oggi un dipendente di Mario (Classic) apre F12 nel browser, sblocca la UI del CRM coi devtools, vede la pagina CRM. Se prova a leggere clienti, il database glieli ridà comunque (oggi non c'è blocco). **Dato esposto senza pagare.**
+> Con RLS: il dipendente sblocca la UI, vede la pagina vuota, perché Supabase controlla `organizations.edition` prima di ogni query e rifiuta se non `pro`/`enterprise`. **Zero dati esposti.**
+
+Lavoro tecnico:
+- Migrazione nuova (`014_rls_edition_gates.sql`) con policies su:
+  - `customers` (CRM esteso)
+  - `service_slots` (Servizio fasce orarie)
+  - `booking_table_assignments` (assegnazione tavoli)
+  - `rooms` (sale per layout)
+  - `tables` (tavoli per layout — verificare se già protette)
+  - Eventuali altre tabelle Pro-only identificate durante esecuzione
 - Policy esempio:
   ```sql
   CREATE POLICY "customers_edition_gate" ON customers
     FOR ALL USING (
-      tenant_id IN (
-        SELECT id FROM tenants
-        WHERE id = customers.tenant_id
-          AND edition IN ('pro', 'enterprise')
+      EXISTS (
+        SELECT 1 FROM organizations
+        WHERE organizations.id = customers.organization_id
+          AND organizations.edition IN ('pro', 'enterprise')
       )
     );
   ```
+  (Adattare nome FK in base a schema reale: `organization_id` o `tenant_id`)
+- Verificare RLS esistenti non vengano sovrascritte — usare CREATE POLICY (non REPLACE)
+- Test SQL diretto: con un tenant Classic, query a `customers` deve ritornare 0 righe anche con SELECT * FROM customers
 
-**Lazy loading**:
-- `CrmPage`, `ServizioPage`, `AnalyticsPage`, `AdminHomePage` importati con `React.lazy()` in AdminShell
-- Wrapper `<Suspense>` con fallback Spinner
+**4b — Lazy loading (ottimizzazione bundle)**
 
-**Test**: con devtools Network tab, verificare che il bundle CRM non venga scaricato in edition='classic'.
+Flusso utente:
+> Mario (Classic) apre l'app la mattina su 4G. Oggi scarica ~900 KB di codice, inclusi CRM/Analytics/Servizio che non vedrà mai. Tempo: ~3s.
+> Con lazy loading: scarica solo ~400 KB del core. Tempo: ~1.5s. Il codice delle feature Pro **esiste** sul server ma viene scaricato solo se l'utente entra in quelle sezioni (e Classic non lo fa mai).
+
+Lavoro tecnico:
+- In `AdminShell.tsx`:
+  - `const CrmPage = lazy(() => import('@/pages/CrmPage').then(m => ({ default: m.CrmPage })))`
+  - Stesso pattern per `ServizioPage`, `AnalyticsPage`, `AdminHomePage`
+  - Avvolgere il render con `<Suspense fallback={<Spinner />}>`
+- AdminDashboard NON lazy (è il core, sempre scaricato)
+- Verificare che bodyOverride (AdminHomePage in shell) funzioni anche con lazy
+
+**Test Fase 4**:
+- Edition Classic + devtools Network: il chunk CRM non deve apparire
+- Edition Classic + tentativo manuale query customers via Supabase JS console: deve fallire / 0 risultati
+- Edition Pro: tutto funziona come prima, primo click su CRM mostra Spinner brevissimo poi pagina
+
+---
+
+### Fase 5 — Fix cosmetici post-edition (1 ora)
+
+**Obiettivo**: risolvere i 2 fix minori emersi nell'audit di supervisione.
+
+**5a — Edge case logout (flash UI Pro)**
+
+Flusso utente:
+> Mario (Classic) clicca logout. Per una frazione di secondo, prima del redirect a login, l'app mostra la sidebar Pro (perché `clearTenant` resetta edition a `'pro'`). Flash visuale strano.
+
+Lavoro tecnico:
+- In `TenantContext.tsx`, modificare `clearTenant`:
+  - Opzione A: reset a `'classic'` (più sicuro: nessuna feature flash)
+  - Opzione B: tipo `TenantEdition | null` e `useFeatures()` ritorna tutto OFF se null
+- Test manuale: logout di un tenant Classic → no flash sidebar. Logout di un tenant Pro → no comportamento errato.
+
+**5b — Ottimizzazione login (2 query → 1)**
+
+Flusso utente:
+> Oggi `setTenantFromAdmin` fa due chiamate al database: prima `check_admin_email` (chi è questo utente?), poi SELECT su `organizations` (qual è la sua edition?). Su 4G lenta significa ~200-400ms in più al login di Mario.
+> Dopo: una sola chiamata che ritorna tutto. Login più reattivo.
+
+Lavoro tecnico:
+- Migrazione nuova (`015_check_admin_email_with_edition.sql`):
+  - Estendere RPC `check_admin_email` per includere `slug`, `name`, `edition` nel return
+  - Mantenere backward compat: campi nuovi sono additivi
+- In `TenantContext.tsx`: rimuovere la seconda SELECT su organizations, leggere tutto dal return RPC
+- Test: login Mario, verificare in Network tab che ci sia una sola chiamata RPC e che edition arrivi correttamente
+
+---
+
+### Fase 6 — Test E2E Edition Classic (2-3 ore)
+
+**Obiettivo**: garantire che la versione Classic resti funzionante nel tempo, anche dopo modifiche future. Senza test automatico, qualsiasi agente potrebbe romperla in silenzio.
+
+**Test da scrivere** (Playwright, in `tests/e2e/`):
+
+Test 1 — `edition-classic.spec.ts`:
+> Setup: tenant di test con `edition='classic'`. Login.
+> Assert:
+> - Nessuna sidebar visibile
+> - 5 NavItem button visibili (Calendario, Prenotazioni, Archivio, Menu, Impostazioni)
+> - Click Calendario → mostra calendario
+> - Click Prenotazioni → mostra lista pending
+> - Nessuna icona walk-in nelle prenotazioni
+> - Nessun bottone "No-show" nel modal dettagli prenotazione
+> - Nessun badge "Da assegnare"
+
+Test 2 — `edition-classic-data-protection.spec.ts`:
+> Setup: tenant Classic + sblocco manuale UI CRM via JS injection.
+> Assert: pagina CRM mostrata ma lista clienti vuota (RLS funziona).
+
+Test 3 — `edition-upgrade.spec.ts`:
+> Setup: tenant inizia Classic, durante test viene aggiornato a Pro via SQL diretto.
+> Assert: dopo reload, sidebar appare, CRM accessibile.
+
+**Documentazione**:
+- Aggiungere sezione "Test Edition" in `docs/ADMIN_CLASSIC_SKILL.md`
+- Comando: `npm run test:e2e -- --grep edition`
+
+---
+
+### Fase 7 — Cleanup finale
+
+**Obiettivo**: rimuovere debiti tecnici accumulati durante l'implementazione.
+
+**Lavoro**:
+- Rimuovere `src/lib/adminFeatures.ts` (se non già rimosso nella sessione cleanup 15-05-26)
+- Verificare nessun riferimento a `ADMIN_FEATURES` resta in codebase
+- Rigenerare `database.ts` se necessario dopo le migrazioni 014/015
+- `npm run validate` finale
 
 ---
 
 ## 4. Definition of Done
 
-- [ ] Fase 0: Home rispetta layout (Header+NavItem visibili)
-- [ ] Fase 1: skill aggiornati, LOCK list visibile, regola "spiegazione preventiva" agenti scritta
-- [ ] Fase 2: edition='classic' nasconde sidebar, AdminDashboard funziona standalone
-- [ ] Fase 3: feature interne gated rispettano FEATURES
-- [ ] Fase 4: RLS rifiuta query da edition errate; bundle CRM non scaricato in Classic
-- [ ] `npm run validate` passa
-- [ ] Documentato in nuovo report di sessione sotto `docs/Sessioni di lavoro/14-05-26/`
+- [x] Fase 0: Home rispetta layout (Header+NavItem visibili)
+- [x] Fase 1: skill aggiornati, LOCK list visibile, regola "spiegazione preventiva" agenti scritta
+- [x] Fase 2: edition='classic' nasconde sidebar, AdminDashboard funziona standalone
+- [x] Fase 3: feature interne gated rispettano FEATURES
+- [x] Fase 4a: RLS rifiuta query a tabelle Pro da tenant Classic
+- [x] Fase 4b: bundle CRM non scaricato in Classic (chunk separati nel build output)
+- [x] Fase 5a: nessun flash UI Pro durante logout di tenant Classic
+- [x] Fase 5b: login fa una sola query DB (RPC esteso)
+- [x] Fase 6: 3 test E2E Edition Classic scritti (.skip se staging non configurato)
+- [x] Fase 7: cleanup completo, zero residui ADMIN_FEATURES
+- [x] `npm run validate` passa (29/29 test, lint 0, typecheck 0)
+- [x] `npm run test:e2e -- --grep edition` → test scritti, .skip senza staging configurato
+- [x] Report finale documentato sotto `docs/Sessioni di lavoro/14-05-26/`
 
 ---
 
@@ -254,9 +361,18 @@ Questo dà ad AdminDashboard l'altezza piena che le serve, senza bisogno di modi
 
 ---
 
-## 6. Note finali
+## 6. Upgrade futuri fuori scope di questo plan
+
+Pianificati ma non parte di questo plan operativo:
+
+- **UI Super-Admin per gestire edition tenant** — pannello dedicato per cambiare edition dei clienti senza Supabase Studio. Vedi `docs/Upgrade-da-Fare/UI-super-admin-edition.md`. Da affrontare quando i tenant superano i 30 o cambi edition diventano frequenti.
+
+---
+
+## 7. Note finali
 
 - L'audit del 14-05-26 conferma che il branch attuale è **operativo** e **non regressivo** rispetto a main.
 - Questo plan trasforma una situazione "già funzionante ma fragile" in una "blindata e scalabile commercialmente".
-- Le 5 fasi sono indipendenti: ognuna può fermarsi e dare valore da sola.
-- Ordine consigliato: 0 → 1 → 2 → 3 → 4.
+- Le 7 fasi sono indipendenti: ognuna può fermarsi e dare valore da sola.
+- Ordine consigliato: 0 → 1 → 2 → 3 → cleanup 15-05-26 → 4 → 5 → 6 → 7.
+- **Bloccante commerciale**: la Fase 4a (RLS) deve essere completata prima di vendere realmente la versione Classic a clienti veri.

@@ -24,11 +24,15 @@ AdminShell (src/components/layout/AdminShell.tsx)
     │   └── Bottom dock: avatar utente + logout
     │
     └── <main> contenuto — switch su `section` state
-        ├── 'home'         → <AdminDashboard bodyOverride={<AdminHomePage />} />
+        ├── 'home'         → <AdminDashboard bodyOverride={<Suspense><AdminHomePage /></Suspense>} />
         ├── 'prenotazioni' → <AdminDashboard />                    ← DEFAULT Classic
-        ├── 'crm'          → <CrmPage />          [solo se features.crm]
-        ├── 'servizio'     → <ServizioPage />      [solo se features.servizio]
-        └── 'analytics'    → <AnalyticsPage />     [solo se features.analytics]
+        ├── 'crm'          → <Suspense><CrmPage /></Suspense>       [solo se features.crm]
+        ├── 'servizio'     → <Suspense><ServizioPage /></Suspense>  [solo se features.servizio]
+        └── 'analytics'    → <Suspense><AnalyticsPage /></Suspense> [solo se features.analytics]
+
+⚠️ **Lazy loading** (aggiunto 2026-05-14, Fase 4b): AdminHomePage, CrmPage, ServizioPage, AnalyticsPage
+sono importati con `React.lazy()`. AdminDashboard NON è lazy (è sempre montata). I chunk sono separati
+nel bundle — un cliente Classic non scarica mai il bundle CRM/Servizio/Analytics.
 ```
 
 **Regole cardine sidebar**:

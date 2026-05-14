@@ -23,11 +23,13 @@
  011   | 011    | 011_booking_table_assignments.sql
  012   | 012    | 012_service_slots_preset_signup.sql
  013   | 013*   | 013_tenants_edition.sql  ← applicata via MCP (2026-05-14)
+ 014   | 014*   | 014_rls_edition_gates.sql  ← RLS Pro-only su customers/service_slots/bta/rooms/tables (2026-05-14)
+ 015   | 015*   | 015_check_admin_email_with_edition.sql  ← RPC estesa con slug/org_name/edition (2026-05-14)
 ```
 
-*La 013 è applicata sul DB remoto ma potrebbe non risultare nel registro CLI (vedi § 4b).
+*Le 013-015 sono applicate sul DB remoto ma potrebbero non risultare nel registro CLI (vedi § 4b).
 
-Tutte le migrazioni 001–013 sono **applicate al DB remoto**. La prossima migrazione deve essere `014_*.sql`.
+Tutte le migrazioni 001–015 sono **applicate al DB remoto**. La prossima migrazione deve essere `016_*.sql`.
 
 ---
 

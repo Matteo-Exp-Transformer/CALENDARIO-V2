@@ -747,7 +747,10 @@ export type Database = {
       check_admin_email: {
         Args: { check_email: string }
         Returns: {
+          edition: string
           name: string
+          org_name: string
+          slug: string
           tenant_id: string
         }[]
       }

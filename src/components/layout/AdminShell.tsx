@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { DEFAULT_APP_THEME } from '@/features/booking/constants/appTheme'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 import {
@@ -16,13 +16,26 @@ import {
 import { cn } from '@/lib/utils'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { AdminDashboard } from '@/pages/AdminDashboard'
-import { AdminHomePage } from '@/pages/AdminHomePage'
-import { CrmPage } from '@/pages/CrmPage'
-import { ServizioPage } from '@/pages/ServizioPage'
-import { AnalyticsPage } from '@/pages/AnalyticsPage'
 import { Button } from '@/components/ui'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useFeatures } from '@/hooks/useFeatures'
+
+const AdminHomePage = lazy(() =>
+  import('@/pages/AdminHomePage').then((m) => ({ default: m.AdminHomePage })),
+)
+const CrmPage = lazy(() => import('@/pages/CrmPage').then((m) => ({ default: m.CrmPage })))
+const ServizioPage = lazy(() =>
+  import('@/pages/ServizioPage').then((m) => ({ default: m.ServizioPage })),
+)
+const AnalyticsPage = lazy(() =>
+  import('@/pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })),
+)
+
+const SectionFallback: FC = () => (
+  <div className="flex h-32 items-center justify-center">
+    <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary-600" />
+  </div>
+)
 
 export type AdminShellSection = 'home' | 'prenotazioni' | 'crm' | 'servizio' | 'analytics'
 type SidebarActiveItem = 'home' | 'form' | 'analytics' | 'servizio' | 'crm' | 'settings' | 'dashboard-tab' | null
@@ -359,11 +372,13 @@ export const AdminShell: FC = () => {
             restaurantSettingsSignal={restaurantSettingsSignal}
             bodyOverride={
               section === 'home' ? (
-                <AdminHomePage
-                  onOpenPrenotazioni={() => openSection('prenotazioni', null)}
-                  onOpenCrm={() => openSection('crm', 'crm')}
-                  onOpenServizio={() => openSection('servizio', 'servizio')}
-                />
+                <Suspense fallback={<SectionFallback />}>
+                  <AdminHomePage
+                    onOpenPrenotazioni={() => openSection('prenotazioni', null)}
+                    onOpenCrm={() => openSection('crm', 'crm')}
+                    onOpenServizio={() => openSection('servizio', 'servizio')}
+                  />
+                </Suspense>
               ) : undefined
             }
             onBodyOverrideExit={() => openSection('prenotazioni', null)}
@@ -385,9 +400,11 @@ export const AdminShell: FC = () => {
               </button>
             </div>
 
-            {section === 'crm' && features.crm && <CrmPage />}
-            {section === 'servizio' && features.servizio && <ServizioPage />}
-            {section === 'analytics' && features.analytics && <AnalyticsPage />}
+            <Suspense fallback={<SectionFallback />}>
+              {section === 'crm' && features.crm && <CrmPage />}
+              {section === 'servizio' && features.servizio && <ServizioPage />}
+              {section === 'analytics' && features.analytics && <AnalyticsPage />}
+            </Suspense>
           </div>
         )}
       </main>

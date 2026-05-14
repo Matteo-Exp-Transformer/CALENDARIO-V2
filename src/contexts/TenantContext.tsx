@@ -70,18 +70,10 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       }
 
       const adminInfo = (adminData as any[])[0]
-      const resolvedTenantId = adminInfo.tenant_id as string
-
-      const { data: orgData } = await (supabasePublic
-        .from('organizations') as any)
-        .select('slug, name, edition')
-        .eq('id', resolvedTenantId)
-        .single()
-
-      setTenantId(resolvedTenantId)
-      setTenantSlug(orgData?.slug || null)
-      setOrganizationName(orgData?.name || null)
-      setEdition((orgData?.edition as TenantEdition) || 'pro')
+      setTenantId(adminInfo.tenant_id as string)
+      setTenantSlug(adminInfo.slug || null)
+      setOrganizationName(adminInfo.org_name || null)
+      setEdition((adminInfo.edition as TenantEdition) || 'pro')
     } catch (err) {
       console.error('Errore setTenantFromAdmin:', err)
       setTenantId(null)
@@ -96,7 +88,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setTenantId(null)
     setTenantSlug(null)
     setOrganizationName(null)
-    setEdition('pro')
+    setEdition('classic')
   }, [])
 
   return (

@@ -241,7 +241,18 @@ LIMIT 1
 
 ### `check_admin_email(check_email text)` → tabella
 
-RPC usata da `TenantContext.setTenantFromAdmin()`. Restituisce il `tenant_id` per una data email admin.
+RPC usata da `TenantContext.setTenantFromAdmin()`. Restituisce in **una sola chiamata** tutti i campi necessari al TenantContext:
+
+| Colonna | Tipo | Fonte |
+|---------|------|-------|
+| `name` | text | `admin_users.name` |
+| `tenant_id` | uuid | `admin_users.tenant_id` |
+| `slug` | text | `organizations.slug` |
+| `org_name` | text | `organizations.name` |
+| `edition` | text | `organizations.edition` |
+
+Migrazione: `015_check_admin_email_with_edition.sql` (2026-05-14).
+Prima della 015 restituiva solo `(name, tenant_id)` — richiedeva una seconda SELECT su `organizations`.
 
 ---
 
