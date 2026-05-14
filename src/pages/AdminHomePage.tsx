@@ -158,56 +158,54 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
           />
         </section>
 
-        {/* Prossime 3 ore */}
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-primary-700" aria-hidden />
-            <h2 className="text-sm font-semibold text-primary-900 md:text-base">
-              Prossime 3 ore
-            </h2>
-          </div>
+        {/* Prossime 3 ore — nascosta se lista vuota (nessun messaggio placeholder) */}
+        {(error || isLoading || upcoming.length > 0) && (
+          <section className="space-y-3" aria-label="Prossime 3 ore">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary-700" aria-hidden />
+              <h2 className="text-sm font-semibold text-primary-900 md:text-base">
+                Prossime 3 ore
+              </h2>
+            </div>
 
-          {error ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-              <p className="font-semibold">Impossibile caricare le prossime prenotazioni.</p>
-              <p className="mt-1">{error.message}</p>
-            </div>
-          ) : isLoading ? (
-            <div
-              className="flex h-24 items-center justify-center rounded-xl border border-(--color-border) bg-surface shadow-sm"
-              role="status"
-              aria-live="polite"
-            >
-              <Loader2 className="h-6 w-6 animate-spin text-primary-600" aria-hidden />
-              <span className="sr-only">Caricamento prossime prenotazioni</span>
-            </div>
-          ) : upcoming.length === 0 ? (
-            <p className="rounded-xl border border-(--color-border) bg-surface px-4 py-6 text-center text-sm text-(--color-text-muted) shadow-sm">
-              Nessuna prenotazione confermata nelle prossime 3 ore.
-            </p>
-          ) : (
-            <ul className="space-y-2">
-              {upcoming.map((b) => (
-                <li
-                  key={b.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-(--color-border) bg-surface px-4 py-3 shadow-sm"
-                >
-                  <div className="flex min-w-0 flex-col">
-                    <span className="truncate text-sm font-semibold text-primary-900">
-                      {b.client_name}
+            {error ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                <p className="font-semibold">Impossibile caricare le prossime prenotazioni.</p>
+                <p className="mt-1">{error.message}</p>
+              </div>
+            ) : isLoading ? (
+              <div
+                className="flex h-24 items-center justify-center rounded-xl border border-(--color-border) bg-surface shadow-sm"
+                role="status"
+                aria-live="polite"
+              >
+                <Loader2 className="h-6 w-6 animate-spin text-primary-600" aria-hidden />
+                <span className="sr-only">Caricamento prossime prenotazioni</span>
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {upcoming.map((b) => (
+                  <li
+                    key={b.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-(--color-border) bg-surface px-4 py-3 shadow-sm"
+                  >
+                    <div className="flex min-w-0 flex-col">
+                      <span className="truncate text-sm font-semibold text-primary-900">
+                        {b.client_name}
+                      </span>
+                      <span className="text-xs text-(--color-text-muted)">
+                        {b.num_guests} {b.num_guests === 1 ? 'coperto' : 'coperti'}
+                      </span>
+                    </div>
+                    <span className="shrink-0 rounded-lg bg-primary-50 px-3 py-1 text-sm font-semibold tabular-nums text-primary-900">
+                      {format(b.start, 'HH:mm', { locale: it })}
                     </span>
-                    <span className="text-xs text-(--color-text-muted)">
-                      {b.num_guests} {b.num_guests === 1 ? 'coperto' : 'coperti'}
-                    </span>
-                  </div>
-                  <span className="shrink-0 rounded-lg bg-primary-50 px-3 py-1 text-sm font-semibold tabular-nums text-primary-900">
-                    {format(b.start, 'HH:mm', { locale: it })}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
       </div>
 
       <WalkInModal isOpen={walkInOpen} onClose={() => setWalkInOpen(false)} />
