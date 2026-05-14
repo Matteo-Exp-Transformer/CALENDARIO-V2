@@ -25,7 +25,13 @@ description: >-
 
 ---
 
-## 1. Regola d'oro
+## 1. Regole d'oro
+
+**Prima di scrivere un test nuovo, verifica se ne esiste già uno utile.**
+
+- Cerca nel file di test esistente più vicino alla funzione/hook in questione.
+- Se un test già copre il comportamento richiesto e passa, non riscriverlo — usalo come riferimento o estendilo con un `it` aggiuntivo nella stessa `describe`.
+- Solo se nessun test esistente è riutilizzabile crea un nuovo file o una nuova `describe`.
 
 **Nessun test tocca il DB di produzione** (`rwuxgvldzrkabglkasym`).
 

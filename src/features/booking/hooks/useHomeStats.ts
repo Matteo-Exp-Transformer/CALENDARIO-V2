@@ -11,6 +11,7 @@ export const HOME_STATS_QUERY_KEY = 'home-stats'
 interface HomeStatsRow {
   id: string
   status: string
+  source: string | null
   num_guests: number | null
   desired_date: string
   desired_time: string | null
@@ -84,22 +85,28 @@ function wallClockDateFromISO(iso: string): Date | null {
 /** Calcola upcoming dalla lista grezza con il `now` passato — chiamabile anche da un tick locale. */
 export function computeUpcoming(rows: HomeStatsRow[], now: Date): UpcomingBooking[] {
   const upcomingCutoff = addHours(now, 3)
+  // I walk-in rimangono visibili anche se l'orario è già passato, fino a 5 minuti dopo l'inizio.
+  const walkInPastCutoff = new Date(now.getTime() - 5 * 60 * 1000)
   const result: UpcomingBooking[] = []
 
   for (const row of rows) {
     if (row.status !== 'accepted' || !row.confirmed_start) continue
     const start = wallClockDateFromISO(row.confirmed_start)
-    if (start && start >= now && start <= upcomingCutoff) {
-      result.push({
-        id: row.id,
-        client_name: row.client_name,
-        num_guests: row.num_guests ?? 0,
-        start,
-        start_time: row.desired_time
-          ? trimTimeToHHmm(row.desired_time)
-          : extractTimeFromISO(row.confirmed_start),
-      })
-    }
+    if (!start || start > upcomingCutoff) continue
+
+    const isWalkIn = row.source === 'walk_in'
+    const lowerBound = isWalkIn ? walkInPastCutoff : now
+    if (start < lowerBound) continue
+
+    result.push({
+      id: row.id,
+      client_name: row.client_name,
+      num_guests: row.num_guests ?? 0,
+      start,
+      start_time: row.desired_time
+        ? trimTimeToHHmm(row.desired_time)
+        : extractTimeFromISO(row.confirmed_start),
+    })
   }
 
   result.sort((a, b) => a.start.getTime() - b.start.getTime())
@@ -156,7 +163,7 @@ export function useHomeStats() {
       const res = await supabase
         .from('booking_requests')
         .select(
-          'id, status, num_guests, desired_date, desired_time, confirmed_start, confirmed_end, client_name',
+          'id, status, source, num_guests, desired_date, desired_time, confirmed_start, confirmed_end, client_name',
         )
         .eq('tenant_id', tenantId)
         .in('status', ['pending', 'accepted'])
