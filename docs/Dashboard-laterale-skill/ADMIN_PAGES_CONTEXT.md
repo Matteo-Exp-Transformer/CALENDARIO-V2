@@ -120,7 +120,7 @@ customer.email === searchTerm  // case-sensitive, manca trim
 
 | File | Ruolo |
 |------|-------|
-| `src/pages/AdminHomePage.tsx` | Home riassuntiva: quick-nav (Calendario / CRM / Servizio), 3 stat card, lista prossime 3h |
+| `src/pages/AdminHomePage.tsx` | Home riassuntiva: quick-nav (Servizio se abilitato, walk-in, briefing), 3 stat card, lista prossime 3h |
 | `src/features/booking/hooks/useHomeStats.ts` | Query TanStack su `booking_requests`, `HOME_STATS_QUERY_KEY`, calcolo lato client |
 | `src/pages/AdminDashboard.tsx` | Vista operativa montata da `section === 'prenotazioni'` |
 
@@ -140,7 +140,7 @@ customer.email === searchTerm  // case-sensitive, manca trim
 
 - Per estrarre la data da `confirmed_start` (ISO con TZ) usare il regex `(\d{4})-(\d{2})-(\d{2})` — coerente con `useBookingStats`, evita drift di fuso.
 - La sidebar mantiene il bottone **Home** attivo sia su `section === 'home'` che `section === 'prenotazioni'` (logica `activeSidebarItem === 'home' || (!activeSidebarItem && (section === 'home' || section === 'prenotazioni'))`).
-- Le callback quick-nav (Calendario, CRM, Servizio) provengono dalla shell tramite `dashboardShellProps.onOpenPrenotazioni / onOpenCrm / onOpenServizio` — non leggere lo state della shell direttamente.
+- Le callback verso CRM e Servizio sono passate da `AdminShell` come prop `onOpenCrm` / `onOpenServizio` su `AdminHomePage` (montata con `bodyOverride`). Per aprire Prenotazioni/Calendario si usano i NavItem nell’header (`onBodyOverrideExit`).
 
 ### Note
 
