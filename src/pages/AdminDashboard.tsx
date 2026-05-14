@@ -145,7 +145,7 @@ const StatCard: React.FC<{ label: string; value: number }> = ({ label, value }) 
 export type AdminDashboardProps = {
   /** Incrementato da AdminShell quando si apre Impostazioni dalla sidebar. */
   restaurantSettingsSignal?: number
-  /** Se passato, sostituisce il corpo dei tab con il contenuto fornito (es. AdminHomePage). Header e NavItem restano visibili. */
+  /** Se passato, sostituisce il corpo dei tab con il contenuto fornito (es. AdminHomePage). Restano visibili solo banner ristorante e nav a 5 voci (niente sotto-righe per tab). */
   bodyOverride?: React.ReactNode
   /** Chiamato quando si clicca un NavItem mentre bodyOverride è attivo — segnala ad AdminShell di uscire dalla Home. */
   onBodyOverrideExit?: () => void
@@ -210,6 +210,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (bodyOverride) onBodyOverrideExit?.()
     setActiveTab(tab)
   }
+
+  /** Con bodyOverride (Home Pro) non mostrare statistiche Calendario, filtri Archivio, toolbar Menu, intro Impostazioni, blocco Nuova prenotazione. */
+  const showTabSecondaryChrome = !bodyOverride
 
   return (
     <div className="min-h-0 flex flex-1 flex-col bg-[var(--color-bg)]">
@@ -278,7 +281,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   />
                 </nav>
 
-                {activeTab === 'calendar' && (
+                {activeTab === 'calendar' && showTabSecondaryChrome && (
                   <div className="grid grid-cols-2 min-[470px]:grid-cols-4 gap-2 md:gap-3">
                     <StatCard label="Oggi" value={stats?.totalDay || 0} />
                     <StatCard label="Settimana" value={stats?.totalWeek || 0} />
@@ -287,7 +290,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                 )}
 
-                {activeTab === 'archive' && (
+                {activeTab === 'archive' && showTabSecondaryChrome && (
                   <ArchiveFiltersCard
                     filter={archiveFilter}
                     sortOrder={archiveSortOrder}
@@ -296,7 +299,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   />
                 )}
 
-                {activeTab === 'menu' && (
+                {activeTab === 'menu' && showTabSecondaryChrome && (
                   <MenuPricesHeroToolbar
                     promoDisabled={menuToolbarPromoDisabled}
                     onAddProduct={() => menuPricesTabRef.current?.startAddProduct()}
@@ -306,11 +309,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   />
                 )}
 
-                {activeTab === 'settings-restaurant' && <RestaurantSettingsIntro />}
+                {activeTab === 'settings-restaurant' && showTabSecondaryChrome && (
+                  <RestaurantSettingsIntro />
+                )}
               </>
             )}
 
-            {activeTab === 'pending' && (
+            {activeTab === 'pending' && showTabSecondaryChrome && (
               <div className="w-full overflow-hidden rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] shadow-md min-h-0">
                 <button
                   type="button"
@@ -347,7 +352,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         className={cn(
           'flex-1 w-full space-y-4 pb-12 md:pb-16',
           activeTab === 'archive' ? 'pt-3 md:pt-4' : 'pt-6',
-          showNewBookingPanel && 'hidden',
+          showNewBookingPanel && !bodyOverride && 'hidden',
         )}
       >
         {bodyOverride ?? (
