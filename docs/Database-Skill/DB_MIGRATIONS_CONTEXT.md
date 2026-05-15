@@ -26,11 +26,13 @@
  014   | 014*   | 014_rls_edition_gates.sql  ← RLS Pro-only su customers/service_slots/bta/rooms/tables (2026-05-14)
  015   | 015*   | 015_check_admin_email_with_edition.sql  ← RPC estesa con slug/org_name/edition (2026-05-14)
  016   | 016*   | 016_service_slots_canonical.sql  ← colonna is_canonical su service_slots; 3 canoniche marcate; trigger signup aggiornato (2026-05-15)
+ 017   | 017*   | 017_service_slots_max_guests.sql  ← colonna max_guests INTEGER DEFAULT NULL su service_slots (2026-05-15)
+ 018   | 018*   | 018_rpc_update_service_slot.sql  ← RPC insert_service_slot + update_service_slot (SECURITY DEFINER, bypass schema cache PostgREST) (2026-05-15)
 ```
 
-*Le 013-016 sono applicate sul DB remoto via MCP `apply_migration` (vedi § 4b).
+*Le 013-018 sono applicate sul DB remoto via MCP `apply_migration` (vedi § 4b).
 
-Tutte le migrazioni 001–016 sono **applicate al DB remoto**. La prossima migrazione deve essere `017_*.sql`.
+Tutte le migrazioni 001–018 sono **applicate al DB remoto**. La prossima migrazione deve essere `019_*.sql`.
 
 ---
 

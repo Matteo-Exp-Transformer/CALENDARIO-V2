@@ -117,13 +117,18 @@ Indice: `(tenant_id, sort_order, label)`.
 | `start_time` | TEXT NOT NULL | Formato `HH:MM` |
 | `end_time` | TEXT NOT NULL | Formato `HH:MM` |
 | `max_turns` | INTEGER | NULL = nessun limite |
+| `max_guests` | INTEGER | NULL = nessun limite coperti per fascia (migrazione 017) |
 | `display_order` | INTEGER NOT NULL DEFAULT 0 | Ordinamento UI |
-| `is_canonical` | BOOLEAN NOT NULL DEFAULT false | Fascia usata da calendario/capacity/pending |
+| `is_canonical` | BOOLEAN NOT NULL DEFAULT false | Fascia usata da calendario/capacity/pending (migrazione 016) |
 | `created_at`, `updated_at` | TIMESTAMPTZ | |
 
-**`is_canonical`**: aggiunto con migrazione `016_service_slots_canonical.sql`. Le 3 fasce `Colazione`, `Pranzo`, `Cena` hanno `is_canonical = true` e sono l'**unica fonte dati** per BookingCalendar, useCapacityCheck, PendingRequestsTab, BookingDetailsModal. Le fasce non canoniche (Aperitivo, Notturna) esistono nel DB ma non influenzano il calendario.
+**`is_canonical`**: Le 3 fasce `Colazione`, `Pranzo`, `Cena` hanno `is_canonical = true` e sono l'**unica fonte dati** per BookingCalendar, useCapacityCheck, PendingRequestsTab, BookingDetailsModal. Le fasce non canoniche (Aperitivo, Notturna) esistono nel DB ma non influenzano il calendario.
 
-Hook dedicato: `useCanonicalTimeSlots()` in `useServiceSlots.ts` — filtra `is_canonical = true` e converte via `toBookingTimeSlots()`.
+**`max_guests`**: impostabile per fascia da Pro/Enterprise in Servizio → Fasce orarie. `useCapacityCheck` lo usa come limite per fascia con fallback su `slot_guest_capacities` di `restaurant_settings` se null. Classic non ha la UI per impostarlo (sezione Fasce nascosta in `!features.servizio`).
+
+Hook dedicato: `useCanonicalTimeSlots()` in `useServiceSlots.ts` — condivide la query di `useServiceSlots`, filtra `is_canonical = true`, converte via `toBookingTimeSlots()`. Nessuna chiamata DB aggiuntiva.
+
+**RPC bypass schema cache** (migrazione 018): `insert_service_slot(...)` e `update_service_slot(...)` — le mutation usano queste RPC invece di `.insert()`/`.update()` REST per aggirare la schema cache PostgREST. `update_service_slot` usa semantica PATCH (parametri omessi = mantieni valore esistente). Il parametro `p_clear_max_guests BOOLEAN` gestisce il caso azzeramento esplicito (null in SQL è ambiguo).
 
 Trigger signup: `seed_default_service_slots_for_organization()` — inserisce 5 fasce di default (Colazione/Pranzo/Aperitivo/Cena/Notturna) con le 3 canoniche già marcate.
 

@@ -13,6 +13,7 @@ import { cn, stripDirectionalFormattingChars } from '@/lib/utils'
 import { ADMIN_WARM_BORDER } from '@/lib/adminWarmGradientSurface'
 import { BusinessHoursEditor } from './BusinessHoursEditor'
 import { toast } from 'react-toastify'
+import { logger } from '@/lib/logger'
 import {
   useRestaurantSetting,
   useUpsertRestaurantSetting,
@@ -571,8 +572,10 @@ export const RestaurantSettingsTab: React.FC = () => {
       setContactPhone(safePhone)
       setContactAddress(safeAddress)
 
-      // Aggiorna le 3 fasce canoniche in service_slots (unica fonte di verità)
-      if (canonicalSlotIds) {
+      // Aggiorna le 3 fasce canoniche in service_slots (unica fonte di verità).
+      // !features.servizio = Classic: la sezione fasce è visibile → salva solo se le righe canoniche esistono.
+      // In Pro/Enterprise questa sezione è nascosta → canonicalSlotIds è sempre null, skip corretto.
+      if (!features.servizio && canonicalSlotIds) {
         const [idMorning, idAfternoon, idEvening] = canonicalSlotIds
         await Promise.all([
           updateServiceSlot.mutateAsync({ id: idMorning, start_time: bookingTimeSlots.morningStart, end_time: bookingTimeSlots.morningEnd }),
@@ -581,6 +584,8 @@ export const RestaurantSettingsTab: React.FC = () => {
         ])
         // Invalida la cache service_slots per allineare calendario e capacity
         await queryClient.invalidateQueries({ queryKey: [SERVICE_SLOTS_QUERY_KEY] })
+      } else if (!features.servizio && !canonicalSlotIds) {
+        logger.warn('[RestaurantSettingsTab] nessuna fascia canonica trovata — fasce non salvate (tenant pre-migrazione 016)')
       }
 
       await upsert.mutateAsync([

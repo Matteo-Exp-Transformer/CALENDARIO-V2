@@ -11,7 +11,7 @@ import {
   slotRangesOverlap,
   type BookingTimeSlots,
 } from '../utils/bookingTimeSlots'
-import { useCanonicalTimeSlots } from './useServiceSlots'
+import { useCanonicalTimeSlots, useServiceSlots } from './useServiceSlots'
 
 interface UseCapacityCheckParams {
   date: string
@@ -62,13 +62,25 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
   const { date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId } = params
   const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
   const { data: bookingSlots } = useCanonicalTimeSlots()
+  const { data: serviceSlots = [] } = useServiceSlots()
   const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities')
   // `null` (o assente) = nessun limite giornaliero impostato → skip del controllo
   const dailyGuestLimit = dailyGuestLimitQuery.data ?? null
-  const slotGuestCapacities: SlotGuestCapacities =
+  const legacySlotCapacities: SlotGuestCapacities =
     slotGuestCapacitiesQuery.data ?? DEFAULT_SLOT_GUEST_CAPACITIES
 
   return useMemo(() => {
+    // Capacità per fascia: service_slots.max_guests vince su slot_guest_capacities se impostato.
+    // Ordine canonical: display_order 0=mattina, 1=pranzo, 2=cena.
+    const canonicals = serviceSlots
+      .filter((s) => s.is_canonical)
+      .sort((a, b) => a.display_order - b.display_order)
+    const slotGuestCapacities: SlotGuestCapacities = {
+      morning:   canonicals[0]?.max_guests ?? legacySlotCapacities.morning,
+      afternoon: canonicals[1]?.max_guests ?? legacySlotCapacities.afternoon,
+      evening:   canonicals[2]?.max_guests ?? legacySlotCapacities.evening,
+    }
+
     const morning = {
       slot: 'morning' as TimeSlot,
       capacity: slotGuestCapacities.morning,
@@ -183,6 +195,7 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
     excludeBookingId,
     dailyGuestLimit,
     bookingSlots,
-    slotGuestCapacities,
+    serviceSlots,
+    legacySlotCapacities,
   ])
 }

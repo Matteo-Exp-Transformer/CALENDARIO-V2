@@ -201,20 +201,23 @@ Le feature sidebar (CRM esteso, Servizio, Analytics, Home) NON devono:
 
 ---
 
-## 4. Stato attuale (snapshot 14-05-26 — post Fase 0/2/3 + fix orario)
+## 4. Stato attuale (snapshot 15-05-26 — post Fase 0/2/3 + fix orario + fasce canoniche)
 
 Branch `Sviluppo-Dashboard-laterale` rispetto a `main`:
 
 - **AdminDashboard.tsx**: integrato in AdminShell. Layout `min-h-0 flex-1`. Aggiunte due prop opzionali: `bodyOverride?: React.ReactNode` (mostra contenuto alternativo nel corpo, Header+NavItem restano visibili) e `onBodyOverrideExit?: () => void` (chiamata al click NavItem quando bodyOverride è attivo). `handleTabClick()` wrappa `setActiveTab` e chiama `onBodyOverrideExit` se necessario.
-- **BookingCalendar.tsx**: feature opt-in ora **gated** con `useFeatures()` — icona walk-in condizionata a `features.walkIn`, turni/badge "Da assegnare" condizionati a `features.servizio`.
-- **BookingDetailsModal.tsx**: bottone No-show gated con `features.noShow && canMarkNoShow`. Avviso «orario già trascorso» su **Salva** (`PastStartTimeWarningModal` + `isWallClockStartBeforeNow`): modifica al file LOCK effettuata con **conferma esplicita dell’utente in chat** (conforme §0 — spiegazione preventiva + ok).
-- **useBookingMutations.ts**: aggiunte invalidazioni per `HOME_STATS_QUERY_KEY` e `ANALYTICS_QUERY_ROOT` — no-op in edition Classic, **safe**. ⚠️ **Fix orario**: `useAcceptBooking` ora scrive sempre `desired_time` nel DB — se il chiamante non lo passa, lo deriva da `confirmedStart` con `extractTimeFromISO` (che è ancora nella forma `+00:00` prima del round-trip). Senza questa garanzia, il display potrebbe mostrare l'orario sbagliato (es. +2h in CEST).
+- **BookingCalendar.tsx**: feature opt-in ora **gated** con `useFeatures()` — icona walk-in condizionata a `features.walkIn`, turni/badge “Da assegnare” condizionati a `features.servizio`. Usa `useCanonicalTimeSlots()` per gli orari delle fasce (fonte: `service_slots` DB, non più JSON in `restaurant_settings`).
+- **BookingDetailsModal.tsx**: bottone No-show gated con `features.noShow && canMarkNoShow`. Avviso «orario già trascorso» su **Salva** (`PastStartTimeWarningModal` + `isWallClockStartBeforeNow`). Usa `useCanonicalTimeSlots()` per il display della fascia.
+- **useBookingMutations.ts**: aggiunte invalidazioni per `HOME_STATS_QUERY_KEY` e `ANALYTICS_QUERY_ROOT` — no-op in edition Classic, **safe**. ⚠️ **Fix orario**: `useAcceptBooking` ora scrive sempre `desired_time` nel DB — se il chiamante non lo passa, lo deriva da `confirmedStart` con `extractTimeFromISO` (che è ancora nella forma `+00:00` prima del round-trip). Senza questa garanzia, il display potrebbe mostrare l’orario sbagliato (es. +2h in CEST).
+- **RestaurantSettingsTab.tsx**: la sezione “Imposta Fasce Orarie” è visibile solo in Classic (`!features.servizio`). Legge e salva le 3 fasce canoniche direttamente su `service_slots` via `useUpdateServiceSlot` (RPC). Al salvataggio: se `canonicalSlotIds` è null (tenant pre-migrazione 016), le fasce vengono saltate con `logger.warn` — le altre impostazioni vengono salvate comunque.
+- **useCapacityCheck.ts**: usa `useServiceSlots()` oltre a `useCanonicalTimeSlots()`. La capacità per fascia segue questa priorità: `service_slots.max_guests` (impostabile in Pro da Servizio) → fallback su `slot_guest_capacities` in `restaurant_settings`. Classic funziona identicamente a prima se `max_guests` è null.
+- **useCanonicalTimeSlots()** in `useServiceSlots.ts`: non ridefinisce più la queryFn — chiama direttamente `useServiceSlots()` e filtra le canoniche. Una sola query al DB condivisa con tutti i consumer.
 - **Bug Home risolto**: cliccando Home nella sidebar, Header e NavItem restano visibili. Il contenuto Home passa via `bodyOverride`.
-- **AdminHomePage.tsx**: sezione "prossime 3 ore" ora mostra `b.start_time` (stringa HH:mm sicura) invece di `format(b.start, 'HH:mm')` su oggetto Date — eliminato il +2h in CEST. Import `format`/`it` da date-fns rimossi.
-- **useHomeStats.ts**: `UpcomingBooking` espone `start_time: string` (da `desired_time` o `extractTimeFromISO`) in luogo di `start_iso`. Rimosso codice di diagnostica agente esterno (fetch verso 127.0.0.1:7934).
+- **AdminHomePage.tsx**: sezione “prossime 3 ore” ora mostra `b.start_time` (stringa HH:mm sicura) invece di `format(b.start, ‘HH:mm’)` su oggetto Date — eliminato il +2h in CEST.
+- **useHomeStats.ts**: `UpcomingBooking` espone `start_time: string` (da `desired_time` o `extractTimeFromISO`) in luogo di `start_iso`.
 - **PastStartTimeWarningModal** + `isWallClockStartBeforeNow` in `dateUtils.ts`: prima di accettare dalla tab *Richieste in attesa*, di salvare modifiche in **BookingDetailsModal**, o di inviare **AdminBookingForm** (“Inserisci Nuova Prenotazione”), se data e ora di inizio (orologio locale) sono già nel passato si mostra un dialog di conferma; dopo OK si ripete la catena capienza → `CapacityWarningModal` → mutate/salvataggio/creazione come prima.
 
-**Riferimento completo**: `docs/Sessioni di lavoro/14-05-26/Report-esecuzione-blindatura-edition.md`.
+**Riferimento completo**: `docs/Sessioni di lavoro/15-05-26/Revisionate da claude/Report-unificazione-fasce-orarie-canoniche.md`.
 
 ---
 

@@ -56,20 +56,19 @@ export function useCreateServiceSlot() {
 
   return useMutation({
     mutationFn: async (input: ServiceSlotInsert) => {
-      // biome-ignore lint: RPC non ancora nei tipi generati (migration 018 applicata via MCP)
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .rpc('insert_service_slot', {
           p_tenant_id:     tenantId!,
           p_name:          input.name,
           p_start_time:    input.start_time,
           p_end_time:      input.end_time,
-          p_max_turns:     input.max_turns ?? null,
-          p_max_guests:    input.max_guests ?? null,
+          p_max_turns:     input.max_turns as number,
+          p_max_guests:    input.max_guests as number,
           p_display_order: input.display_order,
         })
 
       if (error) throw error
-      return (data as unknown as ServiceSlot[])[0]
+      return (data as ServiceSlot[])[0]
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_SLOTS_QUERY_KEY, tenantId] })
@@ -88,26 +87,24 @@ export function useUpdateServiceSlot() {
 
   return useMutation({
     mutationFn: async ({ id, ...patch }: ServiceSlotUpdate) => {
-      // RPC bypassa la schema cache PostgREST (colonne 016/017 non ancora nel cache).
-      // Passa solo i campi presenti nel patch — NULL = mantieni valore esistente.
-      // 'max_guests' in patch con valore null significa azzeramento esplicito.
+      // 'max_guests' in patch con valore null significa azzeramento esplicito (p_clear_max_guests=true).
+      // NULL nei parametri opzionali = mantieni valore esistente (semantica PATCH della RPC).
       const clearMaxGuests = 'max_guests' in patch && patch.max_guests === null
-      // biome-ignore lint: RPC non ancora nei tipi generati (migration 018 applicata via MCP)
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .rpc('update_service_slot', {
           p_id:               id,
           p_tenant_id:        tenantId!,
-          p_name:             patch.name             ?? null,
-          p_start_time:       patch.start_time       ?? null,
-          p_end_time:         patch.end_time         ?? null,
-          p_max_turns:        patch.max_turns        !== undefined ? patch.max_turns : null,
-          p_max_guests:       clearMaxGuests ? null : (patch.max_guests ?? null),
-          p_display_order:    patch.display_order    ?? null,
+          p_name:             patch.name             ?? undefined,
+          p_start_time:       patch.start_time       ?? undefined,
+          p_end_time:         patch.end_time         ?? undefined,
+          p_max_turns:        patch.max_turns        !== undefined ? patch.max_turns as number : undefined,
+          p_max_guests:       clearMaxGuests ? undefined : (patch.max_guests !== undefined ? patch.max_guests as number : undefined),
+          p_display_order:    patch.display_order    ?? undefined,
           p_clear_max_guests: clearMaxGuests,
         })
 
       if (error) throw error
-      return (data as unknown as ServiceSlot[])[0]
+      return (data as ServiceSlot[])[0]
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_SLOTS_QUERY_KEY, tenantId] })
@@ -148,29 +145,14 @@ export function useDeleteServiceSlot() {
 /**
  * Restituisce le 3 fasce canoniche (Colazione/Pranzo/Cena) già convertite
  * nel formato BookingTimeSlots usato da calendario, capacity e pending.
+ * Condivide la stessa TanStack Query di useServiceSlots — nessuna chiamata DB aggiuntiva.
  */
 export function useCanonicalTimeSlots(): {
   data: BookingTimeSlots
   isLoading: boolean
   error: Error | null
 } {
-  const { tenantId } = useTenantContext()
-
-  const query = useQuery({
-    queryKey: [SERVICE_SLOTS_QUERY_KEY, tenantId],
-    queryFn: async (): Promise<ServiceSlot[]> => {
-      const { data, error } = await supabase
-        .from('service_slots')
-        .select('*')
-        .eq('tenant_id', tenantId!)
-        .order('display_order', { ascending: true })
-
-      if (error) throw error
-      return data as ServiceSlot[]
-    },
-    enabled: !!tenantId,
-  })
-
+  const query = useServiceSlots()
   const canonicalSlots = (query.data ?? []).filter((s) => s.is_canonical)
 
   return {
