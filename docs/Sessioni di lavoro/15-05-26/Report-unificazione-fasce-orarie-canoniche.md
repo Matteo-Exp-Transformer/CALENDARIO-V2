@@ -110,7 +110,42 @@ Mario (Classic) apre Impostazioni locale: vede la sezione Fasce Orarie come prim
 
 ---
 
+## Terza parte sessione — Fix bug schema cache PostgREST per max_guests
+
+### Problema
+
+Dopo il deploy della migrazione 017 (`max_guests`), salvare una fascia oraria con il campo coperti compilato restituiva:
+
+> `Could not find the 'max_guests' column of 'service_slots' in the schema cache`
+
+Il DB aveva la colonna, ma PostgREST su Supabase cloud mantiene una schema cache in memoria separata da Postgres. `pg_notify('pgrst', 'reload schema')` non è garantito su cloud — il processo PostgREST potrebbe non essere sullo stesso host di Postgres.
+
+### Fix
+
+Migrazione 018: due RPC `SECURITY DEFINER` che scrivono direttamente in SQL, bypassando il layer REST e la sua schema cache:
+
+- `insert_service_slot(...)` — sostituisce `.insert()` in `useCreateServiceSlot`
+- `update_service_slot(...)` — sostituisce `.update()` in `useUpdateServiceSlot`
+
+L'`update_service_slot` usa **semantica PATCH** (`COALESCE`): i parametri passati come `NULL` mantengono il valore esistente nel DB. Questo è fondamentale perché `RestaurantSettingsTab` chiama la stessa mutation passando solo `start_time` e `end_time` — senza PATCH semantics, i campi `name`, `max_guests`, `max_turns` sarebbero stati azzerati.
+
+Il parametro `p_clear_max_guests BOOLEAN` gestisce il caso in cui l'utente vuole **rimuovere** il limite coperti: `null` in SQL è ambiguo (potrebbe significare "non cambiare"), quindi si usa un flag esplicito.
+
+### File toccati (terza parte)
+
+| File | Motivo |
+|------|--------|
+| `supabase/migrations/018_rpc_update_service_slot.sql` | Nuove RPC insert/update |
+| `src/features/booking/hooks/useServiceSlots.ts` | Mutation migrate a RPC; cast as any temporanei fino a regen tipi |
+
+### Validate finale (terza parte)
+
+`npm run validate` → **86 test passati**, 0 errori lint, 0 errori typecheck.
+
+---
+
 ## Cosa resta
 
-- Integrare `service_slots.max_guests` in `useCapacityCheck` come limite di capienza per fascia (oggi usa ancora `slot_guest_capacities` da `restaurant_settings`). La colonna è nel DB, il tipo è aggiornato, manca solo la lettura nel hook di capacity.
-- Il JSON `booking_time_slots` in `restaurant_settings` è deprecato come fonte dati per calendario/capacity/pending — può essere rimosso in futuro con una pulizia.
+- Rigenerare `src/types/database.ts` dopo che la CLI riconosce le RPC 018 → rimuovere i cast `as any` temporanei in `useServiceSlots.ts` (righe ~61 e ~97).
+- Integrare `service_slots.max_guests` in `useCapacityCheck` come limite per fascia (oggi usa ancora `slot_guest_capacities` da `restaurant_settings`). La colonna è nel DB e nel tipo, manca solo la lettura nel hook.
+- Il JSON `booking_time_slots` in `restaurant_settings` è deprecato come fonte dati — può essere rimosso in futuro.
