@@ -56,14 +56,20 @@ export function useCreateServiceSlot() {
 
   return useMutation({
     mutationFn: async (input: ServiceSlotInsert) => {
-      const { data, error } = await supabase
-        .from('service_slots')
-        .insert({ ...input, tenant_id: tenantId! })
-        .select()
-        .single()
+      // biome-ignore lint: RPC non ancora nei tipi generati (migration 018 applicata via MCP)
+      const { data, error } = await (supabase as any)
+        .rpc('insert_service_slot', {
+          p_tenant_id:     tenantId!,
+          p_name:          input.name,
+          p_start_time:    input.start_time,
+          p_end_time:      input.end_time,
+          p_max_turns:     input.max_turns ?? null,
+          p_max_guests:    input.max_guests ?? null,
+          p_display_order: input.display_order,
+        })
 
       if (error) throw error
-      return data as ServiceSlot
+      return (data as unknown as ServiceSlot[])[0]
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_SLOTS_QUERY_KEY, tenantId] })
@@ -82,16 +88,26 @@ export function useUpdateServiceSlot() {
 
   return useMutation({
     mutationFn: async ({ id, ...patch }: ServiceSlotUpdate) => {
-      const { data, error } = await supabase
-        .from('service_slots')
-        .update({ ...patch, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .eq('tenant_id', tenantId!)
-        .select()
-        .single()
+      // RPC bypassa la schema cache PostgREST (colonne 016/017 non ancora nel cache).
+      // Passa solo i campi presenti nel patch — NULL = mantieni valore esistente.
+      // 'max_guests' in patch con valore null significa azzeramento esplicito.
+      const clearMaxGuests = 'max_guests' in patch && patch.max_guests === null
+      // biome-ignore lint: RPC non ancora nei tipi generati (migration 018 applicata via MCP)
+      const { data, error } = await (supabase as any)
+        .rpc('update_service_slot', {
+          p_id:               id,
+          p_tenant_id:        tenantId!,
+          p_name:             patch.name             ?? null,
+          p_start_time:       patch.start_time       ?? null,
+          p_end_time:         patch.end_time         ?? null,
+          p_max_turns:        patch.max_turns        !== undefined ? patch.max_turns : null,
+          p_max_guests:       clearMaxGuests ? null : (patch.max_guests ?? null),
+          p_display_order:    patch.display_order    ?? null,
+          p_clear_max_guests: clearMaxGuests,
+        })
 
       if (error) throw error
-      return data as ServiceSlot
+      return (data as unknown as ServiceSlot[])[0]
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_SLOTS_QUERY_KEY, tenantId] })
