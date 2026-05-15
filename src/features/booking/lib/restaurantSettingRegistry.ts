@@ -3,11 +3,6 @@ import type { Json } from '@/types/database'
 import type { BusinessHours, BusinessHourSlot } from '@/lib/businessHours'
 import { getDefaultBusinessHours, parseBusinessHours } from '@/lib/businessHours'
 import {
-  DEFAULT_BOOKING_TIME_SLOTS,
-  type BookingTimeSlots,
-  validateBookingTimeSlots,
-} from '@/features/booking/utils/bookingTimeSlots'
-import {
   type BookingPageBackgroundId,
   isBookingPageBackgroundId,
   parseBookingPageBackgroundFromDb,
@@ -27,7 +22,6 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'daily_guest_limit',
   /** Capienza massima coperti per fascia; null per fascia = nessun limite (no default numerico in app). */
   'slot_guest_capacities',
-  'booking_time_slots',
   'business_hours',
   'contact_email',
   'contact_phone',
@@ -139,14 +133,6 @@ function parseSlotGuestCapacitiesFromDb(raw: unknown): SlotGuestCapacities {
 
 /** Valore JSON salvato su `restaurant_settings.setting_value` quando non c’è limite giornaliero (la colonna è NOT NULL). */
 export const DAILY_GUEST_LIMIT_UNLIMITED_DB_VALUE = -1
-const bookingTimeSlotsSchema = z.object({
-  morningStart: timeHm,
-  morningEnd: timeHm,
-  afternoonStart: timeHm,
-  afternoonEnd: timeHm,
-  eveningStart: timeHm,
-  eveningEnd: timeHm,
-})
 
 function parseJsonScalarString(raw: unknown): string {
   if (raw == null) return ''
@@ -194,14 +180,6 @@ function parseBusinessHoursFromDb(raw: unknown): BusinessHours {
   const zh = businessHoursSettingSchema.safeParse(raw)
   if (zh.success) return zh.data
   return getDefaultBusinessHours()
-}
-
-function parseBookingTimeSlotsFromDb(raw: unknown): BookingTimeSlots {
-  const parsed = bookingTimeSlotsSchema.safeParse(raw)
-  if (!parsed.success) return DEFAULT_BOOKING_TIME_SLOTS
-  const error = validateBookingTimeSlots(parsed.data)
-  if (error) return DEFAULT_BOOKING_TIME_SLOTS
-  return parsed.data
 }
 
 const customStaffPresetRowSchema = z.object({
@@ -285,7 +263,6 @@ export type RestaurantSettingValueMap = {
   booking_window_days: number
   daily_guest_limit: number | null
   slot_guest_capacities: SlotGuestCapacities
-  booking_time_slots: BookingTimeSlots
   business_hours: BusinessHours
   contact_email: string
   contact_phone: string
@@ -360,16 +337,6 @@ export const restaurantSettingRegistry: {
     validate: (value) => {
       const r = slotGuestCapacitiesSchema.safeParse(value)
       return r.success ? null : r.error.issues[0]?.message ?? 'Capienze fascia non valide'
-    },
-  },
-  booking_time_slots: {
-    key: 'booking_time_slots',
-    parseFromDb: (raw) => parseBookingTimeSlotsFromDb(raw),
-    serializeToDb: (value) => value as Json,
-    validate: (value) => {
-      const r = bookingTimeSlotsSchema.safeParse(value)
-      if (!r.success) return r.error.issues[0]?.message ?? 'Fasce orarie non valide'
-      return validateBookingTimeSlots(r.data)
     },
   },
   business_hours: {
