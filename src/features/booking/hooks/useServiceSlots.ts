@@ -87,21 +87,18 @@ export function useUpdateServiceSlot() {
 
   return useMutation({
     mutationFn: async ({ id, ...patch }: ServiceSlotUpdate) => {
-      // 'max_guests' in patch con valore null significa azzeramento esplicito (p_clear_max_guests=true).
-      // NULL nei parametri opzionali = mantieni valore esistente (semantica PATCH della RPC).
-      const clearMaxGuests = 'max_guests' in patch && patch.max_guests === null
-      const { data, error } = await supabase
-        .rpc('update_service_slot', {
-          p_id:               id,
-          p_tenant_id:        tenantId!,
-          p_name:             patch.name             ?? undefined,
-          p_start_time:       patch.start_time       ?? undefined,
-          p_end_time:         patch.end_time         ?? undefined,
-          p_max_turns:        patch.max_turns        !== undefined ? patch.max_turns as number : undefined,
-          p_max_guests:       clearMaxGuests ? undefined : (patch.max_guests !== undefined ? patch.max_guests as number : undefined),
-          p_display_order:    patch.display_order    ?? undefined,
-          p_clear_max_guests: clearMaxGuests,
-        })
+      // RPC con singolo parametro jsonb: firma univoca, immune a PGRST202 (schema cache).
+      // Semantica PATCH: solo le chiavi presenti vengono aggiornate. La chiave 'max_guests'
+      // con valore null = azzeramento esplicito del limite (la presenza della chiave è l'intento).
+      const payload: Record<string, string | number | null> = { id, tenant_id: tenantId! }
+      if (patch.name !== undefined) payload.name = patch.name
+      if (patch.start_time !== undefined) payload.start_time = patch.start_time
+      if (patch.end_time !== undefined) payload.end_time = patch.end_time
+      if (patch.max_turns !== undefined) payload.max_turns = patch.max_turns
+      if ('max_guests' in patch) payload.max_guests = patch.max_guests ?? null
+      if (patch.display_order !== undefined) payload.display_order = patch.display_order
+
+      const { data, error } = await supabase.rpc('update_service_slot', { payload })
 
       if (error) throw error
       return (data as ServiceSlot[])[0]

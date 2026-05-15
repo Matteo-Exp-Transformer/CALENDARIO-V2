@@ -128,7 +128,7 @@ Indice: `(tenant_id, sort_order, label)`.
 
 Hook dedicato: `useCanonicalTimeSlots()` in `useServiceSlots.ts` — condivide la query di `useServiceSlots`, filtra `is_canonical = true`, converte via `toBookingTimeSlots()`. Nessuna chiamata DB aggiuntiva.
 
-**RPC bypass schema cache** (migrazione 018): `insert_service_slot(...)` e `update_service_slot(...)` — le mutation usano queste RPC invece di `.insert()`/`.update()` REST per aggirare la schema cache PostgREST. `update_service_slot` usa semantica PATCH (parametri omessi = mantieni valore esistente). Il parametro `p_clear_max_guests BOOLEAN` gestisce il caso azzeramento esplicito (null in SQL è ambiguo).
+**RPC bypass schema cache**: `insert_service_slot(...)` (7 param, migrazione 018) e `update_service_slot(payload jsonb)` (migrazione 021). Le mutation in `useServiceSlots.ts` usano queste RPC invece di `.insert()`/`.update()` REST per aggirare la schema cache PostgREST. `update_service_slot` ha **un solo parametro jsonb** (firma univoca, immune a PGRST202 — vedi DB_MIGRATIONS_CONTEXT § 1 nota PGRST202). Semantica PATCH: chiave assente nel JSON = mantieni valore esistente; `"max_guests": null` (chiave presente con null) = azzera il limite. La presenza/assenza della chiave esprime l'intento — nessun flag `p_clear_max_guests` separato.
 
 Trigger signup: `seed_default_service_slots_for_organization()` — inserisce 5 fasce di default (Colazione/Pranzo/Aperitivo/Cena/Notturna) con le 3 canoniche già marcate.
 

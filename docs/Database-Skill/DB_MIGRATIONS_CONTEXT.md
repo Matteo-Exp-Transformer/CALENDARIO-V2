@@ -4,7 +4,13 @@
 
 ---
 
-## 1. Stato migrazioni (aggiornato 2026-05-14)
+## 1. Stato migrazioni (aggiornato 2026-05-15)
+
+> ⚠️ **DUE ambienti Supabase distinti — non confonderli:**
+> - **PRODUZIONE**: `rwuxgvldzrkabglkasym.supabase.co` — MCP server "Supabase".
+> - **TEST/staging**: `docnnernvpyrbwuzzach.supabase.co` — MCP server "Supabase test". È l'ambiente che l'utente usa di solito da browser in sviluppo (l'URL appare nei suoi errori console).
+>
+> Una migrazione applicata via MCP su un ambiente **NON** si propaga all'altro. Vanno applicate esplicitamente a entrambi. La colonna "Remote" qui sotto si riferisce a **produzione**. Prima di diagnosticare un errore DB visto dall'utente, verificare su quale ambiente sta testando (guardare l'URL Supabase negli errori: `docnnernvp`=test, `rwuxgvld`=prod).
 
 ```
  Local | Remote | File
@@ -27,12 +33,19 @@
  015   | 015*   | 015_check_admin_email_with_edition.sql  ← RPC estesa con slug/org_name/edition (2026-05-14)
  016   | 016*   | 016_service_slots_canonical.sql  ← colonna is_canonical su service_slots; 3 canoniche marcate; trigger signup aggiornato (2026-05-15)
  017   | 017*   | 017_service_slots_max_guests.sql  ← colonna max_guests INTEGER DEFAULT NULL su service_slots (2026-05-15)
- 018   | 018*   | 018_rpc_update_service_slot.sql  ← RPC insert_service_slot + update_service_slot (SECURITY DEFINER, bypass schema cache PostgREST) (2026-05-15)
+ 018   | 018*   | 018_rpc_update_service_slot.sql  ← RPC insert + update_service_slot a 9 param (poi superata da 021) (2026-05-15)
+ 019   |        | 019_cleanup_booking_time_slots.sql  ← DELETE chiave deprecata booking_time_slots da restaurant_settings (NON applicata) (2026-05-15)
+ 020   | 020*   | 020_drop_legacy_update_service_slot.sql  ← DROP firma legacy update_service_slot a 8 param (fix PGRST202 overloading) (2026-05-15)
+ 021   | 021*   | 021_update_service_slot_jsonb.sql  ← update_service_slot riscritta con SINGOLO param jsonb (firma univoca, immune a PGRST202); DROP firma a 9 param (2026-05-15)
 ```
 
-*Le 013-018 sono applicate sul DB remoto via MCP `apply_migration` (vedi § 4b).
+*Le 013-018, 020, 021 sono applicate sul DB **produzione** via MCP `apply_migration`. Sul **DB di test** sono state applicate via MCP solo 016, 017, 018(insert)+021 (allineamento 2026-05-15) — il resto dello storico test non è verificato.
 
-Tutte le migrazioni 001–018 sono **applicate al DB remoto**. La prossima migrazione deve essere `019_*.sql`.
+La 019 (`019_cleanup_booking_time_slots.sql`) **NON è applicata** né su produzione né su test — solo file locale, da applicare manualmente.
+
+> **Nota PGRST202 — soluzione definitiva (2026-05-15)**: il bug è ricomparso più volte perché una RPC con N parametri opzionali è fragile con PostgREST (qualsiasi ambiguità o schema cache stale → "function not found"). Storia: 018 v1 creò la firma a 8 param; 018 v2 ne aggiunse una a 9 param senza sostituire la prima (overloading → PGRST202); 020 droppò la 8 param ma il problema poteva tornare per cache stale. **021 risolve alla radice**: `update_service_slot(payload jsonb)` — un solo parametro, firma univoca, niente più risoluzione di overload. Semantica PATCH: chiave assente = mantieni; `"max_guests": null` = azzera (presenza della chiave = intento). Il flag `p_clear_max_guests` non serve più.
+
+Su **produzione**: 001–018, 020, 021 applicate. La prossima migrazione deve essere `022_*.sql`. **Su test lo storico è parziale** — vedi nota * sopra.
 
 ---
 

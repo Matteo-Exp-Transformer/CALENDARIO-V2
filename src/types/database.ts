@@ -792,70 +792,30 @@ export type Database = {
           isSetofReturn: true
         }
       }
-      update_service_slot:
-        | {
-            Args: {
-              p_clear_max_guests?: boolean
-              p_display_order?: number
-              p_end_time?: string
-              p_id: string
-              p_max_guests?: number
-              p_max_turns?: number
-              p_name?: string
-              p_start_time?: string
-              p_tenant_id: string
-            }
-            Returns: {
-              created_at: string
-              display_order: number
-              end_time: string
-              id: string
-              is_canonical: boolean
-              max_guests: number | null
-              max_turns: number | null
-              name: string
-              start_time: string
-              tenant_id: string
-              updated_at: string
-            }[]
-            SetofOptions: {
-              from: "*"
-              to: "service_slots"
-              isOneToOne: false
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: {
-              p_display_order: number
-              p_end_time: string
-              p_id: string
-              p_max_guests: number
-              p_max_turns: number
-              p_name: string
-              p_start_time: string
-              p_tenant_id: string
-            }
-            Returns: {
-              created_at: string
-              display_order: number
-              end_time: string
-              id: string
-              is_canonical: boolean
-              max_guests: number | null
-              max_turns: number | null
-              name: string
-              start_time: string
-              tenant_id: string
-              updated_at: string
-            }[]
-            SetofOptions: {
-              from: "*"
-              to: "service_slots"
-              isOneToOne: false
-              isSetofReturn: true
-            }
-          }
+      update_service_slot: {
+        Args: {
+          payload: Json
+        }
+        Returns: {
+          created_at: string
+          display_order: number
+          end_time: string
+          id: string
+          is_canonical: boolean
+          max_guests: number | null
+          max_turns: number | null
+          name: string
+          start_time: string
+          tenant_id: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "service_slots"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       [_ in never]: never
