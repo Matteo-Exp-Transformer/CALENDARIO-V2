@@ -8,11 +8,11 @@ import { PastStartTimeWarningModal } from './PastStartTimeWarningModal'
 import { toast } from 'react-toastify'
 import type { BookingRequest } from '@/types/booking'
 import { getSlotsOccupiedByBooking } from '../utils/capacityCalculator'
-import { DEFAULT_BOOKING_TIME_SLOTS } from '../utils/bookingTimeSlots'
 import {
   DEFAULT_SLOT_GUEST_CAPACITIES,
 } from '../lib/restaurantSettingRegistry'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
+import { useCanonicalTimeSlots } from '../hooks/useServiceSlots'
 import {
   createBookingDateTime,
   extractDateFromISO,
@@ -25,7 +25,7 @@ import { logger } from '@/lib/logger'
 export const PendingRequestsTab: React.FC = () => {
   const { data: pendingBookings, isLoading, error, refetch } = usePendingBookings()
   const { data: acceptedBookings = [] } = useAcceptedBookings()
-  const { data: bookingTimeSlots = DEFAULT_BOOKING_TIME_SLOTS } = useRestaurantSetting('booking_time_slots')
+  const { data: bookingTimeSlots } = useCanonicalTimeSlots()
   const { data: slotGuestCapacities = DEFAULT_SLOT_GUEST_CAPACITIES } =
     useRestaurantSetting('slot_guest_capacities')
   const acceptMutation = useAcceptBooking()

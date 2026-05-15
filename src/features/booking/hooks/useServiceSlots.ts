@@ -3,6 +3,13 @@ import { supabase } from '@/lib/supabase'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { toast } from 'react-toastify'
 import { logger } from '@/lib/logger'
+import {
+  toBookingTimeSlots,
+  slotCrossesMidnight,
+  type BookingTimeSlots,
+} from '@/features/booking/utils/bookingTimeSlots'
+
+export { slotCrossesMidnight }
 
 export interface ServiceSlot {
   id: string
@@ -11,17 +18,18 @@ export interface ServiceSlot {
   start_time: string
   end_time: string
   max_turns: number | null
+  max_guests: number | null
   display_order: number
+  // is_canonical è managed dal DB (migration 016) — non incluso nei payload insert/update
+  is_canonical: boolean
   created_at: string
   updated_at: string
 }
 
-export const SERVICE_SLOTS_QUERY_KEY = 'service_slots'
+type ServiceSlotInsert = Omit<ServiceSlot, 'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'is_canonical'>
+type ServiceSlotUpdate = Partial<Omit<ServiceSlot, 'is_canonical'>> & { id: string }
 
-/** end_time < start_time indica una fascia che attraversa la mezzanotte */
-export function slotCrossesMidnight(slot: Pick<ServiceSlot, 'start_time' | 'end_time'>): boolean {
-  return slot.end_time < slot.start_time
-}
+export const SERVICE_SLOTS_QUERY_KEY = 'service_slots'
 
 export function useServiceSlots() {
   const { tenantId } = useTenantContext()
@@ -47,7 +55,7 @@ export function useCreateServiceSlot() {
   const { tenantId } = useTenantContext()
 
   return useMutation({
-    mutationFn: async (input: Omit<ServiceSlot, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (input: ServiceSlotInsert) => {
       const { data, error } = await supabase
         .from('service_slots')
         .insert({ ...input, tenant_id: tenantId! })
@@ -55,7 +63,7 @@ export function useCreateServiceSlot() {
         .single()
 
       if (error) throw error
-      return data
+      return data as ServiceSlot
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_SLOTS_QUERY_KEY, tenantId] })
@@ -73,7 +81,7 @@ export function useUpdateServiceSlot() {
   const { tenantId } = useTenantContext()
 
   return useMutation({
-    mutationFn: async ({ id, ...patch }: Partial<ServiceSlot> & { id: string }) => {
+    mutationFn: async ({ id, ...patch }: ServiceSlotUpdate) => {
       const { data, error } = await supabase
         .from('service_slots')
         .update({ ...patch, updated_at: new Date().toISOString() })
@@ -83,7 +91,7 @@ export function useUpdateServiceSlot() {
         .single()
 
       if (error) throw error
-      return data
+      return data as ServiceSlot
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_SLOTS_QUERY_KEY, tenantId] })
@@ -119,4 +127,39 @@ export function useDeleteServiceSlot() {
       toast.error(error.message || 'Errore nell\'eliminazione della fascia')
     },
   })
+}
+
+/**
+ * Restituisce le 3 fasce canoniche (Colazione/Pranzo/Cena) già convertite
+ * nel formato BookingTimeSlots usato da calendario, capacity e pending.
+ */
+export function useCanonicalTimeSlots(): {
+  data: BookingTimeSlots
+  isLoading: boolean
+  error: Error | null
+} {
+  const { tenantId } = useTenantContext()
+
+  const query = useQuery({
+    queryKey: [SERVICE_SLOTS_QUERY_KEY, tenantId],
+    queryFn: async (): Promise<ServiceSlot[]> => {
+      const { data, error } = await supabase
+        .from('service_slots')
+        .select('*')
+        .eq('tenant_id', tenantId!)
+        .order('display_order', { ascending: true })
+
+      if (error) throw error
+      return data as ServiceSlot[]
+    },
+    enabled: !!tenantId,
+  })
+
+  const canonicalSlots = (query.data ?? []).filter((s) => s.is_canonical)
+
+  return {
+    data: toBookingTimeSlots(canonicalSlots),
+    isLoading: query.isLoading,
+    error: query.error as Error | null,
+  }
 }

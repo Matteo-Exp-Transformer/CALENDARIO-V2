@@ -151,7 +151,7 @@ npm run validate      # lint + typecheck + test (usare pre-PR)
 
 ## 6. Convenzioni
 
-- **Comunicazione con l'utente**: testo breve e pratico — niente tabelle o blocchi codice salvo stretta necessità. Parla in termini di cosa vede o fa l'utente finale (es. "Utente non vede più il pulsante"), non di nomi di file o funzioni. Questa regola vale per ogni risposta all'utente, in ogni skill.
+- **Comunicazione con l'utente**: leggi `docs/COMUNICAZIONE_UTENTE_SKILL.md` **all'inizio di ogni sessione** — contiene le regole su come rispondere a Matteo (breve, nomi dinamici, no gergo). Questa regola vale per ogni skill.
 - **Logger**: `logger.debug/info/warn/error` da `src/lib/logger.ts` — mai `console.log`
 - **TanStack Query**: query server-state nei hook in `src/features/booking/hooks/`
 - **Commit**: `feat(scope):` · `fix(scope):` · `update(scope):`

@@ -107,6 +107,30 @@ Indice: `(tenant_id, sort_order, label)`.
 
 ---
 
+### `service_slots` — Fasce orarie servizio (010)
+
+| Colonna | Tipo | Note |
+|---------|------|------|
+| `id` | UUID PK | `gen_random_uuid()` |
+| `tenant_id` | UUID FK → organizations | ON DELETE CASCADE |
+| `name` | TEXT NOT NULL | Es. `'Colazione'`, `'Pranzo'`, `'Cena'` |
+| `start_time` | TEXT NOT NULL | Formato `HH:MM` |
+| `end_time` | TEXT NOT NULL | Formato `HH:MM` |
+| `max_turns` | INTEGER | NULL = nessun limite |
+| `display_order` | INTEGER NOT NULL DEFAULT 0 | Ordinamento UI |
+| `is_canonical` | BOOLEAN NOT NULL DEFAULT false | Fascia usata da calendario/capacity/pending |
+| `created_at`, `updated_at` | TIMESTAMPTZ | |
+
+**`is_canonical`**: aggiunto con migrazione `016_service_slots_canonical.sql`. Le 3 fasce `Colazione`, `Pranzo`, `Cena` hanno `is_canonical = true` e sono l'**unica fonte dati** per BookingCalendar, useCapacityCheck, PendingRequestsTab, BookingDetailsModal. Le fasce non canoniche (Aperitivo, Notturna) esistono nel DB ma non influenzano il calendario.
+
+Hook dedicato: `useCanonicalTimeSlots()` in `useServiceSlots.ts` — filtra `is_canonical = true` e converte via `toBookingTimeSlots()`.
+
+Trigger signup: `seed_default_service_slots_for_organization()` — inserisce 5 fasce di default (Colazione/Pranzo/Aperitivo/Cena/Notturna) con le 3 canoniche già marcate.
+
+**RLS:** policy `admin_*` — SELECT/INSERT/UPDATE/DELETE per `current_admin_tenant_id()`.
+
+---
+
 ### `restaurant_settings` — Impostazioni per tenant
 
 | Colonna | Tipo | Note |

@@ -606,6 +606,8 @@ export type Database = {
           display_order: number
           end_time: string
           id: string
+          is_canonical: boolean
+          max_guests: number | null
           max_turns: number | null
           name: string
           start_time: string
@@ -617,6 +619,8 @@ export type Database = {
           display_order?: number
           end_time: string
           id?: string
+          is_canonical?: boolean
+          max_guests?: number | null
           max_turns?: number | null
           name: string
           start_time: string
@@ -628,6 +632,8 @@ export type Database = {
           display_order?: number
           end_time?: string
           id?: string
+          is_canonical?: boolean
+          max_guests?: number | null
           max_turns?: number | null
           name?: string
           start_time?: string

@@ -16,7 +16,6 @@ import {
   trimTimeToHHmm,
 } from '../utils/dateUtils'
 import { getSlotsOccupiedByBooking } from '../utils/capacityCalculator'
-import { DEFAULT_BOOKING_TIME_SLOTS } from '../utils/bookingTimeSlots'
 import {
   DEFAULT_SLOT_GUEST_CAPACITIES,
   type SlotGuestCapacities,
@@ -29,6 +28,7 @@ import type { SelectedMenuItem } from '@/types/menu'
 import type { PresetMenuType } from '../constants/presetMenus'
 import { useMenuItems } from '../hooks/useMenuItems'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
+import { useCanonicalTimeSlots } from '../hooks/useServiceSlots'
 import {
   applyPresetTypeToBookingFormPayload,
   computeMenuTotalsFromItems,
@@ -159,7 +159,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     'booking_vol_au_vent_promo_message',
   )
   const { data: volAuVentPromos = [] } = useRestaurantSetting('booking_vol_au_vent_promos')
-  const { data: bookingTimeSlots = DEFAULT_BOOKING_TIME_SLOTS } = useRestaurantSetting('booking_time_slots')
+  const { data: bookingTimeSlots } = useCanonicalTimeSlots()
   const { data: slotGuestCapacities = DEFAULT_SLOT_GUEST_CAPACITIES } =
     useRestaurantSetting('slot_guest_capacities')
 

@@ -31,7 +31,6 @@ import {
 } from '../utils/dateUtils'
 import { getResolvedMenuPriceDisplay } from '../utils/menuPricing'
 import {
-  DEFAULT_BOOKING_TIME_SLOTS,
   getBookingTimeSlotLabel,
 } from '../utils/bookingTimeSlots'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
@@ -39,7 +38,7 @@ import {
   DEFAULT_SLOT_GUEST_CAPACITIES,
 } from '@/features/booking/lib/restaurantSettingRegistry'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
-import { useServiceSlots } from '../hooks/useServiceSlots'
+import { useServiceSlots, useCanonicalTimeSlots } from '../hooks/useServiceSlots'
 import { useTableAssignments, type BookingTableAssignment } from '../hooks/useTableAssignments'
 import { useFeatures } from '@/hooks/useFeatures'
 import { cn } from '@/lib/utils'
@@ -399,8 +398,7 @@ interface BookingCalendarProps {
 
 export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, initialDate }) => {
   const features = useFeatures()
-  const bookingSlotsQuery = useRestaurantSetting('booking_time_slots')
-  const bookingSlots = bookingSlotsQuery.data ?? DEFAULT_BOOKING_TIME_SLOTS
+  const { data: bookingSlots } = useCanonicalTimeSlots()
   const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities')
   const slotGuestCapacities = slotGuestCapacitiesQuery.data ?? DEFAULT_SLOT_GUEST_CAPACITIES
 

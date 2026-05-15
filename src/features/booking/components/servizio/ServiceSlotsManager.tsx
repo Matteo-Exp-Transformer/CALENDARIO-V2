@@ -1,7 +1,8 @@
 import type { FC, FormEvent } from 'react'
 import { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2, AlertCircle, Clock } from 'lucide-react'
+import { Plus, Pencil, Trash2, AlertCircle, Clock, Users } from 'lucide-react'
 import { Modal, Button, Input } from '@/components/ui'
+import { toast } from 'react-toastify'
 import {
   useServiceSlots,
   useCreateServiceSlot,
@@ -76,6 +77,9 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
   const [maxTurnsStr, setMaxTurnsStr] = useState(
     initial?.max_turns === null ? '' : String(initial?.max_turns ?? ''),
   )
+  const [maxGuestsStr, setMaxGuestsStr] = useState(
+    initial?.max_guests == null ? '' : String(initial.max_guests),
+  )
   const [validationError, setValidationError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -84,6 +88,7 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
       setStartTime(initial?.start_time?.slice(0, 5) ?? '12:00')
       setEndTime(initial?.end_time?.slice(0, 5) ?? '15:00')
       setMaxTurnsStr(initial?.max_turns === null || initial?.max_turns === undefined ? '' : String(initial.max_turns))
+      setMaxGuestsStr(initial?.max_guests == null ? '' : String(initial.max_guests))
       setValidationError(null)
     }
   }, [isOpen, initial])
@@ -105,6 +110,8 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
     if (!endTime) return "L'orario di fine è obbligatorio."
     if (maxTurnsStr !== '' && (isNaN(Number(maxTurnsStr)) || Number(maxTurnsStr) < 0))
       return 'I turni massimi devono essere un numero ≥ 0 (0 = fascia chiusa, vuoto = illimitato).'
+    if (maxGuestsStr !== '' && (isNaN(Number(maxGuestsStr)) || Number(maxGuestsStr) < 1))
+      return 'I coperti massimi devono essere un numero ≥ 1 (vuoto = nessun limite).'
     return null
   }
 
@@ -119,13 +126,25 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
       start_time: startTime,
       end_time: endTime,
       max_turns: maxTurnsStr === '' ? null : Number(maxTurnsStr),
+      max_guests: maxGuestsStr === '' ? null : Number(maxGuestsStr),
       display_order: initial?.display_order ?? 0,
     }
 
+    const guestsChanged = payload.max_guests !== (initial?.max_guests ?? null)
+
+    const handleSuccess = () => {
+      if (guestsChanged && payload.max_guests != null) {
+        toast.success(`Limite coperti per "${payload.name}" impostato a ${payload.max_guests}.`)
+      } else if (guestsChanged && payload.max_guests == null) {
+        toast.success(`Limite coperti per "${payload.name}" rimosso.`)
+      }
+      onClose()
+    }
+
     if (isEdit && initial) {
-      update.mutate({ id: initial.id, ...payload }, { onSuccess: onClose })
+      update.mutate({ id: initial.id, ...payload }, { onSuccess: handleSuccess })
     } else {
-      create.mutate(payload, { onSuccess: onClose })
+      create.mutate(payload, { onSuccess: handleSuccess })
     }
   }
 
@@ -205,6 +224,32 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
           </p>
         </div>
 
+        <div className="space-y-1">
+          <label htmlFor="slot-maxguests" className="block text-sm font-medium text-primary-900">
+            Coperti massimi per fascia
+          </label>
+          <Input
+            id="slot-maxguests"
+            type="number"
+            min={1}
+            step={1}
+            placeholder="Nessun limite"
+            value={maxGuestsStr}
+            onChange={(e) => setMaxGuestsStr(e.target.value)}
+            disabled={isPending}
+          />
+          <p className="text-xs text-(--color-text-muted)">
+            Lascia vuoto = nessun limite
+          </p>
+        </div>
+
+        <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm text-blue-800">
+          <Users className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          <span>
+            Impostando i coperti massimi, le prenotazioni dei clienti che superano il limite verranno rifiutate automaticamente dal sistema.
+          </span>
+        </div>
+
         {showOutsideAlert && (
           <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
@@ -261,6 +306,12 @@ const SlotRow: FC<SlotRowProps> = ({ slot, onEdit, onDelete, isDeleting }) => {
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
+        {slot.max_guests != null && (
+          <span className="flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-800">
+            <Users className="h-3 w-3 shrink-0" aria-hidden />
+            {slot.max_guests} cop.
+          </span>
+        )}
         <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${maxTurnsBadgeClass(slot.max_turns)}`}>
           {maxTurnsLabel(slot.max_turns)}
         </span>

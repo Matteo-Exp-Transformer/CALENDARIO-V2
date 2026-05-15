@@ -7,11 +7,11 @@ import {
 import { extractDateFromISO } from '../utils/dateUtils'
 import { useRestaurantSetting } from './useRestaurantSetting'
 import {
-  DEFAULT_BOOKING_TIME_SLOTS,
   parseHmToMinutes,
   slotRangesOverlap,
   type BookingTimeSlots,
 } from '../utils/bookingTimeSlots'
+import { useCanonicalTimeSlots } from './useServiceSlots'
 
 interface UseCapacityCheckParams {
   date: string
@@ -61,11 +61,10 @@ function getSlotsOccupiedByTimeString(
 export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCheck {
   const { date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId } = params
   const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
-  const bookingSlotsQuery = useRestaurantSetting('booking_time_slots')
+  const { data: bookingSlots } = useCanonicalTimeSlots()
   const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities')
   // `null` (o assente) = nessun limite giornaliero impostato → skip del controllo
   const dailyGuestLimit = dailyGuestLimitQuery.data ?? null
-  const bookingSlots = bookingSlotsQuery.data ?? DEFAULT_BOOKING_TIME_SLOTS
   const slotGuestCapacities: SlotGuestCapacities =
     slotGuestCapacitiesQuery.data ?? DEFAULT_SLOT_GUEST_CAPACITIES
 

@@ -9,6 +9,40 @@ export type BookingTimeSlots = {
   eveningEnd: string
 }
 
+export type CanonicalSlot = {
+  name: string
+  start_time: string
+  end_time: string
+  is_canonical: boolean
+  display_order: number
+}
+
+/** end_time < start_time → fascia che attraversa la mezzanotte */
+export function slotCrossesMidnight(slot: Pick<CanonicalSlot, 'start_time' | 'end_time'>): boolean {
+  return slot.end_time.slice(0, 5) < slot.start_time.slice(0, 5)
+}
+
+/**
+ * Converte le 3 fasce canoniche (Colazione/Pranzo/Cena) nel formato BookingTimeSlots
+ * usato da calendario, capacity e pending. Le fasce devono essere già ordinate per display_order.
+ */
+export function toBookingTimeSlots(canonicalSlots: CanonicalSlot[]): BookingTimeSlots {
+  const ordered = [...canonicalSlots]
+    .filter((s) => s.is_canonical)
+    .sort((a, b) => a.display_order - b.display_order)
+
+  const [morning, afternoon, evening] = ordered
+
+  return {
+    morningStart: morning?.start_time?.slice(0, 5) ?? BOOKING_SLOT_TIME_DEFAULTS.MORNING_START,
+    morningEnd: morning?.end_time?.slice(0, 5) ?? BOOKING_SLOT_TIME_DEFAULTS.MORNING_END,
+    afternoonStart: afternoon?.start_time?.slice(0, 5) ?? BOOKING_SLOT_TIME_DEFAULTS.AFTERNOON_START,
+    afternoonEnd: afternoon?.end_time?.slice(0, 5) ?? BOOKING_SLOT_TIME_DEFAULTS.AFTERNOON_END,
+    eveningStart: evening?.start_time?.slice(0, 5) ?? BOOKING_SLOT_TIME_DEFAULTS.EVENING_START,
+    eveningEnd: evening?.end_time?.slice(0, 5) ?? BOOKING_SLOT_TIME_DEFAULTS.EVENING_END,
+  }
+}
+
 export const DEFAULT_BOOKING_TIME_SLOTS: BookingTimeSlots = {
   morningStart: BOOKING_SLOT_TIME_DEFAULTS.MORNING_START,
   morningEnd: BOOKING_SLOT_TIME_DEFAULTS.MORNING_END,
