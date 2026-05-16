@@ -632,6 +632,7 @@ export type Database = {
           is_canonical: boolean
           max_guests: number | null
           max_turns: number | null
+          max_turns_resume: number | null
           name: string
           start_time: string
           tenant_id: string
@@ -645,6 +646,7 @@ export type Database = {
           is_canonical?: boolean
           max_guests?: number | null
           max_turns?: number | null
+          max_turns_resume?: number | null
           name: string
           start_time: string
           tenant_id: string
@@ -658,6 +660,7 @@ export type Database = {
           is_canonical?: boolean
           max_guests?: number | null
           max_turns?: number | null
+          max_turns_resume?: number | null
           name?: string
           start_time?: string
           tenant_id?: string

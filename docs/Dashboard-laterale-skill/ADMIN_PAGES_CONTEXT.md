@@ -206,14 +206,16 @@ poi ritorno automatico ai valori base (nessun job — risoluzione runtime).
 | `src/features/booking/hooks/useServiceSlots.ts` | CRUD fasce base + `update_service_slot` (RPC jsonb) |
 | `src/features/booking/hooks/useServiceSlotOverrides.ts` | Override: query/create/delete + helper di risoluzione |
 | `supabase/migrations/022_service_slot_overrides.sql` | Tabella `service_slot_overrides`, RLS, RPC insert |
+| `supabase/migrations/023_service_slots_max_turns_resume.sql` | Colonna `max_turns_resume` + RPC `update_service_slot` estesa |
 
 Regole chiave:
-- Menu "Quando?": *Per sempre* (modifica il valore base via `update_service_slot`) · *Solo oggi* · *Questa settimana* · *Fino a fine mese* · *Scegli i giorni* (ognuno = override di 1 giorno).
+- Menu "Quando?": *Per sempre* → **solo** `service_slots` (impostazioni base permanenti; **non** crea override né conta tra le «Modifiche a tempo») · *Solo oggi* · *Questa settimana* · *Fino a fine mese* · *Scegli i giorni* (ognuno = riga in `service_slot_overrides`).
 - Sovrapposizioni: **vince il più specifico** (`resolveSlotOverride`, intervallo più corto; a parità il più recente) — stessa regola usata dal capacity check clienti.
-- Una fascia con override attivi si rende come `CollapsibleCard` (LOCKED — solo uso); senza override resta una riga semplice. Dentro: override raggruppati per tipo, eliminabili (`useDeleteServiceSlotOverride`, DELETE diretta, RLS già presente).
+- Una fascia con override attivi si rende come `CollapsibleCard` (LOCKED — solo uso); senza override resta una riga semplice. **Header card**: titolo in `h3`; subtitle con orario e riga «N Modifiche a tempo»; badge `ActiveTodayBadge` («Attiva oggi», solo verde) se oggi vince un override — centrato su `sm+`, inline nel subtitle su mobile; `SlotControls` a destra.
 - Vincolo: **un solo override per tipo a intervallo** (today/week/month) per fascia, validato nel form; `custom` blocca solo i singoli giorni già coperti.
-- Pallino `LimitStatusDot`: verde "Limite attivo" sull'override che vince oggi, grigio "In programma" se nessuno copre oggi.
-- La migrazione 022 è applicata SOLO sul server di test (`docnnernvp`), non a produzione — vedi DB_SKILL / APP_CONTEXT_SKILL §1b.
+- **Chiusura servizio** (`SlotControls`): pulsante ✕ imposta `max_turns = 0` (nessun tavolo/turno, come prima); valore precedente in `max_turns_resume` (migrazione 023); riapertura con icona ↺. Riga/card con `opacity-55` + badge «Servizio chiuso». Non usare `0` nel campo turni del form.
+- Helper: `isServiceSlotClosed(slot)` → `max_turns === 0`.
+- Migrazioni **022** e **023** applicate SOLO sul server di test (`docnnernvp`), non a produzione — vedi DB_SKILL / APP_CONTEXT_SKILL §1b.
 
 ---
 

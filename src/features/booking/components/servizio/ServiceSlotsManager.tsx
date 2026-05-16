@@ -1,6 +1,6 @@
 import type { FC, FormEvent } from 'react'
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Pencil, Trash2, AlertCircle, Clock, Users, CalendarClock, ChevronDown } from 'lucide-react'
+import { Plus, Pencil, Trash2, AlertCircle, Clock, Users, CalendarClock, ChevronDown, X, RotateCcw } from 'lucide-react'
 import { Modal, Button, Input } from '@/components/ui'
 import { CollapsibleCard } from '@/components/ui/CollapsibleCard'
 import { toast } from 'react-toastify'
@@ -9,6 +9,7 @@ import {
   useCreateServiceSlot,
   useUpdateServiceSlot,
   useDeleteServiceSlot,
+  isServiceSlotClosed,
   slotCrossesMidnight,
   type ServiceSlot,
 } from '@/features/booking/hooks/useServiceSlots'
@@ -34,14 +35,16 @@ import { useBusinessHours } from '@/hooks/useBusinessHours'
 
 function maxTurnsLabel(maxTurns: number | null): string {
   if (maxTurns === null) return 'Illimitata'
-  if (maxTurns === 0) return 'Chiusa'
   return `${maxTurns} ${maxTurns === 1 ? 'turno' : 'turni'}`
 }
 
 function maxTurnsBadgeClass(maxTurns: number | null): string {
   if (maxTurns === null) return 'bg-emerald-100 text-emerald-800'
-  if (maxTurns === 0) return 'bg-red-100 text-red-800'
   return 'bg-blue-100 text-blue-800'
+}
+
+function slotClosedRowClass(closed: boolean): string {
+  return closed ? 'opacity-55 saturate-[0.85]' : ''
 }
 
 const SCOPE_OPTIONS: { value: OverrideScope; label: string }[] = [
@@ -236,7 +239,17 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
       setName(initial?.name ?? '')
       setStartTime(initial?.start_time?.slice(0, 5) ?? '12:00')
       setEndTime(initial?.end_time?.slice(0, 5) ?? '15:00')
-      setMaxTurnsStr(initial?.max_turns === null || initial?.max_turns === undefined ? '' : String(initial.max_turns))
+      if (initial?.max_turns === 0) {
+        setMaxTurnsStr(
+          initial.max_turns_resume == null ? '' : String(initial.max_turns_resume),
+        )
+      } else {
+        setMaxTurnsStr(
+          initial?.max_turns === null || initial?.max_turns === undefined
+            ? ''
+            : String(initial.max_turns),
+        )
+      }
       setMaxGuestsStr(initial?.max_guests == null ? '' : String(initial.max_guests))
       setValidationError(null)
       setScope('forever')
@@ -281,8 +294,8 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
     if (!name.trim()) return 'Il nome della fascia è obbligatorio.'
     if (!startTime) return "L'orario di inizio è obbligatorio."
     if (!endTime) return "L'orario di fine è obbligatorio."
-    if (maxTurnsStr !== '' && (isNaN(Number(maxTurnsStr)) || Number(maxTurnsStr) < 0))
-      return 'I turni massimi devono essere un numero ≥ 0 (0 = fascia chiusa, vuoto = illimitato).'
+    if (maxTurnsStr !== '' && (isNaN(Number(maxTurnsStr)) || Number(maxTurnsStr) < 1))
+      return 'I turni massimi devono essere un numero ≥ 1 (vuoto = illimitato).'
     if (maxGuestsStr !== '' && (isNaN(Number(maxGuestsStr)) || Number(maxGuestsStr) < 1))
       return 'I coperti massimi devono essere un numero ≥ 1 (vuoto = nessun limite).'
     // Un override agisce solo su limiti turni/coperti di una fascia esistente.
@@ -321,6 +334,9 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
     setValidationError(null)
 
     const maxTurns = maxTurnsStr === '' ? null : Number(maxTurnsStr)
+    // Salvataggio form = impostazioni base aperte (non chiusura servizio).
+    const maxTurnsResume =
+      isEdit && initial?.max_turns === 0 ? null : initial?.max_turns_resume ?? null
     const maxGuests = maxGuestsStr === '' ? null : Number(maxGuestsStr)
 
     // ── Modifica a tempo: giorni scelti a mano ───────────────────
@@ -381,6 +397,7 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
       start_time: startTime,
       end_time: endTime,
       max_turns: maxTurns,
+      max_turns_resume: maxTurnsResume,
       max_guests: maxGuests,
       display_order: initial?.display_order ?? 0,
     }
@@ -388,10 +405,14 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
     const guestsChanged = payload.max_guests !== (initial?.max_guests ?? null)
 
     const handleSuccess = () => {
-      if (guestsChanged && payload.max_guests != null) {
-        toast.success(`Limite coperti per "${payload.name}" impostato a ${payload.max_guests}.`)
+      if (!isEdit) {
+        toast.success(`Fascia «${payload.name}» aggiunta.`)
+      } else if (guestsChanged && payload.max_guests != null) {
+        toast.success(`Coperti massimi di «${payload.name}» impostati a ${payload.max_guests}.`)
       } else if (guestsChanged && payload.max_guests == null) {
-        toast.success(`Limite coperti per "${payload.name}" rimosso.`)
+        toast.success(`Coperti massimi di «${payload.name}» rimossi.`)
+      } else {
+        toast.success(`Impostazioni base di «${payload.name}» aggiornate.`)
       }
       onClose()
     }
@@ -467,7 +488,7 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
           <Input
             id="slot-maxturns"
             type="number"
-            min={0}
+            min={1}
             step={1}
             placeholder="Illimitato"
             value={maxTurnsStr}
@@ -475,7 +496,7 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
             disabled={isPending}
           />
           <p className="text-xs text-(--color-text-muted)">
-            Lascia vuoto = illimitato · 0 = fascia chiusa
+            Lascia vuoto = illimitato
           </p>
         </div>
 
@@ -502,7 +523,7 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm font-medium text-primary-900">
-                Durata della modifica
+                {scope === 'forever' ? 'Tipo di salvataggio' : 'Durata della modifica'}
               </span>
               <div className="relative" ref={scopeMenuRef}>
                 <Button
@@ -536,6 +557,17 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
                 )}
               </div>
             </div>
+
+            {scope === 'forever' && (
+              <div className="flex items-start gap-2 rounded-lg border border-(--color-border) bg-surface px-3 py-2.5 text-sm text-(--color-text-muted)">
+                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary-700" aria-hidden />
+                <span>
+                  Stai aggiornando le <strong className="text-primary-900">impostazioni base</strong>{' '}
+                  della fascia (nome, orari, turni e coperti). Non viene aggiunta una modifica a tempo
+                  né conteggiata tra quelle sotto la card.
+                </span>
+              </div>
+            )}
 
             {/* Calendario per la scelta manuale dei giorni */}
             {scope === 'custom' && (
@@ -658,21 +690,20 @@ function overrideGuestsDisplayValue(maxGuests: number | null): string {
 }
 
 /**
- * Pallino di stato del limite a tempo. Verde = è la modifica che vale OGGI
- * (quella che ha vinto la regola "più specifico"). Grigio = la fascia ha
- * modifiche in calendario ma nessuna copre oggi.
+ * Badge verde: modifica a tempo che vale OGGI per questa fascia
+ * (regola "vince il più specifico"). Solo override temporanei, non "Per sempre".
  */
-const LimitStatusDot: FC<{ active: boolean }> = ({ active }) => (
+const ActiveTodayBadge: FC = () => (
   <span
-    className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
-      active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
-    }`}
+    className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-emerald-800 sm:gap-1.5 sm:px-2 sm:py-0.5"
+    aria-label="Modifica a tempo attiva oggi"
+    title="Modifica a tempo attiva oggi"
   >
     <span
-      className={`h-2 w-2 shrink-0 rounded-full ${active ? 'bg-emerald-500' : 'bg-gray-400'}`}
+      className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500 sm:h-2 sm:w-2"
       aria-hidden
     />
-    {active ? 'Limite attivo' : 'In programma'}
+    <span className="hidden text-xs font-medium sm:inline">Attiva oggi</span>
   </span>
 )
 
@@ -715,7 +746,7 @@ const OverrideList: FC<{
                   className="flex items-center justify-between gap-3 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm text-violet-900"
                 >
                   <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
-                    {o.id === activeTodayId && <LimitStatusDot active />}
+                    {o.id === activeTodayId && <ActiveTodayBadge />}
                     <span>
                       {o.date_from === o.date_to ? (
                         <strong>{formatItalianDateWithWeekday(o.date_from)}</strong>
@@ -727,9 +758,9 @@ const OverrideList: FC<{
                       )}
                     </span>
                     <span className="text-xs text-violet-700">
-                      Limite Turni : {overrideTurnsDisplayValue(o.max_turns)}
+                      Turni: {overrideTurnsDisplayValue(o.max_turns)}
                       {' · '}
-                      Limite Coperti : {overrideGuestsDisplayValue(o.max_guests)}
+                      Coperti: {overrideGuestsDisplayValue(o.max_guests)}
                     </span>
                   </span>
                   {confirmId === o.id ? (
@@ -777,7 +808,9 @@ interface SlotRowProps {
   slot: ServiceSlot
   onEdit: (slot: ServiceSlot) => void
   onDelete: (id: string) => void
+  onToggleClosed: (slot: ServiceSlot) => void
   isDeleting: boolean
+  isTogglingClosed: boolean
   activeOverrides: ServiceSlotOverride[]
   onRemoveOverride: (id: string) => void
   isRemovingOverride: boolean
@@ -788,20 +821,30 @@ const SlotControls: FC<{
   slot: ServiceSlot
   onEdit: (slot: ServiceSlot) => void
   onDelete: (id: string) => void
+  onToggleClosed: (slot: ServiceSlot) => void
   isDeleting: boolean
-}> = ({ slot, onEdit, onDelete, isDeleting }) => {
+  isTogglingClosed: boolean
+}> = ({ slot, onEdit, onDelete, onToggleClosed, isDeleting, isTogglingClosed }) => {
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const closed = isServiceSlotClosed(slot)
+  const busy = isDeleting || isTogglingClosed
   return (
     <div className="flex shrink-0 items-center gap-2">
-      {slot.max_guests != null && (
+      {slot.max_guests != null && !closed && (
         <span className="flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-800">
           <Users className="h-3 w-3 shrink-0" aria-hidden />
           {slot.max_guests} cop.
         </span>
       )}
-      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${maxTurnsBadgeClass(slot.max_turns)}`}>
-        {maxTurnsLabel(slot.max_turns)}
-      </span>
+      {closed ? (
+        <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+          Servizio chiuso
+        </span>
+      ) : (
+        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${maxTurnsBadgeClass(slot.max_turns)}`}>
+          {maxTurnsLabel(slot.max_turns)}
+        </span>
+      )}
 
       {confirmDelete ? (
         <>
@@ -810,7 +853,7 @@ const SlotControls: FC<{
             type="button"
             variant="danger"
             size="sm"
-            disabled={isDeleting}
+            disabled={busy}
             onClick={() => { onDelete(slot.id); setConfirmDelete(false) }}
           >
             Sì
@@ -828,9 +871,25 @@ const SlotControls: FC<{
         <>
           <Button
             type="button"
+            variant={closed ? 'outline' : 'ghost'}
+            size="icon"
+            aria-label={closed ? `Riapri servizio ${slot.name}` : `Chiudi servizio ${slot.name}`}
+            disabled={busy}
+            onClick={() => onToggleClosed(slot)}
+            className={closed ? 'border-red-200 bg-red-50' : undefined}
+          >
+            {closed ? (
+              <RotateCcw className="h-4 w-4 text-red-600" aria-hidden />
+            ) : (
+              <X className="h-4 w-4 text-red-500" aria-hidden />
+            )}
+          </Button>
+          <Button
+            type="button"
             variant="ghost"
             size="icon"
             aria-label={`Modifica ${slot.name}`}
+            disabled={busy}
             onClick={() => onEdit(slot)}
           >
             <Pencil className="h-4 w-4" />
@@ -840,6 +899,7 @@ const SlotControls: FC<{
             variant="ghost"
             size="icon"
             aria-label={`Elimina ${slot.name}`}
+            disabled={busy}
             onClick={() => setConfirmDelete(true)}
           >
             <Trash2 className="h-4 w-4 text-red-400" />
@@ -854,11 +914,14 @@ const SlotRow: FC<SlotRowProps> = ({
   slot,
   onEdit,
   onDelete,
+  onToggleClosed,
   isDeleting,
+  isTogglingClosed,
   activeOverrides,
   onRemoveOverride,
   isRemovingOverride,
 }) => {
+  const closed = isServiceSlotClosed(slot)
   const crossesMidnight = slotCrossesMidnight(slot)
   const timeLabel = (
     <>
@@ -872,12 +935,21 @@ const SlotRow: FC<SlotRowProps> = ({
   // Senza modifiche a tempo: riga semplice, identica a prima.
   if (activeOverrides.length === 0) {
     return (
-      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-surface px-4 py-3 shadow-sm">
+      <div
+        className={`flex items-center justify-between rounded-xl border border-(--color-border) bg-surface px-4 py-3 shadow-sm transition-opacity ${slotClosedRowClass(closed)}`}
+      >
         <div>
           <p className="font-semibold text-primary-900">{slot.name}</p>
           <p className="mt-0.5 text-sm text-(--color-text-muted)">{timeLabel}</p>
         </div>
-        <SlotControls slot={slot} onEdit={onEdit} onDelete={onDelete} isDeleting={isDeleting} />
+        <SlotControls
+          slot={slot}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onToggleClosed={onToggleClosed}
+          isDeleting={isDeleting}
+          isTogglingClosed={isTogglingClosed}
+        />
       </div>
     )
   }
@@ -889,27 +961,42 @@ const SlotRow: FC<SlotRowProps> = ({
 
   return (
     <CollapsibleCard
+      className={slotClosedRowClass(closed)}
       defaultExpanded={false}
       title={slot.name}
       headerClassName="relative bg-gray-50 hover:bg-gray-100 border-b border-gray-200"
       subtitle={
         <span className="flex w-full min-w-0 flex-col gap-1">
           <span className="text-sm text-(--color-text-muted)">{timeLabel}</span>
-          <span className="flex items-center gap-1 text-xs font-medium text-violet-700">
-            <CalendarClock className="h-3 w-3 shrink-0" aria-hidden />
-            {activeOverrides.length}{' '}
-            {activeOverrides.length === 1 ? 'Limite Impostato' : 'Limiti Impostati'}
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-violet-700">
+            <span className="flex items-center gap-1">
+              <CalendarClock className="h-3 w-3 shrink-0" aria-hidden />
+              {activeOverrides.length}{' '}
+              {activeOverrides.length === 1 ? 'Modifica a tempo' : 'Modifiche a tempo'}
+            </span>
+            {todayWinner !== null && (
+              <span className="sm:hidden">
+                <ActiveTodayBadge />
+              </span>
+            )}
           </span>
         </span>
       }
       actions={
         <>
-          <div
-            className="pointer-events-none absolute left-1/2 top-1/2 z-[1] -translate-x-1/2 -translate-y-1/2"
-          >
-            <LimitStatusDot active={todayWinner !== null} />
-          </div>
-          <SlotControls slot={slot} onEdit={onEdit} onDelete={onDelete} isDeleting={isDeleting} />
+          {todayWinner !== null && (
+            <div className="pointer-events-none absolute left-1/2 top-1/2 z-[1] hidden -translate-x-1/2 -translate-y-1/2 sm:block">
+              <ActiveTodayBadge />
+            </div>
+          )}
+          <SlotControls
+            slot={slot}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onToggleClosed={onToggleClosed}
+            isDeleting={isDeleting}
+            isTogglingClosed={isTogglingClosed}
+          />
         </>
       }
     >
@@ -932,6 +1019,8 @@ export const ServiceSlotsManager: FC = () => {
   const { data: overrides = [] } = useServiceSlotOverrides()
   const deleteSlot = useDeleteServiceSlot()
   const deleteOverride = useDeleteServiceSlotOverride()
+  const updateSlot = useUpdateServiceSlot()
+  const [togglingClosedId, setTogglingClosedId] = useState<string | null>(null)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<ServiceSlot | null>(null)
@@ -949,6 +1038,36 @@ export const ServiceSlotsManager: FC = () => {
   function closeModal() {
     setModalOpen(false)
     setEditing(null)
+  }
+
+  function handleToggleServiceClosed(slot: ServiceSlot) {
+    const closed = isServiceSlotClosed(slot)
+    setTogglingClosedId(slot.id)
+    updateSlot.mutate(
+      closed
+        ? {
+            id: slot.id,
+            max_turns: slot.max_turns_resume ?? null,
+            max_turns_resume: null,
+            skipToast: true,
+          }
+        : {
+            id: slot.id,
+            max_turns: 0,
+            max_turns_resume: slot.max_turns,
+            skipToast: true,
+          },
+      {
+        onSuccess: () => {
+          toast.success(
+            closed
+              ? `Servizio «${slot.name}» riaperto.`
+              : `Servizio «${slot.name}» chiuso: nessun tavolo disponibile in questa fascia.`,
+          )
+        },
+        onSettled: () => setTogglingClosedId(null),
+      },
+    )
   }
 
   return (
@@ -995,7 +1114,9 @@ export const ServiceSlotsManager: FC = () => {
               slot={slot}
               onEdit={openEdit}
               onDelete={(id) => deleteSlot.mutate(id)}
+              onToggleClosed={handleToggleServiceClosed}
               isDeleting={deleteSlot.isPending}
+              isTogglingClosed={togglingClosedId === slot.id && updateSlot.isPending}
               activeOverrides={getActiveOverrides(overrides, slot.id)}
               onRemoveOverride={(id) => deleteOverride.mutate(id)}
               isRemovingOverride={deleteOverride.isPending}

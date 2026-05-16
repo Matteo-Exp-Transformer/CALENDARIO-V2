@@ -18,6 +18,8 @@ export interface ServiceSlot {
   start_time: string
   end_time: string
   max_turns: number | null
+  /** Turni da ripristinare dopo chiusura servizio (pulsante X). Migration 023. */
+  max_turns_resume?: number | null
   max_guests: number | null
   display_order: number
   // is_canonical è managed dal DB (migration 016) — non incluso nei payload insert/update
@@ -26,8 +28,20 @@ export interface ServiceSlot {
   updated_at: string
 }
 
-type ServiceSlotInsert = Omit<ServiceSlot, 'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'is_canonical'>
-type ServiceSlotUpdate = Partial<Omit<ServiceSlot, 'is_canonical'>> & { id: string }
+/** Servizio chiuso manualmente: nessun turno/tavolo disponibile (equivale a max_turns = 0). */
+export function isServiceSlotClosed(slot: Pick<ServiceSlot, 'max_turns'>): boolean {
+  return slot.max_turns === 0
+}
+
+type ServiceSlotInsert = Omit<
+  ServiceSlot,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'is_canonical' | 'max_turns_resume'
+> & { max_turns_resume?: number | null }
+type ServiceSlotUpdate = Partial<Omit<ServiceSlot, 'is_canonical'>> & {
+  id: string
+  /** Se true, non mostra il toast generico "Fascia oraria aggiornata". */
+  skipToast?: boolean
+}
 
 export const SERVICE_SLOTS_QUERY_KEY = 'service_slots'
 
@@ -86,7 +100,7 @@ export function useUpdateServiceSlot() {
   const { tenantId } = useTenantContext()
 
   return useMutation({
-    mutationFn: async ({ id, ...patch }: ServiceSlotUpdate) => {
+    mutationFn: async ({ id, skipToast: _skip, ...patch }: ServiceSlotUpdate) => {
       // RPC con singolo parametro jsonb: firma univoca, immune a PGRST202 (schema cache).
       // Semantica PATCH: solo le chiavi presenti vengono aggiornate. La chiave 'max_guests'
       // con valore null = azzeramento esplicito del limite (la presenza della chiave è l'intento).
@@ -95,6 +109,7 @@ export function useUpdateServiceSlot() {
       if (patch.start_time !== undefined) payload.start_time = patch.start_time
       if (patch.end_time !== undefined) payload.end_time = patch.end_time
       if (patch.max_turns !== undefined) payload.max_turns = patch.max_turns
+      if ('max_turns_resume' in patch) payload.max_turns_resume = patch.max_turns_resume ?? null
       if ('max_guests' in patch) payload.max_guests = patch.max_guests ?? null
       if (patch.display_order !== undefined) payload.display_order = patch.display_order
 
@@ -103,9 +118,9 @@ export function useUpdateServiceSlot() {
       if (error) throw error
       return (data as ServiceSlot[])[0]
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_SLOTS_QUERY_KEY, tenantId] })
-      toast.success('Fascia oraria aggiornata')
+      if (!variables.skipToast) toast.success('Fascia oraria aggiornata')
     },
     onError: (error: Error) => {
       logger.error('[useUpdateServiceSlot] error', error)

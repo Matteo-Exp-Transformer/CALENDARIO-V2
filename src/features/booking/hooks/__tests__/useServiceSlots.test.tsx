@@ -34,6 +34,7 @@ const SLOT_BEFORE = {
   start_time: '19:00:00',
   end_time: '23:00:00',
   max_turns: 2,
+  max_turns_resume: null,
   max_guests: null,
   display_order: 3,
   is_canonical: true,

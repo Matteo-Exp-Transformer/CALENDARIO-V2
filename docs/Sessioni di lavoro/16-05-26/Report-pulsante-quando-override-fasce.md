@@ -148,13 +148,17 @@ File toccati: `ServiceSlotsManager.tsx` (componente `LimitStatusDot`, prop
 `resolveSlotOverride` + `todayLocalISODate` già esposti dall'hook, nessuna
 modifica all'hook). `npm run validate` verde, 90/90.
 
+## Aggiunta quinta–settima iterazione (16-05-26)
+
+Vedi report dedicato: `Report-fasce-ux-chiusura-e-stato.md`.
+
+In sintesi: `ActiveTodayBadge` (solo verde, responsive); copy «Modifiche a tempo»
+e «Per sempre» = base; pulsante ✕/↺ chiusura servizio + migrazione `023`
+(`max_turns_resume`).
+
 ## Cosa resta per la prossima sessione
 
-- **Test manuale dell'utente** sul server di test (richiesto da Matteo).
-- Eventuale gestione "annulla una modifica a tempo" (oggi si può solo
-  crearne una nuova più specifica per sovrascrivere).
-- Override non ancora applicato ai **turni** in fase di assegnazione tavoli
-  (`AssignmentMapPanel`) — il capacity check coperti sì, i turni no: valutare
+- **Test manuale** sul server di test dopo apply migrazioni **022** e **023**.
+- Override non ancora applicato ai **turni** in `AssignmentMapPanel` — valutare
   se serve.
-- La migrazione `022` esiste solo sul test: andrà applicata a produzione
-  quando la feature va live (su richiesta esplicita).
+- Migrazioni **022** e **023** su produzione solo su richiesta esplicita.
