@@ -15,17 +15,18 @@ description: >-
 ## 0. Prima cosa: leggi il task → carica il context
 
 **Passo 1 — sempre obbligatorio:**
-Leggi `docs/per-ui-design/STYLING_AGENT_CONTEXT.md`.
+Leggi `docs/per-ui-design-skill/STYLING_AGENT_CONTEXT.md`.
 
 **Passo 2 — leggi il task ricevuto e applica questa tabella:**
 
 | Il task menziona… | Leggi anche |
 |-------------------|-------------|
-| Componenti (`Button`, `Card`, `Badge`, `Modal`, `Alert`, `Spinner`, `EmptyState`…) | `docs/per-ui-design/UI_COMPONENTS_CONTEXT.md` |
-| Aggiunta / modifica file in `src/components/ui/` | `docs/per-ui-design/UI_COMPONENTS_CONTEXT.md` |
-| Layout, struttura HTML, pattern di composizione | `docs/per-ui-design/UI_COMPONENTS_CONTEXT.md` |
-| Tema, palette, colori, token, `primary-*`, rollout | `docs/per-ui-design/UI_THEME_CONTEXT.md` |
-| Modifica `src/index.css` o `tailwind.config.js` | `docs/per-ui-design/UI_THEME_CONTEXT.md` |
+| Componenti (`Button`, `Card`, `Badge`, `Modal`, `Alert`, `Spinner`, `EmptyState`…) | `docs/per-ui-design-skill/UI_COMPONENTS_CONTEXT.md` |
+| Aggiunta / modifica file in `src/components/ui/` | `docs/per-ui-design-skill/UI_COMPONENTS_CONTEXT.md` |
+| Layout, struttura HTML, pattern di composizione | `docs/per-ui-design-skill/UI_COMPONENTS_CONTEXT.md` |
+| Tema, palette, colori, token, `primary-*`, rollout | `docs/per-ui-design-skill/UI_THEME_CONTEXT.md` |
+| Modifica `src/index.css` o `tailwind.config.js` | `docs/per-ui-design-skill/UI_THEME_CONTEXT.md` |
+| **Responsive: breakpoint, mobile, grid che collassa, padding/gap adattivi, max-width container, contenuto pagina vs sidebar** | `docs/per-ui-design-skill/UI_RESPONSIVE_SKILL.md` |
 | Non è chiaro se serve il contesto componenti o tema | Leggi **entrambi** |
 
 Carica i file indicati **prima** di aprire qualsiasi file da modificare.

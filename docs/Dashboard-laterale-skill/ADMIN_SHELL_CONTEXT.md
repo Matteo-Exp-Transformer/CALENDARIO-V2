@@ -107,14 +107,24 @@ da `AdminDashboard` al primo mount e non viene mai rimosso.
 
 ## 4. Sidebar — comportamento responsive
 
-| Breakpoint | Stato default | Toggle |
-|-----------|---------------|--------|
-| `< 645px` | Rail `w-16`; menu espanso = **drawer** `fixed` `w-56` + backdrop (`z-[7999]`) — chiusura con bottone, click backdrop o `Escape` | chevron |
-| `< 1024px` (e ≥ 645px) | Collapsed `w-16` solo icone | → expanded `w-56` |
-| `≥ 1024px` | Expanded `w-56` icone + label | → collapsed `w-16` |
+> Aggiornato 16-05-26: la sidebar espansa è **overlay a qualsiasi larghezza**
+> (prima solo < 645px; ≥ 645px spingeva il contenuto).
 
-Logica: `useIsNarrow()` (`max-width: 644px`) + `useIsLg()` + stati separati `narrowExpanded` / `wideCollapsed` (preserva la
-preferenza al cambio breakpoint). **No hover-to-expand**: solo bottone chevron.
+L'`<aside>` è **sempre `fixed inset-y-0 left-0 z-8000`** (mai nel flusso): cambia
+solo `width`. `<main>` ha `pl-16` **costante** = larghezza della striscia icone →
+la larghezza del contenuto non cambia MAI tra aperto/chiuso (niente più scatto
+fixed↔relative alla chiusura).
+
+| Stato | Comportamento (a ogni larghezza) |
+|-------|----------------------------------|
+| **Espansa** (`expanded`) | `w-56 shadow-xl` + backdrop scuro `bg-black/40 z-7999`. Si sovrappone in overlay sopra il contenuto. Chiusura: bottone chevron, click backdrop o `Escape`. |
+| **Collassata** | `w-16` striscia icone, sempre `fixed`. `main` mantiene `pl-16`. |
+
+Logica: flag unico `isDrawerOpen = expanded` governa width+backdrop. `useIsNarrow()`
+(`max-width: 644px`) resta usato **solo** per l'autochiusura on-click in
+`openSection` / `runSidebarAction`. La sidebar parte sempre chiusa all'avvio.
+**No hover-to-expand**: solo bottone chevron. Edition Classic (`!features.sidebar`):
+return anticipato, nessuna sidebar.
 
 ---
 
@@ -122,9 +132,9 @@ preferenza al cambio breakpoint). **No hover-to-expand**: solo bottone chevron.
 
 | Layer | Z-index | Cosa |
 |-------|---------|------|
-| Sidebar backdrop (solo drawer stretto) | `z-[7999]` | overlay scuro chiudibile |
-| Sidebar drawer (`< 645px` espanso) | `z-[8000]` | pannello `fixed` |
-| Sidebar aside (flusso normale / desktop) | normale | — |
+| Sidebar backdrop (sidebar espansa, ogni larghezza) | `z-[7999]` | overlay scuro chiudibile |
+| Sidebar drawer (espanso, ogni larghezza) | `z-[8000]` | pannello `fixed` |
+| Sidebar aside (collassato `w-16`) | normale | striscia icone in flusso |
 | CustomerDetailPanel overlay | `z-[8999]` | sfondo scuro |
 | CustomerDetailPanel drawer | `z-[9000]` | pannello slide-in CRM |
 | Modal (`<Modal>`) | `z-[10050]` | **non toccare mai** |

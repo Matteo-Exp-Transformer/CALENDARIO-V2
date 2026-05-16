@@ -150,8 +150,8 @@ export const ServizioPage: FC = () => {
     : 0
 
   return (
-    <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-6 md:px-6">
-      <div className="mx-auto max-w-6xl space-y-6">
+    <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-5 md:px-6 md:py-7">
+      <div className="mx-auto max-w-7xl space-y-6">
         {/* Header con tab Lista / Mappa */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>

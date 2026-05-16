@@ -97,8 +97,8 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
   const pendingGlobal = globalStats?.pending ?? 0
 
   return (
-    <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-6 md:px-6">
-      <div className="mx-auto max-w-6xl space-y-6">
+    <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-5 md:px-6 md:py-7">
+      <div className="mx-auto max-w-7xl space-y-6">
         <header>
           <h1 className="text-xl font-bold text-primary-900 md:text-2xl">Home</h1>
           <p className="mt-1 text-sm text-(--color-text-muted)">
@@ -133,7 +133,8 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
           />
         </nav>
 
-        {/* Stat card */}
+        {/* Stat card — restano 3 colonne (non 4 come Classic): qui ci sono
+            esattamente 3 statistiche, una 4ª colonna resterebbe vuota su desktop */}
         <section
           aria-label="Statistiche di oggi"
           className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4"

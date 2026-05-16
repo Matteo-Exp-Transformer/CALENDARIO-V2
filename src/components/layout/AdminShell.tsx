@@ -183,8 +183,10 @@ export const AdminShell: FC = () => {
     setActiveSidebarItem(sidebarItem)
   }
 
-  // Narrow drawer: sidebar si comporta come overlay
-  const isNarrowDrawerOpen = isNarrow && expanded
+  // Sidebar espansa = overlay a QUALSIASI larghezza: fixed + backdrop, non
+  // spinge mai il contenuto. `isNarrow` resta usato solo per l'autochiusura
+  // on-click (openSection / runSidebarAction).
+  const isDrawerOpen = expanded
 
   // Edition Classic: nessuna sidebar, AdminDashboard occupa tutta la pagina
   if (!features.sidebar) {
@@ -197,8 +199,8 @@ export const AdminShell: FC = () => {
 
   return (
     <div className="flex h-dvh overflow-hidden bg-(--color-bg)">
-      {/* Overlay per narrow drawer */}
-      {isNarrowDrawerOpen && (
+      {/* Backdrop scuro: reso quando la sidebar è espansa, a qualsiasi larghezza */}
+      {isDrawerOpen && (
         <button
           type="button"
           className="fixed inset-0 z-7999 cursor-default border-0 bg-black/40 p-0"
@@ -210,11 +212,12 @@ export const AdminShell: FC = () => {
       <aside
         ref={asideRef as unknown as React.Ref<HTMLElement>}
         className={cn(
-          'flex h-full shrink-0 flex-col border-r border-(--color-border) bg-surface py-4 transition-[width] duration-200 ease-out',
-          isNarrowDrawerOpen && 'fixed inset-y-0 left-0 z-8000 w-56 shadow-xl',
-          isNarrow && !isNarrowDrawerOpen && 'relative w-16',
-          !isNarrow && expanded && 'w-56',
-          !isNarrow && !expanded && 'w-16',
+          // Sempre fixed: la sidebar non sta MAI nel flusso, così non altera mai
+          // la larghezza di <main>. Transiziona solo width (w-16 ↔ w-56) — niente
+          // più scatto fixed↔relative alla chiusura.
+          'fixed inset-y-0 left-0 z-8000 flex h-full flex-col border-r border-(--color-border) bg-surface py-4 transition-[width] duration-200 ease-out',
+          // Espansa: larga + ombra; collassata: striscia icone
+          isDrawerOpen ? 'w-56 shadow-xl' : 'w-16',
         )}
         aria-label="Navigazione principale"
         aria-expanded={expanded}
@@ -366,7 +369,10 @@ export const AdminShell: FC = () => {
         </div>
       </aside>
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      {/* pl-16 costante = spazio della striscia icone (sidebar fixed). La
+          larghezza di main non cambia mai: la sidebar espansa si sovrappone
+          in overlay, non spinge. */}
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto pl-16">
         {(section === 'prenotazioni' || section === 'home') && (
           <AdminDashboard
             restaurantSettingsSignal={restaurantSettingsSignal}
