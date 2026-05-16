@@ -76,6 +76,28 @@ questa regola. Nessuna scrittura su produzione in questa sessione.
 `npm run validate` → lint OK · typecheck OK · **90/90 Vitest passati**.
 Nessuna regressione.
 
+## Aggiunta seconda iterazione (16-05-26)
+
+Domande/considerazioni dell'utente dopo il primo giro:
+
+1. **"Questa settimana"** confermato com'è (da oggi a domenica di questa
+   settimana, non 7 giorni esatti) ma il messaggio viola ora lo **specifica
+   esplicitamente** ("fino a domenica GG/MM, fine di questa settimana — non
+   7 giorni esatti").
+2. **Sovrapposizione mese poi settimana**: confermato che vale la stessa
+   regola "vince il più specifico" — nessuna modifica necessaria, funziona già.
+3. **Nuova voce "Scegli i giorni"** nel menu "Quando?": apre un mini
+   calendario a selezione multipla di giorni singoli sparsi (anche non
+   consecutivi, date passate disabilitate). Ogni giorno scelto crea un
+   override di 1 giorno → con la regola attuale batte mese/settimana su quel
+   giorno. Alert dedicato che elenca i giorni scelti.
+4. **Dato in card**: l'utente ha ritirato la richiesta — `SlotRow` resta
+   invariata.
+
+File toccati in questa iterazione: `useServiceSlotOverrides.ts` (scope
+`custom`), `ServiceSlotsManager.tsx` (MultiDayPicker, alert week, submit
+multi-giorno). `npm run validate` di nuovo verde, 90/90.
+
 ## Cosa resta per la prossima sessione
 
 - **Test manuale dell'utente** sul server di test (richiesto da Matteo).

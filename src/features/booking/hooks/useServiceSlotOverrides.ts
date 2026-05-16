@@ -29,8 +29,13 @@ export type ServiceSlotOverrideInsert = {
   max_guests: number | null
 }
 
-/** Durata utente dell'override. 'forever' = nessun override, modifica il valore base. */
-export type OverrideScope = 'forever' | 'today' | 'week' | 'month'
+/**
+ * Durata utente dell'override.
+ * 'forever' = nessun override, modifica il valore base.
+ * 'custom'  = giorni singoli scelti a mano nel mini calendario (anche non
+ *             consecutivi); ogni giorno diventa un override di 1 giorno.
+ */
+export type OverrideScope = 'forever' | 'today' | 'week' | 'month' | 'custom'
 
 export const SERVICE_SLOT_OVERRIDES_QUERY_KEY = 'service_slot_overrides'
 
@@ -51,13 +56,14 @@ export function todayLocalISODate(now: Date = new Date()): string {
  * 'today'  → oggi..oggi
  * 'week'   → oggi..domenica di questa settimana (lunedì = primo giorno)
  * 'month'  → oggi..ultimo giorno del mese corrente
- * Ritorna null per 'forever' (nessun override).
+ * Ritorna null per 'forever' e 'custom' (gestiti separatamente: il primo non
+ * crea override, il secondo usa i giorni scelti a mano nel calendario).
  */
 export function resolveScopeDateRange(
   scope: OverrideScope,
   now: Date = new Date(),
 ): { date_from: string; date_to: string } | null {
-  if (scope === 'forever') return null
+  if (scope === 'forever' || scope === 'custom') return null
 
   const from = todayLocalISODate(now)
 

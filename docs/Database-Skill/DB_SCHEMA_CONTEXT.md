@@ -164,7 +164,9 @@ stessa scelta di `update_service_slot` — immune a PGRST202). Usata da
 
 UI: pulsante **"Quando?"** nel form fascia (Servizio → Fasce orarie, solo in
 modifica). Opzioni: Per sempre (modifica il valore base) · Solo oggi · Questa
-settimana · Fino a fine mese (creano un override, da oggi incluso).
+settimana (da oggi a domenica di questa settimana) · Fino a fine mese ·
+**Scegli i giorni** (mini calendario, giorni sparsi → 1 override di 1 giorno
+ciascuno). Gli scope a intervallo partono da oggi incluso.
 
 **RLS service_slot_overrides:** policy `admin_*` — SELECT/INSERT/UPDATE/DELETE per `current_admin_tenant_id()`.
 

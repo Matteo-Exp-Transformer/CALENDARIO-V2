@@ -41,6 +41,7 @@ const SCOPE_OPTIONS: { value: OverrideScope; label: string }[] = [
   { value: 'today', label: 'Solo oggi' },
   { value: 'week', label: 'Questa settimana' },
   { value: 'month', label: 'Fino a fine mese' },
+  { value: 'custom', label: 'Scegli i giorni' },
 ]
 
 function scopeLabel(scope: OverrideScope): string {
@@ -51,6 +52,109 @@ function scopeLabel(scope: OverrideScope): string {
 function formatItalianDate(iso: string): string {
   const [y, m, d] = iso.split('-')
   return `${d}/${m}/${y}`
+}
+
+const WEEKDAY_LABELS = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
+const MONTH_LABELS = [
+  'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
+]
+
+/** YYYY-MM-DD locale di una Date, senza shift UTC. */
+function toLocalISODate(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+/**
+ * Mini calendario a selezione multipla di giorni singoli (anche non
+ * consecutivi). Le date passate (prima di oggi) non sono selezionabili:
+ * un override nel passato non avrebbe effetto.
+ */
+const MultiDayPicker: FC<{
+  selected: Set<string>
+  onToggle: (iso: string) => void
+  disabled?: boolean
+}> = ({ selected, onToggle, disabled }) => {
+  const [viewMonth, setViewMonth] = useState(() => {
+    const n = new Date()
+    return new Date(n.getFullYear(), n.getMonth(), 1)
+  })
+
+  const todayIso = toLocalISODate(new Date())
+  const year = viewMonth.getFullYear()
+  const month = viewMonth.getMonth()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  // getDay(): 0=domenica → portiamo a 0=lunedì per la griglia.
+  const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7
+
+  const cells: (string | null)[] = []
+  for (let i = 0; i < firstWeekday; i++) cells.push(null)
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push(toLocalISODate(new Date(year, month, d)))
+  }
+
+  return (
+    <div className="rounded-xl border border-(--color-border) bg-white p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Mese precedente"
+          disabled={disabled}
+          onClick={() => setViewMonth(new Date(year, month - 1, 1))}
+        >
+          ‹
+        </Button>
+        <span className="text-sm font-semibold text-primary-900">
+          {MONTH_LABELS[month]} {year}
+        </span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Mese successivo"
+          disabled={disabled}
+          onClick={() => setViewMonth(new Date(year, month + 1, 1))}
+        >
+          ›
+        </Button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center">
+        {WEEKDAY_LABELS.map((w) => (
+          <span key={w} className="py-1 text-xs font-medium text-(--color-text-muted)">
+            {w}
+          </span>
+        ))}
+        {cells.map((iso, idx) => {
+          if (iso === null) return <span key={`e${idx}`} />
+          const isPast = iso < todayIso
+          const isSelected = selected.has(iso)
+          const dayNum = Number(iso.slice(8, 10))
+          return (
+            <button
+              key={iso}
+              type="button"
+              disabled={disabled || isPast}
+              onClick={() => onToggle(iso)}
+              className={`rounded-lg py-1.5 text-sm transition-colors ${
+                isPast
+                  ? 'cursor-not-allowed text-(--color-text-muted) opacity-40'
+                  : isSelected
+                    ? 'bg-primary-600 font-semibold text-white'
+                    : 'text-primary-900 hover:bg-primary-50'
+              }`}
+            >
+              {dayNum}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 /** Verifica se uno slot (start_time, end_time) ricade negli orari di apertura per almeno un giorno */
@@ -107,6 +211,7 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
   const [validationError, setValidationError] = useState<string | null>(null)
   const [scope, setScope] = useState<OverrideScope>('forever')
   const [scopeMenuOpen, setScopeMenuOpen] = useState(false)
+  const [customDays, setCustomDays] = useState<Set<string>>(new Set())
   const scopeMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -119,6 +224,7 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
       setValidationError(null)
       setScope('forever')
       setScopeMenuOpen(false)
+      setCustomDays(new Set())
     }
   }, [isOpen, initial])
 
@@ -165,6 +271,8 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
     // Un override agisce solo su limiti turni/coperti di una fascia esistente.
     if (scope !== 'forever' && !isEdit)
       return 'La modifica a tempo si applica a una fascia esistente: crea prima la fascia, poi impostala con "Quando?".'
+    if (scope === 'custom' && customDays.size === 0)
+      return 'Seleziona almeno un giorno nel calendario per la modifica a tempo.'
     return null
   }
 
@@ -177,7 +285,36 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
     const maxTurns = maxTurnsStr === '' ? null : Number(maxTurnsStr)
     const maxGuests = maxGuestsStr === '' ? null : Number(maxGuestsStr)
 
-    // ── Modifica a tempo (override) ──────────────────────────────
+    // ── Modifica a tempo: giorni scelti a mano ───────────────────
+    // Ogni giorno selezionato = un override di 1 giorno (date_from = date_to).
+    if (scope === 'custom' && isEdit && initial && customDays.size > 0) {
+      const days = [...customDays].sort()
+      Promise.all(
+        days.map((d) =>
+          createOverride.mutateAsync({
+            service_slot_id: initial.id,
+            date_from: d,
+            date_to: d,
+            max_turns: maxTurns,
+            max_guests: maxGuests,
+          }),
+        ),
+      )
+        .then(() => {
+          toast.success(
+            `Modifica a "${initial.name}" attiva su ${days.length} ` +
+              `giorn${days.length === 1 ? 'o' : 'i'} selezionati. ` +
+              `Negli altri giorni la fascia resta ai valori base.`,
+          )
+          onClose()
+        })
+        .catch(() => {
+          // Il toast d'errore è già gestito da useCreateServiceSlotOverride.onError.
+        })
+      return
+    }
+
+    // ── Modifica a tempo: intervallo (oggi / settimana / mese) ────
     if (scope !== 'forever' && scopeRange && isEdit && initial) {
       createOverride.mutate(
         {
@@ -362,15 +499,51 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
               </div>
             </div>
 
-            {/* Alert ② — come si comporterà l'override scelto */}
-            {scope !== 'forever' && scopeRange && (
+            {/* Calendario per la scelta manuale dei giorni */}
+            {scope === 'custom' && (
+              <MultiDayPicker
+                selected={customDays}
+                disabled={isPending}
+                onToggle={(iso) =>
+                  setCustomDays((prev) => {
+                    const next = new Set(prev)
+                    if (next.has(iso)) next.delete(iso)
+                    else next.add(iso)
+                    return next
+                  })
+                }
+              />
+            )}
+
+            {/* Alert ② — come si comporterà l'override scelto (intervallo) */}
+            {scope !== 'forever' && scope !== 'custom' && scopeRange && (
               <div className="flex items-start gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2.5 text-sm text-violet-800">
                 <CalendarClock className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 <span>
                   Questa modifica varrà <strong>solo</strong> per la fascia{' '}
                   «{initial?.name}» dal <strong>{formatItalianDate(scopeRange.date_from)}</strong>{' '}
-                  al <strong>{formatItalianDate(scopeRange.date_to)}</strong>.{' '}
-                  Dal giorno successivo la fascia tornerà automaticamente ai valori base.
+                  al <strong>{formatItalianDate(scopeRange.date_to)}</strong>
+                  {scope === 'week' && (
+                    <>
+                      {' '}(fino a <strong>domenica {formatItalianDate(scopeRange.date_to)}</strong>,
+                      fine di questa settimana — non 7 giorni esatti)
+                    </>
+                  )}
+                  . Dal giorno successivo la fascia tornerà automaticamente ai valori base.
+                </span>
+              </div>
+            )}
+
+            {/* Alert ② — variante giorni scelti a mano */}
+            {scope === 'custom' && customDays.size > 0 && (
+              <div className="flex items-start gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2.5 text-sm text-violet-800">
+                <CalendarClock className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                <span>
+                  Questa modifica varrà <strong>solo</strong> per la fascia{' '}
+                  «{initial?.name}» nei{' '}
+                  <strong>{customDays.size} giorn{customDays.size === 1 ? 'o' : 'i'}</strong>{' '}
+                  selezionati: {[...customDays].sort().map(formatItalianDate).join(', ')}.{' '}
+                  Negli altri giorni la fascia resta ai valori base.
                 </span>
               </div>
             )}
