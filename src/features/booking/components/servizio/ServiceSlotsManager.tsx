@@ -20,7 +20,7 @@ import { useBusinessHours } from '@/hooks/useBusinessHours'
 function maxTurnsLabel(maxTurns: number | null): string {
   if (maxTurns === null) return 'Illimitata'
   if (maxTurns === 0) return 'Chiusa'
-  return `${maxTurns} turno${maxTurns !== 1 ? 'i' : ''}`
+  return `${maxTurns} ${maxTurns === 1 ? 'turno' : 'turni'}`
 }
 
 function maxTurnsBadgeClass(maxTurns: number | null): string {
