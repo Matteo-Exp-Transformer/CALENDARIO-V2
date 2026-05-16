@@ -321,9 +321,13 @@ export const AdminShell: FC = () => {
             },
           )}
 
-          {/* Pulsanti Espandi / Nascondi — sotto tutte le voci nav, solo in mode icons */}
-          {sidebarMode === 'icons' && (
-            <div className="mt-1 flex flex-col items-center gap-1">
+        </div>
+
+        {/* Espandi / Nascondi — sopra profilo, solo mode icons */}
+        {sidebarMode === 'icons' && (
+          <div className="flex flex-col gap-1 px-2 pb-2">
+            <div className="my-1 border-t border-(--color-border)" />
+            <div className="flex flex-col items-center gap-1">
               <Button
                 type="button"
                 variant="ghost"
@@ -348,8 +352,8 @@ export const AdminShell: FC = () => {
                 <ChevronLeft className="h-4 w-4" aria-hidden />
               </Button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Footer sidebar: utente + logout */}
         <div className="mt-auto flex flex-col gap-2 border-t border-(--color-border) px-2 pt-3">

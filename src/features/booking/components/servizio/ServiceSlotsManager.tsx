@@ -63,6 +63,15 @@ function formatItalianDate(iso: string): string {
 }
 
 const WEEKDAY_LABELS = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
+
+/** YYYY-MM-DD → «Ven 22/05/2026» (giorno settimana + data, locale). */
+function formatItalianDateWithWeekday(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  const date = new Date(y, m - 1, d)
+  const jsDay = date.getDay()
+  const weekday = WEEKDAY_LABELS[jsDay === 0 ? 6 : jsDay - 1]
+  return `${weekday} ${formatItalianDate(iso)}`
+}
 const MONTH_LABELS = [
   'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
   'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
@@ -709,11 +718,11 @@ const OverrideList: FC<{
                     {o.id === activeTodayId && <LimitStatusDot active />}
                     <span>
                       {o.date_from === o.date_to ? (
-                        <strong>{formatItalianDate(o.date_from)}</strong>
+                        <strong>{formatItalianDateWithWeekday(o.date_from)}</strong>
                       ) : (
                         <>
-                          dal <strong>{formatItalianDate(o.date_from)}</strong> al{' '}
-                          <strong>{formatItalianDate(o.date_to)}</strong>
+                          dal <strong>{formatItalianDateWithWeekday(o.date_from)}</strong> al{' '}
+                          <strong>{formatItalianDateWithWeekday(o.date_to)}</strong>
                         </>
                       )}
                     </span>
@@ -882,21 +891,26 @@ const SlotRow: FC<SlotRowProps> = ({
     <CollapsibleCard
       defaultExpanded={false}
       title={slot.name}
+      headerClassName="relative bg-gray-50 hover:bg-gray-100 border-b border-gray-200"
       subtitle={
-        <span className="flex flex-col gap-1">
-          <span className="text-(--color-text-muted)">{timeLabel}</span>
-          <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-violet-700">
-            <LimitStatusDot active={todayWinner !== null} />
-            <span className="flex items-center gap-1">
-              <CalendarClock className="h-3 w-3 shrink-0" aria-hidden />
-              {activeOverrides.length}{' '}
-              {activeOverrides.length === 1 ? 'Limite Impostato' : 'Limiti Impostati'}
-            </span>
+        <span className="flex w-full min-w-0 flex-col gap-1">
+          <span className="text-sm text-(--color-text-muted)">{timeLabel}</span>
+          <span className="flex items-center gap-1 text-xs font-medium text-violet-700">
+            <CalendarClock className="h-3 w-3 shrink-0" aria-hidden />
+            {activeOverrides.length}{' '}
+            {activeOverrides.length === 1 ? 'Limite Impostato' : 'Limiti Impostati'}
           </span>
         </span>
       }
       actions={
-        <SlotControls slot={slot} onEdit={onEdit} onDelete={onDelete} isDeleting={isDeleting} />
+        <>
+          <div
+            className="pointer-events-none absolute left-1/2 top-1/2 z-[1] -translate-x-1/2 -translate-y-1/2"
+          >
+            <LimitStatusDot active={todayWinner !== null} />
+          </div>
+          <SlotControls slot={slot} onEdit={onEdit} onDelete={onDelete} isDeleting={isDeleting} />
+        </>
       }
     >
       <OverrideList

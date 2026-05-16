@@ -7,7 +7,7 @@ description: >-
 
 # Comunicazione con l’utente (Matteo)
 
-Usa questa skill per **risposte in chat**, **spiegazioni di architettura**, **piani**, **report di sessione** e **spiegazioni preventive** prima di modificare codice LOCK.
+Usa questa skill per **risposte in chat**, **spiegazioni di architettura**, **piani**, **report di sessione** e **spiegazioni preventive** .
 
 Non sostituisce `APP_CONTEXT_SKILL.md` (routing, LOCK, edition). Non va nel flusso “quale skill area caricare” — va letta quando devi **spiegare** qualcosa a Matteo.
 
