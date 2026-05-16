@@ -102,8 +102,7 @@ const SIDEBAR_NAV_ITEMS: {
 export const AdminShell: FC = () => {
   const isNarrow = useIsNarrow()
   const features = useFeatures()
-  // Sidebar sempre chiusa all'avvio — si apre solo al click sul pulsante
-  const [expanded, setExpanded] = useState(false)
+  const [sidebarMode, setSidebarMode] = useState<'hidden' | 'icons' | 'expanded'>('icons')
   const [section, setSection] = useState<AdminShellSection>(() =>
     features.sidebar ? 'home' : 'prenotazioni',
   )
@@ -124,31 +123,33 @@ export const AdminShell: FC = () => {
     // nessun cleanup: il tema deve persistere per tutta la sessione admin
   }, [savedAppTheme, isAppThemePending])
 
+  const isDrawerOpen = sidebarMode === 'expanded'
+
   // Click-outside: chiude la sidebar quando si clicca fuori dall'aside
   useEffect(() => {
-    if (!expanded) return
+    if (!isDrawerOpen) return
     const handlePointerDown = (e: PointerEvent) => {
       if (asideRef.current && !asideRef.current.contains(e.target as Node)) {
-        setExpanded(false)
+        setSidebarMode('icons')
       }
     }
     // 'capture: true' intercetta prima che altri handler possano fermare la propagazione
     document.addEventListener('pointerdown', handlePointerDown, { capture: true })
     return () => document.removeEventListener('pointerdown', handlePointerDown, { capture: true })
-  }, [expanded])
+  }, [isDrawerOpen])
 
-  // Escape chiude la sidebar
+  // Escape chiude la sidebar (torna a icons, non a hidden)
   useEffect(() => {
-    if (!expanded) return
+    if (!isDrawerOpen) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setExpanded(false)
+      if (e.key === 'Escape') setSidebarMode('icons')
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [expanded])
+  }, [isDrawerOpen])
 
   const toggleSidebar = useCallback(() => {
-    setExpanded((e) => !e)
+    setSidebarMode((m) => (m === 'expanded' ? 'icons' : 'expanded'))
   }, [])
 
   const runSidebarAction = useCallback(
@@ -164,7 +165,7 @@ export const AdminShell: FC = () => {
       }
       if (action.type === 'public-form') {
         if (!tenantSlug) return
-        if (isNarrow) setExpanded(false)
+        if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
         setActiveSidebarItem('form')
         window.open(`/prenota/${tenantSlug}`, '_blank', 'noopener,noreferrer')
         return
@@ -178,15 +179,10 @@ export const AdminShell: FC = () => {
   )
 
   const openSection = (s: AdminShellSection, sidebarItem: SidebarActiveItem = null) => {
-    if (isNarrow) setExpanded(false)
+    if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
     setSection(s)
     setActiveSidebarItem(sidebarItem)
   }
-
-  // Sidebar espansa = overlay a QUALSIASI larghezza: fixed + backdrop, non
-  // spinge mai il contenuto. `isNarrow` resta usato solo per l'autochiusura
-  // on-click (openSection / runSidebarAction).
-  const isDrawerOpen = expanded
 
   // Edition Classic: nessuna sidebar, AdminDashboard occupa tutta la pagina
   if (!features.sidebar) {
@@ -205,29 +201,44 @@ export const AdminShell: FC = () => {
           type="button"
           className="fixed inset-0 z-7999 cursor-default border-0 bg-black/40 p-0"
           aria-label="Chiudi menu"
-          onClick={() => setExpanded(false)}
+          onClick={() => setSidebarMode('icons')}
         />
+      )}
+
+      {/* Icona tonda flottante — visibile solo quando la sidebar è nascosta */}
+      {sidebarMode === 'hidden' && (
+        <button
+          type="button"
+          className="fixed left-3 top-3 z-8000 flex h-10 w-10 items-center justify-center rounded-full border border-(--color-border) bg-surface/70 shadow-sm backdrop-blur transition-colors hover:bg-primary-50"
+          aria-label="Mostra menu"
+          title="Mostra menu"
+          onClick={() => setSidebarMode('icons')}
+        >
+          <ChevronRight className="h-5 w-5 text-primary-900" aria-hidden />
+        </button>
       )}
 
       <aside
         ref={asideRef as unknown as React.Ref<HTMLElement>}
         className={cn(
           // Sempre fixed: la sidebar non sta MAI nel flusso, così non altera mai
-          // la larghezza di <main>. Transiziona solo width (w-16 ↔ w-56) — niente
-          // più scatto fixed↔relative alla chiusura.
-          'fixed inset-y-0 left-0 z-8000 flex h-full flex-col border-r border-(--color-border) bg-surface py-4 transition-[width] duration-200 ease-out',
-          // Espansa: larga + ombra; collassata: striscia icone
-          isDrawerOpen ? 'w-56 shadow-xl' : 'w-16',
+          // la larghezza di <main>. Transiziona width (icons↔expanded) e transform
+          // (icons↔hidden) per animazioni fluide senza scatti.
+          'fixed inset-y-0 left-0 z-8000 flex h-full flex-col border-r border-(--color-border) bg-surface py-4 transition-[width,transform] duration-200 ease-out',
+          sidebarMode === 'hidden' && '-translate-x-full',
+          sidebarMode === 'icons' && 'w-16 translate-x-0',
+          sidebarMode === 'expanded' && 'w-56 translate-x-0 shadow-xl',
         )}
         aria-label="Navigazione principale"
-        aria-expanded={expanded}
+        aria-hidden={sidebarMode === 'hidden'}
+        aria-expanded={isDrawerOpen}
       >
         <div className="flex flex-1 flex-col gap-1 px-2">
           {/* Home — voce principale */}
           <div
             className={cn(
               'mb-1 flex',
-              expanded ? 'items-center justify-between gap-1 px-1' : 'justify-center',
+              isDrawerOpen ? 'items-center justify-between gap-1 px-1' : 'justify-center',
             )}
           >
             <button
@@ -235,7 +246,7 @@ export const AdminShell: FC = () => {
               onClick={() => {
                 setSection('home')
                 setActiveSidebarItem('home')
-                if (isNarrow) setExpanded(false)
+                if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
               }}
               title="Home"
               aria-label="Home"
@@ -244,7 +255,7 @@ export const AdminShell: FC = () => {
                 activeSidebarItem === 'home'
                   ? 'bg-primary-600 text-white'
                   : 'text-primary-900 hover:bg-primary-50',
-                !expanded && 'w-10 justify-center px-0',
+                !isDrawerOpen && 'w-10 justify-center px-0',
               )}
             >
               <Home
@@ -254,14 +265,14 @@ export const AdminShell: FC = () => {
                 )}
                 aria-hidden
               />
-              {expanded && <span className="truncate">Home</span>}
+              {isDrawerOpen && <span className="truncate">Home</span>}
             </button>
-            {expanded && (
+            {isDrawerOpen && (
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-expanded={expanded}
+                aria-expanded={isDrawerOpen}
                 aria-label="Comprimi menu"
                 title="Comprimi menu"
                 onClick={toggleSidebar}
@@ -294,7 +305,7 @@ export const AdminShell: FC = () => {
                     active
                       ? 'bg-primary-600 text-white'
                       : 'text-primary-900 hover:bg-primary-50',
-                    !expanded && 'mx-auto w-10 justify-center px-0',
+                    !isDrawerOpen && 'mx-auto w-10 justify-center px-0',
                   )}
                 >
                   <Icon
@@ -304,15 +315,15 @@ export const AdminShell: FC = () => {
                     )}
                     aria-hidden
                   />
-                  {expanded && <span className="truncate">{label}</span>}
+                  {isDrawerOpen && <span className="truncate">{label}</span>}
                 </button>
               )
             },
           )}
 
-          {/* Pulsante Espandi — sotto tutte le voci nav */}
-          {!expanded && (
-            <div className="mt-1 flex justify-center">
+          {/* Pulsanti Espandi / Nascondi — sotto tutte le voci nav, solo in mode icons */}
+          {sidebarMode === 'icons' && (
+            <div className="mt-1 flex flex-col items-center gap-1">
               <Button
                 type="button"
                 variant="ghost"
@@ -325,6 +336,17 @@ export const AdminShell: FC = () => {
               >
                 <ChevronRight className="h-4 w-4" aria-hidden />
               </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Nascondi menu"
+                title="Nascondi menu"
+                onClick={() => setSidebarMode('hidden')}
+                className="text-primary-900"
+              >
+                <ChevronLeft className="h-4 w-4" aria-hidden />
+              </Button>
             </div>
           )}
         </div>
@@ -335,7 +357,7 @@ export const AdminShell: FC = () => {
             <div
               className={cn(
                 'flex items-center gap-2 rounded-xl px-2 py-1.5 text-primary-900',
-                !expanded && 'justify-center px-0',
+                !isDrawerOpen && 'justify-center px-0',
               )}
               title={user.email}
             >
@@ -345,7 +367,7 @@ export const AdminShell: FC = () => {
               >
                 {initials(user)}
               </span>
-              {expanded && (
+              {isDrawerOpen && (
                 <span className="min-w-0 truncate text-xs font-medium text-(--color-text-muted)">
                   {user.email}
                 </span>
@@ -355,24 +377,23 @@ export const AdminShell: FC = () => {
           <Button
             type="button"
             variant="ghost"
-            size={expanded ? 'sm' : 'icon'}
+            size={isDrawerOpen ? 'sm' : 'icon'}
             className={cn(
               'w-full text-primary-900',
-              expanded ? 'justify-start gap-2' : 'justify-center',
+              isDrawerOpen ? 'justify-start gap-2' : 'justify-center',
             )}
             onClick={() => void logout()}
             title="Esci"
           >
             <LogOut className="h-4 w-4 shrink-0" aria-hidden />
-            {expanded && <span className="truncate">Esci</span>}
+            {isDrawerOpen && <span className="truncate">Esci</span>}
           </Button>
         </div>
       </aside>
 
-      {/* pl-16 costante = spazio della striscia icone (sidebar fixed). La
-          larghezza di main non cambia mai: la sidebar espansa si sovrappone
-          in overlay, non spinge. */}
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto pl-16">
+      {/* pl-16 presente solo se sidebar visibile (icons/expanded). In hidden
+          il contenuto occupa tutta la larghezza disponibile. */}
+      <main className={cn('flex min-h-0 flex-1 flex-col overflow-y-auto', sidebarMode !== 'hidden' && 'pl-16')}>
         {(section === 'prenotazioni' || section === 'home') && (
           <AdminDashboard
             restaurantSettingsSignal={restaurantSettingsSignal}

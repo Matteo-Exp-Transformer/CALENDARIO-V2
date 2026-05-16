@@ -21,14 +21,12 @@ Conseguenze pratiche:
 - L'agente non deve mai aggiungere logica del tipo "se sidebar aperta riduci colonne".
 
 Stato attuale del codice (`AdminShell.tsx`):
-- L'`<aside>` è **sempre `fixed inset-y-0 left-0 z-8000`** (mai nel flusso): la
-  larghezza di `<main>` non cambia mai tra sidebar aperta e chiusa. `<main>` ha
-  `pl-16` **costante** = spazio della striscia icone.
-- **Espansa (`expanded`), a QUALSIASI larghezza**: `w-56 shadow-xl` + backdrop
-  `bg-black/40 z-7999`, click-outside / Escape chiudono. Si sovrappone in overlay.
-- **Collassata**: `w-16` striscia icone, sempre `fixed`.
-- Flag che governa width+backdrop: `isDrawerOpen = expanded`. `isNarrow` resta
-  usato solo per l'autochiusura on-click.
+- L'`<aside>` è **sempre `fixed inset-y-0 left-0 z-8000`** (mai nel flusso).
+- La sidebar ha **3 stati**: `sidebarMode: 'hidden' | 'icons' | 'expanded'`.
+- **`hidden`**: `-translate-x-full`, fuori schermo. `<main>` **senza `pl-16`** → contenuto full-width.
+- **`icons`**: `w-16` striscia icone. `<main>` con `pl-16`.
+- **`expanded`**: `w-56 shadow-xl` + backdrop `bg-black/40 z-7999`, overlay. Chiusura → torna a `'icons'`.
+- `isDrawerOpen = sidebarMode === 'expanded'`. `isNarrow` resta usato solo per l'autochiusura on-click.
 
 > Quando lavori su una pagina: progettala per il viewport pieno. Se devi toccare
 > `AdminShell.tsx` per il comportamento sidebar, è file di area shell — vedi

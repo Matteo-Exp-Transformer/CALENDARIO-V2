@@ -107,24 +107,21 @@ da `AdminDashboard` al primo mount e non viene mai rimosso.
 
 ## 4. Sidebar — comportamento responsive
 
-> Aggiornato 16-05-26: la sidebar espansa è **overlay a qualsiasi larghezza**
-> (prima solo < 645px; ≥ 645px spingeva il contenuto).
+> Aggiornato 16-05-26 (v2): la sidebar ha ora **3 stati** (`hidden` / `icons` / `expanded`).
 
-L'`<aside>` è **sempre `fixed inset-y-0 left-0 z-8000`** (mai nel flusso): cambia
-solo `width`. `<main>` ha `pl-16` **costante** = larghezza della striscia icone →
-la larghezza del contenuto non cambia MAI tra aperto/chiuso (niente più scatto
-fixed↔relative alla chiusura).
+L'`<aside>` è **sempre `fixed inset-y-0 left-0 z-8000`** (mai nel flusso).
+Stato gestito da `sidebarMode: 'hidden' | 'icons' | 'expanded'` (iniziale: `'icons'`).
+`isDrawerOpen = sidebarMode === 'expanded'`.
 
-| Stato | Comportamento (a ogni larghezza) |
-|-------|----------------------------------|
-| **Espansa** (`expanded`) | `w-56 shadow-xl` + backdrop scuro `bg-black/40 z-7999`. Si sovrappone in overlay sopra il contenuto. Chiusura: bottone chevron, click backdrop o `Escape`. |
-| **Collassata** | `w-16` striscia icone, sempre `fixed`. `main` mantiene `pl-16`. |
+| Stato | Comportamento |
+|-------|---------------|
+| **`hidden`** | `-translate-x-full` — sidebar fuori schermo. `<main>` **senza `pl-16`**: contenuto full-width. Icona tonda flottante `fixed left-3 top-3 z-8000` appare in alto a sinistra (`ChevronRight`, `onClick → 'icons'`). |
+| **`icons`** | `w-16` striscia icone, sempre `fixed`. `<main>` con `pl-16`. Pulsanti sotto le voci nav: ChevronRight (→ `expanded`) e ChevronLeft (→ `hidden`). |
+| **`expanded`** | `w-56 shadow-xl` + backdrop scuro `bg-black/40 z-7999`. Si sovrappone in overlay. Chiusura (click backdrop / Escape / ChevronLeft in header) → torna a `'icons'`, **non a `hidden`**. |
 
-Logica: flag unico `isDrawerOpen = expanded` governa width+backdrop. `useIsNarrow()`
-(`max-width: 644px`) resta usato **solo** per l'autochiusura on-click in
-`openSection` / `runSidebarAction`. La sidebar parte sempre chiusa all'avvio.
-**No hover-to-expand**: solo bottone chevron. Edition Classic (`!features.sidebar`):
-return anticipato, nessuna sidebar.
+`useIsNarrow()` (`max-width: 644px`) resta usato **solo** per l'autochiusura on-click in
+`openSection` / `runSidebarAction`. **No hover-to-expand**: solo bottoni chevron.
+Edition Classic (`!features.sidebar`): return anticipato, nessuna sidebar, nessuna icona flottante.
 
 ---
 
@@ -133,8 +130,8 @@ return anticipato, nessuna sidebar.
 | Layer | Z-index | Cosa |
 |-------|---------|------|
 | Sidebar backdrop (sidebar espansa, ogni larghezza) | `z-[7999]` | overlay scuro chiudibile |
-| Sidebar drawer (espanso, ogni larghezza) | `z-[8000]` | pannello `fixed` |
-| Sidebar aside (collassato `w-16`) | normale | striscia icone in flusso |
+| Sidebar aside (tutti i modi visibili: icons + expanded) | `z-[8000]` | pannello `fixed` |
+| Icona tonda flottante (stato `hidden`) | `z-[8000]` | `fixed left-3 top-3`, stesso layer della sidebar |
 | CustomerDetailPanel overlay | `z-[8999]` | sfondo scuro |
 | CustomerDetailPanel drawer | `z-[9000]` | pannello slide-in CRM |
 | Modal (`<Modal>`) | `z-[10050]` | **non toccare mai** |
