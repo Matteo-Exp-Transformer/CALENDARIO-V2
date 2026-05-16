@@ -1,6 +1,6 @@
 import type { FC, FormEvent } from 'react'
-import { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2, AlertCircle, Clock, Users } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Plus, Pencil, Trash2, AlertCircle, Clock, Users, CalendarClock, ChevronDown } from 'lucide-react'
 import { Modal, Button, Input } from '@/components/ui'
 import { toast } from 'react-toastify'
 import {
@@ -11,6 +11,13 @@ import {
   slotCrossesMidnight,
   type ServiceSlot,
 } from '@/features/booking/hooks/useServiceSlots'
+import {
+  useServiceSlotOverrides,
+  useCreateServiceSlotOverride,
+  resolveScopeDateRange,
+  hasActiveOverride,
+  type OverrideScope,
+} from '@/features/booking/hooks/useServiceSlotOverrides'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 
 // ─────────────────────────────────────────────
@@ -27,6 +34,23 @@ function maxTurnsBadgeClass(maxTurns: number | null): string {
   if (maxTurns === null) return 'bg-emerald-100 text-emerald-800'
   if (maxTurns === 0) return 'bg-red-100 text-red-800'
   return 'bg-blue-100 text-blue-800'
+}
+
+const SCOPE_OPTIONS: { value: OverrideScope; label: string }[] = [
+  { value: 'forever', label: 'Per sempre' },
+  { value: 'today', label: 'Solo oggi' },
+  { value: 'week', label: 'Questa settimana' },
+  { value: 'month', label: 'Fino a fine mese' },
+]
+
+function scopeLabel(scope: OverrideScope): string {
+  return SCOPE_OPTIONS.find((o) => o.value === scope)?.label ?? 'Per sempre'
+}
+
+/** YYYY-MM-DD → GG/MM/AAAA per i messaggi all'utente. */
+function formatItalianDate(iso: string): string {
+  const [y, m, d] = iso.split('-')
+  return `${d}/${m}/${y}`
 }
 
 /** Verifica se uno slot (start_time, end_time) ricade negli orari di apertura per almeno un giorno */
@@ -81,6 +105,9 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
     initial?.max_guests == null ? '' : String(initial.max_guests),
   )
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [scope, setScope] = useState<OverrideScope>('forever')
+  const [scopeMenuOpen, setScopeMenuOpen] = useState(false)
+  const scopeMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -90,12 +117,35 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
       setMaxTurnsStr(initial?.max_turns === null || initial?.max_turns === undefined ? '' : String(initial.max_turns))
       setMaxGuestsStr(initial?.max_guests == null ? '' : String(initial.max_guests))
       setValidationError(null)
+      setScope('forever')
+      setScopeMenuOpen(false)
     }
   }, [isOpen, initial])
 
+  // Chiude il menu "Quando?" cliccando fuori.
+  useEffect(() => {
+    if (!scopeMenuOpen) return
+    function onDocClick(e: MouseEvent) {
+      if (scopeMenuRef.current && !scopeMenuRef.current.contains(e.target as Node)) {
+        setScopeMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
+  }, [scopeMenuOpen])
+
   const create = useCreateServiceSlot()
   const update = useUpdateServiceSlot()
-  const isPending = create.isPending || update.isPending
+  const createOverride = useCreateServiceSlotOverride()
+  const { data: overrides = [] } = useServiceSlotOverrides()
+  const isPending = create.isPending || update.isPending || createOverride.isPending
+
+  // Override già attivo su questa fascia (solo in modifica): serve per l'alert ①.
+  const existingActiveOverride =
+    isEdit && initial ? hasActiveOverride(overrides, initial.id) : null
+
+  // Intervallo che avrà l'override in base allo scope scelto (null = "Per sempre").
+  const scopeRange = resolveScopeDateRange(scope)
 
   const showOutsideAlert =
     name !== '' &&
@@ -112,6 +162,9 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
       return 'I turni massimi devono essere un numero ≥ 0 (0 = fascia chiusa, vuoto = illimitato).'
     if (maxGuestsStr !== '' && (isNaN(Number(maxGuestsStr)) || Number(maxGuestsStr) < 1))
       return 'I coperti massimi devono essere un numero ≥ 1 (vuoto = nessun limite).'
+    // Un override agisce solo su limiti turni/coperti di una fascia esistente.
+    if (scope !== 'forever' && !isEdit)
+      return 'La modifica a tempo si applica a una fascia esistente: crea prima la fascia, poi impostala con "Quando?".'
     return null
   }
 
@@ -121,12 +174,39 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
     if (err) { setValidationError(err); return }
     setValidationError(null)
 
+    const maxTurns = maxTurnsStr === '' ? null : Number(maxTurnsStr)
+    const maxGuests = maxGuestsStr === '' ? null : Number(maxGuestsStr)
+
+    // ── Modifica a tempo (override) ──────────────────────────────
+    if (scope !== 'forever' && scopeRange && isEdit && initial) {
+      createOverride.mutate(
+        {
+          service_slot_id: initial.id,
+          date_from: scopeRange.date_from,
+          date_to: scopeRange.date_to,
+          max_turns: maxTurns,
+          max_guests: maxGuests,
+        },
+        {
+          onSuccess: () => {
+            toast.success(
+              `Modifica a "${initial.name}" attiva dal ${formatItalianDate(scopeRange.date_from)} ` +
+                `al ${formatItalianDate(scopeRange.date_to)}. Poi la fascia torna ai valori base.`,
+            )
+            onClose()
+          },
+        },
+      )
+      return
+    }
+
+    // ── Modifica permanente (valore base) ────────────────────────
     const payload = {
       name: name.trim(),
       start_time: startTime,
       end_time: endTime,
-      max_turns: maxTurnsStr === '' ? null : Number(maxTurnsStr),
-      max_guests: maxGuestsStr === '' ? null : Number(maxGuestsStr),
+      max_turns: maxTurns,
+      max_guests: maxGuests,
       display_order: initial?.display_order ?? 0,
     }
 
@@ -243,6 +323,72 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
           </p>
         </div>
 
+        {isEdit && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium text-primary-900">
+                Durata della modifica
+              </span>
+              <div className="relative" ref={scopeMenuRef}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending}
+                  onClick={() => setScopeMenuOpen((o) => !o)}
+                >
+                  <CalendarClock className="h-4 w-4" aria-hidden />
+                  Quando? · {scopeLabel(scope)}
+                  <ChevronDown className="h-4 w-4" aria-hidden />
+                </Button>
+                {scopeMenuOpen && (
+                  <div className="absolute right-0 z-10 mt-1 w-52 overflow-hidden rounded-xl border border-(--color-border) bg-white shadow-lg">
+                    {SCOPE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`block w-full px-4 py-2 text-left text-sm hover:bg-primary-50 ${
+                          opt.value === scope
+                            ? 'bg-primary-50 font-semibold text-primary-900'
+                            : 'text-primary-800'
+                        }`}
+                        onClick={() => { setScope(opt.value); setScopeMenuOpen(false) }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Alert ② — come si comporterà l'override scelto */}
+            {scope !== 'forever' && scopeRange && (
+              <div className="flex items-start gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2.5 text-sm text-violet-800">
+                <CalendarClock className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                <span>
+                  Questa modifica varrà <strong>solo</strong> per la fascia{' '}
+                  «{initial?.name}» dal <strong>{formatItalianDate(scopeRange.date_from)}</strong>{' '}
+                  al <strong>{formatItalianDate(scopeRange.date_to)}</strong>.{' '}
+                  Dal giorno successivo la fascia tornerà automaticamente ai valori base.
+                </span>
+              </div>
+            )}
+
+            {/* Alert ① — esiste già un override attivo su questa fascia */}
+            {scope !== 'forever' && existingActiveOverride && (
+              <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                <span>
+                  Questa fascia ha già una modifica a tempo attiva fino al{' '}
+                  <strong>{formatItalianDate(existingActiveOverride.date_to)}</strong>.{' '}
+                  Per i giorni in comune varrà quella con l'intervallo più corto.
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm text-blue-800">
           <Users className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <span>
@@ -287,9 +433,10 @@ interface SlotRowProps {
   onEdit: (slot: ServiceSlot) => void
   onDelete: (id: string) => void
   isDeleting: boolean
+  activeOverrideUntil: string | null
 }
 
-const SlotRow: FC<SlotRowProps> = ({ slot, onEdit, onDelete, isDeleting }) => {
+const SlotRow: FC<SlotRowProps> = ({ slot, onEdit, onDelete, isDeleting, activeOverrideUntil }) => {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const crossesMidnight = slotCrossesMidnight(slot)
 
@@ -303,6 +450,12 @@ const SlotRow: FC<SlotRowProps> = ({ slot, onEdit, onDelete, isDeleting }) => {
             <span className="ml-1.5 text-xs text-amber-600">(notturna +1)</span>
           )}
         </p>
+        {activeOverrideUntil && (
+          <p className="mt-1 flex items-center gap-1 text-xs font-medium text-violet-700">
+            <CalendarClock className="h-3 w-3 shrink-0" aria-hidden />
+            Modifica a tempo attiva fino al {formatItalianDate(activeOverrideUntil)}
+          </p>
+        )}
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
@@ -370,6 +523,7 @@ const SlotRow: FC<SlotRowProps> = ({ slot, onEdit, onDelete, isDeleting }) => {
 
 export const ServiceSlotsManager: FC = () => {
   const { data: slots = [], isLoading, error } = useServiceSlots()
+  const { data: overrides = [] } = useServiceSlotOverrides()
   const deleteSlot = useDeleteServiceSlot()
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -435,6 +589,7 @@ export const ServiceSlotsManager: FC = () => {
               onEdit={openEdit}
               onDelete={(id) => deleteSlot.mutate(id)}
               isDeleting={deleteSlot.isPending}
+              activeOverrideUntil={hasActiveOverride(overrides, slot.id)?.date_to ?? null}
             />
           ))}
         </div>

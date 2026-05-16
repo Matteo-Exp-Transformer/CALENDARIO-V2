@@ -37,6 +37,7 @@
  019   |        | 019_cleanup_booking_time_slots.sql  ← DELETE chiave deprecata booking_time_slots da restaurant_settings (NON applicata) (2026-05-15)
  020   | 020*   | 020_drop_legacy_update_service_slot.sql  ← DROP firma legacy update_service_slot a 8 param (fix PGRST202 overloading) (2026-05-15)
  021   | 021*   | 021_update_service_slot_jsonb.sql  ← update_service_slot riscritta con SINGOLO param jsonb (firma univoca, immune a PGRST202); DROP firma a 9 param (2026-05-15)
+ 022   | 022 TEST | 022_service_slot_overrides.sql  ← tabella service_slot_overrides + RPC insert_service_slot_override(jsonb). Applicata SOLO su TEST (docnnernvp). NON su produzione (2026-05-16)
 ```
 
 *Le 013-018, 020, 021 sono applicate sul DB **produzione** via MCP `apply_migration`. Sul **DB di test** sono state applicate via MCP solo 016, 017, 018(insert)+021 (allineamento 2026-05-15) — il resto dello storico test non è verificato.
@@ -45,7 +46,9 @@ La 019 (`019_cleanup_booking_time_slots.sql`) **NON è applicata** né su produz
 
 > **Nota PGRST202 — soluzione definitiva (2026-05-15)**: il bug è ricomparso più volte perché una RPC con N parametri opzionali è fragile con PostgREST (qualsiasi ambiguità o schema cache stale → "function not found"). Storia: 018 v1 creò la firma a 8 param; 018 v2 ne aggiunse una a 9 param senza sostituire la prima (overloading → PGRST202); 020 droppò la 8 param ma il problema poteva tornare per cache stale. **021 risolve alla radice**: `update_service_slot(payload jsonb)` — un solo parametro, firma univoca, niente più risoluzione di overload. Semantica PATCH: chiave assente = mantieni; `"max_guests": null` = azzera (presenza della chiave = intento). Il flag `p_clear_max_guests` non serve più.
 
-Su **produzione**: 001–018, 020, 021 applicate. La prossima migrazione deve essere `022_*.sql`. **Su test lo storico è parziale** — vedi nota * sopra.
+Su **produzione**: 001–018, 020, 021 applicate. La **022** è applicata **solo su TEST** (`docnnernvp`, 2026-05-16) — su produzione NON ancora: andrà applicata su richiesta esplicita quando la feature "modifiche a tempo fasce" va live. La prossima migrazione deve essere `023_*.sql`. **Su test lo storico è parziale** — vedi nota * sopra.
+
+> **Direttiva ambiente (2026-05-16)**: lo sviluppo punta al **server di TEST**. Migrazioni / RPC / rigenerazione tipi via MCP `Supabase_test__*` (`docnnernvp`), mai su produzione (`rwuxgvld`, MCP `Supabase__*`, sola lettura). Verificare sempre con `get_project_url` prima di `apply_migration`. Vedi `APP_CONTEXT_SKILL.md` §1b.
 
 ---
 

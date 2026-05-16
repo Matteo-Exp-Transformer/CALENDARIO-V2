@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       admin_users: {
@@ -600,6 +575,54 @@ export type Database = {
           },
         ]
       }
+      service_slot_overrides: {
+        Row: {
+          created_at: string
+          date_from: string
+          date_to: string
+          id: string
+          max_guests: number | null
+          max_turns: number | null
+          service_slot_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_from: string
+          date_to: string
+          id?: string
+          max_guests?: number | null
+          max_turns?: number | null
+          service_slot_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          date_from?: string
+          date_to?: string
+          id?: string
+          max_guests?: number | null
+          max_turns?: number | null
+          service_slot_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_slot_overrides_service_slot_id_fkey"
+            columns: ["service_slot_id"]
+            isOneToOne: false
+            referencedRelation: "service_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_slot_overrides_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_slots: {
         Row: {
           created_at: string
@@ -792,10 +815,27 @@ export type Database = {
           isSetofReturn: true
         }
       }
-      update_service_slot: {
-        Args: {
-          payload: Json
+      insert_service_slot_override: {
+        Args: { payload: Json }
+        Returns: {
+          created_at: string
+          date_from: string
+          date_to: string
+          id: string
+          max_guests: number | null
+          max_turns: number | null
+          service_slot_id: string
+          tenant_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "service_slot_overrides"
+          isOneToOne: false
+          isSetofReturn: true
         }
+      }
+      update_service_slot: {
+        Args: { payload: Json }
         Returns: {
           created_at: string
           display_order: number
@@ -944,9 +984,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

@@ -49,6 +49,22 @@ Non mischiare mai i due client. `supabase` è per operazioni admin autenticate; 
 
 ---
 
+## 1b. ⚠️ Ambiente DB attivo: SERVER DI TEST
+
+**Tutto lo sviluppo (migrazioni, RPC, query manuali, rigenerazione tipi) va fatto sul server di TEST, mai su produzione.**
+
+| Ambiente | Project ref | URL | MCP tool da usare |
+|----------|-------------|-----|-------------------|
+| **TEST** ← usare sempre | `docnnernvp` | `docnnernvpyrbwuzzach.supabase.co` | `Supabase_test__*` |
+| PRODUZIONE — non toccare | `rwuxgvld` | `rwuxgvldzrkabglkasym.supabase.co` | `Supabase__*` (solo lettura, su richiesta esplicita) |
+
+- Prima di `apply_migration` / `execute_sql` / `generate_typescript_types`: chiamare `get_project_url` e **verificare che risponda `docnnernvp`**. Se risponde `rwuxgvld` è produzione → fermarsi.
+- `supabase db push` da CLI non è disponibile in questo ambiente: applicare le migrazioni via MCP `Supabase_test__apply_migration`.
+- I due DB si disallineano nella numerazione migrazioni (es. sul test le RPC jsonb sono in `021_service_slot_rpcs_jsonb`, su prod in `018/020/021` separate). Allinearsi sempre allo stato del **test** con `Supabase_test__list_migrations`.
+- Il file in `supabase/migrations/` resta la fonte versionata; la migrazione va comunque scritta lì oltre che applicata via MCP sul test.
+
+---
+
 ## 2. Mappa routing admin
 
 Il routing admin è **state-based** (nessun cambio URL). `AdminShell.tsx` gestisce uno stato `section` e monta il componente corretto.

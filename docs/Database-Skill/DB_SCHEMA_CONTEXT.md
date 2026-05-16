@@ -134,6 +134,40 @@ Trigger signup: `seed_default_service_slots_for_organization()` — inserisce 5 
 
 **RLS:** policy `admin_*` — SELECT/INSERT/UPDATE/DELETE per `current_admin_tenant_id()`.
 
+### `service_slot_overrides` — Modifiche a tempo delle fasce (022)
+
+| Colonna | Tipo | Note |
+|---------|------|------|
+| `id` | UUID PK | `gen_random_uuid()` |
+| `tenant_id` | UUID FK → organizations | ON DELETE CASCADE |
+| `service_slot_id` | UUID FK → service_slots | ON DELETE CASCADE |
+| `date_from` | DATE NOT NULL | Inizio validità (incluso) |
+| `date_to` | DATE NOT NULL | Fine validità (incluso). CHECK `date_to >= date_from` |
+| `max_turns` | INTEGER | NULL = nessun limite turni in quel periodo |
+| `max_guests` | INTEGER | NULL = nessun limite coperti in quel periodo |
+| `created_at` | TIMESTAMPTZ | |
+
+Override temporaneo: per l'intervallo `[date_from, date_to]` i valori
+`max_turns`/`max_guests` **sostituiscono** quelli base di `service_slots` per
+quella sola fascia. Il valore base non viene toccato → alla scadenza la fascia
+torna automaticamente ai valori base, **senza job** (risoluzione a runtime).
+
+**Risoluzione "vince il più specifico"**: se più override coprono lo stesso
+giorno per la stessa fascia, vince quello con l'intervallo più corto; a parità
+di durata, il `created_at` più recente. Logica in `resolveSlotOverride()`
+(`useServiceSlotOverrides.ts`), applicata anche da `useCapacityCheck` per la
+data della prenotazione.
+
+**RPC**: `insert_service_slot_override(payload jsonb)` (param jsonb singolo,
+stessa scelta di `update_service_slot` — immune a PGRST202). Usata da
+`useCreateServiceSlotOverride`. Letture via `.select()` REST con RLS.
+
+UI: pulsante **"Quando?"** nel form fascia (Servizio → Fasce orarie, solo in
+modifica). Opzioni: Per sempre (modifica il valore base) · Solo oggi · Questa
+settimana · Fino a fine mese (creano un override, da oggi incluso).
+
+**RLS service_slot_overrides:** policy `admin_*` — SELECT/INSERT/UPDATE/DELETE per `current_admin_tenant_id()`.
+
 ---
 
 ### `restaurant_settings` — Impostazioni per tenant

@@ -12,6 +12,10 @@ import {
   type BookingTimeSlots,
 } from '../utils/bookingTimeSlots'
 import { useCanonicalTimeSlots, useServiceSlots } from './useServiceSlots'
+import {
+  useServiceSlotOverrides,
+  resolveSlotOverride,
+} from './useServiceSlotOverrides'
 
 interface UseCapacityCheckParams {
   date: string
@@ -63,6 +67,7 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
   const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
   const { data: bookingSlots } = useCanonicalTimeSlots()
   const { data: serviceSlots = [] } = useServiceSlots()
+  const { data: slotOverrides = [] } = useServiceSlotOverrides()
   const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities')
   // `null` (o assente) = nessun limite giornaliero impostato → skip del controllo
   const dailyGuestLimit = dailyGuestLimitQuery.data ?? null
@@ -75,10 +80,24 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
     const canonicals = serviceSlots
       .filter((s) => s.is_canonical)
       .sort((a, b) => a.display_order - b.display_order)
+
+    // Override a tempo: se per la data della prenotazione una fascia ha un
+    // override attivo, i suoi max_guests sostituiscono il valore base solo per
+    // quel giorno. Fuori dall'intervallo override → valore base. `date` vuota
+    // (slotsStatus iniziale) → nessun override applicabile, si usa il base.
+    const guestsForCanonical = (slot: typeof canonicals[number] | undefined): number | null => {
+      if (!slot) return null
+      if (date) {
+        const ov = resolveSlotOverride(slotOverrides, slot.id, date)
+        if (ov) return ov.max_guests
+      }
+      return slot.max_guests
+    }
+
     const slotGuestCapacities: SlotGuestCapacities = {
-      morning:   canonicals[0]?.max_guests ?? legacySlotCapacities.morning,
-      afternoon: canonicals[1]?.max_guests ?? legacySlotCapacities.afternoon,
-      evening:   canonicals[2]?.max_guests ?? legacySlotCapacities.evening,
+      morning:   guestsForCanonical(canonicals[0]) ?? legacySlotCapacities.morning,
+      afternoon: guestsForCanonical(canonicals[1]) ?? legacySlotCapacities.afternoon,
+      evening:   guestsForCanonical(canonicals[2]) ?? legacySlotCapacities.evening,
     }
 
     const morning = {
@@ -196,6 +215,7 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
     dailyGuestLimit,
     bookingSlots,
     serviceSlots,
+    slotOverrides,
     legacySlotCapacities,
   ])
 }

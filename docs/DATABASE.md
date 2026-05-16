@@ -24,8 +24,12 @@ I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati
 | 011 | `011_booking_table_assignments.sql` | applicata |
 | 012 | `012_service_slots_preset_signup.sql` | applicata |
 | 013 | `013_tenants_edition.sql` | applicata via MCP Supabase (2026-05-14) |
+| 014–021 | edition gates, service_slots canonical/max_guests, RPC jsonb | applicate (vedi `Database-Skill/DB_MIGRATIONS_CONTEXT.md`) |
+| 022 | `022_service_slot_overrides.sql` | applicata **solo su TEST** (`docnnernvp`, 2026-05-16) — NON su produzione |
 
-La prossima migrazione deve usare il prefisso **`014_`**.
+La prossima migrazione deve usare il prefisso **`023_`**.
+
+> **Ambiente (2026-05-16)**: lo sviluppo punta al **server di TEST** (`docnnernvp`, MCP `Supabase_test`). Produzione (`rwuxgvld`) è sola lettura salvo richiesta esplicita. Dettaglio in `APP_CONTEXT_SKILL.md` §1b.
 
 ### Limite noto: `supabase db push` da CLI
 
