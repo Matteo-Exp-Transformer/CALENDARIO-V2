@@ -133,6 +133,64 @@ export function hasActiveOverride(
   return active[0] ?? null
 }
 
+/** Tutti gli override ancora attivi (date_to ≥ oggi) di una fascia, dal più imminente. */
+export function getActiveOverrides(
+  overrides: ServiceSlotOverride[],
+  serviceSlotId: string,
+  now: Date = new Date(),
+): ServiceSlotOverride[] {
+  const today = todayLocalISODate(now)
+  return overrides
+    .filter((o) => o.service_slot_id === serviceSlotId && o.date_to >= today)
+    .sort((a, b) => (a.date_to < b.date_to ? -1 : a.date_to > b.date_to ? 1 : 0))
+}
+
+/**
+ * Riconosce a quale voce del menu "Quando?" corrisponde un override già salvato,
+ * confrontandone le date con quelle che genererebbe oggi ogni scope a intervallo.
+ * Un override di un solo giorno futuro = 'custom' (giorno scelto a mano).
+ * Se non combacia con nessuno scetto noto → 'custom' (trattato come giorno/intervallo libero).
+ */
+export function classifyOverrideScope(
+  o: ServiceSlotOverride,
+  now: Date = new Date(),
+): Exclude<OverrideScope, 'forever'> {
+  const today = todayLocalISODate(now)
+
+  // Giorno singolo: 1 solo giorno coperto.
+  if (o.date_from === o.date_to) {
+    return o.date_from === today ? 'today' : 'custom'
+  }
+
+  const week = resolveScopeDateRange('week', now)
+  if (week && o.date_from === week.date_from && o.date_to === week.date_to) {
+    return 'week'
+  }
+
+  const month = resolveScopeDateRange('month', now)
+  if (month && o.date_from === month.date_from && o.date_to === month.date_to) {
+    return 'month'
+  }
+
+  return 'custom'
+}
+
+/**
+ * Override attivo dello stesso "tipo a intervallo" (today/week/month) già presente
+ * su questa fascia. Serve al form per impedire due override dello stesso tipo.
+ * 'custom' non è un tipo unico (ogni giorno è a sé) → mai bloccato qui.
+ */
+export function findActiveOverrideOfScope(
+  overrides: ServiceSlotOverride[],
+  serviceSlotId: string,
+  scope: OverrideScope,
+  now: Date = new Date(),
+): ServiceSlotOverride | null {
+  if (scope === 'forever' || scope === 'custom') return null
+  const active = getActiveOverrides(overrides, serviceSlotId, now)
+  return active.find((o) => classifyOverrideScope(o, now) === scope) ?? null
+}
+
 // ─────────────────────────────────────────────
 // Query + mutation
 // ─────────────────────────────────────────────
@@ -183,6 +241,32 @@ export function useCreateServiceSlotOverride() {
     onError: (error: Error) => {
       logger.error('[useCreateServiceSlotOverride] error', error)
       toast.error(error.message || 'Errore nel salvataggio della modifica a tempo')
+    },
+  })
+}
+
+export function useDeleteServiceSlotOverride() {
+  const queryClient = useQueryClient()
+  const { tenantId } = useTenantContext()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      // DELETE diretta: la RLS admin_delete_slot_overrides limita già alla
+      // fascia del tenant loggato — nessuna RPC necessaria.
+      const { error } = await supabase
+        .from('service_slot_overrides')
+        .delete()
+        .eq('id', id)
+      if (error) throw error
+      return id
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [SERVICE_SLOT_OVERRIDES_QUERY_KEY, tenantId] })
+      queryClient.invalidateQueries({ queryKey: [SERVICE_SLOTS_QUERY_KEY, tenantId] })
+    },
+    onError: (error: Error) => {
+      logger.error('[useDeleteServiceSlotOverride] error', error)
+      toast.error(error.message || 'Errore nella rimozione della modifica a tempo')
     },
   })
 }

@@ -2,6 +2,7 @@ import type { FC, FormEvent } from 'react'
 import { useState, useEffect, useRef } from 'react'
 import { Plus, Pencil, Trash2, AlertCircle, Clock, Users, CalendarClock, ChevronDown } from 'lucide-react'
 import { Modal, Button, Input } from '@/components/ui'
+import { CollapsibleCard } from '@/components/ui/CollapsibleCard'
 import { toast } from 'react-toastify'
 import {
   useServiceSlots,
@@ -14,9 +15,16 @@ import {
 import {
   useServiceSlotOverrides,
   useCreateServiceSlotOverride,
+  useDeleteServiceSlotOverride,
   resolveScopeDateRange,
+  resolveSlotOverride,
+  todayLocalISODate,
   hasActiveOverride,
+  getActiveOverrides,
+  classifyOverrideScope,
+  findActiveOverrideOfScope,
   type OverrideScope,
+  type ServiceSlotOverride,
 } from '@/features/booking/hooks/useServiceSlotOverrides'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 
@@ -273,6 +281,27 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
       return 'La modifica a tempo si applica a una fascia esistente: crea prima la fascia, poi impostala con "Quando?".'
     if (scope === 'custom' && customDays.size === 0)
       return 'Seleziona almeno un giorno nel calendario per la modifica a tempo.'
+    // Un solo override per tipo a intervallo (Solo oggi / Questa settimana /
+    // Fino a fine mese): se ne esiste già uno attivo dello stesso tipo, blocca.
+    if (isEdit && initial && scope !== 'forever' && scope !== 'custom') {
+      const dup = findActiveOverrideOfScope(overrides, initial.id, scope)
+      if (dup)
+        return `Esiste già una modifica a tempo «${scopeLabel(scope)}» attiva su questa fascia ` +
+          `(fino al ${formatItalianDate(dup.date_to)}). Eliminala prima dalla card della fascia, ` +
+          `oppure scegli un periodo diverso.`
+    }
+    // "Scegli i giorni": blocca i singoli giorni già coperti da un override
+    // attivo di 1 giorno (stesso tipo) — gli intervalli restano permessi.
+    if (isEdit && initial && scope === 'custom' && customDays.size > 0) {
+      const active = getActiveOverrides(overrides, initial.id)
+      const clash = [...customDays].filter((d) =>
+        active.some((o) => o.date_from === d && o.date_to === d),
+      )
+      if (clash.length > 0)
+        return `Hai già una modifica a tempo per ${clash.length === 1 ? 'il giorno' : 'i giorni'} ` +
+          `${clash.sort().map(formatItalianDate).join(', ')}. Eliminala prima dalla card della fascia, ` +
+          `oppure deseleziona ${clash.length === 1 ? 'quel giorno' : 'quei giorni'}.`
+    }
     return null
   }
 
@@ -601,92 +630,282 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
 // Riga fascia
 // ─────────────────────────────────────────────
 
+/** Etichetta del tipo di override come appare nel menu "Quando?". */
+const OVERRIDE_SCOPE_LABEL: Record<Exclude<OverrideScope, 'forever'>, string> = {
+  today: 'Solo oggi',
+  week: 'Questa settimana',
+  month: 'Fino a fine mese',
+  custom: 'Giorni scelti a mano',
+}
+
+function overrideTurnsDisplayValue(maxTurns: number | null): string {
+  if (maxTurns === null) return 'Illimitata'
+  if (maxTurns === 0) return 'Chiusa'
+  return String(maxTurns)
+}
+
+function overrideGuestsDisplayValue(maxGuests: number | null): string {
+  return maxGuests == null ? 'nessun limite' : String(maxGuests)
+}
+
+/**
+ * Pallino di stato del limite a tempo. Verde = è la modifica che vale OGGI
+ * (quella che ha vinto la regola "più specifico"). Grigio = la fascia ha
+ * modifiche in calendario ma nessuna copre oggi.
+ */
+const LimitStatusDot: FC<{ active: boolean }> = ({ active }) => (
+  <span
+    className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
+      active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
+    }`}
+  >
+    <span
+      className={`h-2 w-2 shrink-0 rounded-full ${active ? 'bg-emerald-500' : 'bg-gray-400'}`}
+      aria-hidden
+    />
+    {active ? 'Limite attivo' : 'In programma'}
+  </span>
+)
+
+/**
+ * Override attivi di una fascia, raggruppati per tipo (Solo oggi / Questa
+ * settimana / Fino a fine mese / Giorni scelti a mano). Ogni voce è
+ * eliminabile: alla rimozione la fascia torna ai valori base per quei giorni.
+ */
+const OverrideList: FC<{
+  overrides: ServiceSlotOverride[]
+  activeTodayId: string | null
+  onRemove: (id: string) => void
+  isRemoving: boolean
+}> = ({ overrides, activeTodayId, onRemove, isRemoving }) => {
+  const [confirmId, setConfirmId] = useState<string | null>(null)
+
+  const groups = new Map<Exclude<OverrideScope, 'forever'>, ServiceSlotOverride[]>()
+  for (const o of overrides) {
+    const scope = classifyOverrideScope(o)
+    const list = groups.get(scope) ?? []
+    list.push(o)
+    groups.set(scope, list)
+  }
+  const order: Exclude<OverrideScope, 'forever'>[] = ['today', 'week', 'month', 'custom']
+
+  return (
+    <div className="space-y-4 px-4 py-4">
+      {order
+        .filter((scope) => groups.has(scope))
+        .map((scope) => (
+          <div key={scope} className="space-y-2">
+            <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-violet-700">
+              <CalendarClock className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              {OVERRIDE_SCOPE_LABEL[scope]}
+            </p>
+            <ul className="space-y-1.5">
+              {groups.get(scope)!.map((o) => (
+                <li
+                  key={o.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm text-violet-900"
+                >
+                  <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                    {o.id === activeTodayId && <LimitStatusDot active />}
+                    <span>
+                      {o.date_from === o.date_to ? (
+                        <strong>{formatItalianDate(o.date_from)}</strong>
+                      ) : (
+                        <>
+                          dal <strong>{formatItalianDate(o.date_from)}</strong> al{' '}
+                          <strong>{formatItalianDate(o.date_to)}</strong>
+                        </>
+                      )}
+                    </span>
+                    <span className="text-xs text-violet-700">
+                      Limite Turni : {overrideTurnsDisplayValue(o.max_turns)}
+                      {' · '}
+                      Limite Coperti : {overrideGuestsDisplayValue(o.max_guests)}
+                    </span>
+                  </span>
+                  {confirmId === o.id ? (
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      <span className="text-xs text-red-600">Eliminare?</span>
+                      <Button
+                        type="button"
+                        variant="danger"
+                        size="sm"
+                        disabled={isRemoving}
+                        onClick={() => { onRemove(o.id); setConfirmId(null) }}
+                      >
+                        Sì
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setConfirmId(null)}
+                      >
+                        No
+                      </Button>
+                    </span>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Elimina questa modifica a tempo"
+                      onClick={() => setConfirmId(o.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-400" />
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+    </div>
+  )
+}
+
 interface SlotRowProps {
   slot: ServiceSlot
   onEdit: (slot: ServiceSlot) => void
   onDelete: (id: string) => void
   isDeleting: boolean
-  activeOverrideUntil: string | null
+  activeOverrides: ServiceSlotOverride[]
+  onRemoveOverride: (id: string) => void
+  isRemovingOverride: boolean
 }
 
-const SlotRow: FC<SlotRowProps> = ({ slot, onEdit, onDelete, isDeleting, activeOverrideUntil }) => {
+/** Badge coperti/turni + azioni modifica/elimina fascia. Condiviso tra riga semplice e card. */
+const SlotControls: FC<{
+  slot: ServiceSlot
+  onEdit: (slot: ServiceSlot) => void
+  onDelete: (id: string) => void
+  isDeleting: boolean
+}> = ({ slot, onEdit, onDelete, isDeleting }) => {
   const [confirmDelete, setConfirmDelete] = useState(false)
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      {slot.max_guests != null && (
+        <span className="flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-800">
+          <Users className="h-3 w-3 shrink-0" aria-hidden />
+          {slot.max_guests} cop.
+        </span>
+      )}
+      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${maxTurnsBadgeClass(slot.max_turns)}`}>
+        {maxTurnsLabel(slot.max_turns)}
+      </span>
+
+      {confirmDelete ? (
+        <>
+          <span className="text-xs text-red-600">Eliminare?</span>
+          <Button
+            type="button"
+            variant="danger"
+            size="sm"
+            disabled={isDeleting}
+            onClick={() => { onDelete(slot.id); setConfirmDelete(false) }}
+          >
+            Sì
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setConfirmDelete(false)}
+          >
+            No
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={`Modifica ${slot.name}`}
+            onClick={() => onEdit(slot)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={`Elimina ${slot.name}`}
+            onClick={() => setConfirmDelete(true)}
+          >
+            <Trash2 className="h-4 w-4 text-red-400" />
+          </Button>
+        </>
+      )}
+    </div>
+  )
+}
+
+const SlotRow: FC<SlotRowProps> = ({
+  slot,
+  onEdit,
+  onDelete,
+  isDeleting,
+  activeOverrides,
+  onRemoveOverride,
+  isRemovingOverride,
+}) => {
   const crossesMidnight = slotCrossesMidnight(slot)
+  const timeLabel = (
+    <>
+      {slot.start_time.slice(0, 5)} → {slot.end_time.slice(0, 5)}
+      {crossesMidnight && (
+        <span className="ml-1.5 text-xs text-amber-600">(notturna +1)</span>
+      )}
+    </>
+  )
+
+  // Senza modifiche a tempo: riga semplice, identica a prima.
+  if (activeOverrides.length === 0) {
+    return (
+      <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-surface px-4 py-3 shadow-sm">
+        <div>
+          <p className="font-semibold text-primary-900">{slot.name}</p>
+          <p className="mt-0.5 text-sm text-(--color-text-muted)">{timeLabel}</p>
+        </div>
+        <SlotControls slot={slot} onEdit={onEdit} onDelete={onDelete} isDeleting={isDeleting} />
+      </div>
+    )
+  }
+
+  // Con modifiche a tempo: card espandibile che le elenca e permette di eliminarle.
+  // Override che vince OGGI per questa fascia (regola "vince il più specifico").
+  // null = ha modifiche in calendario ma nessuna copre la data di oggi.
+  const todayWinner = resolveSlotOverride(activeOverrides, slot.id, todayLocalISODate())
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-(--color-border) bg-surface px-4 py-3 shadow-sm">
-      <div>
-        <p className="font-semibold text-primary-900">{slot.name}</p>
-        <p className="mt-0.5 text-sm text-(--color-text-muted)">
-          {slot.start_time.slice(0, 5)} → {slot.end_time.slice(0, 5)}
-          {crossesMidnight && (
-            <span className="ml-1.5 text-xs text-amber-600">(notturna +1)</span>
-          )}
-        </p>
-        {activeOverrideUntil && (
-          <p className="mt-1 flex items-center gap-1 text-xs font-medium text-violet-700">
-            <CalendarClock className="h-3 w-3 shrink-0" aria-hidden />
-            Modifica a tempo attiva fino al {formatItalianDate(activeOverrideUntil)}
-          </p>
-        )}
-      </div>
-
-      <div className="flex shrink-0 items-center gap-2">
-        {slot.max_guests != null && (
-          <span className="flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-800">
-            <Users className="h-3 w-3 shrink-0" aria-hidden />
-            {slot.max_guests} cop.
+    <CollapsibleCard
+      defaultExpanded={false}
+      title={slot.name}
+      subtitle={
+        <span className="flex flex-col gap-1">
+          <span className="text-(--color-text-muted)">{timeLabel}</span>
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-violet-700">
+            <LimitStatusDot active={todayWinner !== null} />
+            <span className="flex items-center gap-1">
+              <CalendarClock className="h-3 w-3 shrink-0" aria-hidden />
+              {activeOverrides.length}{' '}
+              {activeOverrides.length === 1 ? 'Limite Impostato' : 'Limiti Impostati'}
+            </span>
           </span>
-        )}
-        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${maxTurnsBadgeClass(slot.max_turns)}`}>
-          {maxTurnsLabel(slot.max_turns)}
         </span>
-
-        {confirmDelete ? (
-          <>
-            <span className="text-xs text-red-600">Eliminare?</span>
-            <Button
-              type="button"
-              variant="danger"
-              size="sm"
-              disabled={isDeleting}
-              onClick={() => { onDelete(slot.id); setConfirmDelete(false) }}
-            >
-              Sì
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setConfirmDelete(false)}
-            >
-              No
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={`Modifica ${slot.name}`}
-              onClick={() => onEdit(slot)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={`Elimina ${slot.name}`}
-              onClick={() => setConfirmDelete(true)}
-            >
-              <Trash2 className="h-4 w-4 text-red-400" />
-            </Button>
-          </>
-        )}
-      </div>
-    </div>
+      }
+      actions={
+        <SlotControls slot={slot} onEdit={onEdit} onDelete={onDelete} isDeleting={isDeleting} />
+      }
+    >
+      <OverrideList
+        overrides={activeOverrides}
+        activeTodayId={todayWinner?.id ?? null}
+        onRemove={onRemoveOverride}
+        isRemoving={isRemovingOverride}
+      />
+    </CollapsibleCard>
   )
 }
 
@@ -698,6 +917,7 @@ export const ServiceSlotsManager: FC = () => {
   const { data: slots = [], isLoading, error } = useServiceSlots()
   const { data: overrides = [] } = useServiceSlotOverrides()
   const deleteSlot = useDeleteServiceSlot()
+  const deleteOverride = useDeleteServiceSlotOverride()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<ServiceSlot | null>(null)
@@ -762,7 +982,9 @@ export const ServiceSlotsManager: FC = () => {
               onEdit={openEdit}
               onDelete={(id) => deleteSlot.mutate(id)}
               isDeleting={deleteSlot.isPending}
-              activeOverrideUntil={hasActiveOverride(overrides, slot.id)?.date_to ?? null}
+              activeOverrides={getActiveOverrides(overrides, slot.id)}
+              onRemoveOverride={(id) => deleteOverride.mutate(id)}
+              isRemovingOverride={deleteOverride.isPending}
             />
           ))}
         </div>

@@ -151,7 +151,7 @@ customer.email === searchTerm  // case-sensitive, manca trim
 ## Servizio
 
 **Sezione**: `section === 'servizio'` → `<ServizioPage />`  
-**Stato**: implementato F1 — CRUD tavoli per sala.
+**Stato**: implementato — CRUD tavoli per sala + fasce orarie con modifiche a tempo (override). Vedi sottosezione dedicata sotto gli anti-pattern.
 
 ### File chiave
 
@@ -193,6 +193,27 @@ tables (active=true, tenant_id)               → RestaurantTable[]
 // ❌ non mischiare supabase ↔ supabasePublic nelle query tavoli
 // ❌ non costruire classi dinamiche: `bg-${color}-600` non genera CSS con JIT
 ```
+
+### Fasce orarie + modifiche a tempo (override)
+
+Sottosezione Servizio separata dai tavoli. Una fascia (`service_slots`) può
+avere **modifiche a tempo**: turni/coperti diversi per un intervallo di date,
+poi ritorno automatico ai valori base (nessun job — risoluzione runtime).
+
+| File | Ruolo |
+|------|-------|
+| `src/features/booking/components/servizio/ServiceSlotsManager.tsx` | Lista fasce, modal CRUD, menu "Quando?", card override |
+| `src/features/booking/hooks/useServiceSlots.ts` | CRUD fasce base + `update_service_slot` (RPC jsonb) |
+| `src/features/booking/hooks/useServiceSlotOverrides.ts` | Override: query/create/delete + helper di risoluzione |
+| `supabase/migrations/022_service_slot_overrides.sql` | Tabella `service_slot_overrides`, RLS, RPC insert |
+
+Regole chiave:
+- Menu "Quando?": *Per sempre* (modifica il valore base via `update_service_slot`) · *Solo oggi* · *Questa settimana* · *Fino a fine mese* · *Scegli i giorni* (ognuno = override di 1 giorno).
+- Sovrapposizioni: **vince il più specifico** (`resolveSlotOverride`, intervallo più corto; a parità il più recente) — stessa regola usata dal capacity check clienti.
+- Una fascia con override attivi si rende come `CollapsibleCard` (LOCKED — solo uso); senza override resta una riga semplice. Dentro: override raggruppati per tipo, eliminabili (`useDeleteServiceSlotOverride`, DELETE diretta, RLS già presente).
+- Vincolo: **un solo override per tipo a intervallo** (today/week/month) per fascia, validato nel form; `custom` blocca solo i singoli giorni già coperti.
+- Pallino `LimitStatusDot`: verde "Limite attivo" sull'override che vince oggi, grigio "In programma" se nessuno copre oggi.
+- La migrazione 022 è applicata SOLO sul server di test (`docnnernvp`), non a produzione — vedi DB_SKILL / APP_CONTEXT_SKILL §1b.
 
 ---
 

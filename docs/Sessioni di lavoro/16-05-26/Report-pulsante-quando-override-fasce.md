@@ -98,6 +98,56 @@ File toccati in questa iterazione: `useServiceSlotOverrides.ts` (scope
 `custom`), `ServiceSlotsManager.tsx` (MultiDayPicker, alert week, submit
 multi-giorno). `npm run validate` di nuovo verde, 90/90.
 
+## Aggiunta terza iterazione (16-05-26) — gestione e rimozione override
+
+Richiesta: poter vedere ed eliminare le modifiche a tempo già assegnate, e
+impedire doppioni dello stesso tipo.
+
+1. **Card espandibile**: una fascia che ha modifiche a tempo attive non è più
+   una riga semplice ma una `CollapsibleCard` (componente LOCKED — solo usato,
+   non modificato). L'header mostra nome, orario, e "N modifiche a tempo ·
+   attiva fino al GG/MM/AAAA". Le azioni Modifica/Elimina fascia restano
+   nell'header. Le fasce senza modifiche restano righe semplici come prima.
+2. **Elenco raggruppato**: aprendo la card, le modifiche sono raggruppate per
+   tipo (Solo oggi · Questa settimana · Fino a fine mese · Giorni scelti a
+   mano), ognuna con date e valori (turni/coperti) e un pulsante elimina con
+   conferma Sì/No. Eliminata una modifica, quei giorni tornano subito ai
+   valori base (il capacity check si aggiorna da solo).
+3. **Un solo override per tipo**: il form ora blocca il salvataggio se su
+   quella fascia esiste già una modifica attiva dello stesso tipo a intervallo
+   (Solo oggi / Questa settimana / Fino a fine mese). Per "Scegli i giorni"
+   blocca solo i singoli giorni già coperti da una modifica di 1 giorno; gli
+   altri restano permessi. Messaggio che invita a eliminare prima dalla card.
+
+File toccati: `useServiceSlotOverrides.ts` (nuove `getActiveOverrides`,
+`classifyOverrideScope`, `findActiveOverrideOfScope`, mutation
+`useDeleteServiceSlotOverride` — DELETE diretta, RLS già presente, nessuna
+nuova migrazione), `ServiceSlotsManager.tsx` (SlotRow → CollapsibleCard
+condizionale, sotto-componenti `OverrideList` e `SlotControls`, check
+anti-duplicato in `validate()`). `npm run validate` verde, 90/90.
+
+## Aggiunta quarta iterazione (16-05-26) — pallino "Limite attivo"
+
+Richiesta: rendere visibile, sulla card della fascia, quale modifica a tempo
+sta valendo OGGI.
+
+- Nuovo pallino di stato (`LimitStatusDot`): **verde + "Limite attivo"** se
+  oggi c'è una modifica che vale davvero per quella fascia; **grigio + "In
+  programma"** se la fascia ha modifiche in calendario ma nessuna copre oggi
+  (scelta utente).
+- Quale modifica "vince oggi" è calcolato con la stessa regola del capacity
+  check (`resolveSlotOverride` — più specifico vince): così il pallino verde
+  riflette esattamente il limite che i clienti subiscono in prenotazione.
+- Il pallino appare in **due punti**: nell'header della card (stato
+  complessivo della fascia oggi) e accanto alla singola modifica dentro
+  l'elenco — il verde è sull'unica modifica che oggi sta effettivamente
+  governando turni/coperti.
+
+File toccati: `ServiceSlotsManager.tsx` (componente `LimitStatusDot`, prop
+`activeTodayId` in `OverrideList`, calcolo `todayWinner` in `SlotRow`; import
+`resolveSlotOverride` + `todayLocalISODate` già esposti dall'hook, nessuna
+modifica all'hook). `npm run validate` verde, 90/90.
+
 ## Cosa resta per la prossima sessione
 
 - **Test manuale dell'utente** sul server di test (richiesto da Matteo).
