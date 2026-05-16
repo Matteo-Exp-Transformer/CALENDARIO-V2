@@ -119,8 +119,7 @@ Stato gestito da `sidebarMode: 'hidden' | 'icons' | 'expanded'` (iniziale: `'ico
 | **`icons`** | `w-16` striscia icone, sempre `fixed`. `<main>` con `pl-16`. Pulsanti sotto le voci nav: ChevronRight (→ `expanded`) e ChevronLeft (→ `hidden`). |
 | **`expanded`** | `w-56 shadow-xl` + backdrop scuro `bg-black/40 z-7999`. Si sovrappone in overlay. Chiusura (click backdrop / Escape / ChevronLeft in header) → torna a `'icons'`, **non a `hidden`**. |
 
-`useIsNarrow()` (`max-width: 644px`) resta usato **solo** per l'autochiusura on-click in
-`openSection` / `runSidebarAction`. **No hover-to-expand**: solo bottoni chevron.
+`useIsNarrow()` (`max-width: 644px`) è usato in `openSection` / `runSidebarAction` **solo** per chiudere la sidebar se era `expanded` → `icons`. **Non forza mai `icons` se la sidebar era `hidden`** — la navigazione a una sezione non riapre mai la sidebar da `hidden`. **No hover-to-expand**: solo bottoni chevron.
 Edition Classic (`!features.sidebar`): return anticipato, nessuna sidebar, nessuna icona flottante.
 
 ---
