@@ -1,7 +1,9 @@
 import type { FC, FormEvent } from 'react'
 import { useState, useEffect, useRef } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import { Plus, Pencil, Trash2, AlertCircle, Clock, Users, CalendarClock, ChevronDown, X, RotateCcw } from 'lucide-react'
 import { Modal, Button, Input, TimePicker24h } from '@/components/ui'
+import { cn } from '@/lib/utils'
 import { CollapsibleCard } from '@/components/ui/CollapsibleCard'
 import { toast } from 'react-toastify'
 import {
@@ -48,7 +50,7 @@ function slotClosedRowClass(closed: boolean): string {
 }
 
 const SCOPE_OPTIONS: { value: OverrideScope; label: string }[] = [
-  { value: 'forever', label: 'Per sempre' },
+  { value: 'forever', label: 'Sempre' },
   { value: 'today', label: 'Solo oggi' },
   { value: 'week', label: 'Questa settimana' },
   { value: 'month', label: 'Fino a fine mese' },
@@ -56,7 +58,7 @@ const SCOPE_OPTIONS: { value: OverrideScope; label: string }[] = [
 ]
 
 function scopeLabel(scope: OverrideScope): string {
-  return SCOPE_OPTIONS.find((o) => o.value === scope)?.label ?? 'Per sempre'
+  return SCOPE_OPTIONS.find((o) => o.value === scope)?.label ?? 'Sempre'
 }
 
 /** YYYY-MM-DD → GG/MM/AAAA per i messaggi all'utente. */
@@ -205,6 +207,35 @@ function isSlotOutsideBusinessHours(
   return !startInAnyOpenDay
 }
 
+/** Pulsante icona + «?» per aprire/chiudere testo di aiuto nel form fascia. */
+const FormInfoToggle: FC<{
+  open: boolean
+  onToggle: () => void
+  icon: LucideIcon
+  ariaLabel: string
+}> = ({ open, onToggle, icon: Icon, ariaLabel }) => (
+  <button
+    type="button"
+    onClick={(e) => {
+      e.preventDefault()
+      onToggle()
+    }}
+    aria-expanded={open}
+    aria-label={open ? `Nascondi spiegazione: ${ariaLabel}` : `Mostra spiegazione: ${ariaLabel}`}
+    title={open ? 'Nascondi spiegazione' : 'Mostra spiegazione'}
+    className={cn(
+      'inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 transition-colors',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60',
+      'bg-primary-100 text-primary-900 hover:bg-primary-200',
+    )}
+  >
+    <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+    <span className="text-xs font-bold leading-none" aria-hidden>
+      ?
+    </span>
+  </button>
+)
+
 // ─────────────────────────────────────────────
 // Modal CRUD
 // ─────────────────────────────────────────────
@@ -231,6 +262,8 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
   const [validationError, setValidationError] = useState<string | null>(null)
   const [scope, setScope] = useState<OverrideScope>('forever')
   const [scopeMenuOpen, setScopeMenuOpen] = useState(false)
+  const [saveTypeInfoOpen, setSaveTypeInfoOpen] = useState(false)
+  const [maxGuestsInfoOpen, setMaxGuestsInfoOpen] = useState(false)
   const [customDays, setCustomDays] = useState<Set<string>>(new Set())
   const scopeMenuRef = useRef<HTMLDivElement>(null)
 
@@ -254,6 +287,8 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
       setValidationError(null)
       setScope('forever')
       setScopeMenuOpen(false)
+      setSaveTypeInfoOpen(false)
+      setMaxGuestsInfoOpen(false)
       setCustomDays(new Set())
     }
   }, [isOpen, initial])
@@ -499,8 +534,20 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="slot-maxguests" className="block text-sm font-medium text-primary-900">
-            Coperti massimi per fascia
+          <label
+            htmlFor="slot-maxguests"
+            className="inline-flex max-w-full flex-wrap items-center gap-x-1 text-sm font-medium text-primary-900"
+          >
+            Coperti massimi per{' '}
+            <span className="inline-flex flex-wrap items-center gap-1.5">
+              fascia
+              <FormInfoToggle
+                open={maxGuestsInfoOpen}
+                onToggle={() => setMaxGuestsInfoOpen((o) => !o)}
+                icon={Users}
+                ariaLabel="cosa succede impostando i coperti massimi per fascia"
+              />
+            </span>
           </label>
           <Input
             id="slot-maxguests"
@@ -515,13 +562,34 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
           <p className="text-xs text-(--color-text-muted)">
             Lascia vuoto = nessun limite
           </p>
+          {maxGuestsInfoOpen && (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm text-blue-800">
+              Impostando i coperti massimi, le prenotazioni dei clienti che superano il limite
+              verranno rifiutate automaticamente dal sistema.
+            </div>
+          )}
         </div>
 
         {isEdit && (
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-sm font-medium text-primary-900">
-                {scope === 'forever' ? 'Tipo di salvataggio' : 'Durata della modifica'}
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+              <span className="inline-flex max-w-full flex-wrap items-center gap-x-1 text-sm font-medium text-primary-900">
+                {scope === 'forever' ? (
+                  <>
+                    Tipo di{' '}
+                    <span className="inline-flex flex-wrap items-center gap-1.5">
+                      salvataggio
+                      <FormInfoToggle
+                        open={saveTypeInfoOpen}
+                        onToggle={() => setSaveTypeInfoOpen((o) => !o)}
+                        icon={Clock}
+                        ariaLabel="come impostare una scadenza alle modifiche con un altro tipo di salvataggio"
+                      />
+                    </span>
+                  </>
+                ) : (
+                  'Durata della modifica'
+                )}
               </span>
               <div className="relative" ref={scopeMenuRef}>
                 <Button
@@ -529,10 +597,11 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
                   variant="outline"
                   size="sm"
                   disabled={isPending}
+                  className="border border-primary-600 shadow-none"
                   onClick={() => setScopeMenuOpen((o) => !o)}
                 >
                   <CalendarClock className="h-4 w-4" aria-hidden />
-                  Quando? · {scopeLabel(scope)}
+                  {scopeLabel(scope)}
                   <ChevronDown className="h-4 w-4" aria-hidden />
                 </Button>
                 {scopeMenuOpen && (
@@ -546,7 +615,11 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
                             ? 'bg-primary-50 font-semibold text-primary-900'
                             : 'text-primary-800'
                         }`}
-                        onClick={() => { setScope(opt.value); setScopeMenuOpen(false) }}
+                        onClick={() => {
+                          setScope(opt.value)
+                          setScopeMenuOpen(false)
+                          if (opt.value !== 'forever') setSaveTypeInfoOpen(false)
+                        }}
                       >
                         {opt.label}
                       </button>
@@ -556,14 +629,10 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
               </div>
             </div>
 
-            {scope === 'forever' && (
-              <div className="flex items-start gap-2 rounded-lg border border-(--color-border) bg-surface px-3 py-2.5 text-sm text-(--color-text-muted)">
-                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary-700" aria-hidden />
-                <span>
-                  Stai aggiornando le <strong className="text-primary-900">impostazioni base</strong>{' '}
-                  della fascia (nome, orari, turni e coperti). Non viene aggiunta una modifica a tempo
-                  né conteggiata tra quelle sotto la card.
-                </span>
+            {scope === 'forever' && saveTypeInfoOpen && (
+              <div className="rounded-lg border border-(--color-border) bg-surface px-3 py-2.5 text-sm text-(--color-text-muted)">
+                Se vuoi, puoi impostare una scadenza precisa delle modifiche, selezionando un tipo
+                di salvataggio.
               </div>
             )}
 
@@ -629,13 +698,6 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
             )}
           </div>
         )}
-
-        <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm text-blue-800">
-          <Users className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          <span>
-            Impostando i coperti massimi, le prenotazioni dei clienti che superano il limite verranno rifiutate automaticamente dal sistema.
-          </span>
-        </div>
 
         {showOutsideAlert && (
           <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">

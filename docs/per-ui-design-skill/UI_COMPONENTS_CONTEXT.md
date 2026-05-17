@@ -12,6 +12,29 @@ Non riscrivere componenti esistenti. Non cambiare le interfacce pubbliche.
 
 ---
 
+## Regola cursori (norma globale)
+
+La manina (`cursor: pointer`) su ogni elemento cliccabile è **già globale** —
+definita una sola volta in `src/index.css` (blocco "Cursore manina su TUTTI
+gli elementi interattivi", subito dopo `body`).
+
+Copre automaticamente: `button`, `a[href]`, `select`, `label[for]`,
+`role="button|tab|menuitem|option|switch"`, `[onclick]`, e i `<div>`
+cliccabili marcati con la classe `.is-clickable` o l'attributo
+`data-clickable`. Il disabilitato (`:disabled`, `aria-disabled`,
+`.cursor-not-allowed`) mostra sempre `not-allowed`.
+
+**Da fare / da NON fare:**
+- ❌ NON aggiungere `cursor-pointer` a mano su button, link, select o
+  componenti che usano `Button` — è ridondante, è già coperto.
+- ✅ Per un `<div>` / `<span>` reso cliccabile via `onClick`: aggiungi la
+  classe `is-clickable` (oppure `data-clickable`) invece di `cursor-pointer`.
+  Così resta agganciato alla norma globale e non si sparpaglia.
+- Gli input di testo (`input`, `textarea`) restano col cursore di scrittura
+  per scelta esplicita: NON metterci la manina.
+
+---
+
 ## Componenti disponibili
 
 ---
