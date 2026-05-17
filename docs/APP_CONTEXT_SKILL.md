@@ -150,7 +150,7 @@ RULE  Per aggiungere una feature gated: 1) flag in FeatureFlags+buildFeatures 2)
 
 RULE  Selettore orario: UNICO componente `TimePicker24h` (pubblico+admin), minuti liberi 0-59, prop `compact` per form pubblico — `TimeInput` ELIMINATO, non reintrodurre input nativo type="time"
 RULE  Avviso orario notturno (fine < inizio): testo unico `OVERNIGHT_TIME_END_HINT` in `bookingTimeSlots.ts` — mostrarlo nel modal CRUD fascia (Servizio) e nella sezione Classic «Imposta Fasce Orarie» (`RestaurantSettingsTab`, `!features.servizio`); **non** usare sigle inline tipo `(notturna +1)` nelle liste fasce Pro
-RULE  Modal CRUD fascia (`ServiceSlotsManager` / `SlotModal`): aiuto con `FormInfoToggle` (icona + «?», `bg-primary-100`); pannelli testo solo se aperti; menu durata senza prefisso «Quando?» — etichetta scope (`Sempre`, Solo oggi, …); scope `forever` = solo `service_slots`
+RULE  Modal CRUD fascia (`ServiceSlotsManager` / `SlotModal`): `FormInfoToggle` (icona + «?») apre `FormInfoPanel` blu (`border-blue-200` / `bg-blue-50` / `text-blue-800`) con chiusura ✕; menu durata senza «Quando?» — etichetta scope (`Sempre`, …); scope `forever` = solo `service_slots`
 RULE  Classi Tailwind: solo stringhe letterali statiche — mai `bg-${x}-600`
 RULE  cn() da @/lib/utils — mai clsx() o twMerge() direttamente
 RULE  !important Tailwind v4: suffisso → `border-red-500!` (non `!border-red-500`)

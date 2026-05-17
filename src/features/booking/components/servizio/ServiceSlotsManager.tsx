@@ -1,4 +1,4 @@
-import type { FC, FormEvent } from 'react'
+import type { FC, FormEvent, ReactNode } from 'react'
 import { useState, useEffect, useRef } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { Plus, Pencil, Trash2, AlertCircle, Clock, Users, CalendarClock, ChevronDown, X, RotateCcw } from 'lucide-react'
@@ -207,7 +207,7 @@ function isSlotOutsideBusinessHours(
   return !startInAnyOpenDay
 }
 
-/** Pulsante icona + «?» per aprire/chiudere testo di aiuto nel form fascia. */
+/** Pulsante icona + «?» per aprire il pannello di aiuto (chiusura con ✕ nel pannello). */
 const FormInfoToggle: FC<{
   open: boolean
   onToggle: () => void
@@ -221,8 +221,8 @@ const FormInfoToggle: FC<{
       onToggle()
     }}
     aria-expanded={open}
-    aria-label={open ? `Nascondi spiegazione: ${ariaLabel}` : `Mostra spiegazione: ${ariaLabel}`}
-    title={open ? 'Nascondi spiegazione' : 'Mostra spiegazione'}
+    aria-label={`Mostra spiegazione: ${ariaLabel}`}
+    title="Mostra spiegazione"
     className={cn(
       'inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 transition-colors',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60',
@@ -234,6 +234,26 @@ const FormInfoToggle: FC<{
       ?
     </span>
   </button>
+)
+
+/** Casella aiuto blu con ✕ per chiudere. */
+const FormInfoPanel: FC<{ onClose: () => void; children: ReactNode }> = ({ onClose, children }) => (
+  <div className="relative rounded-lg border border-blue-200 bg-blue-50 py-2.5 pl-3 pr-8 text-sm text-blue-800">
+    {children}
+    <button
+      type="button"
+      onClick={onClose}
+      aria-label="Chiudi spiegazione"
+      title="Chiudi spiegazione"
+      className={cn(
+        'absolute right-1 top-1.5 inline-flex rounded p-0.5 text-blue-800/75 transition-colors',
+        'hover:bg-blue-100 hover:text-blue-900',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60',
+      )}
+    >
+      <X className="h-3.5 w-3.5 shrink-0" aria-hidden />
+    </button>
+  </div>
 )
 
 // ─────────────────────────────────────────────
@@ -563,10 +583,10 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
             Lascia vuoto = nessun limite
           </p>
           {maxGuestsInfoOpen && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm text-blue-800">
+            <FormInfoPanel onClose={() => setMaxGuestsInfoOpen(false)}>
               Impostando i coperti massimi, le prenotazioni dei clienti che superano il limite
               verranno rifiutate automaticamente dal sistema.
-            </div>
+            </FormInfoPanel>
           )}
         </div>
 
@@ -630,10 +650,9 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
             </div>
 
             {scope === 'forever' && saveTypeInfoOpen && (
-              <div className="rounded-lg border border-(--color-border) bg-surface px-3 py-2.5 text-sm text-(--color-text-muted)">
-                Se vuoi, puoi impostare una scadenza precisa delle modifiche, selezionando un tipo
-                di salvataggio.
-              </div>
+              <FormInfoPanel onClose={() => setSaveTypeInfoOpen(false)}>
+                Imposta una scadenza delle modifiche, selezionando un tipo di salvataggio.
+              </FormInfoPanel>
             )}
 
             {/* Calendario per la scelta manuale dei giorni */}

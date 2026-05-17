@@ -202,14 +202,14 @@ poi ritorno automatico ai valori base (nessun job — risoluzione runtime).
 
 | File | Ruolo |
 |------|-------|
-| `src/features/booking/components/servizio/ServiceSlotsManager.tsx` | Lista fasce, modal CRUD (`FormInfoToggle` icona+«?»), menu durata, card override |
+| `src/features/booking/components/servizio/ServiceSlotsManager.tsx` | Lista fasce, modal CRUD (`FormInfoToggle` + `FormInfoPanel` con ✕), menu durata, card override |
 | `src/features/booking/hooks/useServiceSlots.ts` | CRUD fasce base + `update_service_slot` (RPC jsonb) |
 | `src/features/booking/hooks/useServiceSlotOverrides.ts` | Override: query/create/delete + helper di risoluzione |
 | `supabase/migrations/022_service_slot_overrides.sql` | Tabella `service_slot_overrides`, RLS, RPC insert |
 | `supabase/migrations/023_service_slots_max_turns_resume.sql` | Colonna `max_turns_resume` + RPC `update_service_slot` estesa |
 
 Regole chiave:
-- Menu durata (pulsante con icona calendario + etichetta scope, es. **Sempre**): scope `forever` → **solo** `service_slots` (impostazioni base permanenti; **non** crea override né conta tra le «Modifiche a tempo») · *Solo oggi* · *Questa settimana* · *Fino a fine mese* · *Scegli i giorni* (ognuno = riga in `service_slot_overrides`). In modifica con `forever`: riga «Tipo di salvataggio» + `FormInfoToggle` (testo: invito a scegliere un altro tipo per scadenza precisa). Campo coperti: `FormInfoToggle` dopo «fascia» (testo rifiuto automatico oltre limite).
+- Menu durata (pulsante con icona calendario + etichetta scope, es. **Sempre**): scope `forever` → **solo** `service_slots` (impostazioni base permanenti; **non** crea override né conta tra le «Modifiche a tempo») · *Solo oggi* · *Questa settimana* · *Fino a fine mese* · *Scegli i giorni* (ognuno = riga in `service_slot_overrides`). In modifica con `forever`: riga «Tipo di salvataggio» + `FormInfoToggle` → `FormInfoPanel` blu (copy scadenza modifiche; chiusura ✕). Campo coperti: stesso pattern dopo «fascia» (rifiuto automatico oltre limite).
 - Sovrapposizioni: **vince il più specifico** (`resolveSlotOverride`, intervallo più corto; a parità il più recente) — stessa regola usata dal capacity check clienti.
 - Una fascia con override attivi si rende come `CollapsibleCard` (LOCKED — solo uso); senza override resta una riga semplice. **Header card**: titolo in `h3`; subtitle con orario e riga «N Modifiche a tempo»; badge `ActiveTodayBadge` («Attiva oggi», solo verde) se oggi vince un override — centrato su `sm+`, inline nel subtitle su mobile; `SlotControls` a destra.
 - Vincolo: **un solo override per tipo a intervallo** (today/week/month) per fascia, validato nel form; `custom` blocca solo i singoli giorni già coperti.
