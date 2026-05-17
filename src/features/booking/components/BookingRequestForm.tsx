@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Input } from '@/components/ui'
 import { DateInput } from '@/components/ui/DateInput'
-import { TimeInput } from '@/components/ui/TimeInput'
+import { TimePicker24h } from '@/components/ui'
 import type { BookingRequestInput, BookingType } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { useCreateBookingRequest } from '../hooks/useBookingRequests'
@@ -703,7 +703,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             >
               Ora prenotazione *
             </label>
-            <TimeInput
+            <TimePicker24h
               id="desired_time"
               compact
               value={formData.desired_time || '16:00'}

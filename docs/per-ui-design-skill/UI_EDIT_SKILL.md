@@ -48,7 +48,8 @@ Carica i file indicati **prima** di aprire qualsiasi file da modificare.
 ```
 LOCK  CollapsibleCard.tsx          — 57 test, non toccare mai
 LOCK  Modal.tsx  z-[10050]         — stack calibrato con Toast (100000)
-LOCK  DateInput.tsx / TimeInput.tsx — <style> globali con !important
+LOCK  DateInput.tsx               — <style> globali con !important
+NOTE  TimePicker24h.tsx           — UNICO selettore orario app (pubblico+admin), minuti 0-59 liberi, prop compact; TimeInput eliminato
 LOCK  TenantContext.tsx            — core multi-tenancy
 LOCK  src/lib/supabase.ts          — client autenticato
 LOCK  supabase/migrations/         — DB remoto già applicato

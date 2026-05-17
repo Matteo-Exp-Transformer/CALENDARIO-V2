@@ -1,7 +1,7 @@
 import type { FC, FormEvent } from 'react'
 import { useState, useEffect, useRef } from 'react'
 import { Plus, Pencil, Trash2, AlertCircle, Clock, Users, CalendarClock, ChevronDown, X, RotateCcw } from 'lucide-react'
-import { Modal, Button, Input } from '@/components/ui'
+import { Modal, Button, Input, TimePicker24h } from '@/components/ui'
 import { CollapsibleCard } from '@/components/ui/CollapsibleCard'
 import { toast } from 'react-toastify'
 import {
@@ -452,11 +452,10 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
             <label htmlFor="slot-start" className="block text-sm font-medium text-primary-900">
               Inizio
             </label>
-            <Input
+            <TimePicker24h
               id="slot-start"
-              type="time"
               value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
+              onChange={(v) => setStartTime(v)}
               disabled={isPending}
             />
           </div>
@@ -464,11 +463,10 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
             <label htmlFor="slot-end" className="block text-sm font-medium text-primary-900">
               Fine
             </label>
-            <Input
+            <TimePicker24h
               id="slot-end"
-              type="time"
               value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
+              onChange={(v) => setEndTime(v)}
               disabled={isPending}
             />
           </div>

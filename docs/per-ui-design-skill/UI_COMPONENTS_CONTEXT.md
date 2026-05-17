@@ -151,6 +151,20 @@ Aggiorna solo classi surface trigger/content se necessario.
 
 ---
 
+### TimePicker24h
+**File**: `src/components/ui/TimePicker24h.tsx` — **unico** selettore orario dell'app (pubblico + admin). Due `<select>` ore | minuti, minuti **liberi 0-59** (nessuno step). `TimeInput` è stato eliminato.
+
+```tsx
+<TimePicker24h id="orario" value={value} onChange={(v) => setValue(v)} />
+<TimePicker24h id="orario" value={value} onChange={...} compact />  {/* form pubblico / griglia 2 col */}
+```
+
+- `onChange` riceve **la stringa "HH:mm" diretta**, non un evento (≠ `<Input type="time">`).
+- `compact` (default `false`): densità ridotta + font mobile-first per il form pubblico. Con `false` la resa è identica all'uso admin storico.
+- Props: `value`, `onChange`, `id`, `required`, `disabled`, `hasError`, `compact`.
+
+---
+
 ### Label
 **File**: `src/components/ui/Label.tsx`
 
@@ -236,7 +250,6 @@ Interno al `button` del `NavItem` in `AdminDashboard`.
 |------|--------|----------------|
 | `CollapsibleCard.tsx` | 57 test, LOCKED | Solo leggere come riferimento |
 | `DateInput.tsx` | `<style>` globali + `!important` | Solo classi surface esterne |
-| `TimeInput.tsx` | Idem | Idem |
 | `Select.tsx` | Radix portal + inline style | Solo classi trigger/content surface |
 | `Modal.tsx` z-index | Stack calibrato con Toast | Non toccare `z-[10050]` |
 | `TenantContext.tsx` | Core multi-tenancy | MAI |

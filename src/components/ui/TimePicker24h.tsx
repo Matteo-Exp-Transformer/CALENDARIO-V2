@@ -13,6 +13,8 @@ export interface TimePicker24hProps extends Omit<React.HTMLAttributes<HTMLDivEle
   hasError?: boolean
   hourAriaLabel?: string
   minuteAriaLabel?: string
+  /** Densità ridotta + font mobile-first (es. griglia a 2 colonne nel form pubblico) */
+  compact?: boolean
 }
 
 function splitParts(raw: string): { hour: number | null; minute: number | null } {
@@ -40,6 +42,7 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
       hasError = false,
       hourAriaLabel = 'Ora (formato 24 ore)',
       minuteAriaLabel = 'Minuti',
+      compact = false,
       className,
       style,
       ...divProps
@@ -59,8 +62,10 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
       onChange(`${pad(h)}:${pad(mm)}`)
     }
 
-    const selectBase =
-      'min-w-0 flex-1 cursor-pointer rounded-md border-0 bg-white py-2 text-sm font-medium text-slate-900 outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-75'
+    const selectBase = cn(
+      'min-w-0 flex-1 cursor-pointer rounded-md border-0 bg-white py-2 font-medium text-slate-900 outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-75',
+      compact ? 'text-base sm:text-sm' : 'text-sm'
+    )
 
     return (
       <div
@@ -71,8 +76,10 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
           ...(style as React.CSSProperties | undefined),
         }}
         className={cn(
-          '[color-scheme:light] isolate flex min-h-[3.5rem] w-full items-center gap-2 rounded-[1.25rem] !bg-white px-4 py-3 text-sm text-slate-900 shadow-sm',
-          // Stessi spessori/colori border di TimeInput (.time-input-container)
+          '[color-scheme:light] isolate flex w-full items-center !bg-white text-slate-900 shadow-sm',
+          compact
+            ? 'min-h-[3rem] gap-2 rounded-2xl px-3 py-2 text-base sm:text-sm'
+            : 'min-h-[3.5rem] gap-2 rounded-[1.25rem] px-4 py-3 text-sm',
           hasError ? 'border-2 !border-red-500' : 'border border-[rgba(0,0,0,0.2)]',
           '[&_select]:!bg-white [&_select]:text-slate-900',
           'focus-within:outline-none',
