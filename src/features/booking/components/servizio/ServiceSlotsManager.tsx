@@ -10,7 +10,6 @@ import {
   useUpdateServiceSlot,
   useDeleteServiceSlot,
   isServiceSlotClosed,
-  slotCrossesMidnight,
   type ServiceSlot,
 } from '@/features/booking/hooks/useServiceSlots'
 import { OVERNIGHT_TIME_END_HINT } from '@/features/booking/utils/bookingTimeSlots'
@@ -921,15 +920,7 @@ const SlotRow: FC<SlotRowProps> = ({
   isRemovingOverride,
 }) => {
   const closed = isServiceSlotClosed(slot)
-  const crossesMidnight = slotCrossesMidnight(slot)
-  const timeLabel = (
-    <>
-      {slot.start_time.slice(0, 5)} → {slot.end_time.slice(0, 5)}
-      {crossesMidnight && (
-        <span className="ml-1.5 text-xs text-amber-600">(notturna +1)</span>
-      )}
-    </>
-  )
+  const timeLabel = `${slot.start_time.slice(0, 5)} → ${slot.end_time.slice(0, 5)}`
 
   // Senza modifiche a tempo: riga semplice, identica a prima.
   if (activeOverrides.length === 0) {

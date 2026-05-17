@@ -21,8 +21,8 @@ import {
 import { useFeatures } from '@/hooks/useFeatures'
 import {
   OVERNIGHT_TIME_END_HINT,
-  slotRangesOverlap,
   slotCrossesMidnight,
+  slotRangesOverlap,
   toBookingTimeSlots,
   type BookingTimeSlots,
 } from '@/features/booking/utils/bookingTimeSlots'
@@ -505,10 +505,18 @@ export const RestaurantSettingsTab: React.FC = () => {
   const morningName = canonicalNames[0] ?? 'Colazione'
   const afternoonName = canonicalNames[1] ?? 'Pranzo'
   const eveningName = canonicalNames[2] ?? 'Cena'
-
-  const morningCrossesMidnight = slotCrossesMidnight({ start_time: bookingTimeSlots.morningStart, end_time: bookingTimeSlots.morningEnd })
-  const afternoonCrossesMidnight = slotCrossesMidnight({ start_time: bookingTimeSlots.afternoonStart, end_time: bookingTimeSlots.afternoonEnd })
-  const eveningCrossesMidnight = slotCrossesMidnight({ start_time: bookingTimeSlots.eveningStart, end_time: bookingTimeSlots.eveningEnd })
+  const morningCrossesMidnight = slotCrossesMidnight({
+    start_time: bookingTimeSlots.morningStart,
+    end_time: bookingTimeSlots.morningEnd,
+  })
+  const afternoonCrossesMidnight = slotCrossesMidnight({
+    start_time: bookingTimeSlots.afternoonStart,
+    end_time: bookingTimeSlots.afternoonEnd,
+  })
+  const eveningCrossesMidnight = slotCrossesMidnight({
+    start_time: bookingTimeSlots.eveningStart,
+    end_time: bookingTimeSlots.eveningEnd,
+  })
 
   const savedBookingPageBackground = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
   /** Selezione diversa dal valore gia salvato su DB (solo «Salva modifiche» aggiorna il DB). */
@@ -1013,7 +1021,7 @@ export const RestaurantSettingsTab: React.FC = () => {
               {morningName} · {bookingTimeSlots.morningStart} - {bookingTimeSlots.morningEnd}
             </p>
             {morningCrossesMidnight && (
-              <p className="mb-2 flex items-center justify-center gap-1 text-xs text-amber-700">
+              <p className="mb-2 flex items-center justify-center gap-1.5 text-xs text-amber-700">
                 <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 {OVERNIGHT_TIME_END_HINT}
               </p>
@@ -1072,7 +1080,7 @@ export const RestaurantSettingsTab: React.FC = () => {
               {afternoonName} · {bookingTimeSlots.afternoonStart} - {bookingTimeSlots.afternoonEnd}
             </p>
             {afternoonCrossesMidnight && (
-              <p className="mb-2 flex items-center justify-center gap-1 text-xs text-amber-700">
+              <p className="mb-2 flex items-center justify-center gap-1.5 text-xs text-amber-700">
                 <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 {OVERNIGHT_TIME_END_HINT}
               </p>
@@ -1131,7 +1139,7 @@ export const RestaurantSettingsTab: React.FC = () => {
               {eveningName} · {bookingTimeSlots.eveningStart} - {bookingTimeSlots.eveningEnd}
             </p>
             {eveningCrossesMidnight && (
-              <p className="mb-2 flex items-center justify-center gap-1 text-xs text-amber-700">
+              <p className="mb-2 flex items-center justify-center gap-1.5 text-xs text-amber-700">
                 <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 {OVERNIGHT_TIME_END_HINT}
               </p>

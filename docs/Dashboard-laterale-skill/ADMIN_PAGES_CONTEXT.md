@@ -215,6 +215,7 @@ Regole chiave:
 - Vincolo: **un solo override per tipo a intervallo** (today/week/month) per fascia, validato nel form; `custom` blocca solo i singoli giorni già coperti.
 - **Chiusura servizio** (`SlotControls`): pulsante ✕ imposta `max_turns = 0` (nessun tavolo/turno, come prima); valore precedente in `max_turns_resume` (migrazione 023); riapertura con icona ↺. Riga/card con `opacity-55` + badge «Servizio chiuso». Non usare `0` nel campo turni del form.
 - Helper: `isServiceSlotClosed(slot)` → `max_turns === 0`.
+- **Orario notturno** (`end_time < start_time`, `slotCrossesMidnight`): copy unico `OVERNIGHT_TIME_END_HINT` in `bookingTimeSlots.ts`. Mostrato nel **modal** nuova/modifica fascia; **non** in lista righe (`SlotRow` mostra solo `HH:mm → HH:mm`, senza `(notturna +1)`). Edition Classic: stesso avviso anche in Impostazioni → «Imposta Fasce Orarie» (`RestaurantSettingsTab`, `!features.servizio`).
 - Migrazioni **022** e **023** applicate SOLO sul server di test (`docnnernvp`), non a produzione — vedi DB_SKILL / APP_CONTEXT_SKILL §1b.
 
 ---
