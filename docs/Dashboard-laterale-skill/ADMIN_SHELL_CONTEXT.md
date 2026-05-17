@@ -116,7 +116,7 @@ Stato gestito da `sidebarMode: 'hidden' | 'icons' | 'expanded'` (iniziale: `'ico
 | Stato | Comportamento |
 |-------|---------------|
 | **`hidden`** | `-translate-x-full` — sidebar fuori schermo. `<main>` **senza `pl-16`**: contenuto full-width. Icona tonda flottante `fixed left-3 top-3 z-8000` appare in alto a sinistra (`ChevronRight`, `onClick → 'icons'`). |
-| **`icons`** | `w-16` striscia icone, sempre `fixed`. `<main>` con `pl-16`. Pulsanti sotto le voci nav: ChevronRight (→ `expanded`) e ChevronLeft (→ `hidden`). |
+| **`icons`** | `w-16` striscia icone, sempre `fixed`. `<main>` con `pl-16`. In fondo, **sopra** il footer profilo/logout: sezione dedicata con divisorio come sotto Home (`my-1 border-t` dentro `px-2`) — ChevronRight (→ `expanded`) e ChevronLeft (→ `hidden`). Sotto: footer `mt-auto` con utente + Esci. |
 | **`expanded`** | `w-56 shadow-xl` + backdrop scuro `bg-black/40 z-7999`. Si sovrappone in overlay. Chiusura (click backdrop / Escape / ChevronLeft in header) → torna a `'icons'`, **non a `hidden`**. |
 
 `useIsNarrow()` (`max-width: 644px`) è usato in `openSection` / `runSidebarAction` **solo** per chiudere la sidebar se era `expanded` → `icons`. **Non forza mai `icons` se la sidebar era `hidden`** — la navigazione a una sezione non riapre mai la sidebar da `hidden`. **No hover-to-expand**: solo bottoni chevron.
