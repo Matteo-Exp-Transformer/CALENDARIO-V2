@@ -43,8 +43,20 @@ Per ogni modifica, scrivi al massimo 2–3 frasi:
 
 ---
 
+## Errori e bug: niente dettaglio tecnico non richiesto
+
+Quando spieghi un errore o un bug trovato, **non** elencare il tipo tecnico dell'errore né il punto esatto nel codice (file, riga, nome funzione/variabile). Di' solo, in parole pratiche, **cosa non funzionava per chi usa l'app** e **che effetto avrà la correzione**.
+
+> ✅ «Nel form di prenotazione il selettore dell'orario non si apriva: sembrava un campo morto. Ora si apre e si può scegliere ora e minuti.»
+> ❌ «In `TimePicker24h.tsx` riga 114 l'`<option>` aveva label vuota e `value={hourVal}` era `''`, quindi il select restava su un'opzione invisibile…»
+
+Matteo chiede lui il dettaglio tecnico se gli serve. Vale anche per i report di sessione.
+
+---
+
 ## Cosa evitare sempre
 
 - Elenchi di nomi file senza dire cosa cambia in app
 - Tabelle o sezioni con titoli se bastano 2 frasi
 - Spiegazioni non richieste su come funziona il codice internamente
+- Tipo tecnico dell'errore e posizione nel codice quando spieghi un bug (vedi sezione sopra)

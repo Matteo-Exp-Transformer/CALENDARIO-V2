@@ -138,6 +138,10 @@ LOCK  ADMIN CLASSICA — vedi docs/ADMIN_CLASSIC_SKILL.md
         spiegazione preventiva (5 punti) e attendere conferma utente.
         Vedi sezione 0 di ADMIN_CLASSIC_SKILL.md.
 
+RULE  Prima di modificare: leggere INTERO il file da toccare + i file collegati
+      necessari (chiamanti, tipi, componente condiviso). MAI editare avendo
+      letto solo il frammento restituito da grep/search. Spendere token in
+      lettura completa previene fix a pezzi e bug a catena.
 RULE  Sidebar features non importano da admin classica senza interfacce pubbliche
 RULE  Nuove feature in admin classica SEMPRE dietro FEATURES flag — usare useFeatures(), mai ADMIN_FEATURES hardcoded
 RULE  Prop aggiunte ad AdminDashboard sempre OPTIONAL con default sensati

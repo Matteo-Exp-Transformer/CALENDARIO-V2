@@ -49,18 +49,19 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
     },
     ref
   ) => {
+    // I due select sono sempre coerenti: o entrambi vuoti (nessun orario
+    // scelto, mostrano il placeholder "––") o entrambi valorizzati. Niente
+    // stato ibrido. Un valore parziale dal form viene trattato come vuoto.
     const { hour, minute } = splitParts(value)
-    const hourVal = hour === null ? '' : pad(hour)
-    const minuteVal = hour === null ? '' : pad(minute ?? 0)
+    const hasValue = hour !== null && minute !== null
+    const hourVal = hasValue ? pad(hour) : ''
+    const minuteVal = hasValue ? pad(minute) : ''
 
-    const emit = (h: number | null, m: number | null) => {
-      if (h === null) {
-        onChange('')
-        return
-      }
-      const mm = m === null ? 0 : m
-      onChange(`${pad(h)}:${pad(mm)}`)
-    }
+    // Scegliere una delle due parti quando il campo è ancora vuoto fissa
+    // l'altra a 00, così il form riceve subito un "HH:mm" valido.
+    const emitHour = (h: number) => onChange(`${pad(h)}:${pad(minute ?? 0)}`)
+    const emitMinute = (m: number) => onChange(`${pad(hour ?? 0)}:${pad(m)}`)
+    const clear = () => onChange('')
 
     const selectBase = cn(
       'min-w-0 flex-1 cursor-pointer rounded-md border-0 bg-white py-2 font-medium text-slate-900 outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-75',
@@ -101,14 +102,13 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
           onChange={(e) => {
             const v = e.target.value
             if (v === '') {
-              emit(null, null)
+              clear()
               return
             }
-            const h = parseInt(v, 10)
-            emit(h, hour === null ? 0 : minute ?? 0)
+            emitHour(parseInt(v, 10))
           }}
         >
-          <option value="">{required ? '—' : ''}</option>
+          <option value="">––</option>
           {Array.from({ length: 24 }, (_, i) => (
             <option key={i} value={pad(i)}>
               {pad(i)}
@@ -123,24 +123,23 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
           aria-label={minuteAriaLabel}
           className={selectBase}
           value={minuteVal}
-          disabled={disabled || hour === null}
+          disabled={disabled}
           required={required}
           onChange={(e) => {
-            if (hour === null) return
             const v = e.target.value
-            const m = v === '' ? 0 : parseInt(v, 10)
-            emit(hour, m)
+            if (v === '') {
+              clear()
+              return
+            }
+            emitMinute(parseInt(v, 10))
           }}
         >
-          {hour === null ? (
-            <option value="">—</option>
-          ) : (
-            Array.from({ length: 60 }, (_, i) => (
-              <option key={i} value={pad(i)}>
-                {pad(i)}
-              </option>
-            ))
-          )}
+          <option value="">––</option>
+          {Array.from({ length: 60 }, (_, i) => (
+            <option key={i} value={pad(i)}>
+              {pad(i)}
+            </option>
+          ))}
         </select>
       </div>
     )
