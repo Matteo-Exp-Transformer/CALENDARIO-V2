@@ -108,7 +108,9 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
             emitHour(parseInt(v, 10))
           }}
         >
-          <option value="">––</option>
+          {/* Placeholder solo finché non c'è un orario: nei form con default
+              (es. Prenota) non compare mai, evitando una voce morta. */}
+          {!hasValue && <option value="">––</option>}
           {Array.from({ length: 24 }, (_, i) => (
             <option key={i} value={pad(i)}>
               {pad(i)}
@@ -134,7 +136,7 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
             emitMinute(parseInt(v, 10))
           }}
         >
-          <option value="">––</option>
+          {!hasValue && <option value="">––</option>}
           {Array.from({ length: 60 }, (_, i) => (
             <option key={i} value={pad(i)}>
               {pad(i)}

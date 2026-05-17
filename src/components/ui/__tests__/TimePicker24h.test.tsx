@@ -26,12 +26,18 @@ describe('TimePicker24h', () => {
     expect(minute.options[0].textContent).toBe('––')
   })
 
-  it('mostra ore 00-23 e minuti 00-59 (minuti liberi, nessuno step)', () => {
+  it('con un orario valorizzato NON mostra il placeholder (niente voce morta)', () => {
     render(<TimePicker24h value="14:37" onChange={() => {}} />)
     const { hour, minute } = getSelects()
-    // 24 ore + 1 placeholder, 60 minuti + 1 placeholder
-    expect(hour.options).toHaveLength(25)
-    expect(minute.options).toHaveLength(61)
+    // Solo le 24 ore / 60 minuti reali, nessuna option vuota
+    expect(hour.options).toHaveLength(24)
+    expect(minute.options).toHaveLength(60)
+    expect(
+      Array.from(hour.options).some((o) => o.value === '')
+    ).toBe(false)
+    expect(
+      Array.from(minute.options).some((o) => o.value === '')
+    ).toBe(false)
     expect(hour.value).toBe('14')
     expect(minute.value).toBe('37')
   })
