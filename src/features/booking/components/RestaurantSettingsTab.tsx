@@ -20,6 +20,7 @@ import {
 } from '@/features/booking/hooks/useRestaurantSetting'
 import { useFeatures } from '@/hooks/useFeatures'
 import {
+  OVERNIGHT_TIME_END_HINT,
   slotRangesOverlap,
   slotCrossesMidnight,
   toBookingTimeSlots,
@@ -1014,7 +1015,7 @@ export const RestaurantSettingsTab: React.FC = () => {
             {morningCrossesMidnight && (
               <p className="mb-2 flex items-center justify-center gap-1 text-xs text-amber-700">
                 <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                Fascia notturna — fine cade nel giorno successivo
+                {OVERNIGHT_TIME_END_HINT}
               </p>
             )}
             <div className="flex w-full flex-row flex-nowrap items-end justify-center gap-4 overflow-x-auto py-1 [scrollbar-width:thin] md:gap-8">
@@ -1073,7 +1074,7 @@ export const RestaurantSettingsTab: React.FC = () => {
             {afternoonCrossesMidnight && (
               <p className="mb-2 flex items-center justify-center gap-1 text-xs text-amber-700">
                 <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                Fascia notturna — fine cade nel giorno successivo
+                {OVERNIGHT_TIME_END_HINT}
               </p>
             )}
             <div className="flex w-full flex-row flex-nowrap items-end justify-center gap-4 overflow-x-auto py-1 [scrollbar-width:thin] md:gap-8">
@@ -1132,7 +1133,7 @@ export const RestaurantSettingsTab: React.FC = () => {
             {eveningCrossesMidnight && (
               <p className="mb-2 flex items-center justify-center gap-1 text-xs text-amber-700">
                 <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                Fascia notturna — fine cade nel giorno successivo
+                {OVERNIGHT_TIME_END_HINT}
               </p>
             )}
             <div className="flex w-full flex-row flex-nowrap items-end justify-center gap-4 overflow-x-auto py-1 [scrollbar-width:thin] md:gap-8">

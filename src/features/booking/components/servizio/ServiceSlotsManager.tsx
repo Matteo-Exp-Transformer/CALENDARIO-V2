@@ -13,6 +13,7 @@ import {
   slotCrossesMidnight,
   type ServiceSlot,
 } from '@/features/booking/hooks/useServiceSlots'
+import { OVERNIGHT_TIME_END_HINT } from '@/features/booking/utils/bookingTimeSlots'
 import {
   useServiceSlotOverrides,
   useCreateServiceSlotOverride,
@@ -475,7 +476,7 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
         {crossesMidnight && (
           <p className="flex items-center gap-1.5 text-xs text-amber-700">
             <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            Fascia notturna — l'orario di fine cade nel giorno successivo.
+            {OVERNIGHT_TIME_END_HINT}
           </p>
         )}
 

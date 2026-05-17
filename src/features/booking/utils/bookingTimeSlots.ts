@@ -22,6 +22,10 @@ export function slotCrossesMidnight(slot: Pick<CanonicalSlot, 'start_time' | 'en
   return slot.end_time.slice(0, 5) < slot.start_time.slice(0, 5)
 }
 
+/** Avviso UI quando fine < inizio (orario nel giorno successivo). */
+export const OVERNIGHT_TIME_END_HINT =
+  "Orario notturno — l'orario di fine cade nel giorno successivo."
+
 /**
  * Converte le 3 fasce canoniche (Colazione/Pranzo/Cena) nel formato BookingTimeSlots
  * usato da calendario, capacity e pending. Le fasce devono essere già ordinate per display_order.
