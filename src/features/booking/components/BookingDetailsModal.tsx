@@ -154,7 +154,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const { data: menuItems = [] } = useMenuItems()
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
-  const { data: volAuVentPromoVisible = false } = useRestaurantSetting('booking_vol_au_vent_promo_visible')
   const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
     'booking_vol_au_vent_promo_message',
   )
@@ -880,7 +879,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                 menuFlowBookingType={formData.booking_type}
                 staffPresetsDropdownVisible={staffPresetsDropdownVisible}
                 customStaffPresets={customStaffPresets}
-                volAuVentPromoVisible={volAuVentPromoVisible}
                 volAuVentPromoMessages={volAuVentPromoMessagesForTab}
                 isMenuExpanded={isMenuExpanded}
                 onMenuExpandToggle={() => setIsMenuExpanded(!isMenuExpanded)}

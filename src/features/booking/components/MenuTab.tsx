@@ -21,7 +21,6 @@ interface MenuTabProps {
   presetMenu?: string | null
   staffPresetsDropdownVisible?: boolean
   customStaffPresets?: CustomStaffPreset[]
-  volAuVentPromoVisible?: boolean
   /** Testi promo per la tipologia in modifica (stesse card del form pubblico). */
   volAuVentPromoMessages?: string[]
   isMenuExpanded: boolean
@@ -64,7 +63,6 @@ export const MenuTab: React.FC<MenuTabProps> = ({
   presetMenu,
   staffPresetsDropdownVisible = true,
   customStaffPresets = [],
-  volAuVentPromoVisible = false,
   volAuVentPromoMessages = [],
   isMenuExpanded,
   onMenuExpandToggle,
@@ -136,7 +134,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
   // Menu expanded content (view mode)
   const menuContent = isEditMode ? (
     <>
-      {volAuVentPromoVisible && volAuVentPromoMessages.length > 0 && (
+      {volAuVentPromoMessages.length > 0 && (
         <VolAuVentPromoBannerCards messages={volAuVentPromoMessages} className="mb-4" />
       )}
       <MenuSelection
