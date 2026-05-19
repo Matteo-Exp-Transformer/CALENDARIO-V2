@@ -3,6 +3,12 @@ import { supabase } from '@/lib/supabase'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { toast } from 'react-toastify'
 import { logger } from '@/lib/logger'
+import type { ServiceSlot } from '@/features/booking/hooks/useServiceSlots'
+import {
+  activeAssignedBookingIds,
+  filterUnassignedBookingsForSlot,
+} from '@/features/booking/utils/unassignedBookingsFilter'
+import { hasWaitingNextTurnOnTable } from '@/features/booking/utils/tableCheckout'
 import type { BookingRequest } from '@/types/booking'
 
 export interface BookingTableAssignment {
@@ -60,8 +66,12 @@ export function useTableAssignments(date: string) {
 }
 
 /** Prenotazioni accettate per la data, non ancora assegnate ad alcun tavolo per lo slot */
-export function useUnassignedBookings(date: string, slotId: string) {
+export function useUnassignedBookings(
+  date: string,
+  slot: Pick<ServiceSlot, 'id' | 'start_time' | 'end_time'> | null,
+) {
   const { tenantId } = useTenantContext()
+  const slotId = slot?.id ?? ''
 
   return useQuery({
     queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, date, slotId, 'unassigned'],
@@ -95,10 +105,14 @@ export function useUnassignedBookings(date: string, slotId: string) {
 
       if (aErr) throw aErr
 
-      const assignedIds = new Set((assigned ?? []).map((a: { booking_id: string }) => a.booking_id))
-      return onDate.filter((b) => !assignedIds.has(b.id))
+      return filterUnassignedBookingsForSlot(
+        onDate,
+        slot!.start_time,
+        slot!.end_time,
+        activeAssignedBookingIds(assigned ?? []),
+      )
     },
-    enabled: !!tenantId && !!date && !!slotId,
+    enabled: !!tenantId && !!date && !!slot?.id,
   })
 }
 
@@ -184,17 +198,34 @@ export function useCheckoutTable() {
 
       if (active.length === 0) throw new Error('Nessun assignment attivo da liberare.')
 
+      const current = active[0]
+
+      if (hasWaitingNextTurnOnTable(assignments, current)) {
+        const { error } = await supabase
+          .from('booking_table_assignments')
+          .update({ checked_out_at: new Date().toISOString() })
+          .eq('id', current.id)
+          .eq('tenant_id', tenantId!)
+
+        if (error) throw error
+        return
+      }
+
       const { error } = await supabase
         .from('booking_table_assignments')
-        .update({ checked_out_at: new Date().toISOString() })
-        .eq('id', active[0].id)
+        .delete()
+        .eq('id', current.id)
         .eq('tenant_id', tenantId!)
 
       if (error) throw error
     },
-    onSuccess: (_data, vars) => {
-      queryClient.invalidateQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date] })
-      queryClient.invalidateQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date, vars.slotId, 'unassigned'] })
+    onSuccess: async (_data, vars) => {
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date] }),
+        queryClient.refetchQueries({
+          queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date, vars.slotId, 'unassigned'],
+        }),
+      ])
       toast.success('Tavolo liberato')
     },
     onError: (error: Error) => {

@@ -151,6 +151,7 @@ RULE  Per aggiungere una feature gated: 1) flag in FeatureFlags+buildFeatures 2)
 RULE  Selettore orario: UNICO componente `TimePicker24h` (pubblico+admin), minuti liberi 0-59, prop `compact` per form pubblico — `TimeInput` ELIMINATO, non reintrodurre input nativo type="time"
 RULE  Avviso orario notturno (fine < inizio): testo unico `OVERNIGHT_TIME_END_HINT` in `bookingTimeSlots.ts` — mostrarlo nel modal CRUD fascia (Servizio) e nella sezione Classic «Imposta Fasce Orarie» (`RestaurantSettingsTab`, `!features.servizio`); **non** usare sigle inline tipo `(notturna +1)` nelle liste fasce Pro
 RULE  Modal CRUD fascia (`ServiceSlotsManager` / `SlotModal`): `FormInfoToggle` (icona + «?») apre `FormInfoPanel` blu (`border-blue-200` / `bg-blue-50` / `text-blue-800`) con chiusura ✕; menu durata senza «Quando?» — etichetta scope (`Sempre`, …); scope `forever` = solo `service_slots`
+RULE  Assegnazione tavoli (Servizio → `AssignmentMapPanel`): elenco prenotazioni non assegnate filtrato per **ora di inizio** dentro `start_time`–`end_time` della fascia selezionata — `bookingStartsInServiceSlot` (`serviceSlotBookingFilter.ts`) + `isTimeInsideSlot`; non usare overlap durata prenotazione; orari fascia da `service_slots` (non override runtime)
 RULE  Promo menù in Prenota (`MenuPricesTab`, `booking_vol_au_vent_promos`): visibilità solo con occhio per riga (`visible_on_booking`); filtro per `booking_type` nel form — non usare `booking_vol_au_vent_promo_visible` in UI banner
 RULE  Classi Tailwind: solo stringhe letterali statiche — mai `bg-${x}-600`
 RULE  cn() da @/lib/utils — mai clsx() o twMerge() direttamente
@@ -169,7 +170,7 @@ RULE  UUID: cancelled_by è UUID auth.users.id — mai passare email a campi UUI
 npm run dev           # dev server :5173
 npm run typecheck     # tsc --noEmit — zero errori
 npm run lint          # ESLint — zero warning
-npm run test          # 29 Vitest — tutti devono passare
+npm run test          # Vitest — tutti devono passare (mappa in TESTING_CONTEXT.md)
 npm run validate      # lint + typecheck + test (usare pre-PR)
 ```
 
@@ -215,6 +216,7 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | `src/config/features.ts` o `src/hooks/useFeatures.ts` | `APP_CONTEXT_SKILL.md` §2 e §4 |
 | `supabase/migrations/` (nuova migrazione) | `docs/DATABASE.md` + `DB_MIGRATIONS_CONTEXT.md` + `DB_SCHEMA_CONTEXT.md` |
 | Nuova pagina/sezione admin | `ADMIN_PAGES_CONTEXT.md` + `ADMIN_SHELL_CONTEXT.md` §7 |
+| `AssignmentMapPanel` / `useTableAssignments` / `serviceSlotBookingFilter` | `ADMIN_PAGES_CONTEXT.md` § Servizio → Assegnazione tavoli |
 | Struttura cartelle `src/` | `APP_CONTEXT_SKILL.md` §3 |
 | Qualsiasi file LOCK | Aggiorna sezione "stato attuale" nello skill di area |
 
@@ -226,3 +228,4 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 |--------------------|-----------------|
 | `useBookingMutations.ts` / `useWalkInMutation.ts` / qualsiasi mutation che scrive `confirmed_start` o `desired_time` | `ADMIN_CLASSIC_SKILL.md` §4 + §4b |
 | `dateUtils.ts` (createBookingDateTime, extractTimeFromISO, getAccurateStartTime) | `ADMIN_CLASSIC_SKILL.md` §4b + `TESTING_CONTEXT.md` se cambiano i test |
+| `serviceSlotBookingFilter.ts` / logica filtro fascia in `useUnassignedBookings` | `ADMIN_PAGES_CONTEXT.md` § Servizio → Assegnazione tavoli + `TESTING_CONTEXT.md` se cambiano i test |

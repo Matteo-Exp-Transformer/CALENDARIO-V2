@@ -151,7 +151,7 @@ customer.email === searchTerm  // case-sensitive, manca trim
 ## Servizio
 
 **Sezione**: `section === 'servizio'` → `<ServizioPage />`  
-**Stato**: implementato — CRUD tavoli per sala + fasce orarie con modifiche a tempo (override). Vedi sottosezione dedicata sotto gli anti-pattern.
+**Stato**: implementato — CRUD tavoli per sala + fasce orarie con modifiche a tempo (override) + assegnazione tavoli con filtro prenotazioni per fascia. Vedi sottosezioni dedicate sotto gli anti-pattern.
 
 ### File chiave
 
@@ -217,6 +217,39 @@ Regole chiave:
 - Helper: `isServiceSlotClosed(slot)` → `max_turns === 0`.
 - **Orario notturno** (`end_time < start_time`, `slotCrossesMidnight`): copy unico `OVERNIGHT_TIME_END_HINT` in `bookingTimeSlots.ts`. Mostrato nel **modal** nuova/modifica fascia; **non** in lista righe (`SlotRow` mostra solo `HH:mm → HH:mm`, senza `(notturna +1)`). Edition Classic: stesso avviso anche in Impostazioni → «Imposta Fasce Orarie» (`RestaurantSettingsTab`, `!features.servizio`).
 - Migrazioni **022** e **023** applicate SOLO sul server di test (`docnnernvp`), non a produzione — vedi DB_SKILL / APP_CONTEXT_SKILL §1b.
+
+### Assegnazione tavoli (drag-and-drop)
+
+Sottosezione nella tab **Mappa** di `ServizioPage` (sotto `TableMap`). Il ristoratore sceglie **data** + **fascia oraria**; a sinistra compaiono solo le prenotazioni **accettate** del giorno la cui **ora di inizio** rientra in `start_time`–`end_time` della fascia; a destra i tavoli per sala con drop-zone e stati libero/occupato/liberato.
+
+| File | Ruolo |
+|------|-------|
+| `src/features/booking/components/servizio/AssignmentMapPanel.tsx` | UI: select data/fascia, lista prenotazioni, mappa tavoli (`@dnd-kit`) |
+| `src/features/booking/hooks/useTableAssignments.ts` | `useTableAssignments`, `useUnassignedBookings`, `useAssignBookingToTable`, `useCheckoutTable`, `getTableStatus` |
+| `src/features/booking/utils/serviceSlotBookingFilter.ts` | `bookingStartsInServiceSlot` — filtro per ora di inizio nella fascia |
+| `src/features/booking/hooks/useServiceSlots.ts` | Fasce nel select (`useServiceSlots`) |
+
+**Dati**
+
+- Fasce: `service_slots` (`id`, `name`, `start_time`, `end_time`, `max_turns`).
+- Prenotazioni: `booking_requests` (`status = accepted`, `confirmed_start` / `desired_date`, `desired_time`).
+- Assegnazioni: `booking_table_assignments` (`booking_id`, `table_id`, `service_slot_id`, `date`, `turn_number`, `checked_out_at`).
+
+**`useUnassignedBookings(date, slot | null)`** — `slot` = `Pick<ServiceSlot, 'id' | 'start_time' | 'end_time'>`. Filtri in ordine:
+
+1. accettate per tenant;
+2. data (`confirmed_start` o `desired_date`);
+3. **`bookingStartsInServiceSlot`** — `getAccurateStartTime` + `isTimeInsideSlot` (fasce notturne incluse); senza orario → esclusa;
+4. non già assegnate a un tavolo per quello `service_slot_id` + `date` con `checked_out_at` null.
+
+Query key: `[TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, date, slotId, 'unassigned']` (`TABLE_ASSIGNMENTS_QUERY_KEY = 'table_assignments'`).
+
+**Regole**
+
+- Solo **ora di inizio** nella fascia (non overlap con `confirmed_end`) — allineato a `getStartSlotForBooking` / capacity.
+- Orari fascia letti dalla riga `service_slots` caricata da `useServiceSlots()` — **non** da `resolveSlotOverride` (override turni/coperti del giorno: gap noto, vedi report 16-05-26).
+- `max_turns === 0` (servizio chiuso): assegnazione già bloccata in mutation; UI invariata.
+- Test: `src/features/booking/utils/__tests__/serviceSlotBookingFilter.test.ts`.
 
 ---
 

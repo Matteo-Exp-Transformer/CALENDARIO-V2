@@ -174,8 +174,10 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
   const [selectedSlotId, setSelectedSlotId] = useState<string>('')
 
   const { data: slots = [] } = useServiceSlots()
+  const selectedSlot = slots.find((s) => s.id === selectedSlotId) ?? null
+
   const { data: assignments = [] } = useTableAssignments(selectedDate)
-  const { data: unassigned = [] } = useUnassignedBookings(selectedDate, selectedSlotId)
+  const { data: unassigned = [] } = useUnassignedBookings(selectedDate, selectedSlot)
 
   const assignBooking = useAssignBookingToTable()
   const checkoutTable = useCheckoutTable()
@@ -183,8 +185,6 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   )
-
-  const selectedSlot = slots.find((s) => s.id === selectedSlotId) ?? null
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
