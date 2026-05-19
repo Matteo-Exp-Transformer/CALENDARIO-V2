@@ -598,14 +598,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
 
   const maxTurn = Math.max(activeTurn, maxTurnFromAssignments)
 
-  // Pro: booking selezionato per assegnazione rapida tavolo dal pallino
+  // Pro: booking selezionato per assegnazione/riassegnazione rapida tavolo dal pallino
   const [quickAssignBooking, setQuickAssignBooking] = useState<BookingRequest | null>(null)
 
   const handleDotClick = useCallback((booking: BookingRequest) => {
-    if (hasTurnsFeature && !assignedBookingIds.has(booking.id)) {
+    if (hasTurnsFeature) {
       setQuickAssignBooking(booking)
     }
-  }, [hasTurnsFeature, assignedBookingIds])
+  }, [hasTurnsFeature])
 
   /** Filtra prenotazioni per turno attivo.
    *  - Con feature pro: mostra solo quelle assegnate al turno corrente.
@@ -1201,12 +1201,12 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
         />
       )}
 
-      {/* Modal assegnazione rapida tavolo (Pro) */}
+      {/* Modal assegnazione/riassegnazione rapida tavolo (Pro) */}
       {quickAssignBooking && (
         <QuickTableAssignModal
           booking={quickAssignBooking}
           date={selectedDate}
-          serviceSlots={serviceSlots}
+          mode={assignedBookingIds.has(quickAssignBooking.id) ? 'reassign' : 'assign'}
           tableAssignments={tableAssignments as BookingTableAssignment[]}
           onClose={() => setQuickAssignBooking(null)}
         />

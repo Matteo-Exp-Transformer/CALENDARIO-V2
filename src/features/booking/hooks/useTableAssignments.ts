@@ -257,3 +257,64 @@ export function useCheckoutTable() {
     },
   })
 }
+
+interface ReleaseInput {
+  bookingId: string
+  slotId: string
+  date: string
+  assignments: BookingTableAssignment[]
+}
+
+export type ReleaseBlockedReason = 'waiting_next_turn'
+
+/**
+ * Libera l'assignment attivo di una specifica prenotazione (per riassegnazione rapida da Calendario).
+ * Diverso da useCheckoutTable che opera per tavolo+slot.
+ * Restituisce { blocked: ReleaseBlockedReason } se ci sono turni successivi in attesa sul tavolo
+ * (comportamento provvisorio sicuro fino all'implementazione della logica permanenza, sessione futura).
+ */
+export function useReleaseBookingAssignment() {
+  const queryClient = useQueryClient()
+  const { tenantId } = useTenantContext()
+
+  return useMutation({
+    mutationFn: async ({ bookingId, slotId, date, assignments }: ReleaseInput): Promise<{ blocked: ReleaseBlockedReason } | null> => {
+      const current = assignments.find(
+        (a) =>
+          a.booking_id === bookingId &&
+          a.service_slot_id === slotId &&
+          a.date === date &&
+          a.checked_out_at === null,
+      )
+
+      if (!current) throw new Error('Nessun assignment attivo da liberare per questa prenotazione.')
+
+      // Provvisorio: se sul tavolo c'è un turno successivo in attesa, blocca senza modificare DB
+      if (hasWaitingNextTurnOnTable(assignments, current)) {
+        return { blocked: 'waiting_next_turn' }
+      }
+
+      const { error } = await supabase
+        .from('booking_table_assignments')
+        .delete()
+        .eq('id', current.id)
+        .eq('tenant_id', tenantId!)
+
+      if (error) throw error
+      return null
+    },
+    onSuccess: async (result, vars) => {
+      if (result?.blocked) return
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date] }),
+        queryClient.refetchQueries({
+          queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date, vars.slotId, 'unassigned'],
+        }),
+      ])
+    },
+    onError: (error: Error) => {
+      logger.error('[useReleaseBookingAssignment] error', error)
+      toast.error(error.message || 'Errore nel liberare l\'assegnazione')
+    },
+  })
+}
