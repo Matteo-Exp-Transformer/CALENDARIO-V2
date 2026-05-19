@@ -4,9 +4,7 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import { toast } from 'react-toastify'
 import { logger } from '@/lib/logger'
 import {
-  toBookingTimeSlots,
   slotCrossesMidnight,
-  type BookingTimeSlots,
   type SlotConfig,
 } from '@/features/booking/utils/bookingTimeSlots'
 
@@ -183,21 +181,3 @@ export function useDigestSlotConfigs(): {
   }
 }
 
-/**
- * @deprecated Usare useDigestSlotConfigs(). Rimuovere allo Step 9.
- * Wrapper che filtra is_canonical=true per retrocompatibilità consumer non ancora migrati.
- */
-export function useCanonicalTimeSlots(): {
-  data: BookingTimeSlots
-  isLoading: boolean
-  error: Error | null
-} {
-  const query = useServiceSlots()
-  const canonicalSlots = (query.data ?? []).filter((s) => s.is_canonical)
-
-  return {
-    data: toBookingTimeSlots(canonicalSlots),
-    isLoading: query.isLoading,
-    error: query.error as Error | null,
-  }
-}

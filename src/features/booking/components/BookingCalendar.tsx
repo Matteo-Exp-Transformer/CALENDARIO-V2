@@ -393,7 +393,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   const { data: serviceSlots = [] } = useServiceSlots()
   const hasTurnsFeature = features.servizio && serviceSlots.length > 0
 
-  const splitDigestBySlotConfigs = (digestBookings: BookingRequest[]): Record<string, BookingRequest[]> => {
+  const splitDigestBySlotConfigs = useCallback((digestBookings: BookingRequest[]): Record<string, BookingRequest[]> => {
     const bySlot: Record<string, BookingRequest[]> = {}
     for (const s of digestSlots) bySlot[s.id] = []
     for (const booking of digestBookings) {
@@ -413,13 +413,12 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
           break
         }
       }
-      // prenotazioni senza fascia: metti nel primo slot disponibile
       if (!matched && digestSlots.length > 0) {
         bySlot[digestSlots[0].id].push(booking)
       }
     }
     return bySlot
-  }
+  }, [digestSlots])
 
   const calendarRef = useRef<FullCalendar>(null)
   const [selectedBooking, setSelectedBooking] = useState<BookingRequest | null>(null)
@@ -530,12 +529,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   }, [bookings, selectedDate])
   const digestWithMenuBySlot = useMemo(
     () => splitDigestBySlotConfigs(digestWithMenu),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [digestWithMenu, digestSlots]
   )
   const digestTableOnlyBySlot = useMemo(
     () => splitDigestBySlotConfigs(digestTableOnly),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [digestTableOnly, digestSlots]
   )
 
