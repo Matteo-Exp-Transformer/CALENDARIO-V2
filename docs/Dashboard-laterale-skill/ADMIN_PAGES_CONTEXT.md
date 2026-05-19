@@ -254,6 +254,16 @@ Query key: `[TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, date, slotId, 'unassigned']`
 - Filtro elenco estratto in `unassignedBookingsFilter.ts` (`filterUnassignedBookingsForSlot`, `activeAssignedBookingIds`).
 - Test: `serviceSlotBookingFilter.test.ts`, `unassignedBookingsFilter.test.ts`, `tableCheckout.test.ts`.
 
+**Accesso rapido da Calendario (novità 19-05-26)**
+
+L'assegnazione è ora raggiungibile anche dalla **pagina Calendario** (tab Classic/Pro) tramite `QuickTableAssignModal`. Funziona solo se `hasTurnsFeature = features.servizio && serviceSlots.length > 0`.
+
+- Ogni card digest mostra un **pallino** (2.5×2.5) in alto a destra: verde (`bg-(--color-status-accepted)`) = già assegnato; grigio (`bg-primary-300`) = libero. Il pallino non appare in edition Classic senza servizio.
+- Click pallino **grigio** → `QuickTableAssignModal` (Room chip → griglia tavoli → assegna con `useAssignBookingToTable`). Click pallino **verde** → no-op (non apre il modal; per liberare bisogna andare in Servizio → Mappa).
+- `QuickTableAssignModal` deriva `slotId` automaticamente da `bookingStartsInServiceSlot` — nessuna scelta fascia da parte dell'utente. Se l'orario non ricade in nessuna fascia, mostra avviso testuale.
+- File: `src/features/booking/components/QuickTableAssignModal.tsx`.
+- Query key condivisa: `TABLE_ASSIGNMENTS_QUERY_KEY` — dopo assegnazione, anche `ServizioPage → AssignmentMapPanel` si aggiorna.
+
 ---
 
 ## Analytics
