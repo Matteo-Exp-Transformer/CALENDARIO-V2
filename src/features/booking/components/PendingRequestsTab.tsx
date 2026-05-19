@@ -7,12 +7,11 @@ import { CapacityWarningModal } from './CapacityWarningModal'
 import { PastStartTimeWarningModal } from './PastStartTimeWarningModal'
 import { toast } from 'react-toastify'
 import type { BookingRequest } from '@/types/booking'
-import { getSlotsOccupiedByBooking } from '../utils/capacityCalculator'
-import {
-  DEFAULT_SLOT_GUEST_CAPACITIES,
-} from '../lib/restaurantSettingRegistry'
+import { getSlotsOccupiedByBookingV2 } from '../utils/capacityCalculator'
+import { DEFAULT_SLOT_GUEST_CAPACITIES } from '../lib/restaurantSettingRegistry'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
-import { useCanonicalTimeSlots } from '../hooks/useServiceSlots'
+import { useDigestSlotConfigs, useServiceSlots } from '../hooks/useServiceSlots'
+import { useServiceSlotOverrides, resolveSlotOverride } from '../hooks/useServiceSlotOverrides'
 import {
   createBookingDateTime,
   extractDateFromISO,
@@ -25,7 +24,9 @@ import { logger } from '@/lib/logger'
 export const PendingRequestsTab: React.FC = () => {
   const { data: pendingBookings, isLoading, error, refetch } = usePendingBookings()
   const { data: acceptedBookings = [] } = useAcceptedBookings()
-  const { data: bookingTimeSlots } = useCanonicalTimeSlots()
+  const { data: digestSlots = [] } = useDigestSlotConfigs()
+  const { data: serviceSlots = [] } = useServiceSlots()
+  const { data: slotOverrides = [] } = useServiceSlotOverrides()
   const { data: slotGuestCapacities = DEFAULT_SLOT_GUEST_CAPACITIES } =
     useRestaurantSetting('slot_guest_capacities')
   const acceptMutation = useAcceptBooking()
@@ -63,52 +64,52 @@ export const PendingRequestsTab: React.FC = () => {
     })
   }, [pendingBookings])
 
-  // Returns exceeded slot info if capacity would be exceeded, null if within capacity
+  // Ritorna info sul primo slot che supera la capacity, o null se tutto ok
   const getExceededSlotInfo = (
     booking: BookingRequest, startTime: string, endTime: string
   ): { slotName: string; totalOccupied: number; capacity: number; exceededBy: number } | null => {
     const date = booking.desired_date
     const numGuests = booking.num_guests || 0
+    if (digestSlots.length === 0) return null
 
     const dayBookings = acceptedBookings.filter((b) => {
       if (!b.confirmed_start) return false
-      const bookingDate = extractDateFromISO(b.confirmed_start)
-      return bookingDate === date
+      return extractDateFromISO(b.confirmed_start) === date
     })
 
-    const confirmedStart = `${date}T${startTime}:00`
-    const confirmedEnd = `${date}T${endTime}:00`
-    const newBookingSlots = getSlotsOccupiedByBooking(confirmedStart, confirmedEnd, bookingTimeSlots)
+    const confirmedStart = `${date}T${startTime}:00+00:00`
+    const confirmedEnd = `${date}T${endTime}:00+00:00`
+    const newBookingSlotIds = getSlotsOccupiedByBookingV2(confirmedStart, confirmedEnd, digestSlots)
 
-    const morning = { capacity: slotGuestCapacities.morning, occupied: 0 }
-    const afternoon = { capacity: slotGuestCapacities.afternoon, occupied: 0 }
-    const evening = { capacity: slotGuestCapacities.evening, occupied: 0 }
+    // Calcola capienza: service_slots.max_guests > slot_guest_capacities fallback > override
+    const getSlotCap = (slotId: string): number | null => {
+      const svcSlot = serviceSlots.find((s) => s.id === slotId)
+      if (svcSlot) {
+        const ov = resolveSlotOverride(slotOverrides, slotId, date)
+        if (ov) return ov.max_guests
+        if (svcSlot.max_guests != null) return svcSlot.max_guests
+      }
+      return slotGuestCapacities[slotId] ?? null
+    }
 
-    for (const existingBooking of dayBookings) {
-      if (!existingBooking.confirmed_start || !existingBooking.confirmed_end) continue
-      const slots = getSlotsOccupiedByBooking(
-        existingBooking.confirmed_start,
-        existingBooking.confirmed_end,
-        bookingTimeSlots,
-      )
-      const guests = existingBooking.num_guests || 0
-      for (const slot of slots) {
-        if (slot === 'morning') morning.occupied += guests
-        else if (slot === 'afternoon') afternoon.occupied += guests
-        else if (slot === 'evening') evening.occupied += guests
+    // Occupazione esistente per fascia
+    const occupied: Record<string, number> = {}
+    for (const slot of digestSlots) occupied[slot.id] = 0
+    for (const b of dayBookings) {
+      if (!b.confirmed_start || !b.confirmed_end) continue
+      for (const slotId of getSlotsOccupiedByBookingV2(b.confirmed_start, b.confirmed_end, digestSlots)) {
+        if (slotId in occupied) occupied[slotId] += b.num_guests ?? 0
       }
     }
 
-    for (const slot of newBookingSlots) {
-      let occupied: number, capacity: number | null, slotName: string
-      if (slot === 'morning') { occupied = morning.occupied; capacity = morning.capacity; slotName = 'mattina' }
-      else if (slot === 'afternoon') { occupied = afternoon.occupied; capacity = afternoon.capacity; slotName = 'pomeriggio' }
-      else if (slot === 'evening') { occupied = evening.occupied; capacity = evening.capacity; slotName = 'sera' }
-      else continue
-
-      const totalOccupied = occupied + numGuests
-      if (capacity != null && totalOccupied > capacity) {
-        return { slotName, totalOccupied, capacity, exceededBy: totalOccupied - capacity }
+    for (const slotId of newBookingSlotIds) {
+      const slot = digestSlots.find((s) => s.id === slotId)
+      if (!slot) continue
+      const cap = getSlotCap(slotId)
+      if (cap == null) continue
+      const totalOccupied = (occupied[slotId] ?? 0) + numGuests
+      if (totalOccupied > cap) {
+        return { slotName: slot.name, totalOccupied, capacity: cap, exceededBy: totalOccupied - cap }
       }
     }
 

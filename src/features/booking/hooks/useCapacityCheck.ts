@@ -1,21 +1,12 @@
 import { useMemo } from 'react'
-import type { BookingRequest, TimeSlot, AvailabilityCheck } from '@/types/booking'
-import {
-  DEFAULT_SLOT_GUEST_CAPACITIES,
-  type SlotGuestCapacities,
-} from '@/features/booking/lib/restaurantSettingRegistry'
+import type { BookingRequest, AvailabilityCheck } from '@/types/booking'
+import { DEFAULT_SLOT_GUEST_CAPACITIES } from '@/features/booking/lib/restaurantSettingRegistry'
 import { extractDateFromISO } from '../utils/dateUtils'
 import { useRestaurantSetting } from './useRestaurantSetting'
-import {
-  parseHmToMinutes,
-  slotRangesOverlap,
-  type BookingTimeSlots,
-} from '../utils/bookingTimeSlots'
-import { useCanonicalTimeSlots, useServiceSlots } from './useServiceSlots'
-import {
-  useServiceSlotOverrides,
-  resolveSlotOverride,
-} from './useServiceSlotOverrides'
+import { parseHmToMinutes, slotRangesOverlap } from '../utils/bookingTimeSlots'
+import { useDigestSlotConfigs, useServiceSlots, type SlotConfig } from './useServiceSlots'
+import { useServiceSlotOverrides, resolveSlotOverride } from './useServiceSlotOverrides'
+import { useFeatures } from '@/hooks/useFeatures'
 
 interface UseCapacityCheckParams {
   date: string
@@ -26,184 +17,164 @@ interface UseCapacityCheckParams {
   excludeBookingId?: string
 }
 
-// Get slots occupied by a booking based on time strings (HH:MM format)
-// A booking occupies a time slot if it overlaps with that slot's time range
-function getSlotsOccupiedByTimeString(
+function getSlotsOccupiedByTime(
   startTime: string,
   endTime: string,
-  slotConfig: BookingTimeSlots
-): TimeSlot[] {
+  slots: SlotConfig[]
+): string[] {
   const startMinutes = parseHmToMinutes(startTime)
   const endMinutes = parseHmToMinutes(endTime)
-  const bookingCrossesMidnight = endMinutes < startMinutes
-
-  const slots: TimeSlot[] = []
-
-  const overlaps = (slotStart: string, slotEnd: string) => {
-    if (bookingCrossesMidnight) {
-      return (
-        slotRangesOverlap(startTime, '23:59', slotStart, slotEnd) ||
-        slotRangesOverlap('00:00', endTime, slotStart, slotEnd)
-      )
-    }
-    return slotRangesOverlap(startTime, endTime, slotStart, slotEnd)
-  }
-
-  if (overlaps(slotConfig.morningStart, slotConfig.morningEnd)) {
-    slots.push('morning')
-  }
-  if (overlaps(slotConfig.afternoonStart, slotConfig.afternoonEnd)) {
-    slots.push('afternoon')
-  }
-  if (overlaps(slotConfig.eveningStart, slotConfig.eveningEnd)) {
-    slots.push('evening')
-  }
+  const crossesMidnight = endMinutes < startMinutes
 
   return slots
+    .filter((slot) => {
+      const overlaps = crossesMidnight
+        ? slotRangesOverlap(startTime, '23:59', slot.start_time, slot.end_time) ||
+          slotRangesOverlap('00:00', endTime, slot.start_time, slot.end_time)
+        : slotRangesOverlap(startTime, endTime, slot.start_time, slot.end_time)
+      return overlaps
+    })
+    .map((s) => s.id)
 }
 
 export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCheck {
   const { date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId } = params
+  const features = useFeatures()
   const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
-  const { data: bookingSlots } = useCanonicalTimeSlots()
+  const { data: digestSlots } = useDigestSlotConfigs()
   const { data: serviceSlots = [] } = useServiceSlots()
   const { data: slotOverrides = [] } = useServiceSlotOverrides()
   const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities')
-  // `null` (o assente) = nessun limite giornaliero impostato → skip del controllo
+  const timeSlotsEnabledQuery = useRestaurantSetting('booking_time_slots_enabled')
+
   const dailyGuestLimit = dailyGuestLimitQuery.data ?? null
-  const legacySlotCapacities: SlotGuestCapacities =
-    slotGuestCapacitiesQuery.data ?? DEFAULT_SLOT_GUEST_CAPACITIES
+  const legacySlotCapacities = slotGuestCapacitiesQuery.data ?? DEFAULT_SLOT_GUEST_CAPACITIES
+  const slots = digestSlots ?? []
+  // In Pro le fasce sono sempre attive; in Classic rispetta il flag
+  const timeSlotsEnabled = features.servizio ? true : (timeSlotsEnabledQuery.data ?? true)
 
   return useMemo(() => {
-    // Capacità per fascia: service_slots.max_guests vince su slot_guest_capacities se impostato.
-    // Ordine canonical: display_order 0=mattina, 1=pranzo, 2=cena.
-    const canonicals = serviceSlots
-      .filter((s) => s.is_canonical)
-      .sort((a, b) => a.display_order - b.display_order)
-
-    // Override a tempo: se per la data della prenotazione una fascia ha un
-    // override attivo, i suoi max_guests sostituiscono il valore base solo per
-    // quel giorno. Fuori dall'intervallo override → valore base. `date` vuota
-    // (slotsStatus iniziale) → nessun override applicabile, si usa il base.
-    const guestsForCanonical = (slot: typeof canonicals[number] | undefined): number | null => {
-      if (!slot) return null
-      if (date) {
+    // Capacita per fascia: service_slots.max_guests > slot_guest_capacities (per slot.id o legacy key)
+    const getSlotCap = (slot: SlotConfig): number | null => {
+      const svcSlot = serviceSlots.find((s) => s.id === slot.id)
+      if (date && svcSlot) {
         const ov = resolveSlotOverride(slotOverrides, slot.id, date)
         if (ov) return ov.max_guests
+        if (svcSlot.max_guests != null) return svcSlot.max_guests
+      } else if (svcSlot?.max_guests != null) {
+        return svcSlot.max_guests
       }
-      return slot.max_guests
+      // Fallback a slot_guest_capacities: prima prova per id, poi per chiave legacy
+      const byId = legacySlotCapacities[slot.id]
+      if (byId !== undefined) return byId
+      return null
     }
 
-    const slotGuestCapacities: SlotGuestCapacities = {
-      morning:   guestsForCanonical(canonicals[0]) ?? legacySlotCapacities.morning,
-      afternoon: guestsForCanonical(canonicals[1]) ?? legacySlotCapacities.afternoon,
-      evening:   guestsForCanonical(canonicals[2]) ?? legacySlotCapacities.evening,
-    }
-
-    const morning = {
-      slot: 'morning' as TimeSlot,
-      capacity: slotGuestCapacities.morning,
-      occupied: 0,
-      available: slotGuestCapacities.morning,
-    }
-    const afternoon = {
-      slot: 'afternoon' as TimeSlot,
-      capacity: slotGuestCapacities.afternoon,
-      occupied: 0,
-      available: slotGuestCapacities.afternoon,
-    }
-    const evening = {
-      slot: 'evening' as TimeSlot,
-      capacity: slotGuestCapacities.evening,
-      occupied: 0,
-      available: slotGuestCapacities.evening,
-    }
-
-    // Get bookings for the same date
+    // Prenotazioni del giorno (escluse quelle da escludere)
     const dayBookings = acceptedBookings.filter((booking) => {
       if (booking.id === excludeBookingId) return false
       if (!booking.confirmed_start) return false
-      const bookingDate = extractDateFromISO(booking.confirmed_start)
-      return bookingDate === date
+      return extractDateFromISO(booking.confirmed_start) === date
     })
 
-    // Calculate occupied seats for each slot
-    for (const booking of dayBookings) {
-      if (!booking.confirmed_start || !booking.confirmed_end) continue
-      
-      // Extract time directly from ISO string to avoid timezone issues
-      const startTimeMatch = booking.confirmed_start.match(/T(\d{2}):(\d{2}):(\d{2})/)
-      const endTimeMatch = booking.confirmed_end.match(/T(\d{2}):(\d{2}):(\d{2})/)
-      
-      let startTimeStr: string
-      let endTimeStr: string
-      
-      if (startTimeMatch && endTimeMatch) {
-        startTimeStr = `${startTimeMatch[1]}:${startTimeMatch[2]}`
-        endTimeStr = `${endTimeMatch[1]}:${endTimeMatch[2]}`
-      } else {
-        // Fallback to old method
-        startTimeStr = booking.confirmed_start.split('T')[1].substring(0, 5)
-        endTimeStr = booking.confirmed_end.split('T')[1].substring(0, 5)
-      }
-      
-      const slots = getSlotsOccupiedByTimeString(startTimeStr, endTimeStr, bookingSlots)
-      const guests = booking.num_guests || 0
-
-      for (const slot of slots) {
-        if (slot === 'morning') morning.occupied += guests
-        else if (slot === 'afternoon') afternoon.occupied += guests
-        else if (slot === 'evening') evening.occupied += guests
-      }
-    }
-
-    morning.available =
-      morning.capacity == null ? null : morning.capacity - morning.occupied
-    afternoon.available =
-      afternoon.capacity == null ? null : afternoon.capacity - afternoon.occupied
-    evening.available =
-      evening.capacity == null ? null : evening.capacity - evening.occupied
-
-    // If no date/time selected, return available
+    // Se data/ora/ospiti non ancora selezionati: ritorna disponibile con slot vuoti
     if (!date || !startTime || !endTime || numGuests === 0) {
-      return { isAvailable: true, slotsStatus: [morning, afternoon, evening] }
+      const slotsStatus = slots.map((slot) => ({
+        slot: slot.id,
+        capacity: getSlotCap(slot),
+        occupied: 0,
+        available: getSlotCap(slot),
+      }))
+      return { isAvailable: true, slotsStatus }
     }
 
-    // Check if daily limit is exceeded by adding this booking
+    // Check giornaliero (sempre attivo indipendentemente da timeSlotsEnabled)
+    const totalGuestsForDay = dayBookings.reduce((acc, b) => acc + (b.num_guests ?? 0), 0)
+    const totalWithNew = totalGuestsForDay + numGuests
+
     let isAvailable = true
     const errorMessages: string[] = []
-    const exceededSlots: Array<{
-      slot: TimeSlot
-      slotName: string
-      exceededBy: number
-      totalOccupied: number
-      capacity: number
-    }> = []
+    const exceededSlots: AvailabilityCheck['exceededSlots'] = []
 
-    const totalGuestsForDay = dayBookings.reduce((acc, booking) => acc + (booking.num_guests || 0), 0)
-    const totalWithNewBooking = totalGuestsForDay + numGuests
-    // Applica il limite giornaliero solo se l'admin ne ha impostato uno.
-    // `dailyGuestLimit === null` significa «nessun limite» → niente vincolo sul totale del giorno.
-    if (dailyGuestLimit != null && totalWithNewBooking > dailyGuestLimit) {
+    if (dailyGuestLimit != null && totalWithNew > dailyGuestLimit) {
       isAvailable = false
-      const exceededBy = totalWithNewBooking - dailyGuestLimit
+      const exceededBy = totalWithNew - dailyGuestLimit
       errorMessages.push(
-        `Limite giornaliero: ${dailyGuestLimit} coperti (totale con prenotazione: ${totalWithNewBooking})`
+        `Limite giornaliero: ${dailyGuestLimit} coperti (totale con prenotazione: ${totalWithNew})`
       )
-      exceededSlots.push({
+      exceededSlots!.push({
         slot: 'daily',
         slotName: 'giornata',
         exceededBy,
-        totalOccupied: totalWithNewBooking,
+        totalOccupied: totalWithNew,
         capacity: dailyGuestLimit,
       })
     }
 
+    // Check per-fascia: solo se le fasce sono abilitate
+    if (timeSlotsEnabled && slots.length > 0) {
+      // Calcola occupazione per ogni fascia
+      const occupied: Record<string, number> = {}
+      for (const slot of slots) occupied[slot.id] = 0
+
+      for (const booking of dayBookings) {
+        if (!booking.confirmed_start || !booking.confirmed_end) continue
+        const bStart = booking.confirmed_start.match(/T(\d{2}):(\d{2})/)
+        const bEnd = booking.confirmed_end.match(/T(\d{2}):(\d{2})/)
+        if (!bStart || !bEnd) continue
+        const bStartStr = `${bStart[1]}:${bStart[2]}`
+        const bEndStr = `${bEnd[1]}:${bEnd[2]}`
+        for (const slotId of getSlotsOccupiedByTime(bStartStr, bEndStr, slots)) {
+          if (slotId in occupied) occupied[slotId] += booking.num_guests ?? 0
+        }
+      }
+
+      // Controlla se la nuova prenotazione eccede la capacita di una fascia
+      const newBookingSlotIds = getSlotsOccupiedByTime(startTime, endTime, slots)
+      for (const slotId of newBookingSlotIds) {
+        const slot = slots.find((s) => s.id === slotId)
+        if (!slot) continue
+        const cap = getSlotCap(slot)
+        if (cap == null) continue
+        const occ = occupied[slotId] ?? 0
+        const total = occ + numGuests
+        if (total > cap) {
+          isAvailable = false
+          exceededSlots!.push({
+            slot: slotId,
+            slotName: slot.name,
+            exceededBy: total - cap,
+            totalOccupied: total,
+            capacity: cap,
+          })
+        }
+      }
+
+      const slotsStatus = slots.map((slot) => {
+        const cap = getSlotCap(slot)
+        const occ = occupied[slot.id] ?? 0
+        return {
+          slot: slot.id,
+          capacity: cap,
+          occupied: occ,
+          available: cap == null ? null : cap - occ,
+        }
+      })
+
+      return {
+        isAvailable,
+        slotsStatus,
+        errorMessage: errorMessages.length > 0 ? errorMessages.join('\n') : undefined,
+        exceededSlots: exceededSlots!.length > 0 ? exceededSlots : undefined,
+      }
+    }
+
+    // Fasce OFF: solo check giornaliero, slotsStatus vuoto
     return {
       isAvailable,
-      slotsStatus: [morning, afternoon, evening],
+      slotsStatus: [],
       errorMessage: errorMessages.length > 0 ? errorMessages.join('\n') : undefined,
-      exceededSlots: exceededSlots.length > 0 ? exceededSlots : undefined,
+      exceededSlots: exceededSlots!.length > 0 ? exceededSlots : undefined,
     }
   }, [
     date,
@@ -213,9 +184,11 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
     acceptedBookings,
     excludeBookingId,
     dailyGuestLimit,
-    bookingSlots,
+    slots,
     serviceSlots,
     slotOverrides,
     legacySlotCapacities,
+    timeSlotsEnabled,
+    features.servizio,
   ])
 }
