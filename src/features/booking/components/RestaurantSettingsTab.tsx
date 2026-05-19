@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Store, Loader2, Plus, Edit, Trash2, Save, X, Eye, Clock } from 'lucide-react'
+import { Store, Loader2, Eye, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -57,18 +57,6 @@ type SlotFieldKey =
   | 'eveningEnd'
 
 const RESTAURANT_NAME_MAX_LENGTH = 40
-const DEFAULT_PLACEMENT_AREAS = ['Sala A', 'Sala B', 'Deorr'] as const
-const PLACEMENT_AREA_MAX_LENGTH = 40
-
-const normalizePlacementAreas = (value: unknown): string[] => {
-  if (!Array.isArray(value)) return [...DEFAULT_PLACEMENT_AREAS]
-  const cleaned = value
-    .map((item) => stripDirectionalFormattingChars(String(item ?? '')).trim())
-    .filter((item) => item.length > 0)
-    .map((item) => item.slice(0, PLACEMENT_AREA_MAX_LENGTH))
-  const unique = cleaned.filter((item, index) => cleaned.indexOf(item) === index)
-  return unique.length > 0 ? unique : [...DEFAULT_PLACEMENT_AREAS]
-}
 
 function validateBookingTimeSlotsDetailed(config: BookingTimeSlots): {
   message: string | null
@@ -351,7 +339,6 @@ export const RestaurantSettingsTab: React.FC = () => {
   const contactPhoneQuery = useRestaurantSetting('contact_phone')
   const contactAddressQuery = useRestaurantSetting('contact_address')
   const publicBookingPageBgQuery = useRestaurantSetting('public_booking_page_background')
-  const placementAreasQuery = useRestaurantSetting('booking_placement_areas')
   const appThemeQuery = useRestaurantSetting('app_theme')
   const walkInMaxGuestsQuery = useRestaurantSetting('walk_in_max_guests')
 
@@ -387,9 +374,6 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [bookingBgTextureTab, setBookingBgTextureTab] = useState<'images' | 'gradients'>('images')
   /** Dopo «Conferma» la griglia resta bloccata finche non si cambia selezione o non va a buon fine «Salva modifiche». */
   const [bookingBgSelectionLocked, setBookingBgSelectionLocked] = useState(false)
-  const [placementAreas, setPlacementAreas] = useState<string[]>([...DEFAULT_PLACEMENT_AREAS])
-  const [editingPlacementAreaIndex, setEditingPlacementAreaIndex] = useState<number | null>(null)
-  const [editingPlacementAreaDraft, setEditingPlacementAreaDraft] = useState('')
   const [appTheme, setAppTheme] = useState<AppThemeId>(DEFAULT_APP_THEME)
 
   const hydratedRef = useRef(false)
@@ -418,7 +402,6 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactPhoneQuery.isSuccess &&
     contactAddressQuery.isSuccess &&
     publicBookingPageBgQuery.isSuccess &&
-    placementAreasQuery.isSuccess &&
     appThemeQuery.isSuccess &&
     walkInMaxGuestsQuery.isSuccess
 
@@ -443,13 +426,10 @@ export const RestaurantSettingsTab: React.FC = () => {
     setContactEmail(stripDirectionalFormattingChars(contactEmailQuery.data ?? ''))
     setContactPhone(stripDirectionalFormattingChars(contactPhoneQuery.data ?? ''))
     setContactAddress(stripDirectionalFormattingChars(contactAddressQuery.data ?? ''))
-    setPlacementAreas(normalizePlacementAreas(placementAreasQuery.data))
     const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
     setBookingPageBackground(resolvedBg)
     setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
     setBookingBgSelectionLocked(false)
-    setEditingPlacementAreaIndex(null)
-    setEditingPlacementAreaDraft('')
     setAppTheme(appThemeQuery.data ?? DEFAULT_APP_THEME)
     setWalkInMaxGuests(walkInMaxGuestsQuery.data ?? 20)
     hydratedRef.current = true
@@ -463,7 +443,6 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactEmailQuery.data,
     contactPhoneQuery.data,
     contactAddressQuery.data,
-    placementAreasQuery.data,
     publicBookingPageBgQuery.data,
     appThemeQuery.data,
     walkInMaxGuestsQuery.data,
@@ -479,7 +458,6 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactPhoneQuery.isPending ||
     contactAddressQuery.isPending ||
     publicBookingPageBgQuery.isPending ||
-    placementAreasQuery.isPending ||
     appThemeQuery.isPending
 
   const loadError =
@@ -492,7 +470,6 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactPhoneQuery.error ||
     contactAddressQuery.error ||
     publicBookingPageBgQuery.error ||
-    placementAreasQuery.error ||
     appThemeQuery.error
 
   const markDirty = () => setDirty(true)
@@ -613,7 +590,6 @@ export const RestaurantSettingsTab: React.FC = () => {
         { key: 'contact_phone', value: safePhone },
         { key: 'contact_address', value: safeAddress },
         { key: 'public_booking_page_background', value: bookingPageBackground },
-        { key: 'booking_placement_areas', value: placementAreas },
         { key: 'app_theme', value: appTheme },
         { key: 'walk_in_max_guests', value: walkInMaxGuests === '' ? 20 : walkInMaxGuests },
       ])
@@ -634,63 +610,9 @@ export const RestaurantSettingsTab: React.FC = () => {
       })
       setDirty(false)
       setBookingBgSelectionLocked(false)
-      setEditingPlacementAreaIndex(null)
-      setEditingPlacementAreaDraft('')
     } catch {
       /* toast gestito da useUpsertRestaurantSetting.onError */
     }
-  }
-
-  const handleAddPlacementArea = () => {
-    markDirty()
-    const candidateBase = 'Nuova area'
-    const nextLabel =
-      placementAreas.includes(candidateBase)
-        ? `${candidateBase} ${placementAreas.length + 1}`
-        : candidateBase
-    setPlacementAreas((prev) => [...prev, nextLabel])
-    setEditingPlacementAreaIndex(placementAreas.length)
-    setEditingPlacementAreaDraft(nextLabel)
-  }
-
-  const handleStartEditPlacementArea = (index: number) => {
-    setEditingPlacementAreaIndex(index)
-    setEditingPlacementAreaDraft(placementAreas[index] ?? '')
-  }
-
-  const handleCancelEditPlacementArea = () => {
-    setEditingPlacementAreaIndex(null)
-    setEditingPlacementAreaDraft('')
-  }
-
-  const handleSavePlacementArea = (index: number) => {
-    const nextValue = stripDirectionalFormattingChars(editingPlacementAreaDraft).trim()
-    if (!nextValue) {
-      toast.error('Il nome dell area non puo essere vuoto')
-      return
-    }
-    const capped = nextValue.slice(0, PLACEMENT_AREA_MAX_LENGTH)
-    markDirty()
-    setPlacementAreas((prev) => prev.map((item, itemIndex) => (itemIndex === index ? capped : item)))
-    setEditingPlacementAreaIndex(null)
-    setEditingPlacementAreaDraft('')
-  }
-
-  const handleRemovePlacementArea = (index: number) => {
-    if (placementAreas.length <= 1) {
-      toast.warn("Serve almeno un'area di posizionamento")
-      return
-    }
-    markDirty()
-    const wasEditingThis = editingPlacementAreaIndex === index
-    setPlacementAreas((prev) => prev.filter((_, i) => i !== index))
-    setEditingPlacementAreaIndex((current) => {
-      if (current === null) return null
-      if (current === index) return null
-      if (current > index) return current - 1
-      return current
-    })
-    if (wasEditingThis) setEditingPlacementAreaDraft('')
   }
 
   if (loadError) {
@@ -1192,105 +1114,6 @@ export const RestaurantSettingsTab: React.FC = () => {
         </div>
       </section>
       )}
-
-      <section className={bookingBgSectionClass} aria-labelledby="placement-areas-heading">
-        <h3 id="placement-areas-heading" className="text-lg font-semibold text-slate-800">
-          Aree di posizionamento
-        </h3>
-        <p className="text-sm text-slate-600">
-          Inserisci o modifica aree della tua attività per indicare il posizionamento delle prenotazioni.
-        </p>
-        <div className="mx-auto flex w-full max-w-[280px] flex-col items-stretch">
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={handleAddPlacementArea}
-            disabled={upsert.isPending}
-            className={cn(
-              'h-16 w-full shrink-0 gap-2 rounded-lg border-2 border-primary-700 bg-primary-600 px-3 py-0 text-sm font-medium text-white shadow-none transition-colors hover:bg-primary-500 hover:border-primary-600 hover:shadow-none focus:ring-primary-300'
-            )}
-          >
-            <Plus className="h-4 w-4 shrink-0" />
-            Aggiungi nuova area
-          </Button>
-        </div>
-
-        <div className="flex w-full flex-col items-center gap-[28px]">
-          {placementAreas.map((area, index) => {
-            const isEditing = editingPlacementAreaIndex === index
-            return (
-              <React.Fragment key={`${area}-${index}`}>
-                {isEditing ? (
-                  <div className="flex w-full max-w-md flex-col items-center gap-3">
-                    <Input
-                      value={editingPlacementAreaDraft}
-                      onChange={(event) =>
-                        setEditingPlacementAreaDraft(
-                          stripDirectionalFormattingChars(event.target.value).slice(
-                            0,
-                            PLACEMENT_AREA_MAX_LENGTH
-                          )
-                        )
-                      }
-                      maxLength={PLACEMENT_AREA_MAX_LENGTH}
-                      className="w-full rounded-xl border border-slate-300 text-center focus-visible:outline-none focus:ring-1 focus:ring-primary-300 focus:border-primary-500"
-                      placeholder="Nome area"
-                      autoFocus
-                    />
-                    <div className="flex w-full flex-wrap items-center justify-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleSavePlacementArea(index)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30"
-                        style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
-                      >
-                        <Save className="h-4 w-4" />
-                        Salva
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleCancelEditPlacementArea}
-                        className="flex items-center gap-2 px-4 py-2 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
-                        style={{ borderColor: '#dc2626', color: '#dc2626' }}
-                      >
-                        <X className="h-4 w-4" />
-                        Annulla
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="menu-prices-item-row w-full max-w-md">
-                    <div className="menu-prices-item-text overflow-hidden">
-                      <h4 className="font-semibold text-gray-900">{area}</h4>
-                    </div>
-                    <div className="menu-prices-item-actions shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleStartEditPlacementArea(index)}
-                        disabled={upsert.isPending}
-                        className="menu-prices-icon-btn menu-prices-icon-btn--edit"
-                        aria-label={`Modifica ${area}`}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemovePlacementArea(index)}
-                        disabled={upsert.isPending || placementAreas.length <= 1}
-                        className="menu-prices-icon-btn menu-prices-icon-btn--delete"
-                        aria-label={`Elimina ${area}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </React.Fragment>
-            )
-          })}
-        </div>
-      </section>
 
       <section className={bookingBgSectionClass}>
         <h3 className="text-lg font-semibold text-slate-800">Sfondo pagina Prenota</h3>
