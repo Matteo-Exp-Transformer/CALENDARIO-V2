@@ -7,9 +7,11 @@ import {
   toBookingTimeSlots,
   slotCrossesMidnight,
   type BookingTimeSlots,
+  type SlotConfig,
 } from '@/features/booking/utils/bookingTimeSlots'
 
 export { slotCrossesMidnight }
+export type { SlotConfig }
 
 export interface ServiceSlot {
   id: string
@@ -155,9 +157,35 @@ export function useDeleteServiceSlot() {
 }
 
 /**
- * Restituisce le 3 fasce canoniche (Colazione/Pranzo/Cena) già convertite
- * nel formato BookingTimeSlots usato da calendario, capacity e pending.
- * Condivide la stessa TanStack Query di useServiceSlots — nessuna chiamata DB aggiuntiva.
+ * Tutte le service_slots del tenant come SlotConfig[], ordinate per display_order.
+ * Fonte dati primaria per digest, capacity e Impostazioni in Classic.
+ * Condivide la query di useServiceSlots — nessuna chiamata DB aggiuntiva.
+ */
+export function useDigestSlotConfigs(): {
+  data: SlotConfig[]
+  isLoading: boolean
+  error: Error | null
+} {
+  const query = useServiceSlots()
+  const configs: SlotConfig[] = (query.data ?? []).map((s) => ({
+    id: s.id,
+    name: s.name,
+    start_time: s.start_time.slice(0, 5),
+    end_time: s.end_time.slice(0, 5),
+    display_order: s.display_order,
+    is_canonical: s.is_canonical,
+    slot_color: null,
+  }))
+  return {
+    data: configs,
+    isLoading: query.isLoading,
+    error: query.error as Error | null,
+  }
+}
+
+/**
+ * @deprecated Usare useDigestSlotConfigs(). Rimuovere allo Step 9.
+ * Wrapper che filtra is_canonical=true per retrocompatibilità consumer non ancora migrati.
  */
 export function useCanonicalTimeSlots(): {
   data: BookingTimeSlots
