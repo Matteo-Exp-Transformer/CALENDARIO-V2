@@ -18,11 +18,9 @@ import {
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import type { BookingRequest, BookingType } from '@/types/booking'
-import {
-  transformBookingsToCalendarEvents,
-  transformBookingToCalendarEvent,
-} from '../utils/bookingEventTransform'
+import { transformBookingsToCalendarEvents } from '../utils/bookingEventTransform'
 import { BookingDetailsModal } from './BookingDetailsModal'
+import { QuickTableAssignModal } from './QuickTableAssignModal'
 import { calculateDailyCapacity, getStartSlotForBooking } from '../utils/capacityCalculator'
 import {
   extractDateFromISO,
@@ -48,17 +46,13 @@ const CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX = 630
 /** Nei blocchi evento: sotto questa larghezza mostra solo l’icona tipologia (il nome resta in title per hover/tooltip). */
 const CALENDAR_EVENT_ICON_ONLY_MAX_WIDTH_PX = 500
 
-type DigestSlotId = 'morning' | 'afternoon' | 'evening'
-
-/** Intestazioni fasce digest + token in `index.css` per `data-admin-theme`. */
-function digestSlotHeaderChromeStyle(slot: DigestSlotId): React.CSSProperties {
-  return {
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: `var(--booking-digest-slot-${slot}-bg)`,
-    border: `1px solid var(--booking-digest-slot-${slot}-border)`,
-    color: 'var(--booking-digest-slot-heading-text)',
-  }
+/** Intestazione fascia digest — stile neutro allineato al resto dell'app. */
+function DigestSlotHeader({ label }: { label: string }) {
+  return (
+    <h6 className="flex items-center justify-center rounded-xl border border-(--color-border) bg-primary-50 px-3 shadow-sm text-[19px]! font-semibold tracking-wide leading-snug text-primary-900" style={{ height: 56 }}>
+      {label}
+    </h6>
+  )
 }
 
 type FullCalendarViewId = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek'
@@ -117,58 +111,41 @@ function DigestBookingListRow({
   onOpen,
   showMenuPricing = false,
   compactGrid = false,
-  slot,
   unassigned = false,
+  assigned = false,
+  hasTurns = false,
+  onDotClick,
 }: {
   booking: BookingRequest
   onOpen: (b: BookingRequest) => void
   showMenuPricing?: boolean
-  /** Card strette per griglia a 3 colonie (digest calendario). */
+  /** Card strette per griglia a 3 colonne (digest calendario). */
   compactGrid?: boolean
-  slot?: 'morning' | 'afternoon' | 'evening'
   /** Pro: prenotazione accettata senza tavolo assegnato. */
   unassigned?: boolean
+  /** Pro: prenotazione con tavolo già assegnato. */
+  assigned?: boolean
+  /** Pro: mostrare il pallino di stato. */
+  hasTurns?: boolean
+  /** Pro: click sul pallino → apre modal assegnazione rapida. */
+  onDotClick?: (booking: BookingRequest, e: React.MouseEvent) => void
 }) {
-  const calEv = transformBookingToCalendarEvent(booking)
   const menuPriceRow = showMenuPricing ? getResolvedMenuPriceDisplay(booking) : null
   const bookingTimeLabel =
     booking.desired_time || booking.confirmed_start ? getAccurateStartTime(booking) : null
   const hasMenuBookingContext = digestBookingHasMenuContext(booking)
   const hasSpecialNote = !!booking.special_requests?.trim()
   const [showNoteHint, setShowNoteHint] = useState(false)
-  const slotColors =
-    slot === 'morning'
-      ? {
-          backgroundColor: 'var(--booking-digest-slot-morning-bg)',
-          borderColor: 'var(--booking-digest-slot-morning-border)',
-        }
-      : slot === 'afternoon'
-        ? {
-            backgroundColor: 'var(--booking-digest-slot-afternoon-bg)',
-            borderColor: 'var(--booking-digest-slot-afternoon-border)',
-          }
-        : slot === 'evening'
-          ? {
-              backgroundColor: 'var(--booking-digest-slot-evening-bg)',
-              borderColor: 'var(--booking-digest-slot-evening-border)',
-            }
-          : null
 
   return (
     <button
       type="button"
       onClick={() => onOpen(booking)}
-      className={`relative min-h-0 w-full min-w-0 rounded-lg border-2 text-left transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-        compactGrid ? 'flex w-full min-h-[2.938775rem] flex-col shadow-sm' : ''
-      }`}
-      style={{
-        backgroundColor: slotColors?.backgroundColor ?? calEv.backgroundColor,
-        borderColor: slotColors?.borderColor ?? calEv.borderColor,
-        color:
-          slotColors != null
-            ? 'var(--booking-digest-slot-heading-text)'
-            : (calEv.textColor ?? '#fff'),
-      }}
+      className={cn(
+        'relative min-h-0 w-full min-w-0 rounded-lg border text-left transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
+        'bg-surface border-(--color-border) text-primary-900 shadow-sm',
+        compactGrid ? 'flex w-full min-h-[2.938775rem] flex-col' : '',
+      )}
     >
       <div
         className={`flex min-h-0 flex-col ${compactGrid ? 'overflow-visible items-stretch justify-center gap-0.5 px-2 py-1 text-center text-[16px] leading-tight sm:text-[18px]' : 'overflow-hidden flex-1 px-2 py-1.5 text-xs'}`}
@@ -178,7 +155,7 @@ function DigestBookingListRow({
             <DigestBookingTypeIcon booking={booking} className="h-3 w-3 flex-shrink-0" />
             <span className="min-w-0 truncate">{booking.client_name}</span>
             {unassigned && (
-              <span className="ml-auto shrink-0 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
+              <span className="ml-auto shrink-0 rounded-md bg-(--color-status-pending)/15 px-1.5 py-0.5 text-[10px] font-semibold text-(--color-status-pending)">
                 Da assegnare
               </span>
             )}
@@ -191,7 +168,7 @@ function DigestBookingListRow({
             />
             {unassigned && (
               <div className="mb-0.5 flex w-full items-center justify-center">
-                <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
+                <span className="rounded-md bg-(--color-status-pending)/15 px-1.5 py-0.5 text-[10px] font-semibold text-(--color-status-pending)">
                   Da assegnare
                 </span>
               </div>
@@ -347,6 +324,18 @@ function DigestBookingListRow({
             </div>
           )}
         </>
+      )}
+      {hasTurns && (
+        <span
+          onClick={(e) => { e.stopPropagation(); onDotClick?.(booking, e) }}
+          aria-label={assigned ? 'Tavolo assegnato' : 'Assegna tavolo'}
+          className={cn(
+            'absolute top-1 right-1 h-2.5 w-2.5 rounded-full cursor-pointer z-10',
+            assigned
+              ? 'bg-(--color-status-accepted)'
+              : 'bg-primary-300',
+          )}
+        />
       )}
     </button>
   )
@@ -608,6 +597,15 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   }, [hasTurnsFeature, tableAssignments])
 
   const maxTurn = Math.max(activeTurn, maxTurnFromAssignments)
+
+  // Pro: booking selezionato per assegnazione rapida tavolo dal pallino
+  const [quickAssignBooking, setQuickAssignBooking] = useState<BookingRequest | null>(null)
+
+  const handleDotClick = useCallback((booking: BookingRequest) => {
+    if (hasTurnsFeature && !assignedBookingIds.has(booking.id)) {
+      setQuickAssignBooking(booking)
+    }
+  }, [hasTurnsFeature, assignedBookingIds])
 
   /** Filtra prenotazioni per turno attivo.
    *  - Con feature pro: mostra solo quelle assegnate al turno corrente.
@@ -931,30 +929,15 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                     </h5>
                   </div>
                   {digestWithMenu.length > 0 ? (
-                    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/90 p-2 shadow-inner">
+                    <div className="rounded-xl border border-(--color-border) bg-surface/90 p-2 shadow-inner">
                       <div className="hidden min-[1390px]:grid grid-cols-3 gap-2">
-                        <h6
-                          className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
-                          style={digestSlotHeaderChromeStyle('morning')}
-                        >
-                          {getBookingTimeSlotLabel('morning', bookingSlots)}
-                        </h6>
-                        <h6
-                          className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
-                          style={digestSlotHeaderChromeStyle('afternoon')}
-                        >
-                          {getBookingTimeSlotLabel('afternoon', bookingSlots)}
-                        </h6>
-                        <h6
-                          className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
-                          style={digestSlotHeaderChromeStyle('evening')}
-                        >
-                          {getBookingTimeSlotLabel('evening', bookingSlots)}
-                        </h6>
+                        <DigestSlotHeader label={getBookingTimeSlotLabel('morning', bookingSlots)} />
+                        <DigestSlotHeader label={getBookingTimeSlotLabel('afternoon', bookingSlots)} />
+                        <DigestSlotHeader label={getBookingTimeSlotLabel('evening', bookingSlots)} />
                       </div>
                       <div className="mt-2 hidden min-[1390px]:block">
-                        <div className="grid grid-cols-3 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
-                          <div className="flex min-w-0 w-full flex-col gap-2">
+                        <div className="grid grid-cols-3 gap-2 auto-rows-[minmax(0,auto)] items-start">
+                          <div className="grid min-w-0 w-full grid-cols-1 sm:grid-cols-2 gap-2 items-start">
                             {filterByTurn(digestWithMenuBySlot.morning).map((booking) => (
                               <div key={booking.id} className="flex min-w-0 w-full flex-col">
                                 <DigestBookingListRow
@@ -962,13 +945,16 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                   onOpen={openDigestBooking}
                                   showMenuPricing
                                   compactGrid
-                                  slot="morning"
+
                                   unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
+                                  assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                                  hasTurns={hasTurnsFeature}
+                                  onDotClick={handleDotClick}
                                 />
                               </div>
                             ))}
                           </div>
-                          <div className="flex min-w-0 w-full flex-col gap-2">
+                          <div className="grid min-w-0 w-full grid-cols-1 sm:grid-cols-2 gap-2 items-start">
                             {filterByTurn(digestWithMenuBySlot.afternoon).map((booking) => (
                               <div key={booking.id} className="flex min-w-0 w-full flex-col">
                                 <DigestBookingListRow
@@ -976,13 +962,16 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                   onOpen={openDigestBooking}
                                   showMenuPricing
                                   compactGrid
-                                  slot="afternoon"
+
                                   unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
+                                  assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                                  hasTurns={hasTurnsFeature}
+                                  onDotClick={handleDotClick}
                                 />
                               </div>
                             ))}
                           </div>
-                          <div className="flex min-w-0 w-full flex-col gap-2">
+                          <div className="grid min-w-0 w-full grid-cols-1 sm:grid-cols-2 gap-2 items-start">
                             {filterByTurn(digestWithMenuBySlot.evening).map((booking) => (
                               <div key={booking.id} className="flex min-w-0 w-full flex-col">
                                 <DigestBookingListRow
@@ -990,8 +979,11 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                   onOpen={openDigestBooking}
                                   showMenuPricing
                                   compactGrid
-                                  slot="evening"
+
                                   unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
+                                  assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                                  hasTurns={hasTurnsFeature}
+                                  onDotClick={handleDotClick}
                                 />
                               </div>
                             ))}
@@ -1000,12 +992,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                       </div>
                       <div className="min-[1390px]:hidden space-y-3">
                         <div className="space-y-2">
-                          <h6
-                            className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
-                            style={digestSlotHeaderChromeStyle('morning')}
-                          >
-                            {getBookingTimeSlotLabel('morning', bookingSlots)}
-                          </h6>
+                          <DigestSlotHeader label={getBookingTimeSlotLabel('morning', bookingSlots)} />
                           {filterByTurn(digestWithMenuBySlot.morning).map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
                               <DigestBookingListRow
@@ -1013,19 +1000,16 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                 onOpen={openDigestBooking}
                                 showMenuPricing
                                 compactGrid
-                                slot="morning"
                                 unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
+                                assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                                hasTurns={hasTurnsFeature}
+                                onDotClick={handleDotClick}
                               />
                             </div>
                           ))}
                         </div>
                         <div className="space-y-2">
-                          <h6
-                            className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
-                            style={digestSlotHeaderChromeStyle('afternoon')}
-                          >
-                            {getBookingTimeSlotLabel('afternoon', bookingSlots)}
-                          </h6>
+                          <DigestSlotHeader label={getBookingTimeSlotLabel('afternoon', bookingSlots)} />
                           {filterByTurn(digestWithMenuBySlot.afternoon).map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
                               <DigestBookingListRow
@@ -1033,19 +1017,16 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                 onOpen={openDigestBooking}
                                 showMenuPricing
                                 compactGrid
-                                slot="afternoon"
                                 unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
+                                assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                                hasTurns={hasTurnsFeature}
+                                onDotClick={handleDotClick}
                               />
                             </div>
                           ))}
                         </div>
                         <div className="space-y-2">
-                          <h6
-                            className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
-                            style={digestSlotHeaderChromeStyle('evening')}
-                          >
-                            {getBookingTimeSlotLabel('evening', bookingSlots)}
-                          </h6>
+                          <DigestSlotHeader label={getBookingTimeSlotLabel('evening', bookingSlots)} />
                           {filterByTurn(digestWithMenuBySlot.evening).map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
                               <DigestBookingListRow
@@ -1053,8 +1034,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                 onOpen={openDigestBooking}
                                 showMenuPricing
                                 compactGrid
-                                slot="evening"
                                 unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
+                                assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                                hasTurns={hasTurnsFeature}
+                                onDotClick={handleDotClick}
                               />
                             </div>
                           ))}
@@ -1062,7 +1045,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                       </div>
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-[var(--color-text-muted)] italic py-6 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-2)]/80">
+                    <p className="text-center text-sm text-(--color-text-muted) italic py-6 rounded-xl border border-dashed border-(--color-border) bg-(--color-surface-2)/80">
                       Nessuna prenotazione con menù per questa data.
                     </p>
                   )}
@@ -1080,64 +1063,58 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                     </h5>
                   </div>
                   {digestTableOnly.length > 0 ? (
-                    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/90 p-2 shadow-inner">
+                    <div className="rounded-xl border border-(--color-border) bg-surface/90 p-2 shadow-inner">
                       <div className="hidden min-[1390px]:grid grid-cols-3 gap-2">
-                        <h6
-                          className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
-                          style={digestSlotHeaderChromeStyle('morning')}
-                        >
-                          {getBookingTimeSlotLabel('morning', bookingSlots)}
-                        </h6>
-                        <h6
-                          className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
-                          style={digestSlotHeaderChromeStyle('afternoon')}
-                        >
-                          {getBookingTimeSlotLabel('afternoon', bookingSlots)}
-                        </h6>
-                        <h6
-                          className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
-                          style={digestSlotHeaderChromeStyle('evening')}
-                        >
-                          {getBookingTimeSlotLabel('evening', bookingSlots)}
-                        </h6>
+                        <DigestSlotHeader label={getBookingTimeSlotLabel('morning', bookingSlots)} />
+                        <DigestSlotHeader label={getBookingTimeSlotLabel('afternoon', bookingSlots)} />
+                        <DigestSlotHeader label={getBookingTimeSlotLabel('evening', bookingSlots)} />
                       </div>
                       <div className="mt-2 hidden min-[1390px]:block">
-                        <div className="grid grid-cols-3 gap-2 [grid-auto-rows:minmax(0,_auto)] items-start">
-                          <div className="flex min-w-0 w-full flex-col gap-2">
+                        <div className="grid grid-cols-3 gap-2 auto-rows-[minmax(0,auto)] items-start">
+                          <div className="grid min-w-0 w-full grid-cols-1 sm:grid-cols-2 gap-2 items-start">
                             {filterByTurn(digestTableOnlyBySlot.morning).map((booking) => (
                               <div key={booking.id} className="flex min-w-0 w-full flex-col">
                                 <DigestBookingListRow
                                   booking={booking}
                                   onOpen={openDigestBooking}
                                   compactGrid
-                                  slot="morning"
+
                                   unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
+                                  assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                                  hasTurns={hasTurnsFeature}
+                                  onDotClick={handleDotClick}
                                 />
                               </div>
                             ))}
                           </div>
-                          <div className="flex min-w-0 w-full flex-col gap-2">
+                          <div className="grid min-w-0 w-full grid-cols-1 sm:grid-cols-2 gap-2 items-start">
                             {filterByTurn(digestTableOnlyBySlot.afternoon).map((booking) => (
                               <div key={booking.id} className="flex min-w-0 w-full flex-col">
                                 <DigestBookingListRow
                                   booking={booking}
                                   onOpen={openDigestBooking}
                                   compactGrid
-                                  slot="afternoon"
+
                                   unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
+                                  assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                                  hasTurns={hasTurnsFeature}
+                                  onDotClick={handleDotClick}
                                 />
                               </div>
                             ))}
                           </div>
-                          <div className="flex min-w-0 w-full flex-col gap-2">
+                          <div className="grid min-w-0 w-full grid-cols-1 sm:grid-cols-2 gap-2 items-start">
                             {filterByTurn(digestTableOnlyBySlot.evening).map((booking) => (
                               <div key={booking.id} className="flex min-w-0 w-full flex-col">
                                 <DigestBookingListRow
                                   booking={booking}
                                   onOpen={openDigestBooking}
                                   compactGrid
-                                  slot="evening"
+
                                   unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
+                                  assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                                  hasTurns={hasTurnsFeature}
+                                  onDotClick={handleDotClick}
                                 />
                               </div>
                             ))}
@@ -1146,58 +1123,49 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                       </div>
                       <div className="min-[1390px]:hidden space-y-3">
                         <div className="space-y-2">
-                          <h6
-                            className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
-                            style={digestSlotHeaderChromeStyle('morning')}
-                          >
-                            {getBookingTimeSlotLabel('morning', bookingSlots)}
-                          </h6>
+                          <DigestSlotHeader label={getBookingTimeSlotLabel('morning', bookingSlots)} />
                           {filterByTurn(digestTableOnlyBySlot.morning).map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
                               <DigestBookingListRow
                                 booking={booking}
                                 onOpen={openDigestBooking}
                                 compactGrid
-                                slot="morning"
                                 unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
+                                assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                                hasTurns={hasTurnsFeature}
+                                onDotClick={handleDotClick}
                               />
                             </div>
                           ))}
                         </div>
                         <div className="space-y-2">
-                          <h6
-                            className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
-                            style={digestSlotHeaderChromeStyle('afternoon')}
-                          >
-                            {getBookingTimeSlotLabel('afternoon', bookingSlots)}
-                          </h6>
+                          <DigestSlotHeader label={getBookingTimeSlotLabel('afternoon', bookingSlots)} />
                           {filterByTurn(digestTableOnlyBySlot.afternoon).map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
                               <DigestBookingListRow
                                 booking={booking}
                                 onOpen={openDigestBooking}
                                 compactGrid
-                                slot="afternoon"
                                 unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
+                                assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                                hasTurns={hasTurnsFeature}
+                                onDotClick={handleDotClick}
                               />
                             </div>
                           ))}
                         </div>
                         <div className="space-y-2">
-                          <h6
-                            className="flex items-center justify-center px-3 text-center shadow-sm !text-[19px] font-semibold tracking-wide leading-snug"
-                            style={digestSlotHeaderChromeStyle('evening')}
-                          >
-                            {getBookingTimeSlotLabel('evening', bookingSlots)}
-                          </h6>
+                          <DigestSlotHeader label={getBookingTimeSlotLabel('evening', bookingSlots)} />
                           {filterByTurn(digestTableOnlyBySlot.evening).map((booking) => (
                             <div key={booking.id} className="flex min-w-0 w-full flex-col">
                               <DigestBookingListRow
                                 booking={booking}
                                 onOpen={openDigestBooking}
                                 compactGrid
-                                slot="evening"
                                 unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
+                                assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                                hasTurns={hasTurnsFeature}
+                                onDotClick={handleDotClick}
                               />
                             </div>
                           ))}
@@ -1205,14 +1173,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                       </div>
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-[var(--color-text-muted)] italic py-6 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-2)]/80">
+                    <p className="text-center text-sm text-(--color-text-muted) italic py-6 rounded-xl border border-dashed border-(--color-border) bg-(--color-surface-2)/80">
                       Nessuna prenotazione solo tavolo per questa data.
                     </p>
                   )}
                 </section>
               </div>
             ) : (
-              <p className="text-center text-sm text-[var(--color-text-muted)] italic py-4 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-2)]/80">
+              <p className="text-center text-sm text-(--color-text-muted) italic py-4 rounded-xl border border-dashed border-(--color-border) bg-(--color-surface-2)/80">
                 Nessuna prenotazione accettata per questa data.
               </p>
             )}
@@ -1221,7 +1189,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal dettaglio prenotazione */}
       {selectedBooking && (
         <BookingDetailsModal
           isOpen={isModalOpen}
@@ -1230,6 +1198,17 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
             setSelectedBooking(null)
           }}
           booking={selectedBooking}
+        />
+      )}
+
+      {/* Modal assegnazione rapida tavolo (Pro) */}
+      {quickAssignBooking && (
+        <QuickTableAssignModal
+          booking={quickAssignBooking}
+          date={selectedDate}
+          serviceSlots={serviceSlots}
+          tableAssignments={tableAssignments as BookingTableAssignment[]}
+          onClose={() => setQuickAssignBooking(null)}
         />
       )}
     </>
