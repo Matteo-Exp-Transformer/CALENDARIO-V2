@@ -634,6 +634,7 @@ export type Database = {
           max_turns: number | null
           max_turns_resume: number | null
           name: string
+          slot_color: string | null
           start_time: string
           tenant_id: string
           updated_at: string
@@ -648,6 +649,7 @@ export type Database = {
           max_turns?: number | null
           max_turns_resume?: number | null
           name: string
+          slot_color?: string | null
           start_time: string
           tenant_id: string
           updated_at?: string
@@ -662,6 +664,7 @@ export type Database = {
           max_turns?: number | null
           max_turns_resume?: number | null
           name?: string
+          slot_color?: string | null
           start_time?: string
           tenant_id?: string
           updated_at?: string
@@ -807,6 +810,7 @@ export type Database = {
           max_guests: number | null
           max_turns: number | null
           name: string
+          slot_color: string | null
           start_time: string
           tenant_id: string
           updated_at: string
@@ -848,6 +852,7 @@ export type Database = {
           max_guests: number | null
           max_turns: number | null
           name: string
+          slot_color: string | null
           start_time: string
           tenant_id: string
           updated_at: string
