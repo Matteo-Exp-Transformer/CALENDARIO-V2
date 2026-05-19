@@ -1,35 +1,55 @@
-# Report — Libera tavolo: prenotazione torna in elenco
+# Report sessione — Assegnazione tavoli (Servizio)
 
 Data: 19-05-26 · Area: **Servizio** → tab Mappa → `AssignmentMapPanel.tsx`
 
-## Obiettivo
-
-Dopo **Libera tavolo** su un tavolo occupato, la prenotazione deve **ricomparire** nella colonna **PRENOTAZIONI** a sinistra, non sparire dall’interfaccia.
-
 ---
 
-## Comportamento per il ristoratore
+## 1. Libera tavolo → prenotazione torna in elenco
 
-**Prima:** assegnavi una prenotazione al tavolo, cliccavi Libera tavolo → la card non tornava (o restava «persa») nella lista prenotazioni.
+### Obiettivo
 
-**Dopo:** Libera tavolo → la stessa prenotazione (nome + coperti) riappare a sinistra, pronta per un nuovo drag. Il tavolo torna **verde / Libero** se non c’è un secondo turno già in coda su quel tavolo. Se il turno 2 era già assegnato, sul tavolo resta il turno 2 e la prenotazione del turno 1 torna in lista.
+Dopo **Libera tavolo**, la prenotazione deve **ricomparire** nella colonna **PRENOTAZIONI** a sinistra.
 
-**Invariato:** filtro prenotazioni per fascia oraria (report 18-05-26), drag-and-drop, selettori data/fascia.
+### Comportamento per il ristoratore
 
----
+**Prima:** Libera tavolo → la card spariva dalla lista.
 
-## Logica tecnica
+**Dopo:** la stessa prenotazione (nome + coperti) riappare a sinistra. Il tavolo torna **verde / Libero** se non c’è un turno 2 in coda; altrimenti resta il turno successivo sul tavolo.
+
+### Logica tecnica
 
 | Caso | Azione DB | Effetto UI |
 |------|-----------|------------|
-| Un solo turno sul tavolo | `DELETE` riga `booking_table_assignments` | Tavolo libero; prenotazione in PRENOTAZIONI |
-| Turno successivo già assegnato (`turn_number` maggiore, `checked_out_at` null) | `UPDATE checked_out_at` sul turno corrente | Turno 2 sul tavolo; prenotazione T1 in PRENOTAZIONI |
+| Un solo turno sul tavolo | `DELETE` in `booking_table_assignments` | Tavolo libero; prenotazione in PRENOTAZIONI |
+| Turno 2+ già assegnato e attivo | `UPDATE checked_out_at` sul turno corrente | Turno 2 sul tavolo; prenotazione T1 in PRENOTAZIONI |
 
-Helper: `hasWaitingNextTurnOnTable` (`tableCheckout.ts`).
+Helper: `hasWaitingNextTurnOnTable` (`tableCheckout.ts`). Filtro elenco: `unassignedBookingsFilter.ts`. Dopo liberazione: `refetchQueries`.
 
-Elenco sinistro: `filterUnassignedBookingsForSlot` — esclude solo assignment con `checked_out_at` null per slot+data (`unassignedBookingsFilter.ts`).
+Verifica manuale: confermata («funziona»).
 
-Dopo liberazione: `refetchQueries` su assignments e unassigned (aggiornamento immediato).
+---
+
+## 2. Dettaglio prenotazione sulla card tavolo occupato
+
+### Obiettivo
+
+Sostituire il testo generico «Prenotazione assegnata» con i dati utili al servizio.
+
+### Comportamento per il ristoratore
+
+Sul tavolo **arancione (Occupato)** compaiono solo i valori, senza etichette:
+
+1. **Prima riga:** `Mario Rossi, 4` (nome e numero ospiti)
+2. **Seconda riga:** `20:15` (orario di arrivo; se manca, solo la prima riga)
+
+Allineato all’orario usato altrove in dashboard (`desired_time` preferito, altrimenti `confirmed_start`).
+
+### Logica tecnica
+
+- Hook `useAcceptedBookingsForDate(date)` — prenotazioni `accepted` del giorno da `booking_requests`.
+- `AssignmentMapPanel` costruisce `Map<booking_id, BookingRequest>` e la passa a `DroppableTable` tramite l’assignment attivo.
+- Orario: `getAccurateStartTime` + `trimTimeToHHmm` (`dateUtils.ts`).
+- Helper condiviso `filterBookingsOnDate` estratto in `useTableAssignments.ts` (riuso con `useUnassignedBookings`).
 
 ---
 
@@ -38,23 +58,23 @@ Dopo liberazione: `refetchQueries` su assignments e unassigned (aggiornamento im
 | Tabella | Campi |
 |---------|--------|
 | `booking_table_assignments` | `booking_id`, `table_id`, `service_slot_id`, `date`, `turn_number`, `checked_out_at` |
-| `booking_requests` | Prenotazioni in elenco (`status`, orari, data) |
-| `service_slots` | Fascia selezionata nel pannello |
+| `booking_requests` | `client_name`, `num_guests`, `status`, `confirmed_start`, `desired_time`, `desired_date` |
+| `service_slots` | Fascia nel select (`start_time`, `end_time`, `max_turns`) |
 
 ---
 
-## File toccati
+## File toccati (sessione completa)
 
 | File | Modifica |
 |------|----------|
-| `src/features/booking/hooks/useTableAssignments.ts` | Checkout delete/update; refetch; uso filtri estratti |
-| `src/features/booking/utils/unassignedBookingsFilter.ts` | Nuovo — filtro elenco non assegnate |
-| `src/features/booking/utils/tableCheckout.ts` | Nuovo — rilevamento turno successivo |
-| `src/features/booking/utils/serviceSlotBookingFilter.ts` | (sessione precedente) filtro per fascia |
-| `src/features/booking/components/servizio/AssignmentMapPanel.tsx` | Passa `selectedSlot` al hook |
-| `src/features/booking/utils/__tests__/*.test.ts` | 14 test totali su filtri + checkout |
-| `docs/Dashboard-laterale-skill/ADMIN_PAGES_CONTEXT.md` | Regole Libera tavolo |
-| `docs/APP_CONTEXT_SKILL.md` | RULE checkout |
+| `src/features/booking/hooks/useTableAssignments.ts` | Checkout delete/update; `useAcceptedBookingsForDate`; `filterBookingsOnDate` |
+| `src/features/booking/components/servizio/AssignmentMapPanel.tsx` | Card tavolo con nome/coperti/orario; slot filter; lookup prenotazioni |
+| `src/features/booking/utils/unassignedBookingsFilter.ts` | Filtro elenco non assegnate |
+| `src/features/booking/utils/tableCheckout.ts` | Turno successivo in coda |
+| `src/features/booking/utils/serviceSlotBookingFilter.ts` | Filtro per fascia (18-05) |
+| `src/features/booking/utils/__tests__/*.test.ts` | 14 test filtri + checkout |
+| `docs/Dashboard-laterale-skill/ADMIN_PAGES_CONTEXT.md` | Libera tavolo + card occupata |
+| `docs/APP_CONTEXT_SKILL.md` | RULE Libera tavolo |
 
 ---
 
@@ -66,21 +86,19 @@ npm run test -- src/features/booking/utils/__tests__/unassignedBookingsFilter.te
 
 Risultato: **14/14** passati.
 
-`npm run typecheck` — ok.
-
-Verifica manuale: confermata dall’utente («funziona»).
+`npm run typecheck` — ok (anche dopo card tavolo).
 
 ---
 
 ## Fuori scope
 
-- Nome cliente sulla card tavolo (ancora testo generico «Prenotazione assegnata»).
-- Override fasce del giorno in assegnazione tavoli.
+- Override fasce del giorno in assegnazione tavoli (`service_slot_overrides`).
 - Migrazioni DB.
+- Test E2E Playwright su drag/libera tavolo.
 
 ---
 
 ## Prossima sessione (opzionale)
 
-- Mostrare nome cliente + coperti sulla card tavolo occupato (join o cache da `booking_requests`).
 - Allineare orari fascia agli override del giorno in `AssignmentMapPanel`.
+- E2E: flusso assegna → libera → riassegna.

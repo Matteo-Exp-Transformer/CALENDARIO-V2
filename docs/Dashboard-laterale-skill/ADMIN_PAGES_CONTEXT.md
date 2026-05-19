@@ -250,6 +250,7 @@ Query key: `[TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, date, slotId, 'unassigned']`
 - Orari fascia letti dalla riga `service_slots` caricata da `useServiceSlots()` — **non** da `resolveSlotOverride` (override turni/coperti del giorno: gap noto, vedi report 16-05-26).
 - `max_turns === 0` (servizio chiuso): assegnazione già bloccata in mutation; UI invariata.
 - **`Libera tavolo`** (`useCheckoutTable`): la prenotazione del turno liberato **torna** nell’elenco sinistro (non più in `assigned` con `checked_out_at` null). Se **non** c’è un turno successivo già assegnato e attivo sullo stesso tavolo → **DELETE** della riga in `booking_table_assignments` (tavolo verde «Libero»). Se c’è turno 2+ in attesa → **UPDATE** `checked_out_at` sul turno corrente (tavolo passa al turno successivo; prenotazione T1 torna in lista). Helper: `hasWaitingNextTurnOnTable` (`tableCheckout.ts`). Dopo successo: `refetchQueries` su assignments + unassigned.
+- **Card tavolo occupato** (`DroppableTable`): due righe senza etichette — `client_name, num_guests` e sotto orario `HH:mm` da `getAccurateStartTime` (`dateUtils`). Lookup: `useAcceptedBookingsForDate(date)` + mappa `booking_id` dagli assignment attivi.
 - Filtro elenco estratto in `unassignedBookingsFilter.ts` (`filterUnassignedBookingsForSlot`, `activeAssignedBookingIds`).
 - Test: `serviceSlotBookingFilter.test.ts`, `unassignedBookingsFilter.test.ts`, `tableCheckout.test.ts`.
 

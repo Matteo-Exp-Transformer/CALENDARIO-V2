@@ -46,6 +46,35 @@ export function getTableStatus(
   return 'assigned'
 }
 
+export function filterBookingsOnDate(bookings: BookingRequest[], date: string): BookingRequest[] {
+  return bookings.filter((b) => {
+    const d = b.confirmed_start
+      ? b.confirmed_start.slice(0, 10)
+      : b.desired_date?.slice(0, 10)
+    return d === date
+  })
+}
+
+/** Prenotazioni accettate per una data (lookup nome/orario sui tavoli assegnati). */
+export function useAcceptedBookingsForDate(date: string) {
+  const { tenantId } = useTenantContext()
+
+  return useQuery({
+    queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, date, 'accepted-bookings'],
+    queryFn: async (): Promise<BookingRequest[]> => {
+      const { data: bookings, error } = await supabase
+        .from('booking_requests')
+        .select('*')
+        .eq('tenant_id', tenantId!)
+        .eq('status', 'accepted')
+
+      if (error) throw error
+      return filterBookingsOnDate(bookings as unknown as BookingRequest[], date)
+    },
+    enabled: !!tenantId && !!date,
+  })
+}
+
 export function useTableAssignments(date: string) {
   const { tenantId } = useTenantContext()
 
@@ -84,13 +113,7 @@ export function useUnassignedBookings(
 
       if (bErr) throw bErr
 
-      // Filtra per data (confirmed_start o desired_date)
-      const onDate = (bookings as unknown as BookingRequest[]).filter((b) => {
-        const d = b.confirmed_start
-          ? b.confirmed_start.slice(0, 10)
-          : b.desired_date?.slice(0, 10)
-        return d === date
-      })
+      const onDate = filterBookingsOnDate(bookings as unknown as BookingRequest[], date)
 
       if (onDate.length === 0) return []
 

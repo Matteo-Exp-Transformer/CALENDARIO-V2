@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
@@ -9,12 +9,13 @@ import { useServiceSlots } from '@/features/booking/hooks/useServiceSlots'
 import {
   useTableAssignments,
   useUnassignedBookings,
+  useAcceptedBookingsForDate,
   useAssignBookingToTable,
   useCheckoutTable,
   getTableStatus,
-  type BookingTableAssignment,
   type TableStatus,
 } from '@/features/booking/hooks/useTableAssignments'
+import { getAccurateStartTime, trimTimeToHHmm } from '@/features/booking/utils/dateUtils'
 import type { RestaurantTable } from '@/features/booking/hooks/useServizioTables'
 import type { Room } from '@/features/booking/hooks/useRooms'
 import type { BookingRequest } from '@/types/booking'
@@ -75,12 +76,15 @@ const DraggableBookingCard: FC<DraggableBookingCardProps> = ({ booking }) => {
 interface DroppableTableProps {
   table: RestaurantTable
   status: TableStatus
-  assignment: BookingTableAssignment | null
+  assignedBooking: BookingRequest | null
   onCheckout: () => void
   isCheckingOut: boolean
 }
 
-const DroppableTable: FC<DroppableTableProps> = ({ table, status, assignment, onCheckout, isCheckingOut }) => {
+const DroppableTable: FC<DroppableTableProps> = ({ table, status, assignedBooking, onCheckout, isCheckingOut }) => {
+  const arrivalTime = assignedBooking
+    ? trimTimeToHHmm(getAccurateStartTime(assignedBooking)) || null
+    : null
   const [confirmCheckout, setConfirmCheckout] = useState(false)
 
   const { setNodeRef, isOver } = useDroppable({
@@ -107,12 +111,14 @@ const DroppableTable: FC<DroppableTableProps> = ({ table, status, assignment, on
         </span>
       </div>
 
-      {status === 'assigned' && assignment && (
+      {status === 'assigned' && assignedBooking && (
         <div className="mt-2 space-y-1">
-          <p className="text-xs font-medium text-amber-900">
-            {/* booking_id — il nome non è joinato qui, mostriamo solo l'id troncato come fallback */}
-            Prenotazione assegnata
+          <p className="truncate text-xs font-medium text-amber-900">
+            {assignedBooking.client_name}, {assignedBooking.num_guests}
           </p>
+          {arrivalTime && (
+            <p className="text-xs text-amber-800">{arrivalTime}</p>
+          )}
           {confirmCheckout ? (
             <div className="flex items-center gap-1">
               <span className="text-xs text-red-700">Liberare?</span>
@@ -178,6 +184,12 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
 
   const { data: assignments = [] } = useTableAssignments(selectedDate)
   const { data: unassigned = [] } = useUnassignedBookings(selectedDate, selectedSlot)
+  const { data: acceptedOnDate = [] } = useAcceptedBookingsForDate(selectedDate)
+
+  const bookingsById = useMemo(
+    () => new Map(acceptedOnDate.map((b) => [b.id, b])),
+    [acceptedOnDate],
+  )
 
   const assignBooking = useAssignBookingToTable()
   const checkoutTable = useCheckoutTable()
@@ -299,7 +311,11 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
                             key={table.id}
                             table={table}
                             status={status}
-                            assignment={activeAssignment}
+                            assignedBooking={
+                              activeAssignment
+                                ? bookingsById.get(activeAssignment.booking_id) ?? null
+                                : null
+                            }
                             isCheckingOut={checkoutTable.isPending}
                             onCheckout={() =>
                               checkoutTable.mutate({
