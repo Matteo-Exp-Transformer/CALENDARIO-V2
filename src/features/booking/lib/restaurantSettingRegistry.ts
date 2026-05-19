@@ -20,20 +20,20 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'timezone',
   'booking_window_days',
   'daily_guest_limit',
-  /** Capienza massima coperti per fascia; null per fascia = nessun limite (no default numerico in app). */
+  /** Capienza massima coperti per fascia (Record<slotId, number|null>); null = nessun limite. */
   'slot_guest_capacities',
   'business_hours',
   'contact_email',
   'contact_phone',
   'contact_address',
   'public_booking_page_background',
-  /** Mostra nel form pubblico il menu a tendina “menù consigliati” (built-in + personalizzati) */
+  /** Mostra nel form pubblico il menu a tendina "menu consigliati" (built-in + personalizzati) */
   'booking_staff_presets_visible',
-  /** Menù predefiniti creati dall’admin (nome + lista id voci) */
+  /** Menu predefiniti creati dall'admin (nome + lista id voci) */
   'booking_custom_staff_presets',
-  /** Banner sopra al menu a tendina: omaggio Mini Rustici sopra soglia €/persona */
+  /** Banner sopra al menu a tendina: omaggio Mini Rustici sopra soglia euro/persona */
   'booking_vol_au_vent_promo_visible',
-  /** Testo del banner (admin) — fallback se `booking_vol_au_vent_promos` è vuoto */
+  /** Testo del banner (admin) -- fallback se `booking_vol_au_vent_promos` e vuoto */
   'booking_vol_au_vent_promo_message',
   /** Promo multipla con associazione a tipologie di prenotazione */
   'booking_vol_au_vent_promos',
@@ -43,6 +43,8 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'app_theme',
   /** Numero massimo coperti accettati in un singolo walk-in (default 20) */
   'walk_in_max_guests',
+  /** Classic: abilita/disabilita raggruppamento digest per fasce orarie (default true). In Pro ignorato -- sempre ON. */
+  'booking_time_slots_enabled',
 ] as const
 
 export type RestaurantSettingKeyV1 = (typeof RESTAURANT_SETTING_KEYS_V1)[number]
@@ -78,8 +80,8 @@ export const businessHoursSettingSchema = z
     })
   )
 
-const restaurantNameSchema = z.string().trim().min(1, 'Il nome è obbligatorio').max(200)
-const timezoneSchema = z.string().trim().min(1, 'Il fuso orario è obbligatorio').max(80)
+const restaurantNameSchema = z.string().trim().min(1, 'Il nome e obbligatorio').max(200)
+const timezoneSchema = z.string().trim().min(1, 'Il fuso orario e obbligatorio').max(80)
 const genericTextSchema = z.string().trim().min(1, 'Campo obbligatorio').max(200)
 const emailSchema = z.string().trim().email('Email non valida').max(200)
 const phoneSchema = z.string().trim().min(3, 'Telefono non valido').max(50)
@@ -99,39 +101,48 @@ const optionalSlotCapSchema = z.union([
   z.null(),
 ])
 
-export type SlotGuestCapacities = {
-  morning: number | null
-  afternoon: number | null
-  evening: number | null
-}
+/**
+ * Capienze per-fascia: chiave = service_slots.id (UUID).
+ * Formato legacy {morning,afternoon,evening} convertito in-app al primo salvataggio.
+ */
+export type SlotGuestCapacities = Record<string, number | null>
 
-const slotGuestCapacitiesSchema = z
-  .object({
-    morning: optionalSlotCapSchema.optional(),
-    afternoon: optionalSlotCapSchema.optional(),
-    evening: optionalSlotCapSchema.optional(),
-  })
-  .transform(
-    (raw): SlotGuestCapacities => ({
-      morning: raw.morning ?? null,
-      afternoon: raw.afternoon ?? null,
-      evening: raw.evening ?? null,
-    }),
-  )
+/**
+ * Schema Zod per il nuovo formato Record<uuid, number|null>.
+ * Accetta qualsiasi chiave stringa con valore number|null.
+ */
+const slotGuestCapacitiesSchemaV2 = z.record(z.string(), optionalSlotCapSchema.nullable())
 
-export const DEFAULT_SLOT_GUEST_CAPACITIES: SlotGuestCapacities = {
-  morning: null,
-  afternoon: null,
-  evening: null,
-}
+export const DEFAULT_SLOT_GUEST_CAPACITIES: SlotGuestCapacities = {}
 
+/**
+ * Parse da DB: supporta sia il nuovo formato Record<uuid, number|null>
+ * sia il legacy {morning, afternoon, evening}.
+ * Il formato legacy viene preservato as-is (la conversione a UUID avviene
+ * al primo salvataggio dall'UI Settings, quando sono disponibili i slot ids).
+ */
 function parseSlotGuestCapacitiesFromDb(raw: unknown): SlotGuestCapacities {
-  const parsed = slotGuestCapacitiesSchema.safeParse(raw)
-  if (!parsed.success) return { ...DEFAULT_SLOT_GUEST_CAPACITIES }
-  return parsed.data
+  if (raw == null || typeof raw !== 'object' || Array.isArray(raw)) return {}
+  const obj = raw as Record<string, unknown>
+  // Formato legacy: {morning:N, afternoon:N, evening:N} -- preservato as-is
+  const legacyKeys = ['morning', 'afternoon', 'evening']
+  const hasLegacyKeys = legacyKeys.some((k) => k in obj)
+  if (hasLegacyKeys) {
+    const out: SlotGuestCapacities = {}
+    for (const k of legacyKeys) {
+      const v = obj[k]
+      if (v == null) { out[k] = null; continue }
+      const n = typeof v === 'number' ? v : parseInt(String(v), 10)
+      out[k] = Number.isNaN(n) ? null : n
+    }
+    return out
+  }
+  // Nuovo formato Record<uuid, number|null>
+  const parsed = slotGuestCapacitiesSchemaV2.safeParse(raw)
+  return parsed.success ? parsed.data : {}
 }
 
-/** Valore JSON salvato su `restaurant_settings.setting_value` quando non c’è limite giornaliero (la colonna è NOT NULL). */
+/** Valore JSON salvato su `restaurant_settings.setting_value` quando non c'e limite giornaliero (la colonna e NOT NULL). */
 export const DAILY_GUEST_LIMIT_UNLIMITED_DB_VALUE = -1
 
 function parseJsonScalarString(raw: unknown): string {
@@ -152,9 +163,9 @@ function parseBookingWindowDaysFromDb(raw: unknown): number {
 }
 
 /**
- * `daily_guest_limit` può essere assente/`null` per indicare «nessun limite».
- * Restituisce `null` quando il valore non è impostato o non è un numero valido,
- * così l'app sa che non deve applicare alcun cap giornaliero.
+ * `daily_guest_limit` puo essere assente/`null` per indicare «nessun limite».
+ * Restituisce `null` quando il valore non e impostato o non e un numero valido,
+ * cosi l'app sa che non deve applicare alcun cap giornaliero.
  */
 function parseDailyGuestLimitFromDb(raw: unknown): number | null {
   if (raw == null) return null
@@ -276,6 +287,8 @@ export type RestaurantSettingValueMap = {
   booking_placement_areas: string[]
   app_theme: AppThemeId
   walk_in_max_guests: number
+  /** Classic: abilita raggruppamento digest per fasce. Pro: ignorato (sempre true). Default true per retro-compatibilita. */
+  booking_time_slots_enabled: boolean
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -319,7 +332,7 @@ export const restaurantSettingRegistry: {
     key: 'daily_guest_limit',
     parseFromDb: (raw) => parseDailyGuestLimitFromDb(raw),
     serializeToDb: (value) => {
-      // La colonna DB è NOT NULL: usiamo -1 come sentinella per «nessun limite».
+      // La colonna DB e NOT NULL: usiamo -1 come sentinella per «nessun limite».
       if (value == null) return DAILY_GUEST_LIMIT_UNLIMITED_DB_VALUE as unknown as Json
       return value as Json
     },
@@ -335,7 +348,7 @@ export const restaurantSettingRegistry: {
     parseFromDb: (raw) => parseSlotGuestCapacitiesFromDb(raw),
     serializeToDb: (value) => value as unknown as Json,
     validate: (value) => {
-      const r = slotGuestCapacitiesSchema.safeParse(value)
+      const r = slotGuestCapacitiesSchemaV2.safeParse(value)
       return r.success ? null : r.error.issues[0]?.message ?? 'Capienze fascia non valide'
     },
   },
@@ -419,7 +432,7 @@ export const restaurantSettingRegistry: {
     serializeToDb: (value) => value as unknown as Json,
     validate: (value) => {
       const r = bookingCustomStaffPresetsSchema.safeParse(value)
-      return r.success ? null : r.error.issues[0]?.message ?? 'Menù preselezionati non validi'
+      return r.success ? null : r.error.issues[0]?.message ?? 'Menu preselezionati non validi'
     },
   },
   booking_vol_au_vent_promo_visible: {
@@ -445,7 +458,7 @@ export const restaurantSettingRegistry: {
     serializeToDb: (value) => value as unknown as Json,
     validate: (value) => {
       const r = bookingVolAuVentPromosSchema.safeParse(value)
-      return r.success ? null : r.error.issues[0]?.message ?? 'Promo menù non valide'
+      return r.success ? null : r.error.issues[0]?.message ?? 'Promo menu non valide'
     },
   },
   booking_placement_areas: {
@@ -487,5 +500,16 @@ export const restaurantSettingRegistry: {
       if (!Number.isInteger(n) || n < 1 || n > 200) return 'Deve essere un intero tra 1 e 200'
       return null
     },
+  },
+  booking_time_slots_enabled: {
+    key: 'booking_time_slots_enabled',
+    parseFromDb: (raw) => {
+      if (raw == null) return true
+      if (raw === false || raw === 'false') return false
+      if (raw === true || raw === 'true') return true
+      return true
+    },
+    serializeToDb: (value) => value as Json,
+    validate: (value) => (typeof value === 'boolean' ? null : 'Valore non valido'),
   },
 }
