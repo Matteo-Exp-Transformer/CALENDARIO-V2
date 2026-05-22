@@ -272,7 +272,6 @@ export const RestaurantSettingsTab: React.FC = () => {
   const features = useFeatures()
 
   const nameQuery = useRestaurantSetting('restaurant_name')
-  const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
   const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities')
   const timeSlotsEnabledQuery = useRestaurantSetting('booking_time_slots_enabled')
   const serviceSlotsQuery = useServiceSlots()
@@ -291,7 +290,6 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const [dirty, setDirty] = useState(false)
   const [restaurantName, setRestaurantName] = useState('')
-  const [dailyGuestLimit, setDailyGuestLimit] = useState<number | ''>('')
   const [walkInMaxGuests, setWalkInMaxGuests] = useState<number | ''>(20)
   const [slotCapacities, setSlotCapacities] = useState<Record<string, number | ''>>({})
   const [editingSlots, setEditingSlots] = useState<EditingSlot[]>([])
@@ -323,7 +321,6 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const allSuccess =
     nameQuery.isSuccess &&
-    dailyGuestLimitQuery.isSuccess &&
     slotGuestCapacitiesQuery.isSuccess &&
     timeSlotsEnabledQuery.isSuccess &&
     serviceSlotsQuery.isSuccess &&
@@ -340,7 +337,6 @@ export const RestaurantSettingsTab: React.FC = () => {
     setRestaurantName(
       stripDirectionalFormattingChars(String(nameQuery.data ?? '')).slice(0, RESTAURANT_NAME_MAX_LENGTH)
     )
-    setDailyGuestLimit(dailyGuestLimitQuery.data ?? '')
     const sg = slotGuestCapacitiesQuery.data ?? {}
     const caps: Record<string, number | ''> = {}
     for (const [k, v] of Object.entries(sg)) {
@@ -374,7 +370,6 @@ export const RestaurantSettingsTab: React.FC = () => {
   }, [
     allSuccess,
     nameQuery.data,
-    dailyGuestLimitQuery.data,
     slotGuestCapacitiesQuery.data,
     timeSlotsEnabledQuery.data,
     serviceSlotsQuery.data,
@@ -389,7 +384,6 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const loading =
     nameQuery.isPending ||
-    dailyGuestLimitQuery.isPending ||
     slotGuestCapacitiesQuery.isPending ||
     timeSlotsEnabledQuery.isPending ||
     serviceSlotsQuery.isPending ||
@@ -402,7 +396,6 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const loadError =
     nameQuery.error ||
-    dailyGuestLimitQuery.error ||
     slotGuestCapacitiesQuery.error ||
     timeSlotsEnabledQuery.error ||
     serviceSlotsQuery.error ||
@@ -565,7 +558,6 @@ export const RestaurantSettingsTab: React.FC = () => {
 
       await upsert.mutateAsync([
         { key: 'restaurant_name', value: safeName },
-        { key: 'daily_guest_limit', value: dailyGuestLimit === '' ? null : dailyGuestLimit },
         { key: 'slot_guest_capacities', value: slotCapValue },
         { key: 'booking_time_slots_enabled', value: timeSlotsEnabled },
         { key: 'business_hours', value: businessHours },
@@ -698,31 +690,6 @@ export const RestaurantSettingsTab: React.FC = () => {
               placeholder="Nome del locale"
               className={anagraficaInputClassName}
               style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
-            />
-          </div>
-          <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
-            <Label htmlFor="daily_guest_limit" className="block w-full text-center">
-              Limite coperti giornaliero
-            </Label>
-            <Input
-              id="daily_guest_limit"
-              type="number"
-              min={1}
-              max={1000}
-              value={dailyGuestLimit}
-              disabled={upsert.isPending}
-              placeholder="Nessun limite"
-              className={`${anagraficaInputClassName} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-              onChange={(e) => {
-                markDirty()
-                const raw = e.target.value
-                if (raw === '') {
-                  setDailyGuestLimit('')
-                  return
-                }
-                const n = parseInt(raw, 10)
-                if (!Number.isNaN(n)) setDailyGuestLimit(n)
-              }}
             />
           </div>
           <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>

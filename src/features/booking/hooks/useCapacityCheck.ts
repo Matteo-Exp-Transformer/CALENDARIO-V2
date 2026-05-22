@@ -40,14 +40,12 @@ function getSlotsOccupiedByTime(
 export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCheck {
   const { date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId } = params
   const features = useFeatures()
-  const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
   const { data: digestSlots } = useDigestSlotConfigs()
   const { data: serviceSlots = [] } = useServiceSlots()
   const { data: slotOverrides = [] } = useServiceSlotOverrides()
   const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities')
   const timeSlotsEnabledQuery = useRestaurantSetting('booking_time_slots_enabled')
 
-  const dailyGuestLimit = dailyGuestLimitQuery.data ?? null
   const legacySlotCapacities = slotGuestCapacitiesQuery.data ?? DEFAULT_SLOT_GUEST_CAPACITIES
   const slots = digestSlots ?? []
   // In Pro le fasce sono sempre attive; in Classic rispetta il flag
@@ -88,28 +86,9 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
       return { isAvailable: true, slotsStatus }
     }
 
-    // Check giornaliero (sempre attivo indipendentemente da timeSlotsEnabled)
-    const totalGuestsForDay = dayBookings.reduce((acc, b) => acc + (b.num_guests ?? 0), 0)
-    const totalWithNew = totalGuestsForDay + numGuests
-
     let isAvailable = true
     const errorMessages: string[] = []
     const exceededSlots: AvailabilityCheck['exceededSlots'] = []
-
-    if (dailyGuestLimit != null && totalWithNew > dailyGuestLimit) {
-      isAvailable = false
-      const exceededBy = totalWithNew - dailyGuestLimit
-      errorMessages.push(
-        `Limite giornaliero: ${dailyGuestLimit} coperti (totale con prenotazione: ${totalWithNew})`
-      )
-      exceededSlots!.push({
-        slot: 'daily',
-        slotName: 'giornata',
-        exceededBy,
-        totalOccupied: totalWithNew,
-        capacity: dailyGuestLimit,
-      })
-    }
 
     // Check per-fascia: solo se le fasce sono abilitate
     if (timeSlotsEnabled && slots.length > 0) {
@@ -183,7 +162,6 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
     numGuests,
     acceptedBookings,
     excludeBookingId,
-    dailyGuestLimit,
     slots,
     serviceSlots,
     slotOverrides,

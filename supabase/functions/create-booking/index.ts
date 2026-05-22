@@ -150,12 +150,10 @@ Deno.serve(async (req: Request) => {
         .from("restaurant_settings")
         .select("setting_key, setting_value")
         .eq("tenant_id", orgId)
-        .in("setting_key", ["daily_guest_limit", "booking_time_slots_enabled"]);
+        .eq("setting_key", "booking_time_slots_enabled");
 
       const sMap: Record<string, unknown> = {};
       for (const r of settingsRows ?? []) sMap[r.setting_key] = r.setting_value;
-      const dailyLimit: number | null =
-        typeof sMap["daily_guest_limit"] === "number" ? sMap["daily_guest_limit"] : null;
       const timeSlotsEnabled: boolean =
         sMap["booking_time_slots_enabled"] === false ? false : true;
 
@@ -169,18 +167,6 @@ Deno.serve(async (req: Request) => {
         .eq("status", "accepted")
         .gte("confirmed_start", dateStart)
         .lte("confirmed_start", dateEnd);
-
-      const totalGuests = (dayBookings ?? []).reduce(
-        (acc: number, b: { num_guests: number }) => acc + (b.num_guests ?? 0), 0
-      );
-
-      // Check giornaliero
-      if (dailyLimit != null && dailyLimit !== -1 && totalGuests + num_guests > dailyLimit) {
-        return new Response(
-          JSON.stringify({ error: "Spiacenti, per questa data non ci sono più posti disponibili.", code: "DAILY_LIMIT" }),
-          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
 
       // Check per-fascia
       if (timeSlotsEnabled) {
