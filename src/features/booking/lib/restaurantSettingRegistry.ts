@@ -385,6 +385,7 @@ export const restaurantSettingRegistry: {
     parseFromDb: (raw) => parseJsonScalarString(raw),
     serializeToDb: (value) => value as Json,
     validate: (value) => {
+      if (!value || String(value).trim() === '') return null
       const r = emailSchema.safeParse(value)
       return r.success ? null : r.error.issues[0]?.message ?? 'Valore non valido'
     },
@@ -394,6 +395,7 @@ export const restaurantSettingRegistry: {
     parseFromDb: (raw) => parseJsonScalarString(raw),
     serializeToDb: (value) => value as Json,
     validate: (value) => {
+      if (!value || String(value).trim() === '') return null
       const r = phoneSchema.safeParse(value)
       return r.success ? null : r.error.issues[0]?.message ?? 'Valore non valido'
     },
@@ -487,17 +489,17 @@ export const restaurantSettingRegistry: {
   walk_in_max_guests: {
     key: 'walk_in_max_guests',
     parseFromDb: (raw) => {
-      if (typeof raw === 'number' && Number.isFinite(raw) && raw > 0) return raw
+      if (typeof raw === 'number' && Number.isFinite(raw) && raw >= 0) return raw
       if (typeof raw === 'string') {
         const n = parseInt(raw, 10)
-        if (!Number.isNaN(n) && n > 0) return n
+        if (!Number.isNaN(n) && n >= 0) return n
       }
       return 20
     },
     serializeToDb: (value) => value as Json,
     validate: (value) => {
       const n = Number(value)
-      if (!Number.isInteger(n) || n < 1 || n > 200) return 'Deve essere un intero tra 1 e 200'
+      if (!Number.isInteger(n) || n < 0 || n > 500) return 'Deve essere un intero tra 0 e 500'
       return null
     },
   },

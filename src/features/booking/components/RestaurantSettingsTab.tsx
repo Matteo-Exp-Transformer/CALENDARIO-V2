@@ -699,8 +699,8 @@ export const RestaurantSettingsTab: React.FC = () => {
             <Input
               id="walk_in_max_guests"
               type="number"
-              min={1}
-              max={200}
+              min={0}
+              max={500}
               value={walkInMaxGuests}
               disabled={upsert.isPending}
               placeholder="20"
