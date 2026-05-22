@@ -25,7 +25,6 @@ import {
   ChevronUp,
   UtensilsCrossed,
   Store,
-  ExternalLink,
 } from 'lucide-react'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
@@ -38,14 +37,8 @@ import {
 import { NotifyNavShinyLayers } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
-import { useTenantContext } from '@/contexts/TenantContext'
 
-type Tab =
-  | 'calendar'
-  | 'pending'
-  | 'archive'
-  | 'menu'
-  | 'settings-restaurant'
+type Tab = 'calendar' | 'pending' | 'archive' | 'menu' | 'settings-restaurant'
 
 /* ─── NavItem ─── */
 interface NavItemProps {
@@ -53,7 +46,7 @@ interface NavItemProps {
   label: string
   active?: boolean
   badge?: number
-  /** Solo tab Prenotazioni (header): shiny + pulse attorno al bottone quando badge ≥ 1. Il footer quick-nav non usa il pulse. */
+  /** Solo tab Prenotazioni (header): shiny + pulse attorno al bottone quando badge ≥ 1. */
   notifyHighlight?: boolean
   onClick: () => void
   mobileLabel?: string
@@ -92,7 +85,7 @@ const NavItem: React.FC<NavItemProps> = ({
         className={cn(
           'admin-nav-item admin-nav-tab-active relative w-full min-h-11 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl px-2 sm:px-3 py-2.5 text-sm font-semibold text-white cursor-pointer',
           'border-solid shadow-none',
-          showNotifyDecor && 'overflow-hidden'
+          showNotifyDecor && 'overflow-hidden',
         )}
       >
         {showNotifyDecor && <NotifyNavShinyLayers />}
@@ -149,8 +142,21 @@ const StatCard: React.FC<{ label: string; value: number }> = ({ label, value }) 
   </div>
 )
 
+export type AdminDashboardProps = {
+  /** Incrementato da AdminShell quando si apre Impostazioni dalla sidebar. */
+  restaurantSettingsSignal?: number
+  /** Se passato, sostituisce il corpo dei tab con il contenuto fornito (es. AdminHomePage). Restano visibili solo banner ristorante e nav a 5 voci (niente sotto-righe per tab). */
+  bodyOverride?: React.ReactNode
+  /** Chiamato quando si clicca un NavItem mentre bodyOverride è attivo — segnala ad AdminShell di uscire dalla Home. */
+  onBodyOverrideExit?: () => void
+}
+
 /* ─── Dashboard ─── */
-export const AdminDashboard: React.FC = () => {
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({
+  restaurantSettingsSignal = 0,
+  bodyOverride,
+  onBodyOverrideExit,
+}) => {
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
   const [calendarTargetDate, setCalendarTargetDate] = useState<string | null>(null)
   const [showNewBookingPanel, setShowNewBookingPanel] = useState(false)
@@ -158,14 +164,20 @@ export const AdminDashboard: React.FC = () => {
   const [archiveSortOrder, setArchiveSortOrder] = useState<SortOrder>('booking_date')
   const [menuToolbarPromoDisabled, setMenuToolbarPromoDisabled] = useState(false)
   const menuPricesTabRef = useRef<MenuPricesTabHandle>(null)
+  const dashboardRootRef = useRef<HTMLDivElement>(null)
   const { data: stats } = useBookingStats()
+
+  useEffect(() => {
+    if (restaurantSettingsSignal === 0) return
+    setActiveTab('settings-restaurant')
+  }, [restaurantSettingsSignal])
 
   useEffect(() => {
     if (activeTab !== 'pending') setShowNewBookingPanel(false)
   }, [activeTab])
+
   const { user, logout } = useAdminAuth()
   const restaurantName = useRestaurantName()
-  const { tenantSlug } = useTenantContext()
   const appIconSrc = `${import.meta.env.BASE_URL}icons/Icona-per-adminPage-no-bg.png`
   const { data: savedAppTheme = DEFAULT_APP_THEME, isPending: isAppThemePending } =
     useRestaurantSetting('app_theme')
@@ -173,7 +185,7 @@ export const AdminDashboard: React.FC = () => {
   useEffect(() => {
     const resolved = isAppThemePending ? DEFAULT_APP_THEME : savedAppTheme
     document.documentElement.setAttribute('data-admin-theme', resolved)
-    return () => document.documentElement.removeAttribute('data-admin-theme')
+    // nessun cleanup: il tema deve persistere per tutta la sessione admin
   }, [savedAppTheme, isAppThemePending])
 
   const handleViewInCalendar = (date: string) => {
@@ -182,10 +194,15 @@ export const AdminDashboard: React.FC = () => {
   }
 
   const scrollToTop = () => {
+    /** In layout Pro lo scroll è sul `<main>` di AdminShell, non sulla window. */
+    const shellMain = dashboardRootRef.current?.closest('main')
+    if (shellMain) {
+      shellMain.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  /** Stessi h-9 w-9 del tasto «Torna in alto»; attivo = primary come tab header. */
   const footerQuickNavBtnClass = (isActive: boolean) =>
     cn(
       'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
@@ -194,22 +211,24 @@ export const AdminDashboard: React.FC = () => {
         : 'border border-[var(--color-border)] bg-[var(--color-surface)] text-primary-900 hover:bg-[var(--color-surface-2)]',
     )
 
-  const openPublicBookingForm = () => {
-    if (!tenantSlug) return
-    window.location.href = `/prenota/${tenantSlug}`
+  const footerPendingNotify = stats != null && stats.pending != null && stats.pending > 0
+
+  const handleTabClick = (tab: Tab) => {
+    if (bodyOverride) onBodyOverrideExit?.()
+    setActiveTab(tab)
   }
 
-  const footerPendingNotify =
-    stats != null && stats.pending != null && stats.pending > 0
+  /** Con bodyOverride (Home Pro) non mostrare statistiche Calendario, filtri Archivio, toolbar Menu, intro Impostazioni, blocco Nuova prenotazione. */
+  const showTabSecondaryChrome = !bodyOverride
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--color-bg)]">
+    <div ref={dashboardRootRef} className="flex min-h-0 flex-1 flex-col bg-[var(--color-bg)]">
 
-      {/* ── Header in flusso documento: scrolla via insieme al contenuto (nessun ancoraggio sticky in alto) ── */}
+      {/* Header */}
       <header className="relative z-30 border-b border-[var(--color-border)] bg-[var(--color-bg)] shadow-sm">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 pt-4 md:gap-5 md:px-6 md:pt-6">
 
-          {/* Top bar */}
+          {/* Top bar con nome ristorante */}
           <div className="relative flex h-[106px] items-center justify-center overflow-hidden rounded-xl border border-primary-700/25 bg-primary-600 px-4 shadow-md md:px-6">
             <div className="absolute right-2 top-1/2 z-2 flex h-[100px] w-[100px] shrink-0 -translate-y-1/2 items-center justify-center overflow-hidden rounded-xl bg-transparent p-0 md:right-3">
               <img
@@ -220,7 +239,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
             <div className="w-full px-4 md:px-28 text-center pointer-events-none">
               <h1
-                className="relative -left-16 mx-auto max-w-[calc(100%-9rem)] md:max-w-[calc(100%-11rem)] overflow-hidden line-clamp-2 wrap-anywhere font-semibold italic font-serif tracking-wide text-white drop-shadow-sm leading-tight"
+                className="relative -left-16 mx-auto max-w-[calc(100%-9rem)] max-[645px]:left-0 max-[645px]:mx-auto max-[645px]:max-w-[min(100%,calc(100vw-2rem))] md:max-w-[calc(100%-11rem)] overflow-hidden line-clamp-2 wrap-anywhere font-semibold italic font-serif tracking-wide text-white drop-shadow-sm leading-tight"
                 style={{ fontSize: 'clamp(1.297rem, 2.767vw, 1.729rem)' }}
               >
                 {restaurantName || 'Booking SaaS'}
@@ -228,41 +247,48 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Nav + fascia contestuale nascosti solo con form nuova prenotazione aperto (tab Pendenti). Il collapse è solo sul tab Pendenti, allo stesso posto della vecchia fascia. */}
+          {/* Nav tabs — nascosto solo con form nuova prenotazione aperto */}
           <div className="space-y-4 pb-4">
             {!showNewBookingPanel && (
               <>
-                <nav className="grid grid-cols-2 items-start gap-2 sm:grid-cols-3 lg:grid-cols-6">
-                  <NavItem icon={Calendar} label="Calendario" active={activeTab === 'calendar'} onClick={() => setActiveTab('calendar')} />
+                {/* 5 tab + griglia 5 colonne */}
+                <nav className="grid grid-cols-3 items-start gap-2 sm:grid-cols-5">
+                  <NavItem
+                    icon={Calendar}
+                    label="Calendario"
+                    active={activeTab === 'calendar'}
+                    onClick={() => handleTabClick('calendar')}
+                  />
                   <NavItem
                     icon={Clock}
                     label="Prenotazioni"
                     active={activeTab === 'pending'}
                     badge={stats?.pending}
                     notifyHighlight
-                    onClick={() => setActiveTab('pending')}
+                    onClick={() => handleTabClick('pending')}
                   />
-                  <NavItem icon={Archive} label="Archivio" active={activeTab === 'archive'} onClick={() => setActiveTab('archive')} />
-                  <NavItem icon={UtensilsCrossed} label="Menu" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
+                  <NavItem
+                    icon={Archive}
+                    label="Archivio"
+                    active={activeTab === 'archive'}
+                    onClick={() => handleTabClick('archive')}
+                  />
+                  <NavItem
+                    icon={UtensilsCrossed}
+                    label="Menu"
+                    active={activeTab === 'menu'}
+                    onClick={() => handleTabClick('menu')}
+                  />
                   <NavItem
                     icon={Store}
-                    label="Impostazioni locale"
+                    label="Impostazioni"
+                    mobileLabel="Impost."
                     active={activeTab === 'settings-restaurant'}
-                    onClick={() => setActiveTab('settings-restaurant')}
-                    mobileLabel="Impostazioni"
-                  />
-                  <NavItem
-                    icon={ExternalLink}
-                    label="Visualizza Form Pubblico"
-                    mobileLabel="Form"
-                    onClick={() => {
-                      if (!tenantSlug) return
-                      window.location.href = `/prenota/${tenantSlug}`
-                    }}
+                    onClick={() => handleTabClick('settings-restaurant')}
                   />
                 </nav>
 
-                {activeTab === 'calendar' && (
+                {activeTab === 'calendar' && showTabSecondaryChrome && (
                   <div className="grid grid-cols-2 min-[470px]:grid-cols-4 gap-2 md:gap-3">
                     <StatCard label="Oggi" value={stats?.totalDay || 0} />
                     <StatCard label="Settimana" value={stats?.totalWeek || 0} />
@@ -271,7 +297,7 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                 )}
 
-                {activeTab === 'archive' && (
+                {activeTab === 'archive' && showTabSecondaryChrome && (
                   <ArchiveFiltersCard
                     filter={archiveFilter}
                     sortOrder={archiveSortOrder}
@@ -280,7 +306,7 @@ export const AdminDashboard: React.FC = () => {
                   />
                 )}
 
-                {activeTab === 'menu' && (
+                {activeTab === 'menu' && showTabSecondaryChrome && (
                   <MenuPricesHeroToolbar
                     promoDisabled={menuToolbarPromoDisabled}
                     onAddProduct={() => menuPricesTabRef.current?.startAddProduct()}
@@ -290,11 +316,13 @@ export const AdminDashboard: React.FC = () => {
                   />
                 )}
 
-                {activeTab === 'settings-restaurant' && <RestaurantSettingsIntro />}
+                {activeTab === 'settings-restaurant' && showTabSecondaryChrome && (
+                  <RestaurantSettingsIntro />
+                )}
               </>
             )}
 
-            {activeTab === 'pending' && (
+            {activeTab === 'pending' && showTabSecondaryChrome && (
               <div className="w-full overflow-hidden rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] shadow-md min-h-0">
                 <button
                   type="button"
@@ -327,42 +355,40 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </header>
 
-      {/* ── Main: tolto dal flusso con form lungo aperto (solo hero + collapse + footer nella pagina) ── */}
       <main
         className={cn(
           'flex-1 w-full space-y-4 pb-12 md:pb-16',
-          /* Archivio: meno vuoto sopra il blocco filtri rispetto all’header */
           activeTab === 'archive' ? 'pt-3 md:pt-4' : 'pt-6',
-          showNewBookingPanel && 'hidden',
+          showNewBookingPanel && !bodyOverride && 'hidden',
         )}
       >
-        {/* Tab content */}
-        <div
-          className={cn(
-            'mx-auto w-full max-w-7xl px-4 md:px-6',
-            activeTab === 'archive' ? 'pb-6 pt-3 md:pb-7 md:pt-4' : 'py-5 md:py-7',
-            /* Nessun min-h sulla tab Pendenti: lista vuota resta corta così il footer è in vista senza scroll */
-            activeTab !== 'menu' && activeTab !== 'pending' && 'min-h-[500px]'
-          )}
-        >
-          {activeTab === 'calendar' && <BookingCalendarTab initialDate={calendarTargetDate} />}
-          {activeTab === 'pending'  && <PendingRequestsTab />}
-          {activeTab === 'archive' && (
-            <ArchiveTab
-              onViewInCalendar={handleViewInCalendar}
-              filter={archiveFilter}
-              sortOrder={archiveSortOrder}
-            />
-          )}
-          {activeTab === 'menu' && (
-            <MenuPricesTab
-              ref={menuPricesTabRef}
-              omitHeroSection
-              onToolbarPromoDisabled={setMenuToolbarPromoDisabled}
-            />
-          )}
-          {activeTab === 'settings-restaurant' && <RestaurantSettingsTab />}
-        </div>
+        {bodyOverride ?? (
+          <div
+            className={cn(
+              'mx-auto w-full max-w-7xl px-4 md:px-6',
+              activeTab === 'archive' ? 'pb-6 pt-3 md:pb-7 md:pt-4' : 'py-5 md:py-7',
+              activeTab !== 'menu' && activeTab !== 'pending' && 'min-h-[500px]',
+            )}
+          >
+            {activeTab === 'calendar' && <BookingCalendarTab initialDate={calendarTargetDate} />}
+            {activeTab === 'pending' && <PendingRequestsTab />}
+            {activeTab === 'archive' && (
+              <ArchiveTab
+                onViewInCalendar={handleViewInCalendar}
+                filter={archiveFilter}
+                sortOrder={archiveSortOrder}
+              />
+            )}
+            {activeTab === 'menu' && (
+              <MenuPricesTab
+                ref={menuPricesTabRef}
+                omitHeroSection
+                onToolbarPromoDisabled={setMenuToolbarPromoDisabled}
+              />
+            )}
+            {activeTab === 'settings-restaurant' && <RestaurantSettingsTab />}
+          </div>
+        )}
       </main>
 
       <footer className="flex min-h-[62px] items-center border-t border-[var(--color-border)] bg-[var(--color-bg)] py-3">
@@ -381,7 +407,7 @@ export const AdminDashboard: React.FC = () => {
             >
               <button
                 type="button"
-                onClick={() => setActiveTab('calendar')}
+                onClick={() => handleTabClick('calendar')}
                 className={footerQuickNavBtnClass(activeTab === 'calendar')}
                 aria-label="Calendario"
                 title="Calendario"
@@ -395,7 +421,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="admin-nav-notify-pulse-wrap shrink-0 self-center rounded-lg">
                   <button
                     type="button"
-                    onClick={() => setActiveTab('pending')}
+                    onClick={() => handleTabClick('pending')}
                     className={cn(
                       footerQuickNavBtnClass(activeTab === 'pending'),
                       'footer-nav-notify-btn overflow-hidden',
@@ -422,7 +448,7 @@ export const AdminDashboard: React.FC = () => {
               ) : (
                 <button
                   type="button"
-                  onClick={() => setActiveTab('pending')}
+                  onClick={() => handleTabClick('pending')}
                   className={footerQuickNavBtnClass(activeTab === 'pending')}
                   aria-label="Prenotazioni"
                   title="Prenotazioni"
@@ -438,7 +464,7 @@ export const AdminDashboard: React.FC = () => {
               )}
               <button
                 type="button"
-                onClick={() => setActiveTab('archive')}
+                onClick={() => handleTabClick('archive')}
                 className={footerQuickNavBtnClass(activeTab === 'archive')}
                 aria-label="Archivio"
                 title="Archivio"
@@ -450,7 +476,7 @@ export const AdminDashboard: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('menu')}
+                onClick={() => handleTabClick('menu')}
                 className={footerQuickNavBtnClass(activeTab === 'menu')}
                 aria-label="Menu"
                 title="Menu"
@@ -459,30 +485,6 @@ export const AdminDashboard: React.FC = () => {
                   className={cn('h-4 w-4 shrink-0', activeTab === 'menu' ? 'text-white' : 'text-slate-800')}
                   aria-hidden
                 />
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('settings-restaurant')}
-                className={footerQuickNavBtnClass(activeTab === 'settings-restaurant')}
-                aria-label="Impostazioni locale"
-                title="Impostazioni locale"
-              >
-                <Store
-                  className={cn(
-                    'h-4 w-4 shrink-0',
-                    activeTab === 'settings-restaurant' ? 'text-white' : 'text-slate-800',
-                  )}
-                  aria-hidden
-                />
-              </button>
-              <button
-                type="button"
-                onClick={openPublicBookingForm}
-                className={footerQuickNavBtnClass(false)}
-                aria-label="Visualizza form pubblico prenotazioni"
-                title="Visualizza Form Pubblico"
-              >
-                <ExternalLink className="h-4 w-4 shrink-0 text-slate-800" aria-hidden />
               </button>
             </nav>
 

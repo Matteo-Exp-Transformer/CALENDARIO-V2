@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       admin_users: {
@@ -96,10 +71,12 @@ export type Database = {
           menu_selection: Json | null
           menu_total_booking: number | null
           menu_total_per_person: number | null
+          no_show: boolean
           num_guests: number | null
           placement: string | null
           preset_menu: string | null
           rejection_reason: string | null
+          source: string
           special_requests: string | null
           status: string
           tenant_id: string
@@ -126,10 +103,12 @@ export type Database = {
           menu_selection?: Json | null
           menu_total_booking?: number | null
           menu_total_per_person?: number | null
+          no_show?: boolean
           num_guests?: number | null
           placement?: string | null
           preset_menu?: string | null
           rejection_reason?: string | null
+          source?: string
           special_requests?: string | null
           status?: string
           tenant_id: string
@@ -156,10 +135,12 @@ export type Database = {
           menu_selection?: Json | null
           menu_total_booking?: number | null
           menu_total_per_person?: number | null
+          no_show?: boolean
           num_guests?: number | null
           placement?: string | null
           preset_menu?: string | null
           rejection_reason?: string | null
+          source?: string
           special_requests?: string | null
           status?: string
           tenant_id?: string
@@ -168,6 +149,115 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "booking_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_table_assignments: {
+        Row: {
+          booking_id: string
+          checked_out_at: string | null
+          created_at: string
+          date: string
+          id: string
+          service_slot_id: string
+          table_id: string
+          tenant_id: string
+          turn_number: number
+        }
+        Insert: {
+          booking_id: string
+          checked_out_at?: string | null
+          created_at?: string
+          date: string
+          id?: string
+          service_slot_id: string
+          table_id: string
+          tenant_id: string
+          turn_number?: number
+        }
+        Update: {
+          booking_id?: string
+          checked_out_at?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          service_slot_id?: string
+          table_id?: string
+          tenant_id?: string
+          turn_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_table_assignments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_table_assignments_service_slot_id_fkey"
+            columns: ["service_slot_id"]
+            isOneToOne: false
+            referencedRelation: "service_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_table_assignments_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_table_assignments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          source: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          source?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          source?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -267,6 +357,44 @@ export type Database = {
           },
         ]
       }
+      menu_categories: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          label: string
+          sort_order: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          label: string
+          sort_order?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          label?: string
+          sort_order?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_items: {
         Row: {
           booking_types: string[]
@@ -317,6 +445,7 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string
+          edition: string
           id: string
           is_active: boolean
           max_booking_requests_per_year: number
@@ -328,6 +457,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          edition?: string
           id?: string
           is_active?: boolean
           max_booking_requests_per_year?: number
@@ -339,6 +469,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          edition?: string
           id?: string
           is_active?: boolean
           max_booking_requests_per_year?: number
@@ -403,6 +534,214 @@ export type Database = {
           },
         ]
       }
+      rooms: {
+        Row: {
+          created_at: string
+          display_order: number
+          height: number
+          id: string
+          name: string
+          tenant_id: string
+          updated_at: string
+          width: number
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          height?: number
+          id?: string
+          name: string
+          tenant_id: string
+          updated_at?: string
+          width?: number
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          height?: number
+          id?: string
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+          width?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rooms_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_slot_overrides: {
+        Row: {
+          created_at: string
+          date_from: string
+          date_to: string
+          id: string
+          max_guests: number | null
+          max_turns: number | null
+          service_slot_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_from: string
+          date_to: string
+          id?: string
+          max_guests?: number | null
+          max_turns?: number | null
+          service_slot_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          date_from?: string
+          date_to?: string
+          id?: string
+          max_guests?: number | null
+          max_turns?: number | null
+          service_slot_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_slot_overrides_service_slot_id_fkey"
+            columns: ["service_slot_id"]
+            isOneToOne: false
+            referencedRelation: "service_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_slot_overrides_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_slots: {
+        Row: {
+          created_at: string
+          display_order: number
+          end_time: string
+          id: string
+          is_canonical: boolean
+          max_guests: number | null
+          max_turns: number | null
+          max_turns_resume: number | null
+          name: string
+          slot_color: string | null
+          start_time: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          end_time: string
+          id?: string
+          is_canonical?: boolean
+          max_guests?: number | null
+          max_turns?: number | null
+          max_turns_resume?: number | null
+          name: string
+          slot_color?: string | null
+          start_time: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          end_time?: string
+          id?: string
+          is_canonical?: boolean
+          max_guests?: number | null
+          max_turns?: number | null
+          max_turns_resume?: number | null
+          name?: string
+          slot_color?: string | null
+          start_time?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_slots_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tables: {
+        Row: {
+          active: boolean
+          capacity: number
+          created_at: string
+          id: string
+          name: string
+          placement: string
+          position_x: number
+          position_y: number
+          room_id: string | null
+          rotation: number
+          shape: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          capacity: number
+          created_at?: string
+          id?: string
+          name: string
+          placement?: string
+          position_x?: number
+          position_y?: number
+          room_id?: string | null
+          rotation?: number
+          shape?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          capacity?: number
+          created_at?: string
+          id?: string
+          name?: string
+          placement?: string
+          position_x?: number
+          position_y?: number
+          room_id?: string | null
+          rotation?: number
+          shape?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tables_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tables_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_usage: {
         Row: {
           booking_requests_count: number
@@ -443,12 +782,88 @@ export type Database = {
       check_admin_email: {
         Args: { check_email: string }
         Returns: {
+          edition: string
           name: string
+          org_name: string
+          slug: string
           tenant_id: string
         }[]
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       current_admin_tenant_id: { Args: never; Returns: string }
+      insert_service_slot: {
+        Args: {
+          p_display_order: number
+          p_end_time: string
+          p_max_guests: number
+          p_max_turns: number
+          p_name: string
+          p_start_time: string
+          p_tenant_id: string
+        }
+        Returns: {
+          created_at: string
+          display_order: number
+          end_time: string
+          id: string
+          is_canonical: boolean
+          max_guests: number | null
+          max_turns: number | null
+          name: string
+          slot_color: string | null
+          start_time: string
+          tenant_id: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "service_slots"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      insert_service_slot_override: {
+        Args: { payload: Json }
+        Returns: {
+          created_at: string
+          date_from: string
+          date_to: string
+          id: string
+          max_guests: number | null
+          max_turns: number | null
+          service_slot_id: string
+          tenant_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "service_slot_overrides"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      update_service_slot: {
+        Args: { payload: Json }
+        Returns: {
+          created_at: string
+          display_order: number
+          end_time: string
+          id: string
+          is_canonical: boolean
+          max_guests: number | null
+          max_turns: number | null
+          name: string
+          slot_color: string | null
+          start_time: string
+          tenant_id: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "service_slots"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       [_ in never]: never
@@ -577,9 +992,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

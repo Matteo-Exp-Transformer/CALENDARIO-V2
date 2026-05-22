@@ -760,6 +760,38 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ──────────────────────────────────────────────
+   Cursore manina su TUTTI gli elementi interattivi (norma globale).
+   Vale per button/link/select/role=button/[onclick] e div-cliccabili
+   marcati con .is-clickable o data-clickable. NON serve aggiungere
+   cursor-pointer a mano nei componenti — vedi docs/per-ui-design-skill.
+   Gli input di testo restano col cursore di scrittura (scelta esplicita).
+   ────────────────────────────────────────────── */
+button:not(:disabled),
+a[href],
+label[for],
+summary,
+select:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+[role="tab"]:not([aria-disabled="true"]),
+[role="menuitem"]:not([aria-disabled="true"]),
+[role="option"]:not([aria-disabled="true"]),
+[role="switch"]:not([aria-disabled="true"]),
+[onclick],
+.is-clickable,
+[data-clickable] {
+  cursor: pointer;
+}
+
+/* Disabilitato vince sempre: niente manina dove non si puo interagire */
+button:disabled,
+select:disabled,
+[aria-disabled="true"],
+[data-disabled="true"],
+.cursor-not-allowed {
+  cursor: not-allowed;
+}
+
 /* Scrollbar personalizzata */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--color-surface-2); }
@@ -1685,5 +1717,31 @@ button.archive-tab-filter-btn:focus:not(:focus-visible) {
 @media (max-width: 444px) {
   .booking-form-mobile {
     max-width: 68.75vw !important;
+  }
+}
+
+/* ───────────────────────────────────────────
+   Stampa briefing turno: nasconde la shell,
+   mostra solo la print-area.
+   ─────────────────────────────────────────── */
+@media print {
+  body > *:not(.print-portal) {
+    display: none !important;
+  }
+
+  .print-area {
+    display: block !important;
+  }
+
+  .print-area table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .print-area th,
+  .print-area td {
+    border: 1px solid #ccc;
+    padding: 4px 8px;
+    font-size: 11pt;
   }
 }

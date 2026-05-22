@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react'
 import { supabasePublic } from '../lib/supabasePublic'
+import type { TenantEdition } from '@/types/edition'
 
 interface TenantContextType {
   tenantId: string | null
   tenantSlug: string | null
   organizationName: string | null
+  edition: TenantEdition
   isLoading: boolean
   setTenantFromSlug: (slug: string) => Promise<void>
   setTenantFromAdmin: (email: string) => Promise<void>
@@ -17,6 +19,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [tenantId, setTenantId] = useState<string | null>(null)
   const [tenantSlug, setTenantSlug] = useState<string | null>(null)
   const [organizationName, setOrganizationName] = useState<string | null>(null)
+  const [edition, setEdition] = useState<TenantEdition>('pro')
   const [isLoading, setIsLoading] = useState(false)
 
   /** Risolve il tenant dalla slug (usato dalla pagina pubblica /prenota/:slug) */
@@ -67,17 +70,10 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       }
 
       const adminInfo = (adminData as any[])[0]
-      const resolvedTenantId = adminInfo.tenant_id as string
-
-      const { data: orgData } = await (supabasePublic
-        .from('organizations') as any)
-        .select('slug, name')
-        .eq('id', resolvedTenantId)
-        .single()
-
-      setTenantId(resolvedTenantId)
-      setTenantSlug(orgData?.slug || null)
-      setOrganizationName(orgData?.name || null)
+      setTenantId(adminInfo.tenant_id as string)
+      setTenantSlug(adminInfo.slug || null)
+      setOrganizationName(adminInfo.org_name || null)
+      setEdition((adminInfo.edition as TenantEdition) || 'pro')
     } catch (err) {
       console.error('Errore setTenantFromAdmin:', err)
       setTenantId(null)
@@ -92,6 +88,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setTenantId(null)
     setTenantSlug(null)
     setOrganizationName(null)
+    setEdition('classic')
   }, [])
 
   return (
@@ -100,6 +97,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         tenantId,
         tenantSlug,
         organizationName,
+        edition,
         isLoading,
         setTenantFromSlug,
         setTenantFromAdmin,

@@ -26,6 +26,9 @@ import { VolAuVentPromoBannerCards } from './VolAuVentPromoBannerCards'
 import { useAcceptedBookings } from '../hooks/useBookingQueries'
 import { useCapacityCheck } from '../hooks/useCapacityCheck'
 import { CapacityWarningModal } from './CapacityWarningModal'
+import { PastStartTimeWarningModal } from './PastStartTimeWarningModal'
+import { isWallClockStartBeforeNow, trimTimeToHHmm } from '../utils/dateUtils'
+import { logger } from '@/lib/logger'
 
 
 interface AdminBookingFormProps {
@@ -59,6 +62,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [selectedPreset, setSelectedPreset] = useState<PresetMenuType>(null)
   const [showCapacityWarning, setShowCapacityWarning] = useState(false)
+  const [showPastStartWarning, setShowPastStartWarning] = useState(false)
   const [touchCrossBurst, setTouchCrossBurst] = useState(0)
 
   const { mutate, isPending } = useCreateAdminBooking()
@@ -75,7 +79,6 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
     : [...DEFAULT_PLACEMENT_AREAS]
   const normalizedPlacementAreas =
     placementAreas.length > 0 ? placementAreas : [...DEFAULT_PLACEMENT_AREAS]
-  const { data: volAuVentPromoVisible = false } = useRestaurantSetting('booking_vol_au_vent_promo_visible')
   const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
     'booking_vol_au_vent_promo_message',
   )
@@ -291,23 +294,14 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
     return isValid
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!validate()) {
-      return
-    }
-
-    // Check capacity before submitting - show modal if capacity exceeded
+  /** Dopo eventuale OK su orario passato: capienza → eventuale modale → creazione. */
+  const continueSubmitAfterPastTimeCheck = () => {
     if (!capacityCheck.isAvailable) {
-
-      // Check if we have exceeded slots info
       if (capacityCheck.exceededSlots && capacityCheck.exceededSlots.length > 0) {
         setShowCapacityWarning(true)
         return
       }
 
-      // Fallback: calculate exceeded slots from slotsStatus if not available
       const affectedSlots = capacityCheck.slotsStatus.filter((slot) => {
         if (slot.capacity == null) return false
         const totalOccupied = slot.occupied + (formData.num_guests || 0)
@@ -320,14 +314,32 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
       }
     }
 
-    // If capacity check failed but no exceeded slots, proceed anyway (never block)
     if (!capacityCheck.isAvailable) {
-      console.warn('⚠️ [AdminBookingForm] Capacity check failed but no slot details available, proceeding anyway')
+      logger.warn('⚠️ [AdminBookingForm] Capacity check failed but no slot details available, proceeding anyway')
       toast.warn(`⚠️ Attenzione: la capienza potrebbe essere superata. La prenotazione verrà comunque creata.`)
     }
 
-    // Proceed with booking creation
     createBooking()
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!validate()) {
+      return
+    }
+
+    const startHHmm = trimTimeToHHmm(formData.desired_time || '')
+    if (
+      formData.desired_date &&
+      startHHmm &&
+      isWallClockStartBeforeNow(formData.desired_date, startHHmm)
+    ) {
+      setShowPastStartWarning(true)
+      return
+    }
+
+    continueSubmitAfterPastTimeCheck()
   }
 
   const createBooking = () => {
@@ -369,7 +381,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
         onSubmit?.()
       },
       onError: (error) => {
-        console.error('Error creating booking:', error)
+        logger.error('Error creating booking:', error)
         toast.error('Errore nella creazione della prenotazione')
       }
     })
@@ -532,7 +544,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
             {errors.booking_type && (
               <p className="text-sm text-red-500">{errors.booking_type}</p>
             )}
-            {volAuVentPromoVisible && volAuVentPromoBannerMessages.length > 0 && (
+            {volAuVentPromoBannerMessages.length > 0 && (
               <VolAuVentPromoBannerCards
                 messages={volAuVentPromoBannerMessages}
                 className="mt-1"
@@ -764,6 +776,19 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
         </button>
       </div>
     </form>
+
+    <PastStartTimeWarningModal
+      isOpen={showPastStartWarning}
+      variant="new_booking"
+      desiredDate={formData.desired_date}
+      startTimeHHmm={trimTimeToHHmm(formData.desired_time || '')}
+      onClose={() => setShowPastStartWarning(false)}
+      onCancel={() => setShowPastStartWarning(false)}
+      onConfirm={() => {
+        setShowPastStartWarning(false)
+        continueSubmitAfterPastTimeCheck()
+      }}
+    />
 
     {/* Capacity Warning Modal - Fuori dal form per evitare problemi di rendering */}
     {(() => {

@@ -142,6 +142,108 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // --- Slot availability guard ---
+    // Eseguito con service_role: bypassa RLS, vede tutto il necessario.
+    if (desired_date && desired_time && num_guests) {
+      // Leggi impostazioni
+      const { data: settingsRows } = await supabaseAdmin
+        .from("restaurant_settings")
+        .select("setting_key, setting_value")
+        .eq("tenant_id", orgId)
+        .eq("setting_key", "booking_time_slots_enabled");
+
+      const sMap: Record<string, unknown> = {};
+      for (const r of settingsRows ?? []) sMap[r.setting_key] = r.setting_value;
+      const timeSlotsEnabled: boolean =
+        sMap["booking_time_slots_enabled"] === false ? false : true;
+
+      // Prenotazioni accettate del giorno
+      const dateStart = `${desired_date}T00:00:00`;
+      const dateEnd = `${desired_date}T23:59:59`;
+      const { data: dayBookings } = await supabaseAdmin
+        .from("booking_requests")
+        .select("confirmed_start, confirmed_end, num_guests")
+        .eq("tenant_id", orgId)
+        .eq("status", "accepted")
+        .gte("confirmed_start", dateStart)
+        .lte("confirmed_start", dateEnd);
+
+      // Check per-fascia
+      if (timeSlotsEnabled) {
+        const { data: slotsRows } = await supabaseAdmin
+          .from("service_slots")
+          .select("id, name, start_time, end_time, max_guests, display_order")
+          .eq("tenant_id", orgId)
+          .order("display_order");
+
+        const slots = slotsRows ?? [];
+
+        if (slots.length > 0) {
+          const parseHm = (t: string) => {
+            const [h, m] = t.substring(0, 5).split(":").map(Number);
+            return h * 60 + m;
+          };
+          const isInSlot = (time: string, s: string, e: string) => {
+            const t = parseHm(time), sv = parseHm(s), ev = parseHm(e);
+            return ev < sv ? (t >= sv || t <= ev) : (t >= sv && t <= ev);
+          };
+          const segsOverlap = (aS: number, aE: number, bS: number, bE: number) => {
+            const a: [number,number][] = aE < aS ? [[aS,1440],[0,aE]] : [[aS,aE]];
+            const b: [number,number][] = bE < bS ? [[bS,1440],[0,bE]] : [[bS,bE]];
+            return a.some(([as,ae]) => b.some(([bs,be]) => as < be && bs < ae));
+          };
+          const getOccupiedSlots = (cStart: string, cEnd: string) => {
+            const st = cStart.match(/T(\d{2}:\d{2})/)?.[1] ?? "";
+            const et = cEnd.match(/T(\d{2}:\d{2})/)?.[1] ?? "";
+            if (!st || !et) return [];
+            return slots
+              .filter((s: { start_time: string; end_time: string }) =>
+                segsOverlap(parseHm(st), parseHm(et), parseHm(s.start_time), parseHm(s.end_time))
+              )
+              .map((s: { id: string }) => s.id);
+          };
+
+          const matchedSlot = [...slots]
+            .sort((a: { display_order: number }, b: { display_order: number }) => a.display_order - b.display_order)
+            .find((s: { start_time: string; end_time: string }) =>
+              isInSlot(desired_time, s.start_time, s.end_time)
+            );
+
+          if (matchedSlot) {
+            // Leggi override
+            const { data: ovRow } = await supabaseAdmin
+              .from("service_slot_overrides")
+              .select("max_guests")
+              .eq("tenant_id", orgId)
+              .eq("service_slot_id", matchedSlot.id)
+              .eq("override_date", desired_date)
+              .maybeSingle();
+
+            const cap: number | null = ovRow?.max_guests ?? matchedSlot.max_guests ?? null;
+
+            if (cap != null) {
+              const occupied = (dayBookings ?? []).reduce(
+                (acc: number, b: { confirmed_start: string; confirmed_end: string; num_guests: number }) => {
+                  const ids = getOccupiedSlots(b.confirmed_start, b.confirmed_end);
+                  return ids.includes(matchedSlot.id) ? acc + (b.num_guests ?? 0) : acc;
+                }, 0
+              );
+              if (occupied + num_guests > cap) {
+                return new Response(
+                  JSON.stringify({
+                    error: `Spiacenti, la fascia "${matchedSlot.name}" è al completo per questa data.`,
+                    code: "SLOT_LIMIT",
+                    slotName: matchedSlot.name,
+                  }),
+                  { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                );
+              }
+            }
+          }
+        }
+      }
+    }
+
     // --- Insert booking request ---
     const insertData: Record<string, unknown> = {
       tenant_id: orgId,
@@ -177,6 +279,33 @@ Deno.serve(async (req: Request) => {
         JSON.stringify({ error: "Errore durante il salvataggio della prenotazione" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // --- Upsert customer in CRM ---
+    // service_role bypassa RLS; il trigger enforce_customer_tenant salta il check
+    // se auth.role() != 'authenticated', quindi l'insert è sicuro da Edge Function.
+    if (clientEmailNormalized) {
+      const { data: existingCustomer } = await supabaseAdmin
+        .from("customers")
+        .select("id")
+        .eq("tenant_id", orgId)
+        .eq("email", clientEmailNormalized.toLowerCase())
+        .maybeSingle();
+
+      if (existingCustomer) {
+        await supabaseAdmin
+          .from("customers")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", existingCustomer.id);
+      } else {
+        await supabaseAdmin.from("customers").insert({
+          tenant_id: orgId,
+          name: client_name,
+          email: clientEmailNormalized,
+          phone: client_phone || null,
+          source: "synced",
+        });
+      }
     }
 
     // --- Record IP in rate_limits ---

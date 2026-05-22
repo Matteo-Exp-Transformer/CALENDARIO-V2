@@ -4,20 +4,29 @@ import { useAcceptBooking, useRejectBooking } from '../hooks/useBookingMutations
 import { BookingRequestCard } from './BookingRequestCard'
 import { RejectBookingModal } from './RejectBookingModal'
 import { CapacityWarningModal } from './CapacityWarningModal'
+import { PastStartTimeWarningModal } from './PastStartTimeWarningModal'
 import { toast } from 'react-toastify'
 import type { BookingRequest } from '@/types/booking'
-import { getSlotsOccupiedByBooking } from '../utils/capacityCalculator'
-import { DEFAULT_BOOKING_TIME_SLOTS } from '../utils/bookingTimeSlots'
-import {
-  DEFAULT_SLOT_GUEST_CAPACITIES,
-} from '../lib/restaurantSettingRegistry'
+import { getSlotsOccupiedByBookingV2 } from '../utils/capacityCalculator'
+import { DEFAULT_SLOT_GUEST_CAPACITIES } from '../lib/restaurantSettingRegistry'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
-import { createBookingDateTime, extractDateFromISO, calculateEndTimeFromStart } from '../utils/dateUtils'
+import { useDigestSlotConfigs, useServiceSlots } from '../hooks/useServiceSlots'
+import { useServiceSlotOverrides, resolveSlotOverride } from '../hooks/useServiceSlotOverrides'
+import {
+  createBookingDateTime,
+  extractDateFromISO,
+  calculateEndTimeFromStart,
+  isWallClockStartBeforeNow,
+  trimTimeToHHmm,
+} from '../utils/dateUtils'
+import { logger } from '@/lib/logger'
 
 export const PendingRequestsTab: React.FC = () => {
   const { data: pendingBookings, isLoading, error, refetch } = usePendingBookings()
   const { data: acceptedBookings = [] } = useAcceptedBookings()
-  const { data: bookingTimeSlots = DEFAULT_BOOKING_TIME_SLOTS } = useRestaurantSetting('booking_time_slots')
+  const { data: digestSlots = [] } = useDigestSlotConfigs()
+  const { data: serviceSlots = [] } = useServiceSlots()
+  const { data: slotOverrides = [] } = useServiceSlotOverrides()
   const { data: slotGuestCapacities = DEFAULT_SLOT_GUEST_CAPACITIES } =
     useRestaurantSetting('slot_guest_capacities')
   const acceptMutation = useAcceptBooking()
@@ -37,6 +46,9 @@ export const PendingRequestsTab: React.FC = () => {
     desiredTime: string; numGuests: number
   } | null>(null)
 
+  const [showPastStartWarning, setShowPastStartWarning] = useState(false)
+  const [pastStartPendingBooking, setPastStartPendingBooking] = useState<BookingRequest | null>(null)
+
   // ✅ FIX: Deduplicazione prenotazioni pending per evitare visualizzazioni doppie
   // Usa Set per tracciare ID già visti e filtra duplicati
   const uniquePendingBookings = useMemo(() => {
@@ -52,63 +64,118 @@ export const PendingRequestsTab: React.FC = () => {
     })
   }, [pendingBookings])
 
-  // Returns exceeded slot info if capacity would be exceeded, null if within capacity
+  // Ritorna info sul primo slot che supera la capacity, o null se tutto ok
   const getExceededSlotInfo = (
     booking: BookingRequest, startTime: string, endTime: string
   ): { slotName: string; totalOccupied: number; capacity: number; exceededBy: number } | null => {
     const date = booking.desired_date
     const numGuests = booking.num_guests || 0
+    if (digestSlots.length === 0) return null
 
     const dayBookings = acceptedBookings.filter((b) => {
       if (!b.confirmed_start) return false
-      const bookingDate = extractDateFromISO(b.confirmed_start)
-      return bookingDate === date
+      return extractDateFromISO(b.confirmed_start) === date
     })
 
-    const confirmedStart = `${date}T${startTime}:00`
-    const confirmedEnd = `${date}T${endTime}:00`
-    const newBookingSlots = getSlotsOccupiedByBooking(confirmedStart, confirmedEnd, bookingTimeSlots)
+    const confirmedStart = `${date}T${startTime}:00+00:00`
+    const confirmedEnd = `${date}T${endTime}:00+00:00`
+    const newBookingSlotIds = getSlotsOccupiedByBookingV2(confirmedStart, confirmedEnd, digestSlots)
 
-    const morning = { capacity: slotGuestCapacities.morning, occupied: 0 }
-    const afternoon = { capacity: slotGuestCapacities.afternoon, occupied: 0 }
-    const evening = { capacity: slotGuestCapacities.evening, occupied: 0 }
+    // Calcola capienza: service_slots.max_guests > slot_guest_capacities fallback > override
+    const getSlotCap = (slotId: string): number | null => {
+      const svcSlot = serviceSlots.find((s) => s.id === slotId)
+      if (svcSlot) {
+        const ov = resolveSlotOverride(slotOverrides, slotId, date)
+        if (ov) return ov.max_guests
+        if (svcSlot.max_guests != null) return svcSlot.max_guests
+      }
+      return slotGuestCapacities[slotId] ?? null
+    }
 
-    for (const existingBooking of dayBookings) {
-      if (!existingBooking.confirmed_start || !existingBooking.confirmed_end) continue
-      const slots = getSlotsOccupiedByBooking(
-        existingBooking.confirmed_start,
-        existingBooking.confirmed_end,
-        bookingTimeSlots,
-      )
-      const guests = existingBooking.num_guests || 0
-      for (const slot of slots) {
-        if (slot === 'morning') morning.occupied += guests
-        else if (slot === 'afternoon') afternoon.occupied += guests
-        else if (slot === 'evening') evening.occupied += guests
+    // Occupazione esistente per fascia
+    const occupied: Record<string, number> = {}
+    for (const slot of digestSlots) occupied[slot.id] = 0
+    for (const b of dayBookings) {
+      if (!b.confirmed_start || !b.confirmed_end) continue
+      for (const slotId of getSlotsOccupiedByBookingV2(b.confirmed_start, b.confirmed_end, digestSlots)) {
+        if (slotId in occupied) occupied[slotId] += b.num_guests ?? 0
       }
     }
 
-    for (const slot of newBookingSlots) {
-      let occupied: number, capacity: number | null, slotName: string
-      if (slot === 'morning') { occupied = morning.occupied; capacity = morning.capacity; slotName = 'mattina' }
-      else if (slot === 'afternoon') { occupied = afternoon.occupied; capacity = afternoon.capacity; slotName = 'pomeriggio' }
-      else if (slot === 'evening') { occupied = evening.occupied; capacity = evening.capacity; slotName = 'sera' }
-      else continue
-
-      const totalOccupied = occupied + numGuests
-      if (capacity != null && totalOccupied > capacity) {
-        return { slotName, totalOccupied, capacity, exceededBy: totalOccupied - capacity }
+    for (const slotId of newBookingSlotIds) {
+      const slot = digestSlots.find((s) => s.id === slotId)
+      if (!slot) continue
+      const cap = getSlotCap(slotId)
+      if (cap == null) continue
+      const totalOccupied = (occupied[slotId] ?? 0) + numGuests
+      if (totalOccupied > cap) {
+        return { slotName: slot.name, totalOccupied, capacity: cap, exceededBy: totalOccupied - cap }
       }
     }
 
     return null
   }
 
+  const runAcceptMutate = (payload: {
+    bookingId: string
+    confirmedStart: string
+    confirmedEnd: string
+    desiredTime: string
+    numGuests: number
+  }) => {
+    acceptMutation.mutate(
+      {
+        bookingId: payload.bookingId,
+        confirmedStart: payload.confirmedStart,
+        confirmedEnd: payload.confirmedEnd,
+        desiredTime: payload.desiredTime,
+        numGuests: payload.numGuests,
+      },
+      {
+        onSuccess: async () => {
+          toast.success('Prenotazione accettata con successo!')
+          await refetch()
+        },
+        onError: (error) => {
+          logger.error('❌ [PendingRequestsTab] Accept mutation error:', error)
+          toast.error('Errore nell\'accettazione della prenotazione')
+        },
+      }
+    )
+  }
+
+  /** Dopo conferma orario passato: controllo capienza (eventuale CapacityWarningModal) poi mutate. */
+  const continueAcceptAfterPastStart = (booking: BookingRequest, startTimeFormatted: string, confirmedStart: string, confirmedEnd: string) => {
+    const endTimeFormatted = calculateEndTimeFromStart(startTimeFormatted)
+    const exceededInfo = getExceededSlotInfo(booking, startTimeFormatted, endTimeFormatted)
+
+    if (exceededInfo) {
+      setPendingAcceptData({
+        bookingId: booking.id,
+        confirmedStart,
+        confirmedEnd,
+        desiredTime: startTimeFormatted,
+        numGuests: booking.num_guests,
+      })
+      setOverbookingSlotInfo(exceededInfo)
+      setShowOverbookingConfirm(true)
+      return
+    }
+
+    runAcceptMutate({
+      bookingId: booking.id,
+      confirmedStart,
+      confirmedEnd,
+      desiredTime: startTimeFormatted,
+      numGuests: booking.num_guests,
+    })
+  }
+
   const handleAccept = (booking: BookingRequest) => {
 
     // ✅ VALIDAZIONE: desired_time deve essere presente
     if (!booking.desired_time || booking.desired_time.trim() === '') {
-      console.error('❌ [PendingRequestsTab] No desired_time found for booking:', booking.id)
+      logger.error('❌ [PendingRequestsTab] No desired_time found for booking:', booking.id)
       toast.error('Errore: Orario di prenotazione non specificato. Impossibile accettare la prenotazione.')
       return
     }
@@ -126,43 +193,14 @@ export const PendingRequestsTab: React.FC = () => {
     // Create ISO strings handling midnight crossover
     const confirmedStart = createBookingDateTime(date, startTimeFormatted, true)
     const confirmedEnd = createBookingDateTime(date, endTimeFormatted, false, startTimeFormatted)
-    // ✅ CHECK CAPACITY - show warning modal if exceeded, but never block
-    const exceededInfo = getExceededSlotInfo(booking, startTimeFormatted, endTimeFormatted)
 
-    if (exceededInfo) {
-      // Store data for later use when user confirms via modal
-      setPendingAcceptData({
-        bookingId: booking.id,
-        confirmedStart,
-        confirmedEnd,
-        desiredTime: startTimeFormatted,
-        numGuests: booking.num_guests,
-      })
-      setOverbookingSlotInfo(exceededInfo)
-      setShowOverbookingConfirm(true)
+    if (isWallClockStartBeforeNow(date, startTimeFormatted)) {
+      setPastStartPendingBooking(booking)
+      setShowPastStartWarning(true)
       return
     }
 
-    acceptMutation.mutate(
-      {
-        bookingId: booking.id,
-        confirmedStart,
-        confirmedEnd,
-        desiredTime: startTimeFormatted, // ✅ Preserva l'orario originale del cliente
-        numGuests: booking.num_guests,
-      },
-      {
-        onSuccess: async () => {
-          toast.success('Prenotazione accettata con successo!')
-          // Forza il refetch delle richieste pending
-          await refetch()
-        },
-        onError: (error) => {
-          console.error('❌ [PendingRequestsTab] Accept mutation error:', error)
-          toast.error('Errore nell\'accettazione della prenotazione')
-        },
-      }
-    )
+    continueAcceptAfterPastStart(booking, startTimeFormatted, confirmedStart, confirmedEnd)
   }
 
   // Apre il modal quando si clicca su "Rifiuta"
@@ -178,7 +216,7 @@ export const PendingRequestsTab: React.FC = () => {
   // Conferma il rifiuto con il motivo inserito dall'admin
   const handleRejectConfirm = async (rejectionReason: string) => {
     if (!selectedBookingForReject) {
-      console.error('❌ [PendingRequestsTab] No booking selected for rejection')
+      logger.error('❌ [PendingRequestsTab] No booking selected for rejection')
       return
     }
 
@@ -198,7 +236,7 @@ export const PendingRequestsTab: React.FC = () => {
       // Forza il refetch delle richieste pending
       await refetch()
     } catch (error) {
-      console.error('❌ [PendingRequestsTab] Reject mutation error:', error)
+      logger.error('❌ [PendingRequestsTab] Reject mutation error:', error)
       toast.error('Errore nel rifiuto della prenotazione')
     }
   }
@@ -262,6 +300,32 @@ export const PendingRequestsTab: React.FC = () => {
         ))}
       </div>
 
+      <PastStartTimeWarningModal
+        isOpen={showPastStartWarning}
+        variant="accept_pending"
+        desiredDate={pastStartPendingBooking?.desired_date ?? ''}
+        startTimeHHmm={trimTimeToHHmm(pastStartPendingBooking?.desired_time ?? '')}
+        onClose={() => {
+          setShowPastStartWarning(false)
+          setPastStartPendingBooking(null)
+        }}
+        onCancel={() => {
+          setShowPastStartWarning(false)
+          setPastStartPendingBooking(null)
+        }}
+        onConfirm={() => {
+          const b = pastStartPendingBooking
+          setShowPastStartWarning(false)
+          setPastStartPendingBooking(null)
+          if (!b?.desired_time?.trim()) return
+          const startTimeFormatted = trimTimeToHHmm(b.desired_time)
+          const endTimeFormatted = calculateEndTimeFromStart(startTimeFormatted)
+          const confirmedStart = createBookingDateTime(b.desired_date, startTimeFormatted, true)
+          const confirmedEnd = createBookingDateTime(b.desired_date, endTimeFormatted, false, startTimeFormatted)
+          continueAcceptAfterPastStart(b, startTimeFormatted, confirmedStart, confirmedEnd)
+        }}
+      />
+
       {/* Modal per overbooking (solo avviso, non blocca) */}
       {overbookingSlotInfo && (
         <CapacityWarningModal
@@ -273,25 +337,7 @@ export const PendingRequestsTab: React.FC = () => {
           }}
           onConfirm={() => {
             if (pendingAcceptData) {
-              acceptMutation.mutate(
-                {
-                  bookingId: pendingAcceptData.bookingId,
-                  confirmedStart: pendingAcceptData.confirmedStart,
-                  confirmedEnd: pendingAcceptData.confirmedEnd,
-                  desiredTime: pendingAcceptData.desiredTime,
-                  numGuests: pendingAcceptData.numGuests,
-                },
-                {
-                  onSuccess: async () => {
-                    toast.success('Prenotazione accettata con successo!')
-                    await refetch()
-                  },
-                  onError: (error) => {
-                    console.error('❌ [PendingRequestsTab] Accept mutation error:', error)
-                    toast.error('Errore nell\'accettazione della prenotazione')
-                  },
-                }
-              )
+              runAcceptMutate(pendingAcceptData)
             }
             setShowOverbookingConfirm(false)
             setOverbookingSlotInfo(null)

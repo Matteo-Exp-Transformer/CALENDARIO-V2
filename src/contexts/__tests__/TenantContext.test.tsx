@@ -73,14 +73,9 @@ describe('TenantContext', () => {
 
   describe('setTenantFromAdmin', () => {
     it('risolve tenantId dall\'email admin', async () => {
-      // Prima chiamata: rpc check_admin_email
+      // RPC check_admin_email ora restituisce slug, org_name, edition in una sola chiamata
       mockRpc.mockResolvedValueOnce({
-        data: [{ tenant_id: 'tenant-xyz' }],
-        error: null,
-      })
-      // Seconda chiamata: from('organizations').select('slug, name').eq(...)
-      mockSingle.mockResolvedValueOnce({
-        data: { slug: 'ristorante-test', name: 'Ristorante Test' },
+        data: [{ tenant_id: 'tenant-xyz', slug: 'ristorante-test', org_name: 'Ristorante Test', edition: 'pro' }],
         error: null,
       })
 

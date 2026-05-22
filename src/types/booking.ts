@@ -4,7 +4,7 @@ import type { PresetMenuType } from '../features/booking/constants/presetMenus'
 
 export type BookingStatus = 'pending' | 'accepted' | 'rejected' | 'deleted'
 
-/** Tipologia prenotazione: tavolo senza menù; le altre due condividono selezione menù e intolleranze. */
+/** Tipologia prenotazione: tavolo senza menu; le altre due condividono selezione menu e intolleranze. */
 export type BookingType = 'tavolo' | 'rinfresco_laurea' | 'menu_prezzo_fisso'
 export type EventType = 'cena' | 'aperitivo' | 'evento' | 'laurea' | 'drink_caraffe' | 'drink_rinfresco_leggero' | 'drink_rinfresco_completo' | 'drink_rinfresco_completo_primo' | 'menu_pranzo_cena'
 
@@ -32,7 +32,7 @@ export interface BookingRequest {
   special_requests?: string
   menu?: string
 
-  // Extended properties for Rinfresco di Laurea / menù a prezzo fisso
+  // Extended properties for Rinfresco di Laurea / menu a prezzo fisso
   booking_type?: BookingType
   menu_selection?: {
     items: SelectedMenuItem[]
@@ -58,6 +58,10 @@ export interface BookingRequest {
 
   // Booking source tracking
   booking_source?: 'public' | 'admin'
+  source?: 'public_form' | 'manual' | 'walk_in' | 'phone' | 'google'
+
+  // No-show tracking (migrazione 009)
+  no_show?: boolean
 
   // Multi-tenant
   tenant_id: string
@@ -72,7 +76,7 @@ export interface BookingRequestInput {
   desired_time?: string
   num_guests: number
   special_requests?: string
-  // Extended properties for Rinfresco di Laurea / menù a prezzo fisso
+  // Extended properties for Rinfresco di Laurea / menu a prezzo fisso
   booking_type?: BookingType
   menu_selection?: {
     items: SelectedMenuItem[]
@@ -159,22 +163,31 @@ export interface PaginatedResponse<T> {
 }
 
 // Capacity management types
-export type TimeSlot = 'morning' | 'afternoon' | 'evening' | 'daily'
+
+/** Identificatore di fascia: service_slots.id (UUID) oppure 'daily' per il check giornaliero. */
+export type TimeSlot = string
 
 export interface TimeSlotCapacity {
   slot: TimeSlot
   /** null = nessun tetto configurato per questa fascia */
   capacity: number | null
   occupied: number
-  /** null quando non c’è cap (`capacity === null`) */
+  /** null quando non c'e cap (`capacity === null`) */
   available: number | null
 }
 
+/** Capacity giornaliera per N fasce dinamiche. */
 export interface DailyCapacity {
   date: string
-  morning: TimeSlotCapacity
-  afternoon: TimeSlotCapacity
-  evening: TimeSlotCapacity
+  slots: TimeSlotCapacity[]
+}
+
+/** @deprecated Compat getter per consumer legacy. Rimuovere allo Step 9. */
+export function dailyCapacityBySlotName(
+  cap: DailyCapacity,
+  slotName: 'morning' | 'afternoon' | 'evening'
+): TimeSlotCapacity | undefined {
+  return cap.slots.find((s) => s.slot === slotName)
 }
 
 export interface AvailabilityCheck {
