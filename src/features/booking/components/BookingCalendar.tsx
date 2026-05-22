@@ -324,7 +324,8 @@ function DigestBookingListRow({
       )}
       {hasTurns && (
         <span
-          onClick={(e) => { e.stopPropagation(); onDotClick?.(booking, e) }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDotClick?.(booking, e) }}
           aria-label={assigned ? 'Tavolo assegnato' : 'Assegna tavolo'}
           className={cn(
             'absolute top-1 right-1 h-2.5 w-2.5 rounded-full cursor-pointer z-10',
