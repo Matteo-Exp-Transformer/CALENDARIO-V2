@@ -245,13 +245,14 @@ Totale lavoro attivo: **6-8 ore** distribuite su 3-4 sessioni.
 - [x] A3 — Cap 3 colonne con wrapping (sessione 22-05-26)
 - [x] A4 — `npm run validate` verde (127/127), verifica manuale confermata da Matteo
 - [x] A5 — Check disponibilità fascia pubblica: codice corretto, verificato su Pro e Classic (22-05-26)
-- [ ] B1 — Checklist verifiche manuali TEST completata (13 punti)
+- [x] B1 — Verifiche manuali TEST completate (Classic + Pro) — 22-05-26
 - [x] B2 — Skill DB aggiornati (DATABASE.md, DB_MIGRATIONS_CONTEXT.md, DB_SCHEMA_CONTEXT.md) — 22-05-26
-- [x] B3 — Decisione su 019 presa: VA APPLICATA in prod (4 tenant hanno ancora la chiave) — 22-05-26
-- [x] B4 — Ispezione prod read-only OK (22-05-26): 8 tenant × 5 slot ciascuno ✅, colonne service_slots senza 023/024 ✅, registro prod timestamp 001–021 ✅, nessuna 022/023/024 in prod ✅
-- [ ] C1 — PR aperta su `main` con descrizione completa
-- [ ] C2 — 022, 023, 024 applicate in prod (e 019 se decisione B3 lo richiede)
-- [ ] C3 — Smoke test prod OK
-- [ ] C4 — PR mergiata su `main`
-- [ ] C5 — Deploy in produzione completato
-- [ ] C6 — 24-48h monitoring senza incidenti
+- [x] B3 — Decisione su 019 presa: VA APPLICATA in prod — 22-05-26
+- [x] B4 — Ispezione prod read-only OK — 22-05-26
+- [x] C1 — PR #1 aperta e mergiata su `main` — 22-05-26
+- [x] C2 — 019, 022, 023, 024, 025 applicate in prod via MCP — 22-05-26 (nota: 025 non era nel piano originale — aggiunta perché RLS Classic bloccava service_slots)
+- [x] C3 — Smoke test prod OK — 22-05-26
+- [x] C4 — PR mergiata su `main` (SHA 7376b89) — 22-05-26
+- [x] C5 — Deploy in produzione su Vercel attivo — 22-05-26
+- [ ] C6 — 24-48h monitoring senza incidenti (in corso)
+- [x] Fix post-deploy: walk-in 0-500, email/telefono opzionali — PR #2 mergiata (SHA e17bb6e) — 22-05-26

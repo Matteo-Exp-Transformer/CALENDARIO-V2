@@ -4,7 +4,7 @@
 
 ---
 
-## 1. Stato migrazioni (aggiornato 2026-05-22)
+## 1. Stato migrazioni (aggiornato 2026-05-22 — rollout produzione completato)
 
 > ⚠️ **DUE ambienti Supabase distinti — non confonderli:**
 > - **PRODUZIONE**: `rwuxgvldzrkabglkasym.supabase.co` — MCP server "Supabase".
@@ -37,20 +37,16 @@
  019   |        | 019_cleanup_booking_time_slots.sql  ← DELETE chiave deprecata booking_time_slots da restaurant_settings (NON applicata) (2026-05-15)
  020   | 020*   | 020_drop_legacy_update_service_slot.sql  ← DROP firma legacy update_service_slot a 8 param (fix PGRST202 overloading) (2026-05-15)
  021   | 021*   | 021_update_service_slot_jsonb.sql  ← update_service_slot riscritta con SINGOLO param jsonb (firma univoca, immune a PGRST202); DROP firma a 9 param (2026-05-15)
-  022   | TEST ✅ prod ❌ | 022_service_slot_overrides.sql  ← tabella service_slot_overrides + RPC insert_service_slot_override(jsonb). TEST ok (2026-05-16). Da applicare in prod al rollout.
-  023   | TEST ✅ prod ❌ | 023_service_slots_max_turns_resume.sql  ← colonna max_turns_resume + update_service_slot(jsonb) estesa. TEST ok (2026-05-16). Da applicare in prod al rollout.
-  024   | TEST ✅ prod ❌ | 024_n_canonical_slots.sql  ← colonna slot_color su service_slots + aggiornamento commento is_canonical. TEST ok. Da applicare in prod al rollout.
-  019   | ❌ nessuno     | 019_cleanup_booking_time_slots.sql  ← DELETE chiave booking_time_slots da restaurant_settings. NON applicata né TEST né prod. Verificato 2026-05-22: 4 tenant prod hanno ancora questa chiave → VA APPLICATA in prod prima del codice nuovo. Idempotente.
+  019   | TEST ❌ prod ✅ | 019_cleanup_booking_time_slots.sql  ← DELETE chiave booking_time_slots da restaurant_settings. Applicata in PROD (2026-05-22) via MCP con nome colonna corretto (setting_key). File locale aveva bug (key→setting_key): corretto nel commit fix(migrations). NON applicata su TEST.
+  022   | TEST ✅ prod ✅ | 022_service_slot_overrides.sql  ← tabella service_slot_overrides + RPC insert_service_slot_override(jsonb). Applicata in PROD (2026-05-22).
+  023   | TEST ✅ prod ✅ | 023_service_slots_max_turns_resume.sql  ← colonna max_turns_resume + update_service_slot(jsonb) estesa. Applicata in PROD (2026-05-22).
+  024   | TEST ✅ prod ✅ | 024_n_canonical_slots.sql  ← colonna slot_color su service_slots + aggiornamento commento is_canonical. Applicata in PROD (2026-05-22).
+  025   | TEST ✅ prod ✅ | 025_rls_service_slots_classic.sql  ← rimuove gate edition dalle policy RLS di service_slots. Classic può leggere/scrivere le proprie fasce. Applicata in PROD (2026-05-22).
 ```
 
 *Le 013-018, 020, 021 sono applicate sul DB **produzione** via MCP `apply_migration` (versioni timestamp `20260513...`–`20260515183055` nel registro prod). Sul **DB di test** sono state applicate via MCP solo 016, 017, 018(insert)+021 (allineamento 2026-05-15).
 
-> **Ordine applicazione in prod al rollout (C2 del piano master)**:
-> 1. `019` (idempotente, rimuove chiave deprecata da restaurant_settings)
-> 2. `022` (crea tabella service_slot_overrides)
-> 3. `023` (aggiunge colonna max_turns_resume)
-> 4. `024` (aggiunge colonna slot_color)
-> Una alla volta, smoke check dopo ciascuna. Mai usare `supabase db push`.
+> **Rollout produzione completato (2026-05-22)**: 019, 022, 023, 024, 025 applicate in prod via MCP in quest'ordine. Smoke test OK. Branch mergiato su main. Deploy attivo su Vercel.
 
 > **Nota PGRST202 — soluzione definitiva (2026-05-15)**: il bug è ricomparso più volte perché una RPC con N parametri opzionali è fragile con PostgREST (qualsiasi ambiguità o schema cache stale → "function not found"). Storia: 018 v1 creò la firma a 8 param; 018 v2 ne aggiunse una a 9 param senza sostituire la prima (overloading → PGRST202); 020 droppò la 8 param ma il problema poteva tornare per cache stale. **021 risolve alla radice**: `update_service_slot(payload jsonb)` — un solo parametro, firma univoca, niente più risoluzione di overload. Semantica PATCH: chiave assente = mantieni; `"max_guests": null` = azzera (presenza della chiave = intento). Il flag `p_clear_max_guests` non serve più.
 

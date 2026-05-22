@@ -148,6 +148,7 @@ RULE  Prop aggiunte ad AdminDashboard sempre OPTIONAL con default sensati
 RULE  Edition Classic = !features.sidebar → AdminShell fa return anticipato, nessuna sidebar
 RULE  Per aggiungere una feature gated: 1) flag in FeatureFlags+buildFeatures 2) featureKey in SIDEBAR_NAV_ITEMS 3) gating nel render
 
+RULE  walk_in_max_guests: range 0–500 (0 = nessun walk-in accettato), campo opzionale. email/phone contatto opzionali — validati solo se compilati. Validazione in `restaurantSettingRegistry.ts`.
 RULE  Selettore orario: UNICO componente `TimePicker24h` (pubblico+admin), minuti liberi 0-59, prop `compact` per form pubblico — `TimeInput` ELIMINATO, non reintrodurre input nativo type="time"
 RULE  Avviso orario notturno (fine < inizio): testo unico `OVERNIGHT_TIME_END_HINT` in `bookingTimeSlots.ts` — mostrarlo nel modal CRUD fascia (Servizio) e nella sezione Classic «Imposta Fasce Orarie» (`RestaurantSettingsTab`, `!features.servizio`); **non** usare sigle inline tipo `(notturna +1)` nelle liste fasce Pro
 RULE  Modal CRUD fascia (`ServiceSlotsManager` / `SlotModal`): `FormInfoToggle` (icona + «?») apre `FormInfoPanel` blu (`border-blue-200` / `bg-blue-50` / `text-blue-800`) con chiusura ✕; menu durata senza «Quando?» — etichetta scope (`Sempre`, …); scope `forever` = solo `service_slots`
