@@ -70,7 +70,7 @@ export function getStartSlotForBookingV2(start: string, slots: SlotConfig[]): st
   for (const slot of sorted) {
     if (isTimeInsideSlot(startTime, slot.start_time, slot.end_time)) return slot.id
   }
-  return sorted[sorted.length - 1].id
+  return '__unassigned__'
 }
 
 /**

@@ -413,8 +413,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
           break
         }
       }
-      if (!matched && digestSlots.length > 0) {
-        bySlot[digestSlots[0].id].push(booking)
+      if (!matched) {
+        if (!bySlot['__unassigned__']) bySlot['__unassigned__'] = []
+        bySlot['__unassigned__'].push(booking)
       }
     }
     return bySlot
@@ -534,6 +535,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   const digestTableOnlyBySlot = useMemo(
     () => splitDigestBySlotConfigs(digestTableOnly),
     [digestTableOnly, digestSlots]
+  )
+  const digestUnassignedWithMenu = useMemo(
+    () => digestWithMenuBySlot['__unassigned__'] ?? [],
+    [digestWithMenuBySlot]
+  )
+  const digestUnassignedTableOnly = useMemo(
+    () => digestTableOnlyBySlot['__unassigned__'] ?? [],
+    [digestTableOnlyBySlot]
   )
 
   // Pro: set di booking_id con almeno un assignment attivo per la data selezionata
@@ -918,13 +927,12 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         </div>
                       ) : (
                         <>
-                          <div className="hidden min-[1390px]:grid gap-2" style={{ gridTemplateColumns: `repeat(${digestSlots.length}, minmax(0, 1fr))` }}>
+                          <div className="hidden min-[1390px]:grid grid-cols-3 gap-2">
                             {digestSlots.map((s: SlotConfig) => (
                               <DigestSlotHeader key={s.id} label={getSlotLabel(s)} />
                             ))}
                           </div>
-                          <div className="mt-2 hidden min-[1390px]:block">
-                            <div className="gap-2 auto-rows-[minmax(0,auto)] items-start" style={{ display: 'grid', gridTemplateColumns: `repeat(${digestSlots.length}, minmax(0, 1fr))` }}>
+                          <div className="mt-2 hidden min-[1390px]:grid grid-cols-3 gap-2 auto-rows-[minmax(0,auto)] items-start">
                               {digestSlots.map((s: SlotConfig) => (
                                 <div key={s.id} className="grid min-w-0 w-full grid-cols-1 sm:grid-cols-2 gap-2 items-start">
                                   {filterByTurn(digestWithMenuBySlot[s.id] ?? []).map((booking) => (
@@ -943,7 +951,6 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                   ))}
                                 </div>
                               ))}
-                            </div>
                           </div>
                           <div className="min-[1390px]:hidden space-y-3">
                             {digestSlots.map((s: SlotConfig) => (
@@ -1007,13 +1014,12 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         </div>
                       ) : (
                         <>
-                          <div className="hidden min-[1390px]:grid gap-2" style={{ gridTemplateColumns: `repeat(${digestSlots.length}, minmax(0, 1fr))` }}>
+                          <div className="hidden min-[1390px]:grid grid-cols-3 gap-2">
                             {digestSlots.map((s: SlotConfig) => (
                               <DigestSlotHeader key={s.id} label={getSlotLabel(s)} />
                             ))}
                           </div>
-                          <div className="mt-2 hidden min-[1390px]:block">
-                            <div className="gap-2 auto-rows-[minmax(0,auto)] items-start" style={{ display: 'grid', gridTemplateColumns: `repeat(${digestSlots.length}, minmax(0, 1fr))` }}>
+                          <div className="mt-2 hidden min-[1390px]:grid grid-cols-3 gap-2 auto-rows-[minmax(0,auto)] items-start">
                               {digestSlots.map((s: SlotConfig) => (
                                 <div key={s.id} className="grid min-w-0 w-full grid-cols-1 sm:grid-cols-2 gap-2 items-start">
                                   {filterByTurn(digestTableOnlyBySlot[s.id] ?? []).map((booking) => (
@@ -1031,7 +1037,6 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                                   ))}
                                 </div>
                               ))}
-                            </div>
                           </div>
                           <div className="min-[1390px]:hidden space-y-3">
                             {digestSlots.map((s: SlotConfig) => (
@@ -1062,6 +1067,41 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                     </p>
                   )}
                 </section>
+
+                {/* Sezione orfani: booking fuori da ogni fascia oraria configurata */}
+                {timeSlotsEnabled && digestSlots.length > 0 && (digestUnassignedWithMenu.length > 0 || digestUnassignedTableOnly.length > 0) && (
+                  <>
+                    <div className="border-t-2 border-(--color-border) pt-8 mt-2" aria-hidden />
+                    <section aria-labelledby="digest-unassigned-heading">
+                      <div
+                        id="digest-unassigned-heading"
+                        className="admin-warm-surface mb-3 flex items-center justify-center rounded-xl border px-3 py-2 text-center shadow-sm"
+                      >
+                        <h5 className="text-[19px]! font-semibold tracking-wide text-primary-900">
+                          Fuori fascia
+                        </h5>
+                      </div>
+                      <div className="rounded-xl border border-(--color-border) bg-surface/90 p-2 shadow-inner">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {filterByTurn([...digestUnassignedWithMenu, ...digestUnassignedTableOnly]).map((booking) => (
+                            <div key={booking.id} className="flex min-w-0 w-full flex-col">
+                              <DigestBookingListRow
+                                booking={booking}
+                                onOpen={openDigestBooking}
+                                showMenuPricing={digestBookingHasMenuContext(booking)}
+                                compactGrid
+                                unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
+                                assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                                hasTurns={hasTurnsFeature}
+                                onDotClick={handleDotClick}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </section>
+                  </>
+                )}
               </div>
             ) : (
               <p className="text-center text-sm text-(--color-text-muted) italic py-4 rounded-xl border border-dashed border-(--color-border) bg-(--color-surface-2)/80">
