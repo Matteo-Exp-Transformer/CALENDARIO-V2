@@ -201,7 +201,7 @@ Le feature sidebar (CRM esteso, Servizio, Analytics, Home) NON devono:
 
 ---
 
-## 4. Stato attuale (snapshot 19-05-26 — post pallino assegnazione tavolo + rimozione placement areas)
+## 4. Stato attuale (snapshot 22-05-26 — post A5 check disponibilità fascia pubblica verificato)
 
 Branch `Sviluppo-Dashboard-laterale` rispetto a `main`:
 
@@ -217,7 +217,9 @@ Branch `Sviluppo-Dashboard-laterale` rispetto a `main`:
 - **useHomeStats.ts**: `UpcomingBooking` espone `start_time: string` (da `desired_time` o `extractTimeFromISO`) in luogo di `start_iso`.
 - **PastStartTimeWarningModal** + `isWallClockStartBeforeNow` in `dateUtils.ts`: prima di accettare dalla tab *Richieste in attesa*, di salvare modifiche in **BookingDetailsModal**, o di inviare **AdminBookingForm** (“Inserisci Nuova Prenotazione”), se data e ora di inizio (orologio locale) sono già nel passato si mostra un dialog di conferma; dopo OK si ripete la catena capienza → `CapacityWarningModal` → mutate/salvataggio/creazione come prima.
 
-**Riferimento completo**: `docs/Sessioni di lavoro/15-05-26/Revisionate da claude/Report-unificazione-fasce-orarie-canoniche.md` (sessione 15-05). `docs/Sessioni di lavoro/19-05-26/Report-pallino-assegnazione-tavolo.md` (sessione 19-05).
+- **Check disponibilità fascia pubblica** (A5, 22-05-26): `supabase/functions/create-booking/index.ts` contiene guard server-side che calcola `cap - occupied` per la fascia corrispondente all'orario richiesto, usando `service_slot_overrides` per override data-specifica. `supabase/functions/check-slot-availability/index.ts` è la EF pre-check chiamata da `useCheckSlotAvailability` hook (usato in `BookingRequestForm` prima del submit). Doppia guardia: client blocca con toast, server blocca con 409 SLOT_LIMIT contro race condition. Logica: `confirmed_start` delle prenotazioni accepted nel range `desired_date T00:00:00`–`T23:59:59` + overlap fascia → somma `num_guests` → confronto con cap. Verificato funzionante su Pro e Classic (22-05-26).
+
+**Riferimento completo**: `docs/Sessioni di lavoro/15-05-26/Revisionate da claude/Report-unificazione-fasce-orarie-canoniche.md` (sessione 15-05). `docs/Sessioni di lavoro/19-05-26/Report-pallino-assegnazione-tavolo.md` (sessione 19-05). `docs/Sessioni di lavoro/22-05-26/Report-A5-check-disponibilita-fascia-pubblica.md` (sessione 22-05).
 
 ---
 

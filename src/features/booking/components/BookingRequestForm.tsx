@@ -6,6 +6,7 @@ import { TimePicker24h } from '@/components/ui'
 import type { BookingRequestInput, BookingType } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { useCreateBookingRequest } from '../hooks/useBookingRequests'
+import { useCheckSlotAvailability } from '../hooks/useCheckSlotAvailability'
 import { useRateLimit } from '@/hooks/useRateLimit'
 import { Check, Send, Loader2, CheckCircle } from 'lucide-react'
 import { MenuSelection } from './MenuSelection'
@@ -157,6 +158,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
       const newFormData = { ...formData, num_guests: 0, menu_total_booking: tiramisuTotal }
       setFormData(newFormData)
       setErrors({ ...errors, num_guests: '' })
+      resetAvailability()
       return
     }
     
@@ -238,6 +240,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
   }
 
   const { mutate, isPending } = useCreateBookingRequest()
+  const { check: checkSlotAvailability, isChecking: isCheckingAvailability, reset: resetAvailability } = useCheckSlotAvailability()
   const { checkRateLimit, isBlocked } = useRateLimit({
     maxAttempts: 3,
     timeWindow: 60000 // 1 minuto
@@ -452,7 +455,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
     return isValid
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     e.stopPropagation() // Previene propagazione eventi
 
@@ -494,19 +497,40 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
       return
     }
 
-    // Validazione
+    // Validazione form
     if (!validate()) {
-      releaseGlobalLock(lockId) // Rilascia lock se validazione fallisce
+      releaseGlobalLock(lockId)
       return
     }
 
     // Imposta tutti i flag per prevenire doppi submit
-    // IMPORTANTE: Imposta flag PRIMA di chiamare mutate
     isSubmittingRef.current = true
-    setIsSubmitting(true) // Triggera re-render per disabilitare button immediatamente
-    
-    
-    // Chiama mutate - il lock globale e la mutation lock prevengono doppi insert
+    setIsSubmitting(true)
+
+    // Check disponibilità fascia (client-side pre-submit)
+    if (tenantSlug && formData.desired_date && formData.desired_time && formData.num_guests > 0) {
+      const availability = await checkSlotAvailability({
+        tenantSlug,
+        desired_date: formData.desired_date,
+        desired_time: formData.desired_time,
+        num_guests: formData.num_guests,
+      })
+      if (!availability.available) {
+        isSubmittingRef.current = false
+        setIsSubmitting(false)
+        releaseGlobalLock(lockId)
+        setErrors((prev) => ({ ...prev, slot_availability: availability.message ?? 'Fascia non disponibile per questa data.' }))
+        toast.error(availability.message ?? 'Fascia non disponibile per questa data.', {
+          position: 'top-center',
+          autoClose: 6000,
+        })
+        const el = document.getElementById('desired_time')
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        return
+      }
+    }
+
+    // Chiama mutate — il guard server-side in create-booking è la garanzia definitiva
     mutate({ ...formData, tenantSlug }, {
       onSuccess: () => {
         
@@ -664,6 +688,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
               value={formData.desired_date}
               onChange={(newDate) => {
                 setFormData({ ...formData, desired_date: newDate })
+                resetAvailability()
 
                 // Real-time validation for business hours
                 const timeError = newDate && formData.desired_time
@@ -708,6 +733,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
               value={formData.desired_time || '16:00'}
               onChange={(newTime) => {
                 setFormData({ ...formData, desired_time: newTime })
+                resetAvailability()
 
                 // Real-time validation for business hours
                 const timeError = formData.desired_date && newTime
@@ -738,6 +764,12 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             )}
           </div>
         </div>
+
+        {errors.slot_availability && (
+          <div className="text-sm text-red-700 font-semibold p-4 rounded-xl bg-white/90 backdrop-blur-[1px] border border-red-400/40 text-center">
+            {errors.slot_availability}
+          </div>
+        )}
 
         {/* Tipologia di prenotazione (sotto Data / Ora) */}
         <div className="mt-2">
@@ -920,10 +952,10 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
       <div className="flex w-full justify-center items-center mt-12">
         <button
             type="submit"
-            disabled={isPending || isBlocked || isSubmitting}
+            disabled={isPending || isBlocked || isSubmitting || isCheckingAvailability}
             className="booking-cross-shine-btn group relative overflow-hidden px-12 md:px-20 py-7 text-xl md:text-2xl uppercase tracking-wide font-bold text-white rounded-full bg-green-600 hover:bg-green-700 shadow-2xl hover:shadow-[0_20px_40px_rgba(34,197,94,0.4)] hover:-translate-y-1 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-2xl w-full md:w-auto max-w-md md:max-w-2xl"
             onPointerDown={(e) => {
-              if (isPending || isBlocked || isSubmitting) return
+              if (isPending || isBlocked || isSubmitting || isCheckingAvailability) return
               if (
                 typeof window !== 'undefined' &&
                 (e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches)
@@ -946,7 +978,12 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
 
             {/* Content */}
             <div className="relative z-10 flex items-center justify-center gap-3 whitespace-nowrap">
-              {isPending ? (
+              {isCheckingAvailability ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span className="text-base md:text-lg">Verifica disponibilità...</span>
+                </>
+              ) : isPending ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
                   <span className="text-base md:text-lg">Invio in corso...</span>
