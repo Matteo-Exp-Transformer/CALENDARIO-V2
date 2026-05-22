@@ -250,9 +250,9 @@ Totale lavoro attivo: **6-8 ore** distribuite su 3-4 sessioni.
 - [x] A4 — `npm run validate` verde (127/127), verifica manuale confermata da Matteo
 - [x] A5 — Check disponibilità fascia pubblica: codice corretto, verificato su Pro e Classic (22-05-26)
 - [ ] B1 — Checklist verifiche manuali TEST completata (13 punti)
-- [ ] B2 — Skill DB aggiornati (DATABASE.md, DB_MIGRATIONS_CONTEXT.md, DB_SCHEMA_CONTEXT.md)
-- [ ] B3 — Decisione su 019 presa
-- [ ] B4 — Ispezione prod read-only OK
+- [x] B2 — Skill DB aggiornati (DATABASE.md, DB_MIGRATIONS_CONTEXT.md, DB_SCHEMA_CONTEXT.md) — 22-05-26
+- [x] B3 — Decisione su 019 presa: VA APPLICATA in prod (4 tenant hanno ancora la chiave) — 22-05-26
+- [x] B4 — Ispezione prod read-only OK (22-05-26): 8 tenant × 5 slot ciascuno ✅, colonne service_slots senza 023/024 ✅, registro prod timestamp 001–021 ✅, nessuna 022/023/024 in prod ✅
 - [ ] C1 — PR aperta su `main` con descrizione completa
 - [ ] C2 — 022, 023, 024 applicate in prod (e 019 se decisione B3 lo richiede)
 - [ ] C3 — Smoke test prod OK

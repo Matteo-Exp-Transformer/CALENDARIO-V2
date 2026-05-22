@@ -6,7 +6,7 @@ Il DB remoto fu inizializzato con naming timestamped prima di adottare il naming
 
 I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati come `reverted` il 2026-05-13 tramite `supabase migration repair --status reverted`, eliminando il blocco su `db push`.
 
-### Stato migrazioni (aggiornato 2026-05-14)
+### Stato migrazioni (aggiornato 2026-05-22)
 
 | Versione | File | Stato |
 |----------|------|-------|
@@ -25,11 +25,16 @@ I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati
 | 012 | `012_service_slots_preset_signup.sql` | applicata |
 | 013 | `013_tenants_edition.sql` | applicata via MCP Supabase (2026-05-14) |
 | 014–021 | edition gates, service_slots canonical/max_guests, RPC jsonb | applicate (vedi `Database-Skill/DB_MIGRATIONS_CONTEXT.md`) |
-| 022 | `022_service_slot_overrides.sql` | applicata **solo su TEST** (`docnnernvp`, 2026-05-16) — NON su produzione |
+| 022 | `022_service_slot_overrides.sql` | TEST ✅ — prod ❌ (da applicare al rollout) |
+| 023 | `023_service_slots_max_turns_resume.sql` | TEST ✅ — prod ❌ (da applicare al rollout) |
+| 024 | `024_n_canonical_slots.sql` | TEST ✅ — prod ❌ (da applicare al rollout) |
+| 019 | `019_cleanup_booking_time_slots.sql` | NON applicata né TEST né prod — **va applicata in prod** (4 tenant hanno ancora la chiave `booking_time_slots` in `restaurant_settings`) |
 
-La prossima migrazione deve usare il prefisso **`023_`**.
+La prossima migrazione deve usare il prefisso **`025_`**.
 
 > **Ambiente (2026-05-16)**: lo sviluppo punta al **server di TEST** (`docnnernvp`, MCP `Supabase_test`). Produzione (`rwuxgvld`) è sola lettura salvo richiesta esplicita. Dettaglio in `APP_CONTEXT_SKILL.md` §1b.
+
+> **Registro prod (verificato 2026-05-22)**: prod usa versioni timestamp (`20260513...`–`20260515183055`) per le 008–021, più versioni numeriche `001`–`007`. Le 022/023/024 **non sono nel registro prod**. Per applicarle usare `Supabase__apply_migration` (mai `supabase db push`).
 
 ### Limite noto: `supabase db push` da CLI
 

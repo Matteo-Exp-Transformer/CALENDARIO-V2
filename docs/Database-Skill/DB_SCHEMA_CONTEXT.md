@@ -119,10 +119,11 @@ Indice: `(tenant_id, sort_order, label)`.
 | `max_turns` | INTEGER | NULL = nessun limite |
 | `max_guests` | INTEGER | NULL = nessun limite coperti per fascia (migrazione 017) |
 | `display_order` | INTEGER NOT NULL DEFAULT 0 | Ordinamento UI |
-| `is_canonical` | BOOLEAN NOT NULL DEFAULT false | Fascia usata da calendario/capacity/pending (migrazione 016) |
+| `is_canonical` | BOOLEAN NOT NULL DEFAULT false | **Deprecato funzionalmente** — mantenuto per il trigger di signup. Non usare per filtrare fasce attive (migrazione 016 + 024) |
+| `slot_color` | TEXT | Colore hex opzionale per la fascia in UI (migrazione 024, TEST only — da applicare in prod al rollout) |
 | `created_at`, `updated_at` | TIMESTAMPTZ | |
 
-**`is_canonical`**: Le 3 fasce `Colazione`, `Pranzo`, `Cena` hanno `is_canonical = true` e sono l'**unica fonte dati** per BookingCalendar, useCapacityCheck, PendingRequestsTab, BookingDetailsModal. Le fasce non canoniche (Aperitivo, Notturna) esistono nel DB ma non influenzano il calendario.
+**`is_canonical`**: storicamente le 3 fasce canoniche (`Colazione`, `Pranzo`, `Cena`) avevano `is_canonical = true`. Dopo la migrazione 024 il campo è **deprecato funzionalmente** — il codice usa tutte le fasce attive del tenant (non filtra su `is_canonical`). Il campo rimane nel DB perché il trigger di signup (`seed_default_service_slots_for_organization`) lo imposta ancora. **Non eliminare** fino a pulizia esplicita.
 
 **`max_guests`**: impostabile per fascia da Pro/Enterprise in Servizio → Fasce orarie. `useCapacityCheck` lo usa come limite per fascia con fallback su `slot_guest_capacities` di `restaurant_settings` se null. Classic non ha la UI per impostarlo (sezione Fasce nascosta in `!features.servizio`).
 
