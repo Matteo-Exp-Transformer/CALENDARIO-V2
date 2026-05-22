@@ -62,7 +62,7 @@ Non mischiare mai i due client. `supabase` è per operazioni admin autenticate; 
 
 - Prima di `apply_migration` / `execute_sql` / `generate_typescript_types`: chiamare `get_project_url` e **verificare che risponda `docnnernvp`**. Se risponde `rwuxgvld` è produzione → fermarsi.
 - `supabase db push` da CLI non è disponibile in questo ambiente: applicare le migrazioni via MCP `Supabase_test__apply_migration`.
-- I due DB si disallineano nella numerazione migrazioni (es. sul test le RPC jsonb sono in `021_service_slot_rpcs_jsonb`, su prod in `018/020/021` separate). Allinearsi sempre allo stato del **test** con `Supabase_test__list_migrations`.
+- I due DB si disallineano nella numerazione migrazioni. Allinearsi sempre allo stato del **test** con `Supabase_test__list_migrations`.
 - Il file in `supabase/migrations/` resta la fonte versionata; la migrazione va comunque scritta lì oltre che applicata via MCP sul test.
 
 ---
@@ -156,6 +156,7 @@ RULE  Assegnazione tavoli (Servizio → `AssignmentMapPanel`): elenco prenotazio
 RULE  Libera tavolo (`useCheckoutTable`): prenotazione liberata torna in elenco PRENOTAZIONI; senza turno successivo attivo sul tavolo → DELETE assignment; con turno 2+ in coda → UPDATE `checked_out_at` — vedi `ADMIN_PAGES_CONTEXT.md` § Assegnazione tavoli
 RULE  Assegnazione/riassegnazione rapida da Calendario (`QuickTableAssignModal`, solo Pro `hasTurnsFeature`): pallino grigio → assign, pallino verde → dialog conferma + `useReleaseBookingAssignment` (libera per `booking_id`) → poi flusso sala/tavolo identico; se turni in coda → avviso bloccante senza modifica DB; query key condivisa `TABLE_ASSIGNMENTS_QUERY_KEY`
 RULE  Promo menù in Prenota (`MenuPricesTab`, `booking_vol_au_vent_promos`): visibilità solo con occhio per riga (`visible_on_booking`); filtro per `booking_type` nel form — non usare `booking_vol_au_vent_promo_visible` in UI banner
+RULE  walk_in_max_guests: range 0–500 (0 = nessun walk-in accettato), campo opzionale. email/phone contatto opzionali — validati solo se compilati. Validazione in `restaurantSettingRegistry.ts`.
 RULE  Classi Tailwind: solo stringhe letterali statiche — mai `bg-${x}-600`
 RULE  cn() da @/lib/utils — mai clsx() o twMerge() direttamente
 RULE  !important Tailwind v4: suffisso → `border-red-500!` (non `!border-red-500`)
@@ -173,7 +174,7 @@ RULE  UUID: cancelled_by è UUID auth.users.id — mai passare email a campi UUI
 npm run dev           # dev server :5173
 npm run typecheck     # tsc --noEmit — zero errori
 npm run lint          # ESLint — zero warning
-npm run test          # Vitest — tutti devono passare (mappa in TESTING_CONTEXT.md)
+npm run test          # Vitest — tutti devono passare (127/127)
 npm run validate      # lint + typecheck + test (usare pre-PR)
 ```
 
@@ -222,13 +223,7 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | `AssignmentMapPanel` / `useTableAssignments` / `serviceSlotBookingFilter` | `ADMIN_PAGES_CONTEXT.md` § Servizio → Assegnazione tavoli |
 | Struttura cartelle `src/` | `APP_CONTEXT_SKILL.md` §3 |
 | Qualsiasi file LOCK | Aggiorna sezione "stato attuale" nello skill di area |
-
-**Come verificare**: prima di chiudere la sessione, rileggere la lista LOCK in `ADMIN_CLASSIC_SKILL.md` §4 e confrontarla con i file toccati. Se c'è discrepanza, aggiornare.
-
-**Aggiornare anche se il task era un sub-task**: se il sotto-task ha toccato file di un'area diversa da quella del task principale (es. task di debug UI che ha finito per modificare `useBookingMutations`), aggiornare lo skill dell'area realmente toccata — non solo quello del task originale.
-
-| Se hai modificato… | Aggiorna anche… |
-|--------------------|-----------------|
+| `restaurantSettingRegistry.ts` (validazione, range, campi) | `APP_CONTEXT_SKILL.md` §4 RULE walk_in_max_guests |
 | `useBookingMutations.ts` / `useWalkInMutation.ts` / qualsiasi mutation che scrive `confirmed_start` o `desired_time` | `ADMIN_CLASSIC_SKILL.md` §4 + §4b |
 | `dateUtils.ts` (createBookingDateTime, extractTimeFromISO, getAccurateStartTime) | `ADMIN_CLASSIC_SKILL.md` §4b + `TESTING_CONTEXT.md` se cambiano i test |
 | `serviceSlotBookingFilter.ts` / logica filtro fascia in `useUnassignedBookings` | `ADMIN_PAGES_CONTEXT.md` § Servizio → Assegnazione tavoli + `TESTING_CONTEXT.md` se cambiano i test |
