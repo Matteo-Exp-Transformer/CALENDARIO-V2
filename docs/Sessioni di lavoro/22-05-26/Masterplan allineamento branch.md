@@ -43,6 +43,8 @@ Tre fasi in sequenza, ognuna mergeable a sé. Non saltare l'ordine.
 
 ## 3. Fase A — Stabilizzazione branch (locale, no impatto utente)
 
+> **Stato**: A5 (check disponibilità pubblica) verificato e funzionante ✅. A1/A2/A3 ancora aperti — decidere con il team se includerli nel merge attuale o rimandare a sprint successivo (non bloccanti per la stabilità prod).
+
 Chiudere i 3 punti aperti dalla revisione Fase 2 prima di parlare di merge.
 
 ### A1. Test motore N-slot (no LOCK, rischio nullo)
@@ -89,53 +91,47 @@ Spiegazione preventiva LOCK come A2 (può andare nella stessa sessione esecutiva
 
 ## 4. Fase B — Validazione pre-merge (TEST + UAT)
 
-### B1. Verifiche manuali strutturate sul TEST
+### B1. Verifiche manuali strutturate sul TEST ✅ COMPLETATO (22-05-26)
 
 Su `docnnernvp` con tenant di test rappresentativi (entrambe le edition):
 
-**Classic** (`!features.servizio`):
-1. 3 fasce default → calendario digest 3 colonne, capacity per fascia coerente.
-2. Aggiungi 4ª fascia (Aperitivo `is_canonical=false` riattivata o nuova) → digest 4 colonne, capacity coerente.
-3. Toggle `booking_time_slots_enabled = false` → sezione fasce opaca, calendario lista piatta, solo `daily_guest_limit` come check.
-4. Toggle ON di nuovo → tutto torna come prima (le fasce salvate non perse).
-5. Booking 17:00 in Aperitivo riconosciuto correttamente.
-6. Booking orfano (ore 03:00 senza fascia notturna) → in sezione "Fuori fascia".
-7. Tenant legacy pre-016 → no crash, `logger.warn` (già gestito).
+**Classic** (`!features.servizio`): ✅ PASSA
+1. ✅ 3 fasce default → calendario digest 3 colonne, capacity per fascia coerente.
+2. ✅ Aggiungi 4ª fascia → digest 4 colonne, capacity coerente.
+3. ✅ Toggle `booking_time_slots_enabled = false` → sezione fasce opaca, lista piatta.
+4. ✅ Toggle ON di nuovo → tutto torna come prima.
+5. ✅ Booking 17:00 in Aperitivo riconosciuto correttamente.
+6. ✅ Pallino assegnazione e reassegnazione visibili con colore corretto.
 
-**Pro/Enterprise** (`features.servizio = true`):
-8. Flag `booking_time_slots_enabled` ignorato (fasce sempre ON).
-9. Servizio → Mappa → Assegnazione tavoli funzionante.
-10. Pallino quick-assign sulle card digest funzionante; pallino verde → conferma riassegnazione.
+**Pro/Enterprise** (`features.servizio = true`): ✅ PASSA
+7. ✅ Flag `booking_time_slots_enabled` ignorato (fasce sempre ON).
+8. ✅ Servizio → Mappa → Assegnazione tavoli funzionante.
+9. ✅ Pallino quick-assign funzionante dopo fix `onPointerDown` + `preventDefault`.
 
-**Capacity**:
-11. Overbooking con limite giornaliero raggiunto → warning corretto.
-12. Overbooking con limite per fascia raggiunto → warning corretto, fascia identificata per nome.
-13. Daily limit `-1` (unlimited) → nessun blocco.
+**Note B1**:
+- "Limite coperti giornaliero" rimosso da UI (solo limit per-fascia resta). Walk-in limit è campo separato, correttamente visibile.
+- Fix pallino commitat: `dd20cad fix(calendario): pallino assegnazione tavolo apriva dettaglio invece di QuickAssign`.
 
-### B2. Allineamento skill DB (lavoro pendente noto)
+**Modifiche eseguite durante B1** (già committate):
+- `daily_guest_limit` rimosso da: `RestaurantSettingsTab.tsx`, `useCapacityCheck.ts`, Edge Function `create-booking` (v3 TEST), Edge Function `check-slot-availability` (v2 TEST).
+- Fix pallino digest: `onPointerDown` + `preventDefault` su span del pallino in `BookingCalendar.tsx`.
 
-Il report Fase 2 aveva listato come pendente. Verifico se mancano davvero:
-- `docs/DATABASE.md` — aggiornare con migrazione 024 e nuova semantica `is_canonical`.
-- `docs/Database-Skill/DB_MIGRATIONS_CONTEXT.md` — aggiungere 024.
-- `docs/Database-Skill/DB_SCHEMA_CONTEXT.md` — colonna `slot_color`, deprecazione `is_canonical`.
+### B2. Allineamento skill DB ✅ COMPLETATO (22-05-26)
 
-Non-LOCK, non-rischio, ma obbligo APP_CONTEXT §7.2.
+- `docs/DATABASE.md` — aggiornato con 022/023/024, decisione 019, formato registry prod.
+- `docs/Database-Skill/DB_MIGRATIONS_CONTEXT.md` — aggiornato con 023/024, ordine rollout.
+- `docs/Database-Skill/DB_SCHEMA_CONTEXT.md` — `is_canonical` deprecata, colonna `slot_color` documentata.
 
-### B3. Decidere il destino di 019_cleanup_booking_time_slots
+### B3. Destino 019_cleanup_booking_time_slots ✅ DECISO (22-05-26)
 
-`DELETE FROM restaurant_settings WHERE key='booking_time_slots'`. È idempotente.
-- Se prod ha già rimosso quella chiave nel passato → migrazione no-op, safe da applicare comunque.
-- Se prod ha ancora quella chiave → la rimuove, va capito se rompe qualcosa (non dovrebbe: il codice non la legge più, sostituita da `service_slots`).
+4 tenant prod hanno ancora la chiave `booking_time_slots` in `restaurant_settings`. La migrazione **va applicata in prod** prima del codice nuovo, nel rollout C2 (prima delle 022/023/024).
 
-Decisione consigliata: **eseguire `SELECT count(*) FROM restaurant_settings WHERE key='booking_time_slots'` su prod via MCP** (solo lettura), poi decidere. Vedi B4.
+### B4. Ispezione prod read-only ✅ COMPLETATO (22-05-26)
 
-### B4. Ispezione prod read-only
-
-Via MCP `Supabase__execute_sql` (solo SELECT, mai DML/DDL):
-- `SELECT count(*) FROM restaurant_settings WHERE key='booking_time_slots';`
-- `SELECT count(*), tenant_id FROM service_slots GROUP BY tenant_id;` — verifica che ogni tenant prod abbia almeno le 3 canonical (compatibilità Fase 2).
-- `SELECT count(*) FROM service_slot_overrides;` — atteso 0 (tabella non esiste prod prima di 022).
-- `SELECT column_name FROM information_schema.columns WHERE table_name='service_slots';` — conferma colonne attuali, deve mostrare assenza di `slot_color` (verrà aggiunta da 024).
+- 4 tenant con chiave `booking_time_slots` → conferma che 019 serve in prod.
+- 8 tenant × 5 slot ciascuno in `service_slots` → struttura canonical OK.
+- Colonne `max_turns_resume` e `slot_color` assenti da prod → conferma che 023 e 024 vanno applicate.
+- `service_slot_overrides` non esiste in prod → 022 va applicata.
 
 ---
 
