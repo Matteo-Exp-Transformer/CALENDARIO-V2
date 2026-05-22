@@ -351,11 +351,12 @@ export const RestaurantSettingsTab: React.FC = () => {
     const slots = (serviceSlotsQuery.data ?? [])
       .slice()
       .sort((a: SlotConfig, b: SlotConfig) => a.display_order - b.display_order)
+    // Postgres TIME ritorna 'HH:mm:ss'; il form e validateEditingSlots usano 'HH:mm'.
     setEditingSlots(slots.map((s: SlotConfig) => ({
       id: s.id,
       name: s.name,
-      start_time: s.start_time,
-      end_time: s.end_time,
+      start_time: s.start_time.slice(0, 5),
+      end_time: s.end_time.slice(0, 5),
       display_order: s.display_order,
     })))
     setInitialSlotIds(slots.map((s: SlotConfig) => s.id))
@@ -586,8 +587,8 @@ export const RestaurantSettingsTab: React.FC = () => {
         setEditingSlots(orderedRefreshed.map((s: SlotConfig) => ({
           id: s.id,
           name: s.name,
-          start_time: s.start_time,
-          end_time: s.end_time,
+          start_time: s.start_time.slice(0, 5),
+          end_time: s.end_time.slice(0, 5),
           display_order: s.display_order,
         })))
         setInitialSlotIds(orderedRefreshed.map((s: SlotConfig) => s.id))
