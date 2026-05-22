@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabase } from '@/lib/supabase'
 import { logger } from '@/lib/logger'
+import { createBookingDateTime } from '@/features/booking/utils/dateUtils'
 import { ANALYTICS_QUERY_ROOT } from './useAnalytics'
 import { HOME_STATS_QUERY_KEY } from './useHomeStats'
 
@@ -15,9 +16,11 @@ export interface WalkInInput {
 }
 
 /**
- * Crea una prenotazione walk-in: status accepted, source walk_in, confirmed_start = now,
- * confirmed_end = now + 90min. Non invia email, non applica rate-limit.
- * È un'operazione admin-only — usa il client `supabase` autenticato.
+ * Crea una prenotazione walk-in: status accepted, source walk_in,
+ * confirmed_start / confirmed_end con orario locale “a muro” (stesso schema di
+ * `createBookingDateTime` per il resto dell’admin — evita `toISOString()` UTC che
+ * sposta l’ora in calendario). desired_time allineato per digest / getAccurateStartTime.
+ * Non invia email, non applica rate-limit. Admin-only — client `supabase` autenticato.
  */
 export function useWalkInMutation() {
   const { tenantId } = useTenantContext()
@@ -28,9 +31,14 @@ export function useWalkInMutation() {
       if (!tenantId) throw new Error('Tenant mancante')
 
       const now = new Date()
-      const confirmedStart = now.toISOString()
-      const confirmedEnd = new Date(now.getTime() + 90 * 60 * 1000).toISOString()
       const desiredDate = format(now, 'yyyy-MM-dd')
+      const desiredTime = format(now, 'HH:mm')
+      const confirmedStart = createBookingDateTime(desiredDate, desiredTime)
+
+      const endAt = new Date(now.getTime() + 90 * 60 * 1000)
+      const endDate = format(endAt, 'yyyy-MM-dd')
+      const endTime = format(endAt, 'HH:mm')
+      const confirmedEnd = createBookingDateTime(endDate, endTime, false, desiredTime)
 
       const { data, error } = await supabase
         .from('booking_requests')
@@ -40,6 +48,7 @@ export function useWalkInMutation() {
           client_email: '',
           num_guests: input.num_guests,
           desired_date: desiredDate,
+          desired_time: desiredTime,
           status: 'accepted',
           booking_type: 'walk_in',
           source: 'walk_in',

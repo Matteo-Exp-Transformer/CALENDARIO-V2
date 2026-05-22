@@ -43,6 +43,7 @@ supabase migration list --linked # Verifica stato migrazioni
 
 ## Convenzioni
 
+- **Language With User** : in risposte a user , limita testo in output per risparmiare token, non usare tabelle se non sono strettamente necessarie o sezioni di codice. parla in linguaggio pratico e non tecnico con riferimenti pratici agli elementi o alle funzioni in questione  
 - **Conventional Commits**: `feat(scope):`, `fix(scope):`, `update(scope):` ecc.
 - **Import alias**: `@/` punta a `src/` (configurato in `vite.config.ts` e `tsconfig.json`)
 - **Logger**: `src/lib/logger.ts` — usare `logger.debug/info/warn/error` invece di `console.log`

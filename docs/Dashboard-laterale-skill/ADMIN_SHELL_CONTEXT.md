@@ -10,25 +10,56 @@
 ```
 AdminShell (src/components/layout/AdminShell.tsx)
 │
-├── <aside> sidebar sinistra — routing state-based (NO cambio URL)
-│   ├── Pulsante "Home" (icona Home, in cima → sezione 'home')   ← DEFAULT
-│   ├── SIDEBAR_NAV (3 voci):
-│   │   ├── Form Pubblico  (ExternalLink → window.open '/prenota/:slug', _blank)
-│   │   ├── Impostazioni   (Store → 'home' + sessionStorage + restaurantSettingsSignal)
-│   │   └── Analytics      (BarChart3 → sezione 'analytics')
-│   └── Bottom dock: avatar utente + logout
+├── [se !features.sidebar → edition Classic]
+│   └── <div className="min-h-screen"> <AdminDashboard /> </div>  ← standalone, nessuna sidebar
 │
-└── <main> contenuto — switch su `section` state
-    ├── 'home' | 'prenotazioni' → <AdminDashboard />   ← DEFAULT = 'home'
-    ├── 'crm'                  → <CrmPage />
-    ├── 'servizio'             → <ServizioPage />
-    └── 'analytics'            → <AnalyticsPage />
+└── [se features.sidebar → edition Pro/Enterprise]
+    ├── <aside> sidebar sinistra — routing state-based (NO cambio URL)
+    │   ├── Pulsante "Home" (icona Home, in cima → sezione 'home')   ← DEFAULT Pro/Enterprise
+    │   ├── SIDEBAR_NAV_ITEMS (4 voci, filtrate per features):
+    │   │   ├── Form Pubblico  (ExternalLink → window.open '/prenota/:slug', _blank)
+    │   │   ├── Servizio       (ConciergeBell → sezione 'servizio',  featureKey: 'servizio')
+    │   │   ├── CRM Clienti    (Users → sezione 'crm',              featureKey: 'crm')
+    │   │   └── Analytics      (BarChart3 → sezione 'analytics',    featureKey: 'analytics')
+    │   └── Bottom dock: avatar utente + logout
+    │
+    └── <main> contenuto — switch su `section` state
+        ├── 'home'         → <AdminDashboard bodyOverride={<Suspense><AdminHomePage /></Suspense>} />
+        ├── 'prenotazioni' → <AdminDashboard />                    ← DEFAULT Classic
+        ├── 'crm'          → <Suspense><CrmPage /></Suspense>       [solo se features.crm]
+        ├── 'servizio'     → <Suspense><ServizioPage /></Suspense>  [solo se features.servizio]
+        └── 'analytics'    → <Suspense><AnalyticsPage /></Suspense> [solo se features.analytics]
+
+⚠️ **Lazy loading** (aggiunto 2026-05-14, Fase 4b): AdminHomePage, CrmPage, ServizioPage, AnalyticsPage
+sono importati con `React.lazy()`. AdminDashboard NON è lazy (è sempre montata). I chunk sono separati
+nel bundle — un cliente Classic non scarica mai il bundle CRM/Servizio/Analytics.
 ```
 
 **Regole cardine sidebar**:
-- `'home'` NON compare nel `SIDEBAR_NAV` — è coperto dal pulsante Home in cima
-- `'prenotazioni'` NON compare nel `SIDEBAR_NAV` — stesso pulsante Home (section 'home' e 'prenotazioni' montano entrambi AdminDashboard)
-- **Form Pubblico**: usa sempre `window.open(..., '_blank', 'noopener,noreferrer')` — MAI `window.location.href` (navigherebbe via dalla dashboard admin)
+- `'home'` NON compare in `SIDEBAR_NAV_ITEMS` — è coperto dal pulsante Home in cima
+- `'prenotazioni'` NON compare in `SIDEBAR_NAV_ITEMS` — cliccando un tab da Home si passa a 'prenotazioni' via `onBodyOverrideExit`
+- **Form Pubblico**: usa sempre `window.open(..., '_blank', 'noopener,noreferrer')` — MAI `window.location.href`
+- **Edition Classic** (`!features.sidebar`): AdminShell fa un return anticipato — nessun aside, nessun wrapper sidebar. AdminDashboard occupa tutta la pagina. Section default = `'prenotazioni'`.
+- **Edition Pro/Enterprise** (`features.sidebar`): layout completo con sidebar. Section default = `'home'`.
+
+### Sistema Edition e Feature Flags
+
+```typescript
+// src/config/features.ts
+buildFeatures(edition: TenantEdition): FeatureFlags
+// Letto via: const features = useFeatures()  (src/hooks/useFeatures.ts)
+// Sorgente: organizations.edition (letto in TenantContext.setTenantFromAdmin)
+
+// Classic → sidebar/home/crm/analytics/servizio/walkIn/noShow/tableAssignments = false
+// Pro     → tutti true
+// Enterprise → tutti true
+```
+
+### bodyOverride — come funziona la sezione Home
+
+AdminDashboard accetta due prop opzionali aggiunte il 2026-05-14:
+- `bodyOverride?: React.ReactNode` — se presente, il `<main>` di AdminDashboard mostra questo contenuto invece dei tab. **Header e 5 NavItem restano sempre visibili.**
+- `onBodyOverrideExit?: () => void` — chiamata quando l'utente clicca un NavItem mentre Home è attiva. AdminShell la usa per passare `section → 'prenotazioni'` e deselezionare Home dalla sidebar.
 
 ---
 
@@ -36,10 +67,13 @@ AdminShell (src/components/layout/AdminShell.tsx)
 
 | File | Ruolo |
 |------|-------|
-| `src/components/layout/AdminShell.tsx` | Layout: sidebar + main, routing state |
-| `src/pages/AdminHomePage.tsx` | Placeholder per futura dashboard riassuntiva (non montata dalla shell su `home`) |
-| `src/pages/ServizioPage.tsx` | Placeholder Servizio |
-| `src/pages/AnalyticsPage.tsx` | Placeholder Analytics |
+| `src/components/layout/AdminShell.tsx` | Layout: sidebar + main, routing state, gating edition |
+| `src/hooks/useFeatures.ts` | Hook: legge `edition` da TenantContext, ritorna `FeatureFlags` |
+| `src/config/features.ts` | `buildFeatures(edition)` — fonte unica di tutti i feature flag |
+| `src/types/edition.ts` | Tipo `TenantEdition = 'classic' \| 'pro' \| 'enterprise'` |
+| `src/pages/AdminHomePage.tsx` | Home page (KPI giorno + quick-nav). Montata via `bodyOverride` in AdminDashboard |
+| `src/pages/ServizioPage.tsx` | Sezione Servizio (CRUD tavoli/sale) — gated `features.servizio` |
+| `src/pages/AnalyticsPage.tsx` | Sezione Analytics (KPI + trend) — gated `features.analytics` |
 
 Per file specifici di CRM e altre sezioni → vedi `ADMIN_PAGES_CONTEXT.md`.
 
@@ -73,14 +107,20 @@ da `AdminDashboard` al primo mount e non viene mai rimosso.
 
 ## 4. Sidebar — comportamento responsive
 
-| Breakpoint | Stato default | Toggle |
-|-----------|---------------|--------|
-| `< 645px` | Rail `w-16`; menu espanso = **drawer** `fixed` `w-56` + backdrop (`z-[7999]`) — chiusura con bottone, click backdrop o `Escape` | chevron |
-| `< 1024px` (e ≥ 645px) | Collapsed `w-16` solo icone | → expanded `w-56` |
-| `≥ 1024px` | Expanded `w-56` icone + label | → collapsed `w-16` |
+> Aggiornato 16-05-26 (v2): la sidebar ha ora **3 stati** (`hidden` / `icons` / `expanded`).
 
-Logica: `useIsNarrow()` (`max-width: 644px`) + `useIsLg()` + stati separati `narrowExpanded` / `wideCollapsed` (preserva la
-preferenza al cambio breakpoint). **No hover-to-expand**: solo bottone chevron.
+L'`<aside>` è **sempre `fixed inset-y-0 left-0 z-8000`** (mai nel flusso).
+Stato gestito da `sidebarMode: 'hidden' | 'icons' | 'expanded'` (iniziale: `'icons'`).
+`isDrawerOpen = sidebarMode === 'expanded'`.
+
+| Stato | Comportamento |
+|-------|---------------|
+| **`hidden`** | `-translate-x-full` — sidebar fuori schermo. `<main>` **senza `pl-16`**: contenuto full-width. Icona tonda flottante `fixed left-3 top-3 z-8000` appare in alto a sinistra (`ChevronRight`, `onClick → 'icons'`). |
+| **`icons`** | `w-16` striscia icone, sempre `fixed`. `<main>` con `pl-16`. In fondo, **sopra** il footer profilo/logout: sezione dedicata con divisorio come sotto Home (`my-1 border-t` dentro `px-2`) — ChevronRight (→ `expanded`) e ChevronLeft (→ `hidden`). Sotto: footer `mt-auto` con utente + Esci. |
+| **`expanded`** | `w-56 shadow-xl` + backdrop scuro `bg-black/40 z-7999`. Si sovrappone in overlay. Chiusura (click backdrop / Escape / ChevronLeft in header) → torna a `'icons'`, **non a `hidden`**. |
+
+`useIsNarrow()` (`max-width: 644px`) è usato in `openSection` / `runSidebarAction` **solo** per chiudere la sidebar se era `expanded` → `icons`. **Non forza mai `icons` se la sidebar era `hidden`** — la navigazione a una sezione non riapre mai la sidebar da `hidden`. **No hover-to-expand**: solo bottoni chevron.
+Edition Classic (`!features.sidebar`): return anticipato, nessuna sidebar, nessuna icona flottante.
 
 ---
 
@@ -88,9 +128,9 @@ preferenza al cambio breakpoint). **No hover-to-expand**: solo bottone chevron.
 
 | Layer | Z-index | Cosa |
 |-------|---------|------|
-| Sidebar backdrop (solo drawer stretto) | `z-[7999]` | overlay scuro chiudibile |
-| Sidebar drawer (`< 645px` espanso) | `z-[8000]` | pannello `fixed` |
-| Sidebar aside (flusso normale / desktop) | normale | — |
+| Sidebar backdrop (sidebar espansa, ogni larghezza) | `z-[7999]` | overlay scuro chiudibile |
+| Sidebar aside (tutti i modi visibili: icons + expanded) | `z-[8000]` | pannello `fixed` |
+| Icona tonda flottante (stato `hidden`) | `z-[8000]` | `fixed left-3 top-3`, stesso layer della sidebar |
 | CustomerDetailPanel overlay | `z-[8999]` | sfondo scuro |
 | CustomerDetailPanel drawer | `z-[9000]` | pannello slide-in CRM |
 | Modal (`<Modal>`) | `z-[10050]` | **non toccare mai** |
@@ -132,12 +172,12 @@ const cls = `bg-${color}-600`  // ❌ Tailwind v4 non genera questa classe
 
 ## 7. Pattern per nuove sezioni
 
-### Procedura (5 passi)
+### Procedura (6 passi)
 1. Aggiungere `AdminShellSection` type in `AdminShell.tsx`
-2. Aggiungere voce in `SIDEBAR_NAV` / array nav (icona Lucide + label italiano) — **non** aggiungere `'prenotazioni'`
-3. Aggiungere render condizionale in `<main>` della shell
-4. Creare page in `src/pages/NomePaginaPage.tsx`
-5. Importare e usare in `AdminShell.tsx`
+2. Aggiungere flag in `FeatureFlags` (`src/config/features.ts`) e in `buildFeatures()`
+3. Aggiungere voce in `SIDEBAR_NAV_ITEMS` con `featureKey` corrispondente — **non** aggiungere `'home'` o `'prenotazioni'`
+4. Aggiungere render condizionale in `<main>` gated con `features.nomeFlag`
+5. Creare page in `src/pages/NomePaginaPage.tsx`
 6. **Aggiungere sezione in `ADMIN_PAGES_CONTEXT.md`** con file chiave, pattern e note
 
 ### Scheletro pagina placeholder

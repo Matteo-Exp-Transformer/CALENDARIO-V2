@@ -1,17 +1,22 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { useFeatures } from '@/hooks/useFeatures'
 import { createPortal } from 'react-dom'
 import { X, Edit, Trash2, Save } from 'lucide-react'
 import { useUpdateBooking, useCancelBooking, useMarkNoShow } from '../hooks/useBookingMutations'
 import { useAcceptedBookings } from '../hooks/useBookingQueries'
 import type { BookingRequest, BookingType } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
-import { extractDateFromISO, createBookingDateTime, getAccurateStartTime, getAccurateEndTime, calculateEndTimeFromStart } from '../utils/dateUtils'
-import { getSlotsOccupiedByBooking } from '../utils/capacityCalculator'
-import { DEFAULT_BOOKING_TIME_SLOTS } from '../utils/bookingTimeSlots'
 import {
-  DEFAULT_SLOT_GUEST_CAPACITIES,
-  type SlotGuestCapacities,
-} from '../lib/restaurantSettingRegistry'
+  extractDateFromISO,
+  createBookingDateTime,
+  getAccurateStartTime,
+  getAccurateEndTime,
+  calculateEndTimeFromStart,
+  isWallClockStartBeforeNow,
+  trimTimeToHHmm,
+} from '../utils/dateUtils'
+import { getSlotsOccupiedByBookingV2 } from '../utils/capacityCalculator'
+import { DEFAULT_SLOT_GUEST_CAPACITIES } from '../lib/restaurantSettingRegistry'
 import { toast } from 'react-toastify'
 import { DetailsTab } from './DetailsTab'
 import { MenuTab } from './MenuTab'
@@ -20,6 +25,8 @@ import type { SelectedMenuItem } from '@/types/menu'
 import type { PresetMenuType } from '../constants/presetMenus'
 import { useMenuItems } from '../hooks/useMenuItems'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
+import { useDigestSlotConfigs, useServiceSlots } from '../hooks/useServiceSlots'
+import { useServiceSlotOverrides, resolveSlotOverride } from '../hooks/useServiceSlotOverrides'
 import {
   applyPresetTypeToBookingFormPayload,
   computeMenuTotalsFromItems,
@@ -30,7 +37,9 @@ import {
   listVolAuVentPromoMessagesForBookingType,
 } from '../constants/volAuVentPromo'
 import { CapacityWarningModal } from './CapacityWarningModal'
+import { PastStartTimeWarningModal } from './PastStartTimeWarningModal'
 import { cn } from '@/lib/utils'
+import { logger } from '@/lib/logger'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
 
 interface BookingDetailsModalProps {
@@ -69,6 +78,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     capacity: number
     exceededBy: number
   } | null>(null)
+  const [showPastStartWarning, setShowPastStartWarning] = useState(false)
 
   // Ref to track previous booking ID to prevent unnecessary recalculations
   const previousBookingIdRef = React.useRef<string>(booking.id)
@@ -126,6 +136,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     }
   }, [isOpen])
 
+  const features = useFeatures()
   const updateMutation = useUpdateBooking()
   const cancelMutation = useCancelBooking()
   const markNoShowMutation = useMarkNoShow()
@@ -141,14 +152,17 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const { data: menuItems = [] } = useMenuItems()
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
-  const { data: volAuVentPromoVisible = false } = useRestaurantSetting('booking_vol_au_vent_promo_visible')
   const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
     'booking_vol_au_vent_promo_message',
   )
   const { data: volAuVentPromos = [] } = useRestaurantSetting('booking_vol_au_vent_promos')
-  const { data: bookingTimeSlots = DEFAULT_BOOKING_TIME_SLOTS } = useRestaurantSetting('booking_time_slots')
+  const { data: digestSlots = [] } = useDigestSlotConfigs()
+  const { data: serviceSlots = [] } = useServiceSlots()
+  const { data: slotOverrides = [] } = useServiceSlotOverrides()
   const { data: slotGuestCapacities = DEFAULT_SLOT_GUEST_CAPACITIES } =
     useRestaurantSetting('slot_guest_capacities')
+  const { data: timeSlotsEnabledRaw = true } = useRestaurantSetting('booking_time_slots_enabled')
+  const timeSlotsEnabled = features.servizio ? true : timeSlotsEnabledRaw
 
   // Initialize form data from booking
   const [formData, setFormData] = useState(() => {
@@ -172,7 +186,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
         placement: booking.placement || ''
       }
     } catch (error) {
-      console.error('[BookingDetailsModal] Error initializing form data:', error)
+      logger.error('[BookingDetailsModal] Error initializing form data:', error)
       // Return default values if initialization fails
       return {
         booking_type: 'tavolo' as BookingType,
@@ -226,7 +240,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
         placement: booking.placement || ''
       })
     } catch (error) {
-      console.error('[BookingDetailsModal] Error updating form data:', error)
+      logger.error('[BookingDetailsModal] Error updating form data:', error)
     }
   }, [booking, isEditMode])
 
@@ -306,142 +320,70 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     }
   }, [showCancelConfirm])
 
-  const resolveSlotCapacity = (slotGuestCapacities: SlotGuestCapacities, slot: string): number | null => {
-    if (slot === 'morning') return slotGuestCapacities.morning
-    if (slot === 'afternoon') return slotGuestCapacities.afternoon
-    if (slot === 'evening') return slotGuestCapacities.evening
-    return null
+  // Capacita per slot: service_slots.max_guests > override > slot_guest_capacities
+  const getSlotCap = (slotId: string, date: string): number | null => {
+    const svcSlot = serviceSlots.find((s) => s.id === slotId)
+    if (svcSlot) {
+      const ov = resolveSlotOverride(slotOverrides, slotId, date)
+      if (ov) return ov.max_guests
+      if (svcSlot.max_guests != null) return svcSlot.max_guests
+    }
+    return slotGuestCapacities[slotId] ?? null
   }
 
-  // Capacity check function
-  const checkCapacity = (date: string, startTime: string, endTime: string, numGuests: number): boolean => {
+  // Occupazione per-slot delle prenotazioni gia accettate nel giorno (escluso booking corrente)
+  const buildOccupied = (date: string): Record<string, number> => {
+    const result: Record<string, number> = {}
+    for (const slot of digestSlots) result[slot.id] = 0
     const dayBookings = acceptedBookings.filter((b) => {
       if (b.id === booking.id) return false
       if (!b.confirmed_start) return false
-      const bookingDate = extractDateFromISO(b.confirmed_start)
-      return bookingDate === date
+      return extractDateFromISO(b.confirmed_start) === date
     })
-
-    const confirmedStart = `${date}T${startTime}:00`
-    const confirmedEnd = `${date}T${endTime}:00`
-    const newBookingSlots = getSlotsOccupiedByBooking(confirmedStart, confirmedEnd, bookingTimeSlots)
-
-    const morning = { capacity: slotGuestCapacities.morning, occupied: 0 }
-    const afternoon = { capacity: slotGuestCapacities.afternoon, occupied: 0 }
-    const evening = { capacity: slotGuestCapacities.evening, occupied: 0 }
-
-    for (const existingBooking of dayBookings) {
-      if (!existingBooking.confirmed_start || !existingBooking.confirmed_end) continue
-
-      const slots = getSlotsOccupiedByBooking(
-        existingBooking.confirmed_start,
-        existingBooking.confirmed_end,
-        bookingTimeSlots,
-      )
-      const guests = existingBooking.num_guests || 0
-
-      for (const slot of slots) {
-        if (slot === 'morning') morning.occupied += guests
-        else if (slot === 'afternoon') afternoon.occupied += guests
-        else if (slot === 'evening') evening.occupied += guests
+    for (const b of dayBookings) {
+      if (!b.confirmed_start || !b.confirmed_end) continue
+      for (const slotId of getSlotsOccupiedByBookingV2(b.confirmed_start, b.confirmed_end, digestSlots)) {
+        if (slotId in result) result[slotId] += b.num_guests ?? 0
       }
     }
+    return result
+  }
 
-    for (const slot of newBookingSlots) {
-      const cap = resolveSlotCapacity(slotGuestCapacities, slot)
+  const checkCapacity = (date: string, startTime: string, endTime: string, numGuests: number): boolean => {
+    if (!timeSlotsEnabled || digestSlots.length === 0) return true
+    const confirmedStart = `${date}T${startTime}:00+00:00`
+    const confirmedEnd = `${date}T${endTime}:00+00:00`
+    const newSlotIds = getSlotsOccupiedByBookingV2(confirmedStart, confirmedEnd, digestSlots)
+    const occupied = buildOccupied(date)
+    for (const slotId of newSlotIds) {
+      const cap = getSlotCap(slotId, date)
       if (cap == null) continue
-
-      let available: number
-
-      if (slot === 'morning') {
-        available = cap - morning.occupied
-      } else if (slot === 'afternoon') {
-        available = cap - afternoon.occupied
-      } else if (slot === 'evening') {
-        available = cap - evening.occupied
-      } else {
-        continue
-      }
-
-      if (available < numGuests) {
-        return false
-      }
+      if ((occupied[slotId] ?? 0) + numGuests > cap) return false
     }
-
     return true
   }
 
-  // Returns first exceeded slot info for CapacityWarningModal when editing leads to overbooking
   const getExceededSlotInfo = (
     date: string,
     startTime: string,
     endTime: string,
     numGuests: number
   ): { slotName: string; totalOccupied: number; capacity: number; exceededBy: number } | null => {
-    const dayBookings = acceptedBookings.filter((b) => {
-      if (b.id === booking.id) return false
-      if (!b.confirmed_start) return false
-      const bookingDate = extractDateFromISO(b.confirmed_start)
-      return bookingDate === date
-    })
-
-    const confirmedStart = `${date}T${startTime}:00`
-    const confirmedEnd = `${date}T${endTime}:00`
-    const newBookingSlots = getSlotsOccupiedByBooking(confirmedStart, confirmedEnd, bookingTimeSlots)
-
-    const morning = { capacity: slotGuestCapacities.morning, occupied: 0 }
-    const afternoon = { capacity: slotGuestCapacities.afternoon, occupied: 0 }
-    const evening = { capacity: slotGuestCapacities.evening, occupied: 0 }
-
-    for (const existingBooking of dayBookings) {
-      if (!existingBooking.confirmed_start || !existingBooking.confirmed_end) continue
-
-      const slots = getSlotsOccupiedByBooking(
-        existingBooking.confirmed_start,
-        existingBooking.confirmed_end,
-        bookingTimeSlots,
-      )
-      const guests = existingBooking.num_guests || 0
-
-      for (const slot of slots) {
-        if (slot === 'morning') morning.occupied += guests
-        else if (slot === 'afternoon') afternoon.occupied += guests
-        else if (slot === 'evening') evening.occupied += guests
+    if (!timeSlotsEnabled || digestSlots.length === 0) return null
+    const confirmedStart = `${date}T${startTime}:00+00:00`
+    const confirmedEnd = `${date}T${endTime}:00+00:00`
+    const newSlotIds = getSlotsOccupiedByBookingV2(confirmedStart, confirmedEnd, digestSlots)
+    const occupied = buildOccupied(date)
+    for (const slotId of newSlotIds) {
+      const slot = digestSlots.find((s) => s.id === slotId)
+      if (!slot) continue
+      const cap = getSlotCap(slotId, date)
+      if (cap == null) continue
+      const totalOccupied = (occupied[slotId] ?? 0) + numGuests
+      if (totalOccupied > cap) {
+        return { slotName: slot.name, totalOccupied, capacity: cap, exceededBy: totalOccupied - cap }
       }
     }
-
-    for (const slot of newBookingSlots) {
-      let occupied: number
-      let capacity: number | null
-      let slotName: string
-
-      if (slot === 'morning') {
-        occupied = morning.occupied
-        capacity = morning.capacity
-        slotName = 'mattina'
-      } else if (slot === 'afternoon') {
-        occupied = afternoon.occupied
-        capacity = afternoon.capacity
-        slotName = 'pomeriggio'
-      } else if (slot === 'evening') {
-        occupied = evening.occupied
-        capacity = evening.capacity
-        slotName = 'sera'
-      } else {
-        continue
-      }
-
-      const totalOccupied = occupied + numGuests
-      if (capacity != null && totalOccupied > capacity) {
-        return {
-          slotName,
-          totalOccupied,
-          capacity,
-          exceededBy: totalOccupied - capacity
-        }
-      }
-    }
-
     return null
   }
 
@@ -615,10 +557,28 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
           toast.success('Prenotazione modificata con successo!')
         },
         onError: (error) => {
-          console.error('❌ [BookingDetailsModal] Save failed:', error)
+          logger.error('❌ [BookingDetailsModal] Save failed:', error)
         },
       }
     )
+  }
+
+  const runCapacityCheckAndSave = () => {
+    const hasCapacity = checkCapacity(formData.date, formData.startTime, formData.endTime, formData.numGuests)
+
+    if (!hasCapacity) {
+      const exceededInfo = getExceededSlotInfo(formData.date, formData.startTime, formData.endTime, formData.numGuests)
+      if (exceededInfo) {
+        setOverbookingSlotInfo(exceededInfo)
+        setShowOverbookingConfirm(true)
+        return
+      }
+      // No slot details available, but never block — proceed with warning
+      logger.warn('⚠️ [BookingDetailsModal] Capacity exceeded but no slot details, proceeding anyway')
+      toast.warn(`⚠️ Attenzione: la capienza potrebbe essere superata. La modifica verrà comunque salvata.`)
+    }
+
+    performSave()
   }
 
   const handleSave = () => {
@@ -640,21 +600,13 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       return
     }
 
-    const hasCapacity = checkCapacity(formData.date, formData.startTime, formData.endTime, formData.numGuests)
-
-    if (!hasCapacity) {
-      const exceededInfo = getExceededSlotInfo(formData.date, formData.startTime, formData.endTime, formData.numGuests)
-      if (exceededInfo) {
-        setOverbookingSlotInfo(exceededInfo)
-        setShowOverbookingConfirm(true)
-        return
-      }
-      // No slot details available, but never block — proceed with warning
-      console.warn('⚠️ [BookingDetailsModal] Capacity exceeded but no slot details, proceeding anyway')
-      toast.warn(`⚠️ Attenzione: la capienza potrebbe essere superata. La modifica verrà comunque salvata.`)
+    const startNorm = trimTimeToHHmm(formData.startTime)
+    if (isWallClockStartBeforeNow(formData.date, startNorm)) {
+      setShowPastStartWarning(true)
+      return
     }
 
-    performSave()
+    runCapacityCheckAndSave()
   }
 
   const handleCancelBooking = () => {
@@ -679,6 +631,18 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
   const modalContent = (
     <>
+      <PastStartTimeWarningModal
+        isOpen={showPastStartWarning}
+        variant="edit_booking"
+        desiredDate={formData.date}
+        startTimeHHmm={trimTimeToHHmm(formData.startTime)}
+        onClose={() => setShowPastStartWarning(false)}
+        onCancel={() => setShowPastStartWarning(false)}
+        onConfirm={() => {
+          setShowPastStartWarning(false)
+          runCapacityCheckAndSave()
+        }}
+      />
       {overbookingSlotInfo && (
         <CapacityWarningModal
           isOpen={showOverbookingConfirm}
@@ -845,7 +809,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                 menuFlowBookingType={formData.booking_type}
                 staffPresetsDropdownVisible={staffPresetsDropdownVisible}
                 customStaffPresets={customStaffPresets}
-                volAuVentPromoVisible={volAuVentPromoVisible}
                 volAuVentPromoMessages={volAuVentPromoMessagesForTab}
                 isMenuExpanded={isMenuExpanded}
                 onMenuExpandToggle={() => setIsMenuExpanded(!isMenuExpanded)}
@@ -913,7 +876,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                       <Trash2 className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                       <span className="truncate">Elimina</span>
                     </button>
-                    {canMarkNoShow && (
+                    {features.noShow && canMarkNoShow && (
                       <button
                         type="button"
                         onClick={() => markNoShowMutation.mutate(booking.id)}

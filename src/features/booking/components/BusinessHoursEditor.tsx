@@ -3,7 +3,7 @@ import { ADMIN_WARM_BORDER } from '@/lib/adminWarmGradientSurface'
 import { cn } from '@/lib/utils'
 import type { BusinessHours, BusinessHourSlot } from '@/lib/businessHours'
 import { Button } from '@/components/ui/Button'
-import { TimeInput } from '@/components/ui/TimeInput'
+import { TimePicker24h } from '@/components/ui'
 import { Plus, Trash2 } from 'lucide-react'
 
 const DAY_ORDER: (keyof BusinessHours)[] = [
@@ -139,7 +139,7 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
                 >
                   <div className="space-y-1 text-center">
                     <span className="block text-xs font-medium text-slate-500">Apertura</span>
-                    <TimeInput
+                    <TimePicker24h
                       value={slot.open}
                       onChange={(v) => updateSlot(day, index, { open: v })}
                       disabled={disabled || closed}
@@ -148,7 +148,7 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
                   </div>
                   <div className="space-y-1 text-center">
                     <span className="block text-xs font-medium text-slate-500">Chiusura</span>
-                    <TimeInput
+                    <TimePicker24h
                       value={slot.close}
                       onChange={(v) => updateSlot(day, index, { close: v })}
                       disabled={disabled || closed}

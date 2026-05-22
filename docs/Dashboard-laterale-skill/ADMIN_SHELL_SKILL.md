@@ -76,6 +76,6 @@ feat(crm): ...     fix(crm): ...
 ```bash
 npm run typecheck   # zero errori TS
 npm run lint        # zero warning
-npm run test        # 29/29 Vitest
+npm run test        # 90/90 Vitest
 npm run validate    # per PR: tutto in sequenza
 ```

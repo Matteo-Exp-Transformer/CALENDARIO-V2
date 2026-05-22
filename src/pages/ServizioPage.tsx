@@ -6,6 +6,8 @@ import { TableFormModal } from '@/features/booking/components/servizio/TableForm
 import { RoomTabs } from '@/features/booking/components/servizio/RoomTabs'
 import { RoomConfigModal } from '@/features/booking/components/servizio/RoomConfigModal'
 import { TableMap } from '@/features/booking/components/servizio/TableMap'
+import { ServiceSlotsManager } from '@/features/booking/components/servizio/ServiceSlotsManager'
+import { AssignmentMapPanel } from '@/features/booking/components/servizio/AssignmentMapPanel'
 import { useTables, useDeleteTable, type RestaurantTable } from '@/features/booking/hooks/useServizioTables'
 import { useRooms, type Room } from '@/features/booking/hooks/useRooms'
 import { cn } from '@/lib/utils'
@@ -148,8 +150,8 @@ export const ServizioPage: FC = () => {
     : 0
 
   return (
-    <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-6 md:px-6">
-      <div className="mx-auto max-w-6xl space-y-6">
+    <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-5 md:px-6 md:py-7">
+      <div className="mx-auto max-w-7xl space-y-6">
         {/* Header con tab Lista / Mappa */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -285,6 +287,13 @@ export const ServizioPage: FC = () => {
           </>
         )}
 
+        {/* Fasce orarie — visibili in entrambe le view */}
+        {!isLoading && !error && viewMode === 'list' && (
+          <div className="border-t border-(--color-border) pt-6">
+            <ServiceSlotsManager />
+          </div>
+        )}
+
         {/* ========================= TAB MAPPA ========================= */}
         {!isLoading && !error && viewMode === 'map' && (
           <div className="space-y-4">
@@ -313,6 +322,13 @@ export const ServizioPage: FC = () => {
                 onAddTable={() => openAdd(selectedRoom.id)}
               />
             )}
+
+            {/* Assignment prenotazioni → tavoli (DndContext separato dal riposizionamento) */}
+            <AssignmentMapPanel rooms={rooms} tables={tables} />
+
+            <div className="mt-8 border-t border-(--color-border) pt-6">
+              <ServiceSlotsManager />
+            </div>
           </div>
         )}
       </div>

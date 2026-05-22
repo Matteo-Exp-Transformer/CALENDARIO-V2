@@ -1,23 +1,22 @@
 import type { FC } from 'react'
 import { useState } from 'react'
-import { Calendar, ConciergeBell, Loader2, Users, Clock, UserPlus, Printer } from 'lucide-react'
-import { format } from 'date-fns'
-import { it } from 'date-fns/locale'
+import { ConciergeBell, Loader2, Clock, UserPlus, Printer } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui'
 import { useHomeStats } from '@/features/booking/hooks/useHomeStats'
+import { useBookingStats } from '@/features/booking/hooks/useBookingQueries'
 import { WalkInModal } from '@/features/booking/components/home/WalkInModal'
 import { ShiftBriefingModal } from '@/features/booking/components/home/ShiftBriefingModal'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
+import { NotifyNavShinyLayers } from '@/components/ui'
+import { useFeatures } from '@/hooks/useFeatures'
 
 export interface AdminHomePageProps {
-  onOpenPrenotazioni: () => void
   onOpenCrm: () => void
   onOpenServizio: () => void
 }
 
 interface QuickNavButtonProps {
-  icon: typeof Calendar
+  icon: typeof ConciergeBell
   label: string
   description: string
   onClick: () => void
@@ -55,14 +54,22 @@ interface StatCardProps {
   label: string
   value: number
   isLoading?: boolean
+  /** Mostra effetto shiny+pulse quando true */
+  highlight?: boolean
 }
 
-const StatCard: FC<StatCardProps> = ({ label, value, isLoading }) => (
-  <div className="rounded-xl border border-(--color-border) bg-surface p-4 shadow-sm md:p-5">
-    <p className="text-xs font-medium uppercase tracking-wide text-(--color-text-muted) md:text-sm">
+const StatCard: FC<StatCardProps> = ({ label, value, isLoading, highlight }) => (
+  <div
+    className={cn(
+      'relative overflow-hidden rounded-xl border border-(--color-border) bg-surface p-4 shadow-sm md:p-5',
+      highlight && 'admin-nav-notify-pulse-wrap',
+    )}
+  >
+    {highlight && <NotifyNavShinyLayers />}
+    <p className="relative z-10 text-xs font-medium uppercase tracking-wide text-(--color-text-muted) md:text-sm">
       {label}
     </p>
-    <div className="mt-2 flex min-h-8 items-baseline gap-1 md:min-h-9">
+    <div className="relative z-10 mt-2 flex min-h-8 items-baseline gap-1 md:min-h-9">
       {isLoading ? (
         <Loader2 className="h-6 w-6 shrink-0 animate-spin text-primary-600" aria-hidden />
       ) : (
@@ -75,21 +82,23 @@ const StatCard: FC<StatCardProps> = ({ label, value, isLoading }) => (
 )
 
 export const AdminHomePage: FC<AdminHomePageProps> = ({
-  onOpenPrenotazioni,
-  onOpenCrm,
+  onOpenCrm: _onOpenCrm,
   onOpenServizio,
 }) => {
-  const { stats, upcoming, isLoading, error } = useHomeStats()
+  const features = useFeatures()
+  const { stats: homeStats, upcoming, isLoading, error } = useHomeStats()
+  const { data: globalStats } = useBookingStats()
   const { data: businessHoursRaw } = useRestaurantSetting('business_hours')
 
   const [walkInOpen, setWalkInOpen] = useState(false)
   const [briefingOpen, setBriefingOpen] = useState(false)
 
-  const pendingCount = stats.pendingToday
+  // Count globale pending (stesso valore del tab header "Prenotazioni")
+  const pendingGlobal = globalStats?.pending ?? 0
 
   return (
-    <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-6 md:px-6">
-      <div className="mx-auto max-w-6xl space-y-6">
+    <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-5 md:px-6 md:py-7">
+      <div className="mx-auto max-w-7xl space-y-6">
         <header>
           <h1 className="text-xl font-bold text-primary-900 md:text-2xl">Home</h1>
           <p className="mt-1 text-sm text-(--color-text-muted)">
@@ -97,46 +106,19 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
           </p>
         </header>
 
-        {/* Banner alert richieste in attesa */}
-        {!isLoading && pendingCount > 0 && (
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-(--color-warning) bg-warning-50 px-4 py-3">
-            <p className="text-sm font-medium text-warning-900">
-              Hai {pendingCount} {pendingCount === 1 ? 'richiesta in attesa' : 'richieste in attesa'} di conferma
-            </p>
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              onClick={onOpenPrenotazioni}
-            >
-              Vai a Prenotazioni
-            </Button>
-          </div>
-        )}
-
-        {/* Quick-nav: 5 pulsanti su 2-3 colonne */}
+        {/* Quick-nav: Servizio (pro), Walk-in, Briefing */}
         <nav
           aria-label="Scorciatoie sezioni dashboard"
           className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
         >
-          <QuickNavButton
-            icon={Calendar}
-            label="Calendario"
-            description="Prenotazioni e tab operativi"
-            onClick={onOpenPrenotazioni}
-          />
-          <QuickNavButton
-            icon={Users}
-            label="CRM Clienti"
-            description="Anagrafica e storico"
-            onClick={onOpenCrm}
-          />
-          <QuickNavButton
-            icon={ConciergeBell}
-            label="Servizio"
-            description="Gestione tavoli e sale"
-            onClick={onOpenServizio}
-          />
+          {features.servizio && (
+            <QuickNavButton
+              icon={ConciergeBell}
+              label="Servizio"
+              description="Gestione tavoli e sale"
+              onClick={onOpenServizio}
+            />
+          )}
           <QuickNavButton
             icon={UserPlus}
             label="Aggiungi walk-in"
@@ -151,74 +133,78 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
           />
         </nav>
 
-        {/* Stat card */}
+        {/* Stat card — restano 3 colonne (non 4 come Classic): qui ci sono
+            esattamente 3 statistiche, una 4ª colonna resterebbe vuota su desktop */}
         <section
           aria-label="Statistiche di oggi"
           className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4"
         >
-          <StatCard label="Prenotazioni oggi" value={stats.totalToday} isLoading={isLoading} />
+          <StatCard
+            label="Prenotazioni oggi"
+            value={homeStats.totalToday}
+            isLoading={isLoading}
+          />
           <StatCard
             label="Coperti confermati"
-            value={stats.confirmedCoversToday}
+            value={homeStats.confirmedCoversToday}
             isLoading={isLoading}
           />
           <StatCard
             label="In attesa di conferma"
-            value={stats.pendingToday}
+            value={pendingGlobal}
             isLoading={isLoading}
+            highlight={pendingGlobal > 0}
           />
         </section>
 
-        {/* Prossime 3 ore */}
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-primary-700" aria-hidden />
-            <h2 className="text-sm font-semibold text-primary-900 md:text-base">
-              Prossime 3 ore
-            </h2>
-          </div>
+        {/* Prossime 3 ore — nascosta se lista vuota (nessun messaggio placeholder) */}
+        {(error || isLoading || upcoming.length > 0) && (
+          <section className="space-y-3" aria-label="Prossime 3 ore">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary-700" aria-hidden />
+              <h2 className="text-sm font-semibold text-primary-900 md:text-base">
+                Prossime 3 ore
+              </h2>
+            </div>
 
-          {error ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-              <p className="font-semibold">Impossibile caricare le prossime prenotazioni.</p>
-              <p className="mt-1">{error.message}</p>
-            </div>
-          ) : isLoading ? (
-            <div
-              className="flex h-24 items-center justify-center rounded-xl border border-(--color-border) bg-surface shadow-sm"
-              role="status"
-              aria-live="polite"
-            >
-              <Loader2 className="h-6 w-6 animate-spin text-primary-600" aria-hidden />
-              <span className="sr-only">Caricamento prossime prenotazioni</span>
-            </div>
-          ) : upcoming.length === 0 ? (
-            <p className="rounded-xl border border-(--color-border) bg-surface px-4 py-6 text-center text-sm text-(--color-text-muted) shadow-sm">
-              Nessuna prenotazione confermata nelle prossime 3 ore.
-            </p>
-          ) : (
-            <ul className="space-y-2">
-              {upcoming.map((b) => (
-                <li
-                  key={b.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-(--color-border) bg-surface px-4 py-3 shadow-sm"
-                >
-                  <div className="flex min-w-0 flex-col">
-                    <span className="truncate text-sm font-semibold text-primary-900">
-                      {b.client_name}
+            {error ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                <p className="font-semibold">Impossibile caricare le prossime prenotazioni.</p>
+                <p className="mt-1">{error.message}</p>
+              </div>
+            ) : isLoading ? (
+              <div
+                className="flex h-24 items-center justify-center rounded-xl border border-(--color-border) bg-surface shadow-sm"
+                role="status"
+                aria-live="polite"
+              >
+                <Loader2 className="h-6 w-6 animate-spin text-primary-600" aria-hidden />
+                <span className="sr-only">Caricamento prossime prenotazioni</span>
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {upcoming.map((b) => (
+                  <li
+                    key={b.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-(--color-border) bg-surface px-4 py-3 shadow-sm"
+                  >
+                    <div className="flex min-w-0 flex-col">
+                      <span className="truncate text-sm font-semibold text-primary-900">
+                        {b.client_name}
+                      </span>
+                      <span className="text-xs text-(--color-text-muted)">
+                        {b.num_guests} {b.num_guests === 1 ? 'coperto' : 'coperti'}
+                      </span>
+                    </div>
+                    <span className="shrink-0 rounded-lg bg-primary-50 px-3 py-1 text-sm font-semibold tabular-nums text-primary-900">
+                      {b.start_time}
                     </span>
-                    <span className="text-xs text-(--color-text-muted)">
-                      {b.num_guests} {b.num_guests === 1 ? 'coperto' : 'coperti'}
-                    </span>
-                  </div>
-                  <span className="shrink-0 rounded-lg bg-primary-50 px-3 py-1 text-sm font-semibold tabular-nums text-primary-900">
-                    {format(b.start, 'HH:mm', { locale: it })}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
       </div>
 
       <WalkInModal isOpen={walkInOpen} onClose={() => setWalkInOpen(false)} />

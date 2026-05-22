@@ -13,6 +13,8 @@ export interface TimePicker24hProps extends Omit<React.HTMLAttributes<HTMLDivEle
   hasError?: boolean
   hourAriaLabel?: string
   minuteAriaLabel?: string
+  /** Densità ridotta + font mobile-first (es. griglia a 2 colonne nel form pubblico) */
+  compact?: boolean
 }
 
 function splitParts(raw: string): { hour: number | null; minute: number | null } {
@@ -40,27 +42,31 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
       hasError = false,
       hourAriaLabel = 'Ora (formato 24 ore)',
       minuteAriaLabel = 'Minuti',
+      compact = false,
       className,
       style,
       ...divProps
     },
     ref
   ) => {
+    // I due select sono sempre coerenti: o entrambi vuoti (nessun orario
+    // scelto, mostrano il placeholder "––") o entrambi valorizzati. Niente
+    // stato ibrido. Un valore parziale dal form viene trattato come vuoto.
     const { hour, minute } = splitParts(value)
-    const hourVal = hour === null ? '' : pad(hour)
-    const minuteVal = hour === null ? '' : pad(minute ?? 0)
+    const hasValue = hour !== null && minute !== null
+    const hourVal = hasValue ? pad(hour) : ''
+    const minuteVal = hasValue ? pad(minute) : ''
 
-    const emit = (h: number | null, m: number | null) => {
-      if (h === null) {
-        onChange('')
-        return
-      }
-      const mm = m === null ? 0 : m
-      onChange(`${pad(h)}:${pad(mm)}`)
-    }
+    // Scegliere una delle due parti quando il campo è ancora vuoto fissa
+    // l'altra a 00, così il form riceve subito un "HH:mm" valido.
+    const emitHour = (h: number) => onChange(`${pad(h)}:${pad(minute ?? 0)}`)
+    const emitMinute = (m: number) => onChange(`${pad(hour ?? 0)}:${pad(m)}`)
+    const clear = () => onChange('')
 
-    const selectBase =
-      'min-w-0 flex-1 cursor-pointer rounded-md border-0 bg-white py-2 text-sm font-medium text-slate-900 outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-75'
+    const selectBase = cn(
+      'min-w-0 flex-1 cursor-pointer rounded-md border-0 bg-white py-2 font-medium text-slate-900 outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-75',
+      compact ? 'text-base sm:text-sm' : 'text-sm'
+    )
 
     return (
       <div
@@ -71,8 +77,10 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
           ...(style as React.CSSProperties | undefined),
         }}
         className={cn(
-          '[color-scheme:light] isolate flex min-h-[3.5rem] w-full items-center gap-2 rounded-[1.25rem] !bg-white px-4 py-3 text-sm text-slate-900 shadow-sm',
-          // Stessi spessori/colori border di TimeInput (.time-input-container)
+          '[color-scheme:light] isolate flex w-full items-center !bg-white text-slate-900 shadow-sm',
+          compact
+            ? 'min-h-[3rem] gap-2 rounded-2xl px-3 py-2 text-base sm:text-sm'
+            : 'min-h-[3.5rem] gap-2 rounded-[1.25rem] px-4 py-3 text-sm',
           hasError ? 'border-2 !border-red-500' : 'border border-[rgba(0,0,0,0.2)]',
           '[&_select]:!bg-white [&_select]:text-slate-900',
           'focus-within:outline-none',
@@ -94,14 +102,15 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
           onChange={(e) => {
             const v = e.target.value
             if (v === '') {
-              emit(null, null)
+              clear()
               return
             }
-            const h = parseInt(v, 10)
-            emit(h, hour === null ? 0 : minute ?? 0)
+            emitHour(parseInt(v, 10))
           }}
         >
-          <option value="">{required ? '—' : ''}</option>
+          {/* Placeholder solo finché non c'è un orario: nei form con default
+              (es. Prenota) non compare mai, evitando una voce morta. */}
+          {!hasValue && <option value="">––</option>}
           {Array.from({ length: 24 }, (_, i) => (
             <option key={i} value={pad(i)}>
               {pad(i)}
@@ -116,24 +125,23 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
           aria-label={minuteAriaLabel}
           className={selectBase}
           value={minuteVal}
-          disabled={disabled || hour === null}
+          disabled={disabled}
           required={required}
           onChange={(e) => {
-            if (hour === null) return
             const v = e.target.value
-            const m = v === '' ? 0 : parseInt(v, 10)
-            emit(hour, m)
+            if (v === '') {
+              clear()
+              return
+            }
+            emitMinute(parseInt(v, 10))
           }}
         >
-          {hour === null ? (
-            <option value="">—</option>
-          ) : (
-            Array.from({ length: 60 }, (_, i) => (
-              <option key={i} value={pad(i)}>
-                {pad(i)}
-              </option>
-            ))
-          )}
+          {!hasValue && <option value="">––</option>}
+          {Array.from({ length: 60 }, (_, i) => (
+            <option key={i} value={pad(i)}>
+              {pad(i)}
+            </option>
+          ))}
         </select>
       </div>
     )

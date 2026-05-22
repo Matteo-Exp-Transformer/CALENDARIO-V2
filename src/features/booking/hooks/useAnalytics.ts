@@ -10,7 +10,9 @@ import {
   startOfMonth,
   startOfWeek,
   startOfYear,
-  subDays,
+  addWeeks,
+  addMonths,
+  addYears,
 } from 'date-fns'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabase } from '@/lib/supabase'
@@ -50,8 +52,8 @@ export interface KpiDelta {
 
 export const ANALYTICS_QUERY_ROOT = 'analytics'
 
-export const ANALYTICS_QUERY_KEY = (tenantId: string, range: DateRange, shift: ShiftFilter) =>
-  [ANALYTICS_QUERY_ROOT, tenantId, range, shift] as const
+export const ANALYTICS_QUERY_KEY = (tenantId: string, range: DateRange, shift: ShiftFilter, offset: number) =>
+  [ANALYTICS_QUERY_ROOT, tenantId, range, shift, offset] as const
 
 type AnalyticsRow = {
   status: string
@@ -64,25 +66,31 @@ type AnalyticsRow = {
 }
 
 /**
- * Restituisce [startStr, endStr] del periodo corrente per il range dato.
- * - week  → lunedì–domenica della settimana corrente (ISO: firstDay=1)
- * - month → primo–ultimo giorno del mese corrente
- * - year  → 1 gennaio–31 dicembre dell'anno corrente
+ * Restituisce i bounds del periodo indicato dall'offset (0=corrente, -1=precedente, +1=successivo, ecc.).
+ * - week  → lunedì–domenica (ISO: firstDay=1)
+ * - month → primo–ultimo giorno del mese
+ * - year  → 1 gennaio–31 dicembre
  */
-function getCurrentPeriodBounds(range: DateRange): { startStr: string; endStr: string; startDay: Date; endDay: Date } {
+export function getPeriodBounds(
+  range: DateRange,
+  offset = 0,
+): { startStr: string; endStr: string; startDay: Date; endDay: Date } {
   const now = new Date()
   let startDay: Date
   let endDay: Date
 
   if (range === 'week') {
-    startDay = startOfWeek(now, { weekStartsOn: 1 })
-    endDay = endOfWeek(now, { weekStartsOn: 1 })
+    const base = startOfWeek(now, { weekStartsOn: 1 })
+    startDay = startOfWeek(addWeeks(base, offset), { weekStartsOn: 1 })
+    endDay = endOfWeek(startDay, { weekStartsOn: 1 })
   } else if (range === 'month') {
-    startDay = startOfMonth(now)
-    endDay = endOfMonth(now)
+    const base = startOfMonth(now)
+    startDay = startOfMonth(addMonths(base, offset))
+    endDay = endOfMonth(startDay)
   } else {
-    startDay = startOfYear(now)
-    endDay = endOfYear(now)
+    const base = startOfYear(now)
+    startDay = startOfYear(addYears(base, offset))
+    endDay = endOfYear(startDay)
   }
 
   return {
@@ -94,31 +102,30 @@ function getCurrentPeriodBounds(range: DateRange): { startStr: string; endStr: s
 }
 
 /**
- * Restituisce i bounds del periodo *precedente* dello stesso tipo.
- * - week  → settimana precedente (7 gg prima)
- * - month → mese precedente
- * - year  → anno precedente
+ * Etichetta leggibile del periodo (usata nel navigator di AnalyticsPage).
+ * - week  → "Sett. 21 mag – 27 mag" oppure "Settimana corrente"
+ * - month → "Maggio 2026" oppure "Mese corrente"
+ * - year  → "2026" oppure "Anno corrente"
  */
-function getPreviousPeriodBounds(range: DateRange): { startStr: string; endStr: string; startDay: Date; endDay: Date } {
-  const now = new Date()
-  let refDate: Date
-
+export function getPeriodLabel(range: DateRange, offset: number): string {
+  const { startDay, endDay } = getPeriodBounds(range, offset)
   if (range === 'week') {
-    refDate = subDays(startOfWeek(now, { weekStartsOn: 1 }), 1)
-    const startDay = startOfWeek(refDate, { weekStartsOn: 1 })
-    const endDay = endOfWeek(refDate, { weekStartsOn: 1 })
-    return { startDay, endDay, startStr: format(startDay, 'yyyy-MM-dd'), endStr: format(endDay, 'yyyy-MM-dd') }
-  } else if (range === 'month') {
-    refDate = subDays(startOfMonth(now), 1)
-    const startDay = startOfMonth(refDate)
-    const endDay = endOfMonth(refDate)
-    return { startDay, endDay, startStr: format(startDay, 'yyyy-MM-dd'), endStr: format(endDay, 'yyyy-MM-dd') }
-  } else {
-    refDate = new Date(now.getFullYear() - 1, 0, 1)
-    const startDay = startOfYear(refDate)
-    const endDay = endOfYear(refDate)
-    return { startDay, endDay, startStr: format(startDay, 'yyyy-MM-dd'), endStr: format(endDay, 'yyyy-MM-dd') }
+    const s = format(startDay, 'd MMM', { locale: undefined })
+    const e = format(endDay, 'd MMM', { locale: undefined })
+    return `${s} – ${e}`
   }
+  if (range === 'month') {
+    return format(startDay, 'MMMM yyyy', { locale: undefined })
+  }
+  return format(startDay, 'yyyy')
+}
+
+function getCurrentPeriodBounds(range: DateRange, offset = 0) {
+  return getPeriodBounds(range, offset)
+}
+
+function getPreviousPeriodBounds(range: DateRange, offset = 0) {
+  return getPeriodBounds(range, offset - 1)
 }
 
 /**
@@ -147,7 +154,9 @@ function computeAnalytics(
     const day = bookingDate(r)
     if (day < startStr || day > endStr) return false
 
-    if (shift !== 'all' && r.confirmed_start) {
+    if (shift !== 'all') {
+      // Senza confirmed_start non possiamo classificare il turno: escludiamo la prenotazione
+      if (!r.confirmed_start) return false
       const hour = new Date(r.confirmed_start).getHours()
       if (shift === 'lunch') {
         if (hour < shiftRanges.lunch.startHour || hour >= shiftRanges.lunch.endHour) return false
@@ -223,21 +232,10 @@ export function computeOccupancyRate(
   totalSeats: number,
   range: DateRange,
   businessHoursRaw?: unknown,
+  offset = 0,
 ): number | null {
   if (totalSeats <= 0) return null
-  const now = new Date()
-  let startDay: Date
-  let endDay: Date
-  if (range === 'week') {
-    startDay = startOfWeek(now, { weekStartsOn: 1 })
-    endDay = endOfWeek(now, { weekStartsOn: 1 })
-  } else if (range === 'month') {
-    startDay = startOfMonth(now)
-    endDay = endOfMonth(now)
-  } else {
-    startDay = startOfYear(now)
-    endDay = endOfYear(now)
-  }
+  const { startDay, endDay } = getPeriodBounds(range, offset)
 
   const days = eachDayOfInterval({ start: startDay, end: endDay })
   const businessHours = parseBusinessHours(businessHoursRaw)
@@ -254,23 +252,24 @@ export function computeOccupancyRate(
   return maxCovers > 0 ? Math.round((totalCovers / maxCovers) * 100) : null
 }
 
-export function useAnalytics(range: DateRange, shift: ShiftFilter = 'all', businessHoursRaw?: unknown) {
+export function useAnalytics(range: DateRange, shift: ShiftFilter = 'all', businessHoursRaw?: unknown, offset = 0) {
   const { tenantId } = useTenantContext()
 
   const query = useQuery({
-    queryKey: ANALYTICS_QUERY_KEY(tenantId ?? '', range, shift),
+    queryKey: ANALYTICS_QUERY_KEY(tenantId ?? '', range, shift, offset),
     enabled: Boolean(tenantId),
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       if (!tenantId) throw new Error('Tenant mancante')
 
-      const { startDay, startStr, endStr, endDay } = getCurrentPeriodBounds(range)
+      const { startDay, startStr, endStr, endDay } = getCurrentPeriodBounds(range, offset)
 
       const res = await supabase
         .from('booking_requests')
         .select('status, num_guests, created_at, confirmed_start, desired_date, no_show, source')
         .eq('tenant_id', tenantId)
         .gte('created_at', startOfDay(startDay).toISOString())
+        .lte('created_at', endDay.toISOString())
 
       if (res.error) {
         logger.error('[useAnalytics] booking_requests', res.error)
@@ -298,17 +297,18 @@ export function useAnalyticsComparison(
   range: DateRange,
   shift: ShiftFilter = 'all',
   businessHoursRaw?: unknown,
+  offset = 0,
 ) {
   const { tenantId } = useTenantContext()
 
   const query = useQuery({
-    queryKey: [ANALYTICS_QUERY_ROOT, tenantId, range, shift, 'comparison'] as const,
+    queryKey: [ANALYTICS_QUERY_ROOT, tenantId, range, shift, offset, 'comparison'] as const,
     enabled: Boolean(tenantId),
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       if (!tenantId) throw new Error('Tenant mancante')
 
-      const { startDay, startStr, endStr, endDay } = getPreviousPeriodBounds(range)
+      const { startDay, startStr, endStr, endDay } = getPreviousPeriodBounds(range, offset)
 
       const res = await supabase
         .from('booking_requests')

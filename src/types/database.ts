@@ -156,6 +156,71 @@ export type Database = {
           },
         ]
       }
+      booking_table_assignments: {
+        Row: {
+          booking_id: string
+          checked_out_at: string | null
+          created_at: string
+          date: string
+          id: string
+          service_slot_id: string
+          table_id: string
+          tenant_id: string
+          turn_number: number
+        }
+        Insert: {
+          booking_id: string
+          checked_out_at?: string | null
+          created_at?: string
+          date: string
+          id?: string
+          service_slot_id: string
+          table_id: string
+          tenant_id: string
+          turn_number?: number
+        }
+        Update: {
+          booking_id?: string
+          checked_out_at?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          service_slot_id?: string
+          table_id?: string
+          tenant_id?: string
+          turn_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_table_assignments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_table_assignments_service_slot_id_fkey"
+            columns: ["service_slot_id"]
+            isOneToOne: false
+            referencedRelation: "service_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_table_assignments_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_table_assignments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           created_at: string
@@ -380,6 +445,7 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string
+          edition: string
           id: string
           is_active: boolean
           max_booking_requests_per_year: number
@@ -391,6 +457,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          edition?: string
           id?: string
           is_active?: boolean
           max_booking_requests_per_year?: number
@@ -402,6 +469,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          edition?: string
           id?: string
           is_active?: boolean
           max_booking_requests_per_year?: number
@@ -500,6 +568,110 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "rooms_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_slot_overrides: {
+        Row: {
+          created_at: string
+          date_from: string
+          date_to: string
+          id: string
+          max_guests: number | null
+          max_turns: number | null
+          service_slot_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_from: string
+          date_to: string
+          id?: string
+          max_guests?: number | null
+          max_turns?: number | null
+          service_slot_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          date_from?: string
+          date_to?: string
+          id?: string
+          max_guests?: number | null
+          max_turns?: number | null
+          service_slot_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_slot_overrides_service_slot_id_fkey"
+            columns: ["service_slot_id"]
+            isOneToOne: false
+            referencedRelation: "service_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_slot_overrides_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_slots: {
+        Row: {
+          created_at: string
+          display_order: number
+          end_time: string
+          id: string
+          is_canonical: boolean
+          max_guests: number | null
+          max_turns: number | null
+          max_turns_resume: number | null
+          name: string
+          slot_color: string | null
+          start_time: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          end_time: string
+          id?: string
+          is_canonical?: boolean
+          max_guests?: number | null
+          max_turns?: number | null
+          max_turns_resume?: number | null
+          name: string
+          slot_color?: string | null
+          start_time: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          end_time?: string
+          id?: string
+          is_canonical?: boolean
+          max_guests?: number | null
+          max_turns?: number | null
+          max_turns_resume?: number | null
+          name?: string
+          slot_color?: string | null
+          start_time?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_slots_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -610,12 +782,88 @@ export type Database = {
       check_admin_email: {
         Args: { check_email: string }
         Returns: {
+          edition: string
           name: string
+          org_name: string
+          slug: string
           tenant_id: string
         }[]
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       current_admin_tenant_id: { Args: never; Returns: string }
+      insert_service_slot: {
+        Args: {
+          p_display_order: number
+          p_end_time: string
+          p_max_guests: number
+          p_max_turns: number
+          p_name: string
+          p_start_time: string
+          p_tenant_id: string
+        }
+        Returns: {
+          created_at: string
+          display_order: number
+          end_time: string
+          id: string
+          is_canonical: boolean
+          max_guests: number | null
+          max_turns: number | null
+          name: string
+          slot_color: string | null
+          start_time: string
+          tenant_id: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "service_slots"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      insert_service_slot_override: {
+        Args: { payload: Json }
+        Returns: {
+          created_at: string
+          date_from: string
+          date_to: string
+          id: string
+          max_guests: number | null
+          max_turns: number | null
+          service_slot_id: string
+          tenant_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "service_slot_overrides"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      update_service_slot: {
+        Args: { payload: Json }
+        Returns: {
+          created_at: string
+          display_order: number
+          end_time: string
+          id: string
+          is_canonical: boolean
+          max_guests: number | null
+          max_turns: number | null
+          name: string
+          slot_color: string | null
+          start_time: string
+          tenant_id: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "service_slots"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       [_ in never]: never

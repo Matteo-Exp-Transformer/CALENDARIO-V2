@@ -11,6 +11,7 @@ import { ANALYTICS_QUERY_ROOT } from './useAnalytics'
 import { HOME_STATS_QUERY_KEY } from './useHomeStats'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { logger } from '@/lib/logger'
+import { extractTimeFromISO } from '@/features/booking/utils/dateUtils'
 
 interface AcceptBookingInput {
   bookingId: string
@@ -53,16 +54,18 @@ export const useAcceptBooking = () => {
 
   return useMutation({
     mutationFn: async (input: AcceptBookingInput) => {
+      // desired_time deve essere sempre presente: è l'ancora contro il round-trip timestamptz.
+      // Se il chiamante non lo passa, lo deriviamo da confirmedStart (che è ancora nostro,
+      // scritto con createBookingDateTime con offset +00:00 = cifre = orario locale).
+      const resolvedDesiredTime = input.desiredTime ?? extractTimeFromISO(input.confirmedStart)
+
       const updateData: any = {
         status: 'accepted',
         confirmed_start: input.confirmedStart,
         confirmed_end: input.confirmedEnd,
         num_guests: input.numGuests,
         updated_at: new Date().toISOString(),
-      }
-
-      if (input.desiredTime !== undefined) {
-        updateData.desired_time = input.desiredTime
+        desired_time: resolvedDesiredTime || null,
       }
 
       const { data, error } = await (supabase

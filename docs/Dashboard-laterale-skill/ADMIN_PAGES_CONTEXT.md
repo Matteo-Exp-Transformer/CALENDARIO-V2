@@ -120,7 +120,7 @@ customer.email === searchTerm  // case-sensitive, manca trim
 
 | File | Ruolo |
 |------|-------|
-| `src/pages/AdminHomePage.tsx` | Home riassuntiva: quick-nav (Calendario / CRM / Servizio), 3 stat card, lista prossime 3h |
+| `src/pages/AdminHomePage.tsx` | Home riassuntiva: quick-nav (Servizio se abilitato, walk-in, briefing), 3 stat card, lista prossime 3h |
 | `src/features/booking/hooks/useHomeStats.ts` | Query TanStack su `booking_requests`, `HOME_STATS_QUERY_KEY`, calcolo lato client |
 | `src/pages/AdminDashboard.tsx` | Vista operativa montata da `section === 'prenotazioni'` |
 
@@ -140,7 +140,7 @@ customer.email === searchTerm  // case-sensitive, manca trim
 
 - Per estrarre la data da `confirmed_start` (ISO con TZ) usare il regex `(\d{4})-(\d{2})-(\d{2})` — coerente con `useBookingStats`, evita drift di fuso.
 - La sidebar mantiene il bottone **Home** attivo sia su `section === 'home'` che `section === 'prenotazioni'` (logica `activeSidebarItem === 'home' || (!activeSidebarItem && (section === 'home' || section === 'prenotazioni'))`).
-- Le callback quick-nav (Calendario, CRM, Servizio) provengono dalla shell tramite `dashboardShellProps.onOpenPrenotazioni / onOpenCrm / onOpenServizio` — non leggere lo state della shell direttamente.
+- Le callback verso CRM e Servizio sono passate da `AdminShell` come prop `onOpenCrm` / `onOpenServizio` su `AdminHomePage` (montata con `bodyOverride`). Per aprire Prenotazioni/Calendario si usano i NavItem nell’header (`onBodyOverrideExit`).
 
 ### Note
 
@@ -151,7 +151,7 @@ customer.email === searchTerm  // case-sensitive, manca trim
 ## Servizio
 
 **Sezione**: `section === 'servizio'` → `<ServizioPage />`  
-**Stato**: implementato F1 — CRUD tavoli per sala.
+**Stato**: implementato — CRUD tavoli per sala + fasce orarie con modifiche a tempo (override) + assegnazione tavoli con filtro prenotazioni per fascia. Vedi sottosezioni dedicate sotto gli anti-pattern.
 
 ### File chiave
 
@@ -193,6 +193,79 @@ tables (active=true, tenant_id)               → RestaurantTable[]
 // ❌ non mischiare supabase ↔ supabasePublic nelle query tavoli
 // ❌ non costruire classi dinamiche: `bg-${color}-600` non genera CSS con JIT
 ```
+
+### Fasce orarie + modifiche a tempo (override)
+
+Sottosezione Servizio separata dai tavoli. Una fascia (`service_slots`) può
+avere **modifiche a tempo**: turni/coperti diversi per un intervallo di date,
+poi ritorno automatico ai valori base (nessun job — risoluzione runtime).
+
+| File | Ruolo |
+|------|-------|
+| `src/features/booking/components/servizio/ServiceSlotsManager.tsx` | Lista fasce, modal CRUD (`FormInfoToggle` + `FormInfoPanel` con ✕), menu durata, card override |
+| `src/features/booking/hooks/useServiceSlots.ts` | CRUD fasce base + `update_service_slot` (RPC jsonb) |
+| `src/features/booking/hooks/useServiceSlotOverrides.ts` | Override: query/create/delete + helper di risoluzione |
+| `supabase/migrations/022_service_slot_overrides.sql` | Tabella `service_slot_overrides`, RLS, RPC insert |
+| `supabase/migrations/023_service_slots_max_turns_resume.sql` | Colonna `max_turns_resume` + RPC `update_service_slot` estesa |
+
+Regole chiave:
+- Menu durata (pulsante con icona calendario + etichetta scope, es. **Sempre**): scope `forever` → **solo** `service_slots` (impostazioni base permanenti; **non** crea override né conta tra le «Modifiche a tempo») · *Solo oggi* · *Questa settimana* · *Fino a fine mese* · *Scegli i giorni* (ognuno = riga in `service_slot_overrides`). In modifica con `forever`: riga «Tipo di salvataggio» + `FormInfoToggle` → `FormInfoPanel` blu (copy scadenza modifiche; chiusura ✕). Campo coperti: stesso pattern dopo «fascia» (rifiuto automatico oltre limite).
+- Sovrapposizioni: **vince il più specifico** (`resolveSlotOverride`, intervallo più corto; a parità il più recente) — stessa regola usata dal capacity check clienti.
+- Una fascia con override attivi si rende come `CollapsibleCard` (LOCKED — solo uso); senza override resta una riga semplice. **Header card**: titolo in `h3`; subtitle con orario e riga «N Modifiche a tempo»; badge `ActiveTodayBadge` («Attiva oggi», solo verde) se oggi vince un override — centrato su `sm+`, inline nel subtitle su mobile; `SlotControls` a destra.
+- Vincolo: **un solo override per tipo a intervallo** (today/week/month) per fascia, validato nel form; `custom` blocca solo i singoli giorni già coperti.
+- **Chiusura servizio** (`SlotControls`): pulsante ✕ imposta `max_turns = 0` (nessun tavolo/turno, come prima); valore precedente in `max_turns_resume` (migrazione 023); riapertura con icona ↺. Riga/card con `opacity-55` + badge «Servizio chiuso». Non usare `0` nel campo turni del form.
+- Helper: `isServiceSlotClosed(slot)` → `max_turns === 0`.
+- **Orario notturno** (`end_time < start_time`, `slotCrossesMidnight`): copy unico `OVERNIGHT_TIME_END_HINT` in `bookingTimeSlots.ts`. Mostrato nel **modal** nuova/modifica fascia; **non** in lista righe (`SlotRow` mostra solo `HH:mm → HH:mm`, senza `(notturna +1)`). Edition Classic: stesso avviso anche in Impostazioni → «Imposta Fasce Orarie» (`RestaurantSettingsTab`, `!features.servizio`).
+- Migrazioni **022** e **023** applicate SOLO sul server di test (`docnnernvp`), non a produzione — vedi DB_SKILL / APP_CONTEXT_SKILL §1b.
+
+### Assegnazione tavoli (drag-and-drop)
+
+Sottosezione nella tab **Mappa** di `ServizioPage` (sotto `TableMap`). Il ristoratore sceglie **data** + **fascia oraria**; a sinistra compaiono solo le prenotazioni **accettate** del giorno la cui **ora di inizio** rientra in `start_time`–`end_time` della fascia; a destra i tavoli per sala con drop-zone e stati libero/occupato/liberato.
+
+| File | Ruolo |
+|------|-------|
+| `src/features/booking/components/servizio/AssignmentMapPanel.tsx` | UI: select data/fascia, lista prenotazioni, mappa tavoli (`@dnd-kit`) |
+| `src/features/booking/hooks/useTableAssignments.ts` | `useTableAssignments`, `useUnassignedBookings`, `useAssignBookingToTable`, `useCheckoutTable`, `getTableStatus` |
+| `src/features/booking/utils/serviceSlotBookingFilter.ts` | `bookingStartsInServiceSlot` — filtro per ora di inizio nella fascia |
+| `src/features/booking/hooks/useServiceSlots.ts` | Fasce nel select (`useServiceSlots`) |
+
+**Dati**
+
+- Fasce: `service_slots` (`id`, `name`, `start_time`, `end_time`, `max_turns`).
+- Prenotazioni: `booking_requests` (`status = accepted`, `confirmed_start` / `desired_date`, `desired_time`).
+- Assegnazioni: `booking_table_assignments` (`booking_id`, `table_id`, `service_slot_id`, `date`, `turn_number`, `checked_out_at`).
+
+**`useUnassignedBookings(date, slot | null)`** — `slot` = `Pick<ServiceSlot, 'id' | 'start_time' | 'end_time'>`. Filtri in ordine:
+
+1. accettate per tenant;
+2. data (`confirmed_start` o `desired_date`);
+3. **`bookingStartsInServiceSlot`** — `getAccurateStartTime` + `isTimeInsideSlot` (fasce notturne incluse); senza orario → esclusa;
+4. non già assegnate a un tavolo per quello `service_slot_id` + `date` con `checked_out_at` null.
+
+Query key: `[TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, date, slotId, 'unassigned']` (`TABLE_ASSIGNMENTS_QUERY_KEY = 'table_assignments'`).
+
+**Regole**
+
+- Solo **ora di inizio** nella fascia (non overlap con `confirmed_end`) — allineato a `getStartSlotForBooking` / capacity.
+- Orari fascia letti dalla riga `service_slots` caricata da `useServiceSlots()` — **non** da `resolveSlotOverride` (override turni/coperti del giorno: gap noto, vedi report 16-05-26).
+- `max_turns === 0` (servizio chiuso): assegnazione già bloccata in mutation; UI invariata.
+- **`Libera tavolo`** (`useCheckoutTable`): la prenotazione del turno liberato **torna** nell’elenco sinistro (non più in `assigned` con `checked_out_at` null). Se **non** c’è un turno successivo già assegnato e attivo sullo stesso tavolo → **DELETE** della riga in `booking_table_assignments` (tavolo verde «Libero»). Se c’è turno 2+ in attesa → **UPDATE** `checked_out_at` sul turno corrente (tavolo passa al turno successivo; prenotazione T1 torna in lista). Helper: `hasWaitingNextTurnOnTable` (`tableCheckout.ts`). Dopo successo: `refetchQueries` su assignments + unassigned.
+- **Card tavolo occupato** (`DroppableTable`): due righe senza etichette — `client_name, num_guests` e sotto orario `HH:mm` da `getAccurateStartTime` (`dateUtils`). Lookup: `useAcceptedBookingsForDate(date)` + mappa `booking_id` dagli assignment attivi.
+- Filtro elenco estratto in `unassignedBookingsFilter.ts` (`filterUnassignedBookingsForSlot`, `activeAssignedBookingIds`).
+- Test: `serviceSlotBookingFilter.test.ts`, `unassignedBookingsFilter.test.ts`, `tableCheckout.test.ts`.
+
+**Accesso rapido da Calendario (novità 19-05-26, aggiornato Fase 1.5)**
+
+L'assegnazione/riassegnazione è raggiungibile dalla **pagina Calendario** tramite `QuickTableAssignModal`. Funziona solo se `hasTurnsFeature = features.servizio && serviceSlots.length > 0`.
+
+- Ogni card digest mostra un **pallino** (2.5×2.5) in alto a destra: verde (`bg-(--color-status-accepted)`) = già assegnato; grigio (`bg-primary-300`) = libero. Il pallino non appare in edition Classic senza servizio.
+- Click pallino **grigio** → `QuickTableAssignModal` `mode='assign'` (sala → tavolo → `useAssignBookingToTable`).
+- Click pallino **verde** → `QuickTableAssignModal` `mode='reassign'`: mostra dialog di conferma con tavolo attuale, poi chiama `useReleaseBookingAssignment` (libera l'assignment per `booking_id` specifico — non per tavolo come `useCheckoutTable`), infine flusso sala/tavolo identico all'assign.
+- **Caso turni in coda** (provvisorio): se `hasWaitingNextTurnOnTable` → `useReleaseBookingAssignment` ritorna `{ blocked: 'waiting_next_turn' }` senza modificare DB; il modal mostra avviso «gestisci da Servizio → Mappa». Logica definitiva pianificata in sessione futura.
+- `QuickTableAssignModal` riceve `mode` dal Calendario (derivato da `assignedBookingIds`) e non ha più la prop `serviceSlots` (usa `useServiceSlots()` interno).
+- `QuickTableAssignModal` deriva `slotId` automaticamente da `bookingStartsInServiceSlot` — nessuna scelta fascia. Se l'orario non ricade in nessuna fascia, mostra avviso testuale.
+- File: `src/features/booking/components/QuickTableAssignModal.tsx`.
+- Query key condivisa: `TABLE_ASSIGNMENTS_QUERY_KEY` — dopo assegnazione/riassegnazione, anche `ServizioPage → AssignmentMapPanel` si aggiorna.
 
 ---
 

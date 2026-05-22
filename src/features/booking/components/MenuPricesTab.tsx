@@ -471,16 +471,13 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const deleteMutation = useDeleteMenuItem()
 
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
-  const { data: volAuVentPromoVisible = false, isLoading: volAuVentVisLoading } = useRestaurantSetting(
-    'booking_vol_au_vent_promo_visible',
-  )
   const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE, isLoading: volAuVentMsgLoading } =
     useRestaurantSetting('booking_vol_au_vent_promo_message')
   const { data: volAuVentPromos = [], isLoading: volAuVentPromosLoading } = useRestaurantSetting(
     'booking_vol_au_vent_promos',
   )
   const upsertRestaurantSetting = useUpsertRestaurantSetting()
-  const volAuVentPromoLoading = volAuVentVisLoading || volAuVentMsgLoading || volAuVentPromosLoading
+  const volAuVentPromoLoading = volAuVentMsgLoading || volAuVentPromosLoading
 
   const [viewMode, setViewMode] = useState<MenuViewMode>('menu')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -591,14 +588,14 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       return
     }
     const next = volAuVentPromos.filter((p) => p.id !== promoId)
-    upsertRestaurantSetting.mutate([{ key: 'booking_vol_au_vent_promos', value: next }])
+    persistVolAuVentPromos(next)
   }
 
   const toggleVolAuVentPromoBookingVisibility = (promoId: string) => {
     const next = volAuVentPromos.map((p) =>
       p.id === promoId ? { ...p, visible_on_booking: !isVolAuVentPromoVisibleOnBooking(p) } : p,
     )
-    upsertRestaurantSetting.mutate([{ key: 'booking_vol_au_vent_promos', value: next }])
+    persistVolAuVentPromos(next)
   }
 
   const resetPresetEditor = () => {
@@ -1007,6 +1004,10 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     onToolbarPromoDisabled?.(volAuVentPromoLoading || upsertRestaurantSetting.isPending)
   }, [onToolbarPromoDisabled, volAuVentPromoLoading, upsertRestaurantSetting.isPending])
 
+  const persistVolAuVentPromos = (next: VolAuVentPromo[]) => {
+    upsertRestaurantSetting.mutate([{ key: 'booking_vol_au_vent_promos', value: next }])
+  }
+
   if (isLoading) {
     return <div className="text-center py-8">Caricamento menu...</div>
   }
@@ -1104,12 +1105,10 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                 Crea una o più promo e associale alle tipologie di prenotazione del form pubblico.
               </p>
 
-              {!volAuVentPromoVisible && (
-                <p className="mb-3 mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
-                  La visibilità promo in pagina Prenota è disattivata a livello di impostazione: le promo non saranno
-                  mostrate nel form pubblico finché resta così.
-                </p>
-              )}
+              <p className="mb-3 mt-4 rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5 text-xs text-gray-600">
+                In pagina Prenota ogni promo è visibile solo se l&apos;occhio nella lista è aperto. Il testo compare
+                sotto la tipologia di prenotazione associata.
+              </p>
 
               {volAuVentPromoMessage.trim().length > 0 && volAuVentPromos.length === 0 && (
                 <p className="mb-3 mt-4 rounded-lg border border-slate-200 bg-white/70 px-3 py-2 text-xs text-slate-700">

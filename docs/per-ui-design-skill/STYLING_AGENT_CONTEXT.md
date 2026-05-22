@@ -132,7 +132,6 @@ import { cn } from '@/lib/utils'   // clsx + tailwind-merge — sempre usare que
 |------|--------|
 | `CollapsibleCard.tsx` | 57 test, LOCKED |
 | `DateInput.tsx` | `<style>` globali con `!important` |
-| `TimeInput.tsx` | idem |
 | `Modal.tsx` | z-index calibrato con Toast — mai cambiare `z-[10050]` |
 | `TenantContext.tsx` | core multi-tenancy |
 | `src/lib/supabase.ts` | client autenticato |

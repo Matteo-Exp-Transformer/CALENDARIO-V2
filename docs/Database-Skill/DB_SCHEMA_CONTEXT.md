@@ -15,10 +15,13 @@
 | `name` | TEXT NOT NULL | Nome ristorante |
 | `slug` | TEXT UNIQUE NOT NULL | Parte URL: `/prenota/<slug>` |
 | `plan` | TEXT | Default `'starter'` |
+| `edition` | TEXT NOT NULL | Default `'pro'` — valori: `'classic'` · `'pro'` · `'enterprise'` |
 | `max_bookings_per_year` | INTEGER | Default 3600 |
 | `max_booking_requests_per_year` | INTEGER | Default 5000 |
 | `is_active` | BOOLEAN | `false` blocca login admin |
 | `created_at`, `updated_at` | TIMESTAMPTZ | |
+
+`edition` controlla quali feature sono attive per il tenant (letto da `TenantContext` → `useFeatures()`). Migrazione: `013_tenants_edition.sql`.
 
 Indici: `idx_organizations_slug`, `idx_organizations_active` (partial su `is_active = true`).
 **RLS:** nessuna policy — letta via service role o `supabasePublic`.
@@ -101,6 +104,72 @@ Vincolo: `UNIQUE(tenant_id, name, category)`. Indice: `(tenant_id, category, sor
 Vincoli: `UNIQUE(tenant_id, key)`, `UNIQUE(tenant_id, label)`.
 Indice: `(tenant_id, sort_order, label)`.
 **RLS:** `admin_manage_menu_categories` — ALL per authenticated se `tenant_id = current_admin_tenant_id()`.
+
+---
+
+### `service_slots` — Fasce orarie servizio (010)
+
+| Colonna | Tipo | Note |
+|---------|------|------|
+| `id` | UUID PK | `gen_random_uuid()` |
+| `tenant_id` | UUID FK → organizations | ON DELETE CASCADE |
+| `name` | TEXT NOT NULL | Es. `'Colazione'`, `'Pranzo'`, `'Cena'` |
+| `start_time` | TEXT NOT NULL | Formato `HH:MM` |
+| `end_time` | TEXT NOT NULL | Formato `HH:MM` |
+| `max_turns` | INTEGER | NULL = nessun limite |
+| `max_guests` | INTEGER | NULL = nessun limite coperti per fascia (migrazione 017) |
+| `display_order` | INTEGER NOT NULL DEFAULT 0 | Ordinamento UI |
+| `is_canonical` | BOOLEAN NOT NULL DEFAULT false | **Deprecato funzionalmente** — mantenuto per il trigger di signup. Non usare per filtrare fasce attive (migrazione 016 + 024) |
+| `slot_color` | TEXT | Colore hex opzionale per la fascia in UI (migrazione 024, TEST only — da applicare in prod al rollout) |
+| `created_at`, `updated_at` | TIMESTAMPTZ | |
+
+**`is_canonical`**: storicamente le 3 fasce canoniche (`Colazione`, `Pranzo`, `Cena`) avevano `is_canonical = true`. Dopo la migrazione 024 il campo è **deprecato funzionalmente** — il codice usa tutte le fasce attive del tenant (non filtra su `is_canonical`). Il campo rimane nel DB perché il trigger di signup (`seed_default_service_slots_for_organization`) lo imposta ancora. **Non eliminare** fino a pulizia esplicita.
+
+**`max_guests`**: impostabile per fascia da Pro/Enterprise in Servizio → Fasce orarie. `useCapacityCheck` lo usa come limite per fascia con fallback su `slot_guest_capacities` di `restaurant_settings` se null. Classic non ha la UI per impostarlo (sezione Fasce nascosta in `!features.servizio`).
+
+Hook dedicato: `useCanonicalTimeSlots()` in `useServiceSlots.ts` — condivide la query di `useServiceSlots`, filtra `is_canonical = true`, converte via `toBookingTimeSlots()`. Nessuna chiamata DB aggiuntiva.
+
+**RPC bypass schema cache**: `insert_service_slot(...)` (7 param, migrazione 018) e `update_service_slot(payload jsonb)` (migrazione 021). Le mutation in `useServiceSlots.ts` usano queste RPC invece di `.insert()`/`.update()` REST per aggirare la schema cache PostgREST. `update_service_slot` ha **un solo parametro jsonb** (firma univoca, immune a PGRST202 — vedi DB_MIGRATIONS_CONTEXT § 1 nota PGRST202). Semantica PATCH: chiave assente nel JSON = mantieni valore esistente; `"max_guests": null` (chiave presente con null) = azzera il limite. La presenza/assenza della chiave esprime l'intento — nessun flag `p_clear_max_guests` separato.
+
+Trigger signup: `seed_default_service_slots_for_organization()` — inserisce 5 fasce di default (Colazione/Pranzo/Aperitivo/Cena/Notturna) con le 3 canoniche già marcate.
+
+**RLS:** policy `admin_*` — SELECT/INSERT/UPDATE/DELETE per `current_admin_tenant_id()`.
+
+### `service_slot_overrides` — Modifiche a tempo delle fasce (022)
+
+| Colonna | Tipo | Note |
+|---------|------|------|
+| `id` | UUID PK | `gen_random_uuid()` |
+| `tenant_id` | UUID FK → organizations | ON DELETE CASCADE |
+| `service_slot_id` | UUID FK → service_slots | ON DELETE CASCADE |
+| `date_from` | DATE NOT NULL | Inizio validità (incluso) |
+| `date_to` | DATE NOT NULL | Fine validità (incluso). CHECK `date_to >= date_from` |
+| `max_turns` | INTEGER | NULL = nessun limite turni in quel periodo |
+| `max_guests` | INTEGER | NULL = nessun limite coperti in quel periodo |
+| `created_at` | TIMESTAMPTZ | |
+
+Override temporaneo: per l'intervallo `[date_from, date_to]` i valori
+`max_turns`/`max_guests` **sostituiscono** quelli base di `service_slots` per
+quella sola fascia. Il valore base non viene toccato → alla scadenza la fascia
+torna automaticamente ai valori base, **senza job** (risoluzione a runtime).
+
+**Risoluzione "vince il più specifico"**: se più override coprono lo stesso
+giorno per la stessa fascia, vince quello con l'intervallo più corto; a parità
+di durata, il `created_at` più recente. Logica in `resolveSlotOverride()`
+(`useServiceSlotOverrides.ts`), applicata anche da `useCapacityCheck` per la
+data della prenotazione.
+
+**RPC**: `insert_service_slot_override(payload jsonb)` (param jsonb singolo,
+stessa scelta di `update_service_slot` — immune a PGRST202). Usata da
+`useCreateServiceSlotOverride`. Letture via `.select()` REST con RLS.
+
+UI: pulsante **"Quando?"** nel form fascia (Servizio → Fasce orarie, solo in
+modifica). Opzioni: Per sempre (modifica il valore base) · Solo oggi · Questa
+settimana (da oggi a domenica di questa settimana) · Fino a fine mese ·
+**Scegli i giorni** (mini calendario, giorni sparsi → 1 override di 1 giorno
+ciascuno). Gli scope a intervallo partono da oggi incluso.
+
+**RLS service_slot_overrides:** policy `admin_*` — SELECT/INSERT/UPDATE/DELETE per `current_admin_tenant_id()`.
 
 ---
 
@@ -238,7 +307,18 @@ LIMIT 1
 
 ### `check_admin_email(check_email text)` → tabella
 
-RPC usata da `TenantContext.setTenantFromAdmin()`. Restituisce il `tenant_id` per una data email admin.
+RPC usata da `TenantContext.setTenantFromAdmin()`. Restituisce in **una sola chiamata** tutti i campi necessari al TenantContext:
+
+| Colonna | Tipo | Fonte |
+|---------|------|-------|
+| `name` | text | `admin_users.name` |
+| `tenant_id` | uuid | `admin_users.tenant_id` |
+| `slug` | text | `organizations.slug` |
+| `org_name` | text | `organizations.name` |
+| `edition` | text | `organizations.edition` |
+
+Migrazione: `015_check_admin_email_with_edition.sql` (2026-05-14).
+Prima della 015 restituiva solo `(name, tenant_id)` — richiedeva una seconda SELECT su `organizations`.
 
 ---
 

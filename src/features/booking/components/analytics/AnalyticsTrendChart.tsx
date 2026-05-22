@@ -32,8 +32,8 @@ export const AnalyticsTrendChart: FC<AnalyticsTrendChartProps> = ({ data, range,
   }
 
   return (
-    <div className="h-80 w-full min-h-0 rounded-xl border border-(--color-border) bg-surface p-3 pt-4 shadow-sm md:p-4">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="w-full min-h-0 rounded-xl border border-(--color-border) bg-surface p-3 pt-4 shadow-sm md:p-4">
+      <ResponsiveContainer width="100%" height={280}>
         <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 4 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
           <XAxis

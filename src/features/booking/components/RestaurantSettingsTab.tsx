@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Store, Loader2, Plus, Edit, Trash2, Save, X, Eye } from 'lucide-react'
+import { Store, Loader2, Eye, Clock, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -17,12 +17,20 @@ import {
   useRestaurantSetting,
   useUpsertRestaurantSetting,
 } from '@/features/booking/hooks/useRestaurantSetting'
+import { useFeatures } from '@/hooks/useFeatures'
 import {
-  DEFAULT_BOOKING_TIME_SLOTS,
-  getBookingTimeSlotLabel,
+  OVERNIGHT_TIME_END_HINT,
+  slotCrossesMidnight,
   slotRangesOverlap,
-  type BookingTimeSlots,
 } from '@/features/booking/utils/bookingTimeSlots'
+import {
+  useServiceSlots,
+  useUpdateServiceSlot,
+  useCreateServiceSlot,
+  useDeleteServiceSlot,
+  SERVICE_SLOTS_QUERY_KEY,
+  type SlotConfig,
+} from '@/features/booking/hooks/useServiceSlots'
 import {
   BOOKING_PAGE_GRADIENT_PRESETS,
   BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
@@ -40,107 +48,37 @@ import {
   type AppThemeId,
 } from '@/features/booking/constants/appTheme'
 
-type SlotFieldKey =
-  | 'morningStart'
-  | 'morningEnd'
-  | 'afternoonStart'
-  | 'afternoonEnd'
-  | 'eveningStart'
-  | 'eveningEnd'
-
 const RESTAURANT_NAME_MAX_LENGTH = 40
-const DEFAULT_PLACEMENT_AREAS = ['Sala A', 'Sala B', 'Deorr'] as const
-const PLACEMENT_AREA_MAX_LENGTH = 40
+const SLOT_NAME_MAX_LENGTH = 40
+const TEMP_SLOT_ID_PREFIX = 'temp-'
+const isTempSlotId = (id: string) => id.startsWith(TEMP_SLOT_ID_PREFIX)
 
-const normalizePlacementAreas = (value: unknown): string[] => {
-  if (!Array.isArray(value)) return [...DEFAULT_PLACEMENT_AREAS]
-  const cleaned = value
-    .map((item) => stripDirectionalFormattingChars(String(item ?? '')).trim())
-    .filter((item) => item.length > 0)
-    .map((item) => item.slice(0, PLACEMENT_AREA_MAX_LENGTH))
-  const unique = cleaned.filter((item, index) => cleaned.indexOf(item) === index)
-  return unique.length > 0 ? unique : [...DEFAULT_PLACEMENT_AREAS]
+type EditingSlot = {
+  id: string
+  name: string
+  start_time: string
+  end_time: string
+  display_order: number
 }
 
-function validateBookingTimeSlotsDetailed(config: BookingTimeSlots): {
-  message: string | null
-  fields: SlotFieldKey[]
-} {
+function validateEditingSlots(slots: EditingSlot[]): string | null {
   const HH_MM = /^([01]\d|2[0-3]):[0-5]\d$/
-  const allFields: SlotFieldKey[] = [
-    'morningStart',
-    'morningEnd',
-    'afternoonStart',
-    'afternoonEnd',
-    'eveningStart',
-    'eveningEnd',
-  ]
-
-  for (const field of allFields) {
-    if (!HH_MM.test(config[field])) {
-      return { message: 'Ogni orario deve essere nel formato HH:mm', fields: [field] }
+  for (const s of slots) {
+    if (!HH_MM.test(s.start_time) || !HH_MM.test(s.end_time)) {
+      return `Fascia "${s.name}": orari nel formato HH:mm richiesti`
+    }
+    if (s.start_time === s.end_time) {
+      return `Fascia "${s.name}": inizio e fine coincidono`
     }
   }
-
-  if (config.morningStart === config.morningEnd) {
-    return {
-      message: 'La fascia Mattina non e valida: inizio e fine coincidono',
-      fields: ['morningStart', 'morningEnd'],
+  for (let i = 0; i < slots.length; i++) {
+    for (let j = i + 1; j < slots.length; j++) {
+      if (slotRangesOverlap(slots[i].start_time, slots[i].end_time, slots[j].start_time, slots[j].end_time)) {
+        return `Le fasce "${slots[i].name}" e "${slots[j].name}" si sovrappongono`
+      }
     }
   }
-  if (config.afternoonStart === config.afternoonEnd) {
-    return {
-      message: 'La fascia Pomeriggio non e valida: inizio e fine coincidono',
-      fields: ['afternoonStart', 'afternoonEnd'],
-    }
-  }
-  if (config.eveningStart === config.eveningEnd) {
-    return {
-      message: 'La fascia Sera non e valida: inizio e fine coincidono',
-      fields: ['eveningStart', 'eveningEnd'],
-    }
-  }
-  if (
-    slotRangesOverlap(
-      config.morningStart,
-      config.morningEnd,
-      config.afternoonStart,
-      config.afternoonEnd
-    )
-  ) {
-    return {
-      message: 'Le fasce Mattina e Pomeriggio si sovrappongono',
-      fields: ['morningEnd', 'afternoonStart'],
-    }
-  }
-  if (
-    slotRangesOverlap(
-      config.afternoonStart,
-      config.afternoonEnd,
-      config.eveningStart,
-      config.eveningEnd
-    )
-  ) {
-    return {
-      message: 'Le fasce Pomeriggio e Sera si sovrappongono',
-      fields: ['afternoonEnd', 'eveningStart'],
-    }
-  }
-  if (
-    slotRangesOverlap(
-      config.morningStart,
-      config.morningEnd,
-      config.eveningStart,
-      config.eveningEnd
-    )
-  ) {
-    return {
-      message: 'Le fasce Mattina e Sera si sovrappongono',
-      fields: ['morningStart', 'eveningEnd'],
-    }
-  }
-
-  return { message: null, fields: [] }
+  return null
 }
 
 const restaurantSettingsIntroCardClass =
@@ -331,17 +269,20 @@ export function RestaurantSettingsIntro() {
 export const RestaurantSettingsTab: React.FC = () => {
   const queryClient = useQueryClient()
   const { tenantId } = useTenantContext()
+  const features = useFeatures()
 
   const nameQuery = useRestaurantSetting('restaurant_name')
-  const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
   const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities')
-  const bookingTimeSlotsQuery = useRestaurantSetting('booking_time_slots')
+  const timeSlotsEnabledQuery = useRestaurantSetting('booking_time_slots_enabled')
+  const serviceSlotsQuery = useServiceSlots()
+  const updateServiceSlot = useUpdateServiceSlot()
+  const createServiceSlot = useCreateServiceSlot()
+  const deleteServiceSlot = useDeleteServiceSlot()
   const hoursQuery = useRestaurantSetting('business_hours')
   const contactEmailQuery = useRestaurantSetting('contact_email')
   const contactPhoneQuery = useRestaurantSetting('contact_phone')
   const contactAddressQuery = useRestaurantSetting('contact_address')
   const publicBookingPageBgQuery = useRestaurantSetting('public_booking_page_background')
-  const placementAreasQuery = useRestaurantSetting('booking_placement_areas')
   const appThemeQuery = useRestaurantSetting('app_theme')
   const walkInMaxGuestsQuery = useRestaurantSetting('walk_in_max_guests')
 
@@ -349,21 +290,16 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const [dirty, setDirty] = useState(false)
   const [restaurantName, setRestaurantName] = useState('')
-  const [dailyGuestLimit, setDailyGuestLimit] = useState<number | ''>('')
   const [walkInMaxGuests, setWalkInMaxGuests] = useState<number | ''>(20)
-  const [slotCapMorning, setSlotCapMorning] = useState<number | ''>('')
-  const [slotCapAfternoon, setSlotCapAfternoon] = useState<number | ''>('')
-  const [slotCapEvening, setSlotCapEvening] = useState<number | ''>('')
-  const [bookingTimeSlots, setBookingTimeSlots] = useState<BookingTimeSlots>(DEFAULT_BOOKING_TIME_SLOTS)
+  const [slotCapacities, setSlotCapacities] = useState<Record<string, number | ''>>({})
+  const [editingSlots, setEditingSlots] = useState<EditingSlot[]>([])
+  /** Snapshot degli id delle fasce caricate dal DB al primo hydrate. Serve a rilevare le fasce
+   *  rimosse dall'utente: id presenti qui ma assenti in editingSlots al Salva → DELETE su DB. */
+  const [initialSlotIds, setInitialSlotIds] = useState<string[]>([])
+  const [deleteConfirmSlot, setDeleteConfirmSlot] = useState<EditingSlot | null>(null)
+  const tempSlotCounterRef = useRef(0)
+  const [timeSlotsEnabled, setTimeSlotsEnabled] = useState(true)
   const [slotValidationError, setSlotValidationError] = useState<string | null>(null)
-  const [slotFieldsAttention, setSlotFieldsAttention] = useState<Record<SlotFieldKey, boolean>>({
-    morningStart: false,
-    morningEnd: false,
-    afternoonStart: false,
-    afternoonEnd: false,
-    eveningStart: false,
-    eveningEnd: false,
-  })
   const [businessHours, setBusinessHours] = useState<BusinessHours>(() => getDefaultBusinessHours())
   const [contactEmail, setContactEmail] = useState('')
   const [contactPhone, setContactPhone] = useState('')
@@ -373,20 +309,9 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [bookingBgTextureTab, setBookingBgTextureTab] = useState<'images' | 'gradients'>('images')
   /** Dopo «Conferma» la griglia resta bloccata finche non si cambia selezione o non va a buon fine «Salva modifiche». */
   const [bookingBgSelectionLocked, setBookingBgSelectionLocked] = useState(false)
-  const [placementAreas, setPlacementAreas] = useState<string[]>([...DEFAULT_PLACEMENT_AREAS])
-  const [editingPlacementAreaIndex, setEditingPlacementAreaIndex] = useState<number | null>(null)
-  const [editingPlacementAreaDraft, setEditingPlacementAreaDraft] = useState('')
   const [appTheme, setAppTheme] = useState<AppThemeId>(DEFAULT_APP_THEME)
 
   const hydratedRef = useRef(false)
-  const slotFieldRefs = useRef<Record<SlotFieldKey, HTMLDivElement | null>>({
-    morningStart: null,
-    morningEnd: null,
-    afternoonStart: null,
-    afternoonEnd: null,
-    eveningStart: null,
-    eveningEnd: null,
-  })
 
   useEffect(() => {
     hydratedRef.current = false
@@ -396,15 +321,14 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const allSuccess =
     nameQuery.isSuccess &&
-    dailyGuestLimitQuery.isSuccess &&
     slotGuestCapacitiesQuery.isSuccess &&
-    bookingTimeSlotsQuery.isSuccess &&
+    timeSlotsEnabledQuery.isSuccess &&
+    serviceSlotsQuery.isSuccess &&
     hoursQuery.isSuccess &&
     contactEmailQuery.isSuccess &&
     contactPhoneQuery.isSuccess &&
     contactAddressQuery.isSuccess &&
     publicBookingPageBgQuery.isSuccess &&
-    placementAreasQuery.isSuccess &&
     appThemeQuery.isSuccess &&
     walkInMaxGuestsQuery.isSuccess
 
@@ -413,37 +337,46 @@ export const RestaurantSettingsTab: React.FC = () => {
     setRestaurantName(
       stripDirectionalFormattingChars(String(nameQuery.data ?? '')).slice(0, RESTAURANT_NAME_MAX_LENGTH)
     )
-    setDailyGuestLimit(dailyGuestLimitQuery.data ?? '')
-    const sg = slotGuestCapacitiesQuery.data
-    setSlotCapMorning(sg?.morning ?? '')
-    setSlotCapAfternoon(sg?.afternoon ?? '')
-    setSlotCapEvening(sg?.evening ?? '')
-    setBookingTimeSlots(bookingTimeSlotsQuery.data)
+    const sg = slotGuestCapacitiesQuery.data ?? {}
+    const caps: Record<string, number | ''> = {}
+    for (const [k, v] of Object.entries(sg)) {
+      caps[k] = v == null ? '' : (v as number)
+    }
+    setSlotCapacities(caps)
+    setTimeSlotsEnabled(timeSlotsEnabledQuery.data ?? true)
+    const slots = (serviceSlotsQuery.data ?? [])
+      .slice()
+      .sort((a: SlotConfig, b: SlotConfig) => a.display_order - b.display_order)
+    // Postgres TIME ritorna 'HH:mm:ss'; il form e validateEditingSlots usano 'HH:mm'.
+    setEditingSlots(slots.map((s: SlotConfig) => ({
+      id: s.id,
+      name: s.name,
+      start_time: s.start_time.slice(0, 5),
+      end_time: s.end_time.slice(0, 5),
+      display_order: s.display_order,
+    })))
+    setInitialSlotIds(slots.map((s: SlotConfig) => s.id))
     setBusinessHours(hoursQuery.data)
     setContactEmail(stripDirectionalFormattingChars(contactEmailQuery.data ?? ''))
     setContactPhone(stripDirectionalFormattingChars(contactPhoneQuery.data ?? ''))
     setContactAddress(stripDirectionalFormattingChars(contactAddressQuery.data ?? ''))
-    setPlacementAreas(normalizePlacementAreas(placementAreasQuery.data))
     const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
     setBookingPageBackground(resolvedBg)
     setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
     setBookingBgSelectionLocked(false)
-    setEditingPlacementAreaIndex(null)
-    setEditingPlacementAreaDraft('')
     setAppTheme(appThemeQuery.data ?? DEFAULT_APP_THEME)
     setWalkInMaxGuests(walkInMaxGuestsQuery.data ?? 20)
     hydratedRef.current = true
   }, [
     allSuccess,
     nameQuery.data,
-    dailyGuestLimitQuery.data,
     slotGuestCapacitiesQuery.data,
-    bookingTimeSlotsQuery.data,
+    timeSlotsEnabledQuery.data,
+    serviceSlotsQuery.data,
     hoursQuery.data,
     contactEmailQuery.data,
     contactPhoneQuery.data,
     contactAddressQuery.data,
-    placementAreasQuery.data,
     publicBookingPageBgQuery.data,
     appThemeQuery.data,
     walkInMaxGuestsQuery.data,
@@ -451,28 +384,26 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const loading =
     nameQuery.isPending ||
-    dailyGuestLimitQuery.isPending ||
     slotGuestCapacitiesQuery.isPending ||
-    bookingTimeSlotsQuery.isPending ||
+    timeSlotsEnabledQuery.isPending ||
+    serviceSlotsQuery.isPending ||
     hoursQuery.isPending ||
     contactEmailQuery.isPending ||
     contactPhoneQuery.isPending ||
     contactAddressQuery.isPending ||
     publicBookingPageBgQuery.isPending ||
-    placementAreasQuery.isPending ||
     appThemeQuery.isPending
 
   const loadError =
     nameQuery.error ||
-    dailyGuestLimitQuery.error ||
     slotGuestCapacitiesQuery.error ||
-    bookingTimeSlotsQuery.error ||
+    timeSlotsEnabledQuery.error ||
+    serviceSlotsQuery.error ||
     hoursQuery.error ||
     contactEmailQuery.error ||
     contactPhoneQuery.error ||
     contactAddressQuery.error ||
     publicBookingPageBgQuery.error ||
-    placementAreasQuery.error ||
     appThemeQuery.error
 
   const markDirty = () => setDirty(true)
@@ -501,25 +432,61 @@ export const RestaurantSettingsTab: React.FC = () => {
     )
   }
 
+  // ---- Gestione fasce orarie (solo Classic) ----------------------------------
+  const handleAddSlot = () => {
+    markDirty()
+    const nextOrder = editingSlots.length === 0
+      ? 0
+      : Math.max(...editingSlots.map((s) => s.display_order)) + 1
+    const baseName = 'Nuova fascia'
+    const existingNames = new Set(editingSlots.map((s) => s.name))
+    let candidateName = baseName
+    let counter = 2
+    while (existingNames.has(candidateName)) {
+      candidateName = `${baseName} ${counter}`
+      counter += 1
+    }
+    tempSlotCounterRef.current += 1
+    const tempId = `${TEMP_SLOT_ID_PREFIX}${tempSlotCounterRef.current}-${Date.now()}`
+    setEditingSlots((prev) => [
+      ...prev,
+      { id: tempId, name: candidateName, start_time: '12:00', end_time: '14:00', display_order: nextOrder },
+    ])
+  }
+
+  const handleSlotNameChange = (slotId: string, raw: string) => {
+    markDirty()
+    const safe = stripDirectionalFormattingChars(raw).slice(0, SLOT_NAME_MAX_LENGTH)
+    setEditingSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, name: safe } : s)))
+  }
+
+  const handleRequestRemoveSlot = (slot: EditingSlot) => {
+    setDeleteConfirmSlot(slot)
+  }
+
+  const handleConfirmRemoveSlot = () => {
+    if (!deleteConfirmSlot) return
+    markDirty()
+    const removedId = deleteConfirmSlot.id
+    setEditingSlots((prev) => prev.filter((s) => s.id !== removedId))
+    // Pulisce anche la capacity associata se presente
+    setSlotCapacities((prev) => {
+      if (!(removedId in prev)) return prev
+      const next = { ...prev }
+      delete next[removedId]
+      return next
+    })
+    setDeleteConfirmSlot(null)
+  }
+
   const handleSave = async () => {
-    const slotsValidation = validateBookingTimeSlotsDetailed(bookingTimeSlots)
-    if (slotsValidation.message) {
-      setSlotValidationError(slotsValidation.message)
-      setSlotFieldsAttention((prev) => {
-        const next = { ...prev }
-        for (const k of Object.keys(next) as SlotFieldKey[]) next[k] = false
-        for (const f of slotsValidation.fields) next[f] = true
-        return next
-      })
-      const firstField = slotsValidation.fields[0]
-      if (firstField) {
-        slotFieldRefs.current[firstField]?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-        })
+    if (!features.servizio && timeSlotsEnabled) {
+      const validationError = validateEditingSlots(editingSlots)
+      if (validationError) {
+        setSlotValidationError(validationError)
+        toast.error(validationError)
+        return
       }
-      toast.error(slotsValidation.message)
-      return
     }
 
     if (bookingPageBackground !== savedBookingPageBackground && !bookingBgSelectionLocked) {
@@ -540,101 +507,102 @@ export const RestaurantSettingsTab: React.FC = () => {
       setContactPhone(safePhone)
       setContactAddress(safeAddress)
 
+      let createdSlotIdMap: Record<string, string> = {}
+      if (!features.servizio) {
+        // 1) DELETE: fasce caricate dal DB e poi rimosse dall'utente.
+        const currentIds = new Set(editingSlots.map((s) => s.id))
+        const toDelete = initialSlotIds.filter((id) => !currentIds.has(id))
+        if (toDelete.length > 0) {
+          await Promise.all(toDelete.map((id) => deleteServiceSlot.mutateAsync(id)))
+        }
+
+        // 2) CREATE/UPDATE con display_order ricalcolato sequenzialmente
+        //    (la posizione nell'array editingSlots, ordinato per inserimento).
+        const orderedSlots = editingSlots.map((s, idx) => ({ ...s, display_order: idx }))
+        for (const s of orderedSlots) {
+          const safeName = stripDirectionalFormattingChars(s.name).trim().slice(0, SLOT_NAME_MAX_LENGTH) || 'Fascia'
+          if (isTempSlotId(s.id)) {
+            const created = await createServiceSlot.mutateAsync({
+              name: safeName,
+              start_time: s.start_time,
+              end_time: s.end_time,
+              max_turns: null,
+              max_guests: null,
+              display_order: s.display_order,
+            })
+            // Rimappa eventuali capacity temporanee dal tempId al vero uuid
+            createdSlotIdMap[s.id] = created.id
+          } else {
+            await updateServiceSlot.mutateAsync({
+              id: s.id,
+              name: safeName,
+              start_time: s.start_time,
+              end_time: s.end_time,
+              display_order: s.display_order,
+              skipToast: true,
+            })
+          }
+        }
+        await queryClient.invalidateQueries({ queryKey: [SERVICE_SLOTS_QUERY_KEY] })
+      }
+
+      const slotCapValue: Record<string, number | null> = {}
+      for (const [k, v] of Object.entries(slotCapacities)) {
+        // Se la capacity era associata a un id temporaneo, rimappala al vero uuid creato.
+        const targetId = createdSlotIdMap[k] ?? k
+        // Scarta le capacity di slot che sono stati eliminati (id non più presente in editingSlots).
+        const stillExists = editingSlots.some((s) => s.id === k || createdSlotIdMap[s.id] === targetId)
+        if (!stillExists) continue
+        slotCapValue[targetId] = v === '' ? null : (v as number)
+      }
+
       await upsert.mutateAsync([
         { key: 'restaurant_name', value: safeName },
-        { key: 'daily_guest_limit', value: dailyGuestLimit === '' ? null : dailyGuestLimit },
-        {
-          key: 'slot_guest_capacities',
-          value: {
-            morning: slotCapMorning === '' ? null : slotCapMorning,
-            afternoon: slotCapAfternoon === '' ? null : slotCapAfternoon,
-            evening: slotCapEvening === '' ? null : slotCapEvening,
-          },
-        },
-        { key: 'booking_time_slots', value: bookingTimeSlots },
+        { key: 'slot_guest_capacities', value: slotCapValue },
+        { key: 'booking_time_slots_enabled', value: timeSlotsEnabled },
         { key: 'business_hours', value: businessHours },
         { key: 'contact_email', value: safeEmail },
         { key: 'contact_phone', value: safePhone },
         { key: 'contact_address', value: safeAddress },
         { key: 'public_booking_page_background', value: bookingPageBackground },
-        { key: 'booking_placement_areas', value: placementAreas },
         { key: 'app_theme', value: appTheme },
         { key: 'walk_in_max_guests', value: walkInMaxGuests === '' ? 20 : walkInMaxGuests },
       ])
-      // Keep local form state as source of truth after save.
-      // Resetting hydration before refetch can reapply stale cached values.
-      await queryClient.refetchQueries({
-        queryKey: ['restaurant_settings'],
-        type: 'active',
-      })
+      await queryClient.refetchQueries({ queryKey: ['restaurant_settings'], type: 'active' })
+
+      // Rimappa state locale dopo create/delete: ricarica gli id dal nuovo array slots.
+      if (!features.servizio) {
+        const refreshedSlots = (await serviceSlotsQuery.refetch()).data ?? []
+        const orderedRefreshed = [...refreshedSlots].sort(
+          (a: SlotConfig, b: SlotConfig) => a.display_order - b.display_order,
+        )
+        setEditingSlots(orderedRefreshed.map((s: SlotConfig) => ({
+          id: s.id,
+          name: s.name,
+          start_time: s.start_time.slice(0, 5),
+          end_time: s.end_time.slice(0, 5),
+          display_order: s.display_order,
+        })))
+        setInitialSlotIds(orderedRefreshed.map((s: SlotConfig) => s.id))
+        // Rimappa anche slotCapacities locali sui veri uuid (per id temp- creati ora)
+        setSlotCapacities((prev) => {
+          const next: Record<string, number | ''> = {}
+          for (const [k, v] of Object.entries(prev)) {
+            const targetId = createdSlotIdMap[k] ?? k
+            if (orderedRefreshed.some((s: SlotConfig) => s.id === targetId)) {
+              next[targetId] = v
+            }
+          }
+          return next
+        })
+      }
+
       setSlotValidationError(null)
-      setSlotFieldsAttention({
-        morningStart: false,
-        morningEnd: false,
-        afternoonStart: false,
-        afternoonEnd: false,
-        eveningStart: false,
-        eveningEnd: false,
-      })
       setDirty(false)
       setBookingBgSelectionLocked(false)
-      setEditingPlacementAreaIndex(null)
-      setEditingPlacementAreaDraft('')
     } catch {
       /* toast gestito da useUpsertRestaurantSetting.onError */
     }
-  }
-
-  const handleAddPlacementArea = () => {
-    markDirty()
-    const candidateBase = 'Nuova area'
-    const nextLabel =
-      placementAreas.includes(candidateBase)
-        ? `${candidateBase} ${placementAreas.length + 1}`
-        : candidateBase
-    setPlacementAreas((prev) => [...prev, nextLabel])
-    setEditingPlacementAreaIndex(placementAreas.length)
-    setEditingPlacementAreaDraft(nextLabel)
-  }
-
-  const handleStartEditPlacementArea = (index: number) => {
-    setEditingPlacementAreaIndex(index)
-    setEditingPlacementAreaDraft(placementAreas[index] ?? '')
-  }
-
-  const handleCancelEditPlacementArea = () => {
-    setEditingPlacementAreaIndex(null)
-    setEditingPlacementAreaDraft('')
-  }
-
-  const handleSavePlacementArea = (index: number) => {
-    const nextValue = stripDirectionalFormattingChars(editingPlacementAreaDraft).trim()
-    if (!nextValue) {
-      toast.error('Il nome dell area non puo essere vuoto')
-      return
-    }
-    const capped = nextValue.slice(0, PLACEMENT_AREA_MAX_LENGTH)
-    markDirty()
-    setPlacementAreas((prev) => prev.map((item, itemIndex) => (itemIndex === index ? capped : item)))
-    setEditingPlacementAreaIndex(null)
-    setEditingPlacementAreaDraft('')
-  }
-
-  const handleRemovePlacementArea = (index: number) => {
-    if (placementAreas.length <= 1) {
-      toast.warn("Serve almeno un'area di posizionamento")
-      return
-    }
-    markDirty()
-    const wasEditingThis = editingPlacementAreaIndex === index
-    setPlacementAreas((prev) => prev.filter((_, i) => i !== index))
-    setEditingPlacementAreaIndex((current) => {
-      if (current === null) return null
-      if (current === index) return null
-      if (current > index) return current - 1
-      return current
-    })
-    if (wasEditingThis) setEditingPlacementAreaDraft('')
   }
 
   if (loadError) {
@@ -653,20 +621,6 @@ export const RestaurantSettingsTab: React.FC = () => {
       </div>
     )
   }
-
-  const clearSlotAttention = (field: SlotFieldKey) => {
-    setSlotFieldsAttention((prev) => ({ ...prev, [field]: false }))
-  }
-
-  const slotFieldClass = (field: SlotFieldKey) =>
-    slotFieldsAttention[field] ? 'rounded-[1.25rem]' : ''
-  const slotFieldStyle = (field: SlotFieldKey): React.CSSProperties | undefined =>
-    slotFieldsAttention[field]
-      ? {
-          boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.95), 0 0 18px rgba(239, 68, 68, 0.55)',
-          animation: 'slotErrorBlink 0.85s ease-in-out infinite',
-        }
-      : undefined
 
   const sectionSurfaceClass =
     'admin-warm-surface w-full max-w-2xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
@@ -716,13 +670,6 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   return (
     <div className="flex w-full flex-col items-center gap-8">
-      <style>{`
-        @keyframes slotErrorBlink {
-          0% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.95), 0 0 18px rgba(239, 68, 68, 0.55); }
-          50% { box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.65), 0 0 4px rgba(239, 68, 68, 0.25); }
-          100% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.95), 0 0 18px rgba(239, 68, 68, 0.55); }
-        }
-      `}</style>
       <section className={sectionSurfaceClass}>
         <h3 className="text-lg font-semibold text-slate-800">Anagrafica e prenotazioni</h3>
         <div className="flex w-full flex-col items-center">
@@ -746,39 +693,14 @@ export const RestaurantSettingsTab: React.FC = () => {
             />
           </div>
           <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
-            <Label htmlFor="daily_guest_limit" className="block w-full text-center">
-              Limite coperti giornaliero
-            </Label>
-            <Input
-              id="daily_guest_limit"
-              type="number"
-              min={1}
-              max={1000}
-              value={dailyGuestLimit}
-              disabled={upsert.isPending}
-              placeholder="Nessun limite"
-              className={`${anagraficaInputClassName} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-              onChange={(e) => {
-                markDirty()
-                const raw = e.target.value
-                if (raw === '') {
-                  setDailyGuestLimit('')
-                  return
-                }
-                const n = parseInt(raw, 10)
-                if (!Number.isNaN(n)) setDailyGuestLimit(n)
-              }}
-            />
-          </div>
-          <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
             <Label htmlFor="walk_in_max_guests" className="block w-full text-center">
               Limite coperti walk-in
             </Label>
             <Input
               id="walk_in_max_guests"
               type="number"
-              min={1}
-              max={200}
+              min={0}
+              max={500}
               value={walkInMaxGuests}
               disabled={upsert.isPending}
               placeholder="20"
@@ -794,88 +716,6 @@ export const RestaurantSettingsTab: React.FC = () => {
                 if (!Number.isNaN(n)) setWalkInMaxGuests(n)
               }}
             />
-          </div>
-          <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
-            <p className="mx-auto max-w-md text-center text-sm text-slate-600">
-              Coperti massimi per fascia oraria (opzionale). Vuoto = nessun tetto sulla fascia.
-            </p>
-            <div className="mx-auto grid w-full max-w-xl grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="space-y-1">
-                <Label htmlFor="slot_cap_morning" className="block w-full text-center text-sm">
-                  Mattina
-                </Label>
-                <Input
-                  id="slot_cap_morning"
-                  type="number"
-                  min={1}
-                  max={5000}
-                  value={slotCapMorning}
-                  disabled={upsert.isPending}
-                  placeholder="Nessun limite"
-                  className={`${anagraficaInputClassName} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                  onChange={(e) => {
-                    markDirty()
-                    const raw = e.target.value
-                    if (raw === '') {
-                      setSlotCapMorning('')
-                      return
-                    }
-                    const n = parseInt(raw, 10)
-                    if (!Number.isNaN(n)) setSlotCapMorning(n)
-                  }}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="slot_cap_afternoon" className="block w-full text-center text-sm">
-                  Pomeriggio
-                </Label>
-                <Input
-                  id="slot_cap_afternoon"
-                  type="number"
-                  min={1}
-                  max={5000}
-                  value={slotCapAfternoon}
-                  disabled={upsert.isPending}
-                  placeholder="Nessun limite"
-                  className={`${anagraficaInputClassName} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                  onChange={(e) => {
-                    markDirty()
-                    const raw = e.target.value
-                    if (raw === '') {
-                      setSlotCapAfternoon('')
-                      return
-                    }
-                    const n = parseInt(raw, 10)
-                    if (!Number.isNaN(n)) setSlotCapAfternoon(n)
-                  }}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="slot_cap_evening" className="block w-full text-center text-sm">
-                  Sera
-                </Label>
-                <Input
-                  id="slot_cap_evening"
-                  type="number"
-                  min={1}
-                  max={5000}
-                  value={slotCapEvening}
-                  disabled={upsert.isPending}
-                  placeholder="Nessun limite"
-                  className={`${anagraficaInputClassName} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                  onChange={(e) => {
-                    markDirty()
-                    const raw = e.target.value
-                    if (raw === '') {
-                      setSlotCapEvening('')
-                      return
-                    }
-                    const n = parseInt(raw, 10)
-                    if (!Number.isNaN(n)) setSlotCapEvening(n)
-                  }}
-                />
-              </div>
-            </div>
           </div>
           <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
             <Label htmlFor="contact_email" className="block w-full text-center">
@@ -944,277 +784,198 @@ export const RestaurantSettingsTab: React.FC = () => {
         />
       </section>
 
+      {!features.servizio && (
       <section className={sectionSurfaceClass}>
         <h3 className="text-lg font-semibold text-slate-800">Imposta Fasce Orarie</h3>
         <p className="text-sm text-slate-600">
           Cambia le fasce orarie in cui vengono raggruppate le prenotazioni nel calendario.
         </p>
 
-        <div className="flex w-full flex-col items-center gap-4">
+        {/* Checkbox abilita raggruppamento per fasce */}
+        <label className="mx-auto flex cursor-pointer items-center gap-2.5 text-sm font-medium text-slate-700">
+          <input
+            type="checkbox"
+            checked={timeSlotsEnabled}
+            disabled={upsert.isPending}
+            className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+            onChange={(e) => {
+              markDirty()
+              setTimeSlotsEnabled(e.target.checked)
+            }}
+          />
+          Abilita raggruppamento per fasce orarie
+        </label>
+
+        <div className={cn('flex w-full flex-col items-center gap-4 transition-opacity', !timeSlotsEnabled && 'pointer-events-none opacity-50')}>
           {slotValidationError && (
             <div className="mx-auto w-full max-w-[14rem] rounded-[1.25rem] border-2 border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-800 shadow-sm">
               {slotValidationError}
             </div>
           )}
-          <div
-            className="w-full rounded-xl border bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]"
-            style={{ borderColor: ADMIN_WARM_BORDER }}
-          >
-            <p className="mb-3 text-sm font-semibold text-emerald-900">
-              {getBookingTimeSlotLabel('morning', bookingTimeSlots)}
-            </p>
-            <div className="flex w-full flex-row flex-nowrap items-end justify-center gap-4 overflow-x-auto py-1 [scrollbar-width:thin] md:gap-8">
-              <div
-                className={`w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center ${slotFieldClass('morningStart')}`}
-                style={slotFieldStyle('morningStart')}
-                ref={(el) => {
-                  slotFieldRefs.current.morningStart = el
-                }}
-                onClick={() => clearSlotAttention('morningStart')}
-              >
-                <Label htmlFor="slot_morning_start" className="block w-full text-center">
-                  Inizio mattina
-                </Label>
-                <TimePicker24h
-                  id="slot_morning_start"
-                  value={bookingTimeSlots.morningStart}
-                  disabled={upsert.isPending}
-                  onChange={(e) => {
-                    markDirty()
-                    setBookingTimeSlots((prev) => ({ ...prev, morningStart: e }))
-                  }}
-                />
-              </div>
-              <div
-                className={`w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center ${slotFieldClass('morningEnd')}`}
-                style={slotFieldStyle('morningEnd')}
-                ref={(el) => {
-                  slotFieldRefs.current.morningEnd = el
-                }}
-                onClick={() => clearSlotAttention('morningEnd')}
-              >
-                <Label htmlFor="slot_morning_end" className="block w-full text-center">
-                  Fine mattina
-                </Label>
-                <TimePicker24h
-                  id="slot_morning_end"
-                  value={bookingTimeSlots.morningEnd}
-                  disabled={upsert.isPending}
-                  onChange={(e) => {
-                    markDirty()
-                    setBookingTimeSlots((prev) => ({ ...prev, morningEnd: e }))
-                  }}
-                />
-              </div>
-            </div>
-          </div>
 
-          <div
-            className="w-full rounded-xl border bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]"
-            style={{ borderColor: ADMIN_WARM_BORDER }}
-          >
-            <p className="mb-3 text-sm font-semibold text-orange-900">
-              {getBookingTimeSlotLabel('afternoon', bookingTimeSlots)}
-            </p>
-            <div className="flex w-full flex-row flex-nowrap items-end justify-center gap-4 overflow-x-auto py-1 [scrollbar-width:thin] md:gap-8">
-              <div
-                className={`w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center ${slotFieldClass('afternoonStart')}`}
-                style={slotFieldStyle('afternoonStart')}
-                ref={(el) => {
-                  slotFieldRefs.current.afternoonStart = el
-                }}
-                onClick={() => clearSlotAttention('afternoonStart')}
-              >
-                <Label htmlFor="slot_afternoon_start" className="block w-full text-center">
-                  Inizio pomeriggio
-                </Label>
-                <TimePicker24h
-                  id="slot_afternoon_start"
-                  value={bookingTimeSlots.afternoonStart}
-                  disabled={upsert.isPending}
-                  onChange={(e) => {
-                    markDirty()
-                    setBookingTimeSlots((prev) => ({ ...prev, afternoonStart: e }))
-                  }}
-                />
-              </div>
-              <div
-                className={`w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center ${slotFieldClass('afternoonEnd')}`}
-                style={slotFieldStyle('afternoonEnd')}
-                ref={(el) => {
-                  slotFieldRefs.current.afternoonEnd = el
-                }}
-                onClick={() => clearSlotAttention('afternoonEnd')}
-              >
-                <Label htmlFor="slot_afternoon_end" className="block w-full text-center">
-                  Fine pomeriggio
-                </Label>
-                <TimePicker24h
-                  id="slot_afternoon_end"
-                  value={bookingTimeSlots.afternoonEnd}
-                  disabled={upsert.isPending}
-                  onChange={(e) => {
-                    markDirty()
-                    setBookingTimeSlots((prev) => ({ ...prev, afternoonEnd: e }))
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="w-full rounded-xl border bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]"
-            style={{ borderColor: ADMIN_WARM_BORDER }}
-          >
-            <p className="mb-3 text-sm font-semibold text-sky-900">
-              {getBookingTimeSlotLabel('evening', bookingTimeSlots)}
-            </p>
-            <div className="flex w-full flex-row flex-nowrap items-end justify-center gap-4 overflow-x-auto py-1 [scrollbar-width:thin] md:gap-8">
-              <div
-                className={`w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center ${slotFieldClass('eveningStart')}`}
-                style={slotFieldStyle('eveningStart')}
-                ref={(el) => {
-                  slotFieldRefs.current.eveningStart = el
-                }}
-                onClick={() => clearSlotAttention('eveningStart')}
-              >
-                <Label htmlFor="slot_evening_start" className="block w-full text-center">
-                  Inizio sera
-                </Label>
-                <TimePicker24h
-                  id="slot_evening_start"
-                  value={bookingTimeSlots.eveningStart}
-                  disabled={upsert.isPending}
-                  onChange={(e) => {
-                    markDirty()
-                    setBookingTimeSlots((prev) => ({ ...prev, eveningStart: e }))
-                  }}
-                />
-              </div>
-              <div
-                className={`w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center ${slotFieldClass('eveningEnd')}`}
-                style={slotFieldStyle('eveningEnd')}
-                ref={(el) => {
-                  slotFieldRefs.current.eveningEnd = el
-                }}
-                onClick={() => clearSlotAttention('eveningEnd')}
-              >
-                <Label htmlFor="slot_evening_end" className="block w-full text-center">
-                  Fine sera
-                </Label>
-                <TimePicker24h
-                  id="slot_evening_end"
-                  value={bookingTimeSlots.eveningEnd}
-                  disabled={upsert.isPending}
-                  onChange={(e) => {
-                    markDirty()
-                    setBookingTimeSlots((prev) => ({ ...prev, eveningEnd: e }))
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className={bookingBgSectionClass} aria-labelledby="placement-areas-heading">
-        <h3 id="placement-areas-heading" className="text-lg font-semibold text-slate-800">
-          Aree di posizionamento
-        </h3>
-        <p className="text-sm text-slate-600">
-          Inserisci o modifica aree della tua attività per indicare il posizionamento delle prenotazioni.
-        </p>
-        <div className="mx-auto flex w-full max-w-[280px] flex-col items-stretch">
+          {/* Bottone Aggiungi fascia */}
           <Button
             type="button"
             variant="primary"
             size="sm"
-            onClick={handleAddPlacementArea}
+            onClick={handleAddSlot}
             disabled={upsert.isPending}
-            className={cn(
-              'h-16 w-full shrink-0 gap-2 rounded-lg border-2 border-primary-700 bg-primary-600 px-3 py-0 text-sm font-medium text-white shadow-none transition-colors hover:bg-primary-500 hover:border-primary-600 hover:shadow-none focus:ring-primary-300'
-            )}
+            className="inline-flex items-center gap-2"
           >
-            <Plus className="h-4 w-4 shrink-0" />
-            Aggiungi nuova area
+            <Plus className="h-4 w-4" aria-hidden />
+            Aggiungi fascia
           </Button>
-        </div>
 
-        <div className="flex w-full flex-col items-center gap-[28px]">
-          {placementAreas.map((area, index) => {
-            const isEditing = editingPlacementAreaIndex === index
+          {editingSlots.length === 0 ? (
+            <p className="text-sm italic text-slate-500">
+              Nessuna fascia configurata. Aggiungi la prima fascia con il pulsante sopra.
+            </p>
+          ) : null}
+
+          {editingSlots.map((slot, idx) => {
+            const crossesMidnight = slotCrossesMidnight({ start_time: slot.start_time, end_time: slot.end_time })
             return (
-              <React.Fragment key={`${area}-${index}`}>
-                {isEditing ? (
-                  <div className="flex w-full max-w-md flex-col items-center gap-3">
-                    <Input
-                      value={editingPlacementAreaDraft}
-                      onChange={(event) =>
-                        setEditingPlacementAreaDraft(
-                          stripDirectionalFormattingChars(event.target.value).slice(
-                            0,
-                            PLACEMENT_AREA_MAX_LENGTH
-                          )
-                        )
-                      }
-                      maxLength={PLACEMENT_AREA_MAX_LENGTH}
-                      className="w-full rounded-xl border border-slate-300 text-center focus-visible:outline-none focus:ring-1 focus:ring-primary-300 focus:border-primary-500"
-                      placeholder="Nome area"
-                      autoFocus
-                    />
-                    <div className="flex w-full flex-wrap items-center justify-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleSavePlacementArea(index)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30"
-                        style={{ background: '#16a34a', color: '#ffffff', borderColor: '#15803d' }}
-                      >
-                        <Save className="h-4 w-4" />
-                        Salva
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleCancelEditPlacementArea}
-                        className="flex items-center gap-2 px-4 py-2 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
-                        style={{ borderColor: '#dc2626', color: '#dc2626' }}
-                      >
-                        <X className="h-4 w-4" />
-                        Annulla
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="menu-prices-item-row w-full max-w-md">
-                    <div className="menu-prices-item-text overflow-hidden">
-                      <h4 className="font-semibold text-gray-900">{area}</h4>
-                    </div>
-                    <div className="menu-prices-item-actions shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleStartEditPlacementArea(index)}
-                        disabled={upsert.isPending}
-                        className="menu-prices-icon-btn menu-prices-icon-btn--edit"
-                        aria-label={`Modifica ${area}`}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemovePlacementArea(index)}
-                        disabled={upsert.isPending || placementAreas.length <= 1}
-                        className="menu-prices-icon-btn menu-prices-icon-btn--delete"
-                        aria-label={`Elimina ${area}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
+              <div
+                key={slot.id}
+                className="w-full rounded-xl border bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]"
+                style={{ borderColor: ADMIN_WARM_BORDER }}
+              >
+                {/* Riga nome fascia + bottone elimina */}
+                <div className="mb-3 flex items-center justify-center gap-2">
+                  <Input
+                    aria-label={`Nome fascia ${idx + 1}`}
+                    value={slot.name}
+                    maxLength={SLOT_NAME_MAX_LENGTH}
+                    disabled={upsert.isPending}
+                    placeholder="Nome fascia"
+                    className="max-w-xs rounded-xl border-2 border-slate-200 bg-white px-3 py-1.5 text-center text-sm font-semibold text-slate-900 shadow-sm outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500"
+                    onChange={(e) => handleSlotNameChange(slot.id, e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRequestRemoveSlot(slot)}
+                    disabled={upsert.isPending}
+                    aria-label={`Rimuovi fascia ${slot.name}`}
+                    className="text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" aria-hidden />
+                  </Button>
+                </div>
+
+                <p className="mb-1 text-xs text-slate-500">
+                  {slot.start_time} - {slot.end_time}
+                </p>
+                {crossesMidnight && (
+                  <p className="mb-2 flex items-center justify-center gap-1.5 text-xs text-amber-700">
+                    <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    {OVERNIGHT_TIME_END_HINT}
+                  </p>
                 )}
-              </React.Fragment>
+                <div className="flex w-full flex-row flex-nowrap items-end justify-center gap-4 overflow-x-auto py-1 [scrollbar-width:thin] md:gap-8">
+                  <div className="w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center">
+                    <Label htmlFor={`slot_start_${idx}`} className="block w-full text-center">
+                      Inizio
+                    </Label>
+                    <TimePicker24h
+                      id={`slot_start_${idx}`}
+                      value={slot.start_time}
+                      disabled={upsert.isPending}
+                      onChange={(v) => {
+                        markDirty()
+                        setEditingSlots((prev) =>
+                          prev.map((s, i) => i === idx ? { ...s, start_time: v } : s)
+                        )
+                      }}
+                    />
+                  </div>
+                  <div className="w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center">
+                    <Label htmlFor={`slot_end_${idx}`} className="block w-full text-center">
+                      Fine
+                    </Label>
+                    <TimePicker24h
+                      id={`slot_end_${idx}`}
+                      value={slot.end_time}
+                      disabled={upsert.isPending}
+                      onChange={(v) => {
+                        markDirty()
+                        setEditingSlots((prev) =>
+                          prev.map((s, i) => i === idx ? { ...s, end_time: v } : s)
+                        )
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center justify-center gap-2">
+                  <Label htmlFor={`slot_cap_${idx}`} className="text-sm text-slate-600 whitespace-nowrap">
+                    Coperti max:
+                  </Label>
+                  <Input
+                    id={`slot_cap_${idx}`}
+                    type="number"
+                    min={1}
+                    max={5000}
+                    value={slotCapacities[slot.id] ?? ''}
+                    disabled={upsert.isPending}
+                    placeholder="Nessun limite"
+                    className="w-32 rounded-xl border-2 border-slate-200 bg-white px-3 py-1.5 text-center text-sm font-medium text-slate-900 shadow-sm outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    onChange={(e) => {
+                      markDirty()
+                      const raw = e.target.value
+                      setSlotCapacities((prev) => ({
+                        ...prev,
+                        [slot.id]: raw === '' ? '' : parseInt(raw, 10),
+                      }))
+                    }}
+                  />
+                </div>
+              </div>
             )
           })}
         </div>
+
+        {/* Modal di conferma eliminazione fascia */}
+        {deleteConfirmSlot && (
+          <Modal
+            isOpen
+            onClose={() => setDeleteConfirmSlot(null)}
+            title="Elimina fascia oraria"
+            size="sm"
+          >
+            <div className="space-y-4">
+              <p className="text-sm text-slate-700">
+                Vuoi eliminare la fascia{' '}
+                <strong className="font-semibold">{deleteConfirmSlot.name}</strong>
+                {' '}({deleteConfirmSlot.start_time} – {deleteConfirmSlot.end_time})?
+              </p>
+              <p className="text-xs text-slate-500">
+                Le prenotazioni che cadono in questa fascia non avranno più raggruppamento dedicato:
+                verranno mostrate nella sezione &laquo;Fuori fascia&raquo; del calendario.
+              </p>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setDeleteConfirmSlot(null)}
+                  disabled={deleteServiceSlot.isPending}
+                >
+                  Annulla
+                </Button>
+                <Button
+                  type="button"
+                  variant="danger"
+                  onClick={handleConfirmRemoveSlot}
+                  disabled={deleteServiceSlot.isPending}
+                >
+                  Elimina
+                </Button>
+              </div>
+            </div>
+          </Modal>
+        )}
       </section>
+      )}
 
       <section className={bookingBgSectionClass}>
         <h3 className="text-lg font-semibold text-slate-800">Sfondo pagina Prenota</h3>
