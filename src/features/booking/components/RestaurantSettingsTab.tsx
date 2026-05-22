@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Store, Loader2, Eye, Clock } from 'lucide-react'
+import { Store, Loader2, Eye, Clock, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -13,7 +13,6 @@ import { cn, stripDirectionalFormattingChars } from '@/lib/utils'
 import { ADMIN_WARM_BORDER } from '@/lib/adminWarmGradientSurface'
 import { BusinessHoursEditor } from './BusinessHoursEditor'
 import { toast } from 'react-toastify'
-import { logger } from '@/lib/logger'
 import {
   useRestaurantSetting,
   useUpsertRestaurantSetting,
@@ -27,6 +26,8 @@ import {
 import {
   useServiceSlots,
   useUpdateServiceSlot,
+  useCreateServiceSlot,
+  useDeleteServiceSlot,
   SERVICE_SLOTS_QUERY_KEY,
   type SlotConfig,
 } from '@/features/booking/hooks/useServiceSlots'
@@ -48,6 +49,9 @@ import {
 } from '@/features/booking/constants/appTheme'
 
 const RESTAURANT_NAME_MAX_LENGTH = 40
+const SLOT_NAME_MAX_LENGTH = 40
+const TEMP_SLOT_ID_PREFIX = 'temp-'
+const isTempSlotId = (id: string) => id.startsWith(TEMP_SLOT_ID_PREFIX)
 
 type EditingSlot = {
   id: string
@@ -273,6 +277,8 @@ export const RestaurantSettingsTab: React.FC = () => {
   const timeSlotsEnabledQuery = useRestaurantSetting('booking_time_slots_enabled')
   const serviceSlotsQuery = useServiceSlots()
   const updateServiceSlot = useUpdateServiceSlot()
+  const createServiceSlot = useCreateServiceSlot()
+  const deleteServiceSlot = useDeleteServiceSlot()
   const hoursQuery = useRestaurantSetting('business_hours')
   const contactEmailQuery = useRestaurantSetting('contact_email')
   const contactPhoneQuery = useRestaurantSetting('contact_phone')
@@ -289,6 +295,11 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [walkInMaxGuests, setWalkInMaxGuests] = useState<number | ''>(20)
   const [slotCapacities, setSlotCapacities] = useState<Record<string, number | ''>>({})
   const [editingSlots, setEditingSlots] = useState<EditingSlot[]>([])
+  /** Snapshot degli id delle fasce caricate dal DB al primo hydrate. Serve a rilevare le fasce
+   *  rimosse dall'utente: id presenti qui ma assenti in editingSlots al Salva → DELETE su DB. */
+  const [initialSlotIds, setInitialSlotIds] = useState<string[]>([])
+  const [deleteConfirmSlot, setDeleteConfirmSlot] = useState<EditingSlot | null>(null)
+  const tempSlotCounterRef = useRef(0)
   const [timeSlotsEnabled, setTimeSlotsEnabled] = useState(true)
   const [slotValidationError, setSlotValidationError] = useState<string | null>(null)
   const [businessHours, setBusinessHours] = useState<BusinessHours>(() => getDefaultBusinessHours())
@@ -347,6 +358,7 @@ export const RestaurantSettingsTab: React.FC = () => {
       end_time: s.end_time,
       display_order: s.display_order,
     })))
+    setInitialSlotIds(slots.map((s: SlotConfig) => s.id))
     setBusinessHours(hoursQuery.data)
     setContactEmail(stripDirectionalFormattingChars(contactEmailQuery.data ?? ''))
     setContactPhone(stripDirectionalFormattingChars(contactPhoneQuery.data ?? ''))
@@ -426,6 +438,53 @@ export const RestaurantSettingsTab: React.FC = () => {
     )
   }
 
+  // ---- Gestione fasce orarie (solo Classic) ----------------------------------
+  const handleAddSlot = () => {
+    markDirty()
+    const nextOrder = editingSlots.length === 0
+      ? 0
+      : Math.max(...editingSlots.map((s) => s.display_order)) + 1
+    const baseName = 'Nuova fascia'
+    const existingNames = new Set(editingSlots.map((s) => s.name))
+    let candidateName = baseName
+    let counter = 2
+    while (existingNames.has(candidateName)) {
+      candidateName = `${baseName} ${counter}`
+      counter += 1
+    }
+    tempSlotCounterRef.current += 1
+    const tempId = `${TEMP_SLOT_ID_PREFIX}${tempSlotCounterRef.current}-${Date.now()}`
+    setEditingSlots((prev) => [
+      ...prev,
+      { id: tempId, name: candidateName, start_time: '12:00', end_time: '14:00', display_order: nextOrder },
+    ])
+  }
+
+  const handleSlotNameChange = (slotId: string, raw: string) => {
+    markDirty()
+    const safe = stripDirectionalFormattingChars(raw).slice(0, SLOT_NAME_MAX_LENGTH)
+    setEditingSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, name: safe } : s)))
+  }
+
+  const handleRequestRemoveSlot = (slot: EditingSlot) => {
+    setDeleteConfirmSlot(slot)
+  }
+
+  const handleConfirmRemoveSlot = () => {
+    if (!deleteConfirmSlot) return
+    markDirty()
+    const removedId = deleteConfirmSlot.id
+    setEditingSlots((prev) => prev.filter((s) => s.id !== removedId))
+    // Pulisce anche la capacity associata se presente
+    setSlotCapacities((prev) => {
+      if (!(removedId in prev)) return prev
+      const next = { ...prev }
+      delete next[removedId]
+      return next
+    })
+    setDeleteConfirmSlot(null)
+  }
+
   const handleSave = async () => {
     if (!features.servizio && timeSlotsEnabled) {
       const validationError = validateEditingSlots(editingSlots)
@@ -454,20 +513,53 @@ export const RestaurantSettingsTab: React.FC = () => {
       setContactPhone(safePhone)
       setContactAddress(safeAddress)
 
-      if (!features.servizio && editingSlots.length > 0) {
-        await Promise.all(
-          editingSlots.map((s) =>
-            updateServiceSlot.mutateAsync({ id: s.id, start_time: s.start_time, end_time: s.end_time })
-          )
-        )
+      let createdSlotIdMap: Record<string, string> = {}
+      if (!features.servizio) {
+        // 1) DELETE: fasce caricate dal DB e poi rimosse dall'utente.
+        const currentIds = new Set(editingSlots.map((s) => s.id))
+        const toDelete = initialSlotIds.filter((id) => !currentIds.has(id))
+        if (toDelete.length > 0) {
+          await Promise.all(toDelete.map((id) => deleteServiceSlot.mutateAsync(id)))
+        }
+
+        // 2) CREATE/UPDATE con display_order ricalcolato sequenzialmente
+        //    (la posizione nell'array editingSlots, ordinato per inserimento).
+        const orderedSlots = editingSlots.map((s, idx) => ({ ...s, display_order: idx }))
+        for (const s of orderedSlots) {
+          const safeName = stripDirectionalFormattingChars(s.name).trim().slice(0, SLOT_NAME_MAX_LENGTH) || 'Fascia'
+          if (isTempSlotId(s.id)) {
+            const created = await createServiceSlot.mutateAsync({
+              name: safeName,
+              start_time: s.start_time,
+              end_time: s.end_time,
+              max_turns: null,
+              max_guests: null,
+              display_order: s.display_order,
+            })
+            // Rimappa eventuali capacity temporanee dal tempId al vero uuid
+            createdSlotIdMap[s.id] = created.id
+          } else {
+            await updateServiceSlot.mutateAsync({
+              id: s.id,
+              name: safeName,
+              start_time: s.start_time,
+              end_time: s.end_time,
+              display_order: s.display_order,
+              skipToast: true,
+            })
+          }
+        }
         await queryClient.invalidateQueries({ queryKey: [SERVICE_SLOTS_QUERY_KEY] })
-      } else if (!features.servizio && editingSlots.length === 0) {
-        logger.warn('[RestaurantSettingsTab] nessuna fascia trovata — fasce non salvate')
       }
 
       const slotCapValue: Record<string, number | null> = {}
       for (const [k, v] of Object.entries(slotCapacities)) {
-        slotCapValue[k] = v === '' ? null : (v as number)
+        // Se la capacity era associata a un id temporaneo, rimappala al vero uuid creato.
+        const targetId = createdSlotIdMap[k] ?? k
+        // Scarta le capacity di slot che sono stati eliminati (id non più presente in editingSlots).
+        const stillExists = editingSlots.some((s) => s.id === k || createdSlotIdMap[s.id] === targetId)
+        if (!stillExists) continue
+        slotCapValue[targetId] = v === '' ? null : (v as number)
       }
 
       await upsert.mutateAsync([
@@ -484,6 +576,34 @@ export const RestaurantSettingsTab: React.FC = () => {
         { key: 'walk_in_max_guests', value: walkInMaxGuests === '' ? 20 : walkInMaxGuests },
       ])
       await queryClient.refetchQueries({ queryKey: ['restaurant_settings'], type: 'active' })
+
+      // Rimappa state locale dopo create/delete: ricarica gli id dal nuovo array slots.
+      if (!features.servizio) {
+        const refreshedSlots = (await serviceSlotsQuery.refetch()).data ?? []
+        const orderedRefreshed = [...refreshedSlots].sort(
+          (a: SlotConfig, b: SlotConfig) => a.display_order - b.display_order,
+        )
+        setEditingSlots(orderedRefreshed.map((s: SlotConfig) => ({
+          id: s.id,
+          name: s.name,
+          start_time: s.start_time,
+          end_time: s.end_time,
+          display_order: s.display_order,
+        })))
+        setInitialSlotIds(orderedRefreshed.map((s: SlotConfig) => s.id))
+        // Rimappa anche slotCapacities locali sui veri uuid (per id temp- creati ora)
+        setSlotCapacities((prev) => {
+          const next: Record<string, number | ''> = {}
+          for (const [k, v] of Object.entries(prev)) {
+            const targetId = createdSlotIdMap[k] ?? k
+            if (orderedRefreshed.some((s: SlotConfig) => s.id === targetId)) {
+              next[targetId] = v
+            }
+          }
+          return next
+        })
+      }
+
       setSlotValidationError(null)
       setDirty(false)
       setBookingBgSelectionLocked(false)
@@ -724,6 +844,26 @@ export const RestaurantSettingsTab: React.FC = () => {
               {slotValidationError}
             </div>
           )}
+
+          {/* Bottone Aggiungi fascia */}
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={handleAddSlot}
+            disabled={upsert.isPending}
+            className="inline-flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" aria-hidden />
+            Aggiungi fascia
+          </Button>
+
+          {editingSlots.length === 0 ? (
+            <p className="text-sm italic text-slate-500">
+              Nessuna fascia configurata. Aggiungi la prima fascia con il pulsante sopra.
+            </p>
+          ) : null}
+
           {editingSlots.map((slot, idx) => {
             const crossesMidnight = slotCrossesMidnight({ start_time: slot.start_time, end_time: slot.end_time })
             return (
@@ -732,8 +872,32 @@ export const RestaurantSettingsTab: React.FC = () => {
                 className="w-full rounded-xl border bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]"
                 style={{ borderColor: ADMIN_WARM_BORDER }}
               >
-                <p className="mb-1 text-sm font-semibold text-slate-800">
-                  {slot.name} · {slot.start_time} - {slot.end_time}
+                {/* Riga nome fascia + bottone elimina */}
+                <div className="mb-3 flex items-center justify-center gap-2">
+                  <Input
+                    aria-label={`Nome fascia ${idx + 1}`}
+                    value={slot.name}
+                    maxLength={SLOT_NAME_MAX_LENGTH}
+                    disabled={upsert.isPending}
+                    placeholder="Nome fascia"
+                    className="max-w-xs rounded-xl border-2 border-slate-200 bg-white px-3 py-1.5 text-center text-sm font-semibold text-slate-900 shadow-sm outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500"
+                    onChange={(e) => handleSlotNameChange(slot.id, e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRequestRemoveSlot(slot)}
+                    disabled={upsert.isPending}
+                    aria-label={`Rimuovi fascia ${slot.name}`}
+                    className="text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" aria-hidden />
+                  </Button>
+                </div>
+
+                <p className="mb-1 text-xs text-slate-500">
+                  {slot.start_time} - {slot.end_time}
                 </p>
                 {crossesMidnight && (
                   <p className="mb-2 flex items-center justify-center gap-1.5 text-xs text-amber-700">
@@ -744,7 +908,7 @@ export const RestaurantSettingsTab: React.FC = () => {
                 <div className="flex w-full flex-row flex-nowrap items-end justify-center gap-4 overflow-x-auto py-1 [scrollbar-width:thin] md:gap-8">
                   <div className="w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center">
                     <Label htmlFor={`slot_start_${idx}`} className="block w-full text-center">
-                      Inizio {slot.name}
+                      Inizio
                     </Label>
                     <TimePicker24h
                       id={`slot_start_${idx}`}
@@ -760,7 +924,7 @@ export const RestaurantSettingsTab: React.FC = () => {
                   </div>
                   <div className="w-[11.5rem] max-w-none shrink-0 space-y-1.5 text-center">
                     <Label htmlFor={`slot_end_${idx}`} className="block w-full text-center">
-                      Fine {slot.name}
+                      Fine
                     </Label>
                     <TimePicker24h
                       id={`slot_end_${idx}`}
@@ -802,6 +966,46 @@ export const RestaurantSettingsTab: React.FC = () => {
             )
           })}
         </div>
+
+        {/* Modal di conferma eliminazione fascia */}
+        {deleteConfirmSlot && (
+          <Modal
+            isOpen
+            onClose={() => setDeleteConfirmSlot(null)}
+            title="Elimina fascia oraria"
+            size="sm"
+          >
+            <div className="space-y-4">
+              <p className="text-sm text-slate-700">
+                Vuoi eliminare la fascia{' '}
+                <strong className="font-semibold">{deleteConfirmSlot.name}</strong>
+                {' '}({deleteConfirmSlot.start_time} – {deleteConfirmSlot.end_time})?
+              </p>
+              <p className="text-xs text-slate-500">
+                Le prenotazioni che cadono in questa fascia non avranno più raggruppamento dedicato:
+                verranno mostrate nella sezione &laquo;Fuori fascia&raquo; del calendario.
+              </p>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setDeleteConfirmSlot(null)}
+                  disabled={deleteServiceSlot.isPending}
+                >
+                  Annulla
+                </Button>
+                <Button
+                  type="button"
+                  variant="danger"
+                  onClick={handleConfirmRemoveSlot}
+                  disabled={deleteServiceSlot.isPending}
+                >
+                  Elimina
+                </Button>
+              </div>
+            </div>
+          </Modal>
+        )}
       </section>
       )}
 
