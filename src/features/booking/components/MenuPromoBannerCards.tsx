@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 
 const MENU_CARD_MAX_WIDTH_PX = 746
 
-export type VolAuVentPromoBannerCardsProps = {
+export type MenuPromoBannerCardsProps = {
   messages: string[]
   className?: string
 }
@@ -11,7 +11,7 @@ export type VolAuVentPromoBannerCardsProps = {
 /**
  * Card promo stile form pubblico (allineate al label sopra al menu a tendina in MenuSelection).
  */
-export const VolAuVentPromoBannerCards: React.FC<VolAuVentPromoBannerCardsProps> = ({
+export const MenuPromoBannerCards: React.FC<MenuPromoBannerCardsProps> = ({
   messages,
   className,
 }) => {
@@ -42,7 +42,7 @@ export const VolAuVentPromoBannerCards: React.FC<VolAuVentPromoBannerCardsProps>
     >
       {filtered.map((text, i) => (
         <div
-          key={`vol-promo-${i}-${text.slice(0, 40)}`}
+          key={`menu-promo-${i}-${text.slice(0, 40)}`}
           className="block text-base md:text-lg text-warm-wood w-full text-center"
           style={cardStyle}
         >

@@ -5,7 +5,7 @@ import type { SelectedMenuItem } from '@/types/menu'
 import type { BookingType } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { getPresetMenuLabel, type CustomStaffPreset, type PresetMenuType } from '../constants/presetMenus'
-import { VolAuVentPromoBannerCards } from './VolAuVentPromoBannerCards'
+import { MenuPromoBannerCards } from './MenuPromoBannerCards'
 
 interface MenuTabProps {
   booking: any
@@ -22,7 +22,7 @@ interface MenuTabProps {
   staffPresetsDropdownVisible?: boolean
   customStaffPresets?: CustomStaffPreset[]
   /** Testi promo per la tipologia in modifica (stesse card del form pubblico). */
-  volAuVentPromoMessages?: string[]
+  menuPromoMessages?: string[]
   isMenuExpanded: boolean
   onMenuExpandToggle: () => void
   onMenuChange: (payload: {
@@ -63,7 +63,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
   presetMenu,
   staffPresetsDropdownVisible = true,
   customStaffPresets = [],
-  volAuVentPromoMessages = [],
+  menuPromoMessages = [],
   isMenuExpanded,
   onMenuExpandToggle,
   onMenuChange,
@@ -134,8 +134,8 @@ export const MenuTab: React.FC<MenuTabProps> = ({
   // Menu expanded content (view mode)
   const menuContent = isEditMode ? (
     <>
-      {volAuVentPromoMessages.length > 0 && (
-        <VolAuVentPromoBannerCards messages={volAuVentPromoMessages} className="mb-4" />
+      {menuPromoMessages.length > 0 && (
+        <MenuPromoBannerCards messages={menuPromoMessages} className="mb-4" />
       )}
       <MenuSelection
         selectedItems={menuSelection?.items || []}

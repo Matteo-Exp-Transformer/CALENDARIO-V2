@@ -17,7 +17,6 @@ import {
   type PresetMenuType,
 } from '../constants/presetMenus'
 import { isCaraffeDrinkPremium, isCaraffeDrinkStandard } from '../utils/caraffePricing'
-import { VOL_AU_VENT_THRESHOLD_EUR } from '../constants/volAuVentPromo'
 import type { BookingType } from '@/types/booking'
 import { normalizeMenuItemBookingTypes } from '@/types/menu'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
@@ -75,20 +74,6 @@ const isTiramisuItem = (itemName: string): boolean =>
 const TIRAMISU_MIN_KG = 1
 const TIRAMISU_MAX_KG = 7
 const DEFAULT_TIRAMISU_KG = 1
-
-// Virtual promotional item for Vol-au-vent
-const VIRTUAL_VOL_AU_VENT_ID = 'virtual-vol-au-vent-promo'
-
-const createVirtualVolAuVentItem = (): SelectedMenuItem => ({
-  id: VIRTUAL_VOL_AU_VENT_ID,
-  name: 'Mini Rustici Misti',
-  price: 0,
-  category: 'antipasti',
-  totalPrice: 0
-})
-
-const isVolAuVentItem = (item: SelectedMenuItem): boolean =>
-  item.id === VIRTUAL_VOL_AU_VENT_ID
 
 const clampTiramisuQuantity = (qty: number): number => {
   if (Number.isNaN(qty) || qty <= 0) {
@@ -235,16 +220,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     }
   }, [selectedItems, tiramisuUnitPrice])
 
-  // Check if Vol-au-vent promotion threshold is met
-  const meetsVolAuVentThreshold = useMemo(() => {
-    return totalPerPerson >= VOL_AU_VENT_THRESHOLD_EUR
-  }, [totalPerPerson])
-
-  const shouldHaveVolAuVent = useMemo(() => {
-    if (!bookingTypeUsesMenuSelections(bookingType)) return false
-    return meetsVolAuVentThreshold
-  }, [meetsVolAuVentThreshold, bookingType])
-
   // Stato locale per l'input del tiramisù per permettere digitazione libera
   const [localTiramisuValue, setLocalTiramisuValue] = useState<string>('')
   const isInitializedRef = React.useRef<boolean>(false)
@@ -310,21 +285,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       tiramisuKg: tiramisuQuantity
     })
   }, [selectedItems, tiramisuUnitPrice, onMenuChange])
-
-  // Auto-add or remove Vol-au-vent based on threshold
-  useEffect(() => {
-    const currentHasVolAuVent = selectedItems.some(isVolAuVentItem)
-
-    if (shouldHaveVolAuVent && !currentHasVolAuVent) {
-      // Add Vol-au-vent
-      const updatedItems = [...selectedItems, createVirtualVolAuVentItem()]
-      emitMenuSelectionChange(updatedItems)
-    } else if (!shouldHaveVolAuVent && currentHasVolAuVent) {
-      // Remove Vol-au-vent
-      const updatedItems = selectedItems.filter(item => !isVolAuVentItem(item))
-      emitMenuSelectionChange(updatedItems)
-    }
-  }, [shouldHaveVolAuVent, selectedItems, emitMenuSelectionChange])
 
   const handleItemToggle = (item: NormalizedMenuItem) => {
     const isSelected = selectedItems.some(selected => selected.id === item.id)
@@ -637,9 +597,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         ) : (
           <div className={cn(MENU_INGREDIENT_OVERVIEW_GRID_CLASS, 'mt-2')}>
             {categoryEntries.map(([categoryKey, categoryLabel]) => {
-              const categoryItems = (itemsByCategory[categoryKey] ?? []).filter(
-                (item) => item.id !== VIRTUAL_VOL_AU_VENT_ID,
-              )
+              const categoryItems = itemsByCategory[categoryKey] ?? []
               const itemCount = categoryItems.length
               const selectedInCategory = selectedItems.filter((i) => i.category === categoryKey).length
 
@@ -763,10 +721,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
               <div className="flex flex-wrap" style={{ gap: '16px' }}>
                 {selectedItems.map((item) => {
                   const isTiramisu = isTiramisuItem(item.name)
-                  const isPromoItem = isVolAuVentItem(item)
                   const quantityLabel = isTiramisu && item.quantity ? ` - ${item.quantity} Kg` : ''
-                  const chipLabel = `${item.name}${quantityLabel}`
-                  const displayLabel = isPromoItem ? `${chipLabel} (In regalo)` : chipLabel
+                  const displayLabel = `${item.name}${quantityLabel}`
                   return (
                     <button
                       key={item.id}

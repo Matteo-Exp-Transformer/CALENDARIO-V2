@@ -103,6 +103,7 @@ export type Database = {
           menu_selection: Json | null
           menu_total_booking: number | null
           menu_total_per_person: number | null
+          menu_promo_labels: Json | null
           no_show: boolean
           num_guests: number | null
           placement: string | null
@@ -135,6 +136,7 @@ export type Database = {
           menu_selection?: Json | null
           menu_total_booking?: number | null
           menu_total_per_person?: number | null
+          menu_promo_labels?: Json | null
           no_show?: boolean
           num_guests?: number | null
           placement?: string | null
@@ -167,6 +169,7 @@ export type Database = {
           menu_selection?: Json | null
           menu_total_booking?: number | null
           menu_total_per_person?: number | null
+          menu_promo_labels?: Json | null
           no_show?: boolean
           num_guests?: number | null
           placement?: string | null

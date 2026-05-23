@@ -9,9 +9,15 @@ vi.mock('@/hooks/useFeatures', () => ({
 }))
 
 vi.mock('@/features/booking/hooks/useRestaurantSetting', () => ({
-  useRestaurantSetting: vi.fn(() => ({
-    data: ['Sala A', 'Sala B'],
-  })),
+  useRestaurantSetting: vi.fn((key: string) => {
+    if (key === 'booking_placement_areas') {
+      return { data: ['Sala A', 'Sala B'] }
+    }
+    if (key === 'booking_menu_promos') {
+      return { data: [] }
+    }
+    return { data: undefined }
+  }),
 }))
 
 import { useFeatures } from '@/hooks/useFeatures'

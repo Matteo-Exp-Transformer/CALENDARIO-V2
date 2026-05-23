@@ -24,3 +24,5 @@ description: >-
 ## Cosa non duplicare qui
 
 Regole, tabelle LOCK, comandi e report di sessione stanno solo nei due file sopra: aggiornare quelli quando cambiano architettura o invarianti; questa skill resta un puntatore stabile per Cursor.
+
+**Ultimo refactor promo menù (23-05-26):** chiave `booking_menu_promos`, niente omaggio automatico in `MenuSelection` — report `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`, invariante in `docs/APP_CONTEXT_SKILL.md` §4 RULE Menu Prenota.

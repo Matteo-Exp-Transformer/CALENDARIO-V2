@@ -46,6 +46,10 @@ export const useCreateAdminBooking = () => {
         preset_menu: data.preset_menu || null,
         dietary_restrictions: data.dietary_restrictions || null,
         placement: features.servizio ? data.placement || null : null,
+        menu_promo_labels:
+          Array.isArray(data.menu_promo_labels) && data.menu_promo_labels.length > 0
+            ? data.menu_promo_labels
+            : null,
         booking_source: 'admin',
         status: 'accepted' as const,
         confirmed_start: confirmedStart,

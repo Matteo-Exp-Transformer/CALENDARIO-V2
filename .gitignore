@@ -38,3 +38,7 @@ Lavoro/
 Immagini-sfondo/
 icone-nuove/
 docs/_lavoro/
+
+# Pagine HTML salvate dal browser (es. export Supabase Dashboard)
+/*.html
+/*_files/

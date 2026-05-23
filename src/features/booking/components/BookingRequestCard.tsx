@@ -20,6 +20,7 @@ import {
   GraduationCap,
   CalendarClock,
   BookOpen,
+  Tag,
 } from 'lucide-react'
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
@@ -29,6 +30,9 @@ import { getMenuPriceDisplayFromBooking, getResolvedMenuPriceDisplay } from '../
 import { formatBookingDateTime } from '../utils/formatDateTime'
 import { cn } from '@/lib/utils'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
+import {
+  resolveMenuPromoLabelsForBooking,
+} from '../constants/menuPromo'
 
 interface BookingRequestCardProps {
   booking: BookingRequest
@@ -71,6 +75,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
+  const { data: menuPromos = [] } = useRestaurantSetting('booking_menu_promos')
 
   const formatDate = (dateStr: string) => {
     try {
@@ -109,6 +114,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
     (booking.booking_type && BOOKING_TYPE_DIGEST_ICON[booking.booking_type]) ?? EventIcon
 
   const showDigestStrip = Boolean(eventTypeLabel)
+  const menuPromoLabels = resolveMenuPromoLabelsForBooking(booking, menuPromos)
 
   const phoneDigestRow = booking.client_phone ? (
     <div className="flex items-center gap-2">
@@ -195,12 +201,15 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                               {formatTime(booking.desired_time)}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 shrink-0 text-primary-500" />
-                            <span className="text-base font-semibold text-primary-900">
-                              {booking.num_guests} ospiti
-                            </span>
-                          </div>
+                          {menuPromoLabels.length > 0 && (
+                            <div className="flex min-w-0 w-full items-start gap-2">
+                              <Tag className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" aria-hidden />
+                              <span className="min-w-0 flex-1 break-words text-sm italic leading-snug text-gray-700">
+                                Promo visualizzate da cliente :{AFTER_COLON}
+                                {menuPromoLabels.join(', ')}
+                              </span>
+                            </div>
+                          )}
                           {phoneDigestRow ? <div className="min-[659px]:hidden">{phoneDigestRow}</div> : null}
                         </div>
 
@@ -210,15 +219,15 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                             'max-[599px]:-ml-12 max-[599px]:w-[calc(100%+3rem+7.25rem)]',
                           )}
                         >
+                          <div className="hidden min-[659px]:flex items-center gap-2">
+                            <Users className="h-4 w-4 shrink-0 text-primary-500" />
+                            <span className="text-base font-semibold text-primary-900">
+                              {booking.num_guests} ospiti
+                            </span>
+                          </div>
                           {phoneDigestRow ? (
                             <div className="hidden min-[659px]:block">{phoneDigestRow}</div>
                           ) : null}
-                          <div className="flex min-w-0 w-full items-start gap-2">
-                            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
-                            <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 flex-1 break-words text-sm italic text-gray-700">
-                              {booking.client_email}
-                            </span>
-                          </div>
                           {booking.special_requests && (
                             <div className="flex min-w-0 w-full items-start gap-2">
                               <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
@@ -236,6 +245,18 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                               </span>
                             </div>
                           )}
+                          <div className="flex min-w-0 w-full items-start gap-2">
+                            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
+                            <span className="line-clamp-2 max-[599px]:line-clamp-none min-w-0 flex-1 break-words text-sm italic text-gray-700">
+                              {booking.client_email}
+                            </span>
+                          </div>
+                          <div className="flex min-[659px]:hidden items-center gap-2">
+                            <Users className="h-4 w-4 shrink-0 text-primary-500" />
+                            <span className="text-base font-semibold text-primary-900">
+                              {booking.num_guests} ospiti
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -353,6 +374,16 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                   </p>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Promo visibili al cliente al momento della richiesta */}
+          {menuPromoLabels.length > 0 && (
+            <div className="pt-6 mt-6 border-t border-[var(--color-border)]">
+              <p className="mb-3 text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">
+                Promo visualizzate da cliente
+              </p>
+              <p className="text-gray-700">{menuPromoLabels.join(', ')}</p>
             </div>
           )}
 

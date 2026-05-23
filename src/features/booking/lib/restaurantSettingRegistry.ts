@@ -16,7 +16,7 @@ import {
   normalizeStaffPresetBookingTypes,
   type CustomStaffPreset,
 } from '@/features/booking/constants/presetMenus'
-import type { VolAuVentPromo } from '@/features/booking/constants/volAuVentPromo'
+import type { MenuPromo } from '@/features/booking/constants/menuPromo'
 
 export const RESTAURANT_SETTING_KEYS_V1 = [
   'restaurant_name',
@@ -34,12 +34,8 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'booking_staff_presets_visible',
   /** Menu predefiniti creati dall'admin (nome + lista id voci) */
   'booking_custom_staff_presets',
-  /** Banner sopra al menu a tendina: omaggio Mini Rustici sopra soglia euro/persona */
-  'booking_vol_au_vent_promo_visible',
-  /** Testo del banner (admin) -- fallback se `booking_vol_au_vent_promos` e vuoto */
-  'booking_vol_au_vent_promo_message',
-  /** Promo multipla con associazione a tipologie di prenotazione */
-  'booking_vol_au_vent_promos',
+  /** Promo testuali menù (banner pagina Prenota), con tipologie di prenotazione */
+  'booking_menu_promos',
   /** Elenco aree di posizionamento prenotazioni (es. Sala A, Sala B, Deorr) */
   'booking_placement_areas',
   /** Tema visivo dashboard admin (solo /admin); non influenza la pagina pubblica Prenota */
@@ -228,32 +224,24 @@ function parseBookingCustomStaffPresetsFromDb(raw: unknown): CustomStaffPreset[]
   }))
 }
 
-function parseBookingVolAuVentPromoVisibleFromDb(raw: unknown): boolean {
-  if (raw == null) return false
-  if (typeof raw === 'boolean') return raw
-  if (raw === 'false' || raw === false) return false
-  if (raw === 'true' || raw === true) return true
-  return false
-}
-
-const volAuVentPromoMessageSchema = z.string().trim().max(500)
-
 const bookingTypeForPromoSchema = z.enum(['tavolo', 'rinfresco_laurea', 'menu_prezzo_fisso'])
 
-const volAuVentPromoRowSchema = z.object({
+const menuPromoRowSchema = z.object({
   id: z.string().uuid(),
+  label: z.string().trim().max(80).optional().default(''),
   message: z.string().trim().max(500),
   booking_types: z.array(bookingTypeForPromoSchema).min(1).max(3),
   visible_on_booking: z.boolean().optional(),
 })
 
-const bookingVolAuVentPromosSchema = z.array(volAuVentPromoRowSchema).max(24)
+const bookingMenuPromosSchema = z.array(menuPromoRowSchema).max(24)
 
-function parseBookingVolAuVentPromosFromDb(raw: unknown): VolAuVentPromo[] {
-  const parsed = bookingVolAuVentPromosSchema.safeParse(raw)
+function parseBookingMenuPromosFromDb(raw: unknown): MenuPromo[] {
+  const parsed = bookingMenuPromosSchema.safeParse(raw)
   if (!parsed.success) return []
   return parsed.data.map((row) => ({
     id: row.id,
+    label: row.label ?? '',
     message: row.message,
     booking_types: row.booking_types,
     ...(row.visible_on_booking === false ? { visible_on_booking: false as const } : {}),
@@ -261,12 +249,6 @@ function parseBookingVolAuVentPromosFromDb(raw: unknown): VolAuVentPromo[] {
 }
 const placementAreaLabelSchema = z.string().trim().min(1).max(40)
 const bookingPlacementAreasSchema = z.array(placementAreaLabelSchema).min(1).max(30)
-
-function parseBookingVolAuVentPromoMessageFromDb(raw: unknown): string {
-  const s = parseJsonScalarString(raw).trim()
-  if (!s) return ''
-  return s
-}
 
 function parseBookingPlacementAreasFromDb(raw: unknown): string[] {
   const parsed = bookingPlacementAreasSchema.safeParse(raw)
@@ -288,9 +270,7 @@ export type RestaurantSettingValueMap = {
   public_booking_page_background: BookingPageBackgroundId
   booking_staff_presets_visible: boolean
   booking_custom_staff_presets: CustomStaffPreset[]
-  booking_vol_au_vent_promo_visible: boolean
-  booking_vol_au_vent_promo_message: string
-  booking_vol_au_vent_promos: VolAuVentPromo[]
+  booking_menu_promos: MenuPromo[]
   booking_placement_areas: string[]
   app_theme: AppThemeId
   walk_in_max_guests: number
@@ -444,29 +424,12 @@ export const restaurantSettingRegistry: {
       return r.success ? null : r.error.issues[0]?.message ?? 'Menu preselezionati non validi'
     },
   },
-  booking_vol_au_vent_promo_visible: {
-    key: 'booking_vol_au_vent_promo_visible',
-    parseFromDb: (raw) => parseBookingVolAuVentPromoVisibleFromDb(raw),
-    serializeToDb: (value) => value as Json,
-    validate: (value) => {
-      return typeof value === 'boolean' ? null : 'Valore non valido'
-    },
-  },
-  booking_vol_au_vent_promo_message: {
-    key: 'booking_vol_au_vent_promo_message',
-    parseFromDb: (raw) => parseBookingVolAuVentPromoMessageFromDb(raw),
-    serializeToDb: (value) => value as Json,
-    validate: (value) => {
-      const r = volAuVentPromoMessageSchema.safeParse(value)
-      return r.success ? null : r.error.issues[0]?.message ?? 'Messaggio non valido'
-    },
-  },
-  booking_vol_au_vent_promos: {
-    key: 'booking_vol_au_vent_promos',
-    parseFromDb: (raw) => parseBookingVolAuVentPromosFromDb(raw),
+  booking_menu_promos: {
+    key: 'booking_menu_promos',
+    parseFromDb: (raw) => parseBookingMenuPromosFromDb(raw),
     serializeToDb: (value) => value as unknown as Json,
     validate: (value) => {
-      const r = bookingVolAuVentPromosSchema.safeParse(value)
+      const r = bookingMenuPromosSchema.safeParse(value)
       return r.success ? null : r.error.issues[0]?.message ?? 'Promo menu non valide'
     },
   },
