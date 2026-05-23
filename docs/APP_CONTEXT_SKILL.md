@@ -207,6 +207,8 @@ npm run validate      # lint + typecheck + test (usare pre-PR)
 
 ## 7. Obbligo fine sessione — Report + Allineamento skill
 
+**Sessione 23-05-26 (promo menù):** [Report-refactor-promo-menu-rimozione-vol-au-vent.md](Sessioni%20di%20lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md) — rename `booking_menu_promos`, rimozione omaggio automatico, migrazione `029` (test applicata). Correlato: [Report-promo-menu-label-prenotazione.md](Sessioni%20di%20lavoro/23-05-26/Report-promo-menu-label-prenotazione.md).
+
 Al termine di ogni sessione di lavoro l'agente DEVE:
 
 ### 7.1 Scrivere il report

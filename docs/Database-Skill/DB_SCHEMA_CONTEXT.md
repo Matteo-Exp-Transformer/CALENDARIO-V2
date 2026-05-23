@@ -59,7 +59,8 @@ Vincolo: `UNIQUE(email, tenant_id)`.
 | `special_requests` | TEXT | |
 | `placement` | TEXT | Zona sala |
 | `menu`, `preset_menu` | TEXT | |
-| `menu_selection` | JSONB | |
+| `menu_selection` | JSONB | `{ items, tiramisu_total, tiramisu_kg }` — nessun item omaggio automatico in app (ex `virtual-vol-au-vent-promo` ripulito da migrazione 029) |
+| `menu_promo_labels` | JSONB | Snapshot nomi promo admin al submit (`booking_menu_promos.label`); migrazione 028 |
 | `menu_total_per_person`, `menu_total_booking` | NUMERIC | |
 | `dietary_restrictions` | JSONB | |
 | `status` | TEXT CHECK | `pending \| accepted \| rejected \| deleted` |
@@ -183,6 +184,8 @@ ciascuno). Gli scope a intervallo partono da oggi incluso.
 | `setting_value` | JSONB NOT NULL | Struttura variabile per chiave |
 
 Vincolo: `UNIQUE(tenant_id, setting_key)`.
+
+**Chiavi promo menù (23-05-26):** `booking_menu_promos` — JSON array `{ id, label, message, booking_types, visible_on_booking? }`. Chiavi legacy `booking_vol_au_vent_*` rimosse da migrazione 029. Nessun `booking_menu_promo_message` (solo array).
 
 ---
 

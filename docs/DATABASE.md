@@ -28,9 +28,13 @@ I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati
 | 022 | `022_service_slot_overrides.sql` | TEST ✅ — prod ❌ (da applicare al rollout) |
 | 023 | `023_service_slots_max_turns_resume.sql` | TEST ✅ — prod ❌ (da applicare al rollout) |
 | 024 | `024_n_canonical_slots.sql` | TEST ✅ — prod ❌ (da applicare al rollout) |
-| 019 | `019_cleanup_booking_time_slots.sql` | NON applicata né TEST né prod — **va applicata in prod** (4 tenant hanno ancora la chiave `booking_time_slots` in `restaurant_settings`) |
+| 019 | `019_cleanup_booking_time_slots.sql` | applicata TEST + prod (vedi `DB_MIGRATIONS_CONTEXT.md`) |
+| 028 | `028_booking_menu_promo_labels.sql` | TEST ✅ — colonna `menu_promo_labels` su `booking_requests` |
+| 029 | `029_rename_booking_menu_promo_settings.sql` | TEST ✅ — pulizia chiavi `booking_vol_au_vent_*` e JSON omaggio menù; **prod da applicare** |
 
-La prossima migrazione deve usare il prefisso **`025_`**.
+La prossima migrazione deve usare il prefisso **`030_`**.
+
+> Promo menù (23-05-26): impostazioni solo su `restaurant_settings.setting_key = booking_menu_promos`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
 
 > **Ambiente (2026-05-16)**: lo sviluppo punta al **server di TEST** (`docnnernvp`, MCP `Supabase_test`). Produzione (`rwuxgvld`) è sola lettura salvo richiesta esplicita. Dettaglio in `APP_CONTEXT_SKILL.md` §1b.
 
