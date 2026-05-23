@@ -29,7 +29,7 @@
 ### FASE 2 — Documenti per pre-vendita
 - [x] Privacy Policy riscritta e aggiornata (2026-05-23, v2.0 — `src/pages/PrivacyPolicyPage.tsx`)
 - [ ] Lista sub-processor pubblica (file `docs/legal/sub-processors.md`)
-- [ ] **Template DPA per ristoranti clienti — DA CREARE** (`docs/legal/DPA-template-clienti.md`). ATTENZIONE: NON è il modulo Supabase. È il documento speculare in cui Matteo è Processor e il ristorante è Controller. Da redigere in italiano.
+- [x] **Template DPA per ristoranti clienti creato** (2026-05-23) — `docs/_lavoro/Per matteo/Documenti Legali/DPA-template-clienti-ristoranti.md` (cartella locale, gitignored). v1.0, italiano, conforme art. 28 GDPR. Da personalizzare per ogni nuovo cliente.
 - [ ] Registro trattamenti art. 30 GDPR
 - [ ] Runbook data breach
 - [ ] Email `privacy@<dominio>` creata
@@ -97,5 +97,6 @@ Se è EU, è più semplice — dichiarare comunque per trasparenza.
 | 2026-05-23 | (creazione skill) | Skill `legal-production` inizializzata | — |
 | 2026-05-23 | `PrivacyPolicyPage.tsx` | Riscrittura completa post-audit | sessione iniziale |
 | 2026-05-23 | `DATA_INVENTORY_CONTEXT.md` | Aggiunta tabella `ip_blacklist` (PII: IP) per ban automatico | rate limit hardening |
+| 2026-05-23 | Template DPA clienti (locale) | Generato v1.0 italiano, conforme art. 28 GDPR, con Allegato sub-processor (incl. Ref DPA Supabase) e Allegato misure sicurezza (incl. rate limit + RLS) | post-firma DPA Supabase |
 
 Aggiornare quando vengono modificati i documenti.
