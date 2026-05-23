@@ -18,6 +18,15 @@ vi.mock('@/lib/supabasePublic', () => ({
   },
 }))
 
+// Dopo l'hardening 026, check_admin_email è esposta solo al ruolo
+// `authenticated` e TenantContext la chiama via il client autenticato.
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    from: mockFrom,
+    rpc: mockRpc,
+  },
+}))
+
 function buildChain() {
   const chain: Record<string, unknown> = {}
   chain['select'] = vi.fn(() => chain)

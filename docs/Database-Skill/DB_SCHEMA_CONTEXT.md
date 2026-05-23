@@ -320,6 +320,14 @@ RPC usata da `TenantContext.setTenantFromAdmin()`. Restituisce in **una sola chi
 Migrazione: `015_check_admin_email_with_edition.sql` (2026-05-14).
 Prima della 015 restituiva solo `(name, tenant_id)` — richiedeva una seconda SELECT su `organizations`.
 
+**Hardening 026 (2026-05-23)**: EXECUTE revocata da `anon`/`public`, lasciata solo a `authenticated`. `TenantContext.setTenantFromAdmin` chiamata con il client `supabase` autenticato (non più `supabasePublic`). Questo chiude l'enumerazione delle email admin via `/rest/v1/rpc/check_admin_email` da parte di anonimi (vettore di phishing mirato).
+
+---
+
+### Vista `organizations_public`
+
+Vista pubblica creata in `026b_fix_organizations_public_view` che espone solo i 5 campi safe (`id, name, slug, is_active, edition`) della tabella `organizations`, filtrando per `is_active = true`. Usata dalla pagina pubblica `/prenota/:slug` (`TenantContext.setTenantFromSlug`). La tabella `organizations` ora ha policy `admin_select_own_organization` (solo authenticated, solo il proprio tenant) + `anon_select_active_organizations` + GRANT per-colonna ad anon sui 5 campi safe, in modo che `security_invoker = true` della vista funzioni senza esporre `plan` / `max_bookings_per_year`.
+
 ---
 
 ### `customers_normalize_email()` (trigger function)

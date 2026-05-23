@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react'
+import { supabase } from '../lib/supabase'
 import { supabasePublic } from '../lib/supabasePublic'
 import type { TenantEdition } from '@/types/edition'
 
@@ -26,8 +27,12 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const setTenantFromSlug = useCallback(async (slug: string) => {
     setIsLoading(true)
     try {
+      // Usa la vista organizations_public: espone solo campi safe
+      // (id, name, slug, is_active, edition) e bypassa la policy admin-only
+      // sulla tabella. Dopo la migrazione 026 anon non può più leggere la
+      // tabella organizations direttamente.
       const { data, error } = await (supabasePublic
-        .from('organizations') as any)
+        .from('organizations_public') as any)
         .select('id, name, slug')
         .eq('slug', slug)
         .eq('is_active', true)
@@ -54,11 +59,14 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     }
   }, [])
 
-  /** Risolve il tenant dall'email admin (usato dopo login) */
+  /** Risolve il tenant dall'email admin (usato dopo login).
+   *  Usa il client autenticato: la sessione esiste già a questo punto e
+   *  check_admin_email è esposta solo al ruolo `authenticated` per prevenire
+   *  enumerazione delle email admin da parte di anonimi (phishing). */
   const setTenantFromAdmin = useCallback(async (email: string) => {
     setIsLoading(true)
     try {
-      const { data: adminData, error } = await (supabasePublic
+      const { data: adminData, error } = await (supabase
         .rpc as any)('check_admin_email', { check_email: email })
 
       if (error || !adminData || (adminData as any[]).length === 0) {
