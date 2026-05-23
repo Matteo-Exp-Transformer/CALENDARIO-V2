@@ -38,16 +38,16 @@ const TableCard: FC<TableCardProps> = ({ table, onEdit, onDelete, isDeleting }) 
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   return (
-    <div className="flex items-start justify-between rounded-xl border border-(--color-border) bg-surface p-4 shadow-sm">
-      <div>
-        <p className="font-semibold text-primary-900">{table.name}</p>
-        <p className="mt-0.5 text-sm text-(--color-text-muted)">{table.capacity} posti</p>
+    <div className="flex items-start justify-between gap-3 rounded-xl border border-(--color-border) bg-surface p-4 shadow-sm">
+      <div className="min-w-0">
+        <p className="text-body truncate font-semibold text-primary-900">{table.name}</p>
+        <p className="text-micro mt-0.5 text-(--color-text-muted)">{table.capacity} posti</p>
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5">
         {confirmDelete ? (
           <>
-            <span className="mr-1 text-xs text-red-600">Eliminare?</span>
+            <span className="text-micro mr-1 text-red-600">Eliminare?</span>
             <Button
               type="button"
               variant="danger"
@@ -157,9 +157,9 @@ export const ServizioPage: FC = () => {
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header con tab Lista / Mappa */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-primary-900 md:text-2xl">Servizio</h1>
-            <p className="mt-0.5 text-sm text-(--color-text-muted)">Gestisci i tavoli del ristorante per sala</p>
+          <div className="min-w-0">
+            <h1 className="text-title-page font-bold text-primary-900">Servizio</h1>
+            <p className="text-body mt-0.5 text-(--color-text-muted)">Gestisci i tavoli del ristorante per sala</p>
           </div>
           <div className="flex items-center gap-2">
             {/* Toggle Lista / Mappa */}
@@ -225,8 +225,8 @@ export const ServizioPage: FC = () => {
           <>
             {rooms.length === 0 ? (
               <div className="rounded-xl border border-(--color-border) bg-surface px-6 py-10 text-center shadow-sm">
-                <p className="font-semibold text-primary-900">Nessuna sala configurata.</p>
-                <p className="mt-2 text-sm text-(--color-text-muted)">
+                <p className="text-title-section font-semibold text-primary-900">Nessuna sala configurata.</p>
+                <p className="text-body mt-2 text-(--color-text-muted)">
                   Passa alla tab <strong>Mappa</strong> e crea la prima sala con il pulsante "Nuova sala".
                 </p>
               </div>
@@ -236,10 +236,10 @@ export const ServizioPage: FC = () => {
                   const roomTables = tables.filter((t) => t.room_id === room.id)
                   return (
                     <section key={room.id}>
-                      <h2 className="mb-3 text-base font-semibold text-primary-900">{room.name}</h2>
+                      <h2 className="text-title-section mb-3 font-semibold text-primary-900">{room.name}</h2>
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
                         {roomTables.length === 0 && (
-                          <p className="col-span-full text-sm text-(--color-text-muted)">
+                          <p className="text-body col-span-full text-(--color-text-muted)">
                             Nessun tavolo in questa sala.
                           </p>
                         )}
@@ -272,7 +272,7 @@ export const ServizioPage: FC = () => {
                   if (orphaned.length === 0) return null
                   return (
                     <section>
-                      <h2 className="mb-3 text-base font-semibold text-primary-900">Senza sala</h2>
+                      <h2 className="text-title-section mb-3 font-semibold text-primary-900">Senza sala</h2>
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
                         {orphaned.map((table) => (
                           <TableCard
@@ -312,8 +312,8 @@ export const ServizioPage: FC = () => {
 
             {rooms.length === 0 && (
               <div className="rounded-xl border border-(--color-border) bg-surface px-6 py-10 text-center shadow-sm">
-                <p className="font-semibold text-primary-900">Nessuna sala creata.</p>
-                <p className="mt-2 text-sm text-(--color-text-muted)">
+                <p className="text-title-section font-semibold text-primary-900">Nessuna sala creata.</p>
+                <p className="text-body mt-2 text-(--color-text-muted)">
                   Usa il pulsante "Nuova sala" per creare la prima sala.
                 </p>
               </div>

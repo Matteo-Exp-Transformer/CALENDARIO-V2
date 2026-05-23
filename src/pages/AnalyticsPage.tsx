@@ -74,7 +74,7 @@ export const AnalyticsPage: FC = () => {
         {/* Header */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-primary-900 md:text-2xl">Analytics</h1>
+            <h1 className="text-title-page font-bold text-primary-900">Analytics</h1>
             {/* Toggle turno — a destra del titolo */}
             <ShiftToggle value={shift} onChange={setShift} />
           </div>
@@ -105,7 +105,7 @@ export const AnalyticsPage: FC = () => {
             >
               <ChevronLeft className="h-4 w-4" aria-hidden />
             </button>
-            <span className="min-w-[160px] text-center text-sm font-semibold capitalize text-primary-900">
+            <span className="text-label min-w-[160px] text-center font-semibold capitalize text-primary-900">
               {periodLabel(range, offset)}
             </span>
             <button
@@ -122,7 +122,7 @@ export const AnalyticsPage: FC = () => {
         </div>
 
         {error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-5 text-sm text-red-800">
+          <div className="text-body rounded-xl border border-red-200 bg-red-50 px-4 py-5 text-red-800">
             <p className="font-semibold">Impossibile caricare gli analytics.</p>
             <p className="mt-1">{error.message}</p>
           </div>
@@ -181,7 +181,7 @@ export const AnalyticsPage: FC = () => {
 
             {/* Trend */}
             <div className="space-y-3">
-              <h2 className="text-sm font-semibold text-primary-900 md:text-base">Trend prenotazioni e coperti</h2>
+              <h2 className="text-title-section font-semibold text-primary-900">Trend prenotazioni e coperti</h2>
 
               {isLoading ? (
                 <div
@@ -195,7 +195,7 @@ export const AnalyticsPage: FC = () => {
               ) : hasData ? (
                 <AnalyticsTrendChart data={trend} range={range} isEmpty={false} />
               ) : (
-                <p className="rounded-xl border border-(--color-border) bg-surface px-4 py-12 text-center text-sm text-(--color-text-muted) shadow-sm">
+                <p className="text-body rounded-xl border border-(--color-border) bg-surface px-4 py-12 text-center text-(--color-text-muted) shadow-sm">
                   Nessuna prenotazione nel periodo selezionato. Scegli un altro intervallo o attendi nuove
                   richieste.
                 </p>

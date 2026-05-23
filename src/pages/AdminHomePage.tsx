@@ -44,8 +44,8 @@ const QuickNavButton: FC<QuickNavButtonProps> = ({
       <Icon className="h-5 w-5" />
     </span>
     <span className="flex min-w-0 flex-col">
-      <span className="truncate text-sm font-semibold text-primary-900">{label}</span>
-      <span className="truncate text-xs text-(--color-text-muted)">{description}</span>
+      <span className="text-label truncate font-semibold text-primary-900">{label}</span>
+      <span className="text-micro truncate text-(--color-text-muted)">{description}</span>
     </span>
   </button>
 )
@@ -66,14 +66,14 @@ const StatCard: FC<StatCardProps> = ({ label, value, isLoading, highlight }) => 
     )}
   >
     {highlight && <NotifyNavShinyLayers />}
-    <p className="relative z-10 text-xs font-medium uppercase tracking-wide text-(--color-text-muted) md:text-sm">
+    <p className="text-label relative z-10 font-medium uppercase tracking-wide text-(--color-text-muted)">
       {label}
     </p>
     <div className="relative z-10 mt-2 flex min-h-8 items-baseline gap-1 md:min-h-9">
       {isLoading ? (
         <Loader2 className="h-6 w-6 shrink-0 animate-spin text-primary-600" aria-hidden />
       ) : (
-        <span className="text-2xl font-bold tabular-nums text-primary-900 md:text-3xl">
+        <span className="text-stat-big tabular-nums text-primary-900">
           {value}
         </span>
       )}
@@ -100,8 +100,8 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
     <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-5 md:px-6 md:py-7">
       <div className="mx-auto max-w-7xl space-y-6">
         <header>
-          <h1 className="text-xl font-bold text-primary-900 md:text-2xl">Home</h1>
-          <p className="mt-1 text-sm text-(--color-text-muted)">
+          <h1 className="text-title-page font-bold text-primary-900">Home</h1>
+          <p className="text-body mt-1 text-(--color-text-muted)">
             Riepilogo della giornata e accesso rapido alle sezioni principali.
           </p>
         </header>
@@ -161,8 +161,8 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
         {(error || isLoading || upcoming.length > 0) && (
           <section className="space-y-3" aria-label="Prossime 3 ore">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary-700" aria-hidden />
-              <h2 className="text-sm font-semibold text-primary-900 md:text-base">
+              <Clock className="h-4 w-4 shrink-0 text-primary-700" aria-hidden />
+              <h2 className="text-title-section font-semibold text-primary-900">
                 Prossime 3 ore
               </h2>
             </div>
@@ -189,14 +189,14 @@ export const AdminHomePage: FC<AdminHomePageProps> = ({
                     className="flex items-center justify-between gap-3 rounded-xl border border-(--color-border) bg-surface px-4 py-3 shadow-sm"
                   >
                     <div className="flex min-w-0 flex-col">
-                      <span className="truncate text-sm font-semibold text-primary-900">
+                      <span className="text-label truncate font-semibold text-primary-900">
                         {b.client_name}
                       </span>
-                      <span className="text-xs text-(--color-text-muted)">
+                      <span className="text-micro text-(--color-text-muted)">
                         {b.num_guests} {b.num_guests === 1 ? 'coperto' : 'coperti'}
                       </span>
                     </div>
-                    <span className="shrink-0 rounded-lg bg-primary-50 px-3 py-1 text-sm font-semibold tabular-nums text-primary-900">
+                    <span className="text-label shrink-0 rounded-lg bg-primary-50 px-3 py-1 font-semibold tabular-nums text-primary-900">
                       {b.start_time}
                     </span>
                   </li>

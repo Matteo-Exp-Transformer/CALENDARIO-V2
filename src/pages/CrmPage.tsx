@@ -90,7 +90,7 @@ export const CrmPage: FC = () => {
     <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-5 md:px-6 md:py-7">
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="min-w-0 truncate text-xl font-bold text-primary-900 md:text-2xl">CRM Clienti</h1>
+          <h1 className="text-title-page min-w-0 truncate font-bold text-primary-900">CRM Clienti</h1>
           <Button
             type="button"
             variant="primary"
@@ -110,13 +110,13 @@ export const CrmPage: FC = () => {
         />
 
         {error && (
-          <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <p className="text-body rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
             {error.message}
           </p>
         )}
 
         {isLoading ? (
-          <p className="text-sm text-(--color-text-muted)">Caricamento…</p>
+          <p className="text-body text-(--color-text-muted)">Caricamento…</p>
         ) : (
           <CustomerListTable
             rows={customers}
