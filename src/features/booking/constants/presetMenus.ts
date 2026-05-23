@@ -5,7 +5,43 @@
  * Le definizioni `menu_1`…`menu_4` restano per compatibilità con prenotazioni già salvate in DB.
  */
 
+import type { BookingType } from '@/types/booking'
+
 export const CUSTOM_PRESET_PREFIX = 'custom:' as const
+
+/** Tipologie in cui un menù preselezionato può comparire (no «Prenota un tavolo»). */
+export type StaffPresetBookingType = 'rinfresco_laurea' | 'menu_prezzo_fisso'
+
+export const STAFF_PRESET_BOOKING_TYPE_VALUES: StaffPresetBookingType[] = [
+  'rinfresco_laurea',
+  'menu_prezzo_fisso',
+]
+
+export const STAFF_PRESET_DEFAULT_BOOKING_TYPES: StaffPresetBookingType[] = [
+  ...STAFF_PRESET_BOOKING_TYPE_VALUES,
+]
+
+export const STAFF_PRESET_BOOKING_TYPE_OPTIONS: { value: StaffPresetBookingType; label: string }[] = [
+  { value: 'rinfresco_laurea', label: 'Rinfresco di Laurea' },
+  { value: 'menu_prezzo_fisso', label: 'Menu a prezzo fisso' },
+]
+
+export function normalizeStaffPresetBookingTypes(raw: unknown): StaffPresetBookingType[] {
+  if (!Array.isArray(raw) || raw.length === 0) {
+    return [...STAFF_PRESET_DEFAULT_BOOKING_TYPES]
+  }
+  const allowed = new Set<string>(STAFF_PRESET_BOOKING_TYPE_VALUES)
+  const filtered = raw.filter(
+    (t): t is StaffPresetBookingType => typeof t === 'string' && allowed.has(t),
+  )
+  return filtered.length > 0 ? filtered : [...STAFF_PRESET_DEFAULT_BOOKING_TYPES]
+}
+
+export function staffPresetBookingTypeLabelsJoined(types: StaffPresetBookingType[]): string {
+  return types
+    .map((t) => STAFF_PRESET_BOOKING_TYPE_OPTIONS.find((o) => o.value === t)?.label ?? t)
+    .join(', ')
+}
 
 export type BuiltinPresetMenuType = 'menu_1' | 'menu_2' | 'menu_3' | 'menu_4'
 
@@ -16,12 +52,24 @@ export interface CustomStaffPreset {
   id: string
   name: string
   item_ids: string[]
+  /** Tipologie prenotazione con flusso menù in cui il preset è offerto (mai `tavolo`). */
+  booking_types: StaffPresetBookingType[]
   /** Se `false`, il preset non compare nella pagina Prenota (default: visibile). */
   visible_on_booking?: boolean
 }
 
 export function isStaffPresetVisibleOnBooking(p: CustomStaffPreset): boolean {
   return p.visible_on_booking !== false
+}
+
+/** Preset visibile in pagina Prenota per la tipologia scelta (occhio aperto + booking_types). */
+export function isStaffPresetSelectableForBookingType(
+  p: CustomStaffPreset,
+  bookingType: BookingType | string | null | undefined,
+): boolean {
+  if (!isStaffPresetVisibleOnBooking(p)) return false
+  if (bookingType !== 'rinfresco_laurea' && bookingType !== 'menu_prezzo_fisso') return false
+  return normalizeStaffPresetBookingTypes(p.booking_types).includes(bookingType)
 }
 
 export interface PresetMenu {

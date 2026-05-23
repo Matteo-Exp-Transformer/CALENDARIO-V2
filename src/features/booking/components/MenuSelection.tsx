@@ -9,7 +9,7 @@ import {
   getPresetMenuLabel,
   isBuiltinPresetMenuType,
   isCustomPresetMenuType,
-  isStaffPresetVisibleOnBooking,
+  isStaffPresetSelectableForBookingType,
   type CustomStaffPreset,
   type PresetMenuType,
 } from '../constants/presetMenus'
@@ -101,8 +101,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   const formatCurrency = (value: number) => `€${value.toFixed(2)}`
 
   const selectableStaffPresets = useMemo(
-    () => customStaffPresets.filter(isStaffPresetVisibleOnBooking),
-    [customStaffPresets],
+    () => customStaffPresets.filter((p) => isStaffPresetSelectableForBookingType(p, bookingType)),
+    [customStaffPresets, bookingType],
   )
 
   const showStaffPresetDropdown = useMemo(() => {

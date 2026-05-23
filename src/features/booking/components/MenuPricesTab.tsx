@@ -25,7 +25,15 @@ import {
 import { normalizeMenuItemBookingTypes, type MenuItem, type MenuItemInput } from '@/types/menu'
 import type { SelectedMenuItem } from '@/types/menu'
 import type { BookingType } from '@/types/booking'
-import { type CustomStaffPreset, isStaffPresetVisibleOnBooking } from '../constants/presetMenus'
+import {
+  STAFF_PRESET_BOOKING_TYPE_OPTIONS,
+  STAFF_PRESET_DEFAULT_BOOKING_TYPES,
+  type CustomStaffPreset,
+  type StaffPresetBookingType,
+  isStaffPresetVisibleOnBooking,
+  normalizeStaffPresetBookingTypes,
+  staffPresetBookingTypeLabelsJoined,
+} from '../constants/presetMenus'
 import { useRestaurantSetting, useUpsertRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { selectedItemsFromMenuItemIds } from '../utils/buildPresetMenuSelection'
 import { PresetMenuBuilder } from './PresetMenuBuilder'
@@ -500,6 +508,9 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const [presetEditorMode, setPresetEditorMode] = useState<'list' | 'editor'>('list')
   const [presetName, setPresetName] = useState('')
   const [presetSelectedItems, setPresetSelectedItems] = useState<SelectedMenuItem[]>([])
+  const [presetDraftBookingTypes, setPresetDraftBookingTypes] = useState<StaffPresetBookingType[]>([
+    ...STAFF_PRESET_DEFAULT_BOOKING_TYPES,
+  ])
   const [editingCustomPresetId, setEditingCustomPresetId] = useState<string | null>(null)
   const [promoEditorOpen, setPromoEditorOpen] = useState(false)
   const [promoEditorMode, setPromoEditorMode] = useState<'list' | 'editor'>('list')
@@ -614,7 +625,14 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setPresetEditorMode('list')
     setPresetName('')
     setPresetSelectedItems([])
+    setPresetDraftBookingTypes([...STAFF_PRESET_DEFAULT_BOOKING_TYPES])
     setEditingCustomPresetId(null)
+  }
+
+  const togglePresetDraftBookingType = (bt: StaffPresetBookingType) => {
+    setPresetDraftBookingTypes((prev) =>
+      prev.includes(bt) ? prev.filter((x) => x !== bt) : [...prev, bt],
+    )
   }
 
   const closePresetMenusSection = () => {
@@ -626,6 +644,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setEditingCustomPresetId(null)
     setPresetName('')
     setPresetSelectedItems([])
+    setPresetDraftBookingTypes([...STAFF_PRESET_DEFAULT_BOOKING_TYPES])
     setPresetEditorMode('editor')
   }
 
@@ -633,6 +652,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setEditingCustomPresetId(preset.id)
     setPresetName(preset.name)
     setPresetSelectedItems(selectedItemsFromMenuItemIds(menuItems, preset.item_ids))
+    setPresetDraftBookingTypes([...normalizeStaffPresetBookingTypes(preset.booking_types)])
     setPresetEditorMode('editor')
   }
 
@@ -647,13 +667,28 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       toast.error('Seleziona almeno un ingrediente')
       return
     }
+    if (presetDraftBookingTypes.length === 0) {
+      toast.error('Seleziona almeno una tipologia di prenotazione')
+      return
+    }
 
     const next: CustomStaffPreset[] =
       editingCustomPresetId !== null
         ? customStaffPresets.map((p) =>
-            p.id === editingCustomPresetId ? { ...p, name, item_ids: ids } : p,
+            p.id === editingCustomPresetId
+              ? { ...p, name, item_ids: ids, booking_types: presetDraftBookingTypes }
+              : p,
           )
-        : [...customStaffPresets, { id: crypto.randomUUID(), name, item_ids: ids, visible_on_booking: true }]
+        : [
+            ...customStaffPresets,
+            {
+              id: crypto.randomUUID(),
+              name,
+              item_ids: ids,
+              booking_types: presetDraftBookingTypes,
+              visible_on_booking: true,
+            },
+          ]
 
     try {
       await upsertRestaurantSetting.mutateAsync([{ key: 'booking_custom_staff_presets', value: next }])
@@ -1126,11 +1161,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                 Crea una o più promo e associale alle tipologie di prenotazione del form pubblico.
               </p>
 
-              <p className="mb-3 mt-4 rounded-lg border border-slate-200 bg-white/80 px-3 py-2.5 text-xs text-gray-600">
-                In pagina Prenota ogni promo è visibile solo se l&apos;occhio nella lista è aperto. Il testo compare
-                sotto la tipologia di prenotazione associata.
-              </p>
-
               {volAuVentPromoMessage.trim().length > 0 && volAuVentPromos.length === 0 && (
                 <p className="mb-3 mt-4 rounded-lg border border-slate-200 bg-white/70 px-3 py-2 text-xs text-slate-700">
                   È ancora salvato un messaggio dalla versione precedente dell&apos;editor: viene usato in pagina Prenota
@@ -1519,8 +1549,9 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                 Menù preselezionati
               </h3>
               <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
-                Compila un nome, seleziona gli ingredienti come in prenotazione e salva: in pagina Prenota comparirà
-                solo se l&apos;occhio su quella riga è aperto (visibilità per singolo menù).
+                Compila nome e ingredienti, scegli per quali tipologie di prenotazione con menù è disponibile
+                (Rinfresco o Menu a prezzo fisso, non «Prenota un tavolo»). In pagina Prenota compare solo se
+                l&apos;occhio sulla riga è aperto.
               </p>
 
               {presetEditorMode === 'list' && (
@@ -1552,6 +1583,10 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                             <p className="text-left text-xs text-gray-500">
                               {preset.item_ids.length}{' '}
                               {preset.item_ids.length === 1 ? 'ingrediente' : 'ingredienti'}
+                              {' · '}
+                              {staffPresetBookingTypeLabelsJoined(
+                                normalizeStaffPresetBookingTypes(preset.booking_types),
+                              )}
                             </p>
                           </div>
                           <div className="menu-prices-item-actions shrink-0">
@@ -1604,11 +1639,38 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                       onSelectionChange={setPresetSelectedItems}
                     />
                   </div>
+
+                  <div className="rounded-xl border border-gray-200 bg-white/80 p-4">
+                    <span className="mx-auto mb-3 block w-fit max-w-full text-center text-sm font-bold text-warm-wood md:text-base">
+                      Tipologia di Prenotazione *
+                    </span>
+                    <p className="mb-3 text-center text-xs text-gray-600">
+                      Il menù preselezionato compare solo per Rinfresco di Laurea e/o Menu a prezzo fisso (non per
+                      Prenota un tavolo).
+                    </p>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
+                      {STAFF_PRESET_BOOKING_TYPE_OPTIONS.map(({ value, label }) => (
+                        <label
+                          key={value}
+                          className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 shrink-0 rounded border-gray-400"
+                            checked={presetDraftBookingTypes.includes(value)}
+                            onChange={() => togglePresetDraftBookingType(value)}
+                          />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="flex flex-wrap justify-center gap-3">
                     <button
                       type="button"
                       disabled={upsertRestaurantSetting.isPending}
-                      onClick={handleSaveCustomPreset}
+                      onClick={() => void handleSaveCustomPreset()}
                       className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-emerald-500/35 hover:from-emerald-400 hover:to-emerald-500 hover:border-emerald-600 hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 disabled:hover:border-emerald-700"
                     >
                       <Save className="h-4 w-4" />

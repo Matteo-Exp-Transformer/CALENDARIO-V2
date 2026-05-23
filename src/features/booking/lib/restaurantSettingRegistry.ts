@@ -12,7 +12,10 @@ import {
   isAppThemeId,
   parseAppThemeFromDb,
 } from '@/features/booking/constants/appTheme'
-import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
+import {
+  normalizeStaffPresetBookingTypes,
+  type CustomStaffPreset,
+} from '@/features/booking/constants/presetMenus'
 import type { VolAuVentPromo } from '@/features/booking/constants/volAuVentPromo'
 
 export const RESTAURANT_SETTING_KEYS_V1 = [
@@ -193,10 +196,13 @@ function parseBusinessHoursFromDb(raw: unknown): BusinessHours {
   return getDefaultBusinessHours()
 }
 
+const bookingTypeForStaffPresetSchema = z.enum(['rinfresco_laurea', 'menu_prezzo_fisso'])
+
 const customStaffPresetRowSchema = z.object({
   id: z.string().uuid(),
   name: z.string().trim().min(1).max(200),
   item_ids: z.array(z.string().uuid()).max(160),
+  booking_types: z.array(bookingTypeForStaffPresetSchema).min(1).max(2).optional(),
   visible_on_booking: z.boolean().optional(),
 })
 
@@ -217,6 +223,7 @@ function parseBookingCustomStaffPresetsFromDb(raw: unknown): CustomStaffPreset[]
     id: row.id,
     name: row.name,
     item_ids: row.item_ids,
+    booking_types: normalizeStaffPresetBookingTypes(row.booking_types),
     ...(row.visible_on_booking === false ? { visible_on_booking: false as const } : {}),
   }))
 }
