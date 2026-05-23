@@ -1214,8 +1214,17 @@ button.admin-nav-item.admin-nav-tab-active.archive-tab-filter-btn {
     0 10px 18px color-mix(in srgb, var(--color-primary-900) 24%, transparent);
 }
 
-/* Vista mese: respiro sotto l’ultima card evento rispetto al bordo inferiore della cella */
+/* Vista mese: altezza minima celle (--booking-calendar-day-min-height da BookingCalendar.tsx) */
+.booking-calendar-fc {
+  --booking-calendar-day-min-height: 8rem;
+}
+
+.booking-calendar-fc .fc .fc-dayGridMonth-view td.fc-daygrid-day {
+  height: auto;
+}
+
 .booking-calendar-fc .fc .fc-dayGridMonth-view .fc-daygrid-day .fc-daygrid-day-frame {
+  min-height: var(--booking-calendar-day-min-height);
   padding-bottom: 0.375rem;
 }
 

@@ -42,6 +42,13 @@ import { cn } from '@/lib/utils'
 const CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX = 630
 /** Nei blocchi evento: sotto questa larghezza mostra solo l’icona tipologia (il nome resta in title per hover/tooltip). */
 const CALENDAR_EVENT_ICON_ONLY_MAX_WIDTH_PX = 500
+/**
+ * Vista mese: altezza minima cella giorno (px).
+ * FullCalendar v6 con `height: 'auto'` non espone dayMinHeight; valore applicato via
+ * `--booking-calendar-day-min-height` sul wrapper (vedi index.css).
+ */
+const CALENDAR_DAY_GRID_MONTH_MIN_HEIGHT_PX = 128
+const CALENDAR_DAY_GRID_MONTH_MIN_HEIGHT_NARROW_PX = 112
 
 /** Intestazione fascia digest — stile neutro allineato al resto dell'app. */
 function DigestSlotHeader({ label }: { label: string }) {
@@ -858,7 +865,18 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
             </button>
           </div>
 
-          <div className="booking-calendar-fc relative [&_.fc-event]:cursor-pointer">
+          <div
+            className="booking-calendar-fc relative [&_.fc-event]:cursor-pointer"
+            style={
+              {
+                '--booking-calendar-day-min-height': `${
+                  isCalendarNarrowViewport
+                    ? CALENDAR_DAY_GRID_MONTH_MIN_HEIGHT_NARROW_PX
+                    : CALENDAR_DAY_GRID_MONTH_MIN_HEIGHT_PX
+                }px`,
+              } as React.CSSProperties
+            }
+          >
             <button
               type="button"
               onClick={handleGoToToday}
