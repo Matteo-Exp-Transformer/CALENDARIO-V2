@@ -271,10 +271,10 @@ export const PendingRequestsTab: React.FC = () => {
     return (
       <div className="rounded-lg border shadow-sm px-6 py-6 text-center admin-warm-surface">
         <div className="mb-1 text-4xl leading-none">✅</div>
-        <h3 className="mb-0.5 text-base font-semibold text-gray-900">
+        <h3 className="mb-0.5 text-title-card font-semibold text-gray-900">
           Nessuna richiesta in attesa
         </h3>
-        <p className="text-xs text-gray-500">
+        <p className="text-micro text-gray-500">
           Non ci sono prenotazioni pendenti al momento.
         </p>
       </div>
@@ -284,7 +284,7 @@ export const PendingRequestsTab: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-title-section font-semibold text-gray-900">
           📋 Richieste in Attesa ({uniquePendingBookings.length})
         </h3>
       </div>

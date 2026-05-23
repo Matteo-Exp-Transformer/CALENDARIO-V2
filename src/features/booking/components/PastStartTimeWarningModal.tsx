@@ -121,7 +121,7 @@ export const PastStartTimeWarningModal: React.FC<PastStartTimeWarningModalProps>
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-[var(--color-border)] p-4 sm:p-6">
-          <h2 id="past-start-warning-title" className="text-base font-semibold text-[var(--color-text)] sm:text-lg">
+          <h2 id="past-start-warning-title" className="text-title-modal font-semibold text-(--color-text)">
             Orario già trascorso
           </h2>
           <Button variant="ghost" size="sm" onClick={onClose} className="p-1 shrink-0" aria-label="Chiudi">

@@ -1131,7 +1131,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
               <X className="h-4 w-4" />
             </button>
             <div className="mx-auto max-w-3xl pb-12 pr-10">
-              <h3 className="text-center font-serif text-lg font-bold text-warm-wood md:text-xl">
+              <h3 className="text-center font-serif text-title-card font-bold text-warm-wood">
                 Promozioni Menù
               </h3>
               <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
@@ -1329,7 +1329,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
               <X className="h-4 w-4" />
             </button>
             <div className="mx-auto w-2/3 text-center">
-              <h3 className="text-xl font-bold text-warm-wood mb-4">
+              <h3 className="text-title-card font-bold text-warm-wood mb-4">
                 {editingId ? 'Modifica Prodotto' : 'Nuovo Prodotto'}
               </h3>
               <div className="grid gap-4 md:grid-cols-2">
@@ -1546,7 +1546,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                 presetEditorMode !== 'editor' && 'pb-12',
               )}
             >
-              <h3 className="text-center font-serif text-lg font-bold text-warm-wood md:text-xl">
+              <h3 className="text-center font-serif text-title-card font-bold text-warm-wood">
                 Menù preselezionati
               </h3>
               <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
@@ -1721,7 +1721,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
             <X className="h-4 w-4" />
           </button>
           <div className="mx-auto max-w-3xl pb-12 pr-10">
-            <h3 className="text-center font-serif text-lg font-bold text-warm-wood md:text-xl">
+            <h3 className="text-center font-serif text-title-card font-bold text-warm-wood">
               Categorie Menu
             </h3>
             <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">

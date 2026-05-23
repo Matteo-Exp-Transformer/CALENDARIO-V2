@@ -53,7 +53,7 @@ export const BookedByChart: FC<BookedByChartProps> = ({ data, isLoading }) => {
 
   return (
     <div className="rounded-xl border border-(--color-border) bg-surface p-4 shadow-sm">
-      <h3 className="mb-3 text-sm font-semibold text-primary-900 md:text-base">Fonte prenotazioni</h3>
+      <h3 className="mb-3 text-title-card font-semibold text-primary-900">Fonte prenotazioni</h3>
       <ResponsiveContainer width="100%" height={220}>
         <PieChart>
           <Pie

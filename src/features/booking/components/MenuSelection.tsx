@@ -713,8 +713,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             }}
           >
             <div className="flex items-center justify-between" style={{ paddingLeft: '22px', paddingRight: '22px', paddingTop: '22px', paddingBottom: '22px' }}>
-              <h3 className="text-xl font-semibold text-warm-wood">Riepilogo Scelte</h3>
-              <span className="text-sm font-medium text-gray-600">{selectedItems.length} elementi</span>
+              <h3 className="text-title-card font-semibold text-warm-wood">Riepilogo Scelte</h3>
+              <span className="text-label font-medium text-gray-600">{selectedItems.length} elementi</span>
             </div>
             <div style={{ height: '2px', backgroundColor: '#60a5fa', marginLeft: '22px', marginRight: '22px' }} />
             <div style={{ paddingLeft: '22px', paddingRight: '22px', paddingTop: '18px', paddingBottom: '18px' }}>

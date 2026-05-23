@@ -111,7 +111,7 @@ export const DetailsTab: React.FC<Props> = ({
       <div className="flex min-w-0 flex-col gap-6">
       {/* Section 1: Booking Type */}
       <div className="space-y-3">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-gray-900 md:text-base">
+        <h3 className="text-title-subtitle font-bold uppercase tracking-wide text-gray-900">
           Tipo Prenotazione
         </h3>
         {isEditMode ? (
@@ -139,7 +139,7 @@ export const DetailsTab: React.FC<Props> = ({
 
       {/* Section 2: Client Information */}
       <div className="space-y-3">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-gray-900 md:text-base">
+        <h3 className="text-title-subtitle font-bold uppercase tracking-wide text-gray-900">
           Informazioni Cliente
         </h3>
         {isEditMode ? (
@@ -195,7 +195,7 @@ export const DetailsTab: React.FC<Props> = ({
 
       {/* Section 4: Data Creazione */}
       <div className="space-y-3">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-gray-900 md:text-base">
+        <h3 className="text-title-subtitle font-bold uppercase tracking-wide text-gray-900">
           Data Creazione
         </h3>
         <p className="font-medium text-gray-900 md:text-lg">{creationDateLabel}</p>
@@ -204,7 +204,7 @@ export const DetailsTab: React.FC<Props> = ({
       {/* Section 5: Special Notes (tavolo only) */}
       {formData.booking_type === 'tavolo' && (
         <div className="space-y-3">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-gray-900 md:text-base">
+          <h3 className="text-title-subtitle font-bold uppercase tracking-wide text-gray-900">
             Note Speciali
           </h3>
           {isEditMode ? (
@@ -227,7 +227,7 @@ export const DetailsTab: React.FC<Props> = ({
       <div className="flex min-w-0 flex-col gap-6">
       {/* Section 3: Event Details */}
       <div className="space-y-3">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-gray-900 md:text-base">
+        <h3 className="text-title-subtitle font-bold uppercase tracking-wide text-gray-900">
           Dettagli Evento
         </h3>
         {isEditMode ? (

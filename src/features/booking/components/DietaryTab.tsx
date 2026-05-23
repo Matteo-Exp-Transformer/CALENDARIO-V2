@@ -72,7 +72,7 @@ export const DietaryTab: React.FC<Props> = ({
     <div className="space-y-6">
       {/* Section 1: Dietary Restrictions */}
       <div className="space-y-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+        <h3 className="text-title-card font-semibold text-gray-900 flex items-center gap-2">
           <span>⚠️</span>
           <span>Intolleranze e Allergie</span>
         </h3>
@@ -217,7 +217,7 @@ export const DietaryTab: React.FC<Props> = ({
 
       {/* Section 2: Special Requests */}
       <div className="space-y-3">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+        <h3 className="text-title-card font-semibold text-gray-900 flex items-center gap-2">
           <span>📝</span>
           <span>Note Speciali</span>
         </h3>

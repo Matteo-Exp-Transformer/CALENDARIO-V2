@@ -76,7 +76,7 @@ export const CustomerDetailPanel: FC<CustomerDetailPanelProps> = ({
       >
         <div className="flex items-start justify-between gap-3 border-b border-[var(--color-border)] bg-primary-50 px-5 py-4">
           <div className="min-w-0">
-            <h2 className="truncate text-lg font-semibold text-primary-900">{profile.name || profile.email}</h2>
+            <h2 className="truncate text-title-modal font-semibold text-primary-900">{profile.name || profile.email}</h2>
             <p className="truncate text-sm text-[var(--color-text-muted)]">{profile.email}</p>
           </div>
           <Button type="button" variant="ghost" size="icon" aria-label="Chiudi" onClick={onClose}>
@@ -86,7 +86,7 @@ export const CustomerDetailPanel: FC<CustomerDetailPanelProps> = ({
 
         <div className="flex-1 overflow-y-auto px-5 py-4">
           <section className="mb-6">
-            <h3 className="mb-2 text-sm font-semibold text-primary-900">Contatti</h3>
+            <h3 className="mb-2 text-title-subtitle font-semibold text-primary-900">Contatti</h3>
             <dl className="space-y-1 text-sm">
               <div>
                 <dt className="text-[var(--color-text-muted)]">Email</dt>
@@ -103,7 +103,7 @@ export const CustomerDetailPanel: FC<CustomerDetailPanelProps> = ({
           </section>
 
           <section className="mb-6">
-            <h3 className="mb-2 text-sm font-semibold text-primary-900">Note</h3>
+            <h3 className="mb-2 text-title-subtitle font-semibold text-primary-900">Note</h3>
             <Textarea
               value={notesDraft}
               onChange={(e) => setNotesDraft(e.target.value)}
@@ -124,7 +124,7 @@ export const CustomerDetailPanel: FC<CustomerDetailPanelProps> = ({
           </section>
 
           <section className="mb-6">
-            <h3 className="mb-2 text-sm font-semibold text-primary-900">Statistiche</h3>
+            <h3 className="mb-2 text-title-subtitle font-semibold text-primary-900">Statistiche</h3>
             <ul className="grid grid-cols-2 gap-2 text-sm text-[var(--color-text)]">
               <li className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2">
                 <span className="text-[var(--color-text-muted)]">Prenotazioni</span>
@@ -146,7 +146,7 @@ export const CustomerDetailPanel: FC<CustomerDetailPanelProps> = ({
           </section>
 
           <section>
-            <h3 className="mb-2 text-sm font-semibold text-primary-900">Prenotazioni</h3>
+            <h3 className="mb-2 text-title-subtitle font-semibold text-primary-900">Prenotazioni</h3>
             {profile.bookings.length === 0 ? (
               <p className="text-sm text-[var(--color-text-muted)]">Nessuna prenotazione.</p>
             ) : (

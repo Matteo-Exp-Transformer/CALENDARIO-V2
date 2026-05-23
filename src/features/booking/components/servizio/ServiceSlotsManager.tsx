@@ -1145,8 +1145,8 @@ export const ServiceSlotsManager: FC = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-semibold text-primary-900">Fasce orarie</h2>
-          <p className="mt-0.5 text-sm text-(--color-text-muted)">
+          <h2 className="text-title-card font-semibold text-primary-900">Fasce orarie</h2>
+          <p className="mt-0.5 text-body text-(--color-text-muted)">
             Organizza i turni in sala per il servizio al cliente.
           </p>
         </div>

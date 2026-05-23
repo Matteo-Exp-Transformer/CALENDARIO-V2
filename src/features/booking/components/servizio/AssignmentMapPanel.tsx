@@ -222,8 +222,8 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
   return (
     <div className="space-y-4 rounded-xl border border-(--color-border) bg-surface p-4 shadow-sm">
       <div>
-        <h3 className="text-base font-semibold text-primary-900">Assegnazione tavoli</h3>
-        <p className="mt-0.5 text-sm text-(--color-text-muted)">
+        <h3 className="text-title-card font-semibold text-primary-900">Assegnazione tavoli</h3>
+        <p className="mt-0.5 text-body text-(--color-text-muted)">
           Trascina una prenotazione su un tavolo per assegnarla.
         </p>
       </div>

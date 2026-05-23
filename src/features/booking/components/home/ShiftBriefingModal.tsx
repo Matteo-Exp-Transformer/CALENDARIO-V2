@@ -49,7 +49,7 @@ export const ShiftBriefingModal: FC<ShiftBriefingModalProps> = ({
           <>
             {/* Header briefing */}
             <div className="print-area rounded-xl border border-(--color-border) bg-surface p-4">
-              <h2 className="text-lg font-bold text-primary-900">
+              <h2 className="text-title-section font-bold text-primary-900">
                 {format(new Date(data.date), 'EEEE d MMMM yyyy', { locale: it })} — {data.shiftLabel}
               </h2>
 

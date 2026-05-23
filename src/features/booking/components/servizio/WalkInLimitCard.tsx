@@ -65,8 +65,8 @@ export const WalkInLimitCard: FC = () => {
   return (
     <section className="rounded-xl border border-(--color-border) bg-surface px-5 py-5 shadow-sm md:px-6 md:py-6">
       <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-md flex-col items-center gap-3 text-center">
-        <h2 className="text-base font-semibold text-primary-900">Limite coperti walk-in</h2>
-        <p className="text-sm text-(--color-text-muted)">
+        <h2 className="text-title-card font-semibold text-primary-900">Limite coperti walk-in</h2>
+        <p className="text-body text-(--color-text-muted)">
           Numero massimo di coperti per una singola prenotazione walk-in dalla Home.
         </p>
         {isPending && !isSuccess ? (

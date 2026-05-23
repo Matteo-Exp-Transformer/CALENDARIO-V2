@@ -646,7 +646,7 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar, filter
         {filteredBookings.length === 0 ? (
           <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg p-12 text-center border-2 border-purple-100">
             <div className="text-6xl mb-4">📭</div>
-            <h3 className="text-xl font-bold text-indigo-900 mb-2">
+            <h3 className="text-title-card font-bold text-indigo-900 mb-2">
               Nessuna prenotazione {filter !== 'all' && `con status "${filter}"`}
             </h3>
             <p className="text-gray-600 font-medium">
