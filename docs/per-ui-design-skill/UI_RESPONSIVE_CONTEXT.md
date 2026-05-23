@@ -146,6 +146,46 @@ Sanati il 16-05-26 (uniformazione responsive):
 
 ---
 
+## 6b. Scala tipografica centralizzata (utility @utility in index.css)
+
+Dal 23-05-26 esistono utility CSS che incarnano la scala T1–T5 / B1–B6
+ancorata al gold standard del titolo Calendario (22 / 24 / 24 / 30 px).
+**Usare queste utility invece di liste Tailwind `text-* md:text-* lg:text-*`**.
+
+Titoli (con prefisso `text-title-*`):
+
+| Utility | Mobile | sm | md | lg |
+|---------|--------|----|----|----|
+| `text-title-page` | 22 | 24 | 28 | 30 |
+| `text-title-section` | 18 | 20 | 22 | 24 |
+| `text-title-card` | 22 | 24 | 24 | 30 |
+| `text-title-subtitle` | 14 | 14 | 15 | 16 |
+| `text-title-modal` | 18 | 20 | 22 | 22 |
+
+Corpo (prefissi `text-body`, `text-label`, `text-value`, `text-stat-big`,
+`text-micro`, `text-button-label`):
+
+| Utility | Mobile | sm | md | lg |
+|---------|--------|----|----|----|
+| `text-body` | 14 | 14 | 15 | 16 |
+| `text-label` | 13 | 13 | 14 | 14 |
+| `text-value` | 14 | 15 | 16 | 16 |
+| `text-stat-big` | 24 | 28 | 30 | 30 |
+| `text-micro` | 12 | 12 | 13 | 13 |
+| `text-button-label` | 14 | 14 | 14 | 14 |
+
+Linee guida:
+- **Distinzione titoli vs corpo**: il prefisso `text-title-*` è riservato
+  ai titoli; tutto il resto del testo usa `text-body`/`text-label`/
+  `text-value`/`text-micro`. Mai usare `text-title-*` su un paragrafo.
+- Le utility includono già `font-size` + `line-height`. Combina con
+  `font-semibold`, `truncate`, colori (`text-(--color-text-muted)`) ecc.
+- File LOCK admin classica (BookingCalendar, BookingRequestCard, …) NON
+  vanno sostituiti senza spiegazione preventiva: il titolo Calendario in
+  particolare ha una scala dedicata in `index.css` (`.booking-calendar-title`).
+- Quando crei una pagina nuova: parti subito da queste utility. Mai
+  reintrodurre liste `text-xs md:text-sm` ripetute.
+
 ## 7. Checklist prima di chiudere una modifica responsive
 
 1. La pagina funziona a viewport pieno (sidebar trattata come overlay, non come
@@ -155,4 +195,7 @@ Sanati il 16-05-26 (uniformazione responsive):
 4. Le griglie collassano su mobile (nessun `grid-cols-N` secco)?
 5. Spacing coerente con il pattern di riferimento o con il file vicino?
 6. Nessun breakpoint 645px custom dentro un componente pagina?
-7. `npm run typecheck && npm run lint` verdi?
+7. Testo (titoli + corpo) usa le utility centralizzate `text-title-*` /
+   `text-body` / `text-label` / `text-value` / `text-micro` /
+   `text-stat-big` invece di liste `text-* md:text-*` ripetute?
+8. `npm run typecheck && npm run lint` verdi?
