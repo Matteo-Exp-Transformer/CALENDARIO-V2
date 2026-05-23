@@ -247,8 +247,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
             <div className="w-full px-4 md:px-28 text-center pointer-events-none">
               <h1
-                className="relative -left-16 mx-auto max-w-[calc(100%-9rem)] max-[645px]:left-0 max-[645px]:mx-auto max-[645px]:max-w-[min(100%,calc(100vw-2rem))] md:max-w-[calc(100%-11rem)] overflow-hidden line-clamp-2 wrap-anywhere font-semibold italic font-serif tracking-wide text-white drop-shadow-sm leading-tight"
-                style={{ fontSize: 'clamp(1.297rem, 2.767vw, 1.729rem)' }}
+                className="relative -left-16 mx-auto max-w-[calc(100%-9rem)] max-[645px]:left-0 max-[645px]:mx-auto max-[645px]:max-w-[min(100%,calc(100vw-2rem))] md:max-w-[calc(100%-11rem)] overflow-hidden line-clamp-2 wrap-anywhere text-[22px] font-semibold italic font-serif tracking-wide text-white drop-shadow-sm leading-tight sm:text-2xl md:text-[28px] lg:text-[30px]"
               >
                 {restaurantName || 'Booking SaaS'}
               </h1>
