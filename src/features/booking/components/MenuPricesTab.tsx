@@ -219,13 +219,34 @@ const MENU_CARD_MAX_WIDTH_PX = 746
 
 /** Titolo categoria: stesso aspetto tra card gestione categorie e header CollapsibleCard panoramica ingredienti. */
 const MENU_CATEGORY_LABEL_TITLE_CLASS =
-  'booking-mobile-card-title min-w-0 flex-1 font-bold text-base text-gray-700 md:text-lg'
+  'min-w-0 flex-1 text-sm font-semibold leading-snug text-primary-900 sm:text-base'
+
+const MENU_INGREDIENT_NAME_CLASS =
+  'min-w-0 flex-1 text-sm font-semibold leading-snug text-primary-900'
+
+const MENU_INGREDIENT_PRICE_CLASS =
+  'shrink-0 text-sm font-semibold tabular-nums text-warm-wood'
+
+const MENU_INGREDIENT_DESC_CLASS =
+  'w-full min-w-0 text-xs leading-snug text-(--color-text-muted)'
 
 const MENU_CATEGORY_LABEL_TITLE_STYLE: CSSProperties = {
   fontWeight: 700,
   wordBreak: 'break-word',
   overflowWrap: 'break-word',
 }
+
+/** Superficie condivisa: card ingrediente, card categoria e header CollapsibleCard panoramica menu. */
+const MENU_CARD_INNER_SHELL_CLASS =
+  'rounded-2xl border-2 border-black/20 bg-white/85 backdrop-blur-[1px] menu-card-mobile transition-all duration-200'
+
+const MENU_CATEGORY_COLLAPSIBLE_CLASS = cn(
+  'menu-prices-category-collapsible h-fit overflow-hidden shadow-md transition-shadow duration-200 hover:shadow-lg',
+  MENU_CARD_INNER_SHELL_CLASS,
+)
+
+const MENU_CATEGORY_COLLAPSIBLE_HEADER_CLASS =
+  'border-black/15 bg-white/85 hover:bg-white/95'
 
 type AdminMenuIngredientCardProps = {
   item: MenuItem
@@ -235,8 +256,11 @@ type AdminMenuIngredientCardProps = {
   metaLine?: string
   /** Sotto la card bianca (es. tipologie prenotazione in modifica prodotto). */
   footer?: ReactNode
-  /** Vista menu senza «Crea / Modifica Prodotto»: solo nome/prezzo, senza icone azione. */
+  /** Vista modifica: icone azione e riga cliccabile per tipologie prenotazione. */
   showActions?: boolean
+  /** Pannello tipologie visibile solo sull’ingrediente selezionato. */
+  typesPanelOpen?: boolean
+  onSelectForBookingTypes?: () => void
 }
 
 const AdminMenuIngredientCard: React.FC<AdminMenuIngredientCardProps> = ({
@@ -245,12 +269,15 @@ const AdminMenuIngredientCard: React.FC<AdminMenuIngredientCardProps> = ({
   onDelete,
   metaLine,
   footer,
-  showActions = true,
+  showActions = false,
+  typesPanelOpen = false,
+  onSelectForBookingTypes,
 }) => {
   const hasDesc = Boolean(item.description?.trim())
+  const rowSelectable = Boolean(showActions && onSelectForBookingTypes)
   return (
     <div
-      className="flex w-full flex-col items-stretch gap-2"
+      className="flex w-full flex-col items-stretch gap-1.5"
       style={{
         maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
         marginLeft: 'auto',
@@ -258,64 +285,55 @@ const AdminMenuIngredientCard: React.FC<AdminMenuIngredientCardProps> = ({
       }}
     >
       <div
-        className="flex w-full flex-col items-stretch rounded-xl border-2 text-left menu-card-mobile transition-all duration-200"
+        className={cn(
+          'menu-prices-item-row flex-col items-stretch gap-1 py-2.5 px-3',
+          !hasDesc && 'min-h-0 items-center',
+          rowSelectable && 'cursor-pointer hover:border-[color-mix(in_srgb,var(--color-text)_18%,transparent)]',
+          typesPanelOpen &&
+            'border-[color-mix(in_srgb,var(--color-primary-500)_55%,transparent)] ring-2 ring-primary-400/40',
+        )}
         style={{
-          minHeight: '80px',
-          maxHeight: 'none',
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'blur(1px)',
-          borderColor: 'rgba(0,0,0,0.2)',
-          paddingTop: '6px',
-          paddingBottom: '6px',
-          paddingLeft: '8px',
-          paddingRight: '8px',
-          borderRadius: '16px',
-          marginBottom: '4px',
           width: '100%',
           maxWidth: `${MENU_CARD_MAX_WIDTH_PX}px`,
-          height: hasDesc ? 'auto' : '80px',
-          boxSizing: 'border-box',
-          overflow: 'hidden',
-          justifyContent: hasDesc ? undefined : 'center',
+          minHeight: hasDesc ? undefined : '3rem',
         }}
+        role={rowSelectable ? 'button' : undefined}
+        tabIndex={rowSelectable ? 0 : undefined}
+        aria-expanded={rowSelectable ? typesPanelOpen : undefined}
+        onClick={
+          rowSelectable
+            ? (e) => {
+                if ((e.target as HTMLElement).closest('.menu-prices-item-actions')) return
+                onSelectForBookingTypes?.()
+              }
+            : undefined
+        }
+        onKeyDown={
+          rowSelectable
+            ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onSelectForBookingTypes?.()
+                }
+              }
+            : undefined
+        }
       >
-        <div
-          className="flex min-h-0 w-full min-w-0 flex-1 flex-row flex-nowrap items-center justify-between gap-x-2 sm:gap-x-3"
-          style={{
-            paddingLeft: '4px',
-            paddingRight: '12px',
-            paddingTop: '0px',
-            paddingBottom: hasDesc ? '2px' : '0px',
-            overflow: 'hidden',
-          }}
-        >
-          <span
-            className="booking-mobile-card-title min-w-0 flex-1 font-bold text-base md:text-lg text-gray-700"
-            style={{
-              fontWeight: '700',
-              whiteSpace: 'normal',
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-            }}
-          >
+        <div className="flex w-full min-w-0 items-center justify-between gap-2">
+          <p className={cn(MENU_INGREDIENT_NAME_CLASS, 'menu-prices-item-text break-words')}>
             {item.name}
-          </span>
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <span
-              className="booking-mobile-price text-sm font-bold text-warm-wood whitespace-nowrap md:text-lg"
-              style={{ fontWeight: '700', textAlign: 'right' }}
-            >
-              €{item.price.toFixed(2)}
-            </span>
+          </p>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <span className={MENU_INGREDIENT_PRICE_CLASS}>€{item.price.toFixed(2)}</span>
             {showActions ? (
-              <div className="menu-prices-item-actions flex gap-2">
+              <div className="menu-prices-item-actions flex gap-1.5">
                 <button
                   type="button"
                   onClick={onEdit}
                   className="menu-prices-icon-btn menu-prices-icon-btn--edit"
                   aria-label={`Modifica ${item.name}`}
                 >
-                  <Edit className="h-4 w-4" />
+                  <Edit className="h-3.5 w-3.5" />
                 </button>
                 <button
                   type="button"
@@ -323,30 +341,19 @@ const AdminMenuIngredientCard: React.FC<AdminMenuIngredientCardProps> = ({
                   className="menu-prices-icon-btn menu-prices-icon-btn--delete"
                   aria-label={`Elimina ${item.name}`}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>
             ) : null}
           </div>
         </div>
         {hasDesc ? (
-          <p
-            className="booking-mobile-card-description w-full min-w-0 px-1 pb-0 pt-0.5 text-left text-sm font-semibold leading-snug text-gray-600 md:text-base"
-            style={{
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-              lineHeight: '1.35',
-              margin: 0,
-              hyphens: 'auto',
-            }}
-          >
-            {item.description}
-          </p>
+          <p className={cn(MENU_INGREDIENT_DESC_CLASS, 'break-words')}>{item.description}</p>
         ) : null}
       </div>
       {footer}
       {metaLine ? (
-        <p className="px-1 text-center text-xs text-slate-500 sm:text-left">{metaLine}</p>
+        <p className="px-1 text-center text-xs text-(--color-text-muted) sm:text-left">{metaLine}</p>
       ) : null}
     </div>
   )
@@ -406,16 +413,12 @@ const AdminMenuCategoryLabelCard: React.FC<AdminMenuCategoryLabelCardProps> = ({
     }}
   >
     <div
-      className="flex w-full min-h-[80px] items-center rounded-xl border-2 text-left menu-card-mobile transition-all duration-200"
+      className={cn('flex w-full min-h-[80px] items-center text-left', MENU_CARD_INNER_SHELL_CLASS)}
       style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.85)',
-        backdropFilter: 'blur(1px)',
-        borderColor: 'rgba(0,0,0,0.2)',
         paddingTop: '6px',
         paddingBottom: '6px',
         paddingLeft: '8px',
         paddingRight: '8px',
-        borderRadius: '16px',
         marginBottom: '4px',
         width: '100%',
         maxWidth: `${MENU_CARD_MAX_WIDTH_PX}px`,
@@ -510,8 +513,10 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const productFormCardRef = useRef<HTMLDivElement>(null)
   const scrollProductFormIntoViewAfterEditRef = useRef(false)
 
-  /** Attivo dopo «Crea / Modifica Prodotto» (toolbar): form sopra la lista e ingredienti con azioni + tipologie. */
-  const [productToolbarFlowActive, setProductToolbarFlowActive] = useState(false)
+  /** Attivo dopo «Crea / Modifica Prodotto»: titolo «Modifica Ingredienti» e righe ingrediente interattive. */
+  const [ingredientEditMode, setIngredientEditMode] = useState(false)
+  /** Ingrediente con pannello tipologie prenotazione aperto (uno alla volta). */
+  const [ingredientTypesPanelItemId, setIngredientTypesPanelItemId] = useState<string | null>(null)
 
   const resetVolAuVentPromoEditorDraft = () => {
     setPromoEditorMode('list')
@@ -698,7 +703,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   })
 
   const resetProductFormState = () => {
-    setProductToolbarFlowActive(false)
+    setIngredientEditMode(false)
+    setIngredientTypesPanelItemId(null)
     setIsAdding(false)
     setEditingId(null)
     setPriceInput('')
@@ -739,13 +745,12 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     return acc
   }, {} as Record<string, MenuItem[]>)
 
-  const categoryEntriesWithItems = useMemo(
-    () => categoryEntries.filter(([key]) => (itemsByCategory[key]?.length ?? 0) > 0),
-    [categoryEntries, itemsByCategory],
-  )
+  const toggleIngredientTypesPanel = (itemId: string) => {
+    setIngredientTypesPanelItemId((current) => (current === itemId ? null : itemId))
+  }
 
   const handleStartEdit = (item: MenuItem) => {
-    setProductToolbarFlowActive(true)
+    setIngredientEditMode(true)
     setEditingId(item.id)
     setFormData({
       name: item.name,
@@ -764,7 +769,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setPromoEditorOpen(false)
     resetVolAuVentPromoEditorDraft()
     setIsAddingCategory(false)
-    setProductToolbarFlowActive(true)
+    setIngredientEditMode(true)
+    setIngredientTypesPanelItemId(null)
     setIsAdding(true)
     setEditingId(null)
     setPriceInput('')
@@ -1408,64 +1414,84 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           id="menu-prices-ingredient-overview-heading"
           className="text-center font-serif text-lg font-bold leading-tight text-primary-900 md:text-xl"
         >
-          Menu
+          {ingredientEditMode ? 'Modifica Ingredienti' : 'Menu'}
         </h3>
-        {productToolbarFlowActive ? (
+        {ingredientEditMode ? (
           <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
-            Per ogni ingrediente: modifica, elimina o scegli per quali tipologie di prenotazione è disponibile nel menu
-            pubblico.
+            Clicca un ingrediente per vedere per quali tipologie di prenotazioni è visibile. Usa invece
+            le icone per modificare o eliminare.
           </p>
         ) : null}
-        {menuItems.length === 0 ? (
+        {categoryEntries.length === 0 ? (
           <p
             className={cn(
               'py-8 text-center text-sm text-gray-600',
-              productToolbarFlowActive ? 'mt-8' : 'mt-6',
+              ingredientEditMode ? 'mt-8' : 'mt-6',
             )}
           >
-            Nessun ingrediente ancora.
+            Nessuna categoria configurata. Aggiungine una dalla gestione categorie.
           </p>
         ) : (
           <div
             className={cn(
               'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3',
-              productToolbarFlowActive ? 'mt-8' : 'mt-6',
+              ingredientEditMode ? 'mt-8' : 'mt-6',
             )}
           >
-            {categoryEntriesWithItems.map(([categoryKey, categoryLabel]) => (
-              <CollapsibleCard
-                key={categoryKey}
-                title={categoryLabel}
-                subtitle={`${itemsByCategory[categoryKey]?.length ?? 0} ingredienti`}
-                defaultExpanded={false}
-                className="h-fit border-[var(--color-border)] shadow-md"
-                headerClassName="min-h-[48px] border-b border-[var(--color-border)] bg-[var(--color-bg)]/95 hover:bg-[var(--color-bg)]"
-                contentClassName="bg-transparent p-0"
-                titleClassName={cn(MENU_CATEGORY_LABEL_TITLE_CLASS, 'break-words')}
-                titleStyle={MENU_CATEGORY_LABEL_TITLE_STYLE}
-              >
-                <div className="flex flex-col gap-3 px-2 pb-4 pt-1 sm:px-3">
-                  {(itemsByCategory[categoryKey] ?? []).map((item) => (
-                    <AdminMenuIngredientCard
-                      key={item.id}
-                      item={item}
-                      onEdit={() => handleStartEdit(item)}
-                      onDelete={() => handleDelete(item.id, item.name)}
-                      showActions={productToolbarFlowActive}
-                      footer={
-                        productToolbarFlowActive ? (
-                          <MenuItemBookingTypesPanel
-                            item={item}
-                            disabled={updateMutation.isPending}
-                            onToggle={handleToggleMenuItemBookingType}
-                          />
-                        ) : undefined
-                      }
-                    />
-                  ))}
-                </div>
-              </CollapsibleCard>
-            ))}
+            {categoryEntries.map(([categoryKey, categoryLabel]) => {
+              const categoryItems = itemsByCategory[categoryKey] ?? []
+              const itemCount = categoryItems.length
+              return (
+                <CollapsibleCard
+                  key={categoryKey}
+                  title={categoryLabel}
+                  subtitle={
+                    <span className="text-xs font-semibold text-(--color-text-muted) sm:text-sm">
+                      {itemCount} {itemCount === 1 ? 'ingrediente' : 'ingredienti'}
+                    </span>
+                  }
+                  defaultExpanded={false}
+                  className={MENU_CATEGORY_COLLAPSIBLE_CLASS}
+                  headerClassName={MENU_CATEGORY_COLLAPSIBLE_HEADER_CLASS}
+                  contentClassName="bg-transparent p-0"
+                  titleClassName={cn(MENU_CATEGORY_LABEL_TITLE_CLASS, 'break-words')}
+                  titleStyle={MENU_CATEGORY_LABEL_TITLE_STYLE}
+                >
+                  <div className="flex flex-col gap-2 px-1 pb-3 pt-0.5 sm:px-2">
+                    {itemCount === 0 ? (
+                      <p className="px-2 py-4 text-center text-xs text-(--color-text-muted) sm:text-sm">
+                        Nessun ingrediente in questa categoria.
+                      </p>
+                    ) : (
+                      categoryItems.map((item) => (
+                        <AdminMenuIngredientCard
+                          key={item.id}
+                          item={item}
+                          onEdit={() => handleStartEdit(item)}
+                          onDelete={() => handleDelete(item.id, item.name)}
+                          showActions={ingredientEditMode}
+                          typesPanelOpen={ingredientTypesPanelItemId === item.id}
+                          onSelectForBookingTypes={
+                            ingredientEditMode
+                              ? () => toggleIngredientTypesPanel(item.id)
+                              : undefined
+                          }
+                          footer={
+                            ingredientTypesPanelItemId === item.id ? (
+                              <MenuItemBookingTypesPanel
+                                item={item}
+                                disabled={updateMutation.isPending}
+                                onToggle={handleToggleMenuItemBookingType}
+                              />
+                            ) : undefined
+                          }
+                        />
+                      ))
+                    )}
+                  </div>
+                </CollapsibleCard>
+              )
+            })}
           </div>
         )}
       </div>

@@ -1503,6 +1503,24 @@ button.booking-request-reject-booking-btn:focus-visible {
   outline-offset: 2px;
 }
 
+/* CollapsibleCard categorie nella panoramica ingredienti (MenuPricesTab) — allineato alle card menu */
+.menu-prices-category-collapsible {
+  border-color: color-mix(in srgb, var(--color-text) 20%, transparent);
+  background-color: color-mix(in srgb, var(--color-surface) 88%, transparent);
+}
+
+.menu-prices-category-collapsible [id$='-header'] {
+  min-height: 4.5rem;
+}
+
+.menu-prices-category-collapsible [id$='-header'] svg {
+  color: var(--color-warm-wood);
+}
+
+.menu-prices-category-collapsible [id$='-content'] {
+  border-top-color: color-mix(in srgb, var(--color-text) 12%, transparent);
+}
+
 /* Fascia liste categorie menu admin — tema ice (layout griglia in MenuPricesTab) */
 .menu-prices-category-list-wrap {
   box-sizing: border-box;
