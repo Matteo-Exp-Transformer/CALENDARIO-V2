@@ -75,8 +75,14 @@ Regole:
   toggle drawer della sidebar — **non replicarlo nei componenti pagina**. È
   responsabilità esclusiva della shell.
 - Le media query CSS custom in `index.css` (537px, 595px, 768px) servono **solo**
-  alla compattazione di FullCalendar (`#booking-calendar-fc`). Non estenderle ad
+  alla compattazione di FullCalendar (`.booking-calendar-fc`). Non estenderle ad
   altri componenti — usare le classi Tailwind.
+- Eccezioni calendario (maggio 2026): (1) tab **Calendario** in `AdminDashboard` —
+  `max-w-none px-1 md:px-1.5` invece di `max-w-7xl px-4 md:px-6`; (2) titolo
+  `.booking-calendar-page-title` — media query dedicate **400 / 470 / 640 / 768 px**
+  in `index.css` (non replicare con Tailwind arbitrario sul `h2`); (3) card titolo
+  resta `max-w-7xl` tramite `CALENDAR_TITLE_SECTION_INSET_CLASS` in
+  `BookingCalendar.tsx`.
 
 ---
 
@@ -87,7 +93,7 @@ valore esatto):
 
 | Uso | Pattern raccomandato |
 |-----|---------------------|
-| Padding orizzontale pagina | `px-4 md:px-6` |
+| Padding orizzontale pagina | `px-4 md:px-6` (tab Calendario: `px-1 md:px-1.5` + `max-w-none`) |
 | Padding verticale pagina | `py-5 md:py-7` (preferito) — `py-6` accettato se già dominante nel file |
 | Gap tra blocchi maggiori | `gap-4 md:gap-5` |
 | Gap tra item lista/griglia | `gap-3 md:gap-4` |

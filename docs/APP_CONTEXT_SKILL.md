@@ -25,6 +25,7 @@ Leggi il task ricevuto e applica questa tabella:
 | Edition / FEATURES flag / useFeatures / features.sidebar / buildFeatures | `docs/APP_CONTEXT_SKILL.md` § 2 + `src/config/features.ts` + `src/hooks/useFeatures.ts` |
 | UI / className / Tailwind / layout / componenti / tema / colori / index.css | `docs/per-ui-design-skill/UI_EDIT_SKILL.md` |
 | **Responsive / breakpoint / mobile / grid che collassa / padding-gap adattivi / max-width container / contenuto pagina vs sidebar** | `docs/per-ui-design-skill/UI_RESPONSIVE_SKILL.md` |
+| **BookingCalendar — layout tab Calendario, altezza celle mese, titolo/data (Oggi), media query titolo** | `docs/ADMIN_CLASSIC_SKILL.md` §4 + `UI_RESPONSIVE_CONTEXT.md` + `UI_THEME_CONTEXT.md` |
 | DB / schema / migrazioni / RLS / policy / tabelle / trigger / tipi database.ts | `docs/Database-Skill/DB_SKILL.md` |
 | Task che tocca admin classica + qualsiasi altra cosa | **ADMIN_CLASSIC sempre + skill area** |
 | Task che tocca sia layout shell che stile Tailwind | **entrambi** ADMIN_SHELL + UI_EDIT |

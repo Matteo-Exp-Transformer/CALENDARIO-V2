@@ -49,6 +49,8 @@ const CALENDAR_EVENT_ICON_ONLY_MAX_WIDTH_PX = 500
  */
 const CALENDAR_DAY_GRID_MONTH_MIN_HEIGHT_PX = 128
 const CALENDAR_DAY_GRID_MONTH_MIN_HEIGHT_NARROW_PX = 112
+/** Tab Calendario usa px-1 sul contenitore pagina: questo ripristina px-4 md:px-6 solo sulla card titolo. */
+const CALENDAR_TITLE_SECTION_INSET_CLASS = 'mx-auto w-full max-w-7xl px-3 md:px-[1.125rem]'
 
 /** Intestazione fascia digest — stile neutro allineato al resto dell'app. */
 function DigestSlotHeader({ label }: { label: string }) {
@@ -827,24 +829,22 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     <>
       <div className="space-y-6">
         <div className="flex flex-col gap-4">
-          <div className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 shadow-sm max-[537px]:px-3 max-[537px]:py-3 sm:px-5 sm:py-4">
-            {/* Titolo a sinistra, icona + data a destra (stesso su ogni breakpoint) */}
-            <div
-              className="flex w-full items-center justify-between gap-3 py-3"
-              style={{ minHeight: 'calc(48px * 6 / 5 * 6 / 5)' }}
-            >
-              <div className="min-w-0 flex-1 pr-2 text-left sm:pr-4">
-                <h2 className="break-words font-serif font-bold text-primary-900 max-[440px]:text-[1.5rem] max-[440px]:leading-tight min-[441px]:max-sm:text-[2rem] min-[441px]:max-sm:leading-tight sm:text-2xl sm:leading-snug md:text-3xl">
+          <div className={CALENDAR_TITLE_SECTION_INSET_CLASS}>
+            <div className="booking-calendar-title-section w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 shadow-sm max-[537px]:px-3 max-[537px]:py-3 sm:px-5 sm:py-4">
+              {/* <640px: titolo a sinistra + icona; da 640px: titolo centrato, icona a destra */}
+              <div
+                className="relative flex w-full items-start justify-between gap-3 py-3 max-sm:items-start sm:items-center sm:justify-center"
+                style={{ minHeight: 'calc(48px * 6 / 5 * 6 / 5)' }}
+              >
+                <h2 className="booking-calendar-page-title min-w-0 flex-1 pr-2 text-left font-serif font-bold text-primary-900 sm:w-full sm:flex-none sm:pr-14 sm:text-center md:pr-16">
                   Calendario Prenotazioni
                 </h2>
-              </div>
-              <div className="flex shrink-0 items-center">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-primary-700 bg-primary-600 shadow-lg max-[537px]:h-9 max-[537px]:w-9">
+                <div
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-primary-700 bg-primary-600 shadow-lg max-[537px]:h-9 max-[537px]:w-9 sm:absolute sm:right-0 sm:top-1/2 sm:-translate-y-1/2"
+                  aria-hidden
+                >
                   <Calendar className="h-7 w-7 text-white max-[537px]:h-5 max-[537px]:w-5" />
                 </div>
-                <span className="ml-3 text-sm font-semibold tabular-nums text-primary-900 max-[537px]:ml-2 max-[537px]:text-xs sm:text-base">
-                  {currentDateLabel}
-                </span>
               </div>
             </div>
           </div>
@@ -866,7 +866,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
           </div>
 
           <div
-            className="booking-calendar-fc relative [&_.fc-event]:cursor-pointer"
+            className="booking-calendar-fc relative w-full max-w-none [&_.fc-event]:cursor-pointer"
             style={
               {
                 '--booking-calendar-day-min-height': `${
@@ -877,26 +877,31 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
               } as React.CSSProperties
             }
           >
-            <button
-              type="button"
-              onClick={handleGoToToday}
-              className={cn(
-                'absolute left-0 top-0 z-20 inline-flex items-center justify-center rounded-xl border border-primary-200 bg-primary-50 text-sm font-medium leading-none text-primary-900 shadow-sm transition-colors',
-                'hover:border-primary-300 hover:bg-primary-100',
-                'focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:ring-offset-2',
-                'h-10 min-h-10 min-w-[88px] px-3.5',
-                'max-[537px]:h-8 max-[537px]:min-h-8 max-[537px]:min-w-[4.75rem] max-[537px]:rounded-lg max-[537px]:px-2 max-[537px]:text-xs'
-              )}
-            >
-              Oggi
-            </button>
+            <div className="absolute left-0 top-0 z-20 flex items-center gap-2 max-[537px]:gap-1.5">
+              <button
+                type="button"
+                onClick={handleGoToToday}
+                className={cn(
+                  'inline-flex shrink-0 items-center justify-center rounded-xl border border-primary-200 bg-primary-50 text-sm font-medium leading-none text-primary-900 shadow-sm transition-colors',
+                  'hover:border-primary-300 hover:bg-primary-100',
+                  'focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:ring-offset-2',
+                  'h-10 min-h-10 min-w-[88px] px-3.5',
+                  'max-[537px]:h-8 max-[537px]:min-h-8 max-[537px]:min-w-[4.75rem] max-[537px]:rounded-lg max-[537px]:px-2 max-[537px]:text-xs'
+                )}
+              >
+                Oggi
+              </button>
+              <span className="shrink-0 text-sm font-semibold tabular-nums text-primary-900 max-[537px]:text-xs sm:text-base">
+                {currentDateLabel}
+              </span>
+            </div>
             <FullCalendar ref={calendarRef} {...config} events={events} />
           </div>
         </div>
 
         {/* Giornata selezionata: elenco prenotazioni e fasce */}
         <div>
-          <div className="mb-8 w-full max-w-7xl mx-auto">
+          <div className="mb-8 w-full">
             <h4 className="text-center text-base font-semibold text-primary-900 mb-3 leading-snug">
               Prenotazioni del giorno:{' '}
               <span className="font-normal text-[var(--color-text-muted)]">

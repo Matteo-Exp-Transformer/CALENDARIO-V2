@@ -382,7 +382,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {bodyOverride ?? (
           <div
             className={cn(
-              'mx-auto w-full max-w-7xl px-4 md:px-6',
+              'mx-auto w-full',
+              activeTab === 'calendar'
+                ? 'max-w-none px-1 md:px-1.5'
+                : 'max-w-7xl px-4 md:px-6',
               activeTab === 'archive' ? 'pb-6 pt-3 md:pb-7 md:pt-4' : 'py-5 md:py-7',
               activeTab !== 'menu' && activeTab !== 'pending' && 'min-h-[500px]',
             )}

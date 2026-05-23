@@ -25,7 +25,8 @@
 | `src/index.css` `:root` | `--color-bg`, `--color-surface`, `--color-surface-2`, `--color-border`, `--color-border-strong`, `--color-text*`, `--color-primary*`, variabili nav tema (`--theme-surface-nav-*`, `--theme-border-nav-*`, `--theme-accent-primary`…), `--admin-nav-tab-active-border`, `--color-accent-selected`, `--admin-warm-wrap-border` |
 | `tailwind.config.js` | Allineare scala `primary` e `background`/`muted` a `@theme` |
 | `src/lib/adminWarmGradientSurface.ts` | `ADMIN_WARM_BORDER`, `ADMIN_WARM_GRADIENT_SURFACE`: sfondo/blocco editor menu = card/pannello tema |
-| FullCalendar in `src/index.css` | Selettori `.booking-calendar-fc`: giorno selezionato (gradient accent), pulsanti toolbar, `--fc-*` vars |
+| FullCalendar in `src/index.css` | Selettori `.booking-calendar-fc`: giorno selezionato (gradient accent), pulsanti toolbar, `--fc-*` vars, `min-height` celle mese via `--booking-calendar-day-min-height` (impostata da `BookingCalendar.tsx`) |
+| Card titolo calendario in `src/index.css` | `.booking-calendar-title-section .booking-calendar-page-title` — allineamento e `font-size` per fascia &lt;400 / 400–469 / 470–639 / ≥640 / ≥768 px (non usare solo classi Tailwind sul titolo) |
 | `src/lib/adminBlueCtaClass.ts` | CTA footer: usare `primary-*` tema, non blu Tailwind legacy |
 
 ### Inversione "pagina ↔ card" (se richiesta)
@@ -71,7 +72,9 @@ Verificare e riallineare:
 
 ### `src/features/booking/components/BookingCalendar.tsx`
 - Rimuovere costanti `CALENDAR_SECTION_WARM_SURFACE`
-- Fascia titolo: `border-[var(--color-border)]` + `bg-[var(--color-surface)]`; titolo/data `primary-900`
+- Fascia titolo: `border-[var(--color-border)]` + `bg-[var(--color-surface)]`; titolo `primary-900`
+- Costanti layout: `CALENDAR_DAY_GRID_MONTH_MIN_HEIGHT_PX` (128) / `_NARROW_PX` (112), `CALENDAR_TITLE_SECTION_INSET_CLASS`, breakpoint JS `CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX` (630), `CALENDAR_EVENT_ICON_ONLY_MAX_WIDTH_PX` (500)
+- Data corrente: span accanto a **Oggi** (non in card titolo). Scala titolo: regole in `index.css` su `.booking-calendar-page-title`
 
 ### `src/features/booking/components/MenuPricesTab.tsx`
 - Non lasciare `style={ADMIN_WARM_GRADIENT_SURFACE}` con gradient legacy
