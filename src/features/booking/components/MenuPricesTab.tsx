@@ -55,6 +55,7 @@ import {
   VOL_AU_VENT_PROMO_PLACEHOLDER,
   type VolAuVentPromo,
   isVolAuVentPromoVisibleOnBooking,
+  getVolAuVentPromoAdminLabel,
 } from '../constants/volAuVentPromo'
 import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
@@ -73,12 +74,6 @@ function bookingTypeLabelsJoined(types: BookingType[]): string {
   return types
     .map((t) => VOL_AU_VENT_PROMO_BOOKING_TYPE_OPTIONS.find((o) => o.value === t)?.label ?? t)
     .join(', ')
-}
-
-function promoMessageSummary(message: string): string {
-  const line = message.trim().split(/\n/)[0] ?? ''
-  if (!line) return 'Promo senza testo'
-  return line.length > 72 ? `${line.slice(0, 72)}…` : line
 }
 
 type StaffPresetsVisibilityIconButtonProps = {
@@ -493,6 +488,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const [promoEditorMode, setPromoEditorMode] = useState<'list' | 'editor'>('list')
   const [editingVolAuVentPromoId, setEditingVolAuVentPromoId] = useState<string | null>(null)
   const [promoDraftMessage, setPromoDraftMessage] = useState('')
+  const [promoDraftLabel, setPromoDraftLabel] = useState('')
   const [promoDraftBookingTypes, setPromoDraftBookingTypes] = useState<BookingType[]>([
     'rinfresco_laurea',
     'menu_prezzo_fisso',
@@ -510,6 +506,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setPromoEditorMode('list')
     setEditingVolAuVentPromoId(null)
     setPromoDraftMessage('')
+    setPromoDraftLabel('')
     setPromoDraftBookingTypes(['rinfresco_laurea', 'menu_prezzo_fisso'])
   }
 
@@ -521,12 +518,14 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const startNewVolAuVentPromo = () => {
     setEditingVolAuVentPromoId(null)
     setPromoDraftMessage('')
+    setPromoDraftLabel('')
     setPromoDraftBookingTypes(['rinfresco_laurea', 'menu_prezzo_fisso'])
     setPromoEditorMode('editor')
   }
 
   const startEditVolAuVentPromo = (row: VolAuVentPromo) => {
     setEditingVolAuVentPromoId(row.id)
+    setPromoDraftLabel(row.label ?? '')
     setPromoDraftMessage(row.message)
     setPromoDraftBookingTypes([...row.booking_types])
     setPromoEditorMode('editor')
@@ -539,7 +538,12 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   }
 
   const handleSaveVolAuVentPromoRow = async () => {
+    const trimmedLabel = promoDraftLabel.trim()
     const trimmed = promoDraftMessage.trim()
+    if (!trimmedLabel) {
+      toast.error('Inserisci il nome della promozione')
+      return
+    }
     if (!trimmed) {
       toast.error('Inserisci il testo della promozione')
       return
@@ -560,9 +564,10 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
 
     const nextRow: VolAuVentPromo =
       editingVolAuVentPromoId !== null && existing
-        ? { ...existing, message: trimmed, booking_types: promoDraftBookingTypes }
+        ? { ...existing, label: trimmedLabel, message: trimmed, booking_types: promoDraftBookingTypes }
         : {
             id: crypto.randomUUID(),
+            label: trimmedLabel,
             message: trimmed,
             booking_types: promoDraftBookingTypes,
             visible_on_booking: true,
@@ -578,6 +583,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       setPromoEditorMode('list')
       setEditingVolAuVentPromoId(null)
       setPromoDraftMessage('')
+      setPromoDraftLabel('')
     } catch {
       //
     }
@@ -1170,11 +1176,21 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                           className="menu-prices-item-row flex-wrap gap-y-3"
                           style={{ padding: '0.75rem 1rem', minHeight: '72px' }}
                         >
-                          <div className="menu-prices-item-text min-w-[120px]">
+                          <div className="menu-prices-item-text min-w-[120px] flex-1">
                             <h4 className="text-left font-semibold text-gray-900">
-                              {promoMessageSummary(row.message)}
+                              {getVolAuVentPromoAdminLabel(row)}
                             </h4>
-                            <p className="text-left text-xs text-gray-500">
+                            {row.message.trim() ? (
+                              <p
+                                className={cn(
+                                  MENU_INGREDIENT_DESC_CLASS,
+                                  'mt-1 whitespace-pre-wrap break-words text-left',
+                                )}
+                              >
+                                {row.message.trim()}
+                              </p>
+                            ) : null}
+                            <p className="mt-1 text-left text-xs text-gray-500">
                               {bookingTypeLabelsJoined(row.booking_types)}
                             </p>
                           </div>
@@ -1196,7 +1212,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                             <button
                               type="button"
                               onClick={() =>
-                                handleDeleteVolAuVentPromo(row.id, promoMessageSummary(row.message))
+                                handleDeleteVolAuVentPromo(row.id, getVolAuVentPromoAdminLabel(row))
                               }
                               className="menu-prices-icon-btn menu-prices-icon-btn--delete"
                               aria-label={`Elimina promo`}
@@ -1213,6 +1229,24 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
 
               {promoEditorMode === 'editor' && (
                 <div className="mt-8 space-y-6">
+                  <div>
+                    <label
+                      htmlFor="vol-au-vent-promo-label"
+                      className="mb-1 block text-xs font-semibold text-gray-700"
+                    >
+                      Nome promozione (solo admin)
+                    </label>
+                    <Input
+                      id="vol-au-vent-promo-label"
+                      value={promoDraftLabel}
+                      onChange={(e) => setPromoDraftLabel(e.target.value)}
+                      placeholder="Es. Promo estate 2026"
+                      maxLength={80}
+                      className="border-slate-300 bg-white text-slate-900"
+                      aria-label="Nome promozione solo admin"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">{promoDraftLabel.length}/80</p>
+                  </div>
                   <div>
                     <label
                       htmlFor="vol-au-vent-promo-textarea"
@@ -1275,6 +1309,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                         setPromoEditorMode('list')
                         setEditingVolAuVentPromoId(null)
                         setPromoDraftMessage('')
+                        setPromoDraftLabel('')
                       }}
                       className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
                     >

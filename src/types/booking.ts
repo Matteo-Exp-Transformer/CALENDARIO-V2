@@ -43,6 +43,8 @@ export interface BookingRequest {
   preset_menu?: PresetMenuType
   menu_total_per_person?: number
   menu_total_booking?: number
+  /** Nomi promo menù attive al momento della prenotazione (solo admin). */
+  menu_promo_labels?: string[] | null
   placement?: string
 
   // Status management
@@ -87,6 +89,7 @@ export interface BookingRequestInput {
   preset_menu?: PresetMenuType
   menu_total_per_person?: number
   menu_total_booking?: number
+  menu_promo_labels?: string[] | null
   placement?: string
   booking_source?: 'public' | 'admin'
 

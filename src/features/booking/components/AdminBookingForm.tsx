@@ -21,6 +21,7 @@ import {
 import {
   DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
   listVolAuVentPromoMessagesForBookingType,
+  listVolAuVentPromoLabelsForBookingType,
 } from '../constants/volAuVentPromo'
 import { VolAuVentPromoBannerCards } from './VolAuVentPromoBannerCards'
 import { useAcceptedBookings } from '../hooks/useBookingQueries'
@@ -347,9 +348,15 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
   }
 
   const createBooking = () => {
-    const payload: BookingRequestInput = features.servizio
-      ? formData
-      : { ...formData, placement: '' }
+    const menuPromoLabels = listVolAuVentPromoLabelsForBookingType(
+      formData.booking_type ?? 'tavolo',
+      volAuVentPromos,
+      volAuVentPromoMessage,
+    )
+    const payload: BookingRequestInput = {
+      ...(features.servizio ? formData : { ...formData, placement: '' }),
+      menu_promo_labels: menuPromoLabels.length > 0 ? menuPromoLabels : null,
+    }
     mutate(payload, {
       onSuccess: async () => {
         toast.success('Prenotazione creata con successo!')

@@ -26,6 +26,7 @@ import {
 import {
   DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
   listVolAuVentPromoMessagesForBookingType,
+  listVolAuVentPromoLabelsForBookingType,
 } from '../constants/volAuVentPromo'
 import { VolAuVentPromoBannerCards } from './VolAuVentPromoBannerCards'
 
@@ -536,8 +537,19 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
     }
 
     // Chiama mutate — il guard server-side in create-booking è la garanzia definitiva
-    mutate({ ...formData, tenantSlug }, {
-      onSuccess: () => {
+    const menuPromoLabels = listVolAuVentPromoLabelsForBookingType(
+      formData.booking_type ?? 'tavolo',
+      volAuVentPromos,
+      volAuVentPromoMessage,
+    )
+    mutate(
+      {
+        ...formData,
+        tenantSlug,
+        menu_promo_labels: menuPromoLabels.length > 0 ? menuPromoLabels : null,
+      },
+      {
+        onSuccess: () => {
         
         // Reset form (keep default date and time)
         setFormData({
@@ -571,18 +583,19 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
         // Mostra la modal di conferma invece del toast
         setShowSuccessModal(true)
         onSubmit?.()
+        },
+        onError: (error) => {
+          console.error('❌ [BookingForm] Mutation error:', error)
+          // Reset tutti i flag in caso di errore per permettere nuovo tentativo
+          const savedLockId = (isSubmittingRef as any).currentLockId
+          isSubmittingRef.current = false
+          setIsSubmitting(false)
+          if (savedLockId) {
+            releaseGlobalLock(savedLockId)
+          }
+        },
       },
-      onError: (error) => {
-        console.error('❌ [BookingForm] Mutation error:', error)
-        // Reset tutti i flag in caso di errore per permettere nuovo tentativo
-        const savedLockId = (isSubmittingRef as any).currentLockId
-        isSubmittingRef.current = false
-        setIsSubmitting(false)
-        if (savedLockId) {
-          releaseGlobalLock(savedLockId)
-        }
-      }
-    })
+    )
   }
 
   return (

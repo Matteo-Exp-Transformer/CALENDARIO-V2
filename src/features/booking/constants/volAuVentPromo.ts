@@ -12,11 +12,27 @@ export const VOL_AU_VENT_PROMO_PLACEHOLDER = 'Inserisci una promo nella sezione 
 /** Promo banner configurabile dall’admin (una o più righe, con filtro per tipologia prenotazione). */
 export interface VolAuVentPromo {
   id: string
+  /** Nome interno admin (non mostrato al cliente in pagina Prenota). */
+  label: string
   message: string
   /** Tipologie per cui mostrare questo testo (almeno una). */
   booking_types: BookingType[]
   /** Se `false`, non mostrata in pagina Prenota per quella riga. */
   visible_on_booking?: boolean
+}
+
+/** Anteprima breve del testo promo (fallback lista admin se manca il nome). */
+export function volAuVentPromoMessageSummary(message: string): string {
+  const line = message.trim().split(/\n/)[0] ?? ''
+  if (!line) return 'Promo senza testo'
+  return line.length > 72 ? `${line.slice(0, 72)}…` : line
+}
+
+/** Etichetta admin: nome promo, oppure anteprima del testo per righe legacy senza nome. */
+export function getVolAuVentPromoAdminLabel(promo: VolAuVentPromo): string {
+  const label = promo.label?.trim()
+  if (label) return label
+  return volAuVentPromoMessageSummary(promo.message)
 }
 
 /** Opzioni allineate al `<select booking_type>` del form pubblico. */
@@ -53,7 +69,7 @@ export function listVolAuVentPromoMessagesForBookingType(
   const rows = promos.filter(
     (p) =>
       isVolAuVentPromoVisibleOnBooking(p) &&
-      p.message.trim() &&
+      Boolean(p.message?.trim()) &&
       p.booking_types.includes(bookingType),
   )
   if (rows.length > 0) {
@@ -63,4 +79,57 @@ export function listVolAuVentPromoMessagesForBookingType(
     return [legacy]
   }
   return []
+}
+
+/** Nomi promo visibili al momento della prenotazione (solo label non vuote, ordine admin). */
+export function listVolAuVentPromoLabelsForBookingType(
+  bookingType: BookingType,
+  promos: VolAuVentPromo[],
+  _legacyMessage: string,
+): string[] {
+  const rows = promos.filter(
+    (p) =>
+      isVolAuVentPromoVisibleOnBooking(p) &&
+      Boolean(p.message?.trim()) &&
+      p.booking_types.includes(bookingType),
+  )
+  if (rows.length > 0) {
+    return rows.map((p) => p.label?.trim()).filter((label): label is string => Boolean(label))
+  }
+  return []
+}
+
+/** Normalizza `menu_promo_labels` da DB (JSONB array o stringa JSON). */
+export function parseMenuPromoLabelsFromBooking(raw: unknown): string[] {
+  if (raw == null) return []
+  if (Array.isArray(raw)) {
+    return raw.map((item) => String(item ?? '').trim()).filter((label) => label.length > 0)
+  }
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim()
+    if (!trimmed) return []
+    try {
+      const parsed = JSON.parse(trimmed) as unknown
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => String(item ?? '').trim()).filter((label) => label.length > 0)
+      }
+    } catch {
+      return [trimmed]
+    }
+  }
+  return []
+}
+
+/**
+ * Label promo da mostrare in admin: snapshot salvato sulla prenotazione,
+ * oppure fallback dalle impostazioni correnti se manca (prenotazioni precedenti al deploy).
+ */
+export function resolveMenuPromoLabelsForBooking(
+  booking: { booking_type?: BookingType | null; menu_promo_labels?: unknown },
+  promos: VolAuVentPromo[],
+  legacyMessage: string,
+): string[] {
+  const saved = parseMenuPromoLabelsFromBooking(booking.menu_promo_labels)
+  if (saved.length > 0) return saved
+  return listVolAuVentPromoLabelsForBookingType(booking.booking_type ?? 'tavolo', promos, legacyMessage)
 }

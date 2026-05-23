@@ -100,7 +100,11 @@ export const useCreateBookingRequest = () => {
             menu_total_booking: data.menu_total_booking || null,
             dietary_restrictions: data.dietary_restrictions || null,
             preset_menu: data.preset_menu || null,
-            placement: data.placement || null
+            placement: data.placement || null,
+            menu_promo_labels:
+              Array.isArray(data.menu_promo_labels) && data.menu_promo_labels.length > 0
+                ? data.menu_promo_labels
+                : null,
           })
         })
 

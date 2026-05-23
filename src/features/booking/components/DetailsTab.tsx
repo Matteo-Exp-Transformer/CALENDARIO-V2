@@ -6,6 +6,10 @@ import { MapPin } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { TimePicker24h } from '@/components/ui'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
+import {
+  DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
+  resolveMenuPromoLabelsForBooking,
+} from '@/features/booking/constants/volAuVentPromo'
 import { useFeatures } from '@/hooks/useFeatures'
 
 interface Props {
@@ -68,6 +72,11 @@ export const DetailsTab: React.FC<Props> = ({
   onBookingTypeChange
 }) => {
   const features = useFeatures()
+  const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
+    'booking_vol_au_vent_promo_message',
+  )
+  const { data: volAuVentPromos = [] } = useRestaurantSetting('booking_vol_au_vent_promos')
+  const menuPromoLabels = resolveMenuPromoLabelsForBooking(booking, volAuVentPromos, volAuVentPromoMessage)
   const { data: placementAreasSetting = DEFAULT_PLACEMENT_AREAS } = useRestaurantSetting('booking_placement_areas')
   const placementAreas = Array.isArray(placementAreasSetting)
     ? placementAreasSetting
@@ -126,6 +135,9 @@ export const DetailsTab: React.FC<Props> = ({
           <p className="font-medium text-gray-900 md:text-lg">
             {BOOKING_TYPE_EVENT_LABELS[formData.booking_type] ?? formData.booking_type}
           </p>
+        )}
+        {!isEditMode && menuPromoLabels.length > 0 && (
+          <InfoRow label="Promo visualizzate da cliente" value={menuPromoLabels.join(', ')} />
         )}
       </div>
 

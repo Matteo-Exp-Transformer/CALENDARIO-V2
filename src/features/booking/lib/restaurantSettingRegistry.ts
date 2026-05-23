@@ -242,6 +242,7 @@ const bookingTypeForPromoSchema = z.enum(['tavolo', 'rinfresco_laurea', 'menu_pr
 
 const volAuVentPromoRowSchema = z.object({
   id: z.string().uuid(),
+  label: z.string().trim().max(80).optional().default(''),
   message: z.string().trim().max(500),
   booking_types: z.array(bookingTypeForPromoSchema).min(1).max(3),
   visible_on_booking: z.boolean().optional(),
@@ -254,6 +255,7 @@ function parseBookingVolAuVentPromosFromDb(raw: unknown): VolAuVentPromo[] {
   if (!parsed.success) return []
   return parsed.data.map((row) => ({
     id: row.id,
+    label: row.label ?? '',
     message: row.message,
     booking_types: row.booking_types,
     ...(row.visible_on_booking === false ? { visible_on_booking: false as const } : {}),

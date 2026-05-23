@@ -45,6 +45,7 @@ Deno.serve(async (req: Request) => {
       preset_menu,
       placement,
       menu,
+      menu_promo_labels,
     } = body;
 
     // DB: client_email è NOT NULL (default ''). Non usare `|| null`: stringa vuota è falsy e diventerebbe NULL.
@@ -299,6 +300,45 @@ Deno.serve(async (req: Request) => {
     }
 
     // --- Insert booking request ---
+    let resolvedMenuPromoLabels: string[] | null =
+      Array.isArray(menu_promo_labels) && menu_promo_labels.length > 0
+        ? menu_promo_labels
+            .map((label: unknown) => String(label ?? "").trim())
+            .filter((label: string) => label.length > 0)
+        : null;
+
+    if (!resolvedMenuPromoLabels?.length && booking_type) {
+      const { data: promosRow } = await supabaseAdmin
+        .from("restaurant_settings")
+        .select("setting_value")
+        .eq("tenant_id", orgId)
+        .eq("setting_key", "booking_vol_au_vent_promos")
+        .maybeSingle();
+
+      const promos = promosRow?.setting_value;
+      if (Array.isArray(promos)) {
+        const labels = promos
+          .filter(
+            (p: {
+              label?: string;
+              message?: string;
+              booking_types?: string[];
+              visible_on_booking?: boolean;
+            }) =>
+              p.visible_on_booking !== false &&
+              String(p.message ?? "").trim().length > 0 &&
+              Array.isArray(p.booking_types) &&
+              p.booking_types.includes(booking_type),
+          )
+          .map((p: { label?: string }) => String(p.label ?? "").trim())
+          .filter((label: string) => label.length > 0);
+
+        if (labels.length > 0) {
+          resolvedMenuPromoLabels = labels;
+        }
+      }
+    }
+
     const insertData: Record<string, unknown> = {
       tenant_id: orgId,
       client_name,
@@ -317,6 +357,7 @@ Deno.serve(async (req: Request) => {
       dietary_restrictions: dietary_restrictions || null,
       preset_menu: preset_menu || null,
       placement: placement || null,
+      menu_promo_labels: resolvedMenuPromoLabels,
       booking_source: "public",
       status: "pending",
     };
