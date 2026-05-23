@@ -25,7 +25,9 @@ import {
   ChevronUp,
   UtensilsCrossed,
   Store,
+  ExternalLink,
 } from 'lucide-react'
+import { useTenantContext } from '@/contexts/TenantContext'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { DEFAULT_APP_THEME } from '@/features/booking/constants/appTheme'
@@ -177,6 +179,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }, [activeTab])
 
   const { user, logout } = useAdminAuth()
+  const { tenantSlug } = useTenantContext()
   const restaurantName = useRestaurantName()
   const appIconSrc = `${import.meta.env.BASE_URL}icons/Icona-per-adminPage-no-bg.png`
   const { data: savedAppTheme = DEFAULT_APP_THEME, isPending: isAppThemePending } =
@@ -216,6 +219,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleTabClick = (tab: Tab) => {
     if (bodyOverride) onBodyOverrideExit?.()
     setActiveTab(tab)
+  }
+
+  const handleOpenPublicForm = () => {
+    if (!tenantSlug) return
+    window.open(`/prenota/${tenantSlug}`, '_blank', 'noopener,noreferrer')
   }
 
   /** Con bodyOverride (Home Pro) non mostrare statistiche Calendario, filtri Archivio, toolbar Menu, intro Impostazioni, blocco Nuova prenotazione. */
@@ -323,7 +331,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             )}
 
             {activeTab === 'pending' && showTabSecondaryChrome && (
-              <div className="w-full overflow-hidden rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] shadow-md min-h-0">
+              <div className="space-y-3">
+                <div className="mx-auto w-full max-w-md">
+                  <NavItem
+                    icon={ExternalLink}
+                    label="Form Pubblico"
+                    mobileLabel="Form"
+                    onClick={handleOpenPublicForm}
+                  />
+                </div>
+                <div className="w-full overflow-hidden rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] shadow-md min-h-0">
                 <button
                   type="button"
                   onClick={() => setShowNewBookingPanel((p) => !p)}
@@ -349,6 +366,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <AdminBookingForm />
                   </div>
                 )}
+                </div>
               </div>
             )}
           </div>
@@ -483,6 +501,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               >
                 <UtensilsCrossed
                   className={cn('h-4 w-4 shrink-0', activeTab === 'menu' ? 'text-white' : 'text-slate-800')}
+                  aria-hidden
+                />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabClick('settings-restaurant')}
+                className={footerQuickNavBtnClass(activeTab === 'settings-restaurant')}
+                aria-label="Impostazioni"
+                title="Impostazioni"
+              >
+                <Store
+                  className={cn(
+                    'h-4 w-4 shrink-0',
+                    activeTab === 'settings-restaurant' ? 'text-white' : 'text-slate-800',
+                  )}
                   aria-hidden
                 />
               </button>

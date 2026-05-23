@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  ExternalLink,
   ConciergeBell,
   Users,
   X,
@@ -17,7 +16,6 @@ import { cn } from '@/lib/utils'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { AdminDashboard } from '@/pages/AdminDashboard'
 import { Button } from '@/components/ui'
-import { useTenantContext } from '@/contexts/TenantContext'
 import { useFeatures } from '@/hooks/useFeatures'
 
 const AdminHomePage = lazy(() =>
@@ -38,7 +36,7 @@ const SectionFallback: FC = () => (
 )
 
 export type AdminShellSection = 'home' | 'prenotazioni' | 'crm' | 'servizio' | 'analytics'
-type SidebarActiveItem = 'home' | 'form' | 'analytics' | 'servizio' | 'crm' | 'settings' | 'dashboard-tab' | null
+type SidebarActiveItem = 'home' | 'analytics' | 'servizio' | 'crm' | 'settings' | 'dashboard-tab' | null
 
 function useIsNarrow() {
   const [narrow, setNarrow] = useState(() =>
@@ -65,7 +63,6 @@ function initials(user: { name?: string; email: string }): string {
 
 type SidebarNavAction =
   | { type: 'section'; section: AdminShellSection }
-  | { type: 'public-form' }
   | { type: 'settings' }
 
 const SIDEBAR_NAV_ITEMS: {
@@ -75,7 +72,6 @@ const SIDEBAR_NAV_ITEMS: {
   action: SidebarNavAction
   featureKey?: 'servizio' | 'crm' | 'analytics'
 }[] = [
-  { id: 'form', label: 'Form Pubblico', icon: ExternalLink, action: { type: 'public-form' } },
   {
     id: 'servizio',
     label: 'Servizio',
@@ -111,7 +107,6 @@ export const AdminShell: FC = () => {
   )
   const [restaurantSettingsSignal, setRestaurantSettingsSignal] = useState(0)
   const { user, logout } = useAdminAuth()
-  const { tenantSlug } = useTenantContext()
   const asideRef = useRef<HTMLDivElement | null>(null)
 
   const { data: savedAppTheme = DEFAULT_APP_THEME, isPending: isAppThemePending } =
@@ -163,19 +158,12 @@ export const AdminShell: FC = () => {
         openSection(action.section, item)
         return
       }
-      if (action.type === 'public-form') {
-        if (!tenantSlug) return
-        if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
-        setActiveSidebarItem('form')
-        window.open(`/prenota/${tenantSlug}`, '_blank', 'noopener,noreferrer')
-        return
-      }
       if (action.type === 'settings') {
         openSection('prenotazioni', 'settings')
         setRestaurantSettingsSignal((n) => n + 1)
       }
     },
-    [isNarrow, tenantSlug],
+    [isNarrow],
   )
 
   const openSection = (s: AdminShellSection, sidebarItem: SidebarActiveItem = null) => {
