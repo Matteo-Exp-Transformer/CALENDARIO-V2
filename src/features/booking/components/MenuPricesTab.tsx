@@ -12,6 +12,7 @@ import React, {
 import { toast } from 'react-toastify'
 import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { Button, CollapsibleCard, Input, Textarea } from '@/components/ui'
+import { Modal } from '@/components/ui/Modal'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { Plus, Edit, Trash2, Save, X, Eye, EyeOff } from 'lucide-react'
 import { useMenuItems, useCreateMenuItem, useUpdateMenuItem, useDeleteMenuItem } from '../hooks/useMenuItems'
@@ -485,6 +486,12 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const [isAddingCategory, setIsAddingCategory] = useState(false)
   const [newCategoryLabel, setNewCategoryLabel] = useState('')
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
+  const [deleteCategoryConfirm, setDeleteCategoryConfirm] = useState<{
+    id: string
+    categoryKey: string
+    label: string
+    itemsCount: number
+  } | null>(null)
   /** Stringa controllata per l’input prezzo: evita lo 0 “incollato” con `parseFloat(...) || 0` su campo vuoto. */
   const [priceInput, setPriceInput] = useState('')
   const [presetEditorMode, setPresetEditorMode] = useState<'list' | 'editor'>('list')
@@ -848,6 +855,11 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setNewCategoryLabel(currentLabel)
   }
 
+  const countItemsForCategory = (categoryKey: string, categoryLabel: string) =>
+    menuItems.filter(
+      (item) => item.category === categoryKey || item.category === categoryLabel,
+    ).length
+
   const handleDeleteCategory = (categoryKey: string, label: string) => {
     const dbCategory = dbCategoryByKey.get(categoryKey)
     if (!dbCategory) {
@@ -855,17 +867,20 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       return
     }
 
-    const itemsInCategory = itemsByCategory[categoryKey]?.length ?? 0
-    if (itemsInCategory > 0) {
-      toast.error('Elimina prima i prodotti presenti in questa categoria')
-      return
-    }
+    setDeleteCategoryConfirm({
+      id: dbCategory.id,
+      categoryKey,
+      label,
+      itemsCount: countItemsForCategory(categoryKey, label),
+    })
+  }
 
-    if (!confirm(`Sei sicuro di voler eliminare la categoria "${label}"?`)) {
-      return
-    }
-
-    deleteCategoryMutation.mutate(dbCategory.id)
+  const confirmDeleteCategory = () => {
+    if (!deleteCategoryConfirm) return
+    deleteCategoryMutation.mutate(
+      { id: deleteCategoryConfirm.id, categoryKey: deleteCategoryConfirm.categoryKey },
+      { onSettled: () => setDeleteCategoryConfirm(null) },
+    )
   }
 
   const handleStartAddCategory = () => {
@@ -1613,8 +1628,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
               Categorie Menu
             </h3>
             <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
-              Aggiungi, rinomina o elimina le categorie degli ingredienti. Per eliminare una categoria non devono esserci
-              prodotti al suo interno.
+              Aggiungi, rinomina o elimina le categorie degli ingredienti. Una volta impostate inserisci degli
+              ingredienti nelle categorie per completare il menù.
             </p>
 
             {isAddingCategory ? (
@@ -1687,6 +1702,52 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           </div>
         </div>
       )}
+
+      <Modal
+        isOpen={deleteCategoryConfirm != null}
+        onClose={() => setDeleteCategoryConfirm(null)}
+        title="Elimina categoria"
+        size="sm"
+        showCloseButton
+        closeOnOverlayClick
+        closeOnEscape
+      >
+        {deleteCategoryConfirm && (
+          <div className="space-y-4">
+            {deleteCategoryConfirm.itemsCount > 0 ? (
+              <p className="text-sm leading-relaxed text-slate-700">
+                La categoria <strong className="font-semibold">{deleteCategoryConfirm.label}</strong>{' '}
+                contiene {deleteCategoryConfirm.itemsCount}{' '}
+                {deleteCategoryConfirm.itemsCount === 1 ? 'ingrediente' : 'ingredienti'}. Eliminando la
+                categoria verranno rimossi anche tutti gli ingredienti al suo interno.
+              </p>
+            ) : (
+              <p className="text-sm text-slate-700">
+                Sei sicuro di voler eliminare la categoria{' '}
+                <strong className="font-semibold">{deleteCategoryConfirm.label}</strong>?
+              </p>
+            )}
+            <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setDeleteCategoryConfirm(null)}
+                disabled={deleteCategoryMutation.isPending}
+              >
+                Annulla
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                onClick={confirmDeleteCategory}
+                disabled={deleteCategoryMutation.isPending}
+              >
+                {deleteCategoryMutation.isPending ? 'Eliminazione…' : 'Elimina categoria'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 })

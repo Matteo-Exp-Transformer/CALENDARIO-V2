@@ -163,14 +163,27 @@ export const useUpdateMenuCategory = () => {
   })
 }
 
+export type DeleteMenuCategoryInput = {
+  id: string
+  categoryKey: string
+}
+
 export const useDeleteMenuCategory = () => {
   const queryClient = useQueryClient()
   const { tenantId } = useTenantContext()
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await ((supabase as any)
-        .from('menu_categories') as any)
+    mutationFn: async ({ id, categoryKey }: DeleteMenuCategoryInput) => {
+      const { error: itemsError } = await (supabase.from('menu_items') as any)
+        .delete()
+        .eq('tenant_id', tenantId!)
+        .eq('category', categoryKey)
+
+      if (itemsError) {
+        throw new Error(handleSupabaseError(itemsError))
+      }
+
+      const { error } = await (supabase.from('menu_categories') as any)
         .delete()
         .eq('id', id)
         .eq('tenant_id', tenantId!)
@@ -179,14 +192,15 @@ export const useDeleteMenuCategory = () => {
         throw new Error(handleSupabaseError(error))
       }
 
-      return id
+      return { id, categoryKey }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['menu-categories'] })
+      queryClient.invalidateQueries({ queryKey: ['menu-items'] })
       toast.success('Categoria eliminata con successo')
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Errore nell\'eliminazione della categoria')
-    }
+    },
   })
 }
