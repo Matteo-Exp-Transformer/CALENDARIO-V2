@@ -32,6 +32,7 @@ riferimento Classic, breakpoint, scala spacing, griglie, checklist).
 | Componenti `src/components/ui/` (Modal, Button, Card…) | `docs/per-ui-design-skill/UI_COMPONENTS_CONTEXT.md` |
 | Token, colori, `index.css`, `tailwind.config.js` | `docs/per-ui-design-skill/UI_THEME_CONTEXT.md` |
 | File admin classica (AdminDashboard, BookingCalendar, …) | `docs/ADMIN_CLASSIC_SKILL.md` — spiegazione preventiva obbligatoria |
+| Layout / responsive **solo** tab Calendario (FC full-width, titolo 400/470/640, celle mese) | `docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md` |
 
 ---
 

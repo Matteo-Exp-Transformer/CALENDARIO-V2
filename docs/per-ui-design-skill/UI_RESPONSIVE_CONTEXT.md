@@ -77,12 +77,12 @@ Regole:
 - Le media query CSS custom in `index.css` (537px, 595px, 768px) servono **solo**
   alla compattazione di FullCalendar (`.booking-calendar-fc`). Non estenderle ad
   altri componenti — usare le classi Tailwind.
-- Eccezioni calendario (maggio 2026): (1) tab **Calendario** in `AdminDashboard` —
-  `max-w-none px-1 md:px-1.5` invece di `max-w-7xl px-4 md:px-6`; (2) titolo
-  `.booking-calendar-page-title` — media query dedicate **400 / 470 / 640 / 768 px**
-  in `index.css` (non replicare con Tailwind arbitrario sul `h2`); (3) card titolo
-  resta `max-w-7xl` tramite `CALENDAR_TITLE_SECTION_INSET_CLASS` in
-  `BookingCalendar.tsx`.
+- Eccezioni calendario (23-05-26): documentate in
+  **`docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md`** (fonte unica).
+  In breve: tab Calendario `max-w-none px-1 md:px-1.5`; titolo con media query
+  **400 / 470 / 640 / 768 px** in `index.css`; card titolo `max-w-7xl` via
+  `CALENDAR_TITLE_SECTION_INSET_CLASS`; altezza celle mese via CSS var (non
+  `dayMinHeight` FullCalendar).
 
 ---
 

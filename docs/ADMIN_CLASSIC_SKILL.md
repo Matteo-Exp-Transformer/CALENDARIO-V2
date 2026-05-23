@@ -58,6 +58,7 @@ description: >-
 **Modifiche permesse**:
 - Feature opt-in **gated da FEATURES flag** (es. `if (features.walkIn) ...`)
 - Bug fix isolati
+- Aggiustamenti **layout UI** tab Calendario secondo `docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md` (costanti, CSS var celle, titolo responsive)
 
 **Modifiche vietate senza spiegazione preventiva**:
 - Cambiare il modello dati di una prenotazione
@@ -206,8 +207,8 @@ Le feature sidebar (CRM esteso, Servizio, Analytics, Home) NON devono:
 Branch `Sviluppo-Dashboard-laterale` rispetto a `main`:
 
 - **AdminDashboard.tsx**: integrato in AdminShell. Layout `min-h-0 flex-1`. Aggiunte due prop opzionali: `bodyOverride?: React.ReactNode` (mostra contenuto alternativo nel corpo, Header+NavItem restano visibili) e `onBodyOverrideExit?: () => void` (chiamata al click NavItem quando bodyOverride è attivo). `handleTabClick()` wrappa `setActiveTab` e chiama `onBodyOverrideExit` se necessario. **Tab Prenotazioni — collapse «Inserisci Nuova Prenotazione»**: i 5 NavItem (Calendario, Prenotazioni, Archivio, Menu, Impostazioni) restano **sempre** visibili; con il pannello form aperto si nascondono solo le sotto-righe del tab (statistiche Calendario, filtri Archivio, toolbar Menu, intro Impostazioni, bottone Form Pubblico). Il `<main>` con la lista richieste resta nascosto (`hidden`) finché il form è aperto, salvo `bodyOverride` (Home Pro).
-- **BookingCalendar.tsx**: feature opt-in ora **gated** con `useFeatures()` — icona walk-in condizionata a `features.walkIn`, turni/badge “Da assegnare” condizionati a `features.servizio`. Usa `useCanonicalTimeSlots()` per gli orari delle fasce (fonte: `service_slots` DB, non più JSON in `restaurant_settings`). **Novità 19-05-26**: `DigestBookingListRow` non ha più la prop `slot` (rimossa). Le card del digest usano token `bg-surface border-(--color-border)` invece di colori inline per fascia. Aggiunto pallino status (2.5×2.5, `bg-(--color-status-accepted)` / `bg-primary-300`) solo se `hasTurnsFeature=true` (edition Pro con servizio slots configurati). Click pallino **grigio** → `QuickTableAssignModal mode='assign'`; click pallino **verde** → `mode='reassign'` (conferma + `useReleaseBookingAssignment` → stesso flusso sala/tavolo). Headers fasce ora usa componente `DigestSlotHeader` con `bg-primary-50 border-(--color-border)` (h=56px). Layout colonne digest: griglia 2 colonne `sm:grid-cols-2` per screen ≥640px. Il badge “Da assegnare” usa `bg-(--color-status-pending)/15 text-(--color-status-pending)` (prima `bg-amber-100 text-amber-800`). `QuickTableAssignModal` non ha più la prop `serviceSlots` (usa `useServiceSlots()` interno). **Novità 23-05-26 (layout calendario)**: tab Calendario in `AdminDashboard` → contenitore `max-w-none px-1 md:px-1.5` (griglia FC a tutta larghezza); card titolo con `CALENDAR_TITLE_SECTION_INSET_CLASS` (`max-w-7xl` + padding compensato). Altezza minima celle mese: costanti `CALENDAR_DAY_GRID_MONTH_MIN_HEIGHT_*` → CSS var `--booking-calendar-day-min-height` su wrapper `.booking-calendar-fc` (FC v6 con `height: 'auto'` ignora `dayMinHeight`). Data odierna (`currentDateLabel`) accanto al pulsante **Oggi** sopra FC, non in card titolo. Titolo h2 `.booking-calendar-page-title`: allineamento e `font-size` in `index.css` — &lt;470px `1.375rem` sinistra; 470–639px `1.5rem` sinistra; ≥640px centrato (`1.5rem`, `1.875rem` da `md`).
-- **AdminDashboard.tsx** (tab Calendario): eccezione responsive al `max-w-7xl px-4 md:px-6` standard — vedi sopra; altri tab invariati.
+- **BookingCalendar.tsx**: feature opt-in **gated** con `useFeatures()` — icona walk-in condizionata a `features.walkIn`, turni/badge “Da assegnare” condizionati a `features.servizio`. Usa `useCanonicalTimeSlots()` per gli orari delle fasce (fonte: `service_slots` DB, non più JSON in `restaurant_settings`). **Novità 19-05-26**: `DigestBookingListRow` senza prop `slot`; card digest `bg-surface border-(--color-border)`; pallino assegnazione tavolo (Pro); `DigestSlotHeader`; griglia digest `sm:grid-cols-2`; `QuickTableAssignModal` senza prop `serviceSlots`. **Layout UI 23-05-26**: vedi **§4c** e `docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md` (celle mese 128/112px, tab full-width, titolo responsive, data su **Oggi**).
+- **AdminDashboard.tsx** (tab Calendario): eccezione `max-w-none px-1 md:px-1.5` — §4c.
 - **BookingDetailsModal.tsx**: bottone No-show gated con `features.noShow && canMarkNoShow`. Avviso «orario già trascorso» su **Salva** (`PastStartTimeWarningModal` + `isWallClockStartBeforeNow`). Usa `useCanonicalTimeSlots()` per il display della fascia.
 - **useBookingMutations.ts**: aggiunte invalidazioni per `HOME_STATS_QUERY_KEY` e `ANALYTICS_QUERY_ROOT` — no-op in edition Classic, **safe**. ⚠️ **Fix orario**: `useAcceptBooking` ora scrive sempre `desired_time` nel DB — se il chiamante non lo passa, lo deriva da `confirmedStart` con `extractTimeFromISO` (che è ancora nella forma `+00:00` prima del round-trip). Senza questa garanzia, il display potrebbe mostrare l’orario sbagliato (es. +2h in CEST).
 - **RestaurantSettingsTab.tsx**: la sezione “Imposta Fasce Orarie” è visibile solo in Classic (`!features.servizio`). Legge e salva le 3 fasce canoniche direttamente su `service_slots` via `useUpdateServiceSlot` (RPC). Al salvataggio: se `canonicalSlotIds` è null (tenant pre-migrazione 016), le fasce vengono saltate con `logger.warn` — le altre impostazioni vengono salvate comunque. Se `end_time < start_time` su una fascia, mostra l’avviso `OVERNIGHT_TIME_END_HINT`. **Novità 19-05-26**: rimossa la sezione “Aree di posizionamento” (`<section aria-labelledby=”placement-areas-heading”>`) — incluse costanti, funzioni, stati, handler e query `booking_placement_areas`. Il campo non viene più né letto né scritto in `restaurant_settings`.
@@ -222,6 +223,22 @@ Branch `Sviluppo-Dashboard-laterale` rispetto a `main`:
 - **Check disponibilità fascia pubblica** (A5, 22-05-26): `supabase/functions/create-booking/index.ts` contiene guard server-side che calcola `cap - occupied` per la fascia corrispondente all'orario richiesto, usando `service_slot_overrides` per override data-specifica. `supabase/functions/check-slot-availability/index.ts` è la EF pre-check chiamata da `useCheckSlotAvailability` hook (usato in `BookingRequestForm` prima del submit). Doppia guardia: client blocca con toast, server blocca con 409 SLOT_LIMIT contro race condition. Logica: `confirmed_start` delle prenotazioni accepted nel range `desired_date T00:00:00`–`T23:59:59` + overlap fascia → somma `num_guests` → confronto con cap. Verificato funzionante su Pro e Classic (22-05-26).
 
 **Riferimento completo**: `docs/Sessioni di lavoro/15-05-26/Revisionate da claude/Report-unificazione-fasce-orarie-canoniche.md` (sessione 15-05). `docs/Sessioni di lavoro/19-05-26/Report-pallino-assegnazione-tavolo.md` (sessione 19-05). `docs/Sessioni di lavoro/22-05-26/Report-A5-check-disponibilita-fascia-pubblica.md` (sessione 22-05).
+
+---
+
+## 4c. Layout UI tab Calendario (23-05-26)
+
+Fonte unica per agenti UI: **`docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md`**.
+
+In sintesi (non sostituisce il file sopra):
+
+| Area | Comportamento |
+|------|----------------|
+| Contenitore tab | `max-w-none px-1 md:px-1.5` (`AdminDashboard`) |
+| Card titolo | `max-w-7xl` + `CALENDAR_TITLE_SECTION_INSET_CLASS` |
+| Celle mese FC | `--booking-calendar-day-min-height`: 128px / 112px (≤630px JS) — **no** `dayMinHeight` FC |
+| Titolo h2 | CSS `index.css`: &lt;470px 1.375rem sx; 470–639 1.5rem sx; ≥640 centrato 1.5rem; ≥768 1.875rem |
+| Data | Accanto a pulsante **Oggi**, non in card titolo |
 
 ---
 

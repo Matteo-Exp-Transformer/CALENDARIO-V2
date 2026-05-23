@@ -19,6 +19,7 @@ description: >-
 2. Quando `docs/APP_CONTEXT_SKILL.md` indica il “file master `CLAUDE.md`” per comandi e setup, usare **`docs/CLAUDE.md`** come riferimento in Cursor (contenuto allineato a `.claude/CLAUDE.md` dove presente).
 
 3. Dalla sezione 0 di `docs/APP_CONTEXT_SKILL.md`, caricare **subito dopo** lo skill/documento d’area indicato (es. `docs/ADMIN_CLASSIC_SKILL.md`, `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md`, `docs/Database-Skill/DB_SKILL.md`, ecc.) **prima** di aprire file da modificare.
+4. Task su **layout tab Calendario** (celle mese, titolo responsive, padding, Oggi+data): leggere anche `docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md` (oltre a `ADMIN_CLASSIC_SKILL.md` §4c).
 
 ## Cosa non duplicare qui
 

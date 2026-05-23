@@ -27,6 +27,7 @@ Leggi `docs/per-ui-design-skill/STYLING_AGENT_CONTEXT.md`.
 | Tema, palette, colori, token, `primary-*`, rollout | `docs/per-ui-design-skill/UI_THEME_CONTEXT.md` |
 | Modifica `src/index.css` o `tailwind.config.js` | `docs/per-ui-design-skill/UI_THEME_CONTEXT.md` |
 | **Responsive: breakpoint, mobile, grid che collassa, padding/gap adattivi, max-width container, contenuto pagina vs sidebar** | `docs/per-ui-design-skill/UI_RESPONSIVE_SKILL.md` |
+| **BookingCalendar: layout tab Calendario, altezza celle, titolo, Oggi+data, eccezioni padding** | `docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md` + `ADMIN_CLASSIC_SKILL.md` §4c |
 | Non è chiaro se serve il contesto componenti o tema | Leggi **entrambi** |
 
 Carica i file indicati **prima** di aprire qualsiasi file da modificare.

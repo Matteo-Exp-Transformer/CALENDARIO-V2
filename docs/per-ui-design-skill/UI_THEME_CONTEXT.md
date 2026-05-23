@@ -26,7 +26,7 @@
 | `tailwind.config.js` | Allineare scala `primary` e `background`/`muted` a `@theme` |
 | `src/lib/adminWarmGradientSurface.ts` | `ADMIN_WARM_BORDER`, `ADMIN_WARM_GRADIENT_SURFACE`: sfondo/blocco editor menu = card/pannello tema |
 | FullCalendar in `src/index.css` | Selettori `.booking-calendar-fc`: giorno selezionato (gradient accent), pulsanti toolbar, `--fc-*` vars, `min-height` celle mese via `--booking-calendar-day-min-height` (impostata da `BookingCalendar.tsx`) |
-| Card titolo calendario in `src/index.css` | `.booking-calendar-title-section .booking-calendar-page-title` — allineamento e `font-size` per fascia &lt;400 / 400–469 / 470–639 / ≥640 / ≥768 px (non usare solo classi Tailwind sul titolo) |
+| Card titolo calendario in `src/index.css` | `.booking-calendar-title-section .booking-calendar-page-title` — vedi `BOOKING_CALENDAR_LAYOUT_CONTEXT.md` §6 |
 | `src/lib/adminBlueCtaClass.ts` | CTA footer: usare `primary-*` tema, non blu Tailwind legacy |
 
 ### Inversione "pagina ↔ card" (se richiesta)
@@ -73,8 +73,7 @@ Verificare e riallineare:
 ### `src/features/booking/components/BookingCalendar.tsx`
 - Rimuovere costanti `CALENDAR_SECTION_WARM_SURFACE`
 - Fascia titolo: `border-[var(--color-border)]` + `bg-[var(--color-surface)]`; titolo `primary-900`
-- Costanti layout: `CALENDAR_DAY_GRID_MONTH_MIN_HEIGHT_PX` (128) / `_NARROW_PX` (112), `CALENDAR_TITLE_SECTION_INSET_CLASS`, breakpoint JS `CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX` (630), `CALENDAR_EVENT_ICON_ONLY_MAX_WIDTH_PX` (500)
-- Data corrente: span accanto a **Oggi** (non in card titolo). Scala titolo: regole in `index.css` su `.booking-calendar-page-title`
+- **Layout tab Calendario (23-05-26)**: leggere `BOOKING_CALENDAR_LAYOUT_CONTEXT.md` prima di toccare costanti, wrapper FC o titolo
 
 ### `src/features/booking/components/MenuPricesTab.tsx`
 - Non lasciare `style={ADMIN_WARM_GRADIENT_SURFACE}` con gradient legacy
