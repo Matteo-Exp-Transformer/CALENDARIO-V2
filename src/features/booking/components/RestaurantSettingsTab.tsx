@@ -317,6 +317,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [deleteConfirmSlot, setDeleteConfirmSlot] = useState<EditingSlot | null>(null)
   const tempSlotCounterRef = useRef(0)
   const [timeSlotsEnabled, setTimeSlotsEnabled] = useState(true)
+  const [timeSlotsHelpOpen, setTimeSlotsHelpOpen] = useState(false)
   const [slotValidationError, setSlotValidationError] = useState<string | null>(null)
   const [businessHours, setBusinessHours] = useState<BusinessHours>(() => getDefaultBusinessHours())
   const [contactEmail, setContactEmail] = useState('')
@@ -775,25 +776,42 @@ export const RestaurantSettingsTab: React.FC = () => {
 
       {!features.servizio && (
       <section className={sectionSurfaceClass}>
-        <h3 className="text-lg font-semibold text-slate-800">Imposta Fasce Orarie</h3>
-        <p className="text-sm text-slate-600">
-          Cambia le fasce orarie in cui vengono raggruppate le prenotazioni nel calendario.
-        </p>
-
-        {/* Checkbox abilita raggruppamento per fasce */}
-        <label className="mx-auto flex cursor-pointer items-center gap-2.5 text-sm font-medium text-slate-700">
-          <input
-            type="checkbox"
-            checked={timeSlotsEnabled}
-            disabled={upsert.isPending}
-            className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
-            onChange={(e) => {
-              markDirty()
-              setTimeSlotsEnabled(e.target.checked)
-            }}
-          />
-          Abilita raggruppamento per fasce orarie
-        </label>
+        <div className="mb-5 w-full space-y-1.5 md:mb-6">
+          <h3 className="text-center text-lg font-semibold leading-tight text-slate-800">
+            Imposta Fasce Orarie
+          </h3>
+          <div className="flex w-full items-center justify-between gap-3">
+            <button
+              type="button"
+              aria-label={timeSlotsHelpOpen ? 'Nascondi informazioni fasce orarie' : 'Mostra informazioni fasce orarie'}
+              aria-expanded={timeSlotsHelpOpen}
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-sm font-bold leading-none text-slate-600 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1"
+              onClick={() => setTimeSlotsHelpOpen((open) => !open)}
+            >
+              ?
+            </button>
+            <label className="flex cursor-pointer select-none items-center gap-2 text-sm font-medium text-slate-700">
+              <input
+                type="checkbox"
+                checked={timeSlotsEnabled}
+                disabled={upsert.isPending}
+                className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                onChange={(e) => {
+                  markDirty()
+                  setTimeSlotsEnabled(e.target.checked)
+                }}
+              />
+              Attiva / Disattiva
+            </label>
+          </div>
+        </div>
+        {timeSlotsHelpOpen && (
+          <p className="text-sm leading-relaxed text-slate-600">
+            Cambia le fasce orarie in cui vengono raggruppate le prenotazioni nel calendario. Puoi
+            impostare un numero massimo di coperti per ogni fascia oraria. Raggiunto il limite le
+            prenotazioni ricevute verranno rifiutate.
+          </p>
+        )}
 
         <div className={cn('flex w-full flex-col items-center gap-4 transition-opacity', !timeSlotsEnabled && 'pointer-events-none opacity-50')}>
           {slotValidationError && (
@@ -812,7 +830,7 @@ export const RestaurantSettingsTab: React.FC = () => {
             className="inline-flex items-center gap-2"
           >
             <Plus className="h-4 w-4" aria-hidden />
-            Aggiungi fascia
+            Aggiungi fascia oraria
           </Button>
 
           {editingSlots.length === 0 ? (
