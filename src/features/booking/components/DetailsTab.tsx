@@ -6,6 +6,7 @@ import { MapPin } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { TimePicker24h } from '@/components/ui'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
+import { useFeatures } from '@/hooks/useFeatures'
 
 interface Props {
   booking: BookingRequest
@@ -66,6 +67,7 @@ export const DetailsTab: React.FC<Props> = ({
   onFormDataChange,
   onBookingTypeChange
 }) => {
+  const features = useFeatures()
   const { data: placementAreasSetting = DEFAULT_PLACEMENT_AREAS } = useRestaurantSetting('booking_placement_areas')
   const placementAreas = Array.isArray(placementAreasSetting)
     ? placementAreasSetting
@@ -74,9 +76,12 @@ export const DetailsTab: React.FC<Props> = ({
     : [...DEFAULT_PLACEMENT_AREAS]
   const normalizedPlacementAreas =
     placementAreas.length > 0 ? placementAreas : [...DEFAULT_PLACEMENT_AREAS]
-  const currentPlacement = formData.placement && !normalizedPlacementAreas.includes(formData.placement)
-    ? formData.placement
-    : null
+  const currentPlacement =
+    features.servizio &&
+    formData.placement &&
+    !normalizedPlacementAreas.includes(formData.placement)
+      ? formData.placement
+      : null
 
   // Format date with capitalized first letter
   const formatDate = (dateString: string): string => {
@@ -274,31 +279,33 @@ export const DetailsTab: React.FC<Props> = ({
               />
             </div>
 
-            <div>
-              <label className="mb-1 flex items-center gap-2 text-sm font-medium text-gray-700 md:text-base">
-                <MapPin className="h-5 w-5 shrink-0" />
-                Posizionamento
-              </label>
-              <Select
-                value={formData.placement || 'none'}
-                onValueChange={(value) => onFormDataChange('placement', value === 'none' ? null : value)}
-              >
-                <SelectTrigger className={FROSTED_TEXT_INPUT_CLASS_NAME} style={FROSTED_CONTROL_SURFACE}>
-                  <SelectValue placeholder="Seleziona sala" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nessuna preferenza</SelectItem>
-                  {currentPlacement && (
-                    <SelectItem value={currentPlacement}>{currentPlacement}</SelectItem>
-                  )}
-                  {normalizedPlacementAreas.map((area) => (
-                    <SelectItem key={area} value={area}>
-                      {area}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {features.servizio && (
+              <div>
+                <label className="mb-1 flex items-center gap-2 text-sm font-medium text-gray-700 md:text-base">
+                  <MapPin className="h-5 w-5 shrink-0" />
+                  Posizionamento
+                </label>
+                <Select
+                  value={formData.placement || 'none'}
+                  onValueChange={(value) => onFormDataChange('placement', value === 'none' ? null : value)}
+                >
+                  <SelectTrigger className={FROSTED_TEXT_INPUT_CLASS_NAME} style={FROSTED_CONTROL_SURFACE}>
+                    <SelectValue placeholder="Seleziona sala" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nessuna preferenza</SelectItem>
+                    {currentPlacement && (
+                      <SelectItem value={currentPlacement}>{currentPlacement}</SelectItem>
+                    )}
+                    {normalizedPlacementAreas.map((area) => (
+                      <SelectItem key={area} value={area}>
+                        {area}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-3 min-w-0">
@@ -312,10 +319,12 @@ export const DetailsTab: React.FC<Props> = ({
               label="Numero Ospiti"
               value={`${formData.numGuests} ${formData.numGuests === 1 ? 'ospite' : 'ospiti'}`}
             />
-            <InfoRow
-              label="Posizionamento"
-              value={booking.placement || 'Non specificato'}
-            />
+            {features.servizio && (
+              <InfoRow
+                label="Posizionamento"
+                value={booking.placement || 'Non specificato'}
+              />
+            )}
           </div>
         )}
       </div>

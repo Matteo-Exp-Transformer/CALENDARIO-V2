@@ -29,6 +29,7 @@ import { CapacityWarningModal } from './CapacityWarningModal'
 import { PastStartTimeWarningModal } from './PastStartTimeWarningModal'
 import { isWallClockStartBeforeNow, trimTimeToHHmm } from '../utils/dateUtils'
 import { logger } from '@/lib/logger'
+import { useFeatures } from '@/hooks/useFeatures'
 
 
 interface AdminBookingFormProps {
@@ -40,6 +41,7 @@ const ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME =
 const DEFAULT_PLACEMENT_AREAS = ['Sala A', 'Sala B', 'Deorr'] as const
 
 export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) => {
+  const features = useFeatures()
   const [formData, setFormData] = useState<BookingRequestInput>({
     client_name: '',
     client_email: '',
@@ -72,13 +74,15 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
   const { data: placementAreasSetting = DEFAULT_PLACEMENT_AREAS } = useRestaurantSetting('booking_placement_areas')
 
-  const placementAreas = Array.isArray(placementAreasSetting)
-    ? placementAreasSetting
-        .map((item) => String(item ?? '').trim())
-        .filter((item) => item.length > 0)
-    : [...DEFAULT_PLACEMENT_AREAS]
-  const normalizedPlacementAreas =
-    placementAreas.length > 0 ? placementAreas : [...DEFAULT_PLACEMENT_AREAS]
+  const normalizedPlacementAreas = useMemo(() => {
+    if (!features.servizio) return []
+    const placementAreas = Array.isArray(placementAreasSetting)
+      ? placementAreasSetting
+          .map((item) => String(item ?? '').trim())
+          .filter((item) => item.length > 0)
+      : [...DEFAULT_PLACEMENT_AREAS]
+    return placementAreas.length > 0 ? placementAreas : [...DEFAULT_PLACEMENT_AREAS]
+  }, [features.servizio, placementAreasSetting])
   const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
     'booking_vol_au_vent_promo_message',
   )
@@ -343,7 +347,10 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
   }
 
   const createBooking = () => {
-    mutate(formData, {
+    const payload: BookingRequestInput = features.servizio
+      ? formData
+      : { ...formData, placement: '' }
+    mutate(payload, {
       onSuccess: async () => {
         toast.success('Prenotazione creata con successo!')
         // Reset form
@@ -598,36 +605,38 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
             )}
           </div>
 
-          <div className="space-y-3 pt-2">
-            <label
-              htmlFor="placement"
-              className="inline-flex items-center gap-1.5 text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
-            >
-              <MapPin className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
-              Posizionamento
-            </label>
-            <Select
-              value={formData.placement || 'none'}
-              onValueChange={(value) =>
-                setFormData({ ...formData, placement: value === 'none' ? '' : value })
-              }
-            >
-              <SelectTrigger
-                id="placement"
-                className="w-full h-14 rounded-full border border-black/20 shadow-sm transition-all px-4 text-base font-bold bg-white/85 backdrop-blur-[1px] text-black focus:border-warm-wood focus:outline-none"
+          {features.servizio && (
+            <div className="space-y-3 pt-2">
+              <label
+                htmlFor="placement"
+                className="inline-flex items-center gap-1.5 text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
               >
-                <SelectValue placeholder="Seleziona sala (opzionale)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Nessuna preferenza</SelectItem>
-                {normalizedPlacementAreas.map((area) => (
-                  <SelectItem key={area} value={area}>
-                    {area}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                <MapPin className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+                Posizionamento
+              </label>
+              <Select
+                value={formData.placement || 'none'}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, placement: value === 'none' ? '' : value })
+                }
+              >
+                <SelectTrigger
+                  id="placement"
+                  className="w-full h-14 rounded-full border border-black/20 shadow-sm transition-all px-4 text-base font-bold bg-white/85 backdrop-blur-[1px] text-black focus:border-warm-wood focus:outline-none"
+                >
+                  <SelectValue placeholder="Seleziona sala (opzionale)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nessuna preferenza</SelectItem>
+                  {normalizedPlacementAreas.map((area) => (
+                    <SelectItem key={area} value={area}>
+                      {area}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-3 pt-2">
             <label

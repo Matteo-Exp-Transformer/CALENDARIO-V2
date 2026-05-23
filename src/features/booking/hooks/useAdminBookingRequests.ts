@@ -4,15 +4,18 @@ import { supabase } from '@/lib/supabase'
 import type { BookingRequest, BookingRequestInput } from '@/types/booking'
 import { toast } from 'react-toastify'
 import { createBookingDateTime, calculateEndTimeFromStart } from '../utils/dateUtils'
+import { buildFeatures } from '@/config/features'
 
 // Hook for creating booking requests directly as ACCEPTED (admin only)
 export const useCreateAdminBooking = () => {
-  const { tenantId } = useTenantContext()
+  const { tenantId, edition } = useTenantContext()
   return useMutation({
     mutationFn: async (data: BookingRequestInput) => {
       if (!tenantId) {
         throw new Error('Tenant non disponibile: effettuare nuovamente il login')
       }
+
+      const features = buildFeatures(edition)
 
       // Normalizza desired_time a formato HH:MM (rimuove secondi se presenti)
       const normalizedTime = data.desired_time 
@@ -42,7 +45,7 @@ export const useCreateAdminBooking = () => {
         menu_total_booking: data.menu_total_booking || null,
         preset_menu: data.preset_menu || null,
         dietary_restrictions: data.dietary_restrictions || null,
-        placement: data.placement || null,
+        placement: features.servizio ? data.placement || null : null,
         booking_source: 'admin',
         status: 'accepted' as const,
         confirmed_start: confirmedStart,

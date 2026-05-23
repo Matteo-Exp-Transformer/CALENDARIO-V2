@@ -85,7 +85,7 @@ export const DietaryTab: React.FC<Props> = ({
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Intolleranza / Esigenza *
+                      Intolleranza o Esigenza *
                     </label>
                     <select
                       value={selectedRestriction}
@@ -108,7 +108,7 @@ export const DietaryTab: React.FC<Props> = ({
                   {selectedRestriction === 'Altro' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Specifica intolleranza / esigenza *
+                        Specifica intolleranza o esigenza *
                       </label>
                       <input
                         type="text"

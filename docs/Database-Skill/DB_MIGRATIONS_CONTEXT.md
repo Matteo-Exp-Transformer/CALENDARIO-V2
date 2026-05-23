@@ -4,7 +4,7 @@
 
 ---
 
-## 1. Stato migrazioni (aggiornato 2026-05-22 — rollout produzione completato)
+## 1. Stato migrazioni (aggiornato 2026-05-22 — rollout produzione + TEST allineato)
 
 > ⚠️ **DUE ambienti Supabase distinti — non confonderli:**
 > - **PRODUZIONE**: `rwuxgvldzrkabglkasym.supabase.co` — MCP server "Supabase".
@@ -34,22 +34,24 @@
  016   | 016*   | 016_service_slots_canonical.sql  ← colonna is_canonical su service_slots; 3 canoniche marcate; trigger signup aggiornato (2026-05-15)
  017   | 017*   | 017_service_slots_max_guests.sql  ← colonna max_guests INTEGER DEFAULT NULL su service_slots (2026-05-15)
  018   | 018*   | 018_rpc_update_service_slot.sql  ← RPC insert + update_service_slot a 9 param (poi superata da 021) (2026-05-15)
- 019   | prod ✅ TEST ❌ | 019_cleanup_booking_time_slots.sql  ← DELETE chiave booking_time_slots da restaurant_settings. Applicata in PROD (2026-05-22) con nome colonna corretto (setting_key). File locale aveva bug (key→setting_key): corretto. NON applicata su TEST.
+ 019   | prod ✅ TEST ✅ | 019_cleanup_booking_time_slots.sql  ← DELETE chiave booking_time_slots da restaurant_settings. PROD (2026-05-22 rollout). TEST (2026-05-22 allineamento MCP): registro `20260522165025`; DELETE idempotente (0 righe residue).
  020   | 020*   | 020_drop_legacy_update_service_slot.sql  ← DROP firma legacy update_service_slot a 8 param (fix PGRST202 overloading) (2026-05-15)
  021   | 021*   | 021_update_service_slot_jsonb.sql  ← update_service_slot riscritta con SINGOLO param jsonb (firma univoca, immune a PGRST202); DROP firma a 9 param (2026-05-15)
- 022   | TEST ✅ prod ✅ | 022_service_slot_overrides.sql  ← tabella service_slot_overrides + RPC insert_service_slot_override(jsonb). Applicata in PROD (2026-05-22).
- 023   | TEST ✅ prod ✅ | 023_service_slots_max_turns_resume.sql  ← colonna max_turns_resume + update_service_slot(jsonb) estesa. Applicata in PROD (2026-05-22).
- 024   | TEST ✅ prod ✅ | 024_n_canonical_slots.sql  ← colonna slot_color su service_slots + aggiornamento commento is_canonical. Applicata in PROD (2026-05-22).
- 025   | TEST ✅ prod ✅ | 025_rls_service_slots_classic.sql  ← rimuove gate edition dalle policy RLS di service_slots. Classic può leggere/scrivere le proprie fasce. Applicata in PROD (2026-05-22).
+ 022   | TEST ✅ prod ✅ | 022_service_slot_overrides.sql  ← tabella service_slot_overrides + RPC insert_service_slot_override(jsonb). TEST già presente (`20260516112543`) prima dell'allineamento 2026-05-22.
+ 023   | TEST ✅ prod ✅ | 023_service_slots_max_turns_resume.sql  ← colonna max_turns_resume + update_service_slot(jsonb) estesa. TEST (`20260517095034`).
+ 024   | TEST ✅ prod ✅ | 024_n_canonical_slots.sql  ← colonna slot_color su service_slots + aggiornamento commento is_canonical. TEST (`20260519145528`).
+ 025   | TEST ✅ prod ✅ | 025_rls_service_slots_classic.sql  ← rimuove gate edition dalle policy RLS di service_slots. Classic può leggere/scrivere le proprie fasce. TEST (`20260522140650`).
 ```
 
 *Le 013-018, 020, 021 sono applicate sul DB **produzione** via MCP `apply_migration` (versioni timestamp `20260513...`–`20260515183055` nel registro prod). Sul **DB di test** sono state applicate via MCP solo 016, 017, 018(insert)+021 (allineamento 2026-05-15).
 
 > **Rollout produzione completato (2026-05-22)**: 019, 022, 023, 024, 025 applicate in prod via MCP in quest'ordine. Smoke test OK. Branch mergiato su main. Deploy attivo su Vercel.
 
+> **Allineamento TEST (2026-05-22)**: verificato `get_project_url` → `docnnernvp`. `list_migrations` TEST: 022–025 già nel registro; **mancava solo 019** (schema già coerente: nessuna riga `booking_time_slots`, colonne/tabelle 022–024 presenti, policy 025 attive). Applicata via MCP solo `019_cleanup_booking_time_slots`. Smoke: `cnt=0` su `booking_time_slots`, 019 in `list_migrations`.
+
 > **Nota PGRST202 — soluzione definitiva (2026-05-15)**: il bug è ricomparso più volte perché una RPC con N parametri opzionali è fragile con PostgREST (qualsiasi ambiguità o schema cache stale → "function not found"). Storia: 018 v1 creò la firma a 8 param; 018 v2 ne aggiunse una a 9 param senza sostituire la prima (overloading → PGRST202); 020 droppò la 8 param ma il problema poteva tornare per cache stale. **021 risolve alla radice**: `update_service_slot(payload jsonb)` — un solo parametro, firma univoca, niente più risoluzione di overload. Semantica PATCH: chiave assente = mantieni; `"max_guests": null` = azzera (presenza della chiave = intento). Il flag `p_clear_max_guests` non serve più.
 
-Su **produzione**: 001–025 tutte applicate. **Su test lo storico è parziale** — vedi nota * sopra.
+Su **produzione**: 001–025 tutte applicate. Su **TEST**: rollout 019–025 allineato a prod (2026-05-22); storico numerico 018/020 ancora assente nel registro MCP (sostituiti da 021 su TEST) — vedi nota * sopra.
 
 > **Direttiva ambiente (2026-05-16)**: lo sviluppo punta al **server di TEST**. Migrazioni / RPC / rigenerazione tipi via MCP `Supabase_test__*` (`docnnernvp`), mai su produzione (`rwuxgvld`, MCP `Supabase__*`, sola lettura). Verificare sempre con `get_project_url` prima di `apply_migration`. Vedi `APP_CONTEXT_SKILL.md` §1b.
 

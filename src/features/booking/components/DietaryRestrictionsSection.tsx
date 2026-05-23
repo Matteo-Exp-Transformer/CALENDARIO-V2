@@ -131,7 +131,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
               marginBottom: '0.5rem'
             }}
           >
-            Intolleranza / Esigenza *
+            Intolleranza o Esigenza *
           </label>
           <select
             value={selectedRestriction}
@@ -176,7 +176,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                   fontWeight: '700'
                 }}
               >
-                Specifica intolleranza / esigenza *
+                Specifica intolleranza o esigenza *
               </label>
               <Input
                 value={otherNotes}
