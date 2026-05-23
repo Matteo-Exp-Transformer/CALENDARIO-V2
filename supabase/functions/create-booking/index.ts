@@ -312,7 +312,7 @@ Deno.serve(async (req: Request) => {
         .from("restaurant_settings")
         .select("setting_value")
         .eq("tenant_id", orgId)
-        .eq("setting_key", "booking_vol_au_vent_promos")
+        .eq("setting_key", "booking_menu_promos")
         .maybeSingle();
 
       const promos = promosRow?.setting_value;

@@ -13,11 +13,8 @@ vi.mock('@/features/booking/hooks/useRestaurantSetting', () => ({
     if (key === 'booking_placement_areas') {
       return { data: ['Sala A', 'Sala B'] }
     }
-    if (key === 'booking_vol_au_vent_promos') {
+    if (key === 'booking_menu_promos') {
       return { data: [] }
-    }
-    if (key === 'booking_vol_au_vent_promo_message') {
-      return { data: '' }
     }
     return { data: undefined }
   }),

@@ -19,11 +19,10 @@ import {
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
 import {
-  DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
-  listVolAuVentPromoMessagesForBookingType,
-  listVolAuVentPromoLabelsForBookingType,
-} from '../constants/volAuVentPromo'
-import { VolAuVentPromoBannerCards } from './VolAuVentPromoBannerCards'
+  listMenuPromoMessagesForBookingType,
+  listMenuPromoLabelsForBookingType,
+} from '../constants/menuPromo'
+import { MenuPromoBannerCards } from './MenuPromoBannerCards'
 import { useAcceptedBookings } from '../hooks/useBookingQueries'
 import { useCapacityCheck } from '../hooks/useCapacityCheck'
 import { CapacityWarningModal } from './CapacityWarningModal'
@@ -84,19 +83,11 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
       : [...DEFAULT_PLACEMENT_AREAS]
     return placementAreas.length > 0 ? placementAreas : [...DEFAULT_PLACEMENT_AREAS]
   }, [features.servizio, placementAreasSetting])
-  const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
-    'booking_vol_au_vent_promo_message',
-  )
-  const { data: volAuVentPromos = [] } = useRestaurantSetting('booking_vol_au_vent_promos')
+  const { data: menuPromos = [] } = useRestaurantSetting('booking_menu_promos')
 
-  const volAuVentPromoBannerMessages = useMemo(
-    () =>
-      listVolAuVentPromoMessagesForBookingType(
-        formData.booking_type ?? 'tavolo',
-        volAuVentPromos,
-        volAuVentPromoMessage,
-      ),
-    [formData.booking_type, volAuVentPromos, volAuVentPromoMessage],
+  const menuPromoBannerMessages = useMemo(
+    () => listMenuPromoMessagesForBookingType(formData.booking_type ?? 'tavolo', menuPromos),
+    [formData.booking_type, menuPromos],
   )
 
   const { data: acceptedBookings = [] } = useAcceptedBookings()
@@ -348,11 +339,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
   }
 
   const createBooking = () => {
-    const menuPromoLabels = listVolAuVentPromoLabelsForBookingType(
-      formData.booking_type ?? 'tavolo',
-      volAuVentPromos,
-      volAuVentPromoMessage,
-    )
+    const menuPromoLabels = listMenuPromoLabelsForBookingType(formData.booking_type ?? 'tavolo', menuPromos)
     const payload: BookingRequestInput = {
       ...(features.servizio ? formData : { ...formData, placement: '' }),
       menu_promo_labels: menuPromoLabels.length > 0 ? menuPromoLabels : null,
@@ -558,9 +545,9 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
             {errors.booking_type && (
               <p className="text-sm text-red-500">{errors.booking_type}</p>
             )}
-            {volAuVentPromoBannerMessages.length > 0 && (
-              <VolAuVentPromoBannerCards
-                messages={volAuVentPromoBannerMessages}
+            {menuPromoBannerMessages.length > 0 && (
+              <MenuPromoBannerCards
+                messages={menuPromoBannerMessages}
                 className="mt-1"
               />
             )}

@@ -33,9 +33,8 @@ import {
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
 import {
-  DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
-  listVolAuVentPromoMessagesForBookingType,
-} from '../constants/volAuVentPromo'
+  listMenuPromoMessagesForBookingType,
+} from '../constants/menuPromo'
 import { CapacityWarningModal } from './CapacityWarningModal'
 import { PastStartTimeWarningModal } from './PastStartTimeWarningModal'
 import { cn } from '@/lib/utils'
@@ -152,10 +151,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const { data: menuItems = [] } = useMenuItems()
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
-  const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
-    'booking_vol_au_vent_promo_message',
-  )
-  const { data: volAuVentPromos = [] } = useRestaurantSetting('booking_vol_au_vent_promos')
+  const { data: menuPromos = [] } = useRestaurantSetting('booking_menu_promos')
   const { data: digestSlots = [] } = useDigestSlotConfigs()
   const { data: serviceSlots = [] } = useServiceSlots()
   const { data: slotOverrides = [] } = useServiceSlotOverrides()
@@ -265,14 +261,9 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     return baseTabs
   }, [formData.booking_type])
 
-  const volAuVentPromoMessagesForTab = useMemo(
-    () =>
-      listVolAuVentPromoMessagesForBookingType(
-        formData.booking_type,
-        volAuVentPromos,
-        volAuVentPromoMessage,
-      ),
-    [formData.booking_type, volAuVentPromos, volAuVentPromoMessage],
+  const menuPromoMessagesForTab = useMemo(
+    () => listMenuPromoMessagesForBookingType(formData.booking_type, menuPromos),
+    [formData.booking_type, menuPromos],
   )
 
   // Auto-reset active tab if no longer available
@@ -809,7 +800,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                 menuFlowBookingType={formData.booking_type}
                 staffPresetsDropdownVisible={staffPresetsDropdownVisible}
                 customStaffPresets={customStaffPresets}
-                volAuVentPromoMessages={volAuVentPromoMessagesForTab}
+                menuPromoMessages={menuPromoMessagesForTab}
                 isMenuExpanded={isMenuExpanded}
                 onMenuExpandToggle={() => setIsMenuExpanded(!isMenuExpanded)}
                 onMenuChange={handleMenuChange}

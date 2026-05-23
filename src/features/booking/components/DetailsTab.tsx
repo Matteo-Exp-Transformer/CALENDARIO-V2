@@ -7,9 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { TimePicker24h } from '@/components/ui'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 import {
-  DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
   resolveMenuPromoLabelsForBooking,
-} from '@/features/booking/constants/volAuVentPromo'
+} from '@/features/booking/constants/menuPromo'
 import { useFeatures } from '@/hooks/useFeatures'
 
 interface Props {
@@ -72,11 +71,8 @@ export const DetailsTab: React.FC<Props> = ({
   onBookingTypeChange
 }) => {
   const features = useFeatures()
-  const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
-    'booking_vol_au_vent_promo_message',
-  )
-  const { data: volAuVentPromos = [] } = useRestaurantSetting('booking_vol_au_vent_promos')
-  const menuPromoLabels = resolveMenuPromoLabelsForBooking(booking, volAuVentPromos, volAuVentPromoMessage)
+  const { data: menuPromos = [] } = useRestaurantSetting('booking_menu_promos')
+  const menuPromoLabels = resolveMenuPromoLabelsForBooking(booking, menuPromos)
   const { data: placementAreasSetting = DEFAULT_PLACEMENT_AREAS } = useRestaurantSetting('booking_placement_areas')
   const placementAreas = Array.isArray(placementAreasSetting)
     ? placementAreasSetting

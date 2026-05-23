@@ -31,9 +31,8 @@ import { formatBookingDateTime } from '../utils/formatDateTime'
 import { cn } from '@/lib/utils'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 import {
-  DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
   resolveMenuPromoLabelsForBooking,
-} from '../constants/volAuVentPromo'
+} from '../constants/menuPromo'
 
 interface BookingRequestCardProps {
   booking: BookingRequest
@@ -76,10 +75,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
-  const { data: volAuVentPromoMessage = DEFAULT_VOL_AU_VENT_PROMO_MESSAGE } = useRestaurantSetting(
-    'booking_vol_au_vent_promo_message',
-  )
-  const { data: volAuVentPromos = [] } = useRestaurantSetting('booking_vol_au_vent_promos')
+  const { data: menuPromos = [] } = useRestaurantSetting('booking_menu_promos')
 
   const formatDate = (dateStr: string) => {
     try {
@@ -118,7 +114,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
     (booking.booking_type && BOOKING_TYPE_DIGEST_ICON[booking.booking_type]) ?? EventIcon
 
   const showDigestStrip = Boolean(eventTypeLabel)
-  const menuPromoLabels = resolveMenuPromoLabelsForBooking(booking, volAuVentPromos, volAuVentPromoMessage)
+  const menuPromoLabels = resolveMenuPromoLabelsForBooking(booking, menuPromos)
 
   const phoneDigestRow = booking.client_phone ? (
     <div className="flex items-center gap-2">
