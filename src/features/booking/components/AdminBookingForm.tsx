@@ -689,7 +689,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
           id="menu-section"
           className="space-y-6 rounded-xl border px-3 py-4 shadow-sm md:px-5 md:py-5 admin-warm-surface box-border"
         >
-          <div className="w-full max-w-full md:max-w-[55vw] mx-auto px-2 md:px-6 space-y-6">
+          <div className="w-full min-w-0 space-y-6">
             <MenuSelection
               selectedItems={formData.menu_selection?.items || []}
               numGuests={formData.num_guests || 0}

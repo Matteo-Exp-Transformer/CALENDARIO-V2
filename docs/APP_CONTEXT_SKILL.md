@@ -157,7 +157,7 @@ RULE  Modal CRUD fascia (`ServiceSlotsManager` / `SlotModal`): `FormInfoToggle` 
 RULE  Assegnazione tavoli (Servizio → `AssignmentMapPanel`): elenco prenotazioni non assegnate filtrato per **ora di inizio** dentro `start_time`–`end_time` della fascia selezionata — `bookingStartsInServiceSlot` (`serviceSlotBookingFilter.ts`) + `isTimeInsideSlot`; non usare overlap durata prenotazione; orari fascia da `service_slots` (non override runtime)
 RULE  Libera tavolo (`useCheckoutTable`): prenotazione liberata torna in elenco PRENOTAZIONI; senza turno successivo attivo sul tavolo → DELETE assignment; con turno 2+ in coda → UPDATE `checked_out_at` — vedi `ADMIN_PAGES_CONTEXT.md` § Assegnazione tavoli
 RULE  Assegnazione/riassegnazione rapida da Calendario (`QuickTableAssignModal`, solo Pro `hasTurnsFeature`): pallino grigio → assign, pallino verde → dialog conferma + `useReleaseBookingAssignment` (libera per `booking_id`) → poi flusso sala/tavolo identico; se turni in coda → avviso bloccante senza modifica DB; query key condivisa `TABLE_ASSIGNMENTS_QUERY_KEY`
-RULE  Menu Prenota (`MenuPricesTab` + `MenuSelection`): promo in `booking_vol_au_vent_promos` (occhio `visible_on_booking` + `booking_types`, 3 tipologie); ingredienti in `menu_items.booking_types` (pannello tipologie solo su ingrediente cliccato in modalità «Crea/Modifica Prodotto»); menù preselezionati in `booking_custom_staff_presets` con `booking_types` solo `rinfresco_laurea` \| `menu_prezzo_fisso` (mai `tavolo`) — helper `presetMenus.ts` / filtro `isStaffPresetSelectableForBookingType`. No flag globale promo banner.
+RULE  Menu Prenota (`MenuPricesTab` + `MenuSelection` + `PresetMenuBuilder`): panoramica categorie/ingredienti condivisa via `menuPricesCatalogLayout.ts` (griglia CollapsibleCard, conteggio `N/M`, righe `menu-prices-item-row`, selezione `menu-prices-item-row--selected`). Promo in `booking_vol_au_vent_promos`; ingredienti in `menu_items.booking_types` (pannello tipologie su click in «Crea/Modifica Prodotto»); menù preselezionati in `booking_custom_staff_presets` (`booking_types` solo `rinfresco_laurea` \| `menu_prezzo_fisso`). No flag globale promo banner.
 RULE  Classi Tailwind: solo stringhe letterali statiche — mai `bg-${x}-600`
 RULE  cn() da @/lib/utils — mai clsx() o twMerge() direttamente
 RULE  !important Tailwind v4: suffisso → `border-red-500!` (non `!border-red-500`)
@@ -225,7 +225,7 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | Struttura cartelle `src/` | `APP_CONTEXT_SKILL.md` §3 |
 | Qualsiasi file LOCK | Aggiorna sezione "stato attuale" nello skill di area |
 | `restaurantSettingRegistry.ts` (validazione, range, campi) | `APP_CONTEXT_SKILL.md` §4 RULE walk_in_max_guests |
-| `MenuPricesTab.tsx` / `presetMenus.ts` / `booking_custom_staff_presets` | `APP_CONTEXT_SKILL.md` §4 RULE Menu Prenota |
+| `MenuPricesTab.tsx` / `MenuSelection.tsx` / `menuPricesCatalogLayout.ts` / `presetMenus.ts` | `APP_CONTEXT_SKILL.md` §4 RULE Menu Prenota |
 | `useBookingMutations.ts` / `useWalkInMutation.ts` / qualsiasi mutation che scrive `confirmed_start` o `desired_time` | `ADMIN_CLASSIC_SKILL.md` §4 + §4b |
 | `dateUtils.ts` (createBookingDateTime, extractTimeFromISO, getAccurateStartTime) | `ADMIN_CLASSIC_SKILL.md` §4b + `TESTING_CONTEXT.md` se cambiano i test |
 | `serviceSlotBookingFilter.ts` / logica filtro fascia in `useUnassignedBookings` | `ADMIN_PAGES_CONTEXT.md` § Servizio → Assegnazione tavoli + `TESTING_CONTEXT.md` se cambiano i test |

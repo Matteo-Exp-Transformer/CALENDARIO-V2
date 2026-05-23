@@ -231,7 +231,13 @@ export const DietaryTab: React.FC<Props> = ({
               placeholder="Inserisci eventuali richieste particolari..."
             />
           ) : (
-            <p className="text-gray-900 whitespace-pre-wrap">
+            <p
+              className={
+                specialRequests
+                  ? 'text-gray-900 whitespace-pre-wrap'
+                  : 'text-sm text-gray-500 italic'
+              }
+            >
               {specialRequests || 'Nessuna nota aggiunta'}
             </p>
           )}

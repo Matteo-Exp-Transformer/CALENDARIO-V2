@@ -1,5 +1,8 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { X } from 'lucide-react'
+import { CollapsibleCard } from '@/components/ui'
+import { cn } from '@/lib/utils'
+import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { useMenuItems } from '../hooks/useMenuItems'
 import { useMenuCategories } from '../hooks/useMenuCategories'
 import type { SelectedMenuItem } from '@/types/menu'
@@ -18,6 +21,18 @@ import { VOL_AU_VENT_THRESHOLD_EUR } from '../constants/volAuVentPromo'
 import type { BookingType } from '@/types/booking'
 import { normalizeMenuItemBookingTypes } from '@/types/menu'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
+import {
+  MENU_CATEGORY_COLLAPSIBLE_CLASS,
+  MENU_CATEGORY_COLLAPSIBLE_HEADER_CLASS,
+  MENU_CATEGORY_LABEL_TITLE_CLASS,
+  MENU_CATEGORY_LABEL_TITLE_STYLE,
+  MENU_INGREDIENT_DESC_CLASS,
+  MENU_INGREDIENT_NAME_CLASS,
+  MENU_INGREDIENT_OVERVIEW_GRID_CLASS,
+  MENU_CARD_MAX_WIDTH_PX,
+  MENU_INGREDIENT_OVERVIEW_SHELL_CLASS,
+  MENU_INGREDIENT_PRICE_CLASS,
+} from './menuPricesCatalogLayout'
 
 interface MenuSelectionProps {
   selectedItems: SelectedMenuItem[]
@@ -94,7 +109,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
 }) => {
   const { data: menuItems = [], isLoading, error } = useMenuItems()
   const { data: dbCategories = [] } = useMenuCategories()
-  const MENU_CARD_MAX_WIDTH_PX = 746
 
   const formatPrice = (item: NormalizedMenuItem) =>
     `€${item.price.toFixed(2)}${item.priceSuffix ?? ''}`
@@ -164,27 +178,10 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       })
   }, [menuItems, bookingType])
 
-  const orderedCategories = useMemo(() => {
-    const fromDb = dbCategories.map((category) => category.key)
-    const withItems = normalizedMenuItems
-      .map((item) => item.category)
-      .filter((category, idx, arr) => arr.indexOf(category) === idx)
-    const merged = [...fromDb]
-    withItems.forEach((category) => {
-      if (!merged.includes(category)) {
-        merged.push(category)
-      }
-    })
-    return merged
-  }, [dbCategories, normalizedMenuItems])
-
-  const categoryLabels = useMemo(() => {
-    const map = new Map<string, string>()
-    dbCategories.forEach((category) => {
-      map.set(category.key, category.label)
-    })
-    return map
-  }, [dbCategories])
+  const categoryEntries = useMemo(
+    () => dbCategories.map((category) => [category.key, category.label] as const),
+    [dbCategories],
+  )
 
   const tiramisuUnitPrice = useMemo(() => {
     const tiramisuItem = normalizedMenuItems.find((item) => isTiramisuItem(item.name))
@@ -193,10 +190,13 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
 
   // Raggruppa per categoria
   const itemsByCategory = useMemo(() => {
-    const grouped = orderedCategories.reduce((acc, category) => {
-      acc[category] = []
-      return acc
-    }, {} as Record<string, NormalizedMenuItem[]>)
+    const grouped = categoryEntries.reduce(
+      (acc, [key]) => {
+        acc[key] = []
+        return acc
+      },
+      {} as Record<string, NormalizedMenuItem[]>,
+    )
 
     normalizedMenuItems.forEach((item) => {
       if (!grouped[item.category]) {
@@ -205,7 +205,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       grouped[item.category].push(item)
     })
 
-    orderedCategories.forEach((category) => {
+    Object.keys(grouped).forEach((category) => {
       grouped[category]?.sort((a, b) => {
         if (a.sort_order === b.sort_order) {
           return a.name.localeCompare(b.name)
@@ -215,7 +215,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     })
 
     return grouped
-  }, [orderedCategories, normalizedMenuItems])
+  }, [categoryEntries, normalizedMenuItems])
 
   const { totalPerPerson, tiramisuKg, tiramisuTotal } = useMemo(() => {
     const tiramisuSelection = selectedItems.find((item) => isTiramisuItem(item.name))
@@ -625,206 +625,122 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         </div>
       )}
 
-      {/* Lista per Categoria */}
-      {orderedCategories.map((category, index) => {
-        const label = categoryLabels.get(category) ?? category
-        const items = itemsByCategory[category] || []
-        if (!items || items.length === 0) return null
+      {/* Panoramica categorie — stesso layout di MenuPricesTab / menù preselezionati */}
+      <div
+        className={cn(MENU_INGREDIENT_OVERVIEW_SHELL_CLASS, 'mt-4 w-full min-w-0')}
+        style={ADMIN_WARM_GRADIENT_SURFACE}
+      >
+        {categoryEntries.length === 0 ? (
+          <p className="py-8 text-center text-sm text-gray-600">
+            Nessuna categoria configurata.
+          </p>
+        ) : (
+          <div className={cn(MENU_INGREDIENT_OVERVIEW_GRID_CLASS, 'mt-2')}>
+            {categoryEntries.map(([categoryKey, categoryLabel]) => {
+              const categoryItems = (itemsByCategory[categoryKey] ?? []).filter(
+                (item) => item.id !== VIRTUAL_VOL_AU_VENT_ID,
+              )
+              const itemCount = categoryItems.length
+              const selectedInCategory = selectedItems.filter((i) => i.category === categoryKey).length
 
-        const selectedCount = selectedItems.filter(i => i.category === category).length
+              return (
+                <CollapsibleCard
+                  key={categoryKey}
+                  title={categoryLabel}
+                  subtitle={
+                    <span className="text-xs font-semibold tabular-nums text-(--color-text-muted) sm:text-sm">
+                      {selectedInCategory}/{itemCount}
+                    </span>
+                  }
+                  defaultExpanded={false}
+                  className={MENU_CATEGORY_COLLAPSIBLE_CLASS}
+                  headerClassName={MENU_CATEGORY_COLLAPSIBLE_HEADER_CLASS}
+                  contentClassName="bg-transparent p-0"
+                  titleClassName={cn(MENU_CATEGORY_LABEL_TITLE_CLASS, 'break-words')}
+                  titleStyle={MENU_CATEGORY_LABEL_TITLE_STYLE}
+                >
+                  <div className="flex flex-col gap-2 px-1 pb-3 pt-0.5 sm:px-2">
+                    {itemCount === 0 ? (
+                      <p className="px-2 py-4 text-center text-xs text-(--color-text-muted) sm:text-sm">
+                        Nessun ingrediente in questa categoria.
+                      </p>
+                    ) : (
+                      categoryItems.map((item) => {
+                        const isSelected = selectedItems.some((selected) => selected.id === item.id)
+                        const isTiramisu = isTiramisuItem(item.name)
+                        const hasDesc = Boolean(item.description?.trim())
 
-        let counterText: string | null = null
-        if (category === 'bevande') {
-          const caraffeCount = selectedItems.filter(i =>
-            i.category === 'bevande' &&
-            (isCaraffeDrinkStandard(i.name) || isCaraffeDrinkPremium(i.name))
-          ).length
-          const limit = CATEGORY_LIMITS[category]
-          if (typeof limit === 'number') {
-            counterText = `(${caraffeCount}/${limit} selezionat${caraffeCount === 1 ? 'a' : 'e'})`
-          } else {
-            counterText = `(${caraffeCount} selezionat${caraffeCount === 1 ? 'a' : 'e'})`
-          }
-        } else {
-          const limit = CATEGORY_LIMITS[category]
-          if (typeof limit === 'number') {
-            counterText = `(${selectedCount}/${limit} selezionat${selectedCount === 1 ? 'o' : 'i'})`
-          } else if (selectedCount > 0) {
-            counterText = `(${selectedCount} selezionat${selectedCount === 1 ? 'o' : 'i'})`
-          }
-        }
-
-        // Padding condizionale: prima categoria (Bevande) ha padding extra se c'è dropdown sopra
-        const hasDropdownAbove = showStaffPresetDropdown
-        const isFirstCategory = index === 0
-        
-        // Calcola padding top: se è la prima categoria e c'è dropdown, padding extra
-        const paddingTop = isFirstCategory && hasDropdownAbove
-          ? '0.75rem' // Padding extra per prima categoria (Bevande) se c'è dropdown sopra
-          : isFirstCategory
-          ? '0.5rem' // Mantiene un gap visivo tra titolo sezione e prima categoria (utile su mobile)
-          : '1.5rem' // Padding normale per altre categorie
-
-        return (
-          <div 
-            key={category} 
-            className="w-full flex flex-col items-center px-1 sm:px-2 menu-grid-container"
-            style={{ paddingTop, paddingBottom: '0' }}
-          >
-            <h3
-              className="text-lg md:text-xl border-b border-gray-300 pb-2 flex items-center justify-between w-full booking-section-title-mobile booking-mobile-subheading"
-              style={{
-                color: '#6B4226',
-                backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(1px)',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                width: '100%',
-                maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
-                margin: '0 auto',
-                boxSizing: 'border-box',
-                fontWeight: '700'
-              }}
-            >
-              <span>{label}</span>
-              {counterText ? (
-                <span className="text-sm text-gray-600 booking-mobile-counter">
-                  {counterText}
-                </span>
-              ) : null}
-            </h3>
-            <div
-              className="flex w-full max-w-5xl flex-col items-stretch gap-4 mx-auto"
-              style={{ paddingTop: '0.5rem', marginTop: '0' }}
-            >
-              {items
-                .filter(item => item.id !== VIRTUAL_VOL_AU_VENT_ID)
-                .map((item) => {
-                const isSelected = selectedItems.some(selected => selected.id === item.id)
-                const isTiramisu = isTiramisuItem(item.name)
-                return (
-                  <div
-                    key={item.id}
-                    className="flex w-full flex-col items-stretch gap-2"
-                    style={{
-                      maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
-                      marginLeft: 'auto',
-                      marginRight: 'auto'
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleItemToggle(item)}
-                      aria-pressed={isSelected}
-                      className={`
-                        flex w-full cursor-pointer flex-col items-stretch rounded-xl border-2 text-left menu-card-mobile
-                        ${isTiramisu && isSelected ? 'menu-card-with-ingredient' : ''}
-                        transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-warm-wood/50 focus-visible:ring-offset-2
-                      `}
-                      style={{
-                        minHeight: '80px',
-                        maxHeight: 'none',
-                        backgroundColor: isSelected ? 'rgba(245, 222, 179, 0.85)' : 'rgba(255, 255, 255, 0.85)',
-                        backdropFilter: 'blur(1px)',
-                        borderColor: isSelected ? '#8B4513' : 'rgba(0,0,0,0.2)',
-                        paddingTop: '6px',
-                        paddingBottom: '6px',
-                        paddingLeft: '8px',
-                        paddingRight: '8px',
-                        borderRadius: '16px',
-                        marginBottom: '4px',
-                        width: '100%',
-                        maxWidth: `${MENU_CARD_MAX_WIDTH_PX}px`,
-                        height: item.description ? 'auto' : '80px',
-                        boxSizing: 'border-box',
-                        overflow: 'hidden',
-                        justifyContent: item.description ? undefined : 'center',
-                      }}
-                    >
-                      <div
-                        className="flex min-h-0 w-full min-w-0 flex-1 flex-row flex-nowrap items-center justify-between gap-x-2 gap-y-0 sm:gap-x-3"
-                        style={{
-                          paddingLeft: '4px',
-                          paddingRight: '12px',
-                          paddingTop: '0px',
-                          paddingBottom: item.description ? '2px' : '0px',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        <span
-                          className={`booking-mobile-card-title min-w-0 flex-1 font-bold text-base md:text-lg ${isSelected ? 'text-warm-wood' : 'text-gray-700'}`}
-                          style={{
-                            fontWeight: '700',
-                            whiteSpace: 'normal',
-                            wordBreak: 'break-word',
-                            overflowWrap: 'break-word',
-                          }}
-                        >
-                          {item.name}
-                        </span>
-                        <span
-                          className="booking-mobile-price shrink-0 self-center text-sm font-bold text-warm-wood whitespace-nowrap md:text-lg"
-                          style={{ fontWeight: '700', textAlign: 'right' }}
-                        >
-                          {formatPrice(item)}
-                        </span>
-                      </div>
-                      {item.description ? (
-                        <p
-                          className="booking-mobile-card-description w-full min-w-0 px-1 pb-0 pt-0.5 text-left text-sm font-semibold leading-snug text-gray-600 md:text-base"
-                          style={{
-                            wordBreak: 'break-word',
-                            overflowWrap: 'break-word',
-                            lineHeight: '1.35',
-                            margin: 0,
-                            hyphens: 'auto',
-                          }}
-                        >
-                          {item.description}
-                        </p>
-                      ) : null}
-                    </button>
-                    {isTiramisu && isSelected && (
-                      <div
-                        className="w-full max-w-[746px] bg-white/85 border-2 rounded-xl px-4 py-3 flex flex-col gap-2 tiramisu-ingredient-card transition-all duration-200"
-                        style={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                          backdropFilter: 'blur(1px)',
-                          borderColor: 'rgba(0,0,0,0.2)',
-                          borderRadius: '16px',
-                          marginTop: '0.5rem',
-                          paddingTop: '0.75rem'
-                        }}
-                      >
-                        <label
-                          htmlFor="tiramisu-quantity"
-                          className="text-sm font-semibold text-warm-wood"
-                        >
-                          Quanti Kg di Tiramisù desideri? (1-7)
-                        </label>
-                        <input
-                          id="tiramisu-quantity"
-                          type="number"
-                          min={TIRAMISU_MIN_KG}
-                          max={TIRAMISU_MAX_KG}
-                          inputMode="numeric"
-                          value={localTiramisuValue}
-                          onChange={(event) => handleTiramisuQuantityChange(event.target.value)}
-                          onBlur={handleTiramisuQuantityBlur}
-                          className="w-full rounded-lg border border-warm-wood/40 px-3 py-2 text-base font-semibold text-gray-800 focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/30"
-                        />
-                        <p className="text-xs text-gray-500">
-                          Il tiramisù viene preparato in teglie da 1 Kg. Ogni Kg corrisponde a €{tiramisuUnitPrice.toFixed(2)}.
-                        </p>
-                      </div>
+                        return (
+                          <div key={item.id} className="flex w-full min-w-0 flex-col items-stretch gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleItemToggle(item)}
+                              aria-pressed={isSelected}
+                              className={cn(
+                                'menu-prices-item-row w-full min-w-0 flex-col items-stretch gap-1 py-2.5 px-3',
+                                !hasDesc && 'min-h-0 items-center',
+                                isSelected && 'menu-prices-item-row--selected',
+                                isTiramisu && isSelected && 'menu-card-with-ingredient',
+                              )}
+                              style={{
+                                minHeight: hasDesc ? undefined : '3rem',
+                              }}
+                            >
+                              <div className="flex w-full min-w-0 items-center justify-between gap-2">
+                                <p
+                                  className={cn(
+                                    MENU_INGREDIENT_NAME_CLASS,
+                                    'menu-prices-item-text break-words',
+                                  )}
+                                >
+                                  {item.name}
+                                </p>
+                                <span className={MENU_INGREDIENT_PRICE_CLASS}>{formatPrice(item)}</span>
+                              </div>
+                              {hasDesc ? (
+                                <p className={cn(MENU_INGREDIENT_DESC_CLASS, 'break-words')}>
+                                  {item.description}
+                                </p>
+                              ) : null}
+                            </button>
+                            {isTiramisu && isSelected ? (
+                              <div className="w-full min-w-0 rounded-xl border-2 border-black/20 bg-white/85 px-4 py-3">
+                                <label
+                                  htmlFor={`menu-selection-tiramisu-${item.id}`}
+                                  className="mb-2 block text-sm font-semibold text-warm-wood"
+                                >
+                                  Quanti Kg di Tiramisù desideri? (1-7)
+                                </label>
+                                <input
+                                  id={`menu-selection-tiramisu-${item.id}`}
+                                  type="number"
+                                  min={TIRAMISU_MIN_KG}
+                                  max={TIRAMISU_MAX_KG}
+                                  inputMode="numeric"
+                                  value={localTiramisuValue}
+                                  onChange={(event) =>
+                                    handleTiramisuQuantityChange(event.target.value)
+                                  }
+                                  onBlur={handleTiramisuQuantityBlur}
+                                  className="w-full rounded-lg border border-warm-wood/40 px-3 py-2 text-base font-semibold text-gray-800 focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/30"
+                                />
+                                <p className="mt-2 text-xs text-gray-500">
+                                  Il tiramisù viene preparato in teglie da 1 Kg. Ogni Kg corrisponde a €
+                                  {tiramisuUnitPrice.toFixed(2)}.
+                                </p>
+                              </div>
+                            ) : null}
+                          </div>
+                        )
+                      })
                     )}
                   </div>
-                )
-              })}
-            </div>
+                </CollapsibleCard>
+              )
+            })}
           </div>
-        )
-      })}
+        )}
+      </div>
 
       {/* Riepilogo Scelte */}
       {selectedItems.length > 0 && (
