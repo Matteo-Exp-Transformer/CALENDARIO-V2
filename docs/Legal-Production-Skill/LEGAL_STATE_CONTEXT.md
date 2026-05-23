@@ -14,6 +14,7 @@
 - [x] Service role key ruotata (2026-05-23)
 - [x] Leaked password protection ON
 - [x] MFA owner Supabase
+- [x] Rate limit pubblico stretto (2026-05-23) — max 3 richieste/min, ban 24h dopo 2 sforamenti (migrazione `027_ip_blacklist`)
 
 ### FASE 1 — DPA Supabase
 - [x] DPA richiesto a Supabase (2026-05-23)
@@ -87,5 +88,6 @@ Se è EU, è più semplice — dichiarare comunque per trasparenza.
 |---|---|---|---|
 | 2026-05-23 | (creazione skill) | Skill `legal-production` inizializzata | — |
 | 2026-05-23 | `PrivacyPolicyPage.tsx` | Riscrittura completa post-audit | sessione iniziale |
+| 2026-05-23 | `DATA_INVENTORY_CONTEXT.md` | Aggiunta tabella `ip_blacklist` (PII: IP) per ban automatico | rate limit hardening |
 
 Aggiornare quando vengono modificati i documenti.

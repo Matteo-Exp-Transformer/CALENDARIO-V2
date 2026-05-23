@@ -282,7 +282,30 @@ Aggiornata via trigger da `booking_requests`. Vincolo: `UNIQUE(organization_id, 
 | `endpoint` | TEXT | Es. `'create-booking'` |
 | `requested_at` | TIMESTAMPTZ DEFAULT NOW() | |
 
-**RLS:** permissiva — solo Edge Functions con service role.
+**RLS:** permissiva su INSERT per anon (necessaria per registrare le richieste). SELECT solo authenticated/service_role. Cleanup automatico NON schedulato — `cleanup_rate_limits()` esiste ma deve essere chiamata manualmente o via cron.
+
+**Soglia attuale (Edge Function `create-booking`):** max **3 richieste/minuto** per IP. Sopra soglia → 429. Se l'IP ha anche ≥6 richieste in 10 min (= 2 sforamenti consecutivi della soglia) → ban 24h in `ip_blacklist`.
+
+---
+
+### `ip_blacklist` — Ban automatici IP
+
+| Colonna | Tipo | Note |
+|---------|------|------|
+| `ip_address` | TEXT PK | |
+| `blocked_at` | TIMESTAMPTZ DEFAULT NOW() | Quando è stato bannato |
+| `expires_at` | TIMESTAMPTZ DEFAULT now()+24h | **Auto-scadenza**: dopo `expires_at` il ban è inattivo |
+| `reason` | TEXT DEFAULT 'rate_limit_violation' | Causa del ban (estendibile in futuro per altri motivi) |
+
+**RLS:** attiva, **nessuna policy** → bloccata per anon/authenticated. Solo Edge Function con service_role legge/scrive.
+
+**Logica ban (Edge Function `create-booking`):**
+1. Ad ogni richiesta: SELECT su `ip_blacklist` WHERE `ip_address = ?` AND `expires_at > now()`. Se trova riga → 429 immediato.
+2. Se non bannato, check rate_limits ultimo minuto. Se ≥3 → check anche ultimi 10 min. Se ≥6 → UPSERT in `ip_blacklist` con `expires_at = now()+24h`.
+
+**Perché auto-scadenza 24h e non permanente:** IP dinamici (NAT aziendali, WiFi pubblici, hotspot mobili) cambiano cliente frequentemente. Ban permanente bloccherebbe utenti onesti dopo riassegnazione DHCP. 24h è il compromesso tra protezione e accessibilità.
+
+Migrazione: `027_ip_blacklist.sql` (2026-05-23).
 
 ---
 
