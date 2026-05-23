@@ -84,59 +84,86 @@ function validateEditingSlots(slots: EditingSlot[]): string | null {
 const restaurantSettingsIntroCardClass =
   'admin-warm-surface w-full max-w-2xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center flex flex-col items-center gap-3 sm:flex-row sm:justify-center'
 
-/** Titolo introduttivo spostabile nello sticky header della dashboard */
-type AppThemePreviewPickProps = {
-  previewSrc: string
-  previewModalSrc: string
+const previewPickFocusRingClass =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 sm:focus-visible:ring-offset-2'
+
+const previewPickEyeButtonClass =
+  'absolute left-1/2 top-1/2 z-[10] flex min-h-11 min-w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-0 bg-black/50 text-white shadow-md transition-opacity duration-200 sm:min-h-[3rem] sm:min-w-[3rem] pointer-events-none opacity-0 [@media(hover:hover)]:group-hover:pointer-events-auto [@media(hover:hover)]:group-hover:opacity-100 max-sm:pointer-events-auto max-sm:opacity-100 max-sm:bg-black/45 [@media(pointer:coarse)]:pointer-events-auto [@media(pointer:coarse)]:opacity-100 [@media(pointer:coarse)]:bg-black/45'
+
+const previewPickHoverScaleClass =
+  'h-full w-full transition-transform duration-300 ease-out [@media(hover:hover)]:group-hover:scale-105'
+
+type SettingsPreviewPickCardProps = {
   label: string
   selected: boolean
   disabled: boolean
   pickButtonClass: (selected: boolean) => string
   onPick: () => void
+  aspectClass?: string
+  pickEntity?: string
+  modalConfirmLabel?: string
+  modalDescription?: string
+  previewSrc?: string
+  previewModalSrc?: string
+  preview?: React.ReactNode
+  modalPreview?: React.ReactNode
 }
 
-const themePreviewFocusRingClass =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 sm:focus-visible:ring-offset-2'
-
-const AppThemePreviewPick: React.FC<AppThemePreviewPickProps> = ({
-  previewSrc,
-  previewModalSrc,
+const SettingsPreviewPickCard: React.FC<SettingsPreviewPickCardProps> = ({
   label,
   selected,
   disabled,
   pickButtonClass,
   onPick,
+  aspectClass = 'aspect-[5/3]',
+  pickEntity = 'elemento',
+  modalConfirmLabel,
+  modalDescription = 'Anteprima a schermo intero. Puoi applicare la scelta dalla finestra o chiudere e selezionarne un altro.',
+  previewSrc,
+  previewModalSrc,
+  preview,
+  modalPreview,
 }) => {
   const [imgFailed, setImgFailed] = useState(false)
   const [modalImgFailed, setModalImgFailed] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
+  const usesImage = Boolean(previewSrc)
+  const canEnlarge = usesImage ? !imgFailed : Boolean(preview)
 
   useEffect(() => {
     if (previewOpen) setModalImgFailed(false)
   }, [previewOpen])
 
+  const confirmLabel = modalConfirmLabel ?? `Usa questo ${pickEntity}`
+
   return (
     <>
       <div className={cn(pickButtonClass(selected), 'group')}>
-        <div className="relative aspect-[5/3] w-full overflow-hidden rounded-md border border-slate-200/80 bg-slate-100">
-          {imgFailed ? (
-            <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-100 to-slate-200 px-2 text-center text-[0.625rem] font-semibold leading-snug text-slate-500 sm:text-[11px]">
-              Anteprima in arrivo
-            </div>
+        <div
+          className={cn(
+            'relative w-full overflow-hidden rounded-md border border-slate-200/80 bg-slate-100',
+            aspectClass,
+          )}
+        >
+          {usesImage ? (
+            imgFailed ? (
+              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-100 to-slate-200 px-2 text-center text-[0.625rem] font-semibold leading-snug text-slate-500 sm:text-[11px]">
+                Anteprima in arrivo
+              </div>
+            ) : (
+              <img
+                src={previewSrc}
+                alt=""
+                className={cn(previewPickHoverScaleClass, 'object-cover')}
+                loading="lazy"
+                onError={() => setImgFailed(true)}
+              />
+            )
           ) : (
-            <img
-              src={previewSrc}
-              alt=""
-              className={cn(
-                'h-full w-full object-cover transition-transform duration-300 ease-out',
-                '[@media(hover:hover)]:group-hover:scale-105',
-              )}
-              loading="lazy"
-              onError={() => setImgFailed(true)}
-            />
+            <div className={previewPickHoverScaleClass}>{preview}</div>
           )}
 
-          {!imgFailed && (
+          {canEnlarge && (
             <div
               className="pointer-events-none absolute inset-0 z-[5] bg-black/35 opacity-0 transition-opacity duration-200 [@media(hover:hover)]:group-hover:opacity-100"
               aria-hidden
@@ -148,26 +175,18 @@ const AppThemePreviewPick: React.FC<AppThemePreviewPickProps> = ({
             disabled={disabled}
             className={cn(
               'absolute inset-0 z-[1] cursor-pointer border-0 bg-transparent p-0',
-              themePreviewFocusRingClass,
+              previewPickFocusRingClass,
               disabled && 'cursor-not-allowed',
             )}
-            aria-label={`Seleziona tema usando anteprima: ${label}`}
+            aria-label={`Seleziona ${pickEntity} usando anteprima: ${label}`}
             onClick={onPick}
           />
 
-          {!imgFailed && (
+          {canEnlarge && (
             <button
               type="button"
               disabled={disabled}
-              className={cn(
-                'absolute left-1/2 top-1/2 z-[10] flex min-h-11 min-w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-0 bg-black/50 text-white shadow-md transition-opacity duration-200 sm:min-h-[3rem] sm:min-w-[3rem]',
-                themePreviewFocusRingClass,
-                /* Desktop con hover: occhio e hit solo sopra hover (il centro altrimenti seleziona via layer sotto) */
-                'pointer-events-none opacity-0 [@media(hover:hover)]:group-hover:pointer-events-auto [@media(hover:hover)]:group-hover:opacity-100',
-                /* Touch (telefono/tablet): occhio sempre visibile anche sopra breakpoint sm */
-                'max-sm:pointer-events-auto max-sm:opacity-100 max-sm:bg-black/45 [@media(pointer:coarse)]:pointer-events-auto [@media(pointer:coarse)]:opacity-100 [@media(pointer:coarse)]:bg-black/45',
-                disabled && 'cursor-not-allowed opacity-40',
-              )}
+              className={cn(previewPickEyeButtonClass, previewPickFocusRingClass, disabled && 'cursor-not-allowed opacity-40')}
               aria-haspopup="dialog"
               aria-expanded={previewOpen}
               aria-label={`Ingrandisci anteprima: ${label}`}
@@ -190,10 +209,10 @@ const AppThemePreviewPick: React.FC<AppThemePreviewPickProps> = ({
           disabled={disabled}
           className={cn(
             'line-clamp-2 min-h-[1.5em] w-full cursor-pointer border-0 bg-transparent px-px text-center text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]',
-            themePreviewFocusRingClass,
+            previewPickFocusRingClass,
             disabled && 'cursor-not-allowed opacity-65',
           )}
-          aria-label={`Seleziona tema: ${label}`}
+          aria-label={`Seleziona ${pickEntity}: ${label}`}
           onClick={onPick}
         >
           {label}
@@ -210,22 +229,24 @@ const AppThemePreviewPick: React.FC<AppThemePreviewPickProps> = ({
         closeOnEscape
       >
         <div className="space-y-4">
-          <p className="text-sm text-slate-600">
-            Anteprima a schermo intero. Puoi applicare il tema dalla finestra o chiudere e sceglierne un altro.
-          </p>
+          <p className="text-sm text-slate-600">{modalDescription}</p>
           <div className="flex justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
-            {modalImgFailed ? (
-              <div className="flex min-h-[12rem] w-full items-center justify-center px-4 py-10 text-center text-sm font-semibold text-slate-500">
-                Anteprima non disponibile
-              </div>
+            {usesImage ? (
+              modalImgFailed ? (
+                <div className="flex min-h-[12rem] w-full items-center justify-center px-4 py-10 text-center text-sm font-semibold text-slate-500">
+                  Anteprima non disponibile
+                </div>
+              ) : (
+                <img
+                  src={previewModalSrc ?? previewSrc}
+                  alt=""
+                  className="max-h-[min(78vh,880px)] w-full object-contain"
+                  loading="eager"
+                  onError={() => setModalImgFailed(true)}
+                />
+              )
             ) : (
-              <img
-                src={previewModalSrc}
-                alt=""
-                className="max-h-[min(78vh,880px)] w-full object-contain"
-                loading="eager"
-                onError={() => setModalImgFailed(true)}
-              />
+              modalPreview
             )}
           </div>
           <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
@@ -241,7 +262,7 @@ const AppThemePreviewPick: React.FC<AppThemePreviewPickProps> = ({
                 setPreviewOpen(false)
               }}
             >
-              Usa questo tema
+              {confirmLabel}
             </Button>
           </div>
         </div>
@@ -948,7 +969,9 @@ export const RestaurantSettingsTab: React.FC = () => {
       <section className={bookingBgSectionClass}>
         <h3 className="text-lg font-semibold text-slate-800">Sfondo pagina Prenota</h3>
         <p className="text-sm text-slate-600">
-          Scegli una texture, conferma la tua scelta e salva le modifiche.
+          Tocca l&apos;immagine o il nome per selezionare lo sfondo. Tocca l&apos;icona occhio al centro per
+          l&apos;anteprima grande (su desktop compare passando il mouse sulla card). Conferma la scelta e salva in
+          fondo per pubblicarla sulla pagina Prenota.
         </p>
         <div className="flex w-full flex-col">
           <div className="flex w-full justify-end">
@@ -984,27 +1007,25 @@ export const RestaurantSettingsTab: React.FC = () => {
             >
               {bookingBgAvailableTileIds.map((id) => {
                 const overallIndex = BOOKING_PAGE_TILE_IDS.indexOf(id)
+                const tileHref = bookingPageTilePublicHref(id, bookingBgBase)
+                const label = `Texture ${overallIndex + 1}`
                 return (
-                  <button
+                  <SettingsPreviewPickCard
                     key={id}
-                    type="button"
+                    label={label}
+                    selected={bookingPageBackground === id}
                     disabled={upsert.isPending || bookingBgSelectionLocked}
-                    className={bookingBgPickButtonClass(bookingPageBackground === id)}
-                    onClick={() => {
+                    pickButtonClass={bookingBgPickButtonClass}
+                    aspectClass="aspect-[4/3]"
+                    pickEntity="sfondo"
+                    modalConfirmLabel="Usa questo sfondo"
+                    previewSrc={tileHref}
+                    previewModalSrc={tileHref}
+                    onPick={() => {
                       setBookingPageBackground(id)
                       markDirty()
                     }}
-                  >
-                    <img
-                      src={bookingPageTilePublicHref(id, bookingBgBase)}
-                      alt=""
-                      className="pointer-events-none aspect-[4/3] h-auto w-full rounded-md border border-slate-200/80 object-cover"
-                      loading="lazy"
-                    />
-                    <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]">
-                      Texture {overallIndex + 1}
-                    </span>
-                  </button>
+                  />
                 )
               })}
             </div>
@@ -1013,32 +1034,40 @@ export const RestaurantSettingsTab: React.FC = () => {
             className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
             style={bookingBgGridTopSpacingStyle}
           >
-            {BOOKING_PAGE_GRADIENT_PRESETS.map((preset) => (
-              <button
-                key={preset.id}
-                type="button"
-                disabled={upsert.isPending || bookingBgSelectionLocked}
-                className={bookingBgPickButtonClass(bookingPageBackground === preset.id)}
-                onClick={() => {
-                  setBookingPageBackground(preset.id)
-                  markDirty()
-                }}
-              >
-                <div
-                  className="pointer-events-none aspect-[4/3] w-full rounded-md border border-slate-200/80"
-                  style={{
-                    backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
-                    backgroundImage: bookingPageGradientPreviewCss(preset.id),
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
+            {BOOKING_PAGE_GRADIENT_PRESETS.map((preset) => {
+              const gradientStyle: React.CSSProperties = {
+                backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
+                backgroundImage: bookingPageGradientPreviewCss(preset.id),
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }
+              return (
+                <SettingsPreviewPickCard
+                  key={preset.id}
+                  label={preset.name}
+                  selected={bookingPageBackground === preset.id}
+                  disabled={upsert.isPending || bookingBgSelectionLocked}
+                  pickButtonClass={bookingBgPickButtonClass}
+                  aspectClass="aspect-[4/3]"
+                  pickEntity="sfondo"
+                  modalConfirmLabel="Usa questo sfondo"
+                  preview={
+                    <div className="h-full w-full rounded-md border border-slate-200/80" style={gradientStyle} />
+                  }
+                  modalPreview={
+                    <div
+                      className="aspect-[4/3] w-full max-h-[min(78vh,880px)] rounded-xl border border-slate-200/80"
+                      style={gradientStyle}
+                    />
+                  }
+                  onPick={() => {
+                    setBookingPageBackground(preset.id)
+                    markDirty()
                   }}
                 />
-                <span className="line-clamp-2 min-h-[1.5em] px-px text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]">
-                  {preset.name}
-                </span>
-              </button>
-            ))}
+              )
+            })}
           </div>
           )}
         </div>
@@ -1078,7 +1107,7 @@ export const RestaurantSettingsTab: React.FC = () => {
           style={bookingBgGridTopSpacingStyle}
         >
           {APP_THEME_OPTIONS.map((opt) => (
-            <AppThemePreviewPick
+            <SettingsPreviewPickCard
               key={opt.id}
               previewSrc={opt.previewSrc}
               previewModalSrc={opt.previewModalSrc}
@@ -1086,6 +1115,9 @@ export const RestaurantSettingsTab: React.FC = () => {
               selected={appTheme === opt.id}
               disabled={upsert.isPending}
               pickButtonClass={bookingBgPickButtonClass}
+              pickEntity="tema"
+              modalConfirmLabel="Usa questo tema"
+              modalDescription="Anteprima a schermo intero. Puoi applicare il tema dalla finestra o chiudere e sceglierne un altro."
               onPick={() => {
                 setAppTheme(opt.id)
                 markDirty()
