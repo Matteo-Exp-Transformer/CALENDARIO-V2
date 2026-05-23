@@ -7,6 +7,8 @@ import { RoomTabs } from '@/features/booking/components/servizio/RoomTabs'
 import { RoomConfigModal } from '@/features/booking/components/servizio/RoomConfigModal'
 import { TableMap } from '@/features/booking/components/servizio/TableMap'
 import { ServiceSlotsManager } from '@/features/booking/components/servizio/ServiceSlotsManager'
+import { WalkInLimitCard } from '@/features/booking/components/servizio/WalkInLimitCard'
+import { useFeatures } from '@/hooks/useFeatures'
 import { AssignmentMapPanel } from '@/features/booking/components/servizio/AssignmentMapPanel'
 import { useTables, useDeleteTable, type RestaurantTable } from '@/features/booking/hooks/useServizioTables'
 import { useRooms, type Room } from '@/features/booking/hooks/useRooms'
@@ -95,6 +97,7 @@ const TableCard: FC<TableCardProps> = ({ table, onEdit, onDelete, isDeleting }) 
 }
 
 export const ServizioPage: FC = () => {
+  const features = useFeatures()
   const { data: tables = [], isLoading: loadingTables, error } = useTables()
   const { data: rooms = [], isLoading: loadingRooms } = useRooms()
   const deleteTable = useDeleteTable()
@@ -194,6 +197,8 @@ export const ServizioPage: FC = () => {
             )}
           </div>
         </div>
+
+        {features.walkIn && <WalkInLimitCard />}
 
         {/* Errore */}
         {error && (

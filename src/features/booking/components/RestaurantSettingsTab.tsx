@@ -284,13 +284,10 @@ export const RestaurantSettingsTab: React.FC = () => {
   const contactAddressQuery = useRestaurantSetting('contact_address')
   const publicBookingPageBgQuery = useRestaurantSetting('public_booking_page_background')
   const appThemeQuery = useRestaurantSetting('app_theme')
-  const walkInMaxGuestsQuery = useRestaurantSetting('walk_in_max_guests')
-
   const upsert = useUpsertRestaurantSetting()
 
   const [dirty, setDirty] = useState(false)
   const [restaurantName, setRestaurantName] = useState('')
-  const [walkInMaxGuests, setWalkInMaxGuests] = useState<number | ''>(20)
   const [slotCapacities, setSlotCapacities] = useState<Record<string, number | ''>>({})
   const [editingSlots, setEditingSlots] = useState<EditingSlot[]>([])
   /** Snapshot degli id delle fasce caricate dal DB al primo hydrate. Serve a rilevare le fasce
@@ -329,8 +326,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactPhoneQuery.isSuccess &&
     contactAddressQuery.isSuccess &&
     publicBookingPageBgQuery.isSuccess &&
-    appThemeQuery.isSuccess &&
-    walkInMaxGuestsQuery.isSuccess
+    appThemeQuery.isSuccess
 
   useEffect(() => {
     if (!allSuccess || hydratedRef.current) return
@@ -365,7 +361,6 @@ export const RestaurantSettingsTab: React.FC = () => {
     setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
     setBookingBgSelectionLocked(false)
     setAppTheme(appThemeQuery.data ?? DEFAULT_APP_THEME)
-    setWalkInMaxGuests(walkInMaxGuestsQuery.data ?? 20)
     hydratedRef.current = true
   }, [
     allSuccess,
@@ -379,7 +374,6 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactAddressQuery.data,
     publicBookingPageBgQuery.data,
     appThemeQuery.data,
-    walkInMaxGuestsQuery.data,
   ])
 
   const loading =
@@ -566,7 +560,6 @@ export const RestaurantSettingsTab: React.FC = () => {
         { key: 'contact_address', value: safeAddress },
         { key: 'public_booking_page_background', value: bookingPageBackground },
         { key: 'app_theme', value: appTheme },
-        { key: 'walk_in_max_guests', value: walkInMaxGuests === '' ? 20 : walkInMaxGuests },
       ])
       await queryClient.refetchQueries({ queryKey: ['restaurant_settings'], type: 'active' })
 
@@ -671,7 +664,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   return (
     <div className="flex w-full flex-col items-center gap-8">
       <section className={sectionSurfaceClass}>
-        <h3 className="text-lg font-semibold text-slate-800">Anagrafica e prenotazioni</h3>
+        <h3 className="text-lg font-semibold text-slate-800">Anagrafica Azienda</h3>
         <div className="flex w-full flex-col items-center">
           <div className={anagraficaFieldWrapClass}>
             <Label htmlFor="restaurant_name" className="block w-full text-center">
@@ -690,31 +683,6 @@ export const RestaurantSettingsTab: React.FC = () => {
               placeholder="Nome del locale"
               className={anagraficaInputClassName}
               style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
-            />
-          </div>
-          <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
-            <Label htmlFor="walk_in_max_guests" className="block w-full text-center">
-              Limite coperti walk-in
-            </Label>
-            <Input
-              id="walk_in_max_guests"
-              type="number"
-              min={0}
-              max={500}
-              value={walkInMaxGuests}
-              disabled={upsert.isPending}
-              placeholder="20"
-              className={`${anagraficaInputClassName} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-              onChange={(e) => {
-                markDirty()
-                const raw = e.target.value
-                if (raw === '') {
-                  setWalkInMaxGuests('')
-                  return
-                }
-                const n = parseInt(raw, 10)
-                if (!Number.isNaN(n)) setWalkInMaxGuests(n)
-              }}
             />
           </div>
           <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>

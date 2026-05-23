@@ -155,17 +155,19 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
                       id={`${day}-close-${index}`}
                     />
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    disabled={disabled || closed || rowSlots.length <= 1}
-                    onClick={() => removeSlot(day, index)}
-                    className="text-red-600 hover:text-red-700"
-                    aria-label="Rimuovi fascia"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  {rowSlots.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={disabled || closed}
+                      onClick={() => removeSlot(day, index)}
+                      className="text-red-600 hover:text-red-700"
+                      aria-label="Rimuovi apertura"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
               ))}
               <div className="flex w-full min-w-0 justify-center self-stretch">
@@ -180,7 +182,7 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
                   )}
                 >
                   <Plus className="w-4 h-4" />
-                  Aggiungi fascia
+                  Aggiungi apertura
                 </Button>
               </div>
             </div>
