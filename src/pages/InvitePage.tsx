@@ -144,7 +144,7 @@ export const InvitePage: React.FC = () => {
           <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-7 h-7 text-red-500" />
           </div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Link non valido</h2>
+          <h2 className="text-title-card font-bold text-slate-800 mb-2">Link non valido</h2>
           <p className="text-slate-500 text-sm mb-6">
             Il link è scaduto o non valido. Contatta l'amministratore per ottenerne uno nuovo.
           </p>
@@ -167,7 +167,7 @@ export const InvitePage: React.FC = () => {
           <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-7 h-7 text-emerald-500" />
           </div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Registrazione completata!</h2>
+          <h2 className="text-title-card font-bold text-slate-800 mb-2">Registrazione completata!</h2>
           <p className="text-slate-500 text-sm">Verrai reindirizzato al login tra qualche secondo...</p>
         </div>
       </PageShell>
@@ -188,7 +188,7 @@ export const InvitePage: React.FC = () => {
             className="w-4 h-4 object-cover shrink-0 rounded-full overflow-hidden"
           />
         </div>
-        <h2 className="text-xl font-bold text-slate-800">
+        <h2 className="text-title-card font-bold text-slate-800">
           Registrati per {tokenData?.organizationName || 'il ristorante'}
         </h2>
         <p className="text-slate-500 text-sm mt-1">Crea il tuo account amministratore</p>

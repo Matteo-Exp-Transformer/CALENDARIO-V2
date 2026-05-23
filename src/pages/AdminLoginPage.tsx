@@ -99,7 +99,7 @@ export const AdminLoginPage: React.FC = () => {
               alt="Logo app"
               className="mx-auto mb-4 size-[calc(7rem*4/3)] rounded-full object-contain min-[570px]:size-[calc(8rem*4/3)]"
             />
-            <h1 className="text-2xl font-bold leading-tight text-slate-900 drop-shadow-sm max-[736px]:text-balance min-[737px]:text-pretty">
+            <h1 className="text-title-page font-bold leading-tight text-slate-900 drop-shadow-sm max-[736px]:text-balance min-[737px]:text-pretty">
               Sistema Gestionale{' '}
               <br className="hidden max-[736px]:block" aria-hidden />
               Prenotazioni

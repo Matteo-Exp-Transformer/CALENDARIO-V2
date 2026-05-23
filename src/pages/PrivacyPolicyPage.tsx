@@ -44,8 +44,8 @@ export const PrivacyPolicyPage: React.FC = () => {
             <Shield className="w-5 h-5 text-primary-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Privacy Policy</h1>
-            <p className="text-sm text-slate-500">Ai sensi del GDPR — Reg. UE 2016/679</p>
+            <h1 className="text-title-page font-bold text-slate-800">Privacy Policy</h1>
+            <p className="text-body text-slate-500">Ai sensi del GDPR — Reg. UE 2016/679</p>
           </div>
         </div>
 
@@ -262,7 +262,7 @@ export const PrivacyPolicyPage: React.FC = () => {
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div>
-    <h2 className="text-base font-semibold text-slate-800 mb-2">{title}</h2>
+    <h2 className="text-title-card font-semibold text-slate-800 mb-2">{title}</h2>
     {children}
   </div>
 )
