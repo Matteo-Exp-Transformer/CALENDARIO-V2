@@ -17,6 +17,7 @@ import { toast } from 'react-toastify'
 import type { PresetMenuType } from '../constants/presetMenus'
 import { useMenuItems } from '../hooks/useMenuItems'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
+import { useRestaurantName } from '@/hooks/useRestaurantName'
 import {
   applyPresetTypeToBookingFormPayload,
   computeMenuTotalsFromItems,
@@ -35,6 +36,10 @@ interface BookingRequestFormProps {
 }
 
 export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit, tenantSlug }) => {
+  // Nome ristorante dinamico per il consenso privacy: deve riflettere il tenant
+  // corrente, non un nome hardcoded. Fallback generico se non disponibile.
+  const restaurantName = useRestaurantName() || 'questo ristorante'
+
   // Helper function to get current date in YYYY-MM-DD format
   const getCurrentDate = (): string => {
     const now = new Date()
@@ -939,7 +944,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
               >
                 Privacy Policy
               </Link>
-              {' '}di Al Ritrovo *
+              {' '}di {restaurantName} *
             </label>
           </div>
           {errors.privacyAccepted && (
