@@ -535,7 +535,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <button
                 type="button"
                 onClick={logout}
-                className={cn('flex shrink-0 items-center gap-1.5', adminBlueCtaSurfaceClass)}
+                className={cn('flex shrink-0 items-center gap-2', adminBlueCtaSurfaceClass)}
               >
                 <LogOut className="h-3.5 w-3.5 text-white" />
                 <span className="text-white">Log-out</span>

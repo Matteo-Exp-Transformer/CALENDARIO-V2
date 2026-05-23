@@ -378,7 +378,7 @@ export const AdminShell: FC = () => {
             title="Esci"
           >
             <LogOut className="h-4 w-4 shrink-0" aria-hidden />
-            {isDrawerOpen && <span className="truncate">Esci</span>}
+            {isDrawerOpen && <span className="min-w-0 truncate">Esci</span>}
           </Button>
         </div>
       </aside>
