@@ -106,7 +106,7 @@ Quando devi cambiare un bottone: **cambia solo il `variant` nel file chiamante**
 | `<Input>` | `src/components/ui/Input.tsx` | forwardRef + cn() |
 | `<Textarea>` | `src/components/ui/Textarea.tsx` | |
 | `<Select>` | `src/components/ui/Select.tsx` | Radix UI |
-| `<Modal>` | `src/components/ui/Modal.tsx` | **NON toccare z-index** |
+| `<Modal>` | `src/components/ui/Modal.tsx` | **NON toccare z-index**. Titolo h2 interno usa `text-title-modal` — non passare className aggiuntive per ridimensionare il titolo |
 | `<Card>` `<CardHeader>` ecc. | `src/components/ui/Card.tsx` | sistema card completo |
 | `<Badge>` | `src/components/ui/Badge.tsx` | varianti: default/primary/success/warning/danger/info/outline |
 | `<Alert>` | `src/components/ui/Alert.tsx` | varianti: default/success/warning/danger/info |

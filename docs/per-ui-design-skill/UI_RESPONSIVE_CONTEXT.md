@@ -186,6 +186,34 @@ Linee guida:
 - Quando crei una pagina nuova: parti subito da queste utility. Mai
   reintrodurre liste `text-xs md:text-sm` ripetute.
 
+### Stato adozione (24-05-26)
+
+**Già migrato — usare come riferimento di stile**:
+- Pagine admin: `AdminHomePage`, `CrmPage`, `ServizioPage`, `AnalyticsPage` (23-05-26).
+- Pagine non-admin: `AdminLoginPage`, `InvitePage`, `PrivacyPolicyPage` (24-05-26).
+- Componente `Modal.tsx`: il titolo h2 interno usa `text-title-modal` → tutti i `<Modal>` ereditano la scala automaticamente.
+- Componenti booking non-LOCK migrati (24-05-26): `DetailsTab`, `DietaryTab`,
+  `PendingRequestsTab`, `ArchiveTab`, `MenuSelection`, `MenuPricesTab`,
+  `ServiceSlotsManager`, `AssignmentMapPanel`, `WalkInLimitCard`,
+  `BookedByChart`, `ShiftBriefingModal`, `CustomerDetailPanel`,
+  `PastStartTimeWarningModal`.
+
+**Non migrato di proposito — non sostituire senza decisione mirata**:
+- **File LOCK admin classica**: `BookingDetailsModal`, `BookingCalendar`,
+  `RestaurantSettingsTab`, `BookingForm`, `BookingRequestForm`,
+  `AdminBookingForm`. Richiedono spiegazione preventiva 5 punti per ciascuno
+  (vedi `ADMIN_CLASSIC_SKILL.md` §0).
+- **`src/components/ui/` form base**: `Input`, `Label`, `Select`, `Textarea`,
+  `Button` usano `text-sm` (14px fisso) calibrato sull'altezza dei controlli.
+  Migrare a `text-label`/`text-body` ridimensionerebbe i form di tutta l'app.
+  Se serve, creare utility dedicate `text-input` ancorate ai valori attuali.
+- **`BookingRequestPage`** (pagina pubblica prenotazione): titoli usano
+  `clamp()` con moltiplicatore `4/3` calibrato sul gold standard pubblico,
+  diverso dalla scala admin. La sezione info compatta (Orari/Contatti) usa
+  `text-xs` intenzionalmente per stare in due colonne strette. Migrare
+  richiede ridisegno mirato (es. scala dedicata `text-public-*`), non
+  opportunistico.
+
 ## 7. Checklist prima di chiudere una modifica responsive
 
 1. La pagina funziona a viewport pieno (sidebar trattata come overlay, non come
