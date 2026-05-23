@@ -255,47 +255,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           </div>
 
-          {/* Nav tabs — nascosto solo con form nuova prenotazione aperto */}
+          {/* Nav tab sempre visibile; sotto-righe tab (statistiche, filtri, …) nascoste con form nuova prenotazione aperto */}
           <div className="space-y-4 pb-4">
+            <nav className="grid grid-cols-3 items-start gap-2 sm:grid-cols-5">
+              <NavItem
+                icon={Calendar}
+                label="Calendario"
+                active={activeTab === 'calendar'}
+                onClick={() => handleTabClick('calendar')}
+              />
+              <NavItem
+                icon={Clock}
+                label="Prenotazioni"
+                active={activeTab === 'pending'}
+                badge={stats?.pending}
+                notifyHighlight
+                onClick={() => handleTabClick('pending')}
+              />
+              <NavItem
+                icon={Archive}
+                label="Archivio"
+                active={activeTab === 'archive'}
+                onClick={() => handleTabClick('archive')}
+              />
+              <NavItem
+                icon={UtensilsCrossed}
+                label="Menu"
+                active={activeTab === 'menu'}
+                onClick={() => handleTabClick('menu')}
+              />
+              <NavItem
+                icon={Store}
+                label="Impostazioni"
+                mobileLabel="Impost."
+                active={activeTab === 'settings-restaurant'}
+                onClick={() => handleTabClick('settings-restaurant')}
+              />
+            </nav>
+
             {!showNewBookingPanel && (
               <>
-                {/* 5 tab + griglia 5 colonne */}
-                <nav className="grid grid-cols-3 items-start gap-2 sm:grid-cols-5">
-                  <NavItem
-                    icon={Calendar}
-                    label="Calendario"
-                    active={activeTab === 'calendar'}
-                    onClick={() => handleTabClick('calendar')}
-                  />
-                  <NavItem
-                    icon={Clock}
-                    label="Prenotazioni"
-                    active={activeTab === 'pending'}
-                    badge={stats?.pending}
-                    notifyHighlight
-                    onClick={() => handleTabClick('pending')}
-                  />
-                  <NavItem
-                    icon={Archive}
-                    label="Archivio"
-                    active={activeTab === 'archive'}
-                    onClick={() => handleTabClick('archive')}
-                  />
-                  <NavItem
-                    icon={UtensilsCrossed}
-                    label="Menu"
-                    active={activeTab === 'menu'}
-                    onClick={() => handleTabClick('menu')}
-                  />
-                  <NavItem
-                    icon={Store}
-                    label="Impostazioni"
-                    mobileLabel="Impost."
-                    active={activeTab === 'settings-restaurant'}
-                    onClick={() => handleTabClick('settings-restaurant')}
-                  />
-                </nav>
-
                 {activeTab === 'calendar' && showTabSecondaryChrome && (
                   <div className="grid grid-cols-2 min-[470px]:grid-cols-4 gap-2 md:gap-3">
                     <StatCard label="Oggi" value={stats?.totalDay || 0} />
