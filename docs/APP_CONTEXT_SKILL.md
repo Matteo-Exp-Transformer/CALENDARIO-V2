@@ -115,6 +115,18 @@ src/
 └── types/               database.ts (generato), booking.ts, customer.ts, edition.ts
 ```
 
+### 3a. File dead-code presenti ma non importati (23-05-26)
+
+Questi file esistono in `src/` ma non sono importati da nessuno — non riusarli per nuove feature, sono candidati alla rimozione:
+
+- `src/features/booking/components/SettingsTab.tsx` — obsoleto, sostituito da `RestaurantSettingsTab.tsx`
+- `src/features/booking/components/EmailLogsModal.tsx` — usato solo dal `SettingsTab` obsoleto
+- `src/features/booking/components/TestEmailModal.tsx` — usato solo dal `SettingsTab` obsoleto
+- `src/features/booking/hooks/useEmailLogs.ts` — usato solo da `EmailLogsModal`
+- `src/lib/pdfAttachment.ts` — nessun consumer
+
+Tab impostazioni attivo: `RestaurantSettingsTab.tsx` (LOCK strutturale in `ADMIN_CLASSIC_SKILL`).
+
 ---
 
 ## 4. Invarianti globali — valgono in ogni task, in ogni file
@@ -176,7 +188,7 @@ RULE  UUID: cancelled_by è UUID auth.users.id — mai passare email a campi UUI
 npm run dev           # dev server :5173
 npm run typecheck     # tsc --noEmit — zero errori
 npm run lint          # ESLint — zero warning
-npm run test          # Vitest — tutti devono passare (127/127)
+npm run test          # Vitest — tutti devono passare (132/132)
 npm run validate      # lint + typecheck + test (usare pre-PR)
 ```
 

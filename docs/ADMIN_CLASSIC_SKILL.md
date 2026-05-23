@@ -101,6 +101,8 @@ description: >-
 
 **Cosa si rompe**: il ristoratore non può configurare il suo ristorante. Onboarding bloccato.
 
+> ⚠️ Esiste anche `SettingsTab.tsx` (più `EmailLogsModal.tsx`, `TestEmailModal.tsx`, `useEmailLogs.ts`): **dead code**, sostituito da `RestaurantSettingsTab.tsx`. Non importarlo, non riusarlo — vedi `APP_CONTEXT_SKILL.md` §3a.
+
 ---
 
 ### `src/features/booking/hooks/useBookingMutations.ts` — LOCK core
@@ -202,7 +204,24 @@ Le feature sidebar (CRM esteso, Servizio, Analytics, Home) NON devono:
 
 ---
 
-## 4. Stato attuale (snapshot 22-05-26 — post A5 check disponibilità fascia pubblica verificato)
+## 4. Stato attuale (snapshot 23-05-26 — post sessione layout BookingCalendar + cleanup repo)
+
+### Commit chiave post merge sidebar→main (`7376b89`)
+
+- `316449b` Form Pubblico in tab Prenotazioni + bottone Impostazioni nel footer di `AdminDashboard`
+- `fd2f321` Limite walk-in 0–500 in tab Servizio (`WalkInLimitCard.tsx`) + UX orari apertura
+- `91a751c` Anteprima ingrandita su card sfondo del tab Prenota
+- `b7b1434` UX header sezione fasce orarie in Impostazioni
+- `b660f7d` / `b96d783` / `ea101a4` / `ac02267` / `fa19ba0` Refactor catena Menu (categorie con cascade, modifica ingredienti con pannello tipologie, preset menu, catalogo condiviso `MenuSelection`)
+- `39fdb43` 5 NavItem header sempre visibili anche con form «Nuova Prenotazione» aperto
+- `d533a30` Campo Posizionamento solo Pro, etichette diete con «o»
+- `ea1acdd` / `8f197fb` / `354d9c0` Layout calendario full-width, celle mese altezza minima, titolo responsive → vedi §4c + `BOOKING_CALENDAR_LAYOUT_CONTEXT.md`
+- `d334c2f` Pulizia massiva `docs/`: rimossi report di sessioni storiche, archivi e guide manuali dal repo versionato. I report di sessione futuri continuano a vivere in `docs/Sessioni di lavoro/GG-MM-AA/` (cartella locale, non versionata)
+- `8dd1b27` Fix migration 019 (`setting_key`, non `key`)
+
+### Snapshot tecnico
+
+(snapshot 22-05-26 — post A5 check disponibilità fascia pubblica verificato — invariato)
 
 Branch `Sviluppo-Dashboard-laterale` rispetto a `main`:
 
