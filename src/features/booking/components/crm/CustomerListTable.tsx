@@ -86,7 +86,7 @@ export const CustomerListTable: FC<CustomerListTableProps> = ({
 
   return (
     <div className="overflow-x-auto rounded-xl border border-(--color-border) bg-(--color-surface) shadow-sm">
-      <table className="min-w-full divide-y divide-[var(--color-border)] text-left text-sm">
+      <table className="w-full min-w-[640px] divide-y divide-[var(--color-border)] text-left text-sm">
         <thead className="bg-primary-50 text-primary-900">
           <tr>
             {(Object.keys(sortLabel) as SortKey[]).map((key) => (
@@ -136,22 +136,22 @@ export const CustomerListTable: FC<CustomerListTableProps> = ({
                   selected && 'bg-primary-50',
                 )}
               >
-                <td className="px-4 py-3 font-medium text-primary-900">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span>{p.name || '—'}</span>
+                <td className="max-w-[220px] px-4 py-3 font-medium text-primary-900">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="min-w-0 truncate">{p.name || '—'}</span>
                     {showManualBadge(p) && (
-                      <span className="rounded-md border border-(--color-border) bg-(--color-bg) px-1.5 py-0.5 text-xs font-medium text-(--color-text-muted)">
+                      <span className="shrink-0 rounded-md border border-(--color-border) bg-(--color-bg) px-1.5 py-0.5 text-xs font-medium text-(--color-text-muted)">
                         Manuale
                       </span>
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-3 text-(--color-text)">{p.email}</td>
-                <td className="px-4 py-3 text-(--color-text-muted)">{p.phone ?? '—'}</td>
-                <td className="px-4 py-3 text-(--color-text)">{p.booking_count}</td>
-                <td className="px-4 py-3 text-(--color-text-muted)">{p.last_booking_date ?? '—'}</td>
+                <td className="max-w-[260px] truncate px-4 py-3 text-(--color-text)">{p.email}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-(--color-text-muted)">{p.phone ?? '—'}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-(--color-text)">{p.booking_count}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-(--color-text-muted)">{p.last_booking_date ?? '—'}</td>
                 <td className="px-4 py-3 text-right">
-                  <div className="flex justify-end gap-1">
+                  <div className="flex shrink-0 justify-end gap-1">
                     <Button
                       type="button"
                       variant="ghost"

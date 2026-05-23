@@ -90,8 +90,14 @@ export const CrmPage: FC = () => {
     <div className="min-h-0 flex-1 bg-(--color-bg) px-4 py-5 md:px-6 md:py-7">
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-xl font-bold text-primary-900 md:text-2xl">CRM Clienti</h1>
-          <Button type="button" variant="primary" size="sm" onClick={openCreate}>
+          <h1 className="min-w-0 truncate text-xl font-bold text-primary-900 md:text-2xl">CRM Clienti</h1>
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={openCreate}
+            className="w-full shrink-0 sm:w-auto"
+          >
             + Nuovo cliente
           </Button>
         </div>
