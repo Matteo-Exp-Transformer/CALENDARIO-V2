@@ -6,7 +6,6 @@ import React, {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
   type ReactNode,
 } from 'react'
 import { toast } from 'react-toastify'
@@ -37,6 +36,19 @@ import {
 import { useRestaurantSetting, useUpsertRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { selectedItemsFromMenuItemIds } from '../utils/buildPresetMenuSelection'
 import { PresetMenuBuilder } from './PresetMenuBuilder'
+import {
+  MENU_CARD_INNER_SHELL_CLASS,
+  MENU_CARD_MAX_WIDTH_PX,
+  MENU_CATEGORY_COLLAPSIBLE_CLASS,
+  MENU_CATEGORY_COLLAPSIBLE_HEADER_CLASS,
+  MENU_CATEGORY_LABEL_TITLE_CLASS,
+  MENU_CATEGORY_LABEL_TITLE_STYLE,
+  MENU_INGREDIENT_DESC_CLASS,
+  MENU_INGREDIENT_NAME_CLASS,
+  MENU_INGREDIENT_OVERVIEW_GRID_CLASS,
+  MENU_INGREDIENT_OVERVIEW_SHELL_CLASS,
+  MENU_INGREDIENT_PRICE_CLASS,
+} from './menuPricesCatalogLayout'
 import {
   DEFAULT_VOL_AU_VENT_PROMO_MESSAGE,
   VOL_AU_VENT_PROMO_BOOKING_TYPE_OPTIONS,
@@ -222,40 +234,6 @@ const slugifyCategory = (value: string): string =>
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '')
 
-/** Allineato a MenuSelection — larghezza massima card ingredienti */
-const MENU_CARD_MAX_WIDTH_PX = 746
-
-/** Titolo categoria: stesso aspetto tra card gestione categorie e header CollapsibleCard panoramica ingredienti. */
-const MENU_CATEGORY_LABEL_TITLE_CLASS =
-  'min-w-0 flex-1 text-sm font-semibold leading-snug text-primary-900 sm:text-base'
-
-const MENU_INGREDIENT_NAME_CLASS =
-  'min-w-0 flex-1 text-sm font-semibold leading-snug text-primary-900'
-
-const MENU_INGREDIENT_PRICE_CLASS =
-  'shrink-0 text-sm font-semibold tabular-nums text-warm-wood'
-
-const MENU_INGREDIENT_DESC_CLASS =
-  'w-full min-w-0 text-xs leading-snug text-(--color-text-muted)'
-
-const MENU_CATEGORY_LABEL_TITLE_STYLE: CSSProperties = {
-  fontWeight: 700,
-  wordBreak: 'break-word',
-  overflowWrap: 'break-word',
-}
-
-/** Superficie condivisa: card ingrediente, card categoria e header CollapsibleCard panoramica menu. */
-const MENU_CARD_INNER_SHELL_CLASS =
-  'rounded-2xl border-2 border-black/20 bg-white/85 backdrop-blur-[1px] menu-card-mobile transition-all duration-200'
-
-const MENU_CATEGORY_COLLAPSIBLE_CLASS = cn(
-  'menu-prices-category-collapsible h-fit overflow-hidden shadow-md transition-shadow duration-200 hover:shadow-lg',
-  MENU_CARD_INNER_SHELL_CLASS,
-)
-
-const MENU_CATEGORY_COLLAPSIBLE_HEADER_CLASS =
-  'border-black/15 bg-white/85 hover:bg-white/95'
-
 type AdminMenuIngredientCardProps = {
   item: MenuItem
   onEdit: () => void
@@ -297,8 +275,7 @@ const AdminMenuIngredientCard: React.FC<AdminMenuIngredientCardProps> = ({
           'menu-prices-item-row flex-col items-stretch gap-1 py-2.5 px-3',
           !hasDesc && 'min-h-0 items-center',
           rowSelectable && 'cursor-pointer hover:border-[color-mix(in_srgb,var(--color-text)_18%,transparent)]',
-          typesPanelOpen &&
-            'border-[color-mix(in_srgb,var(--color-primary-500)_55%,transparent)] ring-2 ring-primary-400/40',
+          typesPanelOpen && 'menu-prices-item-row--selected',
         )}
         style={{
           width: '100%',
@@ -1435,7 +1412,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           </div>
       )}
       <div
-        className="relative w-full rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-lg md:p-6"
+        className={MENU_INGREDIENT_OVERVIEW_SHELL_CLASS}
         style={ADMIN_WARM_GRADIENT_SURFACE}
         role="region"
         aria-labelledby="menu-prices-ingredient-overview-heading"
@@ -1463,10 +1440,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           </p>
         ) : (
           <div
-            className={cn(
-              'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3',
-              ingredientEditMode ? 'mt-8' : 'mt-6',
-            )}
+            className={cn(MENU_INGREDIENT_OVERVIEW_GRID_CLASS, ingredientEditMode ? 'mt-8' : 'mt-6')}
           >
             {categoryEntries.map(([categoryKey, categoryLabel]) => {
               const categoryItems = itemsByCategory[categoryKey] ?? []
@@ -1544,14 +1518,18 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
             >
               <X className="h-4 w-4" />
             </button>
-            <div className="mx-auto max-w-3xl pb-12 pr-10">
+            <div
+              className={cn(
+                'mx-auto max-w-3xl pr-10',
+                presetEditorMode !== 'editor' && 'pb-12',
+              )}
+            >
               <h3 className="text-center font-serif text-lg font-bold text-warm-wood md:text-xl">
                 Menù preselezionati
               </h3>
               <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
-                Compila nome e ingredienti, scegli per quali tipologie di prenotazione con menù è disponibile
-                (Rinfresco o Menu a prezzo fisso, non «Prenota un tavolo»). In pagina Prenota compare solo se
-                l&apos;occhio sulla riga è aperto.
+                Inserisci nome Menù preselezionato e gli ingredienti. Puoi anche scegliere per quale tipologia di
+                prenotazione sarà visibile.
               </p>
 
               {presetEditorMode === 'list' && (
@@ -1620,7 +1598,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
               )}
 
               {presetEditorMode === 'editor' && (
-                <div className="mt-8 space-y-6">
+                <div className="mt-8">
                   <div className="mx-auto flex w-full max-w-md flex-col gap-2">
                     <label className="text-center text-sm font-medium text-gray-700">
                       Nome menù consigliato *
@@ -1629,24 +1607,33 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                       value={presetName}
                       onChange={(e) => setPresetName(e.target.value)}
                       placeholder="es. Menù laurea Vegan"
-                      className="mx-auto h-14 w-full rounded-2xl pl-6 text-center sm:text-left"
-                      style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                      className="mx-auto h-14 w-full rounded-2xl px-6 text-center"
+                      style={{ height: '56px', borderRadius: '18px' }}
                     />
                   </div>
-                  <div className="rounded-xl bg-white/50 p-4">
-                    <PresetMenuBuilder
-                      selectedItems={presetSelectedItems}
-                      onSelectionChange={setPresetSelectedItems}
-                    />
-                  </div>
+                </div>
+              )}
+            </div>
 
+            {presetEditorMode === 'editor' && (
+              <>
+                <div
+                  className={cn(MENU_INGREDIENT_OVERVIEW_SHELL_CLASS, 'mt-6 w-full min-w-0')}
+                  style={ADMIN_WARM_GRADIENT_SURFACE}
+                >
+                  <PresetMenuBuilder
+                    selectedItems={presetSelectedItems}
+                    onSelectionChange={setPresetSelectedItems}
+                  />
+                </div>
+
+                <div className="mx-auto max-w-3xl space-y-6 pb-12 pr-10">
                   <div className="rounded-xl border border-gray-200 bg-white/80 p-4">
                     <span className="mx-auto mb-3 block w-fit max-w-full text-center text-sm font-bold text-warm-wood md:text-base">
                       Tipologia di Prenotazione *
                     </span>
                     <p className="mb-3 text-center text-xs text-gray-600">
-                      Il menù preselezionato compare solo per Rinfresco di Laurea e/o Menu a prezzo fisso (non per
-                      Prenota un tavolo).
+                      Seleziona per quale tipo di prenotazione sarà visibile il menù preselezionato.
                     </p>
                     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
                       {STAFF_PRESET_BOOKING_TYPE_OPTIONS.map(({ value, label }) => (
@@ -1689,8 +1676,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                     </button>
                   </div>
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </>
       )}

@@ -1566,6 +1566,22 @@ button.booking-request-reject-booking-btn:focus-visible {
   border-color: color-mix(in srgb, var(--color-text) 16%, transparent);
 }
 
+/* Ingrediente selezionato (menù preselezionato, pannello tipologie in modifica prodotto) */
+.menu-prices-item-row--selected,
+.menu-prices-item-row[aria-pressed='true'] {
+  border-color: var(--color-primary-600);
+  background-color: color-mix(in srgb, var(--color-primary-50) 92%, var(--color-surface-2));
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--color-primary-400) 55%, transparent),
+    var(--shadow-md);
+}
+
+.menu-prices-item-row--selected:hover,
+.menu-prices-item-row[aria-pressed='true']:hover {
+  border-color: var(--color-primary-700);
+  background-color: color-mix(in srgb, var(--color-primary-100) 85%, var(--color-surface-2));
+}
+
 .menu-prices-item-row .menu-prices-item-text {
   flex: 1 1 auto;
   min-width: 0;
