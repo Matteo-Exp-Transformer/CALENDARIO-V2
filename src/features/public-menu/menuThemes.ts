@@ -53,7 +53,8 @@ export const MENU_THEMES: Record<MenuThemeKey, MenuTheme> = {
     headerImage: `${BASE}menu-themes/dark-gold-header.png`,
     bodyImage: `${BASE}menu-themes/dark-gold-body.png`,
     headerFallbackBg: '#1c1917',
-    bodyFallbackBg: '#fef9f0',
+    /** Sotto il PNG body (scroll lungo): stesso tono texture scura, non crema */
+    bodyFallbackBg: '#1c1917',
   },
   rustic_terracotta: {
     key: 'rustic_terracotta',
@@ -63,7 +64,7 @@ export const MENU_THEMES: Record<MenuThemeKey, MenuTheme> = {
     headerImage: `${BASE}menu-themes/rustic-terracotta-header.png`,
     bodyImage: `${BASE}menu-themes/rustic-terracotta-body.png`,
     headerFallbackBg: '#9a3412',
-    bodyFallbackBg: '#fff7ed',
+    bodyFallbackBg: '#292018',
   },
   wine_bistrot: {
     key: 'wine_bistrot',

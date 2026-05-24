@@ -114,17 +114,49 @@ function usePublicPresets(tenantId: string | null, presetIds: string[] | null) {
   })
 }
 
-function themeBackgroundStyle(theme: MenuTheme, layer: 'header' | 'body'): CSSProperties {
-  const image = layer === 'header' ? theme.headerImage : theme.bodyImage
-  const fallback = layer === 'header' ? theme.headerFallbackBg : theme.bodyFallbackBg
-  if (image) {
+/** Fascia alta in cui viene disegnato il PNG header (titolo + carousel). */
+const HEADER_BG_BAND = 'min(48vh, 420px)'
+
+/**
+ * Sfondo unico: header in fascia fissa; body con `100% auto` (non `cover`)
+ * così la sfumatura bianca resta ~2/5 dell’altezza del PNG, come in asset.
+ * `cover` stirava il gradiente su tutta la pagina.
+ */
+function themePageBackgroundStyle(theme: MenuTheme): CSSProperties {
+  const { headerImage, bodyImage, headerFallbackBg, bodyFallbackBg } = theme
+
+  if (headerImage && bodyImage) {
     return {
-      backgroundImage: `url(${image})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center top',
+      ['--menu-header-band' as string]: HEADER_BG_BAND,
+      backgroundImage: `url(${headerImage}), url(${bodyImage})`,
+      backgroundSize: `100% var(--menu-header-band), 100% auto`,
+      backgroundPosition: 'center top, center var(--menu-header-band)',
+      backgroundRepeat: 'no-repeat, no-repeat',
+      backgroundColor: bodyFallbackBg,
     }
   }
-  return { backgroundColor: fallback }
+
+  if (bodyImage) {
+    return {
+      backgroundImage: `url(${bodyImage})`,
+      backgroundSize: '100% auto',
+      backgroundPosition: 'center top',
+      backgroundRepeat: 'no-repeat',
+      backgroundColor: bodyFallbackBg,
+    }
+  }
+
+  if (headerImage) {
+    return {
+      backgroundImage: `url(${headerImage})`,
+      backgroundSize: `100% ${HEADER_BG_BAND}`,
+      backgroundPosition: 'center top',
+      backgroundRepeat: 'no-repeat',
+      backgroundColor: headerFallbackBg,
+    }
+  }
+
+  return { backgroundColor: bodyFallbackBg }
 }
 
 // ── Carosello ────────────────────────────────────────────────────────────────
@@ -287,10 +319,7 @@ function MenuNavTabs({
   if (items.length === 0) return null
 
   return (
-    <div
-      className="sticky top-0 z-10 flex justify-center overflow-x-auto scrollbar-hide py-3 px-4 gap-2"
-      style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)' }}
-    >
+    <div className="sticky top-0 z-10 flex justify-center overflow-x-auto scrollbar-hide bg-transparent py-3 px-4 gap-2">
       {items.map((item) => {
         const Icon = 'Icon' in item ? item.Icon as PhosphorIconType : null
         return (
@@ -424,16 +453,10 @@ function MenuContent({
   }
 
   return (
-    <div
-      className="flex min-h-svh flex-col"
-      style={{ backgroundColor: theme.bodyFallbackBg }}
-    >
-      {/* Hero: titolo + carosello su sfondo header */}
-      <header
-        className="relative shrink-0 px-4 pt-8 pb-4"
-        style={themeBackgroundStyle(theme, 'header')}
-      >
-        <div className="relative z-10 flex flex-col items-center gap-2 text-center">
+    <div className="flex min-h-svh flex-col" style={themePageBackgroundStyle(theme)}>
+      {/* Hero: sfondo unificato dietro (header+body in themePageBackgroundStyle) */}
+      <header className="relative shrink-0 px-4 pt-8 pb-4">
+        <div className="relative flex flex-col items-center gap-2 text-center">
           <h1
             className="text-2xl font-bold leading-tight tracking-wide"
             style={{ color: theme.headerTextColor }}
@@ -445,16 +468,12 @@ function MenuContent({
             style={{ background: theme.headerTextColor }}
           />
         </div>
-        <div className="relative z-10 mt-4">
+        <div className="relative mt-4">
           <MenuCarousel items={carouselItems} accentColor={theme.accentColor} />
         </div>
       </header>
 
-      {/* Corpo pagina: sfondo body su tutta l’area sotto l’hero */}
-      <div
-        className="flex flex-1 flex-col"
-        style={themeBackgroundStyle(theme, 'body')}
-      >
+      <div className="flex flex-1 flex-col">
         {showCart && (
           <MenuNavTabs
             categories={categories}

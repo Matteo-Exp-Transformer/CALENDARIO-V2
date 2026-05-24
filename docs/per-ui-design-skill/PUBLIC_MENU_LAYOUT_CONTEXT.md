@@ -31,7 +31,12 @@ description: >-
 └─────────────────────────────────────┘
 ```
 
-Pagina: `min-h-svh flex flex-col`. Hero e corpo usano `themeBackgroundStyle()` in `PublicMenuPage.tsx`.
+Pagina: `themePageBackgroundStyle()` — header `100% × min(48vh,420px)`; body `100% auto` + `background-position-y: var(--menu-header-band)` (mai `cover` sul body: stirava la sfumatura su tutta la pagina). **Asset:** sfumatura bianca ≈ **2/5 altezza** del PNG; sotto l’immagine body resta `bodyFallbackBg` (per temi scuri conviene un fallback scuro, non crema).
+
+| Layer | background-size | Perché |
+|-------|-----------------|--------|
+| header | `100% × fascia hero` | Come mockup, fade in basso alla fascia |
+| body | `100% auto` | Proporzioni file rispettate (~40% bianco in alto) |
 
 ---
 
@@ -73,8 +78,7 @@ PNG in `public/menu-themes/` con naming `{tema-key}-header.png` / `{tema-key}-bo
 Sticky in cima durante lo scroll. Usa preset se `presets.length > 0`, altrimenti categorie.
 
 ```tsx
-<div className="sticky top-0 z-10 flex justify-center overflow-x-auto scrollbar-hide py-3 px-4 gap-2"
-     style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)' }}>
+<div className="sticky top-0 z-10 flex justify-center overflow-x-auto scrollbar-hide bg-transparent py-3 px-4 gap-2">
 ```
 
 - Pill: `border` + `color` impostati con `theme.accentColor` via style inline
