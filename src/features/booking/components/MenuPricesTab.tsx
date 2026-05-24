@@ -13,7 +13,7 @@ import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { Button, CollapsibleCard, Input, Textarea } from '@/components/ui'
 import { Modal } from '@/components/ui/Modal'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
-import { Plus, Edit, Trash2, Save, X, Eye, EyeOff } from 'lucide-react'
+import { Plus, Edit, Trash2, Save, X, Eye, EyeOff, QrCode, ImageIcon } from 'lucide-react'
 import { useMenuItems, useCreateMenuItem, useUpdateMenuItem, useDeleteMenuItem } from '../hooks/useMenuItems'
 import {
   useCreateMenuCategory,
@@ -56,6 +56,10 @@ import {
   isMenuPromoVisibleOnBooking,
   getMenuPromoAdminLabel,
 } from '../constants/menuPromo'
+import { MenuQrManager } from './MenuQrManager'
+import { uploadMenuPhoto } from '@/lib/menuPhotoUpload'
+import { useTenantContext } from '@/contexts/TenantContext'
+import { useFeatures } from '@/hooks/useFeatures'
 import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
 
@@ -438,12 +442,14 @@ const AdminMenuCategoryLabelCard: React.FC<AdminMenuCategoryLabelCardProps> = ({
   </div>
 )
 
-type MenuViewMode = 'menu' | 'categories' | 'preset_menus'
+type MenuViewMode = 'menu' | 'categories' | 'preset_menus' | 'qr_codes'
 
 export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>(function MenuPricesTab(
   { omitHeroSection = false, onToolbarPromoDisabled },
   ref,
 ) {
+  const { tenantId } = useTenantContext()
+  const features = useFeatures()
   const { data: menuItems = [], isLoading, refetch: refetchMenuItems } = useMenuItems()
   const { data: dbCategories = [], refetch: refetchCategories } = useMenuCategories()
   const createMutation = useCreateMenuItem()
@@ -490,6 +496,13 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const promoEditorPanelRef = useRef<HTMLDivElement>(null)
   const productFormCardRef = useRef<HTMLDivElement>(null)
   const scrollProductFormIntoViewAfterEditRef = useRef(false)
+
+  // Stato foto piatto (form prodotto)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null)
+  const [photoUploading, setPhotoUploading] = useState(false)
+  /** image_url corrente del piatto in modifica (per mostrare preview esistente) */
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null)
 
   /** Attivo dopo «Crea / Modifica Prodotto»: titolo «Modifica Ingredienti» e righe ingrediente interattive. */
   const [ingredientEditMode, setIngredientEditMode] = useState(false)
@@ -727,6 +740,9 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       description: '',
       sort_order: 0,
     })
+    setPhotoFile(null)
+    setPhotoPreviewUrl(null)
+    setCurrentImageUrl(null)
   }
 
   const openPromoEditor = () => {
@@ -773,6 +789,9 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     })
     setPriceInput(item.price === 0 ? '' : String(item.price))
     setIsAdding(false)
+    setPhotoFile(null)
+    setPhotoPreviewUrl(null)
+    setCurrentImageUrl(item.image_url ?? null)
     scrollProductFormIntoViewAfterEditRef.current = true
   }
 
@@ -955,7 +974,23 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
 
     try {
       if (editingId) {
-        await updateMutation.mutateAsync({ id: editingId, ...payload })
+        let imageUrl: string | null | undefined = undefined
+        if (photoFile && tenantId) {
+          setPhotoUploading(true)
+          try {
+            imageUrl = await uploadMenuPhoto(photoFile, tenantId, editingId)
+            setCurrentImageUrl(imageUrl)
+            setPhotoFile(null)
+            setPhotoPreviewUrl(null)
+          } finally {
+            setPhotoUploading(false)
+          }
+        }
+        await updateMutation.mutateAsync({
+          id: editingId,
+          ...payload,
+          ...(imageUrl !== undefined ? { image_url: imageUrl } : {}),
+        })
         await refetchMenuItems()
         await refetchCategories()
         setFormData({
@@ -964,10 +999,23 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
         })
         setPriceInput(parsedPrice === 0 ? '' : String(parsedPrice))
       } else {
-        await createMutation.mutateAsync(payload)
+        const created = await createMutation.mutateAsync(payload)
+        // Upload foto dopo la creazione (serve l'id)
+        if (photoFile && tenantId && created?.id) {
+          setPhotoUploading(true)
+          try {
+            const imageUrl = await uploadMenuPhoto(photoFile, tenantId, created.id)
+            await updateMutation.mutateAsync({ id: created.id, image_url: imageUrl })
+          } finally {
+            setPhotoUploading(false)
+          }
+        }
         await refetchMenuItems()
         await refetchCategories()
         setPriceInput('')
+        setPhotoFile(null)
+        setPhotoPreviewUrl(null)
+        setCurrentImageUrl(null)
         setFormData({
           name: '',
           category: categoryKeys[0] ?? '',
@@ -1060,7 +1108,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           Aggiungi, modifica, nascondi o elimina gli elementi del menù
         </p>
         <div className="w-full border-t border-[var(--color-border)] pt-3">
-          <div className="grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2 xl:grid-cols-4">
+          <div className={cn('grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2', features.qrMenu ? 'xl:grid-cols-5' : 'xl:grid-cols-4')}>
             <Button
               variant="ghost"
               size="sm"
@@ -1106,6 +1154,20 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
               <Edit className="h-3.5 w-3.5" />
               Crea / Modifica Promo Menù
             </Button>
+            {features.qrMenu && (
+              <Button
+                variant="ghost"
+                size="sm"
+                type="button"
+                onClick={() => setViewMode('qr_codes')}
+                aria-label="I miei QR menu"
+                title="I miei QR menu"
+                className={cn(menuPricesHeaderCtaButtonClass, 'gap-1.5')}
+              >
+                <QrCode className="h-3.5 w-3.5" />
+                I miei QR
+              </Button>
+            )}
           </div>
         </div>
       </section>
@@ -1411,11 +1473,73 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                   />
                 </div>
               </div>
+              {/* Campo foto piatto (opzionale) */}
+              <div className="mt-6 flex flex-col items-center gap-2">
+                <label className="block text-center text-sm font-medium text-gray-700">
+                  Foto piatto{' '}
+                  <span className="font-normal text-gray-500">(opzionale)</span>
+                </label>
+                <div className="flex flex-col items-center gap-3">
+                  {/* Preview: foto nuova scelta oppure foto già salvata */}
+                  {(photoPreviewUrl || currentImageUrl) && (
+                    <div className="relative">
+                      <img
+                        src={photoPreviewUrl ?? currentImageUrl!}
+                        alt="Anteprima foto piatto"
+                        className="h-28 w-48 rounded-xl object-cover shadow"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (photoPreviewUrl) {
+                            URL.revokeObjectURL(photoPreviewUrl)
+                            setPhotoPreviewUrl(null)
+                            setPhotoFile(null)
+                          } else {
+                            // rimuove foto già salvata solo dopo il salvataggio
+                            setCurrentImageUrl(null)
+                            setPhotoFile(null)
+                          }
+                        }}
+                        className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow"
+                        aria-label="Rimuovi foto"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
+                  {!photoPreviewUrl && !currentImageUrl && (
+                    <label className="flex cursor-pointer items-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-white px-5 py-3 text-sm text-gray-600 hover:border-amber-400 hover:text-amber-700 transition-colors">
+                      <ImageIcon className="h-4 w-4 shrink-0" />
+                      Scegli foto
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/avif"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl)
+                          setPhotoFile(file)
+                          setPhotoPreviewUrl(URL.createObjectURL(file))
+                        }}
+                      />
+                    </label>
+                  )}
+                  {photoFile && !photoUploading && (
+                    <p className="text-xs text-gray-500 truncate max-w-[200px]">{photoFile.name}</p>
+                  )}
+                  {photoUploading && (
+                    <p className="text-xs text-amber-700">Caricamento foto…</p>
+                  )}
+                </div>
+              </div>
+
               <div className="mt-10 flex justify-center gap-3" style={{ marginTop: '40px' }}>
                 <button
                   type="button"
                   onClick={handleSave}
-                  disabled={createMutation.isPending || updateMutation.isPending}
+                  disabled={createMutation.isPending || updateMutation.isPending || photoUploading}
                   className="flex items-center justify-center gap-2 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-emerald-500/35 hover:from-emerald-400 hover:to-emerald-500 hover:border-emerald-600 hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 disabled:hover:border-emerald-700"
                 >
                   <Save className="h-4 w-4 flex-shrink-0" />
@@ -1798,6 +1922,10 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
             </div>
           </div>
         </div>
+      )}
+
+      {viewMode === 'qr_codes' && features.qrMenu && (
+        <MenuQrManager />
       )}
 
       <Modal

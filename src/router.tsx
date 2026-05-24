@@ -6,6 +6,9 @@ import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage'
 import { InvitePage } from './pages/InvitePage'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { TenantProvider } from './contexts/TenantContext'
+import { PublicMenuPage } from './pages/PublicMenuPage'
+import { PublicMenuCategoryPage } from './pages/PublicMenuCategoryPage'
+import { PublicMenuPresetPage } from './pages/PublicMenuPresetPage'
 
 const RootLayout = () => (
   <TenantProvider>
@@ -43,6 +46,29 @@ export const router = createBrowserRouter([
       {
         path: '/prenota',
         element: <TenantNotFound />
+      },
+      // Route menu digitale pubblico via QR
+      {
+        path: '/menu/:tenantSlug/qr/:shortCode/c/:categoryKey',
+        element: <PublicMenuCategoryPage />
+      },
+      {
+        path: '/menu/:tenantSlug/qr/:shortCode/preset/:presetId',
+        element: <PublicMenuPresetPage />
+      },
+      // Predisposta per v2 ordini al tavolo (parametro tableNumber ignorato in fase 1)
+      {
+        path: '/menu/:tenantSlug/qr/:shortCode/t/:tableNumber',
+        element: <PublicMenuPage />
+      },
+      {
+        path: '/menu/:tenantSlug/qr/:shortCode',
+        element: <PublicMenuPage />
+      },
+      // Fallback: mostra il primo QR attivo del tenant
+      {
+        path: '/menu/:tenantSlug',
+        element: <PublicMenuPage />
       },
       // Route invito admin (nuova — token nel path)
       {

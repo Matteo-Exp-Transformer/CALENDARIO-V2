@@ -8,6 +8,8 @@ interface TenantContextType {
   tenantSlug: string | null
   organizationName: string | null
   edition: TenantEdition
+  /** true se il tenant Classic ha acquistato il modulo QR menu */
+  qrMenuEnabled: boolean
   isLoading: boolean
   setTenantFromSlug: (slug: string) => Promise<void>
   setTenantFromAdmin: (email: string) => Promise<void>
@@ -21,6 +23,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [tenantSlug, setTenantSlug] = useState<string | null>(null)
   const [organizationName, setOrganizationName] = useState<string | null>(null)
   const [edition, setEdition] = useState<TenantEdition>('pro')
+  const [qrMenuEnabled, setQrMenuEnabled] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   /** Risolve il tenant dalla slug (usato dalla pagina pubblica /prenota/:slug) */
@@ -33,7 +36,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       // tabella organizations direttamente.
       const { data, error } = await (supabasePublic
         .from('organizations_public') as any)
-        .select('id, name, slug')
+        .select('id, name, slug, qr_menu_enabled')
         .eq('slug', slug)
         .eq('is_active', true)
         .single()
@@ -43,12 +46,14 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setTenantId(null)
         setTenantSlug(null)
         setOrganizationName(null)
+        setQrMenuEnabled(false)
         return
       }
 
       setTenantId(data.id)
       setTenantSlug(data.slug)
       setOrganizationName(data.name)
+      setQrMenuEnabled(Boolean(data.qr_menu_enabled))
     } catch (err) {
       console.error('Errore setTenantFromSlug:', err)
       setTenantId(null)
@@ -97,6 +102,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setTenantSlug(null)
     setOrganizationName(null)
     setEdition('classic')
+    setQrMenuEnabled(false)
   }, [])
 
   return (
@@ -106,6 +112,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         tenantSlug,
         organizationName,
         edition,
+        qrMenuEnabled,
         isLoading,
         setTenantFromSlug,
         setTenantFromAdmin,

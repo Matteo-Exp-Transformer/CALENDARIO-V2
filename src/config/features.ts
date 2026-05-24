@@ -17,9 +17,14 @@ export interface FeatureFlags {
   noShow: boolean
   /** Assegnazione tavoli alle prenotazioni */
   tableAssignments: boolean
+  /**
+   * Menu digitale pubblico via QR.
+   * Pro/Enterprise: sempre true. Classic: true solo se qr_menu_enabled=true su organizations.
+   */
+  qrMenu: boolean
 }
 
-export const buildFeatures = (edition: TenantEdition): FeatureFlags => {
+export const buildFeatures = (edition: TenantEdition, qrMenuEnabled = false): FeatureFlags => {
   const isProOrAbove = edition === 'pro' || edition === 'enterprise'
   return {
     sidebar:          isProOrAbove,
@@ -30,5 +35,6 @@ export const buildFeatures = (edition: TenantEdition): FeatureFlags => {
     walkIn:           isProOrAbove,
     noShow:           isProOrAbove,
     tableAssignments: isProOrAbove,
+    qrMenu:           isProOrAbove || qrMenuEnabled,
   }
 }

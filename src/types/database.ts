@@ -100,10 +100,10 @@ export type Database = {
           event_type: string | null
           id: string
           menu: string | null
+          menu_promo_labels: Json | null
           menu_selection: Json | null
           menu_total_booking: number | null
           menu_total_per_person: number | null
-          menu_promo_labels: Json | null
           no_show: boolean
           num_guests: number | null
           placement: string | null
@@ -133,10 +133,10 @@ export type Database = {
           event_type?: string | null
           id?: string
           menu?: string | null
+          menu_promo_labels?: Json | null
           menu_selection?: Json | null
           menu_total_booking?: number | null
           menu_total_per_person?: number | null
-          menu_promo_labels?: Json | null
           no_show?: boolean
           num_guests?: number | null
           placement?: string | null
@@ -166,10 +166,10 @@ export type Database = {
           event_type?: string | null
           id?: string
           menu?: string | null
+          menu_promo_labels?: Json | null
           menu_selection?: Json | null
           menu_total_booking?: number | null
           menu_total_per_person?: number | null
-          menu_promo_labels?: Json | null
           no_show?: boolean
           num_guests?: number | null
           placement?: string | null
@@ -427,6 +427,27 @@ export type Database = {
           },
         ]
       }
+      ip_blacklist: {
+        Row: {
+          blocked_at: string
+          expires_at: string
+          ip_address: string
+          reason: string
+        }
+        Insert: {
+          blocked_at?: string
+          expires_at?: string
+          ip_address: string
+          reason?: string
+        }
+        Update: {
+          blocked_at?: string
+          expires_at?: string
+          ip_address?: string
+          reason?: string
+        }
+        Relationships: []
+      }
       menu_categories: {
         Row: {
           created_at: string
@@ -479,6 +500,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          image_url: string | null
           name: string
           price: number
           sort_order: number
@@ -491,6 +513,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_url?: string | null
           name: string
           price: number
           sort_order?: number
@@ -503,6 +526,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_url?: string | null
           name?: string
           price?: number
           sort_order?: number
@@ -526,6 +550,63 @@ export type Database = {
           },
         ]
       }
+      menu_qr_codes: {
+        Row: {
+          category_filter: string[] | null
+          content_type: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          preset_ids: string[] | null
+          short_code: string
+          sort_order: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          category_filter?: string[] | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          preset_ids?: string[] | null
+          short_code: string
+          sort_order?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          category_filter?: string[] | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          preset_ids?: string[] | null
+          short_code?: string
+          sort_order?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_qr_codes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_qr_codes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -536,6 +617,7 @@ export type Database = {
           max_bookings_per_year: number
           name: string
           plan: string
+          qr_menu_enabled: boolean
           slug: string
           updated_at: string
         }
@@ -548,6 +630,7 @@ export type Database = {
           max_bookings_per_year?: number
           name: string
           plan?: string
+          qr_menu_enabled?: boolean
           slug: string
           updated_at?: string
         }
@@ -560,6 +643,7 @@ export type Database = {
           max_bookings_per_year?: number
           name?: string
           plan?: string
+          qr_menu_enabled?: boolean
           slug?: string
           updated_at?: string
         }
@@ -908,6 +992,7 @@ export type Database = {
           id: string | null
           is_active: boolean | null
           name: string | null
+          qr_menu_enabled: boolean | null
           slug: string | null
         }
         Insert: {
@@ -915,6 +1000,7 @@ export type Database = {
           id?: string | null
           is_active?: boolean | null
           name?: string | null
+          qr_menu_enabled?: boolean | null
           slug?: string | null
         }
         Update: {
@@ -922,6 +1008,7 @@ export type Database = {
           id?: string | null
           is_active?: boolean | null
           name?: string | null
+          qr_menu_enabled?: boolean | null
           slug?: string | null
         }
         Relationships: []

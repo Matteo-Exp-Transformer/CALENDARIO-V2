@@ -29,8 +29,10 @@ export interface MenuItem {
   price: number
   description?: string
   sort_order: number
-  /** Tipologie prenotazione in cui l’ingrediente è offerto nel menu (form pubblico). */
+  /** Tipologie prenotazione in cui l'ingrediente e offerto nel menu (form pubblico). */
   booking_types?: BookingType[]
+  /** URL pubblico foto piatto (Supabase Storage bucket menu-photos). Opzionale. */
+  image_url?: string | null
 }
 
 export interface MenuItemInput {
@@ -40,6 +42,31 @@ export interface MenuItemInput {
   description?: string
   sort_order?: number
   booking_types?: BookingType[]
+  image_url?: string | null
+}
+
+/** Tipo per i QR code del menu pubblico. */
+export interface MenuQrCode {
+  id: string
+  tenant_id: string
+  short_code: string
+  name: string
+  content_type: 'a_la_carte' | 'preset_menus' | 'mixed'
+  category_filter: string[] | null
+  preset_ids: string[] | null
+  is_active: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export interface MenuQrCodeInput {
+  name: string
+  content_type: 'a_la_carte' | 'preset_menus' | 'mixed'
+  category_filter?: string[] | null
+  preset_ids?: string[] | null
+  is_active?: boolean
+  sort_order?: number
 }
 
 export interface SelectedMenuItem {
