@@ -35,18 +35,18 @@ qrMenu: isProOrAbove || qrMenuEnabled
 
 ---
 
-## 3. DB — Migrazione 030
+## 3. DB — Migrazioni rilevanti
 
-| Cosa | Dettaglio |
-|------|-----------|
-| `menu_items.image_url` | `TEXT NULL` — URL pubblico foto piatto |
-| `menu_qr_codes` | tabella con `short_code UNIQUE`, `content_type`, `category_filter`, `preset_ids`, `is_active`, `sort_order` |
-| `organizations.qr_menu_enabled` | `BOOLEAN DEFAULT false` — override Classic |
-| `organizations_public` view | include `qr_menu_enabled` |
-| Storage bucket `menu-photos` | public=true, 500KB, webp/jpeg/png/avif |
-| RLS `menu_qr_codes` | admin CRUD per proprio tenant; anon legge solo `is_active=true` |
-| RLS `menu_items` public read | policy `public_read_menu_items` per ruolo anon |
-| RLS `menu_categories` public read | policy `public_read_menu_categories` + `GRANT SELECT TO anon` |
+| Migrazione | Cosa aggiunge |
+|------------|---------------|
+| `030` | `menu_items.image_url`, `menu_qr_codes`, `organizations.qr_menu_enabled`, bucket `menu-photos`, RLS public read su `menu_items` e `menu_categories` |
+| `032` | Tabella `menu_homepage_config` (JSONB) — archivia `carousel_items`, `category_images` per tenant |
+| `033` | `menu_categories.description TEXT NULL` — testo opzionale sotto il nome (usato in pagina Prenota e come fallback nel menu QR) |
+| `034` | `menu_homepage_config.theme_key TEXT NOT NULL DEFAULT 'mediterranean_teal'` (5 valori). Tabella `menu_qrcode_categories`: override titolo/descrizione per card categoria nella homepage QR, **separati da `menu_categories`** — non impattano la pagina Prenota |
+
+**Colonne `menu_categories`** (post-033): `id`, `tenant_id`, `key`, `label`, `description`, `sort_order`, `created_at`, `updated_at`.
+
+**Colonne `menu_qrcode_categories`** (034): `id`, `tenant_id`, `category_key`, `title`, `description`, `created_at`, `updated_at`. UNIQUE `(tenant_id, category_key)`.
 
 ---
 
@@ -94,8 +94,9 @@ File: `src/features/booking/hooks/useMenuQrCodes.ts`
 
 | Componente | File |
 |------------|------|
-| `MenuQrManager` | `src/features/booking/components/MenuQrManager.tsx` — lista QR, canvas preview, copia link, download PNG, edit/delete |
-| `MenuQrModal` | `src/features/booking/components/MenuQrModal.tsx` — form crea/modifica QR: nome, tipo contenuto, filtri categoria/preset |
+| `MenuQrManager` | `src/features/booking/components/MenuQrManager.tsx` — solo lista QR (tab "Aspetto homepage" rimosso nella sessione 2026-05-24), canvas preview, copia link, download PNG, edit/delete |
+| `MenuQrModal` | `src/features/booking/components/MenuQrModal.tsx` — `size="lg"`; sezioni: nome QR, categorie visibili (checkbox "Attiva tutte"), filtro preset, preview link; pannello **Aspetto homepage** incorporato in basso (con avviso "condiviso tra tutti i QR") |
+| `MenuHomepageConfigPanel` | `src/features/booking/components/MenuHomepageConfigPanel.tsx` — 4 sezioni: **selettore tema** (5 palette), carosello specialità (titolo+descrizione slide), foto categorie, **titoli/descrizioni card QR** (`menu_qrcode_categories`) |
 
 Il `MenuQrManager` è montato in `MenuPricesTab` quando `viewMode === 'qr_codes'` (pulsante "QR Code" nell'hero section, visibile solo se `features.qrMenu`).
 
@@ -103,7 +104,7 @@ Il `MenuQrManager` è montato in `MenuPricesTab` quando `viewMode === 'qr_codes'
 
 ## 8. Pagine pubbliche (mobile-first)
 
-Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), tema amber, nessun `max-w-7xl`.
+Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), nessun `max-w-7xl`.
 
 | Route | Componente | File |
 |-------|-----------|------|
@@ -112,20 +113,22 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), tema
 | `/menu/:slug/qr/:shortCode/c/:categoryKey` | `PublicMenuCategoryPage` | `src/pages/PublicMenuCategoryPage.tsx` |
 | `/menu/:slug/qr/:shortCode/preset/:presetId` | `PublicMenuPresetPage` | `src/pages/PublicMenuPresetPage.tsx` |
 
-**Tema**: `bg-amber-50` body, `bg-amber-400` sticky header, card `rounded-2xl bg-white shadow-sm`, testo `text-amber-700` per prezzi/accenti.
+**Temi**: 5 palette in `src/features/public-menu/menuThemes.ts`. PNG sfondo in `public/menu-themes/`. Default: `mediterranean_teal`.
 
-**Header homepage** (`PublicMenuPageHeader`): logo app a sinistra (`icons/icon-192-v2.png`) + nome ristorante; hook `usePublicMenuViewport` su tutte le pagine menu per tenere stabile la barra URL su Chrome Android (`interactive-widget=resizes-content`, `min-h-svh`).
+**Layout homepage `PublicMenuPage`** (dall'alto verso il basso, post-sessione 2026-05-24):
 
-**`PublicMenuPage`** — homepage menu:
-- Risolve tenant da slug via `setTenantFromSlug`
-- Carica il QR tramite `short_code` o il QR default se no short_code
-- Mostra categorie alla carta (`CategoryRow` con emoji + chevron) e/o preset evento (`PresetCard`) in base al `content_type` del QR
-- Se `content_type === 'mixed'` mostra entrambe le sezioni con intestazione
+1. **Header a tema** — sfondo PNG (o colore fallback), nome ristorante centrato, fregio decorativo; colore testo da `theme.headerTextColor`. **`PublicMenuPageHeader` rimosso** dalla homepage.
+2. **Sezione carosello** — sfondo body PNG (o fallback); label "Specialità della casa" sempre visibile; slide con gradiente overlay 40% sx + titolo/descrizione; **placeholder trasparente** se nessuna foto (mantiene lo spazio visivo).
+3. **Tab sticky** — `position: sticky; top: 0`; pill colorate col colore accento tema; naviga a preset (se esistono) o categorie.
+4. **Griglia categorie** — `grid-cols-1 min-[400px]:grid-cols-2`; card orizzontale con thumb quadrato 1:1; titolo da `menu_qrcode_categories.title` (fallback `menu_categories.label`); descrizione da `menu_qrcode_categories.description` (fallback `menu_categories.description`); `ChevronRight` lucide.
+5. **Footer data/ora** — card larga, data+ora IT aggiornata ogni minuto.
+
+> Per dettaglio componenti e regole visive: **`docs/per-ui-design-skill/PUBLIC_MENU_LAYOUT_CONTEXT.md`**
 
 **`PublicMenuCategoryPage`** — dettaglio categoria:
 - Carica i piatti della categoria da `menu_items` via `supabasePublic`
-- `ItemCardWithPhoto`: immagine full-width `h-44` + testo (quando `image_url` presente)
-- `ItemCardText`: solo testo (fallback)
+- `ItemCardWithPhoto`: immagine full-width `h-44` + gradiente nero dal basso con testo sovrapposto
+- `ItemCardText`: solo testo (fallback quando `image_url` assente)
 
 **`PublicMenuPresetPage`** — dettaglio menù evento:
 - Carica il preset da `restaurant_settings.booking_custom_staff_presets`
@@ -141,7 +144,16 @@ RULE  Le pagine /menu/* usano SOLO supabasePublic — mai supabase autenticato
 RULE  Il bucket menu-photos è pubblico — le URL sono stabili e cacheable
 RULE  Non aggiungere cursor-pointer inline — usa la regola globale .is-clickable
 RULE  Emoji categorie: mappa CATEGORY_EMOJI in PublicMenuPage — aggiungere nuove voci lì
+RULE  Icone Phosphor categorie: mappa CATEGORY_ICON in PublicMenuPage — aggiungere nuove voci lì
 RULE  content_type valori: 'a_la_carte' | 'preset_menus' | 'mixed' — non aggiungere altri
 RULE  La pagina /menu/:slug senza short_code usa il QR default (primo is_active=true, sort_order ASC)
 RULE  Se short_code specifico non trovato → redirect a /menu/:slug (useEffect in PublicMenuPage)
+RULE  Testo sovrapposto su immagini carosello: gradiente linear-gradient(to right, rgba 0,0,0,0.55 0%, transparent 50%) — overlay 40% sx
+RULE  Griglia categorie: grid-cols-1 / min-[400px]:grid-cols-2; thumb aspect-square w-24; mai split 50/50 (aggiornato in sessione 2026-05-24)
+RULE  Titolo card categoria: legge prima menu_qrcode_categories.title, fallback menu_categories.label — mai hardcoded
+RULE  Descrizione card categoria: legge prima menu_qrcode_categories.description, fallback menu_categories.description — mostrato solo se non null/empty
+RULE  Carosello senza foto: mostrare placeholder trasparente h-28 (non nascondere la sezione) — label "Specialità della casa" sempre visibile
+RULE  Temi: getMenuTheme(key) da src/features/public-menu/menuThemes.ts — mai leggere theme_key direttamente in componenti UI
+RULE  PNG temi in public/menu-themes/ — path stabili nel build; wine_bistrot usa solo colore CSS fallback (nessun PNG)
+RULE  PublicMenuPageHeader (header scuro con logo app) NON è più usato nella homepage QR — rimane per altri possibili usi futuri
 ```

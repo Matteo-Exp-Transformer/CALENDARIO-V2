@@ -8,6 +8,7 @@ export interface MenuCategoryRecord {
   tenant_id: string
   key: string
   label: string
+  description?: string | null
   sort_order: number
   created_at: string
   updated_at: string
@@ -166,6 +167,29 @@ export const useUpdateMenuCategory = () => {
 export type DeleteMenuCategoryInput = {
   id: string
   categoryKey: string
+}
+
+export const useUpdateCategoryDescription = () => {
+  const queryClient = useQueryClient()
+  const { tenantId } = useTenantContext()
+
+  return useMutation({
+    mutationFn: async ({ id, description }: { id: string; description: string | null }) => {
+      const { error } = await ((supabase as any).from('menu_categories') as any)
+        .update({ description, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('tenant_id', tenantId!)
+
+      if (error) throw new Error(handleSupabaseError(error))
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-categories'] })
+      toast.success('Descrizione salvata')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Errore salvataggio descrizione')
+    },
+  })
 }
 
 export const useDeleteMenuCategory = () => {

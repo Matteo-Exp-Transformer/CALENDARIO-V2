@@ -426,6 +426,7 @@ export type Database = {
       menu_categories: {
         Row: {
           created_at: string
+          description: string | null
           id: string
           key: string
           label: string
@@ -435,6 +436,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          description?: string | null
           id?: string
           key: string
           label: string
@@ -444,6 +446,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          description?: string | null
           id?: string
           key?: string
           label?: string
@@ -475,6 +478,7 @@ export type Database = {
           created_at: string
           id: string
           tenant_id: string
+          theme_key: string
           updated_at: string
         }
         Insert: {
@@ -483,6 +487,7 @@ export type Database = {
           created_at?: string
           id?: string
           tenant_id: string
+          theme_key?: string
           updated_at?: string
         }
         Update: {
@@ -491,6 +496,7 @@ export type Database = {
           created_at?: string
           id?: string
           tenant_id?: string
+          theme_key?: string
           updated_at?: string
         }
         Relationships: [
@@ -617,6 +623,51 @@ export type Database = {
           },
           {
             foreignKeyName: "menu_qr_codes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_qrcode_categories: {
+        Row: {
+          category_key: string
+          created_at: string
+          description: string | null
+          id: string
+          tenant_id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          category_key: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          tenant_id: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category_key?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          tenant_id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_qrcode_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_qrcode_categories_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "organizations_public"

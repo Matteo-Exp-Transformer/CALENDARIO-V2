@@ -71,6 +71,11 @@ export interface MenuQrCodeInput {
 
 export interface CarouselItem {
   image_url: string
+  /** Titolo slide (campo nuovo — usa label come fallback in lettura) */
+  title?: string
+  /** Testo breve sotto il titolo */
+  description?: string
+  /** legacy: rimane per retrocompat lettura dati salvati */
   label?: string
   sort_order: number
 }
@@ -80,6 +85,8 @@ export interface MenuHomepageConfig {
   tenant_id: string
   carousel_items: CarouselItem[]
   category_images: Record<string, string>
+  /** Chiave tema visivo (default: 'mediterranean_teal') */
+  theme_key: string
   created_at: string
   updated_at: string
 }
@@ -87,6 +94,25 @@ export interface MenuHomepageConfig {
 export interface MenuHomepageConfigInput {
   carousel_items: CarouselItem[]
   category_images: Record<string, string>
+  theme_key?: string
+}
+
+/** Override titolo/descrizione per le card categoria nella homepage QR.
+ *  Separato da menu_categories per non impattare la pagina Prenota. */
+export interface MenuQrcodeCategoryOverride {
+  id: string
+  tenant_id: string
+  category_key: string
+  title: string | null
+  description: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface MenuQrcodeCategoryOverrideInput {
+  category_key: string
+  title?: string | null
+  description?: string | null
 }
 
 export interface SelectedMenuItem {

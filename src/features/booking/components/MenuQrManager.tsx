@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import QRCode from 'qrcode'
-import { Plus, Edit, Trash2, Copy, Download, QrCode, LayoutDashboard } from 'lucide-react'
+import { Plus, Edit, Trash2, Copy, Download } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import {
@@ -13,19 +13,10 @@ import {
 import { useMenuCategories } from '../hooks/useMenuCategories'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { MenuQrModal } from './MenuQrModal'
-import { MenuHomepageConfigPanel } from './MenuHomepageConfigPanel'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { cn } from '@/lib/utils'
 import type { MenuQrCode, MenuQrCodeInput } from '@/types/menu'
 import type { CustomStaffPreset } from '../constants/presetMenus'
-
-type ManagerTab = 'qr' | 'homepage'
-
-const CONTENT_TYPE_BADGE: Record<string, string> = {
-  a_la_carte: 'Carta',
-  preset_menus: 'Eventi',
-  mixed: 'Misto',
-}
 
 function buildPublicUrl(tenantSlug: string | null, shortCode: string): string {
   return `${window.location.origin}/menu/${tenantSlug}/qr/${shortCode}`
@@ -62,30 +53,20 @@ interface QrRowProps {
 
 function QrRow({ qr, tenantSlug, onEdit, onDelete, isDeleting }: QrRowProps) {
   const url = buildPublicUrl(tenantSlug, qr.short_code)
-  const badgeLabel = CONTENT_TYPE_BADGE[qr.content_type] ?? qr.content_type
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  const renderQrCanvas = async () => {
-    if (!canvasRef.current) return
-    await QRCode.toCanvas(canvasRef.current, url, { width: 80, margin: 1 })
-  }
-
   React.useEffect(() => {
-    void renderQrCanvas()
+    if (!canvasRef.current) return
+    void QRCode.toCanvas(canvasRef.current, url, { width: 80, margin: 1 })
   }, [url])
 
   return (
     <div className="menu-prices-item-row flex-wrap gap-3 px-4 py-4 min-h-[88px]">
-      {/* QR preview */}
       <canvas ref={canvasRef} width={80} height={80} className="shrink-0 rounded-lg" />
 
-      {/* Info */}
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-semibold text-gray-900">{qr.name}</span>
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-            {badgeLabel}
-          </span>
           {!qr.is_active && (
             <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
               Inattivo
@@ -95,7 +76,6 @@ function QrRow({ qr, tenantSlug, onEdit, onDelete, isDeleting }: QrRowProps) {
         <p className="truncate text-xs text-gray-400">{url}</p>
       </div>
 
-      {/* Azioni */}
       <div className="menu-prices-item-actions flex shrink-0 items-center gap-1">
         <button
           type="button"
@@ -149,7 +129,6 @@ export function MenuQrManager() {
   const updateMutation = useUpdateMenuQrCode()
   const deleteMutation = useDeleteMenuQrCode()
 
-  const [activeTab, setActiveTab] = useState<ManagerTab>('qr')
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<MenuQrCode | null>(null)
 
@@ -192,78 +171,42 @@ export function MenuQrManager() {
       aria-label="Gestione QR menu"
     >
       <div className="mx-auto max-w-3xl">
-        {/* Tab switcher */}
-        <div className="flex gap-1 rounded-xl bg-black/5 p-1 mb-6">
-          <button
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs text-gray-600 sm:text-sm">
+            Ogni QR apre una versione pubblica del menu. Scansiona con il telefono per vedere l'anteprima.
+          </p>
+          <Button
+            variant="success"
+            size="sm"
             type="button"
-            onClick={() => setActiveTab('qr')}
-            className={cn(
-              'flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-colors',
-              activeTab === 'qr'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700',
-            )}
+            onClick={openCreate}
+            className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs"
           >
-            <QrCode className="h-4 w-4" />
-            I miei QR
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('homepage')}
-            className={cn(
-              'flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-colors',
-              activeTab === 'homepage'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700',
-            )}
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            Aspetto homepage
-          </button>
+            <Plus className="h-3.5 w-3.5" />
+            Nuovo QR
+          </Button>
         </div>
 
-        {activeTab === 'qr' && (
-          <>
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs text-gray-600 sm:text-sm">
-                Ogni QR apre una versione pubblica del menu. Scansiona con il telefono per vedere l'anteprima.
-              </p>
-              <Button
-                variant="success"
-                size="sm"
-                type="button"
-                onClick={openCreate}
-                className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Nuovo QR
-              </Button>
-            </div>
-
-            <div className="mt-6 flex flex-col gap-3">
-              {isLoading && (
-                <p className="py-8 text-center text-sm text-gray-500">Caricamento…</p>
-              )}
-              {!isLoading && qrCodes.length === 0 && (
-                <p className="rounded-xl border border-dashed border-gray-300 bg-white/60 py-12 text-center text-sm text-gray-600">
-                  Nessun QR ancora. Crea il primo con il pulsante sopra.
-                </p>
-              )}
-              {qrCodes.map((qr) => (
-                <QrRow
-                  key={qr.id}
-                  qr={qr}
-                  tenantSlug={tenantSlug}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                  isDeleting={deleteMutation.isPending}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {activeTab === 'homepage' && <MenuHomepageConfigPanel />}
+        <div className="mt-6 flex flex-col gap-3">
+          {isLoading && (
+            <p className="py-8 text-center text-sm text-gray-500">Caricamento…</p>
+          )}
+          {!isLoading && qrCodes.length === 0 && (
+            <p className="rounded-xl border border-dashed border-gray-300 bg-white/60 py-12 text-center text-sm text-gray-600">
+              Nessun QR ancora. Crea il primo con il pulsante sopra.
+            </p>
+          )}
+          {qrCodes.map((qr) => (
+            <QrRow
+              key={qr.id}
+              qr={qr}
+              tenantSlug={tenantSlug}
+              onEdit={openEdit}
+              onDelete={handleDelete}
+              isDeleting={deleteMutation.isPending}
+            />
+          ))}
+        </div>
       </div>
 
       <MenuQrModal

@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button, Input } from '@/components/ui'
 import { generateShortCode } from '@/lib/shortCodeGenerator'
+import { MenuHomepageConfigPanel } from './MenuHomepageConfigPanel'
 import type { MenuQrCode, MenuQrCodeInput } from '@/types/menu'
 import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
 import type { CustomStaffPreset } from '../constants/presetMenus'
-
-type ContentType = 'a_la_carte' | 'preset_menus' | 'mixed'
 
 interface Props {
   isOpen: boolean
@@ -19,12 +18,6 @@ interface Props {
   baseUrl: string
 }
 
-const CONTENT_TYPE_OPTIONS: { value: ContentType; label: string; desc: string }[] = [
-  { value: 'a_la_carte', label: 'Solo carta', desc: 'Mostra le categorie del menu alla carta' },
-  { value: 'preset_menus', label: 'Solo menù eventi', desc: 'Mostra i menù preselezionati (lauree, ecc.)' },
-  { value: 'mixed', label: 'Entrambi', desc: 'Carta + Menù eventi nella stessa pagina' },
-]
-
 export function MenuQrModal({
   isOpen,
   onClose,
@@ -36,20 +29,18 @@ export function MenuQrModal({
   baseUrl,
 }: Props) {
   const [name, setName] = useState('')
-  const [contentType, setContentType] = useState<ContentType>('a_la_carte')
   const [categoryFilter, setCategoryFilter] = useState<string[]>([])
   const [presetIds, setPresetIds] = useState<string[]>([])
+  const allCategoryKeys = categories.map((c) => c.key)
 
   useEffect(() => {
     if (!isOpen) return
     if (editing) {
       setName(editing.name)
-      setContentType(editing.content_type)
       setCategoryFilter(editing.category_filter ?? [])
       setPresetIds(editing.preset_ids ?? [])
     } else {
       setName('')
-      setContentType('a_la_carte')
       setCategoryFilter([])
       setPresetIds([])
     }
@@ -67,6 +58,13 @@ export function MenuQrModal({
     )
   }
 
+  const allCatsSelected =
+    categoryFilter.length === 0 || categoryFilter.length === allCategoryKeys.length
+
+  const toggleAllCategories = () => {
+    setCategoryFilter(allCatsSelected ? [] : allCategoryKeys)
+  }
+
   const handleSave = () => {
     const trimmed = name.trim()
     if (!trimmed) return
@@ -74,16 +72,13 @@ export function MenuQrModal({
     const shortCode = editing?.short_code ?? generateShortCode()
     const input: MenuQrCodeInput = {
       name: trimmed,
-      content_type: contentType,
+      content_type: 'a_la_carte',
       category_filter: categoryFilter.length > 0 ? categoryFilter : null,
       preset_ids: presetIds.length > 0 ? presetIds : null,
       is_active: editing?.is_active ?? true,
     }
     onSave(shortCode, input)
   }
-
-  const showCategoryFilter = contentType === 'a_la_carte' || contentType === 'mixed'
-  const showPresetFilter = contentType === 'preset_menus' || contentType === 'mixed'
 
   const previewUrl = editing ? `${baseUrl}/menu/[slug]/qr/${editing.short_code}` : null
 
@@ -92,13 +87,13 @@ export function MenuQrModal({
       isOpen={isOpen}
       onClose={onClose}
       title={editing ? 'Modifica QR' : 'Nuovo QR menu'}
-      size="md"
+      size="lg"
       showCloseButton
       closeOnOverlayClick={!isPending}
       closeOnEscape={!isPending}
     >
-      <div className="flex flex-col gap-5">
-        {/* Nome */}
+      <div className="flex flex-col gap-6">
+        {/* Nome QR */}
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
             Nome QR *
@@ -111,38 +106,25 @@ export function MenuQrModal({
           />
         </div>
 
-        {/* Tipo contenuto */}
-        <div>
-          <p className="mb-2 text-sm font-medium text-gray-700">Cosa mostrare *</p>
-          <div className="flex flex-col gap-2">
-            {CONTENT_TYPE_OPTIONS.map((opt) => (
-              <label
-                key={opt.value}
-                className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white px-3 py-3"
-              >
-                <input
-                  type="radio"
-                  name="content-type"
-                  value={opt.value}
-                  checked={contentType === opt.value}
-                  onChange={() => setContentType(opt.value)}
-                  className="mt-0.5 h-4 w-4 shrink-0"
-                />
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">{opt.label}</p>
-                  <p className="text-xs text-gray-500">{opt.desc}</p>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Filtro categorie */}
-        {showCategoryFilter && categories.length > 0 && (
+        {/* Categorie visibili */}
+        {categories.length > 0 && (
           <div>
-            <p className="mb-1 text-sm font-medium text-gray-700">
-              Categorie visibili{' '}
-              <span className="font-normal text-gray-500">(lascia vuoto = tutte)</span>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-sm font-medium text-gray-700">
+                Categorie visibili
+              </p>
+              <label className="flex cursor-pointer items-center gap-1.5 text-xs text-gray-500">
+                <input
+                  type="checkbox"
+                  className="h-3.5 w-3.5"
+                  checked={allCatsSelected}
+                  onChange={toggleAllCategories}
+                />
+                Attiva tutte
+              </label>
+            </div>
+            <p className="mb-2 text-xs text-gray-400">
+              Nessuna selezione = tutte le categorie visibili
             </p>
             <div className="flex flex-wrap gap-2">
               {categories.map((cat) => (
@@ -153,7 +135,7 @@ export function MenuQrModal({
                   <input
                     type="checkbox"
                     className="h-3.5 w-3.5 shrink-0"
-                    checked={categoryFilter.includes(cat.key)}
+                    checked={categoryFilter.length === 0 || categoryFilter.includes(cat.key)}
                     onChange={() => toggleCategory(cat.key)}
                   />
                   {cat.label}
@@ -164,7 +146,7 @@ export function MenuQrModal({
         )}
 
         {/* Filtro preset */}
-        {showPresetFilter && presets.length > 0 && (
+        {presets.length > 0 && (
           <div>
             <p className="mb-1 text-sm font-medium text-gray-700">
               Menù eventi visibili{' '}
@@ -196,7 +178,7 @@ export function MenuQrModal({
           </p>
         )}
 
-        {/* Azioni */}
+        {/* Azioni QR */}
         <div className="flex justify-end gap-2 border-t border-gray-100 pt-2">
           <Button variant="ghost" onClick={onClose} disabled={isPending}>
             Annulla
@@ -208,6 +190,17 @@ export function MenuQrModal({
           >
             {isPending ? 'Salvataggio…' : editing ? 'Salva modifiche' : 'Crea QR'}
           </Button>
+        </div>
+
+        {/* Separatore + pannello aspetto homepage */}
+        <div className="border-t border-gray-200 pt-4">
+          <p className="mb-4 text-xs font-bold uppercase tracking-wider text-gray-500">
+            Aspetto homepage menu
+          </p>
+          <p className="mb-4 text-xs text-amber-700 rounded-lg bg-amber-50 px-3 py-2">
+            L'aspetto è condiviso tra tutti i QR del ristorante.
+          </p>
+          <MenuHomepageConfigPanel />
         </div>
       </div>
     </Modal>

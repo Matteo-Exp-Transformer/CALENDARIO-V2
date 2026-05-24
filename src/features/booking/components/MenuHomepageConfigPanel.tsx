@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useMenuCategories } from '../hooks/useMenuCategories'
 import { useMenuHomepageConfig, useUpsertMenuHomepageConfig } from '../hooks/useMenuHomepageConfig'
+import { useMenuQrcodeCategories, useUpsertMenuQrcodeCategory } from '../hooks/useMenuQrcodeCategories'
+import { MENU_THEMES, DEFAULT_THEME_KEY, type MenuThemeKey } from '@/features/public-menu/menuThemes'
 import type { CarouselItem } from '@/types/menu'
 
 const BUCKET = 'menu-photos'
@@ -60,6 +62,42 @@ async function removeFromStorage(path: string): Promise<void> {
   await (supabase.storage.from(BUCKET) as any).remove([path])
 }
 
+// ── Selettore tema ────────────────────────────────────────────────────────────
+
+function ThemeSelector({
+  value,
+  onChange,
+}: {
+  value: MenuThemeKey
+  onChange: (k: MenuThemeKey) => void
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      {Object.values(MENU_THEMES).map((theme) => (
+        <label
+          key={theme.key}
+          className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2.5"
+        >
+          <input
+            type="radio"
+            name="menu-theme"
+            value={theme.key}
+            checked={value === theme.key}
+            onChange={() => onChange(theme.key)}
+            className="h-4 w-4 shrink-0"
+          />
+          {/* Swatch colore */}
+          <span
+            className="h-5 w-5 shrink-0 rounded-full border border-gray-200"
+            style={{ background: theme.accentColor }}
+          />
+          <span className="text-sm text-gray-800">{theme.label}</span>
+        </label>
+      ))}
+    </div>
+  )
+}
+
 // ── Sezione Carosello ─────────────────────────────────────────────────────────
 
 function CarouselSection({
@@ -108,14 +146,15 @@ function CarouselSection({
 
   const remove = async (i: number) => {
     const item = items[i]
-    // Estrai il path dal URL pubblico
     const match = item.image_url.match(/menu-photos\/(.+)$/)
     if (match) await removeFromStorage(match[1])
     onChange(items.filter((_, idx) => idx !== i).map((x, idx) => ({ ...x, sort_order: idx })))
   }
 
-  const updateLabel = (i: number, label: string) => {
-    const next = items.map((x, idx) => (idx === i ? { ...x, label: label || undefined } : x))
+  const updateField = (i: number, field: 'title' | 'description', value: string) => {
+    const next = items.map((x, idx) =>
+      idx === i ? { ...x, [field]: value || undefined } : x,
+    )
     onChange(next)
   }
 
@@ -145,55 +184,64 @@ function CarouselSection({
 
       {items.length === 0 && (
         <p className="rounded-lg border border-dashed border-gray-300 py-6 text-center text-xs text-gray-400">
-          Nessuna foto. Il carosello non sarà visibile nel menu.
+          Nessuna foto. Nella homepage il carosello mostrerà uno spazio vuoto con il colore del tema.
         </p>
       )}
 
       {items.map((item, i) => (
         <div
           key={item.image_url}
-          className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-2"
+          className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-3"
         >
-          <img
-            src={item.image_url}
-            alt=""
-            className="h-16 w-24 shrink-0 rounded-lg object-cover"
+          <div className="flex items-center gap-3">
+            <img
+              src={item.image_url}
+              alt=""
+              className="h-16 w-24 shrink-0 rounded-lg object-cover"
+            />
+            <div className="flex shrink-0 flex-col gap-0.5">
+              <button
+                type="button"
+                disabled={i === 0}
+                onClick={() => moveUp(i)}
+                className="rounded p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                aria-label="Sposta su"
+              >
+                <ChevronUp className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                disabled={i === items.length - 1}
+                onClick={() => moveDown(i)}
+                className="rounded p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                aria-label="Sposta giù"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => void remove(i)}
+              className="ml-auto shrink-0 rounded p-1 text-red-400 hover:text-red-600"
+              aria-label="Rimuovi"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+          <input
+            type="text"
+            value={item.title ?? ''}
+            onChange={(e) => updateField(i, 'title', e.target.value)}
+            placeholder="Titolo slide (es. Tonno in crosta)"
+            className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
           />
           <input
             type="text"
-            value={item.label ?? ''}
-            onChange={(e) => updateLabel(i, e.target.value)}
-            placeholder="Didascalia (opzionale)"
-            className="min-w-0 flex-1 rounded-md border border-gray-200 px-2 py-1 text-sm outline-none focus:border-gray-400"
+            value={item.description ?? ''}
+            onChange={(e) => updateField(i, 'description', e.target.value)}
+            placeholder="Testo breve (opzionale)"
+            className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
           />
-          <div className="flex shrink-0 flex-col gap-0.5">
-            <button
-              type="button"
-              disabled={i === 0}
-              onClick={() => moveUp(i)}
-              className="rounded p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"
-              aria-label="Sposta su"
-            >
-              <ChevronUp className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              disabled={i === items.length - 1}
-              onClick={() => moveDown(i)}
-              className="rounded p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"
-              aria-label="Sposta giù"
-            >
-              <ChevronDown className="h-4 w-4" />
-            </button>
-          </div>
-          <button
-            type="button"
-            onClick={() => void remove(i)}
-            className="shrink-0 rounded p-1 text-red-400 hover:text-red-600"
-            aria-label="Rimuovi"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
         </div>
       ))}
     </div>
@@ -294,6 +342,90 @@ function CategoryImagesSection({
   )
 }
 
+// ── Sezione titoli/descrizioni QR card ───────────────────────────────────────
+// Override separati da menu_categories: non impattano la pagina Prenota
+
+function QrCategoryOverridesSection() {
+  const { data: categories = [] } = useMenuCategories()
+  const { data: overrides = [] } = useMenuQrcodeCategories()
+  const upsert = useUpsertMenuQrcodeCategory()
+  const [drafts, setDrafts] = useState<Record<string, { title: string; description: string }>>({})
+
+  useEffect(() => {
+    const overrideMap = Object.fromEntries(overrides.map((o) => [o.category_key, o]))
+    const initial: Record<string, { title: string; description: string }> = {}
+    for (const cat of categories) {
+      initial[cat.key] = {
+        title: overrideMap[cat.key]?.title ?? '',
+        description: overrideMap[cat.key]?.description ?? '',
+      }
+    }
+    setDrafts(initial)
+  }, [categories, overrides])
+
+  const handleSave = (catKey: string) => {
+    const d = drafts[catKey]
+    upsert.mutate(
+      {
+        category_key: catKey,
+        title: d.title.trim() || null,
+        description: d.description.trim() || null,
+      },
+      { onSuccess: () => toast.success('Salvato') },
+    )
+  }
+
+  if (categories.length === 0) {
+    return <p className="text-xs text-gray-400">Nessuna categoria trovata.</p>
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-xs text-gray-400">
+        Titolo e descrizione visibili solo nella homepage QR — separati dal nome usato nel form prenotazione.
+      </p>
+      {categories.map((cat) => (
+        <div
+          key={cat.key}
+          className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white px-3 py-3"
+        >
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{cat.label}</span>
+          <input
+            type="text"
+            value={drafts[cat.key]?.title ?? ''}
+            onChange={(e) =>
+              setDrafts((prev) => ({ ...prev, [cat.key]: { ...prev[cat.key], title: e.target.value } }))
+            }
+            placeholder={`Titolo card (default: "${cat.label}")`}
+            className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
+          />
+          <input
+            type="text"
+            value={drafts[cat.key]?.description ?? ''}
+            onChange={(e) =>
+              setDrafts((prev) => ({ ...prev, [cat.key]: { ...prev[cat.key], description: e.target.value } }))
+            }
+            placeholder="Descrizione breve (opzionale)"
+            className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
+          />
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              type="button"
+              disabled={upsert.isPending}
+              onClick={() => handleSave(cat.key)}
+              className="text-xs"
+            >
+              Salva
+            </Button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ── Pannello principale ───────────────────────────────────────────────────────
 
 export function MenuHomepageConfigPanel() {
@@ -303,12 +435,14 @@ export function MenuHomepageConfigPanel() {
 
   const [carouselItems, setCarouselItems] = useState<CarouselItem[]>([])
   const [categoryImages, setCategoryImages] = useState<Record<string, string>>({})
+  const [themeKey, setThemeKey] = useState<MenuThemeKey>(DEFAULT_THEME_KEY)
   const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
     if (saved) {
       setCarouselItems(saved.carousel_items)
       setCategoryImages(saved.category_images)
+      setThemeKey((saved.theme_key as MenuThemeKey) ?? DEFAULT_THEME_KEY)
       setDirty(false)
     }
   }, [saved])
@@ -323,9 +457,14 @@ export function MenuHomepageConfigPanel() {
     setDirty(true)
   }
 
+  const handleThemeChange = (k: MenuThemeKey) => {
+    setThemeKey(k)
+    setDirty(true)
+  }
+
   const handleSave = () => {
     upsert.mutate(
-      { carousel_items: carouselItems, category_images: categoryImages },
+      { carousel_items: carouselItems, category_images: categoryImages, theme_key: themeKey },
       {
         onSuccess: () => {
           toast.success('Aspetto homepage salvato')
@@ -344,6 +483,16 @@ export function MenuHomepageConfigPanel() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Tema */}
+      <section>
+        <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500">
+          Tema homepage
+        </h4>
+        <ThemeSelector value={themeKey} onChange={handleThemeChange} />
+      </section>
+
+      <hr className="border-gray-200" />
+
       {/* Carosello */}
       <section>
         <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500">
@@ -364,7 +513,7 @@ export function MenuHomepageConfigPanel() {
           Foto categorie
         </h4>
         <p className="mb-3 text-xs text-gray-400">
-          Le foto appaiono come sfondo delle card categoria nella homepage del menu.
+          Le foto appaiono come thumbnail nelle card categoria.
         </p>
         <CategoryImagesSection
           tenantId={tenantId}
@@ -383,6 +532,16 @@ export function MenuHomepageConfigPanel() {
           {upsert.isPending ? 'Salvataggio…' : 'Salva aspetto homepage'}
         </Button>
       </div>
+
+      <hr className="border-gray-200" />
+
+      {/* Titoli e descrizioni card QR */}
+      <section>
+        <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500">
+          Titoli e descrizioni card categorie (homepage QR)
+        </h4>
+        <QrCategoryOverridesSection />
+      </section>
     </div>
   )
 }

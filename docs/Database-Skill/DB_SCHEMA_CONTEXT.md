@@ -99,12 +99,46 @@ Vincolo: `UNIQUE(tenant_id, name, category)`. Indice: `(tenant_id, category, sor
 | `tenant_id` | UUID FK → organizations | ON DELETE CASCADE |
 | `key` | TEXT NOT NULL | Slug della categoria |
 | `label` | TEXT NOT NULL | Etichetta visualizzata |
+| `description` | TEXT NULL | Testo opzionale sotto il nome (migrazione 033) |
 | `sort_order` | INTEGER DEFAULT 999 | |
 | `created_at`, `updated_at` | TIMESTAMPTZ | |
 
 Vincoli: `UNIQUE(tenant_id, key)`, `UNIQUE(tenant_id, label)`.
 Indice: `(tenant_id, sort_order, label)`.
 **RLS:** `admin_manage_menu_categories` — ALL per authenticated se `tenant_id = current_admin_tenant_id()`.
+**RLS pubblica:** `public_read_menu_categories` — SELECT per anon (migrazione 030).
+
+---
+
+### `menu_homepage_config` — Configurazione homepage menu QR (032+034)
+
+| Colonna | Tipo | Note |
+|---------|------|------|
+| `id` | UUID PK | |
+| `tenant_id` | UUID FK → organizations | UNIQUE (1 record per tenant) |
+| `carousel_items` | JSONB | Array `CarouselItem[]`: `{image_url, title?, description?, label?, sort_order}` |
+| `category_images` | JSONB | Map `{ [catKey]: url }` foto thumbnail categorie |
+| `theme_key` | TEXT NOT NULL DEFAULT `'mediterranean_teal'` | CHECK 5 valori: `mediterranean_teal`, `cream_sage`, `dark_gold`, `rustic_terracotta`, `wine_bistrot` |
+| `created_at`, `updated_at` | TIMESTAMPTZ | |
+
+**RLS:** `admin_manage_homepage_config` (ALL authenticated) + `public_read_homepage_config` (SELECT anon).
+
+---
+
+### `menu_qrcode_categories` — Override card categoria homepage QR (034)
+
+| Colonna | Tipo | Note |
+|---------|------|------|
+| `id` | UUID PK | |
+| `tenant_id` | UUID FK → organizations | ON DELETE CASCADE |
+| `category_key` | TEXT NOT NULL | Chiave categoria (es. `'pizza'`) |
+| `title` | TEXT NULL | Titolo card QR — sovrascrive `menu_categories.label` solo nella homepage QR |
+| `description` | TEXT NULL | Descrizione breve — sovrascrive `menu_categories.description` solo nella homepage QR |
+| `created_at`, `updated_at` | TIMESTAMPTZ | |
+
+Vincolo UNIQUE: `(tenant_id, category_key)`.
+**RLS:** `admin_manage_qrcode_categories` (ALL authenticated) + `public_read_qrcode_categories` (SELECT anon).
+**Indipendente da `menu_categories`**: modificare questi valori non impatta il nome/descrizione visibili nella pagina Prenota.
 
 ---
 

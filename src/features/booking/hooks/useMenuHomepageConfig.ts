@@ -12,6 +12,8 @@ function parseConfig(raw: Record<string, unknown>): MenuHomepageConfig {
     .filter((x): x is Record<string, unknown> => typeof x === 'object' && x !== null)
     .map((x) => ({
       image_url: String(x.image_url ?? ''),
+      title: x.title != null ? String(x.title) : undefined,
+      description: x.description != null ? String(x.description) : undefined,
       label: x.label != null ? String(x.label) : undefined,
       sort_order: typeof x.sort_order === 'number' ? x.sort_order : 0,
     }))
@@ -31,6 +33,7 @@ function parseConfig(raw: Record<string, unknown>): MenuHomepageConfig {
     tenant_id: String(raw.tenant_id),
     carousel_items: carousel,
     category_images: categoryImages,
+    theme_key: typeof raw.theme_key === 'string' ? raw.theme_key : 'mediterranean_teal',
     created_at: String(raw.created_at),
     updated_at: String(raw.updated_at),
   }
@@ -88,6 +91,7 @@ export function useUpsertMenuHomepageConfig() {
             tenant_id: tenantId,
             carousel_items: input.carousel_items,
             category_images: input.category_images,
+            theme_key: input.theme_key ?? 'mediterranean_teal',
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'tenant_id' },
