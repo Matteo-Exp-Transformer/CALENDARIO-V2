@@ -11,7 +11,7 @@ import {
   Heart,
   type Icon as PhosphorIconType,
 } from '@phosphor-icons/react'
-import { ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabasePublic } from '@/lib/supabasePublic'
 import { usePublicMenuQr, usePublicDefaultMenuQr } from '@/features/booking/hooks/useMenuQrCodes'
@@ -292,6 +292,10 @@ function MenuCarousel({
   )
 }
 
+/** Pixel di scroll dopo il lock sticky per raggiungere opacità piena sulla barra tab. */
+const TAB_BAR_FADE_SCROLL_PX = 56
+const TAB_BAR_SCROLL_STEP_PX = 220
+
 // ── Tab navigazione sticky ────────────────────────────────────────────────────
 
 function MenuNavTabs({
@@ -300,13 +304,21 @@ function MenuNavTabs({
   slug,
   shortCode,
   accentColor,
+  tabBarStickyRgb,
 }: {
   categories: MenuCategoryRecord[]
   presets: { id: string; name: string }[]
   slug: string
   shortCode: string
   accentColor: string
+  tabBarStickyRgb: string
 }) {
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [bgOpacity, setBgOpacity] = useState(0)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
   const usePresets = presets.length > 0
 
   const items = usePresets
@@ -316,25 +328,114 @@ function MenuNavTabs({
         return { key: c.key, label: c.label, href: `/menu/${slug}/qr/${shortCode}/c/${c.key}`, Icon }
       })
 
+  const updateScrollHints = () => {
+    const el = scrollRef.current
+    if (!el) return
+    const { scrollLeft, scrollWidth, clientWidth } = el
+    setCanScrollLeft(scrollLeft > 4)
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4)
+  }
+
+  useEffect(() => {
+    const updateOpacity = () => {
+      const sentinel = sentinelRef.current
+      if (!sentinel) return
+      const bottom = sentinel.getBoundingClientRect().bottom
+      if (bottom > 0) {
+        setBgOpacity(0)
+        return
+      }
+      const progress = Math.min(1, -bottom / TAB_BAR_FADE_SCROLL_PX)
+      setBgOpacity(progress)
+    }
+
+    updateOpacity()
+    window.addEventListener('scroll', updateOpacity, { passive: true })
+    window.addEventListener('resize', updateOpacity)
+    return () => {
+      window.removeEventListener('scroll', updateOpacity)
+      window.removeEventListener('resize', updateOpacity)
+    }
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    updateScrollHints()
+    el.addEventListener('scroll', updateScrollHints, { passive: true })
+    const ro = new ResizeObserver(updateScrollHints)
+    ro.observe(el)
+    return () => {
+      el.removeEventListener('scroll', updateScrollHints)
+      ro.disconnect()
+    }
+  }, [items.length])
+
   if (items.length === 0) return null
 
+  const blurPx = Math.round(bgOpacity * 10)
+  const barBg = `rgba(${tabBarStickyRgb}, ${bgOpacity * 0.97})`
+  const arrowBg = `rgba(${tabBarStickyRgb}, ${Math.max(bgOpacity * 0.97, 0.72)})`
+
+  const scrollTabs = (delta: number) => {
+    scrollRef.current?.scrollBy({ left: delta, behavior: 'smooth' })
+  }
+
   return (
-    <div className="sticky top-0 z-10 flex justify-center overflow-x-auto scrollbar-hide bg-transparent py-3 px-4 gap-2">
-      {items.map((item) => {
-        const Icon = 'Icon' in item ? item.Icon as PhosphorIconType : null
-        return (
-          <Link
-            key={item.key}
-            to={item.href}
-            className="flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium transition-colors"
-            style={{ borderColor: accentColor, color: accentColor }}
+    <>
+      <div ref={sentinelRef} className="h-px w-full shrink-0" aria-hidden />
+      <div
+        className="sticky top-0 z-10 relative"
+        style={{
+          backgroundColor: barBg,
+          backdropFilter: blurPx > 0 ? `blur(${blurPx}px)` : 'none',
+          WebkitBackdropFilter: blurPx > 0 ? `blur(${blurPx}px)` : 'none',
+          transition: 'background-color 0.12s ease-out, backdrop-filter 0.12s ease-out',
+        }}
+      >
+        {canScrollLeft && (
+          <button
+            type="button"
+            aria-label="Scorri categorie indietro"
+            className="absolute left-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-r-md shadow-sm"
+            style={{ backgroundColor: arrowBg, color: accentColor }}
+            onClick={() => scrollTabs(-TAB_BAR_SCROLL_STEP_PX)}
           >
-            {Icon && <Icon size={16} />}
-            {item.label}
-          </Link>
-        )
-      })}
-    </div>
+            <ChevronLeft size={22} strokeWidth={1.75} />
+          </button>
+        )}
+        <div
+          ref={scrollRef}
+          className="flex gap-2 overflow-x-auto scrollbar-hide py-3 px-4 md:px-11"
+        >
+          {items.map((item) => {
+            const Icon = 'Icon' in item ? (item.Icon as PhosphorIconType) : null
+            return (
+              <Link
+                key={item.key}
+                to={item.href}
+                className="flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium transition-colors"
+                style={{ borderColor: accentColor, color: accentColor }}
+              >
+                {Icon && <Icon size={16} />}
+                {item.label}
+              </Link>
+            )
+          })}
+        </div>
+        {canScrollRight && (
+          <button
+            type="button"
+            aria-label="Scorri categorie avanti"
+            className="absolute right-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-l-md shadow-sm"
+            style={{ backgroundColor: arrowBg, color: accentColor }}
+            onClick={() => scrollTabs(TAB_BAR_SCROLL_STEP_PX)}
+          >
+            <ChevronRight size={22} strokeWidth={1.75} />
+          </button>
+        )}
+      </div>
+    </>
   )
 }
 
@@ -481,6 +582,7 @@ function MenuContent({
             slug={slug}
             shortCode={shortCode}
             accentColor={theme.accentColor}
+            tabBarStickyRgb={theme.tabBarStickyRgb}
           />
         )}
 

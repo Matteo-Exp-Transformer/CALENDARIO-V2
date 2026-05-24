@@ -20,6 +20,8 @@ export interface MenuTheme {
   headerFallbackBg: string
   /** Fallback bg-color body se immagine assente */
   bodyFallbackBg: string
+  /** RGB (senza alpha) per sfondo barra tab quando sticky */
+  tabBarStickyRgb: string
 }
 
 const BASE = import.meta.env.BASE_URL
@@ -34,6 +36,7 @@ export const MENU_THEMES: Record<MenuThemeKey, MenuTheme> = {
     bodyImage: `${BASE}menu-themes/mediterranean-teal-body.png`,
     headerFallbackBg: '#0f766e',
     bodyFallbackBg: '#f0fdfa',
+    tabBarStickyRgb: '240, 253, 250',
   },
   cream_sage: {
     key: 'cream_sage',
@@ -44,6 +47,7 @@ export const MENU_THEMES: Record<MenuThemeKey, MenuTheme> = {
     bodyImage: `${BASE}menu-themes/cream-sage-body.png`,
     headerFallbackBg: '#d4c5a3',
     bodyFallbackBg: '#fefce8',
+    tabBarStickyRgb: '254, 252, 232',
   },
   dark_gold: {
     key: 'dark_gold',
@@ -55,6 +59,7 @@ export const MENU_THEMES: Record<MenuThemeKey, MenuTheme> = {
     headerFallbackBg: '#1c1917',
     /** Sotto il PNG body (scroll lungo): stesso tono texture scura, non crema */
     bodyFallbackBg: '#1c1917',
+    tabBarStickyRgb: '28, 25, 23',
   },
   rustic_terracotta: {
     key: 'rustic_terracotta',
@@ -65,6 +70,7 @@ export const MENU_THEMES: Record<MenuThemeKey, MenuTheme> = {
     bodyImage: `${BASE}menu-themes/rustic-terracotta-body.png`,
     headerFallbackBg: '#9a3412',
     bodyFallbackBg: '#292018',
+    tabBarStickyRgb: '41, 32, 24',
   },
   wine_bistrot: {
     key: 'wine_bistrot',
@@ -75,6 +81,7 @@ export const MENU_THEMES: Record<MenuThemeKey, MenuTheme> = {
     bodyImage: null,
     headerFallbackBg: '#4c0519',
     bodyFallbackBg: '#fff1f2',
+    tabBarStickyRgb: '255, 241, 242',
   },
 }
 

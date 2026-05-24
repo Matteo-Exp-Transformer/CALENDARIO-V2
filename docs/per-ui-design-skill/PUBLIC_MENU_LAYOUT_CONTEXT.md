@@ -78,8 +78,17 @@ PNG in `public/menu-themes/` con naming `{tema-key}-header.png` / `{tema-key}-bo
 Sticky in cima durante lo scroll. Usa preset se `presets.length > 0`, altrimenti categorie.
 
 ```tsx
-<div className="sticky top-0 z-10 flex justify-center overflow-x-auto scrollbar-hide bg-transparent py-3 px-4 gap-2">
+{/* sentinel 1px + barra sticky */}
+<div ref={sentinelRef} className="h-px" />
+<div className="sticky top-0 z-10 ..." style={{
+  backgroundColor: `rgba(${theme.tabBarStickyRgb}, opacity)`, // 0 → ~0.97 in ~56px scroll dopo lock
+  backdropFilter: blur progressivo,
+}} />
 ```
+
+Trasparente finché la barra non si blocca in alto; poi sfondo e blur aumentano mentre scorri (~56px) così le card sotto restano leggibili.
+
+Scroll orizzontale: classe `.scrollbar-hide` in `index.css` (niente barra su mobile/desktop). **Desktop (`md+`)**: frecce sx/dx semi-opache (`theme.tabBarStickyRgb`) se c’è overflow; **mobile**: solo swipe, senza frecce.
 
 - Pill: `border` + `color` impostati con `theme.accentColor` via style inline
 - Icona Phosphor da `CATEGORY_ICON` (solo quando mostra categorie)
