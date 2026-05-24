@@ -4,6 +4,6 @@ import { buildFeatures } from '@/config/features'
 import type { FeatureFlags } from '@/config/features'
 
 export const useFeatures = (): FeatureFlags => {
-  const { edition, qrMenuEnabled } = useTenantContext()
-  return useMemo(() => buildFeatures(edition, qrMenuEnabled), [edition, qrMenuEnabled])
+  const { edition, featureOverrides } = useTenantContext()
+  return useMemo(() => buildFeatures(edition, featureOverrides), [edition, featureOverrides])
 }

@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       admin_users: {
@@ -945,6 +920,57 @@ export type Database = {
           },
         ]
       }
+      tenant_features: {
+        Row: {
+          activated_at: string
+          created_by: string | null
+          enabled: boolean
+          expires_at: string | null
+          feature_key: string
+          id: string
+          notes: string | null
+          source: string
+          tenant_id: string
+        }
+        Insert: {
+          activated_at?: string
+          created_by?: string | null
+          enabled: boolean
+          expires_at?: string | null
+          feature_key: string
+          id?: string
+          notes?: string | null
+          source?: string
+          tenant_id: string
+        }
+        Update: {
+          activated_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          expires_at?: string | null
+          feature_key?: string
+          id?: string
+          notes?: string | null
+          source?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_features_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_features_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_usage: {
         Row: {
           booking_requests_count: number
@@ -989,6 +1015,7 @@ export type Database = {
       organizations_public: {
         Row: {
           edition: string | null
+          feature_overrides: string[] | null
           id: string | null
           is_active: boolean | null
           name: string | null
@@ -997,6 +1024,7 @@ export type Database = {
         }
         Insert: {
           edition?: string | null
+          feature_overrides?: never
           id?: string | null
           is_active?: boolean | null
           name?: string | null
@@ -1005,6 +1033,7 @@ export type Database = {
         }
         Update: {
           edition?: string | null
+          feature_overrides?: never
           id?: string | null
           is_active?: boolean | null
           name?: string | null
@@ -1019,6 +1048,7 @@ export type Database = {
         Args: { check_email: string }
         Returns: {
           edition: string
+          feature_overrides: string[]
           name: string
           org_name: string
           slug: string
@@ -1027,6 +1057,7 @@ export type Database = {
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       current_admin_tenant_id: { Args: never; Returns: string }
+      get_tenant_features: { Args: { p_tenant_id: string }; Returns: string[] }
       insert_service_slot: {
         Args: {
           p_display_order: number
@@ -1230,9 +1261,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
