@@ -94,9 +94,9 @@ File: `src/features/booking/hooks/useMenuQrCodes.ts`
 
 | Componente | File |
 |------------|------|
-| `MenuQrManager` | `src/features/booking/components/MenuQrManager.tsx` — solo lista QR (tab "Aspetto homepage" rimosso nella sessione 2026-05-24), canvas preview, copia link, download PNG, edit/delete |
-| `MenuQrModal` | `src/features/booking/components/MenuQrModal.tsx` — `size="lg"`; sezioni: nome QR, categorie visibili (checkbox "Attiva tutte"), filtro preset, preview link; pannello **Aspetto homepage** incorporato in basso (con avviso "condiviso tra tutti i QR") |
-| `MenuHomepageConfigPanel` | `src/features/booking/components/MenuHomepageConfigPanel.tsx` — 4 sezioni: **selettore tema** (5 palette), carosello specialità (titolo+descrizione slide), foto categorie, **titoli/descrizioni card QR** (`menu_qrcode_categories`) |
+| `MenuQrManager` | `src/features/booking/components/MenuQrManager.tsx` — solo lista «I miei QR» (tab Aspetto homepage spostato in modale) |
+| `MenuQrModal` | `src/features/booking/components/MenuQrModal.tsx` — `size="lg"`; nome QR, categorie (checkbox «Attiva tutte»), preset opzionale, **Aspetto homepage** in fondo (condiviso tra tutti i QR del tenant) |
+| `MenuHomepageConfigPanel` | `src/features/booking/components/MenuHomepageConfigPanel.tsx` — tema, carosello (titolo max 60, testo max 125, contatori), foto categorie, titoli/descrizioni card QR |
 
 Il `MenuQrManager` è montato in `MenuPricesTab` quando `viewMode === 'qr_codes'` (pulsante "QR Code" nell'hero section, visibile solo se `features.qrMenu`).
 
@@ -115,15 +115,18 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 
 **Temi**: 5 palette in `src/features/public-menu/menuThemes.ts`. PNG sfondo in `public/menu-themes/`. Default: `mediterranean_teal`.
 
-**Layout homepage `PublicMenuPage`** (dall'alto verso il basso, post-sessione 2026-05-24):
+**Layout homepage `PublicMenuPage`** (post-sessione layout 24-05-26, vedi anche `docs/Sessioni di lavoro/24-05-26/Report-menu-qr-homepage-layout-sessione.md`):
 
-1. **Header a tema** — sfondo PNG (o colore fallback), nome ristorante centrato, fregio decorativo; colore testo da `theme.headerTextColor`. **`PublicMenuPageHeader` rimosso** dalla homepage.
-2. **Sezione carosello** — sfondo body PNG (o fallback); label "Specialità della casa" sempre visibile; slide con gradiente overlay 40% sx + titolo/descrizione; **placeholder trasparente** se nessuna foto (mantiene lo spazio visivo).
-3. **Tab sticky** — `position: sticky; top: 0`; pill colorate col colore accento tema; naviga a preset (se esistono) o categorie.
-4. **Griglia categorie** — `grid-cols-1 min-[400px]:grid-cols-2`; card orizzontale con thumb quadrato 1:1; titolo da `menu_qrcode_categories.title` (fallback `menu_categories.label`); descrizione da `menu_qrcode_categories.description` (fallback `menu_categories.description`); `ChevronRight` lucide.
-5. **Footer data/ora** — card larga, data+ora IT aggiornata ogni minuto.
+1. **Sfondo pagina unico** — `themePageBackgroundStyle()` in `PublicMenuPage.tsx`: PNG header nella fascia `min(48vh,420px)` + PNG body `100% auto` ancorato sotto la fascia (sfumatura bianca ~2/5 del file, senza `cover` che stirava il gradiente).
+2. **Hero `<header>`** — nome ristorante + fregio + `MenuCarousel` (nessuna label esterna “Specialità…”); badge solo dentro ogni slide. **`PublicMenuPageHeader` non usato** sulla homepage.
+3. **Carosello** — slide full-bleed, overlay gradiente 40% sx, titolo/descrizione da `carousel_items`; pallini **cliccabili** (tap mobile 44px). Placeholder `h-28` se zero foto.
+4. **Tab `MenuNavTabs`** — sticky; sfondo trasparente → opaco progressivo (~56px scroll) con `theme.tabBarStickyRgb`; scroll senza barra (`.scrollbar-hide`); frecce sx/dx solo **desktop** se overflow.
+5. **Griglia categorie** — `grid-cols-1` / `min-[400px]:grid-cols-2`; thumb 1:1; override `menu_qrcode_categories` poi fallback `menu_categories`.
+6. **Footer `MenuFooterCard`** — data e ora IT, `mt-auto` in fondo pagina.
 
-> Per dettaglio componenti e regole visive: **`docs/per-ui-design-skill/PUBLIC_MENU_LAYOUT_CONTEXT.md`**
+> Dettaglio componenti: **`docs/per-ui-design-skill/PUBLIC_MENU_LAYOUT_CONTEXT.md`**
+
+**Limiti admin carosello** (`MenuHomepageConfigPanel` → `CarouselSection`): titolo slide max **60** caratteri, testo breve max **125**, contatore `n/max` sotto ogni campo.
 
 **`PublicMenuCategoryPage`** — dettaglio categoria:
 - Carica i piatti della categoria da `menu_items` via `supabasePublic`
@@ -152,8 +155,14 @@ RULE  Testo sovrapposto su immagini carosello: gradiente linear-gradient(to righ
 RULE  Griglia categorie: grid-cols-1 / min-[400px]:grid-cols-2; thumb aspect-square w-24; mai split 50/50 (aggiornato in sessione 2026-05-24)
 RULE  Titolo card categoria: legge prima menu_qrcode_categories.title, fallback menu_categories.label — mai hardcoded
 RULE  Descrizione card categoria: legge prima menu_qrcode_categories.description, fallback menu_categories.description — mostrato solo se non null/empty
-RULE  Carosello senza foto: mostrare placeholder trasparente h-28 (non nascondere la sezione) — label "Specialità della casa" sempre visibile
-RULE  Temi: getMenuTheme(key) da src/features/public-menu/menuThemes.ts — mai leggere theme_key direttamente in componenti UI
-RULE  PNG temi in public/menu-themes/ — path stabili nel build; wine_bistrot usa solo colore CSS fallback (nessun PNG)
-RULE  PublicMenuPageHeader (header scuro con logo app) NON è più usato nella homepage QR — rimane per altri possibili usi futuri
+RULE  Carosello senza foto: placeholder trasparente h-28 — badge "Specialità della casa" solo dentro la slide, non sopra il carosello
+RULE  Pallini carosello: button cliccabili con goToSlide — non solo drag/scroll
+RULE  Sfondo pagina: themePageBackgroundStyle() — non due section con headerImage/bodyImage separate (evita stacco)
+RULE  Body PNG: background-size 100% auto + position sotto --menu-header-band — non cover sul body intero
+RULE  Tab sticky: sfondo rgba(tabBarStickyRgb, opacity) cresce dopo lock; scrollbar-hide; frecce md+ se overflow
+RULE  Admin carosello: CAROUSEL_SLIDE_TITLE_MAX=60, CAROUSEL_SLIDE_DESCRIPTION_MAX=125 in MenuHomepageConfigPanel
+RULE  Temi: getMenuTheme(key) da menuThemes.ts — campi anche tabBarStickyRgb, bodyFallbackBg (scuro per dark_gold/rustic)
+RULE  PNG temi in public/menu-themes/ — wine_bistrot senza PNG (solo CSS)
+RULE  PublicMenuPageHeader NON usato sulla homepage QR
+RULE  Foto categorie: upload su Supabase menu-photos — modifiche admin non passano da Git
 ```

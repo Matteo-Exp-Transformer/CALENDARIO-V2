@@ -26,8 +26,8 @@ Leggi il task ricevuto e applica questa tabella:
 | **TenantContext / useFeatures / edition / tenant_features / login / auth / feature flag / featureOverrides** | `docs/DATA_FLOW_SKILL.md` — flusso identitario end-to-end |
 | **Edition / pricing / add-on / vendita / cliente / pacchetto / commerciale / feature_key / bundle** | `docs/Marketing-Skill/MARKETING_SKILL.md` |
 | **tenant_features** (tabella DB, RPC, override) | `docs/Database-Skill/DB_SKILL.md` + `docs/DATA_FLOW_SKILL.md` |
-| **Menu QR pubblico / QR code / foto piatti / pagina mobile menu / menu digitale** | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` |
-| **Layout pagina menu pubblica / card categorie / carosello / hero section / pill icone / testo su immagini / griglie** | `docs/per-ui-design-skill/PUBLIC_MENU_LAYOUT_CONTEXT.md` |
+| **Menu QR pubblico / QR code / foto piatti / pagina mobile menu / menu digitale** | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` — report sessione layout: `docs/Sessioni di lavoro/24-05-26/Report-menu-qr-homepage-layout-sessione.md` |
+| **Layout pagina menu pubblica / card categorie / carosello / hero section / pill icone / testo su immagini / griglie / sfondi tema** | `docs/per-ui-design-skill/PUBLIC_MENU_LAYOUT_CONTEXT.md` |
 | UI / className / Tailwind / layout / componenti / tema / colori / index.css | `docs/per-ui-design-skill/UI_EDIT_SKILL.md` |
 | **Responsive / breakpoint / mobile / grid che collassa / padding-gap adattivi / max-width container / contenuto pagina vs sidebar** | `docs/per-ui-design-skill/UI_RESPONSIVE_SKILL.md` |
 | **BookingCalendar — layout tab Calendario, celle mese, titolo responsive, data su Oggi, padding tab** | **`docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md`** + `ADMIN_CLASSIC_SKILL.md` §4c |

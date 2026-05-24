@@ -98,6 +98,9 @@ function ThemeSelector({
   )
 }
 
+const CAROUSEL_SLIDE_TITLE_MAX = 60
+const CAROUSEL_SLIDE_DESCRIPTION_MAX = 125
+
 // ── Sezione Carosello ─────────────────────────────────────────────────────────
 
 function CarouselSection({
@@ -152,8 +155,10 @@ function CarouselSection({
   }
 
   const updateField = (i: number, field: 'title' | 'description', value: string) => {
+    const maxLen = field === 'title' ? CAROUSEL_SLIDE_TITLE_MAX : CAROUSEL_SLIDE_DESCRIPTION_MAX
+    const clipped = value.slice(0, maxLen)
     const next = items.map((x, idx) =>
-      idx === i ? { ...x, [field]: value || undefined } : x,
+      idx === i ? { ...x, [field]: clipped || undefined } : x,
     )
     onChange(next)
   }
@@ -228,20 +233,32 @@ function CarouselSection({
               <Trash2 className="h-4 w-4" />
             </button>
           </div>
-          <input
-            type="text"
-            value={item.title ?? ''}
-            onChange={(e) => updateField(i, 'title', e.target.value)}
-            placeholder="Titolo slide (es. Tonno in crosta)"
-            className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
-          />
-          <input
-            type="text"
-            value={item.description ?? ''}
-            onChange={(e) => updateField(i, 'description', e.target.value)}
-            placeholder="Testo breve (opzionale)"
-            className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
-          />
+          <div>
+            <input
+              type="text"
+              value={item.title ?? ''}
+              maxLength={CAROUSEL_SLIDE_TITLE_MAX}
+              onChange={(e) => updateField(i, 'title', e.target.value)}
+              placeholder="Titolo slide (es. Tonno in crosta)"
+              className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
+            />
+            <p className="mt-0.5 text-right text-[11px] text-gray-400 tabular-nums">
+              {(item.title ?? '').length}/{CAROUSEL_SLIDE_TITLE_MAX}
+            </p>
+          </div>
+          <div>
+            <input
+              type="text"
+              value={item.description ?? ''}
+              maxLength={CAROUSEL_SLIDE_DESCRIPTION_MAX}
+              onChange={(e) => updateField(i, 'description', e.target.value)}
+              placeholder="Testo breve (opzionale)"
+              className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
+            />
+            <p className="mt-0.5 text-right text-[11px] text-gray-400 tabular-nums">
+              {(item.description ?? '').length}/{CAROUSEL_SLIDE_DESCRIPTION_MAX}
+            </p>
+          </div>
         </div>
       ))}
     </div>

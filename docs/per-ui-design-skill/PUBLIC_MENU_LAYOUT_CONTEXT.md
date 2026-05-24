@@ -10,7 +10,7 @@ description: >-
 
 > File principale: `src/pages/PublicMenuPage.tsx`
 > Skill entry point: `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`
-> Ultima revisione: 2026-05-24 — redesign homepage con temi, carousel overlay, tab sticky, griglia 2-col
+> Ultima revisione: 2026-05-26 — sfondo unificato, tab opaca al lock, carosello pallini click, limiti admin 60/125
 
 ---
 
@@ -44,7 +44,7 @@ Pagina: `themePageBackgroundStyle()` — header `100% × min(48vh,420px)`; body 
 
 **File**: `src/features/public-menu/menuThemes.ts`
 
-Ogni tema definisce: `accentColor`, `headerTextColor`, `headerImage`, `bodyImage`, `headerFallbackBg`, `bodyFallbackBg`.
+Ogni tema definisce: `accentColor`, `headerTextColor`, `headerImage`, `bodyImage`, `headerFallbackBg`, `bodyFallbackBg`, **`tabBarStickyRgb`** (sfondo barra tab quando sticky).
 
 | Chiave | Label | PNG disponibili |
 |--------|-------|----------------|
@@ -71,7 +71,8 @@ PNG in `public/menu-themes/` con naming `{tema-key}-header.png` / `{tema-key}-bo
 | Overlay testo | `linear-gradient(to right, rgba(0,0,0,0.55) 0%, transparent 50%)` | Gradiente orizzontale 40% sx |
 | Posizione testo | `absolute inset-y-0 left-0 w-1/2` | Solo sul 50% sinistro |
 | Cuore | Phosphor `Heart weight="fill"` | Colore `theme.accentColor` |
-| Pallini | `width: activeIdx ? 16 : 8; height: 8` | Colore `accentColor` (attivo) / `#d6d3d1` |
+| Pallini | `width: activeIdx ? 16 : 8; height: 8` | **`<button>`** cliccabili → `goToSlide(i)`; `min-h-11 min-w-11`, `touch-manipulation` |
+| Label sopra carosello | — | **Rimossa** — solo badge dentro slide |
 
 ### `MenuNavTabs`
 
