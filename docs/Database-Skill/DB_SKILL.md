@@ -47,8 +47,8 @@ Carica i file indicati **prima** di aprire qualsiasi file da modificare.
 
 ```
 LOCK  supabase/migrations/          — file già applicati: MAI modificare
-LOCK  TenantContext.tsx             — core multi-tenancy
 LOCK  src/lib/supabase.ts           — client autenticato
+→ Per regole su TenantContext vedi APP_CONTEXT_SKILL.md §4
 
 RULE  Ogni tabella dati ha tenant_id UUID NOT NULL REFERENCES organizations(id)
 RULE  Ogni tabella ha RLS abilitata + policy admin_* per SELECT/INSERT/UPDATE/DELETE

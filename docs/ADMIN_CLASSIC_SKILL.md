@@ -13,17 +13,17 @@ description: >-
 
 ---
 
-## 0. Regola d'oro per gli agenti
+## 0. Regola d'oro per gli agenti — verifica strutturale obbligatoria
 
-**Prima di modificare qualsiasi file della LOCK list qui sotto, l'agente DEVE produrre questa spiegazione preventiva all'utente e attendere conferma:**
+**Prima di modificare qualsiasi file della LOCK list qui sotto, l'agente DEVE:**
 
-1. **File coinvolti**: elenco completo dei path che verranno toccati.
-2. **A cosa servono**: spiegazione in linguaggio utente di cosa fa ciascun file. Esempio: "questa è la pagina che il ristoratore vede quando apre la dashboard al mattino" — non "questo è un componente React che renderizza un layout flex".
-3. **Flusso utente reale**: descrivere un caso d'uso concreto che mostra perché il cambio è necessario. Esempio: "Mario apre l'app, clicca su Calendario, oggi vede X, dovrebbe vedere Y, ecco perché modifichiamo questo file".
-4. **Edition impattate**: indicare se il cambio tocca Classic, Pro, Enterprise o tutte.
-5. **Cosa potrebbe rompersi**: lista realistica dei rischi, in linguaggio utente. Esempio: "se sbagliamo, Mario apre il calendario e non vede le prenotazioni di oggi".
+1. **Leggere per intero** tutti i file da toccare e i file collegati (chiamanti, tipi, componenti condivisi). Mai editare avendo letto solo un frammento da grep.
+2. **Identificare i conflitti**: quali contratti (prop, tipi, query keys, mutation signature) verrebbero cambiati? Qual è il rischio per Classic?
+3. **Procedere solo se** la modifica preserva l'integrità strutturale e i contratti esistenti.
 
-**Senza queste 5 cose comunicate prima, l'agente NON modifica nessun file LOCK.**
+**Attendere conferma esplicita SOLO se** la modifica viola un invariante documentato (es. rimuove una mutation, cambia una prop obbligatoria, altera la logica di risoluzione tenant).
+
+Per tutto il resto: procedi, ma comunicare il flusso utente impattato **dopo** la modifica in linguaggio utente (vedi `COMUNICAZIONE_UTENTE_SKILL.md`).
 
 ---
 
@@ -173,55 +173,32 @@ Le feature sidebar (CRM esteso, Servizio, Analytics, Home) NON devono:
 
 ## 3. Quando un agente sta per modificare un file LOCK
 
-**Workflow obbligatorio**:
+**Workflow**:
 
 ```
 1. Agente legge il task
 2. Identifica i file da toccare
 3. Verifica se almeno uno è in LOCK list
 4. SE SÌ:
-   → Produce spiegazione preventiva (5 punti del paragrafo 0)
-   → Aspetta conferma utente
-   → SOLO DOPO conferma, scrive codice
+   → Legge per intero tutti i file da toccare + file collegati
+   → Identifica contratti che cambiano e rischi per Classic
+   → SE viola un invariante documentato → spiega il rischio a Matteo e aspetta conferma
+   → SE non viola invarianti → procede, poi comunica in linguaggio utente cosa è cambiato
 5. SE NO:
    → Procede normalmente
 ```
 
-**Esempio di spiegazione preventiva ben fatta** (template da usare):
+**Esempio di comunicazione post-modifica** (in linguaggio utente):
 
-> Per implementare X devo toccare questi file:
->
-> - `src/pages/AdminDashboard.tsx` — è la pagina principale che vede ogni cliente, anche Classic.
-> - `src/features/booking/components/BookingCalendar.tsx` — è il calendario delle prenotazioni.
->
-> **Flusso utente**: oggi Mario clicca il tab Calendario e vede le prenotazioni in lista. Vogliamo aggiungere un filtro "solo confermate". Quindi nel calendario aggiungiamo un toggle in alto, e quando attivo nasconde le prenotazioni pending.
->
-> **Edition impattate**: tutte (Classic, Pro, Enterprise). È una feature base.
->
-> **Cosa potrebbe rompersi**: se sbagliamo il filtro, Mario potrebbe non vedere prenotazioni che esistono → pensa di avere meno coperti del reale → disastro. Quindi aggiungo anche un test che verifica che il default mostri TUTTE le prenotazioni (toggle off).
->
-> **Confermi che procedo?**
+> Ho aggiunto un filtro "solo confermate" nel calendario. Ora Mario può cliccare il toggle in alto e vedere solo le prenotazioni già accettate. Di default il calendario mostra tutto come prima, quindi nessun cambiamento per chi non usa il filtro.
+
+Non serve una spiegazione formale 5 punti a meno che la modifica non tocchi un invariante (mutation signature, prop obbligatoria, logica tenant).
 
 ---
 
-## 4. Stato attuale (snapshot 23-05-26 — post sessione layout BookingCalendar + cleanup repo)
+## 4. Stato attuale
 
-### Commit chiave post merge sidebar→main (`7376b89`)
-
-- `316449b` Form Pubblico in tab Prenotazioni + bottone Impostazioni nel footer di `AdminDashboard`
-- `fd2f321` Limite walk-in 0–500 in tab Servizio (`WalkInLimitCard.tsx`) + UX orari apertura
-- `91a751c` Anteprima ingrandita su card sfondo del tab Prenota
-- `b7b1434` UX header sezione fasce orarie in Impostazioni
-- `b660f7d` / `b96d783` / `ea101a4` / `ac02267` / `fa19ba0` Refactor catena Menu (categorie con cascade, modifica ingredienti con pannello tipologie, preset menu, catalogo condiviso `MenuSelection`)
-- `39fdb43` 5 NavItem header sempre visibili anche con form «Nuova Prenotazione» aperto
-- `d533a30` Campo Posizionamento solo Pro, etichette diete con «o»
-- `ea1acdd` / `8f197fb` / `354d9c0` Layout calendario full-width, celle mese altezza minima, titolo responsive → vedi §4c + `BOOKING_CALENDAR_LAYOUT_CONTEXT.md`
-- `d334c2f` Pulizia massiva `docs/`: rimossi report di sessioni storiche, archivi e guide manuali dal repo versionato. I report di sessione futuri continuano a vivere in `docs/Sessioni di lavoro/GG-MM-AA/` (cartella locale, non versionata)
-- `8dd1b27` Fix migration 019 (`setting_key`, non `key`)
-
-### Snapshot tecnico
-
-(snapshot 22-05-26 — post A5 check disponibilità fascia pubblica verificato — invariato)
+> Cronologia sessioni e commit chiave: vedi [`docs/SESSION_LOG.md`](SESSION_LOG.md).
 
 Branch `Sviluppo-Dashboard-laterale` rispetto a `main`:
 

@@ -23,6 +23,9 @@ Leggi il task ricevuto e applica questa tabella:
 | AdminShell / sidebar / nav / sezioni / routing admin | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
 | CRM / clienti / customer / useCustomers / CustomerProfile | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
 | Edition / FEATURES flag / useFeatures / features.sidebar / buildFeatures | `docs/APP_CONTEXT_SKILL.md` § 2 + `src/config/features.ts` + `src/hooks/useFeatures.ts` |
+| **TenantContext / useFeatures / edition / tenant_features / login / auth / feature flag / featureOverrides** | `docs/DATA_FLOW_SKILL.md` — flusso identitario end-to-end |
+| **Edition / pricing / add-on / vendita / cliente / pacchetto / commerciale / feature_key / bundle** | `docs/Marketing-Skill/MARKETING_SKILL.md` |
+| **tenant_features** (tabella DB, RPC, override) | `docs/Database-Skill/DB_SKILL.md` + `docs/DATA_FLOW_SKILL.md` |
 | **Menu QR pubblico / QR code / foto piatti / pagina mobile menu / menu digitale** | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` |
 | UI / className / Tailwind / layout / componenti / tema / colori / index.css | `docs/per-ui-design-skill/UI_EDIT_SKILL.md` |
 | **Responsive / breakpoint / mobile / grid che collassa / padding-gap adattivi / max-width container / contenuto pagina vs sidebar** | `docs/per-ui-design-skill/UI_RESPONSIVE_SKILL.md` |
@@ -143,9 +146,11 @@ LOCK  ADMIN CLASSICA — vedi docs/ADMIN_CLASSIC_SKILL.md
       • src/features/booking/hooks/useBookingMutations.ts
       • src/features/booking/hooks/useCustomers.ts (parte base)
 
-      → Prima di toccare uno di questi file l'agente DEVE produrre
-        spiegazione preventiva (5 punti) e attendere conferma utente.
-        Vedi sezione 0 di ADMIN_CLASSIC_SKILL.md.
+      → Per i file LOCK l'agente DEVE: (1) leggere prima tutti i file collegati
+        per capire l'impatto, (2) identificare i possibili conflitti, (3) procedere
+        solo se la modifica preserva l'integrità strutturale e i contratti esistenti.
+        Non serve attendere conferma esplicita SALVO che la modifica violi un
+        invariante documentato. Vedi sezione 0 di ADMIN_CLASSIC_SKILL.md.
 
 RULE  Prima di modificare: leggere INTERO il file da toccare + i file collegati
       necessari (chiamanti, tipi, componente condiviso). MAI editare avendo
@@ -170,8 +175,8 @@ RULE  cn() da @/lib/utils — mai clsx() o twMerge() direttamente
 RULE  !important Tailwind v4: suffisso → `border-red-500!` (non `!border-red-500`)
 RULE  data-admin-theme: nessun cleanup — il tema deve persistere per tutta la sessione
 RULE  Due client Supabase: non mischiare supabase ↔ supabasePublic
-RULE  Feature flag commerciali (migrazione 031): governate da `tenant_features` (tabella) + `edition` (bundle base). `useFeatures()` legge sempre da `TenantContext.featureOverrides` → `buildFeatures(edition, featureOverrides)`. Mai leggere `qr_menu_enabled` o altre colonne booleane su `organizations` per gating UI — usare solo `features.X`. Per aggiungere un add-on: `INSERT INTO tenant_features (tenant_id, feature_key, enabled, source)`. TODO: UI super-admin per gestione tenant_features → sessione futura quando >5 clienti paganti.
-RULE  Menu QR (qrMenu flag): auto-true per Pro/Enterprise, per Classic dipende da `tenant_features` (feature_key='qrMenu', gestito da `featureOverrides`). Pagine pubbliche: `/menu/:slug`, `/menu/:slug/qr/:shortCode`, `/c/:categoryKey`, `/preset/:presetId`. Foto piatti: bucket `menu-photos`, path `{tenantId}/{itemId}.webp`, solo webp/jpeg/png/avif, max 500KB, compressa canvas prima dell'upload. Vedi `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`.
+RULE  Feature flag commerciali: governate da `tenant_features` (tabella DB) + `edition` (bundle base). `useFeatures()` legge da `TenantContext.featureOverrides` → `buildFeatures(edition, featureOverrides)` → `FeatureFlags`. Mai leggere colonne `_enabled` da `organizations` né `featureOverrides` direttamente per gating UI — usare solo `features.X`. Flusso completo in `docs/DATA_FLOW_SKILL.md`. Procedura add-on in `docs/Marketing-Skill/MARKETING_SKILL.md`.
+RULE  Menu QR (qrMenu flag): auto-true per Pro/Enterprise, per Classic dipende da `tenant_features` (feature_key='qrMenu'). Pagine pubbliche: `/menu/:slug`, `/menu/:slug/qr/:shortCode`, `/c/:categoryKey`, `/preset/:presetId`. Foto piatti: bucket `menu-photos`, path `{tenantId}/{itemId}.webp`, solo webp/jpeg/png/avif, max 500KB, compressa canvas prima dell'upload. Vedi `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`.
 RULE  Email CRM: normalizeCustomerEmail() prima di confronto o scrittura
 RULE  UUID: cancelled_by è UUID auth.users.id — mai passare email a campi UUID
 ```
@@ -193,6 +198,7 @@ npm run validate      # lint + typecheck + test (usare pre-PR)
 ## 6. Convenzioni
 
 - **Comunicazione con l'utente**: leggi `docs/COMUNICAZIONE_UTENTE_SKILL.md` **all'inizio di ogni sessione** — contiene le regole su come rispondere a Matteo (breve, nomi dinamici, no gergo). Questa regola vale per ogni skill.
+- **RULE Linguaggio utente**: quando spieghi cosa hai fatto o cosa cambierà, usa flussi e schermate concrete — mai nomi di componenti isolati. Mai "ho modificato `MenuPricesTab.tsx`" → sempre "ora Mario quando apre la tab Menu vede un nuovo pulsante per generare il QR". Esempi concreti obbligatori. Vedi `docs/COMUNICAZIONE_UTENTE_SKILL.md`.
 - **Logger**: `logger.debug/info/warn/error` da `src/lib/logger.ts` — mai `console.log`
 - **TanStack Query**: query server-state nei hook in `src/features/booking/hooks/`
 - **Commit**: `feat(scope):` · `fix(scope):` · `update(scope):`
@@ -202,9 +208,7 @@ npm run validate      # lint + typecheck + test (usare pre-PR)
 
 ## 7. Obbligo fine sessione — Report + Allineamento skill
 
-**Sessione 24-05-26 (menu QR):** [Report-menu-qr-pubblico-fase-1.md](Sessioni%20di%20lavoro/24-05-26/Report-menu-qr-pubblico-fase-1.md) — tabella `menu_qr_codes`, bucket `menu-photos`, foto piatti, 3 pagine pubbliche mobile-first, flag `qrMenu`, admin QR manager. Migrazione `030` (test applicata).
-
-**Sessione 23-05-26 (promo menù):** [Report-refactor-promo-menu-rimozione-vol-au-vent.md](Sessioni%20di%20lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md) — rename `booking_menu_promos`, rimozione omaggio automatico, migrazione `029` (test applicata). Correlato: [Report-promo-menu-label-prenotazione.md](Sessioni%20di%20lavoro/23-05-26/Report-promo-menu-label-prenotazione.md).
+**Cronologia sessioni**: vedi [`docs/SESSION_LOG.md`](SESSION_LOG.md).
 
 Al termine di ogni sessione di lavoro se utente di da conferma che il lavoro è stato svolto con successo, l'agente DEVE:
 
@@ -240,7 +244,9 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | `restaurantSettingRegistry.ts` (validazione, range, campi) | `APP_CONTEXT_SKILL.md` §4 RULE walk_in_max_guests |
 | `MenuPricesTab.tsx` / `MenuSelection.tsx` / `menuPricesCatalogLayout.ts` / `presetMenus.ts` | `APP_CONTEXT_SKILL.md` §4 RULE Menu Prenota |
 | `MenuQrManager.tsx` / `MenuQrModal.tsx` / `useMenuQrCodes.ts` / pagine pubbliche menu | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` + `APP_CONTEXT_SKILL.md` §4 RULE Menu QR |
-| `tenant_features` / `buildFeatures` / `featureOverrides` / `TenantContext` / `useFeatures` | `APP_CONTEXT_SKILL.md` §4 RULE Feature flag commerciali |
+| `tenant_features` / `buildFeatures` / `featureOverrides` / `TenantContext` / `useFeatures` | `APP_CONTEXT_SKILL.md` §4 RULE Feature flag commerciali + `DATA_FLOW_SKILL.md` |
+| `docs/Marketing-Skill/FEATURE_CATALOG_CONTEXT.md` (nuova feature add-on) | Aggiorna tabella catalogo feature |
+| `check_admin_email` RPC / `organizations_public` vista | `DATA_FLOW_SKILL.md` §2 + §5 |
 | `menuPhotoUpload.ts` / `shortCodeGenerator.ts` | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` |
 | `useBookingMutations.ts` / `useWalkInMutation.ts` / qualsiasi mutation che scrive `confirmed_start` o `desired_time` | `ADMIN_CLASSIC_SKILL.md` §4 + §4b |
 | `dateUtils.ts` (createBookingDateTime, extractTimeFromISO, getAccurateStartTime) | `ADMIN_CLASSIC_SKILL.md` §4b + `TESTING_CONTEXT.md` se cambiano i test |
