@@ -114,6 +114,8 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), tema
 
 **Tema**: `bg-amber-50` body, `bg-amber-400` sticky header, card `rounded-2xl bg-white shadow-sm`, testo `text-amber-700` per prezzi/accenti.
 
+**Header homepage** (`PublicMenuPageHeader`): logo app a sinistra (`icons/icon-192-v2.png`) + nome ristorante; hook `usePublicMenuViewport` su tutte le pagine menu per tenere stabile la barra URL su Chrome Android (`interactive-widget=resizes-content`, `min-h-svh`).
+
 **`PublicMenuPage`** — homepage menu:
 - Risolve tenant da slug via `setTenantFromSlug`
 - Carica il QR tramite `short_code` o il QR default se no short_code

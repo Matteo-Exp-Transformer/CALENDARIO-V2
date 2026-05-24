@@ -1801,6 +1801,15 @@ button.archive-tab-filter-btn:focus:not(:focus-visible) {
   }
 }
 
+/* Menu QR pubblico — viewport stabile su Chrome Android */
+html.public-menu-viewport {
+  overflow-x: clip;
+}
+
+html.public-menu-viewport body {
+  overflow-x: clip;
+}
+
 /* ───────────────────────────────────────────
    Stampa briefing turno: nasconde la shell,
    mostra solo la print-area.

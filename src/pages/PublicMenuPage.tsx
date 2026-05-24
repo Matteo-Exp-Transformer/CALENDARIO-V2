@@ -6,6 +6,8 @@ import { supabasePublic } from '@/lib/supabasePublic'
 import { usePublicMenuQr, usePublicDefaultMenuQr } from '@/features/booking/hooks/useMenuQrCodes'
 import type { MenuCategoryRecord } from '@/features/booking/hooks/useMenuCategories'
 import type { MenuQrCode } from '@/types/menu'
+import { PublicMenuPageHeader } from '@/features/booking/components/PublicMenuPageHeader'
+import { usePublicMenuViewport } from '@/hooks/usePublicMenuViewport'
 
 /** Emoji mappate ai key standard delle categorie. */
 const CATEGORY_EMOJI: Record<string, string> = {
@@ -81,14 +83,6 @@ function usePublicPresets(tenantId: string | null, presetIds: string[] | null) {
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-
-function PageHeader({ name }: { name: string }) {
-  return (
-    <header className="sticky top-0 z-10 bg-amber-400 px-4 py-4 shadow-sm">
-      <h1 className="text-center text-lg font-bold text-amber-950 leading-tight">{name}</h1>
-    </header>
-  )
-}
 
 function CategoryRow({
   category,
@@ -225,6 +219,7 @@ function MenuContent({
 // ── Pagina principale ─────────────────────────────────────────────────────────
 
 export function PublicMenuPage() {
+  usePublicMenuViewport()
   const { tenantSlug, shortCode } = useParams<{ tenantSlug: string; shortCode?: string }>()
   const navigate = useNavigate()
   const { tenantId, organizationName, isLoading: tenantLoading } = useTenantBySlug(tenantSlug)
@@ -251,7 +246,7 @@ export function PublicMenuPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-amber-50">
+      <div className="min-h-svh bg-amber-50">
         <div className="sticky top-0 h-14 bg-amber-400" />
         <div className="flex items-center justify-center py-16 text-gray-500 text-sm">
           Caricamento...
@@ -262,7 +257,7 @@ export function PublicMenuPage() {
 
   if (!tenantId) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-amber-50 px-6">
+      <div className="flex min-h-svh items-center justify-center bg-amber-50 px-6">
         <p className="text-center text-sm text-gray-500">Ristorante non trovato.</p>
       </div>
     )
@@ -271,8 +266,8 @@ export function PublicMenuPage() {
   const resolvedShortCode = shortCode ?? qr?.short_code ?? ''
 
   return (
-    <div className="min-h-screen bg-amber-50">
-      <PageHeader name={organizationName ?? 'Menu'} />
+    <div className="min-h-svh bg-amber-50">
+      <PublicMenuPageHeader name={organizationName ?? 'Menu'} />
       {qr ? (
         <MenuContent qr={qr} slug={tenantSlug} shortCode={resolvedShortCode} />
       ) : (

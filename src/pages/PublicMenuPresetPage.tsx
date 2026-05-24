@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabasePublic } from '@/lib/supabasePublic'
+import { usePublicMenuViewport } from '@/hooks/usePublicMenuViewport'
 import type { MenuItem } from '@/types/menu'
 import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
 
@@ -55,6 +56,7 @@ function useMenuItemsByIds(tenantId: string | null, itemIds: string[]) {
 }
 
 export function PublicMenuPresetPage() {
+  usePublicMenuViewport()
   const { tenantSlug, shortCode, presetId } = useParams<{
     tenantSlug: string
     shortCode: string
@@ -72,7 +74,7 @@ export function PublicMenuPresetPage() {
   const loading = tenantLoading || presetLoading || (!!preset && itemsLoading)
 
   return (
-    <div className="min-h-screen bg-amber-50">
+    <div className="min-h-svh bg-amber-50">
       <header className="sticky top-0 z-10 bg-amber-400 px-4 py-3 shadow-sm">
         <div className="flex items-center gap-3">
           <Link
