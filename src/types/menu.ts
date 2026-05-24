@@ -69,6 +69,26 @@ export interface MenuQrCodeInput {
   sort_order?: number
 }
 
+export interface CarouselItem {
+  image_url: string
+  label?: string
+  sort_order: number
+}
+
+export interface MenuHomepageConfig {
+  id: string
+  tenant_id: string
+  carousel_items: CarouselItem[]
+  category_images: Record<string, string>
+  created_at: string
+  updated_at: string
+}
+
+export interface MenuHomepageConfigInput {
+  carousel_items: CarouselItem[]
+  category_images: Record<string, string>
+}
+
 export interface SelectedMenuItem {
   id: string
   name: string

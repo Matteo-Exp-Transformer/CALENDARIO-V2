@@ -27,7 +27,12 @@ function usePublicCategoryItems(tenantId: string | null, categoryKey: string | u
         .order('name', { ascending: true })
 
       if (error) throw error
-      return (data ?? []) as MenuItem[]
+      const items = (data ?? []) as MenuItem[]
+      // Prima quelli con foto, poi senza
+      return [
+        ...items.filter((i) => i.image_url),
+        ...items.filter((i) => !i.image_url),
+      ]
     },
     enabled: !!tenantId && !!categoryKey,
   })
@@ -62,7 +67,7 @@ function ItemCardWithPhoto({ item }: { item: MenuItem }) {
       <div className="px-4 py-3">
         <div className="flex items-center justify-between gap-2">
           <span className="text-base font-semibold text-gray-900 leading-snug">{item.name}</span>
-          <span className="shrink-0 text-base font-bold text-amber-700">€{item.price.toFixed(2)}</span>
+          <span className="shrink-0 text-base font-bold text-stone-700">€{item.price.toFixed(2)}</span>
         </div>
         {item.description?.trim() && (
           <p className="mt-1 text-sm text-gray-500 leading-snug">{item.description}</p>
@@ -81,7 +86,7 @@ function ItemCardText({ item }: { item: MenuItem }) {
           <p className="mt-0.5 text-sm text-gray-500 leading-snug">{item.description}</p>
         )}
       </div>
-      <span className="shrink-0 text-base font-bold text-amber-700">€{item.price.toFixed(2)}</span>
+      <span className="shrink-0 text-base font-bold text-stone-700">€{item.price.toFixed(2)}</span>
     </div>
   )
 }
@@ -103,20 +108,19 @@ export function PublicMenuCategoryPage() {
   const loading = tenantLoading || itemsLoading
 
   return (
-    <div className="min-h-svh bg-amber-50">
-      {/* Header con pill categoria */}
-      <header className="sticky top-0 z-10 bg-amber-400 px-4 py-3 shadow-sm">
+    <div className="min-h-svh bg-stone-50">
+      <header className="sticky top-0 z-10 bg-stone-800 px-4 py-3 shadow-sm">
         <div className="flex items-center gap-3">
           <Link
             to={backHref}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-950/10 text-amber-950 active:bg-amber-950/20"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white active:bg-white/20"
             aria-label="Torna al menu"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
-          <h1 className="flex-1 text-center text-lg font-bold text-amber-950 leading-tight pr-9">
+          <h1 className="flex-1 text-center text-lg font-bold text-white leading-tight pr-9">
             {categoryLabel || '…'}
           </h1>
         </div>

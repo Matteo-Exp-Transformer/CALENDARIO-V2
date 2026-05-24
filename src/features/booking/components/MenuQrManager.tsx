@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import QRCode from 'qrcode'
-import { Plus, Edit, Trash2, Copy, Download, QrCode } from 'lucide-react'
+import { Plus, Edit, Trash2, Copy, Download, QrCode, LayoutDashboard } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import {
@@ -13,10 +13,13 @@ import {
 import { useMenuCategories } from '../hooks/useMenuCategories'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { MenuQrModal } from './MenuQrModal'
+import { MenuHomepageConfigPanel } from './MenuHomepageConfigPanel'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { cn } from '@/lib/utils'
 import type { MenuQrCode, MenuQrCodeInput } from '@/types/menu'
 import type { CustomStaffPreset } from '../constants/presetMenus'
+
+type ManagerTab = 'qr' | 'homepage'
 
 const CONTENT_TYPE_BADGE: Record<string, string> = {
   a_la_carte: 'Carta',
@@ -146,6 +149,7 @@ export function MenuQrManager() {
   const updateMutation = useUpdateMenuQrCode()
   const deleteMutation = useDeleteMenuQrCode()
 
+  const [activeTab, setActiveTab] = useState<ManagerTab>('qr')
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<MenuQrCode | null>(null)
 
@@ -188,48 +192,78 @@ export function MenuQrManager() {
       aria-label="Gestione QR menu"
     >
       <div className="mx-auto max-w-3xl">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <QrCode className="h-5 w-5 text-warm-wood" />
-            <h3 className="font-serif text-lg font-bold text-warm-wood md:text-xl">
-              I miei QR
-            </h3>
-          </div>
-          <Button
-            variant="success"
-            size="sm"
+        {/* Tab switcher */}
+        <div className="flex gap-1 rounded-xl bg-black/5 p-1 mb-6">
+          <button
             type="button"
-            onClick={openCreate}
-            className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs"
+            onClick={() => setActiveTab('qr')}
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-colors',
+              activeTab === 'qr'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700',
+            )}
           >
-            <Plus className="h-3.5 w-3.5" />
-            Nuovo QR
-          </Button>
+            <QrCode className="h-4 w-4" />
+            I miei QR
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('homepage')}
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-colors',
+              activeTab === 'homepage'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700',
+            )}
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            Aspetto homepage
+          </button>
         </div>
-        <p className="mt-1 text-xs text-gray-600 sm:text-sm">
-          Ogni QR apre una versione pubblica del menu. Scansiona con il telefono per vedere l'anteprima.
-        </p>
 
-        <div className="mt-6 flex flex-col gap-3">
-          {isLoading && (
-            <p className="py-8 text-center text-sm text-gray-500">Caricamento…</p>
-          )}
-          {!isLoading && qrCodes.length === 0 && (
-            <p className="rounded-xl border border-dashed border-gray-300 bg-white/60 py-12 text-center text-sm text-gray-600">
-              Nessun QR ancora. Crea il primo con il pulsante sopra.
-            </p>
-          )}
-          {qrCodes.map((qr) => (
-            <QrRow
-              key={qr.id}
-              qr={qr}
-              tenantSlug={tenantSlug}
-              onEdit={openEdit}
-              onDelete={handleDelete}
-              isDeleting={deleteMutation.isPending}
-            />
-          ))}
-        </div>
+        {activeTab === 'qr' && (
+          <>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs text-gray-600 sm:text-sm">
+                Ogni QR apre una versione pubblica del menu. Scansiona con il telefono per vedere l'anteprima.
+              </p>
+              <Button
+                variant="success"
+                size="sm"
+                type="button"
+                onClick={openCreate}
+                className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Nuovo QR
+              </Button>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              {isLoading && (
+                <p className="py-8 text-center text-sm text-gray-500">Caricamento…</p>
+              )}
+              {!isLoading && qrCodes.length === 0 && (
+                <p className="rounded-xl border border-dashed border-gray-300 bg-white/60 py-12 text-center text-sm text-gray-600">
+                  Nessun QR ancora. Crea il primo con il pulsante sopra.
+                </p>
+              )}
+              {qrCodes.map((qr) => (
+                <QrRow
+                  key={qr.id}
+                  qr={qr}
+                  tenantSlug={tenantSlug}
+                  onEdit={openEdit}
+                  onDelete={handleDelete}
+                  isDeleting={deleteMutation.isPending}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {activeTab === 'homepage' && <MenuHomepageConfigPanel />}
       </div>
 
       <MenuQrModal

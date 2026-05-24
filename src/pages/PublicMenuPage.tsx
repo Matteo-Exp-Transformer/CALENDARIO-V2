@@ -1,11 +1,12 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabasePublic } from '@/lib/supabasePublic'
 import { usePublicMenuQr, usePublicDefaultMenuQr } from '@/features/booking/hooks/useMenuQrCodes'
+import { usePublicMenuHomepageConfig } from '@/features/booking/hooks/useMenuHomepageConfig'
 import type { MenuCategoryRecord } from '@/features/booking/hooks/useMenuCategories'
-import type { MenuQrCode } from '@/types/menu'
+import type { MenuQrCode, CarouselItem } from '@/types/menu'
 import { PublicMenuPageHeader } from '@/features/booking/components/PublicMenuPageHeader'
 import { usePublicMenuViewport } from '@/hooks/usePublicMenuViewport'
 
@@ -82,9 +83,131 @@ function usePublicPresets(tenantId: string | null, presetIds: string[] | null) {
   })
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── Carosello ────────────────────────────────────────────────────────────────
 
-function CategoryRow({
+function MenuCarousel({ items }: { items: CarouselItem[] }) {
+  const [activeIdx, setActiveIdx] = useState(0)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  const handleScroll = () => {
+    const el = scrollRef.current
+    if (!el) return
+    const idx = Math.round(el.scrollLeft / el.offsetWidth)
+    setActiveIdx(idx)
+  }
+
+  return (
+    <section className="px-4 pt-5">
+      <p className="mb-2 text-xs font-bold uppercase tracking-wider text-stone-500">
+        Specialità della casa
+      </p>
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="flex overflow-x-auto snap-x snap-mandatory rounded-2xl scrollbar-hide gap-0"
+        style={{ scrollSnapType: 'x mandatory' }}
+      >
+        {items.map((item, i) => (
+          <div
+            key={i}
+            className="relative h-48 w-full shrink-0 snap-start overflow-hidden rounded-2xl"
+            style={{ scrollSnapAlign: 'start', minWidth: '100%' }}
+          >
+            <img
+              src={item.image_url}
+              alt={item.label ?? ''}
+              className="h-full w-full object-cover"
+              loading={i === 0 ? 'eager' : 'lazy'}
+            />
+            {item.label && (
+              <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent px-4 pb-3 pt-8">
+                <p className="text-sm font-semibold text-white">{item.label}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      {/* Pallini */}
+      {items.length > 1 && (
+        <div className="mt-2 flex justify-center gap-1.5">
+          {items.map((_, i) => (
+            <span
+              key={i}
+              className={`block rounded-full transition-all ${
+                i === activeIdx ? 'h-2 w-4 bg-stone-700' : 'h-2 w-2 bg-stone-300'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+// ── Pill buttons categoria ────────────────────────────────────────────────────
+
+function CategoryPills({
+  categories,
+  activeKey,
+  onSelect,
+}: {
+  categories: MenuCategoryRecord[]
+  activeKey: string | null
+  onSelect: (key: string | null) => void
+}) {
+  return (
+    <div className="flex gap-2 overflow-x-auto px-4 py-4 scrollbar-hide">
+      <button
+        type="button"
+        onClick={() => onSelect(null)}
+        className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+          activeKey === null
+            ? 'bg-stone-800 text-white'
+            : 'border border-stone-200 bg-white text-stone-700'
+        }`}
+      >
+        Tutte
+      </button>
+      {categories.map((cat) => (
+        <button
+          key={cat.key}
+          type="button"
+          onClick={() => onSelect(cat.key)}
+          className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+            activeKey === cat.key
+              ? 'bg-stone-800 text-white'
+              : 'border border-stone-200 bg-white text-stone-700'
+          }`}
+        >
+          {cat.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// ── Card categoria ────────────────────────────────────────────────────────────
+
+function CategoryCardPhoto({
+  category,
+  href,
+  imageUrl,
+}: {
+  category: MenuCategoryRecord
+  href: string
+  imageUrl: string
+}) {
+  return (
+    <Link to={href} className="relative block overflow-hidden rounded-2xl shadow-sm">
+      <img src={imageUrl} alt={category.label} className="h-32 w-full object-cover" />
+      <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent px-3 pb-3 pt-8">
+        <p className="text-sm font-bold text-white">{category.label}</p>
+      </div>
+    </Link>
+  )
+}
+
+function CategoryCardText({
   category,
   href,
 }: {
@@ -95,7 +218,7 @@ function CategoryRow({
   return (
     <Link
       to={href}
-      className="flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-4 shadow-sm active:bg-amber-50 transition-colors"
+      className="flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-4 shadow-sm active:bg-stone-50 transition-colors"
     >
       <div className="flex items-center gap-3 min-w-0">
         {emoji && <span className="text-2xl leading-none shrink-0">{emoji}</span>}
@@ -113,7 +236,7 @@ function PresetCard({ preset, href }: { preset: { id: string; name: string; item
   return (
     <Link
       to={href}
-      className="flex flex-col gap-1 rounded-2xl bg-white px-4 py-4 shadow-sm active:bg-amber-50 transition-colors"
+      className="flex flex-col gap-1 rounded-2xl bg-white px-4 py-4 shadow-sm active:bg-stone-50 transition-colors"
     >
       <div className="flex items-center justify-between gap-2">
         <span className="text-base font-semibold text-gray-900">{preset.name}</span>
@@ -147,11 +270,23 @@ function MenuContent({
     qr.tenant_id,
     qr.content_type !== 'a_la_carte' ? qr.preset_ids : [],
   )
+  const { data: homepageConfig } = usePublicMenuHomepageConfig(qr.tenant_id)
+
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
   const showCart = qr.content_type === 'a_la_carte' || qr.content_type === 'mixed'
   const showPresets = qr.content_type === 'preset_menus' || qr.content_type === 'mixed'
-
   const isLoading = catLoading || presetLoading
+
+  const carouselItems = homepageConfig?.carousel_items ?? []
+  const categoryImages = homepageConfig?.category_images ?? {}
+
+  const visibleCategories =
+    activeCategory === null
+      ? categories
+      : categories.filter((c) => c.key === activeCategory)
+
+  const hasAnyPhoto = categories.some((c) => categoryImages[c.key])
 
   if (isLoading) {
     return (
@@ -162,36 +297,67 @@ function MenuContent({
   }
 
   return (
-    <main className="flex flex-col gap-6 px-4 py-6">
-      {showCart && (
-        <section>
-          {qr.content_type === 'mixed' && (
-            <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-amber-700">
-              Alla Carta
-            </h2>
-          )}
-          {categories.length === 0 ? (
-            <p className="rounded-2xl bg-white px-4 py-8 text-center text-sm text-gray-500 shadow-sm">
-              Menu in preparazione
-            </p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {categories.map((cat) => (
-                <CategoryRow
-                  key={cat.key}
-                  category={cat}
-                  href={`/menu/${slug}/qr/${shortCode}/c/${cat.key}`}
-                />
-              ))}
-            </div>
-          )}
-        </section>
+    <div>
+      {/* Carosello specialità */}
+      {carouselItems.length > 0 && <MenuCarousel items={carouselItems} />}
+
+      {showCart && categories.length > 0 && (
+        <>
+          {/* Pill categorie */}
+          <CategoryPills
+            categories={categories}
+            activeKey={activeCategory}
+            onSelect={setActiveCategory}
+          />
+
+          {/* Grid categorie */}
+          <main className="px-4 pb-6">
+            {qr.content_type === 'mixed' && (
+              <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-stone-500">
+                Alla Carta
+              </h2>
+            )}
+            {hasAnyPhoto ? (
+              <div className="grid grid-cols-2 gap-3">
+                {visibleCategories.map((cat) => {
+                  const imgUrl = categoryImages[cat.key]
+                  const href = `/menu/${slug}/qr/${shortCode}/c/${cat.key}`
+                  return imgUrl ? (
+                    <CategoryCardPhoto key={cat.key} category={cat} href={href} imageUrl={imgUrl} />
+                  ) : (
+                    <div key={cat.key} className="col-span-2">
+                      <CategoryCardText category={cat} href={href} />
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {visibleCategories.map((cat) => (
+                  <CategoryCardText
+                    key={cat.key}
+                    category={cat}
+                    href={`/menu/${slug}/qr/${shortCode}/c/${cat.key}`}
+                  />
+                ))}
+              </div>
+            )}
+          </main>
+        </>
+      )}
+
+      {showCart && categories.length === 0 && (
+        <main className="px-4 py-6">
+          <p className="rounded-2xl bg-white px-4 py-8 text-center text-sm text-gray-500 shadow-sm">
+            Menu in preparazione
+          </p>
+        </main>
       )}
 
       {showPresets && (
-        <section>
+        <section className="px-4 pb-6">
           {qr.content_type === 'mixed' && (
-            <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-amber-700">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-stone-500">
               Menù Eventi
             </h2>
           )}
@@ -212,7 +378,7 @@ function MenuContent({
           )}
         </section>
       )}
-    </main>
+    </div>
   )
 }
 
@@ -235,7 +401,6 @@ export function PublicMenuPage() {
   const qr = shortCode ? qrByCode : qrDefault
   const loading = tenantLoading || qrLoading || qrDefaultLoading
 
-  // Se short_code specifico non trovato, redirect alla root /menu/:slug
   useEffect(() => {
     if (!loading && shortCode && !qr) {
       navigate(`/menu/${tenantSlug}`, { replace: true })
@@ -246,8 +411,8 @@ export function PublicMenuPage() {
 
   if (loading) {
     return (
-      <div className="min-h-svh bg-amber-50">
-        <div className="sticky top-0 h-14 bg-amber-400" />
+      <div className="min-h-svh bg-stone-50">
+        <div className="sticky top-0 h-14 bg-stone-800" />
         <div className="flex items-center justify-center py-16 text-gray-500 text-sm">
           Caricamento...
         </div>
@@ -257,7 +422,7 @@ export function PublicMenuPage() {
 
   if (!tenantId) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-amber-50 px-6">
+      <div className="flex min-h-svh items-center justify-center bg-stone-50 px-6">
         <p className="text-center text-sm text-gray-500">Ristorante non trovato.</p>
       </div>
     )
@@ -266,7 +431,7 @@ export function PublicMenuPage() {
   const resolvedShortCode = shortCode ?? qr?.short_code ?? ''
 
   return (
-    <div className="min-h-svh bg-amber-50">
+    <div className="min-h-svh bg-stone-50">
       <PublicMenuPageHeader name={organizationName ?? 'Menu'} />
       {qr ? (
         <MenuContent qr={qr} slug={tenantSlug} shortCode={resolvedShortCode} />
