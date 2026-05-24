@@ -23,6 +23,7 @@ Leggi il task ricevuto e applica questa tabella:
 | AdminShell / sidebar / nav / sezioni / routing admin | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
 | CRM / clienti / customer / useCustomers / CustomerProfile | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
 | Edition / FEATURES flag / useFeatures / features.sidebar / buildFeatures | `docs/APP_CONTEXT_SKILL.md` § 2 + `src/config/features.ts` + `src/hooks/useFeatures.ts` |
+| **Menu QR pubblico / QR code / foto piatti / pagina mobile menu / menu digitale** | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` |
 | UI / className / Tailwind / layout / componenti / tema / colori / index.css | `docs/per-ui-design-skill/UI_EDIT_SKILL.md` |
 | **Responsive / breakpoint / mobile / grid che collassa / padding-gap adattivi / max-width container / contenuto pagina vs sidebar** | `docs/per-ui-design-skill/UI_RESPONSIVE_SKILL.md` |
 | **BookingCalendar — layout tab Calendario, celle mese, titolo responsive, data su Oggi, padding tab** | **`docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md`** + `ADMIN_CLASSIC_SKILL.md` §4c |
@@ -103,17 +104,19 @@ src/
 ├── components/layout/   AdminShell.tsx
 ├── components/ui/       Button, Input, Modal, Card, Badge, Alert, EmptyState, Spinner…
 ├── config/              features.ts  ← buildFeatures(edition) → FeatureFlags
-├── contexts/            TenantContext.tsx  ← LOCKED (eccezione: campo edition)
+├── contexts/            TenantContext.tsx  ← LOCKED (eccezione: campo edition + qrMenuEnabled)
 ├── features/booking/
-│   ├── components/      componenti dashboard (BookingCalendar, CRM, ecc.)
-│   ├── hooks/           useAdminAuth, useBookingMutations, useCustomers, ecc.
+│   ├── components/      componenti dashboard (BookingCalendar, CRM, MenuQrManager, MenuQrModal, ecc.)
+│   ├── hooks/           useAdminAuth, useBookingMutations, useMenuQrCodes, useCustomers, ecc.
 │   ├── lib/             restaurantSettingRegistry
 │   └── utils/           helper puri (date, prezzi)
 ├── hooks/               useFeatures.ts, useBusinessHours.ts, useRateLimit.ts…
 ├── lib/                 supabase.ts, supabasePublic.ts, email.ts, logger.ts, utils.ts
+│                        menuPhotoUpload.ts, shortCodeGenerator.ts
 ├── pages/               AdminDashboard, AdminHomePage, CrmPage, ServizioPage, AnalyticsPage…
+│                        PublicMenuPage, PublicMenuCategoryPage, PublicMenuPresetPage
 ├── router.tsx           ← solo su esplicita richiesta
-└── types/               database.ts (generato), booking.ts, customer.ts, edition.ts
+└── types/               database.ts (generato), booking.ts, customer.ts, edition.ts, menu.ts
 ```
 
 ### 3a. File dead-code presenti ma non importati (23-05-26)
@@ -177,6 +180,7 @@ RULE  cn() da @/lib/utils — mai clsx() o twMerge() direttamente
 RULE  !important Tailwind v4: suffisso → `border-red-500!` (non `!border-red-500`)
 RULE  data-admin-theme: nessun cleanup — il tema deve persistere per tutta la sessione
 RULE  Due client Supabase: non mischiare supabase ↔ supabasePublic
+RULE  Menu QR (qrMenu flag): auto-true per Pro/Enterprise, per Classic dipende da `qr_menu_enabled` su `organizations` (gestito da `TenantContext.qrMenuEnabled`). Pagine pubbliche: `/menu/:slug`, `/menu/:slug/qr/:shortCode`, `/c/:categoryKey`, `/preset/:presetId`. Foto piatti: bucket `menu-photos`, path `{tenantId}/{itemId}.webp`, solo webp/jpeg/png/avif, max 500KB, compressa canvas prima dell'upload. Vedi `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`.
 RULE  Email CRM: normalizeCustomerEmail() prima di confronto o scrittura
 RULE  UUID: cancelled_by è UUID auth.users.id — mai passare email a campi UUID
 ```
@@ -189,7 +193,7 @@ RULE  UUID: cancelled_by è UUID auth.users.id — mai passare email a campi UUI
 npm run dev           # dev server :5173
 npm run typecheck     # tsc --noEmit — zero errori
 npm run lint          # ESLint — zero warning
-npm run test          # Vitest — tutti devono passare (132/132)
+npm run test          # Vitest — tutti devono passare (137/137)
 npm run validate      # lint + typecheck + test (usare pre-PR)
 ```
 
@@ -206,6 +210,8 @@ npm run validate      # lint + typecheck + test (usare pre-PR)
 ---
 
 ## 7. Obbligo fine sessione — Report + Allineamento skill
+
+**Sessione 24-05-26 (menu QR):** [Report-menu-qr-pubblico-fase-1.md](Sessioni%20di%20lavoro/24-05-26/Report-menu-qr-pubblico-fase-1.md) — tabella `menu_qr_codes`, bucket `menu-photos`, foto piatti, 3 pagine pubbliche mobile-first, flag `qrMenu`, admin QR manager. Migrazione `030` (test applicata).
 
 **Sessione 23-05-26 (promo menù):** [Report-refactor-promo-menu-rimozione-vol-au-vent.md](Sessioni%20di%20lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md) — rename `booking_menu_promos`, rimozione omaggio automatico, migrazione `029` (test applicata). Correlato: [Report-promo-menu-label-prenotazione.md](Sessioni%20di%20lavoro/23-05-26/Report-promo-menu-label-prenotazione.md).
 
@@ -242,6 +248,8 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | Qualsiasi file LOCK | Aggiorna sezione "stato attuale" nello skill di area |
 | `restaurantSettingRegistry.ts` (validazione, range, campi) | `APP_CONTEXT_SKILL.md` §4 RULE walk_in_max_guests |
 | `MenuPricesTab.tsx` / `MenuSelection.tsx` / `menuPricesCatalogLayout.ts` / `presetMenus.ts` | `APP_CONTEXT_SKILL.md` §4 RULE Menu Prenota |
+| `MenuQrManager.tsx` / `MenuQrModal.tsx` / `useMenuQrCodes.ts` / pagine pubbliche menu | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` + `APP_CONTEXT_SKILL.md` §4 RULE Menu QR |
+| `menuPhotoUpload.ts` / `shortCodeGenerator.ts` | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` |
 | `useBookingMutations.ts` / `useWalkInMutation.ts` / qualsiasi mutation che scrive `confirmed_start` o `desired_time` | `ADMIN_CLASSIC_SKILL.md` §4 + §4b |
 | `dateUtils.ts` (createBookingDateTime, extractTimeFromISO, getAccurateStartTime) | `ADMIN_CLASSIC_SKILL.md` §4b + `TESTING_CONTEXT.md` se cambiano i test |
 | `serviceSlotBookingFilter.ts` / logica filtro fascia in `useUnassignedBookings` | `ADMIN_PAGES_CONTEXT.md` § Servizio → Assegnazione tavoli + `TESTING_CONTEXT.md` se cambiano i test |
