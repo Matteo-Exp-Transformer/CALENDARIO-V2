@@ -181,6 +181,14 @@ function MenuCarousel({
     setActiveIdx(idx)
   }
 
+  const goToSlide = (index: number) => {
+    const el = scrollRef.current
+    if (!el) return
+    const clamped = Math.max(0, Math.min(index, items.length - 1))
+    el.scrollTo({ left: clamped * el.offsetWidth, behavior: 'smooth' })
+    setActiveIdx(clamped)
+  }
+
   const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const el = scrollRef.current
     if (!el) return
@@ -272,19 +280,29 @@ function MenuCarousel({
         <div className="h-28 w-full rounded-2xl" style={{ background: 'rgba(255,255,255,0.15)' }} />
       )}
 
-      {/* Pallini tema */}
+      {/* Pallini tema — click per cambiare slide */}
       {items.length > 1 && (
-        <div className="mt-2 flex justify-center gap-1.5">
+        <div className="mt-2 flex justify-center gap-0.5" role="tablist" aria-label="Slide specialità">
           {items.map((_, i) => (
-            <span
+            <button
               key={i}
-              className="block rounded-full transition-all"
-              style={{
-                width: i === activeIdx ? 16 : 8,
-                height: 8,
-                background: i === activeIdx ? accentColor : '#d6d3d1',
-              }}
-            />
+              type="button"
+              role="tab"
+              aria-selected={i === activeIdx}
+              aria-label={`Slide ${i + 1} di ${items.length}`}
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border-0 bg-transparent p-0 cursor-pointer touch-manipulation"
+              onClick={() => goToSlide(i)}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <span
+                className="block rounded-full transition-all"
+                style={{
+                  width: i === activeIdx ? 16 : 8,
+                  height: 8,
+                  background: i === activeIdx ? accentColor : '#d6d3d1',
+                }}
+              />
+            </button>
           ))}
         </div>
       )}
