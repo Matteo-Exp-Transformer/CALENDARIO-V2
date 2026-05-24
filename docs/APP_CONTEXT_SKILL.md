@@ -104,7 +104,7 @@ src/
 ├── components/layout/   AdminShell.tsx
 ├── components/ui/       Button, Input, Modal, Card, Badge, Alert, EmptyState, Spinner…
 ├── config/              features.ts  ← buildFeatures(edition) → FeatureFlags
-├── contexts/            TenantContext.tsx  ← LOCKED (eccezione: campo edition + qrMenuEnabled)
+├── contexts/            TenantContext.tsx  ← LOCKED (eccezione: campo edition + featureOverrides)
 ├── features/booking/
 │   ├── components/      componenti dashboard (BookingCalendar, CRM, MenuQrManager, MenuQrModal, ecc.)
 │   ├── hooks/           useAdminAuth, useBookingMutations, useMenuQrCodes, useCustomers, ecc.
@@ -119,16 +119,6 @@ src/
 └── types/               database.ts (generato), booking.ts, customer.ts, edition.ts, menu.ts
 ```
 
-### 3a. File dead-code presenti ma non importati (23-05-26)
-
-Questi file esistono in `src/` ma non sono importati da nessuno — non riusarli per nuove feature, sono candidati alla rimozione:
-
-- `src/features/booking/components/SettingsTab.tsx` — obsoleto, sostituito da `RestaurantSettingsTab.tsx`
-- `src/features/booking/components/EmailLogsModal.tsx` — usato solo dal `SettingsTab` obsoleto
-- `src/features/booking/components/TestEmailModal.tsx` — usato solo dal `SettingsTab` obsoleto
-- `src/features/booking/hooks/useEmailLogs.ts` — usato solo da `EmailLogsModal`
-- `src/lib/pdfAttachment.ts` — nessun consumer
-
 Tab impostazioni attivo: `RestaurantSettingsTab.tsx` (LOCK strutturale in `ADMIN_CLASSIC_SKILL`).
 
 ---
@@ -138,7 +128,7 @@ Tab impostazioni attivo: `RestaurantSettingsTab.tsx` (LOCK strutturale in `ADMIN
 ```
 LOCK  CollapsibleCard.tsx          — 57 test — mai toccare
 LOCK  Modal.tsx  z-[10050]         — stack calibrato con Toast z-100000
-LOCK  TenantContext.tsx            — core multi-tenancy — MAI (eccezione: campo edition)
+LOCK  TenantContext.tsx            — core multi-tenancy — MAI (eccezione: edition + featureOverrides)
 LOCK  src/lib/supabase.ts          — client autenticato — MAI
 LOCK  supabase/migrations/         — DB remoto già applicato — MAI
 LOCK  src/router.tsx               — solo su esplicita richiesta
@@ -180,7 +170,8 @@ RULE  cn() da @/lib/utils — mai clsx() o twMerge() direttamente
 RULE  !important Tailwind v4: suffisso → `border-red-500!` (non `!border-red-500`)
 RULE  data-admin-theme: nessun cleanup — il tema deve persistere per tutta la sessione
 RULE  Due client Supabase: non mischiare supabase ↔ supabasePublic
-RULE  Menu QR (qrMenu flag): auto-true per Pro/Enterprise, per Classic dipende da `qr_menu_enabled` su `organizations` (gestito da `TenantContext.qrMenuEnabled`). Pagine pubbliche: `/menu/:slug`, `/menu/:slug/qr/:shortCode`, `/c/:categoryKey`, `/preset/:presetId`. Foto piatti: bucket `menu-photos`, path `{tenantId}/{itemId}.webp`, solo webp/jpeg/png/avif, max 500KB, compressa canvas prima dell'upload. Vedi `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`.
+RULE  Feature flag commerciali (migrazione 031): governate da `tenant_features` (tabella) + `edition` (bundle base). `useFeatures()` legge sempre da `TenantContext.featureOverrides` → `buildFeatures(edition, featureOverrides)`. Mai leggere `qr_menu_enabled` o altre colonne booleane su `organizations` per gating UI — usare solo `features.X`. Per aggiungere un add-on: `INSERT INTO tenant_features (tenant_id, feature_key, enabled, source)`. TODO: UI super-admin per gestione tenant_features → sessione futura quando >5 clienti paganti.
+RULE  Menu QR (qrMenu flag): auto-true per Pro/Enterprise, per Classic dipende da `tenant_features` (feature_key='qrMenu', gestito da `featureOverrides`). Pagine pubbliche: `/menu/:slug`, `/menu/:slug/qr/:shortCode`, `/c/:categoryKey`, `/preset/:presetId`. Foto piatti: bucket `menu-photos`, path `{tenantId}/{itemId}.webp`, solo webp/jpeg/png/avif, max 500KB, compressa canvas prima dell'upload. Vedi `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`.
 RULE  Email CRM: normalizeCustomerEmail() prima di confronto o scrittura
 RULE  UUID: cancelled_by è UUID auth.users.id — mai passare email a campi UUID
 ```
@@ -215,7 +206,7 @@ npm run validate      # lint + typecheck + test (usare pre-PR)
 
 **Sessione 23-05-26 (promo menù):** [Report-refactor-promo-menu-rimozione-vol-au-vent.md](Sessioni%20di%20lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md) — rename `booking_menu_promos`, rimozione omaggio automatico, migrazione `029` (test applicata). Correlato: [Report-promo-menu-label-prenotazione.md](Sessioni%20di%20lavoro/23-05-26/Report-promo-menu-label-prenotazione.md).
 
-Al termine di ogni sessione di lavoro l'agente DEVE:
+Al termine di ogni sessione di lavoro se utente di da conferma che il lavoro è stato svolto con successo, l'agente DEVE:
 
 ### 7.1 Scrivere il report
 
@@ -233,7 +224,7 @@ Il report deve contenere:
 
 Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le regole d'uso, l'agente DEVE aggiornare i file di skill corrispondenti **nella stessa sessione**, non in una successiva.
 
-**Regola**: se hai toccato un file → aggiorna il skill che lo documenta.
+**Regola**: se hai toccato un file → aggiorna la skill che lo documenta.
 
 | Se hai modificato… | Aggiorna anche… |
 |--------------------|-----------------|
@@ -249,6 +240,7 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | `restaurantSettingRegistry.ts` (validazione, range, campi) | `APP_CONTEXT_SKILL.md` §4 RULE walk_in_max_guests |
 | `MenuPricesTab.tsx` / `MenuSelection.tsx` / `menuPricesCatalogLayout.ts` / `presetMenus.ts` | `APP_CONTEXT_SKILL.md` §4 RULE Menu Prenota |
 | `MenuQrManager.tsx` / `MenuQrModal.tsx` / `useMenuQrCodes.ts` / pagine pubbliche menu | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` + `APP_CONTEXT_SKILL.md` §4 RULE Menu QR |
+| `tenant_features` / `buildFeatures` / `featureOverrides` / `TenantContext` / `useFeatures` | `APP_CONTEXT_SKILL.md` §4 RULE Feature flag commerciali |
 | `menuPhotoUpload.ts` / `shortCodeGenerator.ts` | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` |
 | `useBookingMutations.ts` / `useWalkInMutation.ts` / qualsiasi mutation che scrive `confirmed_start` o `desired_time` | `ADMIN_CLASSIC_SKILL.md` §4 + §4b |
 | `dateUtils.ts` (createBookingDateTime, extractTimeFromISO, getAccurateStartTime) | `ADMIN_CLASSIC_SKILL.md` §4b + `TESTING_CONTEXT.md` se cambiano i test |
