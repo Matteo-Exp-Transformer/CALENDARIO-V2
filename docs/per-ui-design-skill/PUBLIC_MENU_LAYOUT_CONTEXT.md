@@ -18,29 +18,20 @@ description: >-
 
 ```
 ┌─────────────────────────────────────┐
-│  Header a tema                      │  background-image PNG o CSS fallback
-│  Nome ristorante centrato + fregio  │  colore testo da theme.headerTextColor
+│  <header> — SOLO headerImage         │
+│  Nome ristorante + fregio             │
+│  MenuCarousel (badge solo in slide)   │
+│  ○ ● ○  pallini tema                  │
 ├─────────────────────────────────────┤
-│  Sezione carosello  (sfondo body)   │  background-image PNG body o fallback
-│  "Specialità della casa" (sempre)   │  label visibile anche senza foto
-│  ┌──────────────────────────────┐   │
-│  │  MenuCarousel (drag+touch)   │   │  h-52 per slide con foto
-│  │  — overlay gradiente 40% sx  │   │  placeholder h-28 trasparente se senza foto
-│  └──────────────────────────────┘   │
-│  ○ ● ○  pallini colore tema         │
-├─────────────────────────────────────┤
-│  MenuNavTabs (sticky top-0)         │  backdrop-blur, colori accent tema
-│  [🍴 Antipasti] [🔥 Pizza] ...      │  naviga preset (se esistono) o categorie
-├─────────────────────────────────────┤
-│  Griglia categorie  (sfondo body)   │  <main> px-4 pb-6 pt-4
-│  ┌──────────┬──────────────────┐    │
-│  │ thumb    │ Titolo QR        │    │  2 colonne ≥400px, 1 colonna sotto
-│  │ 1:1      │ Descrizione QR   │ ›  │  thumb aspect-square w-24
-│  └──────────┴──────────────────┘    │
-├─────────────────────────────────────┤
-│  Footer data/ora                    │  aggiornato ogni minuto, locale IT
+│  <div flex-1> — SOLO bodyImage        │
+│  MenuNavTabs (sticky top-0)           │
+│  Griglia categorie (main, no bg)      │
+│  … contenuto scroll …                 │
+│  Footer data/ora (mt-auto in fondo)   │
 └─────────────────────────────────────┘
 ```
+
+Pagina: `min-h-svh flex flex-col`. Hero e corpo usano `themeBackgroundStyle()` in `PublicMenuPage.tsx`.
 
 ---
 

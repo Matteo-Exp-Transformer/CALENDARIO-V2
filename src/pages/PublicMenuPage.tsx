@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -17,7 +17,7 @@ import { supabasePublic } from '@/lib/supabasePublic'
 import { usePublicMenuQr, usePublicDefaultMenuQr } from '@/features/booking/hooks/useMenuQrCodes'
 import { usePublicMenuHomepageConfig } from '@/features/booking/hooks/useMenuHomepageConfig'
 import { usePublicMenuQrcodeCategories } from '@/features/booking/hooks/useMenuQrcodeCategories'
-import { getMenuTheme } from '@/features/public-menu/menuThemes'
+import { getMenuTheme, type MenuTheme } from '@/features/public-menu/menuThemes'
 import type { MenuCategoryRecord } from '@/features/booking/hooks/useMenuCategories'
 import type { MenuQrCode, CarouselItem } from '@/types/menu'
 import { usePublicMenuViewport } from '@/hooks/usePublicMenuViewport'
@@ -114,6 +114,19 @@ function usePublicPresets(tenantId: string | null, presetIds: string[] | null) {
   })
 }
 
+function themeBackgroundStyle(theme: MenuTheme, layer: 'header' | 'body'): CSSProperties {
+  const image = layer === 'header' ? theme.headerImage : theme.bodyImage
+  const fallback = layer === 'header' ? theme.headerFallbackBg : theme.bodyFallbackBg
+  if (image) {
+    return {
+      backgroundImage: `url(${image})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center top',
+    }
+  }
+  return { backgroundColor: fallback }
+}
+
 // ── Carosello ────────────────────────────────────────────────────────────────
 
 function MenuCarousel({
@@ -164,11 +177,6 @@ function MenuCarousel({
 
   return (
     <div>
-      {/* Label fisso */}
-      <p className="mb-2 text-xs font-bold uppercase tracking-wider text-stone-500">
-        Specialità della casa
-      </p>
-
       {hasImages ? (
         <div
           ref={scrollRef}
@@ -416,19 +424,14 @@ function MenuContent({
   }
 
   return (
-    <div>
-      {/* Header a tema */}
+    <div
+      className="flex min-h-svh flex-col"
+      style={{ backgroundColor: theme.bodyFallbackBg }}
+    >
+      {/* Hero: titolo + carosello su sfondo header */}
       <header
-        className="relative px-5 pt-8 pb-6"
-        style={
-          theme.headerImage
-            ? {
-                backgroundImage: `url(${theme.headerImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center top',
-              }
-            : { backgroundColor: theme.headerFallbackBg }
-        }
+        className="relative shrink-0 px-4 pt-8 pb-4"
+        style={themeBackgroundStyle(theme, 'header')}
       >
         <div className="relative z-10 flex flex-col items-center gap-2 text-center">
           <h1
@@ -437,111 +440,91 @@ function MenuContent({
           >
             {organizationName}
           </h1>
-          {/* Fregio decorativo */}
           <div
             className="mt-1 h-0.5 w-16 rounded-full opacity-60"
             style={{ background: theme.headerTextColor }}
           />
         </div>
+        <div className="relative z-10 mt-4">
+          <MenuCarousel items={carouselItems} accentColor={theme.accentColor} />
+        </div>
       </header>
 
-      {/* Carosello specialità */}
-      <section
-        className="px-4 pt-5 pb-4"
-        style={
-          theme.bodyImage
-            ? {
-                backgroundImage: `url(${theme.bodyImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center top',
-              }
-            : { backgroundColor: theme.bodyFallbackBg }
-        }
+      {/* Corpo pagina: sfondo body su tutta l’area sotto l’hero */}
+      <div
+        className="flex flex-1 flex-col"
+        style={themeBackgroundStyle(theme, 'body')}
       >
-        <MenuCarousel items={carouselItems} accentColor={theme.accentColor} />
-      </section>
+        {showCart && (
+          <MenuNavTabs
+            categories={categories}
+            presets={showPresets ? presets : []}
+            slug={slug}
+            shortCode={shortCode}
+            accentColor={theme.accentColor}
+          />
+        )}
 
-      {/* Tab sticky */}
-      {showCart && (
-        <MenuNavTabs
-          categories={categories}
-          presets={showPresets ? presets : []}
-          slug={slug}
-          shortCode={shortCode}
-          accentColor={theme.accentColor}
-        />
-      )}
+        {showCart && categories.length > 0 && (
+          <main className="flex-1 px-4 pt-4">
+            <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
+              {categories.map((cat) => {
+                const ov = overridesByKey[cat.key]
+                return (
+                  <CategoryCard
+                    key={cat.key}
+                    category={cat}
+                    href={`/menu/${slug}/qr/${shortCode}/c/${cat.key}`}
+                    imageUrl={categoryImages[cat.key]}
+                    qrTitle={ov?.title}
+                    qrDescription={ov?.description}
+                  />
+                )
+              })}
+            </div>
+          </main>
+        )}
 
-      {/* Griglia categorie */}
-      {showCart && categories.length > 0 && (
-        <main
-          className="px-4 pb-6 pt-4"
-          style={
-            theme.bodyImage
-              ? {
-                  backgroundImage: `url(${theme.bodyImage})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }
-              : { backgroundColor: theme.bodyFallbackBg }
-          }
-        >
-          <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
-            {categories.map((cat) => {
-              const ov = overridesByKey[cat.key]
-              return (
-                <CategoryCard
-                  key={cat.key}
-                  category={cat}
-                  href={`/menu/${slug}/qr/${shortCode}/c/${cat.key}`}
-                  imageUrl={categoryImages[cat.key]}
-                  qrTitle={ov?.title}
-                  qrDescription={ov?.description}
-                />
-              )
-            })}
-          </div>
-        </main>
-      )}
-
-      {showCart && categories.length === 0 && (
-        <main className="px-4 py-6">
-          <p className="rounded-2xl bg-white px-4 py-8 text-center text-sm text-gray-500 shadow-sm">
-            Menu in preparazione
-          </p>
-        </main>
-      )}
-
-      {showPresets && (
-        <section className="px-4 pb-6">
-          {presets.length === 0 ? (
+        {showCart && categories.length === 0 && (
+          <main className="flex-1 px-4 py-6">
             <p className="rounded-2xl bg-white px-4 py-8 text-center text-sm text-gray-500 shadow-sm">
               Menu in preparazione
             </p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {presets.map((preset) => (
-                <Link
-                  key={preset.id}
-                  to={`/menu/${slug}/qr/${shortCode}/preset/${preset.id}`}
-                  className="flex flex-col gap-1 rounded-2xl bg-white px-4 py-4 shadow-sm active:bg-stone-50 transition-colors"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-base font-semibold text-gray-900">{preset.name}</span>
-                    <ChevronRight size={18} className="shrink-0 text-gray-400" />
-                  </div>
-                  <span className="text-sm text-gray-500">
-                    {Array.isArray(preset.item_ids) ? preset.item_ids.length : 0} voci
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
+          </main>
+        )}
 
-      {/* Footer data/ora */}
-      <MenuFooterCard />
+        {showPresets && (
+          <section className="flex-1 px-4 pb-4 pt-4">
+            {presets.length === 0 ? (
+              <p className="rounded-2xl bg-white px-4 py-8 text-center text-sm text-gray-500 shadow-sm">
+                Menu in preparazione
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {presets.map((preset) => (
+                  <Link
+                    key={preset.id}
+                    to={`/menu/${slug}/qr/${shortCode}/preset/${preset.id}`}
+                    className="flex flex-col gap-1 rounded-2xl bg-white px-4 py-4 shadow-sm active:bg-stone-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-base font-semibold text-gray-900">{preset.name}</span>
+                      <ChevronRight size={18} className="shrink-0 text-gray-400" />
+                    </div>
+                    <span className="text-sm text-gray-500">
+                      {Array.isArray(preset.item_ids) ? preset.item_ids.length : 0} voci
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        <div className="mt-auto pt-2">
+          <MenuFooterCard />
+        </div>
+      </div>
     </div>
   )
 }
@@ -595,7 +578,7 @@ export function PublicMenuPage() {
   const resolvedShortCode = shortCode ?? qr?.short_code ?? ''
 
   return (
-    <div className="min-h-svh bg-stone-50">
+    <div className="min-h-svh">
       {qr ? (
         <MenuContent
           qr={qr}
