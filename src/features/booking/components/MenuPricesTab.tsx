@@ -135,6 +135,8 @@ export type MenuPricesHeroToolbarProps = {
   onAddCategory: () => void
   onPresetMenus: () => void
   onPromo: () => void
+  onQrCodes?: () => void
+  showQrCodes?: boolean
 }
 
 /** Fascia «Menu» con CTA: riutilizzabile nello sticky header della dashboard. */
@@ -144,6 +146,8 @@ export function MenuPricesHeroToolbar({
   onAddCategory,
   onPresetMenus,
   onPromo,
+  onQrCodes,
+  showQrCodes = false,
 }: MenuPricesHeroToolbarProps) {
   return (
     <section
@@ -158,7 +162,7 @@ export function MenuPricesHeroToolbar({
         Aggiungi, modifica, nascondi o elimina gli elementi del menù
       </p>
       <div className="w-full border-t border-[var(--color-border)] pt-3">
-        <div className="grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2 xl:grid-cols-4">
+        <div className={cn('grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2', showQrCodes ? 'xl:grid-cols-5' : 'xl:grid-cols-4')}>
           <Button
             variant="ghost"
             size="sm"
@@ -204,6 +208,20 @@ export function MenuPricesHeroToolbar({
             <Edit className="h-3.5 w-3.5" />
             Crea / Modifica Promo Menù
           </Button>
+          {showQrCodes && (
+            <Button
+              variant="ghost"
+              size="sm"
+              type="button"
+              onClick={onQrCodes}
+              aria-label="I miei QR menu"
+              title="I miei QR menu"
+              className={cn(menuPricesHeaderCtaButtonClass, 'gap-1.5')}
+            >
+              <QrCode className="h-3.5 w-3.5" />
+              I miei QR
+            </Button>
+          )}
         </div>
       </div>
     </section>
@@ -215,6 +233,7 @@ export type MenuPricesTabHandle = {
   startAddCategory: () => void
   openPresetMenus: () => void
   openPromo: () => void
+  openQrCodes: () => void
 }
 
 export type MenuPricesTabProps = {
@@ -764,6 +783,10 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setViewMode('preset_menus')
   }
 
+  const openQrCodesSection = () => {
+    setViewMode('qr_codes')
+  }
+
   // Raggruppa per categoria
   const itemsByCategory = menuItems.reduce((acc, item) => {
     if (!acc[item.category]) {
@@ -941,8 +964,9 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       startAddCategory: handleStartAddCategory,
       openPresetMenus: openPresetMenusSection,
       openPromo: openPromoEditor,
+      openQrCodes: openQrCodesSection,
     }),
-    [handleStartAdd, handleStartAddCategory, openPresetMenusSection, openPromoEditor],
+    [handleStartAdd, handleStartAddCategory, openPresetMenusSection, openPromoEditor, openQrCodesSection],
   )
 
   const handleSave = async () => {

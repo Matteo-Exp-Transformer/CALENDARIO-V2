@@ -39,6 +39,7 @@ import {
 import { NotifyNavShinyLayers } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
+import { useFeatures } from '@/hooks/useFeatures'
 
 type Tab = 'calendar' | 'pending' | 'archive' | 'menu' | 'settings-restaurant'
 
@@ -166,6 +167,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [archiveSortOrder, setArchiveSortOrder] = useState<SortOrder>('booking_date')
   const [menuToolbarPromoDisabled, setMenuToolbarPromoDisabled] = useState(false)
   const menuPricesTabRef = useRef<MenuPricesTabHandle>(null)
+  const features = useFeatures()
   const dashboardRootRef = useRef<HTMLDivElement>(null)
   const { data: stats } = useBookingStats()
 
@@ -320,6 +322,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     onAddCategory={() => menuPricesTabRef.current?.startAddCategory()}
                     onPresetMenus={() => menuPricesTabRef.current?.openPresetMenus()}
                     onPromo={() => menuPricesTabRef.current?.openPromo()}
+                    onQrCodes={() => menuPricesTabRef.current?.openQrCodes()}
+                    showQrCodes={features.qrMenu}
                   />
                 )}
 

@@ -83,10 +83,18 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       }
 
       const adminInfo = (adminData as any[])[0]
-      setTenantId(adminInfo.tenant_id as string)
+      const tenantId = adminInfo.tenant_id as string
+      setTenantId(tenantId)
       setTenantSlug(adminInfo.slug || null)
       setOrganizationName(adminInfo.org_name || null)
       setEdition((adminInfo.edition as TenantEdition) || 'pro')
+
+      const orgResult = await (supabase
+        .from('organizations') as any)
+        .select('qr_menu_enabled')
+        .eq('id', tenantId)
+        .single()
+      setQrMenuEnabled(Boolean(orgResult?.data?.qr_menu_enabled))
     } catch (err) {
       console.error('Errore setTenantFromAdmin:', err)
       setTenantId(null)
