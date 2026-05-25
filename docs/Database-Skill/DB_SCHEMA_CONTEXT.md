@@ -100,6 +100,7 @@ Vincolo: `UNIQUE(tenant_id, name, category)`. Indice: `(tenant_id, category, sor
 | `key` | TEXT NOT NULL | Slug della categoria |
 | `label` | TEXT NOT NULL | Etichetta visualizzata |
 | `description` | TEXT NULL | Testo opzionale sotto il nome (migrazione 033) |
+| `image_url` | TEXT NULL | Foto categoria per pagina Prenota (migrazione 035); non è la thumb QR in `menu_homepage_config.category_images` |
 | `sort_order` | INTEGER DEFAULT 999 | |
 | `created_at`, `updated_at` | TIMESTAMPTZ | |
 

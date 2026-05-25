@@ -372,9 +372,10 @@ function QrCategoryOverridesSection() {
     const overrideMap = Object.fromEntries(overrides.map((o) => [o.category_key, o]))
     const initial: Record<string, { title: string; description: string }> = {}
     for (const cat of categories) {
+      const ov = overrideMap[cat.key]
       initial[cat.key] = {
-        title: overrideMap[cat.key]?.title ?? '',
-        description: overrideMap[cat.key]?.description ?? '',
+        title: ov?.title ?? cat.label ?? '',
+        description: ov?.description ?? cat.description ?? '',
       }
     }
     setDrafts(initial)

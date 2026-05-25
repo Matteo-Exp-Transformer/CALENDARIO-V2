@@ -4,9 +4,14 @@ const BUCKET = 'menu-photos'
 const MAX_SIDE_PX = 1200
 const MAX_BYTES = 450_000 // target dopo compressione
 
-/** Percorso deterministico: {tenantId}/{menuItemId}.webp */
+/** Percorso deterministico piatto: {tenantId}/{menuItemId}.webp */
 export function menuPhotoPath(tenantId: string, menuItemId: string): string {
   return `${tenantId}/${menuItemId}.webp`
+}
+
+/** Percorso foto categoria Prenota (non homepage QR: quella usa {tenantId}/cat/{key}.webp). */
+export function menuCategoryPhotoPath(tenantId: string, categoryId: string): string {
+  return `${tenantId}/booking-cat/${categoryId}.webp`
 }
 
 /**
@@ -77,5 +82,31 @@ export async function uploadMenuPhoto(
 /** Elimina la foto di un piatto da Storage (non lancia se non esiste). */
 export async function deleteMenuPhoto(tenantId: string, menuItemId: string): Promise<void> {
   const path = menuPhotoPath(tenantId, menuItemId)
+  await (supabase.storage.from(BUCKET) as any).remove([path])
+}
+
+/** Carica la foto di una categoria (pagina Prenota) e restituisce l'URL pubblico. */
+export async function uploadMenuCategoryPhoto(
+  file: File,
+  tenantId: string,
+  categoryId: string,
+): Promise<string> {
+  const blob = await compressImage(file)
+  const path = menuCategoryPhotoPath(tenantId, categoryId)
+
+  const { error } = await (supabase.storage.from(BUCKET) as any).upload(path, blob, {
+    contentType: 'image/webp',
+    upsert: true,
+  })
+
+  if (error) throw new Error(`Errore upload foto categoria: ${(error as any).message ?? error}`)
+
+  const { data } = (supabase.storage.from(BUCKET) as any).getPublicUrl(path)
+  return (data as { publicUrl: string }).publicUrl
+}
+
+/** Elimina la foto categoria Prenota da Storage. */
+export async function deleteMenuCategoryPhoto(tenantId: string, categoryId: string): Promise<void> {
+  const path = menuCategoryPhotoPath(tenantId, categoryId)
   await (supabase.storage.from(BUCKET) as any).remove([path])
 }

@@ -35,6 +35,7 @@ import {
 } from '../constants/presetMenus'
 import { useRestaurantSetting, useUpsertRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { selectedItemsFromMenuItemIds } from '../utils/buildPresetMenuSelection'
+import { groupMenuItemsByCategory } from '../utils/menuCatalogGrouping'
 import { PresetMenuBuilder } from './PresetMenuBuilder'
 import {
   MENU_CARD_INNER_SHELL_CLASS,
@@ -57,7 +58,11 @@ import {
   getMenuPromoAdminLabel,
 } from '../constants/menuPromo'
 import { MenuQrManager } from './MenuQrManager'
-import { uploadMenuPhoto } from '@/lib/menuPhotoUpload'
+import {
+  deleteMenuCategoryPhoto,
+  uploadMenuCategoryPhoto,
+  uploadMenuPhoto,
+} from '@/lib/menuPhotoUpload'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useFeatures } from '@/hooks/useFeatures'
 import { cn } from '@/lib/utils'
@@ -397,12 +402,14 @@ function MenuItemBookingTypesPanel({ item, disabled, onToggle }: MenuItemBooking
 
 type AdminMenuCategoryLabelCardProps = {
   label: string
+  imageUrl?: string | null
   onEdit: () => void
   onDelete: () => void
 }
 
 const AdminMenuCategoryLabelCard: React.FC<AdminMenuCategoryLabelCardProps> = ({
   label,
+  imageUrl,
   onEdit,
   onDelete,
 }) => (
@@ -435,7 +442,14 @@ const AdminMenuCategoryLabelCard: React.FC<AdminMenuCategoryLabelCardProps> = ({
           paddingRight: '12px',
         }}
       >
-        <span className={MENU_CATEGORY_LABEL_TITLE_CLASS} style={MENU_CATEGORY_LABEL_TITLE_STYLE}>
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt=""
+            className="h-12 w-16 shrink-0 rounded-lg object-cover"
+          />
+        ) : null}
+        <span className={cn(MENU_CATEGORY_LABEL_TITLE_CLASS, 'min-w-0 flex-1')} style={MENU_CATEGORY_LABEL_TITLE_STYLE}>
           {label}
         </span>
         <div className="menu-prices-item-actions flex shrink-0 gap-2">
@@ -487,6 +501,11 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const [isAdding, setIsAdding] = useState(false)
   const [isAddingCategory, setIsAddingCategory] = useState(false)
   const [newCategoryLabel, setNewCategoryLabel] = useState('')
+  const [newCategoryDescription, setNewCategoryDescription] = useState('')
+  const [categoryPhotoFile, setCategoryPhotoFile] = useState<File | null>(null)
+  const [categoryPhotoPreviewUrl, setCategoryPhotoPreviewUrl] = useState<string | null>(null)
+  const [categoryCurrentImageUrl, setCategoryCurrentImageUrl] = useState<string | null>(null)
+  const [categoryPhotoUploading, setCategoryPhotoUploading] = useState(false)
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
   const [deleteCategoryConfirm, setDeleteCategoryConfirm] = useState<{
     id: string
@@ -788,13 +807,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   }
 
   // Raggruppa per categoria
-  const itemsByCategory = menuItems.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = []
-    }
-    acc[item.category].push(item)
-    return acc
-  }, {} as Record<string, MenuItem[]>)
+  const itemsByCategory = groupMenuItemsByCategory(menuItems, categoryKeys)
 
   const toggleIngredientTypesPanel = (itemId: string) => {
     setIngredientTypesPanelItemId((current) => (current === itemId ? null : itemId))
@@ -843,6 +856,43 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     resetProductFormState()
   }
 
+  const resetCategoryPhotoState = () => {
+    if (categoryPhotoPreviewUrl) URL.revokeObjectURL(categoryPhotoPreviewUrl)
+    setCategoryPhotoFile(null)
+    setCategoryPhotoPreviewUrl(null)
+    setCategoryCurrentImageUrl(null)
+    setCategoryPhotoUploading(false)
+  }
+
+  const resolveCategoryImageOnSave = async (
+    categoryId: string,
+    previousImageUrl: string | null | undefined,
+  ): Promise<string | null | undefined> => {
+    if (!tenantId) return undefined
+
+    if (categoryPhotoFile) {
+      setCategoryPhotoUploading(true)
+      try {
+        return await uploadMenuCategoryPhoto(categoryPhotoFile, tenantId, categoryId)
+      } finally {
+        setCategoryPhotoUploading(false)
+      }
+    }
+
+    const removedExisting =
+      Boolean(previousImageUrl) && !categoryPhotoPreviewUrl && !categoryCurrentImageUrl
+    if (removedExisting) {
+      try {
+        await deleteMenuCategoryPhoto(tenantId, categoryId)
+      } catch {
+        //
+      }
+      return null
+    }
+
+    return undefined
+  }
+
   const handleSaveCategory = async () => {
     const rawLabel = newCategoryLabel.trim()
     if (!rawLabel) {
@@ -872,11 +922,18 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           return
         }
 
+        const imageUrl = await resolveCategoryImageOnSave(
+          editingCategoryId,
+          editingCategory.image_url,
+        )
+
         await updateCategoryMutation.mutateAsync({
           id: editingCategoryId,
           key: newKey,
           previousKey: editingCategory.key,
-          label: rawLabel
+          label: rawLabel,
+          description: newCategoryDescription.trim() || null,
+          ...(imageUrl !== undefined ? { image_url: imageUrl } : {}),
         })
       } else {
         const key = slugifyCategory(rawLabel)
@@ -890,7 +947,27 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           return
         }
 
-        await createCategoryMutation.mutateAsync({ key, label: rawLabel, sort_order: 999 })
+        const created = await createCategoryMutation.mutateAsync({
+          key,
+          label: rawLabel,
+          description: newCategoryDescription.trim() || null,
+          sort_order: 999,
+        })
+
+        if (categoryPhotoFile && tenantId && created?.id) {
+          const imageUrl = await resolveCategoryImageOnSave(created.id, null)
+          if (imageUrl) {
+            await updateCategoryMutation.mutateAsync({
+              id: created.id,
+              key,
+              previousKey: key,
+              label: rawLabel,
+              description: newCategoryDescription.trim() || null,
+              image_url: imageUrl,
+            })
+          }
+        }
+
         setFormData((prev) => ({ ...prev, category: key }))
       }
 
@@ -913,6 +990,9 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setIsAddingCategory(true)
     setEditingCategoryId(dbCategory.id)
     setNewCategoryLabel(currentLabel)
+    setNewCategoryDescription(dbCategory.description ?? '')
+    resetCategoryPhotoState()
+    setCategoryCurrentImageUrl(dbCategory.image_url ?? null)
   }
 
   const countItemsForCategory = (categoryKey: string, categoryLabel: string) =>
@@ -949,12 +1029,16 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setIsAddingCategory(false)
     setEditingCategoryId(null)
     setNewCategoryLabel('')
+    setNewCategoryDescription('')
+    resetCategoryPhotoState()
   }
 
   const cancelCategoryForm = () => {
     setIsAddingCategory(false)
     setNewCategoryLabel('')
+    setNewCategoryDescription('')
     setEditingCategoryId(null)
+    resetCategoryPhotoState()
   }
 
   useImperativeHandle(
@@ -1879,20 +1963,108 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
 
             {isAddingCategory ? (
               <div className="mt-8 flex flex-col gap-4">
-                <div className="mx-auto w-full max-w-3xl">
-                  <Input
-                    value={newCategoryLabel}
-                    onChange={(e) => setNewCategoryLabel(e.target.value)}
-                    placeholder="Nuova categoria ingredienti"
-                    className="h-14 w-full rounded-2xl pl-6"
-                    style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
-                  />
+                <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                      Titolo categoria
+                    </label>
+                    <Input
+                      value={newCategoryLabel}
+                      onChange={(e) => setNewCategoryLabel(e.target.value)}
+                      placeholder="Es. Antipasti"
+                      className="h-14 w-full rounded-2xl pl-6"
+                      style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Nome usato nel form prenotazione e come base per il menu QR.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                      Descrizione categoria
+                    </label>
+                    <Textarea
+                      value={newCategoryDescription}
+                      onChange={(e) => setNewCategoryDescription(e.target.value)}
+                      placeholder="Testo breve sotto il titolo (opzionale)"
+                      rows={3}
+                      className="w-full rounded-2xl border-gray-200 px-4 py-3 text-sm"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Visibile nella pagina Prenota. Nel menu QR puoi personalizzarla separatamente.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                      Foto categoria{' '}
+                      <span className="font-normal normal-case text-gray-500">(opzionale)</span>
+                    </label>
+                    <div className="flex flex-col items-start gap-3">
+                      {(categoryPhotoPreviewUrl || categoryCurrentImageUrl) && (
+                        <div className="relative">
+                          <img
+                            src={categoryPhotoPreviewUrl ?? categoryCurrentImageUrl!}
+                            alt="Anteprima foto categoria"
+                            className="h-28 w-48 rounded-xl object-cover shadow"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (categoryPhotoPreviewUrl) {
+                                URL.revokeObjectURL(categoryPhotoPreviewUrl)
+                                setCategoryPhotoPreviewUrl(null)
+                                setCategoryPhotoFile(null)
+                              } else {
+                                setCategoryCurrentImageUrl(null)
+                                setCategoryPhotoFile(null)
+                              }
+                            }}
+                            className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow"
+                            aria-label="Rimuovi foto categoria"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
+                      {!categoryPhotoPreviewUrl && !categoryCurrentImageUrl && (
+                        <label className="flex cursor-pointer items-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-white px-5 py-3 text-sm text-gray-600 transition-colors hover:border-amber-400 hover:text-amber-700">
+                          <ImageIcon className="h-4 w-4 shrink-0" />
+                          Scegli foto
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/avif"
+                            className="sr-only"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (!file) return
+                              if (categoryPhotoPreviewUrl) URL.revokeObjectURL(categoryPhotoPreviewUrl)
+                              setCategoryPhotoFile(file)
+                              setCategoryPhotoPreviewUrl(URL.createObjectURL(file))
+                            }}
+                          />
+                        </label>
+                      )}
+                      {categoryPhotoFile && !categoryPhotoUploading && (
+                        <p className="max-w-[240px] truncate text-xs text-gray-500">{categoryPhotoFile.name}</p>
+                      )}
+                      {categoryPhotoUploading && (
+                        <p className="text-xs text-amber-700">Caricamento foto…</p>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Salvata per la pagina Prenota. Le foto del menu QR si gestiscono nel pannello homepage QR.
+                    </p>
+                  </div>
                 </div>
                 <div className="mt-10 flex justify-center gap-3">
                   <button
                     type="button"
                     onClick={() => void handleSaveCategory()}
-                    disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}
+                    disabled={
+                      createCategoryMutation.isPending ||
+                      updateCategoryMutation.isPending ||
+                      categoryPhotoUploading
+                    }
                     className="flex items-center justify-center gap-2 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-emerald-500/35 hover:from-emerald-400 hover:to-emerald-500 hover:border-emerald-600 hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 disabled:hover:border-emerald-700"
                   >
                     <Save className="h-4 w-4 shrink-0" />
@@ -1918,6 +2090,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                     setIsAddingCategory(true)
                     setEditingCategoryId(null)
                     setNewCategoryLabel('')
+                    setNewCategoryDescription('')
+                    resetCategoryPhotoState()
                   }}
                   className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs"
                 >
@@ -1937,6 +2111,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                     <AdminMenuCategoryLabelCard
                       key={key}
                       label={label}
+                      imageUrl={dbCategoryByKey.get(key)?.image_url}
                       onEdit={() => handleEditCategory(key, label)}
                       onDelete={() => handleDeleteCategory(key, label)}
                     />

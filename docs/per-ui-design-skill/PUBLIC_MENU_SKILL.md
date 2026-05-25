@@ -43,25 +43,31 @@ qrMenu: isProOrAbove || qrMenuEnabled
 | `032` | Tabella `menu_homepage_config` (JSONB) — archivia `carousel_items`, `category_images` per tenant |
 | `033` | `menu_categories.description TEXT NULL` — testo opzionale sotto il nome (usato in pagina Prenota e come fallback nel menu QR) |
 | `034` | `menu_homepage_config.theme_key TEXT NOT NULL DEFAULT 'mediterranean_teal'` (5 valori). Tabella `menu_qrcode_categories`: override titolo/descrizione per card categoria nella homepage QR, **separati da `menu_categories`** — non impattano la pagina Prenota |
+| `035` | `menu_categories.image_url TEXT NULL` — foto categoria per admin/Prenota (path Storage `{tenantId}/booking-cat/{categoryId}.webp`). **Non** sostituisce `menu_homepage_config.category_images` (thumb QR: `{tenantId}/cat/{categoryKey}.webp`) |
 
-**Colonne `menu_categories`** (post-033): `id`, `tenant_id`, `key`, `label`, `description`, `sort_order`, `created_at`, `updated_at`.
+**Colonne `menu_categories`** (post-035): `id`, `tenant_id`, `key`, `label`, `description`, `image_url`, `sort_order`, `created_at`, `updated_at`.
 
 **Colonne `menu_qrcode_categories`** (034): `id`, `tenant_id`, `category_key`, `title`, `description`, `created_at`, `updated_at`. UNIQUE `(tenant_id, category_key)`.
 
 ---
 
-## 4. Storage foto piatti
+## 4. Storage foto (bucket `menu-photos`)
 
 File: `src/lib/menuPhotoUpload.ts`
 
-- **Path**: `{tenantId}/{menuItemId}.webp` nel bucket `menu-photos`
+| Uso | Path Storage | Campo DB |
+|-----|--------------|----------|
+| Piatto | `{tenantId}/{menuItemId}.webp` | `menu_items.image_url` |
+| Categoria Prenota | `{tenantId}/booking-cat/{categoryId}.webp` | `menu_categories.image_url` (035) |
+| Thumb categoria QR homepage | `{tenantId}/cat/{categoryKey}.webp` | `menu_homepage_config.category_images` (JSON) |
+
 - **Compressione**: canvas resize max 1200px, iterativa da quality 0.82 a 0.4, target 450KB
-- **Upload**: upsert=true (sovrascrive se già esiste per quell'item)
-- **Delete**: `deleteMenuPhoto(tenantId, itemId)` — non-throwing
+- **Upload**: upsert=true
+- **Delete piatti**: `deleteMenuPhoto`; **categorie Prenota**: `deleteMenuCategoryPhoto`
 
 Il flusso admin in `MenuPricesTab`:
-1. Utente sceglie file → anteprima immediata via `URL.createObjectURL`
-2. Al salvataggio prodotto: upload foto → poi update `image_url` sull'item
+1. Prodotto: sceglie file → anteprima → al salvataggio upload → update `menu_items.image_url`
+2. Categoria (Gestione categorie): stesso pattern → `menu_categories.image_url` — **non** scrive in `category_images` del pannello QR
 
 ---
 
