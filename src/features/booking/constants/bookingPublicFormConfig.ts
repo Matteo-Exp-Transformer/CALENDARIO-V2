@@ -121,3 +121,23 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
     },
   ],
 }
+
+/** Trim solo al salvataggio — mai in onChange, altrimenti la barra spaziatrice non funziona mentre si digita. */
+export function normalizeBookingPublicFormConfig(
+  config: BookingPublicFormConfig,
+): BookingPublicFormConfig {
+  return {
+    page_title: config.page_title.trim(),
+    page_description: config.page_description.trim(),
+    booking_modes: config.booking_modes.map((mode) => ({
+      ...mode,
+      label: mode.label.trim(),
+      description: mode.description.trim(),
+      sub_tabs: (mode.sub_tabs ?? []).map((tab) => ({
+        ...tab,
+        label: tab.label.trim(),
+        description: tab.description?.trim() ? tab.description.trim() : undefined,
+      })),
+    })),
+  }
+}

@@ -41,6 +41,8 @@ interface BookingRequestFormProps {
   formConfig?: BookingPublicFormConfig
   onFormDataChange?: (data: Partial<BookingRequestInput>) => void
   onActiveSubTabChange?: (subTab: SubTab | null) => void
+  /** Riepilogo a destra (desktop); il submit va sotto questa colonna. */
+  summarySidebar?: React.ReactNode
 }
 
 export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
@@ -49,6 +51,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   formConfig = DEFAULT_BOOKING_FORM_CONFIG,
   onFormDataChange,
   onActiveSubTabChange,
+  summarySidebar,
 }) => {
   // Helper function to get current date in YYYY-MM-DD format
   const getCurrentDate = (): string => {
@@ -646,8 +649,12 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
   return (
     <>
-    <form onSubmit={handleSubmit} className="w-full px-2 md:px-4 space-y-6 font-bold booking-form-mobile">
-
+    <form
+      id="booking-request-form"
+      onSubmit={handleSubmit}
+      className="grid w-full grid-cols-1 gap-4 font-bold booking-form-mobile lg:grid-cols-[1fr_min(360px,32%)] lg:items-start lg:gap-6"
+    >
+      <div className="min-w-0 space-y-6 px-2 md:px-4">
       {/* Dati e dettagli — prima sezione sotto header (come pagina prenota attuale) */}
       <div className="space-y-3">
         <BookingFormFields
@@ -824,9 +831,12 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           )}
         </div>
       )}
+      </div>
 
-      {/* Submit Button */}
-      <div className="flex w-full justify-center items-center mt-12">
+      {summarySidebar}
+
+      {/* Submit — sotto colonna form + sidebar (ordine DOM dopo aside) */}
+      <div className="order-3 col-span-1 flex w-full justify-center items-center mt-8 px-2 md:mt-12 md:px-4 lg:col-span-2">
         <button
             type="submit"
             disabled={isPending || isBlocked || isSubmitting || isCheckingAvailability}

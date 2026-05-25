@@ -32,6 +32,31 @@ export interface BookingMenuCategoryCardProps {
   layout?: 'grid' | 'scroll'
 }
 
+function ItemPriceRow({
+  item,
+  formatPrice,
+}: {
+  item: ComposeMenuItem
+  formatPrice: (item: ComposeMenuItem) => string
+}) {
+  const hasDesc = Boolean(item.description?.trim())
+  return (
+    <div className="min-w-0 flex-1">
+      <div className="flex items-start justify-between gap-2">
+        <span className="text-sm font-bold leading-snug text-warm-wood break-words">{item.name}</span>
+        <span className="shrink-0 text-sm font-bold tabular-nums text-warm-wood">
+          {formatPrice(item)}
+        </span>
+      </div>
+      {hasDesc ? (
+        <span className="mt-0.5 block text-xs leading-snug text-warm-wood-dark/65 break-words">
+          {item.description}
+        </span>
+      ) : null}
+    </div>
+  )
+}
+
 export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = ({
   categoryKey,
   categoryLabel,
@@ -54,30 +79,22 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
 
   const heroSrc = imageUrl?.trim() || undefined
 
+  const articleClass = cn(
+    'flex flex-col rounded-2xl border-2 border-black/15 bg-white/90 backdrop-blur-[1px] shadow-md',
+    layout === 'scroll'
+      ? 'w-[min(280px,calc(100vw-3rem))] min-w-[240px] max-w-[280px] shrink-0 snap-center sm:min-w-[260px]'
+      : 'w-full min-w-0 max-w-none',
+  )
+
   return (
-    <article
-      className={cn(
-        'flex flex-col rounded-2xl border-2 border-black/15 bg-white/90 backdrop-blur-[1px] shadow-md',
-        layout === 'scroll'
-          ? 'w-[min(280px,calc(100vw-3rem))] min-w-[240px] max-w-[280px] shrink-0 snap-center sm:min-w-[260px]'
-          : 'w-full min-w-0 max-w-none',
-      )}
-      data-testid={`booking-menu-category-card-${categoryKey}`}
-    >
+    <article className={articleClass} data-testid={`booking-menu-category-card-${categoryKey}`}>
       <div className="border-b border-black/10 px-4 py-3 text-center">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-warm-wood">
-          {categoryLabel}
-        </h3>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-warm-wood">{categoryLabel}</h3>
       </div>
 
       <div className="relative mx-3 mt-3 aspect-[4/3] overflow-hidden rounded-xl bg-warm-beige/40">
         {heroSrc ? (
-          <img
-            src={heroSrc}
-            alt=""
-            className="h-full w-full object-cover"
-            loading="lazy"
-          />
+          <img src={heroSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-warm-wood/40">
             <Utensils className="h-10 w-10" strokeWidth={1.25} />
@@ -85,17 +102,34 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
         )}
       </div>
 
-      <div className="px-4 py-2 text-center">
-        <p className="text-xs font-semibold text-warm-wood-dark/70">{hint}</p>
-        <p className="text-xs font-bold text-warm-orange">{status}</p>
-      </div>
+      {!locked && (
+        <div className="px-4 py-2 text-center">
+          <p className="text-xs font-semibold text-warm-wood-dark/70">{hint}</p>
+          <p className="text-xs font-bold text-warm-orange">{status}</p>
+        </div>
+      )}
 
       <ul className="flex flex-1 flex-col gap-1 px-2 pb-3">
         {items.map((item) => {
           const isSelected = selectedItems.some((s) => s.id === item.id)
           const isTiramisu = isTiramisuItem(item.name)
-          const hasDesc = Boolean(item.description?.trim())
+          const selection = selectedItems.find((s) => s.id === item.id)
           const inputId = `compose-${categoryKey}-${item.id}`
+
+          if (locked) {
+            return (
+              <li key={item.id} className="min-w-0">
+                <div className="flex min-h-[44px] gap-2.5 rounded-xl px-2 py-2">
+                  <ItemPriceRow item={item} formatPrice={formatPrice} />
+                </div>
+                {isTiramisu && selection?.quantity ? (
+                  <p className="mx-2 mb-2 text-xs font-semibold text-warm-wood-dark/80">
+                    {selection.quantity} Kg — €{tiramisuUnitPrice.toFixed(2)} al Kg
+                  </p>
+                ) : null}
+              </li>
+            )
+          }
 
           return (
             <li key={item.id} className="min-w-0">
@@ -103,9 +137,8 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
                 htmlFor={inputId}
                 className={cn(
                   'flex min-h-[44px] cursor-pointer gap-2.5 rounded-xl px-2 py-2 transition-colors',
-                  locked && 'cursor-default',
                   isSelected && 'bg-warm-orange/10',
-                  !locked && !isSelected && 'hover:bg-warm-beige/50',
+                  !isSelected && 'hover:bg-warm-beige/50',
                 )}
               >
                 <input
@@ -113,28 +146,10 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
                   type={useRadioAppearance ? 'radio' : 'checkbox'}
                   name={useRadioAppearance ? `compose-${categoryKey}` : undefined}
                   checked={isSelected}
-                  disabled={locked}
                   onChange={() => onToggleItem(item)}
-                  className={cn(
-                    'mt-1 h-4 w-4 shrink-0 accent-warm-orange',
-                    locked && 'opacity-70',
-                  )}
+                  className="mt-1 h-4 w-4 shrink-0 accent-warm-orange"
                 />
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-start justify-between gap-2">
-                    <span className="text-sm font-bold leading-snug text-warm-wood break-words">
-                      {item.name}
-                    </span>
-                    <span className="shrink-0 text-sm font-bold tabular-nums text-warm-wood">
-                      {formatPrice(item)}
-                    </span>
-                  </span>
-                  {hasDesc ? (
-                    <span className="mt-0.5 block text-xs leading-snug text-warm-wood-dark/65 break-words">
-                      {item.description}
-                    </span>
-                  ) : null}
-                </span>
+                <ItemPriceRow item={item} formatPrice={formatPrice} />
               </label>
 
               {isTiramisu && isSelected ? (
@@ -152,10 +167,9 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
                     max={TIRAMISU_MAX_KG}
                     inputMode="numeric"
                     value={localTiramisuValue}
-                    disabled={locked}
                     onChange={(e) => onTiramisuQuantityChange(e.target.value)}
                     onBlur={onTiramisuQuantityBlur}
-                    className="w-full rounded-lg border border-warm-wood/40 px-2 py-1.5 text-sm font-semibold text-gray-800 focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/30 disabled:opacity-70"
+                    className="w-full rounded-lg border border-warm-wood/40 px-2 py-1.5 text-sm font-semibold text-gray-800 focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/30"
                   />
                   <p className="mt-1 text-[10px] text-gray-500">
                     €{tiramisuUnitPrice.toFixed(2)} al Kg

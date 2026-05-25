@@ -10,6 +10,7 @@ import {
 } from '@/features/booking/hooks/useRestaurantSetting'
 import {
   DEFAULT_BOOKING_FORM_CONFIG,
+  normalizeBookingPublicFormConfig,
   type BookingMode,
   type BookingPublicFormConfig,
   type SubTab,
@@ -141,10 +142,12 @@ export const BookingFormConfigPanel: React.FC = () => {
   }
 
   const handleSave = () => {
+    const normalized = normalizeBookingPublicFormConfig(config)
     upsert.mutate(
-      [{ key: 'booking_public_form_config', value: config }],
+      [{ key: 'booking_public_form_config', value: normalized }],
       {
         onSuccess: () => {
+          setConfig(normalized)
           setDirty(false)
         },
         onError: () => {
@@ -482,7 +485,8 @@ export const BookingFormConfigPanel: React.FC = () => {
                                     value={tab.description ?? ''}
                                     onChange={(e) =>
                                       updateSubTab(mode.id, tab.id, {
-                                        description: e.target.value.trim() || undefined,
+                                        description:
+                                          e.target.value === '' ? undefined : e.target.value,
                                       })
                                     }
                                     maxLength={80}

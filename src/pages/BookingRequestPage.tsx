@@ -119,33 +119,29 @@ export const BookingRequestPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Griglia 2 colonne: form sinistra + sidebar destra */}
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_min(360px,32%)] lg:items-start lg:gap-6">
-            <div className="min-w-0">
-              <BookingRequestForm
-                tenantSlug={tenantSlug}
-                formConfig={resolvedConfig}
-                onFormDataChange={setSharedFormData}
-                onActiveSubTabChange={setActiveSubTab}
+          <BookingRequestForm
+            tenantSlug={tenantSlug}
+            formConfig={resolvedConfig}
+            onFormDataChange={setSharedFormData}
+            onActiveSubTabChange={setActiveSubTab}
+            summarySidebar={
+              <BookingSummarySidebar
+                formData={{
+                  desired_date: sharedFormData.desired_date,
+                  desired_time: sharedFormData.desired_time,
+                  num_guests: sharedFormData.num_guests ?? 0,
+                  booking_type: sharedFormData.booking_type,
+                  menu_selection: sharedFormData.menu_selection,
+                  menu_total_per_person: sharedFormData.menu_total_per_person,
+                  menu_total_booking: sharedFormData.menu_total_booking,
+                  preset_menu: sharedFormData.preset_menu,
+                }}
+                modes={resolvedConfig.booking_modes}
+                contactPhone={displayContactPhone || undefined}
+                activeSubTab={activeSubTab}
               />
-            </div>
-
-            <BookingSummarySidebar
-              formData={{
-                desired_date: sharedFormData.desired_date,
-                desired_time: sharedFormData.desired_time,
-                num_guests: sharedFormData.num_guests ?? 0,
-                booking_type: sharedFormData.booking_type,
-                menu_selection: sharedFormData.menu_selection,
-                menu_total_per_person: sharedFormData.menu_total_per_person,
-                menu_total_booking: sharedFormData.menu_total_booking,
-                preset_menu: sharedFormData.preset_menu,
-              }}
-              modes={resolvedConfig.booking_modes}
-              contactPhone={displayContactPhone || undefined}
-              activeSubTab={activeSubTab}
-            />
-          </div>
+            }
+          />
 
           {/* Footer orari + contatti */}
           <div className="rounded-2xl shadow-xl px-3 md:px-5 bg-white border border-slate-100 pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-[clamp(2rem,6vmin,3.5rem)] animate-fade-in">

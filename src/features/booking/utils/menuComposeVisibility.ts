@@ -28,7 +28,7 @@ export type ComposeMenuItem = {
 
 /**
  * UUID consentiti quando il menù è bloccato (preset fisso o built-in).
- * `null` = nessun filtro (menù personalizzabile o compose libero).
+ * `null` = nessun filtro (compose libero senza preset). Con preset personalizzabile = solo `item_ids` del catalogo.
  */
 export function resolveLockedPresetAllowedItemIds(
   presetMenu: PresetMenuType | null | undefined,
@@ -40,7 +40,8 @@ export function resolveLockedPresetAllowedItemIds(
   if (isCustomPresetMenuType(presetMenu)) {
     const uuid = getCustomPresetUuid(presetMenu)
     const preset = uuid ? customStaffPresets.find((p) => p.id === uuid) : undefined
-    if (!preset || preset.is_fixed_menu === false) return null
+    if (!preset?.item_ids?.length) return new Set()
+    // Personalizzabile: mostra solo il catalogo preset, senza pre-selezioni
     return new Set(preset.item_ids)
   }
 

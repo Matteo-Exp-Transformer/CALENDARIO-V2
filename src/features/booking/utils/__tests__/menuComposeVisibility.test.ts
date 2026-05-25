@@ -45,7 +45,7 @@ describe('resolveLockedPresetAllowedItemIds', () => {
     expect(resolveLockedPresetAllowedItemIds(null, menuItems, [])).toBeNull()
   })
 
-  it('returns null for customizable staff preset', () => {
+  it('returns catalog item_ids for customizable staff preset (no pre-selection)', () => {
     const presetId = 'preset-uuid'
     expect(
       resolveLockedPresetAllowedItemIds(
@@ -61,7 +61,7 @@ describe('resolveLockedPresetAllowedItemIds', () => {
           },
         ],
       ),
-    ).toBeNull()
+    ).toEqual(new Set(['a1', 'p1']))
   })
 
   it('returns item_ids set for fixed staff preset', () => {

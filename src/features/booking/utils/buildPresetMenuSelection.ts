@@ -175,12 +175,49 @@ export function computeMenuTotalsFromItems(
   }
 }
 
-/** Applica selezione preset e restituisce righe selezionate oppure null. */
+/** Menù staff personalizzabile dal cliente (nessuna voce pre-selezionata). */
+export function isGuestComposableStaffPreset(
+  presetType: PresetMenuType,
+  customPresets: CustomStaffPreset[],
+): boolean {
+  if (!presetType || !isCustomPresetMenuType(presetType)) return false
+  const uuid = getCustomPresetUuid(presetType)
+  const preset = uuid ? customPresets.find((p) => p.id === uuid) : undefined
+  return preset?.is_fixed_menu === false
+}
+
+/** Catalogo preset valido per form pubblico (almeno una voce menu nel DB). */
+export function presetCatalogHasMenuItems(
+  presetType: Exclude<PresetMenuType, null>,
+  menuItems: MenuItem[],
+  customPresets: CustomStaffPreset[],
+): boolean {
+  if (isGuestComposableStaffPreset(presetType, customPresets)) {
+    const uuid = getCustomPresetUuid(presetType)
+    const def = uuid ? customPresets.find((c) => c.id === uuid) : undefined
+    if (!def?.item_ids?.length) return false
+    return selectedItemsFromMenuItemIds(menuItems, def.item_ids).length > 0
+  }
+  return (resolvePresetSelectedItems(presetType, menuItems, customPresets)?.length ?? 0) > 0
+}
+
+/** Applica preset: menù fisso/built-in = voci già selezionate; personalizzabile = catalogo vuoto (off). */
 export function applyPresetTypeToBookingFormPayload(
   presetType: Exclude<PresetMenuType, null>,
   menuItems: MenuItem[],
   customPresets: CustomStaffPreset[],
 ): { items: SelectedMenuItem[]; preset_menu: PresetMenuType } | null {
+  if (!presetCatalogHasMenuItems(presetType, menuItems, customPresets)) {
+    return null
+  }
+
+  if (isGuestComposableStaffPreset(presetType, customPresets)) {
+    return {
+      items: [],
+      preset_menu: presetType,
+    }
+  }
+
   const items = resolvePresetSelectedItems(presetType, menuItems, customPresets)
   if (!items?.length) {
     return null
