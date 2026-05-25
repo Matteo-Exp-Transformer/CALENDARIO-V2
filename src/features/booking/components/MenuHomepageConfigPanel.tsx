@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import { ImagePlus, Trash2, ChevronUp, ChevronDown, ArrowUp, Eye, EyeOff } from 'lucide-react'
-import { Button, CollapsibleCard } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 import { useMenuCategories } from '../hooks/useMenuCategories'
 import { MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
@@ -170,7 +170,7 @@ export function MenuQrCarouselSection({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-gray-800">Specialità della casa</p>
+        <p className="text-sm text-gray-700">Specialità della casa</p>
         <input
           ref={fileRef}
           type="file"
@@ -280,6 +280,9 @@ export function MenuQrCarouselSection({
 
 export type CategoryOverrideDraft = Record<string, { title: string; description: string }>
 
+const MENU_QR_FIELD_CLASS =
+  'w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm text-gray-700 outline-none'
+
 export function MenuQrHiddenItemsPicker({
   categoryLabel,
   items,
@@ -291,6 +294,8 @@ export function MenuQrHiddenItemsPicker({
   hiddenItemIds: string[]
   onHiddenItemIdsChange: (ids: string[]) => void
 }) {
+  const [expanded, setExpanded] = useState(false)
+
   if (items.length === 0) return null
 
   const hiddenSet = new Set(hiddenItemIds)
@@ -304,40 +309,49 @@ export function MenuQrHiddenItemsPicker({
   }
 
   return (
-    <CollapsibleCard
-      title="Scegli quali ingredienti non mostrare"
-      defaultExpanded={false}
-      className="border-gray-200 bg-gray-50/80"
-      contentClassName="pt-1"
-    >
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {items.map((item) => {
-          const isHidden = hiddenSet.has(item.id)
-          return (
-            <div
-              key={item.id}
-              className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 py-1.5"
-            >
-              <span className="min-w-0 flex-1 truncate text-xs text-gray-700" title={item.name}>
-                {item.name}
-              </span>
-              <button
-                type="button"
-                className="is-clickable shrink-0 rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
-                aria-label={
-                  isHidden
-                    ? `Mostra ${item.name} nel menu QR ${categoryLabel}`
-                    : `Nascondi ${item.name} dal menu QR ${categoryLabel}`
-                }
-                onClick={() => toggleItem(item.id)}
+    <div className={MENU_QR_FIELD_CLASS}>
+      <button
+        type="button"
+        className="is-clickable flex w-full items-center justify-between gap-2 text-left hover:text-gray-900"
+        aria-expanded={expanded}
+        onClick={() => setExpanded((v) => !v)}
+      >
+        <span className="min-w-0 truncate">Scegli quali ingredienti non mostrare</span>
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-gray-500 transition-transform ${expanded ? 'rotate-180' : ''}`}
+          aria-hidden
+        />
+      </button>
+      {expanded ? (
+        <div className="mt-2 grid grid-cols-2 gap-2 border-t border-gray-200 pt-2 sm:grid-cols-4">
+          {items.map((item) => {
+            const isHidden = hiddenSet.has(item.id)
+            return (
+              <div
+                key={item.id}
+                className="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1.5"
               >
-                {isHidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-          )
-        })}
-      </div>
-    </CollapsibleCard>
+                <span className="min-w-0 flex-1 truncate text-sm text-gray-700" title={item.name}>
+                  {item.name}
+                </span>
+                <button
+                  type="button"
+                  className="is-clickable shrink-0 rounded p-0.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                  aria-label={
+                    isHidden
+                      ? `Mostra ${item.name} nel menu QR ${categoryLabel}`
+                      : `Nascondi ${item.name} dal menu QR ${categoryLabel}`
+                  }
+                  onClick={() => toggleItem(item.id)}
+                >
+                  {isHidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      ) : null}
+    </div>
   )
 }
 

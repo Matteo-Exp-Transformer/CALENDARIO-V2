@@ -260,7 +260,7 @@ export function MenuQrModal({
       <div className="flex max-h-[min(80vh,720px)] flex-col gap-4 overflow-y-auto">
         <div>
           <div className="mb-1 flex items-center justify-between gap-2">
-            <label className="text-sm font-medium text-gray-700">Nome QR *</label>
+            <label className="text-sm font-semibold text-gray-800">Nome QR *</label>
             <Button variant="primary" size="sm" onClick={handleSave} disabled={isPending || !name.trim()}>
               {isPending ? 'Salvataggio…' : 'Salva'}
             </Button>
@@ -276,7 +276,7 @@ export function MenuQrModal({
         {categoryKeysWithItems.length > 0 ? (
           <div>
             <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-sm font-medium text-gray-700">Categorie di prodotti visibili</p>
+              <p className="text-sm font-semibold text-gray-800">Categorie di prodotti visibili</p>
               <label className="flex cursor-pointer items-center gap-1.5 text-xs text-gray-500">
                 <input
                   type="checkbox"
@@ -312,7 +312,7 @@ export function MenuQrModal({
 
         {presets.length > 0 && (
           <div>
-            <p className="mb-1 text-sm font-medium text-gray-700">
+            <p className="mb-1 text-sm font-semibold text-gray-800">
               Menù eventi visibili{' '}
               <span className="font-normal text-gray-500">(lascia vuoto = tutti)</span>
             </p>
@@ -336,7 +336,7 @@ export function MenuQrModal({
         )}
 
         <section>
-          <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500">
+          <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-800">
             Carosello specialità
           </h4>
           <MenuQrCarouselSection
@@ -349,7 +349,7 @@ export function MenuQrModal({
         </section>
 
         <section>
-          <h4 className="mb-1 text-xs font-bold uppercase tracking-wider text-gray-500">
+          <h4 className="mb-1 text-xs font-bold uppercase tracking-wider text-gray-800">
             Titoli e descrizioni categorie
           </h4>
           <p className="mb-3 text-xs text-gray-500">
@@ -371,7 +371,7 @@ export function MenuQrModal({
         </section>
 
         <section>
-          <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500">Tema homepage</h4>
+          <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-800">Tema homepage</h4>
           <MenuQrThemeSection value={themeKey} onChange={setThemeKey} />
         </section>
 

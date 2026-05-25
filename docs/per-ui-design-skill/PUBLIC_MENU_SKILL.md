@@ -110,7 +110,7 @@ File: `src/features/booking/hooks/useMenuQrCodes.ts`
 | Componente | File |
 |------------|------|
 | `MenuQrManager` | `src/features/booking/components/MenuQrManager.tsx` — solo lista «I miei QR» (tab Aspetto homepage spostato in modale) |
-| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia sotto il titolo; **Salva** allineato a destra sulla riga «Nome QR *» + in fondo; checkbox categorie **solo con ≥1 ingrediente**; titoli/foto solo per categorie selezionate; picker occhio per nascondere ingredienti per QR. Salvataggio via `useSaveMenuQrSettings` |
+| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia sotto il titolo; **Salva** allineato a destra sulla riga «Nome QR *» + in fondo; etichette sezione (`Nome QR`, categorie, h4 sezioni) in `font-semibold`/`font-bold` + `text-gray-800`; checkbox categorie **solo con ≥1 ingrediente**; titoli/foto solo per categorie selezionate; picker ingredienti nascosti (stile input `text-sm`). Salvataggio via `useSaveMenuQrSettings` |
 | `MenuHomepageConfigPanel` | Sezioni controllate (`MenuQrCarouselSection`, `MenuQrCategoryCardsSection`, `MenuQrHiddenItemsPicker`, `MenuQrThemeSection`) — upload anche su **nuovo** QR via path `qr/draft/{shortCode}/` (migrazione a `qr/{id}/` al Salva) |
 
 Il `MenuQrManager` è montato in `MenuPricesTab` quando `viewMode === 'qr_codes'` (pulsante "QR Code" nell'hero section, visibile solo se `features.qrMenu`).
@@ -141,7 +141,7 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 
 > Dettaglio componenti: **`docs/per-ui-design-skill/PUBLIC_MENU_LAYOUT_CONTEXT.md`**
 
-**Limiti admin carosello** (`MenuQrCarouselSection`): etichetta sopra titolo (eyebrow, es. «Specialità della casa») max **40**; titolo slide max **60**; testo breve max **125**; contatore `n/max` sotto ogni campo. Campo `eyebrow` in `carousel_items` JSON, mostrato in `MenuCarousel` sulla pagina pubblica.
+**Limiti admin carosello** (`MenuQrCarouselSection`): etichetta fissa «Specialità della casa» in `text-sm` normale (non grassetto); titolo slide max **60**; testo breve max **125**; contatore `n/max` sotto ogni campo. Campo `eyebrow` in `carousel_items` JSON opzionale, mostrato in `MenuCarousel` sulla pagina pubblica.
 
 **`PublicMenuCategoryPage`** — dettaglio categoria:
 - Carica i piatti della categoria da `menu_items` via `supabasePublic`
