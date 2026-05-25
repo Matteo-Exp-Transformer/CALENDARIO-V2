@@ -133,7 +133,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   }, [activeSubTab, onActiveSubTabChange])
 
   const frostedInputCn =
-    'bg-white/85 backdrop-blur-[1px] px-4 rounded-xl !border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
+    'bg-white px-4 rounded-lg border border-slate-200 text-left text-sm sm:text-base font-medium text-warm-wood focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/40'
   
   // Ref per prevenire doppi submit (anche con React StrictMode)
   const isSubmittingRef = useRef(false)
@@ -652,9 +652,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
       {/* Dati e dettagli — prima sezione sotto header (come pagina prenota attuale) */}
       <div className="space-y-3">
-        <h2 className="text-center text-lg md:text-xl font-serif font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
-          Dati e Dettagli
-        </h2>
         <BookingFormFields
           formData={{
             client_name: formData.client_name,
@@ -684,7 +681,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           setErrors={(newErrors) => setErrors(newErrors)}
         />
         {errors.slot_availability && (
-          <div className="text-sm text-red-700 font-semibold p-4 rounded-xl bg-white/90 backdrop-blur-[1px] border border-red-400/40 text-center">
+          <div className="text-sm text-red-700 font-semibold p-4 rounded-lg bg-red-50 border border-red-200 text-left">
             {errors.slot_availability}
           </div>
         )}
@@ -712,9 +709,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
       {/* Tipologia di prenotazione — card sotto data/ora/ospiti */}
       <div className="space-y-3" id="booking-sub-tabs-section">
-        <h2 className="text-center text-lg md:text-xl font-serif font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
-          Tipo di prenotazione
-        </h2>
         <BookingModeCards
           modes={formConfig.booking_modes}
           activeModeId={activeModeId}

@@ -6,6 +6,9 @@ import type { BookingRequestInput } from '@/types/booking'
 import type { BusinessHours } from '@/lib/businessHours'
 import { isValidBookingDateTime, getDayOfWeek, formatHours } from '@/lib/businessHours'
 
+const FIELD_LABEL_CLASS =
+  'block text-left text-sm font-bold text-warm-wood md:text-base mb-1'
+
 interface BookingFormFieldsProps {
   formData: Pick<
     BookingRequestInput,
@@ -59,7 +62,10 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
   return (
     <div className="space-y-5">
       {/* Nome */}
-      <div className="space-y-2">
+      <div className="space-y-1">
+        <label htmlFor="client_name" className={FIELD_LABEL_CLASS}>
+          Nome Completo *
+        </label>
         <Input
           id="client_name"
           value={formData.client_name}
@@ -67,7 +73,6 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             onFieldChange('client_name', e.target.value)
             setErrors({ ...errors, client_name: '' })
           }}
-          placeholder="Nome Completo *"
           required
           className={`${frostedInputCn} ${errors.client_name ? 'border-red-500!' : ''}`}
         />
@@ -76,7 +81,10 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
 
       {/* Riga contatti: email + telefono */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
+        <div className="space-y-1">
+          <label htmlFor="client_email" className={FIELD_LABEL_CLASS}>
+            Email (Opzionale)
+          </label>
           <Input
             id="client_email"
             type="email"
@@ -85,12 +93,14 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
               onFieldChange('client_email', e.target.value)
               setErrors({ ...errors, client_email: '' })
             }}
-            placeholder="Email (Opzionale)"
             className={`${frostedInputCn} ${errors.client_email ? 'border-red-500!' : ''}`}
           />
           {errors.client_email && <p className="text-sm text-red-500">{errors.client_email}</p>}
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1">
+          <label htmlFor="client_phone" className={FIELD_LABEL_CLASS}>
+            Telefono *
+          </label>
           <Input
             id="client_phone"
             type="tel"
@@ -99,7 +109,6 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
               onFieldChange('client_phone', e.target.value)
               setErrors({ ...errors, client_phone: '' })
             }}
-            placeholder="Telefono *"
             required
             className={`${frostedInputCn} ${errors.client_phone ? 'border-red-500!' : ''}`}
           />
@@ -108,7 +117,10 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
       </div>
 
       {/* Numero Ospiti */}
-      <div className="space-y-2">
+      <div className="space-y-1">
+        <label htmlFor="num_guests" className={FIELD_LABEL_CLASS}>
+          Numero Ospiti * (es: 15)
+        </label>
         <Input
           id="num_guests"
           type="text"
@@ -119,7 +131,6 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
           onChange={onNumGuestsChange}
           onKeyPress={onNumGuestsKeyPress}
           required
-          placeholder="Numero Ospiti * (es: 15)"
           className={`${frostedInputCn} ${errors.num_guests ? 'border-red-500!' : ''}`}
         />
         {errors.num_guests && <p className="text-sm text-red-500">{errors.num_guests}</p>}
@@ -127,11 +138,8 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
 
       {/* Data + Ora */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-start">
-        <div className="min-w-0 space-y-2">
-          <label
-            htmlFor="desired_date"
-            className="mx-auto block w-fit max-w-full text-center text-sm font-bold text-warm-wood md:text-base bg-white/85 backdrop-blur-[1px] px-3 py-1.5 md:px-4 md:py-2 rounded-xl"
-          >
+        <div className="min-w-0 space-y-1">
+          <label htmlFor="desired_date" className={FIELD_LABEL_CLASS}>
             Data prenotazione *
           </label>
           <DateInput
@@ -160,17 +168,14 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             hasError={!!errors.desired_date}
           />
           {errors.desired_date && (
-            <div className="text-sm text-red-600 p-3 rounded-lg bg-white/85 backdrop-blur-[1px] border border-red-500/30">
+            <div className="text-sm text-red-600 p-3 rounded-lg bg-red-50 border border-red-200">
               {errors.desired_date}
             </div>
           )}
         </div>
 
-        <div className="min-w-0 space-y-2">
-          <label
-            htmlFor="desired_time"
-            className="mx-auto block w-fit max-w-full text-center text-sm font-bold text-warm-wood md:text-base bg-white/85 backdrop-blur-[1px] px-3 py-1.5 md:px-4 md:py-2 rounded-xl"
-          >
+        <div className="min-w-0 space-y-1">
+          <label htmlFor="desired_time" className={FIELD_LABEL_CLASS}>
             Ora prenotazione *
           </label>
           <TimePicker24h
@@ -199,7 +204,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             hasError={!!errors.desired_time}
           />
           {errors.desired_time && (
-            <div className="text-sm text-red-600 p-3 rounded-lg bg-white/85 backdrop-blur-[1px] border border-red-500/30">
+            <div className="text-sm text-red-600 p-3 rounded-lg bg-red-50 border border-red-200">
               {errors.desired_time}
             </div>
           )}
