@@ -44,8 +44,8 @@ qrMenu: isProOrAbove || qrMenuEnabled
 | `033` | `menu_categories.description TEXT NULL` — testo opzionale sotto il nome (usato in pagina Prenota e come fallback nel menu QR) |
 | `034` | `menu_homepage_config.theme_key` + tabella `menu_qrcode_categories` (modello legacy per-tenant) |
 | `035` | `menu_categories.image_url` — foto categoria Prenota |
-| `036` | **Per-QR**: su `menu_qr_codes` → `theme_key`, `carousel_items`, `category_images`. Su `menu_qrcode_categories` → `menu_qr_code_id` FK, UNIQUE `(menu_qr_code_id, category_key)`. Migrazione dati da `menu_homepage_config` su ogni QR. `menu_homepage_config` **deprecata** (solo storico, non più scritta dall'admin) |
-| `037` | `menu_qr_codes.hidden_menu_item_ids` (JSONB UUID[] — ingredienti nascosti per QR). Rimozione tema `wine_bistrot` (CHECK a 4 temi; QR esistenti → `mediterranean_teal`) |
+| `036` | **Per-QR**: su `menu_qr_codes` → `theme_key`, `carousel_items`, `category_images`. Su `menu_qrcode_categories` → `menu_qr_code_id` FK, UNIQUE `(menu_qr_code_id, category_key)`. Migrazione dati da `menu_homepage_config` su ogni QR. `menu_homepage_config` **deprecata** (solo storico, non più scritta dall'admin). **Richiesta su TEST e produzione** prima del deploy app che salva il modale QR. |
+| `037` | `menu_qr_codes.hidden_menu_item_ids` (JSONB UUID[] — ingredienti nascosti per QR). Rimozione tema `wine_bistrot` (CHECK a 4 temi; QR esistenti → `mediterranean_teal`). Applicare insieme a `036` su ogni ambiente. |
 
 **Colonne `menu_qr_codes`** (post-037): campi 030 + `theme_key`, `carousel_items` (JSONB), `category_images` (JSONB), `hidden_menu_item_ids` (JSONB, default `[]`).
 

@@ -50,7 +50,9 @@
   032   | TEST ✅ prod ? | 032_menu_homepage_config.sql  ← tabella `menu_homepage_config` (JSONB) per carosello e foto categorie per tenant.
   033   | TEST ✅ prod ? | 033_menu_categories_description.sql  ← `ALTER TABLE menu_categories ADD COLUMN description text` (NULL, opzionale). Applicata 2026-05-24 MCP test.
   034   | TEST ✅ prod ? | 034_menu_qrcode_categories_and_theme.sql  ← (1) `theme_key TEXT NOT NULL DEFAULT 'mediterranean_teal'` su `menu_homepage_config` (CHECK 5 valori). (2) Nuova tabella `menu_qrcode_categories`: override titolo/descrizione per card categoria nella homepage QR, separati da `menu_categories` (non impattano la pagina Prenota). Applicata 2026-05-24 MCP test.
-  035   | TEST ✅ prod ? | 035_menu_categories_image_url.sql  ← `menu_categories.image_url TEXT NULL` — foto categoria per flusso Prenota (Storage `{tenantId}/booking-cat/{categoryId}.webp`). Indipendente da `menu_homepage_config.category_images` (QR). Applicata 2026-05-25 MCP test.
+  035   | TEST ✅ prod ✅ | 035_menu_categories_image_url.sql  ← `menu_categories.image_url TEXT NULL` — foto categoria per flusso Prenota (Storage `{tenantId}/booking-cat/{categoryId}.webp`). Indipendente da `menu_homepage_config.category_images` (QR). Applicata 2026-05-25 MCP test.
+  036   | TEST ✅ prod ✅ | 036_menu_qr_per_qr_appearance.sql  ← colonne aspetto su `menu_qr_codes` (`theme_key`, `carousel_items`, `category_images`); `menu_qrcode_categories.menu_qr_code_id` FK per-QR. Applicata TEST + prod 2026-05-25/26.
+  037   | TEST ✅ prod ✅ | 037_menu_qr_hidden_items_and_theme.sql  ← `hidden_menu_item_ids` JSONB; rimozione tema `wine_bistrot` dal CHECK. Applicata TEST + prod 2026-05-26.
 ```
 
 *Le 013-018, 020, 021 sono applicate sul DB **produzione** via MCP `apply_migration` (versioni timestamp `20260513...`–`20260515183055` nel registro prod). Sul **DB di test** sono state applicate via MCP solo 016, 017, 018(insert)+021 (allineamento 2026-05-15).
