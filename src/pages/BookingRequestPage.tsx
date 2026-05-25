@@ -16,7 +16,10 @@ import {
   isBookingPageGradientId,
   type BookingPageBackgroundId,
 } from '@/features/booking/constants/bookingPageBackground'
-import { DEFAULT_BOOKING_FORM_CONFIG } from '@/features/booking/constants/bookingPublicFormConfig'
+import {
+  DEFAULT_BOOKING_FORM_CONFIG,
+  type SubTab,
+} from '@/features/booking/constants/bookingPublicFormConfig'
 import type { BookingRequestInput } from '@/types/booking'
 
 export const BookingRequestPage: React.FC = () => {
@@ -44,6 +47,7 @@ export const BookingRequestPage: React.FC = () => {
 
   // Stato form condiviso tra BookingRequestForm e BookingSummarySidebar
   const [sharedFormData, setSharedFormData] = useState<Partial<BookingRequestInput>>({})
+  const [activeSubTab, setActiveSubTab] = useState<SubTab | null>(null)
 
   useEffect(() => {
     if (isTenantLoading || !tenantId) return
@@ -174,6 +178,7 @@ export const BookingRequestPage: React.FC = () => {
                 tenantSlug={tenantSlug}
                 formConfig={resolvedConfig}
                 onFormDataChange={setSharedFormData}
+                onActiveSubTabChange={setActiveSubTab}
               />
             </div>
 
@@ -190,6 +195,7 @@ export const BookingRequestPage: React.FC = () => {
               }}
               modes={resolvedConfig.booking_modes}
               contactPhone={displayContactPhone || undefined}
+              activeSubTab={activeSubTab}
             />
           </div>
 

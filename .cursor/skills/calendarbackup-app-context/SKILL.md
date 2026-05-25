@@ -28,3 +28,5 @@ Regole, tabelle LOCK, comandi e report di sessione stanno solo nei due file sopr
 **Ultimo refactor promo menù (23-05-26):** chiave `booking_menu_promos`, niente omaggio automatico in `MenuSelection` — report `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`, invariante in `docs/APP_CONTEXT_SKILL.md` §4 RULE Menu Prenota.
 
 **Menu QR homepage layout (24-05-26):** `themePageBackgroundStyle`, tab sticky opaca, carosello pallini click, limiti admin 60/125 — report `docs/Sessioni di lavoro/24-05-26/Report-menu-qr-homepage-layout-sessione.md`, skill `PUBLIC_MENU_SKILL.md` + `PUBLIC_MENU_LAYOUT_CONTEXT.md`.
+
+**Prenota v2 sottotab orizzontali (25-05-26):** `BookingMode.sub_tabs[]` (preset/manuale), `BookingSubTabCards`, editor in `BookingFormConfigPanel` — report `docs/Sessioni di lavoro/25-05-26/Report-sottotab-orizzontali-prenota-v2.md`, RULE in `docs/APP_CONTEXT_SKILL.md` §4.

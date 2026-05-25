@@ -12,6 +12,7 @@ import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { isValidBookingDateTime, getDayOfWeek, formatHours } from '@/lib/businessHours'
 import { toast } from 'react-toastify'
 import type { PresetMenuType } from '../constants/presetMenus'
+import { customPresetStorageId } from '../constants/presetMenus'
 import { useMenuItems } from '../hooks/useMenuItems'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
@@ -27,8 +28,9 @@ import {
 import { MenuPromoBannerCards } from './MenuPromoBannerCards'
 import { BookingModeCards } from './publicBooking/BookingModeCards'
 import { BookingFormFields } from './publicBooking/BookingFormFields'
-import type { BookingPublicFormConfig } from '../constants/bookingPublicFormConfig'
+import type { BookingPublicFormConfig, SubTab } from '../constants/bookingPublicFormConfig'
 import { DEFAULT_BOOKING_FORM_CONFIG } from '../constants/bookingPublicFormConfig'
+import { BookingSubTabCards } from './publicBooking/BookingSubTabCards'
 
 
 interface BookingRequestFormProps {
@@ -36,6 +38,7 @@ interface BookingRequestFormProps {
   tenantSlug?: string
   formConfig?: BookingPublicFormConfig
   onFormDataChange?: (data: Partial<BookingRequestInput>) => void
+  onActiveSubTabChange?: (subTab: SubTab | null) => void
 }
 
 export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
@@ -43,6 +46,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   tenantSlug,
   formConfig = DEFAULT_BOOKING_FORM_CONFIG,
   onFormDataChange,
+  onActiveSubTabChange,
 }) => {
   // Nome ristorante dinamico per il consenso privacy: deve riflettere il tenant
   // corrente, non un nome hardcoded. Fallback generico se non disponibile.
@@ -82,17 +86,40 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false) // Stato per triggerare re-render e disabilitare button
   const [selectedPreset, setSelectedPreset] = useState<PresetMenuType>(null)
+  const [activeSubTabId, setActiveSubTabId] = useState<string | null>(null)
   const [touchCrossBurst, setTouchCrossBurst] = useState(0)
 
   // Trova il modo attivo in base a booking_type
-  const activeModeId = formConfig.booking_modes.find(
-    (m) => m.enabled && m.booking_type === formData.booking_type
-  )?.id ?? formConfig.booking_modes.find((m) => m.enabled)?.id ?? 'tavolo'
+  const activeMode = formConfig.booking_modes.find(
+    (m) => m.enabled && m.booking_type === formData.booking_type,
+  ) ?? formConfig.booking_modes.find((m) => m.enabled)
+
+  const activeModeId = activeMode?.id ?? 'tavolo'
+
+  const activeModeSubTabs =
+    activeMode?.sub_tabs_enabled && (activeMode.sub_tabs?.length ?? 0) > 0
+      ? (activeMode.sub_tabs ?? [])
+      : []
+
+  const activeSubTab = activeModeSubTabs.find((t) => t.id === activeSubTabId) ?? null
+
+  const activeSubTabOverrides = useMemo(() => {
+    if (activeModeSubTabs.length > 0) {
+      return activeModeSubTabs
+        .filter((t): t is typeof t & { preset_id: string } => t.type === 'preset' && !!t.preset_id)
+        .map((t) => ({ preset_id: t.preset_id, custom_label: t.label }))
+    }
+    return activeMode?.sub_tabs_overrides ?? []
+  }, [activeMode, activeModeSubTabs])
 
   // Notifica il parent ad ogni cambio formData (per sidebar riepilogo)
   useEffect(() => {
     onFormDataChange?.(formData)
   }, [formData, onFormDataChange])
+
+  useEffect(() => {
+    onActiveSubTabChange?.(activeSubTab)
+  }, [activeSubTab, onActiveSubTabChange])
 
   const frostedInputCn =
     'bg-white/85 backdrop-blur-[1px] px-4 rounded-xl !border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
@@ -406,7 +433,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     }
 
     // Menu validation (Rinfresco di Laurea / menù a prezzo fisso)
-    if (bookingTypeUsesMenuSelections(formData.booking_type)) {
+    if (bookingTypeUsesMenuSelections(formData.booking_type) && activeSubTab?.type !== 'manual') {
       if (!formData.menu_selection || !formData.menu_selection.items || formData.menu_selection.items.length === 0) {
         newErrors.menu = 'Seleziona almeno un prodotto dal menù'
         isValid = false
@@ -526,9 +553,21 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
     // Chiama mutate — il guard server-side in create-booking è la garanzia definitiva
     const menuPromoLabels = listMenuPromoLabelsForBookingType(formData.booking_type ?? 'tavolo', menuPromos)
+
+    let specialRequests = formData.special_requests?.trim() ?? ''
+    if (activeSubTab?.type === 'manual' && activeSubTab.label.trim()) {
+      const subTabNote = activeSubTab.price_per_person
+        ? `[${activeSubTab.label.trim()} - €${activeSubTab.price_per_person}/p]`
+        : `[${activeSubTab.label.trim()}]`
+      if (!specialRequests.includes(subTabNote)) {
+        specialRequests = specialRequests ? `${subTabNote} ${specialRequests}` : subTabNote
+      }
+    }
+
     mutate(
       {
         ...formData,
+        special_requests: specialRequests,
         tenantSlug,
         menu_promo_labels: menuPromoLabels.length > 0 ? menuPromoLabels : null,
       },
@@ -554,6 +593,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           preset_menu: null
         })
         setSelectedPreset(null)
+        setActiveSubTabId(null)
         setPrivacyAccepted(false)
         
         // Reset tutti i flag di submit e rilascia lock
@@ -595,6 +635,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           modes={formConfig.booking_modes}
           activeModeId={activeModeId}
           onChange={(_modeId, bookingType) => {
+            setActiveSubTabId(null)
             if (bookingType === 'tavolo') {
               setSelectedPreset(null)
               setFormData({
@@ -617,6 +658,35 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         )}
         {menuPromoBannerMessages.length > 0 && (
           <MenuPromoBannerCards messages={menuPromoBannerMessages} className="mt-3" />
+        )}
+        {activeModeSubTabs.length > 0 && (
+          <BookingSubTabCards
+            subTabs={activeModeSubTabs}
+            activeSubTabId={activeSubTabId}
+            onChange={(tab) => {
+              setActiveSubTabId(tab?.id ?? null)
+              if (!tab) {
+                handlePresetMenuChange(null)
+                return
+              }
+              if (tab.type === 'preset' && tab.preset_id) {
+                handlePresetMenuChange(customPresetStorageId(tab.preset_id))
+                return
+              }
+              if (tab.type === 'manual') {
+                setSelectedPreset(null)
+                const price = tab.price_per_person ?? 0
+                const numGuests = formData.num_guests || 0
+                setFormData({
+                  ...formData,
+                  preset_menu: null,
+                  menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
+                  menu_total_per_person: price > 0 ? price : undefined,
+                  menu_total_booking: price > 0 ? price * numGuests : undefined,
+                })
+              }
+            }}
+          />
         )}
       </div>
 
@@ -668,9 +738,13 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             numGuests={formData.num_guests || 0}
             bookingType={formData.booking_type}
             presetMenu={selectedPreset}
-            staffPresetsDropdownVisible={staffPresetsDropdownVisible}
+            staffPresetsDropdownVisible={
+              activeModeSubTabs.length > 0 ? false : staffPresetsDropdownVisible
+            }
             customStaffPresets={customStaffPresets}
             hideSummary={true}
+            hideMenuGrid={activeSubTab?.type === 'manual'}
+            subTabOverrides={activeSubTabOverrides}
             onPresetMenuChange={handlePresetMenuChange}
             onMenuChange={({ items, totalPerPerson, tiramisuTotal, tiramisuKg }) => {
               const numGuests = formData.num_guests || 0

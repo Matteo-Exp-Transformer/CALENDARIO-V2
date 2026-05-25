@@ -54,6 +54,10 @@ interface MenuSelectionProps {
   hideSummary?: boolean
   /** Variante layout: 'compose' usa titolo «CREA IL TUO MENU». Default: 'default' */
   variant?: 'default' | 'compose'
+  /** Etichette custom per le card/opzioni preset (da booking_public_form_config). */
+  subTabOverrides?: { preset_id: string; custom_label: string }[]
+  /** Nasconde la griglia ingredienti (es. sottotab manuale). Default: false */
+  hideMenuGrid?: boolean
 }
 
 type NormalizedMenuItem = {
@@ -98,6 +102,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   customStaffPresets = [],
   hideSummary = false,
   variant: _variant = 'default',
+  subTabOverrides = [],
+  hideMenuGrid = false,
 }) => {
   const { data: menuItems = [], isLoading, error } = useMenuItems()
   const { data: dbCategories = [] } = useMenuCategories()
@@ -564,16 +570,20 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
                   {getPresetMenuLabel(presetMenu, customStaffPresets)}
                 </option>
               )}
-            {selectableStaffPresets.map((p) => (
-              <option key={p.id} value={customPresetStorageId(p.id)}>
-                {p.name}
-              </option>
-            ))}
+            {selectableStaffPresets.map((p) => {
+              const override = subTabOverrides.find((o) => o.preset_id === p.id)
+              return (
+                <option key={p.id} value={customPresetStorageId(p.id)}>
+                  {override?.custom_label?.trim() || p.name}
+                </option>
+              )
+            })}
           </select>
         </div>
       )}
 
       {/* Panoramica categorie — stesso layout di MenuPricesTab / menù preselezionati */}
+      {!hideMenuGrid && (
       <div
         className={cn(MENU_INGREDIENT_OVERVIEW_SHELL_CLASS, 'mt-4 w-full min-w-0')}
         style={ADMIN_WARM_GRADIENT_SURFACE}
@@ -686,6 +696,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
           </div>
         )}
       </div>
+      )}
 
       {/* Riepilogo Scelte — nascosto quando la sidebar mostra già il riepilogo */}
       {!hideSummary && selectedItems.length > 0 && (

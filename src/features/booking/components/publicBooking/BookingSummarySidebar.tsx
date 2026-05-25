@@ -1,7 +1,7 @@
 import React from 'react'
 import { CalendarDays, Clock, Users, UtensilsCrossed, Phone } from 'lucide-react'
 import type { BookingRequestInput, BookingType } from '@/types/booking'
-import type { BookingMode } from '@/features/booking/constants/bookingPublicFormConfig'
+import type { BookingMode, SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
 
 interface BookingSummarySidebarProps {
   formData: {
@@ -16,6 +16,7 @@ interface BookingSummarySidebarProps {
   }
   modes: BookingMode[]
   contactPhone?: string
+  activeSubTab?: SubTab | null
 }
 
 function formatDate(dateStr?: string): string {
@@ -44,6 +45,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   formData,
   modes,
   contactPhone,
+  activeSubTab,
 }) => {
   const hasMenu = formData.booking_type !== 'tavolo'
   const items = formData.menu_selection?.items ?? []
@@ -101,6 +103,26 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
             </p>
           </div>
         </div>
+
+        {/* Sottotab selezionata (opzione manuale o con prezzo indicato) */}
+        {activeSubTab &&
+          (activeSubTab.type === 'manual' ||
+            (activeSubTab.price_per_person != null && activeSubTab.price_per_person > 0)) && (
+            <div className="border-t border-black/10 pt-3">
+              <p className="text-xs text-warm-wood-dark/60 font-semibold uppercase tracking-wide">
+                Opzione menu
+              </p>
+              <p className="text-sm font-bold text-warm-wood leading-tight mt-0.5">
+                {activeSubTab.label}
+                {activeSubTab.price_per_person != null && activeSubTab.price_per_person > 0 && (
+                  <span className="text-warm-wood-dark/80 font-semibold">
+                    {' '}
+                    — {formatCurrency(activeSubTab.price_per_person)}/persona
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
 
         {/* Menu voci */}
         {hasMenu && items.length > 0 && (

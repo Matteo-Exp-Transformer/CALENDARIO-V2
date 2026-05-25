@@ -19,7 +19,11 @@ import {
 import type { MenuPromo } from '@/features/booking/constants/menuPromo'
 import {
   type BookingPublicFormConfig,
+  type SubTab,
+  type SubTabOverride,
   DEFAULT_BOOKING_FORM_CONFIG,
+  migrateOverridesToSubTabs,
+  parseSubTabFromUnknown,
 } from '@/features/booking/constants/bookingPublicFormConfig'
 
 export const RESTAURANT_SETTING_KEYS_V1 = [
@@ -521,8 +525,45 @@ export const restaurantSettingRegistry: {
               ? (mode.icon as 'utensils' | 'cloche' | 'chef-hat')
               : dm.icon,
             sub_tabs_enabled: typeof mode.sub_tabs_enabled === 'boolean' ? mode.sub_tabs_enabled : dm.sub_tabs_enabled,
-            sub_tabs_display: 'horizontal' as const,
-            sub_tabs: [] as [],
+            sub_tabs_display:
+              mode.sub_tabs_display === 'carousel' ? 'carousel' : ('horizontal' as const),
+            sub_tabs: (() => {
+              const parsed: SubTab[] = Array.isArray(mode.sub_tabs)
+                ? mode.sub_tabs.map(parseSubTabFromUnknown).filter((t): t is SubTab => t != null)
+                : []
+              if (parsed.length > 0) return parsed
+              const overrides: SubTabOverride[] = Array.isArray(mode.sub_tabs_overrides)
+                ? mode.sub_tabs_overrides
+                    .filter(
+                      (o): o is SubTabOverride =>
+                        !!o &&
+                        typeof o === 'object' &&
+                        !Array.isArray(o) &&
+                        typeof (o as SubTabOverride).preset_id === 'string' &&
+                        typeof (o as SubTabOverride).custom_label === 'string',
+                    )
+                    .map((o) => ({
+                      preset_id: (o as SubTabOverride).preset_id,
+                      custom_label: (o as SubTabOverride).custom_label,
+                    }))
+                : []
+              return overrides.length > 0 ? migrateOverridesToSubTabs(overrides) : []
+            })(),
+            sub_tabs_overrides: Array.isArray(mode.sub_tabs_overrides)
+              ? mode.sub_tabs_overrides
+                  .filter(
+                    (o): o is SubTabOverride =>
+                      !!o &&
+                      typeof o === 'object' &&
+                      !Array.isArray(o) &&
+                      typeof (o as SubTabOverride).preset_id === 'string' &&
+                      typeof (o as SubTabOverride).custom_label === 'string',
+                  )
+                  .map((o) => ({
+                    preset_id: (o as SubTabOverride).preset_id,
+                    custom_label: (o as SubTabOverride).custom_label,
+                  }))
+              : undefined,
           }
         }),
       }
