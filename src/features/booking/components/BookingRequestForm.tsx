@@ -1,13 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import type { BookingRequestInput } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { useCreateBookingRequest } from '../hooks/useBookingRequests'
 import { useCheckSlotAvailability } from '../hooks/useCheckSlotAvailability'
 import { useRateLimit } from '@/hooks/useRateLimit'
-import { Check, Send, Loader2, CheckCircle } from 'lucide-react'
+import { Send, Loader2, CheckCircle } from 'lucide-react'
 import { MenuSelection } from './MenuSelection'
 import { DietaryRestrictionsSection } from './DietaryRestrictionsSection'
+import {
+  dietaryRestrictionsToText,
+  dietaryTextToRestrictions,
+} from '../utils/dietaryRestrictionsText'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { isValidBookingDateTime, getDayOfWeek, formatHours } from '@/lib/businessHours'
 import { toast } from 'react-toastify'
@@ -15,7 +18,6 @@ import type { PresetMenuType } from '../constants/presetMenus'
 import { customPresetStorageId, enrichPresetSubTabsFromStaffPresets } from '../constants/presetMenus'
 import { useMenuItems } from '../hooks/useMenuItems'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
-import { useRestaurantName } from '@/hooks/useRestaurantName'
 import {
   applyPresetTypeToBookingFormPayload,
   computeMenuTotalsFromItems,
@@ -48,10 +50,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   onFormDataChange,
   onActiveSubTabChange,
 }) => {
-  // Nome ristorante dinamico per il consenso privacy: deve riflettere il tenant
-  // corrente, non un nome hardcoded. Fallback generico se non disponibile.
-  const restaurantName = useRestaurantName() || 'questo ristorante'
-
   // Helper function to get current date in YYYY-MM-DD format
   const getCurrentDate = (): string => {
     const now = new Date()
@@ -685,26 +683,30 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             {errors.slot_availability}
           </div>
         )}
-        {/* Intolleranze e richieste — subito sotto data/ora/ospiti (Rinfresco / menu prezzo fisso) */}
-        {bookingTypeUsesMenuSelections(formData.booking_type) && (
-          <div className="space-y-6 pt-2">
-            <DietaryRestrictionsSection
-              restrictions={formData.dietary_restrictions || []}
-              onRestrictionsChange={(restrictions) => {
-                setFormData({
-                  ...formData,
-                  dietary_restrictions: restrictions,
-                })
-              }}
-              specialRequests={formData.special_requests || ''}
-              onSpecialRequestsChange={(value) => {
-                setFormData({ ...formData, special_requests: value })
-              }}
-              privacyAccepted={privacyAccepted}
-              onPrivacyChange={setPrivacyAccepted}
-            />
-          </div>
-        )}
+        {/* Intolleranze e richieste — sempre sotto data/ora/ospiti, per ogni tipologia */}
+        <div className="space-y-6 pt-2">
+          <DietaryRestrictionsSection
+            dietaryText={dietaryRestrictionsToText(formData.dietary_restrictions)}
+            onDietaryTextChange={(text) => {
+              setFormData({
+                ...formData,
+                dietary_restrictions: dietaryTextToRestrictions(text),
+              })
+            }}
+            specialRequests={formData.special_requests || ''}
+            onSpecialRequestsChange={(value) => {
+              setFormData({ ...formData, special_requests: value })
+            }}
+            privacyAccepted={privacyAccepted}
+            onPrivacyChange={(newValue) => {
+              setPrivacyAccepted(newValue)
+              if (newValue && errors.privacyAccepted) {
+                setErrors({ ...errors, privacyAccepted: '' })
+              }
+            }}
+            privacyError={errors.privacyAccepted}
+          />
+        </div>
       </div>
 
       {/* Tipologia di prenotazione — card sotto data/ora/ospiti */}
@@ -819,64 +821,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           />
           {errors.menu && (
             <p className="text-sm text-red-500">{errors.menu}</p>
-          )}
-        </div>
-      )}
-
-      {/* Privacy Policy - Solo per Prenota un Tavolo (per Rinfresco di Laurea è dentro DietaryRestrictionsSection) */}
-      {!bookingTypeUsesMenuSelections(formData.booking_type) && (
-        <div className="space-y-2 mt-10">
-          <div className="flex items-center gap-3">
-            <div className="group relative size-5 shrink-0">
-              <input
-                type="checkbox"
-                id="privacy-consent"
-                checked={privacyAccepted}
-                onChange={(e) => {
-                  setPrivacyAccepted(e.target.checked)
-                  // Rimuovi errore quando viene selezionata
-                  if (e.target.checked && errors.privacyAccepted) {
-                    setErrors({ ...errors, privacyAccepted: '' })
-                  }
-                }}
-                required
-                className="peer absolute inset-0 z-10 size-5 cursor-pointer appearance-none opacity-0 focus:outline-none"
-              />
-              <div
-                aria-hidden="true"
-                className={`pointer-events-none absolute inset-0 flex items-center justify-center rounded border-2 bg-white shadow-sm transition-all duration-300 group-hover:shadow-md peer-checked:border-warm-orange peer-checked:bg-warm-orange peer-checked:shadow-lg peer-focus-visible:ring-4 peer-focus-visible:ring-warm-wood/20 ${
-                  errors.privacyAccepted
-                    ? 'border-red-500 group-hover:border-red-600'
-                    : 'border-warm-wood/40 group-hover:border-warm-wood'
-                }`}
-              >
-                <Check
-                  className={`h-3.5 w-3.5 text-white transition-all duration-300 ${
-                    privacyAccepted ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
-                  }`}
-                  strokeWidth={3}
-                />
-              </div>
-            </div>
-            <label
-              htmlFor="privacy-consent"
-              className="cursor-pointer text-sm text-warm-wood-dark font-medium leading-relaxed bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl max-w-[600px]"
-            >
-              Accetto la{' '}
-              <Link
-                to="/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold text-warm-orange underline decoration-warm-orange decoration-2 underline-offset-2 hover:text-warm-orange hover:decoration-warm-orange transition-colors"
-                onClick={(e) => e.stopPropagation()}
-              >
-                Privacy Policy
-              </Link>
-              {' '}di {restaurantName} *
-            </label>
-          </div>
-          {errors.privacyAccepted && (
-            <p className="text-sm text-red-500 ml-8 mt-2">{errors.privacyAccepted}</p>
           )}
         </div>
       )}

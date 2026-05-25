@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { MenuItem } from '@/types/menu'
 import type { SelectedMenuItem } from '@/types/menu'
@@ -9,6 +10,8 @@ import {
   type ComposeMenuItem,
 } from '../../utils/menuComposeVisibility'
 import { BookingMenuCategoryCard } from './BookingMenuCategoryCard'
+
+const COMPOSE_SCROLL_STEP_PX = 320
 
 export interface BookingMenuComposeGridProps {
   categoryEntries: readonly (readonly [string, string])[]
@@ -25,6 +28,155 @@ export interface BookingMenuComposeGridProps {
   localTiramisuValue: string
   onTiramisuQuantityChange: (value: string) => void
   onTiramisuQuantityBlur: () => void
+}
+
+type VisibleCategory = { key: string; label: string; items: ComposeMenuItem[] }
+
+function ComposeCategoryCards({
+  categories,
+  layout,
+  categoryImageByKey,
+  selectedItems,
+  locked,
+  formatPrice,
+  onToggleItem,
+  tiramisuUnitPrice,
+  localTiramisuValue,
+  onTiramisuQuantityChange,
+  onTiramisuQuantityBlur,
+}: {
+  categories: VisibleCategory[]
+  layout: 'grid' | 'scroll'
+  categoryImageByKey: Record<string, string | null | undefined>
+  selectedItems: SelectedMenuItem[]
+  locked: boolean
+  formatPrice: (item: ComposeMenuItem) => string
+  onToggleItem: (item: ComposeMenuItem) => void
+  tiramisuUnitPrice: number
+  localTiramisuValue: string
+  onTiramisuQuantityChange: (value: string) => void
+  onTiramisuQuantityBlur: () => void
+}) {
+  return (
+    <>
+      {categories.map(({ key, label, items }) => (
+        <BookingMenuCategoryCard
+          key={key}
+          categoryKey={key}
+          categoryLabel={label}
+          imageUrl={categoryImageByKey[key]}
+          items={items}
+          selectedItems={selectedItems}
+          locked={locked}
+          formatPrice={formatPrice}
+          onToggleItem={onToggleItem}
+          tiramisuUnitPrice={tiramisuUnitPrice}
+          localTiramisuValue={localTiramisuValue}
+          onTiramisuQuantityChange={onTiramisuQuantityChange}
+          onTiramisuQuantityBlur={onTiramisuQuantityBlur}
+          layout={layout}
+        />
+      ))}
+    </>
+  )
+}
+
+function ComposeScrollRow({
+  categories,
+  className,
+  categoryImageByKey,
+  selectedItems,
+  locked,
+  formatPrice,
+  onToggleItem,
+  tiramisuUnitPrice,
+  localTiramisuValue,
+  onTiramisuQuantityChange,
+  onTiramisuQuantityBlur,
+}: {
+  categories: VisibleCategory[]
+  className?: string
+  categoryImageByKey: Record<string, string | null | undefined>
+  selectedItems: SelectedMenuItem[]
+  locked: boolean
+  formatPrice: (item: ComposeMenuItem) => string
+  onToggleItem: (item: ComposeMenuItem) => void
+  tiramisuUnitPrice: number
+  localTiramisuValue: string
+  onTiramisuQuantityChange: (value: string) => void
+  onTiramisuQuantityBlur: () => void
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const updateScrollHints = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const { scrollLeft, scrollWidth, clientWidth } = el
+    setCanScrollLeft(scrollLeft > 4)
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4)
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    updateScrollHints()
+    el.addEventListener('scroll', updateScrollHints, { passive: true })
+    const ro = new ResizeObserver(updateScrollHints)
+    ro.observe(el)
+    return () => {
+      el.removeEventListener('scroll', updateScrollHints)
+      ro.disconnect()
+    }
+  }, [categories.length, updateScrollHints])
+
+  const scrollBy = (delta: number) => {
+    scrollRef.current?.scrollBy({ left: delta, behavior: 'smooth' })
+  }
+
+  return (
+    <div className={cn('relative w-full min-w-0', className)} data-testid="booking-menu-compose-scroll">
+      {canScrollLeft && (
+        <button
+          type="button"
+          aria-label="Scorri categorie menù indietro"
+          className="absolute left-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-r-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
+          onClick={() => scrollBy(-COMPOSE_SCROLL_STEP_PX)}
+        >
+          <ChevronLeft size={22} strokeWidth={1.75} />
+        </button>
+      )}
+      <div
+        ref={scrollRef}
+        className="flex w-full min-w-0 flex-nowrap gap-4 overflow-x-auto scroll-px-2 scrollbar-hide snap-x snap-mandatory py-1 md:px-10"
+      >
+        <ComposeCategoryCards
+          categories={categories}
+          layout="scroll"
+          categoryImageByKey={categoryImageByKey}
+          selectedItems={selectedItems}
+          locked={locked}
+          formatPrice={formatPrice}
+          onToggleItem={onToggleItem}
+          tiramisuUnitPrice={tiramisuUnitPrice}
+          localTiramisuValue={localTiramisuValue}
+          onTiramisuQuantityChange={onTiramisuQuantityChange}
+          onTiramisuQuantityBlur={onTiramisuQuantityBlur}
+        />
+      </div>
+      {canScrollRight && (
+        <button
+          type="button"
+          aria-label="Scorri categorie menù avanti"
+          className="absolute right-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-l-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
+          onClick={() => scrollBy(COMPOSE_SCROLL_STEP_PX)}
+        >
+          <ChevronRight size={22} strokeWidth={1.75} />
+        </button>
+      )}
+    </div>
+  )
 }
 
 export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
@@ -57,8 +209,20 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
         const items = filterItemsForComposeCategory(itemsByCategory[key] ?? [], allowedItemIds)
         return items.length > 0 ? { key, label, items } : null
       })
-      .filter((row): row is { key: string; label: string; items: ComposeMenuItem[] } => row != null)
+      .filter((row): row is VisibleCategory => row != null)
   }, [categoryEntries, itemsByCategory, allowedItemIds])
+
+  const cardProps = {
+    categoryImageByKey,
+    selectedItems,
+    locked,
+    formatPrice,
+    onToggleItem,
+    tiramisuUnitPrice,
+    localTiramisuValue,
+    onTiramisuQuantityChange,
+    onTiramisuQuantityBlur,
+  }
 
   if (visibleCategories.length === 0) {
     return (
@@ -68,40 +232,35 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
     )
   }
 
-  const useEqualColumns = visibleCategories.length <= 5
+  const count = visibleCategories.length
+  const scrollOnMobile = count > 2
+  const scrollOnDesktop = count > 3
+
+  if (!scrollOnMobile && !scrollOnDesktop) {
+    return (
+      <div
+        className="grid w-full min-w-0 grid-cols-2 gap-4 lg:grid-cols-3"
+        data-testid="booking-menu-compose-grid"
+      >
+        <ComposeCategoryCards categories={visibleCategories} layout="grid" {...cardProps} />
+      </div>
+    )
+  }
+
+  if (scrollOnMobile && !scrollOnDesktop) {
+    return (
+      <div className="w-full min-w-0" data-testid="booking-menu-compose-grid">
+        <ComposeScrollRow categories={visibleCategories} className="lg:hidden" {...cardProps} />
+        <div className="hidden w-full min-w-0 gap-4 lg:grid lg:grid-cols-3">
+          <ComposeCategoryCards categories={visibleCategories} layout="grid" {...cardProps} />
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div
-      className={cn(
-        'w-full min-w-0 flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scroll-px-2',
-        useEqualColumns && 'lg:grid lg:overflow-visible lg:snap-none lg:pb-0',
-      )}
-      style={
-        useEqualColumns
-          ? {
-              gridTemplateColumns: `repeat(${visibleCategories.length}, minmax(0, 1fr))`,
-            }
-          : undefined
-      }
-      data-testid="booking-menu-compose-grid"
-    >
-      {visibleCategories.map(({ key, label, items }) => (
-        <BookingMenuCategoryCard
-          key={key}
-          categoryKey={key}
-          categoryLabel={label}
-          imageUrl={categoryImageByKey[key]}
-          items={items}
-          selectedItems={selectedItems}
-          locked={locked}
-          formatPrice={formatPrice}
-          onToggleItem={onToggleItem}
-          tiramisuUnitPrice={tiramisuUnitPrice}
-          localTiramisuValue={localTiramisuValue}
-          onTiramisuQuantityChange={onTiramisuQuantityChange}
-          onTiramisuQuantityBlur={onTiramisuQuantityBlur}
-        />
-      ))}
+    <div className="w-full min-w-0" data-testid="booking-menu-compose-grid">
+      <ComposeScrollRow categories={visibleCategories} {...cardProps} />
     </div>
   )
 }

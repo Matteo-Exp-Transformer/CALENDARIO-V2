@@ -28,6 +28,8 @@ export interface BookingMenuCategoryCardProps {
   localTiramisuValue: string
   onTiramisuQuantityChange: (value: string) => void
   onTiramisuQuantityBlur: () => void
+  /** `scroll` = card a larghezza fissa nella strip orizzontale; `grid` = colonna fluida in griglia. */
+  layout?: 'grid' | 'scroll'
 }
 
 export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = ({
@@ -43,6 +45,7 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   localTiramisuValue,
   onTiramisuQuantityChange,
   onTiramisuQuantityBlur,
+  layout = 'grid',
 }) => {
   const selectedCount = countSelectedInCategory(selectedItems, categoryKey)
   const { hint, status } = selectionStatusLabel(categoryKey, selectedCount)
@@ -54,9 +57,10 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   return (
     <article
       className={cn(
-        'flex min-w-[260px] max-w-[280px] shrink-0 snap-center flex-col',
-        'rounded-2xl border-2 border-black/15 bg-white/90 backdrop-blur-[1px] shadow-md',
-        'sm:min-w-[272px] lg:min-w-0 lg:max-w-none lg:w-full',
+        'flex flex-col rounded-2xl border-2 border-black/15 bg-white/90 backdrop-blur-[1px] shadow-md',
+        layout === 'scroll'
+          ? 'w-[min(280px,calc(100vw-3rem))] min-w-[240px] max-w-[280px] shrink-0 snap-center sm:min-w-[260px]'
+          : 'w-full min-w-0 max-w-none',
       )}
       data-testid={`booking-menu-category-card-${categoryKey}`}
     >

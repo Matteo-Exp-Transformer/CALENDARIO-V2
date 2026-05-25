@@ -9,7 +9,7 @@ import { toast } from 'react-toastify'
 import { Send, Loader2, MapPin } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { MenuSelection } from './MenuSelection'
-import { DietaryRestrictionsSection } from './DietaryRestrictionsSection'
+import { DietaryRestrictionsStructuredSection } from './DietaryRestrictionsStructuredSection'
 import { useMenuItems } from '../hooks/useMenuItems'
 import type { PresetMenuType } from '../constants/presetMenus'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
@@ -478,7 +478,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
 
           {/* Sempre visibile in admin (anche con "Prenota un tavolo"): in pubblico compare solo con menù */}
           <div className="w-full space-y-6 pt-4 border-t border-warm-beige/40">
-            <DietaryRestrictionsSection
+            <DietaryRestrictionsStructuredSection
               omitSpecialRequestsSection
               restrictions={formData.dietary_restrictions || []}
               onRestrictionsChange={(restrictions) => {

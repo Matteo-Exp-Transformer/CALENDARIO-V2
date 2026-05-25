@@ -361,16 +361,23 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
           )}
 
           {/* Intolleranze - Solo per Rinfresco di Laurea */}
-          {bookingTypeUsesMenuSelections(booking.booking_type) && booking.dietary_restrictions && Array.isArray(booking.dietary_restrictions) && booking.dietary_restrictions.length > 0 && (
+          {booking.dietary_restrictions && Array.isArray(booking.dietary_restrictions) && booking.dietary_restrictions.length > 0 && (
             <div className="pt-6 mt-6 border-t border-[var(--color-border)]">
               <p className="mb-3 text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Intolleranze Alimentari</p>
               <div className="space-y-2">
                 {booking.dietary_restrictions.map((restriction: any, idx: number) => (
                   <p key={idx} className="text-gray-700">
-                    <span className="font-semibold">{restriction.restriction}</span>
-                    {restriction.restriction === 'Altro' && restriction.notes && ` (${restriction.notes})`}
-                    {' - '}
-                    {restriction.guest_count} {restriction.guest_count === 1 ? 'ospite' : 'ospiti'}
+                    <span className="font-semibold">
+                      {restriction.restriction === 'Altro' && restriction.notes
+                        ? restriction.notes
+                        : restriction.restriction}
+                    </span>
+                    {restriction.guest_count > 1 && (
+                      <>
+                        {' — '}
+                        {restriction.guest_count} ospiti
+                      </>
+                    )}
                   </p>
                 ))}
               </div>
