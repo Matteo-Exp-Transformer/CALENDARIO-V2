@@ -11,6 +11,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 25-05-26 | UI Prenota v2: sfondo bianco, form, menù compose, intolleranze | [Report](Sessioni%20di%20lavoro/25-05-26/Report-prenota-v2-ui-sessione-25-05-26.md) — label sopra campi, data/ora/ospiti 3 col., intolleranze testo libero sempre visibili, scroll griglia + frecce, menù personalizzabile vuoto / fisso read-only, submit sotto sidebar, fix spazi admin Personalizza form. Commit `2ec770a`–`ab09f9c`. |
 | 25-05-26 | Card categorie menù Prenota v2 (compose grid) | [Report](Sessioni%20di%20lavoro/25-05-26/Report-menu-compose-cards.md) — `BookingMenuComposeGrid` / `BookingMenuCategoryCard`, filtri `menuComposeVisibility`, sidebar con prefisso categoria, menù fisso mostra solo piatti del pacchetto. |
 | 25-05-26 | Menù preselezionati: descrizione e menù fisso | [Report](Sessioni%20di%20lavoro/25-05-26/Report-menu-preselezionati-descrizione-fisso.md) — campi `description` / `is_fixed_menu` su `booking_custom_staff_presets`, editor admin Menu, card Prenota, griglia bloccata se fisso, fix query preset menu QR. |
 | 25-05-26 | Sottotab orizzontali Prenota v2 | [Report](Sessioni%20di%20lavoro/25-05-26/Report-sottotab-orizzontali-prenota-v2.md) — `sub_tabs[]` preset/manuale, card scrollabili, editor admin, fix parseFromDb, nota in `special_requests` per tab manuale. |
