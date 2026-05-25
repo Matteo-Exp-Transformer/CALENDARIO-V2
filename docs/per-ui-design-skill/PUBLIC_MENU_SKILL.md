@@ -132,7 +132,7 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 
 **Layout homepage `PublicMenuPage`** (post-sessione layout 24-05-26, vedi anche `docs/Sessioni di lavoro/24-05-26/Report-menu-qr-homepage-layout-sessione.md`):
 
-1. **Sfondo pagina unico** — `themePageBackgroundStyle()` in `PublicMenuPage.tsx`: PNG header nella fascia `min(48vh,420px)` + PNG body `100% auto` ancorato sotto la fascia (sfumatura bianca ~2/5 del file, senza `cover` che stirava il gradiente).
+1. **Sfondo pagina** — `useMenuPageBackgroundStyle()` in `PublicMenuPage.tsx`: header + body come prima; con scroll lungo (molte categorie) ripete la stessa coppia via layer CSS fino a coprire tutta la pagina (senza `cover` sul body).
 2. **Hero `<header>`** — nome ristorante + fregio + `MenuCarousel` (nessuna label esterna “Specialità…”); badge solo dentro ogni slide. **`PublicMenuPageHeader` non usato** sulla homepage.
 3. **Carosello** — slide full-bleed, overlay gradiente 40% sx, titolo/descrizione da `carousel_items`; pallini **cliccabili** (tap mobile 44px). Placeholder `h-28` se zero foto.
 4. **Tab `MenuNavTabs`** — sticky; sfondo trasparente → opaco progressivo (~56px scroll) con `theme.tabBarStickyRgb`; scroll senza barra (`.scrollbar-hide`); frecce sx/dx solo **desktop** se overflow.
@@ -174,7 +174,7 @@ RULE  Titolo card categoria: legge prima menu_qrcode_categories.title, fallback 
 RULE  Descrizione card categoria: legge prima menu_qrcode_categories.description, fallback menu_categories.description — mostrato solo se non null/empty
 RULE  Carosello senza foto: placeholder trasparente h-28 — badge "Specialità della casa" solo dentro la slide, non sopra il carosello
 RULE  Pallini carosello: button cliccabili con goToSlide — non solo drag/scroll
-RULE  Sfondo pagina: themePageBackgroundStyle() — non due section con headerImage/bodyImage separate (evita stacco)
+RULE  Sfondo pagina: useMenuPageBackgroundStyle() (layer CSS ripetuti) — non due section DOM separate con bg diversi (evita stacco)
 RULE  Body PNG: background-size 100% auto + position sotto --menu-header-band — non cover sul body intero
 RULE  Tab sticky: sfondo rgba(tabBarStickyRgb, opacity) cresce dopo lock; scrollbar-hide; frecce md+ se overflow
 RULE  Admin carosello: CAROUSEL_SLIDE_EYEBROW_MAX=40, TITLE_MAX=60, DESCRIPTION_MAX=125 in MenuHomepageConfigPanel

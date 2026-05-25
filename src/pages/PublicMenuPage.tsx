@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type RefObject,
+} from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -164,6 +171,103 @@ function themePageBackgroundStyle(theme: MenuTheme): CSSProperties {
   }
 
   return { backgroundColor: bodyFallbackBg }
+}
+
+function getHeaderBandPx(): number {
+  return Math.min(window.innerHeight * 0.48, 420)
+}
+
+/**
+ * Stesso layout della prima coppia (header in fascia px + body a larghezza piena),
+ * ripetuto in verticale con più layer CSS fino a coprire tutta la pagina.
+ */
+function buildRepeatingThemePageBackgroundStyle(
+  theme: MenuTheme,
+  headerPx: number,
+  bodyPx: number,
+  coverHeight: number,
+): CSSProperties {
+  const { headerImage, bodyImage, bodyFallbackBg } = theme
+  if (!headerImage || !bodyImage) return themePageBackgroundStyle(theme)
+
+  const images: string[] = []
+  const sizes: string[] = []
+  const positions: string[] = []
+  const repeats: string[] = []
+  let y = 0
+
+  while (y < coverHeight - 0.5) {
+    images.push(`url(${headerImage})`)
+    sizes.push(`100% ${headerPx}px`)
+    positions.push(`center ${y}px`)
+    repeats.push('no-repeat')
+    y += headerPx
+    if (y >= coverHeight - 0.5) break
+
+    images.push(`url(${bodyImage})`)
+    sizes.push(`100% ${bodyPx}px`)
+    positions.push(`center ${y}px`)
+    repeats.push('no-repeat')
+    y += bodyPx
+  }
+
+  return {
+    ['--menu-header-band' as string]: HEADER_BG_BAND,
+    backgroundImage: images.join(', '),
+    backgroundSize: sizes.join(', '),
+    backgroundPosition: positions.join(', '),
+    backgroundRepeat: repeats.join(', '),
+    backgroundColor: bodyFallbackBg,
+  }
+}
+
+function useMenuPageBackgroundStyle(
+  theme: MenuTheme,
+  pageRef: RefObject<HTMLDivElement | null>,
+  enabled: boolean,
+): CSSProperties {
+  const [style, setStyle] = useState<CSSProperties>(() => themePageBackgroundStyle(theme))
+
+  useLayoutEffect(() => {
+    if (!enabled) return
+    if (!theme.headerImage || !theme.bodyImage) {
+      setStyle(themePageBackgroundStyle(theme))
+      return
+    }
+
+    const headerPx = getHeaderBandPx()
+    let bodyPx: number | null = null
+
+    const recompute = () => {
+      if (bodyPx == null) return
+      const el = pageRef.current
+      const coverHeight = Math.max(el?.scrollHeight ?? 0, window.innerHeight)
+      setStyle(buildRepeatingThemePageBackgroundStyle(theme, headerPx, bodyPx, coverHeight))
+    }
+
+    const img = new Image()
+    const syncBodyPx = () => {
+      if (img.naturalWidth <= 0) return
+      const w = pageRef.current?.offsetWidth ?? document.documentElement.clientWidth
+      bodyPx = (w * img.naturalHeight) / img.naturalWidth
+      recompute()
+    }
+    img.onload = syncBodyPx
+    img.src = theme.bodyImage
+
+    const el = pageRef.current
+    const ro = el ? new ResizeObserver(() => recompute()) : null
+    if (el && ro) ro.observe(el)
+    window.addEventListener('resize', syncBodyPx)
+    syncBodyPx()
+
+    return () => {
+      ro?.disconnect()
+      window.removeEventListener('resize', syncBodyPx)
+    }
+  }, [enabled, theme, pageRef])
+
+  return style
 }
 
 // ── Carosello ────────────────────────────────────────────────────────────────
@@ -566,6 +670,8 @@ function MenuContent({
   const carouselItems = qr.carousel_items ?? []
   const categoryImages = qr.category_images ?? {}
   const theme = getMenuTheme(qr.theme_key)
+  const pageBgRef = useRef<HTMLDivElement>(null)
+  const pageBgStyle = useMenuPageBackgroundStyle(theme, pageBgRef, !isLoading)
 
   // Mappa override per category_key
   const overridesByKey = Object.fromEntries(qrCatOverrides.map((o) => [o.category_key, o]))
@@ -579,8 +685,12 @@ function MenuContent({
   }
 
   return (
-    <div className="flex min-h-svh flex-col" style={themePageBackgroundStyle(theme)}>
-      {/* Hero: sfondo unificato dietro (header+body in themePageBackgroundStyle) */}
+    <div
+      ref={pageBgRef}
+      className="flex min-h-svh flex-col"
+      style={pageBgStyle}
+    >
+      {/* Hero: sfondo unificato (header+body ripetuti via layer CSS su scroll lungo) */}
       <header className="relative shrink-0 px-4 pt-8 pb-4">
         <div className="relative flex flex-col items-center gap-2 text-center">
           <h1

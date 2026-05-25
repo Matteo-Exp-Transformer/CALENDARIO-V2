@@ -31,7 +31,7 @@ description: >-
 └─────────────────────────────────────┘
 ```
 
-Pagina: `themePageBackgroundStyle()` — header `100% × min(48vh,420px)`; body `100% auto` + `background-position-y: var(--menu-header-band)` (mai `cover` sul body: stirava la sfumatura su tutta la pagina). **Asset:** sfumatura bianca ≈ **2/5 altezza** del PNG; sotto l’immagine body resta `bodyFallbackBg` (per temi scuri conviene un fallback scuro, non crema).
+Pagina: `useMenuPageBackgroundStyle()` — prima coppia come `themePageBackgroundStyle()` (header `min(48vh,420px)` + body a larghezza piena); se lo scroll supera quella altezza, `buildRepeatingThemePageBackgroundStyle()` aggiunge layer CSS header→body in loop (mai `cover` sul body). **Asset:** sfumatura bianca ≈ **2/5 altezza** del PNG; sotto l’ultimo layer resta `bodyFallbackBg`.
 
 | Layer | background-size | Perché |
 |-------|-----------------|--------|
