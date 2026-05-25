@@ -11,6 +11,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 25-05-26 | Menù preselezionati: descrizione e menù fisso | [Report](Sessioni%20di%20lavoro/25-05-26/Report-menu-preselezionati-descrizione-fisso.md) — campi `description` / `is_fixed_menu` su `booking_custom_staff_presets`, editor admin Menu, card Prenota, griglia bloccata se fisso, fix query preset menu QR. |
 | 25-05-26 | Sottotab orizzontali Prenota v2 | [Report](Sessioni%20di%20lavoro/25-05-26/Report-sottotab-orizzontali-prenota-v2.md) — `sub_tabs[]` preset/manuale, card scrollabili, editor admin, fix parseFromDb, nota in `special_requests` per tab manuale. |
 | 25-05-26 | Pagina Prenota v2 + Admin «Personalizza Form» | [Report](Sessioni%20di%20lavoro/25-05-26/Report-pagina-prenota-v2-admin-personalizza-form.md) — card tipologia al posto del select, layout 2 colonne + sidebar riepilogo, titolo/descrizione dinamici, pannello admin configurazione form. |
 | 25-05-26 | Filtri ingredienti Menu QR + UI modale + fix prod | [Report](Sessioni%20di%20lavoro/25-05-26/Report-menu-qr-filtri-e-ui-modale.md) — `036`/`037` su TEST+prod, picker nascosti, tipografia, rimozione «Menù eventi» dal modale, fix salvataggio carosello vuoto in produzione. |

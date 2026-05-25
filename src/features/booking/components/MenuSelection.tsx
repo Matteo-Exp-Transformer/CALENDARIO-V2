@@ -8,10 +8,12 @@ import { useMenuCategories } from '../hooks/useMenuCategories'
 import type { SelectedMenuItem } from '@/types/menu'
 import {
   customPresetStorageId,
+  getCustomPresetUuid,
   getPresetMenu,
   getPresetMenuLabel,
   isBuiltinPresetMenuType,
   isCustomPresetMenuType,
+  isStaffPresetFixedMenu,
   isStaffPresetSelectableForBookingType,
   type CustomStaffPreset,
   type PresetMenuType,
@@ -116,6 +118,15 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     () => customStaffPresets.filter((p) => isStaffPresetSelectableForBookingType(p, bookingType)),
     [customStaffPresets, bookingType],
   )
+
+  const menuSelectionLocked = useMemo(() => {
+    if (!presetMenu) return false
+    if (isBuiltinPresetMenuType(presetMenu)) return true
+    if (!isCustomPresetMenuType(presetMenu)) return false
+    const uuid = getCustomPresetUuid(presetMenu)
+    const preset = uuid ? customStaffPresets.find((p) => p.id === uuid) : undefined
+    return preset ? isStaffPresetFixedMenu(preset) : false
+  }, [presetMenu, customStaffPresets])
 
   const showStaffPresetDropdown = useMemo(() => {
     if (!bookingTypeUsesMenuSelections(bookingType) || !onPresetMenuChange || !staffPresetsDropdownVisible) {
@@ -281,6 +292,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   }, [selectedItems, tiramisuUnitPrice, onMenuChange])
 
   const handleItemToggle = (item: NormalizedMenuItem) => {
+    if (menuSelectionLocked) return
+
     const isSelected = selectedItems.some(selected => selected.id === item.id)
 
     if (isSelected) {
@@ -343,11 +356,15 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   }
 
   const handleRemoveSelectedItem = (itemId: string) => {
+    if (menuSelectionLocked) return
+
     const remainingItems = selectedItems.filter(item => item.id !== itemId)
     emitMenuSelectionChange(remainingItems)
   }
 
   const handleTiramisuQuantityChange = (value: string) => {
+    if (menuSelectionLocked) return
+
     // Aggiorna immediatamente lo stato locale per permettere digitazione libera
     setLocalTiramisuValue(value)
 
@@ -409,6 +426,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   }
 
   const handleTiramisuQuantityBlur = () => {
+    if (menuSelectionLocked) return
+
     // Al blur, assicurati che il valore sia valido
     const trimmed = localTiramisuValue.trim()
     if (trimmed === '') {
@@ -582,6 +601,12 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         </div>
       )}
 
+      {menuSelectionLocked && !hideMenuGrid && (
+        <p className="mx-auto mt-3 max-w-xl rounded-xl border border-warm-beige bg-white/85 px-4 py-2 text-center text-xs text-warm-wood-dark/80 sm:text-sm">
+          Menù fisso: gli ingredienti sono quelli del pacchetto scelto e non possono essere modificati.
+        </p>
+      )}
+
       {/* Panoramica categorie — stesso layout di MenuPricesTab / menù preselezionati */}
       {!hideMenuGrid && (
       <div
@@ -631,11 +656,13 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
                               type="button"
                               onClick={() => handleItemToggle(item)}
                               aria-pressed={isSelected}
+                              disabled={menuSelectionLocked}
                               className={cn(
                                 'menu-prices-item-row w-full min-w-0 flex-col items-stretch gap-1 py-2.5 px-3',
                                 !hasDesc && 'min-h-0 items-center',
                                 isSelected && 'menu-prices-item-row--selected',
                                 isTiramisu && isSelected && 'menu-card-with-ingredient',
+                                menuSelectionLocked && 'cursor-default opacity-90',
                               )}
                               style={{
                                 minHeight: hasDesc ? undefined : '3rem',
@@ -726,7 +753,11 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
                       key={item.id}
                       type="button"
                       onClick={() => handleRemoveSelectedItem(item.id)}
-                      className="group flex items-center gap-2 rounded-full border bg-white/80 px-4 py-2 text-sm font-semibold text-warm-wood shadow-sm transition-all hover:bg-warm-beige/30"
+                      disabled={menuSelectionLocked}
+                      className={cn(
+                        'group flex items-center gap-2 rounded-full border bg-white/80 px-4 py-2 text-sm font-semibold text-warm-wood shadow-sm transition-all',
+                        menuSelectionLocked ? 'cursor-default' : 'hover:bg-warm-beige/30',
+                      )}
                       style={{ borderColor: '#60a5fa' }}
                     >
                       <span className="truncate max-w-[180px] text-left">{displayLabel}</span>

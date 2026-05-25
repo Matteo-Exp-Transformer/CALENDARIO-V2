@@ -113,14 +113,16 @@ function usePublicPresets(tenantId: string | null, presetIds: string[] | null) {
     queryFn: async () => {
       const { data, error } = await (supabasePublic
         .from('restaurant_settings') as any)
-        .select('value')
+        .select('setting_value')
         .eq('tenant_id', tenantId)
-        .eq('key', 'booking_custom_staff_presets')
-        .single()
+        .eq('setting_key', 'booking_custom_staff_presets')
+        .maybeSingle()
 
       if (error || !data) return []
 
-      const all: { id: string; name: string; item_ids: string[] }[] = Array.isArray(data.value) ? data.value : []
+      const all: { id: string; name: string; item_ids: string[] }[] = Array.isArray(data.setting_value)
+        ? data.setting_value
+        : []
       if (!presetIds || presetIds.length === 0) return all
       return all.filter((p: { id: string }) => presetIds.includes(p.id))
     },

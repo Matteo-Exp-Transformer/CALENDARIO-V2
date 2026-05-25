@@ -21,13 +21,13 @@ function usePublicPresetDetail(tenantId: string | null, presetId: string | undef
     queryFn: async () => {
       const { data, error } = await (supabasePublic
         .from('restaurant_settings') as any)
-        .select('value')
+        .select('setting_value')
         .eq('tenant_id', tenantId)
-        .eq('key', 'booking_custom_staff_presets')
-        .single()
+        .eq('setting_key', 'booking_custom_staff_presets')
+        .maybeSingle()
 
       if (error || !data) return null
-      const all: CustomStaffPreset[] = Array.isArray(data.value) ? data.value : []
+      const all: CustomStaffPreset[] = Array.isArray(data.setting_value) ? data.setting_value : []
       return all.find((p) => p.id === presetId) ?? null
     },
     enabled: !!tenantId && !!presetId,

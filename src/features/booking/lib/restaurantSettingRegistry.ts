@@ -209,6 +209,8 @@ const customStaffPresetRowSchema = z.object({
   name: z.string().trim().min(1).max(200),
   item_ids: z.array(z.string().uuid()).max(160),
   booking_types: z.array(bookingTypeForStaffPresetSchema).min(1).max(2).optional(),
+  description: z.string().trim().max(300).optional(),
+  is_fixed_menu: z.boolean().optional(),
   visible_on_booking: z.boolean().optional(),
 })
 
@@ -230,6 +232,8 @@ function parseBookingCustomStaffPresetsFromDb(raw: unknown): CustomStaffPreset[]
     name: row.name,
     item_ids: row.item_ids,
     booking_types: normalizeStaffPresetBookingTypes(row.booking_types),
+    ...(row.description?.trim() ? { description: row.description.trim() } : {}),
+    ...(row.is_fixed_menu === false ? { is_fixed_menu: false as const } : {}),
     ...(row.visible_on_booking === false ? { visible_on_booking: false as const } : {}),
   }))
 }

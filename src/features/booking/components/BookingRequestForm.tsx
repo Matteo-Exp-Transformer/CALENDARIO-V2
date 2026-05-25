@@ -12,7 +12,7 @@ import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { isValidBookingDateTime, getDayOfWeek, formatHours } from '@/lib/businessHours'
 import { toast } from 'react-toastify'
 import type { PresetMenuType } from '../constants/presetMenus'
-import { customPresetStorageId } from '../constants/presetMenus'
+import { customPresetStorageId, enrichPresetSubTabsFromStaffPresets } from '../constants/presetMenus'
 import { useMenuItems } from '../hooks/useMenuItems'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
@@ -96,10 +96,14 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
   const activeModeId = activeMode?.id ?? 'tavolo'
 
-  const activeModeSubTabs =
-    activeMode?.sub_tabs_enabled && (activeMode.sub_tabs?.length ?? 0) > 0
-      ? (activeMode.sub_tabs ?? [])
-      : []
+  const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
+
+  const activeModeSubTabs = useMemo(() => {
+    if (!activeMode?.sub_tabs_enabled || (activeMode.sub_tabs?.length ?? 0) === 0) {
+      return []
+    }
+    return enrichPresetSubTabsFromStaffPresets(activeMode.sub_tabs ?? [], customStaffPresets)
+  }, [activeMode, customStaffPresets])
 
   const activeSubTab = activeModeSubTabs.find((t) => t.id === activeSubTabId) ?? null
 
@@ -297,7 +301,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   })
   const { data: menuItems = [] } = useMenuItems()
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
-  const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
   const { data: menuPromos = [] } = useRestaurantSetting('booking_menu_promos')
 
   const menuPromoBannerMessages = useMemo(
@@ -626,7 +629,47 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     <>
     <form onSubmit={handleSubmit} className="w-full px-2 md:px-4 space-y-6 font-bold booking-form-mobile">
 
-      {/* Tipologia di prenotazione — card in cima */}
+      {/* Dati e dettagli — prima sezione sotto header (come pagina prenota attuale) */}
+      <div className="space-y-3">
+        <h2 className="text-center text-lg md:text-xl font-serif font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
+          Dati e Dettagli
+        </h2>
+        <BookingFormFields
+          formData={{
+            client_name: formData.client_name,
+            client_email: formData.client_email,
+            client_phone: formData.client_phone,
+            desired_date: formData.desired_date,
+            desired_time: formData.desired_time,
+            num_guests: formData.num_guests,
+          }}
+          errors={errors}
+          businessHours={businessHours}
+          isLoadingHours={isLoadingHours}
+          hoursError={hoursError}
+          frostedInputCn={frostedInputCn}
+          onFieldChange={(field, value) => {
+            setFormData({ ...formData, [field]: value })
+          }}
+          onDateChange={(newDate) => {
+            setFormData({ ...formData, desired_date: newDate })
+          }}
+          onTimeChange={(newTime) => {
+            setFormData({ ...formData, desired_time: newTime })
+          }}
+          onNumGuestsChange={handleNumGuestsChange}
+          onNumGuestsKeyPress={handleNumGuestsKeyPress}
+          resetAvailability={resetAvailability}
+          setErrors={(newErrors) => setErrors(newErrors)}
+        />
+        {errors.slot_availability && (
+          <div className="text-sm text-red-700 font-semibold p-4 rounded-xl bg-white/90 backdrop-blur-[1px] border border-red-400/40 text-center">
+            {errors.slot_availability}
+          </div>
+        )}
+      </div>
+
+      {/* Tipologia di prenotazione — card sotto data/ora/ospiti */}
       <div className="space-y-3">
         <h2 className="text-center text-lg md:text-xl font-serif font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
           Tipo di prenotazione
@@ -687,46 +730,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
               }
             }}
           />
-        )}
-      </div>
-
-      {/* Campi form: nome, contatti, ospiti, data, ora */}
-      <div className="space-y-3">
-        <h2 className="text-center text-lg md:text-xl font-serif font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
-          Dati e Dettagli
-        </h2>
-        <BookingFormFields
-          formData={{
-            client_name: formData.client_name,
-            client_email: formData.client_email,
-            client_phone: formData.client_phone,
-            desired_date: formData.desired_date,
-            desired_time: formData.desired_time,
-            num_guests: formData.num_guests,
-          }}
-          errors={errors}
-          businessHours={businessHours}
-          isLoadingHours={isLoadingHours}
-          hoursError={hoursError}
-          frostedInputCn={frostedInputCn}
-          onFieldChange={(field, value) => {
-            setFormData({ ...formData, [field]: value })
-          }}
-          onDateChange={(newDate) => {
-            setFormData({ ...formData, desired_date: newDate })
-          }}
-          onTimeChange={(newTime) => {
-            setFormData({ ...formData, desired_time: newTime })
-          }}
-          onNumGuestsChange={handleNumGuestsChange}
-          onNumGuestsKeyPress={handleNumGuestsKeyPress}
-          resetAvailability={resetAvailability}
-          setErrors={(newErrors) => setErrors(newErrors)}
-        />
-        {errors.slot_availability && (
-          <div className="text-sm text-red-700 font-semibold p-4 rounded-xl bg-white/90 backdrop-blur-[1px] border border-red-400/40 text-center">
-            {errors.slot_availability}
-          </div>
         )}
       </div>
 

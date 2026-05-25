@@ -29,6 +29,7 @@ import {
   STAFF_PRESET_DEFAULT_BOOKING_TYPES,
   type CustomStaffPreset,
   type StaffPresetBookingType,
+  isStaffPresetFixedMenu,
   isStaffPresetVisibleOnBooking,
   normalizeStaffPresetBookingTypes,
   staffPresetBookingTypeLabelsJoined,
@@ -517,6 +518,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const [priceInput, setPriceInput] = useState('')
   const [presetEditorMode, setPresetEditorMode] = useState<'list' | 'editor'>('list')
   const [presetName, setPresetName] = useState('')
+  const [presetDescription, setPresetDescription] = useState('')
+  const [presetIsFixedMenu, setPresetIsFixedMenu] = useState(true)
   const [presetSelectedItems, setPresetSelectedItems] = useState<SelectedMenuItem[]>([])
   const [presetDraftBookingTypes, setPresetDraftBookingTypes] = useState<StaffPresetBookingType[]>([
     ...STAFF_PRESET_DEFAULT_BOOKING_TYPES,
@@ -652,6 +655,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const resetPresetEditor = () => {
     setPresetEditorMode('list')
     setPresetName('')
+    setPresetDescription('')
+    setPresetIsFixedMenu(true)
     setPresetSelectedItems([])
     setPresetDraftBookingTypes([...STAFF_PRESET_DEFAULT_BOOKING_TYPES])
     setEditingCustomPresetId(null)
@@ -671,6 +676,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const startNewCustomPreset = () => {
     setEditingCustomPresetId(null)
     setPresetName('')
+    setPresetDescription('')
+    setPresetIsFixedMenu(true)
     setPresetSelectedItems([])
     setPresetDraftBookingTypes([...STAFF_PRESET_DEFAULT_BOOKING_TYPES])
     setPresetEditorMode('editor')
@@ -679,9 +686,22 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const startEditCustomPreset = (preset: CustomStaffPreset) => {
     setEditingCustomPresetId(preset.id)
     setPresetName(preset.name)
+    setPresetDescription(preset.description ?? '')
+    setPresetIsFixedMenu(isStaffPresetFixedMenu(preset))
     setPresetSelectedItems(selectedItemsFromMenuItemIds(menuItems, preset.item_ids))
     setPresetDraftBookingTypes([...normalizeStaffPresetBookingTypes(preset.booking_types)])
     setPresetEditorMode('editor')
+  }
+
+  const buildPresetRowPayload = (
+    base: Pick<CustomStaffPreset, 'id' | 'name' | 'item_ids' | 'booking_types' | 'visible_on_booking'>,
+  ): CustomStaffPreset => {
+    const trimmedDesc = presetDescription.trim()
+    return {
+      ...base,
+      ...(trimmedDesc ? { description: trimmedDesc } : {}),
+      ...(presetIsFixedMenu ? {} : { is_fixed_menu: false }),
+    }
   }
 
   const handleSaveCustomPreset = async () => {
@@ -704,18 +724,23 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       editingCustomPresetId !== null
         ? customStaffPresets.map((p) =>
             p.id === editingCustomPresetId
-              ? { ...p, name, item_ids: ids, booking_types: presetDraftBookingTypes }
+              ? buildPresetRowPayload({
+                  ...p,
+                  name,
+                  item_ids: ids,
+                  booking_types: presetDraftBookingTypes,
+                })
               : p,
           )
         : [
             ...customStaffPresets,
-            {
+            buildPresetRowPayload({
               id: crypto.randomUUID(),
               name,
               item_ids: ids,
               booking_types: presetDraftBookingTypes,
               visible_on_booking: true,
-            },
+            }),
           ]
 
     try {
@@ -1819,7 +1844,14 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                               {staffPresetBookingTypeLabelsJoined(
                                 normalizeStaffPresetBookingTypes(preset.booking_types),
                               )}
+                              {' · '}
+                              {isStaffPresetFixedMenu(preset) ? 'Menù fisso' : 'Personalizzabile'}
                             </p>
+                            {preset.description?.trim() && (
+                              <p className="text-left text-xs text-gray-600 line-clamp-2">
+                                {preset.description.trim()}
+                              </p>
+                            )}
                           </div>
                           <div className="menu-prices-item-actions shrink-0">
                             <button
@@ -1865,6 +1897,36 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                       style={{ height: '56px', borderRadius: '18px' }}
                     />
                   </div>
+                  <div className="mx-auto flex w-full max-w-md flex-col gap-2">
+                    <label className="text-center text-sm font-medium text-gray-700">
+                      Descrizione (opzionale)
+                    </label>
+                    <textarea
+                      value={presetDescription}
+                      onChange={(e) => setPresetDescription(e.target.value)}
+                      placeholder="Testo mostrato sotto il nome sulle card in pagina Prenota"
+                      maxLength={300}
+                      rows={3}
+                      className="mx-auto w-full rounded-2xl border border-black/20 bg-white/85 px-4 py-3 text-center text-sm text-warm-wood placeholder:text-warm-wood/50 focus:border-warm-wood focus:outline-none focus:ring-2 focus:ring-warm-wood/40 resize-none"
+                    />
+                    <p className="text-center text-xs text-gray-500">{presetDescription.length}/300</p>
+                  </div>
+                  <label className="mx-auto flex w-full max-w-md cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white/80 px-4 py-3 text-sm text-gray-800 shadow-sm">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-400"
+                      checked={presetIsFixedMenu}
+                      onChange={(e) => setPresetIsFixedMenu(e.target.checked)}
+                    />
+                    <span className="text-left leading-snug">
+                      Menù fisso o personalizzabile da cliente?
+                      <span className="mt-1 block text-xs font-normal text-gray-600">
+                        {presetIsFixedMenu
+                          ? 'Attivo: il cliente non può cambiare gli ingredienti dopo la scelta.'
+                          : 'Disattivo: il cliente può aggiungere o togliere ingredienti dal menù proposto.'}
+                      </span>
+                    </span>
+                  </label>
                 </div>
               )}
             </div>

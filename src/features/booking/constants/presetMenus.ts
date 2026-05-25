@@ -6,6 +6,7 @@
  */
 
 import type { BookingType } from '@/types/booking'
+import type { SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
 
 export const CUSTOM_PRESET_PREFIX = 'custom:' as const
 
@@ -54,8 +55,37 @@ export interface CustomStaffPreset {
   item_ids: string[]
   /** Tipologie prenotazione con flusso menù in cui il preset è offerto (mai `tavolo`). */
   booking_types: StaffPresetBookingType[]
+  /** Testo sotto il nome sulle card Prenota (sottotab preset). */
+  description?: string
+  /**
+   * Se `false`, il cliente può modificare gli ingredienti dopo aver scelto il menù.
+   * Omesso o `true` = menù fisso (default).
+   */
+  is_fixed_menu?: boolean
   /** Se `false`, il preset non compare nella pagina Prenota (default: visibile). */
   visible_on_booking?: boolean
+}
+
+export function isStaffPresetFixedMenu(p: CustomStaffPreset): boolean {
+  return p.is_fixed_menu !== false
+}
+
+export function staffPresetDescriptionForCards(p: CustomStaffPreset): string | undefined {
+  const d = p.description?.trim()
+  return d || undefined
+}
+
+/** Descrizione card Prenota: override sottotab ha priorità, altrimenti descrizione del preset staff. */
+export function enrichPresetSubTabsFromStaffPresets(
+  subTabs: SubTab[],
+  presets: CustomStaffPreset[],
+): SubTab[] {
+  return subTabs.map((tab) => {
+    if (tab.type !== 'preset' || !tab.preset_id || tab.description?.trim()) return tab
+    const preset = presets.find((p) => p.id === tab.preset_id)
+    const desc = preset ? staffPresetDescriptionForCards(preset) : undefined
+    return desc ? { ...tab, description: desc } : tab
+  })
 }
 
 export function isStaffPresetVisibleOnBooking(p: CustomStaffPreset): boolean {
