@@ -11,6 +11,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 25-05-26 | Modale Menù QR unificato + aspetto per-QR | [Report](Sessioni%20di%20lavoro/25-05-26/Report-menu-qr-modale-unificato-per-qr.md) — migrazione `036` su test, tema/carosello/foto/override su `menu_qr_codes`, modale unico con doppio Salva, `category_filter` esplicito. |
 | 25-05-26 | Foto categoria admin Prenota | [Report](Sessioni%20di%20lavoro/25-05-26/Report-foto-categoria-menu-prenota.md) — `menu_categories.image_url`, upload `booking-cat/{id}.webp`, form in Gestione categorie; foto QR homepage invariata. Migrazione `035` su test. |
 | 25-05-26 | Centralizzazione grouping menu + fix contatore | [Report](Sessioni%20di%20lavoro/25-05-26/Report-refactor-menu-grouping-centralizzazione.md) — utility `menuCatalogGrouping.ts`, subtitle da `0/N` a `N ingredienti` in Prenota e builder preset, dead code rimosso. |
 | 24-05-26 | Revisione skill system (Plan 2) | [Report](Sessioni%20di%20lavoro/24-05-26/Report-skill-system-revisione.md) — nuove skill `DATA_FLOW_SKILL.md` + `Marketing-Skill/`, LOCK TenantContext consolidato, RULE Linguaggio utente, snapshot sessione spostati in `SESSION_LOG.md`. |

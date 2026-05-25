@@ -42,12 +42,15 @@ qrMenu: isProOrAbove || qrMenuEnabled
 | `030` | `menu_items.image_url`, `menu_qr_codes`, `organizations.qr_menu_enabled`, bucket `menu-photos`, RLS public read su `menu_items` e `menu_categories` |
 | `032` | Tabella `menu_homepage_config` (JSONB) — archivia `carousel_items`, `category_images` per tenant |
 | `033` | `menu_categories.description TEXT NULL` — testo opzionale sotto il nome (usato in pagina Prenota e come fallback nel menu QR) |
-| `034` | `menu_homepage_config.theme_key TEXT NOT NULL DEFAULT 'mediterranean_teal'` (5 valori). Tabella `menu_qrcode_categories`: override titolo/descrizione per card categoria nella homepage QR, **separati da `menu_categories`** — non impattano la pagina Prenota |
-| `035` | `menu_categories.image_url TEXT NULL` — foto categoria per admin/Prenota (path Storage `{tenantId}/booking-cat/{categoryId}.webp`). **Non** sostituisce `menu_homepage_config.category_images` (thumb QR: `{tenantId}/cat/{categoryKey}.webp`) |
+| `034` | `menu_homepage_config.theme_key` + tabella `menu_qrcode_categories` (modello legacy per-tenant) |
+| `035` | `menu_categories.image_url` — foto categoria Prenota |
+| `036` | **Per-QR**: su `menu_qr_codes` → `theme_key`, `carousel_items`, `category_images`. Su `menu_qrcode_categories` → `menu_qr_code_id` FK, UNIQUE `(menu_qr_code_id, category_key)`. Migrazione dati da `menu_homepage_config` su ogni QR. `menu_homepage_config` **deprecata** (solo storico, non più scritta dall'admin) |
 
-**Colonne `menu_categories`** (post-035): `id`, `tenant_id`, `key`, `label`, `description`, `image_url`, `sort_order`, `created_at`, `updated_at`.
+**Colonne `menu_qr_codes`** (post-036): campi 030 + `theme_key`, `carousel_items` (JSONB), `category_images` (JSONB).
 
-**Colonne `menu_qrcode_categories`** (034): `id`, `tenant_id`, `category_key`, `title`, `description`, `created_at`, `updated_at`. UNIQUE `(tenant_id, category_key)`.
+**Colonne `menu_qrcode_categories`** (post-036): `id`, `tenant_id`, `menu_qr_code_id`, `category_key`, `title`, `description`, timestamps. UNIQUE `(menu_qr_code_id, category_key)`.
+
+**`category_filter` su `menu_qr_codes`**: `null` = legacy (pubblico mostra tutte le categorie); `[]` = nessuna card; `[keys]` = filtro esplicito. Nuovi salvataggi dal modale usano sempre array esplicito.
 
 ---
 
@@ -59,7 +62,9 @@ File: `src/lib/menuPhotoUpload.ts`
 |-----|--------------|----------|
 | Piatto | `{tenantId}/{menuItemId}.webp` | `menu_items.image_url` |
 | Categoria Prenota | `{tenantId}/booking-cat/{categoryId}.webp` | `menu_categories.image_url` (035) |
-| Thumb categoria QR homepage | `{tenantId}/cat/{categoryKey}.webp` | `menu_homepage_config.category_images` (JSON) |
+| Thumb categoria QR (per QR) | `{tenantId}/qr/{menuQrCodeId}/cat/{categoryKey}.webp` | `menu_qr_codes.category_images` (JSON) |
+| Carosello QR (per QR) | `{tenantId}/qr/{menuQrCodeId}/carousel/{uuid}.webp` | `menu_qr_codes.carousel_items` (JSON) |
+| Path legacy (solo URL già salvate) | `{tenantId}/cat/…`, `{tenantId}/carousel/…` | `menu_homepage_config` — non più usato in scrittura |
 
 - **Compressione**: canvas resize max 1200px, iterativa da quality 0.82 a 0.4, target 450KB
 - **Upload**: upsert=true
@@ -88,9 +93,11 @@ File: `src/features/booking/hooks/useMenuQrCodes.ts`
 | Hook | Cosa fa |
 |------|---------|
 | `useMenuQrCodes()` | Lista QR del tenant (usa `supabase` autenticato) |
-| `useCreateMenuQrCode()` | Insert con `{shortCode, input}` + toast |
-| `useUpdateMenuQrCode()` | Update `{id, input}` + toast |
+| `useSaveMenuQrSettings()` | Salvataggio unificato modale: QR + batch `menu_qrcode_categories` (un toast, errore atomico lato UI) |
+| `useCreateMenuQrCode()` / `useUpdateMenuQrCode()` | CRUD singolo (legacy; modale usa `useSaveMenuQrSettings`) |
 | `useDeleteMenuQrCode()` | Delete per id + toast |
+| `useMenuQrcodeCategoriesForQr(menuQrCodeId)` | Override titoli/descrizioni per un QR (admin) |
+| `usePublicMenuQrcodeCategories(menuQrCodeId)` | Lettura pubblica override **filtrata per QR** |
 | `usePublicMenuQr(tenantId, shortCode)` | Risolve QR per short_code (usa `supabasePublic`) |
 | `usePublicDefaultMenuQr(tenantId)` | Primo QR attivo del tenant (fallback per `/menu/:slug`) |
 
@@ -101,8 +108,8 @@ File: `src/features/booking/hooks/useMenuQrCodes.ts`
 | Componente | File |
 |------------|------|
 | `MenuQrManager` | `src/features/booking/components/MenuQrManager.tsx` — solo lista «I miei QR» (tab Aspetto homepage spostato in modale) |
-| `MenuQrModal` | `src/features/booking/components/MenuQrModal.tsx` — `size="lg"`; nome QR, categorie (checkbox «Attiva tutte»), preset opzionale, **Aspetto homepage** in fondo (condiviso tra tutti i QR del tenant) |
-| `MenuHomepageConfigPanel` | `src/features/booking/components/MenuHomepageConfigPanel.tsx` — tema, carosello (titolo max 60, testo max 125, contatori), foto categorie, titoli/descrizioni card QR |
+| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; form unico con doppio **Salva** (alto/basso); sezioni: nome, categorie esplicite, preset, carosello, titoli+foto categorie unificati, tema. Salvataggio via `useSaveMenuQrSettings` |
+| `MenuHomepageConfigPanel` | Sezioni controllate esportate (`MenuQrCarouselSection`, `MenuQrCategoryCardsSection`, `MenuQrThemeSection`) — upload foto richiede QR già salvato (ha `menuQrCodeId`) |
 
 Il `MenuQrManager` è montato in `MenuPricesTab` quando `viewMode === 'qr_codes'` (pulsante "QR Code" nell'hero section, visibile solo se `features.qrMenu`).
 

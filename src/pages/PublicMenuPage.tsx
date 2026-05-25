@@ -15,7 +15,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabasePublic } from '@/lib/supabasePublic'
 import { usePublicMenuQr, usePublicDefaultMenuQr } from '@/features/booking/hooks/useMenuQrCodes'
-import { usePublicMenuHomepageConfig } from '@/features/booking/hooks/useMenuHomepageConfig'
 import { usePublicMenuQrcodeCategories } from '@/features/booking/hooks/useMenuQrcodeCategories'
 import { getMenuTheme, type MenuTheme } from '@/features/public-menu/menuThemes'
 import type { MenuCategoryRecord } from '@/features/booking/hooks/useMenuCategories'
@@ -74,6 +73,11 @@ function usePublicCategories(tenantId: string | null, categoryFilter: string[] |
   return useQuery({
     queryKey: ['public-menu-categories', tenantId, categoryFilter],
     queryFn: async () => {
+      // [] esplicito = nessuna card categoria in homepage
+      if (categoryFilter !== null && categoryFilter.length === 0) {
+        return []
+      }
+
       let query = (supabasePublic
         .from('menu_categories') as any)
         .select('id, key, label, description, sort_order')
@@ -81,7 +85,7 @@ function usePublicCategories(tenantId: string | null, categoryFilter: string[] |
         .order('sort_order', { ascending: true })
         .order('label', { ascending: true })
 
-      if (categoryFilter && categoryFilter.length > 0) {
+      if (categoryFilter !== null && categoryFilter.length > 0) {
         query = query.in('key', categoryFilter)
       }
 
@@ -549,16 +553,15 @@ function MenuContent({
     qr.tenant_id,
     qr.content_type !== 'a_la_carte' ? qr.preset_ids : [],
   )
-  const { data: homepageConfig } = usePublicMenuHomepageConfig(qr.tenant_id)
-  const { data: qrCatOverrides = [] } = usePublicMenuQrcodeCategories(qr.tenant_id)
+  const { data: qrCatOverrides = [] } = usePublicMenuQrcodeCategories(qr.id)
 
   const showCart = qr.content_type === 'a_la_carte' || qr.content_type === 'mixed'
   const showPresets = qr.content_type === 'preset_menus' || qr.content_type === 'mixed'
   const isLoading = catLoading || presetLoading
 
-  const carouselItems = homepageConfig?.carousel_items ?? []
-  const categoryImages = homepageConfig?.category_images ?? {}
-  const theme = getMenuTheme(homepageConfig?.theme_key)
+  const carouselItems = qr.carousel_items ?? []
+  const categoryImages = qr.category_images ?? {}
+  const theme = getMenuTheme(qr.theme_key)
 
   // Mappa override per category_key
   const overridesByKey = Object.fromEntries(qrCatOverrides.map((o) => [o.category_key, o]))

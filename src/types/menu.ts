@@ -56,6 +56,9 @@ export interface MenuQrCode {
   preset_ids: string[] | null
   is_active: boolean
   sort_order: number
+  theme_key: string
+  carousel_items: CarouselItem[]
+  category_images: Record<string, string>
   created_at: string
   updated_at: string
 }
@@ -67,6 +70,23 @@ export interface MenuQrCodeInput {
   preset_ids?: string[] | null
   is_active?: boolean
   sort_order?: number
+  theme_key?: string
+  carousel_items?: CarouselItem[]
+  category_images?: Record<string, string>
+}
+
+export interface MenuQrcodeCategoryOverrideDraft {
+  category_key: string
+  title: string | null
+  description: string | null
+}
+
+/** Payload completo salvataggio modale Impostazione Menù QR. */
+export interface MenuQrSettingsSavePayload {
+  shortCode: string
+  qrId: string | null
+  input: MenuQrCodeInput
+  categoryOverrides: MenuQrcodeCategoryOverrideDraft[]
 }
 
 export interface CarouselItem {
@@ -102,6 +122,7 @@ export interface MenuHomepageConfigInput {
 export interface MenuQrcodeCategoryOverride {
   id: string
   tenant_id: string
+  menu_qr_code_id: string
   category_key: string
   title: string | null
   description: string | null
@@ -110,6 +131,7 @@ export interface MenuQrcodeCategoryOverride {
 }
 
 export interface MenuQrcodeCategoryOverrideInput {
+  menu_qr_code_id: string
   category_key: string
   title?: string | null
   description?: string | null

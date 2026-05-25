@@ -33,8 +33,9 @@ I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati
 | 029 | `029_rename_booking_menu_promo_settings.sql` | TEST ✅ — pulizia chiavi `booking_vol_au_vent_*` e JSON omaggio menù; **prod da applicare** |
 | 030–034 | menu QR, homepage config, description categorie, override QR | vedi `Database-Skill/DB_MIGRATIONS_CONTEXT.md` |
 | 035 | `035_menu_categories_image_url.sql` | TEST ✅ — `menu_categories.image_url` (foto categoria Prenota); **prod da applicare** |
+| 036 | `036_menu_qr_per_qr_appearance.sql` | TEST ✅ — aspetto homepage per `menu_qr_codes`; `menu_qrcode_categories.menu_qr_code_id`; **prod da applicare** |
 
-La prossima migrazione deve usare il prefisso **`036_`**.
+La prossima migrazione deve usare il prefisso **`037_`**.
 
 > Promo menù (23-05-26): impostazioni solo su `restaurant_settings.setting_key = booking_menu_promos`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
 

@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       admin_users: {
@@ -578,7 +603,9 @@ export type Database = {
       }
       menu_qr_codes: {
         Row: {
+          carousel_items: Json
           category_filter: string[] | null
+          category_images: Json
           content_type: string
           created_at: string
           id: string
@@ -588,10 +615,13 @@ export type Database = {
           short_code: string
           sort_order: number
           tenant_id: string
+          theme_key: string
           updated_at: string
         }
         Insert: {
+          carousel_items?: Json
           category_filter?: string[] | null
+          category_images?: Json
           content_type?: string
           created_at?: string
           id?: string
@@ -601,10 +631,13 @@ export type Database = {
           short_code: string
           sort_order?: number
           tenant_id: string
+          theme_key?: string
           updated_at?: string
         }
         Update: {
+          carousel_items?: Json
           category_filter?: string[] | null
+          category_images?: Json
           content_type?: string
           created_at?: string
           id?: string
@@ -614,6 +647,7 @@ export type Database = {
           short_code?: string
           sort_order?: number
           tenant_id?: string
+          theme_key?: string
           updated_at?: string
         }
         Relationships: [
@@ -639,6 +673,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          menu_qr_code_id: string
           tenant_id: string
           title: string | null
           updated_at: string
@@ -648,6 +683,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          menu_qr_code_id: string
           tenant_id: string
           title?: string | null
           updated_at?: string
@@ -657,11 +693,19 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          menu_qr_code_id?: string
           tenant_id?: string
           title?: string | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "menu_qrcode_categories_menu_qr_code_id_fkey"
+            columns: ["menu_qr_code_id"]
+            isOneToOne: false
+            referencedRelation: "menu_qr_codes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "menu_qrcode_categories_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -1357,6 +1401,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

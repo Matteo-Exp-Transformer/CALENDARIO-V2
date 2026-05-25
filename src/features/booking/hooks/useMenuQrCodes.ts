@@ -3,7 +3,8 @@ import { supabase, handleSupabaseError } from '@/lib/supabase'
 import { supabasePublic } from '@/lib/supabasePublic'
 import { toast } from 'react-toastify'
 import { useTenantContext } from '@/contexts/TenantContext'
-import type { MenuQrCode, MenuQrCodeInput } from '@/types/menu'
+import { parseMenuQrCodeRow } from '../utils/menuQrAppearance'
+import type { MenuQrCodeInput, MenuQrSettingsSavePayload } from '@/types/menu'
 
 export const MENU_QR_CODES_QUERY_KEY = 'menu-qr-codes'
 
@@ -23,9 +24,86 @@ export const useMenuQrCodes = () => {
         .order('created_at', { ascending: true })
 
       if (error) throw new Error(handleSupabaseError(error))
-      return data as MenuQrCode[]
+      return (data as Record<string, unknown>[]).map(parseMenuQrCodeRow)
     },
     enabled: !!tenantId,
+  })
+}
+
+// ── Salvataggio unificato modale (QR + override categorie) ────────────────────
+
+export const useSaveMenuQrSettings = () => {
+  const queryClient = useQueryClient()
+  const { tenantId } = useTenantContext()
+
+  return useMutation({
+    mutationFn: async (payload: MenuQrSettingsSavePayload) => {
+      const { shortCode, qrId, input, categoryOverrides } = payload
+      const row = {
+        name: input.name,
+        content_type: input.content_type,
+        category_filter: input.category_filter ?? null,
+        preset_ids: input.preset_ids ?? null,
+        is_active: input.is_active ?? true,
+        sort_order: input.sort_order ?? 0,
+        theme_key: input.theme_key ?? 'mediterranean_teal',
+        carousel_items: input.carousel_items ?? [],
+        category_images: input.category_images ?? {},
+        updated_at: new Date().toISOString(),
+      }
+
+      let savedId = qrId
+
+      if (savedId) {
+        const { error } = await (supabase
+          .from('menu_qr_codes') as any)
+          .update(row)
+          .eq('id', savedId)
+          .eq('tenant_id', tenantId!)
+
+        if (error) throw new Error(handleSupabaseError(error))
+      } else {
+        const { data, error } = await (supabase
+          .from('menu_qr_codes') as any)
+          .insert({
+            tenant_id: tenantId,
+            short_code: shortCode,
+            ...row,
+          })
+          .select()
+          .single()
+
+        if (error) throw new Error(handleSupabaseError(error))
+        savedId = String((data as Record<string, unknown>).id)
+      }
+
+      if (categoryOverrides.length > 0) {
+        const overrideRows = categoryOverrides.map((o) => ({
+          tenant_id: tenantId,
+          menu_qr_code_id: savedId,
+          category_key: o.category_key,
+          title: o.title,
+          description: o.description,
+          updated_at: new Date().toISOString(),
+        }))
+
+        const { error: ovError } = await (supabase
+          .from('menu_qrcode_categories') as any)
+          .upsert(overrideRows, { onConflict: 'menu_qr_code_id,category_key' })
+
+        if (ovError) throw new Error(handleSupabaseError(ovError))
+      }
+
+      return savedId!
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [MENU_QR_CODES_QUERY_KEY] })
+      queryClient.invalidateQueries({ queryKey: ['menu-qrcode-categories'] })
+      toast.success('Menù QR salvato')
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || 'Errore nel salvataggio del Menù QR')
+    },
   })
 }
 
@@ -48,12 +126,15 @@ export const useCreateMenuQrCode = () => {
           preset_ids: input.preset_ids ?? null,
           is_active: input.is_active ?? true,
           sort_order: input.sort_order ?? 0,
+          theme_key: input.theme_key ?? 'mediterranean_teal',
+          carousel_items: input.carousel_items ?? [],
+          category_images: input.category_images ?? {},
         })
         .select()
         .single()
 
       if (error) throw new Error(handleSupabaseError(error))
-      return data as MenuQrCode
+      return parseMenuQrCodeRow(data as Record<string, unknown>)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [MENU_QR_CODES_QUERY_KEY] })
@@ -82,7 +163,7 @@ export const useUpdateMenuQrCode = () => {
         .single()
 
       if (error) throw new Error(handleSupabaseError(error))
-      return data as MenuQrCode
+      return parseMenuQrCodeRow(data as Record<string, unknown>)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [MENU_QR_CODES_QUERY_KEY] })
@@ -116,7 +197,7 @@ export const useDeleteMenuQrCode = () => {
       toast.success('QR eliminato')
     },
     onError: (err: Error) => {
-      toast.error(err.message || 'Errore nell\'eliminazione del QR')
+      toast.error(err.message || "Errore nell'eliminazione del QR")
     },
   })
 }
@@ -136,7 +217,7 @@ export const usePublicMenuQr = (tenantId: string | null, shortCode: string | nul
         .single()
 
       if (error) throw new Error(handleSupabaseError(error))
-      return data as MenuQrCode
+      return parseMenuQrCodeRow(data as Record<string, unknown>)
     },
     enabled: !!tenantId && !!shortCode,
   })
@@ -159,7 +240,7 @@ export const usePublicDefaultMenuQr = (tenantId: string | null) => {
         .single()
 
       if (error) return null
-      return data as MenuQrCode
+      return parseMenuQrCodeRow(data as Record<string, unknown>)
     },
     enabled: !!tenantId,
   })

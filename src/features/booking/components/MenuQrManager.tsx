@@ -6,8 +6,7 @@ import { Button } from '@/components/ui'
 import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import {
   useMenuQrCodes,
-  useCreateMenuQrCode,
-  useUpdateMenuQrCode,
+  useSaveMenuQrSettings,
   useDeleteMenuQrCode,
 } from '../hooks/useMenuQrCodes'
 import { useMenuCategories } from '../hooks/useMenuCategories'
@@ -15,7 +14,7 @@ import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { MenuQrModal } from './MenuQrModal'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { cn } from '@/lib/utils'
-import type { MenuQrCode, MenuQrCodeInput } from '@/types/menu'
+import type { MenuQrCode, MenuQrSettingsSavePayload } from '@/types/menu'
 import type { CustomStaffPreset } from '../constants/presetMenus'
 
 function buildPublicUrl(tenantSlug: string | null, shortCode: string): string {
@@ -68,9 +67,7 @@ function QrRow({ qr, tenantSlug, onEdit, onDelete, isDeleting }: QrRowProps) {
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-semibold text-gray-900">{qr.name}</span>
           {!qr.is_active && (
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-              Inattivo
-            </span>
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">Inattivo</span>
           )}
         </div>
         <p className="truncate text-xs text-gray-400">{url}</p>
@@ -125,8 +122,7 @@ export function MenuQrManager() {
     data: CustomStaffPreset[]
   }
 
-  const createMutation = useCreateMenuQrCode()
-  const updateMutation = useUpdateMenuQrCode()
+  const saveMutation = useSaveMenuQrSettings()
   const deleteMutation = useDeleteMenuQrCode()
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -147,21 +143,13 @@ export function MenuQrManager() {
     deleteMutation.mutate(qr.id)
   }
 
-  const handleSave = (shortCode: string, input: MenuQrCodeInput) => {
-    if (editing) {
-      updateMutation.mutate(
-        { id: editing.id, input },
-        { onSuccess: () => setModalOpen(false) },
-      )
-    } else {
-      createMutation.mutate(
-        { shortCode, input },
-        { onSuccess: () => setModalOpen(false) },
-      )
-    }
+  const handleSave = (payload: MenuQrSettingsSavePayload) => {
+    saveMutation.mutate(payload, {
+      onSuccess: () => setModalOpen(false),
+    })
   }
 
-  const isPending = createMutation.isPending || updateMutation.isPending
+  const isPending = saveMutation.isPending
 
   return (
     <div
@@ -188,9 +176,7 @@ export function MenuQrManager() {
         </div>
 
         <div className="mt-6 flex flex-col gap-3">
-          {isLoading && (
-            <p className="py-8 text-center text-sm text-gray-500">Caricamento…</p>
-          )}
+          {isLoading && <p className="py-8 text-center text-sm text-gray-500">Caricamento…</p>}
           {!isLoading && qrCodes.length === 0 && (
             <p className="rounded-xl border border-dashed border-gray-300 bg-white/60 py-12 text-center text-sm text-gray-600">
               Nessun QR ancora. Crea il primo con il pulsante sopra.

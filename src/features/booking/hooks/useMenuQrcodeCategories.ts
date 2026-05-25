@@ -3,7 +3,10 @@ import { supabase } from '@/lib/supabase'
 import { supabasePublic } from '@/lib/supabasePublic'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { handleSupabaseError } from '@/lib/supabase'
-import type { MenuQrcodeCategoryOverride, MenuQrcodeCategoryOverrideInput } from '@/types/menu'
+import type {
+  MenuQrcodeCategoryOverride,
+  MenuQrcodeCategoryOverrideDraft,
+} from '@/types/menu'
 
 const QUERY_KEY = 'menu-qrcode-categories'
 
@@ -11,6 +14,7 @@ function parseOverride(raw: Record<string, unknown>): MenuQrcodeCategoryOverride
   return {
     id: String(raw.id),
     tenant_id: String(raw.tenant_id),
+    menu_qr_code_id: String(raw.menu_qr_code_id),
     category_key: String(raw.category_key),
     title: raw.title != null ? String(raw.title) : null,
     description: raw.description != null ? String(raw.description) : null,
@@ -19,24 +23,42 @@ function parseOverride(raw: Record<string, unknown>): MenuQrcodeCategoryOverride
   }
 }
 
-/** Lettura pubblica — usato in PublicMenuPage */
-export function usePublicMenuQrcodeCategories(tenantId: string | null) {
+/** Lettura pubblica — filtrata per QR (obbligatorio). */
+export function usePublicMenuQrcodeCategories(menuQrCodeId: string | null) {
   return useQuery({
-    queryKey: [QUERY_KEY, 'public', tenantId],
+    queryKey: [QUERY_KEY, 'public', menuQrCodeId],
     queryFn: async (): Promise<MenuQrcodeCategoryOverride[]> => {
       const { data, error } = await (supabasePublic
         .from('menu_qrcode_categories') as any)
         .select('*')
-        .eq('tenant_id', tenantId)
+        .eq('menu_qr_code_id', menuQrCodeId)
 
       if (error || !data) return []
       return (data as Record<string, unknown>[]).map(parseOverride)
     },
-    enabled: !!tenantId,
+    enabled: !!menuQrCodeId,
   })
 }
 
-/** Lettura admin */
+/** Lettura admin — override di un singolo QR. */
+export function useMenuQrcodeCategoriesForQr(menuQrCodeId: string | null) {
+  const { tenantId } = useTenantContext()
+  return useQuery({
+    queryKey: [QUERY_KEY, 'admin', tenantId, menuQrCodeId],
+    queryFn: async (): Promise<MenuQrcodeCategoryOverride[]> => {
+      const { data, error } = await (supabase
+        .from('menu_qrcode_categories') as any)
+        .select('*')
+        .eq('menu_qr_code_id', menuQrCodeId)
+
+      if (error || !data) return []
+      return (data as Record<string, unknown>[]).map(parseOverride)
+    },
+    enabled: !!tenantId && !!menuQrCodeId,
+  })
+}
+
+/** @deprecated Usare useMenuQrcodeCategoriesForQr */
 export function useMenuQrcodeCategories() {
   const { tenantId } = useTenantContext()
   return useQuery({
@@ -54,32 +76,37 @@ export function useMenuQrcodeCategories() {
   })
 }
 
-/** Upsert singolo override categoria (per admin) */
-export function useUpsertMenuQrcodeCategory() {
+export function useUpsertMenuQrcodeCategoriesBatch() {
   const { tenantId } = useTenantContext()
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (input: MenuQrcodeCategoryOverrideInput) => {
-      const { error } = await (supabase
-        .from('menu_qrcode_categories') as any)
-        .upsert(
-          {
-            tenant_id: tenantId,
-            category_key: input.category_key,
-            title: input.title ?? null,
-            description: input.description ?? null,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'tenant_id,category_key' },
-        )
+    mutationFn: async ({
+      menuQrCodeId,
+      rows,
+    }: {
+      menuQrCodeId: string
+      rows: MenuQrcodeCategoryOverrideDraft[]
+    }) => {
+      if (rows.length === 0) return
+
+      const payload = rows.map((row) => ({
+        tenant_id: tenantId,
+        menu_qr_code_id: menuQrCodeId,
+        category_key: row.category_key,
+        title: row.title,
+        description: row.description,
+        updated_at: new Date().toISOString(),
+      }))
+
+      const { error } = await (supabase.from('menu_qrcode_categories') as any).upsert(payload, {
+        onConflict: 'menu_qr_code_id,category_key',
+      })
+
       if (error) throw new Error(handleSupabaseError(error))
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] })
-    },
-    onError: (error: Error) => {
-      void error
     },
   })
 }
