@@ -50,6 +50,10 @@ interface MenuSelectionProps {
   staffPresetsDropdownVisible?: boolean
   /** Menù personalizzati dallo staff (da restaurant_settings). */
   customStaffPresets?: CustomStaffPreset[]
+  /** Nasconde il blocco «Riepilogo Scelte» e i totali (evita duplicato con la sidebar). Default: false */
+  hideSummary?: boolean
+  /** Variante layout: 'compose' usa titolo «CREA IL TUO MENU». Default: 'default' */
+  variant?: 'default' | 'compose'
 }
 
 type NormalizedMenuItem = {
@@ -92,6 +96,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   bookingType,
   staffPresetsDropdownVisible = true,
   customStaffPresets = [],
+  hideSummary = false,
+  variant: _variant = 'default',
 }) => {
   const { data: menuItems = [], isLoading, error } = useMenuItems()
   const { data: dbCategories = [] } = useMenuCategories()
@@ -681,8 +687,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         )}
       </div>
 
-      {/* Riepilogo Scelte */}
-      {selectedItems.length > 0 && (
+      {/* Riepilogo Scelte — nascosto quando la sidebar mostra già il riepilogo */}
+      {!hideSummary && selectedItems.length > 0 && (
         <div className="w-full flex justify-center">
           <div
             className="w-full max-w-[746px] border-2 rounded-xl bg-white/85 transition-all duration-200"
@@ -723,8 +729,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         </div>
       )}
 
-      {/* Totali */}
-      {selectedItems.length > 0 && (
+      {/* Totali — nascosti quando la sidebar mostra già i totali */}
+      {!hideSummary && selectedItems.length > 0 && (
         <div className="w-full flex justify-center">
           <div
             className="w-full max-w-[746px] border-2 rounded-xl bg-white/85 transition-all duration-200"

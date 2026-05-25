@@ -11,23 +11,40 @@ const BOOKING_URL = `/prenota/${TENANT_SLUG}`
 test.describe('Form prenotazione pubblica', () => {
   test('la pagina di prenotazione si apre correttamente', async ({ page }) => {
     await page.goto(BOOKING_URL)
-    // Il titolo o un heading visibile identifica la pagina
     await expect(page).not.toHaveURL('/login')
-    await expect(page.locator('form, [data-testid="booking-form"], h1, h2').first()).toBeVisible()
+    await expect(page.locator('[data-testid="booking-mode-cards"], form, h1, h2').first()).toBeVisible()
+  })
+
+  test('le card tipologia sono visibili e selezionabili', async ({ page }) => {
+    await page.goto(BOOKING_URL)
+    const cards = page.locator('[data-testid^="booking-mode-card-"]')
+    await expect(cards.first()).toBeVisible({ timeout: 5000 })
+    // Seleziona la prima card
+    await cards.first().click()
+    await expect(cards.first()).toBeVisible()
+  })
+
+  test('selezionando una card tipologia menu appare la sezione menu', async ({ page }) => {
+    await page.goto(BOOKING_URL)
+    // Seleziona Rinfresco di Laurea o Menu prezzo fisso
+    const menuCard = page.locator('[data-testid="booking-mode-card-rinfresco_laurea"], [data-testid="booking-mode-card-menu_prezzo_fisso"]').first()
+    if (await menuCard.isVisible()) {
+      await menuCard.click()
+      // La sezione menu dovrebbe comparire
+      await expect(page.locator('#menu-section')).toBeVisible({ timeout: 3000 })
+    }
   })
 
   test('submit con email non valida mostra errore inline', async ({ page }) => {
     await page.goto(BOOKING_URL)
 
-    // Compila i campi obbligatori con email invalida
-    const emailField = page.locator('input[type="email"], input[name="email"], input[id="email"]').first()
+    const emailField = page.locator('input[type="email"], input[id="client_email"]').first()
     if (await emailField.isVisible()) {
       await emailField.fill('non-una-email')
     }
 
     await page.locator('button[type="submit"]').first().click()
 
-    // Deve apparire un messaggio di errore — cerca pattern comuni
     const errorMsg = page.locator('p.text-red-500, [role="alert"], .text-red-400, .text-destructive').first()
     await expect(errorMsg).toBeVisible({ timeout: 3000 })
   })
@@ -35,10 +52,10 @@ test.describe('Form prenotazione pubblica', () => {
   test('submit con dati validi crea la prenotazione', async ({ page }) => {
     await page.goto(BOOKING_URL)
 
-    const nameInput = page.locator('input[name="name"], input[id="name"], input[placeholder*="nome"], input[placeholder*="Nome"]').first()
+    const nameInput = page.locator('input[id="client_name"], input[placeholder*="Nome"]').first()
     const emailInput = page.locator('input[type="email"]').first()
-    const phoneInput = page.locator('input[type="tel"], input[name="phone"]').first()
-    const guestsInput = page.locator('input[type="number"], input[name="guests"]').first()
+    const phoneInput = page.locator('input[type="tel"], input[id="client_phone"]').first()
+    const guestsInput = page.locator('input[id="num_guests"]').first()
 
     if (await nameInput.isVisible()) await nameInput.fill('Mario Rossi')
     if (await emailInput.isVisible()) await emailInput.fill('mario.rossi@test.it')
@@ -47,7 +64,6 @@ test.describe('Form prenotazione pubblica', () => {
 
     await page.locator('button[type="submit"]').first().click()
 
-    // Il successo si manifesta con toast, messaggio di conferma o cambio URL
     const successSignal = page.locator(
       '[class*="toast"], [role="status"], [class*="success"], [class*="confirm"]'
     ).first()

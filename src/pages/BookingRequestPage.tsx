@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { BookingRequestForm } from '@/features/booking/components/BookingRequestForm'
+import { BookingSummarySidebar } from '@/features/booking/components/publicBooking/BookingSummarySidebar'
 import { MapPin, Clock, Phone, Mail, ChevronDown } from 'lucide-react'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
@@ -15,6 +16,8 @@ import {
   isBookingPageGradientId,
   type BookingPageBackgroundId,
 } from '@/features/booking/constants/bookingPageBackground'
+import { DEFAULT_BOOKING_FORM_CONFIG } from '@/features/booking/constants/bookingPublicFormConfig'
+import type { BookingRequestInput } from '@/types/booking'
 
 export const BookingRequestPage: React.FC = () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>()
@@ -36,9 +39,12 @@ export const BookingRequestPage: React.FC = () => {
   const { data: publicBookingBg, isPending: isPublicBookingBgPending } = useRestaurantSetting(
     'public_booking_page_background'
   )
+  const { data: formConfig } = useRestaurantSetting('booking_public_form_config')
+  const resolvedConfig = formConfig ?? DEFAULT_BOOKING_FORM_CONFIG
 
-  // Imposta il background su :root e rende il body trasparente perché il body
-  // di default è opaco e coprirebbe lo sfondo dinamico impostato qui.
+  // Stato form condiviso tra BookingRequestForm e BookingSummarySidebar
+  const [sharedFormData, setSharedFormData] = useState<Partial<BookingRequestInput>>({})
+
   useEffect(() => {
     if (isTenantLoading || !tenantId) return
 
@@ -136,8 +142,9 @@ export const BookingRequestPage: React.FC = () => {
       <div className="fixed inset-0 z-0 bg-black/15" />
 
       <div className="relative z-10 min-h-screen">
-        <div className="w-full max-w-6xl mx-auto px-4 md:px-8 pb-1.5">
+        <div className="mx-auto w-full max-w-7xl px-4 md:px-6 pb-1.5">
 
+          {/* Header */}
           <div className="py-1.5">
             <div className="bg-white/30 backdrop-blur-[16px] py-[7px] px-[13px] md:py-2 md:px-[29px] rounded-lg shadow-md animate-fade-in">
               <div className="flex flex-col items-center justify-center gap-1.5 text-center">
@@ -151,17 +158,42 @@ export const BookingRequestPage: React.FC = () => {
                   className="font-serif text-warm-wood font-bold leading-tight m-0"
                   style={{ fontSize: 'clamp(1.27rem, calc(2.5vw * 4 / 3), 1.53rem)' }}
                 >
-                  Richiesta Prenotazione Tavolo
+                  {resolvedConfig.page_title}
                 </h2>
                 <p className="text-warm-wood-dark opacity-90 font-bold text-[0.917rem] leading-[1.42] m-0 px-1.5 max-w-[42rem]">
-                  Compilando questo form invierai una richiesta allo staff. Ti contatteremo al pi&ugrave; presto per comunicarti l&apos;esito della richiesta!
+                  {resolvedConfig.page_description}
                 </p>
               </div>
             </div>
           </div>
 
-          <BookingRequestForm tenantSlug={tenantSlug} />
+          {/* Griglia 2 colonne: form sinistra + sidebar destra */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_min(360px,32%)] lg:items-start lg:gap-6">
+            <div className="min-w-0">
+              <BookingRequestForm
+                tenantSlug={tenantSlug}
+                formConfig={resolvedConfig}
+                onFormDataChange={setSharedFormData}
+              />
+            </div>
 
+            <BookingSummarySidebar
+              formData={{
+                desired_date: sharedFormData.desired_date,
+                desired_time: sharedFormData.desired_time,
+                num_guests: sharedFormData.num_guests ?? 0,
+                booking_type: sharedFormData.booking_type,
+                menu_selection: sharedFormData.menu_selection,
+                menu_total_per_person: sharedFormData.menu_total_per_person,
+                menu_total_booking: sharedFormData.menu_total_booking,
+                preset_menu: sharedFormData.preset_menu,
+              }}
+              modes={resolvedConfig.booking_modes}
+              contactPhone={displayContactPhone || undefined}
+            />
+          </div>
+
+          {/* Footer orari + contatti */}
           <div className="rounded-2xl shadow-xl px-3 md:px-5 bg-white/30 backdrop-blur-[16px] pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-[clamp(2rem,6vmin,3.5rem)] animate-fade-in">
             <div className="grid grid-cols-2 gap-x-3 gap-y-1 md:gap-x-4 items-start max-[480px]:hidden">
 

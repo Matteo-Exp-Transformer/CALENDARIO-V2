@@ -1,9 +1,6 @@
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Input } from '@/components/ui'
-import { DateInput } from '@/components/ui/DateInput'
-import { TimePicker24h } from '@/components/ui'
-import type { BookingRequestInput, BookingType } from '@/types/booking'
+import type { BookingRequestInput } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { useCreateBookingRequest } from '../hooks/useBookingRequests'
 import { useCheckSlotAvailability } from '../hooks/useCheckSlotAvailability'
@@ -28,14 +25,25 @@ import {
   listMenuPromoLabelsForBookingType,
 } from '../constants/menuPromo'
 import { MenuPromoBannerCards } from './MenuPromoBannerCards'
+import { BookingModeCards } from './publicBooking/BookingModeCards'
+import { BookingFormFields } from './publicBooking/BookingFormFields'
+import type { BookingPublicFormConfig } from '../constants/bookingPublicFormConfig'
+import { DEFAULT_BOOKING_FORM_CONFIG } from '../constants/bookingPublicFormConfig'
 
 
 interface BookingRequestFormProps {
   onSubmit?: () => void
   tenantSlug?: string
+  formConfig?: BookingPublicFormConfig
+  onFormDataChange?: (data: Partial<BookingRequestInput>) => void
 }
 
-export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit, tenantSlug }) => {
+export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
+  onSubmit,
+  tenantSlug,
+  formConfig = DEFAULT_BOOKING_FORM_CONFIG,
+  onFormDataChange,
+}) => {
   // Nome ristorante dinamico per il consenso privacy: deve riflettere il tenant
   // corrente, non un nome hardcoded. Fallback generico se non disponibile.
   const restaurantName = useRestaurantName() || 'questo ristorante'
@@ -75,6 +83,16 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
   const [isSubmitting, setIsSubmitting] = useState(false) // Stato per triggerare re-render e disabilitare button
   const [selectedPreset, setSelectedPreset] = useState<PresetMenuType>(null)
   const [touchCrossBurst, setTouchCrossBurst] = useState(0)
+
+  // Trova il modo attivo in base a booking_type
+  const activeModeId = formConfig.booking_modes.find(
+    (m) => m.enabled && m.booking_type === formData.booking_type
+  )?.id ?? formConfig.booking_modes.find((m) => m.enabled)?.id ?? 'tavolo'
+
+  // Notifica il parent ad ogni cambio formData (per sidebar riepilogo)
+  useEffect(() => {
+    onFormDataChange?.(formData)
+  }, [formData, onFormDataChange])
 
   const frostedInputCn =
     'bg-white/85 backdrop-blur-[1px] px-4 rounded-xl !border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
@@ -262,27 +280,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
 
   // Fetch business hours (non-blocking - form works even if loading/fails)
   const { data: businessHours, isLoading: isLoadingHours, error: hoursError } = useBusinessHours()
-
-  // Validate business hours in real-time (for immediate feedback)
-  const validateBusinessHours = (date: string, time: string) => {
-    if (!date || !time || !businessHours || isLoadingHours || hoursError) {
-      return null // No validation if data not available
-    }
-
-    if (!isValidBookingDateTime(date, time, businessHours)) {
-      const dayName = getDayOfWeek(date)
-      const dayHours = businessHours[dayName]
-
-      if (!dayHours || dayHours.length === 0) {
-        return 'Il ristorante è chiuso in questo giorno'
-      } else {
-        const availableHours = formatHours(dayHours)
-        return `Orario non valido. Orari disponibili: ${availableHours}`
-      }
-    }
-
-    return null // Valid
-  }
 
   // Helper function to scroll to first error field
   const scrollToError = (errorKey: string) => {
@@ -587,240 +584,83 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
 
   return (
     <>
-    <form onSubmit={handleSubmit} className="w-full max-w-[55vw] mx-auto px-2 md:px-6 space-y-8 font-bold booking-form-mobile">
-      {/* Sezione: Dati Personali */}
-      <div className="space-y-6">
-        <h2 className="text-center text-lg md:text-xl font-serif font-bold text-warm-wood mb-4 bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
-          Dati Personali
+    <form onSubmit={handleSubmit} className="w-full px-2 md:px-4 space-y-6 font-bold booking-form-mobile">
+
+      {/* Tipologia di prenotazione — card in cima */}
+      <div className="space-y-3">
+        <h2 className="text-center text-lg md:text-xl font-serif font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
+          Tipo di prenotazione
         </h2>
-
-        {/* Nome */}
-        <div className="space-y-3">
-          <Input
-            id="client_name"
-            value={formData.client_name}
-            onChange={(e) => {
-              setFormData({ ...formData, client_name: e.target.value })
-              setErrors({ ...errors, client_name: '' })
-            }}
-            placeholder="Nome Completo *"
-            required
-            className={`${frostedInputCn} ${errors.client_name ? 'border-red-500!' : ''}`}
-          />
-          {errors.client_name && (
-            <p className="text-sm text-red-500">{errors.client_name}</p>
-          )}
-        </div>
-
-        {/* Email */}
-        <div className="space-y-3 pt-2">
-          <Input
-            id="client_email"
-            type="email"
-            value={formData.client_email}
-            onChange={(e) => {
-              setFormData({ ...formData, client_email: e.target.value })
-              setErrors({ ...errors, client_email: '' })
-            }}
-            placeholder="Email (Opzionale)"
-            className={`${frostedInputCn} ${errors.client_email ? 'border-red-500!' : ''}`}
-          />
-          {errors.client_email && (
-            <p className="text-sm text-red-500">{errors.client_email}</p>
-          )}
-        </div>
-
-        {/* Telefono */}
-        <div className="space-y-3 pt-2">
-          <Input
-            id="client_phone"
-            type="tel"
-            value={formData.client_phone}
-            onChange={(e) => {
-              setFormData({ ...formData, client_phone: e.target.value })
-              setErrors({ ...errors, client_phone: '' })
-            }}
-            placeholder="Telefono *"
-            required
-            className={`${frostedInputCn} ${errors.client_phone ? 'border-red-500!' : ''}`}
-          />
-          {errors.client_phone && (
-            <p className="text-sm text-red-500">{errors.client_phone}</p>
-          )}
-        </div>
+        <BookingModeCards
+          modes={formConfig.booking_modes}
+          activeModeId={activeModeId}
+          onChange={(_modeId, bookingType) => {
+            if (bookingType === 'tavolo') {
+              setSelectedPreset(null)
+              setFormData({
+                ...formData,
+                booking_type: bookingType,
+                preset_menu: null,
+                menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
+                menu_total_per_person: undefined,
+                menu_total_booking: undefined,
+                dietary_restrictions: [],
+              })
+            } else {
+              setFormData({ ...formData, booking_type: bookingType })
+            }
+            setErrors({ ...errors, booking_type: '', menu: '' })
+          }}
+        />
+        {errors.booking_type && (
+          <p className="text-sm text-red-500">{errors.booking_type}</p>
+        )}
+        {menuPromoBannerMessages.length > 0 && (
+          <MenuPromoBannerCards messages={menuPromoBannerMessages} className="mt-3" />
+        )}
       </div>
 
-      {/* Sezione: Dettagli Prenotazione */}
-      <div className="space-y-6">
-        <h2 className="text-center text-lg md:text-xl font-serif font-bold text-warm-wood mb-4 bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
-          Dettagli Prenotazione
+      {/* Campi form: nome, contatti, ospiti, data, ora */}
+      <div className="space-y-3">
+        <h2 className="text-center text-lg md:text-xl font-serif font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
+          Dati e Dettagli
         </h2>
-
-        {/* Numero Ospiti */}
-        <div className="space-y-3">
-          <div>
-            <Input
-              id="num_guests"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoComplete="off"
-              value={formData.num_guests > 0 ? formData.num_guests.toString() : ''}
-              onChange={handleNumGuestsChange}
-              onKeyPress={handleNumGuestsKeyPress}
-              required
-              placeholder="Numero Ospiti * (es: 15)"
-              className={`${frostedInputCn} ${errors.num_guests ? 'border-red-500!' : ''}`}
-            />
-          </div>
-          {errors.num_guests && (
-            <p className="text-sm text-red-500">{errors.num_guests}</p>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 pt-2 pb-0 md:grid-cols-2 md:gap-5 md:items-start">
-          {/* Data */}
-          <div className="min-w-0 space-y-3">
-            <label
-              htmlFor="desired_date"
-              className="mx-auto block w-fit max-w-full text-center text-sm font-bold text-warm-wood md:text-base bg-white/85 backdrop-blur-[1px] px-3 py-1.5 md:px-4 md:py-2 rounded-xl mb-2"
-            >
-              Data prenotazione *
-            </label>
-            <DateInput
-              id="desired_date"
-              compact
-              value={formData.desired_date}
-              onChange={(newDate) => {
-                setFormData({ ...formData, desired_date: newDate })
-                resetAvailability()
-
-                // Real-time validation for business hours
-                const timeError = newDate && formData.desired_time
-                  ? validateBusinessHours(newDate, formData.desired_time)
-                  : null
-
-                if (timeError) {
-                  // Check if it's a day closure error
-                  const dayName = businessHours ? getDayOfWeek(newDate) : null
-                  const dayHours = businessHours && dayName ? businessHours[dayName] : null
-
-                  if (dayHours === null || (Array.isArray(dayHours) && dayHours.length === 0)) {
-                    setErrors({ ...errors, desired_date: timeError, desired_time: '' })
-                  } else {
-                    setErrors({ ...errors, desired_date: '', desired_time: timeError })
-                  }
-                } else {
-                  setErrors({ ...errors, desired_date: '', desired_time: '' })
-                }
-              }}
-              required
-              hasError={!!errors.desired_date}
-            />
-            {errors.desired_date && (
-              <div className="text-sm text-red-600 p-3 rounded-lg bg-white/85 backdrop-blur-[1px] border border-red-500/30">
-                {errors.desired_date}
-              </div>
-            )}
-          </div>
-
-          {/* Ora */}
-          <div className="min-w-0 space-y-3">
-            <label
-              htmlFor="desired_time"
-              className="mx-auto block w-fit max-w-full text-center text-sm font-bold text-warm-wood md:text-base bg-white/85 backdrop-blur-[1px] px-3 py-1.5 md:px-4 md:py-2 rounded-xl mb-2"
-            >
-              Ora prenotazione *
-            </label>
-            <TimePicker24h
-              id="desired_time"
-              compact
-              value={formData.desired_time || '16:00'}
-              onChange={(newTime) => {
-                setFormData({ ...formData, desired_time: newTime })
-                resetAvailability()
-
-                // Real-time validation for business hours
-                const timeError = formData.desired_date && newTime
-                  ? validateBusinessHours(formData.desired_date, newTime)
-                  : null
-
-                if (timeError) {
-                  // Check if it's a day closure error
-                  const dayName = businessHours && formData.desired_date ? getDayOfWeek(formData.desired_date) : null
-                  const dayHours = businessHours && dayName ? businessHours[dayName] : null
-
-                  if (dayHours === null || (Array.isArray(dayHours) && dayHours.length === 0)) {
-                    setErrors({ ...errors, desired_date: timeError, desired_time: '' })
-                  } else {
-                    setErrors({ ...errors, desired_date: '', desired_time: timeError })
-                  }
-                } else {
-                  setErrors({ ...errors, desired_date: '', desired_time: '' })
-                }
-              }}
-              required
-              hasError={!!errors.desired_time}
-            />
-            {errors.desired_time && (
-              <div className="text-sm text-red-600 p-3 rounded-lg bg-white/85 backdrop-blur-[1px] border border-red-500/30">
-                {errors.desired_time}
-              </div>
-            )}
-          </div>
-        </div>
-
+        <BookingFormFields
+          formData={{
+            client_name: formData.client_name,
+            client_email: formData.client_email,
+            client_phone: formData.client_phone,
+            desired_date: formData.desired_date,
+            desired_time: formData.desired_time,
+            num_guests: formData.num_guests,
+          }}
+          errors={errors}
+          businessHours={businessHours}
+          isLoadingHours={isLoadingHours}
+          hoursError={hoursError}
+          frostedInputCn={frostedInputCn}
+          onFieldChange={(field, value) => {
+            setFormData({ ...formData, [field]: value })
+          }}
+          onDateChange={(newDate) => {
+            setFormData({ ...formData, desired_date: newDate })
+          }}
+          onTimeChange={(newTime) => {
+            setFormData({ ...formData, desired_time: newTime })
+          }}
+          onNumGuestsChange={handleNumGuestsChange}
+          onNumGuestsKeyPress={handleNumGuestsKeyPress}
+          resetAvailability={resetAvailability}
+          setErrors={(newErrors) => setErrors(newErrors)}
+        />
         {errors.slot_availability && (
           <div className="text-sm text-red-700 font-semibold p-4 rounded-xl bg-white/90 backdrop-blur-[1px] border border-red-400/40 text-center">
             {errors.slot_availability}
           </div>
         )}
-
-        {/* Tipologia di prenotazione (sotto Data / Ora) */}
-        <div className="mt-2">
-          <label
-            htmlFor="booking_type"
-            className="mx-auto block w-fit max-w-full text-center text-base md:text-lg font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-4 py-2 rounded-xl mb-2"
-          >
-            Tipologia di Prenotazione *
-          </label>
-          <select
-            id="booking_type"
-            value={formData.booking_type}
-            onChange={(e) => {
-              const booking_type = e.target.value as BookingType
-              if (booking_type === 'tavolo') {
-                setSelectedPreset(null)
-                setFormData({
-                  ...formData,
-                  booking_type,
-                  preset_menu: null,
-                  menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
-                  menu_total_per_person: undefined,
-                  menu_total_booking: undefined,
-                  dietary_restrictions: []
-                })
-              } else {
-                setFormData({ ...formData, booking_type })
-              }
-              setErrors({ ...errors, booking_type: '', menu: '' })
-            }}
-            className="block w-full h-14 rounded-full border border-black/20 shadow-sm transition-all px-4 text-base font-bold bg-white/85 backdrop-blur-[1px] text-black focus:border-warm-wood focus:outline-none"
-          >
-            <option value="tavolo">Prenota un tavolo</option>
-            <option value="rinfresco_laurea">Rinfresco di Laurea</option>
-            <option value="menu_prezzo_fisso">Menu a prezzo fisso</option>
-          </select>
-          {errors.booking_type && (
-            <p className="text-sm text-red-500">{errors.booking_type}</p>
-          )}
-          {menuPromoBannerMessages.length > 0 && (
-            <MenuPromoBannerCards messages={menuPromoBannerMessages} className="mt-3" />
-          )}
-        </div>
-
       </div>
-      {/* Menu Selection - Solo per Rinfresco di Laurea */}
+
+      {/* Menu Selection - Solo per Rinfresco di Laurea / menu prezzo fisso */}
       {bookingTypeUsesMenuSelections(formData.booking_type) && (
         <div id="menu-section" className="space-y-6 pt-6">
           <MenuSelection
@@ -830,6 +670,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({ onSubmit
             presetMenu={selectedPreset}
             staffPresetsDropdownVisible={staffPresetsDropdownVisible}
             customStaffPresets={customStaffPresets}
+            hideSummary={true}
             onPresetMenuChange={handlePresetMenuChange}
             onMenuChange={({ items, totalPerPerson, tiramisuTotal, tiramisuKg }) => {
               const numGuests = formData.num_guests || 0

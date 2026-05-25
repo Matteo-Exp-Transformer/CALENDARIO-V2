@@ -11,6 +11,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 25-05-26 | Pagina Prenota v2 + Admin «Personalizza Form» | [Report](Sessioni%20di%20lavoro/25-05-26/Report-pagina-prenota-v2-admin-personalizza-form.md) — card tipologia al posto del select, layout 2 colonne + sidebar riepilogo, titolo/descrizione dinamici, pannello admin configurazione form. |
 | 25-05-26 | Filtri ingredienti Menu QR + UI modale + fix prod | [Report](Sessioni%20di%20lavoro/25-05-26/Report-menu-qr-filtri-e-ui-modale.md) — `036`/`037` su TEST+prod, picker nascosti, tipografia, rimozione «Menù eventi» dal modale, fix salvataggio carosello vuoto in produzione. |
 | 25-05-26 | Modale Menù QR unificato + aspetto per-QR | [Report](Sessioni%20di%20lavoro/25-05-26/Report-menu-qr-modale-unificato-per-qr.md) — migrazione `036` su test, tema/carosello/foto/override su `menu_qr_codes`, modale unico con doppio Salva, `category_filter` esplicito. |
 | 25-05-26 | Foto categoria admin Prenota | [Report](Sessioni%20di%20lavoro/25-05-26/Report-foto-categoria-menu-prenota.md) — `menu_categories.image_url`, upload `booking-cat/{id}.webp`, form in Gestione categorie; foto QR homepage invariata. Migrazione `035` su test. |

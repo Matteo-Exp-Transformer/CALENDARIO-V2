@@ -17,6 +17,10 @@ import {
   type CustomStaffPreset,
 } from '@/features/booking/constants/presetMenus'
 import type { MenuPromo } from '@/features/booking/constants/menuPromo'
+import {
+  type BookingPublicFormConfig,
+  DEFAULT_BOOKING_FORM_CONFIG,
+} from '@/features/booking/constants/bookingPublicFormConfig'
 
 export const RESTAURANT_SETTING_KEYS_V1 = [
   'restaurant_name',
@@ -44,6 +48,8 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'walk_in_max_guests',
   /** Classic: abilita/disabilita raggruppamento digest per fasce orarie (default true). In Pro ignorato -- sempre ON. */
   'booking_time_slots_enabled',
+  /** Configurazione UI pagina pubblica /prenota: titolo, descrizione, modalità di prenotazione visibili. */
+  'booking_public_form_config',
 ] as const
 
 export type RestaurantSettingKeyV1 = (typeof RESTAURANT_SETTING_KEYS_V1)[number]
@@ -276,6 +282,8 @@ export type RestaurantSettingValueMap = {
   walk_in_max_guests: number
   /** Classic: abilita raggruppamento digest per fasce. Pro: ignorato (sempre true). Default true per retro-compatibilita. */
   booking_time_slots_enabled: boolean
+  /** Configurazione UI pagina pubblica /prenota: titolo, descrizione e modalità di prenotazione. */
+  booking_public_form_config: BookingPublicFormConfig
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -483,5 +491,50 @@ export const restaurantSettingRegistry: {
     },
     serializeToDb: (value) => value as Json,
     validate: (value) => (typeof value === 'boolean' ? null : 'Valore non valido'),
+  },
+  booking_public_form_config: {
+    key: 'booking_public_form_config',
+    parseFromDb: (raw): BookingPublicFormConfig => {
+      if (raw == null || typeof raw !== 'object' || Array.isArray(raw)) {
+        return DEFAULT_BOOKING_FORM_CONFIG
+      }
+      const obj = raw as Record<string, unknown>
+      const modes = Array.isArray(obj.booking_modes) ? obj.booking_modes : null
+      if (!modes || modes.length === 0) return DEFAULT_BOOKING_FORM_CONFIG
+      return {
+        page_title: typeof obj.page_title === 'string' ? obj.page_title : DEFAULT_BOOKING_FORM_CONFIG.page_title,
+        page_description:
+          typeof obj.page_description === 'string'
+            ? obj.page_description
+            : DEFAULT_BOOKING_FORM_CONFIG.page_description,
+        booking_modes: modes.map((m: unknown, i: number) => {
+          const dm = DEFAULT_BOOKING_FORM_CONFIG.booking_modes[i] ?? DEFAULT_BOOKING_FORM_CONFIG.booking_modes[0]
+          if (!m || typeof m !== 'object' || Array.isArray(m)) return dm
+          const mode = m as Record<string, unknown>
+          return {
+            id: typeof mode.id === 'string' ? mode.id : dm.id,
+            booking_type: (mode.booking_type as BookingPublicFormConfig['booking_modes'][number]['booking_type']) ?? dm.booking_type,
+            enabled: typeof mode.enabled === 'boolean' ? mode.enabled : dm.enabled,
+            label: typeof mode.label === 'string' ? mode.label : dm.label,
+            description: typeof mode.description === 'string' ? mode.description : dm.description,
+            icon: (['utensils', 'cloche', 'chef-hat'] as const).includes(mode.icon as 'utensils' | 'cloche' | 'chef-hat')
+              ? (mode.icon as 'utensils' | 'cloche' | 'chef-hat')
+              : dm.icon,
+            sub_tabs_enabled: typeof mode.sub_tabs_enabled === 'boolean' ? mode.sub_tabs_enabled : dm.sub_tabs_enabled,
+            sub_tabs_display: 'horizontal' as const,
+            sub_tabs: [] as [],
+          }
+        }),
+      }
+    },
+    serializeToDb: (value) => value as unknown as Json,
+    validate: (value) => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return 'Configurazione form non valida'
+      const cfg = value as BookingPublicFormConfig
+      if (!Array.isArray(cfg.booking_modes) || cfg.booking_modes.length === 0) {
+        return 'Deve esserci almeno una modalità di prenotazione'
+      }
+      return null
+    },
   },
 }

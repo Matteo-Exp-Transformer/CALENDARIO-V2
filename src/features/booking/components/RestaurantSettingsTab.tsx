@@ -47,6 +47,7 @@ import {
   DEFAULT_APP_THEME,
   type AppThemeId,
 } from '@/features/booking/constants/appTheme'
+import { BookingFormConfigPanel } from './settings/BookingFormConfigPanel'
 
 const RESTAURANT_NAME_MAX_LENGTH = 40
 const SLOT_NAME_MAX_LENGTH = 40
@@ -329,6 +330,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   /** Dopo «Conferma» la griglia resta bloccata finche non si cambia selezione o non va a buon fine «Salva modifiche». */
   const [bookingBgSelectionLocked, setBookingBgSelectionLocked] = useState(false)
   const [appTheme, setAppTheme] = useState<AppThemeId>(DEFAULT_APP_THEME)
+  const [settingsTab, setSettingsTab] = useState<'anagrafica' | 'form'>('anagrafica')
 
   const hydratedRef = useRef(false)
 
@@ -685,6 +687,38 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   return (
     <div className="flex w-full flex-col items-center gap-8">
+      {/* Tab pill: Anagrafica Azienda / Personalizza Form */}
+      <div className="flex gap-2 rounded-xl bg-slate-100 p-1 self-start">
+        <button
+          type="button"
+          onClick={() => setSettingsTab('anagrafica')}
+          className={cn(
+            'rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
+            settingsTab === 'anagrafica'
+              ? 'bg-white text-slate-800 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700',
+          )}
+        >
+          Anagrafica Azienda
+        </button>
+        <button
+          type="button"
+          onClick={() => setSettingsTab('form')}
+          className={cn(
+            'rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
+            settingsTab === 'form'
+              ? 'bg-white text-slate-800 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700',
+          )}
+        >
+          Personalizza Form
+        </button>
+      </div>
+
+      {settingsTab === 'form' && <BookingFormConfigPanel />}
+
+      {settingsTab === 'anagrafica' && (
+      <React.Fragment>
       <section className={sectionSurfaceClass}>
         <h3 className="text-lg font-semibold text-slate-800">Anagrafica Azienda</h3>
         <div className="flex w-full flex-col items-center">
@@ -1170,6 +1204,8 @@ export const RestaurantSettingsTab: React.FC = () => {
           </span>
         )}
       </div>
+      </React.Fragment>
+      )}
     </div>
   )
 }
