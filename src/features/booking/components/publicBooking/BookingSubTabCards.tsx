@@ -30,7 +30,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
 
   return (
     <div className="w-full overflow-x-auto pb-1" data-testid="booking-sub-tab-cards">
-      <div className="flex gap-3 min-w-max">
+      <div className="mx-auto flex w-max max-w-full gap-3">
         {subTabs.map((tab) => {
           const isActive = activeSubTabId === tab.id
           const priceLabel = formatPricePerPerson(tab.price_per_person)

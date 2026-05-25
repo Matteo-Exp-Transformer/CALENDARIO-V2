@@ -116,6 +116,13 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     return activeMode?.sub_tabs_overrides ?? []
   }, [activeMode, activeModeSubTabs])
 
+  /** Con sottotab orizzontali: griglia menù solo dopo click su card tipo preset (menù consigliato). */
+  const showMenuSelectionSection = useMemo(() => {
+    if (!bookingTypeUsesMenuSelections(formData.booking_type)) return false
+    if (activeModeSubTabs.length === 0) return true
+    return activeSubTab?.type === 'preset' && !!activeSubTab.preset_id
+  }, [formData.booking_type, activeModeSubTabs.length, activeSubTab])
+
   // Notifica il parent ad ogni cambio formData (per sidebar riepilogo)
   useEffect(() => {
     onFormDataChange?.(formData)
@@ -326,7 +333,10 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       privacyAccepted: 'privacy-consent'
     }
 
-    const fieldId = fieldIdMap[errorKey]
+    let fieldId = fieldIdMap[errorKey]
+    if (errorKey === 'menu' && fieldId && !document.getElementById(fieldId)) {
+      fieldId = 'booking-sub-tabs-section'
+    }
     if (fieldId) {
       const element = document.getElementById(fieldId)
       if (element) {
@@ -435,8 +445,19 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       if (!firstErrorKey) firstErrorKey = 'booking_type'
     }
 
+    // Sottotab menù: obbligo scelta card prima del submit
+    if (
+      bookingTypeUsesMenuSelections(formData.booking_type) &&
+      activeModeSubTabs.length > 0 &&
+      !activeSubTab
+    ) {
+      newErrors.menu = 'Seleziona un\'opzione menù tra le card sopra'
+      isValid = false
+      if (!firstErrorKey) firstErrorKey = 'menu'
+    }
+
     // Menu validation (Rinfresco di Laurea / menù a prezzo fisso)
-    if (bookingTypeUsesMenuSelections(formData.booking_type) && activeSubTab?.type !== 'manual') {
+    if (showMenuSelectionSection) {
       if (!formData.menu_selection || !formData.menu_selection.items || formData.menu_selection.items.length === 0) {
         newErrors.menu = 'Seleziona almeno un prodotto dal menù'
         isValid = false
@@ -667,10 +688,30 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             {errors.slot_availability}
           </div>
         )}
+        {/* Intolleranze e richieste — subito sotto data/ora/ospiti (Rinfresco / menu prezzo fisso) */}
+        {bookingTypeUsesMenuSelections(formData.booking_type) && (
+          <div className="space-y-6 pt-2">
+            <DietaryRestrictionsSection
+              restrictions={formData.dietary_restrictions || []}
+              onRestrictionsChange={(restrictions) => {
+                setFormData({
+                  ...formData,
+                  dietary_restrictions: restrictions,
+                })
+              }}
+              specialRequests={formData.special_requests || ''}
+              onSpecialRequestsChange={(value) => {
+                setFormData({ ...formData, special_requests: value })
+              }}
+              privacyAccepted={privacyAccepted}
+              onPrivacyChange={setPrivacyAccepted}
+            />
+          </div>
+        )}
       </div>
 
       {/* Tipologia di prenotazione — card sotto data/ora/ospiti */}
-      <div className="space-y-3">
+      <div className="space-y-3" id="booking-sub-tabs-section">
         <h2 className="text-center text-lg md:text-xl font-serif font-bold text-warm-wood bg-white/85 backdrop-blur-[1px] px-6 py-3 rounded-2xl">
           Tipo di prenotazione
         </h2>
@@ -731,10 +772,13 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             }}
           />
         )}
+        {!showMenuSelectionSection && errors.menu && activeModeSubTabs.length > 0 && (
+          <p className="text-sm text-red-500 text-center">{errors.menu}</p>
+        )}
       </div>
 
-      {/* Menu Selection - Solo per Rinfresco di Laurea / menu prezzo fisso */}
-      {bookingTypeUsesMenuSelections(formData.booking_type) && (
+      {/* Menu Selection — visibile solo dopo card preset (se ci sono sottotab) */}
+      {showMenuSelectionSection && (
         <div id="menu-section" className="space-y-6 pt-6">
           <MenuSelection
             selectedItems={formData.menu_selection?.items || []}
@@ -782,32 +826,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           {errors.menu && (
             <p className="text-sm text-red-500">{errors.menu}</p>
           )}
-        </div>
-      )}
-
-      {/* Intolleranze Alimentari - Solo per Rinfresco di Laurea */}
-      {/* NOTA: I guest_count nelle intolleranze sono separati da num_guests.
-          Il num_guests è il totale ospiti della prenotazione.
-          I guest_count nelle intolleranze indicano solo quante persone hanno quella specifica intolleranza.
-          NON vengono sommati al totale. */}
-      {bookingTypeUsesMenuSelections(formData.booking_type) && (
-        <div className="space-y-6">
-          <DietaryRestrictionsSection
-            restrictions={formData.dietary_restrictions || []}
-            onRestrictionsChange={(restrictions) => {
-              setFormData({
-                ...formData,
-                dietary_restrictions: restrictions
-                // NOTA: num_guests non viene modificato quando si aggiungono intolleranze
-              })
-            }}
-            specialRequests={formData.special_requests || ''}
-            onSpecialRequestsChange={(value) => {
-              setFormData({ ...formData, special_requests: value })
-            }}
-            privacyAccepted={privacyAccepted}
-            onPrivacyChange={setPrivacyAccepted}
-          />
         </div>
       )}
 
