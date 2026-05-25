@@ -203,7 +203,7 @@ export function MenuQrManager() {
         editing={editing}
         categories={categories}
         presets={presets}
-        baseUrl={window.location.origin}
+        tenantSlug={tenantSlug}
       />
     </div>
   )

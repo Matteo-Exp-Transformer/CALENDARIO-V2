@@ -6,6 +6,7 @@ export function parseCarouselItems(raw: unknown): CarouselItem[] {
     .filter((x): x is Record<string, unknown> => typeof x === 'object' && x !== null)
     .map((x) => ({
       image_url: String(x.image_url ?? ''),
+      eyebrow: x.eyebrow != null ? String(x.eyebrow) : undefined,
       title: x.title != null ? String(x.title) : undefined,
       description: x.description != null ? String(x.description) : undefined,
       label: x.label != null ? String(x.label) : undefined,

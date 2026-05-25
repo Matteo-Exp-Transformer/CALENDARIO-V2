@@ -7,6 +7,8 @@ interface ModalProps {
   onClose: () => void
   title: string
   children: ReactNode
+  /** Contenuto opzionale sotto il titolo nell'header (es. link QR + copia). */
+  headerBelow?: ReactNode
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
   showCloseButton?: boolean
   closeOnOverlayClick?: boolean
@@ -18,6 +20,7 @@ export const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   children,
+  headerBelow,
   size = 'md',
   showCloseButton = true,
   closeOnOverlayClick = true,
@@ -80,19 +83,22 @@ export const Modal: React.FC<ModalProps> = ({
           role="document"
         >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h2 id="modal-title" className="text-title-modal font-semibold text-slate-800">
-            {title}
-          </h2>
-          {showCloseButton && (
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-              aria-label="Chiudi"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
+        <div className="border-b border-slate-100 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h2 id="modal-title" className="text-title-modal font-semibold text-slate-800">
+              {title}
+            </h2>
+            {showCloseButton && (
+              <button
+                onClick={onClose}
+                className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                aria-label="Chiudi"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+          {headerBelow ? <div className="mt-2">{headerBelow}</div> : null}
         </div>
 
         {/* Body */}

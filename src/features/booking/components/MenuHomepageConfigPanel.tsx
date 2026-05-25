@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react'
 import { toast } from 'react-toastify'
-import { ImagePlus, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
+import { ImagePlus, Trash2, ChevronUp, ChevronDown, ArrowUp } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 import { useMenuCategories } from '../hooks/useMenuCategories'
 import { MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
 import type { CarouselItem } from '@/types/menu'
 import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
+import { menuQrStoragePrefix, menuQrStorageSegment } from '../utils/menuQrStorage'
 
 const BUCKET = 'menu-photos'
 const MAX_SIDE_PX = 1200
@@ -14,6 +15,8 @@ const MAX_BYTES = 450_000
 
 export const CAROUSEL_SLIDE_TITLE_MAX = 60
 export const CAROUSEL_SLIDE_DESCRIPTION_MAX = 125
+export const CAROUSEL_SLIDE_EYEBROW_MAX = 40
+const DEFAULT_CAROUSEL_EYEBROW = 'Specialità della casa'
 
 async function compressImage(file: File): Promise<Blob> {
   return new Promise((resolve, reject) => {
@@ -63,10 +66,6 @@ async function removeFromStorage(path: string): Promise<void> {
   await (supabase.storage.from(BUCKET) as any).remove([path])
 }
 
-function qrStoragePrefix(tenantId: string, menuQrCodeId: string) {
-  return `${tenantId}/qr/${menuQrCodeId}`
-}
-
 export function MenuQrThemeSection({
   value,
   onChange,
@@ -103,26 +102,29 @@ export function MenuQrThemeSection({
 export function MenuQrCarouselSection({
   tenantId,
   menuQrCodeId,
+  draftShortCode,
   items,
   onChange,
 }: {
   tenantId: string
   menuQrCodeId: string | null
+  draftShortCode: string | null
   items: CarouselItem[]
   onChange: (items: CarouselItem[]) => void
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
-  const canUpload = !!menuQrCodeId
+  const storageSegment = menuQrStorageSegment(menuQrCodeId, draftShortCode)
+  const canUpload = !!storageSegment
 
   const handleAddFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     e.target.value = ''
-    if (!file || !menuQrCodeId) return
+    if (!file || !storageSegment) return
     setUploading(true)
     try {
       const uuid = crypto.randomUUID()
-      const path = `${qrStoragePrefix(tenantId, menuQrCodeId)}/carousel/${uuid}.webp`
+      const path = `${menuQrStoragePrefix(tenantId, storageSegment)}/carousel/${uuid}.webp`
       const url = await uploadToStorage(file, path)
       onChange([...items, { image_url: url, sort_order: items.length }])
       toast.success('Foto aggiunta')
@@ -154,8 +156,13 @@ export function MenuQrCarouselSection({
     onChange(items.filter((_, idx) => idx !== i).map((x, idx) => ({ ...x, sort_order: idx })))
   }
 
-  const updateField = (i: number, field: 'title' | 'description', value: string) => {
-    const maxLen = field === 'title' ? CAROUSEL_SLIDE_TITLE_MAX : CAROUSEL_SLIDE_DESCRIPTION_MAX
+  const updateField = (i: number, field: 'eyebrow' | 'title' | 'description', value: string) => {
+    const maxLen =
+      field === 'title'
+        ? CAROUSEL_SLIDE_TITLE_MAX
+        : field === 'description'
+          ? CAROUSEL_SLIDE_DESCRIPTION_MAX
+          : CAROUSEL_SLIDE_EYEBROW_MAX
     const clipped = value.slice(0, maxLen)
     onChange(items.map((x, idx) => (idx === i ? { ...x, [field]: clipped || undefined } : x)))
   }
@@ -178,18 +185,11 @@ export function MenuQrCarouselSection({
           disabled={uploading || !canUpload}
           onClick={() => fileRef.current?.click()}
           className="gap-1.5 text-xs"
-          title={canUpload ? undefined : 'Salva il QR per caricare foto'}
         >
           <ImagePlus className="h-3.5 w-3.5" />
           {uploading ? 'Caricamento…' : 'Aggiungi foto'}
         </Button>
       </div>
-
-      {!canUpload && (
-        <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          Salva il Menù QR una prima volta per poter caricare foto nel carosello.
-        </p>
-      )}
 
       {items.length === 0 && (
         <p className="rounded-lg border border-dashed border-gray-300 py-6 text-center text-xs text-gray-400">
@@ -236,6 +236,19 @@ export function MenuQrCarouselSection({
           <div>
             <input
               type="text"
+              value={item.eyebrow ?? ''}
+              maxLength={CAROUSEL_SLIDE_EYEBROW_MAX}
+              onChange={(e) => updateField(i, 'eyebrow', e.target.value)}
+              placeholder={`Etichetta sopra il titolo (default: ${DEFAULT_CAROUSEL_EYEBROW})`}
+              className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
+            />
+            <p className="mt-0.5 text-right text-[11px] text-gray-400 tabular-nums">
+              {(item.eyebrow ?? '').length}/{CAROUSEL_SLIDE_EYEBROW_MAX}
+            </p>
+          </div>
+          <div>
+            <input
+              type="text"
               value={item.title ?? ''}
               maxLength={CAROUSEL_SLIDE_TITLE_MAX}
               onChange={(e) => updateField(i, 'title', e.target.value)}
@@ -270,6 +283,7 @@ export type CategoryOverrideDraft = Record<string, { title: string; description:
 export function MenuQrCategoryCardsSection({
   tenantId,
   menuQrCodeId,
+  draftShortCode,
   categories,
   categoryImages,
   overrideDrafts,
@@ -278,6 +292,7 @@ export function MenuQrCategoryCardsSection({
 }: {
   tenantId: string
   menuQrCodeId: string | null
+  draftShortCode: string | null
   categories: MenuCategoryRecord[]
   categoryImages: Record<string, string>
   overrideDrafts: CategoryOverrideDraft
@@ -285,13 +300,14 @@ export function MenuQrCategoryCardsSection({
   onOverrideDraftsChange: (drafts: CategoryOverrideDraft) => void
 }) {
   const [uploading, setUploading] = useState<string | null>(null)
-  const canUpload = !!menuQrCodeId
+  const storageSegment = menuQrStorageSegment(menuQrCodeId, draftShortCode)
+  const canUpload = !!storageSegment
 
   const handleFile = async (catKey: string, file: File) => {
-    if (!menuQrCodeId) return
+    if (!storageSegment) return
     setUploading(catKey)
     try {
-      const path = `${qrStoragePrefix(tenantId, menuQrCodeId)}/cat/${catKey}.webp`
+      const path = `${menuQrStoragePrefix(tenantId, storageSegment)}/cat/${catKey}.webp`
       const url = await uploadToStorage(file, path)
       onCategoryImagesChange({ ...categoryImages, [catKey]: url })
       toast.success('Foto categoria salvata')
@@ -303,8 +319,8 @@ export function MenuQrCategoryCardsSection({
   }
 
   const removeCategoryPhoto = async (catKey: string) => {
-    if (!menuQrCodeId) return
-    await removeFromStorage(`${qrStoragePrefix(tenantId, menuQrCodeId)}/cat/${catKey}.webp`)
+    if (!storageSegment) return
+    await removeFromStorage(`${menuQrStoragePrefix(tenantId, storageSegment)}/cat/${catKey}.webp`)
     const next = { ...categoryImages }
     delete next[catKey]
     onCategoryImagesChange(next)
@@ -316,11 +332,6 @@ export function MenuQrCategoryCardsSection({
 
   return (
     <div className="flex flex-col gap-3">
-      {!canUpload && (
-        <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          Salva il Menù QR una prima volta per caricare le foto delle categorie.
-        </p>
-      )}
       {categories.map((cat) => {
         const imgUrl = categoryImages[cat.key]
         const isUp = uploading === cat.key
@@ -335,8 +346,11 @@ export function MenuQrCategoryCardsSection({
               {imgUrl ? (
                 <img src={imgUrl} alt={cat.label} className="h-12 w-16 shrink-0 rounded-lg object-cover" />
               ) : (
-                <div className="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-xs text-gray-400">
-                  No foto
+                <div
+                  className="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400"
+                  aria-hidden
+                >
+                  <ArrowUp className="h-5 w-5" strokeWidth={2} />
                 </div>
               )}
               <label className={canUpload ? 'is-clickable shrink-0' : 'shrink-0 opacity-50'}>

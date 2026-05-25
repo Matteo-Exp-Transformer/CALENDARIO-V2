@@ -64,6 +64,7 @@ File: `src/lib/menuPhotoUpload.ts`
 | Categoria Prenota | `{tenantId}/booking-cat/{categoryId}.webp` | `menu_categories.image_url` (035) |
 | Thumb categoria QR (per QR) | `{tenantId}/qr/{menuQrCodeId}/cat/{categoryKey}.webp` | `menu_qr_codes.category_images` (JSON) |
 | Carosello QR (per QR) | `{tenantId}/qr/{menuQrCodeId}/carousel/{uuid}.webp` | `menu_qr_codes.carousel_items` (JSON) |
+| Bozza nuovo QR (pre-salvataggio) | `{tenantId}/qr/draft/{shortCode}/carousel|cat/…` | spostato su path definitivo al primo Salva |
 | Path legacy (solo URL già salvate) | `{tenantId}/cat/…`, `{tenantId}/carousel/…` | `menu_homepage_config` — non più usato in scrittura |
 
 - **Compressione**: canvas resize max 1200px, iterativa da quality 0.82 a 0.4, target 450KB
@@ -108,8 +109,8 @@ File: `src/features/booking/hooks/useMenuQrCodes.ts`
 | Componente | File |
 |------------|------|
 | `MenuQrManager` | `src/features/booking/components/MenuQrManager.tsx` — solo lista «I miei QR» (tab Aspetto homepage spostato in modale) |
-| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; form unico con doppio **Salva** (alto/basso); sezioni: nome, categorie esplicite, preset, carosello, titoli+foto categorie unificati, tema. Salvataggio via `useSaveMenuQrSettings` |
-| `MenuHomepageConfigPanel` | Sezioni controllate esportate (`MenuQrCarouselSection`, `MenuQrCategoryCardsSection`, `MenuQrThemeSection`) — upload foto richiede QR già salvato (ha `menuQrCodeId`) |
+| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia sotto il titolo; **Salva** allineato a destra sulla riga «Nome QR *» + in fondo; sezioni: nome, categorie, preset, carosello, titoli+foto categorie, tema. Salvataggio via `useSaveMenuQrSettings` |
+| `MenuHomepageConfigPanel` | Sezioni controllate (`MenuQrCarouselSection`, `MenuQrCategoryCardsSection`, `MenuQrThemeSection`) — upload anche su **nuovo** QR via path `qr/draft/{shortCode}/` (migrazione a `qr/{id}/` al Salva) |
 
 Il `MenuQrManager` è montato in `MenuPricesTab` quando `viewMode === 'qr_codes'` (pulsante "QR Code" nell'hero section, visibile solo se `features.qrMenu`).
 
@@ -139,7 +140,7 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 
 > Dettaglio componenti: **`docs/per-ui-design-skill/PUBLIC_MENU_LAYOUT_CONTEXT.md`**
 
-**Limiti admin carosello** (`MenuHomepageConfigPanel` → `CarouselSection`): titolo slide max **60** caratteri, testo breve max **125**, contatore `n/max` sotto ogni campo.
+**Limiti admin carosello** (`MenuQrCarouselSection`): etichetta sopra titolo (eyebrow, es. «Specialità della casa») max **40**; titolo slide max **60**; testo breve max **125**; contatore `n/max` sotto ogni campo. Campo `eyebrow` in `carousel_items` JSON, mostrato in `MenuCarousel` sulla pagina pubblica.
 
 **`PublicMenuCategoryPage`** — dettaglio categoria:
 - Carica i piatti della categoria da `menu_items` via `supabasePublic`
@@ -163,7 +164,8 @@ RULE  Emoji categorie: mappa CATEGORY_EMOJI in PublicMenuPage — aggiungere nuo
 RULE  Icone Phosphor categorie: mappa CATEGORY_ICON in PublicMenuPage — aggiungere nuove voci lì
 RULE  content_type valori: 'a_la_carte' | 'preset_menus' | 'mixed' — non aggiungere altri
 RULE  La pagina /menu/:slug senza short_code usa il QR default (primo is_active=true, sort_order ASC)
-RULE  Se short_code specifico non trovato → redirect a /menu/:slug (useEffect in PublicMenuPage)
+RULE  Se short_code non trovato → messaggio «Menù QR non trovato» (nessun redirect al menu default — evita di mostrare sempre il primo QR)
+RULE  Lookup QR pubblico solo quando `tenantSlug` del context coincide con lo slug nell’URL (`tenantReady` in PublicMenuPage)
 RULE  Testo sovrapposto su immagini carosello: gradiente linear-gradient(to right, rgba 0,0,0,0.55 0%, transparent 50%) — overlay 40% sx
 RULE  Griglia categorie: grid-cols-1 / min-[400px]:grid-cols-2; thumb aspect-square w-24; mai split 50/50 (aggiornato in sessione 2026-05-24)
 RULE  Titolo card categoria: legge prima menu_qrcode_categories.title, fallback menu_categories.label — mai hardcoded
@@ -173,7 +175,8 @@ RULE  Pallini carosello: button cliccabili con goToSlide — non solo drag/scrol
 RULE  Sfondo pagina: themePageBackgroundStyle() — non due section con headerImage/bodyImage separate (evita stacco)
 RULE  Body PNG: background-size 100% auto + position sotto --menu-header-band — non cover sul body intero
 RULE  Tab sticky: sfondo rgba(tabBarStickyRgb, opacity) cresce dopo lock; scrollbar-hide; frecce md+ se overflow
-RULE  Admin carosello: CAROUSEL_SLIDE_TITLE_MAX=60, CAROUSEL_SLIDE_DESCRIPTION_MAX=125 in MenuHomepageConfigPanel
+RULE  Admin carosello: CAROUSEL_SLIDE_EYEBROW_MAX=40, TITLE_MAX=60, DESCRIPTION_MAX=125 in MenuHomepageConfigPanel
+RULE  Nuovo QR: foto carosello/categorie in Storage `qr/draft/{shortCode}/` — migrate a `qr/{menuQrCodeId}/` in useSaveMenuQrSettings al primo insert
 RULE  Temi: getMenuTheme(key) da menuThemes.ts — campi anche tabBarStickyRgb, bodyFallbackBg (scuro per dark_gold/rustic)
 RULE  PNG temi in public/menu-themes/ — wine_bistrot senza PNG (solo CSS)
 RULE  PublicMenuPageHeader NON usato sulla homepage QR

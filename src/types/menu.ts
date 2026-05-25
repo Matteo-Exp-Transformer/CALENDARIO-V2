@@ -85,12 +85,16 @@ export interface MenuQrcodeCategoryOverrideDraft {
 export interface MenuQrSettingsSavePayload {
   shortCode: string
   qrId: string | null
+  /** Short code bozza usato in path Storage prima del primo insert. */
+  draftShortCode?: string | null
   input: MenuQrCodeInput
   categoryOverrides: MenuQrcodeCategoryOverrideDraft[]
 }
 
 export interface CarouselItem {
   image_url: string
+  /** Riga piccola maiuscola sopra il titolo (es. «Specialità della casa») */
+  eyebrow?: string
   /** Titolo slide (campo nuovo — usa label come fallback in lettura) */
   title?: string
   /** Testo breve sotto il titolo */

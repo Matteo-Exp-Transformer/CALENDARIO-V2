@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Copy } from 'lucide-react'
+import { toast } from 'react-toastify'
 import { Modal } from '@/components/ui/Modal'
 import { Button, Input } from '@/components/ui'
 import { generateShortCode } from '@/lib/shortCodeGenerator'
@@ -24,7 +26,7 @@ interface Props {
   editing: MenuQrCode | null
   categories: MenuCategoryRecord[]
   presets: CustomStaffPreset[]
-  baseUrl: string
+  tenantSlug: string | null
 }
 
 function resolveCategoryFilterForUi(
@@ -35,6 +37,15 @@ function resolveCategoryFilterForUi(
   return raw
 }
 
+async function copyToClipboard(text: string) {
+  try {
+    await navigator.clipboard.writeText(text)
+    toast.success('Link copiato')
+  } catch {
+    toast.error('Impossibile copiare')
+  }
+}
+
 export function MenuQrModal({
   isOpen,
   onClose,
@@ -43,12 +54,13 @@ export function MenuQrModal({
   editing,
   categories,
   presets,
-  baseUrl,
+  tenantSlug,
 }: Props) {
   const { tenantId } = useTenantContext()
   const menuQrCodeId = editing?.id ?? null
   const { data: overrides = [] } = useMenuQrcodeCategoriesForQr(menuQrCodeId)
 
+  const [draftShortCode, setDraftShortCode] = useState(() => generateShortCode())
   const [name, setName] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string[]>([])
   const [presetIds, setPresetIds] = useState<string[]>([])
@@ -58,6 +70,8 @@ export function MenuQrModal({
   const [overrideDrafts, setOverrideDrafts] = useState<CategoryOverrideDraft>({})
 
   const allCategoryKeys = useMemo(() => categories.map((c) => c.key), [categories])
+
+  const activeShortCode = editing?.short_code ?? draftShortCode
 
   useEffect(() => {
     if (!isOpen) return
@@ -69,6 +83,7 @@ export function MenuQrModal({
       setCategoryImages(editing.category_images ?? {})
       setThemeKey((editing.theme_key as MenuThemeKey) ?? DEFAULT_THEME_KEY)
     } else {
+      setDraftShortCode(generateShortCode())
       setName('')
       setCategoryFilter([])
       setPresetIds([])
@@ -112,7 +127,7 @@ export function MenuQrModal({
     const trimmed = name.trim()
     if (!trimmed) return null
 
-    const shortCode = editing?.short_code ?? generateShortCode()
+    const shortCode = activeShortCode
     const categoryOverrides = categories.map((cat) => {
       const d = overrideDrafts[cat.key] ?? { title: cat.label, description: cat.description ?? '' }
       return {
@@ -125,6 +140,7 @@ export function MenuQrModal({
     return {
       shortCode,
       qrId: editing?.id ?? null,
+      draftShortCode: editing ? null : draftShortCode,
       input: {
         name: trimmed,
         content_type: editing?.content_type ?? 'a_la_carte',
@@ -144,15 +160,27 @@ export function MenuQrModal({
     if (payload) onSave(payload)
   }
 
-  const previewUrl = editing ? `${baseUrl}/menu/[slug]/qr/${editing.short_code}` : null
+  const previewUrl =
+    tenantSlug && activeShortCode
+      ? `${window.location.origin}/menu/${tenantSlug}/qr/${activeShortCode}`
+      : null
 
-  const saveBar = (
-    <div className="flex justify-end gap-2 border-b border-gray-100 pb-4">
-      <Button variant="primary" onClick={handleSave} disabled={isPending || !name.trim()}>
-        {isPending ? 'Salvataggio…' : 'Salva'}
-      </Button>
+  const headerBelow = previewUrl ? (
+    <div className="flex items-center gap-2">
+      <p className="min-w-0 flex-1 truncate rounded-lg bg-gray-50 px-2.5 py-1.5 text-xs text-gray-500">
+        {previewUrl}
+      </p>
+      <button
+        type="button"
+        className="is-clickable shrink-0 rounded-lg border border-gray-200 p-2 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+        aria-label="Copia link menu QR"
+        title="Copia link"
+        onClick={() => void copyToClipboard(previewUrl)}
+      >
+        <Copy className="h-4 w-4" />
+      </button>
     </div>
-  )
+  ) : null
 
   const bottomBar = (
     <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
@@ -172,16 +200,20 @@ export function MenuQrModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Impostazione Menù QR"
+      headerBelow={headerBelow}
       size="lg"
       showCloseButton
       closeOnOverlayClick={!isPending}
       closeOnEscape={!isPending}
     >
-      <div className="flex max-h-[min(80vh,720px)] flex-col gap-6 overflow-y-auto">
-        {saveBar}
-
+      <div className="flex max-h-[min(80vh,720px)] flex-col gap-4 overflow-y-auto">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Nome QR *</label>
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <label className="text-sm font-medium text-gray-700">Nome QR *</label>
+            <Button variant="primary" size="sm" onClick={handleSave} disabled={isPending || !name.trim()}>
+              {isPending ? 'Salvataggio…' : 'Salva'}
+            </Button>
+          </div>
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -248,10 +280,6 @@ export function MenuQrModal({
           </div>
         )}
 
-        {previewUrl && (
-          <p className="rounded-lg bg-gray-50 px-3 py-2 text-xs break-all text-gray-500">{previewUrl}</p>
-        )}
-
         <section>
           <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500">
             Carosello specialità
@@ -259,6 +287,7 @@ export function MenuQrModal({
           <MenuQrCarouselSection
             tenantId={tenantId}
             menuQrCodeId={menuQrCodeId}
+            draftShortCode={editing ? null : draftShortCode}
             items={carouselItems}
             onChange={setCarouselItems}
           />
@@ -274,6 +303,7 @@ export function MenuQrModal({
           <MenuQrCategoryCardsSection
             tenantId={tenantId}
             menuQrCodeId={menuQrCodeId}
+            draftShortCode={editing ? null : draftShortCode}
             categories={categories}
             categoryImages={categoryImages}
             overrideDrafts={overrideDrafts}

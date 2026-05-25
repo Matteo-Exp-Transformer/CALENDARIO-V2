@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
   ForkKnife,
@@ -60,13 +60,16 @@ const CATEGORY_ICON: Record<string, PhosphorIconType> = {
 }
 
 function useTenantBySlug(slug: string | undefined) {
-  const { setTenantFromSlug, tenantId, organizationName, isLoading } = useTenantContext()
+  const { setTenantFromSlug, tenantId, tenantSlug, organizationName, isLoading } = useTenantContext()
 
   useEffect(() => {
     if (slug) setTenantFromSlug(slug)
   }, [slug, setTenantFromSlug])
 
-  return { tenantId, organizationName, isLoading }
+  /** Evita lookup QR con tenantId “stale” (es. sessione admin) prima che lo slug URL sia risolto. */
+  const tenantReady = !!slug && !isLoading && !!tenantId && tenantSlug === slug
+
+  return { tenantId, organizationName, isLoading, tenantReady }
 }
 
 function usePublicCategories(tenantId: string | null, categoryFilter: string[] | null) {
@@ -234,6 +237,7 @@ function MenuCarousel({
         >
           {items.map((item, i) => {
             const title = item.title ?? item.label
+            const eyebrow = item.eyebrow?.trim() || 'Specialità della casa'
             return (
               <div
                 key={i}
@@ -266,7 +270,7 @@ function MenuCarousel({
                 {/* Testo su sinistra */}
                 <div className="absolute inset-y-0 left-0 flex w-1/2 flex-col justify-end px-4 pb-4">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">
-                    Specialità della casa
+                    {eyebrow}
                   </p>
                   {title && (
                     <p className="mt-0.5 text-base font-bold leading-snug text-white">{title}</p>
@@ -676,25 +680,24 @@ function MenuContent({
 export function PublicMenuPage() {
   usePublicMenuViewport()
   const { tenantSlug, shortCode } = useParams<{ tenantSlug: string; shortCode?: string }>()
-  const navigate = useNavigate()
-  const { tenantId, organizationName, isLoading: tenantLoading } = useTenantBySlug(tenantSlug)
+  const { tenantId, organizationName, isLoading: tenantLoading, tenantReady } =
+    useTenantBySlug(tenantSlug)
 
-  const { data: qrByCode, isLoading: qrLoading } = usePublicMenuQr(
-    tenantId,
+  const { data: qrByCode, isLoading: qrLoading, isFetched: qrByCodeFetched } = usePublicMenuQr(
+    tenantReady ? tenantId : null,
     shortCode ?? null,
   )
   const { data: qrDefault, isLoading: qrDefaultLoading } = usePublicDefaultMenuQr(
-    shortCode ? null : tenantId,
+    shortCode ? null : tenantReady ? tenantId : null,
   )
 
   const qr = shortCode ? qrByCode : qrDefault
-  const loading = tenantLoading || qrLoading || qrDefaultLoading
+  const loading = shortCode
+    ? tenantLoading || !tenantReady || qrLoading
+    : tenantLoading || !tenantReady || qrDefaultLoading
 
-  useEffect(() => {
-    if (!loading && shortCode && !qr) {
-      navigate(`/menu/${tenantSlug}`, { replace: true })
-    }
-  }, [loading, shortCode, qr, navigate, tenantSlug])
+  const qrNotFound =
+    !!shortCode && tenantReady && qrByCodeFetched && !qrLoading && qrByCode === null
 
   if (!tenantSlug) return null
 
@@ -728,6 +731,13 @@ export function PublicMenuPage() {
           shortCode={resolvedShortCode}
           organizationName={organizationName ?? 'Menu'}
         />
+      ) : qrNotFound ? (
+        <main className="px-4 py-12 text-center">
+          <p className="text-sm font-medium text-gray-700">Menù QR non trovato</p>
+          <p className="mt-2 text-xs text-gray-500">
+            Il link non è valido, il QR è disattivato o non appartiene a questo ristorante.
+          </p>
+        </main>
       ) : (
         <main className="px-4 py-12 text-center">
           <p className="text-sm text-gray-500">Menu non ancora configurato.</p>

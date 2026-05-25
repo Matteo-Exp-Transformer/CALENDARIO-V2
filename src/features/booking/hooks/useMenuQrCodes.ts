@@ -4,6 +4,7 @@ import { supabasePublic } from '@/lib/supabasePublic'
 import { toast } from 'react-toastify'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { parseMenuQrCodeRow } from '../utils/menuQrAppearance'
+import { migrateMenuQrDraftAssets } from '../utils/menuQrStorage'
 import type { MenuQrCodeInput, MenuQrSettingsSavePayload } from '@/types/menu'
 
 export const MENU_QR_CODES_QUERY_KEY = 'menu-qr-codes'
@@ -38,7 +39,8 @@ export const useSaveMenuQrSettings = () => {
 
   return useMutation({
     mutationFn: async (payload: MenuQrSettingsSavePayload) => {
-      const { shortCode, qrId, input, categoryOverrides } = payload
+      const { shortCode, qrId, input, categoryOverrides, draftShortCode } = payload
+
       const row = {
         name: input.name,
         content_type: input.content_type,
@@ -75,6 +77,27 @@ export const useSaveMenuQrSettings = () => {
 
         if (error) throw new Error(handleSupabaseError(error))
         savedId = String((data as Record<string, unknown>).id)
+
+        if (draftShortCode) {
+          const finalAssets = await migrateMenuQrDraftAssets(
+            tenantId!,
+            draftShortCode,
+            savedId,
+            row.carousel_items,
+            row.category_images,
+          )
+          const { error: assetError } = await (supabase
+            .from('menu_qr_codes') as any)
+            .update({
+              carousel_items: finalAssets.carousel_items,
+              category_images: finalAssets.category_images,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', savedId)
+            .eq('tenant_id', tenantId!)
+
+          if (assetError) throw new Error(handleSupabaseError(assetError))
+        }
       }
 
       if (categoryOverrides.length > 0) {
@@ -205,21 +228,25 @@ export const useDeleteMenuQrCode = () => {
 // ── Pubblico: risolvi short_code → MenuQrCode ─────────────────────────────────
 
 export const usePublicMenuQr = (tenantId: string | null, shortCode: string | null) => {
+  const normalizedCode = shortCode?.trim().toLowerCase() ?? null
+
   return useQuery({
-    queryKey: ['public-menu-qr', tenantId, shortCode],
+    queryKey: ['public-menu-qr', tenantId, normalizedCode],
     queryFn: async () => {
       const { data, error } = await (supabasePublic
         .from('menu_qr_codes') as any)
         .select('*')
         .eq('tenant_id', tenantId)
-        .eq('short_code', shortCode)
+        .eq('short_code', normalizedCode)
         .eq('is_active', true)
-        .single()
+        .maybeSingle()
 
       if (error) throw new Error(handleSupabaseError(error))
+      if (!data) return null
       return parseMenuQrCodeRow(data as Record<string, unknown>)
     },
-    enabled: !!tenantId && !!shortCode,
+    enabled: !!tenantId && !!normalizedCode,
+    retry: false,
   })
 }
 

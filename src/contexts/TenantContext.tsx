@@ -29,6 +29,8 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   /** Risolve il tenant dalla slug (usato dalla pagina pubblica /prenota/:slug) */
   const setTenantFromSlug = useCallback(async (slug: string) => {
     setIsLoading(true)
+    setTenantId(null)
+    setTenantSlug(null)
     try {
       // organizations_public espone feature_overrides (da tenant_features) oltre ai campi base.
       // Dopo la migrazione 026 anon non può leggere organizations direttamente.
