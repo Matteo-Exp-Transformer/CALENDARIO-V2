@@ -51,6 +51,7 @@ export const useSaveMenuQrSettings = () => {
         theme_key: input.theme_key ?? 'mediterranean_teal',
         carousel_items: input.carousel_items ?? [],
         category_images: input.category_images ?? {},
+        hidden_menu_item_ids: input.hidden_menu_item_ids ?? [],
         updated_at: new Date().toISOString(),
       }
 

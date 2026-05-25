@@ -59,6 +59,8 @@ export interface MenuQrCode {
   theme_key: string
   carousel_items: CarouselItem[]
   category_images: Record<string, string>
+  /** UUID ingredienti da non mostrare in questo Menù QR (occhio chiuso). */
+  hidden_menu_item_ids: string[]
   created_at: string
   updated_at: string
 }
@@ -73,6 +75,7 @@ export interface MenuQrCodeInput {
   theme_key?: string
   carousel_items?: CarouselItem[]
   category_images?: Record<string, string>
+  hidden_menu_item_ids?: string[]
 }
 
 export interface MenuQrcodeCategoryOverrideDraft {

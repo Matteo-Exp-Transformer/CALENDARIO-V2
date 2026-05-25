@@ -6,6 +6,8 @@ import { Button, Input } from '@/components/ui'
 import { generateShortCode } from '@/lib/shortCodeGenerator'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useMenuQrcodeCategoriesForQr } from '../hooks/useMenuQrcodeCategories'
+import { useMenuItems } from '../hooks/useMenuItems'
+import { groupMenuItemsByCategory } from '../utils/menuCatalogGrouping'
 import {
   MenuQrCarouselSection,
   MenuQrCategoryCardsSection,
@@ -13,8 +15,13 @@ import {
   buildCategoryOverrideDrafts,
   type CategoryOverrideDraft,
 } from './MenuHomepageConfigPanel'
-import { DEFAULT_THEME_KEY, type MenuThemeKey } from '@/features/public-menu/menuThemes'
-import type { CarouselItem, MenuQrCode, MenuQrSettingsSavePayload } from '@/types/menu'
+import { DEFAULT_THEME_KEY, MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
+
+function normalizeThemeKey(key: string | undefined | null): MenuThemeKey {
+  if (key && key in MENU_THEMES) return key as MenuThemeKey
+  return DEFAULT_THEME_KEY
+}
+import type { CarouselItem, MenuItem, MenuQrCode, MenuQrSettingsSavePayload } from '@/types/menu'
 import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
 import type { CustomStaffPreset } from '../constants/presetMenus'
 
@@ -31,10 +38,24 @@ interface Props {
 
 function resolveCategoryFilterForUi(
   raw: string[] | null,
-  allKeys: string[],
+  keysWithItems: string[],
 ): string[] {
-  if (raw === null) return [...allKeys]
+  if (raw === null) return [...keysWithItems]
   return raw
+}
+
+function pruneHiddenItemIds(
+  hiddenIds: string[],
+  itemsByCategory: Record<string, MenuItem[]>,
+  selectedKeys: string[],
+): string[] {
+  const allowedIds = new Set<string>()
+  for (const key of selectedKeys) {
+    for (const item of itemsByCategory[key] ?? []) {
+      allowedIds.add(item.id)
+    }
+  }
+  return hiddenIds.filter((id) => allowedIds.has(id))
 }
 
 async function copyToClipboard(text: string) {
@@ -59,6 +80,7 @@ export function MenuQrModal({
   const { tenantId } = useTenantContext()
   const menuQrCodeId = editing?.id ?? null
   const { data: overrides = [] } = useMenuQrcodeCategoriesForQr(menuQrCodeId)
+  const { data: menuItems = [] } = useMenuItems()
 
   const [draftShortCode, setDraftShortCode] = useState(() => generateShortCode())
   const [name, setName] = useState('')
@@ -68,8 +90,27 @@ export function MenuQrModal({
   const [categoryImages, setCategoryImages] = useState<Record<string, string>>({})
   const [themeKey, setThemeKey] = useState<MenuThemeKey>(DEFAULT_THEME_KEY)
   const [overrideDrafts, setOverrideDrafts] = useState<CategoryOverrideDraft>({})
+  const [hiddenItemIds, setHiddenItemIds] = useState<string[]>([])
 
-  const allCategoryKeys = useMemo(() => categories.map((c) => c.key), [categories])
+  const categoriesWithItems = useMemo(() => {
+    const keysWithItems = new Set(menuItems.map((i) => i.category))
+    return categories.filter((c) => keysWithItems.has(c.key))
+  }, [categories, menuItems])
+
+  const categoryKeysWithItems = useMemo(
+    () => categoriesWithItems.map((c) => c.key),
+    [categoriesWithItems],
+  )
+
+  const itemsByCategory = useMemo(
+    () => groupMenuItemsByCategory(menuItems, categoryKeysWithItems),
+    [menuItems, categoryKeysWithItems],
+  )
+
+  const selectedCategories = useMemo(
+    () => categoriesWithItems.filter((c) => categoryFilter.includes(c.key)),
+    [categoriesWithItems, categoryFilter],
+  )
 
   const activeShortCode = editing?.short_code ?? draftShortCode
 
@@ -77,11 +118,12 @@ export function MenuQrModal({
     if (!isOpen) return
     if (editing) {
       setName(editing.name)
-      setCategoryFilter(resolveCategoryFilterForUi(editing.category_filter, allCategoryKeys))
+      setCategoryFilter(resolveCategoryFilterForUi(editing.category_filter, categoryKeysWithItems))
       setPresetIds(editing.preset_ids ?? [])
       setCarouselItems(editing.carousel_items ?? [])
       setCategoryImages(editing.category_images ?? {})
-      setThemeKey((editing.theme_key as MenuThemeKey) ?? DEFAULT_THEME_KEY)
+      setThemeKey(normalizeThemeKey(editing.theme_key))
+      setHiddenItemIds(editing.hidden_menu_item_ids ?? [])
     } else {
       setDraftShortCode(generateShortCode())
       setName('')
@@ -90,9 +132,10 @@ export function MenuQrModal({
       setCarouselItems([])
       setCategoryImages({})
       setThemeKey(DEFAULT_THEME_KEY)
+      setHiddenItemIds([])
       setOverrideDrafts(buildCategoryOverrideDrafts(categories, []))
     }
-  }, [isOpen, editing, allCategoryKeys, categories])
+  }, [isOpen, editing, categoryKeysWithItems, categories])
 
   useEffect(() => {
     if (!isOpen || !editing) return
@@ -105,10 +148,11 @@ export function MenuQrModal({
   }, [isOpen, editing, categories])
 
   const allCatsSelected =
-    allCategoryKeys.length > 0 && categoryFilter.length === allCategoryKeys.length
+    categoryKeysWithItems.length > 0 &&
+    categoryKeysWithItems.every((k) => categoryFilter.includes(k))
 
   const toggleAllCategories = () => {
-    setCategoryFilter(allCatsSelected ? [] : [...allCategoryKeys])
+    setCategoryFilter(allCatsSelected ? [] : [...categoryKeysWithItems])
   }
 
   const toggleCategory = (key: string) => {
@@ -128,7 +172,13 @@ export function MenuQrModal({
     if (!trimmed) return null
 
     const shortCode = activeShortCode
-    const categoryOverrides = categories.map((cat) => {
+    const prunedHidden = pruneHiddenItemIds(hiddenItemIds, itemsByCategory, categoryFilter)
+
+    const filteredCategoryImages = Object.fromEntries(
+      Object.entries(categoryImages).filter(([key]) => categoryFilter.includes(key)),
+    )
+
+    const categoryOverrides = selectedCategories.map((cat) => {
       const d = overrideDrafts[cat.key] ?? { title: cat.label, description: cat.description ?? '' }
       return {
         category_key: cat.key,
@@ -149,7 +199,8 @@ export function MenuQrModal({
         is_active: editing?.is_active ?? true,
         theme_key: themeKey,
         carousel_items: carouselItems,
-        category_images: categoryImages,
+        category_images: filteredCategoryImages,
+        hidden_menu_item_ids: prunedHidden,
       },
       categoryOverrides,
     }
@@ -222,7 +273,7 @@ export function MenuQrModal({
           />
         </div>
 
-        {categories.length > 0 && (
+        {categoryKeysWithItems.length > 0 ? (
           <div>
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-sm font-medium text-gray-700">Categorie di prodotti visibili</p>
@@ -237,7 +288,7 @@ export function MenuQrModal({
               </label>
             </div>
             <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => (
+              {categoriesWithItems.map((cat) => (
                 <label
                   key={cat.key}
                   className="flex cursor-pointer items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1 text-sm"
@@ -253,6 +304,10 @@ export function MenuQrModal({
               ))}
             </div>
           </div>
+        ) : (
+          <p className="text-xs text-gray-500">
+            Nessuna categoria con prodotti — aggiungi ingredienti nella tab Menu.
+          </p>
         )}
 
         {presets.length > 0 && (
@@ -304,11 +359,14 @@ export function MenuQrModal({
             tenantId={tenantId}
             menuQrCodeId={menuQrCodeId}
             draftShortCode={editing ? null : draftShortCode}
-            categories={categories}
+            categories={selectedCategories}
             categoryImages={categoryImages}
             overrideDrafts={overrideDrafts}
             onCategoryImagesChange={setCategoryImages}
             onOverrideDraftsChange={setOverrideDrafts}
+            itemsByCategory={itemsByCategory}
+            hiddenItemIds={hiddenItemIds}
+            onHiddenItemIdsChange={setHiddenItemIds}
           />
         </section>
 

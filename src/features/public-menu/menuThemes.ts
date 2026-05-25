@@ -3,7 +3,6 @@ export type MenuThemeKey =
   | 'cream_sage'
   | 'dark_gold'
   | 'rustic_terracotta'
-  | 'wine_bistrot'
 
 export interface MenuTheme {
   key: MenuThemeKey
@@ -71,17 +70,6 @@ export const MENU_THEMES: Record<MenuThemeKey, MenuTheme> = {
     headerFallbackBg: '#9a3412',
     bodyFallbackBg: '#292018',
     tabBarStickyRgb: '41, 32, 24',
-  },
-  wine_bistrot: {
-    key: 'wine_bistrot',
-    label: 'Wine Bistrot',
-    accentColor: '#9f1239',
-    headerTextColor: '#ffffff',
-    headerImage: null,
-    bodyImage: null,
-    headerFallbackBg: '#4c0519',
-    bodyFallbackBg: '#fff1f2',
-    tabBarStickyRgb: '255, 241, 242',
   },
 }
 

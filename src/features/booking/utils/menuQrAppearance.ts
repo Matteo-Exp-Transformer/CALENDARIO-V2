@@ -15,6 +15,11 @@ export function parseCarouselItems(raw: unknown): CarouselItem[] {
     .filter((x) => x.image_url)
 }
 
+export function parseHiddenMenuItemIds(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return []
+  return raw.filter((x): x is string => typeof x === 'string' && x.length > 0)
+}
+
 export function parseCategoryImages(raw: unknown): Record<string, string> {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return {}
   const out: Record<string, string> = {}
@@ -42,5 +47,6 @@ export function parseMenuQrCodeRow(raw: Record<string, unknown>): MenuQrCode {
     theme_key: typeof raw.theme_key === 'string' ? raw.theme_key : 'mediterranean_teal',
     carousel_items: parseCarouselItems(raw.carousel_items),
     category_images: parseCategoryImages(raw.category_images),
+    hidden_menu_item_ids: parseHiddenMenuItemIds(raw.hidden_menu_item_ids),
   }
 }

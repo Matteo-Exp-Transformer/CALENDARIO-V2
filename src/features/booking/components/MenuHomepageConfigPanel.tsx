@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react'
 import { toast } from 'react-toastify'
-import { ImagePlus, Trash2, ChevronUp, ChevronDown, ArrowUp } from 'lucide-react'
-import { Button } from '@/components/ui'
+import { ImagePlus, Trash2, ChevronUp, ChevronDown, ArrowUp, Eye, EyeOff } from 'lucide-react'
+import { Button, CollapsibleCard } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 import { useMenuCategories } from '../hooks/useMenuCategories'
 import { MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
-import type { CarouselItem } from '@/types/menu'
+import type { CarouselItem, MenuItem } from '@/types/menu'
 import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
 import { menuQrStoragePrefix, menuQrStorageSegment } from '../utils/menuQrStorage'
 
@@ -280,6 +280,67 @@ export function MenuQrCarouselSection({
 
 export type CategoryOverrideDraft = Record<string, { title: string; description: string }>
 
+export function MenuQrHiddenItemsPicker({
+  categoryLabel,
+  items,
+  hiddenItemIds,
+  onHiddenItemIdsChange,
+}: {
+  categoryLabel: string
+  items: MenuItem[]
+  hiddenItemIds: string[]
+  onHiddenItemIdsChange: (ids: string[]) => void
+}) {
+  if (items.length === 0) return null
+
+  const hiddenSet = new Set(hiddenItemIds)
+
+  const toggleItem = (itemId: string) => {
+    if (hiddenSet.has(itemId)) {
+      onHiddenItemIdsChange(hiddenItemIds.filter((id) => id !== itemId))
+    } else {
+      onHiddenItemIdsChange([...hiddenItemIds, itemId])
+    }
+  }
+
+  return (
+    <CollapsibleCard
+      title="Scegli quali ingredienti non mostrare"
+      defaultExpanded={false}
+      className="border-gray-200 bg-gray-50/80"
+      contentClassName="pt-1"
+    >
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {items.map((item) => {
+          const isHidden = hiddenSet.has(item.id)
+          return (
+            <div
+              key={item.id}
+              className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 py-1.5"
+            >
+              <span className="min-w-0 flex-1 truncate text-xs text-gray-700" title={item.name}>
+                {item.name}
+              </span>
+              <button
+                type="button"
+                className="is-clickable shrink-0 rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                aria-label={
+                  isHidden
+                    ? `Mostra ${item.name} nel menu QR ${categoryLabel}`
+                    : `Nascondi ${item.name} dal menu QR ${categoryLabel}`
+                }
+                onClick={() => toggleItem(item.id)}
+              >
+                {isHidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          )
+        })}
+      </div>
+    </CollapsibleCard>
+  )
+}
+
 export function MenuQrCategoryCardsSection({
   tenantId,
   menuQrCodeId,
@@ -289,6 +350,9 @@ export function MenuQrCategoryCardsSection({
   overrideDrafts,
   onCategoryImagesChange,
   onOverrideDraftsChange,
+  itemsByCategory,
+  hiddenItemIds,
+  onHiddenItemIdsChange,
 }: {
   tenantId: string
   menuQrCodeId: string | null
@@ -298,6 +362,9 @@ export function MenuQrCategoryCardsSection({
   overrideDrafts: CategoryOverrideDraft
   onCategoryImagesChange: (images: Record<string, string>) => void
   onOverrideDraftsChange: (drafts: CategoryOverrideDraft) => void
+  itemsByCategory: Record<string, MenuItem[]>
+  hiddenItemIds: string[]
+  onHiddenItemIdsChange: (ids: string[]) => void
 }) {
   const [uploading, setUploading] = useState<string | null>(null)
   const storageSegment = menuQrStorageSegment(menuQrCodeId, draftShortCode)
@@ -327,7 +394,11 @@ export function MenuQrCategoryCardsSection({
   }
 
   if (categories.length === 0) {
-    return <p className="text-xs text-gray-400">Nessuna categoria trovata.</p>
+    return (
+      <p className="text-xs text-gray-500">
+        Seleziona almeno una categoria sopra per personalizzare titoli, foto e visibilità ingredienti.
+      </p>
+    )
   }
 
   return (
@@ -403,6 +474,12 @@ export function MenuQrCategoryCardsSection({
               }
               placeholder="Descrizione breve (opzionale)"
               className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
+            />
+            <MenuQrHiddenItemsPicker
+              categoryLabel={cat.label}
+              items={itemsByCategory[cat.key] ?? []}
+              hiddenItemIds={hiddenItemIds}
+              onHiddenItemIdsChange={onHiddenItemIdsChange}
             />
           </div>
         )

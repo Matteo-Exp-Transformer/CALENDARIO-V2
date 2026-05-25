@@ -45,8 +45,9 @@ qrMenu: isProOrAbove || qrMenuEnabled
 | `034` | `menu_homepage_config.theme_key` + tabella `menu_qrcode_categories` (modello legacy per-tenant) |
 | `035` | `menu_categories.image_url` — foto categoria Prenota |
 | `036` | **Per-QR**: su `menu_qr_codes` → `theme_key`, `carousel_items`, `category_images`. Su `menu_qrcode_categories` → `menu_qr_code_id` FK, UNIQUE `(menu_qr_code_id, category_key)`. Migrazione dati da `menu_homepage_config` su ogni QR. `menu_homepage_config` **deprecata** (solo storico, non più scritta dall'admin) |
+| `037` | `menu_qr_codes.hidden_menu_item_ids` (JSONB UUID[] — ingredienti nascosti per QR). Rimozione tema `wine_bistrot` (CHECK a 4 temi; QR esistenti → `mediterranean_teal`) |
 
-**Colonne `menu_qr_codes`** (post-036): campi 030 + `theme_key`, `carousel_items` (JSONB), `category_images` (JSONB).
+**Colonne `menu_qr_codes`** (post-037): campi 030 + `theme_key`, `carousel_items` (JSONB), `category_images` (JSONB), `hidden_menu_item_ids` (JSONB, default `[]`).
 
 **Colonne `menu_qrcode_categories`** (post-036): `id`, `tenant_id`, `menu_qr_code_id`, `category_key`, `title`, `description`, timestamps. UNIQUE `(menu_qr_code_id, category_key)`.
 
@@ -109,8 +110,8 @@ File: `src/features/booking/hooks/useMenuQrCodes.ts`
 | Componente | File |
 |------------|------|
 | `MenuQrManager` | `src/features/booking/components/MenuQrManager.tsx` — solo lista «I miei QR» (tab Aspetto homepage spostato in modale) |
-| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia sotto il titolo; **Salva** allineato a destra sulla riga «Nome QR *» + in fondo; sezioni: nome, categorie, preset, carosello, titoli+foto categorie, tema. Salvataggio via `useSaveMenuQrSettings` |
-| `MenuHomepageConfigPanel` | Sezioni controllate (`MenuQrCarouselSection`, `MenuQrCategoryCardsSection`, `MenuQrThemeSection`) — upload anche su **nuovo** QR via path `qr/draft/{shortCode}/` (migrazione a `qr/{id}/` al Salva) |
+| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia sotto il titolo; **Salva** allineato a destra sulla riga «Nome QR *» + in fondo; checkbox categorie **solo con ≥1 ingrediente**; titoli/foto solo per categorie selezionate; picker occhio per nascondere ingredienti per QR. Salvataggio via `useSaveMenuQrSettings` |
+| `MenuHomepageConfigPanel` | Sezioni controllate (`MenuQrCarouselSection`, `MenuQrCategoryCardsSection`, `MenuQrHiddenItemsPicker`, `MenuQrThemeSection`) — upload anche su **nuovo** QR via path `qr/draft/{shortCode}/` (migrazione a `qr/{id}/` al Salva) |
 
 Il `MenuQrManager` è montato in `MenuPricesTab` quando `viewMode === 'qr_codes'` (pulsante "QR Code" nell'hero section, visibile solo se `features.qrMenu`).
 
@@ -127,7 +128,7 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 | `/menu/:slug/qr/:shortCode/c/:categoryKey` | `PublicMenuCategoryPage` | `src/pages/PublicMenuCategoryPage.tsx` |
 | `/menu/:slug/qr/:shortCode/preset/:presetId` | `PublicMenuPresetPage` | `src/pages/PublicMenuPresetPage.tsx` |
 
-**Temi**: 5 palette in `src/features/public-menu/menuThemes.ts`. PNG sfondo in `public/menu-themes/`. Default: `mediterranean_teal`.
+**Temi**: 4 palette in `src/features/public-menu/menuThemes.ts` (`mediterranean_teal`, `cream_sage`, `dark_gold`, `rustic_terracotta`). PNG sfondo in `public/menu-themes/`. Default: `mediterranean_teal`.
 
 **Layout homepage `PublicMenuPage`** (post-sessione layout 24-05-26, vedi anche `docs/Sessioni di lavoro/24-05-26/Report-menu-qr-homepage-layout-sessione.md`):
 
@@ -144,6 +145,7 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 
 **`PublicMenuCategoryPage`** — dettaglio categoria:
 - Carica i piatti della categoria da `menu_items` via `supabasePublic`
+- Risolve il QR con `usePublicMenuQr` e esclude gli ID in `hidden_menu_item_ids`
 - `ItemCardWithPhoto`: immagine full-width `h-44` + gradiente nero dal basso con testo sovrapposto
 - `ItemCardText`: solo testo (fallback quando `image_url` assente)
 
@@ -177,8 +179,11 @@ RULE  Body PNG: background-size 100% auto + position sotto --menu-header-band �
 RULE  Tab sticky: sfondo rgba(tabBarStickyRgb, opacity) cresce dopo lock; scrollbar-hide; frecce md+ se overflow
 RULE  Admin carosello: CAROUSEL_SLIDE_EYEBROW_MAX=40, TITLE_MAX=60, DESCRIPTION_MAX=125 in MenuHomepageConfigPanel
 RULE  Nuovo QR: foto carosello/categorie in Storage `qr/draft/{shortCode}/` — migrate a `qr/{menuQrCodeId}/` in useSaveMenuQrSettings al primo insert
-RULE  Temi: getMenuTheme(key) da menuThemes.ts — campi anche tabBarStickyRgb, bodyFallbackBg (scuro per dark_gold/rustic)
-RULE  PNG temi in public/menu-themes/ — wine_bistrot senza PNG (solo CSS)
+RULE  Modale QR: checkbox categorie solo se la categoria ha ≥1 `menu_items`; «Attiva tutte» solo su quelle; legacy `category_filter=null` → tutte le categorie con prodotti
+RULE  Modale QR: `hidden_menu_item_ids` — occhio chiuso = UUID in array; al Salva si scartano ID di categorie deselezionate
+RULE  PublicMenuCategoryPage: filtra `menu_items` con `hidden_menu_item_ids` del QR corrente
+RULE  Temi: getMenuTheme(key) da menuThemes.ts — 4 chiavi; chiavi sconosciute (es. wine_bistrot legacy) → fallback `mediterranean_teal`
+RULE  PNG temi in public/menu-themes/ — tutti e 4 i temi hanno header+body PNG
 RULE  PublicMenuPageHeader NON usato sulla homepage QR
 RULE  Foto categorie: upload su Supabase menu-photos — modifiche admin non passano da Git
 ```

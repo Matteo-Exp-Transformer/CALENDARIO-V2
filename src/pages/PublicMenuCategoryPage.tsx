@@ -1,17 +1,21 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabasePublic } from '@/lib/supabasePublic'
 import { usePublicMenuViewport } from '@/hooks/usePublicMenuViewport'
+import { usePublicMenuQr } from '@/features/booking/hooks/useMenuQrCodes'
 import type { MenuItem } from '@/types/menu'
 
 function useTenantBySlug(slug: string | undefined) {
-  const { setTenantFromSlug, tenantId, isLoading } = useTenantContext()
+  const { setTenantFromSlug, tenantId, tenantSlug, isLoading } = useTenantContext()
   useEffect(() => {
     if (slug) setTenantFromSlug(slug)
   }, [slug, setTenantFromSlug])
-  return { tenantId, isLoading }
+
+  const tenantReady = !!slug && !isLoading && !!tenantId && tenantSlug === slug
+
+  return { tenantId, isLoading, tenantReady }
 }
 
 function usePublicCategoryItems(tenantId: string | null, categoryKey: string | undefined) {
@@ -28,7 +32,6 @@ function usePublicCategoryItems(tenantId: string | null, categoryKey: string | u
 
       if (error) throw error
       const items = (data ?? []) as MenuItem[]
-      // Prima quelli con foto, poi senza
       return [
         ...items.filter((i) => i.image_url),
         ...items.filter((i) => !i.image_url),
@@ -99,13 +102,33 @@ export function PublicMenuCategoryPage() {
     categoryKey: string
   }>()
 
-  const { tenantId, isLoading: tenantLoading } = useTenantBySlug(tenantSlug)
-  const { data: items = [], isLoading: itemsLoading } = usePublicCategoryItems(tenantId, categoryKey)
-  const { data: categoryLabel = '' } = usePublicCategoryLabel(tenantId, categoryKey)
+  const { tenantId, isLoading: tenantLoading, tenantReady } = useTenantBySlug(tenantSlug)
+  const { data: qr, isLoading: qrLoading } = usePublicMenuQr(
+    tenantReady ? tenantId : null,
+    shortCode ?? null,
+  )
+  const { data: rawItems = [], isLoading: itemsLoading } = usePublicCategoryItems(
+    tenantReady ? tenantId : null,
+    categoryKey,
+  )
+  const { data: categoryLabel = '' } = usePublicCategoryLabel(
+    tenantReady ? tenantId : null,
+    categoryKey,
+  )
+
+  const hiddenSet = useMemo(
+    () => new Set(qr?.hidden_menu_item_ids ?? []),
+    [qr?.hidden_menu_item_ids],
+  )
+
+  const items = useMemo(
+    () => rawItems.filter((i) => !hiddenSet.has(i.id)),
+    [rawItems, hiddenSet],
+  )
 
   const backHref = `/menu/${tenantSlug}/qr/${shortCode}`
 
-  const loading = tenantLoading || itemsLoading
+  const loading = tenantLoading || !tenantReady || qrLoading || itemsLoading
 
   return (
     <div className="min-h-svh bg-stone-50">
@@ -133,17 +156,18 @@ export function PublicMenuCategoryPage() {
 
         {!loading && items.length === 0 && (
           <div className="rounded-2xl bg-white px-4 py-10 text-center shadow-sm">
-            <p className="text-sm text-gray-500">Nessun piatto in questa categoria.</p>
+            <p className="text-sm text-gray-500">Nessun piatto visibile in questa categoria.</p>
           </div>
         )}
 
-        {!loading && items.map((item) =>
-          item.image_url ? (
-            <ItemCardWithPhoto key={item.id} item={item} />
-          ) : (
-            <ItemCardText key={item.id} item={item} />
-          )
-        )}
+        {!loading &&
+          items.map((item) =>
+            item.image_url ? (
+              <ItemCardWithPhoto key={item.id} item={item} />
+            ) : (
+              <ItemCardText key={item.id} item={item} />
+            ),
+          )}
       </main>
     </div>
   )

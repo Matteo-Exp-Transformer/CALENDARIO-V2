@@ -608,6 +608,7 @@ export type Database = {
           category_images: Json
           content_type: string
           created_at: string
+          hidden_menu_item_ids: Json
           id: string
           is_active: boolean
           name: string
@@ -624,6 +625,7 @@ export type Database = {
           category_images?: Json
           content_type?: string
           created_at?: string
+          hidden_menu_item_ids?: Json
           id?: string
           is_active?: boolean
           name: string
@@ -640,6 +642,7 @@ export type Database = {
           category_images?: Json
           content_type?: string
           created_at?: string
+          hidden_menu_item_ids?: Json
           id?: string
           is_active?: boolean
           name?: string
