@@ -110,7 +110,7 @@ File: `src/features/booking/hooks/useMenuQrCodes.ts`
 | Componente | File |
 |------------|------|
 | `MenuQrManager` | `src/features/booking/components/MenuQrManager.tsx` — solo lista «I miei QR» (tab Aspetto homepage spostato in modale) |
-| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia sotto il titolo; **Salva** allineato a destra sulla riga «Nome QR *» + in fondo; etichette sezione (`Nome QR`, categorie, h4 sezioni) in `font-semibold`/`font-bold` + `text-gray-800`; checkbox categorie **solo con ≥1 ingrediente**; titoli/foto solo per categorie selezionate; picker ingredienti nascosti (stile input `text-sm`). Salvataggio via `useSaveMenuQrSettings` |
+| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia; **Salva** su riga «Nome QR *» + fondo; checkbox categorie **solo con ≥1 ingrediente**; titoli/foto + picker ingredienti nascosti. **Nessuna UI** per `preset_ids` (menù eventi staff restano in impostazioni Prenota; in salvataggio si preserva solo il valore DB esistente su QR già creati). Richiede migrazioni `036`+`037` su ogni ambiente Supabase collegato all’app deployata. |
 | `MenuHomepageConfigPanel` | Sezioni controllate (`MenuQrCarouselSection`, `MenuQrCategoryCardsSection`, `MenuQrHiddenItemsPicker`, `MenuQrThemeSection`) — upload anche su **nuovo** QR via path `qr/draft/{shortCode}/` (migrazione a `qr/{id}/` al Salva) |
 
 Il `MenuQrManager` è montato in `MenuPricesTab` quando `viewMode === 'qr_codes'` (pulsante "QR Code" nell'hero section, visibile solo se `features.qrMenu`).

@@ -10,13 +10,10 @@ import {
   useDeleteMenuQrCode,
 } from '../hooks/useMenuQrCodes'
 import { useMenuCategories } from '../hooks/useMenuCategories'
-import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { MenuQrModal } from './MenuQrModal'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { cn } from '@/lib/utils'
 import type { MenuQrCode, MenuQrSettingsSavePayload } from '@/types/menu'
-import type { CustomStaffPreset } from '../constants/presetMenus'
-
 function buildPublicUrl(tenantSlug: string | null, shortCode: string): string {
   return `${window.location.origin}/menu/${tenantSlug}/qr/${shortCode}`
 }
@@ -118,9 +115,6 @@ export function MenuQrManager() {
   const { tenantSlug } = useTenantContext()
   const { data: qrCodes = [], isLoading } = useMenuQrCodes()
   const { data: categories = [] } = useMenuCategories()
-  const { data: presets = [] } = useRestaurantSetting('booking_custom_staff_presets') as {
-    data: CustomStaffPreset[]
-  }
 
   const saveMutation = useSaveMenuQrSettings()
   const deleteMutation = useDeleteMenuQrCode()
@@ -202,7 +196,6 @@ export function MenuQrManager() {
         isPending={isPending}
         editing={editing}
         categories={categories}
-        presets={presets}
         tenantSlug={tenantSlug}
       />
     </div>

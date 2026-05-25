@@ -16,14 +16,13 @@ import {
   type CategoryOverrideDraft,
 } from './MenuHomepageConfigPanel'
 import { DEFAULT_THEME_KEY, MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
+import type { CarouselItem, MenuItem, MenuQrCode, MenuQrSettingsSavePayload } from '@/types/menu'
+import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
 
 function normalizeThemeKey(key: string | undefined | null): MenuThemeKey {
   if (key && key in MENU_THEMES) return key as MenuThemeKey
   return DEFAULT_THEME_KEY
 }
-import type { CarouselItem, MenuItem, MenuQrCode, MenuQrSettingsSavePayload } from '@/types/menu'
-import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
-import type { CustomStaffPreset } from '../constants/presetMenus'
 
 interface Props {
   isOpen: boolean
@@ -32,7 +31,6 @@ interface Props {
   isPending: boolean
   editing: MenuQrCode | null
   categories: MenuCategoryRecord[]
-  presets: CustomStaffPreset[]
   tenantSlug: string | null
 }
 
@@ -74,7 +72,6 @@ export function MenuQrModal({
   isPending,
   editing,
   categories,
-  presets,
   tenantSlug,
 }: Props) {
   const { tenantId } = useTenantContext()
@@ -85,7 +82,6 @@ export function MenuQrModal({
   const [draftShortCode, setDraftShortCode] = useState(() => generateShortCode())
   const [name, setName] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string[]>([])
-  const [presetIds, setPresetIds] = useState<string[]>([])
   const [carouselItems, setCarouselItems] = useState<CarouselItem[]>([])
   const [categoryImages, setCategoryImages] = useState<Record<string, string>>({})
   const [themeKey, setThemeKey] = useState<MenuThemeKey>(DEFAULT_THEME_KEY)
@@ -119,7 +115,6 @@ export function MenuQrModal({
     if (editing) {
       setName(editing.name)
       setCategoryFilter(resolveCategoryFilterForUi(editing.category_filter, categoryKeysWithItems))
-      setPresetIds(editing.preset_ids ?? [])
       setCarouselItems(editing.carousel_items ?? [])
       setCategoryImages(editing.category_images ?? {})
       setThemeKey(normalizeThemeKey(editing.theme_key))
@@ -128,7 +123,6 @@ export function MenuQrModal({
       setDraftShortCode(generateShortCode())
       setName('')
       setCategoryFilter([])
-      setPresetIds([])
       setCarouselItems([])
       setCategoryImages({})
       setThemeKey(DEFAULT_THEME_KEY)
@@ -161,12 +155,6 @@ export function MenuQrModal({
     )
   }
 
-  const togglePreset = (id: string) => {
-    setPresetIds((prev) =>
-      prev.includes(id) ? prev.filter((k) => k !== id) : [...prev, id],
-    )
-  }
-
   const buildPayload = (): MenuQrSettingsSavePayload | null => {
     const trimmed = name.trim()
     if (!trimmed) return null
@@ -195,7 +183,7 @@ export function MenuQrModal({
         name: trimmed,
         content_type: editing?.content_type ?? 'a_la_carte',
         category_filter: categoryFilter,
-        preset_ids: presetIds.length > 0 ? presetIds : null,
+        preset_ids: editing?.preset_ids ?? null,
         is_active: editing?.is_active ?? true,
         theme_key: themeKey,
         carousel_items: carouselItems,
@@ -308,31 +296,6 @@ export function MenuQrModal({
           <p className="text-xs text-gray-500">
             Nessuna categoria con prodotti — aggiungi ingredienti nella tab Menu.
           </p>
-        )}
-
-        {presets.length > 0 && (
-          <div>
-            <p className="mb-1 text-sm font-semibold text-gray-800">
-              Menù eventi visibili{' '}
-              <span className="font-normal text-gray-500">(lascia vuoto = tutti)</span>
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {presets.map((preset) => (
-                <label
-                  key={preset.id}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1 text-sm"
-                >
-                  <input
-                    type="checkbox"
-                    className="h-3.5 w-3.5 shrink-0"
-                    checked={presetIds.includes(preset.id)}
-                    onChange={() => togglePreset(preset.id)}
-                  />
-                  {preset.name}
-                </label>
-              ))}
-            </div>
-          </div>
         )}
 
         <section>
