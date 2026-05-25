@@ -9,6 +9,9 @@ import { isValidBookingDateTime, getDayOfWeek, formatHours } from '@/lib/busines
 const FIELD_LABEL_CLASS =
   'block text-left text-sm font-bold text-warm-wood md:text-base mb-1'
 
+const ROW3_LABEL_CLASS =
+  'block text-left text-xs font-bold text-warm-wood sm:text-sm md:text-[0.8125rem] leading-tight mb-1'
+
 interface BookingFormFieldsProps {
   formData: Pick<
     BookingRequestInput,
@@ -116,35 +119,16 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
         </div>
       </div>
 
-      {/* Numero Ospiti */}
-      <div className="space-y-1">
-        <label htmlFor="num_guests" className={FIELD_LABEL_CLASS}>
-          Numero Ospiti * (es: 15)
-        </label>
-        <Input
-          id="num_guests"
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          autoComplete="off"
-          value={formData.num_guests > 0 ? formData.num_guests.toString() : ''}
-          onChange={onNumGuestsChange}
-          onKeyPress={onNumGuestsKeyPress}
-          required
-          className={`${frostedInputCn} ${errors.num_guests ? 'border-red-500!' : ''}`}
-        />
-        {errors.num_guests && <p className="text-sm text-red-500">{errors.num_guests}</p>}
-      </div>
-
-      {/* Data + Ora */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-start">
+      {/* Data, Ora, Numero ospiti — tre colonne su md+ */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-start md:gap-3">
         <div className="min-w-0 space-y-1">
-          <label htmlFor="desired_date" className={FIELD_LABEL_CLASS}>
+          <label htmlFor="desired_date" className={ROW3_LABEL_CLASS}>
             Data prenotazione *
           </label>
           <DateInput
             id="desired_date"
             compact
+            className="w-full min-w-0 max-w-full"
             value={formData.desired_date}
             onChange={(newDate) => {
               onDateChange(newDate)
@@ -175,12 +159,13 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
         </div>
 
         <div className="min-w-0 space-y-1">
-          <label htmlFor="desired_time" className={FIELD_LABEL_CLASS}>
+          <label htmlFor="desired_time" className={ROW3_LABEL_CLASS}>
             Ora prenotazione *
           </label>
           <TimePicker24h
             id="desired_time"
             compact
+            className="w-full min-w-0 max-w-full"
             value={formData.desired_time || '16:00'}
             onChange={(newTime) => {
               onTimeChange(newTime)
@@ -208,6 +193,25 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
               {errors.desired_time}
             </div>
           )}
+        </div>
+
+        <div className="min-w-0 space-y-1">
+          <label htmlFor="num_guests" className={ROW3_LABEL_CLASS}>
+            Numero Ospiti * (es: 15)
+          </label>
+          <Input
+            id="num_guests"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="off"
+            value={formData.num_guests > 0 ? formData.num_guests.toString() : ''}
+            onChange={onNumGuestsChange}
+            onKeyPress={onNumGuestsKeyPress}
+            required
+            className={`${frostedInputCn} min-h-[50px] w-full min-w-0 max-w-full ${errors.num_guests ? 'border-red-500!' : ''}`}
+          />
+          {errors.num_guests && <p className="text-sm text-red-500">{errors.num_guests}</p>}
         </div>
       </div>
     </div>
