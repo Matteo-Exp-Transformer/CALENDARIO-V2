@@ -119,6 +119,6 @@ PNG temi versionati in repo: `public/menu-themes/{tema}-header.png`, `{tema}-bod
 ## Follow-up (non in scope sessione)
 
 - Asset `wine_bistrot` header/body ancora assenti (solo fallback CSS).
-- `rustic_terracotta` body: verificare PNG dedicato se la texture non basta.
+- ~~`rustic_terracotta` body: verificare PNG dedicato~~ — fatto 25-05-26: `rustic-terracotta-header.png` + `rustic-terracotta-body.png` da asset docs; `bodyFallbackBg` / `tabBarStickyRgb` allineati al body chiaro in alto.
 - Decorazioni header (foglie, lanterna) da mockup: non implementate in codice.
 - `useRestaurantName()` in header pubblico: oggi può usare ancora `organizationName` da `TenantContext` — allineare se serve solo `restaurant_name`.

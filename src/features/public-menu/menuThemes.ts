@@ -68,8 +68,9 @@ export const MENU_THEMES: Record<MenuThemeKey, MenuTheme> = {
     headerImage: `${BASE}menu-themes/rustic-terracotta-header.png`,
     bodyImage: `${BASE}menu-themes/rustic-terracotta-body.png`,
     headerFallbackBg: '#9a3412',
-    bodyFallbackBg: '#292018',
-    tabBarStickyRgb: '41, 32, 24',
+    /** Sotto il PNG body (bianco in alto → terracotta in basso): tono caldo, non marrone scuro */
+    bodyFallbackBg: '#9a3412',
+    tabBarStickyRgb: '255, 247, 240',
   },
 }
 

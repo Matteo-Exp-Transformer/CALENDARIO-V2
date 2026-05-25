@@ -51,7 +51,7 @@ Ogni tema definisce: `accentColor`, `headerTextColor`, `headerImage`, `bodyImage
 | `mediterranean_teal` | Mediterranean Teal | header + body |
 | `cream_sage` | Cream Sage | header + body |
 | `dark_gold` | Dark Gold | header + body |
-| `rustic_terracotta` | Rustic Terracotta | header (body = duplicato header) |
+| `rustic_terracotta` | Rustic Terracotta | header + body (asset dedicati in `docs/.../Immagini sfondo pagina QRcode Menu/`) |
 | `wine_bistrot` | Wine Bistrot | nessuno (solo CSS fallback) |
 
 PNG in `public/menu-themes/` con naming `{tema-key}-header.png` / `{tema-key}-body.png`.
