@@ -60,3 +60,16 @@ Matteo chiede lui il dettaglio tecnico se gli serve. Vale anche per i report di 
 - Tabelle o sezioni con titoli se bastano 2 frasi
 - Spiegazioni non richieste su come funziona il codice internamente
 - Tipo tecnico dell'errore e posizione nel codice quando spieghi un bug (vedi sezione sopra)
+
+---
+
+## Traduzioni tecnico → utente (esempi obbligatori)
+
+| Frase tecnica (da evitare) | Frase utente (da usare) |
+|---|---|
+| "ho modificato `MenuPricesTab.tsx`" | "ora Mario quando apre la tab Menu vede un nuovo pulsante per generare il QR" |
+| "aggiunto invalidateQueries su `HOME_STATS_QUERY_KEY`" | "la card riepilogo in Home si aggiorna subito dopo aver accettato una prenotazione" |
+| "estratto `buildFeatures` con override da `tenant_features`" | "da adesso si può attivare il QR Menu anche ai ristoratori Classic senza cambiargli il pacchetto" |
+| "fix su `setTenantFromAdmin`: `featureOverrides` ora letto dall'RPC" | "al login Mario vede correttamente le funzionalità che ha acquistato, anche se ha il pacchetto base" |
+| "aggiunto `isWallClockStartBeforeNow` guard prima della mutation" | "se Mario prova ad accettare una prenotazione con orario già passato, l'app gli chiede conferma prima di procedere" |
+| "rimossa sezione `placement-areas` da `RestaurantSettingsTab`" | "la sezione 'Aree di posizionamento' nelle Impostazioni è stata rimossa perché non era usata da nessun cliente" |

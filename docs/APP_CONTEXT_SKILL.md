@@ -23,6 +23,11 @@ Leggi il task ricevuto e applica questa tabella:
 | AdminShell / sidebar / nav / sezioni / routing admin | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
 | CRM / clienti / customer / useCustomers / CustomerProfile | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
 | Edition / FEATURES flag / useFeatures / features.sidebar / buildFeatures | `docs/APP_CONTEXT_SKILL.md` § 2 + `src/config/features.ts` + `src/hooks/useFeatures.ts` |
+| **TenantContext / useFeatures / edition / tenant_features / login / auth / feature flag / featureOverrides** | `docs/DATA_FLOW_SKILL.md` — flusso identitario end-to-end |
+| **Edition / pricing / add-on / vendita / cliente / pacchetto / commerciale / feature_key / bundle** | `docs/Marketing-Skill/MARKETING_SKILL.md` |
+| **tenant_features** (tabella DB, RPC, override) | `docs/Database-Skill/DB_SKILL.md` + `docs/DATA_FLOW_SKILL.md` |
+| **Menu QR pubblico / QR code / foto piatti / pagina mobile menu / menu digitale** | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` — report sessione layout: `docs/Sessioni di lavoro/24-05-26/Report-menu-qr-homepage-layout-sessione.md` |
+| **Layout pagina menu pubblica / card categorie / carosello / hero section / pill icone / testo su immagini / griglie / sfondi tema** | `docs/per-ui-design-skill/PUBLIC_MENU_LAYOUT_CONTEXT.md` |
 | UI / className / Tailwind / layout / componenti / tema / colori / index.css | `docs/per-ui-design-skill/UI_EDIT_SKILL.md` |
 | **Responsive / breakpoint / mobile / grid che collassa / padding-gap adattivi / max-width container / contenuto pagina vs sidebar** | `docs/per-ui-design-skill/UI_RESPONSIVE_SKILL.md` |
 | **BookingCalendar — layout tab Calendario, celle mese, titolo responsive, data su Oggi, padding tab** | **`docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md`** + `ADMIN_CLASSIC_SKILL.md` §4c |
@@ -103,28 +108,20 @@ src/
 ├── components/layout/   AdminShell.tsx
 ├── components/ui/       Button, Input, Modal, Card, Badge, Alert, EmptyState, Spinner…
 ├── config/              features.ts  ← buildFeatures(edition) → FeatureFlags
-├── contexts/            TenantContext.tsx  ← LOCKED (eccezione: campo edition)
+├── contexts/            TenantContext.tsx  ← LOCKED (eccezione: campo edition + featureOverrides)
 ├── features/booking/
-│   ├── components/      componenti dashboard (BookingCalendar, CRM, ecc.)
-│   ├── hooks/           useAdminAuth, useBookingMutations, useCustomers, ecc.
+│   ├── components/      componenti dashboard (BookingCalendar, CRM, MenuQrManager, MenuQrModal, ecc.)
+│   ├── hooks/           useAdminAuth, useBookingMutations, useMenuQrCodes, useCustomers, ecc.
 │   ├── lib/             restaurantSettingRegistry
-│   └── utils/           helper puri (date, prezzi)
+│   └── utils/           helper puri (date, prezzi, menuCatalogGrouping)
 ├── hooks/               useFeatures.ts, useBusinessHours.ts, useRateLimit.ts…
 ├── lib/                 supabase.ts, supabasePublic.ts, email.ts, logger.ts, utils.ts
+│                        menuPhotoUpload.ts, shortCodeGenerator.ts
 ├── pages/               AdminDashboard, AdminHomePage, CrmPage, ServizioPage, AnalyticsPage…
+│                        PublicMenuPage, PublicMenuCategoryPage, PublicMenuPresetPage
 ├── router.tsx           ← solo su esplicita richiesta
-└── types/               database.ts (generato), booking.ts, customer.ts, edition.ts
+└── types/               database.ts (generato), booking.ts, customer.ts, edition.ts, menu.ts
 ```
-
-### 3a. File dead-code presenti ma non importati (23-05-26)
-
-Questi file esistono in `src/` ma non sono importati da nessuno — non riusarli per nuove feature, sono candidati alla rimozione:
-
-- `src/features/booking/components/SettingsTab.tsx` — obsoleto, sostituito da `RestaurantSettingsTab.tsx`
-- `src/features/booking/components/EmailLogsModal.tsx` — usato solo dal `SettingsTab` obsoleto
-- `src/features/booking/components/TestEmailModal.tsx` — usato solo dal `SettingsTab` obsoleto
-- `src/features/booking/hooks/useEmailLogs.ts` — usato solo da `EmailLogsModal`
-- `src/lib/pdfAttachment.ts` — nessun consumer
 
 Tab impostazioni attivo: `RestaurantSettingsTab.tsx` (LOCK strutturale in `ADMIN_CLASSIC_SKILL`).
 
@@ -135,7 +132,7 @@ Tab impostazioni attivo: `RestaurantSettingsTab.tsx` (LOCK strutturale in `ADMIN
 ```
 LOCK  CollapsibleCard.tsx          — 57 test — mai toccare
 LOCK  Modal.tsx  z-[10050]         — stack calibrato con Toast z-100000
-LOCK  TenantContext.tsx            — core multi-tenancy — MAI (eccezione: campo edition)
+LOCK  TenantContext.tsx            — core multi-tenancy — MAI (eccezione: edition + featureOverrides)
 LOCK  src/lib/supabase.ts          — client autenticato — MAI
 LOCK  supabase/migrations/         — DB remoto già applicato — MAI
 LOCK  src/router.tsx               — solo su esplicita richiesta
@@ -150,9 +147,11 @@ LOCK  ADMIN CLASSICA — vedi docs/ADMIN_CLASSIC_SKILL.md
       • src/features/booking/hooks/useBookingMutations.ts
       • src/features/booking/hooks/useCustomers.ts (parte base)
 
-      → Prima di toccare uno di questi file l'agente DEVE produrre
-        spiegazione preventiva (5 punti) e attendere conferma utente.
-        Vedi sezione 0 di ADMIN_CLASSIC_SKILL.md.
+      → Per i file LOCK l'agente DEVE: (1) leggere prima tutti i file collegati
+        per capire l'impatto, (2) identificare i possibili conflitti, (3) procedere
+        solo se la modifica preserva l'integrità strutturale e i contratti esistenti.
+        Non serve attendere conferma esplicita SALVO che la modifica violi un
+        invariante documentato. Vedi sezione 0 di ADMIN_CLASSIC_SKILL.md.
 
 RULE  Prima di modificare: leggere INTERO il file da toccare + i file collegati
       necessari (chiamanti, tipi, componente condiviso). MAI editare avendo
@@ -171,13 +170,15 @@ RULE  Modal CRUD fascia (`ServiceSlotsManager` / `SlotModal`): `FormInfoToggle` 
 RULE  Assegnazione tavoli (Servizio → `AssignmentMapPanel`): elenco prenotazioni non assegnate filtrato per **ora di inizio** dentro `start_time`–`end_time` della fascia selezionata — `bookingStartsInServiceSlot` (`serviceSlotBookingFilter.ts`) + `isTimeInsideSlot`; non usare overlap durata prenotazione; orari fascia da `service_slots` (non override runtime)
 RULE  Libera tavolo (`useCheckoutTable`): prenotazione liberata torna in elenco PRENOTAZIONI; senza turno successivo attivo sul tavolo → DELETE assignment; con turno 2+ in coda → UPDATE `checked_out_at` — vedi `ADMIN_PAGES_CONTEXT.md` § Assegnazione tavoli
 RULE  Assegnazione/riassegnazione rapida da Calendario (`QuickTableAssignModal`, solo Pro `hasTurnsFeature`): pallino grigio → assign, pallino verde → dialog conferma + `useReleaseBookingAssignment` (libera per `booking_id`) → poi flusso sala/tavolo identico; se turni in coda → avviso bloccante senza modifica DB; query key condivisa `TABLE_ASSIGNMENTS_QUERY_KEY`
-RULE  Menu Prenota (`MenuPricesTab` + `MenuSelection` + `PresetMenuBuilder`): panoramica categorie/ingredienti condivisa via `menuPricesCatalogLayout.ts` (griglia CollapsibleCard, conteggio `N/M`, righe `menu-prices-item-row`, selezione `menu-prices-item-row--selected`). Promo testuali in `booking_menu_promos` (campi `label` admin + `message` cliente, `booking_types`, `visible_on_booking`); snapshot nomi in `booking_requests.menu_promo_labels` al submit; ingredienti in `menu_items.booking_types` (pannello tipologie su click in «Crea/Modifica Prodotto»); menù preselezionati in `booking_custom_staff_presets` (`booking_types` solo `rinfresco_laurea` \| `menu_prezzo_fisso`). Pagina Prenota mostra solo `message`; admin vede `label` in lista promo, card richiesta e modal dettagli. Nessun omaggio automatico nel codice.
+RULE  Menu Prenota (`MenuPricesTab` + `MenuSelection` + `PresetMenuBuilder`): categorie in `menu_categories` (`label`, `description`, `image_url` per Prenota); foto thumbnail homepage QR in `menu_homepage_config.category_images` (path Storage `{tenantId}/cat/{key}.webp`) — non mischiare. Foto categoria Prenota: `menu_categories.image_url`, path `{tenantId}/booking-cat/{categoryId}.webp`. Panoramica categorie/ingredienti condivisa via `menuPricesCatalogLayout.ts` (griglia CollapsibleCard, righe `menu-prices-item-row`, selezione `menu-prices-item-row--selected`). Grouping `itemsByCategory` centralizzato in `src/features/booking/utils/menuCatalogGrouping.ts` (`groupMenuItemsByCategory`) — usarlo, non duplicare. Subtitle card categoria: `N ingredienti` (con pluralizzazione) in tutti e 3 i componenti — non usare formato `selected/total`. Card categorie `defaultExpanded={false}` (chiuse di default). Promo testuali in `booking_menu_promos` (campi `label` admin + `message` cliente, `booking_types`, `visible_on_booking`); snapshot nomi in `booking_requests.menu_promo_labels` al submit; ingredienti in `menu_items.booking_types` (pannello tipologie su click in «Crea/Modifica Prodotto»); menù preselezionati in `booking_custom_staff_presets` (`booking_types` solo `rinfresco_laurea` \| `menu_prezzo_fisso`). Pagina Prenota mostra solo `message`; admin vede `label` in lista promo, card richiesta e modal dettagli. Nessun omaggio automatico nel codice.
 RULE  Scala tipografica responsive: usare utility centralizzate `text-title-page` / `text-title-section` / `text-title-card` / `text-title-subtitle` / `text-title-modal` (titoli) e `text-body` / `text-label` / `text-value` / `text-stat-big` / `text-micro` / `text-button-label` (corpo) definite in `src/index.css`. Ancorate al gold standard del titolo Calendario (22/24/24/30 px). Non reintrodurre liste `text-xs md:text-sm lg:text-base`. Distinzione titolo vs corpo obbligatoria (`text-title-*` solo per titoli). Vedi `docs/per-ui-design-skill/UI_RESPONSIVE_CONTEXT.md` §6b.
 RULE  Classi Tailwind: solo stringhe letterali statiche — mai `bg-${x}-600`
 RULE  cn() da @/lib/utils — mai clsx() o twMerge() direttamente
 RULE  !important Tailwind v4: suffisso → `border-red-500!` (non `!border-red-500`)
 RULE  data-admin-theme: nessun cleanup — il tema deve persistere per tutta la sessione
 RULE  Due client Supabase: non mischiare supabase ↔ supabasePublic
+RULE  Feature flag commerciali: governate da `tenant_features` (tabella DB) + `edition` (bundle base). `useFeatures()` legge da `TenantContext.featureOverrides` → `buildFeatures(edition, featureOverrides)` → `FeatureFlags`. Mai leggere colonne `_enabled` da `organizations` né `featureOverrides` direttamente per gating UI — usare solo `features.X`. Flusso completo in `docs/DATA_FLOW_SKILL.md`. Procedura add-on in `docs/Marketing-Skill/MARKETING_SKILL.md`.
+RULE  Menu QR (qrMenu flag): auto-true per Pro/Enterprise, per Classic dipende da `tenant_features` (feature_key='qrMenu'). Pagine pubbliche: `/menu/:slug`, `/menu/:slug/qr/:shortCode`, `/c/:categoryKey`, `/preset/:presetId`. Foto piatti: bucket `menu-photos`, path `{tenantId}/{itemId}.webp`, solo webp/jpeg/png/avif, max 500KB, compressa canvas prima dell'upload. Vedi `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`.
 RULE  Email CRM: normalizeCustomerEmail() prima di confronto o scrittura
 RULE  UUID: cancelled_by è UUID auth.users.id — mai passare email a campi UUID
 ```
@@ -190,7 +191,7 @@ RULE  UUID: cancelled_by è UUID auth.users.id — mai passare email a campi UUI
 npm run dev           # dev server :5173
 npm run typecheck     # tsc --noEmit — zero errori
 npm run lint          # ESLint — zero warning
-npm run test          # Vitest — tutti devono passare (132/132)
+npm run test          # Vitest — tutti devono passare (137/137)
 npm run validate      # lint + typecheck + test (usare pre-PR)
 ```
 
@@ -199,6 +200,7 @@ npm run validate      # lint + typecheck + test (usare pre-PR)
 ## 6. Convenzioni
 
 - **Comunicazione con l'utente**: leggi `docs/COMUNICAZIONE_UTENTE_SKILL.md` **all'inizio di ogni sessione** — contiene le regole su come rispondere a Matteo (breve, nomi dinamici, no gergo). Questa regola vale per ogni skill.
+- **RULE Linguaggio utente**: quando spieghi cosa hai fatto o cosa cambierà, usa flussi e schermate concrete — mai nomi di componenti isolati. Mai "ho modificato `MenuPricesTab.tsx`" → sempre "ora Mario quando apre la tab Menu vede un nuovo pulsante per generare il QR". Esempi concreti obbligatori. Vedi `docs/COMUNICAZIONE_UTENTE_SKILL.md`.
 - **Logger**: `logger.debug/info/warn/error` da `src/lib/logger.ts` — mai `console.log`
 - **TanStack Query**: query server-state nei hook in `src/features/booking/hooks/`
 - **Commit**: `feat(scope):` · `fix(scope):` · `update(scope):`
@@ -208,9 +210,9 @@ npm run validate      # lint + typecheck + test (usare pre-PR)
 
 ## 7. Obbligo fine sessione — Report + Allineamento skill
 
-**Sessione 23-05-26 (promo menù):** [Report-refactor-promo-menu-rimozione-vol-au-vent.md](Sessioni%20di%20lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md) — rename `booking_menu_promos`, rimozione omaggio automatico, migrazione `029` (test applicata). Correlato: [Report-promo-menu-label-prenotazione.md](Sessioni%20di%20lavoro/23-05-26/Report-promo-menu-label-prenotazione.md).
+**Cronologia sessioni**: vedi [`docs/SESSION_LOG.md`](SESSION_LOG.md).
 
-Al termine di ogni sessione di lavoro l'agente DEVE:
+Al termine di ogni sessione di lavoro se utente di da conferma che il lavoro è stato svolto con successo, l'agente DEVE:
 
 ### 7.1 Scrivere il report
 
@@ -228,7 +230,7 @@ Il report deve contenere:
 
 Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le regole d'uso, l'agente DEVE aggiornare i file di skill corrispondenti **nella stessa sessione**, non in una successiva.
 
-**Regola**: se hai toccato un file → aggiorna il skill che lo documenta.
+**Regola**: se hai toccato un file → aggiorna la skill che lo documenta.
 
 | Se hai modificato… | Aggiorna anche… |
 |--------------------|-----------------|
@@ -242,7 +244,13 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | Struttura cartelle `src/` | `APP_CONTEXT_SKILL.md` §3 |
 | Qualsiasi file LOCK | Aggiorna sezione "stato attuale" nello skill di area |
 | `restaurantSettingRegistry.ts` (validazione, range, campi) | `APP_CONTEXT_SKILL.md` §4 RULE walk_in_max_guests |
-| `MenuPricesTab.tsx` / `MenuSelection.tsx` / `menuPricesCatalogLayout.ts` / `presetMenus.ts` | `APP_CONTEXT_SKILL.md` §4 RULE Menu Prenota |
+| `MenuPricesTab.tsx` / `MenuSelection.tsx` / `menuPricesCatalogLayout.ts` / `presetMenus.ts` / `menuCatalogGrouping.ts` | `APP_CONTEXT_SKILL.md` §4 RULE Menu Prenota |
+| `MenuQrManager.tsx` / `MenuQrModal.tsx` / `useMenuQrCodes.ts` / pagine pubbliche menu | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` + `APP_CONTEXT_SKILL.md` §4 RULE Menu QR |
+| `tenant_features` / `buildFeatures` / `featureOverrides` / `TenantContext` / `useFeatures` | `APP_CONTEXT_SKILL.md` §4 RULE Feature flag commerciali + `DATA_FLOW_SKILL.md` |
+| `docs/Marketing-Skill/FEATURE_CATALOG_CONTEXT.md` (nuova feature add-on) | Aggiorna tabella catalogo feature |
+| `check_admin_email` RPC / `organizations_public` vista | `DATA_FLOW_SKILL.md` §2 + §5 |
+| `menuPhotoUpload.ts` / `shortCodeGenerator.ts` | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` |
+| `035_menu_categories_image_url.sql` / `menu_categories.image_url` | `docs/DATABASE.md` + `DB_MIGRATIONS_CONTEXT.md` + `DB_SCHEMA_CONTEXT.md` + `PUBLIC_MENU_SKILL.md` |
 | `useBookingMutations.ts` / `useWalkInMutation.ts` / qualsiasi mutation che scrive `confirmed_start` o `desired_time` | `ADMIN_CLASSIC_SKILL.md` §4 + §4b |
 | `dateUtils.ts` (createBookingDateTime, extractTimeFromISO, getAccurateStartTime) | `ADMIN_CLASSIC_SKILL.md` §4b + `TESTING_CONTEXT.md` se cambiano i test |
 | `serviceSlotBookingFilter.ts` / logica filtro fascia in `useUnassignedBookings` | `ADMIN_PAGES_CONTEXT.md` § Servizio → Assegnazione tavoli + `TESTING_CONTEXT.md` se cambiano i test |

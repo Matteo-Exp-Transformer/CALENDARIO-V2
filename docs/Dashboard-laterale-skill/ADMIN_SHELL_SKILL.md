@@ -47,8 +47,8 @@ Carica i file indicati **prima** di aprire qualsiasi file da modificare.
 
 ```
 LOCK  supabase/migrations/          — DB remoto, mai toccare
-LOCK  TenantContext.tsx             — core multi-tenancy
 LOCK  Modal.tsx  z-[10050]          — stack z-index calibrato
+→ Per regole su TenantContext vedi APP_CONTEXT_SKILL.md §4
 
 RULE  CRM_QUERY_KEY: importare da useCustomers.ts, mai ridichiarare
 RULE  Email CRM: sempre normalizeCustomerEmail() prima di confronto o scrittura

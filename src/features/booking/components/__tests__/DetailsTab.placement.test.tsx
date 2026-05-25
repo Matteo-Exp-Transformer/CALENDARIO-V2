@@ -67,6 +67,7 @@ describe('DetailsTab — Posizionamento edition gate', () => {
       walkIn: false,
       noShow: false,
       tableAssignments: false,
+      qrMenu: false,
     })
 
     render(
@@ -92,6 +93,7 @@ describe('DetailsTab — Posizionamento edition gate', () => {
       walkIn: true,
       noShow: true,
       tableAssignments: true,
+      qrMenu: true,
     })
 
     render(
@@ -118,6 +120,7 @@ describe('DetailsTab — Posizionamento edition gate', () => {
       walkIn: false,
       noShow: false,
       tableAssignments: false,
+      qrMenu: false,
     })
 
     render(

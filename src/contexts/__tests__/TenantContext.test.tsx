@@ -82,11 +82,13 @@ describe('TenantContext', () => {
 
   describe('setTenantFromAdmin', () => {
     it('risolve tenantId dall\'email admin', async () => {
-      // RPC check_admin_email ora restituisce slug, org_name, edition in una sola chiamata
+      // RPC check_admin_email restituisce slug, org_name, edition
       mockRpc.mockResolvedValueOnce({
         data: [{ tenant_id: 'tenant-xyz', slug: 'ristorante-test', org_name: 'Ristorante Test', edition: 'pro' }],
         error: null,
       })
+      // seconda query: organizations.qr_menu_enabled
+      mockSingle.mockResolvedValueOnce({ data: { qr_menu_enabled: false }, error: null })
 
       const { result } = renderHook(() => useTenantContext(), { wrapper })
 

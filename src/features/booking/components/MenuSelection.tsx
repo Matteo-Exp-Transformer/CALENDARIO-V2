@@ -17,6 +17,7 @@ import {
   type PresetMenuType,
 } from '../constants/presetMenus'
 import { isCaraffeDrinkPremium, isCaraffeDrinkStandard } from '../utils/caraffePricing'
+import { groupMenuItemsByCategory } from '../utils/menuCatalogGrouping'
 import type { BookingType } from '@/types/booking'
 import { normalizeMenuItemBookingTypes } from '@/types/menu'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
@@ -174,33 +175,14 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   }, [normalizedMenuItems])
 
   // Raggruppa per categoria
-  const itemsByCategory = useMemo(() => {
-    const grouped = categoryEntries.reduce(
-      (acc, [key]) => {
-        acc[key] = []
-        return acc
-      },
-      {} as Record<string, NormalizedMenuItem[]>,
-    )
-
-    normalizedMenuItems.forEach((item) => {
-      if (!grouped[item.category]) {
-        grouped[item.category] = []
-      }
-      grouped[item.category].push(item)
-    })
-
-    Object.keys(grouped).forEach((category) => {
-      grouped[category]?.sort((a, b) => {
-        if (a.sort_order === b.sort_order) {
-          return a.name.localeCompare(b.name)
-        }
-        return a.sort_order - b.sort_order
-      })
-    })
-
-    return grouped
-  }, [categoryEntries, normalizedMenuItems])
+  const itemsByCategory = useMemo(
+    () =>
+      groupMenuItemsByCategory(
+        normalizedMenuItems,
+        categoryEntries.map(([key]) => key),
+      ),
+    [categoryEntries, normalizedMenuItems],
+  )
 
   const { totalPerPerson, tiramisuKg, tiramisuTotal } = useMemo(() => {
     const tiramisuSelection = selectedItems.find((item) => isTiramisuItem(item.name))
@@ -599,15 +581,14 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             {categoryEntries.map(([categoryKey, categoryLabel]) => {
               const categoryItems = itemsByCategory[categoryKey] ?? []
               const itemCount = categoryItems.length
-              const selectedInCategory = selectedItems.filter((i) => i.category === categoryKey).length
 
               return (
                 <CollapsibleCard
                   key={categoryKey}
                   title={categoryLabel}
                   subtitle={
-                    <span className="text-xs font-semibold tabular-nums text-(--color-text-muted) sm:text-sm">
-                      {selectedInCategory}/{itemCount}
+                    <span className="text-xs font-semibold text-(--color-text-muted) sm:text-sm">
+                      {itemCount} {itemCount === 1 ? 'ingrediente' : 'ingredienti'}
                     </span>
                   }
                   defaultExpanded={false}

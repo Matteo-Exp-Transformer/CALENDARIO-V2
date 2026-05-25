@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { useTenantContext } from '@/contexts/TenantContext'
+import { deleteMenuCategoryPhoto } from '@/lib/menuPhotoUpload'
 import { handleSupabaseError, supabase } from '@/lib/supabase'
 
 export interface MenuCategoryRecord {
@@ -8,6 +9,9 @@ export interface MenuCategoryRecord {
   tenant_id: string
   key: string
   label: string
+  description?: string | null
+  /** Foto categoria per pagina Prenota (non thumbnail homepage QR). */
+  image_url?: string | null
   sort_order: number
   created_at: string
   updated_at: string
@@ -16,6 +20,8 @@ export interface MenuCategoryRecord {
 export interface MenuCategoryInput {
   key: string
   label: string
+  description?: string | null
+  image_url?: string | null
   sort_order?: number
 }
 
@@ -24,6 +30,8 @@ interface MenuCategoryUpdateInput {
   key: string
   previousKey: string
   label: string
+  description?: string | null
+  image_url?: string | null
 }
 
 const DUPLICATE_CATEGORY_MSG = 'Esiste già una categoria con questo nome'
@@ -92,6 +100,8 @@ export const useCreateMenuCategory = () => {
           tenant_id: tenantId,
           key: category.key,
           label: category.label,
+          description: category.description?.trim() || null,
+          image_url: category.image_url ?? null,
           sort_order: category.sort_order ?? 999
         })
         .select()
@@ -118,16 +128,22 @@ export const useUpdateMenuCategory = () => {
   const { tenantId } = useTenantContext()
 
   return useMutation({
-    mutationFn: async ({ id, key, previousKey, label }: MenuCategoryUpdateInput) => {
+    mutationFn: async ({ id, key, previousKey, label, description, image_url }: MenuCategoryUpdateInput) => {
       const now = new Date().toISOString()
       const supabaseAny = supabase as any
 
+      const patch: Record<string, unknown> = {
+        key,
+        label,
+        description: description?.trim() || null,
+        updated_at: now,
+      }
+      if (image_url !== undefined) {
+        patch.image_url = image_url
+      }
+
       const { data, error } = await ((supabaseAny.from('menu_categories') as any) as any)
-        .update({
-          key,
-          label,
-          updated_at: now
-        })
+        .update(patch)
         .eq('id', id)
         .eq('tenant_id', tenantId!)
         .select()
@@ -168,6 +184,29 @@ export type DeleteMenuCategoryInput = {
   categoryKey: string
 }
 
+export const useUpdateCategoryDescription = () => {
+  const queryClient = useQueryClient()
+  const { tenantId } = useTenantContext()
+
+  return useMutation({
+    mutationFn: async ({ id, description }: { id: string; description: string | null }) => {
+      const { error } = await ((supabase as any).from('menu_categories') as any)
+        .update({ description, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('tenant_id', tenantId!)
+
+      if (error) throw new Error(handleSupabaseError(error))
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-categories'] })
+      toast.success('Descrizione salvata')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Errore salvataggio descrizione')
+    },
+  })
+}
+
 export const useDeleteMenuCategory = () => {
   const queryClient = useQueryClient()
   const { tenantId } = useTenantContext()
@@ -190,6 +229,12 @@ export const useDeleteMenuCategory = () => {
 
       if (error) {
         throw new Error(handleSupabaseError(error))
+      }
+
+      try {
+        await deleteMenuCategoryPhoto(tenantId!, id)
+      } catch {
+        // file assente o già rimosso
       }
 
       return { id, categoryKey }

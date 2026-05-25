@@ -8,6 +8,8 @@ interface TenantContextType {
   tenantSlug: string | null
   organizationName: string | null
   edition: TenantEdition
+  /** Feature attive per questo tenant (da tenant_features DB). Usato da buildFeatures. */
+  featureOverrides: string[]
   isLoading: boolean
   setTenantFromSlug: (slug: string) => Promise<void>
   setTenantFromAdmin: (email: string) => Promise<void>
@@ -21,48 +23,47 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [tenantSlug, setTenantSlug] = useState<string | null>(null)
   const [organizationName, setOrganizationName] = useState<string | null>(null)
   const [edition, setEdition] = useState<TenantEdition>('pro')
+  const [featureOverrides, setFeatureOverrides] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   /** Risolve il tenant dalla slug (usato dalla pagina pubblica /prenota/:slug) */
   const setTenantFromSlug = useCallback(async (slug: string) => {
     setIsLoading(true)
     try {
-      // Usa la vista organizations_public: espone solo campi safe
-      // (id, name, slug, is_active, edition) e bypassa la policy admin-only
-      // sulla tabella. Dopo la migrazione 026 anon non può più leggere la
-      // tabella organizations direttamente.
+      // organizations_public espone feature_overrides (da tenant_features) oltre ai campi base.
+      // Dopo la migrazione 026 anon non può leggere organizations direttamente.
       const { data, error } = await (supabasePublic
         .from('organizations_public') as any)
-        .select('id, name, slug')
+        .select('id, name, slug, edition, feature_overrides')
         .eq('slug', slug)
         .eq('is_active', true)
         .single()
 
       if (error || !data) {
-        console.error('Organizzazione non trovata per slug:', slug, error)
         setTenantId(null)
         setTenantSlug(null)
         setOrganizationName(null)
+        setFeatureOverrides([])
         return
       }
 
       setTenantId(data.id)
       setTenantSlug(data.slug)
       setOrganizationName(data.name)
+      setEdition((data.edition as TenantEdition) || 'classic')
+      setFeatureOverrides(Array.isArray(data.feature_overrides) ? data.feature_overrides : [])
     } catch (err) {
-      console.error('Errore setTenantFromSlug:', err)
       setTenantId(null)
       setTenantSlug(null)
       setOrganizationName(null)
+      setFeatureOverrides([])
     } finally {
       setIsLoading(false)
     }
   }, [])
 
   /** Risolve il tenant dall'email admin (usato dopo login).
-   *  Usa il client autenticato: la sessione esiste già a questo punto e
-   *  check_admin_email è esposta solo al ruolo `authenticated` per prevenire
-   *  enumerazione delle email admin da parte di anonimi (phishing). */
+   *  check_admin_email ora restituisce anche feature_overrides in un solo round-trip. */
   const setTenantFromAdmin = useCallback(async (email: string) => {
     setIsLoading(true)
     try {
@@ -70,10 +71,10 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         .rpc as any)('check_admin_email', { check_email: email })
 
       if (error || !adminData || (adminData as any[]).length === 0) {
-        console.error('Tenant non trovato per email admin:', email, error)
         setTenantId(null)
         setTenantSlug(null)
         setOrganizationName(null)
+        setFeatureOverrides([])
         return
       }
 
@@ -82,11 +83,12 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       setTenantSlug(adminInfo.slug || null)
       setOrganizationName(adminInfo.org_name || null)
       setEdition((adminInfo.edition as TenantEdition) || 'pro')
+      setFeatureOverrides(Array.isArray(adminInfo.feature_overrides) ? adminInfo.feature_overrides : [])
     } catch (err) {
-      console.error('Errore setTenantFromAdmin:', err)
       setTenantId(null)
       setTenantSlug(null)
       setOrganizationName(null)
+      setFeatureOverrides([])
     } finally {
       setIsLoading(false)
     }
@@ -97,6 +99,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setTenantSlug(null)
     setOrganizationName(null)
     setEdition('classic')
+    setFeatureOverrides([])
   }, [])
 
   return (
@@ -106,6 +109,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         tenantSlug,
         organizationName,
         edition,
+        featureOverrides,
         isLoading,
         setTenantFromSlug,
         setTenantFromAdmin,

@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       admin_users: {
@@ -100,10 +75,10 @@ export type Database = {
           event_type: string | null
           id: string
           menu: string | null
+          menu_promo_labels: Json | null
           menu_selection: Json | null
           menu_total_booking: number | null
           menu_total_per_person: number | null
-          menu_promo_labels: Json | null
           no_show: boolean
           num_guests: number | null
           placement: string | null
@@ -133,10 +108,10 @@ export type Database = {
           event_type?: string | null
           id?: string
           menu?: string | null
+          menu_promo_labels?: Json | null
           menu_selection?: Json | null
           menu_total_booking?: number | null
           menu_total_per_person?: number | null
-          menu_promo_labels?: Json | null
           no_show?: boolean
           num_guests?: number | null
           placement?: string | null
@@ -166,10 +141,10 @@ export type Database = {
           event_type?: string | null
           id?: string
           menu?: string | null
+          menu_promo_labels?: Json | null
           menu_selection?: Json | null
           menu_total_booking?: number | null
           menu_total_per_person?: number | null
-          menu_promo_labels?: Json | null
           no_show?: boolean
           num_guests?: number | null
           placement?: string | null
@@ -427,10 +402,33 @@ export type Database = {
           },
         ]
       }
+      ip_blacklist: {
+        Row: {
+          blocked_at: string
+          expires_at: string
+          ip_address: string
+          reason: string
+        }
+        Insert: {
+          blocked_at?: string
+          expires_at?: string
+          ip_address: string
+          reason?: string
+        }
+        Update: {
+          blocked_at?: string
+          expires_at?: string
+          ip_address?: string
+          reason?: string
+        }
+        Relationships: []
+      }
       menu_categories: {
         Row: {
           created_at: string
+          description: string | null
           id: string
+          image_url: string | null
           key: string
           label: string
           sort_order: number
@@ -439,7 +437,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          description?: string | null
           id?: string
+          image_url?: string | null
           key: string
           label: string
           sort_order?: number
@@ -448,7 +448,9 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          description?: string | null
           id?: string
+          image_url?: string | null
           key?: string
           label?: string
           sort_order?: number
@@ -472,6 +474,51 @@ export type Database = {
           },
         ]
       }
+      menu_homepage_config: {
+        Row: {
+          carousel_items: Json
+          category_images: Json
+          created_at: string
+          id: string
+          tenant_id: string
+          theme_key: string
+          updated_at: string
+        }
+        Insert: {
+          carousel_items?: Json
+          category_images?: Json
+          created_at?: string
+          id?: string
+          tenant_id: string
+          theme_key?: string
+          updated_at?: string
+        }
+        Update: {
+          carousel_items?: Json
+          category_images?: Json
+          created_at?: string
+          id?: string
+          tenant_id?: string
+          theme_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_homepage_config_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_homepage_config_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "organizations_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_items: {
         Row: {
           booking_types: string[]
@@ -479,6 +526,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          image_url: string | null
           name: string
           price: number
           sort_order: number
@@ -491,6 +539,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_url?: string | null
           name: string
           price: number
           sort_order?: number
@@ -503,6 +552,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_url?: string | null
           name?: string
           price?: number
           sort_order?: number
@@ -526,6 +576,108 @@ export type Database = {
           },
         ]
       }
+      menu_qr_codes: {
+        Row: {
+          category_filter: string[] | null
+          content_type: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          preset_ids: string[] | null
+          short_code: string
+          sort_order: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          category_filter?: string[] | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          preset_ids?: string[] | null
+          short_code: string
+          sort_order?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          category_filter?: string[] | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          preset_ids?: string[] | null
+          short_code?: string
+          sort_order?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_qr_codes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_qr_codes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_qrcode_categories: {
+        Row: {
+          category_key: string
+          created_at: string
+          description: string | null
+          id: string
+          tenant_id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          category_key: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          tenant_id: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category_key?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          tenant_id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_qrcode_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_qrcode_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -536,6 +688,7 @@ export type Database = {
           max_bookings_per_year: number
           name: string
           plan: string
+          qr_menu_enabled: boolean
           slug: string
           updated_at: string
         }
@@ -548,6 +701,7 @@ export type Database = {
           max_bookings_per_year?: number
           name: string
           plan?: string
+          qr_menu_enabled?: boolean
           slug: string
           updated_at?: string
         }
@@ -560,6 +714,7 @@ export type Database = {
           max_bookings_per_year?: number
           name?: string
           plan?: string
+          qr_menu_enabled?: boolean
           slug?: string
           updated_at?: string
         }
@@ -861,6 +1016,57 @@ export type Database = {
           },
         ]
       }
+      tenant_features: {
+        Row: {
+          activated_at: string
+          created_by: string | null
+          enabled: boolean
+          expires_at: string | null
+          feature_key: string
+          id: string
+          notes: string | null
+          source: string
+          tenant_id: string
+        }
+        Insert: {
+          activated_at?: string
+          created_by?: string | null
+          enabled: boolean
+          expires_at?: string | null
+          feature_key: string
+          id?: string
+          notes?: string | null
+          source?: string
+          tenant_id: string
+        }
+        Update: {
+          activated_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          expires_at?: string | null
+          feature_key?: string
+          id?: string
+          notes?: string | null
+          source?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_features_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_features_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_usage: {
         Row: {
           booking_requests_count: number
@@ -905,23 +1111,29 @@ export type Database = {
       organizations_public: {
         Row: {
           edition: string | null
+          feature_overrides: string[] | null
           id: string | null
           is_active: boolean | null
           name: string | null
+          qr_menu_enabled: boolean | null
           slug: string | null
         }
         Insert: {
           edition?: string | null
+          feature_overrides?: never
           id?: string | null
           is_active?: boolean | null
           name?: string | null
+          qr_menu_enabled?: boolean | null
           slug?: string | null
         }
         Update: {
           edition?: string | null
+          feature_overrides?: never
           id?: string | null
           is_active?: boolean | null
           name?: string | null
+          qr_menu_enabled?: boolean | null
           slug?: string | null
         }
         Relationships: []
@@ -932,6 +1144,7 @@ export type Database = {
         Args: { check_email: string }
         Returns: {
           edition: string
+          feature_overrides: string[]
           name: string
           org_name: string
           slug: string
@@ -940,6 +1153,7 @@ export type Database = {
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       current_admin_tenant_id: { Args: never; Returns: string }
+      get_tenant_features: { Args: { p_tenant_id: string }; Returns: string[] }
       insert_service_slot: {
         Args: {
           p_display_order: number
@@ -1143,9 +1357,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

@@ -798,6 +798,17 @@ select:disabled,
 ::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-text-light); }
 
+/* Scroll orizzontale senza barra (menu QR tab, carosello) */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 /* Animazioni */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
@@ -1799,6 +1810,15 @@ button.archive-tab-filter-btn:focus:not(:focus-visible) {
   .booking-form-mobile {
     max-width: 68.75vw !important;
   }
+}
+
+/* Menu QR pubblico — viewport stabile su Chrome Android */
+html.public-menu-viewport {
+  overflow-x: clip;
+}
+
+html.public-menu-viewport body {
+  overflow-x: clip;
 }
 
 /* ───────────────────────────────────────────
