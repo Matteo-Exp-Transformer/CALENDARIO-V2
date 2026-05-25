@@ -746,6 +746,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             }
             customStaffPresets={customStaffPresets}
             hideSummary={true}
+            variant={formData.booking_type === 'rinfresco_laurea' ? 'compose' : 'default'}
             hideMenuGrid={activeSubTab?.type === 'manual'}
             subTabOverrides={activeSubTabOverrides}
             onPresetMenuChange={handlePresetMenuChange}

@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { CalendarDays, Clock, Users, UtensilsCrossed, Phone } from 'lucide-react'
 import type { BookingRequestInput, BookingType } from '@/types/booking'
 import type { BookingMode, SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
+import { useMenuCategories } from '@/features/booking/hooks/useMenuCategories'
 
 interface BookingSummarySidebarProps {
   formData: {
@@ -47,10 +48,33 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   contactPhone,
   activeSubTab,
 }) => {
+  const { data: menuCategories = [] } = useMenuCategories()
   const hasMenu = formData.booking_type !== 'tavolo'
   const items = formData.menu_selection?.items ?? []
   const totalPerPerson = formData.menu_total_per_person ?? 0
   const totalBooking = formData.menu_total_booking ?? 0
+
+  const categoryLabelByKey = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const cat of menuCategories) {
+      map.set(cat.key, cat.label)
+    }
+    return map
+  }, [menuCategories])
+
+  const categoryOrder = useMemo(
+    () => new Map(menuCategories.map((c, i) => [c.key, c.sort_order ?? i])),
+    [menuCategories],
+  )
+
+  const sortedMenuItems = useMemo(() => {
+    return [...items].sort((a, b) => {
+      const orderA = categoryOrder.get(a.category) ?? 999
+      const orderB = categoryOrder.get(b.category) ?? 999
+      if (orderA !== orderB) return orderA - orderB
+      return a.name.localeCompare(b.name, 'it')
+    })
+  }, [items, categoryOrder])
 
   return (
     <aside
@@ -124,21 +148,33 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
             </div>
           )}
 
-        {/* Menu voci */}
-        {hasMenu && items.length > 0 && (
+        {/* IL TUO MENU */}
+        {hasMenu && sortedMenuItems.length > 0 && (
           <div className="border-t border-black/10 pt-3 space-y-1.5">
-            <p className="text-xs text-warm-wood-dark/60 font-semibold uppercase tracking-wide">Menu selezionato</p>
-            <ul className="space-y-1">
-              {items.map((item) => (
-                <li key={item.id} className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-warm-wood font-medium leading-tight min-w-0 truncate">
-                    {item.name}
-                  </span>
-                  <span className="text-xs text-warm-wood-dark/70 font-semibold shrink-0">
-                    {formatCurrency(item.price)}
-                  </span>
-                </li>
-              ))}
+            <p className="text-xs text-warm-wood-dark/60 font-semibold uppercase tracking-wide">
+              Il tuo menu
+            </p>
+            <ul className="space-y-1.5">
+              {sortedMenuItems.map((item) => {
+                const catLabel = categoryLabelByKey.get(item.category)
+                return (
+                  <li key={item.id} className="flex items-start justify-between gap-2">
+                    <span className="text-xs text-warm-wood font-medium leading-tight min-w-0">
+                      {catLabel ? (
+                        <>
+                          <span className="text-warm-wood-dark/55">{catLabel}: </span>
+                          {item.name}
+                        </>
+                      ) : (
+                        item.name
+                      )}
+                    </span>
+                    <span className="text-xs text-warm-wood-dark/70 font-semibold shrink-0 tabular-nums">
+                      {formatCurrency(item.price)}
+                    </span>
+                  </li>
+                )
+              })}
             </ul>
           </div>
         )}

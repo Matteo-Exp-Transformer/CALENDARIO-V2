@@ -1,8 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { X } from 'lucide-react'
-import { CollapsibleCard } from '@/components/ui'
 import { cn } from '@/lib/utils'
-import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import { useMenuItems } from '../hooks/useMenuItems'
 import { useMenuCategories } from '../hooks/useMenuCategories'
 import type { SelectedMenuItem } from '@/types/menu'
@@ -23,18 +21,12 @@ import { groupMenuItemsByCategory } from '../utils/menuCatalogGrouping'
 import type { BookingType } from '@/types/booking'
 import { normalizeMenuItemBookingTypes } from '@/types/menu'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
+import { MENU_CARD_MAX_WIDTH_PX } from './menuPricesCatalogLayout'
+import { BookingMenuComposeGrid } from './publicBooking/BookingMenuComposeGrid'
 import {
-  MENU_CATEGORY_COLLAPSIBLE_CLASS,
-  MENU_CATEGORY_COLLAPSIBLE_HEADER_CLASS,
-  MENU_CATEGORY_LABEL_TITLE_CLASS,
-  MENU_CATEGORY_LABEL_TITLE_STYLE,
-  MENU_INGREDIENT_DESC_CLASS,
-  MENU_INGREDIENT_NAME_CLASS,
-  MENU_INGREDIENT_OVERVIEW_GRID_CLASS,
-  MENU_CARD_MAX_WIDTH_PX,
-  MENU_INGREDIENT_OVERVIEW_SHELL_CLASS,
-  MENU_INGREDIENT_PRICE_CLASS,
-} from './menuPricesCatalogLayout'
+  MENU_COMPOSE_CATEGORY_LIMITS,
+  type ComposeMenuItem,
+} from '../utils/menuComposeVisibility'
 
 interface MenuSelectionProps {
   selectedItems: SelectedMenuItem[]
@@ -62,22 +54,7 @@ interface MenuSelectionProps {
   hideMenuGrid?: boolean
 }
 
-type NormalizedMenuItem = {
-  id: string
-  name: string
-  price: number
-  category: string
-  description?: string
-  sort_order: number
-  priceSuffix?: string
-}
-
-const CATEGORY_LIMITS: Partial<Record<string, number>> = {
-  bevande: 1,
-  antipasti: 3,
-  primi: 1,
-  secondi: 3
-}
+type NormalizedMenuItem = ComposeMenuItem
 
 const isTiramisuItem = (itemName: string): boolean =>
   itemName.toLowerCase().includes('tiramis')
@@ -103,7 +80,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   staffPresetsDropdownVisible = true,
   customStaffPresets = [],
   hideSummary = false,
-  variant: _variant = 'default',
+  variant = 'default',
   subTabOverrides = [],
   hideMenuGrid = false,
 }) => {
@@ -191,6 +168,27 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     () => dbCategories.map((category) => [category.key, category.label] as const),
     [dbCategories],
   )
+
+  const categoryImageByKey = useMemo(() => {
+    const map: Record<string, string | null | undefined> = {}
+    for (const cat of dbCategories) {
+      map[cat.key] = cat.image_url
+    }
+    return map
+  }, [dbCategories])
+
+  const activeCustomPreset = useMemo(() => {
+    if (!presetMenu || !isCustomPresetMenuType(presetMenu)) return undefined
+    const uuid = getCustomPresetUuid(presetMenu)
+    return uuid ? customStaffPresets.find((p) => p.id === uuid) : undefined
+  }, [presetMenu, customStaffPresets])
+
+  const showComposeHeader =
+    variant === 'compose' ||
+    bookingType === 'rinfresco_laurea' ||
+    activeCustomPreset?.is_fixed_menu === false
+
+  const presetTitleLabel = presetMenu ? getPresetMenuLabel(presetMenu, customStaffPresets) : null
 
   const tiramisuUnitPrice = useMemo(() => {
     const tiramisuItem = normalizedMenuItems.find((item) => isTiramisuItem(item.name))
@@ -327,7 +325,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     }
 
     // Regole generiche per categoria guidate da limite configurato
-    const limit = CATEGORY_LIMITS[item.category]
+    const limit = MENU_COMPOSE_CATEGORY_LIMITS[item.category]
     if (typeof limit === 'number') {
       const categoryCount = updatedItems.filter(s => s.category === item.category).length
       if (limit === 1) {
@@ -499,42 +497,67 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
 
   return (
     <div className="isolate">
-      {/* Titolo Sezione */}
-      <h2
-        className="booking-section-title booking-section-title-mobile booking-mobile-heading text-2xl md:text-3xl max-[595px]:!text-lg font-serif text-warm-wood mb-4 pb-3 border-b-2 border-warm-beige"
-        style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'blur(1px)',
-          padding: '18px 24px',
-          borderRadius: '18px',
-          fontWeight: '700',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '14px',
-          width: '100%',
-          maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
-          margin: '0 auto',
-          boxSizing: 'border-box',
-          overflow: 'hidden',
-          minHeight: '58px'
-        }}
-      >
-        <span style={{ flexShrink: 0 }}>Menù</span>
-        <span
-          className="text-xl font-serif text-warm-wood md:text-2xl max-[595px]:!text-base"
+      {/* Titolo sezione menù */}
+      {showComposeHeader ? (
+        <div
+          className="mx-auto mb-4 w-full max-w-full space-y-1 rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]"
+          style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))` }}
+        >
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-warm-wood-dark/70">
+            Crea il tuo menu
+          </h2>
+          <p className="font-serif text-xl font-bold leading-snug text-warm-wood md:text-2xl">
+            CREA IL TUO MENU
+          </p>
+          <p className="text-sm font-medium text-warm-wood-dark/75">
+            Seleziona una pietanza per ogni portata. Il tuo menu sarà preparato su misura per te.
+          </p>
+        </div>
+      ) : menuSelectionLocked && presetTitleLabel ? (
+        <div
+          className="mx-auto mb-4 w-full rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]"
+          style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))` }}
+        >
+          <h2 className="font-serif text-xl font-bold text-warm-wood md:text-2xl">Il tuo menù</h2>
+          <p className="mt-1 text-sm font-semibold text-warm-orange">{presetTitleLabel}</p>
+        </div>
+      ) : (
+        <h2
+          className="booking-section-title booking-section-title-mobile booking-mobile-heading text-2xl md:text-3xl max-[595px]:!text-lg font-serif text-warm-wood mb-4 pb-3 border-b-2 border-warm-beige"
           style={{
-            whiteSpace: 'normal',
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word',
-            flexShrink: 1,
-            minWidth: 0,
-            textAlign: 'right'
+            backgroundColor: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(1px)',
+            padding: '18px 24px',
+            borderRadius: '18px',
+            fontWeight: '700',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '14px',
+            width: '100%',
+            maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
+            margin: '0 auto',
+            boxSizing: 'border-box',
+            overflow: 'hidden',
+            minHeight: '58px',
           }}
         >
-          € a Persona
-        </span>
-      </h2>
+          <span style={{ flexShrink: 0 }}>Menù</span>
+          <span
+            className="text-xl font-serif text-warm-wood md:text-2xl max-[595px]:!text-base"
+            style={{
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              flexShrink: 1,
+              minWidth: 0,
+              textAlign: 'right',
+            }}
+          >
+            € a Persona
+          </span>
+        </h2>
+      )}
 
       {/* Banner omaggio + menu a tendina menù consigliati — solo Rinfresco di Laurea */}
       {showStaffPresetDropdown && bookingTypeUsesMenuSelections(bookingType) && (
@@ -607,122 +630,26 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         </p>
       )}
 
-      {/* Panoramica categorie — stesso layout di MenuPricesTab / menù preselezionati */}
+      {/* Card orizzontali per categoria (mockup CREA IL TUO MENU) */}
       {!hideMenuGrid && (
-      <div
-        className={cn(MENU_INGREDIENT_OVERVIEW_SHELL_CLASS, 'mt-4 w-full min-w-0')}
-        style={ADMIN_WARM_GRADIENT_SURFACE}
-      >
-        {categoryEntries.length === 0 ? (
-          <p className="py-8 text-center text-sm text-gray-600">
-            Nessuna categoria configurata.
-          </p>
-        ) : (
-          <div className={cn(MENU_INGREDIENT_OVERVIEW_GRID_CLASS, 'mt-2')}>
-            {categoryEntries.map(([categoryKey, categoryLabel]) => {
-              const categoryItems = itemsByCategory[categoryKey] ?? []
-              const itemCount = categoryItems.length
-
-              return (
-                <CollapsibleCard
-                  key={categoryKey}
-                  title={categoryLabel}
-                  subtitle={
-                    <span className="text-xs font-semibold text-(--color-text-muted) sm:text-sm">
-                      {itemCount} {itemCount === 1 ? 'ingrediente' : 'ingredienti'}
-                    </span>
-                  }
-                  defaultExpanded={false}
-                  className={MENU_CATEGORY_COLLAPSIBLE_CLASS}
-                  headerClassName={MENU_CATEGORY_COLLAPSIBLE_HEADER_CLASS}
-                  contentClassName="bg-transparent p-0"
-                  titleClassName={cn(MENU_CATEGORY_LABEL_TITLE_CLASS, 'break-words')}
-                  titleStyle={MENU_CATEGORY_LABEL_TITLE_STYLE}
-                >
-                  <div className="flex flex-col gap-2 px-1 pb-3 pt-0.5 sm:px-2">
-                    {itemCount === 0 ? (
-                      <p className="px-2 py-4 text-center text-xs text-(--color-text-muted) sm:text-sm">
-                        Nessun ingrediente in questa categoria.
-                      </p>
-                    ) : (
-                      categoryItems.map((item) => {
-                        const isSelected = selectedItems.some((selected) => selected.id === item.id)
-                        const isTiramisu = isTiramisuItem(item.name)
-                        const hasDesc = Boolean(item.description?.trim())
-
-                        return (
-                          <div key={item.id} className="flex w-full min-w-0 flex-col items-stretch gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => handleItemToggle(item)}
-                              aria-pressed={isSelected}
-                              disabled={menuSelectionLocked}
-                              className={cn(
-                                'menu-prices-item-row w-full min-w-0 flex-col items-stretch gap-1 py-2.5 px-3',
-                                !hasDesc && 'min-h-0 items-center',
-                                isSelected && 'menu-prices-item-row--selected',
-                                isTiramisu && isSelected && 'menu-card-with-ingredient',
-                                menuSelectionLocked && 'cursor-default opacity-90',
-                              )}
-                              style={{
-                                minHeight: hasDesc ? undefined : '3rem',
-                              }}
-                            >
-                              <div className="flex w-full min-w-0 items-center justify-between gap-2">
-                                <p
-                                  className={cn(
-                                    MENU_INGREDIENT_NAME_CLASS,
-                                    'menu-prices-item-text break-words',
-                                  )}
-                                >
-                                  {item.name}
-                                </p>
-                                <span className={MENU_INGREDIENT_PRICE_CLASS}>{formatPrice(item)}</span>
-                              </div>
-                              {hasDesc ? (
-                                <p className={cn(MENU_INGREDIENT_DESC_CLASS, 'break-words')}>
-                                  {item.description}
-                                </p>
-                              ) : null}
-                            </button>
-                            {isTiramisu && isSelected ? (
-                              <div className="w-full min-w-0 rounded-xl border-2 border-black/20 bg-white/85 px-4 py-3">
-                                <label
-                                  htmlFor={`menu-selection-tiramisu-${item.id}`}
-                                  className="mb-2 block text-sm font-semibold text-warm-wood"
-                                >
-                                  Quanti Kg di Tiramisù desideri? (1-7)
-                                </label>
-                                <input
-                                  id={`menu-selection-tiramisu-${item.id}`}
-                                  type="number"
-                                  min={TIRAMISU_MIN_KG}
-                                  max={TIRAMISU_MAX_KG}
-                                  inputMode="numeric"
-                                  value={localTiramisuValue}
-                                  onChange={(event) =>
-                                    handleTiramisuQuantityChange(event.target.value)
-                                  }
-                                  onBlur={handleTiramisuQuantityBlur}
-                                  className="w-full rounded-lg border border-warm-wood/40 px-3 py-2 text-base font-semibold text-gray-800 focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/30"
-                                />
-                                <p className="mt-2 text-xs text-gray-500">
-                                  Il tiramisù viene preparato in teglie da 1 Kg. Ogni Kg corrisponde a €
-                                  {tiramisuUnitPrice.toFixed(2)}.
-                                </p>
-                              </div>
-                            ) : null}
-                          </div>
-                        )
-                      })
-                    )}
-                  </div>
-                </CollapsibleCard>
-              )
-            })}
-          </div>
-        )}
-      </div>
+        <div className="mt-4 w-full min-w-0">
+          <BookingMenuComposeGrid
+            categoryEntries={categoryEntries}
+            categoryImageByKey={categoryImageByKey}
+            itemsByCategory={itemsByCategory}
+            selectedItems={selectedItems}
+            locked={menuSelectionLocked}
+            presetMenu={presetMenu}
+            menuItems={menuItems}
+            customStaffPresets={customStaffPresets}
+            formatPrice={formatPrice}
+            onToggleItem={handleItemToggle}
+            tiramisuUnitPrice={tiramisuUnitPrice}
+            localTiramisuValue={localTiramisuValue}
+            onTiramisuQuantityChange={handleTiramisuQuantityChange}
+            onTiramisuQuantityBlur={handleTiramisuQuantityBlur}
+          />
+        </div>
       )}
 
       {/* Riepilogo Scelte — nascosto quando la sidebar mostra già il riepilogo */}
