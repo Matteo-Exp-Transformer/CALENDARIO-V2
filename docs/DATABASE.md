@@ -6,7 +6,7 @@ Il DB remoto fu inizializzato con naming timestamped prima di adottare il naming
 
 I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati come `reverted` il 2026-05-13 tramite `supabase migration repair --status reverted`, eliminando il blocco su `db push`.
 
-### Stato migrazioni (aggiornato 2026-05-22)
+### Stato migrazioni (aggiornato 2026-05-27)
 
 | Versione | File | Stato |
 |----------|------|-------|
@@ -34,8 +34,10 @@ I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati
 | 030–034 | menu QR, homepage config, description categorie, override QR | vedi `Database-Skill/DB_MIGRATIONS_CONTEXT.md` |
 | 035 | `035_menu_categories_image_url.sql` | TEST ✅ — `menu_categories.image_url` (foto categoria Prenota); **prod da applicare** |
 | 036 | `036_menu_qr_per_qr_appearance.sql` | TEST ✅ — aspetto homepage per `menu_qr_codes`; `menu_qrcode_categories.menu_qr_code_id`; **prod da applicare** |
+| 037 | `037_menu_qr_hidden_items_and_theme.sql` | TEST ✅ prod ✅ — ingredienti nascosti per QR e tema QR |
+| 038 | `038_clear_menu_items_booking_types.sql` | TEST ✅ — `menu_items.booking_types` legacy: default `{}` e pulizia valori ingredienti; **prod da applicare** |
 
-La prossima migrazione deve usare il prefisso **`037_`**.
+La prossima migrazione deve usare il prefisso **`039_`**.
 
 > Promo menù (23-05-26): impostazioni solo su `restaurant_settings.setting_key = booking_menu_promos`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
 

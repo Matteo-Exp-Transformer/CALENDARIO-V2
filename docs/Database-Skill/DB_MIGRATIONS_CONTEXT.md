@@ -4,7 +4,7 @@
 
 ---
 
-## 1. Stato migrazioni (aggiornato 2026-05-22 — rollout produzione + TEST allineato)
+## 1. Stato migrazioni (aggiornato 2026-05-27 — TEST aggiornato)
 
 > ⚠️ **DUE ambienti Supabase distinti — non confonderli:**
 > - **PRODUZIONE**: `rwuxgvldzrkabglkasym.supabase.co` — MCP server "Supabase".
@@ -53,6 +53,7 @@
   035   | TEST ✅ prod ✅ | 035_menu_categories_image_url.sql  ← `menu_categories.image_url TEXT NULL` — foto categoria per flusso Prenota (Storage `{tenantId}/booking-cat/{categoryId}.webp`). Indipendente da `menu_homepage_config.category_images` (QR). Applicata 2026-05-25 MCP test.
   036   | TEST ✅ prod ✅ | 036_menu_qr_per_qr_appearance.sql  ← colonne aspetto su `menu_qr_codes` (`theme_key`, `carousel_items`, `category_images`); `menu_qrcode_categories.menu_qr_code_id` FK per-QR. Applicata TEST + prod 2026-05-25/26.
   037   | TEST ✅ prod ✅ | 037_menu_qr_hidden_items_and_theme.sql  ← `hidden_menu_item_ids` JSONB; rimozione tema `wine_bistrot` dal CHECK. Applicata TEST + prod 2026-05-26.
+  038   | TEST ✅ prod ? | 038_clear_menu_items_booking_types.sql  ← `menu_items.booking_types` resta campo legacy, default `{}` e pulizia valori esistenti degli ingredienti. Applicata TEST 2026-05-27; prod da applicare.
 ```
 
 *Le 013-018, 020, 021 sono applicate sul DB **produzione** via MCP `apply_migration` (versioni timestamp `20260513...`–`20260515183055` nel registro prod). Sul **DB di test** sono state applicate via MCP solo 016, 017, 018(insert)+021 (allineamento 2026-05-15).

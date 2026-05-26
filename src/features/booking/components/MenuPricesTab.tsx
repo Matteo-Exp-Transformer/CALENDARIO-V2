@@ -263,7 +263,7 @@ type AdminMenuIngredientCardProps = {
   onDelete: () => void
   /** Es. nome categoria (vista elenco prodotti) */
   metaLine?: string
-  /** Sotto la card bianca (es. tipologie prenotazione in modifica prodotto). */
+  /** Sotto la card bianca. */
   footer?: ReactNode
   /** Vista modifica: icone azione. */
   showActions?: boolean
@@ -1424,187 +1424,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       <>
       {!promoEditorOpen && (
       <>
-      {(isAdding || editingId) && (
-          <div
-            ref={productFormCardRef}
-            className="relative w-full scroll-mt-24 rounded-2xl border-2 p-6 shadow-lg md:scroll-mt-28"
-            style={ADMIN_WARM_GRADIENT_SURFACE}
-          >
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-warm-wood/40 bg-white/90 text-warm-wood shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
-              aria-label="Chiudi inserimento prodotto"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <div className="mx-auto w-2/3 text-center">
-              <h3 className="text-title-card font-bold text-warm-wood mb-4">
-                {editingId ? 'Modifica Prodotto' : 'Nuovo Prodotto'}
-              </h3>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="flex flex-col items-center">
-                  <label className="mb-1 block text-center text-sm font-medium text-gray-700">
-                    Nome Prodotto *
-                  </label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="es: Pizza Margherita"
-                    className="mx-auto w-2/3 rounded-2xl pl-6"
-                    style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
-                  />
-                </div>
-                <div className="flex flex-col items-center">
-                  <label className="mb-1 block text-center text-sm font-medium text-gray-700">
-                    Categoria *
-                  </label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) =>
-                      setFormData({
-                        ...formData,
-                        category: value
-                      })
-                    }
-                  >
-                    <SelectTrigger
-                      className="mx-auto h-14 w-2/3 rounded-2xl border text-gray-600 shadow-sm"
-                      style={{
-                        borderColor: 'rgba(0,0,0,0.2)',
-                        height: '56px',
-                        minHeight: '56px',
-                        fontSize: '16px',
-                        backgroundColor: '#ffffff',
-                        borderRadius: '18px',
-                        paddingLeft: '24px',
-                        paddingRight: '24px'
-                      }}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl">
-                      {categoryEntries.map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex flex-col items-center">
-                  <label className="mb-1 block text-center text-sm font-medium text-gray-700">
-                    Prezzo (€) *
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={priceInput}
-                    onChange={(e) => handlePriceInputChange(e.target.value)}
-                    onKeyDown={handlePriceInputKeyDown}
-                    placeholder="es: 4.50"
-                    className="mx-auto w-2/3 rounded-2xl pl-6"
-                    style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
-                  />
-                </div>
-                <div className="flex flex-col items-center">
-                  <label className="mb-1 block text-center text-sm font-medium text-gray-700">
-                    Descrizione (opzionale)
-                  </label>
-                  <Input
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="es: 2 tranci a persona"
-                    className="mx-auto w-2/3 rounded-2xl pl-6"
-                    style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
-                  />
-                </div>
-              </div>
-              {/* Campo foto piatto (opzionale) */}
-              <div className="mt-6 flex flex-col items-center gap-2">
-                <label className="block text-center text-sm font-medium text-gray-700">
-                  Foto piatto{' '}
-                  <span className="font-normal text-gray-500">(opzionale)</span>
-                </label>
-                <div className="flex flex-col items-center gap-3">
-                  {/* Preview: foto nuova scelta oppure foto già salvata */}
-                  {(photoPreviewUrl || currentImageUrl) && (
-                    <div className="relative">
-                      <img
-                        src={photoPreviewUrl ?? currentImageUrl!}
-                        alt="Anteprima foto piatto"
-                        className="h-28 w-48 rounded-xl object-cover shadow"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (photoPreviewUrl) {
-                            URL.revokeObjectURL(photoPreviewUrl)
-                            setPhotoPreviewUrl(null)
-                            setPhotoFile(null)
-                          } else {
-                            // rimuove foto già salvata solo dopo il salvataggio
-                            setCurrentImageUrl(null)
-                            setPhotoFile(null)
-                          }
-                        }}
-                        className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow"
-                        aria-label="Rimuovi foto"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  )}
-                  {!photoPreviewUrl && !currentImageUrl && (
-                    <label className="flex cursor-pointer items-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-white px-5 py-3 text-sm text-gray-600 hover:border-amber-400 hover:text-amber-700 transition-colors">
-                      <ImageIcon className="h-4 w-4 shrink-0" />
-                      Scegli foto
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,image/avif"
-                        className="sr-only"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0]
-                          if (!file) return
-                          if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl)
-                          setPhotoFile(file)
-                          setPhotoPreviewUrl(URL.createObjectURL(file))
-                        }}
-                      />
-                    </label>
-                  )}
-                  {photoFile && !photoUploading && (
-                    <p className="text-xs text-gray-500 truncate max-w-[200px]">{photoFile.name}</p>
-                  )}
-                  {photoUploading && (
-                    <p className="text-xs text-amber-700">Caricamento foto…</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-10 flex justify-center gap-3" style={{ marginTop: '40px' }}>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={createMutation.isPending || updateMutation.isPending || photoUploading}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-emerald-500/35 hover:from-emerald-400 hover:to-emerald-500 hover:border-emerald-600 hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 disabled:hover:border-emerald-700"
-                >
-                  <Save className="h-4 w-4 flex-shrink-0" />
-                  Salva
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
-                >
-                  <X className="h-4 w-4 flex-shrink-0" />
-                  Annulla
-                </button>
-              </div>
-            </div>
-          </div>
-      )}
       <div
         className={MENU_INGREDIENT_OVERVIEW_SHELL_CLASS}
         style={ADMIN_WARM_GRADIENT_SURFACE}
@@ -1622,6 +1441,198 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
             Usa le icone per modificare o eliminare un ingrediente.
           </p>
         ) : null}
+
+        {/* Pulsante Nuovo Prodotto + form inline, visibili solo in ingredientEditMode */}
+        {ingredientEditMode && (
+          <div className="mt-6 flex flex-col items-stretch gap-4">
+            {!(isAdding || editingId) && (
+              <Button
+                variant="success"
+                size="sm"
+                type="button"
+                onClick={() => handleStartAdd()}
+                className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs self-center sm:self-end"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Nuovo Prodotto
+              </Button>
+            )}
+            {(isAdding || editingId) && (
+              <div
+                ref={productFormCardRef}
+                className="relative w-full scroll-mt-24 rounded-2xl border-2 p-6 shadow-lg md:scroll-mt-28"
+                style={ADMIN_WARM_GRADIENT_SURFACE}
+              >
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-warm-wood/40 bg-white/90 text-warm-wood shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
+                  aria-label="Chiudi inserimento prodotto"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                <div className="mx-auto w-2/3 text-center">
+                  <h3 className="text-title-card font-bold text-warm-wood mb-4">
+                    {editingId ? 'Modifica Prodotto' : 'Nuovo Prodotto'}
+                  </h3>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="flex flex-col items-center">
+                      <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                        Nome Prodotto *
+                      </label>
+                      <Input
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="es: Pizza Margherita"
+                        className="mx-auto w-2/3 rounded-2xl pl-6"
+                        style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                      />
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                        Categoria *
+                      </label>
+                      <Select
+                        value={formData.category}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, category: value })
+                        }
+                      >
+                        <SelectTrigger
+                          className="mx-auto h-14 w-2/3 rounded-2xl border text-gray-600 shadow-sm"
+                          style={{
+                            borderColor: 'rgba(0,0,0,0.2)',
+                            height: '56px',
+                            minHeight: '56px',
+                            fontSize: '16px',
+                            backgroundColor: '#ffffff',
+                            borderRadius: '18px',
+                            paddingLeft: '24px',
+                            paddingRight: '24px'
+                          }}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl">
+                          {categoryEntries.map(([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                        Prezzo (€) *
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={priceInput}
+                        onChange={(e) => handlePriceInputChange(e.target.value)}
+                        onKeyDown={handlePriceInputKeyDown}
+                        placeholder="es: 4.50"
+                        className="mx-auto w-2/3 rounded-2xl pl-6"
+                        style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                      />
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                        Descrizione (opzionale)
+                      </label>
+                      <Input
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        placeholder="es: 2 tranci a persona"
+                        className="mx-auto w-2/3 rounded-2xl pl-6"
+                        style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-6 flex flex-col items-center gap-2">
+                    <label className="block text-center text-sm font-medium text-gray-700">
+                      Foto piatto{' '}
+                      <span className="font-normal text-gray-500">(opzionale)</span>
+                    </label>
+                    <div className="flex flex-col items-center gap-3">
+                      {(photoPreviewUrl || currentImageUrl) && (
+                        <div className="relative">
+                          <img
+                            src={photoPreviewUrl ?? currentImageUrl!}
+                            alt="Anteprima foto piatto"
+                            className="h-28 w-48 rounded-xl object-cover shadow"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (photoPreviewUrl) {
+                                URL.revokeObjectURL(photoPreviewUrl)
+                                setPhotoPreviewUrl(null)
+                                setPhotoFile(null)
+                              } else {
+                                setCurrentImageUrl(null)
+                                setPhotoFile(null)
+                              }
+                            }}
+                            className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow"
+                            aria-label="Rimuovi foto"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
+                      {!photoPreviewUrl && !currentImageUrl && (
+                        <label className="flex cursor-pointer items-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-white px-5 py-3 text-sm text-gray-600 hover:border-amber-400 hover:text-amber-700 transition-colors">
+                          <ImageIcon className="h-4 w-4 shrink-0" />
+                          Scegli foto
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/avif"
+                            className="sr-only"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (!file) return
+                              if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl)
+                              setPhotoFile(file)
+                              setPhotoPreviewUrl(URL.createObjectURL(file))
+                            }}
+                          />
+                        </label>
+                      )}
+                      {photoFile && !photoUploading && (
+                        <p className="text-xs text-gray-500 truncate max-w-[200px]">{photoFile.name}</p>
+                      )}
+                      {photoUploading && (
+                        <p className="text-xs text-amber-700">Caricamento foto…</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-10 flex justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      disabled={createMutation.isPending || updateMutation.isPending || photoUploading}
+                      className="flex items-center justify-center gap-2 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-emerald-500/35 hover:from-emerald-400 hover:to-emerald-500 hover:border-emerald-600 hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 disabled:hover:border-emerald-700"
+                    >
+                      <Save className="h-4 w-4 flex-shrink-0" />
+                      Salva
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
+                    >
+                      <X className="h-4 w-4 flex-shrink-0" />
+                      Annulla
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {categoryEntries.length === 0 ? (
           <p
             className={cn(

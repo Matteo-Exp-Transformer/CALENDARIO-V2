@@ -4,7 +4,7 @@ import type { BookingType } from './booking'
 
 export type MenuCategory = string
 
-/** Valori ammessi in DB per `menu_items.booking_types` (allineati al form pubblico). */
+/** Valori legacy ammessi per `menu_items.booking_types`; la UI ingredienti mantiene il campo vuoto. */
 export const MENU_ITEM_BOOKING_TYPE_VALUES: BookingType[] = [
   'tavolo',
   'rinfresco_laurea',
@@ -29,7 +29,7 @@ export interface MenuItem {
   price: number
   description?: string
   sort_order: number
-  /** Tipologie prenotazione in cui l'ingrediente e offerto nel menu (form pubblico). */
+  /** Campo legacy: non valorizzare dalla UI ingredienti. */
   booking_types?: BookingType[]
   /** URL pubblico foto piatto (Supabase Storage bucket menu-photos). Opzionale. */
   image_url?: string | null
@@ -169,7 +169,6 @@ export const DIETARY_RESTRICTIONS = [
 ] as const
 
 export type DietaryRestrictionType = typeof DIETARY_RESTRICTIONS[number]
-
 
 
 

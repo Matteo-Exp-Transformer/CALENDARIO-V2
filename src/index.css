@@ -1625,7 +1625,7 @@ button.booking-request-reject-booking-btn:focus-visible {
   border-color: color-mix(in srgb, var(--color-text) 16%, transparent);
 }
 
-/* Ingrediente selezionato (menù preselezionato, pannello tipologie in modifica prodotto) */
+/* Ingrediente selezionato nei builder di menu. */
 .menu-prices-item-row--selected,
 .menu-prices-item-row[aria-pressed='true'] {
   border-color: var(--color-primary-600);
