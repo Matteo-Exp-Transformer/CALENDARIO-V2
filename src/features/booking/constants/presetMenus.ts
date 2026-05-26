@@ -10,7 +10,7 @@ import type { SubTab } from '@/features/booking/constants/bookingPublicFormConfi
 
 export const CUSTOM_PRESET_PREFIX = 'custom:' as const
 
-/** Tipologie in cui un menù preselezionato può comparire (no «Prenota un tavolo»). */
+/** Legacy: mantenuto per compatibilità dati salvati; l'abbinamento UI avviene in Personalizza Form. */
 export type StaffPresetBookingType = 'rinfresco_laurea' | 'menu_prezzo_fisso'
 
 export const STAFF_PRESET_BOOKING_TYPE_VALUES: StaffPresetBookingType[] = [
@@ -53,7 +53,7 @@ export interface CustomStaffPreset {
   id: string
   name: string
   item_ids: string[]
-  /** Tipologie prenotazione con flusso menù in cui il preset è offerto (mai `tavolo`). */
+  /** Legacy: non modificare da MenuPricesTab; l'uso nelle card Prenota è configurato da Personalizza Form. */
   booking_types: StaffPresetBookingType[]
   /** Testo sotto il nome sulle card Prenota (sottotab preset). */
   description?: string
@@ -94,14 +94,14 @@ export function isStaffPresetVisibleOnBooking(p: CustomStaffPreset): boolean {
   return p.visible_on_booking !== false
 }
 
-/** Preset visibile in pagina Prenota per la tipologia scelta (occhio aperto + booking_types). */
+/** Preset visibile in pagina Prenota: la tipologia è gestita dalle card/subtab in Personalizza Form. */
 export function isStaffPresetSelectableForBookingType(
   p: CustomStaffPreset,
   bookingType: BookingType | string | null | undefined,
 ): boolean {
   if (!isStaffPresetVisibleOnBooking(p)) return false
   if (bookingType !== 'rinfresco_laurea' && bookingType !== 'menu_prezzo_fisso') return false
-  return normalizeStaffPresetBookingTypes(p.booking_types).includes(bookingType)
+  return true
 }
 
 export interface PresetMenu {

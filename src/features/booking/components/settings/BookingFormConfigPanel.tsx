@@ -1184,12 +1184,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           {config.booking_modes.map((mode) => {
             const isOpen = expandedMode === mode.id
 
-            const relevantPresets = allPresets.filter(
-              (p) =>
-                p.visible_on_booking !== false &&
-                Array.isArray(p.booking_types) &&
-                (p.booking_types as string[]).includes(mode.booking_type),
-            )
+            const relevantPresets = allPresets.filter((p) => p.visible_on_booking !== false)
 
             const subTabs = mode.sub_tabs ?? []
             const draftSubTab = draftSubTabsByMode[mode.id] ?? null

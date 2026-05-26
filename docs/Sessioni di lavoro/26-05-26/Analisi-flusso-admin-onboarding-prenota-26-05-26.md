@@ -71,8 +71,8 @@ flowchart TB
 | 1 | Entra in nuova azienda | Login admin → tenant | `TenantContext`, `AdminDashboard` | Sessione + `organizations` (tenant) |
 | 2 | Compila anagrafica | Impostazioni → **Anagrafica Azienda** | `RestaurantSettingsTab` | `restaurant_settings`: `restaurant_name`, contatti, indirizzo, orari (`business_hours`), ecc. |
 | 3 | Definisce categorie ingredienti | Tab **Menu** (classica) | `MenuPricesTab` + `useMenuCategories` | Tabella `menu_categories` (`key`, `label`, `description`, `image_url`, `sort_order`) |
-| 4 | Inserisce ingredienti | Stessa tab Menu | `MenuPricesTab` + `useMenuItems` | Tabella `menu_items` (`name`, `category`→key, `price`, `booking_types[]`, `sort_order`) |
-| 5 | Crea menù preselezionati | Tab Menu → sezione preset | `MenuPricesTab` | `restaurant_settings.booking_custom_staff_presets[]`: `{ id, name, item_ids[], booking_types[], description?, price_per_person?, is_fixed_menu?, visible_on_booking? }` |
+| 4 | Inserisce ingredienti | Stessa tab Menu | `MenuPricesTab` + `useMenuItems` | Tabella `menu_items` (`name`, `category`→key, `price`, `booking_types[]` legacy vuoto, `sort_order`) |
+| 5 | Crea menù preselezionati | Tab Menu → sezione preset | `MenuPricesTab` | `restaurant_settings.booking_custom_staff_presets[]`: `{ id, name, item_ids[], booking_types[] legacy/default, description?, price_per_person?, is_fixed_menu?, visible_on_booking? }` |
 | 6 | Abbina promo a tipologia | Tab Menu → promo | `MenuPricesTab` | `restaurant_settings.booking_menu_promos[]`: messaggio/label + `booking_types[]` |
 | 7 | Personalizza Pagina Prenota | Impostazioni → **Personalizza form** | `BookingFormConfigPanel` | `restaurant_settings.booking_public_form_config` |
 | 7a | Modifica intestazione / font | Sezione intestazione | `BookingFormConfigPanel` | `page_title`, `page_description`, `header_styles` |
@@ -124,7 +124,7 @@ Per ogni **modalità di prenotazione** (`booking_modes[i]` legata a un `booking_
 menu_categories + menu_items
         ↓ (item_ids)
 booking_custom_staff_presets  ──import preset──→  sub_tabs[].preset_id (solo card)
-        ↓ booking_types                              ↓ hidden_* calcolati da preset
+        ↓ item_ids/prezzo/descrizione                ↓ hidden_* calcolati da preset
 booking_menu_promos  ──filtro──→  banner Prenota (indipendente dalle sottotab)
 
 booking_public_form_config.booking_modes[]
@@ -144,12 +144,13 @@ booking_public_form_config.booking_modes[]
 
 | Mondo | Ruolo | Storage |
 |-------|--------|---------|
-| **Tab Menu** | Magazzino: categorie, ingredienti, menù preselezionati (nome, ingredienti, prezzo consigliato, tipologie) | `menu_categories`, `menu_items`, `booking_custom_staff_presets` |
+| **Tab Menu** | Magazzino: categorie, ingredienti, menù preselezionati (nome, ingredienti, prezzo consigliato, fisso/personalizzabile) | `menu_categories`, `menu_items`, `booking_custom_staff_presets` |
 | **Personalizza form** | Vetrina Pagina Prenota: testi e layout che vede il cliente | `booking_public_form_config` → `sub_tabs[]` |
 
 È **corretto e voluto** che il ristoratore possa **sovrascrivere solo per Prenota** etichetta, descrizione, prezzo sulla card, icona, ingredienti nascosti, ecc., anche se la card è collegata a un preset (`preset_id`):
 
 - **Import menù preselezionato** (solo card): copia da `booking_custom_staff_presets` in `sub_tabs[]` (nome → `label`, descrizione, prezzo, `hidden_item_ids` da ingredienti non nel preset).
+- **Abbinamento a tipologia/card Prenota**: non si fa più dalla tab Menu e non usa `booking_custom_staff_presets.booking_types`; avviene solo in **Personalizza form**, importando il preset nella card scorrevole della modalità desiderata (`sub_tabs[].preset_id`).
 - **Dopo il Salva** della sottotab: il cliente vede `sub_tabs[].label` / `description` / `price_per_person`, **non** il nome del preset aggiornato in tab Menu.
 - **`preset_id` resta** il legame per **quali ingredienti** mostrare nella griglia (`MenuSelection`); cambiare ingredienti nel preset in tab Menu **non** rinomina da sola la card già salvata — serve modificare Personalizza form o re-importare il preset (con regola che preserva etichetta già personalizzata).
 
@@ -215,7 +216,7 @@ Non è una lacuna: è **personalizzazione vetrina** senza toccare il magazzino.
 
 | Aspetto | Valutazione | Note |
 |---------|-------------|------|
-| Nuove tipologie prenotazione | Media | Richiede estendere `BookingType`, default in `DEFAULT_BOOKING_FORM_CONFIG`, promo/preset `booking_types` |
+| Nuove tipologie prenotazione | Media | Richiede estendere `BookingType`, default in `DEFAULT_BOOKING_FORM_CONFIG`, promo `booking_types`; i preset staff si collegano alle nuove tipologie solo tramite card in Personalizza Form |
 | Molte sottotab | Buona | Array JSON; scroll orizzontale pubblico |
 | Molte slide carosello | Buona | Array `carousel_items`; editor per slide |
 | Molti tenant | Buona | RLS su tabelle; settings per `tenant_id` |

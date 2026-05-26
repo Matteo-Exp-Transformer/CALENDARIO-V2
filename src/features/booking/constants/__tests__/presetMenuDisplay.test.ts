@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   customPresetStorageId,
+  isStaffPresetSelectableForBookingType,
   resolvePresetDisplayTitle,
   shouldShowComposeMenuHeader,
   type CustomStaffPreset,
@@ -57,5 +58,23 @@ describe('resolvePresetDisplayTitle', () => {
         { preset_id: composablePreset.id, custom_label: 'Etichetta card' },
       ]),
     ).toBe('Etichetta card')
+  })
+})
+
+describe('isStaffPresetSelectableForBookingType', () => {
+  it('does not use preset booking_types as an admin-side association filter', () => {
+    const onlyFixedPricePreset: CustomStaffPreset = {
+      ...composablePreset,
+      booking_types: ['menu_prezzo_fisso'],
+    }
+
+    expect(isStaffPresetSelectableForBookingType(onlyFixedPricePreset, 'rinfresco_laurea')).toBe(true)
+    expect(isStaffPresetSelectableForBookingType(onlyFixedPricePreset, 'tavolo')).toBe(false)
+    expect(
+      isStaffPresetSelectableForBookingType(
+        { ...onlyFixedPricePreset, visible_on_booking: false },
+        'menu_prezzo_fisso',
+      ),
+    ).toBe(false)
   })
 })
