@@ -79,6 +79,7 @@ function AdminFieldWithCharCount({
   onChange,
   placeholder,
   className,
+  singleLine = false,
 }: {
   id?: string
   label: string
@@ -87,20 +88,34 @@ function AdminFieldWithCharCount({
   onChange: (value: string) => void
   placeholder?: string
   className?: string
+  /** Forza input riga singola (default: textarea multi-riga). */
+  singleLine?: boolean
 }) {
   return (
     <div className={cn('w-full min-w-0 space-y-1.5', className)}>
       <Label htmlFor={id} className="block text-sm">
         {label}
       </Label>
-      <Input
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
-        maxLength={maxLength}
-        placeholder={placeholder}
-        className="w-full"
-      />
+      {singleLine ? (
+        <Input
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
+          maxLength={maxLength}
+          placeholder={placeholder}
+          className="w-full"
+        />
+      ) : (
+        <textarea
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
+          maxLength={maxLength}
+          rows={3}
+          placeholder={placeholder}
+          className="block w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        />
+      )}
       <p className={charCountClass}>
         {value.length}/{maxLength}
       </p>
@@ -813,6 +828,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
               maxLength={SUB_TAB_LABEL_MAX}
               onChange={(label) => patchTab({ label })}
               placeholder="Nome mostrato al cliente"
+              singleLine
             />
 
             <div className="w-full min-w-0 space-y-1.5">
@@ -1140,13 +1156,16 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
                     <div>
                       <Label htmlFor={`mode-desc-${mode.id}`} className="block mb-1 text-sm">Descrizione breve</Label>
-                      <Input
+                      <textarea
                         id={`mode-desc-${mode.id}`}
                         value={mode.description}
                         onChange={(e) => updateMode(mode.id, { description: e.target.value })}
                         maxLength={120}
+                        rows={3}
                         placeholder="Una riga descrittiva"
+                        className="block w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
+                      <p className={charCountClass}>{mode.description.length}/120</p>
                     </div>
 
                     <div>
