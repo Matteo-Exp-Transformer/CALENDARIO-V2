@@ -391,7 +391,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                     </div>
 
                     <div>
-                      <Label htmlFor={`mode-label-${mode.id}`} className="block mb-1 text-sm">Etichetta</Label>
+                      <Label htmlFor={`mode-label-${mode.id}`} className="block mb-1 text-sm">Titolo Card</Label>
                       <Input
                         id={`mode-label-${mode.id}`}
                         value={mode.label}
@@ -449,10 +449,12 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
                     {mode.sub_tabs_enabled && (
                       <div className="space-y-4">
-                        <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-                          Le card compaiono sotto la tipologia scelta dal cliente. Puoi collegare un{' '}
-                          <strong>menù consigliato</strong> (griglia ingredienti) oppure un&apos;opzione{' '}
-                          <strong>manuale</strong> (solo etichetta e prezzo nel riepilogo).
+                        <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 text-left">
+                          <p className="font-medium">Scegli se mostrare:</p>
+                          <ul className="mt-2 list-disc space-y-1 pl-5">
+                            <li>Card a scorrimento, per descrivere offerte al cliente</li>
+                            <li>Carosello, per mostrare immagini con testo ai clienti</li>
+                          </ul>
                         </div>
 
                         <div className="flex flex-wrap gap-2">
