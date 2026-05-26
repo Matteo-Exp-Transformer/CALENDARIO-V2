@@ -15,6 +15,7 @@ description: >-
 1. Leggi `APP_CONTEXT_SKILL.md` §4 RULE Pagina Prenota v2.
 2. Leggi interamente:
    - `src/features/booking/components/settings/BookingFormConfigPanel.tsx`
+   - `src/features/booking/components/settings/SettingsSaveUi.tsx`
    - `src/features/booking/constants/bookingPublicFormConfig.ts`
    - `src/features/booking/lib/restaurantSettingRegistry.ts`
    - `src/pages/BookingRequestPage.tsx`
@@ -31,11 +32,14 @@ description: >-
 
 ### Salvataggio admin (Personalizza form)
 
+- UI condivisa in `src/features/booking/components/settings/SettingsSaveUi.tsx` (`FormSectionFloatingActions`, `SectionActionBar`, `SettingsSaveFooter`).
 - Tre sezioni con barra azioni sopra la card (`FormSectionFloatingActions` + `SectionActionBar`):
   1. **Intestazione pagina Prenota** — salva/annulla solo `page_title`, `page_description`, `header_styles` in `booking_public_form_config`.
   2. **Modalità di prenotazione** — salva/annulla solo `booking_modes` (e sottotab).
   3. **Sfondo pagina Prenota** — salva/annulla solo `public_booking_page_background` (`RestaurantSettingsTab` passa handler al panel).
-- **Footer** in fondo (`pageHasUnsaved`): compare solo se almeno una sezione ha modifiche; **Salva modifiche** / **Annulla modifiche** su tutta la tab Personalizza form.
+- **Footer** in fondo (`pageHasUnsaved`, componente `SettingsSaveFooter`): compare solo se almeno una sezione ha modifiche; **Salva modifiche** / **Annulla tutte le modifiche** su tutta la tab Personalizza form.
+- **Salva** dentro l'editor di una sottotab (card/carosello): `commitSubTabEditor` — upsert parziale di `booking_modes` in `booking_public_form_config`, chiude l'editor, `modesDirty` false; non richiede il Salva della card Modalità per quella sottotab.
+- **Anagrafica Azienda** (`RestaurantSettingsTab`): stesso `SettingsSaveFooter` quando `dirty`; un solo flag per tutta la scheda.
 - **Rimosso** il flusso «Conferma selezione sfondo» (pulsante dedicato, lock griglia, toast obbligatorio): lo sfondo si salva con Salva della sezione o footer.
 - Guard navigazione: `UnsavedChangesContext` (`booking-form-config`, `restaurant-booking-bg`).
 

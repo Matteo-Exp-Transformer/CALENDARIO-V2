@@ -49,6 +49,7 @@ import {
   type AppThemeId,
 } from '@/features/booking/constants/appTheme'
 import { BookingFormConfigPanel } from './settings/BookingFormConfigPanel'
+import { SettingsSaveFooter } from './settings/SettingsSaveUi'
 
 const RESTAURANT_NAME_MAX_LENGTH = 40
 const SLOT_NAME_MAX_LENGTH = 40
@@ -1227,39 +1228,13 @@ export const RestaurantSettingsTab: React.FC = () => {
       )}
 
       {settingsTab === 'anagrafica' && dirty && (
-      <div className="restaurant-settings-save-footer admin-warm-surface flex min-h-[4.75rem] w-full max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7">
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={handleCancelChanges}
-          disabled={upsert.isPending || !dirty}
-        >
-          Annulla modifiche
-        </Button>
-        <Button
-          type="button"
-          onClick={handleSave}
-          disabled={upsert.isPending || !tenantId}
-          className="restaurant-settings-save-submit min-h-[3.75rem] border-2 border-primary-700 bg-primary-600 px-10 py-5 text-base shadow-md hover:bg-primary-500 hover:border-primary-600 hover:shadow-lg focus:ring-primary-300 disabled:pointer-events-none disabled:border-primary-700 disabled:bg-primary-600"
-        >
-          {upsert.isPending ? (
-            <>
-              <Loader2 className="h-6 w-6 shrink-0 animate-spin" />
-              Salvataggio…
-            </>
-          ) : (
-            'Salva modifiche'
-          )}
-        </Button>
-        {dirty && !upsert.isPending && (
-          <span
-            className="restaurant-settings-save-footer-msg max-w-xl text-center text-base font-semibold leading-snug text-slate-900"
-            style={{ color: 'var(--color-text)', WebkitTextFillColor: 'var(--color-text)' }}
-          >
-            Modifiche non salvate.
-          </span>
-        )}
-      </div>
+        <SettingsSaveFooter
+          onCancel={handleCancelChanges}
+          onSave={handleSave}
+          pending={upsert.isPending}
+          cancelDisabled={upsert.isPending || !dirty}
+          saveDisabled={upsert.isPending || !tenantId}
+        />
       )}
     </div>
   )

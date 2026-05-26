@@ -11,7 +11,6 @@ import { CakeIcon } from '@phosphor-icons/react/dist/csr/Cake'
 import { MartiniIcon } from '@phosphor-icons/react/dist/csr/Martini'
 import { StarIcon } from '@phosphor-icons/react/dist/csr/Star'
 import { LeafIcon } from '@phosphor-icons/react/dist/csr/Leaf'
-import { SpinnerGapIcon } from '@phosphor-icons/react/dist/csr/SpinnerGap'
 import { CaretUpIcon } from '@phosphor-icons/react/dist/csr/CaretUp'
 import { CaretDownIcon } from '@phosphor-icons/react/dist/csr/CaretDown'
 import { TrashIcon } from '@phosphor-icons/react/dist/csr/Trash'
@@ -47,6 +46,11 @@ import {
 import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
 import { normalizeMenuItemBookingTypes, type MenuItem } from '@/types/menu'
 import { toast } from 'react-toastify'
+import {
+  FormSectionFloatingActions,
+  SectionActionBar,
+  SettingsSaveFooter,
+} from '@/features/booking/components/settings/SettingsSaveUi'
 
 const ICON_OPTIONS: { value: BookingModeIcon; label: string }[] = [
   { value: 'utensils', label: 'Posate' },
@@ -115,66 +119,7 @@ type BookingFormConfigPanelProps = {
   onCancelBookingBackground?: () => void
 }
 
-/** Salva / annulla sopra la card, allineati a destra con spazio sotto i pulsanti. */
-export function FormSectionFloatingActions({
-  actions,
-  children,
-}: {
-  actions?: React.ReactNode
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex w-full flex-col gap-3">
-      {actions != null && <div className="flex w-full justify-end">{actions}</div>}
-      {children}
-    </div>
-  )
-}
-
-const SectionSaveButton: React.FC<{
-  onClick: () => void
-  disabled?: boolean
-  pending?: boolean
-}> = ({ onClick, disabled, pending }) => (
-  <Button
-    type="button"
-    size="sm"
-    onClick={onClick}
-    disabled={disabled || pending}
-    className="border-2 border-primary-700 bg-primary-600 px-4 py-1.5 text-sm shadow-sm hover:bg-primary-500 hover:border-primary-600 disabled:opacity-60"
-  >
-    {pending ? (
-      <span className="flex items-center gap-1.5">
-        <SpinnerGapIcon weight="regular" className="h-3.5 w-3.5 animate-spin" />
-        Salvataggio…
-      </span>
-    ) : (
-      'Salva'
-    )}
-  </Button>
-)
-
-/** Annulla + Salva per una sola sezione (card/modulo). */
-const SectionActionBar: React.FC<{
-  onCancel: () => void
-  onSave: () => void
-  cancelDisabled?: boolean
-  saveDisabled?: boolean
-  pending?: boolean
-}> = ({ onCancel, onSave, cancelDisabled, saveDisabled, pending }) => (
-  <div className="flex flex-wrap items-center justify-end gap-2">
-    <Button
-      type="button"
-      variant="ghost"
-      size="sm"
-      onClick={onCancel}
-      disabled={cancelDisabled || pending}
-    >
-      Annulla modifiche
-    </Button>
-    <SectionSaveButton onClick={onSave} disabled={saveDisabled} pending={pending} />
-  </div>
-)
+export { FormSectionFloatingActions } from '@/features/booking/components/settings/SettingsSaveUi'
 
 export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   afterBookingModesSection,
@@ -294,21 +239,6 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     })
   }
 
-  const saveDraftSubTab = (modeId: string) => {
-    const draft = draftSubTabsByMode[modeId]
-    if (!draft) return
-    setConfig((prev) => ({
-      ...prev,
-      booking_modes: prev.booking_modes.map((m) => {
-        if (m.id !== modeId) return m
-        return { ...m, sub_tabs: [...(m.sub_tabs ?? []), draft] }
-      }),
-    }))
-    setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
-    setExpandedSubTabByMode((prev) => ({ ...prev, [modeId]: null }))
-    markModesDirty()
-  }
-
   const cancelDraftSubTab = (modeId: string) => {
     setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
   }
@@ -418,15 +348,40 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     setHeaderDirty(false)
   }
 
-  const saveModesSection = async () => {
+  const persistModesSection = async (bookingModes: BookingPublicFormConfig['booking_modes']) => {
     const saved = getSavedBaseline()
     const normalized = normalizeBookingPublicFormConfig({
       ...saved,
-      booking_modes: config.booking_modes,
+      booking_modes: bookingModes,
     })
     await upsert.mutateAsync([{ key: 'booking_public_form_config', value: normalized }])
     mergeConfigAfterPartialSave(normalized, 'modes')
     setModesDirty(false)
+  }
+
+  const saveModesSection = async () => {
+    await persistModesSection(config.booking_modes)
+  }
+
+  /** Salva su DB le modalità (incl. sottotab appena modificate) e chiude l'editor — niente secondo Salva sulla card. */
+  const commitSubTabEditor = async (modeId: string, isDraft: boolean) => {
+    let bookingModes = config.booking_modes
+    if (isDraft) {
+      const draft = draftSubTabsByMode[modeId]
+      if (!draft) return
+      bookingModes = config.booking_modes.map((m) =>
+        m.id === modeId ? { ...m, sub_tabs: [...(m.sub_tabs ?? []), draft] } : m,
+      )
+      setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
+      setConfig((prev) => ({ ...prev, booking_modes: bookingModes }))
+    }
+    setExpandedSubTabByMode((prev) => ({ ...prev, [modeId]: null }))
+    try {
+      await persistModesSection(bookingModes)
+    } catch {
+      markModesDirty()
+      toast.error('Errore nel salvataggio sottotab')
+    }
   }
 
   const handleCancelHeaderSection = () => {
@@ -809,10 +764,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           <Button
             type="button"
             size="sm"
-            onClick={() => {
-              if (isDraft) saveDraftSubTab(mode.id)
-              else setExpandedSubTabByMode((prev) => ({ ...prev, [mode.id]: null }))
-            }}
+            disabled={upsert.isPending}
+            onClick={() => void commitSubTabEditor(mode.id, isDraft)}
           >
             Salva
           </Button>
@@ -1334,9 +1287,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                   <Button
                                     type="button"
                                     size="sm"
-                                    onClick={() =>
-                                      setExpandedSubTabByMode((prev) => ({ ...prev, [mode.id]: null }))
-                                    }
+                                    disabled={upsert.isPending}
+                                    onClick={() => void commitSubTabEditor(mode.id, false)}
                                   >
                                     Salva
                                   </Button>
@@ -1365,37 +1317,13 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       )}
 
       {pageHasUnsaved && (
-        <div className="restaurant-settings-save-footer admin-warm-surface flex min-h-[4.75rem] w-full flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={handleCancelAllPage}
-            disabled={upsert.isPending}
-          >
-            Annulla modifiche
-          </Button>
-          <Button
-            type="button"
-            onClick={() => void handleSaveAllPage()}
-            disabled={upsert.isPending}
-            className="restaurant-settings-save-submit min-h-[3.75rem] border-2 border-primary-700 bg-primary-600 px-10 py-5 text-base shadow-md hover:bg-primary-500 hover:border-primary-600 hover:shadow-lg focus:ring-primary-300 disabled:pointer-events-none disabled:border-primary-700 disabled:bg-primary-600"
-          >
-            {upsert.isPending ? (
-              <span className="flex items-center justify-center gap-2">
-                <SpinnerGapIcon weight="regular" className="h-5 w-5 animate-spin" />
-                Salvataggio…
-              </span>
-            ) : (
-              'Salva modifiche'
-            )}
-          </Button>
-          <span
-            className="restaurant-settings-save-footer-msg max-w-xl text-center text-base font-semibold leading-snug text-slate-900"
-            style={{ color: 'var(--color-text)', WebkitTextFillColor: 'var(--color-text)' }}
-          >
-            Modifiche non salvate.
-          </span>
-        </div>
+        <SettingsSaveFooter
+          onCancel={handleCancelAllPage}
+          onSave={() => void handleSaveAllPage()}
+          pending={upsert.isPending}
+          cancelDisabled={upsert.isPending}
+          saveDisabled={upsert.isPending}
+        />
       )}
     </div>
   )

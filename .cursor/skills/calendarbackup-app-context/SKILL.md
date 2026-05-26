@@ -30,3 +30,5 @@ Regole, tabelle LOCK, comandi e report di sessione stanno solo nei due file sopr
 **Menu QR homepage layout (24-05-26):** `themePageBackgroundStyle`, tab sticky opaca, carosello pallini click, limiti admin 60/125 — report `docs/Sessioni di lavoro/24-05-26/Report-menu-qr-homepage-layout-sessione.md`, skill `PUBLIC_MENU_SKILL.md` + `PUBLIC_MENU_LAYOUT_CONTEXT.md`.
 
 **Prenota v2 sottotab orizzontali (25-05-26):** `BookingMode.sub_tabs[]` (preset/manuale), `BookingSubTabCards`, editor in `BookingFormConfigPanel` — report `docs/Sessioni di lavoro/25-05-26/Report-sottotab-orizzontali-prenota-v2.md`, RULE in `docs/APP_CONTEXT_SKILL.md` §4.
+
+**Impostazioni salvataggio condiviso (26-05-26):** `SettingsSaveUi.tsx`, Salva sottotab → DB via `commitSubTabEditor` — report `docs/Sessioni di lavoro/26-05-26/Report-settings-save-ui-sottotab-26-05-26.md`, RULE Personalizza form in `docs/APP_CONTEXT_SKILL.md` §4.
