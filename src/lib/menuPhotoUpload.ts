@@ -76,7 +76,7 @@ export async function uploadMenuPhoto(
   if (error) throw new Error(`Errore upload foto: ${(error as any).message ?? error}`)
 
   const { data } = (supabase.storage.from(BUCKET) as any).getPublicUrl(path)
-  return (data as { publicUrl: string }).publicUrl
+  return `${(data as { publicUrl: string }).publicUrl}?v=${Date.now()}`
 }
 
 /** Elimina la foto di un piatto da Storage (non lancia se non esiste). */
@@ -102,7 +102,7 @@ export async function uploadMenuCategoryPhoto(
   if (error) throw new Error(`Errore upload foto categoria: ${(error as any).message ?? error}`)
 
   const { data } = (supabase.storage.from(BUCKET) as any).getPublicUrl(path)
-  return (data as { publicUrl: string }).publicUrl
+  return `${(data as { publicUrl: string }).publicUrl}?v=${Date.now()}`
 }
 
 /** Elimina la foto categoria Prenota da Storage. */

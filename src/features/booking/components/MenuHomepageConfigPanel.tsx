@@ -60,7 +60,7 @@ async function uploadToStorage(file: File, path: string): Promise<string> {
   })
   if (error) throw new Error((error as any).message ?? 'Upload fallito')
   const { data } = (supabase.storage.from(BUCKET) as any).getPublicUrl(path)
-  return (data as { publicUrl: string }).publicUrl
+  return `${(data as { publicUrl: string }).publicUrl}?v=${Date.now()}`
 }
 
 async function removeFromStorage(path: string): Promise<void> {
@@ -157,7 +157,7 @@ export function useCarouselPhotoUpload({
 
   const removeAt = async (index: number) => {
     const item = items[index]
-    const match = item.image_url.match(/menu-photos\/(.+)$/)
+    const match = item.image_url.match(/menu-photos\/([^?]+)/)
     if (match) await removeFromStorage(match[1])
     onChange(items.filter((_, idx) => idx !== index).map((x, idx) => ({ ...x, sort_order: idx })))
   }
@@ -180,7 +180,7 @@ export function useCarouselPhotoUpload({
       const uuid = crypto.randomUUID()
       const path = `${menuQrStoragePrefix(tenantId, storageSegment)}/carousel/${uuid}.webp`
       const url = await uploadToStorage(file, path)
-      const match = old.image_url.match(/menu-photos\/(.+)$/)
+      const match = old.image_url.match(/menu-photos\/([^?]+)/)
       if (match) await removeFromStorage(match[1])
       onChange(items.map((it, i) => (i === index ? { ...it, image_url: url } : it)))
       toast.success('Foto aggiornata')
@@ -303,7 +303,7 @@ export function MenuQrCarouselSection({
 
   const remove = async (i: number) => {
     const item = items[i]
-    const match = item.image_url.match(/menu-photos\/(.+)$/)
+    const match = item.image_url.match(/menu-photos\/([^?]+)/)
     if (match) await removeFromStorage(match[1])
     onChange(items.filter((_, idx) => idx !== i).map((x, idx) => ({ ...x, sort_order: idx })))
   }

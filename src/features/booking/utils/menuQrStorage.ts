@@ -15,7 +15,7 @@ export function menuQrStoragePrefix(tenantId: string, segment: string) {
 }
 
 function storagePathFromPublicUrl(url: string): string | null {
-  const match = url.match(/menu-photos\/(.+)$/)
+  const match = url.match(/menu-photos\/([^?]+)/)
   return match ? match[1] : null
 }
 
