@@ -9,6 +9,14 @@ import { formatHours, getDefaultBusinessHours } from '@/lib/businessHours'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 import {
+  BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
+  DEFAULT_BOOKING_PAGE_BACKGROUND,
+  bookingPageGradientCss,
+  bookingPageTilePublicHref,
+  isBookingPageGradientId,
+  type BookingPageBackgroundId,
+} from '@/features/booking/constants/bookingPageBackground'
+import {
   DEFAULT_BOOKING_FORM_CONFIG,
   type SubTab,
 } from '@/features/booking/constants/bookingPublicFormConfig'
@@ -31,6 +39,7 @@ export const BookingRequestPage: React.FC = () => {
   const { data: contactEmail } = useRestaurantSetting('contact_email')
   const { data: contactPhone } = useRestaurantSetting('contact_phone')
   const { data: contactAddress } = useRestaurantSetting('contact_address')
+  const { data: publicBookingBg } = useRestaurantSetting('public_booking_page_background')
   const { data: formConfig } = useRestaurantSetting('booking_public_form_config')
   const resolvedConfig = formConfig ?? DEFAULT_BOOKING_FORM_CONFIG
 
@@ -68,6 +77,23 @@ export const BookingRequestPage: React.FC = () => {
   const displayContactEmail = (contactEmail ?? '').trim()
   const displayContactPhone = (contactPhone ?? '').trim()
   const displayContactAddress = (contactAddress ?? '').trim()
+  const bookingPageBackground: BookingPageBackgroundId =
+    publicBookingBg ?? DEFAULT_BOOKING_PAGE_BACKGROUND
+  const bookingPageBackgroundStyle: React.CSSProperties = isBookingPageGradientId(bookingPageBackground)
+    ? {
+        backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
+        backgroundImage: bookingPageGradientCss(bookingPageBackground),
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }
+    : {
+        backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
+        backgroundImage: `url("${bookingPageTilePublicHref(bookingPageBackground, import.meta.env.BASE_URL)}")`,
+        backgroundSize: '100% auto',
+        backgroundPosition: 'top center',
+        backgroundRepeat: 'repeat-y',
+      }
 
   if (isTenantLoading) {
     return (
@@ -92,7 +118,7 @@ export const BookingRequestPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white font-bold">
+    <div className="min-h-screen font-bold" style={bookingPageBackgroundStyle}>
       <div className="min-h-screen">
         <div className="mx-auto w-full max-w-7xl px-4 md:px-6 pb-1.5">
 
