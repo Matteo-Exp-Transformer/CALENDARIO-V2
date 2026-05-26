@@ -1,6 +1,109 @@
 import type { BookingType } from '@/types/booking'
 
 export type SubTabIcon = 'utensils' | 'cloche' | 'chef-hat' | 'star' | 'leaf'
+export const BOOKING_MODE_ICONS = [
+  'utensils',
+  'cloche',
+  'chef-hat',
+  'wine',
+  'coffee',
+  'pizza',
+  'hamburger',
+  'bowl-steam',
+  'cake',
+  'martini',
+] as const
+export type BookingModeIcon = (typeof BOOKING_MODE_ICONS)[number]
+
+export const BOOKING_HEADER_FONT_OPTIONS = [
+  {
+    id: 'playfair',
+    label: 'Playfair Display',
+    fontFamily: '"Playfair Display", Georgia, serif',
+  },
+  {
+    id: 'cormorant',
+    label: 'Cormorant Garamond',
+    fontFamily: '"Cormorant Garamond", Georgia, serif',
+  },
+  {
+    id: 'libre-baskerville',
+    label: 'Libre Baskerville',
+    fontFamily: '"Libre Baskerville", Georgia, serif',
+  },
+  {
+    id: 'cinzel',
+    label: 'Cinzel',
+    fontFamily: '"Cinzel", Georgia, serif',
+  },
+  {
+    id: 'montserrat',
+    label: 'Montserrat',
+    fontFamily: '"Montserrat", Inter, system-ui, sans-serif',
+  },
+  {
+    id: 'mistral',
+    label: 'Mistral',
+    fontFamily: '"Mistral", "Brush Script MT", "Segoe Script", cursive',
+  },
+  {
+    id: 'thirsty-script',
+    label: 'Thirsty Script',
+    fontFamily: '"Thirsty Script", "Lobster", "Pacifico", cursive',
+  },
+] as const
+
+export type BookingHeaderFontId = (typeof BOOKING_HEADER_FONT_OPTIONS)[number]['id']
+
+export type BookingHeaderTextTarget = 'restaurant_name' | 'page_title' | 'page_description'
+
+export interface BookingHeaderTextStyle {
+  font: BookingHeaderFontId
+  color: string
+}
+
+export type BookingHeaderStyles = Record<BookingHeaderTextTarget, BookingHeaderTextStyle>
+
+export const DEFAULT_BOOKING_HEADER_STYLES: BookingHeaderStyles = {
+  restaurant_name: { font: 'playfair', color: '#6b4226' },
+  page_title: { font: 'playfair', color: '#6b4226' },
+  page_description: { font: 'montserrat', color: '#4a2d19' },
+}
+
+const BOOKING_HEADER_FONT_IDS = BOOKING_HEADER_FONT_OPTIONS.map((font) => font.id)
+const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/
+
+export function isBookingHeaderFontId(value: unknown): value is BookingHeaderFontId {
+  return typeof value === 'string' && BOOKING_HEADER_FONT_IDS.includes(value as BookingHeaderFontId)
+}
+
+export function getBookingHeaderFontFamily(font: BookingHeaderFontId): string {
+  return BOOKING_HEADER_FONT_OPTIONS.find((option) => option.id === font)?.fontFamily
+    ?? BOOKING_HEADER_FONT_OPTIONS[0].fontFamily
+}
+
+export function normalizeBookingHeaderColor(value: unknown, fallback: string): string {
+  return typeof value === 'string' && HEX_COLOR_RE.test(value.trim()) ? value.trim() : fallback
+}
+
+export function parseBookingHeaderStylesFromUnknown(raw: unknown): BookingHeaderStyles {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return DEFAULT_BOOKING_HEADER_STYLES
+  const obj = raw as Record<string, unknown>
+  const targets: BookingHeaderTextTarget[] = ['restaurant_name', 'page_title', 'page_description']
+
+  return targets.reduce<BookingHeaderStyles>((acc, target) => {
+    const fallback = DEFAULT_BOOKING_HEADER_STYLES[target]
+    const row = obj[target]
+    const value = row && typeof row === 'object' && !Array.isArray(row)
+      ? (row as Record<string, unknown>)
+      : {}
+    acc[target] = {
+      font: isBookingHeaderFontId(value.font) ? value.font : fallback.font,
+      color: normalizeBookingHeaderColor(value.color, fallback.color),
+    }
+    return acc
+  }, { ...DEFAULT_BOOKING_HEADER_STYLES })
+}
 
 export interface SubTab {
   id: string
@@ -24,7 +127,7 @@ export interface BookingMode {
   enabled: boolean
   label: string
   description: string
-  icon: 'utensils' | 'cloche' | 'chef-hat'
+  icon: BookingModeIcon
   sub_tabs_enabled: boolean
   sub_tabs_display: 'horizontal' | 'carousel'
   sub_tabs: SubTab[]
@@ -35,6 +138,7 @@ export interface BookingMode {
 export interface BookingPublicFormConfig {
   page_title: string
   page_description: string
+  header_styles: BookingHeaderStyles
   booking_modes: BookingMode[]
 }
 
@@ -85,6 +189,7 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
   page_title: 'Richiesta Prenotazione',
   page_description:
     'Compilando questo form invierai una richiesta allo staff. Ti contatteremo al più presto per comunicarti l\'esito!',
+  header_styles: DEFAULT_BOOKING_HEADER_STYLES,
   booking_modes: [
     {
       id: 'tavolo',
@@ -129,6 +234,7 @@ export function normalizeBookingPublicFormConfig(
   return {
     page_title: config.page_title.trim(),
     page_description: config.page_description.trim(),
+    header_styles: parseBookingHeaderStylesFromUnknown(config.header_styles),
     booking_modes: config.booking_modes.map((mode) => ({
       ...mode,
       label: mode.label.trim(),

@@ -19,10 +19,13 @@ import {
 import type { MenuPromo } from '@/features/booking/constants/menuPromo'
 import {
   type BookingPublicFormConfig,
+  BOOKING_MODE_ICONS,
+  type BookingModeIcon,
   type SubTab,
   type SubTabOverride,
   DEFAULT_BOOKING_FORM_CONFIG,
   migrateOverridesToSubTabs,
+  parseBookingHeaderStylesFromUnknown,
   parseSubTabFromUnknown,
 } from '@/features/booking/constants/bookingPublicFormConfig'
 
@@ -515,6 +518,7 @@ export const restaurantSettingRegistry: {
           typeof obj.page_description === 'string'
             ? obj.page_description
             : DEFAULT_BOOKING_FORM_CONFIG.page_description,
+        header_styles: parseBookingHeaderStylesFromUnknown(obj.header_styles),
         booking_modes: modes.map((m: unknown, i: number) => {
           const dm = DEFAULT_BOOKING_FORM_CONFIG.booking_modes[i] ?? DEFAULT_BOOKING_FORM_CONFIG.booking_modes[0]
           if (!m || typeof m !== 'object' || Array.isArray(m)) return dm
@@ -525,8 +529,8 @@ export const restaurantSettingRegistry: {
             enabled: typeof mode.enabled === 'boolean' ? mode.enabled : dm.enabled,
             label: typeof mode.label === 'string' ? mode.label : dm.label,
             description: typeof mode.description === 'string' ? mode.description : dm.description,
-            icon: (['utensils', 'cloche', 'chef-hat'] as const).includes(mode.icon as 'utensils' | 'cloche' | 'chef-hat')
-              ? (mode.icon as 'utensils' | 'cloche' | 'chef-hat')
+            icon: BOOKING_MODE_ICONS.includes(mode.icon as BookingModeIcon)
+              ? (mode.icon as BookingModeIcon)
               : dm.icon,
             sub_tabs_enabled: typeof mode.sub_tabs_enabled === 'boolean' ? mode.sub_tabs_enabled : dm.sub_tabs_enabled,
             sub_tabs_display:

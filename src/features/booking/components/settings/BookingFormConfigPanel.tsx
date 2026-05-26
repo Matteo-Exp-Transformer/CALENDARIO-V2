@@ -1,5 +1,20 @@
 import React, { useEffect, useState } from 'react'
-import { Utensils, ChefHat, Star, Leaf, Loader2, ChevronUp, ChevronDown, Trash2 } from 'lucide-react'
+import { ForkKnifeIcon } from '@phosphor-icons/react/dist/csr/ForkKnife'
+import { CallBellIcon } from '@phosphor-icons/react/dist/csr/CallBell'
+import { ChefHatIcon } from '@phosphor-icons/react/dist/csr/ChefHat'
+import { WineIcon } from '@phosphor-icons/react/dist/csr/Wine'
+import { CoffeeIcon } from '@phosphor-icons/react/dist/csr/Coffee'
+import { PizzaIcon } from '@phosphor-icons/react/dist/csr/Pizza'
+import { HamburgerIcon } from '@phosphor-icons/react/dist/csr/Hamburger'
+import { BowlSteamIcon } from '@phosphor-icons/react/dist/csr/BowlSteam'
+import { CakeIcon } from '@phosphor-icons/react/dist/csr/Cake'
+import { MartiniIcon } from '@phosphor-icons/react/dist/csr/Martini'
+import { StarIcon } from '@phosphor-icons/react/dist/csr/Star'
+import { LeafIcon } from '@phosphor-icons/react/dist/csr/Leaf'
+import { SpinnerGapIcon } from '@phosphor-icons/react/dist/csr/SpinnerGap'
+import { CaretUpIcon } from '@phosphor-icons/react/dist/csr/CaretUp'
+import { CaretDownIcon } from '@phosphor-icons/react/dist/csr/CaretDown'
+import { TrashIcon } from '@phosphor-icons/react/dist/csr/Trash'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -8,9 +23,16 @@ import {
   useRestaurantSetting,
   useUpsertRestaurantSetting,
 } from '@/features/booking/hooks/useRestaurantSetting'
+import { useTenantContext } from '@/contexts/TenantContext'
 import {
+  BOOKING_HEADER_FONT_OPTIONS,
   DEFAULT_BOOKING_FORM_CONFIG,
+  getBookingHeaderFontFamily,
+  normalizeBookingHeaderColor,
   normalizeBookingPublicFormConfig,
+  type BookingHeaderTextStyle,
+  type BookingHeaderTextTarget,
+  type BookingModeIcon,
   type BookingMode,
   type BookingPublicFormConfig,
   type SubTab,
@@ -19,10 +41,17 @@ import {
 import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
 import { toast } from 'react-toastify'
 
-const ICON_OPTIONS: { value: BookingMode['icon']; label: string }[] = [
+const ICON_OPTIONS: { value: BookingModeIcon; label: string }[] = [
   { value: 'utensils', label: 'Posate' },
   { value: 'cloche', label: 'Cloche' },
   { value: 'chef-hat', label: 'Chef' },
+  { value: 'wine', label: 'Calice' },
+  { value: 'coffee', label: 'Caffe' },
+  { value: 'pizza', label: 'Pizza' },
+  { value: 'hamburger', label: 'Burger' },
+  { value: 'bowl-steam', label: 'Piatto caldo' },
+  { value: 'cake', label: 'Dolce' },
+  { value: 'martini', label: 'Cocktail' },
 ]
 
 const SUB_TAB_ICON_OPTIONS: { value: SubTabIcon; label: string }[] = [
@@ -34,15 +63,25 @@ const SUB_TAB_ICON_OPTIONS: { value: SubTabIcon; label: string }[] = [
 ]
 
 function ModeIcon({ icon, className }: { icon: BookingMode['icon']; className?: string }) {
-  if (icon === 'chef-hat') return <ChefHat className={className} />
-  return <Utensils className={className} />
+  if (icon === 'utensils') return <ForkKnifeIcon weight="light" className={className} />
+  if (icon === 'chef-hat') return <ChefHatIcon weight="light" className={className} />
+  if (icon === 'wine') return <WineIcon weight="light" className={className} />
+  if (icon === 'coffee') return <CoffeeIcon weight="light" className={className} />
+  if (icon === 'pizza') return <PizzaIcon weight="light" className={className} />
+  if (icon === 'hamburger') return <HamburgerIcon weight="light" className={className} />
+  if (icon === 'bowl-steam') return <BowlSteamIcon weight="light" className={className} />
+  if (icon === 'cake') return <CakeIcon weight="light" className={className} />
+  if (icon === 'martini') return <MartiniIcon weight="light" className={className} />
+  return <CallBellIcon weight="light" className={className} />
 }
 
 function SubTabIconOption({ icon, className }: { icon: SubTabIcon; className?: string }) {
-  if (icon === 'chef-hat') return <ChefHat className={className} />
-  if (icon === 'star') return <Star className={className} />
-  if (icon === 'leaf') return <Leaf className={className} />
-  return <Utensils className={className} />
+  if (icon === 'utensils') return <ForkKnifeIcon weight="light" className={className} />
+  if (icon === 'cloche') return <CallBellIcon weight="light" className={className} />
+  if (icon === 'chef-hat') return <ChefHatIcon weight="light" className={className} />
+  if (icon === 'star') return <StarIcon weight="light" className={className} />
+  if (icon === 'leaf') return <LeafIcon weight="light" className={className} />
+  return <ForkKnifeIcon weight="light" className={className} />
 }
 
 function newSubTab(type: SubTab['type']): SubTab {
@@ -55,9 +94,16 @@ function newSubTab(type: SubTab['type']): SubTab {
 }
 
 export const BookingFormConfigPanel: React.FC = () => {
+  const { organizationName } = useTenantContext()
   const { data: savedConfig } = useRestaurantSetting('booking_public_form_config')
+  const { data: restaurantName } = useRestaurantSetting('restaurant_name')
   const { data: customPresetsRaw } = useRestaurantSetting('booking_custom_staff_presets')
   const upsert = useUpsertRestaurantSetting()
+
+  const displayRestaurantName =
+    (typeof restaurantName === 'string' ? restaurantName.trim() : '') ||
+    organizationName?.trim() ||
+    ''
 
   const [config, setConfig] = useState<BookingPublicFormConfig>(DEFAULT_BOOKING_FORM_CONFIG)
   const [dirty, setDirty] = useState(false)
@@ -77,6 +123,30 @@ export const BookingFormConfigPanel: React.FC = () => {
     value: string,
   ) => {
     setConfig((prev) => ({ ...prev, [field]: value }))
+    markDirty()
+  }
+
+  const updateHeaderTextStyle = (
+    target: BookingHeaderTextTarget,
+    patch: Partial<BookingHeaderTextStyle>,
+  ) => {
+    setConfig((prev) => {
+      const currentStyles = prev.header_styles ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles
+      const currentTarget = currentStyles[target] ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles[target]
+      return {
+        ...prev,
+        header_styles: {
+          ...currentStyles,
+          [target]: {
+            ...currentTarget,
+            ...patch,
+            color: patch.color
+              ? normalizeBookingHeaderColor(patch.color, currentTarget.color)
+              : currentTarget.color,
+          },
+        },
+      }
+    })
     markDirty()
   }
 
@@ -158,6 +228,44 @@ export const BookingFormConfigPanel: React.FC = () => {
   }
 
   const allPresets: CustomStaffPreset[] = Array.isArray(customPresetsRaw) ? customPresetsRaw : []
+  const headerStyles = config.header_styles ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles
+  const headerControlClass =
+    'rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-300'
+
+  const renderHeaderStyleControls = (target: BookingHeaderTextTarget) => {
+    const style = headerStyles[target] ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles[target]
+    return (
+      <div className="mt-2 grid grid-cols-[minmax(0,1fr)_3rem] gap-2">
+        <label className="block">
+          <span className="mb-1 block text-[11px] font-semibold text-slate-500">Font</span>
+          <select
+            value={style.font}
+            onChange={(e) =>
+              updateHeaderTextStyle(target, {
+                font: e.target.value as BookingHeaderTextStyle['font'],
+              })
+            }
+            className={headerControlClass}
+          >
+            {BOOKING_HEADER_FONT_OPTIONS.map((font) => (
+              <option key={font.id} value={font.id}>
+                {font.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-[11px] font-semibold text-slate-500">Colore</span>
+          <input
+            type="color"
+            value={style.color}
+            onChange={(e) => updateHeaderTextStyle(target, { color: e.target.value })}
+            className="h-9 w-full cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+          />
+        </label>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
@@ -166,6 +274,29 @@ export const BookingFormConfigPanel: React.FC = () => {
         <h3 className="text-base font-semibold text-slate-800">Intestazione pagina Prenota</h3>
         <div className="space-y-3">
           <div>
+            <Label htmlFor="page_restaurant_name" className="block mb-1 text-sm">
+              Nome azienda
+            </Label>
+            <Input
+              id="page_restaurant_name"
+              value={displayRestaurantName || '—'}
+              readOnly
+              disabled
+              className="cursor-default bg-slate-50/90 text-slate-800 disabled:opacity-100"
+              style={{
+                fontFamily: getBookingHeaderFontFamily(headerStyles.restaurant_name.font),
+                color: headerStyles.restaurant_name.color,
+              }}
+              aria-describedby="page_restaurant_name_hint"
+            />
+            <p id="page_restaurant_name_hint" className="mt-1 text-xs text-slate-500">
+              Per modificare nome azienda usa la scheda{' '}
+              <span className="font-medium text-slate-700">&quot;Anagrafica Azienda&quot;</span> nelle
+              Impostazioni.
+            </p>
+            {renderHeaderStyleControls('restaurant_name')}
+          </div>
+          <div>
             <Label htmlFor="page_title" className="block mb-1 text-sm">Titolo</Label>
             <Input
               id="page_title"
@@ -173,7 +304,12 @@ export const BookingFormConfigPanel: React.FC = () => {
               onChange={(e) => updateField('page_title', e.target.value)}
               placeholder="es. Richiesta Prenotazione"
               maxLength={80}
+              style={{
+                fontFamily: getBookingHeaderFontFamily(headerStyles.page_title.font),
+                color: headerStyles.page_title.color,
+              }}
             />
+            {renderHeaderStyleControls('page_title')}
           </div>
           <div>
             <Label htmlFor="page_description" className="block mb-1 text-sm">Descrizione</Label>
@@ -185,14 +321,24 @@ export const BookingFormConfigPanel: React.FC = () => {
               maxLength={300}
               rows={3}
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-300 resize-none"
+              style={{
+                fontFamily: getBookingHeaderFontFamily(headerStyles.page_description.font),
+                color: headerStyles.page_description.color,
+              }}
             />
+            {renderHeaderStyleControls('page_description')}
           </div>
         </div>
       </section>
 
       {/* Blocco 2 — Le modalità */}
       <section className="admin-warm-surface rounded-xl border p-5 space-y-4 shadow-sm">
-        <h3 className="text-base font-semibold text-slate-800">Modalità di prenotazione</h3>
+        <div className="space-y-1">
+          <h3 className="text-base font-semibold text-slate-800">Modalità di prenotazione</h3>
+          <p className="text-sm text-slate-600">
+            Scegli quali modalità di prenotazioni sono disponibili, e cosa mostrano.
+          </p>
+        </div>
         <div className="space-y-3">
           {config.booking_modes.map((mode) => {
             const isOpen = expandedMode === mode.id
@@ -352,7 +498,7 @@ export const BookingFormConfigPanel: React.FC = () => {
                                       onClick={() => moveSubTab(mode.id, tab.id, 'up')}
                                       className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40"
                                     >
-                                      <ChevronUp className="h-4 w-4" />
+                                      <CaretUpIcon weight="regular" className="h-4 w-4" />
                                     </button>
                                     <button
                                       type="button"
@@ -361,7 +507,7 @@ export const BookingFormConfigPanel: React.FC = () => {
                                       onClick={() => moveSubTab(mode.id, tab.id, 'down')}
                                       className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40"
                                     >
-                                      <ChevronDown className="h-4 w-4" />
+                                      <CaretDownIcon weight="regular" className="h-4 w-4" />
                                     </button>
                                     <button
                                       type="button"
@@ -369,7 +515,7 @@ export const BookingFormConfigPanel: React.FC = () => {
                                       onClick={() => removeSubTab(mode.id, tab.id)}
                                       className="p-1.5 rounded border border-red-200 text-red-600 hover:bg-red-50"
                                     >
-                                      <Trash2 className="h-4 w-4" />
+                                      <TrashIcon weight="regular" className="h-4 w-4" />
                                     </button>
                                   </div>
                                 </div>
@@ -532,7 +678,7 @@ export const BookingFormConfigPanel: React.FC = () => {
           >
             {upsert.isPending ? (
               <span className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <SpinnerGapIcon weight="regular" className="h-4 w-4 animate-spin" />
                 Salvataggio…
               </span>
             ) : (

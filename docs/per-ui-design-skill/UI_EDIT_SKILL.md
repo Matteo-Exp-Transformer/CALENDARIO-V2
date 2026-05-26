@@ -39,7 +39,7 @@ Carica i file indicati **prima** di aprire qualsiasi file da modificare.
 1. Carica context (step 0)
 2. **Grep** la zona interessata in `src/` — capire token e classi già in uso
 3. **Leggi** i file da modificare — mai editare alla cieca
-4. **Applica** seguendo il context — nessuna invenzione di token o classi
+4. **Applica** seguendo il context — nessuna invenzione di token o classi; mantieni UI leggera mettendo controlli vicino al campo che modificano e rimuovendo anteprime/testi duplicati
 5. **Valida**: `npm run typecheck && npm run lint`
 
 ---
@@ -60,6 +60,7 @@ RULE  Classi letterali — mai costruire dinamicamente `bg-${x}-600`
 RULE  !important Tailwind v4: suffisso → border-red-500! (non !border-red-500)
 RULE  Nessun CSS in index.css per bottoni/colori già coperti da token
 RULE  style={{}} solo per valori senza equivalente Tailwind (es. clamp())
+RULE  UI leggera: non aggiungere card/pannelli di anteprima separati se il campo stesso puo mostrare il risultato; label brevi e controlli contestuali.
 ```
 
 ---

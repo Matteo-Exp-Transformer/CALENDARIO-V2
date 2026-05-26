@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { CaretLeftIcon } from '@phosphor-icons/react/dist/csr/CaretLeft'
+import { CaretRightIcon } from '@phosphor-icons/react/dist/csr/CaretRight'
 import { cn } from '@/lib/utils'
 import type { SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
 import { BOOKING_PUBLIC_WIDE_CARDS_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
@@ -7,7 +8,7 @@ import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus
 
 const SUB_TAB_SCROLL_STEP_PX = 240
 const SUB_TAB_CARD_SIZE_CLASS =
-  'w-[41%] max-w-[41%] shrink-0 sm:w-[41%] sm:max-w-[41%]'
+  'w-[41%] max-w-[41%] shrink-0 sm:w-[41%] sm:max-w-[41%] lg:w-[31%] lg:max-w-[31%]'
 
 interface BookingSubTabCardsProps {
   subTabs: SubTab[]
@@ -81,7 +82,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
           className="absolute left-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-r-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
           onClick={() => scrollBy(-SUB_TAB_SCROLL_STEP_PX)}
         >
-          <ChevronLeft size={22} strokeWidth={1.75} />
+          <CaretLeftIcon size={22} weight="regular" />
         </button>
       )}
       <div
@@ -114,7 +115,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
               <div className="flex min-w-0 w-full flex-1 flex-col items-center">
                 <p
                   className={cn(
-                    'line-clamp-2 text-sm font-bold leading-tight sm:text-base',
+                    'line-clamp-2 text-sm font-bold leading-tight sm:text-base lg:text-xl',
                     isActive ? 'text-warm-orange' : 'text-warm-wood',
                   )}
                 >
@@ -129,13 +130,13 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                 />
                 <div className="flex min-h-0 w-full flex-1 items-center justify-center py-2 sm:py-2.5">
                   {tab.description && (
-                    <p className="line-clamp-5 text-xs leading-tight text-warm-wood-dark/70 sm:line-clamp-4">
+                    <p className="line-clamp-5 text-xs leading-tight text-warm-wood-dark/70 sm:line-clamp-4 lg:text-base">
                       {tab.description}
                     </p>
                   )}
                 </div>
                 {priceLabel && (
-                  <p className="text-xs font-bold leading-tight text-warm-wood-dark/80 sm:text-sm">
+                  <p className="text-xs font-bold leading-tight text-warm-wood-dark/80 sm:text-sm lg:text-lg">
                     <span>{priceLabel}</span>
                   </p>
                 )}
@@ -151,7 +152,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
           className="absolute right-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-l-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
           onClick={() => scrollBy(SUB_TAB_SCROLL_STEP_PX)}
         >
-          <ChevronRight size={22} strokeWidth={1.75} />
+          <CaretRightIcon size={22} weight="regular" />
         </button>
       )}
     </div>

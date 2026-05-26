@@ -11,6 +11,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 26-05-26 | Prenota v2: Personalizza form, icone, font e UI leggera | [Report](Sessioni%20di%20lavoro/26-05-26/Report-prenota-v2-icone-responsive-26-05-26.md) — icone Phosphor configurabili, header con font/colore per nome azienda/titolo/descrizione, workflow Cursor per Personalizza form. |
 | 26-05-26 | Prenota v2: menù, sfondi e card preset | [Report](Sessioni%20di%20lavoro/26-05-26/Report-prenota-v2-menu-ui-26-05-26.md) — sfondi preimpostati ricollegati; card menù preset senza icona, più grandi, descrizione centrata e prezzo a persona. Commit `1c6cd81`, `89657d9`, `dea95e8`. |
 | 25-05-26 | UI Prenota v2: card, prezzi preset, data/ora | [Report](Sessioni%20di%20lavoro/25-05-26/Report-prenota-v2-ui-sessione-25-05-26.md) — card tipologia/sottotab più leggibili; prezzo preset × ospiti; totale ingredienti barrato; spazi intolleranze; picker data/ora responsive. |
 | 25-05-26 | UI Prenota v2: layout mobile, ordine sezioni, campi inset | [Report](Sessioni%20di%20lavoro/25-05-26/Report-prenota-v2-ui-sessione-25-05-26.md) — tipologia/menù prima dei dati; card compatte 3 col.; sottotab scroll+frecce; categorie mobile collapse al 75%; label dentro card; rimosso banner menù fisso; `BookingPublicInsetField`. Commit `09a574e` + seguito. |

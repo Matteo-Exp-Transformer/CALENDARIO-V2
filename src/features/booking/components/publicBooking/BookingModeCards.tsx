@@ -1,5 +1,14 @@
 import React from 'react'
-import { Utensils, ChefHat } from 'lucide-react'
+import { ForkKnifeIcon } from '@phosphor-icons/react/dist/csr/ForkKnife'
+import { CallBellIcon } from '@phosphor-icons/react/dist/csr/CallBell'
+import { ChefHatIcon } from '@phosphor-icons/react/dist/csr/ChefHat'
+import { WineIcon } from '@phosphor-icons/react/dist/csr/Wine'
+import { CoffeeIcon } from '@phosphor-icons/react/dist/csr/Coffee'
+import { PizzaIcon } from '@phosphor-icons/react/dist/csr/Pizza'
+import { HamburgerIcon } from '@phosphor-icons/react/dist/csr/Hamburger'
+import { BowlSteamIcon } from '@phosphor-icons/react/dist/csr/BowlSteam'
+import { CakeIcon } from '@phosphor-icons/react/dist/csr/Cake'
+import { MartiniIcon } from '@phosphor-icons/react/dist/csr/Martini'
 import { cn } from '@/lib/utils'
 import type { BookingMode } from '@/features/booking/constants/bookingPublicFormConfig'
 import type { BookingType } from '@/types/booking'
@@ -12,10 +21,16 @@ interface BookingModeCardsProps {
 }
 
 function ModeIcon({ icon, className }: { icon: BookingMode['icon']; className?: string }) {
-  if (icon === 'utensils') return <Utensils className={className} />
-  if (icon === 'chef-hat') return <ChefHat className={className} />
-  // 'cloche' — usiamo Utensils come fallback (Lucide non ha cloche)
-  return <Utensils className={className} />
+  if (icon === 'utensils') return <ForkKnifeIcon weight="light" className={className} />
+  if (icon === 'chef-hat') return <ChefHatIcon weight="light" className={className} />
+  if (icon === 'wine') return <WineIcon weight="light" className={className} />
+  if (icon === 'coffee') return <CoffeeIcon weight="light" className={className} />
+  if (icon === 'pizza') return <PizzaIcon weight="light" className={className} />
+  if (icon === 'hamburger') return <HamburgerIcon weight="light" className={className} />
+  if (icon === 'bowl-steam') return <BowlSteamIcon weight="light" className={className} />
+  if (icon === 'cake') return <CakeIcon weight="light" className={className} />
+  if (icon === 'martini') return <MartiniIcon weight="light" className={className} />
+  return <CallBellIcon weight="light" className={className} />
 }
 
 export const BookingModeCards: React.FC<BookingModeCardsProps> = ({ modes, activeModeId, onChange }) => {
@@ -39,8 +54,8 @@ export const BookingModeCards: React.FC<BookingModeCardsProps> = ({ modes, activ
               data-testid={`booking-mode-card-${mode.id}`}
               onClick={() => onChange(mode.id, mode.booking_type)}
               className={cn(
-                'flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-2 py-3 text-center transition-all duration-200',
-                'min-h-[100px] sm:min-h-[110px] sm:gap-2 sm:rounded-2xl sm:px-3 sm:py-4',
+                'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-2 py-3 text-center transition-all duration-200',
+                'min-h-[100px] sm:min-h-[110px] sm:gap-2 sm:rounded-2xl sm:px-3 sm:py-4 lg:px-16',
                 'bg-white/85 backdrop-blur-[1px] shadow-sm',
                 isActive
                   ? 'border-warm-orange ring-2 ring-warm-orange/30 shadow-md'
@@ -49,15 +64,13 @@ export const BookingModeCards: React.FC<BookingModeCardsProps> = ({ modes, activ
             >
               <div
                 className={cn(
-                  'flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors sm:h-10 sm:w-10',
-                  isActive
-                    ? 'bg-linear-to-br from-terracotta to-warm-orange text-white shadow-md'
-                    : 'bg-warm-wood/10 text-warm-wood',
+                  'flex h-8 w-8 shrink-0 items-center justify-center transition-colors sm:h-10 sm:w-10 lg:absolute lg:left-4 lg:top-1/2 lg:-translate-y-1/2',
+                  isActive ? 'text-warm-orange' : 'text-warm-wood/80',
                 )}
               >
-                <ModeIcon icon={mode.icon} className="h-4 w-4 sm:h-5 sm:w-5" />
+                <ModeIcon icon={mode.icon} className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
-              <div className="min-w-0 w-full">
+              <div className="min-w-0 w-full text-center">
                 <p
                   className={cn(
                     'text-[13px] font-bold leading-tight sm:text-base',

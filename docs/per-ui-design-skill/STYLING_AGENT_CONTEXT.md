@@ -148,6 +148,13 @@ import { cn } from '@/lib/utils'   // clsx + tailwind-merge — sempre usare que
 3. **Spacing/layout**: usa classi Tailwind standard (`px-4`, `gap-3`, `rounded-xl`).
 4. **Animazione**: usa `animate-fade-in` (definita in `index.css`) o classi Tailwind native. Per la nav admin, effetti notify (shiny/pulse) sono in `index.css` (classi `admin-nav-notify-*`).
 
+### UI leggera
+
+- Metti i controlli vicino al contenuto che modificano: font/colore sotto il campo testo, toggle vicino alla sezione, icona dentro il pulsante.
+- Evita pannelli separati di anteprima se il campo stesso puo mostrare il risultato.
+- Evita card dentro card e testi guida lunghi; usa label brevi (`Font`, `Colore`, `Icona`) e helper solo quando serve a evitare errori reali.
+- Se aggiungi un controllo, controlla mobile e desktop: non deve allungare inutilmente il pannello ne creare scroll orizzontale.
+
 ### Anti-pattern da evitare
 
 ```tsx
