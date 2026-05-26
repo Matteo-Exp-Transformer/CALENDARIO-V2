@@ -23,9 +23,14 @@ interface BookingSubTabCardsProps {
   modeCardColumnCount: number
 }
 
-function formatPricePerPerson(price?: number): string | null {
+/** Es. `18,00€ a persona` (senza spazio prima del simbolo €). */
+function formatPricePerPersonLabel(price?: number): string | null {
   if (price == null || price <= 0) return null
-  return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(price)
+  const amount = new Intl.NumberFormat('it-IT', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(price)
+  return `${amount}€ a persona`
 }
 
 export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
@@ -88,7 +93,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
       >
         {subTabs.map((tab) => {
           const isActive = activeSubTabId === tab.id
-          const priceLabel = formatPricePerPerson(tab.price_per_person)
+          const priceLabel = formatPricePerPersonLabel(tab.price_per_person)
           const presetName =
             tab.type === 'preset' && tab.preset_id
               ? customStaffPresets.find((p) => p.id === tab.preset_id)?.name
@@ -131,8 +136,8 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                   </p>
                 )}
                 {priceLabel && (
-                  <p className="mt-auto pt-2 text-[13px] font-semibold leading-tight text-warm-wood-dark/80 sm:pt-2.5 sm:text-[15px]">
-                    <span>{priceLabel}/persona</span>
+                  <p className="mt-auto pt-2 text-xs font-bold leading-tight text-warm-wood-dark/80 sm:pt-2.5 sm:text-sm">
+                    <span>{priceLabel}</span>
                   </p>
                 )}
               </div>
