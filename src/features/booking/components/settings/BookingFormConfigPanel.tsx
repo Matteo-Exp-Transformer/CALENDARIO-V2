@@ -109,10 +109,78 @@ function bookingTypeUsesMenuItems(bookingType: BookingMode['booking_type'], item
 type BookingFormConfigPanelProps = {
   /** Es. sezione «Sfondo pagina Prenota» subito sotto le modalità. */
   afterBookingModesSection?: React.ReactNode
+  /** Sfondo pagina Prenota: modifiche non ancora su DB. */
+  bookingBgDirty?: boolean
+  onSaveBookingBackground?: () => void | Promise<void>
+  onCancelBookingBackground?: () => void
 }
+
+/** Salva / annulla sopra la card, allineati a destra con spazio sotto i pulsanti. */
+export function FormSectionFloatingActions({
+  actions,
+  children,
+}: {
+  actions?: React.ReactNode
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex w-full flex-col gap-3">
+      {actions != null && <div className="flex w-full justify-end">{actions}</div>}
+      {children}
+    </div>
+  )
+}
+
+const SectionSaveButton: React.FC<{
+  onClick: () => void
+  disabled?: boolean
+  pending?: boolean
+}> = ({ onClick, disabled, pending }) => (
+  <Button
+    type="button"
+    size="sm"
+    onClick={onClick}
+    disabled={disabled || pending}
+    className="border-2 border-primary-700 bg-primary-600 px-4 py-1.5 text-sm shadow-sm hover:bg-primary-500 hover:border-primary-600 disabled:opacity-60"
+  >
+    {pending ? (
+      <span className="flex items-center gap-1.5">
+        <SpinnerGapIcon weight="regular" className="h-3.5 w-3.5 animate-spin" />
+        Salvataggio…
+      </span>
+    ) : (
+      'Salva'
+    )}
+  </Button>
+)
+
+/** Annulla + Salva per una sola sezione (card/modulo). */
+const SectionActionBar: React.FC<{
+  onCancel: () => void
+  onSave: () => void
+  cancelDisabled?: boolean
+  saveDisabled?: boolean
+  pending?: boolean
+}> = ({ onCancel, onSave, cancelDisabled, saveDisabled, pending }) => (
+  <div className="flex flex-wrap items-center justify-end gap-2">
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      onClick={onCancel}
+      disabled={cancelDisabled || pending}
+    >
+      Annulla modifiche
+    </Button>
+    <SectionSaveButton onClick={onSave} disabled={saveDisabled} pending={pending} />
+  </div>
+)
 
 export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   afterBookingModesSection,
+  bookingBgDirty = false,
+  onSaveBookingBackground,
+  onCancelBookingBackground,
 }) => {
   const { organizationName, tenantId } = useTenantContext()
   const { registerUnsavedSource, clearUnsavedSource } = useUnsavedChangesGuard()
@@ -129,35 +197,43 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     ''
 
   const [config, setConfig] = useState<BookingPublicFormConfig>(DEFAULT_BOOKING_FORM_CONFIG)
-  const [dirty, setDirty] = useState(false)
-  const dirtyRef = useRef(false)
-  dirtyRef.current = dirty
+  const [headerDirty, setHeaderDirty] = useState(false)
+  const [modesDirty, setModesDirty] = useState(false)
+  const headerDirtyRef = useRef(false)
+  const modesDirtyRef = useRef(false)
+  headerDirtyRef.current = headerDirty
+  modesDirtyRef.current = modesDirty
+  const formConfigDirty = headerDirty || modesDirty
   const [expandedMode, setExpandedMode] = useState<string | null>(null)
   const [draftSubTabsByMode, setDraftSubTabsByMode] = useState<Record<string, SubTab | null>>({})
   const [expandedSubTabByMode, setExpandedSubTabByMode] = useState<Record<string, string | null>>({})
 
   useEffect(() => {
-    if (savedConfig) {
+    if (savedConfig && !headerDirty && !modesDirty) {
       setConfig(savedConfig)
-      setDirty(false)
     }
-  }, [savedConfig])
+  }, [savedConfig, headerDirty, modesDirty])
 
   useEffect(() => {
-    registerUnsavedSource('booking-form-config', 'Personalizza form', dirty)
+    registerUnsavedSource('booking-form-config', 'Personalizza form', formConfigDirty)
     return () => {
-      if (!dirtyRef.current) clearUnsavedSource('booking-form-config')
+      if (!headerDirtyRef.current && !modesDirtyRef.current) {
+        clearUnsavedSource('booking-form-config')
+      }
     }
-  }, [clearUnsavedSource, dirty, registerUnsavedSource])
+  }, [clearUnsavedSource, formConfigDirty, registerUnsavedSource])
 
-  const markDirty = () => setDirty(true)
+  const markHeaderDirty = () => setHeaderDirty(true)
+  const markModesDirty = () => setModesDirty(true)
+
+  const getSavedBaseline = () => savedConfig ?? DEFAULT_BOOKING_FORM_CONFIG
 
   const updateField = (
     field: keyof Pick<BookingPublicFormConfig, 'page_title' | 'page_description'>,
     value: string,
   ) => {
     setConfig((prev) => ({ ...prev, [field]: value }))
-    markDirty()
+    markHeaderDirty()
   }
 
   const updateHeaderTextStyle = (
@@ -181,7 +257,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
         },
       }
     })
-    markDirty()
+    markHeaderDirty()
   }
 
   const updateMode = (modeId: string, patch: Partial<BookingMode>) => {
@@ -189,7 +265,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       ...prev,
       booking_modes: prev.booking_modes.map((m) => (m.id === modeId ? { ...m, ...patch } : m)),
     }))
-    markDirty()
+    markModesDirty()
   }
 
   const updateSubTab = (modeId: string, subTabId: string, patch: Partial<SubTab>) => {
@@ -203,7 +279,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
         }
       }),
     }))
-    markDirty()
+    markModesDirty()
   }
 
   const addSubTab = (modeId: string, display: SubTab['display']) => {
@@ -230,7 +306,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     }))
     setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
     setExpandedSubTabByMode((prev) => ({ ...prev, [modeId]: null }))
-    markDirty()
+    markModesDirty()
   }
 
   const cancelDraftSubTab = (modeId: string) => {
@@ -289,7 +365,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
         return { ...m, sub_tabs: (m.sub_tabs ?? []).filter((t) => t.id !== subTabId) }
       }),
     }))
-    markDirty()
+    markModesDirty()
   }
 
   const moveSubTab = (modeId: string, subTabId: string, direction: 'up' | 'down') => {
@@ -306,30 +382,107 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
         return { ...m, sub_tabs: tabs }
       }),
     }))
-    markDirty()
+    markModesDirty()
   }
 
-  const handleSave = () => {
-    const normalized = normalizeBookingPublicFormConfig(config)
-    upsert.mutate(
-      [{ key: 'booking_public_form_config', value: normalized }],
-      {
-        onSuccess: () => {
-          setConfig(normalized)
-          setDirty(false)
-        },
-        onError: () => {
-          toast.error('Errore nel salvataggio configurazione form')
-        },
-      },
-    )
+  const mergeConfigAfterPartialSave = (
+    normalized: BookingPublicFormConfig,
+    savedPart: 'header' | 'modes',
+  ) => {
+    setConfig((prev) => {
+      if (savedPart === 'header' && modesDirty) {
+        return { ...normalized, booking_modes: prev.booking_modes }
+      }
+      if (savedPart === 'modes' && headerDirty) {
+        return {
+          ...normalized,
+          page_title: prev.page_title,
+          page_description: prev.page_description,
+          header_styles: prev.header_styles,
+        }
+      }
+      return normalized
+    })
   }
 
-  const handleCancelChanges = () => {
-    setConfig(savedConfig ?? DEFAULT_BOOKING_FORM_CONFIG)
+  const saveHeaderSection = async () => {
+    const saved = getSavedBaseline()
+    const normalized = normalizeBookingPublicFormConfig({
+      ...saved,
+      page_title: config.page_title,
+      page_description: config.page_description,
+      header_styles: config.header_styles,
+    })
+    await upsert.mutateAsync([{ key: 'booking_public_form_config', value: normalized }])
+    mergeConfigAfterPartialSave(normalized, 'header')
+    setHeaderDirty(false)
+  }
+
+  const saveModesSection = async () => {
+    const saved = getSavedBaseline()
+    const normalized = normalizeBookingPublicFormConfig({
+      ...saved,
+      booking_modes: config.booking_modes,
+    })
+    await upsert.mutateAsync([{ key: 'booking_public_form_config', value: normalized }])
+    mergeConfigAfterPartialSave(normalized, 'modes')
+    setModesDirty(false)
+  }
+
+  const handleCancelHeaderSection = () => {
+    const baseline = getSavedBaseline()
+    setConfig((prev) => ({
+      ...prev,
+      page_title: baseline.page_title,
+      page_description: baseline.page_description,
+      header_styles: baseline.header_styles,
+    }))
+    setHeaderDirty(false)
+  }
+
+  const handleCancelModesSection = () => {
+    const baseline = getSavedBaseline()
+    setConfig((prev) => ({ ...prev, booking_modes: baseline.booking_modes }))
     setDraftSubTabsByMode({})
     setExpandedSubTabByMode({})
-    setDirty(false)
+    setModesDirty(false)
+  }
+
+  const handleCancelFormChanges = () => {
+    const baseline = getSavedBaseline()
+    if (headerDirty && modesDirty) {
+      setConfig(baseline)
+    } else if (headerDirty) {
+      setConfig((prev) => ({
+        ...prev,
+        page_title: baseline.page_title,
+        page_description: baseline.page_description,
+        header_styles: baseline.header_styles,
+      }))
+    } else if (modesDirty) {
+      setConfig((prev) => ({ ...prev, booking_modes: baseline.booking_modes }))
+    }
+    setDraftSubTabsByMode({})
+    setExpandedSubTabByMode({})
+    setHeaderDirty(false)
+    setModesDirty(false)
+  }
+
+  const pageHasUnsaved = formConfigDirty || bookingBgDirty
+
+  const handleSaveAllPage = async () => {
+    try {
+      if (headerDirty) await saveHeaderSection()
+      if (modesDirty) await saveModesSection()
+      if (bookingBgDirty && onSaveBookingBackground) await onSaveBookingBackground()
+    } catch {
+      toast.error('Errore nel salvataggio')
+    }
+  }
+
+  const handleCancelAllPage = () => {
+    handleCancelFormChanges()
+    onCancelBookingBackground?.()
   }
 
   const allPresets: CustomStaffPreset[] = Array.isArray(customPresetsRaw) ? customPresetsRaw : []
@@ -372,28 +525,44 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     )
   }
 
-  const saveControls = (
-    <div className="flex flex-wrap items-center justify-end gap-3">
-      {dirty && !upsert.isPending && (
-        <span className="text-sm font-semibold text-slate-600">Modifiche non salvate</span>
-      )}
-      <Button
-        type="button"
-        onClick={handleSave}
-        disabled={upsert.isPending || !dirty}
-        className="border-2 border-primary-700 bg-primary-600 px-6 py-2.5 text-sm shadow-md hover:bg-primary-500 hover:border-primary-600 disabled:opacity-60"
-      >
-        {upsert.isPending ? (
-          <span className="flex items-center gap-2">
-            <SpinnerGapIcon weight="regular" className="h-4 w-4 animate-spin" />
-            Salvataggio…
-          </span>
-        ) : (
-          'Salva'
-        )}
-      </Button>
-    </div>
+  const headerSectionActions = (
+    <SectionActionBar
+      onCancel={handleCancelHeaderSection}
+      onSave={() => {
+        void saveHeaderSection().catch(() => toast.error('Errore nel salvataggio intestazione'))
+      }}
+      cancelDisabled={!headerDirty}
+      saveDisabled={!headerDirty}
+      pending={upsert.isPending}
+    />
   )
+
+  const modesSectionActions = (
+    <SectionActionBar
+      onCancel={handleCancelModesSection}
+      onSave={() => {
+        void saveModesSection().catch(() => toast.error('Errore nel salvataggio modalità'))
+      }}
+      cancelDisabled={!modesDirty}
+      saveDisabled={!modesDirty}
+      pending={upsert.isPending}
+    />
+  )
+
+  const backgroundSectionActions =
+    onSaveBookingBackground != null && onCancelBookingBackground != null ? (
+      <SectionActionBar
+        onCancel={onCancelBookingBackground}
+        onSave={() => {
+          void Promise.resolve(onSaveBookingBackground()).catch(() =>
+            toast.error('Errore nel salvataggio sfondo'),
+          )
+        }}
+        cancelDisabled={!bookingBgDirty}
+        saveDisabled={!bookingBgDirty}
+        pending={upsert.isPending}
+      />
+    ) : null
 
   const renderSubTabEditor = ({
     mode,
@@ -653,12 +822,9 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-6">
-      {/* Blocco 1 — Intestazione pagina (Salva fuori card, margine alto-destra) */}
-      <div className="relative mt-10">
-        <div className="absolute bottom-full right-0 z-10 mb-1.5 flex w-full justify-end">
-          {saveControls}
-        </div>
+    <div className="w-full max-w-2xl mx-auto space-y-4">
+      {/* Blocco 1 — Intestazione pagina */}
+      <FormSectionFloatingActions actions={headerSectionActions}>
         <section className="admin-warm-surface rounded-xl border p-5 space-y-4 shadow-sm">
           <h3 className="text-base font-semibold text-slate-800">Intestazione pagina Prenota</h3>
           <div className="space-y-3">
@@ -711,9 +877,10 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           </div>
         </div>
       </section>
-      </div>
+      </FormSectionFloatingActions>
 
       {/* Blocco 2 — Le modalità */}
+      <FormSectionFloatingActions actions={modesSectionActions}>
       <section className="admin-warm-surface rounded-xl border p-5 space-y-4 shadow-sm">
         <div className="space-y-1">
           <h3 className="text-base font-semibold text-slate-800">Modalità di prenotazione</h3>
@@ -1189,22 +1356,47 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           })}
         </div>
       </section>
+      </FormSectionFloatingActions>
 
-      {afterBookingModesSection}
+      {afterBookingModesSection != null && (
+        <FormSectionFloatingActions actions={backgroundSectionActions}>
+          {afterBookingModesSection}
+        </FormSectionFloatingActions>
+      )}
 
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border admin-warm-surface px-5 py-4 shadow-sm">
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={handleCancelChanges}
-          disabled={upsert.isPending || !dirty}
-        >
-          Annulla modifiche
-        </Button>
-        <div className="ml-auto">
-          {saveControls}
+      {pageHasUnsaved && (
+        <div className="restaurant-settings-save-footer admin-warm-surface flex min-h-[4.75rem] w-full flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={handleCancelAllPage}
+            disabled={upsert.isPending}
+          >
+            Annulla modifiche
+          </Button>
+          <Button
+            type="button"
+            onClick={() => void handleSaveAllPage()}
+            disabled={upsert.isPending}
+            className="restaurant-settings-save-submit min-h-[3.75rem] border-2 border-primary-700 bg-primary-600 px-10 py-5 text-base shadow-md hover:bg-primary-500 hover:border-primary-600 hover:shadow-lg focus:ring-primary-300 disabled:pointer-events-none disabled:border-primary-700 disabled:bg-primary-600"
+          >
+            {upsert.isPending ? (
+              <span className="flex items-center justify-center gap-2">
+                <SpinnerGapIcon weight="regular" className="h-5 w-5 animate-spin" />
+                Salvataggio…
+              </span>
+            ) : (
+              'Salva modifiche'
+            )}
+          </Button>
+          <span
+            className="restaurant-settings-save-footer-msg max-w-xl text-center text-base font-semibold leading-snug text-slate-900"
+            style={{ color: 'var(--color-text)', WebkitTextFillColor: 'var(--color-text)' }}
+          >
+            Modifiche non salvate.
+          </span>
         </div>
-      </div>
+      )}
     </div>
   )
 }

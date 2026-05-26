@@ -84,7 +84,7 @@ function validateEditingSlots(slots: EditingSlot[]): string | null {
 }
 
 const restaurantSettingsIntroCardClass =
-  'admin-warm-surface w-full max-w-2xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center flex flex-col items-center gap-3 sm:flex-row sm:justify-center'
+  'admin-warm-surface w-full max-w-2xl mx-auto space-y-3 rounded-xl border p-4 md:p-5 shadow-md text-center flex flex-col items-center gap-2 sm:flex-row sm:justify-center'
 
 const previewPickFocusRingClass =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 sm:focus-visible:ring-offset-2'
@@ -313,6 +313,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [dirty, setDirty] = useState(false)
   const dirtyRef = useRef(false)
   dirtyRef.current = dirty
+  const bookingBgDirtyRef = useRef(false)
   const [restaurantName, setRestaurantName] = useState('')
   const [slotCapacities, setSlotCapacities] = useState<Record<string, number | ''>>({})
   const [editingSlots, setEditingSlots] = useState<EditingSlot[]>([])
@@ -331,8 +332,6 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [bookingPageBackground, setBookingPageBackground] =
     useState<BookingPageBackgroundId>(DEFAULT_BOOKING_PAGE_BACKGROUND)
   const [bookingBgTextureTab, setBookingBgTextureTab] = useState<'images' | 'gradients'>('images')
-  /** Dopo «Conferma» la griglia resta bloccata finche non si cambia selezione o non va a buon fine «Salva modifiche». */
-  const [bookingBgSelectionLocked, setBookingBgSelectionLocked] = useState(false)
   const [appTheme, setAppTheme] = useState<AppThemeId>(DEFAULT_APP_THEME)
   const [settingsTab, setSettingsTab] = useState<'anagrafica' | 'form'>('anagrafica')
 
@@ -341,7 +340,6 @@ export const RestaurantSettingsTab: React.FC = () => {
   useEffect(() => {
     hydratedRef.current = false
     setDirty(false)
-    setBookingBgSelectionLocked(false)
   }, [tenantId])
 
   useEffect(() => {
@@ -350,6 +348,18 @@ export const RestaurantSettingsTab: React.FC = () => {
       if (!dirtyRef.current) clearUnsavedSource('restaurant-settings')
     }
   }, [clearUnsavedSource, dirty, registerUnsavedSource])
+
+  const savedBookingPageBackground = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
+  const bookingBgDirty = bookingPageBackground !== savedBookingPageBackground
+  bookingBgDirtyRef.current = bookingBgDirty
+
+  useEffect(() => {
+    if (settingsTab !== 'form') return
+    registerUnsavedSource('restaurant-booking-bg', 'Sfondo pagina Prenota', bookingBgDirty)
+    return () => {
+      if (!bookingBgDirtyRef.current) clearUnsavedSource('restaurant-booking-bg')
+    }
+  }, [bookingBgDirty, clearUnsavedSource, registerUnsavedSource, settingsTab])
 
   const allSuccess =
     nameQuery.isSuccess &&
@@ -394,7 +404,6 @@ export const RestaurantSettingsTab: React.FC = () => {
     const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
     setBookingPageBackground(resolvedBg)
     setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
-    setBookingBgSelectionLocked(false)
     setAppTheme(appThemeQuery.data ?? DEFAULT_APP_THEME)
     hydratedRef.current = true
   }, [
@@ -466,7 +475,6 @@ export const RestaurantSettingsTab: React.FC = () => {
     const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
     setBookingPageBackground(resolvedBg)
     setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
-    setBookingBgSelectionLocked(false)
     setAppTheme(appThemeQuery.data ?? DEFAULT_APP_THEME)
     setSlotValidationError(null)
   }
@@ -476,20 +484,18 @@ export const RestaurantSettingsTab: React.FC = () => {
     setDirty(false)
   }
 
-  const savedBookingPageBackground = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
-  /** Selezione diversa dal valore gia salvato su DB (solo «Salva modifiche» aggiorna il DB). */
-  const bookingBgHasUnsavedChoice = bookingPageBackground !== savedBookingPageBackground
+  const handleSaveBookingBackgroundOnly = async () => {
+    if (!tenantId) return
+    await upsert.mutateAsync([
+      { key: 'public_booking_page_background', value: bookingPageBackground },
+    ])
+    await queryClient.refetchQueries({ queryKey: ['restaurant_settings'], type: 'active' })
+  }
 
-  const handleBookingBgConfirmOrCancel = () => {
-    if (!tenantId || upsert.isPending) return
-    if (bookingBgSelectionLocked) {
-      setBookingBgSelectionLocked(false)
-      return
-    }
-    if (!bookingBgHasUnsavedChoice) return
-    setBookingBgSelectionLocked(true)
-    toast.success(
-      'Selezione confermata e bloccata. Usa «Salva modifiche» in fondo per pubblicarla sulla pagina Prenota.'
+  const handleCancelBookingBackgroundOnly = () => {
+    setBookingPageBackground(savedBookingPageBackground)
+    setBookingBgTextureTab(
+      isBookingPageGradientId(savedBookingPageBackground) ? 'gradients' : 'images',
     )
   }
 
@@ -555,13 +561,6 @@ export const RestaurantSettingsTab: React.FC = () => {
         toast.error(validationError)
         return
       }
-    }
-
-    if (bookingPageBackground !== savedBookingPageBackground && !bookingBgSelectionLocked) {
-      toast.error(
-        'Conferma la selezione dello sfondo con il pulsante dedicato, poi usa Salva modifiche in fondo.'
-      )
-      return
     }
 
     try {
@@ -666,7 +665,6 @@ export const RestaurantSettingsTab: React.FC = () => {
 
       setSlotValidationError(null)
       setDirty(false)
-      setBookingBgSelectionLocked(false)
     } catch {
       /* toast gestito da useUpsertRestaurantSetting.onError */
     }
@@ -743,8 +741,8 @@ export const RestaurantSettingsTab: React.FC = () => {
       <h3 className="text-base font-semibold text-slate-800">Sfondo pagina Prenota</h3>
       <p className="text-sm text-slate-600">
         Tocca l&apos;immagine o il nome per selezionare lo sfondo. Tocca l&apos;icona occhio al centro per
-        l&apos;anteprima grande (su desktop compare passando il mouse sulla card). Conferma la scelta e salva in
-        fondo per pubblicarla sulla pagina Prenota.
+        l&apos;anteprima grande (su desktop compare passando il mouse sulla card). Usa Annulla modifiche o
+        Salva sopra la card (solo questa sezione), oppure Salva modifiche in fondo pagina per tutto.
       </p>
       <div className="flex w-full flex-col">
         <div className="flex w-full justify-end">
@@ -787,7 +785,7 @@ export const RestaurantSettingsTab: React.FC = () => {
                   key={id}
                   label={label}
                   selected={bookingPageBackground === id}
-                  disabled={upsert.isPending || bookingBgSelectionLocked}
+                  disabled={upsert.isPending}
                   pickButtonClass={bookingBgPickButtonClass}
                   aspectClass="aspect-[4/3]"
                   pickEntity="sfondo"
@@ -796,7 +794,6 @@ export const RestaurantSettingsTab: React.FC = () => {
                   previewModalSrc={tileHref}
                   onPick={() => {
                     setBookingPageBackground(id)
-                    markDirty()
                   }}
                 />
               )
@@ -820,7 +817,7 @@ export const RestaurantSettingsTab: React.FC = () => {
                   key={preset.id}
                   label={preset.name}
                   selected={bookingPageBackground === preset.id}
-                  disabled={upsert.isPending || bookingBgSelectionLocked}
+                  disabled={upsert.isPending}
                   pickButtonClass={bookingBgPickButtonClass}
                   aspectClass="aspect-[4/3]"
                   pickEntity="sfondo"
@@ -836,7 +833,6 @@ export const RestaurantSettingsTab: React.FC = () => {
                   }
                   onPick={() => {
                     setBookingPageBackground(preset.id)
-                    markDirty()
                   }}
                 />
               )
@@ -845,32 +841,13 @@ export const RestaurantSettingsTab: React.FC = () => {
         )}
       </div>
 
-      {(bookingBgHasUnsavedChoice || bookingBgSelectionLocked) && (
-        <div className="mx-auto flex w-full max-w-md flex-col items-center gap-2 pt-1">
-          <Button
-            type="button"
-            variant="primary"
-            onClick={handleBookingBgConfirmOrCancel}
-            disabled={upsert.isPending || !tenantId}
-            style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
-            className="min-h-[2.875rem] w-full max-w-xs border-0 bg-primary-800 px-6 py-2.5 text-white shadow-md transition-colors duration-150 hover:bg-primary-700 hover:shadow-lg focus:ring-primary-400 disabled:pointer-events-none disabled:bg-primary-800 [&_svg]:text-white"
-          >
-            {bookingBgSelectionLocked ? 'Annulla selezione sfondo' : 'Conferma selezione sfondo'}
-          </Button>
-          {bookingBgSelectionLocked && bookingBgHasUnsavedChoice && (
-            <p className="text-xs font-semibold leading-snug text-emerald-800">
-              Selezione confermata. Salva modifiche in fondo per pubblicarla sulla pagina Prenota.
-            </p>
-          )}
-        </div>
-      )}
     </section>
   )
 
   return (
-    <div className="flex w-full flex-col items-center gap-8">
+    <div className="flex w-full flex-col items-center gap-3">
       {/* Tab pill: Anagrafica Azienda / Personalizza Form */}
-      <div className="flex gap-2 rounded-xl bg-slate-100 p-1 self-start">
+      <div className="flex gap-1.5 rounded-xl bg-slate-100 p-0.5 self-start">
         <button
           type="button"
           onClick={() => {
@@ -878,7 +855,7 @@ export const RestaurantSettingsTab: React.FC = () => {
             setSettingsTab('anagrafica')
           }}
           className={cn(
-            'rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
+            'rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors',
             settingsTab === 'anagrafica'
               ? 'bg-white text-slate-800 shadow-sm'
               : 'text-slate-500 hover:text-slate-700',
@@ -893,7 +870,7 @@ export const RestaurantSettingsTab: React.FC = () => {
             setSettingsTab('form')
           }}
           className={cn(
-            'rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
+            'rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors',
             settingsTab === 'form'
               ? 'bg-white text-slate-800 shadow-sm'
               : 'text-slate-500 hover:text-slate-700',
@@ -904,7 +881,12 @@ export const RestaurantSettingsTab: React.FC = () => {
       </div>
 
       {settingsTab === 'form' && (
-        <BookingFormConfigPanel afterBookingModesSection={bookingPageBackgroundSection} />
+        <BookingFormConfigPanel
+          afterBookingModesSection={bookingPageBackgroundSection}
+          bookingBgDirty={bookingBgDirty}
+          onSaveBookingBackground={handleSaveBookingBackgroundOnly}
+          onCancelBookingBackground={handleCancelBookingBackgroundOnly}
+        />
       )}
 
       {settingsTab === 'anagrafica' && (
@@ -1244,6 +1226,7 @@ export const RestaurantSettingsTab: React.FC = () => {
       </React.Fragment>
       )}
 
+      {settingsTab === 'anagrafica' && dirty && (
       <div className="restaurant-settings-save-footer admin-warm-surface flex min-h-[4.75rem] w-full max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7">
         <Button
           type="button"
@@ -1277,6 +1260,7 @@ export const RestaurantSettingsTab: React.FC = () => {
           </span>
         )}
       </div>
+      )}
     </div>
   )
 }

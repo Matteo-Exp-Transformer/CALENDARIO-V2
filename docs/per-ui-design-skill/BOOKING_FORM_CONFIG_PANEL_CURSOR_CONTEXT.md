@@ -29,6 +29,16 @@ description: >-
 
 ## Stato attuale
 
+### Salvataggio admin (Personalizza form)
+
+- Tre sezioni con barra azioni sopra la card (`FormSectionFloatingActions` + `SectionActionBar`):
+  1. **Intestazione pagina Prenota** — salva/annulla solo `page_title`, `page_description`, `header_styles` in `booking_public_form_config`.
+  2. **Modalità di prenotazione** — salva/annulla solo `booking_modes` (e sottotab).
+  3. **Sfondo pagina Prenota** — salva/annulla solo `public_booking_page_background` (`RestaurantSettingsTab` passa handler al panel).
+- **Footer** in fondo (`pageHasUnsaved`): compare solo se almeno una sezione ha modifiche; **Salva modifiche** / **Annulla modifiche** su tutta la tab Personalizza form.
+- **Rimosso** il flusso «Conferma selezione sfondo» (pulsante dedicato, lock griglia, toast obbligatorio): lo sfondo si salva con Salva della sezione o footer.
+- Guard navigazione: `UnsavedChangesContext` (`booking-form-config`, `restaurant-booking-bg`).
+
 - Sezione admin: `BookingFormConfigPanel`, blocco **Intestazione pagina Prenota**.
 - Campi testo:
   - nome azienda: solo lettura, letto da `restaurant_name`/tenant; modifica altrove in Anagrafica Azienda.
