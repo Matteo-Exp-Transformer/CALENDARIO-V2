@@ -4,7 +4,6 @@ import { CaretRightIcon } from '@phosphor-icons/react/dist/csr/CaretRight'
 import { cn } from '@/lib/utils'
 import type { SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
 import { BOOKING_PUBLIC_WIDE_CARDS_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
-import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
 
 const SUB_TAB_SCROLL_STEP_PX = 240
 const SUB_TAB_CARD_SIZE_CLASS =
@@ -14,11 +13,6 @@ interface BookingSubTabCardsProps {
   subTabs: SubTab[]
   activeSubTabId: string | null
   onChange: (subTab: SubTab | null) => void
-  /**
-   * Serve per mostrare nel label delle card "preset" il nome vero del menù
-   * (coerente con `MenuSelection`), invece di un label generico tipo "Opzione menu".
-   */
-  customStaffPresets?: CustomStaffPreset[]
   /** Card tipologia attive nella riga sopra. Mantenuta per compatibilita con il chiamante. */
   modeCardColumnCount: number
 }
@@ -37,7 +31,6 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   subTabs,
   activeSubTabId,
   onChange,
-  customStaffPresets = [],
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -92,10 +85,6 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
         {subTabs.map((tab) => {
           const isActive = activeSubTabId === tab.id
           const priceLabel = formatPricePerPersonLabel(tab.price_per_person)
-          const presetName =
-            tab.type === 'preset' && tab.preset_id
-              ? customStaffPresets.find((p) => p.id === tab.preset_id)?.name
-              : undefined
           return (
             <button
               key={tab.id}
@@ -119,7 +108,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                     isActive ? 'text-warm-orange' : 'text-warm-wood',
                   )}
                 >
-                  {presetName?.trim() ? presetName : tab.label}
+                  {tab.label}
                 </p>
                 <div
                   className={cn(

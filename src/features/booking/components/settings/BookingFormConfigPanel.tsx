@@ -15,10 +15,15 @@ import { SpinnerGapIcon } from '@phosphor-icons/react/dist/csr/SpinnerGap'
 import { CaretUpIcon } from '@phosphor-icons/react/dist/csr/CaretUp'
 import { CaretDownIcon } from '@phosphor-icons/react/dist/csr/CaretDown'
 import { TrashIcon } from '@phosphor-icons/react/dist/csr/Trash'
+import { EyeIcon } from '@phosphor-icons/react/dist/csr/Eye'
+import { EyeSlashIcon } from '@phosphor-icons/react/dist/csr/EyeSlash'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { cn } from '@/lib/utils'
+import { useMenuItems } from '@/features/booking/hooks/useMenuItems'
+import { useMenuCategories } from '@/features/booking/hooks/useMenuCategories'
+import { MenuQrCarouselSection } from '@/features/booking/components/MenuHomepageConfigPanel'
 import {
   useRestaurantSetting,
   useUpsertRestaurantSetting,
@@ -39,6 +44,7 @@ import {
   type SubTabIcon,
 } from '@/features/booking/constants/bookingPublicFormConfig'
 import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
+import { normalizeMenuItemBookingTypes, type MenuItem } from '@/types/menu'
 import { toast } from 'react-toastify'
 
 const ICON_OPTIONS: { value: BookingModeIcon; label: string }[] = [
@@ -84,13 +90,19 @@ function SubTabIconOption({ icon, className }: { icon: SubTabIcon; className?: s
   return <ForkKnifeIcon weight="light" className={className} />
 }
 
-function newSubTab(type: SubTab['type']): SubTab {
+function newSubTab(display: SubTab['display']): SubTab {
   return {
     id: crypto.randomUUID(),
-    type,
-    label: type === 'preset' ? 'Menu consigliato' : 'Opzione menu',
+    display,
+    label: display === 'carousel' ? 'Carosello' : 'Card a scorrimento',
     icon: 'utensils',
+    hidden_category_keys: [],
+    hidden_item_ids: [],
   }
+}
+
+function bookingTypeUsesMenuItems(bookingType: BookingMode['booking_type'], items: MenuItem[]): boolean {
+  return items.some((item) => normalizeMenuItemBookingTypes(item.booking_types).includes(bookingType))
 }
 
 type BookingFormConfigPanelProps = {
@@ -101,10 +113,12 @@ type BookingFormConfigPanelProps = {
 export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   afterBookingModesSection,
 }) => {
-  const { organizationName } = useTenantContext()
+  const { organizationName, tenantId } = useTenantContext()
   const { data: savedConfig } = useRestaurantSetting('booking_public_form_config')
   const { data: restaurantName } = useRestaurantSetting('restaurant_name')
   const { data: customPresetsRaw } = useRestaurantSetting('booking_custom_staff_presets')
+  const { data: menuItems = [] } = useMenuItems()
+  const { data: menuCategories = [] } = useMenuCategories()
   const upsert = useUpsertRestaurantSetting()
 
   const displayRestaurantName =
@@ -179,15 +193,43 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     markDirty()
   }
 
-  const addSubTab = (modeId: string, type: SubTab['type']) => {
+  const addSubTab = (modeId: string, display: SubTab['display']) => {
     setConfig((prev) => ({
       ...prev,
       booking_modes: prev.booking_modes.map((m) => {
         if (m.id !== modeId) return m
-        return { ...m, sub_tabs: [...(m.sub_tabs ?? []), newSubTab(type)] }
+        return { ...m, sub_tabs: [...(m.sub_tabs ?? []), newSubTab(display)] }
       }),
     }))
     markDirty()
+  }
+
+  const importPresetIntoSubTab = (modeId: string, subTabId: string, presetId: string) => {
+    const preset = allPresets.find((p) => p.id === presetId)
+    if (!preset) return
+    updateSubTab(modeId, subTabId, {
+      preset_id: preset.id,
+      label: preset.name,
+      description: preset.description?.trim() || undefined,
+      hidden_item_ids: menuItems
+        .filter((item) => !preset.item_ids.includes(item.id))
+        .map((item) => item.id),
+      hidden_category_keys: [],
+    })
+  }
+
+  const toggleSubTabCategory = (modeId: string, tab: SubTab, categoryKey: string) => {
+    const hidden = new Set(tab.hidden_category_keys ?? [])
+    if (hidden.has(categoryKey)) hidden.delete(categoryKey)
+    else hidden.add(categoryKey)
+    updateSubTab(modeId, tab.id, { hidden_category_keys: Array.from(hidden) })
+  }
+
+  const toggleSubTabItem = (modeId: string, tab: SubTab, itemId: string) => {
+    const hidden = new Set(tab.hidden_item_ids ?? [])
+    if (hidden.has(itemId)) hidden.delete(itemId)
+    else hidden.add(itemId)
+    updateSubTab(modeId, tab.id, { hidden_item_ids: Array.from(hidden) })
   }
 
   const removeSubTab = (modeId: string, subTabId: string) => {
@@ -434,17 +476,31 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        id={`mode-subtabs-${mode.id}`}
-                        checked={mode.sub_tabs_enabled}
-                        onChange={(e) => updateMode(mode.id, { sub_tabs_enabled: e.target.checked })}
-                        className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
-                      />
-                      <label htmlFor={`mode-subtabs-${mode.id}`} className="text-sm font-medium text-slate-700">
-                        Abilita sottotab (card orizzontali sul form pubblico)
-                      </label>
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+                      <span className="text-sm font-medium text-slate-700">
+                        Abilita sottotab
+                      </span>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={mode.sub_tabs_enabled}
+                        onClick={() =>
+                          updateMode(mode.id, { sub_tabs_enabled: !mode.sub_tabs_enabled })
+                        }
+                        className={cn(
+                          'relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400',
+                          mode.sub_tabs_enabled
+                            ? 'border-primary-600 bg-primary-600'
+                            : 'border-slate-300 bg-slate-200',
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            'inline-block h-5 w-5 rounded-full bg-white shadow transition-transform',
+                            mode.sub_tabs_enabled ? 'translate-x-5' : 'translate-x-1',
+                          )}
+                        />
+                      </button>
                     </div>
 
                     {mode.sub_tabs_enabled && (
@@ -462,17 +518,17 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => addSubTab(mode.id, 'preset')}
+                            onClick={() => addSubTab(mode.id, 'cards')}
                           >
-                            + Sottotab preset
+                            + Card a scorrimento
                           </Button>
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => addSubTab(mode.id, 'manual')}
+                            onClick={() => addSubTab(mode.id, 'carousel')}
                           >
-                            + Sottotab manuale
+                            + Carosello
                           </Button>
                         </div>
 
@@ -489,7 +545,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                               >
                                 <div className="flex items-center justify-between gap-2">
                                   <span className="text-xs font-semibold text-slate-600 uppercase">
-                                    Sottotab {tabIdx + 1}
+                                    {tab.display === 'carousel' ? 'Carosello' : 'Card a scorrimento'} {tabIdx + 1}
                                   </span>
                                   <div className="flex items-center gap-1">
                                     <button
@@ -519,29 +575,6 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                       <TrashIcon weight="regular" className="h-4 w-4" />
                                     </button>
                                   </div>
-                                </div>
-
-                                <div className="flex gap-2">
-                                  {(['preset', 'manual'] as const).map((t) => (
-                                    <button
-                                      key={t}
-                                      type="button"
-                                      onClick={() =>
-                                        updateSubTab(mode.id, tab.id, {
-                                          type: t,
-                                          preset_id: t === 'manual' ? undefined : tab.preset_id,
-                                        })
-                                      }
-                                      className={cn(
-                                        'rounded-lg border px-3 py-1.5 text-xs font-semibold',
-                                        tab.type === t
-                                          ? 'border-primary-500 bg-primary-50 text-primary-700'
-                                          : 'border-slate-200 text-slate-600',
-                                      )}
-                                    >
-                                      {t === 'preset' ? 'Preset' : 'Manuale'}
-                                    </button>
-                                  ))}
                                 </div>
 
                                 <div>
@@ -580,33 +613,34 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                   </div>
                                 </div>
 
-                                {tab.type === 'preset' && (
-                                  <div>
-                                    <Label className="block mb-1 text-sm">Menù consigliato collegato</Label>
-                                    {relevantPresets.length > 0 ? (
-                                      <select
-                                        value={tab.preset_id ?? ''}
-                                        onChange={(e) =>
-                                          updateSubTab(mode.id, tab.id, {
-                                            preset_id: e.target.value || undefined,
-                                          })
+                                <div>
+                                  <Label className="block mb-1 text-sm">Importa menù preselezionato</Label>
+                                  {relevantPresets.length > 0 ? (
+                                    <select
+                                      value={tab.preset_id ?? ''}
+                                      onChange={(e) => {
+                                        const presetId = e.target.value
+                                        if (presetId) {
+                                          importPresetIntoSubTab(mode.id, tab.id, presetId)
+                                        } else {
+                                          updateSubTab(mode.id, tab.id, { preset_id: undefined })
                                         }
-                                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                                      >
-                                        <option value="">— Seleziona —</option>
-                                        {relevantPresets.map((p) => (
-                                          <option key={p.id} value={p.id}>
-                                            {p.name}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    ) : (
-                                      <p className="text-xs text-slate-500">
-                                        Nessun menù consigliato per questa modalità (tab Menu in admin).
-                                      </p>
-                                    )}
-                                  </div>
-                                )}
+                                      }}
+                                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                                    >
+                                      <option value="">Compila manualmente</option>
+                                      {relevantPresets.map((p) => (
+                                        <option key={p.id} value={p.id}>
+                                          {p.name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  ) : (
+                                    <p className="text-xs text-slate-500">
+                                      Nessun menù preselezionato per questa modalità (tab Menu in admin).
+                                    </p>
+                                  )}
+                                </div>
 
                                 <div>
                                   <Label className="block mb-1 text-sm">Prezzo a persona (opzionale)</Label>
@@ -640,22 +674,111 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                     placeholder="Sottotitolo sulla card"
                                   />
                                 </div>
+
+                                {tab.display === 'carousel' && tenantId && (
+                                  <div className="rounded-lg border border-slate-200 bg-white p-3">
+                                    <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-700">
+                                      Carosello specialità
+                                    </h4>
+                                    <MenuQrCarouselSection
+                                      tenantId={tenantId}
+                                      menuQrCodeId={null}
+                                      draftShortCode={`booking-form-${mode.id}-${tab.id}`}
+                                      items={tab.carousel_items ?? []}
+                                      onChange={(items) =>
+                                        updateSubTab(mode.id, tab.id, { carousel_items: items })
+                                      }
+                                    />
+                                  </div>
+                                )}
+
+                                {bookingTypeUsesMenuItems(mode.booking_type, menuItems) && (
+                                  <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-3">
+                                    <p className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                                      Categorie e ingredienti visibili
+                                    </p>
+                                    <div className="space-y-2">
+                                      {menuCategories.map((cat) => {
+                                        const itemsForCat = menuItems.filter(
+                                          (item) =>
+                                            item.category === cat.key &&
+                                            normalizeMenuItemBookingTypes(item.booking_types).includes(
+                                              mode.booking_type,
+                                            ),
+                                        )
+                                        if (itemsForCat.length === 0) return null
+                                        const catHidden = (tab.hidden_category_keys ?? []).includes(cat.key)
+                                        return (
+                                          <details
+                                            key={cat.key}
+                                            className="rounded-lg border border-slate-200 bg-slate-50"
+                                          >
+                                            <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2">
+                                              <button
+                                                type="button"
+                                                aria-label={catHidden ? `Mostra ${cat.label}` : `Nascondi ${cat.label}`}
+                                                onClick={(e) => {
+                                                  e.preventDefault()
+                                                  toggleSubTabCategory(mode.id, tab, cat.key)
+                                                }}
+                                                className={cn(
+                                                  'rounded-md border p-1.5',
+                                                  catHidden
+                                                    ? 'border-slate-300 text-slate-400'
+                                                    : 'border-primary-200 bg-primary-50 text-primary-700',
+                                                )}
+                                              >
+                                                {catHidden ? (
+                                                  <EyeSlashIcon weight="regular" className="h-4 w-4" />
+                                                ) : (
+                                                  <EyeIcon weight="regular" className="h-4 w-4" />
+                                                )}
+                                              </button>
+                                              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-700">
+                                                {cat.label}
+                                              </span>
+                                              <span className="text-xs text-slate-500">
+                                                {itemsForCat.length}
+                                              </span>
+                                            </summary>
+                                            {!catHidden && (
+                                              <div className="grid grid-cols-1 gap-1 border-t border-slate-200 p-2 sm:grid-cols-2">
+                                                {itemsForCat.map((item) => {
+                                                  const hidden = (tab.hidden_item_ids ?? []).includes(item.id)
+                                                  return (
+                                                    <button
+                                                      key={item.id}
+                                                      type="button"
+                                                      onClick={() => toggleSubTabItem(mode.id, tab, item.id)}
+                                                      className={cn(
+                                                        'flex min-w-0 items-center gap-2 rounded-md border px-2 py-1.5 text-left text-xs',
+                                                        hidden
+                                                          ? 'border-slate-200 bg-slate-100 text-slate-400'
+                                                          : 'border-slate-200 bg-white text-slate-700',
+                                                      )}
+                                                    >
+                                                      {hidden ? (
+                                                        <EyeSlashIcon weight="regular" className="h-3.5 w-3.5 shrink-0" />
+                                                      ) : (
+                                                        <EyeIcon weight="regular" className="h-3.5 w-3.5 shrink-0" />
+                                                      )}
+                                                      <span className="min-w-0 truncate">{item.name}</span>
+                                                    </button>
+                                                  )
+                                                })}
+                                              </div>
+                                            )}
+                                          </details>
+                                        )
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
                         )}
 
-                        <div className="flex gap-4 pt-1">
-                          <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                            <input type="radio" checked readOnly className="h-4 w-4 text-primary-600" />
-                            Card orizzontali
-                          </label>
-                          <label className="flex items-center gap-2 text-sm font-medium text-slate-400 cursor-not-allowed">
-                            <input type="radio" disabled className="h-4 w-4" />
-                            Carosello
-                            <span className="text-xs text-slate-400">(prossimamente)</span>
-                          </label>
-                        </div>
                       </div>
                     )}
                   </div>

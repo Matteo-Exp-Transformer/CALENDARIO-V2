@@ -54,10 +54,16 @@ interface MenuSelectionProps {
   subTabOverrides?: { preset_id: string; custom_label: string }[]
   /** Nasconde la griglia ingredienti (es. sottotab manuale). Default: false */
   hideMenuGrid?: boolean
+  /** Categorie nascoste dalla card sottotab scelta. */
+  hiddenCategoryKeys?: string[]
+  /** Ingredienti nascosti dalla card sottotab scelta. */
+  hiddenItemIds?: string[]
   /** Form /prenota: blocchi centrati al 75% larghezza viewport */
   publicFormLayout?: boolean
   /** Descrizione menù preselezionato (sottotab o preset staff); opzionale, sotto «CREA IL TUO MENU». */
   presetDescription?: string
+  /** Se true, non usa la descrizione del menù staff come fallback. */
+  disablePresetDescriptionFallback?: boolean
 }
 
 type NormalizedMenuItem = ComposeMenuItem
@@ -88,8 +94,11 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   hideSummary = false,
   subTabOverrides = [],
   hideMenuGrid = false,
+  hiddenCategoryKeys = [],
+  hiddenItemIds = [],
   publicFormLayout = false,
   presetDescription,
+  disablePresetDescriptionFallback = false,
 }) => {
   const publicBlockClass = publicFormLayout ? BOOKING_PUBLIC_CONTENT_WIDTH : 'mx-auto w-full max-w-full'
   const { data: menuItems = [], isLoading, error } = useMenuItems()
@@ -145,8 +154,11 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   ])
 
   const normalizedMenuItems = useMemo<NormalizedMenuItem[]>(() => {
+    const hiddenCategories = new Set(hiddenCategoryKeys)
+    const hiddenItems = new Set(hiddenItemIds)
     return menuItems
       .filter((item) => {
+        if (hiddenCategories.has(item.category) || hiddenItems.has(item.id)) return false
         if (!bookingTypeUsesMenuSelections(bookingType)) {
           return true
         }
@@ -171,7 +183,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
           image_url: item.image_url ?? null,
         }
       })
-  }, [menuItems, bookingType])
+  }, [menuItems, bookingType, hiddenCategoryKeys, hiddenItemIds])
 
   const categoryEntries = useMemo(
     () => dbCategories.map((category) => [category.key, category.label] as const),
@@ -207,9 +219,10 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   const composePresetDescription = useMemo(() => {
     const fromTab = presetDescription?.trim()
     if (fromTab) return fromTab
+    if (disablePresetDescriptionFallback) return undefined
     if (activeCustomPreset) return staffPresetDescriptionForCards(activeCustomPreset)
     return undefined
-  }, [presetDescription, activeCustomPreset])
+  }, [presetDescription, activeCustomPreset, disablePresetDescriptionFallback])
 
   const tiramisuUnitPrice = useMemo(() => {
     const tiramisuItem = normalizedMenuItems.find((item) => isTiramisuItem(item.name))
@@ -737,4 +750,3 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     </div>
   )
 }
-

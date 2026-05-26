@@ -81,7 +81,7 @@ export function enrichPresetSubTabsFromStaffPresets(
   presets: CustomStaffPreset[],
 ): SubTab[] {
   return subTabs.map((tab) => {
-    if (tab.type !== 'preset' || !tab.preset_id || tab.description?.trim()) return tab
+    if (!tab.preset_id || tab.description?.trim()) return tab
     const preset = presets.find((p) => p.id === tab.preset_id)
     const desc = preset ? staffPresetDescriptionForCards(preset) : undefined
     return desc ? { ...tab, description: desc } : tab

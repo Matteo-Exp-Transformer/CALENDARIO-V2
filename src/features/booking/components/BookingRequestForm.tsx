@@ -17,7 +17,7 @@ import { isValidBookingDateTime, getDayOfWeek, formatHours } from '@/lib/busines
 import { toast } from 'react-toastify'
 import { cn } from '@/lib/utils'
 import type { PresetMenuType } from '../constants/presetMenus'
-import { customPresetStorageId, enrichPresetSubTabsFromStaffPresets } from '../constants/presetMenus'
+import { customPresetStorageId } from '../constants/presetMenus'
 import { useMenuItems } from '../hooks/useMenuItems'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 import {
@@ -36,6 +36,7 @@ import type { BookingPublicFormConfig, SubTab } from '../constants/bookingPublic
 import { DEFAULT_BOOKING_FORM_CONFIG } from '../constants/bookingPublicFormConfig'
 import { BookingSubTabCards } from './publicBooking/BookingSubTabCards'
 import { BOOKING_PUBLIC_CONTENT_WIDTH } from '../constants/bookingPublicFieldStyles'
+import type { CarouselItem } from '@/types/menu'
 
 
 interface BookingRequestFormProps {
@@ -46,6 +47,35 @@ interface BookingRequestFormProps {
   onActiveSubTabChange?: (subTab: SubTab | null) => void
   /** Riepilogo a destra (desktop); il submit va sotto questa colonna. */
   summarySidebar?: React.ReactNode
+}
+
+function BookingSubTabCarousel({ items }: { items: CarouselItem[] }) {
+  const visible = items.filter((item) => item.image_url?.trim())
+  if (visible.length === 0) return null
+  return (
+    <div className={cn('flex gap-3 overflow-x-auto pb-1 scrollbar-hide', BOOKING_PUBLIC_CONTENT_WIDTH)}>
+      {visible.map((item, idx) => (
+        <article
+          key={`${item.image_url}-${idx}`}
+          className="relative h-52 w-[78%] max-w-[320px] shrink-0 overflow-hidden rounded-2xl bg-warm-wood text-white shadow-lg sm:h-64 sm:w-[46%]"
+        >
+          <img src={item.image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-4 text-left">
+            <p className="text-xs font-bold uppercase tracking-wide text-white/80">
+              {item.eyebrow?.trim() || 'Specialità della casa'}
+            </p>
+            {item.title?.trim() ? (
+              <h3 className="mt-1 text-lg font-bold leading-tight">{item.title}</h3>
+            ) : null}
+            {item.description?.trim() ? (
+              <p className="mt-1 line-clamp-2 text-sm font-medium text-white/85">{item.description}</p>
+            ) : null}
+          </div>
+        </article>
+      ))}
+    </div>
+  )
 }
 
 export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
@@ -106,30 +136,30 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     if (!activeMode?.sub_tabs_enabled || (activeMode.sub_tabs?.length ?? 0) === 0) {
       return []
     }
-    return enrichPresetSubTabsFromStaffPresets(activeMode.sub_tabs ?? [], customStaffPresets)
-  }, [activeMode, customStaffPresets])
+    return activeMode.sub_tabs ?? []
+  }, [activeMode])
 
   const activeSubTab = activeModeSubTabs.find((t) => t.id === activeSubTabId) ?? null
 
   const getPresetPricePerPerson = (subTab: SubTab | null): number | undefined =>
-    subTab?.type === 'preset' && subTab.price_per_person != null && subTab.price_per_person > 0
+    subTab?.price_per_person != null && subTab.price_per_person > 0
       ? subTab.price_per_person
       : undefined
 
   const activeSubTabOverrides = useMemo(() => {
     if (activeModeSubTabs.length > 0) {
       return activeModeSubTabs
-        .filter((t): t is typeof t & { preset_id: string } => t.type === 'preset' && !!t.preset_id)
+        .filter((t): t is typeof t & { preset_id: string } => !!t.preset_id)
         .map((t) => ({ preset_id: t.preset_id, custom_label: t.label }))
     }
     return activeMode?.sub_tabs_overrides ?? []
   }, [activeMode, activeModeSubTabs])
 
-  /** Con sottotab orizzontali: griglia menù solo dopo click su card tipo preset (menù consigliato). */
+  /** Con sottotab: griglia menù solo dopo click su una card. */
   const showMenuSelectionSection = useMemo(() => {
     if (!bookingTypeUsesMenuSelections(formData.booking_type)) return false
     if (activeModeSubTabs.length === 0) return true
-    return activeSubTab?.type === 'preset' && !!activeSubTab.preset_id
+    return !!activeSubTab
   }, [formData.booking_type, activeModeSubTabs.length, activeSubTab])
 
   // Notifica il parent ad ogni cambio formData (per sidebar riepilogo)
@@ -590,7 +620,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     const menuPromoLabels = listMenuPromoLabelsForBookingType(formData.booking_type ?? 'tavolo', menuPromos)
 
     let specialRequests = formData.special_requests?.trim() ?? ''
-    if (activeSubTab?.type === 'manual' && activeSubTab.label.trim()) {
+    if (activeSubTab && !activeSubTab.preset_id && activeSubTab.label.trim()) {
       const subTabNote = activeSubTab.price_per_person
         ? `[${activeSubTab.label.trim()} - €${activeSubTab.price_per_person}/p]`
         : `[${activeSubTab.label.trim()}]`
@@ -713,31 +743,31 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             subTabs={activeModeSubTabs}
             activeSubTabId={activeSubTabId}
             modeCardColumnCount={formConfig.booking_modes.filter((m) => m.enabled).length}
-            customStaffPresets={customStaffPresets}
             onChange={(tab) => {
               setActiveSubTabId(tab?.id ?? null)
               if (!tab) {
                 handlePresetMenuChange(null)
                 return
               }
-              if (tab.type === 'preset' && tab.preset_id) {
+              if (tab.preset_id) {
                 handlePresetMenuChange(customPresetStorageId(tab.preset_id), tab)
                 return
               }
-              if (tab.type === 'manual') {
-                setSelectedPreset(null)
-                const price = tab.price_per_person ?? 0
-                const numGuests = formData.num_guests || 0
-                setFormData({
-                  ...formData,
-                  preset_menu: null,
-                  menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
-                  menu_total_per_person: price > 0 ? price : undefined,
-                  menu_total_booking: price > 0 ? price * numGuests : undefined,
-                })
-              }
+              setSelectedPreset(null)
+              const price = tab.price_per_person ?? 0
+              const numGuests = formData.num_guests || 0
+              setFormData({
+                ...formData,
+                preset_menu: null,
+                menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
+                menu_total_per_person: price > 0 ? price : undefined,
+                menu_total_booking: price > 0 ? price * numGuests : undefined,
+              })
             }}
           />
+        )}
+        {activeSubTab?.display === 'carousel' && (
+          <BookingSubTabCarousel items={activeSubTab.carousel_items ?? []} />
         )}
         {!showMenuSelectionSection && errors.menu && activeModeSubTabs.length > 0 && (
           <p className="text-sm text-red-500 text-center">{errors.menu}</p>
@@ -758,11 +788,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             customStaffPresets={customStaffPresets}
             hideSummary={true}
             publicFormLayout
-            hideMenuGrid={activeSubTab?.type === 'manual'}
+            hiddenCategoryKeys={activeSubTab?.hidden_category_keys ?? []}
+            hiddenItemIds={activeSubTab?.hidden_item_ids ?? []}
             subTabOverrides={activeSubTabOverrides}
-            presetDescription={
-              activeSubTab?.type === 'preset' ? activeSubTab.description : undefined
-            }
+            presetDescription={activeSubTab?.description}
+            disablePresetDescriptionFallback={activeModeSubTabs.length > 0}
             onPresetMenuChange={handlePresetMenuChange}
             onMenuChange={({ items, totalPerPerson, tiramisuTotal, tiramisuKg }) => {
               const numGuests = formData.num_guests || 0

@@ -43,6 +43,21 @@ description: >-
   - `color`: hex `#RRGGBB`
 - Nome azienda e titolo pubblico hanno la stessa scala grande; descrizione resta piu piccola. Non lasciare che il font scelto cambi la gerarchia dimensionale.
 
+## Sottotab Prenota
+
+- Le sottotab stanno in `booking_public_form_config.booking_modes[].sub_tabs[]`.
+- Non usare piu la vecchia distinzione salvata `type: preset|manual`: la scelta admin e `display: 'cards' | 'carousel'`.
+- I dati visuali della pagina Prenota sono snapshot salvati nella sottotab:
+  - `label`
+  - `description`
+  - `price_per_person`
+  - `hidden_category_keys`
+  - `hidden_item_ids`
+  - `carousel_items` per il carosello dedicato Prenota
+- `preset_id` collega un menu preselezionato solo per precompilare gli ingredienti del form pubblico. Importare un preset in Personalizza form compila la card/carousel Prenota, ma non modifica `booking_custom_staff_presets` nella tab Menu.
+- Dopo il salvataggio, la card pubblica mostra titolo e descrizione da `booking_public_form_config`, non dal nome/descrizione del preset staff. La tab Menu resta fonte di verita per gli ingredienti del preset.
+- Il carosello dentro Personalizza form riusa il form `MenuQrCarouselSection` solo come UI/upload, ma i dati sono salvati nella sottotab Prenota e valgono solo per `/prenota/:slug`.
+
 ## Font header
 
 Fonte unica: `BOOKING_HEADER_FONT_OPTIONS` in `bookingPublicFormConfig.ts`.

@@ -55,8 +55,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   const totalPerPerson = formData.menu_total_per_person ?? 0
   const totalBooking = formData.menu_total_booking ?? 0
   const hasPresetPrice =
-    activeSubTab?.type === 'preset' &&
-    activeSubTab.price_per_person != null &&
+    activeSubTab?.price_per_person != null &&
     activeSubTab.price_per_person > 0
 
   const categoryLabelByKey = useMemo(() => {
@@ -138,9 +137,9 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
           </div>
         </div>
 
-        {/* Sottotab selezionata (opzione manuale o con prezzo indicato) */}
+        {/* Sottotab selezionata */}
         {activeSubTab &&
-          (activeSubTab.type === 'manual' ||
+          (activeSubTab.label.trim() ||
             (activeSubTab.price_per_person != null && activeSubTab.price_per_person > 0)) && (
             <div className="border-t border-black/10 pt-3">
               <p className="text-[13px] text-warm-wood-dark/60 font-semibold uppercase tracking-wide">

@@ -1,4 +1,5 @@
 import type { BookingType } from '@/types/booking'
+import type { CarouselItem } from '@/types/menu'
 
 export type SubTabIcon = 'utensils' | 'cloche' | 'chef-hat' | 'star' | 'leaf'
 export const BOOKING_MODE_ICONS = [
@@ -136,12 +137,15 @@ export function parseBookingHeaderStylesFromUnknown(raw: unknown): BookingHeader
 
 export interface SubTab {
   id: string
-  type: 'preset' | 'manual'
+  display: 'cards' | 'carousel'
   label: string
   icon?: SubTabIcon
   preset_id?: string
   price_per_person?: number
   description?: string
+  hidden_category_keys?: string[]
+  hidden_item_ids?: string[]
+  carousel_items?: CarouselItem[]
 }
 
 /** @deprecated Usare `sub_tabs[]` con type preset. Mantenuto per migrazione runtime da DB. */
@@ -158,7 +162,6 @@ export interface BookingMode {
   description: string
   icon: BookingModeIcon
   sub_tabs_enabled: boolean
-  sub_tabs_display: 'horizontal' | 'carousel'
   sub_tabs: SubTab[]
   /** @deprecated Migrato a runtime in `sub_tabs` se vuoto. */
   sub_tabs_overrides?: SubTabOverride[]
@@ -176,8 +179,11 @@ const SUB_TAB_ICONS: SubTabIcon[] = ['utensils', 'cloche', 'chef-hat', 'star', '
 export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
   const o = raw as Record<string, unknown>
-  const type = o.type === 'preset' || o.type === 'manual' ? o.type : null
-  if (!type) return null
+  const legacyType = o.type === 'preset' || o.type === 'manual' ? o.type : null
+  const display =
+    o.display === 'carousel' || o.sub_tabs_display === 'carousel'
+      ? 'carousel'
+      : ('cards' as const)
   const id = typeof o.id === 'string' && o.id.trim() ? o.id.trim() : null
   const label = typeof o.label === 'string' ? o.label.trim() : ''
   if (!id || !label) return null
@@ -193,14 +199,46 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
   }
 
   const description = typeof o.description === 'string' ? o.description.trim() : undefined
+  const hidden_category_keys = Array.isArray(o.hidden_category_keys)
+    ? o.hidden_category_keys.filter((v): v is string => typeof v === 'string' && v.trim().length > 0).map((v) => v.trim())
+    : undefined
+  const hidden_item_ids = Array.isArray(o.hidden_item_ids)
+    ? o.hidden_item_ids.filter((v): v is string => typeof v === 'string' && v.trim().length > 0).map((v) => v.trim())
+    : undefined
+  const carousel_items = Array.isArray(o.carousel_items)
+    ? o.carousel_items
+        .filter((v): v is CarouselItem => {
+          if (!v || typeof v !== 'object' || Array.isArray(v)) return false
+          const item = v as Partial<CarouselItem>
+          return typeof item.image_url === 'string' && item.image_url.trim().length > 0
+        })
+        .map((v, idx) => ({
+          image_url: v.image_url,
+          eyebrow: typeof v.eyebrow === 'string' && v.eyebrow.trim() ? v.eyebrow.trim() : undefined,
+          title: typeof v.title === 'string' && v.title.trim() ? v.title.trim() : undefined,
+          description:
+            typeof v.description === 'string' && v.description.trim() ? v.description.trim() : undefined,
+          sort_order: typeof v.sort_order === 'number' ? v.sort_order : idx,
+        }))
+    : undefined
 
-  if (type === 'preset') {
-    const preset_id = typeof o.preset_id === 'string' && o.preset_id.trim() ? o.preset_id.trim() : undefined
-    if (!preset_id) return null
-    return { id, type, label, icon, preset_id, price_per_person, description }
+  const preset_id =
+    legacyType !== 'manual' && typeof o.preset_id === 'string' && o.preset_id.trim()
+      ? o.preset_id.trim()
+      : undefined
+
+  return {
+    id,
+    display,
+    label,
+    icon,
+    preset_id,
+    price_per_person,
+    description,
+    hidden_category_keys,
+    hidden_item_ids,
+    carousel_items,
   }
-
-  return { id, type, label, icon, price_per_person, description }
 }
 
 export function migrateOverridesToSubTabs(overrides: SubTabOverride[]): SubTab[] {
@@ -208,7 +246,7 @@ export function migrateOverridesToSubTabs(overrides: SubTabOverride[]): SubTab[]
     .filter((o) => o.preset_id && o.custom_label.trim())
     .map((o) => ({
       id: `legacy-${o.preset_id}`,
-      type: 'preset' as const,
+      display: 'cards' as const,
       label: o.custom_label.trim(),
       preset_id: o.preset_id,
     }))
@@ -228,7 +266,6 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
       description: 'Semplice prenotazione tavolo senza menu predefinito.',
       icon: 'utensils',
       sub_tabs_enabled: false,
-      sub_tabs_display: 'horizontal',
       sub_tabs: [],
     },
     {
@@ -239,7 +276,6 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
       description: 'Scegli il tuo menu componendo le portate a prezzo fisso.',
       icon: 'cloche',
       sub_tabs_enabled: false,
-      sub_tabs_display: 'horizontal',
       sub_tabs: [],
     },
     {
@@ -250,7 +286,6 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
       description: 'Organizza il tuo rinfresco di laurea con menu personalizzato.',
       icon: 'chef-hat',
       sub_tabs_enabled: false,
-      sub_tabs_display: 'horizontal',
       sub_tabs: [],
     },
   ],
@@ -270,8 +305,12 @@ export function normalizeBookingPublicFormConfig(
       description: mode.description.trim(),
       sub_tabs: (mode.sub_tabs ?? []).map((tab) => ({
         ...tab,
+        display: tab.display === 'carousel' ? 'carousel' : 'cards',
         label: tab.label.trim(),
         description: tab.description?.trim() ? tab.description.trim() : undefined,
+        hidden_category_keys: tab.hidden_category_keys?.filter((v) => v.trim()) ?? undefined,
+        hidden_item_ids: tab.hidden_item_ids?.filter((v) => v.trim()) ?? undefined,
+        carousel_items: tab.carousel_items,
       })),
     })),
   }

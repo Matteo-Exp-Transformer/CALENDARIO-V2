@@ -533,8 +533,6 @@ export const restaurantSettingRegistry: {
               ? (mode.icon as BookingModeIcon)
               : dm.icon,
             sub_tabs_enabled: typeof mode.sub_tabs_enabled === 'boolean' ? mode.sub_tabs_enabled : dm.sub_tabs_enabled,
-            sub_tabs_display:
-              mode.sub_tabs_display === 'carousel' ? 'carousel' : ('horizontal' as const),
             sub_tabs: (() => {
               const parsed: SubTab[] = Array.isArray(mode.sub_tabs)
                 ? mode.sub_tabs.map(parseSubTabFromUnknown).filter((t): t is SubTab => t != null)
