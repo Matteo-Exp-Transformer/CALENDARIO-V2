@@ -2,6 +2,11 @@ import React from 'react'
 import { Input } from '@/components/ui'
 import { Link } from 'react-router-dom'
 import { Check } from 'lucide-react'
+import {
+  BOOKING_PUBLIC_CONTENT_WIDTH,
+  BOOKING_PUBLIC_FIELD_INPUT,
+  BOOKING_PUBLIC_LABEL_CLASS,
+} from '@/features/booking/constants/bookingPublicFieldStyles'
 
 interface DietaryRestrictionsSectionProps {
   dietaryText: string
@@ -13,6 +18,8 @@ interface DietaryRestrictionsSectionProps {
   privacyError?: string
   /** Nasconde il blocco "Altre Richieste" (es. renderizzato sotto la griglia in AdminBookingForm) */
   omitSpecialRequestsSection?: boolean
+  /** Layout /prenota: campi al 75% larghezza, stessa altezza e font delle card sottotab */
+  publicFormFields?: boolean
 }
 
 const FIELD_LABEL_CLASS =
@@ -31,32 +38,42 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
   onPrivacyChange,
   privacyError,
   omitSpecialRequestsSection = false,
+  publicFormFields = false,
 }) => {
+  const controlClass = publicFormFields ? `${BOOKING_PUBLIC_FIELD_INPUT} w-full` : CONTROL_CLASS
+  const labelClass = publicFormFields ? BOOKING_PUBLIC_LABEL_CLASS : FIELD_LABEL_CLASS
+  const wrap = (node: React.ReactNode) =>
+    publicFormFields ? <div className={BOOKING_PUBLIC_CONTENT_WIDTH}>{node}</div> : node
+
   return (
-    <div className="space-y-5">
+    <div className={publicFormFields ? 'w-full space-y-5' : 'space-y-5'}>
       <div className="space-y-1">
-        <label htmlFor="dietary-notes" className={FIELD_LABEL_CLASS}>
+        <label htmlFor="dietary-notes" className={labelClass}>
           Intolleranze o esigenze alimentari
         </label>
-        <Input
-          id="dietary-notes"
-          value={dietaryText}
-          onChange={(e) => onDietaryTextChange(e.target.value)}
-          className={CONTROL_CLASS}
-        />
+        {wrap(
+          <Input
+            id="dietary-notes"
+            value={dietaryText}
+            onChange={(e) => onDietaryTextChange(e.target.value)}
+            className={controlClass}
+          />,
+        )}
       </div>
 
       {!omitSpecialRequestsSection && (
         <div className="space-y-1">
-          <label htmlFor="special_requests" className={FIELD_LABEL_CLASS}>
+          <label htmlFor="special_requests" className={labelClass}>
             Altre Richieste
           </label>
-          <Input
-            id="special_requests"
-            value={specialRequests}
-            onChange={(e) => onSpecialRequestsChange(e.target.value)}
-            className={CONTROL_CLASS}
-          />
+          {wrap(
+            <Input
+              id="special_requests"
+              value={specialRequests}
+              onChange={(e) => onSpecialRequestsChange(e.target.value)}
+              className={controlClass}
+            />,
+          )}
         </div>
       )}
 

@@ -9,6 +9,8 @@ interface DateInputProps {
   hasError?: boolean // Support for error state
   /** Densità ridotta (es. griglia a 2 colonne stretta nel booking form) */
   compact?: boolean
+  /** Tipografia come card sottotab su /prenota (text-xs font-bold, sm:text-sm) */
+  bookingForm?: boolean
 }
 
 export const DateInput: React.FC<DateInputProps> = ({
@@ -19,6 +21,7 @@ export const DateInput: React.FC<DateInputProps> = ({
   id,
   hasError = false,
   compact = false,
+  bookingForm = false,
 }) => {
   // Parse current value or use defaults
   const [year, month, day] = value
@@ -80,7 +83,7 @@ export const DateInput: React.FC<DateInputProps> = ({
     onChange(newValue)
   }
 
-  const containerClass = `date-input-container ${hasError ? 'error' : ''} ${compact ? 'date-input-container--compact' : ''} ${className}`.trim()
+  const containerClass = `date-input-container ${hasError ? 'error' : ''} ${compact ? 'date-input-container--compact' : ''} ${bookingForm ? 'date-input-container--booking-form' : ''} ${className}`.trim()
 
   return (
     <>
@@ -224,6 +227,28 @@ export const DateInput: React.FC<DateInputProps> = ({
           }
           .date-input-container--compact span {
             font-size: 17px;
+          }
+        }
+        .date-input-container--booking-form {
+          height: 3rem !important;
+          font-size: 12px !important;
+          font-weight: 700 !important;
+          color: #5c4033;
+        }
+        .date-input-container--booking-form select {
+          font-size: 12px !important;
+          font-weight: 700 !important;
+          color: #5c4033;
+        }
+        .date-input-container--booking-form span {
+          font-size: 12px !important;
+          font-weight: 700 !important;
+        }
+        @media (min-width: 640px) {
+          .date-input-container--booking-form,
+          .date-input-container--booking-form select,
+          .date-input-container--booking-form span {
+            font-size: 14px !important;
           }
         }
         @media (max-width: 510px) {

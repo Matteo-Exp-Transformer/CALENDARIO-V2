@@ -15,6 +15,8 @@ export interface TimePicker24hProps extends Omit<React.HTMLAttributes<HTMLDivEle
   minuteAriaLabel?: string
   /** Densità ridotta + font mobile-first (es. griglia a 2 colonne nel form pubblico) */
   compact?: boolean
+  /** Tipografia come card sottotab su /prenota */
+  bookingForm?: boolean
 }
 
 function splitParts(raw: string): { hour: number | null; minute: number | null } {
@@ -43,6 +45,7 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
       hourAriaLabel = 'Ora (formato 24 ore)',
       minuteAriaLabel = 'Minuti',
       compact = false,
+      bookingForm = false,
       className,
       style,
       ...divProps
@@ -64,8 +67,12 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
     const clear = () => onChange('')
 
     const selectBase = cn(
-      'min-w-0 flex-1 cursor-pointer rounded-md border-0 bg-white py-2 font-medium text-slate-900 outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-75',
-      compact ? 'text-base sm:text-sm' : 'text-sm'
+      'min-w-0 flex-1 cursor-pointer rounded-md border-0 bg-white py-2 outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-75',
+      bookingForm
+        ? 'text-xs font-bold text-warm-wood sm:text-sm'
+        : compact
+          ? 'font-medium text-slate-900 text-base sm:text-sm'
+          : 'text-sm font-medium text-slate-900',
     )
 
     return (
@@ -79,7 +86,10 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
         className={cn(
           '[color-scheme:light] isolate flex w-full items-center !bg-white text-slate-900 shadow-sm',
           compact
-            ? 'min-h-[3rem] gap-2 rounded-2xl px-3 py-2 text-base sm:text-sm'
+            ? cn(
+                'min-h-[3rem] gap-2 rounded-2xl px-3 py-2',
+                bookingForm ? 'text-xs font-bold text-warm-wood sm:text-sm' : 'text-base sm:text-sm',
+              )
             : 'min-h-[3.5rem] gap-2 rounded-[1.25rem] px-4 py-3 text-sm',
           hasError ? 'border-2 !border-red-500' : 'border border-[rgba(0,0,0,0.2)]',
           '[&_select]:!bg-white [&_select]:text-slate-900',
@@ -117,7 +127,13 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
             </option>
           ))}
         </select>
-        <span className="select-none font-medium text-slate-400" aria-hidden="true">
+        <span
+          className={cn(
+            'select-none',
+            bookingForm ? 'text-xs font-bold text-warm-wood/60 sm:text-sm' : 'font-medium text-slate-400',
+          )}
+          aria-hidden="true"
+        >
           :
         </span>
         <select

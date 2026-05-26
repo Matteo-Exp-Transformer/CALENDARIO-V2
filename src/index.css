@@ -1806,12 +1806,6 @@ button.archive-tab-filter-btn:focus:not(:focus-visible) {
   }
 }
 
-@media (max-width: 444px) {
-  .booking-form-mobile {
-    max-width: 68.75vw !important;
-  }
-}
-
 /* Menu QR pubblico — viewport stabile su Chrome Android */
 html.public-menu-viewport {
   overflow-x: clip;

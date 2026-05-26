@@ -23,6 +23,7 @@ import { normalizeMenuItemBookingTypes } from '@/types/menu'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { MENU_CARD_MAX_WIDTH_PX } from './menuPricesCatalogLayout'
 import { BookingMenuComposeGrid } from './publicBooking/BookingMenuComposeGrid'
+import { BOOKING_PUBLIC_CONTENT_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
 import {
   MENU_COMPOSE_CATEGORY_LIMITS,
   type ComposeMenuItem,
@@ -52,6 +53,8 @@ interface MenuSelectionProps {
   subTabOverrides?: { preset_id: string; custom_label: string }[]
   /** Nasconde la griglia ingredienti (es. sottotab manuale). Default: false */
   hideMenuGrid?: boolean
+  /** Form /prenota: blocchi centrati al 75% larghezza viewport */
+  publicFormLayout?: boolean
 }
 
 type NormalizedMenuItem = ComposeMenuItem
@@ -83,7 +86,9 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   variant = 'default',
   subTabOverrides = [],
   hideMenuGrid = false,
+  publicFormLayout = false,
 }) => {
+  const publicBlockClass = publicFormLayout ? BOOKING_PUBLIC_CONTENT_WIDTH : 'mx-auto w-full max-w-full'
   const { data: menuItems = [], isLoading, error } = useMenuItems()
   const { data: dbCategories = [] } = useMenuCategories()
 
@@ -500,8 +505,15 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       {/* Titolo sezione menù */}
       {showComposeHeader ? (
         <div
-          className="mx-auto mb-4 w-full max-w-full space-y-1 rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]"
-          style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))` }}
+          className={cn(
+            'mb-4 space-y-1 rounded-2xl bg-white/85 px-4 py-3 backdrop-blur-[1px] sm:px-5 sm:py-4',
+            publicFormLayout ? cn(publicBlockClass, 'text-center') : 'mx-auto w-full max-w-full',
+          )}
+          style={
+            publicFormLayout
+              ? undefined
+              : { maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))` }
+          }
         >
           <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-warm-wood-dark/70">
             Crea il tuo menu
@@ -632,7 +644,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
 
       {/* Card orizzontali per categoria (mockup CREA IL TUO MENU) */}
       {!hideMenuGrid && (
-        <div className="mt-4 w-full min-w-0">
+        <div className={cn('mt-4 w-full min-w-0', publicFormLayout && 'flex flex-col items-center')}>
           <BookingMenuComposeGrid
             categoryEntries={categoryEntries}
             categoryImageByKey={categoryImageByKey}

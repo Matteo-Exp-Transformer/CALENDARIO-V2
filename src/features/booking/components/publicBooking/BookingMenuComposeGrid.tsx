@@ -10,6 +10,7 @@ import {
   type ComposeMenuItem,
 } from '../../utils/menuComposeVisibility'
 import { BookingMenuCategoryCard } from './BookingMenuCategoryCard'
+import { BOOKING_PUBLIC_CONTENT_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
 
 const COMPOSE_SCROLL_STEP_PX = 320
 
@@ -46,7 +47,7 @@ function ComposeCategoryCards({
   onTiramisuQuantityBlur,
 }: {
   categories: VisibleCategory[]
-  layout: 'grid' | 'scroll'
+  layout: 'grid' | 'scroll' | 'stack'
   categoryImageByKey: Record<string, string | null | undefined>
   selectedItems: SelectedMenuItem[]
   locked: boolean
@@ -233,34 +234,36 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
   }
 
   const count = visibleCategories.length
-  const scrollOnMobile = count > 2
   const scrollOnDesktop = count > 3
-
-  if (!scrollOnMobile && !scrollOnDesktop) {
-    return (
-      <div
-        className="grid w-full min-w-0 grid-cols-2 gap-4 lg:grid-cols-3"
-        data-testid="booking-menu-compose-grid"
-      >
-        <ComposeCategoryCards categories={visibleCategories} layout="grid" {...cardProps} />
-      </div>
-    )
-  }
-
-  if (scrollOnMobile && !scrollOnDesktop) {
-    return (
-      <div className="w-full min-w-0" data-testid="booking-menu-compose-grid">
-        <ComposeScrollRow categories={visibleCategories} className="lg:hidden" {...cardProps} />
-        <div className="hidden w-full min-w-0 gap-4 lg:grid lg:grid-cols-3">
-          <ComposeCategoryCards categories={visibleCategories} layout="grid" {...cardProps} />
-        </div>
-      </div>
-    )
-  }
+  const gridOnDesktop = count <= 3
 
   return (
     <div className="w-full min-w-0" data-testid="booking-menu-compose-grid">
-      <ComposeScrollRow categories={visibleCategories} {...cardProps} />
+      {/* Mobile: colonna singola, card collassabili */}
+      <div
+        className={cn(
+          'flex flex-col items-stretch gap-2.5 md:hidden',
+          BOOKING_PUBLIC_CONTENT_WIDTH,
+        )}
+      >
+        <ComposeCategoryCards categories={visibleCategories} layout="stack" {...cardProps} />
+      </div>
+
+      {/* Desktop: griglia o carosello orizzontale */}
+      <div className="hidden md:block">
+        {gridOnDesktop ? (
+          <div
+            className={cn(
+              'grid w-full min-w-0 gap-4',
+              count <= 2 ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-3',
+            )}
+          >
+            <ComposeCategoryCards categories={visibleCategories} layout="grid" {...cardProps} />
+          </div>
+        ) : scrollOnDesktop ? (
+          <ComposeScrollRow categories={visibleCategories} {...cardProps} />
+        ) : null}
+      </div>
     </div>
   )
 }

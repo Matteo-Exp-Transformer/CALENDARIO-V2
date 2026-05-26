@@ -1,7 +1,10 @@
-import React from 'react'
-import { Utensils, ChefHat, Star, Leaf } from 'lucide-react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight, Utensils, ChefHat, Star, Leaf } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { SubTab, SubTabIcon } from '@/features/booking/constants/bookingPublicFormConfig'
+import { BOOKING_PUBLIC_CONTENT_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
+
+const SUB_TAB_SCROLL_STEP_PX = 240
 
 interface BookingSubTabCardsProps {
   subTabs: SubTab[]
@@ -26,11 +29,56 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   activeSubTabId,
   onChange,
 }) => {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const updateScrollHints = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const { scrollLeft, scrollWidth, clientWidth } = el
+    setCanScrollLeft(scrollLeft > 4)
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4)
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    updateScrollHints()
+    el.addEventListener('scroll', updateScrollHints, { passive: true })
+    const ro = new ResizeObserver(updateScrollHints)
+    ro.observe(el)
+    return () => {
+      el.removeEventListener('scroll', updateScrollHints)
+      ro.disconnect()
+    }
+  }, [subTabs.length, updateScrollHints])
+
+  const scrollBy = (delta: number) => {
+    scrollRef.current?.scrollBy({ left: delta, behavior: 'smooth' })
+  }
+
   if (subTabs.length === 0) return null
 
   return (
-    <div className="w-full overflow-x-auto pb-1" data-testid="booking-sub-tab-cards">
-      <div className="mx-auto flex w-max max-w-full gap-3">
+    <div
+      className={cn('relative min-w-0', BOOKING_PUBLIC_CONTENT_WIDTH)}
+      data-testid="booking-sub-tab-cards"
+    >
+      {canScrollLeft && (
+        <button
+          type="button"
+          aria-label="Scorri opzioni menù indietro"
+          className="absolute left-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-r-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
+          onClick={() => scrollBy(-SUB_TAB_SCROLL_STEP_PX)}
+        >
+          <ChevronLeft size={22} strokeWidth={1.75} />
+        </button>
+      )}
+      <div
+        ref={scrollRef}
+        className="flex w-full min-w-0 touch-pan-x flex-nowrap gap-2 overflow-x-auto overscroll-x-contain scroll-px-2 scrollbar-hide snap-x snap-mandatory py-1 [-webkit-overflow-scrolling:touch] md:gap-3 md:px-10"
+      >
         {subTabs.map((tab) => {
           const isActive = activeSubTabId === tab.id
           const priceLabel = formatPricePerPerson(tab.price_per_person)
@@ -41,8 +89,9 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
               data-testid={`booking-sub-tab-card-${tab.id}`}
               onClick={() => onChange(isActive ? null : tab)}
               className={cn(
-                'flex flex-col items-center gap-2 rounded-2xl border-2 px-5 py-4 min-w-[140px] text-center transition-all',
-                'bg-white/85 backdrop-blur-[1px]',
+                'flex shrink-0 snap-center flex-col items-center gap-1.5 rounded-xl border-2 px-2 py-2.5 text-center transition-all sm:gap-2 sm:rounded-2xl sm:px-5 sm:py-4',
+                'min-w-[7.25rem] max-w-[9.5rem] sm:min-w-[140px] sm:max-w-none',
+                'bg-white/85 backdrop-blur-[1px] shadow-sm',
                 isActive
                   ? 'border-warm-orange ring-2 ring-warm-orange/30 shadow-md'
                   : 'border-black/15 hover:border-warm-orange/50',
@@ -50,36 +99,49 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
             >
               <div
                 className={cn(
-                  'flex h-9 w-9 items-center justify-center rounded-full',
+                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-9 sm:w-9',
                   isActive
-                    ? 'bg-gradient-to-br from-terracotta to-warm-orange text-white'
+                    ? 'bg-gradient-to-br from-terracotta to-warm-orange text-white shadow-md'
                     : 'bg-warm-wood/10 text-warm-wood',
                 )}
               >
                 <SubTabIconGraphic icon={tab.icon} className="h-4 w-4" />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 w-full">
                 <p
                   className={cn(
-                    'text-sm font-bold leading-tight',
+                    'text-xs font-bold leading-tight sm:text-sm',
                     isActive ? 'text-warm-orange' : 'text-warm-wood',
                   )}
                 >
                   {tab.label}
                 </p>
                 {tab.description && (
-                  <p className="mt-0.5 text-xs text-warm-wood-dark/70 leading-tight line-clamp-2">
+                  <p className="mt-0.5 hidden text-xs leading-tight text-warm-wood-dark/70 line-clamp-2 sm:block">
                     {tab.description}
                   </p>
                 )}
                 {priceLabel && (
-                  <p className="mt-1 text-xs font-semibold text-warm-wood-dark/80">{priceLabel}/persona</p>
+                  <p className="mt-0.5 text-[10px] font-semibold leading-tight text-warm-wood-dark/80 sm:mt-1 sm:text-xs">
+                    <span className="sm:hidden">{priceLabel}/p</span>
+                    <span className="hidden sm:inline">{priceLabel}/persona</span>
+                  </p>
                 )}
               </div>
             </button>
           )
         })}
       </div>
+      {canScrollRight && (
+        <button
+          type="button"
+          aria-label="Scorri opzioni menù avanti"
+          className="absolute right-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-l-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
+          onClick={() => scrollBy(SUB_TAB_SCROLL_STEP_PX)}
+        >
+          <ChevronRight size={22} strokeWidth={1.75} />
+        </button>
+      )}
     </div>
   )
 }

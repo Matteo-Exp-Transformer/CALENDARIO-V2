@@ -1,5 +1,5 @@
-import React from 'react'
-import { Utensils } from 'lucide-react'
+import React, { useState } from 'react'
+import { ChevronDown, Utensils } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { SelectedMenuItem } from '@/types/menu'
 import {
@@ -28,8 +28,8 @@ export interface BookingMenuCategoryCardProps {
   localTiramisuValue: string
   onTiramisuQuantityChange: (value: string) => void
   onTiramisuQuantityBlur: () => void
-  /** `scroll` = card a larghezza fissa nella strip orizzontale; `grid` = colonna fluida in griglia. */
-  layout?: 'grid' | 'scroll'
+  /** `scroll` = strip orizzontale; `grid` = griglia desktop; `stack` = colonna mobile con collapse. */
+  layout?: 'grid' | 'scroll' | 'stack'
 }
 
 function ItemPriceRow({
@@ -78,38 +78,20 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   const useRadioAppearance = maxSelectable === 1
 
   const heroSrc = imageUrl?.trim() || undefined
+  const isStack = layout === 'stack'
+  const [expanded, setExpanded] = useState(false)
 
   const articleClass = cn(
-    'flex flex-col rounded-2xl border-2 border-black/15 bg-white/90 backdrop-blur-[1px] shadow-md',
+    'flex flex-col border-2 border-black/15 bg-white/90 backdrop-blur-[1px] shadow-md',
     layout === 'scroll'
-      ? 'w-[min(280px,calc(100vw-3rem))] min-w-[240px] max-w-[280px] shrink-0 snap-center sm:min-w-[260px]'
-      : 'w-full min-w-0 max-w-none',
+      ? 'w-[min(280px,calc(100vw-3rem))] min-w-[240px] max-w-[280px] shrink-0 snap-center rounded-2xl sm:min-w-[260px]'
+      : layout === 'stack'
+        ? 'w-full min-w-0 max-w-none rounded-xl'
+        : 'w-full min-w-0 max-w-none rounded-2xl',
   )
 
-  return (
-    <article className={articleClass} data-testid={`booking-menu-category-card-${categoryKey}`}>
-      <div className="border-b border-black/10 px-4 py-3 text-center">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-warm-wood">{categoryLabel}</h3>
-      </div>
-
-      <div className="relative mx-3 mt-3 aspect-[4/3] overflow-hidden rounded-xl bg-warm-beige/40">
-        {heroSrc ? (
-          <img src={heroSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-warm-wood/40">
-            <Utensils className="h-10 w-10" strokeWidth={1.25} />
-          </div>
-        )}
-      </div>
-
-      {!locked && (
-        <div className="px-4 py-2 text-center">
-          <p className="text-xs font-semibold text-warm-wood-dark/70">{hint}</p>
-          <p className="text-xs font-bold text-warm-orange">{status}</p>
-        </div>
-      )}
-
-      <ul className="flex flex-1 flex-col gap-1 px-2 pb-3">
+  const itemsList = (
+    <ul className="flex flex-1 flex-col gap-1 px-2 pb-3">
         {items.map((item) => {
           const isSelected = selectedItems.some((s) => s.id === item.id)
           const isTiramisu = isTiramisuItem(item.name)
@@ -179,7 +161,95 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
             </li>
           )
         })}
-      </ul>
+    </ul>
+  )
+
+  const categoryBody = (
+    <>
+      <div
+        className={cn(
+          'relative overflow-hidden rounded-lg bg-warm-beige/40',
+          isStack ? 'mx-2.5 mt-2 aspect-[5/3]' : 'mx-3 mt-3 aspect-[4/3] rounded-xl',
+        )}
+      >
+        {heroSrc ? (
+          <img src={heroSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-warm-wood/40">
+            <Utensils className={isStack ? 'h-8 w-8' : 'h-10 w-10'} strokeWidth={1.25} />
+          </div>
+        )}
+      </div>
+
+      {!locked && (
+        <div className={cn('text-center', isStack ? 'px-3 py-1.5' : 'px-4 py-2')}>
+          <p className="text-xs font-semibold text-warm-wood-dark/70">{hint}</p>
+          <p className="text-xs font-bold text-warm-orange">{status}</p>
+        </div>
+      )}
+
+      {itemsList}
+    </>
+  )
+
+  if (isStack) {
+    const headerId = `booking-menu-cat-header-${categoryKey}`
+    const panelId = `booking-menu-cat-panel-${categoryKey}`
+
+    return (
+      <article className={articleClass} data-testid={`booking-menu-category-card-${categoryKey}`}>
+        <button
+          type="button"
+          id={headerId}
+          aria-expanded={expanded}
+          aria-controls={panelId}
+          className="flex w-full items-center gap-2.5 border-b border-black/10 px-3 py-2.5 text-left"
+          onClick={() => setExpanded((v) => !v)}
+        >
+          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-warm-beige/40">
+            {heroSrc ? (
+              <img src={heroSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-warm-wood/40">
+                <Utensils className="h-6 w-6" strokeWidth={1.25} />
+              </div>
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-xs font-bold uppercase tracking-wide text-warm-wood">{categoryLabel}</h3>
+            {!locked ? (
+              <p className="mt-0.5 text-[10px] font-bold text-warm-orange">{status}</p>
+            ) : selectedCount > 0 ? (
+              <p className="mt-0.5 text-[10px] font-semibold text-warm-wood-dark/70">
+                {selectedCount} {selectedCount === 1 ? 'piatto' : 'piatti'} nel menù
+              </p>
+            ) : (
+              <p className="mt-0.5 text-[10px] font-semibold text-warm-wood-dark/70">Menù preselezionato</p>
+            )}
+          </div>
+          <ChevronDown
+            className={cn(
+              'h-4 w-4 shrink-0 text-warm-wood transition-transform duration-200',
+              expanded && 'rotate-180',
+            )}
+            aria-hidden
+          />
+        </button>
+        {expanded ? (
+          <div id={panelId} role="region" aria-labelledby={headerId}>
+            {categoryBody}
+          </div>
+        ) : null}
+      </article>
+    )
+  }
+
+  return (
+    <article className={articleClass} data-testid={`booking-menu-category-card-${categoryKey}`}>
+      <div className="border-b border-black/10 px-4 py-3 text-center">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-warm-wood">{categoryLabel}</h3>
+      </div>
+      {categoryBody}
     </article>
   )
 }

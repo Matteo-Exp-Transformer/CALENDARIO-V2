@@ -14,6 +14,7 @@ import {
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { isValidBookingDateTime, getDayOfWeek, formatHours } from '@/lib/businessHours'
 import { toast } from 'react-toastify'
+import { cn } from '@/lib/utils'
 import type { PresetMenuType } from '../constants/presetMenus'
 import { customPresetStorageId, enrichPresetSubTabsFromStaffPresets } from '../constants/presetMenus'
 import { useMenuItems } from '../hooks/useMenuItems'
@@ -33,6 +34,7 @@ import { BookingFormFields } from './publicBooking/BookingFormFields'
 import type { BookingPublicFormConfig, SubTab } from '../constants/bookingPublicFormConfig'
 import { DEFAULT_BOOKING_FORM_CONFIG } from '../constants/bookingPublicFormConfig'
 import { BookingSubTabCards } from './publicBooking/BookingSubTabCards'
+import { BOOKING_PUBLIC_CONTENT_WIDTH } from '../constants/bookingPublicFieldStyles'
 
 
 interface BookingRequestFormProps {
@@ -134,7 +136,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   }, [activeSubTab, onActiveSubTabChange])
 
   const frostedInputCn =
-    'bg-white px-4 rounded-lg border border-slate-200 text-left text-sm sm:text-base font-medium text-warm-wood focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/40'
+    'min-h-[3rem] bg-white px-4 rounded-lg border border-slate-200 text-left text-xs font-bold text-warm-wood sm:text-sm focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/40'
   
   // Ref per prevenire doppi submit (anche con React StrictMode)
   const isSubmittingRef = useRef(false)
@@ -652,72 +654,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     <form
       id="booking-request-form"
       onSubmit={handleSubmit}
-      className="grid w-full grid-cols-1 gap-4 font-bold booking-form-mobile lg:grid-cols-[1fr_min(360px,32%)] lg:items-start lg:gap-6"
+      className="grid w-full max-w-full grid-cols-1 gap-4 font-bold lg:grid-cols-[1fr_min(360px,32%)] lg:items-start lg:gap-6"
     >
-      <div className="min-w-0 space-y-6 px-2 md:px-4">
-      {/* Dati e dettagli — prima sezione sotto header (come pagina prenota attuale) */}
-      <div className="space-y-3">
-        <BookingFormFields
-          formData={{
-            client_name: formData.client_name,
-            client_email: formData.client_email,
-            client_phone: formData.client_phone,
-            desired_date: formData.desired_date,
-            desired_time: formData.desired_time,
-            num_guests: formData.num_guests,
-          }}
-          errors={errors}
-          businessHours={businessHours}
-          isLoadingHours={isLoadingHours}
-          hoursError={hoursError}
-          frostedInputCn={frostedInputCn}
-          onFieldChange={(field, value) => {
-            setFormData({ ...formData, [field]: value })
-          }}
-          onDateChange={(newDate) => {
-            setFormData({ ...formData, desired_date: newDate })
-          }}
-          onTimeChange={(newTime) => {
-            setFormData({ ...formData, desired_time: newTime })
-          }}
-          onNumGuestsChange={handleNumGuestsChange}
-          onNumGuestsKeyPress={handleNumGuestsKeyPress}
-          resetAvailability={resetAvailability}
-          setErrors={(newErrors) => setErrors(newErrors)}
-        />
-        {errors.slot_availability && (
-          <div className="text-sm text-red-700 font-semibold p-4 rounded-lg bg-red-50 border border-red-200 text-left">
-            {errors.slot_availability}
-          </div>
-        )}
-        {/* Intolleranze e richieste — sempre sotto data/ora/ospiti, per ogni tipologia */}
-        <div className="space-y-6 pt-2">
-          <DietaryRestrictionsSection
-            dietaryText={dietaryRestrictionsToText(formData.dietary_restrictions)}
-            onDietaryTextChange={(text) => {
-              setFormData({
-                ...formData,
-                dietary_restrictions: dietaryTextToRestrictions(text),
-              })
-            }}
-            specialRequests={formData.special_requests || ''}
-            onSpecialRequestsChange={(value) => {
-              setFormData({ ...formData, special_requests: value })
-            }}
-            privacyAccepted={privacyAccepted}
-            onPrivacyChange={(newValue) => {
-              setPrivacyAccepted(newValue)
-              if (newValue && errors.privacyAccepted) {
-                setErrors({ ...errors, privacyAccepted: '' })
-              }
-            }}
-            privacyError={errors.privacyAccepted}
-          />
-        </div>
-      </div>
-
-      {/* Tipologia di prenotazione — card sotto data/ora/ospiti */}
-      <div className="space-y-3" id="booking-sub-tabs-section">
+      <div className="min-w-0 w-full max-w-full space-y-6 md:px-2 lg:px-4">
+      {/* Tipologia + sottotab + menù — prima dei dati cliente (v2 layout) */}
+      <div className="flex w-full flex-col items-center space-y-3" id="booking-sub-tabs-section">
         <BookingModeCards
           modes={formConfig.booking_modes}
           activeModeId={activeModeId}
@@ -744,7 +685,10 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           <p className="text-sm text-red-500">{errors.booking_type}</p>
         )}
         {menuPromoBannerMessages.length > 0 && (
-          <MenuPromoBannerCards messages={menuPromoBannerMessages} className="mt-3" />
+          <MenuPromoBannerCards
+            messages={menuPromoBannerMessages}
+            className={cn('mt-3', BOOKING_PUBLIC_CONTENT_WIDTH)}
+          />
         )}
         {activeModeSubTabs.length > 0 && (
           <BookingSubTabCards
@@ -780,9 +724,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         )}
       </div>
 
-      {/* Menu Selection — visibile solo dopo card preset (se ci sono sottotab) */}
       {showMenuSelectionSection && (
-        <div id="menu-section" className="space-y-6 pt-6">
+        <div id="menu-section" className="flex w-full flex-col items-center space-y-6">
           <MenuSelection
             selectedItems={formData.menu_selection?.items || []}
             numGuests={formData.num_guests || 0}
@@ -793,17 +736,16 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             }
             customStaffPresets={customStaffPresets}
             hideSummary={true}
+            publicFormLayout
             variant={formData.booking_type === 'rinfresco_laurea' ? 'compose' : 'default'}
             hideMenuGrid={activeSubTab?.type === 'manual'}
             subTabOverrides={activeSubTabOverrides}
             onPresetMenuChange={handlePresetMenuChange}
             onMenuChange={({ items, totalPerPerson, tiramisuTotal, tiramisuKg }) => {
               const numGuests = formData.num_guests || 0
-              // Mantieni preset_menu se gli items corrispondono ancora al preset
               const currentPreset = selectedPreset
               let updatedPreset: PresetMenuType = currentPreset
-              
-              // Verifica se gli items corrispondono ancora al preset selezionato
+
               if (
                 currentPreset &&
                 !presetSelectionStillMatchesStoredPreset(currentPreset, items, customStaffPresets)
@@ -811,17 +753,17 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
                 updatedPreset = null
                 setSelectedPreset(null)
               }
-              
+
               setFormData({
                 ...formData,
                 preset_menu: updatedPreset,
                 menu_selection: {
                   items,
                   tiramisu_total: tiramisuTotal,
-                  tiramisu_kg: tiramisuKg
+                  tiramisu_kg: tiramisuKg,
                 },
                 menu_total_per_person: totalPerPerson,
-                menu_total_booking: totalPerPerson * numGuests + tiramisuTotal
+                menu_total_booking: totalPerPerson * numGuests + tiramisuTotal,
               })
               setErrors({ ...errors, menu: '' })
             }}
@@ -831,12 +773,74 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           )}
         </div>
       )}
+
+      {/* Dati cliente — dopo tipologia e menù */}
+      <div className="flex w-full flex-col items-center space-y-3">
+        <BookingFormFields
+          formData={{
+            client_name: formData.client_name,
+            client_email: formData.client_email,
+            client_phone: formData.client_phone,
+            desired_date: formData.desired_date,
+            desired_time: formData.desired_time,
+            num_guests: formData.num_guests,
+          }}
+          errors={errors}
+          businessHours={businessHours}
+          isLoadingHours={isLoadingHours}
+          hoursError={hoursError}
+          frostedInputCn={frostedInputCn}
+          onFieldChange={(field, value) => {
+            setFormData({ ...formData, [field]: value })
+          }}
+          onDateChange={(newDate) => {
+            setFormData({ ...formData, desired_date: newDate })
+          }}
+          onTimeChange={(newTime) => {
+            setFormData({ ...formData, desired_time: newTime })
+          }}
+          onNumGuestsChange={handleNumGuestsChange}
+          onNumGuestsKeyPress={handleNumGuestsKeyPress}
+          resetAvailability={resetAvailability}
+          setErrors={(newErrors) => setErrors(newErrors)}
+        />
+        {errors.slot_availability && (
+          <div className="text-sm text-red-700 font-semibold p-4 rounded-lg bg-red-50 border border-red-200 text-left">
+            {errors.slot_availability}
+          </div>
+        )}
+        {/* Intolleranze e richieste — sempre sotto data/ora/ospiti, per ogni tipologia */}
+        <div className="flex w-full flex-col items-center space-y-6 pt-2">
+          <DietaryRestrictionsSection
+            dietaryText={dietaryRestrictionsToText(formData.dietary_restrictions)}
+            onDietaryTextChange={(text) => {
+              setFormData({
+                ...formData,
+                dietary_restrictions: dietaryTextToRestrictions(text),
+              })
+            }}
+            specialRequests={formData.special_requests || ''}
+            onSpecialRequestsChange={(value) => {
+              setFormData({ ...formData, special_requests: value })
+            }}
+            privacyAccepted={privacyAccepted}
+            onPrivacyChange={(newValue) => {
+              setPrivacyAccepted(newValue)
+              if (newValue && errors.privacyAccepted) {
+                setErrors({ ...errors, privacyAccepted: '' })
+              }
+            }}
+            privacyError={errors.privacyAccepted}
+            publicFormFields
+          />
+        </div>
+      </div>
       </div>
 
       {summarySidebar}
 
       {/* Submit — sotto colonna form + sidebar (ordine DOM dopo aside) */}
-      <div className="order-3 col-span-1 flex w-full justify-center items-center mt-8 px-2 md:mt-12 md:px-4 lg:col-span-2">
+      <div className="order-3 col-span-1 flex w-full max-w-full justify-center items-center mt-8 md:mt-12 lg:col-span-2">
         <button
             type="submit"
             disabled={isPending || isBlocked || isSubmitting || isCheckingAvailability}
