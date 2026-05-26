@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Utensils, ChefHat, Star, Leaf } from 'lucide
 import { cn } from '@/lib/utils'
 import type { SubTab, SubTabIcon } from '@/features/booking/constants/bookingPublicFormConfig'
 import { BOOKING_PUBLIC_WIDE_CARDS_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
+import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
 
 const SUB_TAB_SCROLL_STEP_PX = 240
 
@@ -10,6 +11,11 @@ interface BookingSubTabCardsProps {
   subTabs: SubTab[]
   activeSubTabId: string | null
   onChange: (subTab: SubTab | null) => void
+  /**
+   * Serve per mostrare nel label delle card "preset" il nome vero del menù
+   * (coerente con `MenuSelection`), invece di un label generico tipo "Opzione menu".
+   */
+  customStaffPresets?: CustomStaffPreset[]
 }
 
 function SubTabIconGraphic({ icon, className }: { icon?: SubTabIcon; className?: string }) {
@@ -28,6 +34,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   subTabs,
   activeSubTabId,
   onChange,
+  customStaffPresets = [],
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -82,6 +89,10 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
         {subTabs.map((tab) => {
           const isActive = activeSubTabId === tab.id
           const priceLabel = formatPricePerPerson(tab.price_per_person)
+          const presetName =
+            tab.type === 'preset' && tab.preset_id
+              ? customStaffPresets.find((p) => p.id === tab.preset_id)?.name
+              : undefined
           return (
             <button
               key={tab.id}
@@ -115,7 +126,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                     isActive ? 'text-warm-orange' : 'text-warm-wood',
                   )}
                 >
-                  {tab.label}
+                  {presetName?.trim() ? presetName : tab.label}
                 </p>
                 {tab.description && (
                   <p className="mt-0.5 hidden text-xs leading-tight text-warm-wood-dark/70 line-clamp-2 sm:block">

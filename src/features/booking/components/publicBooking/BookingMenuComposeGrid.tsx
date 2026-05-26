@@ -239,7 +239,7 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
   return (
     <div className="w-full min-w-0" data-testid="booking-menu-compose-grid">
       {/* Mobile: colonna singola, card collassabili — larghezza piena come header */}
-      <div className="flex flex-col items-stretch gap-2.5 md:hidden">
+      <div className="flex flex-col items-stretch gap-[2px] md:hidden">
         <ComposeCategoryCards categories={visibleCategories} layout="stack" {...cardProps} />
       </div>
 

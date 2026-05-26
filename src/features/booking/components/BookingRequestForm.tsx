@@ -696,6 +696,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           <BookingSubTabCards
             subTabs={activeModeSubTabs}
             activeSubTabId={activeSubTabId}
+            customStaffPresets={customStaffPresets}
             onChange={(tab) => {
               setActiveSubTabId(tab?.id ?? null)
               if (!tab) {
