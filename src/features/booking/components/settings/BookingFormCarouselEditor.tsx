@@ -43,6 +43,7 @@ function AdminFieldWithCharCount({
   maxLength,
   onChange,
   placeholder,
+  singleLine = false,
 }: {
   id?: string
   label: string
@@ -50,20 +51,33 @@ function AdminFieldWithCharCount({
   maxLength: number
   onChange: (value: string) => void
   placeholder?: string
+  singleLine?: boolean
 }) {
   return (
     <div className="w-full min-w-0 space-y-1.5">
       <Label htmlFor={id} className="block text-sm">
         {label}
       </Label>
-      <Input
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
-        maxLength={maxLength}
-        placeholder={placeholder}
-        className="w-full"
-      />
+      {singleLine ? (
+        <Input
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
+          maxLength={maxLength}
+          placeholder={placeholder}
+          className="w-full"
+        />
+      ) : (
+        <textarea
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
+          maxLength={maxLength}
+          rows={3}
+          placeholder={placeholder}
+          className="block w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        />
+      )}
       <p className="text-right text-[11px] text-slate-400 tabular-nums">
         {value.length}/{maxLength}
       </p>
@@ -92,6 +106,7 @@ function CarouselSlideEditorCard({
   onRemove,
   onReplacePhoto,
   replaceDisabled,
+  hideMobileSlideLabel = false,
 }: {
   item: CarouselItem
   index: number
@@ -102,22 +117,37 @@ function CarouselSlideEditorCard({
   onRemove: () => void
   onReplacePhoto: (e: React.ChangeEvent<HTMLInputElement>) => void
   replaceDisabled?: boolean
+  /** Su mobile la prima slide mostra l'etichetta nella riga titolo del genitore (es. CAROSELLO 1). */
+  hideMobileSlideLabel?: boolean
 }) {
   const replaceFileRef = useRef<HTMLInputElement>(null)
   const slideIcon = (item.icon ?? 'utensils') as SubTabIcon
+  const slideLabel = `Foto N° ${index + 1}`
 
   return (
-    <div className="w-full min-w-0 space-y-3 rounded-lg border border-slate-200 bg-white p-3 md:p-4">
-      <div className="flex w-full min-w-0 items-center gap-3">
+    <div
+      className={cn(
+        'w-full min-w-0 space-y-4',
+        index > 0 && 'border-t border-slate-200 pt-5',
+      )}
+    >
+      {!hideMobileSlideLabel ? (
+        <div className="flex justify-end sm:hidden">
+          <span className="text-xs font-semibold text-slate-600">{slideLabel}</span>
+        </div>
+      ) : null}
+
+      <div className="flex w-full min-w-0 items-start gap-2 sm:items-center sm:gap-3">
         <img
           src={item.image_url}
           alt=""
           className="h-20 w-28 shrink-0 rounded-lg border border-slate-200 object-cover sm:h-24 sm:w-32"
         />
-        <span className="min-w-0 flex-1 text-left text-sm font-semibold text-slate-600">
-          Foto N° {index + 1}
+        <span className="hidden min-w-0 flex-1 text-left text-sm font-semibold text-slate-600 sm:block">
+          {slideLabel}
         </span>
-        <div className="flex shrink-0 flex-col gap-0.5 self-center">
+        <div className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0">
+          <div className="flex shrink-0 flex-col gap-0.5">
           <button
             type="button"
             disabled={index === 0}
@@ -137,7 +167,7 @@ function CarouselSlideEditorCard({
             <ChevronDown className="h-4 w-4" />
           </button>
         </div>
-        <div className="ml-auto flex shrink-0 items-center gap-0.5">
+          <div className="flex shrink-0 items-center gap-0.5">
           <input
             ref={replaceFileRef}
             type="file"
@@ -165,6 +195,7 @@ function CarouselSlideEditorCard({
           >
             <Trash2 className="h-4 w-4" />
           </button>
+          </div>
         </div>
       </div>
 
@@ -174,6 +205,7 @@ function CarouselSlideEditorCard({
         maxLength={SUB_TAB_LABEL_MAX}
         onChange={(eyebrow) => onPatch({ eyebrow: eyebrow || undefined })}
         placeholder="Nome mostrato al cliente"
+        singleLine
       />
 
       <AdminFieldWithCharCount
@@ -182,6 +214,7 @@ function CarouselSlideEditorCard({
         maxLength={CAROUSEL_SLIDE_TITLE_MAX}
         onChange={(title) => onPatch({ title: title || undefined })}
         placeholder="es. Tonno in crosta"
+        singleLine
       />
 
       <div className="w-full min-w-0 space-y-1.5">
@@ -222,11 +255,14 @@ export function BookingFormCarouselEditor({
   modeId,
   tab,
   onPatchTab,
+  firstSlideLabelInParentHeader = false,
 }: {
   tenantId: string
   modeId: string
   tab: SubTab
   onPatchTab: (patch: Partial<SubTab>) => void
+  /** Su mobile la prima slide mostra «Foto N° 1» nella riga titolo del genitore. */
+  firstSlideLabelInParentHeader?: boolean
 }) {
   const items = tab.carousel_items ?? []
 
@@ -283,7 +319,7 @@ export function BookingFormCarouselEditor({
           Carica una foto per compilare etichetta, titolo, icona e descrizione della slide.
         </p>
       ) : (
-        <div className="flex w-full min-w-0 flex-col gap-3">
+        <div className="flex w-full min-w-0 flex-col gap-5">
           {items.map((item, i) => (
             <CarouselSlideEditorCard
               key={`${item.image_url}-${i}`}
@@ -296,6 +332,7 @@ export function BookingFormCarouselEditor({
               onRemove={() => void removeAt(i)}
               onReplacePhoto={(e) => void replaceAt(i, e)}
               replaceDisabled={uploading || !canUpload}
+              hideMobileSlideLabel={firstSlideLabelInParentHeader && i === 0}
             />
           ))}
         </div>

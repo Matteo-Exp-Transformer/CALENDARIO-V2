@@ -795,17 +795,22 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
         {!embedded ? (
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-semibold text-slate-600 uppercase">{editorTitle}</span>
-            {headerActions ??
-              (!isDraft ? (
-                <button
-                  type="button"
-                  title="Elimina"
-                  onClick={() => removeSubTab(mode.id, tab.id)}
-                  className="p-1.5 rounded border border-red-200 text-red-600 hover:bg-red-50"
-                >
-                  <TrashIcon weight="regular" className="h-4 w-4" />
-                </button>
-              ) : null)}
+            <div className="flex shrink-0 items-center gap-2">
+              {tab.display === 'carousel' && (tab.carousel_items?.length ?? 0) > 0 ? (
+                <span className="text-xs font-semibold text-slate-600 sm:hidden">Foto N° 1</span>
+              ) : null}
+              {headerActions ??
+                (!isDraft ? (
+                  <button
+                    type="button"
+                    title="Elimina"
+                    onClick={() => removeSubTab(mode.id, tab.id)}
+                    className="p-1.5 rounded border border-red-200 text-red-600 hover:bg-red-50"
+                  >
+                    <TrashIcon weight="regular" className="h-4 w-4" />
+                  </button>
+                ) : null)}
+            </div>
           </div>
         ) : headerActions ? (
           <div className="flex items-center justify-end gap-1">{headerActions}</div>
@@ -817,6 +822,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
             modeId={mode.id}
             tab={tab}
             onPatchTab={patchTab}
+            firstSlideLabelInParentHeader={!embedded}
           />
         ) : null}
 
