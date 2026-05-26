@@ -50,36 +50,29 @@ interface BookingRequestFormProps {
   summarySidebar?: React.ReactNode
 }
 
-/** Allineato a `BookingSubTabCards` (es. `18,00€ a persona`). */
-function formatCarouselPriceLabel(price?: number): string | null {
-  if (price == null || price <= 0) return null
-  const amount = new Intl.NumberFormat('it-IT', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price)
-  return `${amount}€ a persona`
-}
-
 function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
   const visible = (subTab.carousel_items ?? []).filter((item) => item.image_url?.trim())
   if (visible.length === 0) return null
 
-  const cardLabel = subTab.label.trim()
-  const slideTitle = subTab.carousel_items?.[0]?.title?.trim() || ''
-  const description = subTab.description?.trim() || ''
-  const priceLabel = formatCarouselPriceLabel(subTab.price_per_person)
-  const hasOverlay = Boolean(cardLabel || slideTitle || description || priceLabel)
-
   return (
     <div className={cn('flex gap-3 overflow-x-auto pb-1 scrollbar-hide', BOOKING_PUBLIC_CONTENT_WIDTH)}>
       {visible.map((item, idx) => {
-        const title = item.title?.trim() || slideTitle
+        const cardLabel = item.eyebrow?.trim() || ''
+        const title = item.title?.trim() || ''
+        const description = item.description?.trim() || ''
+        const hasOverlay = Boolean(cardLabel || title || description)
+
         return (
           <article
             key={`${item.image_url}-${idx}`}
             className="relative h-52 w-[78%] max-w-[320px] shrink-0 overflow-hidden rounded-2xl bg-warm-wood text-white shadow-lg sm:h-64 sm:w-[46%]"
           >
-            <img src={item.image_url} alt={title || cardLabel || ''} className="h-full w-full object-cover" loading="lazy" />
+            <img
+              src={item.image_url}
+              alt={title || cardLabel || ''}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
             {hasOverlay ? (
               <div className="absolute inset-x-0 bottom-0 p-4 text-left">
@@ -91,9 +84,6 @@ function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
                   <p className="mt-1 line-clamp-3 text-sm font-medium leading-snug text-white/85">
                     {description}
                   </p>
-                ) : null}
-                {priceLabel ? (
-                  <p className="mt-1.5 text-sm font-bold leading-tight text-white">{priceLabel}</p>
                 ) : null}
               </div>
             ) : null}
@@ -172,10 +162,12 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
   const activeSubTab = activeModeSubTabs.find((t) => t.id === activeSubTabId) ?? null
 
-  const getPresetPricePerPerson = (subTab: SubTab | null): number | undefined =>
-    subTab?.price_per_person != null && subTab.price_per_person > 0
+  const getPresetPricePerPerson = (subTab: SubTab | null): number | undefined => {
+    if (!subTab || subTab.display === 'carousel') return undefined
+    return subTab.price_per_person != null && subTab.price_per_person > 0
       ? subTab.price_per_person
       : undefined
+  }
 
   const activeSubTabOverrides = useMemo(() => {
     if (activeModeSubTabs.length > 0) {
@@ -786,6 +778,16 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
                 return
               }
               setSelectedPreset(null)
+              if (tab.display === 'carousel') {
+                setFormData({
+                  ...formData,
+                  preset_menu: null,
+                  menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
+                  menu_total_per_person: undefined,
+                  menu_total_booking: undefined,
+                })
+                return
+              }
               const price = tab.price_per_person ?? 0
               const numGuests = formData.num_guests || 0
               setFormData({

@@ -94,14 +94,19 @@ export interface MenuQrSettingsSavePayload {
   categoryOverrides: MenuQrcodeCategoryOverrideDraft[]
 }
 
+/** Icone slide carosello Prenota (allineate a `SubTabIcon` in bookingPublicFormConfig). */
+export type CarouselSlideIcon = 'utensils' | 'cloche' | 'chef-hat' | 'star' | 'leaf'
+
 export interface CarouselItem {
   image_url: string
-  /** Riga piccola maiuscola sopra il titolo (es. «Specialità della casa») */
+  /** Riga piccola maiuscola sopra il titolo (editor Prenota: «Etichetta card») */
   eyebrow?: string
-  /** Titolo slide (campo nuovo — usa label come fallback in lettura) */
+  /** Titolo slide */
   title?: string
   /** Testo breve sotto il titolo */
   description?: string
+  /** Icona associata alla slide (solo carosello Prenota) */
+  icon?: CarouselSlideIcon
   /** legacy: rimane per retrocompat lettura dati salvati */
   label?: string
   sort_order: number

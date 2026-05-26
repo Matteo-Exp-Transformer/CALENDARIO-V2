@@ -1,5 +1,5 @@
 import type { BookingType } from '@/types/booking'
-import type { CarouselItem } from '@/types/menu'
+import type { CarouselItem, CarouselSlideIcon } from '@/types/menu'
 
 export type SubTabIcon = 'utensils' | 'cloche' | 'chef-hat' | 'star' | 'leaf'
 export const BOOKING_MODE_ICONS = [
@@ -176,6 +176,49 @@ export interface BookingPublicFormConfig {
 
 const SUB_TAB_ICONS: SubTabIcon[] = ['utensils', 'cloche', 'chef-hat', 'star', 'leaf']
 
+function parseCarouselSlideIcon(value: unknown): CarouselSlideIcon | undefined {
+  return typeof value === 'string' && SUB_TAB_ICONS.includes(value as SubTabIcon)
+    ? (value as CarouselSlideIcon)
+    : undefined
+}
+
+/** Migra testi legacy da livello sottotab alla prima slide; carosello senza prezzo a livello sottotab. */
+export function migrateLegacyCarouselSubTab(tab: SubTab): SubTab {
+  if (tab.display !== 'carousel') return tab
+
+  const items = tab.carousel_items ?? []
+  if (items.length === 0) {
+    return {
+      ...tab,
+      price_per_person: undefined,
+      description: undefined,
+    }
+  }
+
+  const migratedItems: CarouselItem[] = items.map((item, idx) => {
+    if (idx !== 0) return item
+    return {
+      ...item,
+      eyebrow: item.eyebrow?.trim() || tab.label?.trim() || undefined,
+      title: item.title?.trim() || undefined,
+      description: item.description?.trim() || tab.description?.trim() || undefined,
+      icon: item.icon ?? tab.icon,
+    }
+  })
+
+  const first = migratedItems[0]
+  const label = first.eyebrow?.trim() || first.title?.trim() || tab.label
+
+  return {
+    ...tab,
+    label,
+    description: undefined,
+    price_per_person: undefined,
+    icon: undefined,
+    carousel_items: migratedItems,
+  }
+}
+
 export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
   const o = raw as Record<string, unknown>
@@ -218,6 +261,7 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
           title: typeof v.title === 'string' && v.title.trim() ? v.title.trim() : undefined,
           description:
             typeof v.description === 'string' && v.description.trim() ? v.description.trim() : undefined,
+          icon: parseCarouselSlideIcon((v as Partial<CarouselItem>).icon),
           sort_order: typeof v.sort_order === 'number' ? v.sort_order : idx,
         }))
     : undefined
@@ -227,18 +271,20 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
       ? o.preset_id.trim()
       : undefined
 
-  return {
+  const parsed: SubTab = {
     id,
     display,
     label,
     icon,
     preset_id,
-    price_per_person,
-    description,
+    price_per_person: display === 'carousel' ? undefined : price_per_person,
+    description: display === 'carousel' ? undefined : description,
     hidden_category_keys,
     hidden_item_ids,
     carousel_items,
   }
+
+  return display === 'carousel' ? migrateLegacyCarouselSubTab(parsed) : parsed
 }
 
 export function migrateOverridesToSubTabs(overrides: SubTabOverride[]): SubTab[] {
@@ -329,15 +375,29 @@ export function normalizeBookingPublicFormConfig(
       ...mode,
       label: mode.label.trim(),
       description: mode.description.trim(),
-      sub_tabs: (mode.sub_tabs ?? []).map((tab) => ({
-        ...tab,
-        display: tab.display === 'carousel' ? 'carousel' : 'cards',
-        label: tab.label.trim(),
-        description: tab.description?.trim() ? tab.description.trim() : undefined,
-        hidden_category_keys: tab.hidden_category_keys?.filter((v) => v.trim()) ?? undefined,
-        hidden_item_ids: tab.hidden_item_ids?.filter((v) => v.trim()) ?? undefined,
-        carousel_items: tab.carousel_items,
-      })),
+      sub_tabs: (mode.sub_tabs ?? []).map((tab): SubTab => {
+        const display: SubTab['display'] = tab.display === 'carousel' ? 'carousel' : 'cards'
+        const base: SubTab = {
+          ...tab,
+          display,
+          label: tab.label.trim(),
+          hidden_category_keys: tab.hidden_category_keys?.filter((v) => v.trim()) ?? undefined,
+          hidden_item_ids: tab.hidden_item_ids?.filter((v) => v.trim()) ?? undefined,
+          carousel_items: tab.carousel_items,
+        }
+        if (display === 'carousel') {
+          return migrateLegacyCarouselSubTab({
+            ...base,
+            description: undefined,
+            price_per_person: undefined,
+            icon: undefined,
+          })
+        }
+        return {
+          ...base,
+          description: tab.description?.trim() ? tab.description.trim() : undefined,
+        }
+      }),
     })),
   }
 }

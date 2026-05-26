@@ -35,6 +35,8 @@ Regole, tabelle LOCK, comandi e report di sessione stanno solo nei due file sopr
 
 **Personalizza form carosello + help (26-05-26):** `CarouselAddPhotoBlock`, `SubTabsDisplayHelpPanel`, `SubTabAddButtons`; sottotab carousel in Prenota **senza** griglia menù — report `docs/Sessioni di lavoro/26-05-26/Report-personalizza-form-carosello-help-26-05-26.md`, `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md`, RULE Pagina Prenota v2 in `APP_CONTEXT_SKILL.md` §4.
 
-**Prenota carosello overlay campi (26-05-26):** `BookingSubTabCarousel` usa `subTab.label` / `description` / `price_per_person` + `carousel_items[0].title` — report `docs/Sessioni di lavoro/26-05-26/Report-prenota-carosello-overlay-campi-26-05-26.md`, sezione overlay in `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md`.
+**Prenota carosello overlay campi (26-05-26):** report `Report-prenota-carosello-overlay-campi-26-05-26.md` (sostituito dal modello per-slide).
+
+**Carosello editor per slide (26-05-26):** `BookingFormCarouselEditor` foto-first; `carousel_items[].eyebrow/title/description/icon`; nessun prezzo — report `docs/Sessioni di lavoro/26-05-26/Report-carosello-editor-per-slide-26-05-26.md`.
 
 **Personalizza form: etichetta card sottotab (26-05-26):** import menù solo su Card scorrevole; titolo Prenota = `sub_tabs[].label`; `applyLegacySubTabLabelOverrides`; `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md` + RULE §4 Personalizza form / Prenota v2.

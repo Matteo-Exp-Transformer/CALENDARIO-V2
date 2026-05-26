@@ -40,7 +40,8 @@ description: >-
 - **Footer** in fondo (`pageHasUnsaved`, componente `SettingsSaveFooter`): compare solo se almeno una sezione ha modifiche; **Salva modifiche** / **Annulla tutte le modifiche** su tutta la tab Personalizza form.
 - **Salva** dentro l'editor di una sottotab (card/carosello): `commitSubTabEditor` — upsert parziale di `booking_modes` in `booking_public_form_config`, chiude l'editor, `modesDirty` false; non richiede il Salva della card Modalità per quella sottotab.
 - **Editor sottotab Card scorrevole** (`display === 'cards'`): Etichetta card (60), Icona, **Importa menù preselezionato** (select da `booking_custom_staff_presets` filtrati per `booking_type` della modalità), Prezzo, Descrizione breve (80); sezione «Categorie e ingredienti visibili» solo con `preset_id`. Re-import preset **non** sovrascrive un’etichetta già personalizzata (diversa dal nome del preset precedente).
-- **Editor sottotab carosello** (`display === 'carousel'` + `CarouselAddPhotoBlock`): Etichetta card (60), Titolo slide (60 → `carousel_items[0].title`), Aggiungi foto + anteprima, Icona, Prezzo, Descrizione breve (80); contatori `n/max` sotto i campi testo. **Niente** import menù preselezionato né categorie ingredienti; niente `MenuQrCarouselSection` duplicato (quello resta per Menu QR / homepage).
+- **Editor sottotab carosello** (`display === 'carousel'` + `BookingFormCarouselEditor`): flusso **foto-first**; campi per slide: **Testo Etichetta** → `eyebrow`, **Testo Titolo** → `title`, **Scegli Icona** → `icon`, **Testo Descrizione** → `description` (max 60/60/80). Intestazione slide: **Foto N° X** (ordine carosello, 1 = prima a sinistra). Pulsante matita **Modifica foto** (`replaceAt` su `useCarouselPhotoUpload`) accanto a rimuovi. **Nessun prezzo**. Upload bucket `menu-photos`.
+- **Sottotab salvate (card + carosello)** in lista: riga compatta con **Modifica** / **Chiudi** (toggle `expandedSubTabByMode`); editor `embedded` sotto il bordo; **Salva** (`commitSubTabEditor`) chiude il pannello.
 - **Help Card/Carosello** (`SubTabsDisplayHelpPanel`): pulsante collassabile **? Dettagli** subito sotto la riga «Abilita Card o Carosello»; visibile **sempre** (anche con toggle off). Chiuso: `?` + «Dettagli»; aperto: stesso pulsante espanso con elenco **Card scorrevole** vs Carosello. Editor sottotab solo se `sub_tabs_enabled`; disattivando il toggle si annullano bozze/editor aperti.
 - **Aggiunta sottotab** (`SubTabAddButtons`): griglia 2 colonne **+ Card scorrevole** / **+ Carosello** sopra l’editor; altezza responsive allineata alla riga toggle (`md:min-h-[3.125rem]`); sfondo fisso `bg-primary-50`, hover `bg-primary-100`. Label default nuova card: «Card scorrevole» (`display: 'cards'`).
 - **Anagrafica Azienda** (`RestaurantSettingsTab`): stesso `SettingsSaveFooter` quando `dirty`; un solo flag per tutta la scheda.
@@ -66,33 +67,29 @@ description: >-
 - Le sottotab stanno in `booking_public_form_config.booking_modes[].sub_tabs[]`.
 - Non usare piu la vecchia distinzione salvata `type: preset|manual`: la scelta admin e `display: 'cards' | 'carousel'`.
 - **Pagina Prenota pubblica:** sottotab `display: 'carousel'` → solo carosello (`carousel_items`); **nessuna** griglia `MenuSelection` sotto. Sottotab `display: 'cards'` → card + griglia menù (se tipologia con menù).
-- I dati visuali della pagina Prenota sono snapshot salvati nella sottotab:
-  - `label`
-  - `description`
-  - `price_per_person`
-  - `hidden_category_keys`
-  - `hidden_item_ids`
-  - `carousel_items` per il carosello dedicato Prenota
+- I dati visuali **Card scorrevole** sono sulla sottotab: `label`, `description`, `price_per_person`, `hidden_*`, `preset_id`.
+- Il **Carosello** salva testi/icona per slide in `carousel_items[]` (`eyebrow`, `title`, `description`, `icon`); `sub_tabs[].label` resta il nome opzione nel selettore (sync da prima slide); **no** `price_per_person` / `description` a livello sottotab carosello.
 - `preset_id` collega un menu preselezionato solo per precompilare gli ingredienti del form pubblico. Importare un preset in Personalizza form compila i campi della card (nome preset come etichetta iniziale), ma non modifica `booking_custom_staff_presets` nella tab Menu.
 - **Titolo pubblico (card scorrevole + `h2` menù):** sempre `sub_tabs[].label` («Etichetta card»), mai il nome del preset staff se l’etichetta è stata personalizzata. `MenuSelection` riceve `presetSectionTitle` dalla sottotab attiva; `BookingSubTabCards` legge `tab.label`. Helper `applyLegacySubTabLabelOverrides` in `bookingPublicFormConfig.ts`: se in DB resta `label` = nome preset ma esiste ancora `sub_tabs_overrides[].custom_label`, usa l’override fino al prossimo salvataggio admin (che azzera `sub_tabs_overrides`).
 - Dopo il salvataggio da Personalizza form, `persistModesSection` salva solo `sub_tabs[]` (campo legacy `sub_tabs_overrides` rimosso dal JSON). La tab Menu resta fonte di verità per gli ingredienti del preset.
-- Il carosello dentro Personalizza form riusa il form `MenuQrCarouselSection` solo come UI/upload, ma i dati sono salvati nella sottotab Prenota e valgono solo per `/prenota/:slug`.
+- Migrazione runtime: `migrateLegacyCarouselSubTab` in `bookingPublicFormConfig.ts` (testi da sottotab → prima slide; azzera prezzo/descrizione carosello).
 
 ### Overlay pubblico carosello (`BookingSubTabCarousel`)
 
 Componente: `BookingRequestForm.tsx` → `BookingSubTabCarousel({ subTab })`.
 
-**Non** usare `carousel_items[].eyebrow` né il fallback «Specialità della casa» (quelli sono del Menu QR / `PublicMenuPage`). Mappatura admin → overlay su ogni slide con foto:
+**Non** usare fallback «Specialità della casa» (Menu QR). Overlay **per slide** da `carousel_items[i]`:
 
-| Campo admin (editor Carosello) | Chiave JSON | Ruolo overlay |
-|--------------------------------|-------------|---------------|
-| Etichetta card | `sub_tabs[].label` | Riga maiuscola (`text-xs uppercase`) |
-| Titolo slide | `sub_tabs[].carousel_items[0].title` | Titolo (`h3`); per slide singola anche `item.title` se presente |
-| Descrizione breve | `sub_tabs[].description` | Corpo sotto il titolo |
-| Prezzo a persona | `sub_tabs[].price_per_person` | Es. `14,00€ a persona` (stesso formato di `BookingSubTabCards`) |
-| Aggiungi foto | `sub_tabs[].carousel_items[].image_url` | Solo immagine di sfondo |
+| Campo admin (UI) | Chiave JSON | Overlay |
+|------------------|-------------|---------|
+| Testo Etichetta | `carousel_items[i].eyebrow` | Riga maiuscola |
+| Testo Titolo | `carousel_items[i].title` | Titolo |
+| Testo Descrizione | `carousel_items[i].description` | Corpo |
+| Foto | `carousel_items[i].image_url` | Sfondo |
 
-Report: `docs/Sessioni di lavoro/26-05-26/Report-prenota-carosello-overlay-campi-26-05-26.md`.
+**Nessun prezzo** su slide né totale fisso quando il cliente sceglie una sottotab `carousel`.
+
+Report: `docs/Sessioni di lavoro/26-05-26/Report-carosello-editor-per-slide-26-05-26.md`.
 
 ## Font header
 

@@ -100,7 +100,7 @@ export function MenuQrThemeSection({
   )
 }
 
-function useCarouselPhotoUpload({
+export function useCarouselPhotoUpload({
   tenantId,
   menuQrCodeId,
   draftShortCode,
@@ -143,7 +143,28 @@ function useCarouselPhotoUpload({
     onChange(items.filter((_, idx) => idx !== index).map((x, idx) => ({ ...x, sort_order: idx })))
   }
 
-  return { fileRef, uploading, canUpload, handleAddFile, removeAt }
+  const replaceAt = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file || !storageSegment || index < 0 || index >= items.length) return
+    setUploading(true)
+    try {
+      const old = items[index]
+      const uuid = crypto.randomUUID()
+      const path = `${menuQrStoragePrefix(tenantId, storageSegment)}/carousel/${uuid}.webp`
+      const url = await uploadToStorage(file, path)
+      const match = old.image_url.match(/menu-photos\/(.+)$/)
+      if (match) await removeFromStorage(match[1])
+      onChange(items.map((it, i) => (i === index ? { ...it, image_url: url } : it)))
+      toast.success('Foto aggiornata')
+    } catch {
+      toast.error('Errore caricamento foto')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return { fileRef, uploading, canUpload, handleAddFile, removeAt, replaceAt }
 }
 
 const carouselAddPhotoButtonClass = 'gap-1.5 text-xs'

@@ -84,7 +84,8 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
       >
         {subTabs.map((tab) => {
           const isActive = activeSubTabId === tab.id
-          const priceLabel = formatPricePerPersonLabel(tab.price_per_person)
+          const priceLabel =
+            tab.display === 'carousel' ? null : formatPricePerPersonLabel(tab.price_per_person)
           return (
             <button
               key={tab.id}
@@ -118,7 +119,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                   aria-hidden
                 />
                 <div className="flex min-h-0 w-full flex-1 items-center justify-center py-2 sm:py-2.5">
-                  {tab.description && (
+                  {tab.display !== 'carousel' && tab.description && (
                     <p className="line-clamp-5 text-xs leading-tight text-warm-wood-dark/70 sm:line-clamp-4 lg:text-base">
                       {tab.description}
                     </p>
