@@ -11,6 +11,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 26-05-26 | Prenota v2: carosello senza griglia menù | [Report](Sessioni%20di%20lavoro/26-05-26/Report-personalizza-form-carosello-help-26-05-26.md) — sottotab carousel: solo immagini in pagina Prenota, niente `MenuSelection`. |
 | 26-05-26 | Personalizza form: Card scorrevole + pulsanti sottotab | [Report](Sessioni%20di%20lavoro/26-05-26/Report-personalizza-form-carosello-help-26-05-26.md) — rename Card scorrevole, `SubTabAddButtons` griglia responsive sopra editor, sfondo primary-50. |
 | 26-05-26 | Personalizza form: editor carosello + help ? Dettagli | [Report](Sessioni%20di%20lavoro/26-05-26/Report-personalizza-form-carosello-help-26-05-26.md) — `CarouselAddPhotoBlock`, help collassabile sotto toggle Card/Carosello; niente categorie ingredienti su carosello; upload foto condiviso con Menu QR. |
 | 26-05-26 | Personalizza form: `SettingsSaveUi` + Salva sottotab su DB | [Report](Sessioni%20di%20lavoro/26-05-26/Report-settings-save-ui-sottotab-26-05-26.md) — UI footer/barre condivisa; Salva in editor sottotab persiste subito senza doppio Salva sulla card Modalità. |

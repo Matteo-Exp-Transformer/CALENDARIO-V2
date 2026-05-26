@@ -13,6 +13,7 @@ Semplificare l’editor admin delle sottotab **Carosello** sulla Pagina Prenota,
 |--------------------|---------|
 | Modalità espansa → toggle «Abilita Card o Carosello» | Sotto al toggle compare sempre **? Dettagli** (chiuso di default): spiega differenza tra **Card scorrevole** e Carosello |
 | Toggle on → aggiungi sottotab | Due pulsanti affiancati **+ Card scorrevole** / **+ Carosello** sopra l’editor; altezza che cresce con lo schermo; sfondo azzurro chiaro fisso |
+| Cliente sceglie carosello in Prenota | Solo foto/testi del carosello — **nessuna** griglia ingredienti sotto |
 | Clic su **? Dettagli** | Il pulsante si espande nello stesso riquadro e mostra l’elenco; chiuso mostra solo **?** + «Dettagli» |
 | Toggle **off** | Restano visibili toggle + help; spariscono bottoni `+ Card` / `+ Carosello` e gli editor sottotab |
 | Toggle **off** (da on) | Si chiudono bozze/editor sottotab aperti |
@@ -52,10 +53,9 @@ Semplificare l’editor admin delle sottotab **Carosello** sulla Pagina Prenota,
 
 Nessuna migrazione DB.
 
-### `BookingFormConfigPanel.tsx` (seguito)
+### `BookingRequestForm.tsx` (seguito)
 
-- Rename UI **Card scorrevole** (ex «Card a scorrimento») in help, label default e pulsante aggiunta.
-- `SubTabAddButtons`: griglia 2 colonne responsive, sopra editor sottotab; `bg-primary-50` / hover `bg-primary-100`; altezza `md` allineata al toggle.
+- Sottotab `display: 'carousel'`: pagina Prenota mostra solo `BookingSubTabCarousel`, **senza** `MenuSelection` sotto (`showMenuSelectionSection` false).
 
 ## Verifica
 

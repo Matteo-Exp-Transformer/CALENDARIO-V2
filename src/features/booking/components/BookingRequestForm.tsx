@@ -155,11 +155,12 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     return activeMode?.sub_tabs_overrides ?? []
   }, [activeMode, activeModeSubTabs])
 
-  /** Con sottotab: griglia menù solo dopo click su una card. */
+  /** Con sottotab: griglia menù solo dopo click su card (`display !== 'carousel'`). */
   const showMenuSelectionSection = useMemo(() => {
     if (!bookingTypeUsesMenuSelections(formData.booking_type)) return false
     if (activeModeSubTabs.length === 0) return true
-    return !!activeSubTab
+    if (!activeSubTab) return false
+    return activeSubTab.display !== 'carousel'
   }, [formData.booking_type, activeModeSubTabs.length, activeSubTab])
 
   // Notifica il parent ad ogni cambio formData (per sidebar riepilogo)

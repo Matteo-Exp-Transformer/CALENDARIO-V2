@@ -64,6 +64,7 @@ description: >-
 
 - Le sottotab stanno in `booking_public_form_config.booking_modes[].sub_tabs[]`.
 - Non usare piu la vecchia distinzione salvata `type: preset|manual`: la scelta admin e `display: 'cards' | 'carousel'`.
+- **Pagina Prenota pubblica:** sottotab `display: 'carousel'` → solo carosello (`carousel_items`); **nessuna** griglia `MenuSelection` sotto. Sottotab `display: 'cards'` → card + griglia menù (se tipologia con menù).
 - I dati visuali della pagina Prenota sono snapshot salvati nella sottotab:
   - `label`
   - `description`
