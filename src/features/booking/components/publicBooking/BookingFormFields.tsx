@@ -102,6 +102,8 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
           id="client_name"
           label="Nome Completo *"
           value={formData.client_name}
+          autoComplete="name"
+          maxLength={60}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             onFieldChange('client_name', e.target.value)
             setErrors({ ...errors, client_name: '' })
@@ -120,6 +122,9 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             id="client_email"
             label="Email"
             type="email"
+            inputMode="email"
+            autoComplete="email"
+            maxLength={120}
             value={formData.client_email}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               onFieldChange('client_email', e.target.value)
@@ -136,6 +141,9 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             id="client_phone"
             label="Telefono *"
             type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            maxLength={20}
             value={formData.client_phone ?? ''}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               onFieldChange('client_phone', e.target.value)

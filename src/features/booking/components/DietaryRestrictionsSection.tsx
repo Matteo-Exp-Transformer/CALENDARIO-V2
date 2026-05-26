@@ -44,7 +44,9 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
             id="dietary-notes"
             label="Intolleranze o esigenze alimentari"
             value={dietaryText}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onDietaryTextChange(e.target.value)}
+            maxLength={300}
+            autoComplete="off"
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onDietaryTextChange(e.target.value.slice(0, 300))}
           />
         ) : (
           <>
@@ -54,7 +56,8 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
             <Input
               id="dietary-notes"
               value={dietaryText}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onDietaryTextChange(e.target.value)}
+              maxLength={300}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onDietaryTextChange(e.target.value.slice(0, 300))}
               className={CONTROL_CLASS}
             />
           </>
@@ -68,7 +71,9 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
               id="special_requests"
               label="Altre Richieste"
               value={specialRequests}
-              onChange={(e) => onSpecialRequestsChange(e.target.value)}
+              maxLength={300}
+              autoComplete="off"
+              onChange={(e) => onSpecialRequestsChange(e.target.value.slice(0, 300))}
             />
           ) : (
             <>
@@ -78,7 +83,8 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
               <Input
                 id="special_requests"
                 value={specialRequests}
-                onChange={(e) => onSpecialRequestsChange(e.target.value)}
+                maxLength={300}
+                onChange={(e) => onSpecialRequestsChange(e.target.value.slice(0, 300))}
                 className={CONTROL_CLASS}
               />
             </>

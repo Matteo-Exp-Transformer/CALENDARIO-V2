@@ -72,7 +72,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
         <button
           type="button"
           aria-label="Scorri opzioni menù indietro"
-          className="absolute left-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-r-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
+          className="absolute left-0 top-0 bottom-0 z-20 hidden sm:flex w-10 items-center justify-center rounded-r-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
           onClick={() => scrollBy(-SUB_TAB_SCROLL_STEP_PX)}
         >
           <CaretLeftIcon size={22} weight="regular" />
@@ -139,7 +139,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
         <button
           type="button"
           aria-label="Scorri opzioni menù avanti"
-          className="absolute right-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-l-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
+          className="absolute right-0 top-0 bottom-0 z-20 hidden sm:flex w-10 items-center justify-center rounded-l-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
           onClick={() => scrollBy(SUB_TAB_SCROLL_STEP_PX)}
         >
           <CaretRightIcon size={22} weight="regular" />

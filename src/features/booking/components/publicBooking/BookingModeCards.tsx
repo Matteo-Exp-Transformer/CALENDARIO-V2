@@ -73,7 +73,7 @@ export const BookingModeCards: React.FC<BookingModeCardsProps> = ({ modes, activ
               <div className="min-w-0 w-full text-center">
                 <p
                   className={cn(
-                    'text-[13px] font-bold leading-tight sm:text-base',
+                    'text-[13px] font-bold leading-tight sm:text-base lg:text-sm xl:text-base',
                     isActive ? 'text-warm-orange' : 'text-warm-wood',
                   )}
                 >

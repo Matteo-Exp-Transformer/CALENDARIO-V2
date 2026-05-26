@@ -25,6 +25,7 @@ import {
   computeMenuTotalsWithPresetPrice,
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
+import { isValidEmail, isValidPhone } from '../utils/validation'
 import {
   listMenuPromoMessagesForBookingType,
   listMenuPromoLabelsForBookingType,
@@ -153,11 +154,26 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       return []
     }
     const raw = activeMode.sub_tabs ?? []
-    return applyLegacySubTabLabelOverrides(
+    const labeled = applyLegacySubTabLabelOverrides(
       raw,
       activeMode.sub_tabs_overrides,
       customStaffPresets,
     )
+    // Filtro difensivo XOR: se sub_tabs_presentation è impostata, mostra solo il tipo coerente.
+    // Gestisce dati legacy con mix cards/carousel senza richiede migrazione DB.
+    const presentation = activeMode.sub_tabs_presentation
+    if (presentation === 'cards' || presentation === 'carousel') {
+      const filtered = labeled.filter((t) => t.display === presentation)
+      if (filtered.length < labeled.length && import.meta.env.DEV) {
+        import('@/lib/logger').then(({ default: logger }) =>
+          logger.warn(
+            `[BookingRequestForm] Modalità "${activeMode.id}": sottotab con display misto. Mostrate solo "${presentation}".`,
+          ),
+        )
+      }
+      return filtered
+    }
+    return labeled
   }, [activeMode, customStaffPresets])
 
   const activeSubTab = activeModeSubTabs.find((t) => t.id === activeSubTabId) ?? null
@@ -426,16 +442,20 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       if (!firstErrorKey) firstErrorKey = 'client_name'
     }
 
-    // Email validation - optional but must be valid if provided
-    if (formData.client_email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.client_email)) {
+    // Email: opzionale, ma se compilata deve essere valida
+    if (formData.client_email.trim() && !isValidEmail(formData.client_email)) {
       newErrors.client_email = 'Email non valida'
       isValid = false
       if (!firstErrorKey) firstErrorKey = 'client_email'
     }
 
-    // Phone validation - required
+    // Telefono: obbligatorio, almeno 6 cifre
     if (!formData.client_phone || !formData.client_phone.trim()) {
       newErrors.client_phone = 'Numero di telefono obbligatorio'
+      isValid = false
+      if (!firstErrorKey) firstErrorKey = 'client_phone'
+    } else if (!isValidPhone(formData.client_phone)) {
+      newErrors.client_phone = 'Telefono non valido (almeno 6 cifre)'
       isValid = false
       if (!firstErrorKey) firstErrorKey = 'client_phone'
     }

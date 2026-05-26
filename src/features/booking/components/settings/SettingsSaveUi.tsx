@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 
 const saveFooterShellClass =
-  'restaurant-settings-save-footer admin-warm-surface flex min-h-[4.75rem] w-full max-w-2xl mx-auto flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7'
+  'restaurant-settings-save-footer admin-warm-surface flex min-h-[4.75rem] w-full max-w-2xl mx-auto flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border px-6 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7'
 
 const cancelAllButtonClass =
   'restaurant-settings-cancel-all min-h-[3.75rem] border-2 border-slate-300 bg-white px-8 py-5 text-base font-semibold text-slate-800 shadow-sm hover:border-slate-400 hover:bg-slate-50 focus:ring-primary-300'

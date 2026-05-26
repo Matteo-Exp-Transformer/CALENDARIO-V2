@@ -84,7 +84,7 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   const articleClass = cn(
     'flex flex-col border-2 border-black/15 bg-white/90 backdrop-blur-[1px] shadow-md',
     layout === 'scroll'
-      ? 'w-[min(280px,calc(100vw-3rem))] min-w-[240px] max-w-[280px] shrink-0 snap-center rounded-2xl sm:min-w-[260px]'
+      ? 'w-[min(280px,calc(100vw-4rem))] min-w-[240px] max-w-[280px] shrink-0 snap-center rounded-2xl sm:min-w-[260px]'
       : layout === 'stack'
         ? 'w-full min-w-0 max-w-none rounded-xl'
         : 'w-full min-w-0 max-w-none rounded-2xl',

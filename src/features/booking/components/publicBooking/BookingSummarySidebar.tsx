@@ -87,7 +87,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
 
   return (
     <aside
-      className="order-2 w-full max-w-full lg:order-none rounded-2xl bg-white border border-slate-100 shadow-xl px-4 py-5 space-y-4 lg:sticky lg:top-6 self-start"
+      className="order-2 w-full max-w-full lg:order-none rounded-2xl bg-white border border-slate-100 shadow-xl px-4 py-5 space-y-4 md:sticky md:top-4 self-start"
       data-testid="booking-summary-sidebar"
     >
       <h3 className="font-serif text-warm-wood font-bold text-lg leading-tight">

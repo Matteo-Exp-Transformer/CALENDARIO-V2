@@ -196,33 +196,77 @@ function SubTabsDisplayHelpPanel() {
 const SUB_TAB_ADD_BUTTON_CLASS =
   'min-w-0 w-full bg-primary-50 px-2 py-1.5 text-xs leading-tight hover:bg-primary-100 active:bg-primary-100/90 sm:min-h-11 sm:px-3 sm:py-2 sm:text-sm md:min-h-[3.125rem] md:px-3 md:py-2.5 md:text-sm'
 
+/**
+ * Pulsanti aggiungi sottotab.
+ * - presentation=null: mostra entrambi (prima scelta)
+ * - presentation='cards'|'carousel': mostra solo il tipo coerente
+ */
 function SubTabAddButtons({
+  presentation,
   onAddCards,
   onAddCarousel,
 }: {
+  presentation: 'cards' | 'carousel' | null
   onAddCards: () => void
   onAddCarousel: () => void
 }) {
-  return (
-    <div className="grid grid-cols-2 gap-2 sm:gap-3">
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={onAddCards}
-        className={SUB_TAB_ADD_BUTTON_CLASS}
-      >
+  if (presentation === 'cards') {
+    return (
+      <Button type="button" variant="outline" size="sm" onClick={onAddCards} className={SUB_TAB_ADD_BUTTON_CLASS}>
         + Card scorrevole
       </Button>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={onAddCarousel}
-        className={SUB_TAB_ADD_BUTTON_CLASS}
-      >
+    )
+  }
+  if (presentation === 'carousel') {
+    return (
+      <Button type="button" variant="outline" size="sm" onClick={onAddCarousel} className={SUB_TAB_ADD_BUTTON_CLASS}>
         + Carosello
       </Button>
+    )
+  }
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+      <Button type="button" variant="outline" size="sm" onClick={onAddCards} className={SUB_TAB_ADD_BUTTON_CLASS}>
+        + Card scorrevole
+      </Button>
+      <Button type="button" variant="outline" size="sm" onClick={onAddCarousel} className={SUB_TAB_ADD_BUTTON_CLASS}>
+        + Carosello
+      </Button>
+    </div>
+  )
+}
+
+/** Badge che mostra la presentazione scelta con link per cambiarla (previo reset). */
+function SubTabsPresentationBadge({
+  presentation,
+  subTabsCount,
+  onReset,
+}: {
+  presentation: 'cards' | 'carousel'
+  subTabsCount: number
+  onReset: () => void
+}) {
+  const label = presentation === 'cards' ? 'Card scorrevoli' : 'Carosello'
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+      <span>
+        Modalità impostata: <strong className="text-slate-800">{label}</strong>
+      </span>
+      <button
+        type="button"
+        onClick={() => {
+          if (subTabsCount > 0) {
+            const ok = window.confirm(
+              `Cambiare presentazione cancellerà le ${subTabsCount} sottotab esistenti. Continuare?`,
+            )
+            if (!ok) return
+          }
+          onReset()
+        }}
+        className="ml-auto text-primary-700 underline hover:text-primary-900"
+      >
+        Cambia presentazione
+      </button>
     </div>
   )
 }
@@ -358,7 +402,29 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   }
 
   const addSubTab = (modeId: string, display: SubTab['display']) => {
+    // Prima sottotab: imposta la presentazione XOR sulla modalità
+    setConfig((prev) => ({
+      ...prev,
+      booking_modes: prev.booking_modes.map((m) => {
+        if (m.id !== modeId) return m
+        if (m.sub_tabs_presentation != null) return m
+        return { ...m, sub_tabs_presentation: display }
+      }),
+    }))
     setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: newSubTab(display) }))
+    markModesDirty()
+  }
+
+  const resetSubTabsPresentation = (modeId: string) => {
+    setConfig((prev) => ({
+      ...prev,
+      booking_modes: prev.booking_modes.map((m) =>
+        m.id === modeId ? { ...m, sub_tabs_presentation: null, sub_tabs: [] } : m,
+      ),
+    }))
+    setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
+    setExpandedSubTabByMode((prev) => ({ ...prev, [modeId]: null }))
+    markModesDirty()
   }
 
   const updateDraftSubTab = (modeId: string, patch: Partial<SubTab>) => {
@@ -1143,10 +1209,20 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
                     {mode.sub_tabs_enabled && (
                       <div className="mt-5 space-y-3">
-                        <SubTabAddButtons
-                          onAddCards={() => addSubTab(mode.id, 'cards')}
-                          onAddCarousel={() => addSubTab(mode.id, 'carousel')}
-                        />
+                        {mode.sub_tabs_presentation != null && subTabs.length > 0 ? (
+                          <SubTabsPresentationBadge
+                            presentation={mode.sub_tabs_presentation}
+                            subTabsCount={subTabs.length}
+                            onReset={() => resetSubTabsPresentation(mode.id)}
+                          />
+                        ) : null}
+                        {!draftSubTab && (
+                          <SubTabAddButtons
+                            presentation={mode.sub_tabs_presentation}
+                            onAddCards={() => addSubTab(mode.id, 'cards')}
+                            onAddCarousel={() => addSubTab(mode.id, 'carousel')}
+                          />
+                        )}
 
                         {draftSubTab && (
                           <div className="w-full min-w-0">

@@ -535,6 +535,24 @@ export const restaurantSettingRegistry: {
               ? (mode.icon as BookingModeIcon)
               : dm.icon,
             sub_tabs_enabled: typeof mode.sub_tabs_enabled === 'boolean' ? mode.sub_tabs_enabled : dm.sub_tabs_enabled,
+            sub_tabs_presentation: (() => {
+              const raw = mode.sub_tabs_presentation
+              if (raw === 'cards' || raw === 'carousel') return raw
+              // Migrazione legacy: calcola dalla maggioranza di sub_tabs[].display
+              const tabs: unknown[] = Array.isArray(mode.sub_tabs) ? mode.sub_tabs : []
+              if (tabs.length === 0) return null
+              let cardsCount = 0
+              let carouselCount = 0
+              for (const t of tabs) {
+                if (t && typeof t === 'object' && !Array.isArray(t)) {
+                  const display = (t as Record<string, unknown>).display
+                  if (display === 'carousel') carouselCount++
+                  else cardsCount++
+                }
+              }
+              if (carouselCount === 0 && cardsCount === 0) return null
+              return carouselCount > cardsCount ? 'carousel' : 'cards'
+            })(),
             sub_tabs: (() => {
               const parsed: SubTab[] = Array.isArray(mode.sub_tabs)
                 ? mode.sub_tabs.map(parseSubTabFromUnknown).filter((t): t is SubTab => t != null)

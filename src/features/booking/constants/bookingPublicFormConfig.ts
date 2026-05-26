@@ -162,6 +162,12 @@ export interface BookingMode {
   description: string
   icon: BookingModeIcon
   sub_tabs_enabled: boolean
+  /**
+   * XOR presentazione sottotab per questa modalità.
+   * null = non ancora scelto (prima sottotab non ancora salvata).
+   * Calcolato dalla maggioranza di sub_tabs[].display al primo parse di dati legacy.
+   */
+  sub_tabs_presentation: 'cards' | 'carousel' | null
   sub_tabs: SubTab[]
   /** @deprecated Migrato a runtime in `sub_tabs` se vuoto. */
   sub_tabs_overrides?: SubTabOverride[]
@@ -338,6 +344,7 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
       description: 'Semplice prenotazione tavolo senza menu predefinito.',
       icon: 'utensils',
       sub_tabs_enabled: false,
+      sub_tabs_presentation: null,
       sub_tabs: [],
     },
     {
@@ -348,6 +355,7 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
       description: 'Scegli il tuo menu componendo le portate a prezzo fisso.',
       icon: 'cloche',
       sub_tabs_enabled: false,
+      sub_tabs_presentation: null,
       sub_tabs: [],
     },
     {
@@ -358,6 +366,7 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
       description: 'Organizza il tuo rinfresco di laurea con menu personalizzato.',
       icon: 'chef-hat',
       sub_tabs_enabled: false,
+      sub_tabs_presentation: null,
       sub_tabs: [],
     },
   ],
@@ -375,6 +384,7 @@ export function normalizeBookingPublicFormConfig(
       ...mode,
       label: mode.label.trim(),
       description: mode.description.trim(),
+      sub_tabs_presentation: mode.sub_tabs_presentation ?? null,
       sub_tabs: (mode.sub_tabs ?? []).map((tab): SubTab => {
         const display: SubTab['display'] = tab.display === 'carousel' ? 'carousel' : 'cards'
         const base: SubTab = {
