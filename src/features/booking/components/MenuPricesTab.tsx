@@ -1170,6 +1170,67 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     upsertRestaurantSetting.mutate([{ key: 'booking_menu_promos', value: next }])
   }
 
+  const menuPromoList = (
+    <div className="mt-8 flex flex-col gap-3">
+      {menuPromos.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-gray-300 bg-white/60 py-12 text-center text-sm text-gray-600">
+          Nessuna promo. Creane una con il pulsante sopra.
+        </p>
+      ) : (
+        menuPromos.map((row) => (
+          <div
+            key={row.id}
+            className="menu-prices-item-row flex-wrap gap-y-3"
+            style={{ padding: '0.75rem 1rem', minHeight: '72px' }}
+          >
+            <div className="menu-prices-item-text min-w-[120px] flex-1">
+              <h4 className="text-left font-semibold text-gray-900">
+                {getMenuPromoAdminLabel(row)}
+              </h4>
+              {row.message.trim() ? (
+                <p
+                  className={cn(
+                    MENU_INGREDIENT_DESC_CLASS,
+                    'mt-1 whitespace-pre-wrap break-words text-left',
+                  )}
+                >
+                  {row.message.trim()}
+                </p>
+              ) : null}
+              <p className="mt-1 text-left text-xs text-gray-500">
+                {bookingTypeLabelsJoined(row.booking_types)}
+              </p>
+            </div>
+            <div className="menu-prices-item-actions shrink-0">
+              <button
+                type="button"
+                onClick={() => startEditMenuPromo(row)}
+                className="menu-prices-icon-btn menu-prices-icon-btn--edit"
+                aria-label="Modifica promo"
+              >
+                <Edit className="h-4 w-4" />
+              </button>
+              <StaffPresetsVisibilityIconButton
+                variant="menuPromo"
+                visible={isMenuPromoVisibleOnBooking(row)}
+                disabled={upsertRestaurantSetting.isPending}
+                onToggle={() => toggleMenuPromoBookingVisibility(row.id)}
+              />
+              <button
+                type="button"
+                onClick={() => handleDeleteMenuPromo(row.id, getMenuPromoAdminLabel(row))}
+                className="menu-prices-icon-btn menu-prices-icon-btn--delete"
+                aria-label="Elimina promo"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  )
+
   if (isLoading) {
     return <div className="text-center py-8">Caricamento menu...</div>
   }
@@ -1281,8 +1342,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                 Crea una o più promo e associale alle tipologie di prenotazione del form pubblico.
               </p>
 
-              {promoEditorMode === 'list' && (
-                <div className="mt-8 flex flex-col items-stretch gap-4">
+              {promoEditorMode === 'list' ? (
+                <div className="mt-8 flex justify-end">
                   <Button
                     variant="success"
                     size="sm"
@@ -1294,68 +1355,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                     <Plus className="h-3.5 w-3.5" />
                     Nuova Promo Menù
                   </Button>
-                  {menuPromos.length === 0 ? (
-                    <p className="rounded-xl border border-dashed border-gray-300 bg-white/60 py-12 text-center text-sm text-gray-600">
-                      Nessuna promo. Creane una con il pulsante sopra.
-                    </p>
-                  ) : (
-                    <div className="flex flex-col gap-3">
-                      {menuPromos.map((row) => (
-                        <div
-                          key={row.id}
-                          className="menu-prices-item-row flex-wrap gap-y-3"
-                          style={{ padding: '0.75rem 1rem', minHeight: '72px' }}
-                        >
-                          <div className="menu-prices-item-text min-w-[120px] flex-1">
-                            <h4 className="text-left font-semibold text-gray-900">
-                              {getMenuPromoAdminLabel(row)}
-                            </h4>
-                            {row.message.trim() ? (
-                              <p
-                                className={cn(
-                                  MENU_INGREDIENT_DESC_CLASS,
-                                  'mt-1 whitespace-pre-wrap break-words text-left',
-                                )}
-                              >
-                                {row.message.trim()}
-                              </p>
-                            ) : null}
-                            <p className="mt-1 text-left text-xs text-gray-500">
-                              {bookingTypeLabelsJoined(row.booking_types)}
-                            </p>
-                          </div>
-                          <div className="menu-prices-item-actions shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => startEditMenuPromo(row)}
-                              className="menu-prices-icon-btn menu-prices-icon-btn--edit"
-                              aria-label={`Modifica promo`}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </button>
-                            <StaffPresetsVisibilityIconButton
-                              variant="menuPromo"
-                              visible={isMenuPromoVisibleOnBooking(row)}
-                              disabled={upsertRestaurantSetting.isPending}
-                              onToggle={() => toggleMenuPromoBookingVisibility(row.id)}
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleDeleteMenuPromo(row.id, getMenuPromoAdminLabel(row))
-                              }
-                              className="menu-prices-icon-btn menu-prices-icon-btn--delete"
-                              aria-label={`Elimina promo`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
-              )}
+              ) : null}
 
               {promoEditorMode === 'editor' && (
                 <div className="mt-8 flex flex-col gap-4">
@@ -1454,6 +1455,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                   </div>
                 </div>
               )}
+              {menuPromoList}
             </div>
           </div>
         </div>
@@ -1498,26 +1500,26 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
             {(isAdding || editingId) && (
               <div
                 ref={productFormCardRef}
-                className="mx-auto max-w-3xl scroll-mt-24 pr-10 text-center md:scroll-mt-28"
+                className="mx-auto w-full max-w-3xl scroll-mt-24 pr-0 text-left sm:pr-10 md:scroll-mt-28"
               >
-                  <h3 className="text-title-card font-bold text-warm-wood mb-4">
+                  <h3 className="text-center text-title-card font-bold text-warm-wood mb-4">
                     {editingId ? 'Modifica Prodotto' : 'Nuovo Prodotto'}
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div className="flex flex-col items-center">
-                      <label className="mb-1 block text-center text-sm font-medium text-gray-700">
-                        Nome Prodotto *
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                        Nome prodotto *
                       </label>
                       <Input
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="es: Pizza Margherita"
-                        className="mx-auto w-2/3 rounded-2xl pl-6"
+                        placeholder="Es. Pizza Margherita"
+                        className="h-14 w-full rounded-2xl pl-6"
                         style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
                       />
                     </div>
-                    <div className="flex flex-col items-center">
-                      <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
                         Categoria *
                       </label>
                       <Select
@@ -1527,7 +1529,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                         }
                       >
                         <SelectTrigger
-                          className="mx-auto h-14 w-2/3 rounded-2xl border text-gray-600 shadow-sm"
+                          className="h-14 w-full rounded-2xl border text-gray-600 shadow-sm"
                           style={{
                             borderColor: 'rgba(0,0,0,0.2)',
                             height: '56px',
@@ -1550,8 +1552,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="flex flex-col items-center">
-                      <label className="mb-1 block text-center text-sm font-medium text-gray-700">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
                         Prezzo (€) *
                       </label>
                       <Input
@@ -1561,30 +1563,17 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                         value={priceInput}
                         onChange={(e) => handlePriceInputChange(e.target.value)}
                         onKeyDown={handlePriceInputKeyDown}
-                        placeholder="es: 4.50"
-                        className="mx-auto w-2/3 rounded-2xl pl-6"
+                        placeholder="Es. 4.50"
+                        className="h-14 w-full rounded-2xl pl-6"
                         style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
                       />
                     </div>
-                    <div className="flex flex-col items-center">
-                      <label className="mb-1 block text-center text-sm font-medium text-gray-700">
-                        Descrizione (opzionale)
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                        Foto piatto{' '}
+                        <span className="font-normal normal-case text-gray-500">(opzionale)</span>
                       </label>
-                      <Input
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        placeholder="es: 2 tranci a persona"
-                        className="mx-auto w-2/3 rounded-2xl pl-6"
-                        style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-6 flex flex-col items-center gap-2">
-                    <label className="block text-center text-sm font-medium text-gray-700">
-                      Foto piatto{' '}
-                      <span className="font-normal text-gray-500">(opzionale)</span>
-                    </label>
-                    <div className="flex flex-col items-center gap-3">
+                      <div className="flex min-h-14 flex-col items-start justify-center gap-3">
                       {(photoPreviewUrl || currentImageUrl) && (
                         <div className="relative">
                           <img
@@ -1635,6 +1624,23 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                       {photoUploading && (
                         <p className="text-xs text-amber-700">Caricamento foto…</p>
                       )}
+                      </div>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                        Descrizione
+                        <span className="font-normal normal-case text-gray-500"> (opzionale)</span>
+                      </label>
+                      <Textarea
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        placeholder="Es. 2 tranci a persona"
+                        rows={3}
+                        className="w-full rounded-2xl border-gray-200 px-4 py-3 text-sm"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Note visibili quando il prodotto compare nella selezione menù.
+                      </p>
                     </div>
                   </div>
                   <div className="mt-10 flex justify-center gap-3">
