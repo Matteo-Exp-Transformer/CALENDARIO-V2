@@ -34,3 +34,5 @@ Regole, tabelle LOCK, comandi e report di sessione stanno solo nei due file sopr
 **Impostazioni salvataggio condiviso (26-05-26):** `SettingsSaveUi.tsx`, Salva sottotab → DB via `commitSubTabEditor` — report `docs/Sessioni di lavoro/26-05-26/Report-settings-save-ui-sottotab-26-05-26.md`, RULE Personalizza form in `docs/APP_CONTEXT_SKILL.md` §4.
 
 **Personalizza form carosello + help (26-05-26):** `CarouselAddPhotoBlock`, `SubTabsDisplayHelpPanel`, `SubTabAddButtons`; sottotab carousel in Prenota **senza** griglia menù — report `docs/Sessioni di lavoro/26-05-26/Report-personalizza-form-carosello-help-26-05-26.md`, `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md`, RULE Pagina Prenota v2 in `APP_CONTEXT_SKILL.md` §4.
+
+**Prenota carosello overlay campi (26-05-26):** `BookingSubTabCarousel` usa `subTab.label` / `description` / `price_per_person` + `carousel_items[0].title` — report `docs/Sessioni di lavoro/26-05-26/Report-prenota-carosello-overlay-campi-26-05-26.md`, sezione overlay in `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md`.

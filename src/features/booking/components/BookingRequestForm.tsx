@@ -36,8 +36,6 @@ import type { BookingPublicFormConfig, SubTab } from '../constants/bookingPublic
 import { DEFAULT_BOOKING_FORM_CONFIG } from '../constants/bookingPublicFormConfig'
 import { BookingSubTabCards } from './publicBooking/BookingSubTabCards'
 import { BOOKING_PUBLIC_CONTENT_WIDTH } from '../constants/bookingPublicFieldStyles'
-import type { CarouselItem } from '@/types/menu'
-
 
 interface BookingRequestFormProps {
   onSubmit?: () => void
@@ -49,31 +47,56 @@ interface BookingRequestFormProps {
   summarySidebar?: React.ReactNode
 }
 
-function BookingSubTabCarousel({ items }: { items: CarouselItem[] }) {
-  const visible = items.filter((item) => item.image_url?.trim())
+/** Allineato a `BookingSubTabCards` (es. `18,00€ a persona`). */
+function formatCarouselPriceLabel(price?: number): string | null {
+  if (price == null || price <= 0) return null
+  const amount = new Intl.NumberFormat('it-IT', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(price)
+  return `${amount}€ a persona`
+}
+
+function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
+  const visible = (subTab.carousel_items ?? []).filter((item) => item.image_url?.trim())
   if (visible.length === 0) return null
+
+  const cardLabel = subTab.label.trim()
+  const slideTitle = subTab.carousel_items?.[0]?.title?.trim() || ''
+  const description = subTab.description?.trim() || ''
+  const priceLabel = formatCarouselPriceLabel(subTab.price_per_person)
+  const hasOverlay = Boolean(cardLabel || slideTitle || description || priceLabel)
+
   return (
     <div className={cn('flex gap-3 overflow-x-auto pb-1 scrollbar-hide', BOOKING_PUBLIC_CONTENT_WIDTH)}>
-      {visible.map((item, idx) => (
-        <article
-          key={`${item.image_url}-${idx}`}
-          className="relative h-52 w-[78%] max-w-[320px] shrink-0 overflow-hidden rounded-2xl bg-warm-wood text-white shadow-lg sm:h-64 sm:w-[46%]"
-        >
-          <img src={item.image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 p-4 text-left">
-            <p className="text-xs font-bold uppercase tracking-wide text-white/80">
-              {item.eyebrow?.trim() || 'Specialità della casa'}
-            </p>
-            {item.title?.trim() ? (
-              <h3 className="mt-1 text-lg font-bold leading-tight">{item.title}</h3>
+      {visible.map((item, idx) => {
+        const title = item.title?.trim() || slideTitle
+        return (
+          <article
+            key={`${item.image_url}-${idx}`}
+            className="relative h-52 w-[78%] max-w-[320px] shrink-0 overflow-hidden rounded-2xl bg-warm-wood text-white shadow-lg sm:h-64 sm:w-[46%]"
+          >
+            <img src={item.image_url} alt={title || cardLabel || ''} className="h-full w-full object-cover" loading="lazy" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+            {hasOverlay ? (
+              <div className="absolute inset-x-0 bottom-0 p-4 text-left">
+                {cardLabel ? (
+                  <p className="text-xs font-bold uppercase tracking-wide text-white/80">{cardLabel}</p>
+                ) : null}
+                {title ? <h3 className="mt-1 text-lg font-bold leading-tight">{title}</h3> : null}
+                {description ? (
+                  <p className="mt-1 line-clamp-3 text-sm font-medium leading-snug text-white/85">
+                    {description}
+                  </p>
+                ) : null}
+                {priceLabel ? (
+                  <p className="mt-1.5 text-sm font-bold leading-tight text-white">{priceLabel}</p>
+                ) : null}
+              </div>
             ) : null}
-            {item.description?.trim() ? (
-              <p className="mt-1 line-clamp-2 text-sm font-medium text-white/85">{item.description}</p>
-            ) : null}
-          </div>
-        </article>
-      ))}
+          </article>
+        )
+      })}
     </div>
   )
 }
@@ -767,9 +790,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             }}
           />
         )}
-        {activeSubTab?.display === 'carousel' && (
-          <BookingSubTabCarousel items={activeSubTab.carousel_items ?? []} />
-        )}
+        {activeSubTab?.display === 'carousel' && <BookingSubTabCarousel subTab={activeSubTab} />}
         {!showMenuSelectionSection && errors.menu && activeModeSubTabs.length > 0 && (
           <p className="text-sm text-red-500 text-center">{errors.menu}</p>
         )}

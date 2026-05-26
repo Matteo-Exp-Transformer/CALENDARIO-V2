@@ -76,6 +76,22 @@ description: >-
 - Dopo il salvataggio, la card pubblica mostra titolo e descrizione da `booking_public_form_config`, non dal nome/descrizione del preset staff. La tab Menu resta fonte di verita per gli ingredienti del preset.
 - Il carosello dentro Personalizza form riusa il form `MenuQrCarouselSection` solo come UI/upload, ma i dati sono salvati nella sottotab Prenota e valgono solo per `/prenota/:slug`.
 
+### Overlay pubblico carosello (`BookingSubTabCarousel`)
+
+Componente: `BookingRequestForm.tsx` → `BookingSubTabCarousel({ subTab })`.
+
+**Non** usare `carousel_items[].eyebrow` né il fallback «Specialità della casa» (quelli sono del Menu QR / `PublicMenuPage`). Mappatura admin → overlay su ogni slide con foto:
+
+| Campo admin (editor Carosello) | Chiave JSON | Ruolo overlay |
+|--------------------------------|-------------|---------------|
+| Etichetta card | `sub_tabs[].label` | Riga maiuscola (`text-xs uppercase`) |
+| Titolo slide | `sub_tabs[].carousel_items[0].title` | Titolo (`h3`); per slide singola anche `item.title` se presente |
+| Descrizione breve | `sub_tabs[].description` | Corpo sotto il titolo |
+| Prezzo a persona | `sub_tabs[].price_per_person` | Es. `14,00€ a persona` (stesso formato di `BookingSubTabCards`) |
+| Aggiungi foto | `sub_tabs[].carousel_items[].image_url` | Solo immagine di sfondo |
+
+Report: `docs/Sessioni di lavoro/26-05-26/Report-prenota-carosello-overlay-campi-26-05-26.md`.
+
 ## Font header
 
 Fonte unica: `BOOKING_HEADER_FONT_OPTIONS` in `bookingPublicFormConfig.ts`.
