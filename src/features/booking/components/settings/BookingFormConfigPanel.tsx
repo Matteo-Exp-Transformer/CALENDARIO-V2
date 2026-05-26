@@ -27,7 +27,7 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import {
   BOOKING_HEADER_FONT_OPTIONS,
   DEFAULT_BOOKING_FORM_CONFIG,
-  getBookingHeaderFontFamily,
+  getBookingHeaderTextStyle,
   normalizeBookingHeaderColor,
   normalizeBookingPublicFormConfig,
   type BookingHeaderTextStyle,
@@ -93,7 +93,14 @@ function newSubTab(type: SubTab['type']): SubTab {
   }
 }
 
-export const BookingFormConfigPanel: React.FC = () => {
+type BookingFormConfigPanelProps = {
+  /** Es. sezione «Sfondo pagina Prenota» subito sotto le modalità. */
+  afterBookingModesSection?: React.ReactNode
+}
+
+export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
+  afterBookingModesSection,
+}) => {
   const { organizationName } = useTenantContext()
   const { data: savedConfig } = useRestaurantSetting('booking_public_form_config')
   const { data: restaurantName } = useRestaurantSetting('restaurant_name')
@@ -282,11 +289,8 @@ export const BookingFormConfigPanel: React.FC = () => {
               value={displayRestaurantName || '—'}
               readOnly
               disabled
-              className="cursor-default bg-slate-50/90 text-slate-800 disabled:opacity-100"
-              style={{
-                fontFamily: getBookingHeaderFontFamily(headerStyles.restaurant_name.font),
-                color: headerStyles.restaurant_name.color,
-              }}
+              className="min-h-[3.25rem] cursor-default bg-slate-50/90 py-3 font-bold leading-tight text-slate-800 disabled:opacity-100 sm:min-h-[3rem] sm:py-2.5"
+              style={getBookingHeaderTextStyle('restaurant_name', headerStyles)}
               aria-describedby="page_restaurant_name_hint"
             />
             <p id="page_restaurant_name_hint" className="mt-1 text-xs text-slate-500">
@@ -304,10 +308,8 @@ export const BookingFormConfigPanel: React.FC = () => {
               onChange={(e) => updateField('page_title', e.target.value)}
               placeholder="es. Richiesta Prenotazione"
               maxLength={80}
-              style={{
-                fontFamily: getBookingHeaderFontFamily(headerStyles.page_title.font),
-                color: headerStyles.page_title.color,
-              }}
+              className="min-h-[3rem] py-3 font-bold leading-tight sm:min-h-[2.625rem] sm:py-2.5"
+              style={getBookingHeaderTextStyle('page_title', headerStyles)}
             />
             {renderHeaderStyleControls('page_title')}
           </div>
@@ -320,11 +322,8 @@ export const BookingFormConfigPanel: React.FC = () => {
               placeholder="Breve descrizione mostrata sotto il titolo"
               maxLength={300}
               rows={3}
-              className="block w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-colors duration-150 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              style={{
-                fontFamily: getBookingHeaderFontFamily(headerStyles.page_description.font),
-                color: headerStyles.page_description.color,
-              }}
+              className="block w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-400 transition-colors duration-150 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 sm:py-2.5"
+              style={getBookingHeaderTextStyle('page_description', headerStyles)}
             />
             {renderHeaderStyleControls('page_description')}
           </div>
@@ -664,6 +663,8 @@ export const BookingFormConfigPanel: React.FC = () => {
           })}
         </div>
       </section>
+
+      {afterBookingModesSection}
 
       <div className="flex items-center justify-between gap-4 rounded-xl border admin-warm-surface px-5 py-4 shadow-sm">
         {dirty && !upsert.isPending && (

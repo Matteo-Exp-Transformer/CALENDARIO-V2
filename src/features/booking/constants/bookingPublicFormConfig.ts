@@ -82,6 +82,35 @@ export function getBookingHeaderFontFamily(font: BookingHeaderFontId): string {
     ?? BOOKING_HEADER_FONT_OPTIONS[0].fontFamily
 }
 
+/** Dimensioni responsive intestazione Prenota — admin (anteprima nel campo) e pagina pubblica. */
+export const BOOKING_HEADER_FONT_SIZE: Record<BookingHeaderTextTarget, string> = {
+  restaurant_name: 'clamp(1.75rem, 5.2vw, 2.125rem)',
+  page_title: 'clamp(1.5rem, 4.2vw, 1.875rem)',
+  page_description: 'clamp(1rem, 2.8vw, 1.0625rem)',
+}
+
+export function getBookingHeaderFontSize(target: BookingHeaderTextTarget): string {
+  return BOOKING_HEADER_FONT_SIZE[target]
+}
+
+export function getBookingHeaderTextStyle(
+  target: BookingHeaderTextTarget,
+  headerStyles: BookingHeaderStyles,
+): {
+  fontFamily: string
+  color: string
+  fontSize: string
+  lineHeight: number
+} {
+  const style = headerStyles[target] ?? DEFAULT_BOOKING_HEADER_STYLES[target]
+  return {
+    fontFamily: getBookingHeaderFontFamily(style.font),
+    color: style.color,
+    fontSize: BOOKING_HEADER_FONT_SIZE[target],
+    lineHeight: target === 'page_description' ? 1.42 : 1.15,
+  }
+}
+
 export function normalizeBookingHeaderColor(value: unknown, fallback: string): string {
   return typeof value === 'string' && HEX_COLOR_RE.test(value.trim()) ? value.trim() : fallback
 }

@@ -680,10 +680,142 @@ export const RestaurantSettingsTab: React.FC = () => {
     ].join(' ')
 
   const bookingBgSectionClass =
-    'admin-warm-surface w-full max-w-3xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
+    'admin-warm-surface w-full space-y-4 rounded-xl border p-5 shadow-sm text-center'
   const bookingBgGridTopSpacingStyle: React.CSSProperties = { marginTop: '1.375rem' }
   const bookingBgTextureTabRowStyle: React.CSSProperties = { gap: '1rem' }
   const bookingBgAvailableTileIds = BOOKING_PAGE_TILE_IDS.filter((id) => !isBookingPageTilePlaceholder(id))
+
+  const appThemeSectionClass =
+    'admin-warm-surface w-full max-w-3xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
+
+  const bookingPageBackgroundSection = (
+    <section className={bookingBgSectionClass}>
+      <h3 className="text-base font-semibold text-slate-800">Sfondo pagina Prenota</h3>
+      <p className="text-sm text-slate-600">
+        Tocca l&apos;immagine o il nome per selezionare lo sfondo. Tocca l&apos;icona occhio al centro per
+        l&apos;anteprima grande (su desktop compare passando il mouse sulla card). Conferma la scelta e salva in
+        fondo per pubblicarla sulla pagina Prenota.
+      </p>
+      <div className="flex w-full flex-col">
+        <div className="flex w-full justify-end">
+          <div
+            className="flex flex-shrink-0 flex-row flex-nowrap items-center"
+            style={bookingBgTextureTabRowStyle}
+          >
+            <button
+              type="button"
+              disabled={upsert.isPending}
+              className={bookingBgNavyToggleClass(bookingBgTextureTab === 'images')}
+              style={bookingBgNavyToggleButtonStyle}
+              onClick={() => setBookingBgTextureTab('images')}
+            >
+              Immagini
+            </button>
+            <button
+              type="button"
+              disabled={upsert.isPending}
+              className={bookingBgNavyToggleClass(bookingBgTextureTab === 'gradients')}
+              style={bookingBgNavyToggleButtonStyle}
+              onClick={() => setBookingBgTextureTab('gradients')}
+            >
+              Gradienti
+            </button>
+          </div>
+        </div>
+
+        {bookingBgTextureTab === 'images' ? (
+          <div
+            className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
+            style={bookingBgGridTopSpacingStyle}
+          >
+            {bookingBgAvailableTileIds.map((id) => {
+              const overallIndex = BOOKING_PAGE_TILE_IDS.indexOf(id)
+              const tileHref = bookingPageTilePublicHref(id, bookingBgBase)
+              const label = `Texture ${overallIndex + 1}`
+              return (
+                <SettingsPreviewPickCard
+                  key={id}
+                  label={label}
+                  selected={bookingPageBackground === id}
+                  disabled={upsert.isPending || bookingBgSelectionLocked}
+                  pickButtonClass={bookingBgPickButtonClass}
+                  aspectClass="aspect-[4/3]"
+                  pickEntity="sfondo"
+                  modalConfirmLabel="Usa questo sfondo"
+                  previewSrc={tileHref}
+                  previewModalSrc={tileHref}
+                  onPick={() => {
+                    setBookingPageBackground(id)
+                    markDirty()
+                  }}
+                />
+              )
+            })}
+          </div>
+        ) : (
+          <div
+            className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
+            style={bookingBgGridTopSpacingStyle}
+          >
+            {BOOKING_PAGE_GRADIENT_PRESETS.map((preset) => {
+              const gradientStyle: React.CSSProperties = {
+                backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
+                backgroundImage: bookingPageGradientPreviewCss(preset.id),
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }
+              return (
+                <SettingsPreviewPickCard
+                  key={preset.id}
+                  label={preset.name}
+                  selected={bookingPageBackground === preset.id}
+                  disabled={upsert.isPending || bookingBgSelectionLocked}
+                  pickButtonClass={bookingBgPickButtonClass}
+                  aspectClass="aspect-[4/3]"
+                  pickEntity="sfondo"
+                  modalConfirmLabel="Usa questo sfondo"
+                  preview={
+                    <div className="h-full w-full rounded-md border border-slate-200/80" style={gradientStyle} />
+                  }
+                  modalPreview={
+                    <div
+                      className="aspect-[4/3] w-full max-h-[min(78vh,880px)] rounded-xl border border-slate-200/80"
+                      style={gradientStyle}
+                    />
+                  }
+                  onPick={() => {
+                    setBookingPageBackground(preset.id)
+                    markDirty()
+                  }}
+                />
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {(bookingBgHasUnsavedChoice || bookingBgSelectionLocked) && (
+        <div className="mx-auto flex w-full max-w-md flex-col items-center gap-2 pt-1">
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleBookingBgConfirmOrCancel}
+            disabled={upsert.isPending || !tenantId}
+            style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
+            className="min-h-[2.875rem] w-full max-w-xs border-0 bg-primary-800 px-6 py-2.5 text-white shadow-md transition-colors duration-150 hover:bg-primary-700 hover:shadow-lg focus:ring-primary-400 disabled:pointer-events-none disabled:bg-primary-800 [&_svg]:text-white"
+          >
+            {bookingBgSelectionLocked ? 'Annulla selezione sfondo' : 'Conferma selezione sfondo'}
+          </Button>
+          {bookingBgSelectionLocked && bookingBgHasUnsavedChoice && (
+            <p className="text-xs font-semibold leading-snug text-emerald-800">
+              Selezione confermata. Salva modifiche in fondo per pubblicarla sulla pagina Prenota.
+            </p>
+          )}
+        </div>
+      )}
+    </section>
+  )
 
   return (
     <div className="flex w-full flex-col items-center gap-8">
@@ -715,7 +847,9 @@ export const RestaurantSettingsTab: React.FC = () => {
         </button>
       </div>
 
-      {settingsTab === 'form' && <BookingFormConfigPanel />}
+      {settingsTab === 'form' && (
+        <BookingFormConfigPanel afterBookingModesSection={bookingPageBackgroundSection} />
+      )}
 
       {settingsTab === 'anagrafica' && (
       <React.Fragment>
@@ -1018,134 +1152,7 @@ export const RestaurantSettingsTab: React.FC = () => {
       </section>
       )}
 
-      <section className={bookingBgSectionClass}>
-        <h3 className="text-lg font-semibold text-slate-800">Sfondo pagina Prenota</h3>
-        <p className="text-sm text-slate-600">
-          Tocca l&apos;immagine o il nome per selezionare lo sfondo. Tocca l&apos;icona occhio al centro per
-          l&apos;anteprima grande (su desktop compare passando il mouse sulla card). Conferma la scelta e salva in
-          fondo per pubblicarla sulla pagina Prenota.
-        </p>
-        <div className="flex w-full flex-col">
-          <div className="flex w-full justify-end">
-            <div
-              className="flex flex-shrink-0 flex-row flex-nowrap items-center"
-              style={bookingBgTextureTabRowStyle}
-            >
-              <button
-                type="button"
-                disabled={upsert.isPending}
-                className={bookingBgNavyToggleClass(bookingBgTextureTab === 'images')}
-                style={bookingBgNavyToggleButtonStyle}
-                onClick={() => setBookingBgTextureTab('images')}
-              >
-                Immagini
-              </button>
-              <button
-                type="button"
-                disabled={upsert.isPending}
-                className={bookingBgNavyToggleClass(bookingBgTextureTab === 'gradients')}
-                style={bookingBgNavyToggleButtonStyle}
-                onClick={() => setBookingBgTextureTab('gradients')}
-              >
-                Gradienti
-              </button>
-            </div>
-          </div>
-
-          {bookingBgTextureTab === 'images' ? (
-            <div
-              className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
-              style={bookingBgGridTopSpacingStyle}
-            >
-              {bookingBgAvailableTileIds.map((id) => {
-                const overallIndex = BOOKING_PAGE_TILE_IDS.indexOf(id)
-                const tileHref = bookingPageTilePublicHref(id, bookingBgBase)
-                const label = `Texture ${overallIndex + 1}`
-                return (
-                  <SettingsPreviewPickCard
-                    key={id}
-                    label={label}
-                    selected={bookingPageBackground === id}
-                    disabled={upsert.isPending || bookingBgSelectionLocked}
-                    pickButtonClass={bookingBgPickButtonClass}
-                    aspectClass="aspect-[4/3]"
-                    pickEntity="sfondo"
-                    modalConfirmLabel="Usa questo sfondo"
-                    previewSrc={tileHref}
-                    previewModalSrc={tileHref}
-                    onPick={() => {
-                      setBookingPageBackground(id)
-                      markDirty()
-                    }}
-                  />
-                )
-              })}
-            </div>
-          ) : (
-          <div
-            className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
-            style={bookingBgGridTopSpacingStyle}
-          >
-            {BOOKING_PAGE_GRADIENT_PRESETS.map((preset) => {
-              const gradientStyle: React.CSSProperties = {
-                backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
-                backgroundImage: bookingPageGradientPreviewCss(preset.id),
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-              }
-              return (
-                <SettingsPreviewPickCard
-                  key={preset.id}
-                  label={preset.name}
-                  selected={bookingPageBackground === preset.id}
-                  disabled={upsert.isPending || bookingBgSelectionLocked}
-                  pickButtonClass={bookingBgPickButtonClass}
-                  aspectClass="aspect-[4/3]"
-                  pickEntity="sfondo"
-                  modalConfirmLabel="Usa questo sfondo"
-                  preview={
-                    <div className="h-full w-full rounded-md border border-slate-200/80" style={gradientStyle} />
-                  }
-                  modalPreview={
-                    <div
-                      className="aspect-[4/3] w-full max-h-[min(78vh,880px)] rounded-xl border border-slate-200/80"
-                      style={gradientStyle}
-                    />
-                  }
-                  onPick={() => {
-                    setBookingPageBackground(preset.id)
-                    markDirty()
-                  }}
-                />
-              )
-            })}
-          </div>
-          )}
-        </div>
-
-        {(bookingBgHasUnsavedChoice || bookingBgSelectionLocked) && (
-          <div className="mx-auto flex w-full max-w-md flex-col items-center gap-2 pt-1">
-            <Button
-              type="button"
-              variant="primary"
-              onClick={handleBookingBgConfirmOrCancel}
-              disabled={upsert.isPending || !tenantId}
-              style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
-              className="min-h-[2.875rem] w-full max-w-xs border-0 bg-primary-800 px-6 py-2.5 text-white shadow-md transition-colors duration-150 hover:bg-primary-700 hover:shadow-lg focus:ring-primary-400 disabled:pointer-events-none disabled:bg-primary-800 [&_svg]:text-white"
-            >
-              {bookingBgSelectionLocked ? 'Annulla selezione sfondo' : 'Conferma selezione sfondo'}
-            </Button>
-            {bookingBgSelectionLocked && bookingBgHasUnsavedChoice && (
-              <p className="text-xs font-semibold leading-snug text-emerald-800">
-                Selezione confermata. Salva modifiche in fondo per pubblicarla sulla pagina Prenota.
-              </p>
-            )}
-          </div>
-        )}
-      </section>
-
-      <section className={bookingBgSectionClass} aria-labelledby="app-theme-heading">
+      <section className={appThemeSectionClass} aria-labelledby="app-theme-heading">
         <h3 id="app-theme-heading" className="text-lg font-semibold text-slate-800">
           Selezione tema app
         </h3>
@@ -1178,6 +1185,8 @@ export const RestaurantSettingsTab: React.FC = () => {
           ))}
         </div>
       </section>
+      </React.Fragment>
+      )}
 
       <div className="restaurant-settings-save-footer admin-warm-surface flex min-h-[4.75rem] w-full max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7">
         <Button
@@ -1204,8 +1213,6 @@ export const RestaurantSettingsTab: React.FC = () => {
           </span>
         )}
       </div>
-      </React.Fragment>
-      )}
     </div>
   )
 }

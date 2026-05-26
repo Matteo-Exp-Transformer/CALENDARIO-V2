@@ -18,7 +18,7 @@ import {
 } from '@/features/booking/constants/bookingPageBackground'
 import {
   DEFAULT_BOOKING_FORM_CONFIG,
-  getBookingHeaderFontFamily,
+  getBookingHeaderTextStyle,
   type SubTab,
 } from '@/features/booking/constants/bookingPublicFormConfig'
 import type { BookingRequestInput } from '@/types/booking'
@@ -127,31 +127,20 @@ export const BookingRequestPage: React.FC = () => {
           {/* Header — solo testo sullo sfondo pagina */}
           <div className="flex flex-col items-center justify-center gap-1.5 py-1.5 text-center animate-fade-in">
             <h1
-              className="font-bold leading-tight m-0"
-              style={{
-                fontSize: 'clamp(1.4rem, 3.733vw, 1.8rem)',
-                fontFamily: getBookingHeaderFontFamily(headerStyles.restaurant_name.font),
-                color: headerStyles.restaurant_name.color,
-              }}
+              className="font-bold m-0"
+              style={getBookingHeaderTextStyle('restaurant_name', headerStyles)}
             >
               {displayName}
             </h1>
             <h2
-              className="font-bold leading-tight m-0"
-              style={{
-                fontSize: 'clamp(1.4rem, 3.733vw, 1.8rem)',
-                fontFamily: getBookingHeaderFontFamily(headerStyles.page_title.font),
-                color: headerStyles.page_title.color,
-              }}
+              className="font-bold m-0"
+              style={getBookingHeaderTextStyle('page_title', headerStyles)}
             >
               {resolvedConfig.page_title}
             </h2>
             <p
-              className="opacity-90 font-bold text-[0.917rem] leading-[1.42] m-0 px-1.5 max-w-[42rem]"
-              style={{
-                fontFamily: getBookingHeaderFontFamily(headerStyles.page_description.font),
-                color: headerStyles.page_description.color,
-              }}
+              className="opacity-90 font-bold m-0 px-1.5 max-w-[42rem]"
+              style={getBookingHeaderTextStyle('page_description', headerStyles)}
             >
               {resolvedConfig.page_description}
             </p>
