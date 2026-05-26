@@ -100,6 +100,17 @@ export function MenuQrThemeSection({
   )
 }
 
+/** Limite dimensione foto carosello (Prenota + Menu QR homepage). */
+export const CAROUSEL_PHOTO_MAX_MB = 5
+export const CAROUSEL_PHOTO_MAX_BYTES = CAROUSEL_PHOTO_MAX_MB * 1024 * 1024
+const ACCEPTED_CAROUSEL_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
+
+function isAcceptedCarouselPhoto(file: File): boolean {
+  // file.type può essere vuoto su alcuni browser; in tal caso permettiamo il passaggio
+  // (lo storage WebP convertito è gestito a valle). Se il tipo è dichiarato, deve essere ammesso.
+  return file.type === '' || ACCEPTED_CAROUSEL_MIME.has(file.type)
+}
+
 export function useCarouselPhotoUpload({
   tenantId,
   menuQrCodeId,
@@ -122,6 +133,14 @@ export function useCarouselPhotoUpload({
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file || !storageSegment) return
+    if (!isAcceptedCarouselPhoto(file)) {
+      toast.error('Formato non supportato. Usa JPG, PNG, WebP o AVIF.')
+      return
+    }
+    if (file.size > CAROUSEL_PHOTO_MAX_BYTES) {
+      toast.error(`Foto troppo grande (max ${CAROUSEL_PHOTO_MAX_MB} MB).`)
+      return
+    }
     setUploading(true)
     try {
       const uuid = crypto.randomUUID()
@@ -147,6 +166,14 @@ export function useCarouselPhotoUpload({
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file || !storageSegment || index < 0 || index >= items.length) return
+    if (!isAcceptedCarouselPhoto(file)) {
+      toast.error('Formato non supportato. Usa JPG, PNG, WebP o AVIF.')
+      return
+    }
+    if (file.size > CAROUSEL_PHOTO_MAX_BYTES) {
+      toast.error(`Foto troppo grande (max ${CAROUSEL_PHOTO_MAX_MB} MB).`)
+      return
+    }
     setUploading(true)
     try {
       const old = items[index]

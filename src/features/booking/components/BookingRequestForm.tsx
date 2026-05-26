@@ -26,6 +26,7 @@ import {
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
 import { isValidEmail, isValidPhone } from '../utils/validation'
+import { resolveSubTabView } from '../services/bookingFormResolver'
 import {
   listMenuPromoMessagesForBookingType,
   listMenuPromoLabelsForBookingType,
@@ -162,18 +163,28 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     // Filtro difensivo XOR: se sub_tabs_presentation è impostata, mostra solo il tipo coerente.
     // Gestisce dati legacy con mix cards/carousel senza richiede migrazione DB.
     const presentation = activeMode.sub_tabs_presentation
-    if (presentation === 'cards' || presentation === 'carousel') {
-      const filtered = labeled.filter((t) => t.display === presentation)
-      if (filtered.length < labeled.length && import.meta.env.DEV) {
-        import('@/lib/logger').then(({ logger }) =>
-          logger.warn(
-            `[BookingRequestForm] Modalità "${activeMode.id}": sottotab con display misto. Mostrate solo "${presentation}".`,
-          ),
-        )
-      }
-      return filtered
+    const filtered = presentation === 'cards' || presentation === 'carousel'
+      ? labeled.filter((t) => t.display === presentation)
+      : labeled
+    if (presentation && filtered.length < labeled.length && import.meta.env.DEV) {
+      import('@/lib/logger').then(({ logger }) =>
+        logger.warn(
+          `[BookingRequestForm] Modalità "${activeMode.id}": sottotab con display misto. Mostrate solo "${presentation}".`,
+        ),
+      )
     }
-    return labeled
+    // Resolver: applica field_overrides → campi non personalizzati seguono il preset live
+    return filtered.map((tab): SubTab => {
+      const resolved = resolveSubTabView(tab, customStaffPresets)
+      return {
+        ...tab,
+        label: resolved.label,
+        description: resolved.description,
+        price_per_person: resolved.price_per_person,
+        hidden_category_keys: resolved.hidden_category_keys,
+        hidden_item_ids: resolved.hidden_item_ids,
+      }
+    })
   }, [activeMode, customStaffPresets])
 
   const activeSubTab = activeModeSubTabs.find((t) => t.id === activeSubTabId) ?? null

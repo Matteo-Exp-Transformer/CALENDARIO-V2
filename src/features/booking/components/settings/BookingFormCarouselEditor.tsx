@@ -9,15 +9,14 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { cn } from '@/lib/utils'
-import {
-  CAROUSEL_SLIDE_TITLE_MAX,
-  useCarouselPhotoUpload,
-} from '@/features/booking/components/MenuHomepageConfigPanel'
+import { useCarouselPhotoUpload } from '@/features/booking/components/MenuHomepageConfigPanel'
 import type { CarouselItem, CarouselSlideIcon } from '@/types/menu'
 import type { SubTab, SubTabIcon } from '@/features/booking/constants/bookingPublicFormConfig'
 
-const SUB_TAB_LABEL_MAX = 60
-const SUB_TAB_DESCRIPTION_MAX = 80
+/** Limiti testi slide carosello in Personalizza form (Pagina Prenota). */
+const BOOKING_CAROUSEL_EYEBROW_MAX = 30
+const BOOKING_CAROUSEL_TITLE_MAX = 22
+const BOOKING_CAROUSEL_DESCRIPTION_MAX = 77
 
 const SUB_TAB_ICON_OPTIONS: { value: SubTabIcon; label: string }[] = [
   { value: 'utensils', label: 'Posate' },
@@ -63,6 +62,10 @@ function AdminFieldWithCharCount({
           id={id}
           value={value}
           onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
+          onBlur={(e) => {
+            const trimmed = e.target.value.trim()
+            if (trimmed !== value) onChange(trimmed)
+          }}
           maxLength={maxLength}
           placeholder={placeholder}
           className="w-full"
@@ -72,13 +75,22 @@ function AdminFieldWithCharCount({
           id={id}
           value={value}
           onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
+          onBlur={(e) => {
+            const trimmed = e.target.value.trim()
+            if (trimmed !== value) onChange(trimmed)
+          }}
           maxLength={maxLength}
           rows={3}
           placeholder={placeholder}
           className="block w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
       )}
-      <p className="text-right text-[11px] text-slate-400 tabular-nums">
+      <p
+        className={cn(
+          'text-right text-[11px] tabular-nums',
+          value.length >= maxLength ? 'text-red-500' : 'text-slate-400',
+        )}
+      >
         {value.length}/{maxLength}
       </p>
     </div>
@@ -202,7 +214,7 @@ function CarouselSlideEditorCard({
       <AdminFieldWithCharCount
         label="Testo Etichetta"
         value={item.eyebrow ?? ''}
-        maxLength={SUB_TAB_LABEL_MAX}
+        maxLength={BOOKING_CAROUSEL_EYEBROW_MAX}
         onChange={(eyebrow) => onPatch({ eyebrow: eyebrow || undefined })}
         placeholder="Nome mostrato al cliente"
         singleLine
@@ -211,7 +223,7 @@ function CarouselSlideEditorCard({
       <AdminFieldWithCharCount
         label="Testo Titolo"
         value={item.title ?? ''}
-        maxLength={CAROUSEL_SLIDE_TITLE_MAX}
+        maxLength={BOOKING_CAROUSEL_TITLE_MAX}
         onChange={(title) => onPatch({ title: title || undefined })}
         placeholder="es. Tonno in crosta"
         singleLine
@@ -242,7 +254,7 @@ function CarouselSlideEditorCard({
       <AdminFieldWithCharCount
         label="Testo Descrizione"
         value={item.description ?? ''}
-        maxLength={SUB_TAB_DESCRIPTION_MAX}
+        maxLength={BOOKING_CAROUSEL_DESCRIPTION_MAX}
         onChange={(description) => onPatch({ description: description || undefined })}
         placeholder="Sottotitolo sulla card"
       />

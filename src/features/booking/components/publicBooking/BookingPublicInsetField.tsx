@@ -30,6 +30,8 @@ export const BookingPublicInsetField: React.FC<BookingPublicInsetFieldProps> = (
         </label>
         <Input
           id={id}
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasError && id ? `${id}-error` : undefined}
           className={cn(BOOKING_PUBLIC_FIELD_INNER_INPUT, className)}
           {...inputProps}
         />

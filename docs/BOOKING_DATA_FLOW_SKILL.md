@@ -1,0 +1,184 @@
+---
+name: booking-data-flow
+description: >-
+  Skill obbligatoria prima di toccare qualsiasi cosa che attraversi
+  tab Menu (magazzino) → Personalizza form (vetrina) → Pagina Prenota pubblica.
+  Spiega come scorrono i dati, dove sono le "fonti di verità", come funziona
+  il resolver `field_overrides` e quali invarianti non rompere.
+---
+
+# Booking Data Flow — flusso dati Prenota
+
+> **Quando usare questa skill:** prima di modificare uno di questi file
+> `bookingFormResolver.ts`, `bookingPublicFormConfig.ts`, `restaurantSettingRegistry.ts`,
+> `BookingFormConfigPanel.tsx`, `BookingFormCarouselEditor.tsx`, `BookingRequestForm.tsx`,
+> `MenuPricesTab.tsx` (preset/promo), o quando aggiungi un campo a `SubTab` / `BookingMode`.
+
+---
+
+## 1. Le due "fonti di verità"
+
+| Mondo | Cosa contiene | Storage | Owner UI |
+|-------|--------------|---------|----------|
+| **Magazzino menu** | Categorie ingredienti, ingredienti, **menù preselezionati**, promo | Tabelle `menu_categories`, `menu_items` + JSONB `restaurant_settings.booking_custom_staff_presets`, `booking_menu_promos` | Tab **Menu** (`MenuPricesTab`) |
+| **Vetrina Prenota** | Testi/foto/icone che il **cliente** vede in pagina Prenota | JSONB `restaurant_settings.booking_public_form_config` | Tab **Impostazioni → Personalizza form** (`BookingFormConfigPanel`) |
+
+**Regola operativa:** la vetrina **non** legge il magazzino in tempo reale per tutto. Per i campi vetrina (`label`, `description`, `price_per_person`, `hidden_*`) c'è un **resolver** che decide caso per caso se mostrare il valore live del preset o quello «congelato» nella card.
+
+---
+
+## 2. Il resolver `field_overrides` — come funziona
+
+File: `src/features/booking/services/bookingFormResolver.ts`.
+
+Ogni `SubTab` può avere un oggetto `field_overrides: { label?, description?, price_per_person?, hidden_item_ids?, hidden_category_keys? }` con valori `boolean`.
+
+- `field_overrides[campo] === true` → quel campo è **personalizzato** dal ristoratore. La pagina Prenota mostra il valore salvato nella card. Modifiche al preset in tab Menu **non** la toccano.
+- `field_overrides[campo]` assente o `false` → quel campo è **ereditato dal preset**. La pagina Prenota legge il valore live dal preset corrente in `booking_custom_staff_presets`. Se il preset cambia in tab Menu, la card si aggiorna senza riaprire Personalizza form.
+
+### Quando le bandierine vengono cambiate
+
+1. **Import preset** (admin clicca "Importa menù preselezionato" nell'editor card): `importPresetIntoSubTab` / `importPresetIntoDraftSubTab` usano `presetImportFieldOverrides()` → tutte a `false`. Eccezione: se l'etichetta corrente era già personalizzata e diversa dal nome del preset precedente, `label` resta `true` (`shouldKeepSubTabLabelOnPresetImport`).
+2. **Modifica admin di un campo vetrina**: `updateSubTab` / `updateDraftSubTab` passano per `applyPatchWithOverrideTracking`. Se il patch contiene uno dei 5 campi overridable, quella bandierina diventa `true`.
+3. **Reset esplicito** (utility): `resetSubTabToPreset(subTab, presets)` riallinea tutto al preset corrente e azzera tutti gli override.
+
+### Dove il resolver viene applicato
+
+- **Pagina pubblica**: `BookingRequestForm.activeModeSubTabs` chiama `resolveSubTabView(tab, customStaffPresets)` per ogni sottotab dopo il filtro XOR. Tutti i consumatori a valle (`activeSubTab`, sidebar, `MenuSelection`) ricevono i valori risolti.
+- **Admin**: l'editor mostra sempre i campi salvati nella card (per permettere all'admin di modificarli). Non applicare il resolver lato admin: confonderebbe l'editing.
+
+---
+
+## 3. Mappa flusso dati end-to-end
+
+```
+ADMIN
+─────
+[Tab Menu]
+   menu_categories ─┐
+   menu_items ──────┼─→ booking_custom_staff_presets (in restaurant_settings)
+                    └─→ booking_menu_promos        (in restaurant_settings)
+
+[Tab Impostazioni → Personalizza form]
+   BookingFormConfigPanel
+     ├─ Intestazione → booking_public_form_config.page_title/description/header_styles
+     └─ Modalità (BookingMode[])
+           ├─ sub_tabs_presentation: XOR cards | carousel | null
+           └─ sub_tabs (SubTab[])
+                ├─ preset_id        ─── legame con preset staff (magazzino)
+                ├─ label, description, price_per_person, hidden_*  (snapshot vetrina)
+                ├─ field_overrides  ─── decide per ogni campo: live o congelato
+                └─ carousel_items (solo display='carousel')
+
+PUBBLICO (/prenota/:slug)
+─────────────────────────
+   BookingRequestForm
+     1. Legge booking_public_form_config (via supabasePublic)
+     2. activeMode = booking_modes[booking_type]
+     3. activeModeSubTabs:
+          a) applyLegacySubTabLabelOverrides (compat dati vecchi)
+          b) filtro XOR per sub_tabs_presentation
+          c) MAP → resolveSubTabView(tab, customStaffPresets)
+             ↑ qui i campi NON personalizzati vengono letti live dal preset corrente
+     4. Renderizza BookingModeCards / BookingSubTabCards / BookingSubTabCarousel / MenuSelection
+```
+
+---
+
+## 4. Invarianti da non rompere
+
+```
+LOCK  Resolver puro
+      `bookingFormResolver.ts` non deve dipendere da React, hook, fetch.
+      Funzioni pure: input → output. Test in services/__tests__/.
+
+LOCK  Owner field_overrides
+      Solo `BookingFormConfigPanel` cambia le bandierine in scrittura tramite
+      `applyPatchWithOverrideTracking` e `presetImportFieldOverrides`.
+      MAI scrivere a mano `field_overrides[x] = true/false` da altri componenti.
+
+LOCK  No resolver in admin editor
+      L'editor admin lavora sui valori SALVATI in `sub_tabs[]`. Non applicare
+      `resolveSubTabView` ai campi che l'admin sta modificando: vedrebbe il valore
+      live del preset e non capirebbe perché il suo input "rimbalza".
+
+LOCK  XOR card vs carosello
+      Una `BookingMode` è solo cards O solo carousel.
+      `sub_tabs_presentation` decide; `SubTabAddButtons` mostra solo il pulsante coerente.
+      Cambio presentazione richiede reset esplicito (`resetSubTabsPresentation`).
+
+LOCK  Parser/normalizer accoppiati
+      Aggiungere un campo a `SubTab` richiede:
+      1) tipo in `bookingPublicFormConfig.ts`
+      2) parsing in `parseSubTabFromUnknown` (con difesa input malformato)
+      3) preservazione in `normalizeBookingPublicFormConfig`
+      4) eventuale fallback in `restaurantSettingRegistry.parseFromDb`
+      Test minimi: parser accetta dati legacy senza il campo.
+
+LOCK  Submit cliente invariato
+      `useCreateBookingRequest` NON va toccato per cambi vetrina.
+      Il submit usa il payload risolto (label, prezzo) già processato dal resolver.
+
+LOCK  Due client Supabase
+      Admin: `supabase` (autenticato). Pubblico Prenota: `supabasePublic` (anonimo).
+      Il resolver è puro, non sa di client — lo chiama chi ha già i dati in mano.
+```
+
+---
+
+## 5. Come estendere senza rompere
+
+### Aggiungere un nuovo campo vetrina overridable (es. `subtitle`)
+
+1. Aggiungi `subtitle?: string` a `SubTab` in `bookingPublicFormConfig.ts`.
+2. Aggiungi `'subtitle'` a `SubTabOverridableField` (stesso file) e a `OVERRIDABLE_FIELDS` per il parser.
+3. Aggiorna `parseSubTabFromUnknown` per leggerlo (con trim + difesa).
+4. Aggiorna `normalizeBookingPublicFormConfig` per preservarlo al salvataggio.
+5. Aggiungi il campo a `ResolvedSubTab` e alla logica in `resolveSubTabView` (analogamente a `label`: se override mostra salvato, altrimenti leggi dal preset se il preset ha un campo equivalente).
+6. Aggiungi `'subtitle'` a `SUB_TAB_OVERRIDABLE_KEYS` in `BookingFormConfigPanel.tsx` così `applyPatchWithOverrideTracking` lo marca quando l'admin lo modifica.
+7. Test in `bookingFormResolver.test.ts`: scenario override true/false, preset cancellato.
+
+### Aggiungere una nuova modalità (`BookingType`)
+
+1. Aggiorna `BookingType` in `src/types/booking.ts`.
+2. Aggiungi una voce a `DEFAULT_BOOKING_FORM_CONFIG.booking_modes` con `sub_tabs_presentation: null`, `sub_tabs: []`.
+3. Verifica che `bookingTypeUsesMenuSelections` (in `BookingRequestForm`) e `STAFF_PRESET_BOOKING_TYPE_VALUES` siano coerenti.
+
+### Cambiare il comportamento "aggiorna solo se non personalizzato"
+
+Tocca **solo** `bookingFormResolver.ts`. Non duplicare la logica nei componenti consumatori. Aggiungi test prima di modificare.
+
+### Aggiungere validazione su un campo cliente pubblico
+
+1. Aggiungi helper a `src/features/booking/utils/validation.ts` (pure function).
+2. Usalo in `BookingRequestForm.validate`.
+3. Aggiungi `aria-invalid` + `id="<campo>-error"` sul componente in `BookingFormFields.tsx`.
+4. Test in `validation.test.ts`.
+
+---
+
+## 6. Antipattern noti — non rifarli
+
+- ❌ Leggere `customStaffPresets` direttamente dentro `MenuSelection` per ricostruire label/prezzo. **Usa quanto già risolto a monte in `BookingRequestForm.activeModeSubTabs`.**
+- ❌ Salvare label/description/prezzo "via preset" come riferimento (es. `label: preset.name` come stringa di refresh). Il sistema attuale **salva sempre il valore concreto** in `sub_tabs[]`; il resolver decide se mostrarlo o leggerlo live.
+- ❌ Applicare `resolveSubTabView` due volte (admin + pubblico) sullo stesso oggetto. Già stato fatto, causa confusione: applica **solo** nel punto di lettura pubblico.
+- ❌ Cambiare `field_overrides` con merge manuale (`{ ...current.field_overrides, label: true }`) sparso nei componenti. **Usa `applyPatchWithOverrideTracking` o `patchSubTabAsOverride`.**
+- ❌ Bypassare il filtro XOR mostrando sottotab di entrambi i tipi nel pubblico "per legacy". Il filtro c'è apposta — i mix legacy vengono sanitizzati a runtime senza toccare il DB finché Mario non salva.
+
+---
+
+## 7. File di riferimento
+
+| File | Ruolo |
+|------|-------|
+| `src/features/booking/services/bookingFormResolver.ts` | Resolver puro field_overrides |
+| `src/features/booking/services/__tests__/bookingFormResolver.test.ts` | Test resolver |
+| `src/features/booking/constants/bookingPublicFormConfig.ts` | Tipi, default, parser, normalizer |
+| `src/features/booking/lib/restaurantSettingRegistry.ts` | parseFromDb + migrazione legacy |
+| `src/features/booking/components/settings/BookingFormConfigPanel.tsx` | Admin editor + tracking override |
+| `src/features/booking/components/settings/BookingFormCarouselEditor.tsx` | Editor carosello |
+| `src/features/booking/components/BookingRequestForm.tsx` | Applicazione resolver lato pubblico |
+| `src/features/booking/utils/validation.ts` | Helper validazione campi cliente |
+| `src/features/booking/components/publicBooking/BookingFormFields.tsx` | Form pubblico con aria-invalid |
+
+Report sessione che ha introdotto il resolver: `docs/Sessioni di lavoro/26-05-26/Report-resolver-field-overrides-pulizia-26-05-26.md`.

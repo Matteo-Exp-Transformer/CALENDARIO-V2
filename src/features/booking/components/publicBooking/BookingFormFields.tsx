@@ -112,7 +112,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
           hasError={!!errors.client_name}
         />
         {errors.client_name && (
-          <p className="text-center text-sm text-red-500">{errors.client_name}</p>
+          <p id="client_name-error" className="text-center text-sm text-red-500">{errors.client_name}</p>
         )}
       </div>
 
@@ -133,7 +133,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             hasError={!!errors.client_email}
           />
           {errors.client_email && (
-            <p className="text-center text-sm text-red-500">{errors.client_email}</p>
+            <p id="client_email-error" className="text-center text-sm text-red-500">{errors.client_email}</p>
           )}
         </div>
         <div className="space-y-1">
@@ -153,7 +153,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             hasError={!!errors.client_phone}
           />
           {errors.client_phone && (
-            <p className="text-center text-sm text-red-500">{errors.client_phone}</p>
+            <p id="client_phone-error" className="text-center text-sm text-red-500">{errors.client_phone}</p>
           )}
         </div>
       </div>
@@ -199,6 +199,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             inputMode="numeric"
             pattern="[0-9]*"
             autoComplete="off"
+            maxLength={3}
             value={formData.num_guests > 0 ? formData.num_guests.toString() : ''}
             onChange={onNumGuestsChange}
             onKeyPress={onNumGuestsKeyPress}
@@ -206,7 +207,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             hasError={!!errors.num_guests}
           />
           {errors.num_guests && (
-            <p className="text-center text-sm text-red-500">{errors.num_guests}</p>
+            <p id="num_guests-error" className="text-center text-sm text-red-500">{errors.num_guests}</p>
           )}
         </div>
       </div>

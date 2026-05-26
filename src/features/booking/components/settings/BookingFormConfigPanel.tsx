@@ -45,6 +45,7 @@ import {
   type SubTabIcon,
 } from '@/features/booking/constants/bookingPublicFormConfig'
 import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
+import type { SubTabOverridableField } from '@/features/booking/constants/bookingPublicFormConfig'
 import { normalizeMenuItemBookingTypes, type MenuItem } from '@/types/menu'
 import { toast } from 'react-toastify'
 import {
@@ -101,6 +102,10 @@ function AdminFieldWithCharCount({
           id={id}
           value={value}
           onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
+          onBlur={(e) => {
+            const trimmed = e.target.value.trim()
+            if (trimmed !== value) onChange(trimmed)
+          }}
           maxLength={maxLength}
           placeholder={placeholder}
           className="w-full"
@@ -110,13 +115,17 @@ function AdminFieldWithCharCount({
           id={id}
           value={value}
           onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
+          onBlur={(e) => {
+            const trimmed = e.target.value.trim()
+            if (trimmed !== value) onChange(trimmed)
+          }}
           maxLength={maxLength}
           rows={3}
           placeholder={placeholder}
           className="block w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
       )}
-      <p className={charCountClass}>
+      <p className={cn(charCountClass, value.length >= maxLength && 'text-red-500')}>
         {value.length}/{maxLength}
       </p>
     </div>
@@ -162,6 +171,44 @@ function newSubTab(display: SubTab['display']): SubTab {
     ...(display === 'cards'
       ? { hidden_category_keys: [], hidden_item_ids: [] }
       : {}),
+  }
+}
+
+/**
+ * Campi della card che, se patchati direttamente dall'editor admin,
+ * devono essere marcati come personalizzati dal ristoratore.
+ * L'import preset usa un percorso separato che azzera tutti gli override.
+ */
+const SUB_TAB_OVERRIDABLE_KEYS: ReadonlyArray<SubTabOverridableField> = [
+  'label',
+  'description',
+  'price_per_person',
+  'hidden_item_ids',
+  'hidden_category_keys',
+]
+
+/**
+ * Applica un patch alla sottotab marcando come `field_overrides[campo]=true`
+ * ogni campo «vetrina» presente nel patch. Usato da updateSubTab/updateDraftSubTab:
+ * ogni modifica dell'admin diventa personalizzazione → quel campo non segue più il preset.
+ */
+function applyPatchWithOverrideTracking(current: SubTab, patch: Partial<SubTab>): SubTab {
+  const next: SubTab = { ...current, ...patch }
+  const touched = SUB_TAB_OVERRIDABLE_KEYS.filter((k) => k in patch)
+  if (touched.length === 0) return next
+  const overrides: NonNullable<SubTab['field_overrides']> = { ...(current.field_overrides ?? {}) }
+  for (const k of touched) overrides[k] = true
+  return { ...next, field_overrides: overrides }
+}
+
+/** Stato override post-import preset: tutto torna a «ereditato dal preset». */
+function presetImportFieldOverrides(): NonNullable<SubTab['field_overrides']> {
+  return {
+    label: false,
+    description: false,
+    price_per_person: false,
+    hidden_item_ids: false,
+    hidden_category_keys: false,
   }
 }
 
@@ -409,7 +456,9 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
         if (m.id !== modeId) return m
         return {
           ...m,
-          sub_tabs: (m.sub_tabs ?? []).map((t) => (t.id === subTabId ? { ...t, ...patch } : t)),
+          sub_tabs: (m.sub_tabs ?? []).map((t) =>
+            t.id === subTabId ? applyPatchWithOverrideTracking(t, patch) : t,
+          ),
         }
       }),
     }))
@@ -446,7 +495,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     setDraftSubTabsByMode((prev) => {
       const current = prev[modeId]
       if (!current) return prev
-      return { ...prev, [modeId]: { ...current, ...patch } }
+      return { ...prev, [modeId]: applyPatchWithOverrideTracking(current, patch) }
     })
   }
 
@@ -468,39 +517,61 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     return undefined
   }
 
+  /**
+   * Snapshot della card dopo import preset: tutti i campi «vetrina» tornano a «ereditato dal preset»
+   * (`field_overrides[*] = false`), così cambi futuri al preset si propagano in automatico.
+   * Eccezione: se l'admin aveva una label personalizzata diversa dal preset precedente, la
+   * mantengono (`label` resta `true`).
+   */
+  const buildSubTabFromPreset = (current: SubTab, preset: CustomStaffPreset): Partial<SubTab> => {
+    const keepLabel = shouldKeepSubTabLabelOnPresetImport(current, preset)
+    const overrides = presetImportFieldOverrides()
+    if (keepLabel) overrides.label = true
+    return {
+      preset_id: preset.id,
+      label: keepLabel ?? preset.name,
+      description: preset.description?.trim() || undefined,
+      price_per_person: preset.price_per_person && preset.price_per_person > 0 ? preset.price_per_person : undefined,
+      hidden_item_ids: menuItems
+        .filter((item) => !preset.item_ids.includes(item.id))
+        .map((item) => item.id),
+      hidden_category_keys: [],
+      field_overrides: overrides,
+    }
+  }
+
   const importPresetIntoSubTab = (modeId: string, subTabId: string, presetId: string) => {
     const preset = allPresets.find((p) => p.id === presetId)
     if (!preset) return
     const current = config.booking_modes
       .find((m) => m.id === modeId)
       ?.sub_tabs?.find((t) => t.id === subTabId)
-    const keepLabel = shouldKeepSubTabLabelOnPresetImport(current, preset)
-    updateSubTab(modeId, subTabId, {
-      preset_id: preset.id,
-      label: keepLabel ?? preset.name,
-      description: preset.description?.trim() || undefined,
-      price_per_person: preset.price_per_person && preset.price_per_person > 0 ? preset.price_per_person : undefined,
-      hidden_item_ids: menuItems
-        .filter((item) => !preset.item_ids.includes(item.id))
-        .map((item) => item.id),
-      hidden_category_keys: [],
-    })
+    if (!current) return
+    // Bypass tracking: scriviamo field_overrides esplicito dentro il patch
+    setConfig((prev) => ({
+      ...prev,
+      booking_modes: prev.booking_modes.map((m) => {
+        if (m.id !== modeId) return m
+        return {
+          ...m,
+          sub_tabs: (m.sub_tabs ?? []).map((t) =>
+            t.id === subTabId ? { ...t, ...buildSubTabFromPreset(current, preset) } : t,
+          ),
+        }
+      }),
+    }))
+    markModesDirty()
   }
 
   const importPresetIntoDraftSubTab = (modeId: string, presetId: string) => {
     const preset = allPresets.find((p) => p.id === presetId)
     if (!preset) return
     const current = draftSubTabsByMode[modeId] ?? undefined
-    const keepLabel = shouldKeepSubTabLabelOnPresetImport(current, preset)
-    updateDraftSubTab(modeId, {
-      preset_id: preset.id,
-      label: keepLabel ?? preset.name,
-      description: preset.description?.trim() || undefined,
-      price_per_person: preset.price_per_person && preset.price_per_person > 0 ? preset.price_per_person : undefined,
-      hidden_item_ids: menuItems
-        .filter((item) => !preset.item_ids.includes(item.id))
-        .map((item) => item.id),
-      hidden_category_keys: [],
+    if (!current) return
+    setDraftSubTabsByMode((prev) => {
+      const draft = prev[modeId]
+      if (!draft) return prev
+      return { ...prev, [modeId]: { ...draft, ...buildSubTabFromPreset(current, preset) } }
     })
   }
 

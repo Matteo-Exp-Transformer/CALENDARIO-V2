@@ -135,6 +135,21 @@ export function parseBookingHeaderStylesFromUnknown(raw: unknown): BookingHeader
   }, { ...DEFAULT_BOOKING_HEADER_STYLES })
 }
 
+/**
+ * Campi della card Prenota che possono essere personalizzati dal ristoratore
+ * sovrascrivendo il preset collegato. La bandierina booleana indica:
+ * `true` = personalizzato dal ristoratore (resta anche se il preset cambia)
+ * `false`/`undefined` = ereditato dal preset (segue il preset live)
+ */
+export type SubTabOverridableField =
+  | 'label'
+  | 'description'
+  | 'price_per_person'
+  | 'hidden_item_ids'
+  | 'hidden_category_keys'
+
+export type SubTabFieldOverrides = Partial<Record<SubTabOverridableField, boolean>>
+
 export interface SubTab {
   id: string
   display: 'cards' | 'carousel'
@@ -146,6 +161,11 @@ export interface SubTab {
   hidden_category_keys?: string[]
   hidden_item_ids?: string[]
   carousel_items?: CarouselItem[]
+  /**
+   * Tracking personalizzazioni vs preset.
+   * Vedi `bookingFormResolver.ts` per il comportamento «aggiorna solo se non personalizzato».
+   */
+  field_overrides?: SubTabFieldOverrides
 }
 
 /** @deprecated Usare `sub_tabs[]` con type preset. Mantenuto per migrazione runtime da DB. */
@@ -277,6 +297,8 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
       ? o.preset_id.trim()
       : undefined
 
+  const field_overrides = parseFieldOverridesFromUnknown(o.field_overrides)
+
   const parsed: SubTab = {
     id,
     display,
@@ -288,9 +310,32 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
     hidden_category_keys,
     hidden_item_ids,
     carousel_items,
+    field_overrides,
   }
 
   return display === 'carousel' ? migrateLegacyCarouselSubTab(parsed) : parsed
+}
+
+const OVERRIDABLE_FIELDS: SubTabOverridableField[] = [
+  'label',
+  'description',
+  'price_per_person',
+  'hidden_item_ids',
+  'hidden_category_keys',
+]
+
+function parseFieldOverridesFromUnknown(raw: unknown): SubTabFieldOverrides | undefined {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined
+  const obj = raw as Record<string, unknown>
+  const result: SubTabFieldOverrides = {}
+  let hasAny = false
+  for (const key of OVERRIDABLE_FIELDS) {
+    if (typeof obj[key] === 'boolean') {
+      result[key] = obj[key] as boolean
+      hasAny = true
+    }
+  }
+  return hasAny ? result : undefined
 }
 
 export function migrateOverridesToSubTabs(overrides: SubTabOverride[]): SubTab[] {
@@ -394,6 +439,7 @@ export function normalizeBookingPublicFormConfig(
           hidden_category_keys: tab.hidden_category_keys?.filter((v) => v.trim()) ?? undefined,
           hidden_item_ids: tab.hidden_item_ids?.filter((v) => v.trim()) ?? undefined,
           carousel_items: tab.carousel_items,
+          field_overrides: tab.field_overrides,
         }
         if (display === 'carousel') {
           return migrateLegacyCarouselSubTab({
