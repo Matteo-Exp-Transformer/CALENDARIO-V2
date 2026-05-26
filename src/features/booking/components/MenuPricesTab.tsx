@@ -772,6 +772,28 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setViewMode('qr_codes')
   }
 
+  const openIngredientEditSection = () => {
+    setViewMode('menu')
+    setPromoEditorOpen(false)
+    resetMenuPromoEditorDraft()
+    setIsAddingCategory(false)
+    setEditingCategoryId(null)
+    setIngredientEditMode(true)
+    setIsAdding(false)
+    setEditingId(null)
+    setPriceInput('')
+    setFormData({
+      name: '',
+      category: categoryKeys[0] ?? '',
+      price: 0,
+      description: '',
+      sort_order: 0
+    })
+    setPhotoFile(null)
+    setPhotoPreviewUrl(null)
+    setCurrentImageUrl(null)
+  }
+
   // Raggruppa per categoria
   const itemsByCategory = groupMenuItemsByCategory(menuItems, categoryKeys)
 
@@ -813,8 +835,19 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   }
 
   const handleCancel = () => {
-    setViewMode('menu')
-    resetProductFormState()
+    setIsAdding(false)
+    setEditingId(null)
+    setPriceInput('')
+    setFormData({
+      name: '',
+      category: categoryKeys[0] ?? '',
+      price: 0,
+      description: '',
+      sort_order: 0,
+    })
+    setPhotoFile(null)
+    setPhotoPreviewUrl(null)
+    setCurrentImageUrl(null)
   }
 
   const resetCategoryPhotoState = () => {
@@ -1005,13 +1038,13 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   useImperativeHandle(
     ref,
     () => ({
-      startAddProduct: handleStartAdd,
+      startAddProduct: openIngredientEditSection,
       startAddCategory: handleStartAddCategory,
       openPresetMenus: openPresetMenusSection,
       openPromo: openPromoEditor,
       openQrCodes: openQrCodesSection,
     }),
-    [handleStartAdd, handleStartAddCategory, openPresetMenusSection, openPromoEditor, openQrCodesSection],
+    [openIngredientEditSection, handleStartAddCategory, openPresetMenusSection, openPromoEditor, openQrCodesSection],
   )
 
   const handleSave = async () => {
@@ -1161,7 +1194,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
               variant="ghost"
               size="sm"
               type="button"
-              onClick={() => handleStartAdd()}
+              onClick={openIngredientEditSection}
               className={cn(menuPricesHeaderCtaButtonClass)}
             >
               <Plus className="h-3.5 w-3.5" />
@@ -1454,24 +1487,14 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                 className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs self-center sm:self-end"
               >
                 <Plus className="h-3.5 w-3.5" />
-                Nuovo Prodotto
+                Aggiungi nuovo ingrediente
               </Button>
             )}
             {(isAdding || editingId) && (
               <div
                 ref={productFormCardRef}
-                className="relative w-full scroll-mt-24 rounded-2xl border-2 p-6 shadow-lg md:scroll-mt-28"
-                style={ADMIN_WARM_GRADIENT_SURFACE}
+                className="mx-auto max-w-3xl scroll-mt-24 pr-10 text-center md:scroll-mt-28"
               >
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-warm-wood/40 bg-white/90 text-warm-wood shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
-                  aria-label="Chiudi inserimento prodotto"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-                <div className="mx-auto w-2/3 text-center">
                   <h3 className="text-title-card font-bold text-warm-wood mb-4">
                     {editingId ? 'Modifica Prodotto' : 'Nuovo Prodotto'}
                   </h3>
@@ -1628,7 +1651,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                       Annulla
                     </button>
                   </div>
-                </div>
               </div>
             )}
           </div>
