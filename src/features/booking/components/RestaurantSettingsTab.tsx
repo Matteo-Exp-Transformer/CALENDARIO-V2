@@ -49,7 +49,11 @@ import {
   type AppThemeId,
 } from '@/features/booking/constants/appTheme'
 import { BookingFormConfigPanel } from './settings/BookingFormConfigPanel'
-import { SettingsSaveFooter } from './settings/SettingsSaveUi'
+import {
+  FormSectionFloatingActions,
+  SectionActionBar,
+  SettingsSaveFooter,
+} from './settings/SettingsSaveUi'
 
 const RESTAURANT_NAME_MAX_LENGTH = 40
 const SLOT_NAME_MAX_LENGTH = 40
@@ -311,7 +315,11 @@ export const RestaurantSettingsTab: React.FC = () => {
   const appThemeQuery = useRestaurantSetting('app_theme')
   const upsert = useUpsertRestaurantSetting()
 
-  const [dirty, setDirty] = useState(false)
+  const [anagraficaDirty, setAnagraficaDirty] = useState(false)
+  const [hoursDirty, setHoursDirty] = useState(false)
+  const [themeDirty, setThemeDirty] = useState(false)
+  const [slotsDirty, setSlotsDirty] = useState(false)
+  const dirty = anagraficaDirty || hoursDirty || themeDirty || slotsDirty
   const dirtyRef = useRef(false)
   dirtyRef.current = dirty
   const bookingBgDirtyRef = useRef(false)
@@ -340,7 +348,10 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   useEffect(() => {
     hydratedRef.current = false
-    setDirty(false)
+    setAnagraficaDirty(false)
+    setHoursDirty(false)
+    setThemeDirty(false)
+    setSlotsDirty(false)
   }, [tenantId])
 
   useEffect(() => {
@@ -445,12 +456,31 @@ export const RestaurantSettingsTab: React.FC = () => {
     publicBookingPageBgQuery.error ||
     appThemeQuery.error
 
-  const markDirty = () => setDirty(true)
+  const clearAllSectionDirty = () => {
+    setAnagraficaDirty(false)
+    setHoursDirty(false)
+    setThemeDirty(false)
+    setSlotsDirty(false)
+  }
 
-  const hydrateLocalSettingsFromQueries = () => {
+  const hydrateAnagraficaFromQueries = () => {
     setRestaurantName(
-      stripDirectionalFormattingChars(String(nameQuery.data ?? '')).slice(0, RESTAURANT_NAME_MAX_LENGTH)
+      stripDirectionalFormattingChars(String(nameQuery.data ?? '')).slice(0, RESTAURANT_NAME_MAX_LENGTH),
     )
+    setContactEmail(stripDirectionalFormattingChars(contactEmailQuery.data ?? ''))
+    setContactPhone(stripDirectionalFormattingChars(contactPhoneQuery.data ?? ''))
+    setContactAddress(stripDirectionalFormattingChars(contactAddressQuery.data ?? ''))
+  }
+
+  const hydrateHoursFromQueries = () => {
+    setBusinessHours(hoursQuery.data ?? getDefaultBusinessHours())
+  }
+
+  const hydrateThemeFromQueries = () => {
+    setAppTheme(appThemeQuery.data ?? DEFAULT_APP_THEME)
+  }
+
+  const hydrateSlotsFromQueries = () => {
     const sg = slotGuestCapacitiesQuery.data ?? {}
     const caps: Record<string, number | ''> = {}
     for (const [k, v] of Object.entries(sg)) {
@@ -461,28 +491,210 @@ export const RestaurantSettingsTab: React.FC = () => {
     const slots = (serviceSlotsQuery.data ?? [])
       .slice()
       .sort((a: SlotConfig, b: SlotConfig) => a.display_order - b.display_order)
-    setEditingSlots(slots.map((s: SlotConfig) => ({
-      id: s.id,
-      name: s.name,
-      start_time: s.start_time.slice(0, 5),
-      end_time: s.end_time.slice(0, 5),
-      display_order: s.display_order,
-    })))
+    setEditingSlots(
+      slots.map((s: SlotConfig) => ({
+        id: s.id,
+        name: s.name,
+        start_time: s.start_time.slice(0, 5),
+        end_time: s.end_time.slice(0, 5),
+        display_order: s.display_order,
+      })),
+    )
     setInitialSlotIds(slots.map((s: SlotConfig) => s.id))
-    setBusinessHours(hoursQuery.data ?? getDefaultBusinessHours())
-    setContactEmail(stripDirectionalFormattingChars(contactEmailQuery.data ?? ''))
-    setContactPhone(stripDirectionalFormattingChars(contactPhoneQuery.data ?? ''))
-    setContactAddress(stripDirectionalFormattingChars(contactAddressQuery.data ?? ''))
+    setSlotValidationError(null)
+  }
+
+  const hydrateLocalSettingsFromQueries = () => {
+    hydrateAnagraficaFromQueries()
+    hydrateSlotsFromQueries()
+    hydrateHoursFromQueries()
     const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
     setBookingPageBackground(resolvedBg)
     setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
-    setAppTheme(appThemeQuery.data ?? DEFAULT_APP_THEME)
-    setSlotValidationError(null)
+    hydrateThemeFromQueries()
   }
 
   const handleCancelChanges = () => {
     hydrateLocalSettingsFromQueries()
-    setDirty(false)
+    clearAllSectionDirty()
+  }
+
+  const handleCancelAnagraficaSection = () => {
+    hydrateAnagraficaFromQueries()
+    setAnagraficaDirty(false)
+  }
+
+  const handleCancelHoursSection = () => {
+    hydrateHoursFromQueries()
+    setHoursDirty(false)
+  }
+
+  const handleCancelThemeSection = () => {
+    hydrateThemeFromQueries()
+    setThemeDirty(false)
+  }
+
+  const handleCancelSlotsSection = () => {
+    hydrateSlotsFromQueries()
+    setSlotsDirty(false)
+  }
+
+  const slotsMutationPending =
+    createServiceSlot.isPending || updateServiceSlot.isPending || deleteServiceSlot.isPending
+
+  const refetchRestaurantSettings = async () => {
+    await queryClient.refetchQueries({ queryKey: ['restaurant_settings'], type: 'active' })
+  }
+
+  const persistServiceSlots = async (): Promise<Record<string, string>> => {
+    const createdSlotIdMap: Record<string, string> = {}
+    if (features.servizio) return createdSlotIdMap
+
+    const currentIds = new Set(editingSlots.map((s) => s.id))
+    const toDelete = initialSlotIds.filter((id) => !currentIds.has(id))
+    if (toDelete.length > 0) {
+      await Promise.all(toDelete.map((id) => deleteServiceSlot.mutateAsync(id)))
+    }
+
+    const orderedSlots = editingSlots.map((s, idx) => ({ ...s, display_order: idx }))
+    for (const s of orderedSlots) {
+      const safeSlotName =
+        stripDirectionalFormattingChars(s.name).trim().slice(0, SLOT_NAME_MAX_LENGTH) || 'Fascia'
+      if (isTempSlotId(s.id)) {
+        const created = await createServiceSlot.mutateAsync({
+          name: safeSlotName,
+          start_time: s.start_time,
+          end_time: s.end_time,
+          max_turns: null,
+          max_guests: null,
+          display_order: s.display_order,
+        })
+        createdSlotIdMap[s.id] = created.id
+      } else {
+        await updateServiceSlot.mutateAsync({
+          id: s.id,
+          name: safeSlotName,
+          start_time: s.start_time,
+          end_time: s.end_time,
+          display_order: s.display_order,
+          skipToast: true,
+        })
+      }
+    }
+    await queryClient.invalidateQueries({ queryKey: [SERVICE_SLOTS_QUERY_KEY] })
+    return createdSlotIdMap
+  }
+
+  const buildSlotCapacitiesPayload = (createdSlotIdMap: Record<string, string>) => {
+    const slotCapValue: Record<string, number | null> = {}
+    for (const [k, v] of Object.entries(slotCapacities)) {
+      const targetId = createdSlotIdMap[k] ?? k
+      const stillExists = editingSlots.some((s) => s.id === k || createdSlotIdMap[s.id] === targetId)
+      if (!stillExists) continue
+      slotCapValue[targetId] = v === '' ? null : (v as number)
+    }
+    return slotCapValue
+  }
+
+  const refreshSlotsStateAfterSave = async (createdSlotIdMap: Record<string, string>) => {
+    const refreshedSlots = (await serviceSlotsQuery.refetch()).data ?? []
+    const orderedRefreshed = [...refreshedSlots].sort(
+      (a: SlotConfig, b: SlotConfig) => a.display_order - b.display_order,
+    )
+    setEditingSlots(
+      orderedRefreshed.map((s: SlotConfig) => ({
+        id: s.id,
+        name: s.name,
+        start_time: s.start_time.slice(0, 5),
+        end_time: s.end_time.slice(0, 5),
+        display_order: s.display_order,
+      })),
+    )
+    setInitialSlotIds(orderedRefreshed.map((s: SlotConfig) => s.id))
+    setSlotCapacities((prev) => {
+      const next: Record<string, number | ''> = {}
+      for (const [k, v] of Object.entries(prev)) {
+        const targetId = createdSlotIdMap[k] ?? k
+        if (orderedRefreshed.some((s: SlotConfig) => s.id === targetId)) {
+          next[targetId] = v
+        }
+      }
+      return next
+    })
+  }
+
+  const handleSaveAnagraficaSection = async () => {
+    if (!tenantId) return
+    const safeName = stripDirectionalFormattingChars(restaurantName).slice(0, RESTAURANT_NAME_MAX_LENGTH)
+    const safeEmail = stripDirectionalFormattingChars(contactEmail)
+    const safePhone = stripDirectionalFormattingChars(contactPhone)
+    const safeAddress = stripDirectionalFormattingChars(contactAddress)
+    setRestaurantName(safeName)
+    setContactEmail(safeEmail)
+    setContactPhone(safePhone)
+    setContactAddress(safeAddress)
+    try {
+      await upsert.mutateAsync([
+        { key: 'restaurant_name', value: safeName },
+        { key: 'contact_email', value: safeEmail },
+        { key: 'contact_phone', value: safePhone },
+        { key: 'contact_address', value: safeAddress },
+      ])
+      await refetchRestaurantSettings()
+      setAnagraficaDirty(false)
+    } catch {
+      /* toast da useUpsertRestaurantSetting */
+    }
+  }
+
+  const handleSaveHoursSection = async () => {
+    if (!tenantId) return
+    try {
+      await upsert.mutateAsync([{ key: 'business_hours', value: businessHours }])
+      await refetchRestaurantSettings()
+      setHoursDirty(false)
+    } catch {
+      /* toast da useUpsertRestaurantSetting */
+    }
+  }
+
+  const handleSaveThemeSection = async () => {
+    if (!tenantId) return
+    try {
+      await upsert.mutateAsync([{ key: 'app_theme', value: appTheme }])
+      await refetchRestaurantSettings()
+      setThemeDirty(false)
+    } catch {
+      /* toast da useUpsertRestaurantSetting */
+    }
+  }
+
+  const handleSaveSlotsSection = async () => {
+    if (!tenantId) return
+    if (!features.servizio && timeSlotsEnabled) {
+      const validationError = validateEditingSlots(editingSlots)
+      if (validationError) {
+        setSlotValidationError(validationError)
+        toast.error(validationError)
+        return
+      }
+    }
+    try {
+      const createdSlotIdMap = await persistServiceSlots()
+      const slotCapValue = buildSlotCapacitiesPayload(createdSlotIdMap)
+      await upsert.mutateAsync([
+        { key: 'slot_guest_capacities', value: slotCapValue },
+        { key: 'booking_time_slots_enabled', value: timeSlotsEnabled },
+      ])
+      if (!features.servizio) {
+        await refreshSlotsStateAfterSave(createdSlotIdMap)
+      }
+      await refetchRestaurantSettings()
+      setSlotValidationError(null)
+      setSlotsDirty(false)
+    } catch {
+      /* toast da hook */
+    }
   }
 
   const handleSaveBookingBackgroundOnly = async () => {
@@ -501,7 +713,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   }
 
   const handleRestaurantNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    markDirty()
+    setAnagraficaDirty(true)
     setRestaurantName(
       stripDirectionalFormattingChars(event.target.value).slice(0, RESTAURANT_NAME_MAX_LENGTH)
     )
@@ -509,7 +721,7 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   // ---- Gestione fasce orarie (solo Classic) ----------------------------------
   const handleAddSlot = () => {
-    markDirty()
+    setSlotsDirty(true)
     const nextOrder = editingSlots.length === 0
       ? 0
       : Math.max(...editingSlots.map((s) => s.display_order)) + 1
@@ -530,7 +742,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   }
 
   const handleSlotNameChange = (slotId: string, raw: string) => {
-    markDirty()
+    setSlotsDirty(true)
     const safe = stripDirectionalFormattingChars(raw).slice(0, SLOT_NAME_MAX_LENGTH)
     setEditingSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, name: safe } : s)))
   }
@@ -541,7 +753,7 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const handleConfirmRemoveSlot = () => {
     if (!deleteConfirmSlot) return
-    markDirty()
+    setSlotsDirty(true)
     const removedId = deleteConfirmSlot.id
     setEditingSlots((prev) => prev.filter((s) => s.id !== removedId))
     // Pulisce anche la capacity associata se presente
@@ -575,54 +787,8 @@ export const RestaurantSettingsTab: React.FC = () => {
       setContactPhone(safePhone)
       setContactAddress(safeAddress)
 
-      let createdSlotIdMap: Record<string, string> = {}
-      if (!features.servizio) {
-        // 1) DELETE: fasce caricate dal DB e poi rimosse dall'utente.
-        const currentIds = new Set(editingSlots.map((s) => s.id))
-        const toDelete = initialSlotIds.filter((id) => !currentIds.has(id))
-        if (toDelete.length > 0) {
-          await Promise.all(toDelete.map((id) => deleteServiceSlot.mutateAsync(id)))
-        }
-
-        // 2) CREATE/UPDATE con display_order ricalcolato sequenzialmente
-        //    (la posizione nell'array editingSlots, ordinato per inserimento).
-        const orderedSlots = editingSlots.map((s, idx) => ({ ...s, display_order: idx }))
-        for (const s of orderedSlots) {
-          const safeName = stripDirectionalFormattingChars(s.name).trim().slice(0, SLOT_NAME_MAX_LENGTH) || 'Fascia'
-          if (isTempSlotId(s.id)) {
-            const created = await createServiceSlot.mutateAsync({
-              name: safeName,
-              start_time: s.start_time,
-              end_time: s.end_time,
-              max_turns: null,
-              max_guests: null,
-              display_order: s.display_order,
-            })
-            // Rimappa eventuali capacity temporanee dal tempId al vero uuid
-            createdSlotIdMap[s.id] = created.id
-          } else {
-            await updateServiceSlot.mutateAsync({
-              id: s.id,
-              name: safeName,
-              start_time: s.start_time,
-              end_time: s.end_time,
-              display_order: s.display_order,
-              skipToast: true,
-            })
-          }
-        }
-        await queryClient.invalidateQueries({ queryKey: [SERVICE_SLOTS_QUERY_KEY] })
-      }
-
-      const slotCapValue: Record<string, number | null> = {}
-      for (const [k, v] of Object.entries(slotCapacities)) {
-        // Se la capacity era associata a un id temporaneo, rimappala al vero uuid creato.
-        const targetId = createdSlotIdMap[k] ?? k
-        // Scarta le capacity di slot che sono stati eliminati (id non più presente in editingSlots).
-        const stillExists = editingSlots.some((s) => s.id === k || createdSlotIdMap[s.id] === targetId)
-        if (!stillExists) continue
-        slotCapValue[targetId] = v === '' ? null : (v as number)
-      }
+      const createdSlotIdMap = await persistServiceSlots()
+      const slotCapValue = buildSlotCapacitiesPayload(createdSlotIdMap)
 
       await upsert.mutateAsync([
         { key: 'restaurant_name', value: safeName },
@@ -635,37 +801,14 @@ export const RestaurantSettingsTab: React.FC = () => {
         { key: 'public_booking_page_background', value: bookingPageBackground },
         { key: 'app_theme', value: appTheme },
       ])
-      await queryClient.refetchQueries({ queryKey: ['restaurant_settings'], type: 'active' })
+      await refetchRestaurantSettings()
 
-      // Rimappa state locale dopo create/delete: ricarica gli id dal nuovo array slots.
       if (!features.servizio) {
-        const refreshedSlots = (await serviceSlotsQuery.refetch()).data ?? []
-        const orderedRefreshed = [...refreshedSlots].sort(
-          (a: SlotConfig, b: SlotConfig) => a.display_order - b.display_order,
-        )
-        setEditingSlots(orderedRefreshed.map((s: SlotConfig) => ({
-          id: s.id,
-          name: s.name,
-          start_time: s.start_time.slice(0, 5),
-          end_time: s.end_time.slice(0, 5),
-          display_order: s.display_order,
-        })))
-        setInitialSlotIds(orderedRefreshed.map((s: SlotConfig) => s.id))
-        // Rimappa anche slotCapacities locali sui veri uuid (per id temp- creati ora)
-        setSlotCapacities((prev) => {
-          const next: Record<string, number | ''> = {}
-          for (const [k, v] of Object.entries(prev)) {
-            const targetId = createdSlotIdMap[k] ?? k
-            if (orderedRefreshed.some((s: SlotConfig) => s.id === targetId)) {
-              next[targetId] = v
-            }
-          }
-          return next
-        })
+        await refreshSlotsStateAfterSave(createdSlotIdMap)
       }
 
       setSlotValidationError(null)
-      setDirty(false)
+      clearAllSectionDirty()
     } catch {
       /* toast gestito da useUpsertRestaurantSetting.onError */
     }
@@ -736,6 +879,56 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const appThemeSectionClass =
     'admin-warm-surface w-full max-w-3xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
+
+  const sectionSavePending = upsert.isPending || slotsMutationPending
+
+  const anagraficaSectionActions = (
+    <SectionActionBar
+      onCancel={handleCancelAnagraficaSection}
+      onSave={() => {
+        void handleSaveAnagraficaSection().catch(() => toast.error('Errore nel salvataggio anagrafica'))
+      }}
+      cancelDisabled={!anagraficaDirty}
+      saveDisabled={!anagraficaDirty || !tenantId}
+      pending={upsert.isPending}
+    />
+  )
+
+  const hoursSectionActions = (
+    <SectionActionBar
+      onCancel={handleCancelHoursSection}
+      onSave={() => {
+        void handleSaveHoursSection().catch(() => toast.error('Errore nel salvataggio orari'))
+      }}
+      cancelDisabled={!hoursDirty}
+      saveDisabled={!hoursDirty || !tenantId}
+      pending={upsert.isPending}
+    />
+  )
+
+  const slotsSectionActions = (
+    <SectionActionBar
+      onCancel={handleCancelSlotsSection}
+      onSave={() => {
+        void handleSaveSlotsSection().catch(() => toast.error('Errore nel salvataggio fasce orarie'))
+      }}
+      cancelDisabled={!slotsDirty}
+      saveDisabled={!slotsDirty || !tenantId}
+      pending={sectionSavePending}
+    />
+  )
+
+  const themeSectionActions = (
+    <SectionActionBar
+      onCancel={handleCancelThemeSection}
+      onSave={() => {
+        void handleSaveThemeSection().catch(() => toast.error('Errore nel salvataggio tema'))
+      }}
+      cancelDisabled={!themeDirty}
+      saveDisabled={!themeDirty || !tenantId}
+      pending={upsert.isPending}
+    />
+  )
 
   const bookingPageBackgroundSection = (
     <section className={bookingBgSectionClass}>
@@ -892,6 +1085,8 @@ export const RestaurantSettingsTab: React.FC = () => {
 
       {settingsTab === 'anagrafica' && (
       <React.Fragment>
+      <div className="w-full max-w-2xl mx-auto">
+      <FormSectionFloatingActions actions={anagraficaSectionActions}>
       <section className={sectionSurfaceClass}>
         <h3 className="text-lg font-semibold text-slate-800">Anagrafica Azienda</h3>
         <div className="flex w-full flex-col items-center">
@@ -925,7 +1120,7 @@ export const RestaurantSettingsTab: React.FC = () => {
               disabled={upsert.isPending}
               className={anagraficaInputClassName}
               onChange={(e) => {
-                markDirty()
+                setAnagraficaDirty(true)
                 setContactEmail(stripDirectionalFormattingChars(e.target.value))
               }}
               placeholder="ristorante@example.com"
@@ -941,7 +1136,7 @@ export const RestaurantSettingsTab: React.FC = () => {
               disabled={upsert.isPending}
               className={anagraficaInputClassName}
               onChange={(e) => {
-                markDirty()
+                setAnagraficaDirty(true)
                 setContactPhone(stripDirectionalFormattingChars(e.target.value))
               }}
               placeholder="+39 ..."
@@ -957,7 +1152,7 @@ export const RestaurantSettingsTab: React.FC = () => {
               disabled={upsert.isPending}
               className={anagraficaInputClassName}
               onChange={(e) => {
-                markDirty()
+                setAnagraficaDirty(true)
                 setContactAddress(stripDirectionalFormattingChars(e.target.value))
               }}
               placeholder="Via ..., Citta, CAP"
@@ -965,7 +1160,11 @@ export const RestaurantSettingsTab: React.FC = () => {
           </div>
         </div>
       </section>
+      </FormSectionFloatingActions>
+      </div>
 
+      <div className="w-full max-w-2xl mx-auto">
+      <FormSectionFloatingActions actions={hoursSectionActions}>
       <section className={sectionSurfaceClass}>
         <h3 className="text-lg font-semibold text-slate-800">Orari di apertura</h3>
         <p className="text-sm text-slate-600">
@@ -975,13 +1174,17 @@ export const RestaurantSettingsTab: React.FC = () => {
           value={businessHours}
           disabled={upsert.isPending}
           onChange={(next) => {
-            markDirty()
+            setHoursDirty(true)
             setBusinessHours(next)
           }}
         />
       </section>
+      </FormSectionFloatingActions>
+      </div>
 
       {!features.servizio && (
+      <div className="w-full max-w-2xl mx-auto">
+      <FormSectionFloatingActions actions={slotsSectionActions}>
       <section className={sectionSurfaceClass}>
         <div className="mb-5 w-full space-y-1.5 md:mb-6">
           <h3 className="text-center text-lg font-semibold leading-tight text-slate-800">
@@ -1004,7 +1207,7 @@ export const RestaurantSettingsTab: React.FC = () => {
                 disabled={upsert.isPending}
                 className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
                 onChange={(e) => {
-                  markDirty()
+                  setSlotsDirty(true)
                   setTimeSlotsEnabled(e.target.checked)
                 }}
               />
@@ -1097,7 +1300,7 @@ export const RestaurantSettingsTab: React.FC = () => {
                       value={slot.start_time}
                       disabled={upsert.isPending}
                       onChange={(v) => {
-                        markDirty()
+                        setSlotsDirty(true)
                         setEditingSlots((prev) =>
                           prev.map((s, i) => i === idx ? { ...s, start_time: v } : s)
                         )
@@ -1113,7 +1316,7 @@ export const RestaurantSettingsTab: React.FC = () => {
                       value={slot.end_time}
                       disabled={upsert.isPending}
                       onChange={(v) => {
-                        markDirty()
+                        setSlotsDirty(true)
                         setEditingSlots((prev) =>
                           prev.map((s, i) => i === idx ? { ...s, end_time: v } : s)
                         )
@@ -1135,7 +1338,7 @@ export const RestaurantSettingsTab: React.FC = () => {
                     placeholder="Nessun limite"
                     className="w-32 rounded-xl border-2 border-slate-200 bg-white px-3 py-1.5 text-center text-sm font-medium text-slate-900 shadow-sm outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     onChange={(e) => {
-                      markDirty()
+                      setSlotsDirty(true)
                       const raw = e.target.value
                       setSlotCapacities((prev) => ({
                         ...prev,
@@ -1189,16 +1392,20 @@ export const RestaurantSettingsTab: React.FC = () => {
           </Modal>
         )}
       </section>
+      </FormSectionFloatingActions>
+      </div>
       )}
 
+      <div className="w-full max-w-3xl mx-auto">
+      <FormSectionFloatingActions actions={themeSectionActions}>
       <section className={appThemeSectionClass} aria-labelledby="app-theme-heading">
         <h3 id="app-theme-heading" className="text-lg font-semibold text-slate-800">
           Selezione tema app
         </h3>
         <p className="text-sm text-slate-600">
           Tocca l&apos;immagine o il nome del tema per selezionarlo subito. Tocca l&apos;icona occhio al centro per l&apos;anteprima
-          grande (su desktop compare passando il mouse sull&apos;immagine). Nella finestra puoi usare «Usa questo tema», poi
-          salva in fondo per applicare alla dashboard.
+          grande (su desktop compare passando il mouse sull&apos;immagine). Usa <strong>Annulla modifiche</strong> o{' '}
+          <strong>Salva</strong> sopra la card per applicare solo il tema, oppure il footer in fondo per salvare tutto insieme.
         </p>
         <div
           className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
@@ -1218,12 +1425,14 @@ export const RestaurantSettingsTab: React.FC = () => {
               modalDescription="Anteprima a schermo intero. Puoi applicare il tema dalla finestra o chiudere e sceglierne un altro."
               onPick={() => {
                 setAppTheme(opt.id)
-                markDirty()
+                setThemeDirty(true)
               }}
             />
           ))}
         </div>
       </section>
+      </FormSectionFloatingActions>
+      </div>
       </React.Fragment>
       )}
 
