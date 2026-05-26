@@ -107,6 +107,15 @@ LOCK  XOR card vs carosello
       `sub_tabs_presentation` decide; `SubTabAddButtons` mostra solo il pulsante coerente.
       Cambio presentazione richiede reset esplicito (`resetSubTabsPresentation`).
 
+LOCK  Carosello = singolo, con N foto dentro
+      Per ogni `BookingMode` con `sub_tabs_presentation === 'carousel'` c'è
+      UNA sola sottotab carousel (con `carousel_items[]` per le N foto).
+      Admin: `SubTabAddButtons` nasconde «+ Carosello» se ne esiste già una
+      (`carouselAlreadyExists`); `addSubTab` blocca duplicati a runtime.
+      Pubblico: `BookingRequestForm` salta `BookingSubTabCards` per questa
+      presentazione e auto-seleziona l'unica sottotab carosello (`useEffect`).
+      Renderizza direttamente `BookingSubTabCarousel`.
+
 LOCK  Parser/normalizer accoppiati
       Aggiungere un campo a `SubTab` richiede:
       1) tipo in `bookingPublicFormConfig.ts`

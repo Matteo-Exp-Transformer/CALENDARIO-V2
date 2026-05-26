@@ -69,6 +69,7 @@ const ICON_OPTIONS: { value: BookingModeIcon; label: string }[] = [
 
 const SUB_TAB_LABEL_MAX = 60
 const SUB_TAB_DESCRIPTION_MAX = 80
+const BOOKING_MODE_DESCRIPTION_MAX = 61
 
 const charCountClass = 'text-right text-[11px] text-slate-400 tabular-nums'
 
@@ -261,14 +262,18 @@ const SUB_TAB_ADD_BUTTON_CLASS =
 /**
  * Pulsanti aggiungi sottotab.
  * - presentation=null: mostra entrambi (prima scelta)
- * - presentation='cards'|'carousel': mostra solo il tipo coerente
+ * - presentation='cards': solo «+ Card scorrevole»
+ * - presentation='carousel': **un solo carosello per modalità** — se già presente non mostra nulla
  */
 function SubTabAddButtons({
   presentation,
+  carouselAlreadyExists,
   onAddCards,
   onAddCarousel,
 }: {
   presentation: 'cards' | 'carousel' | null
+  /** True se esiste già una sottotab carousel (salvata o in bozza). */
+  carouselAlreadyExists: boolean
   onAddCards: () => void
   onAddCarousel: () => void
 }) {
@@ -280,6 +285,8 @@ function SubTabAddButtons({
     )
   }
   if (presentation === 'carousel') {
+    // Un solo carosello per modalità: pulsante nascosto se ne esiste già uno.
+    if (carouselAlreadyExists) return null
     return (
       <Button type="button" variant="outline" size="sm" onClick={onAddCarousel} className={SUB_TAB_ADD_BUTTON_CLASS}>
         + Carosello
@@ -466,6 +473,13 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   }
 
   const addSubTab = (modeId: string, display: SubTab['display']) => {
+    // Difesa runtime: un solo carosello per modalità (la UI nasconde il pulsante,
+    // questa guard previene aggiunte da percorsi alternativi futuri).
+    if (display === 'carousel') {
+      const mode = config.booking_modes.find((m) => m.id === modeId)
+      const hasCarousel = mode?.sub_tabs?.some((t) => t.display === 'carousel') ?? false
+      if (hasCarousel) return
+    }
     // Prima sottotab: imposta la presentazione XOR sulla modalità
     setConfig((prev) => ({
       ...prev,
@@ -1236,13 +1250,19 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                       <textarea
                         id={`mode-desc-${mode.id}`}
                         value={mode.description}
-                        onChange={(e) => updateMode(mode.id, { description: e.target.value })}
-                        maxLength={120}
+                        onChange={(e) =>
+                          updateMode(mode.id, {
+                            description: e.target.value.slice(0, BOOKING_MODE_DESCRIPTION_MAX),
+                          })
+                        }
+                        maxLength={BOOKING_MODE_DESCRIPTION_MAX}
                         rows={3}
                         placeholder="Una riga descrittiva"
                         className="block w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
-                      <p className={charCountClass}>{mode.description.length}/120</p>
+                      <p className={charCountClass}>
+                        {mode.description.length}/{BOOKING_MODE_DESCRIPTION_MAX}
+                      </p>
                     </div>
 
                     <div>
@@ -1315,6 +1335,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                         {!draftSubTab && (
                           <SubTabAddButtons
                             presentation={mode.sub_tabs_presentation}
+                            carouselAlreadyExists={subTabs.some((t) => t.display === 'carousel')}
                             onAddCards={() => addSubTab(mode.id, 'cards')}
                             onAddCarousel={() => addSubTab(mode.id, 'carousel')}
                           />

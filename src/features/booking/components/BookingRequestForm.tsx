@@ -222,6 +222,15 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     onActiveSubTabChange?.(activeSubTab)
   }, [activeSubTab, onActiveSubTabChange])
 
+  // Modalità Carosello: c'è una sola sottotab; auto-selezionala senza richiedere click utente
+  // (la strip BookingSubTabCards non viene renderizzata per questa presentazione).
+  useEffect(() => {
+    if (activeMode?.sub_tabs_presentation !== 'carousel') return
+    if (activeSubTabId) return
+    const first = activeModeSubTabs[0]
+    if (first) setActiveSubTabId(first.id)
+  }, [activeMode?.sub_tabs_presentation, activeModeSubTabs, activeSubTabId])
+
   const frostedInputCn =
     'min-h-[3rem] bg-white px-4 rounded-lg border border-slate-200 text-left text-xs font-bold text-warm-wood sm:text-sm focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/40'
   
@@ -793,7 +802,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             className={cn('mt-3', BOOKING_PUBLIC_CONTENT_WIDTH)}
           />
         )}
-        {activeModeSubTabs.length > 0 && (
+        {activeModeSubTabs.length > 0 && activeMode?.sub_tabs_presentation !== 'carousel' && (
           <BookingSubTabCards
             subTabs={activeModeSubTabs}
             activeSubTabId={activeSubTabId}
