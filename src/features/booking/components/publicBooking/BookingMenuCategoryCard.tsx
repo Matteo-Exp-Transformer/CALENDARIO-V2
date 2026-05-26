@@ -91,7 +91,7 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   )
 
   const itemsList = (
-    <ul className="flex flex-1 flex-col gap-[1px] px-0 pb-2">
+    <ul className="flex flex-1 flex-col gap-px px-0 pb-2">
         {items.map((item) => {
           const isSelected = selectedItems.some((s) => s.id === item.id)
           const isTiramisu = isTiramisuItem(item.name)
@@ -205,10 +205,15 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
           id={headerId}
           aria-expanded={expanded}
           aria-controls={panelId}
-          className="flex w-full items-center gap-3 border-b border-black/10 px-3 py-4 text-left"
+          className="flex w-full items-stretch gap-2 border-b border-black/10 p-0 text-left"
           onClick={() => setExpanded((v) => !v)}
         >
-          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-warm-beige/40">
+          <div
+            className={cn(
+              'relative h-[76px] w-[76px] shrink-0 overflow-hidden rounded-tl-[10px] bg-warm-beige/40',
+              !expanded && 'rounded-bl-[10px]',
+            )}
+          >
             {heroSrc ? (
               <img src={heroSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
             ) : (
@@ -217,25 +222,27 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
               </div>
             )}
           </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="text-xs font-bold uppercase tracking-wide text-warm-wood">{categoryLabel}</h3>
-            {!locked ? (
-              <p className="mt-0.5 text-[10px] font-bold text-warm-orange">{status}</p>
-            ) : selectedCount > 0 ? (
-              <p className="mt-0.5 text-[10px] font-semibold text-warm-wood-dark/70">
-                {selectedCount} {selectedCount === 1 ? 'piatto' : 'piatti'} nel menù
-              </p>
-            ) : (
-              <p className="mt-0.5 text-[10px] font-semibold text-warm-wood-dark/70">Menù preselezionato</p>
-            )}
+          <div className="flex min-w-0 flex-1 items-center py-2 pr-2">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-xs font-bold uppercase tracking-wide text-warm-wood">{categoryLabel}</h3>
+              {!locked ? (
+                <p className="mt-0.5 text-[10px] font-bold text-warm-orange">{status}</p>
+              ) : selectedCount > 0 ? (
+                <p className="mt-0.5 text-[10px] font-semibold text-warm-wood-dark/70">
+                  {selectedCount} {selectedCount === 1 ? 'piatto' : 'piatti'} nel menù
+                </p>
+              ) : (
+                <p className="mt-0.5 text-[10px] font-semibold text-warm-wood-dark/70">Menù preselezionato</p>
+              )}
+            </div>
+            <ChevronDown
+              className={cn(
+                'ml-2 h-4 w-4 shrink-0 text-warm-wood transition-transform duration-200',
+                expanded && 'rotate-180',
+              )}
+              aria-hidden
+            />
           </div>
-          <ChevronDown
-            className={cn(
-              'h-4 w-4 shrink-0 text-warm-wood transition-transform duration-200',
-              expanded && 'rotate-180',
-            )}
-            aria-hidden
-          />
         </button>
         {expanded ? (
           <div id={panelId} role="region" aria-labelledby={headerId}>
