@@ -1,7 +1,7 @@
 # Report sessione — Pagina Prenota v2: UI form, menù compose, layout mobile
 
 **Data:** 25-05-26 (continuazione layout mobile + campi inset)  
-**Commit su `main`:** `2ec770a`–`ab09f9c` (sessione precedente) · `09a574e` (layout mobile) · *questo commit* (label inset + fix)  
+**Commit su `main`:** `2ec770a`–`ab09f9c` (sessione precedente) · `09a574e` (layout mobile) · `334fd44` (label inset + rimozione banner menù fisso)  
 **Validate:** `npm run typecheck` ✓
 
 ---
