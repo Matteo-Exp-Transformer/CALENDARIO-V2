@@ -1,5 +1,14 @@
-/** Blocco centrato al 75% — campi, card menù mobile, sezioni form /prenota. */
-export const BOOKING_PUBLIC_CONTENT_WIDTH = 'mx-auto w-3/4 max-w-full min-w-0'
+/** Larghezza piena form /prenota — allineata al box header (solo px-4/px-6 del container pagina). */
+export const BOOKING_PUBLIC_CONTENT_WIDTH = 'w-full min-w-0'
+
+/**
+ * Padding interno del box bianco header (solo testo titolo/descrizione).
+ * Non usarlo sulle card tipologia/sottotab: lì serve allineare il bordo esterno del box header.
+ */
+export const BOOKING_PUBLIC_PAGE_HEADER_INSET = 'px-[13px] md:px-[29px]'
+
+/** Card tipologia + sottotab: stessa larghezza del box header. */
+export const BOOKING_PUBLIC_WIDE_CARDS_WIDTH = 'w-full min-w-0'
 
 /** @deprecated alias */
 export const BOOKING_PUBLIC_FIELD_WRAP = BOOKING_PUBLIC_CONTENT_WIDTH

@@ -10,7 +10,6 @@ import {
   type ComposeMenuItem,
 } from '../../utils/menuComposeVisibility'
 import { BookingMenuCategoryCard } from './BookingMenuCategoryCard'
-import { BOOKING_PUBLIC_CONTENT_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
 
 const COMPOSE_SCROLL_STEP_PX = 320
 
@@ -239,13 +238,8 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
 
   return (
     <div className="w-full min-w-0" data-testid="booking-menu-compose-grid">
-      {/* Mobile: colonna singola, card collassabili */}
-      <div
-        className={cn(
-          'flex flex-col items-stretch gap-2.5 md:hidden',
-          BOOKING_PUBLIC_CONTENT_WIDTH,
-        )}
-      >
+      {/* Mobile: colonna singola, card collassabili — larghezza piena come header */}
+      <div className="flex flex-col items-stretch gap-2.5 md:hidden">
         <ComposeCategoryCards categories={visibleCategories} layout="stack" {...cardProps} />
       </div>
 

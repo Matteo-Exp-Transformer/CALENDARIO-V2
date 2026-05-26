@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Utensils, ChefHat, Star, Leaf } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { SubTab, SubTabIcon } from '@/features/booking/constants/bookingPublicFormConfig'
-import { BOOKING_PUBLIC_CONTENT_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
+import { BOOKING_PUBLIC_WIDE_CARDS_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
 
 const SUB_TAB_SCROLL_STEP_PX = 240
 
@@ -62,7 +62,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
 
   return (
     <div
-      className={cn('relative min-w-0', BOOKING_PUBLIC_CONTENT_WIDTH)}
+      className={cn('relative min-w-0', BOOKING_PUBLIC_WIDE_CARDS_WIDTH)}
       data-testid="booking-sub-tab-cards"
     >
       {canScrollLeft && (
@@ -77,7 +77,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
       )}
       <div
         ref={scrollRef}
-        className="flex w-full min-w-0 touch-pan-x flex-nowrap gap-2 overflow-x-auto overscroll-x-contain scroll-px-2 scrollbar-hide snap-x snap-mandatory py-1 [-webkit-overflow-scrolling:touch] md:gap-3 md:px-10"
+        className="flex w-full min-w-0 touch-pan-x flex-nowrap gap-2 overflow-x-auto overscroll-x-contain scroll-px-2 scrollbar-hide snap-x snap-mandatory py-1 [-webkit-overflow-scrolling:touch] md:gap-3"
       >
         {subTabs.map((tab) => {
           const isActive = activeSubTabId === tab.id
@@ -90,7 +90,8 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
               onClick={() => onChange(isActive ? null : tab)}
               className={cn(
                 'flex shrink-0 snap-center flex-col items-center gap-1.5 rounded-xl border-2 px-2 py-2.5 text-center transition-all sm:gap-2 sm:rounded-2xl sm:px-5 sm:py-4',
-                'min-w-[7.25rem] max-w-[9.5rem] sm:min-w-[140px] sm:max-w-none',
+                // Stessa “lunghezza” delle card tipologia, ma un po’ più alte/quadrate
+                'min-w-37 sm:min-w-42 min-h-22 sm:min-h-25',
                 'bg-white/85 backdrop-blur-[1px] shadow-sm',
                 isActive
                   ? 'border-warm-orange ring-2 ring-warm-orange/30 shadow-md'
@@ -101,7 +102,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                 className={cn(
                   'flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-9 sm:w-9',
                   isActive
-                    ? 'bg-gradient-to-br from-terracotta to-warm-orange text-white shadow-md'
+                    ? 'bg-linear-to-br from-terracotta to-warm-orange text-white shadow-md'
                     : 'bg-warm-wood/10 text-warm-wood',
                 )}
               >

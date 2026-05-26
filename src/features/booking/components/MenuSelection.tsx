@@ -13,6 +13,7 @@ import {
   isCustomPresetMenuType,
   isStaffPresetFixedMenu,
   isStaffPresetSelectableForBookingType,
+  staffPresetDescriptionForCards,
   type CustomStaffPreset,
   type PresetMenuType,
 } from '../constants/presetMenus'
@@ -47,7 +48,7 @@ interface MenuSelectionProps {
   customStaffPresets?: CustomStaffPreset[]
   /** Nasconde il blocco «Riepilogo Scelte» e i totali (evita duplicato con la sidebar). Default: false */
   hideSummary?: boolean
-  /** Variante layout: 'compose' usa titolo «CREA IL TUO MENU». Default: 'default' */
+  /** Variante layout: 'compose' = titolo grande «CREA IL TUO MENU» + griglia (senza sottotitolo). Default: 'default' */
   variant?: 'default' | 'compose'
   /** Etichette custom per le card/opzioni preset (da booking_public_form_config). */
   subTabOverrides?: { preset_id: string; custom_label: string }[]
@@ -55,6 +56,8 @@ interface MenuSelectionProps {
   hideMenuGrid?: boolean
   /** Form /prenota: blocchi centrati al 75% larghezza viewport */
   publicFormLayout?: boolean
+  /** Descrizione menù preselezionato (sottotab o preset staff); opzionale, sotto «CREA IL TUO MENU». */
+  presetDescription?: string
 }
 
 type NormalizedMenuItem = ComposeMenuItem
@@ -87,6 +90,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   subTabOverrides = [],
   hideMenuGrid = false,
   publicFormLayout = false,
+  presetDescription,
 }) => {
   const publicBlockClass = publicFormLayout ? BOOKING_PUBLIC_CONTENT_WIDTH : 'mx-auto w-full max-w-full'
   const { data: menuItems = [], isLoading, error } = useMenuItems()
@@ -194,6 +198,13 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     activeCustomPreset?.is_fixed_menu === false
 
   const presetTitleLabel = presetMenu ? getPresetMenuLabel(presetMenu, customStaffPresets) : null
+
+  const composePresetDescription = useMemo(() => {
+    const fromTab = presetDescription?.trim()
+    if (fromTab) return fromTab
+    if (activeCustomPreset) return staffPresetDescriptionForCards(activeCustomPreset)
+    return undefined
+  }, [presetDescription, activeCustomPreset])
 
   const tiramisuUnitPrice = useMemo(() => {
     const tiramisuItem = normalizedMenuItems.find((item) => isTiramisuItem(item.name))
@@ -501,12 +512,12 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   }
 
   return (
-    <div className="isolate">
-      {/* Titolo sezione menù */}
+    <div className={cn('isolate w-full min-w-0', publicFormLayout ? publicBlockClass : 'mx-auto w-full max-w-full')}>
+      {/* Titolo sezione menù — compose: solo titolo grande (no etichetta piccola / descrizione) */}
       {showComposeHeader ? (
         <div
           className={cn(
-            'mb-4 space-y-1 rounded-2xl bg-white/85 px-4 py-3 backdrop-blur-[1px] sm:px-5 sm:py-4',
+            'mb-4 rounded-2xl bg-white/85 px-4 py-3 backdrop-blur-[1px] sm:px-5 sm:py-4',
             publicFormLayout ? cn(publicBlockClass, 'text-center') : 'mx-auto w-full max-w-full',
           )}
           style={
@@ -515,15 +526,12 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
               : { maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))` }
           }
         >
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-warm-wood-dark/70">
-            Crea il tuo menu
-          </h2>
           <p className="font-serif text-xl font-bold leading-snug text-warm-wood md:text-2xl">
             CREA IL TUO MENU
           </p>
-          <p className="text-sm font-medium text-warm-wood-dark/75">
-            Seleziona una pietanza per ogni portata. Il tuo menu sarà preparato su misura per te.
-          </p>
+          {composePresetDescription ? (
+            <p className="mt-2 text-sm font-medium text-warm-wood-dark/75">{composePresetDescription}</p>
+          ) : null}
         </div>
       ) : menuSelectionLocked && presetTitleLabel ? (
         <div
@@ -535,7 +543,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         </div>
       ) : (
         <h2
-          className="booking-section-title booking-section-title-mobile booking-mobile-heading text-2xl md:text-3xl max-[595px]:!text-lg font-serif text-warm-wood mb-4 pb-3 border-b-2 border-warm-beige"
+          className="booking-section-title booking-section-title-mobile booking-mobile-heading text-2xl md:text-3xl max-[595px]:text-lg! font-serif text-warm-wood mb-4 pb-3 border-b-2 border-warm-beige"
           style={{
             backgroundColor: 'rgba(255, 255, 255, 0.85)',
             backdropFilter: 'blur(1px)',
@@ -556,7 +564,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         >
           <span style={{ flexShrink: 0 }}>Menù</span>
           <span
-            className="text-xl font-serif text-warm-wood md:text-2xl max-[595px]:!text-base"
+            className="text-xl font-serif text-warm-wood md:text-2xl max-[595px]:text-base!"
             style={{
               whiteSpace: 'normal',
               wordBreak: 'break-word',
@@ -638,7 +646,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
 
       {/* Card orizzontali per categoria (mockup CREA IL TUO MENU) */}
       {!hideMenuGrid && (
-        <div className={cn('mt-4 w-full min-w-0', publicFormLayout && 'flex flex-col items-center')}>
+        <div className={cn('mt-4 w-full min-w-0', publicFormLayout && 'flex flex-col')}>
           <BookingMenuComposeGrid
             categoryEntries={categoryEntries}
             categoryImageByKey={categoryImageByKey}

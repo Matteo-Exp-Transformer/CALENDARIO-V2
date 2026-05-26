@@ -656,9 +656,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       onSubmit={handleSubmit}
       className="grid w-full max-w-full grid-cols-1 gap-4 font-bold lg:grid-cols-[1fr_min(360px,32%)] lg:items-start lg:gap-6"
     >
-      <div className="min-w-0 w-full max-w-full space-y-6 md:px-2 lg:px-4">
-      {/* Tipologia + sottotab + menù — prima dei dati cliente (v2 layout) */}
-      <div className="flex w-full flex-col items-center space-y-3" id="booking-sub-tabs-section">
+      {/* Tipologia + sottotab: fuori da md:px-2/lg:px-4 — stesso bordo laterale del box header */}
+      <div
+        className="col-span-1 flex w-full min-w-0 flex-col space-y-3 lg:col-span-2"
+        id="booking-sub-tabs-section"
+      >
         <BookingModeCards
           modes={formConfig.booking_modes}
           activeModeId={activeModeId}
@@ -724,8 +726,9 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         )}
       </div>
 
+      <div className="col-span-1 min-w-0 w-full max-w-full space-y-6">
       {showMenuSelectionSection && (
-        <div id="menu-section" className="flex w-full flex-col items-center space-y-6">
+        <div id="menu-section" className="flex w-full min-w-0 flex-col space-y-6">
           <MenuSelection
             selectedItems={formData.menu_selection?.items || []}
             numGuests={formData.num_guests || 0}
@@ -740,6 +743,9 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             variant={formData.booking_type === 'rinfresco_laurea' ? 'compose' : 'default'}
             hideMenuGrid={activeSubTab?.type === 'manual'}
             subTabOverrides={activeSubTabOverrides}
+            presetDescription={
+              activeSubTab?.type === 'preset' ? activeSubTab.description : undefined
+            }
             onPresetMenuChange={handlePresetMenuChange}
             onMenuChange={({ items, totalPerPerson, tiramisuTotal, tiramisuKg }) => {
               const numGuests = formData.num_guests || 0
@@ -775,7 +781,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       )}
 
       {/* Dati cliente — dopo tipologia e menù */}
-      <div className="flex w-full flex-col items-center space-y-3">
+      <div className="flex w-full min-w-0 flex-col space-y-3">
         <BookingFormFields
           formData={{
             client_name: formData.client_name,
@@ -810,7 +816,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           </div>
         )}
         {/* Intolleranze e richieste — sempre sotto data/ora/ospiti, per ogni tipologia */}
-        <div className="flex w-full flex-col items-center space-y-6 pt-2">
+        <div className="flex w-full min-w-0 flex-col space-y-6 pt-2">
           <DietaryRestrictionsSection
             dietaryText={dietaryRestrictionsToText(formData.dietary_restrictions)}
             onDietaryTextChange={(text) => {
