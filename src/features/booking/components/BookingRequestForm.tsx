@@ -675,8 +675,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           activeModeId={activeModeId}
           onChange={(_modeId, bookingType) => {
             setActiveSubTabId(null)
+            setSelectedPreset(null)
             if (bookingType === 'tavolo') {
-              setSelectedPreset(null)
               setFormData({
                 ...formData,
                 booking_type: bookingType,
@@ -687,7 +687,14 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
                 dietary_restrictions: [],
               })
             } else {
-              setFormData({ ...formData, booking_type: bookingType })
+              setFormData({
+                ...formData,
+                booking_type: bookingType,
+                preset_menu: null,
+                menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
+                menu_total_per_person: undefined,
+                menu_total_booking: undefined,
+              })
             }
             setErrors({ ...errors, booking_type: '', menu: '' })
           }}
@@ -751,7 +758,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             customStaffPresets={customStaffPresets}
             hideSummary={true}
             publicFormLayout
-            variant={formData.booking_type === 'rinfresco_laurea' ? 'compose' : 'default'}
             hideMenuGrid={activeSubTab?.type === 'manual'}
             subTabOverrides={activeSubTabOverrides}
             presetDescription={

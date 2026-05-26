@@ -118,7 +118,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
         <div className="space-y-1">
           <BookingPublicInsetField
             id="client_email"
-            label="Email (Opzionale)"
+            label="Email"
             type="email"
             value={formData.client_email}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,7 +186,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
         <div className="min-w-0 space-y-1">
           <BookingPublicInsetField
             id="num_guests"
-            label="Numero Ospiti * (es: 15)"
+            label="Numero Ospiti *"
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"

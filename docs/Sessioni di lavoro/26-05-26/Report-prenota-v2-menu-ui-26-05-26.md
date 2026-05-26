@@ -29,6 +29,16 @@ Caso segnalato: una card sottotab mostrava un label generico tipo “Opzione men
 - Nella lista categorie (Antipasti/Primi/…), su mobile le card sono state rese più “alte” e con area foto molto più grande (per capire meglio le immagini).
 - Ridotto anche il gap tra le card in colonna su mobile.
 
+5) **Sfondi preimpostati di nuovo collegati alla pagina Prenota**
+- In Impostazioni Mario può scegliere Texture o Gradiente come prima.
+- La pagina Prenota usa di nuovo quello sfondo salvato, mentre le card principali restano bianche e leggibili.
+
+6) **Card dei menù preselezionati ridisegnate**
+- Le card sotto alle tipologie non mostrano più l’icona.
+- Ora mostrano: titolo menù, linea corta, descrizione centrata nello spazio della card, prezzo a persona in basso.
+- Le card sono più grandi rispetto alle card tipologia sopra: più larghe, più alte e con più padding interno.
+- La descrizione può usare più righe, quindi i testi dei menù preselezionati sono più leggibili.
+
 ---
 
 ### File toccati (e perché)
@@ -43,7 +53,11 @@ Caso segnalato: una card sottotab mostrava un label generico tipo “Opzione men
 
 - `src/features/booking/components/publicBooking/BookingSubTabCards.tsx`
   - **Schermata**: pagina Prenota → card sottotab menù (scroll orizzontale)
-  - **Effetto**: la label della card “preset” mostra il **nome del menù** (coerente con quello mostrato più sotto).
+  - **Effetto**: la label della card “preset” mostra il **nome del menù**; la card è stata poi resa più grande, senza icona, con descrizione centrata e prezzo a persona in basso.
+
+- `src/pages/BookingRequestPage.tsx`
+  - **Schermata**: pagina Prenota pubblica
+  - **Effetto**: lo sfondo scelto in Impostazioni torna visibile nella pagina del cliente.
 
 - `src/features/booking/components/publicBooking/BookingMenuComposeGrid.tsx`
   - **Schermata**: pagina Prenota → griglia categorie ingredienti
@@ -57,6 +71,8 @@ Caso segnalato: una card sottotab mostrava un label generico tipo “Opzione men
   - Aggiornata la RULE “Pagina Prenota v2” per documentare:
     - descrizione sotto “CREA IL TUO MENU”,
     - card sottotab preset che mostra il nome del menù (coerenza con `MenuSelection`).
+    - sfondo pagina Prenota da `public_booking_page_background`,
+    - card sottotab menù senza icona e svincolate dalla larghezza delle tipologie.
 
 ---
 
@@ -94,3 +110,7 @@ Caso segnalato: una card sottotab mostrava un label generico tipo “Opzione men
 - `npm run lint` ✅
 - `npm run typecheck` ✅
 
+### Commit collegati
+- `1c6cd81` — sfondi preimpostati pagina Prenota ricollegati.
+- `89657d9` — card opzioni menù semplificate.
+- `dea95e8` — card menù preselezionati più grandi e skill aggiornata.

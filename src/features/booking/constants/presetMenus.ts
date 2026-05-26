@@ -220,3 +220,39 @@ export const getPresetMenuLabel = (type: PresetMenuType, customPresets?: CustomS
   }
   return getPresetMenu(type)?.label ?? 'Menu Sconosciuto'
 }
+
+export type PresetSubTabLabelOverride = { preset_id: string; custom_label: string }
+
+/** Titolo card bianca sotto le sottotab: override sottotab, poi nome preset staff. */
+export function resolvePresetDisplayTitle(
+  presetMenu: PresetMenuType,
+  customPresets?: CustomStaffPreset[],
+  subTabOverrides?: PresetSubTabLabelOverride[],
+): string | null {
+  if (!presetMenu) return null
+  if (isCustomPresetMenuType(presetMenu)) {
+    const uuid = getCustomPresetUuid(presetMenu)
+    const override =
+      uuid && subTabOverrides?.find((o) => o.preset_id === uuid)?.custom_label?.trim()
+    if (override) return override
+  }
+  return getPresetMenuLabel(presetMenu, customPresets)
+}
+
+/**
+ * Intestazione «Crea il tuo menù» solo se il cliente può comporre gli ingredienti.
+ * Non dipende dalla tipologia tab (es. Rinfresco): conta `is_fixed_menu` sul preset staff.
+ */
+export function shouldShowComposeMenuHeader(
+  presetMenu: PresetMenuType,
+  customPreset: CustomStaffPreset | undefined,
+  bookingType?: BookingType | string | null,
+): boolean {
+  if (customPreset) {
+    return customPreset.is_fixed_menu === false
+  }
+  if (presetMenu && isBuiltinPresetMenuType(presetMenu)) {
+    return false
+  }
+  return !presetMenu && bookingType === 'rinfresco_laurea'
+}

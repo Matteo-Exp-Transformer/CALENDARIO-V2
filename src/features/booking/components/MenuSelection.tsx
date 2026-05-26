@@ -10,6 +10,8 @@ import {
   getPresetMenu,
   getPresetMenuLabel,
   isBuiltinPresetMenuType,
+  resolvePresetDisplayTitle,
+  shouldShowComposeMenuHeader,
   isCustomPresetMenuType,
   isStaffPresetFixedMenu,
   isStaffPresetSelectableForBookingType,
@@ -48,8 +50,6 @@ interface MenuSelectionProps {
   customStaffPresets?: CustomStaffPreset[]
   /** Nasconde il blocco «Riepilogo Scelte» e i totali (evita duplicato con la sidebar). Default: false */
   hideSummary?: boolean
-  /** Variante layout: 'compose' = titolo grande «CREA IL TUO MENU» + griglia (senza sottotitolo). Default: 'default' */
-  variant?: 'default' | 'compose'
   /** Etichette custom per le card/opzioni preset (da booking_public_form_config). */
   subTabOverrides?: { preset_id: string; custom_label: string }[]
   /** Nasconde la griglia ingredienti (es. sottotab manuale). Default: false */
@@ -86,7 +86,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   staffPresetsDropdownVisible = true,
   customStaffPresets = [],
   hideSummary = false,
-  variant = 'default',
   subTabOverrides = [],
   hideMenuGrid = false,
   publicFormLayout = false,
@@ -193,10 +192,17 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     return uuid ? customStaffPresets.find((p) => p.id === uuid) : undefined
   }, [presetMenu, customStaffPresets])
 
-  const showComposeHeader =
-    variant === 'compose' || activeCustomPreset?.is_fixed_menu === false
+  const showComposeHeader = shouldShowComposeMenuHeader(
+    presetMenu ?? null,
+    activeCustomPreset,
+    bookingType,
+  )
 
-  const presetTitleLabel = presetMenu ? getPresetMenuLabel(presetMenu, customStaffPresets) : null
+  const presetTitleLabel = resolvePresetDisplayTitle(
+    presetMenu ?? null,
+    customStaffPresets,
+    subTabOverrides,
+  )
 
   const composePresetDescription = useMemo(() => {
     const fromTab = presetDescription?.trim()
