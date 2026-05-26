@@ -1358,72 +1358,77 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
               )}
 
               {promoEditorMode === 'editor' && (
-                <div className="mt-8 space-y-6">
-                  <div>
-                    <label
-                      htmlFor="menu-promo-label"
-                      className="mb-1 block text-xs font-semibold text-gray-700"
-                    >
-                      Nome promozione (solo admin)
-                    </label>
-                    <Input
-                      id="menu-promo-label"
-                      value={promoDraftLabel}
-                      onChange={(e) => setPromoDraftLabel(e.target.value)}
-                      placeholder="Es. Promo estate 2026"
-                      maxLength={80}
-                      className="border-slate-300 bg-white text-slate-900"
-                      aria-label="Nome promozione solo admin"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">{promoDraftLabel.length}/80</p>
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="menu-promo-textarea"
-                      className="mb-1 block text-xs font-semibold text-gray-700"
-                    >
-                      Inserisci il testo della promozione
-                    </label>
-                    <Textarea
-                      id="menu-promo-textarea"
-                      value={promoDraftMessage}
-                      onChange={(e) => setPromoDraftMessage(e.target.value)}
-                      placeholder={MENU_PROMO_PLACEHOLDER}
-                      rows={6}
-                      maxLength={500}
-                      className="min-h-[140px] resize-y border-slate-300 bg-white text-slate-900"
-                      aria-label="Inserisci il testo della promozione"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">{promoDraftMessage.length}/500</p>
-                  </div>
-
-                  <div className="rounded-xl border border-gray-200 bg-white/80 p-4">
-                    <span className="mx-auto mb-3 block w-fit max-w-full text-center text-sm font-bold text-warm-wood md:text-base">
-                      Tipologia di Prenotazione *
-                    </span>
-                    <p className="mb-3 text-center text-xs text-gray-600">
-                      Seleziona una o più tipologie: il testo comparirà quando il cliente sceglie una di queste opzioni
-                      (come nel form pubblico).
-                    </p>
-                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
-                      {MENU_PROMO_BOOKING_TYPE_OPTIONS.map(({ value, label }) => (
-                        <label
-                          key={value}
-                          className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm"
-                        >
-                          <input
-                            type="checkbox"
-                            className="h-4 w-4 shrink-0 rounded border-gray-400"
-                            checked={promoDraftBookingTypes.includes(value)}
-                            onChange={() => togglePromoDraftBookingType(value)}
-                          />
-                          {label}
-                        </label>
-                      ))}
+                <div className="mt-8 flex flex-col gap-4">
+                  <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+                    <div>
+                      <label
+                        htmlFor="menu-promo-label"
+                        className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600"
+                      >
+                        Nome promozione
+                      </label>
+                      <Input
+                        id="menu-promo-label"
+                        value={promoDraftLabel}
+                        onChange={(e) => setPromoDraftLabel(e.target.value)}
+                        placeholder="Es. Promo estate 2026"
+                        maxLength={80}
+                        className="h-14 w-full rounded-2xl pl-6"
+                        style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                        aria-label="Nome promozione solo admin"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Solo admin. {promoDraftLabel.length}/80
+                      </p>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="menu-promo-textarea"
+                        className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600"
+                      >
+                        Testo promozione
+                      </label>
+                      <Textarea
+                        id="menu-promo-textarea"
+                        value={promoDraftMessage}
+                        onChange={(e) => setPromoDraftMessage(e.target.value)}
+                        placeholder={MENU_PROMO_PLACEHOLDER}
+                        rows={5}
+                        maxLength={500}
+                        className="w-full rounded-2xl border-gray-200 px-4 py-3 text-sm"
+                        aria-label="Inserisci il testo della promozione"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Visibile nella pagina Prenota. {promoDraftMessage.length}/500
+                      </p>
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                        Tipologia di prenotazione *
+                      </label>
+                      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                        {MENU_PROMO_BOOKING_TYPE_OPTIONS.map(({ value, label }) => (
+                          <label
+                            key={value}
+                            className="flex cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 shadow-sm"
+                          >
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 shrink-0 rounded border-gray-400"
+                              checked={promoDraftBookingTypes.includes(value)}
+                              onChange={() => togglePromoDraftBookingType(value)}
+                            />
+                            {label}
+                          </label>
+                        ))}
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Seleziona una o più tipologie: il testo comparirà quando il cliente sceglie una di queste opzioni.
+                      </p>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap justify-center gap-3">
+                  <div className="mt-10 flex flex-wrap justify-center gap-3">
                     <button
                       type="button"
                       disabled={upsertRestaurantSetting.isPending}
@@ -1833,64 +1838,81 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
               )}
 
               {presetEditorMode === 'editor' && (
-                <div className="mt-8">
-                  <div className="mx-auto flex w-full max-w-md flex-col gap-2">
-                    <label className="text-center text-sm font-medium text-gray-700">
-                      Nome menù consigliato *
-                    </label>
-                    <Input
-                      value={presetName}
-                      onChange={(e) => setPresetName(e.target.value)}
-                      placeholder="es. Menù laurea Vegan"
-                      className="mx-auto h-14 w-full rounded-2xl px-6 text-center"
-                      style={{ height: '56px', borderRadius: '18px' }}
-                    />
+                <div className="mt-8 flex flex-col gap-4">
+                  <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                        Nome menù consigliato *
+                      </label>
+                      <Input
+                        value={presetName}
+                        onChange={(e) => setPresetName(e.target.value)}
+                        placeholder="Es. Menù laurea vegan"
+                        className="h-14 w-full rounded-2xl pl-6"
+                        style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Nome mostrato nelle card e nella selezione del form Prenota.
+                      </p>
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                        Descrizione
+                        <span className="font-normal normal-case text-gray-500"> (opzionale)</span>
+                      </label>
+                      <Textarea
+                        value={presetDescription}
+                        onChange={(e) => setPresetDescription(e.target.value)}
+                        placeholder="Testo mostrato sotto il nome sulle card in pagina Prenota"
+                        maxLength={300}
+                        rows={3}
+                        className="w-full rounded-2xl border-gray-200 px-4 py-3 text-sm"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Visibile nella pagina Prenota. {presetDescription.length}/300
+                      </p>
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                        Prezzo a persona
+                        <span className="font-normal normal-case text-gray-500"> (opzionale)</span>
+                      </label>
+                      <Input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        value={presetPriceInput}
+                        onChange={(e) => setPresetPriceInput(e.target.value)}
+                        placeholder="Es. 45"
+                        className="h-14 w-full rounded-2xl pl-6"
+                        style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Se compilato, viene mostrato come prezzo indicativo per persona.
+                      </p>
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                        Menù fisso o personalizzabile
+                      </label>
+                      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 shadow-sm">
+                        <input
+                          type="checkbox"
+                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-400"
+                          checked={presetIsFixedMenu}
+                          onChange={(e) => setPresetIsFixedMenu(e.target.checked)}
+                        />
+                        <span className="text-left leading-snug">
+                          Menù fisso
+                          <span className="mt-1 block text-xs font-normal text-gray-600">
+                            {presetIsFixedMenu
+                              ? 'Attivo: il cliente non può cambiare gli ingredienti dopo la scelta.'
+                              : 'Disattivo: il cliente può aggiungere o togliere ingredienti dal menù proposto.'}
+                          </span>
+                        </span>
+                      </label>
+                    </div>
                   </div>
-                  <div className="mx-auto flex w-full max-w-md flex-col gap-2">
-                    <label className="text-center text-sm font-medium text-gray-700">
-                      Descrizione (opzionale)
-                    </label>
-                    <textarea
-                      value={presetDescription}
-                      onChange={(e) => setPresetDescription(e.target.value)}
-                      placeholder="Testo mostrato sotto il nome sulle card in pagina Prenota"
-                      maxLength={300}
-                      rows={3}
-                      className="mx-auto w-full rounded-2xl border border-black/20 bg-white/85 px-4 py-3 text-center text-sm text-warm-wood placeholder:text-warm-wood/50 focus:border-warm-wood focus:outline-none focus:ring-2 focus:ring-warm-wood/40 resize-none"
-                    />
-                    <p className="text-center text-xs text-gray-500">{presetDescription.length}/300</p>
-                  </div>
-                  <div className="mx-auto flex w-full max-w-md flex-col gap-2">
-                    <label className="text-center text-sm font-medium text-gray-700">
-                      Prezzo a persona (opzionale)
-                    </label>
-                    <Input
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={presetPriceInput}
-                      onChange={(e) => setPresetPriceInput(e.target.value)}
-                      placeholder="es. 45"
-                      className="mx-auto h-14 w-full rounded-2xl px-6 text-center"
-                      style={{ height: '56px', borderRadius: '18px' }}
-                    />
-                  </div>
-                  <label className="mx-auto flex w-full max-w-md cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white/80 px-4 py-3 text-sm text-gray-800 shadow-sm">
-                    <input
-                      type="checkbox"
-                      className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-400"
-                      checked={presetIsFixedMenu}
-                      onChange={(e) => setPresetIsFixedMenu(e.target.checked)}
-                    />
-                    <span className="text-left leading-snug">
-                      Menù fisso o personalizzabile da cliente?
-                      <span className="mt-1 block text-xs font-normal text-gray-600">
-                        {presetIsFixedMenu
-                          ? 'Attivo: il cliente non può cambiare gli ingredienti dopo la scelta.'
-                          : 'Disattivo: il cliente può aggiungere o togliere ingredienti dal menù proposto.'}
-                      </span>
-                    </span>
-                  </label>
                 </div>
               )}
             </div>
@@ -1908,18 +1930,15 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                 </div>
 
                 <div className="mx-auto max-w-3xl space-y-6 pb-12 pr-10">
-                  <div className="rounded-xl border border-gray-200 bg-white/80 p-4">
-                    <span className="mx-auto mb-3 block w-fit max-w-full text-center text-sm font-bold text-warm-wood md:text-base">
-                      Tipologia di Prenotazione *
-                    </span>
-                    <p className="mb-3 text-center text-xs text-gray-600">
-                      Seleziona per quale tipo di prenotazione sarà visibile il menù preselezionato.
-                    </p>
-                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                      Tipologia di prenotazione *
+                    </label>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                       {STAFF_PRESET_BOOKING_TYPE_OPTIONS.map(({ value, label }) => (
                         <label
                           key={value}
-                          className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm"
+                          className="flex cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 shadow-sm"
                         >
                           <input
                             type="checkbox"
@@ -1931,6 +1950,9 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                         </label>
                       ))}
                     </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Seleziona per quale tipo di prenotazione sarà visibile il menù preselezionato.
+                    </p>
                   </div>
 
                   <div className="flex flex-wrap justify-center gap-3">
