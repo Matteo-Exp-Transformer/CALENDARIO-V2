@@ -2,13 +2,12 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
-import {
-  BOOKING_PUBLIC_WIDE_CARDS_WIDTH,
-  bookingPublicRowCardWidthClass,
-} from '@/features/booking/constants/bookingPublicFieldStyles'
+import { BOOKING_PUBLIC_WIDE_CARDS_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
 import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
 
 const SUB_TAB_SCROLL_STEP_PX = 240
+const SUB_TAB_CARD_SIZE_CLASS =
+  'w-[41%] max-w-[41%] shrink-0 sm:w-[41%] sm:max-w-[41%]'
 
 interface BookingSubTabCardsProps {
   subTabs: SubTab[]
@@ -19,7 +18,7 @@ interface BookingSubTabCardsProps {
    * (coerente con `MenuSelection`), invece di un label generico tipo "Opzione menu".
    */
   customStaffPresets?: CustomStaffPreset[]
-  /** Card tipologia attive nella riga sopra — allinea la larghezza massima delle sottotab. */
+  /** Card tipologia attive nella riga sopra. Mantenuta per compatibilita con il chiamante. */
   modeCardColumnCount: number
 }
 
@@ -38,9 +37,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   activeSubTabId,
   onChange,
   customStaffPresets = [],
-  modeCardColumnCount,
 }) => {
-  const subTabCardWidthClass = bookingPublicRowCardWidthClass(modeCardColumnCount)
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
@@ -105,9 +102,9 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
               data-testid={`booking-sub-tab-card-${tab.id}`}
               onClick={() => onChange(isActive ? null : tab)}
               className={cn(
-                'flex snap-center flex-col items-center rounded-xl border-2 px-2 py-3 text-center transition-all sm:rounded-2xl sm:px-5 sm:py-4',
-                subTabCardWidthClass,
-                'min-h-[132px] sm:min-h-[150px]',
+                'flex snap-center flex-col items-center rounded-xl border-2 px-3 py-3 text-center transition-all sm:rounded-2xl sm:px-6 sm:py-4',
+                SUB_TAB_CARD_SIZE_CLASS,
+                'min-h-[196px] sm:min-h-[220px]',
                 'bg-white/85 backdrop-blur-[1px] shadow-sm',
                 isActive
                   ? 'border-warm-orange ring-2 ring-warm-orange/30 shadow-md'
@@ -125,18 +122,20 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                 </p>
                 <div
                   className={cn(
-                    'mt-2 h-px w-10 rounded-full sm:mt-2.5',
-                    isActive ? 'bg-warm-orange/60' : 'bg-warm-wood/25',
+                    'mt-2 h-[3px] min-h-[3px] w-11 shrink-0 rounded-full sm:mt-2.5',
+                    isActive ? 'bg-warm-orange/70' : 'bg-warm-wood/40',
                   )}
                   aria-hidden
                 />
-                {tab.description && (
-                  <p className="mt-2 line-clamp-3 text-xs leading-tight text-warm-wood-dark/70 sm:mt-2.5 sm:line-clamp-2">
-                    {tab.description}
-                  </p>
-                )}
+                <div className="flex min-h-0 w-full flex-1 items-center justify-center py-2 sm:py-2.5">
+                  {tab.description && (
+                    <p className="line-clamp-5 text-xs leading-tight text-warm-wood-dark/70 sm:line-clamp-4">
+                      {tab.description}
+                    </p>
+                  )}
+                </div>
                 {priceLabel && (
-                  <p className="mt-auto pt-2 text-xs font-bold leading-tight text-warm-wood-dark/80 sm:pt-2.5 sm:text-sm">
+                  <p className="text-xs font-bold leading-tight text-warm-wood-dark/80 sm:text-sm">
                     <span>{priceLabel}</span>
                   </p>
                 )}
