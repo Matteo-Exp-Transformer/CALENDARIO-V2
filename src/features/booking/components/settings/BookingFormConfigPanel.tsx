@@ -144,7 +144,7 @@ function newSubTab(display: SubTab['display']): SubTab {
   return {
     id: crypto.randomUUID(),
     display,
-    label: display === 'carousel' ? 'Carosello' : 'Card a scorrimento',
+    label: display === 'carousel' ? 'Carosello' : 'Card scorrevole',
     icon: 'utensils',
     ...(display === 'cards'
       ? { hidden_category_keys: [], hidden_item_ids: [] }
@@ -186,12 +186,46 @@ function SubTabsDisplayHelpPanel() {
         <span className="min-w-0 space-y-2">
           <span className="block font-medium">Scegli se mostrare:</span>
           <ul className="mt-2 list-disc space-y-1 pl-5">
-            <li>Card a scorrimento, per descrivere offerte al cliente</li>
+            <li>Card scorrevole, per descrivere offerte al cliente</li>
             <li>Carosello, per mostrare immagini con testo ai clienti</li>
           </ul>
         </span>
       )}
     </button>
+  )
+}
+
+const SUB_TAB_ADD_BUTTON_CLASS =
+  'min-w-0 w-full bg-primary-50 px-2 py-1.5 text-xs leading-tight hover:bg-primary-100 active:bg-primary-100/90 sm:min-h-11 sm:px-3 sm:py-2 sm:text-sm md:min-h-[3.125rem] md:px-3 md:py-2.5 md:text-sm'
+
+function SubTabAddButtons({
+  onAddCards,
+  onAddCarousel,
+}: {
+  onAddCards: () => void
+  onAddCarousel: () => void
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={onAddCards}
+        className={SUB_TAB_ADD_BUTTON_CLASS}
+      >
+        + Card scorrevole
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={onAddCarousel}
+        className={SUB_TAB_ADD_BUTTON_CLASS}
+      >
+        + Carosello
+      </Button>
+    </div>
   )
 }
 
@@ -1013,28 +1047,14 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                     </div>
 
                     {mode.sub_tabs_enabled && (
-                      <>
-                        <div className="mt-7 flex flex-wrap gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => addSubTab(mode.id, 'cards')}
-                          >
-                            + Card a scorrimento
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => addSubTab(mode.id, 'carousel')}
-                          >
-                            + Carosello
-                          </Button>
-                        </div>
+                      <div className="mt-5 space-y-3">
+                        <SubTabAddButtons
+                          onAddCards={() => addSubTab(mode.id, 'cards')}
+                          onAddCarousel={() => addSubTab(mode.id, 'carousel')}
+                        />
 
                         {draftSubTab && (
-                          <div className="mt-4 w-full min-w-0">
+                          <div className="w-full min-w-0">
                             {renderSubTabEditor({
                               mode,
                               tab: draftSubTab,
@@ -1045,11 +1065,11 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                         )}
 
                         {subTabs.length === 0 && !draftSubTab ? (
-                          <p className="mt-4 text-xs text-slate-500">
+                          <p className="text-xs text-slate-500">
                             Nessuna sottotab: aggiungine almeno una o disattiva l&apos;opzione sopra.
                           </p>
                         ) : (
-                          <div className="mt-4 w-full min-w-0 space-y-3">
+                          <div className="w-full min-w-0 space-y-3">
                             {subTabs.map((tab, tabIdx) => {
                               const savedOpen = expandedSubTabId === tab.id
                               if (!savedOpen) {
@@ -1123,8 +1143,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                             })}
                           </div>
                         )}
-
-                      </>
+                      </div>
                     )}
                   </div>
                 )}
