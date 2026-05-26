@@ -3,6 +3,7 @@ import { CalendarDays, Clock, Users, UtensilsCrossed, Phone } from 'lucide-react
 import type { BookingRequestInput, BookingType } from '@/types/booking'
 import type { BookingMode, SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
 import { useMenuCategories } from '@/features/booking/hooks/useMenuCategories'
+import { computeMenuTotalsFromItems } from '@/features/booking/utils/buildPresetMenuSelection'
 
 interface BookingSummarySidebarProps {
   formData: {
@@ -53,6 +54,10 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   const items = formData.menu_selection?.items ?? []
   const totalPerPerson = formData.menu_total_per_person ?? 0
   const totalBooking = formData.menu_total_booking ?? 0
+  const hasPresetPrice =
+    activeSubTab?.type === 'preset' &&
+    activeSubTab.price_per_person != null &&
+    activeSubTab.price_per_person > 0
 
   const categoryLabelByKey = useMemo(() => {
     const map = new Map<string, string>()
@@ -76,12 +81,17 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
     })
   }, [items, categoryOrder])
 
+  const menuItemsTotalWithoutPreset = useMemo(
+    () => computeMenuTotalsFromItems(items, formData.num_guests).menu_total_booking,
+    [items, formData.num_guests],
+  )
+
   return (
     <aside
       className="order-2 w-full max-w-full lg:order-none rounded-2xl bg-white border border-slate-100 shadow-xl px-4 py-5 space-y-4 lg:sticky lg:top-6 self-start"
       data-testid="booking-summary-sidebar"
     >
-      <h3 className="font-serif text-warm-wood font-bold text-base leading-tight">
+      <h3 className="font-serif text-warm-wood font-bold text-lg leading-tight">
         Riepilogo Prenotazione
       </h3>
 
@@ -90,8 +100,8 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         <div className="flex items-start gap-2.5">
           <CalendarDays className="h-4 w-4 text-warm-orange mt-0.5 shrink-0" />
           <div className="min-w-0">
-            <p className="text-xs text-warm-wood-dark/60 font-semibold uppercase tracking-wide">Data</p>
-            <p className="text-sm font-bold text-warm-wood leading-tight">
+            <p className="text-[13px] text-warm-wood-dark/60 font-semibold uppercase tracking-wide">Data</p>
+            <p className="text-base font-bold text-warm-wood leading-tight">
               {formData.desired_date ? formatDate(formData.desired_date) : '—'}
             </p>
           </div>
@@ -101,8 +111,8 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         <div className="flex items-start gap-2.5">
           <Clock className="h-4 w-4 text-warm-orange mt-0.5 shrink-0" />
           <div className="min-w-0">
-            <p className="text-xs text-warm-wood-dark/60 font-semibold uppercase tracking-wide">Orario</p>
-            <p className="text-sm font-bold text-warm-wood">{formData.desired_time || '—'}</p>
+            <p className="text-[13px] text-warm-wood-dark/60 font-semibold uppercase tracking-wide">Orario</p>
+            <p className="text-base font-bold text-warm-wood">{formData.desired_time || '—'}</p>
           </div>
         </div>
 
@@ -110,8 +120,8 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         <div className="flex items-start gap-2.5">
           <Users className="h-4 w-4 text-warm-orange mt-0.5 shrink-0" />
           <div className="min-w-0">
-            <p className="text-xs text-warm-wood-dark/60 font-semibold uppercase tracking-wide">Ospiti</p>
-            <p className="text-sm font-bold text-warm-wood">
+            <p className="text-[13px] text-warm-wood-dark/60 font-semibold uppercase tracking-wide">Ospiti</p>
+            <p className="text-base font-bold text-warm-wood">
               {formData.num_guests > 0 ? `${formData.num_guests} persone` : '—'}
             </p>
           </div>
@@ -121,8 +131,8 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         <div className="flex items-start gap-2.5">
           <UtensilsCrossed className="h-4 w-4 text-warm-orange mt-0.5 shrink-0" />
           <div className="min-w-0">
-            <p className="text-xs text-warm-wood-dark/60 font-semibold uppercase tracking-wide">Tipo</p>
-            <p className="text-sm font-bold text-warm-wood">
+            <p className="text-[13px] text-warm-wood-dark/60 font-semibold uppercase tracking-wide">Tipo</p>
+            <p className="text-base font-bold text-warm-wood">
               {getModeLabelByType(modes, formData.booking_type)}
             </p>
           </div>
@@ -133,10 +143,10 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
           (activeSubTab.type === 'manual' ||
             (activeSubTab.price_per_person != null && activeSubTab.price_per_person > 0)) && (
             <div className="border-t border-black/10 pt-3">
-              <p className="text-xs text-warm-wood-dark/60 font-semibold uppercase tracking-wide">
+              <p className="text-[13px] text-warm-wood-dark/60 font-semibold uppercase tracking-wide">
                 Opzione menu
               </p>
-              <p className="text-sm font-bold text-warm-wood leading-tight mt-0.5">
+              <p className="text-base font-bold text-warm-wood leading-tight mt-0.5">
                 {activeSubTab.label}
                 {activeSubTab.price_per_person != null && activeSubTab.price_per_person > 0 && (
                   <span className="text-warm-wood-dark/80 font-semibold">
@@ -151,7 +161,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         {/* IL TUO MENU */}
         {hasMenu && sortedMenuItems.length > 0 && (
           <div className="border-t border-black/10 pt-3 space-y-1.5">
-            <p className="text-xs text-warm-wood-dark/60 font-semibold uppercase tracking-wide">
+            <p className="text-[13px] text-warm-wood-dark/60 font-semibold uppercase tracking-wide">
               Il tuo menu
             </p>
             <ul className="space-y-1.5">
@@ -159,7 +169,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
                 const catLabel = categoryLabelByKey.get(item.category)
                 return (
                   <li key={item.id} className="flex items-start justify-between gap-2">
-                    <span className="text-xs text-warm-wood font-medium leading-tight min-w-0">
+                    <span className="text-sm text-warm-wood font-medium leading-tight min-w-0">
                       {catLabel ? (
                         <>
                           <span className="text-warm-wood-dark/55">{catLabel}: </span>
@@ -169,13 +179,23 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
                         item.name
                       )}
                     </span>
-                    <span className="text-xs text-warm-wood-dark/70 font-semibold shrink-0 tabular-nums">
+                    <span className="text-sm text-warm-wood-dark/70 font-semibold shrink-0 tabular-nums">
                       {formatCurrency(item.price)}
                     </span>
                   </li>
                 )
               })}
             </ul>
+            {hasPresetPrice && menuItemsTotalWithoutPreset > 0 && (
+              <div className="flex items-center justify-between gap-2 pt-1.5">
+                <span className="text-xs font-semibold text-warm-wood-dark/55">
+                  Totale senza menù preselezionato
+                </span>
+                <span className="shrink-0 text-sm font-bold tabular-nums text-warm-wood-dark/45 line-through">
+                  {formatCurrency(menuItemsTotalWithoutPreset)}
+                </span>
+              </div>
+            )}
           </div>
         )}
 
@@ -183,13 +203,13 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         {hasMenu && totalPerPerson > 0 && (
           <div className="border-t border-black/10 pt-3 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-warm-wood-dark/70 font-semibold">A persona</span>
-              <span className="text-sm font-bold text-warm-wood">{formatCurrency(totalPerPerson)}</span>
+              <span className="text-sm text-warm-wood-dark/70 font-semibold">A persona</span>
+              <span className="text-base font-bold text-warm-wood">{formatCurrency(totalPerPerson)}</span>
             </div>
             {formData.num_guests > 0 && (
               <div className="flex items-center justify-between">
-                <span className="text-xs text-warm-wood-dark/70 font-semibold">Totale stimato</span>
-                <span className="text-base font-bold text-warm-orange">{formatCurrency(totalBooking)}</span>
+                <span className="text-sm text-warm-wood-dark/70 font-semibold">Totale stimato</span>
+                <span className="text-lg font-bold text-warm-orange">{formatCurrency(totalBooking)}</span>
               </div>
             )}
           </div>
@@ -199,7 +219,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         {contactPhone && (
           <div className="border-t border-black/10 pt-3 flex items-center gap-2">
             <Phone className="h-3.5 w-3.5 text-warm-orange shrink-0" />
-            <span className="text-xs text-warm-wood-dark font-medium">{contactPhone}</span>
+            <span className="text-sm text-warm-wood-dark font-medium">{contactPhone}</span>
           </div>
         )}
       </div>

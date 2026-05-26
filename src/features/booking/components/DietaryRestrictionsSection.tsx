@@ -115,7 +115,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                   />
                 </div>
               </div>
-              <label htmlFor="privacy-consent-dietary" className="cursor-pointer text-sm text-warm-wood-dark">
+              <label htmlFor="privacy-consent-dietary" className="cursor-pointer text-base text-warm-wood-dark">
                 Accetto la{' '}
                 <Link
                   to="/privacy"
@@ -129,7 +129,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                 {' '}*
               </label>
             </div>
-            <p className="text-xs font-semibold text-warm-wood-dark/80 sm:text-sm">
+            <p className="text-sm font-semibold text-warm-wood-dark/80 sm:text-base">
               * I campi contrassegnati sono obbligatori
             </p>
           </div>

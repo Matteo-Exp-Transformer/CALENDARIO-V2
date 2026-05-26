@@ -10,6 +10,7 @@ import { DietaryRestrictionsSection } from './DietaryRestrictionsSection'
 import {
   dietaryRestrictionsToText,
   dietaryTextToRestrictions,
+  normalizeDietaryRestrictionsForSubmit,
 } from '../utils/dietaryRestrictionsText'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { isValidBookingDateTime, getDayOfWeek, formatHours } from '@/lib/businessHours'
@@ -21,7 +22,7 @@ import { useMenuItems } from '../hooks/useMenuItems'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 import {
   applyPresetTypeToBookingFormPayload,
-  computeMenuTotalsFromItems,
+  computeMenuTotalsWithPresetPrice,
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
 import {
@@ -109,6 +110,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   }, [activeMode, customStaffPresets])
 
   const activeSubTab = activeModeSubTabs.find((t) => t.id === activeSubTabId) ?? null
+
+  const getPresetPricePerPerson = (subTab: SubTab | null): number | undefined =>
+    subTab?.type === 'preset' && subTab.price_per_person != null && subTab.price_per_person > 0
+      ? subTab.price_per_person
+      : undefined
 
   const activeSubTabOverrides = useMemo(() => {
     if (activeModeSubTabs.length > 0) {
@@ -215,10 +221,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   // Reset num_guests to 0 when cleared - only allow numeric input
   const handleNumGuestsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value.trim()
+    const presetPricePerPerson = getPresetPricePerPerson(activeSubTab)
 
     // Only allow numeric characters or empty string
     if (inputValue === '') {
-      const tiramisuTotal = formData.menu_selection?.tiramisu_total || 0
+      const tiramisuTotal = presetPricePerPerson ? 0 : formData.menu_selection?.tiramisu_total || 0
       const newFormData = { ...formData, num_guests: 0, menu_total_booking: tiramisuTotal }
       setFormData(newFormData)
       setErrors({ ...errors, num_guests: '' })
@@ -230,8 +237,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     if (/^\d+$/.test(inputValue)) {
       const value = parseInt(inputValue, 10)
       if (!isNaN(value) && value >= 1 && value <= 110) {
-        const tiramisuTotal = formData.menu_selection?.tiramisu_total || 0
-        const totalPerPerson = formData.menu_total_per_person || 0
+        const tiramisuTotal = presetPricePerPerson ? 0 : formData.menu_selection?.tiramisu_total || 0
+        const totalPerPerson = presetPricePerPerson ?? formData.menu_total_per_person ?? 0
         const newFormData = {
           ...formData,
           num_guests: value,
@@ -241,7 +248,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         setErrors({ ...errors, num_guests: '' })
       } else if (value === 0) {
         // Explicitly handle 0 to show empty
-        const tiramisuTotal = formData.menu_selection?.tiramisu_total || 0
+        const tiramisuTotal = presetPricePerPerson ? 0 : formData.menu_selection?.tiramisu_total || 0
         const newFormData = { ...formData, num_guests: 0, menu_total_booking: tiramisuTotal }
         setFormData(newFormData)
         setErrors({ ...errors, num_guests: '' })
@@ -257,7 +264,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   }
 
   // Gestione selezione menu predefinito
-  const handlePresetMenuChange = (presetType: PresetMenuType) => {
+  const handlePresetMenuChange = (presetType: PresetMenuType, sourceSubTab: SubTab | null = activeSubTab) => {
     setSelectedPreset(presetType)
 
     if (!presetType) {
@@ -287,8 +294,9 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
     const { items } = resolved
     const numGuests = formData.num_guests || 0
+    const presetPricePerPerson = getPresetPricePerPerson(sourceSubTab)
     const { totalPerPerson, tiramisuTotal, tiramisuKg, menu_total_booking } =
-      computeMenuTotalsFromItems(items, numGuests)
+      computeMenuTotalsWithPresetPrice(items, numGuests, presetPricePerPerson)
 
     setFormData({
       ...formData,
@@ -595,6 +603,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       {
         ...formData,
         special_requests: specialRequests,
+        dietary_restrictions: normalizeDietaryRestrictionsForSubmit(formData.dietary_restrictions),
         tenantSlug,
         menu_promo_labels: menuPromoLabels.length > 0 ? menuPromoLabels : null,
       },
@@ -696,6 +705,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           <BookingSubTabCards
             subTabs={activeModeSubTabs}
             activeSubTabId={activeSubTabId}
+            modeCardColumnCount={formConfig.booking_modes.filter((m) => m.enabled).length}
             customStaffPresets={customStaffPresets}
             onChange={(tab) => {
               setActiveSubTabId(tab?.id ?? null)
@@ -704,7 +714,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
                 return
               }
               if (tab.type === 'preset' && tab.preset_id) {
-                handlePresetMenuChange(customPresetStorageId(tab.preset_id))
+                handlePresetMenuChange(customPresetStorageId(tab.preset_id), tab)
                 return
               }
               if (tab.type === 'manual') {
@@ -752,6 +762,10 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
               const numGuests = formData.num_guests || 0
               const currentPreset = selectedPreset
               let updatedPreset: PresetMenuType = currentPreset
+              const presetPricePerPerson = getPresetPricePerPerson(activeSubTab)
+              const effectiveTotalPerPerson = presetPricePerPerson ?? totalPerPerson
+              const effectiveTiramisuTotal = presetPricePerPerson ? 0 : tiramisuTotal
+              const effectiveTiramisuKg = presetPricePerPerson ? 0 : tiramisuKg
 
               if (
                 currentPreset &&
@@ -766,11 +780,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
                 preset_menu: updatedPreset,
                 menu_selection: {
                   items,
-                  tiramisu_total: tiramisuTotal,
-                  tiramisu_kg: tiramisuKg,
+                  tiramisu_total: effectiveTiramisuTotal,
+                  tiramisu_kg: effectiveTiramisuKg,
                 },
-                menu_total_per_person: totalPerPerson,
-                menu_total_booking: totalPerPerson * numGuests + tiramisuTotal,
+                menu_total_per_person: effectiveTotalPerPerson,
+                menu_total_booking: effectiveTotalPerPerson * numGuests + effectiveTiramisuTotal,
               })
               setErrors({ ...errors, menu: '' })
             }}

@@ -169,6 +169,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
           description: item.description ?? undefined,
           sort_order: item.sort_order ?? 0,
           priceSuffix,
+          image_url: item.image_url ?? null,
         }
       })
   }, [menuItems, bookingType])
@@ -193,9 +194,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   }, [presetMenu, customStaffPresets])
 
   const showComposeHeader =
-    variant === 'compose' ||
-    bookingType === 'rinfresco_laurea' ||
-    activeCustomPreset?.is_fixed_menu === false
+    variant === 'compose' || activeCustomPreset?.is_fixed_menu === false
 
   const presetTitleLabel = presetMenu ? getPresetMenuLabel(presetMenu, customStaffPresets) : null
 
@@ -516,19 +515,10 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       {/* Titolo sezione menù — compose: solo titolo grande (no etichetta piccola / descrizione) */}
       {showComposeHeader ? (
         <div
-          className={cn(
-            'mb-4 rounded-2xl bg-white/85 px-4 py-3 backdrop-blur-[1px] sm:px-5 sm:py-4',
-            publicFormLayout ? cn(publicBlockClass, 'text-center') : 'mx-auto w-full max-w-full',
-          )}
-          style={
-            publicFormLayout
-              ? undefined
-              : { maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))` }
-          }
+          className="mx-auto mb-4 w-full rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]"
+          style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))` }}
         >
-          <p className="font-serif text-xl font-bold leading-snug text-warm-wood md:text-2xl">
-            CREA IL TUO MENU
-          </p>
+          <h2 className="font-serif text-xl font-bold text-warm-wood md:text-2xl">Crea il tuo menù</h2>
           {composePresetDescription ? (
             <p className="mt-2 text-sm font-medium text-warm-wood-dark/75">{composePresetDescription}</p>
           ) : null}
@@ -538,8 +528,10 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
           className="mx-auto mb-4 w-full rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]"
           style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))` }}
         >
-          <h2 className="font-serif text-xl font-bold text-warm-wood md:text-2xl">Il tuo menù</h2>
-          <p className="mt-1 text-sm font-semibold text-warm-orange">{presetTitleLabel}</p>
+          <h2 className="font-serif text-xl font-bold text-warm-wood md:text-2xl">{presetTitleLabel}</h2>
+          {composePresetDescription ? (
+            <p className="mt-2 text-sm font-medium text-warm-wood-dark/75">{composePresetDescription}</p>
+          ) : null}
         </div>
       ) : (
         <h2
@@ -551,8 +543,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             borderRadius: '18px',
             fontWeight: '700',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
             gap: '14px',
             width: '100%',
             maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
@@ -563,19 +555,9 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
           }}
         >
           <span style={{ flexShrink: 0 }}>Menù</span>
-          <span
-            className="text-xl font-serif text-warm-wood md:text-2xl max-[595px]:text-base!"
-            style={{
-              whiteSpace: 'normal',
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-              flexShrink: 1,
-              minWidth: 0,
-              textAlign: 'right',
-            }}
-          >
-            € a Persona
-          </span>
+          {composePresetDescription ? (
+            <span className="text-sm font-medium text-warm-wood-dark/75">{composePresetDescription}</span>
+          ) : null}
         </h2>
       )}
 

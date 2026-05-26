@@ -40,7 +40,7 @@ export const BookingModeCards: React.FC<BookingModeCardsProps> = ({ modes, activ
               onClick={() => onChange(mode.id, mode.booking_type)}
               className={cn(
                 'flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-2 py-3 text-center transition-all duration-200',
-                'min-h-20 sm:min-h-22 sm:gap-2 sm:rounded-2xl sm:px-3 sm:py-4',
+                'min-h-[100px] sm:min-h-[110px] sm:gap-2 sm:rounded-2xl sm:px-3 sm:py-4',
                 'bg-white/85 backdrop-blur-[1px] shadow-sm',
                 isActive
                   ? 'border-warm-orange ring-2 ring-warm-orange/30 shadow-md'
@@ -60,7 +60,7 @@ export const BookingModeCards: React.FC<BookingModeCardsProps> = ({ modes, activ
               <div className="min-w-0 w-full">
                 <p
                   className={cn(
-                    'text-[11px] font-bold leading-tight sm:text-sm',
+                    'text-[13px] font-bold leading-tight sm:text-base',
                     isActive ? 'text-warm-orange' : 'text-warm-wood',
                   )}
                 >

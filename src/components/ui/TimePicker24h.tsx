@@ -72,7 +72,7 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
     const selectBase = cn(
       'min-w-0 flex-1 cursor-pointer rounded-md border-0 bg-white py-2 outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-75',
       bookingForm
-        ? 'text-xs font-bold text-warm-wood sm:text-sm'
+        ? 'text-sm font-bold text-warm-wood sm:text-base'
         : compact
           ? 'font-medium text-slate-900 text-base sm:text-sm'
           : 'text-sm font-medium text-slate-900',
@@ -92,7 +92,7 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
           compact && !bookingFormInset
             ? cn(
                 'min-h-[3rem] gap-2 rounded-2xl px-3 py-2',
-                bookingForm ? 'text-xs font-bold text-warm-wood sm:text-sm' : 'text-base sm:text-sm',
+                bookingForm ? 'text-sm font-bold text-warm-wood sm:text-base' : 'text-base sm:text-sm',
               )
             : !bookingFormInset && 'min-h-[3.5rem] gap-2 rounded-[1.25rem] px-4 py-3 text-sm',
           !bookingFormInset && (hasError ? 'border-2 !border-red-500' : 'border border-[rgba(0,0,0,0.2)]'),
@@ -134,7 +134,7 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
         <span
           className={cn(
             'select-none',
-            bookingForm ? 'text-xs font-bold text-warm-wood/60 sm:text-sm' : 'font-medium text-slate-400',
+            bookingForm ? 'text-sm font-bold text-warm-wood/60 sm:text-base' : 'font-medium text-slate-400',
           )}
           aria-hidden="true"
         >

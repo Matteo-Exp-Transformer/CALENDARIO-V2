@@ -175,6 +175,24 @@ export function computeMenuTotalsFromItems(
   }
 }
 
+export function computeMenuTotalsWithPresetPrice(
+  items: SelectedMenuItem[],
+  numGuests: number,
+  presetPricePerPerson?: number | null,
+): MenuTotalsPayload {
+  if (presetPricePerPerson != null && presetPricePerPerson > 0) {
+    const totalPerPerson = presetPricePerPerson
+    return {
+      totalPerPerson,
+      tiramisuTotal: 0,
+      tiramisuKg: 0,
+      menu_total_booking: totalPerPerson * Math.max(numGuests, 0),
+    }
+  }
+
+  return computeMenuTotalsFromItems(items, numGuests)
+}
+
 /** Menù staff personalizzabile dal cliente (nessuna voce pre-selezionata). */
 export function isGuestComposableStaffPreset(
   presetType: PresetMenuType,

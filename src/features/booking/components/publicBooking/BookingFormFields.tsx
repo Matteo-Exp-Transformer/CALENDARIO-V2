@@ -1,13 +1,12 @@
 import React from 'react'
-import { DateInput } from '@/components/ui/DateInput'
-import { TimePicker24h } from '@/components/ui'
 import type { BookingRequestInput } from '@/types/booking'
 import type { BusinessHours } from '@/lib/businessHours'
 import { isValidBookingDateTime, getDayOfWeek, formatHours } from '@/lib/businessHours'
+import { BookingPublicInsetField } from './BookingPublicInsetField'
 import {
-  BookingPublicInsetField,
-  BookingPublicInsetFieldShell,
-} from './BookingPublicInsetField'
+  BookingPublicDatePickerField,
+  BookingPublicTimePickerField,
+} from './BookingPublicDateTimePickers'
 
 interface BookingFormFieldsProps {
   formData: Pick<
@@ -56,6 +55,44 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
       return `Orario non valido. Orari disponibili: ${formatHours(dayHours)}`
     }
     return null
+  }
+
+  const handleDateChange = (newDate: string) => {
+    onDateChange(newDate)
+    resetAvailability()
+    const timeError = newDate && formData.desired_time
+      ? validateBusinessHours(newDate, formData.desired_time)
+      : null
+    if (timeError) {
+      const dayName = businessHours ? getDayOfWeek(newDate) : null
+      const dayHours = businessHours && dayName ? businessHours[dayName] : null
+      if (dayHours === null || (Array.isArray(dayHours) && dayHours.length === 0)) {
+        setErrors({ ...errors, desired_date: timeError, desired_time: '' })
+      } else {
+        setErrors({ ...errors, desired_date: '', desired_time: timeError })
+      }
+    } else {
+      setErrors({ ...errors, desired_date: '', desired_time: '' })
+    }
+  }
+
+  const handleTimeChange = (newTime: string) => {
+    onTimeChange(newTime)
+    resetAvailability()
+    const timeError = formData.desired_date && newTime
+      ? validateBusinessHours(formData.desired_date, newTime)
+      : null
+    if (timeError) {
+      const dayName = businessHours && formData.desired_date ? getDayOfWeek(formData.desired_date) : null
+      const dayHours = businessHours && dayName ? businessHours[dayName] : null
+      if (dayHours === null || (Array.isArray(dayHours) && dayHours.length === 0)) {
+        setErrors({ ...errors, desired_date: timeError, desired_time: '' })
+      } else {
+        setErrors({ ...errors, desired_date: '', desired_time: timeError })
+      }
+    } else {
+      setErrors({ ...errors, desired_date: '', desired_time: '' })
+    }
   }
 
   return (
@@ -115,40 +152,14 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-start md:gap-3">
         <div className="min-w-0 space-y-1">
-          <BookingPublicInsetFieldShell
+          <BookingPublicDatePickerField
+            id="desired_date"
             label="Data prenotazione *"
-            htmlFor="desired_date"
+            value={formData.desired_date}
+            onChange={handleDateChange}
+            required
             hasError={!!errors.desired_date}
-          >
-            <DateInput
-              id="desired_date"
-              compact
-              bookingForm
-              bookingFormInset
-              className="w-full min-w-0"
-              value={formData.desired_date}
-              onChange={(newDate) => {
-                onDateChange(newDate)
-                resetAvailability()
-                const timeError = newDate && formData.desired_time
-                  ? validateBusinessHours(newDate, formData.desired_time)
-                  : null
-                if (timeError) {
-                  const dayName = businessHours ? getDayOfWeek(newDate) : null
-                  const dayHours = businessHours && dayName ? businessHours[dayName] : null
-                  if (dayHours === null || (Array.isArray(dayHours) && dayHours.length === 0)) {
-                    setErrors({ ...errors, desired_date: timeError, desired_time: '' })
-                  } else {
-                    setErrors({ ...errors, desired_date: '', desired_time: timeError })
-                  }
-                } else {
-                  setErrors({ ...errors, desired_date: '', desired_time: '' })
-                }
-              }}
-              required
-              hasError={!!errors.desired_date}
-            />
-          </BookingPublicInsetFieldShell>
+          />
           {errors.desired_date && (
             <div className="text-sm text-red-600 p-3 rounded-lg bg-red-50 border border-red-200">
               {errors.desired_date}
@@ -157,40 +168,14 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
         </div>
 
         <div className="min-w-0 space-y-1">
-          <BookingPublicInsetFieldShell
+          <BookingPublicTimePickerField
+            id="desired_time"
             label="Ora prenotazione *"
-            htmlFor="desired_time"
+            value={formData.desired_time || '16:00'}
+            onChange={handleTimeChange}
+            required
             hasError={!!errors.desired_time}
-          >
-            <TimePicker24h
-              id="desired_time"
-              compact
-              bookingForm
-              bookingFormInset
-              className="w-full min-w-0"
-              value={formData.desired_time || '16:00'}
-              onChange={(newTime) => {
-                onTimeChange(newTime)
-                resetAvailability()
-                const timeError = formData.desired_date && newTime
-                  ? validateBusinessHours(formData.desired_date, newTime)
-                  : null
-                if (timeError) {
-                  const dayName = businessHours && formData.desired_date ? getDayOfWeek(formData.desired_date) : null
-                  const dayHours = businessHours && dayName ? businessHours[dayName] : null
-                  if (dayHours === null || (Array.isArray(dayHours) && dayHours.length === 0)) {
-                    setErrors({ ...errors, desired_date: timeError, desired_time: '' })
-                  } else {
-                    setErrors({ ...errors, desired_date: '', desired_time: timeError })
-                  }
-                } else {
-                  setErrors({ ...errors, desired_date: '', desired_time: '' })
-                }
-              }}
-              required
-              hasError={!!errors.desired_time}
-            />
-          </BookingPublicInsetFieldShell>
+          />
           {errors.desired_time && (
             <div className="text-sm text-red-600 p-3 rounded-lg bg-red-50 border border-red-200">
               {errors.desired_time}

@@ -128,13 +128,13 @@ export const BookingRequestPage: React.FC = () => {
               <div className="flex flex-col items-center justify-center gap-1.5 text-center">
                 <h1
                   className="font-serif text-warm-wood font-bold leading-tight m-0"
-                  style={{ fontSize: 'clamp(1.4rem, calc(2.8vw * 4 / 3), 1.8rem)' }}
+                  style={{ fontSize: 'clamp(1.4rem, 3.733vw, 1.8rem)' }}
                 >
                   {displayName}
                 </h1>
                 <h2
                   className="font-serif text-warm-wood font-bold leading-tight m-0"
-                  style={{ fontSize: 'clamp(1.27rem, calc(2.5vw * 4 / 3), 1.53rem)' }}
+                  style={{ fontSize: 'clamp(1.27rem, 3.333vw, 1.53rem)' }}
                 >
                   {resolvedConfig.page_title}
                 </h2>

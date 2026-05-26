@@ -24,6 +24,7 @@ export type ComposeMenuItem = {
   description?: string
   sort_order: number
   priceSuffix?: string
+  image_url?: string | null
 }
 
 /**

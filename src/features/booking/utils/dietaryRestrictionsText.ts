@@ -12,7 +12,20 @@ export function dietaryRestrictionsToText(
 
 /** Salva il testo libero come singola voce in dietary_restrictions (JSONB). */
 export function dietaryTextToRestrictions(text: string): DietaryRestriction[] {
-  const trimmed = text.trim()
-  if (!trimmed) return []
-  return [{ restriction: trimmed, guest_count: 1 }]
+  if (!text.trim()) return []
+  return [{ restriction: text, guest_count: 1 }]
+}
+
+/** Trim solo in invio prenotazione — mai in onChange, altrimenti la barra spaziatrice non funziona mentre si digita. */
+export function normalizeDietaryRestrictionsForSubmit(
+  restrictions: DietaryRestriction[] | undefined | null,
+): DietaryRestriction[] {
+  if (!restrictions?.length) return []
+  return restrictions
+    .map((r) => ({
+      ...r,
+      restriction: r.restriction.trim(),
+      notes: r.notes?.trim() || undefined,
+    }))
+    .filter((r) => r.restriction.length > 0 || (r.notes?.length ?? 0) > 0)
 }

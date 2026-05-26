@@ -97,12 +97,20 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
           const isTiramisu = isTiramisuItem(item.name)
           const selection = selectedItems.find((s) => s.id === item.id)
           const inputId = `compose-${categoryKey}-${item.id}`
+          const itemImageSrc = item.image_url?.trim() || undefined
 
           if (locked) {
             return (
               <li key={item.id} className="min-w-0">
-                <div className="flex min-h-[44px] gap-2.5 rounded-xl px-2 py-2">
-                  <ItemPriceRow item={item} formatPrice={formatPrice} />
+                <div className="min-w-0 rounded-xl px-2 py-2">
+                  {itemImageSrc ? (
+                    <div className="mb-2 overflow-hidden rounded-lg border border-black/10 bg-warm-beige/20">
+                      <img src={itemImageSrc} alt="" className="h-[188px] w-full object-cover" loading="lazy" />
+                    </div>
+                  ) : null}
+                  <div className="flex min-h-[44px] gap-2.5">
+                    <ItemPriceRow item={item} formatPrice={formatPrice} />
+                  </div>
                 </div>
                 {isTiramisu && selection?.quantity ? (
                   <p className="mx-2 mb-2 text-xs font-semibold text-warm-wood-dark/80">
@@ -118,20 +126,27 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
               <label
                 htmlFor={inputId}
                 className={cn(
-                  'flex min-h-[44px] cursor-pointer gap-2.5 rounded-xl px-2 py-2 transition-colors',
+                  'flex cursor-pointer flex-col rounded-xl px-2 py-2 transition-colors',
                   isSelected && 'bg-warm-orange/10',
                   !isSelected && 'hover:bg-warm-beige/50',
                 )}
               >
-                <input
-                  id={inputId}
-                  type={useRadioAppearance ? 'radio' : 'checkbox'}
-                  name={useRadioAppearance ? `compose-${categoryKey}` : undefined}
-                  checked={isSelected}
-                  onChange={() => onToggleItem(item)}
-                  className="mt-1 h-4 w-4 shrink-0 accent-warm-orange"
-                />
-                <ItemPriceRow item={item} formatPrice={formatPrice} />
+                {itemImageSrc ? (
+                  <div className="mb-2 overflow-hidden rounded-lg border border-black/10 bg-warm-beige/20">
+                    <img src={itemImageSrc} alt="" className="h-[188px] w-full object-cover" loading="lazy" />
+                  </div>
+                ) : null}
+                <div className="flex min-h-[44px] gap-2.5">
+                  <input
+                    id={inputId}
+                    type={useRadioAppearance ? 'radio' : 'checkbox'}
+                    name={useRadioAppearance ? `compose-${categoryKey}` : undefined}
+                    checked={isSelected}
+                    onChange={() => onToggleItem(item)}
+                    className="mt-1 h-4 w-4 shrink-0 accent-warm-orange"
+                  />
+                  <ItemPriceRow item={item} formatPrice={formatPrice} />
+                </div>
               </label>
 
               {isTiramisu && isSelected ? (
@@ -166,22 +181,17 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
 
   const categoryBody = (
     <>
-      <div
-        className={cn(
-          'relative overflow-hidden rounded-lg bg-warm-beige/40',
-          // In Prenota v2 (mobile) vogliamo che la foto occupi una porzione maggiore del card,
-          // così da restare visibile anche se l'immagine è più "alta" del previsto.
-          isStack ? 'mx-0 mt-0 aspect-square min-h-[250px] rounded-none' : 'mx-3 mt-3 aspect-4/3 rounded-xl',
-        )}
-      >
-        {heroSrc ? (
-          <img src={heroSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-warm-wood/40">
-            <Utensils className={isStack ? 'h-8 w-8' : 'h-10 w-10'} strokeWidth={1.25} />
-          </div>
-        )}
-      </div>
+      {!isStack ? (
+        <div className="relative mx-3 mt-3 aspect-4/3 overflow-hidden rounded-xl bg-warm-beige/40">
+          {heroSrc ? (
+            <img src={heroSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-warm-wood/40">
+              <Utensils className="h-10 w-10" strokeWidth={1.25} />
+            </div>
+          )}
+        </div>
+      ) : null}
 
       {!locked && (
         <div className={cn('text-center', isStack ? 'px-0 py-1.5' : 'px-4 py-2')}>
@@ -210,7 +220,7 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
         >
           <div
             className={cn(
-              'relative h-[76px] w-[76px] shrink-0 overflow-hidden rounded-tl-[10px] bg-warm-beige/40',
+              'relative h-[96px] w-[96px] shrink-0 overflow-hidden rounded-tl-[10px] bg-warm-beige/40',
               !expanded && 'rounded-bl-[10px]',
             )}
           >
@@ -222,22 +232,22 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
               </div>
             )}
           </div>
-          <div className="flex min-w-0 flex-1 items-center py-2 pr-2">
+          <div className="flex min-w-0 flex-1 items-center py-3 pr-3">
             <div className="min-w-0 flex-1">
-              <h3 className="text-xs font-bold uppercase tracking-wide text-warm-wood">{categoryLabel}</h3>
+              <h3 className="text-base font-bold uppercase tracking-wide text-warm-wood">{categoryLabel}</h3>
               {!locked ? (
-                <p className="mt-0.5 text-[10px] font-bold text-warm-orange">{status}</p>
+                <p className="mt-1 text-sm font-bold text-warm-orange">{status}</p>
               ) : selectedCount > 0 ? (
-                <p className="mt-0.5 text-[10px] font-semibold text-warm-wood-dark/70">
+                <p className="mt-1 text-sm font-semibold text-warm-wood-dark/70">
                   {selectedCount} {selectedCount === 1 ? 'piatto' : 'piatti'} nel menù
                 </p>
               ) : (
-                <p className="mt-0.5 text-[10px] font-semibold text-warm-wood-dark/70">Menù preselezionato</p>
+                <p className="mt-1 text-sm font-semibold text-warm-wood-dark/70">Menù preselezionato</p>
               )}
             </div>
             <ChevronDown
               className={cn(
-                'ml-2 h-4 w-4 shrink-0 text-warm-wood transition-transform duration-200',
+                'ml-2 h-5 w-5 shrink-0 text-warm-wood transition-transform duration-200',
                 expanded && 'rotate-180',
               )}
               aria-hidden

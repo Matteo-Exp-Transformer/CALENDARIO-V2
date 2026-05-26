@@ -11,6 +11,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 25-05-26 | UI Prenota v2: card, prezzi preset, data/ora | [Report](Sessioni%20di%20lavoro/25-05-26/Report-prenota-v2-ui-sessione-25-05-26.md) — card tipologia/sottotab più leggibili; prezzo preset × ospiti; totale ingredienti barrato; spazi intolleranze; picker data/ora responsive. |
 | 25-05-26 | UI Prenota v2: layout mobile, ordine sezioni, campi inset | [Report](Sessioni%20di%20lavoro/25-05-26/Report-prenota-v2-ui-sessione-25-05-26.md) — tipologia/menù prima dei dati; card compatte 3 col.; sottotab scroll+frecce; categorie mobile collapse al 75%; label dentro card; rimosso banner menù fisso; `BookingPublicInsetField`. Commit `09a574e` + seguito. |
 | 25-05-26 | UI Prenota v2: sfondo bianco, form, menù compose, intolleranze | [Report](Sessioni%20di%20lavoro/25-05-26/Report-prenota-v2-ui-sessione-25-05-26.md) — label sopra campi, data/ora/ospiti 3 col., intolleranze testo libero sempre visibili, scroll griglia + frecce, menù personalizzabile vuoto / fisso read-only, submit sotto sidebar, fix spazi admin Personalizza form. Commit `2ec770a`–`ab09f9c`. |
 | 25-05-26 | Card categorie menù Prenota v2 (compose grid) | [Report](Sessioni%20di%20lavoro/25-05-26/Report-menu-compose-cards.md) — `BookingMenuComposeGrid` / `BookingMenuCategoryCard`, filtri `menuComposeVisibility`, sidebar con prefisso categoria, menù fisso mostra solo piatti del pacchetto. |

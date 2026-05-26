@@ -1,8 +1,8 @@
 # Report sessione — Pagina Prenota v2: UI form, menù compose, layout mobile
 
-**Data:** 25-05-26 (continuazione layout mobile + campi inset)  
-**Commit su `main`:** `2ec770a`–`ab09f9c` (sessione precedente) · `09a574e` (layout mobile) · `334fd44` (label inset + rimozione banner menù fisso)  
-**Validate:** `npm run typecheck` ✓
+**Data:** 25-05-26 (continuazione layout mobile + campi inset + card altezze + fix intolleranze + picker data/ora)  
+**Commit su `main`:** `2ec770a`–`ab09f9c` (sessione precedente) · `09a574e` · `334fd44` · commit corrente  
+**Validate:** `npm run lint` ✓ · `npm run typecheck` ✓ · `npm run test` ✓
 
 ---
 
@@ -17,6 +17,10 @@
 | **Campi compilazione** | Label sopra, campi a tutta larghezza | **Label dentro la card** (alto sinistra), blocco al **75% centrato**, stessa altezza |
 | **Menù fisso** | Banner «Menù fisso: non modificabile…» | **Banner rimosso** (comportamento invariato: solo consultazione nelle card) |
 | **Larghezza form** | Form stretto e decentrato (cap CSS legacy) | Uso **pieno dello spazio utile**, allineato al contenitore pagina |
+| **Card tipologia** | Più basse, titolo piccolo | **+25% altezza minima**, titolo leggermente più grande |
+| **Card opzioni menù** | Altezza/larghezza non allineate alle tipologia | Più alte, **larghezza = 1/N** come le card sopra, prezzo più leggibile |
+| **Intolleranze (testo libero)** | La barra spaziatrice non inseriva spazi tra le parole | **Spazi funzionanti** mentre si digita; trim solo all’invio |
+| **Data e ora** | Campi nativi dentro card | Card cliccabili con picker controllato: calendario responsive e orario 24h confermato |
 
 ---
 
@@ -65,6 +69,31 @@
 5. **`bookingPublicFieldStyles.ts`** — `BOOKING_PUBLIC_FIELD_BOX`, `INNER_LABEL`, `INNER_INPUT`.
 6. **`DateInput` / `TimePicker24h`** — prop `bookingFormInset` (senza doppio bordo dentro la card).
 
+### Fase C — Altezze card tipologia/sottotab + fix spazi intolleranze
+
+1. **`BookingModeCards.tsx`**
+   - Altezza minima **+25%**: `min-h-[100px]` / `sm:min-h-[110px]`.
+   - Titolo card: `text-[13px]` / `sm:text-base` (prima `11px` / `sm:text-sm`).
+
+2. **`BookingSubTabCards.tsx`**
+   - Altezza card opzioni menù aumentata in più passaggi (prima +20% sulla scala Tailwind, poi tentativo +25% troppo alto → ripristino → valore finale in **px** per stabilità visiva).
+   - Stato attuale nel codice: `min-h-[145px] sm:min-h-[165px]` (da baseline originale `min-h-22` / `min-h-25` + tuning).
+   - Larghezza card allineata alle tipologia sopra: prop `modeCardColumnCount` + `bookingPublicRowCardWidthClass()` da `bookingPublicFieldStyles.ts`.
+   - Tipografia prezzo: `text-[13px]` / `sm:text-[15px]`, più margine sopra il prezzo.
+
+3. **`dietaryRestrictionsText.ts`** + **`BookingRequestForm.tsx`**
+   - **Bug:** `dietaryTextToRestrictions` faceva `text.trim()` a ogni `onChange` → lo spazio in fondo (mentre si passa alla parola successiva) spariva subito.
+   - **Fix:** salvare il testo **senza trim** mentre si digita; `normalizeDietaryRestrictionsForSubmit()` applica trim solo in `mutate` al submit.
+   - Test: `src/features/booking/utils/__tests__/dietaryRestrictionsText.test.ts` (4 casi).
+
+**Nota operativa:** dopo modifiche Tailwind su altezze frazionarie (`min-h-34.8`, ecc.) conviene **hard refresh** (`Ctrl+Shift+R`): in dev a volte HMR non aggiorna subito le utility e sembra un “salto” di altezza doppio.
+
+### Fase D — Picker data/ora pubblico
+
+- Data e ora restano dentro le card del form, ma ora si aprono con un pannello controllato: bottom sheet su mobile, popover su desktop.
+- Il calendario blocca date passate e date oltre fine anno prossimo; l'orario usa ancora `TimePicker24h`, senza reintrodurre input nativo `type="time"`.
+- Il comportamento di validazione/disponibilità resta quello esistente: cambio data/ora resetta il check disponibilità.
+
 ---
 
 ## Domande utente e risposte
@@ -78,6 +107,10 @@
 | Campi stessa larghezza −25%, font come sottotab | `w-3/4`, `text-xs`/`sm:text-sm` bold |
 | Rimuovere testo menù fisso | Rimosso banner in `MenuSelection` |
 | Label dentro la card, allineate alto sinistra | `BookingPublicInsetField` |
+| Card tipologia più alte (+25%) | `BookingModeCards` — `min-h-[100px]` / `sm:min-h-[110px]` |
+| Card menù più alte, larghezza come tipologia | `BookingSubTabCards` — `min-h-[145px]` / `sm:min-h-[165px]`, `bookingPublicRowCardWidthClass` |
+| Spazi nel campo intolleranze | `dietaryTextToRestrictions` senza trim in onChange; trim al submit |
+| Migliorare data e ora | Card con picker responsive; niente input nativo orario |
 
 ---
 
@@ -86,6 +119,8 @@
 | Comando | Risultato |
 |---------|-----------|
 | `npm run typecheck` | ✓ (dopo fix tipi su `BookingPublicInsetField`) |
+| `vitest run …/dietaryRestrictionsText.test.ts` | ✓ 4/4 (Fase C) |
+| `npm run lint` / `typecheck` / `test` | ✓ dopo picker data/ora |
 
 ---
 
@@ -97,7 +132,7 @@
 
 ---
 
-## File toccati (tutti i commit della continuazione)
+## File toccati (Fase A–B committate + Fase C working tree)
 
 ```
 src/features/booking/components/BookingRequestForm.tsx
@@ -109,8 +144,11 @@ src/features/booking/components/publicBooking/BookingSubTabCards.tsx
 src/features/booking/components/publicBooking/BookingMenuComposeGrid.tsx
 src/features/booking/components/publicBooking/BookingMenuCategoryCard.tsx
 src/features/booking/components/publicBooking/BookingSummarySidebar.tsx
+src/features/booking/components/publicBooking/BookingPublicDateTimePickers.tsx
 src/features/booking/components/publicBooking/BookingPublicInsetField.tsx
 src/features/booking/constants/bookingPublicFieldStyles.ts
+src/features/booking/utils/dietaryRestrictionsText.ts
+src/features/booking/utils/__tests__/dietaryRestrictionsText.test.ts
 src/components/ui/DateInput.tsx
 src/components/ui/TimePicker24h.tsx
 src/index.css
