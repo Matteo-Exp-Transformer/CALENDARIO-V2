@@ -17,6 +17,8 @@ export interface TimePicker24hProps extends Omit<React.HTMLAttributes<HTMLDivEle
   compact?: boolean
   /** Tipografia come card sottotab su /prenota */
   bookingForm?: boolean
+  /** Dentro card con label interna: senza bordo esterno */
+  bookingFormInset?: boolean
 }
 
 function splitParts(raw: string): { hour: number | null; minute: number | null } {
@@ -46,6 +48,7 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
       minuteAriaLabel = 'Minuti',
       compact = false,
       bookingForm = false,
+      bookingFormInset = false,
       className,
       style,
       ...divProps
@@ -84,17 +87,18 @@ export const TimePicker24h = React.forwardRef<HTMLDivElement, TimePicker24hProps
           ...(style as React.CSSProperties | undefined),
         }}
         className={cn(
-          '[color-scheme:light] isolate flex w-full items-center !bg-white text-slate-900 shadow-sm',
-          compact
+          '[color-scheme:light] isolate flex w-full items-center !bg-white text-slate-900',
+          bookingFormInset ? 'min-h-0 gap-1.5 border-0 bg-transparent p-0 shadow-none' : 'shadow-sm',
+          compact && !bookingFormInset
             ? cn(
                 'min-h-[3rem] gap-2 rounded-2xl px-3 py-2',
                 bookingForm ? 'text-xs font-bold text-warm-wood sm:text-sm' : 'text-base sm:text-sm',
               )
-            : 'min-h-[3.5rem] gap-2 rounded-[1.25rem] px-4 py-3 text-sm',
-          hasError ? 'border-2 !border-red-500' : 'border border-[rgba(0,0,0,0.2)]',
+            : !bookingFormInset && 'min-h-[3.5rem] gap-2 rounded-[1.25rem] px-4 py-3 text-sm',
+          !bookingFormInset && (hasError ? 'border-2 !border-red-500' : 'border border-[rgba(0,0,0,0.2)]'),
           '[&_select]:!bg-white [&_select]:text-slate-900',
           'focus-within:outline-none',
-          !hasError && 'focus-within:border-[#8B6914]',
+          !bookingFormInset && !hasError && 'focus-within:border-[#8B6914]',
           hasError &&
             'focus-within:border-red-600 focus-within:!border-red-600 focus-within:ring-2 focus-within:ring-red-500/35',
           disabled && '!cursor-not-allowed',

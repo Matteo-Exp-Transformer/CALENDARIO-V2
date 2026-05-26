@@ -2,11 +2,7 @@ import React from 'react'
 import { Input } from '@/components/ui'
 import { Link } from 'react-router-dom'
 import { Check } from 'lucide-react'
-import {
-  BOOKING_PUBLIC_CONTENT_WIDTH,
-  BOOKING_PUBLIC_FIELD_INPUT,
-  BOOKING_PUBLIC_LABEL_CLASS,
-} from '@/features/booking/constants/bookingPublicFieldStyles'
+import { BookingPublicInsetField } from './publicBooking/BookingPublicInsetField'
 
 interface DietaryRestrictionsSectionProps {
   dietaryText: string
@@ -40,39 +36,52 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
   omitSpecialRequestsSection = false,
   publicFormFields = false,
 }) => {
-  const controlClass = publicFormFields ? `${BOOKING_PUBLIC_FIELD_INPUT} w-full` : CONTROL_CLASS
-  const labelClass = publicFormFields ? BOOKING_PUBLIC_LABEL_CLASS : FIELD_LABEL_CLASS
-  const wrap = (node: React.ReactNode) =>
-    publicFormFields ? <div className={BOOKING_PUBLIC_CONTENT_WIDTH}>{node}</div> : node
-
   return (
     <div className={publicFormFields ? 'w-full space-y-5' : 'space-y-5'}>
       <div className="space-y-1">
-        <label htmlFor="dietary-notes" className={labelClass}>
-          Intolleranze o esigenze alimentari
-        </label>
-        {wrap(
-          <Input
+        {publicFormFields ? (
+          <BookingPublicInsetField
             id="dietary-notes"
+            label="Intolleranze o esigenze alimentari"
             value={dietaryText}
-            onChange={(e) => onDietaryTextChange(e.target.value)}
-            className={controlClass}
-          />,
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onDietaryTextChange(e.target.value)}
+          />
+        ) : (
+          <>
+            <label htmlFor="dietary-notes" className={FIELD_LABEL_CLASS}>
+              Intolleranze o esigenze alimentari
+            </label>
+            <Input
+              id="dietary-notes"
+              value={dietaryText}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onDietaryTextChange(e.target.value)}
+              className={CONTROL_CLASS}
+            />
+          </>
         )}
       </div>
 
       {!omitSpecialRequestsSection && (
         <div className="space-y-1">
-          <label htmlFor="special_requests" className={labelClass}>
-            Altre Richieste
-          </label>
-          {wrap(
-            <Input
+          {publicFormFields ? (
+            <BookingPublicInsetField
               id="special_requests"
+              label="Altre Richieste"
               value={specialRequests}
               onChange={(e) => onSpecialRequestsChange(e.target.value)}
-              className={controlClass}
-            />,
+            />
+          ) : (
+            <>
+              <label htmlFor="special_requests" className={FIELD_LABEL_CLASS}>
+                Altre Richieste
+              </label>
+              <Input
+                id="special_requests"
+                value={specialRequests}
+                onChange={(e) => onSpecialRequestsChange(e.target.value)}
+                className={CONTROL_CLASS}
+              />
+            </>
           )}
         </div>
       )}

@@ -636,12 +636,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         </div>
       )}
 
-      {menuSelectionLocked && !hideMenuGrid && (
-        <p className="mx-auto mt-3 max-w-xl rounded-xl border border-warm-beige bg-white/85 px-4 py-2 text-center text-xs text-warm-wood-dark/80 sm:text-sm">
-          Menù fisso: gli ingredienti sono quelli del pacchetto scelto e non possono essere modificati.
-        </p>
-      )}
-
       {/* Card orizzontali per categoria (mockup CREA IL TUO MENU) */}
       {!hideMenuGrid && (
         <div className={cn('mt-4 w-full min-w-0', publicFormLayout && 'flex flex-col items-center')}>

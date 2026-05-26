@@ -11,6 +11,8 @@ interface DateInputProps {
   compact?: boolean
   /** Tipografia come card sottotab su /prenota (text-xs font-bold, sm:text-sm) */
   bookingForm?: boolean
+  /** Dentro card con label interna: senza bordo esterno */
+  bookingFormInset?: boolean
 }
 
 export const DateInput: React.FC<DateInputProps> = ({
@@ -22,6 +24,7 @@ export const DateInput: React.FC<DateInputProps> = ({
   hasError = false,
   compact = false,
   bookingForm = false,
+  bookingFormInset = false,
 }) => {
   // Parse current value or use defaults
   const [year, month, day] = value
@@ -83,7 +86,7 @@ export const DateInput: React.FC<DateInputProps> = ({
     onChange(newValue)
   }
 
-  const containerClass = `date-input-container ${hasError ? 'error' : ''} ${compact ? 'date-input-container--compact' : ''} ${bookingForm ? 'date-input-container--booking-form' : ''} ${className}`.trim()
+  const containerClass = `date-input-container ${hasError ? 'error' : ''} ${compact ? 'date-input-container--compact' : ''} ${bookingForm ? 'date-input-container--booking-form' : ''} ${bookingFormInset ? 'date-input-container--booking-form-inset' : ''} ${className}`.trim()
 
   return (
     <>
@@ -248,6 +251,26 @@ export const DateInput: React.FC<DateInputProps> = ({
           .date-input-container--booking-form,
           .date-input-container--booking-form select,
           .date-input-container--booking-form span {
+            font-size: 14px !important;
+          }
+        }
+        .date-input-container--booking-form-inset {
+          height: auto !important;
+          min-height: 0 !important;
+          border: none !important;
+          padding: 0 !important;
+          background: transparent !important;
+          backdrop-filter: none !important;
+          max-width: none !important;
+        }
+        .date-input-container--booking-form-inset select,
+        .date-input-container--booking-form-inset span {
+          font-size: 12px !important;
+          font-weight: 700 !important;
+        }
+        @media (min-width: 640px) {
+          .date-input-container--booking-form-inset select,
+          .date-input-container--booking-form-inset span {
             font-size: 14px !important;
           }
         }
