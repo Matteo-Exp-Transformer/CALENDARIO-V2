@@ -22,7 +22,11 @@ import { Label } from '@/components/ui/Label'
 import { cn } from '@/lib/utils'
 import { useMenuItems } from '@/features/booking/hooks/useMenuItems'
 import { useMenuCategories } from '@/features/booking/hooks/useMenuCategories'
-import { MenuQrCarouselSection } from '@/features/booking/components/MenuHomepageConfigPanel'
+import {
+  CAROUSEL_SLIDE_TITLE_MAX,
+  CarouselAddPhotoBlock,
+} from '@/features/booking/components/MenuHomepageConfigPanel'
+import type { CarouselItem } from '@/types/menu'
 import {
   useRestaurantSetting,
   useUpsertRestaurantSetting,
@@ -43,7 +47,6 @@ import {
   type SubTab,
   type SubTabIcon,
 } from '@/features/booking/constants/bookingPublicFormConfig'
-import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
 import { normalizeMenuItemBookingTypes, type MenuItem } from '@/types/menu'
 import { toast } from 'react-toastify'
 import {
@@ -64,6 +67,48 @@ const ICON_OPTIONS: { value: BookingModeIcon; label: string }[] = [
   { value: 'cake', label: 'Dolce' },
   { value: 'martini', label: 'Cocktail' },
 ]
+
+const SUB_TAB_LABEL_MAX = 60
+const SUB_TAB_DESCRIPTION_MAX = 80
+
+const charCountClass = 'text-right text-[11px] text-slate-400 tabular-nums'
+
+function AdminFieldWithCharCount({
+  id,
+  label,
+  value,
+  maxLength,
+  onChange,
+  placeholder,
+  className,
+}: {
+  id?: string
+  label: string
+  value: string
+  maxLength: number
+  onChange: (value: string) => void
+  placeholder?: string
+  className?: string
+}) {
+  return (
+    <div className={cn('w-full min-w-0 space-y-1.5', className)}>
+      <Label htmlFor={id} className="block text-sm">
+        {label}
+      </Label>
+      <Input
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
+        maxLength={maxLength}
+        placeholder={placeholder}
+        className="w-full"
+      />
+      <p className={charCountClass}>
+        {value.length}/{maxLength}
+      </p>
+    </div>
+  )
+}
 
 const SUB_TAB_ICON_OPTIONS: { value: SubTabIcon; label: string }[] = [
   { value: 'utensils', label: 'Posate' },
@@ -101,13 +146,53 @@ function newSubTab(display: SubTab['display']): SubTab {
     display,
     label: display === 'carousel' ? 'Carosello' : 'Card a scorrimento',
     icon: 'utensils',
-    hidden_category_keys: [],
-    hidden_item_ids: [],
+    ...(display === 'cards'
+      ? { hidden_category_keys: [], hidden_item_ids: [] }
+      : {}),
   }
 }
 
 function bookingTypeUsesMenuItems(bookingType: BookingMode['booking_type'], items: MenuItem[]): boolean {
   return items.some((item) => normalizeMenuItemBookingTypes(item.booking_types).includes(bookingType))
+}
+
+function SubTabsDisplayHelpPanel() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <button
+      type="button"
+      onClick={() => setOpen((prev) => !prev)}
+      aria-expanded={open}
+      className={cn(
+        'flex w-full rounded-lg border border-blue-200 bg-blue-50 text-left text-blue-800',
+        open
+          ? 'items-start gap-2 px-4 py-3 text-sm'
+          : 'items-center gap-2 px-3 py-2 text-sm font-semibold',
+      )}
+    >
+      <span
+        aria-hidden
+        className={cn(
+          'flex shrink-0 items-center justify-center rounded-full border border-blue-300 bg-white text-xs font-bold text-blue-700',
+          open ? 'mt-0.5 h-5 w-5' : 'h-5 w-5',
+        )}
+      >
+        ?
+      </span>
+      {!open ? (
+        <span>Dettagli</span>
+      ) : (
+        <span className="min-w-0 space-y-2">
+          <span className="block font-medium">Scegli se mostrare:</span>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            <li>Card a scorrimento, per descrivere offerte al cliente</li>
+            <li>Carosello, per mostrare immagini con testo ai clienti</li>
+          </ul>
+        </span>
+      )}
+    </button>
+  )
 }
 
 type BookingFormConfigPanelProps = {
@@ -131,7 +216,6 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   const { registerUnsavedSource, clearUnsavedSource } = useUnsavedChangesGuard()
   const { data: savedConfig } = useRestaurantSetting('booking_public_form_config')
   const { data: restaurantName } = useRestaurantSetting('restaurant_name')
-  const { data: customPresetsRaw } = useRestaurantSetting('booking_custom_staff_presets')
   const { data: menuItems = [] } = useMenuItems()
   const { data: menuCategories = [] } = useMenuCategories()
   const upsert = useUpsertRestaurantSetting()
@@ -152,6 +236,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   const [expandedMode, setExpandedMode] = useState<string | null>(null)
   const [draftSubTabsByMode, setDraftSubTabsByMode] = useState<Record<string, SubTab | null>>({})
   const [expandedSubTabByMode, setExpandedSubTabByMode] = useState<Record<string, string | null>>({})
+  /** Titolo slide digitato prima della prima foto (poi applicato al primo item). */
+  const pendingSlideTitleByTabRef = useRef<Record<string, string>>({})
 
   useEffect(() => {
     if (savedConfig && !headerDirty && !modesDirty) {
@@ -241,50 +327,6 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
   const cancelDraftSubTab = (modeId: string) => {
     setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
-  }
-
-  const importPresetIntoSubTab = (modeId: string, subTabId: string, presetId: string) => {
-    const preset = allPresets.find((p) => p.id === presetId)
-    if (!preset) return
-    updateSubTab(modeId, subTabId, {
-      preset_id: preset.id,
-      label: preset.name,
-      description: preset.description?.trim() || undefined,
-      price_per_person: preset.price_per_person && preset.price_per_person > 0 ? preset.price_per_person : undefined,
-      hidden_item_ids: menuItems
-        .filter((item) => !preset.item_ids.includes(item.id))
-        .map((item) => item.id),
-      hidden_category_keys: [],
-    })
-  }
-
-  const importPresetIntoDraftSubTab = (modeId: string, presetId: string) => {
-    const preset = allPresets.find((p) => p.id === presetId)
-    if (!preset) return
-    updateDraftSubTab(modeId, {
-      preset_id: preset.id,
-      label: preset.name,
-      description: preset.description?.trim() || undefined,
-      price_per_person: preset.price_per_person && preset.price_per_person > 0 ? preset.price_per_person : undefined,
-      hidden_item_ids: menuItems
-        .filter((item) => !preset.item_ids.includes(item.id))
-        .map((item) => item.id),
-      hidden_category_keys: [],
-    })
-  }
-
-  const toggleSubTabCategory = (modeId: string, tab: SubTab, categoryKey: string) => {
-    const hidden = new Set(tab.hidden_category_keys ?? [])
-    if (hidden.has(categoryKey)) hidden.delete(categoryKey)
-    else hidden.add(categoryKey)
-    updateSubTab(modeId, tab.id, { hidden_category_keys: Array.from(hidden) })
-  }
-
-  const toggleSubTabItem = (modeId: string, tab: SubTab, itemId: string) => {
-    const hidden = new Set(tab.hidden_item_ids ?? [])
-    if (hidden.has(itemId)) hidden.delete(itemId)
-    else hidden.add(itemId)
-    updateSubTab(modeId, tab.id, { hidden_item_ids: Array.from(hidden) })
   }
 
   const removeSubTab = (modeId: string, subTabId: string) => {
@@ -440,8 +482,13 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     onCancelBookingBackground?.()
   }
 
-  const allPresets: CustomStaffPreset[] = Array.isArray(customPresetsRaw) ? customPresetsRaw : []
   const headerStyles = config.header_styles ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles
+
+  const getSubTabEditorTitle = (tab: SubTab, number: number, isDraft: boolean) => {
+    if (tab.display === 'carousel') return `Carosello ${number}`
+    if (isDraft) return `Nuova Card ${number}`
+    return `Card ${number}`
+  }
   const headerControlClass =
     'rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-300'
 
@@ -522,15 +569,15 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   const renderSubTabEditor = ({
     mode,
     tab,
-    relevantPresets,
-    index,
+    subTabNumber,
     isDraft,
+    headerActions,
   }: {
     mode: BookingMode
     tab: SubTab
-    relevantPresets: CustomStaffPreset[]
-    index: number
+    subTabNumber: number
     isDraft: boolean
+    headerActions?: React.ReactNode
   }) => {
     const patchTab = (patch: Partial<SubTab>) => {
       if (isDraft) updateDraftSubTab(mode.id, patch)
@@ -549,47 +596,92 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       patchTab({ hidden_item_ids: Array.from(hidden) })
     }
 
+    const editorTitle = getSubTabEditorTitle(tab, subTabNumber, isDraft)
+
     return (
-      <div className="rounded-lg border border-slate-200 p-4 space-y-3 bg-slate-50/50">
+      <div className="w-full min-w-0 rounded-lg border border-slate-200 bg-slate-50/50 p-4 md:p-5 space-y-4">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-slate-600 uppercase">
-            {tab.display === 'carousel' ? 'Carosello' : 'Card'} {isDraft ? 'nuovo' : index + 1}
-          </span>
-          {!isDraft && (
-            <button
-              type="button"
-              title="Elimina"
-              onClick={() => removeSubTab(mode.id, tab.id)}
-              className="p-1.5 rounded border border-red-200 text-red-600 hover:bg-red-50"
-            >
-              <TrashIcon weight="regular" className="h-4 w-4" />
-            </button>
-          )}
+          <span className="text-xs font-semibold text-slate-600 uppercase">{editorTitle}</span>
+          {headerActions ??
+            (!isDraft ? (
+              <button
+                type="button"
+                title="Elimina"
+                onClick={() => removeSubTab(mode.id, tab.id)}
+                className="p-1.5 rounded border border-red-200 text-red-600 hover:bg-red-50"
+              >
+                <TrashIcon weight="regular" className="h-4 w-4" />
+              </button>
+            ) : null)}
         </div>
 
-        <div>
-          <Label className="block mb-1 text-sm">Etichetta card</Label>
-          <Input
-            value={tab.label}
-            onChange={(e) => patchTab({ label: e.target.value })}
-            maxLength={60}
-            placeholder="Nome mostrato al cliente"
+        <AdminFieldWithCharCount
+          label="Etichetta card"
+          value={tab.label}
+          maxLength={SUB_TAB_LABEL_MAX}
+          onChange={(label) => patchTab({ label })}
+          placeholder="Nome mostrato al cliente"
+        />
+
+        {tab.display === 'carousel' && (
+          <AdminFieldWithCharCount
+            label="Titolo slide"
+            value={
+              tab.carousel_items?.[0]?.title ??
+              pendingSlideTitleByTabRef.current[tab.id] ??
+              ''
+            }
+            maxLength={CAROUSEL_SLIDE_TITLE_MAX}
+            onChange={(title) => {
+              const clipped = title.slice(0, CAROUSEL_SLIDE_TITLE_MAX)
+              const items = tab.carousel_items ?? []
+              if (items.length === 0) {
+                pendingSlideTitleByTabRef.current[tab.id] = clipped
+                return
+              }
+              delete pendingSlideTitleByTabRef.current[tab.id]
+              const next: CarouselItem[] = items.map((it, i) =>
+                i === 0 ? { ...it, title: clipped || undefined } : it,
+              )
+              patchTab({ carousel_items: next })
+            }}
+            placeholder="es. Tonno in crosta"
           />
-        </div>
+        )}
 
-        <div>
-          <Label className="block mb-1 text-sm">Icona</Label>
-          <div className="flex gap-2 flex-wrap">
+        {tab.display === 'carousel' && tenantId && (
+          <CarouselAddPhotoBlock
+            tenantId={tenantId}
+            menuQrCodeId={null}
+            draftShortCode={`booking-form-${mode.id}-${tab.id}`}
+            items={tab.carousel_items ?? []}
+            onChange={(items) => {
+              const pending = pendingSlideTitleByTabRef.current[tab.id]?.trim()
+              let next = items
+              if (pending && items.length > 0 && !items[0].title?.trim()) {
+                next = items.map((it, i) =>
+                  i === 0 ? { ...it, title: pending } : it,
+                )
+                delete pendingSlideTitleByTabRef.current[tab.id]
+              }
+              patchTab({ carousel_items: next })
+            }}
+          />
+        )}
+
+        <div className="w-full min-w-0 space-y-1.5">
+          <Label className="block text-sm">Icona</Label>
+          <div className="flex flex-wrap gap-2">
             {SUB_TAB_ICON_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => patchTab({ icon: opt.value })}
                 className={cn(
-                  'flex items-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-semibold',
+                  'flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold',
                   tab.icon === opt.value
                     ? 'border-primary-500 bg-primary-50 text-primary-700'
-                    : 'border-slate-200 text-slate-600',
+                    : 'border-slate-200 bg-white text-slate-600',
                 )}
               >
                 <SubTabIconOption icon={opt.value} className="h-3 w-3" />
@@ -599,42 +691,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           </div>
         </div>
 
-        <div>
-          <Label className="block mb-1 text-sm">Importa menù preselezionato</Label>
-          {relevantPresets.length > 0 ? (
-            <select
-              value={tab.preset_id ?? ''}
-              onChange={(e) => {
-                const presetId = e.target.value
-                if (presetId) {
-                  if (isDraft) importPresetIntoDraftSubTab(mode.id, presetId)
-                  else importPresetIntoSubTab(mode.id, tab.id, presetId)
-                } else {
-                  patchTab({
-                    preset_id: undefined,
-                    hidden_category_keys: [],
-                    hidden_item_ids: [],
-                  })
-                }
-              }}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-            >
-              <option value="">Compila manualmente</option>
-              {relevantPresets.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <p className="text-xs text-slate-500">
-              Nessun menù preselezionato per questa modalità (tab Menu in admin).
-            </p>
-          )}
-        </div>
-
-        <div>
-          <Label className="block mb-1 text-sm">Prezzo a persona (opzionale)</Label>
+        <div className="w-full min-w-0 space-y-1.5">
+          <Label className="block text-sm">Prezzo a persona (opzionale)</Label>
           <Input
             type="number"
             min={0}
@@ -647,39 +705,25 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
               })
             }}
             placeholder="es. 45"
+            className="w-full max-w-xs"
           />
         </div>
 
-        <div>
-          <Label className="block mb-1 text-sm">Descrizione breve (opzionale)</Label>
-          <Input
-            value={tab.description ?? ''}
-            onChange={(e) =>
-              patchTab({
-                description: e.target.value === '' ? undefined : e.target.value,
-              })
-            }
-            maxLength={80}
-            placeholder="Sottotitolo sulla card"
-          />
-        </div>
+        <AdminFieldWithCharCount
+          label="Descrizione breve (opzionale)"
+          value={tab.description ?? ''}
+          maxLength={SUB_TAB_DESCRIPTION_MAX}
+          onChange={(description) =>
+            patchTab({
+              description: description === '' ? undefined : description,
+            })
+          }
+          placeholder="Sottotitolo sulla card"
+        />
 
-        {tab.display === 'carousel' && tenantId && (
-          <div className="rounded-lg border border-slate-200 bg-white p-3">
-            <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-700">
-              Carosello specialità
-            </h4>
-            <MenuQrCarouselSection
-              tenantId={tenantId}
-              menuQrCodeId={null}
-              draftShortCode={`booking-form-${mode.id}-${tab.id}`}
-              items={tab.carousel_items ?? []}
-              onChange={(items) => patchTab({ carousel_items: items })}
-            />
-          </div>
-        )}
-
-        {tab.preset_id && bookingTypeUsesMenuItems(mode.booking_type, menuItems) && (
+        {tab.display === 'cards' &&
+          tab.preset_id &&
+          bookingTypeUsesMenuItems(mode.booking_type, menuItems) && (
           <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-3">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-700">
               Categorie e ingredienti visibili
@@ -845,13 +889,6 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           {config.booking_modes.map((mode) => {
             const isOpen = expandedMode === mode.id
 
-            const relevantPresets = allPresets.filter(
-              (p) =>
-                p.visible_on_booking !== false &&
-                Array.isArray(p.booking_types) &&
-                (p.booking_types as string[]).includes(mode.booking_type),
-            )
-
             const subTabs = mode.sub_tabs ?? []
             const draftSubTab = draftSubTabsByMode[mode.id] ?? null
             const expandedSubTabId = expandedSubTabByMode[mode.id] ?? null
@@ -947,9 +984,14 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                         type="button"
                         role="switch"
                         aria-checked={mode.sub_tabs_enabled}
-                        onClick={() =>
-                          updateMode(mode.id, { sub_tabs_enabled: !mode.sub_tabs_enabled })
-                        }
+                        onClick={() => {
+                          const nextEnabled = !mode.sub_tabs_enabled
+                          if (!nextEnabled) {
+                            cancelDraftSubTab(mode.id)
+                            setExpandedSubTabByMode((prev) => ({ ...prev, [mode.id]: null }))
+                          }
+                          updateMode(mode.id, { sub_tabs_enabled: nextEnabled })
+                        }}
                         className={cn(
                           'relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400',
                           mode.sub_tabs_enabled
@@ -966,17 +1008,13 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                       </button>
                     </div>
 
-                    {mode.sub_tabs_enabled && (
-                      <div className="space-y-4">
-                        <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 text-left">
-                          <p className="font-medium">Scegli se mostrare:</p>
-                          <ul className="mt-2 list-disc space-y-1 pl-5">
-                            <li>Card a scorrimento, per descrivere offerte al cliente</li>
-                            <li>Carosello, per mostrare immagini con testo ai clienti</li>
-                          </ul>
-                        </div>
+                    <div className="-mt-2">
+                      <SubTabsDisplayHelpPanel />
+                    </div>
 
-                        <div className="flex flex-wrap gap-2">
+                    {mode.sub_tabs_enabled && (
+                      <>
+                        <div className="mt-7 flex flex-wrap gap-2">
                           <Button
                             type="button"
                             variant="outline"
@@ -996,23 +1034,22 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                         </div>
 
                         {draftSubTab && (
-                          <div className="space-y-2">
+                          <div className="mt-4 w-full min-w-0">
                             {renderSubTabEditor({
                               mode,
                               tab: draftSubTab,
-                              relevantPresets,
-                              index: 0,
+                              subTabNumber: subTabs.length + 1,
                               isDraft: true,
                             })}
                           </div>
                         )}
 
                         {subTabs.length === 0 && !draftSubTab ? (
-                          <p className="text-xs text-slate-500">
+                          <p className="mt-4 text-xs text-slate-500">
                             Nessuna sottotab: aggiungine almeno una o disattiva l&apos;opzione sopra.
                           </p>
                         ) : (
-                          <div className="space-y-3">
+                          <div className="mt-4 w-full min-w-0 space-y-3">
                             {subTabs.map((tab, tabIdx) => {
                               const savedOpen = expandedSubTabId === tab.id
                               if (!savedOpen) {
@@ -1030,7 +1067,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                     >
                                       <span className="min-w-0">
                                         <span className="block text-xs font-semibold uppercase text-slate-500">
-                                          {tab.display === 'carousel' ? 'Carosello' : 'Card'}
+                                          {getSubTabEditorTitle(tab, tabIdx + 1, false)}
                                         </span>
                                         <span className="block truncate text-sm font-semibold text-slate-800">
                                           {tab.label || 'Senza etichetta'}
@@ -1044,262 +1081,50 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                 )
                               }
                               return (
-                              <div
-                                key={tab.id}
-                                className="rounded-lg border border-slate-200 p-4 space-y-3 bg-slate-50/50"
-                              >
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="text-xs font-semibold text-slate-600 uppercase">
-                                    {tab.display === 'carousel' ? 'Carosello' : 'Card a scorrimento'} {tabIdx + 1}
-                                  </span>
-                                  <div className="flex items-center gap-1">
-                                    <button
-                                      type="button"
-                                      title="Sposta su"
-                                      disabled={tabIdx === 0}
-                                      onClick={() => moveSubTab(mode.id, tab.id, 'up')}
-                                      className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40"
-                                    >
-                                      <CaretUpIcon weight="regular" className="h-4 w-4" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      title="Sposta giù"
-                                      disabled={tabIdx === subTabs.length - 1}
-                                      onClick={() => moveSubTab(mode.id, tab.id, 'down')}
-                                      className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40"
-                                    >
-                                      <CaretDownIcon weight="regular" className="h-4 w-4" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      title="Elimina"
-                                      onClick={() => removeSubTab(mode.id, tab.id)}
-                                      className="p-1.5 rounded border border-red-200 text-red-600 hover:bg-red-50"
-                                    >
-                                      <TrashIcon weight="regular" className="h-4 w-4" />
-                                    </button>
-                                  </div>
+                                <div key={tab.id} className="w-full min-w-0">
+                                  {renderSubTabEditor({
+                                    mode,
+                                    tab,
+                                    subTabNumber: tabIdx + 1,
+                                    isDraft: false,
+                                    headerActions: (
+                                      <div className="flex items-center gap-1">
+                                        <button
+                                          type="button"
+                                          title="Sposta su"
+                                          disabled={tabIdx === 0}
+                                          onClick={() => moveSubTab(mode.id, tab.id, 'up')}
+                                          className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40"
+                                        >
+                                          <CaretUpIcon weight="regular" className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          title="Sposta giù"
+                                          disabled={tabIdx === subTabs.length - 1}
+                                          onClick={() => moveSubTab(mode.id, tab.id, 'down')}
+                                          className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40"
+                                        >
+                                          <CaretDownIcon weight="regular" className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          title="Elimina"
+                                          onClick={() => removeSubTab(mode.id, tab.id)}
+                                          className="p-1.5 rounded border border-red-200 text-red-600 hover:bg-red-50"
+                                        >
+                                          <TrashIcon weight="regular" className="h-4 w-4" />
+                                        </button>
+                                      </div>
+                                    ),
+                                  })}
                                 </div>
-
-                                <div>
-                                  <Label className="block mb-1 text-sm">Etichetta card</Label>
-                                  <Input
-                                    value={tab.label}
-                                    onChange={(e) =>
-                                      updateSubTab(mode.id, tab.id, { label: e.target.value })
-                                    }
-                                    maxLength={60}
-                                    placeholder="Nome mostrato al cliente"
-                                  />
-                                </div>
-
-                                <div>
-                                  <Label className="block mb-1 text-sm">Icona</Label>
-                                  <div className="flex gap-2 flex-wrap">
-                                    {SUB_TAB_ICON_OPTIONS.map((opt) => (
-                                      <button
-                                        key={opt.value}
-                                        type="button"
-                                        onClick={() =>
-                                          updateSubTab(mode.id, tab.id, { icon: opt.value })
-                                        }
-                                        className={cn(
-                                          'flex items-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-semibold',
-                                          tab.icon === opt.value
-                                            ? 'border-primary-500 bg-primary-50 text-primary-700'
-                                            : 'border-slate-200 text-slate-600',
-                                        )}
-                                      >
-                                        <SubTabIconOption icon={opt.value} className="h-3 w-3" />
-                                        {opt.label}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                <div>
-                                  <Label className="block mb-1 text-sm">Importa menù preselezionato</Label>
-                                  {relevantPresets.length > 0 ? (
-                                    <select
-                                      value={tab.preset_id ?? ''}
-                                      onChange={(e) => {
-                                        const presetId = e.target.value
-                                        if (presetId) {
-                                          importPresetIntoSubTab(mode.id, tab.id, presetId)
-                                        } else {
-                                          updateSubTab(mode.id, tab.id, {
-                                            preset_id: undefined,
-                                            hidden_category_keys: [],
-                                            hidden_item_ids: [],
-                                          })
-                                        }
-                                      }}
-                                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                                    >
-                                      <option value="">Compila manualmente</option>
-                                      {relevantPresets.map((p) => (
-                                        <option key={p.id} value={p.id}>
-                                          {p.name}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  ) : (
-                                    <p className="text-xs text-slate-500">
-                                      Nessun menù preselezionato per questa modalità (tab Menu in admin).
-                                    </p>
-                                  )}
-                                </div>
-
-                                <div>
-                                  <Label className="block mb-1 text-sm">Prezzo a persona (opzionale)</Label>
-                                  <Input
-                                    type="number"
-                                    min={0}
-                                    step={0.01}
-                                    value={tab.price_per_person ?? ''}
-                                    onChange={(e) => {
-                                      const v = e.target.value
-                                      updateSubTab(mode.id, tab.id, {
-                                        price_per_person:
-                                          v === '' ? undefined : Math.max(0, parseFloat(v) || 0),
-                                      })
-                                    }}
-                                    placeholder="es. 45"
-                                  />
-                                </div>
-
-                                <div>
-                                  <Label className="block mb-1 text-sm">Descrizione breve (opzionale)</Label>
-                                  <Input
-                                    value={tab.description ?? ''}
-                                    onChange={(e) =>
-                                      updateSubTab(mode.id, tab.id, {
-                                        description:
-                                          e.target.value === '' ? undefined : e.target.value,
-                                      })
-                                    }
-                                    maxLength={80}
-                                    placeholder="Sottotitolo sulla card"
-                                  />
-                                </div>
-
-                                {tab.display === 'carousel' && tenantId && (
-                                  <div className="rounded-lg border border-slate-200 bg-white p-3">
-                                    <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-700">
-                                      Carosello specialità
-                                    </h4>
-                                    <MenuQrCarouselSection
-                                      tenantId={tenantId}
-                                      menuQrCodeId={null}
-                                      draftShortCode={`booking-form-${mode.id}-${tab.id}`}
-                                      items={tab.carousel_items ?? []}
-                                      onChange={(items) =>
-                                        updateSubTab(mode.id, tab.id, { carousel_items: items })
-                                      }
-                                    />
-                                  </div>
-                                )}
-
-                                {tab.preset_id && bookingTypeUsesMenuItems(mode.booking_type, menuItems) && (
-                                  <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-3">
-                                    <p className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                                      Categorie e ingredienti visibili
-                                    </p>
-                                    <div className="space-y-2">
-                                      {menuCategories.map((cat) => {
-                                        const itemsForCat = menuItems.filter(
-                                          (item) =>
-                                            item.category === cat.key &&
-                                            normalizeMenuItemBookingTypes(item.booking_types).includes(
-                                              mode.booking_type,
-                                            ),
-                                        )
-                                        if (itemsForCat.length === 0) return null
-                                        const catHidden = (tab.hidden_category_keys ?? []).includes(cat.key)
-                                        return (
-                                          <details
-                                            key={cat.key}
-                                            className="rounded-lg border border-slate-200 bg-slate-50"
-                                          >
-                                            <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2">
-                                              <button
-                                                type="button"
-                                                aria-label={catHidden ? `Mostra ${cat.label}` : `Nascondi ${cat.label}`}
-                                                onClick={(e) => {
-                                                  e.preventDefault()
-                                                  toggleSubTabCategory(mode.id, tab, cat.key)
-                                                }}
-                                                className={cn(
-                                                  'rounded-md border p-1.5',
-                                                  catHidden
-                                                    ? 'border-slate-300 text-slate-400'
-                                                    : 'border-primary-200 bg-primary-50 text-primary-700',
-                                                )}
-                                              >
-                                                {catHidden ? (
-                                                  <EyeSlashIcon weight="regular" className="h-4 w-4" />
-                                                ) : (
-                                                  <EyeIcon weight="regular" className="h-4 w-4" />
-                                                )}
-                                              </button>
-                                              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-700">
-                                                {cat.label}
-                                              </span>
-                                              <span className="text-xs text-slate-500">
-                                                {itemsForCat.length}
-                                              </span>
-                                            </summary>
-                                            {!catHidden && (
-                                              <div className="grid grid-cols-1 gap-1 border-t border-slate-200 p-2 sm:grid-cols-2">
-                                                {itemsForCat.map((item) => {
-                                                  const hidden = (tab.hidden_item_ids ?? []).includes(item.id)
-                                                  return (
-                                                    <button
-                                                      key={item.id}
-                                                      type="button"
-                                                      onClick={() => toggleSubTabItem(mode.id, tab, item.id)}
-                                                      className={cn(
-                                                        'flex min-w-0 items-center gap-2 rounded-md border px-2 py-1.5 text-left text-xs',
-                                                        hidden
-                                                          ? 'border-slate-200 bg-slate-100 text-slate-400'
-                                                          : 'border-slate-200 bg-white text-slate-700',
-                                                      )}
-                                                    >
-                                                      {hidden ? (
-                                                        <EyeSlashIcon weight="regular" className="h-3.5 w-3.5 shrink-0" />
-                                                      ) : (
-                                                        <EyeIcon weight="regular" className="h-3.5 w-3.5 shrink-0" />
-                                                      )}
-                                                      <span className="min-w-0 truncate">{item.name}</span>
-                                                    </button>
-                                                  )
-                                                })}
-                                              </div>
-                                            )}
-                                          </details>
-                                        )
-                                      })}
-                                    </div>
-                                  </div>
-                                )}
-                                <div className="flex justify-end">
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    disabled={upsert.isPending}
-                                    onClick={() => void commitSubTabEditor(mode.id, false)}
-                                  >
-                                    Salva
-                                  </Button>
-                                </div>
-                              </div>
                               )
                             })}
                           </div>
                         )}
 
-                      </div>
+                      </>
                     )}
                   </div>
                 )}

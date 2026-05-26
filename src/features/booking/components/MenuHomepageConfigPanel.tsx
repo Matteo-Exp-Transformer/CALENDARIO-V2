@@ -8,6 +8,7 @@ import { MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuTheme
 import type { CarouselItem, MenuItem } from '@/types/menu'
 import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
 import { menuQrStoragePrefix, menuQrStorageSegment } from '../utils/menuQrStorage'
+import { cn } from '@/lib/utils'
 
 const BUCKET = 'menu-photos'
 const MAX_SIDE_PX = 1200
@@ -99,7 +100,7 @@ export function MenuQrThemeSection({
   )
 }
 
-export function MenuQrCarouselSection({
+function useCarouselPhotoUpload({
   tenantId,
   menuQrCodeId,
   draftShortCode,
@@ -135,6 +136,109 @@ export function MenuQrCarouselSection({
     }
   }
 
+  const removeAt = async (index: number) => {
+    const item = items[index]
+    const match = item.image_url.match(/menu-photos\/(.+)$/)
+    if (match) await removeFromStorage(match[1])
+    onChange(items.filter((_, idx) => idx !== index).map((x, idx) => ({ ...x, sort_order: idx })))
+  }
+
+  return { fileRef, uploading, canUpload, handleAddFile, removeAt }
+}
+
+const carouselAddPhotoButtonClass = 'gap-1.5 text-xs'
+
+/** Pulsante + anteprima foto sotto l’etichetta card (editor Prenota). */
+export function CarouselAddPhotoBlock({
+  tenantId,
+  menuQrCodeId,
+  draftShortCode,
+  items,
+  onChange,
+}: {
+  tenantId: string
+  menuQrCodeId: string | null
+  draftShortCode: string | null
+  items: CarouselItem[]
+  onChange: (items: CarouselItem[]) => void
+}) {
+  const { fileRef, uploading, canUpload, handleAddFile, removeAt } = useCarouselPhotoUpload({
+    tenantId,
+    menuQrCodeId,
+    draftShortCode,
+    items,
+    onChange,
+  })
+
+  return (
+    <div className="flex w-full min-w-0 flex-col gap-2">
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/webp,image/jpeg,image/png,image/avif"
+        className="hidden"
+        onChange={handleAddFile}
+      />
+      <Button
+        variant="outline"
+        size="sm"
+        type="button"
+        disabled={uploading || !canUpload}
+        onClick={() => fileRef.current?.click()}
+        className={cn('self-start', carouselAddPhotoButtonClass)}
+      >
+        <ImagePlus className="h-3.5 w-3.5" />
+        {uploading ? 'Caricamento…' : 'Aggiungi foto'}
+      </Button>
+      {items.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {items.map((item, i) => (
+            <div key={item.image_url} className="relative shrink-0">
+              <img
+                src={item.image_url}
+                alt=""
+                className="h-20 w-28 rounded-lg border border-slate-200 object-cover sm:h-24 sm:w-32"
+              />
+              <button
+                type="button"
+                onClick={() => void removeAt(i)}
+                className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow"
+                aria-label="Rimuovi foto"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function MenuQrCarouselSection({
+  tenantId,
+  menuQrCodeId,
+  draftShortCode,
+  items,
+  onChange,
+  hideToolbarLabel = false,
+}: {
+  tenantId: string
+  menuQrCodeId: string | null
+  draftShortCode: string | null
+  items: CarouselItem[]
+  onChange: (items: CarouselItem[]) => void
+  /** Nasconde la riga «Specialità della casa». */
+  hideToolbarLabel?: boolean
+}) {
+  const { fileRef, uploading, canUpload, handleAddFile } = useCarouselPhotoUpload({
+    tenantId,
+    menuQrCodeId,
+    draftShortCode,
+    items,
+    onChange,
+  })
+
   const moveUp = (i: number) => {
     if (i === 0) return
     const next = [...items]
@@ -169,8 +273,8 @@ export function MenuQrCarouselSection({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-700">Specialità della casa</p>
+      <div className={cn('flex items-center', hideToolbarLabel ? 'justify-end' : 'justify-between')}>
+        {!hideToolbarLabel && <p className="text-sm text-gray-700">Specialità della casa</p>}
         <input
           ref={fileRef}
           type="file"
@@ -184,7 +288,7 @@ export function MenuQrCarouselSection({
           type="button"
           disabled={uploading || !canUpload}
           onClick={() => fileRef.current?.click()}
-          className="gap-1.5 text-xs"
+          className={carouselAddPhotoButtonClass}
         >
           <ImagePlus className="h-3.5 w-3.5" />
           {uploading ? 'Caricamento…' : 'Aggiungi foto'}
