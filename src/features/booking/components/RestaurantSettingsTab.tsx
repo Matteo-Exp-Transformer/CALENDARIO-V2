@@ -311,6 +311,8 @@ export const RestaurantSettingsTab: React.FC = () => {
   const upsert = useUpsertRestaurantSetting()
 
   const [dirty, setDirty] = useState(false)
+  const dirtyRef = useRef(false)
+  dirtyRef.current = dirty
   const [restaurantName, setRestaurantName] = useState('')
   const [slotCapacities, setSlotCapacities] = useState<Record<string, number | ''>>({})
   const [editingSlots, setEditingSlots] = useState<EditingSlot[]>([])
@@ -344,7 +346,9 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   useEffect(() => {
     registerUnsavedSource('restaurant-settings', 'Anagrafica azienda', dirty)
-    return () => clearUnsavedSource('restaurant-settings')
+    return () => {
+      if (!dirtyRef.current) clearUnsavedSource('restaurant-settings')
+    }
   }, [clearUnsavedSource, dirty, registerUnsavedSource])
 
   const allSuccess =

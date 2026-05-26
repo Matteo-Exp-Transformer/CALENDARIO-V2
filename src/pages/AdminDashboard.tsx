@@ -223,9 +223,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const footerPendingNotify = stats != null && stats.pending != null && stats.pending > 0
 
   const handleTabClick = (tab: Tab) => {
-    if (tab !== activeTab && !guardNavigation()) return
-    if (bodyOverride) onBodyOverrideExit?.()
-    setActiveTab(tab)
+    const tabChange = tab !== activeTab
+    if (tabChange && !guardNavigation()) return
+    if (bodyOverride) {
+      onBodyOverrideExit?.()
+      if (tabChange) setActiveTab(tab)
+      return
+    }
+    if (tabChange) setActiveTab(tab)
   }
 
   const handleOpenPublicForm = () => {

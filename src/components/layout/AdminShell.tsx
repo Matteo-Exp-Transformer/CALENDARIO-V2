@@ -149,6 +149,20 @@ const AdminShellInner: FC = () => {
     setSidebarMode((m) => (m === 'expanded' ? 'icons' : 'expanded'))
   }, [])
 
+  const openSection = useCallback(
+    (s: AdminShellSection, sidebarItem: SidebarActiveItem = null) => {
+      const sectionChange = s !== section
+      if (sectionChange) {
+        const allowReturn = s === 'prenotazioni'
+        if (!guardNavigation(allowReturn ? { allowPrenotazioniDashboard: true } : undefined)) return
+      }
+      if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
+      setSection(s)
+      setActiveSidebarItem(sidebarItem)
+    },
+    [guardNavigation, isNarrow, section, sidebarMode],
+  )
+
   const runSidebarAction = useCallback(
     (action: SidebarNavAction) => {
       if (action.type === 'section') {
@@ -165,15 +179,8 @@ const AdminShellInner: FC = () => {
         setRestaurantSettingsSignal((n) => n + 1)
       }
     },
-    [isNarrow],
+    [openSection],
   )
-
-  const openSection = (s: AdminShellSection, sidebarItem: SidebarActiveItem = null) => {
-    if (s !== section && !guardNavigation()) return
-    if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
-    setSection(s)
-    setActiveSidebarItem(sidebarItem)
-  }
 
   // Edition Classic: nessuna sidebar, AdminDashboard occupa tutta la pagina
   if (!features.sidebar) {
@@ -234,12 +241,7 @@ const AdminShellInner: FC = () => {
           >
             <button
               type="button"
-              onClick={() => {
-                if (section !== 'home' && !guardNavigation()) return
-                setSection('home')
-                setActiveSidebarItem('home')
-                if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
-              }}
+              onClick={() => openSection('home', 'home')}
               title="Home"
               aria-label="Home"
               className={cn(

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { ForkKnifeIcon } from '@phosphor-icons/react/dist/csr/ForkKnife'
 import { CallBellIcon } from '@phosphor-icons/react/dist/csr/CallBell'
 import { ChefHatIcon } from '@phosphor-icons/react/dist/csr/ChefHat'
@@ -130,6 +130,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
   const [config, setConfig] = useState<BookingPublicFormConfig>(DEFAULT_BOOKING_FORM_CONFIG)
   const [dirty, setDirty] = useState(false)
+  const dirtyRef = useRef(false)
+  dirtyRef.current = dirty
   const [expandedMode, setExpandedMode] = useState<string | null>(null)
   const [draftSubTabsByMode, setDraftSubTabsByMode] = useState<Record<string, SubTab | null>>({})
   const [expandedSubTabByMode, setExpandedSubTabByMode] = useState<Record<string, string | null>>({})
@@ -143,7 +145,9 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
   useEffect(() => {
     registerUnsavedSource('booking-form-config', 'Personalizza form', dirty)
-    return () => clearUnsavedSource('booking-form-config')
+    return () => {
+      if (!dirtyRef.current) clearUnsavedSource('booking-form-config')
+    }
   }, [clearUnsavedSource, dirty, registerUnsavedSource])
 
   const markDirty = () => setDirty(true)
