@@ -29,6 +29,7 @@ import {
   useUpsertRestaurantSetting,
 } from '@/features/booking/hooks/useRestaurantSetting'
 import { useTenantContext } from '@/contexts/TenantContext'
+import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 import {
   BOOKING_HEADER_FONT_OPTIONS,
   DEFAULT_BOOKING_FORM_CONFIG,
@@ -114,6 +115,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   afterBookingModesSection,
 }) => {
   const { organizationName, tenantId } = useTenantContext()
+  const { registerUnsavedSource, clearUnsavedSource } = useUnsavedChangesGuard()
   const { data: savedConfig } = useRestaurantSetting('booking_public_form_config')
   const { data: restaurantName } = useRestaurantSetting('restaurant_name')
   const { data: customPresetsRaw } = useRestaurantSetting('booking_custom_staff_presets')
@@ -129,6 +131,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   const [config, setConfig] = useState<BookingPublicFormConfig>(DEFAULT_BOOKING_FORM_CONFIG)
   const [dirty, setDirty] = useState(false)
   const [expandedMode, setExpandedMode] = useState<string | null>(null)
+  const [draftSubTabsByMode, setDraftSubTabsByMode] = useState<Record<string, SubTab | null>>({})
+  const [expandedSubTabByMode, setExpandedSubTabByMode] = useState<Record<string, string | null>>({})
 
   useEffect(() => {
     if (savedConfig) {
@@ -136,6 +140,11 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       setDirty(false)
     }
   }, [savedConfig])
+
+  useEffect(() => {
+    registerUnsavedSource('booking-form-config', 'Personalizza form', dirty)
+    return () => clearUnsavedSource('booking-form-config')
+  }, [clearUnsavedSource, dirty, registerUnsavedSource])
 
   const markDirty = () => setDirty(true)
 
@@ -194,14 +203,34 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   }
 
   const addSubTab = (modeId: string, display: SubTab['display']) => {
+    setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: newSubTab(display) }))
+  }
+
+  const updateDraftSubTab = (modeId: string, patch: Partial<SubTab>) => {
+    setDraftSubTabsByMode((prev) => {
+      const current = prev[modeId]
+      if (!current) return prev
+      return { ...prev, [modeId]: { ...current, ...patch } }
+    })
+  }
+
+  const saveDraftSubTab = (modeId: string) => {
+    const draft = draftSubTabsByMode[modeId]
+    if (!draft) return
     setConfig((prev) => ({
       ...prev,
       booking_modes: prev.booking_modes.map((m) => {
         if (m.id !== modeId) return m
-        return { ...m, sub_tabs: [...(m.sub_tabs ?? []), newSubTab(display)] }
+        return { ...m, sub_tabs: [...(m.sub_tabs ?? []), draft] }
       }),
     }))
+    setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
+    setExpandedSubTabByMode((prev) => ({ ...prev, [modeId]: null }))
     markDirty()
+  }
+
+  const cancelDraftSubTab = (modeId: string) => {
+    setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
   }
 
   const importPresetIntoSubTab = (modeId: string, subTabId: string, presetId: string) => {
@@ -211,6 +240,22 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       preset_id: preset.id,
       label: preset.name,
       description: preset.description?.trim() || undefined,
+      price_per_person: preset.price_per_person && preset.price_per_person > 0 ? preset.price_per_person : undefined,
+      hidden_item_ids: menuItems
+        .filter((item) => !preset.item_ids.includes(item.id))
+        .map((item) => item.id),
+      hidden_category_keys: [],
+    })
+  }
+
+  const importPresetIntoDraftSubTab = (modeId: string, presetId: string) => {
+    const preset = allPresets.find((p) => p.id === presetId)
+    if (!preset) return
+    updateDraftSubTab(modeId, {
+      preset_id: preset.id,
+      label: preset.name,
+      description: preset.description?.trim() || undefined,
+      price_per_person: preset.price_per_person && preset.price_per_person > 0 ? preset.price_per_person : undefined,
       hidden_item_ids: menuItems
         .filter((item) => !preset.item_ids.includes(item.id))
         .map((item) => item.id),
@@ -276,6 +321,13 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     )
   }
 
+  const handleCancelChanges = () => {
+    setConfig(savedConfig ?? DEFAULT_BOOKING_FORM_CONFIG)
+    setDraftSubTabsByMode({})
+    setExpandedSubTabByMode({})
+    setDirty(false)
+  }
+
   const allPresets: CustomStaffPreset[] = Array.isArray(customPresetsRaw) ? customPresetsRaw : []
   const headerStyles = config.header_styles ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles
   const headerControlClass =
@@ -316,12 +368,296 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     )
   }
 
+  const saveControls = (
+    <div className="flex flex-wrap items-center justify-end gap-3">
+      {dirty && !upsert.isPending && (
+        <span className="text-sm font-semibold text-slate-600">Modifiche non salvate</span>
+      )}
+      <Button
+        type="button"
+        onClick={handleSave}
+        disabled={upsert.isPending || !dirty}
+        className="border-2 border-primary-700 bg-primary-600 px-6 py-2.5 text-sm shadow-md hover:bg-primary-500 hover:border-primary-600 disabled:opacity-60"
+      >
+        {upsert.isPending ? (
+          <span className="flex items-center gap-2">
+            <SpinnerGapIcon weight="regular" className="h-4 w-4 animate-spin" />
+            Salvataggio…
+          </span>
+        ) : (
+          'Salva'
+        )}
+      </Button>
+    </div>
+  )
+
+  const renderSubTabEditor = ({
+    mode,
+    tab,
+    relevantPresets,
+    index,
+    isDraft,
+  }: {
+    mode: BookingMode
+    tab: SubTab
+    relevantPresets: CustomStaffPreset[]
+    index: number
+    isDraft: boolean
+  }) => {
+    const patchTab = (patch: Partial<SubTab>) => {
+      if (isDraft) updateDraftSubTab(mode.id, patch)
+      else updateSubTab(mode.id, tab.id, patch)
+    }
+    const toggleCategory = (categoryKey: string) => {
+      const hidden = new Set(tab.hidden_category_keys ?? [])
+      if (hidden.has(categoryKey)) hidden.delete(categoryKey)
+      else hidden.add(categoryKey)
+      patchTab({ hidden_category_keys: Array.from(hidden) })
+    }
+    const toggleItem = (itemId: string) => {
+      const hidden = new Set(tab.hidden_item_ids ?? [])
+      if (hidden.has(itemId)) hidden.delete(itemId)
+      else hidden.add(itemId)
+      patchTab({ hidden_item_ids: Array.from(hidden) })
+    }
+
+    return (
+      <div className="rounded-lg border border-slate-200 p-4 space-y-3 bg-slate-50/50">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-semibold text-slate-600 uppercase">
+            {tab.display === 'carousel' ? 'Carosello' : 'Card'} {isDraft ? 'nuovo' : index + 1}
+          </span>
+          {!isDraft && (
+            <button
+              type="button"
+              title="Elimina"
+              onClick={() => removeSubTab(mode.id, tab.id)}
+              className="p-1.5 rounded border border-red-200 text-red-600 hover:bg-red-50"
+            >
+              <TrashIcon weight="regular" className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        <div>
+          <Label className="block mb-1 text-sm">Etichetta card</Label>
+          <Input
+            value={tab.label}
+            onChange={(e) => patchTab({ label: e.target.value })}
+            maxLength={60}
+            placeholder="Nome mostrato al cliente"
+          />
+        </div>
+
+        <div>
+          <Label className="block mb-1 text-sm">Icona</Label>
+          <div className="flex gap-2 flex-wrap">
+            {SUB_TAB_ICON_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => patchTab({ icon: opt.value })}
+                className={cn(
+                  'flex items-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-semibold',
+                  tab.icon === opt.value
+                    ? 'border-primary-500 bg-primary-50 text-primary-700'
+                    : 'border-slate-200 text-slate-600',
+                )}
+              >
+                <SubTabIconOption icon={opt.value} className="h-3 w-3" />
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <Label className="block mb-1 text-sm">Importa menù preselezionato</Label>
+          {relevantPresets.length > 0 ? (
+            <select
+              value={tab.preset_id ?? ''}
+              onChange={(e) => {
+                const presetId = e.target.value
+                if (presetId) {
+                  if (isDraft) importPresetIntoDraftSubTab(mode.id, presetId)
+                  else importPresetIntoSubTab(mode.id, tab.id, presetId)
+                } else {
+                  patchTab({
+                    preset_id: undefined,
+                    hidden_category_keys: [],
+                    hidden_item_ids: [],
+                  })
+                }
+              }}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            >
+              <option value="">Compila manualmente</option>
+              {relevantPresets.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="text-xs text-slate-500">
+              Nessun menù preselezionato per questa modalità (tab Menu in admin).
+            </p>
+          )}
+        </div>
+
+        <div>
+          <Label className="block mb-1 text-sm">Prezzo a persona (opzionale)</Label>
+          <Input
+            type="number"
+            min={0}
+            step={0.01}
+            value={tab.price_per_person ?? ''}
+            onChange={(e) => {
+              const v = e.target.value
+              patchTab({
+                price_per_person: v === '' ? undefined : Math.max(0, parseFloat(v) || 0),
+              })
+            }}
+            placeholder="es. 45"
+          />
+        </div>
+
+        <div>
+          <Label className="block mb-1 text-sm">Descrizione breve (opzionale)</Label>
+          <Input
+            value={tab.description ?? ''}
+            onChange={(e) =>
+              patchTab({
+                description: e.target.value === '' ? undefined : e.target.value,
+              })
+            }
+            maxLength={80}
+            placeholder="Sottotitolo sulla card"
+          />
+        </div>
+
+        {tab.display === 'carousel' && tenantId && (
+          <div className="rounded-lg border border-slate-200 bg-white p-3">
+            <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-700">
+              Carosello specialità
+            </h4>
+            <MenuQrCarouselSection
+              tenantId={tenantId}
+              menuQrCodeId={null}
+              draftShortCode={`booking-form-${mode.id}-${tab.id}`}
+              items={tab.carousel_items ?? []}
+              onChange={(items) => patchTab({ carousel_items: items })}
+            />
+          </div>
+        )}
+
+        {tab.preset_id && bookingTypeUsesMenuItems(mode.booking_type, menuItems) && (
+          <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-3">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-700">
+              Categorie e ingredienti visibili
+            </p>
+            <div className="space-y-2">
+              {menuCategories.map((cat) => {
+                const itemsForCat = menuItems.filter(
+                  (item) =>
+                    item.category === cat.key &&
+                    normalizeMenuItemBookingTypes(item.booking_types).includes(mode.booking_type),
+                )
+                if (itemsForCat.length === 0) return null
+                const catHidden = (tab.hidden_category_keys ?? []).includes(cat.key)
+                return (
+                  <details key={cat.key} className="rounded-lg border border-slate-200 bg-slate-50">
+                    <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2">
+                      <button
+                        type="button"
+                        aria-label={catHidden ? `Mostra ${cat.label}` : `Nascondi ${cat.label}`}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          toggleCategory(cat.key)
+                        }}
+                        className={cn(
+                          'rounded-md border p-1.5',
+                          catHidden
+                            ? 'border-slate-300 text-slate-400'
+                            : 'border-primary-200 bg-primary-50 text-primary-700',
+                        )}
+                      >
+                        {catHidden ? (
+                          <EyeSlashIcon weight="regular" className="h-4 w-4" />
+                        ) : (
+                          <EyeIcon weight="regular" className="h-4 w-4" />
+                        )}
+                      </button>
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-700">
+                        {cat.label}
+                      </span>
+                      <span className="text-xs text-slate-500">{itemsForCat.length}</span>
+                    </summary>
+                    {!catHidden && (
+                      <div className="grid grid-cols-1 gap-1 border-t border-slate-200 p-2 sm:grid-cols-2">
+                        {itemsForCat.map((item) => {
+                          const hidden = (tab.hidden_item_ids ?? []).includes(item.id)
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => toggleItem(item.id)}
+                              className={cn(
+                                'flex min-w-0 items-center gap-2 rounded-md border px-2 py-1.5 text-left text-xs',
+                                hidden
+                                  ? 'border-slate-200 bg-slate-100 text-slate-400'
+                                  : 'border-slate-200 bg-white text-slate-700',
+                              )}
+                            >
+                              {hidden ? (
+                                <EyeSlashIcon weight="regular" className="h-3.5 w-3.5 shrink-0" />
+                              ) : (
+                                <EyeIcon weight="regular" className="h-3.5 w-3.5 shrink-0" />
+                              )}
+                              <span className="min-w-0 truncate">{item.name}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </details>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-end gap-2">
+          {isDraft && (
+            <Button type="button" variant="ghost" size="sm" onClick={() => cancelDraftSubTab(mode.id)}>
+              Annulla
+            </Button>
+          )}
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => {
+              if (isDraft) saveDraftSubTab(mode.id)
+              else setExpandedSubTabByMode((prev) => ({ ...prev, [mode.id]: null }))
+            }}
+          >
+            Salva
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
-      {/* Blocco 1 — Intestazione pagina */}
-      <section className="admin-warm-surface rounded-xl border p-5 space-y-4 shadow-sm">
-        <h3 className="text-base font-semibold text-slate-800">Intestazione pagina Prenota</h3>
-        <div className="space-y-3">
+      {/* Blocco 1 — Intestazione pagina (Salva fuori card, margine alto-destra) */}
+      <div className="relative mt-10">
+        <div className="absolute bottom-full right-0 z-10 mb-1.5 flex w-full justify-end">
+          {saveControls}
+        </div>
+        <section className="admin-warm-surface rounded-xl border p-5 space-y-4 shadow-sm">
+          <h3 className="text-base font-semibold text-slate-800">Intestazione pagina Prenota</h3>
+          <div className="space-y-3">
           <div>
             <Label htmlFor="page_restaurant_name" className="block mb-1 text-sm">
               Nome azienda
@@ -371,6 +707,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           </div>
         </div>
       </section>
+      </div>
 
       {/* Blocco 2 — Le modalità */}
       <section className="admin-warm-surface rounded-xl border p-5 space-y-4 shadow-sm">
@@ -392,6 +729,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
             )
 
             const subTabs = mode.sub_tabs ?? []
+            const draftSubTab = draftSubTabsByMode[mode.id] ?? null
+            const expandedSubTabId = expandedSubTabByMode[mode.id] ?? null
 
             return (
               <div key={mode.id} className="rounded-lg border border-slate-200 overflow-hidden">
@@ -478,7 +817,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
                     <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
                       <span className="text-sm font-medium text-slate-700">
-                        Abilita sottotab
+                        Abilita Card o Carosello
                       </span>
                       <button
                         type="button"
@@ -532,13 +871,55 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                           </Button>
                         </div>
 
-                        {subTabs.length === 0 ? (
+                        {draftSubTab && (
+                          <div className="space-y-2">
+                            {renderSubTabEditor({
+                              mode,
+                              tab: draftSubTab,
+                              relevantPresets,
+                              index: 0,
+                              isDraft: true,
+                            })}
+                          </div>
+                        )}
+
+                        {subTabs.length === 0 && !draftSubTab ? (
                           <p className="text-xs text-slate-500">
                             Nessuna sottotab: aggiungine almeno una o disattiva l&apos;opzione sopra.
                           </p>
                         ) : (
                           <div className="space-y-3">
-                            {subTabs.map((tab, tabIdx) => (
+                            {subTabs.map((tab, tabIdx) => {
+                              const savedOpen = expandedSubTabId === tab.id
+                              if (!savedOpen) {
+                                return (
+                                  <div
+                                    key={tab.id}
+                                    className="rounded-lg border border-slate-200 bg-white px-4 py-3"
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setExpandedSubTabByMode((prev) => ({ ...prev, [mode.id]: tab.id }))
+                                      }
+                                      className="flex w-full min-w-0 items-center justify-between gap-3 text-left"
+                                    >
+                                      <span className="min-w-0">
+                                        <span className="block text-xs font-semibold uppercase text-slate-500">
+                                          {tab.display === 'carousel' ? 'Carosello' : 'Card'}
+                                        </span>
+                                        <span className="block truncate text-sm font-semibold text-slate-800">
+                                          {tab.label || 'Senza etichetta'}
+                                        </span>
+                                      </span>
+                                      <span className="shrink-0 text-xs font-semibold text-primary-700">
+                                        Modifica
+                                      </span>
+                                    </button>
+                                  </div>
+                                )
+                              }
+                              return (
                               <div
                                 key={tab.id}
                                 className="rounded-lg border border-slate-200 p-4 space-y-3 bg-slate-50/50"
@@ -623,7 +1004,11 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                         if (presetId) {
                                           importPresetIntoSubTab(mode.id, tab.id, presetId)
                                         } else {
-                                          updateSubTab(mode.id, tab.id, { preset_id: undefined })
+                                          updateSubTab(mode.id, tab.id, {
+                                            preset_id: undefined,
+                                            hidden_category_keys: [],
+                                            hidden_item_ids: [],
+                                          })
                                         }
                                       }}
                                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
@@ -692,7 +1077,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                   </div>
                                 )}
 
-                                {bookingTypeUsesMenuItems(mode.booking_type, menuItems) && (
+                                {tab.preset_id && bookingTypeUsesMenuItems(mode.booking_type, menuItems) && (
                                   <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-3">
                                     <p className="text-xs font-bold uppercase tracking-wider text-slate-700">
                                       Categorie e ingredienti visibili
@@ -774,8 +1159,20 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                     </div>
                                   </div>
                                 )}
+                                <div className="flex justify-end">
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={() =>
+                                      setExpandedSubTabByMode((prev) => ({ ...prev, [mode.id]: null }))
+                                    }
+                                  >
+                                    Salva
+                                  </Button>
+                                </div>
                               </div>
-                            ))}
+                              )
+                            })}
                           </div>
                         )}
 
@@ -791,26 +1188,17 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
       {afterBookingModesSection}
 
-      <div className="flex items-center justify-between gap-4 rounded-xl border admin-warm-surface px-5 py-4 shadow-sm">
-        {dirty && !upsert.isPending && (
-          <span className="text-sm font-semibold text-slate-600">Modifiche non salvate</span>
-        )}
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border admin-warm-surface px-5 py-4 shadow-sm">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleCancelChanges}
+          disabled={upsert.isPending || !dirty}
+        >
+          Annulla modifiche
+        </Button>
         <div className="ml-auto">
-          <Button
-            type="button"
-            onClick={handleSave}
-            disabled={upsert.isPending || !dirty}
-            className="border-2 border-primary-700 bg-primary-600 px-8 py-3 text-sm shadow-md hover:bg-primary-500 hover:border-primary-600 disabled:opacity-60"
-          >
-            {upsert.isPending ? (
-              <span className="flex items-center gap-2">
-                <SpinnerGapIcon weight="regular" className="h-4 w-4 animate-spin" />
-                Salvataggio…
-              </span>
-            ) : (
-              'Salva'
-            )}
-          </Button>
+          {saveControls}
         </div>
       </div>
     </div>

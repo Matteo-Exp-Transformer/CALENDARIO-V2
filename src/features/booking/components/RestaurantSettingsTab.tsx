@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { TimePicker24h } from '@/components/ui/TimePicker24h'
 import { useTenantContext } from '@/contexts/TenantContext'
+import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 import type { BusinessHours } from '@/lib/businessHours'
 import { getDefaultBusinessHours } from '@/lib/businessHours'
 import { cn, stripDirectionalFormattingChars } from '@/lib/utils'
@@ -291,6 +292,7 @@ export function RestaurantSettingsIntro() {
 export const RestaurantSettingsTab: React.FC = () => {
   const queryClient = useQueryClient()
   const { tenantId } = useTenantContext()
+  const { registerUnsavedSource, clearUnsavedSource, guardNavigation } = useUnsavedChangesGuard()
   const features = useFeatures()
 
   const nameQuery = useRestaurantSetting('restaurant_name')
@@ -340,6 +342,11 @@ export const RestaurantSettingsTab: React.FC = () => {
     setBookingBgSelectionLocked(false)
   }, [tenantId])
 
+  useEffect(() => {
+    registerUnsavedSource('restaurant-settings', 'Anagrafica azienda', dirty)
+    return () => clearUnsavedSource('restaurant-settings')
+  }, [clearUnsavedSource, dirty, registerUnsavedSource])
+
   const allSuccess =
     nameQuery.isSuccess &&
     slotGuestCapacitiesQuery.isSuccess &&
@@ -376,7 +383,7 @@ export const RestaurantSettingsTab: React.FC = () => {
       display_order: s.display_order,
     })))
     setInitialSlotIds(slots.map((s: SlotConfig) => s.id))
-    setBusinessHours(hoursQuery.data)
+    setBusinessHours(hoursQuery.data ?? getDefaultBusinessHours())
     setContactEmail(stripDirectionalFormattingChars(contactEmailQuery.data ?? ''))
     setContactPhone(stripDirectionalFormattingChars(contactPhoneQuery.data ?? ''))
     setContactAddress(stripDirectionalFormattingChars(contactAddressQuery.data ?? ''))
@@ -425,6 +432,45 @@ export const RestaurantSettingsTab: React.FC = () => {
     appThemeQuery.error
 
   const markDirty = () => setDirty(true)
+
+  const hydrateLocalSettingsFromQueries = () => {
+    setRestaurantName(
+      stripDirectionalFormattingChars(String(nameQuery.data ?? '')).slice(0, RESTAURANT_NAME_MAX_LENGTH)
+    )
+    const sg = slotGuestCapacitiesQuery.data ?? {}
+    const caps: Record<string, number | ''> = {}
+    for (const [k, v] of Object.entries(sg)) {
+      caps[k] = v == null ? '' : (v as number)
+    }
+    setSlotCapacities(caps)
+    setTimeSlotsEnabled(timeSlotsEnabledQuery.data ?? true)
+    const slots = (serviceSlotsQuery.data ?? [])
+      .slice()
+      .sort((a: SlotConfig, b: SlotConfig) => a.display_order - b.display_order)
+    setEditingSlots(slots.map((s: SlotConfig) => ({
+      id: s.id,
+      name: s.name,
+      start_time: s.start_time.slice(0, 5),
+      end_time: s.end_time.slice(0, 5),
+      display_order: s.display_order,
+    })))
+    setInitialSlotIds(slots.map((s: SlotConfig) => s.id))
+    setBusinessHours(hoursQuery.data ?? getDefaultBusinessHours())
+    setContactEmail(stripDirectionalFormattingChars(contactEmailQuery.data ?? ''))
+    setContactPhone(stripDirectionalFormattingChars(contactPhoneQuery.data ?? ''))
+    setContactAddress(stripDirectionalFormattingChars(contactAddressQuery.data ?? ''))
+    const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
+    setBookingPageBackground(resolvedBg)
+    setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
+    setBookingBgSelectionLocked(false)
+    setAppTheme(appThemeQuery.data ?? DEFAULT_APP_THEME)
+    setSlotValidationError(null)
+  }
+
+  const handleCancelChanges = () => {
+    hydrateLocalSettingsFromQueries()
+    setDirty(false)
+  }
 
   const savedBookingPageBackground = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
   /** Selezione diversa dal valore gia salvato su DB (solo «Salva modifiche» aggiorna il DB). */
@@ -823,7 +869,10 @@ export const RestaurantSettingsTab: React.FC = () => {
       <div className="flex gap-2 rounded-xl bg-slate-100 p-1 self-start">
         <button
           type="button"
-          onClick={() => setSettingsTab('anagrafica')}
+          onClick={() => {
+            if (settingsTab !== 'anagrafica' && !guardNavigation()) return
+            setSettingsTab('anagrafica')
+          }}
           className={cn(
             'rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
             settingsTab === 'anagrafica'
@@ -835,7 +884,10 @@ export const RestaurantSettingsTab: React.FC = () => {
         </button>
         <button
           type="button"
-          onClick={() => setSettingsTab('form')}
+          onClick={() => {
+            if (settingsTab !== 'form' && !guardNavigation()) return
+            setSettingsTab('form')
+          }}
           className={cn(
             'rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
             settingsTab === 'form'
@@ -1189,6 +1241,14 @@ export const RestaurantSettingsTab: React.FC = () => {
       )}
 
       <div className="restaurant-settings-save-footer admin-warm-surface flex min-h-[4.75rem] w-full max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-xl border px-6 py-6 shadow-sm md:min-h-[5.25rem] md:px-8 md:py-7">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleCancelChanges}
+          disabled={upsert.isPending || !dirty}
+        >
+          Annulla modifiche
+        </Button>
         <Button
           type="button"
           onClick={handleSave}

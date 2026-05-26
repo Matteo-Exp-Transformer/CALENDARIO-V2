@@ -17,6 +17,7 @@ import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
 import { AdminDashboard } from '@/pages/AdminDashboard'
 import { Button } from '@/components/ui'
 import { useFeatures } from '@/hooks/useFeatures'
+import { UnsavedChangesProvider, useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 
 const AdminHomePage = lazy(() =>
   import('@/pages/AdminHomePage').then((m) => ({ default: m.AdminHomePage })),
@@ -95,7 +96,7 @@ const SIDEBAR_NAV_ITEMS: {
   },
 ]
 
-export const AdminShell: FC = () => {
+const AdminShellInner: FC = () => {
   const isNarrow = useIsNarrow()
   const features = useFeatures()
   const [sidebarMode, setSidebarMode] = useState<'hidden' | 'icons' | 'expanded'>('icons')
@@ -107,6 +108,7 @@ export const AdminShell: FC = () => {
   )
   const [restaurantSettingsSignal, setRestaurantSettingsSignal] = useState(0)
   const { user, logout } = useAdminAuth()
+  const { guardNavigation } = useUnsavedChangesGuard()
   const asideRef = useRef<HTMLDivElement | null>(null)
 
   const { data: savedAppTheme = DEFAULT_APP_THEME, isPending: isAppThemePending } =
@@ -167,6 +169,7 @@ export const AdminShell: FC = () => {
   )
 
   const openSection = (s: AdminShellSection, sidebarItem: SidebarActiveItem = null) => {
+    if (s !== section && !guardNavigation()) return
     if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
     setSection(s)
     setActiveSidebarItem(sidebarItem)
@@ -232,6 +235,7 @@ export const AdminShell: FC = () => {
             <button
               type="button"
               onClick={() => {
+                if (section !== 'home' && !guardNavigation()) return
                 setSection('home')
                 setActiveSidebarItem('home')
                 if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
@@ -429,3 +433,9 @@ export const AdminShell: FC = () => {
     </div>
   )
 }
+
+export const AdminShell: FC = () => (
+  <UnsavedChangesProvider>
+    <AdminShellInner />
+  </UnsavedChangesProvider>
+)

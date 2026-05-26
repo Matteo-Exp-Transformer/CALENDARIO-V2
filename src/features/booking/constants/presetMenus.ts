@@ -57,6 +57,8 @@ export interface CustomStaffPreset {
   booking_types: StaffPresetBookingType[]
   /** Testo sotto il nome sulle card Prenota (sottotab preset). */
   description?: string
+  /** Prezzo consigliato a persona da usare come default quando il preset viene importato in Prenota. */
+  price_per_person?: number
   /**
    * Se `false`, il cliente può modificare gli ingredienti dopo aver scelto il menù.
    * Omesso o `true` = menù fisso (default).

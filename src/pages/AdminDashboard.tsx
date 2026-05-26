@@ -40,6 +40,7 @@ import { NotifyNavShinyLayers } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
 import { useFeatures } from '@/hooks/useFeatures'
+import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 
 type Tab = 'calendar' | 'pending' | 'archive' | 'menu' | 'settings-restaurant'
 
@@ -168,13 +169,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [menuToolbarPromoDisabled, setMenuToolbarPromoDisabled] = useState(false)
   const menuPricesTabRef = useRef<MenuPricesTabHandle>(null)
   const features = useFeatures()
+  const { guardNavigation } = useUnsavedChangesGuard()
   const dashboardRootRef = useRef<HTMLDivElement>(null)
   const { data: stats } = useBookingStats()
 
   useEffect(() => {
     if (restaurantSettingsSignal === 0) return
+    if (activeTab !== 'settings-restaurant' && !guardNavigation()) return
     setActiveTab('settings-restaurant')
-  }, [restaurantSettingsSignal])
+  }, [activeTab, guardNavigation, restaurantSettingsSignal])
 
   useEffect(() => {
     if (activeTab !== 'pending') setShowNewBookingPanel(false)
@@ -194,6 +197,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }, [savedAppTheme, isAppThemePending])
 
   const handleViewInCalendar = (date: string) => {
+    if (!guardNavigation()) return
     setCalendarTargetDate(date)
     setActiveTab('calendar')
   }
@@ -219,6 +223,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const footerPendingNotify = stats != null && stats.pending != null && stats.pending > 0
 
   const handleTabClick = (tab: Tab) => {
+    if (tab !== activeTab && !guardNavigation()) return
     if (bodyOverride) onBodyOverrideExit?.()
     setActiveTab(tab)
   }

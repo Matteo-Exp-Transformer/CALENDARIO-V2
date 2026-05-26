@@ -519,6 +519,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const [presetEditorMode, setPresetEditorMode] = useState<'list' | 'editor'>('list')
   const [presetName, setPresetName] = useState('')
   const [presetDescription, setPresetDescription] = useState('')
+  const [presetPriceInput, setPresetPriceInput] = useState('')
   const [presetIsFixedMenu, setPresetIsFixedMenu] = useState(true)
   const [presetSelectedItems, setPresetSelectedItems] = useState<SelectedMenuItem[]>([])
   const [presetDraftBookingTypes, setPresetDraftBookingTypes] = useState<StaffPresetBookingType[]>([
@@ -656,6 +657,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setPresetEditorMode('list')
     setPresetName('')
     setPresetDescription('')
+    setPresetPriceInput('')
     setPresetIsFixedMenu(true)
     setPresetSelectedItems([])
     setPresetDraftBookingTypes([...STAFF_PRESET_DEFAULT_BOOKING_TYPES])
@@ -677,6 +679,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setEditingCustomPresetId(null)
     setPresetName('')
     setPresetDescription('')
+    setPresetPriceInput('')
     setPresetIsFixedMenu(true)
     setPresetSelectedItems([])
     setPresetDraftBookingTypes([...STAFF_PRESET_DEFAULT_BOOKING_TYPES])
@@ -687,6 +690,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setEditingCustomPresetId(preset.id)
     setPresetName(preset.name)
     setPresetDescription(preset.description ?? '')
+    setPresetPriceInput(preset.price_per_person != null ? String(preset.price_per_person) : '')
     setPresetIsFixedMenu(isStaffPresetFixedMenu(preset))
     setPresetSelectedItems(selectedItemsFromMenuItemIds(menuItems, preset.item_ids))
     setPresetDraftBookingTypes([...normalizeStaffPresetBookingTypes(preset.booking_types)])
@@ -697,9 +701,11 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     base: Pick<CustomStaffPreset, 'id' | 'name' | 'item_ids' | 'booking_types' | 'visible_on_booking'>,
   ): CustomStaffPreset => {
     const trimmedDesc = presetDescription.trim()
+    const parsedPrice = presetPriceInput.trim() ? Math.max(0, parseFloat(presetPriceInput) || 0) : 0
     return {
       ...base,
       ...(trimmedDesc ? { description: trimmedDesc } : {}),
+      ...(parsedPrice > 0 ? { price_per_person: parsedPrice } : {}),
       ...(presetIsFixedMenu ? {} : { is_fixed_menu: false }),
     }
   }
@@ -1846,6 +1852,9 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                               )}
                               {' · '}
                               {isStaffPresetFixedMenu(preset) ? 'Menù fisso' : 'Personalizzabile'}
+                              {preset.price_per_person != null && preset.price_per_person > 0
+                                ? ` · €${preset.price_per_person.toFixed(2)}/persona`
+                                : ''}
                             </p>
                             {preset.description?.trim() && (
                               <p className="text-left text-xs text-gray-600 line-clamp-2">
@@ -1910,6 +1919,21 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                       className="mx-auto w-full rounded-2xl border border-black/20 bg-white/85 px-4 py-3 text-center text-sm text-warm-wood placeholder:text-warm-wood/50 focus:border-warm-wood focus:outline-none focus:ring-2 focus:ring-warm-wood/40 resize-none"
                     />
                     <p className="text-center text-xs text-gray-500">{presetDescription.length}/300</p>
+                  </div>
+                  <div className="mx-auto flex w-full max-w-md flex-col gap-2">
+                    <label className="text-center text-sm font-medium text-gray-700">
+                      Prezzo a persona (opzionale)
+                    </label>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={presetPriceInput}
+                      onChange={(e) => setPresetPriceInput(e.target.value)}
+                      placeholder="es. 45"
+                      className="mx-auto h-14 w-full rounded-2xl px-6 text-center"
+                      style={{ height: '56px', borderRadius: '18px' }}
+                    />
                   </div>
                   <label className="mx-auto flex w-full max-w-md cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white/80 px-4 py-3 text-sm text-gray-800 shadow-sm">
                     <input
