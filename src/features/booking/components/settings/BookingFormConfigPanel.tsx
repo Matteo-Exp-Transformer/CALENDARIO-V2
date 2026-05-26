@@ -1209,7 +1209,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
                     {mode.sub_tabs_enabled && (
                       <div className="mt-5 space-y-3">
-                        {mode.sub_tabs_presentation != null && subTabs.length > 0 ? (
+                        {mode.sub_tabs_presentation != null ? (
                           <SubTabsPresentationBadge
                             presentation={mode.sub_tabs_presentation}
                             subTabsCount={subTabs.length}

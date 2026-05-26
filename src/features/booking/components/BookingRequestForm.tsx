@@ -165,7 +165,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     if (presentation === 'cards' || presentation === 'carousel') {
       const filtered = labeled.filter((t) => t.display === presentation)
       if (filtered.length < labeled.length && import.meta.env.DEV) {
-        import('@/lib/logger').then(({ default: logger }) =>
+        import('@/lib/logger').then(({ logger }) =>
           logger.warn(
             `[BookingRequestForm] Modalità "${activeMode.id}": sottotab con display misto. Mostrate solo "${presentation}".`,
           ),
