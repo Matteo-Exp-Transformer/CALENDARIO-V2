@@ -64,6 +64,8 @@ interface MenuSelectionProps {
   presetDescription?: string
   /** Se true, non usa la descrizione del menù staff come fallback. */
   disablePresetDescriptionFallback?: boolean
+  /** Titolo sezione menù da Etichetta card sottotab (priorità su nome preset staff). */
+  presetSectionTitle?: string
 }
 
 type NormalizedMenuItem = ComposeMenuItem
@@ -99,6 +101,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   publicFormLayout = false,
   presetDescription,
   disablePresetDescriptionFallback = false,
+  presetSectionTitle,
 }) => {
   const publicBlockClass = publicFormLayout ? BOOKING_PUBLIC_CONTENT_WIDTH : 'mx-auto w-full max-w-full'
   const { data: menuItems = [], isLoading, error } = useMenuItems()
@@ -215,6 +218,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     customStaffPresets,
     subTabOverrides,
   )
+  const lockedPresetTitle = presetSectionTitle?.trim() || presetTitleLabel
 
   const composePresetDescription = useMemo(() => {
     const fromTab = presetDescription?.trim()
@@ -542,12 +546,12 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             <p className="mt-2 text-sm font-medium text-warm-wood-dark/75">{composePresetDescription}</p>
           ) : null}
         </div>
-      ) : menuSelectionLocked && presetTitleLabel ? (
+      ) : menuSelectionLocked && lockedPresetTitle ? (
         <div
           className="mx-auto mb-4 w-full rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]"
           style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))` }}
         >
-          <h2 className="font-serif text-xl font-bold text-warm-wood md:text-2xl">{presetTitleLabel}</h2>
+          <h2 className="font-serif text-xl font-bold text-warm-wood md:text-2xl">{lockedPresetTitle}</h2>
           {composePresetDescription ? (
             <p className="mt-2 text-sm font-medium text-warm-wood-dark/75">{composePresetDescription}</p>
           ) : null}

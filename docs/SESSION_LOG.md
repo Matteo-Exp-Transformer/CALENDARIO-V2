@@ -11,6 +11,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 26-05-26 | Personalizza form: etichetta card e import preset Card scorrevole | Ripristino import menù preselezionato solo su `display: 'cards'`; titolo Prenota da `sub_tabs[].label`; merge legacy `sub_tabs_overrides`; `presetSectionTitle` in `MenuSelection`. |
 | 26-05-26 | Prenota v2: overlay carosello da campi Personalizza form | [Report](Sessioni%20di%20lavoro/26-05-26/Report-prenota-carosello-overlay-campi-26-05-26.md) — `BookingSubTabCarousel` legge `label`, titolo slide, `description`, `price_per_person`; niente «Specialità della casa». |
 | 26-05-26 | Prenota v2: carosello senza griglia menù | [Report](Sessioni%20di%20lavoro/26-05-26/Report-personalizza-form-carosello-help-26-05-26.md) — sottotab carousel: solo immagini in pagina Prenota, niente `MenuSelection`. |
 | 26-05-26 | Personalizza form: Card scorrevole + pulsanti sottotab | [Report](Sessioni%20di%20lavoro/26-05-26/Report-personalizza-form-carosello-help-26-05-26.md) — rename Card scorrevole, `SubTabAddButtons` griglia responsive sopra editor, sfondo primary-50. |

@@ -252,6 +252,32 @@ export function migrateOverridesToSubTabs(overrides: SubTabOverride[]): SubTab[]
     }))
 }
 
+/**
+ * Allinea `sub_tabs[].label` (Etichetta card) con `sub_tabs_overrides` legacy:
+ * se la label salvata coincide ancora col nome del preset staff ma esiste un override
+ * con etichetta personalizzata, usa l'override per la pagina Prenota.
+ */
+export function applyLegacySubTabLabelOverrides(
+  subTabs: SubTab[],
+  legacyOverrides: SubTabOverride[] | undefined,
+  staffPresets: { id: string; name: string }[],
+): SubTab[] {
+  if (!legacyOverrides?.length) return subTabs
+  return subTabs.map((tab) => {
+    if (!tab.preset_id) return tab
+    const override = legacyOverrides.find((o) => o.preset_id === tab.preset_id)
+    const custom = override?.custom_label?.trim()
+    if (!custom) return tab
+    const label = tab.label?.trim() ?? ''
+    const presetName = staffPresets.find((p) => p.id === tab.preset_id)?.name?.trim()
+    if (!label) return { ...tab, label: custom }
+    if (presetName && label === presetName && custom !== label) {
+      return { ...tab, label: custom }
+    }
+    return tab
+  })
+}
+
 export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
   page_title: 'Richiesta Prenotazione',
   page_description:

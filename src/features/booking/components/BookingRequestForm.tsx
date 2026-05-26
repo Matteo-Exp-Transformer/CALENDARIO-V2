@@ -33,7 +33,10 @@ import { MenuPromoBannerCards } from './MenuPromoBannerCards'
 import { BookingModeCards } from './publicBooking/BookingModeCards'
 import { BookingFormFields } from './publicBooking/BookingFormFields'
 import type { BookingPublicFormConfig, SubTab } from '../constants/bookingPublicFormConfig'
-import { DEFAULT_BOOKING_FORM_CONFIG } from '../constants/bookingPublicFormConfig'
+import {
+  applyLegacySubTabLabelOverrides,
+  DEFAULT_BOOKING_FORM_CONFIG,
+} from '../constants/bookingPublicFormConfig'
 import { BookingSubTabCards } from './publicBooking/BookingSubTabCards'
 import { BOOKING_PUBLIC_CONTENT_WIDTH } from '../constants/bookingPublicFieldStyles'
 
@@ -159,8 +162,13 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     if (!activeMode?.sub_tabs_enabled || (activeMode.sub_tabs?.length ?? 0) === 0) {
       return []
     }
-    return activeMode.sub_tabs ?? []
-  }, [activeMode])
+    const raw = activeMode.sub_tabs ?? []
+    return applyLegacySubTabLabelOverrides(
+      raw,
+      activeMode.sub_tabs_overrides,
+      customStaffPresets,
+    )
+  }, [activeMode, customStaffPresets])
 
   const activeSubTab = activeModeSubTabs.find((t) => t.id === activeSubTabId) ?? null
 
@@ -813,6 +821,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             hiddenCategoryKeys={activeSubTab?.hidden_category_keys ?? []}
             hiddenItemIds={activeSubTab?.hidden_item_ids ?? []}
             subTabOverrides={activeSubTabOverrides}
+            presetSectionTitle={activeSubTab?.label?.trim() || undefined}
             presetDescription={activeSubTab?.description}
             disablePresetDescriptionFallback={activeModeSubTabs.length > 0}
             onPresetMenuChange={handlePresetMenuChange}

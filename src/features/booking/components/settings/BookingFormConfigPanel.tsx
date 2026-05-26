@@ -35,6 +35,7 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 import {
   BOOKING_HEADER_FONT_OPTIONS,
+  applyLegacySubTabLabelOverrides,
   DEFAULT_BOOKING_FORM_CONFIG,
   getBookingHeaderTextStyle,
   normalizeBookingHeaderColor,
@@ -47,6 +48,7 @@ import {
   type SubTab,
   type SubTabIcon,
 } from '@/features/booking/constants/bookingPublicFormConfig'
+import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
 import { normalizeMenuItemBookingTypes, type MenuItem } from '@/types/menu'
 import { toast } from 'react-toastify'
 import {
@@ -250,6 +252,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   const { registerUnsavedSource, clearUnsavedSource } = useUnsavedChangesGuard()
   const { data: savedConfig } = useRestaurantSetting('booking_public_form_config')
   const { data: restaurantName } = useRestaurantSetting('restaurant_name')
+  const { data: customPresetsRaw } = useRestaurantSetting('booking_custom_staff_presets')
   const { data: menuItems = [] } = useMenuItems()
   const { data: menuCategories = [] } = useMenuCategories()
   const upsert = useUpsertRestaurantSetting()
@@ -273,11 +276,25 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   /** Titolo slide digitato prima della prima foto (poi applicato al primo item). */
   const pendingSlideTitleByTabRef = useRef<Record<string, string>>({})
 
+  const allPresets: CustomStaffPreset[] = Array.isArray(customPresetsRaw) ? customPresetsRaw : []
+
+  const withMergedSubTabLabels = (cfg: BookingPublicFormConfig): BookingPublicFormConfig => ({
+    ...cfg,
+    booking_modes: cfg.booking_modes.map((m) => ({
+      ...m,
+      sub_tabs: applyLegacySubTabLabelOverrides(
+        m.sub_tabs ?? [],
+        m.sub_tabs_overrides,
+        allPresets,
+      ),
+    })),
+  })
+
   useEffect(() => {
     if (savedConfig && !headerDirty && !modesDirty) {
-      setConfig(savedConfig)
+      setConfig(withMergedSubTabLabels(savedConfig))
     }
-  }, [savedConfig, headerDirty, modesDirty])
+  }, [savedConfig, headerDirty, modesDirty, customPresetsRaw])
 
   useEffect(() => {
     registerUnsavedSource('booking-form-config', 'Personalizza form', formConfigDirty)
@@ -363,6 +380,56 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
   }
 
+  const shouldKeepSubTabLabelOnPresetImport = (
+    current: SubTab | undefined,
+    nextPreset: CustomStaffPreset,
+  ): string | undefined => {
+    const customized = current?.label?.trim()
+    if (!customized) return undefined
+    const previousPresetName = current?.preset_id
+      ? allPresets.find((p) => p.id === current.preset_id)?.name?.trim()
+      : undefined
+    if (previousPresetName && customized !== previousPresetName) return customized
+    if (!previousPresetName && customized !== nextPreset.name.trim()) return customized
+    return undefined
+  }
+
+  const importPresetIntoSubTab = (modeId: string, subTabId: string, presetId: string) => {
+    const preset = allPresets.find((p) => p.id === presetId)
+    if (!preset) return
+    const current = config.booking_modes
+      .find((m) => m.id === modeId)
+      ?.sub_tabs?.find((t) => t.id === subTabId)
+    const keepLabel = shouldKeepSubTabLabelOnPresetImport(current, preset)
+    updateSubTab(modeId, subTabId, {
+      preset_id: preset.id,
+      label: keepLabel ?? preset.name,
+      description: preset.description?.trim() || undefined,
+      price_per_person: preset.price_per_person && preset.price_per_person > 0 ? preset.price_per_person : undefined,
+      hidden_item_ids: menuItems
+        .filter((item) => !preset.item_ids.includes(item.id))
+        .map((item) => item.id),
+      hidden_category_keys: [],
+    })
+  }
+
+  const importPresetIntoDraftSubTab = (modeId: string, presetId: string) => {
+    const preset = allPresets.find((p) => p.id === presetId)
+    if (!preset) return
+    const current = draftSubTabsByMode[modeId] ?? undefined
+    const keepLabel = shouldKeepSubTabLabelOnPresetImport(current, preset)
+    updateDraftSubTab(modeId, {
+      preset_id: preset.id,
+      label: keepLabel ?? preset.name,
+      description: preset.description?.trim() || undefined,
+      price_per_person: preset.price_per_person && preset.price_per_person > 0 ? preset.price_per_person : undefined,
+      hidden_item_ids: menuItems
+        .filter((item) => !preset.item_ids.includes(item.id))
+        .map((item) => item.id),
+      hidden_category_keys: [],
+    })
+  }
+
   const removeSubTab = (modeId: string, subTabId: string) => {
     setConfig((prev) => ({
       ...prev,
@@ -426,9 +493,13 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
   const persistModesSection = async (bookingModes: BookingPublicFormConfig['booking_modes']) => {
     const saved = getSavedBaseline()
+    const modesForDb = bookingModes.map((m) => ({
+      ...m,
+      sub_tabs_overrides: undefined,
+    }))
     const normalized = normalizeBookingPublicFormConfig({
       ...saved,
-      booking_modes: bookingModes,
+      booking_modes: modesForDb,
     })
     await upsert.mutateAsync([{ key: 'booking_public_form_config', value: normalized }])
     mergeConfigAfterPartialSave(normalized, 'modes')
@@ -473,7 +544,10 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
   const handleCancelModesSection = () => {
     const baseline = getSavedBaseline()
-    setConfig((prev) => ({ ...prev, booking_modes: baseline.booking_modes }))
+    setConfig((prev) => ({
+      ...prev,
+      booking_modes: withMergedSubTabLabels(baseline).booking_modes,
+    }))
     setDraftSubTabsByMode({})
     setExpandedSubTabByMode({})
     setModesDirty(false)
@@ -603,12 +677,14 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   const renderSubTabEditor = ({
     mode,
     tab,
+    relevantPresets,
     subTabNumber,
     isDraft,
     headerActions,
   }: {
     mode: BookingMode
     tab: SubTab
+    relevantPresets: CustomStaffPreset[]
     subTabNumber: number
     isDraft: boolean
     headerActions?: React.ReactNode
@@ -724,6 +800,42 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
             ))}
           </div>
         </div>
+
+        {tab.display === 'cards' && (
+          <div className="w-full min-w-0 space-y-1.5">
+            <Label className="block text-sm">Importa menù preselezionato</Label>
+            {relevantPresets.length > 0 ? (
+              <select
+                value={tab.preset_id ?? ''}
+                onChange={(e) => {
+                  const presetId = e.target.value
+                  if (presetId) {
+                    if (isDraft) importPresetIntoDraftSubTab(mode.id, presetId)
+                    else importPresetIntoSubTab(mode.id, tab.id, presetId)
+                  } else {
+                    patchTab({
+                      preset_id: undefined,
+                      hidden_category_keys: [],
+                      hidden_item_ids: [],
+                    })
+                  }
+                }}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              >
+                <option value="">Compila manualmente</option>
+                {relevantPresets.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <p className="text-xs text-slate-500">
+                Nessun menù preselezionato per questa modalità (tab Menu in admin).
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="w-full min-w-0 space-y-1.5">
           <Label className="block text-sm">Prezzo a persona (opzionale)</Label>
@@ -923,6 +1035,13 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           {config.booking_modes.map((mode) => {
             const isOpen = expandedMode === mode.id
 
+            const relevantPresets = allPresets.filter(
+              (p) =>
+                p.visible_on_booking !== false &&
+                Array.isArray(p.booking_types) &&
+                (p.booking_types as string[]).includes(mode.booking_type),
+            )
+
             const subTabs = mode.sub_tabs ?? []
             const draftSubTab = draftSubTabsByMode[mode.id] ?? null
             const expandedSubTabId = expandedSubTabByMode[mode.id] ?? null
@@ -1058,6 +1177,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                             {renderSubTabEditor({
                               mode,
                               tab: draftSubTab,
+                              relevantPresets,
                               subTabNumber: subTabs.length + 1,
                               isDraft: true,
                             })}
@@ -1105,6 +1225,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                   {renderSubTabEditor({
                                     mode,
                                     tab,
+                                    relevantPresets,
                                     subTabNumber: tabIdx + 1,
                                     isDraft: false,
                                     headerActions: (
