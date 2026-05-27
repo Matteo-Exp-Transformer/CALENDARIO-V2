@@ -158,7 +158,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-start md:gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_7rem_6rem] sm:items-start sm:gap-3">
         <div className="min-w-0 space-y-1">
           <BookingPublicDatePickerField
             id="desired_date"
@@ -178,7 +178,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
         <div className="min-w-0 space-y-1">
           <BookingPublicTimePickerField
             id="desired_time"
-            label="Ora prenotazione *"
+            label="Ora *"
             value={formData.desired_time || '16:00'}
             onChange={handleTimeChange}
             required
@@ -194,7 +194,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
         <div className="min-w-0 space-y-1">
           <BookingPublicInsetField
             id="num_guests"
-            label="Numero Ospiti *"
+            label="Ospiti *"
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
