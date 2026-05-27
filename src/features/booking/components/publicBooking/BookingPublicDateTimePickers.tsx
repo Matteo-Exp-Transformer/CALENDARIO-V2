@@ -93,11 +93,13 @@ function PickerPanel({
   title,
   onClose,
   children,
+  alignRight = false,
 }: {
   open: boolean
   title: string
   onClose: () => void
   children: React.ReactNode
+  alignRight?: boolean
 }) {
   const panelRef = useDismissablePanel(open, onClose)
   if (!open) return null
@@ -110,7 +112,10 @@ function PickerPanel({
         role="dialog"
         aria-modal="false"
         aria-label={title}
-        className="fixed inset-x-3 bottom-3 z-50 rounded-2xl border border-black/10 bg-white p-4 shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:top-full sm:mt-2 sm:w-[min(24rem,calc(100vw-2rem))]"
+        className={cn(
+          'fixed inset-x-3 bottom-3 z-50 rounded-2xl border border-black/10 bg-white p-4 shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:top-full sm:mt-2 sm:w-[min(24rem,calc(100vw-2rem))]',
+          alignRight ? 'sm:right-0' : 'sm:left-0',
+        )}
       >
         <div className="mb-3 flex items-center justify-between gap-3">
           <p className="text-base font-bold text-warm-wood">{title}</p>
@@ -293,7 +298,7 @@ export function BookingPublicTimePickerField({
         </button>
       </div>
 
-      <PickerPanel open={open} title="Scegli l'orario" onClose={() => setOpen(false)}>
+      <PickerPanel open={open} title="Scegli l'orario" onClose={() => setOpen(false)} alignRight>
         <TimePicker24h
           id={`${id}-picker`}
           value={value || ''}
