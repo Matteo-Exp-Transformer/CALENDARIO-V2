@@ -248,7 +248,7 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
         {gridOnDesktop ? (
           <div
             className={cn(
-              'grid w-full min-w-0 gap-4',
+              'grid w-full min-w-0 items-start gap-4',
               count <= 2 ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-3',
             )}
           >
