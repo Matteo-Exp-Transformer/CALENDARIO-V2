@@ -48,6 +48,7 @@ interface BookingRequestFormProps {
   formConfig?: BookingPublicFormConfig
   onFormDataChange?: (data: Partial<BookingRequestInput>) => void
   onActiveSubTabChange?: (subTab: SubTab | null) => void
+  onMenuPanelVisibilityChange?: (visible: boolean) => void
   /** Riepilogo a destra (desktop); il submit va sotto questa colonna. */
   summarySidebar?: React.ReactNode
 }
@@ -102,6 +103,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   formConfig = DEFAULT_BOOKING_FORM_CONFIG,
   onFormDataChange,
   onActiveSubTabChange,
+  onMenuPanelVisibilityChange,
   summarySidebar,
 }) => {
   // Helper function to get current date in YYYY-MM-DD format
@@ -181,6 +183,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         label: resolved.label,
         description: resolved.description,
         price_per_person: resolved.price_per_person,
+        is_fixed_menu: resolved.is_fixed_menu,
         hidden_category_keys: resolved.hidden_category_keys,
         hidden_item_ids: resolved.hidden_item_ids,
       }
@@ -189,12 +192,14 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
   const activeSubTab = activeModeSubTabs.find((t) => t.id === activeSubTabId) ?? null
 
-  const getPresetPricePerPerson = (subTab: SubTab | null): number | undefined => {
-    if (!subTab || subTab.display === 'carousel') return undefined
+  const getActiveSubTabPricePerPerson = (subTab: SubTab | null): number | undefined => {
+    if (!subTab || subTab.is_fixed_menu === false) return undefined
     return subTab.price_per_person != null && subTab.price_per_person > 0
       ? subTab.price_per_person
       : undefined
   }
+
+  const activeSubTabUsesFixedPricing = getActiveSubTabPricePerPerson(activeSubTab) != null
 
   const activeSubTabOverrides = useMemo(() => {
     if (activeModeSubTabs.length > 0) {
@@ -222,6 +227,10 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     onActiveSubTabChange?.(activeSubTab)
   }, [activeSubTab, onActiveSubTabChange])
 
+  useEffect(() => {
+    onMenuPanelVisibilityChange?.(showMenuSelectionSection && activeSubTab != null)
+  }, [activeSubTab, onMenuPanelVisibilityChange, showMenuSelectionSection])
+
   // Modalità Carosello: c'è una sola sottotab; auto-selezionala senza richiedere click utente
   // (la strip BookingSubTabCards non viene renderizzata per questa presentazione).
   useEffect(() => {
@@ -230,6 +239,17 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     const first = activeModeSubTabs[0]
     if (first) setActiveSubTabId(first.id)
   }, [activeMode?.sub_tabs_presentation, activeModeSubTabs, activeSubTabId])
+
+  useEffect(() => {
+    if (!activeSubTab || activeSubTab.display !== 'carousel') return
+    const price = getActiveSubTabPricePerPerson(activeSubTab)
+    setFormData((prev) => ({
+      ...prev,
+      menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
+      menu_total_per_person: price,
+      menu_total_booking: price && prev.num_guests > 0 ? price * prev.num_guests : undefined,
+    }))
+  }, [activeSubTab?.id, activeSubTab?.display, activeSubTab?.price_per_person, activeSubTab?.is_fixed_menu])
 
   const frostedInputCn =
     'min-h-[3rem] bg-white px-4 rounded-lg border border-slate-200 text-left text-xs font-bold text-warm-wood sm:text-sm focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/40'
@@ -311,11 +331,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   // Reset num_guests to 0 when cleared - only allow numeric input
   const handleNumGuestsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value.trim()
-    const presetPricePerPerson = getPresetPricePerPerson(activeSubTab)
+    const presetPricePerPerson = getActiveSubTabPricePerPerson(activeSubTab)
 
     // Only allow numeric characters or empty string
     if (inputValue === '') {
-      const tiramisuTotal = presetPricePerPerson ? 0 : formData.menu_selection?.tiramisu_total || 0
+      const tiramisuTotal = activeSubTabUsesFixedPricing ? 0 : formData.menu_selection?.tiramisu_total || 0
       const newFormData = { ...formData, num_guests: 0, menu_total_booking: tiramisuTotal }
       setFormData(newFormData)
       setErrors({ ...errors, num_guests: '' })
@@ -327,18 +347,20 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     if (/^\d+$/.test(inputValue)) {
       const value = parseInt(inputValue, 10)
       if (!isNaN(value) && value >= 1 && value <= 110) {
-        const tiramisuTotal = presetPricePerPerson ? 0 : formData.menu_selection?.tiramisu_total || 0
-        const totalPerPerson = presetPricePerPerson ?? formData.menu_total_per_person ?? 0
+        const tiramisuTotal = activeSubTabUsesFixedPricing ? 0 : formData.menu_selection?.tiramisu_total || 0
+        const totalPerPerson = activeSubTabUsesFixedPricing
+          ? presetPricePerPerson
+          : formData.menu_total_per_person
         const newFormData = {
           ...formData,
           num_guests: value,
-          menu_total_booking: totalPerPerson * value + tiramisuTotal
+          menu_total_booking: totalPerPerson ? totalPerPerson * value + tiramisuTotal : undefined
         }
         setFormData(newFormData)
         setErrors({ ...errors, num_guests: '' })
       } else if (value === 0) {
         // Explicitly handle 0 to show empty
-        const tiramisuTotal = presetPricePerPerson ? 0 : formData.menu_selection?.tiramisu_total || 0
+        const tiramisuTotal = activeSubTabUsesFixedPricing ? 0 : formData.menu_selection?.tiramisu_total || 0
         const newFormData = { ...formData, num_guests: 0, menu_total_booking: tiramisuTotal }
         setFormData(newFormData)
         setErrors({ ...errors, num_guests: '' })
@@ -384,20 +406,28 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
     const { items } = resolved
     const numGuests = formData.num_guests || 0
-    const presetPricePerPerson = getPresetPricePerPerson(sourceSubTab)
+    const presetPricePerPerson = getActiveSubTabPricePerPerson(sourceSubTab)
     const { totalPerPerson, tiramisuTotal, tiramisuKg, menu_total_booking } =
       computeMenuTotalsWithPresetPrice(items, numGuests, presetPricePerPerson)
+    const usesFixedSubTabPricing = presetPricePerPerson != null
+    const effectiveTotalPerPerson = usesFixedSubTabPricing ? presetPricePerPerson : totalPerPerson
+    const effectiveTiramisuTotal = usesFixedSubTabPricing ? 0 : tiramisuTotal
 
     setFormData({
       ...formData,
       preset_menu: presetType,
       menu_selection: {
         items,
-        tiramisu_total: tiramisuTotal,
-        tiramisu_kg: tiramisuKg,
+        tiramisu_total: effectiveTiramisuTotal,
+        tiramisu_kg: usesFixedSubTabPricing ? 0 : tiramisuKg,
       },
-      menu_total_per_person: totalPerPerson,
-      menu_total_booking,
+      menu_total_per_person: effectiveTotalPerPerson,
+      menu_total_booking:
+        effectiveTotalPerPerson && numGuests > 0
+          ? effectiveTotalPerPerson * numGuests + effectiveTiramisuTotal
+          : usesFixedSubTabPricing
+            ? undefined
+            : menu_total_booking,
     })
   }
 
@@ -568,7 +598,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         isValid = false
         if (!firstErrorKey) firstErrorKey = 'menu'
       }
-      if (!formData.menu_total_per_person || formData.menu_total_per_person <= 0) {
+      if (!activeSubTabUsesFixedPricing && (!formData.menu_total_per_person || formData.menu_total_per_person <= 0)) {
         newErrors.menu = 'Il totale a persona deve essere maggiore di 0'
         isValid = false
         if (!firstErrorKey) firstErrorKey = 'menu'
@@ -828,14 +858,14 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
                 })
                 return
               }
-              const price = tab.price_per_person ?? 0
+              const price = getActiveSubTabPricePerPerson(tab)
               const numGuests = formData.num_guests || 0
               setFormData({
                 ...formData,
                 preset_menu: null,
                 menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
-                menu_total_per_person: price > 0 ? price : undefined,
-                menu_total_booking: price > 0 ? price * numGuests : undefined,
+                menu_total_per_person: price,
+                menu_total_booking: price && numGuests > 0 ? price * numGuests : undefined,
               })
             }}
           />
@@ -866,15 +896,19 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             presetSectionTitle={activeSubTab?.label?.trim() || undefined}
             presetDescription={activeSubTab?.description}
             disablePresetDescriptionFallback={activeModeSubTabs.length > 0}
+            menuSelectionLockedOverride={
+              activeSubTab ? activeSubTab.is_fixed_menu !== false : undefined
+            }
             onPresetMenuChange={handlePresetMenuChange}
             onMenuChange={({ items, totalPerPerson, tiramisuTotal, tiramisuKg }) => {
               const numGuests = formData.num_guests || 0
               const currentPreset = selectedPreset
               let updatedPreset: PresetMenuType = currentPreset
-              const presetPricePerPerson = getPresetPricePerPerson(activeSubTab)
-              const effectiveTotalPerPerson = presetPricePerPerson ?? totalPerPerson
-              const effectiveTiramisuTotal = presetPricePerPerson ? 0 : tiramisuTotal
-              const effectiveTiramisuKg = presetPricePerPerson ? 0 : tiramisuKg
+              const presetPricePerPerson = getActiveSubTabPricePerPerson(activeSubTab)
+              const usesFixedSubTabPricing = presetPricePerPerson != null
+              const effectiveTotalPerPerson = usesFixedSubTabPricing ? presetPricePerPerson : totalPerPerson
+              const effectiveTiramisuTotal = usesFixedSubTabPricing ? 0 : tiramisuTotal
+              const effectiveTiramisuKg = usesFixedSubTabPricing ? 0 : tiramisuKg
 
               if (
                 currentPreset &&
@@ -893,7 +927,10 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
                   tiramisu_kg: effectiveTiramisuKg,
                 },
                 menu_total_per_person: effectiveTotalPerPerson,
-                menu_total_booking: effectiveTotalPerPerson * numGuests + effectiveTiramisuTotal,
+                menu_total_booking:
+                  effectiveTotalPerPerson && numGuests > 0
+                    ? effectiveTotalPerPerson * numGuests + effectiveTiramisuTotal
+                    : undefined,
               })
               setErrors({ ...errors, menu: '' })
             }}

@@ -1,8 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { CaretLeftIcon } from '@phosphor-icons/react/dist/csr/CaretLeft'
 import { CaretRightIcon } from '@phosphor-icons/react/dist/csr/CaretRight'
+import { ForkKnifeIcon } from '@phosphor-icons/react/dist/csr/ForkKnife'
+import { CallBellIcon } from '@phosphor-icons/react/dist/csr/CallBell'
+import { ChefHatIcon } from '@phosphor-icons/react/dist/csr/ChefHat'
+import { StarIcon } from '@phosphor-icons/react/dist/csr/Star'
+import { LeafIcon } from '@phosphor-icons/react/dist/csr/Leaf'
 import { cn } from '@/lib/utils'
-import type { SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
+import type { SubTab, SubTabIcon } from '@/features/booking/constants/bookingPublicFormConfig'
 import { BOOKING_PUBLIC_WIDE_CARDS_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
 
 const SUB_TAB_SCROLL_STEP_PX = 240
@@ -25,6 +30,14 @@ function formatPricePerPersonLabel(price?: number): string | null {
     maximumFractionDigits: 2,
   }).format(price)
   return `${amount}€ a persona`
+}
+
+function SubTabCardIcon({ icon, className }: { icon?: SubTabIcon; className?: string }) {
+  if (icon === 'cloche') return <CallBellIcon weight="light" className={className} />
+  if (icon === 'chef-hat') return <ChefHatIcon weight="light" className={className} />
+  if (icon === 'star') return <StarIcon weight="light" className={className} />
+  if (icon === 'leaf') return <LeafIcon weight="light" className={className} />
+  return <ForkKnifeIcon weight="light" className={className} />
 }
 
 export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
@@ -72,10 +85,10 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
         <button
           type="button"
           aria-label="Scorri opzioni menù indietro"
-          className="absolute left-0 top-0 bottom-0 z-20 hidden sm:flex w-10 items-center justify-center rounded-r-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
+          className="absolute left-2 top-1/2 z-20 hidden h-12 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-warm-wood/15 bg-white/85 text-warm-wood shadow-[0_8px_24px_rgba(74,45,25,0.14)] backdrop-blur-sm transition hover:bg-white hover:text-warm-orange sm:flex"
           onClick={() => scrollBy(-SUB_TAB_SCROLL_STEP_PX)}
         >
-          <CaretLeftIcon size={22} weight="regular" />
+          <CaretLeftIcon size={20} weight="bold" />
         </button>
       )}
       <div
@@ -95,17 +108,17 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
               className={cn(
                 'flex snap-center flex-col items-center rounded-xl border-2 px-3 py-3 text-center transition-all sm:rounded-2xl sm:px-6 sm:py-4',
                 SUB_TAB_CARD_SIZE_CLASS,
-                'min-h-[196px] sm:min-h-[220px]',
+                'min-h-[196px] sm:min-h-[230px] lg:min-h-[250px]',
                 'bg-white/85 backdrop-blur-[1px] shadow-sm',
                 isActive
                   ? 'border-warm-orange ring-2 ring-warm-orange/30 shadow-md'
                   : 'border-black/15 hover:border-warm-orange/50',
               )}
             >
-              <div className="flex min-w-0 w-full flex-1 flex-col items-center">
+              <div className="flex min-w-0 w-full flex-1 flex-col items-center pt-2 sm:pt-3">
                 <p
                   className={cn(
-                    'line-clamp-2 text-sm font-bold leading-tight sm:text-base lg:text-xl',
+                    'line-clamp-2 text-sm font-bold leading-tight sm:text-lg lg:text-2xl',
                     isActive ? 'text-warm-orange' : 'text-warm-wood',
                   )}
                 >
@@ -113,20 +126,31 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                 </p>
                 <div
                   className={cn(
-                    'mt-2 h-[3px] min-h-[3px] w-11 shrink-0 rounded-full sm:mt-2.5',
+                    'mt-3 h-[3px] min-h-[3px] w-11 shrink-0 rounded-full sm:mt-4',
                     isActive ? 'bg-warm-orange/70' : 'bg-warm-wood/40',
                   )}
                   aria-hidden
                 />
-                <div className="flex min-h-0 w-full flex-1 items-center justify-center py-2 sm:py-2.5">
+                <div className="flex min-h-0 w-full flex-1 items-center justify-center gap-3 py-2 sm:py-3 lg:gap-4">
                   {tab.display !== 'carousel' && tab.description && (
-                    <p className="line-clamp-5 text-xs leading-tight text-warm-wood-dark/70 sm:line-clamp-4 lg:text-base">
-                      {tab.description}
-                    </p>
+                    <>
+                      <span
+                        className={cn(
+                          'hidden shrink-0 items-center justify-center rounded-full bg-warm-beige/60 text-warm-wood-dark/65 md:flex',
+                          'h-12 w-12 lg:h-16 lg:w-16',
+                        )}
+                        aria-hidden
+                      >
+                        <SubTabCardIcon icon={tab.icon} className="h-7 w-7 lg:h-10 lg:w-10" />
+                      </span>
+                      <p className="min-w-0 flex-1 line-clamp-5 text-center text-xs leading-tight text-warm-wood-dark/70 sm:line-clamp-4 sm:text-sm md:text-left lg:text-lg">
+                        {tab.description}
+                      </p>
+                    </>
                   )}
                 </div>
                 {priceLabel && (
-                  <p className="text-xs font-bold leading-tight text-warm-wood-dark/80 sm:text-sm lg:text-lg">
+                  <p className="text-xs font-bold leading-tight text-warm-wood-dark/80 sm:text-base lg:text-xl">
                     <span>{priceLabel}</span>
                   </p>
                 )}
@@ -139,10 +163,10 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
         <button
           type="button"
           aria-label="Scorri opzioni menù avanti"
-          className="absolute right-0 top-0 bottom-0 z-20 hidden sm:flex w-10 items-center justify-center rounded-l-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
+          className="absolute right-2 top-1/2 z-20 hidden h-12 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-warm-wood/15 bg-white/85 text-warm-wood shadow-[0_8px_24px_rgba(74,45,25,0.14)] backdrop-blur-sm transition hover:bg-white hover:text-warm-orange sm:flex"
           onClick={() => scrollBy(SUB_TAB_SCROLL_STEP_PX)}
         >
-          <CaretRightIcon size={22} weight="regular" />
+          <CaretRightIcon size={20} weight="bold" />
         </button>
       )}
     </div>

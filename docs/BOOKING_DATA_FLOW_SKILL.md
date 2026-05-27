@@ -66,7 +66,7 @@ ADMIN
            ├─ sub_tabs_presentation: XOR cards | carousel | null
            └─ sub_tabs (SubTab[])
                 ├─ preset_id        ─── legame con preset staff (magazzino)
-                ├─ label, description, price_per_person, hidden_*  (snapshot vetrina)
+                ├─ label, description, price_per_person, is_fixed_menu, hidden_*  (snapshot vetrina)
                 ├─ field_overrides  ─── decide per ogni campo: live o congelato
                 └─ carousel_items (solo display='carousel')
 
@@ -151,7 +151,7 @@ LOCK  Due client Supabase
 
 1. Aggiorna `BookingType` in `src/types/booking.ts`.
 2. Aggiungi una voce a `DEFAULT_BOOKING_FORM_CONFIG.booking_modes` con `sub_tabs_presentation: null`, `sub_tabs: []`.
-3. Verifica che `bookingTypeUsesMenuSelections` (in `BookingRequestForm`) e `STAFF_PRESET_BOOKING_TYPE_VALUES` siano coerenti.
+3. Verifica che `bookingTypeUsesMenuSelections` (in `BookingRequestForm`) sia coerente.
 
 ### Cambiare il comportamento "aggiorna solo se non personalizzato"
 

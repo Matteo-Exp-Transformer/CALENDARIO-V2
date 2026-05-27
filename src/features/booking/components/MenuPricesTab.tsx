@@ -27,7 +27,6 @@ import type { BookingType } from '@/types/booking'
 import {
   STAFF_PRESET_DEFAULT_BOOKING_TYPES,
   type CustomStaffPreset,
-  isStaffPresetFixedMenu,
   isStaffPresetVisibleOnBooking,
 } from '../constants/presetMenus'
 import { useRestaurantSetting, useUpsertRestaurantSetting } from '../hooks/useRestaurantSetting'
@@ -454,7 +453,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const [presetName, setPresetName] = useState('')
   const [presetDescription, setPresetDescription] = useState('')
   const [presetPriceInput, setPresetPriceInput] = useState('')
-  const [presetIsFixedMenu, setPresetIsFixedMenu] = useState(true)
   const [presetSelectedItems, setPresetSelectedItems] = useState<SelectedMenuItem[]>([])
   const [editingCustomPresetId, setEditingCustomPresetId] = useState<string | null>(null)
   const [promoEditorOpen, setPromoEditorOpen] = useState(false)
@@ -587,7 +585,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setPresetName('')
     setPresetDescription('')
     setPresetPriceInput('')
-    setPresetIsFixedMenu(true)
     setPresetSelectedItems([])
     setEditingCustomPresetId(null)
   }
@@ -602,7 +599,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setPresetName('')
     setPresetDescription('')
     setPresetPriceInput('')
-    setPresetIsFixedMenu(true)
     setPresetSelectedItems([])
     setPresetEditorMode('editor')
   }
@@ -612,7 +608,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setPresetName(preset.name)
     setPresetDescription(preset.description ?? '')
     setPresetPriceInput(preset.price_per_person != null ? String(preset.price_per_person) : '')
-    setPresetIsFixedMenu(isStaffPresetFixedMenu(preset))
     setPresetSelectedItems(selectedItemsFromMenuItemIds(menuItems, preset.item_ids))
     setPresetEditorMode('editor')
   }
@@ -626,7 +621,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       ...base,
       ...(trimmedDesc ? { description: trimmedDesc } : {}),
       ...(parsedPrice > 0 ? { price_per_person: parsedPrice } : {}),
-      ...(presetIsFixedMenu ? {} : { is_fixed_menu: false }),
     }
   }
 
@@ -1720,10 +1714,11 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       )}
 
       {viewMode === 'preset_menus' && (
-        <>
           <div
-            className="relative w-full rounded-2xl border-2 p-4 md:p-6 shadow-lg"
+            className={MENU_INGREDIENT_OVERVIEW_SHELL_CLASS}
             style={ADMIN_WARM_GRADIENT_SURFACE}
+            role="region"
+            aria-labelledby="menu-prices-preset-menus-heading"
           >
             <button
               type="button"
@@ -1735,20 +1730,22 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
             </button>
             <div
               className={cn(
-                'mx-auto max-w-3xl pr-10',
-                presetEditorMode !== 'editor' && 'pb-12',
+                'pr-10',
+                presetEditorMode === 'list' && 'pb-12',
               )}
             >
-              <h3 className="text-center font-serif text-title-card font-bold text-warm-wood">
+              <h3
+                id="menu-prices-preset-menus-heading"
+                className="text-center font-serif text-title-card font-bold text-warm-wood"
+              >
                 Menù preselezionati
               </h3>
               <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
-                Inserisci nome Menù preselezionato e gli ingredienti. Puoi anche scegliere per quale tipologia di
-                prenotazione sarà visibile.
+                Dai un nome al Menù preselezionato e scegli quali ingredienti ne fanno parte.
               </p>
 
               {presetEditorMode === 'list' && (
-                <div className="mt-8 flex flex-col items-stretch gap-4">
+                <div className="mx-auto mt-8 max-w-3xl flex flex-col items-stretch gap-4">
                   <Button
                     variant="success"
                     size="sm"
@@ -1776,8 +1773,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                             <p className="text-left text-xs text-gray-500">
                               {preset.item_ids.length}{' '}
                               {preset.item_ids.length === 1 ? 'ingrediente' : 'ingredienti'}
-                              {' · '}
-                              {isStaffPresetFixedMenu(preset) ? 'Menù fisso' : 'Personalizzabile'}
                               {preset.price_per_person != null && preset.price_per_person > 0
                                 ? ` · €${preset.price_per_person.toFixed(2)}/persona`
                                 : ''}
@@ -1819,7 +1814,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
               )}
 
               {presetEditorMode === 'editor' && (
-                <div className="mt-8 flex flex-col gap-4">
+                <div className="mt-8 flex flex-col gap-6 pb-12">
                   <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
                     <div>
                       <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
@@ -1832,9 +1827,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                         className="h-14 w-full rounded-2xl pl-6"
                         style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
                       />
-                      <p className="mt-1 text-xs text-gray-500">
-                        Nome mostrato nelle card e nella selezione del form Prenota.
-                      </p>
                     </div>
                     <div>
                       <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
@@ -1845,13 +1837,10 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                         value={presetDescription}
                         onChange={(e) => setPresetDescription(e.target.value)}
                         placeholder="Testo mostrato sotto il nome sulle card in pagina Prenota"
-                        maxLength={300}
+                        maxLength={80}
                         rows={3}
                         className="w-full rounded-2xl border-gray-200 px-4 py-3 text-sm"
                       />
-                      <p className="mt-1 text-xs text-gray-500">
-                        Visibile nella pagina Prenota. {presetDescription.length}/300
-                      </p>
                     </div>
                     <div>
                       <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
@@ -1869,49 +1858,17 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                         style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
                       />
                       <p className="mt-1 text-xs text-gray-500">
-                        Se compilato, viene mostrato come prezzo indicativo per persona.
+                        Assegna un prezzo a persona al menù
                       </p>
                     </div>
-                    <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
-                        Menù fisso o personalizzabile
-                      </label>
-                      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 shadow-sm">
-                        <input
-                          type="checkbox"
-                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-400"
-                          checked={presetIsFixedMenu}
-                          onChange={(e) => setPresetIsFixedMenu(e.target.checked)}
-                        />
-                        <span className="text-left leading-snug">
-                          Menù fisso
-                          <span className="mt-1 block text-xs font-normal text-gray-600">
-                            {presetIsFixedMenu
-                              ? 'Attivo: il cliente non può cambiare gli ingredienti dopo la scelta.'
-                              : 'Disattivo: il cliente può aggiungere o togliere ingredienti dal menù proposto.'}
-                          </span>
-                        </span>
-                      </label>
-                    </div>
                   </div>
-                </div>
-              )}
-            </div>
 
-            {presetEditorMode === 'editor' && (
-              <>
-                <div
-                  className={cn(MENU_INGREDIENT_OVERVIEW_SHELL_CLASS, 'mt-6 w-full min-w-0')}
-                  style={ADMIN_WARM_GRADIENT_SURFACE}
-                >
                   <PresetMenuBuilder
                     selectedItems={presetSelectedItems}
                     onSelectionChange={setPresetSelectedItems}
                   />
-                </div>
 
-                <div className="mx-auto max-w-3xl space-y-6 pb-12 pr-10">
-                  <div className="flex flex-wrap justify-center gap-3">
+                  <div className="mx-auto flex w-full max-w-3xl flex-wrap justify-center gap-3">
                     <button
                       type="button"
                       disabled={upsertRestaurantSetting.isPending}
@@ -1929,15 +1886,14 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                       }}
                       className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
                     >
-                      <X className="h-4 w-4 flex-shrink-0" />
+                      <X className="h-4 w-4 shrink-0" />
                       Annulla
                     </button>
                   </div>
                 </div>
-              </>
-            )}
+              )}
+            </div>
           </div>
-        </>
       )}
 
       {viewMode === 'categories' && (

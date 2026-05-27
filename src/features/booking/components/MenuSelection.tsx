@@ -66,6 +66,8 @@ interface MenuSelectionProps {
   disablePresetDescriptionFallback?: boolean
   /** Titolo sezione menù da Etichetta card sottotab (priorità su nome preset staff). */
   presetSectionTitle?: string
+  /** Forza blocco/sblocco ingredienti dalla card Prenota selezionata. */
+  menuSelectionLockedOverride?: boolean
 }
 
 type NormalizedMenuItem = ComposeMenuItem
@@ -102,6 +104,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   presetDescription,
   disablePresetDescriptionFallback = false,
   presetSectionTitle,
+  menuSelectionLockedOverride,
 }) => {
   const publicBlockClass = publicFormLayout ? BOOKING_PUBLIC_CONTENT_WIDTH : 'mx-auto w-full max-w-full'
   const { data: menuItems = [], isLoading, error } = useMenuItems()
@@ -117,13 +120,14 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   )
 
   const menuSelectionLocked = useMemo(() => {
+    if (typeof menuSelectionLockedOverride === 'boolean') return menuSelectionLockedOverride
     if (!presetMenu) return false
     if (isBuiltinPresetMenuType(presetMenu)) return true
     if (!isCustomPresetMenuType(presetMenu)) return false
     const uuid = getCustomPresetUuid(presetMenu)
     const preset = uuid ? customStaffPresets.find((p) => p.id === uuid) : undefined
     return preset ? isStaffPresetFixedMenu(preset) : false
-  }, [presetMenu, customStaffPresets])
+  }, [presetMenu, customStaffPresets, menuSelectionLockedOverride])
 
   const showStaffPresetDropdown = useMemo(() => {
     if (!bookingTypeUsesMenuSelections(bookingType) || !onPresetMenuChange || !staffPresetsDropdownVisible) {
@@ -207,11 +211,13 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     return uuid ? customStaffPresets.find((p) => p.id === uuid) : undefined
   }, [presetMenu, customStaffPresets])
 
-  const showComposeHeader = shouldShowComposeMenuHeader(
-    presetMenu ?? null,
-    activeCustomPreset,
-    bookingType,
-  )
+  const showComposeHeader =
+    menuSelectionLockedOverride === false ||
+    shouldShowComposeMenuHeader(
+      presetMenu ?? null,
+      activeCustomPreset,
+      bookingType,
+    )
 
   const presetTitleLabel = resolvePresetDisplayTitle(
     presetMenu ?? null,
@@ -538,8 +544,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       {/* Titolo sezione menù — compose: solo titolo grande (no etichetta piccola / descrizione) */}
       {showComposeHeader ? (
         <div
-          className="mx-auto mb-4 w-full rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]"
-          style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))` }}
+          className={cn('mb-4 w-full rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]', publicFormLayout ? 'mr-auto' : 'mx-auto')}
+          style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, 100%)` }}
         >
           <h2 className="font-serif text-xl font-bold text-warm-wood md:text-2xl">Crea il tuo menù</h2>
           {composePresetDescription ? (
@@ -548,8 +554,8 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         </div>
       ) : menuSelectionLocked && lockedPresetTitle ? (
         <div
-          className="mx-auto mb-4 w-full rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]"
-          style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))` }}
+          className={cn('mb-4 w-full rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]', publicFormLayout ? 'mr-auto' : 'mx-auto')}
+          style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, 100%)` }}
         >
           <h2 className="font-serif text-xl font-bold text-warm-wood md:text-2xl">{lockedPresetTitle}</h2>
           {composePresetDescription ? (

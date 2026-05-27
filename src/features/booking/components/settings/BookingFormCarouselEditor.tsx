@@ -97,14 +97,11 @@ function AdminFieldWithCharCount({
   )
 }
 
-function syncCarouselSubTabFields(tab: SubTab, items: CarouselItem[]): Partial<SubTab> {
-  const first = items[0]
+function syncCarouselSubTabFields(items: CarouselItem[]): Partial<SubTab> {
   return {
     carousel_items: items,
-    price_per_person: undefined,
     description: undefined,
     icon: undefined,
-    label: first?.eyebrow?.trim() || first?.title?.trim() || tab.label,
   }
 }
 
@@ -279,7 +276,7 @@ export function BookingFormCarouselEditor({
   const items = tab.carousel_items ?? []
 
   const applyItems = (next: CarouselItem[]) => {
-    onPatchTab(syncCarouselSubTabFields(tab, next))
+    onPatchTab(syncCarouselSubTabFields(next))
   }
 
   const { fileRef, uploading, canUpload, handleAddFile, removeAt, replaceAt } = useCarouselPhotoUpload({

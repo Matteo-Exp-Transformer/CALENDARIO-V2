@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react'
-import { CalendarDays, Clock, Users, UtensilsCrossed, Phone } from 'lucide-react'
+import { CalendarDays, Clock, Users, UtensilsCrossed, Phone, ChevronLeft } from 'lucide-react'
 import type { BookingRequestInput, BookingType } from '@/types/booking'
 import type { BookingMode, SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
 import { useMenuCategories } from '@/features/booking/hooks/useMenuCategories'
 import { computeMenuTotalsFromItems } from '@/features/booking/utils/buildPresetMenuSelection'
+import { cn } from '@/lib/utils'
 
 interface BookingSummarySidebarProps {
   formData: {
@@ -19,6 +20,8 @@ interface BookingSummarySidebarProps {
   modes: BookingMode[]
   contactPhone?: string
   activeSubTab?: SubTab | null
+  collapsed?: boolean
+  onExpand?: () => void
 }
 
 function formatDate(dateStr?: string): string {
@@ -48,6 +51,8 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   modes,
   contactPhone,
   activeSubTab,
+  collapsed = false,
+  onExpand,
 }) => {
   const { data: menuCategories = [] } = useMenuCategories()
   const hasMenu = formData.booking_type !== 'tavolo'
@@ -56,7 +61,9 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   const totalBooking = formData.menu_total_booking ?? 0
   const hasPresetPrice =
     activeSubTab?.price_per_person != null &&
-    activeSubTab.price_per_person > 0
+    activeSubTab.price_per_person > 0 &&
+    activeSubTab.is_fixed_menu !== false
+  const showMenuPrices = hasPresetPrice || totalPerPerson > 0
 
   const categoryLabelByKey = useMemo(() => {
     const map = new Map<string, string>()
@@ -86,10 +93,25 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   )
 
   return (
-    <aside
-      className="order-2 w-full max-w-full lg:order-none rounded-2xl bg-white border border-slate-100 shadow-xl px-4 py-5 space-y-4 md:sticky md:top-4 self-start"
-      data-testid="booking-summary-sidebar"
-    >
+    <div className="order-2 w-full max-w-full self-start md:sticky md:top-4 lg:order-none">
+      {collapsed ? (
+        <button
+          type="button"
+          aria-label="Mostra riepilogo prenotazione"
+          onClick={onExpand}
+          className="ml-auto hidden h-12 w-12 items-center justify-center rounded-l-full border border-slate-100 bg-white/90 text-warm-wood shadow-xl backdrop-blur-sm transition hover:bg-white hover:text-warm-orange lg:flex"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+      ) : null}
+      <aside
+        className={cn(
+          'w-full max-w-full rounded-2xl border border-slate-100 bg-white px-4 py-5 shadow-xl transition-all duration-300 ease-out',
+          'space-y-4',
+          collapsed && 'pointer-events-none translate-x-[120%] opacity-0',
+        )}
+        data-testid="booking-summary-sidebar"
+      >
       <h3 className="font-serif text-warm-wood font-bold text-lg leading-tight">
         Riepilogo Prenotazione
       </h3>
@@ -147,7 +169,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
               </p>
               <p className="text-base font-bold text-warm-wood leading-tight mt-0.5">
                 {activeSubTab.label}
-                {activeSubTab.price_per_person != null && activeSubTab.price_per_person > 0 && (
+                {hasPresetPrice && (
                   <span className="text-warm-wood-dark/80 font-semibold">
                     {' '}
                     — {formatCurrency(activeSubTab.price_per_person)}/persona
@@ -178,9 +200,11 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
                         item.name
                       )}
                     </span>
-                    <span className="text-sm text-warm-wood-dark/70 font-semibold shrink-0 tabular-nums">
-                      {formatCurrency(item.price)}
-                    </span>
+                    {showMenuPrices ? (
+                      <span className="text-sm text-warm-wood-dark/70 font-semibold shrink-0 tabular-nums">
+                        {formatCurrency(item.price)}
+                      </span>
+                    ) : null}
                   </li>
                 )
               })}
@@ -199,7 +223,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         )}
 
         {/* Totali */}
-        {hasMenu && totalPerPerson > 0 && (
+        {hasMenu && showMenuPrices && totalPerPerson > 0 && (
           <div className="border-t border-black/10 pt-3 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-sm text-warm-wood-dark/70 font-semibold">A persona</span>
@@ -222,6 +246,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
           </div>
         )}
       </div>
-    </aside>
+      </aside>
+    </div>
   )
 }

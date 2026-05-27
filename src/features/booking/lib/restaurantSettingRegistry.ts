@@ -212,7 +212,7 @@ const customStaffPresetRowSchema = z.object({
   name: z.string().trim().min(1).max(200),
   item_ids: z.array(z.string().uuid()).max(160),
   booking_types: z.array(bookingTypeForStaffPresetSchema).min(1).max(2).optional(),
-  description: z.string().trim().max(300).optional(),
+  description: z.string().trim().max(80).optional(),
   price_per_person: z.number().min(0).max(10000).optional(),
   is_fixed_menu: z.boolean().optional(),
   visible_on_booking: z.boolean().optional(),

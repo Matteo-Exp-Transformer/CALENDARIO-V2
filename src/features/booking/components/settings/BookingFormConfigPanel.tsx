@@ -16,6 +16,7 @@ import { CaretDownIcon } from '@phosphor-icons/react/dist/csr/CaretDown'
 import { TrashIcon } from '@phosphor-icons/react/dist/csr/Trash'
 import { EyeIcon } from '@phosphor-icons/react/dist/csr/Eye'
 import { EyeSlashIcon } from '@phosphor-icons/react/dist/csr/EyeSlash'
+import { PencilSimpleIcon } from '@phosphor-icons/react/dist/csr/PencilSimple'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -163,6 +164,83 @@ function SubTabIconOption({ icon, className }: { icon: SubTabIcon; className?: s
   return <ForkKnifeIcon weight="light" className={className} />
 }
 
+function InlineSubTabTitle({
+  value,
+  fallback,
+  onCommit,
+  className,
+}: {
+  value: string
+  fallback: string
+  onCommit: (value: string) => void
+  className?: string
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value || fallback)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!editing) setDraft(value || fallback)
+  }, [editing, fallback, value])
+
+  useEffect(() => {
+    if (editing) inputRef.current?.focus()
+  }, [editing])
+
+  const commit = () => {
+    const next = draft.trim() || fallback
+    setEditing(false)
+    if (next !== value) onCommit(next)
+  }
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value.slice(0, SUB_TAB_LABEL_MAX))}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            commit()
+          }
+          if (e.key === 'Escape') {
+            e.preventDefault()
+            setDraft(value || fallback)
+            setEditing(false)
+          }
+        }}
+        className={cn(
+          'min-w-0 bg-transparent p-0 text-xs font-semibold uppercase text-slate-600 outline-none ring-0',
+          className,
+        )}
+      />
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation()
+        setEditing(true)
+      }}
+      className={cn(
+        'group inline-flex min-w-0 items-center gap-2 text-left text-xs font-semibold uppercase text-slate-600',
+        className,
+      )}
+    >
+      <span className="min-w-0 truncate">{value || fallback}</span>
+      <PencilSimpleIcon
+        weight="regular"
+        className="h-3.5 w-3.5 shrink-0 text-slate-400 transition group-hover:text-primary-700"
+        aria-hidden
+      />
+    </button>
+  )
+}
+
 function newSubTab(display: SubTab['display']): SubTab {
   return {
     id: crypto.randomUUID(),
@@ -308,11 +386,9 @@ function SubTabAddButtons({
 /** Badge che mostra la presentazione scelta con link per cambiarla (previo reset). */
 function SubTabsPresentationBadge({
   presentation,
-  subTabsCount,
   onReset,
 }: {
   presentation: 'cards' | 'carousel'
-  subTabsCount: number
   onReset: () => void
 }) {
   const label = presentation === 'cards' ? 'Card scorrevoli' : 'Carosello'
@@ -324,12 +400,11 @@ function SubTabsPresentationBadge({
       <button
         type="button"
         onClick={() => {
-          if (subTabsCount > 0) {
-            const ok = window.confirm(
-              `Cambiare presentazione cancellerà le ${subTabsCount} sottotab esistenti. Continuare?`,
-            )
-            if (!ok) return
-          }
+          const currentDataLabel = presentation === 'cards' ? 'Card scorrevole' : 'Carosello'
+          const ok = window.confirm(
+            `Se cambi presentazione perderai i dati del "${currentDataLabel}". Sei sicuro di voler procedere?`,
+          )
+          if (!ok) return
           onReset()
         }}
         className="ml-auto text-primary-700 underline hover:text-primary-900"
@@ -541,11 +616,16 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     const keepLabel = shouldKeepSubTabLabelOnPresetImport(current, preset)
     const overrides = presetImportFieldOverrides()
     if (keepLabel) overrides.label = true
+    const isFixedMenu = preset.is_fixed_menu !== false
     return {
       preset_id: preset.id,
       label: keepLabel ?? preset.name,
       description: preset.description?.trim() || undefined,
-      price_per_person: preset.price_per_person && preset.price_per_person > 0 ? preset.price_per_person : undefined,
+      price_per_person:
+        isFixedMenu && preset.price_per_person && preset.price_per_person > 0
+          ? preset.price_per_person
+          : undefined,
+      is_fixed_menu: isFixedMenu ? undefined : false,
       hidden_item_ids: menuItems
         .filter((item) => !preset.item_ids.includes(item.id))
         .map((item) => item.id),
@@ -869,6 +949,49 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     }
 
     const editorTitle = getSubTabEditorTitle(tab, subTabNumber, isDraft)
+    const isFixedMenu = tab.display === 'carousel' || tab.is_fixed_menu !== false
+    const renderInlineTitle = (extraClassName?: string) => (
+      tab.display === 'carousel' ? (
+        <span className={cn('min-w-0 truncate text-xs font-semibold uppercase text-slate-600', extraClassName)}>
+          {editorTitle}
+        </span>
+      ) : (
+        <InlineSubTabTitle
+          value={tab.label}
+          fallback={editorTitle}
+          onCommit={(label) => patchTab({ label })}
+          className={extraClassName}
+        />
+      )
+    )
+    const priceSection =
+      tab.display === 'cards' || tab.display === 'carousel' ? (
+        <div className="w-full min-w-0 space-y-1.5">
+          <Label className="block text-sm">
+            {tab.display === 'carousel' ? 'Dai un prezzo all&apos;offerta' : 'Prezzo a persona'}
+          </Label>
+          <div className="relative w-full max-w-xs">
+            <Input
+              type="number"
+              min={0}
+              step={0.01}
+              value={isFixedMenu ? (tab.price_per_person ?? '') : ''}
+              disabled={!isFixedMenu}
+              onChange={(e) => {
+                const v = e.target.value
+                patchTab({
+                  price_per_person: v === '' ? undefined : Math.max(0, parseFloat(v) || 0),
+                })
+              }}
+              placeholder="45.00"
+              className="w-full pr-9 disabled:bg-slate-100 disabled:text-slate-400"
+            />
+            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm font-semibold text-slate-500">
+              €
+            </span>
+          </div>
+        </div>
+      ) : null
 
     return (
       <div
@@ -879,7 +1002,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       >
         {!embedded ? (
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-slate-600 uppercase">{editorTitle}</span>
+            {renderInlineTitle('max-w-[55%]')}
             <div className="flex shrink-0 items-center gap-2">
               {tab.display === 'carousel' && (tab.carousel_items?.length ?? 0) > 0 ? (
                 <span className="text-xs font-semibold text-slate-600 sm:hidden">Foto N° 1</span>
@@ -897,31 +1020,30 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                 ) : null)}
             </div>
           </div>
-        ) : headerActions ? (
-          <div className="flex items-center justify-end gap-1">{headerActions}</div>
-        ) : null}
+        ) : (
+          <div className="flex items-center justify-between gap-3">
+            {renderInlineTitle('max-w-[45%]')}
+            <div className="flex shrink-0 items-center gap-2">
+              {headerActions}
+            </div>
+          </div>
+        )}
 
         {tab.display === 'carousel' && tenantId ? (
-          <BookingFormCarouselEditor
-            tenantId={tenantId}
-            modeId={mode.id}
-            tab={tab}
-            onPatchTab={patchTab}
-            firstSlideLabelInParentHeader={!embedded}
-          />
+          <>
+            {priceSection}
+            <BookingFormCarouselEditor
+              tenantId={tenantId}
+              modeId={mode.id}
+              tab={tab}
+              onPatchTab={patchTab}
+              firstSlideLabelInParentHeader={!embedded}
+            />
+          </>
         ) : null}
 
         {tab.display === 'cards' && (
           <>
-            <AdminFieldWithCharCount
-              label="Etichetta card"
-              value={tab.label}
-              maxLength={SUB_TAB_LABEL_MAX}
-              onChange={(label) => patchTab({ label })}
-              placeholder="Nome mostrato al cliente"
-              singleLine
-            />
-
             <div className="w-full min-w-0 space-y-1.5">
               <Label className="block text-sm">Icona</Label>
               <div className="flex flex-wrap gap-2">
@@ -983,37 +1105,17 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
         )}
 
         {tab.display === 'cards' && (
-          <>
-            <div className="w-full min-w-0 space-y-1.5">
-              <Label className="block text-sm">Prezzo a persona (opzionale)</Label>
-              <Input
-                type="number"
-                min={0}
-                step={0.01}
-                value={tab.price_per_person ?? ''}
-                onChange={(e) => {
-                  const v = e.target.value
-                  patchTab({
-                    price_per_person: v === '' ? undefined : Math.max(0, parseFloat(v) || 0),
-                  })
-                }}
-                placeholder="es. 45"
-                className="w-full max-w-xs"
-              />
-            </div>
-
-            <AdminFieldWithCharCount
-              label="Descrizione breve (opzionale)"
-              value={tab.description ?? ''}
-              maxLength={SUB_TAB_DESCRIPTION_MAX}
-              onChange={(description) =>
-                patchTab({
-                  description: description === '' ? undefined : description,
-                })
-              }
-              placeholder="Sottotitolo sulla card"
-            />
-          </>
+          <AdminFieldWithCharCount
+            label="Descrizione breve (opzionale)"
+            value={tab.description ?? ''}
+            maxLength={SUB_TAB_DESCRIPTION_MAX}
+            onChange={(description) =>
+              patchTab({
+                description: description === '' ? undefined : description,
+              })
+            }
+            placeholder="Sottotitolo sulla card"
+          />
         )}
 
         {tab.display === 'cards' &&
@@ -1032,6 +1134,10 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                 )
                 if (itemsForCat.length === 0) return null
                 const catHidden = (tab.hidden_category_keys ?? []).includes(cat.key)
+                const hiddenItemIds = tab.hidden_item_ids ?? []
+                const visibleInCat = catHidden
+                  ? 0
+                  : itemsForCat.filter((item) => !hiddenItemIds.includes(item.id)).length
                 return (
                   <details key={cat.key} className="rounded-lg border border-slate-200 bg-slate-50">
                     <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2">
@@ -1058,7 +1164,9 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                       <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-700">
                         {cat.label}
                       </span>
-                      <span className="text-xs text-slate-500">{itemsForCat.length}</span>
+                      <span className="shrink-0 text-xs tabular-nums text-slate-500">
+                        {visibleInCat} / {itemsForCat.length}
+                      </span>
                     </summary>
                     {!catHidden && (
                       <div className="grid grid-cols-1 gap-1 border-t border-slate-200 p-2 sm:grid-cols-2">
@@ -1093,6 +1201,46 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
             </div>
           </div>
         )}
+
+        {tab.display === 'cards' && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-slate-700">Menù personalizzabile</p>
+              <p className="text-xs text-slate-500">
+                {!isFixedMenu
+                  ? 'Il cliente può modificare gli ingredienti: niente prezzo fisso.'
+                  : 'Disattivo: il cliente non cambia ingredienti e puoi impostare un prezzo.'}
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={!isFixedMenu}
+              onClick={() => {
+                const nextCustomizable = isFixedMenu
+                patchTab({
+                  is_fixed_menu: nextCustomizable ? false : undefined,
+                  ...(nextCustomizable ? { price_per_person: undefined } : {}),
+                })
+              }}
+              className={cn(
+                'relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400',
+                !isFixedMenu
+                  ? 'border-primary-600 bg-primary-600'
+                  : 'border-slate-300 bg-slate-200',
+              )}
+            >
+              <span
+                className={cn(
+                  'inline-block h-5 w-5 rounded-full bg-white shadow transition-transform',
+                  !isFixedMenu ? 'translate-x-5' : 'translate-x-1',
+                )}
+              />
+            </button>
+          </div>
+        )}
+
+        {tab.display === 'cards' && priceSection}
 
         <div className="flex justify-end gap-2">
           {isDraft && (
@@ -1184,7 +1332,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           {config.booking_modes.map((mode) => {
             const isOpen = expandedMode === mode.id
 
-            const relevantPresets = allPresets.filter((p) => p.visible_on_booking !== false)
+            const relevantPresets = allPresets
 
             const subTabs = mode.sub_tabs ?? []
             const draftSubTab = draftSubTabsByMode[mode.id] ?? null
@@ -1323,7 +1471,6 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                         {mode.sub_tabs_presentation != null ? (
                           <SubTabsPresentationBadge
                             presentation={mode.sub_tabs_presentation}
-                            subTabsCount={subTabs.length}
                             onReset={() => resetSubTabsPresentation(mode.id)}
                           />
                         ) : null}
@@ -1367,24 +1514,63 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                   key={tab.id}
                                   className="w-full min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white"
                                 >
-                                  <button
-                                    type="button"
-                                    aria-expanded={savedOpen}
-                                    onClick={toggleSavedSubTab}
-                                    className="flex w-full min-w-0 items-center justify-between gap-3 px-4 py-3 text-left hover:bg-slate-50/80"
-                                  >
-                                    <span className="min-w-0">
-                                      <span className="block text-xs font-semibold uppercase text-slate-500">
-                                        {getSubTabEditorTitle(tab, tabIdx + 1, false)}
-                                      </span>
-                                      <span className="block truncate text-sm font-semibold text-slate-800">
-                                        {tab.label || 'Senza etichetta'}
-                                      </span>
-                                    </span>
-                                    <span className="shrink-0 text-xs font-semibold text-primary-700">
-                                      {savedOpen ? 'Chiudi' : 'Modifica'}
-                                    </span>
-                                  </button>
+                                  <div className="flex w-full min-w-0 items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50/80">
+                                    <button
+                                      type="button"
+                                      aria-expanded={savedOpen}
+                                      onClick={toggleSavedSubTab}
+                                      className="min-w-0 flex-1 text-left"
+                                    >
+                                      {!savedOpen ? (
+                                        <span className="block min-w-0 truncate text-xs font-semibold uppercase text-slate-500">
+                                          {getSubTabEditorTitle(tab, tabIdx + 1, false)}
+                                        </span>
+                                      ) : (
+                                        <span className="block h-4" aria-hidden />
+                                      )}
+                                    </button>
+                                    <div className="flex shrink-0 items-center gap-1">
+                                      {tab.display !== 'carousel' ? (
+                                        <>
+                                          <button
+                                            type="button"
+                                            title="Sposta su"
+                                            disabled={tabIdx === 0}
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              moveSubTab(mode.id, tab.id, 'up')
+                                            }}
+                                            className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40"
+                                          >
+                                            <CaretUpIcon weight="regular" className="h-4 w-4" />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            title="Sposta giù"
+                                            disabled={tabIdx === subTabs.length - 1}
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              moveSubTab(mode.id, tab.id, 'down')
+                                            }}
+                                            className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40"
+                                          >
+                                            <CaretDownIcon weight="regular" className="h-4 w-4" />
+                                          </button>
+                                        </>
+                                      ) : null}
+                                      <button
+                                        type="button"
+                                        title="Elimina"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          removeSubTab(mode.id, tab.id)
+                                        }}
+                                        className="p-1.5 rounded border border-red-200 text-red-600 hover:bg-red-50"
+                                      >
+                                        <TrashIcon weight="regular" className="h-4 w-4" />
+                                      </button>
+                                    </div>
+                                  </div>
                                   {savedOpen ? (
                                     <div className="border-t border-slate-200 bg-slate-50/50">
                                       {renderSubTabEditor({
@@ -1394,36 +1580,6 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                         subTabNumber: tabIdx + 1,
                                         isDraft: false,
                                         embedded: true,
-                                        headerActions: (
-                                          <div className="flex items-center gap-1">
-                                            <button
-                                              type="button"
-                                              title="Sposta su"
-                                              disabled={tabIdx === 0}
-                                              onClick={() => moveSubTab(mode.id, tab.id, 'up')}
-                                              className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40"
-                                            >
-                                              <CaretUpIcon weight="regular" className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                              type="button"
-                                              title="Sposta giù"
-                                              disabled={tabIdx === subTabs.length - 1}
-                                              onClick={() => moveSubTab(mode.id, tab.id, 'down')}
-                                              className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40"
-                                            >
-                                              <CaretDownIcon weight="regular" className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                              type="button"
-                                              title="Elimina"
-                                              onClick={() => removeSubTab(mode.id, tab.id)}
-                                              className="p-1.5 rounded border border-red-200 text-red-600 hover:bg-red-50"
-                                            >
-                                              <TrashIcon weight="regular" className="h-4 w-4" />
-                                            </button>
-                                          </div>
-                                        ),
                                       })}
                                     </div>
                                   ) : null}

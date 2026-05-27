@@ -19,6 +19,7 @@ export interface ResolvedSubTab {
   label: string
   description?: string
   price_per_person?: number
+  is_fixed_menu?: boolean
   hidden_category_keys?: string[]
   hidden_item_ids?: string[]
   preset_id?: string
@@ -60,8 +61,11 @@ export function resolveSubTabView(
     ? subTab.description
     : (preset.description?.trim() || subTab.description)
 
-  // price_per_person: solo card; se non personalizzato e preset ha un prezzo, segue il preset
-  const price_per_person = subTab.display === 'carousel'
+  const is_fixed_menu = subTab.display === 'cards' && subTab.is_fixed_menu === false ? false : undefined
+
+  // price_per_person: se il menu e personalizzabile non esiste prezzo fisso.
+  // Le card con preset continuano a ereditare il prezzo live se non personalizzate.
+  const price_per_person = is_fixed_menu === false
     ? undefined
     : isFieldOverridden(subTab, 'price_per_person') || !preset
       ? subTab.price_per_person
@@ -82,6 +86,7 @@ export function resolveSubTabView(
     label,
     description,
     price_per_person,
+    is_fixed_menu,
     hidden_category_keys,
     hidden_item_ids,
     preset_id: subTab.preset_id,
@@ -154,6 +159,7 @@ export function resetSubTabToPreset(
     label: preset.name?.trim() || subTab.label,
     description: preset.description?.trim() || undefined,
     price_per_person: preset.price_per_person,
+    is_fixed_menu: subTab.is_fixed_menu === false ? false : undefined,
     hidden_item_ids: undefined,
     hidden_category_keys: undefined,
     field_overrides: {

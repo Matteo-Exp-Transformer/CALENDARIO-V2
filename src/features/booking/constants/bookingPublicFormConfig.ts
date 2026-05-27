@@ -157,6 +157,8 @@ export interface SubTab {
   icon?: SubTabIcon
   preset_id?: string
   price_per_person?: number
+  /** Omesso o true = ingredienti bloccati; false = cliente puo modificarli e non ha prezzo fisso. */
+  is_fixed_menu?: boolean
   description?: string
   hidden_category_keys?: string[]
   hidden_item_ids?: string[]
@@ -208,7 +210,7 @@ function parseCarouselSlideIcon(value: unknown): CarouselSlideIcon | undefined {
     : undefined
 }
 
-/** Migra testi legacy da livello sottotab alla prima slide; carosello senza prezzo a livello sottotab. */
+/** Migra testi legacy da livello sottotab alla prima slide; il carosello puo mantenere il prezzo fisso. */
 export function migrateLegacyCarouselSubTab(tab: SubTab): SubTab {
   if (tab.display !== 'carousel') return tab
 
@@ -216,7 +218,7 @@ export function migrateLegacyCarouselSubTab(tab: SubTab): SubTab {
   if (items.length === 0) {
     return {
       ...tab,
-      price_per_person: undefined,
+      price_per_person: tab.price_per_person,
       description: undefined,
     }
   }
@@ -239,7 +241,7 @@ export function migrateLegacyCarouselSubTab(tab: SubTab): SubTab {
     ...tab,
     label,
     description: undefined,
-    price_per_person: undefined,
+    price_per_person: tab.price_per_person,
     icon: undefined,
     carousel_items: migratedItems,
   }
@@ -305,7 +307,8 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
     label,
     icon,
     preset_id,
-    price_per_person: display === 'carousel' ? undefined : price_per_person,
+    price_per_person,
+    is_fixed_menu: typeof o.is_fixed_menu === 'boolean' ? o.is_fixed_menu : undefined,
     description: display === 'carousel' ? undefined : description,
     hidden_category_keys,
     hidden_item_ids,
@@ -436,6 +439,8 @@ export function normalizeBookingPublicFormConfig(
           ...tab,
           display,
           label: tab.label.trim(),
+          is_fixed_menu: display === 'cards' && tab.is_fixed_menu === false ? false : undefined,
+          price_per_person: display === 'cards' && tab.is_fixed_menu === false ? undefined : tab.price_per_person,
           hidden_category_keys: tab.hidden_category_keys?.filter((v) => v.trim()) ?? undefined,
           hidden_item_ids: tab.hidden_item_ids?.filter((v) => v.trim()) ?? undefined,
           carousel_items: tab.carousel_items,
@@ -445,7 +450,6 @@ export function normalizeBookingPublicFormConfig(
           return migrateLegacyCarouselSubTab({
             ...base,
             description: undefined,
-            price_per_person: undefined,
             icon: undefined,
           })
         }
