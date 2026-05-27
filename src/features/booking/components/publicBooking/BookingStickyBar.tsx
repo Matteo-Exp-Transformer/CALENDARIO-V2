@@ -23,7 +23,6 @@ interface BookingStickyBarProps {
     desired_time?: string
     num_guests: number
     booking_type?: BookingType
-    menu_total_per_person?: number
   }
   modes: BookingMode[]
   totalBooking?: number
@@ -43,14 +42,6 @@ function formatStickyDate(dateStr?: string): string {
   const mm = String(month).padStart(2, '0')
   const yy = String(year % 100).padStart(2, '0')
   return `${dd}/${mm}/${yy}`
-}
-
-function formatPricePerPersonLabel(price: number): string {
-  const amount = new Intl.NumberFormat('it-IT', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price)
-  return `${amount}€/persona`
 }
 
 function formatCurrency(amount?: number): string {
@@ -104,17 +95,13 @@ export const BookingStickyBar: React.FC<BookingStickyBarProps> = ({
         : `${formData.num_guests} persone`
       : ''
   const orarioStr = formData.desired_time?.trim() ?? ''
-  const hasClientRow = Boolean(clientName || guestsSummary || orarioStr)
-
-  const tipoLabel = getModeLabelByType(modes, formData.booking_type)
   const dataStr = formatStickyDate(formData.desired_date)
-  const pricePerPersonStr =
-    formData.menu_total_per_person != null && formData.menu_total_per_person > 0
-      ? formatPricePerPersonLabel(formData.menu_total_per_person)
-      : ''
+  const tipoLabel = getModeLabelByType(modes, formData.booking_type)
   const totaleStr = totalBooking && totalBooking > 0 ? formatCurrency(totalBooking) : ''
 
-  const hasBookingDetails = Boolean(tipoLabel || dataStr || pricePerPersonStr || totaleStr)
+  const showNameRow = Boolean(clientName)
+  const showGuestDateTimeRow = Boolean(guestsSummary || dataStr || orarioStr)
+  const showBookingRow = Boolean(tipoLabel || totaleStr)
 
   return (
     <>
@@ -143,56 +130,53 @@ export const BookingStickyBar: React.FC<BookingStickyBarProps> = ({
             </span>
             <ChevronUp className="h-3.5 w-3.5 text-warm-wood-dark/40 shrink-0" />
           </div>
-          {hasClientRow && (
-            <div className="flex flex-col gap-1 min-w-0">
-              {clientName && (
-                <StickySummaryChip icon={User} className="text-sm font-bold text-warm-wood">
-                  {clientName}
-                </StickySummaryChip>
-              )}
-              {(guestsSummary || orarioStr) && (
-                <div className="flex w-full items-center justify-between gap-2 min-w-0">
-                  {guestsSummary ? (
-                    <StickySummaryChip icon={Users} className="text-sm text-warm-wood-dark/70">
-                      {guestsSummary}
-                    </StickySummaryChip>
-                  ) : (
-                    <span className="min-w-0 flex-1" aria-hidden />
-                  )}
-                  {orarioStr && (
-                    <StickySummaryChip
-                      icon={Clock}
-                      className="shrink-0 text-sm text-warm-wood-dark/70"
-                    >
-                      {orarioStr}
-                    </StickySummaryChip>
-                  )}
-                </div>
-              )}
+          {showNameRow && (
+            <StickySummaryChip icon={User} className="text-sm font-bold text-warm-wood">
+              {clientName}
+            </StickySummaryChip>
+          )}
+          {showGuestDateTimeRow && (
+            <div className="flex w-full items-center gap-2 min-w-0">
+              <div className="flex min-w-0 flex-1 justify-start">
+                {guestsSummary ? (
+                  <StickySummaryChip icon={Users} className="text-sm text-warm-wood-dark/70">
+                    {guestsSummary}
+                  </StickySummaryChip>
+                ) : null}
+              </div>
+              <div className="flex shrink-0 justify-center">
+                {dataStr ? (
+                  <StickySummaryChip icon={CalendarDays} className="text-sm text-warm-wood-dark/70">
+                    {dataStr}
+                  </StickySummaryChip>
+                ) : null}
+              </div>
+              <div className="flex min-w-0 flex-1 justify-end">
+                {orarioStr ? (
+                  <StickySummaryChip icon={Clock} className="text-sm text-warm-wood-dark/70">
+                    {orarioStr}
+                  </StickySummaryChip>
+                ) : null}
+              </div>
             </div>
           )}
-          {hasBookingDetails && (
-            <div className="flex flex-wrap gap-x-2.5 gap-y-1 min-w-0">
-              {tipoLabel && (
-                <StickySummaryChip icon={UtensilsCrossed} className="text-sm font-bold text-warm-wood">
+          {showBookingRow && (
+            <div className="flex w-full items-center justify-between gap-2 min-w-0">
+              {tipoLabel ? (
+                <StickySummaryChip icon={UtensilsCrossed} className="min-w-0 text-sm font-bold text-warm-wood">
                   {tipoLabel}
                 </StickySummaryChip>
+              ) : (
+                <span className="min-w-0 flex-1" aria-hidden />
               )}
-              {dataStr && (
-                <StickySummaryChip icon={CalendarDays} className="text-sm text-warm-wood-dark/70">
-                  {dataStr}
-                </StickySummaryChip>
-              )}
-              {pricePerPersonStr && (
-                <StickySummaryChip icon={Euro} className="text-sm text-warm-wood-dark/70">
-                  {pricePerPersonStr}
-                </StickySummaryChip>
-              )}
-              {totaleStr && (
-                <StickySummaryChip icon={Euro} className="text-sm font-bold text-warm-orange">
+              {totaleStr ? (
+                <StickySummaryChip
+                  icon={Euro}
+                  className="shrink-0 text-sm font-bold text-warm-orange"
+                >
                   {totaleStr}
                 </StickySummaryChip>
-              )}
+              ) : null}
             </div>
           )}
         </button>

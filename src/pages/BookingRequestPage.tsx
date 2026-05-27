@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { BookingRequestForm } from '@/features/booking/components/BookingRequestForm'
 import { BookingSummarySidebar } from '@/features/booking/components/publicBooking/BookingSummarySidebar'
 import { BookingStickyBar } from '@/features/booking/components/publicBooking/BookingStickyBar'
+import { BookingPhotoStrip } from '@/features/booking/components/publicBooking/BookingPhotoStrip'
 import { MapPin, Clock, Phone, Mail, ChevronDown, Send } from 'lucide-react'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
@@ -23,6 +24,20 @@ import {
   type SubTab,
 } from '@/features/booking/constants/bookingPublicFormConfig'
 import type { BookingRequestInput } from '@/types/booking'
+
+/**
+ * Foto della striscia verticale sinistra.
+ * Aggiungere qui gli URL delle foto una volta generate.
+ * Le foto devono essere verticali strettissime (ratio ~1:4) e progettate
+ * per essere visualizzate in una fascia di ~20% dello schermo.
+ * Esempio:
+ *   '/assets/strip/01-tavoli.jpg',
+ *   '/assets/strip/02-pasta.jpg',
+ *   ...
+ */
+const BOOKING_STRIP_PHOTOS: string[] = [
+  // inserire gli URL qui — finché vuoto mostra il gradiente placeholder
+]
 
 export const BookingRequestPage: React.FC = () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>()
@@ -135,11 +150,14 @@ export const BookingRequestPage: React.FC = () => {
         */}
         <div className="mx-auto w-full max-w-7xl grid grid-cols-[20vw_1fr] min-[900px]:grid-cols-[25vw_1fr] items-start">
 
-          {/* Striscia foto laterale sinistra */}
-          {/* Larghezza: 20vw mobile, 25vw da 900px — modificare i valori nella classe grid-cols sopra */}
-          <div className="sticky top-0 h-screen overflow-hidden bg-black/10">
-            {/* Placeholder visivo temporaneo: sarà sostituito da una foto nella prossima sessione */}
-          </div>
+          {/*
+            Striscia foto laterale sinistra.
+            Larghezza: 20vw mobile, 25vw da 900px — modificare i valori in grid-cols sopra.
+            Per aggiungere le foto: popolare BOOKING_STRIP_PHOTOS in questo file.
+            Le foto devono essere verticali strettissime (~1:4), progettate per
+            una fascia di ~20% schermo. Vedere commento in BookingPhotoStrip.tsx.
+          */}
+          <BookingPhotoStrip photos={BOOKING_STRIP_PHOTOS} />
 
           {/* Colonna contenuto destra */}
           <div className="w-full min-w-0 px-4 md:px-8 pb-28 min-[900px]:pb-1.5 min-[900px]:px-6 lg:px-8">
@@ -211,7 +229,6 @@ export const BookingRequestPage: React.FC = () => {
               desired_time: sharedFormData.desired_time,
               num_guests: sharedFormData.num_guests ?? 0,
               booking_type: sharedFormData.booking_type,
-              menu_total_per_person: sharedFormData.menu_total_per_person,
             }}
             modes={resolvedConfig.booking_modes}
             totalBooking={sharedFormData.menu_total_booking}
