@@ -8,6 +8,7 @@ import {
   BOOKING_PUBLIC_FIELD_INNER_INPUT,
   BOOKING_PUBLIC_FIELD_INNER_LABEL,
 } from '@/features/booking/constants/bookingPublicFieldStyles'
+import { dateToIso } from '../../utils/bookingPublicDateHelpers'
 
 const MONTHS = [
   'Gennaio',
@@ -25,13 +26,6 @@ const MONTHS = [
 ]
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
-
-function dateToIso(date: Date): string {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
 
 function parseIsoDate(value?: string): Date | null {
   if (!value) return null
@@ -200,7 +194,7 @@ export function BookingPublicDatePickerField({
             type="button"
             aria-label="Mese precedente"
             disabled={!canGoPrev}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-warm-wood disabled:opacity-30 enabled:hover:bg-warm-beige/50"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-warm-wood disabled:opacity-30 enabled:hover:bg-warm-beige/50"
             onClick={() => moveMonth(-1)}
           >
             <ChevronLeft className="h-5 w-5" aria-hidden />
@@ -212,7 +206,7 @@ export function BookingPublicDatePickerField({
             type="button"
             aria-label="Mese successivo"
             disabled={!canGoNext}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-warm-wood disabled:opacity-30 enabled:hover:bg-warm-beige/50"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-warm-wood disabled:opacity-30 enabled:hover:bg-warm-beige/50"
             onClick={() => moveMonth(1)}
           >
             <ChevronRight className="h-5 w-5" aria-hidden />

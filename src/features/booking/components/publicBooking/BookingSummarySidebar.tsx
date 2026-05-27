@@ -1,10 +1,11 @@
 import React, { useMemo, useEffect, useRef } from 'react'
 import { CalendarDays, Clock, Users, UtensilsCrossed, Phone } from 'lucide-react'
-import type { BookingRequestInput, BookingType } from '@/types/booking'
+import type { BookingRequestInput } from '@/types/booking'
 import type { BookingMode, SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
 import { useMenuCategories } from '@/features/booking/hooks/useMenuCategories'
 import { computeMenuTotalsFromItems } from '@/features/booking/utils/buildPresetMenuSelection'
 import { cn } from '@/lib/utils'
+import { getModeLabelByType } from '../../utils/bookingModeLabels'
 
 interface BookingSummarySidebarProps {
   formData: {
@@ -35,17 +36,6 @@ function formatDate(dateStr?: string): string {
 function formatCurrency(amount?: number): string {
   if (!amount) return '—'
   return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(amount)
-}
-
-function getModeLabelByType(modes: BookingMode[], bookingType?: BookingType): string {
-  const mode = modes.find((m) => m.booking_type === bookingType && m.enabled)
-  if (mode) return mode.label
-  const map: Record<string, string> = {
-    tavolo: 'Prenota un Tavolo',
-    menu_prezzo_fisso: 'Menu a Prezzo Fisso',
-    rinfresco_laurea: 'Rinfresco di Laurea',
-  }
-  return map[bookingType ?? ''] ?? '—'
 }
 
 export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
@@ -119,7 +109,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   }, [activeSubTab, isCarouselSummary])
 
   return (
-    <div ref={asideRef} className="order-2 w-full max-w-full self-start md:sticky md:top-4 min-[900px]:order-0">
+    <div ref={asideRef} className="order-2 w-full max-w-full self-start min-[900px]:sticky min-[900px]:top-4 min-[900px]:order-0">
       <aside
         className={cn(
           'w-full max-w-full rounded-2xl border border-slate-100 bg-white px-4 py-5 shadow-xl transition-all duration-300 ease-out',

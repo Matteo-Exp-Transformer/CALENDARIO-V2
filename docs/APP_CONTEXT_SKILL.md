@@ -160,6 +160,18 @@ RULE  Prima di modificare: leggere INTERO il file da toccare + i file collegati
       necessari (chiamanti, tipi, componente condiviso). MAI editare avendo
       letto solo il frammento restituito da grep/search. Spendere token in
       lettura completa previene fix a pezzi e bug a catena.
+RULE  Anti-duplicazione: prima di scrivere una funzione helper dentro un componente
+      (date utils, label maps, formatter, classi tailwind ricorrenti), cercare con
+      Grep se esiste già altrove. Se la stessa funzione compare in 2+ file →
+      estrarre in `src/features/booking/utils/` (o `@/lib/`) con un parametro
+      `variant` se i comportamenti divergono leggermente (es. `getModeLabelByType(modes, type, 'short'|'long')`).
+      Stesso vale per costanti di stile/breakpoint: prima di hardcodare `min-[900px]`
+      o `25vw` in più file, valutare se serve una costante in `constants/bookingPublicFieldStyles.ts`.
+RULE  Import in cima al file: mai inserire `import` in mezzo al body (dopo una
+      function declaration). Quando un edit lo crea per errore, spostare in cima
+      nello stesso turno — TypeScript non sempre fallisce, ma ESLint sì in pre-commit.
+RULE  Logger: in pubblico-form e componenti React mai `console.error/log` — usare
+      `logger` da `@/lib/logger`. Vale anche per handler async dentro mutation.
 RULE  Sidebar features non importano da admin classica senza interfacce pubbliche
 RULE  Nuove feature in admin classica SEMPRE dietro FEATURES flag — usare useFeatures(), mai ADMIN_FEATURES hardcoded
 RULE  Prop aggiunte ad AdminDashboard sempre OPTIONAL con default sensati
@@ -275,3 +287,4 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | `MenuSelection.tsx` / `BookingMenuComposeGrid.tsx` / `BookingMenuCategoryCard.tsx` / `menuComposeVisibility.ts` | `APP_CONTEXT_SKILL.md` §4 RULE Pagina Prenota v2 + RULE Menu Prenota |
 | `MenuSelection.tsx` prop `hideMenuGrid` / `subTabOverrides` / `BookingMode.sub_tabs` | `APP_CONTEXT_SKILL.md` §4 RULE Pagina Prenota v2 + RULE Menu Prenota |
 | `bookingFormResolver.ts` / `SubTab.field_overrides` / `patchSubTabAsOverride` / `resetSubTabToPreset` | `APP_CONTEXT_SKILL.md` §4 RULE Tracking personalizzazioni card Prenota |
+| `bookingPublicDateHelpers.ts` (getTodayIso, dateToIso, getCurrentTimeHHMM) / `bookingModeLabels.ts` (getModeLabelByType) | `APP_CONTEXT_SKILL.md` §4 RULE Anti-duplicazione — sono i punti di verità per date locali e label modalità del form pubblico |

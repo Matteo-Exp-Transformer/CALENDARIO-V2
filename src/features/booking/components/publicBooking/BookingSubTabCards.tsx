@@ -160,7 +160,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                     {priceAmount && (
                       <p className="shrink-0 text-right text-xs font-bold leading-tight text-warm-wood-dark/80 sm:text-base lg:text-xl">
                         <span>{priceAmount}</span>
-                        <span className="hidden sm:inline"> a persona</span>
+                        <span className="hidden min-[900px]:inline"> a persona</span>
                       </p>
                     )}
                   </div>

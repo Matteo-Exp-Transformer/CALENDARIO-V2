@@ -13,6 +13,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import type { BookingType } from '@/types/booking'
 import type { BookingMode } from '@/features/booking/constants/bookingPublicFormConfig'
+import { getModeLabelByType } from '../../utils/bookingModeLabels'
 import { cn } from '@/lib/utils'
 import { BookingCrossShineSubmitButton } from './BookingCrossShineSubmitButton'
 
@@ -66,17 +67,6 @@ function StickySummaryChip({
   )
 }
 
-function getModeLabelByType(modes: BookingMode[], bookingType?: BookingType): string {
-  const mode = modes.find((m) => m.booking_type === bookingType && m.enabled)
-  if (mode) return mode.label
-  const map: Record<string, string> = {
-    tavolo: 'Tavolo',
-    menu_prezzo_fisso: 'Menu Fisso',
-    rinfresco_laurea: 'Rinfresco',
-  }
-  return map[bookingType ?? ''] ?? ''
-}
-
 export const BookingStickyBar: React.FC<BookingStickyBarProps> = ({
   formData,
   modes,
@@ -96,7 +86,7 @@ export const BookingStickyBar: React.FC<BookingStickyBarProps> = ({
       : ''
   const orarioStr = formData.desired_time?.trim() ?? ''
   const dataStr = formatStickyDate(formData.desired_date)
-  const tipoLabel = getModeLabelByType(modes, formData.booking_type)
+  const tipoLabel = getModeLabelByType(modes, formData.booking_type, 'short')
   const totaleStr = totalBooking && totalBooking > 0 ? formatCurrency(totalBooking) : ''
 
   const showNameRow = Boolean(clientName)

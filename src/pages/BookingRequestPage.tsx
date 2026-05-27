@@ -152,7 +152,7 @@ export const BookingRequestPage: React.FC = () => {
           />
 
           {/* Colonna contenuto destra */}
-          <div className="w-full min-w-0 px-4 md:px-8 pb-4 min-[900px]:pb-4 min-[900px]:px-6 lg:px-8">
+          <div className="w-full min-w-0 px-4 md:px-8 pb-44 min-[900px]:pb-4 min-[900px]:px-6 lg:px-8">
 
             {/* Header — solo testo sullo sfondo pagina */}
             <div className="flex flex-col items-center justify-center gap-1.5 py-1.5 text-center animate-fade-in">

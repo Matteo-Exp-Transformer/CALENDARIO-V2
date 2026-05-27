@@ -7,6 +7,7 @@ import {
   BookingPublicDatePickerField,
   BookingPublicTimePickerField,
 } from './BookingPublicDateTimePickers'
+import { getCurrentTimeHHMM, getTodayIso } from '../../utils/bookingPublicDateHelpers'
 
 interface BookingFormFieldsProps {
   formData: Pick<
@@ -30,17 +31,6 @@ interface BookingFormFieldsProps {
   onNumGuestsKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void
   resetAvailability: () => void
   setErrors: (errors: Record<string, string>) => void
-}
-
-// Restituisce "HH:MM" dell'ora corrente (per validazione ora minima quando la data è oggi)
-function getCurrentTimeHHMM(): string {
-  const now = new Date()
-  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
-}
-
-function getTodayIso(): string {
-  const today = new Date()
-  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 }
 
 export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({

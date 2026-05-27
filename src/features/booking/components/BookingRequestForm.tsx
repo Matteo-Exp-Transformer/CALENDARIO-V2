@@ -16,6 +16,7 @@ import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { isValidBookingDateTime, getDayOfWeek, formatHours } from '@/lib/businessHours'
 import { toast } from 'react-toastify'
 import { cn } from '@/lib/utils'
+import { logger } from '@/lib/logger'
 import type { PresetMenuType } from '../constants/presetMenus'
 import { customPresetStorageId } from '../constants/presetMenus'
 import { useMenuItems } from '../hooks/useMenuItems'
@@ -26,6 +27,7 @@ import {
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
 import { isValidEmail, isValidPhone } from '../utils/validation'
+import { getTodayIso } from '../utils/bookingPublicDateHelpers'
 import { resolveSubTabView } from '../services/bookingFormResolver'
 import {
   listMenuPromoMessagesForBookingType,
@@ -137,14 +139,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   summarySidebar,
   onIsDisabledChange,
 }) => {
-  // Helper function to get current date in YYYY-MM-DD format
-  const getCurrentDate = (): string => {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const day = String(now.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
+  const getCurrentDate = getTodayIso
 
   // Ora di default: prossima ora intera futura (es. se sono le 14:23 → 15:00)
   const getDefaultTime = (): string => {
@@ -350,7 +345,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       
       if (actualLock !== lockId) {
         // Race condition rilevata - un'altra istanza ha sovrascritto il nostro lock
-        console.error('❌ [BookingForm] RACE CONDITION RILEVATA! Lock acquisito da altra istanza:', {
+        logger.error('[BookingForm] RACE CONDITION RILEVATA! Lock acquisito da altra istanza:', {
           ourId: lockId.substring(0, 30),
           actualLock: actualLock?.substring(0, 30),
           timestamp: now
@@ -887,7 +882,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         onSubmit?.()
         },
         onError: (error) => {
-          console.error('❌ [BookingForm] Mutation error:', error)
+          logger.error('[BookingForm] Mutation error:', error)
           // Reset tutti i flag in caso di errore per permettere nuovo tentativo
           const savedLockId = (isSubmittingRef as any).currentLockId
           isSubmittingRef.current = false
