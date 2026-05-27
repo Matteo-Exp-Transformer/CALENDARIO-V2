@@ -16,7 +16,6 @@ import { CaretDownIcon } from '@phosphor-icons/react/dist/csr/CaretDown'
 import { TrashIcon } from '@phosphor-icons/react/dist/csr/Trash'
 import { EyeIcon } from '@phosphor-icons/react/dist/csr/Eye'
 import { EyeSlashIcon } from '@phosphor-icons/react/dist/csr/EyeSlash'
-import { PencilSimpleIcon } from '@phosphor-icons/react/dist/csr/PencilSimple'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -68,7 +67,7 @@ const ICON_OPTIONS: { value: BookingModeIcon; label: string }[] = [
   { value: 'martini', label: 'Cocktail' },
 ]
 
-const SUB_TAB_LABEL_MAX = 60
+const SUB_TAB_LABEL_MAX = 30
 const SUB_TAB_DESCRIPTION_MAX = 80
 const BOOKING_MODE_DESCRIPTION_MAX = 61
 
@@ -162,83 +161,6 @@ function SubTabIconOption({ icon, className }: { icon: SubTabIcon; className?: s
   if (icon === 'star') return <StarIcon weight="light" className={className} />
   if (icon === 'leaf') return <LeafIcon weight="light" className={className} />
   return <ForkKnifeIcon weight="light" className={className} />
-}
-
-function InlineSubTabTitle({
-  value,
-  fallback,
-  onCommit,
-  className,
-}: {
-  value: string
-  fallback: string
-  onCommit: (value: string) => void
-  className?: string
-}) {
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(value || fallback)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (!editing) setDraft(value || fallback)
-  }, [editing, fallback, value])
-
-  useEffect(() => {
-    if (editing) inputRef.current?.focus()
-  }, [editing])
-
-  const commit = () => {
-    const next = draft.trim() || fallback
-    setEditing(false)
-    if (next !== value) onCommit(next)
-  }
-
-  if (editing) {
-    return (
-      <input
-        ref={inputRef}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value.slice(0, SUB_TAB_LABEL_MAX))}
-        onBlur={commit}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault()
-            commit()
-          }
-          if (e.key === 'Escape') {
-            e.preventDefault()
-            setDraft(value || fallback)
-            setEditing(false)
-          }
-        }}
-        className={cn(
-          'min-w-0 bg-transparent p-0 text-xs font-semibold uppercase text-slate-600 outline-none ring-0',
-          className,
-        )}
-      />
-    )
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation()
-        setEditing(true)
-      }}
-      className={cn(
-        'group inline-flex min-w-0 items-center gap-2 text-left text-xs font-semibold uppercase text-slate-600',
-        className,
-      )}
-    >
-      <span className="min-w-0 truncate">{value || fallback}</span>
-      <PencilSimpleIcon
-        weight="regular"
-        className="h-3.5 w-3.5 shrink-0 text-slate-400 transition group-hover:text-primary-700"
-        aria-hidden
-      />
-    </button>
-  )
 }
 
 function newSubTab(display: SubTab['display']): SubTab {
@@ -619,7 +541,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     const isFixedMenu = preset.is_fixed_menu !== false
     return {
       preset_id: preset.id,
-      label: keepLabel ?? preset.name,
+      label: (keepLabel ?? preset.name).slice(0, SUB_TAB_LABEL_MAX),
       description: preset.description?.trim() || undefined,
       price_per_person:
         isFixedMenu && preset.price_per_person && preset.price_per_person > 0
@@ -950,46 +872,45 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
     const editorTitle = getSubTabEditorTitle(tab, subTabNumber, isDraft)
     const isFixedMenu = tab.display === 'carousel' || tab.is_fixed_menu !== false
-    const renderInlineTitle = (extraClassName?: string) => (
-      tab.display === 'carousel' ? (
-        <span className={cn('min-w-0 truncate text-xs font-semibold uppercase text-slate-600', extraClassName)}>
-          {editorTitle}
-        </span>
-      ) : (
-        <InlineSubTabTitle
-          value={tab.label}
-          fallback={editorTitle}
-          onCommit={(label) => patchTab({ label })}
-          className={extraClassName}
-        />
-      )
+    const renderEditorTitle = (extraClassName?: string) => (
+      <span className={cn('min-w-0 truncate text-xs font-semibold uppercase text-slate-600', extraClassName)}>
+        {editorTitle}
+      </span>
     )
-    const priceSection =
-      tab.display === 'cards' || tab.display === 'carousel' ? (
+    const renderPriceInput = (disabled: boolean) => (
+      <div className="relative w-full max-w-xs">
+        <Input
+          type="number"
+          min={0}
+          step={0.01}
+          value={disabled ? '' : (tab.price_per_person ?? '')}
+          disabled={disabled}
+          onChange={(e) => {
+            const v = e.target.value
+            patchTab({
+              price_per_person: v === '' ? undefined : Math.max(0, parseFloat(v) || 0),
+            })
+          }}
+          placeholder="45.00"
+          className="w-full pr-9 disabled:bg-slate-100 disabled:text-slate-400"
+        />
+        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm font-semibold text-slate-500">
+          €
+        </span>
+      </div>
+    )
+    const cardPriceSection =
+      tab.display === 'cards' ? (
         <div className="w-full min-w-0 space-y-1.5">
-          <Label className="block text-sm">
-            {tab.display === 'carousel' ? 'Dai un prezzo all&apos;offerta' : 'Prezzo a persona'}
-          </Label>
-          <div className="relative w-full max-w-xs">
-            <Input
-              type="number"
-              min={0}
-              step={0.01}
-              value={isFixedMenu ? (tab.price_per_person ?? '') : ''}
-              disabled={!isFixedMenu}
-              onChange={(e) => {
-                const v = e.target.value
-                patchTab({
-                  price_per_person: v === '' ? undefined : Math.max(0, parseFloat(v) || 0),
-                })
-              }}
-              placeholder="45.00"
-              className="w-full pr-9 disabled:bg-slate-100 disabled:text-slate-400"
-            />
-            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm font-semibold text-slate-500">
-              €
-            </span>
-          </div>
+          <Label className="block text-sm">Prezzo a persona</Label>
+          {renderPriceInput(!isFixedMenu)}
+        </div>
+      ) : null
+    const carouselPriceSection =
+      tab.display === 'carousel' ? (
+        <div className="w-full min-w-0 space-y-1.5">
+          <Label className="block text-sm">Prezzo a persona (opzionale)</Label>
+          {renderPriceInput(false)}
         </div>
       ) : null
 
@@ -1002,7 +923,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       >
         {!embedded ? (
           <div className="flex items-center justify-between gap-2">
-            {renderInlineTitle('max-w-[55%]')}
+            {renderEditorTitle('max-w-[55%]')}
             <div className="flex shrink-0 items-center gap-2">
               {tab.display === 'carousel' && (tab.carousel_items?.length ?? 0) > 0 ? (
                 <span className="text-xs font-semibold text-slate-600 sm:hidden">Foto N° 1</span>
@@ -1022,7 +943,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           </div>
         ) : (
           <div className="flex items-center justify-between gap-3">
-            {renderInlineTitle('max-w-[45%]')}
+            {renderEditorTitle('max-w-[45%]')}
             <div className="flex shrink-0 items-center gap-2">
               {headerActions}
             </div>
@@ -1031,7 +952,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
         {tab.display === 'carousel' && tenantId ? (
           <>
-            {priceSection}
+            {carouselPriceSection}
             <BookingFormCarouselEditor
               tenantId={tenantId}
               modeId={mode.id}
@@ -1044,6 +965,15 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
         {tab.display === 'cards' && (
           <>
+            <AdminFieldWithCharCount
+              label="Titolo card"
+              value={tab.label}
+              maxLength={SUB_TAB_LABEL_MAX}
+              onChange={(label) => patchTab({ label })}
+              placeholder="Nome mostrato al cliente"
+              singleLine
+            />
+
             <div className="w-full min-w-0 space-y-1.5">
               <Label className="block text-sm">Icona</Label>
               <div className="flex flex-wrap gap-2">
@@ -1208,8 +1138,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
               <p className="text-sm font-medium text-slate-700">Menù personalizzabile</p>
               <p className="text-xs text-slate-500">
                 {!isFixedMenu
-                  ? 'Il cliente può modificare gli ingredienti: niente prezzo fisso.'
-                  : 'Disattivo: il cliente non cambia ingredienti e puoi impostare un prezzo.'}
+                  ? 'Il cliente può scegliere dei piatti da questo menù e configurare un menù personalizzato.'
+                  : 'Il cliente NON può comporsi un menù personalizzato.'}
               </p>
             </div>
             <button
@@ -1240,7 +1170,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           </div>
         )}
 
-        {tab.display === 'cards' && priceSection}
+        {tab.display === 'cards' && cardPriceSection}
 
         <div className="flex justify-end gap-2">
           {isDraft && (

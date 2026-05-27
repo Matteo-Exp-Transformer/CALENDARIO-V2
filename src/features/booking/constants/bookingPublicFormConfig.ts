@@ -210,7 +210,7 @@ function parseCarouselSlideIcon(value: unknown): CarouselSlideIcon | undefined {
     : undefined
 }
 
-/** Migra testi legacy da livello sottotab alla prima slide; il carosello puo mantenere il prezzo fisso. */
+/** Migra testi legacy da livello sottotab alla prima slide; il carosello mantiene label e prezzo separati. */
 export function migrateLegacyCarouselSubTab(tab: SubTab): SubTab {
   if (tab.display !== 'carousel') return tab
 
@@ -227,19 +227,15 @@ export function migrateLegacyCarouselSubTab(tab: SubTab): SubTab {
     if (idx !== 0) return item
     return {
       ...item,
-      eyebrow: item.eyebrow?.trim() || tab.label?.trim() || undefined,
+      eyebrow: item.eyebrow?.trim() || undefined,
       title: item.title?.trim() || undefined,
       description: item.description?.trim() || tab.description?.trim() || undefined,
       icon: item.icon ?? tab.icon,
     }
   })
 
-  const first = migratedItems[0]
-  const label = first.eyebrow?.trim() || first.title?.trim() || tab.label
-
   return {
     ...tab,
-    label,
     description: undefined,
     price_per_person: tab.price_per_person,
     icon: undefined,
