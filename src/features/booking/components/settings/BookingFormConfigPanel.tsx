@@ -514,34 +514,17 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
   }
 
-  const shouldKeepSubTabLabelOnPresetImport = (
-    current: SubTab | undefined,
-    nextPreset: CustomStaffPreset,
-  ): string | undefined => {
-    const customized = current?.label?.trim()
-    if (!customized) return undefined
-    const previousPresetName = current?.preset_id
-      ? allPresets.find((p) => p.id === current.preset_id)?.name?.trim()
-      : undefined
-    if (previousPresetName && customized !== previousPresetName) return customized
-    if (!previousPresetName && customized !== nextPreset.name.trim()) return customized
-    return undefined
-  }
-
   /**
    * Snapshot della card dopo import preset: tutti i campi «vetrina» tornano a «ereditato dal preset»
    * (`field_overrides[*] = false`), così cambi futuri al preset si propagano in automatico.
-   * Eccezione: se l'admin aveva una label personalizzata diversa dal preset precedente, la
-   * mantengono (`label` resta `true`).
+   * Nota: il titolo card viene sempre riallineato al nome del preset importato.
    */
   const buildSubTabFromPreset = (current: SubTab, preset: CustomStaffPreset): Partial<SubTab> => {
-    const keepLabel = shouldKeepSubTabLabelOnPresetImport(current, preset)
     const overrides = presetImportFieldOverrides()
-    if (keepLabel) overrides.label = true
     const isFixedMenu = preset.is_fixed_menu !== false
     return {
       preset_id: preset.id,
-      label: (keepLabel ?? preset.name).slice(0, SUB_TAB_LABEL_MAX),
+      label: preset.name.slice(0, SUB_TAB_LABEL_MAX),
       description: preset.description?.trim() || undefined,
       price_per_person:
         isFixedMenu && preset.price_per_person && preset.price_per_person > 0
@@ -904,7 +887,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     )
     const cardPriceSection =
       tab.display === 'cards' ? (
-        <div className="w-full min-w-0 space-y-1.5">
+        <div className="mt-4 w-full min-w-0 space-y-1.5">
           <Label className="block text-sm">Prezzo a persona</Label>
           {renderPriceInput(!isFixedMenu)}
         </div>
@@ -944,13 +927,6 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                 ) : null)}
             </div>
           </div>
-        ) : tab.display !== 'carousel' ? (
-          <div className="flex items-center justify-between gap-3">
-            {renderEditorTitle('max-w-[45%]')}
-            <div className="flex shrink-0 items-center gap-2">
-              {headerActions}
-            </div>
-          </div>
         ) : headerActions ? (
           <div className="flex items-center justify-end gap-3">{headerActions}</div>
         ) : null}
@@ -986,33 +962,11 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
               placeholder="Nome mostrato al cliente"
               singleLine
             />
-
-            <div className="w-full min-w-0 space-y-1.5">
-              <Label className="block text-sm">Icona</Label>
-              <div className="flex flex-wrap gap-2">
-                {SUB_TAB_ICON_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => patchTab({ icon: opt.value })}
-                    className={cn(
-                      'flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold',
-                      tab.icon === opt.value
-                        ? 'border-primary-500 bg-primary-50 text-primary-700'
-                        : 'border-slate-200 bg-white text-slate-600',
-                    )}
-                  >
-                    <SubTabIconOption icon={opt.value} className="h-3 w-3" />
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
           </>
         )}
 
         {tab.display === 'cards' && (
-          <div className="w-full min-w-0 space-y-1.5">
+          <div className="w-full min-w-0 space-y-1.5 -mt-2">
             <Label className="block text-sm">Importa menù preselezionato</Label>
             {relevantPresets.length > 0 ? (
               <select
@@ -1061,6 +1015,30 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           />
         )}
 
+        {tab.display === 'cards' && (
+          <div className="w-full min-w-0 space-y-1.5 -mt-2">
+            <Label className="block text-sm">Icona</Label>
+            <div className="flex flex-wrap gap-2">
+              {SUB_TAB_ICON_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => patchTab({ icon: opt.value })}
+                  className={cn(
+                    'flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold',
+                    tab.icon === opt.value
+                      ? 'border-primary-500 bg-primary-50 text-primary-700'
+                      : 'border-slate-200 bg-white text-slate-600',
+                  )}
+                >
+                  <SubTabIconOption icon={opt.value} className="h-3 w-3" />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {tab.display === 'cards' &&
           tab.preset_id &&
           bookingTypeUsesMenuItems(mode.booking_type, menuItems) && (
@@ -1078,9 +1056,13 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                 if (itemsForCat.length === 0) return null
                 const catHidden = (tab.hidden_category_keys ?? []).includes(cat.key)
                 const hiddenItemIds = tab.hidden_item_ids ?? []
-                const visibleInCat = catHidden
-                  ? 0
-                  : itemsForCat.filter((item) => !hiddenItemIds.includes(item.id)).length
+                const visibleItemsForCat = catHidden
+                  ? []
+                  : itemsForCat.filter((item) => !hiddenItemIds.includes(item.id))
+                const visibleInCat = visibleItemsForCat.length
+                // In questo pannello vogliamo mostrare solo le categorie effettivamente incluse
+                // nel menù preselezionato (cioè con almeno 1 ingrediente visibile).
+                if (visibleInCat === 0) return null
                 return (
                   <details key={cat.key} className="rounded-lg border border-slate-200 bg-slate-50">
                     <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2">
@@ -1113,8 +1095,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                     </summary>
                     {!catHidden && (
                       <div className="grid grid-cols-1 gap-1 border-t border-slate-200 p-2 sm:grid-cols-2">
-                        {itemsForCat.map((item) => {
-                          const hidden = (tab.hidden_item_ids ?? []).includes(item.id)
+                        {visibleItemsForCat.map((item) => {
+                          const hidden = false
                           return (
                             <button
                               key={item.id}
@@ -1145,7 +1127,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           </div>
         )}
 
-        {tab.display === 'cards' && (
+        {tab.display === 'cards' && tab.preset_id && (
           <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5">
             <div className="min-w-0">
               <p className="text-sm font-medium text-slate-700">Menù personalizzabile</p>
@@ -1469,7 +1451,9 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                           {getSubTabEditorTitle(tab, tabIdx + 1, false)}
                                         </span>
                                       ) : (
-                                        <span className="block h-4" aria-hidden />
+                                        <span className="block min-w-0 truncate text-xs font-semibold uppercase text-slate-500">
+                                          {getSubTabEditorTitle(tab, tabIdx + 1, false)}
+                                        </span>
                                       )}
                                     </button>
                                     <div className="flex shrink-0 items-center gap-1">

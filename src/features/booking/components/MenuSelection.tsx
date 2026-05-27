@@ -211,13 +211,11 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     return uuid ? customStaffPresets.find((p) => p.id === uuid) : undefined
   }, [presetMenu, customStaffPresets])
 
-  const showComposeHeader =
-    menuSelectionLockedOverride === false ||
-    shouldShowComposeMenuHeader(
-      presetMenu ?? null,
-      activeCustomPreset,
-      bookingType,
-    )
+  const showComposeHeader = shouldShowComposeMenuHeader(
+    presetMenu ?? null,
+    activeCustomPreset,
+    bookingType,
+  )
 
   const presetTitleLabel = resolvePresetDisplayTitle(
     presetMenu ?? null,
@@ -552,7 +550,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             <p className="mt-2 text-sm font-medium text-warm-wood-dark/75">{composePresetDescription}</p>
           ) : null}
         </div>
-      ) : menuSelectionLocked && lockedPresetTitle ? (
+      ) : lockedPresetTitle ? (
         <div
           className={cn('mb-4 w-full rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]', publicFormLayout ? 'mr-auto' : 'mx-auto')}
           style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, 100%)` }}
@@ -563,31 +561,15 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
           ) : null}
         </div>
       ) : (
-        <h2
-          className="booking-section-title booking-section-title-mobile booking-mobile-heading text-2xl md:text-3xl max-[595px]:text-lg! font-serif text-warm-wood mb-4 pb-3 border-b-2 border-warm-beige"
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(1px)',
-            padding: '18px 24px',
-            borderRadius: '18px',
-            fontWeight: '700',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            gap: '14px',
-            width: '100%',
-            maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
-            margin: '0 auto',
-            boxSizing: 'border-box',
-            overflow: 'hidden',
-            minHeight: '58px',
-          }}
+        <div
+          className={cn('mb-4 w-full rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]', publicFormLayout ? 'mr-auto' : 'mx-auto')}
+          style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, 100%)` }}
         >
-          <span style={{ flexShrink: 0 }}>Menù</span>
+          <h2 className="font-serif text-xl font-bold text-warm-wood md:text-2xl">Menù</h2>
           {composePresetDescription ? (
-            <span className="text-sm font-medium text-warm-wood-dark/75">{composePresetDescription}</span>
+            <p className="mt-2 text-sm font-medium text-warm-wood-dark/75">{composePresetDescription}</p>
           ) : null}
-        </h2>
+        </div>
       )}
 
       {/* Banner omaggio + menu a tendina menù consigliati — solo Rinfresco di Laurea */}
