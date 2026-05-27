@@ -1,111 +1,90 @@
 /**
  * BookingPhotoStrip
  * Striscia verticale sinistra nella pagina Prenota.
- * Mostra N foto impilate verticalmente con effetto parallax leggero (0.4×).
- * La striscia è sticky top-0 h-screen; le foto scorrono internamente
- * più lentamente della pagina, creando profondità senza librerie esterne.
+ * Mostra tutte le foto di `public/asset/strip/` impilate verticalmente,
+ * con la foto selezionata dall'admin (`selectedPhotoId`) mostrata per prima.
+ * Effetto parallax leggero (0.4×): le foto scorrono più lentamente della pagina.
  *
  * LARGHEZZA: controllata dalla griglia padre in BookingRequestPage
- *   - mobile:  20vw  (~ 72px su 360px, ~ 78px su 390px)
- *   - ≥900px:  25vw  (~ 225px su 900px, 360px su 1440px)
+ *   - mobile:  20vw  (~78px su 390px)
+ *   - ≥900px:  25vw  (~360px su 1440px)
  *
- * FOTO: passare array di URL via prop `photos`.
- * Se vuoto mostra il placeholder scuro (bg-black/10).
- * Le foto devono essere verticali strettissime (ratio ~1:4) e progettate
- * per essere visualizzate in una fascia di ~20% dello schermo.
+ * CAMPO DB: `public_booking_strip_photo` in `restaurant_settings` (strip-01…strip-06).
+ * Nessuna foto selezionata → mostra tutte in ordine, partendo da strip-01.
  *
- * Per aggiungere le foto reali: passare l'array da BookingRequestPage.
- * Esempio:
- *   const STRIP_PHOTOS = [
- *     '/assets/strip/tavoli.jpg',
- *     '/assets/strip/cucina.jpg',
- *     '/assets/strip/pasta.jpg',
- *     '/assets/strip/ingredienti.jpg',
- *     '/assets/strip/attrezzi.jpg',
- *     '/assets/strip/natura.jpg',
- *   ]
+ * Per aggiungere foto: aggiungere l'ID in BOOKING_STRIP_PHOTO_IDS
+ * in bookingPageBackground.ts e mettere il file in public/asset/strip/.
  */
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
+import {
+  BOOKING_STRIP_PHOTO_IDS,
+  bookingStripPhotoPublicHref,
+  type BookingStripPhotoId,
+} from '@/features/booking/constants/bookingPageBackground'
 
 interface BookingPhotoStripProps {
-  /** URL delle foto da mostrare in sequenza verticale. Se vuoto: placeholder. */
-  photos?: string[]
+  /** ID foto selezionata dall'admin (da DB). Se null: prima foto. */
+  selectedPhotoId?: BookingStripPhotoId | null
+  /** BASE_URL Vite: passare `import.meta.env.BASE_URL` dal componente parent. */
+  viteBase: string
   className?: string
 }
 
-/** Velocità parallax: 0 = ferme, 1 = scorrono con la pagina, 0.4 = lente */
+/** Velocità parallax: 0 = ferme, 1 = con la pagina, 0.4 = lente */
 const PARALLAX_SPEED = 0.4
 
 export const BookingPhotoStrip: React.FC<BookingPhotoStripProps> = ({
-  photos = [],
+  selectedPhotoId,
+  viteBase,
   className,
 }) => {
-  const innerRef = useRef<HTMLDivElement>(null)
   const [offset, setOffset] = useState(0)
 
   useEffect(() => {
-    const onScroll = () => {
-      setOffset(window.scrollY * PARALLAX_SPEED)
-    }
+    const onScroll = () => setOffset(window.scrollY * PARALLAX_SPEED)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const hasPhotos = photos.length > 0
+  // Ordina le foto mettendo la selezionata per prima, poi le altre in ordine
+  const orderedIds = selectedPhotoId
+    ? [selectedPhotoId, ...BOOKING_STRIP_PHOTO_IDS.filter((id) => id !== selectedPhotoId)]
+    : [...BOOKING_STRIP_PHOTO_IDS]
 
   return (
     <div
-      className={cn(
-        // Sticky: rimane ancorata in cima mentre la pagina scorre
-        'sticky top-0 h-screen overflow-hidden',
-        // Placeholder quando non ci sono foto
-        !hasPhotos && 'bg-black/10',
-        className,
-      )}
+      className={cn('sticky top-0 h-screen overflow-hidden', className)}
     >
-      {hasPhotos ? (
-        <div
-          ref={innerRef}
-          className="flex flex-col will-change-transform"
-          style={{ transform: `translateY(-${offset}px)` }}
-        >
-          {photos.map((src, i) => (
-            <img
-              key={i}
-              src={src}
-              alt=""
-              aria-hidden
-              loading={i === 0 ? 'eager' : 'lazy'}
-              className="w-full object-cover block"
-              // Ogni foto copre 120vh: assicura continuità anche su schermi alti
-              style={{ height: '120vh', minHeight: '120vh' }}
-            />
-          ))}
-          {/* Ripete le ultime 2 foto in coda per pagine molto lunghe */}
-          {photos.slice(-2).map((src, i) => (
-            <img
-              key={`repeat-${i}`}
-              src={src}
-              alt=""
-              aria-hidden
-              loading="lazy"
-              className="w-full object-cover block"
-              style={{ height: '120vh', minHeight: '120vh' }}
-            />
-          ))}
-        </div>
-      ) : (
-        /* Placeholder visivo: gradiente caldo che simula la presenza della foto */
-        <div
-          className="h-full w-full"
-          style={{
-            background:
-              'linear-gradient(180deg, color-mix(in srgb, var(--color-warm-wood) 18%, transparent) 0%, color-mix(in srgb, var(--color-terracotta) 12%, transparent) 40%, color-mix(in srgb, var(--color-warm-orange) 10%, transparent) 80%, color-mix(in srgb, var(--color-warm-wood) 20%, transparent) 100%)',
-          }}
-        />
-      )}
+      <div
+        className="flex flex-col will-change-transform"
+        style={{ transform: `translateY(-${offset}px)` }}
+      >
+        {orderedIds.map((id, i) => (
+          <img
+            key={id}
+            src={bookingStripPhotoPublicHref(id, viteBase)}
+            alt=""
+            aria-hidden
+            loading={i === 0 ? 'eager' : 'lazy'}
+            className="w-full object-cover block"
+            style={{ height: '120vh', minHeight: '120vh' }}
+          />
+        ))}
+        {/* Ripete le prime 2 in coda per scroll molto lunghi */}
+        {orderedIds.slice(0, 2).map((id) => (
+          <img
+            key={`repeat-${id}`}
+            src={bookingStripPhotoPublicHref(id, viteBase)}
+            alt=""
+            aria-hidden
+            loading="lazy"
+            className="w-full object-cover block"
+            style={{ height: '120vh', minHeight: '120vh' }}
+          />
+        ))}
+      </div>
     </div>
   )
 }

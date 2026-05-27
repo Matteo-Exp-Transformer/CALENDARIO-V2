@@ -1,3 +1,48 @@
+/**
+ * Foto della striscia laterale sinistra nella pagina Prenota.
+ * File in `public/asset/strip/` con nome "foto sfondo  Pagina prenota (N).png".
+ * L'ID è `strip-01` … `strip-06`; il numero corrisponde al suffisso (N).
+ * Per aggiungere foto: aggiungere l'ID qui e mettere il file nella cartella.
+ */
+export const BOOKING_STRIP_PHOTO_IDS = [
+  'strip-01',
+  'strip-02',
+  'strip-03',
+  'strip-04',
+  'strip-05',
+  'strip-06',
+] as const
+
+export type BookingStripPhotoId = (typeof BOOKING_STRIP_PHOTO_IDS)[number]
+
+export const DEFAULT_BOOKING_STRIP_PHOTO: BookingStripPhotoId = 'strip-01'
+
+export function isBookingStripPhotoId(value: string): value is BookingStripPhotoId {
+  return (BOOKING_STRIP_PHOTO_IDS as readonly string[]).includes(value)
+}
+
+export function parseBookingStripPhotoFromDb(raw: unknown): BookingStripPhotoId | null {
+  if (typeof raw !== 'string' || raw.trim() === '') return null
+  const v = raw.trim().toLowerCase()
+  return isBookingStripPhotoId(v) ? (v as BookingStripPhotoId) : null
+}
+
+/**
+ * URL pubblico della foto striscia.
+ * `base` = `import.meta.env.BASE_URL` (Vite).
+ * I file hanno spazi nel nome originale; usiamo encodeURIComponent per sicurezza.
+ */
+export function bookingStripPhotoPublicHref(id: BookingStripPhotoId, base: string): string {
+  const n = Number(id.replace('strip-', ''))
+  const filename = `foto sfondo  Pagina prenota (${n}).png`
+  return `${base}asset/strip/${encodeURIComponent(filename)}`
+}
+
+/** Tutte le URL in ordine, pronte per lo scroll verticale della striscia. */
+export function allBookingStripPhotoHrefs(base: string): string[] {
+  return BOOKING_STRIP_PHOTO_IDS.map((id) => bookingStripPhotoPublicHref(id, base))
+}
+
 /** Tile PNG in `public/booking/tiles/` (nome file = id + `.png`). */
 export const BOOKING_PAGE_TILE_IDS = [
   'tile-01',

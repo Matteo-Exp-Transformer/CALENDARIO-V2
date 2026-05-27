@@ -42,6 +42,9 @@ import {
   isBookingPageGradientId,
   isBookingPageTilePlaceholder,
   type BookingPageBackgroundId,
+  BOOKING_STRIP_PHOTO_IDS,
+  bookingStripPhotoPublicHref,
+  type BookingStripPhotoId,
 } from '@/features/booking/constants/bookingPageBackground'
 import {
   APP_THEME_OPTIONS,
@@ -312,6 +315,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const contactPhoneQuery = useRestaurantSetting('contact_phone')
   const contactAddressQuery = useRestaurantSetting('contact_address')
   const publicBookingPageBgQuery = useRestaurantSetting('public_booking_page_background')
+  const stripPhotoQuery = useRestaurantSetting('public_booking_strip_photo')
   const appThemeQuery = useRestaurantSetting('app_theme')
   const upsert = useUpsertRestaurantSetting()
 
@@ -341,6 +345,8 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [bookingPageBackground, setBookingPageBackground] =
     useState<BookingPageBackgroundId>(DEFAULT_BOOKING_PAGE_BACKGROUND)
   const [bookingBgTextureTab, setBookingBgTextureTab] = useState<'images' | 'gradients'>('images')
+  const [stripPhoto, setStripPhoto] = useState<BookingStripPhotoId | null>(null)
+  const [stripPhotoDirty, setStripPhotoDirty] = useState(false)
   const [appTheme, setAppTheme] = useState<AppThemeId>(DEFAULT_APP_THEME)
   const [settingsTab, setSettingsTab] = useState<'anagrafica' | 'form'>('anagrafica')
 
@@ -363,6 +369,7 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const savedBookingPageBackground = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
   const bookingBgDirty = bookingPageBackground !== savedBookingPageBackground
+  const savedStripPhoto = stripPhotoQuery.data ?? null
   bookingBgDirtyRef.current = bookingBgDirty
 
   useEffect(() => {
@@ -416,6 +423,8 @@ export const RestaurantSettingsTab: React.FC = () => {
     const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
     setBookingPageBackground(resolvedBg)
     setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
+    setStripPhoto(stripPhotoQuery.data ?? null)
+    setStripPhotoDirty(false)
     setAppTheme(appThemeQuery.data ?? DEFAULT_APP_THEME)
     hydratedRef.current = true
   }, [
@@ -429,6 +438,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactPhoneQuery.data,
     contactAddressQuery.data,
     publicBookingPageBgQuery.data,
+    stripPhotoQuery.data,
     appThemeQuery.data,
   ])
 
@@ -710,6 +720,20 @@ export const RestaurantSettingsTab: React.FC = () => {
     setBookingBgTextureTab(
       isBookingPageGradientId(savedBookingPageBackground) ? 'gradients' : 'images',
     )
+  }
+
+  const handleSaveStripPhotoOnly = async () => {
+    if (!tenantId) return
+    await upsert.mutateAsync([
+      { key: 'public_booking_strip_photo', value: stripPhoto },
+    ])
+    await queryClient.refetchQueries({ queryKey: ['restaurant_settings'], type: 'active' })
+    setStripPhotoDirty(false)
+  }
+
+  const handleCancelStripPhotoOnly = () => {
+    setStripPhoto(savedStripPhoto)
+    setStripPhotoDirty(false)
   }
 
   const handleRestaurantNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1034,7 +1058,59 @@ export const RestaurantSettingsTab: React.FC = () => {
           </div>
         )}
       </div>
+    </section>
+  )
 
+  /**
+   * Sezione "Foto striscia laterale" — sostituisce il tab Gradienti.
+   * Permette di scegliere quale foto mostrare per prima nella striscia sinistra
+   * della pagina Prenota. La foto selezionata viene mostrata in cima; le altre
+   * scorrono sotto di essa con effetto parallax.
+   */
+  const stripPhotoSection = (
+    <section className={bookingBgSectionClass}>
+      <h3 className="text-base font-semibold text-slate-800">Foto striscia pagina Prenota</h3>
+      <p className="text-sm text-slate-600">
+        Scegli quale foto appare in cima alla striscia verticale sinistra nella pagina di prenotazione.
+        Le altre foto scorrono sotto durante la navigazione della pagina.
+      </p>
+      <SectionActionBar
+        onCancel={handleCancelStripPhotoOnly}
+        onSave={() => {
+          void handleSaveStripPhotoOnly().catch(() => toast.error('Errore nel salvataggio foto striscia'))
+        }}
+        cancelDisabled={!stripPhotoDirty}
+        saveDisabled={!stripPhotoDirty || !tenantId}
+        pending={upsert.isPending}
+      />
+      <div
+        className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
+        style={bookingBgGridTopSpacingStyle}
+      >
+        {BOOKING_STRIP_PHOTO_IDS.map((id, idx) => {
+          const href = bookingStripPhotoPublicHref(id, bookingBgBase)
+          const label = `Foto ${idx + 1}`
+          const isSelected = stripPhoto === id || (stripPhoto == null && id === 'strip-01')
+          return (
+            <SettingsPreviewPickCard
+              key={id}
+              label={label}
+              selected={isSelected}
+              disabled={upsert.isPending}
+              pickButtonClass={bookingBgPickButtonClass}
+              aspectClass="aspect-[1/3]"
+              pickEntity="foto"
+              modalConfirmLabel="Usa questa foto"
+              previewSrc={href}
+              previewModalSrc={href}
+              onPick={() => {
+                setStripPhoto(id)
+                setStripPhotoDirty(id !== savedStripPhoto)
+              }}
+            />
+          )
+        })}
+      </div>
     </section>
   )
 
@@ -1076,7 +1152,12 @@ export const RestaurantSettingsTab: React.FC = () => {
 
       {settingsTab === 'form' && (
         <BookingFormConfigPanel
-          afterBookingModesSection={bookingPageBackgroundSection}
+          afterBookingModesSection={
+            <>
+              {bookingPageBackgroundSection}
+              {stripPhotoSection}
+            </>
+          }
           bookingBgDirty={bookingBgDirty}
           onSaveBookingBackground={handleSaveBookingBackgroundOnly}
           onCancelBookingBackground={handleCancelBookingBackgroundOnly}

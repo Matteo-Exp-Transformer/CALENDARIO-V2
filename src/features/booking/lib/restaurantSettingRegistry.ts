@@ -6,6 +6,9 @@ import {
   type BookingPageBackgroundId,
   isBookingPageBackgroundId,
   parseBookingPageBackgroundFromDb,
+  type BookingStripPhotoId,
+  isBookingStripPhotoId,
+  parseBookingStripPhotoFromDb,
 } from '@/features/booking/constants/bookingPageBackground'
 import {
   type AppThemeId,
@@ -41,6 +44,8 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'contact_phone',
   'contact_address',
   'public_booking_page_background',
+  /** Foto della striscia verticale sinistra nella pagina Prenota (strip-01 … strip-06). */
+  'public_booking_strip_photo',
   /** Mostra nel form pubblico il menu a tendina "menu consigliati" (built-in + personalizzati) */
   'booking_staff_presets_visible',
   /** Menu predefiniti creati dall'admin (nome + lista id voci) */
@@ -287,6 +292,7 @@ export type RestaurantSettingValueMap = {
   contact_phone: string
   contact_address: string
   public_booking_page_background: BookingPageBackgroundId
+  public_booking_strip_photo: BookingStripPhotoId | null
   booking_staff_presets_visible: boolean
   booking_custom_staff_presets: CustomStaffPreset[]
   booking_menu_promos: MenuPromo[]
@@ -426,6 +432,16 @@ export const restaurantSettingRegistry: {
       const normalized = value.trim().toLowerCase()
       if (isBookingPageBackgroundId(normalized)) return null
       return 'Sfondo pagina non valido'
+    },
+  },
+  public_booking_strip_photo: {
+    key: 'public_booking_strip_photo',
+    parseFromDb: (raw) => parseBookingStripPhotoFromDb(raw),
+    serializeToDb: (value) => (value == null ? null : String(value)) as Json,
+    validate: (value) => {
+      if (value == null) return null
+      if (typeof value === 'string' && isBookingStripPhotoId(value)) return null
+      return 'Foto striscia non valida'
     },
   },
   booking_staff_presets_visible: {

@@ -25,20 +25,6 @@ import {
 } from '@/features/booking/constants/bookingPublicFormConfig'
 import type { BookingRequestInput } from '@/types/booking'
 
-/**
- * Foto della striscia verticale sinistra.
- * Aggiungere qui gli URL delle foto una volta generate.
- * Le foto devono essere verticali strettissime (ratio ~1:4) e progettate
- * per essere visualizzate in una fascia di ~20% dello schermo.
- * Esempio:
- *   '/assets/strip/01-tavoli.jpg',
- *   '/assets/strip/02-pasta.jpg',
- *   ...
- */
-const BOOKING_STRIP_PHOTOS: string[] = [
-  // inserire gli URL qui — finché vuoto mostra il gradiente placeholder
-]
-
 export const BookingRequestPage: React.FC = () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>()
   const { tenantId, isLoading: isTenantLoading, setTenantFromSlug } = useTenantContext()
@@ -57,6 +43,7 @@ export const BookingRequestPage: React.FC = () => {
   const { data: contactPhone } = useRestaurantSetting('contact_phone')
   const { data: contactAddress } = useRestaurantSetting('contact_address')
   const { data: publicBookingBg } = useRestaurantSetting('public_booking_page_background')
+  const { data: stripPhotoId } = useRestaurantSetting('public_booking_strip_photo')
   const { data: formConfig } = useRestaurantSetting('booking_public_form_config')
   const resolvedConfig = formConfig ?? DEFAULT_BOOKING_FORM_CONFIG
   const headerStyles = resolvedConfig.header_styles ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles
@@ -157,7 +144,10 @@ export const BookingRequestPage: React.FC = () => {
             Le foto devono essere verticali strettissime (~1:4), progettate per
             una fascia di ~20% schermo. Vedere commento in BookingPhotoStrip.tsx.
           */}
-          <BookingPhotoStrip photos={BOOKING_STRIP_PHOTOS} />
+          <BookingPhotoStrip
+            selectedPhotoId={stripPhotoId ?? null}
+            viteBase={import.meta.env.BASE_URL}
+          />
 
           {/* Colonna contenuto destra */}
           <div className="w-full min-w-0 px-4 md:px-8 pb-28 min-[900px]:pb-1.5 min-[900px]:px-6 lg:px-8">
@@ -253,13 +243,8 @@ export const BookingRequestPage: React.FC = () => {
             }
           />
 
-          </div>{/* fine colonna contenuto destra */}
-
-        </div>{/* fine griglia 3-col */}
-
-        {/* Footer orari + contatti — larghezza intera pagina senza gap laterali */}
-        <div className="mx-auto w-full max-w-7xl">
-          <div className="rounded-2xl shadow-xl px-6 md:px-8 bg-white border border-slate-100 pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-[clamp(2rem,6vmin,3.5rem)] animate-fade-in">
+          {/* Footer orari + contatti — dentro la colonna destra così la striscia foto sx copre tutta l'altezza */}
+          <div className="rounded-2xl shadow-xl px-6 md:px-8 bg-white border border-slate-100 pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-3 mb-4 animate-fade-in">
             <div className="grid grid-cols-2 gap-x-3 gap-y-1 md:gap-x-4 items-start max-[480px]:hidden">
 
               <div className="min-w-0 w-full space-y-1 text-left pr-1.5">
@@ -411,7 +396,10 @@ export const BookingRequestPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>{/* fine wrapper footer */}
+
+          </div>{/* fine colonna contenuto destra */}
+
+        </div>{/* fine griglia [striscia foto | contenuto] */}
 
       </div>
     </div>
