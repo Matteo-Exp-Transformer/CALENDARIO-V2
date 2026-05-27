@@ -129,14 +129,14 @@ export const BookingRequestPage: React.FC = () => {
       <div className="min-h-screen">
         {/*
           Layout pagina Prenota — sempre 2 colonne [striscia foto | form]:
-          - Colonna sinistra (25vw): striscia foto verticale sticky full-height
+          - Colonna sinistra (20vw mobile, 25vw da 900px): striscia foto verticale sticky full-height
           - Colonna destra (1fr): header + form + sticky bar
-          Per cambiare la larghezza della striscia foto: modifica il valore 25vw in grid-cols-[25vw_1fr].
+          Per cambiare la larghezza della striscia foto: modifica i valori in grid-cols-[20vw_1fr] / min-[900px]:grid-cols-[25vw_1fr].
         */}
-        <div className="mx-auto w-full max-w-7xl grid grid-cols-[25vw_1fr] items-start">
+        <div className="mx-auto w-full max-w-7xl grid grid-cols-[20vw_1fr] min-[900px]:grid-cols-[25vw_1fr] items-start">
 
           {/* Striscia foto laterale sinistra */}
-          {/* Larghezza: 25vw — modificare il valore nella classe grid-cols-[25vw_1fr] sopra */}
+          {/* Larghezza: 20vw mobile, 25vw da 900px — modificare i valori nella classe grid-cols sopra */}
           <div className="sticky top-0 h-screen overflow-hidden bg-black/10">
             {/* Placeholder visivo temporaneo: sarà sostituito da una foto nella prossima sessione */}
           </div>
