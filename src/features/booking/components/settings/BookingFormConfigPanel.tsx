@@ -754,7 +754,10 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   const headerStyles = config.header_styles ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles
 
   const getSubTabEditorTitle = (tab: SubTab, number: number, isDraft: boolean) => {
-    if (tab.display === 'carousel') return `Carosello ${number}`
+    if (tab.display === 'carousel') {
+      const name = tab.label?.trim()
+      return name || `Carosello ${number}`
+    }
     if (isDraft) return `Nuova Card ${number}`
     return `Card ${number}`
   }
@@ -941,17 +944,27 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                 ) : null)}
             </div>
           </div>
-        ) : (
+        ) : tab.display !== 'carousel' ? (
           <div className="flex items-center justify-between gap-3">
             {renderEditorTitle('max-w-[45%]')}
             <div className="flex shrink-0 items-center gap-2">
               {headerActions}
             </div>
           </div>
-        )}
+        ) : headerActions ? (
+          <div className="flex items-center justify-end gap-3">{headerActions}</div>
+        ) : null}
 
         {tab.display === 'carousel' && tenantId ? (
           <>
+            <AdminFieldWithCharCount
+              label="Nome carosello"
+              value={tab.label}
+              maxLength={SUB_TAB_LABEL_MAX}
+              onChange={(label) => patchTab({ label })}
+              placeholder="Nome tecnico per admin"
+              singleLine
+            />
             {carouselPriceSection}
             <BookingFormCarouselEditor
               tenantId={tenantId}
@@ -1451,7 +1464,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                       onClick={toggleSavedSubTab}
                                       className="min-w-0 flex-1 text-left"
                                     >
-                                      {!savedOpen ? (
+                                      {tab.display === 'carousel' || !savedOpen ? (
                                         <span className="block min-w-0 truncate text-xs font-semibold uppercase text-slate-500">
                                           {getSubTabEditorTitle(tab, tabIdx + 1, false)}
                                         </span>

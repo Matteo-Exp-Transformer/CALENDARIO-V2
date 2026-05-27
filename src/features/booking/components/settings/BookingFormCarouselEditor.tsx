@@ -208,6 +208,8 @@ function CarouselSlideEditorCard({
         </div>
       </div>
 
+      <p className="text-sm text-slate-600">Inserisci o modifica il testo mostrato nelle foto del carosello.</p>
+
       <AdminFieldWithCharCount
         label="Testo Etichetta"
         value={item.eyebrow ?? ''}
@@ -226,7 +228,15 @@ function CarouselSlideEditorCard({
         singleLine
       />
 
-      <div className="w-full min-w-0 space-y-1.5">
+      <AdminFieldWithCharCount
+        label="Testo Descrizione"
+        value={item.description ?? ''}
+        maxLength={BOOKING_CAROUSEL_DESCRIPTION_MAX}
+        onChange={(description) => onPatch({ description: description || undefined })}
+        placeholder="Sottotitolo sulla card"
+      />
+
+      <div className="w-full min-w-0 space-y-1.5 -mt-2">
         <Label className="block text-sm">Scegli Icona</Label>
         <div className="flex flex-wrap gap-2">
           {SUB_TAB_ICON_OPTIONS.map((opt) => (
@@ -247,14 +257,6 @@ function CarouselSlideEditorCard({
           ))}
         </div>
       </div>
-
-      <AdminFieldWithCharCount
-        label="Testo Descrizione"
-        value={item.description ?? ''}
-        maxLength={BOOKING_CAROUSEL_DESCRIPTION_MAX}
-        onChange={(description) => onPatch({ description: description || undefined })}
-        placeholder="Sottotitolo sulla card"
-      />
     </div>
   )
 }
@@ -314,7 +316,7 @@ export function BookingFormCarouselEditor({
   }
 
   return (
-    <div className="w-full min-w-0 space-y-4">
+    <div className="w-full min-w-0 space-y-12">
       <input
         ref={fileRef}
         type="file"
@@ -349,14 +351,14 @@ export function BookingFormCarouselEditor({
 
       <Button
         variant="outline"
-        size="sm"
+        size="md"
         type="button"
         disabled={uploading || !canUpload}
         onClick={() => fileRef.current?.click()}
-        className="gap-1.5 self-start text-xs"
+        className="self-start"
       >
-        <ImagePlus className="h-3.5 w-3.5" />
-        {uploading ? 'Caricamento…' : items.length === 0 ? 'Aggiungi foto' : 'Aggiungi altra foto'}
+        <ImagePlus className="h-4 w-4" />
+        {uploading ? 'Caricamento…' : `Aggiungi foto n ${items.length + 1}`}
       </Button>
     </div>
   )

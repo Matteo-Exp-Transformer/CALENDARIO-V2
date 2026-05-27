@@ -63,13 +63,17 @@ export function resolveSubTabView(
 
   const is_fixed_menu = subTab.display === 'cards' && subTab.is_fixed_menu === false ? false : undefined
 
-  // price_per_person: se il menu e personalizzabile non esiste prezzo fisso.
-  // Le card con preset continuano a ereditare il prezzo live se non personalizzate.
-  const price_per_person = is_fixed_menu === false
-    ? undefined
-    : isFieldOverridden(subTab, 'price_per_person') || !preset
-      ? subTab.price_per_person
-      : (preset.price_per_person ?? subTab.price_per_person)
+  // price_per_person:
+  // - cards: se il menu è personalizzabile non esiste prezzo fisso, altrimenti si eredita dal preset se non personalizzato
+  // - carousel: non deve mai derivare dal preset (e per coerenza lato cliente risulta sempre undefined in resolver)
+  const price_per_person =
+    subTab.display === 'carousel'
+      ? undefined
+      : is_fixed_menu === false
+        ? undefined
+        : isFieldOverridden(subTab, 'price_per_person') || !preset
+          ? subTab.price_per_person
+          : (preset.price_per_person ?? subTab.price_per_person)
 
   // hidden_item_ids / hidden_category_keys: vetrina-only. Senza personalizzazione → array vuoto
   // (= mostra tutti gli ingredienti del preset). Con personalizzazione → usa i salvati.
