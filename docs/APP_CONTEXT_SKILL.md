@@ -238,6 +238,7 @@ Il report deve contenere:
 - File toccati e perché (linguaggio utente — non "ho modificato X" ma "ora Mario vede Y")
 - Domande poste all'utente e risposte ricevute
 - Test eseguiti e risultato (`npm run validate`)
+- **Sezione "File di skill aggiornati"** — tabella con skill toccata + cosa è cambiato (obbligatoria, anche se la riga è "nessuno")
 - Cosa resta per la prossima sessione
 - Eventuali deviazioni dal plan con motivazione
 

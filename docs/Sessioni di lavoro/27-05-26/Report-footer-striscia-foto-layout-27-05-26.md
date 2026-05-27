@@ -71,6 +71,15 @@ La griglia `grid-cols-[20vw_1fr]` è sempre attiva, anche su schermi molto picco
 - `src/pages/BookingRequestPage.tsx` — struttura layout riscritta, footer spostato fuori griglia, fix warning Tailwind v4
 - `src/features/booking/components/publicBooking/BookingPhotoStrip.tsx` — ripetizione foto da 2 a 12 (3 cicli completi)
 
+## File di skill aggiornati in questa sessione
+
+| Skill aggiornata | Cosa è cambiato |
+|------------------|-----------------|
+| `docs/APP_CONTEXT_SKILL.md` §4 RULE Pagina Prenota v2 | Aggiornata la nota su footer: ora fuori dalla griglia nel `flex-col` wrapper, non dentro la colonna destra. Aggiunta nota su struttura `return` (`min-h-screen flex-col → [griglia flex-1 | footer]`). Aggiunta nota copertura foto striscia (18 foto × 120vh). |
+| `docs/SESSION_LOG.md` | Aggiunta riga sessione. |
+
+---
+
 ## Prossima sessione
 
 - Valutare se aggiungere `pb-safe` (safe-area iOS) al footer per dispositivi con notch in basso
