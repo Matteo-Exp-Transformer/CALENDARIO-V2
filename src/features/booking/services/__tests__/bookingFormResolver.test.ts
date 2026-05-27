@@ -52,6 +52,22 @@ describe('resolveSubTabView — campi non personalizzati seguono il preset live'
     expect(resolved.price_per_person).toBe(40) // resta live
   })
 
+  it('mantiene il testo Numero Portate salvato sulla card', () => {
+    const tab = { ...baseSubTab(), courses_label: '4 portate' }
+    const resolved = resolveSubTabView(tab, [PRESET_UPDATED])
+    expect(resolved.courses_label).toBe('4 portate')
+  })
+
+  it('con price override mantiene il prezzo salvato sulla card', () => {
+    const tab = {
+      ...baseSubTab(),
+      price_per_person: 32,
+      field_overrides: { price_per_person: true },
+    }
+    const resolved = resolveSubTabView(tab, [PRESET_UPDATED])
+    expect(resolved.price_per_person).toBe(32)
+  })
+
   it('senza preset collegato restituisce i valori salvati', () => {
     const tab: SubTab = { id: 't', display: 'cards', label: 'Manuale', price_per_person: 50 }
     const resolved = resolveSubTabView(tab, [])
@@ -65,14 +81,14 @@ describe('resolveSubTabView — campi non personalizzati seguono il preset live'
     expect(resolved.label).toBe('Menu Estate')
   })
 
-  it('carosello: price_per_person sempre undefined', () => {
+  it('carosello: mantiene il prezzo salvato senza ereditarlo dal preset', () => {
     const tab: SubTab = {
       ...baseSubTab(),
       display: 'carousel',
       price_per_person: 99,
     }
     const resolved = resolveSubTabView(tab, [PRESET])
-    expect(resolved.price_per_person).toBeUndefined()
+    expect(resolved.price_per_person).toBe(99)
   })
 })
 

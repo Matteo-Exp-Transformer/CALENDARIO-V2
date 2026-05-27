@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { BookingRequestInput } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 import { useCreateBookingRequest } from '../hooks/useBookingRequests'
 import { useCheckSlotAvailability } from '../hooks/useCheckSlotAvailability'
 import { useRateLimit } from '@/hooks/useRateLimit'
-import { Send, Loader2, CheckCircle } from 'lucide-react'
+import { Send, Loader2, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { MenuSelection } from './MenuSelection'
 import { DietaryRestrictionsSection } from './DietaryRestrictionsSection'
 import {
@@ -48,51 +48,80 @@ interface BookingRequestFormProps {
   formConfig?: BookingPublicFormConfig
   onFormDataChange?: (data: Partial<BookingRequestInput>) => void
   onActiveSubTabChange?: (subTab: SubTab | null) => void
-  onMenuPanelVisibilityChange?: (visible: boolean) => void
   /** Riepilogo a destra (desktop); il submit va sotto questa colonna. */
   summarySidebar?: React.ReactNode
 }
 
 function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
+  const scrollerRef = useRef<HTMLDivElement>(null)
   const visible = (subTab.carousel_items ?? []).filter((item) => item.image_url?.trim())
   if (visible.length === 0) return null
 
-  return (
-    <div className={cn('flex gap-3 overflow-x-auto pb-1 scrollbar-hide', BOOKING_PUBLIC_CONTENT_WIDTH)}>
-      {visible.map((item, idx) => {
-        const cardLabel = item.eyebrow?.trim() || ''
-        const title = item.title?.trim() || ''
-        const description = item.description?.trim() || ''
-        const hasOverlay = Boolean(cardLabel || title || description)
+  const scrollCarousel = (direction: 'left' | 'right') => {
+    const el = scrollerRef.current
+    if (!el) return
+    const delta = Math.max(280, Math.round(el.clientWidth * 0.7))
+    el.scrollBy({ left: direction === 'left' ? -delta : delta, behavior: 'smooth' })
+  }
 
-        return (
-          <article
-            key={`${item.image_url}-${idx}`}
-            className="relative h-52 w-[78%] max-w-[320px] shrink-0 overflow-hidden rounded-2xl bg-warm-wood text-white shadow-lg sm:h-64 sm:w-[46%]"
+  return (
+    <div className={cn('relative', BOOKING_PUBLIC_CONTENT_WIDTH)}>
+      {visible.length > 1 ? (
+        <>
+          <button
+            type="button"
+            aria-label="Scorri foto precedenti"
+            onClick={() => scrollCarousel('left')}
+            className="absolute left-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange md:flex"
           >
-            <img
-              src={item.image_url}
-              alt={title || cardLabel || ''}
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
-            {hasOverlay ? (
-              <div className="absolute inset-x-0 bottom-0 p-4 text-left">
-                {cardLabel ? (
-                  <p className="text-xs font-bold uppercase tracking-wide text-white/80">{cardLabel}</p>
-                ) : null}
-                {title ? <h3 className="mt-1 text-lg font-bold leading-tight">{title}</h3> : null}
-                {description ? (
-                  <p className="mt-1 line-clamp-3 text-sm font-medium leading-snug text-white/85">
-                    {description}
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
-          </article>
-        )
-      })}
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Scorri foto successive"
+            onClick={() => scrollCarousel('right')}
+            className="absolute right-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange md:flex"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </>
+      ) : null}
+      <div ref={scrollerRef} className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+        {visible.map((item, idx) => {
+          const cardLabel = item.eyebrow?.trim() || ''
+          const title = item.title?.trim() || ''
+          const description = item.description?.trim() || ''
+          const hasOverlay = Boolean(cardLabel || title || description)
+
+          return (
+            <article
+              key={`${item.image_url}-${idx}`}
+              className="relative h-52 w-[78%] max-w-[320px] shrink-0 overflow-hidden rounded-2xl bg-warm-wood text-white shadow-lg sm:h-64 sm:w-[46%]"
+            >
+              <img
+                src={item.image_url}
+                alt={title || cardLabel || ''}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+              {hasOverlay ? (
+                <div className="absolute inset-x-0 bottom-0 p-4 text-left">
+                  {cardLabel ? (
+                    <p className="text-xs font-bold uppercase tracking-wide text-white/80">{cardLabel}</p>
+                  ) : null}
+                  {title ? <h3 className="mt-1 text-lg font-bold leading-tight">{title}</h3> : null}
+                  {description ? (
+                    <p className="mt-1 line-clamp-3 text-sm font-medium leading-snug text-white/85">
+                      {description}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </article>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -103,7 +132,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   formConfig = DEFAULT_BOOKING_FORM_CONFIG,
   onFormDataChange,
   onActiveSubTabChange,
-  onMenuPanelVisibilityChange,
   summarySidebar,
 }) => {
   // Helper function to get current date in YYYY-MM-DD format
@@ -150,7 +178,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
   const activeModeId = activeMode?.id ?? 'tavolo'
 
-  const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
+  const {
+    data: customStaffPresets = [],
+    isLoading: customStaffPresetsLoading,
+    isFetching: customStaffPresetsFetching,
+  } = useRestaurantSetting('booking_custom_staff_presets')
 
   const activeModeSubTabs = useMemo(() => {
     if (!activeMode?.sub_tabs_enabled || (activeMode.sub_tabs?.length ?? 0) === 0) {
@@ -184,6 +216,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         description: resolved.description,
         price_per_person: resolved.price_per_person,
         is_fixed_menu: resolved.is_fixed_menu,
+        courses_label: resolved.courses_label,
         hidden_category_keys: resolved.hidden_category_keys,
         hidden_item_ids: resolved.hidden_item_ids,
       }
@@ -192,14 +225,18 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
   const activeSubTab = activeModeSubTabs.find((t) => t.id === activeSubTabId) ?? null
 
-  const getActiveSubTabPricePerPerson = (subTab: SubTab | null): number | undefined => {
+  const getActiveSubTabPricePerPerson = useCallback((subTab: SubTab | null): number | undefined => {
     if (!subTab || subTab.is_fixed_menu === false) return undefined
     return subTab.price_per_person != null && subTab.price_per_person > 0
       ? subTab.price_per_person
       : undefined
-  }
+  }, [])
 
   const activeSubTabUsesFixedPricing = getActiveSubTabPricePerPerson(activeSubTab) != null
+
+  const { data: menuItems = [], isLoading: menuItemsLoading, isFetching: menuItemsFetching } = useMenuItems()
+  const presetCatalogLoading =
+    menuItemsLoading || menuItemsFetching || customStaffPresetsLoading || customStaffPresetsFetching
 
   const activeSubTabOverrides = useMemo(() => {
     if (activeModeSubTabs.length > 0) {
@@ -227,10 +264,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     onActiveSubTabChange?.(activeSubTab)
   }, [activeSubTab, onActiveSubTabChange])
 
-  useEffect(() => {
-    onMenuPanelVisibilityChange?.(showMenuSelectionSection && activeSubTab != null)
-  }, [activeSubTab, onMenuPanelVisibilityChange, showMenuSelectionSection])
-
   // Modalità Carosello: c'è una sola sottotab; auto-selezionala senza richiedere click utente
   // (la strip BookingSubTabCards non viene renderizzata per questa presentazione).
   useEffect(() => {
@@ -249,7 +282,13 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       menu_total_per_person: price,
       menu_total_booking: price && prev.num_guests > 0 ? price * prev.num_guests : undefined,
     }))
-  }, [activeSubTab?.id, activeSubTab?.display, activeSubTab?.price_per_person, activeSubTab?.is_fixed_menu])
+  }, [
+    activeSubTab?.id,
+    activeSubTab?.display,
+    activeSubTab?.price_per_person,
+    activeSubTab?.is_fixed_menu,
+    getActiveSubTabPricePerPerson,
+  ])
 
   const frostedInputCn =
     'min-h-[3rem] bg-white px-4 rounded-lg border border-slate-200 text-left text-xs font-bold text-warm-wood sm:text-sm focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/40'
@@ -392,6 +431,17 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
     const resolved = applyPresetTypeToBookingFormPayload(presetType, menuItems, customStaffPresets)
     if (!resolved) {
+      if (presetCatalogLoading) {
+        setFormData({
+          ...formData,
+          preset_menu: presetType,
+          menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
+          menu_total_per_person: getActiveSubTabPricePerPerson(sourceSubTab),
+          menu_total_booking: undefined,
+        })
+        return
+      }
+
       toast.error('Menù consigliato non disponibile. Aggiorna la pagina o scegli un altro menù.')
       setSelectedPreset(null)
       setFormData({
@@ -431,13 +481,56 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     })
   }
 
+  useEffect(() => {
+    if (presetCatalogLoading || !selectedPreset) return
+    if (formData.preset_menu !== selectedPreset) return
+    if ((formData.menu_selection?.items.length ?? 0) > 0) return
+
+    const resolved = applyPresetTypeToBookingFormPayload(selectedPreset, menuItems, customStaffPresets)
+    if (!resolved || resolved.items.length === 0) return
+
+    const numGuests = formData.num_guests || 0
+    const presetPricePerPerson = getActiveSubTabPricePerPerson(activeSubTab)
+    const { totalPerPerson, tiramisuTotal, tiramisuKg, menu_total_booking } =
+      computeMenuTotalsWithPresetPrice(resolved.items, numGuests, presetPricePerPerson)
+    const usesFixedSubTabPricing = presetPricePerPerson != null
+    const effectiveTotalPerPerson = usesFixedSubTabPricing ? presetPricePerPerson : totalPerPerson
+    const effectiveTiramisuTotal = usesFixedSubTabPricing ? 0 : tiramisuTotal
+
+    setFormData((prev) => ({
+      ...prev,
+      preset_menu: selectedPreset,
+      menu_selection: {
+        items: resolved.items,
+        tiramisu_total: effectiveTiramisuTotal,
+        tiramisu_kg: usesFixedSubTabPricing ? 0 : tiramisuKg,
+      },
+      menu_total_per_person: effectiveTotalPerPerson,
+      menu_total_booking:
+        effectiveTotalPerPerson && numGuests > 0
+          ? effectiveTotalPerPerson * numGuests + effectiveTiramisuTotal
+          : usesFixedSubTabPricing
+            ? undefined
+            : menu_total_booking,
+    }))
+  }, [
+    activeSubTab,
+    customStaffPresets,
+    formData.menu_selection?.items.length,
+    formData.num_guests,
+    formData.preset_menu,
+    getActiveSubTabPricePerPerson,
+    menuItems,
+    presetCatalogLoading,
+    selectedPreset,
+  ])
+
   const { mutate, isPending } = useCreateBookingRequest()
   const { check: checkSlotAvailability, isChecking: isCheckingAvailability, reset: resetAvailability } = useCheckSlotAvailability()
   const { checkRateLimit, isBlocked } = useRateLimit({
     maxAttempts: 3,
     timeWindow: 60000 // 1 minuto
   })
-  const { data: menuItems = [] } = useMenuItems()
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
   const { data: menuPromos = [] } = useRestaurantSetting('booking_menu_promos')
 
@@ -876,9 +969,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         )}
       </div>
 
-      <div className="col-span-1 min-w-0 w-full max-w-full space-y-6">
       {showMenuSelectionSection && (
-        <div id="menu-section" className="flex w-full min-w-0 flex-col space-y-6">
+        <div id="menu-section" className="col-span-1 flex w-full min-w-0 flex-col space-y-6 lg:col-span-2">
           <MenuSelection
             selectedItems={formData.menu_selection?.items || []}
             numGuests={formData.num_guests || 0}
@@ -941,6 +1033,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         </div>
       )}
 
+      <div className="col-span-1 min-w-0 w-full max-w-full space-y-6">
       {/* Dati cliente — dopo tipologia e menù */}
       <div className="flex w-full min-w-0 flex-col space-y-3">
         <BookingFormFields

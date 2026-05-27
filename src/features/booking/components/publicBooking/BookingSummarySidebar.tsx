@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { CalendarDays, Clock, Users, UtensilsCrossed, Phone, ChevronLeft } from 'lucide-react'
+import { CalendarDays, Clock, Users, UtensilsCrossed, Phone } from 'lucide-react'
 import type { BookingRequestInput, BookingType } from '@/types/booking'
 import type { BookingMode, SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
 import { useMenuCategories } from '@/features/booking/hooks/useMenuCategories'
@@ -20,8 +20,6 @@ interface BookingSummarySidebarProps {
   modes: BookingMode[]
   contactPhone?: string
   activeSubTab?: SubTab | null
-  collapsed?: boolean
-  onExpand?: () => void
 }
 
 function formatDate(dateStr?: string): string {
@@ -51,8 +49,6 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   modes,
   contactPhone,
   activeSubTab,
-  collapsed = false,
-  onExpand,
 }) => {
   const { data: menuCategories = [] } = useMenuCategories()
   const hasMenu = formData.booking_type !== 'tavolo'
@@ -63,7 +59,10 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
     activeSubTab?.price_per_person != null &&
     activeSubTab.price_per_person > 0 &&
     activeSubTab.is_fixed_menu !== false
+  const isCarouselSummary = activeSubTab?.display === 'carousel'
+  const isScrollableCardSummary = activeSubTab?.display === 'cards'
   const showMenuPrices = hasPresetPrice || totalPerPerson > 0
+  const showTotals = showMenuPrices && totalPerPerson > 0 && (hasMenu || isCarouselSummary)
 
   const categoryLabelByKey = useMemo(() => {
     const map = new Map<string, string>()
@@ -91,24 +90,20 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
     () => computeMenuTotalsFromItems(items, formData.num_guests).menu_total_booking,
     [items, formData.num_guests],
   )
+  const carouselSlideTitles = useMemo(() => {
+    if (!isCarouselSummary) return []
+    return (activeSubTab.carousel_items ?? [])
+      .filter((item) => item.image_url?.trim())
+      .map((item, idx) => item.title?.trim() || item.eyebrow?.trim() || `Foto ${idx + 1}`)
+      .filter((title) => title.length > 0)
+  }, [activeSubTab, isCarouselSummary])
 
   return (
     <div className="order-2 w-full max-w-full self-start md:sticky md:top-4 lg:order-none">
-      {collapsed ? (
-        <button
-          type="button"
-          aria-label="Mostra riepilogo prenotazione"
-          onClick={onExpand}
-          className="ml-auto hidden h-12 w-12 items-center justify-center rounded-l-full border border-slate-100 bg-white/90 text-warm-wood shadow-xl backdrop-blur-sm transition hover:bg-white hover:text-warm-orange lg:flex"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-      ) : null}
       <aside
         className={cn(
           'w-full max-w-full rounded-2xl border border-slate-100 bg-white px-4 py-5 shadow-xl transition-all duration-300 ease-out',
           'space-y-4',
-          collapsed && 'pointer-events-none translate-x-[120%] opacity-0',
         )}
         data-testid="booking-summary-sidebar"
       >
@@ -179,6 +174,22 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
             </div>
           )}
 
+        {/* Foto carosello */}
+        {isCarouselSummary && carouselSlideTitles.length > 0 && (
+          <div className="border-t border-black/10 pt-3 space-y-1.5">
+            <p className="text-[13px] text-warm-wood-dark/60 font-semibold uppercase tracking-wide">
+              Offerta selezionata
+            </p>
+            <ul className="space-y-1.5">
+              {carouselSlideTitles.map((title, idx) => (
+                <li key={`${title}-${idx}`} className="text-sm text-warm-wood font-medium leading-tight">
+                  {title}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* IL TUO MENU */}
         {hasMenu && sortedMenuItems.length > 0 && (
           <div className="border-t border-black/10 pt-3 space-y-1.5">
@@ -200,7 +211,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
                         item.name
                       )}
                     </span>
-                    {showMenuPrices ? (
+                    {showMenuPrices && !(hasPresetPrice && isScrollableCardSummary) ? (
                       <span className="text-sm text-warm-wood-dark/70 font-semibold shrink-0 tabular-nums">
                         {formatCurrency(item.price)}
                       </span>
@@ -223,11 +234,15 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         )}
 
         {/* Totali */}
-        {hasMenu && showMenuPrices && totalPerPerson > 0 && (
+        {showTotals && (
           <div className="border-t border-black/10 pt-3 space-y-1">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <span className="text-sm text-warm-wood-dark/70 font-semibold">A persona</span>
-              <span className="text-base font-bold text-warm-wood">{formatCurrency(totalPerPerson)}</span>
+              <span className="text-base font-bold text-warm-wood">
+                {hasPresetPrice && formData.num_guests > 0
+                  ? `${formatCurrency(totalPerPerson)} x ${formData.num_guests} ospiti`
+                  : formatCurrency(totalPerPerson)}
+              </span>
             </div>
             {formData.num_guests > 0 && (
               <div className="flex items-center justify-between">

@@ -18,6 +18,7 @@ export interface ResolvedSubTab {
   display: SubTab['display']
   label: string
   description?: string
+  courses_label?: string
   price_per_person?: number
   is_fixed_menu?: boolean
   hidden_category_keys?: string[]
@@ -65,10 +66,10 @@ export function resolveSubTabView(
 
   // price_per_person:
   // - cards: se il menu è personalizzabile non esiste prezzo fisso, altrimenti si eredita dal preset se non personalizzato
-  // - carousel: non deve mai derivare dal preset (e per coerenza lato cliente risulta sempre undefined in resolver)
+  // - carousel: usa solo il prezzo salvato sulla vetrina, senza ereditarlo dal preset
   const price_per_person =
     subTab.display === 'carousel'
-      ? undefined
+      ? subTab.price_per_person
       : is_fixed_menu === false
         ? undefined
         : isFieldOverridden(subTab, 'price_per_person') || !preset
@@ -89,6 +90,7 @@ export function resolveSubTabView(
     display: subTab.display,
     label,
     description,
+    courses_label: subTab.courses_label,
     price_per_person,
     is_fixed_menu,
     hidden_category_keys,

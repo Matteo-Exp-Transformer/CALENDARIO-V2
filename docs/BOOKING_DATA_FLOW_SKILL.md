@@ -66,7 +66,7 @@ ADMIN
            ├─ sub_tabs_presentation: XOR cards | carousel | null
            └─ sub_tabs (SubTab[])
                 ├─ preset_id        ─── legame con preset staff (magazzino)
-                ├─ label, description, price_per_person, is_fixed_menu, hidden_*  (snapshot vetrina)
+                ├─ label, description, courses_label, price_per_person, is_fixed_menu, hidden_*  (snapshot vetrina)
                 ├─ field_overrides  ─── decide per ogni campo: live o congelato
                 └─ carousel_items (solo display='carousel')
 
@@ -128,6 +128,13 @@ LOCK  Submit cliente invariato
       `useCreateBookingRequest` NON va toccato per cambi vetrina.
       Il submit usa il payload risolto (label, prezzo) già processato dal resolver.
 
+LOCK  Selezione preset pubblico e caricamento async
+      In `BookingRequestForm`, `menuItems` e `booking_custom_staff_presets` arrivano da React Query.
+      Non trattare array vuoti durante `isLoading/isFetching` come "preset mancante":
+      il click su una card scorrevole deve mantenere il preset selezionato e riapplicarlo
+      quando il catalogo e pronto. Mostrare "Menu consigliato non disponibile" solo
+      quando il caricamento e finito e il preset non risolve davvero nessuna voce.
+
 LOCK  Due client Supabase
       Admin: `supabase` (autenticato). Pubblico Prenota: `supabasePublic` (anonimo).
       Il resolver è puro, non sa di client — lo chiama chi ha già i dati in mano.
@@ -143,7 +150,7 @@ LOCK  Due client Supabase
 2. Aggiungi `'subtitle'` a `SubTabOverridableField` (stesso file) e a `OVERRIDABLE_FIELDS` per il parser.
 3. Aggiorna `parseSubTabFromUnknown` per leggerlo (con trim + difesa).
 4. Aggiorna `normalizeBookingPublicFormConfig` per preservarlo al salvataggio.
-5. Aggiungi il campo a `ResolvedSubTab` e alla logica in `resolveSubTabView` (analogamente a `label`: se override mostra salvato, altrimenti leggi dal preset se il preset ha un campo equivalente).
+5. Aggiungi il campo a `ResolvedSubTab` e alla logica in `resolveSubTabView` (analogamente a `label`: se override mostra salvato, altrimenti leggi dal preset se il preset ha un campo equivalente). Se il campo non ha fonte nel preset, preserva solo il valore salvato e non aggiungerlo a `field_overrides`.
 6. Aggiungi `'subtitle'` a `SUB_TAB_OVERRIDABLE_KEYS` in `BookingFormConfigPanel.tsx` così `applyPatchWithOverrideTracking` lo marca quando l'admin lo modifica.
 7. Test in `bookingFormResolver.test.ts`: scenario override true/false, preset cancellato.
 

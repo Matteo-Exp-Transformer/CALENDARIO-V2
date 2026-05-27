@@ -44,6 +44,7 @@ function ComposeCategoryCards({
   localTiramisuValue,
   onTiramisuQuantityChange,
   onTiramisuQuantityBlur,
+  resetKey,
 }: {
   categories: VisibleCategory[]
   layout: 'grid' | 'scroll' | 'stack'
@@ -56,6 +57,7 @@ function ComposeCategoryCards({
   localTiramisuValue: string
   onTiramisuQuantityChange: (value: string) => void
   onTiramisuQuantityBlur: () => void
+  resetKey?: string
 }) {
   return (
     <>
@@ -75,6 +77,7 @@ function ComposeCategoryCards({
           onTiramisuQuantityChange={onTiramisuQuantityChange}
           onTiramisuQuantityBlur={onTiramisuQuantityBlur}
           layout={layout}
+          resetKey={resetKey}
         />
       ))}
     </>
@@ -93,6 +96,7 @@ function ComposeScrollRow({
   localTiramisuValue,
   onTiramisuQuantityChange,
   onTiramisuQuantityBlur,
+  resetKey,
 }: {
   categories: VisibleCategory[]
   className?: string
@@ -105,6 +109,7 @@ function ComposeScrollRow({
   localTiramisuValue: string
   onTiramisuQuantityChange: (value: string) => void
   onTiramisuQuantityBlur: () => void
+  resetKey?: string
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -141,7 +146,7 @@ function ComposeScrollRow({
         <button
           type="button"
           aria-label="Scorri categorie menù indietro"
-          className="absolute left-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-r-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
+          className="absolute left-2 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-warm-wood/15 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange md:flex"
           onClick={() => scrollBy(-COMPOSE_SCROLL_STEP_PX)}
         >
           <ChevronLeft size={22} strokeWidth={1.75} />
@@ -149,7 +154,7 @@ function ComposeScrollRow({
       )}
       <div
         ref={scrollRef}
-        className="flex w-full min-w-0 flex-nowrap gap-4 overflow-x-auto scroll-px-2 scrollbar-hide snap-x snap-mandatory py-1 md:px-10"
+        className="flex w-full min-w-0 flex-nowrap items-start gap-4 overflow-x-auto scroll-px-2 scrollbar-hide snap-x snap-mandatory py-1 md:px-14"
       >
         <ComposeCategoryCards
           categories={categories}
@@ -163,13 +168,14 @@ function ComposeScrollRow({
           localTiramisuValue={localTiramisuValue}
           onTiramisuQuantityChange={onTiramisuQuantityChange}
           onTiramisuQuantityBlur={onTiramisuQuantityBlur}
+          resetKey={resetKey}
         />
       </div>
       {canScrollRight && (
         <button
           type="button"
           aria-label="Scorri categorie menù avanti"
-          className="absolute right-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-l-md border border-slate-200/80 bg-white/95 text-warm-wood shadow-sm hover:bg-white"
+          className="absolute right-2 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-warm-wood/15 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange md:flex"
           onClick={() => scrollBy(COMPOSE_SCROLL_STEP_PX)}
         >
           <ChevronRight size={22} strokeWidth={1.75} />
@@ -222,6 +228,7 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
     localTiramisuValue,
     onTiramisuQuantityChange,
     onTiramisuQuantityBlur,
+    resetKey: presetMenu ?? 'no-preset',
   }
 
   if (visibleCategories.length === 0) {
@@ -248,8 +255,8 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
         {gridOnDesktop ? (
           <div
             className={cn(
-              'grid w-full min-w-0 items-start gap-4',
-              count <= 2 ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-3',
+              'grid w-full min-w-0 items-start justify-items-start gap-4',
+              count <= 1 ? 'grid-cols-1' : count === 2 ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-3',
             )}
           >
             <ComposeCategoryCards categories={visibleCategories} layout="grid" {...cardProps} />

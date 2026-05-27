@@ -30,6 +30,7 @@ export interface BookingMenuCategoryCardProps {
   onTiramisuQuantityBlur: () => void
   /** `scroll` = strip orizzontale; `grid` = griglia desktop; `stack` = colonna mobile con collapse. */
   layout?: 'grid' | 'scroll' | 'stack'
+  resetKey?: string
 }
 
 function ItemPriceRow({
@@ -71,6 +72,7 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   onTiramisuQuantityChange,
   onTiramisuQuantityBlur,
   layout = 'grid',
+  resetKey,
 }) => {
   const selectedCount = countSelectedInCategory(selectedItems, categoryKey)
   const { hint, status } = selectionStatusLabel(categoryKey, selectedCount)
@@ -81,17 +83,21 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   const isStack = layout === 'stack'
   const [expanded, setExpanded] = useState(false)
 
+  React.useEffect(() => {
+    setExpanded(false)
+  }, [resetKey])
+
   const articleClass = cn(
     'flex flex-col border-2 border-black/15 bg-white/90 backdrop-blur-[1px] shadow-md',
     layout === 'scroll'
       ? 'w-[min(280px,calc(100vw-4rem))] min-w-[240px] max-w-[280px] shrink-0 snap-center rounded-2xl sm:min-w-[260px]'
       : layout === 'stack'
         ? 'w-full min-w-0 max-w-none rounded-xl'
-        : 'w-full min-w-0 max-w-none self-start rounded-2xl',
+        : 'w-full min-w-0 max-w-[320px] self-start rounded-2xl',
   )
 
   const itemsList = (
-    <ul className="flex flex-1 flex-col gap-px px-0 pb-2">
+    <ul className="flex flex-col gap-px px-0 pb-2">
         {items.map((item) => {
           const isSelected = selectedItems.some((s) => s.id === item.id)
           const isTiramisu = isTiramisuItem(item.name)
@@ -179,96 +185,89 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
     </ul>
   )
 
-  const categoryBody = (
-    <>
-      {!isStack ? (
-        <div className="relative mx-3 mt-3 aspect-4/3 overflow-hidden rounded-xl bg-warm-beige/40">
-          {heroSrc ? (
-            <img src={heroSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-warm-wood/40">
-              <Utensils className="h-10 w-10" strokeWidth={1.25} />
-            </div>
-          )}
-        </div>
-      ) : null}
+  const headerId = `booking-menu-cat-header-${categoryKey}`
+  const panelId = `booking-menu-cat-panel-${categoryKey}`
+  const lockedOpenSummary = selectedCount > 0 ? 'Incluso nel menù' : 'Menù preselezionato'
+  const lockedClosedTeaser = 'Scopri cosa è incluso'
+  const closedImageClass = isStack
+    ? 'h-[148px] sm:h-[172px]'
+    : 'aspect-4/3'
 
-      {!locked && (
-        <div className={cn('text-center', isStack ? 'px-0 py-1.5' : 'px-4 py-2')}>
-          <p className="text-xs font-semibold text-warm-wood-dark/70">{hint}</p>
-          <p className="text-xs font-bold text-warm-orange">{status}</p>
-        </div>
-      )}
-
-      {itemsList}
-    </>
-  )
-
-  if (isStack) {
-    const headerId = `booking-menu-cat-header-${categoryKey}`
-    const panelId = `booking-menu-cat-panel-${categoryKey}`
-
+  if (!expanded) {
     return (
       <article className={articleClass} data-testid={`booking-menu-category-card-${categoryKey}`}>
         <button
           type="button"
           id={headerId}
-          aria-expanded={expanded}
+          aria-expanded={false}
           aria-controls={panelId}
-          className="flex w-full items-stretch gap-2 border-b border-black/10 p-0 text-left"
-          onClick={() => setExpanded((v) => !v)}
+          className="group relative block w-full overflow-hidden rounded-[inherit] text-left"
+          onClick={() => setExpanded(true)}
         >
-          <div
-            className={cn(
-              'relative h-[96px] w-[96px] shrink-0 overflow-hidden rounded-tl-[10px] bg-warm-beige/40',
-              !expanded && 'rounded-bl-[10px]',
-            )}
-          >
+          <div className={cn('relative w-full overflow-hidden bg-warm-beige/40', closedImageClass)}>
             {heroSrc ? (
-              <img src={heroSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
+              <img
+                src={heroSrc}
+                alt=""
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                loading="lazy"
+              />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-warm-wood/40">
-                <Utensils className="h-7 w-7" strokeWidth={1.25} />
+                <Utensils className="h-10 w-10" strokeWidth={1.25} />
               </div>
             )}
-          </div>
-          <div className="flex min-w-0 flex-1 items-center py-3 pr-3">
-            <div className="min-w-0 flex-1">
-              <h3 className="text-base font-bold uppercase tracking-wide text-warm-wood">{categoryLabel}</h3>
-              {!locked ? (
-                <p className="mt-1 text-sm font-bold text-warm-orange">{status}</p>
-              ) : selectedCount > 0 ? (
-                <p className="mt-1 text-sm font-semibold text-warm-wood-dark/70">
-                  {selectedCount} {selectedCount === 1 ? 'piatto' : 'piatti'} nel menù
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 flex items-end gap-3 p-4 text-white">
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base font-bold uppercase tracking-wide leading-tight sm:text-lg">
+                  {categoryLabel}
+                </h3>
+                <p
+                  className={cn(
+                    'mt-1 font-bold text-white/85',
+                    locked ? 'text-sm' : 'text-xs',
+                  )}
+                >
+                  {!locked ? status : lockedClosedTeaser}
                 </p>
-              ) : (
-                <p className="mt-1 text-sm font-semibold text-warm-wood-dark/70">Menù preselezionato</p>
-              )}
+              </div>
+              <ChevronDown className="h-5 w-5 shrink-0" aria-hidden />
             </div>
-            <ChevronDown
-              className={cn(
-                'ml-2 h-5 w-5 shrink-0 text-warm-wood transition-transform duration-200',
-                expanded && 'rotate-180',
-              )}
-              aria-hidden
-            />
           </div>
         </button>
-        {expanded ? (
-          <div id={panelId} role="region" aria-labelledby={headerId}>
-            {categoryBody}
-          </div>
-        ) : null}
       </article>
     )
   }
 
   return (
     <article className={articleClass} data-testid={`booking-menu-category-card-${categoryKey}`}>
-      <div className="border-b border-black/10 px-4 py-3 text-center">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-warm-wood">{categoryLabel}</h3>
+      <button
+        type="button"
+        id={headerId}
+        aria-expanded={true}
+        aria-controls={panelId}
+        className="flex w-full items-center gap-3 border-b border-black/10 px-4 py-3 text-left"
+        onClick={() => setExpanded(false)}
+      >
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-warm-wood sm:text-base">
+            {categoryLabel}
+          </h3>
+          {!locked ? (
+            <div className="mt-1">
+              <p className="text-xs font-semibold text-warm-wood-dark/70">{hint}</p>
+              <p className="text-xs font-bold text-warm-orange">{status}</p>
+            </div>
+          ) : (
+            <p className="mt-1 text-sm font-semibold text-warm-wood-dark/70">{lockedOpenSummary}</p>
+          )}
+        </div>
+        <ChevronDown className="h-5 w-5 shrink-0 rotate-180 text-warm-wood" aria-hidden />
+      </button>
+      <div id={panelId} role="region" aria-labelledby={headerId}>
+        {itemsList}
       </div>
-      {categoryBody}
     </article>
   )
 }

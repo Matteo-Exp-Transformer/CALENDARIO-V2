@@ -211,11 +211,13 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     return uuid ? customStaffPresets.find((p) => p.id === uuid) : undefined
   }, [presetMenu, customStaffPresets])
 
-  const showComposeHeader = shouldShowComposeMenuHeader(
-    presetMenu ?? null,
-    activeCustomPreset,
-    bookingType,
-  )
+  const showComposeHeader =
+    !menuSelectionLocked &&
+    shouldShowComposeMenuHeader(
+      presetMenu ?? null,
+      activeCustomPreset,
+      bookingType,
+    )
 
   const presetTitleLabel = resolvePresetDisplayTitle(
     presetMenu ?? null,

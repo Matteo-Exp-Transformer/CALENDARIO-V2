@@ -48,24 +48,6 @@ export const BookingRequestPage: React.FC = () => {
   // Stato form condiviso tra BookingRequestForm e BookingSummarySidebar
   const [sharedFormData, setSharedFormData] = useState<Partial<BookingRequestInput>>({})
   const [activeSubTab, setActiveSubTab] = useState<SubTab | null>(null)
-  const [menuPanelVisible, setMenuPanelVisible] = useState(false)
-  const [summaryCollapsed, setSummaryCollapsed] = useState(false)
-
-  useEffect(() => {
-    if (!menuPanelVisible) {
-      setSummaryCollapsed(false)
-      return
-    }
-    setSummaryCollapsed(true)
-    const startY = window.scrollY
-    const handleScroll = () => {
-      if (Math.abs(window.scrollY - startY) > 80) {
-        setSummaryCollapsed(false)
-      }
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [menuPanelVisible])
 
   const formatDayName = (day: string): string => {
     const dayMap: Record<string, string> = {
@@ -169,7 +151,6 @@ export const BookingRequestPage: React.FC = () => {
             formConfig={resolvedConfig}
             onFormDataChange={setSharedFormData}
             onActiveSubTabChange={setActiveSubTab}
-            onMenuPanelVisibilityChange={setMenuPanelVisible}
             summarySidebar={
               <BookingSummarySidebar
                 formData={{
@@ -185,8 +166,6 @@ export const BookingRequestPage: React.FC = () => {
                 modes={resolvedConfig.booking_modes}
                 contactPhone={displayContactPhone || undefined}
                 activeSubTab={activeSubTab}
-                collapsed={summaryCollapsed}
-                onExpand={() => setSummaryCollapsed(false)}
               />
             }
           />

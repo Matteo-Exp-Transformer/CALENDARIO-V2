@@ -160,6 +160,7 @@ export interface SubTab {
   /** Omesso o true = ingredienti bloccati; false = cliente puo modificarli e non ha prezzo fisso. */
   is_fixed_menu?: boolean
   description?: string
+  courses_label?: string
   hidden_category_keys?: string[]
   hidden_item_ids?: string[]
   carousel_items?: CarouselItem[]
@@ -266,6 +267,7 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
   }
 
   const description = typeof o.description === 'string' ? o.description.trim() : undefined
+  const courses_label = typeof o.courses_label === 'string' ? o.courses_label.trim() : undefined
   const hidden_category_keys = Array.isArray(o.hidden_category_keys)
     ? o.hidden_category_keys.filter((v): v is string => typeof v === 'string' && v.trim().length > 0).map((v) => v.trim())
     : undefined
@@ -306,6 +308,7 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
     price_per_person,
     is_fixed_menu: typeof o.is_fixed_menu === 'boolean' ? o.is_fixed_menu : undefined,
     description: display === 'carousel' ? undefined : description,
+    courses_label: display === 'carousel' ? undefined : courses_label,
     hidden_category_keys,
     hidden_item_ids,
     carousel_items,
@@ -440,6 +443,10 @@ export function normalizeBookingPublicFormConfig(
           hidden_category_keys: tab.hidden_category_keys?.filter((v) => v.trim()) ?? undefined,
           hidden_item_ids: tab.hidden_item_ids?.filter((v) => v.trim()) ?? undefined,
           carousel_items: tab.carousel_items,
+          courses_label:
+            display === 'cards' && tab.courses_label?.trim()
+              ? tab.courses_label.trim()
+              : undefined,
           field_overrides: tab.field_overrides,
         }
         if (display === 'carousel') {

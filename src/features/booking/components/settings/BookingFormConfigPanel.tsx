@@ -69,6 +69,7 @@ const ICON_OPTIONS: { value: BookingModeIcon; label: string }[] = [
 
 const SUB_TAB_LABEL_MAX = 30
 const SUB_TAB_DESCRIPTION_MAX = 80
+const SUB_TAB_COURSES_LABEL_MAX = 40
 const BOOKING_MODE_DESCRIPTION_MAX = 61
 
 const charCountClass = 'text-right text-[11px] text-slate-400 tabular-nums'
@@ -519,7 +520,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
    * (`field_overrides[*] = false`), così cambi futuri al preset si propagano in automatico.
    * Nota: il titolo card viene sempre riallineato al nome del preset importato.
    */
-  const buildSubTabFromPreset = (current: SubTab, preset: CustomStaffPreset): Partial<SubTab> => {
+  const buildSubTabFromPreset = (_current: SubTab, preset: CustomStaffPreset): Partial<SubTab> => {
     const overrides = presetImportFieldOverrides()
     const isFixedMenu = preset.is_fixed_menu !== false
     return {
@@ -858,18 +859,27 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
     const editorTitle = getSubTabEditorTitle(tab, subTabNumber, isDraft)
     const isFixedMenu = tab.display === 'carousel' || tab.is_fixed_menu !== false
+    const linkedPreset = tab.preset_id
+      ? relevantPresets.find((preset) => preset.id === tab.preset_id)
+      : undefined
+    const cardPriceInputValue =
+      tab.display === 'cards' &&
+      tab.field_overrides?.price_per_person !== true &&
+      linkedPreset?.price_per_person != null
+        ? linkedPreset.price_per_person
+        : tab.price_per_person
     const renderEditorTitle = (extraClassName?: string) => (
       <span className={cn('min-w-0 truncate text-xs font-semibold uppercase text-slate-600', extraClassName)}>
         {editorTitle}
       </span>
     )
-    const renderPriceInput = (disabled: boolean) => (
+    const renderPriceInput = (disabled: boolean, value: number | undefined = tab.price_per_person) => (
       <div className="relative w-full max-w-xs">
         <Input
           type="number"
           min={0}
           step={0.01}
-          value={disabled ? '' : (tab.price_per_person ?? '')}
+          value={disabled ? '' : (value ?? '')}
           disabled={disabled}
           onChange={(e) => {
             const v = e.target.value
@@ -889,7 +899,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       tab.display === 'cards' ? (
         <div className="mt-4 w-full min-w-0 space-y-1.5">
           <Label className="block text-sm">Prezzo a persona</Label>
-          {renderPriceInput(!isFixedMenu)}
+          {renderPriceInput(!isFixedMenu, cardPriceInputValue)}
         </div>
       ) : null
     const carouselPriceSection =
@@ -1013,6 +1023,36 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
             }
             placeholder="Sottotitolo sulla card"
           />
+        )}
+
+        {tab.display === 'cards' && (
+          <div className="w-full min-w-0 space-y-1.5">
+            <div>
+              <Label htmlFor={`sub-tab-courses-${tab.id}`} className="block text-sm">
+                Numero Portate
+              </Label>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Mostra a clienti da quante portate è composto il menù.
+              </p>
+            </div>
+            <Input
+              id={`sub-tab-courses-${tab.id}`}
+              value={tab.courses_label ?? ''}
+              onChange={(e) =>
+                patchTab({
+                  courses_label: e.target.value.slice(0, SUB_TAB_COURSES_LABEL_MAX) || undefined,
+                })
+              }
+              onBlur={(e) => {
+                const trimmed = e.target.value.trim()
+                if (trimmed !== (tab.courses_label ?? '')) {
+                  patchTab({ courses_label: trimmed || undefined })
+                }
+              }}
+              maxLength={SUB_TAB_COURSES_LABEL_MAX}
+              placeholder="es. 4 portate"
+            />
+          </div>
         )}
 
         {tab.display === 'cards' && (

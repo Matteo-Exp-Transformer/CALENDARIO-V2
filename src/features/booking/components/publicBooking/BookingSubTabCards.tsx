@@ -85,7 +85,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
         <button
           type="button"
           aria-label="Scorri opzioni menù indietro"
-          className="absolute left-2 top-1/2 z-20 hidden h-12 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-warm-wood/15 bg-white/85 text-warm-wood shadow-[0_8px_24px_rgba(74,45,25,0.14)] backdrop-blur-sm transition hover:bg-white hover:text-warm-orange sm:flex"
+          className="absolute left-2 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-warm-wood/15 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange md:flex"
           onClick={() => scrollBy(-SUB_TAB_SCROLL_STEP_PX)}
         >
           <CaretLeftIcon size={20} weight="bold" />
@@ -99,6 +99,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
           const isActive = activeSubTabId === tab.id
           const priceLabel =
             tab.display === 'carousel' ? null : formatPricePerPersonLabel(tab.price_per_person)
+          const coursesLabel = tab.display === 'carousel' ? '' : tab.courses_label?.trim() ?? ''
           return (
             <button
               key={tab.id}
@@ -136,14 +137,14 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                     <>
                       <span
                         className={cn(
-                          'hidden shrink-0 items-center justify-center rounded-full bg-warm-beige/60 text-warm-wood-dark/65 md:flex',
-                          'h-12 w-12 lg:h-16 lg:w-16',
+                          'flex shrink-0 items-center justify-center rounded-full bg-warm-beige/60 text-warm-wood-dark/65',
+                          'h-16 w-16 md:h-20 md:w-20 lg:h-16 lg:w-16',
                         )}
                         aria-hidden
                       >
-                        <SubTabCardIcon icon={tab.icon} className="h-7 w-7 lg:h-10 lg:w-10" />
+                        <SubTabCardIcon icon={tab.icon} className="h-10 w-10 md:h-12 md:w-12 lg:h-10 lg:w-10" />
                       </span>
-                      <p className="min-w-0 flex-1 line-clamp-5 text-center text-xs leading-tight text-warm-wood-dark/70 sm:line-clamp-4 sm:text-sm md:text-left lg:text-lg">
+                      <p className="hidden min-w-0 flex-1 line-clamp-4 text-left text-lg leading-tight text-warm-wood-dark/70 lg:block">
                         {tab.description}
                       </p>
                     </>
@@ -152,6 +153,11 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                 {priceLabel && (
                   <p className="text-xs font-bold leading-tight text-warm-wood-dark/80 sm:text-base lg:text-xl">
                     <span>{priceLabel}</span>
+                  </p>
+                )}
+                {coursesLabel && (
+                  <p className="mt-1 text-[11px] font-bold leading-tight text-warm-orange sm:text-sm lg:text-base">
+                    {coursesLabel}
                   </p>
                 )}
               </div>
@@ -163,7 +169,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
         <button
           type="button"
           aria-label="Scorri opzioni menù avanti"
-          className="absolute right-2 top-1/2 z-20 hidden h-12 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-warm-wood/15 bg-white/85 text-warm-wood shadow-[0_8px_24px_rgba(74,45,25,0.14)] backdrop-blur-sm transition hover:bg-white hover:text-warm-orange sm:flex"
+          className="absolute right-2 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-warm-wood/15 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange md:flex"
           onClick={() => scrollBy(SUB_TAB_SCROLL_STEP_PX)}
         >
           <CaretRightIcon size={20} weight="bold" />
