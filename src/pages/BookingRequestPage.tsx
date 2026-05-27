@@ -128,17 +128,16 @@ export const BookingRequestPage: React.FC = () => {
     <div className="min-h-screen font-bold" style={bookingPageBackgroundStyle}>
       <div className="min-h-screen">
         {/*
-          Layout pagina Prenota da 900px:
-          - Colonna sinistra (25vw): striscia foto verticale (attualmente vuota — pronta per prossima sessione)
+          Layout pagina Prenota — sempre 2 colonne [striscia foto | form]:
+          - Colonna sinistra (25vw): striscia foto verticale sticky full-height
           - Colonna destra (1fr): header + form + sticky bar
-          Sotto 900px: striscia foto scompare, layout a colonna unica (comportamento invariato).
-          Per cambiare la larghezza della striscia foto: modifica il valore 25vw in min-[900px]:grid-cols-[25vw_1fr].
+          Per cambiare la larghezza della striscia foto: modifica il valore 25vw in grid-cols-[25vw_1fr].
         */}
-        <div className="mx-auto w-full max-w-7xl min-[900px]:grid min-[900px]:grid-cols-[25vw_1fr] min-[900px]:items-start">
+        <div className="mx-auto w-full max-w-7xl grid grid-cols-[25vw_1fr] items-start">
 
-          {/* Striscia foto laterale sinistra — visibile solo da 900px */}
-          {/* Larghezza: 25vw — modificare il valore nella classe min-[900px]:grid-cols-[25vw_1fr] sopra */}
-          <div className="hidden min-[900px]:block min-[900px]:sticky min-[900px]:top-0 min-[900px]:h-screen min-[900px]:overflow-hidden min-[900px]:bg-black/10">
+          {/* Striscia foto laterale sinistra */}
+          {/* Larghezza: 25vw — modificare il valore nella classe grid-cols-[25vw_1fr] sopra */}
+          <div className="sticky top-0 h-screen overflow-hidden bg-black/10">
             {/* Placeholder visivo temporaneo: sarà sostituito da una foto nella prossima sessione */}
           </div>
 
