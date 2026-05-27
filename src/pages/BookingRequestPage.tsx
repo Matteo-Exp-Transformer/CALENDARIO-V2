@@ -128,21 +128,23 @@ export const BookingRequestPage: React.FC = () => {
 
   return (
     <div className="min-h-screen font-bold" style={bookingPageBackgroundStyle}>
-      <div className="min-h-screen">
-        {/*
-          Layout pagina Prenota — sempre 2 colonne [striscia foto | form]:
-          - Colonna sinistra (20vw mobile, 25vw da 900px): striscia foto verticale sticky full-height
-          - Colonna destra (1fr): header + form + sticky bar
-          Per cambiare la larghezza della striscia foto: modifica i valori in grid-cols-[20vw_1fr] / min-[900px]:grid-cols-[25vw_1fr].
-        */}
-        <div className="mx-auto w-full max-w-7xl grid grid-cols-[20vw_1fr] min-[900px]:grid-cols-[25vw_1fr] items-start">
+      {/*
+        Layout pagina Prenota — flex colonna:
+        1. Griglia [striscia foto sx | contenuto form dx] — flex-1 si espande con il form
+        2. Footer Orari+Contatti — larghezza piena pagina, copre anche la zona striscia foto
+        La striscia foto è sticky top-0 h-screen: rimane visibile durante tutto lo scroll.
+        Le foto si ripetono internamente per coprire form lunghi (es. 10 categorie ingredienti).
+      */}
+      <div className="min-h-screen flex flex-col">
+
+        {/* Griglia [striscia foto | form] — flex-1 si allunga con il contenuto */}
+        <div className="flex-1 mx-auto w-full max-w-7xl grid grid-cols-[20vw_1fr] min-[900px]:grid-cols-[25vw_1fr] items-start">
 
           {/*
             Striscia foto laterale sinistra.
-            Larghezza: 20vw mobile, 25vw da 900px — modificare i valori in grid-cols sopra.
-            Per aggiungere le foto: popolare BOOKING_STRIP_PHOTOS in questo file.
-            Le foto devono essere verticali strettissime (~1:4), progettate per
-            una fascia di ~20% schermo. Vedere commento in BookingPhotoStrip.tsx.
+            sticky top-0 h-screen: rimane ancorata in cima mentre il form scorre.
+            Le foto si ripetono per coprire qualsiasi lunghezza di form.
+            Per cambiare larghezza: modificare i valori 20vw/25vw in grid-cols sopra.
           */}
           <BookingPhotoStrip
             selectedPhotoId={stripPhotoId ?? null}
@@ -150,106 +152,117 @@ export const BookingRequestPage: React.FC = () => {
           />
 
           {/* Colonna contenuto destra */}
-          <div className="w-full min-w-0 px-4 md:px-8 pb-28 min-[900px]:pb-1.5 min-[900px]:px-6 lg:px-8">
+          <div className="w-full min-w-0 px-4 md:px-8 pb-4 min-[900px]:pb-4 min-[900px]:px-6 lg:px-8">
 
-          {/* Header — solo testo sullo sfondo pagina */}
-          <div className="flex flex-col items-center justify-center gap-1.5 py-1.5 text-center animate-fade-in">
-            <h1
-              className="font-bold m-0"
-              style={getBookingHeaderTextStyle('restaurant_name', headerStyles)}
-            >
-              {displayName}
-            </h1>
-            <h2
-              className="font-bold m-0"
-              style={getBookingHeaderTextStyle('page_title', headerStyles)}
-            >
-              {resolvedConfig.page_title}
-            </h2>
-            <p
-              className="opacity-90 font-bold m-0 px-1.5 max-w-[42rem]"
-              style={getBookingHeaderTextStyle('page_description', headerStyles)}
-            >
-              {resolvedConfig.page_description}
-            </p>
-          </div>
+            {/* Header — solo testo sullo sfondo pagina */}
+            <div className="flex flex-col items-center justify-center gap-1.5 py-1.5 text-center animate-fade-in">
+              <h1
+                className="font-bold m-0"
+                style={getBookingHeaderTextStyle('restaurant_name', headerStyles)}
+              >
+                {displayName}
+              </h1>
+              <h2
+                className="font-bold m-0"
+                style={getBookingHeaderTextStyle('page_title', headerStyles)}
+              >
+                {resolvedConfig.page_title}
+              </h2>
+              <p
+                className="opacity-90 font-bold m-0 px-1.5 max-w-2xl"
+                style={getBookingHeaderTextStyle('page_description', headerStyles)}
+              >
+                {resolvedConfig.page_description}
+              </p>
+            </div>
 
-          <BookingRequestForm
-            tenantSlug={tenantSlug}
-            formConfig={resolvedConfig}
-            onFormDataChange={setSharedFormData}
-            onActiveSubTabChange={setActiveSubTab}
-            onIsDisabledChange={setIsSubmitDisabled}
-            summarySidebar={
-              <BookingSummarySidebar
-                formData={{
-                  desired_date: sharedFormData.desired_date,
-                  desired_time: sharedFormData.desired_time,
-                  num_guests: sharedFormData.num_guests ?? 0,
-                  booking_type: sharedFormData.booking_type,
-                  menu_selection: sharedFormData.menu_selection,
-                  menu_total_per_person: sharedFormData.menu_total_per_person,
-                  menu_total_booking: sharedFormData.menu_total_booking,
-                  preset_menu: sharedFormData.preset_menu,
-                }}
-                modes={resolvedConfig.booking_modes}
-                contactPhone={displayContactPhone || undefined}
-                activeSubTab={activeSubTab}
-                onVisibilityChange={setIsSummaryVisible}
-                submitButton={
-                  <button
-                    type="submit"
-                    form="booking-request-form"
-                    disabled={isSubmitDisabled}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-5 text-sm font-bold text-white rounded-full bg-green-600 hover:bg-green-700 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-wide transition-colors duration-200"
-                  >
-                    <Send className="h-4 w-4" />
-                    Invia Prenotazione
-                  </button>
-                }
-              />
-            }
-          />
+            <BookingRequestForm
+              tenantSlug={tenantSlug}
+              formConfig={resolvedConfig}
+              onFormDataChange={setSharedFormData}
+              onActiveSubTabChange={setActiveSubTab}
+              onIsDisabledChange={setIsSubmitDisabled}
+              summarySidebar={
+                <BookingSummarySidebar
+                  formData={{
+                    desired_date: sharedFormData.desired_date,
+                    desired_time: sharedFormData.desired_time,
+                    num_guests: sharedFormData.num_guests ?? 0,
+                    booking_type: sharedFormData.booking_type,
+                    menu_selection: sharedFormData.menu_selection,
+                    menu_total_per_person: sharedFormData.menu_total_per_person,
+                    menu_total_booking: sharedFormData.menu_total_booking,
+                    preset_menu: sharedFormData.preset_menu,
+                  }}
+                  modes={resolvedConfig.booking_modes}
+                  contactPhone={displayContactPhone || undefined}
+                  activeSubTab={activeSubTab}
+                  onVisibilityChange={setIsSummaryVisible}
+                  submitButton={
+                    <button
+                      type="submit"
+                      form="booking-request-form"
+                      disabled={isSubmitDisabled}
+                      className="w-full flex items-center justify-center gap-2 py-3 px-5 text-sm font-bold text-white rounded-full bg-green-600 hover:bg-green-700 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-wide transition-colors duration-200"
+                    >
+                      <Send className="h-4 w-4" />
+                      Invia Prenotazione
+                    </button>
+                  }
+                />
+              }
+            />
 
-          {/* Sticky bar mobile — visibile quando il riepilogo è fuori dalla viewport */}
-          <BookingStickyBar
-            formData={{
-              client_name: sharedFormData.client_name,
-              desired_date: sharedFormData.desired_date,
-              desired_time: sharedFormData.desired_time,
-              num_guests: sharedFormData.num_guests ?? 0,
-              booking_type: sharedFormData.booking_type,
-            }}
-            modes={resolvedConfig.booking_modes}
-            totalBooking={sharedFormData.menu_total_booking}
-            isSubmitDisabled={isSubmitDisabled}
-            visible={!isSummaryVisible}
-            summaryContent={
-              <BookingSummarySidebar
-                formData={{
-                  desired_date: sharedFormData.desired_date,
-                  desired_time: sharedFormData.desired_time,
-                  num_guests: sharedFormData.num_guests ?? 0,
-                  booking_type: sharedFormData.booking_type,
-                  menu_selection: sharedFormData.menu_selection,
-                  menu_total_per_person: sharedFormData.menu_total_per_person,
-                  menu_total_booking: sharedFormData.menu_total_booking,
-                  preset_menu: sharedFormData.preset_menu,
-                }}
-                modes={resolvedConfig.booking_modes}
-                contactPhone={displayContactPhone || undefined}
-                activeSubTab={activeSubTab}
-              />
-            }
-          />
+            {/* Sticky bar mobile — visibile quando il riepilogo è fuori dalla viewport */}
+            <BookingStickyBar
+              formData={{
+                client_name: sharedFormData.client_name,
+                desired_date: sharedFormData.desired_date,
+                desired_time: sharedFormData.desired_time,
+                num_guests: sharedFormData.num_guests ?? 0,
+                booking_type: sharedFormData.booking_type,
+              }}
+              modes={resolvedConfig.booking_modes}
+              totalBooking={sharedFormData.menu_total_booking}
+              isSubmitDisabled={isSubmitDisabled}
+              visible={!isSummaryVisible}
+              summaryContent={
+                <BookingSummarySidebar
+                  formData={{
+                    desired_date: sharedFormData.desired_date,
+                    desired_time: sharedFormData.desired_time,
+                    num_guests: sharedFormData.num_guests ?? 0,
+                    booking_type: sharedFormData.booking_type,
+                    menu_selection: sharedFormData.menu_selection,
+                    menu_total_per_person: sharedFormData.menu_total_per_person,
+                    menu_total_booking: sharedFormData.menu_total_booking,
+                    preset_menu: sharedFormData.preset_menu,
+                  }}
+                  modes={resolvedConfig.booking_modes}
+                  contactPhone={displayContactPhone || undefined}
+                  activeSubTab={activeSubTab}
+                />
+              }
+            />
 
-          {/* Footer orari + contatti — dentro la colonna destra così la striscia foto sx copre tutta l'altezza */}
-          <div className="rounded-2xl shadow-xl px-6 md:px-8 bg-white border border-slate-100 pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-3 mb-4 animate-fade-in">
+          </div>{/* fine colonna contenuto destra */}
+
+        </div>{/* fine griglia [striscia foto | contenuto] */}
+
+        {/*
+          Footer Orari+Contatti — fuori dalla griglia, larghezza piena max-w-7xl.
+          Copre tutta la larghezza inclusa la zona striscia foto.
+          È l'ultimo elemento: la pagina si chiude visivamente qui.
+        */}
+        <div className="mx-auto w-full max-w-7xl px-0">
+          <div className="rounded-none md:rounded-2xl shadow-xl px-6 md:px-8 bg-white border-t border-slate-100 pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-0 animate-fade-in">
+
+            {/* Layout desktop/tablet (≥480px): 2 colonne Orari | Contatti */}
             <div className="grid grid-cols-2 gap-x-3 gap-y-1 md:gap-x-4 items-start max-[480px]:hidden">
 
               <div className="min-w-0 w-full space-y-1 text-left pr-1.5">
                 <div className="flex items-center gap-1.5 mb-1" style={{ paddingLeft: hoursInset }}>
-                  <div className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-gradient-to-br from-terracotta to-warm-orange shadow-md">
+                  <div className="shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-linear-to-br from-terracotta to-warm-orange shadow-md">
                     <Clock className="w-[14px] h-[14px] text-white" />
                   </div>
                   <h3 className="text-xs md:text-sm font-serif text-warm-wood leading-tight font-bold">
@@ -284,7 +297,7 @@ export const BookingRequestPage: React.FC = () => {
 
               <div className="min-w-0 space-y-0.5 justify-self-end text-right" style={{ paddingRight: hoursInset }}>
                 <div className="flex items-center justify-end gap-1.5 mb-1">
-                  <div className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-gradient-to-br from-terracotta to-warm-orange shadow-md">
+                  <div className="shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-linear-to-br from-terracotta to-warm-orange shadow-md">
                     <MapPin className="w-[14px] h-[14px] text-white" />
                   </div>
                   <h3 className="text-xs md:text-sm font-serif text-warm-wood leading-tight font-bold">
@@ -293,7 +306,7 @@ export const BookingRequestPage: React.FC = () => {
                 </div>
                 {displayContactEmail && (
                   <div className="flex min-w-0 items-center justify-end gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-warm-orange flex-shrink-0" />
+                    <Mail className="w-3.5 h-3.5 text-warm-orange shrink-0" />
                     <span className="min-w-0 break-all text-right text-xs text-warm-wood-dark font-medium leading-tight">
                       {displayContactEmail}
                     </span>
@@ -301,13 +314,13 @@ export const BookingRequestPage: React.FC = () => {
                 )}
                 {displayContactPhone && (
                   <div className="flex items-center justify-end gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-warm-orange flex-shrink-0" />
+                    <Phone className="w-3.5 h-3.5 text-warm-orange shrink-0" />
                     <span className="text-xs text-warm-wood-dark font-medium leading-tight">{displayContactPhone}</span>
                   </div>
                 )}
                 {displayContactAddress && (
                   <div className="flex items-center justify-end gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-warm-orange flex-shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 text-warm-orange shrink-0" />
                     <span className="text-xs text-warm-wood-dark font-bold leading-tight">{displayContactAddress}</span>
                   </div>
                 )}
@@ -315,6 +328,7 @@ export const BookingRequestPage: React.FC = () => {
 
             </div>
 
+            {/* Layout mobile (<480px): accordion Orari / Contatti */}
             <div className="hidden max-[480px]:block space-y-2">
               <div className="rounded-xl bg-white border border-slate-100">
                 <button
@@ -324,7 +338,7 @@ export const BookingRequestPage: React.FC = () => {
                   aria-expanded={mobileInfoOpen === 'hours'}
                 >
                   <div className="flex items-center gap-1.5">
-                    <div className="shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-gradient-to-br from-terracotta to-warm-orange shadow-md">
+                    <div className="shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-linear-to-br from-terracotta to-warm-orange shadow-md">
                       <Clock className="w-[14px] h-[14px] text-white" />
                     </div>
                     <h3 className="text-xs font-serif text-warm-wood leading-tight font-bold">
@@ -360,7 +374,7 @@ export const BookingRequestPage: React.FC = () => {
                   aria-expanded={mobileInfoOpen === 'contacts'}
                 >
                   <div className="flex items-center gap-1.5">
-                    <div className="shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-gradient-to-br from-terracotta to-warm-orange shadow-md">
+                    <div className="shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-linear-to-br from-terracotta to-warm-orange shadow-md">
                       <MapPin className="w-[14px] h-[14px] text-white" />
                     </div>
                     <h3 className="text-xs font-serif text-warm-wood leading-tight font-bold">
@@ -395,11 +409,9 @@ export const BookingRequestPage: React.FC = () => {
                 )}
               </div>
             </div>
+
           </div>
-
-          </div>{/* fine colonna contenuto destra */}
-
-        </div>{/* fine griglia [striscia foto | contenuto] */}
+        </div>{/* fine footer */}
 
       </div>
     </div>

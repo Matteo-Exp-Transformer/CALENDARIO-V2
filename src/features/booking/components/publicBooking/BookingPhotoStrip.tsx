@@ -61,6 +61,14 @@ export const BookingPhotoStrip: React.FC<BookingPhotoStripProps> = ({
         className="flex flex-col will-change-transform"
         style={{ transform: `translateY(-${offset}px)` }}
       >
+        {/*
+          Sequenza originale (6 foto × 120vh = 720vh).
+          Con parallax 0.4×: scrollando 5000px il translateY è −2000px,
+          quindi il contenuto interno deve superare 5000 + 2000 = 7000px.
+          Su mobile 667px: 720vh ≈ 4800px — non sufficiente per form con 10 categorie.
+          Ripetiamo il ciclo completo 3 volte in totale → 18 foto × 120vh = 2160vh ≈ 14400px su 667px.
+          Questo copre qualsiasi form realistico senza rischi di gap neri.
+        */}
         {orderedIds.map((id, i) => (
           <img
             key={id}
@@ -72,18 +80,20 @@ export const BookingPhotoStrip: React.FC<BookingPhotoStripProps> = ({
             style={{ height: '120vh', minHeight: '120vh' }}
           />
         ))}
-        {/* Ripete le prime 2 in coda per scroll molto lunghi */}
-        {orderedIds.slice(0, 2).map((id) => (
-          <img
-            key={`repeat-${id}`}
-            src={bookingStripPhotoPublicHref(id, viteBase)}
-            alt=""
-            aria-hidden
-            loading="lazy"
-            className="w-full object-cover block"
-            style={{ height: '120vh', minHeight: '120vh' }}
-          />
-        ))}
+        {/* Ripetizione 2 e 3 del ciclo completo */}
+        {[1, 2].flatMap((cycle) =>
+          orderedIds.map((id) => (
+            <img
+              key={`r${cycle}-${id}`}
+              src={bookingStripPhotoPublicHref(id, viteBase)}
+              alt=""
+              aria-hidden
+              loading="lazy"
+              className="w-full object-cover block"
+              style={{ height: '120vh', minHeight: '120vh' }}
+            />
+          ))
+        )}
       </div>
     </div>
   )

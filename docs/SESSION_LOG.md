@@ -11,6 +11,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 27-05-26 | Footer + striscia foto pagina Prenota | [Report](Sessioni%20di%20lavoro/27-05-26/Report-footer-striscia-foto-layout-27-05-26.md) — footer Orari+Contatti fuori griglia a larghezza piena (copre anche zona striscia foto); striscia foto ripetuta 3× per coprire form con 10 categorie; fix struttura `return` riscritta da zero dopo edit incasinato. |
 | 27-05-26 | Prenota v2: editor card preset + layout menù | [Report](Sessioni%20di%20lavoro/27-05-26/Report-prenota-v2-editor-card-preset-27-05-26.md) — Personalizza form: import preset compila Titolo card, pannello categorie mostra solo categorie/ingredienti inclusi; sezione Menù pubblica coerente con toggle personalizzabile; fix altezza card categorie ingredienti su desktop. |
 | 26-05-26 | Resolver field_overrides + pulizia codice morto + gap validazione | [Report](Sessioni%20di%20lavoro/26-05-26/Report-resolver-field-overrides-pulizia-26-05-26.md) — `bookingFormResolver.ts` con tracking personalizzazioni; preset cambia in tab Menu → card Prenota non personalizzata si aggiorna live; rimossi `BookingSubTabStrip`/`BookingPresetPicker` morti; trim onBlur admin; accept+max 5MB foto carosello; `aria-invalid` + `maxLength={3}` num ospiti; test resolver + validation. |
 | 26-05-26 | Personalizza form: etichetta card e import preset Card scorrevole | Ripristino import menù preselezionato solo su `display: 'cards'`; titolo Prenota da `sub_tabs[].label`; merge legacy `sub_tabs_overrides`; `presetSectionTitle` in `MenuSelection`. |
