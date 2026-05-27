@@ -1,5 +1,15 @@
 import React, { useState } from 'react'
-import { ChevronUp, ChevronDown, Send } from 'lucide-react'
+import {
+  CalendarDays,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Euro,
+  Send,
+  Users,
+  UtensilsCrossed,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { BookingType } from '@/types/booking'
 import type { BookingMode } from '@/features/booking/constants/bookingPublicFormConfig'
 import { cn } from '@/lib/utils'
@@ -30,6 +40,23 @@ function formatDate(dateStr?: string): string {
 function formatCurrency(amount?: number): string {
   if (!amount) return ''
   return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(amount)
+}
+
+function StickySummaryChip({
+  icon: Icon,
+  children,
+  className,
+}: {
+  icon: LucideIcon
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <span className={cn('inline-flex items-center gap-1 min-w-0', className)}>
+      <Icon className="h-3.5 w-3.5 shrink-0 text-warm-orange" aria-hidden />
+      <span className="truncate">{children}</span>
+    </span>
+  )
 }
 
 function getModeLabelByType(modes: BookingMode[], bookingType?: BookingType): string {
@@ -91,21 +118,31 @@ export const BookingStickyBar: React.FC<BookingStickyBarProps> = ({
           </div>
           {/* Valori chiave */}
           {hasData && (
-            <div className="flex flex-wrap gap-x-2.5 gap-y-0.5 min-w-0">
+            <div className="flex flex-wrap gap-x-2.5 gap-y-1 min-w-0">
               {tipoLabel && (
-                <span className="text-sm font-bold text-warm-wood">{tipoLabel}</span>
+                <StickySummaryChip icon={UtensilsCrossed} className="text-sm font-bold text-warm-wood">
+                  {tipoLabel}
+                </StickySummaryChip>
               )}
               {dataStr && (
-                <span className="text-sm text-warm-wood-dark/70">{dataStr}</span>
+                <StickySummaryChip icon={CalendarDays} className="text-sm text-warm-wood-dark/70">
+                  {dataStr}
+                </StickySummaryChip>
               )}
               {orarioStr && (
-                <span className="text-sm text-warm-wood-dark/70">{orarioStr}</span>
+                <StickySummaryChip icon={Clock} className="text-sm text-warm-wood-dark/70">
+                  {orarioStr}
+                </StickySummaryChip>
               )}
               {ospiti && (
-                <span className="text-sm text-warm-wood-dark/70">{ospiti}</span>
+                <StickySummaryChip icon={Users} className="text-sm text-warm-wood-dark/70">
+                  {ospiti}
+                </StickySummaryChip>
               )}
               {totaleStr && (
-                <span className="text-sm font-bold text-warm-orange">{totaleStr}</span>
+                <StickySummaryChip icon={Euro} className="text-sm font-bold text-warm-orange">
+                  {totaleStr}
+                </StickySummaryChip>
               )}
             </div>
           )}

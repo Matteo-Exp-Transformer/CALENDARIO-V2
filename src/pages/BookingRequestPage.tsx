@@ -127,7 +127,22 @@ export const BookingRequestPage: React.FC = () => {
   return (
     <div className="min-h-screen font-bold" style={bookingPageBackgroundStyle}>
       <div className="min-h-screen">
-        <div className="mx-auto w-full max-w-7xl px-12 md:px-12 pb-28 min-[900px]:pb-1.5">
+        {/*
+          Layout pagina Prenota da 900px:
+          - Colonna sinistra (25vw): striscia foto verticale (attualmente vuota — pronta per prossima sessione)
+          - Colonna destra (1fr): header + form + sticky bar
+          Sotto 900px: striscia foto scompare, layout a colonna unica (comportamento invariato).
+          Per cambiare la larghezza della striscia foto: modifica il valore 25vw in min-[900px]:grid-cols-[25vw_1fr].
+        */}
+        <div className="mx-auto w-full max-w-7xl min-[900px]:grid min-[900px]:grid-cols-[25vw_1fr] min-[900px]:items-start">
+
+          {/* Striscia foto laterale sinistra — visibile solo da 900px */}
+          <div className="hidden min-[900px]:block min-[900px]:sticky min-[900px]:top-0 min-[900px]:h-screen min-[900px]:overflow-hidden">
+            {/* Placeholder: qui verrà inserita la foto di sfondo verticale nella prossima sessione */}
+          </div>
+
+          {/* Colonna contenuto destra */}
+          <div className="w-full min-w-0 px-4 md:px-8 pb-28 min-[900px]:pb-1.5 min-[900px]:px-6 lg:px-8">
 
           {/* Header — solo testo sullo sfondo pagina */}
           <div className="flex flex-col items-center justify-center gap-1.5 py-1.5 text-center animate-fade-in">
@@ -219,7 +234,12 @@ export const BookingRequestPage: React.FC = () => {
             }
           />
 
-          {/* Footer orari + contatti */}
+          </div>{/* fine colonna contenuto destra */}
+
+        </div>{/* fine griglia 3-col */}
+
+        {/* Footer orari + contatti — larghezza intera pagina (include striscia foto) */}
+        <div className="mx-auto w-full max-w-7xl px-4 md:px-8">
           <div className="rounded-2xl shadow-xl px-6 md:px-8 bg-white border border-slate-100 pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-[clamp(2rem,6vmin,3.5rem)] animate-fade-in">
             <div className="grid grid-cols-2 gap-x-3 gap-y-1 md:gap-x-4 items-start max-[480px]:hidden">
 
@@ -372,8 +392,8 @@ export const BookingRequestPage: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>{/* fine wrapper footer */}
 
-        </div>
       </div>
     </div>
   )
