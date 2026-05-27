@@ -137,8 +137,9 @@ export const BookingRequestPage: React.FC = () => {
         <div className="mx-auto w-full max-w-7xl min-[900px]:grid min-[900px]:grid-cols-[25vw_1fr] min-[900px]:items-start">
 
           {/* Striscia foto laterale sinistra — visibile solo da 900px */}
-          <div className="hidden min-[900px]:block min-[900px]:sticky min-[900px]:top-0 min-[900px]:h-screen min-[900px]:overflow-hidden">
-            {/* Placeholder: qui verrà inserita la foto di sfondo verticale nella prossima sessione */}
+          {/* Larghezza: 25vw — modificare il valore nella classe min-[900px]:grid-cols-[25vw_1fr] sopra */}
+          <div className="hidden min-[900px]:block min-[900px]:sticky min-[900px]:top-0 min-[900px]:h-screen min-[900px]:overflow-hidden min-[900px]:bg-black/10">
+            {/* Placeholder visivo temporaneo: sarà sostituito da una foto nella prossima sessione */}
           </div>
 
           {/* Colonna contenuto destra */}
@@ -206,10 +207,12 @@ export const BookingRequestPage: React.FC = () => {
           {/* Sticky bar mobile — visibile quando il riepilogo è fuori dalla viewport */}
           <BookingStickyBar
             formData={{
+              client_name: sharedFormData.client_name,
               desired_date: sharedFormData.desired_date,
               desired_time: sharedFormData.desired_time,
               num_guests: sharedFormData.num_guests ?? 0,
               booking_type: sharedFormData.booking_type,
+              menu_total_per_person: sharedFormData.menu_total_per_person,
             }}
             modes={resolvedConfig.booking_modes}
             totalBooking={sharedFormData.menu_total_booking}
