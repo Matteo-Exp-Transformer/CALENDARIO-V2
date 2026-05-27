@@ -135,6 +135,31 @@ LOCK  Selezione preset pubblico e caricamento async
       quando il catalogo e pronto. Mostrare "Menu consigliato non disponibile" solo
       quando il caricamento e finito e il preset non risolve davvero nessuna voce.
 
+LOCK  Card scorrevole senza preset
+      Una `display='cards'` senza `preset_id` e una card compilata manualmente:
+      non ha griglia ingredienti, non mostra controlli categoria/ingrediente,
+      non mostra toggle "Menù personalizzabile" e puo mantenere un prezzo
+      salvato. Le card importate da preset, invece, ereditano
+      fisso/personalizzabile dal preset tramite resolver.
+
+LOCK  Ingredienti preset custom
+      Per una card con `preset_id`, gli ingredienti salvati in
+      `booking_custom_staff_presets[].item_ids` sono la fonte del catalogo
+      mostrato nella pagina Prenota e nel pannello visibilità. Non filtrarli
+      fuori solo perché il singolo `menu_item.booking_types` non include la
+      modalità corrente: il legame esplicito card→preset ha priorità. Le sole
+      esclusioni ammesse sono ingrediente/categoria nascosti nella card o
+      ingrediente eliminato dal catalogo.
+
+LOCK  Cancellazione preset staff
+      Se un menù preselezionato viene cancellato in `MenuPricesTab`, mostrare
+      conferma esplicita che verranno eliminate anche le card collegate in
+      Personalizza form. Persisti nello stesso upsert sia
+      `booking_custom_staff_presets` sia `booking_public_form_config`, rimuovendo
+      `sub_tabs[]` e `sub_tabs_overrides[]` con quel `preset_id`. La modifica di
+      un preset non deve cancellare card: i campi pubblici seguono il resolver e
+      gli override personalizzati restano salvati.
+
 LOCK  Due client Supabase
       Admin: `supabase` (autenticato). Pubblico Prenota: `supabasePublic` (anonimo).
       Il resolver è puro, non sa di client — lo chiama chi ha già i dati in mano.

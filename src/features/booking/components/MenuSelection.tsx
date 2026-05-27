@@ -160,12 +160,20 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     presetMenu,
   ])
 
+  const activeCustomPreset = useMemo(() => {
+    if (!presetMenu || !isCustomPresetMenuType(presetMenu)) return undefined
+    const uuid = getCustomPresetUuid(presetMenu)
+    return uuid ? customStaffPresets.find((p) => p.id === uuid) : undefined
+  }, [presetMenu, customStaffPresets])
+
   const normalizedMenuItems = useMemo<NormalizedMenuItem[]>(() => {
     const hiddenCategories = new Set(hiddenCategoryKeys)
     const hiddenItems = new Set(hiddenItemIds)
+    const activePresetItemIds = new Set(activeCustomPreset?.item_ids ?? [])
     return menuItems
       .filter((item) => {
         if (hiddenCategories.has(item.category) || hiddenItems.has(item.id)) return false
+        if (activePresetItemIds.has(item.id)) return true
         if (!bookingTypeUsesMenuSelections(bookingType)) {
           return true
         }
@@ -190,7 +198,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
           image_url: item.image_url ?? null,
         }
       })
-  }, [menuItems, bookingType, hiddenCategoryKeys, hiddenItemIds])
+  }, [menuItems, bookingType, hiddenCategoryKeys, hiddenItemIds, activeCustomPreset])
 
   const categoryEntries = useMemo(
     () => dbCategories.map((category) => [category.key, category.label] as const),
@@ -204,12 +212,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     }
     return map
   }, [dbCategories])
-
-  const activeCustomPreset = useMemo(() => {
-    if (!presetMenu || !isCustomPresetMenuType(presetMenu)) return undefined
-    const uuid = getCustomPresetUuid(presetMenu)
-    return uuid ? customStaffPresets.find((p) => p.id === uuid) : undefined
-  }, [presetMenu, customStaffPresets])
 
   const showComposeHeader =
     !menuSelectionLocked &&
@@ -557,7 +559,10 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
           className={cn('mb-4 w-full rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]', publicFormLayout ? 'mr-auto' : 'mx-auto')}
           style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, 100%)` }}
         >
-          <h2 className="font-serif text-xl font-bold text-warm-wood md:text-2xl">{lockedPresetTitle}</h2>
+          <p className="text-[13px] font-bold leading-tight text-warm-wood sm:text-base lg:text-sm xl:text-base">
+            Hai selezionato :
+          </p>
+          <h2 className="mt-1 font-serif text-xl font-bold text-warm-wood md:text-2xl">{lockedPresetTitle}</h2>
           {composePresetDescription ? (
             <p className="mt-2 text-sm font-medium text-warm-wood-dark/75">{composePresetDescription}</p>
           ) : null}

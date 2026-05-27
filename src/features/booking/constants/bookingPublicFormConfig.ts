@@ -434,12 +434,13 @@ export function normalizeBookingPublicFormConfig(
       sub_tabs_presentation: mode.sub_tabs_presentation ?? null,
       sub_tabs: (mode.sub_tabs ?? []).map((tab): SubTab => {
         const display: SubTab['display'] = tab.display === 'carousel' ? 'carousel' : 'cards'
+        const isPersonalizzabileCard = display === 'cards' && tab.is_fixed_menu === false
         const base: SubTab = {
           ...tab,
           display,
           label: tab.label.trim(),
-          is_fixed_menu: display === 'cards' && tab.is_fixed_menu === false ? false : undefined,
-          price_per_person: display === 'cards' && tab.is_fixed_menu === false ? undefined : tab.price_per_person,
+          is_fixed_menu: isPersonalizzabileCard ? false : undefined,
+          price_per_person: isPersonalizzabileCard ? undefined : tab.price_per_person,
           hidden_category_keys: tab.hidden_category_keys?.filter((v) => v.trim()) ?? undefined,
           hidden_item_ids: tab.hidden_item_ids?.filter((v) => v.trim()) ?? undefined,
           carousel_items: tab.carousel_items,

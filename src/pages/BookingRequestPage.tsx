@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { BookingRequestForm } from '@/features/booking/components/BookingRequestForm'
 import { BookingSummarySidebar } from '@/features/booking/components/publicBooking/BookingSummarySidebar'
-import { MapPin, Clock, Phone, Mail, ChevronDown } from 'lucide-react'
+import { BookingStickyBar } from '@/features/booking/components/publicBooking/BookingStickyBar'
+import { MapPin, Clock, Phone, Mail, ChevronDown, Send } from 'lucide-react'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { formatHours, getDefaultBusinessHours } from '@/lib/businessHours'
@@ -48,6 +49,10 @@ export const BookingRequestPage: React.FC = () => {
   // Stato form condiviso tra BookingRequestForm e BookingSummarySidebar
   const [sharedFormData, setSharedFormData] = useState<Partial<BookingRequestInput>>({})
   const [activeSubTab, setActiveSubTab] = useState<SubTab | null>(null)
+  // Stato disabled del pulsante submit (sincronizzato da BookingRequestForm)
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(true)
+  // Visibilità del riepilogo nella viewport (per sticky bar mobile)
+  const [isSummaryVisible, setIsSummaryVisible] = useState(false)
 
   const formatDayName = (day: string): string => {
     const dayMap: Record<string, string> = {
@@ -122,7 +127,7 @@ export const BookingRequestPage: React.FC = () => {
   return (
     <div className="min-h-screen font-bold" style={bookingPageBackgroundStyle}>
       <div className="min-h-screen">
-        <div className="mx-auto w-full max-w-7xl px-4 md:px-6 pb-1.5">
+        <div className="mx-auto w-full max-w-7xl px-12 md:px-12 pb-28 min-[900px]:pb-1.5">
 
           {/* Header — solo testo sullo sfondo pagina */}
           <div className="flex flex-col items-center justify-center gap-1.5 py-1.5 text-center animate-fade-in">
@@ -151,7 +156,51 @@ export const BookingRequestPage: React.FC = () => {
             formConfig={resolvedConfig}
             onFormDataChange={setSharedFormData}
             onActiveSubTabChange={setActiveSubTab}
+            onIsDisabledChange={setIsSubmitDisabled}
             summarySidebar={
+              <BookingSummarySidebar
+                formData={{
+                  desired_date: sharedFormData.desired_date,
+                  desired_time: sharedFormData.desired_time,
+                  num_guests: sharedFormData.num_guests ?? 0,
+                  booking_type: sharedFormData.booking_type,
+                  menu_selection: sharedFormData.menu_selection,
+                  menu_total_per_person: sharedFormData.menu_total_per_person,
+                  menu_total_booking: sharedFormData.menu_total_booking,
+                  preset_menu: sharedFormData.preset_menu,
+                }}
+                modes={resolvedConfig.booking_modes}
+                contactPhone={displayContactPhone || undefined}
+                activeSubTab={activeSubTab}
+                onVisibilityChange={setIsSummaryVisible}
+                submitButton={
+                  <button
+                    type="submit"
+                    form="booking-request-form"
+                    disabled={isSubmitDisabled}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-5 text-sm font-bold text-white rounded-full bg-green-600 hover:bg-green-700 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-wide transition-colors duration-200"
+                  >
+                    <Send className="h-4 w-4" />
+                    Invia Prenotazione
+                  </button>
+                }
+              />
+            }
+          />
+
+          {/* Sticky bar mobile — visibile quando il riepilogo è fuori dalla viewport */}
+          <BookingStickyBar
+            formData={{
+              desired_date: sharedFormData.desired_date,
+              desired_time: sharedFormData.desired_time,
+              num_guests: sharedFormData.num_guests ?? 0,
+              booking_type: sharedFormData.booking_type,
+            }}
+            modes={resolvedConfig.booking_modes}
+            totalBooking={sharedFormData.menu_total_booking}
+            isSubmitDisabled={isSubmitDisabled}
+            visible={!isSummaryVisible}
+            summaryContent={
               <BookingSummarySidebar
                 formData={{
                   desired_date: sharedFormData.desired_date,
@@ -171,7 +220,7 @@ export const BookingRequestPage: React.FC = () => {
           />
 
           {/* Footer orari + contatti */}
-          <div className="rounded-2xl shadow-xl px-3 md:px-5 bg-white border border-slate-100 pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-[clamp(2rem,6vmin,3.5rem)] animate-fade-in">
+          <div className="rounded-2xl shadow-xl px-6 md:px-8 bg-white border border-slate-100 pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-[clamp(2rem,6vmin,3.5rem)] animate-fade-in">
             <div className="grid grid-cols-2 gap-x-3 gap-y-1 md:gap-x-4 items-start max-[480px]:hidden">
 
               <div className="min-w-0 w-full space-y-1 text-left pr-1.5">

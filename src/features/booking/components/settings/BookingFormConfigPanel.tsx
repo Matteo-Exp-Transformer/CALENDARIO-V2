@@ -532,9 +532,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           ? preset.price_per_person
           : undefined,
       is_fixed_menu: isFixedMenu ? undefined : false,
-      hidden_item_ids: menuItems
-        .filter((item) => !preset.item_ids.includes(item.id))
-        .map((item) => item.id),
+      hidden_item_ids: [],
       hidden_category_keys: [],
       field_overrides: overrides,
     }
@@ -858,10 +856,11 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     }
 
     const editorTitle = getSubTabEditorTitle(tab, subTabNumber, isDraft)
-    const isFixedMenu = tab.display === 'carousel' || tab.is_fixed_menu !== false
     const linkedPreset = tab.preset_id
       ? relevantPresets.find((preset) => preset.id === tab.preset_id)
       : undefined
+    const isLinkedCard = tab.display === 'cards' && Boolean(linkedPreset)
+    const isFixedMenu = tab.display === 'carousel' || !isLinkedCard || tab.is_fixed_menu !== false
     const cardPriceInputValue =
       tab.display === 'cards' &&
       tab.field_overrides?.price_per_person !== true &&
@@ -1080,7 +1079,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
         )}
 
         {tab.display === 'cards' &&
-          tab.preset_id &&
+          linkedPreset &&
           bookingTypeUsesMenuItems(mode.booking_type, menuItems) && (
           <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-3">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -1088,21 +1087,18 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
             </p>
             <div className="space-y-2">
               {menuCategories.map((cat) => {
+                const presetItemIds = new Set(linkedPreset?.item_ids ?? [])
                 const itemsForCat = menuItems.filter(
                   (item) =>
                     item.category === cat.key &&
-                    normalizeMenuItemBookingTypes(item.booking_types).includes(mode.booking_type),
+                    presetItemIds.has(item.id),
                 )
                 if (itemsForCat.length === 0) return null
                 const catHidden = (tab.hidden_category_keys ?? []).includes(cat.key)
                 const hiddenItemIds = tab.hidden_item_ids ?? []
-                const visibleItemsForCat = catHidden
-                  ? []
-                  : itemsForCat.filter((item) => !hiddenItemIds.includes(item.id))
-                const visibleInCat = visibleItemsForCat.length
-                // In questo pannello vogliamo mostrare solo le categorie effettivamente incluse
-                // nel menù preselezionato (cioè con almeno 1 ingrediente visibile).
-                if (visibleInCat === 0) return null
+                const visibleInCat = catHidden
+                  ? 0
+                  : itemsForCat.filter((item) => !hiddenItemIds.includes(item.id)).length
                 return (
                   <details key={cat.key} className="rounded-lg border border-slate-200 bg-slate-50">
                     <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2">
@@ -1135,8 +1131,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                     </summary>
                     {!catHidden && (
                       <div className="grid grid-cols-1 gap-1 border-t border-slate-200 p-2 sm:grid-cols-2">
-                        {visibleItemsForCat.map((item) => {
-                          const hidden = false
+                        {itemsForCat.map((item) => {
+                          const hidden = hiddenItemIds.includes(item.id)
                           return (
                             <button
                               key={item.id}
@@ -1167,7 +1163,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           </div>
         )}
 
-        {tab.display === 'cards' && tab.preset_id && (
+        {tab.display === 'cards' && linkedPreset && (
           <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5">
             <div className="min-w-0">
               <p className="text-sm font-medium text-slate-700">Menù personalizzabile</p>

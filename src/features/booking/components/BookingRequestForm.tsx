@@ -50,6 +50,8 @@ interface BookingRequestFormProps {
   onActiveSubTabChange?: (subTab: SubTab | null) => void
   /** Riepilogo a destra (desktop); il submit va sotto questa colonna. */
   summarySidebar?: React.ReactNode
+  /** Notifica il parent quando il pulsante submit cambia stato disabled. */
+  onIsDisabledChange?: (disabled: boolean) => void
 }
 
 function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
@@ -133,6 +135,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   onFormDataChange,
   onActiveSubTabChange,
   summarySidebar,
+  onIsDisabledChange,
 }) => {
   // Helper function to get current date in YYYY-MM-DD format
   const getCurrentDate = (): string => {
@@ -538,6 +541,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     timeWindow: 60000 // 1 minuto
   })
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
+
+  // Notifica il parent quando cambia lo stato disabled del submit
+  useEffect(() => {
+    onIsDisabledChange?.(isPending || isBlocked || isSubmitting || isCheckingAvailability)
+  }, [isPending, isBlocked, isSubmitting, isCheckingAvailability, onIsDisabledChange])
   const { data: menuPromos = [] } = useRestaurantSetting('booking_menu_promos')
 
   const menuPromoBannerMessages = useMemo(

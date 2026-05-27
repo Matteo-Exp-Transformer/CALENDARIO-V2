@@ -23,14 +23,14 @@ interface BookingSubTabCardsProps {
   modeCardColumnCount: number
 }
 
-/** Es. `18,00€ a persona` (senza spazio prima del simbolo €). */
-function formatPricePerPersonLabel(price?: number): string | null {
+/** Es. `18,00€` (senza spazio prima del simbolo €). */
+function formatPriceAmountLabel(price?: number): string | null {
   if (price == null || price <= 0) return null
   const amount = new Intl.NumberFormat('it-IT', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(price)
-  return `${amount}€ a persona`
+  return `${amount}€`
 }
 
 function SubTabCardIcon({ icon, className }: { icon?: SubTabIcon; className?: string }) {
@@ -100,8 +100,8 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
       >
         {subTabs.map((tab) => {
           const isActive = activeSubTabId === tab.id
-          const priceLabel =
-            tab.display === 'carousel' ? null : formatPricePerPersonLabel(tab.price_per_person)
+          const priceAmount =
+            tab.display === 'carousel' ? null : formatPriceAmountLabel(tab.price_per_person)
           const coursesLabel = tab.display === 'carousel' ? '' : tab.courses_label?.trim() ?? ''
           return (
             <button
@@ -148,15 +148,22 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                     </span>
                   )}
                 </div>
-                {priceLabel && (
-                  <p className="text-xs font-bold leading-tight text-warm-wood-dark/80 sm:text-base lg:text-xl">
-                    <span>{priceLabel}</span>
-                  </p>
-                )}
-                {coursesLabel && (
-                  <p className="mt-1 text-[11px] font-bold leading-tight text-warm-orange sm:text-sm lg:text-base">
-                    {coursesLabel}
-                  </p>
+                {(priceAmount || coursesLabel) && (
+                  <div className="flex w-full items-end justify-between gap-2">
+                    {coursesLabel ? (
+                      <p className="min-w-0 text-left text-[11px] font-bold leading-tight text-warm-orange sm:text-sm lg:text-base">
+                        {coursesLabel}
+                      </p>
+                    ) : (
+                      <span className="min-w-0 flex-1" aria-hidden />
+                    )}
+                    {priceAmount && (
+                      <p className="shrink-0 text-right text-xs font-bold leading-tight text-warm-wood-dark/80 sm:text-base lg:text-xl">
+                        <span>{priceAmount}</span>
+                        <span className="hidden sm:inline"> a persona</span>
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             </button>

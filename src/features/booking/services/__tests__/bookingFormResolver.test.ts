@@ -68,11 +68,18 @@ describe('resolveSubTabView — campi non personalizzati seguono il preset live'
     expect(resolved.price_per_person).toBe(32)
   })
 
-  it('senza preset collegato restituisce i valori salvati', () => {
+  it('senza preset collegato restituisce testi e prezzo salvati', () => {
     const tab: SubTab = { id: 't', display: 'cards', label: 'Manuale', price_per_person: 50 }
     const resolved = resolveSubTabView(tab, [])
     expect(resolved.label).toBe('Manuale')
     expect(resolved.price_per_person).toBe(50)
+    expect(resolved.is_fixed_menu).toBeUndefined()
+  })
+
+  it('senza preset collegato non forza la griglia personalizzabile', () => {
+    const tab: SubTab = { id: 't', display: 'cards', label: 'Manuale' }
+    const resolved = resolveSubTabView(tab, [])
+    expect(resolved.is_fixed_menu).toBeUndefined()
   })
 
   it('preset cancellato non blocca: fallback ai valori salvati', () => {

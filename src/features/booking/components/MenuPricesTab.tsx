@@ -29,6 +29,7 @@ import {
   type CustomStaffPreset,
   isStaffPresetVisibleOnBooking,
 } from '../constants/presetMenus'
+import { normalizeBookingPublicFormConfig } from '../constants/bookingPublicFormConfig'
 import { useRestaurantSetting, useUpsertRestaurantSetting } from '../hooks/useRestaurantSetting'
 import { selectedItemsFromMenuItemIds } from '../utils/buildPresetMenuSelection'
 import { groupMenuItemsByCategory } from '../utils/menuCatalogGrouping'
@@ -427,6 +428,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const deleteMutation = useDeleteMenuItem()
 
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
+  const { data: bookingPublicFormConfig } = useRestaurantSetting('booking_public_form_config')
   const { data: menuPromos = [], isLoading: menuPromosLoading } = useRestaurantSetting('booking_menu_promos')
   const upsertRestaurantSetting = useUpsertRestaurantSetting()
 
@@ -668,11 +670,32 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   }
 
   const handleDeleteCustomPreset = (presetId: string, label: string) => {
-    if (!confirm(`Eliminare il menù preselezionato "${label}"?`)) {
+    if (
+      !confirm(
+        `Eliminare il menù preselezionato "${label}"?\n\nLe card collegate a questo menù verranno eliminate anche da Personalizza form.`,
+      )
+    ) {
       return
     }
     const next = customStaffPresets.filter((p) => p.id !== presetId)
-    upsertRestaurantSetting.mutate([{ key: 'booking_custom_staff_presets', value: next }])
+    const nextFormConfig = bookingPublicFormConfig
+      ? normalizeBookingPublicFormConfig({
+          ...bookingPublicFormConfig,
+          booking_modes: bookingPublicFormConfig.booking_modes.map((mode) => {
+            const subTabs = (mode.sub_tabs ?? []).filter((tab) => tab.preset_id !== presetId)
+            return {
+              ...mode,
+              sub_tabs: subTabs,
+              sub_tabs_overrides: mode.sub_tabs_overrides?.filter((override) => override.preset_id !== presetId),
+              sub_tabs_presentation: subTabs.length === 0 ? null : mode.sub_tabs_presentation,
+            }
+          }),
+        })
+      : undefined
+    upsertRestaurantSetting.mutate([
+      { key: 'booking_custom_staff_presets', value: next },
+      ...(nextFormConfig ? [{ key: 'booking_public_form_config' as const, value: nextFormConfig }] : []),
+    ])
   }
 
   const toggleStaffPresetBookingVisibility = (presetId: string) => {

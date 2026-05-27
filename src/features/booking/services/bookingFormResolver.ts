@@ -62,7 +62,10 @@ export function resolveSubTabView(
     ? subTab.description
     : (preset.description?.trim() || subTab.description)
 
-  const is_fixed_menu = subTab.display === 'cards' && subTab.is_fixed_menu === false ? false : undefined
+  const is_fixed_menu =
+    subTab.display === 'cards' && subTab.is_fixed_menu === false
+      ? false
+      : undefined
 
   // price_per_person:
   // - cards: se il menu è personalizzabile non esiste prezzo fisso, altrimenti si eredita dal preset se non personalizzato

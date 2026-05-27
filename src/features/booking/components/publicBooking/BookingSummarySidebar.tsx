@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useEffect, useRef } from 'react'
 import { CalendarDays, Clock, Users, UtensilsCrossed, Phone } from 'lucide-react'
 import type { BookingRequestInput, BookingType } from '@/types/booking'
 import type { BookingMode, SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
@@ -20,6 +20,10 @@ interface BookingSummarySidebarProps {
   modes: BookingMode[]
   contactPhone?: string
   activeSubTab?: SubTab | null
+  /** Pulsante submit da mostrare in fondo al riepilogo (desktop). */
+  submitButton?: React.ReactNode
+  /** Callback invocata quando il riepilogo entra/esce dalla viewport (per la sticky bar mobile). */
+  onVisibilityChange?: (visible: boolean) => void
 }
 
 function formatDate(dateStr?: string): string {
@@ -49,7 +53,23 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   modes,
   contactPhone,
   activeSubTab,
+  submitButton,
+  onVisibilityChange,
 }) => {
+  const asideRef = useRef<HTMLDivElement>(null)
+
+  // Osserva quando il riepilogo entra/esce dalla viewport (per la sticky bar mobile)
+  useEffect(() => {
+    if (!onVisibilityChange) return
+    const el = asideRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => onVisibilityChange(entry.isIntersecting),
+      { threshold: 0.1 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [onVisibilityChange])
   const { data: menuCategories = [] } = useMenuCategories()
   const hasMenu = formData.booking_type !== 'tavolo'
   const items = formData.menu_selection?.items ?? []
@@ -99,7 +119,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   }, [activeSubTab, isCarouselSummary])
 
   return (
-    <div className="order-2 w-full max-w-full self-start md:sticky md:top-4 min-[900px]:order-0">
+    <div ref={asideRef} className="order-2 w-full max-w-full self-start md:sticky md:top-4 min-[900px]:order-0">
       <aside
         className={cn(
           'w-full max-w-full rounded-2xl border border-slate-100 bg-white px-4 py-5 shadow-xl transition-all duration-300 ease-out',
@@ -261,6 +281,13 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
           </div>
         )}
       </div>
+
+      {/* Pulsante submit in fondo al riepilogo (visibile su desktop/tablet) */}
+      {submitButton && (
+        <div className="border-t border-black/10 pt-4 hidden min-[900px]:block">
+          {submitButton}
+        </div>
+      )}
       </aside>
     </div>
   )
