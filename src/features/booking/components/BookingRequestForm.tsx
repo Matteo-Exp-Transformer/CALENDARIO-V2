@@ -146,13 +146,21 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     return `${year}-${month}-${day}`
   }
 
+  // Ora di default: prossima ora intera futura (es. se sono le 14:23 → 15:00)
+  const getDefaultTime = (): string => {
+    const now = new Date()
+    const nextHour = now.getHours() + 1
+    if (nextHour >= 24) return '00:00'
+    return `${String(nextHour).padStart(2, '0')}:00`
+  }
+
   const createInitialFormData = (): BookingRequestInput => ({
     client_name: '',
     client_email: '',
     client_phone: '',
     booking_type: 'tavolo',
     desired_date: getCurrentDate(),
-    desired_time: '16:00',
+    desired_time: getDefaultTime(),
     num_guests: 0,
     special_requests: '',
     menu_selection: {

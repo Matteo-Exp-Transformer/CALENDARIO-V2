@@ -240,8 +240,8 @@ export const BookingRequestPage: React.FC = () => {
 
         </div>{/* fine griglia 3-col */}
 
-        {/* Footer orari + contatti — larghezza intera pagina (include striscia foto) */}
-        <div className="mx-auto w-full max-w-7xl px-4 md:px-8">
+        {/* Footer orari + contatti — larghezza intera pagina senza gap laterali */}
+        <div className="mx-auto w-full max-w-7xl">
           <div className="rounded-2xl shadow-xl px-6 md:px-8 bg-white border border-slate-100 pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-[clamp(2rem,6vmin,3.5rem)] animate-fade-in">
             <div className="grid grid-cols-2 gap-x-3 gap-y-1 md:gap-x-4 items-start max-[480px]:hidden">
 

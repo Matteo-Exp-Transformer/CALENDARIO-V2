@@ -32,6 +32,17 @@ interface BookingFormFieldsProps {
   setErrors: (errors: Record<string, string>) => void
 }
 
+// Restituisce "HH:MM" dell'ora corrente (per validazione ora minima quando la data è oggi)
+function getCurrentTimeHHMM(): string {
+  const now = new Date()
+  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+}
+
+function getTodayIso(): string {
+  const today = new Date()
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+}
+
 export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
   formData,
   errors,
@@ -46,8 +57,18 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
   resetAvailability,
   setErrors,
 }) => {
-  const validateBusinessHours = (date: string, time: string): string | null => {
-    if (!date || !time || !businessHours || isLoadingHours || hoursError) return null
+  const isDateToday = formData.desired_date === getTodayIso()
+  // Ora minima selezionabile: solo se la data è oggi, blocca le ore passate
+  const minTimeToday = isDateToday ? getCurrentTimeHHMM() : undefined
+
+  const validateDateTime = (date: string, time: string): string | null => {
+    if (!date || !time) return null
+    // Blocca data+ora nel passato
+    const todayIso = getTodayIso()
+    if (date < todayIso) return 'Non puoi selezionare una data passata'
+    if (date === todayIso && time < getCurrentTimeHHMM()) return "L'orario selezionato è già passato"
+    // Valida orari di apertura ristorante
+    if (!businessHours || isLoadingHours || hoursError) return null
     if (!isValidBookingDateTime(date, time, businessHours)) {
       const dayName = getDayOfWeek(date)
       const dayHours = businessHours[dayName]
@@ -61,7 +82,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
     onDateChange(newDate)
     resetAvailability()
     const timeError = newDate && formData.desired_time
-      ? validateBusinessHours(newDate, formData.desired_time)
+      ? validateDateTime(newDate, formData.desired_time)
       : null
     if (timeError) {
       const dayName = businessHours ? getDayOfWeek(newDate) : null
@@ -80,7 +101,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
     onTimeChange(newTime)
     resetAvailability()
     const timeError = formData.desired_date && newTime
-      ? validateBusinessHours(formData.desired_date, newTime)
+      ? validateDateTime(formData.desired_date, newTime)
       : null
     if (timeError) {
       const dayName = businessHours && formData.desired_date ? getDayOfWeek(formData.desired_date) : null
@@ -179,10 +200,11 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
           <BookingPublicTimePickerField
             id="desired_time"
             label="Ora *"
-            value={formData.desired_time || '16:00'}
+            value={formData.desired_time || ''}
             onChange={handleTimeChange}
             required
             hasError={!!errors.desired_time}
+            minTime={minTimeToday}
           />
           {errors.desired_time && (
             <div className="text-sm text-red-600 p-3 rounded-lg bg-red-50 border border-red-200">

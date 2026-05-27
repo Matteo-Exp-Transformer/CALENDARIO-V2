@@ -267,6 +267,7 @@ export function BookingPublicTimePickerField({
   onChange,
   required,
   hasError = false,
+  minTime: _minTime,
 }: {
   id: string
   label: string
@@ -274,6 +275,8 @@ export function BookingPublicTimePickerField({
   onChange: (value: string) => void
   required?: boolean
   hasError?: boolean
+  /** Ora minima selezionabile "HH:MM" — usata per bloccare ore passate quando la data è oggi */
+  minTime?: string
 }) {
   const [open, setOpen] = useState(false)
 
