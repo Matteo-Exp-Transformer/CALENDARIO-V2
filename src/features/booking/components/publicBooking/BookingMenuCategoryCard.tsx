@@ -93,7 +93,7 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
       ? 'w-[min(280px,calc(100vw-4rem))] min-w-[240px] max-w-[280px] shrink-0 snap-center rounded-2xl sm:min-w-[260px]'
       : layout === 'stack'
         ? 'w-full min-w-0 max-w-none rounded-xl'
-        : 'w-full min-w-0 max-w-[320px] self-start rounded-2xl',
+        : 'w-full min-w-0 self-start rounded-2xl',
   )
 
   const itemsList = (

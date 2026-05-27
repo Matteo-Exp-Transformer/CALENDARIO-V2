@@ -154,7 +154,7 @@ function ComposeScrollRow({
       )}
       <div
         ref={scrollRef}
-        className="flex w-full min-w-0 flex-nowrap items-start gap-4 overflow-x-auto scroll-px-2 scrollbar-hide snap-x snap-mandatory py-1 md:px-14"
+        className="flex w-full min-w-0 flex-nowrap items-start gap-4 overflow-x-auto scroll-px-2 scrollbar-hide snap-x snap-mandatory py-1"
       >
         <ComposeCategoryCards
           categories={categories}
@@ -255,8 +255,8 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
         {gridOnDesktop ? (
           <div
             className={cn(
-              'grid w-full min-w-0 items-start justify-items-start gap-4',
-              count <= 1 ? 'grid-cols-1' : count === 2 ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-3',
+              'grid w-full min-w-0 items-start gap-4',
+              count <= 1 ? 'grid-cols-1' : count === 2 ? 'grid-cols-2' : 'grid-cols-3',
             )}
           >
             <ComposeCategoryCards categories={visibleCategories} layout="grid" {...cardProps} />

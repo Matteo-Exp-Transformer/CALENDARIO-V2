@@ -224,6 +224,9 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   }, [activeMode, customStaffPresets])
 
   const activeSubTab = activeModeSubTabs.find((t) => t.id === activeSubTabId) ?? null
+  const activeSubTabLinkedPreset = activeSubTab?.preset_id
+    ? customStaffPresets.find((preset) => preset.id === activeSubTab.preset_id) ?? null
+    : null
 
   const getActiveSubTabPricePerPerson = useCallback((subTab: SubTab | null): number | undefined => {
     if (!subTab || subTab.is_fixed_menu === false) return undefined
@@ -252,8 +255,9 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     if (!bookingTypeUsesMenuSelections(formData.booking_type)) return false
     if (activeModeSubTabs.length === 0) return true
     if (!activeSubTab) return false
+    if (!activeSubTabLinkedPreset) return false
     return activeSubTab.display !== 'carousel'
-  }, [formData.booking_type, activeModeSubTabs.length, activeSubTab])
+  }, [formData.booking_type, activeModeSubTabs.length, activeSubTab, activeSubTabLinkedPreset])
 
   // Notifica il parent ad ogni cambio formData (per sidebar riepilogo)
   useEffect(() => {
@@ -291,7 +295,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   ])
 
   const frostedInputCn =
-    'min-h-[3rem] bg-white px-4 rounded-lg border border-slate-200 text-left text-xs font-bold text-warm-wood sm:text-sm focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/40'
+    'min-h-[2.6rem] min-[900px]:min-h-[2.4rem] bg-white px-3 min-[900px]:px-3 rounded-lg border border-slate-200 text-left text-xs font-bold text-warm-wood sm:text-sm min-[900px]:text-xs focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/40'
   
   // Ref per prevenire doppi submit (anche con React StrictMode)
   const isSubmittingRef = useRef(false)
@@ -432,12 +436,14 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     const resolved = applyPresetTypeToBookingFormPayload(presetType, menuItems, customStaffPresets)
     if (!resolved) {
       if (presetCatalogLoading) {
+        const fallbackPrice = getActiveSubTabPricePerPerson(sourceSubTab)
+        const numGuests = formData.num_guests || 0
         setFormData({
           ...formData,
           preset_menu: presetType,
           menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
-          menu_total_per_person: getActiveSubTabPricePerPerson(sourceSubTab),
-          menu_total_booking: undefined,
+          menu_total_per_person: fallbackPrice,
+          menu_total_booking: fallbackPrice && numGuests > 0 ? fallbackPrice * numGuests : undefined,
         })
         return
       }
@@ -686,7 +692,10 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
     // Menu validation (Rinfresco di Laurea / menù a prezzo fisso)
     if (showMenuSelectionSection) {
-      if (!formData.menu_selection || !formData.menu_selection.items || formData.menu_selection.items.length === 0) {
+      if (
+        !activeSubTabUsesFixedPricing &&
+        (!formData.menu_selection || !formData.menu_selection.items || formData.menu_selection.items.length === 0)
+      ) {
         newErrors.menu = 'Seleziona almeno un prodotto dal menù'
         isValid = false
         if (!firstErrorKey) firstErrorKey = 'menu'
@@ -880,11 +889,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     <form
       id="booking-request-form"
       onSubmit={handleSubmit}
-      className="grid w-full max-w-full grid-cols-1 gap-4 font-bold lg:grid-cols-[1fr_min(360px,32%)] lg:items-start lg:gap-6"
+      className="grid w-full max-w-full grid-cols-1 gap-4 font-bold min-[900px]:grid-cols-[1fr_min(320px,30%)] min-[900px]:items-start min-[900px]:gap-5 lg:grid-cols-[1fr_min(360px,32%)] lg:gap-6"
     >
       {/* Tipologia + sottotab: fuori da md:px-2/lg:px-4 — stesso bordo laterale del box header */}
       <div
-        className="col-span-1 flex w-full min-w-0 flex-col space-y-3 lg:col-span-2"
+        className="col-span-1 flex w-full min-w-0 flex-col space-y-3 min-[900px]:col-span-2"
         id="booking-sub-tabs-section"
       >
         <BookingModeCards
@@ -936,8 +945,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
                 handlePresetMenuChange(null)
                 return
               }
-              if (tab.preset_id) {
-                handlePresetMenuChange(customPresetStorageId(tab.preset_id), tab)
+              const linkedPreset = tab.preset_id
+                ? customStaffPresets.find((preset) => preset.id === tab.preset_id)
+                : null
+              if (linkedPreset) {
+                handlePresetMenuChange(customPresetStorageId(linkedPreset.id), tab)
                 return
               }
               setSelectedPreset(null)
@@ -970,7 +982,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       </div>
 
       {showMenuSelectionSection && (
-        <div id="menu-section" className="col-span-1 flex w-full min-w-0 flex-col space-y-6 lg:col-span-2">
+        <div id="menu-section" className="col-span-1 flex w-full min-w-0 flex-col space-y-6 min-[900px]:col-span-2">
           <MenuSelection
             selectedItems={formData.menu_selection?.items || []}
             numGuests={formData.num_guests || 0}
@@ -1100,7 +1112,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       {summarySidebar}
 
       {/* Submit — sotto colonna form + sidebar (ordine DOM dopo aside) */}
-      <div className="order-3 col-span-1 flex w-full max-w-full justify-center items-center mt-8 md:mt-12 lg:col-span-2">
+      <div className="order-3 col-span-1 flex w-full max-w-full justify-center items-center mt-8 md:mt-12 min-[900px]:col-span-2">
         <button
             type="submit"
             disabled={isPending || isBlocked || isSubmitting || isCheckingAvailability}

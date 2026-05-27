@@ -8,11 +8,12 @@ import { StarIcon } from '@phosphor-icons/react/dist/csr/Star'
 import { LeafIcon } from '@phosphor-icons/react/dist/csr/Leaf'
 import { cn } from '@/lib/utils'
 import type { SubTab, SubTabIcon } from '@/features/booking/constants/bookingPublicFormConfig'
-import { BOOKING_PUBLIC_WIDE_CARDS_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
+import {
+  BOOKING_PUBLIC_WIDE_CARDS_WIDTH,
+  bookingPublicRowCardWidthClass,
+} from '@/features/booking/constants/bookingPublicFieldStyles'
 
 const SUB_TAB_SCROLL_STEP_PX = 240
-const SUB_TAB_CARD_SIZE_CLASS =
-  'w-[41%] max-w-[41%] shrink-0 sm:w-[41%] sm:max-w-[41%] lg:w-[31%] lg:max-w-[31%]'
 
 interface BookingSubTabCardsProps {
   subTabs: SubTab[]
@@ -44,6 +45,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   subTabs,
   activeSubTabId,
   onChange,
+  modeCardColumnCount,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -75,6 +77,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   }
 
   if (subTabs.length === 0) return null
+  const cardWidthClass = bookingPublicRowCardWidthClass(Math.min(3, Math.max(1, modeCardColumnCount)))
 
   return (
     <div
@@ -108,7 +111,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
               onClick={() => onChange(isActive ? null : tab)}
               className={cn(
                 'flex snap-center flex-col items-center rounded-xl border-2 px-3 py-3 text-center transition-all sm:rounded-2xl sm:px-6 sm:py-4',
-                SUB_TAB_CARD_SIZE_CLASS,
+                cardWidthClass,
                 'min-h-[196px] sm:min-h-[230px] lg:min-h-[250px]',
                 'bg-white/85 backdrop-blur-[1px] shadow-sm',
                 isActive
@@ -132,22 +135,17 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                   )}
                   aria-hidden
                 />
-                <div className="flex min-h-0 w-full flex-1 items-center justify-center gap-3 py-2 sm:py-3 lg:gap-4">
-                  {tab.display !== 'carousel' && tab.description && (
-                    <>
-                      <span
-                        className={cn(
-                          'flex shrink-0 items-center justify-center rounded-full bg-warm-beige/60 text-warm-wood-dark/65',
-                          'h-16 w-16 md:h-20 md:w-20 lg:h-16 lg:w-16',
-                        )}
-                        aria-hidden
-                      >
-                        <SubTabCardIcon icon={tab.icon} className="h-10 w-10 md:h-12 md:w-12 lg:h-10 lg:w-10" />
-                      </span>
-                      <p className="hidden min-w-0 flex-1 line-clamp-4 text-left text-lg leading-tight text-warm-wood-dark/70 lg:block">
-                        {tab.description}
-                      </p>
-                    </>
+                <div className="flex min-h-0 w-full flex-1 items-center justify-center py-2 sm:py-3">
+                  {tab.display !== 'carousel' && (
+                    <span
+                      className={cn(
+                        'flex shrink-0 items-center justify-center',
+                        'h-16 w-16 md:h-20 md:w-20 lg:h-16 lg:w-16',
+                      )}
+                      aria-hidden
+                    >
+                      <SubTabCardIcon icon={tab.icon} className="h-10 w-10 md:h-12 md:w-12 lg:h-10 lg:w-10 text-warm-wood-dark" />
+                    </span>
                   )}
                 </div>
                 {priceLabel && (
