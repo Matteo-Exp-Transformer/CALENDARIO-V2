@@ -108,13 +108,15 @@ export const BookingRequestPage: React.FC = () => {
   const fullPagePhotoPortraitUrl = fullPagePhotoId
     ? bookingFullPageBackgroundPublicHref(fullPagePhotoId, import.meta.env.BASE_URL, 'portrait')
     : null
-  // Foto full-page: applicate via due div fissi (variante portrait <768px, landscape ≥768px),
-  // perché un singolo `style.backgroundImage` non può cambiare per media query.
-  // Per gradient/tile legacy resta lo style inline; per striscia solo tinta crema.
+  // Foto full-page: applicate come `background-image` su un wrapper interno che cambia
+  // url via media query (vedi sotto). Quando la foto è attiva, il root NON imposta
+  // backgroundColor scuro: serve un fondo crema chiaro come fallback se la foto tarda
+  // a caricare (un marrone scuro produrrebbe l'effetto "tutto buio" segnalato).
+  const FULL_PAGE_FALLBACK_BG = STRIP_MODE_PAGE_BG
   const bookingPageBackgroundStyle: React.CSSProperties = showPhotoStrip
     ? { backgroundColor: STRIP_MODE_PAGE_BG }
     : isFullPagePhoto
-      ? { backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR }
+      ? { backgroundColor: FULL_PAGE_FALLBACK_BG }
       : isBookingPageGradientId(bookingPageBackground)
         ? {
             backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
@@ -156,25 +158,26 @@ export const BookingRequestPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen font-bold relative" style={bookingPageBackgroundStyle}>
+    <div className="min-h-screen font-bold" style={bookingPageBackgroundStyle}>
       {/*
         Foto full-page in due varianti (responsive):
         - portrait (9:16) per viewport mobile <768px
         - landscape (16:9) per viewport ≥768px
-        Sono div `fixed inset-0` dietro al contenuto, perché un singolo
-        `style.backgroundImage` non può cambiare in base alle media query.
+        Sono due `<div fixed inset-0>` montati PRIMA del contenuto in modo che restino
+        sotto nello z-stacking naturale. Il root non deve essere `position: relative`
+        né avere `z-index`, altrimenti crea uno stacking context che nasconde questi div.
       */}
       {isFullPagePhoto && fullPagePhotoPortraitUrl && (
         <div
           aria-hidden
-          className="fixed inset-0 -z-10 md:hidden bg-cover bg-center bg-no-repeat"
+          className="pointer-events-none fixed inset-0 md:hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url("${fullPagePhotoPortraitUrl}")` }}
         />
       )}
       {isFullPagePhoto && fullPagePhotoLandscapeUrl && (
         <div
           aria-hidden
-          className="fixed inset-0 -z-10 hidden md:block bg-cover bg-center bg-no-repeat"
+          className="pointer-events-none fixed inset-0 hidden md:block bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url("${fullPagePhotoLandscapeUrl}")` }}
         />
       )}

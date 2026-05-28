@@ -7,7 +7,24 @@ export const BOOKING_STRIP_PHOTO_IDS = [
   'strip-01',
   'strip-02',
   'strip-03',
+  'strip-04',
+  'strip-05',
+  'strip-06',
 ] as const
+
+/**
+ * Mappa estensione file per ciascun preset.
+ * `strip-01..03` sono PNG (vecchio set "seconda prova"); `strip-04..06` sono WebP HD (1440×4320).
+ * Quando aggiungi nuove foto, registra qui l'estensione corretta.
+ */
+const STRIP_PHOTO_EXTENSIONS: Record<string, 'png' | 'webp'> = {
+  'strip-01': 'png',
+  'strip-02': 'png',
+  'strip-03': 'png',
+  'strip-04': 'webp',
+  'strip-05': 'webp',
+  'strip-06': 'webp',
+}
 
 export type BookingStripPhotoId = (typeof BOOKING_STRIP_PHOTO_IDS)[number]
 
@@ -29,7 +46,8 @@ export function parseBookingStripPhotoFromDb(raw: unknown): BookingStripPhotoId 
  * I file hanno spazi nel nome originale; usiamo encodeURIComponent per sicurezza.
  */
 export function bookingStripPhotoPublicHref(id: BookingStripPhotoId, base: string): string {
-  return `${base}asset/strip/${id}.png`
+  const ext = STRIP_PHOTO_EXTENSIONS[id] ?? 'png'
+  return `${base}asset/strip/${id}.${ext}`
 }
 
 /** Tutte le URL in ordine, pronte per lo scroll verticale della striscia. */
