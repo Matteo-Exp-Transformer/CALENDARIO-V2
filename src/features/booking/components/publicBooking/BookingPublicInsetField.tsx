@@ -57,7 +57,7 @@ export function BookingPublicInsetFieldShell({
         <label htmlFor={htmlFor} className={BOOKING_PUBLIC_FIELD_INNER_LABEL}>
           {label}
         </label>
-        <div className="mt-0.5 w-full min-w-0 flex-1">{children}</div>
+        <div className="w-full min-w-0 flex-1 text-right">{children}</div>
       </div>
     </div>
   )

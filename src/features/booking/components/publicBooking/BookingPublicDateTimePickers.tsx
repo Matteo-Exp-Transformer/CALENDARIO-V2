@@ -180,7 +180,7 @@ export function BookingPublicDatePickerField({
           aria-expanded={open}
           aria-required={required}
           data-booking-picker-trigger="true"
-          className={cn(BOOKING_PUBLIC_FIELD_INNER_INPUT, 'flex items-center gap-2 text-left')}
+          className={cn(BOOKING_PUBLIC_FIELD_INNER_INPUT, 'flex items-center justify-end gap-2 text-right')}
           onClick={() => setOpen((v) => !v)}
         >
           <CalendarDays className="h-4 w-4 shrink-0 text-warm-orange" aria-hidden />
@@ -287,7 +287,7 @@ export function BookingPublicTimePickerField({
           aria-expanded={open}
           aria-required={required}
           data-booking-picker-trigger="true"
-          className={cn(BOOKING_PUBLIC_FIELD_INNER_INPUT, 'flex items-center gap-2 text-left')}
+          className={cn(BOOKING_PUBLIC_FIELD_INNER_INPUT, 'flex items-center justify-end gap-2 text-right')}
           onClick={() => setOpen((v) => !v)}
         >
           <Clock className="h-4 w-4 shrink-0 text-warm-orange" aria-hidden />

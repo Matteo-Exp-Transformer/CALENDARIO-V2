@@ -21,15 +21,15 @@ export function bookingPublicRowCardWidthClass(columnCount: number): string {
   return 'w-[calc((100%_-_1.125rem)/4)] max-w-[calc((100%_-_1.125rem)/4)] sm:w-[calc((100%_-_1.5rem)/4)] sm:max-w-[calc((100%_-_1.5rem)/4)] shrink-0'
 }
 
-/** Card campo: label in alto a sinistra + valore sotto.
- *  `bg-white/75 backdrop-blur-sm` = leggermente trasparente per lasciar trasparire
- *  lo sfondo foto della pagina senza compromettere la leggibilità del valore.
- *  Altezza compatta: 3.25rem mobile, 3.5rem sm+ per non sacrificare la leggibilità tablet/desktop. */
+/** Card campo single-row: label a sinistra + valore a destra sulla stessa riga.
+ *  Altezza compatta uniforme per tutte le caselle (nome, email, telefono, data, ora, ospiti).
+ *  bg-white/75 + backdrop-blur-sm = velo trasparente sulla foto di sfondo.
+ *  Mobile: 2.5rem (40px), sm+ 2.75rem (44px). */
 export const BOOKING_PUBLIC_FIELD_BOX =
-  'flex w-full min-h-[3.25rem] sm:min-h-[3.5rem] flex-col items-start justify-start rounded-lg border border-slate-200 bg-white/75 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 text-left focus-within:border-warm-wood focus-within:ring-2 focus-within:ring-warm-wood/40'
+  'flex w-full min-h-[2.5rem] sm:min-h-[2.75rem] flex-row items-center gap-2 sm:gap-3 rounded-lg border border-slate-200 bg-white/75 backdrop-blur-sm px-3 py-1 sm:px-4 sm:py-1.5 text-left focus-within:border-warm-wood focus-within:ring-2 focus-within:ring-warm-wood/40'
 
 export const BOOKING_PUBLIC_FIELD_INNER_LABEL =
-  'pointer-events-none text-left text-sm font-bold leading-tight text-warm-wood sm:text-base'
+  'pointer-events-none shrink-0 whitespace-nowrap text-left text-xs font-bold leading-tight text-warm-wood sm:text-sm'
 
 export const BOOKING_PUBLIC_FIELD_INNER_INPUT =
-  'mt-0.5 w-full min-w-0 flex-1 border-0! bg-transparent p-0 text-sm font-bold text-warm-wood shadow-none ring-0! focus:outline-none focus:ring-0! sm:text-base'
+  'w-full min-w-0 flex-1 border-0! bg-transparent p-0 text-right text-sm font-bold text-warm-wood shadow-none ring-0! focus:outline-none focus:ring-0! sm:text-base'
