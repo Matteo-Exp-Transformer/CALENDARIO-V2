@@ -80,7 +80,6 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   const useRadioAppearance = maxSelectable === 1
 
   const heroSrc = imageUrl?.trim() || undefined
-  const isStack = layout === 'stack'
   const [expanded, setExpanded] = useState(false)
 
   React.useEffect(() => {
@@ -110,8 +109,8 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
               <li key={item.id} className="min-w-0">
                 <div className="min-w-0 rounded-xl px-2 py-2">
                   {itemImageSrc ? (
-                    <div className="mb-2 overflow-hidden rounded-lg border border-black/10 bg-warm-beige/20">
-                      <img src={itemImageSrc} alt="" className="h-[188px] w-full object-cover" loading="lazy" />
+                    <div className="mb-2 aspect-4/3 overflow-hidden rounded-lg border border-black/10 bg-warm-beige/20 sm:aspect-3/2">
+                      <img src={itemImageSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
                     </div>
                   ) : null}
                   <div className="flex min-h-[44px] gap-2.5">
@@ -189,9 +188,11 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   const panelId = `booking-menu-cat-panel-${categoryKey}`
   const lockedOpenSummary = selectedCount > 0 ? 'Incluso nel menù' : 'Menù preselezionato'
   const lockedClosedTeaser = 'Scopri cosa è incluso'
-  const closedImageClass = isStack
-    ? 'h-[148px] sm:h-[172px]'
-    : 'aspect-4/3'
+  // Card chiusa: aspect-ratio fisso 4/3 indipendente dal layout, così la foto resta
+  // proporzionata sia in colonna stretta (mobile) che in colonna larga (tablet/desktop).
+  // Su mobile stack la card prende tutta la larghezza form: 4/3 produce un'altezza
+  // visiva coerente (es. 400×300 anziché un nastro 600×148 sproporzionato).
+  const closedImageClass = 'aspect-4/3'
 
   if (!expanded) {
     return (

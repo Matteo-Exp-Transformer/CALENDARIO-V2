@@ -1,16 +1,12 @@
 /**
  * Foto della striscia laterale sinistra nella pagina Prenota.
- * File in `public/asset/strip/` con nome "foto sfondo  Pagina prenota (N).png".
- * L'ID è `strip-01` … `strip-06`; il numero corrisponde al suffisso (N).
+ * File in `public/asset/strip/` con nome `strip-NN.png`.
  * Per aggiungere foto: aggiungere l'ID qui e mettere il file nella cartella.
  */
 export const BOOKING_STRIP_PHOTO_IDS = [
   'strip-01',
   'strip-02',
   'strip-03',
-  'strip-04',
-  'strip-05',
-  'strip-06',
 ] as const
 
 export type BookingStripPhotoId = (typeof BOOKING_STRIP_PHOTO_IDS)[number]
@@ -33,14 +29,38 @@ export function parseBookingStripPhotoFromDb(raw: unknown): BookingStripPhotoId 
  * I file hanno spazi nel nome originale; usiamo encodeURIComponent per sicurezza.
  */
 export function bookingStripPhotoPublicHref(id: BookingStripPhotoId, base: string): string {
-  const n = Number(id.replace('strip-', ''))
-  const filename = `foto sfondo  Pagina prenota (${n}).png`
-  return `${base}asset/strip/${encodeURIComponent(filename)}`
+  return `${base}asset/strip/${id}.png`
 }
 
 /** Tutte le URL in ordine, pronte per lo scroll verticale della striscia. */
 export function allBookingStripPhotoHrefs(base: string): string[] {
   return BOOKING_STRIP_PHOTO_IDS.map((id) => bookingStripPhotoPublicHref(id, base))
+}
+
+/**
+ * Foto a pagina intera nella pagina Prenota.
+ * File in `public/asset/sfondo intero/` con nome `full-NN.png`.
+ */
+export const BOOKING_FULL_PAGE_BACKGROUND_IDS = [
+  'full-01',
+  'full-02',
+  'full-03',
+] as const
+
+export type BookingFullPageBackgroundId = (typeof BOOKING_FULL_PAGE_BACKGROUND_IDS)[number]
+
+export const DEFAULT_BOOKING_FULL_PAGE_BACKGROUND: BookingFullPageBackgroundId = 'full-01'
+
+export function isBookingFullPageBackgroundId(value: string): value is BookingFullPageBackgroundId {
+  return (BOOKING_FULL_PAGE_BACKGROUND_IDS as readonly string[]).includes(value)
+}
+
+/** URL pubblico della foto a pagina intera. */
+export function bookingFullPageBackgroundPublicHref(
+  id: BookingFullPageBackgroundId,
+  base: string,
+): string {
+  return `${base}asset/${encodeURIComponent('sfondo intero')}/${id}.png`
 }
 
 /** Tile PNG in `public/booking/tiles/` (nome file = id + `.png`). */
@@ -211,11 +231,11 @@ export type BookingPageGradientId = BookingPageGradientPreset['id']
 
 export const BOOKING_PAGE_GRADIENT_IDS = prenotaGradientPresets.map((g) => g.id)
 
-export type BookingPageBackgroundId = BookingPageTileId | BookingPageGradientId
+export type BookingPageBackgroundId = BookingFullPageBackgroundId | BookingPageTileId | BookingPageGradientId
 
 /** Default: prima texture immagine. */
 export const DEFAULT_BOOKING_PAGE_TILE: BookingPageTileId = 'tile-01'
-export const DEFAULT_BOOKING_PAGE_BACKGROUND: BookingPageBackgroundId = DEFAULT_BOOKING_PAGE_TILE
+export const DEFAULT_BOOKING_PAGE_BACKGROUND: BookingPageBackgroundId = DEFAULT_BOOKING_FULL_PAGE_BACKGROUND
 
 export const BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR = '#2d2013'
 
@@ -236,7 +256,7 @@ export function isBookingPageGradientId(value: string): value is BookingPageGrad
 }
 
 export function isBookingPageBackgroundId(value: string): value is BookingPageBackgroundId {
-  return isBookingPageTileId(value) || isBookingPageGradientId(value)
+  return isBookingFullPageBackgroundId(value) || isBookingPageTileId(value) || isBookingPageGradientId(value)
 }
 
 export function parseBookingPageBackgroundFromDb(raw: unknown): BookingPageBackgroundId {

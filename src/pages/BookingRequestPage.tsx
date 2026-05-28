@@ -10,11 +10,14 @@ import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { formatHours, getDefaultBusinessHours } from '@/lib/businessHours'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
+import { cn } from '@/lib/utils'
 import {
   BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
   DEFAULT_BOOKING_PAGE_BACKGROUND,
+  bookingFullPageBackgroundPublicHref,
   bookingPageGradientCss,
   bookingPageTilePublicHref,
+  isBookingFullPageBackgroundId,
   isBookingPageGradientId,
   type BookingPageBackgroundId,
 } from '@/features/booking/constants/bookingPageBackground'
@@ -88,8 +91,22 @@ export const BookingRequestPage: React.FC = () => {
   const displayContactAddress = (contactAddress ?? '').trim()
   const bookingPageBackground: BookingPageBackgroundId =
     publicBookingBg ?? DEFAULT_BOOKING_PAGE_BACKGROUND
-  const bookingPageBackgroundStyle: React.CSSProperties = isBookingPageGradientId(bookingPageBackground)
+  const showPhotoStrip = stripPhotoId != null
+  // Quando la striscia laterale è attiva, il resto della pagina deve restare uniforme
+  // chiaro (crema/avorio): l'immagine full-page o legacy viene applicata SOLO senza striscia.
+  const STRIP_MODE_PAGE_BG = '#faf7f1'
+  const bookingPageBackgroundStyle: React.CSSProperties = showPhotoStrip
+    ? { backgroundColor: STRIP_MODE_PAGE_BG }
+    : isBookingFullPageBackgroundId(bookingPageBackground)
     ? {
+        backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
+        backgroundImage: `url("${bookingFullPageBackgroundPublicHref(bookingPageBackground, import.meta.env.BASE_URL)}")`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }
+    : isBookingPageGradientId(bookingPageBackground)
+      ? {
         backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
         backgroundImage: bookingPageGradientCss(bookingPageBackground),
         backgroundSize: 'cover',
@@ -137,22 +154,31 @@ export const BookingRequestPage: React.FC = () => {
       */}
       <div className="min-h-screen flex flex-col">
 
-        {/* Griglia [striscia foto | form] — flex-1 si allunga con il contenuto */}
-        <div className="flex-1 mx-auto w-full max-w-7xl grid grid-cols-[20vw_1fr] min-[900px]:grid-cols-[25vw_1fr] items-start">
+        {/* Griglia [striscia foto | form] — full viewport: la foto resta ancorata al bordo sinistro.
+            Mobile/tablet: striscia 20vw. Desktop ≥900px: striscia 25vw. */}
+        <div
+          className={cn(
+            'flex-1 w-full grid grid-cols-1 items-start',
+            showPhotoStrip && 'grid-cols-[20vw_1fr] min-[900px]:grid-cols-[25vw_1fr]',
+          )}
+        >
 
           {/*
             Striscia foto laterale sinistra.
             sticky top-0 h-screen: rimane ancorata in cima mentre il form scorre.
             Le foto si ripetono per coprire qualsiasi lunghezza di form.
             Per cambiare larghezza: modificare i valori 20vw/25vw in grid-cols sopra.
+            Non aggiungere mx-auto/max-w-* a questa griglia: staccherebbe la foto dal bordo sinistro desktop.
           */}
-          <BookingPhotoStrip
-            selectedPhotoId={stripPhotoId ?? null}
-            viteBase={import.meta.env.BASE_URL}
-          />
+          {showPhotoStrip && (
+            <BookingPhotoStrip
+              selectedPhotoId={stripPhotoId}
+              viteBase={import.meta.env.BASE_URL}
+            />
+          )}
 
           {/* Colonna contenuto destra */}
-          <div className="w-full min-w-0 px-4 md:px-8 pb-44 min-[900px]:pb-4 min-[900px]:px-6 lg:px-8">
+          <div className="w-full min-w-0 px-4 md:px-8 pb-44 min-[900px]:pb-1 min-[900px]:px-6 lg:px-8">
 
             {/* Header — solo testo sullo sfondo pagina */}
             <div className="flex flex-col items-center justify-center gap-1.5 py-1.5 text-center animate-fade-in">
@@ -250,12 +276,12 @@ export const BookingRequestPage: React.FC = () => {
         </div>{/* fine griglia [striscia foto | contenuto] */}
 
         {/*
-          Footer Orari+Contatti — fuori dalla griglia, larghezza piena max-w-7xl.
-          Copre tutta la larghezza inclusa la zona striscia foto.
+          Footer Orari+Contatti — fuori dalla griglia, a tutta larghezza viewport.
+          Chiude la pagina da bordo sinistro a bordo destro anche su desktop.
           È l'ultimo elemento: la pagina si chiude visivamente qui.
         */}
-        <div className="mx-auto w-full max-w-7xl px-0">
-          <div className="rounded-none md:rounded-2xl shadow-xl px-6 md:px-8 bg-white border-t border-slate-100 pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-0 animate-fade-in">
+        <div className="w-full px-0">
+          <div className="rounded-none shadow-xl px-6 md:px-8 bg-white border-t border-slate-100 pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-0 animate-fade-in">
 
             {/* Layout desktop/tablet (≥480px): 2 colonne Orari | Contatti */}
             <div className="grid grid-cols-2 gap-x-3 gap-y-1 md:gap-x-4 items-start max-[480px]:hidden">

@@ -437,7 +437,9 @@ export const restaurantSettingRegistry: {
   public_booking_strip_photo: {
     key: 'public_booking_strip_photo',
     parseFromDb: (raw) => parseBookingStripPhotoFromDb(raw),
-    serializeToDb: (value) => (value == null ? null : String(value)) as Json,
+    // La colonna `setting_value` è NOT NULL: "nessuna striscia" si scrive come stringa vuota,
+    // letta poi come null da parseBookingStripPhotoFromDb.
+    serializeToDb: (value) => (value == null ? '' : String(value)) as Json,
     validate: (value) => {
       if (value == null) return null
       if (typeof value === 'string' && isBookingStripPhotoId(value)) return null
