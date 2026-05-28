@@ -33,17 +33,14 @@ import {
   type SlotConfig,
 } from '@/features/booking/hooks/useServiceSlots'
 import {
-  BOOKING_PAGE_GRADIENT_PRESETS,
-  BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
-  BOOKING_PAGE_TILE_IDS,
+  BOOKING_FULL_PAGE_BACKGROUND_IDS,
   DEFAULT_BOOKING_PAGE_BACKGROUND,
-  bookingPageGradientPreviewCss,
-  bookingPageTilePublicHref,
-  isBookingPageGradientId,
-  isBookingPageTilePlaceholder,
-  type BookingPageBackgroundId,
+  DEFAULT_BOOKING_FULL_PAGE_BACKGROUND,
+  DEFAULT_BOOKING_STRIP_PHOTO,
   BOOKING_STRIP_PHOTO_IDS,
+  bookingFullPageBackgroundPublicHref,
   bookingStripPhotoPublicHref,
+  type BookingPageBackgroundId,
   type BookingStripPhotoId,
 } from '@/features/booking/constants/bookingPageBackground'
 import {
@@ -344,9 +341,8 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [contactAddress, setContactAddress] = useState('')
   const [bookingPageBackground, setBookingPageBackground] =
     useState<BookingPageBackgroundId>(DEFAULT_BOOKING_PAGE_BACKGROUND)
-  const [bookingBgTextureTab, setBookingBgTextureTab] = useState<'images' | 'gradients'>('images')
+  const [bookingBgMode, setBookingBgMode] = useState<'strip' | 'full'>('strip')
   const [stripPhoto, setStripPhoto] = useState<BookingStripPhotoId | null>(null)
-  const [stripPhotoDirty, setStripPhotoDirty] = useState(false)
   const [appTheme, setAppTheme] = useState<AppThemeId>(DEFAULT_APP_THEME)
   const [settingsTab, setSettingsTab] = useState<'anagrafica' | 'form'>('anagrafica')
 
@@ -368,8 +364,9 @@ export const RestaurantSettingsTab: React.FC = () => {
   }, [clearUnsavedSource, dirty, registerUnsavedSource])
 
   const savedBookingPageBackground = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
-  const bookingBgDirty = bookingPageBackground !== savedBookingPageBackground
   const savedStripPhoto = stripPhotoQuery.data ?? null
+  const bookingBgDirty =
+    bookingPageBackground !== savedBookingPageBackground || stripPhoto !== savedStripPhoto
   bookingBgDirtyRef.current = bookingBgDirty
 
   useEffect(() => {
@@ -390,6 +387,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactPhoneQuery.isSuccess &&
     contactAddressQuery.isSuccess &&
     publicBookingPageBgQuery.isSuccess &&
+    stripPhotoQuery.isSuccess &&
     appThemeQuery.isSuccess
 
   useEffect(() => {
@@ -422,9 +420,9 @@ export const RestaurantSettingsTab: React.FC = () => {
     setContactAddress(stripDirectionalFormattingChars(contactAddressQuery.data ?? ''))
     const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
     setBookingPageBackground(resolvedBg)
-    setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
-    setStripPhoto(stripPhotoQuery.data ?? null)
-    setStripPhotoDirty(false)
+    const resolvedStripPhoto = stripPhotoQuery.data ?? null
+    setStripPhoto(resolvedStripPhoto)
+    setBookingBgMode(resolvedStripPhoto ? 'strip' : 'full')
     setAppTheme(appThemeQuery.data ?? DEFAULT_APP_THEME)
     hydratedRef.current = true
   }, [
@@ -452,6 +450,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactPhoneQuery.isPending ||
     contactAddressQuery.isPending ||
     publicBookingPageBgQuery.isPending ||
+    stripPhotoQuery.isPending ||
     appThemeQuery.isPending
 
   const loadError =
@@ -464,6 +463,7 @@ export const RestaurantSettingsTab: React.FC = () => {
     contactPhoneQuery.error ||
     contactAddressQuery.error ||
     publicBookingPageBgQuery.error ||
+    stripPhotoQuery.error ||
     appThemeQuery.error
 
   const clearAllSectionDirty = () => {
@@ -520,7 +520,9 @@ export const RestaurantSettingsTab: React.FC = () => {
     hydrateHoursFromQueries()
     const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
     setBookingPageBackground(resolvedBg)
-    setBookingBgTextureTab(isBookingPageGradientId(resolvedBg) ? 'gradients' : 'images')
+    const resolvedStripPhoto = stripPhotoQuery.data ?? null
+    setStripPhoto(resolvedStripPhoto)
+    setBookingBgMode(resolvedStripPhoto ? 'strip' : 'full')
     hydrateThemeFromQueries()
   }
 
@@ -711,29 +713,15 @@ export const RestaurantSettingsTab: React.FC = () => {
     if (!tenantId) return
     await upsert.mutateAsync([
       { key: 'public_booking_page_background', value: bookingPageBackground },
+      { key: 'public_booking_strip_photo', value: stripPhoto },
     ])
     await queryClient.refetchQueries({ queryKey: ['restaurant_settings'], type: 'active' })
   }
 
   const handleCancelBookingBackgroundOnly = () => {
     setBookingPageBackground(savedBookingPageBackground)
-    setBookingBgTextureTab(
-      isBookingPageGradientId(savedBookingPageBackground) ? 'gradients' : 'images',
-    )
-  }
-
-  const handleSaveStripPhotoOnly = async () => {
-    if (!tenantId) return
-    await upsert.mutateAsync([
-      { key: 'public_booking_strip_photo', value: stripPhoto },
-    ])
-    await queryClient.refetchQueries({ queryKey: ['restaurant_settings'], type: 'active' })
-    setStripPhotoDirty(false)
-  }
-
-  const handleCancelStripPhotoOnly = () => {
     setStripPhoto(savedStripPhoto)
-    setStripPhotoDirty(false)
+    setBookingBgMode(savedStripPhoto ? 'strip' : 'full')
   }
 
   const handleRestaurantNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -823,6 +811,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         { key: 'contact_phone', value: safePhone },
         { key: 'contact_address', value: safeAddress },
         { key: 'public_booking_page_background', value: bookingPageBackground },
+        { key: 'public_booking_strip_photo', value: stripPhoto },
         { key: 'app_theme', value: appTheme },
       ])
       await refetchRestaurantSettings()
@@ -877,29 +866,16 @@ export const RestaurantSettingsTab: React.FC = () => {
       .filter(Boolean)
       .join(' ')
 
-  const bookingBgNavyToggleButtonStyle: React.CSSProperties = {
-    boxSizing: 'border-box',
-    paddingInline: 'calc(0.875rem * 4 / 3)',
-    paddingBlock: 'calc(0.5rem * 5 / 4)',
-    minWidth: 'calc(4.375rem * 4 / 3)',
-    minHeight: 'calc(2.25rem * 5 / 4)',
-    color: '#ffffff',
-    WebkitTextFillColor: '#ffffff',
-  }
-
-  const bookingBgNavyToggleClass = (active: boolean) =>
-    [
-      'rounded-lg text-sm font-semibold shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-300 disabled:pointer-events-none disabled:opacity-65',
-      active
-        ? 'bg-primary-600 ring-2 ring-white/70 hover:bg-primary-700'
-        : 'bg-primary-900 hover:bg-primary-800',
-    ].join(' ')
-
   const bookingBgSectionClass =
     'admin-warm-surface w-full space-y-4 rounded-xl border p-5 shadow-sm text-center'
   const bookingBgGridTopSpacingStyle: React.CSSProperties = { marginTop: '1.375rem' }
-  const bookingBgTextureTabRowStyle: React.CSSProperties = { gap: '1rem' }
-  const bookingBgAvailableTileIds = BOOKING_PAGE_TILE_IDS.filter((id) => !isBookingPageTilePlaceholder(id))
+  const bookingBgModeButtonClass = (active: boolean) =>
+    cn(
+      'rounded-lg px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 disabled:opacity-65',
+      active
+        ? 'bg-primary-600 text-white shadow-sm'
+        : 'bg-white text-slate-700 hover:bg-slate-50',
+    )
 
   const appThemeSectionClass =
     'admin-warm-surface w-full max-w-3xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
@@ -958,159 +934,93 @@ export const RestaurantSettingsTab: React.FC = () => {
     <section className={bookingBgSectionClass}>
       <h3 className="text-base font-semibold text-slate-800">Sfondo pagina Prenota</h3>
       <p className="text-sm text-slate-600">
-        Tocca l&apos;immagine o il nome per selezionare lo sfondo. Tocca l&apos;icona occhio al centro per
-        l&apos;anteprima grande (su desktop compare passando il mouse sulla card). Usa Annulla modifiche o
-        Salva sopra la card (solo questa sezione), oppure Salva modifiche in fondo pagina per tutto.
+        Scegli se usare una foto nella striscia laterale sinistra oppure uno sfondo a pagina intera.
       </p>
-      <div className="flex w-full flex-col">
-        <div className="flex w-full justify-end">
-          <div
-            className="flex flex-shrink-0 flex-row flex-nowrap items-center"
-            style={bookingBgTextureTabRowStyle}
-          >
-            <button
-              type="button"
-              disabled={upsert.isPending}
-              className={bookingBgNavyToggleClass(bookingBgTextureTab === 'images')}
-              style={bookingBgNavyToggleButtonStyle}
-              onClick={() => setBookingBgTextureTab('images')}
-            >
-              Immagini
-            </button>
-            <button
-              type="button"
-              disabled={upsert.isPending}
-              className={bookingBgNavyToggleClass(bookingBgTextureTab === 'gradients')}
-              style={bookingBgNavyToggleButtonStyle}
-              onClick={() => setBookingBgTextureTab('gradients')}
-            >
-              Gradienti
-            </button>
-          </div>
+      <div className="flex flex-wrap justify-center gap-2">
+        <button
+          type="button"
+          disabled={upsert.isPending}
+          className={bookingBgModeButtonClass(bookingBgMode === 'strip')}
+          onClick={() => {
+            setBookingBgMode('strip')
+            setStripPhoto((current) => current ?? savedStripPhoto ?? DEFAULT_BOOKING_STRIP_PHOTO)
+          }}
+        >
+          Striscia laterale
+        </button>
+        <button
+          type="button"
+          disabled={upsert.isPending}
+          className={bookingBgModeButtonClass(bookingBgMode === 'full')}
+          onClick={() => {
+            setBookingBgMode('full')
+            setStripPhoto(null)
+            setBookingPageBackground((current) =>
+              String(current).startsWith('full-') ? current : DEFAULT_BOOKING_FULL_PAGE_BACKGROUND,
+            )
+          }}
+        >
+          Pagina intera
+        </button>
+      </div>
+
+      {bookingBgMode === 'strip' ? (
+        <div
+          className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
+          style={bookingBgGridTopSpacingStyle}
+        >
+          {BOOKING_STRIP_PHOTO_IDS.map((id, idx) => {
+            const href = bookingStripPhotoPublicHref(id, bookingBgBase)
+            const label = `Foto ${idx + 1}`
+            return (
+              <SettingsPreviewPickCard
+                key={id}
+                label={label}
+                selected={stripPhoto === id}
+                disabled={upsert.isPending}
+                pickButtonClass={bookingBgPickButtonClass}
+                aspectClass="aspect-[1/3]"
+                pickEntity="foto laterale"
+                modalConfirmLabel="Usa questa foto laterale"
+                previewSrc={href}
+                previewModalSrc={href}
+                onPick={() => {
+                  setStripPhoto(id)
+                  setBookingBgMode('strip')
+                }}
+              />
+            )
+          })}
         </div>
-
-        {bookingBgTextureTab === 'images' ? (
-          <div
-            className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
-            style={bookingBgGridTopSpacingStyle}
-          >
-            {bookingBgAvailableTileIds.map((id) => {
-              const overallIndex = BOOKING_PAGE_TILE_IDS.indexOf(id)
-              const tileHref = bookingPageTilePublicHref(id, bookingBgBase)
-              const label = `Texture ${overallIndex + 1}`
-              return (
-                <SettingsPreviewPickCard
-                  key={id}
-                  label={label}
-                  selected={bookingPageBackground === id}
-                  disabled={upsert.isPending}
-                  pickButtonClass={bookingBgPickButtonClass}
-                  aspectClass="aspect-[4/3]"
-                  pickEntity="sfondo"
-                  modalConfirmLabel="Usa questo sfondo"
-                  previewSrc={tileHref}
-                  previewModalSrc={tileHref}
-                  onPick={() => {
-                    setBookingPageBackground(id)
-                  }}
-                />
-              )
-            })}
-          </div>
-        ) : (
-          <div
-            className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
-            style={bookingBgGridTopSpacingStyle}
-          >
-            {BOOKING_PAGE_GRADIENT_PRESETS.map((preset) => {
-              const gradientStyle: React.CSSProperties = {
-                backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
-                backgroundImage: bookingPageGradientPreviewCss(preset.id),
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-              }
-              return (
-                <SettingsPreviewPickCard
-                  key={preset.id}
-                  label={preset.name}
-                  selected={bookingPageBackground === preset.id}
-                  disabled={upsert.isPending}
-                  pickButtonClass={bookingBgPickButtonClass}
-                  aspectClass="aspect-[4/3]"
-                  pickEntity="sfondo"
-                  modalConfirmLabel="Usa questo sfondo"
-                  preview={
-                    <div className="h-full w-full rounded-md border border-slate-200/80" style={gradientStyle} />
-                  }
-                  modalPreview={
-                    <div
-                      className="aspect-[4/3] w-full max-h-[min(78vh,880px)] rounded-xl border border-slate-200/80"
-                      style={gradientStyle}
-                    />
-                  }
-                  onPick={() => {
-                    setBookingPageBackground(preset.id)
-                  }}
-                />
-              )
-            })}
-          </div>
-        )}
-      </div>
-    </section>
-  )
-
-  /**
-   * Sezione "Foto striscia laterale" — sostituisce il tab Gradienti.
-   * Permette di scegliere quale foto mostrare per prima nella striscia sinistra
-   * della pagina Prenota. La foto selezionata viene mostrata in cima; le altre
-   * scorrono sotto di essa con effetto parallax.
-   */
-  const stripPhotoSection = (
-    <section className={bookingBgSectionClass}>
-      <h3 className="text-base font-semibold text-slate-800">Foto striscia pagina Prenota</h3>
-      <p className="text-sm text-slate-600">
-        Scegli quale foto appare in cima alla striscia verticale sinistra nella pagina di prenotazione.
-        Le altre foto scorrono sotto durante la navigazione della pagina.
-      </p>
-      <SectionActionBar
-        onCancel={handleCancelStripPhotoOnly}
-        onSave={() => {
-          void handleSaveStripPhotoOnly().catch(() => toast.error('Errore nel salvataggio foto striscia'))
-        }}
-        cancelDisabled={!stripPhotoDirty}
-        saveDisabled={!stripPhotoDirty || !tenantId}
-        pending={upsert.isPending}
-      />
-      <div
-        className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
-        style={bookingBgGridTopSpacingStyle}
-      >
-        {BOOKING_STRIP_PHOTO_IDS.map((id, idx) => {
-          const href = bookingStripPhotoPublicHref(id, bookingBgBase)
-          const label = `Foto ${idx + 1}`
-          const isSelected = stripPhoto === id || (stripPhoto == null && id === 'strip-01')
-          return (
-            <SettingsPreviewPickCard
-              key={id}
-              label={label}
-              selected={isSelected}
-              disabled={upsert.isPending}
-              pickButtonClass={bookingBgPickButtonClass}
-              aspectClass="aspect-[1/3]"
-              pickEntity="foto"
-              modalConfirmLabel="Usa questa foto"
-              previewSrc={href}
-              previewModalSrc={href}
-              onPick={() => {
-                setStripPhoto(id)
-                setStripPhotoDirty(id !== savedStripPhoto)
-              }}
-            />
-          )
-        })}
-      </div>
+      ) : (
+        <div
+          className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
+          style={bookingBgGridTopSpacingStyle}
+        >
+          {BOOKING_FULL_PAGE_BACKGROUND_IDS.map((id, idx) => {
+            const href = bookingFullPageBackgroundPublicHref(id, bookingBgBase)
+            return (
+              <SettingsPreviewPickCard
+                key={id}
+                label={`Sfondo ${idx + 1}`}
+                selected={bookingPageBackground === id && stripPhoto == null}
+                disabled={upsert.isPending}
+                pickButtonClass={bookingBgPickButtonClass}
+                aspectClass="aspect-[4/3]"
+                pickEntity="sfondo pagina intera"
+                modalConfirmLabel="Usa a pagina intera"
+                previewSrc={href}
+                previewModalSrc={href}
+                onPick={() => {
+                  setBookingPageBackground(id)
+                  setStripPhoto(null)
+                  setBookingBgMode('full')
+                }}
+              />
+            )
+          })}
+        </div>
+      )}
     </section>
   )
 
@@ -1153,10 +1063,7 @@ export const RestaurantSettingsTab: React.FC = () => {
       {settingsTab === 'form' && (
         <BookingFormConfigPanel
           afterBookingModesSection={
-            <>
-              {bookingPageBackgroundSection}
-              {stripPhotoSection}
-            </>
+            bookingPageBackgroundSection
           }
           bookingBgDirty={bookingBgDirty}
           onSaveBookingBackground={handleSaveBookingBackgroundOnly}

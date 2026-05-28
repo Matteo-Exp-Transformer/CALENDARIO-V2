@@ -556,7 +556,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         </div>
       ) : lockedPresetTitle ? (
         <div
-          className={cn('mb-4 w-full rounded-2xl bg-white/85 px-5 py-4 backdrop-blur-[1px]', publicFormLayout ? 'mr-auto' : 'mx-auto')}
+          className={cn('mb-4 w-full', publicFormLayout ? 'mr-auto' : 'mx-auto')}
           style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, 100%)` }}
         >
           <p className="text-[13px] font-bold leading-tight text-warm-wood sm:text-base lg:text-sm xl:text-base">

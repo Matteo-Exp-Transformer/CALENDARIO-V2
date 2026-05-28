@@ -387,7 +387,9 @@ Prima della 015 restituiva solo `(name, tenant_id)` — richiedeva una seconda S
 
 ### Vista `organizations_public`
 
-Vista pubblica creata in `026b_fix_organizations_public_view` che espone solo i 5 campi safe (`id, name, slug, is_active, edition`) della tabella `organizations`, filtrando per `is_active = true`. Usata dalla pagina pubblica `/prenota/:slug` (`TenantContext.setTenantFromSlug`). La tabella `organizations` ora ha policy `admin_select_own_organization` (solo authenticated, solo il proprio tenant) + `anon_select_active_organizations` + GRANT per-colonna ad anon sui 5 campi safe, in modo che `security_invoker = true` della vista funzioni senza esporre `plan` / `max_bookings_per_year`.
+Vista pubblica creata in `026b_fix_organizations_public_view`, indurita in produzione con `039_harden_organizations_public_view.sql`. Espone solo i campi pubblici necessari (`id, name, slug, is_active, edition, qr_menu_enabled` legacy, `feature_overrides`) della tabella `organizations`, filtrando per `is_active = true`. Usata dalla pagina pubblica `/prenota/:slug` (`TenantContext.setTenantFromSlug`). La tabella `organizations` ora ha policy `admin_select_own_organization` (solo authenticated, solo il proprio tenant) + `anon_select_active_organizations` + GRANT per-colonna ad anon sui campi safe, in modo che `security_invoker = true` della vista funzioni senza esporre `plan` / `max_bookings_per_year`.
+
+**Grant produzione 039:** `organizations_public` deve avere solo `SELECT` per `anon` e `authenticated`; niente `INSERT/UPDATE/DELETE/TRUNCATE/TRIGGER/REFERENCES` sulla vista.
 
 ⚠️ **Trappola `security_invoker=true`**: la vista applica i permessi del chiamante alla tabella sottostante. Servono SIA il GRANT per-colonna SIA una policy SELECT per anon (`anon_select_active_organizations`), altrimenti il chiamante vede 0 righe e `.single()` di PostgREST risponde 406. Gli errori 404/406 sulla vista quando l'utente naviga `/prenota/:slug` sono quasi sempre disallineamento di queste 2 condizioni (es. policy presente ma GRANT no, o viceversa).
 
