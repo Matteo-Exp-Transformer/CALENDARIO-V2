@@ -169,11 +169,11 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_7rem_6rem] sm:items-start sm:gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_9rem_7rem] sm:items-start sm:gap-3">
         <div className="min-w-0 space-y-1">
           <BookingPublicDatePickerField
             id="desired_date"
-            label="Data prenotazione *"
+            label="Data *"
             value={formData.desired_date}
             onChange={handleDateChange}
             required

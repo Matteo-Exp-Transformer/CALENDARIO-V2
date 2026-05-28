@@ -748,8 +748,9 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
   const renderHeaderStyleControls = (target: BookingHeaderTextTarget) => {
     const style = headerStyles[target] ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles[target]
+    const currentAlign = style.textAlign ?? 'center'
     return (
-      <div className="mt-2 grid grid-cols-[minmax(0,1fr)_3rem] gap-2">
+      <div className="mt-2 grid grid-cols-[minmax(0,1fr)_3rem_auto] gap-2 items-end">
         <label className="block">
           <span className="mb-1 block text-[11px] font-semibold text-slate-500">Font</span>
           <select
@@ -777,6 +778,26 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
             className="h-9 w-full cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
           />
         </label>
+        <div className="block">
+          <span className="mb-1 block text-[11px] font-semibold text-slate-500">Allineamento</span>
+          <div className="flex gap-0.5">
+            {(['left', 'center', 'right'] as const).map((align) => (
+              <button
+                key={align}
+                type="button"
+                onClick={() => updateHeaderTextStyle(target, { textAlign: align })}
+                className={`h-9 w-9 rounded-lg border text-xs font-bold transition-colors ${
+                  currentAlign === align
+                    ? 'border-primary-500 bg-primary-50 text-primary-700'
+                    : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                }`}
+                title={align === 'left' ? 'Sinistra' : align === 'center' ? 'Centro' : 'Destra'}
+              >
+                {align === 'left' ? '⬅' : align === 'center' ? '↔' : '➡'}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     )
   }

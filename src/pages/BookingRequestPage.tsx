@@ -217,26 +217,28 @@ export const BookingRequestPage: React.FC = () => {
               desktop ≥900px px-6 / lg:px-8 invariati (già OK con larghezza maggiore). */}
           <div className="w-full min-w-0 px-6 md:px-10 min-[900px]:px-6 lg:px-8">
 
-            {/* Header — solo testo sullo sfondo pagina */}
-            <div className="flex flex-col items-center justify-center gap-1.5 py-1.5 text-center animate-fade-in -mx-6 md:-mx-10 min-[900px]:-mx-6 lg:-mx-8">
+            {/* Header — allineamento controllato da header_styles.textAlign per ogni elemento */}
+            <div className="flex w-full flex-col gap-1.5 py-1.5 animate-fade-in -mx-6 md:-mx-10 min-[900px]:-mx-6 lg:-mx-8">
               <h1
-                className="font-bold m-0"
+                className="font-bold m-0 w-full px-2"
                 style={getBookingHeaderTextStyle('restaurant_name', headerStyles)}
               >
                 {displayName}
               </h1>
-              <h2
-                className="font-bold m-0"
-                style={getBookingHeaderTextStyle('page_title', headerStyles)}
-              >
-                {resolvedConfig.page_title}
-              </h2>
-              <p
-                className="opacity-90 font-bold m-0 px-1.5 max-w-2xl"
-                style={getBookingHeaderTextStyle('page_description', headerStyles)}
-              >
-                {resolvedConfig.page_description}
-              </p>
+              <div className="flex w-full flex-col gap-1.5 px-2">
+                <h2
+                  className="font-bold m-0 w-full"
+                  style={getBookingHeaderTextStyle('page_title', headerStyles)}
+                >
+                  {resolvedConfig.page_title}
+                </h2>
+                <p
+                  className="opacity-90 font-bold m-0 w-full"
+                  style={getBookingHeaderTextStyle('page_description', headerStyles)}
+                >
+                  {resolvedConfig.page_description}
+                </p>
+              </div>
             </div>
 
             <BookingRequestForm
