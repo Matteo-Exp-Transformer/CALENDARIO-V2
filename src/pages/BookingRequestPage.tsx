@@ -158,26 +158,25 @@ export const BookingRequestPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen font-bold" style={bookingPageBackgroundStyle}>
+    <div className="min-h-screen font-bold relative isolate" style={bookingPageBackgroundStyle}>
       {/*
         Foto full-page in due varianti (responsive):
         - portrait (9:16) per viewport mobile <768px
         - landscape (16:9) per viewport ≥768px
-        Sono due `<div fixed inset-0>` montati PRIMA del contenuto in modo che restino
-        sotto nello z-stacking naturale. Il root non deve essere `position: relative`
-        né avere `z-index`, altrimenti crea uno stacking context che nasconde questi div.
+        Stacking: root con `relative isolate` crea uno stacking context locale.
+        Le foto sono `z-0` (sotto), il wrapper contenuto è `relative z-10` (sopra).
       */}
       {isFullPagePhoto && fullPagePhotoPortraitUrl && (
         <div
           aria-hidden
-          className="pointer-events-none fixed inset-0 md:hidden bg-cover bg-center bg-no-repeat"
+          className="pointer-events-none fixed inset-0 z-0 md:hidden bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url("${fullPagePhotoPortraitUrl}")` }}
         />
       )}
       {isFullPagePhoto && fullPagePhotoLandscapeUrl && (
         <div
           aria-hidden
-          className="pointer-events-none fixed inset-0 hidden md:block bg-cover bg-center bg-no-repeat"
+          className="pointer-events-none fixed inset-0 z-0 hidden md:block bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url("${fullPagePhotoLandscapeUrl}")` }}
         />
       )}
@@ -188,7 +187,7 @@ export const BookingRequestPage: React.FC = () => {
         La striscia foto è sticky top-0 h-screen: rimane visibile durante tutto lo scroll.
         Le foto si ripetono internamente per coprire form lunghi (es. 10 categorie ingredienti).
       */}
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col relative z-10">
 
         {/* Griglia [striscia foto | form] — full viewport: la foto resta ancorata al bordo sinistro.
             Mobile/tablet: striscia 20vw. Desktop ≥900px: striscia 25vw. */}
