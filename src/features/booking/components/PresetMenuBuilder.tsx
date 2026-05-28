@@ -375,7 +375,7 @@ export const PresetMenuBuilder: React.FC<PresetMenuBuilderProps> = ({
                             className="w-full rounded-lg border border-warm-wood/40 px-3 py-2 text-base font-semibold"
                           />
                           <p className="mt-2 text-xs text-gray-500">
-                            Ogni Kg €{tiramisuUnitPrice.toFixed(2)} — il cliente potrà modificarlo in prenotazione.
+                            €{tiramisuUnitPrice.toFixed(2)} al Kg
                           </p>
                         </div>
                       ) : null}
