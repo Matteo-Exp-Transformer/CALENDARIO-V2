@@ -11,12 +11,11 @@ import { Label } from '@/components/ui/Label'
 import { cn } from '@/lib/utils'
 import { useCarouselPhotoUpload } from '@/features/booking/components/MenuHomepageConfigPanel'
 import type { CarouselItem, CarouselSlideIcon } from '@/types/menu'
-import type { SubTab, SubTabIcon } from '@/features/booking/constants/bookingPublicFormConfig'
-
-/** Limiti testi slide carosello in Personalizza form (Pagina Prenota). */
-const BOOKING_CAROUSEL_EYEBROW_MAX = 19
-const BOOKING_CAROUSEL_TITLE_MAX = 18
-const BOOKING_CAROUSEL_DESCRIPTION_MAX = 70
+import {
+  BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS,
+  type SubTab,
+  type SubTabIcon,
+} from '@/features/booking/constants/bookingPublicFormConfig'
 
 const SUB_TAB_ICON_OPTIONS: { value: SubTabIcon; label: string }[] = [
   { value: 'utensils', label: 'Posate' },
@@ -213,7 +212,7 @@ function CarouselSlideEditorCard({
       <AdminFieldWithCharCount
         label="Testo Etichetta"
         value={item.eyebrow ?? ''}
-        maxLength={BOOKING_CAROUSEL_EYEBROW_MAX}
+        maxLength={BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS.eyebrow}
         onChange={(eyebrow) => onPatch({ eyebrow: eyebrow || undefined })}
         placeholder="Nome mostrato al cliente"
         singleLine
@@ -222,7 +221,7 @@ function CarouselSlideEditorCard({
       <AdminFieldWithCharCount
         label="Testo Titolo"
         value={item.title ?? ''}
-        maxLength={BOOKING_CAROUSEL_TITLE_MAX}
+        maxLength={BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS.title}
         onChange={(title) => onPatch({ title: title || undefined })}
         placeholder="es. Tonno in crosta"
         singleLine
@@ -231,7 +230,7 @@ function CarouselSlideEditorCard({
       <AdminFieldWithCharCount
         label="Testo Descrizione"
         value={item.description ?? ''}
-        maxLength={BOOKING_CAROUSEL_DESCRIPTION_MAX}
+        maxLength={BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS.description}
         onChange={(description) => onPatch({ description: description || undefined })}
         placeholder="Sottotitolo sulla card"
       />

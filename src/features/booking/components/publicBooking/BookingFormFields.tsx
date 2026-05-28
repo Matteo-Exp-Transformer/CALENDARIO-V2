@@ -128,64 +128,6 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-1">
-          <BookingPublicInsetField
-            id="client_email"
-            label="Email"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            maxLength={120}
-            value={formData.client_email}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              onFieldChange('client_email', e.target.value)
-              setErrors({ ...errors, client_email: '' })
-            }}
-            hasError={!!errors.client_email}
-          />
-          {errors.client_email && (
-            <p id="client_email-error" className="text-center text-sm text-red-500">{errors.client_email}</p>
-          )}
-        </div>
-        <div className="space-y-1">
-          <BookingPublicInsetField
-            id="client_phone"
-            label="Telefono *"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            maxLength={20}
-            value={formData.client_phone ?? ''}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              onFieldChange('client_phone', e.target.value)
-              setErrors({ ...errors, client_phone: '' })
-            }}
-            required
-            hasError={!!errors.client_phone}
-          />
-          {errors.client_phone && (
-            <p id="client_phone-error" className="text-center text-sm text-red-500">{errors.client_phone}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_9rem_7rem] sm:items-start sm:gap-3">
-        <div className="min-w-0 space-y-1">
-          <BookingPublicDatePickerField
-            id="desired_date"
-            label="Data *"
-            value={formData.desired_date}
-            onChange={handleDateChange}
-            required
-            hasError={!!errors.desired_date}
-          />
-          {errors.desired_date && (
-            <div className="text-sm text-red-600 p-3 rounded-lg bg-red-50 border border-red-200">
-              {errors.desired_date}
-            </div>
-          )}
-        </div>
-
         <div className="min-w-0 space-y-1">
           <BookingPublicTimePickerField
             id="desired_time"
@@ -220,6 +162,65 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
           />
           {errors.num_guests && (
             <p id="num_guests-error" className="text-center text-sm text-red-500">{errors.num_guests}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <BookingPublicInsetField
+          id="client_phone"
+          label="Telefono *"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          maxLength={20}
+          value={formData.client_phone ?? ''}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            onFieldChange('client_phone', e.target.value)
+            setErrors({ ...errors, client_phone: '' })
+          }}
+          required
+          hasError={!!errors.client_phone}
+        />
+        {errors.client_phone && (
+          <p id="client_phone-error" className="text-center text-sm text-red-500">{errors.client_phone}</p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_9rem_7rem] sm:items-start sm:gap-3">
+        <div className="min-w-0 space-y-1">
+          <BookingPublicDatePickerField
+            id="desired_date"
+            label="Data *"
+            value={formData.desired_date}
+            onChange={handleDateChange}
+            required
+            hasError={!!errors.desired_date}
+          />
+          {errors.desired_date && (
+            <div className="text-sm text-red-600 p-3 rounded-lg bg-red-50 border border-red-200">
+              {errors.desired_date}
+            </div>
+          )}
+        </div>
+
+        <div className="min-w-0 space-y-1 sm:col-span-2">
+          <BookingPublicInsetField
+            id="client_email"
+            label="Email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            maxLength={120}
+            value={formData.client_email}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              onFieldChange('client_email', e.target.value)
+              setErrors({ ...errors, client_email: '' })
+            }}
+            hasError={!!errors.client_email}
+          />
+          {errors.client_email && (
+            <p id="client_email-error" className="text-center text-sm text-red-500">{errors.client_email}</p>
           )}
         </div>
       </div>

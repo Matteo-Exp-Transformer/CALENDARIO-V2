@@ -109,11 +109,11 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   }, [activeSubTab, isCarouselSummary])
 
   return (
-    <div ref={asideRef} className="order-2 w-full max-w-full self-start mb-6 min-[900px]:mb-0 min-[900px]:sticky min-[900px]:top-4 min-[900px]:order-0">
+    <div ref={asideRef} className="order-2 w-full max-w-full self-start mb-6 min-[1256px]:mb-0 min-[1256px]:sticky min-[1256px]:top-4 min-[1256px]:order-0">
       <aside
         className={cn(
           'w-full max-w-full rounded-2xl border border-slate-100 bg-white px-4 py-5 shadow-xl transition-all duration-300 ease-out',
-          'space-y-4 min-[900px]:min-h-[320px]',
+          'space-y-4 min-[1256px]:min-h-[320px]',
         )}
         data-testid="booking-summary-sidebar"
       >
@@ -272,9 +272,9 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         )}
       </div>
 
-      {/* Pulsante submit in fondo al riepilogo (visibile solo su mobile, sotto 900px) */}
+      {/* Pulsante submit in fondo al riepilogo (sotto il breakpoint riepilogo laterale) */}
       {submitButton && (
-        <div className="border-t border-black/10 pt-4 block min-[900px]:hidden">
+        <div className="border-t border-black/10 pt-4 block min-[1256px]:hidden">
           {submitButton}
         </div>
       )}

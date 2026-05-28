@@ -2,6 +2,35 @@ import type { BookingType } from '@/types/booking'
 import type { CarouselItem, CarouselSlideIcon } from '@/types/menu'
 
 export type SubTabIcon = 'utensils' | 'cloche' | 'chef-hat' | 'star' | 'leaf'
+
+/** Limiti testi slide carosello Prenota (editor Personalizza form + normalizzazione DB). */
+export const BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS = {
+  eyebrow: 19,
+  title: 18,
+  description: 38,
+} as const
+
+function clampCarouselSlideText(
+  value: string | undefined,
+  max: number,
+): string | undefined {
+  if (!value?.trim()) return undefined
+  const trimmed = value.trim()
+  return trimmed.length > max ? trimmed.slice(0, max) : trimmed
+}
+
+export function normalizeCarouselSlideItem(item: CarouselItem, sortOrder: number): CarouselItem {
+  return {
+    ...item,
+    eyebrow: clampCarouselSlideText(item.eyebrow, BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS.eyebrow),
+    title: clampCarouselSlideText(item.title, BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS.title),
+    description: clampCarouselSlideText(
+      item.description,
+      BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS.description,
+    ),
+    sort_order: typeof item.sort_order === 'number' ? item.sort_order : sortOrder,
+  }
+}
 export const BOOKING_MODE_ICONS = [
   'utensils',
   'cloche',
@@ -233,14 +262,17 @@ export function migrateLegacyCarouselSubTab(tab: SubTab): SubTab {
   }
 
   const migratedItems: CarouselItem[] = items.map((item, idx) => {
-    if (idx !== 0) return item
-    return {
-      ...item,
-      eyebrow: item.eyebrow?.trim() || undefined,
-      title: item.title?.trim() || undefined,
-      description: item.description?.trim() || tab.description?.trim() || undefined,
-      icon: item.icon ?? tab.icon,
-    }
+    const base =
+      idx === 0
+        ? {
+            ...item,
+            eyebrow: item.eyebrow?.trim() || undefined,
+            title: item.title?.trim() || undefined,
+            description: item.description?.trim() || tab.description?.trim() || undefined,
+            icon: item.icon ?? tab.icon,
+          }
+        : item
+    return normalizeCarouselSlideItem(base, typeof base.sort_order === 'number' ? base.sort_order : idx)
   })
 
   return {
@@ -289,15 +321,22 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
           const item = v as Partial<CarouselItem>
           return typeof item.image_url === 'string' && item.image_url.trim().length > 0
         })
-        .map((v, idx) => ({
-          image_url: v.image_url,
-          eyebrow: typeof v.eyebrow === 'string' && v.eyebrow.trim() ? v.eyebrow.trim() : undefined,
-          title: typeof v.title === 'string' && v.title.trim() ? v.title.trim() : undefined,
-          description:
-            typeof v.description === 'string' && v.description.trim() ? v.description.trim() : undefined,
-          icon: parseCarouselSlideIcon((v as Partial<CarouselItem>).icon),
-          sort_order: typeof v.sort_order === 'number' ? v.sort_order : idx,
-        }))
+        .map((v, idx) =>
+          normalizeCarouselSlideItem(
+            {
+              image_url: v.image_url,
+              eyebrow: typeof v.eyebrow === 'string' && v.eyebrow.trim() ? v.eyebrow.trim() : undefined,
+              title: typeof v.title === 'string' && v.title.trim() ? v.title.trim() : undefined,
+              description:
+                typeof v.description === 'string' && v.description.trim()
+                  ? v.description.trim()
+                  : undefined,
+              icon: parseCarouselSlideIcon((v as Partial<CarouselItem>).icon),
+              sort_order: typeof v.sort_order === 'number' ? v.sort_order : idx,
+            },
+            idx,
+          ),
+        )
     : undefined
 
   const preset_id =
@@ -463,6 +502,9 @@ export function normalizeBookingPublicFormConfig(
             ...base,
             description: undefined,
             icon: undefined,
+            carousel_items: base.carousel_items?.map((item, idx) =>
+              normalizeCarouselSlideItem(item, typeof item.sort_order === 'number' ? item.sort_order : idx),
+            ),
           })
         }
         return {

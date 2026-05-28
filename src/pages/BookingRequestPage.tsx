@@ -310,9 +310,8 @@ export const BookingRequestPage: React.FC = () => {
               }
             />
 
-          {/* Spacer: riserva spazio per sticky bar mobile (<900px) + gap uniforme prima del footer.
-              h-20 mobile (~80px, altezza sticky bar); h-4 desktop (gap minimo decorativo). */}
-          <div className="h-20 min-[900px]:h-4" aria-hidden />
+          {/* Spacer: riserva spazio per sticky bar (<1256px) + gap uniforme prima del footer. */}
+          <div className="h-20 min-[1256px]:h-4" aria-hidden />
 
           </div>{/* fine colonna contenuto destra */}
         </div>{/* fine griglia [striscia foto | contenuto] */}

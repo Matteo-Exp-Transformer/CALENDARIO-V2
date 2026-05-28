@@ -43,10 +43,11 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
           <BookingPublicInsetField
             id="dietary-notes"
             label="Intolleranze o esigenze alimentari"
+            multiline
             value={dietaryText}
             maxLength={300}
             autoComplete="off"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onDietaryTextChange(e.target.value.slice(0, 300))}
+            onChange={(e) => onDietaryTextChange(e.target.value.slice(0, 300))}
           />
         ) : (
           <>
@@ -70,6 +71,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
             <BookingPublicInsetField
               id="special_requests"
               label="Altre Richieste"
+              multiline
               value={specialRequests}
               maxLength={300}
               autoComplete="off"
