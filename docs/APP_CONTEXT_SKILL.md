@@ -354,6 +354,12 @@ Il report deve contenere:
 - Test eseguiti e risultato (`npm run validate`)
 - **Sezione "File di skill aggiornati"** — tabella con skill toccata + cosa è cambiato (obbligatoria, anche se la riga è "nessuno")
 - **Sezione "Dati comunicazione"** (obbligatoria) — frasi/richieste ricorrenti di questa chat con conteggio, spiegazioni date e formato che ha funzionato, procedure ripetute, cosa si può automatizzare con certezza vs cosa lasciare manuale, proposte fatte e loro esito, token risparmiabili. Vedi `COMUNICAZIONE_UTENTE_SKILL.md`.
+- **Sezione "Derivazione errori"** (obbligatoria, anche se la riga è "nessuna difficoltà") — per ogni bug o difficoltà incontrata durante il lavoro, classificare la **causa**:
+  - **bug preesistente** — c'era già nel codice prima di questo task (citare file/RULE);
+  - **prompt ambiguo/incompleto** — la richiesta lasciava spazio a interpretazioni o conteneva intenti contraddittori (citare cosa mancava o cosa si è invertito);
+  - **errore agente** — interpretazione sbagliata, tentativo fallito evitabile, scelta tecnica non ottimale dell'agente esecutore;
+  - **vincolo strutturale** — un LOCK/comportamento CSS/architettura preesistente ha bloccato un approccio (es. `overflow-x-auto` che taglia i figli `absolute`).
+  Per ognuno: cosa è successo, da cosa derivava, come si sarebbe evitato. I pattern ricorrenti vanno **anche** appesi in `docs/Comunicazione-Skill/ERRORI_PROCESSO.md` (indice per il revisore Meta). Vedi modello report 29-05-26 card ingredienti.
 - Cosa resta per la prossima sessione
 - Eventuali deviazioni dal plan con motivazione
 

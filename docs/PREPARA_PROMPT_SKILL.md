@@ -80,6 +80,15 @@ spiegazione per Matteo). Deve essere auto-contenuto e contenere, quando pertinen
   nessuna sfugge (è il buco tipico: la sticky bar dimenticata). E richiedi che il comportamento sia
   **verificato sulle 3 view** (≈375 / 900 / 1256px): responsive già consolidato + nuovi
   componenti/comportamenti. La verifica la fa l'agente che tocca la pagina, o una revisione dedicata.
+- **Elementi adiacenti impattati** (obbligatorio quando il task modifica o crea un elemento UI):
+  l'errore tipico non è interpretare male l'intento — è non accorgersi che **altri elementi vicini o
+  sovrapposti subiscono la modifica**. Quando un elemento si espande, galleggia, cambia altezza o
+  z-index, **chi viene toccato?** Dalle RULE/LOCK dell'area (APP_CONTEXT § 4) elenca nel prompt gli
+  elementi adiacenti noti che la modifica può impattare — es. per la Pagina Prenota: campi cliente,
+  `BookingSummarySidebar`, `BookingStickyBar`, footer. Chiedi che l'esecutore li verifichi (e completi
+  la mappa leggendo il codice) prima di chiudere. Il filtro non legge il codice: elenca ciò che conosce
+  dalle skill, l'esecutore completa. Vedi caso 29-05-26 (card ingredienti che si espandeva sopra
+  campi/riepilogo senza che nessuno l'avesse mappato a monte) in `Comunicazione-Skill/ERRORI_PROCESSO.md`.
 - **Cosa NON fare** / fuori scope, se Matteo l'ha delimitato. **Mai** scrivere «fuori scope
   aggiornamento skill»: l'allineamento skill è già obbligatorio (APP_CONTEXT § 7.2) — vedi § C.
 - **Criterio di fatto**: come si capisce che è finito (comportamento atteso, `npm run validate`).
