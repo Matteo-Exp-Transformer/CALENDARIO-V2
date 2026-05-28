@@ -95,31 +95,43 @@ export const BookingRequestPage: React.FC = () => {
   // Quando la striscia laterale è attiva, il resto della pagina deve restare uniforme
   // chiaro (crema/avorio): l'immagine full-page o legacy viene applicata SOLO senza striscia.
   const STRIP_MODE_PAGE_BG = '#faf7f1'
+  const fullPagePhotoId = !showPhotoStrip && isBookingFullPageBackgroundId(bookingPageBackground)
+    ? bookingPageBackground
+    : null
+  const legacyTileId = !showPhotoStrip && !isBookingFullPageBackgroundId(bookingPageBackground) && !isBookingPageGradientId(bookingPageBackground)
+    ? bookingPageBackground
+    : null
+  const isFullPagePhoto = fullPagePhotoId != null
+  const fullPagePhotoLandscapeUrl = fullPagePhotoId
+    ? bookingFullPageBackgroundPublicHref(fullPagePhotoId, import.meta.env.BASE_URL, 'landscape')
+    : null
+  const fullPagePhotoPortraitUrl = fullPagePhotoId
+    ? bookingFullPageBackgroundPublicHref(fullPagePhotoId, import.meta.env.BASE_URL, 'portrait')
+    : null
+  // Foto full-page: applicate via due div fissi (variante portrait <768px, landscape ≥768px),
+  // perché un singolo `style.backgroundImage` non può cambiare per media query.
+  // Per gradient/tile legacy resta lo style inline; per striscia solo tinta crema.
   const bookingPageBackgroundStyle: React.CSSProperties = showPhotoStrip
     ? { backgroundColor: STRIP_MODE_PAGE_BG }
-    : isBookingFullPageBackgroundId(bookingPageBackground)
-    ? {
-        backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
-        backgroundImage: `url("${bookingFullPageBackgroundPublicHref(bookingPageBackground, import.meta.env.BASE_URL)}")`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }
-    : isBookingPageGradientId(bookingPageBackground)
-      ? {
-        backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
-        backgroundImage: bookingPageGradientCss(bookingPageBackground),
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }
-    : {
-        backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
-        backgroundImage: `url("${bookingPageTilePublicHref(bookingPageBackground, import.meta.env.BASE_URL)}")`,
-        backgroundSize: '100% auto',
-        backgroundPosition: 'top center',
-        backgroundRepeat: 'repeat-y',
-      }
+    : isFullPagePhoto
+      ? { backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR }
+      : isBookingPageGradientId(bookingPageBackground)
+        ? {
+            backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
+            backgroundImage: bookingPageGradientCss(bookingPageBackground),
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }
+        : legacyTileId
+          ? {
+              backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
+              backgroundImage: `url("${bookingPageTilePublicHref(legacyTileId, import.meta.env.BASE_URL)}")`,
+              backgroundSize: '100% auto',
+              backgroundPosition: 'top center',
+              backgroundRepeat: 'repeat-y',
+            }
+          : { backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR }
 
   if (isTenantLoading) {
     return (
@@ -144,7 +156,28 @@ export const BookingRequestPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen font-bold" style={bookingPageBackgroundStyle}>
+    <div className="min-h-screen font-bold relative" style={bookingPageBackgroundStyle}>
+      {/*
+        Foto full-page in due varianti (responsive):
+        - portrait (9:16) per viewport mobile <768px
+        - landscape (16:9) per viewport ≥768px
+        Sono div `fixed inset-0` dietro al contenuto, perché un singolo
+        `style.backgroundImage` non può cambiare in base alle media query.
+      */}
+      {isFullPagePhoto && fullPagePhotoPortraitUrl && (
+        <div
+          aria-hidden
+          className="fixed inset-0 -z-10 md:hidden bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url("${fullPagePhotoPortraitUrl}")` }}
+        />
+      )}
+      {isFullPagePhoto && fullPagePhotoLandscapeUrl && (
+        <div
+          aria-hidden
+          className="fixed inset-0 -z-10 hidden md:block bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url("${fullPagePhotoLandscapeUrl}")` }}
+        />
+      )}
       {/*
         Layout pagina Prenota — flex colonna:
         1. Griglia [striscia foto sx | contenuto form dx] — flex-1 si espande con il form

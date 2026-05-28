@@ -55,12 +55,18 @@ export function isBookingFullPageBackgroundId(value: string): value is BookingFu
   return (BOOKING_FULL_PAGE_BACKGROUND_IDS as readonly string[]).includes(value)
 }
 
-/** URL pubblico della foto a pagina intera. */
+/**
+ * URL pubblico della foto a pagina intera.
+ * Restituisce per default la variante landscape; passare `orientation: 'portrait'`
+ * per la versione 9:16 servita su viewport mobile portrait (<768px).
+ * File in `public/asset/sfondo intero/full-NN-(landscape|portrait).webp`.
+ */
 export function bookingFullPageBackgroundPublicHref(
   id: BookingFullPageBackgroundId,
   base: string,
+  orientation: 'landscape' | 'portrait' = 'landscape',
 ): string {
-  return `${base}asset/${encodeURIComponent('sfondo intero')}/${id}.png`
+  return `${base}asset/${encodeURIComponent('sfondo intero')}/${id}-${orientation}.webp`
 }
 
 /** Tile PNG in `public/booking/tiles/` (nome file = id + `.png`). */
