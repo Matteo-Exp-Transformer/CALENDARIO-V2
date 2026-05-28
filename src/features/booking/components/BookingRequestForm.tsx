@@ -100,7 +100,7 @@ function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
           return (
             <article
               key={`${item.image_url}-${idx}`}
-              className="relative h-52 w-[78%] max-w-[320px] shrink-0 overflow-hidden rounded-2xl bg-warm-wood text-white shadow-lg sm:h-64 sm:w-[46%]"
+              className="relative h-36 w-[72%] max-w-[280px] shrink-0 overflow-hidden rounded-2xl bg-warm-wood text-white shadow-lg sm:h-52 sm:w-[60%] sm:max-w-[320px] md:h-64 md:w-[46%]"
             >
               <img
                 src={item.image_url}

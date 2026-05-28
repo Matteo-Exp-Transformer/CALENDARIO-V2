@@ -137,8 +137,8 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
                 )}
               >
                 {itemImageSrc ? (
-                  <div className="mb-2 overflow-hidden rounded-lg border border-black/10 bg-warm-beige/20">
-                    <img src={itemImageSrc} alt="" className="h-[188px] w-full object-cover" loading="lazy" />
+                  <div className="mb-2 aspect-4/3 overflow-hidden rounded-lg border border-black/10 bg-warm-beige/20 sm:aspect-3/2">
+                    <img src={itemImageSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
                   </div>
                 ) : null}
                 <div className="flex min-h-[44px] gap-2.5">
