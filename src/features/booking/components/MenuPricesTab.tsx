@@ -1121,7 +1121,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           description: '',
           sort_order: 0,
         })
-        setIsAdding(true)
+        setIsAdding(false)
         setEditingId(null)
       }
     } catch {
