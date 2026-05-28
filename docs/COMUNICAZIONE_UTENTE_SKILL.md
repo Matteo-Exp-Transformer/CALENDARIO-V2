@@ -87,6 +87,8 @@ revisore in una **sessione dedicata**.
 | **Agente di lavoro** (tutti, anche non specializzati) | Ogni chat | Applica il `VOCABOLARIO` per parlare bene a Matteo; **raccoglie dati** (specie sulle voci Liv.2); scrive un **report esaustivo**; aggiorna lo skill system **solo se Matteo lo autorizza sul momento**. | Non valuta promozioni/regressioni; non propone riforme dello skill system; non apre discussioni meta. Tiene il contesto minimo. |
 | **Agente revisore** (sessione separata) | Su richiesta di Matteo, ogni tanto | Legge i report accumulati + `OSSERVAZIONI.md` + dati Liv.2; **valuta** quali voci promuovere/regredire; propone a Matteo miglioramenti allo skill system; applica le decisioni. Vedi [`Comunicazione-Skill/REVISIONE.md`](Comunicazione-Skill/REVISIONE.md). | Non è coinvolto nelle chat di lavoro. |
 
+> **Profili di ingresso e termini.** I tre profili di ingresso (Esecuzione / Verifica / Meta) definiti in `APP_CONTEXT_SKILL.md` § 0.0 sono solo uno *smistatore di contesto* (quali skill caricare) e non hanno livello. I **termini** con cui Matteo li chiama in chat sono invece voci di vocabolario, con livello 1/2/3: nascono in `PROPOSTE.md` (liv. 3), si mappano nella chat dedicata e salgono in `VOCABOLARIO.md` dopo approvazione. Esecuzione/Verifica = agente di lavoro; Meta = agente revisore (`Comunicazione-Skill/REVISIONE.md`).
+
 File di supporto in `docs/Comunicazione-Skill/`:
 
 | File | A cosa serve |

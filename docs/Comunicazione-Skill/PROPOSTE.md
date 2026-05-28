@@ -80,4 +80,8 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## Archivio (decise)
 
-*(vuoto — nessuna proposta ancora decisa)*
+### ✅ ACCETTATA (28-05-26) termini profili di ingresso → VOCABOLARIO Liv. 1
+- **Esecuzione:** «implementa» · «sistema» · «fai» · «nuova feature» · «aggiungi» · «crea»
+- **Verifica:** «revisiona» · «controlla» · «verifica» · «debugga» · «trova il bug» · «non funziona»
+- **Meta:** «migliora comunicazione» · «aggiorna comunicazione»
+- **Esito:** approvati in chat di mappatura, saliti in `VOCABOLARIO.md` a Liv. 1. Riferimento rapido anche in `APP_CONTEXT_SKILL.md` § 0.0.

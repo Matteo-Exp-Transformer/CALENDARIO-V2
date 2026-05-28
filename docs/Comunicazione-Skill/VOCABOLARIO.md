@@ -56,8 +56,33 @@ prende l'**agente revisore** in sessione separata (vedi `REVISIONE.md`), confron
 
 ## Voci attive
 
-*(nessuna ancora — il file parte vuoto per scelta di Matteo. Le voci arrivano dalle proposte
-approvate a fine chat.)*
+> **Profili di ingresso** (vedi `APP_CONTEXT_SKILL.md` § 0.0): i termini sotto attivano un profilo,
+> cioè quali skill l'agente carica a inizio task. Il **profilo** è solo uno smistatore e non ha
+> livello; il **termine** sì. I LOCK obbligatori della tabella § 0 vincono sempre sul profilo.
+
+### «implementa» · «sistema» · «fai» · «nuova feature» · «aggiungi» · «crea» — Liv. 1
+- **Intende:** fare/modificare codice di una feature, un fix piccolo o un lavoro responsive → **profilo Esecuzione**
+- **Comportamento agente:** entra in profilo Esecuzione — carica la skill dell'area pertinente (tabella § 0) + UI (`UI_EDIT`/`UI_RESPONSIVE` se tocca layout/stile); salta Testing/debug/comunicazione-revisione. I LOCK obbligatori (ADMIN_CLASSIC, BOOKING_DATA_FLOW, § 4b orari) restano dovuti se il task tocca quei file.
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** —
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura profili di ingresso · `ANALISI_RACCOLTA_DATI_SKILL_SYSTEM`
+
+### «revisiona» · «controlla» · «verifica» · «debugga» · «trova il bug» · «non funziona» — Liv. 1
+- **Intende:** controllare codice/piani già prodotti, fare diagnosi o testing → **profilo Verifica**
+- **Comportamento agente:** entra in profilo Verifica — carica `Testing-Skill/TESTING_SKILL.md` + la skill dell'area che sta revisionando; salta comunicazione-revisione. Su «revisiona … e committa» usa `npm run validate` come criterio oggettivo, ma si ferma e segnala se nota un difetto logico anche a test verdi.
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** —
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura profili di ingresso · `ANALISI_RACCOLTA_DATI_SKILL_SYSTEM`
+
+### «migliora comunicazione» · «aggiorna comunicazione» — Liv. 1
+- **Intende:** lavorare sul sistema di comunicazione/skill (revisione voci vocabolario, regole di stile) → **profilo Meta**
+- **Comportamento agente:** entra in profilo Meta — carica **solo** `COMUNICAZIONE_UTENTE_SKILL.md` + `Comunicazione-Skill/REVISIONE.md`; non carica skill di area/codice/DB/UI. È il ruolo agente revisore (sessione dedicata).
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** —
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura profili di ingresso · `ANALISI_RACCOLTA_DATI_SKILL_SYSTEM`
 
 <!--
 ESEMPIO di come apparirà una voce approvata (commentato, non attivo):

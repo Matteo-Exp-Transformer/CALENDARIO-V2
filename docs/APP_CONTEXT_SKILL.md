@@ -15,6 +15,26 @@ description: >-
 
 ## 0. Prima cosa: instrada al skill corretto
 
+### 0.0 Scegli il profilo di ingresso
+
+Prima di scendere alla tabella delle aree, capisci **che tipo di task** stai per fare e scegli un profilo. Il profilo riduce il contesto che carichi a inizio sessione: non leggi skill fuori dal tuo profilo.
+
+| Profilo | Tipo di task | Termini di Matteo (Liv. 1) | Carica | Salta |
+|---------|--------------|----------------------------|--------|-------|
+| **Esecuzione** | nuove feature · piccoli fix · responsive design | «implementa» · «sistema» · «fai» · «nuova feature» · «aggiungi» · «crea» | skill dell'**area pertinente** (tabella § 0 sotto) + UI (`UI_EDIT` / `UI_RESPONSIVE` se tocca layout/stile) | Testing-Skill, debug, comunicazione-revisione |
+| **Verifica** | debug · testing · revisione piani · revisione esecuzione | «revisiona» · «controlla» · «verifica» · «debugga» · «trova il bug» · «non funziona» | `docs/Testing-Skill/TESTING_SKILL.md` + skill **dell'area che stai revisionando** | comunicazione-revisione |
+| **Meta** | revisione/miglioramento sistema comunicazione | «migliora comunicazione» · «aggiorna comunicazione» | **solo** `docs/COMUNICAZIONE_UTENTE_SKILL.md` + `docs/Comunicazione-Skill/REVISIONE.md` | tutte le skill di area/codice/DB/UI |
+
+I profili non si sovrappongono — il discriminante è **cosa produce il task**: Esecuzione produce/modifica codice di una feature; Verifica controlla codice o piani già prodotti (sempre con i test); Meta lavora sul sistema documentale e sulla comunicazione, non sul codice dell'app. Coerenza con i due ruoli di § 7.0: Esecuzione e Verifica sono **agente di lavoro**, Meta è **agente revisore** (sessione dedicata).
+
+**Identificato il profilo, scendi alla tabella § 0 e applica solo le righe pertinenti al profilo.** Non caricare skill fuori dal profilo.
+
+> ⚠️ **I LOCK battono il profilo.** Le righe marcate **OBBLIGATORIO** nella tabella § 0 (`ADMIN_CLASSIC_SKILL.md`, `BOOKING_DATA_FLOW_SKILL.md`) e la regola orari § 4b (`dateUtils`) valgono **sempre**: se il task tocca quei file vanno caricate anche in un fix "piccolo" del profilo Esecuzione. Il profilo riduce il contesto, non scavalca i LOCK.
+
+> **Termini → profilo.** I termini nella colonna sopra sono il riferimento rapido; la fonte autorevole (con livello e comportamento) è `docs/Comunicazione-Skill/VOCABOLARIO.md`. Il **profilo** è solo uno smistatore e non ha livello; il **termine** sì. Se Matteo non usa un termine mappato, scegli il profilo per descrizione del task. Nuovi termini partono candidati in `docs/Comunicazione-Skill/PROPOSTE.md` finché non approvati.
+
+---
+
 Leggi il task ricevuto e applica questa tabella:
 
 | Il task riguarda… | Skill da caricare |
@@ -48,7 +68,7 @@ Leggi il task ricevuto e applica questa tabella:
 
 Carica il skill indicato **prima** di aprire qualsiasi file da modificare.
 
-> **Regola sub-task**: ogni volta che un agente scompone il lavoro in sotto-task (a se stesso o a un sub-agente), deve ripetere questa domanda per ciascun sotto-task. Un task iniziale fuori dall'area booking può diventare un sub-task che tocca `useBookingMutations` o `dateUtils` — in quel momento scatta l'obbligo di caricare lo skill corrispondente prima di procedere. "L'ho già letto all'inizio" non è sufficiente se il sotto-task cambia area.
+> **Regola sub-task**: ogni volta che un agente scompone il lavoro in sotto-task (a se stesso o a un sub-agente), deve ripetere questa domanda per ciascun sotto-task — **rivalutando sia il profilo di ingresso (§ 0.0) sia la riga della tabella**. Un task iniziale fuori dall'area booking può diventare un sub-task che tocca `useBookingMutations` o `dateUtils` — in quel momento scatta l'obbligo di caricare lo skill corrispondente prima di procedere. Allo stesso modo un sub-task di un'Esecuzione che diventa diagnosi passa al profilo **Verifica** e carica Testing-Skill. "L'ho già letto all'inizio" non è sufficiente se il sotto-task cambia area o profilo.
 
 ---
 
