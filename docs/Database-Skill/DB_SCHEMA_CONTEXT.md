@@ -462,7 +462,13 @@ CREATE POLICY "admin_update_nome_tabella"
 CREATE POLICY "admin_delete_nome_tabella"
   ON nome_tabella FOR DELETE TO authenticated
   USING (tenant_id = current_admin_tenant_id());
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE nome_tabella TO authenticated;
 ```
+
+Il GRANT finale è parte del pattern, non un dettaglio opzionale: da maggio/ottobre 2026 Supabase richiede permessi espliciti per esporre nuove tabelle `public` alla Data API. RLS decide quali righe passano; GRANT decide se il client può proprio chiamare la tabella via PostgREST / GraphQL / `supabase-js`.
+
+Per tabelle pubbliche read-only aggiungere solo `GRANT SELECT ON TABLE nome_tabella TO anon, authenticated` e una policy SELECT anon stretta. Per tabelle usate solo da Edge Function con service role non aggiungere GRANT ad `anon` o `authenticated` se il frontend non deve accedervi.
 
 ---
 

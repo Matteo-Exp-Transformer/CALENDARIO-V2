@@ -66,6 +66,7 @@ File: `src/lib/menuPhotoUpload.ts`
 | Thumb categoria QR (per QR) | `{tenantId}/qr/{menuQrCodeId}/cat/{categoryKey}.webp` | `menu_qr_codes.category_images` (JSON) |
 | Carosello QR (per QR) | `{tenantId}/qr/{menuQrCodeId}/carousel/{uuid}.webp` | `menu_qr_codes.carousel_items` (JSON) |
 | Bozza nuovo QR (pre-salvataggio) | `{tenantId}/qr/draft/{shortCode}/carousel|cat/…` | spostato su path definitivo al primo Salva |
+| Carosello Prenota | `{tenantId}/booking-form/{modeId}/{subTabId}/carousel/{uuid}.webp` | `restaurant_settings.booking_public_form_config.booking_modes[].sub_tabs[].carousel_items` |
 | Path legacy (solo URL già salvate) | `{tenantId}/cat/…`, `{tenantId}/carousel/…` | `menu_homepage_config` — non più usato in scrittura |
 
 - **Compressione**: canvas resize max 1200px, iterativa da quality 0.82 a 0.4, target 450KB
@@ -111,7 +112,7 @@ File: `src/features/booking/hooks/useMenuQrCodes.ts`
 |------------|------|
 | `MenuQrManager` | `src/features/booking/components/MenuQrManager.tsx` — solo lista «I miei QR» (tab Aspetto homepage spostato in modale) |
 | `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia; **Salva** su riga «Nome QR *» + fondo; checkbox categorie **solo con ≥1 ingrediente**; titoli/foto + picker ingredienti nascosti. **Nessuna UI** per `preset_ids` (menù eventi staff restano in impostazioni Prenota; in salvataggio si preserva solo il valore DB esistente su QR già creati). Richiede migrazioni `036`+`037` su ogni ambiente Supabase collegato all’app deployata. |
-| `MenuHomepageConfigPanel` | Sezioni controllate (`MenuQrCarouselSection`, `MenuQrCategoryCardsSection`, `MenuQrHiddenItemsPicker`, `MenuQrThemeSection`) — upload anche su **nuovo** QR via path `qr/draft/{shortCode}/` (migrazione a `qr/{id}/` al Salva) |
+| `MenuHomepageConfigPanel` | Sezioni controllate QR (`MenuQrCarouselSection`, `MenuQrCategoryCardsSection`, `MenuQrHiddenItemsPicker`, `MenuQrThemeSection`) — upload anche su **nuovo** QR via path `qr/draft/{shortCode}/` (migrazione a `qr/{id}/` al Salva). La logica upload condivisa sta in `src/features/booking/hooks/useCarouselPhotoUpload.ts`, non nel pannello QR. |
 
 Il `MenuQrManager` è montato in `MenuPricesTab` quando `viewMode === 'qr_codes'` (pulsante "QR Code" nell'hero section, visibile solo se `features.qrMenu`).
 
@@ -177,7 +178,7 @@ RULE  Pallini carosello: button cliccabili con goToSlide — non solo drag/scrol
 RULE  Sfondo pagina: useMenuPageBackgroundStyle() (layer CSS ripetuti) — non due section DOM separate con bg diversi (evita stacco)
 RULE  Body PNG: background-size 100% auto + position sotto --menu-header-band — non cover sul body intero
 RULE  Tab sticky: sfondo rgba(tabBarStickyRgb, opacity) cresce dopo lock; scrollbar-hide; frecce md+ se overflow
-RULE  Admin carosello: CAROUSEL_SLIDE_EYEBROW_MAX=40, TITLE_MAX=60, DESCRIPTION_MAX=125 in MenuHomepageConfigPanel
+RULE  Admin carosello QR: CAROUSEL_SLIDE_EYEBROW_MAX=40, TITLE_MAX=60, DESCRIPTION_MAX=125 in MenuHomepageConfigPanel. Prenota usa limiti separati 19/18/38 in bookingPublicFormConfig.
 RULE  Nuovo QR: foto carosello/categorie in Storage `qr/draft/{shortCode}/` — migrate a `qr/{menuQrCodeId}/` in useSaveMenuQrSettings al primo insert
 RULE  Modale QR: checkbox categorie solo se la categoria ha ≥1 `menu_items`; «Attiva tutte» solo su quelle; legacy `category_filter=null` → tutte le categorie con prodotti
 RULE  Modale QR: `hidden_menu_item_ids` — occhio chiuso = UUID in array; al Salva si scartano ID di categorie deselezionate

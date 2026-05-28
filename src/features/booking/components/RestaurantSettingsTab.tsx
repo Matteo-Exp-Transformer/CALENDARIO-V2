@@ -1433,6 +1433,10 @@ export const RestaurantSettingsTab: React.FC = () => {
           saveDisabled={upsert.isPending || !tenantId}
         />
       )}
+
+      <p className="mt-6 text-center text-micro text-[var(--color-text-muted)] select-none">
+        v{__APP_VERSION__} · {__BUILD_COMMIT__} · {__BUILD_DATE__}
+      </p>
     </div>
   )
 }

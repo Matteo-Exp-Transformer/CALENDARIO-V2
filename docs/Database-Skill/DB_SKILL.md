@@ -37,9 +37,10 @@ Carica i file indicati **prima** di aprire qualsiasi file da modificare.
 1. Carica context (step 0)
 2. **Leggi** le migrazioni esistenti rilevanti — mai modificare quelle già applicate
 3. **Crea** il file migrazione numerato progressivamente (`008_*.sql`, `009_*.sql`, …)
-4. **Applica** con `supabase db push`
-5. **Rigenera** tipi con `npm run db:types:linked`
-6. **Valida**: `npm run typecheck && npm run lint && npm run test`
+4. **Verifica ambiente** con MCP `get_project_url`: deve essere TEST `docnnernvp`, non produzione `rwuxgvld`
+5. **Applica** con MCP `Supabase_test__apply_migration`
+6. **Rigenera** tipi con MCP test / `npm run db:types:linked` solo se il link punta al DB test corretto
+7. **Valida**: `npm run typecheck && npm run lint && npm run test`
 
 ---
 
@@ -57,6 +58,10 @@ RULE  Trigger di tenant enforcement (enforce_*_tenant) su ogni nuova tabella
 RULE  Naming migrazioni: 008_*, 009_*, … (numerico progressivo, MAI timestamp)
 RULE  Dopo ogni migrazione applicata: npm run db:types:linked
 RULE  Due client Supabase: supabase (admin auth) / supabasePublic (anonimo) — non mischiare
+RULE  Supabase Data API 2026: ogni nuova tabella in schema public richiede GRANT espliciti minimi nella migrazione
+      - Tabelle admin: GRANT SELECT, INSERT, UPDATE, DELETE TO authenticated + RLS admin_*
+      - Tabelle pubbliche read-only: GRANT SELECT TO anon, authenticated + policy SELECT anon mirata
+      - Tabelle scritte solo da Edge Function/service_role: nessun GRANT anon/authenticated se non serve al client
 RULE  Email customers: normalizeCustomerEmail() prima di confronto o scrittura
 RULE  cancelled_by è UUID auth.users.id — MAI passare email a campi UUID
 ```

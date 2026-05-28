@@ -44,6 +44,8 @@ La prossima migrazione deve usare il prefisso **`040_`**.
 
 > **Ambiente (2026-05-16)**: lo sviluppo punta al **server di TEST** (`docnnernvp`, MCP `Supabase_test`). Produzione (`rwuxgvld`) è sola lettura salvo richiesta esplicita. Dettaglio in `APP_CONTEXT_SKILL.md` §1b.
 
+> **Data API Supabase (2026-05-28)**: dal 30 maggio 2026 sui nuovi progetti, e dal 30 ottobre 2026 sulle nuove tabelle dei progetti esistenti, le tabelle `public` non sono esposte alla Data API senza GRANT espliciti. Ogni nuova tabella deve avere nella migrazione i GRANT minimi coerenti con l'uso: admin `authenticated`, pubblico `anon` solo se davvero pubblico, nessun grant client per tabelle solo service_role.
+
 > **Registro prod (verificato 2026-05-22)**: prod usa versioni timestamp (`20260513...`–`20260515183055`) per le 008–021, più versioni numeriche `001`–`007`. Le 022/023/024 **non sono nel registro prod**. Per applicarle usare `Supabase__apply_migration` (mai `supabase db push`).
 
 ### Limite noto: `supabase db push` da CLI

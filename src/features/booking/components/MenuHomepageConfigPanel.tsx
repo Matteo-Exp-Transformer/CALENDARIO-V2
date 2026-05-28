@@ -1,71 +1,24 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'react-toastify'
 import { ImagePlus, Trash2, ChevronUp, ChevronDown, ArrowUp, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui'
-import { supabase } from '@/lib/supabase'
 import { useMenuCategories } from '../hooks/useMenuCategories'
 import { MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
 import type { CarouselItem, MenuItem } from '@/types/menu'
 import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
 import { menuQrStoragePrefix, menuQrStorageSegment } from '../utils/menuQrStorage'
+import {
+  removeMenuPhotoPath,
+  storagePathFromMenuPhotoUrl,
+  uploadMenuPhotoFile,
+  useCarouselPhotoUpload,
+} from '@/features/booking/hooks/useCarouselPhotoUpload'
 import { cn } from '@/lib/utils'
-
-const BUCKET = 'menu-photos'
-const MAX_SIDE_PX = 1200
-const MAX_BYTES = 450_000
 
 export const CAROUSEL_SLIDE_TITLE_MAX = 60
 export const CAROUSEL_SLIDE_DESCRIPTION_MAX = 125
 export const CAROUSEL_SLIDE_EYEBROW_MAX = 40
 const DEFAULT_CAROUSEL_EYEBROW = 'Specialità della casa'
-
-async function compressImage(file: File): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    const url = URL.createObjectURL(file)
-    img.onload = () => {
-      URL.revokeObjectURL(url)
-      const scale = Math.min(1, MAX_SIDE_PX / Math.max(img.width, img.height))
-      const w = Math.round(img.width * scale)
-      const h = Math.round(img.height * scale)
-      const canvas = document.createElement('canvas')
-      canvas.width = w
-      canvas.height = h
-      canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
-      let quality = 0.82
-      const tryEncode = () => {
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) return reject(new Error('Compressione fallita'))
-            if (blob.size <= MAX_BYTES || quality <= 0.4) return resolve(blob)
-            quality -= 0.12
-            tryEncode()
-          },
-          'image/webp',
-          quality,
-        )
-      }
-      tryEncode()
-    }
-    img.onerror = () => reject(new Error('Impossibile leggere immagine'))
-    img.src = url
-  })
-}
-
-async function uploadToStorage(file: File, path: string): Promise<string> {
-  const blob = await compressImage(file)
-  const { error } = await (supabase.storage.from(BUCKET) as any).upload(path, blob, {
-    contentType: 'image/webp',
-    upsert: true,
-  })
-  if (error) throw new Error((error as any).message ?? 'Upload fallito')
-  const { data } = (supabase.storage.from(BUCKET) as any).getPublicUrl(path)
-  return `${(data as { publicUrl: string }).publicUrl}?v=${Date.now()}`
-}
-
-async function removeFromStorage(path: string): Promise<void> {
-  await (supabase.storage.from(BUCKET) as any).remove([path])
-}
 
 export function MenuQrThemeSection({
   value,
@@ -100,100 +53,6 @@ export function MenuQrThemeSection({
   )
 }
 
-/** Limite dimensione foto carosello (Prenota + Menu QR homepage). */
-export const CAROUSEL_PHOTO_MAX_MB = 5
-export const CAROUSEL_PHOTO_MAX_BYTES = CAROUSEL_PHOTO_MAX_MB * 1024 * 1024
-const ACCEPTED_CAROUSEL_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
-
-function isAcceptedCarouselPhoto(file: File): boolean {
-  // file.type può essere vuoto su alcuni browser; in tal caso permettiamo il passaggio
-  // (lo storage WebP convertito è gestito a valle). Se il tipo è dichiarato, deve essere ammesso.
-  return file.type === '' || ACCEPTED_CAROUSEL_MIME.has(file.type)
-}
-
-export function useCarouselPhotoUpload({
-  tenantId,
-  menuQrCodeId,
-  draftShortCode,
-  items,
-  onChange,
-}: {
-  tenantId: string
-  menuQrCodeId: string | null
-  draftShortCode: string | null
-  items: CarouselItem[]
-  onChange: (items: CarouselItem[]) => void
-}) {
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [uploading, setUploading] = useState(false)
-  const storageSegment = menuQrStorageSegment(menuQrCodeId, draftShortCode)
-  const canUpload = !!storageSegment
-
-  const handleAddFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file || !storageSegment) return
-    if (!isAcceptedCarouselPhoto(file)) {
-      toast.error('Formato non supportato. Usa JPG, PNG, WebP o AVIF.')
-      return
-    }
-    if (file.size > CAROUSEL_PHOTO_MAX_BYTES) {
-      toast.error(`Foto troppo grande (max ${CAROUSEL_PHOTO_MAX_MB} MB).`)
-      return
-    }
-    setUploading(true)
-    try {
-      const uuid = crypto.randomUUID()
-      const path = `${menuQrStoragePrefix(tenantId, storageSegment)}/carousel/${uuid}.webp`
-      const url = await uploadToStorage(file, path)
-      onChange([...items, { image_url: url, sort_order: items.length }])
-      toast.success('Foto aggiunta')
-    } catch {
-      toast.error('Errore caricamento foto')
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  const removeAt = async (index: number) => {
-    const item = items[index]
-    const match = item.image_url.match(/menu-photos\/([^?]+)/)
-    if (match) await removeFromStorage(match[1])
-    onChange(items.filter((_, idx) => idx !== index).map((x, idx) => ({ ...x, sort_order: idx })))
-  }
-
-  const replaceAt = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file || !storageSegment || index < 0 || index >= items.length) return
-    if (!isAcceptedCarouselPhoto(file)) {
-      toast.error('Formato non supportato. Usa JPG, PNG, WebP o AVIF.')
-      return
-    }
-    if (file.size > CAROUSEL_PHOTO_MAX_BYTES) {
-      toast.error(`Foto troppo grande (max ${CAROUSEL_PHOTO_MAX_MB} MB).`)
-      return
-    }
-    setUploading(true)
-    try {
-      const old = items[index]
-      const uuid = crypto.randomUUID()
-      const path = `${menuQrStoragePrefix(tenantId, storageSegment)}/carousel/${uuid}.webp`
-      const url = await uploadToStorage(file, path)
-      const match = old.image_url.match(/menu-photos\/([^?]+)/)
-      if (match) await removeFromStorage(match[1])
-      onChange(items.map((it, i) => (i === index ? { ...it, image_url: url } : it)))
-      toast.success('Foto aggiornata')
-    } catch {
-      toast.error('Errore caricamento foto')
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  return { fileRef, uploading, canUpload, handleAddFile, removeAt, replaceAt }
-}
-
 const carouselAddPhotoButtonClass = 'gap-1.5 text-xs'
 
 /** Pulsante + anteprima foto sotto l’etichetta card (editor Prenota). */
@@ -210,10 +69,9 @@ export function CarouselAddPhotoBlock({
   items: CarouselItem[]
   onChange: (items: CarouselItem[]) => void
 }) {
+  const storageSegment = menuQrStorageSegment(menuQrCodeId, draftShortCode)
   const { fileRef, uploading, canUpload, handleAddFile, removeAt } = useCarouselPhotoUpload({
-    tenantId,
-    menuQrCodeId,
-    draftShortCode,
+    storagePrefix: storageSegment ? menuQrStoragePrefix(tenantId, storageSegment) : null,
     items,
     onChange,
   })
@@ -279,10 +137,9 @@ export function MenuQrCarouselSection({
   /** Nasconde la riga «Specialità della casa». */
   hideToolbarLabel?: boolean
 }) {
+  const storageSegment = menuQrStorageSegment(menuQrCodeId, draftShortCode)
   const { fileRef, uploading, canUpload, handleAddFile } = useCarouselPhotoUpload({
-    tenantId,
-    menuQrCodeId,
-    draftShortCode,
+    storagePrefix: storageSegment ? menuQrStoragePrefix(tenantId, storageSegment) : null,
     items,
     onChange,
   })
@@ -303,8 +160,8 @@ export function MenuQrCarouselSection({
 
   const remove = async (i: number) => {
     const item = items[i]
-    const match = item.image_url.match(/menu-photos\/([^?]+)/)
-    if (match) await removeFromStorage(match[1])
+    const path = storagePathFromMenuPhotoUrl(item.image_url)
+    if (path) await removeMenuPhotoPath(path)
     onChange(items.filter((_, idx) => idx !== i).map((x, idx) => ({ ...x, sort_order: idx })))
   }
 
@@ -541,7 +398,7 @@ export function MenuQrCategoryCardsSection({
     setUploading(catKey)
     try {
       const path = `${menuQrStoragePrefix(tenantId, storageSegment)}/cat/${catKey}.webp`
-      const url = await uploadToStorage(file, path)
+      const url = await uploadMenuPhotoFile(file, path)
       onCategoryImagesChange({ ...categoryImages, [catKey]: url })
       toast.success('Foto categoria salvata')
     } catch {
@@ -553,7 +410,7 @@ export function MenuQrCategoryCardsSection({
 
   const removeCategoryPhoto = async (catKey: string) => {
     if (!storageSegment) return
-    await removeFromStorage(`${menuQrStoragePrefix(tenantId, storageSegment)}/cat/${catKey}.webp`)
+    await removeMenuPhotoPath(`${menuQrStoragePrefix(tenantId, storageSegment)}/cat/${catKey}.webp`)
     const next = { ...categoryImages }
     delete next[catKey]
     onCategoryImagesChange(next)
