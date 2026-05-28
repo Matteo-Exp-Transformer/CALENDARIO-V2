@@ -84,6 +84,100 @@ prende l'**agente revisore** in sessione separata (vedi `REVISIONE.md`), confron
 - **Approvata il:** 28-05-26
 - **Origine:** chat mappatura profili di ingresso · `ANALISI_RACCOLTA_DATI_SKILL_SYSTEM`
 
+---
+
+## Stile di comunicazione
+
+### «spiegamelo semplice» · «in modo sintetico» — Liv. 1
+- **Intende:** non una lezione tecnica, ma l'effetto concreto e chi fa cosa
+- **Comportamento agente:** immagine concreta + esempio nell'app + dichiara esplicitamente chi fa l'azione (tu / il tool / config una-tantum / scelta UX); pochi blocchi, breve; niente codice salvo richiesta. Vedi `Metodo_spiegazioni_agenti_coding.md`.
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** —
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura · OSSERVAZIONI (3+ occorrenze, es. cache PWA)
+
+### «devo farlo io ogni volta?» · «è una rule che devo ricordare?» — Liv. 2
+- **Intende:** capire se un'azione è suo lavoro manuale ricorrente o un automatismo
+- **Comportamento agente:** **quando Matteo lo chiede esplicitamente**, chiudi con la riga «Chi fa cosa: tu = … / il tool = … / una-tantum = …». Non aggiungerla in modo proattivo a ogni risposta (per quello è Liv. 2, non Liv. 1).
+- **Livello:** 2 (cautela) — non proattiva, solo su domanda esplicita
+- **Dati Liv.2:**
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura · OSSERVAZIONI (2+ occorrenze)
+
+### «mantieni linea scalabile e pulita» · «no parti obsolete» — Liv. 1
+- **Intende:** soluzioni durevoli, niente codice ridondante/legacy né sovra-ingegnerizzazione
+- **Comportamento agente:** preferisci l'opzione scalabile e segnala esplicitamente cosa eviti (duplicazioni, file sparsi, astrazioni premature). Il «quanto» astrarre resta giudizio sul caso.
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** —
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura · OSSERVAZIONI (2+ occorrenze)
+
+### Comportamento in plan mode (nessun termine — contesto) — Liv. 1
+- **Intende:** quando l'agente entra in pianificazione, Matteo si aspetta domande sulle decisioni di sua competenza
+- **Comportamento agente:** in plan mode, oltre a progettare, fai domande (AskUserQuestion con opzioni + impatto) su: (a) decisioni che competono a Matteo (prodotto, UX, scope, commerciale); (b) dubbi su come procedere o scelte strutturali che Matteo potrebbe non aver considerato. Non calare piani dall'alto su questi punti.
+- **Livello:** 1 (automatico) — vale ogni volta che si entra in plan mode
+- **Casi identici già ok:** —
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura (riformulata da Matteo: legare al plan mode, non a un termine)
+
+### Sicurezza produzione (DB / migrazioni / deploy) — Liv. 1
+- **Intende:** massima cautela quando si tocca produzione; mai scrivere su PROD senza conferma
+- **Comportamento agente:** prima di INSERT/UPDATE/DELETE/migrazioni via MCP verifica l'ambiente (`get_project_url`); se è PROD (`rwuxgvld`) fermati e chiedi conferma esplicita; su TEST (`docnnernvp`) procedi. Segnala sempre azioni che rischiano di pubblicare contenuto privato. Coerente con `CLAUDE.md` e APP_CONTEXT § 1b.
+- **Livello:** 1 (automatico) — salvaguardia
+- **Casi identici già ok:** —
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura · `Metodo_spiegazioni_agenti_coding.md`
+
+---
+
+## Scorciatoie d'area (riferimento rapido a zone/componenti dell'app)
+
+> Aiutano l'agente a non confondere zone simili (le tre "menu", pubblico vs admin). Caricano la skill d'area corretta.
+
+### Pagina Prenota — «Pagina Prenota» · «form prenotazione clienti» · «modal/form prenotazione cliente» — Liv. 1
+- **Punta a:** la pagina pubblica di prenotazione del cliente (`/prenota/:slug`)
+- **Comportamento agente:** carica RULE Pagina Prenota v2 (APP_CONTEXT § 4) + `UI_RESPONSIVE_SKILL` / `UI_EDIT_SKILL`; rispetta il LOCK griglia striscia di `BookingRequestPage`.
+- **Livello:** 1 (automatico)
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura
+
+### Pagina Menu pubblica — «Pagina menù» · «pagina QR code» — Liv. 1
+- **Punta a:** il menu digitale pubblico mobile (pagine `/menu/:slug`, QR)
+- **Comportamento agente:** carica `PUBLIC_MENU_SKILL` + RULE Menu QR (APP_CONTEXT § 4).
+- **Livello:** 1 (automatico)
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura
+
+### Pagina admin — «pagina admin» · «dashboard» (Liv. 1) · «main dell'app» (Liv. 2) — Liv. 1/2
+- **Punta a:** la dashboard del ristoratore (`/admin` → AdminShell / AdminDashboard)
+- **Comportamento agente:** carica `ADMIN_CLASSIC_SKILL` (admin classica) o `ADMIN_SHELL_SKILL` (shell/sidebar/sezioni) secondo cosa si tocca. «main dell'app» è Liv. 2: se ambiguo (admin vs intera app) chiedi quale intende.
+- **Livello:** «pagina admin»/«dashboard» = 1; «main dell'app» = 2
+- **Dati Liv.2 (solo «main dell'app»):**
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura
+
+### Menu per Pagina Prenota — «Menù prenotazioni» · «menu form prenotazioni» — Liv. 1
+- **Punta a:** la **Personalizza form** (vetrina che sceglie cosa mostrare nelle card Prenota) — `BookingFormConfigPanel`, NON il magazzino
+- **Comportamento agente:** carica RULE Personalizza form (APP_CONTEXT § 4) + `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT`; se tocca il flusso dati, `BOOKING_DATA_FLOW_SKILL` (obbligatorio).
+- **Livello:** 1 (automatico)
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura (Matteo: punta alla vetrina, non al magazzino)
+
+### Menu per Pagina QR — «Menu qr code» · «menu pagina qr menù» — Liv. 1
+- **Punta a:** la gestione del menu pubblico QR (`MenuQrManager` / `MenuQrModal`)
+- **Comportamento agente:** carica `PUBLIC_MENU_SKILL` + RULE Menu QR.
+- **Livello:** 1 (automatico)
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura
+
+### Menu magazzino (fonte di verità) — «menù fonte di verità» · «menu pagina impostazioni» (Liv. 1) · «menù originale» (Liv. 2) — Liv. 1/2
+- **Punta a:** la **tab Menu** = magazzino unico di prezzi e ingredienti (`MenuPricesTab`), da cui Pagina Prenota e QR pescano i dati
+- **Comportamento agente:** carica RULE Menu Prenota (APP_CONTEXT § 4) + DB_SKILL se tocca lo schema. «menù originale» è Liv. 2: se ambiguo rispetto alle altre due zone menu, chiedi.
+- **Livello:** «fonte di verità»/«pagina impostazioni» = 1; «menù originale» = 2
+- **Dati Liv.2 (solo «menù originale»):**
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura
+
 <!--
 ESEMPIO di come apparirà una voce approvata (commentato, non attivo):
 

@@ -21,7 +21,9 @@
 
 | Voce Liv.2 | ok | domanda-superflua | corretto-da-Matteo | segnale |
 |------------|----|-------------------|--------------------|---------|
-| *(nessuna voce Liv.2 ancora)* | | | | |
+| «devo farlo io ogni volta?» (non proattiva) | 0 | 0 | 0 | nuova 28-05 |
+| «main dell'app» (ambiguo admin vs app) | 0 | 0 | 0 | nuova 28-05 |
+| «menù originale» (ambiguo tra zone menu) | 0 | 0 | 0 | nuova 28-05 |
 
 ## Frasi / richieste ricorrenti (con conteggio)
 
@@ -62,6 +64,18 @@
 ---
 
 ## Log per data
+
+### 28-05-26 (parte 3) — Profili di ingresso + mappatura iniziale vocabolario
+- Approvati profili Esecuzione/Verifica/Meta (§ 0.0 APP_CONTEXT) + termini-trigger a Liv.1.
+- Mappatura iniziale vocabolario: stile («spiegamelo semplice» L1, «scalabile e pulita» L1,
+  «devo farlo io ogni volta?» L2 non-proattiva, sicurezza prod L1) + scorciatoie d'area (Pagina
+  Prenota, Pagina menù/QR, pagina admin, le tre zone menu distinte) per evitare confusione zone simili.
+- Riformulazione di Matteo: «fammi domande» non è un termine ma un comportamento legato al **plan
+  mode** (domande su decisioni di sua competenza + dubbi strutturali). Codificato come voce di contesto.
+- Conferma scelta: i termini-profilo vivono in VOCABOLARIO (fonte) **e** elencati in APP_CONTEXT § 0.0
+  come riferimento rapido (Matteo preferisce visibilità a colpo d'occhio anche se tocca 2 file).
+- Disambiguazione prodotto: «Menù prenotazioni» = Personalizza form (vetrina), NON il magazzino;
+  «fonte di verità/pagina impostazioni» = MenuPricesTab (magazzino). Conferma diretta di Matteo.
 
 ### 28-05-26 (parte 2) — Costruzione skill system comunicazione + riorganizzazione docs
 - Pattern forte: Matteo **estende lo scope** quando risponde alle domande ("anche QR e future
