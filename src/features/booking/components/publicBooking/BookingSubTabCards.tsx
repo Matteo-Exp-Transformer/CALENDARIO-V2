@@ -8,10 +8,7 @@ import { StarIcon } from '@phosphor-icons/react/dist/csr/Star'
 import { LeafIcon } from '@phosphor-icons/react/dist/csr/Leaf'
 import { cn } from '@/lib/utils'
 import type { SubTab, SubTabIcon } from '@/features/booking/constants/bookingPublicFormConfig'
-import {
-  BOOKING_PUBLIC_WIDE_CARDS_WIDTH,
-  bookingPublicRowCardWidthClass,
-} from '@/features/booking/constants/bookingPublicFieldStyles'
+import { BOOKING_PUBLIC_WIDE_CARDS_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
 
 const SUB_TAB_SCROLL_STEP_PX = 240
 
@@ -45,7 +42,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   subTabs,
   activeSubTabId,
   onChange,
-  modeCardColumnCount,
+  modeCardColumnCount: _modeCardColumnCount,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -77,7 +74,11 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   }
 
   if (subTabs.length === 0) return null
-  const cardWidthClass = bookingPublicRowCardWidthClass(Math.min(3, Math.max(1, modeCardColumnCount)))
+  // ≤3 card: flex-1 su ogni card → si espandono a riempire la riga, centrate
+  // ≥4 card: larghezza minima fissa → scroll laterale automatico
+  const cardFlexClass = subTabs.length <= 3
+    ? 'flex-1 min-w-0'
+    : 'w-[200px] sm:w-[220px] shrink-0'
 
   return (
     <div
@@ -98,7 +99,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
         ref={scrollRef}
         className="w-full min-w-0 overflow-x-auto overscroll-x-contain scrollbar-hide py-1 touch-pan-x [-webkit-overflow-scrolling:touch]"
       >
-        <div className="flex flex-nowrap justify-center gap-1.5 sm:gap-2 snap-x snap-mandatory scroll-px-2 min-w-0 mx-auto">
+        <div className="flex w-full flex-nowrap gap-1.5 sm:gap-2 snap-x snap-mandatory scroll-px-2">
         {subTabs.map((tab) => {
           const isActive = activeSubTabId === tab.id
           const priceAmount =
@@ -112,7 +113,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
               onClick={() => onChange(isActive ? null : tab)}
               className={cn(
                 'flex snap-center flex-col items-center rounded-xl border-2 px-3 py-3 text-center transition-all sm:rounded-2xl sm:px-6 sm:py-4',
-                cardWidthClass,
+                cardFlexClass,
                 'min-h-[140px] sm:min-h-[196px] lg:min-h-[230px]',
                 'bg-white/85 backdrop-blur-[1px] shadow-sm',
                 isActive
