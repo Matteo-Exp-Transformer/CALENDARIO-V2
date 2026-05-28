@@ -113,7 +113,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
       <aside
         className={cn(
           'w-full max-w-full rounded-2xl border border-slate-100 bg-white px-4 py-5 shadow-xl transition-all duration-300 ease-out',
-          'space-y-4',
+          'space-y-4 min-[900px]:min-h-[320px]',
         )}
         data-testid="booking-summary-sidebar"
       >
