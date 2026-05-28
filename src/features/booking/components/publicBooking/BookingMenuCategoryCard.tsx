@@ -31,6 +31,8 @@ export interface BookingMenuCategoryCardProps {
   /** `scroll` = strip orizzontale; `grid` = griglia desktop; `stack` = colonna mobile con collapse. */
   layout?: 'grid' | 'scroll' | 'stack'
   resetKey?: string
+  /** Riduce padding e testo per griglie strette (es. 3 col su mobile). */
+  compact?: boolean
 }
 
 function ItemPriceRow({
@@ -73,6 +75,7 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   onTiramisuQuantityBlur,
   layout = 'grid',
   resetKey,
+  compact = false,
 }) => {
   const selectedCount = countSelectedInCategory(selectedItems, categoryKey)
   const { hint, status } = selectionStatusLabel(categoryKey, selectedCount)
@@ -219,21 +222,18 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 flex items-end gap-3 p-4 text-white">
-              <div className="min-w-0 flex-1">
-                <h3 className="text-base font-bold uppercase tracking-wide leading-tight sm:text-lg">
+            <div className={cn('absolute inset-x-0 bottom-0 flex items-end gap-1 text-white', compact ? 'p-1.5' : 'p-4 gap-3')}>
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <h3 className={cn('font-bold uppercase leading-tight', compact ? 'text-[10px] tracking-tight line-clamp-2' : 'text-base tracking-wide sm:text-lg')}>
                   {categoryLabel}
                 </h3>
-                <p
-                  className={cn(
-                    'mt-1 font-bold text-white/85',
-                    locked ? 'text-sm' : 'text-xs',
-                  )}
-                >
-                  {!locked ? status : lockedClosedTeaser}
-                </p>
+                {!compact && (
+                  <p className={cn('mt-1 font-bold text-white/85', locked ? 'text-sm' : 'text-xs')}>
+                    {!locked ? status : lockedClosedTeaser}
+                  </p>
+                )}
               </div>
-              <ChevronDown className="h-5 w-5 shrink-0" aria-hidden />
+              <ChevronDown className={cn('shrink-0', compact ? 'h-3 w-3' : 'h-5 w-5')} aria-hidden />
             </div>
           </div>
         </button>

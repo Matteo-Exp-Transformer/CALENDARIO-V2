@@ -35,6 +35,7 @@ type VisibleCategory = { key: string; label: string; items: ComposeMenuItem[] }
 function ComposeCategoryCards({
   categories,
   layout,
+  compact,
   categoryImageByKey,
   selectedItems,
   locked,
@@ -48,6 +49,7 @@ function ComposeCategoryCards({
 }: {
   categories: VisibleCategory[]
   layout: 'grid' | 'scroll' | 'stack'
+  compact?: boolean
   categoryImageByKey: Record<string, string | null | undefined>
   selectedItems: SelectedMenuItem[]
   locked: boolean
@@ -77,6 +79,7 @@ function ComposeCategoryCards({
           onTiramisuQuantityChange={onTiramisuQuantityChange}
           onTiramisuQuantityBlur={onTiramisuQuantityBlur}
           layout={layout}
+          compact={compact}
           resetKey={resetKey}
         />
       ))}
@@ -245,10 +248,17 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
 
   return (
     <div className="w-full min-w-0" data-testid="booking-menu-compose-grid">
-      {/* Mobile: colonna singola, card collassabili — larghezza piena come header */}
-      <div className="flex flex-col items-stretch gap-[2px] md:hidden">
-        <ComposeCategoryCards categories={visibleCategories} layout="stack" {...cardProps} />
-      </div>
+      {/* Mobile locked (menu preselezionato): griglia 3 colonne compatte */}
+      {locked ? (
+        <div className="grid grid-cols-3 items-start gap-1.5 md:hidden">
+          <ComposeCategoryCards categories={visibleCategories} layout="grid" compact {...cardProps} />
+        </div>
+      ) : (
+        /* Mobile free: colonna singola, card collassabili */
+        <div className="flex flex-col items-stretch gap-[2px] md:hidden">
+          <ComposeCategoryCards categories={visibleCategories} layout="stack" {...cardProps} />
+        </div>
+      )}
 
       {/* Desktop: griglia o carosello orizzontale */}
       <div className="hidden md:block">
