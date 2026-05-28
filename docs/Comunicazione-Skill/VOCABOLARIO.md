@@ -120,6 +120,14 @@ prende l'**agente revisore** in sessione separata (vedi `REVISIONE.md`), confron
 - **Approvata il:** 28-05-26
 - **Origine:** chat mappatura · OSSERVAZIONI (workflow multi-agente)
 
+### «prepara» · «prepara prompt» — Liv. 1
+- **Intende:** Matteo sta per descrivere un lavoro in forma grezza e vuole che venga trasformato in un prompt ottimizzato per l'agente di lavoro, dopo un filtro su rischi e ambiguità
+- **Comportamento agente:** carica la skill `PREPARA_PROMPT_SKILL.md` ed entra in modalità filtro d'ingresso — NON scrive codice. Legge APP_CONTEXT + vocabolario + `Archivio/CONTESTO_PRODOTTO.md`; fa le domande importanti prima (opzioni/sì-no), poi consegna **solo il prompt** in italiano per l'agente di lavoro, con le domande secondarie sotto. Usa i termini del vocabolario come lessico-comando.
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** —
+- **Approvata il:** 28-05-26
+- **Origine:** chat creazione agente filtro d'ingresso
+
 ### «revisione completa» — Liv. 1
 - **Intende:** non un check superficiale, ma una revisione critica e indipendente del lavoro (tipicamente di un altro agente nel workflow pianifica → esegue → revisiona)
 - **Comportamento agente:** entra in profilo Verifica; dichiara apertamente i difetti trovati (anche a test verdi), mai "ok" di cortesia. Riconosci il termine anche se è già nel testo di avvio dell'agente. Esegui `npm run validate` come criterio oggettivo, ma fermati e segnala i difetti logici prima di approvare/committare.

@@ -64,6 +64,15 @@
 
 ## Log per data
 
+### 28-05-26 (parte 4) — Agente filtro d'ingresso «prepara prompt»
+- Nuova skill `PREPARA_PROMPT_SKILL.md`: filtro a monte che trasforma il flusso grezzo di Matteo in
+  un prompt ottimizzato per l'agente di lavoro. Non scrive codice; legge skill + archivio, non il codice.
+- Output: solo il prompt testuale italiano; domande importanti prima (opzioni/sì-no), secondarie sotto.
+- Precisazione chiave di Matteo: **scopo del vocabolario = parole definite e accettate per generare
+  comandi**. Il filtro usa il vocabolario come lessico-comando (traduce il grezzo nei termini ufficiali).
+- Preferenze confermate: "meglio una domanda in più che una in meno"; predilige risposte a opzioni o sì/no.
+- Voce «prepara / prepara prompt» Liv.1 in vocabolario; citata in APP_CONTEXT § 0.0 come passo-zero opzionale.
+
 ### 28-05-26 (parte 3) — Profili di ingresso + mappatura iniziale vocabolario
 - Approvati profili Esecuzione/Verifica/Meta (§ 0.0 APP_CONTEXT) + termini-trigger a Liv.1.
 - Mappatura iniziale vocabolario: stile («spiegamelo semplice» L1, «scalabile e pulita» L1,

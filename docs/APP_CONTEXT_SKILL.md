@@ -15,6 +15,8 @@ description: >-
 
 ## 0. Prima cosa: instrada al skill corretto
 
+> **Passo-zero opzionale — filtro d'ingresso.** Se Matteo dice «prepara» / «prepara prompt» e descrive un lavoro grezzo, carica `docs/PREPARA_PROMPT_SKILL.md`: non si esegue il task, si produce un prompt ottimizzato per l'agente di lavoro (con filtro su rischi e ambiguità). L'agente di lavoro vero parte poi da questo § 0.0 con il prompt già pronto.
+
 ### 0.0 Scegli il profilo di ingresso
 
 Prima di scendere alla tabella delle aree, capisci **che tipo di task** stai per fare e scegli un profilo. Il profilo riduce il contesto che carichi a inizio sessione: non leggi skill fuori dal tuo profilo.
