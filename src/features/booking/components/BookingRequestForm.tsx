@@ -1084,7 +1084,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       {summarySidebar}
 
       {/* Submit grande — solo desktop ≥900px; su mobile/tablet il submit è dentro BookingSummarySidebar */}
-      <div className="order-3 col-span-1 hidden min-[900px]:flex w-full max-w-full justify-center items-center mt-3 min-[900px]:col-span-2">
+      <div className="order-3 col-span-1 hidden min-[900px]:flex w-full max-w-full justify-center items-center mt-3 mb-6 min-[900px]:col-span-2">
         <button
             type="submit"
             disabled={isPending || isBlocked || isSubmitting || isCheckingAvailability}
