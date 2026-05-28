@@ -63,6 +63,23 @@
 
 ## Log per data
 
+### 28-05-26 (parte 2) — Costruzione skill system comunicazione + riorganizzazione docs
+- Pattern forte: Matteo **estende lo scope** quando risponde alle domande ("anche QR e future
+  feature", "in futuro un numero tipo 2.1") → ragiona per principi durevoli, non per caso singolo.
+  Comportamento agente utile: proporre già soluzioni scalabili, non solo per il caso immediato.
+- Pattern: prima di azioni strutturali rischiose (spostare 77 file, rinominare cartella gitignored)
+  vuole capire l'impatto e decidere → fermarsi e fare AskUserQuestion con dati è ciò che si aspetta.
+- Privacy: tiene `docs/_lavoro/` privata apposta; molto sensibile a non esporre dati su git.
+  Segnalare SEMPRE quando un'azione rischia di pubblicare contenuto privato.
+- Commit: ha confermato che vuole commit dell'agente dopo "tutto ok", e ha capito/apprezzato i
+  **commit separati** come punti di ripristino indipendenti. Domanda sua: "un commit in più non
+  crea disagi giusto?" → rassicurato che è più sicuro.
+- Revisione lavoro altri agenti: "revisiona e se è ok committa anche quello" → si fida della
+  validazione (npm run validate) come prova, non pretende rilettura riga per riga.
+- Token: chiede prompt pronti da copiare per la sessione successiva → fornirli già formattati
+  e auto-contenuti è apprezzato.
+- Chiusura calorosa ("grazie mille", emoji) → rapporto collaborativo, non solo transazionale.
+
 ### 28-05-26 — Sessione PWA + costruzione sistema comunicazione
 - Confermato: "spiegamelo semplice" = metafora + chi-fa-cosa (vedi cache PWA).
 - Confermato: preoccupazione ricorrente "lavoro mio o del tool?".

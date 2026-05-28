@@ -157,3 +157,107 @@ Il piano originale prevedeva `registerType: 'autoUpdate'`. In implementazione si
 incompatibile con il requisito "no aggiornamento in sessione": corretto in `prompt`. È una
 correzione del piano, non una deviazione arbitraria — il requisito di Matteo (no interruzioni)
 è stato rispettato meglio.
+
+---
+
+## PARTE 2 — Costruzione skill system comunicazione + riorganizzazione docs
+
+Dopo il fix PWA, la sessione è proseguita costruendo il **sistema di comunicazione vivente** e
+riordinando lo skill system.
+
+### Cosa è stato costruito
+
+1. **Skill comunicazione interattiva** (`COMUNICAZIONE_UTENTE_SKILL.md`): impara come lavora
+   Matteo e propone scorciatoie che lui approva.
+2. **Vocabolario a 3 livelli** (`Comunicazione-Skill/VOCABOLARIO.md`): ogni voce ha un livello
+   di libertà — 1 automatico, 2 cautela (con raccolta dati per promozione/regressione), 3 conferma.
+3. **Due ruoli separati**: agente di lavoro (raccoglie dati + report, in ogni chat) vs agente
+   revisore (valuta e riforma, in sessione dedicata — `REVISIONE.md`). Serve a non appesantire
+   ogni chat col lavoro "meta".
+4. **File di supporto**: `OSSERVAZIONI.md` (diario dati), `PROPOSTE.md` (candidate), `REVISIONE.md`.
+5. **Riorganizzazione docs/**: cartella vuota rimossa; `docs/Archivio/CONTESTO_PRODOTTO.md` (fonte
+   di verità versionata, no dati sensibili); `docs/_lavoro/` privata riordinata (Per matteo /
+   Storico / Supporto / Sessioni) restando gitignored; mappa struttura in APP_CONTEXT §3.
+
+### Decisione critica di privacy
+
+`docs/_lavoro/` è **gitignored** (dati sensibili: DPA, prezzi). Rinominarla l'avrebbe esposta su
+git → NON fatto. Le sessioni vecchie (12-22/05) restano nello storico privato; solo le sessioni
+vive (dal 23/05) sono versionate.
+
+### Commit
+
+Tre commit separati su `env/test`, pushati:
+- `7959c30` fix(pwa) — il fix dell'aggiornamento app
+- `8fa47e2` feat(prenota) — caroselli separati (lavoro agente precedente, revisionato: validate verde)
+- `d6447b2` docs(comunicazione) — sistema comunicazione + riorganizzazione docs
+
+### Resta aperto
+
+- **Step 2 (prossima sessione)**: profili di ingresso per ruolo (Esecuzione / Verifica / Meta)
+  dentro APP_CONTEXT, per ridurre il carico di contesto iniziale. Prompt pronto consegnato a Matteo.
+- `pw-*.mjs` nella root: script scratch di test visuale, non committati. Da cancellare o gitignorare.
+
+---
+
+## Dati comunicazione (per il revisore)
+
+### Frasi / richieste ricorrenti (con conteggio)
+- «spiegamelo semplice / sintetico» — 3+ (cache PWA, ecc.) → metafora + chi-fa-cosa.
+- «è una rule che devo ricordare / devo farlo io ogni volta?» — 2+ → distinguere lavoro manuale da automatismo.
+- «mantieni linea scalabile e pulita, no parti obsolete» — 2+ → soluzioni durevoli.
+- «fammi domande per decidere» — 2+ → AskUserQuestion prima di pianificare/agire.
+- «revisiona e se è ok committa» — 1 forte → valida con test + committa, ma fermati sui difetti logici.
+- conferma successo («ok / funziona / perfetto / grazie») → trigger protocollo fine-chat.
+
+### Spiegazioni date e formato che ha funzionato
+- Metafora concreta + esempio nell'app + dichiarazione esplicita "chi fa cosa" (tu / tool / config / UX).
+- Esempio modello: cache PWA come "file usa-e-getta vs file-indice"; "l'hash lo fa Vite da solo".
+
+### Procedure ripetute (candidate ad automazione)
+- Fine sessione: report + skill + commit separati.
+- Revisione critica del lavoro di altri agenti (non confermare per cortesia).
+- Stop + AskUserQuestion prima di azioni rischiose (prod, spostamenti di massa, privacy git).
+
+### Cosa automatizzare con certezza vs lasciare manuale
+- **Certezza**: stile "spiegamelo semplice"; chiusura "chi fa cosa"; preferenza scalabile; impatto+domanda prima di azioni rischiose.
+- **Manuale**: scelta della metafora specifica; quanto astrarre; lo stop sui difetti logici anche quando i test passano.
+
+### Proposte fatte e loro esito
+- 5 candidate in `PROPOSTE.md` (tutte IN ATTESA): "spiegamelo semplice", "chi-fa-cosa",
+  "revisiona-e-committa", "linea scalabile/pulita", "azioni rischiose → impatto+domanda".
+
+### Token risparmiabili
+- Stile comunicazione e flusso fine-chat: ora codificati → Matteo non li ridescrive.
+- Prompt pronti per sessioni successive: forniti già formattati.
+
+---
+
+## Come iniziare a comporre il TUO vocabolario (guida per Matteo)
+
+Sono il primo a girare questo sistema, quindi ti do io il punto di partenza concreto.
+
+**Cos'è il vocabolario:** un file (`docs/Comunicazione-Skill/VOCABOLARIO.md`) dove una tua frase
+breve → un comportamento preciso dell'agente. Così smetti di rispiegare ogni volta come vuoi le cose.
+
+**Come si compone, in pratica:**
+1. Guardi `PROPOSTE.md` — ci sono già 5 candidate che ho estratto dai pattern reali.
+2. Per ognuna decidi: **la voglio? a che livello (1/2/3)?**
+3. Quelle che approvi salgono in `VOCABOLARIO.md` col livello scelto. Le altre si archiviano.
+
+**Le 5 candidate pronte (puoi decidere ora o quando vuoi):**
+
+| Frase tua | Cosa farebbe l'agente | Livello che consiglio |
+|-----------|----------------------|----------------------|
+| «spiegamelo semplice» | metafora + esempio nell'app + "chi fa cosa", breve | 1 (automatico) |
+| (a fine di ogni meccanismo tecnico) | chiude sempre con "chi fa: tu / il tool / una-tantum" | 1 |
+| «revisiona e se è ok committa» | valida con i test, committa, ma stop sui difetti logici | 2 (cautela) |
+| «mantieni linea pulita/scalabile» | soluzioni durevoli, niente codice ridondante | 1 |
+| (azioni rischiose: sposta molti file, prod) | misura l'impatto e ti chiede prima | 1 (salvaguardia) |
+
+**I 3 livelli, in una riga:** Liv.1 = fa e basta · Liv.2 = fa ma chiede se è ambiguo (e registra
+com'è andata, per capire se promuoverla) · Liv.3 = chiede sempre, salvo frase identica già vista.
+
+**Consiglio:** parti approvando le 2-3 a Liv.1 più ovvie (es. "spiegamelo semplice"). Le incerte
+mettile a Liv.2: l'agente raccoglie i dati e nella sessione di revisione decidi se promuoverle.
+Non serve riempire il vocabolario subito — cresce da solo a ogni chat.
