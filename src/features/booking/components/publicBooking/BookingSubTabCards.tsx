@@ -96,8 +96,9 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
       )}
       <div
         ref={scrollRef}
-        className="flex w-full min-w-0 touch-pan-x flex-nowrap gap-1.5 overflow-x-auto overscroll-x-contain scroll-px-2 scrollbar-hide snap-x snap-mandatory py-1 [-webkit-overflow-scrolling:touch] sm:gap-2"
+        className="w-full min-w-0 overflow-x-auto overscroll-x-contain scrollbar-hide py-1 touch-pan-x [-webkit-overflow-scrolling:touch]"
       >
+        <div className="flex flex-nowrap justify-center gap-1.5 sm:gap-2 snap-x snap-mandatory scroll-px-2 min-w-0 mx-auto">
         {subTabs.map((tab) => {
           const isActive = activeSubTabId === tab.id
           const priceAmount =
@@ -169,6 +170,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
             </button>
           )
         })}
+        </div>
       </div>
       {canScrollRight && (
         <button

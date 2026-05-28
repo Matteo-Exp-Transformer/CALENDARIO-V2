@@ -24,10 +24,6 @@ export interface BookingMenuComposeGridProps {
   customStaffPresets: CustomStaffPreset[]
   formatPrice: (item: ComposeMenuItem) => string
   onToggleItem: (item: ComposeMenuItem) => void
-  tiramisuUnitPrice: number
-  localTiramisuValue: string
-  onTiramisuQuantityChange: (value: string) => void
-  onTiramisuQuantityBlur: () => void
 }
 
 type VisibleCategory = { key: string; label: string; items: ComposeMenuItem[] }
@@ -41,10 +37,6 @@ function ComposeCategoryCards({
   locked,
   formatPrice,
   onToggleItem,
-  tiramisuUnitPrice,
-  localTiramisuValue,
-  onTiramisuQuantityChange,
-  onTiramisuQuantityBlur,
   resetKey,
 }: {
   categories: VisibleCategory[]
@@ -55,10 +47,6 @@ function ComposeCategoryCards({
   locked: boolean
   formatPrice: (item: ComposeMenuItem) => string
   onToggleItem: (item: ComposeMenuItem) => void
-  tiramisuUnitPrice: number
-  localTiramisuValue: string
-  onTiramisuQuantityChange: (value: string) => void
-  onTiramisuQuantityBlur: () => void
   resetKey?: string
 }) {
   return (
@@ -74,10 +62,6 @@ function ComposeCategoryCards({
           locked={locked}
           formatPrice={formatPrice}
           onToggleItem={onToggleItem}
-          tiramisuUnitPrice={tiramisuUnitPrice}
-          localTiramisuValue={localTiramisuValue}
-          onTiramisuQuantityChange={onTiramisuQuantityChange}
-          onTiramisuQuantityBlur={onTiramisuQuantityBlur}
           layout={layout}
           compact={compact}
           resetKey={resetKey}
@@ -95,10 +79,6 @@ function ComposeScrollRow({
   locked,
   formatPrice,
   onToggleItem,
-  tiramisuUnitPrice,
-  localTiramisuValue,
-  onTiramisuQuantityChange,
-  onTiramisuQuantityBlur,
   resetKey,
 }: {
   categories: VisibleCategory[]
@@ -108,10 +88,6 @@ function ComposeScrollRow({
   locked: boolean
   formatPrice: (item: ComposeMenuItem) => string
   onToggleItem: (item: ComposeMenuItem) => void
-  tiramisuUnitPrice: number
-  localTiramisuValue: string
-  onTiramisuQuantityChange: (value: string) => void
-  onTiramisuQuantityBlur: () => void
   resetKey?: string
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -167,10 +143,6 @@ function ComposeScrollRow({
           locked={locked}
           formatPrice={formatPrice}
           onToggleItem={onToggleItem}
-          tiramisuUnitPrice={tiramisuUnitPrice}
-          localTiramisuValue={localTiramisuValue}
-          onTiramisuQuantityChange={onTiramisuQuantityChange}
-          onTiramisuQuantityBlur={onTiramisuQuantityBlur}
           resetKey={resetKey}
         />
       </div>
@@ -199,10 +171,6 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
   customStaffPresets,
   formatPrice,
   onToggleItem,
-  tiramisuUnitPrice,
-  localTiramisuValue,
-  onTiramisuQuantityChange,
-  onTiramisuQuantityBlur,
 }) => {
   const allowedItemIds = useMemo(
     () =>
@@ -227,10 +195,6 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
     locked,
     formatPrice,
     onToggleItem,
-    tiramisuUnitPrice,
-    localTiramisuValue,
-    onTiramisuQuantityChange,
-    onTiramisuQuantityBlur,
     resetKey: presetMenu ?? 'no-preset',
   }
 

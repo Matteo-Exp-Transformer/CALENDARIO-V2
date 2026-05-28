@@ -193,7 +193,7 @@ export const BookingRequestPage: React.FC = () => {
             Mobile/tablet: striscia 20vw. Desktop ≥900px: striscia 25vw. */}
         <div
           className={cn(
-            'flex-1 w-full grid grid-cols-1 items-start',
+            'flex-1 w-full grid grid-cols-1 items-stretch',
             showPhotoStrip && 'grid-cols-[20vw_1fr] min-[900px]:grid-cols-[25vw_1fr]',
           )}
         >
@@ -215,7 +215,7 @@ export const BookingRequestPage: React.FC = () => {
           {/* Colonna contenuto destra
               Padding laterale: mobile px-6 (più sfondo foto ai lati), tablet md:px-10,
               desktop ≥900px px-6 / lg:px-8 invariati (già OK con larghezza maggiore). */}
-          <div className="w-full min-w-0 px-6 md:px-10 pb-44 min-[900px]:pb-1 min-[900px]:px-6 lg:px-8">
+          <div className="w-full min-w-0 min-h-full px-6 md:px-10 pb-44 min-[900px]:pb-1 min-[900px]:px-6 lg:px-8">
 
             {/* Header — solo testo sullo sfondo pagina */}
             <div className="flex flex-col items-center justify-center gap-1.5 py-1.5 text-center animate-fade-in">

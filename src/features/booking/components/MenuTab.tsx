@@ -14,8 +14,6 @@ interface MenuTabProps {
   isEditMode: boolean
   menuSelection?: {
     items: SelectedMenuItem[]
-    tiramisu_total?: number
-    tiramisu_kg?: number
   }
   numGuests: number
   presetMenu?: string | null
@@ -28,8 +26,6 @@ interface MenuTabProps {
   onMenuChange: (payload: {
     items: SelectedMenuItem[]
     totalPerPerson: number
-    tiramisuTotal: number
-    tiramisuKg: number
   }) => void
   onPresetMenuChange?: (preset: PresetMenuType) => void
 }
@@ -87,33 +83,16 @@ export const MenuTab: React.FC<MenuTabProps> = ({
   }, [menuSelection?.items])
 
   // Calculate totals
-  const { totalPerPerson, totalBooking, itemCount, baseTotal, tiramisuTotal, tiramisuKg } = useMemo(() => {
-    if (!menuSelection?.items) return {
-      totalPerPerson: 0,
-      totalBooking: 0,
-      itemCount: 0,
-      baseTotal: 0,
-      tiramisuTotal: 0,
-      tiramisuKg: 0
-    }
-
-    const baseTotal = menuSelection.items
-      .filter((item) => !item.name.toLowerCase().includes('tiramis'))
-      .reduce((sum, item) => sum + item.price, 0)
-
-    const tiramisuTotal = menuSelection.tiramisu_total || 0
-    const tiramisuKg = menuSelection.tiramisu_kg || 0
-    const totalBooking = baseTotal * numGuests + tiramisuTotal
-
+  const { totalPerPerson, totalBooking, itemCount, baseTotal } = useMemo(() => {
+    if (!menuSelection?.items) return { totalPerPerson: 0, totalBooking: 0, itemCount: 0, baseTotal: 0 }
+    const baseTotal = menuSelection.items.reduce((sum, item) => sum + item.price, 0)
     return {
       totalPerPerson: baseTotal,
-      totalBooking,
+      totalBooking: baseTotal * numGuests,
       itemCount: menuSelection.items.length,
       baseTotal,
-      tiramisuTotal,
-      tiramisuKg
     }
-  }, [menuSelection, numGuests, booking.booking_type])
+  }, [menuSelection, numGuests])
 
   // Menu summary (always visible)
   const menuSummary = (
@@ -151,12 +130,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
   ) : (
     <div className="space-y-4">
       {Object.entries(groupedItems).map(([category, items]) => {
-        const categoryTotal = items.reduce((sum, item) => {
-          if (item.name.toLowerCase().includes('tiramis')) {
-            return sum + (item.totalPrice || 0)
-          }
-          return sum + item.price
-        }, 0)
+        const categoryTotal = items.reduce((sum, item) => sum + item.price, 0)
 
         return (
           <div key={category} className="space-y-2">
@@ -167,24 +141,12 @@ export const MenuTab: React.FC<MenuTabProps> = ({
               <span className="ml-auto text-sm font-bold text-gray-700">€{categoryTotal.toFixed(2)}</span>
             </h4>
             <ul className="space-y-1 pl-6">
-              {items.map((item, idx) => {
-                const isTiramisu = item.name.toLowerCase().includes('tiramis')
-                const displayPrice = isTiramisu && item.totalPrice
-                  ? `€${item.totalPrice.toFixed(2)}`
-                  : `€${item.price.toFixed(2)}`
-                const quantityLabel = isTiramisu && item.quantity
-                  ? ` ${item.quantity} Kg -`
-                  : ''
-
-                return (
-                  <li key={`${item.id}-${idx}`} className="text-sm text-gray-700 flex items-center justify-between">
-                    <span>
-                      • {item.name}{quantityLabel}
-                    </span>
-                    <span className="font-semibold">{displayPrice}</span>
-                  </li>
-                )
-              })}
+              {items.map((item, idx) => (
+                <li key={`${item.id}-${idx}`} className="text-sm text-gray-700 flex items-center justify-between">
+                  <span>• {item.name}</span>
+                  <span className="font-semibold">€{item.price.toFixed(2)}</span>
+                </li>
+              ))}
             </ul>
           </div>
         )
@@ -193,13 +155,11 @@ export const MenuTab: React.FC<MenuTabProps> = ({
       {/* Cost Breakdown Summary */}
       {(() => {
         const prezzoPersonaTotal = baseTotal * numGuests
-        const totalRinfresco = prezzoPersonaTotal + tiramisuTotal
 
         return (
           <div className="mt-6 pt-4 border-t-2 border-gray-300">
             <h4 className="text-base font-bold text-gray-900 mb-3">RIEPILOGO COSTI</h4>
 
-            {/* Prezzo a persona × ospiti */}
             <div className="flex justify-between items-center text-sm mb-2">
               <span className="text-gray-700">
                 Prezzo a persona: €{baseTotal.toFixed(2)} × {numGuests} ospiti
@@ -207,20 +167,9 @@ export const MenuTab: React.FC<MenuTabProps> = ({
               <span className="font-bold text-gray-900">€{prezzoPersonaTotal.toFixed(2)}</span>
             </div>
 
-            {/* Tiramisù (only if selected) */}
-            {tiramisuTotal > 0 && (
-              <div className="flex justify-between items-center text-sm mb-2">
-                <span className="text-gray-700">
-                  Tiramisù ({tiramisuKg} Kg)
-                </span>
-                <span className="font-bold text-gray-900">€{tiramisuTotal.toFixed(2)}</span>
-              </div>
-            )}
-
-            {/* TOTALE RINFRESCO */}
             <div className="flex justify-between items-center text-base font-bold mt-3 pt-3 border-t border-gray-300">
               <span className="text-gray-900">TOTALE RINFRESCO</span>
-              <span className="text-gray-900">€{totalRinfresco.toFixed(2)}</span>
+              <span className="text-gray-900">€{prezzoPersonaTotal.toFixed(2)}</span>
             </div>
           </div>
         )

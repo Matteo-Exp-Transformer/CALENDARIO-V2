@@ -8,12 +8,6 @@ import {
   selectionStatusLabel,
 } from '../../utils/menuComposeVisibility'
 
-const TIRAMISU_MIN_KG = 1
-const TIRAMISU_MAX_KG = 7
-
-const isTiramisuItem = (itemName: string): boolean =>
-  itemName.toLowerCase().includes('tiramis')
-
 export interface BookingMenuCategoryCardProps {
   categoryKey: string
   categoryLabel: string
@@ -23,10 +17,6 @@ export interface BookingMenuCategoryCardProps {
   locked: boolean
   formatPrice: (item: ComposeMenuItem) => string
   onToggleItem: (item: ComposeMenuItem) => void
-  tiramisuUnitPrice: number
-  localTiramisuValue: string
-  onTiramisuQuantityChange: (value: string) => void
-  onTiramisuQuantityBlur: () => void
   /** `scroll` = strip orizzontale; `grid` = griglia desktop; `stack` = colonna mobile con collapse. */
   layout?: 'grid' | 'scroll' | 'stack'
   resetKey?: string
@@ -68,10 +58,6 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   locked,
   formatPrice,
   onToggleItem,
-  tiramisuUnitPrice,
-  localTiramisuValue,
-  onTiramisuQuantityChange,
-  onTiramisuQuantityBlur,
   layout = 'grid',
   resetKey,
   compact = false,
@@ -97,89 +83,57 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
 
   const itemsList = (
     <ul className="flex flex-col gap-px px-0 pb-2">
-        {items.map((item) => {
-          const isSelected = selectedItems.some((s) => s.id === item.id)
-          const isTiramisu = isTiramisuItem(item.name)
-          const selection = selectedItems.find((s) => s.id === item.id)
-          const inputId = `compose-${categoryKey}-${item.id}`
-          const itemImageSrc = item.image_url?.trim() || undefined
+      {items.map((item) => {
+        const isSelected = selectedItems.some((s) => s.id === item.id)
+        const inputId = `compose-${categoryKey}-${item.id}`
+        const itemImageSrc = item.image_url?.trim() || undefined
 
-          if (locked) {
-            return (
-              <li key={item.id} className="min-w-0">
-                <div className="min-w-0 rounded-xl px-2 py-2">
-                  {itemImageSrc ? (
-                    <div className="mb-2 aspect-4/3 overflow-hidden rounded-lg border border-black/10 bg-warm-beige/20 sm:aspect-3/2">
-                      <img src={itemImageSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
-                    </div>
-                  ) : null}
-                  <div className="flex min-h-[44px] gap-2.5">
-                    <ItemPriceRow item={item} formatPrice={formatPrice} />
-                  </div>
-                </div>
-                {isTiramisu && selection?.quantity ? (
-                  <p className="mx-2 mb-2 text-xs font-semibold text-warm-wood-dark/80">
-                    {selection.quantity} Kg — €{tiramisuUnitPrice.toFixed(2)} al Kg
-                  </p>
-                ) : null}
-              </li>
-            )
-          }
-
+        if (locked) {
           return (
             <li key={item.id} className="min-w-0">
-              <label
-                htmlFor={inputId}
-                className={cn(
-                  'flex cursor-pointer flex-col rounded-xl px-2 py-2 transition-colors',
-                  isSelected && 'bg-warm-orange/10',
-                  !isSelected && 'hover:bg-warm-beige/50',
-                )}
-              >
+              <div className="min-w-0 rounded-xl px-2 py-2">
                 {itemImageSrc ? (
                   <div className="mb-2 aspect-4/3 overflow-hidden rounded-lg border border-black/10 bg-warm-beige/20 sm:aspect-3/2">
                     <img src={itemImageSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
                   </div>
                 ) : null}
                 <div className="flex min-h-[44px] gap-2.5">
-                  <input
-                    id={inputId}
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => onToggleItem(item)}
-                    className="mt-1 h-4 w-4 shrink-0 accent-warm-orange"
-                  />
                   <ItemPriceRow item={item} formatPrice={formatPrice} />
                 </div>
-              </label>
-
-              {isTiramisu && isSelected ? (
-                <div className="mx-2 mb-2 rounded-xl border border-black/15 bg-white/95 px-3 py-2">
-                  <label
-                    htmlFor={`tiramisu-${item.id}`}
-                    className="mb-1 block text-xs font-semibold text-warm-wood"
-                  >
-                    Quanti Kg di Tiramisù? ({TIRAMISU_MIN_KG}-{TIRAMISU_MAX_KG})
-                  </label>
-                  <input
-                    id={`tiramisu-${item.id}`}
-                    type="number"
-                    min={TIRAMISU_MIN_KG}
-                    max={TIRAMISU_MAX_KG}
-                    inputMode="numeric"
-                    value={localTiramisuValue}
-                    onChange={(e) => onTiramisuQuantityChange(e.target.value)}
-                    onBlur={onTiramisuQuantityBlur}
-                    className="w-full rounded-lg border border-warm-wood/40 px-2 py-1.5 text-sm font-semibold text-gray-800 focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/30"
-                  />
-                  <p className="mt-1 text-[10px] text-gray-500">
-                    €{tiramisuUnitPrice.toFixed(2)} al Kg
-                  </p>
-                </div>
-              ) : null}
+              </div>
             </li>
           )
-        })}
+        }
+
+        return (
+          <li key={item.id} className="min-w-0">
+            <label
+              htmlFor={inputId}
+              className={cn(
+                'flex cursor-pointer flex-col rounded-xl px-2 py-2 transition-colors',
+                isSelected && 'bg-warm-orange/10',
+                !isSelected && 'hover:bg-warm-beige/50',
+              )}
+            >
+              {itemImageSrc ? (
+                <div className="mb-2 aspect-4/3 overflow-hidden rounded-lg border border-black/10 bg-warm-beige/20 sm:aspect-3/2">
+                  <img src={itemImageSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
+                </div>
+              ) : null}
+              <div className="flex min-h-[44px] gap-2.5">
+                <input
+                  id={inputId}
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => onToggleItem(item)}
+                  className="mt-1 h-4 w-4 shrink-0 accent-warm-orange"
+                />
+                <ItemPriceRow item={item} formatPrice={formatPrice} />
+              </div>
+            </label>
+          </li>
+        )
+      })}
     </ul>
   )
 

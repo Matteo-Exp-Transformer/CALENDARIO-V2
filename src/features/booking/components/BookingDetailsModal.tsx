@@ -29,7 +29,6 @@ import { useDigestSlotConfigs, useServiceSlots } from '../hooks/useServiceSlots'
 import { useServiceSlotOverrides, resolveSlotOverride } from '../hooks/useServiceSlotOverrides'
 import {
   applyPresetTypeToBookingFormPayload,
-  computeMenuTotalsFromItems,
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
 import {
@@ -413,8 +412,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
           booking_type: newType,
           menu_selection: {
             items: [],
-            tiramisu_total: 0,
-            tiramisu_kg: 0
           }
         }))
       } else {
@@ -438,8 +435,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const handleMenuChange = (payload: {
     items: SelectedMenuItem[]
     totalPerPerson: number
-    tiramisuTotal: number
-    tiramisuKg: number
   }) => {
     setFormData((prev) => {
       const currentPreset = prev.preset_menu as PresetMenuType | undefined | null
@@ -453,11 +448,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       return {
         ...prev,
         preset_menu,
-        menu_selection: {
-          items: payload.items,
-          tiramisu_total: payload.tiramisuTotal,
-          tiramisu_kg: payload.tiramisuKg,
-        },
+        menu_selection: { items: payload.items },
       }
     })
   }
@@ -467,11 +458,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       setFormData((prev) => ({
         ...prev,
         preset_menu: null,
-        menu_selection: {
-          items: [],
-          tiramisu_total: 0,
-          tiramisu_kg: 0,
-        },
+        menu_selection: { items: [] },
       }))
       return
     }
@@ -482,22 +469,15 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       setFormData((prev) => ({
         ...prev,
         preset_menu: null,
-        menu_selection: { items: [], tiramisu_total: 0, tiramisu_kg: 0 },
+        menu_selection: { items: [] },
       }))
       return
     }
 
-    const numGuests = formData.numGuests
-    const totals = computeMenuTotalsFromItems(resolved.items, numGuests)
-
     setFormData((prev) => ({
       ...prev,
       preset_menu: presetType,
-      menu_selection: {
-        items: resolved.items,
-        tiramisu_total: totals.tiramisuTotal,
-        tiramisu_kg: totals.tiramisuKg,
-      },
+      menu_selection: { items: resolved.items },
     }))
   }
 
@@ -509,11 +489,9 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     let menuTotalBooking = undefined
     if (bookingTypeUsesMenuSelections(formData.booking_type) && formData.menu_selection) {
       const baseTotal = formData.menu_selection.items
-        .filter((item: any) => !item.name.toLowerCase().includes('tiramis'))
         .reduce((sum: number, item: any) => sum + item.price, 0)
-      const tiramisuTotal = formData.menu_selection.tiramisu_total || 0
       menuTotalPerPerson = baseTotal
-      menuTotalBooking = baseTotal * formData.numGuests + tiramisuTotal
+      menuTotalBooking = baseTotal * formData.numGuests
     }
 
     updateMutation.mutate(

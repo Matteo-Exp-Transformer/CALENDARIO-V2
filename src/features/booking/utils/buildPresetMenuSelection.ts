@@ -12,8 +12,6 @@ import {
   type PresetMenuType,
 } from '../constants/presetMenus'
 
-const DEFAULT_TIRAMISU_Q = 1
-
 const normalizeName = (name: string): string =>
   name
     .toLowerCase()
@@ -66,17 +64,13 @@ export function selectedItemsFromBuiltinPresetDefinition(
 ): SelectedMenuItem[] {
   return menuItems
     .filter((item) => preset.itemNames.some((presetName) => matchesName(item.name, presetName)))
-    .map((item) => {
-      const isTiramisu = item.name.toLowerCase().includes('tiramis')
-      return {
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        category: item.category,
-        quantity: isTiramisu ? DEFAULT_TIRAMISU_Q : undefined,
-        totalPrice: isTiramisu ? item.price : item.price,
-      }
-    })
+    .map((item) => ({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      category: item.category,
+      totalPrice: item.price,
+    }))
 }
 
 /** Selezione tramite UUID voci menu (preset admin). */
@@ -84,17 +78,13 @@ export function selectedItemsFromMenuItemIds(menuItems: MenuItem[], itemIds: str
   const idSet = new Set(itemIds)
   return menuItems
     .filter((m) => idSet.has(m.id))
-    .map((item) => {
-      const isTiramisu = item.name.toLowerCase().includes('tiramis')
-      return {
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        category: item.category,
-        quantity: isTiramisu ? DEFAULT_TIRAMISU_Q : undefined,
-        totalPrice: isTiramisu ? item.price : item.price,
-      }
-    })
+    .map((item) => ({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      category: item.category,
+      totalPrice: item.price,
+    }))
 }
 
 export function resolvePresetSelectedItems(
@@ -151,8 +141,6 @@ export function presetSelectionStillMatchesStoredPreset(
 
 export type MenuTotalsPayload = {
   totalPerPerson: number
-  tiramisuTotal: number
-  tiramisuKg: number
   menu_total_booking: number
 }
 
@@ -160,18 +148,10 @@ export function computeMenuTotalsFromItems(
   items: SelectedMenuItem[],
   numGuests: number,
 ): MenuTotalsPayload {
-  const totalPerPerson = items
-    .filter((item) => !item.name.toLowerCase().includes('tiramis'))
-    .reduce((sum, item) => sum + item.price, 0)
-  const tiramisuSelection = items.find((item) => item.name.toLowerCase().includes('tiramis'))
-  const tiramisuKg = tiramisuSelection?.quantity ?? 0
-  const tiramisuUnitPrice = tiramisuSelection?.price ?? 0
-  const tiramisuTotal = tiramisuKg > 0 ? tiramisuUnitPrice * tiramisuKg : 0
+  const totalPerPerson = items.reduce((sum, item) => sum + item.price, 0)
   return {
     totalPerPerson,
-    tiramisuTotal,
-    tiramisuKg,
-    menu_total_booking: totalPerPerson * Math.max(numGuests, 0) + tiramisuTotal,
+    menu_total_booking: totalPerPerson * Math.max(numGuests, 0),
   }
 }
 
@@ -181,15 +161,11 @@ export function computeMenuTotalsWithPresetPrice(
   presetPricePerPerson?: number | null,
 ): MenuTotalsPayload {
   if (presetPricePerPerson != null && presetPricePerPerson > 0) {
-    const totalPerPerson = presetPricePerPerson
     return {
-      totalPerPerson,
-      tiramisuTotal: 0,
-      tiramisuKg: 0,
-      menu_total_booking: totalPerPerson * Math.max(numGuests, 0),
+      totalPerPerson: presetPricePerPerson,
+      menu_total_booking: presetPricePerPerson * Math.max(numGuests, 0),
     }
   }
-
   return computeMenuTotalsFromItems(items, numGuests)
 }
 

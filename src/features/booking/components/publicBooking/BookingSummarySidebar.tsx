@@ -272,9 +272,9 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         )}
       </div>
 
-      {/* Pulsante submit in fondo al riepilogo (visibile su desktop/tablet) */}
+      {/* Pulsante submit in fondo al riepilogo (visibile solo su mobile, sotto 900px) */}
       {submitButton && (
-        <div className="border-t border-black/10 pt-4 hidden min-[900px]:block">
+        <div className="border-t border-black/10 pt-4 block min-[900px]:hidden">
           {submitButton}
         </div>
       )}
