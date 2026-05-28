@@ -61,14 +61,15 @@ export type BookingHeaderTextTarget = 'restaurant_name' | 'page_title' | 'page_d
 export interface BookingHeaderTextStyle {
   font: BookingHeaderFontId
   color: string
+  textAlign?: 'left' | 'center' | 'right'
 }
 
 export type BookingHeaderStyles = Record<BookingHeaderTextTarget, BookingHeaderTextStyle>
 
 export const DEFAULT_BOOKING_HEADER_STYLES: BookingHeaderStyles = {
-  restaurant_name: { font: 'playfair', color: '#6b4226' },
-  page_title: { font: 'playfair', color: '#6b4226' },
-  page_description: { font: 'montserrat', color: '#4a2d19' },
+  restaurant_name: { font: 'playfair', color: '#6b4226', textAlign: 'center' },
+  page_title: { font: 'playfair', color: '#6b4226', textAlign: 'center' },
+  page_description: { font: 'montserrat', color: '#4a2d19', textAlign: 'center' },
 }
 
 const BOOKING_HEADER_FONT_IDS = BOOKING_HEADER_FONT_OPTIONS.map((font) => font.id)
@@ -102,13 +103,16 @@ export function getBookingHeaderTextStyle(
   color: string
   fontSize: string
   lineHeight: number
+  textAlign: 'left' | 'center' | 'right'
 } {
   const style = headerStyles[target] ?? DEFAULT_BOOKING_HEADER_STYLES[target]
+  const fallback = DEFAULT_BOOKING_HEADER_STYLES[target]
   return {
     fontFamily: getBookingHeaderFontFamily(style.font),
     color: style.color,
     fontSize: BOOKING_HEADER_FONT_SIZE[target],
     lineHeight: target === 'page_description' ? 1.42 : 1.15,
+    textAlign: style.textAlign ?? fallback.textAlign ?? 'center',
   }
 }
 
@@ -130,6 +134,10 @@ export function parseBookingHeaderStylesFromUnknown(raw: unknown): BookingHeader
     acc[target] = {
       font: isBookingHeaderFontId(value.font) ? value.font : fallback.font,
       color: normalizeBookingHeaderColor(value.color, fallback.color),
+      textAlign:
+        value.textAlign === 'left' || value.textAlign === 'center' || value.textAlign === 'right'
+          ? value.textAlign
+          : fallback.textAlign ?? 'center',
     }
     return acc
   }, { ...DEFAULT_BOOKING_HEADER_STYLES })
