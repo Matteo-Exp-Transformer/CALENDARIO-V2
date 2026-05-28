@@ -295,6 +295,8 @@ Nessuna voce Liv.2 del vocabolario applicata in modo esplicito in questa chat.
 
 - Prepara-prompt stesso giorno: `docs/Sessioni di lavoro/29-05-26/Report-prepara-prompt-prenota-card-ingredienti-stack-29-05-26.md` (intent overlay **invertito** rispetto a esecuzione pomeridiana).
 
+---
+
 ## Appendice — Tutti i prompt di Matteo (cronologia)
 
 | # | Quando | Testo / intento | Esito |

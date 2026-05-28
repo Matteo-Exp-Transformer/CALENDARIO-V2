@@ -12,7 +12,11 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { BookingType } from '@/types/booking'
-import type { BookingMode } from '@/features/booking/constants/bookingPublicFormConfig'
+import {
+  getCarouselStickyMiniPanelLine,
+  type BookingMode,
+  type SubTab,
+} from '@/features/booking/constants/bookingPublicFormConfig'
 import { getModeLabelByType } from '../../utils/bookingModeLabels'
 import { cn } from '@/lib/utils'
 import { BookingCrossShineSubmitButton } from './BookingCrossShineSubmitButton'
@@ -32,6 +36,8 @@ interface BookingStickyBarProps {
   summaryContent: React.ReactNode
   /** Controlla se la barra deve essere visibile (il riepilogo è fuori dalla viewport). */
   visible: boolean
+  /** Sottotab carosello attiva — riga testo compatta offerta nel mini-pannello. */
+  activeSubTab?: SubTab | null
 }
 
 /** Data compatta per mini-riepilogo: gg/mm/aa */
@@ -74,8 +80,10 @@ export const BookingStickyBar: React.FC<BookingStickyBarProps> = ({
   isSubmitDisabled,
   summaryContent,
   visible,
+  activeSubTab,
 }) => {
   const [overlayOpen, setOverlayOpen] = useState(false)
+  const carouselMiniLine = getCarouselStickyMiniPanelLine(activeSubTab)
 
   const clientName = formData.client_name?.trim() ?? ''
   const guestsSummary =
@@ -169,6 +177,11 @@ export const BookingStickyBar: React.FC<BookingStickyBarProps> = ({
               ) : null}
             </div>
           )}
+          {carouselMiniLine ? (
+            <p className="text-sm text-warm-wood-dark/70 truncate line-clamp-1 min-w-0 w-full">
+              {carouselMiniLine}
+            </p>
+          ) : null}
         </button>
 
         <BookingCrossShineSubmitButton

@@ -291,6 +291,7 @@ export const BookingRequestPage: React.FC = () => {
               totalBooking={sharedFormData.menu_total_booking}
               isSubmitDisabled={isSubmitDisabled}
               visible={!isSummaryVisible}
+              activeSubTab={activeSubTab}
               summaryContent={
                 <BookingSummarySidebar
                   formData={{

@@ -202,10 +202,78 @@ export interface SubTab {
   hidden_item_ids?: string[]
   carousel_items?: CarouselItem[]
   /**
+   * Carosello: se `false`, il riepilogo Prenota non elenca i titoli slide in «Offerta selezionata»
+   * (può mostrare solo il prezzo). Omesso o `true` = comportamento legacy (dettaglio visibile).
+   */
+  show_offer_details_in_summary?: boolean
+  /**
    * Tracking personalizzazioni vs preset.
    * Vedi `bookingFormResolver.ts` per il comportamento «aggiorna solo se non personalizzato».
    */
   field_overrides?: SubTabFieldOverrides
+}
+
+/** Carosello Prenota: dettaglio slide nel riepilogo laterale (default true se assente). */
+export function getShowOfferDetailsInSummary(tab: SubTab | null | undefined): boolean {
+  return tab?.show_offer_details_in_summary !== false
+}
+
+/** Titoli slide carosello (solo item con `image_url`). Con `photoFallback` aggiunge `Foto N` se manca title/eyebrow. */
+export function getCarouselSlideTitles(
+  tab: SubTab | null | undefined,
+  options?: { photoFallback?: boolean },
+): string[] {
+  if (tab?.display !== 'carousel') return []
+  const usePhotoFallback = options?.photoFallback !== false
+  return (tab.carousel_items ?? [])
+    .filter((item) => item.image_url?.trim())
+    .map((item, idx) => {
+      const explicit = item.title?.trim() || item.eyebrow?.trim()
+      if (explicit) return explicit
+      return usePhotoFallback ? `Foto ${idx + 1}` : ''
+    })
+    .filter((title) => title.length > 0)
+}
+
+export function formatCarouselPricePerPersonLine(amount: number): string {
+  const formatted = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(
+    amount,
+  )
+  return `${formatted}/persona`
+}
+
+export type CarouselSummaryDisplay =
+  | { kind: 'titles'; titles: string[] }
+  | { kind: 'price'; amount: number }
+
+/** Cosa mostrare in riepilogo/sticky carosello (titoli lista o solo prezzo). */
+export function resolveCarouselSummaryDisplay(
+  tab: SubTab | null | undefined,
+): CarouselSummaryDisplay | null {
+  if (tab?.display !== 'carousel') return null
+  const showDetails = getShowOfferDetailsInSummary(tab)
+  const explicitTitles = getCarouselSlideTitles(tab, { photoFallback: false })
+  const price =
+    tab.price_per_person != null && tab.price_per_person > 0 ? tab.price_per_person : null
+
+  if (showDetails && explicitTitles.length > 0) {
+    return { kind: 'titles', titles: getCarouselSlideTitles(tab) }
+  }
+  if (price != null) return { kind: 'price', amount: price }
+  return null
+}
+
+/** Una riga di testo per mini-pannello sticky (primo title/eyebrow o prezzo; senza label). */
+export function getCarouselStickyMiniPanelLine(tab: SubTab | null | undefined): string | null {
+  if (tab?.display !== 'carousel') return null
+  const showDetails = getShowOfferDetailsInSummary(tab)
+  const explicitTitles = getCarouselSlideTitles(tab, { photoFallback: false })
+  const price =
+    tab.price_per_person != null && tab.price_per_person > 0 ? tab.price_per_person : null
+
+  if (showDetails && explicitTitles.length > 0) return explicitTitles[0]
+  if (price != null) return formatCarouselPricePerPersonLine(price)
+  return null
 }
 
 /** @deprecated Usare `sub_tabs[]` con type preset. Mantenuto per migrazione runtime da DB. */
@@ -346,6 +414,11 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
 
   const field_overrides = parseFieldOverridesFromUnknown(o.field_overrides)
 
+  const show_offer_details_in_summary =
+    typeof o.show_offer_details_in_summary === 'boolean'
+      ? o.show_offer_details_in_summary
+      : undefined
+
   const parsed: SubTab = {
     id,
     display,
@@ -359,6 +432,8 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
     hidden_category_keys,
     hidden_item_ids,
     carousel_items,
+    show_offer_details_in_summary:
+      display === 'carousel' ? show_offer_details_in_summary : undefined,
     field_overrides,
   }
 
@@ -502,6 +577,8 @@ export function normalizeBookingPublicFormConfig(
             ...base,
             description: undefined,
             icon: undefined,
+            show_offer_details_in_summary:
+              tab.show_offer_details_in_summary === false ? false : undefined,
             carousel_items: base.carousel_items?.map((item, idx) =>
               normalizeCarouselSlideItem(item, typeof item.sort_order === 'number' ? item.sort_order : idx),
             ),

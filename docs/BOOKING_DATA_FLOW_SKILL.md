@@ -169,6 +169,19 @@ LOCK  Due client Supabase
 
 ## 5. Come estendere senza rompere
 
+### Aggiungere un campo vetrina solo-carosello (non overridable)
+
+Esempio: `show_offer_details_in_summary` (preferenza riepilogo Prenota, non legata al preset).
+
+1. Aggiungi il campo opzionale a `SubTab` in `bookingPublicFormConfig.ts` + helper default se serve (es. `getShowOfferDetailsInSummary`: assente = `true`).
+2. Aggiorna `parseSubTabFromUnknown` (solo per `display === 'carousel'` se il campo non ha senso sulle card).
+3. Aggiorna `normalizeBookingPublicFormConfig` per preservare al salvataggio (preferire persistere solo valori non-default, es. `false` esplicito).
+4. **Non** aggiungere a `SubTabOverridableField` né a `resolveSubTabView` — il valore resta su `sub_tabs[]` e passa al pubblico via spread in `BookingRequestForm.activeModeSubTabs` (`...tab` dopo resolver).
+5. UI admin in `BookingFormConfigPanel` (editor carosello); render pubblico nel componente consumatore (`BookingSummarySidebar`).
+6. Test parser: `src/features/booking/constants/__tests__/bookingPublicFormConfig.test.ts`.
+
+Report: `docs/Sessioni di lavoro/28-05-26/Report-carosello-riepilogo-toggle-offerta-28-05-26.md`.
+
 ### Aggiungere un nuovo campo vetrina overridable (es. `subtitle`)
 
 1. Aggiungi `subtitle?: string` a `SubTab` in `bookingPublicFormConfig.ts`.

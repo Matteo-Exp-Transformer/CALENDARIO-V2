@@ -922,11 +922,46 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           {renderPriceInput(!isFixedMenu, cardPriceInputValue)}
         </div>
       ) : null
+    const showOfferDetailsInSummary = tab.show_offer_details_in_summary !== false
     const carouselPriceSection =
       tab.display === 'carousel' ? (
-        <div className="w-full min-w-0 space-y-1.5">
-          <Label className="block text-sm">Prezzo a persona (opzionale)</Label>
-          {renderPriceInput(false)}
+        <div className="w-full min-w-0 space-y-3">
+          <div className="space-y-1.5">
+            <Label className="block text-sm">Prezzo a persona (opzionale)</Label>
+            {renderPriceInput(false)}
+          </div>
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-slate-700">Mostra dettaglio offerta</p>
+              <p className="text-xs text-slate-500">
+                Se disattivo, il cliente vede solo il prezzo nel riepilogo prenotazione
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={showOfferDetailsInSummary}
+              aria-label="Mostra dettaglio offerta"
+              onClick={() =>
+                patchTab({
+                  show_offer_details_in_summary: showOfferDetailsInSummary ? false : undefined,
+                })
+              }
+              className={cn(
+                'relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400',
+                showOfferDetailsInSummary
+                  ? 'border-primary-600 bg-primary-600'
+                  : 'border-slate-300 bg-slate-200',
+              )}
+            >
+              <span
+                className={cn(
+                  'inline-block h-5 w-5 rounded-full bg-white shadow transition-transform',
+                  showOfferDetailsInSummary ? 'translate-x-5' : 'translate-x-1',
+                )}
+              />
+            </button>
+          </div>
         </div>
       ) : null
 
