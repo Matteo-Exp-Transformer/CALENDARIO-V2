@@ -49,6 +49,9 @@ description: >-
 | 19-05-26 | Pallino assegnazione tavolo da Calendario | [Report](Sessioni%20di%20lavoro/19-05-26/Report-pallino-assegnazione-tavolo.md) — `QuickTableAssignModal`, `useReleaseBookingAssignment`. |
 | 15-05-26 | Unificazione fasce orarie canoniche | [Report](Sessioni%20di%20lavoro/15-05-26/Revisionate%20da%20claude/Report-unificazione-fasce-orarie-canoniche.md) — `useCanonicalTimeSlots`, migrazione 016. |
 
-## 2026-04 e precedenti
+## Storico privato (12–22 maggio e precedenti)
 
-Vedi cartella `docs/Sessioni di lavoro/` — i report più vecchi potrebbero non essere versionati.
+I report delle prime sessioni (12-05-26 → 22-05-26) sono in `docs/_lavoro/Sessioni/` — cartella
+**locale e gitignored** (non su GitHub) perché può contenere note non destinate alla
+pubblicazione. Restano consultabili in locale come memoria storica, ma non sono materiale di
+contesto per gli agenti post-produzione. Le sessioni versionate (vive) partono dal 23-05-26.

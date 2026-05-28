@@ -41,6 +41,9 @@ Leggi il task ricevuto e applica questa tabella:
 | **data/ora prenotazioni / dateUtils / createBookingDateTime / extractTimeFromISO / desired_time / confirmed_start / orario display** | `docs/ADMIN_CLASSIC_SKILL.md` §4b — leggere **prima** di toccare qualsiasi logica orario |
 | **Test / Vitest / Playwright / staging Supabase / CI / copertura** | `docs/Testing-Skill/TESTING_SKILL.md` |
 | **Privacy Policy / GDPR / DPA / cookie / registro trattamenti / data breach / "cose da fare per produzione" / conformità legale / configurazioni compliance Supabase (PITR, SSL, MFA)** | `docs/Legal-Production-Skill/LEGAL_PRODUCTION_SKILL.md` |
+| **Come rispondere a Matteo / spiegazioni / report / fine sessione / vocabolario / "spiegamelo semplice"** | `docs/COMUNICAZIONE_UTENTE_SKILL.md` + supporto `docs/Comunicazione-Skill/` (VOCABOLARIO, OSSERVAZIONI, PROPOSTE). Agente di lavoro: applica vocabolario + raccoglie dati + report esaustivo. Caricala a inizio (se usi il vocabolario o fai domande) e a fine sessione. |
+| **Revisione skill comunicazione / promuovere-regredire voci / valutare i dati raccolti / riformare lo skill system comunicazione** | `docs/Comunicazione-Skill/REVISIONE.md` — **sessione dedicata** col revisore, non in una chat di lavoro |
+| **Visione prodotto / perché una scelta / modello commerciale / roadmap / decisioni strutturali / dove trovo cosa** | `docs/Archivio/CONTESTO_PRODOTTO.md` — fonte di verità riassuntiva (no dati sensibili) |
 | Non è chiaro di quale area si tratti | Leggi `CLAUDE.md`, poi usa questa tabella |
 
 Carica il skill indicato **prima** di aprire qualsiasi file da modificare.
@@ -128,6 +131,31 @@ src/
 
 Tab impostazioni attivo: `RestaurantSettingsTab.tsx` (LOCK strutturale in `ADMIN_CLASSIC_SKILL`).
 
+### Struttura `docs/` (skill system)
+
+```
+docs/
+├── APP_CONTEXT_SKILL.md        ← Skill 0, indice/routing (questo file, resta in root)
+├── ADMIN_CLASSIC_SKILL.md      ┐ skill "radice" citate da molti file → restano in root
+├── BOOKING_DATA_FLOW_SKILL.md  │
+├── DATA_FLOW_SKILL.md          │
+├── COMUNICAZIONE_UTENTE_SKILL.md ┘
+├── DATABASE.md · SESSION_LOG.md  ← riferimenti globali
+├── <Area>-Skill/ ·  per-ui-design-skill/   ← una cartella per area, skill + *_CONTEXT
+├── Comunicazione-Skill/        ← VOCABOLARIO, OSSERVAZIONI, PROPOSTE, REVISIONE
+├── Archivio/                   ← CONTESTO_PRODOTTO.md (fonte di verità, versionata, no dati sensibili)
+├── Sessioni di lavoro/GG-MM-AA/  ← report sessioni vive (versionati, dal 23-05-26)
+└── _lavoro/                    ← LOCALE e gitignored (MAI committare). Sottocartelle:
+    ├── Per matteo/             ← guide/dati privati di Matteo (prezzi, DPA, cose-da-fare)
+    ├── Storico/                ← architettura/changelog/setup storici
+    ├── Supporto/               ← piani e analisi di lavoro (PWA, metodo spiegazioni)
+    └── Sessioni/               ← report sessioni vecchie (12-22 maggio), privati
+```
+
+Regola: le **skill** stanno in `docs/` (root o cartella d'area). Il **materiale di supporto
+versionato** sta in `docs/Archivio/`. Il **privato** sta in `docs/_lavoro/` (gitignored) — mai
+referenziarlo come contesto obbligatorio per agenti post-produzione.
+
 ---
 
 ## 4. Invarianti globali — valgono in ogni task, in ogni file
@@ -201,6 +229,14 @@ RULE  Admin **Personalizza form** (`BookingFormConfigPanel` + sezione sfondo in 
 RULE  **Tracking personalizzazioni card Prenota** (`SubTab.field_overrides`): bandierine booleane per i campi vetrina (`label`, `description`, `price_per_person`, `hidden_item_ids`, `hidden_category_keys`). `true` = personalizzato dal ristoratore in `BookingFormConfigPanel` (resta anche se preset cambia); `false`/assente = ereditato dal preset live (segue cambi in tab Menu). Resolver puro in `src/features/booking/services/bookingFormResolver.ts` (`resolveSubTabView`, `patchSubTabAsOverride`, `resetSubTabToPreset`, `markFieldOverridden`). `BookingRequestForm.activeModeSubTabs` applica `resolveSubTabView` dopo il filtro XOR. Admin: `updateSubTab`/`updateDraftSubTab` marcano automaticamente `field_overrides[campo]=true` per ogni campo overridable presente nel patch; `importPresetIntoSubTab`/`importPresetIntoDraftSubTab` azzerano tutti gli override (eccezione: label personalizzata diversa dal preset precedente resta `true`). Parser/normalizer in `bookingPublicFormConfig.ts` preservano `field_overrides` su DB; assenza = default ereditato.
 RULE  **Pagina Prenota v2** (`/prenota/:slug`): **layout esterno opzionale a 2 colonne da 900px** in `BookingRequestPage`: se `public_booking_strip_photo` e valorizzato, usa `min-[900px]:grid-cols-[25vw_1fr]` — colonna sx = striscia foto verticale sticky; colonna dx = header + form + sticky bar. Se `public_booking_strip_photo` e `null`, la pagina resta a colonna unica anche su desktop e lo sfondo occupa tutta la viewport. La griglia esterna deve restare `w-full` senza `mx-auto`/`max-w-*`: quando la striscia esiste, parte dal bordo sinistro del viewport e mantiene sempre la stessa percentuale (`25vw`). Sotto 900px: striscia foto nascosta (`hidden min-[900px]:block`), layout a colonna unica. **Per cambiare larghezza striscia foto**: modificare il valore `25vw` nella classe `min-[900px]:grid-cols-[25vw_1fr]` in `BookingRequestPage.tsx`. **Footer Orari+Contatti**: fuori dalla griglia, ultimo figlio del `flex-col` wrapper — prende `w-full` senza `max-w-*`, copre da bordo sinistro a bordo destro e chiude visivamente la pagina; `border-t border-slate-100`, `rounded-none`. **Struttura `BookingRequestPage` return**: `div.min-h-screen → div.min-h-screen.flex.flex-col → [griglia flex-1 | footer a larghezza piena]` — non riportare il footer dentro la colonna destra (provoca footer galleggiante che non copre la striscia foto). **Copertura foto striscia**: `BookingPhotoStrip` ripete il ciclo di 6 foto 3 volte (18 foto × 120vh = 2160vh) per coprire form con 10+ categorie ingredienti aperte senza gap visivi. **Layout interno form** (dentro colonna dx): 2 colonne `min-[1256px]:grid-cols-[1fr_min(360px,32%)]` — la sidebar `BookingSummarySidebar` è laterale sticky solo da **≥1256px** (`BOOKING_PUBLIC_SUMMARY_SIDEBAR_MIN_PX` in `bookingPublicFieldStyles.ts`); sotto 1256px il riepilogo resta **sotto** il form (come su mobile). Sidebar con `min-[1256px]:sticky min-[1256px]:top-4 min-[1256px]:order-0` e `min-h-[320px]` su ≥1256px. Breakpoint **1256px** anche per `col-span-2` di tipologia/sottotab, menu-section e submit desktop; il resto del form (tipologia full-width, striscia foto, ecc.) può restare su **900px** dove documentato. Caselle dati cliente ridotte a tablet (`min-h-[2.4rem]`, testo `text-xs`) via `frostedInputCn` in `BookingRequestForm`. Lo sfondo viewport usa `public_booking_page_background` da `restaurant_settings` (foto a pagina intera `full-01`…`full-06` via `bookingFullPageBackgroundPublicHref`; texture/gradienti restano solo fallback legacy), mentre le card principali restano bianche/opache. Header pubblico: nome azienda, titolo e descrizione leggono font/colore da `booking_public_form_config.header_styles`; nome azienda e titolo hanno stessa scala grande, descrizione resta piu piccola. Font disponibili in `BOOKING_HEADER_FONT_OPTIONS`; Google Fonts caricati in `index.css`, mentre font commerciali/locali (es. Mistral, Thirsty Script) devono restare fallback CSS se non c'e licenza webfont. **Ordine form (v2 attuale):** prima tipologia (`BookingModeCards`, 3 colonne compatte su mobile, descrizione solo da `sm+`; icone Phosphor outline configurabili da `BookingFormConfigPanel`, valori ammessi in `BOOKING_MODE_ICONS`), poi sottotab scrollabili (`BookingSubTabCards`, frecce desktop + touch; card con icona della sottotab centrata **senza sfondo** e senza descrizione in nessuna view — la descrizione appare solo in `MenuSelection` dopo selezione; prezzo `/persona` solo se presente e menu fisso; se `display='carousel'` mostra **solo** `BookingSubTabCarousel` (foto + overlay per slide da `carousel_items[].eyebrow/title/description`; prezzo opzionale da `sub_tabs[].price_per_person`; nessuna griglia menù); se `display='cards'` poi menù (`MenuSelection` → `BookingMenuComposeGrid`; mobile: colonna stack `BookingMenuCategoryCard`, header con miniatura 76px a filo bordo e padding solo sul testo; desktop md+: griglia — con 3 categorie usa `grid-cols-3` già da `md` (non solo da `lg`); card griglia senza `max-w-[320px]`, si espandono a piena larghezza colonna), poi dati cliente (`BookingFormFields` + `DietaryRestrictionsSection` con `BookingPublicInsetField`: label **dentro** la card in alto a sinistra, valore sotto; data/ora usano `BookingPublicDateTimePickers` con bottom sheet mobile e popover desktop, mantenendo `TimePicker24h`; larghezza piena `BOOKING_PUBLIC_CONTENT_WIDTH` = `w-full min-w-0` allineata al box header in `bookingPublicFieldStyles.ts`; tipologia/sottotab in `#booking-sub-tabs-section` fuori padding colonna form, `min-[900px]:col-span-2`; **nessun** banner testo «Menù fisso» — solo UI read-only nelle card se `is_fixed_menu`). Sidebar `BookingSummarySidebar` a destra solo ≥1256px (`order-2` sotto 1256px nel flusso sotto il form) e sempre visibile nel flusso prima del pulsante **Invia Prenotazione** (≥1256px); quando si apre la griglia ingredienti da una sottotab, il riepilogo non scorre fuori schermo e non mostra frecce di riapertura. Config: `booking_public_form_config` in `restaurant_settings`; default `bookingPublicFormConfig.ts`; parse `restaurantSettingRegistry.ts`. Sottotab `SubTab`: niente piu `preset|manual` salvato; usare `display: 'cards' | 'carousel'`, `label`, `description`, `courses_label`, `price_per_person`, `is_fixed_menu?`, `preset_id?`, `hidden_category_keys?`, `hidden_item_ids?`, `carousel_items?`. **XOR presentazione:** `BookingMode.sub_tabs_presentation: 'cards' | 'carousel' | null`; filtro difensivo in `activeModeSubTabs` filtra per tipo coerente. **Carosello = una sola card con N foto** per modalità: `SubTabAddButtons` nasconde «+ Carosello» se ne esiste già una, `addSubTab` blocca duplicati a runtime; lato pubblico `BookingSubTabCards` non viene renderizzato per modalità carosello (auto-selezione della sottotab unica + `BookingSubTabCarousel` direttamente). **Validazione form pubblico:** email con `isValidEmail()`, telefono con `isValidPhone()` da `src/features/booking/utils/validation.ts`; `maxLength` su nome (60), email (120), telefono (20), intolleranze (300). `BookingFormFields` usa `autoComplete`/`inputMode` HTML5. Importare un menu preselezionato in `BookingFormConfigPanel` compila i campi della card Prenota e collega `preset_id`, ma non modifica `booking_custom_staff_presets` nella tab Menu; titolo card e `h2` menù pubblico = `sub_tabs[].label` (Etichetta card), descrizione da `sub_tabs[].description` — non dal nome preset staff (`MenuSelection.presetSectionTitle` + `applyLegacySubTabLabelOverrides`). `preset_id` resta la fonte per precompilare gli ingredienti e seguire il menu staff come fonte di verità per le voci. Se `is_fixed_menu !== false` e `price_per_person > 0`, riepilogo e submit usano quel prezzo × ospiti, non la somma dei piatti, e mostra il totale ingredienti barrato come confronto; se manca prezzo o `is_fixed_menu === false`, non c'è riepilogo prezzo. Menù staff: fisso = read-only card; personalizzabile = titolo grande «CREA IL TUO MENU» in `MenuSelection` + sotto solo descrizione salvata sulla sottotab, se presente + griglia `BookingMenuComposeGrid`; visibilità ingredienti/categorie per singola card Prenota filtrata da `hidden_category_keys`/`hidden_item_ids`. Admin: `BookingFormConfigPanel` + `MenuPricesTab`. Pubblici in `publicBooking/`. Submit invariato — non toccare `useCreateBookingRequest`. Report: `docs/Sessioni di lavoro/25-05-26/Report-prenota-v2-ui-sessione-25-05-26.md`.
 
+RULE  **PWA / aggiornamento app (service worker)** — file: `vite.config.ts` (`VitePWA`), `src/main.tsx` (`registerSW`), `index.html` (`#sw-update-splash`), `vercel.json` (cache header), `src/vite-env.d.ts` (globali build). Strategia: **app sempre aggiornata all'apertura, mai reload/popup durante la sessione**. Invarianti da NON violare:
+      • `registerType: 'prompt'` + `workbox.skipWaiting: false` + `clientsClaim: false`. **MAI tornare a `autoUpdate`**: farebbe attivare il nuovo SW da solo durante la sessione (interrompe Mario). In `prompt` il SW resta in `waiting` e `skipWaiting()` parte solo al messaggio `SKIP_WAITING`.
+      • In `src/main.tsx`: `onNeedRefresh` deve restare **vuoto** (niente `window.confirm`, niente reload in sessione). `onRegisteredSW` controlla `registration.waiting` all'avvio → mostra splash `#sw-update-splash` + `updateSW(true)` (skipWaiting + reload una tantum). Usare l'helper `updateSW` di `registerSW`, **non** `postMessage`/`controllerchange` manuali (fragili: il SW generato non ascolta messaggi custom).
+      • Cache `vercel.json`: `/assets/*` = `immutable` (nomi con hash → sicuri); `index.html` / `sw.js` / `manifest.webmanifest` = `no-cache` (sempre rivalidati). Non rimuovere i security header esistenti. L'hash dei file è automatico Vite — nessuna config nomi output.
+      • **Mai cacheare richieste `supabase.co`** (escluse in `workbox.runtimeCaching` — mantenere).
+      • Versione build: `__APP_VERSION__` (da `package.json` `version` — numero leggibile, bump manuale per pubblicare es. `2.1.0`) + `__BUILD_COMMIT__` + `__BUILD_DATE__`, iniettati via `define` in `vite.config.ts`, loggati con `logger.info` all'avvio. Tipi in `src/vite-env.d.ts`.
+      Report sessione: `docs/Sessioni di lavoro/28-05-26/Report-pwa-update-strategy-sessione-28-05-26.md`.
+
 LOCK  **`BookingRequestPage.tsx` — struttura griglia con striscia laterale**: il layout a 2 colonne `[striscia foto | contenuto]` con `BookingPhotoStrip` sticky è consolidato e testato su 3 breakpoint. Prima di qualsiasi modifica a `BookingRequestPage.tsx` un agente DEVE: (1) valutare se il task può essere risolto toccando solo componenti figli (`BookingRequestForm`, `BookingSummarySidebar`, `BookingStickyBar`, footer, ecc.) senza toccare la griglia esterna — se sì, procedere su quei componenti; (2) se è necessario toccare la griglia, leggere per intero `BookingRequestPage.tsx` + `BookingPhotoStrip.tsx` + `BookingSummarySidebar.tsx` + `BookingRequestForm.tsx` prima di qualsiasi edit; (3) non alterare mai questi invarianti strutturali: griglia esterna `w-full` senza `mx-auto/max-w-*`, `BookingPhotoStrip` rimane `sticky top-0 h-screen` nella colonna sinistra, footer fuori dalla griglia come ultimo figlio del wrapper `flex-col`, spacer `h-20 min-[1256px]:h-4` come ultimo elemento della colonna destra (sticky bar sotto 1256px). Qualsiasi modifica che viola uno di questi punti va discussa con l'utente prima di procedere.
 Nota: `public_booking_page_background` non accetta `strip-01`…`strip-06`; quelle foto appartengono solo a `public_booking_strip_photo`.
 Nota: **Header pagina Prenota — allineamento testo (28-05-26).** `BookingHeaderTextStyle` ora include `textAlign?: 'left' | 'center' | 'right'` (default `'center'` per tutti e 3 i target). La funzione `getBookingHeaderTextStyle` lo restituisce nel style inline. In `BookingRequestPage` le classi Tailwind `text-center`/`md:text-left` hardcoded sono state rimosse — l'allineamento è governato solo da `header_styles.textAlign` salvato su DB. Admin: `renderHeaderStyleControls` mostra 3 pulsanti ⬅ ↔ ➡ per ciascun campo (Nome azienda, Titolo, Descrizione). Parser `parseBookingHeaderStylesFromUnknown` preserva `textAlign` dal DB; valore assente → fallback `'center'`. Non aggiungere classi Tailwind `text-*` hardcoded ai tag `h1`/`h2`/`p` dell'header — sovrascrivono lo style inline.
@@ -258,6 +294,27 @@ npm run validate      # lint + typecheck + test (usare pre-PR)
 
 Al termine di ogni sessione di lavoro se utente di da conferma che il lavoro è stato svolto con successo, l'agente DEVE:
 
+### 7.0 Protocollo comunicazione (carica la skill comunicazione)
+
+Lo stile delle risposte e il **flusso di fine-chat** sono governati da
+[`docs/COMUNICAZIONE_UTENTE_SKILL.md`](COMUNICAZIONE_UTENTE_SKILL.md) + i file di supporto in
+[`docs/Comunicazione-Skill/`](Comunicazione-Skill/) (`VOCABOLARIO.md`, `OSSERVAZIONI.md`,
+`PROPOSTE.md`, `REVISIONE.md`).
+
+**Due ruoli separati** (per non appesantire ogni chat):
+- **Agente di lavoro** (tu, in una chat normale): carica la skill (a) **all'inizio** se userai il
+  vocabolario o devi fare domande prima di eseguire; (b) **alla fine**, dopo conferma successo di
+  Matteo, per: applicare il vocabolario, **raccogliere dati** (esiti voci Liv.2), aggiornare
+  `OSSERVAZIONI.md`, scrivere il report con sezione **"Dati comunicazione"** esaustiva, commit
+  dedicato `docs(comunicazione):`. Aggiorni lo skill system **solo se Matteo lo autorizza sul
+  momento**; altrimenti **segnali** i candidati nel report/`PROPOSTE.md` senza proporre riforme in
+  chat.
+- **Agente revisore** (sessione dedicata, vedi `Comunicazione-Skill/REVISIONE.md`): valuta i dati
+  accumulati, decide promozioni/regressioni delle voci, propone riforme a Matteo. Non è coinvolto
+  nelle chat di lavoro.
+
+Il report (§7.1) e l'allineamento skill (§7.2) sono parte del flusso dell'agente di lavoro.
+
 ### 7.1 Scrivere il report
 
 Creare un file `Report-*.md` in `docs/Sessioni di lavoro/GG-MM-AA/` (creando la cartella se non esiste).
@@ -268,6 +325,7 @@ Il report deve contenere:
 - Domande poste all'utente e risposte ricevute
 - Test eseguiti e risultato (`npm run validate`)
 - **Sezione "File di skill aggiornati"** — tabella con skill toccata + cosa è cambiato (obbligatoria, anche se la riga è "nessuno")
+- **Sezione "Dati comunicazione"** (obbligatoria) — frasi/richieste ricorrenti di questa chat con conteggio, spiegazioni date e formato che ha funzionato, procedure ripetute, cosa si può automatizzare con certezza vs cosa lasciare manuale, proposte fatte e loro esito, token risparmiabili. Vedi `COMUNICAZIONE_UTENTE_SKILL.md`.
 - Cosa resta per la prossima sessione
 - Eventuali deviazioni dal plan con motivazione
 
@@ -305,3 +363,4 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | `MenuSelection.tsx` prop `hideMenuGrid` / `subTabOverrides` / `BookingMode.sub_tabs` | `APP_CONTEXT_SKILL.md` §4 RULE Pagina Prenota v2 + RULE Menu Prenota |
 | `bookingFormResolver.ts` / `SubTab.field_overrides` / `patchSubTabAsOverride` / `resetSubTabToPreset` | `APP_CONTEXT_SKILL.md` §4 RULE Tracking personalizzazioni card Prenota |
 | `bookingPublicDateHelpers.ts` (getTodayIso, dateToIso, getCurrentTimeHHMM) / `bookingModeLabels.ts` (getModeLabelByType) | `APP_CONTEXT_SKILL.md` §4 RULE Anti-duplicazione — sono i punti di verità per date locali e label modalità del form pubblico |
+| `vite.config.ts` (VitePWA/define) / `src/main.tsx` (registerSW) / `index.html` (splash) / `vercel.json` (cache header) / `src/vite-env.d.ts` (globali build) | `APP_CONTEXT_SKILL.md` §4 RULE PWA / aggiornamento app |
