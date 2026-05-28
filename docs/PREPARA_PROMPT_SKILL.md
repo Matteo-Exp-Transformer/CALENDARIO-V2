@@ -62,7 +62,13 @@ spiegazione per Matteo). Deve essere auto-contenuto e contenere, quando pertinen
 - **Contesto** minimo necessario (area, schermata, flusso utente coinvolto).
 - **Vincoli**: LOCK/invarianti/RULE da rispettare (citali esplicitamente se il task li sfiora),
   TEST vs PROD se tocca il DB, edition se rilevante.
-- **Cosa NON fare** / fuori scope, se Matteo l'ha delimitato.
+- **Superfici utente** (obbligatorio quando il task tocca la UI): per **ogni** schermata citata,
+  elenca esplicitamente le superfici da gestire — desktop, mobile/sticky bar, overlay, admin — così
+  nessuna sfugge (è il buco tipico: la sticky bar dimenticata). E richiedi che il comportamento sia
+  **verificato sulle 3 view** (≈375 / 900 / 1256px): responsive già consolidato + nuovi
+  componenti/comportamenti. La verifica la fa l'agente che tocca la pagina, o una revisione dedicata.
+- **Cosa NON fare** / fuori scope, se Matteo l'ha delimitato. **Mai** scrivere «fuori scope
+  aggiornamento skill»: l'allineamento skill è già obbligatorio (APP_CONTEXT § 7.2) — vedi § C.
 - **Criterio di fatto**: come si capisce che è finito (comportamento atteso, `npm run validate`).
 
 **Usa il VOCABOLARIO come lessico-comando.** Il vocabolario è l'insieme delle parole *definite e
@@ -88,6 +94,10 @@ Scrivi il prompt come blocco copia-incolla. Niente fronzoli attorno.
 - **Domande secondarie / per scrupolo → SOTTO il prompt**, in una sezione «Da verificare (non
   bloccanti)». Non fermano Matteo, ma le vede.
 
+**Chiusura nel prompt.** Includi sempre un blocco fine-sessione che richiama APP_CONTEXT § 7: a
+conferma di Matteo → report § 7.1 + **allineamento skill § 7.2** delle aree toccate. È già
+obbligatorio: non presentarlo come opzione né escluderlo.
+
 ---
 
 ## 2. Cosa controlli prima di scrivere il prompt (filtro rischi)
@@ -103,6 +113,10 @@ Passa il flusso di Matteo attraverso questi controlli, basandoti su skill + arch
   magazzino menu; bozza vs salvato vs mostrato; Classic vs Pro/Enterprise; TEST vs PROD. Se il
   flusso è ambiguo su una di queste, chiedi quale intende.
 - **Scope**: la richiesta è chiusa o lascia spazio a interpretazioni? Esplicita i confini nel prompt.
+- **Pattern UI ripetuti**: se il task aggiunge un controllo a un pannello (toggle, prezzo, campo),
+  richiama nel prompt la RULE «UI leggera» (APP_CONTEXT § 4): controllo vicino al campo che modifica,
+  help/anteprima **sotto il controllo stesso**, mai sul campo accanto; niente blocchi informativi
+  separati. Regola generale, non un blocco per ogni componente — basta citarla quando pertinente.
 
 Se non trovi rischi, non inventarteli: scrivi un prompt pulito e, al più, una nota sotto.
 
@@ -119,7 +133,10 @@ semplice; prompt per l'agente = strutturato.
 
 ## 4. Cosa NON fai
 
-- Non scrivi né modifichi codice, non apri i file `src/`.
+- Non scrivi né modifichi codice, non apri i file `src/`. **Unica eccezione:** se Matteo dice che
+  il task precedente è «completata» e devi preparare un follow-up, è ammesso un **grep leggero solo
+  sui file già citati nel prompt precedente** per cogliere il delta — niente lettura esplorativa più
+  ampia, altrimenti smetti di essere un filtro.
 - Non esegui il task: lo prepari soltanto.
 - Non imponi decisioni di prodotto/UX: quelle le chiedi a Matteo.
 - Non aggiorni lo skill system (quello è il profilo Meta, sessione dedicata).

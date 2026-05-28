@@ -137,7 +137,7 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 
 ### «fai report finale» — Liv. 1
 - **Intende:** chiudere la sessione con il flusso di fine-chat (non parte da solo sulla conferma "ok/funziona": parte solo se Matteo lo dice)
-- **Comportamento agente:** esegui il protocollo § 7 APP_CONTEXT: report in `docs/Sessioni di lavoro/GG-MM-AA/` (linguaggio utente, sezione Dati comunicazione), allineamento skill toccate, e proponi i commit dedicati. Il via al commit resta una conferma di Matteo.
+- **Comportamento agente:** esegui il protocollo § 7 APP_CONTEXT: report § 7.1 in `docs/Sessioni di lavoro/GG-MM-AA/` (linguaggio utente, sezione Dati comunicazione), **allineamento skill § 7.2 delle aree toccate** (obbligatorio, anche se la riga è "nessuna"), e proponi i commit dedicati. Il via al commit resta una conferma di Matteo.
 - **Livello:** 1 (automatico)
 - **Casi identici già ok:** —
 - **Approvata il:** 28-05-26
