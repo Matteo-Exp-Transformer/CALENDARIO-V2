@@ -21,8 +21,6 @@ describe('computeMenuTotalsWithPresetPrice', () => {
   it('uses the preset price per person instead of summing selected dishes', () => {
     expect(computeMenuTotalsWithPresetPrice(selectedItems, 3, 8)).toEqual({
       totalPerPerson: 8,
-      tiramisuTotal: 0,
-      tiramisuKg: 0,
       menu_total_booking: 24,
     })
   })
@@ -30,8 +28,6 @@ describe('computeMenuTotalsWithPresetPrice', () => {
   it('falls back to selected dish totals when preset price is not set', () => {
     expect(computeMenuTotalsWithPresetPrice(selectedItems, 3, undefined)).toEqual({
       totalPerPerson: 7,
-      tiramisuTotal: 0,
-      tiramisuKg: 0,
       menu_total_booking: 21,
     })
   })

@@ -36,8 +36,6 @@ export interface BookingRequest {
   booking_type?: BookingType
   menu_selection?: {
     items: SelectedMenuItem[]
-    tiramisu_total: number
-    tiramisu_kg: number
   }
   dietary_restrictions?: DietaryRestriction[]
   preset_menu?: PresetMenuType
@@ -82,8 +80,6 @@ export interface BookingRequestInput {
   booking_type?: BookingType
   menu_selection?: {
     items: SelectedMenuItem[]
-    tiramisu_total: number
-    tiramisu_kg: number
   }
   dietary_restrictions?: DietaryRestriction[]
   preset_menu?: PresetMenuType

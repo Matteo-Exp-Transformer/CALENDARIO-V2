@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useMenuItems } from '../hooks/useMenuItems'
@@ -37,8 +37,6 @@ interface MenuSelectionProps {
   onMenuChange: (payload: {
     items: SelectedMenuItem[]
     totalPerPerson: number
-    tiramisuTotal: number
-    tiramisuKg: number
   }) => void
   presetMenu?: PresetMenuType
   onPresetMenuChange?: (preset: PresetMenuType) => void
@@ -70,20 +68,6 @@ interface MenuSelectionProps {
 }
 
 type NormalizedMenuItem = ComposeMenuItem
-
-const isTiramisuItem = (itemName: string): boolean =>
-  itemName.toLowerCase().includes('tiramis')
-
-const TIRAMISU_MIN_KG = 1
-const TIRAMISU_MAX_KG = 7
-const DEFAULT_TIRAMISU_KG = 1
-
-const clampTiramisuQuantity = (qty: number): number => {
-  if (Number.isNaN(qty) || qty <= 0) {
-    return 0
-  }
-  return Math.min(TIRAMISU_MAX_KG, Math.max(TIRAMISU_MIN_KG, qty))
-}
 
 export const MenuSelection: React.FC<MenuSelectionProps> = ({
   selectedItems,
@@ -179,24 +163,15 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
         const types = normalizeMenuItemBookingTypes(item.booking_types)
         return bookingType ? types.includes(bookingType) : true
       })
-      .map<NormalizedMenuItem>((item) => {
-        const lowerName = item.name.toLowerCase()
-        const priceSuffix =
-          lowerName.includes('tiramis') && item.category === 'dolci'
-            ? ' al Kg'
-            : undefined
-
-        return {
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          category: item.category,
-          description: item.description ?? undefined,
-          sort_order: item.sort_order ?? 0,
-          priceSuffix,
-          image_url: item.image_url ?? null,
-        }
-      })
+      .map<NormalizedMenuItem>((item) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        category: item.category,
+        description: item.description ?? undefined,
+        sort_order: item.sort_order ?? 0,
+        image_url: item.image_url ?? null,
+      }))
   }, [menuItems, bookingType, hiddenCategoryKeys, hiddenItemIds, activeCustomPreset])
 
   const categoryEntries = useMemo(
@@ -235,11 +210,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     return undefined
   }, [presetDescription, activeCustomPreset, disablePresetDescriptionFallback])
 
-  const tiramisuUnitPrice = useMemo(() => {
-    const tiramisuItem = normalizedMenuItems.find((item) => isTiramisuItem(item.name))
-    return tiramisuItem?.price ?? 20
-  }, [normalizedMenuItems])
-
   // Raggruppa per categoria
   const itemsByCategory = useMemo(
     () =>
@@ -250,89 +220,27 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     [categoryEntries, normalizedMenuItems],
   )
 
-  const { totalPerPerson, tiramisuKg, tiramisuTotal } = useMemo(() => {
-    const tiramisuSelection = selectedItems.find((item) => isTiramisuItem(item.name))
-    const quantity = tiramisuSelection?.quantity ?? 0
-    const totalForTiramisu = quantity > 0 ? tiramisuUnitPrice * quantity : 0
-
-    const baseTotal = selectedItems
-      .filter((item) => !isTiramisuItem(item.name))
-      .reduce((sum, item) => sum + item.price, 0)
-
-    const totalPerPerson = baseTotal
-
-    return {
-      totalPerPerson,
-      tiramisuKg: quantity,
-      tiramisuTotal: totalForTiramisu
-    }
-  }, [selectedItems, tiramisuUnitPrice])
-
-  // Stato locale per l'input del tiramisù per permettere digitazione libera
-  const [localTiramisuValue, setLocalTiramisuValue] = useState<string>('')
-  const isInitializedRef = React.useRef<boolean>(false)
-
-  // Inizializza lo stato locale solo una volta quando tiramisuKg è disponibile
-  useEffect(() => {
-    if (!isInitializedRef.current && tiramisuKg > 0) {
-      setLocalTiramisuValue(String(tiramisuKg))
-      isInitializedRef.current = true
-    } else if (tiramisuKg === 0 && localTiramisuValue !== '') {
-      // Reset solo se tiramisuKg è 0 e il valore locale non è vuoto (caso di rimozione tiramisù)
-      setLocalTiramisuValue('')
-    }
-  }, [tiramisuKg])
-
-  // Rimosso useEffect che causava loop infinito
-  // Il callback viene chiamato direttamente da handleItemToggle e handleBisPrimiToggle
+  const totalPerPerson = useMemo(
+    () => selectedItems.reduce((sum, item) => sum + item.price, 0),
+    [selectedItems],
+  )
 
   const emitMenuSelectionChange = useCallback((items: SelectedMenuItem[]) => {
-    // GUARD: Prevent infinite loops by checking if items actually changed
     const itemsChanged = items.length !== selectedItems.length ||
       items.some((item, index) => {
         const existing = selectedItems[index]
-        return !existing ||
-          item.id !== existing.id ||
-          item.quantity !== existing.quantity
+        return !existing || item.id !== existing.id
       })
+    if (!itemsChanged) return
 
-    if (!itemsChanged) {
-      return
-    }
+    const itemsWithTotals = items.map((selected) => ({
+      ...selected,
+      totalPrice: selected.totalPrice ?? selected.price,
+    }))
 
-    const itemsWithTotals = items.map((selected) => {
-      if (isTiramisuItem(selected.name)) {
-        const rawQuantity = selected.quantity ?? DEFAULT_TIRAMISU_KG
-        const clampedQuantity = clampTiramisuQuantity(rawQuantity)
-        const totalPrice = clampedQuantity > 0 ? tiramisuUnitPrice * clampedQuantity : 0
-        return {
-          ...selected,
-          quantity: clampedQuantity > 0 ? clampedQuantity : undefined,
-          totalPrice: totalPrice > 0 ? totalPrice : undefined
-        }
-      }
-
-      return {
-        ...selected,
-        totalPrice: selected.totalPrice ?? selected.price
-      }
-    })
-
-    const tiramisuSelection = itemsWithTotals.find((item) => isTiramisuItem(item.name))
-    const tiramisuQuantity = tiramisuSelection?.quantity ?? 0
-    const tiramisuTotalValue = tiramisuSelection?.totalPrice ?? 0
-
-    const baseTotal = itemsWithTotals
-      .filter((item) => !isTiramisuItem(item.name))
-      .reduce((sum, item) => sum + item.price, 0)
-
-    onMenuChange({
-      items: itemsWithTotals,
-      totalPerPerson: baseTotal,
-      tiramisuTotal: tiramisuTotalValue,
-      tiramisuKg: tiramisuQuantity
-    })
-  }, [selectedItems, tiramisuUnitPrice, onMenuChange])
+    const total = itemsWithTotals.reduce((sum, item) => sum + item.price, 0)
+    onMenuChange({ items: itemsWithTotals, totalPerPerson: total })
+  }, [selectedItems, onMenuChange])
 
   const handleItemToggle = (item: NormalizedMenuItem) => {
     if (menuSelectionLocked) return
@@ -364,11 +272,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       id: item.id,
       name: item.name,
       price: item.price,
-      category: item.category
-    }
-
-    if (isTiramisuItem(item.name)) {
-      newItem.quantity = DEFAULT_TIRAMISU_KG
+      category: item.category,
     }
 
     emitMenuSelectionChange([
@@ -382,128 +286,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
 
     const remainingItems = selectedItems.filter(item => item.id !== itemId)
     emitMenuSelectionChange(remainingItems)
-  }
-
-  const handleTiramisuQuantityChange = (value: string) => {
-    if (menuSelectionLocked) return
-
-    // Aggiorna immediatamente lo stato locale per permettere digitazione libera
-    setLocalTiramisuValue(value)
-
-    const trimmed = value.trim()
-    const isEmpty = trimmed === ''
-
-    if (isEmpty) {
-      const itemsWithoutQuantity = selectedItems.map((item) =>
-        isTiramisuItem(item.name)
-          ? { ...item, quantity: undefined, totalPrice: undefined }
-          : item
-      )
-      emitMenuSelectionChange(itemsWithoutQuantity)
-      return
-    }
-
-    // Permetti solo numeri
-    if (!/^\d+$/.test(trimmed)) {
-      return
-    }
-
-    const parsed = Number.parseInt(trimmed, 10)
-    if (Number.isNaN(parsed)) {
-      return
-    }
-
-    // Se il numero è fuori range (0 o > 7)
-    if (parsed < TIRAMISU_MIN_KG || parsed > TIRAMISU_MAX_KG) {
-      // Se è chiaramente fuori range (es. > 7), clampalo immediatamente
-      if (parsed > TIRAMISU_MAX_KG) {
-        const clamped = TIRAMISU_MAX_KG
-        setLocalTiramisuValue(String(clamped))
-        const updatedItems = selectedItems.map((item) =>
-          isTiramisuItem(item.name)
-            ? {
-                ...item,
-                quantity: clamped,
-                totalPrice: clamped > 0 ? tiramisuUnitPrice * clamped : undefined
-              }
-            : item
-        )
-        emitMenuSelectionChange(updatedItems)
-      }
-      // Se è < 1, lascia che l'utente continui a digitare (potrebbe voler digitare 1, 2, etc.)
-      return
-    }
-
-    // Valore valido (1-7), aggiorna immediatamente
-    const updatedItems = selectedItems.map((item) =>
-      isTiramisuItem(item.name)
-        ? {
-            ...item,
-            quantity: parsed,
-            totalPrice: parsed > 0 ? tiramisuUnitPrice * parsed : undefined
-          }
-        : item
-    )
-    emitMenuSelectionChange(updatedItems)
-  }
-
-  const handleTiramisuQuantityBlur = () => {
-    if (menuSelectionLocked) return
-
-    // Al blur, assicurati che il valore sia valido
-    const trimmed = localTiramisuValue.trim()
-    if (trimmed === '') {
-      const itemsWithoutQuantity = selectedItems.map((item) =>
-        isTiramisuItem(item.name)
-          ? { ...item, quantity: undefined, totalPrice: undefined }
-          : item
-      )
-      emitMenuSelectionChange(itemsWithoutQuantity)
-      return
-    }
-
-    const parsed = Number.parseInt(trimmed, 10)
-    if (Number.isNaN(parsed) || parsed < TIRAMISU_MIN_KG) {
-      // Se vuoto o invalido, imposta a default
-      const clamped = DEFAULT_TIRAMISU_KG
-      setLocalTiramisuValue(String(clamped))
-      const updatedItems = selectedItems.map((item) =>
-        isTiramisuItem(item.name)
-          ? {
-              ...item,
-              quantity: clamped,
-              totalPrice: clamped > 0 ? tiramisuUnitPrice * clamped : undefined
-            }
-          : item
-      )
-      emitMenuSelectionChange(updatedItems)
-    } else if (parsed > TIRAMISU_MAX_KG) {
-      // Se troppo grande, clampalo
-      const clamped = TIRAMISU_MAX_KG
-      setLocalTiramisuValue(String(clamped))
-      const updatedItems = selectedItems.map((item) =>
-        isTiramisuItem(item.name)
-          ? {
-              ...item,
-              quantity: clamped,
-              totalPrice: clamped > 0 ? tiramisuUnitPrice * clamped : undefined
-            }
-          : item
-      )
-      emitMenuSelectionChange(updatedItems)
-    } else {
-      // Valore valido, assicurati che sia sincronizzato
-      const updatedItems = selectedItems.map((item) =>
-        isTiramisuItem(item.name)
-          ? {
-              ...item,
-              quantity: parsed,
-              totalPrice: parsed > 0 ? tiramisuUnitPrice * parsed : undefined
-            }
-          : item
-      )
-      emitMenuSelectionChange(updatedItems)
-    }
   }
 
   if (isLoading) {
@@ -636,10 +418,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             customStaffPresets={customStaffPresets}
             formatPrice={formatPrice}
             onToggleItem={handleItemToggle}
-            tiramisuUnitPrice={tiramisuUnitPrice}
-            localTiramisuValue={localTiramisuValue}
-            onTiramisuQuantityChange={handleTiramisuQuantityChange}
-            onTiramisuQuantityBlur={handleTiramisuQuantityBlur}
           />
         </div>
       )}
@@ -664,9 +442,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             <div style={{ paddingLeft: '22px', paddingRight: '22px', paddingTop: '18px', paddingBottom: '18px' }}>
               <div className="flex flex-wrap" style={{ gap: '16px' }}>
                 {selectedItems.map((item) => {
-                  const isTiramisu = isTiramisuItem(item.name)
-                  const quantityLabel = isTiramisu && item.quantity ? ` - ${item.quantity} Kg` : ''
-                  const displayLabel = `${item.name}${quantityLabel}`
                   return (
                     <button
                       key={item.id}
@@ -679,7 +454,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
                       )}
                       style={{ borderColor: '#60a5fa' }}
                     >
-                      <span className="truncate max-w-[180px] text-left">{displayLabel}</span>
+                      <span className="truncate max-w-[180px] text-left">{item.name}</span>
                       <X className="h-4 w-4 transition-colors" style={{ color: '#60a5fa' }} />
                     </button>
                   )
@@ -707,18 +482,10 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
                 <span>Prezzo a persona</span>
                 <span>{formatCurrency(totalPerPerson)}</span>
               </div>
-              {tiramisuTotal > 0 && (
-                <div className="flex items-center justify-between text-lg font-semibold text-warm-wood">
-                  <span>Tiramisù</span>
-                  <span>{formatCurrency(tiramisuTotal)}</span>
-                </div>
-              )}
               <div className="h-px bg-warm-beige/60" />
               <div className="flex items-center justify-between text-2xl font-bold text-warm-wood">
                 <span>Prezzo totale rinfresco</span>
-                <span>
-                  {formatCurrency(totalPerPerson * Math.max(numGuests, 0) + tiramisuTotal)}
-                </span>
+                <span>{formatCurrency(totalPerPerson * Math.max(numGuests, 0))}</span>
               </div>
             </div>
           </div>
