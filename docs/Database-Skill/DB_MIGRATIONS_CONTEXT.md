@@ -69,6 +69,8 @@ Su **produzione**: 001–025 tutte applicate. Su **TEST**: rollout 019–025 all
 
 > **Direttiva ambiente (2026-05-16)**: lo sviluppo punta al **server di TEST**. Migrazioni / RPC / rigenerazione tipi via MCP `Supabase_test__*` (`docnnernvp`), mai su produzione (`rwuxgvld`, MCP `Supabase__*`, sola lettura). Verificare sempre con `get_project_url` prima di `apply_migration`. Vedi `APP_CONTEXT_SKILL.md` §1b.
 
+> **Supabase Data API — GRANT espliciti (email Supabase, 2026-05-28)**: dal **30 maggio 2026** i nuovi progetti non espongono più automaticamente le tabelle `public` alla Data API; dal **30 ottobre 2026** il requisito arriva anche sulle nuove tabelle dei progetti esistenti. Ogni nuova migrazione che crea una tabella deve dichiarare i GRANT minimi richiesti da PostgREST / GraphQL / `supabase-js`, oltre a RLS e policy. Per tabelle admin usare `GRANT SELECT, INSERT, UPDATE, DELETE ... TO authenticated`; per letture pubbliche usare `GRANT SELECT ... TO anon, authenticated` solo quando il dato è davvero pubblico; per tabelle solo Edge Function/service_role non concedere accesso ai client.
+
 ---
 
 ## 2. Workflow migrazione nuova
@@ -77,21 +79,21 @@ Su **produzione**: 001–025 tutte applicate. Su **TEST**: rollout 019–025 all
 # 1. Crea il file (naming numerico progressivo)
 # supabase/migrations/026_nome_descrittivo.sql
 
-# 2a. Prova prima con CLI
-npx supabase db push
+# 2. Verifica ambiente prima di qualunque SQL remoto
+# MCP Supabase test: get_project_url deve rispondere docnnernvp
 
-# 2b. Se CLI fallisce (disallineamento versioni) → usa MCP Supabase
-#     apply_migration(name, query)  — applica DDL direttamente sul DB remoto
-#     Poi: npx supabase migration repair --status applied 026  (allinea registro)
+# 3. Applica via MCP sul DB TEST
+# Supabase_test__apply_migration(name, query)
 
-# 3. Rigenera i tipi TypeScript
+# 4. Rigenera i tipi TypeScript dal DB test corretto
 npm run db:types:linked
 
-# 4. Valida
+# 5. Valida
 npm run typecheck && npm run lint && npm run test
 ```
 
 > Non usare `supabase migration new` — genera naming timestamp. Creare il file SQL manualmente con prefisso numerico.
+> Non usare la produzione per "provare" una migrazione: `Supabase__*` (`rwuxgvld`) è sola lettura salvo richiesta esplicita.
 
 ---
 
@@ -235,4 +237,8 @@ CREATE POLICY "admin_update_nome_tabella"
 CREATE POLICY "admin_delete_nome_tabella"
   ON nome_tabella FOR DELETE TO authenticated
   USING (tenant_id = current_admin_tenant_id());
+
+-- Data API grants: richiesti da Supabase per nuove tabelle public.
+-- Admin-only: il client autenticato passa comunque da RLS.
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE nome_tabella TO authenticated;
 ```

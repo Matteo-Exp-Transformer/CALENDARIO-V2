@@ -12,7 +12,11 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { BookingType } from '@/types/booking'
-import type { BookingMode } from '@/features/booking/constants/bookingPublicFormConfig'
+import {
+  getCarouselStickyMiniPanelLine,
+  type BookingMode,
+  type SubTab,
+} from '@/features/booking/constants/bookingPublicFormConfig'
 import { getModeLabelByType } from '../../utils/bookingModeLabels'
 import { cn } from '@/lib/utils'
 import { BookingCrossShineSubmitButton } from './BookingCrossShineSubmitButton'
@@ -32,6 +36,8 @@ interface BookingStickyBarProps {
   summaryContent: React.ReactNode
   /** Controlla se la barra deve essere visibile (il riepilogo è fuori dalla viewport). */
   visible: boolean
+  /** Sottotab carosello attiva — riga testo compatta offerta nel mini-pannello. */
+  activeSubTab?: SubTab | null
 }
 
 /** Data compatta per mini-riepilogo: gg/mm/aa */
@@ -74,8 +80,10 @@ export const BookingStickyBar: React.FC<BookingStickyBarProps> = ({
   isSubmitDisabled,
   summaryContent,
   visible,
+  activeSubTab,
 }) => {
   const [overlayOpen, setOverlayOpen] = useState(false)
+  const carouselMiniLine = getCarouselStickyMiniPanelLine(activeSubTab)
 
   const clientName = formData.client_name?.trim() ?? ''
   const guestsSummary =
@@ -98,7 +106,7 @@ export const BookingStickyBar: React.FC<BookingStickyBarProps> = ({
       {/* Sticky bar — solo mobile, solo quando il riepilogo è fuori dalla viewport */}
       <div
         className={cn(
-          'fixed bottom-0 left-0 right-0 z-200 min-[900px]:hidden',
+          'fixed bottom-0 left-0 right-0 z-200 min-[1256px]:hidden',
           'border-t border-warm-wood/15 shadow-[0_-4px_24px_rgba(0,0,0,0.13)]',
           'px-4 pt-2.5 pb-3 flex flex-col gap-2',
           'transition-transform duration-300 ease-out',
@@ -169,6 +177,11 @@ export const BookingStickyBar: React.FC<BookingStickyBarProps> = ({
               ) : null}
             </div>
           )}
+          {carouselMiniLine ? (
+            <p className="text-sm text-warm-wood-dark/70 truncate line-clamp-1 min-w-0 w-full">
+              {carouselMiniLine}
+            </p>
+          ) : null}
         </button>
 
         <BookingCrossShineSubmitButton
@@ -182,7 +195,7 @@ export const BookingStickyBar: React.FC<BookingStickyBarProps> = ({
 
       {/* Overlay riepilogo — si apre al clic sulla barra */}
       {overlayOpen && (
-        <div className="fixed inset-0 z-300 min-[900px]:hidden flex flex-col">
+        <div className="fixed inset-0 z-300 min-[1256px]:hidden flex flex-col">
           {/* Sfondo semi-trasparente cliccabile per chiudere */}
           <div
             className="absolute inset-0 bg-black/50"

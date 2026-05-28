@@ -1,5 +1,5 @@
 import { ImagePlus, ChevronUp, ChevronDown, Trash2, Pencil } from 'lucide-react'
-import { useRef } from 'react'
+import { useRef, type ChangeEvent } from 'react'
 import { ForkKnifeIcon } from '@phosphor-icons/react/dist/csr/ForkKnife'
 import { CallBellIcon } from '@phosphor-icons/react/dist/csr/CallBell'
 import { ChefHatIcon } from '@phosphor-icons/react/dist/csr/ChefHat'
@@ -9,14 +9,16 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { cn } from '@/lib/utils'
-import { useCarouselPhotoUpload } from '@/features/booking/components/MenuHomepageConfigPanel'
+import {
+  bookingCarouselStoragePrefix,
+  useCarouselPhotoUpload,
+} from '@/features/booking/hooks/useCarouselPhotoUpload'
 import type { CarouselItem, CarouselSlideIcon } from '@/types/menu'
-import type { SubTab, SubTabIcon } from '@/features/booking/constants/bookingPublicFormConfig'
-
-/** Limiti testi slide carosello in Personalizza form (Pagina Prenota). */
-const BOOKING_CAROUSEL_EYEBROW_MAX = 30
-const BOOKING_CAROUSEL_TITLE_MAX = 22
-const BOOKING_CAROUSEL_DESCRIPTION_MAX = 66
+import {
+  BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS,
+  type SubTab,
+  type SubTabIcon,
+} from '@/features/booking/constants/bookingPublicFormConfig'
 
 const SUB_TAB_ICON_OPTIONS: { value: SubTabIcon; label: string }[] = [
   { value: 'utensils', label: 'Posate' },
@@ -124,7 +126,7 @@ function CarouselSlideEditorCard({
   onMoveUp: () => void
   onMoveDown: () => void
   onRemove: () => void
-  onReplacePhoto: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onReplacePhoto: (e: ChangeEvent<HTMLInputElement>) => void
   replaceDisabled?: boolean
   /** Su mobile la prima slide mostra l'etichetta nella riga titolo del genitore (es. CAROSELLO 1). */
   hideMobileSlideLabel?: boolean
@@ -213,7 +215,7 @@ function CarouselSlideEditorCard({
       <AdminFieldWithCharCount
         label="Testo Etichetta"
         value={item.eyebrow ?? ''}
-        maxLength={BOOKING_CAROUSEL_EYEBROW_MAX}
+        maxLength={BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS.eyebrow}
         onChange={(eyebrow) => onPatch({ eyebrow: eyebrow || undefined })}
         placeholder="Nome mostrato al cliente"
         singleLine
@@ -222,7 +224,7 @@ function CarouselSlideEditorCard({
       <AdminFieldWithCharCount
         label="Testo Titolo"
         value={item.title ?? ''}
-        maxLength={BOOKING_CAROUSEL_TITLE_MAX}
+        maxLength={BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS.title}
         onChange={(title) => onPatch({ title: title || undefined })}
         placeholder="es. Tonno in crosta"
         singleLine
@@ -231,7 +233,7 @@ function CarouselSlideEditorCard({
       <AdminFieldWithCharCount
         label="Testo Descrizione"
         value={item.description ?? ''}
-        maxLength={BOOKING_CAROUSEL_DESCRIPTION_MAX}
+        maxLength={BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS.description}
         onChange={(description) => onPatch({ description: description || undefined })}
         placeholder="Sottotitolo sulla card"
       />
@@ -282,9 +284,7 @@ export function BookingFormCarouselEditor({
   }
 
   const { fileRef, uploading, canUpload, handleAddFile, removeAt, replaceAt } = useCarouselPhotoUpload({
-    tenantId,
-    menuQrCodeId: null,
-    draftShortCode: `booking-form-${modeId}-${tab.id}`,
+    storagePrefix: bookingCarouselStoragePrefix(tenantId, modeId, tab.id),
     items,
     onChange: (next) => {
       const merged = next.map((it, idx) => {

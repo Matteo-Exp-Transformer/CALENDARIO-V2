@@ -112,11 +112,15 @@ function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
               {hasOverlay ? (
                 <div className="absolute inset-x-0 bottom-0 p-4 text-left">
                   {cardLabel ? (
-                    <p className="text-xs font-bold uppercase tracking-wide text-white/80">{cardLabel}</p>
+                    <p className="ml-[-9px] mr-[-9px] px-0 text-xs font-bold uppercase tracking-wide text-white/80">
+                      {cardLabel}
+                    </p>
                   ) : null}
-                  {title ? <h3 className="mt-1 text-lg font-bold leading-tight">{title}</h3> : null}
+                  {title ? (
+                    <h3 className="mt-1 ml-[-9px] mr-[-11px] px-0 text-lg font-bold leading-tight">{title}</h3>
+                  ) : null}
                   {description ? (
-                    <p className="mt-1 line-clamp-3 text-sm font-medium leading-snug text-white/85">
+                    <p className="mt-1 ml-[-9px] mr-[-11px] line-clamp-3 text-sm font-medium leading-snug text-white/85">
                       {description}
                     </p>
                   ) : null}
@@ -867,11 +871,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     <form
       id="booking-request-form"
       onSubmit={handleSubmit}
-      className="grid w-full max-w-full grid-cols-1 gap-4 font-bold min-[900px]:grid-cols-[1fr_min(320px,30%)] min-[900px]:items-start min-[900px]:gap-5 lg:grid-cols-[1fr_min(360px,32%)] lg:gap-6"
+      className="grid w-full max-w-full grid-cols-1 gap-4 font-bold min-[1256px]:grid-cols-[1fr_min(360px,32%)] min-[1256px]:items-start min-[1256px]:gap-6"
     >
       {/* Tipologia + sottotab: fuori da md:px-2/lg:px-4 — stesso bordo laterale del box header */}
       <div
-        className="col-span-1 flex w-full min-w-0 flex-col space-y-3 min-[900px]:col-span-2"
+        className="col-span-1 flex w-full min-w-0 flex-col space-y-3 min-[1256px]:col-span-2"
         id="booking-sub-tabs-section"
       >
         <BookingModeCards
@@ -960,7 +964,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       </div>
 
       {showMenuSelectionSection && (
-        <div id="menu-section" className="col-span-1 flex w-full min-w-0 flex-col space-y-6 min-[900px]:col-span-2">
+        <div id="menu-section" className="col-span-1 flex w-full min-w-0 flex-col space-y-6 min-[1256px]:col-span-2">
           <MenuSelection
             selectedItems={formData.menu_selection?.items || []}
             numGuests={formData.num_guests || 0}
@@ -1083,8 +1087,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
       {summarySidebar}
 
-      {/* Submit grande — solo desktop ≥900px; su mobile/tablet il submit è dentro BookingSummarySidebar */}
-      <div className="order-3 col-span-1 hidden min-[900px]:flex w-full max-w-full justify-center items-center mt-3 mb-6 min-[900px]:col-span-2">
+      {/* Submit grande — solo ≥1256px; sotto il submit è nel riepilogo / sticky bar */}
+      <div className="order-3 col-span-1 hidden min-[1256px]:flex w-full max-w-full justify-center items-center mt-3 mb-6 min-[1256px]:col-span-2">
         <button
             type="submit"
             disabled={isPending || isBlocked || isSubmitting || isCheckingAvailability}

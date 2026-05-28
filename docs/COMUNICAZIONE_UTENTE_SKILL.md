@@ -73,3 +73,76 @@ Matteo chiede lui il dettaglio tecnico se gli serve. Vale anche per i report di 
 | "fix su `setTenantFromAdmin`: `featureOverrides` ora letto dall'RPC" | "al login Mario vede correttamente le funzionalità che ha acquistato, anche se ha il pacchetto base" |
 | "aggiunto `isWallClockStartBeforeNow` guard prima della mutation" | "se Mario prova ad accettare una prenotazione con orario già passato, l'app gli chiede conferma prima di procedere" |
 | "rimossa sezione `placement-areas` da `RestaurantSettingsTab`" | "la sezione 'Aree di posizionamento' nelle Impostazioni è stata rimossa perché non era usata da nessun cliente" |
+
+---
+
+## Sistema vivo: due ruoli separati
+
+Per **non appesantire ogni chat**, il sistema separa due ruoli. Un agente di lavoro normale fa
+solo le cose leggere; il lavoro "meta" (valutare i dati, riformare lo skill system) è di un agente
+revisore in una **sessione dedicata**.
+
+| Ruolo | Quando | Cosa fa | Cosa NON fa |
+|-------|--------|---------|-------------|
+| **Agente di lavoro** (tutti, anche non specializzati) | Ogni chat | Applica il `VOCABOLARIO` per parlare bene a Matteo; **raccoglie dati** (specie sulle voci Liv.2); scrive un **report esaustivo**; aggiorna lo skill system **solo se Matteo lo autorizza sul momento**. | Non valuta promozioni/regressioni; non propone riforme dello skill system; non apre discussioni meta. Tiene il contesto minimo. |
+| **Agente revisore** (sessione separata) | Su richiesta di Matteo, ogni tanto | Legge i report accumulati + `OSSERVAZIONI.md` + dati Liv.2; **valuta** quali voci promuovere/regredire; propone a Matteo miglioramenti allo skill system; applica le decisioni. Vedi [`Comunicazione-Skill/REVISIONE.md`](Comunicazione-Skill/REVISIONE.md). | Non è coinvolto nelle chat di lavoro. |
+
+> **Profili di ingresso e termini.** I tre profili di ingresso (Esecuzione / Verifica / Meta) definiti in `APP_CONTEXT_SKILL.md` § 0.0 sono solo uno *smistatore di contesto* (quali skill caricare) e non hanno livello. I **termini** con cui Matteo li chiama in chat sono invece voci di vocabolario, con livello 1/2/3: nascono in `PROPOSTE.md` (liv. 3), si mappano nella chat dedicata e salgono in `VOCABOLARIO.md` dopo approvazione. Esecuzione/Verifica = agente di lavoro; Meta = agente revisore (`Comunicazione-Skill/REVISIONE.md`).
+
+File di supporto in `docs/Comunicazione-Skill/`:
+
+| File | A cosa serve |
+|------|--------------|
+| `VOCABOLARIO.md` | Parole/frasi di Matteo → comportamento agente, con **livello 1/2/3**. Solo voci approvate da lui. Caricalo a inizio sessione. |
+| `OSSERVAZIONI.md` | Registro dati: frasi ricorrenti, procedure ripetute, esiti applicazione voci. Lo scrivono gli agenti di lavoro; lo legge il revisore. |
+| `PROPOSTE.md` | Candidate automazioni. Le **alimenta** l'agente di lavoro (segnalando pattern nel report); le **decide** Matteo con il revisore. |
+| `REVISIONE.md` | Protocollo della sessione separata di revisione skill system. |
+
+### Come usare il VOCABOLARIO durante il lavoro (agente di lavoro)
+
+A inizio sessione, leggi `VOCABOLARIO.md`. Ogni voce ha un **livello di libertà**:
+- **Liv. 1 (automatico):** applica subito, niente domande.
+- **Liv. 2 (cautela):** applica, ma se il contesto è ambiguo fai una domanda breve prima.
+- **Liv. 3 (conferma):** chiedi sempre conferma, salvo frase identica a un caso già ok nella voce.
+
+Se una frase somiglia a una voce ma non combacia, trattala come liv. 3 (chiedi) e segnalalo nel report.
+
+**Per ogni voce Liv.2 che applichi**, aggiungi una riga al campo `Dati Liv.2` della voce con
+l'esito: `ok` (applicata, Matteo non ha corretto) / `domanda-superflua` (hai chiesto ma era ovvio)
+/ `corretto-da-Matteo` (non era ciò che voleva). Questi dati servono al revisore per decidere se
+promuovere (→ Liv.1) o regredire (→ Liv.3) la voce. **Tu non decidi**, scrivi solo il dato.
+
+### Protocollo di fine-chat dell'agente di lavoro (SOLO dopo conferma successo di Matteo)
+
+Quando Matteo conferma che il lavoro è andato bene ("ok", "funziona", "perfetto"), esegui:
+
+1. **Aggiorna `OSSERVAZIONI.md`**: aggiungi i dati grezzi di questa chat (frasi ricorrenti,
+   spiegazioni che hanno funzionato, procedure ripetute) e i contatori `Dati Liv.2` delle voci usate.
+2. **Scrivi il report di sessione** (§7 APP_CONTEXT) con la sezione obbligatoria **"Dati comunicazione"**
+   (vedi sotto) — è qui che dai al revisore tutto ciò che gli serve, senza che lui rilegga la chat.
+3. **Aggiornamenti skill solo se autorizzati**: se durante la chat Matteo ti ha esplicitamente
+   detto di aggiornare una skill o aggiungere una voce, fallo. **Altrimenti non toccare lo skill
+   system**: limitati a *segnalare* i candidati nel report e in `PROPOSTE.md`. Le proposte vere e
+   le domande di riforma le farà il revisore in sessione separata.
+4. **Commit dedicato** (se Matteo conferma): commit separati — uno per il codice, uno
+   `docs(comunicazione):` per report/osservazioni. Punto di ripristino indipendente.
+
+> L'agente di lavoro **non** apre con Matteo discussioni sul miglioramento dello skill system né
+> propone nuove rule in chat (salvo che Matteo lo chieda lì). Quel dialogo avviene con il revisore.
+
+### Sezione obbligatoria nei report: "Dati comunicazione"
+
+Deve essere **esaustiva e autosufficiente**: il revisore deve poter valutare leggendo solo questa,
+senza rileggere la chat. Includi:
+
+- **Frasi/richieste ricorrenti** di questa chat, con **conteggio** (es. "spiegamelo semplice ×2").
+- **Spiegazioni date** e quale formato ha funzionato (metafora? "chi fa cosa"? esempio nell'app?).
+- **Procedure ripetute** richieste da Matteo (candidate a diventare voci/automazioni).
+- **Voci Liv.2 applicate** e loro esito (ok / domanda-superflua / corretto-da-Matteo) → input per
+  promozione/regressione.
+- **Pattern nuovi** che potrebbero diventare voci di vocabolario (anche solo intuiti).
+- **Cosa si può automatizzare con certezza** vs **cosa lasciare manuale** (con motivo).
+- **Token risparmiabili**: dove Matteo ha scritto molto e una rule lo accorcerebbe.
+
+Sii **proattivo nel proporre dati nuovi**: se noti un segnale utile non previsto da questo elenco,
+aggiungilo comunque — meglio dare al revisore più materiale grezzo che meno.

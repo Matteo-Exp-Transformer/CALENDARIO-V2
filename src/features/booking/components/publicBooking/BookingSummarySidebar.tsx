@@ -1,7 +1,11 @@
 import React, { useMemo, useEffect, useRef } from 'react'
 import { CalendarDays, Clock, Users, UtensilsCrossed, Phone } from 'lucide-react'
 import type { BookingRequestInput } from '@/types/booking'
-import type { BookingMode, SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
+import {
+  resolveCarouselSummaryDisplay,
+  type BookingMode,
+  type SubTab,
+} from '@/features/booking/constants/bookingPublicFormConfig'
 import { useMenuCategories } from '@/features/booking/hooks/useMenuCategories'
 import { computeMenuTotalsFromItems } from '@/features/booking/utils/buildPresetMenuSelection'
 import { cn } from '@/lib/utils'
@@ -100,20 +104,17 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
     () => computeMenuTotalsFromItems(items, formData.num_guests).menu_total_booking,
     [items, formData.num_guests],
   )
-  const carouselSlideTitles = useMemo(() => {
-    if (!isCarouselSummary) return []
-    return (activeSubTab.carousel_items ?? [])
-      .filter((item) => item.image_url?.trim())
-      .map((item, idx) => item.title?.trim() || item.eyebrow?.trim() || `Foto ${idx + 1}`)
-      .filter((title) => title.length > 0)
-  }, [activeSubTab, isCarouselSummary])
+  const carouselSummaryDisplay = useMemo(
+    () => (isCarouselSummary ? resolveCarouselSummaryDisplay(activeSubTab) : null),
+    [activeSubTab, isCarouselSummary],
+  )
 
   return (
-    <div ref={asideRef} className="order-2 w-full max-w-full self-start mb-6 min-[900px]:mb-0 min-[900px]:sticky min-[900px]:top-4 min-[900px]:order-0">
+    <div ref={asideRef} className="order-2 w-full max-w-full self-start mb-6 min-[1256px]:mb-0 min-[1256px]:sticky min-[1256px]:top-4 min-[1256px]:order-0">
       <aside
         className={cn(
           'w-full max-w-full rounded-2xl border border-slate-100 bg-white px-4 py-5 shadow-xl transition-all duration-300 ease-out',
-          'space-y-4 min-[900px]:min-h-[320px]',
+          'space-y-4 min-[1256px]:min-h-[320px]',
         )}
         data-testid="booking-summary-sidebar"
       >
@@ -184,19 +185,28 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
             </div>
           )}
 
-        {/* Foto carosello */}
-        {isCarouselSummary && carouselSlideTitles.length > 0 && (
+        {/* Carosello — offerta nel riepilogo (titoli slide e/o solo prezzo) */}
+        {carouselSummaryDisplay && (
           <div className="border-t border-black/10 pt-3 space-y-1.5">
-            <p className="text-[13px] text-warm-wood-dark/60 font-semibold uppercase tracking-wide">
-              Offerta selezionata
-            </p>
-            <ul className="space-y-1.5">
-              {carouselSlideTitles.map((title, idx) => (
-                <li key={`${title}-${idx}`} className="text-sm text-warm-wood font-medium leading-tight">
-                  {title}
-                </li>
-              ))}
-            </ul>
+            {carouselSummaryDisplay.kind === 'titles' ? (
+              <>
+                <p className="text-[13px] text-warm-wood-dark/60 font-semibold uppercase tracking-wide">
+                  Offerta selezionata
+                </p>
+                <ul className="space-y-1.5">
+                  {carouselSummaryDisplay.titles.map((title, idx) => (
+                    <li key={`${title}-${idx}`} className="text-sm text-warm-wood font-medium leading-tight">
+                      {title}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <p className="text-base font-bold text-warm-wood leading-tight">
+                {formatCurrency(carouselSummaryDisplay.amount)}
+                <span className="text-warm-wood-dark/80 font-semibold">/persona</span>
+              </p>
+            )}
           </div>
         )}
 
@@ -272,9 +282,9 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         )}
       </div>
 
-      {/* Pulsante submit in fondo al riepilogo (visibile solo su mobile, sotto 900px) */}
+      {/* Pulsante submit in fondo al riepilogo (sotto il breakpoint riepilogo laterale) */}
       {submitButton && (
-        <div className="border-t border-black/10 pt-4 block min-[900px]:hidden">
+        <div className="border-t border-black/10 pt-4 block min-[1256px]:hidden">
           {submitButton}
         </div>
       )}

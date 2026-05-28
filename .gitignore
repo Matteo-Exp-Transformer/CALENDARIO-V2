@@ -37,7 +37,17 @@ playwright-report/
 Lavoro/
 Immagini-sfondo/
 icone-nuove/
-docs/_lavoro/
+
+# Skill system e documentazione interna: vive in locale per gli agenti, MAI online.
+# I file di doc professionale (README, CONTRIBUTING, ONBOARDING, CHANGELOG) stanno
+# in root e restano tracciati. Tutto docs/ (skill, archivio, sessioni, immagini mock) no.
+docs/
+
+# Script Playwright usa-e-getta (debug locale, mai committati)
+pw-*.mjs
+
+# Note di lavoro sciolte in root
+/Report idea workflow per sviluppatore
 
 # Pagine HTML salvate dal browser (es. export Supabase Dashboard)
 /*.html

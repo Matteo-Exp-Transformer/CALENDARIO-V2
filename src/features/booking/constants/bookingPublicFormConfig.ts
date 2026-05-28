@@ -2,6 +2,35 @@ import type { BookingType } from '@/types/booking'
 import type { CarouselItem, CarouselSlideIcon } from '@/types/menu'
 
 export type SubTabIcon = 'utensils' | 'cloche' | 'chef-hat' | 'star' | 'leaf'
+
+/** Limiti testi slide carosello Prenota (editor Personalizza form + normalizzazione DB). */
+export const BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS = {
+  eyebrow: 19,
+  title: 18,
+  description: 38,
+} as const
+
+function clampCarouselSlideText(
+  value: string | undefined,
+  max: number,
+): string | undefined {
+  if (!value?.trim()) return undefined
+  const trimmed = value.trim()
+  return trimmed.length > max ? trimmed.slice(0, max) : trimmed
+}
+
+export function normalizeCarouselSlideItem(item: CarouselItem, sortOrder: number): CarouselItem {
+  return {
+    ...item,
+    eyebrow: clampCarouselSlideText(item.eyebrow, BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS.eyebrow),
+    title: clampCarouselSlideText(item.title, BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS.title),
+    description: clampCarouselSlideText(
+      item.description,
+      BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS.description,
+    ),
+    sort_order: typeof item.sort_order === 'number' ? item.sort_order : sortOrder,
+  }
+}
 export const BOOKING_MODE_ICONS = [
   'utensils',
   'cloche',
@@ -173,10 +202,78 @@ export interface SubTab {
   hidden_item_ids?: string[]
   carousel_items?: CarouselItem[]
   /**
+   * Carosello: se `false`, il riepilogo Prenota non elenca i titoli slide in «Offerta selezionata»
+   * (può mostrare solo il prezzo). Omesso o `true` = comportamento legacy (dettaglio visibile).
+   */
+  show_offer_details_in_summary?: boolean
+  /**
    * Tracking personalizzazioni vs preset.
    * Vedi `bookingFormResolver.ts` per il comportamento «aggiorna solo se non personalizzato».
    */
   field_overrides?: SubTabFieldOverrides
+}
+
+/** Carosello Prenota: dettaglio slide nel riepilogo laterale (default true se assente). */
+export function getShowOfferDetailsInSummary(tab: SubTab | null | undefined): boolean {
+  return tab?.show_offer_details_in_summary !== false
+}
+
+/** Titoli slide carosello (solo item con `image_url`). Con `photoFallback` aggiunge `Foto N` se manca title/eyebrow. */
+export function getCarouselSlideTitles(
+  tab: SubTab | null | undefined,
+  options?: { photoFallback?: boolean },
+): string[] {
+  if (tab?.display !== 'carousel') return []
+  const usePhotoFallback = options?.photoFallback !== false
+  return (tab.carousel_items ?? [])
+    .filter((item) => item.image_url?.trim())
+    .map((item, idx) => {
+      const explicit = item.title?.trim() || item.eyebrow?.trim()
+      if (explicit) return explicit
+      return usePhotoFallback ? `Foto ${idx + 1}` : ''
+    })
+    .filter((title) => title.length > 0)
+}
+
+export function formatCarouselPricePerPersonLine(amount: number): string {
+  const formatted = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(
+    amount,
+  )
+  return `${formatted}/persona`
+}
+
+export type CarouselSummaryDisplay =
+  | { kind: 'titles'; titles: string[] }
+  | { kind: 'price'; amount: number }
+
+/** Cosa mostrare in riepilogo/sticky carosello (titoli lista o solo prezzo). */
+export function resolveCarouselSummaryDisplay(
+  tab: SubTab | null | undefined,
+): CarouselSummaryDisplay | null {
+  if (tab?.display !== 'carousel') return null
+  const showDetails = getShowOfferDetailsInSummary(tab)
+  const explicitTitles = getCarouselSlideTitles(tab, { photoFallback: false })
+  const price =
+    tab.price_per_person != null && tab.price_per_person > 0 ? tab.price_per_person : null
+
+  if (showDetails && explicitTitles.length > 0) {
+    return { kind: 'titles', titles: getCarouselSlideTitles(tab) }
+  }
+  if (price != null) return { kind: 'price', amount: price }
+  return null
+}
+
+/** Una riga di testo per mini-pannello sticky (primo title/eyebrow o prezzo; senza label). */
+export function getCarouselStickyMiniPanelLine(tab: SubTab | null | undefined): string | null {
+  if (tab?.display !== 'carousel') return null
+  const showDetails = getShowOfferDetailsInSummary(tab)
+  const explicitTitles = getCarouselSlideTitles(tab, { photoFallback: false })
+  const price =
+    tab.price_per_person != null && tab.price_per_person > 0 ? tab.price_per_person : null
+
+  if (showDetails && explicitTitles.length > 0) return explicitTitles[0]
+  if (price != null) return formatCarouselPricePerPersonLine(price)
+  return null
 }
 
 /** @deprecated Usare `sub_tabs[]` con type preset. Mantenuto per migrazione runtime da DB. */
@@ -233,14 +330,17 @@ export function migrateLegacyCarouselSubTab(tab: SubTab): SubTab {
   }
 
   const migratedItems: CarouselItem[] = items.map((item, idx) => {
-    if (idx !== 0) return item
-    return {
-      ...item,
-      eyebrow: item.eyebrow?.trim() || undefined,
-      title: item.title?.trim() || undefined,
-      description: item.description?.trim() || tab.description?.trim() || undefined,
-      icon: item.icon ?? tab.icon,
-    }
+    const base =
+      idx === 0
+        ? {
+            ...item,
+            eyebrow: item.eyebrow?.trim() || undefined,
+            title: item.title?.trim() || undefined,
+            description: item.description?.trim() || tab.description?.trim() || undefined,
+            icon: item.icon ?? tab.icon,
+          }
+        : item
+    return normalizeCarouselSlideItem(base, typeof base.sort_order === 'number' ? base.sort_order : idx)
   })
 
   return {
@@ -289,15 +389,22 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
           const item = v as Partial<CarouselItem>
           return typeof item.image_url === 'string' && item.image_url.trim().length > 0
         })
-        .map((v, idx) => ({
-          image_url: v.image_url,
-          eyebrow: typeof v.eyebrow === 'string' && v.eyebrow.trim() ? v.eyebrow.trim() : undefined,
-          title: typeof v.title === 'string' && v.title.trim() ? v.title.trim() : undefined,
-          description:
-            typeof v.description === 'string' && v.description.trim() ? v.description.trim() : undefined,
-          icon: parseCarouselSlideIcon((v as Partial<CarouselItem>).icon),
-          sort_order: typeof v.sort_order === 'number' ? v.sort_order : idx,
-        }))
+        .map((v, idx) =>
+          normalizeCarouselSlideItem(
+            {
+              image_url: v.image_url,
+              eyebrow: typeof v.eyebrow === 'string' && v.eyebrow.trim() ? v.eyebrow.trim() : undefined,
+              title: typeof v.title === 'string' && v.title.trim() ? v.title.trim() : undefined,
+              description:
+                typeof v.description === 'string' && v.description.trim()
+                  ? v.description.trim()
+                  : undefined,
+              icon: parseCarouselSlideIcon((v as Partial<CarouselItem>).icon),
+              sort_order: typeof v.sort_order === 'number' ? v.sort_order : idx,
+            },
+            idx,
+          ),
+        )
     : undefined
 
   const preset_id =
@@ -306,6 +413,11 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
       : undefined
 
   const field_overrides = parseFieldOverridesFromUnknown(o.field_overrides)
+
+  const show_offer_details_in_summary =
+    typeof o.show_offer_details_in_summary === 'boolean'
+      ? o.show_offer_details_in_summary
+      : undefined
 
   const parsed: SubTab = {
     id,
@@ -320,6 +432,8 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
     hidden_category_keys,
     hidden_item_ids,
     carousel_items,
+    show_offer_details_in_summary:
+      display === 'carousel' ? show_offer_details_in_summary : undefined,
     field_overrides,
   }
 
@@ -463,6 +577,11 @@ export function normalizeBookingPublicFormConfig(
             ...base,
             description: undefined,
             icon: undefined,
+            show_offer_details_in_summary:
+              tab.show_offer_details_in_summary === false ? false : undefined,
+            carousel_items: base.carousel_items?.map((item, idx) =>
+              normalizeCarouselSlideItem(item, typeof item.sort_order === 'number' ? item.sort_order : idx),
+            ),
           })
         }
         return {

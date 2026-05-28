@@ -40,3 +40,5 @@ Regole, tabelle LOCK, comandi e report di sessione stanno solo nei due file sopr
 **Carosello editor per slide (26-05-26):** `BookingFormCarouselEditor` foto-first; `carousel_items[].eyebrow/title/description/icon`; nessun prezzo — report `docs/Sessioni di lavoro/26-05-26/Report-carosello-editor-per-slide-26-05-26.md`.
 
 **Personalizza form: etichetta card sottotab (26-05-26):** import menù solo su Card scorrevole; titolo Prenota = `sub_tabs[].label`; `applyLegacySubTabLabelOverrides`; `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md` + RULE §4 Personalizza form / Prenota v2.
+
+**Carosello toggle riepilogo offerta (28-05-26):** `sub_tabs[].show_offer_details_in_summary` (default ON); switch in editor carosello `BookingFormConfigPanel`; `BookingSummarySidebar` condiziona «Offerta selezionata» — report `docs/Sessioni di lavoro/28-05-26/Report-carosello-riepilogo-toggle-offerta-28-05-26.md`, `BOOKING_DATA_FLOW_SKILL.md` §5, `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md`.
