@@ -23,9 +23,10 @@ export function bookingPublicRowCardWidthClass(columnCount: number): string {
 
 /** Card campo: label in alto a sinistra + valore sotto.
  *  `bg-white/75 backdrop-blur-sm` = leggermente trasparente per lasciar trasparire
- *  lo sfondo foto della pagina senza compromettere la leggibilità del valore. */
+ *  lo sfondo foto della pagina senza compromettere la leggibilità del valore.
+ *  Altezza compatta: 3.25rem mobile, 3.5rem sm+ per non sacrificare la leggibilità tablet/desktop. */
 export const BOOKING_PUBLIC_FIELD_BOX =
-  'flex w-full min-h-[3.75rem] flex-col items-start justify-start rounded-lg border border-slate-200 bg-white/75 backdrop-blur-sm px-4 py-2 text-left focus-within:border-warm-wood focus-within:ring-2 focus-within:ring-warm-wood/40'
+  'flex w-full min-h-[3.25rem] sm:min-h-[3.5rem] flex-col items-start justify-start rounded-lg border border-slate-200 bg-white/75 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 text-left focus-within:border-warm-wood focus-within:ring-2 focus-within:ring-warm-wood/40'
 
 export const BOOKING_PUBLIC_FIELD_INNER_LABEL =
   'pointer-events-none text-left text-sm font-bold leading-tight text-warm-wood sm:text-base'

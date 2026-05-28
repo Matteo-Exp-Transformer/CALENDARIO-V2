@@ -212,8 +212,10 @@ export const BookingRequestPage: React.FC = () => {
             />
           )}
 
-          {/* Colonna contenuto destra */}
-          <div className="w-full min-w-0 px-4 md:px-8 pb-44 min-[900px]:pb-1 min-[900px]:px-6 lg:px-8">
+          {/* Colonna contenuto destra
+              Padding laterale: mobile px-6 (più sfondo foto ai lati), tablet md:px-10,
+              desktop ≥900px px-6 / lg:px-8 invariati (già OK con larghezza maggiore). */}
+          <div className="w-full min-w-0 px-6 md:px-10 pb-44 min-[900px]:pb-1 min-[900px]:px-6 lg:px-8">
 
             {/* Header — solo testo sullo sfondo pagina */}
             <div className="flex flex-col items-center justify-center gap-1.5 py-1.5 text-center animate-fade-in">
