@@ -109,7 +109,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   }, [activeSubTab, isCarouselSummary])
 
   return (
-    <div ref={asideRef} className="order-2 w-full max-w-full self-start min-[900px]:sticky min-[900px]:top-4 min-[900px]:order-0">
+    <div ref={asideRef} className="order-2 w-full max-w-full self-start mb-6 min-[900px]:mb-0 min-[900px]:sticky min-[900px]:top-4 min-[900px]:order-0">
       <aside
         className={cn(
           'w-full max-w-full rounded-2xl border border-slate-100 bg-white px-4 py-5 shadow-xl transition-all duration-300 ease-out',
