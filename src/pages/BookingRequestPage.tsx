@@ -218,7 +218,7 @@ export const BookingRequestPage: React.FC = () => {
           <div className="w-full min-w-0 px-6 md:px-10 min-[900px]:px-6 lg:px-8">
 
             {/* Header — solo testo sullo sfondo pagina */}
-            <div className="flex flex-col items-center justify-center gap-1.5 py-1.5 text-center animate-fade-in">
+            <div className="flex flex-col items-center justify-center gap-1.5 py-1.5 text-center animate-fade-in -mx-6 md:-mx-10 min-[900px]:-mx-6 lg:-mx-8">
               <h1
                 className="font-bold m-0"
                 style={getBookingHeaderTextStyle('restaurant_name', headerStyles)}
@@ -308,44 +308,45 @@ export const BookingRequestPage: React.FC = () => {
               }
             />
 
-          {/* Spacer: riserva spazio per sticky bar mobile (<900px) + gap uniforme prima del footer */}
-          <div className="h-28 min-[900px]:h-6" aria-hidden />
+          {/* Spacer: riserva spazio per sticky bar mobile (<900px) + gap uniforme prima del footer.
+              h-20 mobile (~80px, altezza sticky bar); h-4 desktop (gap minimo decorativo). */}
+          <div className="h-20 min-[900px]:h-4" aria-hidden />
 
           </div>{/* fine colonna contenuto destra */}
         </div>{/* fine griglia [striscia foto | contenuto] */}
 
         {/* Footer Orari+Contatti — fuori dalla griglia, a tutta larghezza viewport */}
         <div className="w-full px-0">
-          <div className="rounded-none shadow-xl px-6 md:px-8 bg-white border-t border-slate-100 pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-0 animate-fade-in">
+          <div className="rounded-none shadow-xl px-6 md:px-10 bg-white border-t border-slate-100 py-5 md:py-7 mt-0 animate-fade-in">
 
             {/* Layout desktop/tablet (≥480px): 2 colonne Orari | Contatti */}
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1 md:gap-x-4 items-start max-[480px]:hidden">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2 md:gap-x-10 items-start max-[480px]:hidden">
 
-              <div className="min-w-0 w-full space-y-1 text-left pr-1.5">
-                <div className="flex items-center gap-1.5 mb-1" style={{ paddingLeft: hoursInset }}>
-                  <div className="shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-linear-to-br from-terracotta to-warm-orange shadow-md">
-                    <Clock className="w-[14px] h-[14px] text-white" />
+              <div className="min-w-0 w-full space-y-2 text-left pr-1.5">
+                <div className="flex items-center gap-2 mb-2" style={{ paddingLeft: hoursInset }}>
+                  <div className="shrink-0 w-9 h-9 rounded-md flex items-center justify-center bg-linear-to-br from-terracotta to-warm-orange shadow-md">
+                    <Clock className="w-[18px] h-[18px] text-white" />
                   </div>
-                  <h3 className="text-xs md:text-sm font-serif text-warm-wood leading-tight font-bold">
+                  <h3 className="text-sm md:text-base font-serif text-warm-wood leading-tight font-bold">
                     Orari
                   </h3>
                 </div>
                 <div
-                  className="flex flex-wrap items-start gap-y-0 leading-tight"
+                  className="flex flex-wrap items-start gap-y-0.5 leading-snug"
                   style={{ paddingLeft: hoursInset, columnGap: 'clamp(1.2rem, 6.4vw, 3.2rem)' }}
                 >
                   {isLoading ? (
-                    <div className="w-full font-medium text-xs text-warm-wood-dark">
+                    <div className="w-full font-medium text-sm text-warm-wood-dark">
                       Caricamento orari...
                     </div>
                   ) : (
                     openingHoursColumns.map((columnDays, colIdx) => (
-                      <div key={colIdx} className="shrink-0 space-y-0">
+                      <div key={colIdx} className="shrink-0 space-y-0.5">
                         {columnDays.map((day) => {
                           const dayHours = hours[day]
                           const isOpen = !!dayHours && dayHours.length > 0
                           return (
-                            <div key={day} className="font-medium text-xs text-warm-wood-dark leading-tight">
+                            <div key={day} className="font-medium text-sm text-warm-wood-dark leading-snug">
                               {formatDayName(day)}: {isOpen ? formatHours(dayHours) : 'Chiuso'}
                             </div>
                           )
@@ -356,33 +357,33 @@ export const BookingRequestPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="min-w-0 space-y-0.5 justify-self-end text-right" style={{ paddingRight: hoursInset }}>
-                <div className="flex items-center justify-end gap-1.5 mb-1">
-                  <div className="shrink-0 w-7 h-7 rounded-md flex items-center justify-center bg-linear-to-br from-terracotta to-warm-orange shadow-md">
-                    <MapPin className="w-[14px] h-[14px] text-white" />
+              <div className="min-w-0 space-y-1 justify-self-end text-right" style={{ paddingRight: hoursInset }}>
+                <div className="flex items-center justify-end gap-2 mb-2">
+                  <div className="shrink-0 w-9 h-9 rounded-md flex items-center justify-center bg-linear-to-br from-terracotta to-warm-orange shadow-md">
+                    <MapPin className="w-[18px] h-[18px] text-white" />
                   </div>
-                  <h3 className="text-xs md:text-sm font-serif text-warm-wood leading-tight font-bold">
+                  <h3 className="text-sm md:text-base font-serif text-warm-wood leading-tight font-bold">
                     Contatti e Indirizzo
                   </h3>
                 </div>
                 {displayContactEmail && (
-                  <div className="flex min-w-0 items-center justify-end gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-warm-orange shrink-0" />
-                    <span className="min-w-0 break-all text-right text-xs text-warm-wood-dark font-medium leading-tight">
+                  <div className="flex min-w-0 items-center justify-end gap-2">
+                    <Mail className="w-4 h-4 text-warm-orange shrink-0" />
+                    <span className="min-w-0 break-all text-right text-sm text-warm-wood-dark font-medium leading-snug">
                       {displayContactEmail}
                     </span>
                   </div>
                 )}
                 {displayContactPhone && (
-                  <div className="flex items-center justify-end gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-warm-orange shrink-0" />
-                    <span className="text-xs text-warm-wood-dark font-medium leading-tight">{displayContactPhone}</span>
+                  <div className="flex items-center justify-end gap-2">
+                    <Phone className="w-4 h-4 text-warm-orange shrink-0" />
+                    <span className="text-sm text-warm-wood-dark font-medium leading-snug">{displayContactPhone}</span>
                   </div>
                 )}
                 {displayContactAddress && (
-                  <div className="flex items-center justify-end gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-warm-orange shrink-0" />
-                    <span className="text-xs text-warm-wood-dark font-bold leading-tight">{displayContactAddress}</span>
+                  <div className="flex items-center justify-end gap-2">
+                    <MapPin className="w-4 h-4 text-warm-orange shrink-0" />
+                    <span className="text-sm text-warm-wood-dark font-bold leading-snug">{displayContactAddress}</span>
                   </div>
                 )}
               </div>
