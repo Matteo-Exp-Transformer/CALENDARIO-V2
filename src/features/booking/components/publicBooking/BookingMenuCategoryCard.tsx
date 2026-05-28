@@ -1,7 +1,13 @@
-import React, { useState } from 'react'
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ChevronDown, Utensils } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { SelectedMenuItem } from '@/types/menu'
+import {
+  BOOKING_MENU_CATEGORY_EXPANDED_PORTAL_CLASS,
+  BOOKING_MENU_CATEGORY_PANEL_SCROLL_CLASS,
+  type BookingMenuCategoryOverlayRect,
+} from '../../constants/bookingMenuComposePanelLayout'
 import {
   type ComposeMenuItem,
   countSelectedInCategory,
@@ -67,18 +73,49 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
 
   const heroSrc = imageUrl?.trim() || undefined
   const [expanded, setExpanded] = useState(false)
+  const shellRef = useRef<HTMLDivElement>(null)
+  const [overlayRect, setOverlayRect] = useState<BookingMenuCategoryOverlayRect | null>(null)
 
   React.useEffect(() => {
     setExpanded(false)
   }, [resetKey])
 
-  const articleClass = cn(
-    'flex flex-col border-2 border-black/15 bg-white/90 backdrop-blur-[1px] shadow-md',
+  const syncOverlayRect = useCallback(() => {
+    const shell = shellRef.current
+    if (!shell) return
+    const { top, left, width } = shell.getBoundingClientRect()
+    setOverlayRect({ top, left, width })
+  }, [])
+
+  useLayoutEffect(() => {
+    if (!expanded) {
+      setOverlayRect(null)
+      return
+    }
+    syncOverlayRect()
+    window.addEventListener('scroll', syncOverlayRect, true)
+    window.addEventListener('resize', syncOverlayRect)
+    const ro = new ResizeObserver(syncOverlayRect)
+    if (shellRef.current) ro.observe(shellRef.current)
+    return () => {
+      window.removeEventListener('scroll', syncOverlayRect, true)
+      window.removeEventListener('resize', syncOverlayRect)
+      ro.disconnect()
+    }
+  }, [expanded, syncOverlayRect])
+
+  const shellClass = cn(
+    'relative',
     layout === 'scroll'
-      ? 'w-[min(280px,calc(100vw-4rem))] min-w-[240px] max-w-[280px] shrink-0 snap-center rounded-2xl sm:min-w-[260px]'
+      ? 'w-[min(280px,calc(100vw-4rem))] min-w-[240px] max-w-[280px] shrink-0 snap-center sm:min-w-[260px]'
       : layout === 'stack'
-        ? 'w-full min-w-0 max-w-none rounded-xl'
-        : 'w-full min-w-0 self-start rounded-2xl',
+        ? 'w-full min-w-0'
+        : 'w-full min-w-0 self-start',
+  )
+
+  const articleSurfaceClass = cn(
+    '@container flex flex-col border-2 border-black/15 bg-white/90 backdrop-blur-[1px] shadow-md',
+    layout === 'scroll' ? 'rounded-2xl' : layout === 'stack' ? 'rounded-xl' : 'w-full rounded-2xl',
   )
 
   const itemsList = (
@@ -141,64 +178,16 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   const panelId = `booking-menu-cat-panel-${categoryKey}`
   const lockedOpenSummary = selectedCount > 0 ? 'Incluso nel menù' : 'Menù preselezionato'
   const lockedClosedTeaser = 'Scopri cosa è incluso'
-  // Card chiusa: aspect-ratio fisso 4/3 indipendente dal layout, così la foto resta
-  // proporzionata sia in colonna stretta (mobile) che in colonna larga (tablet/desktop).
-  // Su mobile stack la card prende tutta la larghezza form: 4/3 produce un'altezza
-  // visiva coerente (es. 400×300 anziché un nastro 600×148 sproporzionato).
   const closedImageClass = layout === 'stack' ? 'aspect-video sm:aspect-4/3' : 'aspect-4/3'
 
-  if (!expanded) {
-    return (
-      <article className={articleClass} data-testid={`booking-menu-category-card-${categoryKey}`}>
-        <button
-          type="button"
-          id={headerId}
-          aria-expanded={false}
-          aria-controls={panelId}
-          className="group relative block w-full overflow-hidden rounded-[inherit] text-left"
-          onClick={() => setExpanded(true)}
-        >
-          <div className={cn('relative w-full overflow-hidden bg-warm-beige/40', closedImageClass)}>
-            {heroSrc ? (
-              <img
-                src={heroSrc}
-                alt=""
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                loading="lazy"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-warm-wood/40">
-                <Utensils className="h-10 w-10" strokeWidth={1.25} />
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-            <div className={cn('absolute inset-x-0 bottom-0 flex items-end gap-1 text-white', compact ? 'p-1.5' : 'p-4 gap-3')}>
-              <div className="min-w-0 flex-1 overflow-hidden">
-                <h3 className={cn('font-bold uppercase leading-tight', compact ? 'text-[10px] tracking-tight line-clamp-2' : 'text-base tracking-wide sm:text-lg')}>
-                  {categoryLabel}
-                </h3>
-                {!compact && (
-                  <p className={cn('mt-1 font-bold text-white/85', locked ? 'text-sm' : 'text-xs')}>
-                    {!locked ? status : lockedClosedTeaser}
-                  </p>
-                )}
-              </div>
-              <ChevronDown className={cn('shrink-0', compact ? 'h-3 w-3' : 'h-5 w-5')} aria-hidden />
-            </div>
-          </div>
-        </button>
-      </article>
-    )
-  }
-
-  return (
-    <article className={articleClass} data-testid={`booking-menu-category-card-${categoryKey}`}>
+  const expandedPanel = (
+    <>
       <button
         type="button"
         id={headerId}
         aria-expanded={true}
         aria-controls={panelId}
-        className="flex w-full items-center gap-3 border-b border-black/10 px-4 py-3 text-left"
+        className="flex w-full shrink-0 items-center gap-3 border-b border-black/10 px-4 py-3 text-left"
         onClick={() => setExpanded(false)}
       >
         <div className="min-w-0 flex-1">
@@ -216,9 +205,91 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
         </div>
         <ChevronDown className="h-5 w-5 shrink-0 rotate-180 text-warm-wood" aria-hidden />
       </button>
-      <div id={panelId} role="region" aria-labelledby={headerId}>
+      <div
+        id={panelId}
+        role="region"
+        aria-labelledby={headerId}
+        className={cn('min-h-0', BOOKING_MENU_CATEGORY_PANEL_SCROLL_CLASS)}
+      >
         {itemsList}
       </div>
-    </article>
+    </>
+  )
+
+  const expandedPortal =
+    expanded && overlayRect
+      ? createPortal(
+          <article
+            className={cn(articleSurfaceClass, BOOKING_MENU_CATEGORY_EXPANDED_PORTAL_CLASS)}
+            style={{
+              top: overlayRect.top,
+              left: overlayRect.left,
+              width: overlayRect.width,
+            }}
+            data-testid={`booking-menu-category-card-${categoryKey}`}
+            data-booking-menu-expanded="true"
+          >
+            {expandedPanel}
+          </article>,
+          document.body,
+        )
+      : null
+
+  if (!expanded) {
+    return (
+      <div ref={shellRef} className={shellClass}>
+        <article className={articleSurfaceClass} data-testid={`booking-menu-category-card-${categoryKey}`}>
+          <button
+            type="button"
+            id={headerId}
+            aria-expanded={false}
+            aria-controls={panelId}
+            className="group relative block w-full overflow-hidden rounded-[inherit] text-left"
+            onClick={() => setExpanded(true)}
+          >
+            <div className={cn('relative w-full overflow-hidden bg-warm-beige/40', closedImageClass)}>
+              {heroSrc ? (
+                <img
+                  src={heroSrc}
+                  alt=""
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-warm-wood/40">
+                  <Utensils className="h-10 w-10" strokeWidth={1.25} />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className={cn('absolute inset-x-0 bottom-0 flex items-end gap-1 text-white', compact ? 'p-1.5' : 'p-4 gap-3')}>
+                <div className="min-w-0 flex-1 overflow-hidden">
+                  <h3 className={cn('font-bold uppercase leading-tight', compact ? 'text-[10px] tracking-tight line-clamp-2' : 'text-base tracking-wide sm:text-lg')}>
+                    {categoryLabel}
+                  </h3>
+                  {!compact && (
+                    <p className={cn('mt-1 font-bold text-white/85', locked ? 'text-sm' : 'text-xs')}>
+                      {!locked ? status : lockedClosedTeaser}
+                    </p>
+                  )}
+                </div>
+                <ChevronDown className={cn('shrink-0', compact ? 'h-3 w-3' : 'h-5 w-5')} aria-hidden />
+              </div>
+            </div>
+          </button>
+        </article>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div ref={shellRef} className={shellClass}>
+        <div
+          className={cn('pointer-events-none invisible w-full', closedImageClass, layout === 'scroll' && 'rounded-2xl')}
+          aria-hidden
+        />
+      </div>
+      {expandedPortal}
+    </>
   )
 }
