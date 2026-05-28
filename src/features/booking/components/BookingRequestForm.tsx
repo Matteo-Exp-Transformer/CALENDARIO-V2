@@ -112,11 +112,15 @@ function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
               {hasOverlay ? (
                 <div className="absolute inset-x-0 bottom-0 p-4 text-left">
                   {cardLabel ? (
-                    <p className="text-xs font-bold uppercase tracking-wide text-white/80">{cardLabel}</p>
+                    <p className="ml-[-9px] mr-[-9px] px-0 text-xs font-bold uppercase tracking-wide text-white/80">
+                      {cardLabel}
+                    </p>
                   ) : null}
-                  {title ? <h3 className="mt-1 text-lg font-bold leading-tight">{title}</h3> : null}
+                  {title ? (
+                    <h3 className="mt-1 ml-[-9px] mr-[-11px] px-0 text-lg font-bold leading-tight">{title}</h3>
+                  ) : null}
                   {description ? (
-                    <p className="mt-1 line-clamp-3 text-sm font-medium leading-snug text-white/85">
+                    <p className="mt-1 ml-[-9px] mr-[-11px] line-clamp-3 text-sm font-medium leading-snug text-white/85">
                       {description}
                     </p>
                   ) : null}

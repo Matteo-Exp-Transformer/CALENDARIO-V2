@@ -14,9 +14,9 @@ import type { CarouselItem, CarouselSlideIcon } from '@/types/menu'
 import type { SubTab, SubTabIcon } from '@/features/booking/constants/bookingPublicFormConfig'
 
 /** Limiti testi slide carosello in Personalizza form (Pagina Prenota). */
-const BOOKING_CAROUSEL_EYEBROW_MAX = 30
-const BOOKING_CAROUSEL_TITLE_MAX = 22
-const BOOKING_CAROUSEL_DESCRIPTION_MAX = 66
+const BOOKING_CAROUSEL_EYEBROW_MAX = 19
+const BOOKING_CAROUSEL_TITLE_MAX = 18
+const BOOKING_CAROUSEL_DESCRIPTION_MAX = 70
 
 const SUB_TAB_ICON_OPTIONS: { value: SubTabIcon; label: string }[] = [
   { value: 'utensils', label: 'Posate' },
