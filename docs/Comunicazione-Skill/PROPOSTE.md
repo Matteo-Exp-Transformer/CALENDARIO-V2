@@ -47,55 +47,30 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 - **Token risparmiati per Matteo:** alti — evita danni e rilavorazioni.
 - **Esito / data:** in attesa.
 
-### [IN ATTESA] «ottimo / funziona / perfetto» → trigger protocollo fine-chat
-- **Pattern osservato:** molte volte (OSSERVAZIONI). È la conferma di successo che dovrebbe far
-  partire report + aggiornamento skill + commit dedicato.
-- **Automatizzabile con certezza:** alla conferma esplicita, l'agente propone (non esegue d'ufficio)
-  il flusso di fine-chat: report in `Sessioni di lavoro/`, allineamento skill, commit separati.
-- **Meglio lasciare manuale:** il via al commit resta una conferma di Matteo (non committare di slancio).
-- **Livello suggerito:** 2 (cautela) — proponi il flusso, non lo esegui senza ok.
-- **Token risparmiati per Matteo:** medi — non deve ricordare ogni volta i passi di chiusura.
-- **Esito / data:** in attesa.
-
-### [IN ATTESA] «dammi il prompt per la prossima sessione» → prompt pronto e auto-contenuto
-- **Pattern osservato:** ≥1 forte (28-05, log OSSERVAZIONI). Matteo usa più agenti in catena e
-  apprezza prompt già formattati da incollare.
-- **Automatizzabile con certezza:** a fine sessione, se c'è lavoro residuo, fornire un blocco prompt
-  copia-incolla auto-contenuto (contesto + obiettivo + file + vincoli) per la chat successiva.
-- **Meglio lasciare manuale:** quali task includere (Matteo decide lo scope della prossima sessione).
-- **Livello suggerito:** 2 (cautela) — offrilo quando c'è residuo, non sempre.
-- **Token risparmiati per Matteo:** alti — non riscrive il contesto da zero.
-- **Esito / data:** in attesa (idea proposta dall'agente, da decidere).
-
-### [IN ATTESA] workflow multi-agente «pianifica → esegue → revisiona» → revisione critica vera
-- **Pattern osservato:** 2+ (OSSERVAZIONI). Matteo separa chi pianifica, chi esegue (altra chat) e
-  chi revisiona; vuole che il revisore trovi difetti veri, non confermi per cortesia.
-- **Automatizzabile con certezza:** in profilo Verifica su lavoro altrui, dichiarare apertamente i
-  difetti trovati (anche a test verdi) prima di approvare; mai "ok" di cortesia.
-- **Meglio lasciare manuale:** la decisione di committare il lavoro revisionato resta di Matteo.
-- **Livello suggerito:** 1 (automatico) — è il senso stesso del profilo Verifica.
-- **Token risparmiati per Matteo:** medi.
-- **Esito / data:** in attesa (idea proposta dall'agente).
-
-### [IN ATTESA] «è un bug o è voluto?» → distinguere comportamento atteso da difetto
-- **Pattern osservato:** segnalato nel Metodo come dubbio da fermare (striscia 20vw "voluta non bug").
-- **Automatizzabile con certezza:** prima di "correggere" un comportamento che potrebbe essere una
-  scelta UX già confermata, l'agente verifica nelle RULE/report se è voluto e chiede se ambiguo.
-- **Meglio lasciare manuale:** la conferma finale "è voluto" spetta a Matteo.
-- **Livello suggerito:** 2 (cautela).
-- **Token risparmiati per Matteo:** medi — evita fix non richiesti su scelte volute.
-- **Esito / data:** in attesa (idea proposta dall'agente).
-
 ---
 
 ## Archivio (decise)
 
+### ✅ ACCETTATA (28-05-26) «fai report finale» → VOCABOLARIO Liv. 1
+- Flusso di fine-chat (report + skill + proposta commit) **solo su questo termine esplicito**, non
+  sul trigger "ok/funziona". Matteo preferisce dirlo lui. Salita in `VOCABOLARIO.md`.
+
+### ✅ ACCETTATA (28-05-26) «dammi prompt proseguimento» → VOCABOLARIO Liv. 1
+- Risposta = solo il prompt auto-contenuto per la chat successiva (passa il lavoro dal punto esatto,
+  evita contesto pesante). Salita in `VOCABOLARIO.md`.
+
+### ✅ ACCETTATA (28-05-26) «revisione completa» → VOCABOLARIO Liv. 1
+- Revisione critica e indipendente (workflow multi-agente): dichiara i difetti veri, mai "ok" di
+  cortesia. Riconosciuta anche nel testo di avvio dell'agente. Salita in `VOCABOLARIO.md`.
+
+### ❌ RIFIUTATA (28-05-26) «è un bug o è voluto?»
+- Caso troppo raro per ora. Non riproporre salvo nuovi dati.
+
 ### ✅ ACCETTATA (28-05-26) «spiegamelo semplice» → VOCABOLARIO Liv. 1
 - Metafora + esempio nell'app + chi-fa-cosa, breve. Salita in `VOCABOLARIO.md`.
 
-### ✅ ACCETTATA (28-05-26) «devo farlo io ogni volta?» → VOCABOLARIO Liv. 2
-- Classifica responsabilità (tu/tool/una-tantum), ma **solo su domanda esplicita** (non proattiva).
-  Matteo ha scelto Liv. 2 non proattivo, non Liv. 1. In osservazione.
+### ❌ RIMOSSA (28-05-26) «devo farlo io ogni volta?»
+- Era stata aggiunta a Liv. 2, poi Matteo l'ha rimossa: non la dice abbastanza spesso per ora.
 
 ### ✅ ACCETTATA (28-05-26) «scalabile e pulita / no parti obsolete» → VOCABOLARIO Liv. 1
 - Preferisci soluzioni durevoli, segnala cosa eviti. Salita in `VOCABOLARIO.md`.

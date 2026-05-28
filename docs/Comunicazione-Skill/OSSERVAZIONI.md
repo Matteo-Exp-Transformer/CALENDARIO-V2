@@ -21,7 +21,6 @@
 
 | Voce Liv.2 | ok | domanda-superflua | corretto-da-Matteo | segnale |
 |------------|----|-------------------|--------------------|---------|
-| «devo farlo io ogni volta?» (non proattiva) | 0 | 0 | 0 | nuova 28-05 |
 | «main dell'app» (ambiguo admin vs app) | 0 | 0 | 0 | nuova 28-05 |
 | «menù originale» (ambiguo tra zone menu) | 0 | 0 | 0 | nuova 28-05 |
 

@@ -96,14 +96,6 @@ prende l'**agente revisore** in sessione separata (vedi `REVISIONE.md`), confron
 - **Approvata il:** 28-05-26
 - **Origine:** chat mappatura · OSSERVAZIONI (3+ occorrenze, es. cache PWA)
 
-### «devo farlo io ogni volta?» · «è una rule che devo ricordare?» — Liv. 2
-- **Intende:** capire se un'azione è suo lavoro manuale ricorrente o un automatismo
-- **Comportamento agente:** **quando Matteo lo chiede esplicitamente**, chiudi con la riga «Chi fa cosa: tu = … / il tool = … / una-tantum = …». Non aggiungerla in modo proattivo a ogni risposta (per quello è Liv. 2, non Liv. 1).
-- **Livello:** 2 (cautela) — non proattiva, solo su domanda esplicita
-- **Dati Liv.2:**
-- **Approvata il:** 28-05-26
-- **Origine:** chat mappatura · OSSERVAZIONI (2+ occorrenze)
-
 ### «mantieni linea scalabile e pulita» · «no parti obsolete» — Liv. 1
 - **Intende:** soluzioni durevoli, niente codice ridondante/legacy né sovra-ingegnerizzazione
 - **Comportamento agente:** preferisci l'opzione scalabile e segnala esplicitamente cosa eviti (duplicazioni, file sparsi, astrazioni premature). Il «quanto» astrarre resta giudizio sul caso.
@@ -111,6 +103,30 @@ prende l'**agente revisore** in sessione separata (vedi `REVISIONE.md`), confron
 - **Casi identici già ok:** —
 - **Approvata il:** 28-05-26
 - **Origine:** chat mappatura · OSSERVAZIONI (2+ occorrenze)
+
+### «fai report finale» — Liv. 1
+- **Intende:** chiudere la sessione con il flusso di fine-chat (non parte da solo sulla conferma "ok/funziona": parte solo se Matteo lo dice)
+- **Comportamento agente:** esegui il protocollo § 7 APP_CONTEXT: report in `docs/Sessioni di lavoro/GG-MM-AA/` (linguaggio utente, sezione Dati comunicazione), allineamento skill toccate, e proponi i commit dedicati. Il via al commit resta una conferma di Matteo.
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** —
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura (Matteo preferisce un termine esplicito al trigger sulla conferma)
+
+### «dammi prompt proseguimento» — Liv. 1
+- **Intende:** passare il lavoro a un'altra chat dal punto esatto raggiunto, per evitare sessioni con troppo contesto
+- **Comportamento agente:** rispondi con **solo il prompt** da incollare nella prossima chat — auto-contenuto, con contesto, obiettivo, file coinvolti, vincoli e punto esatto da cui ripartire. Nessun'altra spiegazione attorno.
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** —
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura · OSSERVAZIONI (workflow multi-agente)
+
+### «revisione completa» — Liv. 1
+- **Intende:** non un check superficiale, ma una revisione critica e indipendente del lavoro (tipicamente di un altro agente nel workflow pianifica → esegue → revisiona)
+- **Comportamento agente:** entra in profilo Verifica; dichiara apertamente i difetti trovati (anche a test verdi), mai "ok" di cortesia. Riconosci il termine anche se è già nel testo di avvio dell'agente. Esegui `npm run validate` come criterio oggettivo, ma fermati e segnala i difetti logici prima di approvare/committare.
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** «revisione completa» nel prompt iniziale di una chat di revisione → procedi diretto
+- **Approvata il:** 28-05-26
+- **Origine:** chat mappatura · OSSERVAZIONI (workflow multi-agente)
 
 ### Comportamento in plan mode (nessun termine — contesto) — Liv. 1
 - **Intende:** quando l'agente entra in pianificazione, Matteo si aspetta domande sulle decisioni di sua competenza
