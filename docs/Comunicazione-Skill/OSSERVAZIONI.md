@@ -30,7 +30,9 @@
 |---------------|-----------------|--------------------------------|
 | «spiegamelo semplice / in modo sintetico» | 3+ (chat PWA, Metodo, report) | metafora concreta + "chi fa cosa" + breve |
 | «è una rule che devo ricordare io?» / «devo farlo ogni volta?» | 2+ | distinguere lavoro manuale ricorrente da automatismo del tool |
-| «ottimo / funziona / perfetto» (conferma successo) | molte | trigger del protocollo fine-chat (report + skill + commit) |
+| «ottimo / funziona / perfetto / revisione ok» (conferma successo) | molte+ | trigger del protocollo fine-chat (report + skill + commit) |
+| «allineato a skill system» (post-implementazione) | 2 | Matteo si aspetta §7.1/§7.2 senza doverlo ripetere |
+| «report con derivazione errori / prompt vs struttura vs agente» | 1 | 29-05-26 card ingredienti — chiesto esplicitamente nel report finale |
 | «mantieni linea scalabile e pulita, no parti obsolete» | 2+ | preferire soluzioni durevoli, niente codice ridondante/legacy |
 | «fammi delle domande per decidere» | 2+ | usare AskUserQuestion prima di pianificare, non calare piani dall'alto |
 | report in `Sessioni di lavoro/` non `_lavoro/` | 1 (forte) | i report ufficiali vanno nella cartella datata |
@@ -63,6 +65,43 @@
 ---
 
 ## Log per data
+
+### 29-05-26 — Esecuzione: scroll interno + overlay portal card ingredienti Prenota
+- Implementazione su `BookingMenuCategoryCard` + `bookingMenuComposePanelLayout.ts`; skill §4 aggiornata.
+- **Intento invertito** rispetto al report prepara-prompt mattina: Matteo vuole overlay **sopra** form/riepilogo, non evitarlo.
+- 3 cicli feedback: (1) overlay no → sì; (2) absolute/z-index fallisce; (3) portal ok ma ingredienti giganti → larghezza card.
+- Conferma: «ok ora ci siamo!» — report con sezione **derivazione errori** (prompt vs struttura CSS vs agente) su richiesta esplicita Matteo.
+- Chiusura sera: «revisione ok» + report esaustivo + commit + allineamento skill — pattern §7 completo senza ripetizione istruzioni.
+- Report: `docs/Sessioni di lavoro/29-05-26/Report-prenota-card-ingredienti-scroll-overlay-29-05-26.md`
+
+### 29-05-26 — Chiusura ciclo: card ingredienti Prenota (prepara → esecuzione → revisione OK)
+- Matteo: «revisione ok» + report esaustivo prepara-prompt + commit.
+- Ciclo completo documentato in `Report-finale-ciclo-prepara-prompt-card-ingredienti-29-05-26.md` (tutti i messaggi, pivot overlay, prompt v1/v2/v3 revisione).
+- Pivot critico stessa giornata: mattina prompt **anti-overlap** → esecuzione Matteo chiede **overlay voluto** → soluzione portal + scroll 3 righe.
+- Revisione accurata: agente Verifica esterno, OK confermato da Matteo.
+- Pattern utile: dichiarare «overlay sì/no» a monte nei prompt UI stacking (candidate PROPOSTE/process PREPARA_PROMPT).
+
+### 29-05-26 — Prepara prompt: card ingredienti Prenota (stacking) + report comunicazione
+- Sessione **senza codice**: filtro `PREPARA_PROMPT_SKILL` su overlap ingredienti vs campi/riepilogo
+  (`ComposeScrollRow` / `BookingMenuCategoryCard`).
+- Correzione Matteo: «non è un problema, comportamenti ok, voglio che cambi come ti ho detto» →
+  **non** usare framing bug/regressione nel prompt; vincolo «tutte le categorie aperte insieme».
+- Chiesto esplicitamente: chi revisiona (tu vs altro) perché **task delicata** → risposta:
+  revisione **accurata**, agente Verifica esterno.
+- Chiusura in due passi: (1) report + PROPOSTE + prompt annotati; (2) Matteo chiede report
+  **autosufficiente** («tutto in documenti? revisore lo sa?» + «annota tutto … status skill system»).
+- Report consolidato v2: prompt esecutore (Appendice A) + prompt revisione (Appendice B) + analisi
+  skill system + cronologia chat completa — **non serve rileggere la chat**.
+- Report: `docs/Sessioni di lavoro/29-05-26/Report-prepara-prompt-prenota-card-ingredienti-stack-29-05-26.md`.
+
+### 28-05-26 (parte 5) — Carosello `show_offer_details_in_summary` (Prenota)
+- Task in due tempi: implementazione feature + follow-up UI admin/sticky; conferma «ok funziona».
+- Matteo ha richiesto esplicitamente allineamento skill system dopo la prima implementazione
+  (report troppo corto, skill d’area non aggiornate subito) → pattern: per `SubTab` + Personalizza
+  form caricare `BOOKING_DATA_FLOW` + `BOOKING_FORM_CONFIG_PANEL` e chiudere con report §7 completo.
+- Spec follow-up molto precisa (layout toggle, regole sticky senza label/chip) → esecuzione senza
+  domande aggiuntive; validazione automatica + prova manuale di Matteo.
+- Report finale consolidato: `Report-carosello-riepilogo-toggle-finale-28-05-26.md`.
 
 ### 28-05-26 (parte 4) — Agente filtro d'ingresso «prepara prompt»
 - Nuova skill `PREPARA_PROMPT_SKILL.md`: filtro a monte che trasforma il flusso grezzo di Matteo in

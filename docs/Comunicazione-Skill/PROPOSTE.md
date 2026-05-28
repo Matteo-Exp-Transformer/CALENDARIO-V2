@@ -26,6 +26,27 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## In attesa di decisione
 
+### [IN ATTESA] «comportamenti sono ok» · «non è un problema» · «voglio che cambi (come ti ho detto)» → cambio intenzionale, non bugfix
+- **Pattern osservato:** 1 forte (29-05-26). Matteo corregge l'agente che aveva inquadrato la richiesta
+  come fix/regressione: il comportamento attuale è accettabile; serve un **cambio mirato** al comportamento
+  descritto (es. smettere di disegnarsi sopra altri blocchi UI).
+- **Automatizzabile con certezza:** in prompt/report usare linguaggio «comportamento richiesto / cambio UX»,
+  non «bug / ripristino / regressione»; obiettivo prompt = stato desiderato esatto, non diagnosi.
+- **Meglio lasciare manuale:** decidere se il cambio tocca anche copy o skill di prodotto.
+- **Livello suggerito:** 2 (cautela) — se ambiguo se vuole mantenere qualche aspetto del comportamento attuale, una domanda.
+- **Token risparmiati per Matteo:** evita riformulazioni e prompt esecutore sbagliati.
+- **Esito / data:** in attesa · origine report 29-05-26 prepara-prompt Prenota stacking.
+
+### [IN ATTESA] «compila report … comunicazione … vocabolario (solo sicuro) … annota i miei prompt» → chiusura meta sessione
+- **Pattern osservato:** 1 (29-05-26). Dopo sessione prepara-prompt (o simili senza codice), Matteo chiede
+  report dettagliato su comunicazione, proposte vocabolario **senza junk**, citazione verbatim dei suoi prompt.
+- **Automatizzabile con certezza:** generare report in `Sessioni di lavoro/GG-MM-AA/` con sezione «Dati comunicazione»
+  completa + sottosezione «Prompt di Matteo (annotati)» + aggiornare `OSSERVAZIONI.md`; candidate solo in `PROPOSTE.md`.
+- **Meglio lasciare manuale:** promozione voci in `VOCABOLARIO.md` (solo Matteo).
+- **Livello suggerito:** 2 (cautela) — estende «fai report finale» quando la sessione è meta/comunicazione, non implementazione.
+- **Token risparmiati per Matteo:** una richiesta invece di ripetere struttura report + regole anti-junk.
+- **Esito / data:** in attesa · origine report 29-05-26.
+
 ### [IN ATTESA] «revisiona [lavoro X] e se è ok committa» → valida con i test e committa
 - **Pattern osservato:** 1 forte (28-05). Matteo delega la revisione del lavoro di altri agenti
   fidandosi della validazione automatica come prova.
