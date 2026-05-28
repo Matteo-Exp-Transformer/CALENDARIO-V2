@@ -39,6 +39,37 @@ prende l'**agente revisore** in sessione separata (vedi `REVISIONE.md`), confron
 
 ---
 
+<!-- ============================================================
+     REGOLA DI FALLBACK LESSICO — INIZIO
+     Per disattivarla (sistema meno rigido): cancella tutto il blocco
+     fra "INIZIO" e "FINE". Vale per TUTTI gli agenti che usano il vocabolario.
+     ============================================================ -->
+
+## Regola di fallback: quale parola usare quando il lessico non basta
+
+Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'agente filtro
+`PREPARA_PROMPT_SKILL.md`). Catena a gradini, in ordine:
+
+1. **C'è una voce Liv. 1 pertinente** → usala direttamente, senza chiedere.
+2. **Non c'è Liv. 1 ma c'è una Liv. 2 pertinente** → se hai **dubbi sul contesto di lavoro**,
+   chiedi a Matteo se va bene usare quella parola Liv. 2 prima di procedere. Se il contesto è
+   chiaro, applicala (è il comportamento Liv. 2 standard).
+3. **Altrimenti** (resta solo una Liv. 3 pertinente) → attieniti al Liv. 3: chiedi sempre conferma
+   prima di usarla, salvo match identico a un caso già ok.
+4. **Non hai informazioni / non sai quali parole usare** → fai domande a Matteo per **definire
+   parole nuove** (a opzioni o sì/no). Quando Matteo concorda una parola e ne indica il livello,
+   **salvala subito in questo file** (sezione "Voci attive") col livello indicato — è
+   un'approvazione esplicita sul momento. Usala per il comando corrente.
+
+> Questa regola è una salvaguardia per la fase di test. Quando il sistema sarà rodato e Matteo
+> vorrà provare un approccio meno rigido, si rimuove cancellando il blocco delimitato.
+
+<!-- ============================================================
+     REGOLA DI FALLBACK LESSICO — FINE
+     ============================================================ -->
+
+---
+
 ## Formato di una voce
 
 ```

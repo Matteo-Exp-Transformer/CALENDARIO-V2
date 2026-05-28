@@ -72,6 +72,11 @@ completa» quando intendi l'audit critico). Così il prompt parla la lingua che 
 riconosce in modo univoco, senza reinterpretazioni. Se Matteo ha usato una parola grezza che
 corrisponde a una voce, traducila nel termine approvato.
 
+**Quando il lessico non basta**, applica la *Regola di fallback* in testa a `VOCABOLARIO.md`:
+Liv.1 diretto → Liv.2 (chiedi se dubbio sul contesto) → Liv.3 (chiedi sempre) → se non sai quali
+parole usare, fai domande per definirne di nuove e, quando Matteo concorda una parola + livello,
+salvala subito in `VOCABOLARIO.md`.
+
 Scrivi il prompt come blocco copia-incolla. Niente fronzoli attorno.
 
 ### C. Domande
