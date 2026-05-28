@@ -17,13 +17,6 @@ import {
   MENU_INGREDIENT_PRICE_CLASS,
 } from './menuPricesCatalogLayout'
 
-const CATEGORY_LIMITS: Partial<Record<string, number>> = {
-  bevande: 1,
-  antipasti: 3,
-  primi: 1,
-  secondi: 3,
-}
-
 const DEFAULT_TIRAMISU_KG = 1
 const TIRAMISU_MIN_KG = 1
 const TIRAMISU_MAX_KG = 7
@@ -136,25 +129,6 @@ export const PresetMenuBuilder: React.FC<PresetMenuBuilderProps> = ({
               (isCaraffeDrinkStandard(selected.name) || isCaraffeDrinkPremium(selected.name))
             ),
         )
-      }
-    }
-
-    if (item.category === 'antipasti') {
-      const antipastiCount = selectedItems.filter((s) => s.category === 'antipasti').length
-      if (antipastiCount >= 3) {
-        window.alert('Puoi scegliere massimo 3 antipasti')
-        return
-      }
-    }
-
-    const limit = CATEGORY_LIMITS[item.category]
-    if (typeof limit === 'number') {
-      const categoryCount = updatedItems.filter((s) => s.category === item.category).length
-      if (limit === 1) {
-        updatedItems = updatedItems.filter((selected) => selected.category !== item.category)
-      } else if (categoryCount >= limit) {
-        window.alert(`Puoi scegliere massimo ${limit} elementi in questa categoria`)
-        return
       }
     }
 

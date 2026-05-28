@@ -8,13 +8,8 @@ import {
 } from '../constants/presetMenus'
 import { resolvePresetSelectedItems } from './buildPresetMenuSelection'
 
-/** Limiti selezione per categoria (form pubblico Prenota). */
-export const MENU_COMPOSE_CATEGORY_LIMITS: Partial<Record<string, number>> = {
-  bevande: 1,
-  antipasti: 3,
-  primi: 1,
-  secondi: 3,
-}
+/** Limiti selezione per categoria — nessuno configurato, feature da implementare. */
+export const MENU_COMPOSE_CATEGORY_LIMITS: Partial<Record<string, number>> = {}
 
 export type ComposeMenuItem = {
   id: string
@@ -71,32 +66,9 @@ export function countSelectedInCategory(
 }
 
 export function selectionStatusLabel(
-  categoryKey: string,
+  _categoryKey: string,
   selectedCount: number,
 ): { hint: string; status: string } {
-  const limit = MENU_COMPOSE_CATEGORY_LIMITS[categoryKey]
-  if (typeof limit === 'number' && limit === 1) {
-    return {
-      hint: 'Scegli 1 opzione',
-      status:
-        selectedCount === 1
-          ? '1 selezionata'
-          : selectedCount === 0
-            ? 'Nessuna selezionata'
-            : `${selectedCount} selezionate`,
-    }
-  }
-  if (typeof limit === 'number' && limit > 1) {
-    return {
-      hint: `Scegli fino a ${limit}`,
-      status:
-        selectedCount === 0
-          ? 'Nessuna selezionata'
-          : selectedCount === 1
-            ? '1 selezionata'
-            : `${selectedCount} selezionate`,
-    }
-  }
   return {
     hint: 'Scegli le opzioni',
     status:

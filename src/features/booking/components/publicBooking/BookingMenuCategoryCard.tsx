@@ -3,7 +3,6 @@ import { ChevronDown, Utensils } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { SelectedMenuItem } from '@/types/menu'
 import {
-  MENU_COMPOSE_CATEGORY_LIMITS,
   type ComposeMenuItem,
   countSelectedInCategory,
   selectionStatusLabel,
@@ -79,8 +78,6 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
 }) => {
   const selectedCount = countSelectedInCategory(selectedItems, categoryKey)
   const { hint, status } = selectionStatusLabel(categoryKey, selectedCount)
-  const maxSelectable = MENU_COMPOSE_CATEGORY_LIMITS[categoryKey]
-  const useRadioAppearance = maxSelectable === 1
 
   const heroSrc = imageUrl?.trim() || undefined
   const [expanded, setExpanded] = useState(false)
@@ -147,8 +144,7 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
                 <div className="flex min-h-[44px] gap-2.5">
                   <input
                     id={inputId}
-                    type={useRadioAppearance ? 'radio' : 'checkbox'}
-                    name={useRadioAppearance ? `compose-${categoryKey}` : undefined}
+                    type="checkbox"
                     checked={isSelected}
                     onChange={() => onToggleItem(item)}
                     className="mt-1 h-4 w-4 shrink-0 accent-warm-orange"

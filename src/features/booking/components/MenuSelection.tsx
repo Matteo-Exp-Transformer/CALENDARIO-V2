@@ -28,7 +28,6 @@ import { MENU_CARD_MAX_WIDTH_PX } from './menuPricesCatalogLayout'
 import { BookingMenuComposeGrid } from './publicBooking/BookingMenuComposeGrid'
 import { BOOKING_PUBLIC_CONTENT_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
 import {
-  MENU_COMPOSE_CATEGORY_LIMITS,
   type ComposeMenuItem,
 } from '../utils/menuComposeVisibility'
 
@@ -358,27 +357,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             (isCaraffeDrinkStandard(selected.name) || isCaraffeDrinkPremium(selected.name))
           )
         )
-      }
-    }
-
-    // === ANTIPASTI RULES ===
-    if (item.category === 'antipasti') {
-      const antipastiCount = selectedItems.filter(s => s.category === 'antipasti').length
-      if (antipastiCount >= 3) {
-        alert('Puoi scegliere massimo 3 antipasti')
-        return
-      }
-    }
-
-    // Regole generiche per categoria guidate da limite configurato
-    const limit = MENU_COMPOSE_CATEGORY_LIMITS[item.category]
-    if (typeof limit === 'number') {
-      const categoryCount = updatedItems.filter(s => s.category === item.category).length
-      if (limit === 1) {
-        updatedItems = updatedItems.filter(selected => selected.category !== item.category)
-      } else if (categoryCount >= limit) {
-        alert(`Puoi scegliere massimo ${limit} elementi in questa categoria`)
-        return
       }
     }
 

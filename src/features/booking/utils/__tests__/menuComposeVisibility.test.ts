@@ -99,16 +99,16 @@ describe('filterItemsForComposeCategory', () => {
 })
 
 describe('selectionStatusLabel', () => {
-  it('uses singular copy for limit 1', () => {
+  it('returns generic hint with 1 selected', () => {
     expect(selectionStatusLabel('primi', 1)).toEqual({
-      hint: 'Scegli 1 opzione',
+      hint: 'Scegli le opzioni',
       status: '1 selezionata',
     })
   })
 
-  it('uses plural copy for multi limit', () => {
+  it('returns generic hint with multiple selected', () => {
     expect(selectionStatusLabel('antipasti', 2)).toEqual({
-      hint: 'Scegli fino a 3',
+      hint: 'Scegli le opzioni',
       status: '2 selezionate',
     })
   })
