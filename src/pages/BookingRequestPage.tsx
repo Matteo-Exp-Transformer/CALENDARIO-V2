@@ -242,6 +242,7 @@ export const BookingRequestPage: React.FC = () => {
             <BookingRequestForm
               tenantSlug={tenantSlug}
               formConfig={resolvedConfig}
+              fullPageBackground={!showPhotoStrip}
               onFormDataChange={setSharedFormData}
               onActiveSubTabChange={setActiveSubTab}
               onIsDisabledChange={setIsSubmitDisabled}

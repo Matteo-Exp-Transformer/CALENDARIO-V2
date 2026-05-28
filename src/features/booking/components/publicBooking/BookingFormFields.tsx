@@ -31,6 +31,8 @@ interface BookingFormFieldsProps {
   onNumGuestsKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void
   resetAvailability: () => void
   setErrors: (errors: Record<string, string>) => void
+  /** Su mobile con layout pagina intera, restringe le caselle a metà larghezza. */
+  narrowMobile?: boolean
 }
 
 export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
@@ -46,6 +48,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
   onNumGuestsKeyPress,
   resetAvailability,
   setErrors,
+  narrowMobile = false,
 }) => {
   const isDateToday = formData.desired_date === getTodayIso()
   // Ora minima selezionabile: solo se la data è oggi, blocca le ore passate
@@ -106,8 +109,10 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
     }
   }
 
+  const fieldWrapperClass = narrowMobile ? 'w-full max-w-[50%] sm:max-w-full' : 'w-full'
+
   return (
-    <div className="w-full space-y-5">
+    <div className={fieldWrapperClass + ' space-y-5'}>
       <div className="space-y-1">
         <BookingPublicInsetField
           id="client_name"

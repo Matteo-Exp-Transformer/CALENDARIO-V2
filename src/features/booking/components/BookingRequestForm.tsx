@@ -54,6 +54,8 @@ interface BookingRequestFormProps {
   summarySidebar?: React.ReactNode
   /** Notifica il parent quando il pulsante submit cambia stato disabled. */
   onIsDisabledChange?: (disabled: boolean) => void
+  /** True quando il layout è pagina intera (nessuna striscia laterale): restringe le caselle su mobile. */
+  fullPageBackground?: boolean
 }
 
 function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
@@ -138,6 +140,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   onActiveSubTabChange,
   summarySidebar,
   onIsDisabledChange,
+  fullPageBackground = false,
 }) => {
   const getCurrentDate = getTodayIso
 
@@ -1086,6 +1089,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           onNumGuestsKeyPress={handleNumGuestsKeyPress}
           resetAvailability={resetAvailability}
           setErrors={(newErrors) => setErrors(newErrors)}
+          narrowMobile={fullPageBackground}
         />
         {errors.slot_availability && (
           <div className="text-sm text-red-700 font-semibold p-4 rounded-lg bg-red-50 border border-red-200 text-left">

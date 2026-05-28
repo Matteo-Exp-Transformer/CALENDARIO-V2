@@ -192,7 +192,7 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   // proporzionata sia in colonna stretta (mobile) che in colonna larga (tablet/desktop).
   // Su mobile stack la card prende tutta la larghezza form: 4/3 produce un'altezza
   // visiva coerente (es. 400×300 anziché un nastro 600×148 sproporzionato).
-  const closedImageClass = 'aspect-4/3'
+  const closedImageClass = layout === 'stack' ? 'aspect-video sm:aspect-4/3' : 'aspect-4/3'
 
   if (!expanded) {
     return (
