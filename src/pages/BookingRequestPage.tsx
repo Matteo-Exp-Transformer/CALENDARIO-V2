@@ -193,7 +193,7 @@ export const BookingRequestPage: React.FC = () => {
             Mobile/tablet: striscia 20vw. Desktop ≥900px: striscia 25vw. */}
         <div
           className={cn(
-            'flex-1 w-full grid grid-cols-1 items-stretch',
+            'flex-1 w-full grid grid-cols-1 items-start',
             showPhotoStrip && 'grid-cols-[20vw_1fr] min-[900px]:grid-cols-[25vw_1fr]',
           )}
         >
@@ -215,7 +215,7 @@ export const BookingRequestPage: React.FC = () => {
           {/* Colonna contenuto destra
               Padding laterale: mobile px-6 (più sfondo foto ai lati), tablet md:px-10,
               desktop ≥900px px-6 / lg:px-8 invariati (già OK con larghezza maggiore). */}
-          <div className="w-full min-w-0 min-h-full px-6 md:px-10 pb-44 min-[900px]:pb-1 min-[900px]:px-6 lg:px-8">
+          <div className="w-full min-w-0 px-6 md:px-10 min-[900px]:px-6 lg:px-8">
 
             {/* Header — solo testo sullo sfondo pagina */}
             <div className="flex flex-col items-center justify-center gap-1.5 py-1.5 text-center animate-fade-in">
@@ -308,15 +308,13 @@ export const BookingRequestPage: React.FC = () => {
               }
             />
 
-          </div>{/* fine colonna contenuto destra */}
+          {/* Spacer: riserva spazio per sticky bar mobile (<900px) + gap uniforme prima del footer */}
+          <div className="h-28 min-[900px]:h-6" aria-hidden />
 
+          </div>{/* fine colonna contenuto destra */}
         </div>{/* fine griglia [striscia foto | contenuto] */}
 
-        {/*
-          Footer Orari+Contatti — fuori dalla griglia, a tutta larghezza viewport.
-          Chiude la pagina da bordo sinistro a bordo destro anche su desktop.
-          È l'ultimo elemento: la pagina si chiude visivamente qui.
-        */}
+        {/* Footer Orari+Contatti — fuori dalla griglia, a tutta larghezza viewport */}
         <div className="w-full px-0">
           <div className="rounded-none shadow-xl px-6 md:px-8 bg-white border-t border-slate-100 pt-[clamp(0.4rem,1.2vw,0.7rem)] pb-[clamp(0.5rem,1.6vmin,0.9rem)] mt-0 animate-fade-in">
 
