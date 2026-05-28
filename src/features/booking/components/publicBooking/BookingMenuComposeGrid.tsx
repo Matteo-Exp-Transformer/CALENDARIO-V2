@@ -243,14 +243,12 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
   }
 
   const count = visibleCategories.length
-  const scrollOnDesktop = count > 3
-  const gridOnDesktop = count <= 3
 
   return (
     <div className="w-full min-w-0" data-testid="booking-menu-compose-grid">
-      {/* Mobile locked (menu preselezionato): griglia 3 colonne compatte */}
+      {/* Mobile locked (menu preselezionato): griglia 2 colonne compatte */}
       {locked ? (
-        <div className="grid grid-cols-3 items-start gap-1.5 md:hidden">
+        <div className="grid grid-cols-2 items-start gap-2 md:hidden">
           <ComposeCategoryCards categories={visibleCategories} layout="grid" compact {...cardProps} />
         </div>
       ) : (
@@ -260,20 +258,20 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
         </div>
       )}
 
-      {/* Desktop: griglia o carosello orizzontale */}
+      {/* Desktop: griglia o carosello orizzontale — sempre almeno 2 col, max-w per evitare card enormi */}
       <div className="hidden md:block">
-        {gridOnDesktop ? (
+        {count <= 3 ? (
           <div
             className={cn(
               'grid w-full min-w-0 items-start gap-4',
-              count <= 1 ? 'grid-cols-1' : count === 2 ? 'grid-cols-2' : 'grid-cols-3',
+              count === 1 ? 'grid-cols-2' : count === 2 ? 'grid-cols-2' : 'grid-cols-3',
             )}
           >
             <ComposeCategoryCards categories={visibleCategories} layout="grid" {...cardProps} />
           </div>
-        ) : scrollOnDesktop ? (
+        ) : (
           <ComposeScrollRow categories={visibleCategories} {...cardProps} />
-        ) : null}
+        )}
       </div>
     </div>
   )
