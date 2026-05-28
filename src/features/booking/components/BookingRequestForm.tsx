@@ -301,7 +301,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   ])
 
   const frostedInputCn =
-    'min-h-[2.6rem] min-[900px]:min-h-[2.4rem] bg-white px-3 min-[900px]:px-3 rounded-lg border border-slate-200 text-left text-xs font-bold text-warm-wood sm:text-sm min-[900px]:text-xs focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/40'
+    'min-h-[2.6rem] min-[900px]:min-h-[2.4rem] bg-white/75 backdrop-blur-sm px-3 min-[900px]:px-3 rounded-lg border border-slate-200 text-left text-xs font-bold text-warm-wood sm:text-sm min-[900px]:text-xs focus:border-warm-wood focus:ring-2 focus:ring-warm-wood/40'
   
   // Ref per prevenire doppi submit (anche con React StrictMode)
   const isSubmittingRef = useRef(false)
