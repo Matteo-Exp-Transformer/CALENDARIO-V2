@@ -13,6 +13,9 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 30-05-26 | Verifica — revisione **indipendente** 2° passaggio mappa Menu QR (Fase 2) | [Report revisione](Sessioni%20di%20lavoro/29-05-26/Report-revisione-mappatura-menu-qr-admin-pubblico-29-05-26.md) §2° passaggio — **Approva con riserve**; Q1–Q5 TEST OK; M1–M6 @ 375/834/1280; validate 222 OK; admin modale non testato; handoff Fase 3 INC-03/06/09. |
+| 29-05-26 | Verifica — revisione mappa Menu QR (1° passaggio esecutore, sostituita) | [Report revisione](Sessioni%20di%20lavoro/29-05-26/Report-revisione-mappatura-menu-qr-admin-pubblico-29-05-26.md) — bozza non vincolante; vedere riga 30-05-26. |
+| 29-05-26 | Verifica — mappatura Menu QR Admin ↔ Pubblico (Fase 1, solo doc) ✅ | [Report](Sessioni%20di%20lavoro/29-05-26/Report-mappatura-menu-qr-admin-pubblico-29-05-26.md) — 38 coppie; query TEST OK; INC-01…16; context `PUBLIC_MENU_DATA_FLOW_CONTEXT.md`; FU-017/018/019. |
 | 29-05-26 | **Ciclo unificato BookingRequestCard** (mappa→rev→fix→rev) ✅ | [**Report unificato**](Sessioni%20di%20lavoro/29-05-26/Report-unificato-ciclo-booking-request-card-29-05-26.md) — INC-01/07 risolti; Approva revisore fix; prompt/comunicazione annotati; template replicabile Menu QR. |
 | 29-05-26 | Revisione — fix digest prezzo menù (INC-01/07) ✅ | [Report](Sessioni%20di%20lavoro/29-05-26/Report-revisione-fix-menu-pricing-digest-29-05-26.md) — **Approva**; validate OK (222 test); QA browser test-pro M1/M2 OK (€8 e €13.98 digest=espanso). |
 | 29-05-26 | Fix digest prezzo menù admin/calendario ✅ | [Report](Sessioni%20di%20lavoro/29-05-26/Report-fix-menu-pricing-digest-29-05-26.md) — `menuPricing` policy DB vince; test INC-01/07; GUIDA query + BOOKING_REQUEST_CARD_CONTEXT §3; validate OK (222 test); FU-015/FU-016 chiusi. |
