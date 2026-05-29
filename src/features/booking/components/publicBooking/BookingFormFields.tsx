@@ -24,6 +24,9 @@ interface BookingFormFieldsProps {
   isLoadingHours?: boolean
   hoursError?: unknown
   frostedInputCn?: string
+  /** Chiave del primo campo in errore — lampeggio attenzione. */
+  attentionFieldKey?: string | null
+  onClearAttention?: () => void
   onFieldChange: (field: string, value: string | number) => void
   onDateChange: (date: string) => void
   onTimeChange: (time: string) => void
@@ -40,6 +43,8 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
   isLoadingHours,
   hoursError,
   onFieldChange,
+  attentionFieldKey = null,
+  onClearAttention,
   onDateChange,
   onTimeChange,
   onNumGuestsChange,
@@ -121,9 +126,11 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
           }}
           required
           hasError={!!errors.client_name}
+          showAttention={attentionFieldKey === 'client_name'}
+          onAttentionInteract={onClearAttention}
         />
         {errors.client_name && (
-          <p id="client_name-error" className="text-center text-sm text-red-500">{errors.client_name}</p>
+          <p id="client_name-error" className="text-start text-sm font-semibold text-white">{errors.client_name}</p>
         )}
       </div>
 
@@ -136,12 +143,14 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             onChange={handleTimeChange}
             required
             hasError={!!errors.desired_time}
+            showAttention={attentionFieldKey === 'desired_time'}
+            onAttentionInteract={onClearAttention}
             minTime={minTimeToday}
           />
           {errors.desired_time && (
-            <div className="text-sm text-red-600 p-3 rounded-lg bg-red-50 border border-red-200">
+            <p id="desired_time-error" className="text-start text-sm font-semibold text-white">
               {errors.desired_time}
-            </div>
+            </p>
           )}
         </div>
 
@@ -159,9 +168,11 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             onKeyPress={onNumGuestsKeyPress}
             required
             hasError={!!errors.num_guests}
+            showAttention={attentionFieldKey === 'num_guests'}
+            onAttentionInteract={onClearAttention}
           />
           {errors.num_guests && (
-            <p id="num_guests-error" className="text-center text-sm text-red-500">{errors.num_guests}</p>
+            <p id="num_guests-error" className="text-start text-sm font-semibold text-white">{errors.num_guests}</p>
           )}
         </div>
       </div>
@@ -181,9 +192,11 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
           }}
           required
           hasError={!!errors.client_phone}
+          showAttention={attentionFieldKey === 'client_phone'}
+          onAttentionInteract={onClearAttention}
         />
         {errors.client_phone && (
-          <p id="client_phone-error" className="text-center text-sm text-red-500">{errors.client_phone}</p>
+          <p id="client_phone-error" className="text-start text-sm font-semibold text-white">{errors.client_phone}</p>
         )}
       </div>
 
@@ -196,11 +209,13 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             onChange={handleDateChange}
             required
             hasError={!!errors.desired_date}
+            showAttention={attentionFieldKey === 'desired_date'}
+            onAttentionInteract={onClearAttention}
           />
           {errors.desired_date && (
-            <div className="text-sm text-red-600 p-3 rounded-lg bg-red-50 border border-red-200">
+            <p id="desired_date-error" className="text-start text-sm font-semibold text-white">
               {errors.desired_date}
-            </div>
+            </p>
           )}
         </div>
 
@@ -218,9 +233,11 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
               setErrors({ ...errors, client_email: '' })
             }}
             hasError={!!errors.client_email}
+            showAttention={attentionFieldKey === 'client_email'}
+            onAttentionInteract={onClearAttention}
           />
           {errors.client_email && (
-            <p id="client_email-error" className="text-center text-sm text-red-500">{errors.client_email}</p>
+            <p id="client_email-error" className="text-start text-sm font-semibold text-white">{errors.client_email}</p>
           )}
         </div>
       </div>

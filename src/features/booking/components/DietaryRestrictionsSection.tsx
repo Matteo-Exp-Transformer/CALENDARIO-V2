@@ -2,7 +2,13 @@ import React from 'react'
 import { Input } from '@/components/ui'
 import { Link } from 'react-router-dom'
 import { Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { BookingPublicInsetField } from './publicBooking/BookingPublicInsetField'
+import {
+  BOOKING_PUBLIC_FIELD_ATTENTION_CLASS,
+  BOOKING_PUBLIC_FIELD_SCROLL_MARGIN,
+  shouldDismissBookingPublicAttention,
+} from '../utils/bookingPublicFormAttention'
 
 interface DietaryRestrictionsSectionProps {
   dietaryText: string
@@ -12,6 +18,9 @@ interface DietaryRestrictionsSectionProps {
   privacyAccepted?: boolean
   onPrivacyChange?: (value: boolean) => void
   privacyError?: string
+  /** Lampeggio attenzione sul checkbox privacy. */
+  showPrivacyAttention?: boolean
+  onPrivacyAttentionInteract?: () => void
   /** Nasconde il blocco "Altre Richieste" (es. renderizzato sotto la griglia in AdminBookingForm) */
   omitSpecialRequestsSection?: boolean
   /** Layout /prenota: campi al 75% larghezza, stessa altezza e font delle card sottotab */
@@ -33,6 +42,8 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
   privacyAccepted,
   onPrivacyChange,
   privacyError,
+  showPrivacyAttention = false,
+  onPrivacyAttentionInteract,
   omitSpecialRequestsSection = false,
   publicFormFields = false,
 }) => {
@@ -95,22 +106,35 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
       )}
 
       {privacyAccepted !== undefined && onPrivacyChange && (
-        <div className="space-y-2 pt-1">
+        <div
+          id="privacy-consent-dietary"
+          className={cn('space-y-2 pt-1', BOOKING_PUBLIC_FIELD_SCROLL_MARGIN, showPrivacyAttention && BOOKING_PUBLIC_FIELD_ATTENTION_CLASS, 'rounded-lg')}
+        >
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div className="flex min-w-0 flex-1 items-start gap-3">
               <div className="group relative size-5 shrink-0">
                 <input
                   type="checkbox"
-                  id="privacy-consent-dietary"
+                  id="privacy-consent-dietary-input"
                   checked={privacyAccepted}
                   onChange={(e) => onPrivacyChange(e.target.checked)}
+                  onFocus={(event) => {
+                    if (showPrivacyAttention && shouldDismissBookingPublicAttention(event)) {
+                      onPrivacyAttentionInteract?.()
+                    }
+                  }}
+                  onPointerDown={(event) => {
+                    if (showPrivacyAttention && shouldDismissBookingPublicAttention(event)) {
+                      onPrivacyAttentionInteract?.()
+                    }
+                  }}
                   required
                   className="peer absolute inset-0 z-10 size-5 cursor-pointer appearance-none opacity-0 focus:outline-none"
                 />
                 <div
                   aria-hidden="true"
                   className={`pointer-events-none absolute inset-0 flex items-center justify-center rounded border-2 bg-white shadow-sm transition-all duration-300 group-hover:shadow-md peer-checked:border-warm-orange peer-checked:bg-warm-orange peer-checked:shadow-lg peer-focus-visible:ring-4 peer-focus-visible:ring-warm-wood/20 ${
-                    privacyError
+                    privacyError || showPrivacyAttention
                       ? 'border-red-500 group-hover:border-red-600'
                       : 'border-warm-wood/40 group-hover:border-warm-wood'
                   }`}
@@ -123,13 +147,24 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                   />
                 </div>
               </div>
-              <label htmlFor="privacy-consent-dietary" className="cursor-pointer text-base text-warm-wood-dark">
+              <label
+                htmlFor="privacy-consent-dietary-input"
+                className={cn(
+                  'cursor-pointer text-base',
+                  publicFormFields ? 'font-medium text-white' : 'text-warm-wood-dark',
+                )}
+              >
                 Accetto la{' '}
                 <Link
                   to="/privacy"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-semibold text-warm-orange underline decoration-warm-orange hover:text-warm-orange"
+                  className={cn(
+                    'font-semibold underline underline-offset-2',
+                    publicFormFields
+                      ? 'text-white decoration-white hover:text-white/90'
+                      : 'text-warm-orange decoration-warm-orange hover:text-warm-orange',
+                  )}
                   onClick={(e) => e.stopPropagation()}
                 >
                   Privacy Policy
@@ -137,11 +172,25 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                 {' '}*
               </label>
             </div>
-            <p className="text-sm font-semibold text-warm-wood-dark/80 sm:text-base">
+            <p
+              className={cn(
+                'text-sm font-semibold sm:text-base',
+                publicFormFields ? 'text-white' : 'text-warm-wood-dark/80',
+              )}
+            >
               * I campi contrassegnati sono obbligatori
             </p>
           </div>
-          {privacyError && <p className="text-sm text-red-500 ml-8">{privacyError}</p>}
+          {privacyError && (
+            <p
+              className={cn(
+                'ml-8 text-sm font-semibold',
+                publicFormFields ? 'text-white' : 'text-red-500',
+              )}
+            >
+              {privacyError}
+            </p>
+          )}
         </div>
       )}
     </div>

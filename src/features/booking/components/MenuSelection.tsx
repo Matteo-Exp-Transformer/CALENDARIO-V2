@@ -65,6 +65,8 @@ interface MenuSelectionProps {
   presetSectionTitle?: string
   /** Forza blocco/sblocco ingredienti dalla card Prenota selezionata. */
   menuSelectionLockedOverride?: boolean
+  /** Chiave per richiudere card ingredienti aperte (es. submit con errori). */
+  composeCollapseKey?: string
 }
 
 type NormalizedMenuItem = ComposeMenuItem
@@ -88,6 +90,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   disablePresetDescriptionFallback = false,
   presetSectionTitle,
   menuSelectionLockedOverride,
+  composeCollapseKey,
 }) => {
   const publicBlockClass = publicFormLayout ? BOOKING_PUBLIC_CONTENT_WIDTH : 'mx-auto w-full max-w-full'
   const { data: menuItems = [], isLoading, error } = useMenuItems()
@@ -319,12 +322,31 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
           className={cn('mb-4 w-full', publicFormLayout ? 'mr-auto' : 'mx-auto')}
           style={{ maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, 100%)` }}
         >
-          <p className="text-[13px] font-bold leading-tight text-warm-wood sm:text-base lg:text-sm xl:text-base">
+          <p
+            className={cn(
+              'text-[13px] font-bold leading-tight sm:text-base lg:text-sm xl:text-base',
+              publicFormLayout ? 'text-white' : 'text-warm-wood',
+            )}
+          >
             Hai selezionato :
           </p>
-          <h2 className="mt-1 font-serif text-xl font-bold text-warm-wood md:text-2xl">{lockedPresetTitle}</h2>
+          <h2
+            className={cn(
+              'mt-1 font-serif text-xl font-bold md:text-2xl',
+              publicFormLayout ? 'text-white' : 'text-warm-wood',
+            )}
+          >
+            {lockedPresetTitle}
+          </h2>
           {composePresetDescription ? (
-            <p className="mt-2 text-sm font-medium text-warm-wood-dark/75">{composePresetDescription}</p>
+            <p
+              className={cn(
+                'mt-2 text-sm font-medium',
+                publicFormLayout ? 'text-white/90' : 'text-warm-wood-dark/75',
+              )}
+            >
+              {composePresetDescription}
+            </p>
           ) : null}
         </div>
       ) : (
@@ -418,6 +440,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             customStaffPresets={customStaffPresets}
             formatPrice={formatPrice}
             onToggleItem={handleItemToggle}
+            composeCollapseKey={composeCollapseKey}
           />
         </div>
       )}
