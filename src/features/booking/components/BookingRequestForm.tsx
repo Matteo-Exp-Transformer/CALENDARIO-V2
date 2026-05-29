@@ -43,7 +43,11 @@ import {
   DEFAULT_BOOKING_FORM_CONFIG,
 } from '../constants/bookingPublicFormConfig'
 import { BookingSubTabCards, SubTabCardIcon } from './publicBooking/BookingSubTabCards'
-import { BOOKING_PUBLIC_CONTENT_WIDTH } from '../constants/bookingPublicFieldStyles'
+import {
+  BOOKING_PUBLIC_CONTENT_WIDTH,
+  publicFormSectionErrorClass,
+  publicFormSlotAvailabilityErrorClass,
+} from '../constants/bookingPublicFieldStyles'
 import {
   BOOKING_PUBLIC_FIELD_ATTENTION_CLASS,
   BOOKING_PUBLIC_FIELD_SCROLL_MARGIN,
@@ -62,6 +66,8 @@ interface BookingRequestFormProps {
   summarySidebar?: React.ReactNode
   /** Notifica il parent quando il pulsante submit cambia stato disabled. */
   onIsDisabledChange?: (disabled: boolean) => void
+  /** Testo errore/privacy/riepilogo in bianco solo su sfondo full-page (no striscia). */
+  publicFormLightTextOnDarkBackground?: boolean
 }
 
 function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
@@ -158,6 +164,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   onActiveSubTabChange,
   summarySidebar,
   onIsDisabledChange,
+  publicFormLightTextOnDarkBackground = false,
 }) => {
   const getCurrentDate = getTodayIso
 
@@ -948,7 +955,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           }}
         />
         {errors.booking_type && (
-          <p className="text-sm font-semibold text-white">{errors.booking_type}</p>
+          <p className={publicFormSectionErrorClass(publicFormLightTextOnDarkBackground)}>{errors.booking_type}</p>
         )}
         {menuPromoBannerMessages.length > 0 && (
           <MenuPromoBannerCards
@@ -999,7 +1006,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         )}
         {activeSubTab?.display === 'carousel' && <BookingSubTabCarousel subTab={activeSubTab} />}
         {!showMenuSelectionSection && errors.menu && activeModeSubTabs.length > 0 && (
-          <p className="text-center text-sm font-semibold text-white">{errors.menu}</p>
+          <p className={publicFormSectionErrorClass(publicFormLightTextOnDarkBackground, 'center')}>{errors.menu}</p>
         )}
       </div>
 
@@ -1030,6 +1037,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             customStaffPresets={customStaffPresets}
             hideSummary={true}
             publicFormLayout
+            publicFormLightTextOnDarkBackground={publicFormLightTextOnDarkBackground}
             hiddenCategoryKeys={activeSubTab?.hidden_category_keys ?? []}
             hiddenItemIds={activeSubTab?.hidden_item_ids ?? []}
             subTabOverrides={activeSubTabOverrides}
@@ -1071,7 +1079,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             }}
           />
           {errors.menu && (
-            <p className="text-sm font-semibold text-white">{errors.menu}</p>
+            <p className={publicFormSectionErrorClass(publicFormLightTextOnDarkBackground)}>{errors.menu}</p>
           )}
         </div>
       )}
@@ -1080,6 +1088,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       {/* Dati cliente — dopo tipologia e menù */}
       <div className="flex w-full min-w-0 flex-col space-y-3 text-start">
         <BookingFormFields
+          lightTextOnDarkBackground={publicFormLightTextOnDarkBackground}
           formData={{
             client_name: formData.client_name,
             client_email: formData.client_email,
@@ -1110,7 +1119,9 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           setErrors={(newErrors) => setErrors(newErrors)}
         />
         {errors.slot_availability && (
-          <p className="text-left text-sm font-semibold text-white">{errors.slot_availability}</p>
+          <div className={publicFormSlotAvailabilityErrorClass(publicFormLightTextOnDarkBackground)}>
+            {errors.slot_availability}
+          </div>
         )}
         {/* Intolleranze e richieste — sempre sotto data/ora/ospiti, per ogni tipologia */}
         <div className="flex w-full min-w-0 flex-col space-y-6 pt-2">
@@ -1137,6 +1148,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             showPrivacyAttention={attentionFieldKey === 'privacyAccepted'}
             onPrivacyAttentionInteract={clearAttentionField}
             publicFormFields
+            lightTextOnDarkBackground={publicFormLightTextOnDarkBackground}
           />
         </div>
       </div>

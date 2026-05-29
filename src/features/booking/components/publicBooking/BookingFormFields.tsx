@@ -8,6 +8,10 @@ import {
   BookingPublicTimePickerField,
 } from './BookingPublicDateTimePickers'
 import { getCurrentTimeHHMM, getTodayIso } from '../../utils/bookingPublicDateHelpers'
+import {
+  publicFormDateTimeErrorClass,
+  publicFormFieldErrorClass,
+} from '../../constants/bookingPublicFieldStyles'
 
 interface BookingFormFieldsProps {
   formData: Pick<
@@ -34,6 +38,8 @@ interface BookingFormFieldsProps {
   onNumGuestsKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void
   resetAvailability: () => void
   setErrors: (errors: Record<string, string>) => void
+  /** Testo errore in bianco solo su sfondo full-page foto. */
+  lightTextOnDarkBackground?: boolean
 }
 
 export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
@@ -51,6 +57,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
   onNumGuestsKeyPress,
   resetAvailability,
   setErrors,
+  lightTextOnDarkBackground = false,
 }) => {
   const isDateToday = formData.desired_date === getTodayIso()
   // Ora minima selezionabile: solo se la data è oggi, blocca le ore passate
@@ -130,7 +137,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
           onAttentionInteract={onClearAttention}
         />
         {errors.client_name && (
-          <p id="client_name-error" className="text-start text-sm font-semibold text-white">{errors.client_name}</p>
+          <p id="client_name-error" className={publicFormFieldErrorClass(lightTextOnDarkBackground)}>{errors.client_name}</p>
         )}
       </div>
 
@@ -148,9 +155,9 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             minTime={minTimeToday}
           />
           {errors.desired_time && (
-            <p id="desired_time-error" className="text-start text-sm font-semibold text-white">
+            <div id="desired_time-error" className={publicFormDateTimeErrorClass(lightTextOnDarkBackground)}>
               {errors.desired_time}
-            </p>
+            </div>
           )}
         </div>
 
@@ -172,7 +179,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             onAttentionInteract={onClearAttention}
           />
           {errors.num_guests && (
-            <p id="num_guests-error" className="text-start text-sm font-semibold text-white">{errors.num_guests}</p>
+            <p id="num_guests-error" className={publicFormFieldErrorClass(lightTextOnDarkBackground)}>{errors.num_guests}</p>
           )}
         </div>
       </div>
@@ -196,7 +203,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
           onAttentionInteract={onClearAttention}
         />
         {errors.client_phone && (
-          <p id="client_phone-error" className="text-start text-sm font-semibold text-white">{errors.client_phone}</p>
+          <p id="client_phone-error" className={publicFormFieldErrorClass(lightTextOnDarkBackground)}>{errors.client_phone}</p>
         )}
       </div>
 
@@ -213,9 +220,9 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             onAttentionInteract={onClearAttention}
           />
           {errors.desired_date && (
-            <p id="desired_date-error" className="text-start text-sm font-semibold text-white">
+            <div id="desired_date-error" className={publicFormDateTimeErrorClass(lightTextOnDarkBackground)}>
               {errors.desired_date}
-            </p>
+            </div>
           )}
         </div>
 
@@ -237,7 +244,7 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             onAttentionInteract={onClearAttention}
           />
           {errors.client_email && (
-            <p id="client_email-error" className="text-start text-sm font-semibold text-white">{errors.client_email}</p>
+            <p id="client_email-error" className={publicFormFieldErrorClass(lightTextOnDarkBackground)}>{errors.client_email}</p>
           )}
         </div>
       </div>
