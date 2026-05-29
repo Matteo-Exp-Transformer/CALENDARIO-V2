@@ -18,11 +18,6 @@ import {
   computeMenuTotalsFromItems,
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
-import {
-  listMenuPromoMessagesForBookingType,
-  listMenuPromoLabelsForBookingType,
-} from '../constants/menuPromo'
-import { MenuPromoBannerCards } from './MenuPromoBannerCards'
 import { useAcceptedBookings } from '../hooks/useBookingQueries'
 import { useCapacityCheck } from '../hooks/useCapacityCheck'
 import { CapacityWarningModal } from './CapacityWarningModal'
@@ -81,12 +76,6 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
       : [...DEFAULT_PLACEMENT_AREAS]
     return placementAreas.length > 0 ? placementAreas : [...DEFAULT_PLACEMENT_AREAS]
   }, [features.servizio, placementAreasSetting])
-  const { data: menuPromos = [] } = useRestaurantSetting('booking_menu_promos')
-
-  const menuPromoBannerMessages = useMemo(
-    () => listMenuPromoMessagesForBookingType(formData.booking_type ?? 'tavolo', menuPromos),
-    [formData.booking_type, menuPromos],
-  )
 
   const { data: acceptedBookings = [] } = useAcceptedBookings()
 
@@ -317,10 +306,9 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
   }
 
   const createBooking = () => {
-    const menuPromoLabels = listMenuPromoLabelsForBookingType(formData.booking_type ?? 'tavolo', menuPromos)
     const payload: BookingRequestInput = {
       ...(features.servizio ? formData : { ...formData, placement: '' }),
-      menu_promo_labels: menuPromoLabels.length > 0 ? menuPromoLabels : null,
+      menu_promo_labels: null,
     }
     mutate(payload, {
       onSuccess: async () => {
@@ -518,12 +506,6 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) 
             </select>
             {errors.booking_type && (
               <p className="text-sm text-red-500">{errors.booking_type}</p>
-            )}
-            {menuPromoBannerMessages.length > 0 && (
-              <MenuPromoBannerCards
-                messages={menuPromoBannerMessages}
-                className="mt-1"
-              />
             )}
           </div>
 

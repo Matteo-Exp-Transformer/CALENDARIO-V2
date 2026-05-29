@@ -30,7 +30,7 @@ Prima di scendere alla tabella delle aree, capisci **che tipo di task** stai per
 | Profilo | Tipo di task | Termini di Matteo (Liv. 1) | Carica | Salta |
 |---------|--------------|----------------------------|--------|-------|
 | **Esecuzione** | nuove feature · piccoli fix · responsive design | «implementa» · «sistema» · «fai» · «nuova feature» · «aggiungi» · «crea» | skill dell'**area pertinente** (tabella § 0 sotto) + UI (`UI_EDIT` / `UI_RESPONSIVE` se tocca layout/stile) | Testing-Skill, debug, comunicazione-revisione |
-| **Verifica** | debug · testing · revisione piani · revisione esecuzione | «revisiona» · «controlla» · «verifica» · «debugga» · «trova il bug» · «non funziona» | `docs/Testing-Skill/TESTING_SKILL.md` + skill **dell'area che stai revisionando** | comunicazione-revisione |
+| **Verifica** | debug · testing · revisione piani · revisione esecuzione | «revisiona» · «controlla» · «verifica» · «debugga» · «trova il bug» · «non funziona» | `docs/Testing-Skill/TESTING_SKILL.md` (**§7 protocollo QA manuale obbligatorio**: `npm run validate` + stessi test funzionali su viewport **375 / 834 / 1280** + tabella esiti nel report) + skill **dell'area che stai revisionando** + `UI_RESPONSIVE_SKILL.md` se layout/breakpoint | comunicazione-revisione |
 | **Meta** | revisione/miglioramento sistema comunicazione | «migliora comunicazione» · «aggiorna comunicazione» | **solo** `docs/COMUNICAZIONE_UTENTE_SKILL.md` + `docs/Comunicazione-Skill/REVISIONE.md` | tutte le skill di area/codice/DB/UI |
 
 I profili non si sovrappongono — il discriminante è **cosa produce il task**: Esecuzione produce/modifica codice di una feature; Verifica controlla codice o piani già prodotti (sempre con i test); Meta lavora sul sistema documentale e sulla comunicazione, non sul codice dell'app. Coerenza con i due ruoli di § 7.0: Esecuzione e Verifica sono **agente di lavoro**, Meta è **agente revisore** (sessione dedicata).
@@ -72,6 +72,7 @@ Leggi il task ricevuto e applica questa tabella:
 | **Come rispondere a Matteo / spiegazioni / report / fine sessione / vocabolario / "spiegamelo semplice"** | `docs/COMUNICAZIONE_UTENTE_SKILL.md` + supporto `docs/Comunicazione-Skill/` (VOCABOLARIO, OSSERVAZIONI, PROPOSTE). Agente di lavoro: applica vocabolario + raccoglie dati + report esaustivo. Caricala a inizio (se usi il vocabolario o fai domande) e a fine sessione. |
 | **Revisione skill comunicazione / promuovere-regredire voci / valutare i dati raccolti / riformare lo skill system comunicazione** | `docs/Comunicazione-Skill/REVISIONE.md` — **sessione dedicata** col revisore, non in una chat di lavoro |
 | **Visione prodotto / perché una scelta / modello commerciale / roadmap / decisioni strutturali / dove trovo cosa** | `docs/Archivio/CONTESTO_PRODOTTO.md` — fonte di verità riassuntiva (no dati sensibili) |
+| **Follow-up / debito post-sessione / controlli rimandati / FU-NNN** | `docs/FOLLOW_UP.md` — collegare al report in `docs/Sessioni di lavoro/`; aggiornare a fine sessione (§7.1). Agente **prepara-prompt**: ruolo attivo nel trovare follow-up (`docs/PREPARA_PROMPT_SKILL.md`). |
 | Non è chiaro di quale area si tratti | Leggi `CLAUDE.md`, poi usa questa tabella |
 
 Carica il skill indicato **prima** di aprire qualsiasi file da modificare.
@@ -361,8 +362,14 @@ Il report deve contenere:
   - **errore agente** — interpretazione sbagliata, tentativo fallito evitabile, scelta tecnica non ottimale dell'agente esecutore;
   - **vincolo strutturale** — un LOCK/comportamento CSS/architettura preesistente ha bloccato un approccio (es. `overflow-x-auto` che taglia i figli `absolute`).
   Per ognuno: cosa è successo, da cosa derivava, come si sarebbe evitato. I pattern ricorrenti vanno **anche** appesi in `docs/Comunicazione-Skill/ERRORI_PROCESSO.md` (indice per il revisore Meta). Vedi modello report 29-05-26 card ingredienti.
-- Cosa resta per la prossima sessione
+- Cosa resta per la prossima sessione (sincronizzare con `docs/FOLLOW_UP.md`: nuove righe `FU-NNN` per controlli rimandati, stato `fatto` se chiusi in sessione)
 - Eventuali deviazioni dal plan con motivazione
+
+**Riferimenti nei commit (pratica obbligatoria).** Nel corpo del messaggio di commit (dopo la riga
+soggetto), includere sempre una sezione **`Review:`** con elenco puntato dei path che permettono di
+revisionare il lavoro: report in `docs/Sessioni di lavoro/GG-MM-AA/Report-*.md`, riga pertinente in
+`docs/SESSION_LOG.md`, eventuali voci aperte in `docs/FOLLOW_UP.md`, skill/context toccati. Così
+chi fa `git log` o apre la PR trova subito dove leggere senza cercare in chat.
 
 ### 7.2 Allineare i file di skill
 
@@ -398,4 +405,5 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | `MenuSelection.tsx` prop `hideMenuGrid` / `subTabOverrides` / `BookingMode.sub_tabs` | `APP_CONTEXT_SKILL.md` §4 RULE Pagina Prenota v2 + RULE Menu Prenota |
 | `bookingFormResolver.ts` / `SubTab.field_overrides` / `patchSubTabAsOverride` / `resetSubTabToPreset` | `APP_CONTEXT_SKILL.md` §4 RULE Tracking personalizzazioni card Prenota |
 | `bookingPublicDateHelpers.ts` (getTodayIso, dateToIso, getCurrentTimeHHMM) / `bookingModeLabels.ts` (getModeLabelByType) | `APP_CONTEXT_SKILL.md` §4 RULE Anti-duplicazione — sono i punti di verità per date locali e label modalità del form pubblico |
+| `docs/FOLLOW_UP.md` (nuova riga o chiusura FU) | Nessun altro file obbligatorio; opzionale puntatore in `.cursor/skills/calendarbackup-app-context/SKILL.md` se il follow-up è rilevante per sessioni future |
 | `vite.config.ts` (VitePWA/define) / `src/main.tsx` (registerSW) / `index.html` (splash) / `vercel.json` (cache header) / `src/vite-env.d.ts` (globali build) | `APP_CONTEXT_SKILL.md` §4 RULE PWA / aggiornamento app |

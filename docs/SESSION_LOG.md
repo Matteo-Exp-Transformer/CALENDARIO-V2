@@ -7,10 +7,14 @@ description: >-
 
 # Session Log — Cronologia sessioni
 
+> Controlli e lavori **rimandati** legati a un report → `docs/FOLLOW_UP.md` (non duplicare qui).
+
 ## 2026-05
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 29-05-26 | Promo conflitto abbinamento — dialogo sostituzione ✅ | [Report](Sessioni%20di%20lavoro/29-05-26/Report-promo-conflitto-sostituzione-29-05-26.md) — Personalizza form: modale conflitto tipologia/card al salvataggio editor promo; merge esplicito Sostituisci/Annulla; helper `menuPromo.ts`; fix visibilità Modal vs `window.confirm`; copy semplificato. Conferma «ottimo funziona». |
+| 29-05-26 | Promo Personalizza form + abbinamento UI flessibile | [Report](Sessioni%20di%20lavoro/29-05-26/Report-promo-personalizza-form-29-05-26.md) — spostamento editor da Tab Menu; multi-target `booking_types[]` / `sub_tab_refs[]` ([multi-target](Sessioni%20di%20lavoro/29-05-26/Report-promo-multi-target-29-05-26.md)); banner singolo Prenota; follow-up UI: niente dropdown abbinamento, checkbox 0/1/2/tutte, promo solo testo ok. QA Playwright baseline OK; smoke post-fix UI da fare. FU-001 aperto. |
 | 29-05-26 | Card scorrevole: titolo vuoto, placeholder, riga lista admin ✅ | [Report](Sessioni%20di%20lavoro/29-05-26/Report-card-scorrevole-titolo-admin-29-05-26.md) — Personalizza form: no prefill «Card scorrevole», placeholder «Nome card scorrevole», clear su Compila manualmente, riga «Titolo · Card N»; parser label vuoto; carosello invariato. Conferma «lavoro ok». |
 | 29-05-26 | Card ingredienti Prenota: ciclo completo ✅ | [Report finale ciclo](Sessioni%20di%20lavoro/29-05-26/Report-finale-ciclo-prepara-prompt-card-ingredienti-29-05-26.md) — prepara-prompt → esecuzione (portal, scroll 3 righe) → revisione OK + commit. Dettagli: [prepara](Sessioni%20di%20lavoro/29-05-26/Report-prepara-prompt-prenota-card-ingredienti-stack-29-05-26.md), [esecutore](Sessioni%20di%20lavoro/29-05-26/Report-prenota-card-ingredienti-scroll-overlay-29-05-26.md). |
 | 28-05-26 | Carosello: toggle dettaglio offerta nel riepilogo Prenota ✅ | [Report finale](Sessioni%20di%20lavoro/28-05-26/Report-carosello-riepilogo-toggle-finale-28-05-26.md) — `show_offer_details_in_summary`; admin + sidebar + sticky; confermato da Matteo. Parziali: [v1](Sessioni%20di%20lavoro/28-05-26/Report-carosello-riepilogo-toggle-offerta-28-05-26.md), [follow-up](Sessioni%20di%20lavoro/28-05-26/Report-carosello-riepilogo-toggle-followup-28-05-26.md). |

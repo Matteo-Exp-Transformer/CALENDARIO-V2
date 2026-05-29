@@ -1,6 +1,5 @@
 import React, {
   forwardRef,
-  useEffect,
   useImperativeHandle,
   useLayoutEffect,
   useMemo,
@@ -23,7 +22,6 @@ import {
 } from '../hooks/useMenuCategories'
 import { type MenuItem, type MenuItemInput } from '@/types/menu'
 import type { SelectedMenuItem } from '@/types/menu'
-import type { BookingType } from '@/types/booking'
 import {
   STAFF_PRESET_DEFAULT_BOOKING_TYPES,
   type CustomStaffPreset,
@@ -47,13 +45,6 @@ import {
   MENU_INGREDIENT_OVERVIEW_SHELL_CLASS,
   MENU_INGREDIENT_PRICE_CLASS,
 } from './menuPricesCatalogLayout'
-import {
-  MENU_PROMO_BOOKING_TYPE_OPTIONS,
-  MENU_PROMO_PLACEHOLDER,
-  type MenuPromo,
-  isMenuPromoVisibleOnBooking,
-  getMenuPromoAdminLabel,
-} from '../constants/menuPromo'
 import { MenuQrManager } from './MenuQrManager'
 import {
   deleteMenuCategoryPhoto,
@@ -75,18 +66,10 @@ const menuPricesHeaderCtaButtonClass = cn(
   'h-9 min-h-9 w-full shrink-0 gap-1.5 min-w-0'
 )
 
-function bookingTypeLabelsJoined(types: BookingType[]): string {
-  return types
-    .map((t) => MENU_PROMO_BOOKING_TYPE_OPTIONS.find((o) => o.value === t)?.label ?? t)
-    .join(', ')
-}
-
 type StaffPresetsVisibilityIconButtonProps = {
   visible: boolean
   disabled: boolean
   onToggle: () => void
-  /** `menuPromo`: testi per singola riga promo (non preset staff). */
-  variant?: 'staffPresets' | 'menuPromo'
 }
 
 /** Occhio tra Modifica ed Elimina nella lista menù preselezionati — stessa hit-area degli altri `.menu-prices-icon-btn`. */
@@ -94,24 +77,13 @@ function StaffPresetsVisibilityIconButton({
   visible,
   disabled,
   onToggle,
-  variant = 'staffPresets',
 }: StaffPresetsVisibilityIconButtonProps) {
-  const title =
-    variant === 'menuPromo'
-      ? visible
-        ? 'Promo visibile in Prenota: clic per nascondere'
-        : 'Promo nascosta in Prenota: clic per mostrare'
-      : visible
-        ? 'Visibili nella pagina Prenota: clic per nascondere'
-        : 'Nascosti nella pagina Prenota: clic per mostrare'
-  const ariaLabel =
-    variant === 'menuPromo'
-      ? visible
-        ? 'Nascondi questa promo nella pagina Prenota'
-        : 'Mostra questa promo nella pagina Prenota'
-      : visible
-        ? 'Nascondi i menù consigliati nella pagina Prenota'
-        : 'Mostra i menù consigliati nella pagina Prenota'
+  const title = visible
+    ? 'Visibili nella pagina Prenota: clic per nascondere'
+    : 'Nascosti nella pagina Prenota: clic per mostrare'
+  const ariaLabel = visible
+    ? 'Nascondi i menù consigliati nella pagina Prenota'
+    : 'Mostra i menù consigliati nella pagina Prenota'
 
   return (
     <button
@@ -132,22 +104,18 @@ function StaffPresetsVisibilityIconButton({
 }
 
 export type MenuPricesHeroToolbarProps = {
-  promoDisabled: boolean
   onAddProduct: () => void
   onAddCategory: () => void
   onPresetMenus: () => void
-  onPromo: () => void
   onQrCodes?: () => void
   showQrCodes?: boolean
 }
 
 /** Fascia «Menu» con CTA: riutilizzabile nello sticky header della dashboard. */
 export function MenuPricesHeroToolbar({
-  promoDisabled,
   onAddProduct,
   onAddCategory,
   onPresetMenus,
-  onPromo,
   onQrCodes,
   showQrCodes = false,
 }: MenuPricesHeroToolbarProps) {
@@ -164,7 +132,7 @@ export function MenuPricesHeroToolbar({
         Aggiungi, modifica, nascondi o elimina gli elementi del menù
       </p>
       <div className="w-full border-t border-[var(--color-border)] pt-3">
-        <div className={cn('grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2', showQrCodes ? 'xl:grid-cols-5' : 'xl:grid-cols-4')}>
+        <div className={cn('grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2', showQrCodes ? 'xl:grid-cols-4' : 'xl:grid-cols-3')}>
           <Button
             variant="ghost"
             size="sm"
@@ -197,19 +165,6 @@ export function MenuPricesHeroToolbar({
             <Plus className="h-3.5 w-3.5" />
             Crea / Modifica Menù Preselezionati
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            type="button"
-            onClick={onPromo}
-            disabled={promoDisabled}
-            aria-label="Crea / Modifica Promo Menù"
-            title="Crea / Modifica Promo Menù"
-            className={cn(menuPricesHeaderCtaButtonClass, 'whitespace-normal leading-snug')}
-          >
-            <Edit className="h-3.5 w-3.5" />
-            Crea / Modifica Promo Menù
-          </Button>
           {showQrCodes && (
             <Button
               variant="ghost"
@@ -234,14 +189,12 @@ export type MenuPricesTabHandle = {
   startAddProduct: () => void
   startAddCategory: () => void
   openPresetMenus: () => void
-  openPromo: () => void
   openQrCodes: () => void
 }
 
 export type MenuPricesTabProps = {
   /** Toolbar principale spostata nello sticky header AdminDashboard */
   omitHeroSection?: boolean
-  onToolbarPromoDisabled?: (disabled: boolean) => void
 }
 
 const slugifyCategory = (value: string): string =>
@@ -413,7 +366,7 @@ const AdminMenuCategoryLabelCard: React.FC<AdminMenuCategoryLabelCardProps> = ({
 type MenuViewMode = 'menu' | 'categories' | 'preset_menus' | 'qr_codes'
 
 export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>(function MenuPricesTab(
-  { omitHeroSection = false, onToolbarPromoDisabled },
+  { omitHeroSection = false },
   ref,
 ) {
   const { tenantId } = useTenantContext()
@@ -429,7 +382,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
 
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
   const { data: bookingPublicFormConfig } = useRestaurantSetting('booking_public_form_config')
-  const { data: menuPromos = [], isLoading: menuPromosLoading } = useRestaurantSetting('booking_menu_promos')
   const upsertRestaurantSetting = useUpsertRestaurantSetting()
 
   const [viewMode, setViewMode] = useState<MenuViewMode>('menu')
@@ -457,16 +409,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const [presetPriceInput, setPresetPriceInput] = useState('')
   const [presetSelectedItems, setPresetSelectedItems] = useState<SelectedMenuItem[]>([])
   const [editingCustomPresetId, setEditingCustomPresetId] = useState<string | null>(null)
-  const [promoEditorOpen, setPromoEditorOpen] = useState(false)
-  const [promoEditorMode, setPromoEditorMode] = useState<'list' | 'editor'>('list')
-  const [editingMenuPromoId, setEditingMenuPromoId] = useState<string | null>(null)
-  const [promoDraftMessage, setPromoDraftMessage] = useState('')
-  const [promoDraftLabel, setPromoDraftLabel] = useState('')
-  const [promoDraftBookingTypes, setPromoDraftBookingTypes] = useState<BookingType[]>([
-    'rinfresco_laurea',
-    'menu_prezzo_fisso',
-  ])
-  const promoEditorPanelRef = useRef<HTMLDivElement>(null)
   const productFormCardRef = useRef<HTMLDivElement>(null)
   const scrollProductFormIntoViewAfterEditRef = useRef(false)
 
@@ -479,108 +421,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
 
   /** Attivo dopo «Crea / Modifica Prodotto»: titolo «Modifica Ingredienti» e righe ingrediente interattive. */
   const [ingredientEditMode, setIngredientEditMode] = useState(false)
-
-  const resetMenuPromoEditorDraft = () => {
-    setPromoEditorMode('list')
-    setEditingMenuPromoId(null)
-    setPromoDraftMessage('')
-    setPromoDraftLabel('')
-    setPromoDraftBookingTypes(['rinfresco_laurea', 'menu_prezzo_fisso'])
-  }
-
-  useLayoutEffect(() => {
-    if (!promoEditorOpen || viewMode !== 'menu') return
-    promoEditorPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [promoEditorOpen, viewMode])
-
-  const startNewMenuPromo = () => {
-    setEditingMenuPromoId(null)
-    setPromoDraftMessage('')
-    setPromoDraftLabel('')
-    setPromoDraftBookingTypes(['rinfresco_laurea', 'menu_prezzo_fisso'])
-    setPromoEditorMode('editor')
-  }
-
-  const startEditMenuPromo = (row: MenuPromo) => {
-    setEditingMenuPromoId(row.id)
-    setPromoDraftLabel(row.label ?? '')
-    setPromoDraftMessage(row.message)
-    setPromoDraftBookingTypes([...row.booking_types])
-    setPromoEditorMode('editor')
-  }
-
-  const togglePromoDraftBookingType = (bt: BookingType) => {
-    setPromoDraftBookingTypes((prev) =>
-      prev.includes(bt) ? prev.filter((x) => x !== bt) : [...prev, bt],
-    )
-  }
-
-  const handleSaveMenuPromoRow = async () => {
-    const trimmedLabel = promoDraftLabel.trim()
-    const trimmed = promoDraftMessage.trim()
-    if (!trimmedLabel) {
-      toast.error('Inserisci il nome della promozione')
-      return
-    }
-    if (!trimmed) {
-      toast.error('Inserisci il testo della promozione')
-      return
-    }
-    if (promoDraftBookingTypes.length === 0) {
-      toast.error('Seleziona almeno una tipologia di prenotazione')
-      return
-    }
-
-    const existing =
-      editingMenuPromoId !== null
-        ? menuPromos.find((p) => p.id === editingMenuPromoId)
-        : undefined
-    if (editingMenuPromoId !== null && !existing) {
-      toast.error('Promo non trovata')
-      return
-    }
-
-    const nextRow: MenuPromo =
-      editingMenuPromoId !== null && existing
-        ? { ...existing, label: trimmedLabel, message: trimmed, booking_types: promoDraftBookingTypes }
-        : {
-            id: crypto.randomUUID(),
-            label: trimmedLabel,
-            message: trimmed,
-            booking_types: promoDraftBookingTypes,
-            visible_on_booking: true,
-          }
-
-    const next: MenuPromo[] =
-      editingMenuPromoId !== null
-        ? menuPromos.map((p) => (p.id === editingMenuPromoId ? nextRow : p))
-        : [...menuPromos, nextRow]
-
-    try {
-      await upsertRestaurantSetting.mutateAsync([{ key: 'booking_menu_promos', value: next }])
-      setPromoEditorMode('list')
-      setEditingMenuPromoId(null)
-      setPromoDraftMessage('')
-      setPromoDraftLabel('')
-    } catch {
-      //
-    }
-  }
-
-  const handleDeleteMenuPromo = (promoId: string, summary: string) => {
-    if (!confirm(`Eliminare la promo "${summary}"?`)) {
-      return
-    }
-    const next = menuPromos.filter((p) => p.id !== promoId)
-    persistMenuPromos(next)
-  }
-
-  const toggleMenuPromoBookingVisibility = (promoId: string) => {
-    const next = menuPromos.map((p) =>
-      p.id === promoId ? { ...p, visible_on_booking: !isMenuPromoVisibleOnBooking(p) } : p,
-    )
-    persistMenuPromos(next)
-  }
 
   const resetPresetEditor = () => {
     setPresetEditorMode('list')
@@ -745,18 +585,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setCurrentImageUrl(null)
   }
 
-  const openPromoEditor = () => {
-    resetMenuPromoEditorDraft()
-    resetPresetEditor()
-    setViewMode('menu')
-    resetProductFormState()
-    setIsAddingCategory(false)
-    setEditingCategoryId(null)
-    setNewCategoryLabel('')
-    setPromoEditorOpen(true)
-    setPromoEditorMode('list')
-  }
-
   const openPresetMenusSection = () => {
     resetPresetEditor()
     resetProductFormState()
@@ -770,8 +598,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
 
   const openIngredientEditSection = () => {
     setViewMode('menu')
-    setPromoEditorOpen(false)
-    resetMenuPromoEditorDraft()
     setIsAddingCategory(false)
     setEditingCategoryId(null)
     setIngredientEditMode(true)
@@ -813,8 +639,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
 
   const handleStartAdd = (preselectedCategory?: string) => {
     setViewMode('menu')
-    setPromoEditorOpen(false)
-    resetMenuPromoEditorDraft()
     setIsAddingCategory(false)
     setIngredientEditMode(true)
     setIsAdding(true)
@@ -1037,10 +861,9 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       startAddProduct: openIngredientEditSection,
       startAddCategory: handleStartAddCategory,
       openPresetMenus: openPresetMenusSection,
-      openPromo: openPromoEditor,
       openQrCodes: openQrCodesSection,
     }),
-    [openIngredientEditSection, handleStartAddCategory, openPresetMenusSection, openPromoEditor, openQrCodesSection],
+    [openIngredientEditSection, handleStartAddCategory, openPresetMenusSection, openQrCodesSection],
   )
 
   const handleSave = async () => {
@@ -1152,80 +975,11 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
 
   useLayoutEffect(() => {
     if (!scrollProductFormIntoViewAfterEditRef.current) return
-    if (viewMode !== 'menu' || promoEditorOpen) return
+    if (viewMode !== 'menu') return
     if (!editingId && !isAdding) return
     scrollProductFormIntoViewAfterEditRef.current = false
     productFormCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [viewMode, promoEditorOpen, isAdding, editingId])
-
-  useEffect(() => {
-    onToolbarPromoDisabled?.(menuPromosLoading || upsertRestaurantSetting.isPending)
-  }, [onToolbarPromoDisabled, menuPromosLoading, upsertRestaurantSetting.isPending])
-
-  const persistMenuPromos = (next: MenuPromo[]) => {
-    upsertRestaurantSetting.mutate([{ key: 'booking_menu_promos', value: next }])
-  }
-
-  const menuPromoList = (
-    <div className="mt-8 flex flex-col gap-3">
-      {menuPromos.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-gray-300 bg-white/60 py-12 text-center text-sm text-gray-600">
-          Nessuna promo. Creane una con il pulsante sopra.
-        </p>
-      ) : (
-        menuPromos.map((row) => (
-          <div
-            key={row.id}
-            className="menu-prices-item-row flex-wrap gap-y-3"
-            style={{ padding: '0.75rem 1rem', minHeight: '72px' }}
-          >
-            <div className="menu-prices-item-text min-w-[120px] flex-1">
-              <h4 className="text-left font-semibold text-gray-900">
-                {getMenuPromoAdminLabel(row)}
-              </h4>
-              {row.message.trim() ? (
-                <p
-                  className={cn(
-                    MENU_INGREDIENT_DESC_CLASS,
-                    'mt-1 whitespace-pre-wrap break-words text-left',
-                  )}
-                >
-                  {row.message.trim()}
-                </p>
-              ) : null}
-              <p className="mt-1 text-left text-xs text-gray-500">
-                {bookingTypeLabelsJoined(row.booking_types)}
-              </p>
-            </div>
-            <div className="menu-prices-item-actions shrink-0">
-              <button
-                type="button"
-                onClick={() => startEditMenuPromo(row)}
-                className="menu-prices-icon-btn menu-prices-icon-btn--edit"
-                aria-label="Modifica promo"
-              >
-                <Edit className="h-4 w-4" />
-              </button>
-              <StaffPresetsVisibilityIconButton
-                variant="menuPromo"
-                visible={isMenuPromoVisibleOnBooking(row)}
-                disabled={upsertRestaurantSetting.isPending}
-                onToggle={() => toggleMenuPromoBookingVisibility(row.id)}
-              />
-              <button
-                type="button"
-                onClick={() => handleDeleteMenuPromo(row.id, getMenuPromoAdminLabel(row))}
-                className="menu-prices-icon-btn menu-prices-icon-btn--delete"
-                aria-label="Elimina promo"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        ))
-      )}
-    </div>
-  )
+  }, [viewMode, isAdding, editingId])
 
   if (isLoading) {
     return <div className="text-center py-8">Caricamento menu...</div>
@@ -1246,7 +1000,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           Aggiungi, modifica, nascondi o elimina gli elementi del menù
         </p>
         <div className="w-full border-t border-[var(--color-border)] pt-3">
-          <div className={cn('grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2', features.qrMenu ? 'xl:grid-cols-5' : 'xl:grid-cols-4')}>
+          <div className={cn('grid w-full grid-cols-1 gap-2 min-[560px]:grid-cols-2', features.qrMenu ? 'xl:grid-cols-4' : 'xl:grid-cols-3')}>
             <Button
               variant="ghost"
               size="sm"
@@ -1279,19 +1033,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
               <Plus className="h-3.5 w-3.5" />
               Crea / Modifica Menù Preselezionati
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              type="button"
-              onClick={openPromoEditor}
-              disabled={menuPromosLoading || upsertRestaurantSetting.isPending}
-              aria-label="Crea / Modifica Promo Menù"
-              title="Crea / Modifica Promo Menù"
-              className={cn(menuPricesHeaderCtaButtonClass, 'whitespace-normal leading-snug')}
-            >
-              <Edit className="h-3.5 w-3.5" />
-              Crea / Modifica Promo Menù
-            </Button>
             {features.qrMenu && (
               <Button
                 variant="ghost"
@@ -1310,155 +1051,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
         </div>
       </section>
       )}
-      {viewMode === 'menu' && promoEditorOpen && (
-        <div className="w-full">
-          <div
-            ref={promoEditorPanelRef}
-            className="relative w-full scroll-mt-24 rounded-2xl border-2 p-4 md:p-6 shadow-lg md:scroll-mt-28"
-            style={ADMIN_WARM_GRADIENT_SURFACE}
-            role="region"
-            aria-label="Editor promozioni menù pagina prenotazione"
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setPromoEditorOpen(false)
-                resetMenuPromoEditorDraft()
-              }}
-              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-warm-wood/40 bg-white/90 text-warm-wood shadow-sm transition hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-warm-wood/40"
-              aria-label="Chiudi promozioni menù"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <div className="mx-auto max-w-3xl pb-12 pr-10">
-              <h3 className="text-center font-serif text-title-card font-bold text-warm-wood">
-                Promozioni Menù
-              </h3>
-              <p className="mt-2 text-center text-xs text-gray-600 sm:text-sm">
-                Crea una o più promo e associale alle tipologie di prenotazione del form pubblico.
-              </p>
-
-              {promoEditorMode === 'list' ? (
-                <div className="mt-8 flex justify-end">
-                  <Button
-                    variant="success"
-                    size="sm"
-                    type="button"
-                    onClick={startNewMenuPromo}
-                    disabled={menuPromosLoading || upsertRestaurantSetting.isPending}
-                    className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs self-center sm:self-end"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Nuova Promo Menù
-                  </Button>
-                </div>
-              ) : null}
-
-              {promoEditorMode === 'editor' && (
-                <div className="mt-8 flex flex-col gap-4">
-                  <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
-                    <div>
-                      <label
-                        htmlFor="menu-promo-label"
-                        className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600"
-                      >
-                        Nome promozione
-                      </label>
-                      <Input
-                        id="menu-promo-label"
-                        value={promoDraftLabel}
-                        onChange={(e) => setPromoDraftLabel(e.target.value)}
-                        placeholder="Es. Promo estate 2026"
-                        maxLength={80}
-                        className="h-14 w-full rounded-2xl pl-6"
-                        style={{ height: '56px', borderRadius: '18px', paddingLeft: '24px' }}
-                        aria-label="Nome promozione solo admin"
-                      />
-                      <p className="mt-1 text-xs text-gray-500">
-                        Solo admin. {promoDraftLabel.length}/80
-                      </p>
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="menu-promo-textarea"
-                        className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600"
-                      >
-                        Testo promozione
-                      </label>
-                      <Textarea
-                        id="menu-promo-textarea"
-                        value={promoDraftMessage}
-                        onChange={(e) => setPromoDraftMessage(e.target.value)}
-                        placeholder={MENU_PROMO_PLACEHOLDER}
-                        rows={5}
-                        maxLength={500}
-                        className="w-full rounded-2xl border-gray-200 px-4 py-3 text-sm"
-                        aria-label="Inserisci il testo della promozione"
-                      />
-                      <p className="mt-1 text-xs text-gray-500">
-                        Visibile nella pagina Prenota. {promoDraftMessage.length}/500
-                      </p>
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
-                        Tipologia di prenotazione *
-                      </label>
-                      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                        {MENU_PROMO_BOOKING_TYPE_OPTIONS.map(({ value, label }) => (
-                          <label
-                            key={value}
-                            className="flex cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 shadow-sm"
-                          >
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4 shrink-0 rounded border-gray-400"
-                              checked={promoDraftBookingTypes.includes(value)}
-                              onChange={() => togglePromoDraftBookingType(value)}
-                            />
-                            {label}
-                          </label>
-                        ))}
-                      </div>
-                      <p className="mt-1 text-xs text-gray-500">
-                        Seleziona una o più tipologie: il testo comparirà quando il cliente sceglie una di queste opzioni.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-10 flex flex-wrap justify-center gap-3">
-                    <button
-                      type="button"
-                      disabled={upsertRestaurantSetting.isPending}
-                      onClick={() => void handleSaveMenuPromoRow()}
-                      className="flex items-center gap-2 px-6 py-3 bg-linear-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl border-2 border-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-emerald-500/35 hover:from-emerald-400 hover:to-emerald-500 hover:border-emerald-600 hover:brightness-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 disabled:hover:border-emerald-700"
-                    >
-                      <Save className="h-4 w-4" />
-                      Salva promo
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPromoEditorMode('list')
-                        setEditingMenuPromoId(null)
-                        setPromoDraftMessage('')
-                        setPromoDraftLabel('')
-                      }}
-                      className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30"
-                    >
-                      <X className="h-4 w-4 flex-shrink-0" />
-                      Annulla
-                    </button>
-                  </div>
-                </div>
-              )}
-              {menuPromoList}
-            </div>
-          </div>
-        </div>
-      )}
       {viewMode === 'menu' && (
-      <>
-      {!promoEditorOpen && (
       <>
       <div
         className={MENU_INGREDIENT_OVERVIEW_SHELL_CLASS}
@@ -1731,8 +1324,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           </div>
         )}
       </div>
-      </>
-      )}
       </>
       )}
 

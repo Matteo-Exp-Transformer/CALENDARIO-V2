@@ -322,19 +322,35 @@ Deno.serve(async (req: Request) => {
             (p: {
               label?: string;
               message?: string;
+              placement?: string;
+              booking_type?: string;
               booking_types?: string[];
               visible_on_booking?: boolean;
-            }) =>
-              p.visible_on_booking !== false &&
-              String(p.message ?? "").trim().length > 0 &&
-              Array.isArray(p.booking_types) &&
-              p.booking_types.includes(booking_type),
+            }) => {
+              if (p.visible_on_booking === false) return false;
+              if (String(p.message ?? "").trim().length === 0) return false;
+              const types = Array.isArray(p.booking_types)
+                ? p.booking_types
+                : p.booking_type
+                  ? [p.booking_type]
+                  : [];
+              if (p.placement === "booking_type" && types.includes(booking_type)) {
+                return true;
+              }
+              if (
+                !p.placement &&
+                types.includes(booking_type)
+              ) {
+                return true;
+              }
+              return false;
+            },
           )
           .map((p: { label?: string }) => String(p.label ?? "").trim())
           .filter((label: string) => label.length > 0);
 
         if (labels.length > 0) {
-          resolvedMenuPromoLabels = labels;
+          resolvedMenuPromoLabels = [labels[0]];
         }
       }
     }

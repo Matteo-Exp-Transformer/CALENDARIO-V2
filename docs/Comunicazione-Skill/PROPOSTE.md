@@ -26,6 +26,22 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## In attesa di decisione
 
+### [IN ATTESA] Copy verbatim / «mostra solo questo testo» → delta esplicito, non riscrivere tutto il blocco
+- **Pattern osservato:** 1 (29-05-26 promo modale). Matteo chiede nuovo intro + chiusura; agente semplifica anche l’elenco rimuovendo `tipologia → «promo esistente»`. Matteo: «non ti ho detto di cambiarlo».
+- **Automatizzabile con certezza:** applicare letteralmente **solo** le stringhe/frasi citate; lasciare invariati gli elementi UI non menzionati (es. formato riga elenco).
+- **Meglio lasciare manuale:** se la richiesta sembra sostituire «tutto il testo del modale», chiedere conferma su elenco/dettagli secondari.
+- **Livello suggerito:** 2 (cautela).
+- **Token risparmiati per Matteo:** evita giro correzione + frustrazione.
+- **Esito / data:** in attesa · report promo conflitto 29-05-26.
+
+### [IN ATTESA] «non vedo il modal» → usare Modal in-app, non window.confirm
+- **Pattern osservato:** 1 (29-05-26 promo conflitto). Dopo implementazione con `window.confirm`, Matteo non percepisce il dialogo; fix con `Modal.tsx` → «ottimo funziona».
+- **Automatizzabile con certezza:** in task admin con «finestra di conferma», default = componente `Modal` con due pulsanti; `window.confirm` solo se esplicitamente richiesto per parity legacy.
+- **Meglio lasciare manuale:** scelta copy e layout modale specifico per feature.
+- **Livello suggerito:** 1 (automatico) per la scelta Modal vs confirm browser.
+- **Token risparmiati per Matteo:** evita un giro «non funziona» + fix.
+- **Esito / data:** in attesa · collegato FU-003 e report promo conflitto 29-05-26.
+
 ### [IN ATTESA] «lavoro ok» → conferma successo implementazione (spesso seguito da report)
 - **Pattern osservato:** 1 (29-05-26). Matteo chiude una sessione Esecuzione con «lavoro ok» dopo
   aver verificato (o fidandosi del riepilogo agente); nella stessa frase o subito dopo chiede spesso

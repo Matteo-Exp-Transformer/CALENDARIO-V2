@@ -37,6 +37,11 @@
 | «mantieni linea scalabile e pulita, no parti obsolete» | 2+ | preferire soluzioni durevoli, niente codice ridondante/legacy |
 | «fammi delle domande per decidere» | 2+ | usare AskUserQuestion prima di pianificare, non calare piani dall'alto |
 | report in `Sessioni di lavoro/` non `_lavoro/` | 1 (forte) | i report ufficiali vanno nella cartella datata |
+| «aggiorna report … anche comunicazione» | 1 | vuole § Dati comunicazione nel report, non solo codice |
+| feedback UX «a scelta tra» vs multi-selezione | 1 | descrive il problema percepito in app, non il componente |
+| «non vedo il modal» (dopo confirm browser) | 1 | vuole dialogo in-app visibile (`Modal`), non popup nativo |
+| copy modale verbatim («mostra come testo solo questo…») | 1 | incolla testo desiderato — agente deve applicarlo letterale |
+| «non ti ho detto di cambiarlo» | 1 | delta copy era solo intro/chiusura — agente aveva rimosso anche elenco con freccia → promo |
 
 ## Spiegazioni date e formato che ha funzionato
 
@@ -66,6 +71,20 @@
 ---
 
 ## Log per data
+
+### 29-05-26 — Esecuzione: promo conflitto abbinamento — dialogo sostituzione
+- Follow-up prompt strutturato (helper, test, no skill/docs); implementazione + validate OK.
+- Matteo: «non vedo il modal» → fix `Modal` React; «ottimo funziona»; poi copy modale intro/chiusura semplificati; **correzione**: «non ti ho detto di cambiarlo» → ripristinata freccia + nome promo in elenco.
+- Agente: risposte con schermata Personalizza form + storage `booking_menu_promos`; nota pulsante editor vs Salva sezione.
+- Skill: APP_CONTEXT profilo Esecuzione ok; BOOKING_FORM context non caricato; `window.confirm` nel prompt suggerito → errore UX (allineare FU-003).
+- Report: `Report-promo-conflitto-sostituzione-29-05-26.md` con § skill system e Dati comunicazione.
+
+### 29-05-26 — Esecuzione: promo Personalizza form + fix UI abbinamento (checkbox libere)
+- Feature grande (spostamento da Tab Menu, multi-target, banner Prenota) + due iterazioni UX abbinamento.
+- Feedback Matteo sul select: «a scelta tra» → vuole «1 o nessuno o tutti o 2» (multi-checkbox libera, non menu esclusivo).
+- Spiegazione agente con schermata + `BookingFormPromoSection` + `booking_menu_promos` — allineata a user rule «spiegami semplice».
+- Chiusura: «aggiorna report di fine lavoro, anche parte comunicazione» — **senza** «lavoro ok» sul fix UI; nessun commit.
+- Report aggiornato: `Report-promo-personalizza-form-29-05-26.md` (§ Dati comunicazione + follow-up UI).
 
 ### 29-05-26 — Esecuzione: card scorrevole titolo/placeholder/lista admin (Personalizza form)
 - Prompt esecutore completo (no domande): vuoto + placeholder, import menù, clear manuale, riga `· Card N`, carosello invariato.

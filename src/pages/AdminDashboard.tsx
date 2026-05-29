@@ -166,7 +166,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [showNewBookingPanel, setShowNewBookingPanel] = useState(false)
   const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>('all')
   const [archiveSortOrder, setArchiveSortOrder] = useState<SortOrder>('booking_date')
-  const [menuToolbarPromoDisabled, setMenuToolbarPromoDisabled] = useState(false)
   const menuPricesTabRef = useRef<MenuPricesTabHandle>(null)
   const features = useFeatures()
   const { guardNavigation } = useUnsavedChangesGuard()
@@ -326,11 +325,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                 {activeTab === 'menu' && showTabSecondaryChrome && (
                   <MenuPricesHeroToolbar
-                    promoDisabled={menuToolbarPromoDisabled}
                     onAddProduct={() => menuPricesTabRef.current?.startAddProduct()}
                     onAddCategory={() => menuPricesTabRef.current?.startAddCategory()}
                     onPresetMenus={() => menuPricesTabRef.current?.openPresetMenus()}
-                    onPromo={() => menuPricesTabRef.current?.openPromo()}
                     onQrCodes={() => menuPricesTabRef.current?.openQrCodes()}
                     showQrCodes={features.qrMenu}
                   />
@@ -417,11 +414,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               />
             )}
             {activeTab === 'menu' && (
-              <MenuPricesTab
-                ref={menuPricesTabRef}
-                omitHeroSection
-                onToolbarPromoDisabled={setMenuToolbarPromoDisabled}
-              />
+              <MenuPricesTab ref={menuPricesTabRef} omitHeroSection />
             )}
             {activeTab === 'settings-restaurant' && <RestaurantSettingsTab />}
           </div>

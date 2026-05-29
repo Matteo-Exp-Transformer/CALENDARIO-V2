@@ -30,9 +30,10 @@ import { isValidEmail, isValidPhone } from '../utils/validation'
 import { getTodayIso } from '../utils/bookingPublicDateHelpers'
 import { resolveSubTabView } from '../services/bookingFormResolver'
 import {
-  listMenuPromoMessagesForBookingType,
-  listMenuPromoLabelsForBookingType,
+  collectMenuPromoLabelsForSubmit,
+  resolveMenuPromoForBookingView,
 } from '../constants/menuPromo'
+import { useMenuPromoViewTracking } from '../hooks/useMenuPromoViewTracking'
 import { MenuPromoBannerCards } from './MenuPromoBannerCards'
 import { BookingModeCards } from './publicBooking/BookingModeCards'
 import { BookingFormFields } from './publicBooking/BookingFormFields'
@@ -526,10 +527,14 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   }, [isPending, isBlocked, isSubmitting, isCheckingAvailability, onIsDisabledChange])
   const { data: menuPromos = [] } = useRestaurantSetting('booking_menu_promos')
 
-  const menuPromoBannerMessages = useMemo(
-    () => listMenuPromoMessagesForBookingType(formData.booking_type ?? 'tavolo', menuPromos),
-    [formData.booking_type, menuPromos],
-  )
+  const { resolvedPromo, viewedPromoIdsRef, resetViewedPromos } = useMenuPromoViewTracking({
+    bookingType: formData.booking_type ?? 'tavolo',
+    modeId: activeModeId,
+    subTabId: activeSubTabId,
+    promos: menuPromos,
+  })
+
+  const menuPromoBannerMessages = resolvedPromo?.message?.trim() ? [resolvedPromo.message.trim()] : []
 
   // Fetch business hours (non-blocking - form works even if loading/fails)
   const { data: businessHours, isLoading: isLoadingHours, error: hoursError } = useBusinessHours()
@@ -799,7 +804,17 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     }
 
     // Chiama mutate — il guard server-side in create-booking è la garanzia definitiva
-    const menuPromoLabels = listMenuPromoLabelsForBookingType(formData.booking_type ?? 'tavolo', menuPromos)
+    const finalSubTabPromo = resolveMenuPromoForBookingView({
+      bookingType: formData.booking_type ?? 'tavolo',
+      modeId: activeModeId,
+      subTabId: activeSubTabId,
+      promos: menuPromos,
+    })
+    const menuPromoLabels = collectMenuPromoLabelsForSubmit({
+      viewedPromoIds: viewedPromoIdsRef.current,
+      finalSubTabPromoId: finalSubTabPromo?.id,
+      promos: menuPromos,
+    })
 
     let specialRequests = formData.special_requests?.trim() ?? ''
     if (activeSubTab && !activeSubTab.preset_id && activeSubTab.label.trim()) {
@@ -838,6 +853,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         })
         setSelectedPreset(null)
         setActiveSubTabId(null)
+        resetViewedPromos()
         setPrivacyAccepted(false)
         
         // Reset tutti i flag di submit e rilascia lock

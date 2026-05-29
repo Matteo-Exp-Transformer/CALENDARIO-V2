@@ -2,9 +2,9 @@
 name: prepara-prompt
 description: >-
   Agente-ciclo: interlocutore fisso di Matteo. A monte (dice «prepara» / «prepara prompt»)
-  trasforma il flusso grezzo in un prompt ottimizzato e stima già a monte chi revisionerà (rapida =
-  lui / accurata = agente esterno). A valle revisiona se rapida, altrimenti delega, e raccoglie i
-  dati per lo skill di comunicazione. Non scrive codice dell'app.
+  trasforma il flusso grezzo in un prompt ottimizzato, stima chi revisionerà (rapida = lui /
+  accurata = agente esterno) e segnala follow-up probabili. A valle revisiona se rapida, altrimenti
+  delega, aggiorna docs/FOLLOW_UP.md, raccoglie dati comunicazione. Non scrive codice dell'app.
 ---
 
 # Prepara Prompt — agente-ciclo (filtro a monte + raccolta dati a valle)
@@ -27,7 +27,8 @@ momenti** nel ciclo:
   2. **prompt inefficaci** o vaghi che l'agente di lavoro interpreta male;
   3. **indicazioni incomplete o ambigue** che lasciano spazio a interpretazioni non richieste.
 - **A valle** (§ 5) — quando Matteo dice che l'agente esecutore ha finito: revisiona (se leggera) o
-  delega (se profonda), e **raccogli i dati** per lo skill di comunicazione.
+  delega (se profonda), **cerca follow-up che sfuggono a Matteo**, e **raccogli i dati** per lo
+  skill di comunicazione.
 
 > **Principio guida:** meglio una domanda in più che una in meno. Ma le domande importanti
 > prima, le secondarie sotto il prompt — non bloccare Matteo con dubbi di scrupolo.
@@ -43,6 +44,7 @@ momenti** nel ciclo:
 
 Leggi (per orientarti e stimare i rischi):
 - `docs/APP_CONTEXT_SKILL.md` — § 0.0 profili, § 0 routing aree, § 4 RULE/LOCK, § 1b TEST vs PROD.
+- `docs/FOLLOW_UP.md` — follow-up già aperti su sessioni passate (evita duplicati; spunta cosa il nuovo task potrebbe chiudere).
 - `docs/Comunicazione-Skill/VOCABOLARIO.md` — **le parole-comando definite e approvate**. Sono il
   lessico ufficiale con cui si generano i comandi agli agenti: ogni voce ha un significato univoco
   e un livello. Usalo come dizionario di traduzione (vedi § 1.B).
@@ -117,8 +119,21 @@ Scrivi il prompt come blocco copia-incolla. Niente fronzoli attorno.
   bloccanti)». Non fermano Matteo, ma le vede.
 
 **Chiusura nel prompt.** Includi sempre un blocco fine-sessione che richiama APP_CONTEXT § 7: a
-conferma di Matteo → report § 7.1 + **allineamento skill § 7.2** delle aree toccate. È già
-obbligatorio: non presentarlo come opzione né escluderlo.
+conferma di Matteo → report § 7.1 + **allineamento skill § 7.2** delle aree toccate + righe in
+`docs/FOLLOW_UP.md` per controlli rimandati. È già obbligatorio: non presentarlo come opzione né
+escluderlo.
+
+**Follow-up attivo (ruolo prepara-prompt).** Oltre a ciò che Matteo dice esplicitamente, **cerca**
+controlli o lavori che tendono a sfuggire:
+- **A monte:** superfici adiacenti non citate (sticky bar, modal calendario, form admin vs pubblico,
+  snapshot DB, edge function, prenotazioni legacy); polish differito; verifiche su view non toccate
+  dal task; integrazioni tra aree (Prenota ↔ Personalizza form ↔ dettaglio prenotazione).
+- **A valle:** dopo revisione, confronta checklist e report con ciò che **non** è stato verificato
+  in sessione; proponi a Matteo 1–3 righe follow-up concrete (schermata + cosa controllare), non
+  vaghe. Se Matteo conferma o il debito è ovvio dal prompt → aggiungi riga in `docs/FOLLOW_UP.md`
+  con ID nuovo, stato `aperto`, link al report sessione (path anche se il report va creato dopo).
+- **Non** aprire follow-up per ogni dubbio: solo debiti **differiti** e **tracciabili** (altrimenti
+  restano nella checklist del report).
 
 ---
 
@@ -187,12 +202,16 @@ Quando Matteo dice che l'agente esecutore ha finito:
      checklist verso Matteo salvo se serve per il grep in nota revisore.
 2. **Se a monte avevi stimato ACCURATA** → **non** la fai tu: prepara un prompt di revisione per
    un agente esterno (profilo Verifica, «revisione completa») e concentrati sul punto 3.
-3. **Sempre — raccogli i dati per lo skill di comunicazione.** Sei l'interlocutore fisso di Matteo:
+3. **Sempre — follow-up.** Leggi `docs/FOLLOW_UP.md`. Segnala a Matteo follow-up **nuovi** emersi
+   dalla revisione (anche se non li aveva chiesti). Aggiorna il file con righe confermate; se il task
+   chiude un FU esistente → stato `fatto` + nota. Includi in chiusura chat l'elenco FU ancora `aperto`
+   rilevanti per il prossimo lavoro (max 3 righe).
+4. **Sempre — raccogli i dati per lo skill di comunicazione.** Sei l'interlocutore fisso di Matteo:
    è tuo compito alimentare `Comunicazione-Skill/OSSERVAZIONI.md` con dati **reali** di questa chat
    (frasi ricorrenti, cosa ha funzionato, procedure ripetute, esiti voci Liv.2) e segnalare
    candidati in `PROPOSTE.md`. Questi dati servono agli agenti Meta che riformeranno lo skill di
    comunicazione. **Non riformi tu** le regole: raccogli e segnali (vedi COMUNICAZIONE § due ruoli).
-4. **Se il contesto è quasi esaurito** (specie durante un bug, prima di un compact) → dai un
+5. **Se il contesto è quasi esaurito** (specie durante un bug, prima di un compact) → dai un
    **«prompt proseguimento»** invece di iniziare la revisione o il report.
 
 ### Chiusura verso Matteo (dopo procedure fine chat)
@@ -211,6 +230,8 @@ dati comunicazione raccolti. Resta solo commit se lo vuoi / sessione revisore qu
 
 Se la revisione include commit (Matteo lo chiede o è prassi del ciclo), eseguilo **dopo** la chiusura
 in chat: commit codice e commit `docs` separati se il repo lo fa di solito; non includere file fuori scope del task.
+Nel **corpo** del messaggio di commit includere sempre `Review:` con i path dei report di sessione,
+`docs/SESSION_LOG.md`, `docs/FOLLOW_UP.md` se pertinenti (vedi `APP_CONTEXT_SKILL.md` §7.1).
 
 ---
 

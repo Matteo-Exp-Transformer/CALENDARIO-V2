@@ -19,7 +19,12 @@ import {
   normalizeStaffPresetBookingTypes,
   type CustomStaffPreset,
 } from '@/features/booking/constants/presetMenus'
-import type { MenuPromo } from '@/features/booking/constants/menuPromo'
+import {
+  migrateMenuPromosFromLegacy,
+  normalizeMenuPromosList,
+  validateMenuPromoUniqueness,
+  type MenuPromo,
+} from '@/features/booking/constants/menuPromo'
 import {
   type BookingPublicFormConfig,
   BOOKING_MODE_ICONS,
@@ -250,26 +255,59 @@ function parseBookingCustomStaffPresetsFromDb(raw: unknown): CustomStaffPreset[]
 
 const bookingTypeForPromoSchema = z.enum(['tavolo', 'rinfresco_laurea', 'menu_prezzo_fisso'])
 
+const menuPromoSubTabRefSchema = z.object({
+  mode_id: z.string().min(1),
+  sub_tab_id: z.string().uuid(),
+})
+
+const menuPromoRowInputSchema = z.object({
+  id: z.string().uuid(),
+  label: z.string().trim().max(80).optional().default(''),
+  message: z.string().trim().max(500),
+  placement: z.enum(['none', 'booking_type', 'sub_tab']).optional(),
+  booking_type: bookingTypeForPromoSchema.optional(),
+  booking_types: z.array(bookingTypeForPromoSchema).optional(),
+  sub_tab_ref: menuPromoSubTabRefSchema.optional(),
+  sub_tab_refs: z.array(menuPromoSubTabRefSchema).optional(),
+  visible_on_booking: z.boolean().optional(),
+})
+
 const menuPromoRowSchema = z.object({
   id: z.string().uuid(),
   label: z.string().trim().max(80).optional().default(''),
   message: z.string().trim().max(500),
-  booking_types: z.array(bookingTypeForPromoSchema).min(1).max(3),
+  placement: z.enum(['none', 'booking_type', 'sub_tab']),
+  booking_types: z.array(bookingTypeForPromoSchema).min(1).max(3).optional(),
+  sub_tab_refs: z.array(menuPromoSubTabRefSchema).min(1).max(24).optional(),
   visible_on_booking: z.boolean().optional(),
 })
 
+const bookingMenuPromosInputSchema = z.array(menuPromoRowInputSchema).max(24)
 const bookingMenuPromosSchema = z.array(menuPromoRowSchema).max(24)
 
 function parseBookingMenuPromosFromDb(raw: unknown): MenuPromo[] {
-  const parsed = bookingMenuPromosSchema.safeParse(raw)
+  const parsed = bookingMenuPromosInputSchema.safeParse(raw)
   if (!parsed.success) return []
-  return parsed.data.map((row) => ({
-    id: row.id,
-    label: row.label ?? '',
-    message: row.message,
-    booking_types: row.booking_types,
-    ...(row.visible_on_booking === false ? { visible_on_booking: false as const } : {}),
-  }))
+  return migrateMenuPromosFromLegacy(parsed.data)
+}
+
+function serializeMenuPromosToDb(value: MenuPromo[]): unknown {
+  return normalizeMenuPromosList(value).map((row) => {
+    const base = {
+      id: row.id,
+      label: row.label ?? '',
+      message: row.message,
+      placement: row.placement,
+      ...(row.visible_on_booking === false ? { visible_on_booking: false as const } : {}),
+    }
+    if (row.placement === 'booking_type' && row.booking_types?.length) {
+      return { ...base, booking_types: row.booking_types }
+    }
+    if (row.placement === 'sub_tab' && row.sub_tab_refs?.length) {
+      return { ...base, sub_tab_refs: row.sub_tab_refs }
+    }
+    return base
+  })
 }
 const placementAreaLabelSchema = z.string().trim().min(1).max(40)
 const bookingPlacementAreasSchema = z.array(placementAreaLabelSchema).min(1).max(30)
@@ -466,10 +504,13 @@ export const restaurantSettingRegistry: {
   booking_menu_promos: {
     key: 'booking_menu_promos',
     parseFromDb: (raw) => parseBookingMenuPromosFromDb(raw),
-    serializeToDb: (value) => value as unknown as Json,
+    serializeToDb: (value) => serializeMenuPromosToDb(value as MenuPromo[]) as unknown as Json,
     validate: (value) => {
-      const r = bookingMenuPromosSchema.safeParse(value)
-      return r.success ? null : r.error.issues[0]?.message ?? 'Promo menu non valide'
+      const normalized = normalizeMenuPromosList(value as MenuPromo[])
+      const r = bookingMenuPromosSchema.safeParse(normalized)
+      if (!r.success) return r.error.issues[0]?.message ?? 'Promo menu non valide'
+      const uniqueness = validateMenuPromoUniqueness(normalized)
+      return uniqueness.ok ? null : uniqueness.message
     },
   },
   booking_placement_areas: {

@@ -43,4 +43,10 @@ Regole, tabelle LOCK, comandi e report di sessione stanno solo nei due file sopr
 
 **Card scorrevole titolo admin (29-05-26):** no prefill label; placeholder «Nome card scorrevole»; clear label su Compila manualmente; riga lista `Titolo · Card N` — report `docs/Sessioni di lavoro/29-05-26/Report-card-scorrevole-titolo-admin-29-05-26.md`.
 
+**Promo in Personalizza form (29-05-26):** editor promo spostato da Tab Menu a sezione **Messaggio Promozionale**; modello `MenuPromo.placement` + array `booking_types` / `sub_tab_refs` (multi-target); banner singolo Prenota + snapshot multi-promo — report `docs/Sessioni di lavoro/29-05-26/Report-promo-personalizza-form-29-05-26.md`, correzione multi-target `Report-promo-multi-target-29-05-26.md`, `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md` § Salvataggio admin.
+
 **Carosello toggle riepilogo offerta (28-05-26):** `sub_tabs[].show_offer_details_in_summary` (default ON); switch in editor carosello `BookingFormConfigPanel`; `BookingSummarySidebar` condiziona «Offerta selezionata» — report `docs/Sessioni di lavoro/28-05-26/Report-carosello-riepilogo-toggle-offerta-28-05-26.md`, `BOOKING_DATA_FLOW_SKILL.md` §5, `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md`.
+
+**Follow-up post-sessione:** debiti e controlli differiti → [`docs/FOLLOW_UP.md`](../../docs/FOLLOW_UP.md) (es. FU-001 modal calendario promo). Agente prepara-prompt: cerca follow-up in `docs/PREPARA_PROMPT_SKILL.md`.
+
+**Profilo Verifica (revisione lavoro altrui):** leggere `docs/Testing-Skill/TESTING_SKILL.md` **§7** — dopo `npm run validate`, eseguire QA manuale su **mobile 375×812, tablet 834×1194, desktop 1280×800** (stessi casi funzionali per ogni viewport); credenziali in `.env.local.test`; documentare tabella esiti nel report sessione. Non dichiarare «verificato» con una sola larghezza schermo.

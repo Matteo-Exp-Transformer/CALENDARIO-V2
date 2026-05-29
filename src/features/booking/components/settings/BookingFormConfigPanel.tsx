@@ -24,6 +24,10 @@ import { useMenuItems } from '@/features/booking/hooks/useMenuItems'
 import { useMenuCategories } from '@/features/booking/hooks/useMenuCategories'
 import { BookingFormCarouselEditor } from '@/features/booking/components/settings/BookingFormCarouselEditor'
 import {
+  BookingFormPromoSection,
+  type BookingFormPromoSectionHandle,
+} from '@/features/booking/components/settings/BookingFormPromoSection'
+import {
   useRestaurantSetting,
   useUpsertRestaurantSetting,
 } from '@/features/booking/hooks/useRestaurantSetting'
@@ -383,8 +387,10 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   const [config, setConfig] = useState<BookingPublicFormConfig>(DEFAULT_BOOKING_FORM_CONFIG)
   const [headerDirty, setHeaderDirty] = useState(false)
   const [modesDirty, setModesDirty] = useState(false)
+  const [promoDirty, setPromoDirty] = useState(false)
   const headerDirtyRef = useRef(false)
   const modesDirtyRef = useRef(false)
+  const promoSectionRef = useRef<BookingFormPromoSectionHandle>(null)
   headerDirtyRef.current = headerDirty
   modesDirtyRef.current = modesDirty
   const formConfigDirty = headerDirty || modesDirty
@@ -727,12 +733,13 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     setModesDirty(false)
   }
 
-  const pageHasUnsaved = formConfigDirty || bookingBgDirty
+  const pageHasUnsaved = formConfigDirty || promoDirty || bookingBgDirty
 
   const handleSaveAllPage = async () => {
     try {
       if (headerDirty) await saveHeaderSection()
       if (modesDirty) await saveModesSection()
+      if (promoDirty && promoSectionRef.current) await promoSectionRef.current.save()
       if (bookingBgDirty && onSaveBookingBackground) await onSaveBookingBackground()
     } catch {
       toast.error('Errore nel salvataggio')
@@ -741,6 +748,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
   const handleCancelAllPage = () => {
     handleCancelFormChanges()
+    if (promoDirty) promoSectionRef.current?.cancel()
     onCancelBookingBackground?.()
   }
 
@@ -1627,6 +1635,12 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
         </div>
       </section>
       </FormSectionFloatingActions>
+
+      <BookingFormPromoSection
+        ref={promoSectionRef}
+        bookingModes={config.booking_modes}
+        onDirtyChange={setPromoDirty}
+      />
 
       {afterBookingModesSection != null && (
         <FormSectionFloatingActions actions={backgroundSectionActions}>
