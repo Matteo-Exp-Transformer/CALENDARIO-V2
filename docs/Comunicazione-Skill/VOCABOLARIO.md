@@ -231,10 +231,24 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 
 ### Pagina Prenota — «Pagina Prenota» · «form prenotazione clienti» · «modal/form prenotazione cliente» — Liv. 1
 - **Punta a:** la pagina pubblica di prenotazione del cliente (`/prenota/:slug`)
-- **Comportamento agente:** carica RULE Pagina Prenota v2 (APP_CONTEXT § 4) + `UI_RESPONSIVE_SKILL` / `UI_EDIT_SKILL`; rispetta il LOCK griglia striscia di `BookingRequestPage`.
+- **Comportamento agente:** carica `docs/per-ui-design-skill/BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` + `UI_RESPONSIVE_SKILL` / `UI_EDIT_SKILL`; rispetta il LOCK griglia striscia (§0 di quel file).
 - **Livello:** 1 (automatico)
-- **Approvata il:** 28-05-26
+- **Approvata il:** 28-05-26 (rif. aggiornato 29-05-26: ora punta al file di contesto, non a APP_CONTEXT §4)
 - **Origine:** chat mappatura
+
+### Striscia laterale — «striscia laterale» · «striscia foto» — Liv. 1
+- **Punta a:** la colonna foto verticale sticky a sinistra della pagina Prenota (`BookingPhotoStrip`, setting `public_booking_strip_photo`) — vedi `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` §1-2
+- **Comportamento agente:** carica quel file di contesto; rispetta il LOCK griglia (§0). Non confondere con lo sfondo «pagina intera» (`public_booking_page_background`): sono due modalità XOR.
+- **Livello:** 1 (automatico)
+- **Approvata il:** 29-05-26
+- **Origine:** mappatura pagina Prenota (parola-mappa interna ovvia)
+
+### Card scorrevole vs Carosello — «card scorrevole» · «carosello» (Prenota) — Liv. 1
+- **Punta a:** le due presentazioni XOR delle sottotab di una modalità Prenota (`BookingMode.sub_tabs_presentation: 'cards' | 'carousel'`) — vedi `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` §5
+- **Comportamento agente:** distingui sempre le due: «card scorrevole» = `display='cards'` (griglia menù selezionabile); «carosello» = `display='carousel'` (foto + overlay per slide, una sola card con N foto, nessuna griglia). Mai mescolarle sulla stessa modalità.
+- **Livello:** 1 (automatico)
+- **Approvata il:** 29-05-26
+- **Origine:** mappatura pagina Prenota (zone che l'agente confonde)
 
 ### Pagina Menu pubblica — «Pagina menù» · «pagina QR code» — Liv. 1
 - **Punta a:** il menu digitale pubblico mobile (pagine `/menu/:slug`, QR)
@@ -253,7 +267,7 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 
 ### Menu per Pagina Prenota — «Menù prenotazioni» · «menu form prenotazioni» — Liv. 1
 - **Punta a:** la **Personalizza form** (vetrina che sceglie cosa mostrare nelle card Prenota) — `BookingFormConfigPanel`, NON il magazzino
-- **Comportamento agente:** carica RULE Personalizza form (APP_CONTEXT § 4) + `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT`; se tocca il flusso dati, `BOOKING_DATA_FLOW_SKILL` (obbligatorio).
+- **Comportamento agente:** carica `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT`; se tocca il flusso dati, `BOOKING_DATA_FLOW_SKILL` (obbligatorio).
 - **Livello:** 1 (automatico)
 - **Approvata il:** 28-05-26
 - **Origine:** chat mappatura (Matteo: punta alla vetrina, non al magazzino)
@@ -267,7 +281,7 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 
 ### Menu magazzino (fonte di verità) — «menù fonte di verità» · «menu pagina impostazioni» (Liv. 1) · «menù originale» (Liv. 2) — Liv. 1/2
 - **Punta a:** la **tab Menu** = magazzino unico di prezzi e ingredienti (`MenuPricesTab`), da cui Pagina Prenota e QR pescano i dati
-- **Comportamento agente:** carica RULE Menu Prenota (APP_CONTEXT § 4) + DB_SKILL se tocca lo schema. «menù originale» è Liv. 2: se ambiguo rispetto alle altre due zone menu, chiedi.
+- **Comportamento agente:** carica `docs/per-ui-design-skill/MENU_ADMIN_CONTEXT.md` (+ `BOOKING_DATA_FLOW_SKILL` per il flusso, `DB_SKILL` per lo schema). «menù originale» è Liv. 2: se ambiguo rispetto alle altre due zone menu, chiedi.
 - **Livello:** «fonte di verità»/«pagina impostazioni» = 1; «menù originale» = 2
 - **Dati Liv.2 (solo «menù originale»):**
 - **Approvata il:** 28-05-26
