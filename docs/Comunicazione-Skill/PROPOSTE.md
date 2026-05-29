@@ -26,6 +26,15 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## In attesa di decisione
 
+### In attesa «revisione UI → QA viewport 375/834/1280 obbligatorio»
+- **Pattern osservato:** In revisione validazione UX Prenota (29-05-26) il revisore ha approvato con «affida a QA Matteo» e ha eseguito browser solo dopo richiesta esplicita; mobile 375 non testato. La regola esiste già in `APP_CONTEXT_SKILL.md` §0.0 (profilo Verifica → `TESTING_SKILL.md` §7) ma i prompt di revisione e l’agente la bypassano.
+- **Automatizzabile con certezza:** se la revisione riguarda lavoro che ha toccato **UI/layout/responsive** (`src/**/*.tsx` con className/layout, `index.css`, skill UI_*), il revisore **deve** eseguire gli stessi passi funzionali su **375 × 812**, **834 × 1194**, **1280 × 800** (Playwright MCP / browser Cursor) e compilare tabella esiti nel report — **prima** del verdetto. «Non testato» ammesso solo con motivo esplicito (es. feature solo desktop admin, no surface pubblica).
+- **Meglio lasciare manuale:** scelta dei casi funzionali specifici (dipende dal task); giudizio visivo su drift overlay accettabile.
+- **Livello suggerito:** 1 per profilo Verifica + UI; eccezione documentata = Liv. 2 (Matteo può esonerare in prompt).
+- **Token risparmiati per Matteo:** evita giro «revisiona» → «fai test viewport» → secondo report.
+- **Dove codificare (se approvata):** `TESTING_SKILL.md` §7.7 nuova sottosezione «Revisione post-esecutore UI»; rafforzo in `APP_CONTEXT_SKILL.md` §0.0 colonna Verifica; checklist nel template prompt revisione (PREPARA_PROMPT o snippet report).
+- **Esito / data:** proposta Matteo 29-05-26 — in attesa ok (rispetta PAUSA-RACCOLTA: regola in markdown, non hook).
+
 ### In attesa «segnala conflitto scalabilità multi-tenant» → sezione report + COMUNICAZIONE
 - **Pattern osservato:** Matteo vuole sapere se le sue decisioni (autosave, guard, persistenza) confliggono con N ristoranti / multi-azienda.
 - **Automatizzabile con certezza:** sezione report **Scalabilità multi-tenant** (ok/attenzione/conflitto) quando task tocca persistenza o state admin condiviso.

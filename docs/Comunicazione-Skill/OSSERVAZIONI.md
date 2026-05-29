@@ -219,6 +219,13 @@
   e auto-contenuti è apprezzato.
 - Chiusura calorosa ("grazie mille", emoji) → rapporto collaborativo, non solo transazionale.
 
+### 29-05-26 — Validazione UX Pagina Prenota (ciclo prepara-prompt → esecutore → revisore)
+- Sintomo QA «non funziona nulla» (no toast/scroll/pulse/chiusura card) con implementazione già presente → **causa root HTML5** (`required` senza `noValidate`), non logica React. Pattern da documentare in ogni nuovo form con validazione custom.
+- Dopo root cause il fix è andato **veloce** (1–2 giri: `isTrusted`, pulse su wrapper, testi bianchi); i giri precedenti erano lo stesso blocco.
+- Matteo affida follow-up supplementari **nella chat esecutore** (leggibilità testi, colore pulse) — funziona meglio che tornare al prepara-prompt per polish minori.
+- Revisore: utile escludere diff fuori scope dal commit (`BookingModeCards` margin) — Matteo vuole commit pulito per task.
+- Richiesta esplicita: **guida replica** con riferimenti file per portare il pattern su admin/modali (FU-010) → `FORM_VALIDATION_ATTENTION_PATTERN.md`.
+
 ### 28-05-26 — Sessione PWA + costruzione sistema comunicazione
 - Confermato: "spiegamelo semplice" = metafora + chi-fa-cosa (vedi cache PWA).
 - Confermato: preoccupazione ricorrente "lavoro mio o del tool?".

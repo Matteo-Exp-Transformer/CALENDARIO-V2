@@ -217,7 +217,23 @@ caricano; `BookingRequestForm` mantiene il preset e lo riapplica a catalogo pron
 - Submit invariato — **non toccare `useCreateBookingRequest`**.
 - Admin: `BookingFormConfigPanel` + `MenuPricesTab`. Pubblici in `publicBooking/`.
 
-## 9. Report di sessione collegati
+## 9. Validazione submit fallito (29-05-26)
+
+Quando il cliente clicca **Invia** con dati invalidi:
+
+1. **`noValidate`** su `#booking-request-form` — obbligatorio se i campi hanno `required`; altrimenti il browser blocca `validate()` React.
+2. **Chiudi** card ingredienti aperte (`dispatchBookingMenuComposeCollapse` + `composeCollapseNonce` + remount `MenuSelection`).
+3. **Scroll** al primo errore (`scrollToBookingPublicError` in `bookingPublicFormAttention.ts`).
+4. **Pulse arancione** sul wrapper del campo (`.booking-public-field-attention`) fino a click reale (`shouldDismissBookingPublicAttention` / `isTrusted`).
+5. Messaggi errore / privacy / riepilogo menù in **bianco** su sfondo scuro.
+
+**Guida per replicare su altri form/modali:** `FORM_VALIDATION_ATTENTION_PATTERN.md` (stesso folder).
+
+---
+
+## 10. Report di sessione collegati
 
 - `docs/Sessioni di lavoro/25-05-26/Report-prenota-v2-ui-sessione-25-05-26.md`
+- `docs/Sessioni di lavoro/29-05-26/Report-validazione-ux-prenota-29-05-26.md` (validazione UX + ancoraggio)
+- `docs/Sessioni di lavoro/29-05-26/Report-revisione-validazione-ux-prenota-29-05-26.md` (Verifica)
 - Sessioni 26-29/05 (carosello, sfondo, caselle, promo) — vedi `SESSION_LOG.md`.
