@@ -8,6 +8,11 @@ import {
   BOOKING_PUBLIC_FIELD_INNER_INPUT,
   BOOKING_PUBLIC_FIELD_INNER_LABEL,
 } from '@/features/booking/constants/bookingPublicFieldStyles'
+import {
+  BOOKING_PUBLIC_FIELD_ATTENTION_CLASS,
+  BOOKING_PUBLIC_FIELD_SCROLL_MARGIN,
+  shouldDismissBookingPublicAttention,
+} from '@/features/booking/utils/bookingPublicFormAttention'
 import { dateToIso } from '../../utils/bookingPublicDateHelpers'
 
 const MONTHS = [
@@ -135,6 +140,8 @@ export function BookingPublicDatePickerField({
   onChange,
   required,
   hasError = false,
+  showAttention = false,
+  onAttentionInteract,
 }: {
   id: string
   label: string
@@ -142,6 +149,8 @@ export function BookingPublicDatePickerField({
   onChange: (value: string) => void
   required?: boolean
   hasError?: boolean
+  showAttention?: boolean
+  onAttentionInteract?: () => void
 }) {
   const [open, setOpen] = useState(false)
   const today = useMemo(() => startOfToday(), [])
@@ -167,21 +176,41 @@ export function BookingPublicDatePickerField({
     setViewDate((current) => new Date(current.getFullYear(), current.getMonth() + delta, 1))
   }
 
+  const dismissAttentionIfUser = (event: React.PointerEvent | React.FocusEvent) => {
+    if (showAttention && shouldDismissBookingPublicAttention(event)) {
+      onAttentionInteract?.()
+    }
+  }
+
   return (
-    <div className={cn(BOOKING_PUBLIC_CONTENT_WIDTH, 'relative')}>
+    <div
+      id={id}
+      data-booking-public-field-anchor
+      className={cn(
+        BOOKING_PUBLIC_CONTENT_WIDTH,
+        BOOKING_PUBLIC_FIELD_SCROLL_MARGIN,
+        'relative',
+        showAttention && BOOKING_PUBLIC_FIELD_ATTENTION_CLASS,
+        showAttention && 'rounded-lg',
+      )}
+    >
       <div className={cn(BOOKING_PUBLIC_FIELD_BOX, hasError && 'border-red-500!')}>
-        <label htmlFor={id} className={BOOKING_PUBLIC_FIELD_INNER_LABEL}>
+        <label htmlFor={`${id}-control`} className={BOOKING_PUBLIC_FIELD_INNER_LABEL}>
           {label}
         </label>
         <button
-          id={id}
+          id={`${id}-control`}
           type="button"
           aria-haspopup="dialog"
           aria-expanded={open}
           aria-required={required}
           data-booking-picker-trigger="true"
-          className={cn(BOOKING_PUBLIC_FIELD_INNER_INPUT, 'flex items-center justify-end gap-2 text-right')}
-          onClick={() => setOpen((v) => !v)}
+          className={cn(BOOKING_PUBLIC_FIELD_INNER_INPUT, 'flex items-center justify-start gap-2 text-left')}
+          onPointerDown={(event) => {
+            dismissAttentionIfUser(event)
+            setOpen((v) => !v)
+          }}
+          onFocus={dismissAttentionIfUser}
         >
           <CalendarDays className="h-4 w-4 shrink-0 text-warm-orange" aria-hidden />
           <span className="min-w-0 flex-1 truncate">{formatDisplayDate(value)}</span>
@@ -261,6 +290,8 @@ export function BookingPublicTimePickerField({
   onChange,
   required,
   hasError = false,
+  showAttention = false,
+  onAttentionInteract,
   minTime: _minTime,
 }: {
   id: string
@@ -269,26 +300,48 @@ export function BookingPublicTimePickerField({
   onChange: (value: string) => void
   required?: boolean
   hasError?: boolean
+  showAttention?: boolean
+  onAttentionInteract?: () => void
   /** Ora minima selezionabile "HH:MM" — usata per bloccare ore passate quando la data è oggi */
   minTime?: string
 }) {
   const [open, setOpen] = useState(false)
 
+  const dismissAttentionIfUser = (event: React.PointerEvent | React.FocusEvent) => {
+    if (showAttention && shouldDismissBookingPublicAttention(event)) {
+      onAttentionInteract?.()
+    }
+  }
+
   return (
-    <div className={cn(BOOKING_PUBLIC_CONTENT_WIDTH, 'relative')}>
+    <div
+      id={id}
+      data-booking-public-field-anchor
+      className={cn(
+        BOOKING_PUBLIC_CONTENT_WIDTH,
+        BOOKING_PUBLIC_FIELD_SCROLL_MARGIN,
+        'relative',
+        showAttention && BOOKING_PUBLIC_FIELD_ATTENTION_CLASS,
+        showAttention && 'rounded-lg',
+      )}
+    >
       <div className={cn(BOOKING_PUBLIC_FIELD_BOX, hasError && 'border-red-500!')}>
-        <label htmlFor={id} className={BOOKING_PUBLIC_FIELD_INNER_LABEL}>
+        <label htmlFor={`${id}-control`} className={BOOKING_PUBLIC_FIELD_INNER_LABEL}>
           {label}
         </label>
         <button
-          id={id}
+          id={`${id}-control`}
           type="button"
           aria-haspopup="dialog"
           aria-expanded={open}
           aria-required={required}
           data-booking-picker-trigger="true"
-          className={cn(BOOKING_PUBLIC_FIELD_INNER_INPUT, 'flex items-center justify-end gap-2 text-right')}
-          onClick={() => setOpen((v) => !v)}
+          className={cn(BOOKING_PUBLIC_FIELD_INNER_INPUT, 'flex items-center justify-start gap-2 text-left')}
+          onPointerDown={(event) => {
+            dismissAttentionIfUser(event)
+            setOpen((v) => !v)
+          }}
+          onFocus={dismissAttentionIfUser}
         >
           <Clock className="h-4 w-4 shrink-0 text-warm-orange" aria-hidden />
           <span className="min-w-0 flex-1 truncate">{formatDisplayTime(value)}</span>

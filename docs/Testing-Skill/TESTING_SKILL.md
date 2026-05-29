@@ -120,3 +120,65 @@ it("classic → nessuna feature Pro", () => {
 | `tests/setup.ts` | MSW server + cleanup Vitest |
 | `vitest.config.ts` | Config Vitest (jsdom, globals, alias) |
 | `playwright.config.ts` | Config Playwright (staging env, webServer) |
+
+---
+
+## 7. Profilo **Verifica** — protocollo QA manuale (obbligatorio)
+
+> Caricare questa sezione quando Matteo chiede **revisiona / verifica / controlla** un lavoro già fatto, o a fine sessione prima di dichiarare «fatto». Vale per ogni area (promo, form Prenota, admin, CRM…), non solo per i test automatici.
+
+### 7.1 Ordine delle verifiche
+
+1. **`npm run validate`** — gate automatico (lint + typecheck + Vitest). Se fallisce, la revisione si ferma qui.
+2. **QA manuale funzionale** — stessi casi su **tre viewport** (vedi §7.2). Non basta un solo zoom del browser.
+3. **Registro esiti** — tabella nel report sessione (`docs/Sessioni di lavoro/…/Report-*.md`) con colonne: ID test · viewport · esito · nota.
+
+### 7.2 Viewport standard CalendarBackup
+
+Usare queste larghezze (Playwright: `page.setViewportSize`, DevTools device toolbar equivalente):
+
+| Profilo | Larghezza × altezza | Ruolo nel prodotto |
+|---------|---------------------|-------------------|
+| **mobile** | **375 × 812** | Telefono; sticky bar Prenota; striscia laterale stretta (20vw) |
+| **tablet** | **834 × 1194** | Tablet; layout intermedio; spesso ancora sticky bar (<1256px) |
+| **desktop** | **1280 × 800** | Desktop; sidebar riepilogo Prenota da **≥1256px**; griglia 2 colonne form da **≥900px** dove documentato |
+
+Per feature **solo admin classica** (Calendario, lista prenotazioni): aggiungere se serve **400px** (titolo calendario) come da `BOOKING_CALENDAR_LAYOUT_CONTEXT.md`.
+
+Per ogni viewport ripetere **gli stessi passi funzionali** (es. cambio tipologia → banner promo → altra tipologia). L’UI può cambiare (sticky bar, colonne) ma il **comportamento dati** deve restare coerente.
+
+### 7.3 Credenziali e ambiente
+
+- **DB:** solo TEST (`docnnernvp`) — mai validare su produzione.
+- **Dev server:** `npm run dev` (legge `.env.local` = test).
+- **Credenziali QA:** `.env.local.test` → `MANUAL_ADMIN_EMAIL`, `MANUAL_ADMIN_PASSWORD`, `MANUAL_TENANT_SLUG` (gitignored). Riferimento: `docs/_lavoro/Per matteo/Comandi per terminale.md`.
+- **Pagina pubblica:** `/prenota/{MANUAL_TENANT_SLUG}` (es. `test-pro`).
+
+Strumenti ammessi: **Playwright MCP** (browser), DevTools, o test E2E esistenti — l’agente deve **eseguire** i passi, non solo elencarli a Matteo.
+
+### 7.4 Cosa documentare per ogni revisione
+
+Nel report, sezione **«QA manuale»** (o **«QA manuale responsive»**):
+
+- Data, commit/build se noto, tenant/slug usato.
+- Tabella con righe per **funzione** (non solo per viewport): ripetere colonne `mobile` / `tablet` / `desktop` oppure una riga per viewport.
+- Segnalare **Non testato** esplicitamente (es. submit + snapshot DB).
+- Allegare follow-up in `docs/FOLLOW_UP.md` se il polish UI resta fuori scope (es. FU-001).
+
+### 7.5 Esempio — feature Promo (Prenota + Personalizza form)
+
+| ID | Caso | mobile | tablet | desktop |
+|----|------|--------|--------|---------|
+| C1 | Banner promo su tipologia abbinata | | | |
+| C2 | Banner assente su tipologia non abbinata | | | |
+| C3 | Banner torna su seconda tipologia (multi-target) | | | |
+| A2 | Sezione Messaggio Promozionale in Personalizza form | | | |
+| B1 | Tab Menu senza editor promo | | | |
+
+Comportamento atteso Prenota (invariato tra viewport): un solo `region` «Promozioni menù»; priorità card > tipologia; sotto **1256px** tipicamente presente sticky riepilogo, da **≥1256px** riepilogo laterale.
+
+### 7.6 Cosa non sostituisce il manuale
+
+- Vitest su `menuPromo.ts` (o altri helper) — necessario ma non sufficiente.
+- Una sola verifica a 1920px senza mobile/tablet.
+- Solo lettura codice senza aprire l’app (salvo revisione puramente documentale).

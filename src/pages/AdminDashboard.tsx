@@ -166,18 +166,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [showNewBookingPanel, setShowNewBookingPanel] = useState(false)
   const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>('all')
   const [archiveSortOrder, setArchiveSortOrder] = useState<SortOrder>('booking_date')
-  const [menuToolbarPromoDisabled, setMenuToolbarPromoDisabled] = useState(false)
   const menuPricesTabRef = useRef<MenuPricesTabHandle>(null)
   const features = useFeatures()
-  const { guardNavigation } = useUnsavedChangesGuard()
+  const { confirmNavigation } = useUnsavedChangesGuard()
   const dashboardRootRef = useRef<HTMLDivElement>(null)
   const { data: stats } = useBookingStats()
 
   useEffect(() => {
     if (restaurantSettingsSignal === 0) return
-    if (activeTab !== 'settings-restaurant' && !guardNavigation()) return
-    setActiveTab('settings-restaurant')
-  }, [activeTab, guardNavigation, restaurantSettingsSignal])
+    if (activeTab === 'settings-restaurant') return
+    void confirmNavigation().then((ok) => {
+      if (ok) setActiveTab('settings-restaurant')
+    })
+  }, [activeTab, confirmNavigation, restaurantSettingsSignal])
 
   useEffect(() => {
     if (activeTab !== 'pending') setShowNewBookingPanel(false)
@@ -196,8 +197,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     // nessun cleanup: il tema deve persistere per tutta la sessione admin
   }, [savedAppTheme, isAppThemePending])
 
-  const handleViewInCalendar = (date: string) => {
-    if (!guardNavigation()) return
+  const handleViewInCalendar = async (date: string) => {
+    if (!(await confirmNavigation())) return
     setCalendarTargetDate(date)
     setActiveTab('calendar')
   }
@@ -222,9 +223,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const footerPendingNotify = stats != null && stats.pending != null && stats.pending > 0
 
-  const handleTabClick = (tab: Tab) => {
+  const handleTabClick = async (tab: Tab) => {
     const tabChange = tab !== activeTab
-    if (tabChange && !guardNavigation()) return
+    if (tabChange && !(await confirmNavigation())) return
     if (bodyOverride) {
       onBodyOverrideExit?.()
       if (tabChange) setActiveTab(tab)
@@ -326,11 +327,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                 {activeTab === 'menu' && showTabSecondaryChrome && (
                   <MenuPricesHeroToolbar
-                    promoDisabled={menuToolbarPromoDisabled}
                     onAddProduct={() => menuPricesTabRef.current?.startAddProduct()}
                     onAddCategory={() => menuPricesTabRef.current?.startAddCategory()}
                     onPresetMenus={() => menuPricesTabRef.current?.openPresetMenus()}
-                    onPromo={() => menuPricesTabRef.current?.openPromo()}
                     onQrCodes={() => menuPricesTabRef.current?.openQrCodes()}
                     showQrCodes={features.qrMenu}
                   />
@@ -417,11 +416,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               />
             )}
             {activeTab === 'menu' && (
-              <MenuPricesTab
-                ref={menuPricesTabRef}
-                omitHeroSection
-                onToolbarPromoDisabled={setMenuToolbarPromoDisabled}
-              />
+              <MenuPricesTab ref={menuPricesTabRef} omitHeroSection />
             )}
             {activeTab === 'settings-restaurant' && <RestaurantSettingsTab />}
           </div>

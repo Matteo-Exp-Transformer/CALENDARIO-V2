@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronDown, Utensils } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -6,13 +6,13 @@ import type { SelectedMenuItem } from '@/types/menu'
 import {
   BOOKING_MENU_CATEGORY_EXPANDED_PORTAL_CLASS,
   BOOKING_MENU_CATEGORY_PANEL_SCROLL_CLASS,
-  type BookingMenuCategoryOverlayRect,
 } from '../../constants/bookingMenuComposePanelLayout'
 import {
   type ComposeMenuItem,
   countSelectedInCategory,
   selectionStatusLabel,
 } from '../../utils/menuComposeVisibility'
+import { BOOKING_MENU_COMPOSE_COLLAPSE_EVENT } from '../../utils/bookingPublicFormAttention'
 
 export interface BookingMenuCategoryCardProps {
   categoryKey: string
@@ -26,6 +26,8 @@ export interface BookingMenuCategoryCardProps {
   /** `scroll` = strip orizzontale; `grid` = griglia desktop; `stack` = colonna mobile con collapse. */
   layout?: 'grid' | 'scroll' | 'stack'
   resetKey?: string
+  /** Contenitore scroll orizzontale categorie (desktop): sync posizione overlay. */
+  horizontalScrollRef?: React.RefObject<HTMLElement | null>
   /** Riduce padding e testo per griglie strette (es. 3 col su mobile). */
   compact?: boolean
 }
@@ -66,6 +68,7 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   onToggleItem,
   layout = 'grid',
   resetKey,
+  horizontalScrollRef,
   compact = false,
 }) => {
   const selectedCount = countSelectedInCategory(selectedItems, categoryKey)
@@ -74,35 +77,62 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   const heroSrc = imageUrl?.trim() || undefined
   const [expanded, setExpanded] = useState(false)
   const shellRef = useRef<HTMLDivElement>(null)
-  const [overlayRect, setOverlayRect] = useState<BookingMenuCategoryOverlayRect | null>(null)
+  const portalArticleRef = useRef<HTMLElement | null>(null)
 
-  React.useEffect(() => {
+  const collapseExpanded = useCallback(() => {
     setExpanded(false)
-  }, [resetKey])
-
-  const syncOverlayRect = useCallback(() => {
-    const shell = shellRef.current
-    if (!shell) return
-    const { top, left, width } = shell.getBoundingClientRect()
-    setOverlayRect({ top, left, width })
   }, [])
 
   useLayoutEffect(() => {
-    if (!expanded) {
-      setOverlayRect(null)
-      return
+    collapseExpanded()
+  }, [resetKey, collapseExpanded])
+
+  useEffect(() => {
+    const onForceCollapse = () => collapseExpanded()
+    window.addEventListener(BOOKING_MENU_COMPOSE_COLLAPSE_EVENT, onForceCollapse)
+    return () => window.removeEventListener(BOOKING_MENU_COMPOSE_COLLAPSE_EVENT, onForceCollapse)
+  }, [collapseExpanded])
+
+  const applyOverlayPosition = useCallback(() => {
+    const shell = shellRef.current
+    const portal = portalArticleRef.current
+    if (!shell || !portal) return
+    const { top, left, width } = shell.getBoundingClientRect()
+    portal.style.top = `${top}px`
+    portal.style.left = `${left}px`
+    portal.style.width = `${width}px`
+  }, [])
+
+  useLayoutEffect(() => {
+    if (!expanded) return
+
+    applyOverlayPosition()
+
+    let rafId = 0
+    const tick = () => {
+      applyOverlayPosition()
+      rafId = requestAnimationFrame(tick)
     }
-    syncOverlayRect()
-    window.addEventListener('scroll', syncOverlayRect, true)
-    window.addEventListener('resize', syncOverlayRect)
-    const ro = new ResizeObserver(syncOverlayRect)
+    rafId = requestAnimationFrame(tick)
+
+    const onScrollOrResize = () => applyOverlayPosition()
+    window.addEventListener('scroll', onScrollOrResize, true)
+    window.addEventListener('resize', onScrollOrResize)
+
+    const ro = new ResizeObserver(onScrollOrResize)
     if (shellRef.current) ro.observe(shellRef.current)
+
+    const horizontalScrollEl = horizontalScrollRef?.current ?? null
+    horizontalScrollEl?.addEventListener('scroll', onScrollOrResize, { passive: true })
+
     return () => {
-      window.removeEventListener('scroll', syncOverlayRect, true)
-      window.removeEventListener('resize', syncOverlayRect)
+      cancelAnimationFrame(rafId)
+      window.removeEventListener('scroll', onScrollOrResize, true)
+      window.removeEventListener('resize', onScrollOrResize)
       ro.disconnect()
+      horizontalScrollEl?.removeEventListener('scroll', onScrollOrResize)
     }
-  }, [expanded, syncOverlayRect])
+  }, [expanded, applyOverlayPosition, horizontalScrollRef])
 
   const shellClass = cn(
     'relative',
@@ -217,15 +247,11 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   )
 
   const expandedPortal =
-    expanded && overlayRect
+    expanded
       ? createPortal(
           <article
+            ref={portalArticleRef}
             className={cn(articleSurfaceClass, BOOKING_MENU_CATEGORY_EXPANDED_PORTAL_CLASS)}
-            style={{
-              top: overlayRect.top,
-              left: overlayRect.left,
-              width: overlayRect.width,
-            }}
             data-testid={`booking-menu-category-card-${categoryKey}`}
             data-booking-menu-expanded="true"
           >

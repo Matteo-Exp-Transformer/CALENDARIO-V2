@@ -167,6 +167,46 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 - **Approvata il:** 28-05-26
 - **Origine:** chat mappatura · OSSERVAZIONI (workflow multi-agente)
 
+### «lavoro ok» — Liv. 1
+- **Intende:** conferma che il codice/task è accettato (equivale a «funziona» / «perfetto» per il protocollo). NON è di per sé «fai report finale».
+- **Comportamento agente:** tratta il task come accettato. Se Matteo aggiunge «fai report finale» (o equivalente) esegui il flusso § 7; da solo «lavoro ok» non avvia report né commit/push/migrazioni.
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** —
+- **Approvata il:** 29-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report 29-05-26 card scorrevole titolo admin
+
+### «finestra di conferma» · «dialog di conferma» · «non vedo il modal» — Liv. 1
+- **Intende:** la finestra di conferma deve essere il dialogo in-app (componente `Modal`, bianco con due pulsanti), NON il popup nativo del browser (`window.confirm`, grigio) che Matteo spesso non percepisce.
+- **Comportamento agente:** in un task con «finestra/dialog di conferma» usa di default il componente `Modal` dell'app. Usa `window.confirm` solo se Matteo dice esplicitamente «popup nativo» o per parity legacy richiesta. Si lega a FU-003 (safe check delete uniforme).
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** —
+- **Approvata il:** 29-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report promo conflitto 29-05-26
+
+### «comportamenti sono ok» · «non è un problema» + «voglio che cambi (come ti ho detto)» — Liv. 2
+- **Intende:** cambio intenzionale, NON bugfix/regressione. Il comportamento attuale è accettabile come baseline; Matteo vuole un cambio mirato verso lo stato che ha descritto.
+- **Comportamento agente:** nel prompt/report usa linguaggio «comportamento richiesto / cambio UX», mai «bug / ripristino / regressione». L'obiettivo è lo stato desiderato esatto, non una diagnosi. Se è ambiguo se vuole mantenere qualche aspetto del comportamento attuale → una domanda preventiva.
+- **Livello:** 2 (cautela)
+- **Dati Liv.2:**
+- **Approvata il:** 29-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report prepara-prompt Prenota stacking 29-05-26
+
+### «compila report … comunicazione … vocabolario (solo sicuro) … annota i miei prompt» — Liv. 2
+- **Intende:** chiusura di una sessione meta/comunicazione (tipicamente prepara-prompt o senza codice): report dettagliato su comunicazione, proposte vocabolario senza junk, citazione verbatim dei prompt di Matteo.
+- **Comportamento agente:** genera il report in `Sessioni di lavoro/GG-MM-AA/` con sezione «Dati comunicazione» completa + sottosezione «Prompt di Matteo (annotati)»; aggiorna `OSSERVAZIONI.md`; candidate solo in `PROPOSTE.md` (mai promuovere voci in `VOCABOLARIO.md` da solo). Estende «fai report finale» quando la sessione è meta, non implementazione.
+- **Livello:** 2 (cautela)
+- **Dati Liv.2:**
+- **Approvata il:** 29-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report 29-05-26
+
+### «revisiona [lavoro] e se è ok committa» — Liv. 2
+- **Intende:** delega della revisione del lavoro di un altro agente, fidandosi della validazione automatica come prova di «ok».
+- **Comportamento agente:** esegui `npm run validate` + check import rotti come criterio oggettivo; se verde, committa con messaggio che cita l'esito della revisione. **MA** se i test passano e noti un difetto logico (es. il caso PWA), fermati e segnalalo prima di committare — il verde non basta sempre. Coerente con la voce «revisione completa».
+- **Livello:** 2 (cautela)
+- **Dati Liv.2:**
+- **Approvata il:** 29-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · OSSERVAZIONI 28-05-26
+
 ### Comportamento in plan mode (nessun termine — contesto) — Liv. 1
 - **Intende:** quando l'agente entra in pianificazione, Matteo si aspetta domande sulle decisioni di sua competenza
 - **Comportamento agente:** in plan mode, oltre a progettare, fai domande (AskUserQuestion con opzioni + impatto) su: (a) decisioni che competono a Matteo (prodotto, UX, scope, commerciale); (b) dubbi su come procedere o scelte strutturali che Matteo potrebbe non aver considerato. Non calare piani dall'alto su questi punti.
@@ -191,10 +231,24 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 
 ### Pagina Prenota — «Pagina Prenota» · «form prenotazione clienti» · «modal/form prenotazione cliente» — Liv. 1
 - **Punta a:** la pagina pubblica di prenotazione del cliente (`/prenota/:slug`)
-- **Comportamento agente:** carica RULE Pagina Prenota v2 (APP_CONTEXT § 4) + `UI_RESPONSIVE_SKILL` / `UI_EDIT_SKILL`; rispetta il LOCK griglia striscia di `BookingRequestPage`.
+- **Comportamento agente:** carica `docs/per-ui-design-skill/BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` + `UI_RESPONSIVE_SKILL` / `UI_EDIT_SKILL`; rispetta il LOCK griglia striscia (§0 di quel file).
 - **Livello:** 1 (automatico)
-- **Approvata il:** 28-05-26
+- **Approvata il:** 28-05-26 (rif. aggiornato 29-05-26: ora punta al file di contesto, non a APP_CONTEXT §4)
 - **Origine:** chat mappatura
+
+### Striscia laterale — «striscia laterale» · «striscia foto» — Liv. 1
+- **Punta a:** la colonna foto verticale sticky a sinistra della pagina Prenota (`BookingPhotoStrip`, setting `public_booking_strip_photo`) — vedi `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` §1-2
+- **Comportamento agente:** carica quel file di contesto; rispetta il LOCK griglia (§0). Non confondere con lo sfondo «pagina intera» (`public_booking_page_background`): sono due modalità XOR.
+- **Livello:** 1 (automatico)
+- **Approvata il:** 29-05-26
+- **Origine:** mappatura pagina Prenota (parola-mappa interna ovvia)
+
+### Card scorrevole vs Carosello — «card scorrevole» · «carosello» (Prenota) — Liv. 1
+- **Punta a:** le due presentazioni XOR delle sottotab di una modalità Prenota (`BookingMode.sub_tabs_presentation: 'cards' | 'carousel'`) — vedi `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` §5
+- **Comportamento agente:** distingui sempre le due: «card scorrevole» = `display='cards'` (griglia menù selezionabile); «carosello» = `display='carousel'` (foto + overlay per slide, una sola card con N foto, nessuna griglia). Mai mescolarle sulla stessa modalità.
+- **Livello:** 1 (automatico)
+- **Approvata il:** 29-05-26
+- **Origine:** mappatura pagina Prenota (zone che l'agente confonde)
 
 ### Pagina Menu pubblica — «Pagina menù» · «pagina QR code» — Liv. 1
 - **Punta a:** il menu digitale pubblico mobile (pagine `/menu/:slug`, QR)
@@ -213,7 +267,7 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 
 ### Menu per Pagina Prenota — «Menù prenotazioni» · «menu form prenotazioni» — Liv. 1
 - **Punta a:** la **Personalizza form** (vetrina che sceglie cosa mostrare nelle card Prenota) — `BookingFormConfigPanel`, NON il magazzino
-- **Comportamento agente:** carica RULE Personalizza form (APP_CONTEXT § 4) + `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT`; se tocca il flusso dati, `BOOKING_DATA_FLOW_SKILL` (obbligatorio).
+- **Comportamento agente:** carica `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT`; se tocca il flusso dati, `BOOKING_DATA_FLOW_SKILL` (obbligatorio).
 - **Livello:** 1 (automatico)
 - **Approvata il:** 28-05-26
 - **Origine:** chat mappatura (Matteo: punta alla vetrina, non al magazzino)
@@ -227,7 +281,7 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 
 ### Menu magazzino (fonte di verità) — «menù fonte di verità» · «menu pagina impostazioni» (Liv. 1) · «menù originale» (Liv. 2) — Liv. 1/2
 - **Punta a:** la **tab Menu** = magazzino unico di prezzi e ingredienti (`MenuPricesTab`), da cui Pagina Prenota e QR pescano i dati
-- **Comportamento agente:** carica RULE Menu Prenota (APP_CONTEXT § 4) + DB_SKILL se tocca lo schema. «menù originale» è Liv. 2: se ambiguo rispetto alle altre due zone menu, chiedi.
+- **Comportamento agente:** carica `docs/per-ui-design-skill/MENU_ADMIN_CONTEXT.md` (+ `BOOKING_DATA_FLOW_SKILL` per il flusso, `DB_SKILL` per lo schema). «menù originale» è Liv. 2: se ambiguo rispetto alle altre due zone menu, chiedi.
 - **Livello:** «fonte di verità»/«pagina impostazioni» = 1; «menù originale» = 2
 - **Dati Liv.2 (solo «menù originale»):**
 - **Approvata il:** 28-05-26

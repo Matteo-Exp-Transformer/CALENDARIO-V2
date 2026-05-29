@@ -35,7 +35,7 @@ export const BOOKING_PUBLIC_FIELD_INNER_LABEL =
   'pointer-events-none shrink-0 whitespace-nowrap text-left text-xs font-bold leading-tight text-warm-wood sm:text-sm'
 
 export const BOOKING_PUBLIC_FIELD_INNER_INPUT =
-  'w-full min-w-0 flex-1 border-0! bg-transparent p-0 text-right text-sm font-bold text-warm-wood shadow-none ring-0! focus:outline-none focus:ring-0! sm:text-base'
+  'w-full min-w-0 flex-1 border-0! bg-transparent p-0 text-left text-sm font-bold text-warm-wood shadow-none ring-0! focus:outline-none focus:ring-0! sm:text-base'
 
 /** Casella testo libero (es. Altre Richieste): label sopra, area che cresce con il contenuto su tutti i breakpoint. */
 export const BOOKING_PUBLIC_FIELD_BOX_MULTILINE =

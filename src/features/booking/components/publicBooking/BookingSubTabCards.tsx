@@ -30,7 +30,7 @@ function formatPriceAmountLabel(price?: number): string | null {
   return `${amount}€`
 }
 
-function SubTabCardIcon({ icon, className }: { icon?: SubTabIcon; className?: string }) {
+export function SubTabCardIcon({ icon, className }: { icon?: SubTabIcon; className?: string }) {
   if (icon === 'cloche') return <CallBellIcon weight="light" className={className} />
   if (icon === 'chef-hat') return <ChefHatIcon weight="light" className={className} />
   if (icon === 'star') return <StarIcon weight="light" className={className} />
@@ -105,6 +105,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
           const priceAmount =
             tab.display === 'carousel' ? null : formatPriceAmountLabel(tab.price_per_person)
           const coursesLabel = tab.display === 'carousel' ? '' : tab.courses_label?.trim() ?? ''
+          const descriptionLabel = tab.display === 'carousel' ? '' : tab.description?.trim() ?? ''
           return (
             <button
               key={tab.id}
@@ -150,6 +151,11 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                     </span>
                   )}
                 </div>
+                {descriptionLabel ? (
+                  <p className="mt-0.5 hidden max-w-full px-1 text-center text-xs leading-snug text-warm-wood-dark/70 line-clamp-3 min-[700px]:block sm:line-clamp-2">
+                    {descriptionLabel}
+                  </p>
+                ) : null}
                 {(priceAmount || coursesLabel) && (
                   <div className="flex w-full items-end justify-between gap-2">
                     {coursesLabel ? (

@@ -23,6 +23,20 @@
 |------------|----|-------------------|--------------------|---------|
 | «main dell'app» (ambiguo admin vs app) | 0 | 0 | 0 | nuova 28-05 |
 | «menù originale» (ambiguo tra zone menu) | 0 | 0 | 0 | nuova 28-05 |
+| «comportamenti ok ma voglio che cambi» | 0 | 0 | 0 | nuova 29-05 (promossa da PROPOSTE) |
+| «compila report comunicazione + annota prompt» | 0 | 0 | 0 | nuova 29-05 (promossa da PROPOSTE) |
+| «revisiona e se ok committa» | 0 | 0 | 0 | nuova 29-05 (promossa da PROPOSTE) |
+
+| «procedura finale» | 1 | chiusura §7: report + SESSION_LOG + FOLLOW_UP + OSSERVAZIONI |
+| «report unificato o solo report?» | 1 | Matteo vuole sapere se un file o più file; risposta breve preferita |
+| sessione mappatura DOM admin ↔ Prenota | 1 | liste lunghe path + esito OK/KO; conferme puntuali (import preset, 700px) |
+
+## Sessioni registrate (append-only)
+
+### 29-05-26 — Verifica mappatura Impostazioni ↔ Prenota
+- Profilo Verifica via prompt custom; report unificato un file; skill caricata: APP_CONTEXT only.
+- Matteo: liste DOM, correzione breakpoint 700px, «procedura finale».
+- Esito: 2 KO documentati (description card, icona carosello); validate non eseguito.
 
 ## Frasi / richieste ricorrenti (con conteggio)
 
@@ -31,11 +45,26 @@
 | «spiegamelo semplice / in modo sintetico» | 3+ (chat PWA, Metodo, report) | metafora concreta + "chi fa cosa" + breve |
 | «è una rule che devo ricordare io?» / «devo farlo ogni volta?» | 2+ | distinguere lavoro manuale ricorrente da automatismo del tool |
 | «ottimo / funziona / perfetto / revisione ok» (conferma successo) | molte+ | trigger del protocollo fine-chat (report + skill + commit) |
+| «lavoro ok» (conferma task) | 1 | usato con «fai report finale» + richiesta report comunicazione dettagliato; proposta PROPOSTE |
 | «allineato a skill system» (post-implementazione) | 2 | Matteo si aspetta §7.1/§7.2 senza doverlo ripetere |
 | «report con derivazione errori / prompt vs struttura vs agente» | 1 | 29-05-26 card ingredienti — chiesto esplicitamente nel report finale |
 | «mantieni linea scalabile e pulita, no parti obsolete» | 2+ | preferire soluzioni durevoli, niente codice ridondante/legacy |
 | «fammi delle domande per decidere» | 2+ | usare AskUserQuestion prima di pianificare, non calare piani dall'alto |
 | report in `Sessioni di lavoro/` non `_lavoro/` | 1 (forte) | i report ufficiali vanno nella cartella datata |
+| «aggiorna report … anche comunicazione» | 1 | vuole § Dati comunicazione nel report, non solo codice |
+| report unificato per ciclo multi-agente | 1 | preferenza esplicita 29-05-26: un solo file aggiornato da prepara-prompt, esecutore e revisore, non N report paralleli |
+| feedback UX «a scelta tra» vs multi-selezione | 1 | descrive il problema percepito in app, non il componente |
+| «non vedo il modal» (dopo confirm browser) | 1 | vuole dialogo in-app visibile (`Modal`), non popup nativo |
+| copy modale verbatim («mostra come testo solo questo…») | 1 | incolla testo desiderato — agente deve applicarlo letterale |
+| «non ti ho detto di cambiarlo» | 1 | delta copy era solo intro/chiusura — agente aveva rimosso anche elenco con freccia → promo |
+| «veder visivamente / paginetta mockup» per scegliere flusso UX | 1 | HTML stilizzato multi-stato (tab oggi/proposta/modale) prima del prompt esecutore — vedi PREPARA_PROMPT §1.B |
+| «conflitto con scalabilità multi-azienda?» nelle decisioni tecniche | 1 | vuole verdetto esplicito ok/attenzione/conflitto nel report, non solo implementazione |
+| autosave debug vs footer manuale in prod | 2 | debug: autosave campi semplici ok; prod commerciale: solo footer + validazione prima del pubblico (FU-004) |
+| conferma Salva su dati esposti in Pagina Prenota | 1 | modale «saranno pubblici» — follow-up FU-005, non in fase debug |
+| «tutto fatto» + raccolta comunicazione + commit | 1 | chiusura ciclo multi-agente; vuole OSSERVAZIONI/PROPOSTE aggiornati senza sessione Meta senior |
+| «comportamento agente non senior corretto?» | 1 | conferma: solo raccolta dati + PROPOSTE, non promuovere VOCABOLARIO né riformare COMUNICAZIONE |
+| footer mobile 50% + sfondo trasparente | 1 | decisioni UX esplicite dopo mockup HTML |
+| domande non bloccanti lasciate al revisore | 1 | Classic vs Pro, smoke Prenota pubblica — ok lasciare ? in QA |
 
 ## Spiegazioni date e formato che ha funzionato
 
@@ -55,6 +84,10 @@
 
 - Matteo usa più agenti in catena: uno pianifica (plan mode), uno esegue (Sonnet in altra chat),
   uno revisiona. La revisione deve trovare difetti veri, non confermare per cortesia.
+- **Preferenza processo (29-05-26):** per un ciclo tema (es. promo), **un report unificato**
+  in `docs/Sessioni di lavoro/GG-MM-AA/` con sezioni per fase (prepara-prompt → esecuzione →
+  revisione), invece di file `Report-*` separati per ogni agente. Vedi PROPOSTE «report unificato»
+  e report revisione promo § Proposta report unificato.
 
 ## Token risparmiabili (dove Matteo scrive molto)
 
@@ -65,6 +98,51 @@
 ---
 
 ## Log per data
+
+### 29-05-26 — Chiusura ciclo salvataggio admin (raccolta dati comunicazione, non Meta senior)
+- Matteo: «tutto fatto» — esecuzione completata; chiede analisi comunicazione, primo aggiornamento skill comunicazione (**solo dati**, non revisore senior), commit + report finale.
+- **Ruolo corretto agente di lavoro / prepara-prompt a valle:** aggiornare `OSSERVAZIONI.md`, `PROPOSTE.md`, sezione Dati comunicazione nel report ciclo, `SESSION_LOG`, `FOLLOW_UP` (note FU-002 fase 1); **non** promuovere voci in `VOCABOLARIO.md`, **non** riscrivere `COMUNICAZIONE_UTENTE_SKILL.md` (salvo regola temporanea già in skill).
+- Mockup HTML: conferma utilità alta; PROPOSTE mockup → archivio accettata (regola in PREPARA_PROMPT §1.B).
+- Scalabilità multi-tenant: esecutore ha scritto «attenzione» nel report — FU-006 resta per promozione regola fissa in report (sessione Meta futura).
+- QA browser formale 375/834/1280: non documentato in report revisione separato; chiusura per conferma Matteo.
+- `npm run validate` 217 test OK in chiusura.
+
+### 29-05-26 — Prepara prompt: ciclo salvataggio Impostazioni locale (Anagrafica + Personalizza form)
+- Matteo ha scelto footer compatto ~50% allineato a destra (anche mobile), sfondo footer mobile leggermente trasparente, guard modale, autosave whitelist in **fase debug**.
+- Mockup HTML multi-stato (`mockup-salvataggio.html`) molto apprezzato («comodissimo», «mi serve quasi sempre») per decisioni flusso/UI → codificato in PREPARA_PROMPT §1.B.
+- **Prod futura (FU-004):** disattivare autosave; salvataggio manuale footer per validare errori prima del pubblico e ridurre DB.
+- **Follow-up FU-005:** modale conferma al Salva su campi che finiscono in Pagina Prenota esposta ai clienti.
+- Chiede segnalazione conflitti **scalabilità multi-tenant** nelle decisioni → FU-006 + sezione obbligatoria nel report ciclo.
+- Report ciclo: `docs/Sessioni di lavoro/29-05-26/Report-ciclo-salvataggio-admin-29-05-26.md`
+
+### 29-05-26 — Meta: miglioria skill system (analisi report ciclo card ingredienti + decisione PROPOSTE)
+- Sessione Meta su richiesta Matteo: analisi 3 report del ciclo prepara→esegui→revisiona (card ingredienti) + i 4 file Comunicazione-Skill + PREPARA_PROMPT.
+- Decise tutte le 8 PROPOSTE in attesa: 2 voci Liv.1 («lavoro ok», «finestra di conferma»), 3 voci Liv.2 («comportamenti ok ma voglio che cambi», «compila report comunicazione», «revisiona e committa»), 3 regole attive (report unificato, copy verbatim, freno azioni rischiose).
+- Matteo ha chiesto di spiegare le proposte come «parola → comportamento», distinguendo parole-comando da regole automatiche. Pattern: vuole capire SE una cosa è un comando da dire o un automatismo prima di approvarla.
+- Nuova regola PREPARA_PROMPT: segnalare conflitti con prompt/report precedenti (no tabelle timeline, solo segnalazione) — nasce dal caso overlay invertito 29-05.
+- Sintesi periodica feedback agenti (da ERRORI_PROCESSO): assegnata al revisore Meta in sessione con Matteo, NON agli agenti esecuzione/revisione. Codificata in REVISIONE.md §4b.
+- «main dell'app» / «menù originale» Liv.2: non usate in questa chat.
+- Report: `docs/Sessioni di lavoro/29-05-26/Report-meta-miglioria-skill-system-29-05-26.md`
+
+### 29-05-26 — Esecuzione: promo conflitto abbinamento — dialogo sostituzione
+- Follow-up prompt strutturato (helper, test, no skill/docs); implementazione + validate OK.
+- Matteo: «non vedo il modal» → fix `Modal` React; «ottimo funziona»; poi copy modale intro/chiusura semplificati; **correzione**: «non ti ho detto di cambiarlo» → ripristinata freccia + nome promo in elenco.
+- Agente: risposte con schermata Personalizza form + storage `booking_menu_promos`; nota pulsante editor vs Salva sezione.
+- Skill: APP_CONTEXT profilo Esecuzione ok; BOOKING_FORM context non caricato; `window.confirm` nel prompt suggerito → errore UX (allineare FU-003).
+- Report: `Report-promo-conflitto-sostituzione-29-05-26.md` con § skill system e Dati comunicazione.
+
+### 29-05-26 — Esecuzione: promo Personalizza form + fix UI abbinamento (checkbox libere)
+- Feature grande (spostamento da Tab Menu, multi-target, banner Prenota) + due iterazioni UX abbinamento.
+- Feedback Matteo sul select: «a scelta tra» → vuole «1 o nessuno o tutti o 2» (multi-checkbox libera, non menu esclusivo).
+- Spiegazione agente con schermata + `BookingFormPromoSection` + `booking_menu_promos` — allineata a user rule «spiegami semplice».
+- Chiusura: «aggiorna report di fine lavoro, anche parte comunicazione» — **senza** «lavoro ok» sul fix UI; nessun commit.
+- Report aggiornato: `Report-promo-personalizza-form-29-05-26.md` (§ Dati comunicazione + follow-up UI).
+
+### 29-05-26 — Esecuzione: card scorrevole titolo/placeholder/lista admin (Personalizza form)
+- Prompt esecutore completo (no domande): vuoto + placeholder, import menù, clear manuale, riga `· Card N`, carosello invariato.
+- Implementazione al primo giro; `npm run validate` 195 test OK.
+- Chiusura Matteo: «lavoro ok» + report finale dettagliato + proposta vocabolario «lavoro ok» + regola temporanea report comunicazione più ricca.
+- Report: `docs/Sessioni di lavoro/29-05-26/Report-card-scorrevole-titolo-admin-29-05-26.md`
 
 ### 29-05-26 — Esecuzione: scroll interno + overlay portal card ingredienti Prenota
 - Implementazione su `BookingMenuCategoryCard` + `bookingMenuComposePanelLayout.ts`; skill §4 aggiornata.
@@ -140,6 +218,13 @@
 - Token: chiede prompt pronti da copiare per la sessione successiva → fornirli già formattati
   e auto-contenuti è apprezzato.
 - Chiusura calorosa ("grazie mille", emoji) → rapporto collaborativo, non solo transazionale.
+
+### 29-05-26 — Validazione UX Pagina Prenota (ciclo prepara-prompt → esecutore → revisore)
+- Sintomo QA «non funziona nulla» (no toast/scroll/pulse/chiusura card) con implementazione già presente → **causa root HTML5** (`required` senza `noValidate`), non logica React. Pattern da documentare in ogni nuovo form con validazione custom.
+- Dopo root cause il fix è andato **veloce** (1–2 giri: `isTrusted`, pulse su wrapper, testi bianchi); i giri precedenti erano lo stesso blocco.
+- Matteo affida follow-up supplementari **nella chat esecutore** (leggibilità testi, colore pulse) — funziona meglio che tornare al prepara-prompt per polish minori.
+- Revisore: utile escludere diff fuori scope dal commit (`BookingModeCards` margin) — Matteo vuole commit pulito per task.
+- Richiesta esplicita: **guida replica** con riferimenti file per portare il pattern su admin/modali (FU-010) → `FORM_VALIDATION_ATTENTION_PATTERN.md`.
 
 ### 28-05-26 — Sessione PWA + costruzione sistema comunicazione
 - Confermato: "spiegamelo semplice" = metafora + chi-fa-cosa (vedi cache PWA).

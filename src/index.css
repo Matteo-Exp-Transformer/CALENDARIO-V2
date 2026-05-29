@@ -1535,6 +1535,40 @@ button.admin-nav-item.admin-nav-tab-active.archive-tab-filter-btn {
   }
 }
 
+/* Pagina Prenota — lampeggio attenzione sul primo campo in errore (submit fallito) */
+@keyframes booking-public-field-attention-pulse {
+  0%,
+  100% {
+    border-color: color-mix(in srgb, var(--color-warm-orange) 88%, black);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-warm-orange) 50%, transparent);
+    outline-color: var(--color-warm-orange);
+  }
+
+  50% {
+    border-color: var(--color-warm-orange);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-warm-orange) 40%, transparent);
+    outline-color: color-mix(in srgb, var(--color-warm-orange) 75%, white);
+  }
+}
+
+.booking-public-field-attention {
+  border-color: var(--color-warm-orange) !important;
+  border-width: 2px !important;
+  outline: 2px solid var(--color-warm-orange);
+  outline-offset: 2px;
+  animation: booking-public-field-attention-pulse 0.95s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .booking-public-field-attention {
+    animation: none;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-warm-orange) 42%, transparent);
+    border-color: var(--color-warm-orange) !important;
+    outline: 3px solid var(--color-warm-orange);
+    outline-offset: 2px;
+  }
+}
+
 /*
  * “Rifiuta” su superficie warm/gradient: alcuni browser o layer Tailwind lasciano sfondo grigio/neutro.
  * Colore pieno qui (nessun background-image) così il rosso resta sempre visibile.

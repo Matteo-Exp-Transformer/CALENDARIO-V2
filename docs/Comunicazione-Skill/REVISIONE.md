@@ -12,11 +12,11 @@
 
 ## Cosa fa l'agente revisore
 
-1. **Raccoglie il materiale** senza rileggere le chat:
-   - Le sezioni **"Dati comunicazione"** dei report recenti in `docs/Sessioni di lavoro/*/Report-*.md`.
-   - [`OSSERVAZIONI.md`](OSSERVAZIONI.md) — frasi ricorrenti, procedure, esiti Liv.2 aggregati.
-   - [`PROPOSTE.md`](PROPOSTE.md) — candidate in attesa.
-   - I campi `Dati Liv.2` delle voci in [`VOCABOLARIO.md`](VOCABOLARIO.md).
+1. **Raccoglie il materiale** (fase attuale: **raccolta dati** — non limitarti ai soli report sintetici):
+   - Report in `docs/Sessioni di lavoro/*/Report-*.md`: sezione **"Dati comunicazione"** e, se presente, **cronologia / prompt di Matteo** (verbatim o annotati).
+   - Quando Matteo le fornisce: **prompt delle chat** con l'agente che ha eseguito il lavoro (oltre al report) — analizzali con la stessa attenzione del report.
+   - [`OSSERVAZIONI.md`](OSSERVAZIONI.md), [`PROPOSTE.md`](PROPOSTE.md), campi `Dati Liv.2` in [`VOCABOLARIO.md`](VOCABOLARIO.md).
+   - **Analisi attiva su quel materiale:** parole/frasi che Matteo usa per **elementi UI** specifici, per **avviare procedure** (es. chiusura sessione, «prepara prompt»), o che **ripete spesso** e potrebbero diventare scorciatoie — **proponi termini** (voce + livello 1/2/3) in chat e in `PROPOSTE.md`, senza aggiungerli al vocabolario senza ok.
 
 2. **Valuta le voci Liv.2** (promozione / regressione), con criterio basato sui dati:
    - Prevalenza di `ok` + `domanda-superflua` e nessun `corretto-da-Matteo` recente → **proponi Liv.1**.
@@ -26,10 +26,19 @@
 3. **Valuta le candidate in `PROPOSTE.md`**: quali sono mature (pattern ≥2-3 volte, basso rischio)
    per diventare voci di vocabolario, e con quale livello iniziale.
 
-4. **Cerca pattern nuovi** nei report che nessun agente di lavoro aveva ancora formalizzato.
+4. **Cerca pattern nuovi** in report + prompt chat che nessun agente aveva ancora formalizzato.
 
-5. **Parla con Matteo**: presenta le valutazioni in modo sintetico (stile skill comunicazione) e
-   chiede le decisioni. Domande tipiche:
+4b. **Sintesi feedback agenti (da `ERRORI_PROCESSO.md`).** Questo è compito del **revisore Meta**,
+   **non** degli agenti di esecuzione/revisione (loro raccolgono solo i dati grezzi nella sezione
+   «Derivazione errori» del report). In sessione con Matteo, leggi `ERRORI_PROCESSO.md`, individua le
+   **top 3 cause ricorrenti** (bug preesistente / prompt ambiguo / errore agente / vincolo strutturale)
+   e per ognuna proponi a Matteo **un'azione correttiva** allo skill system: una RULE in `APP_CONTEXT`,
+   una regola in `PREPARA_PROMPT`, o una Nota in skill d'area. Così i dati di feedback non restano solo
+   accumulati ma si trasformano in miglioramenti. Quando una causa è risolta da una regola, annotalo in
+   `ERRORI_PROCESSO.md`.
+
+5. **Parla con Matteo**: presenta le valutazioni in modo sintetico (stile skill comunicazione),
+   **proponi attivamente** le nuove voci emerse dall'analisi (punto 1), non solo le candidate già in `PROPOSTE.md`, e chiedi le decisioni. Domande tipiche:
    - "La voce «X» è andata bene N volte, la promuovo a automatica?"
    - "Ho notato che chiedi spesso «Y»: la trasformo in voce di livello [1/2/3]?"
    - "Per scrivere meno, ti basterebbe dire «Z» invece della spiegazione lunga?"
@@ -37,6 +46,26 @@
 6. **Applica le decisioni approvate**: aggiorna `VOCABOLARIO.md` (voci/livelli), archivia le
    proposte decise in `PROPOSTE.md`, alleggerisce `OSSERVAZIONI.md` dai dati ormai consolidati in
    regole. Scrive un report di revisione e fa commit dedicato `docs(comunicazione):`.
+
+---
+
+## Evoluzione del sistema — due livelli di Meta (`EVOLUZIONE_SKILLS.md`)
+
+Oltre alla revisione del vocabolario sopra, lo skill system **evolve** (automazioni, statistiche,
+tecniche nuove, raffinamenti). Questo lavoro è separato in due livelli e vive in
+[`EVOLUZIONE_SKILLS.md`](EVOLUZIONE_SKILLS.md):
+
+- **Meta junior** (agenti Cursor / modelli più piccoli, anche durante una sessione di lavoro):
+  quando notano un'idea utile per il sistema — un'automazione possibile, un dato/statistica che
+  varrebbe la pena raccogliere, una tecnica non ancora usata, un raffinamento — **aggiungono una sola
+  riga** nel «Log idee» in fondo a `EVOLUZIONE_SKILLS.md`. **Spontaneo, non a ogni sessione.** Non
+  progettano e non decidono: solo annotano.
+- **Meta senior** (Opus 4.8+, sessione dedicata lanciata da Matteo): legge il Log idee + le milestone
+  + i dati accumulati; **analizza**, decide cosa costruire e in che ordine, fa avanzare le milestone,
+  pota le idee morte. Distingue sempre **governance soft (markdown)** da **enforcement vero
+  (hook `settings.json`)** quando pianifica un'automazione.
+
+Quando il senior calibra anche la modalità light/standard/deep, è il compito di igiene già previsto.
 
 ---
 

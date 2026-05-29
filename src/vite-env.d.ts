@@ -4,6 +4,8 @@
 interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL: string
   readonly VITE_SUPABASE_ANON_KEY: string
+  /** `false` disabilita autosave in dev; `true` abilita in build prod (default: dev ON, prod OFF). */
+  readonly VITE_SETTINGS_AUTOSAVE?: string
 }
 
 interface ImportMeta {

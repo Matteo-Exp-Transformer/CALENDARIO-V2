@@ -24,6 +24,8 @@ export interface BookingMenuComposeGridProps {
   customStaffPresets: CustomStaffPreset[]
   formatPrice: (item: ComposeMenuItem) => string
   onToggleItem: (item: ComposeMenuItem) => void
+  /** Incrementa per richiudere tutte le card ingredienti (es. submit con errori). */
+  composeCollapseKey?: string
 }
 
 type VisibleCategory = { key: string; label: string; items: ComposeMenuItem[] }
@@ -38,6 +40,7 @@ function ComposeCategoryCards({
   formatPrice,
   onToggleItem,
   resetKey,
+  horizontalScrollRef,
 }: {
   categories: VisibleCategory[]
   layout: 'grid' | 'scroll' | 'stack'
@@ -48,6 +51,7 @@ function ComposeCategoryCards({
   formatPrice: (item: ComposeMenuItem) => string
   onToggleItem: (item: ComposeMenuItem) => void
   resetKey?: string
+  horizontalScrollRef?: React.RefObject<HTMLElement | null>
 }) {
   return (
     <>
@@ -65,6 +69,7 @@ function ComposeCategoryCards({
           layout={layout}
           compact={compact}
           resetKey={resetKey}
+          horizontalScrollRef={horizontalScrollRef}
         />
       ))}
     </>
@@ -144,6 +149,7 @@ function ComposeScrollRow({
           formatPrice={formatPrice}
           onToggleItem={onToggleItem}
           resetKey={resetKey}
+          horizontalScrollRef={scrollRef}
         />
       </div>
       {canScrollRight && (
@@ -171,6 +177,7 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
   customStaffPresets,
   formatPrice,
   onToggleItem,
+  composeCollapseKey,
 }) => {
   const allowedItemIds = useMemo(
     () =>
@@ -195,7 +202,7 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
     locked,
     formatPrice,
     onToggleItem,
-    resetKey: presetMenu ?? 'no-preset',
+    resetKey: `${presetMenu ?? 'no-preset'}:${composeCollapseKey ?? '0'}`,
   }
 
   if (visibleCategories.length === 0) {

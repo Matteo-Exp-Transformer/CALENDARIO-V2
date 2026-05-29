@@ -54,6 +54,22 @@ Matteo chiede lui il dettaglio tecnico se gli serve. Vale anche per i report di 
 
 ---
 
+## Copy verbatim: applica solo ciò che Matteo cita
+
+Quando Matteo **incolla un testo** e dice di metterlo «esattamente così» / «mostra solo questo testo»
+/ ti dà un nuovo intro o una nuova frase, applica **letteralmente solo le stringhe che ha citato** e
+lascia **invariato** tutto il resto attorno (elenchi, formato righe, etichette non menzionate). Non
+«migliorare» né semplificare ciò che non ti ha chiesto di toccare.
+
+> Caso 29-05-26 (promo modale): Matteo ha dato un nuovo intro + chiusura; l'agente ha cambiato anche
+> l'elenco con freccia che non era stato menzionato → «non ti ho detto di cambiarlo». Giro di
+> correzione evitabile.
+
+Se la richiesta **sembra** voler sostituire tutto il blocco (non solo le frasi citate), **chiedi
+conferma** su elenchi/dettagli secondari prima di riscrivere.
+
+---
+
 ## Cosa evitare sempre
 
 - Elenchi di nomi file senza dire cosa cambia in app
@@ -118,8 +134,9 @@ Quando Matteo conferma che il lavoro è andato bene ("ok", "funziona", "perfetto
 
 1. **Aggiorna `OSSERVAZIONI.md`**: aggiungi i dati grezzi di questa chat (frasi ricorrenti,
    spiegazioni che hanno funzionato, procedure ripetute) e i contatori `Dati Liv.2` delle voci usate.
-2. **Scrivi il report di sessione** (§7 APP_CONTEXT) con la sezione obbligatoria **"Dati comunicazione"**
-   (vedi sotto) — è qui che dai al revisore tutto ciò che gli serve, senza che lui rilegga la chat.
+2. **Scrivi il report di sessione** (§7 APP_CONTEXT) con:
+   - sezione **"File di skill aggiornati"** (tabella file | modifica breve | **perché** — vedi §7.1 APP_CONTEXT);
+   - sezione obbligatoria **"Dati comunicazione"** (vedi sotto) — materiale per il revisore senza rileggere la chat.
 3. **Aggiornamenti skill solo se autorizzati**: se durante la chat Matteo ti ha esplicitamente
    detto di aggiornare una skill o aggiungere una voce, fallo. **Altrimenti non toccare lo skill
    system**: limitati a *segnalare* i candidati nel report e in `PROPOSTE.md`. Le proposte vere e
@@ -146,3 +163,32 @@ senza rileggere la chat. Includi:
 
 Sii **proattivo nel proporre dati nuovi**: se noti un segnale utile non previsto da questo elenco,
 aggiungilo comunque — meglio dare al revisore più materiale grezzo che meno.
+
+> ⚠️ **REGOLA TEMPORANEA (raccolta dati iniziali — rimuovere dopo revisione Meta)**  
+> Fino a nuova indicazione del revisore, la sezione **"Dati comunicazione"** nei report di sessione
+> deve essere **più dettagliata del minimo** sopra. Aggiungi obbligatoriamente:
+> - sottosezione **«Cronologia / prompt di Matteo (annotati)»** con i messaggi utente rilevanti
+>   (verbatim o citazione fedele), numerati, con intento ed esito agente;
+> - **contesto sessione** (profilo ingresso, numero turni, se c’erano prompt prepara-prompt);
+> - sottosezione **«Cosa non è successo in chat»** (vedi spiegazione sotto);
+> - tabella **prompt annotati** se la chat ha più di un messaggio sostanziale di Matteo.
+> Il revisore userà questo materiale per calibrare vocabolario e lunghezza futura dei report; non
+> sostituisce le altre sezioni del report (§7.1 APP_CONTEXT).
+
+#### Cosa significa «cosa non è successo in chat» (non sono errori)
+
+È un elenco di **assenza di eventi** utili al revisore — cosa **non** è avvenuto nella conversazione,
+così capisce i **limiti** dei dati raccolti (e non interpreta il silenzio come conferma).
+
+Esempi da annotare quando applicabili:
+
+| Tipo di «non successo» | Esempio |
+|------------------------|---------|
+| Domande non poste | L’agente non ha chiesto chiarimenti perché il prompt era già completo |
+| Conferme non ricevute | Matteo ha detto «lavoro ok» ma non ha confermato smoke manuale in admin |
+| Azioni non richieste | Nessun commit, push, deploy, migrazione DB |
+| Protocollo non attivato | Matteo non ha detto «fai report finale» ma solo «ok» (o il contrario) |
+| Skill non toccate | Nessun aggiornamento a VOCABOLARIO (solo PROPOSTE) |
+| Test non eseguiti | Solo `validate` automatico, nessuna prova browser |
+
+**Non** significa «cosa è andato male»: per i fallimenti usare **Derivazione errori** nel report.

@@ -31,9 +31,6 @@ import {
   applyPresetTypeToBookingFormPayload,
   presetSelectionStillMatchesStoredPreset,
 } from '../utils/buildPresetMenuSelection'
-import {
-  listMenuPromoMessagesForBookingType,
-} from '../constants/menuPromo'
 import { CapacityWarningModal } from './CapacityWarningModal'
 import { PastStartTimeWarningModal } from './PastStartTimeWarningModal'
 import { cn } from '@/lib/utils'
@@ -150,7 +147,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const { data: menuItems = [] } = useMenuItems()
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
-  const { data: menuPromos = [] } = useRestaurantSetting('booking_menu_promos')
   const { data: digestSlots = [] } = useDigestSlotConfigs()
   const { data: serviceSlots = [] } = useServiceSlots()
   const { data: slotOverrides = [] } = useServiceSlotOverrides()
@@ -259,11 +255,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
     return baseTabs
   }, [formData.booking_type])
-
-  const menuPromoMessagesForTab = useMemo(
-    () => listMenuPromoMessagesForBookingType(formData.booking_type, menuPromos),
-    [formData.booking_type, menuPromos],
-  )
 
   // Auto-reset active tab if no longer available
   useEffect(() => {
@@ -778,7 +769,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                 menuFlowBookingType={formData.booking_type}
                 staffPresetsDropdownVisible={staffPresetsDropdownVisible}
                 customStaffPresets={customStaffPresets}
-                menuPromoMessages={menuPromoMessagesForTab}
                 isMenuExpanded={isMenuExpanded}
                 onMenuExpandToggle={() => setIsMenuExpanded(!isMenuExpanded)}
                 onMenuChange={handleMenuChange}

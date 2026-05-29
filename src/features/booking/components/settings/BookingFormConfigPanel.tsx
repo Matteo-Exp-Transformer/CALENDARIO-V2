@@ -24,6 +24,10 @@ import { useMenuItems } from '@/features/booking/hooks/useMenuItems'
 import { useMenuCategories } from '@/features/booking/hooks/useMenuCategories'
 import { BookingFormCarouselEditor } from '@/features/booking/components/settings/BookingFormCarouselEditor'
 import {
+  BookingFormPromoSection,
+  type BookingFormPromoSectionHandle,
+} from '@/features/booking/components/settings/BookingFormPromoSection'
+import {
   useRestaurantSetting,
   useUpsertRestaurantSetting,
 } from '@/features/booking/hooks/useRestaurantSetting'
@@ -48,9 +52,10 @@ import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus
 import type { SubTabOverridableField } from '@/features/booking/constants/bookingPublicFormConfig'
 import { normalizeMenuItemBookingTypes, type MenuItem } from '@/types/menu'
 import { toast } from 'react-toastify'
+import { SETTINGS_AUTOSAVE_ENABLED } from '@/config/settingsAutosave'
+import { useDebouncedSettingsAutosave } from '@/features/booking/hooks/useDebouncedSettingsAutosave'
 import {
-  FormSectionFloatingActions,
-  SectionActionBar,
+  FieldAutosaveIndicator,
   SettingsSaveFooter,
 } from '@/features/booking/components/settings/SettingsSaveUi'
 
@@ -168,12 +173,23 @@ function newSubTab(display: SubTab['display']): SubTab {
   return {
     id: crypto.randomUUID(),
     display,
-    label: display === 'carousel' ? 'Carosello' : 'Card scorrevole',
+    label: display === 'carousel' ? 'Carosello' : '',
     icon: 'utensils',
     ...(display === 'cards'
       ? { hidden_category_keys: [], hidden_item_ids: [] }
       : {}),
   }
+}
+
+/** Riga collassata lista card salvate (non carosello). */
+function getSubTabCollapsedRowTitle(tab: SubTab, number: number): string {
+  if (tab.display === 'carousel') {
+    const name = tab.label?.trim()
+    return name || `Carosello ${number}`
+  }
+  const trimmed = tab.label?.trim() ?? ''
+  const suffix = `Card ${number}`
+  return trimmed ? `${trimmed} · ${suffix}` : suffix
 }
 
 /**
@@ -356,7 +372,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   onCancelBookingBackground,
 }) => {
   const { organizationName, tenantId } = useTenantContext()
-  const { registerUnsavedSource, clearUnsavedSource } = useUnsavedChangesGuard()
+  const { registerUnsavedSource, registerUnsavedHandlers, clearUnsavedSource } =
+    useUnsavedChangesGuard()
   const { data: savedConfig } = useRestaurantSetting('booking_public_form_config')
   const { data: restaurantName } = useRestaurantSetting('restaurant_name')
   const { data: customPresetsRaw } = useRestaurantSetting('booking_custom_staff_presets')
@@ -370,13 +387,22 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     ''
 
   const [config, setConfig] = useState<BookingPublicFormConfig>(DEFAULT_BOOKING_FORM_CONFIG)
-  const [headerDirty, setHeaderDirty] = useState(false)
+  const [headerTextDirty, setHeaderTextDirty] = useState(false)
+  const [headerStylesDirty, setHeaderStylesDirty] = useState(false)
   const [modesDirty, setModesDirty] = useState(false)
-  const headerDirtyRef = useRef(false)
+  const [promoDirty, setPromoDirty] = useState(false)
+  const headerTextDirtyRef = useRef(false)
+  const headerStylesDirtyRef = useRef(false)
   const modesDirtyRef = useRef(false)
-  headerDirtyRef.current = headerDirty
+  const promoDirtyRef = useRef(false)
+  const promoSectionRef = useRef<BookingFormPromoSectionHandle>(null)
+  headerTextDirtyRef.current = headerTextDirty
+  headerStylesDirtyRef.current = headerStylesDirty
   modesDirtyRef.current = modesDirty
-  const formConfigDirty = headerDirty || modesDirty
+  promoDirtyRef.current = promoDirty
+  const headerTextFooterDirty = SETTINGS_AUTOSAVE_ENABLED ? false : headerTextDirty
+  const personalizzaFormDirty =
+    headerTextFooterDirty || headerStylesDirty || modesDirty || promoDirty || bookingBgDirty
   const [expandedMode, setExpandedMode] = useState<string | null>(null)
   const [draftSubTabsByMode, setDraftSubTabsByMode] = useState<Record<string, SubTab | null>>({})
   const [expandedSubTabByMode, setExpandedSubTabByMode] = useState<Record<string, string | null>>({})
@@ -395,56 +421,41 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   })
 
   useEffect(() => {
-    if (savedConfig && !headerDirty && !modesDirty) {
+    if (savedConfig && !headerTextDirty && !headerStylesDirty && !modesDirty) {
       setConfig(withMergedSubTabLabels(savedConfig))
     }
-  }, [savedConfig, headerDirty, modesDirty, customPresetsRaw])
+  }, [savedConfig, headerTextDirty, headerStylesDirty, modesDirty, customPresetsRaw])
 
   useEffect(() => {
-    registerUnsavedSource('booking-form-config', 'Personalizza form', formConfigDirty)
+    setHeaderTextDirty(false)
+    setHeaderStylesDirty(false)
+    setModesDirty(false)
+    setPromoDirty(false)
+    setDraftSubTabsByMode({})
+    setExpandedSubTabByMode({})
+    setExpandedMode(null)
+    clearUnsavedSource('booking-form-config')
+  }, [tenantId, clearUnsavedSource])
+
+  useEffect(() => {
+    registerUnsavedSource('booking-form-config', 'Personalizza form', personalizzaFormDirty)
     return () => {
-      if (!headerDirtyRef.current && !modesDirtyRef.current) {
+      if (
+        !headerTextDirtyRef.current &&
+        !headerStylesDirtyRef.current &&
+        !modesDirtyRef.current &&
+        !promoDirtyRef.current
+      ) {
         clearUnsavedSource('booking-form-config')
       }
     }
-  }, [clearUnsavedSource, formConfigDirty, registerUnsavedSource])
+  }, [clearUnsavedSource, personalizzaFormDirty, registerUnsavedSource])
 
-  const markHeaderDirty = () => setHeaderDirty(true)
+  const markHeaderTextDirty = () => setHeaderTextDirty(true)
+  const markHeaderStylesDirty = () => setHeaderStylesDirty(true)
   const markModesDirty = () => setModesDirty(true)
 
   const getSavedBaseline = () => savedConfig ?? DEFAULT_BOOKING_FORM_CONFIG
-
-  const updateField = (
-    field: keyof Pick<BookingPublicFormConfig, 'page_title' | 'page_description'>,
-    value: string,
-  ) => {
-    setConfig((prev) => ({ ...prev, [field]: value }))
-    markHeaderDirty()
-  }
-
-  const updateHeaderTextStyle = (
-    target: BookingHeaderTextTarget,
-    patch: Partial<BookingHeaderTextStyle>,
-  ) => {
-    setConfig((prev) => {
-      const currentStyles = prev.header_styles ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles
-      const currentTarget = currentStyles[target] ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles[target]
-      return {
-        ...prev,
-        header_styles: {
-          ...currentStyles,
-          [target]: {
-            ...currentTarget,
-            ...patch,
-            color: patch.color
-              ? normalizeBookingHeaderColor(patch.color, currentTarget.color)
-              : currentTarget.color,
-          },
-        },
-      }
-    })
-    markHeaderDirty()
-  }
 
   const updateMode = (modeId: string, patch: Partial<BookingMode>) => {
     setConfig((prev) => ({
@@ -609,7 +620,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       if (savedPart === 'header' && modesDirty) {
         return { ...normalized, booking_modes: prev.booking_modes }
       }
-      if (savedPart === 'modes' && headerDirty) {
+      if (savedPart === 'modes' && (headerTextDirty || headerStylesDirty)) {
         return {
           ...normalized,
           page_title: prev.page_title,
@@ -619,6 +630,78 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       }
       return normalized
     })
+  }
+
+  const headerAutosave = useDebouncedSettingsAutosave({
+    enabled: SETTINGS_AUTOSAVE_ENABLED,
+    tenantId,
+    fields: {
+      page_title: {
+        value: config.page_title,
+        baseline: getSavedBaseline().page_title,
+      },
+      page_description: {
+        value: config.page_description,
+        baseline: getSavedBaseline().page_description,
+      },
+    },
+    onSave: async (keys) => {
+      const saved = getSavedBaseline()
+      const nextTitle = keys.includes('page_title') ? config.page_title : saved.page_title
+      const nextDescription = keys.includes('page_description')
+        ? config.page_description
+        : saved.page_description
+      const normalized = normalizeBookingPublicFormConfig({
+        ...saved,
+        page_title: nextTitle,
+        page_description: nextDescription,
+        header_styles: config.header_styles,
+        booking_modes: config.booking_modes,
+      })
+      await upsert.mutateAsync({
+        items: [{ key: 'booking_public_form_config', value: normalized }],
+        options: { silent: true },
+      })
+      mergeConfigAfterPartialSave(normalized, 'header')
+      setHeaderTextDirty(false)
+    },
+  })
+
+  useEffect(() => {
+    headerAutosave.cancelPending()
+  }, [tenantId, headerAutosave])
+
+  const updateField = (
+    field: keyof Pick<BookingPublicFormConfig, 'page_title' | 'page_description'>,
+    value: string,
+  ) => {
+    setConfig((prev) => ({ ...prev, [field]: value }))
+    if (!SETTINGS_AUTOSAVE_ENABLED) markHeaderTextDirty()
+    headerAutosave.notifyFieldChange(field)
+  }
+
+  const updateHeaderTextStyle = (
+    target: BookingHeaderTextTarget,
+    patch: Partial<BookingHeaderTextStyle>,
+  ) => {
+    setConfig((prev) => {
+      const currentStyles = prev.header_styles ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles
+      const currentTarget = currentStyles[target] ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles[target]
+      return {
+        ...prev,
+        header_styles: {
+          ...currentStyles,
+          [target]: {
+            ...currentTarget,
+            ...patch,
+            color: patch.color
+              ? normalizeBookingHeaderColor(patch.color, currentTarget.color)
+              : currentTarget.color,
+          },
+        },
+      }
+    })
+    markHeaderStylesDirty()
   }
 
   const saveHeaderSection = async () => {
@@ -631,7 +714,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     })
     await upsert.mutateAsync([{ key: 'booking_public_form_config', value: normalized }])
     mergeConfigAfterPartialSave(normalized, 'header')
-    setHeaderDirty(false)
+    setHeaderTextDirty(false)
+    setHeaderStylesDirty(false)
   }
 
   const persistModesSection = async (bookingModes: BookingPublicFormConfig['booking_modes']) => {
@@ -674,33 +758,13 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     }
   }
 
-  const handleCancelHeaderSection = () => {
-    const baseline = getSavedBaseline()
-    setConfig((prev) => ({
-      ...prev,
-      page_title: baseline.page_title,
-      page_description: baseline.page_description,
-      header_styles: baseline.header_styles,
-    }))
-    setHeaderDirty(false)
-  }
-
-  const handleCancelModesSection = () => {
-    const baseline = getSavedBaseline()
-    setConfig((prev) => ({
-      ...prev,
-      booking_modes: withMergedSubTabLabels(baseline).booking_modes,
-    }))
-    setDraftSubTabsByMode({})
-    setExpandedSubTabByMode({})
-    setModesDirty(false)
-  }
-
   const handleCancelFormChanges = () => {
+    headerAutosave.cancelPending()
     const baseline = getSavedBaseline()
-    if (headerDirty && modesDirty) {
+    const headerDirtyCombined = headerTextDirty || headerStylesDirty
+    if (headerDirtyCombined && modesDirty) {
       setConfig(baseline)
-    } else if (headerDirty) {
+    } else if (headerDirtyCombined) {
       setConfig((prev) => ({
         ...prev,
         page_title: baseline.page_title,
@@ -712,16 +776,18 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     }
     setDraftSubTabsByMode({})
     setExpandedSubTabByMode({})
-    setHeaderDirty(false)
+    setHeaderTextDirty(false)
+    setHeaderStylesDirty(false)
     setModesDirty(false)
   }
 
-  const pageHasUnsaved = formConfigDirty || bookingBgDirty
+  const pageHasUnsaved = personalizzaFormDirty
 
   const handleSaveAllPage = async () => {
     try {
-      if (headerDirty) await saveHeaderSection()
+      if (headerTextDirty || headerStylesDirty) await saveHeaderSection()
       if (modesDirty) await saveModesSection()
+      if (promoDirty && promoSectionRef.current) await promoSectionRef.current.save()
       if (bookingBgDirty && onSaveBookingBackground) await onSaveBookingBackground()
     } catch {
       toast.error('Errore nel salvataggio')
@@ -730,8 +796,17 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
   const handleCancelAllPage = () => {
     handleCancelFormChanges()
+    if (promoDirty) promoSectionRef.current?.cancel()
     onCancelBookingBackground?.()
   }
+
+  useEffect(() => {
+    registerUnsavedHandlers('booking-form-config', {
+      saveAll: handleSaveAllPage,
+      discardAll: handleCancelAllPage,
+    })
+    return () => registerUnsavedHandlers('booking-form-config', null)
+  }, [handleCancelAllPage, handleSaveAllPage, registerUnsavedHandlers])
 
   const headerStyles = config.header_styles ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles
 
@@ -740,7 +815,11 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       const name = tab.label?.trim()
       return name || `Carosello ${number}`
     }
-    if (isDraft) return `Nuova Card ${number}`
+    if (isDraft) {
+      const trimmed = tab.label?.trim() ?? ''
+      if (trimmed) return `${trimmed} · Card ${number}`
+      return `Nuova card · Card ${number}`
+    }
     return `Card ${number}`
   }
   const headerControlClass =
@@ -801,45 +880,6 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       </div>
     )
   }
-
-  const headerSectionActions = (
-    <SectionActionBar
-      onCancel={handleCancelHeaderSection}
-      onSave={() => {
-        void saveHeaderSection().catch(() => toast.error('Errore nel salvataggio intestazione'))
-      }}
-      cancelDisabled={!headerDirty}
-      saveDisabled={!headerDirty}
-      pending={upsert.isPending}
-    />
-  )
-
-  const modesSectionActions = (
-    <SectionActionBar
-      onCancel={handleCancelModesSection}
-      onSave={() => {
-        void saveModesSection().catch(() => toast.error('Errore nel salvataggio modalità'))
-      }}
-      cancelDisabled={!modesDirty}
-      saveDisabled={!modesDirty}
-      pending={upsert.isPending}
-    />
-  )
-
-  const backgroundSectionActions =
-    onSaveBookingBackground != null && onCancelBookingBackground != null ? (
-      <SectionActionBar
-        onCancel={onCancelBookingBackground}
-        onSave={() => {
-          void Promise.resolve(onSaveBookingBackground()).catch(() =>
-            toast.error('Errore nel salvataggio sfondo'),
-          )
-        }}
-        cancelDisabled={!bookingBgDirty}
-        saveDisabled={!bookingBgDirty}
-        pending={upsert.isPending}
-      />
-    ) : null
 
   const renderSubTabEditor = ({
     mode,
@@ -1021,10 +1061,10 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           <>
             <AdminFieldWithCharCount
               label="Titolo card"
-              value={tab.label}
+              value={tab.label ?? ''}
               maxLength={SUB_TAB_LABEL_MAX}
               onChange={(label) => patchTab({ label })}
-              placeholder="Nome mostrato al cliente"
+              placeholder="Nome card scorrevole"
               singleLine
             />
           </>
@@ -1044,6 +1084,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                   } else {
                     patchTab({
                       preset_id: undefined,
+                      label: '',
                       hidden_category_keys: [],
                       hidden_item_ids: [],
                     })
@@ -1281,8 +1322,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4">
       {/* Blocco 1 — Intestazione pagina */}
-      <FormSectionFloatingActions actions={headerSectionActions}>
-        <section className="admin-warm-surface rounded-xl border p-5 space-y-4 shadow-sm">
+      <section className="admin-warm-surface rounded-xl border p-5 space-y-4 shadow-sm">
           <h3 className="text-base font-semibold text-slate-800">Intestazione pagina Prenota</h3>
           <div className="space-y-3">
           <div>
@@ -1311,11 +1351,15 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
               id="page_title"
               value={config.page_title}
               onChange={(e) => updateField('page_title', e.target.value)}
+              onBlur={() => headerAutosave.flushField('page_title')}
               placeholder="es. Richiesta Prenotazione"
               maxLength={80}
               className="min-h-[3rem] py-3 font-bold leading-tight sm:min-h-[2.625rem] sm:py-2.5"
               style={getBookingHeaderTextStyle('page_title', headerStyles)}
             />
+            {SETTINGS_AUTOSAVE_ENABLED ? (
+              <FieldAutosaveIndicator status={headerAutosave.fieldStatus.page_title} />
+            ) : null}
             {renderHeaderStyleControls('page_title')}
           </div>
           <div>
@@ -1324,20 +1368,22 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
               id="page_description"
               value={config.page_description}
               onChange={(e) => updateField('page_description', e.target.value)}
+              onBlur={() => headerAutosave.flushField('page_description')}
               placeholder="Breve descrizione mostrata sotto il titolo"
               maxLength={300}
               rows={3}
               className="block w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-400 transition-colors duration-150 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 sm:py-2.5"
               style={getBookingHeaderTextStyle('page_description', headerStyles)}
             />
+            {SETTINGS_AUTOSAVE_ENABLED ? (
+              <FieldAutosaveIndicator status={headerAutosave.fieldStatus.page_description} />
+            ) : null}
             {renderHeaderStyleControls('page_description')}
           </div>
         </div>
       </section>
-      </FormSectionFloatingActions>
 
       {/* Blocco 2 — Le modalità */}
-      <FormSectionFloatingActions actions={modesSectionActions}>
       <section className="admin-warm-surface rounded-xl border p-5 space-y-4 shadow-sm">
         <div className="space-y-1">
           <h3 className="text-base font-semibold text-slate-800">Modalità di prenotazione</h3>
@@ -1538,15 +1584,9 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                       onClick={toggleSavedSubTab}
                                       className="min-w-0 flex-1 text-left"
                                     >
-                                      {tab.display === 'carousel' || !savedOpen ? (
-                                        <span className="block min-w-0 truncate text-xs font-semibold uppercase text-slate-500">
-                                          {getSubTabEditorTitle(tab, tabIdx + 1, false)}
-                                        </span>
-                                      ) : (
-                                        <span className="block min-w-0 truncate text-xs font-semibold uppercase text-slate-500">
-                                          {getSubTabEditorTitle(tab, tabIdx + 1, false)}
-                                        </span>
-                                      )}
+                                      <span className="block min-w-0 truncate text-xs font-semibold uppercase text-slate-500">
+                                        {getSubTabCollapsedRowTitle(tab, tabIdx + 1)}
+                                      </span>
                                     </button>
                                     <div className="flex shrink-0 items-center gap-1">
                                       {tab.display !== 'carousel' ? (
@@ -1616,13 +1656,14 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           })}
         </div>
       </section>
-      </FormSectionFloatingActions>
 
-      {afterBookingModesSection != null && (
-        <FormSectionFloatingActions actions={backgroundSectionActions}>
-          {afterBookingModesSection}
-        </FormSectionFloatingActions>
-      )}
+      <BookingFormPromoSection
+        ref={promoSectionRef}
+        bookingModes={config.booking_modes}
+        onDirtyChange={setPromoDirty}
+      />
+
+      {afterBookingModesSection != null && afterBookingModesSection}
 
       {pageHasUnsaved && (
         <SettingsSaveFooter

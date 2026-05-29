@@ -30,9 +30,10 @@ import { isValidEmail, isValidPhone } from '../utils/validation'
 import { getTodayIso } from '../utils/bookingPublicDateHelpers'
 import { resolveSubTabView } from '../services/bookingFormResolver'
 import {
-  listMenuPromoMessagesForBookingType,
-  listMenuPromoLabelsForBookingType,
+  collectMenuPromoLabelsForSubmit,
+  resolveMenuPromoForBookingView,
 } from '../constants/menuPromo'
+import { useMenuPromoViewTracking } from '../hooks/useMenuPromoViewTracking'
 import { MenuPromoBannerCards } from './MenuPromoBannerCards'
 import { BookingModeCards } from './publicBooking/BookingModeCards'
 import { BookingFormFields } from './publicBooking/BookingFormFields'
@@ -41,8 +42,15 @@ import {
   applyLegacySubTabLabelOverrides,
   DEFAULT_BOOKING_FORM_CONFIG,
 } from '../constants/bookingPublicFormConfig'
-import { BookingSubTabCards } from './publicBooking/BookingSubTabCards'
+import { BookingSubTabCards, SubTabCardIcon } from './publicBooking/BookingSubTabCards'
 import { BOOKING_PUBLIC_CONTENT_WIDTH } from '../constants/bookingPublicFieldStyles'
+import {
+  BOOKING_PUBLIC_FIELD_ATTENTION_CLASS,
+  BOOKING_PUBLIC_FIELD_SCROLL_MARGIN,
+  dispatchBookingMenuComposeCollapse,
+  scrollToBookingPublicError,
+  shouldDismissBookingPublicAttention,
+} from '../utils/bookingPublicFormAttention'
 
 interface BookingRequestFormProps {
   onSubmit?: () => void
@@ -109,6 +117,14 @@ function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+              {item.icon ? (
+                <span
+                  className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white shadow-md backdrop-blur-[1px] sm:right-4 sm:top-4 sm:h-10 sm:w-10"
+                  aria-hidden
+                >
+                  <SubTabCardIcon icon={item.icon} className="h-5 w-5 sm:h-6 sm:w-6" />
+                </span>
+              ) : null}
               {hasOverlay ? (
                 <div className="absolute inset-x-0 bottom-0 p-4 text-left">
                   {cardLabel ? (
@@ -176,6 +192,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   const [selectedPreset, setSelectedPreset] = useState<PresetMenuType>(null)
   const [activeSubTabId, setActiveSubTabId] = useState<string | null>(null)
   const [touchCrossBurst, setTouchCrossBurst] = useState(0)
+  const [composeCollapseNonce, setComposeCollapseNonce] = useState(0)
+  const [attentionFieldKey, setAttentionFieldKey] = useState<string | null>(null)
 
   // Trova il modo attivo in base a booking_type
   const activeMode = formConfig.booking_modes.find(
@@ -526,44 +544,44 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   }, [isPending, isBlocked, isSubmitting, isCheckingAvailability, onIsDisabledChange])
   const { data: menuPromos = [] } = useRestaurantSetting('booking_menu_promos')
 
-  const menuPromoBannerMessages = useMemo(
-    () => listMenuPromoMessagesForBookingType(formData.booking_type ?? 'tavolo', menuPromos),
-    [formData.booking_type, menuPromos],
+  const { resolvedPromo, viewedPromoIdsRef, resetViewedPromos } = useMenuPromoViewTracking({
+    bookingType: formData.booking_type ?? 'tavolo',
+    modeId: activeModeId,
+    subTabId: activeSubTabId,
+    promos: menuPromos,
+  })
+
+  const menuPromoBannerMessages = resolvedPromo?.message?.trim() ? [resolvedPromo.message.trim()] : []
+
+  const clearAttentionField = useCallback(() => {
+    setAttentionFieldKey(null)
+  }, [])
+
+  const runAfterComposeCardsCollapsed = useCallback((callback: () => void) => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(callback)
+      })
+    })
+  }, [])
+
+  const focusFirstValidationIssue = useCallback(
+    (firstErrorKey: string | null) => {
+      setComposeCollapseNonce((value) => value + 1)
+      setAttentionFieldKey(firstErrorKey)
+      dispatchBookingMenuComposeCollapse()
+      if (!firstErrorKey) return
+      runAfterComposeCardsCollapsed(() => {
+        scrollToBookingPublicError(firstErrorKey)
+      })
+    },
+    [runAfterComposeCardsCollapsed],
   )
 
   // Fetch business hours (non-blocking - form works even if loading/fails)
   const { data: businessHours, isLoading: isLoadingHours, error: hoursError } = useBusinessHours()
 
-  // Helper function to scroll to first error field
-  const scrollToError = (errorKey: string) => {
-    // Map error keys to input IDs
-    const fieldIdMap: Record<string, string> = {
-      client_name: 'client_name',
-      client_email: 'client_email',
-      client_phone: 'client_phone',
-      desired_date: 'desired_date',
-      desired_time: 'desired_time',
-      num_guests: 'num_guests',
-      booking_type: 'booking_type',
-      menu: 'menu-section',
-      privacyAccepted: 'privacy-consent'
-    }
-
-    let fieldId = fieldIdMap[errorKey]
-    if (errorKey === 'menu' && fieldId && !document.getElementById(fieldId)) {
-      fieldId = 'booking-sub-tabs-section'
-    }
-    if (fieldId) {
-      const element = document.getElementById(fieldId)
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        // Focus the element if it's an input
-        if (element instanceof HTMLInputElement || element instanceof HTMLSelectElement) {
-          setTimeout(() => element.focus(), 500)
-        }
-      }
-    }
-  }
+  // Helper function to scroll to first error field — vedi bookingPublicFormAttention.ts
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
@@ -714,10 +732,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         draggable: true
       })
 
-      // Scroll to first error field
-      if (firstErrorKey) {
-        scrollToError(firstErrorKey)
-      }
+      focusFirstValidationIssue(firstErrorKey)
     }
 
     return isValid
@@ -792,14 +807,23 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           position: 'top-center',
           autoClose: 6000,
         })
-        const el = document.getElementById('desired_time')
-        el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        focusFirstValidationIssue('desired_time')
         return
       }
     }
 
     // Chiama mutate — il guard server-side in create-booking è la garanzia definitiva
-    const menuPromoLabels = listMenuPromoLabelsForBookingType(formData.booking_type ?? 'tavolo', menuPromos)
+    const finalSubTabPromo = resolveMenuPromoForBookingView({
+      bookingType: formData.booking_type ?? 'tavolo',
+      modeId: activeModeId,
+      subTabId: activeSubTabId,
+      promos: menuPromos,
+    })
+    const menuPromoLabels = collectMenuPromoLabelsForSubmit({
+      viewedPromoIds: viewedPromoIdsRef.current,
+      finalSubTabPromoId: finalSubTabPromo?.id,
+      promos: menuPromos,
+    })
 
     let specialRequests = formData.special_requests?.trim() ?? ''
     if (activeSubTab && !activeSubTab.preset_id && activeSubTab.label.trim()) {
@@ -838,6 +862,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         })
         setSelectedPreset(null)
         setActiveSubTabId(null)
+        resetViewedPromos()
         setPrivacyAccepted(false)
         
         // Reset tutti i flag di submit e rilascia lock
@@ -870,13 +895,28 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     <>
     <form
       id="booking-request-form"
+      noValidate
       onSubmit={handleSubmit}
       className="grid w-full max-w-full grid-cols-1 gap-4 font-bold min-[1256px]:grid-cols-[1fr_min(360px,32%)] min-[1256px]:items-start min-[1256px]:gap-6"
     >
       {/* Tipologia + sottotab: fuori da md:px-2/lg:px-4 — stesso bordo laterale del box header */}
       <div
-        className="col-span-1 flex w-full min-w-0 flex-col space-y-3 min-[1256px]:col-span-2"
+        className={cn(
+          'col-span-1 flex w-full min-w-0 flex-col space-y-3 min-[1256px]:col-span-2',
+          BOOKING_PUBLIC_FIELD_SCROLL_MARGIN,
+          (attentionFieldKey === 'menu' ||
+            attentionFieldKey === 'booking_type') &&
+            BOOKING_PUBLIC_FIELD_ATTENTION_CLASS,
+        )}
         id="booking-sub-tabs-section"
+        onPointerDown={(event) => {
+          if (
+            shouldDismissBookingPublicAttention(event) &&
+            (attentionFieldKey === 'menu' || attentionFieldKey === 'booking_type')
+          ) {
+            clearAttentionField()
+          }
+        }}
       >
         <BookingModeCards
           modes={formConfig.booking_modes}
@@ -908,7 +948,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           }}
         />
         {errors.booking_type && (
-          <p className="text-sm text-red-500">{errors.booking_type}</p>
+          <p className="text-sm font-semibold text-white">{errors.booking_type}</p>
         )}
         {menuPromoBannerMessages.length > 0 && (
           <MenuPromoBannerCards
@@ -959,13 +999,27 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         )}
         {activeSubTab?.display === 'carousel' && <BookingSubTabCarousel subTab={activeSubTab} />}
         {!showMenuSelectionSection && errors.menu && activeModeSubTabs.length > 0 && (
-          <p className="text-sm text-red-500 text-center">{errors.menu}</p>
+          <p className="text-center text-sm font-semibold text-white">{errors.menu}</p>
         )}
       </div>
 
       {showMenuSelectionSection && (
-        <div id="menu-section" className="col-span-1 flex w-full min-w-0 flex-col space-y-6 min-[1256px]:col-span-2">
+        <div
+          id="menu-section"
+          className={cn(
+            'col-span-1 flex w-full min-w-0 flex-col space-y-6 min-[1256px]:col-span-2',
+            BOOKING_PUBLIC_FIELD_SCROLL_MARGIN,
+            attentionFieldKey === 'menu' && BOOKING_PUBLIC_FIELD_ATTENTION_CLASS,
+            'rounded-xl',
+          )}
+          onPointerDown={(event) => {
+            if (shouldDismissBookingPublicAttention(event) && attentionFieldKey === 'menu') {
+              clearAttentionField()
+            }
+          }}
+        >
           <MenuSelection
+            key={`menu-compose-${composeCollapseNonce}`}
             selectedItems={formData.menu_selection?.items || []}
             numGuests={formData.num_guests || 0}
             bookingType={formData.booking_type}
@@ -985,6 +1039,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             menuSelectionLockedOverride={
               activeSubTab ? activeSubTab.is_fixed_menu !== false : undefined
             }
+            composeCollapseKey={String(composeCollapseNonce)}
             onPresetMenuChange={handlePresetMenuChange}
             onMenuChange={({ items, totalPerPerson }) => {
               const numGuests = formData.num_guests || 0
@@ -1016,14 +1071,14 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             }}
           />
           {errors.menu && (
-            <p className="text-sm text-red-500">{errors.menu}</p>
+            <p className="text-sm font-semibold text-white">{errors.menu}</p>
           )}
         </div>
       )}
 
       <div className="col-span-1 min-w-0 w-full max-w-full space-y-6">
       {/* Dati cliente — dopo tipologia e menù */}
-      <div className="flex w-full min-w-0 flex-col space-y-3">
+      <div className="flex w-full min-w-0 flex-col space-y-3 text-start">
         <BookingFormFields
           formData={{
             client_name: formData.client_name,
@@ -1038,6 +1093,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           isLoadingHours={isLoadingHours}
           hoursError={hoursError}
           frostedInputCn={frostedInputCn}
+          attentionFieldKey={attentionFieldKey}
+          onClearAttention={clearAttentionField}
           onFieldChange={(field, value) => {
             setFormData({ ...formData, [field]: value })
           }}
@@ -1053,9 +1110,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           setErrors={(newErrors) => setErrors(newErrors)}
         />
         {errors.slot_availability && (
-          <div className="text-sm text-red-700 font-semibold p-4 rounded-lg bg-red-50 border border-red-200 text-left">
-            {errors.slot_availability}
-          </div>
+          <p className="text-left text-sm font-semibold text-white">{errors.slot_availability}</p>
         )}
         {/* Intolleranze e richieste — sempre sotto data/ora/ospiti, per ogni tipologia */}
         <div className="flex w-full min-w-0 flex-col space-y-6 pt-2">
@@ -1079,6 +1134,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
               }
             }}
             privacyError={errors.privacyAccepted}
+            showPrivacyAttention={attentionFieldKey === 'privacyAccepted'}
+            onPrivacyAttentionInteract={clearAttentionField}
             publicFormFields
           />
         </div>
