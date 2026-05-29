@@ -40,6 +40,27 @@ describe('parseSubTabFromUnknown — show_offer_details_in_summary', () => {
     expect(tab).not.toBeNull()
     expect(tab!.show_offer_details_in_summary).toBeUndefined()
   })
+
+  it('accetta label vuoto sulle card scorrevoli', () => {
+    const tab = parseSubTabFromUnknown({
+      id: 'card-empty',
+      label: '',
+      display: 'cards',
+    })
+    expect(tab).not.toBeNull()
+    expect(tab!.label).toBe('')
+  })
+
+  it('rifiuta carosello senza label', () => {
+    expect(
+      parseSubTabFromUnknown({
+        id: 'carousel-empty',
+        label: '',
+        display: 'carousel',
+        carousel_items: [{ image_url: 'https://example.com/a.jpg' }],
+      }),
+    ).toBeNull()
+  })
 })
 
 describe('resolveCarouselSummaryDisplay / sticky mini-pannello', () => {

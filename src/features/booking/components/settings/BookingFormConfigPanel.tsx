@@ -168,12 +168,23 @@ function newSubTab(display: SubTab['display']): SubTab {
   return {
     id: crypto.randomUUID(),
     display,
-    label: display === 'carousel' ? 'Carosello' : 'Card scorrevole',
+    label: display === 'carousel' ? 'Carosello' : '',
     icon: 'utensils',
     ...(display === 'cards'
       ? { hidden_category_keys: [], hidden_item_ids: [] }
       : {}),
   }
+}
+
+/** Riga collassata lista card salvate (non carosello). */
+function getSubTabCollapsedRowTitle(tab: SubTab, number: number): string {
+  if (tab.display === 'carousel') {
+    const name = tab.label?.trim()
+    return name || `Carosello ${number}`
+  }
+  const trimmed = tab.label?.trim() ?? ''
+  const suffix = `Card ${number}`
+  return trimmed ? `${trimmed} · ${suffix}` : suffix
 }
 
 /**
@@ -740,7 +751,11 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       const name = tab.label?.trim()
       return name || `Carosello ${number}`
     }
-    if (isDraft) return `Nuova Card ${number}`
+    if (isDraft) {
+      const trimmed = tab.label?.trim() ?? ''
+      if (trimmed) return `${trimmed} · Card ${number}`
+      return `Nuova card · Card ${number}`
+    }
     return `Card ${number}`
   }
   const headerControlClass =
@@ -1021,10 +1036,10 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           <>
             <AdminFieldWithCharCount
               label="Titolo card"
-              value={tab.label}
+              value={tab.label ?? ''}
               maxLength={SUB_TAB_LABEL_MAX}
               onChange={(label) => patchTab({ label })}
-              placeholder="Nome mostrato al cliente"
+              placeholder="Nome card scorrevole"
               singleLine
             />
           </>
@@ -1044,6 +1059,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                   } else {
                     patchTab({
                       preset_id: undefined,
+                      label: '',
                       hidden_category_keys: [],
                       hidden_item_ids: [],
                     })
@@ -1538,15 +1554,9 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                                       onClick={toggleSavedSubTab}
                                       className="min-w-0 flex-1 text-left"
                                     >
-                                      {tab.display === 'carousel' || !savedOpen ? (
-                                        <span className="block min-w-0 truncate text-xs font-semibold uppercase text-slate-500">
-                                          {getSubTabEditorTitle(tab, tabIdx + 1, false)}
-                                        </span>
-                                      ) : (
-                                        <span className="block min-w-0 truncate text-xs font-semibold uppercase text-slate-500">
-                                          {getSubTabEditorTitle(tab, tabIdx + 1, false)}
-                                        </span>
-                                      )}
+                                      <span className="block min-w-0 truncate text-xs font-semibold uppercase text-slate-500">
+                                        {getSubTabCollapsedRowTitle(tab, tabIdx + 1)}
+                                      </span>
                                     </button>
                                     <div className="flex shrink-0 items-center gap-1">
                                       {tab.display !== 'carousel' ? (

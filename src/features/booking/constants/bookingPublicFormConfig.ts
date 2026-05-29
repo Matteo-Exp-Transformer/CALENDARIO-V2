@@ -362,7 +362,8 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
       : ('cards' as const)
   const id = typeof o.id === 'string' && o.id.trim() ? o.id.trim() : null
   const label = typeof o.label === 'string' ? o.label.trim() : ''
-  if (!id || !label) return null
+  if (!id) return null
+  if (!label && display === 'carousel') return null
 
   const icon =
     typeof o.icon === 'string' && SUB_TAB_ICONS.includes(o.icon as SubTabIcon)
