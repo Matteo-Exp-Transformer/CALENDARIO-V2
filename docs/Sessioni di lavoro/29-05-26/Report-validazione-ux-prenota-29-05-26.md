@@ -2,7 +2,7 @@
 
 **Modalità sessione:** standard  
 **Scope:** solo Pagina Prenota pubblica (`/prenota/:slug`)  
-**Esito:** ✅ **Chiuso — QA Matteo + revisione Verifica** (validazione + leggibilità testi)  
+**Esito:** ✅ **Chiuso — QA Matteo + revisione Verifica** (validazione + leggibilità testi); **post-fix palette striscia** confermato da Matteo («ottimo funziona»)  
 **Revisione:** [Report-revisione-validazione-ux-prenota-29-05-26.md](Report-revisione-validazione-ux-prenota-29-05-26.md) — **Approva con riserve**  
 **Replica altri form:** [FORM_VALIDATION_ATTENTION_PATTERN.md](../../per-ui-design-skill/FORM_VALIDATION_ATTENTION_PATTERN.md)
 
@@ -19,6 +19,7 @@
 | Polish chat esecutore | Testi errore/privacy/menù bianchi; pulse visibile su Ospiti/Data |
 | Revisione Verifica | Approva A1–B; validate 217 test; QA browser 834/900/1280 |
 | Commit | Codice `src/` + doc pattern (questa sessione) |
+| Fix palette striscia (sessione light, stesso giorno) | Prop `publicFormLightTextOnDarkBackground`; bianco solo full-page; QA Matteo OK |
 
 **Velocità:** il fix definitivo è stato rapido una volta individuato `noValidate`; i giri precedenti erano sintomi dello stesso blocco.
 
@@ -32,7 +33,7 @@ Quando prova a inviare la prenotazione con dati mancanti o errati:
 2. La pagina **scorre** verso il primo problema (nome, menù, privacy, …).
 3. Il campo lampeggia in **arancione** (colore tema) finché non ci clicca — poi smette.
 4. Con una categoria ingredienti aperta, scrollando la pagina il pannello **resta agganciato** alla card.
-5. **Messaggi di errore**, testo privacy e riepilogo menù («Hai selezionato : …») sono in **bianco** — leggibili sullo sfondo scuro della pagina.
+5. **Messaggi di errore**, testo privacy e riepilogo menù («Hai selezionato : …») usano colori **adatti allo sfondo**: **bianco** solo con foto **pagina intera**; con **striscia laterale** o sfondo crema/gradiente restano **marrone e rosso** (leggibili su `#faf7f1`).
 
 **Storage DB:** nessun cambiamento — solo stato UI in memoria React nel browser.
 
@@ -43,9 +44,9 @@ Quando prova a inviare la prenotazione con dati mancanti o errati:
 | Dove nell’app | Cosa vede il cliente |
 |---------------|----------------------|
 | **Pagina Prenota** — submit con campi vuoti | Toast di errore, scroll automatico al primo campo, lampeggio arancione sul campo da correggere. |
-| **Sezione menù** — menù fisso preselezionato | Riepilogo «Hai selezionato : …» + titolo + descrizione in **testo bianco**. |
-| **Campi cliente** — errori sotto nome, ora, ospiti, … | Messaggi tipo «Nome obbligatorio» in **testo bianco** (niente riquadri rossi chiari). |
-| **Blocco privacy** — in fondo al form | Etichetta, link Privacy Policy, nota obbligatori ed eventuale errore in **testo bianco**. |
+| **Sezione menù** — menù fisso preselezionato | Riepilogo «Hai selezionato : …» — **bianco** su foto full-page; **marrone** su striscia/crema. |
+| **Campi cliente** — errori sotto nome, ora, ospiti, … | **Rosso** su sfondo chiaro; **bianco** su foto full-page (data/ora possono avere box rosso chiaro su crema). |
+| **Blocco privacy** — in fondo al form | Link arancione + testo marrone su crema; bianco + link bianchi solo su full-page. |
 
 ---
 
@@ -60,6 +61,7 @@ Quando prova a inviare la prenotazione con dati mancanti o errati:
 | 5 | **Polish lampeggio** — colore **arancione** (`--color-warm-orange`); pulse spostato sul **wrapper esterno** del campo (Ospiti, Data, Ora, input inset) per visibilità anche con bordo rosso errore. |
 | 6 | **Polish leggibilità giro 4** — testi privacy, riepilogo menù fisso e messaggi errore form → **bianco** su sfondo scuro; rimossi box rossi chiari su errori data/ora/slot. |
 | 7 | **Conferma QA Matteo** — chiusura card, scroll, lampeggio, ancoraggio overlay; iterazioni colore testi fino a bianco. |
+| 8 | **Fix palette striscia** — bianco era applicato anche su crema `#faf7f1` (striscia laterale); prop `publicFormLightTextOnDarkBackground` da `BookingRequestPage`; helper in `bookingPublicFieldStyles.ts`; layout inset (`publicFormFields`) separato dalla palette. |
 
 ---
 
@@ -86,23 +88,33 @@ Il browser intercettava il submit **prima** di `onSubmit` → `validate()` e `fo
 - Classe: `.booking-public-field-attention` in `index.css`
 - Colore: **`var(--color-warm-orange)`** (arancione tema, non rosso errore)
 - Applicato sul **contenitore esterno** (`data-booking-public-field-anchor`), non sul riquadro interno — così Ospiti e altri campi lampeggiano anche quando c’è bordo rosso `hasError`
-- Il bordo rosso del campo e i messaggi testo bianchi restano per segnalare l’errore; il pulse arancione indica «clicca qui per correggere»
+- Il bordo rosso del campo e i messaggi errore (rossi o bianchi a seconda dello sfondo pagina) segnalano l’errore; il pulse arancione indica «clicca qui per correggere»
 - `prefers-reduced-motion`: ring arancione statico, senza animazione
 
 ---
 
-## Leggibilità testi (giro 4)
+## Leggibilità testi (giro 4 + fix striscia)
 
-Sullo sfondo scuro della Pagina Prenota, testi marrone/rosso/arancione erano poco leggibili.
+**Giro 4 (sessione validazione):** su sfondo **full-page** foto, testi marrone/rosso erano poco leggibili → introdotto bianco.
 
-| Elemento | Componente | Stile pubblico |
-|----------|------------|----------------|
-| «Hai selezionato :» + titolo menù + descrizione | `MenuSelection` (`publicFormLayout`) | `text-white` / `text-white/90` |
-| Errori sotto i campi (nome, ospiti, …) | `BookingFormFields` | `text-white font-semibold` |
-| Errori menù, tipologia, slot | `BookingRequestForm` | `text-white font-semibold` |
-| Privacy + link + nota obbligatori + errore | `DietaryRestrictionsSection` (`publicFormFields`) | `text-white` |
+**Fix striscia (stesso giorno):** il bianco era legato a `publicFormLayout` / `publicFormFields` (sempre true su `/prenota`) e finiva anche sulla colonna **crema** con striscia laterale (`public_booking_strip_photo`) — illeggibile. Ora la palette dipende da un solo booleano calcolato in pagina:
 
-**Nota:** le card menù con sfondo bianco (`bg-white/85`, es. «Crea il tuo menù») **non** sono state alterate — solo i blocchi senza sfondo chiaro.
+`publicFormLightTextOnDarkBackground = !showPhotoStrip && isFullPagePhoto`
+
+| Layout | Sfondo colonna form | Palette errori / privacy / «Hai selezionato» |
+|--------|---------------------|---------------------------------------------|
+| Striscia laterale | Crema `#faf7f1` | warm-wood, `text-red-500` / `text-red-600`, link `text-warm-orange` |
+| Pagina intera (full-01…06) | Foto viewport | `text-white` |
+| Senza striscia, gradiente/tile/crema | Chiaro | come striscia |
+
+| Elemento | Componente | Stile (condizionato) |
+|----------|------------|----------------------|
+| «Hai selezionato :» + titolo + descrizione | `MenuSelection` | `publicFormLightTextOnDarkBackground` |
+| Errori campi cliente | `BookingFormFields` | helper `publicFormFieldErrorClass` / `publicFormDateTimeErrorClass` |
+| Errori menù, tipologia, slot | `BookingRequestForm` | helper `publicFormSectionErrorClass` / `publicFormSlotAvailabilityErrorClass` |
+| Privacy + link + obbligatori | `DietaryRestrictionsSection` | prop `lightTextOnDarkBackground` (layout inset resta `publicFormFields`) |
+
+**Nota:** card menù con `bg-white/85` e titoli **dentro** le card ingredienti su foto restano invariati (`text-white` sulle foto delle card).
 
 ---
 
@@ -118,8 +130,10 @@ Sullo sfondo scuro della Pagina Prenota, testi marrone/rosso/arancione erano poc
 | `BookingFormFields.tsx` | attenzione per campo; messaggi errore bianchi |
 | `BookingPublicInsetField.tsx` | anchor scroll + pulse su wrapper esterno |
 | `BookingPublicDateTimePickers.tsx` | idem date/ora + pulse esterno |
-| `DietaryRestrictionsSection.tsx` | privacy + pulse; testi bianchi su form pubblico |
+| `DietaryRestrictionsSection.tsx` | privacy + pulse; palette condizionata (`lightTextOnDarkBackground`) |
 | `index.css` | animazione pulse arancione |
+| `BookingRequestPage.tsx` | calcolo e passaggio `publicFormLightTextOnDarkBackground` |
+| `bookingPublicFieldStyles.ts` | helper palette errori (`publicFormFieldErrorClass`, …) |
 
 ---
 
@@ -131,7 +145,9 @@ Sullo sfondo scuro della Pagina Prenota, testi marrone/rosso/arancione erano poc
 | QA browser locale — submit nome vuoto | ✅ toast, scroll, pulse |
 | QA Matteo — chiusura card + scroll + lampeggio | ✅ **Approvato** |
 | QA Matteo — ancoraggio overlay scroll | ✅ Accettabile |
-| QA Matteo — leggibilità privacy / errori / riepilogo menù | ✅ Richiesta bianco applicata |
+| QA Matteo — leggibilità privacy / errori / riepilogo menù | ✅ Bianco su full-page (giro 4) |
+| QA Matteo — fix palette con striscia laterale attiva | ✅ **«Ottimo funziona»** (sessione light) |
+| `npm run validate` post-fix palette | ✅ OK (217 test) |
 
 ---
 
@@ -145,7 +161,8 @@ Sullo sfondo scuro della Pagina Prenota, testi marrone/rosso/arancione erano poc
 | Lag overlay | portal + setState per frame | Sync DOM via rAF |
 | Privacy non scrollava | id DOM errato in mappa | `privacy-consent-dietary` |
 | Ospiti poco visibile al pulse | Classe attenzione sul riquadro interno con bordo rosso | Pulse sul wrapper esterno |
-| Testi privacy/errori/menù illeggibili | Colori warm-wood / rosso su sfondo scuro | Testo bianco solo su form pubblico |
+| Testi privacy/errori/menù illeggibili su full-page | Colori warm-wood / rosso su foto scura | Bianco se `publicFormLightTextOnDarkBackground` |
+| Testi bianchi illeggibili su striscia/crema | Bianco legato a `publicFormFields` senza distinguere layout | Prop da `BookingRequestPage`; warm/rosso su sfondo chiaro |
 
 ---
 
@@ -154,7 +171,7 @@ Sullo sfondo scuro della Pagina Prenota, testi marrone/rosso/arancione erano poc
 | File | Modifica | Perché |
 |------|----------|--------|
 | `FORM_VALIDATION_ATTENTION_PATTERN.md` | **nuovo** — guida replica su altri form/modali | FU-010, riferimenti codice |
-| `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` | §9 validazione submit + link pattern | agenti su Prenota |
+| `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` | §9 validazione + palette condizionale full-page | agenti su Prenota |
 | `FOLLOW_UP.md` | FU-010 aperto; FU-011/012/013 chiusi | debito post-sessione |
 | `SESSION_LOG.md` | righe esecutore + revisione | tracciamento |
 | `Report-revisione-validazione-ux-prenota-29-05-26.md` | report Verifica | chiusura ciclo |
@@ -193,3 +210,21 @@ Per **AdminBookingForm**, modali walk-in/tavolo, ecc.:
 ## Scalabilità multi-tenant
 
 **OK** — nessuna query Supabase; loop rAF per card aperta è per istanza browser locale.
+
+---
+
+## Fix palette striscia (29-05-26, sessione light)
+
+**Problema:** il giro 4 aveva messo testo bianco ovunque il form pubblico usasse `publicFormFields` / `publicFormLayout`, ma con **striscia laterale** la colonna form è su crema `#faf7f1` (`STRIP_MODE_PAGE_BG` in `BookingRequestPage.tsx`) — errori e privacy risultavano invisibili.
+
+**Soluzione:** un booleano dalla pagina, non dal form:
+
+- `publicFormLightTextOnDarkBackground={!showPhotoStrip && isFullPagePhoto}`
+- Propagato a `BookingRequestForm` → `BookingFormFields`, `DietaryRestrictionsSection`, `MenuSelection`
+- Classi centralizzate in `bookingPublicFieldStyles.ts`
+
+**Invariato:** lampeggio arancione, `noValidate`, chiusura card, scroll errore, ancoraggio overlay portal.
+
+**Storage:** nessun cambio — solo `restaurant_settings` già letti (`public_booking_strip_photo`, `public_booking_page_background`).
+
+**Esito QA:** Matteo — «ottimo funziona» su striscia; full-page mantiene bianco come giro 4.
