@@ -26,79 +26,56 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## In attesa di decisione
 
-### [IN ATTESA] Copy verbatim / «mostra solo questo testo» → delta esplicito, non riscrivere tutto il blocco
-- **Pattern osservato:** 1 (29-05-26 promo modale). Matteo chiede nuovo intro + chiusura; agente semplifica anche l’elenco rimuovendo `tipologia → «promo esistente»`. Matteo: «non ti ho detto di cambiarlo».
-- **Automatizzabile con certezza:** applicare letteralmente **solo** le stringhe/frasi citate; lasciare invariati gli elementi UI non menzionati (es. formato riga elenco).
-- **Meglio lasciare manuale:** se la richiesta sembra sostituire «tutto il testo del modale», chiedere conferma su elenco/dettagli secondari.
-- **Livello suggerito:** 2 (cautela).
-- **Token risparmiati per Matteo:** evita giro correzione + frustrazione.
-- **Esito / data:** in attesa · report promo conflitto 29-05-26.
+### In attesa «segnala conflitto scalabilità multi-tenant» → sezione report + COMUNICAZIONE
+- **Pattern osservato:** Matteo vuole sapere se le sue decisioni (autosave, guard, persistenza) confliggono con N ristoranti / multi-azienda.
+- **Automatizzabile con certezza:** sezione report **Scalabilità multi-tenant** (ok/attenzione/conflitto) quando task tocca persistenza o state admin condiviso.
+- **Meglio lasciare manuale:** giudizio sul conflitto reale.
+- **Livello suggerito:** 2
+- **Esito / data:** FU-006 aperto; in attesa promozione regola report.
 
-### [IN ATTESA] «non vedo il modal» → usare Modal in-app, non window.confirm
-- **Pattern osservato:** 1 (29-05-26 promo conflitto). Dopo implementazione con `window.confirm`, Matteo non percepisce il dialogo; fix con `Modal.tsx` → «ottimo funziona».
-- **Automatizzabile con certezza:** in task admin con «finestra di conferma», default = componente `Modal` con due pulsanti; `window.confirm` solo se esplicitamente richiesto per parity legacy.
-- **Meglio lasciare manuale:** scelta copy e layout modale specifico per feature.
-- **Livello suggerito:** 1 (automatico) per la scelta Modal vs confirm browser.
-- **Token risparmiati per Matteo:** evita un giro «non funziona» + fix.
-- **Esito / data:** in attesa · collegato FU-003 e report promo conflitto 29-05-26.
-
-### [IN ATTESA] «lavoro ok» → conferma successo implementazione (spesso seguito da report)
-- **Pattern osservato:** 1 (29-05-26). Matteo chiude una sessione Esecuzione con «lavoro ok» dopo
-  aver verificato (o fidandosi del riepilogo agente); nella stessa frase o subito dopo chiede spesso
-  «fai report finale» e dettagli comunicazione.
-- **Automatizzabile con certezza:** trattare «lavoro ok» come **conferma che il codice/task è accettato**
-  (equivalente a «funziona» / «perfetto» per il protocollo fine-chat); **non** sostituisce da solo
-  «fai report finale» se Matteo non lo dice — ma se dice entrambi, eseguire report + OSSERVAZIONI + PROPOSTE.
-- **Meglio lasciare manuale:** commit, push, migrazioni DB — non inferire da «lavoro ok» solo.
-- **Livello suggerito:** 1 (automatico) per la conferma; resta Liv.1 anche «fai report finale» quando esplicito.
-- **Token risparmiati per Matteo:** una parola invece di ripetere «va bene così, chiudi sessione».
-- **Esito / data:** in attesa · origine report 29-05-26 card scorrevole titolo admin.
-
-### [IN ATTESA] «comportamenti sono ok» · «non è un problema» · «voglio che cambi (come ti ho detto)» → cambio intenzionale, non bugfix
-- **Pattern osservato:** 1 forte (29-05-26). Matteo corregge l'agente che aveva inquadrato la richiesta
-  come fix/regressione: il comportamento attuale è accettabile; serve un **cambio mirato** al comportamento
-  descritto (es. smettere di disegnarsi sopra altri blocchi UI).
-- **Automatizzabile con certezza:** in prompt/report usare linguaggio «comportamento richiesto / cambio UX»,
-  non «bug / ripristino / regressione»; obiettivo prompt = stato desiderato esatto, non diagnosi.
-- **Meglio lasciare manuale:** decidere se il cambio tocca anche copy o skill di prodotto.
-- **Livello suggerito:** 2 (cautela) — se ambiguo se vuole mantenere qualche aspetto del comportamento attuale, una domanda.
-- **Token risparmiati per Matteo:** evita riformulazioni e prompt esecutore sbagliati.
-- **Esito / data:** in attesa · origine report 29-05-26 prepara-prompt Prenota stacking.
-
-### [IN ATTESA] «compila report … comunicazione … vocabolario (solo sicuro) … annota i miei prompt» → chiusura meta sessione
-- **Pattern osservato:** 1 (29-05-26). Dopo sessione prepara-prompt (o simili senza codice), Matteo chiede
-  report dettagliato su comunicazione, proposte vocabolario **senza junk**, citazione verbatim dei suoi prompt.
-- **Automatizzabile con certezza:** generare report in `Sessioni di lavoro/GG-MM-AA/` con sezione «Dati comunicazione»
-  completa + sottosezione «Prompt di Matteo (annotati)» + aggiornare `OSSERVAZIONI.md`; candidate solo in `PROPOSTE.md`.
-- **Meglio lasciare manuale:** promozione voci in `VOCABOLARIO.md` (solo Matteo).
-- **Livello suggerito:** 2 (cautela) — estende «fai report finale» quando la sessione è meta/comunicazione, non implementazione.
-- **Token risparmiati per Matteo:** una richiesta invece di ripetere struttura report + regole anti-junk.
-- **Esito / data:** in attesa · origine report 29-05-26.
-
-### [IN ATTESA] «revisiona [lavoro X] e se è ok committa» → valida con i test e committa
-- **Pattern osservato:** 1 forte (28-05). Matteo delega la revisione del lavoro di altri agenti
-  fidandosi della validazione automatica come prova.
-- **Automatizzabile con certezza:** eseguire `npm run validate` + check import rotti come criterio
-  oggettivo di "ok"; se verde, committare con messaggio che cita l'esito della revisione.
-- **Meglio lasciare manuale:** se i test passano ma noti un difetto logico (come nel caso PWA),
-  fermarsi e segnalarlo prima di committare — il "verde" non basta sempre.
-- **Livello suggerito:** 2 (cautela) — di solito procedi, ma con lo stop sui difetti logici.
-- **Token risparmiati per Matteo:** medi.
-- **Esito / data:** in attesa.
-
-### [IN ATTESA] azioni strutturali rischiose → impatto + AskUserQuestion prima di agire
-- **Pattern osservato:** 2 (spostare 77 file, rinominare cartella gitignored). Matteo vuole capire
-  l'impatto e decidere, non subire un'azione irreversibile.
-- **Automatizzabile con certezza:** prima di spostamenti di massa / rename / azioni che toccano
-  git tracking o privacy, misurare l'impatto (quanti link, gitignore) e proporre opzioni con dati.
-- **Meglio lasciare manuale:** la decisione finale è sempre sua.
-- **Livello suggerito:** 1 (automatico) — è una salvaguardia, mai dannosa.
-- **Token risparmiati per Matteo:** alti — evita danni e rilavorazioni.
-- **Esito / data:** in attesa.
+### In attesa «tutto fatto» come chiusura ciclo multi-agente
+- **Pattern osservato:** Matteo dice «tutto fatto» a fine catena prepara → esecuzione → (revisione) e chiede raccolta comunicazione + commit + report (29-05-26 salvataggio admin).
+- **Automatizzabile con certezza:** agente prepara-prompt a valle (o esecutore con conferma) aggiorna report ciclo, OSSERVAZIONI, PROPOSTE, SESSION_LOG; commit codice + docs separati; **non** promuove voci vocabolario.
+- **Meglio lasciare manuale:** giudizio «approva / riserve» se QA browser incompleto.
+- **Livello suggerito:** 2 — trattare come trigger chiusura documentale, non come «lavoro ok» sul solo codice.
+- **Esito / data:** in attesa — distinguere da voce Liv.1 «lavoro ok» (task singolo).
 
 ---
 
 ## Archivio (decise)
+
+### ✅ ACCETTATA (29-05-26) «mockup HTML per scelta flusso UX» → PREPARA_PROMPT §1.B
+- **Pattern osservato:** Matteo: «comodissimo», «mi serve quasi sempre» per scegliere flusso/UI prima di implementare (ciclo salvataggio admin).
+- **Automatizzabile:** prepara-prompt propone o consegna HTML multi-stato (tab oggi/proposta/modale); file es. `mockup-*.html` in root ok.
+- **Non in VOCABOLARIO Liv.1** finché Meta non promuove — regola già in `PREPARA_PROMPT_SKILL.md` §1.B.
+- **Esito / data:** 29-05-26 codificata; esempio `mockup-salvataggio.html`.
+
+### ✅ ACCETTATA (29-05-26) Modalità sessione light / standard / deep → regola attiva (PREPARA_PROMPT § 1.A + APP_CONTEXT § 7.1)
+- Classificazione interna (no parola di Matteo): prepara-prompt assegna light/standard/deep e la scrive nel prompt; decide quanto protocollo di chiusura applicare. **Deep automatico** su: DB/prod/RLS, file LOCK, >1 view o nuovo componente, auth/login/pagamenti. **L'esecutore può solo alzare, mai abbassare.** Risolve il rischio #1 (sistema troppo procedurale: oggi ogni task fa il protocollo deep). Origine: analisi agente skill system v0 + decisione Matteo 29-05-26.
+
+### ✅ ACCETTATA (29-05-26) «lavoro ok» → VOCABOLARIO Liv. 1
+- Conferma che il task è accettato; non avvia da solo report/commit. In `VOCABOLARIO.md`.
+
+### ✅ ACCETTATA (29-05-26) «finestra/dialog di conferma» → VOCABOLARIO Liv. 1
+- Default = componente `Modal` in-app, mai `window.confirm` browser. In `VOCABOLARIO.md`. Lega a FU-003.
+
+### ✅ ACCETTATA (29-05-26) «comportamenti ok ma voglio che cambi» → VOCABOLARIO Liv. 2
+- Cambio intenzionale, non bugfix. Linguaggio «cambio UX» non «bug/regressione». In osservazione (Liv.2).
+
+### ✅ ACCETTATA (29-05-26) «compila report … comunicazione … annota prompt» → VOCABOLARIO Liv. 2
+- Chiusura sessione meta: report Dati comunicazione + prompt verbatim + OSSERVAZIONI; candidate only. In osservazione (Liv.2).
+
+### ✅ ACCETTATA (29-05-26) «revisiona [lavoro] e se ok committa» → VOCABOLARIO Liv. 2
+- Valida con `npm run validate`, committa se verde, MA fermati sui difetti logici anche a test verdi. In osservazione (Liv.2).
+
+### ✅ ACCETTATA (29-05-26) Report unificato ciclo multi-agente → regola attiva (APP_CONTEXT § 7.1)
+- Da preferenza a regola: cicli dichiarati multi-agente (prepara → esegui → revisiona) usano un solo `Report-ciclo-<tema>-GG-MM-AA.md`, aggiornato da ogni ruolo. Codificata in § 7.1.
+
+### ✅ ACCETTATA (29-05-26) Copy verbatim → Nota in COMUNICAZIONE_UTENTE_SKILL
+- Quando Matteo incolla testo da applicare letterale: cambiare solo le stringhe citate, lasciare invariato il resto; se sembra sostituzione totale, chiedere. Codificata nello skill comunicazione.
+
+### ✅ ACCETTATA (29-05-26) Freno azioni strutturali rischiose → regola attiva (PREPARA_PROMPT § 2)
+- Prima di spostamenti di massa / rename / azioni irreversibili: misurare impatto + AskUserQuestion con opzioni, mai eseguire d'impulso. Salvaguardia automatica, nessuna parola-trigger.
 
 ### ✅ ACCETTATA (28-05-26) «fai report finale» → VOCABOLARIO Liv. 1
 - Flusso di fine-chat (report + skill + proposta commit) **solo su questo termine esplicito**, non
@@ -120,6 +97,15 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ### ❌ RIMOSSA (28-05-26) «devo farlo io ogni volta?»
 - Era stata aggiunta a Liv. 2, poi Matteo l'ha rimossa: non la dice abbastanza spesso per ora.
+
+### In attesa «sessione Verifica mappatura Impostazioni ↔ Prenota» → template + vocabolario
+- **Pattern osservato:** Matteo incolla coppie DOM `admin -- prenota`; agente Verifica traccia `setting_key`, hook, esito OK/KO (29-05-26, ~30 coppie).
+- **Automatizzabile con certezza:** template report con colonne fisse + sezione procedura/prompt; checklist gap «campo admin non renderizzato in Prenota»; rimando APP_CONTEXT riga Pagina Prenota.
+- **Meglio lasciare manuale:** coppie DOM da ispezionare; giudizio KO vs parziale.
+- **Livello suggerito:** 2 — «controverifica mappatura» / «mappatura impostazioni prenota» → profilo Verifica + report template.
+- **Termini candidati Liv.2:** Anagrafica Azienda, Personalizza form, Card scorrevole, TIPO sidebar, Nome promo (admin) vs Testo promo (Prenota), Filtro categorie/ingredienti — tabella nel report mappatura 29-05-26.
+- **Token risparmiati:** meno re-spiegazioni storage `restaurant_settings` vs JSON config.
+- **Esito / data:** in attesa — proposta da report mappatura 29-05-26.
 
 ### ✅ ACCETTATA (28-05-26) «scalabile e pulita / no parti obsolete» → VOCABOLARIO Liv. 1
 - Preferisci soluzioni durevoli, segnala cosa eviti. Salita in `VOCABOLARIO.md`.

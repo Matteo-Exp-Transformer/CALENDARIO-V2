@@ -62,12 +62,38 @@ leggero: ti basano skill + archivio per fiutare incongruenze, regressioni e LOCK
 
 Dal flusso di Matteo deduci:
 - **Profilo** (APP_CONTEXT § 0.0): Esecuzione / Verifica / Meta.
-- **Modalità consigliata**:
+- **Modalità plan/ask** (come avviare l'agente):
   - **plan** quando il task è non banale, tocca più aree, ha decisioni di prodotto/UX aperte, o
     rischia di toccare un LOCK → l'agente deve pianificare e fare domande prima di agire.
   - **ask** (agente normale che esegue) quando il task è circoscritto, chiaro, basso rischio.
 - Non imponi tu il profilo nel prompt: lo dedurrà l'agente di lavoro da § 0.0. Ma **suggerisci**
   a Matteo la modalità (es. «conviene avviarlo in plan mode») dentro o accanto al prompt.
+
+#### Peso della sessione: light / standard / deep (classifica QUI)
+
+Stima quanto **protocollo** merita il task e **scrivilo nel prompt** come prima riga
+(es. `Modalità: standard`). Serve a non far pagare a ogni fix il costo di chiusura completo. È una
+classificazione interna: Matteo non deve dire nessuna parola — gliela comunichi tu in una riga.
+
+| Modalità | Quando | Cosa comporta a fine task (APP_CONTEXT § 7) |
+|----------|--------|---------------------------------------------|
+| **light** | fix piccolo, 1 file/zona, basso rischio, nessun trigger deep | niente checklist apertura; risposta breve; **no file report dedicato** → 1 riga in `SESSION_LOG.md`; niente sezione Dati comunicazione obbligatoria; § 7.2 solo se hai toccato una skill |
+| **standard** | feature o fix normale, una zona, qualche superficie UI | routing + contesto della zona; **report normale** con Dati comunicazione; § 7.2 delle aree toccate |
+| **deep** | vedi trigger sotto | protocollo completo: checklist apertura/chiusura, **report esaustivo** (Dati comunicazione + Derivazione errori), follow-up, § 7.2 |
+
+**Trigger DEEP obbligatori** (scatta deep a prescindere dalla dimensione apparente del task — basta uno):
+- **DB / migrazioni / produzione / RLS / policy** (un errore qui costa caro);
+- **file LOCK** (ADMIN_CLASSIC, griglia Prenota, TenantContext, migrazioni, ecc. — APP_CONTEXT § 4);
+- **più di una view** (responsive 375/900/1256) **o un nuovo componente/comportamento**;
+- **auth / login / pagamenti** (flussi identità e commerciali).
+
+Se nessun trigger deep scatta: **light** se è davvero piccolo (1 file, basso rischio), altrimenti
+**standard**. Nel dubbio fra due livelli, scegli il più alto.
+
+> **L'esecutore può solo ALZARE la modalità, mai abbassarla.** Se un task partito `light`/`standard`
+> si rivela più rischioso in corsa (scopre un LOCK, tocca il DB, serve una seconda view), l'agente di
+> lavoro **sale** al livello superiore e lo segnala nel report. Non può scendere: nel dubbio ci si
+> protegge. Scrivi questa regola nel prompt insieme alla modalità.
 
 ### B. Il prompt (output principale)
 
@@ -108,6 +134,15 @@ parole usare, fai domande per definirne di nuove e, quando Matteo concorda una p
 salvala subito in `VOCABOLARIO.md`.
 
 Scrivi il prompt come blocco copia-incolla. Niente fronzoli attorno.
+
+**Mockup visivo per scelta flusso UX (29-05-26).** Quando Matteo deve **scegliere tra tipi di
+flusso utente o layout UI** (salvataggio, modali, footer, wizard, ecc.) e non ha ancora deciso,
+**proponi o produci un mockup HTML stilizzato** auto-contenuto (come `mockup-salvataggio.html`):
+tab o stati cliccabili (oggi / proposta / modale / varianti), wireframe leggero, copy in italiano.
+Consegnalo **in chat** (blocco HTML copia-incolla) o come file in root/repo se Matteo lo aprirà
+spesso. Non sostituisce il prompt esecutore: serve a **allineare la decisione prima** di scrivere
+il prompt di implementazione. Pattern osservato: «mi viene comodo vedere visivamente» → riduce
+giri di chat e reinterpretazioni dell'agente esecutore.
 
 ### C. Domande
 
@@ -154,6 +189,19 @@ Passa il flusso di Matteo attraverso questi controlli, basandoti su skill + arch
   richiama nel prompt la RULE «UI leggera» (APP_CONTEXT § 4): controllo vicino al campo che modifica,
   help/anteprima **sotto il controllo stesso**, mai sul campo accanto; niente blocchi informativi
   separati. Regola generale, non un blocco per ogni componente — basta citarla quando pertinente.
+- **Conflitto con un prompt/report precedente** (salvaguardia, sempre attiva): se la richiesta di
+  Matteo **contraddice** un prompt o un report già prodotto sullo stesso tema (es. ieri «non deve
+  passare sopra», oggi «voglio che passi sopra»), **segnalalo subito a Matteo in chat** — una riga:
+  «Attenzione: questo contraddice il prompt/report precedente che diceva X. Confermi il nuovo
+  intento?». Non assumere il vecchio intento e non assumere il nuovo: chiedi quale vale ora. È il
+  caso 29-05-26 (overlay invertito in 12h) in `Comunicazione-Skill/ERRORI_PROCESSO.md`. NON serve
+  produrre tabelle di timeline — basta la segnalazione esplicita del conflitto.
+- **Azione strutturale rischiosa** (freno, sempre attivo): se il lavoro implica spostamenti di
+  massa, rename di cartelle/file tracciati da git, azioni su `.gitignore`/privacy o qualsiasi
+  operazione **irreversibile**, **non proporre di eseguirla d'impulso**: prima misura l'impatto
+  (quanti file/link toccati, cosa entra/esce da git) e presenta a Matteo le opzioni con
+  `AskUserQuestion`. La decisione finale è sua. Pattern osservato 2 volte (spostare ~77 file,
+  rinominare cartella gitignored).
 
 Se non trovi rischi, non inventarteli: scrivi un prompt pulito e, al più, una nota sotto.
 

@@ -54,6 +54,22 @@ Matteo chiede lui il dettaglio tecnico se gli serve. Vale anche per i report di 
 
 ---
 
+## Copy verbatim: applica solo ciò che Matteo cita
+
+Quando Matteo **incolla un testo** e dice di metterlo «esattamente così» / «mostra solo questo testo»
+/ ti dà un nuovo intro o una nuova frase, applica **letteralmente solo le stringhe che ha citato** e
+lascia **invariato** tutto il resto attorno (elenchi, formato righe, etichette non menzionate). Non
+«migliorare» né semplificare ciò che non ti ha chiesto di toccare.
+
+> Caso 29-05-26 (promo modale): Matteo ha dato un nuovo intro + chiusura; l'agente ha cambiato anche
+> l'elenco con freccia che non era stato menzionato → «non ti ho detto di cambiarlo». Giro di
+> correzione evitabile.
+
+Se la richiesta **sembra** voler sostituire tutto il blocco (non solo le frasi citate), **chiedi
+conferma** su elenchi/dettagli secondari prima di riscrivere.
+
+---
+
 ## Cosa evitare sempre
 
 - Elenchi di nomi file senza dire cosa cambia in app

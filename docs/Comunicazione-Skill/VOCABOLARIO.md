@@ -167,6 +167,46 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 - **Approvata il:** 28-05-26
 - **Origine:** chat mappatura · OSSERVAZIONI (workflow multi-agente)
 
+### «lavoro ok» — Liv. 1
+- **Intende:** conferma che il codice/task è accettato (equivale a «funziona» / «perfetto» per il protocollo). NON è di per sé «fai report finale».
+- **Comportamento agente:** tratta il task come accettato. Se Matteo aggiunge «fai report finale» (o equivalente) esegui il flusso § 7; da solo «lavoro ok» non avvia report né commit/push/migrazioni.
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** —
+- **Approvata il:** 29-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report 29-05-26 card scorrevole titolo admin
+
+### «finestra di conferma» · «dialog di conferma» · «non vedo il modal» — Liv. 1
+- **Intende:** la finestra di conferma deve essere il dialogo in-app (componente `Modal`, bianco con due pulsanti), NON il popup nativo del browser (`window.confirm`, grigio) che Matteo spesso non percepisce.
+- **Comportamento agente:** in un task con «finestra/dialog di conferma» usa di default il componente `Modal` dell'app. Usa `window.confirm` solo se Matteo dice esplicitamente «popup nativo» o per parity legacy richiesta. Si lega a FU-003 (safe check delete uniforme).
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** —
+- **Approvata il:** 29-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report promo conflitto 29-05-26
+
+### «comportamenti sono ok» · «non è un problema» + «voglio che cambi (come ti ho detto)» — Liv. 2
+- **Intende:** cambio intenzionale, NON bugfix/regressione. Il comportamento attuale è accettabile come baseline; Matteo vuole un cambio mirato verso lo stato che ha descritto.
+- **Comportamento agente:** nel prompt/report usa linguaggio «comportamento richiesto / cambio UX», mai «bug / ripristino / regressione». L'obiettivo è lo stato desiderato esatto, non una diagnosi. Se è ambiguo se vuole mantenere qualche aspetto del comportamento attuale → una domanda preventiva.
+- **Livello:** 2 (cautela)
+- **Dati Liv.2:**
+- **Approvata il:** 29-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report prepara-prompt Prenota stacking 29-05-26
+
+### «compila report … comunicazione … vocabolario (solo sicuro) … annota i miei prompt» — Liv. 2
+- **Intende:** chiusura di una sessione meta/comunicazione (tipicamente prepara-prompt o senza codice): report dettagliato su comunicazione, proposte vocabolario senza junk, citazione verbatim dei prompt di Matteo.
+- **Comportamento agente:** genera il report in `Sessioni di lavoro/GG-MM-AA/` con sezione «Dati comunicazione» completa + sottosezione «Prompt di Matteo (annotati)»; aggiorna `OSSERVAZIONI.md`; candidate solo in `PROPOSTE.md` (mai promuovere voci in `VOCABOLARIO.md` da solo). Estende «fai report finale» quando la sessione è meta, non implementazione.
+- **Livello:** 2 (cautela)
+- **Dati Liv.2:**
+- **Approvata il:** 29-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report 29-05-26
+
+### «revisiona [lavoro] e se è ok committa» — Liv. 2
+- **Intende:** delega della revisione del lavoro di un altro agente, fidandosi della validazione automatica come prova di «ok».
+- **Comportamento agente:** esegui `npm run validate` + check import rotti come criterio oggettivo; se verde, committa con messaggio che cita l'esito della revisione. **MA** se i test passano e noti un difetto logico (es. il caso PWA), fermati e segnalalo prima di committare — il verde non basta sempre. Coerente con la voce «revisione completa».
+- **Livello:** 2 (cautela)
+- **Dati Liv.2:**
+- **Approvata il:** 29-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · OSSERVAZIONI 28-05-26
+
 ### Comportamento in plan mode (nessun termine — contesto) — Liv. 1
 - **Intende:** quando l'agente entra in pianificazione, Matteo si aspetta domande sulle decisioni di sua competenza
 - **Comportamento agente:** in plan mode, oltre a progettare, fai domande (AskUserQuestion con opzioni + impatto) su: (a) decisioni che competono a Matteo (prodotto, UX, scope, commerciale); (b) dubbi su come procedere o scelte strutturali che Matteo potrebbe non aver considerato. Non calare piani dall'alto su questi punti.
