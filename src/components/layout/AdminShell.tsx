@@ -108,7 +108,7 @@ const AdminShellInner: FC = () => {
   )
   const [restaurantSettingsSignal, setRestaurantSettingsSignal] = useState(0)
   const { user, logout } = useAdminAuth()
-  const { guardNavigation } = useUnsavedChangesGuard()
+  const { confirmNavigation } = useUnsavedChangesGuard()
   const asideRef = useRef<HTMLDivElement | null>(null)
 
   const { data: savedAppTheme = DEFAULT_APP_THEME, isPending: isAppThemePending } =
@@ -154,13 +154,21 @@ const AdminShellInner: FC = () => {
       const sectionChange = s !== section
       if (sectionChange) {
         const allowReturn = s === 'prenotazioni'
-        if (!guardNavigation(allowReturn ? { allowPrenotazioniDashboard: true } : undefined)) return
+        void confirmNavigation(
+          allowReturn ? { allowPrenotazioniDashboard: true } : undefined,
+        ).then((ok) => {
+          if (!ok) return
+          if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
+          setSection(s)
+          setActiveSidebarItem(sidebarItem)
+        })
+        return
       }
       if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
       setSection(s)
       setActiveSidebarItem(sidebarItem)
     },
-    [guardNavigation, isNarrow, section, sidebarMode],
+    [confirmNavigation, isNarrow, section, sidebarMode],
   )
 
   const runSidebarAction = useCallback(

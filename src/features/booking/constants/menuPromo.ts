@@ -347,33 +347,6 @@ export function hasMenuPromoPlacementConflicts(conflicts: MenuPromoPlacementConf
   return conflicts.bookingTypes.length > 0 || conflicts.subTabs.length > 0
 }
 
-export function buildMenuPromoReplacementConfirmMessage(
-  draft: MenuPromo,
-  conflicts: MenuPromoPlacementConflicts,
-  resolveSubTabLabel?: (ref: MenuPromoSubTabRef) => string,
-): string {
-  const draftLabel = getMenuPromoAdminLabel(draft)
-  const lines: string[] = ['Alcuni abbinamenti sono già usati da altre promo:', '']
-
-  for (const conflict of conflicts.bookingTypes) {
-    const typeLabel =
-      MENU_PROMO_BOOKING_TYPE_OPTIONS.find((o) => o.value === conflict.type)?.label ?? conflict.type
-    lines.push(`• ${typeLabel} → «${conflict.existingLabel}»`)
-  }
-
-  for (const conflict of conflicts.subTabs) {
-    const refLabel =
-      resolveSubTabLabel?.(conflict.ref) ??
-      `${conflict.ref.mode_id} · ${conflict.ref.sub_tab_id}`
-    lines.push(`• ${refLabel} → «${conflict.existingLabel}»`)
-  }
-
-  lines.push('')
-  lines.push(`Vuoi sostituire l'abbinamento con «${draftLabel}»?`)
-
-  return lines.join('\n')
-}
-
 /** Rimuove i target in conflitto dalle promo esistenti e inserisce/aggiorna la bozza. */
 export function applyMenuPromoWithReplacement(
   draft: MenuPromo,

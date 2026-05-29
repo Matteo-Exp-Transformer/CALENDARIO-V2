@@ -42,7 +42,7 @@ import {
   applyLegacySubTabLabelOverrides,
   DEFAULT_BOOKING_FORM_CONFIG,
 } from '../constants/bookingPublicFormConfig'
-import { BookingSubTabCards } from './publicBooking/BookingSubTabCards'
+import { BookingSubTabCards, SubTabCardIcon } from './publicBooking/BookingSubTabCards'
 import { BOOKING_PUBLIC_CONTENT_WIDTH } from '../constants/bookingPublicFieldStyles'
 
 interface BookingRequestFormProps {
@@ -110,6 +110,14 @@ function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+              {item.icon ? (
+                <span
+                  className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white shadow-md backdrop-blur-[1px] sm:right-4 sm:top-4 sm:h-10 sm:w-10"
+                  aria-hidden
+                >
+                  <SubTabCardIcon icon={item.icon} className="h-5 w-5 sm:h-6 sm:w-6" />
+                </span>
+              ) : null}
               {hasOverlay ? (
                 <div className="absolute inset-x-0 bottom-0 p-4 text-left">
                   {cardLabel ? (

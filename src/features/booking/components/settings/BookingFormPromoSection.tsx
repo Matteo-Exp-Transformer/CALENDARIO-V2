@@ -5,10 +5,6 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Textarea } from '@/components/ui/Textarea'
-import {
-  FormSectionFloatingActions,
-  SectionActionBar,
-} from '@/features/booking/components/settings/SettingsSaveUi'
 import type { BookingMode } from '@/features/booking/constants/bookingPublicFormConfig'
 import {
   applyMenuPromoWithReplacement,
@@ -443,18 +439,8 @@ export const BookingFormPromoSection = forwardRef<BookingFormPromoSectionHandle,
       isDirty: () => dirtyRef.current,
     }))
 
-    const sectionActions = (
-      <SectionActionBar
-        onCancel={cancelSection}
-        onSave={() => void saveSection().catch(() => undefined)}
-        cancelDisabled={!dirty}
-        saveDisabled={!dirty}
-        pending={upsert.isPending}
-      />
-    )
-
     return (
-      <FormSectionFloatingActions actions={sectionActions}>
+      <>
         {conflictDialog ? (
           <PromoPlacementConflictDialog
             draft={conflictDialog.row}
@@ -702,7 +688,7 @@ export const BookingFormPromoSection = forwardRef<BookingFormPromoSectionHandle,
             )}
           </div>
         </section>
-      </FormSectionFloatingActions>
+      </>
     )
   },
 )

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Store, Loader2, Eye, Clock, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -49,9 +49,10 @@ import {
   type AppThemeId,
 } from '@/features/booking/constants/appTheme'
 import { BookingFormConfigPanel } from './settings/BookingFormConfigPanel'
+import { SETTINGS_AUTOSAVE_ENABLED } from '@/config/settingsAutosave'
+import { useDebouncedSettingsAutosave } from '@/features/booking/hooks/useDebouncedSettingsAutosave'
 import {
-  FormSectionFloatingActions,
-  SectionActionBar,
+  FieldAutosaveIndicator,
   SettingsSaveFooter,
 } from './settings/SettingsSaveUi'
 
@@ -297,7 +298,8 @@ export function RestaurantSettingsIntro() {
 export const RestaurantSettingsTab: React.FC = () => {
   const queryClient = useQueryClient()
   const { tenantId } = useTenantContext()
-  const { registerUnsavedSource, clearUnsavedSource, guardNavigation } = useUnsavedChangesGuard()
+  const { registerUnsavedSource, registerUnsavedHandlers, clearUnsavedSource, confirmNavigation } =
+    useUnsavedChangesGuard()
   const features = useFeatures()
 
   const nameQuery = useRestaurantSetting('restaurant_name')
@@ -320,7 +322,8 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [hoursDirty, setHoursDirty] = useState(false)
   const [themeDirty, setThemeDirty] = useState(false)
   const [slotsDirty, setSlotsDirty] = useState(false)
-  const dirty = anagraficaDirty || hoursDirty || themeDirty || slotsDirty
+  const anagraficaFooterDirty = SETTINGS_AUTOSAVE_ENABLED ? false : anagraficaDirty
+  const dirty = anagraficaFooterDirty || hoursDirty || themeDirty || slotsDirty
   const dirtyRef = useRef(false)
   dirtyRef.current = dirty
   const bookingBgDirtyRef = useRef(false)
@@ -348,13 +351,76 @@ export const RestaurantSettingsTab: React.FC = () => {
 
   const hydratedRef = useRef(false)
 
+  const normalizeAnagraficaName = useCallback(
+    (v: string) => stripDirectionalFormattingChars(v).slice(0, RESTAURANT_NAME_MAX_LENGTH),
+    [],
+  )
+
+  const anagraficaAutosave = useDebouncedSettingsAutosave({
+    enabled: SETTINGS_AUTOSAVE_ENABLED,
+    tenantId,
+    fields: {
+      restaurant_name: {
+        value: restaurantName,
+        baseline: normalizeAnagraficaName(String(nameQuery.data ?? '')),
+        normalize: normalizeAnagraficaName,
+      },
+      contact_email: {
+        value: contactEmail,
+        baseline: stripDirectionalFormattingChars(contactEmailQuery.data ?? ''),
+        normalize: stripDirectionalFormattingChars,
+      },
+      contact_phone: {
+        value: contactPhone,
+        baseline: stripDirectionalFormattingChars(contactPhoneQuery.data ?? ''),
+        normalize: stripDirectionalFormattingChars,
+      },
+      contact_address: {
+        value: contactAddress,
+        baseline: stripDirectionalFormattingChars(contactAddressQuery.data ?? ''),
+        normalize: stripDirectionalFormattingChars,
+      },
+    },
+    onSave: async (keys) => {
+      if (!tenantId) return
+      const items: { key: 'restaurant_name' | 'contact_email' | 'contact_phone' | 'contact_address'; value: string }[] =
+        []
+      if (keys.includes('restaurant_name')) {
+        const safeName = normalizeAnagraficaName(restaurantName)
+        setRestaurantName(safeName)
+        items.push({ key: 'restaurant_name', value: safeName })
+      }
+      if (keys.includes('contact_email')) {
+        const safeEmail = stripDirectionalFormattingChars(contactEmail)
+        setContactEmail(safeEmail)
+        items.push({ key: 'contact_email', value: safeEmail })
+      }
+      if (keys.includes('contact_phone')) {
+        const safePhone = stripDirectionalFormattingChars(contactPhone)
+        setContactPhone(safePhone)
+        items.push({ key: 'contact_phone', value: safePhone })
+      }
+      if (keys.includes('contact_address')) {
+        const safeAddress = stripDirectionalFormattingChars(contactAddress)
+        setContactAddress(safeAddress)
+        items.push({ key: 'contact_address', value: safeAddress })
+      }
+      if (items.length === 0) return
+      await upsert.mutateAsync({ items, options: { silent: true } })
+      if (!SETTINGS_AUTOSAVE_ENABLED) {
+        setAnagraficaDirty(false)
+      }
+    },
+  })
+
   useEffect(() => {
     hydratedRef.current = false
     setAnagraficaDirty(false)
     setHoursDirty(false)
     setThemeDirty(false)
     setSlotsDirty(false)
-  }, [tenantId])
+    clearUnsavedSource('restaurant-settings')
+  }, [tenantId, clearUnsavedSource])
 
   useEffect(() => {
     registerUnsavedSource('restaurant-settings', 'Anagrafica azienda', dirty)
@@ -368,14 +434,6 @@ export const RestaurantSettingsTab: React.FC = () => {
   const bookingBgDirty =
     bookingPageBackground !== savedBookingPageBackground || stripPhoto !== savedStripPhoto
   bookingBgDirtyRef.current = bookingBgDirty
-
-  useEffect(() => {
-    if (settingsTab !== 'form') return
-    registerUnsavedSource('restaurant-booking-bg', 'Sfondo pagina Prenota', bookingBgDirty)
-    return () => {
-      if (!bookingBgDirtyRef.current) clearUnsavedSource('restaurant-booking-bg')
-    }
-  }, [bookingBgDirty, clearUnsavedSource, registerUnsavedSource, settingsTab])
 
   const allSuccess =
     nameQuery.isSuccess &&
@@ -527,32 +585,10 @@ export const RestaurantSettingsTab: React.FC = () => {
   }
 
   const handleCancelChanges = () => {
+    anagraficaAutosave.cancelPending()
     hydrateLocalSettingsFromQueries()
     clearAllSectionDirty()
   }
-
-  const handleCancelAnagraficaSection = () => {
-    hydrateAnagraficaFromQueries()
-    setAnagraficaDirty(false)
-  }
-
-  const handleCancelHoursSection = () => {
-    hydrateHoursFromQueries()
-    setHoursDirty(false)
-  }
-
-  const handleCancelThemeSection = () => {
-    hydrateThemeFromQueries()
-    setThemeDirty(false)
-  }
-
-  const handleCancelSlotsSection = () => {
-    hydrateSlotsFromQueries()
-    setSlotsDirty(false)
-  }
-
-  const slotsMutationPending =
-    createServiceSlot.isPending || updateServiceSlot.isPending || deleteServiceSlot.isPending
 
   const refetchRestaurantSettings = async () => {
     await queryClient.refetchQueries({ queryKey: ['restaurant_settings'], type: 'active' })
@@ -635,80 +671,6 @@ export const RestaurantSettingsTab: React.FC = () => {
     })
   }
 
-  const handleSaveAnagraficaSection = async () => {
-    if (!tenantId) return
-    const safeName = stripDirectionalFormattingChars(restaurantName).slice(0, RESTAURANT_NAME_MAX_LENGTH)
-    const safeEmail = stripDirectionalFormattingChars(contactEmail)
-    const safePhone = stripDirectionalFormattingChars(contactPhone)
-    const safeAddress = stripDirectionalFormattingChars(contactAddress)
-    setRestaurantName(safeName)
-    setContactEmail(safeEmail)
-    setContactPhone(safePhone)
-    setContactAddress(safeAddress)
-    try {
-      await upsert.mutateAsync([
-        { key: 'restaurant_name', value: safeName },
-        { key: 'contact_email', value: safeEmail },
-        { key: 'contact_phone', value: safePhone },
-        { key: 'contact_address', value: safeAddress },
-      ])
-      await refetchRestaurantSettings()
-      setAnagraficaDirty(false)
-    } catch {
-      /* toast da useUpsertRestaurantSetting */
-    }
-  }
-
-  const handleSaveHoursSection = async () => {
-    if (!tenantId) return
-    try {
-      await upsert.mutateAsync([{ key: 'business_hours', value: businessHours }])
-      await refetchRestaurantSettings()
-      setHoursDirty(false)
-    } catch {
-      /* toast da useUpsertRestaurantSetting */
-    }
-  }
-
-  const handleSaveThemeSection = async () => {
-    if (!tenantId) return
-    try {
-      await upsert.mutateAsync([{ key: 'app_theme', value: appTheme }])
-      await refetchRestaurantSettings()
-      setThemeDirty(false)
-    } catch {
-      /* toast da useUpsertRestaurantSetting */
-    }
-  }
-
-  const handleSaveSlotsSection = async () => {
-    if (!tenantId) return
-    if (!features.servizio && timeSlotsEnabled) {
-      const validationError = validateEditingSlots(editingSlots)
-      if (validationError) {
-        setSlotValidationError(validationError)
-        toast.error(validationError)
-        return
-      }
-    }
-    try {
-      const createdSlotIdMap = await persistServiceSlots()
-      const slotCapValue = buildSlotCapacitiesPayload(createdSlotIdMap)
-      await upsert.mutateAsync([
-        { key: 'slot_guest_capacities', value: slotCapValue },
-        { key: 'booking_time_slots_enabled', value: timeSlotsEnabled },
-      ])
-      if (!features.servizio) {
-        await refreshSlotsStateAfterSave(createdSlotIdMap)
-      }
-      await refetchRestaurantSettings()
-      setSlotValidationError(null)
-      setSlotsDirty(false)
-    } catch {
-      /* toast da hook */
-    }
-  }
-
   const handleSaveBookingBackgroundOnly = async () => {
     if (!tenantId) return
     await upsert.mutateAsync([
@@ -725,10 +687,10 @@ export const RestaurantSettingsTab: React.FC = () => {
   }
 
   const handleRestaurantNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setAnagraficaDirty(true)
-    setRestaurantName(
-      stripDirectionalFormattingChars(event.target.value).slice(0, RESTAURANT_NAME_MAX_LENGTH)
-    )
+    if (!SETTINGS_AUTOSAVE_ENABLED) setAnagraficaDirty(true)
+    const next = normalizeAnagraficaName(event.target.value)
+    setRestaurantName(next)
+    anagraficaAutosave.notifyFieldChange('restaurant_name')
   }
 
   // ---- Gestione fasce orarie (solo Classic) ----------------------------------
@@ -827,6 +789,14 @@ export const RestaurantSettingsTab: React.FC = () => {
     }
   }
 
+  useEffect(() => {
+    registerUnsavedHandlers('restaurant-settings', {
+      saveAll: handleSave,
+      discardAll: handleCancelChanges,
+    })
+    return () => registerUnsavedHandlers('restaurant-settings', null)
+  }, [handleCancelChanges, handleSave, registerUnsavedHandlers])
+
   if (loadError) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-800">
@@ -880,55 +850,12 @@ export const RestaurantSettingsTab: React.FC = () => {
   const appThemeSectionClass =
     'admin-warm-surface w-full max-w-3xl mx-auto space-y-4 rounded-xl border p-5 md:p-7 shadow-md text-center'
 
-  const sectionSavePending = upsert.isPending || slotsMutationPending
-
-  const anagraficaSectionActions = (
-    <SectionActionBar
-      onCancel={handleCancelAnagraficaSection}
-      onSave={() => {
-        void handleSaveAnagraficaSection().catch(() => toast.error('Errore nel salvataggio anagrafica'))
-      }}
-      cancelDisabled={!anagraficaDirty}
-      saveDisabled={!anagraficaDirty || !tenantId}
-      pending={upsert.isPending}
-    />
-  )
-
-  const hoursSectionActions = (
-    <SectionActionBar
-      onCancel={handleCancelHoursSection}
-      onSave={() => {
-        void handleSaveHoursSection().catch(() => toast.error('Errore nel salvataggio orari'))
-      }}
-      cancelDisabled={!hoursDirty}
-      saveDisabled={!hoursDirty || !tenantId}
-      pending={upsert.isPending}
-    />
-  )
-
-  const slotsSectionActions = (
-    <SectionActionBar
-      onCancel={handleCancelSlotsSection}
-      onSave={() => {
-        void handleSaveSlotsSection().catch(() => toast.error('Errore nel salvataggio fasce orarie'))
-      }}
-      cancelDisabled={!slotsDirty}
-      saveDisabled={!slotsDirty || !tenantId}
-      pending={sectionSavePending}
-    />
-  )
-
-  const themeSectionActions = (
-    <SectionActionBar
-      onCancel={handleCancelThemeSection}
-      onSave={() => {
-        void handleSaveThemeSection().catch(() => toast.error('Errore nel salvataggio tema'))
-      }}
-      cancelDisabled={!themeDirty}
-      saveDisabled={!themeDirty || !tenantId}
-      pending={upsert.isPending}
-    />
-  )
+  const switchSettingsTab = (next: 'anagrafica' | 'form') => {
+    if (settingsTab === next) return
+    void confirmNavigation().then((ok) => {
+      if (ok) setSettingsTab(next)
+    })
+  }
 
   const bookingPageBackgroundSection = (
     <section className={bookingBgSectionClass}>
@@ -1030,10 +957,7 @@ export const RestaurantSettingsTab: React.FC = () => {
       <div className="flex gap-1.5 rounded-xl bg-slate-100 p-0.5 self-start">
         <button
           type="button"
-          onClick={() => {
-            if (settingsTab !== 'anagrafica' && !guardNavigation()) return
-            setSettingsTab('anagrafica')
-          }}
+          onClick={() => switchSettingsTab('anagrafica')}
           className={cn(
             'rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors',
             settingsTab === 'anagrafica'
@@ -1045,10 +969,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         </button>
         <button
           type="button"
-          onClick={() => {
-            if (settingsTab !== 'form' && !guardNavigation()) return
-            setSettingsTab('form')
-          }}
+          onClick={() => switchSettingsTab('form')}
           className={cn(
             'rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors',
             settingsTab === 'form'
@@ -1074,7 +995,6 @@ export const RestaurantSettingsTab: React.FC = () => {
       {settingsTab === 'anagrafica' && (
       <React.Fragment>
       <div className="w-full max-w-2xl mx-auto">
-      <FormSectionFloatingActions actions={anagraficaSectionActions}>
       <section className={sectionSurfaceClass}>
         <h3 className="text-lg font-semibold text-slate-800">Anagrafica Azienda</h3>
         <div className="flex w-full flex-col items-center">
@@ -1092,10 +1012,14 @@ export const RestaurantSettingsTab: React.FC = () => {
               value={typeof restaurantName === 'string' ? restaurantName : ''}
               disabled={upsert.isPending}
               onChange={handleRestaurantNameChange}
+              onBlur={() => anagraficaAutosave.flushField('restaurant_name')}
               placeholder="Nome del locale"
               className={anagraficaInputClassName}
               style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
             />
+            {SETTINGS_AUTOSAVE_ENABLED ? (
+              <FieldAutosaveIndicator status={anagraficaAutosave.fieldStatus.restaurant_name} />
+            ) : null}
           </div>
           <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
             <Label htmlFor="contact_email" className="block w-full text-center">
@@ -1108,11 +1032,16 @@ export const RestaurantSettingsTab: React.FC = () => {
               disabled={upsert.isPending}
               className={anagraficaInputClassName}
               onChange={(e) => {
-                setAnagraficaDirty(true)
+                if (!SETTINGS_AUTOSAVE_ENABLED) setAnagraficaDirty(true)
                 setContactEmail(stripDirectionalFormattingChars(e.target.value))
+                anagraficaAutosave.notifyFieldChange('contact_email')
               }}
+              onBlur={() => anagraficaAutosave.flushField('contact_email')}
               placeholder="ristorante@example.com"
             />
+            {SETTINGS_AUTOSAVE_ENABLED ? (
+              <FieldAutosaveIndicator status={anagraficaAutosave.fieldStatus.contact_email} />
+            ) : null}
           </div>
           <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
             <Label htmlFor="contact_phone" className="block w-full text-center">
@@ -1124,11 +1053,16 @@ export const RestaurantSettingsTab: React.FC = () => {
               disabled={upsert.isPending}
               className={anagraficaInputClassName}
               onChange={(e) => {
-                setAnagraficaDirty(true)
+                if (!SETTINGS_AUTOSAVE_ENABLED) setAnagraficaDirty(true)
                 setContactPhone(stripDirectionalFormattingChars(e.target.value))
+                anagraficaAutosave.notifyFieldChange('contact_phone')
               }}
+              onBlur={() => anagraficaAutosave.flushField('contact_phone')}
               placeholder="+39 ..."
             />
+            {SETTINGS_AUTOSAVE_ENABLED ? (
+              <FieldAutosaveIndicator status={anagraficaAutosave.fieldStatus.contact_phone} />
+            ) : null}
           </div>
           <div className={anagraficaFieldWrapClass} style={anagraficaFieldStackStyle}>
             <Label htmlFor="contact_address" className="block w-full text-center">
@@ -1140,19 +1074,22 @@ export const RestaurantSettingsTab: React.FC = () => {
               disabled={upsert.isPending}
               className={anagraficaInputClassName}
               onChange={(e) => {
-                setAnagraficaDirty(true)
+                if (!SETTINGS_AUTOSAVE_ENABLED) setAnagraficaDirty(true)
                 setContactAddress(stripDirectionalFormattingChars(e.target.value))
+                anagraficaAutosave.notifyFieldChange('contact_address')
               }}
+              onBlur={() => anagraficaAutosave.flushField('contact_address')}
               placeholder="Via ..., Citta, CAP"
             />
+            {SETTINGS_AUTOSAVE_ENABLED ? (
+              <FieldAutosaveIndicator status={anagraficaAutosave.fieldStatus.contact_address} />
+            ) : null}
           </div>
         </div>
       </section>
-      </FormSectionFloatingActions>
       </div>
 
       <div className="w-full max-w-2xl mx-auto">
-      <FormSectionFloatingActions actions={hoursSectionActions}>
       <section className={sectionSurfaceClass}>
         <h3 className="text-lg font-semibold text-slate-800">Orari di apertura</h3>
         <p className="text-sm text-slate-600">
@@ -1167,12 +1104,10 @@ export const RestaurantSettingsTab: React.FC = () => {
           }}
         />
       </section>
-      </FormSectionFloatingActions>
       </div>
 
       {!features.servizio && (
       <div className="w-full max-w-2xl mx-auto">
-      <FormSectionFloatingActions actions={slotsSectionActions}>
       <section className={sectionSurfaceClass}>
         <div className="mb-5 w-full space-y-1.5 md:mb-6">
           <h3 className="text-center text-lg font-semibold leading-tight text-slate-800">
@@ -1380,20 +1315,17 @@ export const RestaurantSettingsTab: React.FC = () => {
           </Modal>
         )}
       </section>
-      </FormSectionFloatingActions>
       </div>
       )}
 
       <div className="w-full max-w-3xl mx-auto">
-      <FormSectionFloatingActions actions={themeSectionActions}>
       <section className={appThemeSectionClass} aria-labelledby="app-theme-heading">
         <h3 id="app-theme-heading" className="text-lg font-semibold text-slate-800">
           Selezione tema app
         </h3>
         <p className="text-sm text-slate-600">
           Tocca l&apos;immagine o il nome del tema per selezionarlo subito. Tocca l&apos;icona occhio al centro per l&apos;anteprima
-          grande (su desktop compare passando il mouse sull&apos;immagine). Usa <strong>Annulla modifiche</strong> o{' '}
-          <strong>Salva</strong> sopra la card per applicare solo il tema, oppure il footer in fondo per salvare tutto insieme.
+          grande (su desktop compare passando il mouse sull&apos;immagine). Usa il footer in basso a destra per salvare le modifiche al tema.
         </p>
         <div
           className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
@@ -1419,7 +1351,6 @@ export const RestaurantSettingsTab: React.FC = () => {
           ))}
         </div>
       </section>
-      </FormSectionFloatingActions>
       </div>
       </React.Fragment>
       )}

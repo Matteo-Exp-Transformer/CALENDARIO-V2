@@ -36,16 +36,38 @@ export type UpsertRestaurantSettingItem = {
   value: unknown
 }
 
+export type UpsertRestaurantSettingOptions = {
+  /** Nessun toast successo/errore standard (autosave silenzioso). Gli errori restano senza toast se silent. */
+  silent?: boolean
+}
+
+export type UpsertRestaurantSettingVariables = {
+  items: UpsertRestaurantSettingItem[]
+  options?: UpsertRestaurantSettingOptions
+}
+
+function normalizeUpsertInput(
+  input: UpsertRestaurantSettingItem[] | UpsertRestaurantSettingVariables,
+): UpsertRestaurantSettingVariables {
+  if (Array.isArray(input)) {
+    return { items: input }
+  }
+  return input
+}
+
 /**
  * Upsert una o più righe `restaurant_settings` (stesso tenant). Dopo il successo invalida
- * le query pubbliche/admin sugli stessi prefissi definiti nel piano.
+ * solo le query delle chiavi toccate (+ business_hours legacy se applicabile).
  */
 export function useUpsertRestaurantSetting() {
   const queryClient = useQueryClient()
   const { tenantId } = useTenantContext()
 
   return useMutation({
-    mutationFn: async (items: UpsertRestaurantSettingItem[]) => {
+    mutationFn: async (
+      input: UpsertRestaurantSettingItem[] | UpsertRestaurantSettingVariables,
+    ) => {
+      const { items, options } = normalizeUpsertInput(input)
       if (!tenantId) {
         throw new Error('Tenant non disponibile')
       }
@@ -70,19 +92,32 @@ export function useUpsertRestaurantSetting() {
       if (error) {
         throw new Error(handleSupabaseError(error))
       }
+
+      return { items, options }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['restaurant_settings'], refetchType: 'active' })
-      if (tenantId) {
+    onSuccess: ({ items, options }) => {
+      const silent = options?.silent === true
+      for (const { key } of items) {
+        queryClient.invalidateQueries({
+          queryKey: ['restaurant_settings', key, tenantId],
+          refetchType: 'active',
+        })
+      }
+      if (items.some((i) => i.key === 'business_hours') && tenantId) {
         queryClient.invalidateQueries({
           queryKey: ['restaurant_settings', 'business_hours', tenantId],
           refetchType: 'active',
         })
       }
-      toast.success('Impostazioni salvate')
+      if (!silent) {
+        toast.success('Impostazioni salvate')
+      }
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Errore nel salvataggio')
+    onError: (error: Error, variables) => {
+      const silent = normalizeUpsertInput(variables).options?.silent === true
+      if (!silent) {
+        toast.error(error.message || 'Errore nel salvataggio')
+      }
     },
   })
 }

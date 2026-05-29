@@ -80,7 +80,7 @@ export const BookingModeCards: React.FC<BookingModeCardsProps> = ({ modes, activ
                   {mode.label}
                 </p>
                 {mode.description && (
-                  <p className="mt-0.5 hidden text-xs leading-snug text-warm-wood-dark/70 line-clamp-3 min-[501px]:block sm:line-clamp-2">
+                  <p className="mt-0.5 hidden text-xs leading-snug text-warm-wood-dark/70 line-clamp-3 min-[700px]:block sm:line-clamp-2">
                     {mode.description}
                   </p>
                 )}
