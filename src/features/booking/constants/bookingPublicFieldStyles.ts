@@ -1,3 +1,5 @@
+import { cn } from '@/lib/utils'
+
 /** Viewport minimo (px) per riepilogo laterale sticky + griglia form a 2 colonne. Sotto: riepilogo sotto il form. */
 export const BOOKING_PUBLIC_SUMMARY_SIDEBAR_MIN_PX = 1256
 
@@ -46,3 +48,38 @@ export const BOOKING_PUBLIC_FIELD_INNER_LABEL_MULTILINE =
 
 export const BOOKING_PUBLIC_FIELD_INNER_TEXTAREA =
   'w-full min-w-0 resize-none overflow-hidden break-words border-0! bg-transparent p-0 text-left text-sm font-bold leading-snug text-warm-wood shadow-none ring-0! placeholder:text-warm-wood/50 focus:outline-none focus:ring-0! sm:text-base sm:leading-normal'
+
+/** Messaggio errore campo singolo — bianco solo con sfondo full-page (`public_booking_page_background` senza striscia). */
+export function publicFormFieldErrorClass(lightTextOnDarkBackground: boolean): string {
+  return cn(
+    'text-start text-sm font-semibold',
+    lightTextOnDarkBackground ? 'text-white' : 'text-red-500',
+  )
+}
+
+/** Errori data/ora — box rosso su sfondo chiaro; bianco su full-page. */
+export function publicFormDateTimeErrorClass(lightTextOnDarkBackground: boolean): string {
+  return lightTextOnDarkBackground
+    ? 'text-start text-sm font-semibold text-white'
+    : 'text-sm text-red-600 rounded-lg border border-red-200 bg-red-50 p-3'
+}
+
+/** Errori sezione (tipologia, menù) — bianco solo su full-page. */
+export function publicFormSectionErrorClass(
+  lightTextOnDarkBackground: boolean,
+  align: 'left' | 'center' = 'left',
+): string {
+  return cn(
+    'text-sm font-semibold',
+    align === 'center' && 'text-center',
+    align === 'left' && 'text-left',
+    lightTextOnDarkBackground ? 'text-white' : 'text-red-500',
+  )
+}
+
+/** Disponibilità slot — box rosso su sfondo chiaro; bianco su full-page. */
+export function publicFormSlotAvailabilityErrorClass(lightTextOnDarkBackground: boolean): string {
+  return lightTextOnDarkBackground
+    ? 'text-left text-sm font-semibold text-white'
+    : 'rounded-lg border border-red-200 bg-red-50 p-4 text-left text-sm font-semibold text-red-700'
+}

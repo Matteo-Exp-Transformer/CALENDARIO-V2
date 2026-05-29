@@ -225,7 +225,7 @@ Quando il cliente clicca **Invia** con dati invalidi:
 2. **Chiudi** card ingredienti aperte (`dispatchBookingMenuComposeCollapse` + `composeCollapseNonce` + remount `MenuSelection`).
 3. **Scroll** al primo errore (`scrollToBookingPublicError` in `bookingPublicFormAttention.ts`).
 4. **Pulse arancione** sul wrapper del campo (`.booking-public-field-attention`) fino a click reale (`shouldDismissBookingPublicAttention` / `isTrusted`).
-5. Messaggi errore / privacy / riepilogo menù in **bianco** su sfondo scuro.
+5. Messaggi errore / privacy / riepilogo menù: palette condizionata da `publicFormLightTextOnDarkBackground` (`!showPhotoStrip && isFullPagePhoto`) — **bianco** solo su sfondo full-page foto; su striscia laterale / crema / gradiente → warm-wood e rossi come pre-29-05 (helper in `bookingPublicFieldStyles.ts`).
 
 **Guida per replicare su altri form/modali:** `FORM_VALIDATION_ATTENTION_PATTERN.md` (stesso folder).
 

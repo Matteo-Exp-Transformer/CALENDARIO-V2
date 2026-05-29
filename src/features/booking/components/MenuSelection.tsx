@@ -57,6 +57,8 @@ interface MenuSelectionProps {
   hiddenItemIds?: string[]
   /** Form /prenota: blocchi centrati al 75% larghezza viewport */
   publicFormLayout?: boolean
+  /** Titolo/riepilogo menù in bianco solo su sfondo full-page foto. */
+  publicFormLightTextOnDarkBackground?: boolean
   /** Descrizione menù preselezionato (sottotab o preset staff); opzionale, sotto «CREA IL TUO MENU». */
   presetDescription?: string
   /** Se true, non usa la descrizione del menù staff come fallback. */
@@ -86,6 +88,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   hiddenCategoryKeys = [],
   hiddenItemIds = [],
   publicFormLayout = false,
+  publicFormLightTextOnDarkBackground = false,
   presetDescription,
   disablePresetDescriptionFallback = false,
   presetSectionTitle,
@@ -325,7 +328,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
           <p
             className={cn(
               'text-[13px] font-bold leading-tight sm:text-base lg:text-sm xl:text-base',
-              publicFormLayout ? 'text-white' : 'text-warm-wood',
+              publicFormLightTextOnDarkBackground ? 'text-white' : 'text-warm-wood',
             )}
           >
             Hai selezionato :
@@ -333,7 +336,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
           <h2
             className={cn(
               'mt-1 font-serif text-xl font-bold md:text-2xl',
-              publicFormLayout ? 'text-white' : 'text-warm-wood',
+              publicFormLightTextOnDarkBackground ? 'text-white' : 'text-warm-wood',
             )}
           >
             {lockedPresetTitle}
@@ -342,7 +345,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             <p
               className={cn(
                 'mt-2 text-sm font-medium',
-                publicFormLayout ? 'text-white/90' : 'text-warm-wood-dark/75',
+                publicFormLightTextOnDarkBackground ? 'text-white/90' : 'text-warm-wood-dark/75',
               )}
             >
               {composePresetDescription}

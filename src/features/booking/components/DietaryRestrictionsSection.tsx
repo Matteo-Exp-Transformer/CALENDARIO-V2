@@ -25,6 +25,8 @@ interface DietaryRestrictionsSectionProps {
   omitSpecialRequestsSection?: boolean
   /** Layout /prenota: campi al 75% larghezza, stessa altezza e font delle card sottotab */
   publicFormFields?: boolean
+  /** Testo privacy/obbligatori in bianco solo su sfondo full-page foto. */
+  lightTextOnDarkBackground?: boolean
 }
 
 const FIELD_LABEL_CLASS =
@@ -46,6 +48,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
   onPrivacyAttentionInteract,
   omitSpecialRequestsSection = false,
   publicFormFields = false,
+  lightTextOnDarkBackground = false,
 }) => {
   return (
     <div className={publicFormFields ? 'w-full space-y-5' : 'space-y-5'}>
@@ -151,7 +154,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                 htmlFor="privacy-consent-dietary-input"
                 className={cn(
                   'cursor-pointer text-base',
-                  publicFormFields ? 'font-medium text-white' : 'text-warm-wood-dark',
+                  lightTextOnDarkBackground ? 'font-medium text-white' : 'text-warm-wood-dark',
                 )}
               >
                 Accetto la{' '}
@@ -161,7 +164,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                   rel="noopener noreferrer"
                   className={cn(
                     'font-semibold underline underline-offset-2',
-                    publicFormFields
+                    lightTextOnDarkBackground
                       ? 'text-white decoration-white hover:text-white/90'
                       : 'text-warm-orange decoration-warm-orange hover:text-warm-orange',
                   )}
@@ -175,7 +178,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
             <p
               className={cn(
                 'text-sm font-semibold sm:text-base',
-                publicFormFields ? 'text-white' : 'text-warm-wood-dark/80',
+                lightTextOnDarkBackground ? 'text-white' : 'text-warm-wood-dark/80',
               )}
             >
               * I campi contrassegnati sono obbligatori
@@ -185,7 +188,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
             <p
               className={cn(
                 'ml-8 text-sm font-semibold',
-                publicFormFields ? 'text-white' : 'text-red-500',
+                lightTextOnDarkBackground ? 'text-white' : 'text-red-500',
               )}
             >
               {privacyError}
