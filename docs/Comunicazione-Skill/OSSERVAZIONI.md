@@ -31,6 +31,7 @@
 | «spiegamelo semplice / in modo sintetico» | 3+ (chat PWA, Metodo, report) | metafora concreta + "chi fa cosa" + breve |
 | «è una rule che devo ricordare io?» / «devo farlo ogni volta?» | 2+ | distinguere lavoro manuale ricorrente da automatismo del tool |
 | «ottimo / funziona / perfetto / revisione ok» (conferma successo) | molte+ | trigger del protocollo fine-chat (report + skill + commit) |
+| «lavoro ok» (conferma task) | 1 | usato con «fai report finale» + richiesta report comunicazione dettagliato; proposta PROPOSTE |
 | «allineato a skill system» (post-implementazione) | 2 | Matteo si aspetta §7.1/§7.2 senza doverlo ripetere |
 | «report con derivazione errori / prompt vs struttura vs agente» | 1 | 29-05-26 card ingredienti — chiesto esplicitamente nel report finale |
 | «mantieni linea scalabile e pulita, no parti obsolete» | 2+ | preferire soluzioni durevoli, niente codice ridondante/legacy |
@@ -65,6 +66,12 @@
 ---
 
 ## Log per data
+
+### 29-05-26 — Esecuzione: card scorrevole titolo/placeholder/lista admin (Personalizza form)
+- Prompt esecutore completo (no domande): vuoto + placeholder, import menù, clear manuale, riga `· Card N`, carosello invariato.
+- Implementazione al primo giro; `npm run validate` 195 test OK.
+- Chiusura Matteo: «lavoro ok» + report finale dettagliato + proposta vocabolario «lavoro ok» + regola temporanea report comunicazione più ricca.
+- Report: `docs/Sessioni di lavoro/29-05-26/Report-card-scorrevole-titolo-admin-29-05-26.md`
 
 ### 29-05-26 — Esecuzione: scroll interno + overlay portal card ingredienti Prenota
 - Implementazione su `BookingMenuCategoryCard` + `bookingMenuComposePanelLayout.ts`; skill §4 aggiornata.

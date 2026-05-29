@@ -179,6 +179,12 @@ Quando Matteo dice che l'agente esecutore ha finito:
    modifica tocca la UI, controlla l'allineamento al comportamento richiesto. Nel report scrivi
    **solo view + check minimo**: eventuali bug/dubbi e se i **componenti attorno** possono
    risentire della modifica. Niente verbosità.
+   - **Checklist controllo (obbligatoria a valle):** quando consegni il prompt **o** quando l'esecutore
+     ha finito, aggiungi per Matteo un blocco **«Checklist controllo»** (5–8 righe `- [ ]`):
+     ogni riga = **dove guardare** (schermata/flusso) + **cosa deve vedere**; una riga `npm run validate`
+     se il task tocca codice. Stessa lista nel report di sessione (sezione revisione). Tu la usi per
+     la revisione rapida (grep sui file citati nel prompt + spot delle righe UI). Niente nomi file in
+     checklist verso Matteo salvo se serve per il grep in nota revisore.
 2. **Se a monte avevi stimato ACCURATA** → **non** la fai tu: prepara un prompt di revisione per
    un agente esterno (profilo Verifica, «revisione completa») e concentrati sul punto 3.
 3. **Sempre — raccogli i dati per lo skill di comunicazione.** Sei l'interlocutore fisso di Matteo:
@@ -188,6 +194,23 @@ Quando Matteo dice che l'agente esecutore ha finito:
    comunicazione. **Non riformi tu** le regole: raccogli e segnali (vedi COMUNICAZIONE § due ruoli).
 4. **Se il contesto è quasi esaurito** (specie durante un bug, prima di un compact) → dai un
    **«prompt proseguimento»** invece di iniziare la revisione o il report.
+
+### Chiusura verso Matteo (dopo procedure fine chat)
+
+Quando hai completato revisione (se rapida), aggiornamento report e raccolta dati comunicazione
+(OSSERVAZIONI/PROPOSTE se previsto), chiudi con **2–4 righe** che rispondano esplicitamente:
+
+- **Ciclo task:** sì — può aprire un’altra chat; questa è **completa a livello tecnico e operativo**
+  per il lavoro richiesto (codice/validate/checklist/report skill area).
+- **Dati skill system:** report sessione + «Dati comunicazione» (e OSSERVAZIONI/PROPOSTE se aggiornati);
+  la **sessione revisore vocabolario** è separata e **non** blocca la chiusura.
+- **Resta fuori** (solo se applicabile): commit non fatto, smoke non confermato, follow-up esplicito.
+
+Esempio: «Puoi chiudere questa chat e aprirne un’altra: task ok, report in Sessioni di lavoro/…,
+dati comunicazione raccolti. Resta solo commit se lo vuoi / sessione revisore quando decidi tu.»
+
+Se la revisione include commit (Matteo lo chiede o è prassi del ciclo), eseguilo **dopo** la chiusura
+in chat: commit codice e commit `docs` separati se il repo lo fa di solito; non includere file fuori scope del task.
 
 ---
 

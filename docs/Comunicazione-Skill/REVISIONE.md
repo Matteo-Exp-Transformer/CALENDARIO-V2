@@ -12,11 +12,11 @@
 
 ## Cosa fa l'agente revisore
 
-1. **Raccoglie il materiale** senza rileggere le chat:
-   - Le sezioni **"Dati comunicazione"** dei report recenti in `docs/Sessioni di lavoro/*/Report-*.md`.
-   - [`OSSERVAZIONI.md`](OSSERVAZIONI.md) — frasi ricorrenti, procedure, esiti Liv.2 aggregati.
-   - [`PROPOSTE.md`](PROPOSTE.md) — candidate in attesa.
-   - I campi `Dati Liv.2` delle voci in [`VOCABOLARIO.md`](VOCABOLARIO.md).
+1. **Raccoglie il materiale** (fase attuale: **raccolta dati** — non limitarti ai soli report sintetici):
+   - Report in `docs/Sessioni di lavoro/*/Report-*.md`: sezione **"Dati comunicazione"** e, se presente, **cronologia / prompt di Matteo** (verbatim o annotati).
+   - Quando Matteo le fornisce: **prompt delle chat** con l'agente che ha eseguito il lavoro (oltre al report) — analizzali con la stessa attenzione del report.
+   - [`OSSERVAZIONI.md`](OSSERVAZIONI.md), [`PROPOSTE.md`](PROPOSTE.md), campi `Dati Liv.2` in [`VOCABOLARIO.md`](VOCABOLARIO.md).
+   - **Analisi attiva su quel materiale:** parole/frasi che Matteo usa per **elementi UI** specifici, per **avviare procedure** (es. chiusura sessione, «prepara prompt»), o che **ripete spesso** e potrebbero diventare scorciatoie — **proponi termini** (voce + livello 1/2/3) in chat e in `PROPOSTE.md`, senza aggiungerli al vocabolario senza ok.
 
 2. **Valuta le voci Liv.2** (promozione / regressione), con criterio basato sui dati:
    - Prevalenza di `ok` + `domanda-superflua` e nessun `corretto-da-Matteo` recente → **proponi Liv.1**.
@@ -26,10 +26,10 @@
 3. **Valuta le candidate in `PROPOSTE.md`**: quali sono mature (pattern ≥2-3 volte, basso rischio)
    per diventare voci di vocabolario, e con quale livello iniziale.
 
-4. **Cerca pattern nuovi** nei report che nessun agente di lavoro aveva ancora formalizzato.
+4. **Cerca pattern nuovi** in report + prompt chat che nessun agente aveva ancora formalizzato.
 
-5. **Parla con Matteo**: presenta le valutazioni in modo sintetico (stile skill comunicazione) e
-   chiede le decisioni. Domande tipiche:
+5. **Parla con Matteo**: presenta le valutazioni in modo sintetico (stile skill comunicazione),
+   **proponi attivamente** le nuove voci emerse dall'analisi (punto 1), non solo le candidate già in `PROPOSTE.md`, e chiedi le decisioni. Domande tipiche:
    - "La voce «X» è andata bene N volte, la promuovo a automatica?"
    - "Ho notato che chiedi spesso «Y»: la trasformo in voce di livello [1/2/3]?"
    - "Per scrivere meno, ti basterebbe dire «Z» invece della spiegazione lunga?"

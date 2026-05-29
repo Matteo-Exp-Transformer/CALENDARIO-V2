@@ -26,6 +26,18 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## In attesa di decisione
 
+### [IN ATTESA] «lavoro ok» → conferma successo implementazione (spesso seguito da report)
+- **Pattern osservato:** 1 (29-05-26). Matteo chiude una sessione Esecuzione con «lavoro ok» dopo
+  aver verificato (o fidandosi del riepilogo agente); nella stessa frase o subito dopo chiede spesso
+  «fai report finale» e dettagli comunicazione.
+- **Automatizzabile con certezza:** trattare «lavoro ok» come **conferma che il codice/task è accettato**
+  (equivalente a «funziona» / «perfetto» per il protocollo fine-chat); **non** sostituisce da solo
+  «fai report finale» se Matteo non lo dice — ma se dice entrambi, eseguire report + OSSERVAZIONI + PROPOSTE.
+- **Meglio lasciare manuale:** commit, push, migrazioni DB — non inferire da «lavoro ok» solo.
+- **Livello suggerito:** 1 (automatico) per la conferma; resta Liv.1 anche «fai report finale» quando esplicito.
+- **Token risparmiati per Matteo:** una parola invece di ripetere «va bene così, chiudi sessione».
+- **Esito / data:** in attesa · origine report 29-05-26 card scorrevole titolo admin.
+
 ### [IN ATTESA] «comportamenti sono ok» · «non è un problema» · «voglio che cambi (come ti ho detto)» → cambio intenzionale, non bugfix
 - **Pattern osservato:** 1 forte (29-05-26). Matteo corregge l'agente che aveva inquadrato la richiesta
   come fix/regressione: il comportamento attuale è accettabile; serve un **cambio mirato** al comportamento
