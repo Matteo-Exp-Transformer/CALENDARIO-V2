@@ -44,6 +44,9 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## Archivio (decise)
 
+### ✅ ACCETTATA (29-05-26) Metriche successo chat → `EVOLUZIONE_SKILLS.md` (M5 concreta)
+- 4 criteri oggettivi (n° prompt Matteo · correzioni post-1ª risposta · follow-up generati · modalità alzata). Li mette **prepara-prompt a valle** (no autopagella), solo numeri, sessioni standard/deep. + **PAUSA-RACCOLTA**: stop nuove regole finché non si accumulano ~5-10 sessioni di dati. Origine: idea Matteo 29-05-26. **Ultima aggiunta prima della pausa.**
+
 ### ✅ ACCETTATA (29-05-26) «mockup HTML per scelta flusso UX» → PREPARA_PROMPT §1.B
 - **Pattern osservato:** Matteo: «comodissimo», «mi serve quasi sempre» per scegliere flusso/UI prima di implementare (ciclo salvataggio admin).
 - **Automatizzabile:** prepara-prompt propone o consegna HTML multi-stato (tab oggi/proposta/modale); file es. `mockup-*.html` in root ok.

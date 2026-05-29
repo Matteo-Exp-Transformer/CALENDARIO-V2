@@ -259,7 +259,12 @@ Quando Matteo dice che l'agente esecutore ha finito:
    (frasi ricorrenti, cosa ha funzionato, procedure ripetute, esiti voci Liv.2) e segnalare
    candidati in `PROPOSTE.md`. Questi dati servono agli agenti Meta che riformeranno lo skill di
    comunicazione. **Non riformi tu** le regole: raccogli e segnali (vedi COMUNICAZIONE § due ruoli).
-5. **Se il contesto è quasi esaurito** (specie durante un bug, prima di un compact) → dai un
+5. **Metriche successo chat (sessioni standard/deep).** Sei l'agente che ha visto tutto il ciclo:
+   aggiungi una riga oggettiva al «Registro metriche» di `Comunicazione-Skill/EVOLUZIONE_SKILLS.md`
+   con i 4 conteggi (n° prompt di Matteo · correzioni dopo la 1ª risposta · follow-up generati ·
+   modalità alzata sì/no). **Solo numeri, niente voto** — il senior interpreta. Non gonfiare: è un
+   dato, non una pagella. Salta per le sessioni light.
+6. **Se il contesto è quasi esaurito** (specie durante un bug, prima di un compact) → dai un
    **«prompt proseguimento»** invece di iniziare la revisione o il report.
 
 ### Chiusura verso Matteo (dopo procedure fine chat)

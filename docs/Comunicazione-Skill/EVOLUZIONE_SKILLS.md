@@ -15,6 +15,13 @@
 > **Flusso reale:** agenti annotano durante il lavoro → Matteo, dopo alcune sessioni, chiede una
 > revisione comunicazione → poi lancia il Meta senior per analisi + fix + sviluppo del sistema.
 
+> 🛑 **PAUSA-RACCOLTA (decisa 29-05-26).** Lo skill system ha avuto molte aggiunte in pochi giorni.
+> **Stop a nuovi meccanismi/regole** finché non si accumulano ~5-10 sessioni di dati con gli
+> strumenti già esistenti (modalità, metriche successo chat, log idee). Il prossimo passo è
+> **misurare**, non aggiungere. Le nuove idee vanno nel Log idee, non implementate subito. Il senior
+> decide cosa promuovere **sui dati**, non sull'intuizione. Questo è il principio che separa un
+> sistema scalabile (poche regole validate) da uno burocratico (molte regole non verificate).
+
 ---
 
 ## ⚠️ Distinzione tecnica importante (markdown vs enforcement vero)
@@ -66,12 +73,51 @@ PROD prima di scrivere sul DB, `npm run validate` pre-commit, blocco commit su f
 conferma. La macchina li esegue, non dipende dalla buona volontà dell'agente.
 **Tipo:** **enforcement vero** (config tecnica, non markdown). Skill harness: `update-config`.
 
-### M5 — Statistiche d'uso del sistema ⬜
+### M5 — Statistiche d'uso del sistema 🔶
 **Obiettivo:** capire dove il sistema funziona e dove no, con numeri semplici.
 **Idee concrete:** dai report e dal SESSION_LOG, contare cose come: sessioni light/standard/deep,
 quali skill/zone si toccano più spesso, cause di errore ricorrenti (da `ERRORI_PROCESSO`), quante
 volte un task è stato "alzato" di modalità in corsa. Input per le decisioni del senior.
 **Tipo:** misto — raccolta soft, eventuale script di conteggio (enforcement leggero).
+**Stato:** prima forma concreta attiva → sezione «Metriche di successo chat» sotto (4 criteri,
+registro append-only). Da affinare coi dati.
+
+---
+
+## Metriche di successo chat (M5 — forma concreta, attiva dal 29-05-26)
+
+**Scopo:** raccogliere dati **oggettivi e contabili** (non opinioni) su quanto bene è andata una
+sessione, così in futuro avremo chat di riferimento per capire **quali comportamenti automatizzare e
+promuovere**. È la milestone che cura il rischio di tutte le altre: dice quali regole valgono.
+
+**Chi mette i dati:** l'agente **prepara-prompt a valle** (ha visto tutto il ciclo; non si
+auto-pagella → meno autocelebrazione). Se non c'è prepara-prompt nel ciclo, li mette l'agente di
+chiusura ma **solo i numeri grezzi**, senza voto sintetico.
+
+**Cosa si registra** (4 criteri iniziali — si affinano coi dati, non sono definitivi):
+
+| Criterio | Come si conta | Segnale |
+|----------|---------------|---------|
+| **N° prompt di Matteo** per chiudere il task | messaggi sostanziali (no «ok», «grazie») | pochi = comando recepito bene |
+| **Correzioni dopo la 1ª risposta** | quante volte Matteo ha ripetuto/corretto l'intento | 0 = capito alla prima |
+| **Follow-up / fix da revisione generati** | n° FU aperti o bug emersi dopo | 0 = lavoro pulito al primo giro |
+| **Modalità alzata in corsa** (light→standard→deep) | sì/no + perché | sì = stima iniziale o prompt incompleti |
+
+**Dove vanno i dati:** una riga nel «Registro metriche» sotto, **per le sole sessioni standard/deep**
+(le light sono troppe e poco informative). Niente voto da 1 a 10 finché non abbiamo abbastanza
+sessioni: per ora **solo i numeri** + una nota di una riga. Il voto sintetico lo decide il senior
+quando i criteri saranno tarati.
+
+> **Onestà sul peso (Matteo, 29-05-26):** in questa fase di test si accetta un contesto leggermente
+> più pesante per raccogliere **molti dati**; si snellisce mano a mano. Il senior, quando i pattern
+> sono chiari, taglia i criteri inutili e alleggerisce.
+
+### Registro metriche (append-only — sessioni standard/deep)
+
+> Formato: `GG-MM-AA · tema · modalità · prompt:N · correzioni:N · FU:N · alzata:sì/no · nota`.
+
+- 29-05-26 · creazione metriche successo chat · deep · prompt:~6 · correzioni:0 · FU:0 · alzata:no · sessione meta skill system, comandi recepiti alla prima, scope ampliato da Matteo in corso (non è correzione)
+- 29-05-26 · mappatura Impostazioni↔Prenota + fix FU-007/008 + revisione · standard · prompt:7 · correzioni:2 · FU:3 · alzata:sì · 4 giri; revisione Approva; FU-009 aperto
 
 ---
 
