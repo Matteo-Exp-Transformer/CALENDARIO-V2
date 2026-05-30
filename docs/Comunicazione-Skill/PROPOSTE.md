@@ -26,6 +26,15 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## In attesa di decisione
 
+### In attesa «ciclo Verifica — commit docs + merge env/test→main a cura del revisore»
+- **Pattern osservato:** A fine mappa/revisione/fix, Matteo chiede esplicitamente merge su `main` e commit `docs/` con `git add -f`; l’esecutore Fase 1 aveva anche scritto un report revisione (conflitto di ruoli). Merge 30-05-26 (`b3216d7`) fatto dal revisore post-controverifica.
+- **Automatizzabile con certezza:** a chiusura ciclo **deep Verifica** (mappa → revisione → fix → revisione fix): revisore fa `git add -f docs/…`, commit messaggio `docs(scope): …`, `merge env/test --no-ff` → `main`, `push origin main`; esecutore **non** mergea né revisiona sé stesso; check DB prod **solo lettura** (`list_migrations` + colonne critiche) prima del push se il fix tocca schema già su TEST.
+- **Meglio lasciare manuale:** push produzione Supabase (`apply_migration` su `rwuxgvld`), deploy Vercel, tag release — sempre su richiesta esplicita Matteo.
+- **Livello suggerito:** 2 — revisore mergea dopo «fai report finale» / «aggiorna main»; esecutore committa solo il proprio scope (`src/` o docs della sua fase) su `env/test`.
+- **Token risparmiati:** 1 messaggio Matteo per merge + meno rischio doppio report revisione.
+- **Dove codificare:** `APP_CONTEXT_SKILL.md` §7.0 (ruolo revisore) + `TESTING_SKILL.md` §7 chiusura ciclo.
+- **Esito / data:** proposta 30-05-26 post-merge Menu QR — in attesa ok Matteo.
+
 ### In attesa «checklist QA verso Matteo — no path URL, sì schermata+effetto»
 - **Pattern osservato:** Checklist smoke Menu QR Fase 3 con `/c/antipasti OK` — Matteo: «non mi aiuta a capire» (30-05-26, 1× correzione esplicita).
 - **Automatizzabile con certezza:** template checklist in report e risposte chat: **Admin → …** / **Cliente sul telefono → …** + azione + esito atteso; vietare route tecniche salvo debug interno agente.
