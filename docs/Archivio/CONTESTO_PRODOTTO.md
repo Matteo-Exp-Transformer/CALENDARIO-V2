@@ -69,6 +69,7 @@ sono in `docs/_lavoro/Per matteo/` (privato).
 - Prezzi commerciali reali da definire (placeholder in `Marketing-Skill/EDITION_PRICING_CONTEXT.md`).
 - Verifica PWA end-to-end post-deploy (vedi report PWA 28-05-26).
 - Conformità produzione (privacy, DPA, config Supabase) — tracciata in `Legal-Production-Skill/`.
+- **Skill system tier avanzato (lontano):** valutare entry point multipli per agenti più competenti (Codex, Cursor thinking, ecc.) e pack contesto su misura — `docs/FOLLOW_UP.md` **FU-024**, `APP_CONTEXT_SKILL.md` §4d.
 
 ---
 

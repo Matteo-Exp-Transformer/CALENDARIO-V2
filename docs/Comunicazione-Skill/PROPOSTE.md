@@ -68,6 +68,20 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 - **Livello suggerito:** 2
 - **Esito / data:** FU-006 aperto; in attesa promozione regola report.
 
+### In attesa «file mappa richieste-utente → automazioni» (idea Matteo)
+- **Pattern osservato:** Matteo vuole un punto unico dove annotare le sue richieste ricorrenti (come la diagnosi prod/test 30-05-26) per mappare automazioni che le soddisfino. Oggi le proposte vivono qui in PROPOSTE.md.
+- **Da valutare col revisore:** serve un file .md NUOVO o basta questo file? Rischio duplicazione con OSSERVAZIONI/PROPOSTE/EVOLUZIONE_SKILLS. Matteo stesso ha frenato (Opus 4.8 gli ha chiesto di testare prima di aggiungere) → **non creare file ora**, solo questa nota.
+- **Esito / data:** annotata 30-05-26 su richiesta esplicita Matteo — in attesa decisione revisore (rispetta PAUSA-RACCOLTA).
+
+### In attesa «diagnosi disallineamento prod/test → consultare provider via MCP, non elencare cause ovvie»
+- **Pattern osservato:** 30-05-26 Matteo riporta «prod non aggiornata». Le cause ovvie (deploy vecchio, due hosting) erano già note a lui — voleva che interrogassi i provider per dati reali. Diagnosi risolta con MCP Vercel+Supabase+git: tutto allineato, causa = **cache PWA desktop** (mobile vedeva nuovo, stesso link). Risposta finale troppo lunga: la soluzione ovvia (chiudi/riapri browser) annegata nel testo.
+- **Automatizzabile con certezza:** quando Matteo segnala disallineamento ambienti, l'agente **consulta attivamente** i provider (MCP Vercel deployment+state, MCP Supabase list_migrations, git log branch) PRIMA di ipotizzare; non elenca cause generiche che lui già conosce. Checklist 4 dimensioni: git → deploy → DB → cache/PWA.
+- **Meglio lasciare manuale:** test browser lato Matteo (incognito/hard reload).
+- **Livello suggerito:** 1 per consultare provider; + regola comunicazione: **risposta in 1-2 righe, dettaglio solo se richiesto** (Matteo: troppi caratteri = qualcosa sfugge).
+- **Token risparmiati:** evita giri di ipotesi sbagliate; risposte più corte.
+- **Dove codificare (se approvata):** APP_CONTEXT §1b.1 (checklist 4 dimensioni) + COMUNICAZIONE (brevità) + nota «consulta provider con MCP nei ragionamenti».
+- **Esito / data:** annotata 30-05-26 — in attesa ok (PAUSA-RACCOLTA).
+
 ### In attesa «tutto fatto» come chiusura ciclo multi-agente
 - **Pattern osservato:** Matteo dice «tutto fatto» a fine catena prepara → esecuzione → (revisione) e chiede raccolta comunicazione + commit + report (29-05-26 salvataggio admin).
 - **Automatizzabile con certezza:** agente prepara-prompt a valle (o esecutore con conferma) aggiorna report ciclo, OSSERVAZIONI, PROPOSTE, SESSION_LOG; commit codice + docs separati; **non** promuove voci vocabolario.

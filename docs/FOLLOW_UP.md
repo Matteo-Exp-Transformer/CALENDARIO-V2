@@ -2,6 +2,8 @@
 
 Debiti e controlli differiti collegati ai report di sessione.
 
+**Stati:** `Aperto` / `Fatto` = lavoro operativo · `Milestone lontana` = idea approvata, sessione dedicata futura (non priorità corrente).
+
 | ID | Stato | Follow-up | Report sessione |
 |----|-------|-----------|-----------------|
 | FU-001 | Aperto | Verificare modal dettaglio prenotazione in calendario — promo/offerte viste dal cliente, UI corretta (polish elenco promo in `BookingDetailsModal` / card calendario). | [Report promo Personalizza form 29-05-26](Sessioni%20di%20lavoro/29-05-26/Report-promo-personalizza-form-29-05-26.md) |
@@ -26,6 +28,8 @@ Debiti e controlli differiti collegati ai report di sessione.
 | FU-011 | Fatto | ~~Lampeggio attenzione~~ — root cause reale: validazione HTML5 (`required` senza `noValidate`) bloccava `validate()` React; fix `noValidate` + dismiss `isTrusted` + pulse arancione `--color-warm-orange`. **QA Matteo OK.** | [Report validazione UX Prenota 29-05-26](Sessioni%20di%20lavoro/29-05-26/Report-validazione-ux-prenota-29-05-26.md) |
 | FU-012 | Fatto | ~~Card ingredienti non si chiudono~~ — stesso blocco HTML5; fix `noValidate` + evento `booking-menu-compose-collapse` + remount `MenuSelection`. **QA Matteo OK.** | [Report validazione UX Prenota 29-05-26](Sessioni%20di%20lavoro/29-05-26/Report-validazione-ux-prenota-29-05-26.md) |
 | FU-013 | Fatto | ~~Ancoraggio overlay card ingredienti~~ — loop rAF + listener scroll orizzontale; **QA Matteo OK** (drift residuo accettabile). | [Report validazione UX Prenota 29-05-26](Sessioni%20di%20lavoro/29-05-26/Report-validazione-ux-prenota-29-05-26.md) |
+| FU-024 | Milestone lontana | **Skill system per agenti più competenti (tier avanzato):** valutare se conviene un **secondo livello** di istruzioni (o più file di ingresso scelti da Matteo all’apertura chat) per modelli/tool con più contesto e ragionamento — es. Claude Codex, Cursor «intelligent» / thinking, Opus-high. **Obiettivo:** all’avvio scegliere il profilo giusto («fix UI», «architettura DB», «revisione profonda») senza caricare sempre tutto `APP_CONTEXT_SKILL.md`; per agenti forti, pack più denso (invarianti + skill d’area + meno ripetizioni). **Da decidere in sessione Meta/dedicata:** duplicare vs estendere Skill 0; cartella `.cursor/skills/` per tier; regole Cursor vs solo `docs/`; come restare allineati a PREPARA_PROMPT e LOCK senza moltiplicare la manutenzione. **Non implementare ora** — spike di design quando lo skill system attuale è stabile (dopo debiti prod tipo FU-023). Dettaglio → `APP_CONTEXT_SKILL.md` §4d. | Richiesta Matteo 30-05-26 (roadmap agenti) |
+| FU-023 | Aperto | **Mappatura trasversale — fallback di tutti gli elementi:** audit su **tutta** l'app (admin, Pagina Prenota, Menu QR, email, resolver, impostazioni) per ogni valore mostrato quando DB/config/tenant è assente, in errore o non ancora compilato (`\|\| '…'`, `?? default`, URL/immagini demo, label fisse, slug/tenant di test). **Obiettivo:** eliminare shortcut hardcodati pensati per dev/demo e sostituirli con fonti **affidabili in produzione** (`restaurant_settings`, `booking_public_form_config`, preset/menu Supabase, `tenant_features`, config QR, costanti centralizzate documentate, oppure `EmptyState` esplicito). **Metodo:** per elemento → (1) valore da storage se presente, (2) fallback attuale nel codice, (3) classificare ok prod / da sostituire / vuoto intenzionale. Sessione dedicata o incrementale per area (skill § 0). **Non** introdurre nuovi placeholder «per far vedere qualcosa» senza nota in questo FU o sotto-riga nel report. Regola skill → `APP_CONTEXT_SKILL.md` §4c. | Richiesta Matteo 30-05-26 (debito prod-ready) |
 
 ## Note FU-002 / FU-003 / FU-004 / FU-005 (contesto prodotto)
 
@@ -36,3 +40,17 @@ Debiti e controlli differiti collegati ai report di sessione.
 - **FU-005:** layer di sicurezza umana su dati pubblici al momento del Salva (prod).
 - **Storage:** invariato (`restaurant_settings`, `booking_public_form_config`, tabelle menu, ecc.) — cambia solo **quando** e **come** il client scrive su DB, non il modello dati.
 - **FU-003 non sostituisce** conferme già presenti su operazioni bulk (es. reset tutte le sottotab): estendere la copertura alle delete singole mancanti.
+
+## Note FU-023 (fallback prod-ready)
+
+- **Per il ristoratore:** oggi, se un campo non è compilato in Impostazioni, l'app può mostrare testi o immagini «di riempimento» scritti nel codice (utili in sviluppo, rischiosi in commercio: copy sbagliata, foto generiche, prezzi inventati).
+- **Obiettivo:** ogni schermata deve prendere i dati dal **database del ristorante** (`restaurant_settings`, config Prenota, menu, QR) oppure dire chiaramente «non configurato» — non fingere contenuto.
+- **Storage di riferimento:** stesso modello dati già in produzione; FU-023 cambia solo **cosa mostra il client** quando il valore manca, non le tabelle.
+- **Relazione con altri FU:** FU-009 mappa singole impostazioni Prenota; FU-023 è l'**inventario globale** di tutti i `??` / `||` e placeholder sparsi nel codice.
+
+## Note FU-024 (milestone lontana — skill per agenti forti)
+
+- **Per te oggi:** apri quasi sempre la stessa chat con Skill 0 (`APP_CONTEXT_SKILL.md`) + skill d’area — funziona, ma un modello «più intelligente» potrebbe reggere **più contesto utile** e meno ripetizioni; un modello leggero potrebbe partire da **file più corti** (solo routing + LOCK del task).
+- **Idea:** più **entry point** da scegliere («Implementa feature», «Revisiona piano», «DB/migrazione», «Solo prepara prompt») — ciascuno con il set minimo di `docs/` e `.cursor/skills/` da caricare.
+- **Rischio da evitare:** tre copie delle stesse RULE che divergono; preferire **un nucleo unico** (`APP_CONTEXT` §4) + **appendici per tier** o skill Cursor separate che puntano ai medesimi file.
+- **Quando affrontarlo:** sessione **Meta** dedicata (non in mezzo a un fix); dopo FU-023 e stabilizzazione docs pre-repo pubblico se possibile.

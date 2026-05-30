@@ -33,6 +33,14 @@
 
 ## Sessioni registrate (append-only)
 
+### 30-05-26 — Terminali Cursor + chiusura a «report finale»
+- **Contesto:** molte tab terminale in Cursor (vite su 5173–5176, tab vuote, «History restored»); Matteo chiede se può chiuderle.
+- **Causa tipica:** `npm run dev` / comandi shell lanciati **dagli agenti** (Shell tool, processi in background) + tab aperte dall’utente per sviluppo locale.
+- **Regola richiesta da Matteo (30-05-26):** quando dice **«fai report finale»** (o chiusura sessione equivalente), l’agente deve **suggerire esplicitamente** di chiudere **solo i terminali che ha aperto l’agente** in quella sessione — **non** quelli avviati da Matteo (es. il suo `npm run dev` attivo per provare in locale).
+- **Come distinguere (per l’agente):** terminali con comandi partiti da Shell tool / subagent / `run_in_background` in chat corrente o sessioni agente precedenti nella stessa finestra Cursor; **non** toccare tab dove Matteo ha lanciato a mano `npm run dev` se ancora in uso.
+- **Comportamento desiderato in chiusura chat:** 1–2 righe tipo «Puoi chiudere le tab terminale lasciate dall’agente (es. vecchi `npm run dev` su 5174/5175); tieni quella con il tuo dev se stai ancora lavorando in locale».
+- **Stato regola (30-05-26):** **attiva** — `APP_CONTEXT_SKILL.md` §7.3, `COMUNICAZIONE_UTENTE_SKILL.md` fine-chat §5, `VOCABOLARIO.md` «fai report finale», `PREPARA_PROMPT_SKILL.md` chiusura.
+
 ### 30-05-26 — Prepara prompt + revisione — loop modale Modifica Menù QR
 - **Flusso:** Ask (prepara) → esecutore → Agent (revisione + report comunicazione).
 - **Input iniziale:** stack console `Maximum update depth` / `MenuQrModal.tsx:139`.
@@ -93,6 +101,7 @@
 | «home solo body / header solo categoria» (correzione prodotto Menu QR) | 1 | RULE layout — citare sempre in task asset menu QR |
 | «le altre foto le stiamo usando?» | 1 | rispondere subito con tabella tema↔file; aggiungere tema in UI se spare |
 | «fai report finale comunicazione e skill» | 2 | §7 completo + OSSERVAZIONI + FOLLOW_UP |
+| «fai report finale» (chiusura sessione) | 1 | §7 + **§7.3 terminali** (Liv.1 attivo): chiudere solo tab agente; non il dev di Matteo |
 | «ridammi prompt completo» + nota anti-copia | 1 | blocco Nota da Matteo nel prompt esecutore |
 | «solo modifica / subito all’apertura» (correzione riproduzione bug) | 1 | obbligatoria nel prompt se non nello stack |
 | «revisiona… comunicazione… segna cosa ho chiesto in chat» | 1 | cronologia in § Dati comunicazione report |

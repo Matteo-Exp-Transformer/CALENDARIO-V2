@@ -42,13 +42,19 @@ momenti** nel ciclo:
 
 ## 0. Cosa carichi nel tuo contesto (e cosa no)
 
+> ✅ **Check branch (prima di tutto).** All'avvio verifica il branch git corrente (`git branch --show-current`).
+> Se **non** è `env/test`, la **prima frase** della tua risposta in chat deve avvisare Matteo:
+> «⚠️ Non sei su `env/test` ma su `<branch>` — passa a env/test prima di iniziare la sessione.»
+> Poi prosegui normalmente. Se sei già su `env/test`, non dire nulla e procedi.
+
 Leggi (per orientarti e stimare i rischi):
 - `docs/APP_CONTEXT_SKILL.md` — § 0.0 profili, § 0 routing aree, § 4 RULE/LOCK, § 1b TEST vs PROD.
-- `docs/FOLLOW_UP.md` — follow-up già aperti su sessioni passate (evita duplicati; spunta cosa il nuovo task potrebbe chiudere).
+- `docs/FOLLOW_UP.md` — follow-up già aperti su sessioni passate (evita duplicati; spunta cosa il nuovo task potrebbe chiudere). Se il task tocca **default UI quando manca config/DB**, ricorda **FU-023** (`APP_CONTEXT_SKILL.md` §4c) e non proporre nuovi placeholder hardcodati senza tracciarli.
 - `docs/Comunicazione-Skill/VOCABOLARIO.md` — **le parole-comando definite e approvate**. Sono il
   lessico ufficiale con cui si generano i comandi agli agenti: ogni voce ha un significato univoco
   e un livello. Usalo come dizionario di traduzione (vedi § 1.B).
 - `docs/Archivio/CONTESTO_PRODOTTO.md` — visione prodotto, perché delle scelte, dove trovi cosa.
+- `docs/FOLLOW_UP.md` **FU-024** (solo se Matteo chiede roadmap skill / agenti forti): milestone lontana §4d `APP_CONTEXT_SKILL.md` — **non** proporre di creare nuovi skill file in chat di lavoro normale.
 - Se serve, le skill d'area citate nella tabella § 0 (solo le sezioni pertinenti al task).
 
 **Non** apri i file di codice (`src/…`). Il check di codice vero lo fa l'agente di lavoro. Tu resti
@@ -266,8 +272,9 @@ Quando Matteo dice che l'agente esecutore ha finito:
    un agente esterno (profilo Verifica, «revisione completa») e concentrati sul punto 3.
 3. **Sempre — follow-up.** Leggi `docs/FOLLOW_UP.md`. Segnala a Matteo follow-up **nuovi** emersi
    dalla revisione (anche se non li aveva chiesti). Aggiorna il file con righe confermate; se il task
-   chiude un FU esistente → stato `fatto` + nota. Includi in chiusura chat l'elenco FU ancora `aperto`
-   rilevanti per il prossimo lavoro (max 3 righe).
+   chiude un FU esistente → stato `fatto` + nota. Se emergono fallback hardcodati di test → sotto-riga
+   in **FU-023** (audit trasversale, §4c `APP_CONTEXT_SKILL.md`). Includi in chiusura chat l'elenco FU
+   ancora `aperto` rilevanti per il prossimo lavoro (max 3 righe).
 4. **Sempre — raccogli i dati per lo skill di comunicazione.** Sei l'interlocutore fisso di Matteo:
    è tuo compito alimentare `Comunicazione-Skill/OSSERVAZIONI.md` con dati **reali** di questa chat
    (frasi ricorrenti, cosa ha funzionato, procedure ripetute, esiti voci Liv.2) e segnalare
@@ -291,8 +298,10 @@ Quando hai completato revisione (se rapida), aggiornamento report e raccolta dat
 - **Dati skill system:** report sessione + «Dati comunicazione» (e OSSERVAZIONI/PROPOSTE se aggiornati);
   la **sessione revisore vocabolario** è separata e **non** blocca la chiusura.
 - **Resta fuori** (solo se applicabile): commit non fatto, smoke non confermato, follow-up esplicito.
+- **Terminali:** se in sessione l’esecutore ha avviato shell/`npm run dev`, ricorda a Matteo di chiudere **solo** quelle tab agente (`APP_CONTEXT` §7.3) — non il suo dev locale.
 
 Esempio: «Puoi chiudere questa chat e aprirne un’altra: task ok, report in Sessioni di lavoro/…,
+dati comunicazione raccolti. Puoi chiudere le tab terminale lasciate dall’agente; tieni il tuo `npm run dev` se ti serve ancora.»
 dati comunicazione raccolti. Resta solo commit se lo vuoi / sessione revisore quando decidi tu.»
 
 Se la revisione include commit (Matteo lo chiede o è prassi del ciclo), eseguilo **dopo** la chiusura
