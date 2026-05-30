@@ -2,11 +2,11 @@
 
 **Data:** 29-05-26  
 **Modalità:** deep · **Profilo:** Verifica (APP_CONTEXT §0.0)  
-**Stato:** Fase 1 mappa ✅ · Fase 2 revisione indipendente 2° passaggio ✅ (**Approva con riserve**, 30-05-26) — pronto per Fase 3 fix
+**Stato:** Ciclo Menu QR ✅ chiuso (F1→F4, 30-05-26) — **F4 Approva con riserve**
 
-- **Cosa è stato fatto:** mappatura end-to-end 38 coppie admin → DB → UI pubblica; query SQL verificate su TEST; incoerenze INC-01…12, 15–16 (13–14 non catalogati); context agenti; **revisione indipendente** con QA M1–M6 su 375/834/1280 + validate OK.
-- **Cosa resta:** Fase 3 fix (scope 30-05-26: INC-01, INC-09, dialog Salva, INC-04/08; INC-03/06 posticipati); QA admin **Matteo**; FU-021 asset sfondo.
-- **Serve una tua azione:** confermare D1/D2 se vuoi, poi avviare Fase 3 fix.
+- **Cosa è stato fatto:** mappa 38 coppie; revisione F2; fix F3; merge `main`; revisione F4 su `dd315a3`.
+- **Cosa resta:** INC-03/06/15; FU-017…021; **FU-022** ricreare QR test su TEST.
+- **Serve una tua azione:** no per chiusura ciclo.
 
 **Report revisione (fonte):** [Report-revisione-mappatura-menu-qr-admin-pubblico-29-05-26.md](Report-revisione-mappatura-menu-qr-admin-pubblico-29-05-26.md) — § «Revisione indipendente — 2° passaggio»
 

@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 30-05-26 | Verifica — **revisione finale Fase 4** ciclo Menu QR ✅ | [Report F4](Sessioni%20di%20lavoro/29-05-26/Report-revisione-fix-menu-qr-fase4-30-05-26.md) — **Approva con riserve**; `main` validate 227 OK; INC-01/09 risolti in codice; QA browser revisore N/A (0 QR su test-pro TEST); FU-022; ciclo chiuso. |
 | 30-05-26 | Git — merge `env/test` → `main` + push | Commit `b3216d7` su `origin/main`: Menu QR Fase 3 (`5b9c40c`), revisione mappa doc (`cb5a4fa`), digest prezzo (`0c31585`). DB prod verificato read-only: schema Menu QR 036/037 + `040` clamp OK — nessuna migrazione da applicare. |
 | 30-05-26 | Esecuzione — fix Menu QR **Fase 3** ✅ chiuso (QA Matteo 3 round) | [Report finale Fase 3](Sessioni%20di%20lavoro/29-05-26/Report-fix-menu-qr-fase3-29-05-26.md) — validate 227 OK; validazione Salva+categorie+carosello; Modal pattern preferito; § Dati comunicazione esaustivo; FU-021 aperto; Fase 4 ⬜. |
 | 30-05-26 | Esecuzione — fix Menu QR Fase 3 (1° commit report) | [Report fix Fase 3](Sessioni%20di%20lavoro/29-05-26/Report-fix-menu-qr-fase3-29-05-26.md) — vedi riga sopra (report finale unificato). |

@@ -1,10 +1,10 @@
 # Report finale — Ciclo Menu QR Fase 3 (29–30-05-26)
 
 - **Cosa è cambiato:** modale QR completa (label carosello, validazione Salva, Modal conferme/ successo); menu pubblico con nome Anagrafica, protezione categorie spente, header categoria a tema; cuoricino rimosso.
-- **Cosa resta:** Fase 4 revisione fix; INC-03/06 preset/mixed; INC-15; asset PNG scroll **FU-021**; eventuale rimozione toast validazione (preferenza Matteo: Salva disattivato basta).
-- **Serve una tua azione:** no per Fase 3 — **Matteo ha confermato QA round 3 OK**; opzionale Fase 4 revisore + commit se richiesto.
+- **Cosa resta:** INC-03/06 preset/mixed; INC-15; asset PNG scroll **FU-021**; **FU-022** ricreare QR test su TEST; toast validazione opzionale (PROPOSTE).
+- **Serve una tua azione:** no — Fase 3 chiusa; **Fase 4 revisore Approva con riserve** (vedi report sotto).
 
-**Ciclo:** [Mappa Fase 1](Report-mappatura-menu-qr-admin-pubblico-29-05-26.md) → [Revisione Fase 2](Report-revisione-mappatura-menu-qr-admin-pubblico-29-05-26.md) → **Fase 3 fix (questo report)** → Fase 4 ⬜
+**Ciclo:** [Mappa Fase 1](Report-mappatura-menu-qr-admin-pubblico-29-05-26.md) → [Revisione Fase 2](Report-revisione-mappatura-menu-qr-admin-pubblico-29-05-26.md) → [Fase 3 fix (questo report)](Report-fix-menu-qr-fase3-29-05-26.md) → [Revisione F4](Report-revisione-fix-menu-qr-fase4-30-05-26.md) ✅
 
 **Modalità:** standard (elevata a deep su validazione multi-turno + comunicazione) · **Profilo:** Esecuzione · **Chiusura:** Matteo 30-05-26 «compila report finale» + conferma resto OK
 
@@ -17,7 +17,7 @@
 | 1 Mappa | ✅ | 38 coppie, INC catalogati |
 | 2 Revisione | ✅ | Approva con riserve (2° passaggio) |
 | 3 Fix codice | ✅ | QA Matteo 3 round — **chiuso** |
-| 4 Revisione fix | ⬜ | Handoff revisore |
+| 4 Revisione fix | ✅ | [Report F4](Report-revisione-fix-menu-qr-fase4-30-05-26.md) — Approva con riserve |
 
 ---
 
@@ -262,7 +262,8 @@ Matteo invia **DOM Path + React Component + Position** (es. `Modal`, `MenuPrices
 | FU-017/018/019 | Invariati da mappa | Aperto |
 | INC-03/06 | Preset/mixed modale | Posticipato |
 | INC-15 | Hidden preset page | Posticipato |
-| Fase 4 | Revisione fix indipendente | Da pianificare |
+| Fase 4 | Revisione fix | ✅ Approva con riserve — vedi [Report F4](Report-revisione-fix-menu-qr-fase4-30-05-26.md) |
+| FU-022 | QR test-pro su TEST eliminato — ricreare per QA | Aperto |
 | Toast validazione QR | Opzionale rimuovere se solo Salva grigio | Proposta Matteo — in attesa |
 
 ---
