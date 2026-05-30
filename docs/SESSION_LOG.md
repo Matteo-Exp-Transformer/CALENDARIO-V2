@@ -13,6 +13,10 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 30-05-26 | Ops — **allineamento PROD** Menu QR (migrazione `041`) ✅ | Migrazione `menu_qr_theme_green_wellness` su `rwuxgvld`; constraint `theme_key` include `green_wellness`; frontend già su `main` (`2fc7e9b` + deploy `5f2acc8`). |
+| 30-05-26 | Esecuzione — fix loop **Maximum update depth** modale Modifica Menù QR ✅ | [Report](Sessioni%20di%20lavoro/30-05-26/Report-fix-loop-modifica-menu-qr-30-05-26.md) — `MenuQrModal`: array stabili + sync override con `isSuccess`; validate 227 OK; QA Matteo console OK. |
+| 30-05-26 | Esecuzione — **ciclo temi sfondo Menu QR** ✅ (asset + body-only home + Green Wellness) | [Report ciclo](Sessioni%20di%20lavoro/30-05-26/Report-ciclo-temi-sfondo-menu-qr-30-05-26.md) — commit `2fc7e9b`; 5 temi PNG; migrazione `041` TEST+PROD; push `main`+`env/test`; FU-021 parziale. |
+| 30-05-26 | Meta — **prepara prompt** temi sfondo Menu QR (light, no codice) | [Report](Sessioni%20di%20lavoro/30-05-26/Report-prepara-prompt-temi-sfondo-menu-qr-30-05-26.md) — prompt v3; vedi report ciclo sopra. |
 | 30-05-26 | Verifica — **revisione finale Fase 4** ciclo Menu QR ✅ | [Report F4](Sessioni%20di%20lavoro/29-05-26/Report-revisione-fix-menu-qr-fase4-30-05-26.md) — **Approva con riserve**; `main` validate 227 OK; INC-01/09 risolti in codice; QA browser revisore N/A (0 QR su test-pro TEST); FU-022; ciclo chiuso. |
 | 30-05-26 | Git — merge `env/test` → `main` + push | Commit `b3216d7` su `origin/main`: Menu QR Fase 3 (`5b9c40c`), revisione mappa doc (`cb5a4fa`), digest prezzo (`0c31585`). DB prod verificato read-only: schema Menu QR 036/037 + `040` clamp OK — nessuna migrazione da applicare. |
 | 30-05-26 | Esecuzione — fix Menu QR **Fase 3** ✅ chiuso (QA Matteo 3 round) | [Report finale Fase 3](Sessioni%20di%20lavoro/29-05-26/Report-fix-menu-qr-fase3-29-05-26.md) — validate 227 OK; validazione Salva+categorie+carosello; Modal pattern preferito; § Dati comunicazione esaustivo; FU-021 aperto; Fase 4 ⬜. |

@@ -17,8 +17,17 @@ import {
 } from './MenuHomepageConfigPanel'
 import { DEFAULT_THEME_KEY, MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
 import { validateMenuQrSettings, isMenuQrSettingsValid } from '../utils/menuQrValidation'
-import type { CarouselItem, MenuItem, MenuQrCode, MenuQrSettingsSavePayload } from '@/types/menu'
+import type {
+  CarouselItem,
+  MenuItem,
+  MenuQrCode,
+  MenuQrSettingsSavePayload,
+  MenuQrcodeCategoryOverride,
+} from '@/types/menu'
 import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
+
+const EMPTY_OVERRIDES: MenuQrcodeCategoryOverride[] = []
+const EMPTY_MENU_ITEMS: MenuItem[] = []
 
 function normalizeThemeKey(key: string | undefined | null): MenuThemeKey {
   if (key && key in MENU_THEMES) return key as MenuThemeKey
@@ -77,8 +86,11 @@ export function MenuQrModal({
 }: Props) {
   const { tenantId } = useTenantContext()
   const menuQrCodeId = editing?.id ?? null
-  const { data: overrides = [] } = useMenuQrcodeCategoriesForQr(menuQrCodeId)
-  const { data: menuItems = [] } = useMenuItems()
+  const { data: overridesData, isSuccess: overridesLoaded } =
+    useMenuQrcodeCategoriesForQr(menuQrCodeId)
+  const overrides = overridesData ?? EMPTY_OVERRIDES
+  const { data: menuItemsData } = useMenuItems()
+  const menuItems = menuItemsData ?? EMPTY_MENU_ITEMS
 
   const [draftShortCode, setDraftShortCode] = useState(() => generateShortCode())
   const [name, setName] = useState('')
@@ -135,9 +147,9 @@ export function MenuQrModal({
   }, [isOpen, editing, categoryKeysWithItems, categories])
 
   useEffect(() => {
-    if (!isOpen || !editing) return
+    if (!isOpen || !editing || !overridesLoaded) return
     setOverrideDrafts(buildCategoryOverrideDrafts(categories, overrides))
-  }, [isOpen, editing, categories, overrides])
+  }, [isOpen, editing, categories, overrides, overridesLoaded])
 
   useEffect(() => {
     if (!isOpen || editing) return

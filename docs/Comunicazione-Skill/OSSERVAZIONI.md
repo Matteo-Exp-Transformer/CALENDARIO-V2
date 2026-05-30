@@ -33,6 +33,37 @@
 
 ## Sessioni registrate (append-only)
 
+### 30-05-26 — Prepara prompt + revisione — loop modale Modifica Menù QR
+- **Flusso:** Ask (prepara) → esecutore → Agent (revisione + report comunicazione).
+- **Input iniziale:** stack console `Maximum update depth` / `MenuQrModal.tsx:139`.
+- **Correzioni Matteo (fondamentali per il prompt):** «**solo modifica**»; errori «**appena** apro modale» (non Nuovo QR).
+- **Richiesta esplicita:** «**ridammi prompt completo**» + annotare che senza quelle due frasi rischiava di **copiare male** il prompt.
+- **Pattern prompt:** blocco **Nota da Matteo** in testa al prompt esecutore (riproduzione non deducibile solo dallo stack).
+- **Chiusura:** «revisiona e aggiorna report finale» + «**comunicazione non dimenticarla**» + «segna cosa ti ho chiesto in questa chat».
+- Report: `Report-fix-loop-modifica-menu-qr-30-05-26.md` (§ Dati comunicazione ciclo completo).
+
+### 30-05-26 — Fix loop modale Modifica Menù QR
+- **Bug:** solo **Modifica** (matita), non «Nuovo QR» — errori console **appena** apertura modale.
+- **Causa confermata:** default `= []` su query override → dipendenza instabile in `useEffect` modifica.
+- **Fix:** `EMPTY_OVERRIDES` / gate `isSuccess` in `MenuQrModal.tsx`.
+- **QA Matteo:** «ok non vedo più errore in console».
+- **Pattern da tenere d'occhio:** altri hook con `data = []` nella feature Menu QR (non aperto FU).
+
+### 30-05-26 — Ciclo temi sfondo Menu QR (asset → deploy)
+- **Flusso:** prepara-prompt → test PNG → fix body-only home → batch 2 (a/b/c) → Green Wellness → commit `2fc7e9b` push main+env/test.
+- **Correzione prodotto chiave:** «home = 1 sfondo (body), header solo in categoria» — Matteo ha dovuto correggere dopo primo test; fix codice + doc layout.
+- **Dark gold:** coppia scartata (batch d); sostituita con coppia b.
+- **Comunicazione:** preferisce sapere subito se **non** tutte le foto sono in app (green-wellness era spare → chiesto pulsante tema).
+- **Checklist smoke:** modale 5 temi, hard refresh, home scroll, categoria header; PROD migrazione `041` prima di salvare Green Wellness.
+- Report: `Report-ciclo-temi-sfondo-menu-qr-30-05-26.md`.
+
+### 30-05-26 — Prepara prompt temi sfondo Menu QR (light)
+- **Flusso:** prepara-prompt → 3 iterazioni prompt (v1 verboso → v2 +3° PNG non richiesto → v3 snellito su correzione Matteo).
+- **Correzione efficace:** «non aggiungere cose che non ti ho chiesto» / «non 3 immagini» — agente ha riformulato intero prompt invece di patch parziale; Matteo non ha ribadito errori.
+- **Formato utile:** tabella zone scoperte + screenshot mobile allegato + vincoli asset esistenti (1672×941, header/body); spiegazione semplice «margini 16px = dove si vede lo sfondo».
+- **Scope chiarito:** 2 PNG per idea (header + body); header progettato anche per crop barra categoria; solo «leggera sfumatura dall’alto» per testo — niente file category-header separato.
+- **Non fatto:** generazione immagini, codice footer 1/4, commit. Report: `Sessioni di lavoro/30-05-26/Report-prepara-prompt-temi-sfondo-menu-qr-30-05-26.md`.
+
 ### 30-05-26 — Chiusura Fase 3 Menu QR (round 3 + report finale)
 - **Conferma QA:** resto tutto OK; Modal elimina QR = modello preferito («modal di base per comunicazioni utenti app»).
 - **Toast vs Salva:** Matteo chiede nome elemento (toast Toastify); accetta che toast validazione è ridondante se Salva disattivato — UX primaria = pulsante grigio; toast resta backup.
@@ -59,7 +90,12 @@
 
 | Frase/intento | Volte osservate | Comportamento desiderato emerso |
 |---------------|-----------------|--------------------------------|
-| «compila report finale» (+ Dati comunicazione esaustivi) | 2 | §7 completo; funziona quando sessione ricca di feedback |
+| «home solo body / header solo categoria» (correzione prodotto Menu QR) | 1 | RULE layout — citare sempre in task asset menu QR |
+| «le altre foto le stiamo usando?» | 1 | rispondere subito con tabella tema↔file; aggiungere tema in UI se spare |
+| «fai report finale comunicazione e skill» | 2 | §7 completo + OSSERVAZIONI + FOLLOW_UP |
+| «ridammi prompt completo» + nota anti-copia | 1 | blocco Nota da Matteo nel prompt esecutore |
+| «solo modifica / subito all’apertura» (correzione riproduzione bug) | 1 | obbligatoria nel prompt se non nello stack |
+| «revisiona… comunicazione… segna cosa ho chiesto in chat» | 1 | cronologia in § Dati comunicazione report |
 | «modal di base» per comunicazioni utenti app | 1 | Modal preferito vs toast per conferme/successo; vedi PROPOSTE |
 | checklist smoke con path URL `/c/...` | 1 | **corretto-da-Matteo** → schermata + azione + effetto visivo |
 | «come si chiama questo elemento» (es. toast) | 1 | nome utente prima (toast/Modal), tecnico dopo |
