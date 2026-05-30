@@ -18,6 +18,7 @@ function parseOverride(raw: Record<string, unknown>): MenuQrcodeCategoryOverride
     category_key: String(raw.category_key),
     title: raw.title != null ? String(raw.title) : null,
     description: raw.description != null ? String(raw.description) : null,
+    icon: raw.icon != null ? String(raw.icon) : null,
     created_at: String(raw.created_at),
     updated_at: String(raw.updated_at),
   }
@@ -96,6 +97,7 @@ export function useUpsertMenuQrcodeCategoriesBatch() {
         category_key: row.category_key,
         title: row.title,
         description: row.description,
+        icon: row.icon ?? null,
         updated_at: new Date().toISOString(),
       }))
 

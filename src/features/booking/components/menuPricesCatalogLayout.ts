@@ -38,4 +38,4 @@ export const MENU_INGREDIENT_OVERVIEW_SHELL_CLASS =
   'relative w-full rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-lg md:p-6'
 
 export const MENU_INGREDIENT_OVERVIEW_GRID_CLASS =
-  'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'
+  'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'

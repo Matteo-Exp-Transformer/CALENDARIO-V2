@@ -24,10 +24,19 @@ Prenota e Menu QR pescano i dati. È la fonte di verità delle voci di menù.
   (`menu_categories.image_url`, path `{tenantId}/booking-cat/{categoryId}.webp`).
 - Panoramica categorie/ingredienti condivisa via `menuPricesCatalogLayout.ts` (griglia
   CollapsibleCard, righe `menu-prices-item-row`, selezione `menu-prices-item-row--selected`).
+  - Griglia categorie `MENU_INGREDIENT_OVERVIEW_GRID_CLASS`: `grid-cols-1` → `sm:grid-cols-2`
+    (≥640px) → `lg:grid-cols-3` (≥1024px). **Non** usare `md:` per le 2 colonne: lascia un buco a
+    1 colonna tra 640-767px (regressione corretta 30-05-26). La classe legacy
+    `menu-prices-category-list-wrap` in `index.css` non è più applicata a questa griglia.
 - Grouping `itemsByCategory` centralizzato in `menuCatalogGrouping.ts` (`groupMenuItemsByCategory`)
   — usarlo, non duplicare.
 - Subtitle card categoria: `N ingredienti` (con pluralizzazione) in tutti e 3 i componenti — non
   usare `selected/total`. Card categorie `defaultExpanded={false}`.
+- **Overlay «Categorie Menu»** (`viewMode === 'categories'`): form in alto; scroll al form con
+  `scrollIntoAdminShellView` (`adminScroll.ts`) sul `<main>` AdminShell Pro; guard chiusura (X / Esc)
+  se form aperto e dirty — `DiscardChangesConfirmModal` (pattern Impostazioni 29-05-26).
+- **Card categoria admin** (`AdminMenuCategoryLabelCard`): griglia `grid-cols-[minmax(0,1fr)_auto]`
+  — titolo orizzontale con `break-words`, azioni a destra (no testo verticale lettera-per-lettera).
 
 ## 3. Form prodotto/ingrediente
 
@@ -71,3 +80,4 @@ tipologie nella UI.
 
 - Refactor promo: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`
 - Promo in Personalizza form: `docs/Sessioni di lavoro/29-05-26/Report-promo-personalizza-form-29-05-26.md`
+- Fix menu admin modali 30-05-26: `docs/Sessioni di lavoro/30-05-26/Report-fix-menu-admin-modali-30-05-26.md`

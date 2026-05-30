@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Copy } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { Modal } from '@/components/ui/Modal'
@@ -15,6 +15,7 @@ import {
   buildCategoryOverrideDrafts,
   type CategoryOverrideDraft,
 } from './MenuHomepageConfigPanel'
+import { DiscardChangesConfirmModal } from './settings/SettingsSaveUi'
 import { DEFAULT_THEME_KEY, MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
 import { validateMenuQrSettings, isMenuQrSettingsValid } from '../utils/menuQrValidation'
 import type { CarouselItem, MenuItem, MenuQrCode, MenuQrSettingsSavePayload } from '@/types/menu'
@@ -66,6 +67,26 @@ async function copyToClipboard(text: string) {
   }
 }
 
+function serializeMenuQrDraft(input: {
+  name: string
+  categoryFilter: string[]
+  carouselItems: CarouselItem[]
+  categoryImages: Record<string, string>
+  themeKey: MenuThemeKey
+  overrideDrafts: CategoryOverrideDraft
+  hiddenItemIds: string[]
+}): string {
+  return JSON.stringify({
+    name: input.name.trim(),
+    categoryFilter: [...input.categoryFilter].sort(),
+    carouselItems: input.carouselItems,
+    categoryImages: input.categoryImages,
+    themeKey: input.themeKey,
+    overrideDrafts: input.overrideDrafts,
+    hiddenItemIds: [...input.hiddenItemIds].sort(),
+  })
+}
+
 export function MenuQrModal({
   isOpen,
   onClose,
@@ -77,7 +98,7 @@ export function MenuQrModal({
 }: Props) {
   const { tenantId } = useTenantContext()
   const menuQrCodeId = editing?.id ?? null
-  const { data: overrides = [] } = useMenuQrcodeCategoriesForQr(menuQrCodeId)
+  const { data: overrides = [], isLoading: overridesLoading } = useMenuQrcodeCategoriesForQr(menuQrCodeId)
   const { data: menuItems = [] } = useMenuItems()
 
   const [draftShortCode, setDraftShortCode] = useState(() => generateShortCode())
@@ -88,6 +109,11 @@ export function MenuQrModal({
   const [themeKey, setThemeKey] = useState<MenuThemeKey>(DEFAULT_THEME_KEY)
   const [overrideDrafts, setOverrideDrafts] = useState<CategoryOverrideDraft>({})
   const [hiddenItemIds, setHiddenItemIds] = useState<string[]>([])
+  const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false)
+
+  const baselineRef = useRef('')
+  const baselineSessionRef = useRef<string | null>(null)
+  const [baselineReady, setBaselineReady] = useState(false)
 
   const categoriesWithItems = useMemo(() => {
     const keysWithItems = new Set(menuItems.map((i) => i.category))
@@ -144,6 +170,83 @@ export function MenuQrModal({
     setOverrideDrafts(buildCategoryOverrideDrafts(categories, []))
   }, [isOpen, editing, categories])
 
+  useLayoutEffect(() => {
+    if (!isOpen) {
+      baselineSessionRef.current = null
+      setBaselineReady(false)
+      return
+    }
+    if (editing && menuQrCodeId && overridesLoading) return
+    const sessionKey = editing?.id ?? 'new'
+    if (baselineSessionRef.current === sessionKey) return
+    if (editing && categories.length > 0 && Object.keys(overrideDrafts).length === 0) return
+
+    baselineRef.current = serializeMenuQrDraft({
+      name,
+      categoryFilter,
+      carouselItems,
+      categoryImages,
+      themeKey,
+      overrideDrafts,
+      hiddenItemIds,
+    })
+    baselineSessionRef.current = sessionKey
+    setBaselineReady(true)
+  }, [
+    isOpen,
+    editing?.id,
+    menuQrCodeId,
+    overridesLoading,
+    categories.length,
+    overrideDrafts,
+    name,
+    categoryFilter,
+    carouselItems,
+    categoryImages,
+    themeKey,
+    hiddenItemIds,
+  ])
+
+  const isDirty = useMemo(() => {
+    if (!isOpen || !baselineReady) return false
+    return (
+      serializeMenuQrDraft({
+        name,
+        categoryFilter,
+        carouselItems,
+        categoryImages,
+        themeKey,
+        overrideDrafts,
+        hiddenItemIds,
+      }) !== baselineRef.current
+    )
+  }, [
+    isOpen,
+    name,
+    categoryFilter,
+    carouselItems,
+    categoryImages,
+    themeKey,
+    overrideDrafts,
+    hiddenItemIds,
+    baselineReady,
+  ])
+
+  const requestClose = () => {
+    if (isPending) return
+    if (!isDirty) {
+      onClose()
+      return
+    }
+    setDiscardConfirmOpen(true)
+  }
+
+  const confirmDiscardClose = () => {
+    setDiscardConfirmOpen(false)
+    baselineSessionRef.current = null
+    onClose()
+  }
+
   const allCatsSelected =
     categoryKeysWithItems.length > 0 &&
     categoryKeysWithItems.every((k) => categoryFilter.includes(k))
@@ -197,11 +300,16 @@ export function MenuQrModal({
     )
 
     const categoryOverrides = selectedCategories.map((cat) => {
-      const d = overrideDrafts[cat.key] ?? { title: cat.label, description: cat.description ?? '' }
+      const d = overrideDrafts[cat.key] ?? {
+        title: cat.label,
+        description: cat.description ?? '',
+        icon: null,
+      }
       return {
         category_key: cat.key,
         title: d.title.trim() || null,
         description: d.description.trim() || null,
+        icon: d.icon?.trim() || null,
       }
     })
 
@@ -254,7 +362,7 @@ export function MenuQrModal({
 
   const bottomBar = (
     <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
-      <Button variant="ghost" onClick={onClose} disabled={isPending}>
+      <Button variant="ghost" onClick={requestClose} disabled={isPending}>
         Annulla
       </Button>
       <Button variant="primary" onClick={handleSave} disabled={!canSave}>
@@ -266,16 +374,17 @@ export function MenuQrModal({
   if (!tenantId) return null
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Impostazione Menù QR"
-      headerBelow={headerBelow}
-      size="lg"
-      showCloseButton
-      closeOnOverlayClick={!isPending}
-      closeOnEscape={!isPending}
-    >
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={requestClose}
+        title="Impostazione Menù QR"
+        headerBelow={headerBelow}
+        size="lg"
+        showCloseButton
+        closeOnOverlayClick={!isPending}
+        closeOnEscape={!isPending}
+      >
       <div className="flex max-h-[min(80vh,720px)] flex-col gap-4 overflow-y-auto">
         <div>
           <div className="mb-1 flex items-center justify-between gap-2">
@@ -387,5 +496,12 @@ export function MenuQrModal({
         {bottomBar}
       </div>
     </Modal>
+
+      <DiscardChangesConfirmModal
+        isOpen={discardConfirmOpen}
+        onStay={() => setDiscardConfirmOpen(false)}
+        onDiscard={confirmDiscardClose}
+      />
+    </>
   )
 }

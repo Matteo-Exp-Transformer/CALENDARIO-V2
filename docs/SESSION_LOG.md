@@ -13,6 +13,10 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 30-05-26 | Prepara-prompt — ciclo fix note Menu QR (8 punti → 2 prompt + correttivo) | [Report prepara-prompt](Sessioni%20di%20lavoro/30-05-26/Report-prepara-prompt-ciclo-menu-qr-fix-30-05-26.md) — D1–D6; P1 Approvato; P2 esecutore OK; revisione P2/handoff; checklist compatta §3 PREPARA_PROMPT. |
+| 30-05-26 | Esecuzione — fix Menu QR **pubblico mobile** (Prompt 2) | [Report](Sessioni%20di%20lavoro/30-05-26/Report-fix-menu-qr-pubblico-mobile-30-05-26.md) — card ≤700px; icone Phosphor; sfondo repeat-y; validate 227 OK; QA browser/FU-021 ⬜. |
+| 30-05-26 | Verifica — revisione Prompt 1 admin + fix mobile KO | [Report revisione](Sessioni%20di%20lavoro/30-05-26/Report-revisione-fix-menu-admin-modali-30-05-26.md) — **Approvato**; scroll+ titolo card 375px OK; P1 chiuso. |
+| 30-05-26 | Esecuzione — fix tab Menu + modali QR (Prompt 1) | [Report](Sessioni%20di%20lavoro/30-05-26/Report-fix-menu-admin-modali-30-05-26.md) — scroll categorie; guard; carosello copy; icon 042 TEST; fix post-revisione mobile. |
 | 30-05-26 | Verifica — **revisione finale Fase 4** ciclo Menu QR ✅ | [Report F4](Sessioni%20di%20lavoro/29-05-26/Report-revisione-fix-menu-qr-fase4-30-05-26.md) — **Approva con riserve**; `main` validate 227 OK; INC-01/09 risolti in codice; QA browser revisore N/A (0 QR su test-pro TEST); FU-022; ciclo chiuso. |
 | 30-05-26 | Git — merge `env/test` → `main` + push | Commit `b3216d7` su `origin/main`: Menu QR Fase 3 (`5b9c40c`), revisione mappa doc (`cb5a4fa`), digest prezzo (`0c31585`). DB prod verificato read-only: schema Menu QR 036/037 + `040` clamp OK — nessuna migrazione da applicare. |
 | 30-05-26 | Esecuzione — fix Menu QR **Fase 3** ✅ chiuso (QA Matteo 3 round) | [Report finale Fase 3](Sessioni%20di%20lavoro/29-05-26/Report-fix-menu-qr-fase3-29-05-26.md) — validate 227 OK; validazione Salva+categorie+carosello; Modal pattern preferito; § Dati comunicazione esaustivo; FU-021 aperto; Fase 4 ⬜. |

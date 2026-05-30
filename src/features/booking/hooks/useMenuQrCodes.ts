@@ -108,6 +108,7 @@ export const useSaveMenuQrSettings = () => {
           category_key: o.category_key,
           title: o.title,
           description: o.description,
+          icon: o.icon ?? null,
           updated_at: new Date().toISOString(),
         }))
 

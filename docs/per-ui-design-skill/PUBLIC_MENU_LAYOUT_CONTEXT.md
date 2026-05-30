@@ -10,7 +10,7 @@ description: >-
 
 > File principale: `src/pages/PublicMenuPage.tsx`
 > Skill entry point: `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`
-> Ultima revisione: 2026-05-26 — sfondo unificato, tab opaca al lock, carosello pallini click, limiti admin 60/125
+> Ultima revisione: 2026-05-30 — card verticali ≤700px, icone Phosphor override, sfondo repeat-y stabile
 
 ---
 
@@ -35,7 +35,7 @@ Pagina: `useMenuPageBackgroundStyle()` — **solo `bodyImage`** su tutta la home
 
 | Pagina | Asset sfondo |
 |--------|----------------|
-| Homepage `PublicMenuPage` | `bodyImage` — `100% auto`, repeat verticale via layer CSS |
+| Homepage `PublicMenuPage` | `bodyImage` — `100% auto`, `repeat-y` (CSS puro, no flash scroll) |
 | Categoria `PublicMenuCategoryPage` | `headerImage` — crop top sulla barra sticky; corpo `bg-stone-50` |
 
 ---
@@ -91,19 +91,44 @@ Trasparente finché la barra non si blocca in alto; poi sfondo e blur aumentano 
 
 Scroll orizzontale: classe `.scrollbar-hide` in `index.css` (niente barra su mobile/desktop). **Desktop (`md+`)**: frecce sx/dx semi-opache (`theme.tabBarStickyRgb`) se c’è overflow; **mobile**: solo swipe, senza frecce.
 
-- Pill: `border` + `color` impostati con `theme.accentColor` via style inline
-- Icona Phosphor da `CATEGORY_ICON` (solo quando mostra categorie)
+- Pill: `inline-flex items-center gap-1.5` + `leading-none` — icona Phosphor 16px + testo allineati su mobile
+- Icona: `resolveMenuQrCategoryIcon(menu_qrcode_categories.icon, category_key)` (solo quando mostra categorie)
 
 ### `CategoryCard`
 
-Griglia a 2 colonne sopra 400px. Layout orizzontale con thumb quadrato:
+**Griglia categorie** (in `MenuContent`):
+
+| Viewport | Colonne | Layout card |
+|----------|---------|-------------|
+| &lt;480px | 1 | verticale compatta `aspect-[7/2]` |
+| 480–699px | 2 | verticale `aspect-[5/2]` (tile più leggibile in 2 col) |
+| 700–1023px | 1 | orizzontale full-width |
+| ≥1024px | 2 | orizzontale |
+
+**Breakpoint layout card: 700px** (verticale sotto, orizzontale sopra).
+
+**≤699px — verticale** (tile compatta, non monopolizza lo scroll):
 
 ```tsx
-<Link className="flex overflow-hidden rounded-2xl bg-white shadow-sm min-h-[88px]">
-  <div className="aspect-square w-24 shrink-0 bg-stone-100">  ← thumb 1:1
+<Link className="block rounded-xl ... min-[700px]:flex min-[700px]:rounded-2xl">
+  <div className="relative min-[700px]:hidden">
+    <div className="aspect-[7/2] min-[480px]:aspect-[5/2] ...">
+      {imageUrl ? <img /> : <CategoryIcon className="size-6 min-[480px]:size-7" />}
+      ...
+      <h2 className="text-xs min-[480px]:text-sm uppercase">{displayTitle}</h2>
+    </div>
+  </div>
+</Link>
+```
+
+**≥700px — orizzontale** con thumb quadrato (`w-20` → `w-24` da 900px):
+
+```tsx
+<Link className="... min-[700px]:flex min-h-[80px] min-[900px]:min-h-[88px]">
+  <div className="aspect-square w-20 min-[900px]:w-24 shrink-0 bg-stone-100">
     {imageUrl
       ? <img className="h-full w-full object-cover" />
-      : <div className="flex h-full w-full items-center justify-center text-3xl">{emoji}</div>
+      : <CategoryIcon size={32} />  ← Phosphor da override o CATEGORY_ICON
     }
   </div>
   <div className="flex min-w-0 flex-1 flex-col justify-center px-4 py-3">
@@ -113,12 +138,12 @@ Griglia a 2 colonne sopra 400px. Layout orizzontale con thumb quadrato:
     )}
   </div>
   <div className="flex shrink-0 items-center pr-3 text-gray-300">
-    <ChevronRight size={18} />  ← da lucide-react
+    <ChevronRight size={18} />
   </div>
 </Link>
 ```
 
-**Titolo e descrizione**: leggono prima `menu_qrcode_categories` (override QR-specifico), fallback su `menu_categories.label/description`.
+**Titolo, descrizione, icona**: leggono prima `menu_qrcode_categories` (override QR per `menu_qr_code_id`), fallback su `menu_categories` / `CATEGORY_ICON`.
 
 ### `MenuFooterCard`
 
@@ -146,11 +171,13 @@ Il testo è posizionato in assoluto sul 50% sinistro (`inset-y-0 left-0 w-1/2`),
 | Foto carosello | "Specialità della casa" (titolo + descrizione slide) | `carouselItems` via `usePublicMenuHomepageConfig` |
 | Foto categoria | "Foto categorie" | `categoryImages[cat.key]` come `imageUrl` in `CategoryCard` |
 | Titolo card QR | "Titoli e descrizioni card categorie" → campo Titolo | `menu_qrcode_categories.title` (override) o `menu_categories.label` |
+| Icona card/tab (senza foto) | Modale QR → picker icona Phosphor | `menu_qrcode_categories.icon` → `resolveMenuQrCategoryIcon()` |
+
 | Descrizione card QR | "Titoli e descrizioni card categorie" → campo Descrizione | `menu_qrcode_categories.description` (override) o `menu_categories.description` |
 
-**Hook pubblici**:
-- `usePublicMenuHomepageConfig(tenantId)` — tema + carosello + foto categorie
-- `usePublicMenuQrcodeCategories(tenantId)` — override titoli/descrizioni card QR
+**Hook pubblici** (per-QR, post-migrazione 036):
+- `usePublicMenuQr` / `usePublicDefaultMenuQr` — risolve QR + `theme_key`, `carousel_items`, `category_images`
+- `usePublicMenuQrcodeCategories(menuQrCodeId)` — override titoli/descrizioni/**icon** card QR
 
 **Hook admin**:
 - `useMenuHomepageConfig()` — lettura autenticata
@@ -162,10 +189,9 @@ Il testo è posizionato in assoluto sul 50% sinistro (`inset-y-0 left-0 w-1/2`),
 
 ## 6. Icone Phosphor — come aggiungere una nuova categoria
 
-1. Importa l'icona da `@phosphor-icons/react` in cima a `PublicMenuPage.tsx`
-2. Aggiungi la coppia `key: IconComponent` in `CATEGORY_ICON`
-3. Aggiungi la coppia `key: '🔣'` in `CATEGORY_EMOJI` (fallback nelle card senza immagine)
-4. Nessun altro file da toccare
+1. Aggiungi la coppia `key: IconComponent` in `CATEGORY_ICON` (`src/features/public-menu/categoryIcons.ts`)
+2. Aggiungi l'opzione corrispondente in `MENU_QR_CATEGORY_ICON_OPTIONS` se deve essere selezionabile nel modale QR admin
+3. Il pubblico usa `resolveMenuQrCategoryIcon(override.icon, category_key)` — nessuna emoji
 
 ---
 

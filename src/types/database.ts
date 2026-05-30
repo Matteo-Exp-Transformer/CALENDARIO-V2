@@ -675,6 +675,7 @@ export type Database = {
           category_key: string
           created_at: string
           description: string | null
+          icon: string | null
           id: string
           menu_qr_code_id: string
           tenant_id: string
@@ -685,6 +686,7 @@ export type Database = {
           category_key: string
           created_at?: string
           description?: string | null
+          icon?: string | null
           id?: string
           menu_qr_code_id: string
           tenant_id: string
@@ -695,6 +697,7 @@ export type Database = {
           category_key?: string
           created_at?: string
           description?: string | null
+          icon?: string | null
           id?: string
           menu_qr_code_id?: string
           tenant_id?: string

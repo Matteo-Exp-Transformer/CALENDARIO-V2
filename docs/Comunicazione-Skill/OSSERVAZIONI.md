@@ -33,6 +33,9 @@
 
 ## Sessioni registrate (append-only)
 
+### 30-05-26 — PREPARA_PROMPT · checklist compatta verso Matteo
+- **Formato preferito:** tabella 3 col (Dove | Cosa fai | OK se); flusso utente, non gergo agente («overlay» → nome schermata in app); token minimi in pianificazione; dettagli solo on demand.
+
 ### 30-05-26 — Chiusura Fase 3 Menu QR (round 3 + report finale)
 - **Conferma QA:** resto tutto OK; Modal elimina QR = modello preferito («modal di base per comunicazioni utenti app»).
 - **Toast vs Salva:** Matteo chiede nome elemento (toast Toastify); accetta che toast validazione è ridondante se Salva disattivato — UX primaria = pulsante grigio; toast resta backup.
