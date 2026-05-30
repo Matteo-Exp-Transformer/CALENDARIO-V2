@@ -33,6 +33,23 @@
 
 ## Sessioni registrate (append-only)
 
+### 30-05-26 — Chiusura Fase 3 Menu QR (round 3 + report finale)
+- **Conferma QA:** resto tutto OK; Modal elimina QR = modello preferito («modal di base per comunicazioni utenti app»).
+- **Toast vs Salva:** Matteo chiede nome elemento (toast Toastify); accetta che toast validazione è ridondante se Salva disattivato — UX primaria = pulsante grigio; toast resta backup.
+- **Priorità errori:** categorie prima del carosello nel messaggio validazione.
+- **Salva fuorviante:** fix `canSave` = nome + requisiti completi (non solo nome).
+- **PROPOSTE aggiunte:** checklist no URL; validazione admin no toast se pulsante disattivato.
+
+### 30-05-26 — Test manuale Fase 3 Menu QR (round 2)
+- Matteo segnala: frasi tipo «/c/antipasti OK · /c/primi → messaggio blocco» **non aiutano** — preferisce **schermata + cosa vede il cliente** (es. «Apri Antipasti dal menu QR → vedi i piatti» vs «Digita manualmente un link di una categoria che hai spento nel QR → compare avviso e pulsante Torna al menu»). **Evitare path URL tecnici** nelle checklist smoke verso Matteo.
+- Validazione Salva QR mancante (tutte cat off, carosello vuoto) — corretto in codice stessa sessione.
+- Categorie modale percepite «hardcoded» — atteso allineamento a tab Menu (`menu_categories`); fix: elenco completo + refetch all'apertura modale.
+
+### 30-05-26 — Prepara-prompt post-revisione Menu QR
+- Matteo (prompt citato in report): sintesi «cosa decidere + dove siamo + come proseguire», poche parole; **sempre** tabella ciclo + checklist aggiornata; decisioni in **A/B/C** o **Sì/No** con raccomandazione.
+- Risposte prodotto: preset/mixed QR **non ora**; dialog post-Salva (non «cambia link»); header = anagrafica; temi OK + FU-021 asset sfondo; QA admin **Matteo**.
+- Annotato in `Report-revisione-mappatura-menu-qr-admin-pubblico-29-05-26.md` § Dati comunicazione; regola in `PREPARA_PROMPT_SKILL.md` §3.
+
 ### 29-05-26 — Verifica mappatura Impostazioni ↔ Prenota
 - Profilo Verifica via prompt custom; report unificato un file; skill caricata: APP_CONTEXT only.
 - Matteo: liste DOM, correzione breakpoint 700px, «procedura finale».
@@ -42,6 +59,11 @@
 
 | Frase/intento | Volte osservate | Comportamento desiderato emerso |
 |---------------|-----------------|--------------------------------|
+| «compila report finale» (+ Dati comunicazione esaustivi) | 2 | §7 completo; funziona quando sessione ricca di feedback |
+| «modal di base» per comunicazioni utenti app | 1 | Modal preferito vs toast per conferme/successo; vedi PROPOSTE |
+| checklist smoke con path URL `/c/...` | 1 | **corretto-da-Matteo** → schermata + azione + effetto visivo |
+| «come si chiama questo elemento» (es. toast) | 1 | nome utente prima (toast/Modal), tecnico dopo |
+| «spiegami cosa decidere / dove siamo / come proseguire» (sintetico) | 1 | ciclo tabella + checklist + opzioni A/B/C con raccomandato; citare il prompt in report comunicazione |
 | «spiegamelo semplice / in modo sintetico» | 3+ (chat PWA, Metodo, report) | metafora concreta + "chi fa cosa" + breve |
 | «è una rule che devo ricordare io?» / «devo farlo ogni volta?» | 2+ | distinguere lavoro manuale ricorrente da automatismo del tool |
 | «ottimo / funziona / perfetto / revisione ok» (conferma successo) | molte+ | trigger del protocollo fine-chat (report + skill + commit) |

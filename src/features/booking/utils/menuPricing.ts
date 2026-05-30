@@ -64,16 +64,28 @@ export const getMenuPriceDisplayFromBooking = (booking: BookingRequest): MenuPri
   )
 }
 
-/** Prezzi da DB (`menu_total_*`) oppure derivati dalla selezione rinfresco (come nelle card dettaglio). */
+/** Prezzi da DB (`menu_total_*`) oppure derivati dalla selezione rinfresco (legacy senza totali salvati). */
 export function getResolvedMenuPriceDisplay(booking: BookingRequest): MenuPriceDisplay | null {
   const fromDb = getMenuPriceDisplayFromBooking(booking)
 
+  // Snapshot submit in booking_requests: digest/calendario allineati al pannello espanso
+  if (fromDb) {
+    return fromDb
+  }
+
   if (bookingTypeUsesMenuSelections(booking.booking_type) && booking.menu_selection?.items) {
-    const baseTotal = booking.menu_selection.items
-      .reduce((sum, item) => sum + (item.totalPrice || item.price), 0)
+    const baseTotal = booking.menu_selection.items.reduce(
+      (sum, item) => sum + (item.totalPrice || item.price),
+      0,
+    )
+
+    if (baseTotal <= 0) {
+      return null
+    }
+
     const totalBooking = baseTotal * (booking.num_guests || 0)
 
-    const overlay = {
+    return {
       prezzoMenu: baseTotal,
       prezzoMenuLabel: `€${formatEuroAmountForDisplay(baseTotal)}/persona`,
       breakdownLabel: undefined,
@@ -83,12 +95,8 @@ export function getResolvedMenuPriceDisplay(booking: BookingRequest): MenuPriceD
       totalPerPerson: baseTotal,
       basePerPerson: baseTotal,
     }
-
-    if (fromDb) return overlay
-    if (baseTotal > 0) return overlay
-    return null
   }
 
-  return fromDb
+  return null
 }
 

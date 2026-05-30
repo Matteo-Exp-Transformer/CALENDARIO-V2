@@ -8,6 +8,7 @@ description: >-
 # Menu Digitale Pubblico via QR — Skill
 
 > Feature introdotta nella sessione 24-05-26 con migrazione 030.
+> **Flusso dati admin ↔ pubblico:** [`PUBLIC_MENU_DATA_FLOW_CONTEXT.md`](PUBLIC_MENU_DATA_FLOW_CONTEXT.md) — mappa campi, storage, incoerenze (report 29-05-26).
 
 ---
 
@@ -134,7 +135,7 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 **Layout homepage `PublicMenuPage`** (post-sessione layout 24-05-26, vedi anche `docs/Sessioni di lavoro/24-05-26/Report-menu-qr-homepage-layout-sessione.md`):
 
 1. **Sfondo pagina** — `useMenuPageBackgroundStyle()` in `PublicMenuPage.tsx`: header + body come prima; con scroll lungo (molte categorie) ripete la stessa coppia via layer CSS fino a coprire tutta la pagina (senza `cover` sul body).
-2. **Hero `<header>`** — nome ristorante + fregio + `MenuCarousel` (nessuna label esterna “Specialità…”); badge solo dentro ogni slide. **`PublicMenuPageHeader` non usato** sulla homepage.
+2. **Hero `<header>`** — nome ristorante da **`useRestaurantName()`** (`restaurant_settings.restaurant_name`, fallback `organizations_public.name`, poi «Menu») + fregio + `MenuCarousel` (nessuna label esterna “Specialità…”); badge solo dentro ogni slide. **`PublicMenuPageHeader` non usato** sulla homepage.
 3. **Carosello** — slide full-bleed, overlay gradiente 40% sx, titolo/descrizione da `carousel_items`; pallini **cliccabili** (tap mobile 44px). Placeholder `h-28` se zero foto.
 4. **Tab `MenuNavTabs`** — sticky; sfondo trasparente → opaco progressivo (~56px scroll) con `theme.tabBarStickyRgb`; scroll senza barra (`.scrollbar-hide`); frecce sx/dx solo **desktop** se overflow.
 5. **Griglia categorie** — `grid-cols-1` / `min-[400px]:grid-cols-2`; thumb 1:1; override `menu_qrcode_categories` poi fallback `menu_categories`.
@@ -142,12 +143,16 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 
 > Dettaglio componenti: **`docs/per-ui-design-skill/PUBLIC_MENU_LAYOUT_CONTEXT.md`**
 
-**Limiti admin carosello** (`MenuQrCarouselSection`): etichetta fissa «Specialità della casa» in `text-sm` normale (non grassetto); titolo slide max **60**; testo breve max **125**; contatore `n/max` sotto ogni campo. Campo `eyebrow` in `carousel_items` JSON opzionale, mostrato in `MenuCarousel` sulla pagina pubblica.
+**Limiti admin carosello** (`MenuQrCarouselSection`): campi con `AdminFieldWithCharCount` — **Etichetta** (eyebrow) max **40**, **Titolo slide** max **60**, **Descrizione breve** max **125**; rimozione slide con `Modal` conferma. Pubblico: eyebrow fallback «Specialità della casa»; slide senza `image_url` escluse dal parse.
+
+**Salvataggio modale QR:** dopo Salva, `MenuQrManager` mostra `Modal` in-app — modifica: «modifiche già visibili sullo stesso link/stampa QR»; nuovo QR: «nuovo codice/link».
 
 **`PublicMenuCategoryPage`** — dettaglio categoria:
 - Carica i piatti della categoria da `menu_items` via `supabasePublic`
 - Risolve il QR con `usePublicMenuQr` e esclude gli ID in `hidden_menu_item_ids`
-- `ItemCardWithPhoto`: immagine full-width `h-44` + gradiente nero dal basso con testo sovrapposto
+- **`isCategoryInQrFilter`**: se `categoryKey` non è in `category_filter` (o filtro `[]`), messaggio + link «Torna al menù QR» — non lista piatti
+- Header sticky: fascia PNG da `theme_key` del QR (`menuThemes.headerImage`); corpo pagina `bg-stone-50` invariato (asset scroll ottimizzati → **FU-021**)
+- `ItemCardWithPhoto`: immagine full-width `h-44` + testo sotto
 - `ItemCardText`: solo testo (fallback quando `image_url` assente)
 
 **`PublicMenuPresetPage`** — dettaglio menù evento:
@@ -180,9 +185,15 @@ RULE  Body PNG: background-size 100% auto + position sotto --menu-header-band �
 RULE  Tab sticky: sfondo rgba(tabBarStickyRgb, opacity) cresce dopo lock; scrollbar-hide; frecce md+ se overflow
 RULE  Admin carosello QR: CAROUSEL_SLIDE_EYEBROW_MAX=40, TITLE_MAX=60, DESCRIPTION_MAX=125 in MenuHomepageConfigPanel. Prenota usa limiti separati 19/18/38 in bookingPublicFormConfig.
 RULE  Nuovo QR: foto carosello/categorie in Storage `qr/draft/{shortCode}/` — migrate a `qr/{menuQrCodeId}/` in useSaveMenuQrSettings al primo insert
-RULE  Modale QR: checkbox categorie solo se la categoria ha ≥1 `menu_items`; «Attiva tutte» solo su quelle; legacy `category_filter=null` → tutte le categorie con prodotti
+RULE  Modale QR: checkbox categorie = elenco completo `menu_categories` (tab Menu); disabilitate se senza ingredienti; al Salva obbligatori carosello (≥1 foto + etichetta + titolo), ≥1 categoria con ≥1 ingrediente visibile — vedi `menuQrValidation.ts`
+RULE  Elimina menù QR: `Modal` conferma (non `window.confirm` al primo click icona)
 RULE  Modale QR: `hidden_menu_item_ids` — occhio chiuso = UUID in array; al Salva si scartano ID di categorie deselezionate
 RULE  PublicMenuCategoryPage: filtra `menu_items` con `hidden_menu_item_ids` del QR corrente
+RULE  PublicMenuCategoryPage: `isCategoryInQrFilter(category_filter, categoryKey)` — legacy `null` = tutte; `[]` = nessuna; URL fuori filtro → messaggio + link homepage QR
+RULE  PublicMenuCategoryPage header: PNG `theme_key` QR in fascia sticky (~56px); testo colore `headerTextColor`; corpo lista `bg-stone-50` — asset scroll FU-021
+RULE  Admin carosello QR: `AdminFieldWithCharCount` (Etichetta/Titolo slide/Descrizione breve); `Modal` conferma elimina slide e foto categoria
+RULE  Salva modale QR: `canSave` = nome + `isMenuQrSettingsValid` (carosello ≥1 slide completa, ≥1 cat con ingrediente visibile); ordine messaggio validazione: categorie → carosello
+RULE  Comunicazioni utente admin: preferenza **Modal** (successo, elimina, conferme); toast validazione opzionale/backup se Salva già disattivato
 RULE  Temi: getMenuTheme(key) da menuThemes.ts — 4 chiavi; chiavi sconosciute (es. wine_bistrot legacy) → fallback `mediterranean_teal`
 RULE  PNG temi in public/menu-themes/ — tutti e 4 i temi hanno header+body PNG
 RULE  PublicMenuPageHeader NON usato sulla homepage QR

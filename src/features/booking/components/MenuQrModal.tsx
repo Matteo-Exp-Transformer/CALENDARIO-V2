@@ -16,6 +16,7 @@ import {
   type CategoryOverrideDraft,
 } from './MenuHomepageConfigPanel'
 import { DEFAULT_THEME_KEY, MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
+import { validateMenuQrSettings, isMenuQrSettingsValid } from '../utils/menuQrValidation'
 import type { CarouselItem, MenuItem, MenuQrCode, MenuQrSettingsSavePayload } from '@/types/menu'
 import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
 
@@ -98,14 +99,16 @@ export function MenuQrModal({
     [categoriesWithItems],
   )
 
+  const allCategoryKeys = useMemo(() => categories.map((c) => c.key), [categories])
+
   const itemsByCategory = useMemo(
-    () => groupMenuItemsByCategory(menuItems, categoryKeysWithItems),
-    [menuItems, categoryKeysWithItems],
+    () => groupMenuItemsByCategory(menuItems, allCategoryKeys),
+    [menuItems, allCategoryKeys],
   )
 
   const selectedCategories = useMemo(
-    () => categoriesWithItems.filter((c) => categoryFilter.includes(c.key)),
-    [categoriesWithItems, categoryFilter],
+    () => categories.filter((c) => categoryFilter.includes(c.key)),
+    [categories, categoryFilter],
   )
 
   const activeShortCode = editing?.short_code ?? draftShortCode
@@ -122,7 +125,7 @@ export function MenuQrModal({
     } else {
       setDraftShortCode(generateShortCode())
       setName('')
-      setCategoryFilter([])
+      setCategoryFilter(categoryKeysWithItems.length > 0 ? [...categoryKeysWithItems] : [])
       setCarouselItems([])
       setCategoryImages({})
       setThemeKey(DEFAULT_THEME_KEY)
@@ -150,9 +153,36 @@ export function MenuQrModal({
   }
 
   const toggleCategory = (key: string) => {
+    if (!categoryKeysWithItems.includes(key)) return
     setCategoryFilter((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
     )
+  }
+
+  const validationInput = useMemo(
+    () => ({
+      carouselItems,
+      categoryFilter,
+      itemsByCategory,
+      hiddenItemIds,
+    }),
+    [carouselItems, categoryFilter, itemsByCategory, hiddenItemIds],
+  )
+
+  const canSaveSettings = useMemo(
+    () => isMenuQrSettingsValid(validationInput),
+    [validationInput],
+  )
+
+  const canSave = !!name.trim() && canSaveSettings && !isPending
+
+  const validateBeforeSave = (): boolean => {
+    const validation = validateMenuQrSettings(validationInput)
+    if (!validation.ok) {
+      toast.warn(validation.message)
+      return false
+    }
+    return true
   }
 
   const buildPayload = (): MenuQrSettingsSavePayload | null => {
@@ -195,6 +225,7 @@ export function MenuQrModal({
   }
 
   const handleSave = () => {
+    if (!validateBeforeSave()) return
     const payload = buildPayload()
     if (payload) onSave(payload)
   }
@@ -226,7 +257,7 @@ export function MenuQrModal({
       <Button variant="ghost" onClick={onClose} disabled={isPending}>
         Annulla
       </Button>
-      <Button variant="primary" onClick={handleSave} disabled={isPending || !name.trim()}>
+      <Button variant="primary" onClick={handleSave} disabled={!canSave}>
         {isPending ? 'Salvataggio…' : 'Salva'}
       </Button>
     </div>
@@ -249,7 +280,7 @@ export function MenuQrModal({
         <div>
           <div className="mb-1 flex items-center justify-between gap-2">
             <label className="text-sm font-semibold text-gray-800">Nome QR *</label>
-            <Button variant="primary" size="sm" onClick={handleSave} disabled={isPending || !name.trim()}>
+            <Button variant="primary" size="sm" onClick={handleSave} disabled={!canSave}>
               {isPending ? 'Salvataggio…' : 'Salva'}
             </Button>
           </div>
@@ -261,40 +292,55 @@ export function MenuQrModal({
           />
         </div>
 
-        {categoryKeysWithItems.length > 0 ? (
+        {categories.length > 0 ? (
           <div>
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-sm font-semibold text-gray-800">Categorie di prodotti visibili</p>
-              <label className="flex cursor-pointer items-center gap-1.5 text-xs text-gray-500">
-                <input
-                  type="checkbox"
-                  className="h-3.5 w-3.5"
-                  checked={allCatsSelected}
-                  onChange={toggleAllCategories}
-                />
-                Attiva tutte
-              </label>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {categoriesWithItems.map((cat) => (
-                <label
-                  key={cat.key}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1 text-sm"
-                >
+              {categoryKeysWithItems.length > 0 ? (
+                <label className="flex cursor-pointer items-center gap-1.5 text-xs text-gray-500">
                   <input
                     type="checkbox"
-                    className="h-3.5 w-3.5 shrink-0"
-                    checked={categoryFilter.includes(cat.key)}
-                    onChange={() => toggleCategory(cat.key)}
+                    className="h-3.5 w-3.5"
+                    checked={allCatsSelected}
+                    onChange={toggleAllCategories}
                   />
-                  {cat.label}
+                  Attiva tutte
                 </label>
-              ))}
+              ) : null}
+            </div>
+            <p className="mb-2 text-xs text-gray-500">
+              Elenco allineato alle categorie della tab Menu. Serve almeno una categoria con almeno un
+              ingrediente visibile.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => {
+                const hasItems = categoryKeysWithItems.includes(cat.key)
+                return (
+                  <label
+                    key={cat.key}
+                    className={`flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1 text-sm ${
+                      hasItems ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="h-3.5 w-3.5 shrink-0"
+                      checked={categoryFilter.includes(cat.key)}
+                      disabled={!hasItems}
+                      onChange={() => toggleCategory(cat.key)}
+                    />
+                    {cat.label}
+                    {!hasItems ? (
+                      <span className="text-[10px] text-gray-400">(nessun ingrediente)</span>
+                    ) : null}
+                  </label>
+                )
+              })}
             </div>
           </div>
         ) : (
           <p className="text-xs text-gray-500">
-            Nessuna categoria con prodotti — aggiungi ingredienti nella tab Menu.
+            Nessuna categoria nel menù — creane almeno una dalla tab Menu → Gestione categorie.
           </p>
         )}
 

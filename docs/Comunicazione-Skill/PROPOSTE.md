@@ -26,6 +26,23 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## In attesa di decisione
 
+### In attesa «checklist QA verso Matteo — no path URL, sì schermata+effetto»
+- **Pattern osservato:** Checklist smoke Menu QR Fase 3 con `/c/antipasti OK` — Matteo: «non mi aiuta a capire» (30-05-26, 1× correzione esplicita).
+- **Automatizzabile con certezza:** template checklist in report e risposte chat: **Admin → …** / **Cliente sul telefono → …** + azione + esito atteso; vietare route tecniche salvo debug interno agente.
+- **Meglio lasciare manuale:** scelta casi funzionali per feature nuova.
+- **Livello suggerito:** 1 per agente di lavoro verso Matteo.
+- **Token risparmiati:** ~5–8 righe + 1 giro chiarimento per sessione UI.
+- **Dove codificare:** `COMUNICAZIONE_UTENTE_SKILL.md` + template report §7.
+- **Esito / data:** proposta da report Fase 3 Menu QR 30-05-26 — in attesa ok Matteo.
+
+### In attesa «validazione admin — no toast se Salva già disattivato»
+- **Pattern osservato:** Menu QR modale: toast validazione + Salva grigio — Matteo «a cosa serve? regola inutile?»; accettato dopo spiegazione (toast = backup).
+- **Automatizzabile con certezza:** se `canSave === false`, non chiamare `toast.warn` su click Salva; validazione visiva = pulsante disattivato; toast solo errori async (rete) o rimuovere del tutto su validazione sync.
+- **Meglio lasciare manuale:** messaggi testuali specifici per campo (potrebbero servire hint inline futuri).
+- **Livello suggerito:** 2 — preferenza UX Matteo esplicita su Modal, non ancora su rimozione toast.
+- **Token risparmiati:** evita duplicazione feedback percepita come rumore.
+- **Esito / data:** in attesa — 30-05-26 Menu QR.
+
 ### In attesa «revisione UI → QA viewport 375/834/1280 obbligatorio»
 - **Pattern osservato:** In revisione validazione UX Prenota (29-05-26) il revisore ha approvato con «affida a QA Matteo» e ha eseguito browser solo dopo richiesta esplicita; mobile 375 non testato. La regola esiste già in `APP_CONTEXT_SKILL.md` §0.0 (profilo Verifica → `TESTING_SKILL.md` §7) ma i prompt di revisione e l’agente la bypassano.
 - **Automatizzabile con certezza:** se la revisione riguarda lavoro che ha toccato **UI/layout/responsive** (`src/**/*.tsx` con className/layout, `index.css`, skill UI_*), il revisore **deve** eseguire gli stessi passi funzionali su **375 × 812**, **834 × 1194**, **1280 × 800** (Playwright MCP / browser Cursor) e compilare tabella esiti nel report — **prima** del verdetto. «Non testato» ammesso solo con motivo esplicito (es. feature solo desktop admin, no surface pubblica).

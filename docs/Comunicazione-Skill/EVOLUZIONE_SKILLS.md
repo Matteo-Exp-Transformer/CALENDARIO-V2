@@ -119,6 +119,7 @@ quando i criteri saranno tarati.
 - 29-05-26 · creazione metriche successo chat · deep · prompt:~6 · correzioni:0 · FU:0 · alzata:no · sessione meta skill system, comandi recepiti alla prima, scope ampliato da Matteo in corso (non è correzione)
 - 29-05-26 · mappatura Impostazioni↔Prenota + fix FU-007/008 + revisione · standard · prompt:7 · correzioni:2 · FU:3 · alzata:sì · 4 giri; revisione Approva; FU-009 aperto
 - 29-05-26 · validazione UX Prenota (esecutore+fix+revisione) · standard · prompt:3 · correzioni:2 · FU:1 · alzata:no · KO iniziali = HTML5 senza `noValidate`; fix veloce post root cause; doc `FORM_VALIDATION_ATTENTION_PATTERN.md`; revisore Approva con riserve
+- 29-05-26 · ciclo BookingRequestCard mappa→fix menuPricing · deep→standard · prompt:5 · correzioni:3 · FU:2 chiusi · alzata:no · Approva revisore fix; report unificato; pipeline mappa/rev/fix annotata per vocabolario
 
 ---
 
@@ -142,3 +143,4 @@ quando i criteri saranno tarati.
 - 29-05-26 · [raffinamento] · creato questo file con M1–M5 + ruolo junior/senior — origine analisi agente revisore skill system v0 + decisione Matteo
 - 29-05-26 · [raffinamento] · mockup HTML multi-stato prima dell'esecutore — Matteo «quasi sempre» per scelte UX; già in PREPARA_PROMPT §1.B; alimenta M1
 - 29-05-26 · [raffinamento] · QA viewport 375/834/1280 obbligatorio per revisore su task UI — proposta Matteo; regola già in TESTING §7 ma bypassata in pratica; vedi PROPOSTE «revisione UI»
+- 30-05-26 · [raffinamento] · blocco fisso «Dove siamo nel ciclo» + «Checklist ciclo» insieme, dopo ogni fase multi-agente — approvato Matteo (Menu QR); in PREPARA_PROMPT §3 + report revisione § Dati comunicazione

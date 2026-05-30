@@ -214,6 +214,20 @@ file isolati; domande brevi a opzioni/sì-no; niente lezioni tecniche non richie
 invece è tecnico e preciso (lo legge un agente) — la distinzione è netta: spiegazione a Matteo =
 semplice; prompt per l'agente = strutturato.
 
+**Sintesi post-revisione / handoff (approvato 30-05-26, ciclo Menu QR).** Quando Matteo chiede
+cosa decidere e come proseguire dopo un revisore, rispondi in questo ordine (poche righe, no ridondanza):
+
+1. **Cosa decidere** — linguaggio schermata + effetto; ogni scelta aperta con **A / B / C** oppure
+   **Sì / No** e una riga **Raccomandato:** (es. «Raccomandato: A»).
+2. **Dove siamo nel ciclo** — tabella fasi (1 Mappa · 2 Revisione · 3 Fix · 4 Revisione fix) con ✅/⏳/⬜.
+3. **Checklist ciclo** — stessa sezione, elenco `- [ ]` / `- [x]` che si aggiorna a ogni fase (non
+   sostituire la tabella: vanno **sempre insieme**).
+4. **Prossimo passo** — una riga (es. «Prompt Fase 3» o «conferma D1/D2»).
+
+Modello di richiesta Matteo da citare nei report «Dati comunicazione» quando annoti il formato:
+*«revisore ha finito. spiegami brevemente cosa c'è da decidere… dove siamo… sii sintetico»*.
+Replica il pattern nel report di sessione (sezione Dati comunicazione) per il revisore Meta.
+
 ---
 
 ## 4. A monte: stima chi revisionerà (decisione presa QUI, non a valle)
