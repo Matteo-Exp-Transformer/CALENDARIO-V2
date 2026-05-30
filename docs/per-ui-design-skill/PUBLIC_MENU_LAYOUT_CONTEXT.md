@@ -18,12 +18,12 @@ description: >-
 
 ```
 ┌─────────────────────────────────────┐
-│  <header> — SOLO headerImage         │
+│  <header> — nessun PNG header        │
 │  Nome ristorante + fregio             │
 │  MenuCarousel (badge solo in slide)   │
 │  ○ ● ○  pallini tema                  │
 ├─────────────────────────────────────┤
-│  <div flex-1> — SOLO bodyImage        │
+│  <div flex-1> — SOLO bodyImage       │
 │  MenuNavTabs (sticky top-0)           │
 │  Griglia categorie (main, no bg)      │
 │  … contenuto scroll …                 │
@@ -31,12 +31,12 @@ description: >-
 └─────────────────────────────────────┘
 ```
 
-Pagina: `useMenuPageBackgroundStyle()` — prima coppia come `themePageBackgroundStyle()` (header `min(48vh,420px)` + body a larghezza piena); se lo scroll supera quella altezza, `buildRepeatingThemePageBackgroundStyle()` aggiunge layer CSS header→body in loop (mai `cover` sul body). **Asset:** sfumatura bianca ≈ **2/5 altezza** del PNG; sotto l’ultimo layer resta `bodyFallbackBg`.
+Pagina: `useMenuPageBackgroundStyle()` — **solo `bodyImage`** su tutta la homepage (ripetuto in verticale se scroll lungo). **`headerImage` non usato in homepage** — solo in `PublicMenuCategoryPage` (barra sticky ~56px).
 
-| Layer | background-size | Perché |
-|-------|-----------------|--------|
-| header | `100% × fascia hero` | Come mockup, fade in basso alla fascia |
-| body | `100% auto` | Proporzioni file rispettate (~40% bianco in alto) |
+| Pagina | Asset sfondo |
+|--------|----------------|
+| Homepage `PublicMenuPage` | `bodyImage` — `100% auto`, repeat verticale via layer CSS |
+| Categoria `PublicMenuCategoryPage` | `headerImage` — crop top sulla barra sticky; corpo `bg-stone-50` |
 
 ---
 
@@ -51,8 +51,8 @@ Ogni tema definisce: `accentColor`, `headerTextColor`, `headerImage`, `bodyImage
 | `mediterranean_teal` | Mediterranean Teal | header + body |
 | `cream_sage` | Cream Sage | header + body |
 | `dark_gold` | Dark Gold | header + body |
-| `rustic_terracotta` | Rustic Terracotta | header + body (asset dedicati in `docs/.../Immagini sfondo pagina QRcode Menu/`) |
-| `wine_bistrot` | Wine Bistrot | nessuno (solo CSS fallback) |
+| `rustic_terracotta` | Rustic Terracotta | header + body |
+| `green_wellness` | Green Wellness | header + body |
 
 PNG in `public/menu-themes/` con naming `{tema-key}-header.png` / `{tema-key}-body.png`.
 

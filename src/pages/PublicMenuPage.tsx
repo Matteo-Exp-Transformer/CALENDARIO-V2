@@ -130,27 +130,13 @@ function usePublicPresets(tenantId: string | null, presetIds: string[] | null) {
   })
 }
 
-/** Fascia alta in cui viene disegnato il PNG header (titolo + carousel). */
-const HEADER_BG_BAND = 'min(48vh, 420px)'
-
 /**
- * Sfondo unico: header in fascia fissa; body con `100% auto` (non `cover`)
- * così la sfumatura bianca resta ~2/5 dell’altezza del PNG, come in asset.
- * `cover` stirava il gradiente su tutta la pagina.
+ * Homepage menu QR: un solo PNG (`bodyImage`) per tutto lo sfondo.
+ * `headerImage` è solo su PublicMenuCategoryPage (barra categoria).
+ * Body con `100% auto` (non `cover`) — altezza proporzionale al file.
  */
 function themePageBackgroundStyle(theme: MenuTheme): CSSProperties {
-  const { headerImage, bodyImage, headerFallbackBg, bodyFallbackBg } = theme
-
-  if (headerImage && bodyImage) {
-    return {
-      ['--menu-header-band' as string]: HEADER_BG_BAND,
-      backgroundImage: `url(${headerImage}), url(${bodyImage})`,
-      backgroundSize: `100% var(--menu-header-band), 100% auto`,
-      backgroundPosition: 'center top, center var(--menu-header-band)',
-      backgroundRepeat: 'no-repeat, no-repeat',
-      backgroundColor: bodyFallbackBg,
-    }
-  }
+  const { bodyImage, bodyFallbackBg } = theme
 
   if (bodyImage) {
     return {
@@ -162,36 +148,16 @@ function themePageBackgroundStyle(theme: MenuTheme): CSSProperties {
     }
   }
 
-  if (headerImage) {
-    return {
-      backgroundImage: `url(${headerImage})`,
-      backgroundSize: `100% ${HEADER_BG_BAND}`,
-      backgroundPosition: 'center top',
-      backgroundRepeat: 'no-repeat',
-      backgroundColor: headerFallbackBg,
-    }
-  }
-
   return { backgroundColor: bodyFallbackBg }
 }
 
-function getHeaderBandPx(): number {
-  return Math.min(window.innerHeight * 0.48, 420)
-}
-
-/**
- * Stesso layout della prima coppia (header in fascia px + body a larghezza piena),
- * ripetuto in verticale con più layer CSS fino a coprire tutta la pagina.
- */
-function buildRepeatingThemePageBackgroundStyle(
-  theme: MenuTheme,
-  headerPx: number,
+/** Ripete solo il body in verticale fino a coprire lo scroll della homepage. */
+function buildRepeatingBodyBackgroundStyle(
+  bodyImage: string,
   bodyPx: number,
   coverHeight: number,
+  bodyFallbackBg: string,
 ): CSSProperties {
-  const { headerImage, bodyImage, bodyFallbackBg } = theme
-  if (!headerImage || !bodyImage) return themePageBackgroundStyle(theme)
-
   const images: string[] = []
   const sizes: string[] = []
   const positions: string[] = []
@@ -199,13 +165,6 @@ function buildRepeatingThemePageBackgroundStyle(
   let y = 0
 
   while (y < coverHeight - 0.5) {
-    images.push(`url(${headerImage})`)
-    sizes.push(`100% ${headerPx}px`)
-    positions.push(`center ${y}px`)
-    repeats.push('no-repeat')
-    y += headerPx
-    if (y >= coverHeight - 0.5) break
-
     images.push(`url(${bodyImage})`)
     sizes.push(`100% ${bodyPx}px`)
     positions.push(`center ${y}px`)
@@ -214,7 +173,6 @@ function buildRepeatingThemePageBackgroundStyle(
   }
 
   return {
-    ['--menu-header-band' as string]: HEADER_BG_BAND,
     backgroundImage: images.join(', '),
     backgroundSize: sizes.join(', '),
     backgroundPosition: positions.join(', '),
@@ -232,19 +190,20 @@ function useMenuPageBackgroundStyle(
 
   useLayoutEffect(() => {
     if (!enabled) return
-    if (!theme.headerImage || !theme.bodyImage) {
+    if (!theme.bodyImage) {
       setStyle(themePageBackgroundStyle(theme))
       return
     }
 
-    const headerPx = getHeaderBandPx()
     let bodyPx: number | null = null
 
     const recompute = () => {
       if (bodyPx == null) return
       const el = pageRef.current
       const coverHeight = Math.max(el?.scrollHeight ?? 0, window.innerHeight)
-      setStyle(buildRepeatingThemePageBackgroundStyle(theme, headerPx, bodyPx, coverHeight))
+      setStyle(
+        buildRepeatingBodyBackgroundStyle(theme.bodyImage!, bodyPx, coverHeight, theme.bodyFallbackBg),
+      )
     }
 
     const img = new Image()

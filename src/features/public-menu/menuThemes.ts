@@ -3,6 +3,7 @@ export type MenuThemeKey =
   | 'cream_sage'
   | 'dark_gold'
   | 'rustic_terracotta'
+  | 'green_wellness'
 
 export interface MenuTheme {
   key: MenuThemeKey
@@ -11,9 +12,9 @@ export interface MenuTheme {
   accentColor: string
   /** Colore testo su sfondo header */
   headerTextColor: string
-  /** URL immagine header (o null = fallback CSS) */
+  /** URL immagine barra header pagina categoria (non usata in homepage) */
   headerImage: string | null
-  /** URL immagine body (o null = fallback CSS) */
+  /** URL sfondo intero homepage menu QR */
   bodyImage: string | null
   /** Fallback bg-color header se immagine assente */
   headerFallbackBg: string
@@ -71,6 +72,17 @@ export const MENU_THEMES: Record<MenuThemeKey, MenuTheme> = {
     /** Sotto il PNG body (bianco in alto → terracotta in basso): tono caldo, non marrone scuro */
     bodyFallbackBg: '#9a3412',
     tabBarStickyRgb: '255, 247, 240',
+  },
+  green_wellness: {
+    key: 'green_wellness',
+    label: 'Green Wellness',
+    accentColor: '#16a34a',
+    headerTextColor: '#1a1a1a',
+    headerImage: `${BASE}menu-themes/green-wellness-header.png`,
+    bodyImage: `${BASE}menu-themes/green-wellness-body.png`,
+    headerFallbackBg: '#dcfce7',
+    bodyFallbackBg: '#f0fdf4',
+    tabBarStickyRgb: '240, 253, 244',
   },
 }
 
