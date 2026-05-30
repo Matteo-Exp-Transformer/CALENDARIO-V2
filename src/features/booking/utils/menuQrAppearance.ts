@@ -29,6 +29,16 @@ export function parseCategoryImages(raw: unknown): Record<string, string> {
   return out
 }
 
+/** Legacy `null` = tutte le categorie; `[]` = nessuna; array esplicito = solo quelle chiavi. */
+export function isCategoryInQrFilter(
+  categoryFilter: string[] | null | undefined,
+  categoryKey: string,
+): boolean {
+  if (categoryFilter == null) return true
+  if (categoryFilter.length === 0) return false
+  return categoryFilter.includes(categoryKey)
+}
+
 export function parseMenuQrCodeRow(raw: Record<string, unknown>): MenuQrCode {
   return {
     id: String(raw.id),

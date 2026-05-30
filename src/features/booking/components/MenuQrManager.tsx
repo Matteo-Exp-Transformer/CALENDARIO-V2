@@ -3,6 +3,7 @@ import { toast } from 'react-toastify'
 import QRCode from 'qrcode'
 import { Plus, Edit, Trash2, Copy, Download } from 'lucide-react'
 import { Button } from '@/components/ui'
+import { Modal } from '@/components/ui/Modal'
 import { ADMIN_WARM_GRADIENT_SURFACE } from '@/lib/adminWarmGradientSurface'
 import {
   useMenuQrCodes,
@@ -114,32 +115,47 @@ function QrRow({ qr, tenantSlug, onEdit, onDelete, isDeleting }: QrRowProps) {
 export function MenuQrManager() {
   const { tenantSlug } = useTenantContext()
   const { data: qrCodes = [], isLoading } = useMenuQrCodes()
-  const { data: categories = [] } = useMenuCategories()
+  const { data: categories = [], refetch: refetchCategories } = useMenuCategories()
 
   const saveMutation = useSaveMenuQrSettings()
   const deleteMutation = useDeleteMenuQrCode()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<MenuQrCode | null>(null)
+  const [saveSuccess, setSaveSuccess] = useState<{ isNew: boolean } | null>(null)
+  const [qrToDelete, setQrToDelete] = useState<MenuQrCode | null>(null)
 
   const openCreate = () => {
+    void refetchCategories()
     setEditing(null)
     setModalOpen(true)
   }
 
   const openEdit = (qr: MenuQrCode) => {
+    void refetchCategories()
     setEditing(qr)
     setModalOpen(true)
   }
 
   const handleDelete = (qr: MenuQrCode) => {
-    if (!confirm(`Eliminare il QR "${qr.name}"? Il link smetterà di funzionare.`)) return
-    deleteMutation.mutate(qr.id)
+    setQrToDelete(qr)
+  }
+
+  const confirmDelete = () => {
+    if (!qrToDelete) return
+    deleteMutation.mutate(qrToDelete.id, {
+      onSuccess: () => setQrToDelete(null),
+    })
   }
 
   const handleSave = (payload: MenuQrSettingsSavePayload) => {
+    const isNew = !editing
     saveMutation.mutate(payload, {
-      onSuccess: () => setModalOpen(false),
+      onSuccess: () => {
+        setModalOpen(false)
+        setEditing(null)
+        setSaveSuccess({ isNew })
+      },
     })
   }
 
@@ -198,6 +214,56 @@ export function MenuQrManager() {
         categories={categories}
         tenantSlug={tenantSlug}
       />
+
+      <Modal
+        isOpen={saveSuccess !== null}
+        onClose={() => setSaveSuccess(null)}
+        title="Menù QR salvato"
+        size="sm"
+      >
+        <p className="text-sm text-gray-600">
+          {saveSuccess?.isNew
+            ? 'Salvato. Hai creato un nuovo codice e un nuovo link QR: condividili o stampa il QR dalla lista.'
+            : 'Salvato. Le modifiche sono già visibili aprendo lo stesso link o la stessa stampa QR.'}
+        </p>
+        <div className="mt-4 flex justify-end">
+          <Button variant="primary" type="button" onClick={() => setSaveSuccess(null)}>
+            OK
+          </Button>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={qrToDelete !== null}
+        onClose={() => !deleteMutation.isPending && setQrToDelete(null)}
+        title="Elimina menù QR"
+        size="sm"
+        closeOnOverlayClick={!deleteMutation.isPending}
+        closeOnEscape={!deleteMutation.isPending}
+      >
+        <p className="text-sm text-gray-600">
+          Eliminare il menù QR <strong className="font-semibold">{qrToDelete?.name}</strong>? Il link e la
+          stampa QR smetteranno di funzionare. L&apos;operazione non si può annullare.
+        </p>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            type="button"
+            disabled={deleteMutation.isPending}
+            onClick={() => setQrToDelete(null)}
+          >
+            Annulla
+          </Button>
+          <Button
+            variant="primary"
+            type="button"
+            disabled={deleteMutation.isPending}
+            onClick={confirmDelete}
+          >
+            {deleteMutation.isPending ? 'Eliminazione…' : 'Elimina'}
+          </Button>
+        </div>
+      </Modal>
     </div>
   )
 }

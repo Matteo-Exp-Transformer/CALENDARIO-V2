@@ -15,7 +15,6 @@ import {
   Flame,
   Cake,
   Martini,
-  Heart,
   type Icon as PhosphorIconType,
 } from '@phosphor-icons/react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -27,6 +26,7 @@ import { getMenuTheme, type MenuTheme } from '@/features/public-menu/menuThemes'
 import type { MenuCategoryRecord } from '@/features/booking/hooks/useMenuCategories'
 import type { MenuQrCode, CarouselItem } from '@/types/menu'
 import { usePublicMenuViewport } from '@/hooks/usePublicMenuViewport'
+import { useRestaurantName } from '@/hooks/useRestaurantName'
 
 /** Emoji mappate ai key standard delle categorie. */
 const CATEGORY_EMOJI: Record<string, string> = {
@@ -364,15 +364,6 @@ function MenuCarousel({
                     background: 'linear-gradient(to right, rgba(0,0,0,0.55) 0%, transparent 50%)',
                   }}
                 />
-                {/* Cuore tema */}
-                <button
-                  type="button"
-                  aria-label="Specialità"
-                  className="absolute right-3 top-3 rounded-full p-1.5"
-                  style={{ color: accentColor }}
-                >
-                  <Heart size={20} weight="fill" />
-                </button>
                 {/* Testo su sinistra */}
                 <div className="absolute inset-y-0 left-0 flex w-1/2 flex-col justify-end px-4 pb-4">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">
@@ -792,8 +783,8 @@ function MenuContent({
 export function PublicMenuPage() {
   usePublicMenuViewport()
   const { tenantSlug, shortCode } = useParams<{ tenantSlug: string; shortCode?: string }>()
-  const { tenantId, organizationName, isLoading: tenantLoading, tenantReady } =
-    useTenantBySlug(tenantSlug)
+  const { tenantId, isLoading: tenantLoading, tenantReady } = useTenantBySlug(tenantSlug)
+  const restaurantDisplayName = useRestaurantName()
 
   const { data: qrByCode, isLoading: qrLoading, isFetched: qrByCodeFetched } = usePublicMenuQr(
     tenantReady ? tenantId : null,
@@ -841,7 +832,7 @@ export function PublicMenuPage() {
           qr={qr}
           slug={tenantSlug}
           shortCode={resolvedShortCode}
-          organizationName={organizationName ?? 'Menu'}
+          organizationName={restaurantDisplayName ?? 'Menu'}
         />
       ) : qrNotFound ? (
         <main className="px-4 py-12 text-center">

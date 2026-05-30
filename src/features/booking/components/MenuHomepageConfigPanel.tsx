@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { toast } from 'react-toastify'
 import { ImagePlus, Trash2, ChevronUp, ChevronDown, ArrowUp, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui'
+import { Modal } from '@/components/ui/Modal'
 import { useMenuCategories } from '../hooks/useMenuCategories'
 import { MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
 import type { CarouselItem, MenuItem } from '@/types/menu'
@@ -13,6 +14,7 @@ import {
   uploadMenuPhotoFile,
   useCarouselPhotoUpload,
 } from '@/features/booking/hooks/useCarouselPhotoUpload'
+import { AdminFieldWithCharCount } from './settings/AdminFieldWithCharCount'
 import { cn } from '@/lib/utils'
 
 export const CAROUSEL_SLIDE_TITLE_MAX = 60
@@ -137,6 +139,7 @@ export function MenuQrCarouselSection({
   /** Nasconde la riga «Specialità della casa». */
   hideToolbarLabel?: boolean
 }) {
+  const [slideToRemove, setSlideToRemove] = useState<number | null>(null)
   const storageSegment = menuQrStorageSegment(menuQrCodeId, draftShortCode)
   const { fileRef, uploading, canUpload, handleAddFile } = useCarouselPhotoUpload({
     storagePrefix: storageSegment ? menuQrStoragePrefix(tenantId, storageSegment) : null,
@@ -163,6 +166,7 @@ export function MenuQrCarouselSection({
     const path = storagePathFromMenuPhotoUrl(item.image_url)
     if (path) await removeMenuPhotoPath(path)
     onChange(items.filter((_, idx) => idx !== i).map((x, idx) => ({ ...x, sort_order: idx })))
+    setSlideToRemove(null)
   }
 
   const updateField = (i: number, field: 'eyebrow' | 'title' | 'description', value: string) => {
@@ -235,54 +239,63 @@ export function MenuQrCarouselSection({
             </div>
             <button
               type="button"
-              onClick={() => void remove(i)}
+              onClick={() => setSlideToRemove(i)}
               className="ml-auto shrink-0 rounded p-1 text-red-400 hover:text-red-600"
               aria-label="Rimuovi"
             >
               <Trash2 className="h-4 w-4" />
             </button>
           </div>
-          <div>
-            <input
-              type="text"
-              value={item.eyebrow ?? ''}
-              maxLength={CAROUSEL_SLIDE_EYEBROW_MAX}
-              onChange={(e) => updateField(i, 'eyebrow', e.target.value)}
-              placeholder={`Etichetta sopra il titolo (default: ${DEFAULT_CAROUSEL_EYEBROW})`}
-              className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
-            />
-            <p className="mt-0.5 text-right text-[11px] text-gray-400 tabular-nums">
-              {(item.eyebrow ?? '').length}/{CAROUSEL_SLIDE_EYEBROW_MAX}
-            </p>
-          </div>
-          <div>
-            <input
-              type="text"
-              value={item.title ?? ''}
-              maxLength={CAROUSEL_SLIDE_TITLE_MAX}
-              onChange={(e) => updateField(i, 'title', e.target.value)}
-              placeholder="Titolo slide (es. Tonno in crosta)"
-              className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
-            />
-            <p className="mt-0.5 text-right text-[11px] text-gray-400 tabular-nums">
-              {(item.title ?? '').length}/{CAROUSEL_SLIDE_TITLE_MAX}
-            </p>
-          </div>
-          <div>
-            <input
-              type="text"
-              value={item.description ?? ''}
-              maxLength={CAROUSEL_SLIDE_DESCRIPTION_MAX}
-              onChange={(e) => updateField(i, 'description', e.target.value)}
-              placeholder="Testo breve (opzionale)"
-              className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
-            />
-            <p className="mt-0.5 text-right text-[11px] text-gray-400 tabular-nums">
-              {(item.description ?? '').length}/{CAROUSEL_SLIDE_DESCRIPTION_MAX}
-            </p>
-          </div>
+          <AdminFieldWithCharCount
+            id={`qr-carousel-eyebrow-${i}`}
+            label="Etichetta"
+            value={item.eyebrow ?? ''}
+            maxLength={CAROUSEL_SLIDE_EYEBROW_MAX}
+            onChange={(value) => updateField(i, 'eyebrow', value)}
+            placeholder={`Default: ${DEFAULT_CAROUSEL_EYEBROW}`}
+            singleLine
+          />
+          <AdminFieldWithCharCount
+            id={`qr-carousel-title-${i}`}
+            label="Titolo slide"
+            value={item.title ?? ''}
+            maxLength={CAROUSEL_SLIDE_TITLE_MAX}
+            onChange={(value) => updateField(i, 'title', value)}
+            placeholder="Es. Tonno in crosta"
+            singleLine
+          />
+          <AdminFieldWithCharCount
+            id={`qr-carousel-desc-${i}`}
+            label="Descrizione breve"
+            value={item.description ?? ''}
+            maxLength={CAROUSEL_SLIDE_DESCRIPTION_MAX}
+            onChange={(value) => updateField(i, 'description', value)}
+            placeholder="Testo breve (opzionale)"
+            singleLine
+          />
         </div>
       ))}
+
+      <Modal
+        isOpen={slideToRemove !== null}
+        onClose={() => setSlideToRemove(null)}
+        title="Elimina slide"
+        size="sm"
+      >
+        <p className="text-sm text-gray-600">Eliminare questa slide?</p>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="ghost" type="button" onClick={() => setSlideToRemove(null)}>
+            Annulla
+          </Button>
+          <Button
+            variant="primary"
+            type="button"
+            onClick={() => slideToRemove !== null && void remove(slideToRemove)}
+          >
+            Elimina
+          </Button>
+        </div>
+      </Modal>
     </div>
   )
 }
@@ -390,6 +403,7 @@ export function MenuQrCategoryCardsSection({
   onHiddenItemIdsChange: (ids: string[]) => void
 }) {
   const [uploading, setUploading] = useState<string | null>(null)
+  const [photoToRemove, setPhotoToRemove] = useState<string | null>(null)
   const storageSegment = menuQrStorageSegment(menuQrCodeId, draftShortCode)
   const canUpload = !!storageSegment
 
@@ -414,12 +428,13 @@ export function MenuQrCategoryCardsSection({
     const next = { ...categoryImages }
     delete next[catKey]
     onCategoryImagesChange(next)
+    setPhotoToRemove(null)
   }
 
   if (categories.length === 0) {
     return (
       <p className="text-xs text-gray-500">
-        Seleziona almeno una categoria sopra per personalizzare titoli, foto e visibilità ingredienti.
+        Riattiva almeno una categoria sopra per personalizzare titoli, foto e visibilità ingredienti.
       </p>
     )
   }
@@ -466,7 +481,7 @@ export function MenuQrCategoryCardsSection({
               {imgUrl && canUpload && (
                 <button
                   type="button"
-                  onClick={() => void removeCategoryPhoto(cat.key)}
+                  onClick={() => setPhotoToRemove(cat.key)}
                   className="shrink-0 rounded p-1 text-red-400 hover:text-red-600"
                   aria-label={`Rimuovi foto ${cat.label}`}
                 >
@@ -507,6 +522,27 @@ export function MenuQrCategoryCardsSection({
           </div>
         )
       })}
+
+      <Modal
+        isOpen={photoToRemove !== null}
+        onClose={() => setPhotoToRemove(null)}
+        title="Rimuovi foto categoria"
+        size="sm"
+      >
+        <p className="text-sm text-gray-600">Rimuovere la foto di questa categoria?</p>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="ghost" type="button" onClick={() => setPhotoToRemove(null)}>
+            Annulla
+          </Button>
+          <Button
+            variant="primary"
+            type="button"
+            onClick={() => photoToRemove !== null && void removeCategoryPhoto(photoToRemove)}
+          >
+            Rimuovi
+          </Button>
+        </div>
+      </Modal>
     </div>
   )
 }

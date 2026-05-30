@@ -140,20 +140,37 @@ Pubblico: eyebrow fallback «Specialità della casa»; slide senza `image_url` e
 
 ## 8. Incoerenze aperte (29-05-26 Fase 1)
 
-| ID | Sintesi |
-|----|---------|
-| INC-01 | Header usa `organizations_public.name`, non `restaurant_name` |
-| INC-02 | `menu_qr_codes.name` non mostrato al cliente |
-| INC-03 | Nessuna UI per `content_type` / `preset_ids` |
-| INC-04 | Tema QR ignorato su pagine categoria/preset |
-| INC-05 | Preset page: no foto piatti |
-| INC-06 | Tab preset nasconde tab categorie se preset presenti |
-| INC-08 | Titolo override non usato in pagina categoria |
-| INC-09 | URL categoria bypassa `category_filter` |
-| INC-15 | `hidden_menu_item_ids` non su preset page |
-| INC-16 | Preset page senza `tenantReady` |
+| ID | Sintesi | Stato Fase 3 (30-05-26) |
+|----|---------|-------------------------|
+| INC-01 | Header usa `organizations_public.name`, non `restaurant_name` | **Risolto** — `useRestaurantName()` in `PublicMenuPage` |
+| INC-02 | `menu_qr_codes.name` non mostrato al cliente | Aperto |
+| INC-03 | Nessuna UI per `content_type` / `preset_ids` | Posticipato (fuori scope Fase 3) |
+| INC-04 | Tema QR ignorato su pagine categoria/preset | **Parziale** — fascia header categoria da `theme_key` (D2); corpo/preset restano stone |
+| INC-05 | Preset page: no foto piatti | Aperto |
+| INC-06 | Tab preset nasconde tab categorie se preset presenti | Posticipato |
+| INC-08 | Titolo override non usato in pagina categoria | Aperto (solo D2 header bg) |
+| INC-09 | URL categoria bypassa `category_filter` | **Risolto** — `isCategoryInQrFilter` in `PublicMenuCategoryPage` |
+| INC-15 | `hidden_menu_item_ids` non su preset page | Aperto |
+| INC-16 | Preset page senza `tenantReady` | Aperto |
 
-Dettaglio: report mappa § Incoerenze. Fix in fasi 3–4 del ciclo.
+Dettaglio: report mappa § Incoerenze. Fix Fase 3 in §11 sotto.
+
+---
+
+## 11. Fix applicati (Fase 3 — 30-05-26)
+
+| Area | Intervento | File |
+|------|------------|------|
+| Admin carosello QR | Label + contatori (`AdminFieldWithCharCount`: Etichetta 40, Titolo 60, Descrizione 125); `Modal` conferma rimozione slide | `MenuHomepageConfigPanel.tsx`, `AdminFieldWithCharCount.tsx` |
+| Admin categorie QR | Zero categorie attive → messaggio (no card); `Modal` conferma rimozione foto categoria | `MenuHomepageConfigPanel.tsx` |
+| Salva modale | `Modal` post-success (stesso link vs nuovo QR) | `MenuQrManager.tsx` |
+| Validazione Salva | Carosello obbligatorio; ≥1 cat con ingrediente visibile; toast se invalido | `menuQrValidation.ts`, `MenuQrModal.tsx` |
+| Checkbox categorie | Elenco allineato a tab Menu (`menu_categories`); refetch all'apertura modale | `MenuQrModal.tsx`, `MenuQrManager.tsx` |
+| Pubblico carosello | Rimosso cuoricino decorativo su slide | `PublicMenuPage.tsx` |
+| Pubblico header | Nome da `restaurant_settings.restaurant_name` via `useRestaurantName` | `PublicMenuPage.tsx` |
+| Pubblico categoria | Guard `category_filter`; messaggio + link indietro se categoria esclusa | `PublicMenuCategoryPage.tsx`, `menuQrAppearance.ts` |
+| Pubblico categoria header | Fascia sticky con PNG header del `theme_key` QR (asset finali FU-021) | `PublicMenuCategoryPage.tsx` |
+| Doc layout | Rimosso riferimento attivo a `menu_homepage_config` in tabella §7 | `PUBLIC_MENU_LAYOUT_CONTEXT.md` |
 
 ---
 

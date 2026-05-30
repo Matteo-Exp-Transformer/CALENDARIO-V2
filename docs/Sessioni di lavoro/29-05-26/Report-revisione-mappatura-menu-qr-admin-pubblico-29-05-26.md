@@ -126,6 +126,43 @@ La mappa Fase 1 (38 coppie, flusso admin→DB→pubblico, modello per-QR 036/037
 
 ## Dati comunicazione (per Matteo)
 
+### Formato spiegazione approvato (Matteo, 30-05-26)
+
+Dopo revisione o handoff, la sintesi verso Matteo deve seguire il modello della richiesta:
+
+> *«revisore ha finito. spiegami brevemente cosa c'è da decidere e capire. poi dimmi anche a che punto siamo e come possiamo proseguire. sii sintetico non troppe parole ridondanti»*
+
+In pratica: **(1)** decisioni in linguaggio semplice (schermata + effetto) · **(2)** tabella **Dove siamo nel ciclo** + **Checklist ciclo** (sezione sotto, sempre aggiornata) · **(3)** prossimo passo. Le decisioni aperte: **opzioni A/B/C** o **Sì/No** con **raccomandazione** (tabella «Prossime decisioni»).
+
+### Decisioni Matteo post-revisione (30-05-26)
+
+| # | Tema | Scelta Matteo | Impatto Fase 3 |
+|---|------|---------------|----------------|
+| **1** | Preset / tab eventi / `mixed` nel modale (INC-03, INC-06) — *non* il carosello QR già esistente | **Non ora.** Prima fix strutturali pagine QR; integrazioni preset/tab **dopo**. | INC-03/06 **fuori scope Fase 3** |
+| **2** | Avviso dopo Salva modale QR | **Sì** — dialog in-app. **Tecnico:** in modifica il `short_code` **non cambia** → stesso link/stampa QR già mostra dati aggiornati (nessun trigger che invalida URL). Copy: modifiche **già visibili** sullo stesso link; eccezione **nuovo** QR = nuovo codice/link. | `Modal` post-success (VOCABOLARIO «finestra di conferma») |
+| **3** | Nome header cliente (INC-01) | **Allineare ad Anagrafica** — `restaurant_name` | Fix header `PublicMenuPage` |
+| **4** | Temi sfondo | **OK** temi homepage. **Follow-up:** asset PNG sfondo (giunzione scroll lungo) → **FU-021** | INC-04/08 pagine figlie in scope se D2=Sì |
+| **5** | QA admin modale | **Matteo fa lui** | — |
+
+### Prossime decisioni (A/B/C — per conferma prima Fase 3)
+
+| # | Domanda | A | B | C | Raccomandato |
+|---|---------|---|---|---|--------------|
+| **D1** | ~~404 URL~~ → **Admin:** se **zero** categorie attive, nascondere sezione «Titoli e descrizioni categorie» (`MenuQrCategoryCardsSection`); riattivare con checkbox categoria; cestino foto slide/foto cat con **Modal** conferma; non mostrare categorie senza ingredienti (già filtro checkbox). **Pubblico:** guard `category_filter` su `/c/:key` (messaggio/redirect se cat non nel filtro). | — | — | — | **Confermato 30-05-26** |
+| **D2** | Solo **fascia header** pagina categoria: piccola immagine sfondo legata al `theme_key` del QR; corpo pagina invariato (stone-50). Asset definitivi → **FU-021**. | — | — | — | **Confermato 30-05-26** |
+| **D3** | Hidden/foto su pagina preset | In Fase 3 | Dopo (preset non ora) | — | **B** |
+
+### Fix da test manuale Matteo (30-05-26, Fase 3)
+
+| Area | Richiesta | Componente |
+|------|-----------|--------------|
+| Carosello modale QR | **Label visibili** + limiti caratteri (40/60/125) come Personalizza form (`AdminFieldWithCharCount`: Etichetta, Titolo, Descrizione) | `MenuQrCarouselSection` |
+| Carosello | **Conferma** prima di eliminare slide (cestino) — `Modal`, non `window.confirm` | `MenuQrCarouselSection` |
+| Categorie modale | Se tutte le categorie **spente** → nascondere blocchi foto/titoli/ingredienti; messaggio per riaccendere con checkbox | `MenuQrModal` + `MenuQrCategoryCardsSection` |
+| Foto categoria | **Conferma** prima di rimuovere foto categoria (cestino) | `MenuQrCategoryCardsSection` |
+
+---
+
 | Dove nell’app | Effetto ristoratore / cliente | Componente | Storage |
 |---------------|------------------------------|------------|---------|
 | **Admin → Menu → QR Code → modale** | Configura nome interno QR, tema, carosello, card categorie, piatti nascosti (occhio) — **non verificato live** revisore | `MenuQrModal` + `MenuHomepageConfigPanel` | `menu_qr_codes`, `menu_qrcode_categories`, bucket `menu-photos` |
@@ -139,25 +176,54 @@ La mappa Fase 1 (38 coppie, flusso admin→DB→pubblico, modello per-QR 036/037
 
 | ID | Nota |
 |----|------|
-| FU-017/018/019 | Invariati — restano aperti |
-| **FU-020** (nuovo) | Seed su TEST: almeno 1 QR `content_type=mixed` + `preset_ids` per QA browser INC-06; categoria con piatti **fuori** `category_filter` per QA INC-09 |
-| Giro 2 QA | Admin modale + salva→ricarica 375px quando login TEST disponibile |
+| FU-017/018/019 | Invariati — FU-018 posticipato con decisione #1 |
+| **FU-020** | Seed TEST mixed/preset — **solo quando** si riapre INC-06 |
+| **FU-021** (nuovo) | Asset sfondo temi QR: formato/dimensioni PNG header+body per scroll lunghi; prompt dedicato generazione preset immagini |
+| Giro 2 QA admin | **Matteo** (decisione #5) |
+
+---
+
+## Dove siamo nel ciclo + checklist (aggiornamento 30-05-26)
+
+| Fase | Stato | Note |
+|------|--------|------|
+| 1 Mappa | ✅ | 38 coppie + `PUBLIC_MENU_DATA_FLOW_CONTEXT.md` |
+| 2 Revisione | ✅ | Approva con riserve (2° passaggio) |
+| 3 Fix codice | ⏳ | Scope ridotto da decisioni Matteo (vedi sotto) |
+| 4 Revisione fix | ⬜ | Dopo Fase 3 |
+
+**Checklist ciclo**
+
+- [x] Mappa Fase 1 + query TEST
+- [x] Revisione indipendente + QA pubblico 375/834/1280
+- [x] Decisioni prodotto Matteo annotate (questa sezione)
+- [ ] Fase 3 fix (scope approvato)
+- [ ] `npm run validate` post-fix
+- [ ] QA mobile ripetuto (M1–M6)
+- [ ] QA admin modale — **Matteo**
+- [ ] Revisione fix (Fase 4)
 
 ---
 
 ## Handoff Fase 3 (fix — solo `src/`, fuori scope revisore)
 
+**Scope Matteo 30-05-26 (aggiornato):** INC-03/06 posticipati. Priorità: test admin carosello/categorie + INC-01 + INC-09 + dialog Salva + header categoria tema (struttura, asset FU-021).
+
 | Priorità | ID | Intervento | File hub |
 |----------|-----|------------|----------|
-| **P0** | INC-03 | UI `content_type` / `preset_ids` **oppure** policy «solo a_la_carte» + dead code preset | `MenuQrModal.tsx` |
-| **P0** | INC-06 | `MenuNavTabs`: in `mixed` mostrare tab categorie **e** preset (non `presets.length > 0` alone) | `PublicMenuPage.tsx` L454–461 |
-| **P1** | INC-09 | Guard `category_filter` su route `/c/:key` (404 / redirect / messaggio) | `PublicMenuCategoryPage.tsx` |
-| **P2** | INC-04/08 | Propagare `theme_key` + titolo override `menu_qrcode_categories` su pagina categoria | cat page + hook label |
-| **P2** | INC-15 | Applicare `hidden_menu_item_ids` (e opz. foto) su `PublicMenuPresetPage` | preset page |
-| **P3** | INC-01 | Valutare `restaurant_name` o `useRestaurantName()` in header pubblico | `PublicMenuPage.tsx`, `TenantContext` |
-| **Doc** | INC-11 | §7 `PUBLIC_MENU_LAYOUT_CONTEXT.md` → rimuovere `menu_homepage_config` | doc only |
+| **P0** | Test M | Carosello: label `AdminFieldWithCharCount` (40/60/125) + conferma `Modal` rimozione slide | `MenuQrCarouselSection` |
+| **P0** | D1 admin | Zero categorie attive → nascondere `MenuQrCategoryCardsSection`; conferma `Modal` rimozione foto cat | `MenuQrModal`, `MenuQrCategoryCardsSection` |
+| **P0** | INC-01 | Header homepage QR = `restaurant_name` (Anagrafica) | `PublicMenuPage.tsx` |
+| **P0** | INC-09 / D1 pub | `/c/:key` non in `category_filter` → messaggio o redirect (non lista piatti) | `PublicMenuCategoryPage.tsx` |
+| **P0** | UX | `Modal` post-Salva: modifiche già sullo stesso link QR | `MenuQrModal` |
+| **P1** | D2 | Header pagina categoria: sfondo immagine da `theme_key` (fascia piccola); resto pagina invariato; asset finali **FU-021** | `PublicMenuCategoryPage.tsx`, `menuThemes.ts` |
+| **—** | INC-04/08 full page | Tema/titolo override su tutta cat page | **Fuori scope** (solo header D2) |
+| **—** | INC-03/06, INC-15 | Preset/mixed | **Fuori scope** |
+| **Doc** | INC-11 | `PUBLIC_MENU_LAYOUT_CONTEXT.md` § obsoleto | doc |
 
-**Test post-fix:** `npm run validate` + ripetere tabella M1–M6 (375 obbligatorio) + seed FU-020 per INC-06/09.
+**Test post-fix:** `npm run validate` + ripetere tabella M1–M6 (375 obbligatorio). Seed FU-020 solo se si riapre INC-06 in sessione futura.
+
+**Follow-up asset:** FU-021 — preset immagini sfondo tema QR (formato scroll lungo).
 
 ---
 

@@ -5,8 +5,8 @@
 **Stato:** Fase 1 mappa ✅ · Fase 2 revisione indipendente 2° passaggio ✅ (**Approva con riserve**, 30-05-26) — pronto per Fase 3 fix
 
 - **Cosa è stato fatto:** mappatura end-to-end 38 coppie admin → DB → UI pubblica; query SQL verificate su TEST; incoerenze INC-01…12, 15–16 (13–14 non catalogati); context agenti; **revisione indipendente** con QA M1–M6 su 375/834/1280 + validate OK.
-- **Cosa resta:** Fase 3 fix (INC-03/06/09 P0); QA admin modale; seed TEST mixed (FU-020).
-- **Serve una tua azione:** avviare Fase 3 fix quando pronto.
+- **Cosa resta:** Fase 3 fix (scope 30-05-26: INC-01, INC-09, dialog Salva, INC-04/08; INC-03/06 posticipati); QA admin **Matteo**; FU-021 asset sfondo.
+- **Serve una tua azione:** confermare D1/D2 se vuoi, poi avviare Fase 3 fix.
 
 **Report revisione (fonte):** [Report-revisione-mappatura-menu-qr-admin-pubblico-29-05-26.md](Report-revisione-mappatura-menu-qr-admin-pubblico-29-05-26.md) — § «Revisione indipendente — 2° passaggio»
 

@@ -1,11 +1,16 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, type CSSProperties } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabasePublic } from '@/lib/supabasePublic'
 import { usePublicMenuViewport } from '@/hooks/usePublicMenuViewport'
 import { usePublicMenuQr } from '@/features/booking/hooks/useMenuQrCodes'
+import { isCategoryInQrFilter } from '@/features/booking/utils/menuQrAppearance'
+import { getMenuTheme } from '@/features/public-menu/menuThemes'
 import type { MenuItem } from '@/types/menu'
+
+/** Fascia header categoria — crop piccolo del PNG tema QR. Asset ottimizzati scroll: FU-021. */
+const CATEGORY_HEADER_BAND_PX = 56
 
 function useTenantBySlug(slug: string | undefined) {
   const { setTenantFromSlug, tenantId, tenantSlug, isLoading } = useTenantContext()
@@ -58,6 +63,19 @@ function usePublicCategoryLabel(tenantId: string | null, categoryKey: string | u
   })
 }
 
+function categoryHeaderBackgroundStyle(headerImage: string | null, fallbackBg: string): CSSProperties {
+  if (headerImage) {
+    return {
+      backgroundImage: `url(${headerImage})`,
+      backgroundSize: `100% auto`,
+      backgroundPosition: 'center top',
+      backgroundRepeat: 'no-repeat',
+      backgroundColor: fallbackBg,
+    }
+  }
+  return { backgroundColor: fallbackBg }
+}
+
 function ItemCardWithPhoto({ item }: { item: MenuItem }) {
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
@@ -107,14 +125,20 @@ export function PublicMenuCategoryPage() {
     tenantReady ? tenantId : null,
     shortCode ?? null,
   )
+  const categoryAllowed =
+    !!categoryKey && !!qr && isCategoryInQrFilter(qr.category_filter, categoryKey)
+
   const { data: rawItems = [], isLoading: itemsLoading } = usePublicCategoryItems(
-    tenantReady ? tenantId : null,
+    tenantReady && categoryAllowed ? tenantId : null,
     categoryKey,
   )
   const { data: categoryLabel = '' } = usePublicCategoryLabel(
     tenantReady ? tenantId : null,
     categoryKey,
   )
+
+  const theme = getMenuTheme(qr?.theme_key)
+  const headerBgStyle = categoryHeaderBackgroundStyle(theme.headerImage, theme.headerFallbackBg)
 
   const hiddenSet = useMemo(
     () => new Set(qr?.hidden_menu_item_ids ?? []),
@@ -128,22 +152,35 @@ export function PublicMenuCategoryPage() {
 
   const backHref = `/menu/${tenantSlug}/qr/${shortCode}`
 
-  const loading = tenantLoading || !tenantReady || qrLoading || itemsLoading
+  const loading = tenantLoading || !tenantReady || qrLoading || (categoryAllowed && itemsLoading)
 
   return (
     <div className="min-h-svh bg-stone-50">
-      <header className="sticky top-0 z-10 bg-stone-800 px-4 py-3 shadow-sm">
+      <header
+        className="sticky top-0 z-10 px-4 py-3 shadow-sm"
+        style={{
+          ...headerBgStyle,
+          minHeight: CATEGORY_HEADER_BAND_PX,
+        }}
+      >
         <div className="flex items-center gap-3">
           <Link
             to={backHref}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white active:bg-white/20"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full active:opacity-80"
+            style={{
+              color: theme.headerTextColor,
+              backgroundColor: `${theme.headerTextColor}1a`,
+            }}
             aria-label="Torna al menu"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
-          <h1 className="flex-1 text-center text-lg font-bold text-white leading-tight pr-9">
+          <h1
+            className="flex-1 text-center text-lg font-bold leading-tight pr-9"
+            style={{ color: theme.headerTextColor }}
+          >
             {categoryLabel || '…'}
           </h1>
         </div>
@@ -154,13 +191,31 @@ export function PublicMenuCategoryPage() {
           <div className="py-16 text-center text-sm text-gray-500">Caricamento...</div>
         )}
 
-        {!loading && items.length === 0 && (
+        {!loading && qr && !categoryAllowed && (
+          <div className="rounded-2xl bg-white px-4 py-10 text-center shadow-sm">
+            <p className="text-sm font-medium text-gray-700">
+              Questa categoria non fa parte di questo menù QR.
+            </p>
+            <p className="mt-2 text-sm text-gray-500">
+              Torna alla homepage del menù per vedere le categorie disponibili.
+            </p>
+            <Link
+              to={backHref}
+              className="is-clickable mt-4 inline-block text-sm font-semibold text-teal-700 underline"
+            >
+              Torna al menù QR
+            </Link>
+          </div>
+        )}
+
+        {!loading && categoryAllowed && items.length === 0 && (
           <div className="rounded-2xl bg-white px-4 py-10 text-center shadow-sm">
             <p className="text-sm text-gray-500">Nessun piatto visibile in questa categoria.</p>
           </div>
         )}
 
         {!loading &&
+          categoryAllowed &&
           items.map((item) =>
             item.image_url ? (
               <ItemCardWithPhoto key={item.id} item={item} />
