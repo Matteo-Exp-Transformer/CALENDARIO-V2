@@ -108,6 +108,38 @@ Non mischiare mai i due client. `supabase` è per operazioni admin autenticate; 
 - I due DB si disallineano nella numerazione migrazioni. Allinearsi sempre allo stato del **test** con `Supabase_test__list_migrations`.
 - Il file in `supabase/migrations/` resta la fonte versionata; la migrazione va comunque scritta lì oltre che applicata via MCP sul test.
 
+### 1b.1 Flusso branch + deploy (2 branch — deciso 30-05-26)
+
+Solo **due branch** dopo la dismissione di `env/prod`:
+
+```
+env/test  →  sviluppo: qui si lavora e si testa (codice + DB test docnnernvp)
+   │  merge quando una feature è pronta e validata
+   ▼
+main      →  PRODUZIONE: è il branch che Vercel pubblica come app reale
+```
+
+- **Vercel-produzione builda `main`** (project `calendario-v2`, team `matteos-projects-9122caa7`). Mergiare in `main` = pubblicare in produzione. Non esistono più `env/prod` né altri branch di rilascio. GitHub Pages pubblica solo `docs/` (Jekyll) → è documentazione, NON l'app: ignorarlo in diagnosi deploy.
+
+> ⚠️ **Allineamento ha 3 dimensioni separate — è la causa #1 dei disallineamenti percepiti.**
+> «Codice in produzione», «DB di produzione» e «cache del browser» si aggiornano con azioni diverse
+> e indipendenti. Una feature può MANCARE in prod anche dopo commit/push/merge. Quando Matteo segnala
+> «prod non aggiornata», **consultare attivamente i provider via MCP** prima di ipotizzare, in
+> quest'ordine:
+>
+> 1. **Codice/git** → la feature è mergiata in `main`? (`git log main`)
+> 2. **Deploy Vercel** → ultimo deploy `target=production` è `READY` sul commit giusto? (MCP Vercel
+>    `list_deployments` / `get_project`). Stato `ERROR` = build fallito, prod mostra il precedente.
+> 3. **DB** → migrazioni della feature applicate al Supabase PROD (`rwuxgvld`)? (`Supabase__list_migrations` vs `Supabase_test__`).
+> 4. **Cache/PWA** → l'app ha un service worker (`registerType: 'prompt'`, non auto-update): dopo un
+>    deploy la versione nuova subentra solo **chiudendo e riaprendo** il browser, o in incognito.
+>    Sintomo tipico: **mobile vede il nuovo, desktop il vecchio, stesso link** = cache locale, non
+>    deploy mancato. La console logga la versione attiva (`__APP_VERSION__` + commit): confrontarla.
+>    Dettagli in `docs/PWA_CONTEXT.md`.
+>
+> Caso reale 30-05-26: tutto allineato (git+Vercel+DB), causa = cache PWA desktop. L'avviso Vercel
+> «Production deployment differ from Project Settings» NON è un errore (settings cambiate dopo il deploy).
+
 ---
 
 ## 2. Mappa routing admin
@@ -249,7 +281,7 @@ RULE  cn() da @/lib/utils — mai clsx() o twMerge() direttamente
 RULE  !important Tailwind v4: suffisso → `border-red-500!` (non `!border-red-500`)
 RULE  data-admin-theme: nessun cleanup — il tema deve persistere per tutta la sessione
 RULE  Due client Supabase: non mischiare supabase ↔ supabasePublic
-RULE  Feature flag commerciali: governate da `tenant_features` (tabella DB) + `edition` (bundle base). `useFeatures()` legge da `TenantContext.featureOverrides` → `buildFeatures(edition, featureOverrides)` → `FeatureFlags`. Mai leggere colonne `_enabled` da `organizations` né `featureOverrides` direttamente per gating UI — usare solo `features.X`. Flusso completo in `docs/DATA_FLOW_SKILL.md`. Procedura add-on in `docs/Marketing-Skill/MARKETING_SKILL.md`.
+RULE  Feature flag commerciali: governate da `tenant_features` (tabella DB) + `edition` (bundle base). `useFeatures()` legge da `TenantContext.featureOverrides` → `buildFeatures(edition, featureOverrides)` → `FeatureFlags`. Mai leggere colonne `_enabled` da `organizations` né `featureOverrides` direttamente per gating UI — usare solo `features.X`. **Per attivare una feature a un'azienda la fonte di verità è la riga in `tenant_features` (via `get_tenant_features`); `organizations.qr_menu_enabled` è legacy e NON viene letta dal codice.** Flusso completo in `docs/DATA_FLOW_SKILL.md`. **Procedura passo-passo (con avvertenza fonte di verità + ambiente PROD) in `docs/Marketing-Skill/MARKETING_SKILL.md` § 3.**
 RULE  **Menu QR** (qrMenu flag: auto-true Pro/Enterprise, Classic via `tenant_features`). Pagine pubbliche `/menu/:slug` ecc.; aspetto per-QR su `menu_qr_codes` (migrazioni **036/037** obbligatorie su ogni Supabase del deploy). **Dettaglio completo → `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`**.
 RULE  Email CRM: normalizeCustomerEmail() prima di confronto o scrittura
 RULE  UUID: cancelled_by è UUID auth.users.id — mai passare email a campi UUID

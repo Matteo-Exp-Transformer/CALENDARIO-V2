@@ -214,6 +214,10 @@ file isolati; domande brevi a opzioni/sì-no; niente lezioni tecniche non richie
 invece è tecnico e preciso (lo legge un agente) — la distinzione è netta: spiegazione a Matteo =
 semplice; prompt per l'agente = strutturato.
 
+**Checklist / allineamento verso Matteo (30-05-26):** tabelle compatte (Dove | Cosa fai | OK se);
+flusso utente e nomi schermata in app; no gergo agente (overlay, guard, eyebrow). Spiegazioni lunghe
+solo se chieste. Il prompt esecutore resta tecnico.
+
 **Sintesi post-revisione / handoff (approvato 30-05-26, ciclo Menu QR).** Quando Matteo chiede
 cosa decidere e come proseguire dopo un revisore, rispondi in questo ordine (poche righe, no ridondanza):
 
@@ -256,12 +260,13 @@ Quando Matteo dice che l'agente esecutore ha finito:
    modifica tocca la UI, controlla l'allineamento al comportamento richiesto. Nel report scrivi
    **solo view + check minimo**: eventuali bug/dubbi e se i **componenti attorno** possono
    risentire della modifica. Niente verbosità.
-   - **Checklist controllo (obbligatoria a valle):** quando consegni il prompt **o** quando l'esecutore
-     ha finito, aggiungi per Matteo un blocco **«Checklist controllo»** (5–8 righe `- [ ]`):
-     ogni riga = **dove guardare** (schermata/flusso) + **cosa deve vedere**; una riga `npm run validate`
-     se il task tocca codice. Stessa lista nel report di sessione (sezione revisione). Tu la usi per
-     la revisione rapida (grep sui file citati nel prompt + spot delle righe UI). Niente nomi file in
-     checklist verso Matteo salvo se serve per il grep in nota revisore.
+   - **Roadmap del ciclo (non checklist di task):** prepara-prompt verso Matteo dà la **mappa del
+     ciclo** — dove siamo e cosa viene dopo — **non** la lista di cose da spuntare (quella la danno
+     già esecutore e revisore con le loro checklist di verifica; non duplicarla). Forma: tabella fasi
+     **Prepara · Esecuzione · Revisione · Fix** con ✅/⏳/⬜ + **prossimo passo** in una riga
+     (es. «⏳ Revisione → poi merge se ok»). Il «cosa controllare in app» è compito dell'esecutore/
+     revisore; tu orienti sul **punto del percorso**. Per la tua revisione rapida interna usa pure i
+     file citati nel prompt, ma verso Matteo resta sulla roadmap, non sui task tecnici.
 2. **Se a monte avevi stimato ACCURATA** → **non** la fai tu: prepara un prompt di revisione per
    un agente esterno (profilo Verifica, «revisione completa») e concentrati sul punto 3.
 3. **Sempre — follow-up.** Leggi `docs/FOLLOW_UP.md`. Segnala a Matteo follow-up **nuovi** emersi

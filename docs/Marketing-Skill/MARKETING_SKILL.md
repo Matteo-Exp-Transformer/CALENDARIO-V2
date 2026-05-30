@@ -49,20 +49,45 @@ Questa decisione cambia dove la feature viene dichiarata — sbagliare significa
 
 Oggi l'attivazione di add-on è manuale via MCP o SQL. UI super-admin prevista quando >5 clienti paganti.
 
+> **Fonte di verità = `tenant_features`, NON `organizations.qr_menu_enabled`.**
+> Verificato sul campo (30-05-26): il codice attiva una feature add-on **solo** se la
+> `feature_key` compare in `feature_overrides`, che la vista `organizations_public` e la RPC
+> `check_admin_email` ricavano da `get_tenant_features(id)` → legge **solo** `tenant_features`
+> (`enabled = true` e non scaduta). La colonna `organizations.qr_menu_enabled` è **legacy**: non
+> è letta da nessun componente reale (solo dai tipi generati). Quindi **non basta** mettere
+> `qr_menu_enabled = true`: l'attivazione vera è la riga in `tenant_features`. Allinearla per
+> coerenza è opzionale, ma non è ciò che accende la feature.
+
+> ⚠️ **Ambiente.** Questa procedura si esegue di norma su **PRODUZIONE** (il cliente reale è lì).
+> Prima di ogni INSERT/UPDATE chiamare `get_project_url`: `rwuxgvld` = PROD → chiedere conferma
+> esplicita all'utente prima di scrivere; `docnnernvp` = TEST → ok. (Override della regola "tutto
+> su test" del § 1b di APP_CONTEXT, perché qui il target è un tenant pagante reale.)
+
 **Passo 1** — trova il tenant_id di Mario:
 ```sql
-SELECT id, name, edition FROM organizations WHERE slug = 'pizzeria-da-mario';
+SELECT id, name, edition, qr_menu_enabled FROM organizations WHERE slug = 'pizzeria-da-mario';
 ```
 
-**Passo 2** — attiva l'add-on:
+**Passo 2** — attiva l'add-on (la riga in `tenant_features` è ciò che conta):
 ```sql
-INSERT INTO tenant_features (tenant_id, feature_key, enabled, source)
-VALUES ('<tenant-id>', 'qrMenu', true, 'override')
-ON CONFLICT (tenant_id, feature_key) DO UPDATE SET enabled = true, source = 'override';
-```
+INSERT INTO tenant_features (tenant_id, feature_key, enabled, source, notes, created_by)
+VALUES ('<tenant-id>', 'qrMenu', true, 'manual', 'Attivazione richiesta cliente', 'admin')
+ON CONFLICT (tenant_id, feature_key) DO UPDATE SET enabled = true, source = 'manual';
 
-**Passo 3** — verifica al prossimo login di Mario:
-Mario fa logout e login → `check_admin_email` restituisce `feature_overrides=['qrMenu']` → `features.qrMenu=true`.
+-- opzionale, solo per coerenza (non letta dal codice):
+UPDATE organizations SET qr_menu_enabled = true, updated_at = now() WHERE id = '<tenant-id>';
+```
+> Nota: `ON CONFLICT (tenant_id, feature_key)` richiede il constraint univoco su quella coppia.
+> Se manca nel DB, usare `ON CONFLICT DO NOTHING` e gestire l'eventuale riga già presente a mano.
+
+**Passo 3** — verifica con la stessa catena che legge l'app (non la tabella grezza):
+```sql
+SELECT edition, feature_overrides FROM organizations_public WHERE slug = 'pizzeria-da-mario';
+-- atteso: feature_overrides contiene 'qrMenu'
+```
+Poi Mario fa **logout e login** (o ricarica con Ctrl+F5) → `check_admin_email` restituisce
+`feature_overrides=['qrMenu']` → `features.qrMenu=true`. Una sessione già aperta tiene i flag
+vecchi finché non si ricarica.
 
 **Disattivare**:
 ```sql
