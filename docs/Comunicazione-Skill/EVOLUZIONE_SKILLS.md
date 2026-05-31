@@ -73,6 +73,22 @@ PROD prima di scrivere sul DB, `npm run validate` pre-commit, blocco commit su f
 conferma. La macchina li esegue, non dipende dalla buona volontà dell'agente.
 **Tipo:** **enforcement vero** (config tecnica, non markdown). Skill harness: `update-config`.
 
+> **⚠️ Limite scoperto 01-06-26 — gli esecutori girano su Cursor, non Claude Code.** Un hook
+> `settings.json` di Claude Code copre **solo** le chat aperte in Claude Code. Gli agenti che
+> «si dimenticano» (sezione Dati comunicazione nel report, esiti Liv.2) sono per lo più **agenti
+> Cursor** → l'hook **non li raggiunge**. Conseguenza: M4 va sdoppiata.
+>
+> **Nudge fine-sessione (progettato 01-06-26, non installato).** Promemoria su evento `Stop` che
+> ricorda all'agente, prima di chiudere: (1) sezione «Dati comunicazione» nel report; (2) esiti voci
+> Liv.2 usate; (3) report in `Sessioni di lavoro/` + riga `SESSION_LOG`. Poco invasivo (solo testo,
+> non blocca). **Ma vale solo in Claude Code.**
+> - **Leva Cursor** (dove serve davvero): non esiste l'equivalente hook `Stop`. Le opzioni sono
+>   `.cursor/rules` (sempre governance soft, stesso limite di oggi) o una **checklist fissa di
+>   chiusura nel prompt esecutore** che prepara-prompt inserisce (l'agente la vede nel proprio task).
+>   Quest'ultima è la più promettente per Cursor. Da valutare in sessione enforcement dedicata.
+> - **Conclusione:** il nudge Claude Code copre **questa** famiglia di chat (Meta/revisione qui);
+>   per gli esecutori Cursor serve la checklist-nel-prompt. Due leve, non una.
+
 ### M5 — Statistiche d'uso del sistema 🔶
 **Obiettivo:** capire dove il sistema funziona e dove no, con numeri semplici.
 **Idee concrete:** dai report e dal SESSION_LOG, contare cose come: sessioni light/standard/deep,
@@ -149,3 +165,6 @@ quando i criteri saranno tarati.
 - 31-05-26 · [raffinamento] · **gate schermata+URL** prima di QA OK su fix scroll/sfondo — fix #8 su Menu QR ma sintomo su Pagina Prenota; ≥3 agenti; vedi ERRORI_PROCESSO + PROPOSTE disambiguazione Prenota vs QR — ✅ **RISOLTO** 31-05-26 (gate in PREPARA_PROMPT §2)
 - 31-05-26 · [statistica] · **motore Liv.2 fermo** — le 5 voci Liv.2 in OSSERVAZIONI sono a 0/0/0 esiti dopo 3 giorni: o non vengono usate o gli agenti non registrano `Dati Liv.2`. Senza questi numeri M5 e la logica promozione/regressione girano a vuoto. **Prossima sessione senior:** capire la causa (le voci non scattano? il protocollo fine-chat non scrive l'esito?) e renderne obbligatoria la scrittura, eventualmente via M4/hook. È il guasto #1 del sistema oggi — diagnosi senior 31-05-26.
 - 31-05-26 · [raffinamento] · **grilletti avvio chat + COMANDI_AVVIO.md** — mappati «evolvi … senior» (Meta senior), «evolvi» senza senior (Liv.2, chiede), «analizza/revisiona comunicazione» (sempre revisore). Creato `COMANDI_AVVIO.md` come mappa parola→chat→cosa carica. Alimenta M3 (chiusura/avvio con una parola).
+- 01-06-26 · [statistica] · **motore Liv.2 avviato con esiti ricostruiti** — ripescati dai report 29-05: «compila report comunicazione» 2×ok (candidata Liv.1), «revisiona e committa» 1×ok (confermata). «comportamenti ok ma cambi» ELIMINATA (Matteo non la usa). Dati vecchi/pochi: avvio, non regime.
+- 01-06-26 · [automazione] · **nudge fine-sessione progettato (non installato)** — vedi M4. Scoperto che gli esecutori girano su **Cursor** → l'hook Claude Code non li copre; serve checklist-di-chiusura nel prompt esecutore come leva Cursor. Due leve, non una. Sessione enforcement dedicata da pianificare.
+- 01-06-26 · [statistica] · **score chat 31-05 = 6,5/10** — 11 sessioni operative, 1 in prod, 1 misrouting grave (Prenota vs QR), ~12 giri correzione, follow-up netti positivi. Causa rumore: validate verde ≠ QA visivo. Vedi report revisione-controverifica 01-06.

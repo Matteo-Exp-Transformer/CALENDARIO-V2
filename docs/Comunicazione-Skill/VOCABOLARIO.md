@@ -199,29 +199,26 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 - **Approvata il:** 29-05-26
 - **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report promo conflitto 29-05-26
 
-### «comportamenti sono ok» · «non è un problema» + «voglio che cambi (come ti ho detto)» — Liv. 2
-- **Intende:** cambio intenzionale, NON bugfix/regressione. Il comportamento attuale è accettabile come baseline; Matteo vuole un cambio mirato verso lo stato che ha descritto.
-- **Comportamento agente:** nel prompt/report usa linguaggio «comportamento richiesto / cambio UX», mai «bug / ripristino / regressione». L'obiettivo è lo stato desiderato esatto, non una diagnosi. Se è ambiguo se vuole mantenere qualche aspetto del comportamento attuale → una domanda preventiva.
-- **Livello:** 2 (cautela)
-- **Dati Liv.2:**
-- **Approvata il:** 29-05-26
-- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report prepara-prompt Prenota stacking 29-05-26
-
 ### «compila report … comunicazione … vocabolario (solo sicuro) … annota i miei prompt» — Liv. 2
 - **Intende:** chiusura di una sessione meta/comunicazione (tipicamente prepara-prompt o senza codice): report dettagliato su comunicazione, proposte vocabolario senza junk, citazione verbatim dei prompt di Matteo.
 - **Comportamento agente:** genera il report in `Sessioni di lavoro/GG-MM-AA/` con sezione «Dati comunicazione» completa + sottosezione «Prompt di Matteo (annotati)»; aggiorna `OSSERVAZIONI.md`; candidate solo in `PROPOSTE.md` (mai promuovere voci in `VOCABOLARIO.md` da solo). Estende «fai report finale» quando la sessione è meta, non implementazione.
 - **Livello:** 2 (cautela)
 - **Dati Liv.2:**
+  - 29-05-26 · ok (ciclo card ingredienti — sezione comunicazione + prompt annotati applicati) · *ricostruito dai report, non live*
+  - 29-05-26 · ok (card scorrevole admin — report comunicazione esaustivo) · *ricostruito dai report, non live*
+- **⚠️ Nota Matteo (01-06-26):** Matteo dice questa frase **perché gli agenti si dimenticano** di annotare la sezione comunicazione nel report — è una **pezza a una dimenticanza**, non un comando che vuole dare. La cura vera non è promuovere la voce ma **far sì che gli agenti non se ne dimentichino** (stesso problema degli esiti Liv.2). Vedi nudge/enforcement in `EVOLUZIONE_SKILLS.md` (M4). Finché la dimenticanza non è risolta, la voce resta utile come promemoria manuale.
 - **Approvata il:** 29-05-26
-- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report 29-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report 29-05-26 · nota 01-06-26
 
 ### «revisiona [lavoro] e se è ok committa» — Liv. 2
 - **Intende:** delega della revisione del lavoro di un altro agente, fidandosi della validazione automatica come prova di «ok».
 - **Comportamento agente:** esegui `npm run validate` + check import rotti come criterio oggettivo; se verde, committa con messaggio che cita l'esito della revisione. **MA** se i test passano e noti un difetto logico (es. il caso PWA), fermati e segnalalo prima di committare — il verde non basta sempre. Coerente con la voce «revisione completa».
 - **Livello:** 2 (cautela)
 - **Dati Liv.2:**
+  - 29-05-26 · ok (ciclo card ingredienti — «revisione ok» + commit, validate verde) · *ricostruito dai report, non live*
+- **Conferma Matteo (01-06-26):** comportamento corretto e confermato (validate come prova + stop su difetto logico anche a verde).
 - **Approvata il:** 29-05-26
-- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · OSSERVAZIONI 28-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · OSSERVAZIONI 28-05-26 · conferma 01-06-26
 
 ### Comportamento in plan mode (nessun termine — contesto) — Liv. 1
 - **Intende:** quando l'agente entra in pianificazione, Matteo si aspetta domande sulle decisioni di sua competenza
