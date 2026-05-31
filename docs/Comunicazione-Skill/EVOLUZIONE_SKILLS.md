@@ -120,6 +120,7 @@ quando i criteri saranno tarati.
 - 29-05-26 · mappatura Impostazioni↔Prenota + fix FU-007/008 + revisione · standard · prompt:7 · correzioni:2 · FU:3 · alzata:sì · 4 giri; revisione Approva; FU-009 aperto
 - 29-05-26 · validazione UX Prenota (esecutore+fix+revisione) · standard · prompt:3 · correzioni:2 · FU:1 · alzata:no · KO iniziali = HTML5 senza `noValidate`; fix veloce post root cause; doc `FORM_VALIDATION_ATTENTION_PATTERN.md`; revisore Approva con riserve
 - 29-05-26 · ciclo BookingRequestCard mappa→fix menuPricing · deep→standard · prompt:5 · correzioni:3 · FU:2 chiusi · alzata:no · Approva revisore fix; report unificato; pipeline mappa/rev/fix annotata per vocabolario
+- 30-05-26 · prepara-prompt ciclo fix Menu QR (8 note) · deep · prompt:~12 · correzioni:4 · FU:1 · alzata:no · handoff tabella+tipi sessione+QA Matteo 31-05-26
 
 ---
 

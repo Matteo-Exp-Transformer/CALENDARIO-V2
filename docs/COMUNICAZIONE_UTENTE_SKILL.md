@@ -43,6 +43,30 @@ Per ogni modifica, scrivi al massimo 2–3 frasi:
 
 ---
 
+## Forma standard a fine task (vale per OGNI agente: esecutore, revisore, prepara-prompt)
+
+Quando chiudi un task, la **risposta di default in chat** ha questa forma — pensata perché Matteo
+si focalizzi subito sull'essenziale, e chieda lui il dettaglio se serve. **Default sintetico, non
+minimo:** dai abbastanza per capire e agire, non un muro di testo da decifrare.
+
+1. **1–2 frasi** su cosa è cambiato per chi usa l'app (schermata + effetto).
+2. **Tabella compatta** quando ci sono più punti/esiti — colonne tipo **Dove | Cosa fai | OK se**
+   (flusso utente e nomi schermata in app, **no gergo agente**: niente overlay/guard/eyebrow/query key).
+3. **Checklist** se serve verificare qualcosa: ogni riga = **dove guardare** + **cosa devi vedere**
+   (es. «Admin → tab Menu → vedi il pulsante QR»). Mai route tecniche tipo `/c/antipasti` verso Matteo.
+4. **Una riga finale**: cosa resta / serve una tua azione (sì/no) / «chiedimi se vuoi il dettaglio».
+
+> **Default sintetico, dettaglio on-demand.** Non anticipare derivazione tecnica, nomi file, logica
+> interna: Matteo li chiede quando servono. Ma la sintesi deve bastare a decidere senza altri giri.
+> Se ometti qualcosa di utile, segnala in una riga che esiste («ho anche toccato X — chiedi se vuoi»),
+> non sparire il dato. Equilibrio: **focus prima, contesto a richiesta** — mai solo-il-minimo che
+> costringe Matteo a interrogarti per capire cosa è successo.
+
+Origine: feedback Matteo 30-05-26 — «perdo dettagli per troppi token a display; voglio focalizzarmi
+subito sulle cose importanti, i dettagli li chiedo». Stesso stile già in `PREPARA_PROMPT_SKILL.md` § 3.
+
+---
+
 ## Errori e bug: niente dettaglio tecnico non richiesto
 
 Quando spieghi un errore o un bug trovato, **non** elencare il tipo tecnico dell'errore né il punto esatto nel codice (file, riga, nome funzione/variabile). Di' solo, in parole pratiche, **cosa non funzionava per chi usa l'app** e **che effetto avrà la correzione**.

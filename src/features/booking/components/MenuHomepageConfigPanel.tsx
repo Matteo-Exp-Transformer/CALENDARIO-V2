@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'react-toastify'
-import { ImagePlus, Trash2, ChevronUp, ChevronDown, ArrowUp, Eye, EyeOff } from 'lucide-react'
+import { ImagePlus, Trash2, ChevronUp, ChevronDown, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { Modal } from '@/components/ui/Modal'
 import { useMenuCategories } from '../hooks/useMenuCategories'
@@ -16,11 +16,15 @@ import {
 } from '@/features/booking/hooks/useCarouselPhotoUpload'
 import { AdminFieldWithCharCount } from './settings/AdminFieldWithCharCount'
 import { cn } from '@/lib/utils'
+import {
+  MENU_QR_CATEGORY_ICON_OPTIONS,
+  resolveMenuQrCategoryIcon,
+} from '@/features/public-menu/categoryIcons'
 
 export const CAROUSEL_SLIDE_TITLE_MAX = 60
 export const CAROUSEL_SLIDE_DESCRIPTION_MAX = 125
 export const CAROUSEL_SLIDE_EYEBROW_MAX = 40
-const DEFAULT_CAROUSEL_EYEBROW = 'Specialità della casa'
+export const CAROUSEL_SLIDE_EYEBROW_PLACEHOLDER = 'Esempio: Specialità della casa'
 
 export function MenuQrThemeSection({
   value,
@@ -129,16 +133,17 @@ export function MenuQrCarouselSection({
   draftShortCode,
   items,
   onChange,
-  hideToolbarLabel = false,
+  hideToolbarLabel: _hideToolbarLabel = false,
 }: {
   tenantId: string
   menuQrCodeId: string | null
   draftShortCode: string | null
   items: CarouselItem[]
   onChange: (items: CarouselItem[]) => void
-  /** Nasconde la riga «Specialità della casa». */
+  /** @deprecated Toolbar label rimossa — placeholder solo sul campo Etichetta. */
   hideToolbarLabel?: boolean
 }) {
+  void _hideToolbarLabel
   const [slideToRemove, setSlideToRemove] = useState<number | null>(null)
   const storageSegment = menuQrStorageSegment(menuQrCodeId, draftShortCode)
   const { fileRef, uploading, canUpload, handleAddFile } = useCarouselPhotoUpload({
@@ -182,8 +187,7 @@ export function MenuQrCarouselSection({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className={cn('flex items-center', hideToolbarLabel ? 'justify-end' : 'justify-between')}>
-        {!hideToolbarLabel && <p className="text-sm text-gray-700">Specialità della casa</p>}
+      <div className="flex items-center justify-end">
         <input
           ref={fileRef}
           type="file"
@@ -252,7 +256,7 @@ export function MenuQrCarouselSection({
             value={item.eyebrow ?? ''}
             maxLength={CAROUSEL_SLIDE_EYEBROW_MAX}
             onChange={(value) => updateField(i, 'eyebrow', value)}
-            placeholder={`Default: ${DEFAULT_CAROUSEL_EYEBROW}`}
+            placeholder={CAROUSEL_SLIDE_EYEBROW_PLACEHOLDER}
             singleLine
           />
           <AdminFieldWithCharCount
@@ -300,7 +304,10 @@ export function MenuQrCarouselSection({
   )
 }
 
-export type CategoryOverrideDraft = Record<string, { title: string; description: string }>
+export type CategoryOverrideDraft = Record<
+  string,
+  { title: string; description: string; icon?: string | null }
+>
 
 const MENU_QR_FIELD_CLASS =
   'w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm text-gray-700 outline-none'
@@ -444,7 +451,12 @@ export function MenuQrCategoryCardsSection({
       {categories.map((cat) => {
         const imgUrl = categoryImages[cat.key]
         const isUp = uploading === cat.key
-        const draft = overrideDrafts[cat.key] ?? { title: cat.label, description: cat.description ?? '' }
+        const draft = overrideDrafts[cat.key] ?? {
+          title: cat.label,
+          description: cat.description ?? '',
+          icon: null,
+        }
+        const SelectedIcon = resolveMenuQrCategoryIcon(draft.icon, cat.key)
         return (
           <div
             key={cat.key}
@@ -456,10 +468,10 @@ export function MenuQrCategoryCardsSection({
                 <img src={imgUrl} alt={cat.label} className="h-12 w-16 shrink-0 rounded-lg object-cover" />
               ) : (
                 <div
-                  className="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400"
+                  className="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500"
                   aria-hidden
                 >
-                  <ArrowUp className="h-5 w-5" strokeWidth={2} />
+                  <SelectedIcon className="h-6 w-6" weight="regular" />
                 </div>
               )}
               <label className={canUpload ? 'is-clickable shrink-0' : 'shrink-0 opacity-50'}>
@@ -489,6 +501,39 @@ export function MenuQrCategoryCardsSection({
                 </button>
               )}
             </div>
+            {!imgUrl ? (
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-gray-600">Icona categoria (senza foto)</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {MENU_QR_CATEGORY_ICON_OPTIONS.map((opt) => {
+                    const Icon = opt.Icon
+                    const selected = draft.icon === opt.value
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        aria-label={opt.label}
+                        aria-pressed={selected}
+                        onClick={() =>
+                          onOverrideDraftsChange({
+                            ...overrideDrafts,
+                            [cat.key]: { ...draft, icon: opt.value },
+                          })
+                        }
+                        className={cn(
+                          'inline-flex h-9 w-9 items-center justify-center rounded-lg border transition-colors',
+                          selected
+                            ? 'border-primary-500 bg-primary-50 text-primary-700'
+                            : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-400',
+                        )}
+                      >
+                        <Icon className="h-4 w-4" weight="regular" />
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ) : null}
             <input
               type="text"
               value={draft.title}
@@ -550,7 +595,12 @@ export function MenuQrCategoryCardsSection({
 /** Hook helper per inizializzare draft override da categorie DB + override salvati. */
 export function buildCategoryOverrideDrafts(
   categories: MenuCategoryRecord[],
-  overrides: { category_key: string; title: string | null; description: string | null }[],
+  overrides: {
+    category_key: string
+    title: string | null
+    description: string | null
+    icon?: string | null
+  }[],
 ): CategoryOverrideDraft {
   const overrideMap = Object.fromEntries(overrides.map((o) => [o.category_key, o]))
   const initial: CategoryOverrideDraft = {}
@@ -559,6 +609,7 @@ export function buildCategoryOverrideDrafts(
     initial[cat.key] = {
       title: ov?.title ?? cat.label ?? '',
       description: ov?.description ?? cat.description ?? '',
+      icon: ov?.icon ?? null,
     }
   }
   return initial

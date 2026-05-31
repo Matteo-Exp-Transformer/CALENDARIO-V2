@@ -130,7 +130,7 @@ function ComposeScrollRow({
         <button
           type="button"
           aria-label="Scorri categorie menù indietro"
-          className="absolute left-2 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-warm-wood/15 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange md:flex"
+          className="absolute left-2 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-warm-wood/15 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange min-[700px]:flex"
           onClick={() => scrollBy(-COMPOSE_SCROLL_STEP_PX)}
         >
           <ChevronLeft size={22} strokeWidth={1.75} />
@@ -156,7 +156,7 @@ function ComposeScrollRow({
         <button
           type="button"
           aria-label="Scorri categorie menù avanti"
-          className="absolute right-2 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-warm-wood/15 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange md:flex"
+          className="absolute right-2 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-warm-wood/15 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange min-[700px]:flex"
           onClick={() => scrollBy(COMPOSE_SCROLL_STEP_PX)}
         >
           <ChevronRight size={22} strokeWidth={1.75} />
@@ -215,20 +215,13 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
 
   return (
     <div className="w-full min-w-0" data-testid="booking-menu-compose-grid">
-      {/* Mobile locked (menu preselezionato): griglia 2 colonne compatte */}
-      {locked ? (
-        <div className="grid grid-cols-2 items-start gap-2 md:hidden">
-          <ComposeCategoryCards categories={visibleCategories} layout="grid" compact {...cardProps} />
-        </div>
-      ) : (
-        /* Mobile free: colonna singola, card collassabili */
-        <div className="flex flex-col items-stretch gap-[2px] md:hidden">
-          <ComposeCategoryCards categories={visibleCategories} layout="stack" {...cardProps} />
-        </div>
-      )}
+      {/* ≤699px: griglia 2 colonne compatte — stesso layout per menù libero e preselezionato */}
+      <div className="grid grid-cols-2 items-start gap-2 min-[700px]:hidden">
+        <ComposeCategoryCards categories={visibleCategories} layout="grid" compact {...cardProps} />
+      </div>
 
-      {/* Desktop: sempre scroll orizzontale a larghezza fissa — dimensione uniforme indipendente dal numero di categorie */}
-      <div className="hidden md:block">
+      {/* ≥700px: scroll orizzontale a larghezza fissa */}
+      <div className="hidden min-[700px]:block">
         <ComposeScrollRow categories={visibleCategories} {...cardProps} />
       </div>
     </div>

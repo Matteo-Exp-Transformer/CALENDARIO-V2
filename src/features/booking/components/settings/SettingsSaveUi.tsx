@@ -197,6 +197,51 @@ export function SettingsSaveFooter({
   )
 }
 
+export type DiscardChangesConfirmModalProps = {
+  isOpen: boolean
+  onStay: () => void
+  onDiscard: () => void
+  title?: string
+  message?: string
+  stayLabel?: string
+  discardLabel?: string
+}
+
+/** Conferma perdita modifiche (chiusura modale / overlay con draft aperto). */
+export function DiscardChangesConfirmModal({
+  isOpen,
+  onStay,
+  onDiscard,
+  title = 'Annullare le modifiche?',
+  message = 'Le modifiche non salvate verranno perse. Vuoi continuare?',
+  stayLabel = 'Resta qui',
+  discardLabel = 'Annulla modifiche',
+}: DiscardChangesConfirmModalProps) {
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onStay}
+      title={title}
+      size="md"
+      showCloseButton
+      closeOnOverlayClick
+      closeOnEscape
+    >
+      <div className="space-y-4">
+        <p className="text-sm text-slate-600">{message}</p>
+        <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
+          <Button type="button" variant="outline" size="sm" onClick={onStay}>
+            {stayLabel}
+          </Button>
+          <Button type="button" variant="danger" size="sm" onClick={onDiscard}>
+            {discardLabel}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
 export type UnsavedNavigationGuardModalProps = {
   isOpen: boolean
   dirtyLabels: string[]

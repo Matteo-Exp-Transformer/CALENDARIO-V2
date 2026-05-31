@@ -1,70 +1,18 @@
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type RefObject,
-} from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import {
-  ForkKnife,
-  BowlFood,
-  CookingPot,
-  Flame,
-  Cake,
-  Martini,
-  type Icon as PhosphorIconType,
-} from '@phosphor-icons/react'
+import type { Icon as PhosphorIconType } from '@phosphor-icons/react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabasePublic } from '@/lib/supabasePublic'
 import { usePublicMenuQr, usePublicDefaultMenuQr } from '@/features/booking/hooks/useMenuQrCodes'
 import { usePublicMenuQrcodeCategories } from '@/features/booking/hooks/useMenuQrcodeCategories'
 import { getMenuTheme, type MenuTheme } from '@/features/public-menu/menuThemes'
+import { resolveMenuQrCategoryIcon } from '@/features/public-menu/categoryIcons'
 import type { MenuCategoryRecord } from '@/features/booking/hooks/useMenuCategories'
-import type { MenuQrCode, CarouselItem } from '@/types/menu'
+import type { MenuQrCode, CarouselItem, MenuQrcodeCategoryOverride } from '@/types/menu'
 import { usePublicMenuViewport } from '@/hooks/usePublicMenuViewport'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
-
-/** Emoji mappate ai key standard delle categorie. */
-const CATEGORY_EMOJI: Record<string, string> = {
-  antipasti:  '🥗',
-  pizza:      '🍕',
-  primi:      '🍝',
-  secondi:    '🍖',
-  fritti:     '🍟',
-  bevande:    '🥤',
-  vini:       '🍷',
-  birre:      '🍺',
-  dolci:      '🍰',
-  dessert:    '🍰',
-  formaggi:   '🧀',
-  contorni:   '🥦',
-  panini:     '🥪',
-  insalate:   '🥗',
-  zuppe:      '🍲',
-}
-
-/** Icone Phosphor per categoria. */
-const CATEGORY_ICON: Record<string, PhosphorIconType> = {
-  antipasti:  ForkKnife,
-  pizza:      Flame,
-  primi:      CookingPot,
-  secondi:    ForkKnife,
-  fritti:     Flame,
-  bevande:    BowlFood,
-  vini:       Martini,
-  birre:      Martini,
-  dolci:      Cake,
-  dessert:    Cake,
-  formaggi:   BowlFood,
-  contorni:   BowlFood,
-  panini:     ForkKnife,
-  insalate:   BowlFood,
-  zuppe:      CookingPot,
-}
 
 function useTenantBySlug(slug: string | undefined) {
   const { setTenantFromSlug, tenantId, tenantSlug, organizationName, isLoading } = useTenantContext()
@@ -133,9 +81,9 @@ function usePublicPresets(tenantId: string | null, presetIds: string[] | null) {
 /**
  * Homepage menu QR: un solo PNG (`bodyImage`) per tutto lo sfondo.
  * `headerImage` è solo su PublicMenuCategoryPage (barra categoria).
- * Body con `100% auto` (non `cover`) — altezza proporzionale al file.
+ * `repeat-y` + `100% auto` fin dal primo paint — niente switch JS single→layer (flash scroll).
  */
-function themePageBackgroundStyle(theme: MenuTheme): CSSProperties {
+function useMenuPageBackgroundStyle(theme: MenuTheme): CSSProperties {
   const { bodyImage, bodyFallbackBg } = theme
 
   if (bodyImage) {
@@ -143,92 +91,12 @@ function themePageBackgroundStyle(theme: MenuTheme): CSSProperties {
       backgroundImage: `url(${bodyImage})`,
       backgroundSize: '100% auto',
       backgroundPosition: 'center top',
-      backgroundRepeat: 'no-repeat',
+      backgroundRepeat: 'repeat-y',
       backgroundColor: bodyFallbackBg,
     }
   }
 
   return { backgroundColor: bodyFallbackBg }
-}
-
-/** Ripete solo il body in verticale fino a coprire lo scroll della homepage. */
-function buildRepeatingBodyBackgroundStyle(
-  bodyImage: string,
-  bodyPx: number,
-  coverHeight: number,
-  bodyFallbackBg: string,
-): CSSProperties {
-  const images: string[] = []
-  const sizes: string[] = []
-  const positions: string[] = []
-  const repeats: string[] = []
-  let y = 0
-
-  while (y < coverHeight - 0.5) {
-    images.push(`url(${bodyImage})`)
-    sizes.push(`100% ${bodyPx}px`)
-    positions.push(`center ${y}px`)
-    repeats.push('no-repeat')
-    y += bodyPx
-  }
-
-  return {
-    backgroundImage: images.join(', '),
-    backgroundSize: sizes.join(', '),
-    backgroundPosition: positions.join(', '),
-    backgroundRepeat: repeats.join(', '),
-    backgroundColor: bodyFallbackBg,
-  }
-}
-
-function useMenuPageBackgroundStyle(
-  theme: MenuTheme,
-  pageRef: RefObject<HTMLDivElement | null>,
-  enabled: boolean,
-): CSSProperties {
-  const [style, setStyle] = useState<CSSProperties>(() => themePageBackgroundStyle(theme))
-
-  useLayoutEffect(() => {
-    if (!enabled) return
-    if (!theme.bodyImage) {
-      setStyle(themePageBackgroundStyle(theme))
-      return
-    }
-
-    let bodyPx: number | null = null
-
-    const recompute = () => {
-      if (bodyPx == null) return
-      const el = pageRef.current
-      const coverHeight = Math.max(el?.scrollHeight ?? 0, window.innerHeight)
-      setStyle(
-        buildRepeatingBodyBackgroundStyle(theme.bodyImage!, bodyPx, coverHeight, theme.bodyFallbackBg),
-      )
-    }
-
-    const img = new Image()
-    const syncBodyPx = () => {
-      if (img.naturalWidth <= 0) return
-      const w = pageRef.current?.offsetWidth ?? document.documentElement.clientWidth
-      bodyPx = (w * img.naturalHeight) / img.naturalWidth
-      recompute()
-    }
-    img.onload = syncBodyPx
-    img.src = theme.bodyImage
-
-    const el = pageRef.current
-    const ro = el ? new ResizeObserver(() => recompute()) : null
-    if (el && ro) ro.observe(el)
-    window.addEventListener('resize', syncBodyPx)
-    syncBodyPx()
-
-    return () => {
-      ro?.disconnect()
-      window.removeEventListener('resize', syncBodyPx)
-    }
-  }, [enabled, theme, pageRef])
-
-  return style
 }
 
 // ── Carosello ────────────────────────────────────────────────────────────────
@@ -302,7 +170,7 @@ function MenuCarousel({
         >
           {items.map((item, i) => {
             const title = item.title ?? item.label
-            const eyebrow = item.eyebrow?.trim() || 'Specialità della casa'
+            const eyebrow = item.eyebrow?.trim()
             return (
               <div
                 key={i}
@@ -325,9 +193,11 @@ function MenuCarousel({
                 />
                 {/* Testo su sinistra */}
                 <div className="absolute inset-y-0 left-0 flex w-1/2 flex-col justify-end px-4 pb-4">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">
-                    {eyebrow}
-                  </p>
+                  {eyebrow ? (
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">
+                      {eyebrow}
+                    </p>
+                  ) : null}
                   {title && (
                     <p className="mt-0.5 text-base font-bold leading-snug text-white">{title}</p>
                   )}
@@ -387,6 +257,7 @@ function MenuNavTabs({
   shortCode,
   accentColor,
   tabBarStickyRgb,
+  overridesByKey,
 }: {
   categories: MenuCategoryRecord[]
   presets: { id: string; name: string }[]
@@ -394,6 +265,7 @@ function MenuNavTabs({
   shortCode: string
   accentColor: string
   tabBarStickyRgb: string
+  overridesByKey: Record<string, MenuQrcodeCategoryOverride>
 }) {
   const sentinelRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -406,7 +278,8 @@ function MenuNavTabs({
   const items = usePresets
     ? presets.map((p) => ({ key: p.id, label: p.name, href: `/menu/${slug}/qr/${shortCode}/preset/${p.id}` }))
     : categories.map((c) => {
-        const Icon = CATEGORY_ICON[c.key.toLowerCase()] ?? ForkKnife
+        const ov = overridesByKey[c.key]
+        const Icon = resolveMenuQrCategoryIcon(ov?.icon, c.key)
         return { key: c.key, label: c.label, href: `/menu/${slug}/qr/${shortCode}/c/${c.key}`, Icon }
       })
 
@@ -479,7 +352,7 @@ function MenuNavTabs({
           <button
             type="button"
             aria-label="Scorri categorie indietro"
-            className="absolute left-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-r-md shadow-sm"
+            className="absolute left-0 top-0 bottom-0 z-20 hidden min-[700px]:flex w-10 items-center justify-center rounded-r-md shadow-sm"
             style={{ backgroundColor: arrowBg, color: accentColor }}
             onClick={() => scrollTabs(-TAB_BAR_SCROLL_STEP_PX)}
           >
@@ -488,7 +361,7 @@ function MenuNavTabs({
         )}
         <div
           ref={scrollRef}
-          className="flex gap-2 overflow-x-auto scrollbar-hide py-3 px-4 md:px-11"
+          className="flex gap-2 overflow-x-auto scrollbar-hide py-3 px-4 min-[700px]:px-11"
         >
           {items.map((item) => {
             const Icon = 'Icon' in item ? (item.Icon as PhosphorIconType) : null
@@ -496,11 +369,11 @@ function MenuNavTabs({
               <Link
                 key={item.key}
                 to={item.href}
-                className="flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium transition-colors"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium leading-none transition-colors"
                 style={{ borderColor: accentColor, color: accentColor }}
               >
-                {Icon && <Icon size={16} />}
-                {item.label}
+                {Icon ? <Icon size={16} className="shrink-0" aria-hidden /> : null}
+                <span className="whitespace-nowrap">{item.label}</span>
               </Link>
             )
           })}
@@ -509,7 +382,7 @@ function MenuNavTabs({
           <button
             type="button"
             aria-label="Scorri categorie avanti"
-            className="absolute right-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-l-md shadow-sm"
+            className="absolute right-0 top-0 bottom-0 z-20 hidden min-[700px]:flex w-10 items-center justify-center rounded-l-md shadow-sm"
             style={{ backgroundColor: arrowBg, color: accentColor }}
             onClick={() => scrollTabs(TAB_BAR_SCROLL_STEP_PX)}
           >
@@ -521,7 +394,8 @@ function MenuNavTabs({
   )
 }
 
-// ── Card categoria — orizzontale thumb 1:1 ───────────────────────────────────
+// ── Card categoria — tile verticale <1025px, riga orizzontale da 1025px ──
+// Griglia (in MenuContent): 1 col <520 · 2 col 520–1024 · 2 col ≥1025 (card orizzontale)
 
 function CategoryCard({
   category,
@@ -529,39 +403,64 @@ function CategoryCard({
   imageUrl,
   qrTitle,
   qrDescription,
+  iconKey,
 }: {
   category: MenuCategoryRecord
   href: string
   imageUrl?: string
   qrTitle?: string | null
   qrDescription?: string | null
+  iconKey?: string | null
 }) {
-  const emoji = CATEGORY_EMOJI[category.key.toLowerCase()] ?? '🍽️'
   const displayTitle = qrTitle || category.label
   const displayDesc = qrDescription !== undefined ? qrDescription : category.description
+  const CategoryIcon = resolveMenuQrCategoryIcon(iconKey, category.key)
 
   return (
     <Link
       to={href}
-      className="flex overflow-hidden rounded-2xl bg-white shadow-sm min-h-[88px] active:bg-stone-50 transition-colors"
+      className="block overflow-hidden rounded-xl bg-white shadow-sm active:bg-stone-50 transition-colors min-[1025px]:flex min-[1025px]:min-h-[80px] min-[1025px]:rounded-2xl min-[900px]:min-h-[88px]"
     >
-      {/* Thumb 1:1 */}
-      <div className="aspect-square w-24 shrink-0 bg-stone-100">
-        {imageUrl ? (
-          <img src={imageUrl} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-3xl">{emoji}</div>
-        )}
+      {/* <1025px: tile verticale (anche in griglia 2 col tablet) */}
+      <div className="relative min-[1025px]:hidden">
+        <div className="relative aspect-[7/2] w-full overflow-hidden bg-stone-100 min-[520px]:aspect-[5/2]">
+          {imageUrl ? (
+            <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-stone-400">
+              <CategoryIcon className="size-6 min-[520px]:size-7" aria-hidden />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 flex items-end gap-1 p-2 text-white min-[520px]:p-2.5">
+            <h2 className="min-w-0 flex-1 text-xs font-bold uppercase leading-tight tracking-wide min-[520px]:text-sm">
+              {displayTitle}
+            </h2>
+            <ChevronRight className="size-3.5 shrink-0 opacity-80 min-[520px]:size-4" aria-hidden />
+          </div>
+        </div>
       </div>
-      {/* Testo */}
-      <div className="flex min-w-0 flex-1 flex-col justify-center px-4 py-3">
-        <p className="text-sm font-semibold text-gray-900 leading-snug">{displayTitle}</p>
-        {displayDesc && (
-          <p className="mt-1 text-xs text-gray-500 leading-snug line-clamp-2">{displayDesc}</p>
-        )}
-      </div>
-      <div className="flex shrink-0 items-center pr-3 text-gray-300">
-        <ChevronRight size={18} />
+
+      {/* ≥1025px: riga orizzontale thumb + titolo + descrizione */}
+      <div className="hidden min-[1025px]:contents">
+        <div className="aspect-square w-20 shrink-0 bg-stone-100 min-[900px]:w-24">
+          {imageUrl ? (
+            <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-stone-400">
+              <CategoryIcon size={32} aria-hidden />
+            </div>
+          )}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-2.5 min-[900px]:px-4 min-[900px]:py-3">
+          <p className="text-sm font-semibold text-gray-900 leading-snug min-[900px]:text-[15px]">{displayTitle}</p>
+          {displayDesc ? (
+            <p className="mt-1 text-xs text-gray-500 leading-snug line-clamp-2">{displayDesc}</p>
+          ) : null}
+        </div>
+        <div className="flex shrink-0 items-center pr-3 text-gray-300">
+          <ChevronRight size={18} aria-hidden />
+        </div>
       </div>
     </Link>
   )
@@ -623,7 +522,7 @@ function MenuContent({
   const categoryImages = qr.category_images ?? {}
   const theme = getMenuTheme(qr.theme_key)
   const pageBgRef = useRef<HTMLDivElement>(null)
-  const pageBgStyle = useMenuPageBackgroundStyle(theme, pageBgRef, !isLoading)
+  const pageBgStyle = useMenuPageBackgroundStyle(theme)
 
   // Mappa override per category_key
   const overridesByKey = Object.fromEntries(qrCatOverrides.map((o) => [o.category_key, o]))
@@ -642,6 +541,8 @@ function MenuContent({
       className="flex min-h-svh flex-col"
       style={pageBgStyle}
     >
+      {/* FU-025: sfondo tema full viewport; contenuto congelato a larghezza tablet, centrato oltre 1024px */}
+      <div className="mx-auto flex w-full max-w-[1024px] flex-1 flex-col">
       {/* Hero: sfondo unificato (header+body ripetuti via layer CSS su scroll lungo) */}
       <header className="relative shrink-0 px-4 pt-8 pb-4">
         <div className="relative flex flex-col items-center gap-2 text-center">
@@ -670,12 +571,13 @@ function MenuContent({
             shortCode={shortCode}
             accentColor={theme.accentColor}
             tabBarStickyRgb={theme.tabBarStickyRgb}
+            overridesByKey={overridesByKey}
           />
         )}
 
         {showCart && categories.length > 0 && (
           <main className="flex-1 px-4 pt-4">
-            <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-1.5 min-[520px]:grid-cols-2 min-[520px]:gap-2 min-[1025px]:gap-3">
               {categories.map((cat) => {
                 const ov = overridesByKey[cat.key]
                 return (
@@ -686,6 +588,7 @@ function MenuContent({
                     imageUrl={categoryImages[cat.key]}
                     qrTitle={ov?.title}
                     qrDescription={ov?.description}
+                    iconKey={ov?.icon}
                   />
                 )
               })}
@@ -732,6 +635,7 @@ function MenuContent({
         <div className="mt-auto pt-2">
           <MenuFooterCard />
         </div>
+      </div>
       </div>
     </div>
   )

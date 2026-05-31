@@ -82,6 +82,8 @@ export interface MenuQrcodeCategoryOverrideDraft {
   category_key: string
   title: string | null
   description: string | null
+  /** Icona Phosphor per-QR quando manca foto in category_images. */
+  icon?: string | null
 }
 
 /** Payload completo salvataggio modale Impostazione Menù QR. */
@@ -138,6 +140,7 @@ export interface MenuQrcodeCategoryOverride {
   category_key: string
   title: string | null
   description: string | null
+  icon: string | null
   created_at: string
   updated_at: string
 }

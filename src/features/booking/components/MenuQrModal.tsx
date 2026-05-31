@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Copy } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { Modal } from '@/components/ui/Modal'
@@ -15,6 +15,7 @@ import {
   buildCategoryOverrideDrafts,
   type CategoryOverrideDraft,
 } from './MenuHomepageConfigPanel'
+import { DiscardChangesConfirmModal } from './settings/SettingsSaveUi'
 import { DEFAULT_THEME_KEY, MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
 import { validateMenuQrSettings, isMenuQrSettingsValid } from '../utils/menuQrValidation'
 import type {
@@ -26,8 +27,7 @@ import type {
 } from '@/types/menu'
 import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
 
-const EMPTY_OVERRIDES: MenuQrcodeCategoryOverride[] = []
-const EMPTY_MENU_ITEMS: MenuItem[] = []
+const EMPTY_QR_CATEGORY_OVERRIDES: MenuQrcodeCategoryOverride[] = []
 
 function normalizeThemeKey(key: string | undefined | null): MenuThemeKey {
   if (key && key in MENU_THEMES) return key as MenuThemeKey
@@ -75,6 +75,26 @@ async function copyToClipboard(text: string) {
   }
 }
 
+function serializeMenuQrDraft(input: {
+  name: string
+  categoryFilter: string[]
+  carouselItems: CarouselItem[]
+  categoryImages: Record<string, string>
+  themeKey: MenuThemeKey
+  overrideDrafts: CategoryOverrideDraft
+  hiddenItemIds: string[]
+}): string {
+  return JSON.stringify({
+    name: input.name.trim(),
+    categoryFilter: [...input.categoryFilter].sort(),
+    carouselItems: input.carouselItems,
+    categoryImages: input.categoryImages,
+    themeKey: input.themeKey,
+    overrideDrafts: input.overrideDrafts,
+    hiddenItemIds: [...input.hiddenItemIds].sort(),
+  })
+}
+
 export function MenuQrModal({
   isOpen,
   onClose,
@@ -86,11 +106,9 @@ export function MenuQrModal({
 }: Props) {
   const { tenantId } = useTenantContext()
   const menuQrCodeId = editing?.id ?? null
-  const { data: overridesData, isSuccess: overridesLoaded } =
+  const { data: overrides = EMPTY_QR_CATEGORY_OVERRIDES, isLoading: overridesLoading } =
     useMenuQrcodeCategoriesForQr(menuQrCodeId)
-  const overrides = overridesData ?? EMPTY_OVERRIDES
-  const { data: menuItemsData } = useMenuItems()
-  const menuItems = menuItemsData ?? EMPTY_MENU_ITEMS
+  const { data: menuItems = [] } = useMenuItems()
 
   const [draftShortCode, setDraftShortCode] = useState(() => generateShortCode())
   const [name, setName] = useState('')
@@ -100,6 +118,13 @@ export function MenuQrModal({
   const [themeKey, setThemeKey] = useState<MenuThemeKey>(DEFAULT_THEME_KEY)
   const [overrideDrafts, setOverrideDrafts] = useState<CategoryOverrideDraft>({})
   const [hiddenItemIds, setHiddenItemIds] = useState<string[]>([])
+  const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false)
+
+  const baselineRef = useRef('')
+  const baselineSessionRef = useRef<string | null>(null)
+  const overridesHydratedSessionRef = useRef<string | null>(null)
+  const [overridesHydratedVersion, setOverridesHydratedVersion] = useState(0)
+  const [baselineReady, setBaselineReady] = useState(false)
 
   const categoriesWithItems = useMemo(() => {
     const keysWithItems = new Set(menuItems.map((i) => i.category))
@@ -126,7 +151,19 @@ export function MenuQrModal({
   const activeShortCode = editing?.short_code ?? draftShortCode
 
   useEffect(() => {
+    if (isOpen) return
+    baselineSessionRef.current = null
+    overridesHydratedSessionRef.current = null
+    setOverridesHydratedVersion(0)
+    setBaselineReady(false)
+  }, [isOpen])
+
+  useEffect(() => {
     if (!isOpen) return
+
+    const sessionKey = editing?.id ?? 'new'
+    if (overridesHydratedSessionRef.current === sessionKey) return
+
     if (editing) {
       setName(editing.name)
       setCategoryFilter(resolveCategoryFilterForUi(editing.category_filter, categoryKeysWithItems))
@@ -134,27 +171,92 @@ export function MenuQrModal({
       setCategoryImages(editing.category_images ?? {})
       setThemeKey(normalizeThemeKey(editing.theme_key))
       setHiddenItemIds(editing.hidden_menu_item_ids ?? [])
-    } else {
-      setDraftShortCode(generateShortCode())
-      setName('')
-      setCategoryFilter(categoryKeysWithItems.length > 0 ? [...categoryKeysWithItems] : [])
-      setCarouselItems([])
-      setCategoryImages({})
-      setThemeKey(DEFAULT_THEME_KEY)
-      setHiddenItemIds([])
-      setOverrideDrafts(buildCategoryOverrideDrafts(categories, []))
+      return
     }
-  }, [isOpen, editing, categoryKeysWithItems, categories])
 
-  useEffect(() => {
-    if (!isOpen || !editing || !overridesLoaded) return
-    setOverrideDrafts(buildCategoryOverrideDrafts(categories, overrides))
-  }, [isOpen, editing, categories, overrides, overridesLoaded])
-
-  useEffect(() => {
-    if (!isOpen || editing) return
+    setDraftShortCode(generateShortCode())
+    setName('')
+    setCategoryFilter(categoryKeysWithItems.length > 0 ? [...categoryKeysWithItems] : [])
+    setCarouselItems([])
+    setCategoryImages({})
+    setThemeKey(DEFAULT_THEME_KEY)
+    setHiddenItemIds([])
     setOverrideDrafts(buildCategoryOverrideDrafts(categories, []))
-  }, [isOpen, editing, categories])
+    overridesHydratedSessionRef.current = 'new'
+    setOverridesHydratedVersion((v) => v + 1)
+  }, [isOpen, editing?.id, categoryKeysWithItems, categories])
+
+  useEffect(() => {
+    if (!isOpen || !editing || overridesLoading) return
+
+    const sessionKey = editing.id
+    if (overridesHydratedSessionRef.current === sessionKey) return
+
+    setOverrideDrafts(buildCategoryOverrideDrafts(categories, overrides))
+    overridesHydratedSessionRef.current = sessionKey
+    setOverridesHydratedVersion((v) => v + 1)
+  }, [isOpen, editing?.id, overridesLoading, categories, overrides])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const sessionKey = editing?.id ?? 'new'
+    if (baselineSessionRef.current === sessionKey) return
+    if (overridesHydratedSessionRef.current !== sessionKey) return
+
+    baselineRef.current = serializeMenuQrDraft({
+      name,
+      categoryFilter,
+      carouselItems,
+      categoryImages,
+      themeKey,
+      overrideDrafts,
+      hiddenItemIds,
+    })
+    baselineSessionRef.current = sessionKey
+    setBaselineReady(true)
+  }, [isOpen, editing?.id, overridesHydratedVersion])
+
+  const isDirty = useMemo(() => {
+    if (!isOpen || !baselineReady) return false
+    return (
+      serializeMenuQrDraft({
+        name,
+        categoryFilter,
+        carouselItems,
+        categoryImages,
+        themeKey,
+        overrideDrafts,
+        hiddenItemIds,
+      }) !== baselineRef.current
+    )
+  }, [
+    isOpen,
+    name,
+    categoryFilter,
+    carouselItems,
+    categoryImages,
+    themeKey,
+    overrideDrafts,
+    hiddenItemIds,
+    baselineReady,
+  ])
+
+  const requestClose = () => {
+    if (isPending) return
+    if (!isDirty) {
+      onClose()
+      return
+    }
+    setDiscardConfirmOpen(true)
+  }
+
+  const confirmDiscardClose = () => {
+    setDiscardConfirmOpen(false)
+    baselineSessionRef.current = null
+    overridesHydratedSessionRef.current = null
+    onClose()
+  }
 
   const allCatsSelected =
     categoryKeysWithItems.length > 0 &&
@@ -209,11 +311,16 @@ export function MenuQrModal({
     )
 
     const categoryOverrides = selectedCategories.map((cat) => {
-      const d = overrideDrafts[cat.key] ?? { title: cat.label, description: cat.description ?? '' }
+      const d = overrideDrafts[cat.key] ?? {
+        title: cat.label,
+        description: cat.description ?? '',
+        icon: null,
+      }
       return {
         category_key: cat.key,
         title: d.title.trim() || null,
         description: d.description.trim() || null,
+        icon: d.icon?.trim() || null,
       }
     })
 
@@ -266,7 +373,7 @@ export function MenuQrModal({
 
   const bottomBar = (
     <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
-      <Button variant="ghost" onClick={onClose} disabled={isPending}>
+      <Button variant="ghost" onClick={requestClose} disabled={isPending}>
         Annulla
       </Button>
       <Button variant="primary" onClick={handleSave} disabled={!canSave}>
@@ -278,16 +385,17 @@ export function MenuQrModal({
   if (!tenantId) return null
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Impostazione Menù QR"
-      headerBelow={headerBelow}
-      size="lg"
-      showCloseButton
-      closeOnOverlayClick={!isPending}
-      closeOnEscape={!isPending}
-    >
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={requestClose}
+        title="Impostazione Menù QR"
+        headerBelow={headerBelow}
+        size="lg"
+        showCloseButton
+        closeOnOverlayClick={!isPending}
+        closeOnEscape={!isPending}
+      >
       <div className="flex max-h-[min(80vh,720px)] flex-col gap-4 overflow-y-auto">
         <div>
           <div className="mb-1 flex items-center justify-between gap-2">
@@ -399,5 +507,12 @@ export function MenuQrModal({
         {bottomBar}
       </div>
     </Modal>
+
+      <DiscardChangesConfirmModal
+        isOpen={discardConfirmOpen}
+        onStay={() => setDiscardConfirmOpen(false)}
+        onDiscard={confirmDiscardClose}
+      />
+    </>
   )
 }

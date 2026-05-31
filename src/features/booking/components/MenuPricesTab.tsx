@@ -46,6 +46,7 @@ import {
   MENU_INGREDIENT_PRICE_CLASS,
 } from './menuPricesCatalogLayout'
 import { MenuQrManager } from './MenuQrManager'
+import { scrollIntoAdminShellView } from '../utils/adminScroll'
 import {
   deleteMenuCategoryPhoto,
   uploadMenuCategoryPhoto,
@@ -56,9 +57,9 @@ import { useFeatures } from '@/hooks/useFeatures'
 import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
 
-/** Fascia lista categorie: griglia 2 colonne da sm — classi Tailwind qui (STYLING_AGENT_CONTEXT §4). */
+/** Fascia lista categorie: griglia 1 colonna — classi Tailwind qui (STYLING_AGENT_CONTEXT §4). */
 const menuPricesCategoryListWrapClass = cn(
-  'menu-prices-category-list-wrap grid grid-cols-1 items-start gap-[28px] sm:grid-cols-2'
+  'menu-prices-category-list-wrap grid grid-cols-1 items-start gap-[28px]'
 )
 
 const menuPricesHeaderCtaButtonClass = cn(
@@ -410,7 +411,19 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const [presetSelectedItems, setPresetSelectedItems] = useState<SelectedMenuItem[]>([])
   const [editingCustomPresetId, setEditingCustomPresetId] = useState<string | null>(null)
   const productFormCardRef = useRef<HTMLDivElement>(null)
+  const productFormTitleRef = useRef<HTMLHeadingElement>(null)
+  const categoryFormTitleRef = useRef<HTMLDivElement>(null)
   const scrollProductFormIntoViewAfterEditRef = useRef(false)
+  const scrollCategoryFormIntoViewAfterEditRef = useRef(false)
+
+  const ADMIN_MENU_FORM_SCROLL_MARGIN = 132
+  const scrollAdminMenuFormTitleIntoView = (element: HTMLElement | null) => {
+    scrollIntoAdminShellView(element, {
+      behavior: 'smooth',
+      scrollMarginTop: ADMIN_MENU_FORM_SCROLL_MARGIN,
+      ensureVisible: true,
+    })
+  }
 
   // Stato foto piatto (form prodotto)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
@@ -807,6 +820,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     setNewCategoryDescription(dbCategory.description ?? '')
     resetCategoryPhotoState()
     setCategoryCurrentImageUrl(dbCategory.image_url ?? null)
+    scrollCategoryFormIntoViewAfterEditRef.current = true
   }
 
   const countItemsForCategory = (categoryKey: string, categoryLabel: string) =>
@@ -974,12 +988,19 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
 
 
   useLayoutEffect(() => {
-    if (!scrollProductFormIntoViewAfterEditRef.current) return
-    if (viewMode !== 'menu') return
-    if (!editingId && !isAdding) return
-    scrollProductFormIntoViewAfterEditRef.current = false
-    productFormCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [viewMode, isAdding, editingId])
+    if (scrollProductFormIntoViewAfterEditRef.current && viewMode === 'menu' && (editingId || isAdding)) {
+      scrollProductFormIntoViewAfterEditRef.current = false
+      scrollAdminMenuFormTitleIntoView(productFormTitleRef.current)
+    }
+    if (
+      scrollCategoryFormIntoViewAfterEditRef.current &&
+      viewMode === 'categories' &&
+      isAddingCategory
+    ) {
+      scrollCategoryFormIntoViewAfterEditRef.current = false
+      scrollAdminMenuFormTitleIntoView(categoryFormTitleRef.current)
+    }
+  }, [viewMode, isAdding, editingId, isAddingCategory, editingCategoryId])
 
   if (isLoading) {
     return <div className="text-center py-8">Caricamento menu...</div>
@@ -1091,7 +1112,10 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                 ref={productFormCardRef}
                 className="mx-auto w-full max-w-3xl scroll-mt-24 pr-0 text-left sm:pr-10 md:scroll-mt-28"
               >
-                  <h3 className="text-center text-title-card font-bold text-warm-wood mb-4">
+                  <h3
+                    ref={productFormTitleRef}
+                    className="text-center text-title-card font-bold text-warm-wood mb-4"
+                  >
                     {editingId ? 'Modifica Prodotto' : 'Nuovo Prodotto'}
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2">
@@ -1538,7 +1562,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
             {isAddingCategory ? (
               <div className="mt-8 flex flex-col gap-4">
                 <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
-                  <div>
+                  <div ref={categoryFormTitleRef}>
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
                       Titolo categoria
                     </label>
@@ -1676,9 +1700,9 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
             )}
 
             <div className={cn(menuPricesCategoryListWrapClass, 'mt-8')}>
-              <div className="menu-prices-category-block flex w-full flex-col items-center px-1 sm:px-2 md:col-span-2">
+              <div className="menu-prices-category-block flex w-full flex-col items-center px-1 sm:px-2">
                 <div
-                  className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-2"
+                  className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 min-[1050px]:grid-cols-2"
                   style={{ marginTop: '0', paddingTop: '0.5rem' }}
                 >
                   {categoryEntries.map(([key, label]) => (

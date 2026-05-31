@@ -74,12 +74,11 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 - **Esito / data:** annotata 30-05-26 su richiesta esplicita Matteo — in attesa decisione revisore (rispetta PAUSA-RACCOLTA).
 
 ### In attesa «diagnosi disallineamento prod/test → consultare provider via MCP, non elencare cause ovvie»
-- **Pattern osservato:** 30-05-26 Matteo riporta «prod non aggiornata». Le cause ovvie (deploy vecchio, due hosting) erano già note a lui — voleva che interrogassi i provider per dati reali. Diagnosi risolta con MCP Vercel+Supabase+git: tutto allineato, causa = **cache PWA desktop** (mobile vedeva nuovo, stesso link). Risposta finale troppo lunga: la soluzione ovvia (chiudi/riapri browser) annegata nel testo.
-- **Automatizzabile con certezza:** quando Matteo segnala disallineamento ambienti, l'agente **consulta attivamente** i provider (MCP Vercel deployment+state, MCP Supabase list_migrations, git log branch) PRIMA di ipotizzare; non elenca cause generiche che lui già conosce. Checklist 4 dimensioni: git → deploy → DB → cache/PWA.
+- **Pattern osservato:** 30-05-26 Matteo riporta «prod non aggiornata». Le cause ovvie (deploy vecchio, due hosting) erano già note a lui — voleva che interrogassi i provider per dati reali. Diagnosi risolta con MCP Vercel+Supabase+git: tutto allineato, causa = **cache PWA desktop** (mobile vedeva nuovo, stesso link).
+- **Automatizzabile con certezza:** quando Matteo segnala disallineamento ambienti, l'agente **consulta attivamente** i provider (MCP Vercel deployment+state, MCP Supabase list_migrations, git log branch) PRIMA di ipotizzare; non elenca cause generiche che lui già conosce. Checklist 4 dimensioni: git → deploy → DB → cache/PWA (codificata in APP_CONTEXT §1b.1).
 - **Meglio lasciare manuale:** test browser lato Matteo (incognito/hard reload).
 - **Livello suggerito:** 1 per consultare provider; + regola comunicazione: **risposta in 1-2 righe, dettaglio solo se richiesto** (Matteo: troppi caratteri = qualcosa sfugge).
 - **Token risparmiati:** evita giri di ipotesi sbagliate; risposte più corte.
-- **Dove codificare (se approvata):** APP_CONTEXT §1b.1 (checklist 4 dimensioni) + COMUNICAZIONE (brevità) + nota «consulta provider con MCP nei ragionamenti».
 - **Esito / data:** annotata 30-05-26 — in attesa ok (PAUSA-RACCOLTA).
 
 ### In attesa «tutto fatto» come chiusura ciclo multi-agente

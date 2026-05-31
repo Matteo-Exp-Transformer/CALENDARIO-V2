@@ -33,44 +33,26 @@
 
 ## Sessioni registrate (append-only)
 
-### 30-05-26 — Terminali Cursor + chiusura a «report finale»
-- **Contesto:** molte tab terminale in Cursor (vite su 5173–5176, tab vuote, «History restored»); Matteo chiede se può chiuderle.
-- **Causa tipica:** `npm run dev` / comandi shell lanciati **dagli agenti** (Shell tool, processi in background) + tab aperte dall’utente per sviluppo locale.
-- **Regola richiesta da Matteo (30-05-26):** quando dice **«fai report finale»** (o chiusura sessione equivalente), l’agente deve **suggerire esplicitamente** di chiudere **solo i terminali che ha aperto l’agente** in quella sessione — **non** quelli avviati da Matteo (es. il suo `npm run dev` attivo per provare in locale).
-- **Come distinguere (per l’agente):** terminali con comandi partiti da Shell tool / subagent / `run_in_background` in chat corrente o sessioni agente precedenti nella stessa finestra Cursor; **non** toccare tab dove Matteo ha lanciato a mano `npm run dev` se ancora in uso.
-- **Comportamento desiderato in chiusura chat:** 1–2 righe tipo «Puoi chiudere le tab terminale lasciate dall’agente (es. vecchi `npm run dev` su 5174/5175); tieni quella con il tuo dev se stai ancora lavorando in locale».
-- **Stato regola (30-05-26):** **attiva** — `APP_CONTEXT_SKILL.md` §7.3, `COMUNICAZIONE_UTENTE_SKILL.md` fine-chat §5, `VOCABOLARIO.md` «fai report finale», `PREPARA_PROMPT_SKILL.md` chiusura.
+### 31-05-26 — «Suggerisci / annota» ≠ skill system
+- Matteo: suggerire o annotare **non** autorizza ad aggiornare regole skill (PREPARA_PROMPT, VOCABOLARIO, comunicazione) — solo sessione Meta senior/junior (`REVISIONE.md`).
+- Distinzione sessione **ragionamento** (prompt, handoff, report) vs **scrittura codice** (esecutore, diff) — handoff deve indicare quale tipo aprire dopo.
 
-### 30-05-26 — Prepara prompt + revisione — loop modale Modifica Menù QR
-- **Flusso:** Ask (prepara) → esecutore → Agent (revisione + report comunicazione).
-- **Input iniziale:** stack console `Maximum update depth` / `MenuQrModal.tsx:139`.
-- **Correzioni Matteo (fondamentali per il prompt):** «**solo modifica**»; errori «**appena** apro modale» (non Nuovo QR).
-- **Richiesta esplicita:** «**ridammi prompt completo**» + annotare che senza quelle due frasi rischiava di **copiare male** il prompt.
-- **Pattern prompt:** blocco **Nota da Matteo** in testa al prompt esecutore (riproduzione non deducibile solo dallo stack).
-- **Chiusura:** «revisiona e aggiorna report finale» + «**comunicazione non dimenticarla**» + «segna cosa ti ho chiesto in questa chat».
-- Report: `Report-fix-loop-modifica-menu-qr-30-05-26.md` (§ Dati comunicazione ciclo completo).
+### 31-05-26 — Handoff follow-up: tabella riepilogo obbligatoria
+- Matteo chiede che ogni «follow-up / aggiorna handoff» includa **prima** tabella Ciclo · QA · FU (max 8 righe), poi blocco copia-incolla agente.
+- Promosso in `PREPARA_PROMPT_SKILL.md` §3 (31-05-26).
 
-### 30-05-26 — Fix loop modale Modifica Menù QR
-- **Bug:** solo **Modifica** (matita), non «Nuovo QR» — errori console **appena** apertura modale.
-- **Causa confermata:** default `= []` su query override → dipendenza instabile in `useEffect` modifica.
-- **Fix:** `EMPTY_OVERRIDES` / gate `isSuccess` in `MenuQrModal.tsx`.
-- **QA Matteo:** «ok non vedo più errore in console».
-- **Pattern da tenere d'occhio:** altri hook con `data = []` nella feature Menu QR (non aperto FU).
+### 31-05-26 — QA checklist 8 note Menu QR (Matteo)
+- **Viewport «buco» 479–700px (admin 640–768):** layout ibrido vecchio su QR cliente + Categorie Menu — sessione dedicata; non trattare come solo mobile 375.
+- **Scroll form già aperto:** Modifica altra card senza chiudere form → camera non risale + titolo form fuori viewport.
+- **Console MenuQrModal edit:** Maximum update depth — solo modifica QR, non create.
 
-### 30-05-26 — Ciclo temi sfondo Menu QR (asset → deploy)
-- **Flusso:** prepara-prompt → test PNG → fix body-only home → batch 2 (a/b/c) → Green Wellness → commit `2fc7e9b` push main+env/test.
-- **Correzione prodotto chiave:** «home = 1 sfondo (body), header solo in categoria» — Matteo ha dovuto correggere dopo primo test; fix codice + doc layout.
-- **Dark gold:** coppia scartata (batch d); sostituita con coppia b.
-- **Comunicazione:** preferisce sapere subito se **non** tutte le foto sono in app (green-wellness era spare → chiesto pulsante tema).
-- **Checklist smoke:** modale 5 temi, hard refresh, home scroll, categoria header; PROD migrazione `041` prima di salvare Green Wellness.
-- Report: `Report-ciclo-temi-sfondo-menu-qr-30-05-26.md`.
+### 30-05-26 — PREPARA_PROMPT · ciclo 8 note Menu QR + checklist verifica
+- **8 note originali** mappate in tabella verifica nel report prepara-prompt (P1 admin / P2 pubblico / FU-023 / FU-021).
+- **Formato preferito:** tabella 3 col (Dove | Cosa fai | OK se); flusso utente, non gergo agente; token minimi; dettagli on demand.
+- **Correzioni mid-chat:** «overlay» → schermata Categorie Menu; checklist revisore troppo lunga → compatta.
 
-### 30-05-26 — Prepara prompt temi sfondo Menu QR (light)
-- **Flusso:** prepara-prompt → 3 iterazioni prompt (v1 verboso → v2 +3° PNG non richiesto → v3 snellito su correzione Matteo).
-- **Correzione efficace:** «non aggiungere cose che non ti ho chiesto» / «non 3 immagini» — agente ha riformulato intero prompt invece di patch parziale; Matteo non ha ribadito errori.
-- **Formato utile:** tabella zone scoperte + screenshot mobile allegato + vincoli asset esistenti (1672×941, header/body); spiegazione semplice «margini 16px = dove si vede lo sfondo».
-- **Scope chiarito:** 2 PNG per idea (header + body); header progettato anche per crop barra categoria; solo «leggera sfumatura dall’alto» per testo — niente file category-header separato.
-- **Non fatto:** generazione immagini, codice footer 1/4, commit. Report: `Sessioni di lavoro/30-05-26/Report-prepara-prompt-temi-sfondo-menu-qr-30-05-26.md`.
+### 30-05-26 — PREPARA_PROMPT · checklist compatta verso Matteo
+- **Formato preferito:** tabella 3 col (Dove | Cosa fai | OK se); flusso utente, non gergo agente («overlay» → nome schermata in app); token minimi in pianificazione; dettagli solo on demand.
 
 ### 30-05-26 — Chiusura Fase 3 Menu QR (round 3 + report finale)
 - **Conferma QA:** resto tutto OK; Modal elimina QR = modello preferito («modal di base per comunicazioni utenti app»).
@@ -98,13 +80,7 @@
 
 | Frase/intento | Volte osservate | Comportamento desiderato emerso |
 |---------------|-----------------|--------------------------------|
-| «home solo body / header solo categoria» (correzione prodotto Menu QR) | 1 | RULE layout — citare sempre in task asset menu QR |
-| «le altre foto le stiamo usando?» | 1 | rispondere subito con tabella tema↔file; aggiungere tema in UI se spare |
-| «fai report finale comunicazione e skill» | 2 | §7 completo + OSSERVAZIONI + FOLLOW_UP |
-| «fai report finale» (chiusura sessione) | 1 | §7 + **§7.3 terminali** (Liv.1 attivo): chiudere solo tab agente; non il dev di Matteo |
-| «ridammi prompt completo» + nota anti-copia | 1 | blocco Nota da Matteo nel prompt esecutore |
-| «solo modifica / subito all’apertura» (correzione riproduzione bug) | 1 | obbligatoria nel prompt se non nello stack |
-| «revisiona… comunicazione… segna cosa ho chiesto in chat» | 1 | cronologia in § Dati comunicazione report |
+| «compila report finale» (+ Dati comunicazione esaustivi) | 2 | §7 completo; funziona quando sessione ricca di feedback |
 | «modal di base» per comunicazioni utenti app | 1 | Modal preferito vs toast per conferme/successo; vedi PROPOSTE |
 | checklist smoke con path URL `/c/...` | 1 | **corretto-da-Matteo** → schermata + azione + effetto visivo |
 | «come si chiama questo elemento» (es. toast) | 1 | nome utente prima (toast/Modal), tecnico dopo |
@@ -285,6 +261,22 @@
 - Token: chiede prompt pronti da copiare per la sessione successiva → fornirli già formattati
   e auto-contenuti è apprezzato.
 - Chiusura calorosa ("grazie mille", emoji) → rapporto collaborativo, non solo transazionale.
+
+### 31-05-26 — Correzione: «annota» ≠ codificare nello skill system
+- Matteo: quando chiede **annota**, l'agente deve **solo** scrivere in `OSSERVAZIONI.md` (dati
+  grezzi) — **non** modificare `APP_CONTEXT_SKILL.md`, `PREPARA_PROMPT_SKILL.md`, `PROPOSTE` come
+  accettate, né promuovere regole. Codifica = sessione Meta / decisione esplicita separata.
+
+### 31-05-26 — Report Verifica (revisore esecuzione): «Mappatura responsive» (candidato, non codificato)
+- Matteo chiede che l'**agente Verifica** (revisore nel ciclo, non Meta comunicazione) aggiunga nel
+  report una **nota compatta** per ogni componente/superficie UI: se è stato **mappato** e controllato
+  alle viewport responsive, con esito (**mappatura OK/KO** · **responsive OK/KO**) — per tenere traccia
+  di cosa resta da mappare/testare in responsive design. Viewport tipiche 375/834/1280.
+
+### 31-05-26 — Report esecutore: sezione «Stato prima» del codice (candidato, non codificato)
+- Matteo chiede che l'**agente esecutore** nel report annoti **come era il codice prima delle sue
+  modifiche** — solo le parti necessarie a capire i cambiamenti e la struttura (per ripristino se
+  serve). Deve essere **sintetico** ma permettere ricostruzione; no dump interi file.
 
 ### 29-05-26 — Validazione UX Pagina Prenota (ciclo prepara-prompt → esecutore → revisore)
 - Sintomo QA «non funziona nulla» (no toast/scroll/pulse/chiusura card) con implementazione già presente → **causa root HTML5** (`required` senza `noValidate`), non logica React. Pattern da documentare in ogni nuovo form con validazione custom.
