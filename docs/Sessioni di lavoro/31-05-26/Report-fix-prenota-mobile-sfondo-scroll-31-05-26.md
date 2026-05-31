@@ -1,14 +1,15 @@
-# Fix — Pagina Prenota: sfondo full-page mobile stabile in scroll (31-05-26)
+# Report finale — Pagina Prenota: sfondo full-page mobile stabile in scroll (31-05-26) · **CHIUSO ✅**
 
-**Ruolo:** esecutore (deep)  
+**Ruolo:** esecutore (deep) · chiusura ciclo FU-028  
 **File:** `BookingRequestPage.tsx`, `useBookingPublicViewport.ts`, `index.css`  
-**Follow-up:** FU-028 (QA full-page mobile) · contesto [FU-028 tile/gradiente](Report-fix-prenota-footer-scroll-sfondo-31-05-26.md)
+**Commit:** `cd10c64` su `env/test` (pushato)  
+**Contesto ciclo:** [tile/gradiente FU-028](Report-fix-prenota-footer-scroll-sfondo-31-05-26.md) · [meta-analisi Prenota vs QR](Report-meta-analisi-routing-prenota-vs-menu-qr-31-05-26.md)
 
 ---
 
 ## Sintesi (1 riga)
 
-Layer foto full-page: `fixed` con altezza **`100lvh`** + hook viewport Prenota (`interactive-widget=resizes-content`) — crop stabile su scroll footer↔top; tile/gradiente e griglia LOCK invariati. `npm run validate` ✅ 227.
+Layer foto full-page: `fixed` con altezza **`100lvh`** + hook viewport dedicato Prenota — crop stabile su scroll footer↔top su **Android Chrome**; **QA Matteo OK** («fixato, ottimo lavoro»). Tile/gradiente e griglia LOCK invariati. `npm run validate` ✅ 227. **FU-028 rimosso da `FOLLOW_UP.md`.**
 
 ---
 
@@ -16,10 +17,38 @@ Layer foto full-page: `fixed` con altezza **`100lvh`** + hook viewport Prenota (
 
 | Campo | Valore |
 |-------|--------|
-| **Schermata** | **Pagina Prenota** — form pubblico che il cliente apre dal link del ristorante (`/prenota/:slug`, es. `test-pro`). Sfondo foto intera fermo; form e footer bianco Orari/Contatti scorrono sopra. |
+| **Schermata** | **Pagina Prenota** — form pubblico che il cliente apre dal link del ristorante (`/prenota/:slug`, es. `test-pro`). Sfondo foto intera ferma; form e footer bianco Orari/Contatti scorrono sopra. |
 | **Effetto per il ristoratore** | La foto scelta in **Impostazioni → Pagina Prenota** (preset `full-01`…`full-04`) **non “salta” più** quando il cliente scorre fino al footer e risale — soprattutto su **Android Chrome** con barra URL che si nasconde/mostra. |
 | **Componente** | `BookingRequestPage.tsx` — layer sfondo portrait/landscape; `useBookingPublicViewport.ts` — meta viewport solo su questa route. |
 | **Storage** | `restaurant_settings.public_booking_page_background` — id foto intera (`full-0x`) o tile/gradiente legacy. `public_booking_strip_photo` — se valorizzato, striscia ON e sfondo pagina crema (fix non applicato in quella modalità). |
+
+### Dati comunicazione estesa (doppio livello)
+
+**Dove nell’app (cliente)**  
+Il cliente apre il link prenotazione del ristorante (es. da QR o sito). Vede nome locale, titolo pagina, card tipologia/menù, form dati e in fondo la fascia bianca **Orari** e **Contatti**. Con sfondo **foto a pagina intera** attivo, la foto resta ferma dietro mentre lui scorre il form.
+
+**Cosa fa il ristoratore (admin)**  
+In **Impostazioni → Pagina Prenota** (anteprima sfondo) sceglie un preset **foto intera** (`full-01`…`full-04`) e lascia **disattivata** la striscia laterale. Non deve fare nulla in più: il comportamento è automatico sulla pagina pubblica.
+
+**Componenti tecnici (riferimento agenti)**  
+- `BookingRequestPage.tsx` — composizione layout, due layer foto (portrait mobile / landscape desktop), footer, sticky bar.  
+- `useBookingPublicViewport.ts` — hook montato solo su `/prenota/:slug`; imposta meta viewport e classe `html.booking-public-viewport`.  
+- `src/index.css` — regole CSS per quella classe (mirror pattern Menu QR).
+
+**Storage DB (Supabase)**  
+Tabella `restaurant_settings`, chiavi per tenant:
+
+| Chiave | Cosa contiene | Ruolo in questo fix |
+|--------|---------------|---------------------|
+| `public_booking_page_background` | Id preset: `full-01`…`full-04` (foto intera), oppure id tile/gradiente legacy | Fix attivo quando valore = `full-0x` e striscia off |
+| `public_booking_strip_photo` | Id striscia `strip-01`…`strip-06` oppure `''` (nessuna) | Se valorizzato → pagina crema, **nessun** layer full-page |
+
+**Prima vs dopo (effetto percepito)**  
+| Prima | Dopo |
+|-------|------|
+| Scorrendo verso il footer (e risalendo) la foto sembrava **spostarsi** o fare un micro “reload” — senza spinner, su qualsiasi preset foto | Scroll fluido: la foto resta **ferma** con lo stesso ritaglio; form e footer scorrono sopra |
+
+**Conferma Matteo:** Android Chrome, sfondo full-page, striscia OFF — **OK** («fixato, ottimo lavoro»).
 
 ---
 
@@ -29,13 +58,13 @@ Layer foto full-page: `fixed` con altezza **`100lvh`** + hook viewport Prenota (
 
 - Nessuno spinner / re-download asset.
 - Crop foto sembra spostarsi ai confini scroll (footer ↔ top).
-- Succede con qualsiasi preset `full-0x` → bug implementazione layer, non asset.
+- Succede con qualsiasi preset `full-0x` → bug implementazione layer, **non** dipendente dal file foto.
 
 ### Ipotesi confermate
 
 | ID | Verdetto | Evidenza |
 |----|----------|----------|
-| **H1** Viewport mobile dinamico (barra URL) | **Confermata** | `fixed inset-0` segue altezza viewport visibile; Prenota non aveva hook viewport (Menu QR sì) |
+| **H1** Viewport mobile dinamico (barra URL Android) | **Confermata** | `fixed inset-0` segue altezza viewport visibile; Prenota non aveva hook viewport (Menu QR sì) |
 | **H2** `cover` su layer fixed ricalcola crop | **Confermata** | Altezza box variabile → `background-size: cover` ridisegna crop |
 | **H3** Footer bianco vs foto | Secondaria | Amplifica percezione, non spiega tutti i preset |
 | **H4** `min-h-screen` | Secondaria | Non modificato in questo fix |
@@ -68,9 +97,9 @@ Nota: emulazione desktop Playwright **non** simula hide/show barra URL Android �
 
 ### A — Viewport Prenota (`useBookingPublicViewport`)
 
-- Nuovo hook [`src/hooks/useBookingPublicViewport.ts`](../../../src/hooks/useBookingPublicViewport.ts)
+- Nuovo hook `src/hooks/useBookingPublicViewport.ts`
 - Meta: `width=device-width, initial-scale=1.0, interactive-widget=resizes-content, viewport-fit=cover`
-- Classe `html.booking-public-viewport` + CSS in `index.css` (mirror Menu QR)
+- Classe `html.booking-public-viewport` + CSS in `index.css` (pattern analogo Menu QR, classe separata)
 - Montato **solo** in `BookingRequestPage`; cleanup on unmount
 
 ### B — Layer fixed con altezza stabile
@@ -79,10 +108,10 @@ Nota: emulazione desktop Playwright **non** simula hide/show barra URL Android �
 - Portrait `<768px`, landscape `≥768px` — stesso pattern
 - **Non** `inset-0`, **non** `100dvh`
 
-### Invariato (LOCK / FU-028)
+### Invariato (LOCK / FU-028 tile path)
 
-- Griglia striscia, footer fuori griglia, spacer, header padding
-- Tile legacy + gradienti su layer `absolute` scrollabile
+- Griglia striscia, footer fuori griglia, spacer, header padding `px-8 md:px-10`
+- Tile legacy + gradienti su layer `absolute` scrollabile (fix sessione precedente)
 - Striscia ON → crema `#faf7f1`
 - Menu QR, asset WebP, DB
 
@@ -90,33 +119,48 @@ Nota: emulazione desktop Playwright **non** simula hide/show barra URL Android �
 
 ## Compatibilità mobile sfondo
 
-| Ambiente | Esito automatico | Nota |
-|----------|------------------|------|
+| Ambiente | Esito | Nota |
+|----------|-------|------|
 | Playwright 375×812 | ✅ altezza + backgroundPosition stabili | Non sostituisce device reale |
 | Playwright 834 / 1280 | ✅ landscape, footer full-width | — |
-| **Android Chrome (Matteo)** | ⬜ smoke manuale | Priorità — conferma assenza salto crop |
-| iOS Safari | ⬜ non testato in sessione | `lvh` + fixed pattern già usato altrove |
+| **Android Chrome (Matteo)** | ✅ **OK** | Scroll footer↔top — nessun salto crop |
+| iOS Safari | ⬜ non testato | `lvh` + fixed già usati altrove; smoke opzionale |
 
 ---
 
-## QA automatico
+## QA
 
 | Check | Esito |
 |-------|--------|
 | `npm run validate` | ✅ 227 test |
-| 375px scroll 3 cicli | ✅ heightStable |
-| 834px / 1280px | ✅ heightStable, footer width = viewport |
-| Network scroll | ✅ solo load iniziale asset portrait/landscape |
+| 375px scroll 3 cicli (auto) | ✅ heightStable |
+| 834px / 1280px (auto) | ✅ heightStable, footer width = viewport |
+| Network scroll | ✅ solo load iniziale asset |
+| **Matteo Android Chrome** | ✅ «fixato, ottimo lavoro» |
 
-### QA Matteo (chiusura FU-028 full-page)
+Smoke opzionali non eseguiti: tile/gradiente su slug texture, striscia ON, iOS — nessuna segnalazione regressione.
 
-| Dove | Cosa | OK se… |
-|------|------|--------|
-| Android Chrome, `/prenota/test-pro`, striscia OFF, `full-0x` | 3× scroll footer ↔ top | **Nessun salto** crop foto |
-| 834px tablet | Idem + form leggibile | Idem |
-| 1280px desktop | Foto landscape fissa | Nessuna regressione |
-| Tile/gradiente (se slug con texture) | Scroll footer | Nessuna regressione FU-028 |
-| Striscia ON | Smoke | Crema + striscia OK |
+---
+
+## Ciclo chiuso
+
+| Fase | Stato |
+|------|--------|
+| Fix tile/gradiente scroll (FU-028 codice) | ✅ |
+| Fix full-page mobile Android | ✅ |
+| QA Matteo device reale | ✅ |
+| Report + skill §2 | ✅ |
+| FU-028 | ✅ **rimosso da tabella follow-up** |
+
+---
+
+## Derivazione errori (processo)
+
+| # | Cosa è successo | Causa | Come evitare |
+|---|-----------------|-------|--------------|
+| 1 | Fix #8 applicato su Menu QR invece che Prenota | Misrouting checklist ciclo Menu QR | Gate URL smoke nel prompt (Prenota vs QR) — vedi meta-analisi 31-05-26 |
+| 2 | FU-028 chiuso a codice ma KO su full-page mobile | Primo fix toccava solo tile/gradiente; tenant TEST usa spesso `full-0x` | QA esplicito per **modalità sfondo attiva in admin**, non solo path tile |
+| 3 | Sintomo attribuito a preset foto | Matteo: succede con tutte le foto | Diagnosi su layer/viewport, non su asset |
 
 ---
 
@@ -126,7 +170,7 @@ Nota: emulazione desktop Playwright **non** simula hide/show barra URL Android �
 - `src/pages/BookingRequestPage.tsx` — hook + layer `100lvh`
 - `src/index.css` — `html.booking-public-viewport`
 - `docs/per-ui-design-skill/BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` — §2
-- `docs/FOLLOW_UP.md` — FU-028
-- `docs/SESSION_LOG.md`
+- `docs/FOLLOW_UP.md` — FU-028 **rimosso**
+- `docs/SESSION_LOG.md` — riga sessione
 
-**Commit:** non eseguito (salvo richiesta esplicita Matteo).
+**Commit:** `cd10c64` — `fix(prenota): stabilizza crop sfondo full-page su mobile Android` (push `origin/env/test`).

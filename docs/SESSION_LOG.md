@@ -13,7 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
-| 31-05-26 | Esecuzione — Pagina Prenota sfondo full-page mobile stabile (100lvh + viewport hook) | [Report](Sessioni%20di%20lavoro/31-05-26/Report-fix-prenota-mobile-sfondo-scroll-31-05-26.md) — `useBookingPublicViewport`; layer `h-[100lvh]`; validate 227; QA Android Chrome ⬜ Matteo. |
+| 31-05-26 | **Report finale ciclo** — Pagina Prenota sfondo mobile Android **✅ chiuso** | [Report finale](Sessioni%20di%20lavoro/31-05-26/Report-fix-prenota-mobile-sfondo-scroll-31-05-26.md) — `useBookingPublicViewport` + `100lvh`; QA Matteo OK; FU-028 rimosso da FOLLOW_UP; commit `cd10c64` `env/test`. |
 | 31-05-26 | **Chiusura ciclo** — Pagina Prenota sfondo fixed + padding + admin | [Report verifica](Sessioni%20di%20lavoro/31-05-26/Report-verifica-prenota-header-personalizza-form-31-05-26.md) — fixed+cover; padding `px-8 md:px-10` senza bleed; loop Personalizza form; **QA Matteo header + console ✅**; FU-024/025/027 OK; FU-021 annullato; validate 227. |
 | 31-05-26 | Verifica + fix — header Prenota allineato + loop Personalizza form | [Report](Sessioni%20di%20lavoro/31-05-26/Report-verifica-prenota-header-personalizza-form-31-05-26.md) — rimosso headerBleed; `px-8 md:px-10`; loop promo `EMPTY_MENU_PROMOS` + effect autosave duplicato; QA auto header 375/834/1280 ✅; QA loop admin ✅; validate 227; QA Matteo ✅ (vedi report finale). |
 | 31-05-26 | Esecuzione — Pagina Prenota sfondo fixed + asset sfondo3 + padding colonna | [Report](Sessioni%20di%20lavoro/31-05-26/Report-prenota-sfondo-fixed-padding-31-05-26.md) — fixed+cover OK; asset sfondo3 OK; padding ↑; header disallineato → **fix in report verifica sopra**; validate 227 OK. |
