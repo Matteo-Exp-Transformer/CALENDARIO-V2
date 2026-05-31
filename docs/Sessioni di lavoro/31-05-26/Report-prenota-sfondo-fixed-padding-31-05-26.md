@@ -2,7 +2,7 @@
 
 **Ruolo:** esecutore  
 **File principali:** `src/pages/BookingRequestPage.tsx`, `public/asset/sfondo intero/full-0N-*.webp`, `src/features/booking/constants/bookingPageBackground.ts`, `docs/per-ui-design-skill/BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` §2  
-**Stato:** codice + asset **non committati** · QA Matteo **⬜ header** · validate **✅ 227**
+**Stato:** codice + asset **non committati** · header **✅** (fix in [Report verifica header](Report-verifica-prenota-header-personalizza-form-31-05-26.md)) · validate **✅ 227**
 
 ---
 
@@ -20,6 +20,8 @@ Sfondo full-page **fisso** (`fixed` + `cover`); asset sostituiti con set **sfond
 | **Effetto atteso** | Foto sfondo ferma mentre il cliente scorre; più spazio ai lati su form/card; titolo centrato sulle card come prima. |
 | **Componente** | `BookingRequestPage.tsx` — layout colonna destra, layer sfondo, header pubblico. |
 | **Storage** | `restaurant_settings.public_booking_page_background` — id `full-01`…`full-04` (invariato). `public_booking_strip_photo` — se valorizzato, striscia ON e sfondo pagina crema. |
+
+**Chiusura header (31-05-26, sessione verifica):** il disallineamento titolo/card è risolto rimuovendo il «bleed» `-mx` sull’header e unificando il padding colonna — dettaglio e comunicazione estesa nel [report verifica](Report-verifica-prenota-header-personalizza-form-31-05-26.md) § Dati comunicazione.
 
 ---
 
@@ -167,7 +169,7 @@ Se header **ancora storto:** considerare rimuovere del tutto il bleed `-mx-*` e 
 | Sfondo fixed + cover | ✅ come brief |
 | Asset sfondo3 | ✅ deploy file |
 | Padding aumentato | ✅ valori più alti del baseline |
-| Header centrato | ❌ **rotto durante iterazioni**; ultimo fix **non validato** |
-| Comunicazione / iterazioni padding | ❌ troppi giri, regressioni evitabili con QA visivo prima di chiudere |
+| Header centrato | ✅ chiuso in [Report verifica header](Report-verifica-prenota-header-personalizza-form-31-05-26.md) |
+| Comunicazione / iterazioni padding | ⚠️ regressioni in sessione esecutore; **ripreso** in sessione verifica + § Dati comunicazione |
 
-**Sessione fermata su richiesta Matteo** — nessun ulteriore intervento fino a nuova istruzione.
+**Sessione esecutore fermata su richiesta Matteo** — fix header completato nella sessione verifica successiva.

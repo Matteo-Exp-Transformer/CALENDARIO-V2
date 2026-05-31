@@ -5,6 +5,7 @@ import { BookingSummarySidebar } from '@/features/booking/components/publicBooki
 import { BookingStickyBar } from '@/features/booking/components/publicBooking/BookingStickyBar'
 import { BookingPhotoStrip } from '@/features/booking/components/publicBooking/BookingPhotoStrip'
 import { MapPin, Clock, Phone, Mail, ChevronDown, Send } from 'lucide-react'
+import { useBookingPublicViewport } from '@/hooks/useBookingPublicViewport'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { formatHours, getDefaultBusinessHours } from '@/lib/businessHours'
@@ -31,8 +32,12 @@ import type { BookingRequestInput } from '@/types/booking'
 /** Padding colonna contenuto — header, form e sticky condividono lo stesso inset (no -mx bleed). */
 const BOOKING_PAGE_CONTENT_PAD_FULL = 'px-8 md:px-10 lg:px-10'
 const BOOKING_PAGE_CONTENT_PAD_STRIP = 'px-8 md:px-10 lg:px-10'
+/** Layer foto full-page: altezza large viewport — non segue hide/show barra URL Android. */
+const FULL_PAGE_PHOTO_LAYER_CLASS =
+  'pointer-events-none fixed top-0 left-0 right-0 h-[100lvh] min-h-[100svh] -z-10'
 
 export const BookingRequestPage: React.FC = () => {
+  useBookingPublicViewport()
   const { tenantSlug } = useParams<{ tenantSlug: string }>()
   const { tenantId, isLoading: isTenantLoading, setTenantFromSlug } = useTenantContext()
   const restaurantName = useRestaurantName()
@@ -184,20 +189,20 @@ export const BookingRequestPage: React.FC = () => {
         />
       )}
       {/*
-        Foto full-page (responsive): layer `fixed inset-0` viewport — immagine fissa, contenuto
-        scrolla sopra. Portrait <768px, landscape ≥768px; cover + top center, no-repeat (doc §2).
+        Foto full-page (responsive): layer fixed con h-[100lvh] — crop stabile su Android Chrome
+        (barra URL). Portrait <768px, landscape ≥768px; cover + top center, no-repeat (doc §2).
       */}
       {isFullPagePhoto && fullPagePhotoPortraitUrl && (
         <div
           aria-hidden
-          className="pointer-events-none fixed inset-0 -z-10 md:hidden"
+          className={cn(FULL_PAGE_PHOTO_LAYER_CLASS, 'md:hidden')}
           style={fullPagePhotoLayerStyle(fullPagePhotoPortraitUrl)}
         />
       )}
       {isFullPagePhoto && fullPagePhotoLandscapeUrl && (
         <div
           aria-hidden
-          className="pointer-events-none fixed inset-0 -z-10 hidden md:block"
+          className={cn(FULL_PAGE_PHOTO_LAYER_CLASS, 'hidden md:block')}
           style={fullPagePhotoLayerStyle(fullPagePhotoLandscapeUrl)}
         />
       )}

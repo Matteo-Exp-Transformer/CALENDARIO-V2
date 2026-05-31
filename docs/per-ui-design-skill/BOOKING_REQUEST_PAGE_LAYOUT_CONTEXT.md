@@ -71,17 +71,23 @@ resta a colonna unica anche su desktop e lo sfondo occupa tutta la viewport.
   `…/full-NN-landscape.webp` (**1672×941**, ≥768px) + `full-NN-portrait.webp`
   (**941×1672**, <768px). Set da `immagini di prova/sfondo 3/` (a→01, b→02, c→03, e→04).
   `bookingFullPageBackgroundPublicHref(id, base, orientation?)` default landscape. Applicate
-  via due `<div fixed inset-0 -z-10>` (portrait `md:hidden`, landscape `hidden md:block`) —
-  **immagine fissa in viewport**, contenuto scrolla sopra. `background-size: cover`,
-  `background-position: top center`, `no-repeat`. Su iOS: `position: fixed` sul div (non
-  `background-attachment: fixed`, spesso inaffidabile). **NON** `repeat-y`, **NON** layer alto quanto
-  il documento, **NON** hero `min-h-svh`. Root fallback crema `#faf7f1` solo primo paint / se
-  l'immagine non carica.
+  via due `<div fixed top-0 left-0 right-0 h-[100lvh] min-h-[100svh] -z-10>` (portrait
+  `md:hidden`, landscape `hidden md:block`) — **immagine fissa in viewport**, contenuto scrolla
+  sopra. `background-size: cover`, `background-position: top center`, `no-repeat`. Altezza
+  **`100lvh`** (large viewport) evita ricalcolo crop su Android Chrome quando la barra URL
+  si nasconde/mostra in scroll — **non** usare `inset-0` né `100dvh` sul layer foto. Su iOS:
+  `position: fixed` sul div (non `background-attachment: fixed`, spesso inaffidabile). **NON**
+  `repeat-y`, **NON** layer alto quanto il documento, **NON** hero `min-h-svh`. Root fallback
+  crema `#faf7f1` solo primo paint / se l'immagine non carica.
+- **Viewport mobile Prenota (31-05-26):** `useBookingPublicViewport()` in `BookingRequestPage`
+  imposta meta `interactive-widget=resizes-content` + classe `html.booking-public-viewport`
+  (solo su route `/prenota/:slug`; cleanup on unmount). Pattern analogo a Menu QR
+  (`usePublicMenuViewport`) ma classe separata per evitare effetti su altre route.
 - **Trade-off fixed vs scroll (31-05-26):** in fondo pagina (footer Orari/Contatti) lo sfondo resta
   ancorato alla viewport — accettato; verificare scroll fondo↔su a 375px e 1280px.
 - **Stacking context sfondo (31-05-26)**:
   1. root `BookingRequestPage` = `relative isolate` + colore fallback crema (`#faf7f1` full-page) o marrone (gradiente);
-  2. foto full-page = layer `fixed inset-0 -z-10` (solo viewport); tile/gradiente = layer `absolute inset-0 -z-10` (altezza documento, scroll col contenuto);
+  2. foto full-page = layer `fixed top-0 left-0 right-0 h-[100lvh] -z-10` (solo viewport); tile/gradiente = layer `absolute inset-0 -z-10` (altezza documento, scroll col contenuto);
   3. wrapper contenuto = `relative z-10 w-full`.
 - **Tile legacy + gradiente** — stesso layer `absolute` scrollabile; gradiente `background-size: 100% 100%`
   (non `cover` sul root).

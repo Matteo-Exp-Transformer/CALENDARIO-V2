@@ -2,7 +2,7 @@
 
 **Ruolo:** esecutore · profilo **Verifica + fix**  
 **File principali:** `src/pages/BookingRequestPage.tsx`, `src/features/booking/components/settings/BookingFormConfigPanel.tsx`, `src/features/booking/components/settings/BookingFormPromoSection.tsx`  
-**Stato:** codice **non committato** · validate **✅ 227** · QA automatico header **✅** · QA automatico loop admin **✅** · QA visivo Matteo **⬜** (conferma browser)
+**Stato:** codice **non committato** · validate **✅ 227** · QA automatico header **✅** · QA automatico loop admin **✅** · QA visivo Matteo **✅** (header + Personalizza form; chiusure FU 31-05-26)
 
 ---
 
@@ -14,14 +14,96 @@ Rimosso il «bleed» dell’header che annullava il padding della colonna; heade
 
 ## Dati comunicazione
 
+> Sezione obbligatoria (`docs/COMUNICAZIONE_UTENTE_SKILL.md`) — autosufficiente per il revisore.
+
+### Mappa schermata → effetto → codice → storage
+
 | Campo | Valore |
 |-------|--------|
-| **Schermata (pubblico)** | **Pagina Prenota** — `/prenota/:slug`. Nome ristorante, titolo, descrizione sopra le card tipologia. |
-| **Effetto atteso (pubblico)** | Titolo e form **stesso rientro** a sinistra/destra; più margine laterale rispetto al bleed precedente; footer Orari/Contatti **ancora a tutta larghezza**. |
-| **Schermata (admin)** | **Impostazioni** → tab **Personalizza Form**. Editor titolo pagina, modalità, promo, sfondo Prenota. |
-| **Effetto atteso (admin)** | Tab si apre **senza** schermo bianco né errore console «Maximum update depth exceeded». |
-| **Componente** | `BookingRequestPage.tsx` (layout colonna); `BookingFormConfigPanel.tsx`; `BookingFormPromoSection.tsx` (sezione promo). |
-| **Storage** | `restaurant_settings.booking_public_form_config` (titolo/descrizione/header_styles); `booking_menu_promos` (promo — sync locale da DB). Sfondo: `public_booking_page_background`, `public_booking_strip_photo` — **non modificati** in questa sessione. |
+| **Schermata (pubblico)** | **Pagina Prenota** — link che il cliente apre per prenotare. In alto: nome ristorante, titolo pagina, descrizione; sotto le card «tipo prenotazione» e il form. |
+| **Effetto per il ristoratore (pubblico)** | Il cliente vede titolo e card **allineati** (stesso rientro a sinistra/destra). I margini laterali sono un po’ più ampi ma **coerenti** su tutta la colonna. La barra bianca **Orari e Contatti** in fondo resta **larga quanto lo schermo** (non stretta come il form). |
+| **Schermata (admin)** | **Impostazioni** → pill **Personalizza Form** (titolo/descrizione pagina, modalità prenotazione, promo, anteprima sfondo Prenota). |
+| **Effetto per il ristoratore (admin)** | Aprendo Personalizza form la pagina **non va in crash** e la console del browser **non** ripete l’errore «troppi aggiornamenti». |
+| **Componente** | `BookingRequestPage.tsx` (layout colonna destra); `BookingFormConfigPanel.tsx` (tab admin); `BookingFormPromoSection.tsx` (lista promo in fondo al pannello). |
+| **Storage (Supabase `restaurant_settings`)** | `booking_public_form_config` — JSON con `page_title`, `page_description`, `header_styles`, `booking_modes`. `booking_menu_promos` — array promo mostrate in Prenota. Sfondo pagina: `public_booking_page_background` (`full-01`…`04`), striscia: `public_booking_strip_photo` — **non modificati** in questa sessione. |
+
+### Contesto sessione
+
+| Voce | Valore |
+|------|--------|
+| Profilo ingresso | **Verifica + fix** (revisione lavoro precedente su Prenota + admin) |
+| Trigger | Brief esecutore: header KO confermato, loop Personalizza form, prova visiva obbligatoria |
+| Turni chat (thread report/FU) | ~6 messaggi Matteo post-fix (report, follow-up, chiusure FU, aggiorna doc) |
+| Prepara-prompt | No |
+
+### Cronologia / prompt di Matteo (annotati)
+
+| # | Prompt (sintesi / verbatim) | Intento | Esito agente |
+|---|----------------------------|---------|--------------|
+| 1 | Brief esecutore: header non allineato, «sistemato» ma no in app; loop Personalizza form; checklist view | Verifica reale + fix | Fix bleed/padding + loop promo/autosave; QA Playwright |
+| 2 | «fai report» | Report sessione | `Report-verifica-prenota-header-personalizza-form-31-05-26.md` + `SESSION_LOG` |
+| 3 | «cosa manca nel follow up» (sintetico) | Capire debiti residui | Spiegazione FU; sessione header non aveva nuovo FU |
+| 4 | «non ho capito niente» (spiegazione FU) | Linguaggio semplice | Riscrittura per schermata/azione, non codici FU |
+| 5 | FU-024/025/027 OK; FU-021 annullare (sfondo unico bloccato); resto in FU | Chiudere tabella follow-up | Aggiornamento `FOLLOW_UP.md` |
+| 6 | «aggiorna pure i file» | Allineare doc a decisioni | FU + report + SESSION_LOG |
+| 7 | «assicurati comunicazioni nel report» | Sezione comunicazione completa | Questa espansione § Dati comunicazione |
+
+### Frasi / richieste ricorrenti
+
+| Frase / tema | Conteggio | Nota |
+|--------------|-----------|------|
+| Spiegazione semplice (regola utente permanente) | ×2 esplicite (FU, comunicazione) | Tabella **Dove \| Cosa fai \| OK se** efficace dopo primo KO «non ho capito» |
+| «non chiudere senza prova visiva» (dal brief) | ×1 | Rispettato con misura Playwright bordi h1/card |
+| Chiusure FU esplicite (OK / annulla / lascia) | ×1 | Pattern chiaro — aggiornare subito `FOLLOW_UP.md` |
+
+### Voci vocabolario / Liv.2
+
+| Voce | Esito | Nota |
+|------|-------|------|
+| «spiegamelo semplice» (regola Cursor) | **ok** | Dopo riscrittura FU, nessuna correzione |
+| Profilo **Verifica** (TESTING §7 multi-viewport) | **ok** | QA automatico 375/834/1280 eseguito |
+
+### Spiegazioni che hanno funzionato
+
+- **Tabella FU tradotta in schermate** («Pagina Prenota», «Personalizza Form») invece di ID soli.
+- **Separazione** «debito di questa sessione» vs «FU vecchi ancora aperti».
+- **Causa header in una frase:** «il titolo usciva dai margini perché aveva un trucco che annullava il padding».
+
+### Procedure ripetute (candidate automazione)
+
+| Procedura | Automatizzabile? | Motivo |
+|-----------|------------------|--------|
+| Misura allineamento h1 vs card tipologia (Playwright) | **Sì** | Script one-off già usato; candidato smoke E2E leggero |
+| Smoke Personalizza form senza loop console | **Sì** | Stesso pattern; utile in CI staging |
+| Aggiornare FU dopo «FU-xxx OK» di Matteo | **Parziale** | Serve conferma esplicita ID + stato (come messaggio 5) |
+
+### Pattern nuovi (candidate `PROPOSTE.md`)
+
+- Matteo chiude **più FU in un messaggio** con stati misti (Fatto / Annullato / lascia aperto) — utile voce Liv.1 «aggiorna FOLLOW_UP da elenco».
+- **Annullamento FU** per cambio strategia prodotto (es. tile → full-page fixed) senza nuovo lavoro codice.
+
+### Token / focus
+
+- Risposta FU troppo tecnica al primo colpo → secondo messaggio necessario; **partire sempre da tabella schermata** quando si parla di FOLLOW_UP.
+- Report tecnico §1–2 resta per revisore; **sintesi + Dati comunicazione** bastano a Matteo per decisioni.
+
+### Cosa non è successo in chat
+
+| Evento non avvenuto | Implicazione |
+|---------------------|--------------|
+| Matteo non ha detto «fai report finale» / «lavoro ok» nel thread fix | Report su richiesta esplicita «fai report» |
+| Nessun commit / push | Diff ancora locale |
+| `OSSERVAZIONI.md` / `PROPOSTE.md` non aggiornati in questa chat | Solo report + FOLLOW_UP |
+| QA browser FU-028 (footer + tile/gradiente) | Resta **aperto** in FOLLOW_UP |
+| Aggiornamento `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` § padding | Rimandato al commit codice |
+
+### Chiusure Matteo (post-report, stesso ciclo)
+
+| Decisione | File aggiornato |
+|-----------|-----------------|
+| FU-024, FU-025, FU-027 → QA OK | `docs/FOLLOW_UP.md` |
+| FU-021 → annullato (sfondo full-page unico) | `docs/FOLLOW_UP.md` |
+| Altri FU invariati | `docs/FOLLOW_UP.md` |
 
 ---
 
@@ -52,7 +134,7 @@ Header pubblico più largo o spostato rispetto alle card del form sotto; session
 | 834×1194 | 40.0 | 40.0 | ✅ |
 | 1280×800 | 40.0 | 40.0 | ✅ |
 
-### QA Matteo ⬜
+### QA Matteo ✅
 
 | Dove | Cosa fai | OK se… |
 |------|----------|--------|
@@ -85,7 +167,7 @@ Possibile crash/loop aprendo **Impostazioni → Personalizza Form** (React: maxi
 | Dopo tab **Impostazioni** | 0 |
 | Dopo click **Personalizza Form** | 0 (prima: 23+) |
 
-### QA Matteo ⬜
+### QA Matteo ✅ (console loop; tab stabile — conferma ciclo chiusura)
 
 | Dove | Cosa fai | OK se… |
 |------|----------|--------|
@@ -126,18 +208,47 @@ E2E smoke: `e2e/public-booking.spec.ts` «la pagina si apre correttamente» — 
 
 ## 6. Follow-up / debiti
 
-| ID | Priorità | Nota |
-|----|----------|------|
-| — | — | Nessun FU nuovo; conferma visiva Matteo su Prenota (striscia ON/OFF) e Personalizza form |
+| ID | Stato (31-05-26) | Nota |
+|----|------------------|------|
+| — | — | Nessun FU nuovo da questa sessione |
+| FU-024, FU-025, FU-027 | **Fatto** | QA Matteo OK (responsive Menu QR + compose Prenota) — aggiornato in `docs/FOLLOW_UP.md` |
+| FU-021 | **Annullato** | Prenota: sfondo full-page unico bloccato; task tile `repeat-y` obsoleto |
+| FU-028, FU-009, … | Aperti | Restano in `FOLLOW_UP.md` come da Matteo |
 
 ---
 
-## 7. Checklist chiusura sessione (agente)
+## 7. File di skill aggiornati
+
+| file | modifica (breve) | perché |
+|------|------------------|--------|
+| `docs/Sessioni di lavoro/31-05-26/Report-verifica-prenota-header-personalizza-form-31-05-26.md` | Report + § Dati comunicazione estesa | protocollo §7.1 |
+| `docs/Sessioni di lavoro/31-05-26/Report-prenota-sfondo-fixed-padding-31-05-26.md` | Stato header + link verifica | allineamento ciclo sfondo/padding |
+| `docs/FOLLOW_UP.md` | FU-024/025/027 Fatto; FU-021 Annullato; riga FU-028 ripulita; § Chiusure Matteo | decisioni post-QA |
+| `docs/SESSION_LOG.md` | Righe ciclo Prenota + viewport | indice sessioni |
+
+**Non aggiornati:** `OSSERVAZIONI.md`, `PROPOSTE.md`, `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` (padding — al commit codice), skill di area codice.
+
+---
+
+## 8. Derivazione errori
+
+| # | Cosa è successo | Causa | Come evitare |
+|---|-----------------|-------|--------------|
+| 1 | Header «sistemato» ma KO in app | **errore agente** (sessione padding): `-mx` header annullava `px` colonna | Stesso inset per header e form; QA misura bordi prima di chiudere |
+| 2 | Loop Personalizza form | **bug preesistente** + pattern fragile: effect su oggetto autosave; `data ?? []` nuovo ogni render | Dipendere solo da `cancelPending` stabile; costante `EMPTY_*` per default array |
+| 3 | Spiegazione FU incomprensibile | **errore agente** comunicazione: elenco ID senza schermate | Tabella Dove / effetto ristoratore prima dei codici FU |
+
+Pattern ricorrenti: già coperti in report padding §4; non duplicare in `ERRORI_PROCESSO.md` senza sessione Meta.
+
+---
+
+## 9. Checklist chiusura sessione (agente)
 
 - [x] Causa header documentata e fix in codice
 - [x] Loop admin identificato (2 cause) e fix in codice
 - [x] `npm run validate` verde
 - [x] QA automatico 3 viewport header
 - [x] QA automatico loop Personalizza form
-- [ ] QA visivo Matteo ⬜
+- [x] QA visivo Matteo (header + console Personalizza form — vedi `SESSION_LOG` report finale ciclo)
+- [x] Aggiornamento FU-024/025/027/021 in `FOLLOW_UP.md`
 - [ ] Commit su richiesta Matteo
