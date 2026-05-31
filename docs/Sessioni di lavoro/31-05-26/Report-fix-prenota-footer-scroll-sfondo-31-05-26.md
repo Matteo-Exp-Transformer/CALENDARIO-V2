@@ -85,4 +85,10 @@ URL esempio: `http://localhost:5173/prenota/test-pro` (full-page) · per tile ve
 - `docs/FOLLOW_UP.md` — FU-028 aggiornato
 - `docs/SESSION_LOG.md` — riga sessione
 
-**Commit:** non eseguito (richiesta sessione).
+**Commit:** `13a691e` (tile/gradiente) — QA preview ancora KO: tenant TEST usa spesso **foto full-page** (`full-0x`, default app), path non toccato dal primo fix.
+
+### Follow-up 31-05-26 (post-preview Vercel)
+
+- **Causa probabile KO preview:** `public_booking_page_background` = `full-02` (o altro `full-*`) → layer **`fixed`** (foto ferma, footer bianco scorre sopra → salto percepito).
+- **Fix aggiuntivo:** foto full-page → `absolute inset-0 -z-10` (scorrono col documento, come tile).
+- **Verifica:** dopo deploy, hard refresh su preview; smoke con la stessa modalità sfondo attiva in admin.

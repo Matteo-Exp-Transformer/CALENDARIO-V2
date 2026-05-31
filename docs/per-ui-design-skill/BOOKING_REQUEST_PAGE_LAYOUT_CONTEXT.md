@@ -70,16 +70,14 @@ resta a colonna unica anche su desktop e lo sfondo occupa tutta la viewport.
   HD 1440×4320). Pagina intera 3 preset `full-01..03` in **due varianti WebP**:
   `…/full-NN-landscape.webp` (2560×1440, ≥768px) + `full-NN-portrait.webp` (1440×2560, <768px).
   Helper `bookingFullPageBackgroundPublicHref(id, base, orientation?)` default landscape. Applicate
-  via due `<div fixed inset-0 -z-10>` con `md:hidden` / `hidden md:block`.
-- **Stacking context foto full-page (28-05-26)** — regola definitiva:
-  1. root `BookingRequestPage` = `relative isolate` + fondo crema chiaro come fallback;
-  2. foto = `<div pointer-events-none fixed inset-0 z-0>` (portrait `md:hidden`, landscape
-     `hidden md:block`);
-  3. wrapper contenuto interno = `relative z-10`, altrimenti i `fixed` con z ≥ 0 coprono il form.
-- **Tile legacy + gradiente (31-05-26)** — sfondo **scrollabile** (vincolo prodotto: no `fixed` per
-  tile/gradiente): layer dedicato `absolute inset-0 -z-10` sul root (altezza = documento), non
-  `background-*` inline sul root scrollabile; gradiente con `background-size: 100% 100%` (non
-  `cover`) per evitare ricalcoli in scroll footer. Foto full-page restano `fixed` come sopra.
+  via due `<div absolute inset-0 -z-10 bg-cover bg-top>` (portrait `md:hidden`, landscape
+  `hidden md:block`) — **scrollano col documento** (31-05-26: non più `fixed`, evita salto al footer).
+- **Stacking context sfondo (31-05-26)**:
+  1. root `BookingRequestPage` = `relative isolate` + colore fallback crema/marrone;
+  2. sfondo foto/tile/gradiente = layer `absolute inset-0 -z-10` (altezza = root che cresce con form+footer);
+  3. wrapper contenuto = `relative z-10 w-full`.
+- **Tile legacy + gradiente** — stesso layer `absolute` scrollabile; gradiente `background-size: 100% 100%`
+  (non `cover` sul root).
 
 ## 3. Header pubblico
 

@@ -175,23 +175,20 @@ export const BookingRequestPage: React.FC = () => {
         />
       )}
       {/*
-        Foto full-page in due varianti (responsive):
-        - portrait (9:16) per viewport mobile <768px
-        - landscape (16:9) per viewport ≥768px
-        Stacking: root con `relative isolate` crea uno stacking context locale.
-        Le foto sono `z-0` (sotto), il wrapper contenuto è `relative z-10` (sopra).
+        Foto full-page (responsive): layer `absolute` sul root che cresce col form+footer —
+        scorre col contenuto (non `fixed`: evita salto/lampeggio al bordo footer bianco).
       */}
       {isFullPagePhoto && fullPagePhotoPortraitUrl && (
         <div
           aria-hidden
-          className="pointer-events-none fixed inset-0 z-0 md:hidden bg-cover bg-center bg-no-repeat"
+          className="pointer-events-none absolute inset-0 -z-10 md:hidden bg-cover bg-top bg-no-repeat"
           style={{ backgroundImage: `url("${fullPagePhotoPortraitUrl}")` }}
         />
       )}
       {isFullPagePhoto && fullPagePhotoLandscapeUrl && (
         <div
           aria-hidden
-          className="pointer-events-none fixed inset-0 z-0 hidden md:block bg-cover bg-center bg-no-repeat"
+          className="pointer-events-none absolute inset-0 -z-10 hidden md:block bg-cover bg-top bg-no-repeat"
           style={{ backgroundImage: `url("${fullPagePhotoLandscapeUrl}")` }}
         />
       )}
