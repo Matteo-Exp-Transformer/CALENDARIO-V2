@@ -174,3 +174,5 @@ Smoke opzionali non eseguiti: tile/gradiente su slug texture, striscia ON, iOS �
 - `docs/SESSION_LOG.md` — riga sessione
 
 **Commit:** `cd10c64` — `fix(prenota): stabilizza crop sfondo full-page su mobile Android` (push `origin/env/test`).
+
+**Merge main (31-05-26):** `env/test` → `main` (`--no-ff`); push `origin/main`. DB prod: migrazione **042** `menu_qrcode_categories.icon` applicata (TEST già allineato; nessuna migrazione nuova nel diff codice Prenota).

@@ -167,6 +167,10 @@ Quando Matteo conferma che il lavoro è andato bene ("ok", "funziona", "perfetto
    le domande di riforma le farà il revisore in sessione separata.
 4. **Commit dedicato** (se Matteo conferma): commit separati — uno per il codice, uno
    `docs(comunicazione):` per report/osservazioni. Punto di ripristino indipendente.
+5. **Terminali Cursor** (se Matteo ha detto «fai report finale» o chiusura con report §7): nelle
+   **ultime righe** della risposta, nota obbligatoria — chiudere **solo** tab/processi aperti
+   **dall’agente**; non il `npm run dev` di Matteo se ancora in uso. Dettaglio: `APP_CONTEXT_SKILL.md` §7.3;
+   voce `VOCABOLARIO.md` «fai report finale».
 
 > L'agente di lavoro **non** apre con Matteo discussioni sul miglioramento dello skill system né
 > propone nuove rule in chat (salvo che Matteo lo chieda lì). Quel dialogo avviene con il revisore.

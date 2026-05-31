@@ -33,6 +33,14 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## In attesa di decisione
 
+### In attesa «handoff / follow-up — due parti: copia-incolla + riepilogo Matteo»
+- **Pattern osservato:** Matteo chiede handoff per prossima chat; risposte troppo lunghe o mescolate rendono difficile capire cosa incollare e cosa è extra (31-05-26, ciclo Menu QR).
+- **Automatizzabile con certezza:** prepara-prompt risponde sempre con (1) **un fenced block** pronto per nuova chat + (2) **riepilogo corto fuori** (tabella Ciclo·QA·FU + «cosa NON passi»); report finale prepara-prompt a parte se chiusura sessione.
+- **Meglio lasciare manuale:** contenuto del prompt esecutore (task-specific); promozione VOCABOLARIO.
+- **Livello suggerito:** 1 per prepara-prompt quando trigger = «handoff» / «follow-up prossima chat» / «proseguimento».
+- **Dove codificare:** `PREPARA_PROMPT_SKILL.md` §3 — promozione definitiva → Meta.
+- **Esito / data:** proposta 31-05-26 — in attesa ok Matteo. **Nota:** §3 è stato modificato dall’agente prepara-prompt **prima** della ratifica (deviazione processo — vedi report ciclo § Deviazione processo).
+
 ### ATTESA-DATI «Meta — gate spiegazione procedura avvio chat (@ skill)»
 > **Triage senior 31-05-26:** parzialmente **già risolta** oggi con `COMANDI_AVVIO.md` (mappa
 > parola→chat→cosa caricare). Rivalutare dopo che Matteo usa la mappa: se la domanda «cosa metto in @»
@@ -55,13 +63,6 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 - **Livello suggerito:** 2 — prepara-prompt applica il blocco su task UI scroll/sfondo; non su ogni fix CSS.
 - **Token risparmiati:** ~1 sessione correttiva iOS per ciclo simile.
 - **Esito / data:** proposta 31-05-26 — **ATTESA-DATI** (1 occorrenza, serve la 2ª).
-
-### In attesa «Meta — gate spiegazione procedura avvio chat (@ skill)»
-- **Pattern osservato:** Matteo chiede se @ `APP_CONTEXT` in ogni chat esecutore (31-05-26) — implica dubbio su **cosa caricare** vs prompt già completo; rischio sovraccarico contesto se APP_CONTEXT + area + prompt lungo sempre insieme.
-- **Automatizzabile con certezza:** in chat **Meta** o quando il messaggio è meta-procedura («cosa metto in @», «come avvio agente»), il revisore **prima** chiede: *«Vuoi una spiegazione passo-passo per questa chat (sì/no)?»* — poi tabella 3 righe: Tipo chat | Cosa @ | Cosa no.
-- **Regola sintesi (per Matteo, non ancora in skill):** Esecuzione mirata → prompt + 1 skill area; Esecuzione esplorativa → `@calendarbackup-app-context`; Prepara-prompt → `PREPARA_PROMPT_SKILL` only; Verifica → APP_CONTEXT profilo Verifica + area.
-- **Livello suggerito:** 2 — Meta chiede prima di spiegare; Liv.1 card in `REVISIONE.md` onboarding dopo ok Matteo.
-- **Esito / data:** proposta 31-05-26 — in attesa sessione Meta.
 
 ### ATTESA-DATI «ciclo Verifica — commit docs + merge env/test→main a cura del revisore»
 > **Triage senior 31-05-26:** tocca **merge su `main` = produzione**. Troppo rischioso promuovere

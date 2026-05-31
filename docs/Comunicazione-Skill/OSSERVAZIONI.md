@@ -312,6 +312,13 @@
 - Revisore: utile escludere diff fuori scope dal commit (`BookingModeCards` margin) — Matteo vuole commit pulito per task.
 - Richiesta esplicita: **guida replica** con riferimenti file per portare il pattern su admin/modali (FU-010) → `FORM_VALIDATION_ATTENTION_PATTERN.md`.
 
+### 31-05-26 — Handoff / follow-up verso prossima chat (prepara-prompt)
+- Quando Matteo chiede **handoff** o **follow-up** per il prossimo agente, vuole la risposta in **due parti distinte**:
+  1. **Blocco copia-incolla** — testo unico (fenced) da incollare in **nuova chat** (contesto, prompt esecutore, cosa fare a fine lavoro esecutore).
+  2. **Riepilogo per lui** — **fuori** dal blocco: tabelle compatte (ciclo · cosa stai passando · cosa **non** c’è) — stesso stile «Dove | Cosa fai | OK se» / tabella Ciclo·QA·FU; così controlla al colpo d’occhio che non ci siano elementi aggiunti o non richiesti.
+- **Non** mischiare spiegazione lunga e blocco copia-incolla nello stesso flusso senza separazione visiva.
+- Esito positivo sessione: handoff Prompt B (#8 footer) + merge main consegnato in questo formato.
+
 ### 28-05-26 — Sessione PWA + costruzione sistema comunicazione
 - Confermato: "spiegamelo semplice" = metafora + chi-fa-cosa (vedi cache PWA).
 - Confermato: preoccupazione ricorrente "lavoro mio o del tool?".

@@ -153,11 +153,11 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 
 ### «fai report finale» — Liv. 1
 - **Intende:** chiudere la sessione con il flusso di fine-chat (non parte da solo sulla conferma "ok/funziona": parte solo se Matteo lo dice)
-- **Comportamento agente:** esegui il protocollo § 7 APP_CONTEXT: report § 7.1 in `docs/Sessioni di lavoro/GG-MM-AA/` (linguaggio utente, sezione Dati comunicazione), **allineamento skill § 7.2 delle aree toccate** (obbligatorio, anche se la riga è "nessuna"), e proponi i commit dedicati. Il via al commit resta una conferma di Matteo.
+- **Comportamento agente:** esegui il protocollo § 7 APP_CONTEXT: report § 7.1 in `docs/Sessioni di lavoro/GG-MM-AA/` (linguaggio utente, sezione Dati comunicazione), **allineamento skill § 7.2 delle aree toccate** (obbligatorio, anche se la riga è "nessuna"), e proponi i commit dedicati. Il via al commit resta una conferma di Matteo. **In chiusura chat verso Matteo** (2–4 righe finali) includi **sempre** la nota terminali (§7.3 APP_CONTEXT): suggerire di chiudere **solo** le tab/processi terminale aperti **dall’agente** in sessione; **non** chiedere di chiudere il `npm run dev` (o altro) avviato **da Matteo** se può essere ancora in uso.
 - **Livello:** 1 (automatico)
 - **Casi identici già ok:** —
-- **Approvata il:** 28-05-26
-- **Origine:** chat mappatura (Matteo preferisce un termine esplicito al trigger sulla conferma)
+- **Approvata il:** 28-05-26 · agg. 30-05-26 (nota terminali)
+- **Origine:** chat mappatura (Matteo preferisce un termine esplicito al trigger sulla conferma) · regola terminali 30-05-26
 
 ### «dammi prompt proseguimento» — Liv. 1
 - **Intende:** passare il lavoro a un'altra chat dal punto esatto raggiunto, per evitare sessioni con troppo contesto

@@ -74,7 +74,8 @@ Leggi il task ricevuto e applica questa tabella:
 | **Come rispondere a Matteo / spiegazioni / report / fine sessione / vocabolario / "spiegamelo semplice"** | `docs/COMUNICAZIONE_UTENTE_SKILL.md` + supporto `docs/Comunicazione-Skill/` (VOCABOLARIO, OSSERVAZIONI, PROPOSTE). Agente di lavoro: applica vocabolario + raccoglie dati + report esaustivo. Caricala a inizio (se usi il vocabolario o fai domande) e a fine sessione. |
 | **Revisione skill comunicazione / promuovere-regredire voci / valutare i dati raccolti / riformare lo skill system comunicazione** | `docs/Comunicazione-Skill/REVISIONE.md` — **sessione dedicata** col revisore, non in una chat di lavoro |
 | **Visione prodotto / perché una scelta / modello commerciale / roadmap / decisioni strutturali / dove trovo cosa** | `docs/Archivio/CONTESTO_PRODOTTO.md` — fonte di verità riassuntiva (no dati sensibili) |
-| **Follow-up / debito post-sessione / controlli rimandati / FU-NNN** | `docs/FOLLOW_UP.md` — collegare al report in `docs/Sessioni di lavoro/`; aggiornare a fine sessione (§7.1). Agente **prepara-prompt**: ruolo attivo nel trovare follow-up (`docs/PREPARA_PROMPT_SKILL.md`). |
+| **Follow-up / debito post-sessione / controlli rimandati / FU-NNN** | `docs/FOLLOW_UP.md` — collegare al report in `docs/Sessioni di lavoro/`; aggiornare a fine sessione (§7.1). Debito trasversale **fallback prod** → **FU-023** + §4c. **Milestone lontana skill agenti tier avanzato** → **FU-024** + §4d. Agente **prepara-prompt**: ruolo attivo nel trovare follow-up (`docs/PREPARA_PROMPT_SKILL.md`). |
+| **Skill system / agenti Cursor / Codex / contesto chat / entry point / tier modello** | `docs/FOLLOW_UP.md` **FU-024** + §4d (solo design, non implementare senza sessione Meta) |
 | Non è chiaro di quale area si tratti | Leggi `CLAUDE.md`, poi usa questa tabella |
 
 Carica il skill indicato **prima** di aprire qualsiasi file da modificare.
@@ -199,6 +200,7 @@ Tab impostazioni attivo: `RestaurantSettingsTab.tsx` (LOCK strutturale in `ADMIN
 ```
 docs/
 ├── APP_CONTEXT_SKILL.md        ← Skill 0, indice/routing (questo file, resta in root)
+│                               ← futuro: eventuali entry tier avanzato → FU-024 §4d (non ancora creati)
 ├── ADMIN_CLASSIC_SKILL.md      ┐ skill "radice" citate da molti file → restano in root
 ├── BOOKING_DATA_FLOW_SKILL.md  │
 ├── DATA_FLOW_SKILL.md          │
@@ -292,7 +294,52 @@ RULE  **Pagina Prenota v2** (`/prenota/:slug`): layout esterno opzionale a 2 col
 RULE  **PWA / aggiornamento app (service worker)** — file: `vite.config.ts`, `src/main.tsx`, `index.html`, `vercel.json`, `src/vite-env.d.ts`. Strategia: app sempre aggiornata all'apertura, mai reload/popup in sessione. **MAI `autoUpdate`** (resta `registerType: 'prompt'`); mai cacheare `supabase.co`. **Invarianti completi → `docs/PWA_CONTEXT.md`**.
 
 LOCK  **`BookingRequestPage.tsx` — struttura griglia con striscia laterale** (consolidata, testata su 3 breakpoint). Prima di toccarla: valutare se basta agire sui componenti figli; se serve toccare la griglia, leggere per intero `BookingRequestPage` + `BookingPhotoStrip` + `BookingSummarySidebar` + `BookingRequestForm`; non violare gli invarianti strutturali (griglia `w-full`, strip `sticky top-0 h-screen`, footer fuori griglia, spacer `h-20/h-4`). **Invarianti dettagliati + tutte le note layout → `docs/per-ui-design-skill/BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` §0.** Modifiche che li violano vanno discusse con l'utente prima.
+
+RULE  **Fallback e placeholder (prod-ready):** quando manca un dato da DB o config del tenant, non lasciare stringhe/URL/immagini hardcodate «per far funzionare la demo» senza tracciarle. In produzione commerciale preferire: valore da storage del ristorante (`restaurant_settings`, `booking_public_form_config`, catalogo menu, `menu_qr_codes`, ecc.), stato vuoto esplicito (`EmptyState`, testo neutro), o costante centralizzata in `src/features/booking/constants/` / `@/config/` documentata nello skill d'area. Audit trasversale pianificato → `docs/FOLLOW_UP.md` **FU-023** (§4c). Se in sessione tocchi un fallback sospetto: nota nel report §7.1 e sotto-riga in FU-023 (o nuovo FU collegato).
 ```
+
+### 4c. Debito trasversale — mappatura fallback (FU-023)
+
+Obiettivo unico: **eliminare elementi hardcodati di test/demo** e sostituirli con comportamento **affidabile in produzione** per ogni ristorante (tenant).
+
+| Aspetto | Indicazione |
+|---------|-------------|
+| **Perimetro** | Tutta l'app: dashboard admin, Pagina Prenota, Menu QR, email, resolver form (`bookingFormResolver`), impostazioni, componenti con `??` / `\|\|` su testi, immagini, prezzi, orari. |
+| **Cosa cercare** | Valori fissi nel JSX/TS quando la query è vuota o fallisce; slug/tenant di prova; immagini stock; label «Lorem» o copy di sviluppo; default che non esistono in `restaurant_settings` o config pubblica. |
+| **Fonti corrette** | Storage per tenant (vedi skill DB / `BOOKING_DATA_FLOW` / `DATA_FLOW`); mai duplicare in componente ciò che già vive in Supabase o in registry impostazioni. |
+| **Come mappare (checklist)** | Per ogni elemento: (1) **se pieno** — da dove arriva (tabella/colonna o chiave settings); (2) **se vuoto** — fallback attuale nel codice; (3) **verdetto** — ok prod · da sostituire · vuoto intenzionale (`EmptyState`). |
+| **Esecuzione** | Sessione dedicata o incrementale per area (profilo **Esecuzione** + skill della tabella § 0). Non confondere con FU-009 (mappatura impostazioni Prenota): FU-023 è l'**audit globale** sui fallback. |
+| **Registro** | `docs/FOLLOW_UP.md` riga **FU-023**; aggiornare a fine sessione (§7.1). |
+
+### 4d. Milestone lontana — skill system per agenti più competenti (FU-024)
+
+> **Non è lavoro corrente.** Tenere traccia finché non si fa una sessione Meta dedicata al design.
+> Lo skill system attuale (Skill 0 + skill d’area + `PREPARA_PROMPT` + `.cursor/skills/` puntatori)
+> resta la **fonte unica** fino a decisione esplicita.
+
+**Problema da risolvere (futuro):** modelli e tool con capacità diverse (es. Cursor Auto vs thinking vs Claude Codex)
+beneficiano di **ingressi diversi**: agenti leggeri → meno token, solo routing + LOCK del task; agenti forti →
+pack più ricco senza ripetere tutto §4 ogni volta in forme ridondanti.
+
+**Obiettivo per Matteo:** all’inizio chat, scegliere **cosa stai per fare** e caricare il set giusto — es. file
+dedicati «Esecuzione feature», «Verifica profonda», «DB/migrazione», «Prepara prompt», «Meta comunicazione» —
+invece di un solo `APP_CONTEXT_SKILL.md` monolitico.
+
+| Domanda (sessione design) | Opzioni da confrontare |
+|---------------------------|------------------------|
+| Dove vivono le istruzioni? | Solo `docs/` · solo `.cursor/skills/` · **ibrido** (nucleo in docs, puntatori Cursor per tier) |
+| Quanti entry point? | 1 Skill 0 + tabella §0 (oggi) · **2–4 skill ingresso** per profilo §0.0 · skill per **tier modello** |
+| Duplicazione RULE/LOCK | Vietata: un §4 master; tier avanzato = **indice + deep-link** alle skill d’area già esistenti |
+| Allineamento ciclo | `PREPARA_PROMPT_SKILL.md` resta leggero; tier avanzato non sostituisce prepara-prompt |
+| Manutenzione | Chi aggiorna cosa quando cambia un LOCK — checklist in §7.2 estesa o script/doc generator (fuori scope ora) |
+
+**Criteri di successo (bozza):** (1) Matteo sa quale file/skill attaccare in 10 secondi; (2) nessuna RULE
+in due versioni diverse; (3) agente forte riceve contesto sufficiente per task multi-area senza leggere tutto `docs/`;
+(4) agente leggero non carica Legal/DB se fa solo un fix UI.
+
+**Registro e trigger:** `docs/FOLLOW_UP.md` **FU-024** (stato `Milestone lontana`). Roadmap prodotto:
+`docs/Archivio/CONTESTO_PRODOTTO.md` §4. **Non** creare nuovi file `.cursor/skills/` in chat di lavoro
+normale — solo in sessione approvata che produce un mini-piano (anche 1 pagina in `docs/_lavoro/Supporto/` se serve).
 
 ---
 
@@ -345,6 +392,17 @@ Lo stile delle risposte e il **flusso di fine-chat** sono governati da
   nelle chat di lavoro.
 
 Il report (§7.1) e l'allineamento skill (§7.2) sono parte del flusso dell'agente di lavoro.
+
+### 7.3 Terminali Cursor — nota obbligatoria a chiusura (attiva 30-05-26)
+
+Quando Matteo dice **«fai report finale»** (o equivalente: chiusura sessione con report §7), nella **risposta finale in chat** (ultime 2–4 righe, insieme a ciclo completato / resta commit) l'agente DEVE includere **1–2 righe** sui terminali:
+
+- **Suggerire di chiudere solo** le tab o processi terminale che **l’agente** ha aperto in quella sessione (comandi da Shell tool, `npm run dev` in background, validate lunghi, ecc.).
+- **Non** chiedere di chiudere il terminale dove **Matteo** ha lanciato a mano `npm run dev` (o altro) se può servire ancora per provare in locale.
+- **Come riconoscere (agente):** conta solo ciò avviato da tool agente in chat; le tab vuote o «History restored» senza comando agente attivo → opzionale chiudere, senza insistere.
+- **Testo tipo:** «Puoi chiudere le tab terminale lasciate dall’agente (es. vecchi `npm run dev` su porte 5174/5175); tieni quella con il tuo dev se stai ancora lavorando in locale.»
+
+Non è obbligatorio **terminare** i processi dall’agente (Matteo chiude le tab); è obbligatorio **ricordarglielo** a fine report.
 
 ### 7.1 Scrivere il report
 
@@ -439,4 +497,5 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | `bookingFormResolver.ts` / `SubTab.field_overrides` / `patchSubTabAsOverride` / `resetSubTabToPreset` | `BOOKING_DATA_FLOW_SKILL.md` (resolver e override) |
 | `bookingPublicDateHelpers.ts` (getTodayIso, dateToIso, getCurrentTimeHHMM) / `bookingModeLabels.ts` (getModeLabelByType) | `APP_CONTEXT_SKILL.md` §4 RULE Anti-duplicazione — sono i punti di verità per date locali e label modalità del form pubblico |
 | `docs/FOLLOW_UP.md` (nuova riga o chiusura FU) | Nessun altro file obbligatorio; opzionale puntatore in `.cursor/skills/calendarbackup-app-context/SKILL.md` se il follow-up è rilevante per sessioni future |
+| Fallback / placeholder / `??` / `\|\|` su copy o asset quando config o DB è vuoto | `docs/FOLLOW_UP.md` **FU-023** + §4c; skill d'area del componente toccato |
 | `vite.config.ts` (VitePWA/define) / `src/main.tsx` (registerSW) / `index.html` (splash) / `vercel.json` (cache header) / `src/vite-env.d.ts` (globali build) | `docs/PWA_CONTEXT.md` |
