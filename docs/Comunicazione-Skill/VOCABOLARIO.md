@@ -107,13 +107,29 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 - **Approvata il:** 28-05-26
 - **Origine:** chat mappatura profili di ingresso · `ANALISI_RACCOLTA_DATI_SKILL_SYSTEM`
 
-### «migliora comunicazione» · «aggiorna comunicazione» — Liv. 1
-- **Intende:** lavorare sul sistema di comunicazione/skill (revisione voci vocabolario, regole di stile) → **profilo Meta**
-- **Comportamento agente:** entra in profilo Meta — carica **solo** `COMUNICAZIONE_UTENTE_SKILL.md` + `Comunicazione-Skill/REVISIONE.md`; non carica skill di area/codice/DB/UI. È il ruolo agente revisore (sessione dedicata).
+### «migliora comunicazione» · «aggiorna comunicazione» · «analizza comunicazione» · «revisiona comunicazione» — Liv. 1
+- **Intende:** lavorare sul sistema di comunicazione/skill al livello **revisore** (revisione voci vocabolario, valutazione dati Liv.2, regole di stile) → **profilo Meta (revisore)**
+- **Comportamento agente:** entra in profilo Meta — carica **solo** `COMUNICAZIONE_UTENTE_SKILL.md` + `Comunicazione-Skill/REVISIONE.md`; non carica skill di area/codice/DB/UI. È il ruolo **agente revisore** (sessione dedicata). «analizza»/«revisiona»/«controlla» comunicazione attivano **questo** ruolo, **mai** il Meta senior: diagnosi e proposte, non evoluzione del sistema.
 - **Livello:** 1 (automatico)
 - **Casi identici già ok:** —
-- **Approvata il:** 28-05-26
-- **Origine:** chat mappatura profili di ingresso · `ANALISI_RACCOLTA_DATI_SKILL_SYSTEM`
+- **Approvata il:** 28-05-26 (esteso 31-05-26: aggiunti «analizza/revisiona comunicazione», esplicitato che non attivano il senior)
+- **Origine:** chat mappatura profili di ingresso · `ANALISI_RACCOLTA_DATI_SKILL_SYSTEM` · sessione test skill system 31-05-26
+
+### «evolvi skill system senior» · «meta senior» — Liv. 1
+- **Intende:** far **evolvere** lo skill system al livello più alto: leggere il Log idee + le milestone + i dati accumulati, decidere automazioni/statistiche/tecniche nuove, far avanzare le milestone, potare le idee morte → **profilo Meta (senior)**
+- **Comportamento agente:** entra in profilo Meta senior — carica `Comunicazione-Skill/EVOLUZIONE_SKILLS.md` (+ `REVISIONE.md` come contesto); non carica skill di area/codice/DB/UI. Distingue sempre **governance soft (markdown)** da **enforcement vero (hook `settings.json`)** quando pianifica un'automazione. È il livello Opus, sessione dedicata lanciata da Matteo. Distinto dal revisore: il revisore rifinisce le voci, il senior fa evolvere il sistema.
+- **Livello:** 1 (automatico) — **solo** se la frase contiene «senior» (o «meta senior»)
+- **Casi identici già ok:** —
+- **Approvata il:** 31-05-26
+- **Origine:** sessione test skill system 31-05-26 (Matteo: il termine «senior» di EVOLUZIONE_SKILLS § «due livelli di Meta» va mappato come grilletto)
+
+### «evolvi» / «evolvi skill system» SENZA «senior» — Liv. 2
+- **Intende:** ambiguo — potrebbe voler dire il ruolo Meta senior (evoluzione del sistema) oppure un generico "miglioralo" da revisore. Manca il discriminante «senior».
+- **Comportamento agente:** **non** partire diretto da senior. Fai **una domanda preventiva breve**: «Devo comportarmi come Meta senior (far evolvere il sistema: milestone/automazioni) o come revisore comunicazione (rifinire voci)?». Procedi solo dopo la risposta. Se Matteo aggiunge «senior» → sali alla voce Liv. 1 sopra.
+- **Livello:** 2 (cautela) — il dubbio è strutturale, la domanda è quasi sempre dovuta
+- **Dati Liv.2:**
+- **Approvata il:** 31-05-26
+- **Origine:** sessione test skill system 31-05-26 (Matteo: «se leggi evolvi ma non senior, chiedi per sicurezza»)
 
 ---
 
