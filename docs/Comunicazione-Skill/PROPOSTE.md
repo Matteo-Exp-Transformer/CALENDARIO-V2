@@ -26,6 +26,14 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## In attesa di decisione
 
+### In attesa «handoff / follow-up — due parti: copia-incolla + riepilogo Matteo»
+- **Pattern osservato:** Matteo chiede handoff per prossima chat; risposte troppo lunghe o mescolate rendono difficile capire cosa incollare e cosa è extra (31-05-26, ciclo Menu QR).
+- **Automatizzabile con certezza:** prepara-prompt risponde sempre con (1) **un fenced block** pronto per nuova chat + (2) **riepilogo corto fuori** (tabella Ciclo·QA·FU + «cosa NON passi»); report finale prepara-prompt a parte se chiusura sessione.
+- **Meglio lasciare manuale:** contenuto del prompt esecutore (task-specific); promozione VOCABOLARIO.
+- **Livello suggerito:** 1 per prepara-prompt quando trigger = «handoff» / «follow-up prossima chat» / «proseguimento».
+- **Dove codificare:** `PREPARA_PROMPT_SKILL.md` §3 — promozione definitiva → Meta.
+- **Esito / data:** proposta 31-05-26 — in attesa ok Matteo. **Nota:** §3 è stato modificato dall’agente prepara-prompt **prima** della ratifica (deviazione processo — vedi report ciclo § Deviazione processo).
+
 ### In attesa «ciclo Verifica — commit docs + merge env/test→main a cura del revisore»
 - **Pattern osservato:** A fine mappa/revisione/fix, Matteo chiede esplicitamente merge su `main` e commit `docs/` con `git add -f`; l’esecutore Fase 1 aveva anche scritto un report revisione (conflitto di ruoli). Merge 30-05-26 (`b3216d7`) fatto dal revisore post-controverifica.
 - **Automatizzabile con certezza:** a chiusura ciclo **deep Verifica** (mappa → revisione → fix → revisione fix): revisore fa `git add -f docs/…`, commit messaggio `docs(scope): …`, `merge env/test --no-ff` → `main`, `push origin main`; esecutore **non** mergea né revisiona sé stesso; check DB prod **solo lettura** (`list_migrations` + colonne critiche) prima del push se il fix tocca schema già su TEST.

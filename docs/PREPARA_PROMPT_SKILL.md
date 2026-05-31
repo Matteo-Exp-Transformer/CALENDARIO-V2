@@ -249,6 +249,20 @@ Regola: FU **fatto** non elencare salvo chiusura esplicita in quella sessione. S
 ✅/⏳/⬜/KO. Poi il blocco handoff testuale per l’agente. Token minimi — niente ripetere intero
 `FOLLOW_UP.md`.
 
+**Formato risposta handoff / follow-up (Matteo 31-05-26).** Quando chiede handoff o follow-up
+per la prossima chat, la risposta ha **due parti obbligatorie** — non mescolarle in un unico muro
+di testo:
+
+1. **Blocco copia-incolla** — un solo fenced block (````` … `````) pronto da incollare in **nuova
+   chat**: contesto, prompt esecutore se serve, istruzioni «dopo esecutore» per il prossimo
+   prepara-prompt.
+2. **Riepilogo per Matteo** — **fuori** dal blocco: tabelle compatte (Ciclo·QA·FU · cosa stai
+   passando · cosa **non** c’è / fuori scope) — stesso stile checklist schermata; così controlla al
+   colpo d’occhio che non ci siano elementi aggiunti o non richiesti.
+
+A **chiusura sessione** prepara-prompt: dopo (1)+(2), report finale breve (cosa resta, prossimo
+passo una riga) — vedi §5 chiusura verso Matteo.
+
 **«Suggerisci» / «annota» ≠ aggiornare skill system (31-05-26).** Se Matteo chiede di
 *suggerire*, *annotare*, *promuovere una regola* o simili in chat prepara-prompt:
 - **Sì:** risposta in chat, riga in report sessione, candidato in `OSSERVAZIONI.md` / segnalazione in
