@@ -1,0 +1,11 @@
+Per vendere un’app con utenti paganti mensilmente è normalmente necessaria la partita IVA, perché un abbonamento ricorrente viene considerato attività continuativa e non prestazione occasionale. La prestazione occasionale vale solo quando il lavoro non è abituale; se invece l’app è online, venduta con piani mensili, promossa e usata da clienti paganti, l’attività diventa stabile e organizzata.
+
+La soluzione più semplice per partire è spesso il regime forfettario, se si rispettano i requisiti. In questo regime non si applica l’IVA in fattura al cliente, quindi il prezzo può essere più chiaro e competitivo. Inoltre non si scaricano i costi reali, perché il reddito tassabile viene calcolato applicando un coefficiente di redditività al fatturato. Per attività software/SaaS il coefficiente può variare in base al codice ATECO scelto, quindi va verificato con un commercialista.
+
+Le tasse nel forfettario sono generalmente del 15% sul reddito imponibile, ma possono scendere al 5% per i primi 5 anni se l’attività è nuova e si rispettano i requisiti previsti. Il limite principale del regime forfettario è di 85.000€ annui di ricavi/compensi.
+
+Oltre alle tasse ci sono i contributi INPS, che spesso sono la voce più pesante all’inizio. Se l’attività viene inquadrata come impresa/artigiano/commerciante, possono esserci contributi minimi fissi annuali, anche se si guadagna poco. Nel 2026 le aliquote INPS indicate per artigiani e commercianti sono circa il 24% per artigiani e 24,48% per commercianti; chi è in forfettario e iscritto alla gestione artigiani/commercianti può chiedere la riduzione del 35% dei contributi INPS, se ne ha diritto.
+
+In pratica, vendere un’app a 20€, 39€ o 79€ al mese non significa incassare tutto netto: bisogna considerare commissioni di pagamento, commercialista, tasse e soprattutto INPS. Per questo un prezzo troppo basso può diventare poco sostenibile: con pochi clienti il peso dei costi fissi incide molto. Per una piccola SaaS conviene valutare bene il pricing, evitando di partire troppo bassi, e impostare fin dall’inizio una struttura fiscale corretta.
+
+Prima di vendere in modo continuativo è consigliabile parlare con un commercialista per scegliere correttamente codice ATECO, regime fiscale, gestione INPS e modalità di fatturazione.

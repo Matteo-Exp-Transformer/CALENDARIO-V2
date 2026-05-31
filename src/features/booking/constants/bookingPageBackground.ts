@@ -57,12 +57,15 @@ export function allBookingStripPhotoHrefs(base: string): string[] {
 
 /**
  * Foto a pagina intera nella pagina Prenota.
- * File in `public/asset/sfondo intero/` con nome `full-NN.png`.
+ * File in `public/asset/sfondo intero/` con nome `full-NN-(landscape|portrait).webp`.
+ * Set sfondo3 (31-05-26): landscape 1672×941, portrait 941×1672 — da
+ * `immagini di prova/sfondo 3/` (a→01, b→02, c→03, e→04; `.png` landscape, `mobile` portrait).
  */
 export const BOOKING_FULL_PAGE_BACKGROUND_IDS = [
   'full-01',
   'full-02',
   'full-03',
+  'full-04',
 ] as const
 
 export type BookingFullPageBackgroundId = (typeof BOOKING_FULL_PAGE_BACKGROUND_IDS)[number]

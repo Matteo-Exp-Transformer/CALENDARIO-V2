@@ -72,8 +72,16 @@ Dal flusso di Matteo deduci:
   - **plan** quando il task è non banale, tocca più aree, ha decisioni di prodotto/UX aperte, o
     rischia di toccare un LOCK → l'agente deve pianificare e fare domande prima di agire.
   - **ask** (agente normale che esegue) quando il task è circoscritto, chiaro, basso rischio.
-- Non imponi tu il profilo nel prompt: lo dedurrà l'agente di lavoro da § 0.0. Ma **suggerisci**
-  a Matteo la modalità (es. «conviene avviarlo in plan mode») dentro o accanto al prompt.
+- **Scrivi profilo + skill nel prompt (31-05-26).** Non lasciare che l'esecutore deduca tutto da
+  § 0.0 (è la causa #1 degli errori-zona). Il blocco copia-incolla **inizia** con una riga-intestazione
+  fissa:
+  - `Profilo: Esecuzione | Verifica | Meta`
+  - `Modalità: light | standard | deep`
+  - `Skill da leggere: …` (i file d'area pertinenti, es. `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md`)
+  - `Non caricare: …` (opzionale — es. «APP_CONTEXT intero» quando il prompt è stretto, per non
+    sovraccaricare il contesto)
+  Così Matteo incolla il prompt senza dedurre profilo né @ file. La **modalità plan/ask** la
+  **suggerisci** a Matteo in chat (es. «conviene avviarlo in plan mode»), non dentro la riga del prompt.
 
 #### Peso della sessione: light / standard / deep (classifica QUI)
 
@@ -190,6 +198,15 @@ Passa il flusso di Matteo attraverso questi controlli, basandoti su skill + arch
 - **Zone che si confondono** (dal vocabolario): Pagina Prenota vs Personalizza form vs Menu QR vs
   magazzino menu; bozza vs salvato vs mostrato; Classic vs Pro/Enterprise; TEST vs PROD. Se il
   flusso è ambiguo su una di queste, chiedi quale intende.
+  - **Gate obbligatorio scroll / sfondo / footer su pagina pubblica (31-05-26).** Per ogni task che
+    tocca **scroll, sfondo full-page o footer** di una pagina pubblica, il prompt **deve** dichiarare
+    lo **slug/URL smoke** della schermata bersaglio. Se nel thread compaiono **sia «Prenota» sia «Menu
+    QR»** (capita nei cicli Menu QR dove «stile Prenota» = layout card, non «fix su Prenota»), prima
+    di scrivere il prompt chiedi a Matteo **una riga** Sì/No: «Confermi: è il link **Prenota**
+    (`/prenota/:slug`) o la **homepage Menu QR** (`/menu/:slug`)?». **Vietato chiudere un QA come OK
+    senza che l'URL citato nel prompt sia l'URL effettivamente testato.** Causa radice: caso 31-05-26
+    (fix su `PublicMenuPage` mentre il sintomo era su `BookingRequestPage`, ≥3 agenti, QA OK errato) in
+    `Comunicazione-Skill/ERRORI_PROCESSO.md`.
 - **Scope**: la richiesta è chiusa o lascia spazio a interpretazioni? Esplicita i confini nel prompt.
 - **Pattern UI ripetuti**: se il task aggiunge un controllo a un pannello (toggle, prezzo, campo),
   richiama nel prompt la RULE «UI leggera» (APP_CONTEXT § 4): controllo vicino al campo che modifica,

@@ -1850,6 +1850,15 @@ html.public-menu-viewport body {
   overflow-x: clip;
 }
 
+/* Pagina Prenota pubblica — viewport stabile su Chrome Android */
+html.booking-public-viewport {
+  overflow-x: clip;
+}
+
+html.booking-public-viewport body {
+  overflow-x: clip;
+}
+
 /* ───────────────────────────────────────────
    Stampa briefing turno: nasconde la shell,
    mostra solo la print-area.

@@ -51,8 +51,10 @@
 | Prompt 1 admin | ✅ Approvato |
 | Prompt 2 pubblico esecutore | ✅ report |
 | Prompt 2 revisione | ⏳ verificare report revisione |
-| QA Matteo checklist 8 note | ⬜ **7/8 OK** — resta solo **#8** footer scroll |
-| Commit / merge | ✅ `6214491` main (31-05-26) |
+| QA Matteo checklist 8 note | ✅ **#8 risolto su Pagina Prenota** (non QR) — [report finale](../31-05-26/Report-fix-prenota-mobile-sfondo-scroll-31-05-26.md) |
+| Prompt B #8 footer sfondo | ❌ schermata sbagliata — revert + fix su Prenota ✅ |
+| Prompt C FU-026 (polish admin) | ⬜ prossimo |
+| Commit / merge ciclo Prenota | ✅ merge `env/test`→`main` (31-05-26) |
 | QA 5 temi mobile (FU-021) | ⬜ checklist in FOLLOW_UP |
 
 ---
@@ -72,11 +74,11 @@
 | 5 | OK | |
 | 6 | **OK** | = 3b admin · **QA Matteo OK** |
 | 7 | — | chiuso |
-| 8 | **KO** | Scroll footer homepage QR: salto sfondo **ancora presente** |
+| 8 | **Misrouting** | Checklist diceva QR; Matteo: sintomo su **Pagina Prenota**. Fix Prompt B su QR da **revertare**. [Meta-analisi](../31-05-26/Report-meta-analisi-routing-prenota-vs-menu-qr-31-05-26.md) |
 | extra | **OK** | Fix 31-05-26 · **QA Matteo OK** (apertura Modifica QR, console pulita). |
 | Prenota compose | **OK** | Fix 31-05-26 · **QA Matteo OK** |
 
-**Prossimo lavoro:** **Prompt B** — footer scroll sfondo (#8). Poi **Prompt C** FU-026 icone card admin.
+**Prossimo lavoro (agente successivo):** **Prompt C — FU-026** (icone matita/cestino in basso a destra su card Categorie Menu admin). Ciclo 8 note **chiuso** lato funzionale (#8 OK su Prenota). FU-021 checklist 5 temi mobile — opzionale.
 
 ---
 

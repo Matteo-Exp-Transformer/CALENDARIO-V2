@@ -667,10 +667,6 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     },
   })
 
-  useEffect(() => {
-    headerAutosave.cancelPending()
-  }, [tenantId, headerAutosave])
-
   const updateField = (
     field: keyof Pick<BookingPublicFormConfig, 'page_title' | 'page_description'>,
     value: string,

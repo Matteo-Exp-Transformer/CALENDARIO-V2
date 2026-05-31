@@ -28,6 +28,9 @@ import { useRestaurantSetting, useUpsertRestaurantSetting } from '@/features/boo
 import type { BookingType } from '@/types/booking'
 import { cn } from '@/lib/utils'
 
+/** Riferimento stabile: `data ?? []` inline crea un array nuovo a ogni render → loop in useEffect sync. */
+const EMPTY_MENU_PROMOS: MenuPromo[] = []
+
 export type BookingFormPromoSectionHandle = {
   save: () => Promise<void>
   cancel: () => void
@@ -183,7 +186,8 @@ function PromoPlacementConflictDialog({
 
 export const BookingFormPromoSection = forwardRef<BookingFormPromoSectionHandle, BookingFormPromoSectionProps>(
   function BookingFormPromoSection({ bookingModes, onDirtyChange }, ref) {
-    const { data: savedPromos = [] } = useRestaurantSetting('booking_menu_promos')
+    const { data: savedPromosRaw } = useRestaurantSetting('booking_menu_promos')
+    const savedPromos = savedPromosRaw ?? EMPTY_MENU_PROMOS
     const upsert = useUpsertRestaurantSetting()
 
     const [promos, setPromos] = useState<MenuPromo[]>([])

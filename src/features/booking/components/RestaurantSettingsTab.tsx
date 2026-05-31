@@ -921,7 +921,7 @@ export const RestaurantSettingsTab: React.FC = () => {
         </div>
       ) : (
         <div
-          className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2 sm:gap-2.5"
+          className="mx-auto grid w-full max-w-3xl grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5"
           style={bookingBgGridTopSpacingStyle}
         >
           {BOOKING_FULL_PAGE_BACKGROUND_IDS.map((id, idx) => {
