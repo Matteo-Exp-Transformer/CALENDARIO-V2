@@ -228,6 +228,40 @@ cosa decidere e come proseguire dopo un revisore, rispondi in questo ordine (poc
    sostituire la tabella: vanno **sempre insieme**).
 4. **Prossimo passo** — una riga (es. «Prompt Fase 3» o «conferma D1/D2»).
 
+**Handoff / follow-up aggiornamento (31-05-26).** Quando Matteo chiede un follow-up per il
+prossimo agente prepara-prompt (o «aggiorna handoff»), **prima** del blocco copia-incolla includi
+sempre una **tabella riepilogo** (max ~8 righe) con tre blocchi — non sostituiscono il handoff,
+lo precedono:
+
+| Blocco | Colonne suggerite | Cosa mettere |
+|--------|-------------------|--------------|
+| **Ciclo corrente** | Voce · Stato | Fasi del task in corso (es. P1 ✅ · P2 ⏳ · revisione ⬜ · commit ⬜) |
+| **Test / QA** | # o voce · Esito | Solo se c’è checklist o QA Matteo (OK / KO / da fare) — numeri note originali se esistono |
+| **Follow-up** | FU-ID · Stato · Nota 1 riga | Solo FU **aperti** legati al ciclo (leggi `FOLLOW_UP.md`); max 3–5 righe; «fuori tema» omessi |
+
+Regola: FU **fatto** non elencare salvo chiusura esplicita in quella sessione. Stato ciclo con
+✅/⏳/⬜/KO. Poi il blocco handoff testuale per l’agente. Token minimi — niente ripetere intero
+`FOLLOW_UP.md`.
+
+**«Suggerisci» / «annota» ≠ aggiornare skill system (31-05-26).** Se Matteo chiede di
+*suggerire*, *annotare*, *promuovere una regola* o simili in chat prepara-prompt:
+- **Sì:** risposta in chat, riga in report sessione, candidato in `OSSERVAZIONI.md` / segnalazione in
+  `PROPOSTE.md` (dati grezzi) — come già previsto per la raccolta comunicazione.
+- **No:** modificare regole operative dello skill system (`PREPARA_PROMPT_SKILL.md`, `VOCABOLARIO.md`,
+  promozione Liv.1/2/3, `COMUNICAZIONE_UTENTE_SKILL.md`, `.cursor/rules`, ecc.). Quello lo fanno
+  **solo** agenti comunicazione (Meta junior raccolta / **Meta senior** decisione) in **sessione Meta
+  dedicata** di ragionamento — vedi `Comunicazione-Skill/REVISIONE.md`. In dubbio: annota il dato,
+  non riformare.
+
+**Due tipi di sessione (31-05-26)** — tenerli distinti in chat e nei handoff:
+
+| Tipo | Agente tipico | Output | Non fa |
+|------|---------------|--------|--------|
+| **Ragionamento / preparazione** | prepara-prompt, Meta, revisore doc | Prompt, handoff, tabelle ciclo·QA·FU, report, OSSERVAZIONI | Codice `src/`, migrazioni, commit (salvo esplicito) |
+| **Scrittura / modifica** | esecutore, fix, revisore codice | Diff app, validate, report tecnico area | Riformare skill system; decidere prodotto senza Matteo |
+
+Matteo può aprire chat diverse per i due tipi; l’handoff deve dire **quale tipo** è la prossima chat.
+
 Modello di richiesta Matteo da citare nei report «Dati comunicazione» quando annoti il formato:
 *«revisore ha finito. spiegami brevemente cosa c'è da decidere… dove siamo… sii sintetico»*.
 Replica il pattern nel report di sessione (sezione Dati comunicazione) per il revisore Meta.
@@ -318,3 +352,7 @@ Nel **corpo** del messaggio di commit includere sempre `Review:` con i path dei 
 - Non revisioni i task ACCURATI (LOCK/più view/nuovi componenti/strutturali): li deleghi a un agente esterno.
 - **Raccogli** dati per lo skill di comunicazione (OSSERVAZIONI/PROPOSTE), ma **non riformi** le
   regole né promuovi/regredisci voci: quello è il profilo Meta, sessione dedicata.
+- **Non aggiornare** file skill/regole (`PREPARA_PROMPT_SKILL.md`, `VOCABOLARIO.md`, skill comunicazione,
+  `.cursor/rules`) solo perché Matteo dice «suggerisci» o «annota» — salvo che chieda esplicitamente
+  di scrivere in un file *e* sia chiaro che non è una sessione Meta (in quel caso preferire
+  OSSERVAZIONI/PROPOSTE e rimandare la riforma al revisore Meta).

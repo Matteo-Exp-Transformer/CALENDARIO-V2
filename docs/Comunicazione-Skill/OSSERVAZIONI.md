@@ -33,6 +33,24 @@
 
 ## Sessioni registrate (append-only)
 
+### 31-05-26 — «Suggerisci / annota» ≠ skill system
+- Matteo: suggerire o annotare **non** autorizza ad aggiornare regole skill (PREPARA_PROMPT, VOCABOLARIO, comunicazione) — solo sessione Meta senior/junior (`REVISIONE.md`).
+- Distinzione sessione **ragionamento** (prompt, handoff, report) vs **scrittura codice** (esecutore, diff) — handoff deve indicare quale tipo aprire dopo.
+
+### 31-05-26 — Handoff follow-up: tabella riepilogo obbligatoria
+- Matteo chiede che ogni «follow-up / aggiorna handoff» includa **prima** tabella Ciclo · QA · FU (max 8 righe), poi blocco copia-incolla agente.
+- Promosso in `PREPARA_PROMPT_SKILL.md` §3 (31-05-26).
+
+### 31-05-26 — QA checklist 8 note Menu QR (Matteo)
+- **Viewport «buco» 479–700px (admin 640–768):** layout ibrido vecchio su QR cliente + Categorie Menu — sessione dedicata; non trattare come solo mobile 375.
+- **Scroll form già aperto:** Modifica altra card senza chiudere form → camera non risale + titolo form fuori viewport.
+- **Console MenuQrModal edit:** Maximum update depth — solo modifica QR, non create.
+
+### 30-05-26 — PREPARA_PROMPT · ciclo 8 note Menu QR + checklist verifica
+- **8 note originali** mappate in tabella verifica nel report prepara-prompt (P1 admin / P2 pubblico / FU-023 / FU-021).
+- **Formato preferito:** tabella 3 col (Dove | Cosa fai | OK se); flusso utente, non gergo agente; token minimi; dettagli on demand.
+- **Correzioni mid-chat:** «overlay» → schermata Categorie Menu; checklist revisore troppo lunga → compatta.
+
 ### 30-05-26 — PREPARA_PROMPT · checklist compatta verso Matteo
 - **Formato preferito:** tabella 3 col (Dove | Cosa fai | OK se); flusso utente, non gergo agente («overlay» → nome schermata in app); token minimi in pianificazione; dettagli solo on demand.
 

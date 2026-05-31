@@ -13,7 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
-| 30-05-26 | Prepara-prompt — ciclo fix note Menu QR (8 punti → 2 prompt + correttivo) | [Report prepara-prompt](Sessioni%20di%20lavoro/30-05-26/Report-prepara-prompt-ciclo-menu-qr-fix-30-05-26.md) — D1–D6; P1 Approvato; P2 esecutore OK; revisione P2/handoff; checklist compatta §3 PREPARA_PROMPT. |
+| 31-05-26 | Esecuzione — scroll form categorie/ingredienti + loop modale QR edit | [Report](Sessioni%20di%20lavoro/31-05-26/Report-fix-menu-admin-scroll-modale-31-05-26.md) — validate 227 OK; **QA Matteo OK** #1 + extra; KO residui #3b/#6/#8. |
+| 30-05-26 | Prepara-prompt — ciclo fix note Menu QR (8 punti → 2 prompt + correttivo + QA) | [Report prepara-prompt](Sessioni%20di%20lavoro/30-05-26/Report-prepara-prompt-ciclo-menu-qr-fix-30-05-26.md) — handoff tabella Ciclo·QA·FU; tipi sessione; QA Matteo 31-05-26; PREPARA_PROMPT §3 aggiornato. |
 | 30-05-26 | Esecuzione — fix Menu QR **pubblico mobile** (Prompt 2) | [Report](Sessioni%20di%20lavoro/30-05-26/Report-fix-menu-qr-pubblico-mobile-30-05-26.md) — card ≤700px; icone Phosphor; sfondo repeat-y; validate 227 OK; QA browser/FU-021 ⬜. |
 | 30-05-26 | Verifica — revisione Prompt 1 admin + fix mobile KO | [Report revisione](Sessioni%20di%20lavoro/30-05-26/Report-revisione-fix-menu-admin-modali-30-05-26.md) — **Approvato**; scroll+ titolo card 375px OK; P1 chiuso. |
 | 30-05-26 | Esecuzione — fix tab Menu + modali QR (Prompt 1) | [Report](Sessioni%20di%20lavoro/30-05-26/Report-fix-menu-admin-modali-30-05-26.md) — scroll categorie; guard; carosello copy; icon 042 TEST; fix post-revisione mobile. |
