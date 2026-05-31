@@ -145,3 +145,5 @@ quando i criteri saranno tarati.
 - 29-05-26 · [raffinamento] · mockup HTML multi-stato prima dell'esecutore — Matteo «quasi sempre» per scelte UX; già in PREPARA_PROMPT §1.B; alimenta M1
 - 29-05-26 · [raffinamento] · QA viewport 375/834/1280 obbligatorio per revisore su task UI — proposta Matteo; regola già in TESTING §7 ma bypassata in pratica; vedi PROPOSTE «revisione UI»
 - 30-05-26 · [raffinamento] · blocco fisso «Dove siamo nel ciclo» + «Checklist ciclo» insieme, dopo ogni fase multi-agente — approvato Matteo (Menu QR); in PREPARA_PROMPT §3 + report revisione § Dati comunicazione
+- 31-05-26 · [raffinamento] · **onboarding @ skill avvio chat** — domanda «metto APP_CONTEXT?» → Meta chiede se serve spiegazione procedura; vedi PROPOSTE gate spiegazione — non caricare APP_CONTEXT su ogni prompt stretto
+- 31-05-26 · [raffinamento] · **gate schermata+URL** prima di QA OK su fix scroll/sfondo — fix #8 su Menu QR ma sintomo su Pagina Prenota; ≥3 agenti; vedi ERRORI_PROCESSO + PROPOSTE disambiguazione Prenota vs QR — **candidato M1/M2 Meta urgente**

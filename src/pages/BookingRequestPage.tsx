@@ -113,16 +113,23 @@ export const BookingRequestPage: React.FC = () => {
   // backgroundColor scuro: serve un fondo crema chiaro come fallback se la foto tarda
   // a caricare (un marrone scuro produrrebbe l'effetto "tutto buio" segnalato).
   const FULL_PAGE_FALLBACK_BG = STRIP_MODE_PAGE_BG
-  const bookingPageBackgroundStyle: React.CSSProperties = showPhotoStrip
+  // Colore di fallback sul root (primo paint + bordi footer). Tile/gradiente su layer
+  // `absolute` che segue l'altezza del documento — NON `fixed` (sfondo deve scrollare col contenuto).
+  const pageRootFallbackStyle: React.CSSProperties = showPhotoStrip
     ? { backgroundColor: STRIP_MODE_PAGE_BG }
     : isFullPagePhoto
       ? { backgroundColor: FULL_PAGE_FALLBACK_BG }
-      : isBookingPageGradientId(bookingPageBackground)
+      : { backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR }
+
+  const scrollablePageBackgroundStyle: React.CSSProperties | null =
+    !showPhotoStrip && !isFullPagePhoto
+      ? isBookingPageGradientId(bookingPageBackground)
         ? {
             backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR,
             backgroundImage: bookingPageGradientCss(bookingPageBackground),
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            // `100% 100%` sul layer alto quanto il documento evita ricalcoli `cover` vs viewport in scroll.
+            backgroundSize: '100% 100%',
+            backgroundPosition: 'top center',
             backgroundRepeat: 'no-repeat',
           }
         : legacyTileId
@@ -133,7 +140,8 @@ export const BookingRequestPage: React.FC = () => {
               backgroundPosition: 'top center',
               backgroundRepeat: 'repeat-y',
             }
-          : { backgroundColor: BOOKING_PAGE_GRADIENT_ROOT_FALLBACK_COLOR }
+          : null
+      : null
 
   if (isTenantLoading) {
     return (
@@ -158,7 +166,14 @@ export const BookingRequestPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen font-bold relative isolate" style={bookingPageBackgroundStyle}>
+    <div className="min-h-screen font-bold relative isolate" style={pageRootFallbackStyle}>
+      {scrollablePageBackgroundStyle && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={scrollablePageBackgroundStyle}
+        />
+      )}
       {/*
         Foto full-page in due varianti (responsive):
         - portrait (9:16) per viewport mobile <768px
@@ -187,7 +202,7 @@ export const BookingRequestPage: React.FC = () => {
         La striscia foto è sticky top-0 h-screen: rimane visibile durante tutto lo scroll.
         Le foto si ripetono internamente per coprire form lunghi (es. 10 categorie ingredienti).
       */}
-      <div className="min-h-screen flex flex-col relative z-10">
+      <div className="min-h-screen flex flex-col relative z-10 w-full">
 
         {/* Griglia [striscia foto | form] — full viewport: la foto resta ancorata al bordo sinistro.
             Mobile/tablet: striscia 20vw. Desktop ≥900px: striscia 25vw. */}

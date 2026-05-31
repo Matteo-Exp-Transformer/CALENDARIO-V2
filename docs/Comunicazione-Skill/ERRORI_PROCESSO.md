@@ -34,10 +34,21 @@ filtro `PREPARA_PROMPT`, o una Nota in skill d'area. La promozione la decide il 
 | Intento UI invertito tra prepara-prompt e esecuzione (overlay sì/no) | prompt ambiguo | 1 | regola PREPARA_PROMPT: mappare elementi adiacenti impattati a monte |
 | `overflow-x-auto` taglia figli `absolute` → serve portal | vincolo strutturale | 1 | Nota UI: per escape da scroll-container usare portal, non absolute |
 | Modifica a un elemento senza mappare gli elementi vicini impattati | prompt ambiguo + errore agente | 1 | regola PREPARA_PROMPT (implementata) |
+| Fix su **Menu QR** invece di **Pagina Prenota** (sfondo scroll footer #8) | prompt ambiguo + errore agente | 1 | **CRITICO Meta:** disambiguazione obbligatoria schermata + URL smoke; gate QA URL |
 
 ---
 
 ## Log per data
+
+### 31-05-26 — Sfondo scroll footer: fix su Menu QR, sintomo su Pagina Prenota (#8)
+- **prompt ambiguo:** checklist ciclo 8 note ha voce **#8 = «homepage QR»**; Matteo aveva indicato **Pagina Prenota** a ≥3 agenti. «Stile Prenota» (layout card QR) confuso con «fix **su** Prenota».
+- **errore agente (esecutore):** Prompt B su `PublicMenuPage.tsx` — layer `fixed inset-0`; Playwright «layer top=0» su URL QR; **nessun sintomo** percepito da Matteo su Menu QR.
+- **errore agente (prepara-prompt):** handoff e Prompt B hanno ereditato #8 senza **conferma schermata** quando Matteo disse OK; docs segnati QA OK senza URL Prenota vs QR allineati.
+- **errore agente (ciclo precedente):** Prompt 2 (30-05) ha introdotto `repeat-y` su container scroll QR come «fix» scroll — poi #8 KO → secondo fix sulla stessa pagina sbagliata.
+- **vincolo strutturale:** `BookingRequestPage` (tile legacy `repeat-y` su root) vs `PublicMenuPage` (stesso pattern) — fix pattern valido ma **zona** errata; full-page Prenota già usa layer fixed.
+- **Causa radice:** manca regola Liv.1/2: ogni task **scroll/sfondo/footer** deve dichiarare **slug/URL smoke** e prepara-prompt chiede a Matteo **una riga** «confermi: è il link QR o la pagina Prenota?» se nel ciclo compare «Prenota» e «Menu» insieme.
+- **Report meta:** [Report-meta-analisi-routing-prenota-vs-menu-qr-31-05-26.md](../Sessioni%20di%20lavoro/31-05-26/Report-meta-analisi-routing-prenota-vs-menu-qr-31-05-26.md)
+- **Azione correttiva:** revert `PublicMenuPage` se non serve; nuovo prompt su `BookingRequestPage.tsx`; riaprire QA #8 come **misrouting**, non OK.
 
 ### 29-05-26 — Card ingredienti Prenota (scroll interno + overlay)
 - **prompt ambiguo:** la mattina il prompt chiedeva ingredienti che NON passano sopra campi/riepilogo; il pomeriggio Matteo voleva l'opposto (overlay voluto). Stessa feature, intenti contrari in 12h → primo giro di implementazione sbagliato.

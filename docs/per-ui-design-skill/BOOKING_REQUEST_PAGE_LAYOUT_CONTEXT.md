@@ -76,6 +76,10 @@ resta a colonna unica anche su desktop e lo sfondo occupa tutta la viewport.
   2. foto = `<div pointer-events-none fixed inset-0 z-0>` (portrait `md:hidden`, landscape
      `hidden md:block`);
   3. wrapper contenuto interno = `relative z-10`, altrimenti i `fixed` con z ≥ 0 coprono il form.
+- **Tile legacy + gradiente (31-05-26)** — sfondo **scrollabile** (vincolo prodotto: no `fixed` per
+  tile/gradiente): layer dedicato `absolute inset-0 -z-10` sul root (altezza = documento), non
+  `background-*` inline sul root scrollabile; gradiente con `background-size: 100% 100%` (non
+  `cover`) per evitare ricalcoli in scroll footer. Foto full-page restano `fixed` come sopra.
 
 ## 3. Header pubblico
 

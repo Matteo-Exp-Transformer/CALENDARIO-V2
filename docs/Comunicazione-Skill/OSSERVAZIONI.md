@@ -41,6 +41,33 @@
 - Matteo chiede che ogni «follow-up / aggiorna handoff» includa **prima** tabella Ciclo · QA · FU (max 8 righe), poi blocco copia-incolla agente.
 - Promosso in `PREPARA_PROMPT_SKILL.md` §3 (31-05-26).
 
+### 31-05-26 — Prepara-prompt deve assegnare profilo + skill nel prompt a Matteo
+- Matteo: le valutazioni (profilo, cosa @, modalità) **non** devono restare implicite — **prepara-prompt** le fa a monte e nel blocco copia-incolla include già:
+  - `Profilo: Esecuzione | Verifica | Meta`
+  - skill da caricare (es. `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md`) e cosa **non** caricare (es. APP_CONTEXT intero se prompt stretto)
+- Obiettivo: Matteo incolla il prompt senza dover dedurre profilo né @ file; meno errori zona sbagliata (caso QR vs Prenota).
+- Candidato promozione: `PREPARA_PROMPT_SKILL.md` §1.B — vedi `PROPOSTE.md` «prepara-prompt profilo+skill nel prompt».
+
+### 31-05-26 — Domanda «come viene assegnato il profilo Esecuzione/Verifica/Meta?»
+- Matteo: non chiaro se profilo è automatico né quanto è sicuro senza @ file in avvio.
+- Chiarimento: **nessuna assegnazione automatica da Cursor** — l’agente **si auto-classifica** leggendo APP_CONTEXT §0.0 (o non lo legge). Affidabilità ↑ con riga esplicita nel prompt (`Profilo: Esecuzione`) o prompt stretto; @ `calendarbackup-app-context` fa leggere la tabella profili.
+- Confusione frequente: **profilo** (cosa caricare) ≠ **tipo sessione** prepara-prompt (ragionamento vs codice) ≠ **modalità** light/standard/deep (quanto report §7).
+
+### 31-05-26 — Domanda «metto APP_CONTEXT in chat avvio agenti?» → chiarezza skill system
+- Matteo chiede se è giusto @ `APP_CONTEXT` all’apertura delle chat esecutore — segnale che **procedura avvio non è ancora internalizzata** (non è errore tecnico).
+- Risposta operativa (prepara-prompt): task **stretto** (prompt copia-incolla + skill area) → **non serve** APP_CONTEXT intero; task **vago / multi-area / primo giro** → sì `@calendarbackup-app-context` o APP_CONTEXT §0 + skill riga tabella.
+- **Meta:** in sessione dedicata o quando la chat è «come avvio gli agenti / cosa @ » chiedere esplicitamente: *«Ti serve una spiegazione passo-passo per questa procedura (riferimento: questa chat)?»* — non assumere che le domande su @ = richiesta di implementare codice.
+
+### 31-05-26 — **CRITICO** Fix sfondo scroll: schermata sbagliata (Prenota ≠ Menu QR)
+- Matteo: modifiche Prompt B **sbagliate** — andavano su **Pagina Prenota** (`BookingRequestPage`), non homepage Menu QR; **nessun** problema scroll percepito su QR; già detto a ≥3 agenti.
+- QA «#8 OK» in chat **invalidato** — era allineato a checklist QR, non al sintomo reale. Revert consigliato su `PublicMenuPage` se non deployato.
+- Meta-analisi: [Report-meta-analisi](../Sessioni%20di%20lavoro/31-05-26/Report-meta-analisi-routing-prenota-vs-menu-qr-31-05-26.md) · `ERRORI_PROCESSO` 31-05-26.
+
+### 31-05-26 — Prompt esecutore: precauzioni CSS mobile (sfondo scroll)
+- Per fix **scroll + sfondo tema** (Menu QR #8): Matteo vuole nel prompt espliciti **layer fisso vs `background-attachment: fixed`**, verifica **375px + Safari iOS**, e sezione report **«Compatibilità mobile sfondo»** (cosa scelto / perché).
+- Template canonico: `docs/Sessioni di lavoro/31-05-26/Prompt-B-menu-qr-footer-scroll-31-05-26.md` — prepara-prompt riusa blocco «Implementazione sfondo» per task simili (fullscreen bg, parallax, repeat su pagine pubbliche).
+- Candidato workflow: vedi `PROPOSTE.md` «blocco precauzioni mobile CSS nei prompt UI».
+
 ### 31-05-26 — QA checklist 8 note Menu QR (Matteo)
 - **Viewport «buco» 479–700px (admin 640–768):** layout ibrido vecchio su QR cliente + Categorie Menu — sessione dedicata; non trattare come solo mobile 375.
 - **Scroll form già aperto:** Modifica altra card senza chiudere form → camera non risale + titolo form fuori viewport.

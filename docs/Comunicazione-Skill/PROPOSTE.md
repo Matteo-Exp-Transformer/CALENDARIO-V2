@@ -26,6 +26,39 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## In attesa di decisione
 
+### In attesa «prepara-prompt — profilo + skill obbligatori nel prompt esecutore»
+- **Pattern osservato:** Matteo chiede chiarimenti su profilo/@ file; errori routing schermata; prepara-prompt oggi **non** scrive profilo nel prompt (APP_CONTEXT §0.0 dice «lo deduce l’esecutore»).
+- **Automatizzabile con certezza:** ogni prompt esecutore da prepara-prompt inizia con blocco fisso:
+  - `Profilo: …` · `Modalità: light|standard|deep` · `Skill da leggere: …` · `Non caricare: …` (opzionale)
+- **Meglio lasciare manuale:** scelta tecnica dentro l’area dopo lettura codice.
+- **Livello suggerito:** 1 per prepara-prompt dopo ok Matteo (31-05-26 richiesta esplicita).
+- **Dove codificare:** `PREPARA_PROMPT_SKILL.md` §1.B + esempio in `Prompt-*.md` in Sessioni di lavoro.
+- **Esito / data:** proposta 31-05-26 — in attesa ok Meta / Matteo.
+
+### In attesa «Meta — gate spiegazione procedura avvio chat (@ skill)»
+- **Pattern osservato:** Matteo chiede se @ `APP_CONTEXT` in ogni chat esecutore (31-05-26) — implica dubbio su **cosa caricare** vs prompt già completo; rischio sovraccarico contesto se APP_CONTEXT + area + prompt lungo sempre insieme.
+- **Automatizzabile con certezza:** in chat **Meta** o quando il messaggio è meta-procedura («cosa metto in @», «come avvio agente»), il revisore **prima** chiede: *«Vuoi una spiegazione passo-passo per questa chat (sì/no)?»* — poi tabella 3 righe: Tipo chat | Cosa @ | Cosa no.
+- **Regola sintesi (per Matteo, non ancora in skill):** Esecuzione mirata → prompt + 1 skill area; Esecuzione esplorativa → `@calendarbackup-app-context`; Prepara-prompt → `PREPARA_PROMPT_SKILL` only; Verifica → APP_CONTEXT profilo Verifica + area.
+- **Livello suggerito:** 2 — Meta chiede prima di spiegare; Liv.1 card in `REVISIONE.md` onboarding dopo ok Matteo.
+- **Esito / data:** proposta 31-05-26 — in attesa sessione Meta.
+
+### In attesa «disambiguazione obbligatoria Pagina Prenota vs Menu QR (prepara-prompt)» — **priorità Meta**
+- **Pattern osservato:** 31-05-26 — fix sfondo scroll footer applicato su `PublicMenuPage` (checklist #8 QR); Matteo voleva `BookingRequestPage`; ≥3 agenti; QA OK errato. Parole «stile Prenota» / «compose Prenota» nel ciclo Menu QR aumentano confusione.
+- **Automatizzabile con certezza:** prima di prompt esecutore su scroll/sfondo/footer pubblico, prepara-prompt include tabella **Schermata | URL smoke esempio | Cosa scorri fino in fondo** e chiede a Matteo **Sì/No** su una riga se compare sia «Prenota» sia «Menu QR» nel thread. Vietato chiudere QA senza URL citato nel prompt = URL testato.
+- **Meglio lasciare manuale:** scelta tecnica CSS per tile legacy vs gradiente vs striscia su Prenota.
+- **Livello suggerito:** **1** per prepara-prompt su task scroll/sfondo; **3** se Matteo dice solo «sistema prenota» senza slug.
+- **Dove codificare:** `PREPARA_PROMPT_SKILL.md` §2 (filtro zone) + `VOCABOLARIO.md` voce distinta «Pagina Prenota» vs «Homepage menu QR»; `APP_CONTEXT` §0 già le separa — serve **check obbligatorio** nel filtro.
+- **Esito / data:** proposta 31-05-26 post meta-analisi — **urgente** sessione Meta.
+
+### In attesa «blocco precauzioni mobile CSS nei prompt UI (prepara-prompt)»
+- **Pattern osservato:** Fix sfondo scroll Menu QR #8 (31-05-26): dopo diagnosi generica, Matteo chiede esplicitare iOS/`background-attachment` e obbligo report compatibilità — evita secondo giro «funziona desktop ma salta su iPhone».
+- **Automatizzabile con certezza:** quando il prompt tocca **sfondo full-page / scroll / footer** su superficie pubblica mobile, includere sotto «Diagnosi» un mini-blocco **Implementazione sfondo (obbligatorio)**: (1) layer viewport fisso preferito, (2) `background-attachment: fixed` solo se verificato 375 + nota Safari, (3) sezione report dedicata. Template: `Sessioni di lavoro/31-05-26/Prompt-B-menu-qr-footer-scroll-31-05-26.md`.
+- **Meglio lasciare manuale:** scelta tecnica precisa (pseudo vs fixed div) — resta all’esecutore dopo lettura codice.
+- **Livello suggerito:** 2 — prepara-prompt applica il blocco su task UI scroll/sfondo; non su ogni fix CSS.
+- **Token risparmiati:** ~1 sessione correttiva iOS per ciclo simile.
+- **Dove codificare:** `PREPARA_PROMPT_SKILL.md` §1.B (checklist prompt UI) — **solo dopo** ok Matteo in sessione Meta; fino ad allora template in `Sessioni di lavoro/…/Prompt-*.md`.
+- **Esito / data:** proposta 31-05-26 — in attesa ok Matteo.
+
 ### In attesa «ciclo Verifica — commit docs + merge env/test→main a cura del revisore»
 - **Pattern osservato:** A fine mappa/revisione/fix, Matteo chiede esplicitamente merge su `main` e commit `docs/` con `git add -f`; l’esecutore Fase 1 aveva anche scritto un report revisione (conflitto di ruoli). Merge 30-05-26 (`b3216d7`) fatto dal revisore post-controverifica.
 - **Automatizzabile con certezza:** a chiusura ciclo **deep Verifica** (mappa → revisione → fix → revisione fix): revisore fa `git add -f docs/…`, commit messaggio `docs(scope): …`, `merge env/test --no-ff` → `main`, `push origin main`; esecutore **non** mergea né revisiona sé stesso; check DB prod **solo lettura** (`list_migrations` + colonne critiche) prima del push se il fix tocca schema già su TEST.

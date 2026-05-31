@@ -13,6 +13,11 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 31-05-26 | Esecuzione — Pagina Prenota sfondo scroll footer (tile/gradiente) | [Report](Sessioni%20di%20lavoro/31-05-26/Report-fix-prenota-footer-scroll-sfondo-31-05-26.md) — layer `absolute` scrollabile; validate 227 OK; FU-028 codice; QA Matteo ⬜ tile/gradiente. |
+| 31-05-26 | Revert — Prompt B #8 Menu QR (sfondo scroll ripristinato) | [Report Prompt B](Sessioni%20di%20lavoro/31-05-26/Report-fix-menu-qr-footer-scroll-31-05-26.md) § Revert 31-05-26 — layer `fixed` rimosso; #8 QR non OK. |
+| 31-05-26 | Meta-analisi — #8 fix su QR vs sintomo Pagina Prenota (misrouting) | [Report](Sessioni%20di%20lavoro/31-05-26/Report-meta-analisi-routing-prenota-vs-menu-qr-31-05-26.md) — revert QR consigliato; FU-028; ERRORI_PROCESSO + PROPOSTE Meta. |
+| 31-05-26 | Esecuzione — fix #8 footer scroll (Prompt B) | [Report](Sessioni%20di%20lavoro/31-05-26/Report-fix-menu-qr-footer-scroll-31-05-26.md) — **QA revocato**; target errato `PublicMenuPage`. |
+| 31-05-26 | Prepara-prompt — template Prompt B #8 sfondo scroll (+ precauzioni iOS) | [Prompt-B](Sessioni%20di%20lavoro/31-05-26/Prompt-B-menu-qr-footer-scroll-31-05-26.md) — OSSERVAZIONI + PROPOSTE candidato blocco CSS mobile; esecutore ✅. |
 | 31-05-26 | Esecuzione — fix viewport menu responsive (#3b/#6, QR 520+, admin 1050, Prenota unify) | [Report](Sessioni%20di%20lavoro/31-05-26/Report-fix-viewport-menu-responsive-31-05-26.md) — validate 227 OK; FU-025/026/027 aperti; QA Matteo ⬜. |
 | 31-05-26 | Esecuzione — scroll form categorie/ingredienti + loop modale QR edit | [Report](Sessioni%20di%20lavoro/31-05-26/Report-fix-menu-admin-scroll-modale-31-05-26.md) — validate 227 OK; **QA Matteo OK** #1 + extra; KO residui #3b/#6/#8. |
 | 30-05-26 | Prepara-prompt — ciclo fix note Menu QR (8 punti → 2 prompt + correttivo + QA) | [Report prepara-prompt](Sessioni%20di%20lavoro/30-05-26/Report-prepara-prompt-ciclo-menu-qr-fix-30-05-26.md) — handoff tabella Ciclo·QA·FU; tipi sessione; QA Matteo 31-05-26; PREPARA_PROMPT §3 aggiornato. |

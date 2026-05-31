@@ -10,7 +10,7 @@ description: >-
 
 > File principale: `src/pages/PublicMenuPage.tsx`
 > Skill entry point: `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`
-> Ultima revisione: 2026-05-31 — wrapper desktop FU-025, griglia 520/1025, icone Phosphor override, sfondo repeat-y stabile
+> Ultima revisione: 2026-05-31 — wrapper desktop FU-025, griglia 520/1025, sfondo repeat-y su shell scrollabile
 
 ---
 
@@ -19,7 +19,7 @@ description: >-
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │  Shell pagina (full viewport) — useMenuPageBackgroundStyle     │
-│  bodyImage repeat-y, riempie anche i lati su desktop largo   │
+│  bodyImage repeat-y, scrolla col contenuto; lati desktop     │
 │  ┌────────────────────────────────────────┐                  │
 │  │  Wrapper contenuto max-w-[1024px]      │  ← centrato      │
 │  │  mx-auto — invisibile, no bordo        │    oltre 1024px  │
@@ -33,11 +33,11 @@ description: >-
 └──────────────────────────────────────────────────────────────┘
 ```
 
-Pagina: `useMenuPageBackgroundStyle()` sul **wrapper esterno** — **solo `bodyImage`** su tutta la viewport (ripetuto in verticale se scroll lungo). Il **wrapper interno** (`max-w-[1024px] mx-auto`) congela larghezza UI oltre 1024px senza casella visibile. **`headerImage` non usato in homepage** — solo in `PublicMenuCategoryPage` (barra sticky ~56px).
+Pagina: `useMenuPageBackgroundStyle()` sul **wrapper esterno scrollabile** — **solo `bodyImage`**, `100% auto`, `repeat-y`. Il **wrapper interno** (`max-w-[1024px] mx-auto`) congela larghezza UI oltre 1024px senza casella visibile. **`headerImage` non usato in homepage** — solo in `PublicMenuCategoryPage` (barra sticky ~56px).
 
 | Pagina | Asset sfondo |
 |--------|----------------|
-| Homepage `PublicMenuPage` | `bodyImage` — `100% auto`, `repeat-y` (CSS puro, no flash scroll) |
+| Homepage `PublicMenuPage` | `bodyImage` — `100% auto`, `repeat-y` sul container che scrolla |
 | Categoria `PublicMenuCategoryPage` | `headerImage` — crop top sulla barra sticky; corpo `bg-stone-50` |
 
 ---

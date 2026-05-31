@@ -81,7 +81,7 @@ function usePublicPresets(tenantId: string | null, presetIds: string[] | null) {
 /**
  * Homepage menu QR: un solo PNG (`bodyImage`) per tutto lo sfondo.
  * `headerImage` è solo su PublicMenuCategoryPage (barra categoria).
- * `repeat-y` + `100% auto` fin dal primo paint — niente switch JS single→layer (flash scroll).
+ * `repeat-y` + `100% auto` sul wrapper scrollabile — niente layer fixed separato.
  */
 function useMenuPageBackgroundStyle(theme: MenuTheme): CSSProperties {
   const { bodyImage, bodyFallbackBg } = theme
@@ -521,7 +521,6 @@ function MenuContent({
   const carouselItems = qr.carousel_items ?? []
   const categoryImages = qr.category_images ?? {}
   const theme = getMenuTheme(qr.theme_key)
-  const pageBgRef = useRef<HTMLDivElement>(null)
   const pageBgStyle = useMenuPageBackgroundStyle(theme)
 
   // Mappa override per category_key
@@ -537,13 +536,12 @@ function MenuContent({
 
   return (
     <div
-      ref={pageBgRef}
       className="flex min-h-svh flex-col"
       style={pageBgStyle}
     >
       {/* FU-025: sfondo tema full viewport; contenuto congelato a larghezza tablet, centrato oltre 1024px */}
       <div className="mx-auto flex w-full max-w-[1024px] flex-1 flex-col">
-      {/* Hero: sfondo unificato (header+body ripetuti via layer CSS su scroll lungo) */}
+      {/* Hero: sfondo bodyImage repeat-y sul wrapper che scrolla col contenuto */}
       <header className="relative shrink-0 px-4 pt-8 pb-4">
         <div className="relative flex flex-col items-center gap-2 text-center">
           <h1
