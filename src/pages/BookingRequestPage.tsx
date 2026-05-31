@@ -181,15 +181,26 @@ export const BookingRequestPage: React.FC = () => {
       {isFullPagePhoto && fullPagePhotoPortraitUrl && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 md:hidden bg-cover bg-top bg-no-repeat"
-          style={{ backgroundImage: `url("${fullPagePhotoPortraitUrl}")` }}
+          className="pointer-events-none absolute inset-0 -z-10 md:hidden"
+          style={{
+            backgroundImage: `url("${fullPagePhotoPortraitUrl}")`,
+            // `cover` su layer alto quanto tutto il form zoomava troppo; larghezza viewport, altezza naturale.
+            backgroundSize: '100% auto',
+            backgroundPosition: 'top center',
+            backgroundRepeat: 'no-repeat',
+          }}
         />
       )}
       {isFullPagePhoto && fullPagePhotoLandscapeUrl && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 hidden md:block bg-cover bg-top bg-no-repeat"
-          style={{ backgroundImage: `url("${fullPagePhotoLandscapeUrl}")` }}
+          className="pointer-events-none absolute inset-0 -z-10 hidden md:block"
+          style={{
+            backgroundImage: `url("${fullPagePhotoLandscapeUrl}")`,
+            backgroundSize: '100% auto',
+            backgroundPosition: 'top center',
+            backgroundRepeat: 'no-repeat',
+          }}
         />
       )}
       {/*

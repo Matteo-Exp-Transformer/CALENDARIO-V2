@@ -70,8 +70,9 @@ resta a colonna unica anche su desktop e lo sfondo occupa tutta la viewport.
   HD 1440×4320). Pagina intera 3 preset `full-01..03` in **due varianti WebP**:
   `…/full-NN-landscape.webp` (2560×1440, ≥768px) + `full-NN-portrait.webp` (1440×2560, <768px).
   Helper `bookingFullPageBackgroundPublicHref(id, base, orientation?)` default landscape. Applicate
-  via due `<div absolute inset-0 -z-10 bg-cover bg-top>` (portrait `md:hidden`, landscape
-  `hidden md:block`) — **scrollano col documento** (31-05-26: non più `fixed`, evita salto al footer).
+  via due `<div absolute inset-0 -z-10>` (portrait `md:hidden`, landscape `hidden md:block`) con
+  `background-size: 100% auto`, `top center`, `no-repeat` — **scrollano col documento**; sotto la
+  foto resta il fallback crema del root (no `cover` su documento lungo = no zoom eccessivo).
 - **Stacking context sfondo (31-05-26)**:
   1. root `BookingRequestPage` = `relative isolate` + colore fallback crema/marrone;
   2. sfondo foto/tile/gradiente = layer `absolute inset-0 -z-10` (altezza = root che cresce con form+footer);
