@@ -73,21 +73,29 @@ PROD prima di scrivere sul DB, `npm run validate` pre-commit, blocco commit su f
 conferma. La macchina li esegue, non dipende dalla buona volontà dell'agente.
 **Tipo:** **enforcement vero** (config tecnica, non markdown). Skill harness: `update-config`.
 
-> **⚠️ Limite scoperto 01-06-26 — gli esecutori girano su Cursor, non Claude Code.** Un hook
-> `settings.json` di Claude Code copre **solo** le chat aperte in Claude Code. Gli agenti che
-> «si dimenticano» (sezione Dati comunicazione nel report, esiti Liv.2) sono per lo più **agenti
-> Cursor** → l'hook **non li raggiunge**. Conseguenza: M4 va sdoppiata.
+> **✅ CORREZIONE 01-06-26 — Cursor HA gli hooks (l'analisi di ieri era incompleta).** Ricerca su
+> doc ufficiale (`cursor.com/docs/agent/hooks`): Cursor supporta hook di lifecycle in
+> `.cursor/hooks.json`, con eventi tra cui `stop`, `sessionStart`, `beforeShellExecution`,
+> `preToolUse` ecc. Gli hook sono processi che comunicano via stdin/stdout JSON; alcuni possono
+> **bloccare** (`permission: deny`, exit code 2), altri solo osservare. → **Cursor permette
+> enforcement vero, non solo governance soft.** Il limite reale è un altro: gli hook `stop` e
+> `sessionStart` **NON girano sui Cloud Agents** (solo IDE locale). Per il lavoro IDE di Matteo
+> (caso normale) funzionano.
 >
-> **Nudge fine-sessione (progettato 01-06-26, non installato).** Promemoria su evento `Stop` che
-> ricorda all'agente, prima di chiudere: (1) sezione «Dati comunicazione» nel report; (2) esiti voci
-> Liv.2 usate; (3) report in `Sessioni di lavoro/` + riga `SESSION_LOG`. Poco invasivo (solo testo,
-> non blocca). **Ma vale solo in Claude Code.**
-> - **Leva Cursor** (dove serve davvero): non esiste l'equivalente hook `Stop`. Le opzioni sono
->   `.cursor/rules` (sempre governance soft, stesso limite di oggi) o una **checklist fissa di
->   chiusura nel prompt esecutore** che prepara-prompt inserisce (l'agente la vede nel proprio task).
->   Quest'ultima è la più promettente per Cursor. Da valutare in sessione enforcement dedicata.
-> - **Conclusione:** il nudge Claude Code copre **questa** famiglia di chat (Meta/revisione qui);
->   per gli esecutori Cursor serve la checklist-nel-prompt. Due leve, non una.
+> **Leve Cursor mappate per lo skill system** (ordine di valore):
+> 1. **`stop` → nudge fine-chat** ✅ **INSTALLATO 01-06-26.** File: `.cursor/hooks/fine-sessione-nudge.mjs`
+>    (Node, cross-platform) + `.cursor/hooks.json`. Inietta un `agent_message` non bloccante che ricorda:
+>    sezione «Dati comunicazione» + esiti Liv.2 + report/SESSION_LOG. Testato (output JSON valido, exit 0).
+>    L'agente decide se applicarlo (chat light → ignora). Risolve il motore Liv.2 fermo.
+> 2. **`beforeShellExecution` → guard PROD** (da fare): blocca scritture su DB prod `rwuxgvld` senza
+>    conferma (`permission: deny`). Trasforma la regola di sicurezza prod da markdown a enforcement.
+> 3. **`sessionStart` → carica vocabolario** (da fare): inietta i grilletti a ogni avvio chat IDE.
+>
+> **Limiti onesti del nudge installato:** (a) non gira sui Cloud Agents; (b) l'hook `stop` riceve
+> poco contesto sulla sessione, quindi il promemoria è statico e delega all'agente il giudizio
+> «mi applico o no» — non è un controllo che verifica davvero se il report è stato scritto. Per una
+> verifica vera servirebbe leggere i file modificati (possibile ma più complesso). Fonti:
+> `cursor.com/docs/agent/hooks`, `cursor.com/blog/agent-best-practices`.
 
 ### M5 — Statistiche d'uso del sistema 🔶
 **Obiettivo:** capire dove il sistema funziona e dove no, con numeri semplici.
