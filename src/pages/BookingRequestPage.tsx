@@ -28,6 +28,10 @@ import {
 } from '@/features/booking/constants/bookingPublicFormConfig'
 import type { BookingRequestInput } from '@/types/booking'
 
+/** Padding colonna contenuto — header, form e sticky condividono lo stesso inset (no -mx bleed). */
+const BOOKING_PAGE_CONTENT_PAD_FULL = 'px-8 md:px-10 lg:px-10'
+const BOOKING_PAGE_CONTENT_PAD_STRIP = 'px-8 md:px-10 lg:px-10'
+
 export const BookingRequestPage: React.FC = () => {
   const { tenantSlug } = useParams<{ tenantSlug: string }>()
   const { tenantId, isLoading: isTenantLoading, setTenantFromSlug } = useTenantContext()
@@ -92,6 +96,7 @@ export const BookingRequestPage: React.FC = () => {
   const bookingPageBackground: BookingPageBackgroundId =
     publicBookingBg ?? DEFAULT_BOOKING_PAGE_BACKGROUND
   const showPhotoStrip = stripPhotoId != null
+  const contentColumnPad = showPhotoStrip ? BOOKING_PAGE_CONTENT_PAD_STRIP : BOOKING_PAGE_CONTENT_PAD_FULL
   // Quando la striscia laterale è attiva, il resto della pagina deve restare uniforme
   // chiaro (crema/avorio): l'immagine full-page o legacy viene applicata SOLO senza striscia.
   const STRIP_MODE_PAGE_BG = '#faf7f1'
@@ -108,13 +113,17 @@ export const BookingRequestPage: React.FC = () => {
   const fullPagePhotoPortraitUrl = fullPagePhotoId
     ? bookingFullPageBackgroundPublicHref(fullPagePhotoId, import.meta.env.BASE_URL, 'portrait')
     : null
-  // Foto full-page: applicate come `background-image` su un wrapper interno che cambia
-  // url via media query (vedi sotto). Quando la foto è attiva, il root NON imposta
-  // backgroundColor scuro: serve un fondo crema chiaro come fallback se la foto tarda
-  // a caricare (un marrone scuro produrrebbe l'effetto "tutto buio" segnalato).
+  // Foto full-page: layer viewport `fixed` + cover (contenuto scrolla sopra). Root crema solo
+  // primo paint / se l'immagine non carica. Tile/gradiente restano su layer `absolute` scrollabile.
   const FULL_PAGE_FALLBACK_BG = STRIP_MODE_PAGE_BG
-  // Colore di fallback sul root (primo paint + bordi footer). Tile/gradiente su layer
-  // `absolute` che segue l'altezza del documento — NON `fixed` (sfondo deve scrollare col contenuto).
+  const fullPagePhotoLayerStyle = (url: string): React.CSSProperties => ({
+    backgroundImage: `url("${url}")`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'top center',
+    backgroundRepeat: 'no-repeat',
+    // `position:fixed` sul div (non `background-attachment:fixed`) — equivalente robusto su iOS.
+  })
+  // Colore di fallback sul root (primo paint). Tile/gradiente su layer `absolute` scrollabile.
   const pageRootFallbackStyle: React.CSSProperties = showPhotoStrip
     ? { backgroundColor: STRIP_MODE_PAGE_BG }
     : isFullPagePhoto
@@ -175,32 +184,21 @@ export const BookingRequestPage: React.FC = () => {
         />
       )}
       {/*
-        Foto full-page (responsive): layer `absolute` sul root che cresce col form+footer —
-        scorre col contenuto (non `fixed`: evita salto/lampeggio al bordo footer bianco).
+        Foto full-page (responsive): layer `fixed inset-0` viewport — immagine fissa, contenuto
+        scrolla sopra. Portrait <768px, landscape ≥768px; cover + top center, no-repeat (doc §2).
       */}
       {isFullPagePhoto && fullPagePhotoPortraitUrl && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 md:hidden"
-          style={{
-            backgroundImage: `url("${fullPagePhotoPortraitUrl}")`,
-            // `cover` su layer alto quanto tutto il form zoomava troppo; larghezza viewport, altezza naturale.
-            backgroundSize: '100% auto',
-            backgroundPosition: 'top center',
-            backgroundRepeat: 'no-repeat',
-          }}
+          className="pointer-events-none fixed inset-0 -z-10 md:hidden"
+          style={fullPagePhotoLayerStyle(fullPagePhotoPortraitUrl)}
         />
       )}
       {isFullPagePhoto && fullPagePhotoLandscapeUrl && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 hidden md:block"
-          style={{
-            backgroundImage: `url("${fullPagePhotoLandscapeUrl}")`,
-            backgroundSize: '100% auto',
-            backgroundPosition: 'top center',
-            backgroundRepeat: 'no-repeat',
-          }}
+          className="pointer-events-none fixed inset-0 -z-10 hidden md:block"
+          style={fullPagePhotoLayerStyle(fullPagePhotoLandscapeUrl)}
         />
       )}
       {/*
@@ -235,20 +233,18 @@ export const BookingRequestPage: React.FC = () => {
             />
           )}
 
-          {/* Colonna contenuto destra
-              Padding laterale: mobile px-6 (più sfondo foto ai lati), tablet md:px-10,
-              desktop ≥900px px-6 / lg:px-8 invariati (già OK con larghezza maggiore). */}
-          <div className="w-full min-w-0 px-6 md:px-10 min-[900px]:px-6 lg:px-8">
+          {/* Colonna contenuto destra — stesso padding orizzontale per header, form e sticky bar. */}
+          <div className={cn('w-full min-w-0', contentColumnPad)}>
 
             {/* Header — allineamento controllato da header_styles.textAlign per ogni elemento */}
-            <div className="flex w-full flex-col gap-1.5 py-1.5 animate-fade-in -mx-6 md:-mx-10 min-[900px]:-mx-6 lg:-mx-8">
+            <div className="flex w-full flex-col gap-1.5 py-1.5 animate-fade-in">
               <h1
-                className="font-bold m-0 w-full px-2"
+                className="font-bold m-0 w-full"
                 style={getBookingHeaderTextStyle('restaurant_name', headerStyles)}
               >
                 {displayName}
               </h1>
-              <div className="flex w-full flex-col gap-1.5 px-2">
+              <div className="flex w-full flex-col gap-1.5">
                 <h2
                   className="font-bold m-0 w-full"
                   style={getBookingHeaderTextStyle('page_title', headerStyles)}

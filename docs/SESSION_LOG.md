@@ -13,6 +13,9 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 31-05-26 | **Chiusura ciclo** — Pagina Prenota sfondo fixed + padding + admin | [**Report finale**](Sessioni%20di%20lavoro/31-05-26/Report-finale-ciclo-prenota-sfondo-31-05-26.md) — strategia fixed+cover; asset sfondo3; padding `px-8 md:px-10` senza bleed; loop Personalizza form risolto; **QA Matteo header + console ✅**; validate 227. |
+| 31-05-26 | Verifica + fix — header Prenota allineato + loop Personalizza form | [Report](Sessioni%20di%20lavoro/31-05-26/Report-verifica-prenota-header-personalizza-form-31-05-26.md) — rimosso headerBleed; `px-8 md:px-10`; loop promo `EMPTY_MENU_PROMOS` + effect autosave duplicato; QA auto header 375/834/1280 ✅; QA loop admin ✅; validate 227; QA Matteo ✅ (vedi report finale). |
+| 31-05-26 | Esecuzione — Pagina Prenota sfondo fixed + asset sfondo3 + padding colonna | [Report](Sessioni%20di%20lavoro/31-05-26/Report-prenota-sfondo-fixed-padding-31-05-26.md) — fixed+cover OK; asset sfondo3 OK; padding ↑; header disallineato → **fix in report verifica sopra**; validate 227 OK. |
 | 31-05-26 | Meta senior — grilletti avvio chat + triage 9 proposte (pausa rispettata) | [Report](Sessioni%20di%20lavoro/31-05-26/Report-revisione-senior-skill-system-31-05-26.md) — mappati «evolvi senior»/«evolvi»; 3 proposte promosse (Prenota-vs-QR, profilo+skill, checklist QA), 6 attesa-dati; motore Liv.2 fermo annotato. |
 | 31-05-26 | Esecuzione — Pagina Prenota sfondo full-page hero `cover` (no banda crema) | [Report](Sessioni%20di%20lavoro/31-05-26/Report-fix-prenota-sfondo-display-hero-31-05-26.md) — layer `min-h-svh` + `cover`; validate 227 OK; QA Matteo ⬜. |
 | 31-05-26 | Esecuzione — integrazione 4 preset sfondo pagina intera Prenota (prove a–d) | [Report](Sessioni%20di%20lavoro/31-05-26/Report-integrazione-asset-sfondo-prenota-prova-31-05-26.md) — WebP `full-01`…`04`; validate 227 OK; QA Matteo ⬜; `immagini di prova/` fuori commit. |
