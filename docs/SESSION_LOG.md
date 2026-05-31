@@ -13,6 +13,9 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 31-05-26 | Meta senior — grilletti avvio chat + triage 9 proposte (pausa rispettata) | [Report](Sessioni%20di%20lavoro/31-05-26/Report-revisione-senior-skill-system-31-05-26.md) — mappati «evolvi senior»/«evolvi»; 3 proposte promosse (Prenota-vs-QR, profilo+skill, checklist QA), 6 attesa-dati; motore Liv.2 fermo annotato. |
+| 31-05-26 | Esecuzione — Pagina Prenota sfondo full-page hero `cover` (no banda crema) | [Report](Sessioni%20di%20lavoro/31-05-26/Report-fix-prenota-sfondo-display-hero-31-05-26.md) — layer `min-h-svh` + `cover`; validate 227 OK; QA Matteo ⬜. |
+| 31-05-26 | Esecuzione — integrazione 4 preset sfondo pagina intera Prenota (prove a–d) | [Report](Sessioni%20di%20lavoro/31-05-26/Report-integrazione-asset-sfondo-prenota-prova-31-05-26.md) — WebP `full-01`…`04`; validate 227 OK; QA Matteo ⬜; `immagini di prova/` fuori commit. |
 | 31-05-26 | Esecuzione — Pagina Prenota sfondo scroll footer (tile/gradiente) | [Report](Sessioni%20di%20lavoro/31-05-26/Report-fix-prenota-footer-scroll-sfondo-31-05-26.md) — layer `absolute` scrollabile; validate 227 OK; FU-028 codice; QA Matteo ⬜ tile/gradiente. |
 | 31-05-26 | Revert — Prompt B #8 Menu QR (sfondo scroll ripristinato) | [Report Prompt B](Sessioni%20di%20lavoro/31-05-26/Report-fix-menu-qr-footer-scroll-31-05-26.md) § Revert 31-05-26 — layer `fixed` rimosso; #8 QR non OK. |
 | 31-05-26 | Meta-analisi — #8 fix su QR vs sintomo Pagina Prenota (misrouting) | [Report](Sessioni%20di%20lavoro/31-05-26/Report-meta-analisi-routing-prenota-vs-menu-qr-31-05-26.md) — revert QR consigliato; FU-028; ERRORI_PROCESSO + PROPOSTE Meta. |

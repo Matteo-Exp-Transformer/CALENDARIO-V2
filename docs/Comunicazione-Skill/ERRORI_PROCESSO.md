@@ -34,7 +34,7 @@ filtro `PREPARA_PROMPT`, o una Nota in skill d'area. La promozione la decide il 
 | Intento UI invertito tra prepara-prompt e esecuzione (overlay sì/no) | prompt ambiguo | 1 | regola PREPARA_PROMPT: mappare elementi adiacenti impattati a monte |
 | `overflow-x-auto` taglia figli `absolute` → serve portal | vincolo strutturale | 1 | Nota UI: per escape da scroll-container usare portal, non absolute |
 | Modifica a un elemento senza mappare gli elementi vicini impattati | prompt ambiguo + errore agente | 1 | regola PREPARA_PROMPT (implementata) |
-| Fix su **Menu QR** invece di **Pagina Prenota** (sfondo scroll footer #8) | prompt ambiguo + errore agente | 1 | **CRITICO Meta:** disambiguazione obbligatoria schermata + URL smoke; gate QA URL |
+| Fix su **Menu QR** invece di **Pagina Prenota** (sfondo scroll footer #8) | prompt ambiguo + errore agente | 1 | ✅ **RISOLTA 31-05-26** → gate obbligatorio in `PREPARA_PROMPT_SKILL.md` §2 (slug/URL smoke + domanda Sì/No se Prenota+QR nel thread + vietato QA OK senza URL testato) |
 
 ---
 

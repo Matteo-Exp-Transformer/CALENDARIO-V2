@@ -24,16 +24,37 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ---
 
+> 🛑 **PAUSA-RACCOLTA fatta rispettare (revisione senior 31-05-26).** In questa revisione si
+> chiudono solo le proposte che **riparano un danno dimostrato** o **sbloccano la misurazione** o
+> hanno **costo zero** (formalizzano una prassi già in atto). Tutto il resto resta marcato
+> **ATTESA-DATI** con il motivo: non si promuove su intuizione, si aspettano ~5-10 sessioni di dati.
+> Esito triage: **3 accettate** (Prenota-vs-QR · profilo+skill nel prompt · checklist QA), **6
+> attesa-dati**. Report: `docs/Sessioni di lavoro/31-05-26/Report-revisione-senior-skill-system-31-05-26.md`.
+
 ## In attesa di decisione
 
-### In attesa «prepara-prompt — profilo + skill obbligatori nel prompt esecutore»
-- **Pattern osservato:** Matteo chiede chiarimenti su profilo/@ file; errori routing schermata; prepara-prompt oggi **non** scrive profilo nel prompt (APP_CONTEXT §0.0 dice «lo deduce l’esecutore»).
-- **Automatizzabile con certezza:** ogni prompt esecutore da prepara-prompt inizia con blocco fisso:
-  - `Profilo: …` · `Modalità: light|standard|deep` · `Skill da leggere: …` · `Non caricare: …` (opzionale)
-- **Meglio lasciare manuale:** scelta tecnica dentro l’area dopo lettura codice.
-- **Livello suggerito:** 1 per prepara-prompt dopo ok Matteo (31-05-26 richiesta esplicita).
-- **Dove codificare:** `PREPARA_PROMPT_SKILL.md` §1.B + esempio in `Prompt-*.md` in Sessioni di lavoro.
-- **Esito / data:** proposta 31-05-26 — in attesa ok Meta / Matteo.
+### ATTESA-DATI «Meta — gate spiegazione procedura avvio chat (@ skill)»
+> **Triage senior 31-05-26:** parzialmente **già risolta** oggi con `COMANDI_AVVIO.md` (mappa
+> parola→chat→cosa caricare). Rivalutare dopo che Matteo usa la mappa: se la domanda «cosa metto in @»
+> non si ripresenta, archiviare; se torna, promuovere il gate. **Non promuovere ora.**
+
+- **Pattern osservato:** Matteo chiede se @ `APP_CONTEXT` in ogni chat esecutore (31-05-26) — implica dubbio su **cosa caricare** vs prompt già completo; rischio sovraccarico contesto se APP_CONTEXT + area + prompt lungo sempre insieme.
+- **Automatizzabile con certezza:** in chat **Meta** o quando il messaggio è meta-procedura («cosa metto in @», «come avvio agente»), il revisore **prima** chiede: *«Vuoi una spiegazione passo-passo per questa chat (sì/no)?»* — poi tabella 3 righe: Tipo chat | Cosa @ | Cosa no.
+- **Regola sintesi (per Matteo, non ancora in skill):** Esecuzione mirata → prompt + 1 skill area; Esecuzione esplorativa → `@calendarbackup-app-context`; Prepara-prompt → `PREPARA_PROMPT_SKILL` only; Verifica → APP_CONTEXT profilo Verifica + area.
+- **Livello suggerito:** 2 — Meta chiede prima di spiegare; Liv.1 card in `REVISIONE.md` onboarding dopo ok Matteo.
+- **Esito / data:** proposta 31-05-26 — **ATTESA-DATI** (parz. risolta da COMANDI_AVVIO.md).
+
+### ATTESA-DATI «blocco precauzioni mobile CSS nei prompt UI (prepara-prompt)»
+> **Triage senior 31-05-26:** sensata ma **1 sola occorrenza**. Il template canonico esiste già nei
+> file sessione (`Prompt-B-menu-qr-footer-scroll-31-05-26.md`). Pausa: serve una **2ª occorrenza**
+> prima di promuovere a regola fissa. Fino ad allora prepara-prompt riusa il template manualmente.
+
+- **Pattern osservato:** Fix sfondo scroll Menu QR #8 (31-05-26): dopo diagnosi generica, Matteo chiede esplicitare iOS/`background-attachment` e obbligo report compatibilità — evita secondo giro «funziona desktop ma salta su iPhone».
+- **Automatizzabile con certezza:** quando il prompt tocca **sfondo full-page / scroll / footer** su superficie pubblica mobile, includere sotto «Diagnosi» un mini-blocco **Implementazione sfondo (obbligatorio)**: (1) layer viewport fisso preferito, (2) `background-attachment: fixed` solo se verificato 375 + nota Safari, (3) sezione report dedicata. Template: `Sessioni di lavoro/31-05-26/Prompt-B-menu-qr-footer-scroll-31-05-26.md`.
+- **Meglio lasciare manuale:** scelta tecnica precisa (pseudo vs fixed div) — resta all’esecutore dopo lettura codice.
+- **Livello suggerito:** 2 — prepara-prompt applica il blocco su task UI scroll/sfondo; non su ogni fix CSS.
+- **Token risparmiati:** ~1 sessione correttiva iOS per ciclo simile.
+- **Esito / data:** proposta 31-05-26 — **ATTESA-DATI** (1 occorrenza, serve la 2ª).
 
 ### In attesa «Meta — gate spiegazione procedura avvio chat (@ skill)»
 - **Pattern osservato:** Matteo chiede se @ `APP_CONTEXT` in ogni chat esecutore (31-05-26) — implica dubbio su **cosa caricare** vs prompt già completo; rischio sovraccarico contesto se APP_CONTEXT + area + prompt lungo sempre insieme.
@@ -42,24 +63,11 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 - **Livello suggerito:** 2 — Meta chiede prima di spiegare; Liv.1 card in `REVISIONE.md` onboarding dopo ok Matteo.
 - **Esito / data:** proposta 31-05-26 — in attesa sessione Meta.
 
-### In attesa «disambiguazione obbligatoria Pagina Prenota vs Menu QR (prepara-prompt)» — **priorità Meta**
-- **Pattern osservato:** 31-05-26 — fix sfondo scroll footer applicato su `PublicMenuPage` (checklist #8 QR); Matteo voleva `BookingRequestPage`; ≥3 agenti; QA OK errato. Parole «stile Prenota» / «compose Prenota» nel ciclo Menu QR aumentano confusione.
-- **Automatizzabile con certezza:** prima di prompt esecutore su scroll/sfondo/footer pubblico, prepara-prompt include tabella **Schermata | URL smoke esempio | Cosa scorri fino in fondo** e chiede a Matteo **Sì/No** su una riga se compare sia «Prenota» sia «Menu QR» nel thread. Vietato chiudere QA senza URL citato nel prompt = URL testato.
-- **Meglio lasciare manuale:** scelta tecnica CSS per tile legacy vs gradiente vs striscia su Prenota.
-- **Livello suggerito:** **1** per prepara-prompt su task scroll/sfondo; **3** se Matteo dice solo «sistema prenota» senza slug.
-- **Dove codificare:** `PREPARA_PROMPT_SKILL.md` §2 (filtro zone) + `VOCABOLARIO.md` voce distinta «Pagina Prenota» vs «Homepage menu QR»; `APP_CONTEXT` §0 già le separa — serve **check obbligatorio** nel filtro.
-- **Esito / data:** proposta 31-05-26 post meta-analisi — **urgente** sessione Meta.
+### ATTESA-DATI «ciclo Verifica — commit docs + merge env/test→main a cura del revisore»
+> **Triage senior 31-05-26:** tocca **merge su `main` = produzione**. Troppo rischioso promuovere
+> un automatismo su **1 caso** (merge 30-05). Il merge resta **manuale, su richiesta esplicita** di
+> Matteo. È materiale da **M4 (enforcement hook)**, non da regola markdown. **Non promuovere ora.**
 
-### In attesa «blocco precauzioni mobile CSS nei prompt UI (prepara-prompt)»
-- **Pattern osservato:** Fix sfondo scroll Menu QR #8 (31-05-26): dopo diagnosi generica, Matteo chiede esplicitare iOS/`background-attachment` e obbligo report compatibilità — evita secondo giro «funziona desktop ma salta su iPhone».
-- **Automatizzabile con certezza:** quando il prompt tocca **sfondo full-page / scroll / footer** su superficie pubblica mobile, includere sotto «Diagnosi» un mini-blocco **Implementazione sfondo (obbligatorio)**: (1) layer viewport fisso preferito, (2) `background-attachment: fixed` solo se verificato 375 + nota Safari, (3) sezione report dedicata. Template: `Sessioni di lavoro/31-05-26/Prompt-B-menu-qr-footer-scroll-31-05-26.md`.
-- **Meglio lasciare manuale:** scelta tecnica precisa (pseudo vs fixed div) — resta all’esecutore dopo lettura codice.
-- **Livello suggerito:** 2 — prepara-prompt applica il blocco su task UI scroll/sfondo; non su ogni fix CSS.
-- **Token risparmiati:** ~1 sessione correttiva iOS per ciclo simile.
-- **Dove codificare:** `PREPARA_PROMPT_SKILL.md` §1.B (checklist prompt UI) — **solo dopo** ok Matteo in sessione Meta; fino ad allora template in `Sessioni di lavoro/…/Prompt-*.md`.
-- **Esito / data:** proposta 31-05-26 — in attesa ok Matteo.
-
-### In attesa «ciclo Verifica — commit docs + merge env/test→main a cura del revisore»
 - **Pattern osservato:** A fine mappa/revisione/fix, Matteo chiede esplicitamente merge su `main` e commit `docs/` con `git add -f`; l’esecutore Fase 1 aveva anche scritto un report revisione (conflitto di ruoli). Merge 30-05-26 (`b3216d7`) fatto dal revisore post-controverifica.
 - **Automatizzabile con certezza:** a chiusura ciclo **deep Verifica** (mappa → revisione → fix → revisione fix): revisore fa `git add -f docs/…`, commit messaggio `docs(scope): …`, `merge env/test --no-ff` → `main`, `push origin main`; esecutore **non** mergea né revisiona sé stesso; check DB prod **solo lettura** (`list_migrations` + colonne critiche) prima del push se il fix tocca schema già su TEST.
 - **Meglio lasciare manuale:** push produzione Supabase (`apply_migration` su `rwuxgvld`), deploy Vercel, tag release — sempre su richiesta esplicita Matteo.
@@ -68,16 +76,11 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 - **Dove codificare:** `APP_CONTEXT_SKILL.md` §7.0 (ruolo revisore) + `TESTING_SKILL.md` §7 chiusura ciclo.
 - **Esito / data:** proposta 30-05-26 post-merge Menu QR — in attesa ok Matteo.
 
-### In attesa «checklist QA verso Matteo — no path URL, sì schermata+effetto»
-- **Pattern osservato:** Checklist smoke Menu QR Fase 3 con `/c/antipasti OK` — Matteo: «non mi aiuta a capire» (30-05-26, 1× correzione esplicita).
-- **Automatizzabile con certezza:** template checklist in report e risposte chat: **Admin → …** / **Cliente sul telefono → …** + azione + esito atteso; vietare route tecniche salvo debug interno agente.
-- **Meglio lasciare manuale:** scelta casi funzionali per feature nuova.
-- **Livello suggerito:** 1 per agente di lavoro verso Matteo.
-- **Token risparmiati:** ~5–8 righe + 1 giro chiarimento per sessione UI.
-- **Dove codificare:** `COMUNICAZIONE_UTENTE_SKILL.md` + template report §7.
-- **Esito / data:** proposta da report Fase 3 Menu QR 30-05-26 — in attesa ok Matteo.
+### ATTESA-DATI «validazione admin — no toast se Salva già disattivato»
+> **Triage senior 31-05-26:** preferenza UX **1 occorrenza**, già accettata da Matteo dopo spiegazione
+> (il toast resta come backup). Non è un danno: è una micro-ottimizzazione. Aspetta la 2ª occorrenza
+> o promuovi in una sessione UI dedicata. **Non promuovere ora.**
 
-### In attesa «validazione admin — no toast se Salva già disattivato»
 - **Pattern osservato:** Menu QR modale: toast validazione + Salva grigio — Matteo «a cosa serve? regola inutile?»; accettato dopo spiegazione (toast = backup).
 - **Automatizzabile con certezza:** se `canSave === false`, non chiamare `toast.warn` su click Salva; validazione visiva = pulsante disattivato; toast solo errori async (rete) o rimuovere del tutto su validazione sync.
 - **Meglio lasciare manuale:** messaggi testuali specifici per campo (potrebbero servire hint inline futuri).
@@ -85,7 +88,13 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 - **Token risparmiati:** evita duplicazione feedback percepita come rumore.
 - **Esito / data:** in attesa — 30-05-26 Menu QR.
 
-### In attesa «revisione UI → QA viewport 375/834/1280 obbligatorio»
+### ATTESA-DATI → M4 «revisione UI → QA viewport 375/834/1280 obbligatorio»
+> **Triage senior 31-05-26:** la regola **esiste già** (TESTING §7 / APP_CONTEXT §0.0) ma viene
+> **bypassata**. Aggiungere un'altra regola markdown non risolve un problema di *enforcement*: una
+> regola che già c'è e non viene seguita non si ripara duplicandola. Questo è materiale da **M4
+> (hook `settings.json`)** — un check che la macchina esegue. **Spostato su milestone M4, non
+> promosso come regola.**
+
 - **Pattern osservato:** In revisione validazione UX Prenota (29-05-26) il revisore ha approvato con «affida a QA Matteo» e ha eseguito browser solo dopo richiesta esplicita; mobile 375 non testato. La regola esiste già in `APP_CONTEXT_SKILL.md` §0.0 (profilo Verifica → `TESTING_SKILL.md` §7) ma i prompt di revisione e l’agente la bypassano.
 - **Automatizzabile con certezza:** se la revisione riguarda lavoro che ha toccato **UI/layout/responsive** (`src/**/*.tsx` con className/layout, `index.css`, skill UI_*), il revisore **deve** eseguire gli stessi passi funzionali su **375 × 812**, **834 × 1194**, **1280 × 800** (Playwright MCP / browser Cursor) e compilare tabella esiti nel report — **prima** del verdetto. «Non testato» ammesso solo con motivo esplicito (es. feature solo desktop admin, no surface pubblica).
 - **Meglio lasciare manuale:** scelta dei casi funzionali specifici (dipende dal task); giudizio visivo su drift overlay accettabile.
@@ -94,7 +103,11 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 - **Dove codificare (se approvata):** `TESTING_SKILL.md` §7.7 nuova sottosezione «Revisione post-esecutore UI»; rafforzo in `APP_CONTEXT_SKILL.md` §0.0 colonna Verifica; checklist nel template prompt revisione (PREPARA_PROMPT o snippet report).
 - **Esito / data:** proposta Matteo 29-05-26 — in attesa ok (rispetta PAUSA-RACCOLTA: regola in markdown, non hook).
 
-### In attesa «segnala conflitto scalabilità multi-tenant» → sezione report + COMUNICAZIONE
+### ATTESA-DATI «segnala conflitto scalabilità multi-tenant» → sezione report + COMUNICAZIONE
+> **Triage senior 31-05-26:** **1 occorrenza**, già tracciata come FU-006. Aspetta che il pattern
+> torni prima di renderla sezione obbligatoria di ogni report (rischio di gonfiare i report con una
+> sezione spesso vuota). **Non promuovere ora.**
+
 - **Pattern osservato:** Matteo vuole sapere se le sue decisioni (autosave, guard, persistenza) confliggono con N ristoranti / multi-azienda.
 - **Automatizzabile con certezza:** sezione report **Scalabilità multi-tenant** (ok/attenzione/conflitto) quando task tocca persistenza o state admin condiviso.
 - **Meglio lasciare manuale:** giudizio sul conflitto reale.
@@ -114,7 +127,12 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 - **Token risparmiati:** evita giri di ipotesi sbagliate; risposte più corte.
 - **Esito / data:** annotata 30-05-26 — in attesa ok (PAUSA-RACCOLTA).
 
-### In attesa «tutto fatto» come chiusura ciclo multi-agente
+### ATTESA-DATI «tutto fatto» come chiusura ciclo multi-agente
+> **Triage senior 31-05-26:** si **sovrappone** a «lavoro ok» (Liv.1) + «fai report finale» (Liv.1)
+> già in vocabolario. Rischio ridondanza / parole-trigger doppione. Prima di aggiungere un terzo
+> trigger, verificare sui dati se «tutto fatto» ha un comportamento **distinto** dai due esistenti
+> (sembra = «lavoro ok» + «fai report finale» detti insieme). **Non promuovere ora.**
+
 - **Pattern osservato:** Matteo dice «tutto fatto» a fine catena prepara → esecuzione → (revisione) e chiede raccolta comunicazione + commit + report (29-05-26 salvataggio admin).
 - **Automatizzabile con certezza:** agente prepara-prompt a valle (o esecutore con conferma) aggiorna report ciclo, OSSERVAZIONI, PROPOSTE, SESSION_LOG; commit codice + docs separati; **non** promuove voci vocabolario.
 - **Meglio lasciare manuale:** giudizio «approva / riserve» se QA browser incompleto.
@@ -124,6 +142,18 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 ---
 
 ## Archivio (decise)
+
+### ✅ ACCETTATA (31-05-26) Disambiguazione Prenota vs Menu QR → `PREPARA_PROMPT_SKILL.md` §2
+- **Triage senior:** unico danno **dimostrato e ripetuto** (fix su `PublicMenuPage` mentre il sintomo era su `BookingRequestPage`, ≥3 agenti, QA OK errato). Ripara, non aggiunge.
+- **Codificata:** gate obbligatorio nel filtro § 2 «Zone che si confondono» — task scroll/sfondo/footer pubblico **deve** dichiarare slug/URL smoke; se nel thread compaiono sia «Prenota» sia «Menu QR» → prepara-prompt chiede una riga Sì/No; vietato QA OK senza URL citato = URL testato.
+- Le 3 proposte-doppione sul tema sono collassate in questa. Origine: meta-analisi 31-05-26 + `ERRORI_PROCESSO.md`.
+
+### ✅ ACCETTATA (31-05-26) Profilo + skill nel prompt esecutore → `PREPARA_PROMPT_SKILL.md` §1.A
+- **Triage senior:** richiesta esplicita Matteo 31-05, **costo zero** (è formato, non meccanismo), riduce errori-zona.
+- **Codificata:** il blocco copia-incolla inizia con riga fissa `Profilo: … · Modalità: … · Skill da leggere: … · Non caricare: …`. Sostituisce la vecchia logica «lo deduce l'esecutore da §0.0».
+
+### ✅ ACCETTATA-GIÀ-PRESENTE (31-05-26) Checklist QA: no URL, sì schermata+effetto
+- **Triage senior:** **già regola** in `COMUNICAZIONE_UTENTE_SKILL.md` (forma standard a fine task: «Mai route tecniche tipo `/c/antipasti` verso Matteo» + righe «dove guardare + cosa vedere»). Nessuna modifica necessaria: la proposta è già soddisfatta dallo skill esistente. Chiusa senza nuovo codice.
 
 ### ✅ ACCETTATA (29-05-26) Metriche successo chat → `EVOLUZIONE_SKILLS.md` (M5 concreta)
 - 4 criteri oggettivi (n° prompt Matteo · correzioni post-1ª risposta · follow-up generati · modalità alzata). Li mette **prepara-prompt a valle** (no autopagella), solo numeri, sessioni standard/deep. + **PAUSA-RACCOLTA**: stop nuove regole finché non si accumulano ~5-10 sessioni di dati. Origine: idea Matteo 29-05-26. **Ultima aggiunta prima della pausa.**
