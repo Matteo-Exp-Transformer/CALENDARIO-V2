@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Copy } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { Modal } from '@/components/ui/Modal'
@@ -18,8 +18,16 @@ import {
 import { DiscardChangesConfirmModal } from './settings/SettingsSaveUi'
 import { DEFAULT_THEME_KEY, MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
 import { validateMenuQrSettings, isMenuQrSettingsValid } from '../utils/menuQrValidation'
-import type { CarouselItem, MenuItem, MenuQrCode, MenuQrSettingsSavePayload } from '@/types/menu'
+import type {
+  CarouselItem,
+  MenuItem,
+  MenuQrCode,
+  MenuQrSettingsSavePayload,
+  MenuQrcodeCategoryOverride,
+} from '@/types/menu'
 import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
+
+const EMPTY_QR_CATEGORY_OVERRIDES: MenuQrcodeCategoryOverride[] = []
 
 function normalizeThemeKey(key: string | undefined | null): MenuThemeKey {
   if (key && key in MENU_THEMES) return key as MenuThemeKey
@@ -98,7 +106,8 @@ export function MenuQrModal({
 }: Props) {
   const { tenantId } = useTenantContext()
   const menuQrCodeId = editing?.id ?? null
-  const { data: overrides = [], isLoading: overridesLoading } = useMenuQrcodeCategoriesForQr(menuQrCodeId)
+  const { data: overrides = EMPTY_QR_CATEGORY_OVERRIDES, isLoading: overridesLoading } =
+    useMenuQrcodeCategoriesForQr(menuQrCodeId)
   const { data: menuItems = [] } = useMenuItems()
 
   const [draftShortCode, setDraftShortCode] = useState(() => generateShortCode())
@@ -113,6 +122,8 @@ export function MenuQrModal({
 
   const baselineRef = useRef('')
   const baselineSessionRef = useRef<string | null>(null)
+  const overridesHydratedSessionRef = useRef<string | null>(null)
+  const [overridesHydratedVersion, setOverridesHydratedVersion] = useState(0)
   const [baselineReady, setBaselineReady] = useState(false)
 
   const categoriesWithItems = useMemo(() => {
@@ -140,7 +151,19 @@ export function MenuQrModal({
   const activeShortCode = editing?.short_code ?? draftShortCode
 
   useEffect(() => {
+    if (isOpen) return
+    baselineSessionRef.current = null
+    overridesHydratedSessionRef.current = null
+    setOverridesHydratedVersion(0)
+    setBaselineReady(false)
+  }, [isOpen])
+
+  useEffect(() => {
     if (!isOpen) return
+
+    const sessionKey = editing?.id ?? 'new'
+    if (overridesHydratedSessionRef.current === sessionKey) return
+
     if (editing) {
       setName(editing.name)
       setCategoryFilter(resolveCategoryFilterForUi(editing.category_filter, categoryKeysWithItems))
@@ -148,38 +171,38 @@ export function MenuQrModal({
       setCategoryImages(editing.category_images ?? {})
       setThemeKey(normalizeThemeKey(editing.theme_key))
       setHiddenItemIds(editing.hidden_menu_item_ids ?? [])
-    } else {
-      setDraftShortCode(generateShortCode())
-      setName('')
-      setCategoryFilter(categoryKeysWithItems.length > 0 ? [...categoryKeysWithItems] : [])
-      setCarouselItems([])
-      setCategoryImages({})
-      setThemeKey(DEFAULT_THEME_KEY)
-      setHiddenItemIds([])
-      setOverrideDrafts(buildCategoryOverrideDrafts(categories, []))
-    }
-  }, [isOpen, editing, categoryKeysWithItems, categories])
-
-  useEffect(() => {
-    if (!isOpen || !editing) return
-    setOverrideDrafts(buildCategoryOverrideDrafts(categories, overrides))
-  }, [isOpen, editing, categories, overrides])
-
-  useEffect(() => {
-    if (!isOpen || editing) return
-    setOverrideDrafts(buildCategoryOverrideDrafts(categories, []))
-  }, [isOpen, editing, categories])
-
-  useLayoutEffect(() => {
-    if (!isOpen) {
-      baselineSessionRef.current = null
-      setBaselineReady(false)
       return
     }
-    if (editing && menuQrCodeId && overridesLoading) return
+
+    setDraftShortCode(generateShortCode())
+    setName('')
+    setCategoryFilter(categoryKeysWithItems.length > 0 ? [...categoryKeysWithItems] : [])
+    setCarouselItems([])
+    setCategoryImages({})
+    setThemeKey(DEFAULT_THEME_KEY)
+    setHiddenItemIds([])
+    setOverrideDrafts(buildCategoryOverrideDrafts(categories, []))
+    overridesHydratedSessionRef.current = 'new'
+    setOverridesHydratedVersion((v) => v + 1)
+  }, [isOpen, editing?.id, categoryKeysWithItems, categories])
+
+  useEffect(() => {
+    if (!isOpen || !editing || overridesLoading) return
+
+    const sessionKey = editing.id
+    if (overridesHydratedSessionRef.current === sessionKey) return
+
+    setOverrideDrafts(buildCategoryOverrideDrafts(categories, overrides))
+    overridesHydratedSessionRef.current = sessionKey
+    setOverridesHydratedVersion((v) => v + 1)
+  }, [isOpen, editing?.id, overridesLoading, categories, overrides])
+
+  useEffect(() => {
+    if (!isOpen) return
+
     const sessionKey = editing?.id ?? 'new'
     if (baselineSessionRef.current === sessionKey) return
-    if (editing && categories.length > 0 && Object.keys(overrideDrafts).length === 0) return
+    if (overridesHydratedSessionRef.current !== sessionKey) return
 
     baselineRef.current = serializeMenuQrDraft({
       name,
@@ -192,20 +215,7 @@ export function MenuQrModal({
     })
     baselineSessionRef.current = sessionKey
     setBaselineReady(true)
-  }, [
-    isOpen,
-    editing?.id,
-    menuQrCodeId,
-    overridesLoading,
-    categories.length,
-    overrideDrafts,
-    name,
-    categoryFilter,
-    carouselItems,
-    categoryImages,
-    themeKey,
-    hiddenItemIds,
-  ])
+  }, [isOpen, editing?.id, overridesHydratedVersion])
 
   const isDirty = useMemo(() => {
     if (!isOpen || !baselineReady) return false
@@ -244,6 +254,7 @@ export function MenuQrModal({
   const confirmDiscardClose = () => {
     setDiscardConfirmOpen(false)
     baselineSessionRef.current = null
+    overridesHydratedSessionRef.current = null
     onClose()
   }
 

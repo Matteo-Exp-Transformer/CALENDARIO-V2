@@ -352,7 +352,7 @@ function MenuNavTabs({
           <button
             type="button"
             aria-label="Scorri categorie indietro"
-            className="absolute left-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-r-md shadow-sm"
+            className="absolute left-0 top-0 bottom-0 z-20 hidden min-[700px]:flex w-10 items-center justify-center rounded-r-md shadow-sm"
             style={{ backgroundColor: arrowBg, color: accentColor }}
             onClick={() => scrollTabs(-TAB_BAR_SCROLL_STEP_PX)}
           >
@@ -361,7 +361,7 @@ function MenuNavTabs({
         )}
         <div
           ref={scrollRef}
-          className="flex gap-2 overflow-x-auto scrollbar-hide py-3 px-4 md:px-11"
+          className="flex gap-2 overflow-x-auto scrollbar-hide py-3 px-4 min-[700px]:px-11"
         >
           {items.map((item) => {
             const Icon = 'Icon' in item ? (item.Icon as PhosphorIconType) : null
@@ -382,7 +382,7 @@ function MenuNavTabs({
           <button
             type="button"
             aria-label="Scorri categorie avanti"
-            className="absolute right-0 top-0 bottom-0 z-20 hidden md:flex w-10 items-center justify-center rounded-l-md shadow-sm"
+            className="absolute right-0 top-0 bottom-0 z-20 hidden min-[700px]:flex w-10 items-center justify-center rounded-l-md shadow-sm"
             style={{ backgroundColor: arrowBg, color: accentColor }}
             onClick={() => scrollTabs(TAB_BAR_SCROLL_STEP_PX)}
           >
@@ -394,8 +394,8 @@ function MenuNavTabs({
   )
 }
 
-// ── Card categoria — verticale ≤699px, orizzontale da 700px ──
-// Griglia (in MenuContent): 1 col · 2 col solo 480–699 · 1 col 700–1023 · 2 col ≥1024
+// ── Card categoria — tile verticale <1025px, riga orizzontale da 1025px ──
+// Griglia (in MenuContent): 1 col <520 · 2 col 520–1024 · 2 col ≥1025 (card orizzontale)
 
 function CategoryCard({
   category,
@@ -419,30 +419,30 @@ function CategoryCard({
   return (
     <Link
       to={href}
-      className="block overflow-hidden rounded-xl bg-white shadow-sm active:bg-stone-50 transition-colors min-[700px]:flex min-[700px]:min-h-[80px] min-[700px]:rounded-2xl min-[900px]:min-h-[88px]"
+      className="block overflow-hidden rounded-xl bg-white shadow-sm active:bg-stone-50 transition-colors min-[1025px]:flex min-[1025px]:min-h-[80px] min-[1025px]:rounded-2xl min-[900px]:min-h-[88px]"
     >
-      {/* ≤699px: tile verticale compatta — più bassa in 1 col, leggermente più alta in griglia 2 col */}
-      <div className="relative min-[700px]:hidden">
-        <div className="relative aspect-[7/2] w-full overflow-hidden bg-stone-100 min-[480px]:aspect-[5/2]">
+      {/* <1025px: tile verticale (anche in griglia 2 col tablet) */}
+      <div className="relative min-[1025px]:hidden">
+        <div className="relative aspect-[7/2] w-full overflow-hidden bg-stone-100 min-[520px]:aspect-[5/2]">
           {imageUrl ? (
             <img src={imageUrl} alt="" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-stone-400">
-              <CategoryIcon className="size-6 min-[480px]:size-7" aria-hidden />
+              <CategoryIcon className="size-6 min-[520px]:size-7" aria-hidden />
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 flex items-end gap-1 p-2 text-white min-[480px]:p-2.5">
-            <h2 className="min-w-0 flex-1 text-xs font-bold uppercase leading-tight tracking-wide min-[480px]:text-sm">
+          <div className="absolute inset-x-0 bottom-0 flex items-end gap-1 p-2 text-white min-[520px]:p-2.5">
+            <h2 className="min-w-0 flex-1 text-xs font-bold uppercase leading-tight tracking-wide min-[520px]:text-sm">
               {displayTitle}
             </h2>
-            <ChevronRight className="size-3.5 shrink-0 opacity-80 min-[480px]:size-4" aria-hidden />
+            <ChevronRight className="size-3.5 shrink-0 opacity-80 min-[520px]:size-4" aria-hidden />
           </div>
         </div>
       </div>
 
-      {/* ≥700px: riga orizzontale thumb + titolo + descrizione */}
-      <div className="hidden min-[700px]:contents">
+      {/* ≥1025px: riga orizzontale thumb + titolo + descrizione */}
+      <div className="hidden min-[1025px]:contents">
         <div className="aspect-square w-20 shrink-0 bg-stone-100 min-[900px]:w-24">
           {imageUrl ? (
             <img src={imageUrl} alt="" className="h-full w-full object-cover" />
@@ -541,6 +541,8 @@ function MenuContent({
       className="flex min-h-svh flex-col"
       style={pageBgStyle}
     >
+      {/* FU-025: sfondo tema full viewport; contenuto congelato a larghezza tablet, centrato oltre 1024px */}
+      <div className="mx-auto flex w-full max-w-[1024px] flex-1 flex-col">
       {/* Hero: sfondo unificato (header+body ripetuti via layer CSS su scroll lungo) */}
       <header className="relative shrink-0 px-4 pt-8 pb-4">
         <div className="relative flex flex-col items-center gap-2 text-center">
@@ -575,7 +577,7 @@ function MenuContent({
 
         {showCart && categories.length > 0 && (
           <main className="flex-1 px-4 pt-4">
-            <div className="grid grid-cols-1 gap-1.5 min-[480px]:max-[699px]:grid-cols-2 min-[700px]:grid-cols-1 min-[700px]:gap-2.5 min-[1024px]:grid-cols-2 min-[1024px]:gap-3">
+            <div className="grid grid-cols-1 gap-1.5 min-[520px]:grid-cols-2 min-[520px]:gap-2 min-[1025px]:gap-3">
               {categories.map((cat) => {
                 const ov = overridesByKey[cat.key]
                 return (
@@ -633,6 +635,7 @@ function MenuContent({
         <div className="mt-auto pt-2">
           <MenuFooterCard />
         </div>
+      </div>
       </div>
     </div>
   )

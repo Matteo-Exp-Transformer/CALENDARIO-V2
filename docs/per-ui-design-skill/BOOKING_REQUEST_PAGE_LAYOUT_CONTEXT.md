@@ -174,6 +174,7 @@ Nome e titolo stessa scala grande, descrizione più piccola. Font in `BOOKING_HE
 
 ## 7. Card categoria ingredienti (`BookingMenuCategoryCard`)
 
+- **Breakpoint compose (`BookingMenuComposeGrid`):** ≤699px griglia 2 col compact; ≥700px scroll orizzontale — **stesso layout** per menù libero e preselezionato (`locked` non cambia la view). Entrambi i branch DOM montati (collapse su submit).
 - Card chiusa: `aspect-4/3` indipendente dal `layout` (evita nastro basso da `h-[148px]` su colonna
   larga). Foto ingrediente in card aperta: `aspect-4/3 sm:aspect-3/2`. Mai altezze `px` su immagini
   full-width: sempre `aspect-ratio`.

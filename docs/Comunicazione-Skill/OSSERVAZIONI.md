@@ -262,6 +262,22 @@
   e auto-contenuti è apprezzato.
 - Chiusura calorosa ("grazie mille", emoji) → rapporto collaborativo, non solo transazionale.
 
+### 31-05-26 — Correzione: «annota» ≠ codificare nello skill system
+- Matteo: quando chiede **annota**, l'agente deve **solo** scrivere in `OSSERVAZIONI.md` (dati
+  grezzi) — **non** modificare `APP_CONTEXT_SKILL.md`, `PREPARA_PROMPT_SKILL.md`, `PROPOSTE` come
+  accettate, né promuovere regole. Codifica = sessione Meta / decisione esplicita separata.
+
+### 31-05-26 — Report Verifica (revisore esecuzione): «Mappatura responsive» (candidato, non codificato)
+- Matteo chiede che l'**agente Verifica** (revisore nel ciclo, non Meta comunicazione) aggiunga nel
+  report una **nota compatta** per ogni componente/superficie UI: se è stato **mappato** e controllato
+  alle viewport responsive, con esito (**mappatura OK/KO** · **responsive OK/KO**) — per tenere traccia
+  di cosa resta da mappare/testare in responsive design. Viewport tipiche 375/834/1280.
+
+### 31-05-26 — Report esecutore: sezione «Stato prima» del codice (candidato, non codificato)
+- Matteo chiede che l'**agente esecutore** nel report annoti **come era il codice prima delle sue
+  modifiche** — solo le parti necessarie a capire i cambiamenti e la struttura (per ripristino se
+  serve). Deve essere **sintetico** ma permettere ricostruzione; no dump interi file.
+
 ### 29-05-26 — Validazione UX Pagina Prenota (ciclo prepara-prompt → esecutore → revisore)
 - Sintomo QA «non funziona nulla» (no toast/scroll/pulse/chiusura card) con implementazione già presente → **causa root HTML5** (`required` senza `noValidate`), non logica React. Pattern da documentare in ogni nuovo form con validazione custom.
 - Dopo root cause il fix è andato **veloce** (1–2 giri: `isTrusted`, pulse su wrapper, testi bianchi); i giri precedenti erano lo stesso blocco.

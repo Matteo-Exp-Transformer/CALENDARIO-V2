@@ -51,7 +51,7 @@
 | Prompt 1 admin | ✅ Approvato |
 | Prompt 2 pubblico esecutore | ✅ report |
 | Prompt 2 revisione | ⏳ verificare report revisione |
-| QA Matteo checklist 8 note | ⬜ parziale — #1 + extra **OK** Matteo 31-05-26; restano KO #3b/#6/#8 (vedi § QA Matteo) |
+| QA Matteo checklist 8 note | ⬜ parziale — #1 + extra **OK** Matteo 31-05-26; **fix #3b/#6 + Prenota 31-05-26** (QA agente QR OK, Matteo ⬜); resta KO **#8** |
 | Commit / merge | ⬜ Matteo |
 | QA 5 temi mobile (FU-021) | ⬜ checklist in FOLLOW_UP |
 
@@ -65,17 +65,18 @@
 | 2 | OK | |
 | 2b | OK | |
 | 3 | OK | |
-| 3b | **KO** | View **479–700px** (e admin **640–768** = #6): layout ibrido vecchio, card mal configurate — QR cliente + schermata Categorie Menu. **Sessione dedicata.** |
+| 3b | **Fix 31-05-26** | View 479–700px: **1 col full-width** (Opzione A D2). QA agente Playwright OK 375–1280; **Matteo ⬜** conferma. [Report](../31-05-26/Report-fix-viewport-menu-responsive-31-05-26.md) |
 | 3c | OK | |
 | 4 | OK | |
 | 4b | OK | |
 | 5 | OK | |
-| 6 | **KO** | = 3b (640–768px titolo card categorie admin) |
+| 6 | **Fix 31-05-26** | = 3b admin: wrap griglia + overview `md` 768px. **Matteo ⬜** |
 | 7 | — | chiuso |
 | 8 | **KO** | Scroll footer homepage QR: salto sfondo **ancora presente** |
 | extra | **OK** | Fix 31-05-26 · **QA Matteo OK** (apertura Modifica QR, console pulita). |
+| Prenota compose | **Fix 31-05-26** | Soglia scroll categorie **700px** (allineata QR). **Matteo ⬜** |
 
-**Prossimo lavoro suggerito:** QA Matteo su #1/extra post-fix · prompt viewport 479–700 (#3b/#6) · prompt P2-lite (#8). Report fix: [Report-fix-menu-admin-scroll-modale-31-05-26.md](../31-05-26/Report-fix-menu-admin-scroll-modale-31-05-26.md).
+**Prossimo lavoro (agente successivo):** prompt footer sfondo (#8). Viewport #3b/#6: fix codice 31-05-26 — [Report](../31-05-26/Report-fix-viewport-menu-responsive-31-05-26.md).
 
 ---
 
@@ -180,7 +181,7 @@ Mappa note iniziali → dove verificare. Smoke: `/menu/test-pro/qr/x7zuud5` · a
 | Voce | Stato |
 |------|--------|
 | Ciclo pianificazione 8 note | ✅ prompt P1/P2 + correttivi + revisioni consegnati |
-| QA Matteo | ⏳ 3 KO aperti (#3b/#6/#8) |
+| QA Matteo | ⏳ 1 KO aperto (**#8**); #3b/#6 fix codice — conferma Matteo ⬜ |
 | Handoff agente successivo | Report + `PREPARA_PROMPT` §3 + tabella QA § sopra |
 | Sessione Meta skill | ⬜ dati in OSSERVAZIONI — niente riforma VOCABOLARIO qui |
 

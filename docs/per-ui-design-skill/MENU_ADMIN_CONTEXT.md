@@ -24,10 +24,10 @@ Prenota e Menu QR pescano i dati. È la fonte di verità delle voci di menù.
   (`menu_categories.image_url`, path `{tenantId}/booking-cat/{categoryId}.webp`).
 - Panoramica categorie/ingredienti condivisa via `menuPricesCatalogLayout.ts` (griglia
   CollapsibleCard, righe `menu-prices-item-row`, selezione `menu-prices-item-row--selected`).
-  - Griglia categorie `MENU_INGREDIENT_OVERVIEW_GRID_CLASS`: `grid-cols-1` → `sm:grid-cols-2`
-    (≥640px) → `lg:grid-cols-3` (≥1024px). **Non** usare `md:` per le 2 colonne: lascia un buco a
-    1 colonna tra 640-767px (regressione corretta 30-05-26). La classe legacy
-    `menu-prices-category-list-wrap` in `index.css` non è più applicata a questa griglia.
+  - Griglia categorie `MENU_INGREDIENT_OVERVIEW_GRID_CLASS`: `grid-cols-1` fino a **1050px** →
+    `min-[1050px]:grid-cols-2` → `xl:grid-cols-3` (≥1280px). Lista card categorie
+    (`menuPricesCategoryListWrapClass`): sempre 1 colonna esterna; griglia interna
+    `AdminMenuCategoryLabelCard` passa a 2 col da **1050px** (`min-[1050px]:grid-cols-2`) — allineato a overview ingredienti e soglia tab Menu principale.
 - Grouping `itemsByCategory` centralizzato in `menuCatalogGrouping.ts` (`groupMenuItemsByCategory`)
   — usarlo, non duplicare.
 - Subtitle card categoria: `N ingredienti` (con pluralizzazione) in tutti e 3 i componenti — non
@@ -44,6 +44,9 @@ In `MenuPricesTab`, il form "Nuovo/Modifica Prodotto" sta dentro la sezione "Mod
 dopo titolo/descrizione e prima delle categorie; di default chiuso, si apre con "Aggiungi nuovo
 ingrediente" (`Button variant="success" size="sm"`). Layout responsive: griglia 2x2 desktop
 (nome/categoria, prezzo/foto) + descrizione full-width sotto; 1 colonna mobile.
+Scroll al form (anche **Modifica** su un’altra card con form già aperto): `scrollIntoAdminShellView`
+su titolo form (`productFormTitleRef` / `categoryFormTitleRef`), `scrollMarginTop` ~132px,
+`ensureVisible: true` — stesso helper dell’overlay Categorie Menu (`adminScroll.ts`).
 
 ## 4. Promo testuali
 

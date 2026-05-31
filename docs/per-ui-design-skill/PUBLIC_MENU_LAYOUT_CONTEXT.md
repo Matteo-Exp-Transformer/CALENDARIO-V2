@@ -10,28 +10,30 @@ description: >-
 
 > File principale: `src/pages/PublicMenuPage.tsx`
 > Skill entry point: `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`
-> Ultima revisione: 2026-05-30 — card verticali ≤700px, icone Phosphor override, sfondo repeat-y stabile
+> Ultima revisione: 2026-05-31 — wrapper desktop FU-025, griglia 520/1025, icone Phosphor override, sfondo repeat-y stabile
 
 ---
 
 ## 1. Struttura visiva dall'alto verso il basso
 
 ```
-┌─────────────────────────────────────┐
-│  <header> — nessun PNG header        │
-│  Nome ristorante + fregio             │
-│  MenuCarousel (badge solo in slide)   │
-│  ○ ● ○  pallini tema                  │
-├─────────────────────────────────────┤
-│  <div flex-1> — SOLO bodyImage       │
-│  MenuNavTabs (sticky top-0)           │
-│  Griglia categorie (main, no bg)      │
-│  … contenuto scroll …                 │
-│  Footer data/ora (mt-auto in fondo)   │
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│  Shell pagina (full viewport) — useMenuPageBackgroundStyle     │
+│  bodyImage repeat-y, riempie anche i lati su desktop largo   │
+│  ┌────────────────────────────────────────┐                  │
+│  │  Wrapper contenuto max-w-[1024px]      │  ← centrato      │
+│  │  mx-auto — invisibile, no bordo        │    oltre 1024px  │
+│  │  ┌──────────────────────────────────┐  │                  │
+│  │  │ <header> nome + MenuCarousel      │  │                  │
+│  │  │ MenuNavTabs (sticky top-0)        │  │                  │
+│  │  │ Griglia categorie (main)          │  │                  │
+│  │  │ Footer data/ora (mt-auto)       │  │                  │
+│  │  └──────────────────────────────────┘  │                  │
+│  └────────────────────────────────────────┘                  │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-Pagina: `useMenuPageBackgroundStyle()` — **solo `bodyImage`** su tutta la homepage (ripetuto in verticale se scroll lungo). **`headerImage` non usato in homepage** — solo in `PublicMenuCategoryPage` (barra sticky ~56px).
+Pagina: `useMenuPageBackgroundStyle()` sul **wrapper esterno** — **solo `bodyImage`** su tutta la viewport (ripetuto in verticale se scroll lungo). Il **wrapper interno** (`max-w-[1024px] mx-auto`) congela larghezza UI oltre 1024px senza casella visibile. **`headerImage` non usato in homepage** — solo in `PublicMenuCategoryPage` (barra sticky ~56px).
 
 | Pagina | Asset sfondo |
 |--------|----------------|
@@ -100,31 +102,32 @@ Scroll orizzontale: classe `.scrollbar-hide` in `index.css` (niente barra su mob
 
 | Viewport | Colonne | Layout card |
 |----------|---------|-------------|
-| &lt;480px | 1 | verticale compatta `aspect-[7/2]` |
-| 480–699px | 2 | verticale `aspect-[5/2]` (tile più leggibile in 2 col) |
-| 700–1023px | 1 | orizzontale full-width |
-| ≥1024px | 2 | orizzontale |
+| &lt;520px | 1 | verticale `aspect-[7/2]` |
+| 520–1024px | 2 | verticale `aspect-[5/2]` (tile) |
+| ≥1025px | 2 | orizzontale (thumb + titolo + descrizione) |
 
-**Breakpoint layout card: 700px** (verticale sotto, orizzontale sopra).
+**Breakpoint layout card: 1025px** (tile verticale sotto, riga orizzontale sopra). Soglia griglia 2 col: **520px** (invariata).
 
-**≤699px — verticale** (tile compatta, non monopolizza lo scroll):
+**Desktop largo (&gt;1024px viewport):** il wrapper `max-w-[1024px] mx-auto` congela la larghezza del contenuto; lo sfondo tema resta full viewport. I breakpoint Tailwind restano legati alla **viewport** (es. card orizzontale da 1025px anche se la colonna è 1024px).
+
+**≤1024px — verticale** (tile, anche in griglia 2 col tablet):
 
 ```tsx
-<Link className="block rounded-xl ... min-[700px]:flex min-[700px]:rounded-2xl">
-  <div className="relative min-[700px]:hidden">
-    <div className="aspect-[7/2] min-[480px]:aspect-[5/2] ...">
-      {imageUrl ? <img /> : <CategoryIcon className="size-6 min-[480px]:size-7" />}
+<Link className="block rounded-xl ... min-[1025px]:flex min-[1025px]:rounded-2xl">
+  <div className="relative min-[1025px]:hidden">
+    <div className="aspect-[7/2] min-[520px]:aspect-[5/2] ...">
+      {imageUrl ? <img /> : <CategoryIcon className="size-6 min-[520px]:size-7" />}
       ...
-      <h2 className="text-xs min-[480px]:text-sm uppercase">{displayTitle}</h2>
+      <h2 className="text-xs min-[520px]:text-sm uppercase">{displayTitle}</h2>
     </div>
   </div>
 </Link>
 ```
 
-**≥700px — orizzontale** con thumb quadrato (`w-20` → `w-24` da 900px):
+**≥1025px — orizzontale** con thumb quadrato (`w-20` → `w-24` da 900px viewport):
 
 ```tsx
-<Link className="... min-[700px]:flex min-h-[80px] min-[900px]:min-h-[88px]">
+<Link className="... min-[1025px]:flex min-h-[80px] min-[900px]:min-h-[88px]">
   <div className="aspect-square w-20 min-[900px]:w-24 shrink-0 bg-stone-100">
     {imageUrl
       ? <img className="h-full w-full object-cover" />
