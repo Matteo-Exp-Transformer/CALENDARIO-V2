@@ -53,7 +53,7 @@ qrMenu: isProOrAbove || qrMenuEnabled
 
 **Colonne `menu_qrcode_categories`** (post-042): `id`, `tenant_id`, `menu_qr_code_id`, `category_key`, `title`, `description`, `icon`, timestamps. UNIQUE `(menu_qr_code_id, category_key)`.
 
-**`category_filter` su `menu_qr_codes`**: `null` = legacy (pubblico mostra tutte le categorie); `[]` = nessuna card; `[keys]` = filtro esplicito. Nuovi salvataggi dal modale usano sempre array esplicito.
+**`category_filter` su `menu_qr_codes`**: `null` = legacy (pubblico mostra tutte le categorie, ordine catalogo `menu_categories.sort_order`); `[]` = nessuna card; `[keys]` = filtro esplicito **e ordine di visualizzazione** (tab + griglia homepage). La **sequenza dell’array** è l’ordine salvato dal modale (frecce Su/Giù sulle card «Titoli e descrizioni categorie», non sui checkbox). Nuova categoria attivata dai checkbox → append in coda. Nuovi salvataggi dal modale usano sempre array esplicito. Helper: `orderMenuCategoriesByFilter` in `menuQrAppearance.ts`.
 
 ---
 
@@ -114,7 +114,7 @@ File: `src/features/booking/hooks/useMenuQrCodes.ts`
 | Componente | File |
 |------------|------|
 | `MenuQrManager` | `src/features/booking/components/MenuQrManager.tsx` — solo lista «I miei QR» (tab Aspetto homepage spostato in modale) |
-| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia; **Salva** su riga «Nome QR *» + fondo; checkbox categorie **solo con ≥1 ingrediente**; titoli/foto + picker ingredienti nascosti; **picker icone (12 Phosphor + 8 Lucide, griglia)** per categoria senza foto QR; **guard chiusura** (overlay/Esc/X) se draft dirty. **Nessuna UI** per `preset_ids` (menù eventi staff restano in impostazioni Prenota; in salvataggio si preserva solo il valore DB esistente su QR già creati). Richiede migrazioni `036`+`037`+`042` su ogni ambiente Supabase collegato all’app deployata. |
+| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia; **Salva** su riga «Nome QR *» + fondo; checkbox categorie **solo con ≥1 ingrediente** (attiva/disattiva, **senza** riordino); sezione card «Titoli e descrizioni categorie» con **frecce Su/Giù** per ordine → persiste in `category_filter`; titoli/foto + picker ingredienti nascosti; **picker icone (12 Phosphor + 8 Lucide, griglia)** per categoria senza foto QR; **guard chiusura** (overlay/Esc/X) se draft dirty (`serializeMenuQrDraft` non ordina `categoryFilter`). **Nessuna UI** per `preset_ids` (menù eventi staff restano in impostazioni Prenota; in salvataggio si preserva solo il valore DB esistente su QR già creati). Richiede migrazioni `036`+`037`+`042` su ogni ambiente Supabase collegato all’app deployata. |
 | `MenuHomepageConfigPanel` | Sezioni controllate QR (`MenuQrCarouselSection`, `MenuQrCategoryCardsSection`, `MenuQrHiddenItemsPicker`, `MenuQrThemeSection`) — upload anche su **nuovo** QR via path `qr/draft/{shortCode}/` (migrazione a `qr/{id}/` al Salva). La logica upload condivisa sta in `src/features/booking/hooks/useCarouselPhotoUpload.ts`, non nel pannello QR. |
 
 ### Icone categoria senza foto (20 preset — 01-06-26)

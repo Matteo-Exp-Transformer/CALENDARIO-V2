@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 01-06-26 | Menù QR — ordine categorie (frecce modale + tab/griglia pubblico) ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-ordine-categorie-01-06-26.md) — `category_filter` sequenza; legacy null→sort_order; validate 241; QA smoke ⬜; commit chiusura report finale. |
 | 01-06-26 | Menù QR — 12 Phosphor + import foto + 10 Lucide (**commit `a25f02c`**) | [12 icone](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-12-icone-categoria-01-06-26.md) · [Lucide](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-lucide-icone-01-06-26.md) — picker 22, glyph condiviso, foto catalogo→QR; validate 236; QA ⬜. |
 | 01-06-26 | Follow-up — rimosse Lucide Zuppa/Uova dal picker Menù QR ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-follow-up-rimozione-lucide-soup-uova-01-06-26.md) — 20 icone; fallback DB; commit report finale; validate 237. |
 | 01-06-26 | Esecuzione light — logo header admin più piccolo solo mobile | [Report](Sessioni%20di%20lavoro/01-06-26/Report-admin-header-logo-mobile-01-06-26.md) — `AdminDashboard` top bar: logo 56px &lt;sm, 100px ≥sm; barra 92/106px; validate 227; QA visivo ⬜. |
