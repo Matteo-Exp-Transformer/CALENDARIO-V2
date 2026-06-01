@@ -37,6 +37,22 @@
    accumulati ma si trasformano in miglioramenti. Quando una causa è risolta da una regola, annotalo in
    `ERRORI_PROCESSO.md`.
 
+4c. **Voto sintetico alla sessione — è compito TUO, non dell'agente di lavoro** (regola 01-06-26).
+   Gli agenti di lavoro (esecutore, revisore-codice, prepara-prompt) scrivono nel report **solo la
+   loro versione + i dati grezzi** (n° giri, correzioni, chiarezza prompt, qualità skill system) —
+   **non** un voto sintetico, per evitare l'autocelebrazione. Il **voto finale** alla sessione lo dai
+   **tu**, confrontando le versioni dei vari agenti nel report unico del ciclo.
+   - **Le contraddizioni tra versioni sono un dato di prim'ordine.** Se l'esecutore si legge come
+     "tutto liscio" e il revisore segnala 4 giri di correzione sulla stessa sessione, quella
+     divergenza misura l'**affidabilità dell'agente** (quanto la sua autovalutazione è realistica).
+     Annotala esplicitamente: è un segnale su quali agenti fidarsi di più e dove serve enforcement.
+   - In fase di **raccolta dati** (attuale): tieni le versioni dei singoli agenti nel report (non
+     cancellarle), così la divergenza resta tracciabile. Il voto sintetico va nel «Registro metriche»
+     di [`EVOLUZIONE_SKILLS.md`](EVOLUZIONE_SKILLS.md) (M5), non disperso nei report.
+   - Origine: Matteo 01-06-26 — «se ci sono contraddizioni lo dovremmo capire; ci aiuta a capire
+     quanto gli agenti sono affidabili». Voci collegate: `VOCABOLARIO.md` «lavoro ok» (l'agente
+     scrive la sua versione, non il voto) + `COMUNICAZIONE_UTENTE_SKILL.md` protocollo fine-chat.
+
 5. **Parla con Matteo**: presenta le valutazioni in modo sintetico (stile skill comunicazione),
    **proponi attivamente** le nuove voci emerse dall'analisi (punto 1), non solo le candidate già in `PROPOSTE.md`, e chiedi le decisioni. Domande tipiche:
    - "La voce «X» è andata bene N volte, la promuovo a automatica?"
