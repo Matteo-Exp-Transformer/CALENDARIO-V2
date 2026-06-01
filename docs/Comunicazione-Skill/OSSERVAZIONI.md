@@ -37,10 +37,22 @@
 
 ## Sessioni registrate (append-only)
 
+### 01-06-26 — Sync rename categoria → QR + form (deep + follow-up modale)
+- Prompt deep **9/10**: 4 decisioni prodotto, helper, cosa NON fare → **0 domande**, 1 turno sync; ambiguità «toast o modale» → agente toast post-save, Matteo corregge a **modale pre-save** (pattern elimina categoria) + FU-029.
+- Follow-up UX **breve ed efficace** (1 turno); errori restano toast.
+- «lavoro ok» con richiesta **analisi prompt inclusa** → report con § statistiche (aderenza migliore vs sessioni Insalata/ordine categorie).
+- Report: `docs/Sessioni di lavoro/01-06-26/Report-sync-rename-categoria-qr-form-01-06-26.md`.
+
 ### 01-06-26 — «Test fatti tutto ok» ≠ riscrivere il report (Matteo)
 - Dopo QA positivo («test fatti tutto ok»), Matteo nota che gli agenti **aggiungono dettagli retroattivi** come se il report fosse stato approssimativo — il contenuto tecnico era già valido; aggiornare solo **QA ⬜→✅**, cappello «cosa resta», note skill se richieste.
 - **Non** espandere «cosa è stato fatto» né inventare difficoltà post-OK.
 - Vedi `PROPOSTE.md` «test fatti tutto ok» + sezione analisi flusso prompt (report ordine categorie).
+
+### 01-06-26 — Menù QR default icona Insalata (`lucide_salad`)
+- Prompt esecuzione **10/10** (superfici 3, FU-023, no APP_CONTEXT intero, cosa NON fare) → **0 domande**, 1 turno codice, validate **241** OK.
+- «lavoro ok» → report tecnico + skill; **mancava** § Analisi flusso prompt; Matteo ping esplicito (stesso pattern ordine categorie).
+- Task **O(1)** grazie ad architettura precedente (`MENU_QR_DEFAULT_CATEGORY_ICON_KEY` + glyph condiviso).
+- Report: `docs/Sessioni di lavoro/01-06-26/Report-menu-qr-default-icona-insalata-01-06-26.md`.
 
 ### 01-06-26 — Menù QR ordine categorie (standard) + richiesta analisi prompt
 - Prompt esecuzione **10/10** checklist (profilo, skill, file, pattern, anti-scope, DB, smoke) → **0 domande**, 1 turno codice, validate 241 OK.

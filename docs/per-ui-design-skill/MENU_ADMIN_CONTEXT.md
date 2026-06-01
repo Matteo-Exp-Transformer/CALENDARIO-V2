@@ -35,8 +35,14 @@ Prenota e Menu QR pescano i dati. È la fonte di verità delle voci di menù.
 - **Overlay «Categorie Menu»** (`viewMode === 'categories'`): form in alto; scroll al form con
   `scrollIntoAdminShellView` (`adminScroll.ts`) sul `<main>` AdminShell Pro; guard chiusura (X / Esc)
   se form aperto e dirty — `DiscardChangesConfirmModal` (pattern Impostazioni 29-05-26).
-- **Card categoria admin** (`AdminMenuCategoryLabelCard`): griglia `grid-cols-[minmax(0,1fr)_auto]`
-  — titolo orizzontale con `break-words`, azioni a destra (no testo verticale lettera-per-lettera).
+- **Rename chiave categoria:** se il nome cambia lo slug (`key`), modale **Conferma e salva** prima del persist (come elimina categoria); poi `useUpdateMenuCategory` allinea `menu_items`, Menù QR e `hidden_category_keys` in Personalizza form. Solo al save confermato, non in digitazione o cambio tab. Vedi `PUBLIC_MENU_DATA_FLOW_CONTEXT.md` § rename · FU-029.
+- **Elimina categoria:** modale **Elimina categoria** con avviso QR/form (`CATEGORY_KEY_DELETE_INFO_MESSAGE`); al click Elimina `useDeleteMenuCategory` esegue sync immediato (`syncMenuCategoryKeyDelete`) — non al Salva modale QR. Vedi `PUBLIC_MENU_DATA_FLOW_CONTEXT.md` § delete sync.
+- **Card categoria admin** (`AdminMenuCategoryLabelCard`): flex `.menu-prices-category-label-card`
+  (CSS in `index.css`). **Mobile (&lt;1050px): nessuna thumb** — solo titolo + azioni in colonna
+  (`.menu-prices-category-label-card__body`). **Desktop (≥1050px):** thumb Prenota
+  (`menu_categories.image_url`) in `.menu-prices-category-label-card__thumb` (`hidden min-[1050px]:block`).
+  Titolo centrato in `.menu-prices-category-label-card__title` (zona centrale flex);
+  icone in `.menu-prices-category-label-card__actions` in basso, centrate (no overlap ~375px).
 
 ## 3. Form prodotto/ingrediente
 
@@ -82,8 +88,8 @@ tipologie nella UI.
 ## 8. Modale Menù QR — icone categoria (senza foto)
 
 - **Dove:** tab Menu → I miei QR → Crea/Modifica → sezione card categoria **senza** foto in `category_images` del QR.
-- **UI:** titolo «Icona categoria (senza foto)» + griglia 12 icone Phosphor (`MenuQrCategoryCardsSection` in `MenuHomepageConfigPanel.tsx`).
-- **Default:** `fork_knife` per categorie senza mapping; mapping per key comuni in `categoryIcons.ts` (`pizza` → `pizza_slice`, `birre` → `beer`, …).
+- **UI:** titolo «Icona categoria (senza foto)» + picker **20 icone** (12 Phosphor + 8 Lucide «Altre icone») in `MenuQrCategoryCardsSection` (`MenuHomepageConfigPanel.tsx`).
+- **Default:** `lucide_salad` (Insalata) per categorie senza mapping e senza icona DB valida; mapping Phosphor per key comuni in `categoryIcons.ts` (`pizza` → `pizza_slice`, `birre` → `beer`, …) — costante `MENU_QR_DEFAULT_CATEGORY_ICON_KEY`.
 - **DB:** `menu_qrcode_categories.icon` (migrazione 042) — una delle 12 chiavi; prefill su nuovo QR senza upload foto automatico.
 - Dettaglio pubblico: `PUBLIC_MENU_SKILL.md` § Icone categoria senza foto.
 

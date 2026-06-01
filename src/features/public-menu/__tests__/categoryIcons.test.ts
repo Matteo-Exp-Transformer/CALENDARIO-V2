@@ -20,9 +20,10 @@ describe('categoryIcons', () => {
     expect(values).not.toContain('lucide_egg_fried')
   })
 
-  it('default senza foto: fork_knife per categoria sconosciuta', () => {
+  it('default senza foto: lucide_salad per categoria sconosciuta', () => {
     expect(defaultIconKeyForCategory('categoria_xyz')).toBeNull()
-    expect(resolveMenuQrCategoryIconKey(null, 'categoria_xyz')).toBe('fork_knife')
+    expect(resolveMenuQrCategoryIconKey(null, 'categoria_xyz')).toBe('lucide_salad')
+    expect(MENU_QR_DEFAULT_CATEGORY_ICON_KEY).toBe('lucide_salad')
   })
 
   it('mapping noto per category_key (Phosphor)', () => {

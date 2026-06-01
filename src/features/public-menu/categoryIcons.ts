@@ -26,7 +26,7 @@ import {
 } from 'lucide-react'
 
 /** Default universale per categorie senza foto e senza mapping noto. */
-export const MENU_QR_DEFAULT_CATEGORY_ICON_KEY = 'fork_knife' as const
+export const MENU_QR_DEFAULT_CATEGORY_ICON_KEY = 'lucide_salad' as const
 
 export type MenuQrPhosphorIconKey =
   | 'fork_knife'
@@ -165,7 +165,7 @@ export function resolveMenuQrCategoryIcon(
   const resolved = resolveMenuQrCategoryIconKey(iconKey, categoryKey)
   const opt = getMenuQrCategoryIconOption(resolved)
   if (opt.family === 'lucide') {
-    return PHOSPHOR_ICON_BY_KEY[MENU_QR_DEFAULT_CATEGORY_ICON_KEY]
+    return PHOSPHOR_ICON_BY_KEY.fork_knife
   }
   return opt.Icon
 }

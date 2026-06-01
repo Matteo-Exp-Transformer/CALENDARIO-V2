@@ -3,6 +3,8 @@ import { toast } from 'react-toastify'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { deleteMenuCategoryPhoto } from '@/lib/menuPhotoUpload'
 import { handleSupabaseError, supabase } from '@/lib/supabase'
+import { syncMenuCategoryKeyRename } from '@/features/booking/services/syncMenuCategoryKeyRename'
+import { syncMenuCategoryKeyDelete } from '@/features/booking/services/syncMenuCategoryKeyDelete'
 
 export interface MenuCategoryRecord {
   id: string
@@ -153,7 +155,9 @@ export const useUpdateMenuCategory = () => {
         throw new Error(getMenuCategoryMutationError(error))
       }
 
-      if (previousKey !== key) {
+      const keyRenamed = previousKey !== key
+
+      if (keyRenamed) {
         const { error: menuItemsError } = await ((supabaseAny.from('menu_items') as any) as any)
           .update({
             category: key,
@@ -165,12 +169,28 @@ export const useUpdateMenuCategory = () => {
         if (menuItemsError) {
           throw new Error(handleSupabaseError(menuItemsError))
         }
+
+        try {
+          await syncMenuCategoryKeyRename(tenantId!, previousKey, key)
+        } catch (syncError) {
+          throw new Error(
+            syncError instanceof Error
+              ? syncError.message
+              : 'Errore nell\'allineamento Menù QR e Personalizza form dopo il rename della categoria',
+          )
+        }
       }
 
       return data as MenuCategoryRecord
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['menu-categories'] })
+      queryClient.invalidateQueries({ queryKey: ['menu-items'] })
+      queryClient.invalidateQueries({ queryKey: ['menu-qr-codes'] })
+      queryClient.invalidateQueries({ queryKey: ['menu-qrcode-categories'] })
+      queryClient.invalidateQueries({
+        queryKey: ['restaurant_settings', 'booking_public_form_config'],
+      })
       toast.success('Categoria aggiornata con successo')
     },
     onError: (error: Error) => {
@@ -232,6 +252,16 @@ export const useDeleteMenuCategory = () => {
       }
 
       try {
+        await syncMenuCategoryKeyDelete(tenantId!, categoryKey)
+      } catch (syncError) {
+        throw new Error(
+          syncError instanceof Error
+            ? syncError.message
+            : 'Errore nell\'allineamento Menù QR e Personalizza form dopo l\'eliminazione della categoria',
+        )
+      }
+
+      try {
         await deleteMenuCategoryPhoto(tenantId!, id)
       } catch {
         // file assente o già rimosso
@@ -242,6 +272,11 @@ export const useDeleteMenuCategory = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['menu-categories'] })
       queryClient.invalidateQueries({ queryKey: ['menu-items'] })
+      queryClient.invalidateQueries({ queryKey: ['menu-qr-codes'] })
+      queryClient.invalidateQueries({ queryKey: ['menu-qrcode-categories'] })
+      queryClient.invalidateQueries({
+        queryKey: ['restaurant_settings', 'booking_public_form_config'],
+      })
       toast.success('Categoria eliminata con successo')
     },
     onError: (error: Error) => {

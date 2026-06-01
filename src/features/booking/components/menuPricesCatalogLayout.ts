@@ -25,6 +25,10 @@ export const MENU_CATEGORY_LABEL_TITLE_STYLE: CSSProperties = {
 export const MENU_CARD_INNER_SHELL_CLASS =
   'rounded-2xl border-2 border-black/20 bg-white/85 backdrop-blur-[1px] menu-card-mobile transition-all duration-200'
 
+/** Shell card categoria nell’overlay «Categorie ingredienti» (thumb + titolo + azioni). */
+export const MENU_CATEGORY_LABEL_CARD_SHELL_CLASS =
+  'menu-prices-category-label-card'
+
 export const MENU_CATEGORY_COLLAPSIBLE_CLASS = cn(
   'menu-prices-category-collapsible h-fit overflow-hidden shadow-md transition-shadow duration-200 hover:shadow-lg',
   MENU_CARD_INNER_SHELL_CLASS,

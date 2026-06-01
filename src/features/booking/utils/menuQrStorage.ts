@@ -81,6 +81,24 @@ async function copyStorageObject(fromPath: string, toPath: string): Promise<void
   if (error) throw error
 }
 
+/** Copia thumb QR `cat/{previousKey}.webp` → `cat/{newKey}.webp` se il file sorgente esiste. */
+export async function tryCopyQrCategoryPhotoOnRename(
+  tenantId: string,
+  storageSegment: string,
+  previousKey: string,
+  newKey: string,
+): Promise<boolean> {
+  if (previousKey === newKey) return false
+  const fromPath = menuQrCategoryPhotoPath(tenantId, storageSegment, previousKey)
+  const toPath = menuQrCategoryPhotoPath(tenantId, storageSegment, newKey)
+  try {
+    await copyStorageObject(fromPath, toPath)
+    return true
+  } catch {
+    return false
+  }
+}
+
 function publicUrlForPath(path: string): string {
   const { data } = (supabase.storage.from(BUCKET) as any).getPublicUrl(path)
   return (data as { publicUrl: string }).publicUrl

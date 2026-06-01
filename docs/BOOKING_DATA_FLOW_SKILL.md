@@ -25,6 +25,8 @@ description: >-
 
 **Regola operativa:** la vetrina **non** legge il magazzino in tempo reale per tutto. Per i campi vetrina (`label`, `description`, `price_per_person`, `hidden_*`) c'è un **resolver** che decide caso per caso se mostrare il valore live del preset o quello «congelato» nella card.
 
+**Delete categoria magazzino → vetrina:** eliminando una categoria in tab Menu (`useDeleteMenuCategory`), `syncMenuCategoryKeyDelete` rimuove la `category_key` da `sub_tabs[].hidden_category_keys` in `booking_public_form_config` (non tocca `field_overrides`). Helper: `bookingFormCategoryKeySync.removeCategoryKeyFromBookingPublicFormConfig`. Stesso momento del sync Menù QR — vedi `PUBLIC_MENU_DATA_FLOW_CONTEXT.md` § delete sync.
+
 ---
 
 ## 2. Il resolver `field_overrides` — come funziona
@@ -163,6 +165,15 @@ LOCK  Cancellazione preset staff
 LOCK  Due client Supabase
       Admin: `supabase` (autenticato). Pubblico Prenota: `supabasePublic` (anonimo).
       Il resolver è puro, non sa di client — lo chiama chi ha già i dati in mano.
+
+LOCK  Rename chiave categoria (magazzino)
+      Solo al save categoria in tab Menu (`useUpdateMenuCategory`): oltre a
+      `menu_items.category`, allinea in background `menu_qr_codes` /
+      `menu_qrcode_categories` e `sub_tabs[].hidden_category_keys` in
+      `booking_public_form_config` (`bookingFormCategoryKeySync.ts`). Non toccare
+      `field_overrides` né altri campi vetrina. Sync non automatica aprendo tab Menu
+      o modale QR senza save categoria. UX rename: modale conferma in overlay Categorie
+      (non toast laterale) — vedi FU-029 / `MenuPricesTab`.
 ```
 
 ---
@@ -234,5 +245,7 @@ Tocca **solo** `bookingFormResolver.ts`. Non duplicare la logica nei componenti 
 | `src/features/booking/components/BookingRequestForm.tsx` | Applicazione resolver lato pubblico |
 | `src/features/booking/utils/validation.ts` | Helper validazione campi cliente |
 | `src/features/booking/components/publicBooking/BookingFormFields.tsx` | Form pubblico con aria-invalid |
+| `src/features/booking/utils/bookingFormCategoryKeySync.ts` | Sync rename/delete `hidden_category_keys` dopo magazzino |
+| `src/features/booking/services/syncMenuCategoryKeyDelete.ts` | Orchestrazione delete categoria → QR + form |
 
 Report sessione che ha introdotto il resolver: `docs/Sessioni di lavoro/26-05-26/Report-resolver-field-overrides-pulizia-26-05-26.md`.
