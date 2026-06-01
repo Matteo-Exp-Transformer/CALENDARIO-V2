@@ -33,6 +33,22 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## In attesa di decisione
 
+### In attesa «test fatti tutto ok» → solo aggiornare QA, non gonfiare report»
+- **Pattern osservato:** Matteo conferma smoke/QA OK; agenti riscrivevano sezioni già corrette come se fossero state stimate (01-06-26, ciclo ordine categorie Menu QR).
+- **Automatizzabile con certezza:** su frasi tipo «test fatti tutto ok» / «prove ok» / «QA ok» → aggiornare tabella QA, cappello 3 righe, SESSION_LOG; **vietato** espandere retroattivamente «cosa è stato fatto» o inventare difficoltà non emerse in chat.
+- **Meglio lasciare manuale:** contenuto della sezione «Analisi flusso prompt» (interpretazione ciclo).
+- **Livello suggerito:** 1 per agenti che chiudono report dopo QA Matteo.
+- **Dove codificare:** `COMUNICAZIONE_UTENTE_SKILL.md` + template report `APP_CONTEXT` §7.1.
+- **Esito / data:** proposta 01-06-26 — in attesa ok Matteo.
+
+### In attesa «Report standard/deep — sezione Analisi flusso prompt ed efficienza»»
+- **Pattern osservato:** Matteo chiede esplicitamente statistiche sul flusso dei prompt ricevuti (prepara → esecuzione → chiusura) per migliorare comunicazione e skill system (01-06-26).
+- **Automatizzabile con certezza:** tabella fasi + metriche numeriche (giri utente, correzioni, modalità alzata sì/no, validate vs smoke) in ogni report **standard/deep** quando esiste catena prepara-prompt o prompt strutturato lungo.
+- **Meglio lasciare manuale:** giudizio «prompt efficace/non» oltre ai numeri.
+- **Livello suggerito:** 1 obbligo report; 2 se dati mancanti (agente chiede 1 riga a Matteo).
+- **Dove codificare:** `APP_CONTEXT_SKILL.md` §7.1, `COMUNICAZIONE_UTENTE_SKILL.md` «Dati comunicazione».
+- **Esito / data:** proposta 01-06-26 — in attesa ok Matteo. Esempio compilato: report `Report-menu-qr-ordine-categorie-01-06-26.md` § Analisi flusso prompt.
+
 ### In attesa «handoff / follow-up — due parti: copia-incolla + riepilogo Matteo»
 - **Pattern osservato:** Matteo chiede handoff per prossima chat; risposte troppo lunghe o mescolate rendono difficile capire cosa incollare e cosa è extra (31-05-26, ciclo Menu QR).
 - **Automatizzabile con certezza:** prepara-prompt risponde sempre con (1) **un fenced block** pronto per nuova chat + (2) **riepilogo corto fuori** (tabella Ciclo·QA·FU + «cosa NON passi»); report finale prepara-prompt a parte se chiusura sessione.

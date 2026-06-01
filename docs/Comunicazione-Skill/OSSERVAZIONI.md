@@ -37,6 +37,17 @@
 
 ## Sessioni registrate (append-only)
 
+### 01-06-26 — «Test fatti tutto ok» ≠ riscrivere il report (Matteo)
+- Dopo QA positivo («test fatti tutto ok»), Matteo nota che gli agenti **aggiungono dettagli retroattivi** come se il report fosse stato approssimativo — il contenuto tecnico era già valido; aggiornare solo **QA ⬜→✅**, cappello «cosa resta», note skill se richieste.
+- **Non** espandere «cosa è stato fatto» né inventare difficoltà post-OK.
+- Vedi `PROPOSTE.md` «test fatti tutto ok» + sezione analisi flusso prompt (report ordine categorie).
+
+### 01-06-26 — Menù QR ordine categorie (standard) + richiesta analisi prompt
+- Prompt esecuzione **10/10** checklist (profilo, skill, file, pattern, anti-scope, DB, smoke) → **0 domande**, 1 turno codice, validate 241 OK.
+- «lavoro ok» → report scritto ma **mancava** sottosezione «Analisi flusso prompt…»; Matteo ping esplicito → report arricchito + regola fissa in `COMUNICAZIONE_UTENTE_SKILL.md`.
+- **Segnale processo:** regola comunicazione già esisteva (regola temporanea) ma non applicata al 100% — candidato nudge hook o checklist §7.1 APP_CONTEXT.
+- **Modello prompt:** riusabile per feature Menu QR admin+pubblico senza migrazioni.
+
 ### 01-06-26 — Prepara prompt a monte: checklist + mini tabella (Matteo)
 - Su «prepara prompt» (task standard icone QR), agenti prepara hanno **omesso** tabella ciclo + checklist compatta; **non** perché task light (era **standard**).
 - Matteo vuole **sempre a monte** (fuori blocco copia-incolla): tabella fasi Prepara/Esecuzione/Revisione + 2–3 checkbox operative; handoff resta con Ciclo·QA·FU.
