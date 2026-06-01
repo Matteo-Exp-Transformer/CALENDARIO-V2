@@ -107,7 +107,7 @@ Nessuna domanda in chat: prompt iniziale già completo (scope, file, legacy, smo
 |-----------|--------|
 | Diff vs report | **OK** — 6 file codice/docs come tabella sopra + test nuovo |
 | `npm run validate` (ri-eseguito a chiusura) | **OK** — 241 test |
-| Commit + push `env/test` | Eseguiti in chiusura «fai report finale» |
+| Commit + push `env/test` | `e511ded` (feat) · `8a35733` (docs) — push `origin/env/test` |
 
 ## Cosa resta / FOLLOW_UP
 
