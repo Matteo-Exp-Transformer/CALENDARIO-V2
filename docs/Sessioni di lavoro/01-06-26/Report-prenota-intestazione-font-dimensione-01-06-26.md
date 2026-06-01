@@ -1,176 +1,196 @@
-# Report — Pagina Prenota: font intestazione ampliati + dimensione testo 8–38 px
+# Report — Pagina Prenota: intestazione font, dimensione, stile testo
 
 **Data:** 01-06-26  
-**Modalità:** standard · **Profilo:** Esecuzione  
-**Stato:** ✅ report finale · revisione prepara-prompt OK · commit `73dddcc` (+ doc `4d60b75`) · push ✅
+**Modalità:** standard · **Profilo:** Esecuzione (+ revisione prepara-prompt font)  
+**Stato:** ✅ **lavoro ok** (Matteo 01-06-26) · commit fase 1 ✅ `73dddcc`/`623a4b8` su `main` · commit fase 2 ⬜
 
 ---
 
-**Cosa è cambiato:** In **Personalizza form → Intestazione pagina Prenota**, il ristoratore può scegliere tra più font e impostare la **dimensione del testo (8–38 px)** in modo **indipendente** per nome azienda, titolo e descrizione. Colori e allineamento restano come prima. La pagina pubblica `/prenota/:slug` applica le dimensioni salvate al posto dei `clamp()` CSS fissi.
+**Cosa è cambiato (sintesi):** In **Personalizza form → Intestazione pagina Prenota** il ristoratore può scegliere **font** (lista ampliata), **dimensione 8–38 px** per riga, **grassetto** e **sottolineato** per nome/titolo/descrizione. La pagina pubblica `/prenota/:slug` applica tutto da `booking_public_form_config.header_styles`. Fix fallback: niente più Thirsty che diventa Lobster; Dancing Script (Google OFL); stack script pulite.
 
-**Cosa resta:** QA visivo manuale su 375 / 834 / 1280 (anteprima admin + pagina pubblica dopo Salva) — non bloccante per il commit.
+**Cosa resta:** QA visivo Matteo (375 / 834 / 1280); **commit + push fase 2** (diff locale non ancora in git).
 
-**Serve una tua azione:** provare in admin, **Salva** (header_styles non è in autosave), verificare su `/prenota/:slug` con dimensioni diverse per riga.
+**Tua azione:** provare G/S e Dancing Script vs Lobster sulle **caselle testo** header → **Salva** → verificare `/prenota/:slug`.
 
 ---
 
-## 1. Obiettivo
+## 1. Obiettivi (due fasi)
 
-Estendere la personalizzazione dell’intestazione della **Pagina Prenota v2**:
+### Fase 1 — Feature iniziale (committata)
 
-1. Lista font curata ampliata (Google Fonts + Mistral/Thirsty di sistema).
-2. Campo numerico **fontSize** (8–38 px inclusi) per ciascuno dei tre target: `restaurant_name`, `page_title`, `page_description`.
-3. Retrocompatibilità migrate-on-read (FU-023): tenant senza `fontSize` → default 34 / 30 / 16 px; font/colori/allineamento invariati.
+1. Lista font curata ampliata (Google Fonts).
+2. `fontSize` 8–38 px indipendente per `restaurant_name`, `page_title`, `page_description`.
+3. Retrocompat migrate-on-read: default 34 / 30 / 16 px; colori/font/allineamento invariati.
 
-**Fuori scope rispettato:** corpo form, titoli sezione, pulsanti, Menu QR, carosello/sottotab, migrazioni SQL (solo JSON in `restaurant_settings.booking_public_form_config`).
+### Fase 2 — Fix fallback + stile testo (lavoro ok, da committare)
+
+1. **Mistral:** fallback solo font di sistema (no Lobster/Pacifico nella catena).
+2. **Thirsty Script** → **Dancing Script** (Google Fonts, licenza commerciale OK); migrate-on-read `thirsty-script` → `dancing-script`.
+3. **Lobster / Pacifico / Great Vibes:** fallback `cursive` generico, non altri font del menu.
+4. **`fontWeight`** `normal` | `bold` e **`textDecoration`** `none` | `underline` per riga; toggle **G** / **S** in admin; default bold su nome+titolo, normal su descrizione.
+5. **Pubblico:** rimosso `font-bold` fisso su header (`BookingRequestPage`); peso da config.
+
+**Fuori scope (entrambe le fasi):** corpo form, Menu QR, carosello, migrazioni SQL, anteprima font extra oltre alle caselle header.
 
 ---
 
 ## 2. Effetto per il ristoratore
 
-| Schermata | Prima | Dopo |
-|-----------|-------|------|
-| **Impostazioni → Personalizza form → Intestazione pagina Prenota** | Font (7), colore, allineamento per riga; dimensioni fisse in anteprima | + controllo **Dimensione (8–38)**; 17 font; anteprima live con px scelti |
-| **Pagina pubblica `/prenota/:slug`** | Header con `clamp()` responsive uguale per tutti i tenant (gerarchia solo via CSS) | Header con `fontSize: Npx` da config per ogni riga |
-| **Storage** `booking_public_form_config.header_styles` | `font`, `color`, `textAlign?` | + `fontSize` (intero normalizzato al parse/salvataggio) |
+| Schermata | Cosa fa ora |
+|-----------|-------------|
+| **Personalizza form → Intestazione pagina Prenota** | Font (17 voci), colore, dimensione 8–38, allineamento, **G** grassetto, **S** sottolineato; anteprima **solo** nelle caselle nome/titolo/descrizione |
+| **`/prenota/:slug`** | Header con font, px, grassetto e sottolineatura salvati |
+| **Storage** `restaurant_settings.booking_public_form_config` → `header_styles.*` | `font`, `color`, `fontSize`, `fontWeight`, `textDecoration`, `textAlign?` |
 
-**Default legacy** (assenza o valore invalido di `fontSize`):
+**Default** (campi assenti o legacy):
 
-| Elemento | font default | color default | fontSize default |
-|----------|--------------|---------------|------------------|
-| Nome azienda | playfair | #6b4226 | **34** px |
-| Titolo pagina | playfair | #6b4226 | **30** px |
-| Descrizione | montserrat | #4a2d19 | **16** px |
+| Elemento | font | color | fontSize | fontWeight | textDecoration |
+|----------|------|-------|----------|------------|----------------|
+| Nome azienda | playfair | #6b4226 | 34 px | **bold** | none |
+| Titolo | playfair | #6b4226 | 30 px | **bold** | none |
+| Descrizione | montserrat | #4a2d19 | 16 px | **normal** | none |
 
-**Salvataggio:** `header_styles` resta fuori dall’autosave — serve il footer **Salva** di Personalizza form (pattern 29-05-26 invariato).
+**Salvataggio:** `header_styles` **non** in autosave — footer **Salva** Personalizza form.
+
+**Font in lista (17):** Playfair, Cormorant, Libre Baskerville, Cinzel, Montserrat, Lora, Raleway, DM Serif Display, Merriweather, Poppins, Lobster, Pacifico, Great Vibes, **Dancing Script**, Mistral (solo se installato sul dispositivo).
 
 ---
 
-## 3. Modifiche tecniche
+## 3. Revisione font «tutti uguali» (prepara-prompt)
+
+| Causa | Spiegazione |
+|-------|-------------|
+| Menu `<select>` Font | Il browser **non** mostra ogni font nella lista opzioni — giudizio va sulle **caselle testo** |
+| **Thirsty Script** (prima del fix) | Non su Google → fallback a Lobster/Pacifico → sembrava uguale |
+| **Mistral** | Solo sistema; su Mac/mobile spesso corsivo generico |
+| Fallback incrociati | Lobster↔Pacifico nella stack → due scelte diverse potevano renderizzare uguale |
+| `font-bold` fisso | Faux-bold su font a un solo peso → serif/script più simili |
+
+**Dopo fase 2:** Thirsty eliminato; Dancing Script caricato da Google; stack script senza incrocio tra voci del menu.
+
+---
+
+## 4. Modifiche tecniche
 
 ### `bookingPublicFormConfig.ts`
 
-- `BookingHeaderTextStyle.fontSize: number` obbligatorio nel modello normalizzato.
-- Costanti `BOOKING_HEADER_FONT_SIZE_MIN/MAX` (8–38), `DEFAULT_BOOKING_HEADER_FONT_SIZE_PX`.
-- `normalizeBookingHeaderFontSize()` — arrotonda, clamp, fallback per target.
-- `parseBookingHeaderStylesFromUnknown` — persiste `fontSize` normalizzato.
-- `getBookingHeaderTextStyle` — `fontSize: '${N}px'` (rimossi `BOOKING_HEADER_FONT_SIZE` clamp CSS).
-- `BOOKING_HEADER_FONT_OPTIONS` — aggiunti: Lora, Raleway, DM Serif Display, Merriweather, Poppins, Lobster, Pacifico, Great Vibes (+ esistenti).
-- `normalizeBookingPublicFormConfig` — già richiama `parseBookingHeaderStylesFromUnknown` su `header_styles` (nessun cambio strutturale).
+- `BOOKING_HEADER_FONT_OPTIONS`: +font Google fase 1; fase 2 — Dancing Script, stack pulite, rimosso `thirsty-script`.
+- `BOOKING_HEADER_LEGACY_FONT_ID_MAP`: `thirsty-script` → `dancing-script`.
+- `resolveBookingHeaderFontId()`, `normalizeBookingHeaderFontWeight()`, `normalizeBookingHeaderTextDecoration()`.
+- `BookingHeaderTextStyle`: `fontSize`, `fontWeight`, `textDecoration`.
+- `getBookingHeaderTextStyle`: `fontSize`, `fontWeight` (400/700), `textDecoration`.
 
 ### `BookingFormConfigPanel.tsx`
 
-- `renderHeaderStyleControls`: griglia Font | Colore | Dimensione (number input) | Allineamento; help «Valore da 8 a 38 (px)»; `onBlur` normalizza.
+- Fase 1: input dimensione 8–38.
+- Fase 2: toggle **G** / **S**; rimosso `font-bold` dalle classi Input titolo/nome (stile inline governa).
 
 ### `BookingRequestPage.tsx`
 
-- Nessuna modifica diretta: usa già `getBookingHeaderTextStyle` sui tre elementi header.
-
-### `restaurantSettingRegistry.ts`
-
-- Nessuna modifica: parse DB già delega a `parseBookingHeaderStylesFromUnknown`.
+- Fase 2: rimosso `font-bold` da h1/h2/p header.
 
 ### `src/index.css`
 
-- `@import` Google Fonts esteso (Lora, Raleway, DM Serif Display, Great Vibes, Merriweather, Poppins; Lobster/Pacifico già presenti).
-- Commento: Mistral / Thirsty Script = font di sistema.
+- Fase 1: import estesi (Lora, Raleway, …).
+- Fase 2: `Dancing+Script`; commento aggiornato (solo Mistral di sistema).
 
-### Test
+### Test `bookingPublicFormConfig.test.ts`
 
-- `bookingPublicFormConfig.test.ts`: 4 test su migrate-on-read `fontSize`, clamp, font sconosciuto, output px.
+- Fase 1: fontSize migrate/clamp/px (4 test).
+- Fase 2: thirsty→dancing, default fontWeight, fontWeight+underline in CSS output (+3 test) → **19/19** totali in file.
 
----
+### Skill
 
-## 4. File toccati
+- `docs/per-ui-design-skill/BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md` — § Intestazione e § Font header allineati a fase 1+2.
 
-| File | Modifica |
-|------|----------|
-| `src/features/booking/constants/bookingPublicFormConfig.ts` | Tipi, font, parse, render, default px |
-| `src/features/booking/components/settings/BookingFormConfigPanel.tsx` | UI dimensione + import costanti |
-| `src/index.css` | Import Google Fonts |
-| `src/features/booking/constants/__tests__/bookingPublicFormConfig.test.ts` | Test header fontSize |
+### Invariato
 
-**Diff non committato:** 4 file, +215 / −62 righe (stima `git diff --stat`).
+- `restaurantSettingRegistry.ts` — parse delega già a `parseBookingHeaderStylesFromUnknown`.
+- **DB:** nessuna migrazione; solo JSON `booking_public_form_config`.
 
 ---
 
-## 5. Verifica automatica
+## 5. File toccati
 
-| Controllo | Esito |
-|-----------|--------|
-| `npm run typecheck` | ✅ OK |
-| `vitest` `bookingPublicFormConfig.test.ts` | ✅ 16/16 |
-| `npm run validate` completo | Non eseguito in chiusura |
-| QA visivo Matteo (375/834/1280) | ⬜ non in chat |
+| File | Fase |
+|------|------|
+| `src/features/booking/constants/bookingPublicFormConfig.ts` | 1 + 2 |
+| `src/features/booking/components/settings/BookingFormConfigPanel.tsx` | 1 + 2 |
+| `src/index.css` | 1 + 2 |
+| `src/pages/BookingRequestPage.tsx` | 2 |
+| `src/features/booking/constants/__tests__/bookingPublicFormConfig.test.ts` | 1 + 2 |
+| `docs/per-ui-design-skill/BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md` | 1 + 2 |
+
+**Git fase 1 (su `main`):** `73dddcc` feat + `4d60b75`/`623a4b8` doc — merge `env/test` → `main` eseguito in sessione.
+
+**Git fase 2 (locale, non committato):** ~6 file, +149 / −30 righe (`git diff --stat` a chiusura lavoro ok).
 
 ---
 
-## 6. Dati comunicazione
+## 6. Verifica automatica
 
-### Frasi / prompt Matteo
+| Controllo | Fase 1 | Fase 2 |
+|-----------|--------|--------|
+| `npm run typecheck` | ✅ | ✅ |
+| `npm run lint` | ✅ | ✅ |
+| `vitest` bookingPublicFormConfig | 16/16 | **19/19** |
+| `npm run validate` completo | ⬜ | ⬜ |
+| QA visivo Matteo | ⬜ | ⬜ |
+
+---
+
+## 7. Dati comunicazione
+
+### Frasi / prompt Matteo (cronologia)
 
 | # | Messaggio | Ruolo |
 |---|-----------|--------|
-| 1 | Prompt esecuzione completo: Profilo Esecuzione, modalità standard, skill APP_CONTEXT §4 Prenota + BOOKING_FORM_CONFIG_PANEL + layout header; obiettivo font ampliati + fontSize 8–38 per riga; tabella default; file indicativi; fuori scope | Task iniziale (unico messaggio tecnico) |
-| 2 | «lavoro ok .» | Accettazione + richiesta report |
+| 1 | «prepara prompt» — font + dimensione intestazione Prenota; poi D1/D2/D3 (font ampliati, size 8–27 per riga, solo intestazione) | Prepara-prompt |
+| 2 | Max dimensione **38**; prompt completo | Affinamento |
+| 3 | «lavoro finito» — revisione + report finale | Chiusura fase 1 |
+| 4 | «fai merge con main» + DB prod | Merge git; prod già a migrazione 042, nessuna SQL per feature |
+| 5 | Revisione font identici — spiegazione + fix proposti | Prepara-prompt / analisi |
+| 6 | Prompt esecuzione: fallback Mistral, Dancing Script, G/S grassetto-sottolineato | Fase 2 |
+| 7 | «annota tutto nel tuon report. lavoro ok» | Accettazione sessione |
 
-### Prompt annotato (sintesi qualità)
-
-- **Punti di forza:** obiettivo per schermata admin/pubblica; storage `booking_public_form_config.header_styles`; tabella default FU-023; intervallo 8–38 esplicito; fuori scope e no autosave su header_styles; file target elencati.
-- **Ambiguità residue:** messaggio troncato su «File da toccare» (lista incompleta in chat — compensata da grep nel repo).
-- **Nessuna correzione mid-session** da parte di Matteo.
-
-### Dati grezzi sessione
+### Dati grezzi sessione (aggiornati)
 
 | Metrica | Valore |
 |---------|--------|
-| Messaggi Matteo | **2** |
-| Giri agente (turni tool) | **1** implementazione + **1** report |
-| Correzioni post-prima consegna | **0** |
-| Rework codice su feedback | **0** |
-| Modalità alzata a deep | No (nessun LOCK / migrazione DB) |
-| Migrazioni SQL | **0** (solo JSON) |
+| Messaggi Matteo (task utili) | **7** |
+| Fasi codice | **2** (feature + fix) |
+| Correzioni post-consegna | **1** (max 38 px prima dell’implementazione) |
+| Revisione font «uguali» | Sì — ha guidato fase 2 |
+| Modalità alzata a deep | No |
+| Migrazioni SQL | **0** |
+| Commit fase 2 | **No** (su richiesta «lavoro ok») |
 
-### Lettura qualità (dati per revisore — non voto)
+### Lettura qualità (dati per revisore)
 
 | Aspetto | Osservazione |
-|---------|----------------|
-| Skill system | Prompt ha indirizzato correttamente verso `bookingPublicFormConfig` + pannello; FU-023 rispettato con un solo helper `normalizeBookingHeaderFontSize` + default tabella |
-| Efficienza | Implementazione in un passaggio; typecheck + test mirati; nessun file fuori scope |
-| Chiarezza prompt | Alto — requisiti A/B/C separati; default tabellati; vincolo autosave esplicito |
-| Gap documentazione | Allineato al report finale: § Intestazione in `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md` (font + fontSize 8–38) |
-| QA | Solo test unitari; QA responsive non dichiarato dall’esecutore |
+|---------|------------|
+| Skill / FU-023 | Default e parse centralizzati; legacy `thirsty-script` mappato |
+| Prodotto | Dancing Script risolve vendibilità vs Thirsty commerciale |
+| UX | Anteprima solo su caselle — rispettato; select Font resta limitazione browser nota |
+| Ciclo prepara → esecuzione → revisione → fix | Coerente; fase 2 non ancora in git |
 
 ---
 
-## 7. Follow-up suggeriti
+## 8. Follow-up
 
-| ID | Descrizione | Priorità |
-|----|-------------|----------|
-| — | QA visivo: 3 righe header con dimensioni diverse + 2 font nuovi dopo Salva | P1 operativo |
-| — | ~~Aggiornare skill pannello~~ | ✅ fatto in report finale |
-| FU-023 | Coerente: nessun placeholder px sparso; default centralizzati | ✅ rispettato in codice |
-
----
-
-## 9. Revisione prepara-prompt (01-06-26)
-
-| Check | Esito |
-|-------|--------|
-| Font ampliati (Lobster, Pacifico + ≥4 Google) | ✅ 17 opzioni in `BOOKING_HEADER_FONT_OPTIONS` |
-| `fontSize` 8–38 per riga, indipendente | ✅ UI + parse + `getBookingHeaderTextStyle` |
-| Default 34/30/16 migrate-on-read | ✅ test dedicati |
-| Colori/allineamento invariati | ✅ |
-| Fuori scope rispettato | ✅ nessun altro file form |
-| `npm run typecheck` + lint + test | ✅ |
-| Skill §7.2 | ✅ aggiornata in chiusura report finale |
-
-**Nota:** perdita `clamp()` responsive su dimensione — scelta voluta (px fissi da config). Su mobile verificare testi a 38 px.
+| Priorità | Voce |
+|----------|------|
+| P0 | Commit + push **fase 2** quando Matteo dice «fai report finale» |
+| P1 | QA visivo: Dancing vs Lobster, G/S, Mistral su Windows vs Mac |
+| P2 | Opzionale: rimuovere Mistral da lista se troppi reclami su mobile |
 
 ---
 
-## 8. Chiusura
+## 9. Chiusura git / DB
 
-- **Commit:** ✅ `73dddcc` su `env/test`
-- **Push:** ✅ `origin/env/test`
-- **DB:** nessuna scrittura MCP; solo JSON runtime via app su `booking_public_form_config`
+| Voce | Stato |
+|------|--------|
+| Fase 1 commit | ✅ `73dddcc` (merge su `main` `623a4b8`) |
+| Fase 2 commit | ⬜ atteso «fai report finale» |
+| DB PROD | ✅ allineato a `042`; **nessuna** migrazione richiesta per `header_styles` |
+| Deploy | Frontend da `main` dopo commit fase 2 |

@@ -94,39 +94,49 @@ export const BOOKING_HEADER_FONT_OPTIONS = [
   {
     id: 'lobster',
     label: 'Lobster',
-    fontFamily: '"Lobster", "Pacifico", cursive',
+    fontFamily: '"Lobster", cursive',
   },
   {
     id: 'pacifico',
     label: 'Pacifico',
-    fontFamily: '"Pacifico", "Lobster", cursive',
+    fontFamily: '"Pacifico", cursive',
   },
   {
     id: 'great-vibes',
     label: 'Great Vibes',
-    fontFamily: '"Great Vibes", "Pacifico", cursive',
+    fontFamily: '"Great Vibes", cursive',
+  },
+  {
+    id: 'dancing-script',
+    label: 'Dancing Script',
+    fontFamily: '"Dancing Script", cursive',
   },
   {
     id: 'mistral',
     label: 'Mistral',
     fontFamily: '"Mistral", "Brush Script MT", "Segoe Script", cursive',
   },
-  {
-    id: 'thirsty-script',
-    label: 'Thirsty Script',
-    fontFamily: '"Thirsty Script", "Lobster", "Pacifico", cursive',
-  },
 ] as const
 
 export type BookingHeaderFontId = (typeof BOOKING_HEADER_FONT_OPTIONS)[number]['id']
 
+/** Id font salvati in DB prima del rename Thirsty → Dancing Script. */
+const BOOKING_HEADER_LEGACY_FONT_ID_MAP: Record<string, BookingHeaderFontId> = {
+  'thirsty-script': 'dancing-script',
+}
+
 export type BookingHeaderTextTarget = 'restaurant_name' | 'page_title' | 'page_description'
+
+export type BookingHeaderFontWeight = 'normal' | 'bold'
+export type BookingHeaderTextDecoration = 'none' | 'underline'
 
 export interface BookingHeaderTextStyle {
   font: BookingHeaderFontId
   color: string
   /** Dimensione testo intestazione Prenota (px), 8–38 inclusi. */
   fontSize: number
+  fontWeight: BookingHeaderFontWeight
+  textDecoration: BookingHeaderTextDecoration
   textAlign?: 'left' | 'center' | 'right'
 }
 
@@ -142,23 +152,47 @@ export const DEFAULT_BOOKING_HEADER_FONT_SIZE_PX: Record<BookingHeaderTextTarget
   page_description: 16,
 }
 
+export function defaultBookingHeaderFontWeight(
+  target: BookingHeaderTextTarget,
+): BookingHeaderFontWeight {
+  return target === 'page_description' ? 'normal' : 'bold'
+}
+
+export function normalizeBookingHeaderFontWeight(
+  value: unknown,
+  target: BookingHeaderTextTarget,
+): BookingHeaderFontWeight {
+  if (value === 'normal' || value === 'bold') return value
+  return defaultBookingHeaderFontWeight(target)
+}
+
+export function normalizeBookingHeaderTextDecoration(value: unknown): BookingHeaderTextDecoration {
+  return value === 'underline' ? 'underline' : 'none'
+}
+
 export const DEFAULT_BOOKING_HEADER_STYLES: BookingHeaderStyles = {
   restaurant_name: {
     font: 'playfair',
     color: '#6b4226',
     fontSize: DEFAULT_BOOKING_HEADER_FONT_SIZE_PX.restaurant_name,
+    fontWeight: 'bold',
+    textDecoration: 'none',
     textAlign: 'center',
   },
   page_title: {
     font: 'playfair',
     color: '#6b4226',
     fontSize: DEFAULT_BOOKING_HEADER_FONT_SIZE_PX.page_title,
+    fontWeight: 'bold',
+    textDecoration: 'none',
     textAlign: 'center',
   },
   page_description: {
     font: 'montserrat',
     color: '#4a2d19',
     fontSize: DEFAULT_BOOKING_HEADER_FONT_SIZE_PX.page_description,
+    fontWeight: 'normal',
+    textDecoration: 'none',
     textAlign: 'center',
   },
 }
@@ -168,6 +202,18 @@ const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/
 
 export function isBookingHeaderFontId(value: unknown): value is BookingHeaderFontId {
   return typeof value === 'string' && BOOKING_HEADER_FONT_IDS.includes(value as BookingHeaderFontId)
+}
+
+export function resolveBookingHeaderFontId(
+  value: unknown,
+  fallback: BookingHeaderFontId,
+): BookingHeaderFontId {
+  if (typeof value === 'string') {
+    const legacy = BOOKING_HEADER_LEGACY_FONT_ID_MAP[value]
+    if (legacy) return legacy
+    if (isBookingHeaderFontId(value)) return value
+  }
+  return fallback
 }
 
 export function getBookingHeaderFontFamily(font: BookingHeaderFontId): string {
@@ -197,16 +243,22 @@ export function getBookingHeaderTextStyle(
   fontFamily: string
   color: string
   fontSize: string
+  fontWeight: number
+  textDecoration: BookingHeaderTextDecoration
   lineHeight: number
   textAlign: 'left' | 'center' | 'right'
 } {
   const style = headerStyles[target] ?? DEFAULT_BOOKING_HEADER_STYLES[target]
   const fallback = DEFAULT_BOOKING_HEADER_STYLES[target]
   const fontSizePx = normalizeBookingHeaderFontSize(style.fontSize, target)
+  const fontWeight = normalizeBookingHeaderFontWeight(style.fontWeight, target)
+  const textDecoration = normalizeBookingHeaderTextDecoration(style.textDecoration)
   return {
     fontFamily: getBookingHeaderFontFamily(style.font),
     color: style.color,
     fontSize: `${fontSizePx}px`,
+    fontWeight: fontWeight === 'bold' ? 700 : 400,
+    textDecoration,
     lineHeight: target === 'page_description' ? 1.42 : 1.15,
     textAlign: style.textAlign ?? fallback.textAlign ?? 'center',
   }
@@ -228,9 +280,11 @@ export function parseBookingHeaderStylesFromUnknown(raw: unknown): BookingHeader
       ? (row as Record<string, unknown>)
       : {}
     acc[target] = {
-      font: isBookingHeaderFontId(value.font) ? value.font : fallback.font,
+      font: resolveBookingHeaderFontId(value.font, fallback.font),
       color: normalizeBookingHeaderColor(value.color, fallback.color),
       fontSize: normalizeBookingHeaderFontSize(value.fontSize, target),
+      fontWeight: normalizeBookingHeaderFontWeight(value.fontWeight, target),
+      textDecoration: normalizeBookingHeaderTextDecoration(value.textDecoration),
       textAlign:
         value.textAlign === 'left' || value.textAlign === 'center' || value.textAlign === 'right'
           ? value.textAlign

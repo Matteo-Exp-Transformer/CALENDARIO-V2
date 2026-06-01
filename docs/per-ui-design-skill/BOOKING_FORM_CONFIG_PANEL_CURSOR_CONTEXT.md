@@ -70,12 +70,15 @@ description: >-
   - `header_styles.page_title`
   - `header_styles.page_description`
 - Ogni stile contiene:
-  - `font`: id presente in `BOOKING_HEADER_FONT_OPTIONS` (lista curata in `bookingPublicFormConfig.ts`: Playfair, Cormorant, Libre Baskerville, Cinzel, Montserrat, Lora, Raleway, DM Serif Display, Merriweather, Poppins, Lobster, Pacifico, Great Vibes, Mistral, Thirsty Script — questi ultimi due solo font di sistema dove Google non li fornisce)
+  - `font`: id in `BOOKING_HEADER_FONT_OPTIONS` (Google Fonts OFL + **Mistral** solo sistema). Legacy DB `thirsty-script` → migrate-on-read a `dancing-script` (Dancing Script, Google).
   - `color`: hex `#RRGGBB`
-  - `fontSize`: intero **8–38 px** (per riga, indipendente); default migrate-on-read se assente: nome **34**, titolo **30**, descrizione **16** (`DEFAULT_BOOKING_HEADER_FONT_SIZE_PX`)
+  - `fontSize`: intero **8–38 px**; default: nome **34**, titolo **30**, descrizione **16**
+  - `fontWeight`: `normal` | `bold` — default bold su nome/titolo, normal su descrizione
+  - `textDecoration`: `none` | `underline` — default `none`
   - `textAlign?`: `left` | `center` | `right`
-- Admin: controllo **Dimensione (8–38)** in `renderHeaderStyleControls` accanto a Font/Colore/Allineamento; anteprima live sul campo. Pubblico: `getBookingHeaderTextStyle` → `fontSize: 'Npx'` (niente più `clamp()` CSS su `BOOKING_HEADER_FONT_SIZE`).
-- Gerarchia dimensionale: nei **default** nome ≥ titolo > descrizione; l’utente può impostare px diversi liberamente nel range.
+- Script (Lobster, Pacifico, Great Vibes, Dancing Script): `fontFamily` con fallback `cursive` generico (non altri font della lista).
+- Admin: `renderHeaderStyleControls` — Font, Colore, Dimensione, Allineamento + toggle **G** (grassetto) / **S** (sottolineato). Anteprima solo sul campo testo.
+- Pubblico: `getBookingHeaderTextStyle` → `fontFamily`, `fontSize`, `fontWeight`, `textDecoration`, `textAlign` (niente `font-bold` fisso su `BookingRequestPage`).
 
 ## Sottotab Prenota
 
@@ -116,7 +119,7 @@ Fonte unica: `BOOKING_HEADER_FONT_OPTIONS` in `bookingPublicFormConfig.ts`.
 Per aggiungere un font:
 1. Aggiungi `{ id, label, fontFamily }` a `BOOKING_HEADER_FONT_OPTIONS`.
 2. Se e un Google Font libero, aggiungi la famiglia all'`@import` in `src/index.css`.
-3. Se e un font commerciale o locale (es. Mistral, Thirsty Script), non incorporare file font senza licenza: usa il nome font + fallback CSS.
+3. Se e un font solo di sistema (es. Mistral), non incorporare file senza licenza: nome + fallback script di sistema, mai altri font del menu nella catena.
 4. Verifica che `parseBookingHeaderStylesFromUnknown` accetti il nuovo id automaticamente.
 
 Per rimuovere un font:
@@ -124,14 +127,7 @@ Per rimuovere un font:
 2. Se era caricato solo per quello, rimuovilo dall'`@import` in `src/index.css`.
 3. Lascia il parser com'e: valori salvati non piu ammessi tornano ai default.
 
-Font attuali:
-- Playfair Display
-- Cormorant Garamond
-- Libre Baskerville
-- Cinzel
-- Montserrat
-- Mistral (fallback locale/script, non webfont incorporato)
-- Thirsty Script (fallback locale/script, non webfont incorporato)
+Font attuali (17): Playfair, Cormorant, Libre Baskerville, Cinzel, Montserrat, Lora, Raleway, DM Serif Display, Merriweather, Poppins, Lobster, Pacifico, Great Vibes, **Dancing Script** (Google), Mistral (solo se installato sul dispositivo).
 
 ## Icone (tipologia, card scorrevoli, slide carosello)
 
@@ -155,5 +151,4 @@ Font attuali:
 
 - Non aggiungere un secondo blocco di anteprima sotto i campi header.
 - Non duplicare validazioni del parser dentro il componente.
-- Non salvare dimensioni font configurabili per l'header pubblico senza richiesta esplicita: la gerarchia visuale e governata dal layout.
 - Non usare font commerciali via `@font-face` o CDN non ufficiale senza licenza verificata.

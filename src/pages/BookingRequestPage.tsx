@@ -244,20 +244,20 @@ export const BookingRequestPage: React.FC = () => {
             {/* Header — allineamento controllato da header_styles.textAlign per ogni elemento */}
             <div className="flex w-full flex-col gap-1.5 py-1.5 animate-fade-in">
               <h1
-                className="font-bold m-0 w-full"
+                className="m-0 w-full"
                 style={getBookingHeaderTextStyle('restaurant_name', headerStyles)}
               >
                 {displayName}
               </h1>
               <div className="flex w-full flex-col gap-1.5">
                 <h2
-                  className="font-bold m-0 w-full"
+                  className="m-0 w-full"
                   style={getBookingHeaderTextStyle('page_title', headerStyles)}
                 >
                   {resolvedConfig.page_title}
                 </h2>
                 <p
-                  className="opacity-90 font-bold m-0 w-full"
+                  className="opacity-90 m-0 w-full"
                   style={getBookingHeaderTextStyle('page_description', headerStyles)}
                 >
                   {resolvedConfig.page_description}

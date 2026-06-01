@@ -773,10 +773,20 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   const headerControlClass =
     'rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-300'
 
+  const headerStyleToggleClass = (active: boolean) =>
+    cn(
+      'h-9 min-w-9 rounded-lg border px-2 text-xs font-bold transition-colors',
+      active
+        ? 'border-primary-500 bg-primary-50 text-primary-700'
+        : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50',
+    )
+
   const renderHeaderStyleControls = (target: BookingHeaderTextTarget) => {
     const style = headerStyles[target] ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles[target]
     const currentAlign = style.textAlign ?? 'center'
     const fontSizeValue = normalizeBookingHeaderFontSize(style.fontSize, target)
+    const isBold = style.fontWeight === 'bold'
+    const isUnderlined = style.textDecoration === 'underline'
     return (
       <div className="mt-2 space-y-1">
         <div className="grid grid-cols-[minmax(0,1fr)_3rem_minmax(3.25rem,4rem)_auto] gap-2 items-end">
@@ -852,6 +862,33 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
               ))}
             </div>
           </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[11px] font-semibold text-slate-500">Stile testo</span>
+          <button
+            type="button"
+            onClick={() =>
+              updateHeaderTextStyle(target, { fontWeight: isBold ? 'normal' : 'bold' })
+            }
+            className={headerStyleToggleClass(isBold)}
+            title={isBold ? 'Grassetto attivo' : 'Attiva grassetto'}
+            aria-pressed={isBold}
+          >
+            G
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              updateHeaderTextStyle(target, {
+                textDecoration: isUnderlined ? 'none' : 'underline',
+              })
+            }
+            className={cn(headerStyleToggleClass(isUnderlined), 'underline')}
+            title={isUnderlined ? 'Sottolineato attivo' : 'Attiva sottolineatura'}
+            aria-pressed={isUnderlined}
+          >
+            S
+          </button>
         </div>
         <p className="text-[10px] text-slate-400">Valore da 8 a 38 (px)</p>
       </div>
@@ -1298,7 +1335,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
               value={displayRestaurantName || '—'}
               readOnly
               disabled
-              className="min-h-[3.25rem] cursor-default bg-slate-50/90 py-3 font-bold leading-tight text-slate-800 disabled:opacity-100 sm:min-h-[3rem] sm:py-2.5"
+              className="min-h-[3.25rem] cursor-default bg-slate-50/90 py-3 leading-tight text-slate-800 disabled:opacity-100 sm:min-h-[3rem] sm:py-2.5"
               style={getBookingHeaderTextStyle('restaurant_name', headerStyles)}
               aria-describedby="page_restaurant_name_hint"
             />
@@ -1318,7 +1355,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
               onBlur={() => headerAutosave.flushField('page_title')}
               placeholder="es. Richiesta Prenotazione"
               maxLength={80}
-              className="min-h-[3rem] py-3 font-bold leading-tight sm:min-h-[2.625rem] sm:py-2.5"
+              className="min-h-[3rem] py-3 leading-tight sm:min-h-[2.625rem] sm:py-2.5"
               style={getBookingHeaderTextStyle('page_title', headerStyles)}
             />
             {SETTINGS_AUTOSAVE_ENABLED ? (

@@ -1,5 +1,5 @@
-/* Google Fonts: intestazione Prenota + altri UI. Mistral/Thirsty Script: solo font di sistema (non su Google). */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:wght@500;600;700&family=DM+Serif+Display&family=Great+Vibes&family=Libre+Baskerville:wght@400;700&family=Lobster&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Montserrat:wght@500;600;700&family=Pacifico&family=Playfair+Display:wght@500;600;700&family=Poppins:wght@500;600;700&family=Raleway:wght@500;600;700&display=swap');
+/* Google Fonts: intestazione Prenota + altri UI. Mistral: solo font di sistema (non su Google). */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:wght@500;600;700&family=Dancing+Script&family=DM+Serif+Display&family=Great+Vibes&family=Libre+Baskerville:wght@400;700&family=Lobster&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Montserrat:wght@500;600;700&family=Pacifico&family=Playfair+Display:wght@500;600;700&family=Poppins:wght@500;600;700&family=Raleway:wght@500;600;700&display=swap');
 @import "tailwindcss";
 
 /* ──────────────────────────────────────────────

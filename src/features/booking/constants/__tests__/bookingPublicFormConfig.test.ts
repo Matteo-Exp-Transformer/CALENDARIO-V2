@@ -53,6 +53,39 @@ describe('parseBookingHeaderStylesFromUnknown — fontSize migrate-on-read', () 
     expect(getBookingHeaderTextStyle('restaurant_name', styles).fontSize).toBe('20px')
     expect(getBookingHeaderTextStyle('page_title', styles).fontSize).toBe('30px')
   })
+
+  it('legacy thirsty-script → dancing-script', () => {
+    const styles = parseBookingHeaderStylesFromUnknown({
+      page_title: { font: 'thirsty-script', color: '#6b4226' },
+    })
+    expect(styles.page_title.font).toBe('dancing-script')
+  })
+
+  it('default fontWeight: bold su nome/titolo, normal su descrizione', () => {
+    const styles = parseBookingHeaderStylesFromUnknown({
+      restaurant_name: { font: 'playfair', color: '#6b4226' },
+      page_title: { font: 'playfair', color: '#6b4226' },
+      page_description: { font: 'montserrat', color: '#4a2d19' },
+    })
+    expect(styles.restaurant_name.fontWeight).toBe('bold')
+    expect(styles.page_title.fontWeight).toBe('bold')
+    expect(styles.page_description.fontWeight).toBe('normal')
+    expect(styles.page_description.textDecoration).toBe('none')
+  })
+
+  it('getBookingHeaderTextStyle espone fontWeight e textDecoration', () => {
+    const styles = parseBookingHeaderStylesFromUnknown({
+      page_title: {
+        font: 'playfair',
+        color: '#6b4226',
+        fontWeight: 'normal',
+        textDecoration: 'underline',
+      },
+    })
+    const css = getBookingHeaderTextStyle('page_title', styles)
+    expect(css.fontWeight).toBe(400)
+    expect(css.textDecoration).toBe('underline')
+  })
 })
 
 describe('icone Prenota — migrate-on-read', () => {
