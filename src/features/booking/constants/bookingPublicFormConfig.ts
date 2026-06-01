@@ -67,6 +67,46 @@ export const BOOKING_HEADER_FONT_OPTIONS = [
     fontFamily: '"Montserrat", Inter, system-ui, sans-serif',
   },
   {
+    id: 'lora',
+    label: 'Lora',
+    fontFamily: '"Lora", Georgia, serif',
+  },
+  {
+    id: 'raleway',
+    label: 'Raleway',
+    fontFamily: '"Raleway", Inter, system-ui, sans-serif',
+  },
+  {
+    id: 'dm-serif-display',
+    label: 'DM Serif Display',
+    fontFamily: '"DM Serif Display", Georgia, serif',
+  },
+  {
+    id: 'merriweather',
+    label: 'Merriweather',
+    fontFamily: '"Merriweather", Georgia, serif',
+  },
+  {
+    id: 'poppins',
+    label: 'Poppins',
+    fontFamily: '"Poppins", Inter, system-ui, sans-serif',
+  },
+  {
+    id: 'lobster',
+    label: 'Lobster',
+    fontFamily: '"Lobster", "Pacifico", cursive',
+  },
+  {
+    id: 'pacifico',
+    label: 'Pacifico',
+    fontFamily: '"Pacifico", "Lobster", cursive',
+  },
+  {
+    id: 'great-vibes',
+    label: 'Great Vibes',
+    fontFamily: '"Great Vibes", "Pacifico", cursive',
+  },
+  {
     id: 'mistral',
     label: 'Mistral',
     fontFamily: '"Mistral", "Brush Script MT", "Segoe Script", cursive',
@@ -85,15 +125,42 @@ export type BookingHeaderTextTarget = 'restaurant_name' | 'page_title' | 'page_d
 export interface BookingHeaderTextStyle {
   font: BookingHeaderFontId
   color: string
+  /** Dimensione testo intestazione Prenota (px), 8–38 inclusi. */
+  fontSize: number
   textAlign?: 'left' | 'center' | 'right'
 }
 
 export type BookingHeaderStyles = Record<BookingHeaderTextTarget, BookingHeaderTextStyle>
 
+export const BOOKING_HEADER_FONT_SIZE_MIN = 8
+export const BOOKING_HEADER_FONT_SIZE_MAX = 38
+
+/** Default px per target quando `fontSize` assente o non valido (migrate-on-read, FU-023). */
+export const DEFAULT_BOOKING_HEADER_FONT_SIZE_PX: Record<BookingHeaderTextTarget, number> = {
+  restaurant_name: 34,
+  page_title: 30,
+  page_description: 16,
+}
+
 export const DEFAULT_BOOKING_HEADER_STYLES: BookingHeaderStyles = {
-  restaurant_name: { font: 'playfair', color: '#6b4226', textAlign: 'center' },
-  page_title: { font: 'playfair', color: '#6b4226', textAlign: 'center' },
-  page_description: { font: 'montserrat', color: '#4a2d19', textAlign: 'center' },
+  restaurant_name: {
+    font: 'playfair',
+    color: '#6b4226',
+    fontSize: DEFAULT_BOOKING_HEADER_FONT_SIZE_PX.restaurant_name,
+    textAlign: 'center',
+  },
+  page_title: {
+    font: 'playfair',
+    color: '#6b4226',
+    fontSize: DEFAULT_BOOKING_HEADER_FONT_SIZE_PX.page_title,
+    textAlign: 'center',
+  },
+  page_description: {
+    font: 'montserrat',
+    color: '#4a2d19',
+    fontSize: DEFAULT_BOOKING_HEADER_FONT_SIZE_PX.page_description,
+    textAlign: 'center',
+  },
 }
 
 const BOOKING_HEADER_FONT_IDS = BOOKING_HEADER_FONT_OPTIONS.map((font) => font.id)
@@ -108,15 +175,19 @@ export function getBookingHeaderFontFamily(font: BookingHeaderFontId): string {
     ?? BOOKING_HEADER_FONT_OPTIONS[0].fontFamily
 }
 
-/** Dimensioni responsive intestazione Prenota — admin (anteprima nel campo) e pagina pubblica. */
-export const BOOKING_HEADER_FONT_SIZE: Record<BookingHeaderTextTarget, string> = {
-  restaurant_name: 'clamp(1.75rem, 5.2vw, 2.125rem)',
-  page_title: 'clamp(1.5rem, 4.2vw, 1.875rem)',
-  page_description: 'clamp(1rem, 2.8vw, 1.0625rem)',
-}
-
-export function getBookingHeaderFontSize(target: BookingHeaderTextTarget): string {
-  return BOOKING_HEADER_FONT_SIZE[target]
+export function normalizeBookingHeaderFontSize(
+  value: unknown,
+  target: BookingHeaderTextTarget,
+): number {
+  const fallback = DEFAULT_BOOKING_HEADER_FONT_SIZE_PX[target]
+  if (value === undefined || value === null || value === '') return fallback
+  const num = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(num)) return fallback
+  const rounded = Math.round(num)
+  return Math.min(
+    BOOKING_HEADER_FONT_SIZE_MAX,
+    Math.max(BOOKING_HEADER_FONT_SIZE_MIN, rounded),
+  )
 }
 
 export function getBookingHeaderTextStyle(
@@ -131,10 +202,11 @@ export function getBookingHeaderTextStyle(
 } {
   const style = headerStyles[target] ?? DEFAULT_BOOKING_HEADER_STYLES[target]
   const fallback = DEFAULT_BOOKING_HEADER_STYLES[target]
+  const fontSizePx = normalizeBookingHeaderFontSize(style.fontSize, target)
   return {
     fontFamily: getBookingHeaderFontFamily(style.font),
     color: style.color,
-    fontSize: BOOKING_HEADER_FONT_SIZE[target],
+    fontSize: `${fontSizePx}px`,
     lineHeight: target === 'page_description' ? 1.42 : 1.15,
     textAlign: style.textAlign ?? fallback.textAlign ?? 'center',
   }
@@ -158,6 +230,7 @@ export function parseBookingHeaderStylesFromUnknown(raw: unknown): BookingHeader
     acc[target] = {
       font: isBookingHeaderFontId(value.font) ? value.font : fallback.font,
       color: normalizeBookingHeaderColor(value.color, fallback.color),
+      fontSize: normalizeBookingHeaderFontSize(value.fontSize, target),
       textAlign:
         value.textAlign === 'left' || value.textAlign === 'center' || value.textAlign === 'right'
           ? value.textAlign

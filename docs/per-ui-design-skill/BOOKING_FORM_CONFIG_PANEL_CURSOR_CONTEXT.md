@@ -70,9 +70,12 @@ description: >-
   - `header_styles.page_title`
   - `header_styles.page_description`
 - Ogni stile contiene:
-  - `font`: id presente in `BOOKING_HEADER_FONT_OPTIONS`
+  - `font`: id presente in `BOOKING_HEADER_FONT_OPTIONS` (lista curata in `bookingPublicFormConfig.ts`: Playfair, Cormorant, Libre Baskerville, Cinzel, Montserrat, Lora, Raleway, DM Serif Display, Merriweather, Poppins, Lobster, Pacifico, Great Vibes, Mistral, Thirsty Script — questi ultimi due solo font di sistema dove Google non li fornisce)
   - `color`: hex `#RRGGBB`
-- Nome azienda e titolo pubblico hanno la stessa scala grande; descrizione resta piu piccola. Non lasciare che il font scelto cambi la gerarchia dimensionale.
+  - `fontSize`: intero **8–38 px** (per riga, indipendente); default migrate-on-read se assente: nome **34**, titolo **30**, descrizione **16** (`DEFAULT_BOOKING_HEADER_FONT_SIZE_PX`)
+  - `textAlign?`: `left` | `center` | `right`
+- Admin: controllo **Dimensione (8–38)** in `renderHeaderStyleControls` accanto a Font/Colore/Allineamento; anteprima live sul campo. Pubblico: `getBookingHeaderTextStyle` → `fontSize: 'Npx'` (niente più `clamp()` CSS su `BOOKING_HEADER_FONT_SIZE`).
+- Gerarchia dimensionale: nei **default** nome ≥ titolo > descrizione; l’utente può impostare px diversi liberamente nel range.
 
 ## Sottotab Prenota
 

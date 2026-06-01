@@ -23,10 +23,13 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 import {
   BOOKING_HEADER_FONT_OPTIONS,
+  BOOKING_HEADER_FONT_SIZE_MAX,
+  BOOKING_HEADER_FONT_SIZE_MIN,
   applyLegacySubTabLabelOverrides,
   DEFAULT_BOOKING_FORM_CONFIG,
   getBookingHeaderTextStyle,
   normalizeBookingHeaderColor,
+  normalizeBookingHeaderFontSize,
   normalizeBookingPublicFormConfig,
   type BookingHeaderTextStyle,
   type BookingHeaderTextTarget,
@@ -773,55 +776,84 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   const renderHeaderStyleControls = (target: BookingHeaderTextTarget) => {
     const style = headerStyles[target] ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles[target]
     const currentAlign = style.textAlign ?? 'center'
+    const fontSizeValue = normalizeBookingHeaderFontSize(style.fontSize, target)
     return (
-      <div className="mt-2 grid grid-cols-[minmax(0,1fr)_3rem_auto] gap-2 items-end">
-        <label className="block">
-          <span className="mb-1 block text-[11px] font-semibold text-slate-500">Font</span>
-          <select
-            value={style.font}
-            onChange={(e) =>
-              updateHeaderTextStyle(target, {
-                font: e.target.value as BookingHeaderTextStyle['font'],
-              })
-            }
-            className={headerControlClass}
-          >
-            {BOOKING_HEADER_FONT_OPTIONS.map((font) => (
-              <option key={font.id} value={font.id}>
-                {font.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-[11px] font-semibold text-slate-500">Colore</span>
-          <input
-            type="color"
-            value={style.color}
-            onChange={(e) => updateHeaderTextStyle(target, { color: e.target.value })}
-            className="h-9 w-full cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
-          />
-        </label>
-        <div className="block">
-          <span className="mb-1 block text-[11px] font-semibold text-slate-500">Allineamento</span>
-          <div className="flex gap-0.5">
-            {(['left', 'center', 'right'] as const).map((align) => (
-              <button
-                key={align}
-                type="button"
-                onClick={() => updateHeaderTextStyle(target, { textAlign: align })}
-                className={`h-9 w-9 rounded-lg border text-xs font-bold transition-colors ${
-                  currentAlign === align
-                    ? 'border-primary-500 bg-primary-50 text-primary-700'
-                    : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
-                }`}
-                title={align === 'left' ? 'Sinistra' : align === 'center' ? 'Centro' : 'Destra'}
-              >
-                {align === 'left' ? '⬅' : align === 'center' ? '↔' : '➡'}
-              </button>
-            ))}
+      <div className="mt-2 space-y-1">
+        <div className="grid grid-cols-[minmax(0,1fr)_3rem_minmax(3.25rem,4rem)_auto] gap-2 items-end">
+          <label className="block">
+            <span className="mb-1 block text-[11px] font-semibold text-slate-500">Font</span>
+            <select
+              value={style.font}
+              onChange={(e) =>
+                updateHeaderTextStyle(target, {
+                  font: e.target.value as BookingHeaderTextStyle['font'],
+                })
+              }
+              className={headerControlClass}
+            >
+              {BOOKING_HEADER_FONT_OPTIONS.map((font) => (
+                <option key={font.id} value={font.id}>
+                  {font.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-[11px] font-semibold text-slate-500">Colore</span>
+            <input
+              type="color"
+              value={style.color}
+              onChange={(e) => updateHeaderTextStyle(target, { color: e.target.value })}
+              className="h-9 w-full cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-[11px] font-semibold text-slate-500">
+              Dimensione (8–38)
+            </span>
+            <input
+              type="number"
+              min={BOOKING_HEADER_FONT_SIZE_MIN}
+              max={BOOKING_HEADER_FONT_SIZE_MAX}
+              step={1}
+              value={fontSizeValue}
+              onChange={(e) => {
+                const raw = e.target.value
+                if (raw === '') return
+                const next = Number(raw)
+                if (!Number.isFinite(next)) return
+                updateHeaderTextStyle(target, { fontSize: next })
+              }}
+              onBlur={() => {
+                updateHeaderTextStyle(target, {
+                  fontSize: normalizeBookingHeaderFontSize(style.fontSize, target),
+                })
+              }}
+              className={`${headerControlClass} w-full tabular-nums`}
+            />
+          </label>
+          <div className="block">
+            <span className="mb-1 block text-[11px] font-semibold text-slate-500">Allineamento</span>
+            <div className="flex gap-0.5">
+              {(['left', 'center', 'right'] as const).map((align) => (
+                <button
+                  key={align}
+                  type="button"
+                  onClick={() => updateHeaderTextStyle(target, { textAlign: align })}
+                  className={`h-9 w-9 rounded-lg border text-xs font-bold transition-colors ${
+                    currentAlign === align
+                      ? 'border-primary-500 bg-primary-50 text-primary-700'
+                      : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                  }`}
+                  title={align === 'left' ? 'Sinistra' : align === 'center' ? 'Centro' : 'Destra'}
+                >
+                  {align === 'left' ? '⬅' : align === 'center' ? '↔' : '➡'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
+        <p className="text-[10px] text-slate-400">Valore da 8 a 38 (px)</p>
       </div>
     )
   }

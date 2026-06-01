@@ -1,12 +1,59 @@
 import { describe, it, expect } from 'vitest'
 import {
+  DEFAULT_BOOKING_HEADER_FONT_SIZE_PX,
+  getBookingHeaderTextStyle,
   getCarouselStickyMiniPanelLine,
   getShowOfferDetailsInSummary,
   normalizeBookingPublicFormConfig,
+  parseBookingHeaderStylesFromUnknown,
   parseSubTabFromUnknown,
   resolveCarouselSummaryDisplay,
   type BookingPublicFormConfig,
 } from '../bookingPublicFormConfig'
+
+describe('parseBookingHeaderStylesFromUnknown — fontSize migrate-on-read', () => {
+  it('usa default 34/30/16 quando fontSize assente (legacy)', () => {
+    const styles = parseBookingHeaderStylesFromUnknown({
+      restaurant_name: { font: 'playfair', color: '#6b4226' },
+      page_title: { font: 'playfair', color: '#6b4226' },
+      page_description: { font: 'montserrat', color: '#4a2d19' },
+    })
+    expect(styles.restaurant_name.fontSize).toBe(DEFAULT_BOOKING_HEADER_FONT_SIZE_PX.restaurant_name)
+    expect(styles.page_title.fontSize).toBe(DEFAULT_BOOKING_HEADER_FONT_SIZE_PX.page_title)
+    expect(styles.page_description.fontSize).toBe(
+      DEFAULT_BOOKING_HEADER_FONT_SIZE_PX.page_description,
+    )
+  })
+
+  it('clamp fontSize fuori range e arrotonda decimali', () => {
+    const styles = parseBookingHeaderStylesFromUnknown({
+      restaurant_name: { font: 'playfair', color: '#6b4226', fontSize: 5 },
+      page_title: { font: 'playfair', color: '#6b4226', fontSize: 50 },
+      page_description: { font: 'montserrat', color: '#4a2d19', fontSize: 15.6 },
+    })
+    expect(styles.restaurant_name.fontSize).toBe(8)
+    expect(styles.page_title.fontSize).toBe(38)
+    expect(styles.page_description.fontSize).toBe(16)
+  })
+
+  it('font id sconosciuto → fallback font del target', () => {
+    const styles = parseBookingHeaderStylesFromUnknown({
+      page_title: { font: 'not-a-font', color: '#6b4226', fontSize: 22 },
+    })
+    expect(styles.page_title.font).toBe('playfair')
+    expect(styles.page_title.fontSize).toBe(22)
+  })
+
+  it('getBookingHeaderTextStyle espone fontSize in px', () => {
+    const styles = parseBookingHeaderStylesFromUnknown({
+      restaurant_name: { font: 'lora', color: '#6b4226', fontSize: 20 },
+      page_title: { font: 'playfair', color: '#6b4226' },
+      page_description: { font: 'montserrat', color: '#4a2d19' },
+    })
+    expect(getBookingHeaderTextStyle('restaurant_name', styles).fontSize).toBe('20px')
+    expect(getBookingHeaderTextStyle('page_title', styles).fontSize).toBe('30px')
+  })
+})
 
 describe('icone Prenota — migrate-on-read', () => {
   it('card scorrevole: legacy utensils → fork_knife in memoria', () => {
@@ -38,11 +85,11 @@ describe('icone Prenota — migrate-on-read', () => {
     const config: BookingPublicFormConfig = {
       page_title: 'Prenota',
       page_description: 'Desc',
-      header_styles: {
+      header_styles: parseBookingHeaderStylesFromUnknown({
         restaurant_name: { font: 'playfair', color: '#6b4226' },
         page_title: { font: 'playfair', color: '#6b4226' },
         page_description: { font: 'montserrat', color: '#4a2d19' },
-      },
+      }),
       booking_modes: [
         {
           id: 'm1',
