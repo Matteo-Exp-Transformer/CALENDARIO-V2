@@ -171,6 +171,6 @@ Estendere la personalizzazione dell’intestazione della **Pagina Prenota v2**:
 
 ## 8. Chiusura
 
-- **Commit:** ⬜ (in corso report finale)
-- **Push:** ⬜
+- **Commit:** ✅ `73dddcc` su `env/test`
+- **Push:** ✅ `origin/env/test`
 - **DB:** nessuna scrittura MCP; solo JSON runtime via app su `booking_public_form_config`
