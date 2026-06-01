@@ -89,7 +89,9 @@ I clienti con config **vecchia** (`utensils`, `wine`, …) devono continuare a v
 1. **«prepara prompt»** — stesse icone categoria ingredienti (modale QR) anche per tipologia prenotazione e card scorrevoli (testo iniziale vago).
 2. **«spiegami meglio e brevemente»** — su migrate-on-read vs write e QA Lucide (correzione dopo prima risposta troppo tecnica).
 3. **«confermo tutto»** — scope carosello incluso, migrate-on-read, QA Lucide da fare in implementazione.
-4. **«agente ha finito lavoro. fai report finale»** — chiusura + analisi flusso prompt.
+4. **«agente ha finito lavoro. fai report finale»** — chiusura + analisi flusso prompt (richiesta esplicita statistiche per skill system).
+5. **«fai commit push e merge con main di tutto poi»** — deploy branch produzione (nessun codice nuovo, solo merge).
+6. **«ricorda di mettere un analisi del flusso…»** — promemoria qualità report (già in §6–7; questa passata completa il ciclo deploy).
 
 ### Prompt annotati (prepara-prompt)
 
@@ -100,14 +102,38 @@ I clienti con config **vecchia** (`utensils`, `wine`, …) devono continuare a v
 
 | Metrica | Valore | Nota |
 |---------|--------|------|
-| Messaggi Matteo nel ciclo prepara + chiusura | **4** | prepara → chiarimento → conferma → report finale |
-| Correzioni dopo 1ª risposta prepara | **1** | richiesta spiegazione semplice (migrate-on-read / Lucide) |
-| Giri prepara-prompt prima prompt esecutore | **2** | v1 + v2 con decisioni bloccate |
-| Domande bloccanti pre-prompt | **1** | carosello sì/no (risolta con default B + conferma «tutto») |
-| Follow-up nuovi aperti | **0** | QA visivo rimandato nel report, non FU-ID dedicato |
-| Modalità alzata in corso | **no** | restato `standard` |
-| Efficacia prompt (lettura revisore) | **alta** | esecutore ha rispettato scope; diff coerente; test aggiunti |
-| Punto debole | **QA umano** | prompt chiedeva smoke 3 viewport — non tracciato come fatto da Matteo |
+| Messaggi Matteo (ciclo intero prepara → produzione) | **6** | vedi elenco sopra |
+| Chat/agenti distinti coinvolti | **3** | prepara-prompt · esecutore · prepara (chiusura+merge) |
+| Correzioni dopo 1ª risposta prepara | **1** | «spiegami meglio» (migrate-on-read / Lucide) |
+| Giri prepara-prompt prima prompt esecutore | **2** | v1 + v2 con «Decisioni prodotto» |
+| Domande bloccanti pre-prompt | **1** | carosello (chiusa con default B + conferma) |
+| Passate esecutore post-prompt | **1** | nessun rework segnalato |
+| Commit su `env/test` (feature) | **3** | `b1c345d` feat + 2 doc hash |
+| Merge `main` | **1** | fast-forward `283c36b` → `f4dc30a` |
+| Test validate | **269** (+3) | lint + typecheck + vitest OK |
+| Follow-up nuovi (FU-ID) | **0** | QA visivo solo in report |
+| Modalità alzata | **no** | `standard` per tutto |
+| Rapporto messaggi utili / correzioni | **6:1** | basso attrito dopo chiarimento |
+| Tempo-agente stimato (ordine grandezza) | prepara 2× · esec 1× · chiusura 2× | merge = operazione git, no nuovo codice |
+
+**KPI sintetici (per confronto sessioni future)**
+
+| KPI | Questa sessione | Interpretazione |
+|-----|-----------------|-----------------|
+| Prompt esecutore utili prima del «fatto» | **1** (v2) | Buono: una sola incollata decisiva |
+| % ciclo in chiarimenti | ~**17%** (1/6 messaggi) | Accettabile; evitabile con default nel prompt v1 |
+| Rework codice post-merge | **0** | Segnale prompt + esecuzione allineati |
+| Sezioni report richieste da Matteo | comunicazione + statistiche | **Obbligatorie** a chiusura — vedi §7.1 template |
+
+### Efficacia prompt (sintesi per Meta senior)
+
+| Aspetto | Voto operativo | Evidenza |
+|---------|----------------|----------|
+| Chiarezza obiettivo | Alta | Diff 20 file coerente con prompt v2 |
+| Completezza vincoli | Alta | migrate-on-read, mappa legacy, 3 superfici rispettate |
+| Costo ciclo | Medio-basso | 2 chat prepara + 1 esecuzione; 1 chiarimento utile |
+| Tracciabilità QA | Bassa | smoke 3 viewport non confermato da Matteo |
+| Chiusura operativa | Alta | commit, push, merge `main` senza conflitti |
 
 ### Lettura qualità comunicazione
 
@@ -119,24 +145,69 @@ I clienti con config **vecchia** (`utensils`, `wine`, …) devono continuare a v
 
 ## 7. Analisi flusso di lavoro (agenti e prompt)
 
+### 7.1 Template obbligatorio report (richiesta Matteo)
+
+Ogni **«fai report finale»** su task standard/deep deve includere — oltre al diff tecnico:
+
+1. **Elenco prompt/frasi** di Matteo in ordine cronologico.
+2. **Tabella statistiche** (messaggi, correzioni, giri prepara, commit, FU, modalità alzata).
+3. **Diagramma o tabella fasi** (prepara → esec → revisione → deploy).
+4. **Lettura qualità** (cosa ha funzionato / cosa migliorare nel prompt).
+5. **KPI confrontabili** tra sessioni (almeno: passate esecutore, % chiarimenti, rework).
+
+Questa sessione è il riferimento per il punto 1–5.
+
+### 7.2 Diagramma ciclo completo
+
 ```mermaid
-flowchart LR
-  M[Matteo: prepara prompt] --> P[Prepara-prompt: esplora skill, prompt v1]
-  P --> Q[Domanda carosello + note migrate/Lucide]
-  M2[Matteo: spiegami] --> P2[Prepara: spiegazione semplice]
-  M3[Matteo: confermo tutto] --> P3[Prompt v2 con Decisioni]
-  P3 --> E[Esecutore: implementazione]
-  E --> V[validate 269 OK]
-  M4[Matteo: report finale] --> R[Prepara-prompt: report + commit]
+flowchart TB
+  subgraph prep [Preparazione]
+    M1[Matteo: prepara prompt]
+    P1[Prepara: prompt v1 + domanda carosello]
+    M2[Matteo: spiegami]
+    P2[Prepara: spiegazione semplice]
+    M3[Matteo: confermo tutto]
+    P3[Prepara: prompt v2 + Decisioni]
+  end
+  subgraph exec [Esecuzione]
+    E[Esecutore: codice + test]
+    V[validate 269]
+  end
+  subgraph close [Chiusura e produzione]
+    M4[Matteo: report finale]
+    R[Prepara: report + commit env/test]
+    M5[Matteo: merge main]
+    G[git merge main + push]
+    M6[Matteo: ricorda analisi flusso]
+    U[Aggiorna report §6-7]
+  end
+  M1 --> P1 --> M2 --> P2 --> M3 --> P3 --> E --> V --> M4 --> R --> M5 --> G --> M6 --> U
 ```
 
-| Fase | Agente | Durata relativa | Output |
-|------|--------|-----------------|--------|
-| Preparazione | prepara-prompt | ~2 chat | Prompt auto-contenuto + decisioni prodotto |
-| Esecuzione | esecutore (chat separata) | 1 sessione | 17 file, componente condiviso, test |
-| Chiusura | prepara-prompt | 1 chat | Questo report, commit, push |
+| Fase | Agente | Input prompt | Output | Efficienza |
+|------|--------|--------------|--------|------------|
+| Preparazione | prepara-prompt | Richiesta vaga + 1 chiarimento | Prompt v2 bloccato | Media — 2 giri necessari |
+| Esecuzione | esecutore | Incolla prompt v2 | 20 file, +3 test | **Alta** — 1 passata |
+| Chiusura doc | prepara-prompt | «report finale» | Report + `b1c345d` | Alta |
+| Deploy | prepara-prompt / shell | «merge main» | `main` @ `f4dc30a` | Alta — fast-forward |
+| Arricchimento | prepara-prompt | «ricorda analisi…» | §6–7 estesi | — |
 
-**Efficienza:** un solo passaggio esecutore dopo prompt v2 — nessun rework segnalato nel diff. Il costo extra è **1 chat** di chiarimento (utile: ha fissato migrate-on-read evitando migrate-on-write involontario).
+### 7.3 Raccomandazioni per skill system (dati grezzi → Meta)
+
+| # | Raccomandazione | Priorità | Target file |
+|---|-----------------|----------|-------------|
+| R1 | Nel **primo** prompt prepara, includere sempre blocco «Default raccomandati» (es. migrate-on-read, scope carosello se stesso set legacy) per ridurre giro «spiegami» | Media | `PREPARA_PROMPT_SKILL.md` §1.B |
+| R2 | Checklist **report finale**: § Dati comunicazione + statistiche + diagramma fasi obbligatori | Alta | `PREPARA_PROMPT_SKILL.md` §5 |
+| R3 | Voce Liv.1 **«ricorda analisi flusso»** = richiesta esplicita sezione statistiche in report (non opzionale) | Bassa | `VOCABOLARIO.md` / `PROPOSTE.md` |
+| R4 | Metriche sessione: aggiungere colonne **commit count** e **merge main sì/no** nel registro EVOLUZIONE | Bassa | `EVOLUZIONE_SKILLS.md` |
+
+**Efficienza complessiva del ciclo:** **buona** — un solo passaggio codice; costo principale = 2 chat prepara + 1 chiarimento prodotto (migrate-on-read). Il merge non ha generato conflitti né commit di fix.
+
+### 7.4 Cosa NON è stato misurato (limite dati)
+
+- Tempo wall-clock reale (minuti) per fase — non tracciato.
+- Token/contesto per chat — non disponibile in report.
+- Esito QA visivo Matteo — ancora ⬜.
 
 ---
 
@@ -159,6 +230,11 @@ Non aperti nuovi FU-ID: debito coperto da checklist report.
 
 ---
 
-## 10. Chiusura commit
+## 10. Chiusura commit e deploy
 
-Vedi commit associato a questa sessione (messaggio con `Review:` verso questo file e `SESSION_LOG.md`).
+| Branch | Commit | Nota |
+|--------|--------|------|
+| `env/test` | `b1c345d` (feat) · `f4dc30a` (doc) | push OK |
+| `main` | `f4dc30a` | fast-forward merge da `env/test`, push OK — Vercel prod |
+
+Asset locali **non** versionati: `immagini di prova/`, `mobile-full01-bottom.png`.

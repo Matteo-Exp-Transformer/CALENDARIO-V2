@@ -404,5 +404,6 @@
 
 ### 01-06-26 — Ciclo prepara-prompt icone Prenota = Menu QR
 - Richiesta iniziale vaga («stesse icone…»); dopo spiegazione breve su migrate-on-read/Lucide risponde **«confermo tutto»** — pattern efficace: non serve ripetere domande già chiarite.
-- Chiede esplicitamente **analisi flusso prompt + statistiche** nel report finale (skill system), non solo diff tecnico.
+- Chiede esplicitamente **analisi flusso prompt + statistiche** nel report finale (skill system), non solo diff tecnico — **ripete** la richiesta dopo merge («ricorda di mettere…»): per Matteo è requisito di chiusura, non optional.
 - Preferenza confermata: **migrate-on-read** (DB legacy intatto finché non salva admin).
+- Sequenza operativa tipica: report finale → commit/push → merge `main` in un secondo messaggio (deploy separato dalla scrittura report).
