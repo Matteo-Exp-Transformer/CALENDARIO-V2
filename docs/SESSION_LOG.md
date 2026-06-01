@@ -13,7 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
-| 01-06-26 | Esecuzione — unificazione icone Prenota = catalogo Menù QR ✅ **report finale** | [Report](Sessioni%20di%20lavoro/01-06-26/Report-unificazione-icone-prenota-qr.md) — `MenuCategoryIconPicker` + migrate-on-read; validate **269**; QA visivo Lucide card ⬜; commit `93f4983`. |
+| 01-06-26 | Esecuzione — unificazione icone Prenota = catalogo Menù QR ✅ **report finale** | [Report](Sessioni%20di%20lavoro/01-06-26/Report-unificazione-icone-prenota-qr.md) — `MenuCategoryIconPicker` + migrate-on-read; validate **269**; QA visivo Lucide card ⬜; commit `b1c345d`. |
 | 01-06-26 | Esecuzione — FU-025 freeze desktop su PublicMenuCategoryPage ✅ **lavoro ok** | [Report](Sessioni%20di%20lavoro/01-06-26/Report-fu-025-public-menu-category-page-01-06-26.md) — costante `publicMenuLayout.ts`; wrapper header+lista ~1024px; validate **263**; QA Matteo OK; commit ⬜. |
 | 01-06-26 | Esecuzione — card categorie QR senza foto 30/70 + rifiniture ✅ **lavoro ok** | [Report](Sessioni%20di%20lavoro/01-06-26/Report-card-categoria-qr-senza-foto-30-70-01-06-26.md) — layout 30/70; fix tablet `cover`+stretch; testo centro; icona `accentColor`; P0+P2 follow-up Matteo (allineati); validate **263**; commit ⬜. |
 | 01-06-26 | Verifica — card categorie QR layout 30/70 (2ª passata) ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-verifica-card-categoria-qr-mobile-30-70-01-06-26.md) — V1/V2/V3 **OK** post-implementazione; `headerImage` nel 70%; validate 263; QA Playwright ⬜ Matteo visivo. |
