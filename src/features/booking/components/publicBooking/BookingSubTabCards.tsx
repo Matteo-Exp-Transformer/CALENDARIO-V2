@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import type { SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
 import {
   BOOKING_PUBLIC_WIDE_CARDS_WIDTH,
-  bookingPublicRowCardWidthClass,
+  bookingPublicSubTabScrollCardWidthClass,
 } from '@/features/booking/constants/bookingPublicFieldStyles'
 import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
 import { MENU_QR_DEFAULT_CATEGORY_ICON_KEY } from '@/features/public-menu/categoryIcons'
@@ -18,8 +18,6 @@ interface BookingSubTabCardsProps {
   onChange: (subTab: SubTab | null) => void
   /** Card tipologia attive nella riga sopra. Mantenuta per compatibilita con il chiamante. */
   modeCardColumnCount: number
-  /** Cap 1168px full-page: ≥4 sottotab = 5 slot visibili in riga (`bookingPublicRowCardWidthClass(5)`). */
-  fullPageFormCapLayout?: boolean
 }
 
 /** Es. `18,00€` (senza spazio prima del simbolo €). */
@@ -37,7 +35,6 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   activeSubTabId,
   onChange,
   modeCardColumnCount: _modeCardColumnCount,
-  fullPageFormCapLayout = false,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -69,14 +66,22 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   }
 
   if (subTabs.length === 0) return null
-  // ≤3 card: flex-1 su ogni card → si espandono a riempire la riga, centrate
-  // ≥4 card: larghezza minima fissa → scroll laterale automatico
-  const cardFlexClass =
-    subTabs.length <= 3
-      ? 'flex-1 min-w-0'
-      : fullPageFormCapLayout
-        ? bookingPublicSubTabCapCardWidthClass()
-        : 'w-[200px] sm:w-[220px] shrink-0'
+  // ≤3 card: flex-1 su ogni card → si espandono a riempire la riga, centrate (altezza fissa).
+  // ≥4 card: larghezza proporzionale al contenitore — 3 slot visibili da mobile, poi 4 e 5
+  //   man mano che la view cresce e ci sta una card intera in più. La card usa `aspect-square`
+  //   (sotto): l'altezza segue la larghezza, così resta quadrata e non diventa oblunga.
+  const isScrollable = subTabs.length > 3
+  const cardFlexClass = isScrollable
+    ? bookingPublicSubTabScrollCardWidthClass()
+    : 'flex-1 min-w-0'
+  // Ramo scrollabile: altezza legata alla larghezza via aspect-ratio.
+  //   - sotto 640px: quadrata (`aspect-square`), card piccole e leggibili su mobile;
+  //   - da ≥640px: più bassa (`aspect-4/3`, larga ~200px → alta ~150px) per non risultare
+  //     troppo alta quando il lato fisso cresce.
+  // ≤3 card mantengono l'altezza fissa (sono larghe, l'aspect-ratio le renderebbe enormi).
+  const cardHeightClass = isScrollable
+    ? 'aspect-square sm:aspect-4/3'
+    : 'min-h-[140px] sm:min-h-[196px] lg:min-h-[230px]'
 
   return (
     <div
@@ -113,7 +118,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
               className={cn(
                 'flex snap-center flex-col items-center rounded-xl border-2 px-3 py-3 text-center transition-all sm:rounded-2xl sm:px-6 sm:py-4',
                 cardFlexClass,
-                'min-h-[140px] sm:min-h-[196px] lg:min-h-[230px]',
+                cardHeightClass,
                 'bg-white/85 backdrop-blur-[1px] shadow-sm',
                 isActive
                   ? 'border-warm-orange ring-2 ring-warm-orange/30 shadow-md'

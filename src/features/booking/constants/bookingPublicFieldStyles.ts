@@ -55,6 +55,32 @@ export const BOOKING_PUBLIC_FIELD_INNER_LABEL_MULTILINE =
 export const BOOKING_PUBLIC_FIELD_INNER_TEXTAREA =
   'w-full min-w-0 resize-none overflow-hidden break-words border-0! bg-transparent p-0 text-left text-sm font-bold leading-snug text-warm-wood shadow-none ring-0! placeholder:text-warm-wood/50 focus:outline-none focus:ring-0! sm:text-base sm:leading-normal'
 
+/**
+ * Larghezza card sottotab scrollabili (≥4 sottotab).
+ * - Sotto ~782px (mobile/tablet stretto): 3 slot proporzionali al contenitore (% del container);
+ *   il quadrato fisso 200px sarebbe troppo largo su mobile. Gap base 6px (`gap-1.5`).
+ * - Da ~782px: **quadrato a lato fisso** (come le card categoria ingrediente, cappate a 280px
+ *   4:3 → alte ~210px): lato 200px, coerente con gli ingredienti, niente crescita gigante. Ne
+ *   entrano quante stanno nella riga; il resto scrolla.
+ * - Da ≥1400px (laptop/desktop): scatto coordinato con le card ingredienti → lato 240px.
+ * L'altezza segue la larghezza (`aspect-square` sulla card), quindi resta quadrata a ogni step.
+ * Classi letterali statiche (Tailwind JIT non tollera interpolazione dinamica).
+ */
+export function bookingPublicSubTabScrollCardWidthClass(): string {
+  return [
+    // base mobile: 3 slot proporzionali (2 gap da 6px = 0.75rem)
+    'w-[calc((100%_-_0.75rem)/3)]',
+    'max-w-[calc((100%_-_0.75rem)/3)]',
+    // ≥782px: quadrato a lato fisso, allineato alle card ingredienti
+    'min-[782px]:w-[200px]',
+    'min-[782px]:max-w-[200px]',
+    // ≥1400px: scatto coordinato con gli ingredienti
+    'min-[1400px]:w-[240px]',
+    'min-[1400px]:max-w-[240px]',
+    'shrink-0',
+  ].join(' ')
+}
+
 /** Messaggio errore campo singolo — bianco solo con sfondo full-page (`public_booking_page_background` senza striscia). */
 export function publicFormFieldErrorClass(lightTextOnDarkBackground: boolean): string {
   return cn(

@@ -983,7 +983,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             subTabs={activeModeSubTabs}
             activeSubTabId={activeSubTabId}
             modeCardColumnCount={formConfig.booking_modes.filter((m) => m.enabled).length}
-            fullPageFormCapLayout={externalSummaryLayout}
             onChange={(tab) => {
               setActiveSubTabId(tab?.id ?? null)
               if (!tab) {
@@ -1100,7 +1099,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         </div>
       )}
 
-      <div className="col-span-1 min-w-0 w-full max-w-full space-y-6">
+      <div className="col-span-1 min-[1256px]:col-span-2 min-w-0 w-full max-w-full space-y-6">
       {/* Dati cliente — dopo tipologia e menù */}
       <div className="flex w-full min-w-0 flex-col space-y-3 text-start">
         <BookingFormFields
@@ -1172,7 +1171,9 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
       {summarySidebar != null &&
         (externalSummaryLayout ? (
-          <div className="min-[1600px]:hidden">{summarySidebar}</div>
+          // Full-page: riepilogo a piena larghezza sotto il form (stack). col-span-2 occupa
+          // la stessa colonna implicita dei figli con col-span-2, evitando l'affiancamento.
+          <div className="col-span-1 min-[1256px]:col-span-2 min-[1600px]:hidden">{summarySidebar}</div>
         ) : (
           summarySidebar
         ))}

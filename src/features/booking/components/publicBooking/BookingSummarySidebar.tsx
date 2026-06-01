@@ -29,6 +29,12 @@ interface BookingSummarySidebarProps {
   submitButton?: React.ReactNode
   /** Callback invocata quando il riepilogo entra/esce dalla viewport (per la sticky bar mobile). */
   onVisibilityChange?: (visible: boolean) => void
+  /**
+   * Classi posizionali del wrapper, decise dal chiamante (sticky/order/top).
+   * Il componente è neutro: il parent passa lo sticky solo dove serve (colonna laterale),
+   * lo lascia vuoto dove il riepilogo deve stare sotto il form in flusso normale.
+   */
+  className?: string
 }
 
 function formatDate(dateStr?: string): string {
@@ -49,6 +55,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   activeSubTab,
   submitButton,
   onVisibilityChange,
+  className,
 }) => {
   const asideRef = useRef<HTMLDivElement>(null)
 
@@ -110,7 +117,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   )
 
   return (
-    <div ref={asideRef} className="order-2 w-full max-w-full self-start mb-6 min-[1256px]:mb-0 min-[1256px]:sticky min-[1256px]:top-4 min-[1256px]:order-0">
+    <div ref={asideRef} className={cn('w-full max-w-full self-start', className)}>
       <aside
         className={cn(
           'w-full max-w-full rounded-2xl border border-slate-100 bg-white px-4 py-5 shadow-xl transition-all duration-300 ease-out',

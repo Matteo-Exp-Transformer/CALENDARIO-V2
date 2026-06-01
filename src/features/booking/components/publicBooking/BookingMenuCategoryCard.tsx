@@ -137,7 +137,9 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   const shellClass = cn(
     'relative',
     layout === 'scroll'
-      ? 'w-[min(280px,calc(100vw-4rem))] min-w-[240px] max-w-[280px] shrink-0 snap-center sm:min-w-[260px]'
+      // ≥1400px: scatto coordinato con le card sottotab scrollabili (280→320px) per bilanciare
+      // la pagina su laptop/desktop; sotto resta cappata a 280px.
+      ? 'w-[min(280px,calc(100vw-4rem))] min-w-[240px] max-w-[280px] shrink-0 snap-center sm:min-w-[260px] min-[1400px]:w-[320px] min-[1400px]:min-w-[320px] min-[1400px]:max-w-[320px]'
       : layout === 'stack'
         ? 'w-full min-w-0'
         : 'w-full min-w-0 self-start',

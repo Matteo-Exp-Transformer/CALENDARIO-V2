@@ -214,6 +214,13 @@ export const BookingRequestPage: React.FC = () => {
       activeSubTab={activeSubTab}
       onVisibilityChange={setIsSummaryVisible}
       submitButton={summarySubmitButton}
+      // Full-page: riepilogo sotto il form in flusso normale (niente sticky).
+      // Griglia striscia: colonna laterale sticky da 1256px (layout legacy a 2 colonne).
+      className={
+        useFullPageDesktopFreezeLayout
+          ? 'mb-6'
+          : 'order-2 mb-6 min-[1256px]:mb-0 min-[1256px]:sticky min-[1256px]:top-4 min-[1256px]:order-0'
+      }
     />
   )
   const summarySidebarDesktopExternal = (
@@ -223,6 +230,8 @@ export const BookingRequestPage: React.FC = () => {
       contactPhone={displayContactPhone || undefined}
       activeSubTab={activeSubTab}
       submitButton={summarySubmitButton}
+      // Istanza esterna ≥1600px: colonna laterale sticky.
+      className="sticky top-4"
     />
   )
   const bookingRequestForm = (

@@ -140,9 +140,23 @@ viewport &lt;1256px (riepilogo sotto form + `BookingStickyBar`).
 - Da 1600px: `BookingSummarySidebar` sibling a destra (`BOOKING_FULL_PAGE_SUMMARY_WIDTH_PX` = 360),
   sticky `top-4`.
 - `BookingRequestForm` con `externalSummaryLayout`: griglia interna sempre **una colonna** (anche ≥1256).
-- Card nel cap (`fullPageFormCapLayout` = `externalSummaryLayout`): tipologie con
-  `bookingPublicRowCardWidthClass(N)` (no `lg:px-16`); sottotab ≥4 con **5 slot** visibili
-  (`bookingPublicRowCardWidthClass(5)`), scroll se 6+.
+  **Tutti** i figli principali (tipologia, menu, campi cliente, riepilogo stacked, submit) hanno
+  `min-[1256px]:col-span-2`: in `grid-cols-1` un `col-span-2` crea una colonna implicita che
+  affiancherebbe i figli `col-span-1` → senza span uniforme il riepilogo finiva a destra dei campi
+  cliente (bug 1256–1599 risolto 02-06-26).
+- **Posizionamento riepilogo deciso dal parent, non dal componente (02-06-26):** `BookingSummarySidebar`
+  è neutro (`w-full max-w-full self-start` + prop `className`). Il chiamante passa lo sticky **solo**
+  dove serve: istanza esterna ≥1600px → `className="sticky top-4"`; istanza stacked full-page →
+  `className="mb-6"` (niente sticky, sta sotto); layout striscia legacy → classi sticky da 1256.
+  **Non** rimettere `min-[1256px]:sticky/order` dentro `BookingSummarySidebar`.
+- **Card sottotab scrollabili (≥4) (02-06-26):** `bookingPublicSubTabScrollCardWidthClass()` —
+  sotto 782px 3 slot proporzionali (mobile, gap 6px); da **782px** quadrato a **lato fisso 200px**
+  (allineato all'altezza delle card categoria ingrediente, no crescita gigante); da **1400px** lato
+  **240px** (scatto coordinato con gli ingredienti). Altezza via `aspect-square sm:aspect-4/3`
+  (quadrata mobile, più bassa da 640px). Px fissi e non % + breakpoint viewport: le card vivono nel
+  cap 1168px, le media-query sul viewport davano conteggi slot incoerenti.
+- **Bilanciamento card ingredienti:** `BookingMenuCategoryCard` layout `scroll` da **1400px** passa da
+  280→320px, in coppia con le sottotab. Tipologie con `bookingPublicRowCardWidthClass(N)` (no `lg:px-16`).
 - Pulsante Invia: `form="booking-request-form"` in sidebar (mobile) e submit grande nel form (desktop).
 - Header ristorante **sopra** form+riepilogo, nello stesso wrapper centrato (testo con
   `header_styles.textAlign`; il box segue la larghezza del blocco 1168+360).
