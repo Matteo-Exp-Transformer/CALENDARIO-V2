@@ -1,14 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { CaretLeftIcon } from '@phosphor-icons/react/dist/csr/CaretLeft'
 import { CaretRightIcon } from '@phosphor-icons/react/dist/csr/CaretRight'
-import { ForkKnifeIcon } from '@phosphor-icons/react/dist/csr/ForkKnife'
-import { CallBellIcon } from '@phosphor-icons/react/dist/csr/CallBell'
-import { ChefHatIcon } from '@phosphor-icons/react/dist/csr/ChefHat'
-import { StarIcon } from '@phosphor-icons/react/dist/csr/Star'
-import { LeafIcon } from '@phosphor-icons/react/dist/csr/Leaf'
 import { cn } from '@/lib/utils'
-import type { SubTab, SubTabIcon } from '@/features/booking/constants/bookingPublicFormConfig'
+import type { SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
 import { BOOKING_PUBLIC_WIDE_CARDS_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
+import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
+import { MENU_QR_DEFAULT_CATEGORY_ICON_KEY } from '@/features/public-menu/categoryIcons'
 
 const SUB_TAB_SCROLL_STEP_PX = 240
 
@@ -28,14 +25,6 @@ function formatPriceAmountLabel(price?: number): string | null {
     maximumFractionDigits: 2,
   }).format(price)
   return `${amount}€`
-}
-
-export function SubTabCardIcon({ icon, className }: { icon?: SubTabIcon; className?: string }) {
-  if (icon === 'cloche') return <CallBellIcon weight="light" className={className} />
-  if (icon === 'chef-hat') return <ChefHatIcon weight="light" className={className} />
-  if (icon === 'star') return <StarIcon weight="light" className={className} />
-  if (icon === 'leaf') return <LeafIcon weight="light" className={className} />
-  return <ForkKnifeIcon weight="light" className={className} />
 }
 
 export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
@@ -147,7 +136,10 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                       )}
                       aria-hidden
                     >
-                      <SubTabCardIcon icon={tab.icon} className="h-7 w-7 sm:h-9 sm:w-9 md:h-10 md:w-10 text-warm-wood-dark" />
+                      <MenuQrCategoryIconGlyph
+                        iconKey={tab.icon ?? MENU_QR_DEFAULT_CATEGORY_ICON_KEY}
+                        className="h-7 w-7 sm:h-9 sm:w-9 md:h-10 md:w-10 text-warm-wood-dark"
+                      />
                     </span>
                   )}
                 </div>

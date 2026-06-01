@@ -1,10 +1,5 @@
 import { ImagePlus, ChevronUp, ChevronDown, Trash2, Pencil } from 'lucide-react'
 import { useRef, type ChangeEvent } from 'react'
-import { ForkKnifeIcon } from '@phosphor-icons/react/dist/csr/ForkKnife'
-import { CallBellIcon } from '@phosphor-icons/react/dist/csr/CallBell'
-import { ChefHatIcon } from '@phosphor-icons/react/dist/csr/ChefHat'
-import { StarIcon } from '@phosphor-icons/react/dist/csr/Star'
-import { LeafIcon } from '@phosphor-icons/react/dist/csr/Leaf'
 import { Button } from '@/components/ui/Button'
 import { Label } from '@/components/ui/Label'
 import { cn } from '@/lib/utils'
@@ -13,29 +8,13 @@ import {
   bookingCarouselStoragePrefix,
   useCarouselPhotoUpload,
 } from '@/features/booking/hooks/useCarouselPhotoUpload'
-import type { CarouselItem, CarouselSlideIcon } from '@/types/menu'
+import type { CarouselItem } from '@/types/menu'
 import {
   BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS,
   type SubTab,
-  type SubTabIcon,
 } from '@/features/booking/constants/bookingPublicFormConfig'
-
-const SUB_TAB_ICON_OPTIONS: { value: SubTabIcon; label: string }[] = [
-  { value: 'utensils', label: 'Posate' },
-  { value: 'cloche', label: 'Cloche' },
-  { value: 'chef-hat', label: 'Chef' },
-  { value: 'star', label: 'Stella' },
-  { value: 'leaf', label: 'Foglia' },
-]
-
-function SubTabIconOption({ icon, className }: { icon: SubTabIcon; className?: string }) {
-  if (icon === 'utensils') return <ForkKnifeIcon weight="light" className={className} />
-  if (icon === 'cloche') return <CallBellIcon weight="light" className={className} />
-  if (icon === 'chef-hat') return <ChefHatIcon weight="light" className={className} />
-  if (icon === 'star') return <StarIcon weight="light" className={className} />
-  if (icon === 'leaf') return <LeafIcon weight="light" className={className} />
-  return <ForkKnifeIcon weight="light" className={className} />
-}
+import { MenuCategoryIconPicker } from '@/features/public-menu/MenuCategoryIconPicker'
+import { MENU_QR_DEFAULT_CATEGORY_ICON_KEY } from '@/features/public-menu/categoryIcons'
 
 function syncCarouselSubTabFields(items: CarouselItem[]): Partial<SubTab> {
   return {
@@ -70,7 +49,6 @@ function CarouselSlideEditorCard({
   hideMobileSlideLabel?: boolean
 }) {
   const replaceFileRef = useRef<HTMLInputElement>(null)
-  const slideIcon = (item.icon ?? 'utensils') as SubTabIcon
   const slideLabel = `Foto N° ${index + 1}`
 
   return (
@@ -178,24 +156,11 @@ function CarouselSlideEditorCard({
 
       <div className="w-full min-w-0 space-y-1.5 -mt-2">
         <Label className="block text-sm">Scegli Icona</Label>
-        <div className="flex flex-wrap gap-2">
-          {SUB_TAB_ICON_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => onPatch({ icon: opt.value as CarouselSlideIcon })}
-              className={cn(
-                'flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold',
-                slideIcon === opt.value
-                  ? 'border-primary-500 bg-primary-50 text-primary-700'
-                  : 'border-slate-200 bg-slate-50 text-slate-600',
-              )}
-            >
-              <SubTabIconOption icon={opt.value} className="h-3 w-3" />
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        <MenuCategoryIconPicker
+          value={item.icon ?? MENU_QR_DEFAULT_CATEGORY_ICON_KEY}
+          onChange={(icon) => onPatch({ icon })}
+          ariaLabel={`Icona slide ${slideLabel}`}
+        />
       </div>
     </div>
   )
@@ -228,7 +193,7 @@ export function BookingFormCarouselEditor({
       const merged = next.map((it, idx) => {
         const prev = items.find((p) => p.image_url === it.image_url) ?? items[idx]
         if (prev) return { ...prev, image_url: it.image_url, sort_order: idx }
-        return { ...it, icon: it.icon ?? 'utensils', sort_order: idx }
+        return { ...it, icon: it.icon ?? 'fork_knife', sort_order: idx }
       })
       applyItems(merged)
     },

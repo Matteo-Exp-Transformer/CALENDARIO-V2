@@ -130,11 +130,23 @@ Font attuali:
 - Mistral (fallback locale/script, non webfont incorporato)
 - Thirsty Script (fallback locale/script, non webfont incorporato)
 
-## Icone modalita
+## Icone (tipologia, card scorrevoli, slide carosello)
 
-- Fonte unica: `BOOKING_MODE_ICONS`.
-- Render pubblico e admin usano Phosphor outline.
-- Se aggiungi/rimuovi un'icona, aggiorna `BOOKING_MODE_ICONS`, `ICON_OPTIONS`, `ModeIcon` admin e `ModeIcon` pubblico.
+- **Catalogo unico** con il modale Menù QR: `MENU_QR_CATEGORY_ICON_OPTIONS` (~20 icone) in
+  `src/features/public-menu/categoryIcons.ts`; namespace `MenuQrCategoryIconKey`.
+- **Picker admin condiviso:** `MenuCategoryIconPicker` (griglia Phosphor + «Altre icone» Lucide) in
+  `BookingFormConfigPanel` (tipologia + card scorrevoli) e `BookingFormCarouselEditor` (slide).
+  Stesso componente nel modale QR (`MenuHomepageConfigPanel`).
+- **Pubblico:** `MenuQrCategoryIconGlyph` in `BookingModeCards`, `BookingSubTabCards`, overlay
+  carosello in `BookingRequestForm` — niente `ModeIcon` / `SubTabCardIcon` duplicati.
+- **Storage:** `booking_modes[].icon`, `sub_tabs[].icon`, `carousel_items[].icon` (JSON
+  `booking_public_form_config`). Migrate-on-read: `BOOKING_LEGACY_ICON_TO_MENU_QR_KEY` +
+  `resolveBookingStoredIconKey` in parser/normalizer; migrate-on-write solo al **Salva** admin
+  (`normalizeBookingPublicFormConfig`), mai in background al load.
+- **Fallback legacy documentati:** `cloche` → `bowl_food`; `star` → `lucide_salad`
+  (`MENU_QR_DEFAULT_CATEGORY_ICON_KEY`).
+- Per aggiungere/rimuovere un'icona: aggiornare `categoryIcons.ts` (Phosphor/Lucide options) — il
+  picker e il pubblico seguono automaticamente.
 
 ## Cosa evitare
 

@@ -24,11 +24,11 @@ import { cn } from '@/lib/utils'
 import {
   defaultIconKeyForCategory,
   isMenuQrCategoryIconKey,
-  MENU_QR_LUCIDE_ICON_OPTIONS,
-  MENU_QR_PHOSPHOR_ICON_OPTIONS,
   MENU_QR_DEFAULT_CATEGORY_ICON_KEY,
+  type MenuQrCategoryIconKey,
 } from '@/features/public-menu/categoryIcons'
 import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
+import { MenuCategoryIconPicker } from '@/features/public-menu/MenuCategoryIconPicker'
 
 export const CAROUSEL_SLIDE_TITLE_MAX = 60
 export const CAROUSEL_SLIDE_DESCRIPTION_MAX = 125
@@ -548,71 +548,20 @@ export function MenuQrCategoryCardsSection({
             {!imgUrl ? (
               <div className="space-y-1.5">
                 <p className="text-xs font-medium text-gray-600">Icona categoria (senza foto)</p>
-                <div role="group" aria-label={`Icona per ${cat.label}`} className="space-y-2">
-                  <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
-                    {MENU_QR_PHOSPHOR_ICON_OPTIONS.map((opt) => {
-                      const selected =
-                        (draft.icon ??
-                          defaultIconKeyForCategory(cat.key) ??
-                          MENU_QR_DEFAULT_CATEGORY_ICON_KEY) === opt.value
-                      return (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          aria-label={opt.label}
-                          aria-pressed={selected}
-                          onClick={() =>
-                            onOverrideDraftsChange({
-                              ...overrideDrafts,
-                              [cat.key]: { ...draft, icon: opt.value },
-                            })
-                          }
-                          className={cn(
-                            'inline-flex h-10 w-10 items-center justify-center rounded-lg border transition-colors',
-                            selected
-                              ? 'border-primary-500 bg-primary-50 text-primary-700'
-                              : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-400',
-                          )}
-                        >
-                          <MenuQrCategoryIconGlyph iconKey={opt.value} className="h-5 w-5" />
-                        </button>
-                      )
-                    })}
-                  </div>
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
-                    Altre icone
-                  </p>
-                  <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-                    {MENU_QR_LUCIDE_ICON_OPTIONS.map((opt) => {
-                      const selected =
-                        (draft.icon ??
-                          defaultIconKeyForCategory(cat.key) ??
-                          MENU_QR_DEFAULT_CATEGORY_ICON_KEY) === opt.value
-                      return (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          aria-label={opt.label}
-                          aria-pressed={selected}
-                          onClick={() =>
-                            onOverrideDraftsChange({
-                              ...overrideDrafts,
-                              [cat.key]: { ...draft, icon: opt.value },
-                            })
-                          }
-                          className={cn(
-                            'inline-flex h-10 w-10 items-center justify-center rounded-lg border transition-colors',
-                            selected
-                              ? 'border-primary-500 bg-primary-50 text-primary-700'
-                              : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-400',
-                          )}
-                        >
-                          <MenuQrCategoryIconGlyph iconKey={opt.value} className="h-5 w-5" />
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
+                <MenuCategoryIconPicker
+                  value={
+                    (draft.icon ??
+                      defaultIconKeyForCategory(cat.key) ??
+                      MENU_QR_DEFAULT_CATEGORY_ICON_KEY) as MenuQrCategoryIconKey
+                  }
+                  onChange={(icon) =>
+                    onOverrideDraftsChange({
+                      ...overrideDrafts,
+                      [cat.key]: { ...draft, icon },
+                    })
+                  }
+                  ariaLabel={`Icona per ${cat.label}`}
+                />
               </div>
             ) : null}
             <input

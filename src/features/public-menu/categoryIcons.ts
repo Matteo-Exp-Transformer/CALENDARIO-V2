@@ -147,8 +147,36 @@ export const CATEGORY_ICON: Record<string, PhosphorIconType> = Object.fromEntrie
   ]),
 )
 
+/** Chiavi icona legacy Prenota (pre-unificazione catalogo QR) → `MenuQrCategoryIconKey`. */
+export const BOOKING_LEGACY_ICON_TO_MENU_QR_KEY: Record<string, MenuQrCategoryIconKey> = {
+  utensils: 'fork_knife',
+  'chef-hat': 'lucide_chef_hat',
+  wine: 'martini',
+  coffee: 'coffee',
+  pizza: 'pizza_slice',
+  hamburger: 'steak',
+  'bowl-steam': 'cooking_pot',
+  cake: 'cake',
+  martini: 'martini',
+  leaf: 'leaf',
+  cloche: 'bowl_food',
+  star: MENU_QR_DEFAULT_CATEGORY_ICON_KEY,
+}
+
 export function isMenuQrCategoryIconKey(key: string): key is MenuQrCategoryIconKey {
   return key in MENU_QR_CATEGORY_ICON_OPTION_BY_VALUE
+}
+
+/** Migrate-on-read: legacy booking / valori già nel catalogo QR. */
+export function resolveBookingStoredIconKey(
+  iconKey: string | null | undefined,
+  fallback: MenuQrCategoryIconKey = MENU_QR_DEFAULT_CATEGORY_ICON_KEY,
+): MenuQrCategoryIconKey {
+  if (iconKey && isMenuQrCategoryIconKey(iconKey)) return iconKey
+  if (iconKey && iconKey in BOOKING_LEGACY_ICON_TO_MENU_QR_KEY) {
+    return BOOKING_LEGACY_ICON_TO_MENU_QR_KEY[iconKey]
+  }
+  return fallback
 }
 
 export function getMenuQrCategoryIconOption(

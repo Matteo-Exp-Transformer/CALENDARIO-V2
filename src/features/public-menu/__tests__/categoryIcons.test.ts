@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
+  BOOKING_LEGACY_ICON_TO_MENU_QR_KEY,
   defaultIconKeyForCategory,
   getMenuQrCategoryIconOption,
   MENU_QR_CATEGORY_ICON_OPTIONS,
   MENU_QR_LUCIDE_ICON_OPTIONS,
   MENU_QR_PHOSPHOR_ICON_OPTIONS,
   MENU_QR_DEFAULT_CATEGORY_ICON_KEY,
+  resolveBookingStoredIconKey,
   resolveMenuQrCategoryIconKey,
 } from '../categoryIcons'
 
@@ -51,5 +53,25 @@ describe('categoryIcons', () => {
   it('fallback per chiavi Lucide rimosse dal picker', () => {
     expect(resolveMenuQrCategoryIconKey('lucide_soup', 'zuppe')).toBe('cooking_pot')
     expect(resolveMenuQrCategoryIconKey('lucide_egg_fried', undefined)).toBe('fork_knife')
+  })
+})
+
+describe('BOOKING_LEGACY_ICON_TO_MENU_QR_KEY / resolveBookingStoredIconKey', () => {
+  it('mappa chiavi legacy Prenota al catalogo QR', () => {
+    expect(BOOKING_LEGACY_ICON_TO_MENU_QR_KEY.utensils).toBe('fork_knife')
+    expect(BOOKING_LEGACY_ICON_TO_MENU_QR_KEY['chef-hat']).toBe('lucide_chef_hat')
+    expect(BOOKING_LEGACY_ICON_TO_MENU_QR_KEY.cloche).toBe('bowl_food')
+    expect(BOOKING_LEGACY_ICON_TO_MENU_QR_KEY.star).toBe(MENU_QR_DEFAULT_CATEGORY_ICON_KEY)
+  })
+
+  it('pass-through per chiavi già nel catalogo', () => {
+    expect(resolveBookingStoredIconKey('lucide_salad')).toBe('lucide_salad')
+    expect(resolveBookingStoredIconKey('pizza_slice')).toBe('pizza_slice')
+  })
+
+  it('migrate-on-read da legacy senza riscrivere chiavi nuove', () => {
+    expect(resolveBookingStoredIconKey('wine')).toBe('martini')
+    expect(resolveBookingStoredIconKey('bowl-steam')).toBe('cooking_pot')
+    expect(resolveBookingStoredIconKey('unknown_xyz')).toBe(MENU_QR_DEFAULT_CATEGORY_ICON_KEY)
   })
 })

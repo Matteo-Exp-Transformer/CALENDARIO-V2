@@ -401,3 +401,8 @@
 - Confermato: vuole flusso fine-chat con commit dedicato (commit = punto di ripristino sicuro).
 - Confermato: vocabolario solo con voci approvate; file di supporto dentro la skill comunicazione.
 - Nuovo: vuole che l'agente proponga automazioni quando ha abbastanza dati, e chieda come accorciare i suoi prompt.
+
+### 01-06-26 — Ciclo prepara-prompt icone Prenota = Menu QR
+- Richiesta iniziale vaga («stesse icone…»); dopo spiegazione breve su migrate-on-read/Lucide risponde **«confermo tutto»** — pattern efficace: non serve ripetere domande già chiarite.
+- Chiede esplicitamente **analisi flusso prompt + statistiche** nel report finale (skill system), non solo diff tecnico.
+- Preferenza confermata: **migrate-on-read** (DB legacy intatto finché non salva admin).

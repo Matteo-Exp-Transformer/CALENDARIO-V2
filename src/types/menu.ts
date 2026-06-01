@@ -1,6 +1,7 @@
 // Type definitions for Menu Items
 
 import type { BookingType } from './booking'
+import type { MenuQrCategoryIconKey } from '@/features/public-menu/categoryIcons'
 
 export type MenuCategory = string
 
@@ -96,8 +97,8 @@ export interface MenuQrSettingsSavePayload {
   categoryOverrides: MenuQrcodeCategoryOverrideDraft[]
 }
 
-/** Icone slide carosello Prenota (allineate a `SubTabIcon` in bookingPublicFormConfig). */
-export type CarouselSlideIcon = 'utensils' | 'cloche' | 'chef-hat' | 'star' | 'leaf'
+/** Icone slide carosello Prenota — catalogo unificato Menù QR. */
+export type CarouselSlideIcon = MenuQrCategoryIconKey
 
 export interface CarouselItem {
   image_url: string

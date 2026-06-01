@@ -125,16 +125,19 @@ Nome e titolo stessa scala grande, descrizione più piccola. Font in `BOOKING_HE
 ## 5. Ordine del form (v2 attuale)
 
 1. **Tipologia** (`BookingModeCards`): 3 colonne compatte su mobile, descrizione solo da `sm+`;
-   icone Phosphor outline configurabili (`BOOKING_MODE_ICONS`).
+   icone da catalogo unificato Menù QR (`MenuQrCategoryIconKey` in
+   `booking_modes[].icon`) renderizzate con `MenuQrCategoryIconGlyph` (Phosphor `regular` + Lucide
+   `strokeWidth` 1.75). Chiavi legacy in DB mappate in lettura (`BOOKING_LEGACY_ICON_TO_MENU_QR_KEY`).
 2. **Sottotab** (`BookingSubTabCards`): scrollabili, frecce desktop + touch; icona centrata **senza
-   sfondo**, **descrizione mai nella card** (appare solo in `MenuSelection` dopo selezione); prezzo
+   sfondo** (`MenuQrCategoryIconGlyph`, ~`h-7` `text-warm-wood-dark` su card chiara), **descrizione mai nella card** (appare solo in `MenuSelection` dopo selezione); prezzo
    `/persona` solo se presente e menu fisso. Centratura: `justify-center` su flex interno (1-3 card
    centrate; 4+ scroll). Wrapper diviso outer `overflow-x-auto scrollbar-hide` + inner
    `flex flex-nowrap justify-center mx-auto` (evita bug `justify-center` che blocca scroll). Max 3
    colonne (`bookingPublicRowCardWidthClass`).
 3. **Presentazione XOR** (`BookingMode.sub_tabs_presentation: 'cards'|'carousel'|null`): filtro
    difensivo in `activeModeSubTabs`. Se `display='carousel'`: mostra **solo** `BookingSubTabCarousel`
-   (foto + overlay per slide da `carousel_items[].eyebrow/title/description`; prezzo opzionale;
+   (foto + overlay per slide da `carousel_items[].eyebrow/title/description`; badge icona in alto a
+   dx con `MenuQrCategoryIconGlyph` + `resolveBookingStoredIconKey`; prezzo opzionale;
    nessuna griglia menù). Carosello = **una sola card con N foto** per modalità: `BookingSubTabCards`
    non renderizzato per modalità carosello (auto-selezione sottotab unica + carosello diretto).
 4. **Menù** (se `display='cards'`): `MenuSelection` → `BookingMenuComposeGrid`. Mobile: colonna stack

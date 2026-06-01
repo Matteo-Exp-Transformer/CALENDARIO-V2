@@ -2,9 +2,73 @@ import { describe, it, expect } from 'vitest'
 import {
   getCarouselStickyMiniPanelLine,
   getShowOfferDetailsInSummary,
+  normalizeBookingPublicFormConfig,
   parseSubTabFromUnknown,
   resolveCarouselSummaryDisplay,
+  type BookingPublicFormConfig,
 } from '../bookingPublicFormConfig'
+
+describe('icone Prenota — migrate-on-read', () => {
+  it('card scorrevole: legacy utensils → fork_knife in memoria', () => {
+    const tab = parseSubTabFromUnknown({
+      id: 'c1',
+      label: 'Menu',
+      display: 'cards',
+      icon: 'utensils',
+    })
+    expect(tab!.icon).toBe('fork_knife')
+  })
+
+  it('slide carosello: legacy chef-hat → lucide_chef_hat', () => {
+    const tab = parseSubTabFromUnknown({
+      id: 'car1',
+      label: 'Offerta',
+      display: 'carousel',
+      carousel_items: [
+        {
+          image_url: 'https://example.com/a.jpg',
+          icon: 'chef-hat',
+        },
+      ],
+    })
+    expect(tab!.carousel_items![0].icon).toBe('lucide_chef_hat')
+  })
+
+  it('normalize al salvataggio admin scrive chiavi catalogo QR', () => {
+    const config: BookingPublicFormConfig = {
+      page_title: 'Prenota',
+      page_description: 'Desc',
+      header_styles: {
+        restaurant_name: { font: 'playfair', color: '#6b4226' },
+        page_title: { font: 'playfair', color: '#6b4226' },
+        page_description: { font: 'montserrat', color: '#4a2d19' },
+      },
+      booking_modes: [
+        {
+          id: 'm1',
+          booking_type: 'tavolo',
+          enabled: true,
+          label: 'Tavolo',
+          description: 'D',
+          icon: 'utensils' as unknown as BookingPublicFormConfig['booking_modes'][0]['icon'],
+          sub_tabs_enabled: true,
+          sub_tabs_presentation: 'cards',
+          sub_tabs: [
+            {
+              id: 's1',
+              display: 'cards',
+              label: 'Card',
+              icon: 'star' as unknown as BookingPublicFormConfig['booking_modes'][0]['sub_tabs'][0]['icon'],
+            },
+          ],
+        },
+      ],
+    }
+    const normalized = normalizeBookingPublicFormConfig(config)
+    expect(normalized.booking_modes[0].icon).toBe('fork_knife')
+    expect(normalized.booking_modes[0].sub_tabs[0].icon).toBe('lucide_salad')
+  })
+})
 
 describe('parseSubTabFromUnknown — show_offer_details_in_summary', () => {
   const baseCarousel = {

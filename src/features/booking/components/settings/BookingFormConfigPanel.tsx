@@ -1,16 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { ForkKnifeIcon } from '@phosphor-icons/react/dist/csr/ForkKnife'
-import { CallBellIcon } from '@phosphor-icons/react/dist/csr/CallBell'
-import { ChefHatIcon } from '@phosphor-icons/react/dist/csr/ChefHat'
-import { WineIcon } from '@phosphor-icons/react/dist/csr/Wine'
-import { CoffeeIcon } from '@phosphor-icons/react/dist/csr/Coffee'
-import { PizzaIcon } from '@phosphor-icons/react/dist/csr/Pizza'
-import { HamburgerIcon } from '@phosphor-icons/react/dist/csr/Hamburger'
-import { BowlSteamIcon } from '@phosphor-icons/react/dist/csr/BowlSteam'
-import { CakeIcon } from '@phosphor-icons/react/dist/csr/Cake'
-import { MartiniIcon } from '@phosphor-icons/react/dist/csr/Martini'
-import { StarIcon } from '@phosphor-icons/react/dist/csr/Star'
-import { LeafIcon } from '@phosphor-icons/react/dist/csr/Leaf'
 import { CaretUpIcon } from '@phosphor-icons/react/dist/csr/CaretUp'
 import { CaretDownIcon } from '@phosphor-icons/react/dist/csr/CaretDown'
 import { TrashIcon } from '@phosphor-icons/react/dist/csr/Trash'
@@ -42,12 +30,16 @@ import {
   normalizeBookingPublicFormConfig,
   type BookingHeaderTextStyle,
   type BookingHeaderTextTarget,
-  type BookingModeIcon,
   type BookingMode,
   type BookingPublicFormConfig,
   type SubTab,
-  type SubTabIcon,
 } from '@/features/booking/constants/bookingPublicFormConfig'
+import { MenuCategoryIconPicker } from '@/features/public-menu/MenuCategoryIconPicker'
+import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
+import {
+  MENU_QR_DEFAULT_CATEGORY_ICON_KEY,
+  type MenuQrCategoryIconKey,
+} from '@/features/public-menu/categoryIcons'
 import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
 import type { SubTabOverridableField } from '@/features/booking/constants/bookingPublicFormConfig'
 import { normalizeMenuItemBookingTypes, type MenuItem } from '@/types/menu'
@@ -58,19 +50,6 @@ import {
   FieldAutosaveIndicator,
   SettingsSaveFooter,
 } from '@/features/booking/components/settings/SettingsSaveUi'
-
-const ICON_OPTIONS: { value: BookingModeIcon; label: string }[] = [
-  { value: 'utensils', label: 'Posate' },
-  { value: 'cloche', label: 'Cloche' },
-  { value: 'chef-hat', label: 'Chef' },
-  { value: 'wine', label: 'Calice' },
-  { value: 'coffee', label: 'Caffe' },
-  { value: 'pizza', label: 'Pizza' },
-  { value: 'hamburger', label: 'Burger' },
-  { value: 'bowl-steam', label: 'Piatto caldo' },
-  { value: 'cake', label: 'Dolce' },
-  { value: 'martini', label: 'Cocktail' },
-]
 
 const SUB_TAB_LABEL_MAX = 30
 const SUB_TAB_DESCRIPTION_MAX = 80
@@ -139,42 +118,12 @@ function AdminFieldWithCharCount({
   )
 }
 
-const SUB_TAB_ICON_OPTIONS: { value: SubTabIcon; label: string }[] = [
-  { value: 'utensils', label: 'Posate' },
-  { value: 'cloche', label: 'Cloche' },
-  { value: 'chef-hat', label: 'Chef' },
-  { value: 'star', label: 'Stella' },
-  { value: 'leaf', label: 'Foglia' },
-]
-
-function ModeIcon({ icon, className }: { icon: BookingMode['icon']; className?: string }) {
-  if (icon === 'utensils') return <ForkKnifeIcon weight="light" className={className} />
-  if (icon === 'chef-hat') return <ChefHatIcon weight="light" className={className} />
-  if (icon === 'wine') return <WineIcon weight="light" className={className} />
-  if (icon === 'coffee') return <CoffeeIcon weight="light" className={className} />
-  if (icon === 'pizza') return <PizzaIcon weight="light" className={className} />
-  if (icon === 'hamburger') return <HamburgerIcon weight="light" className={className} />
-  if (icon === 'bowl-steam') return <BowlSteamIcon weight="light" className={className} />
-  if (icon === 'cake') return <CakeIcon weight="light" className={className} />
-  if (icon === 'martini') return <MartiniIcon weight="light" className={className} />
-  return <CallBellIcon weight="light" className={className} />
-}
-
-function SubTabIconOption({ icon, className }: { icon: SubTabIcon; className?: string }) {
-  if (icon === 'utensils') return <ForkKnifeIcon weight="light" className={className} />
-  if (icon === 'cloche') return <CallBellIcon weight="light" className={className} />
-  if (icon === 'chef-hat') return <ChefHatIcon weight="light" className={className} />
-  if (icon === 'star') return <StarIcon weight="light" className={className} />
-  if (icon === 'leaf') return <LeafIcon weight="light" className={className} />
-  return <ForkKnifeIcon weight="light" className={className} />
-}
-
 function newSubTab(display: SubTab['display']): SubTab {
   return {
     id: crypto.randomUUID(),
     display,
     label: display === 'carousel' ? 'Carosello' : '',
-    icon: 'utensils',
+    icon: 'fork_knife',
     ...(display === 'cards'
       ? { hidden_category_keys: [], hidden_item_ids: [] }
       : {}),
@@ -1150,24 +1099,11 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
         {tab.display === 'cards' && (
           <div className="w-full min-w-0 space-y-1.5 -mt-2">
             <Label className="block text-sm">Icona</Label>
-            <div className="flex flex-wrap gap-2">
-              {SUB_TAB_ICON_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => patchTab({ icon: opt.value })}
-                  className={cn(
-                    'flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold',
-                    tab.icon === opt.value
-                      ? 'border-primary-500 bg-primary-50 text-primary-700'
-                      : 'border-slate-200 bg-white text-slate-600',
-                  )}
-                >
-                  <SubTabIconOption icon={opt.value} className="h-3 w-3" />
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+            <MenuCategoryIconPicker
+              value={tab.icon ?? MENU_QR_DEFAULT_CATEGORY_ICON_KEY}
+              onChange={(icon) => patchTab({ icon })}
+              ariaLabel={`Icona card ${tab.label || 'scorrevole'}`}
+            />
           </div>
         )}
 
@@ -1411,7 +1347,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                         mode.enabled ? 'bg-primary-100 text-primary-700' : 'bg-slate-200 text-slate-400',
                       )}
                     >
-                      <ModeIcon icon={mode.icon} className="h-4 w-4" />
+                      <MenuQrCategoryIconGlyph iconKey={mode.icon} className="h-4 w-4" />
                     </div>
                     <span className="text-sm font-semibold text-slate-700">{mode.label}</span>
                     {!mode.enabled && (
@@ -1469,24 +1405,11 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
                     <div>
                       <Label className="block mb-1 text-sm">Icona</Label>
-                      <div className="flex gap-2 flex-wrap">
-                        {ICON_OPTIONS.map((opt) => (
-                          <button
-                            key={opt.value}
-                            type="button"
-                            onClick={() => updateMode(mode.id, { icon: opt.value })}
-                            className={cn(
-                              'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors',
-                              mode.icon === opt.value
-                                ? 'border-primary-500 bg-primary-50 text-primary-700'
-                                : 'border-slate-200 text-slate-600 hover:border-slate-300',
-                            )}
-                          >
-                            <ModeIcon icon={opt.value} className="h-3.5 w-3.5" />
-                            {opt.label}
-                          </button>
-                        ))}
-                      </div>
+                      <MenuCategoryIconPicker
+                        value={mode.icon}
+                        onChange={(icon: MenuQrCategoryIconKey) => updateMode(mode.id, { icon })}
+                        ariaLabel={`Icona tipologia ${mode.label}`}
+                      />
                     </div>
 
                     <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">

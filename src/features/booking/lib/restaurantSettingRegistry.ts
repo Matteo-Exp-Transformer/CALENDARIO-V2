@@ -27,8 +27,6 @@ import {
 } from '@/features/booking/constants/menuPromo'
 import {
   type BookingPublicFormConfig,
-  BOOKING_MODE_ICONS,
-  type BookingModeIcon,
   type SubTab,
   type SubTabOverride,
   DEFAULT_BOOKING_FORM_CONFIG,
@@ -36,6 +34,7 @@ import {
   parseBookingHeaderStylesFromUnknown,
   parseSubTabFromUnknown,
 } from '@/features/booking/constants/bookingPublicFormConfig'
+import { resolveBookingStoredIconKey } from '@/features/public-menu/categoryIcons'
 
 export const RESTAURANT_SETTING_KEYS_V1 = [
   'restaurant_name',
@@ -590,9 +589,10 @@ export const restaurantSettingRegistry: {
             enabled: typeof mode.enabled === 'boolean' ? mode.enabled : dm.enabled,
             label: typeof mode.label === 'string' ? mode.label : dm.label,
             description: typeof mode.description === 'string' ? mode.description : dm.description,
-            icon: BOOKING_MODE_ICONS.includes(mode.icon as BookingModeIcon)
-              ? (mode.icon as BookingModeIcon)
-              : dm.icon,
+            icon: resolveBookingStoredIconKey(
+              typeof mode.icon === 'string' ? mode.icon : undefined,
+              resolveBookingStoredIconKey(dm.icon),
+            ),
             sub_tabs_enabled: typeof mode.sub_tabs_enabled === 'boolean' ? mode.sub_tabs_enabled : dm.sub_tabs_enabled,
             sub_tabs_presentation: (() => {
               const raw = mode.sub_tabs_presentation

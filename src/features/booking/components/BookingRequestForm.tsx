@@ -42,7 +42,9 @@ import {
   applyLegacySubTabLabelOverrides,
   DEFAULT_BOOKING_FORM_CONFIG,
 } from '../constants/bookingPublicFormConfig'
-import { BookingSubTabCards, SubTabCardIcon } from './publicBooking/BookingSubTabCards'
+import { BookingSubTabCards } from './publicBooking/BookingSubTabCards'
+import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
+import { resolveBookingStoredIconKey } from '@/features/public-menu/categoryIcons'
 import {
   BOOKING_PUBLIC_CONTENT_WIDTH,
   publicFormSectionErrorClass,
@@ -128,7 +130,10 @@ function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
                   className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white shadow-md backdrop-blur-[1px] sm:right-4 sm:top-4 sm:h-10 sm:w-10"
                   aria-hidden
                 >
-                  <SubTabCardIcon icon={item.icon} className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <MenuQrCategoryIconGlyph
+                    iconKey={resolveBookingStoredIconKey(item.icon)}
+                    className="h-5 w-5 sm:h-6 sm:w-6 text-white"
+                  />
                 </span>
               ) : null}
               {hasOverlay ? (

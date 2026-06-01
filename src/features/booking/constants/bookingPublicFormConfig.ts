@@ -1,7 +1,16 @@
 import type { BookingType } from '@/types/booking'
-import type { CarouselItem, CarouselSlideIcon } from '@/types/menu'
+import type { CarouselItem } from '@/types/menu'
+import {
+  MENU_QR_DEFAULT_CATEGORY_ICON_KEY,
+  resolveBookingStoredIconKey,
+  type MenuQrCategoryIconKey,
+} from '@/features/public-menu/categoryIcons'
 
-export type SubTabIcon = 'utensils' | 'cloche' | 'chef-hat' | 'star' | 'leaf'
+/** Icone card scorrevoli / carosello Prenota — stesso namespace del Menù QR. */
+export type SubTabIcon = MenuQrCategoryIconKey
+
+/** Icone tipologie prenotazione — stesso namespace del Menù QR. */
+export type BookingModeIcon = MenuQrCategoryIconKey
 
 /** Limiti testi slide carosello Prenota (editor Personalizza form + normalizzazione DB). */
 export const BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS = {
@@ -31,20 +40,6 @@ export function normalizeCarouselSlideItem(item: CarouselItem, sortOrder: number
     sort_order: typeof item.sort_order === 'number' ? item.sort_order : sortOrder,
   }
 }
-export const BOOKING_MODE_ICONS = [
-  'utensils',
-  'cloche',
-  'chef-hat',
-  'wine',
-  'coffee',
-  'pizza',
-  'hamburger',
-  'bowl-steam',
-  'cake',
-  'martini',
-] as const
-export type BookingModeIcon = (typeof BOOKING_MODE_ICONS)[number]
-
 export const BOOKING_HEADER_FONT_OPTIONS = [
   {
     id: 'playfair',
@@ -308,12 +303,17 @@ export interface BookingPublicFormConfig {
   booking_modes: BookingMode[]
 }
 
-const SUB_TAB_ICONS: SubTabIcon[] = ['utensils', 'cloche', 'chef-hat', 'star', 'leaf']
+function parseBookingIconOptional(value: unknown): SubTabIcon | undefined {
+  if (typeof value !== 'string' || !value.trim()) return undefined
+  return resolveBookingStoredIconKey(value.trim())
+}
 
-function parseCarouselSlideIcon(value: unknown): CarouselSlideIcon | undefined {
-  return typeof value === 'string' && SUB_TAB_ICONS.includes(value as SubTabIcon)
-    ? (value as CarouselSlideIcon)
-    : undefined
+function parseBookingIconRequired(
+  value: unknown,
+  fallback: MenuQrCategoryIconKey,
+): MenuQrCategoryIconKey {
+  if (typeof value !== 'string' || !value.trim()) return fallback
+  return resolveBookingStoredIconKey(value.trim(), fallback)
 }
 
 /** Migra testi legacy da livello sottotab alla prima slide; il carosello mantiene label e prezzo separati. */
@@ -365,10 +365,7 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
   if (!id) return null
   if (!label && display === 'carousel') return null
 
-  const icon =
-    typeof o.icon === 'string' && SUB_TAB_ICONS.includes(o.icon as SubTabIcon)
-      ? (o.icon as SubTabIcon)
-      : undefined
+  const icon = parseBookingIconOptional(o.icon)
 
   let price_per_person: number | undefined
   if (typeof o.price_per_person === 'number' && o.price_per_person >= 0) {
@@ -400,7 +397,7 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
                 typeof v.description === 'string' && v.description.trim()
                   ? v.description.trim()
                   : undefined,
-              icon: parseCarouselSlideIcon((v as Partial<CarouselItem>).icon),
+              icon: parseBookingIconOptional((v as Partial<CarouselItem>).icon),
               sort_order: typeof v.sort_order === 'number' ? v.sort_order : idx,
             },
             idx,
@@ -512,7 +509,7 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
       enabled: true,
       label: 'Prenota un Tavolo',
       description: 'Semplice prenotazione tavolo senza menu predefinito.',
-      icon: 'utensils',
+      icon: 'fork_knife',
       sub_tabs_enabled: false,
       sub_tabs_presentation: null,
       sub_tabs: [],
@@ -523,7 +520,7 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
       enabled: true,
       label: 'Menu a Prezzo Fisso',
       description: 'Scegli il tuo menu componendo le portate a prezzo fisso.',
-      icon: 'cloche',
+      icon: 'bowl_food',
       sub_tabs_enabled: false,
       sub_tabs_presentation: null,
       sub_tabs: [],
@@ -534,7 +531,7 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
       enabled: true,
       label: 'Rinfresco di Laurea',
       description: 'Organizza il tuo rinfresco di laurea con menu personalizzato.',
-      icon: 'chef-hat',
+      icon: 'lucide_chef_hat',
       sub_tabs_enabled: false,
       sub_tabs_presentation: null,
       sub_tabs: [],
@@ -554,6 +551,7 @@ export function normalizeBookingPublicFormConfig(
       ...mode,
       label: mode.label.trim(),
       description: mode.description.trim(),
+      icon: parseBookingIconRequired(mode.icon, MENU_QR_DEFAULT_CATEGORY_ICON_KEY),
       sub_tabs_presentation: mode.sub_tabs_presentation ?? null,
       sub_tabs: (mode.sub_tabs ?? []).map((tab): SubTab => {
         const display: SubTab['display'] = tab.display === 'carousel' ? 'carousel' : 'cards'
@@ -561,6 +559,7 @@ export function normalizeBookingPublicFormConfig(
         const base: SubTab = {
           ...tab,
           display,
+          icon: tab.icon ? parseBookingIconOptional(tab.icon) : undefined,
           label: tab.label.trim(),
           is_fixed_menu: isPersonalizzabileCard ? false : undefined,
           price_per_person: isPersonalizzabileCard ? undefined : tab.price_per_person,
@@ -580,9 +579,18 @@ export function normalizeBookingPublicFormConfig(
             icon: undefined,
             show_offer_details_in_summary:
               tab.show_offer_details_in_summary === false ? false : undefined,
-            carousel_items: base.carousel_items?.map((item, idx) =>
-              normalizeCarouselSlideItem(item, typeof item.sort_order === 'number' ? item.sort_order : idx),
-            ),
+            carousel_items: base.carousel_items?.map((item, idx) => {
+              const normalized = normalizeCarouselSlideItem(
+                item,
+                typeof item.sort_order === 'number' ? item.sort_order : idx,
+              )
+              return {
+                ...normalized,
+                icon: normalized.icon
+                  ? parseBookingIconOptional(normalized.icon)
+                  : undefined,
+              }
+            }),
           })
         }
         return {

@@ -30,5 +30,13 @@ export function MenuQrCategoryIconGlyph({
   }
 
   const Icon = opt.Icon
-  return <Icon size={size} className={cn(className)} style={style} aria-hidden />
+  return (
+    <Icon
+      size={size}
+      className={cn(className)}
+      style={style}
+      strokeWidth={1.75}
+      aria-hidden
+    />
+  )
 }

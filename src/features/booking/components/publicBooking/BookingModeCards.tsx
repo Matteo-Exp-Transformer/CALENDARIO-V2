@@ -1,36 +1,14 @@
 import React from 'react'
-import { ForkKnifeIcon } from '@phosphor-icons/react/dist/csr/ForkKnife'
-import { CallBellIcon } from '@phosphor-icons/react/dist/csr/CallBell'
-import { ChefHatIcon } from '@phosphor-icons/react/dist/csr/ChefHat'
-import { WineIcon } from '@phosphor-icons/react/dist/csr/Wine'
-import { CoffeeIcon } from '@phosphor-icons/react/dist/csr/Coffee'
-import { PizzaIcon } from '@phosphor-icons/react/dist/csr/Pizza'
-import { HamburgerIcon } from '@phosphor-icons/react/dist/csr/Hamburger'
-import { BowlSteamIcon } from '@phosphor-icons/react/dist/csr/BowlSteam'
-import { CakeIcon } from '@phosphor-icons/react/dist/csr/Cake'
-import { MartiniIcon } from '@phosphor-icons/react/dist/csr/Martini'
 import { cn } from '@/lib/utils'
 import type { BookingMode } from '@/features/booking/constants/bookingPublicFormConfig'
 import type { BookingType } from '@/types/booking'
 import { BOOKING_PUBLIC_WIDE_CARDS_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
+import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
 
 interface BookingModeCardsProps {
   modes: BookingMode[]
   activeModeId: string
   onChange: (modeId: string, bookingType: BookingType) => void
-}
-
-function ModeIcon({ icon, className }: { icon: BookingMode['icon']; className?: string }) {
-  if (icon === 'utensils') return <ForkKnifeIcon weight="light" className={className} />
-  if (icon === 'chef-hat') return <ChefHatIcon weight="light" className={className} />
-  if (icon === 'wine') return <WineIcon weight="light" className={className} />
-  if (icon === 'coffee') return <CoffeeIcon weight="light" className={className} />
-  if (icon === 'pizza') return <PizzaIcon weight="light" className={className} />
-  if (icon === 'hamburger') return <HamburgerIcon weight="light" className={className} />
-  if (icon === 'bowl-steam') return <BowlSteamIcon weight="light" className={className} />
-  if (icon === 'cake') return <CakeIcon weight="light" className={className} />
-  if (icon === 'martini') return <MartiniIcon weight="light" className={className} />
-  return <CallBellIcon weight="light" className={className} />
 }
 
 export const BookingModeCards: React.FC<BookingModeCardsProps> = ({ modes, activeModeId, onChange }) => {
@@ -68,7 +46,7 @@ export const BookingModeCards: React.FC<BookingModeCardsProps> = ({ modes, activ
                   isActive ? 'text-warm-orange' : 'text-warm-wood/80',
                 )}
               >
-                <ModeIcon icon={mode.icon} className="h-6 w-6 sm:h-7 sm:w-7" />
+                <MenuQrCategoryIconGlyph iconKey={mode.icon} className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
               <div className="min-w-0 w-full text-center">
                 <p
