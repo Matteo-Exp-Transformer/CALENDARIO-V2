@@ -1,9 +1,8 @@
 # Report — Follow-up: rimozione 2 icone Lucide Menù QR (01-06-26)
 
-> ⚠️ **Stato revisione report finale:** bozza **non applicata** al codice su `env/test` (commit `a25f02c`). Il picker ha ancora **22** icone incluso `lucide_soup` e `lucide_egg_fried`. Trattare questo file come intento/documentazione; eseguire il diff sotto solo se Matteo conferma.
-
-- **Cosa avrebbe cambiato (se implementato):** rimuovere Zuppa e Uova dal picker → **20** icone (12 + 8 Lucide).
-- **Cosa resta:** implementazione codice + commit, oppure annullare il follow-up.
+- **Cosa è cambiato:** rimosse **Zuppa** (`lucide_soup`) e **Uova / brunch** (`lucide_egg_fried`) dal picker «Altre icone». Restano **20** icone (12 Phosphor + 8 Lucide). Chiavi ancora in DB → fallback visivo pentola/posate.
+- **Chiusura report finale (01-06-26):** diff applicato; validate **237** test; commit su `env/test`.
+- **Nota:** sessione precedente aveva solo il report su carta — Matteo ha segnalato che le icone erano ancora visibili; corretto in questo commit.
 
 ---
 
@@ -33,13 +32,24 @@
 
 ## Test
 
-`npm run validate` — **236** test verdi.
+`npm run validate` — **237** test verdi (report finale).
 
 ## Dati comunicazione
 
 - Matteo ha identificato le icone via **ping DOM** (`lucide-soup`, `lucide-egg-fried`) — stesso metodo della sessione Lucide precedente; efficace.
 - «lavoro ok» senza altre correzioni.
 
+## Revisione report finale
+
+| Check | Esito |
+|-------|--------|
+| `lucide_soup` / `lucide_egg_fried` assenti dal picker | ✅ |
+| 20 icone totali (12 + 8) | ✅ test |
+| Fallback DB `lucide_soup` → `cooking_pot`, `lucide_egg_fried` → `fork_knife` | ✅ |
+| Skill `PUBLIC_MENU_SKILL.md` | ✅ |
+| `npm run validate` | ✅ 237/237 |
+
 ## Stato
 
-**Non mergiato** — solo report scritto; `src/features/public-menu/categoryIcons.ts` su branch ha ancora le 10 Lucide originali.
+- Codice + docs: **committati** su `env/test` (report finale).
+- QR con chiavi vecchie in DB: riapri modale e Salva con altra icona se vuoi aggiornare il valore salvato (il pubblico intanto usa il fallback).
