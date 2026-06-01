@@ -23,6 +23,7 @@ import {
   MENU_QR_DEFAULT_CATEGORY_ICON_KEY,
 } from '@/features/public-menu/categoryIcons'
 import { validateMenuQrSettings, isMenuQrSettingsValid } from '../utils/menuQrValidation'
+import { buildCatalogPrefillForKeys } from '../utils/menuQrStorage'
 import type {
   CarouselItem,
   MenuItem,
@@ -55,25 +56,6 @@ function resolveCategoryFilterForUi(
 ): string[] {
   if (raw === null) return [...keysWithItems]
   return raw
-}
-
-/** Anteprima modale: URL catalogo Menu solo se non c’è già thumb QR in draft. */
-function buildCatalogPrefillForKeys(
-  keys: string[],
-  categories: MenuCategoryRecord[],
-  existing: Record<string, string>,
-): Record<string, string> {
-  let changed = false
-  const next = { ...existing }
-  for (const key of keys) {
-    if (next[key]) continue
-    const cat = categories.find((c) => c.key === key)
-    if (cat?.image_url) {
-      next[key] = cat.image_url
-      changed = true
-    }
-  }
-  return changed ? next : existing
 }
 
 function pruneHiddenItemIds(
@@ -212,7 +194,7 @@ export function MenuQrModal({
       categoryKeysWithItems.length > 0 ? [...categoryKeysWithItems] : []
     setCategoryFilter(initialFilter)
     setCarouselItems([])
-    setCategoryImages(buildCatalogPrefillForKeys(initialFilter, categories, {}))
+    setCategoryImages(buildCatalogPrefillForKeys(initialFilter, categories, {}, tenantId))
     setThemeKey(DEFAULT_THEME_KEY)
     setHiddenItemIds([])
     setOverrideDrafts(buildCategoryOverrideDrafts(categories, []))
@@ -303,7 +285,7 @@ export function MenuQrModal({
     }
     const keys = [...categoryKeysWithItems]
     setCategoryFilter(keys)
-    setCategoryImages((prev) => buildCatalogPrefillForKeys(keys, categories, prev))
+    setCategoryImages((prev) => buildCatalogPrefillForKeys(keys, categories, prev, tenantId))
   }
 
   const toggleCategory = (key: string) => {
@@ -313,7 +295,7 @@ export function MenuQrModal({
       return
     }
     setCategoryFilter((prev) => [...prev, key])
-    setCategoryImages((prev) => buildCatalogPrefillForKeys([key], categories, prev))
+    setCategoryImages((prev) => buildCatalogPrefillForKeys([key], categories, prev, tenantId))
   }
 
   const moveCategoryInFilter = (key: string, direction: -1 | 1) => {
