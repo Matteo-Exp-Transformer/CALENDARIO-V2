@@ -63,6 +63,25 @@
    proposte decise in `PROPOSTE.md`, alleggerisce `OSSERVAZIONI.md` dai dati ormai consolidati in
    regole. Scrive un report di revisione e fa commit dedicato `docs(comunicazione):`.
 
+6b. **Allinea il TEMPLATE «v.0» del sistema vuoto — su «fai report finale» / chiusura sessione**
+   (regola 01-06-26). Esiste una versione **generica e pulita** dello skill system, pronta per nuovi
+   progetti, in `_skill-system-v0/` (alla radice del repo, **gitignored** → non compare nei comandi
+   git ma è sul disco). Matteo la tiene allineata agli upgrade fatti qui. Quando un upgrade è
+   **strutturale/riusabile** (nuova regola di processo, nuovo meccanismo, modifica al protocollo
+   fine-chat, nuovo livello/comportamento generico — NON cose specifiche di CalendarBackup come una
+   RULE su `BookingRequestPage`), **propaga la modifica anche nel file corrispondente di
+   `_skill-system-v0/comunicazione/`** (`VOCABOLARIO.md`, `REVISIONE.md`, `EVOLUZIONE_SKILLS.md`,
+   `COMUNICAZIONE_SKILL.md`, ecc.), in forma **generica** (togli i riferimenti specifici al progetto).
+   - **Cosa propagare:** meccanismi e regole di processo del sistema (es. i livelli di fiducia, il
+     voto-al-revisore 4c, la distinzione lavoro-ok/report-finale, gli hook/Rule come leve di
+     enforcement). **Cosa NON propagare:** voci/RULE legate a feature o file specifici di questo
+     progetto.
+   - **Limite tecnico:** `_skill-system-v0/` è gitignored → le sue modifiche **non entrano nei commit**
+     di questo repo. Restano locali sul disco di Matteo (è il suo template personale). Annota
+     nel report quali file del template hai toccato, così resta traccia anche se git non li versiona.
+   - Origine: Matteo 01-06-26 — «mantengo v.0 allineato con gli upgrade; vorrei che il senior si
+     ricordasse di aggiornarlo a report finale».
+
 ---
 
 ## Evoluzione del sistema — due livelli di Meta (`EVOLUZIONE_SKILLS.md`)
