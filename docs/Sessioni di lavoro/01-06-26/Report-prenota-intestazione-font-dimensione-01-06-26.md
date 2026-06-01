@@ -2,13 +2,13 @@
 
 **Data:** 01-06-26  
 **Modalità:** standard · **Profilo:** Esecuzione (+ revisione prepara-prompt font)  
-**Stato:** ✅ **lavoro ok** (Matteo 01-06-26) · commit fase 1 ✅ `73dddcc`/`623a4b8` su `main` · commit fase 2 ⬜
+**Stato:** ✅ **report finale** · fase 1 `73dddcc` · fase 2 `5f6819f` · `main` + `env/test` push ✅
 
 ---
 
 **Cosa è cambiato (sintesi):** In **Personalizza form → Intestazione pagina Prenota** il ristoratore può scegliere **font** (lista ampliata), **dimensione 8–38 px** per riga, **grassetto** e **sottolineato** per nome/titolo/descrizione. La pagina pubblica `/prenota/:slug` applica tutto da `booking_public_form_config.header_styles`. Fix fallback: niente più Thirsty che diventa Lobster; Dancing Script (Google OFL); stack script pulite.
 
-**Cosa resta:** QA visivo Matteo (375 / 834 / 1280); **commit + push fase 2** (diff locale non ancora in git).
+**Cosa resta:** QA visivo Matteo (375 / 834 / 1280) dopo deploy da `main`.
 
 **Tua azione:** provare G/S e Dancing Script vs Lobster sulle **caselle testo** header → **Salva** → verificare `/prenota/:slug`.
 
@@ -123,7 +123,7 @@
 
 **Git fase 1 (su `main`):** `73dddcc` feat + `4d60b75`/`623a4b8` doc — merge `env/test` → `main` eseguito in sessione.
 
-**Git fase 2 (locale, non committato):** ~6 file, +149 / −30 righe (`git diff --stat` a chiusura lavoro ok).
+**Git fase 2:** `5f6819f` — merge fast-forward su `main`.
 
 ---
 
@@ -180,7 +180,7 @@
 
 | Priorità | Voce |
 |----------|------|
-| P0 | Commit + push **fase 2** quando Matteo dice «fai report finale» |
+| — | ~~Commit fase 2~~ | ✅ `5f6819f` |
 | P1 | QA visivo: Dancing vs Lobster, G/S, Mistral su Windows vs Mac |
 | P2 | Opzionale: rimuovere Mistral da lista se troppi reclami su mobile |
 
@@ -190,7 +190,7 @@
 
 | Voce | Stato |
 |------|--------|
-| Fase 1 commit | ✅ `73dddcc` (merge su `main` `623a4b8`) |
-| Fase 2 commit | ⬜ atteso «fai report finale» |
-| DB PROD | ✅ allineato a `042`; **nessuna** migrazione richiesta per `header_styles` |
-| Deploy | Frontend da `main` dopo commit fase 2 |
+| Fase 1 commit | ✅ `73dddcc` |
+| Fase 2 commit | ✅ `5f6819f` su `env/test` e `main` (fast-forward) |
+| DB PROD | ✅ `042`; nessuna migrazione per `header_styles` |
+| Deploy | Frontend da `main` (`5f6819f`) |
