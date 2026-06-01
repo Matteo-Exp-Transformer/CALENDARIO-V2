@@ -2,7 +2,7 @@
 
 **Data:** 01-06-26  
 **Modalità:** standard · **Profilo:** Esecuzione  
-**Stato:** ✅ report finale · revisione prepara-prompt OK · commit ⬜ · push ⬜
+**Stato:** ✅ report finale · revisione prepara-prompt OK · commit `73dddcc` (+ doc `4d60b75`) · push ✅
 
 ---
 
