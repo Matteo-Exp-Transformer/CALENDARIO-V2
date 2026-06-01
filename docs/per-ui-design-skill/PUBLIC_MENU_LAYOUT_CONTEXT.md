@@ -113,7 +113,7 @@ Trasparente finché la barra non si blocca in alto; poi sfondo e blur aumentano 
 
 Scroll orizzontale: classe `.scrollbar-hide` in `index.css` (niente barra su mobile/desktop). **Desktop (`md+`)**: frecce sx/dx semi-opache (`theme.tabBarStickyRgb`) se c’è overflow; **mobile**: solo swipe, senza frecce.
 
-- Pill: `inline-flex items-center gap-1.5` + `leading-none` — icona Phosphor 16px + testo allineati su mobile
+- Pill: fill `rgba(tabBarStickyRgb, 0.92)` (sempre visibile, anche con barra trasparente) + bordo/testo `accentColor`; `inline-flex items-center gap-1.5` + `leading-none` — icona Phosphor 16px + testo allineati su mobile
 - Icona: `resolveMenuQrCategoryIcon(menu_qrcode_categories.icon, category_key)` (solo quando mostra categorie)
 
 ### `CategoryCard`

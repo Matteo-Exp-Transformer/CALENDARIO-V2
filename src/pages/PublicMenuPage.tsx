@@ -349,6 +349,7 @@ function MenuNavTabs({
   const blurPx = Math.round(bgOpacity * 10)
   const barBg = `rgba(${tabBarStickyRgb}, ${bgOpacity * 0.97})`
   const arrowBg = `rgba(${tabBarStickyRgb}, ${Math.max(bgOpacity * 0.97, 0.72)})`
+  const pillBg = `rgba(${tabBarStickyRgb}, 0.92)`
 
   const scrollTabs = (delta: number) => {
     scrollRef.current?.scrollBy({ left: delta, behavior: 'smooth' })
@@ -386,7 +387,11 @@ function MenuNavTabs({
                 key={item.key}
                 to={item.href}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium leading-none transition-colors"
-                style={{ borderColor: accentColor, color: accentColor }}
+                style={{
+                  borderColor: accentColor,
+                  color: accentColor,
+                  backgroundColor: pillBg,
+                }}
               >
                 {isCategoryNavTab(item) ? (
                   <MenuQrCategoryIconGlyph
