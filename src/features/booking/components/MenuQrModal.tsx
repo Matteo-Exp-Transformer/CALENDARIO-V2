@@ -110,7 +110,7 @@ function serializeMenuQrDraft(input: {
 }): string {
   return JSON.stringify({
     name: input.name.trim(),
-    categoryFilter: [...input.categoryFilter].sort(),
+    categoryFilter: input.categoryFilter,
     carouselItems: input.carouselItems,
     categoryImages: input.categoryImages,
     themeKey: input.themeKey,
@@ -167,9 +167,17 @@ export function MenuQrModal({
     [menuItems, allCategoryKeys],
   )
 
+  const categoryByKey = useMemo(
+    () => Object.fromEntries(categories.map((c) => [c.key, c])),
+    [categories],
+  )
+
   const selectedCategories = useMemo(
-    () => categories.filter((c) => categoryFilter.includes(c.key)),
-    [categories, categoryFilter],
+    () =>
+      categoryFilter
+        .map((key) => categoryByKey[key])
+        .filter((c): c is MenuCategoryRecord => !!c),
+    [categoryFilter, categoryByKey],
   )
 
   const activeShortCode = editing?.short_code ?? draftShortCode
@@ -306,6 +314,18 @@ export function MenuQrModal({
     }
     setCategoryFilter((prev) => [...prev, key])
     setCategoryImages((prev) => buildCatalogPrefillForKeys([key], categories, prev))
+  }
+
+  const moveCategoryInFilter = (key: string, direction: -1 | 1) => {
+    setCategoryFilter((prev) => {
+      const i = prev.indexOf(key)
+      if (i < 0) return prev
+      const j = i + direction
+      if (j < 0 || j >= prev.length) return prev
+      const next = [...prev]
+      ;[next[i], next[j]] = [next[j], next[i]]
+      return next
+    })
   }
 
   const validationInput = useMemo(
@@ -535,6 +555,8 @@ export function MenuQrModal({
             itemsByCategory={itemsByCategory}
             hiddenItemIds={hiddenItemIds}
             onHiddenItemIdsChange={setHiddenItemIds}
+            onMoveCategoryUp={(key) => moveCategoryInFilter(key, -1)}
+            onMoveCategoryDown={(key) => moveCategoryInFilter(key, 1)}
           />
         </section>
 
