@@ -78,6 +78,7 @@ File: `src/lib/menuPhotoUpload.ts`
 Il flusso admin in `MenuPricesTab`:
 1. Prodotto: sceglie file → anteprima → al salvataggio upload → update `menu_items.image_url`
 2. Categoria (Gestione categorie): stesso pattern → `menu_categories.image_url` — **non** scrive in `category_images` del pannello QR
+3. Modale Menù QR: selezione categoria con foto in catalogo → anteprima da `menu_categories.image_url`; al **Salva** copia storage `booking-cat/` → `qr/{id|draft}/cat/` (`importCatalogCategoryImagesToQrStorage`) — **mai** aggiorna `menu_categories`
 
 ---
 
@@ -113,8 +114,20 @@ File: `src/features/booking/hooks/useMenuQrCodes.ts`
 | Componente | File |
 |------------|------|
 | `MenuQrManager` | `src/features/booking/components/MenuQrManager.tsx` — solo lista «I miei QR» (tab Aspetto homepage spostato in modale) |
-| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia; **Salva** su riga «Nome QR *» + fondo; checkbox categorie **solo con ≥1 ingrediente**; titoli/foto + picker ingredienti nascosti; **picker icona Phosphor** per categoria senza foto QR; **guard chiusura** (overlay/Esc/X) se draft dirty. **Nessuna UI** per `preset_ids` (menù eventi staff restano in impostazioni Prenota; in salvataggio si preserva solo il valore DB esistente su QR già creati). Richiede migrazioni `036`+`037`+`042` su ogni ambiente Supabase collegato all’app deployata. |
+| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia; **Salva** su riga «Nome QR *» + fondo; checkbox categorie **solo con ≥1 ingrediente**; titoli/foto + picker ingredienti nascosti; **picker icone (12 Phosphor + 10 Lucide, griglia)** per categoria senza foto QR; **guard chiusura** (overlay/Esc/X) se draft dirty. **Nessuna UI** per `preset_ids` (menù eventi staff restano in impostazioni Prenota; in salvataggio si preserva solo il valore DB esistente su QR già creati). Richiede migrazioni `036`+`037`+`042` su ogni ambiente Supabase collegato all’app deployata. |
 | `MenuHomepageConfigPanel` | Sezioni controllate QR (`MenuQrCarouselSection`, `MenuQrCategoryCardsSection`, `MenuQrHiddenItemsPicker`, `MenuQrThemeSection`) — upload anche su **nuovo** QR via path `qr/draft/{shortCode}/` (migrazione a `qr/{id}/` al Salva). La logica upload condivisa sta in `src/features/booking/hooks/useCarouselPhotoUpload.ts`, non nel pannello QR. |
+
+### Icone categoria senza foto (22 preset — 01-06-26)
+
+File: `src/features/public-menu/categoryIcons.ts` · render: `MenuQrCategoryIconGlyph.tsx`
+
+- **Admin:** **12 Phosphor** (`MENU_QR_PHOSPHOR_ICON_OPTIONS`) + **10 Lucide** (`MENU_QR_LUCIDE_ICON_OPTIONS`, riga «Altre icone») = **22** in `MENU_QR_CATEGORY_ICON_OPTIONS`. Picker in `MenuQrCategoryCardsSection`: griglie `grid-cols-4 sm:grid-cols-6` (Phosphor) e `sm:grid-cols-5` (Lucide); tap `h-10`; `aria-label` italiano; mai emoji.
+- **Render:** `MenuQrCategoryIconGlyph` — Phosphor con `weight="regular"`, Lucide senza `weight` — admin + `PublicMenuPage` (tab + card).
+- **Default senza foto:** `fork_knife` se nessun override DB e nessun mapping Phosphor per `category_key`.
+- **Prefill draft:** `buildCategoryOverrideDrafts` — icona DB valida → quella; altrimenti mapping Phosphor o `fork_knife`.
+- **Salvataggio:** `menu_qrcode_categories.icon` = chiave snake_case (`fork_knife` … `lucide_tea`).
+- **Phosphor (12):** `fork_knife`, `bowl_food`, `cooking_pot`, `flame`, `cake`, `martini`, `fish`, `steak` (glyph `Hamburger`), `leaf`, `coffee`, `beer`, `pizza_slice`.
+- **Lucide (10):** `lucide_chef_hat`, `lucide_soup`, `lucide_salad`, `lucide_shrimp`, `lucide_sandwich`, `lucide_croissant`, `lucide_ice_cream`, `lucide_cookie`, `lucide_egg_fried`, `lucide_tea` (glyph **`Milk`** — `Tea` assente in lucide-react del progetto).
 
 Il `MenuQrManager` è montato in `MenuPricesTab` quando `viewMode === 'qr_codes'` (pulsante "QR Code" nell'hero section, visibile solo se `features.qrMenu`).
 
@@ -138,7 +151,7 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 1. **Sfondo pagina** — `useMenuPageBackgroundStyle()` in `PublicMenuPage.tsx`: solo `bodyImage` con `background-size: 100% auto` + `background-repeat: repeat-y` fin dal primo paint (niente switch JS single→layer multipli — evita flash in scroll). `bodyFallbackBg` riempie eventuali gap (es. terracotta `#9a3412`).
 2. **Hero `<header>`** — nome ristorante da **`useRestaurantName()`** (`restaurant_settings.restaurant_name`, fallback `organizations_public.name`, poi «Menu») + fregio + `MenuCarousel` (nessuna label esterna “Specialità…”); badge solo dentro ogni slide. **`PublicMenuPageHeader` non usato** sulla homepage.
 3. **Carosello** — slide full-bleed, overlay gradiente 40% sx, titolo/descrizione da `carousel_items`; pallini **cliccabili** (tap mobile 44px). Placeholder `h-28` se zero foto. Eyebrow slide **solo se compilato** in admin.
-4. **Tab `MenuNavTabs`** — sticky; sfondo trasparente → opaco progressivo (~56px scroll) con `theme.tabBarStickyRgb`; pill `inline-flex items-center` (icona + testo allineati su mobile); icona via `resolveMenuQrCategoryIcon(override.icon, category_key)`; scroll senza barra (`.scrollbar-hide`); frecce sx/dx da **700px** se overflow.
+4. **Tab `MenuNavTabs`** — sticky; sfondo trasparente → opaco progressivo (~56px scroll) con `theme.tabBarStickyRgb`; pill `inline-flex items-center` (icona + testo allineati su mobile); icona via `MenuQrCategoryIconGlyph(override.icon, category_key)`; scroll senza barra (`.scrollbar-hide`); frecce sx/dx da **700px** se overflow.
 5. **Griglia categorie** — responsive: 1 col &lt;520 · **2 col 520–1024** (tile verticale) · 2 col ≥1025 con card **orizzontale** (thumb + titolo + descrizione); senza foto → icona Phosphor — **mai emoji**. Oltre 1024px viewport: **wrapper contenuto** `max-w-[1024px] mx-auto` — carosello/tab/card/footer **non si allargano**; sfondo tema PNG resta **full-bleed** sul wrapper pagina esterno (`useMenuPageBackgroundStyle`).
 6. **Footer `MenuFooterCard`** — data e ora IT, `mt-auto` in fondo pagina.
 
@@ -169,7 +182,7 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 RULE  Le pagine /menu/* usano SOLO supabasePublic — mai supabase autenticato
 RULE  Il bucket menu-photos è pubblico — le URL sono stabili e cacheable
 RULE  Non aggiungere cursor-pointer inline — usa la regola globale .is-clickable
-RULE  Icone Phosphor categorie: `resolveMenuQrCategoryIcon(icon, category_key)` in `categoryIcons.ts` — override `menu_qrcode_categories.icon` (admin picker `MENU_QR_CATEGORY_ICON_OPTIONS`), fallback `CATEGORY_ICON` per key — **mai emoji** in card/tab pubbliche
+RULE  Icone categorie QR: **22** chiavi (12 Phosphor + 10 Lucide `lucide_*`) in `categoryIcons.ts`; render con `MenuQrCategoryIconGlyph`; override DB → mapping Phosphor per `category_key` → default `fork_knife`; picker in `MenuQrCategoryCardsSection` — **mai emoji** in card/tab pubbliche
 RULE  content_type valori: 'a_la_carte' | 'preset_menus' | 'mixed' — non aggiungere altri
 RULE  La pagina /menu/:slug senza short_code usa il QR default (primo is_active=true, sort_order ASC)
 RULE  Se short_code non trovato → messaggio «Menù QR non trovato» (nessun redirect al menu default — evita di mostrare sempre il primo QR)

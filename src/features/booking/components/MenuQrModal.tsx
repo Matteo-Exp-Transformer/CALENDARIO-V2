@@ -17,6 +17,11 @@ import {
 } from './MenuHomepageConfigPanel'
 import { DiscardChangesConfirmModal } from './settings/SettingsSaveUi'
 import { DEFAULT_THEME_KEY, MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
+import {
+  defaultIconKeyForCategory,
+  isMenuQrCategoryIconKey,
+  MENU_QR_DEFAULT_CATEGORY_ICON_KEY,
+} from '@/features/public-menu/categoryIcons'
 import { validateMenuQrSettings, isMenuQrSettingsValid } from '../utils/menuQrValidation'
 import type {
   CarouselItem,
@@ -50,6 +55,25 @@ function resolveCategoryFilterForUi(
 ): string[] {
   if (raw === null) return [...keysWithItems]
   return raw
+}
+
+/** Anteprima modale: URL catalogo Menu solo se non c’è già thumb QR in draft. */
+function buildCatalogPrefillForKeys(
+  keys: string[],
+  categories: MenuCategoryRecord[],
+  existing: Record<string, string>,
+): Record<string, string> {
+  let changed = false
+  const next = { ...existing }
+  for (const key of keys) {
+    if (next[key]) continue
+    const cat = categories.find((c) => c.key === key)
+    if (cat?.image_url) {
+      next[key] = cat.image_url
+      changed = true
+    }
+  }
+  return changed ? next : existing
 }
 
 function pruneHiddenItemIds(
@@ -176,9 +200,11 @@ export function MenuQrModal({
 
     setDraftShortCode(generateShortCode())
     setName('')
-    setCategoryFilter(categoryKeysWithItems.length > 0 ? [...categoryKeysWithItems] : [])
+    const initialFilter =
+      categoryKeysWithItems.length > 0 ? [...categoryKeysWithItems] : []
+    setCategoryFilter(initialFilter)
     setCarouselItems([])
-    setCategoryImages({})
+    setCategoryImages(buildCatalogPrefillForKeys(initialFilter, categories, {}))
     setThemeKey(DEFAULT_THEME_KEY)
     setHiddenItemIds([])
     setOverrideDrafts(buildCategoryOverrideDrafts(categories, []))
@@ -263,14 +289,23 @@ export function MenuQrModal({
     categoryKeysWithItems.every((k) => categoryFilter.includes(k))
 
   const toggleAllCategories = () => {
-    setCategoryFilter(allCatsSelected ? [] : [...categoryKeysWithItems])
+    if (allCatsSelected) {
+      setCategoryFilter([])
+      return
+    }
+    const keys = [...categoryKeysWithItems]
+    setCategoryFilter(keys)
+    setCategoryImages((prev) => buildCatalogPrefillForKeys(keys, categories, prev))
   }
 
   const toggleCategory = (key: string) => {
     if (!categoryKeysWithItems.includes(key)) return
-    setCategoryFilter((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
-    )
+    if (categoryFilter.includes(key)) {
+      setCategoryFilter((prev) => prev.filter((k) => k !== key))
+      return
+    }
+    setCategoryFilter((prev) => [...prev, key])
+    setCategoryImages((prev) => buildCatalogPrefillForKeys([key], categories, prev))
   }
 
   const validationInput = useMemo(
@@ -314,13 +349,17 @@ export function MenuQrModal({
       const d = overrideDrafts[cat.key] ?? {
         title: cat.label,
         description: cat.description ?? '',
-        icon: null,
+        icon: defaultIconKeyForCategory(cat.key) ?? MENU_QR_DEFAULT_CATEGORY_ICON_KEY,
       }
+      const trimmedIcon = d.icon?.trim()
       return {
         category_key: cat.key,
         title: d.title.trim() || null,
         description: d.description.trim() || null,
-        icon: d.icon?.trim() || null,
+        icon:
+          trimmedIcon && isMenuQrCategoryIconKey(trimmedIcon)
+            ? trimmedIcon
+            : (defaultIconKeyForCategory(cat.key) ?? MENU_QR_DEFAULT_CATEGORY_ICON_KEY),
       }
     })
 

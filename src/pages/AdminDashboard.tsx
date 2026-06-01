@@ -250,8 +250,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 pt-4 md:gap-5 md:px-6 md:pt-6">
 
           {/* Top bar con nome ristorante */}
-          <div className="relative flex h-[106px] items-center justify-center overflow-hidden rounded-xl border border-primary-700/25 bg-primary-600 px-4 shadow-md md:px-6">
-            <div className="absolute right-2 top-1/2 z-2 flex h-[100px] w-[100px] shrink-0 -translate-y-1/2 items-center justify-center overflow-hidden rounded-xl bg-transparent p-0 md:right-3">
+          <div className="relative flex h-[92px] items-center justify-center overflow-hidden rounded-xl border border-primary-700/25 bg-primary-600 px-4 shadow-md sm:h-[106px] md:px-6">
+            <div className="absolute right-2 top-1/2 z-2 flex h-14 w-14 shrink-0 -translate-y-1/2 items-center justify-center overflow-hidden rounded-xl bg-transparent p-0 sm:h-[100px] sm:w-[100px] md:right-3">
               <img
                 src={appIconSrc}
                 alt="Icona app"
@@ -260,7 +260,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
             <div className="w-full px-4 md:px-28 text-center pointer-events-none">
               <h1
-                className="relative -left-16 mx-auto max-w-[calc(100%-9rem)] max-[645px]:left-0 max-[645px]:mx-auto max-[645px]:max-w-[min(100%,calc(100vw-2rem))] md:max-w-[calc(100%-11rem)] overflow-hidden line-clamp-2 wrap-anywhere text-[22px] font-semibold italic font-serif tracking-wide text-white drop-shadow-sm leading-tight sm:text-2xl md:text-[28px] lg:text-[30px]"
+                className="relative -left-16 mx-auto max-w-[calc(100%-4.5rem)] max-[645px]:left-0 max-[645px]:mx-auto max-[645px]:max-w-[min(100%,calc(100vw-5rem))] sm:max-w-[calc(100%-9rem)] md:max-w-[calc(100%-11rem)] overflow-hidden line-clamp-2 wrap-anywhere text-[22px] font-semibold italic font-serif tracking-wide text-white drop-shadow-sm leading-tight sm:text-2xl md:text-[28px] lg:text-[30px]"
               >
                 {restaurantName || 'Booking SaaS'}
               </h1>

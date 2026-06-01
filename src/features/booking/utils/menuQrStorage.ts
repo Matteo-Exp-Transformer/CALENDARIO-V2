@@ -14,9 +14,66 @@ export function menuQrStoragePrefix(tenantId: string, segment: string) {
   return `${tenantId}/qr/${segment}`
 }
 
-function storagePathFromPublicUrl(url: string): string | null {
+export function storagePathFromPublicUrl(url: string): string | null {
   const match = url.match(/menu-photos\/([^?]+)/)
   return match ? match[1] : null
+}
+
+export function isBookingCategoryPhotoUrl(url: string, tenantId: string): boolean {
+  const path = storagePathFromPublicUrl(url)
+  if (!path) return false
+  return path.startsWith(`${tenantId}/booking-cat/`)
+}
+
+export function menuQrCategoryPhotoPath(
+  tenantId: string,
+  storageSegment: string,
+  categoryKey: string,
+): string {
+  return `${menuQrStoragePrefix(tenantId, storageSegment)}/cat/${categoryKey}.webp`
+}
+
+/**
+ * Copia thumb da catalogo Menu (`booking-cat/`) al path QR (`qr/{segment}/cat/`).
+ * URL già sul path QR canonico restano invariati.
+ */
+export async function importCatalogCategoryImagesToQrStorage(
+  tenantId: string,
+  storageSegment: string,
+  categoryImages: Record<string, string>,
+): Promise<Record<string, string>> {
+  const result: Record<string, string> = {}
+
+  for (const [categoryKey, url] of Object.entries(categoryImages)) {
+    const path = storagePathFromPublicUrl(url)
+    if (!path) {
+      result[categoryKey] = url
+      continue
+    }
+
+    const destPath = menuQrCategoryPhotoPath(tenantId, storageSegment, categoryKey)
+    if (path === destPath) {
+      result[categoryKey] = url
+      continue
+    }
+
+    const bookingPrefix = `${tenantId}/booking-cat/`
+    if (path.startsWith(bookingPrefix)) {
+      await copyStorageObject(path, destPath)
+      result[categoryKey] = publicUrlForPath(destPath)
+      continue
+    }
+
+    const qrPrefix = `${menuQrStoragePrefix(tenantId, storageSegment)}/`
+    if (path.startsWith(qrPrefix)) {
+      result[categoryKey] = url
+      continue
+    }
+
+    result[categoryKey] = url
+  }
+
+  return result
 }
 
 async function copyStorageObject(fromPath: string, toPath: string): Promise<void> {

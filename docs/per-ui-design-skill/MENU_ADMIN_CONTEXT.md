@@ -79,6 +79,14 @@ In `booking_custom_staff_presets` (`name`, `description?`, `price_per_person?`, 
 `menu_items.booking_types` è legacy e va mantenuto vuoto (`{}`) per gli ingredienti, senza pannello
 tipologie nella UI.
 
+## 8. Modale Menù QR — icone categoria (senza foto)
+
+- **Dove:** tab Menu → I miei QR → Crea/Modifica → sezione card categoria **senza** foto in `category_images` del QR.
+- **UI:** titolo «Icona categoria (senza foto)» + griglia 12 icone Phosphor (`MenuQrCategoryCardsSection` in `MenuHomepageConfigPanel.tsx`).
+- **Default:** `fork_knife` per categorie senza mapping; mapping per key comuni in `categoryIcons.ts` (`pizza` → `pizza_slice`, `birre` → `beer`, …).
+- **DB:** `menu_qrcode_categories.icon` (migrazione 042) — una delle 12 chiavi; prefill su nuovo QR senza upload foto automatico.
+- Dettaglio pubblico: `PUBLIC_MENU_SKILL.md` § Icone categoria senza foto.
+
 ## 7. Report di sessione collegati
 
 - Refactor promo: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`
