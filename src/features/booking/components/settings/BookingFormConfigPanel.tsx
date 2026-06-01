@@ -358,6 +358,10 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   const [expandedMode, setExpandedMode] = useState<string | null>(null)
   const [draftSubTabsByMode, setDraftSubTabsByMode] = useState<Record<string, SubTab | null>>({})
   const [expandedSubTabByMode, setExpandedSubTabByMode] = useState<Record<string, string | null>>({})
+  /** Testo grezzo dimensione font mentre l'utente digita (evita clamp 8–38 fino al blur). */
+  const [headerFontSizeDraftByTarget, setHeaderFontSizeDraftByTarget] = useState<
+    Partial<Record<BookingHeaderTextTarget, string>>
+  >({})
   const allPresets: CustomStaffPreset[] = Array.isArray(customPresetsRaw) ? customPresetsRaw : []
 
   const withMergedSubTabLabels = (cfg: BookingPublicFormConfig): BookingPublicFormConfig => ({
@@ -375,6 +379,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   useEffect(() => {
     if (savedConfig && !headerTextDirty && !headerStylesDirty && !modesDirty) {
       setConfig(withMergedSubTabLabels(savedConfig))
+      setHeaderFontSizeDraftByTarget({})
     }
   }, [savedConfig, headerTextDirty, headerStylesDirty, modesDirty, customPresetsRaw])
 
@@ -784,7 +789,9 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   const renderHeaderStyleControls = (target: BookingHeaderTextTarget) => {
     const style = headerStyles[target] ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles[target]
     const currentAlign = style.textAlign ?? 'center'
-    const fontSizeValue = normalizeBookingHeaderFontSize(style.fontSize, target)
+    const fontSizeDraft = headerFontSizeDraftByTarget[target]
+    const fontSizeInputValue =
+      fontSizeDraft !== undefined ? fontSizeDraft : String(style.fontSize)
     const isBold = style.fontWeight === 'bold'
     const isUnderlined = style.textDecoration === 'underline'
     return (
@@ -822,21 +829,31 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
               Dimensione (8–38)
             </span>
             <input
-              type="number"
-              min={BOOKING_HEADER_FONT_SIZE_MIN}
-              max={BOOKING_HEADER_FONT_SIZE_MAX}
-              step={1}
-              value={fontSizeValue}
+              type="text"
+              inputMode="numeric"
+              aria-valuemin={BOOKING_HEADER_FONT_SIZE_MIN}
+              aria-valuemax={BOOKING_HEADER_FONT_SIZE_MAX}
+              value={fontSizeInputValue}
               onChange={(e) => {
-                const raw = e.target.value
+                const raw = e.target.value.trim()
+                if (raw !== '' && !/^\d+$/.test(raw)) return
+                setHeaderFontSizeDraftByTarget((prev) => ({ ...prev, [target]: raw }))
                 if (raw === '') return
                 const next = Number(raw)
                 if (!Number.isFinite(next)) return
                 updateHeaderTextStyle(target, { fontSize: next })
               }}
               onBlur={() => {
+                const raw =
+                  headerFontSizeDraftByTarget[target] ?? String(style.fontSize)
+                setHeaderFontSizeDraftByTarget((prev) => {
+                  const next = { ...prev }
+                  delete next[target]
+                  return next
+                })
+                const parsed = raw.trim() === '' ? style.fontSize : Number(raw)
                 updateHeaderTextStyle(target, {
-                  fontSize: normalizeBookingHeaderFontSize(style.fontSize, target),
+                  fontSize: normalizeBookingHeaderFontSize(parsed, target),
                 })
               }}
               className={`${headerControlClass} w-full tabular-nums`}

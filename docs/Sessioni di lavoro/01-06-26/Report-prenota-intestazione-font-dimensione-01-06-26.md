@@ -2,7 +2,7 @@
 
 **Data:** 01-06-26  
 **Modalità:** standard · **Profilo:** Esecuzione (+ revisione prepara-prompt font)  
-**Stato:** ✅ **report finale** · fase 1 `73dddcc` · fase 2 `5f6819f` · `main` + `env/test` push ✅
+**Stato:** ✅ **lavoro ok** (fix input dimensione) · commit ⬜ · fase 1 `73dddcc` · fase 2 `5f6819f` · fase 3 ⬜
 
 ---
 
@@ -11,6 +11,12 @@
 **Cosa resta:** QA visivo Matteo (375 / 834 / 1280) dopo deploy da `main`.
 
 **Tua azione:** provare G/S e Dancing Script vs Lobster sulle **caselle testo** header → **Salva** → verificare `/prenota/:slug`.
+
+### Fase 3 — Fix input dimensione font (01-06-26, lavoro ok)
+
+**Bug:** campo Dimensione bloccato su `8` — non si poteva cancellare il default né digitare `18` (clamp 8–38 applicato ad ogni keystroke sul `value`).
+
+**Fix:** stato bozza `headerFontSizeDraftByTarget` + input `text`/`numeric`; clamp **solo on blur**; anteprima invariata sulle caselle header.
 
 ---
 
@@ -152,6 +158,8 @@
 | 5 | Revisione font identici — spiegazione + fix proposti | Prepara-prompt / analisi |
 | 6 | Prompt esecuzione: fallback Mistral, Dancing Script, G/S grassetto-sottolineato | Fase 2 |
 | 7 | «annota tutto nel tuon report. lavoro ok» | Accettazione sessione |
+| 8 | Bug dimensione sempre 8, non cancellabile | Fix fase 3 |
+| 9 | «lavoro ok. commit push e merge con main» | Chiusura fase 3 |
 
 ### Dati grezzi sessione (aggiornati)
 
@@ -191,6 +199,7 @@
 | Voce | Stato |
 |------|--------|
 | Fase 1 commit | ✅ `73dddcc` |
-| Fase 2 commit | ✅ `5f6819f` su `env/test` e `main` (fast-forward) |
+| Fase 2 commit | ✅ `5f6819f` |
+| Fase 3 commit | ⬜ fix input dimensione (draft + blur) |
 | DB PROD | ✅ `042`; nessuna migrazione per `header_styles` |
-| Deploy | Frontend da `main` (`5f6819f`) |
+| Deploy | Frontend da `main` dopo fase 3 |
