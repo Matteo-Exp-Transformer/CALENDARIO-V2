@@ -37,6 +37,14 @@
 
 ## Sessioni registrate (append-only)
 
+### 01-06-26 — Admin header logo mobile (light)
+- Prompt esecuzione delimitato (file, righe, fuori scope) → **zero domande** (non erano annotate in prima stesura report; aggiunte su richiesta Matteo).
+- **Procedura:** 1º turno interrotto prima di risposta + `validate` verde in chat → 2º turno «lavoro ok».
+- **Tensione light vs lavoro ok:** prompt light (solo SESSION_LOG) vs report completo su «lavoro ok» — scelta report file + log (VOCABOLARIO vince).
+- **Gap:** QA viewport nel prompt ma non fatto da agente (coerente Esecuzione, tabella ⬜).
+- Matteo chiede esplicitamente tensioni/procedura nel report, non solo codice.
+- **Agente non sapeva di doverlo fare da solo:** fino alla richiesta non era chiaro che errori di **procedura** / **skill system** vadano segnalati proattivamente nel report (non solo codice / Derivazione errori). Dopo la correzione di Matteo → tabella tensioni nel report; **candidato** regola §7 «Procedura e skill» obbligatoria anche in light.
+
 ### 31-05-26 — «Suggerisci / annota» ≠ skill system
 - Matteo: suggerire o annotare **non** autorizza ad aggiornare regole skill (PREPARA_PROMPT, VOCABOLARIO, comunicazione) — solo sessione Meta senior/junior (`REVISIONE.md`).
 - Distinzione sessione **ragionamento** (prompt, handoff, report) vs **scrittura codice** (esecutore, diff) — handoff deve indicare quale tipo aprire dopo.
