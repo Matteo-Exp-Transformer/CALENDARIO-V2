@@ -25,6 +25,88 @@ export function isBookingCategoryPhotoUrl(url: string, tenantId: string): boolea
   return path.startsWith(`${tenantId}/booking-cat/`)
 }
 
+/** Thumb categoria già sul path QR del tenant (`qr/{segment}/cat/…`), incluso draft. */
+export function isMenuQrCategoryPhotoUrl(url: string, tenantId: string): boolean {
+  const path = storagePathFromPublicUrl(url)
+  if (!path) return false
+  return path.startsWith(`${tenantId}/qr/`) && path.includes('/cat/')
+}
+
+/** UUID categoria da path `booking-cat/{id}.webp`; null se URL non è catalogo del tenant. */
+export function bookingCategoryIdFromPhotoUrl(url: string, tenantId: string): string | null {
+  const path = storagePathFromPublicUrl(url)
+  if (!path) return null
+  const prefix = `${tenantId}/booking-cat/`
+  if (!path.startsWith(prefix)) return null
+  const rest = path.slice(prefix.length)
+  const match = /^(.+)\.webp$/i.exec(rest)
+  return match ? match[1] : null
+}
+
+/**
+ * Anteprima modale: sostituire URL catalogo stale (booking-cat di altra categoria).
+ * Non tocca thumb già su path QR né booking-cat con categoryId corretto.
+ */
+export function shouldRefreshCatalogPrefill(
+  url: string,
+  categoryId: string,
+  tenantId: string,
+): boolean {
+  if (isMenuQrCategoryPhotoUrl(url, tenantId)) return false
+  if (!isBookingCategoryPhotoUrl(url, tenantId)) return false
+  return bookingCategoryIdFromPhotoUrl(url, tenantId) !== categoryId
+}
+
+export function applyCatalogPrefillForKey(
+  existingUrl: string | undefined,
+  catalogImageUrl: string,
+  categoryId: string,
+  tenantId: string,
+): string {
+  if (!existingUrl) return catalogImageUrl
+  if (shouldRefreshCatalogPrefill(existingUrl, categoryId, tenantId)) {
+    return catalogImageUrl
+  }
+  return existingUrl
+}
+
+export interface CatalogPrefillCategory {
+  key: string
+  id: string
+  image_url?: string | null
+}
+
+/** Anteprima modale QR: prefill da `menu_categories.image_url` (solo draft, non Salva). */
+export function buildCatalogPrefillForKeys(
+  keys: string[],
+  categories: CatalogPrefillCategory[],
+  existing: Record<string, string>,
+  tenantId: string | null | undefined,
+): Record<string, string> {
+  let changed = false
+  const next = { ...existing }
+  for (const key of keys) {
+    const cat = categories.find((c) => c.key === key)
+    if (!cat?.image_url) continue
+
+    const current = next[key]
+    if (!current) {
+      next[key] = cat.image_url
+      changed = true
+      continue
+    }
+
+    if (!tenantId) continue
+
+    const refreshed = applyCatalogPrefillForKey(current, cat.image_url, cat.id, tenantId)
+    if (refreshed !== current) {
+      next[key] = refreshed
+      changed = true
+    }
+  }
+  return changed ? next : existing
+}
+
 export function menuQrCategoryPhotoPath(
   tenantId: string,
   storageSegment: string,
@@ -79,6 +161,24 @@ export async function importCatalogCategoryImagesToQrStorage(
 async function copyStorageObject(fromPath: string, toPath: string): Promise<void> {
   const { error } = await (supabase.storage.from(BUCKET) as any).copy(fromPath, toPath)
   if (error) throw error
+}
+
+/** Copia thumb QR `cat/{previousKey}.webp` → `cat/{newKey}.webp` se il file sorgente esiste. */
+export async function tryCopyQrCategoryPhotoOnRename(
+  tenantId: string,
+  storageSegment: string,
+  previousKey: string,
+  newKey: string,
+): Promise<boolean> {
+  if (previousKey === newKey) return false
+  const fromPath = menuQrCategoryPhotoPath(tenantId, storageSegment, previousKey)
+  const toPath = menuQrCategoryPhotoPath(tenantId, storageSegment, newKey)
+  try {
+    await copyStorageObject(fromPath, toPath)
+    return true
+  } catch {
+    return false
+  }
 }
 
 function publicUrlForPath(path: string): string {

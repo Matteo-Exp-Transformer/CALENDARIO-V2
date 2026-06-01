@@ -13,8 +13,14 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
-| 01-06-26 | Esecuzione standard — Menù QR +10 icone Lucide (22 totali) | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-lucide-icone-01-06-26.md) — Phosphor 12 + Lucide 10, `MenuQrCategoryIconGlyph`; `lucide_tea`→Milk; validate 236. |
-| 01-06-26 | Esecuzione standard — Menù QR 12 icone + import foto catalogo | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-12-icone-categoria-01-06-26.md) — icone, griglia, import `menu_categories`→QR storage; validate 236; commit report finale; QA ⬜. |
+| 01-06-26 | Menù QR — prefill anteprima stale booking-cat (modale) ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-prefill-stale-booking-cat-01-06-26.md) — draft `booking-cat` altra categoria corretto al re-check; `qr/…/cat/` protetto; validate **263**; QA Vitest OK / UI ⬜; commit `41cd6ad`. |
+| 01-06-26 | Sync delete categoria → Menù QR + Personalizza form ✅ | sync al click Elimina; modale avviso; validate 258; **QA Matteo OK**; commit `16b8bbe`. |
+| 01-06-26 | Sync rename chiave categoria → Menù QR + Personalizza form ✅ | modale conferma pre-save; validate 258; **QA Matteo OK**; commit `16b8bbe`. |
+| 01-06-26 | Menù QR — default icona categoria Insalata (`lucide_salad`) ✅ | FU-023; admin modale + pubblico; validate 258; commit `16b8bbe`. |
+| 01-06-26 | Admin — card categorie overlay mobile (layout + no thumb) ✅ | titolo centro, icone basso, wrap; thumb ≥1050px; validate 258; QA 375 OK; commit `16b8bbe`. |
+| 01-06-26 | Menù QR — ordine categorie (frecce modale + tab/griglia pubblico) ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-ordine-categorie-01-06-26.md) — `category_filter` sequenza; validate 241; **QA Matteo OK**; commit `e511ded`/`8a35733`. |
+| 01-06-26 | Menù QR — 12 Phosphor + import foto + 10 Lucide (**commit `a25f02c`**) | [12 icone](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-12-icone-categoria-01-06-26.md) · [Lucide](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-lucide-icone-01-06-26.md) — picker 22, glyph condiviso, foto catalogo→QR; validate 236; QA ⬜. |
+| 01-06-26 | Follow-up — rimosse Lucide Zuppa/Uova dal picker Menù QR ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-follow-up-rimozione-lucide-soup-uova-01-06-26.md) — 20 icone; fallback DB; commit report finale; validate 237. |
 | 01-06-26 | Esecuzione light — logo header admin più piccolo solo mobile | [Report](Sessioni%20di%20lavoro/01-06-26/Report-admin-header-logo-mobile-01-06-26.md) — `AdminDashboard` top bar: logo 56px &lt;sm, 100px ≥sm; barra 92/106px; validate 227; QA visivo ⬜. |
 | 01-06-26 | Meta senior + Verifica — revisione codice (no fix) + enforcement Cursor (Rule grilletti + hook nudge) | [Report](Sessioni%20di%20lavoro/01-06-26/Report-revisione-codice-e-enforcement-cursor-01-06-26.md) — 2 sub-agent; codice ieri solido; motore Liv.2 avviato; Cursor HA gli hook → nudge `stop` installato + Rule always-on grilletti; «lavoro ok»/«fai report finale» ridefinite; score 31 = 6,5. |
 | 31-05-26 | **Git — merge env/test→main** ciclo Prenota sfondo mobile + asset sfondo3 | Merge `--no-ff`; validate 227; DB prod migrazione **042** `menu_qrcode_categories.icon` applicata; push `origin/main`. |

@@ -17,18 +17,16 @@ import {
   ChefHat,
   Cookie,
   Croissant,
-  EggFried,
   IceCreamCone,
   Milk,
   Salad,
   Sandwich,
   Shrimp,
-  Soup,
   type LucideIcon,
 } from 'lucide-react'
 
 /** Default universale per categorie senza foto e senza mapping noto. */
-export const MENU_QR_DEFAULT_CATEGORY_ICON_KEY = 'fork_knife' as const
+export const MENU_QR_DEFAULT_CATEGORY_ICON_KEY = 'lucide_salad' as const
 
 export type MenuQrPhosphorIconKey =
   | 'fork_knife'
@@ -46,15 +44,19 @@ export type MenuQrPhosphorIconKey =
 
 export type MenuQrLucideIconKey =
   | 'lucide_chef_hat'
-  | 'lucide_soup'
   | 'lucide_salad'
   | 'lucide_shrimp'
   | 'lucide_sandwich'
   | 'lucide_croissant'
   | 'lucide_ice_cream'
   | 'lucide_cookie'
-  | 'lucide_egg_fried'
   | 'lucide_tea'
+
+/** Chiavi Lucide rimosse dal picker (01-06-26) — fallback visivo se ancora in DB. */
+const REMOVED_LUCIDE_ICON_FALLBACK: Record<string, MenuQrCategoryIconKey> = {
+  lucide_soup: 'cooking_pot',
+  lucide_egg_fried: 'fork_knife',
+}
 
 export type MenuQrCategoryIconKey = MenuQrPhosphorIconKey | MenuQrLucideIconKey
 
@@ -115,14 +117,12 @@ export const MENU_QR_PHOSPHOR_ICON_OPTIONS: MenuQrCategoryIconOption[] = [
 /** Lucide: `Tea` non esportato in lucide-react del progetto → `Milk` (bevanda calda ≠ caffè Phosphor). */
 export const MENU_QR_LUCIDE_ICON_OPTIONS: MenuQrCategoryIconOption[] = [
   { value: 'lucide_chef_hat', label: 'Chef / cucina', family: 'lucide', Icon: ChefHat },
-  { value: 'lucide_soup', label: 'Zuppa', family: 'lucide', Icon: Soup },
   { value: 'lucide_salad', label: 'Insalata', family: 'lucide', Icon: Salad },
   { value: 'lucide_shrimp', label: 'Gamberi / mare', family: 'lucide', Icon: Shrimp },
   { value: 'lucide_sandwich', label: 'Panino', family: 'lucide', Icon: Sandwich },
   { value: 'lucide_croissant', label: 'Brioche / colazione', family: 'lucide', Icon: Croissant },
   { value: 'lucide_ice_cream', label: 'Gelato', family: 'lucide', Icon: IceCreamCone },
   { value: 'lucide_cookie', label: 'Biscotti', family: 'lucide', Icon: Cookie },
-  { value: 'lucide_egg_fried', label: 'Uova / brunch', family: 'lucide', Icon: EggFried },
   { value: 'lucide_tea', label: 'Tè', family: 'lucide', Icon: Milk },
 ]
 
@@ -165,7 +165,7 @@ export function resolveMenuQrCategoryIcon(
   const resolved = resolveMenuQrCategoryIconKey(iconKey, categoryKey)
   const opt = getMenuQrCategoryIconOption(resolved)
   if (opt.family === 'lucide') {
-    return PHOSPHOR_ICON_BY_KEY[MENU_QR_DEFAULT_CATEGORY_ICON_KEY]
+    return PHOSPHOR_ICON_BY_KEY.fork_knife
   }
   return opt.Icon
 }
@@ -179,5 +179,8 @@ export function resolveMenuQrCategoryIconKey(
   categoryKey?: string,
 ): MenuQrCategoryIconKey {
   if (iconKey && isMenuQrCategoryIconKey(iconKey)) return iconKey
+  if (iconKey && iconKey in REMOVED_LUCIDE_ICON_FALLBACK) {
+    return REMOVED_LUCIDE_ICON_FALLBACK[iconKey]
+  }
   return defaultIconKeyForCategory(categoryKey ?? '') ?? MENU_QR_DEFAULT_CATEGORY_ICON_KEY
 }

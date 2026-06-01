@@ -173,5 +173,5 @@ Mapping esempio: `pizza` → `pizza_slice`, `birre` → `beer`, `insalate`/`cont
 
 - Codice: **chiuso** su `env/test`; validate 236 test.
 - Report: allineato al diff reale (icone + import foto + glyph + test storage).
-- Commit: eseguito in sessione «fai report finale» (vedi messaggio git `Review:` sotto).
+- Commit: `a25f02c` — include anche **+10 Lucide** (dettaglio [Report Lucide](Report-menu-qr-lucide-icone-01-06-26.md)).
 - QA manuale viewport: rimane opzionale (tabella § QA).

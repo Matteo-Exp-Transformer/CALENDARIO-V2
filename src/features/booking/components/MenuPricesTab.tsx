@@ -37,6 +37,7 @@ import {
   MENU_CARD_MAX_WIDTH_PX,
   MENU_CATEGORY_COLLAPSIBLE_CLASS,
   MENU_CATEGORY_COLLAPSIBLE_HEADER_CLASS,
+  MENU_CATEGORY_LABEL_CARD_SHELL_CLASS,
   MENU_CATEGORY_LABEL_TITLE_CLASS,
   MENU_CATEGORY_LABEL_TITLE_STYLE,
   MENU_INGREDIENT_DESC_CLASS,
@@ -56,6 +57,8 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import { useFeatures } from '@/hooks/useFeatures'
 import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
+import { CATEGORY_KEY_RENAME_INFO_MESSAGE } from '@/features/booking/services/syncMenuCategoryKeyRename'
+import { CATEGORY_KEY_DELETE_INFO_MESSAGE } from '@/features/booking/services/syncMenuCategoryKeyDelete'
 
 /** Fascia lista categorie: griglia 1 colonna — classi Tailwind qui (STYLING_AGENT_CONTEXT §4). */
 const menuPricesCategoryListWrapClass = cn(
@@ -301,68 +304,75 @@ const AdminMenuCategoryLabelCard: React.FC<AdminMenuCategoryLabelCardProps> = ({
   imageUrl,
   onEdit,
   onDelete,
-}) => (
-  <div
-    className="flex w-full flex-col items-stretch gap-2"
-    style={{
-      maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
-      marginLeft: 'auto',
-      marginRight: 'auto',
-    }}
-  >
+}) => {
+  const categoryThumbSrc = imageUrl?.trim() || undefined
+
+  return (
     <div
-      className={cn('flex w-full min-h-[80px] items-center text-left', MENU_CARD_INNER_SHELL_CLASS)}
+      className="flex w-full min-w-0 max-w-full flex-col items-stretch gap-2"
       style={{
-        paddingTop: '6px',
-        paddingBottom: '6px',
-        paddingLeft: '8px',
-        paddingRight: '8px',
-        marginBottom: '4px',
-        width: '100%',
-        maxWidth: `${MENU_CARD_MAX_WIDTH_PX}px`,
-        boxSizing: 'border-box',
-        overflow: 'hidden',
+        maxWidth: `min(${MENU_CARD_MAX_WIDTH_PX}px, calc(100% - 16px))`,
+        marginLeft: 'auto',
+        marginRight: 'auto',
       }}
     >
       <div
-        className="flex min-w-0 w-full flex-1 items-center justify-between gap-3"
+        className={cn(
+          MENU_CARD_INNER_SHELL_CLASS,
+          MENU_CATEGORY_LABEL_CARD_SHELL_CLASS,
+          'w-full min-h-[80px]',
+        )}
         style={{
-          paddingLeft: '4px',
-          paddingRight: '12px',
+          paddingTop: '6px',
+          paddingBottom: '6px',
+          paddingLeft: '8px',
+          paddingRight: '8px',
+          marginBottom: '4px',
+          width: '100%',
+          maxWidth: `${MENU_CARD_MAX_WIDTH_PX}px`,
+          boxSizing: 'border-box',
         }}
       >
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt=""
-            className="h-12 w-16 shrink-0 rounded-lg object-cover"
-          />
+        {categoryThumbSrc ? (
+          <div className="menu-prices-category-label-card__thumb hidden min-[1050px]:block">
+            <img src={categoryThumbSrc} alt="" />
+          </div>
         ) : null}
-        <span className={cn(MENU_CATEGORY_LABEL_TITLE_CLASS, 'min-w-0 flex-1')} style={MENU_CATEGORY_LABEL_TITLE_STYLE}>
-          {label}
-        </span>
-        <div className="menu-prices-item-actions flex shrink-0 gap-2">
-          <button
-            type="button"
-            onClick={onEdit}
-            className="menu-prices-icon-btn menu-prices-icon-btn--edit"
-            aria-label={`Modifica ${label}`}
-          >
-            <Edit className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="menu-prices-icon-btn menu-prices-icon-btn--delete"
-            aria-label={`Elimina ${label}`}
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+        <div className="menu-prices-category-label-card__body">
+          <div className="menu-prices-category-label-card__title">
+            <span
+              className={cn(
+                MENU_CATEGORY_LABEL_TITLE_CLASS,
+                'block w-full max-w-full min-w-0 text-center break-words',
+              )}
+              style={MENU_CATEGORY_LABEL_TITLE_STYLE}
+            >
+              {label}
+            </span>
+          </div>
+          <div className="menu-prices-category-label-card__actions menu-prices-item-actions flex gap-2">
+            <button
+              type="button"
+              onClick={onEdit}
+              className="menu-prices-icon-btn menu-prices-icon-btn--edit"
+              aria-label={`Modifica ${label}`}
+            >
+              <Edit className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={onDelete}
+              className="menu-prices-icon-btn menu-prices-icon-btn--delete"
+              aria-label={`Elimina ${label}`}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-)
+  )
+}
 
 type MenuViewMode = 'menu' | 'categories' | 'preset_menus' | 'qr_codes'
 
@@ -396,6 +406,14 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   const [categoryCurrentImageUrl, setCategoryCurrentImageUrl] = useState<string | null>(null)
   const [categoryPhotoUploading, setCategoryPhotoUploading] = useState(false)
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
+  const [categoryRenameConfirm, setCategoryRenameConfirm] = useState<{
+    id: string
+    previousKey: string
+    newKey: string
+    label: string
+    description: string | null
+    image_url?: string | null
+  } | null>(null)
   const [deleteCategoryConfirm, setDeleteCategoryConfirm] = useState<{
     id: string
     categoryKey: string
@@ -720,6 +738,57 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     return undefined
   }
 
+  const executeSaveCategory = async (params: {
+    editingCategoryId: string | null
+    rawLabel: string
+    description: string | null
+    imageUrl?: string | null
+    previousKey?: string
+    newKey?: string
+  }) => {
+    const { editingCategoryId: catId, rawLabel, description, imageUrl, previousKey, newKey } = params
+
+    if (catId && previousKey != null && newKey != null) {
+      await updateCategoryMutation.mutateAsync({
+        id: catId,
+        key: newKey,
+        previousKey,
+        label: rawLabel,
+        description,
+        ...(imageUrl !== undefined ? { image_url: imageUrl } : {}),
+      })
+      return
+    }
+
+    if (!catId) {
+      const key = newKey ?? slugifyCategory(rawLabel)
+      if (!key) return
+
+      const created = await createCategoryMutation.mutateAsync({
+        key,
+        label: rawLabel,
+        description,
+        sort_order: 999,
+      })
+
+      if (categoryPhotoFile && tenantId && created?.id) {
+        const uploadedUrl = await resolveCategoryImageOnSave(created.id, null)
+        if (uploadedUrl) {
+          await updateCategoryMutation.mutateAsync({
+            id: created.id,
+            key,
+            previousKey: key,
+            label: rawLabel,
+            description,
+            image_url: uploadedUrl,
+          })
+        }
+      }
+
+      setFormData((prev) => ({ ...prev, category: key }))
+    }
+  }
+
   const handleSaveCategory = async () => {
     const rawLabel = newCategoryLabel.trim()
     if (!rawLabel) {
@@ -754,13 +823,27 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           editingCategory.image_url,
         )
 
-        await updateCategoryMutation.mutateAsync({
-          id: editingCategoryId,
-          key: newKey,
+        const description = newCategoryDescription.trim() || null
+
+        if (editingCategory.key !== newKey) {
+          setCategoryRenameConfirm({
+            id: editingCategoryId,
+            previousKey: editingCategory.key,
+            newKey,
+            label: rawLabel,
+            description,
+            ...(imageUrl !== undefined ? { image_url: imageUrl } : {}),
+          })
+          return
+        }
+
+        await executeSaveCategory({
+          editingCategoryId,
+          rawLabel,
+          description,
+          imageUrl,
           previousKey: editingCategory.key,
-          label: rawLabel,
-          description: newCategoryDescription.trim() || null,
-          ...(imageUrl !== undefined ? { image_url: imageUrl } : {}),
+          newKey,
         })
       } else {
         const key = slugifyCategory(rawLabel)
@@ -774,28 +857,12 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           return
         }
 
-        const created = await createCategoryMutation.mutateAsync({
-          key,
-          label: rawLabel,
+        await executeSaveCategory({
+          editingCategoryId: null,
+          rawLabel,
           description: newCategoryDescription.trim() || null,
-          sort_order: 999,
+          newKey: key,
         })
-
-        if (categoryPhotoFile && tenantId && created?.id) {
-          const imageUrl = await resolveCategoryImageOnSave(created.id, null)
-          if (imageUrl) {
-            await updateCategoryMutation.mutateAsync({
-              id: created.id,
-              key,
-              previousKey: key,
-              label: rawLabel,
-              description: newCategoryDescription.trim() || null,
-              image_url: imageUrl,
-            })
-          }
-        }
-
-        setFormData((prev) => ({ ...prev, category: key }))
       }
 
       await refetchCategories()
@@ -803,6 +870,27 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       cancelCategoryForm()
     } catch {
       // errore già gestito dalla mutation con toast
+    }
+  }
+
+  const confirmCategoryRenameSave = async () => {
+    if (!categoryRenameConfirm) return
+    const pending = categoryRenameConfirm
+    try {
+      await executeSaveCategory({
+        editingCategoryId: pending.id,
+        rawLabel: pending.label,
+        description: pending.description,
+        imageUrl: pending.image_url,
+        previousKey: pending.previousKey,
+        newKey: pending.newKey,
+      })
+      setCategoryRenameConfirm(null)
+      await refetchCategories()
+      await refetchMenuItems()
+      cancelCategoryForm()
+    } catch {
+      // toast errore dalla mutation
     }
   }
 
@@ -1550,7 +1638,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           >
             <X className="h-4 w-4" />
           </button>
-          <div className="mx-auto max-w-3xl pb-12 pr-10">
+          <div className="mx-auto max-w-3xl pb-12 pr-4 sm:pr-10">
             <h3 className="text-center font-serif text-title-card font-bold text-warm-wood">
               Categorie Menu
             </h3>
@@ -1726,6 +1814,40 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       )}
 
       <Modal
+        isOpen={categoryRenameConfirm != null}
+        onClose={() => setCategoryRenameConfirm(null)}
+        title="Rinominare la categoria?"
+        size="sm"
+        showCloseButton
+        closeOnOverlayClick
+        closeOnEscape
+      >
+        {categoryRenameConfirm && (
+          <div className="space-y-4">
+            <p className="text-sm leading-relaxed text-slate-700">{CATEGORY_KEY_RENAME_INFO_MESSAGE}</p>
+            <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setCategoryRenameConfirm(null)}
+                disabled={updateCategoryMutation.isPending}
+              >
+                Annulla
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                onClick={confirmCategoryRenameSave}
+                disabled={updateCategoryMutation.isPending}
+              >
+                {updateCategoryMutation.isPending ? 'Salvataggio…' : 'Conferma e salva'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
         isOpen={deleteCategoryConfirm != null}
         onClose={() => setDeleteCategoryConfirm(null)}
         title="Elimina categoria"
@@ -1749,6 +1871,7 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                 <strong className="font-semibold">{deleteCategoryConfirm.label}</strong>?
               </p>
             )}
+            <p className="text-sm leading-relaxed text-slate-600">{CATEGORY_KEY_DELETE_INFO_MESSAGE}</p>
             <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
               <Button
                 type="button"

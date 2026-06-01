@@ -10,6 +10,7 @@ import { getMenuTheme, type MenuTheme } from '@/features/public-menu/menuThemes'
 import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
 import type { MenuCategoryRecord } from '@/features/booking/hooks/useMenuCategories'
 import type { MenuQrCode, CarouselItem, MenuQrcodeCategoryOverride } from '@/types/menu'
+import { orderMenuCategoriesByFilter } from '@/features/booking/utils/menuQrAppearance'
 import { usePublicMenuViewport } from '@/hooks/usePublicMenuViewport'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 
@@ -48,7 +49,8 @@ function usePublicCategories(tenantId: string | null, categoryFilter: string[] |
 
       const { data, error } = await query
       if (error) throw error
-      return (data ?? []) as MenuCategoryRecord[]
+      const rows = (data ?? []) as MenuCategoryRecord[]
+      return orderMenuCategoriesByFilter(rows, categoryFilter)
     },
     enabled: !!tenantId,
   })

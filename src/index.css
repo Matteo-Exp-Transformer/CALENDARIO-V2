@@ -1632,6 +1632,77 @@ button.booking-request-reject-booking-btn:focus-visible {
   min-width: 0;
 }
 
+/* Overlay «Categorie ingredienti» — card singola (thumb Prenota + titolo + azioni) */
+.menu-prices-category-label-card {
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 5rem;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+.menu-prices-category-label-card__thumb {
+  flex: 0 0 4rem;
+  width: 4rem;
+  height: 3rem;
+  min-width: 4rem;
+  min-height: 3rem;
+  align-self: center;
+}
+
+.menu-prices-category-label-card__thumb img {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.5rem;
+  object-fit: cover;
+}
+
+.menu-prices-category-label-card__body {
+  display: flex;
+  min-width: 0;
+  min-height: 100%;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.menu-prices-category-label-card__title {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.375rem;
+  text-align: center;
+}
+
+.menu-prices-category-label-card__title > span {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.menu-prices-category-label-card__actions {
+  flex: 0 0 auto;
+  justify-content: center;
+  margin-top: auto;
+  padding-bottom: 0.125rem;
+}
+
 /* Righe prodotto dentro la card: larghezza piena del contenitore, contenuto centrato */
 .menu-prices-item-row {
   box-sizing: border-box;
@@ -1824,6 +1895,11 @@ button.archive-tab-filter-btn:focus:not(:focus-visible) {
 
   .menu-card-mobile {
     min-height: 106px !important;
+    height: auto !important;
+  }
+
+  .menu-prices-category-label-card__title {
+    padding-inline: 0.5rem;
   }
 
   .booking-mobile-card-title {

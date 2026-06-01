@@ -216,6 +216,33 @@ aggiungilo comunque — meglio dare al revisore più materiale grezzo che meno.
 > Il revisore userà questo materiale per calibrare vocabolario e lunghezza futura dei report; non
 > sostituisce le altre sezioni del report (§7.1 APP_CONTEXT).
 
+#### Sottosezione obbligatoria: «Analisi flusso prompt, efficienza e statistiche (skill system)»
+
+In ogni report **standard** e **deep** (su «lavoro ok» o «fai report finale»), oltre alle bullet
+sopra, includere una sottosezione con **questo titolo fisso** (autosufficiente per il revisore
+Meta, senza rileggere la chat). Contenuto minimo:
+
+1. **Statistiche sessione** — tabella: messaggi utente/agente, domande, correzioni, validate,
+   retry, file toccati, commit sì/no.
+2. **Cronologia prompt annotati** — tabella # | sintesi/verbatim | intento | esito agente.
+3. **Cosa non è successo in chat** — tabella assenze (vedi sotto).
+4. **Anatomia del prompt principale** — checklist blocchi (profilo, skill, file, anti-scope, DB,
+   smoke) + indice completezza (es. N/10).
+5. **KPI efficienza** — turni codice, rework post-accettazione, domande/turno; confronto breve
+   con sessioni simili se note.
+6. **Cosa replicare / cosa migliorare** — proposte con destinazione (`PROPOSTE`, PREPARA_PROMPT,
+   hook, VOCABOLARIO).
+7. **Automatizzabile vs manuale** — tabella breve.
+8. **Lettura qualità agente** — dati, non voto sintetico (il voto è del revisore).
+
+Opzionale: diagramma mermaid del flusso messaggi se il ciclo ha ≥2 fasi (prepara→exec, o
+correzioni multiple).
+
+> **Conferma QA Matteo («test fatti tutto ok», «prove ok», ecc.) — 01-06-26**  
+> Aggiornare solo stato QA (⬜→✅), cappello «cosa resta» e, se serve, una riga in OSSERVAZIONI.
+> **Non** riscrivere sezioni tecniche già scritte come se fossero state approssimative né aggiungere
+> difficoltà non emerse in chat. Vedi `OSSERVAZIONI.md` e `PROPOSTE.md` (candidata in attesa).
+
 #### Cosa significa «cosa non è successo in chat» (non sono errori)
 
 È un elenco di **assenza di eventi** utili al revisore — cosa **non** è avvenuto nella conversazione,
@@ -231,5 +258,6 @@ Esempi da annotare quando applicabili:
 | Protocollo non attivato | Matteo non ha detto «fai report finale» ma solo «ok» (o il contrario) |
 | Skill non toccate | Nessun aggiornamento a VOCABOLARIO (solo PROPOSTE) |
 | Test non eseguiti | Solo `validate` automatico, nessuna prova browser |
+| Report gonfiato dopo QA OK | Matteo ha confermato smoke ma l’agente ha riscritto «cosa è stato fatto» senza nuovi fatti |
 
 **Non** significa «cosa è andato male»: per i fallimenti usare **Derivazione errori** nel report.

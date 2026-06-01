@@ -1,4 +1,22 @@
+import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
 import type { CarouselItem, MenuQrCode } from '@/types/menu'
+
+/** Ordine pubblico: sequenza `category_filter` del QR; legacy `null` = ordine già da query (`sort_order`). */
+export function orderMenuCategoriesByFilter(
+  categories: MenuCategoryRecord[],
+  categoryFilter: string[] | null,
+): MenuCategoryRecord[] {
+  if (categoryFilter == null || categoryFilter.length === 0) {
+    return categories
+  }
+  const byKey = new Map(categories.map((c) => [c.key, c]))
+  const ordered: MenuCategoryRecord[] = []
+  for (const key of categoryFilter) {
+    const row = byKey.get(key)
+    if (row) ordered.push(row)
+  }
+  return ordered
+}
 
 export function parseCarouselItems(raw: unknown): CarouselItem[] {
   const carouselRaw = Array.isArray(raw) ? raw : []

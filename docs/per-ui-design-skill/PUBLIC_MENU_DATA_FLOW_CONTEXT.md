@@ -43,7 +43,11 @@ MenuQrModal.buildPayload()
        └─ primo insert: migrateMenuQrDraftAssets (qr/draft/ → qr/{id}/)
 ```
 
-**Import foto catalogo → QR (modale):** alla selezione checkbox (o nuovo QR con categorie preselezionate), anteprima da `menu_categories.image_url` (path `booking-cat/`). Al **Salva**, copia storage su `qr/…/cat/{categoryKey}.webp` e persiste URL QR in `category_images`. Mai scrittura su `menu_categories` né `booking-cat/`. QR esistenti senza thumb in `category_images`: nessun backfill all’apertura; solo riselezione o upload manuale.
+**Import foto catalogo → QR (modale):** alla selezione checkbox (o nuovo QR con categorie preselezionate), anteprima da `menu_categories.image_url` (path `booking-cat/`). Se il draft ha già un URL `booking-cat/` di **altra** categoria (stale), riselezionando la checkbox si aggiorna l’anteprima; thumb già su `qr/…/cat/` non viene sovrascritta. Al **Salva**, copia storage su `qr/…/cat/{categoryKey}.webp` e persiste URL QR in `category_images`. Mai scrittura su `menu_categories` né `booking-cat/`. QR esistenti senza thumb in `category_images`: nessun backfill all’apertura; solo riselezione o upload manuale. Helper: `buildCatalogPrefillForKeys`, `shouldRefreshCatalogPrefill` in `menuQrStorage.ts`.
+
+**Rename chiave categoria (magazzino):** solo al **Salvataggio** overlay «Categorie ingredienti» (`useUpdateMenuCategory`), se `previousKey !== key`: **prima** modale conferma in `MenuPricesTab` (stesso pattern modale «Elimina categoria» — Annulla / Conferma e salva; testo `CATEGORY_KEY_RENAME_INFO_MESSAGE`); poi sync DB. Per ogni `menu_qr_codes` del tenant aggiorna `category_filter` e `category_images` (sposta URL; copia opz. Storage `qr/{id}/cat/{old}.webp` → `{new}.webp`); `menu_qrcode_categories` fa UPDATE `category_key` (merge su conflitto UNIQUE). Non resetta title/description/icon né forza re-upload. Errori sync → toast errore. Helper: `menuQrCategoryKeySync.ts`, orchestrazione `syncMenuCategoryKeyRename.ts`.
+
+**Delete categoria (magazzino):** al click **Elimina categoria** nel modale overlay (`useDeleteMenuCategory`), **dopo** delete `menu_categories` OK e **prima** del toast successo: sync immediato (non al Salva modale QR). Modale conferma include `CATEGORY_KEY_DELETE_INFO_MESSAGE`. Per ogni `menu_qr_codes` del tenant: rimuove la chiave da `category_images`; da `category_filter` solo se array esplicito (`null` legacy = tutte le categorie, **non** modificato); DELETE righe `menu_qrcode_categories` per `(tenant_id, category_key)`; rimuove la chiave da `hidden_category_keys` in `booking_public_form_config`; opz. Storage `remove` su `qr/{id}/cat/{key}.webp` se c’era thumb QR. Helper: `deleteCategoryKeyFromQrRow`, orchestrazione `syncMenuCategoryKeyDelete.ts`.
 
 **Campi scritti dal modale:**
 
@@ -213,6 +217,10 @@ Guida generica query: aggiungere § Menu QR (**FU-017**).
 | Save hook | `src/features/booking/hooks/useMenuQrCodes.ts` |
 | Override hook | `src/features/booking/hooks/useMenuQrcodeCategories.ts` |
 | Parse row | `src/features/booking/utils/menuQrAppearance.ts` |
+| Rename/delete chiave QR (pure) | `src/features/booking/utils/menuQrCategoryKeySync.ts` |
+| Rename chiave QR (DB) | `src/features/booking/services/syncMenuCategoryKeyRename.ts` |
+| Delete chiave QR (DB) | `src/features/booking/services/syncMenuCategoryKeyDelete.ts` |
+| Delete chiave form (pure) | `src/features/booking/utils/bookingFormCategoryKeySync.ts` |
 | Storage path | `src/features/booking/utils/menuQrStorage.ts` |
 | Homepage pubblica | `src/pages/PublicMenuPage.tsx` |
 | Categoria pubblica | `src/pages/PublicMenuCategoryPage.tsx` |

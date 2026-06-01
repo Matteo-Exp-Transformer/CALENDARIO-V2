@@ -405,6 +405,8 @@ export function MenuQrCategoryCardsSection({
   itemsByCategory,
   hiddenItemIds,
   onHiddenItemIdsChange,
+  onMoveCategoryUp,
+  onMoveCategoryDown,
 }: {
   tenantId: string
   menuQrCodeId: string | null
@@ -417,6 +419,8 @@ export function MenuQrCategoryCardsSection({
   itemsByCategory: Record<string, MenuItem[]>
   hiddenItemIds: string[]
   onHiddenItemIdsChange: (ids: string[]) => void
+  onMoveCategoryUp: (categoryKey: string) => void
+  onMoveCategoryDown: (categoryKey: string) => void
 }) {
   const [uploading, setUploading] = useState<string | null>(null)
   const [photoToRemove, setPhotoToRemove] = useState<string | null>(null)
@@ -459,7 +463,7 @@ export function MenuQrCategoryCardsSection({
 
   return (
     <div className="flex flex-col gap-3">
-      {categories.map((cat) => {
+      {categories.map((cat, index) => {
         const imgUrl = categoryImages[cat.key]
         const isUp = uploading === cat.key
         const draft = overrideDrafts[cat.key] ?? {
@@ -472,7 +476,33 @@ export function MenuQrCategoryCardsSection({
             key={cat.key}
             className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white px-3 py-3"
           >
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{cat.label}</span>
+            <div className="flex items-center gap-2">
+              <span className="min-w-0 flex-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                {cat.label}
+              </span>
+              {categories.length > 1 ? (
+                <div className="flex shrink-0 flex-col gap-0.5">
+                  <button
+                    type="button"
+                    disabled={index === 0}
+                    onClick={() => onMoveCategoryUp(cat.key)}
+                    className="rounded p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                    aria-label="Sposta su"
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={index === categories.length - 1}
+                    onClick={() => onMoveCategoryDown(cat.key)}
+                    className="rounded p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                    aria-label="Sposta giù"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : null}
+            </div>
             <div className="flex items-center gap-3">
               {imgUrl ? (
                 <img src={imgUrl} alt={cat.label} className="h-12 w-16 shrink-0 rounded-lg object-cover" />
