@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 01-06-26 | Menu QR — pill barra categorie sfondo semi-opaco ✅ **report finale** | [Report ciclo](Sessioni%20di%20lavoro/01-06-26/Report-ciclo-menu-qr-pill-barra-categorie-01-06-26.md) — `rgba(tabBarStickyRgb, 0.92)` su `MenuNavTabs`; prepara→esecuzione 0 rework; commit `8192fa6` su `env/test`. |
 | 01-06-26 | Fix — card categoria QR senza foto = altezza con foto (mobile &lt;520) ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-card-senza-foto-mobile-align-01-06-26.md) — `aspect-[7/2]` su `matchPhotoTileHeight`; validate **269**; commit `30e3b91` su `main`. |
 | 01-06-26 | Esecuzione — unificazione icone Prenota = catalogo Menù QR ✅ **report finale** | [Report](Sessioni%20di%20lavoro/01-06-26/Report-unificazione-icone-prenota-qr.md) — `MenuCategoryIconPicker` + migrate-on-read; validate **269**; QA visivo Lucide card ⬜; commit `b1c345d`. |
 | 01-06-26 | Esecuzione — FU-025 freeze desktop su PublicMenuCategoryPage ✅ **lavoro ok** | [Report](Sessioni%20di%20lavoro/01-06-26/Report-fu-025-public-menu-category-page-01-06-26.md) — costante `publicMenuLayout.ts`; wrapper header+lista ~1024px; validate **263**; QA Matteo OK; commit ⬜. |
