@@ -37,6 +37,14 @@
 
 ## Sessioni registrate (append-only)
 
+### 01-06-26 — Chiusura ciclo Menù QR (Verifica prefill + merge main + report finale)
+- **Chat a 3 messaggi:** (1) Verifica prefill con prompt **9/10** — criteri, file, commit se OK; (2) merge main + production; (3) «fai report finale» con **analisi prompt obbligatoria** inclusa nel messaggio (non ping separato).
+- Verifica: **0 domande**, commit `41cd6ad` al primo giro; QA browser modale **non fatto** (Vitest + review); dichiarato ⬜.
+- Merge `da1a2f2`: validate post-merge OK; PROD già migrazione `042` — nessun apply.
+- **Segnale positivo:** Matteo chiede analisi prompt **nello stesso messaggio** di report finale → evita 4º turno come ordine/sync.
+- **Gap processo:** SESSION_LOG puntava a report prefill **inesistente** fino a chiusura — allineare file report prima del commit doc.
+- Report: `Report-finale-ciclo-menu-qr-01-06-26.md` + `Report-menu-qr-prefill-stale-booking-cat-01-06-26.md`.
+
 ### 01-06-26 — Sync rename categoria → QR + form (deep + follow-up modale)
 - Prompt deep **9/10**: 4 decisioni prodotto, helper, cosa NON fare → **0 domande**, 1 turno sync; ambiguità «toast o modale» → agente toast post-save, Matteo corregge a **modale pre-save** (pattern elimina categoria) + FU-029.
 - Follow-up UX **breve ed efficace** (1 turno); errori restano toast.
