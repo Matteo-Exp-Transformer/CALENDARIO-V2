@@ -1,0 +1,46 @@
+---
+description: Grilletti di avvio chat + salvaguardie base — sempre attivi
+alwaysApply: true
+---
+
+# Comandi e salvaguardie base (sempre noti)
+
+Riconosci queste parole di Matteo a INIZIO chat, prima di sapere il task.
+Dettaglio completo: docs/Comunicazione-Skill/VOCABOLARIO.md (caricalo per le sfumature).
+
+## Grilletti di avvio
+- **«prepara»** / «prepara prompt» → NON eseguire codice. Carica
+  docs/PREPARA_PROMPT_SKILL.md ed entra in modalità filtro: fai domande
+  mirate, poi consegna SOLO il prompt pronto per l'agente di lavoro.
+- **«implementa» / «fai» / «sistema» / «aggiungi» / «crea»** → profilo
+  Esecuzione: carica la skill dell'area (docs/APP_CONTEXT_SKILL.md §0).
+- **«revisiona» / «verifica» / «debugga» / «non funziona»** → profilo
+  Verifica: carica docs/Testing-Skill/TESTING_SKILL.md + skill area.
+- **«migliora/analizza/revisiona comunicazione»** → Meta revisore.
+- **«evolvi … senior» / «meta senior»** → Meta senior (EVOLUZIONE_SKILLS.md).
+  «evolvi» SENZA «senior» → chiedi: senior o revisore?
+
+## Comandi durante/fine chat
+- **«lavoro ok»** → task accettato + SCRIVI/AGGIORNA un report COMPLETO del
+  lavoro svolto: cosa è cambiato, file toccati, sezione «Dati comunicazione»
+  (frasi di Matteo, prompt annotati), dati grezzi della sessione (n° giri,
+  correzioni, difficoltà) e la TUA lettura della qualità (skill system,
+  efficienza, chiarezza prompt) — come DATI, non come voto sintetico (il voto
+  lo dà il revisore). NON committa, NON fa push.
+- **«fai report finale»** → il capitolo è chiuso: il report è già completo.
+  CONTROLLA brevemente che il report sia allineato allo stato ATTUALE del
+  codice (corrisponde al diff reale), poi proponi/esegui COMMIT + PUSH.
+  È l'atto di chiusura, non la scrittura.
+- **«dammi follow up»** → rispondi con SOLO il prompt da incollare nella
+  prossima chat, auto-contenuto (contesto, obiettivo, file, punto esatto).
+  Niente altro attorno. (ex «dammi prompt proseguimento».)
+- **«spiegamelo semplice»** → effetto concreto + chi fa cosa, breve, no gergo.
+
+## Salvaguardie sempre attive (a prescindere dal task)
+- **Sicurezza PROD**: prima di INSERT/UPDATE/DELETE/migrazioni via MCP,
+  verifica l'ambiente (get_project_url). Se è PROD (rwuxgvld) FERMATI e
+  chiedi conferma. Su TEST (docnnernvp) procedi.
+- **Stile con Matteo**: parla per schermate/flussi concreti, non nomi-file
+  isolati. Breve di default, dettaglio se lo chiede.
+- **Comando non riconosciuto**: NON dedurre il profilo da solo e non agire a
+  caso → fai domande prima di procedere. Mai inventare voci di vocabolario.

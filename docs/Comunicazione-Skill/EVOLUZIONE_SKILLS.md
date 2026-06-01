@@ -73,6 +73,30 @@ PROD prima di scrivere sul DB, `npm run validate` pre-commit, blocco commit su f
 conferma. La macchina li esegue, non dipende dalla buona volontà dell'agente.
 **Tipo:** **enforcement vero** (config tecnica, non markdown). Skill harness: `update-config`.
 
+> **✅ CORREZIONE 01-06-26 — Cursor HA gli hooks (l'analisi di ieri era incompleta).** Ricerca su
+> doc ufficiale (`cursor.com/docs/agent/hooks`): Cursor supporta hook di lifecycle in
+> `.cursor/hooks.json`, con eventi tra cui `stop`, `sessionStart`, `beforeShellExecution`,
+> `preToolUse` ecc. Gli hook sono processi che comunicano via stdin/stdout JSON; alcuni possono
+> **bloccare** (`permission: deny`, exit code 2), altri solo osservare. → **Cursor permette
+> enforcement vero, non solo governance soft.** Il limite reale è un altro: gli hook `stop` e
+> `sessionStart` **NON girano sui Cloud Agents** (solo IDE locale). Per il lavoro IDE di Matteo
+> (caso normale) funzionano.
+>
+> **Leve Cursor mappate per lo skill system** (ordine di valore):
+> 1. **`stop` → nudge fine-chat** ✅ **INSTALLATO 01-06-26.** File: `.cursor/hooks/fine-sessione-nudge.mjs`
+>    (Node, cross-platform) + `.cursor/hooks.json`. Inietta un `agent_message` non bloccante che ricorda:
+>    sezione «Dati comunicazione» + esiti Liv.2 + report/SESSION_LOG. Testato (output JSON valido, exit 0).
+>    L'agente decide se applicarlo (chat light → ignora). Risolve il motore Liv.2 fermo.
+> 2. **`beforeShellExecution` → guard PROD** (da fare): blocca scritture su DB prod `rwuxgvld` senza
+>    conferma (`permission: deny`). Trasforma la regola di sicurezza prod da markdown a enforcement.
+> 3. **`sessionStart` → carica vocabolario** (da fare): inietta i grilletti a ogni avvio chat IDE.
+>
+> **Limiti onesti del nudge installato:** (a) non gira sui Cloud Agents; (b) l'hook `stop` riceve
+> poco contesto sulla sessione, quindi il promemoria è statico e delega all'agente il giudizio
+> «mi applico o no» — non è un controllo che verifica davvero se il report è stato scritto. Per una
+> verifica vera servirebbe leggere i file modificati (possibile ma più complesso). Fonti:
+> `cursor.com/docs/agent/hooks`, `cursor.com/blog/agent-best-practices`.
+
 ### M5 — Statistiche d'uso del sistema 🔶
 **Obiettivo:** capire dove il sistema funziona e dove no, con numeri semplici.
 **Idee concrete:** dai report e dal SESSION_LOG, contare cose come: sessioni light/standard/deep,
@@ -149,3 +173,6 @@ quando i criteri saranno tarati.
 - 31-05-26 · [raffinamento] · **gate schermata+URL** prima di QA OK su fix scroll/sfondo — fix #8 su Menu QR ma sintomo su Pagina Prenota; ≥3 agenti; vedi ERRORI_PROCESSO + PROPOSTE disambiguazione Prenota vs QR — ✅ **RISOLTO** 31-05-26 (gate in PREPARA_PROMPT §2)
 - 31-05-26 · [statistica] · **motore Liv.2 fermo** — le 5 voci Liv.2 in OSSERVAZIONI sono a 0/0/0 esiti dopo 3 giorni: o non vengono usate o gli agenti non registrano `Dati Liv.2`. Senza questi numeri M5 e la logica promozione/regressione girano a vuoto. **Prossima sessione senior:** capire la causa (le voci non scattano? il protocollo fine-chat non scrive l'esito?) e renderne obbligatoria la scrittura, eventualmente via M4/hook. È il guasto #1 del sistema oggi — diagnosi senior 31-05-26.
 - 31-05-26 · [raffinamento] · **grilletti avvio chat + COMANDI_AVVIO.md** — mappati «evolvi … senior» (Meta senior), «evolvi» senza senior (Liv.2, chiede), «analizza/revisiona comunicazione» (sempre revisore). Creato `COMANDI_AVVIO.md` come mappa parola→chat→cosa carica. Alimenta M3 (chiusura/avvio con una parola).
+- 01-06-26 · [statistica] · **motore Liv.2 avviato con esiti ricostruiti** — ripescati dai report 29-05: «compila report comunicazione» 2×ok (candidata Liv.1), «revisiona e committa» 1×ok (confermata). «comportamenti ok ma cambi» ELIMINATA (Matteo non la usa). Dati vecchi/pochi: avvio, non regime.
+- 01-06-26 · [automazione] · **nudge fine-sessione progettato (non installato)** — vedi M4. Scoperto che gli esecutori girano su **Cursor** → l'hook Claude Code non li copre; serve checklist-di-chiusura nel prompt esecutore come leva Cursor. Due leve, non una. Sessione enforcement dedicata da pianificare.
+- 01-06-26 · [statistica] · **score chat 31-05 = 6,5/10** — 11 sessioni operative, 1 in prod, 1 misrouting grave (Prenota vs QR), ~12 giri correzione, follow-up netti positivi. Causa rumore: validate verde ≠ QA visivo. Vedi report revisione-controverifica 01-06.

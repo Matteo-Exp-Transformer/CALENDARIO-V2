@@ -144,6 +144,9 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 
 ## Archivio (decise)
 
+### ❌ ELIMINATA (01-06-26) «comportamenti ok ma voglio che cambi» (era VOCABOLARIO Liv.2)
+- **Motivo:** Matteo dichiara di **non usarla**. Rimossa dal vocabolario. Unico esito storico ricostruito era `corretto-da-Matteo` (29-05, framing bug invertito). Non riproporre salvo nuovi dati. La sostanza utile (linguaggio «cambio UX» non «bug/regressione» quando il cambio è intenzionale) resta come prassi di stile in `COMUNICAZIONE_UTENTE_SKILL.md`, non come voce-trigger.
+
 ### ✅ ACCETTATA (31-05-26) Disambiguazione Prenota vs Menu QR → `PREPARA_PROMPT_SKILL.md` §2
 - **Triage senior:** unico danno **dimostrato e ripetuto** (fix su `PublicMenuPage` mentre il sintomo era su `BookingRequestPage`, ≥3 agenti, QA OK errato). Ripara, non aggiunge.
 - **Codificata:** gate obbligatorio nel filtro § 2 «Zone che si confondono» — task scroll/sfondo/footer pubblico **deve** dichiarare slug/URL smoke; se nel thread compaiono sia «Prenota» sia «Menu QR» → prepara-prompt chiede una riga Sì/No; vietato QA OK senza URL citato = URL testato.

@@ -152,25 +152,38 @@ l'esito: `ok` (applicata, Matteo non ha corretto) / `domanda-superflua` (hai chi
 / `corretto-da-Matteo` (non era ciò che voleva). Questi dati servono al revisore per decidere se
 promuovere (→ Liv.1) o regredire (→ Liv.3) la voce. **Tu non decidi**, scrivi solo il dato.
 
-### Protocollo di fine-chat dell'agente di lavoro (SOLO dopo conferma successo di Matteo)
+### Protocollo di fine-chat dell'agente di lavoro
 
-Quando Matteo conferma che il lavoro è andato bene ("ok", "funziona", "perfetto"), esegui:
+> **Due momenti distinti (ridefinito 01-06-26).** Non confondere la **scrittura del report** con la
+> **chiusura/pubblicazione**:
+> - **«lavoro ok»** → task accettato **+ scrivi il report COMPLETO** (mai "a metà": contiene già
+>   tutto, comunicazione e dati di qualità inclusi). NON committi, NON fai push.
+> - **«fai report finale»** → **capitolo chiuso → commit + push**. Il report era già completo.
 
-1. **Aggiorna `OSSERVAZIONI.md`**: aggiungi i dati grezzi di questa chat (frasi ricorrenti,
-   spiegazioni che hanno funzionato, procedure ripetute) e i contatori `Dati Liv.2` delle voci usate.
-2. **Scrivi il report di sessione** (§7 APP_CONTEXT) con:
-   - sezione **"File di skill aggiornati"** (tabella file | modifica breve | **perché** — vedi §7.1 APP_CONTEXT);
-   - sezione obbligatoria **"Dati comunicazione"** (vedi sotto) — materiale per il revisore senza rileggere la chat.
-3. **Aggiornamenti skill solo se autorizzati**: se durante la chat Matteo ti ha esplicitamente
-   detto di aggiornare una skill o aggiungere una voce, fallo. **Altrimenti non toccare lo skill
-   system**: limitati a *segnalare* i candidati nel report e in `PROPOSTE.md`. Le proposte vere e
-   le domande di riforma le farà il revisore in sessione separata.
-4. **Commit dedicato** (se Matteo conferma): commit separati — uno per il codice, uno
-   `docs(comunicazione):` per report/osservazioni. Punto di ripristino indipendente.
-5. **Terminali Cursor** (se Matteo ha detto «fai report finale» o chiusura con report §7): nelle
-   **ultime righe** della risposta, nota obbligatoria — chiudere **solo** tab/processi aperti
-   **dall’agente**; non il `npm run dev` di Matteo se ancora in uso. Dettaglio: `APP_CONTEXT_SKILL.md` §7.3;
-   voce `VOCABOLARIO.md` «fai report finale».
+Su **«lavoro ok»** esegui:
+
+1. **Aggiorna `OSSERVAZIONI.md`**: dati grezzi (frasi ricorrenti, spiegazioni che hanno funzionato,
+   procedure ripetute) e i contatori `Dati Liv.2` delle voci usate.
+2. **Scrivi il report di sessione COMPLETO** (§7 APP_CONTEXT) con TUTTE le sezioni, sempre:
+   - **"File di skill aggiornati"** (tabella file | modifica breve | **perché**);
+   - **"Dati comunicazione"** (obbligatoria — vedi sotto);
+   - **dati grezzi della sessione**: n° giri, correzioni dopo la 1ª risposta, follow-up generati,
+     difficoltà (Derivazione errori);
+   - **la TUA lettura della qualità** (skill system, efficienza, chiarezza prompt, osservazioni e
+     consigli): **come versione dell'agente e dati**, NON come voto sintetico. Il voto sintetico
+     finale lo dà il **revisore** confrontando le versioni dei vari agenti — le **contraddizioni tra
+     versioni** sono un dato utile (affidabilità dell'agente). Fase raccolta dati 01-06-26.
+3. **Aggiornamenti skill solo se autorizzati**: se Matteo te l'ha detto, fallo; altrimenti *segnala*
+   i candidati nel report e in `PROPOSTE.md`. Le riforme le fa il revisore.
+
+Su **«fai report finale»**: **controlla brevemente che il report sia allineato allo stato ATTUALE
+del codice** (le modifiche descritte corrispondono a ciò che è davvero sul disco/diff — niente
+sezioni rimaste indietro rispetto a fix successivi); allinea le skill §7.2 se manca; poi **commit
+dedicati** (codice + `docs(comunicazione):` separati) e **push**, su conferma di Matteo.
+
+5. **Terminali Cursor** (su «fai report finale» / chiusura): nelle **ultime righe**, nota obbligatoria
+   — chiudere **solo** tab/processi aperti **dall'agente**; non il `npm run dev` di Matteo se in uso.
+   Dettaglio: `APP_CONTEXT_SKILL.md` §7.3; voce `VOCABOLARIO.md` «fai report finale».
 
 > L'agente di lavoro **non** apre con Matteo discussioni sul miglioramento dello skill system né
 > propone nuove rule in chat (salvo che Matteo lo chieda lì). Quel dialogo avviene con il revisore.

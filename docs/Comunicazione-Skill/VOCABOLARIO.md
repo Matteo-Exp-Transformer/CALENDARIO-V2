@@ -152,20 +152,20 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 - **Origine:** chat mappatura · OSSERVAZIONI (2+ occorrenze)
 
 ### «fai report finale» — Liv. 1
-- **Intende:** chiudere la sessione con il flusso di fine-chat (non parte da solo sulla conferma "ok/funziona": parte solo se Matteo lo dice)
-- **Comportamento agente:** esegui il protocollo § 7 APP_CONTEXT: report § 7.1 in `docs/Sessioni di lavoro/GG-MM-AA/` (linguaggio utente, sezione Dati comunicazione), **allineamento skill § 7.2 delle aree toccate** (obbligatorio, anche se la riga è "nessuna"), e proponi i commit dedicati. Il via al commit resta una conferma di Matteo. **In chiusura chat verso Matteo** (2–4 righe finali) includi **sempre** la nota terminali (§7.3 APP_CONTEXT): suggerire di chiudere **solo** le tab/processi terminale aperti **dall’agente** in sessione; **non** chiedere di chiudere il `npm run dev` (o altro) avviato **da Matteo** se può essere ancora in uso.
+- **Intende:** **capitolo chiuso → commit e push.** NON è la scrittura del report (quella avviene già con «lavoro ok», completa): qui Matteo dichiara che il lavoro è concluso e si pubblica. Aggiornato 01-06-26 (Matteo: «report finale è come dire, capitolo chiuso fai commit e push»).
+- **Comportamento agente:** il report dev'essere già completo (scritto su «lavoro ok» con tutte le sezioni). **Controlla brevemente che sia allineato allo stato ATTUALE del codice** (le modifiche descritte corrispondono al diff reale — nessuna sezione rimasta indietro rispetto a fix successivi), poi: **allineamento skill § 7.2** delle aree toccate se mancante, **commit dedicati** (codice + `docs(...)` separati) e **push**. Il via al commit/push resta una conferma di Matteo. **In chiusura chat** (2–4 righe) includi la nota terminali (§7.3 APP_CONTEXT): chiudere **solo** i terminali aperti **dall'agente**; non toccare il `npm run dev` avviato **da Matteo**.
 - **Livello:** 1 (automatico)
 - **Casi identici già ok:** —
-- **Approvata il:** 28-05-26 · agg. 30-05-26 (nota terminali)
-- **Origine:** chat mappatura (Matteo preferisce un termine esplicito al trigger sulla conferma) · regola terminali 30-05-26
+- **Approvata il:** 28-05-26 · ridefinita 01-06-26 (= commit+push, non scrittura report) · nota terminali 30-05-26
+- **Origine:** chat mappatura · ridefinizione 01-06-26 (separa scrittura report da chiusura/pubblicazione)
 
-### «dammi prompt proseguimento» — Liv. 1
-- **Intende:** passare il lavoro a un'altra chat dal punto esatto raggiunto, per evitare sessioni con troppo contesto
+### «dammi follow up» — Liv. 1
+- **Intende:** passare il lavoro a un'altra chat dal punto esatto raggiunto, per evitare sessioni con troppo contesto. Rinominata da «dammi prompt proseguimento» il 01-06-26.
 - **Comportamento agente:** rispondi con **solo il prompt** da incollare nella prossima chat — auto-contenuto, con contesto, obiettivo, file coinvolti, vincoli e punto esatto da cui ripartire. Nessun'altra spiegazione attorno.
 - **Livello:** 1 (automatico)
-- **Casi identici già ok:** —
-- **Approvata il:** 28-05-26
-- **Origine:** chat mappatura · OSSERVAZIONI (workflow multi-agente)
+- **Casi identici già ok:** «dammi prompt proseguimento» (vecchio nome) → stesso comportamento
+- **Approvata il:** 28-05-26 · rinominata 01-06-26
+- **Origine:** chat mappatura · OSSERVAZIONI (workflow multi-agente) · rinomina 01-06-26
 
 ### «prepara» · «prepara prompt» — Liv. 1
 - **Intende:** Matteo sta per descrivere un lavoro in forma grezza e vuole che venga trasformato in un prompt ottimizzato per l'agente di lavoro, dopo un filtro su rischi e ambiguità
@@ -184,12 +184,12 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 - **Origine:** chat mappatura · OSSERVAZIONI (workflow multi-agente)
 
 ### «lavoro ok» — Liv. 1
-- **Intende:** conferma che il codice/task è accettato (equivale a «funziona» / «perfetto» per il protocollo). NON è di per sé «fai report finale».
-- **Comportamento agente:** tratta il task come accettato. Se Matteo aggiunge «fai report finale» (o equivalente) esegui il flusso § 7; da solo «lavoro ok» non avvia report né commit/push/migrazioni.
+- **Intende:** task accettato **+ scrivi/aggiorna il report COMPLETO** del lavoro svolto. Ridefinita 01-06-26 (Matteo: «se fanno report gli agenti devono annotarsi già tutto quello che è successo e tutti i dati che ci servono»). NON è «fai report finale» (= commit+push).
+- **Comportamento agente:** tratta il task come accettato e **scrivi un report completo** in `docs/Sessioni di lavoro/GG-MM-AA/` (o aggiorna quello del ciclo) con TUTTE le sezioni: cosa è cambiato (linguaggio utente), file toccati, **«Dati comunicazione»** (frasi di Matteo, prompt annotati), **dati grezzi della sessione** (n° giri, correzioni, difficoltà/derivazione errori) e la **tua lettura della qualità** (skill system, efficienza, chiarezza dei prompt, osservazioni/consigli) — espressa come **DATI e versione dell'agente**, NON come voto sintetico finale. Il **voto sintetico** lo dà il **revisore** confrontando le versioni dei vari agenti (le contraddizioni tra versioni sono un dato utile sull'affidabilità — fase raccolta dati 01-06-26). **NON committa, NON fa push** (quello è «fai report finale»).
 - **Livello:** 1 (automatico)
-- **Casi identici già ok:** —
-- **Approvata il:** 29-05-26
-- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report 29-05-26 card scorrevole titolo admin
+- **Casi identici già ok:** «funziona» / «perfetto» → task accettato; ma il report completo parte su «lavoro ok» esplicito
+- **Approvata il:** 29-05-26 · ridefinita 01-06-26 (ora include scrittura report completo)
+- **Origine:** sessione miglioria skill system 29-05-26 · ridefinizione 01-06-26 (separare scrittura-report da chiusura-pubblicazione)
 
 ### «finestra di conferma» · «dialog di conferma» · «non vedo il modal» — Liv. 1
 - **Intende:** la finestra di conferma deve essere il dialogo in-app (componente `Modal`, bianco con due pulsanti), NON il popup nativo del browser (`window.confirm`, grigio) che Matteo spesso non percepisce.
@@ -199,29 +199,26 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 - **Approvata il:** 29-05-26
 - **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report promo conflitto 29-05-26
 
-### «comportamenti sono ok» · «non è un problema» + «voglio che cambi (come ti ho detto)» — Liv. 2
-- **Intende:** cambio intenzionale, NON bugfix/regressione. Il comportamento attuale è accettabile come baseline; Matteo vuole un cambio mirato verso lo stato che ha descritto.
-- **Comportamento agente:** nel prompt/report usa linguaggio «comportamento richiesto / cambio UX», mai «bug / ripristino / regressione». L'obiettivo è lo stato desiderato esatto, non una diagnosi. Se è ambiguo se vuole mantenere qualche aspetto del comportamento attuale → una domanda preventiva.
-- **Livello:** 2 (cautela)
-- **Dati Liv.2:**
-- **Approvata il:** 29-05-26
-- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report prepara-prompt Prenota stacking 29-05-26
-
 ### «compila report … comunicazione … vocabolario (solo sicuro) … annota i miei prompt» — Liv. 2
 - **Intende:** chiusura di una sessione meta/comunicazione (tipicamente prepara-prompt o senza codice): report dettagliato su comunicazione, proposte vocabolario senza junk, citazione verbatim dei prompt di Matteo.
 - **Comportamento agente:** genera il report in `Sessioni di lavoro/GG-MM-AA/` con sezione «Dati comunicazione» completa + sottosezione «Prompt di Matteo (annotati)»; aggiorna `OSSERVAZIONI.md`; candidate solo in `PROPOSTE.md` (mai promuovere voci in `VOCABOLARIO.md` da solo). Estende «fai report finale» quando la sessione è meta, non implementazione.
 - **Livello:** 2 (cautela)
 - **Dati Liv.2:**
+  - 29-05-26 · ok (ciclo card ingredienti — sezione comunicazione + prompt annotati applicati) · *ricostruito dai report, non live*
+  - 29-05-26 · ok (card scorrevole admin — report comunicazione esaustivo) · *ricostruito dai report, non live*
+- **⚠️ Nota Matteo (01-06-26):** Matteo dice questa frase **perché gli agenti si dimenticano** di annotare la sezione comunicazione nel report — è una **pezza a una dimenticanza**, non un comando che vuole dare. La cura vera non è promuovere la voce ma **far sì che gli agenti non se ne dimentichino** (stesso problema degli esiti Liv.2). Vedi nudge/enforcement in `EVOLUZIONE_SKILLS.md` (M4). Finché la dimenticanza non è risolta, la voce resta utile come promemoria manuale.
 - **Approvata il:** 29-05-26
-- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report 29-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · report 29-05-26 · nota 01-06-26
 
 ### «revisiona [lavoro] e se è ok committa» — Liv. 2
 - **Intende:** delega della revisione del lavoro di un altro agente, fidandosi della validazione automatica come prova di «ok».
 - **Comportamento agente:** esegui `npm run validate` + check import rotti come criterio oggettivo; se verde, committa con messaggio che cita l'esito della revisione. **MA** se i test passano e noti un difetto logico (es. il caso PWA), fermati e segnalalo prima di committare — il verde non basta sempre. Coerente con la voce «revisione completa».
 - **Livello:** 2 (cautela)
 - **Dati Liv.2:**
+  - 29-05-26 · ok (ciclo card ingredienti — «revisione ok» + commit, validate verde) · *ricostruito dai report, non live*
+- **Conferma Matteo (01-06-26):** comportamento corretto e confermato (validate come prova + stop su difetto logico anche a verde).
 - **Approvata il:** 29-05-26
-- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · OSSERVAZIONI 28-05-26
+- **Origine:** sessione miglioria skill system 29-05-26 (era PROPOSTE) · OSSERVAZIONI 28-05-26 · conferma 01-06-26
 
 ### Comportamento in plan mode (nessun termine — contesto) — Liv. 1
 - **Intende:** quando l'agente entra in pianificazione, Matteo si aspetta domande sulle decisioni di sua competenza

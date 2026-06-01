@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "command": "node .cursor/hooks/fine-sessione-nudge.mjs",
+        "timeout": 10
+      }
+    ]
+  }
+}

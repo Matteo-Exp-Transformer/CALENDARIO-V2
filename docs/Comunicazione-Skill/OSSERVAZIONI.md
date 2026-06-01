@@ -19,13 +19,17 @@
 > Il revisore guarda qui: tante `ok`/`domanda-superflua` → promuovere a Liv.1; `corretto-da-Matteo`
 > ricorrenti → regredire a Liv.3 o riscrivere la voce.
 
+> **Esiti ricostruiti dai report (01-06-26).** I primi esiti sono stati **ripescati dai report** del
+> 29-05 (non raccolti live), per avviare il motore Liv.2 fermo a zero. Marcati *ricostruito*. Dal
+> 30-05 in poi nessun esito live → conferma il problema di registrazione (vedi nudge/M4 in EVOLUZIONE).
+
 | Voce Liv.2 | ok | domanda-superflua | corretto-da-Matteo | segnale |
 |------------|----|-------------------|--------------------|---------|
-| «main dell'app» (ambiguo admin vs app) | 0 | 0 | 0 | nuova 28-05 |
-| «menù originale» (ambiguo tra zone menu) | 0 | 0 | 0 | nuova 28-05 |
-| «comportamenti ok ma voglio che cambi» | 0 | 0 | 0 | nuova 29-05 (promossa da PROPOSTE) |
-| «compila report comunicazione + annota prompt» | 0 | 0 | 0 | nuova 29-05 (promossa da PROPOSTE) |
-| «revisiona e se ok committa» | 0 | 0 | 0 | nuova 29-05 (promossa da PROPOSTE) |
+| «main dell'app» (ambiguo admin vs app) | 0 | 0 | 0 | viva (Matteo la usa a volte) — esiti mai registrati |
+| «menù originale» (ambiguo tra zone menu) | 0 | 0 | 0 | viva (Matteo la usa a volte) — esiti mai registrati |
+| «compila report comunicazione + annota prompt» | 2 | 0 | 0 | **candidata Liv.1** — MA è pezza a dimenticanza agenti (01-06: risolvere col nudge, non promuovere) |
+| «revisiona e se ok committa» | 1 | 0 | 0 | **candidata Liv.1** — comportamento confermato da Matteo 01-06 |
+| ~~«comportamenti ok ma voglio che cambi»~~ | — | — | — | **ELIMINATA 01-06-26** (Matteo: non la usa) |
 
 | «procedura finale» | 1 | chiusura §7: report + SESSION_LOG + FOLLOW_UP + OSSERVAZIONI |
 | «report unificato o solo report?» | 1 | Matteo vuole sapere se un file o più file; risposta breve preferita |
