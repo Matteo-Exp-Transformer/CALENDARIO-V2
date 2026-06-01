@@ -37,6 +37,21 @@
 
 ## Sessioni registrate (append-only)
 
+### 01-06-26 — Prepara prompt a monte: checklist + mini tabella (Matteo)
+- Su «prepara prompt» (task standard icone QR), agenti prepara hanno **omesso** tabella ciclo + checklist compatta; **non** perché task light (era **standard**).
+- Matteo vuole **sempre a monte** (fuori blocco copia-incolla): tabella fasi Prepara/Esecuzione/Revisione + 2–3 checkbox operative; handoff resta con Ciclo·QA·FU.
+- **Candidato** PREPARA_PROMPT §3: obbligo esplicito per modalità standard/deep, non solo handoff/post-revisore.
+
+### 01-06-26 — Menù QR +10 Lucide (standard)
+- Additivo su 12 Phosphor; validate 236; `lucide_tea` → glyph `Milk`.
+- Matteo chiede se ping DOM su `<svg>` identifica l’icona → sì (`lucide-soup` → `lucide_soup` / «Zuppa»).
+
+### 01-06-26 — Menù QR 12 icone (standard)
+- Prompt esecuzione standard completo → 0 domande, 1 turno codice + validate 235.
+- «lavoro ok» senza correzioni; skill PUBLIC_MENU + MENU_ADMIN allineate in chiusura.
+- Nota tecnica: Phosphor senza `Steak` → `Hamburger` per chiave `steak`.
+- **Revisione prepara-prompt:** scope creep — import foto da `menu_categories.image_url` / `booking-cat/` → storage QR al Salva (**non** nel prompt icone); chiedere a Matteo tenere o revert.
+
 ### 01-06-26 — Admin header logo mobile (light)
 - Prompt esecuzione delimitato (file, righe, fuori scope) → **zero domande** (non erano annotate in prima stesura report; aggiunte su richiesta Matteo).
 - **Procedura:** 1º turno interrotto prima di risposta + `validate` verde in chat → 2º turno «lavoro ok».

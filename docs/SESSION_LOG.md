@@ -13,6 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 01-06-26 | Esecuzione standard — Menù QR +10 icone Lucide (22 totali) | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-lucide-icone-01-06-26.md) — Phosphor 12 + Lucide 10, `MenuQrCategoryIconGlyph`; `lucide_tea`→Milk; validate 236. |
+| 01-06-26 | Esecuzione standard — Menù QR 12 icone + import foto catalogo | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-12-icone-categoria-01-06-26.md) — icone, griglia, import `menu_categories`→QR storage; validate 236; commit report finale; QA ⬜. |
 | 01-06-26 | Esecuzione light — logo header admin più piccolo solo mobile | [Report](Sessioni%20di%20lavoro/01-06-26/Report-admin-header-logo-mobile-01-06-26.md) — `AdminDashboard` top bar: logo 56px &lt;sm, 100px ≥sm; barra 92/106px; validate 227; QA visivo ⬜. |
 | 01-06-26 | Meta senior + Verifica — revisione codice (no fix) + enforcement Cursor (Rule grilletti + hook nudge) | [Report](Sessioni%20di%20lavoro/01-06-26/Report-revisione-codice-e-enforcement-cursor-01-06-26.md) — 2 sub-agent; codice ieri solido; motore Liv.2 avviato; Cursor HA gli hook → nudge `stop` installato + Rule always-on grilletti; «lavoro ok»/«fai report finale» ridefinite; score 31 = 6,5. |
 | 31-05-26 | **Git — merge env/test→main** ciclo Prenota sfondo mobile + asset sfondo3 | Merge `--no-ff`; validate 227; DB prod migrazione **042** `menu_qrcode_categories.icon` applicata; push `origin/main`. |

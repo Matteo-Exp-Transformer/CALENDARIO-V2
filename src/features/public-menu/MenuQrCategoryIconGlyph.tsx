@@ -1,0 +1,31 @@
+import { cn } from '@/lib/utils'
+import {
+  getMenuQrCategoryIconOption,
+  resolveMenuQrCategoryIconKey,
+} from '@/features/public-menu/categoryIcons'
+
+type MenuQrCategoryIconGlyphProps = {
+  iconKey?: string | null
+  categoryKey?: string
+  className?: string
+  size?: number
+}
+
+/** Render unico per icone categoria QR: Phosphor (`weight="regular"`) o Lucide. */
+export function MenuQrCategoryIconGlyph({
+  iconKey,
+  categoryKey,
+  className,
+  size,
+}: MenuQrCategoryIconGlyphProps) {
+  const key = resolveMenuQrCategoryIconKey(iconKey, categoryKey)
+  const opt = getMenuQrCategoryIconOption(key)
+
+  if (opt.family === 'phosphor') {
+    const Icon = opt.Icon
+    return <Icon size={size} className={cn(className)} weight="regular" aria-hidden />
+  }
+
+  const Icon = opt.Icon
+  return <Icon size={size} className={cn(className)} aria-hidden />
+}

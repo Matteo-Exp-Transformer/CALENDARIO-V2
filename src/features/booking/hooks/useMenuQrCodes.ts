@@ -4,7 +4,11 @@ import { supabasePublic } from '@/lib/supabasePublic'
 import { toast } from 'react-toastify'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { parseMenuQrCodeRow } from '../utils/menuQrAppearance'
-import { migrateMenuQrDraftAssets } from '../utils/menuQrStorage'
+import {
+  importCatalogCategoryImagesToQrStorage,
+  menuQrStorageSegment,
+  migrateMenuQrDraftAssets,
+} from '../utils/menuQrStorage'
 import type { MenuQrCodeInput, MenuQrSettingsSavePayload } from '@/types/menu'
 
 export const MENU_QR_CODES_QUERY_KEY = 'menu-qr-codes'
@@ -41,6 +45,16 @@ export const useSaveMenuQrSettings = () => {
     mutationFn: async (payload: MenuQrSettingsSavePayload) => {
       const { shortCode, qrId, input, categoryOverrides, draftShortCode } = payload
 
+      const storageSegment = menuQrStorageSegment(qrId, draftShortCode ?? null)
+      let categoryImages = input.category_images ?? {}
+      if (storageSegment) {
+        categoryImages = await importCatalogCategoryImagesToQrStorage(
+          tenantId!,
+          storageSegment,
+          categoryImages,
+        )
+      }
+
       const row = {
         name: input.name,
         content_type: input.content_type,
@@ -50,7 +64,7 @@ export const useSaveMenuQrSettings = () => {
         sort_order: input.sort_order ?? 0,
         theme_key: input.theme_key ?? 'mediterranean_teal',
         carousel_items: input.carousel_items ?? [],
-        category_images: input.category_images ?? {},
+        category_images: categoryImages,
         hidden_menu_item_ids: input.hidden_menu_item_ids ?? [],
         updated_at: new Date().toISOString(),
       }

@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import type { Icon as PhosphorIconType } from '@phosphor-icons/react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabasePublic } from '@/lib/supabasePublic'
 import { usePublicMenuQr, usePublicDefaultMenuQr } from '@/features/booking/hooks/useMenuQrCodes'
 import { usePublicMenuQrcodeCategories } from '@/features/booking/hooks/useMenuQrcodeCategories'
 import { getMenuTheme, type MenuTheme } from '@/features/public-menu/menuThemes'
-import { resolveMenuQrCategoryIcon } from '@/features/public-menu/categoryIcons'
+import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
 import type { MenuCategoryRecord } from '@/features/booking/hooks/useMenuCategories'
 import type { MenuQrCode, CarouselItem, MenuQrcodeCategoryOverride } from '@/types/menu'
 import { usePublicMenuViewport } from '@/hooks/usePublicMenuViewport'
@@ -248,6 +247,16 @@ function MenuCarousel({
 const TAB_BAR_FADE_SCROLL_PX = 56
 const TAB_BAR_SCROLL_STEP_PX = 220
 
+type MenuNavTabItem =
+  | { key: string; label: string; href: string }
+  | { key: string; label: string; href: string; iconKey?: string | null; categoryKey: string }
+
+function isCategoryNavTab(
+  item: MenuNavTabItem,
+): item is Extract<MenuNavTabItem, { categoryKey: string }> {
+  return 'categoryKey' in item
+}
+
 // ── Tab navigazione sticky ────────────────────────────────────────────────────
 
 function MenuNavTabs({
@@ -275,12 +284,17 @@ function MenuNavTabs({
 
   const usePresets = presets.length > 0
 
-  const items = usePresets
+  const items: MenuNavTabItem[] = usePresets
     ? presets.map((p) => ({ key: p.id, label: p.name, href: `/menu/${slug}/qr/${shortCode}/preset/${p.id}` }))
     : categories.map((c) => {
         const ov = overridesByKey[c.key]
-        const Icon = resolveMenuQrCategoryIcon(ov?.icon, c.key)
-        return { key: c.key, label: c.label, href: `/menu/${slug}/qr/${shortCode}/c/${c.key}`, Icon }
+        return {
+          key: c.key,
+          label: c.label,
+          href: `/menu/${slug}/qr/${shortCode}/c/${c.key}`,
+          iconKey: ov?.icon,
+          categoryKey: c.key,
+        }
       })
 
   const updateScrollHints = () => {
@@ -363,20 +377,24 @@ function MenuNavTabs({
           ref={scrollRef}
           className="flex gap-2 overflow-x-auto scrollbar-hide py-3 px-4 min-[700px]:px-11"
         >
-          {items.map((item) => {
-            const Icon = 'Icon' in item ? (item.Icon as PhosphorIconType) : null
-            return (
+          {items.map((item) => (
               <Link
                 key={item.key}
                 to={item.href}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium leading-none transition-colors"
                 style={{ borderColor: accentColor, color: accentColor }}
               >
-                {Icon ? <Icon size={16} className="shrink-0" aria-hidden /> : null}
+                {isCategoryNavTab(item) ? (
+                  <MenuQrCategoryIconGlyph
+                    iconKey={item.iconKey}
+                    categoryKey={item.categoryKey}
+                    size={16}
+                    className="shrink-0"
+                  />
+                ) : null}
                 <span className="whitespace-nowrap">{item.label}</span>
               </Link>
-            )
-          })}
+            ))}
         </div>
         {canScrollRight && (
           <button
@@ -414,8 +432,6 @@ function CategoryCard({
 }) {
   const displayTitle = qrTitle || category.label
   const displayDesc = qrDescription !== undefined ? qrDescription : category.description
-  const CategoryIcon = resolveMenuQrCategoryIcon(iconKey, category.key)
-
   return (
     <Link
       to={href}
@@ -428,7 +444,11 @@ function CategoryCard({
             <img src={imageUrl} alt="" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-stone-400">
-              <CategoryIcon className="size-6 min-[520px]:size-7" aria-hidden />
+              <MenuQrCategoryIconGlyph
+                iconKey={iconKey}
+                categoryKey={category.key}
+                className="size-6 min-[520px]:size-7"
+              />
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
@@ -448,7 +468,7 @@ function CategoryCard({
             <img src={imageUrl} alt="" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-stone-400">
-              <CategoryIcon size={32} aria-hidden />
+              <MenuQrCategoryIconGlyph iconKey={iconKey} categoryKey={category.key} size={32} />
             </div>
           )}
         </div>

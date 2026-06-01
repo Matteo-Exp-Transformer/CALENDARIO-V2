@@ -37,10 +37,13 @@
 MenuQrModal.buildPayload()
   → MenuQrManager.handleSave()
   → useSaveMenuQrSettings (useMenuQrCodes.ts)
+       ├─ importCatalogCategoryImagesToQrStorage (booking-cat/ → qr/{id|draft}/cat/)
        ├─ upsert menu_qr_codes
        ├─ upsert menu_qrcode_categories (onConflict menu_qr_code_id,category_key)
        └─ primo insert: migrateMenuQrDraftAssets (qr/draft/ → qr/{id}/)
 ```
+
+**Import foto catalogo → QR (modale):** alla selezione checkbox (o nuovo QR con categorie preselezionate), anteprima da `menu_categories.image_url` (path `booking-cat/`). Al **Salva**, copia storage su `qr/…/cat/{categoryKey}.webp` e persiste URL QR in `category_images`. Mai scrittura su `menu_categories` né `booking-cat/`. QR esistenti senza thumb in `category_images`: nessun backfill all’apertura; solo riselezione o upload manuale.
 
 **Campi scritti dal modale:**
 
