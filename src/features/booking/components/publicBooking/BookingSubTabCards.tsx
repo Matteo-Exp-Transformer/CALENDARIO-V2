@@ -3,7 +3,10 @@ import { CaretLeftIcon } from '@phosphor-icons/react/dist/csr/CaretLeft'
 import { CaretRightIcon } from '@phosphor-icons/react/dist/csr/CaretRight'
 import { cn } from '@/lib/utils'
 import type { SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
-import { BOOKING_PUBLIC_WIDE_CARDS_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
+import {
+  BOOKING_PUBLIC_WIDE_CARDS_WIDTH,
+  bookingPublicRowCardWidthClass,
+} from '@/features/booking/constants/bookingPublicFieldStyles'
 import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
 import { MENU_QR_DEFAULT_CATEGORY_ICON_KEY } from '@/features/public-menu/categoryIcons'
 
@@ -15,6 +18,8 @@ interface BookingSubTabCardsProps {
   onChange: (subTab: SubTab | null) => void
   /** Card tipologia attive nella riga sopra. Mantenuta per compatibilita con il chiamante. */
   modeCardColumnCount: number
+  /** Cap 1168px full-page: ≥4 sottotab = 5 slot visibili in riga (`bookingPublicRowCardWidthClass(5)`). */
+  fullPageFormCapLayout?: boolean
 }
 
 /** Es. `18,00€` (senza spazio prima del simbolo €). */
@@ -32,6 +37,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   activeSubTabId,
   onChange,
   modeCardColumnCount: _modeCardColumnCount,
+  fullPageFormCapLayout = false,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -65,9 +71,12 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   if (subTabs.length === 0) return null
   // ≤3 card: flex-1 su ogni card → si espandono a riempire la riga, centrate
   // ≥4 card: larghezza minima fissa → scroll laterale automatico
-  const cardFlexClass = subTabs.length <= 3
-    ? 'flex-1 min-w-0'
-    : 'w-[200px] sm:w-[220px] shrink-0'
+  const cardFlexClass =
+    subTabs.length <= 3
+      ? 'flex-1 min-w-0'
+      : fullPageFormCapLayout
+        ? bookingPublicSubTabCapCardWidthClass()
+        : 'w-[200px] sm:w-[220px] shrink-0'
 
   return (
     <div

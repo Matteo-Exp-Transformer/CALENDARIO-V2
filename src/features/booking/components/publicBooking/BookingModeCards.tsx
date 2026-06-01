@@ -2,18 +2,34 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 import type { BookingMode } from '@/features/booking/constants/bookingPublicFormConfig'
 import type { BookingType } from '@/types/booking'
-import { BOOKING_PUBLIC_WIDE_CARDS_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
+import {
+  BOOKING_PUBLIC_WIDE_CARDS_WIDTH,
+  bookingPublicRowCardWidthClass,
+} from '@/features/booking/constants/bookingPublicFieldStyles'
 import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
 
 interface BookingModeCardsProps {
   modes: BookingMode[]
   activeModeId: string
   onChange: (modeId: string, bookingType: BookingType) => void
+  /** Cap 1168px full-page: card a larghezza fissa in riga, senza lg:px-16 / icona assoluta. */
+  fullPageFormCapLayout?: boolean
 }
 
-export const BookingModeCards: React.FC<BookingModeCardsProps> = ({ modes, activeModeId, onChange }) => {
+export const BookingModeCards: React.FC<BookingModeCardsProps> = ({
+  modes,
+  activeModeId,
+  onChange,
+  fullPageFormCapLayout = false,
+}) => {
   const enabledModes = modes.filter((m) => m.enabled)
   if (enabledModes.length === 0) return null
+
+  const useFixedRowWidths =
+    fullPageFormCapLayout && enabledModes.length >= 2 && enabledModes.length <= 4
+  const rowCardWidthClass = useFixedRowWidths
+    ? bookingPublicRowCardWidthClass(enabledModes.length)
+    : 'flex-1 min-w-0'
 
   return (
     <div className={cn('w-full space-y-2', BOOKING_PUBLIC_WIDE_CARDS_WIDTH)} data-testid="booking-mode-cards">
@@ -32,8 +48,10 @@ export const BookingModeCards: React.FC<BookingModeCardsProps> = ({ modes, activ
               data-testid={`booking-mode-card-${mode.id}`}
               onClick={() => onChange(mode.id, mode.booking_type)}
               className={cn(
-                'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-2 py-3 text-center transition-all duration-200',
-                'min-h-[120px] sm:min-h-[110px] sm:gap-2 sm:rounded-2xl sm:px-3 sm:py-4 lg:px-16',
+                'relative flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-2 py-3 text-center transition-all duration-200',
+                rowCardWidthClass,
+                'min-h-[120px] sm:min-h-[110px] sm:gap-2 sm:rounded-2xl sm:px-3 sm:py-4',
+                !fullPageFormCapLayout && 'lg:px-16',
                 'bg-white/85 backdrop-blur-[1px] shadow-sm',
                 isActive
                   ? 'border-warm-orange ring-2 ring-warm-orange/30 shadow-md'
@@ -42,7 +60,9 @@ export const BookingModeCards: React.FC<BookingModeCardsProps> = ({ modes, activ
             >
               <div
                 className={cn(
-                  'flex h-8 w-8 shrink-0 items-center justify-center transition-colors sm:h-10 sm:w-10 lg:absolute lg:left-4 lg:top-1/2 lg:-translate-y-1/2',
+                  'flex h-8 w-8 shrink-0 items-center justify-center transition-colors sm:h-10 sm:w-10',
+                  !fullPageFormCapLayout &&
+                    'lg:absolute lg:left-4 lg:top-1/2 lg:-translate-y-1/2',
                   isActive ? 'text-warm-orange' : 'text-warm-wood/80',
                 )}
               >

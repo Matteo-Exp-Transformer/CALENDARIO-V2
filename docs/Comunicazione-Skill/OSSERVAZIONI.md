@@ -37,6 +37,13 @@
 
 ## Sessioni registrate (append-only)
 
+### 02-06-26 — Prenota full-page freeze layout (prepara + esecuzione parziale, multi-turno)
+- **Area:** Pagina Prenota pubblica, solo `isFullPagePhoto && !showPhotoStrip` — cap form 1168px, riepilogo esterno da 1600px.
+- **Prompt:** 5 blocchi prepara + follow-up; regola nuova: su correzione prompt → **sempre prompt intero** (non solo delta).
+- **Esito:** Menu QR commit `283c36b` OK (inizio thread); Prenota centratura OK; riepilogo 1256–1599 KO (sticky `BookingSummarySidebar`); 2º fix annullato da Matteo.
+- **Pattern:** due breakpoint (1256/1600) + componente condiviso senza variant → agente tocca pagina ma non sidebar.
+- **Report:** `docs/Sessioni di lavoro/02-06-26/Report-prenota-full-page-freeze-ciclo-layout-02-06-26.md`
+
 ### 01-06-26 — FU-025 freeze desktop PublicMenuCategoryPage (Esecuzione, 1 turno)
 - **Prompt P0 ~10/10** (estensione pattern FU-025, architettura 2 livelli, DRY costante, anti-scope, smoke, regola deep) → **0 domande**, **1 turno codice**, **0 follow-up** prima di «lavoro ok».
 - Task meccanico (wrapper CSS) su pattern già su homepage → più efficiente della sessione card 30/70 (3 turni codice + 2 follow-up).

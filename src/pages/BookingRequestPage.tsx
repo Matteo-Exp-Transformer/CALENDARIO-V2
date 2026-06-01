@@ -28,6 +28,10 @@ import {
   type SubTab,
 } from '@/features/booking/constants/bookingPublicFormConfig'
 import type { BookingRequestInput } from '@/types/booking'
+import {
+  BOOKING_FULL_PAGE_FORM_MAX_WIDTH_PX,
+  BOOKING_FULL_PAGE_SUMMARY_WIDTH_PX,
+} from '@/features/booking/constants/bookingPageLayout'
 
 /** Padding colonna contenuto — header, form e sticky condividono lo stesso inset (no -mx bleed). */
 const BOOKING_PAGE_CONTENT_PAD_FULL = 'px-8 md:px-10 lg:px-10'
@@ -112,6 +116,8 @@ export const BookingRequestPage: React.FC = () => {
     ? bookingPageBackground
     : null
   const isFullPagePhoto = fullPagePhotoId != null
+  /** Cap form + riepilogo esterno: solo full-page senza striscia, desktop ≥1256px (CSS). */
+  const useFullPageDesktopFreezeLayout = !showPhotoStrip && isFullPagePhoto
   const fullPagePhotoLandscapeUrl = fullPagePhotoId
     ? bookingFullPageBackgroundPublicHref(fullPagePhotoId, import.meta.env.BASE_URL, 'landscape')
     : null
@@ -179,6 +185,89 @@ export const BookingRequestPage: React.FC = () => {
     )
   }
 
+  const summaryFormData = {
+    desired_date: sharedFormData.desired_date,
+    desired_time: sharedFormData.desired_time,
+    num_guests: sharedFormData.num_guests ?? 0,
+    booking_type: sharedFormData.booking_type,
+    menu_selection: sharedFormData.menu_selection,
+    menu_total_per_person: sharedFormData.menu_total_per_person,
+    menu_total_booking: sharedFormData.menu_total_booking,
+    preset_menu: sharedFormData.preset_menu,
+  }
+  const summarySubmitButton = (
+    <button
+      type="submit"
+      form="booking-request-form"
+      disabled={isSubmitDisabled}
+      className="w-full flex items-center justify-center gap-2 py-3 px-5 text-sm font-bold text-white rounded-full bg-green-600 hover:bg-green-700 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-wide transition-colors duration-200"
+    >
+      <Send className="h-4 w-4" />
+      Invia Prenotazione
+    </button>
+  )
+  const summarySidebarStacked = (
+    <BookingSummarySidebar
+      formData={summaryFormData}
+      modes={resolvedConfig.booking_modes}
+      contactPhone={displayContactPhone || undefined}
+      activeSubTab={activeSubTab}
+      onVisibilityChange={setIsSummaryVisible}
+      submitButton={summarySubmitButton}
+    />
+  )
+  const summarySidebarDesktopExternal = (
+    <BookingSummarySidebar
+      formData={summaryFormData}
+      modes={resolvedConfig.booking_modes}
+      contactPhone={displayContactPhone || undefined}
+      activeSubTab={activeSubTab}
+      submitButton={summarySubmitButton}
+    />
+  )
+  const bookingRequestForm = (
+    <BookingRequestForm
+      tenantSlug={tenantSlug}
+      formConfig={resolvedConfig}
+      publicFormLightTextOnDarkBackground={!showPhotoStrip && isFullPagePhoto}
+      onFormDataChange={setSharedFormData}
+      onActiveSubTabChange={setActiveSubTab}
+      onIsDisabledChange={setIsSubmitDisabled}
+      externalSummaryLayout={useFullPageDesktopFreezeLayout}
+      summarySidebar={summarySidebarStacked}
+    />
+  )
+
+  const fullPageDesktopCapStyle = {
+    ['--booking-full-page-form-max' as string]: `${BOOKING_FULL_PAGE_FORM_MAX_WIDTH_PX}px`,
+    ['--booking-full-page-summary-w' as string]: `${BOOKING_FULL_PAGE_SUMMARY_WIDTH_PX}px`,
+  } as React.CSSProperties
+
+  const bookingPageHeader = (
+    <div className="flex w-full flex-col gap-1.5 py-1.5 animate-fade-in">
+      <h1
+        className="m-0 w-full"
+        style={getBookingHeaderTextStyle('restaurant_name', headerStyles)}
+      >
+        {displayName}
+      </h1>
+      <div className="flex w-full flex-col gap-1.5">
+        <h2
+          className="m-0 w-full"
+          style={getBookingHeaderTextStyle('page_title', headerStyles)}
+        >
+          {resolvedConfig.page_title}
+        </h2>
+        <p
+          className="opacity-90 m-0 w-full"
+          style={getBookingHeaderTextStyle('page_description', headerStyles)}
+        >
+          {resolvedConfig.page_description}
+        </p>
+      </div>
+    </div>
+  )
+
   return (
     <div className="min-h-screen font-bold relative isolate" style={pageRootFallbackStyle}>
       {scrollablePageBackgroundStyle && (
@@ -241,67 +330,48 @@ export const BookingRequestPage: React.FC = () => {
           {/* Colonna contenuto destra — stesso padding orizzontale per header, form e sticky bar. */}
           <div className={cn('w-full min-w-0', contentColumnPad)}>
 
-            {/* Header — allineamento controllato da header_styles.textAlign per ogni elemento */}
-            <div className="flex w-full flex-col gap-1.5 py-1.5 animate-fade-in">
-              <h1
-                className="m-0 w-full"
-                style={getBookingHeaderTextStyle('restaurant_name', headerStyles)}
+            {useFullPageDesktopFreezeLayout ? (
+              <div
+                className={cn(
+                  'w-full',
+                  'min-[1256px]:mx-auto min-[1256px]:w-fit min-[1256px]:max-w-full',
+                  'min-[1256px]:flex min-[1256px]:flex-col',
+                )}
+                style={fullPageDesktopCapStyle}
               >
-                {displayName}
-              </h1>
-              <div className="flex w-full flex-col gap-1.5">
-                <h2
-                  className="m-0 w-full"
-                  style={getBookingHeaderTextStyle('page_title', headerStyles)}
+                {bookingPageHeader}
+                <div
+                  className={cn(
+                    'w-full',
+                    'min-[1600px]:flex min-[1600px]:w-fit min-[1600px]:items-start min-[1600px]:gap-6',
+                  )}
                 >
-                  {resolvedConfig.page_title}
-                </h2>
-                <p
-                  className="opacity-90 m-0 w-full"
-                  style={getBookingHeaderTextStyle('page_description', headerStyles)}
-                >
-                  {resolvedConfig.page_description}
-                </p>
+                  <div
+                    className={cn(
+                      'w-full min-w-0',
+                      'min-[1256px]:w-[var(--booking-full-page-form-max)]',
+                      'min-[1256px]:max-w-[var(--booking-full-page-form-max)]',
+                      'min-[1256px]:shrink-0',
+                    )}
+                  >
+                    {bookingRequestForm}
+                  </div>
+                  <div
+                    className={cn(
+                      'hidden min-[1600px]:block min-[1600px]:shrink-0 min-[1600px]:self-start',
+                      'min-[1600px]:w-[var(--booking-full-page-summary-w)]',
+                    )}
+                  >
+                    {summarySidebarDesktopExternal}
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <BookingRequestForm
-              tenantSlug={tenantSlug}
-              formConfig={resolvedConfig}
-              publicFormLightTextOnDarkBackground={!showPhotoStrip && isFullPagePhoto}
-              onFormDataChange={setSharedFormData}
-              onActiveSubTabChange={setActiveSubTab}
-              onIsDisabledChange={setIsSubmitDisabled}
-              summarySidebar={
-                <BookingSummarySidebar
-                  formData={{
-                    desired_date: sharedFormData.desired_date,
-                    desired_time: sharedFormData.desired_time,
-                    num_guests: sharedFormData.num_guests ?? 0,
-                    booking_type: sharedFormData.booking_type,
-                    menu_selection: sharedFormData.menu_selection,
-                    menu_total_per_person: sharedFormData.menu_total_per_person,
-                    menu_total_booking: sharedFormData.menu_total_booking,
-                    preset_menu: sharedFormData.preset_menu,
-                  }}
-                  modes={resolvedConfig.booking_modes}
-                  contactPhone={displayContactPhone || undefined}
-                  activeSubTab={activeSubTab}
-                  onVisibilityChange={setIsSummaryVisible}
-                  submitButton={
-                    <button
-                      type="submit"
-                      form="booking-request-form"
-                      disabled={isSubmitDisabled}
-                      className="w-full flex items-center justify-center gap-2 py-3 px-5 text-sm font-bold text-white rounded-full bg-green-600 hover:bg-green-700 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-wide transition-colors duration-200"
-                    >
-                      <Send className="h-4 w-4" />
-                      Invia Prenotazione
-                    </button>
-                  }
-                />
-              }
-            />
+            ) : (
+              <>
+                {bookingPageHeader}
+                {bookingRequestForm}
+              </>
+            )}
 
             {/* Sticky bar mobile — visibile quando il riepilogo è fuori dalla viewport */}
             <BookingStickyBar

@@ -23,6 +23,12 @@ export function bookingPublicRowCardWidthClass(columnCount: number): string {
   if (columnCount === 3) {
     return 'w-[calc((100%_-_0.75rem)/3)] max-w-[calc((100%_-_0.75rem)/3)] sm:w-[calc((100%_-_1rem)/3)] sm:max-w-[calc((100%_-_1rem)/3)] shrink-0'
   }
+  if (columnCount === 4) {
+    return 'w-[calc((100%_-_1.125rem)/4)] max-w-[calc((100%_-_1.125rem)/4)] sm:w-[calc((100%_-_1.5rem)/4)] sm:max-w-[calc((100%_-_1.5rem)/4)] shrink-0'
+  }
+  if (columnCount === 5) {
+    return 'w-[calc((100%_-_2rem)/5)] max-w-[calc((100%_-_2rem)/5)] shrink-0'
+  }
   return 'w-[calc((100%_-_1.125rem)/4)] max-w-[calc((100%_-_1.125rem)/4)] sm:w-[calc((100%_-_1.5rem)/4)] sm:max-w-[calc((100%_-_1.5rem)/4)] shrink-0'
 }
 

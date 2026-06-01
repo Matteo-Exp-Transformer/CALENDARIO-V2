@@ -122,6 +122,34 @@ Nome e titolo stessa scala grande, descrizione più piccola. Font in `BOOKING_HE
 - Quando si apre la griglia ingredienti, il riepilogo **non** scorre fuori schermo e non mostra
   frecce di riapertura (comportamento vecchio rimosso).
 
+### 4.1 Freeze desktop full-page (senza striscia)
+
+**Condizione:** `useFullPageDesktopFreezeLayout = !showPhotoStrip && isFullPagePhoto` (preset
+`full-01`…`full-04`, layer fixed cover — **non** gradiente/tile legacy). Attivo solo da
+**≥1256px** via classi `min-[1256px]:*` (stesso breakpoint di `BOOKING_PUBLIC_SUMMARY_SIDEBAR_MIN_PX`).
+
+**Fuori scope (layout invariato):** striscia laterale; sfondo gradiente/tile senza full-page;
+viewport &lt;1256px (riepilogo sotto form + `BookingStickyBar`).
+
+**Desktop full-page:**
+- Blocco **centrato** `mx-auto w-fit` da **≥1256px** (header + riga form [+ riepilogo da 1600px]):
+  colonna form fissa `BOOKING_FULL_PAGE_FORM_MAX_WIDTH_PX` (1168px); sfondo simmetrico ai lati.
+- **Riepilogo esterno** solo da **`BOOKING_FULL_PAGE_EXTERNAL_SUMMARY_MIN_PX` (1600px)**:
+  sotto 1600px resta **sotto** il form (stack, come mobile); 1256–1599 **non** ha colonna laterale
+  interna a 2 colonne. `summarySidebar` nel form nascosto con `min-[1600px]:hidden`.
+- Da 1600px: `BookingSummarySidebar` sibling a destra (`BOOKING_FULL_PAGE_SUMMARY_WIDTH_PX` = 360),
+  sticky `top-4`.
+- `BookingRequestForm` con `externalSummaryLayout`: griglia interna sempre **una colonna** (anche ≥1256).
+- Card nel cap (`fullPageFormCapLayout` = `externalSummaryLayout`): tipologie con
+  `bookingPublicRowCardWidthClass(N)` (no `lg:px-16`); sottotab ≥4 con **5 slot** visibili
+  (`bookingPublicRowCardWidthClass(5)`), scroll se 6+.
+- Pulsante Invia: `form="booking-request-form"` in sidebar (mobile) e submit grande nel form (desktop).
+- Header ristorante **sopra** form+riepilogo, nello stesso wrapper centrato (testo con
+  `header_styles.textAlign`; il box segue la larghezza del blocco 1168+360).
+
+**Ripristino layout precedente:** rimuovere il wrapper in `BookingRequestPage` e
+`externalSummaryLayout`; riepilogo torna nella griglia `min-[1256px]:grid-cols-[1fr_min(360px,32%)]`.
+
 ## 5. Ordine del form (v2 attuale)
 
 1. **Tipologia** (`BookingModeCards`): 3 colonne compatte su mobile, descrizione solo da `sm+`;

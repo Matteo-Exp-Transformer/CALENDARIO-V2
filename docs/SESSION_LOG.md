@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 02-06-26 | Prenota — freeze desktop full-page (cap 1168 + riepilogo 1600) ⏳ **report ciclo** | [Report ciclo layout](Sessioni%20di%20lavoro/02-06-26/Report-prenota-full-page-freeze-ciclo-layout-02-06-26.md) — centratura OK; KO 1256–1599 sticky; fix 3/4/5 sottotab pendente; 2º agente annullato; diff non committato |
 | 01-06-26 | Prenota — intestazione font + size + G/S + fix input dimensione ✅ **lavoro ok** | [Report](Sessioni%20di%20lavoro/01-06-26/Report-prenota-intestazione-font-dimensione-01-06-26.md) — `aebe95c` su `main`; fix draft fontSize on blur. |
 | 01-06-26 | Menu QR — pill barra categorie sfondo semi-opaco ✅ **report finale** | [Report ciclo](Sessioni%20di%20lavoro/01-06-26/Report-ciclo-menu-qr-pill-barra-categorie-01-06-26.md) — `rgba(tabBarStickyRgb, 0.92)` su `MenuNavTabs`; prepara→esecuzione 0 rework; commit `8192fa6` su `env/test`. |
 | 01-06-26 | Fix — card categoria QR senza foto = altezza con foto (mobile &lt;520) ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-card-senza-foto-mobile-align-01-06-26.md) — `aspect-[7/2]` su `matchPhotoTileHeight`; validate **269**; commit `30e3b91` su `main`. |

@@ -66,6 +66,11 @@ interface BookingRequestFormProps {
   onActiveSubTabChange?: (subTab: SubTab | null) => void
   /** Riepilogo a destra (desktop); il submit va sotto questa colonna. */
   summarySidebar?: React.ReactNode
+  /**
+   * Desktop full-page: il parent mette il riepilogo fuori dal cap del form;
+   * sotto 1600px `summarySidebar` resta sotto il form; da 1600px è nascosto qui (colonna esterna).
+   */
+  externalSummaryLayout?: boolean
   /** Notifica il parent quando il pulsante submit cambia stato disabled. */
   onIsDisabledChange?: (disabled: boolean) => void
   /** Testo errore/privacy/riepilogo in bianco solo su sfondo full-page (no striscia). */
@@ -168,6 +173,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   onFormDataChange,
   onActiveSubTabChange,
   summarySidebar,
+  externalSummaryLayout = false,
   onIsDisabledChange,
   publicFormLightTextOnDarkBackground = false,
 }) => {
@@ -909,7 +915,10 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       id="booking-request-form"
       noValidate
       onSubmit={handleSubmit}
-      className="grid w-full max-w-full grid-cols-1 gap-4 font-bold min-[1256px]:grid-cols-[1fr_min(360px,32%)] min-[1256px]:items-start min-[1256px]:gap-6"
+      className={cn(
+        'grid w-full max-w-full grid-cols-1 gap-4 font-bold min-[1256px]:items-start min-[1256px]:gap-6',
+        !externalSummaryLayout && 'min-[1256px]:grid-cols-[1fr_min(360px,32%)]',
+      )}
     >
       {/* Tipologia + sottotab: fuori da md:px-2/lg:px-4 — stesso bordo laterale del box header */}
       <div
@@ -933,6 +942,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         <BookingModeCards
           modes={formConfig.booking_modes}
           activeModeId={activeModeId}
+          fullPageFormCapLayout={externalSummaryLayout}
           onChange={(_modeId, bookingType) => {
             setActiveSubTabId(null)
             setSelectedPreset(null)
@@ -973,6 +983,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             subTabs={activeModeSubTabs}
             activeSubTabId={activeSubTabId}
             modeCardColumnCount={formConfig.booking_modes.filter((m) => m.enabled).length}
+            fullPageFormCapLayout={externalSummaryLayout}
             onChange={(tab) => {
               setActiveSubTabId(tab?.id ?? null)
               if (!tab) {
@@ -1159,7 +1170,12 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       </div>
       </div>
 
-      {summarySidebar}
+      {summarySidebar != null &&
+        (externalSummaryLayout ? (
+          <div className="min-[1600px]:hidden">{summarySidebar}</div>
+        ) : (
+          summarySidebar
+        ))}
 
       {/* Submit grande — solo ≥1256px; sotto il submit è nel riepilogo / sticky bar */}
       <div className="order-3 col-span-1 hidden min-[1256px]:flex w-full max-w-full justify-center items-center mt-3 mb-6 min-[1256px]:col-span-2">
