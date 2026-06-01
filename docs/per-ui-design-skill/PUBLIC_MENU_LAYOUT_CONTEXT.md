@@ -129,7 +129,7 @@ Scroll orizzontale: classe `.scrollbar-hide` in `index.css` (niente barra su mob
 
 **Con foto** — tile verticale, titolo su gradiente in basso (tutte le larghezze).
 
-**Senza foto** — riga 30/70: icona su bianco a sinistra; titolo (+ descrizione opzionale sotto il titolo) nella fascia `theme.headerImage` a destra (`categoryCardNoPhotoBackgroundStyle`), testo in `headerTextColor`. Se **almeno una** categoria ha foto in `category_images`, da **520px** le card senza foto usano `aspect-[5/2]` come le tile con foto (`matchPhotoTileHeight`).
+**Senza foto** — riga 30/70: icona su bianco a sinistra; titolo (+ descrizione opzionale sotto il titolo) nella fascia `theme.headerImage` a destra (`categoryCardNoPhotoBackgroundStyle`), testo in `headerTextColor`. Se **almeno una** categoria ha foto in `category_images`, le card senza foto usano `aspect-[7/2]` sotto 520px e `aspect-[5/2]` da 520px come le tile con foto (`matchPhotoTileHeight`). Senza mix foto: `min-h-[64px]` mobile, `min-h-[72px]` da 520px.
 
 **Titolo e icona**: override `menu_qrcode_categories` → fallback `menu_categories` / `resolveMenuQrCategoryIcon`.
 

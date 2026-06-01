@@ -146,6 +146,7 @@ quando i criteri saranno tarati.
 - 29-05-26 · ciclo BookingRequestCard mappa→fix menuPricing · deep→standard · prompt:5 · correzioni:3 · FU:2 chiusi · alzata:no · Approva revisore fix; report unificato; pipeline mappa/rev/fix annotata per vocabolario
 - 30-05-26 · prepara-prompt ciclo fix Menu QR (8 note) · deep · prompt:~12 · correzioni:4 · FU:1 · alzata:no · handoff tabella+tipi sessione+QA Matteo 31-05-26
 - 01-06-26 · unificazione icone Prenota=Menu QR (prepara→esecutore→report→merge main) · standard · prompt:6 · correzioni:1 · FU:0 · alzata:no · merge:ff · commit:3 · esecutore 1 passata; Matteo chiede 2× sezione analisi/statistiche in report; QA visivo ⬜
+- 01-06-26 · Menu QR card senza foto mobile align · standard · prompt:2 · correzioni:0 · FU:0 · alzata:no · 1 prepara 1 esec; fix 1 riga aspect; merge main in chiusura
 
 ---
 

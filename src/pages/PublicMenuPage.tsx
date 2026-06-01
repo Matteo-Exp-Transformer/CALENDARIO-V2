@@ -436,7 +436,7 @@ function CategoryCard({
   qrDescription?: string | null
   iconKey?: string | null
   theme: MenuTheme
-  /** Tablet/desktop: se almeno una categoria ha foto, le card senza foto usano aspect 5/2 come le altre */
+  /** Mix foto in griglia: card senza foto usa aspect 7/2 (<520) e 5/2 (≥520) come le tile con foto */
   matchPhotoTileHeight: boolean
 }) {
   const displayTitle = qrTitle || category.label
@@ -445,7 +445,7 @@ function CategoryCard({
   const noPhotoBgStyle = categoryCardNoPhotoBackgroundStyle(theme.headerImage, theme.headerFallbackBg)
 
   const noPhotoRowClass = matchPhotoTileHeight
-    ? 'flex h-full min-h-[64px] w-full overflow-hidden min-[520px]:aspect-[5/2] min-[520px]:min-h-0'
+    ? 'flex aspect-[7/2] w-full overflow-hidden min-[520px]:aspect-[5/2]'
     : 'flex h-full min-h-[64px] w-full overflow-hidden min-[520px]:min-h-[72px]'
 
   return (
