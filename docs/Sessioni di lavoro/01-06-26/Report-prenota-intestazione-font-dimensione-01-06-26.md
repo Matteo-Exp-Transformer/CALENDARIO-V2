@@ -2,7 +2,7 @@
 
 **Data:** 01-06-26  
 **Modalità:** standard · **Profilo:** Esecuzione (+ revisione prepara-prompt font)  
-**Stato:** ✅ **lavoro ok** (fix input dimensione) · commit ⬜ · fase 1 `73dddcc` · fase 2 `5f6819f` · fase 3 ⬜
+**Stato:** ✅ **lavoro ok** · fase 3 `aebe95c` su `main` + `env/test`
 
 ---
 
@@ -200,6 +200,6 @@
 |------|--------|
 | Fase 1 commit | ✅ `73dddcc` |
 | Fase 2 commit | ✅ `5f6819f` |
-| Fase 3 commit | ⬜ fix input dimensione (draft + blur) |
+| Fase 3 commit | ✅ `aebe95c` fix input dimensione (draft + blur) |
 | DB PROD | ✅ `042`; nessuna migrazione per `header_styles` |
 | Deploy | Frontend da `main` dopo fase 3 |
