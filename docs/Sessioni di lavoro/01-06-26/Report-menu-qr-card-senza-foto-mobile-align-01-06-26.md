@@ -2,7 +2,7 @@
 
 **Data:** 01-06-26  
 **Modalità:** standard · **Profilo:** Esecuzione  
-**Stato:** ✅ lavoro ok (Matteo) · validate OK · commit in chiusura report
+**Stato:** ✅ lavoro ok · validate OK · commit `30e3b91` su `env/test` e `main`
 
 ---
 
