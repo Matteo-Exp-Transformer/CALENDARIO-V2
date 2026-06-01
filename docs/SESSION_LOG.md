@@ -13,10 +13,10 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
-| 01-06-26 | Sync delete categoria → Menù QR + Personalizza form ✅ | `deleteCategoryKeyFromQrRow`, `syncMenuCategoryKeyDelete`, `useDeleteMenuCategory`; modale elimina + `CATEGORY_KEY_DELETE_INFO_MESSAGE`; test helper/hook; validate 258; no commit. |
-| 01-06-26 | Sync rename chiave categoria → Menù QR + Personalizza form ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-sync-rename-categoria-qr-form-01-06-26.md) — sync save categoria; modale pre-save FU-029; validate 252; QA ⬜; no commit. |
-| 01-06-26 | Menù QR — default icona categoria Insalata (`lucide_salad`) ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-default-icona-insalata-01-06-26.md) — FU-023; admin modale + pubblico; validate 241; QA ⬜; no commit. |
-| 01-06-26 | Admin — card categorie overlay mobile (layout + no thumb) ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-admin-card-categorie-ingredienti-mobile-01-06-26.md) — titolo centro, icone basso, wrap; thumb ≥1050px; validate 241; QA 375 OK; no commit. |
+| 01-06-26 | Sync delete categoria → Menù QR + Personalizza form ✅ | sync al click Elimina; modale avviso; validate 258; **QA Matteo OK**; commit `16b8bbe`. |
+| 01-06-26 | Sync rename chiave categoria → Menù QR + Personalizza form ✅ | modale conferma pre-save; validate 258; **QA Matteo OK**; commit `16b8bbe`. |
+| 01-06-26 | Menù QR — default icona categoria Insalata (`lucide_salad`) ✅ | FU-023; admin modale + pubblico; validate 258; commit `16b8bbe`. |
+| 01-06-26 | Admin — card categorie overlay mobile (layout + no thumb) ✅ | titolo centro, icone basso, wrap; thumb ≥1050px; validate 258; QA 375 OK; commit `16b8bbe`. |
 | 01-06-26 | Menù QR — ordine categorie (frecce modale + tab/griglia pubblico) ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-ordine-categorie-01-06-26.md) — `category_filter` sequenza; validate 241; **QA Matteo OK**; commit `e511ded`/`8a35733`. |
 | 01-06-26 | Menù QR — 12 Phosphor + import foto + 10 Lucide (**commit `a25f02c`**) | [12 icone](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-12-icone-categoria-01-06-26.md) · [Lucide](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-lucide-icone-01-06-26.md) — picker 22, glyph condiviso, foto catalogo→QR; validate 236; QA ⬜. |
 | 01-06-26 | Follow-up — rimosse Lucide Zuppa/Uova dal picker Menù QR ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-follow-up-rimozione-lucide-soup-uova-01-06-26.md) — 20 icone; fallback DB; commit report finale; validate 237. |
