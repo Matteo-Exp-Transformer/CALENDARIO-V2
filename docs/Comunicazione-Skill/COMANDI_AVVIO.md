@@ -32,9 +32,14 @@
 | Dico… | Effetto | Liv. |
 |-------|---------|------|
 | **«spiegamelo semplice»** · «in modo sintetico» | risposta breve: effetto concreto + chi fa cosa, niente lezione tecnica | 1 |
-| **«lavoro ok»** · «funziona» · «perfetto» | task accettato (NON avvia da solo report/commit) | 1 |
-| **«fai report finale»** | esegue il flusso fine-chat § 7 (report + allineamento skill + propone commit) | 1 |
-| **«dammi prompt proseguimento»** | risponde con **solo** il prompt da incollare nella prossima chat | 1 |
+| **«lavoro ok»** | task accettato **+ scrive il report COMPLETO** (lavoro + comunicazione + dati qualità). NON committa | 1 |
+| **«fai report finale»** | **capitolo chiuso**: controlla che il report sia allineato al codice, poi **commit + push** | 1 |
+| **«dammi follow up»** | risponde con **solo** il prompt da incollare nella prossima chat (ex «dammi prompt proseguimento») | 1 |
+
+> **«lavoro ok» vs «fai report finale» (01-06-26):** il report completo si scrive su **«lavoro ok»**
+> (sempre tutto: comunicazione, dati, lettura qualità dell'agente). **«fai report finale»** è solo
+> l'atto di **chiusura e pubblicazione** (commit+push), dopo un controllo che il report rispecchi il
+> codice. Il **voto sintetico** alla sessione lo dà il **revisore**, non l'agente che ha lavorato.
 
 ---
 
