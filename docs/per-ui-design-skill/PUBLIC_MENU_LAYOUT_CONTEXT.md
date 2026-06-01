@@ -10,7 +10,7 @@ description: >-
 
 > File principale: `src/pages/PublicMenuPage.tsx`
 > Skill entry point: `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`
-> Ultima revisione: 2026-05-31 — wrapper desktop FU-025, griglia 520/1025, sfondo repeat-y su shell scrollabile
+> Ultima revisione: 2026-06-01 — FU-025 esteso a `PublicMenuCategoryPage`; costante `publicMenuLayout.ts`; griglia 520, sfondo repeat-y homepage
 
 ---
 
@@ -39,6 +39,26 @@ Pagina: `useMenuPageBackgroundStyle()` sul **wrapper esterno scrollabile** — *
 |--------|----------------|
 | Homepage `PublicMenuPage` | `bodyImage` — `100% auto`, `repeat-y` sul container che scrolla |
 | Categoria `PublicMenuCategoryPage` | `headerImage` — crop top sulla barra sticky; corpo `bg-stone-50` |
+
+**Costante condivisa FU-025:** `PUBLIC_MENU_CONTENT_MAX_WIDTH_CLASS` in `src/features/public-menu/publicMenuLayout.ts` — usata in `PublicMenuPage` e `PublicMenuCategoryPage`.
+
+### `PublicMenuCategoryPage` — due livelli (01-06-26)
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Shell esterna — min-h-svh bg-stone-50 (full viewport)       │
+│  ┌────────────────────────────────────────┐                  │
+│  │  PUBLIC_MENU_CONTENT_MAX_WIDTH_CLASS   │  ← centrato      │
+│  │  + min-h-svh                           │    oltre 1024px  │
+│  │  ┌──────────────────────────────────┐  │                  │
+│  │  │ <header> sticky PNG tema (~56px) │  │                  │
+│  │  │ <main> lista piatti (px-4)       │  │                  │
+│  │  └──────────────────────────────────┘  │                  │
+│  └────────────────────────────────────────┘                  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+Header sticky resta **dentro** la colonna 1024px (non full-bleed su ultrawide). Sotto 1024px viewport la colonna è `w-full` — comportamento invariato rispetto al mobile precedente.
 
 ---
 
@@ -102,51 +122,16 @@ Scroll orizzontale: classe `.scrollbar-hide` in `index.css` (niente barra su mob
 
 | Viewport | Colonne | Layout card |
 |----------|---------|-------------|
-| &lt;520px | 1 | verticale `aspect-[7/2]` |
-| 520–1024px | 2 | verticale `aspect-[5/2]` (tile) |
-| ≥1025px | 2 | orizzontale (thumb + titolo + descrizione) |
+| &lt;520px | 1 | con foto: tile `aspect-[7/2]`; senza foto: riga **30%** icona + **70%** `headerImage` |
+| ≥520px | 2 | stesso layout card; aspect foto `5/2` da 520px |
 
-**Breakpoint layout card: 1025px** (tile verticale sotto, riga orizzontale sopra). Soglia griglia 2 col: **520px** (invariata).
+**Nessun layout orizzontale thumb da 1025px** — desktop usa le stesse card del tablet dentro `max-w-[1024px]`. Soglia griglia 2 col: **520px**.
 
-**Desktop largo (&gt;1024px viewport):** il wrapper `max-w-[1024px] mx-auto` congela la larghezza del contenuto; lo sfondo tema resta full viewport. I breakpoint Tailwind restano legati alla **viewport** (es. card orizzontale da 1025px anche se la colonna è 1024px).
+**Con foto** — tile verticale, titolo su gradiente in basso (tutte le larghezze).
 
-**≤1024px — verticale** (tile, anche in griglia 2 col tablet):
+**Senza foto** — riga 30/70: icona su bianco a sinistra; titolo (+ descrizione opzionale sotto il titolo) nella fascia `theme.headerImage` a destra (`categoryCardNoPhotoBackgroundStyle`), testo in `headerTextColor`. Se **almeno una** categoria ha foto in `category_images`, da **520px** le card senza foto usano `aspect-[5/2]` come le tile con foto (`matchPhotoTileHeight`).
 
-```tsx
-<Link className="block rounded-xl ... min-[1025px]:flex min-[1025px]:rounded-2xl">
-  <div className="relative min-[1025px]:hidden">
-    <div className="aspect-[7/2] min-[520px]:aspect-[5/2] ...">
-      {imageUrl ? <img /> : <CategoryIcon className="size-6 min-[520px]:size-7" />}
-      ...
-      <h2 className="text-xs min-[520px]:text-sm uppercase">{displayTitle}</h2>
-    </div>
-  </div>
-</Link>
-```
-
-**≥1025px — orizzontale** con thumb quadrato (`w-20` → `w-24` da 900px viewport):
-
-```tsx
-<Link className="... min-[1025px]:flex min-h-[80px] min-[900px]:min-h-[88px]">
-  <div className="aspect-square w-20 min-[900px]:w-24 shrink-0 bg-stone-100">
-    {imageUrl
-      ? <img className="h-full w-full object-cover" />
-      : <CategoryIcon size={32} />  ← Phosphor da override o CATEGORY_ICON
-    }
-  </div>
-  <div className="flex min-w-0 flex-1 flex-col justify-center px-4 py-3">
-    <p className="text-sm font-semibold text-gray-900 leading-snug">{displayTitle}</p>
-    {displayDesc && (
-      <p className="mt-1 text-xs text-gray-500 leading-snug line-clamp-2">{displayDesc}</p>
-    )}
-  </div>
-  <div className="flex shrink-0 items-center pr-3 text-gray-300">
-    <ChevronRight size={18} />
-  </div>
-</Link>
-```
-
-**Titolo, descrizione, icona**: leggono prima `menu_qrcode_categories` (override QR per `menu_qr_code_id`), fallback su `menu_categories` / `CATEGORY_ICON`.
+**Titolo e icona**: override `menu_qrcode_categories` → fallback `menu_categories` / `resolveMenuQrCategoryIcon`.
 
 ### `MenuFooterCard`
 

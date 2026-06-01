@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { cn } from '@/lib/utils'
 import {
   getMenuQrCategoryIconOption,
@@ -9,6 +10,7 @@ type MenuQrCategoryIconGlyphProps = {
   categoryKey?: string
   className?: string
   size?: number
+  style?: CSSProperties
 }
 
 /** Render unico per icone categoria QR: Phosphor (`weight="regular"`) o Lucide. */
@@ -17,15 +19,16 @@ export function MenuQrCategoryIconGlyph({
   categoryKey,
   className,
   size,
+  style,
 }: MenuQrCategoryIconGlyphProps) {
   const key = resolveMenuQrCategoryIconKey(iconKey, categoryKey)
   const opt = getMenuQrCategoryIconOption(key)
 
   if (opt.family === 'phosphor') {
     const Icon = opt.Icon
-    return <Icon size={size} className={cn(className)} weight="regular" aria-hidden />
+    return <Icon size={size} className={cn(className)} style={style} weight="regular" aria-hidden />
   }
 
   const Icon = opt.Icon
-  return <Icon size={size} className={cn(className)} aria-hidden />
+  return <Icon size={size} className={cn(className)} style={style} aria-hidden />
 }

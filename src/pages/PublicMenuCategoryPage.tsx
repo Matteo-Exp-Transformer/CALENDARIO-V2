@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type CSSProperties } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTenantContext } from '@/contexts/TenantContext'
@@ -6,7 +6,9 @@ import { supabasePublic } from '@/lib/supabasePublic'
 import { usePublicMenuViewport } from '@/hooks/usePublicMenuViewport'
 import { usePublicMenuQr } from '@/features/booking/hooks/useMenuQrCodes'
 import { isCategoryInQrFilter } from '@/features/booking/utils/menuQrAppearance'
+import { categoryHeaderBackgroundStyle } from '@/features/public-menu/categoryHeaderBackgroundStyle'
 import { getMenuTheme } from '@/features/public-menu/menuThemes'
+import { PUBLIC_MENU_CONTENT_MAX_WIDTH_CLASS } from '@/features/public-menu/publicMenuLayout'
 import type { MenuItem } from '@/types/menu'
 
 /** Fascia header categoria — crop piccolo del PNG tema QR. Asset ottimizzati scroll: FU-021. */
@@ -61,19 +63,6 @@ function usePublicCategoryLabel(tenantId: string | null, categoryKey: string | u
     },
     enabled: !!tenantId && !!categoryKey,
   })
-}
-
-function categoryHeaderBackgroundStyle(headerImage: string | null, fallbackBg: string): CSSProperties {
-  if (headerImage) {
-    return {
-      backgroundImage: `url(${headerImage})`,
-      backgroundSize: `100% auto`,
-      backgroundPosition: 'center top',
-      backgroundRepeat: 'no-repeat',
-      backgroundColor: fallbackBg,
-    }
-  }
-  return { backgroundColor: fallbackBg }
 }
 
 function ItemCardWithPhoto({ item }: { item: MenuItem }) {
@@ -156,37 +145,39 @@ export function PublicMenuCategoryPage() {
 
   return (
     <div className="min-h-svh bg-stone-50">
-      <header
-        className="sticky top-0 z-10 px-4 py-3 shadow-sm"
-        style={{
-          ...headerBgStyle,
-          minHeight: CATEGORY_HEADER_BAND_PX,
-        }}
-      >
-        <div className="flex items-center gap-3">
-          <Link
-            to={backHref}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full active:opacity-80"
-            style={{
-              color: theme.headerTextColor,
-              backgroundColor: `${theme.headerTextColor}1a`,
-            }}
-            aria-label="Torna al menu"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </Link>
-          <h1
-            className="flex-1 text-center text-lg font-bold leading-tight pr-9"
-            style={{ color: theme.headerTextColor }}
-          >
-            {categoryLabel || '…'}
-          </h1>
-        </div>
-      </header>
+      {/* FU-025: shell stone-50 full viewport; header + lista nella stessa colonna ~1024px della homepage QR */}
+      <div className={`${PUBLIC_MENU_CONTENT_MAX_WIDTH_CLASS} min-h-svh`}>
+        <header
+          className="sticky top-0 z-10 px-4 py-3 shadow-sm"
+          style={{
+            ...headerBgStyle,
+            minHeight: CATEGORY_HEADER_BAND_PX,
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <Link
+              to={backHref}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full active:opacity-80"
+              style={{
+                color: theme.headerTextColor,
+                backgroundColor: `${theme.headerTextColor}1a`,
+              }}
+              aria-label="Torna al menu"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </Link>
+            <h1
+              className="flex-1 text-center text-lg font-bold leading-tight pr-9"
+              style={{ color: theme.headerTextColor }}
+            >
+              {categoryLabel || '…'}
+            </h1>
+          </div>
+        </header>
 
-      <main className="flex flex-col gap-3 px-4 py-6">
+        <main className="flex flex-col gap-3 px-4 py-6">
         {loading && (
           <div className="py-16 text-center text-sm text-gray-500">Caricamento...</div>
         )}
@@ -223,7 +214,8 @@ export function PublicMenuCategoryPage() {
               <ItemCardText key={item.id} item={item} />
             ),
           )}
-      </main>
+        </main>
+      </div>
     </div>
   )
 }

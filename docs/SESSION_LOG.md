@@ -13,6 +13,9 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 01-06-26 | Esecuzione — FU-025 freeze desktop su PublicMenuCategoryPage ✅ **lavoro ok** | [Report](Sessioni%20di%20lavoro/01-06-26/Report-fu-025-public-menu-category-page-01-06-26.md) — costante `publicMenuLayout.ts`; wrapper header+lista ~1024px; validate **263**; QA Matteo OK; commit ⬜. |
+| 01-06-26 | Esecuzione — card categorie QR senza foto 30/70 + rifiniture ✅ **lavoro ok** | [Report](Sessioni%20di%20lavoro/01-06-26/Report-card-categoria-qr-senza-foto-30-70-01-06-26.md) — layout 30/70; fix tablet `cover`+stretch; testo centro; icona `accentColor`; P0+P2 follow-up Matteo (allineati); validate **263**; commit ⬜. |
+| 01-06-26 | Verifica — card categorie QR layout 30/70 (2ª passata) ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-verifica-card-categoria-qr-mobile-30-70-01-06-26.md) — V1/V2/V3 **OK** post-implementazione; `headerImage` nel 70%; validate 263; QA Playwright ⬜ Matteo visivo. |
 | 01-06-26 | **Ciclo Menù QR — chiusura merge main** ✅ | [Report finale](Sessioni%20di%20lavoro/01-06-26/Report-finale-ciclo-menu-qr-01-06-26.md) — merge `da1a2f2` su `origin/main`; validate **263**; PROD DB `042` ok; deploy ⬜. |
 | 01-06-26 | Menù QR — prefill anteprima stale booking-cat (modale) ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-prefill-stale-booking-cat-01-06-26.md) — draft `booking-cat` altra categoria corretto al re-check; `qr/…/cat/` protetto; validate **263**; QA Vitest OK / UI ⬜; commit `41cd6ad` → in `da1a2f2`. |
 | 01-06-26 | Sync delete categoria → Menù QR + Personalizza form ✅ | sync al click Elimina; modale avviso; validate 258; **QA Matteo OK**; commit `16b8bbe`. |

@@ -6,6 +6,7 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import { supabasePublic } from '@/lib/supabasePublic'
 import { usePublicMenuQr, usePublicDefaultMenuQr } from '@/features/booking/hooks/useMenuQrCodes'
 import { usePublicMenuQrcodeCategories } from '@/features/booking/hooks/useMenuQrcodeCategories'
+import { categoryCardNoPhotoBackgroundStyle } from '@/features/public-menu/categoryHeaderBackgroundStyle'
 import { getMenuTheme, type MenuTheme } from '@/features/public-menu/menuThemes'
 import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
 import type { MenuCategoryRecord } from '@/features/booking/hooks/useMenuCategories'
@@ -13,6 +14,7 @@ import type { MenuQrCode, CarouselItem, MenuQrcodeCategoryOverride } from '@/typ
 import { orderMenuCategoriesByFilter } from '@/features/booking/utils/menuQrAppearance'
 import { usePublicMenuViewport } from '@/hooks/usePublicMenuViewport'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
+import { PUBLIC_MENU_CONTENT_MAX_WIDTH_CLASS } from '@/features/public-menu/publicMenuLayout'
 
 function useTenantBySlug(slug: string | undefined) {
   const { setTenantFromSlug, tenantId, tenantSlug, organizationName, isLoading } = useTenantContext()
@@ -414,8 +416,8 @@ function MenuNavTabs({
   )
 }
 
-// ── Card categoria — tile verticale <1025px, riga orizzontale da 1025px ──
-// Griglia (in MenuContent): 1 col <520 · 2 col 520–1024 · 2 col ≥1025 (card orizzontale)
+// ── Card categoria — stesso layout ovunque; descrizione nella fascia header 70%; altezza allineata se mix foto ──
+// Griglia: 1 col <520 · 2 col ≥520
 
 function CategoryCard({
   category,
@@ -424,6 +426,8 @@ function CategoryCard({
   qrTitle,
   qrDescription,
   iconKey,
+  theme,
+  matchPhotoTileHeight,
 }: {
   category: MenuCategoryRecord
   href: string
@@ -431,58 +435,75 @@ function CategoryCard({
   qrTitle?: string | null
   qrDescription?: string | null
   iconKey?: string | null
+  theme: MenuTheme
+  /** Tablet/desktop: se almeno una categoria ha foto, le card senza foto usano aspect 5/2 come le altre */
+  matchPhotoTileHeight: boolean
 }) {
   const displayTitle = qrTitle || category.label
   const displayDesc = qrDescription !== undefined ? qrDescription : category.description
+  const descText = displayDesc?.trim() ?? ''
+  const noPhotoBgStyle = categoryCardNoPhotoBackgroundStyle(theme.headerImage, theme.headerFallbackBg)
+
+  const noPhotoRowClass = matchPhotoTileHeight
+    ? 'flex h-full min-h-[64px] w-full overflow-hidden min-[520px]:aspect-[5/2] min-[520px]:min-h-0'
+    : 'flex h-full min-h-[64px] w-full overflow-hidden min-[520px]:min-h-[72px]'
+
   return (
     <Link
       to={href}
-      className="block overflow-hidden rounded-xl bg-white shadow-sm active:bg-stone-50 transition-colors min-[1025px]:flex min-[1025px]:min-h-[80px] min-[1025px]:rounded-2xl min-[900px]:min-h-[88px]"
+      className="block h-full overflow-hidden rounded-xl bg-white shadow-sm active:bg-stone-50 transition-colors min-[1025px]:rounded-2xl"
     >
-      {/* <1025px: tile verticale (anche in griglia 2 col tablet) */}
-      <div className="relative min-[1025px]:hidden">
-        <div className="relative aspect-[7/2] w-full overflow-hidden bg-stone-100 min-[520px]:aspect-[5/2]">
-          {imageUrl ? (
+      <div className="relative h-full">
+        {imageUrl ? (
+          <div className="relative aspect-[7/2] w-full overflow-hidden bg-stone-100 min-[520px]:aspect-[5/2]">
             <img src={imageUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-stone-400">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 flex items-end gap-1 p-2 text-white min-[520px]:p-2.5">
+              <h2 className="min-w-0 flex-1 text-xs font-bold uppercase leading-tight tracking-wide min-[520px]:text-sm">
+                {displayTitle}
+              </h2>
+              <ChevronRight className="size-3.5 shrink-0 opacity-80 min-[520px]:size-4" aria-hidden />
+            </div>
+          </div>
+        ) : (
+          <div className={noPhotoRowClass}>
+            <div className="flex w-[30%] shrink-0 items-center justify-center self-stretch bg-white">
               <MenuQrCategoryIconGlyph
                 iconKey={iconKey}
                 categoryKey={category.key}
-                className="size-6 min-[520px]:size-7"
+                size={40}
+                className="shrink-0"
+                style={{ color: theme.accentColor }}
               />
             </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 flex items-end gap-1 p-2 text-white min-[520px]:p-2.5">
-            <h2 className="min-w-0 flex-1 text-xs font-bold uppercase leading-tight tracking-wide min-[520px]:text-sm">
-              {displayTitle}
-            </h2>
-            <ChevronRight className="size-3.5 shrink-0 opacity-80 min-[520px]:size-4" aria-hidden />
-          </div>
-        </div>
-      </div>
-
-      {/* ≥1025px: riga orizzontale thumb + titolo + descrizione */}
-      <div className="hidden min-[1025px]:contents">
-        <div className="aspect-square w-20 shrink-0 bg-stone-100 min-[900px]:w-24">
-          {imageUrl ? (
-            <img src={imageUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-stone-400">
-              <MenuQrCategoryIconGlyph iconKey={iconKey} categoryKey={category.key} size={32} />
+            <div
+              className="flex w-[70%] min-w-0 flex-col items-center justify-center gap-0.5 self-stretch px-2.5 py-2 min-[520px]:gap-1 min-[520px]:px-3 min-[520px]:py-2.5"
+              style={noPhotoBgStyle}
+            >
+              <div className="flex w-full min-w-0 items-center justify-center gap-1.5 min-[520px]:gap-2">
+                <h2
+                  className="min-w-0 text-center text-sm font-bold uppercase leading-tight tracking-wide min-[520px]:text-base"
+                  style={{ color: theme.headerTextColor }}
+                >
+                  {displayTitle}
+                </h2>
+                <ChevronRight
+                  className="size-4 shrink-0 opacity-85 min-[520px]:size-[18px]"
+                  style={{ color: theme.headerTextColor }}
+                  aria-hidden
+                />
+              </div>
+              {descText ? (
+                <p
+                  className="min-w-0 max-w-full text-center text-[10px] font-normal normal-case leading-snug tracking-normal line-clamp-2 opacity-90 min-[520px]:text-xs"
+                  style={{ color: theme.headerTextColor }}
+                >
+                  {descText}
+                </p>
+              ) : null}
             </div>
-          )}
-        </div>
-        <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-2.5 min-[900px]:px-4 min-[900px]:py-3">
-          <p className="text-sm font-semibold text-gray-900 leading-snug min-[900px]:text-[15px]">{displayTitle}</p>
-          {displayDesc ? (
-            <p className="mt-1 text-xs text-gray-500 leading-snug line-clamp-2">{displayDesc}</p>
-          ) : null}
-        </div>
-        <div className="flex shrink-0 items-center pr-3 text-gray-300">
-          <ChevronRight size={18} aria-hidden />
-        </div>
+          </div>
+        )}
       </div>
     </Link>
   )
@@ -547,6 +568,7 @@ function MenuContent({
 
   // Mappa override per category_key
   const overridesByKey = Object.fromEntries(qrCatOverrides.map((o) => [o.category_key, o]))
+  const hasAnyCategoryPhoto = categories.some((cat) => Boolean(categoryImages[cat.key]))
 
   if (isLoading) {
     return (
@@ -562,7 +584,7 @@ function MenuContent({
       style={pageBgStyle}
     >
       {/* FU-025: sfondo tema full viewport; contenuto congelato a larghezza tablet, centrato oltre 1024px */}
-      <div className="mx-auto flex w-full max-w-[1024px] flex-1 flex-col">
+      <div className={PUBLIC_MENU_CONTENT_MAX_WIDTH_CLASS}>
       {/* Hero: sfondo bodyImage repeat-y sul wrapper che scrolla col contenuto */}
       <header className="relative shrink-0 px-4 pt-8 pb-4">
         <div className="relative flex flex-col items-center gap-2 text-center">
@@ -597,7 +619,7 @@ function MenuContent({
 
         {showCart && categories.length > 0 && (
           <main className="flex-1 px-4 pt-4">
-            <div className="grid grid-cols-1 gap-1.5 min-[520px]:grid-cols-2 min-[520px]:gap-2 min-[1025px]:gap-3">
+            <div className="grid grid-cols-1 items-stretch gap-1.5 min-[520px]:grid-cols-2 min-[520px]:gap-2 min-[1025px]:gap-3">
               {categories.map((cat) => {
                 const ov = overridesByKey[cat.key]
                 return (
@@ -609,6 +631,8 @@ function MenuContent({
                     qrTitle={ov?.title}
                     qrDescription={ov?.description}
                     iconKey={ov?.icon}
+                    theme={theme}
+                    matchPhotoTileHeight={hasAnyCategoryPhoto}
                   />
                 )
               })}

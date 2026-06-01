@@ -37,6 +37,21 @@
 
 ## Sessioni registrate (append-only)
 
+### 01-06-26 — FU-025 freeze desktop PublicMenuCategoryPage (Esecuzione, 1 turno)
+- **Prompt P0 ~10/10** (estensione pattern FU-025, architettura 2 livelli, DRY costante, anti-scope, smoke, regola deep) → **0 domande**, **1 turno codice**, **0 follow-up** prima di «lavoro ok».
+- Task meccanico (wrapper CSS) su pattern già su homepage → più efficiente della sessione card 30/70 (3 turni codice + 2 follow-up).
+- «lavoro ok» con **analisi prompt inclusa** nel messaggio → report § statistiche senza ping separato (pattern positivo, come merge ciclo QR).
+- Segnale: prompt che cita FU-025 + file home come riferimento riduce ambiguità su breakpoint 1024 vs 1025 card.
+- Report: `Report-fu-025-public-menu-category-page-01-06-26.md`.
+
+### 01-06-26 — Card QR senza foto 30/70 (Esecuzione + follow-up visivi)
+- **Prompt P0 ~9/10** (skill mirate, breakpoint, anti-scope, fallback) → **0 domande**, 1 turno codice.
+- **2 follow-up Matteo non in P0** (testo centro + bug sfondo tablet; colore icona tema): esplicitamente **allineati** a quanto chiede — non correzioni di scope; pattern feedback «ottimo» + delta.
+- **0 rework** da «non era questo»; validate 263×3.
+- Segnale: DOM path + dimensioni su bug tablet → fix rapido (`h-full` griglia + `categoryCardNoPhotoBackgroundStyle` cover).
+- Report con § analisi prompt obbligatoria su «lavoro ok».
+- Report: `Report-card-categoria-qr-senza-foto-30-70-01-06-26.md`.
+
 ### 01-06-26 — Chiusura ciclo Menù QR (Verifica prefill + merge main + report finale)
 - **Chat a 3 messaggi:** (1) Verifica prefill con prompt **9/10** — criteri, file, commit se OK; (2) merge main + production; (3) «fai report finale» con **analisi prompt obbligatoria** inclusa nel messaggio (non ping separato).
 - Verifica: **0 domande**, commit `41cd6ad` al primo giro; QA browser modale **non fatto** (Vitest + review); dichiarato ⬜.

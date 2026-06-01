@@ -152,7 +152,7 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 2. **Hero `<header>`** — nome ristorante da **`useRestaurantName()`** (`restaurant_settings.restaurant_name`, fallback `organizations_public.name`, poi «Menu») + fregio + `MenuCarousel` (nessuna label esterna “Specialità…”); badge solo dentro ogni slide. **`PublicMenuPageHeader` non usato** sulla homepage.
 3. **Carosello** — slide full-bleed, overlay gradiente 40% sx, titolo/descrizione da `carousel_items`; pallini **cliccabili** (tap mobile 44px). Placeholder `h-28` se zero foto. Eyebrow slide **solo se compilato** in admin.
 4. **Tab `MenuNavTabs`** — sticky; sfondo trasparente → opaco progressivo (~56px scroll) con `theme.tabBarStickyRgb`; pill `inline-flex items-center` (icona + testo allineati su mobile); icona via `MenuQrCategoryIconGlyph(override.icon, category_key)`; scroll senza barra (`.scrollbar-hide`); frecce sx/dx da **700px** se overflow.
-5. **Griglia categorie** — responsive: 1 col &lt;520 · **2 col 520–1024** (tile verticale) · 2 col ≥1025 con card **orizzontale** (thumb + titolo + descrizione); senza foto → `MenuQrCategoryIconGlyph` (Phosphor o Lucide) — **mai emoji**. Oltre 1024px viewport: **wrapper contenuto** `max-w-[1024px] mx-auto` — carosello/tab/card/footer **non si allargano**; sfondo tema PNG resta **full-bleed** sul wrapper pagina esterno (`useMenuPageBackgroundStyle`).
+5. **Griglia categorie** — 1 col &lt;520 · **2 col ≥520** (stesso layout card a tutte le larghezze dentro `max-w-[1024px]`). **Con foto**: tile `aspect-[7/2]` (da 520 `5/2`), gradiente, titolo su immagine. **Senza foto**: riga ~**30%** icona su bianco + ~**70%** header PNG con titolo/chevron; descrizione opzionale **sotto il titolo nel 70%**. Mix foto: da 520px card senza foto `aspect-[5/2]` come le tile con foto. **Nessun** ramo thumb orizzontale da 1025px. **Mai emoji** (FU-023). Sfondo pagina: `useMenuPageBackgroundStyle()` full-bleed; contenuto centrato oltre 1024px.
 6. **Footer `MenuFooterCard`** — data e ora IT, `mt-auto` in fondo pagina.
 
 > Dettaglio componenti: **`docs/per-ui-design-skill/PUBLIC_MENU_LAYOUT_CONTEXT.md`**
@@ -165,7 +165,8 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 - Carica i piatti della categoria da `menu_items` via `supabasePublic`
 - Risolve il QR con `usePublicMenuQr` e esclude gli ID in `hidden_menu_item_ids`
 - **`isCategoryInQrFilter`**: se `categoryKey` non è in `category_filter` (o filtro `[]`), messaggio + link «Torna al menù QR» — non lista piatti
-- Header sticky: fascia PNG da `theme_key` del QR (`menuThemes.headerImage`); corpo pagina `bg-stone-50` invariato (asset scroll ottimizzati → **FU-021**)
+- **Layout FU-025 (01-06-26):** shell esterna `min-h-svh bg-stone-50` full viewport; wrapper interno `PUBLIC_MENU_CONTENT_MAX_WIDTH_CLASS` (`publicMenuLayout.ts`) avvolge **header sticky + main** — stessa colonna ~1024px centrata della homepage QR oltre 1024px; bande `stone-50` ai lati su desktop largo
+- Header sticky: fascia PNG da `theme_key` del QR (`menuThemes.headerImage`); corpo lista `bg-stone-50` invariato (no `useMenuPageBackgroundStyle` sul body — fuori scope FU-019)
 - `ItemCardWithPhoto`: immagine full-width `h-44` + testo sotto
 - `ItemCardText`: solo testo (fallback quando `image_url` assente)
 
@@ -188,10 +189,14 @@ RULE  La pagina /menu/:slug senza short_code usa il QR default (primo is_active=
 RULE  Se short_code non trovato → messaggio «Menù QR non trovato» (nessun redirect al menu default — evita di mostrare sempre il primo QR)
 RULE  Lookup QR pubblico solo quando `tenantSlug` del context coincide con lo slug nell’URL (`tenantReady` in PublicMenuPage)
 RULE  Testo sovrapposto su immagini carosello: gradiente linear-gradient(to right, rgba 0,0,0,0.55 0%, transparent 50%) — overlay 40% sx
-RULE  Griglia categorie: 1 col &lt;520 · 2 col 520–1024 (tile verticale); **≥1025px** 2 col con thumb orizzontale (w-20, w-24 da 900px) + descrizione
-RULE  Homepage QR viewport &gt;1024px: wrapper contenuto `max-w-[1024px] mx-auto w-full` dentro shell sfondo full viewport — niente stretch carosello/card/tab/footer; breakpoint card restano su viewport (≥1025 orizzontale), non container query
+RULE  Griglia categorie: 1 col &lt;520 · 2 col ≥520 — stesso layout card mobile/tablet/desktop (wrapper max 1024px)
+RULE  Card categoria **con foto**: tile aspect + gradiente + titolo su immagine (tutte le larghezze)
+RULE  Card categoria **senza foto**: flex 30% icona su bianco + 70% header PNG con titolo/chevron; descrizione (override QR o `menu_categories.description`) **sotto il titolo dentro il 70%**, mai fuori dalla card
+RULE  Mix foto/no-foto: se almeno una categoria ha `category_images[key]`, da **520px** le card senza foto hanno `aspect-[5/2]` come le tile con foto
+RULE  Homepage QR viewport &gt;1024px: wrapper `PUBLIC_MENU_CONTENT_MAX_WIDTH_CLASS` (`publicMenuLayout.ts`) — card non cambiano layout rispetto a tablet
+RULE  PublicMenuCategoryPage viewport &gt;1024px: stesso wrapper FU-025 su header sticky + lista piatti; shell `bg-stone-50` full viewport; card ingredienti non si allargano oltre ~1024px
 RULE  Titolo card categoria: legge prima menu_qrcode_categories.title, fallback menu_categories.label — mai hardcoded
-RULE  Descrizione card categoria: legge prima menu_qrcode_categories.description, fallback menu_categories.description — mostrato solo se non null/empty
+RULE  Descrizione breve categoria: in `CategoryCard` solo nella fascia header 70% (sotto titolo), se valorizzata in `menu_qrcode_categories` o `menu_categories`
 RULE  Carosello senza foto: placeholder trasparente h-28 — eyebrow slide solo se valorizzato in admin (no fallback «Specialità della casa»)
 RULE  Pallini carosello: button cliccabili con goToSlide — non solo drag/scroll
 RULE  Sfondo pagina: useMenuPageBackgroundStyle() — `repeat-y` + `100% auto` fin dal primo paint; non layer JS multipli (evita flash scroll footer)
