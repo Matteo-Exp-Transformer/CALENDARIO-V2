@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 01-06-26 | Meta senior + Verifica — revisione codice (no fix) + enforcement Cursor (Rule grilletti + hook nudge) | [Report](Sessioni%20di%20lavoro/01-06-26/Report-revisione-codice-e-enforcement-cursor-01-06-26.md) — 2 sub-agent; codice ieri solido; motore Liv.2 avviato; Cursor HA gli hook → nudge `stop` installato + Rule always-on grilletti; «lavoro ok»/«fai report finale» ridefinite; score 31 = 6,5. |
 | 31-05-26 | **Git — merge env/test→main** ciclo Prenota sfondo mobile + asset sfondo3 | Merge `--no-ff`; validate 227; DB prod migrazione **042** `menu_qrcode_categories.icon` applicata; push `origin/main`. |
 | 31-05-26 | **Report finale ciclo** — Pagina Prenota sfondo mobile Android **✅ chiuso** | [Report finale](Sessioni%20di%20lavoro/31-05-26/Report-fix-prenota-mobile-sfondo-scroll-31-05-26.md) — `useBookingPublicViewport` + `100lvh`; QA Matteo OK; FU-028 rimosso da FOLLOW_UP; merge su `main`. |
 | 31-05-26 | Prepara-prompt — handoff Prompt B (#8) + regola formato handoff due-parti | [Report ciclo](Sessioni%20di%20lavoro/30-05-26/Report-prepara-prompt-ciclo-menu-qr-fix-30-05-26.md) § chiusura 31-05 — QA 7/8; merge `6214491`; OSSERVAZIONI/PROPOSTE/PREPARA_PROMPT §3. |
