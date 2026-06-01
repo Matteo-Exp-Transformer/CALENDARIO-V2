@@ -13,7 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
-| 01-06-26 | Menù QR — prefill anteprima stale booking-cat (modale) | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-prefill-stale-booking-cat-01-06-26.md) — draft `booking-cat` altra categoria corretto al re-check; `qr/…/cat/` protetto; validate **263**; QA ⬜; commit ⬜. |
+| 01-06-26 | Menù QR — prefill anteprima stale booking-cat (modale) ✅ | [Report](Sessioni%20di%20lavoro/01-06-26/Report-menu-qr-prefill-stale-booking-cat-01-06-26.md) — draft `booking-cat` altra categoria corretto al re-check; `qr/…/cat/` protetto; validate **263**; QA Vitest OK / UI ⬜; commit `41cd6ad`. |
 | 01-06-26 | Sync delete categoria → Menù QR + Personalizza form ✅ | sync al click Elimina; modale avviso; validate 258; **QA Matteo OK**; commit `16b8bbe`. |
 | 01-06-26 | Sync rename chiave categoria → Menù QR + Personalizza form ✅ | modale conferma pre-save; validate 258; **QA Matteo OK**; commit `16b8bbe`. |
 | 01-06-26 | Menù QR — default icona categoria Insalata (`lucide_salad`) ✅ | FU-023; admin modale + pubblico; validate 258; commit `16b8bbe`. |
