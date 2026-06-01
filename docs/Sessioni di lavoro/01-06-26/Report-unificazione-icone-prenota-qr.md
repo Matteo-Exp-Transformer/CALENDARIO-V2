@@ -3,7 +3,7 @@
 **Data:** 01-06-26  
 **Branch:** `env/test`  
 **Modalità sessione:** standard (prompt prepara-prompt → esecutore)  
-**Stato:** codice + validate OK · QA visivo Lucide card scorrevoli ⬜ · commit in chiusura report
+**Stato:** codice + validate OK · QA visivo Lucide card scorrevoli ⬜ · commit `b1c345d` su `env/test`
 
 ---
 
