@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 import { supabase } from '../lib/supabase'
 import { supabasePublic } from '../lib/supabasePublic'
 import type { TenantEdition } from '@/types/edition'
+import { setDevHealth, printDevHealth } from '@/lib/devConsole'
 
 interface TenantContextType {
   tenantId: string | null
@@ -54,6 +55,9 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       setOrganizationName(data.name)
       setEdition((data.edition as TenantEdition) || 'classic')
       setFeatureOverrides(Array.isArray(data.feature_overrides) ? data.feature_overrides : [])
+      // Dev console: fotografia salute (pagina pubblica — non admin).
+      setDevHealth({ tenant: data.name, isAdmin: false, edition: (data.edition as string) || 'classic' })
+      printDevHealth('STATO (pagina pubblica)')
     } catch (err) {
       setTenantId(null)
       setTenantSlug(null)
@@ -86,6 +90,9 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       setOrganizationName(adminInfo.org_name || null)
       setEdition((adminInfo.edition as TenantEdition) || 'pro')
       setFeatureOverrides(Array.isArray(adminInfo.feature_overrides) ? adminInfo.feature_overrides : [])
+      // Dev console: fotografia salute (sei loggato come admin).
+      setDevHealth({ tenant: adminInfo.org_name || null, isAdmin: true, edition: (adminInfo.edition as string) || 'pro' })
+      printDevHealth('STATO (admin)')
     } catch (err) {
       setTenantId(null)
       setTenantSlug(null)
