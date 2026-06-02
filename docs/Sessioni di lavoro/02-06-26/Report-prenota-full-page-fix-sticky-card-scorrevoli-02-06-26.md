@@ -79,6 +79,43 @@ Evoluzione in più passaggi guidata dagli screenshot di Matteo:
 
 ---
 
+## Metodo, prompt di Matteo e spunti skill system (questa chat)
+
+### Come ha lavorato Matteo (dati grezzi)
+
+| # | Matteo | Effetto sul lavoro |
+|---|--------|--------------------|
+| 1 | «analizza lavori precedenti… cosa è stato fatto in merito a questo fix» + hand-off completo | Agente ha letto report + context §4/§4.1 + 3 file chiave **prima** di toccare → root cause individuata senza tentativi a vuoto |
+| 2 | «procedi con tutti e due se ti è chiaro il quadro» (aggiunge Fix 2 card via prompt all'hand-off) | Due fix in un colpo; il 2º non era nell'hand-off originale ma in un prompt allegato |
+| 3 | Screenshot «niente è ancora lì» a 1320px | Falso negativo: il fix era corretto, mancava **riavvio dev server** → 1 giro di ri-diagnosi sprecato |
+| 4 | «scemo io, non avevo riavviato dev server» + chiede reminder principianti | Nasce l'idea reminder attivabili/disattivabili |
+| 5 | Screenshot card oblunghe / tagliate / 5 troppo presto | 4-5 micro-iterazioni guidate da foto: gap 6/8px, soglie, taglio bordo |
+| 6 | «parliamone prima di fare modifiche assicurati di aver capito» | Stop esplicito prima di codare → riformulazione ipotesi + 2 domande con AskUserQuestion → **zero rework** su quel passo |
+| 7 | «proviamo con i tuoi numeri» / «lavoro ok» / «fai report finale» | Comandi-base già coперti, nessuna frase lunga necessaria |
+
+### Cosa ha funzionato
+
+- **Hand-off scritto + «analizza prima»**: leggere report/context/file prima di editare ha evitato i tentativi a vuoto della sessione precedente (dove la root cause sticky era emersa solo dopo annullamento).
+- **«parliamone prima»** come freno: ha trasformato un task estetico ambiguo (card troppo grandi) in 2 scelte nette (quadrato px fisso vs tetto; scatto coordinato sì/no) prima di codare.
+- **QA visivo iterativo** su screenshot reali: efficace per il pixel-perfect, Matteo vede subito.
+
+### Cosa è costato / da migliorare
+
+1. **Falso negativo dev-server** (turno 3): un giro di ri-diagnosi su codice già corretto. → reminder principianti.
+2. **Iterazioni card prevedibili**: gap 6/8px, "più grandi degli ingredienti", soglie troppo basse — un agente che fa **card responsive** dovrebbe, prima di codare, **misurare le card vicine di riferimento** (qui: card categoria ingrediente = `min(280px) 4:3`) e chiedere il target dimensionale, invece di scoprirlo a posteriori via screenshot.
+3. **px fisso vs viewport in container cappato**: trappola ricorrente su Prenota (cap 1168px). Le media-query sul viewport danno conteggi slot incoerenti → la regola «card dentro un cap = px fissa» andrebbe nel context come anti-pattern esplicito (fatto in §4.1).
+4. **Post-commit rework di Matteo**: dopo il commit Matteo ha rielaborato il template card (verticale, `aspect-[4/5]`, prezzo grande). Segnale che la card "funzionante ma non finita" andava forse mostrata come **proposta di layout** prima del commit, non solo come fix di dimensioni.
+
+### Bozza per OSSERVAZIONI.md (osservazioni di Matteo — da approvare, NON in VOCABOLARIO da solo)
+
+| Data | Osservazione Matteo | Uso per agenti |
+|------|---------------------|----------------|
+| 02-06-26 | **Reminder per principianti**: idea di promemoria operativi (es. «riavvia dev server») attivabili/disattivabili, che «pesano sullo skill system» quando attivi e si tolgono quando Matteo è più confident. | Valutare categoria dedicata in Comunicazione-Skill; per ora in memoria agente. |
+| 02-06-26 | **«parliamone prima di fare modifiche»** = trigger esplicito: l'agente si ferma, riformula l'ipotesi e allinea (anche con domande) **prima** di scrivere codice, su task estetici/ambigui. | Su richieste UI vaghe («troppo grande», «non bilanciato») non codare subito: proporre interpretazione + scelte. Candidata lessico operativo. |
+| 02-06-26 | **Card responsive**: prima di dimensionare, misurare le card vicine di riferimento (es. card ingrediente) e fissare il target con Matteo, invece di iterare a posteriori su screenshot. | Regola per task card/griglia su Prenota. |
+
+---
+
 ## File report correlati
 
 - Ciclo prepara/analisi: `docs/Sessioni di lavoro/02-06-26/Report-prenota-full-page-freeze-ciclo-layout-02-06-26.md`
