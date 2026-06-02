@@ -8,7 +8,6 @@ import {
   bookingPublicSubTabScrollCardWidthClass,
 } from '@/features/booking/constants/bookingPublicFieldStyles'
 import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
-import { MENU_QR_DEFAULT_CATEGORY_ICON_KEY } from '@/features/public-menu/categoryIcons'
 
 const SUB_TAB_SCROLL_STEP_PX = 240
 
@@ -115,7 +114,12 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                   : 'border-black/5 hover:border-warm-orange/45',
               )}
             >
-              <div className="flex min-h-0 w-full flex-1 flex-col">
+              <div
+                className={cn(
+                  'flex min-h-0 w-full flex-1 flex-col',
+                  tab.display !== 'carousel' && !tab.icon && 'justify-center',
+                )}
+              >
                 <p
                   className={cn(
                     'text-center text-[13px] font-bold leading-tight line-clamp-2 sm:text-base lg:text-sm xl:text-base',
@@ -124,8 +128,8 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                 >
                   {tab.label}
                 </p>
-                <div className="flex min-h-0 flex-1 items-center justify-center py-2 sm:py-3">
-                  {tab.display !== 'carousel' && (
+                {tab.display !== 'carousel' && tab.icon ? (
+                  <div className="flex min-h-0 flex-1 items-center justify-center py-2 sm:py-3">
                     <span
                       className={cn(
                         'flex shrink-0 items-center justify-center',
@@ -135,12 +139,12 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                       aria-hidden
                     >
                       <MenuQrCategoryIconGlyph
-                        iconKey={tab.icon ?? MENU_QR_DEFAULT_CATEGORY_ICON_KEY}
+                        iconKey={tab.icon}
                         className="h-10 w-10 text-warm-wood-dark sm:h-11 sm:w-11 min-[782px]:h-12 min-[782px]:w-12"
                       />
                     </span>
-                  )}
-                </div>
+                  </div>
+                ) : null}
                 <div
                   className={cn(
                     'h-px w-full shrink-0',

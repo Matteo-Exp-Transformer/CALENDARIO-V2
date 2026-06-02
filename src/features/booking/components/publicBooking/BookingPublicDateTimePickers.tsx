@@ -32,6 +32,12 @@ const MONTHS = [
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
 
+/** Trigger compatto (icona + valore): non eredita w-full/flex-1 da BOOKING_PUBLIC_FIELD_INNER_INPUT. */
+const BOOKING_PUBLIC_PICKER_TRIGGER_CLASS = cn(
+  BOOKING_PUBLIC_FIELD_INNER_INPUT,
+  'inline-flex w-auto shrink-0 flex-none items-center justify-start gap-2 text-left',
+)
+
 function parseIsoDate(value?: string): Date | null {
   if (!value) return null
   const [year, month, day] = value.split('-').map(Number)
@@ -195,26 +201,30 @@ export function BookingPublicDatePickerField({
       )}
     >
       <div className={cn(BOOKING_PUBLIC_FIELD_BOX, hasError && 'border-red-500!')}>
-        <label htmlFor={`${id}-control`} className={BOOKING_PUBLIC_FIELD_INNER_LABEL}>
+        <span id={`${id}-label`} className={BOOKING_PUBLIC_FIELD_INNER_LABEL}>
           {label}
-        </label>
-        <button
-          id={`${id}-control`}
-          type="button"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          aria-required={required}
-          data-booking-picker-trigger="true"
-          className={cn(BOOKING_PUBLIC_FIELD_INNER_INPUT, 'flex items-center justify-start gap-2 text-left')}
-          onPointerDown={(event) => {
-            dismissAttentionIfUser(event)
-            setOpen((v) => !v)
-          }}
-          onFocus={dismissAttentionIfUser}
-        >
-          <CalendarDays className="h-4 w-4 shrink-0 text-warm-orange" aria-hidden />
-          <span className="min-w-0 flex-1 truncate">{formatDisplayDate(value)}</span>
-        </button>
+        </span>
+        <div className="flex min-w-0 flex-1">
+          <button
+            id={`${id}-control`}
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            aria-required={required}
+            aria-labelledby={`${id}-label`}
+            data-booking-picker-trigger="true"
+            className={BOOKING_PUBLIC_PICKER_TRIGGER_CLASS}
+            onPointerDown={(event) => {
+              dismissAttentionIfUser(event)
+              setOpen((v) => !v)
+            }}
+            onFocus={dismissAttentionIfUser}
+          >
+            <CalendarDays className="h-4 w-4 shrink-0 text-warm-orange" aria-hidden />
+            <span className="min-w-0 truncate">{formatDisplayDate(value)}</span>
+          </button>
+          <div className="min-w-0 flex-1 pointer-events-none" aria-hidden />
+        </div>
       </div>
 
       <PickerPanel open={open} title="Scegli la data" onClose={() => setOpen(false)}>
@@ -326,26 +336,30 @@ export function BookingPublicTimePickerField({
       )}
     >
       <div className={cn(BOOKING_PUBLIC_FIELD_BOX, hasError && 'border-red-500!')}>
-        <label htmlFor={`${id}-control`} className={BOOKING_PUBLIC_FIELD_INNER_LABEL}>
+        <span id={`${id}-label`} className={BOOKING_PUBLIC_FIELD_INNER_LABEL}>
           {label}
-        </label>
-        <button
-          id={`${id}-control`}
-          type="button"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          aria-required={required}
-          data-booking-picker-trigger="true"
-          className={cn(BOOKING_PUBLIC_FIELD_INNER_INPUT, 'flex items-center justify-start gap-2 text-left')}
-          onPointerDown={(event) => {
-            dismissAttentionIfUser(event)
-            setOpen((v) => !v)
-          }}
-          onFocus={dismissAttentionIfUser}
-        >
-          <Clock className="h-4 w-4 shrink-0 text-warm-orange" aria-hidden />
-          <span className="min-w-0 flex-1 truncate">{formatDisplayTime(value)}</span>
-        </button>
+        </span>
+        <div className="grid min-w-0 flex-1 grid-cols-2">
+          <button
+            id={`${id}-control`}
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            aria-required={required}
+            aria-labelledby={`${id}-label`}
+            data-booking-picker-trigger="true"
+            className={cn(BOOKING_PUBLIC_PICKER_TRIGGER_CLASS, 'min-h-9 w-full sm:min-h-10')}
+            onPointerDown={(event) => {
+              dismissAttentionIfUser(event)
+              setOpen((v) => !v)
+            }}
+            onFocus={dismissAttentionIfUser}
+          >
+            <Clock className="h-4 w-4 shrink-0 text-warm-orange" aria-hidden />
+            <span className="min-w-0 truncate">{formatDisplayTime(value)}</span>
+          </button>
+          <div className="pointer-events-none" aria-hidden />
+        </div>
       </div>
 
       <PickerPanel open={open} title="Scegli l'orario" onClose={() => setOpen(false)} alignRight>

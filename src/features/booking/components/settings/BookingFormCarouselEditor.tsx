@@ -14,7 +14,6 @@ import {
   type SubTab,
 } from '@/features/booking/constants/bookingPublicFormConfig'
 import { MenuCategoryIconPicker } from '@/features/public-menu/MenuCategoryIconPicker'
-import { MENU_QR_DEFAULT_CATEGORY_ICON_KEY } from '@/features/public-menu/categoryIcons'
 
 function syncCarouselSubTabFields(items: CarouselItem[]): Partial<SubTab> {
   return {
@@ -157,7 +156,8 @@ function CarouselSlideEditorCard({
       <div className="w-full min-w-0 space-y-1.5 -mt-2">
         <Label className="block text-sm">Scegli Icona</Label>
         <MenuCategoryIconPicker
-          value={item.icon ?? MENU_QR_DEFAULT_CATEGORY_ICON_KEY}
+          allowNone
+          value={item.icon}
           onChange={(icon) => onPatch({ icon })}
           ariaLabel={`Icona slide ${slideLabel}`}
         />

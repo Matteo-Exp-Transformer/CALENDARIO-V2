@@ -39,10 +39,7 @@ import {
 } from '@/features/booking/constants/bookingPublicFormConfig'
 import { MenuCategoryIconPicker } from '@/features/public-menu/MenuCategoryIconPicker'
 import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
-import {
-  MENU_QR_DEFAULT_CATEGORY_ICON_KEY,
-  type MenuQrCategoryIconKey,
-} from '@/features/public-menu/categoryIcons'
+import type { MenuQrCategoryIconKey } from '@/features/public-menu/categoryIcons'
 import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
 import type { SubTabOverridableField } from '@/features/booking/constants/bookingPublicFormConfig'
 import { normalizeMenuItemBookingTypes, type MenuItem } from '@/types/menu'
@@ -1186,7 +1183,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           <div className="w-full min-w-0 space-y-1.5 -mt-2">
             <Label className="block text-sm">Icona</Label>
             <MenuCategoryIconPicker
-              value={tab.icon ?? MENU_QR_DEFAULT_CATEGORY_ICON_KEY}
+              allowNone
+              value={tab.icon}
               onChange={(icon) => patchTab({ icon })}
               ariaLabel={`Icona card ${tab.label || 'scorrevole'}`}
             />

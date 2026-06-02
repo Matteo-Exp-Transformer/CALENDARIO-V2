@@ -114,6 +114,55 @@ describe('icone Prenota — migrate-on-read', () => {
     expect(tab!.carousel_items![0].icon).toBe('lucide_chef_hat')
   })
 
+  it('card scorrevole senza icon nel JSON resta senza icona', () => {
+    const tab = parseSubTabFromUnknown({
+      id: 'c-none',
+      label: 'Senza icona',
+      display: 'cards',
+    })
+    expect(tab!.icon).toBeUndefined()
+  })
+
+  it('normalize mantiene assenza icona su card e slide carosello', () => {
+    const config: BookingPublicFormConfig = {
+      page_title: 'Prenota',
+      page_description: 'Desc',
+      header_styles: parseBookingHeaderStylesFromUnknown({
+        restaurant_name: { font: 'playfair', color: '#6b4226' },
+        page_title: { font: 'playfair', color: '#6b4226' },
+        page_description: { font: 'montserrat', color: '#4a2d19' },
+      }),
+      booking_modes: [
+        {
+          id: 'm1',
+          booking_type: 'tavolo',
+          enabled: true,
+          label: 'Tavolo',
+          description: 'D',
+          icon: 'fork_knife',
+          sub_tabs_enabled: true,
+          sub_tabs_presentation: 'carousel',
+          sub_tabs: [
+            {
+              id: 's-card',
+              display: 'cards',
+              label: 'Card',
+            },
+            {
+              id: 's-car',
+              label: 'Carosello',
+              display: 'carousel',
+              carousel_items: [{ image_url: 'https://example.com/a.jpg', sort_order: 0 }],
+            },
+          ],
+        },
+      ],
+    }
+    const normalized = normalizeBookingPublicFormConfig(config)
+    expect(normalized.booking_modes[0].sub_tabs[0].icon).toBeUndefined()
+    expect(normalized.booking_modes[0].sub_tabs[1].carousel_items![0].icon).toBeUndefined()
+  })
+
   it('normalize al salvataggio admin scrive chiavi catalogo QR', () => {
     const config: BookingPublicFormConfig = {
       page_title: 'Prenota',

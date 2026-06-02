@@ -169,7 +169,9 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
    `booking_modes[].icon`) renderizzate con `MenuQrCategoryIconGlyph` (Phosphor `regular` + Lucide
    `strokeWidth` 1.75). Chiavi legacy in DB mappate in lettura (`BOOKING_LEGACY_ICON_TO_MENU_QR_KEY`).
 2. **Sottotab** (`BookingSubTabCards`): scrollabili, frecce desktop + touch; icona centrata **senza
-   sfondo** (`MenuQrCategoryIconGlyph`, ~`h-7` `text-warm-wood-dark` su card chiara), **descrizione mai nella card** (appare solo in `MenuSelection` dopo selezione); prezzo
+   sfondo** (`MenuQrCategoryIconGlyph`, ~`h-7` `text-warm-wood-dark` su card chiara) **solo se**
+   `sub_tabs[].icon` è valorizzata in config (admin Personalizza form → «Nessuna» = campo omesso;
+   nessun fallback a icona default). **Descrizione mai nella card** (appare solo in `MenuSelection` dopo selezione); prezzo
    `/persona` solo se presente e menu fisso. Centratura: `justify-center` su flex interno (1-3 card
    centrate; 4+ scroll). Wrapper diviso outer `overflow-x-auto scrollbar-hide` + inner
    `flex flex-nowrap justify-center mx-auto` (evita bug `justify-center` che blocca scroll). Max 3
@@ -177,7 +179,8 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
 3. **Presentazione XOR** (`BookingMode.sub_tabs_presentation: 'cards'|'carousel'|null`): filtro
    difensivo in `activeModeSubTabs`. Se `display='carousel'`: mostra **solo** `BookingSubTabCarousel`
    (foto + overlay per slide da `carousel_items[].eyebrow/title/description`; badge icona in alto a
-   dx con `MenuQrCategoryIconGlyph` + `resolveBookingStoredIconKey`; prezzo opzionale;
+   dx solo se `carousel_items[].icon` è valorizzata (`MenuQrCategoryIconGlyph` +
+   `resolveBookingStoredIconKey`; «Nessuna» in admin = assenza icona); prezzo opzionale;
    nessuna griglia menù). Carosello = **una sola card con N foto** per modalità: `BookingSubTabCards`
    non renderizzato per modalità carosello (auto-selezione sottotab unica + carosello diretto).
 4. **Menù** (se `display='cards'`): `MenuSelection` → `BookingMenuComposeGrid`. Mobile: colonna stack
@@ -212,6 +215,13 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
   mobile / `sm:min-h-[2.75rem]`. Per nome, email, telefono, Data, Ora, ospiti.
   `BookingPublicInsetFieldShell`, `BookingPublicDatePickerField`, `BookingPublicTimePickerField`
   condividono il layout; picker date/time button con `justify-end text-right`.
+- **Trigger ridotto Data/Ora (02-06-26):** la card resta uguale; solo icona + valore formattato apre
+  il picker (bottom sheet mobile / popover desktop). Label «Data \*» / «Ora \*» non è cliccabile
+  (`span` + `aria-labelledby` sul trigger, niente `htmlFor`). **Data:** area valore =
+  `flex` con trigger `inline-flex` (calendario + testo) + filler destro `pointer-events-none`.
+  **Ora:** area valore = `grid grid-cols-2` — metà sx (icona + ora) = trigger; metà dx = area morta
+  `pointer-events-none`. Tab e screen reader raggiungono solo il trigger; `focus-within` sul box
+  quando il trigger ha focus.
 - **Griglia campi (28-05-26):** ordine Nome → **Ora | Ospiti** (`sm:grid-cols-2`) → **Telefono**
   full-width → **Data | Email** (`sm:grid-cols-[minmax(0,1fr)_9rem_7rem]`, Email in `sm:col-span-2`).
   Label "Data \*". Mobile <640px colonna singola. Non tornare a `1fr` fisso per Data.
