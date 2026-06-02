@@ -128,21 +128,39 @@ async function main() {
     process.exit(0)
   }
 
-  // Caso 2: report fresco presente ma TUTTE le sezioni ci sono → conferma minima, niente muro.
-  // Il promemoria Liv.2 si mostra solo quando c'è già qualcosa da completare (sotto), per non
-  // ripetere il muro a ogni chat con report a posto (rilievo debug 02-06-26).
+  // Istruzione QUALITATIVA — il pezzo che l'hook non può verificare ma DEVE chiedere.
+  // L'hook controlla che le sezioni ESISTANO; questo blocco chiede all'agente di RIEMPIRLE col
+  // contenuto che conta di più per lo skill system: la sua lettura del lavoro, non solo il "cosa".
+  // Risponde all'osservazione di Matteo 02-06-26: «la presenza non basta, serve l'allineamento».
+  const qualityInstruction = [
+    'PRIMA DI CHIUDERE — il report deve contenere la TUA lettura della sessione (non solo cosa hai fatto):',
+    '  1. Impressioni dell\'agente: cosa ha funzionato bene e cosa no LAVORANDO con lo skill system',
+    '     (prompt chiari? skill giuste caricate? procedura scorrevole o macchinosa?).',
+    '  2. Difficoltà incontrate + come le hai risolte (anche piccole — sono dati per migliorare il sistema).',
+    '  3. Migliorie che TU suggeriresti (allo skill system, ai prompt, al processo) — come dato, non come modifica.',
+    '  4. Errori e correzioni: cosa è andato storto, da cosa derivava, come si sarebbe evitato',
+    '     (classifica la causa: bug preesistente / prompt ambiguo / errore agente / vincolo strutturale).',
+    'Scrivilo come DATI e versione dell\'agente, NON come voto sintetico (il voto lo dà il revisore).',
+  ]
+
+  // Caso 2: report fresco presente ma TUTTE le sezioni ci sono → conferma + istruzione qualitativa.
+  // Le sezioni "esistono" ma potrebbero essere vuote/sbrigative: l'agente va comunque stimolato a
+  // riempirle con la sua lettura (la presenza del titolo non garantisce il contenuto).
   if (findings.length === 0) {
+    const ok = [
+      `✓ ${recentReports.length} report di oggi: sezioni obbligatorie presenti.`,
+      '',
+      ...qualityInstruction,
+      '',
+      'Se hai usato voci Liv.2 del VOCABOLARIO, segnane l\'esito (ok / domanda-superflua / corretto-da-Matteo).',
+    ]
     process.stdout.write(
-      JSON.stringify({
-        permission: 'allow',
-        agent_message: `✓ ${recentReports.length} report di oggi con le sezioni obbligatorie presenti. Se hai usato voci Liv.2 del VOCABOLARIO, ricorda di segnarne l'esito.`,
-      })
+      JSON.stringify({ permission: 'allow', agent_message: ok.join('\n') })
     )
     process.exit(0)
   }
 
-  // Caso 3: manca almeno una sezione obbligatoria → avviso mirato + (qui sì) promemoria Liv.2,
-  // perché l'agente sta comunque per rimettere mano al report.
+  // Caso 3: manca almeno una sezione obbligatoria → avviso mirato + istruzione qualitativa + Liv.2.
   const lines = ['⚠️ FINE-SESSIONE (skill system comunicazione) — controllo mirato sui report di oggi:', '']
   lines.push('SEZIONI OBBLIGATORIE MANCANTI (APP_CONTEXT §7.1) — completa prima di chiudere:')
   for (const f of findings) {
@@ -151,10 +169,11 @@ async function main() {
     lines.push(`    manca: ${f.missing.join(' · ')}`)
   }
   lines.push('')
+  lines.push(...qualityInstruction)
+  lines.push('')
   // Il check Liv.2 resta un promemoria: l'hook non può sapere QUALI voci sono state usate in chat.
-  lines.push('Già che rimetti mano al report: hai usato VOCI Liv.2 del VOCABOLARIO in questa chat')
-  lines.push('(es. «main dell\'app», «menù originale», «revisiona e committa»)? Segna l\'esito nel campo')
-  lines.push('«Dati Liv.2» della voce: ok / domanda-superflua / corretto-da-Matteo. È il motore di apprendimento.')
+  lines.push('Hai usato VOCI Liv.2 del VOCABOLARIO in questa chat (es. «main dell\'app», «menù originale»,')
+  lines.push('«revisiona e committa»)? Segna l\'esito nel campo «Dati Liv.2»: ok / domanda-superflua / corretto-da-Matteo.')
 
   // NOTA salto futuro a enforcement vero: per bloccare i casi CERTI, sostituire 'allow' con 'deny'
   // SOLO quando findings.length > 0 (report esiste ma manca l'intestazione obbligatoria) e aggiungere
