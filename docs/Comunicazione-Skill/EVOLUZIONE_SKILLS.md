@@ -8,9 +8,14 @@
 > - **Meta junior** (per lo più agenti Cursor / modelli più piccoli): *annotano* — quando durante una
 >   sessione notano un'idea utile, aggiungono **una riga** nel Log idee in fondo. Non progettano, non
 >   decidono. Spontaneo: solo se salta all'occhio qualcosa, non a ogni sessione.
-> - **Meta senior** (Opus 4.8+, on-demand quando Matteo lo lancia): *analizza* il Log idee, le milestone
->   e i dati accumulati; decide cosa costruire, in che ordine; fa avanzare le milestone; pota le idee
->   morte. È l'unico che trasforma idee grezze in lavoro pianificato.
+> - **Meta senior** (Opus 4.8+, on-demand quando Matteo lo lancia): lavora **in chat con Matteo** come
+>   partner di ingegneria del sistema, su **tre fronti**:
+>   1. **Riorganizzare** — consolidare in fonti uniche, togliere duplicati, mettere ogni cosa nel file giusto.
+>   2. **Snellire** — alleggerire i file di lavoro, archiviare il consolidato (file leggeri = sistema usabile).
+>   3. **Evolvere** — analizzare Log idee/milestone/dati, decidere automazioni, far avanzare milestone, potare idee morte.
+>   Non cala decisioni dall'alto: usa `AskUserQuestion` e **confronta le idee di Matteo con principi di
+>   ingegneria** per educarlo a migliorare il metodo. È l'unico che trasforma idee grezze in lavoro
+>   pianificato. **Applica il Playbook del Meta senior** (sotto). Confermato mandato esplicito 02-06-26.
 >
 > **Flusso reale:** agenti annotano durante il lavoro → Matteo, dopo alcune sessioni, chiede una
 > revisione comunicazione → poi lancia il Meta senior per analisi + fix + sviluppo del sistema.
