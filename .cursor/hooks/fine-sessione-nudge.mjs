@@ -10,10 +10,17 @@
  * PERCHÉ v2 (02-06-26): la v1 era un promemoria STATICO — stampava sempre lo stesso muro di testo e
  * delegava tutto il giudizio all'agente. Cioè la stessa «buona volontà» che già falliva. Questa v2
  * LEGGE LO STATO REALE: trova i Report-*.md toccati di recente e controlla se le sezioni obbligatorie
- * ci sono davvero. Così l'avviso è SPECIFICO («il report X non ha Dati comunicazione») e contabile,
- * non generico. Decisione Matteo 02-06-26: **smart-allow** — avvisa in modo mirato ma NON blocca
- * (permission: allow). Niente rischio di falsi positivi che bloccano una chat legittima. Se in futuro
- * l'avviso mirato non basta, il salto a `deny` sui soli casi certi è già predisposto sotto (vedi NOTA).
+ * ci sono davvero. Così l'avviso è SPECIFICO («il report X non ha Dati comunicazione») e contabile.
+ *
+ * COMPORTAMENTO (aggiornato 02-06-26, richiesta Matteo «dammi il file fresco SEMPRE»):
+ *  - report fresco con sezioni MANCANTI → avviso mirato (cosa manca) + procedura completa.
+ *  - report fresco con sezioni PRESENTI → comunque la procedura completa + monito a verificare che
+ *    siano PIENE e allineate, non solo presenti (l'hook non può giudicare la qualità → non finge
+ *    «sei a posto», chiede di rileggere). Vale anche sugli AGGIORNAMENTI di report (no aggiornamenti
+ *    superficiali): un report ri-toccato rientra nella finestra e riceve di nuovo il promemoria.
+ *  - nessun report fresco → silenzio.
+ * Decisione: **smart-allow** — non blocca (permission: allow). Niente falsi positivi che bloccano una
+ * chat legittima. Il salto a `deny` sui soli casi certi è già predisposto sotto (vedi NOTA).
  *
  * LIMITE NOTO: gli hook `stop` NON girano sui Cloud Agents (solo IDE locale — limite Cursor). Per il
  * lavoro IDE di Matteo (caso normale, confermato 02-06-26) è la leva principale. Fallback Cloud =
@@ -26,9 +33,10 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, sep, relative } from 'node:path'
 
 /** Finestra entro cui un report è considerato «di questa sessione» (minuti).
- *  Stretta apposta: solo i file appena scritti dall'agente di QUESTA chat, per non
- *  allarmare su report di sessioni precedenti ancora «freschi» su disco. */
-const RECENT_MINUTES = 10
+ *  20 min: copre anche le chat dove il report è scritto a inizio sessione e la chat si chiude più
+ *  tardi (così l'hook lo vede sia come nuovo sia come aggiornato). Non così largo da pescare report
+ *  di sessioni davvero vecchie. Decisione Matteo 02-06-26 (reminder anche sugli aggiornamenti). */
+const RECENT_MINUTES = 20
 /** Marcatori che devono comparire in un report standard/deep (vedi APP_CONTEXT §7.1). */
 const REQUIRED_MARKERS = [
   { label: 'Dati comunicazione', re: /dati\s+comunicazione/i },
@@ -139,12 +147,15 @@ async function main() {
     'con causa classificata. Come DATI e versione dell\'agente, NON come voto sintetico (il voto è del revisore).',
   ]
 
-  // Caso 2: report fresco presente ma TUTTE le sezioni ci sono → conferma + istruzione qualitativa.
-  // Le sezioni "esistono" ma potrebbero essere vuote/sbrigative: l'agente va comunque stimolato a
-  // riempirle con la sua lettura (la presenza del titolo non garantisce il contenuto).
+  // Caso 2: report fresco (nuovo O aggiornato) con TUTTE le sezioni presenti.
+  // Decisione Matteo 02-06-26: dare SEMPRE la procedura fresca, non solo quando manca un buco —
+  // perché la presenza del titolo NON garantisce il contenuto (rischio aggiornamenti superficiali).
+  // L'hook non può giudicare la qualità → invece di fingere «sei a posto», chiede di RILEGGERE il
+  // file e verificare che ogni sezione sia piena e allineata, non solo presente.
   if (findings.length === 0) {
     const ok = [
-      `✓ ${recentReports.length} report di oggi: sezioni obbligatorie presenti.`,
+      `📄 ${recentReports.length} report toccato/i in questa sessione — prima di chiudere, RILEGGI la procedura`,
+      'e verifica che le sezioni siano PIENE e allineate, non solo presenti (no aggiornamenti superficiali):',
       '',
       ...qualityInstruction,
       '',

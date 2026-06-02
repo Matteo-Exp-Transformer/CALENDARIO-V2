@@ -138,17 +138,16 @@ conferma. La macchina li esegue, non dipende dalla buona volontà dell'agente.
 >    File: `.cursor/hooks/fine-sessione-nudge.mjs` (Node, cross-platform) + `.cursor/hooks.json`.
 >    **Salto v1→v2:** la v1 era un promemoria **statico** (stesso testo sempre, giudizio delegato
 >    all'agente = la stessa buona volontà che già falliva). La v2 **legge lo stato reale**: trova i
->    `Report-*.md` toccati negli ultimi 10 min sotto `docs/Sessioni di lavoro/`, **controlla se
->    contengono davvero** «Dati comunicazione» + «Analisi flusso prompt», e avvisa **citando il file
->    e cosa gli manca**. Esclude i report `revisione/verifica/meta/audit/analisi/dossier` (non hanno
->    «Analisi flusso prompt» → evita falsi positivi). Se non c'è report fresco → **silenzio** (niente
->    muro di testo a ogni micro-chat). Testato 02-06-26 (3 rami: silenzioso, mirato, esclusione
->    revisore — JSON valido, exit 0; ha pescato un dato vero al primo colpo: report freeze 02-06
->    senza «Analisi flusso prompt»).
->    **Decisione Matteo 02-06-26: `smart-allow`** — avvisa mirato ma **NON blocca** (`permission: allow`):
->    nessun rischio di bloccare una chat legittima per un falso positivo. Il salto a `deny` sui soli
->    casi certi (report esiste ma manca l'intestazione obbligatoria) è **già predisposto e commentato**
->    nel file (NOTA finale) — si attiva se l'avviso mirato non basta a far ripartire il motore Liv.2.
+>    `Report-*.md` toccati negli ultimi **20 min** sotto `docs/Sessioni di lavoro/`, controlla se
+>    contengono «Dati comunicazione» + «Analisi flusso prompt», cita il file unico `CHIUSURA_SESSIONE.md`.
+>    Esclude i report `revisione/verifica/meta/audit/analisi/dossier` (non hanno «Analisi flusso prompt»).
+>    **Comportamento (aggiornato 02-06-26 — Matteo «dammi il file fresco SEMPRE, non solo sui buchi»):**
+>    se mancano sezioni → avviso mirato (cosa manca) + procedura; se le sezioni **ci sono** → comunque
+>    la procedura completa + **monito a verificare che siano PIENE e allineate, non solo presenti**
+>    (anti-aggiornamenti-superficiali). Vale anche sugli **aggiornamenti**: un report ri-toccato rientra
+>    nei 20 min e riceve di nuovo il promemoria — calza con la regola «un report unificato» (ogni agente
+>    che tocca il file viene stimolato sulla sua sezione). Se non c'è report fresco → **silenzio**.
+>    **`smart-allow`** — non blocca (`permission: allow`); `deny` sui casi certi è predisposto (NOTA nel file).
 > 2. **`beforeShellExecution` → guard PROD** (da fare): blocca scritture su DB prod `rwuxgvld` senza
 >    conferma (`permission: deny`). Trasforma la regola di sicurezza prod da markdown a enforcement.
 > 3. **`sessionStart` → carica vocabolario** — ✅ **già coperto senza hook (02-06-26).** Scoperta:
