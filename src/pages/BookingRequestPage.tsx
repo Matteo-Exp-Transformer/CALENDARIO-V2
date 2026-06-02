@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { BookingRequestForm } from '@/features/booking/components/BookingRequestForm'
 import { BookingSummarySidebar } from '@/features/booking/components/publicBooking/BookingSummarySidebar'
-import { BookingStickyBar } from '@/features/booking/components/publicBooking/BookingStickyBar'
 import { BookingPhotoStrip } from '@/features/booking/components/publicBooking/BookingPhotoStrip'
 import { MapPin, Clock, Phone, Mail, ChevronDown, Send } from 'lucide-react'
 import { useBookingPublicViewport } from '@/hooks/useBookingPublicViewport'
@@ -33,7 +32,7 @@ import {
   BOOKING_FULL_PAGE_SUMMARY_WIDTH_PX,
 } from '@/features/booking/constants/bookingPageLayout'
 
-/** Padding colonna contenuto — header, form e sticky condividono lo stesso inset (no -mx bleed). */
+/** Padding colonna contenuto — header e form condividono lo stesso inset (no -mx bleed). */
 const BOOKING_PAGE_CONTENT_PAD_FULL = 'px-8 md:px-10 lg:px-10'
 const BOOKING_PAGE_CONTENT_PAD_STRIP = 'px-8 md:px-10 lg:px-10'
 /** Layer foto full-page: altezza large viewport — non segue hide/show barra URL Android. */
@@ -69,8 +68,6 @@ export const BookingRequestPage: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<SubTab | null>(null)
   // Stato disabled del pulsante submit (sincronizzato da BookingRequestForm)
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true)
-  // Visibilità del riepilogo nella viewport (per sticky bar mobile)
-  const [isSummaryVisible, setIsSummaryVisible] = useState(false)
 
   const formatDayName = (day: string): string => {
     const dayMap: Record<string, string> = {
@@ -212,7 +209,6 @@ export const BookingRequestPage: React.FC = () => {
       modes={resolvedConfig.booking_modes}
       contactPhone={displayContactPhone || undefined}
       activeSubTab={activeSubTab}
-      onVisibilityChange={setIsSummaryVisible}
       submitButton={summarySubmitButton}
       // Full-page: riepilogo sotto il form in flusso normale (niente sticky).
       // Griglia striscia: colonna laterale sticky da 1256px (layout legacy a 2 colonne),
@@ -337,7 +333,7 @@ export const BookingRequestPage: React.FC = () => {
             />
           )}
 
-          {/* Colonna contenuto destra — stesso padding orizzontale per header, form e sticky bar. */}
+          {/* Colonna contenuto destra — stesso padding orizzontale per header e form. */}
           <div className={cn('w-full min-w-0', contentColumnPad)}>
 
             {useFullPageDesktopFreezeLayout ? (
@@ -383,41 +379,8 @@ export const BookingRequestPage: React.FC = () => {
               </>
             )}
 
-            {/* Sticky bar mobile — visibile quando il riepilogo è fuori dalla viewport */}
-            <BookingStickyBar
-              formData={{
-                client_name: sharedFormData.client_name,
-                desired_date: sharedFormData.desired_date,
-                desired_time: sharedFormData.desired_time,
-                num_guests: sharedFormData.num_guests ?? 0,
-                booking_type: sharedFormData.booking_type,
-              }}
-              modes={resolvedConfig.booking_modes}
-              totalBooking={sharedFormData.menu_total_booking}
-              isSubmitDisabled={isSubmitDisabled}
-              visible={!isSummaryVisible}
-              activeSubTab={activeSubTab}
-              summaryContent={
-                <BookingSummarySidebar
-                  formData={{
-                    desired_date: sharedFormData.desired_date,
-                    desired_time: sharedFormData.desired_time,
-                    num_guests: sharedFormData.num_guests ?? 0,
-                    booking_type: sharedFormData.booking_type,
-                    menu_selection: sharedFormData.menu_selection,
-                    menu_total_per_person: sharedFormData.menu_total_per_person,
-                    menu_total_booking: sharedFormData.menu_total_booking,
-                    preset_menu: sharedFormData.preset_menu,
-                  }}
-                  modes={resolvedConfig.booking_modes}
-                  contactPhone={displayContactPhone || undefined}
-                  activeSubTab={activeSubTab}
-                />
-              }
-            />
-
-          {/* Spacer: riserva spazio per sticky bar (<1256px) + gap uniforme prima del footer. */}
-          <div className="h-20 min-[1256px]:h-4" aria-hidden />
+          {/* Spacer: gap uniforme prima del footer (ultimo elemento colonna destra, §0 LOCK). */}
+          <div className="h-4" aria-hidden />
 
           </div>{/* fine colonna contenuto destra */}
         </div>{/* fine griglia [striscia foto | contenuto] */}

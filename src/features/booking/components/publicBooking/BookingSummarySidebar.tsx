@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useRef } from 'react'
+import React, { useMemo } from 'react'
 import { CalendarDays, Clock, Users, UtensilsCrossed, Phone } from 'lucide-react'
 import type { BookingRequestInput } from '@/types/booking'
 import {
@@ -25,10 +25,8 @@ interface BookingSummarySidebarProps {
   modes: BookingMode[]
   contactPhone?: string
   activeSubTab?: SubTab | null
-  /** Pulsante submit da mostrare in fondo al riepilogo (desktop). */
+  /** Pulsante submit da mostrare in fondo al riepilogo (<1256px). */
   submitButton?: React.ReactNode
-  /** Callback invocata quando il riepilogo entra/esce dalla viewport (per la sticky bar mobile). */
-  onVisibilityChange?: (visible: boolean) => void
   /**
    * Classi posizionali del wrapper, decise dal chiamante (sticky/order/top).
    * Il componente è neutro: il parent passa lo sticky solo dove serve (colonna laterale),
@@ -54,23 +52,8 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   contactPhone,
   activeSubTab,
   submitButton,
-  onVisibilityChange,
   className,
 }) => {
-  const asideRef = useRef<HTMLDivElement>(null)
-
-  // Osserva quando il riepilogo entra/esce dalla viewport (per la sticky bar mobile)
-  useEffect(() => {
-    if (!onVisibilityChange) return
-    const el = asideRef.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => onVisibilityChange(entry.isIntersecting),
-      { threshold: 0.1 },
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [onVisibilityChange])
   const { data: menuCategories = [] } = useMenuCategories()
   const hasMenu = formData.booking_type !== 'tavolo'
   const items = formData.menu_selection?.items ?? []
@@ -117,7 +100,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   )
 
   return (
-    <div ref={asideRef} className={cn('w-full max-w-full self-start', className)}>
+    <div className={cn('w-full max-w-full self-start', className)}>
       <aside
         className={cn(
           'w-full max-w-full rounded-2xl border border-slate-100 bg-white px-4 py-5 shadow-xl transition-all duration-300 ease-out',
