@@ -249,6 +249,14 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 - **Approvata il:** 28-05-26 (rif. aggiornato 29-05-26: ora punta al file di contesto, non a APP_CONTEXT §4)
 - **Origine:** chat mappatura
 
+<!-- «sticky» (layout) — RITIRATA da VOCABOLARIO il 02-06-26 (sessione Meta senior).
+     Motivo: nei turni veri della chat freeze Prenota (02-06) Matteo aveva corretto l'agente che la
+     metteva qui — «solo OSSERVAZIONI». Un agente l'aveva comunque promossa a Liv.1 senza ratifica
+     (deviazione di processo). Il dossier revisore 02-06 ha rilevato l'incoerenza; il senior, con
+     Matteo, la risolve a favore di quanto detto nei turni: la voce resta in OSSERVAZIONI come
+     osservazione di Matteo non ancora promossa, finché lui non l'approva in una sessione dedicata.
+     Per ripromuoverla servono: ok esplicito di Matteo + passaggio regolare PROPOSTE → VOCABOLARIO. -->
+
 ### Striscia laterale — «striscia laterale» · «striscia foto» — Liv. 1
 - **Punta a:** la colonna foto verticale sticky a sinistra della pagina Prenota (`BookingPhotoStrip`, setting `public_booking_strip_photo`) — vedi `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` §1-2
 - **Comportamento agente:** carica quel file di contesto; rispetta il LOCK griglia (§0). Non confondere con lo sfondo «pagina intera» (`public_booking_page_background`): sono due modalità XOR.

@@ -66,8 +66,13 @@ valutare all'uso se le 3 righe scelte sono quelle giuste per Matteo (raccogliere
 modalità** del task (light → 1 riga log; standard → report; deep → tutto). Oggi servono più frasi.
 **Tipo:** governance soft (voce vocabolario + §7).
 
-### M4 — Enforcement via hook settings.json ⬜
+### M4 — Enforcement via hook 🔶
 **Obiettivo:** blindare gli errori costosi che una regola markdown non può garantire.
+**Stato (02-06-26):** primo enforcement vero **attivo** → hook `stop` v2 mirato (vedi box leve Cursor
+sotto). La scelta di campo che ha sbloccato M4: il dossier revisore + Matteo hanno verificato che la
+sezione report «mancante» era **già obbligatoria nel template** e gli agenti la saltavano lo stesso →
+una regola markdown sopra una regola markdown non cura nulla; serviva la macchina che **controlla i
+file**. Prossimi passi M4: `beforeShellExecution` guard PROD, eventuale salto `deny` del nudge.
 **Idee concrete:** spostare in hook di `settings.json` i controlli critici — es. verifica TEST vs
 PROD prima di scrivere sul DB, `npm run validate` pre-commit, blocco commit su file LOCK senza
 conferma. La macchina li esegue, non dipende dalla buona volontà dell'agente.
@@ -83,19 +88,40 @@ conferma. La macchina li esegue, non dipende dalla buona volontà dell'agente.
 > (caso normale) funzionano.
 >
 > **Leve Cursor mappate per lo skill system** (ordine di valore):
-> 1. **`stop` → nudge fine-chat** ✅ **INSTALLATO 01-06-26.** File: `.cursor/hooks/fine-sessione-nudge.mjs`
->    (Node, cross-platform) + `.cursor/hooks.json`. Inietta un `agent_message` non bloccante che ricorda:
->    sezione «Dati comunicazione» + esiti Liv.2 + report/SESSION_LOG. Testato (output JSON valido, exit 0).
->    L'agente decide se applicarlo (chat light → ignora). Risolve il motore Liv.2 fermo.
+> 1. **`stop` → nudge fine-chat MIRATO** ✅ **v2 INSTALLATA 02-06-26** (v1 statica 01-06-26).
+>    File: `.cursor/hooks/fine-sessione-nudge.mjs` (Node, cross-platform) + `.cursor/hooks.json`.
+>    **Salto v1→v2:** la v1 era un promemoria **statico** (stesso testo sempre, giudizio delegato
+>    all'agente = la stessa buona volontà che già falliva). La v2 **legge lo stato reale**: trova i
+>    `Report-*.md` toccati negli ultimi 10 min sotto `docs/Sessioni di lavoro/`, **controlla se
+>    contengono davvero** «Dati comunicazione» + «Analisi flusso prompt», e avvisa **citando il file
+>    e cosa gli manca**. Esclude i report `revisione/verifica/meta/audit/analisi/dossier` (non hanno
+>    «Analisi flusso prompt» → evita falsi positivi). Se non c'è report fresco → **silenzio** (niente
+>    muro di testo a ogni micro-chat). Testato 02-06-26 (3 rami: silenzioso, mirato, esclusione
+>    revisore — JSON valido, exit 0; ha pescato un dato vero al primo colpo: report freeze 02-06
+>    senza «Analisi flusso prompt»).
+>    **Decisione Matteo 02-06-26: `smart-allow`** — avvisa mirato ma **NON blocca** (`permission: allow`):
+>    nessun rischio di bloccare una chat legittima per un falso positivo. Il salto a `deny` sui soli
+>    casi certi (report esiste ma manca l'intestazione obbligatoria) è **già predisposto e commentato**
+>    nel file (NOTA finale) — si attiva se l'avviso mirato non basta a far ripartire il motore Liv.2.
 > 2. **`beforeShellExecution` → guard PROD** (da fare): blocca scritture su DB prod `rwuxgvld` senza
 >    conferma (`permission: deny`). Trasforma la regola di sicurezza prod da markdown a enforcement.
-> 3. **`sessionStart` → carica vocabolario** (da fare): inietta i grilletti a ogni avvio chat IDE.
+> 3. **`sessionStart` → carica vocabolario** — ✅ **già coperto senza hook (02-06-26).** Scoperta:
+>    `.cursor/rules/comandi-base.mdc` ha `alwaysApply: true`, quindi Cursor inietta **già** i grilletti
+>    + salvaguardie a ogni chat IDE — un hook `sessionStart` sarebbe un doppione. Mossa fatta invece:
+>    **esteso `comandi-base.mdc`** con il blocco «Zone che si confondono» (Prenota↔QR + 3 zone menu),
+>    così la disambiguazione zona vale **anche in chat esplorativa** (dove il prepara-prompt non c'è e
+>    nasceva la confusione 02-06). Realizza l'idea di Matteo «carica il vocabolario + scorciatoia» con
+>    la leva già-attiva invece di una nuova. Un `sessionStart` vero servirebbe solo se in futuro
+>    servisse logica dinamica (es. iniettare contesto diverso per tipo di chat) — non ora.
 >
-> **Limiti onesti del nudge installato:** (a) non gira sui Cloud Agents; (b) l'hook `stop` riceve
-> poco contesto sulla sessione, quindi il promemoria è statico e delega all'agente il giudizio
-> «mi applico o no» — non è un controllo che verifica davvero se il report è stato scritto. Per una
-> verifica vera servirebbe leggere i file modificati (possibile ma più complesso). Fonti:
-> `cursor.com/docs/agent/hooks`, `cursor.com/blog/agent-best-practices`.
+> **Limiti onesti del nudge v2:** (a) non gira sui Cloud Agents (limite Cursor) — Matteo conferma
+> 02-06-26 che gli esecutori girano **quasi sempre su IDE locale**, quindi la copertura è quella del
+> caso normale; fallback Cloud = checklist-di-chiusura nel prompt esecutore, da attivare solo se si
+> osserva che i Cloud Agent saltano comunque. (b) Sul check **Liv.2** resta un promemoria, non una
+> verifica: l'hook non può sapere quali voci Liv.2 sono state *usate* nella conversazione (legge i
+> file, non la chat) → quello resta delegato all'agente. La verifica vera ora c'è **per le sezioni
+> report** (a), che era il pezzo più grosso del guasto #1. Fonti: `cursor.com/docs/agent/hooks`,
+> `cursor.com/blog/agent-best-practices`.
 
 ### M5 — Statistiche d'uso del sistema 🔶
 **Obiettivo:** capire dove il sistema funziona e dove no, con numeri semplici.
@@ -180,3 +206,4 @@ quando i criteri saranno tarati.
 - 01-06-26 · [automazione] · **nudge fine-sessione progettato (non installato)** — vedi M4. Scoperto che gli esecutori girano su **Cursor** → l'hook Claude Code non li copre; serve checklist-di-chiusura nel prompt esecutore come leva Cursor. Due leve, non una. Sessione enforcement dedicata da pianificare.
 - 01-06-26 · [statistica] · **score chat 31-05 = 6,5/10** — 11 sessioni operative, 1 in prod, 1 misrouting grave (Prenota vs QR), ~12 giri correzione, follow-up netti positivi. Causa rumore: validate verde ≠ QA visivo. Vedi report revisione-controverifica 01-06.
 - 01-06-26 · [raffinamento] · **sezione report «Analisi flusso prompt ed efficienza»** — Matteo: statistiche fasi prepara→esecuzione + anti-gonfiaggio report su «test fatti tutto ok»; vedi PROPOSTE + OSSERVAZIONI 01-06-26; alimenta M2/M5.
+- 02-06-26 · [automazione] · **hook `stop` v2 mirato INSTALLATO** (senior, da dossier revisore) — da promemoria statico a controllo che legge i Report-*.md freschi e verifica le sezioni obbligatorie. Sblocca M4. Decisione Matteo: smart-allow (avvisa, non blocca); `deny` predisposto. Cura il guasto #1 dal lato «sezioni report», non «buona volontà».

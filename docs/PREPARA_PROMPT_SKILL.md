@@ -80,6 +80,13 @@ Dal flusso di Matteo deduci:
   - `Skill da leggere: …` (i file d'area pertinenti, es. `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md`)
   - `Non caricare: …` (opzionale — es. «APP_CONTEXT intero» quando il prompt è stretto, per non
     sovraccaricare il contesto)
+  - `Output attesi: …` (**obbligatorio — freno scope creep, 02-06-26**) — elenca **esattamente** i
+    deliverable concordati (es. «2 PNG sfondo» / «1 file modificato: X.tsx» / «il fix, nessun file
+    nuovo»). Chiudi con: **«niente output in più senza chiedere Sì/No prima»**. Questo sposta il freno
+    scope creep DOVE l'esecutore lo legge per forza (nel prompt), non solo nella skill prepara-prompt
+    che l'esecutore non apre. Se aggiunge un file/asset/variante non in questa riga → deve fermarsi e
+    chiedere. È la versione «semi-enforcement» del freno §2 (decisione Matteo 02-06-26: dentro il
+    prompt, non hook — lo scope creep non è verificabile da una macchina che legge solo i file).
   Così Matteo incolla il prompt senza dedurre profilo né @ file. La **modalità plan/ask** la
   **suggerisci** a Matteo in chat (es. «conviene avviarlo in plan mode»), non dentro la riga del prompt.
 
@@ -148,6 +155,13 @@ parole usare, fai domande per definirne di nuove e, quando Matteo concorda una p
 salvala subito in `VOCABOLARIO.md`.
 
 Scrivi il prompt come blocco copia-incolla. Niente fronzoli attorno.
+
+**Correzione in chat → riconsegna il prompt INTERO (Matteo 02-06-26).** Se Matteo, dopo che gli hai
+dato il prompt, lo **corregge** in chat (cambia un vincolo, una superficie, l'obiettivo), **riconsegna
+il blocco copia-incolla per intero** con la modifica già dentro — **non** rispondere col solo delta
+(«cambia X in Y»). Motivo: incollare un delta su un prompt vecchio è fonte di errori (l'esecutore
+riceve un testo incoerente). Costa qualche riga in più ma garantisce che il blocco incollato sia
+sempre l'unica versione valida. È formato del prepara-prompt, non un meccanismo che cambia l'esito.
 
 **Mockup visivo per scelta flusso UX (29-05-26).** Quando Matteo deve **scegliere tra tipi di
 flusso utente o layout UI** (salvataggio, modali, footer, wizard, ecc.) e non ha ancora deciso,
@@ -225,6 +239,21 @@ Passa il flusso di Matteo attraverso questi controlli, basandoti su skill + arch
   (quanti file/link toccati, cosa entra/esce da git) e presenta a Matteo le opzioni con
   `AskUserQuestion`. La decisione finale è sua. Pattern osservato 2 volte (spostare ~77 file,
   rinominare cartella gitignored).
+- **Scope creep — niente deliverable in più senza chiedere** (freno, sempre attivo — accettato
+  02-06-26, 3 occorrenze). Gli agenti tendono ad **allargare il deliverable** rispetto a quanto
+  chiesto: 3 PNG invece di 2 (temi sfondo 30-05), un file header separato non richiesto (Menu QR
+  30-05), asset/varianti extra. Matteo corregge «non aggiungere cose che non ti ho chiesto». Regola:
+  prima di consegnare un artefatto **non esplicitamente richiesto** (file, asset, variante, sezione
+  in più, refactor collaterale), l'agente **chiede Sì/No a Matteo** invece di produrlo d'iniziativa.
+  Vale sia per il prepara-prompt (lo scrive come vincolo nel prompt: «consegna ESATTAMENTE N
+  output, niente extra senza conferma») sia per l'esecutore. Non è un freno alla qualità interna
+  (suggerire un'idea va bene): è un freno a **materializzare** output non richiesti. Origine:
+  dossier revisore 02-06-26 §5bis.B + `ERRORI_PROCESSO.md` (causa «errore agente»).
+  **Come si applica davvero (semi-enforcement, 02-06-26):** non resta una regola sepolta qui — il
+  prepara-prompt la mette nella riga **`Output attesi:`** dell'intestazione obbligatoria del prompt
+  (§1.A), così l'esecutore se la trova sotto gli occhi. Perché non un hook: lo scope creep non è
+  verificabile da una macchina che legge solo i file (non sa quanti output erano richiesti — quel
+  numero è nella chat). Il punto più forte raggiungibile oggi è il vincolo dentro il prompt.
 
 Se non trovi rischi, non inventarteli: scrivi un prompt pulito e, al più, una nota sotto.
 
@@ -266,9 +295,9 @@ Regola: FU **fatto** non elencare salvo chiusura esplicita in quella sessione. S
 ✅/⏳/⬜/KO. Poi il blocco handoff testuale per l’agente. Token minimi — niente ripetere intero
 `FOLLOW_UP.md`.
 
-**Formato risposta handoff / follow-up (Matteo 31-05-26).** Quando chiede handoff o follow-up
-per la prossima chat, la risposta ha **due parti obbligatorie** — non mescolarle in un unico muro
-di testo:
+**Formato risposta handoff / follow-up (Matteo 31-05-26 · ratificata Meta senior 02-06-26).**
+Quando chiede handoff o follow-up per la prossima chat, la risposta ha **due parti obbligatorie** —
+non mescolarle in un unico muro di testo:
 
 1. **Blocco copia-incolla** — un solo fenced block (````` … `````) pronto da incollare in **nuova
    chat**: contesto, prompt esecutore se serve, istruzioni «dopo esecutore» per il prossimo

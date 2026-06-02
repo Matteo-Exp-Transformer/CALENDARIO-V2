@@ -25,12 +25,23 @@
 
 | Voce Liv.2 | ok | domanda-superflua | corretto-da-Matteo | segnale |
 |------------|----|-------------------|--------------------|---------|
-| «main dell'app» (ambiguo admin vs app) | 0 | 0 | 0 | viva (Matteo la usa a volte) — esiti mai registrati |
-| «menù originale» (ambiguo tra zone menu) | 0 | 0 | 0 | viva (Matteo la usa a volte) — esiti mai registrati |
+| «main dell'app» (ambiguo admin vs app) | 0 | 0 | 0 | **Liv.2 attiva — Matteo conferma di tenerla (02-06-26)**; raccogliere esiti, NON archiviare |
+| «menù originale» (ambiguo tra zone menu) | 0 | 0 | 0 | **Liv.2 attiva — Matteo conferma di tenerla (02-06-26)**; raccogliere esiti, NON archiviare |
 | «compila report comunicazione + annota prompt» | 2 | 0 | 0 | **candidata Liv.1** — MA è pezza a dimenticanza agenti (01-06: risolvere col nudge, non promuovere) |
 | «revisiona e se ok committa» | 1 | 0 | 0 | **candidata Liv.1** — comportamento confermato da Matteo 01-06 |
 | ~~«comportamenti ok ma voglio che cambi»~~ | — | — | — | **ELIMINATA 01-06-26** (Matteo: non la usa) |
 
+> **Decisioni Meta senior 02-06-26 (da dossier revisore):** (1) **guasto #1** curato con enforcement
+> vero — hook `stop` v2 mirato, non nuove regole markdown (Matteo: le sezioni saltate erano già
+> obbligatorie nel template → serviva la macchina). (2) **«sticky» RITIRATA** da VOCABOLARIO, torna
+> qui in OSSERVAZIONI (vale quanto detto da Matteo nei turni veri: «solo OSSERVAZIONI»; era stata
+> promossa senza ratifica = deviazione di processo sanata). (3) **scope creep** → freno accettato in
+> PREPARA_PROMPT §2 (3 occorrenze). Report sessione senior: `docs/Sessioni di lavoro/02-06-26/`.
+
+**Altre frasi di chiusura osservate** (conteggio + comportamento):
+
+| Frase/intento | Volte | Comportamento emerso |
+|---------------|-------|----------------------|
 | «procedura finale» | 1 | chiusura §7: report + SESSION_LOG + FOLLOW_UP + OSSERVAZIONI |
 | «report unificato o solo report?» | 1 | Matteo vuole sapere se un file o più file; risposta breve preferita |
 | sessione mappatura DOM admin ↔ Prenota | 1 | liste lunghe path + esito OK/KO; conferme puntuali (import preset, 700px) |
@@ -39,10 +50,19 @@
 
 ### 02-06-26 — Prenota full-page freeze layout (prepara + esecuzione parziale, multi-turno)
 - **Area:** Pagina Prenota pubblica, solo `isFullPagePhoto && !showPhotoStrip` — cap form 1168px, riepilogo esterno da 1600px.
-- **Prompt:** 5 blocchi prepara + follow-up; regola nuova: su correzione prompt → **sempre prompt intero** (non solo delta).
-- **Esito:** Menu QR commit `283c36b` OK (inizio thread); Prenota centratura OK; riepilogo 1256–1599 KO (sticky `BookingSummarySidebar`); 2º fix annullato da Matteo.
+- **Prompt:** 5 blocchi prepara + follow-up; regola operativa (Matteo, **non** voce VOCABOLARIO): su correzione prompt in chat prepara → agente riconsegna **prompt intero**, non solo il delta.
+- **Esito:** Menu QR `283c36b` OK; Prenota freeze parziale commit `166b5a2` (fix sticky 1256–1599 + slot 3/4/5 sottotab **ancora pendenti**); 2º agente esecutore annullato da Matteo.
 - **Pattern:** due breakpoint (1256/1600) + componente condiviso senza variant → agente tocca pagina ma non sidebar.
 - **Report:** `docs/Sessioni di lavoro/02-06-26/Report-prenota-full-page-freeze-ciclo-layout-02-06-26.md`
+
+**Osservazioni Matteo (comunicazione / lessico — restano in OSSERVAZIONI, non in VOCABOLARIO finché non approva):**
+
+| Data chat | Osservazione Matteo | Uso per agenti |
+|-----------|---------------------|----------------|
+| 02-06-26 | Parola chiave **`sticky`**: indica che un elemento UI è **forzatamente agganciato** a un altro (o al bordo) mentre si scrolla — es. riepilogo che «resta a destra» invece di andare sotto il form. In prompt/fix scrivere «sticky» esplicitamente. | Fix layout Prenota 1256–1599: cercare `min-[1256px]:sticky` su `BookingSummarySidebar` istanza stacked. |
+| 02-06-26 | In chat **prepara**, se corregge il prompt: l’agente deve ridare il **prompt completo**, non solo la parte cambiata (evita errori incollando delta su prompt vecchio). | ✅ **PROMOSSA a regola di formato** in PREPARA_PROMPT §1.B (Meta senior 02-06-26) — non voce VOCABOLARIO, è formato del prepara-prompt come «profilo+skill nel prompt». |
+| 02-06-26 | Chiede spesso la frase lunga «aggiungi tutti i dati… prompt… skill system… osservazioni e dubbi» — **non** perché manchi nel sistema: **`lavoro ok`** e **`fai report finale`** già la coprono (`comandi-base` + voce «lavoro ok»). La ripete quando gli agenti **saltano** sezioni del report (stesso problema della voce Liv.2 «compila report comunicazione» = pezza alla dimenticanza). | Preferire **`lavoro ok`** a fine task; **`fai report finale`** solo commit/push; frase lunga solo se report scarno o chat solo meta. |
+| 02-06-26 | **`sticky` e regole comunicazione nuove** → annotare in **OSSERVAZIONI** come osservazione sua, **non** aggiungere da solo in VOCABOLARIO. | Solo revisore/Meta senior + approvazione esplicita Matteo per promuovere voce. |
 
 ### 01-06-26 — FU-025 freeze desktop PublicMenuCategoryPage (Esecuzione, 1 turno)
 - **Prompt P0 ~10/10** (estensione pattern FU-025, architettura 2 livelli, DRY costante, anti-scope, smoke, regola deep) → **0 domande**, **1 turno codice**, **0 follow-up** prima di «lavoro ok».

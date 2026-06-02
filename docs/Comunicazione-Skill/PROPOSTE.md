@@ -55,7 +55,7 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 - **Meglio lasciare manuale:** contenuto del prompt esecutore (task-specific); promozione VOCABOLARIO.
 - **Livello suggerito:** 1 per prepara-prompt quando trigger = «handoff» / «follow-up prossima chat» / «proseguimento».
 - **Dove codificare:** `PREPARA_PROMPT_SKILL.md` §3 — promozione definitiva → Meta.
-- **Esito / data:** proposta 31-05-26 — in attesa ok Matteo. **Nota:** §3 è stato modificato dall’agente prepara-prompt **prima** della ratifica (deviazione processo — vedi report ciclo § Deviazione processo).
+- **Esito / data:** ✅ **RATIFICATA Meta senior 02-06-26.** Il contenuto era già richiesto da Matteo (OSSERVAZIONI 31-05, esito positivo) → la regola è giusta nel merito; era irregolare solo nel COME è entrata (l'agente l'ha scritta in §3 prima della ratifica = deviazione, commit `939a5cf`). Il senior la ratifica (marcata «ratificata 02-06-26» in §3) e sana la deviazione. Distinta dal caso «sticky» (lì il contenuto era osservazione NON confermata → ritirata; qui era già confermato → ratificato).
 
 ### ATTESA-DATI «Meta — gate spiegazione procedura avvio chat (@ skill)»
 > **Triage senior 31-05-26:** parzialmente **già risolta** oggi con `COMANDI_AVVIO.md` (mappa
@@ -159,6 +159,16 @@ Ogni proposta deve dire: cosa automatizzare **con certezza** vs cosa **lasciare 
 ---
 
 ## Archivio (decise)
+
+### ✅ ACCETTATA (02-06-26) Freno scope creep → `PREPARA_PROMPT_SKILL.md` §2
+- **Triage senior:** pattern più maturo emerso dal dossier revisore 02-06 — **3 occorrenze** (3 PNG vs 2, file header extra, asset non richiesti), basso rischio (è un freno di formato, non tocca codice). Soglia PROPOSTE rispettata. Ripara un danno dimostrato e ripetuto.
+- **Codificata:** prima di materializzare un deliverable non richiesto (file/asset/variante/sezione/refactor collaterale), l'agente chiede Sì/No. Il prepara-prompt lo scrive come vincolo nel prompt («consegna ESATTAMENTE N output»). Non frena le idee, frena gli output non chiesti. Origine: dossier revisore 02-06 §5bis.B + `ERRORI_PROCESSO.md`.
+- **Rinforzo semi-enforcement (02-06-26, domanda Matteo «serve un hook?»):** un hook NON è fattibile in modo affidabile — lo scope creep non è verificabile da una macchina che legge solo i file (non sa quanti output erano richiesti: il numero è nella chat, non sul disco). Soluzione scelta: riga **`Output attesi:`** **obbligatoria** nell'intestazione del prompt (PREPARA_PROMPT §1.A), così il freno sta DOVE l'esecutore lo legge per forza, non solo nella skill che l'esecutore non apre. **Quando saremo sicuri che funziona:** è governance soft rinforzata — lo si saprà **dai dati** (se nelle prossime sessioni gli «output extra» spariscono dai report/ERRORI_PROCESSO → funziona; se tornano → valutare leva più forte). Coerente con pausa-raccolta: decidere sui numeri.
+
+### 🔶 ENFORCEMENT (02-06-26) Guasto #1 (sezioni report saltate) → hook `stop` v2, NON nuova regola markdown
+- **Triage senior:** la cura «trasformare le pezze in righe-template» è stata **scartata da Matteo** con un'osservazione decisiva: le sezioni «mancanti» (Dati comunicazione, Analisi flusso prompt) erano **già obbligatorie** nel template (APP_CONTEXT §7.1) e gli agenti le saltavano lo stesso → aggiungere markdown sopra markdown non cura. **Serviva la macchina.**
+- **Fatto:** hook `stop` v2 mirato (`.cursor/hooks/fine-sessione-nudge.mjs`) che legge i Report-*.md freschi e avvisa cosa manca. Smart-allow (avvisa, non blocca). Dettaglio in `EVOLUZIONE_SKILLS.md` M4 + box leve Cursor. Le 2 «voci-pezza» (`compila report comunicazione`, frase lunga) **non vengono promosse**: la loro funzione è ora coperta dall'hook.
+- **Conseguenza sul triage Liv.2:** «compila report comunicazione» resta a Liv.2 ma marcata «coperta da enforcement, non promuovere». «main dell'app»/«menù originale» (0/0/0): **Matteo le conferma a Liv.2 attiva 02-06-26** — NON archiviare, restano in osservazione a raccogliere esiti (l'hook non le copre perché legge i file, non la chat → l'esito Liv.2 va scritto a mano quando la voce viene usata).
 
 ### ❌ ELIMINATA (01-06-26) «comportamenti ok ma voglio che cambi» (era VOCABOLARIO Liv.2)
 - **Motivo:** Matteo dichiara di **non usarla**. Rimossa dal vocabolario. Unico esito storico ricostruito era `corretto-da-Matteo` (29-05, framing bug invertito). Non riproporre salvo nuovi dati. La sostanza utile (linguaggio «cambio UX» non «bug/regressione» quando il cambio è intenzionale) resta come prassi di stile in `COMUNICAZIONE_UTENTE_SKILL.md`, non come voce-trigger.

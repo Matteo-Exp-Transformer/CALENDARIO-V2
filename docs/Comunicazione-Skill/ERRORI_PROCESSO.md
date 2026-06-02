@@ -35,6 +35,10 @@ filtro `PREPARA_PROMPT`, o una Nota in skill d'area. La promozione la decide il 
 | `overflow-x-auto` taglia figli `absolute` → serve portal | vincolo strutturale | 1 | Nota UI: per escape da scroll-container usare portal, non absolute |
 | Modifica a un elemento senza mappare gli elementi vicini impattati | prompt ambiguo + errore agente | 1 | regola PREPARA_PROMPT (implementata) |
 | Fix su **Menu QR** invece di **Pagina Prenota** (sfondo scroll footer #8) | prompt ambiguo + errore agente | 1 | ✅ **RISOLTA 31-05-26** → gate obbligatorio in `PREPARA_PROMPT_SKILL.md` §2 (slug/URL smoke + domanda Sì/No se Prenota+QR nel thread + vietato QA OK senza URL testato) |
+| **Scope creep** — agente consegna deliverable extra non richiesti (3 PNG invece di 2, file header non chiesto, asset extra) | errore agente | 3 | ✅ **RISOLTA 02-06-26** → freno in `PREPARA_PROMPT_SKILL.md` §2 «Scope creep»: prima di materializzare un output non richiesto, chiedi Sì/No |
+| **Sezioni report obbligatorie saltate** (Dati comunicazione / Analisi flusso prompt) + esiti Liv.2 non scritti | errore agente | molte (4+ giorni) | 🔶 **enforcement 02-06-26** → hook `stop` v2 mirato controlla i Report-*.md freschi e avvisa cosa manca (M4) |
+| **Deviazione processo** — agente scrive nelle skill (VOCABOLARIO/PREPARA_PROMPT §3) invece di limitarsi a OSSERVAZIONI/PROPOSTE | errore agente | 2 | regola «annota ≠ codificare» esiste già (OSSERVAZIONI 31-05) ma bypassata → problema di enforcement, non di regola mancante. Caso «sticky» sanato 02-06-26; §3 handoff ratificato 02-06-26 |
+| **Confusione Prenota↔QR in chat ESPLORATIVA** (non preparata) — il gate §2 prepara-prompt non copre le chat dirette | errore agente | 1 (02-06) | ✅ **RISOLTA 02-06-26** → blocco «Zone che si confondono» in `.cursor/rules/comandi-base.mdc` (`alwaysApply: true` → vale anche senza prepara-prompt) |
 
 ---
 
