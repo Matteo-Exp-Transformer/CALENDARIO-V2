@@ -4,8 +4,8 @@ import { router } from './router'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { DevFlowPanel } from '@/components/dev/DevFlowPanel'
-import { devFlow, devFlowError, isDevConsoleEnabled } from '@/lib/devConsole'
-import { devQueryName, devCountFromData } from '@/lib/devQueryNames'
+import { devFlow, devFlowError, isDevConsoleEnabled, setDevHealth } from '@/lib/devConsole'
+import { devQueryName, devCountFromData, devHealthCountKey } from '@/lib/devQueryNames'
 
 // DEV CONSOLE — aggancio UNICO al flusso dati: queste cache globali intercettano OGNI
 // lettura (QueryCache) e scrittura (MutationCache) dell'app, senza toccare i singoli hook.
@@ -17,6 +17,9 @@ const queryCache = new QueryCache(
           const name = devQueryName(query.queryKey)
           const count = devCountFromData(data)
           devFlow('ok', count != null ? `${name} · ${count} trovate` : `${name} · caricato`)
+          // Alimenta i conteggi della fotografia salute (i «dati utili sotto»).
+          const healthKey = devHealthCountKey(query.queryKey)
+          if (healthKey && count != null) setDevHealth({ counts: { [healthKey]: count } })
         },
         onError: (error, query) => {
           devFlowError(`lettura ${devQueryName(query.queryKey)}`, error)

@@ -16,7 +16,16 @@
  * il pannello. Console e pannello sono solo le due "facce" che leggono da qui.
  */
 
-const isDev = import.meta.env.DEV
+/**
+ * La dev console è attiva quando:
+ *  - siamo in sviluppo locale (`import.meta.env.DEV`), OPPURE
+ *  - l'app gira su un deploy collegato al DB di TEST (`docnnernvp`), così il pannello flusso
+ *    è visibile anche da telefono sul branch env/test pushato su Vercel.
+ * In PRODUZIONE (DB `rwuxgvld`) resta sempre disattivata: i clienti non vedono nulla.
+ * Decisione Matteo 02-06-26: «attivo anche online ma solo su env/test».
+ */
+const isTestDeploy = (import.meta.env.VITE_SUPABASE_URL ?? '').includes('docnnernvp')
+const isDev = import.meta.env.DEV || isTestDeploy
 
 // ───────────────────────────────────────────────────────────────────────────
 // Tipi
@@ -177,6 +186,8 @@ export function devFlowWorstLevel(withinMs = 30_000): DevFlowLevel {
 // API SALUTE (la "fotografia" in console F12)
 // ───────────────────────────────────────────────────────────────────────────
 
+let healthReprintTimer: ReturnType<typeof setTimeout> | null = null
+
 /** Aggiorna uno o più campi della fotografia di salute (merge). No-op in produzione. */
 export function setDevHealth(patch: Partial<DevHealthSnapshot>): void {
   if (!isDev) return
@@ -185,31 +196,54 @@ export function setDevHealth(patch: Partial<DevHealthSnapshot>): void {
   if ('tenant' in patch) health.tenant = patch.tenant
   if ('isAdmin' in patch) health.isAdmin = patch.isAdmin
   if ('edition' in patch) health.edition = patch.edition
+
+  // I conteggi arrivano dalle query, sfasati rispetto alla prima stampa (tenant risolto prima).
+  // Schedula UNA ristampa debounced: così la salute completa (con i conteggi) appare una volta,
+  // non a ogni singola query. La firma in printDevHealth evita comunque doppioni identici.
+  if (patch.counts) {
+    if (healthReprintTimer) clearTimeout(healthReprintTimer)
+    healthReprintTimer = setTimeout(() => printDevHealth('STATO APP'), 800)
+  }
 }
 
-/** Stampa la fotografia di salute in console, raggruppata e leggibile. No-op in produzione. */
+// Firma dell'ultima salute stampata: evita di ristampare lo STESSO riquadro a ogni
+// re-render / refetch (era la causa del log ripetuto 4-5 volte — fix Matteo 02-06-26).
+let lastHealthSignature = ''
+
+/**
+ * Stampa la fotografia di salute in console: UN log unico (riga titolo) + i dati utili
+ * raggruppati sotto. Stampa solo se lo stato è CAMBIATO rispetto all'ultima volta.
+ * No-op in produzione.
+ */
 export function printDevHealth(title = 'STATO APP'): void {
   if (!isDev) return
-  const ok = (v: boolean | undefined) => (v === undefined ? '…' : v ? '✓' : '✗')
-  const parts: string[] = []
-  if (health.tenant !== undefined) parts.push(`🏥 ${health.tenant ?? '(nessun ristorante)'}`)
-  parts.push(`${ok(health.isAdmin)} admin`)
-  if (health.edition) parts.push(`edition: ${health.edition}`)
-  if (health.counts) {
-    for (const [k, v] of Object.entries(health.counts)) parts.push(`${v} ${k}`)
-  }
 
-  // %c = styling in console. Verde tenue su sfondo scuro: si distingue dagli errori rossi.
-  // eslint-disable-next-line no-console
-  console.log(
-    `%c ${title} %c ${parts.join('  ·  ')} `,
-    'background:#2f7d32;color:#fff;border-radius:3px 0 0 3px;padding:2px 4px;font-weight:bold',
-    'background:#1b3a1c;color:#c8e6c9;border-radius:0 3px 3px 0;padding:2px 6px',
+  const ok = (v: boolean | undefined) => (v === undefined ? '…' : v ? '✓' : '✗')
+  const headline = `🏥 ${health.tenant ?? '(nessun ristorante)'} · ${ok(health.isAdmin)} admin${
+    health.edition ? ` · ${health.edition}` : ''
+  }`
+  const countsLine = health.counts
+    ? Object.entries(health.counts)
+        .map(([k, v]) => `${v} ${k}`)
+        .join('  ·  ')
+    : ''
+
+  // Firma = tutto ciò che renderebbe utile una nuova stampa. Se identica → non ristampare.
+  const signature = `${headline}|${countsLine}|${(health.notes ?? []).join('·')}`
+  if (signature === lastHealthSignature) return
+  lastHealthSignature = signature
+
+  // Un solo gruppo: titolo in cima, dati sotto. `groupCollapsed` = compatto, espandibile a click.
+  /* eslint-disable no-console */
+  console.groupCollapsed(
+    `%c ${title} %c ${headline} `,
+    'background:#2f7d32;color:#fff;border-radius:3px 0 0 3px;padding:2px 6px;font-weight:bold',
+    'background:#1b3a1c;color:#c8e6c9;border-radius:0 3px 3px 0;padding:2px 8px',
   )
-  if (health.notes?.length) {
-    // eslint-disable-next-line no-console
-    console.log('%c   ' + health.notes.join(' · '), 'color:#8a8a8a')
-  }
+  if (countsLine) console.log('%c' + countsLine, 'color:#33503a;font-weight:bold')
+  if (health.notes?.length) console.log('%c' + health.notes.join(' · '), 'color:#8a8a8a')
+  console.groupEnd()
+  /* eslint-enable no-console */
 }
 
 /** Snapshot corrente (per il pannello che mostra anche la salute in testa). */

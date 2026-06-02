@@ -38,3 +38,22 @@ export function devCountFromData(data: unknown): number | null {
   if (Array.isArray(data)) return data.length
   return null
 }
+
+/**
+ * Etichetta breve per i conteggi della fotografia salute (i «dati utili sotto» il log unico).
+ * Solo le poche risorse che ha senso vedere a colpo d'occhio; le altre → null (non in testa).
+ */
+const HEALTH_COUNT_KEY: Record<string, string> = {
+  bookingRequests: 'prenotazioni',
+  adminBookingRequests: 'prenotazioni',
+  menuCategories: 'cat. menu',
+  menuItems: 'piatti',
+  serviceSlots: 'fasce',
+  customers: 'clienti',
+}
+
+export function devHealthCountKey(queryKey: readonly unknown[]): string | null {
+  const first = queryKey?.[0]
+  if (typeof first === 'string' && HEALTH_COUNT_KEY[first]) return HEALTH_COUNT_KEY[first]
+  return null
+}
