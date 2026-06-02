@@ -1,8 +1,8 @@
 # Report — Ciclo layout Pagina Prenota full-page (freeze desktop)
 
 **Data:** 02-06-26  
-**Profilo:** Prepara-prompt + analisi (chat multi-turno); esecuzione parziale su working tree  
-**Stato:** **non chiuso** — QA Matteo parziale OK; **2 fix pendenti**; working tree con diff non committato; agente esecutore 2º tentativo **annullato** da Matteo
+**Profilo:** Prepara-prompt + analisi (chat multi-turno); esecuzione parziale + commit parziale  
+**Stato:** **non chiuso** — commit `166b5a2` (freeze base); **2 fix pendenti** (sticky 1256–1599, sottotab 3/4/5); 2º agente esecutore **annullato**; report aggiornato post-chat comunicazione
 
 ---
 
@@ -21,22 +21,18 @@
 
 ---
 
-## Stato codice (fine sessione)
+## Stato codice (aggiornato 02-06-26 sera)
 
 | Area | Stato |
 |------|--------|
-| Menu QR FU-025 categoria | Committato `283c36b`, push `env/test` + merge `main` (inizio sessione) |
-| Prenota freeze full-page | **Modifiche in working tree** (non committate): ~219 righe su 7 file + `bookingPageLayout.ts` untracked |
+| Menu QR FU-025 categoria | Committato `283c36b`, merge `main` (inizio sessione) |
+| Prenota freeze full-page (base) | Commit **`166b5a2`** su `env/test` — cap 1168, centratura, riepilogo esterno da 1600px, tipologie/sottotab 5 slot parziale |
 | Fix riepilogo 1256–1599 + slot 3/4/5 sottotab | **Non completati** (2º agente annullato) |
+| Doc comunicazione | `OSSERVAZIONI.md` — osservazioni Matteo sticky / prompt intero / frase report (non VOCABOLARIO) |
 
-**File toccati (diff attuale):**
-- `src/pages/BookingRequestPage.tsx` — wrapper centrato, cap CSS vars, riepilogo esterno `min-[1600px]`
-- `src/features/booking/components/BookingRequestForm.tsx` — `externalSummaryLayout`, `min-[1600px]:hidden` su stacked summary
-- `src/features/booking/constants/bookingPageLayout.ts` — **nuovo** (1168, 360, 1600)
-- `BookingModeCards.tsx`, `BookingSubTabCards.tsx`, `bookingPublicFieldStyles.ts` (row width 3/5)
-- `docs/per-ui-design-skill/BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` — §4.1
+**In commit `166b5a2`:** `BookingRequestPage.tsx`, `BookingRequestForm.tsx`, `bookingPageLayout.ts`, `BookingModeCards`, `BookingSubTabCards`, `bookingPublicFieldStyles`, §4.1, report sessione, SESSION_LOG, OSSERVAZIONI (riga sessione).
 
-**Validate / commit:** non eseguiti in chiusura report (Matteo non ha chiesto commit).
+**Validate:** 276 test OK prima del commit `166b5a2`.
 
 ---
 
@@ -62,6 +58,12 @@
 | 14 | Matteo | **Annulla** esecutore — riepilogo 1256–1599 ancora sbagliato (comportamento sticky) |
 | 15 | Agente | Tabella + **follow up** copia-incolla per prossima chat |
 | 16 | Matteo | **Report finale** sessione + meta skill |
+| 17 | Agente | Report scritto; commit `166b5a2` su richiesta «fai commit» |
+| 18 | Matteo | Chiede annotare **`sticky`** come parola chiave agenti — **non** in VOCABOLARIO |
+| 19 | Agente | Aveva messo sticky in VOCABOLARIO (errore processo) |
+| 20 | Matteo | Spostare in **OSSERVAZIONI** come osservazione sua; aggiornare report ultime interazioni |
+| 21 | Matteo | Domanda: serve ripetere frase lunga «tutti i dati… skill system…»? |
+| 22 | Agente | No se usa `lavoro ok` / `fai report finale`; frase lunga = pezza se agente dimentica sezioni |
 
 ### Prompt consegnati (sintesi obiettivi)
 
@@ -81,6 +83,20 @@
 - «sotto 1600 mantiene posizione sotto come mobile»
 - «agente ha sbagliato ancora, ho fatto annullare»
 - «quando aggiustamenti al prompt in chat prepara → agente deve ridare **prompt intero**»
+- «sticky» = parola chiave elemento agganciato (annotare in OSSERVAZIONI, non VOCABOLARIO)
+- «non devi annotare nel vocabolario» / «mettila in osservazioni come osservazione mia»
+- «è necessario [la frase lunga su dati skill]?» → risposta: no, basta `lavoro ok`
+
+---
+
+## Dati comunicazione — osservazioni Matteo (→ OSSERVAZIONI.md)
+
+Registrate in `docs/Comunicazione-Skill/OSSERVAZIONI.md` § sessione 02-06-26 (tabella), **non** promosse in VOCABOLARIO:
+
+1. **`sticky`** — elemento forzatamente agganciato mentre scrolli; usarla nei prompt layout.
+2. **`prompt intero`** in chat prepara su correzioni (regola operativa, candidata PROPOSTE).
+3. **Frase lunga report skill** — ridondante con `lavoro ok`; utile solo se agente salta sezioni.
+4. **Dove annotare** — nuove parole/regole comunicazione di Matteo → OSSERVAZIONI finché non approva voce.
 
 ---
 
@@ -152,19 +168,22 @@ Oggi con `fullPageFormCapLayout`: solo `bookingPublicRowCardWidthClass(5)` per �
 | P5 | Cap **1168** derivato da card ingredienti vs Menu QR **1024** — due costanti, due pagine; rischio confusione agente | `bookingPageLayout.ts` vs `publicMenuLayout.ts` — tabella in APP_CONTEXT §4 routing già utile |
 | P6 | «Revisione accurata» dichiarata ma QA solo Matteo — nessun Playwright su 1300/1599/1680 | FOLLOW_UP: smoke viewport prenota full-page |
 
-### Candidato VOCABOLARIO
+### Candidato PROPOSTE (non VOCABOLARIO — Matteo 02-06-26)
 
-- **«prompt intero»** (Liv.2 → Liv.1?): in chat **prepara**, se Matteo corregge il prompt, l’agente riconsegna il blocco **completo**, non il delta.
+- **«prompt intero»** — prepara: riconsegna blocco completo su correzione.
+- **«sticky»** — lessico layout; esempio `BookingSummarySidebar` 1256–1599.
+
+**Errore processo questa chat:** agente ha tentato voce VOCABOLARIO «sticky» → Matteo ha corretto: solo OSSERVAZIONI.
 
 ---
 
 ## Prossimo passo
 
-1. Nuova chat **Esecuzione** con follow-up (fix sticky + slot 3/4/5).
+1. Nuova chat **Esecuzione** con follow-up (fix sticky stacked + slot 3/4/5 sottotab).
 2. Smoke: **1300px**, **1599px**, **1680px**, **1000px**, **650px** su tenant full-page (es. da-tommaso).
-3. `npm run validate` → commit solo se Matteo chiede «fai report finale» + push.
+3. Dopo fix: `lavoro ok` → poi `fai report finale` (commit/push) se capitolo chiuso.
 
-**Prompt pronto:** vedi messaggio agente «dammi follow up» (stessa chat, 02-06-26).
+**Prompt pronto:** follow-up in chat 02-06-26 (fix sticky + slot responsive).
 
 ---
 
