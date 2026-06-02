@@ -17,14 +17,14 @@
 `[striscia foto | contenuto]` con `BookingPhotoStrip` sticky è consolidato e testato su 3
 breakpoint. Prima di qualsiasi modifica a `BookingRequestPage.tsx` un agente DEVE:
 1. valutare se il task può essere risolto toccando solo componenti figli (`BookingRequestForm`,
-   `BookingSummarySidebar`, `BookingStickyBar`, footer) senza toccare la griglia esterna — se sì,
+   `BookingSummarySidebar`, footer) senza toccare la griglia esterna — se sì,
    procedere su quei componenti;
 2. se è necessario toccare la griglia, leggere per intero `BookingRequestPage.tsx` +
    `BookingPhotoStrip.tsx` + `BookingSummarySidebar.tsx` + `BookingRequestForm.tsx` prima di editare;
 3. non alterare mai questi invarianti: griglia esterna `w-full` senza `mx-auto/max-w-*`;
    `BookingPhotoStrip` resta `sticky top-0 h-screen` nella colonna sinistra; footer fuori dalla
-   griglia come ultimo figlio del wrapper `flex-col`; spacer `h-20 min-[1256px]:h-4` come ultimo
-   elemento della colonna destra (sticky bar sotto 1256px).
+   griglia come ultimo figlio del wrapper `flex-col`; spacer `h-4` come ultimo elemento della
+   colonna destra (gap prima del footer).
 Qualsiasi modifica che viola uno di questi punti va discussa con l'utente prima di procedere.
 
 ---
@@ -33,7 +33,7 @@ Qualsiasi modifica che viola uno di questi punti va discussa con l'utente prima 
 
 **Layout esterno opzionale a 2 colonne da 900px** in `BookingRequestPage`: se
 `public_booking_strip_photo` è valorizzato, usa `min-[900px]:grid-cols-[25vw_1fr]` — colonna sx =
-striscia foto verticale sticky; colonna dx = header + form + sticky bar. Se è `null`, la pagina
+striscia foto verticale sticky; colonna dx = header + form + riepilogo. Se è `null`, la pagina
 resta a colonna unica anche su desktop e lo sfondo occupa tutta la viewport.
 
 - La griglia esterna deve restare `w-full` senza `mx-auto`/`max-w-*`: con la striscia parte dal
@@ -109,16 +109,14 @@ Nome e titolo stessa scala grande, descrizione più piccola. Font in `BOOKING_HE
   **sotto** il form. Sidebar `min-[1256px]:sticky top-4 order-0` + `min-h-[320px]` su ≥1256px.
 - Breakpoint **1256px** anche per `col-span-2` di tipologia/sottotab, menu-section, submit desktop.
   Il resto (tipologia full-width, striscia) può restare a **900px**.
-- **Sticky bar mobile** (`BookingStickyBar`): solo sotto **1256px**, fixed bottom, z-200. Appare
-  quando `BookingSummarySidebar` esce dalla viewport (IntersectionObserver +
-  `onVisibilityChange`). Mini-panel «Riepilogo Prenotazione» + valori chiave + submit. Con sottotab
-  carosello aggiunge una riga di testo (`getCarouselStickyMiniPanelLine`). Click → overlay
-  bottom-sheet (z-300, max-h-90vh). Colori via CSS custom properties + `color-mix` (si adattano al
-  tema). Submit split: sidebar mostra `submitButton` sotto 1256px (`block min-[1256px]:hidden`); il
-  pulsante grande in `BookingRequestForm` è `hidden min-[1256px]:flex`. Pulsanti usano
-  `type="submit" form="booking-request-form"`. `BookingRequestForm` espone `onIsDisabledChange`.
-- **Gap pulsante/sidebar → footer:** spacer `<div className="h-20 min-[1256px]:h-4" aria-hidden />`
-  in `BookingRequestPage`.
+- **Sotto 1256px — un solo riepilogo in flusso (02-06-26):** nessuna barra fixed in basso, nessun
+  overlay, nessun secondo pulsante Invia. `BookingSummarySidebar` resta **sotto** il form con
+  `submitButton` in fondo (`block min-[1256px]:hidden`). Per inviare il cliente scrolla fino al
+  riepilogo. Il pulsante grande in `BookingRequestForm` è `hidden min-[1256px]:flex` (solo desktop).
+  Pulsanti usano `type="submit" form="booking-request-form"`. `BookingRequestForm` espone
+  `onIsDisabledChange`.
+- **Gap prima del footer:** spacer `<div className="h-4" aria-hidden />` in `BookingRequestPage`
+  (ultimo elemento colonna destra).
 - Quando si apre la griglia ingredienti, il riepilogo **non** scorre fuori schermo e non mostra
   frecce di riapertura (comportamento vecchio rimosso).
 
@@ -129,7 +127,7 @@ Nome e titolo stessa scala grande, descrizione più piccola. Font in `BOOKING_HE
 **≥1256px** via classi `min-[1256px]:*` (stesso breakpoint di `BOOKING_PUBLIC_SUMMARY_SIDEBAR_MIN_PX`).
 
 **Fuori scope (layout invariato):** striscia laterale; sfondo gradiente/tile senza full-page;
-viewport &lt;1256px (riepilogo sotto form + `BookingStickyBar`).
+viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fixed).
 
 **Desktop full-page:**
 - Blocco **centrato** `mx-auto w-fit` da **≥1256px** (header + riga form [+ riepilogo da 1600px]):
@@ -252,8 +250,8 @@ viewport &lt;1256px (riepilogo sotto form + `BookingStickyBar`).
 
 ### Riepilogo carosello (summary display)
 Per `display='carousel'` il resolver mantiene `price_per_person` sulla sottotab; in Prenota
-`resolveCarouselSummaryDisplay` / `getCarouselStickyMiniPanelLine` (`bookingPublicFormConfig.ts`)
-governano sidebar e mini-pannello sticky: toggle dettaglio ON + titoli slide → «Offerta
+`resolveCarouselSummaryDisplay` (`bookingPublicFormConfig.ts`) governa il riepilogo in sidebar:
+toggle dettaglio ON + titoli slide → «Offerta
 selezionata» + lista; altrimenti solo prezzo se `price_per_person > 0` (anche con toggle ON ma
 senza titoli); toggle OFF senza prezzo → nessuna sezione offerta. Campo
 `show_offer_details_in_summary` su `sub_tabs[]`; editor carosello in `BookingFormConfigPanel`
