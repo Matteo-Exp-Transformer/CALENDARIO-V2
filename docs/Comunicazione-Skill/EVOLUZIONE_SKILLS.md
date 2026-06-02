@@ -15,6 +15,47 @@
 > **Flusso reale:** agenti annotano durante il lavoro → Matteo, dopo alcune sessioni, chiede una
 > revisione comunicazione → poi lancia il Meta senior per analisi + fix + sviluppo del sistema.
 
+---
+
+## Playbook del Meta senior (competenze, raccolte dalle sessioni)
+
+> Strumenti e principi che il senior applica. Aggiornato dalle sessioni reali — l'ultima (02-06-26)
+> ha aggiunto enforcement via hook, alleggerimento file e il modello mentale degli hook.
+
+**1. Markdown vs enforcement — la domanda che decide tutto.** Prima di promettere un'automazione,
+chiediti: *la regola è verificabile guardando i FILE, o solo conoscendo la CONVERSAZIONE?*
+- File (es. «il report ha la sezione X?») → **hook possibile** (la macchina lo verifica).
+- Chat (es. «ha consegnato più output di quanti chiesti?») → **hook impossibile**; il massimo è il
+  vincolo dentro il prompt (semi-enforcement). Esempio: scope creep → riga `Output attesi:` nel prompt.
+Una regola markdown che già c'è e viene saltata **non si ripara con un'altra markdown**: serve l'hook.
+
+**2. Cosa fa (e cosa NON fa) un hook.** L'hook **sposta il momento** in cui l'informazione arriva
+(es. «come scrivere il report» consegnato a fine chat, non tenuto in testa tutta la sessione). NON
+rende il sistema più piccolo da solo: è il *fattorino*, non chi riordina la casa. Il dimagrimento vero
+lo fa la **riorganizzazione** (mettere le cose nei file giusti). L'hook `stop` di Cursor verifica i
+file, gira solo su IDE locale (non Cloud Agent), e può `allow` (avvisa) o `deny` (blocca). Default
+scelto: **smart-allow** — avvisa mirato, non blocca (no falsi positivi che irritano).
+
+**3. Alleggerire i file (principi di ingegneria applicati).**
+- **Cohesion by lifecycle phase:** raggruppa per *quando* serve, non per *tipo*. Tutto il «fine chat»
+  in un file (`CHIUSURA_SESSIONE.md`), puntato dall'hook quando quella fase arriva.
+- **Single source of truth:** una sola copia di ogni istruzione. Se due file dicono la stessa cosa,
+  si disallineano → tieni il dettaglio in un posto, gli altri rimandano. (Fatto: APP_CONTEXT §7.1 →
+  rimando, non copia.)
+- **Evita il god-object:** un file di fase va bene finché la fase ha confini *finiti*. «Chiusura» sì
+  (report→commit→push→allinea→terminali). «File di tutto» no.
+- **Nastro trasportatore, non magazzino:** `OSSERVAZIONI.md` processa dati, non li accumula. Ogni
+  osservazione → diventa regola / resta in osservazione con motivo / si butta. Lo storico consolidato
+  va in archivio (`ARCHIVIO_*.md`), i file di lavoro restano leggeri.
+
+**4. Sequenza di una sessione senior.** Parti dal dossier del revisore (se c'è) → non ri-diagnosticare,
+**decidi e fai avanzare**. Ogni decisione che spetta a Matteo → `AskUserQuestion` con opzioni pesate
+(no piani calati). Onestà sul limite della propria mossa: dire «la mia prima idea è markdown-su-markdown,
+non basta» ha prodotto le decisioni migliori. Educare Matteo confrontando le sue idee con l'ingegneria.
+
+**5. A fine sessione senior:** archivia il deciso (file di lavoro leggeri), aggiorna questo Playbook se
+hai imparato un metodo nuovo, propaga gli upgrade strutturali nel template v.0 (`REVISIONE.md` §6b).
+
 > 🛑 **PAUSA-RACCOLTA (decisa 29-05-26).** Lo skill system ha avuto molte aggiunte in pochi giorni.
 > **Stop a nuovi meccanismi/regole** finché non si accumulano ~5-10 sessioni di dati con gli
 > strumenti già esistenti (modalità, metriche successo chat, log idee). Il prossimo passo è
