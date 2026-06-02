@@ -34,7 +34,7 @@ import {
 
 /** Padding colonna contenuto — header e form condividono lo stesso inset (no -mx bleed). */
 const BOOKING_PAGE_CONTENT_PAD_FULL = 'px-8 md:px-10 lg:px-10'
-const BOOKING_PAGE_CONTENT_PAD_STRIP = 'px-8 md:px-10 lg:px-10'
+const BOOKING_PAGE_CONTENT_PAD_STRIP = 'px-4 md:px-6 lg:px-6'
 /** Layer foto full-page: altezza large viewport — non segue hide/show barra URL Android. */
 const FULL_PAGE_PHOTO_LAYER_CLASS =
   'pointer-events-none fixed top-0 left-0 right-0 h-[100lvh] min-h-[100svh] -z-10'
