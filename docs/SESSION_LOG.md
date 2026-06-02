@@ -9,6 +9,12 @@ description: >-
 
 > Controlli e lavori **rimandati** legati a un report → `docs/FOLLOW_UP.md` (non duplicare qui).
 
+## 2026-06
+
+| Data | Sessione | Report |
+|------|----------|--------|
+| 03-06-26 | Prenota — riduzione padding orizzontale colonna form layout striscia ✅ **light** | `cee87db` su `origin/env/test` — `BOOKING_PAGE_CONTENT_PAD_STRIP` da `px-8 md:px-10` a `px-4 md:px-6`; card carousel si ridimensionano da sole (% sul contenitore). |
+
 ## 2026-05
 
 | Data | Sessione | Report |
