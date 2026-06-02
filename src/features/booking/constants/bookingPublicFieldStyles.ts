@@ -1,7 +1,8 @@
 import { cn } from '@/lib/utils'
 
-/** Viewport minimo (px) per riepilogo laterale sticky + griglia form a 2 colonne. Sotto: riepilogo sotto il form. */
-export const BOOKING_PUBLIC_SUMMARY_SIDEBAR_MIN_PX = 1256
+// Breakpoint 1256 (riepilogo laterale sticky + griglia 2 colonne): vive come literal `min-[1256px]`
+// nei JSX (Tailwind JIT non risolve costanti). Ex-costante rimossa 02-06-26 perché morta — vedi nota
+// in bookingPageLayout.ts.
 
 /** Larghezza piena form /prenota — allineata al box header (solo px-4/px-6 del container pagina). */
 export const BOOKING_PUBLIC_CONTENT_WIDTH = 'w-full min-w-0'
@@ -57,8 +58,10 @@ export const BOOKING_PUBLIC_FIELD_INNER_TEXTAREA =
 
 /**
  * Larghezza card sottotab scrollabili (≥4 sottotab).
- * - Sotto ~782px (mobile/tablet stretto): 3 slot proporzionali al contenitore (% del container);
- *   il quadrato fisso 200px sarebbe troppo largo su mobile. Gap base 6px (`gap-1.5`).
+ * - Sotto ~782px (mobile/tablet stretto): ~2,4 slot proporzionali al contenitore (% del container),
+ *   così la card è abbastanza larga da NON comprimere icona/titolo/prezzo e la 3ª card "sbircia"
+ *   invitando allo scroll. Prima erano 3 slot stretti → icona compressa (corretto 02-06-26).
+ *   Il quadrato fisso 200px sarebbe troppo largo su mobile. Gap base 6px (`gap-1.5`).
  * - Da ~782px: **quadrato a lato fisso** (come le card categoria ingrediente, cappate a 280px
  *   4:3 → alte ~210px): lato 200px, coerente con gli ingredienti, niente crescita gigante. Ne
  *   entrano quante stanno nella riga; il resto scrolla.
@@ -68,9 +71,9 @@ export const BOOKING_PUBLIC_FIELD_INNER_TEXTAREA =
  */
 export function bookingPublicSubTabScrollCardWidthClass(): string {
   return [
-    // base mobile: 3 slot proporzionali (2 gap da 6px = 0.75rem)
-    'w-[calc((100%_-_0.75rem)/3)]',
-    'max-w-[calc((100%_-_0.75rem)/3)]',
+    // base mobile: ~2,4 slot proporzionali (card più larga → icona/contenuti non compressi)
+    'w-[41%]',
+    'max-w-[41%]',
     // ≥782px: quadrato a lato fisso, allineato alle card ingredienti
     'min-[782px]:w-[200px]',
     'min-[782px]:max-w-[200px]',

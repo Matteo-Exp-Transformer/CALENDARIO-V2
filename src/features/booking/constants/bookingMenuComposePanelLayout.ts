@@ -16,9 +16,3 @@ export const BOOKING_MENU_CATEGORY_PANEL_SCROLL_CLASS =
 
 /** Card aperta in portal (`position: fixed`): stessa larghezza della card chiusa (shell), sopra form/sidebar, sotto sticky bar (`z-200`). */
 export const BOOKING_MENU_CATEGORY_EXPANDED_PORTAL_CLASS = 'fixed z-[160] shadow-xl'
-
-export type BookingMenuCategoryOverlayRect = {
-  top: number
-  left: number
-  width: number
-}

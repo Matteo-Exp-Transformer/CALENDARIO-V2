@@ -215,11 +215,12 @@ export const BookingRequestPage: React.FC = () => {
       onVisibilityChange={setIsSummaryVisible}
       submitButton={summarySubmitButton}
       // Full-page: riepilogo sotto il form in flusso normale (niente sticky).
-      // Griglia striscia: colonna laterale sticky da 1256px (layout legacy a 2 colonne).
+      // Griglia striscia: colonna laterale sticky da 1256px (layout legacy a 2 colonne),
+      // resta `order-2` a tutte le viewport — comportamento confermato corretto (Matteo 02-06-26).
       className={
         useFullPageDesktopFreezeLayout
           ? 'mb-6'
-          : 'order-2 mb-6 min-[1256px]:mb-0 min-[1256px]:sticky min-[1256px]:top-4 min-[1256px]:order-0'
+          : 'order-2 mb-6 min-[1256px]:mb-0 min-[1256px]:sticky min-[1256px]:top-4'
       }
     />
   )

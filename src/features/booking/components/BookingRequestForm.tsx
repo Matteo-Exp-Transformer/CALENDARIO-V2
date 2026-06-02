@@ -982,7 +982,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           <BookingSubTabCards
             subTabs={activeModeSubTabs}
             activeSubTabId={activeSubTabId}
-            modeCardColumnCount={formConfig.booking_modes.filter((m) => m.enabled).length}
             onChange={(tab) => {
               setActiveSubTabId(tab?.id ?? null)
               if (!tab) {

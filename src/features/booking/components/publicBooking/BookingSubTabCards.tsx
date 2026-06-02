@@ -16,8 +16,6 @@ interface BookingSubTabCardsProps {
   subTabs: SubTab[]
   activeSubTabId: string | null
   onChange: (subTab: SubTab | null) => void
-  /** Card tipologia attive nella riga sopra. Mantenuta per compatibilita con il chiamante. */
-  modeCardColumnCount: number
 }
 
 /** Es. `18,00€` (senza spazio prima del simbolo €). */
@@ -34,7 +32,6 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   subTabs,
   activeSubTabId,
   onChange,
-  modeCardColumnCount: _modeCardColumnCount,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -132,13 +129,14 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                     <span
                       className={cn(
                         'flex shrink-0 items-center justify-center',
-                        'h-10 w-10 sm:h-14 sm:w-14 min-[782px]:h-16 min-[782px]:w-16',
+                        // Mobile leggermente più grande ora che la card è più larga (icona non compressa).
+                        'h-12 w-12 sm:h-14 sm:w-14 min-[782px]:h-16 min-[782px]:w-16',
                       )}
                       aria-hidden
                     >
                       <MenuQrCategoryIconGlyph
                         iconKey={tab.icon ?? MENU_QR_DEFAULT_CATEGORY_ICON_KEY}
-                        className="h-8 w-8 text-warm-wood-dark sm:h-11 sm:w-11 min-[782px]:h-12 min-[782px]:w-12"
+                        className="h-10 w-10 text-warm-wood-dark sm:h-11 sm:w-11 min-[782px]:h-12 min-[782px]:w-12"
                       />
                     </span>
                   )}
