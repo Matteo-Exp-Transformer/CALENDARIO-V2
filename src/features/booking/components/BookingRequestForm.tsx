@@ -41,6 +41,7 @@ import type { BookingPublicFormConfig, SubTab } from '../constants/bookingPublic
 import {
   applyLegacySubTabLabelOverrides,
   DEFAULT_BOOKING_FORM_CONFIG,
+  getSubTabPricePerPerson,
 } from '../constants/bookingPublicFormConfig'
 import { BookingSubTabCards } from './publicBooking/BookingSubTabCards'
 import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
@@ -270,14 +271,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     ? customStaffPresets.find((preset) => preset.id === activeSubTab.preset_id) ?? null
     : null
 
-  const getActiveSubTabPricePerPerson = useCallback((subTab: SubTab | null): number | undefined => {
-    if (!subTab || subTab.is_fixed_menu === false) return undefined
-    return subTab.price_per_person != null && subTab.price_per_person > 0
-      ? subTab.price_per_person
-      : undefined
-  }, [])
-
-  const activeSubTabUsesFixedPricing = getActiveSubTabPricePerPerson(activeSubTab) != null
+  const activeSubTabUsesFixedPricing = getSubTabPricePerPerson(activeSubTab) != null
+  const showIngredientPrices = getSubTabPricePerPerson(activeSubTab) == null
 
   const { data: menuItems = [], isLoading: menuItemsLoading, isFetching: menuItemsFetching } = useMenuItems()
   const presetCatalogLoading =
@@ -321,7 +316,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
   useEffect(() => {
     if (!activeSubTab || activeSubTab.display !== 'carousel') return
-    const price = getActiveSubTabPricePerPerson(activeSubTab)
+    const price = getSubTabPricePerPerson(activeSubTab)
     setFormData((prev) => ({
       ...prev,
       menu_selection: { items: [] },
@@ -333,7 +328,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     activeSubTab?.display,
     activeSubTab?.price_per_person,
     activeSubTab?.is_fixed_menu,
-    getActiveSubTabPricePerPerson,
   ])
 
   const frostedInputCn =
@@ -416,7 +410,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   // Reset num_guests to 0 when cleared - only allow numeric input
   const handleNumGuestsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value.trim()
-    const presetPricePerPerson = getActiveSubTabPricePerPerson(activeSubTab)
+    const presetPricePerPerson = getSubTabPricePerPerson(activeSubTab)
 
     // Only allow numeric characters or empty string
     if (inputValue === '') {
@@ -463,7 +457,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     const resolved = applyPresetTypeToBookingFormPayload(presetType, menuItems, customStaffPresets)
     if (!resolved) {
       if (presetCatalogLoading) {
-        const fallbackPrice = getActiveSubTabPricePerPerson(sourceSubTab)
+        const fallbackPrice = getSubTabPricePerPerson(sourceSubTab)
         const numGuests = formData.num_guests || 0
         setFormData({
           ...formData,
@@ -489,7 +483,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
     const { items } = resolved
     const numGuests = formData.num_guests || 0
-    const presetPricePerPerson = getActiveSubTabPricePerPerson(sourceSubTab)
+    const presetPricePerPerson = getSubTabPricePerPerson(sourceSubTab)
     const { totalPerPerson, menu_total_booking } =
       computeMenuTotalsWithPresetPrice(items, numGuests, presetPricePerPerson)
     const usesFixedSubTabPricing = presetPricePerPerson != null
@@ -518,7 +512,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     if (!resolved || resolved.items.length === 0) return
 
     const numGuests = formData.num_guests || 0
-    const presetPricePerPerson = getActiveSubTabPricePerPerson(activeSubTab)
+    const presetPricePerPerson = getSubTabPricePerPerson(activeSubTab)
     const { totalPerPerson, menu_total_booking } =
       computeMenuTotalsWithPresetPrice(resolved.items, numGuests, presetPricePerPerson)
     const usesFixedSubTabPricing = presetPricePerPerson != null
@@ -542,7 +536,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     formData.menu_selection?.items.length,
     formData.num_guests,
     formData.preset_menu,
-    getActiveSubTabPricePerPerson,
+    getSubTabPricePerPerson,
     menuItems,
     presetCatalogLoading,
     selectedPreset,
@@ -1006,7 +1000,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
                 })
                 return
               }
-              const price = getActiveSubTabPricePerPerson(tab)
+              const price = getSubTabPricePerPerson(tab)
               const numGuests = formData.num_guests || 0
               setFormData({
                 ...formData,
@@ -1062,12 +1056,13 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
               activeSubTab ? activeSubTab.is_fixed_menu !== false : undefined
             }
             composeCollapseKey={String(composeCollapseNonce)}
+            showIngredientPrices={showIngredientPrices}
             onPresetMenuChange={handlePresetMenuChange}
             onMenuChange={({ items, totalPerPerson }) => {
               const numGuests = formData.num_guests || 0
               const currentPreset = selectedPreset
               let updatedPreset: PresetMenuType = currentPreset
-              const presetPricePerPerson = getActiveSubTabPricePerPerson(activeSubTab)
+              const presetPricePerPerson = getSubTabPricePerPerson(activeSubTab)
               const usesFixedSubTabPricing = presetPricePerPerson != null
               const effectiveTotalPerPerson = usesFixedSubTabPricing ? presetPricePerPerson : totalPerPerson
 

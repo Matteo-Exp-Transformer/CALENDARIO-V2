@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import { CalendarDays, Clock, Users, UtensilsCrossed, Phone } from 'lucide-react'
 import type { BookingRequestInput } from '@/types/booking'
 import {
+  getSubTabPricePerPerson,
   resolveCarouselSummaryDisplay,
   type BookingMode,
   type SubTab,
@@ -59,12 +60,10 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   const items = formData.menu_selection?.items ?? []
   const totalPerPerson = formData.menu_total_per_person ?? 0
   const totalBooking = formData.menu_total_booking ?? 0
-  const hasPresetPrice =
-    activeSubTab?.price_per_person != null &&
-    activeSubTab.price_per_person > 0 &&
-    activeSubTab.is_fixed_menu !== false
+  const presetPricePerPerson = getSubTabPricePerPerson(activeSubTab)
+  const hasPresetPrice = presetPricePerPerson != null
+  const showIngredientPrices = presetPricePerPerson == null
   const isCarouselSummary = activeSubTab?.display === 'carousel'
-  const isScrollableCardSummary = activeSubTab?.display === 'cards'
   const showMenuPrices = hasPresetPrice || totalPerPerson > 0
   const showTotals = showMenuPrices && totalPerPerson > 0 && (hasMenu || isCarouselSummary)
 
@@ -165,10 +164,10 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
               </p>
               <p className="text-base font-bold text-warm-wood leading-tight mt-0.5">
                 {activeSubTab.label}
-                {hasPresetPrice && (
+                {hasPresetPrice && presetPricePerPerson != null && (
                   <span className="text-warm-wood-dark/80 font-semibold">
                     {' '}
-                    — {formatCurrency(activeSubTab.price_per_person)}/persona
+                    — {formatCurrency(presetPricePerPerson)}/persona
                   </span>
                 )}
               </p>
@@ -221,7 +220,7 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
                         item.name
                       )}
                     </span>
-                    {showMenuPrices && !(hasPresetPrice && isScrollableCardSummary) ? (
+                    {showMenuPrices && showIngredientPrices ? (
                       <span className="text-sm text-warm-wood-dark/70 font-semibold shrink-0 tabular-nums">
                         {formatCurrency(item.price)}
                       </span>

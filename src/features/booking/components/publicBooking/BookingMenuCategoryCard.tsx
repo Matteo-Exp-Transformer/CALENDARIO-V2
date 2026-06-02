@@ -30,23 +30,34 @@ export interface BookingMenuCategoryCardProps {
   horizontalScrollRef?: React.RefObject<HTMLElement | null>
   /** Riduce padding e testo per griglie strette (es. 3 col su mobile). */
   compact?: boolean
+  /** false = sottotab con prezzo fisso: nasconde € per ingrediente. Default true. */
+  showIngredientPrices?: boolean
 }
 
 function ItemPriceRow({
   item,
   formatPrice,
+  showPrice = true,
 }: {
   item: ComposeMenuItem
   formatPrice: (item: ComposeMenuItem) => string
+  showPrice?: boolean
 }) {
   const hasDesc = Boolean(item.description?.trim())
   return (
     <div className="min-w-0 flex-1">
-      <div className="flex items-start justify-between gap-2">
+      <div
+        className={cn(
+          'flex items-start gap-2',
+          showPrice ? 'justify-between' : 'justify-start',
+        )}
+      >
         <span className="text-sm font-bold leading-snug text-warm-wood wrap-break-word">{item.name}</span>
-        <span className="shrink-0 text-sm font-bold tabular-nums text-warm-wood">
-          {formatPrice(item)}
-        </span>
+        {showPrice ? (
+          <span className="shrink-0 text-sm font-bold tabular-nums text-warm-wood">
+            {formatPrice(item)}
+          </span>
+        ) : null}
       </div>
       {hasDesc ? (
         <span className="mt-0.5 block text-xs leading-snug text-warm-wood-dark/65 wrap-break-word">
@@ -70,6 +81,7 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   resetKey,
   horizontalScrollRef,
   compact = false,
+  showIngredientPrices = true,
 }) => {
   const selectedCount = countSelectedInCategory(selectedItems, categoryKey)
   const { hint, status } = selectionStatusLabel(categoryKey, selectedCount)
@@ -167,7 +179,11 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
                   </div>
                 ) : null}
                 <div className="flex min-h-[44px] gap-2.5">
-                  <ItemPriceRow item={item} formatPrice={formatPrice} />
+                  <ItemPriceRow
+                    item={item}
+                    formatPrice={formatPrice}
+                    showPrice={showIngredientPrices}
+                  />
                 </div>
               </div>
             </li>
@@ -197,7 +213,11 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
                   onChange={() => onToggleItem(item)}
                   className="mt-1 h-4 w-4 shrink-0 accent-warm-orange"
                 />
-                <ItemPriceRow item={item} formatPrice={formatPrice} />
+                <ItemPriceRow
+                  item={item}
+                  formatPrice={formatPrice}
+                  showPrice={showIngredientPrices}
+                />
               </div>
             </label>
           </li>

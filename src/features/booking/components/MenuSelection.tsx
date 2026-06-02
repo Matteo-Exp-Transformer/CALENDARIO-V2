@@ -69,6 +69,8 @@ interface MenuSelectionProps {
   menuSelectionLockedOverride?: boolean
   /** Chiave per richiudere card ingredienti aperte (es. submit con errori). */
   composeCollapseKey?: string
+  /** false = sottotab con prezzo fisso: nasconde € per ingrediente. Default true. */
+  showIngredientPrices?: boolean
 }
 
 type NormalizedMenuItem = ComposeMenuItem
@@ -94,6 +96,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   presetSectionTitle,
   menuSelectionLockedOverride,
   composeCollapseKey,
+  showIngredientPrices = true,
 }) => {
   const publicBlockClass = publicFormLayout ? BOOKING_PUBLIC_CONTENT_WIDTH : 'mx-auto w-full max-w-full'
   const { data: menuItems = [], isLoading, error } = useMenuItems()
@@ -444,6 +447,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
             formatPrice={formatPrice}
             onToggleItem={handleItemToggle}
             composeCollapseKey={composeCollapseKey}
+            showIngredientPrices={showIngredientPrices}
           />
         </div>
       )}

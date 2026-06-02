@@ -26,6 +26,8 @@ export interface BookingMenuComposeGridProps {
   onToggleItem: (item: ComposeMenuItem) => void
   /** Incrementa per richiudere tutte le card ingredienti (es. submit con errori). */
   composeCollapseKey?: string
+  /** false = sottotab con prezzo fisso: nasconde € per ingrediente. Default true. */
+  showIngredientPrices?: boolean
 }
 
 type VisibleCategory = { key: string; label: string; items: ComposeMenuItem[] }
@@ -41,6 +43,7 @@ function ComposeCategoryCards({
   onToggleItem,
   resetKey,
   horizontalScrollRef,
+  showIngredientPrices,
 }: {
   categories: VisibleCategory[]
   layout: 'grid' | 'scroll' | 'stack'
@@ -52,6 +55,7 @@ function ComposeCategoryCards({
   onToggleItem: (item: ComposeMenuItem) => void
   resetKey?: string
   horizontalScrollRef?: React.RefObject<HTMLElement | null>
+  showIngredientPrices?: boolean
 }) {
   return (
     <>
@@ -70,6 +74,7 @@ function ComposeCategoryCards({
           compact={compact}
           resetKey={resetKey}
           horizontalScrollRef={horizontalScrollRef}
+          showIngredientPrices={showIngredientPrices}
         />
       ))}
     </>
@@ -85,6 +90,7 @@ function ComposeScrollRow({
   formatPrice,
   onToggleItem,
   resetKey,
+  showIngredientPrices,
 }: {
   categories: VisibleCategory[]
   className?: string
@@ -94,6 +100,7 @@ function ComposeScrollRow({
   formatPrice: (item: ComposeMenuItem) => string
   onToggleItem: (item: ComposeMenuItem) => void
   resetKey?: string
+  showIngredientPrices?: boolean
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -150,6 +157,7 @@ function ComposeScrollRow({
           onToggleItem={onToggleItem}
           resetKey={resetKey}
           horizontalScrollRef={scrollRef}
+          showIngredientPrices={showIngredientPrices}
         />
       </div>
       {canScrollRight && (
@@ -178,6 +186,7 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
   formatPrice,
   onToggleItem,
   composeCollapseKey,
+  showIngredientPrices = true,
 }) => {
   const allowedItemIds = useMemo(
     () =>
@@ -203,6 +212,7 @@ export const BookingMenuComposeGrid: React.FC<BookingMenuComposeGridProps> = ({
     formatPrice,
     onToggleItem,
     resetKey: `${presetMenu ?? 'no-preset'}:${composeCollapseKey ?? '0'}`,
+    showIngredientPrices,
   }
 
   if (visibleCategories.length === 0) {

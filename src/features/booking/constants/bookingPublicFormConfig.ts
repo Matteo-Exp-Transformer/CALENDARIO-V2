@@ -335,6 +335,17 @@ export interface SubTab {
   field_overrides?: SubTabFieldOverrides
 }
 
+/**
+ * Prezzo fisso €/persona della sottotab, se applicabile.
+ * `undefined` = menù personalizzabile (somma ingredienti); numero = prezzo fisso opzione.
+ */
+export function getSubTabPricePerPerson(subTab: SubTab | null | undefined): number | undefined {
+  if (!subTab || subTab.is_fixed_menu === false) return undefined
+  return subTab.price_per_person != null && subTab.price_per_person > 0
+    ? subTab.price_per_person
+    : undefined
+}
+
 /** Carosello Prenota: dettaglio slide nel riepilogo laterale (default true se assente). */
 export function getShowOfferDetailsInSummary(tab: SubTab | null | undefined): boolean {
   return tab?.show_offer_details_in_summary !== false
