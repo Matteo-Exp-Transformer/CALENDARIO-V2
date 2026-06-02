@@ -67,21 +67,16 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
 
   if (subTabs.length === 0) return null
   // ≤3 card: flex-1 su ogni card → si espandono a riempire la riga, centrate (altezza fissa).
-  // ≥4 card: larghezza proporzionale al contenitore — 3 slot visibili da mobile, poi 4 e 5
-  //   man mano che la view cresce e ci sta una card intera in più. La card usa `aspect-square`
-  //   (sotto): l'altezza segue la larghezza, così resta quadrata e non diventa oblunga.
+  // ≥4 card: comportamento responsive validato nel report agente:
+  // 3 slot proporzionali su mobile, lato fisso da 782px e scatto a 1400px.
   const isScrollable = subTabs.length > 3
   const cardFlexClass = isScrollable
     ? bookingPublicSubTabScrollCardWidthClass()
     : 'flex-1 min-w-0'
-  // Ramo scrollabile: altezza legata alla larghezza via aspect-ratio.
-  //   - sotto 640px: quadrata (`aspect-square`), card piccole e leggibili su mobile;
-  //   - da ≥640px: più bassa (`aspect-4/3`, larga ~200px → alta ~150px) per non risultare
-  //     troppo alta quando il lato fisso cresce.
-  // ≤3 card mantengono l'altezza fissa (sono larghe, l'aspect-ratio le renderebbe enormi).
+  // Ramo scrollabile: mobile compatto (titolo, icona, prezzo), poi più basso da sm.
   const cardHeightClass = isScrollable
-    ? 'aspect-square sm:aspect-4/3'
-    : 'min-h-[140px] sm:min-h-[196px] lg:min-h-[230px]'
+    ? 'aspect-[1/1.08] sm:aspect-[4/3.35]'
+    : 'min-h-[154px] sm:min-h-[212px] lg:min-h-[248px]'
 
   return (
     <div
@@ -107,8 +102,6 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
           const isActive = activeSubTabId === tab.id
           const priceAmount =
             tab.display === 'carousel' ? null : formatPriceAmountLabel(tab.price_per_person)
-          const coursesLabel = tab.display === 'carousel' ? '' : tab.courses_label?.trim() ?? ''
-          const descriptionLabel = tab.display === 'carousel' ? '' : tab.description?.trim() ?? ''
           return (
             <button
               key={tab.id}
@@ -116,67 +109,55 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
               data-testid={`booking-sub-tab-card-${tab.id}`}
               onClick={() => onChange(isActive ? null : tab)}
               className={cn(
-                'flex snap-center flex-col items-center rounded-xl border-2 px-3 py-3 text-center transition-all sm:rounded-2xl sm:px-6 sm:py-4',
+                'flex snap-center flex-col rounded-xl border px-2.5 py-2.5 text-left transition-all sm:rounded-2xl sm:px-4 sm:py-4',
                 cardFlexClass,
                 cardHeightClass,
-                'bg-white/85 backdrop-blur-[1px] shadow-sm',
+                'bg-white/95 backdrop-blur-[1px] shadow-[0_12px_34px_rgba(49,22,12,0.10)]',
                 isActive
-                  ? 'border-warm-orange ring-2 ring-warm-orange/30 shadow-md'
-                  : 'border-black/15 hover:border-warm-orange/50',
+                  ? 'border-warm-orange ring-2 ring-warm-orange/25'
+                  : 'border-black/5 hover:border-warm-orange/45',
               )}
             >
-              <div className="flex min-w-0 w-full flex-1 flex-col items-center pt-2 sm:pt-3">
+              <div className="flex min-h-0 w-full flex-1 flex-col">
                 <p
                   className={cn(
-                    'line-clamp-2 text-xs font-bold leading-tight sm:text-base lg:text-xl',
+                    'text-center text-[13px] font-bold leading-tight line-clamp-2 sm:text-base lg:text-sm xl:text-base',
                     isActive ? 'text-warm-orange' : 'text-warm-wood',
                   )}
                 >
                   {tab.label}
                 </p>
-                <div
-                  className={cn(
-                    'mt-3 h-[3px] min-h-[3px] w-11 shrink-0 rounded-full sm:mt-4',
-                    isActive ? 'bg-warm-orange/70' : 'bg-warm-wood/40',
-                  )}
-                  aria-hidden
-                />
-                <div className="flex min-h-0 w-full flex-1 items-center justify-center py-2 sm:py-3">
+                <div className="flex min-h-0 flex-1 items-center justify-center py-2 sm:py-3">
                   {tab.display !== 'carousel' && (
                     <span
                       className={cn(
                         'flex shrink-0 items-center justify-center',
-                        'h-10 w-10 sm:h-14 sm:w-14 md:h-16 md:w-16',
+                        'h-10 w-10 sm:h-14 sm:w-14 min-[782px]:h-16 min-[782px]:w-16',
                       )}
                       aria-hidden
                     >
                       <MenuQrCategoryIconGlyph
                         iconKey={tab.icon ?? MENU_QR_DEFAULT_CATEGORY_ICON_KEY}
-                        className="h-7 w-7 sm:h-9 sm:w-9 md:h-10 md:w-10 text-warm-wood-dark"
+                        className="h-8 w-8 text-warm-wood-dark sm:h-11 sm:w-11 min-[782px]:h-12 min-[782px]:w-12"
                       />
                     </span>
                   )}
                 </div>
-                {descriptionLabel ? (
-                  <p className="mt-0.5 hidden max-w-full px-1 text-center text-xs leading-snug text-warm-wood-dark/70 line-clamp-3 min-[700px]:block sm:line-clamp-2">
-                    {descriptionLabel}
-                  </p>
-                ) : null}
-                {(priceAmount || coursesLabel) && (
-                  <div className="flex w-full items-end justify-between gap-2">
-                    {coursesLabel ? (
-                      <p className="min-w-0 text-left text-[11px] font-bold leading-tight text-warm-orange sm:text-sm lg:text-base">
-                        {coursesLabel}
-                      </p>
-                    ) : (
-                      <span className="min-w-0 flex-1" aria-hidden />
-                    )}
-                    {priceAmount && (
-                      <p className="shrink-0 text-right text-xs font-bold leading-tight text-warm-wood-dark/80 sm:text-base lg:text-xl">
-                        <span>{priceAmount}</span>
-                        <span className="hidden min-[900px]:inline"> a persona</span>
-                      </p>
-                    )}
+                <div
+                  className={cn(
+                    'h-px w-full shrink-0',
+                    isActive ? 'bg-warm-orange/35' : 'bg-warm-wood/15',
+                  )}
+                  aria-hidden
+                />
+                {priceAmount && (
+                  <div className="flex shrink-0 flex-col items-center justify-end pt-2 text-center sm:pt-3">
+                    <p className="text-sm font-normal leading-none tracking-normal text-warm-orange tabular-nums sm:text-lg min-[782px]:text-xl">
+                      {priceAmount}
+                    </p>
+                    <p className="mt-1 hidden text-xs font-normal leading-none text-warm-orange lg:block">
+                      a persona
+                    </p>
                   </div>
                 )}
               </div>
