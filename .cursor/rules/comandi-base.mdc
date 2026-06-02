@@ -36,6 +36,18 @@ Dettaglio completo: docs/Comunicazione-Skill/VOCABOLARIO.md (caricalo per le sfu
   Niente altro attorno. (ex «dammi prompt proseguimento».)
 - **«spiegamelo semplice»** → effetto concreto + chi fa cosa, breve, no gergo.
 
+## Zone che si confondono (chiedi PRIMA di toccare codice — vale anche in chat esplorativa)
+Tre zone diverse si chiamano «menu» e due pagine pubbliche si confondono. Se il
+contesto è ambiguo tra queste, **chiedi quale prima di agire** — non dedurre:
+- **Pagina Prenota** (`/prenota/:slug`, BookingRequestPage) ≠ **Pagina/Home Menu
+  QR** (`/menu/:slug`, PublicMenuPage). «stile Prenota» su un task QR = il layout
+  delle card, NON «fix sulla pagina Prenota». Se nel discorso compaiono ENTRAMBE
+  e il task tocca layout/scroll/sfondo → una riga Sì/No: «è Prenota o Menu QR?».
+- Le **tre zone menu**: Personalizza form (vetrina Prenota) · Menu QR (pagina
+  pubblica QR) · magazzino MenuPricesTab (fonte di verità prezzi/ingredienti).
+- Dettaglio + scorciatoie complete in VOCABOLARIO.md «Scorciatoie d'area».
+Causa: confusione Prenota↔QR ricorrente, anche fuori dal prepara-prompt (02-06-26).
+
 ## Salvaguardie sempre attive (a prescindere dal task)
 - **Sicurezza PROD**: prima di INSERT/UPDATE/DELETE/migrazioni via MCP,
   verifica l'ambiente (get_project_url). Se è PROD (rwuxgvld) FERMATI e
