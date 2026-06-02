@@ -22,9 +22,9 @@ Dettaglio completo: docs/Comunicazione-Skill/VOCABOLARIO.md (caricalo per le sfu
 
 ## Comandi durante/fine chat
 - **«lavoro ok»** → task accettato + SCRIVI/AGGIORNA un report COMPLETO.
-  COME si compila un report (tutte le sezioni, incl. «la tua lettura della
-  sessione»): **docs/Comunicazione-Skill/COME_COMPILARE_REPORT.md** — è la
-  fonte unica. NON committa, NON fa push.
+  COME si compila (tutte le sezioni, incl. «la tua lettura della sessione») +
+  procedure di chiusura: **docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md** —
+  fonte unica per la fase fine-chat. NON committa, NON fa push.
 - **Nota hook fine-chat:** a fine chat un hook Cursor (`stop`) legge i report
   appena scritti e ti ricorda le sezioni mancanti + la tua lettura/esiti Liv.2.
   È normale e voluto (non blocca): assecondalo, completa ciò che segnala. Non è

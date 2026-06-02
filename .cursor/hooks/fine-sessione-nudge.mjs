@@ -133,7 +133,7 @@ async function main() {
   // riempirle (single source of truth). Risponde a Matteo 02-06-26: «la presenza non basta, serve
   // l'allineamento» + «l'hook citi un file X con tutti i dettagli su come compilare il report».
   const qualityInstruction = [
-    'PRIMA DI CHIUDERE — completa il report seguendo: docs/Comunicazione-Skill/COME_COMPILARE_REPORT.md',
+    'PRIMA DI CHIUDERE — completa il report seguendo: docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md (Parte A)',
     'In particolare la SEZIONE 8 «La tua lettura della sessione» (la più saltata): impressioni',
     'lavorando con lo skill system, difficoltà+soluzioni, migliorie che suggeriresti, errori+correzioni',
     'con causa classificata. Come DATI e versione dell\'agente, NON come voto sintetico (il voto è del revisore).',

@@ -1,12 +1,18 @@
-# COME COMPILARE UN REPORT — guida unica (citata dall'hook fine-chat)
+# CHIUSURA SESSIONE — guida unica (report + procedure di fine chat)
 
-> **Fonte unica.** Questo è il file a cui rimanda l'hook `stop` (`.cursor/hooks/fine-sessione-nudge.mjs`)
-> quando a fine chat trova un report incompleto: «vedi COME_COMPILARE_REPORT.md». Tutte le istruzioni
-> su cosa scrivere in un report stanno **qui**, in un posto solo. APP_CONTEXT §7.1 definisce QUANDO
-> scrivere un report (modalità light/standard/deep) e rimanda qui per il COME.
+> **Fonte unica per la FASE «fine chat».** Tutto ciò che serve quando una sessione si chiude sta qui:
+> come compilare il report (Parte A) e le procedure operative di chiusura — commit, push, allineamento
+> branch, terminali (Parte B). L'hook `stop` (`.cursor/hooks/fine-sessione-nudge.mjs`) rimanda a questo
+> file quando un report è incompleto. APP_CONTEXT §7 definisce il **QUANDO** (modalità) e rimanda qui
+> per il **COME**: una sola copia, niente disallineamenti.
 >
-> **Perché esiste:** l'hook controlla che le sezioni *esistano*, ma non può giudicare se sono piene
-> e allineate. Questa guida è ciò che l'agente deve seguire perché il contenuto sia davvero utile.
+> **Principio (Single Responsibility):** questo file copre **solo** la chiusura sessione — una fase con
+> confini finiti (report → commit → push → allineamento → terminali). Non diventa un «file di tutto»:
+> se un'informazione non riguarda la chiusura, NON va qui.
+
+---
+
+# PARTE A — Come compilare il report
 
 ---
 
@@ -100,3 +106,40 @@ A fine chat un hook Cursor (`stop`) legge i `Report-*.md` che hai appena scritto
 - ti ricorda di scrivere **la sezione 8** (la tua lettura) e gli esiti delle voci Liv.2 usate.
 **È normale e voluto: assecondalo, completa ciò che segnala, non è un errore del sistema.** Non blocca
 la chiusura (smart-allow). Se la chat non aveva report (es. domanda veloce), l'hook tace.
+
+---
+
+# PARTE B — Procedure operative di chiusura
+
+> Scattano su **«fai report finale»** (capitolo chiuso → si pubblica). NON su «lavoro ok» (= solo
+> scrivere il report). Il via al commit/push è sempre una conferma di Matteo.
+
+## 1. Prima di committare: report allineato al codice
+Controlla che il report descriva il **diff reale** (nessuna sezione rimasta indietro rispetto a fix
+successivi). Allinea le skill §7.2 delle aree toccate se mancante.
+
+## 2. Commit — separati per tipo
+- **Codice** (`feat`/`fix`) e **documentazione** (`docs(...)`) in **commit distinti** (punti di
+  ripristino indipendenti — Matteo lo preferisce).
+- Conventional Commits: `feat(scope):` · `fix(scope):` · `docs(scope):`.
+- Corpo del commit: sezione **`Review:`** con i path per revisionare (report, SESSION_LOG, skill toccati).
+- **Trappola gitignore `docs/`:** la cartella `docs/` è gitignored → i file **nuovi** lì dentro
+  (report nuovi) richiedono `git add -f`. I file **già tracciati** si committano normali. Se un `git add`
+  misto fallisce «paths are ignored», forza con `-f` il file nuovo e ripeti.
+- Aggiungi SOLO i tuoi file: non includere modifiche/untracked altrui nel commit del task.
+
+## 3. Allineamento branch `env/test` → `main` (se richiesto)
+- Verifica: `git merge-base --is-ancestor main env/test` → se «sì», **fast-forward** pulito.
+- Se il working tree ha modifiche non tue che bloccano il checkout → `git stash push <file>`, fai il
+  merge, torna su env/test, `git stash pop` (preserva il lavoro altrui senza committarlo).
+- `git checkout main && git merge --ff-only env/test && git push origin main`, poi torna su `env/test`.
+
+## 4. Allineamento DB prod ↔ test (se richiesto)
+- **Sola lettura per default.** `get_project_url` per sapere dove sei: `rwuxgvld`=PROD, `docnnernvp`=TEST.
+- Confronta le migrazioni per **nome logico** (non per version: i due ambienti hanno schemi di
+  versionamento diversi). Differenze storiche note (003 duplicate, RPC consolidate) ≠ disallineamento.
+- **Mai scrivere su PROD** senza conferma esplicita di Matteo.
+
+## 5. Terminali (nota obbligatoria in chiusura chat, 1-2 righe)
+- Suggerisci di chiudere SOLO i terminali aperti **dall'agente** (validate, `npm run dev` in background avviati da tool).
+- **Non** toccare il `npm run dev` che ha lanciato **Matteo** (può servirgli in locale).

@@ -406,10 +406,10 @@ Non è obbligatorio **terminare** i processi dall’agente (Matteo chiude le tab
 
 ### 7.1 Scrivere il report
 
-> **COME si compila (tutte le sezioni, tono, cosa NON fare):** fonte unica in
-> `docs/Comunicazione-Skill/COME_COMPILARE_REPORT.md` — è anche il file citato dall'hook fine-chat
-> quando un report è incompleto. Qui sotto resta il **QUANDO** (modalità) + il dettaglio storico; per
-> la checklist operativa di compilazione segui quel file (evita di tenere due copie disallineate).
+> **COME si compila (tutte le sezioni, tono, cosa NON fare) + procedure di chiusura (commit, push,
+> allineamento branch/DB, terminali):** fonte unica in
+> `docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md` — è anche il file citato dall'hook fine-chat.
+> Qui sotto resta solo il **QUANDO** (modalità + politiche di attivazione); il COME sta nel file unico.
 
 > **Peso del protocollo per modalità (light / standard / deep).** Il task arriva con una modalità
 > (la classifica `PREPARA_PROMPT_SKILL.md` § 1.A e la scrive nel prompt; se manca, deducila tu dai
@@ -444,28 +444,11 @@ Per **standard** e **deep**, creare un file `Report-*.md` in `docs/Sessioni di l
 > `SESSION_LOG.md` punta a quel file. Resta a report singolo (modello classico) solo quando il
 > ciclo è **un solo agente in un solo turno**. I report parziali storici restano dove sono.
 
-Il report (standard/deep) deve contenere — in **deep** tutte le sezioni, in **standard** quelle base + Dati comunicazione (Derivazione errori solo se ci sono state difficoltà):
-- Cosa è stato fatto (in ordine cronologico)
-- File toccati e perché (linguaggio utente — non "ho modificato X" ma "ora Mario vede Y")
-- Domande poste all'utente e risposte ricevute
-- Test eseguiti e risultato (`npm run validate`)
-- **Sezione "File di skill aggiornati"** — tabella obbligatoria (anche se una sola riga «nessuno»). Colonne:
-  **file** | **modifica (breve)** | **perché** (motivo legato al task o a §7.2). Elencare **tutti** i file dello skill system toccati in sessione: skill di area (`docs/*_SKILL.md`, `*_CONTEXT.md`), `docs/COMUNICAZIONE_UTENTE_SKILL.md`, `docs/APP_CONTEXT_SKILL.md`, `docs/Comunicazione-Skill/*`, `docs/SESSION_LOG.md`, `.cursor/skills/**`, report in `docs/Sessioni di lavoro/`. Non limitarsi al codice app: se hai aggiornato PROPOSTE/OSSERVAZIONI/regole report, va nella stessa tabella con il perché.
-- **Sezione "Dati comunicazione"** (obbligatoria) — frasi/richieste ricorrenti di questa chat con conteggio, spiegazioni date e formato che ha funzionato, procedure ripetute, cosa si può automatizzare con certezza vs cosa lasciare manuale, proposte fatte e loro esito, token risparmiabili. Vedi `COMUNICAZIONE_UTENTE_SKILL.md`. **Regola temporanea (raccolta dati iniziali):** in questa sezione includi anche cronologia prompt di Matteo (annotati, verbatim dove utile), contesto sessione e cosa non è successo in chat — dettaglio in `COMUNICAZIONE_UTENTE_SKILL.md` sotto «Dati comunicazione». **Sottosezione obbligatoria (standard/deep):** «Analisi flusso prompt, efficienza e statistiche (skill system)» — statistiche sessione, KPI, anatomia prompt, cosa replicare/migliorare; vedi titolo fisso in `COMUNICAZIONE_UTENTE_SKILL.md`.
-- **Sezione "Derivazione errori"** (obbligatoria, anche se la riga è "nessuna difficoltà") — per ogni bug o difficoltà incontrata durante il lavoro, classificare la **causa**:
-  - **bug preesistente** — c'era già nel codice prima di questo task (citare file/RULE);
-  - **prompt ambiguo/incompleto** — la richiesta lasciava spazio a interpretazioni o conteneva intenti contraddittori (citare cosa mancava o cosa si è invertito);
-  - **errore agente** — interpretazione sbagliata, tentativo fallito evitabile, scelta tecnica non ottimale dell'agente esecutore;
-  - **vincolo strutturale** — un LOCK/comportamento CSS/architettura preesistente ha bloccato un approccio (es. `overflow-x-auto` che taglia i figli `absolute`).
-  Per ognuno: cosa è successo, da cosa derivava, come si sarebbe evitato. I pattern ricorrenti vanno **anche** appesi in `docs/Comunicazione-Skill/ERRORI_PROCESSO.md` (indice per il revisore Meta). Vedi modello report 29-05-26 card ingredienti.
-- Cosa resta per la prossima sessione (sincronizzare con `docs/FOLLOW_UP.md`: nuove righe `FU-NNN` per controlli rimandati, stato `fatto` se chiusi in sessione)
-- Eventuali deviazioni dal plan con motivazione
-
-**Riferimenti nei commit (pratica obbligatoria).** Nel corpo del messaggio di commit (dopo la riga
-soggetto), includere sempre una sezione **`Review:`** con elenco puntato dei path che permettono di
-revisionare il lavoro: report in `docs/Sessioni di lavoro/GG-MM-AA/Report-*.md`, riga pertinente in
-`docs/SESSION_LOG.md`, eventuali voci aperte in `docs/FOLLOW_UP.md`, skill/context toccati. Così
-chi fa `git log` o apre la PR trova subito dove leggere senza cercare in chat.
+**Le sezioni del report, il tono, le procedure di commit/push/allineamento e i terminali** stanno
+nella fonte unica `docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md` (Parte A = report, Parte B =
+procedure). Qui in APP_CONTEXT non si duplica più l'elenco — si rimanda lì (evita due copie che si
+disallineano). Le **politiche di attivazione** sopra (modalità, trigger deep, cappello 3 righe, report
+unificato) restano qui perché governano *quando* parte il protocollo.
 
 ### 7.2 Allineare i file di skill
 
