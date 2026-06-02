@@ -406,6 +406,11 @@ Non è obbligatorio **terminare** i processi dall’agente (Matteo chiude le tab
 
 ### 7.1 Scrivere il report
 
+> **COME si compila (tutte le sezioni, tono, cosa NON fare):** fonte unica in
+> `docs/Comunicazione-Skill/COME_COMPILARE_REPORT.md` — è anche il file citato dall'hook fine-chat
+> quando un report è incompleto. Qui sotto resta il **QUANDO** (modalità) + il dettaglio storico; per
+> la checklist operativa di compilazione segui quel file (evita di tenere due copie disallineate).
+
 > **Peso del protocollo per modalità (light / standard / deep).** Il task arriva con una modalità
 > (la classifica `PREPARA_PROMPT_SKILL.md` § 1.A e la scrive nel prompt; se manca, deducila tu dai
 > trigger deep sotto). La modalità decide **quanto** di questo § 7 applichi:

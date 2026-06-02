@@ -21,12 +21,14 @@ Dettaglio completo: docs/Comunicazione-Skill/VOCABOLARIO.md (caricalo per le sfu
   «evolvi» SENZA «senior» → chiedi: senior o revisore?
 
 ## Comandi durante/fine chat
-- **«lavoro ok»** → task accettato + SCRIVI/AGGIORNA un report COMPLETO del
-  lavoro svolto: cosa è cambiato, file toccati, sezione «Dati comunicazione»
-  (frasi di Matteo, prompt annotati), dati grezzi della sessione (n° giri,
-  correzioni, difficoltà) e la TUA lettura della qualità (skill system,
-  efficienza, chiarezza prompt) — come DATI, non come voto sintetico (il voto
-  lo dà il revisore). NON committa, NON fa push.
+- **«lavoro ok»** → task accettato + SCRIVI/AGGIORNA un report COMPLETO.
+  COME si compila un report (tutte le sezioni, incl. «la tua lettura della
+  sessione»): **docs/Comunicazione-Skill/COME_COMPILARE_REPORT.md** — è la
+  fonte unica. NON committa, NON fa push.
+- **Nota hook fine-chat:** a fine chat un hook Cursor (`stop`) legge i report
+  appena scritti e ti ricorda le sezioni mancanti + la tua lettura/esiti Liv.2.
+  È normale e voluto (non blocca): assecondalo, completa ciò che segnala. Non è
+  un errore del sistema. Se la chat non aveva report → l'hook tace.
 - **«fai report finale»** → il capitolo è chiuso: il report è già completo.
   CONTROLLA brevemente che il report sia allineato allo stato ATTUALE del
   codice (corrisponde al diff reale), poi proponi/esegui COMMIT + PUSH.

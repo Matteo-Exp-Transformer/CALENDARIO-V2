@@ -129,18 +129,14 @@ async function main() {
   }
 
   // Istruzione QUALITATIVA — il pezzo che l'hook non può verificare ma DEVE chiedere.
-  // L'hook controlla che le sezioni ESISTANO; questo blocco chiede all'agente di RIEMPIRLE col
-  // contenuto che conta di più per lo skill system: la sua lettura del lavoro, non solo il "cosa".
-  // Risponde all'osservazione di Matteo 02-06-26: «la presenza non basta, serve l'allineamento».
+  // L'hook controlla che le sezioni ESISTANO; questo blocco rimanda alla guida unica su COME
+  // riempirle (single source of truth). Risponde a Matteo 02-06-26: «la presenza non basta, serve
+  // l'allineamento» + «l'hook citi un file X con tutti i dettagli su come compilare il report».
   const qualityInstruction = [
-    'PRIMA DI CHIUDERE — il report deve contenere la TUA lettura della sessione (non solo cosa hai fatto):',
-    '  1. Impressioni dell\'agente: cosa ha funzionato bene e cosa no LAVORANDO con lo skill system',
-    '     (prompt chiari? skill giuste caricate? procedura scorrevole o macchinosa?).',
-    '  2. Difficoltà incontrate + come le hai risolte (anche piccole — sono dati per migliorare il sistema).',
-    '  3. Migliorie che TU suggeriresti (allo skill system, ai prompt, al processo) — come dato, non come modifica.',
-    '  4. Errori e correzioni: cosa è andato storto, da cosa derivava, come si sarebbe evitato',
-    '     (classifica la causa: bug preesistente / prompt ambiguo / errore agente / vincolo strutturale).',
-    'Scrivilo come DATI e versione dell\'agente, NON come voto sintetico (il voto lo dà il revisore).',
+    'PRIMA DI CHIUDERE — completa il report seguendo: docs/Comunicazione-Skill/COME_COMPILARE_REPORT.md',
+    'In particolare la SEZIONE 8 «La tua lettura della sessione» (la più saltata): impressioni',
+    'lavorando con lo skill system, difficoltà+soluzioni, migliorie che suggeriresti, errori+correzioni',
+    'con causa classificata. Come DATI e versione dell\'agente, NON come voto sintetico (il voto è del revisore).',
   ]
 
   // Caso 2: report fresco presente ma TUTTE le sezioni ci sono → conferma + istruzione qualitativa.
