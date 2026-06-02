@@ -199,6 +199,11 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
 - Se `is_fixed_menu !== false` e `price_per_person > 0`: riepilogo/submit usano prezzo × ospiti (non
   somma piatti) e mostrano totale ingredienti barrato come confronto; senza prezzo o
   `is_fixed_menu === false` nessun riepilogo prezzo.
+- **€ per ingrediente (03-06-26):** criterio unico `getSubTabPricePerPerson` in
+  `bookingPublicFormConfig.ts` — se restituisce un numero (prezzo fisso sottotab), prop
+  `showIngredientPrices={false}` da `BookingRequestForm` → `MenuSelection` →
+  `BookingMenuComposeGrid` → `BookingMenuCategoryCard` (`ItemPriceRow` senza colonna prezzo) e
+  sidebar «Il tuo menu» senza € riga; se `undefined` (personalizzabile) comportamento precedente.
 - `preset_id` resta fonte per precompilare ingredienti e seguire il menu staff. Visibilità
   ingredienti/categorie per card filtrata da `hidden_category_keys`/`hidden_item_ids`.
 - Card scorrevole `display='cards'` senza `preset_id` (compilata a mano): no griglia ingredienti,

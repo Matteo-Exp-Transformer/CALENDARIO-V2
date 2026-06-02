@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 03-06-26 | Prenota — nascondere € ingredienti se sottotab ha prezzo fisso ✅ **light** · report finale | `485b7a2`+`7ce53d7` su `origin/env/test` — `getSubTabPricePerPerson` + `showIngredientPrices` su card categorie e «Il tuo menu»; totali opzione × coperti invariati; validate verde. |
 | 03-06-26 | Prenota — riduzione padding orizzontale colonna form layout striscia ✅ **light** | `cee87db` su `origin/env/test` — `BOOKING_PAGE_CONTENT_PAD_STRIP` da `px-8 md:px-10` a `px-4 md:px-6`; card carousel si ridimensionano da sole (% sul contenitore). |
 
 ## 2026-05

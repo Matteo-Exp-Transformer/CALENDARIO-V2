@@ -48,6 +48,12 @@
 
 ## Sessioni registrate (append-only)
 
+### 03-06-26 — Prezzo ingredienti Prenota (prepara-prompt, chiarimento regola)
+- **Area:** Pagina Prenota — card ingredienti (`BookingMenuCategoryCard`) + riepilogo (`BookingSummarySidebar`).
+- **Pattern:** Matteo descrive il task con DOM path + componente; la regola di prodotto emerge dopo 2–3 turni (prezzo sottotab vs personalizzabile). Chiede al prepara-prompt di **annotare nel report** anche un «prompt iniziale ideale» in poche righe — la frase che avrebbe evitato ambiguità fin dall’inizio.
+- **Proposta processo (Matteo 03-06-26, da valutare revisore):** in ogni sessione **prepara-prompt**, nel report o sotto il blocco copia-incolla, aggiungere sezione **«Prompt ideale (retroattivo)»** — 2–4 righe auto-contenute che Matteo avrebbe potuto incollare al posto del flusso grezzo (es. «Se la sottotab ha prezzo fisso: niente € sugli ingredienti; se personalizzabile: € come ora»). Non sostituisce il prompt esecutore; serve come memoria per sessioni simili e per affinare come Matteo formula le richieste.
+- **Prompt ideale (retroattivo) per questa sessione:** «Pagina Prenota: dopo tab + sottotab card, se la sottotab ha prezzo/persona → mostra solo quello nel riepilogo (× coperti), nascondi € su ogni ingrediente in card e in «Il tuo menu»; se menù personalizzabile (senza prezzo fisso) → € ingredienti come ora. Solo questo, nient’altro.»
+
 ### 02-06-26 — Prenota full-page freeze layout (prepara + esecuzione parziale, multi-turno)
 - **Area:** Pagina Prenota pubblica, solo `isFullPagePhoto && !showPhotoStrip` — cap form 1168px, riepilogo esterno da 1600px.
 - **Prompt:** 5 blocchi prepara + follow-up; regola operativa (Matteo, **non** voce VOCABOLARIO): su correzione prompt in chat prepara → agente riconsegna **prompt intero**, non solo il delta.
@@ -97,6 +103,7 @@
 | «comportamento agente non senior corretto?» | 1 | conferma: solo raccolta dati + PROPOSTE, non promuovere VOCABOLARIO né riformare COMUNICAZIONE |
 | footer mobile 50% + sfondo trasparente | 1 | decisioni UX esplicite dopo mockup HTML |
 | domande non bloccanti lasciate al revisore | 1 | Classic vs Pro, smoke Prenota pubblica — ok lasciare ? in QA |
+| «annota prompt ideale / come avrei dovuto dirlo» (prepara-prompt) | 1 | nel report prepara: sezione breve «Prompt ideale (retroattivo)» — 2–4 righe che catturano la regola di prodotto senza DOM path; candidato PROPOSTE per PREPARA_PROMPT §5 |
 
 ## Spiegazioni date e formato che ha funzionato
 
