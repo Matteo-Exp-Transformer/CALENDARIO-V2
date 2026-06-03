@@ -1,6 +1,6 @@
 # Report — Limiti testo Pagina Prenota (03-06-26)
 
-**Commit:** `111277e` (codice) · `06c9d9a` · `64530d7` · `a9bca14` (docs/chiusura) · branch `env/test` → `origin/env/test`
+**Commit:** `111277e` (codice) · `06c9d9a` · `64530d7` · `a9bca14` · `1309618` (docs/chiusura) · branch `env/test` → `origin/env/test`
 
 ## Cappello
 
@@ -18,6 +18,36 @@
 4. **Form prenotazione cliente:** chi compila nome, email, telefono, intolleranze e altre richieste **non** vede contatori; se supera il cap generoso, al click Invia compare solo «Testo troppo lungo» (stesso messaggio anche lato server).
 5. **Revisione + chiusura (hook 1):** mappa markdown mancante aggiunta; skill §6 validazione allineata (prima citava ancora 60/120/20/300); report riscritto con sez. 8 e prompt verbatim (`64530d7`).
 6. **Annotazioni processo (Matteo):** log errori esecutore su allineamento skill in `ERRORI_PROCESSO.md`; sessione + hook in `OSSERVAZIONI.md` (`a9bca14`).
+7. **Hook stop (2° passaggio):** report completato con sezione effetto hook + commit mancanti in tabella revisione (`1309618`).
+
+---
+
+## Effetto hook stop `FINE-SESSIONE` (`.cursor/hooks/fine-sessione-nudge.mjs`)
+
+Hook ricevuto **2 volte** in questa chat (Matteo incolla il messaggio «📄 FINE-SESSIONE — 2 report toccato/i…»). Senza hook la chiusura si sarebbe fermata al primo «lavoro ok» + commit `111277e`/`06c9d9a` con debiti sotto.
+
+### Cosa **non** sarebbe successo senza hook
+
+| Debito | Perché restava aperto |
+|--------|------------------------|
+| **`BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` §6** con limiti **60/120/20/300** | Esecutore aveva aggiornato solo §8.1 (65/30/700); §6 è la sezione che legge chi cerca «validazione campi» — **informazione falsa** per agenti futuri |
+| **Report scarno** | Sez. 8 superficiale, **nessun prompt verbatim**, nessun FU-ID, tabella skill incompleta, nessuna derivazione errori classificata |
+| **`BOOKING_PRENOTA_TEXT_LIMITS_MAP.md`** | Citata in skill ma **assente** a «lavoro ok» (solo mappa implicita in §8.1) |
+| **`FU-030/031/032`** in `FOLLOW_UP.md` | Follow-up restavano solo nel corpo del report, non tracciati |
+| **`ERRORI_PROCESSO.md` / `OSSERVAZIONI.md`** | Errori esecutore su skill stale **non** registrati come pattern processo |
+| **2° passaggio report** | Commit `64530d7`/`a9bca14`/`1309618`, prompt 6–7, tabella skill comunicazione **non** citati nel report |
+
+In sintesi: il codice (`111277e`) era ok; **documentazione, skill incoerente e chiusura processo** sarebbero rimaste parziali.
+
+### Cosa ho fatto **dopo** aver ricevuto l’hook
+
+| Passaggio | Trigger | Azioni | Commit |
+|-----------|---------|--------|--------|
+| **Hook 1** | Primo «📄 FINE-SESSIONE…» dopo «lavoro ok» | Rilettura `CHIUSURA_SESSIONE` Parte A; grep skill vs codice → trovato §6 stale; report **riscritto** (sez. 8, verbatim, derivazione errori, FU); creato/completato mappa se mancante; §6 allineata a 65/30/700 | `64530d7` |
+| **Post-hook 1** | Matteo: «annota errori altro agente… e hook» | Log tabellare in `ERRORI_PROCESSO.md` (7 errori esecutore + 2 pattern); blocco sessione in `OSSERVAZIONI.md` | `a9bca14` |
+| **Hook 2** | Secondo «📄 FINE-SESSIONE…» | Verifica report **pieno** (non solo titoli sezione): aggiunti prompt 6–7, commit mancanti, ERRORI/OSSERVAZIONI in tabella §5, sez. effetto hook (questa) | `1309618` |
+
+**Valore misurabile dell’hook:** ha trasformato una chiusura «codice ok + skill a metà» in ciclo tracciabile (mappa, §6 coerente, FU, ERRORI_PROCESSO, report utilizzabile dal revisore Meta).
 
 ---
 
@@ -192,7 +222,7 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 | Skill allineate al diff (§6 + mappa + ERRORI/OSSERVAZIONI) | OK |
 | Edge sync limiti cliente | OK (duplicate + commento) |
 | LOCK griglia BookingRequestPage | Non toccato |
-| Commit + push `env/test` | OK `111277e` … `a9bca14` |
-| Hook stop ×2 — report sez. 8 + verbatim | OK (questo passaggio) |
+| Commit + push `env/test` | OK `111277e` … `1309618` |
+| Hook stop ×2 — report sez. 8 + verbatim + **§ Effetto hook** | OK |
 
 **Verdetto revisione:** approvato — ciclo chiuso.
