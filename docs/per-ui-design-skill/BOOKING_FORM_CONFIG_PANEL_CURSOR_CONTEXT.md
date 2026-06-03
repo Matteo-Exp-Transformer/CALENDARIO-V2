@@ -41,8 +41,8 @@ description: >-
 - **Guard:** `UnsavedChangesContext` + `confirmNavigation`. Sorgente unica `booking-form-config` (promo + sfondo inclusi). Reset su cambio `tenantId`.
 - **Salva sottotab:** `commitSubTabEditor` — upsert parziale `booking_modes`.
 - **Dettaglio promo (CRUD):** persistenza con footer; conflitto abbinamento → `PromoPlacementConflictDialog`. Vedi report promo 29-05-26.
-- **Editor sottotab Card scorrevole** (`display === 'cards'`): titolo tecnico nell'editor aperto `Card N` / bozza `Nuova card · Card N` (o `Titolo · Card N` se già digitato); campo **Titolo card** (30) per il testo sulla Pagina Prenota — **vuoto** su nuova card (`newSubTab` → `label: ''`), placeholder **«Nome card scorrevole»**; **riempito** col nome del menù solo dopo scelta in **Importa menù preselezionato**; tornando a **Compila manualmente** (`preset_id` cleared) anche `label` si azzera. Select con tutti i `booking_custom_staff_presets`, senza filtro tipologia/visibilità. Descrizione breve (80); **Numero Portate** opzionale (`courses_label`, max 40); Icona; «Categorie e ingredienti visibili» solo con `preset_id`; toggle **Menù personalizzabile** solo con `preset_id`; Prezzo (live preset se non personalizzato). `parseSubTabFromUnknown` accetta `label` vuoto sulle card.
-- **Editor sottotab carosello** (`display === 'carousel'` + `BookingFormCarouselEditor`): flusso **foto-first**; campi per slide: **Testo Etichetta** → `eyebrow`, **Testo Titolo** → `title`, **Scegli Icona** → `icon`, **Testo Etichetta / Titolo / Descrizione** → `eyebrow` / `title` / `description` (max **19 / 18 / 38** — `BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS` in `bookingPublicFormConfig.ts`). Migrazione dati legacy: `040_clamp_booking_carousel_slide_text_limits.sql` su `restaurant_settings.booking_public_form_config`. Intestazione slide: **Foto N° X** (ordine carosello, 1 = prima a sinistra). Pulsante matita **Modifica foto** (`replaceAt` su `useCarouselPhotoUpload`) accanto a rimuovi. **Blocco prezzo** (solo label + input €). **Sotto**, blocco toggle stile «Menù personalizzabile»: titolo «Mostra dettaglio offerta» + help `text-xs` solo lì; switch `show_offer_details_in_summary` a destra. **Non** è in `field_overrides`. Helper pubblici: `resolveCarouselSummaryDisplay`, `getCarouselStickyMiniPanelLine`. Riepilogo + sticky bar mobile seguono gli stessi helper. Nessun toggle fisso/personalizzabile. Upload bucket `menu-photos`, path dedicato Prenota `{tenantId}/booking-form/{modeId}/{subTabId}/carousel/{uuid}.webp` (non `qr/...`).
+- **Editor sottotab Card scorrevole** (`display === 'cards'`): titolo tecnico nell'editor aperto `Card N` / bozza `Nuova card · Card N` (o `Titolo · Card N` se già digitato); campo **Titolo card** (30) per il testo sulla Pagina Prenota — **vuoto** su nuova card (`newSubTab` → `label: ''`), placeholder **«Nome card scorrevole»**; **riempito** col nome del menù solo dopo scelta in **Importa menù preselezionato**; tornando a **Compila manualmente** (`preset_id` cleared) anche `label` si azzera. Select con tutti i `booking_custom_staff_presets`, senza filtro tipologia/visibilità. Descrizione breve (**65**); **Numero Portate** opzionale (`courses_label`, max **12**); Icona; «Categorie e ingredienti visibili» solo con `preset_id`; toggle **Menù personalizzabile** solo con `preset_id`; Prezzo (live preset se non personalizzato). `parseSubTabFromUnknown` accetta `label` vuoto sulle card.
+- **Editor sottotab carosello** (`display === 'carousel'` + `BookingFormCarouselEditor`): flusso **foto-first**; campi per slide: **Testo Etichetta** → `eyebrow`, **Testo Titolo** → `title`, **Scegli Icona** → `icon`, **Testo Etichetta / Titolo / Descrizione** → `eyebrow` / `title` / `description` (max **19 / 18 / 38** — `BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS` in `bookingPrenotaTextLimits.ts`). Migrazione dati legacy: `040_clamp_booking_carousel_slide_text_limits.sql` su `restaurant_settings.booking_public_form_config`. Intestazione slide: **Foto N° X** (ordine carosello, 1 = prima a sinistra). Pulsante matita **Modifica foto** (`replaceAt` su `useCarouselPhotoUpload`) accanto a rimuovi. **Blocco prezzo** (solo label + input €). **Sotto**, blocco toggle stile «Menù personalizzabile»: titolo «Mostra dettaglio offerta» + help `text-xs` solo lì; switch `show_offer_details_in_summary` a destra. **Non** è in `field_overrides`. Helper pubblici: `resolveCarouselSummaryDisplay`, `getCarouselStickyMiniPanelLine`. Riepilogo + sticky bar mobile seguono gli stessi helper. Nessun toggle fisso/personalizzabile. Upload bucket `menu-photos`, path dedicato Prenota `{tenantId}/booking-form/{modeId}/{subTabId}/carousel/{uuid}.webp` (non `qr/...`).
 - **Sottotab salvate (card + carosello)** in lista: riga compatta con titolo da `getSubTabCollapsedRowTitle` — card: **`{label trimmato} · Card N`** o solo **`Card N`** se titolo vuoto; carosello: **Nome carosello** / `Carosello N`. Azioni nella testata; click apre/chiude (`expandedSubTabByMode`). Editor distinti: card = Titolo card + import preset + visibilità + toggle + prezzo; carosello = Nome carosello + `BookingFormCarouselEditor`. Titolo pubblico card solo da campo **Titolo card** (30). Carosello senza matita né frecce sposta sulle card. Ordine editor card: campi base → categorie → toggle personalizzabile → prezzo. **Salva** (`commitSubTabEditor`) chiude il pannello.
 - **Help Card/Carosello** (`SubTabsDisplayHelpPanel`): pulsante collassabile **? Dettagli** subito sotto la riga «Abilita Card o Carosello»; visibile **sempre** (anche con toggle off). Chiuso: `?` + «Dettagli»; aperto: stesso pulsante espanso con elenco **Card scorrevole** vs Carosello. Editor sottotab solo se `sub_tabs_enabled`; disattivando il toggle si annullano bozze/editor aperti.
 - **XOR card/carosello per modalità** (`sub_tabs_presentation: ‘cards’ | ‘carousel’ | null`):
@@ -62,9 +62,9 @@ description: >-
 
 - Sezione admin: `BookingFormConfigPanel`, blocco **Intestazione pagina Prenota**.
 - Campi testo:
-  - nome azienda: solo lettura, letto da `restaurant_name`/tenant; modifica altrove in Anagrafica Azienda.
-  - titolo: `page_title`
-  - descrizione: `page_description`
+  - nome azienda: solo lettura, letto da `restaurant_name`/tenant; modifica altrove in Anagrafica Azienda (**max 40** in Anagrafica).
+  - titolo: `page_title` — **max 65** caratteri + contatore `N/max` in admin
+  - descrizione: `page_description` — **max 120** caratteri + contatore
 - Stile header pubblico:
   - `header_styles.restaurant_name`
   - `header_styles.page_title`
@@ -72,7 +72,7 @@ description: >-
 - Ogni stile contiene:
   - `font`: id in `BOOKING_HEADER_FONT_OPTIONS` (Google Fonts OFL + **Mistral** solo sistema). Legacy DB `thirsty-script` → migrate-on-read a `dancing-script` (Dancing Script, Google).
   - `color`: hex `#RRGGBB`
-  - `fontSize`: intero **8–38 px**; default: nome **34**, titolo **30**, descrizione **16**
+  - `fontSize`: intero px; **min 8**; **max per target:** nome e titolo **38**, descrizione **22** (default: nome **34**, titolo **30**, descrizione **16**). Costanti in `bookingPrenotaTextLimits.ts` (`BOOKING_HEADER_FONT_SIZE_MAX_BY_TARGET`).
   - `fontWeight`: `normal` | `bold` — default bold su nome/titolo, normal su descrizione
   - `textDecoration`: `none` | `underline` — default `none`
   - `textAlign?`: `left` | `center` | `right`
@@ -146,6 +146,20 @@ Font attuali (17): Playfair, Cormorant, Libre Baskerville, Cinzel, Montserrat, L
   (`MENU_QR_DEFAULT_CATEGORY_ICON_KEY`).
 - Per aggiungere/rimuovere un'icona: aggiornare `categoryIcons.ts` (Phosphor/Lucide options) — il
   picker e il pubblico seguono automaticamente.
+
+## Limiti testo (03-06-26)
+
+Tabella 1:1: **`BOOKING_PRENOTA_TEXT_LIMITS_MAP.md`**. Costanti: `src/features/booking/constants/bookingPrenotaTextLimits.ts`.
+
+| Area admin | Limiti chiave |
+|------------|---------------|
+| Header | titolo **65**, descrizione **120**, font descrizione **8–22px** |
+| Tipologie | titolo **40**, descrizione **61** |
+| Sottotab card | titolo **30**, descrizione **65**, portate **12** (non in pubblico) |
+| Carosello slide | **19 / 18 / 38** (`BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS`) |
+| Promo (setting separato) | titolo **60**, messaggio **350** |
+
+**Form cliente pubblico:** vietato contatore o hint limite; cap in `BOOKING_PUBLIC_CLIENT_TEXT_LIMITS` (edge sync).
 
 ## Cosa evitare
 

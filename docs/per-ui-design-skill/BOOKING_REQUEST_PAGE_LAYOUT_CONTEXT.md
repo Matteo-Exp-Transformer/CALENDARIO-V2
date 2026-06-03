@@ -321,6 +321,14 @@ caricano; `BookingRequestForm` mantiene il preset e lo riapplica a catalogo pron
 - Submit invariato — **non toccare `useCreateBookingRequest`**.
 - Admin: `BookingFormConfigPanel` + `MenuPricesTab`. Pubblici in `publicBooking/`.
 
+### 8.1 Limiti testo (03-06-26)
+
+Mappa completa: **`BOOKING_PRENOTA_TEXT_LIMITS_MAP.md`**. Costanti: `bookingPrenotaTextLimits.ts`.
+
+- **Ristoratore (A–F):** cap legati al layout + contatore `N/max` in Personalizza form / promo. Descrizione header max **22px** (titolo/nome fino **38px**).
+- **Cliente (H):** cap generoso (**65** nome/email, **30** tel, **700** intolleranze/richieste) — **solo sistema**: `maxLength` silenzioso, nessun contatore in pagina; edge `create-booking` allineato.
+- **`courses_label`:** salvato in JSON, **non** renderizzato in pubblico (max **12** in admin).
+
 ## 9. Validazione submit fallito (29-05-26)
 
 Quando il cliente clicca **Invia** con dati invalidi:
@@ -329,7 +337,8 @@ Quando il cliente clicca **Invia** con dati invalidi:
 2. **Chiudi** card ingredienti aperte (`dispatchBookingMenuComposeCollapse` + `composeCollapseNonce` + remount `MenuSelection`).
 3. **Scroll** al primo errore (`scrollToBookingPublicError` in `bookingPublicFormAttention.ts`).
 4. **Pulse arancione** sul wrapper del campo (`.booking-public-field-attention`) fino a click reale (`shouldDismissBookingPublicAttention` / `isTrusted`).
-5. Messaggi errore / privacy / riepilogo menù: palette condizionata da `publicFormLightTextOnDarkBackground` (`!showPhotoStrip && isFullPagePhoto`) — **bianco** solo su sfondo full-page foto; su striscia laterale / crema / gradiente → warm-wood e rossi come pre-29-05 (helper in `bookingPublicFieldStyles.ts`).
+5. **Lunghezza testo cliente (03-06-26):** `validate()` controlla cap in `BOOKING_PUBLIC_CLIENT_TEXT_LIMITS` (`bookingPrenotaTextLimits.ts`) — nome, email, tel, intolleranze aggregate, richieste speciali, ospiti max. Messaggio unico **`Testo troppo lungo`**; nessun contatore in UI (cap silenzioso + edge `create-booking`).
+6. Messaggi errore / privacy / riepilogo menù: palette condizionata da `publicFormLightTextOnDarkBackground` (`!showPhotoStrip && isFullPagePhoto`) — **bianco** solo su sfondo full-page foto; su striscia laterale / crema / gradiente → warm-wood e rossi come pre-29-05 (helper in `bookingPublicFieldStyles.ts`).
 
 **Guida per replicare su altri form/modali:** `FORM_VALIDATION_ATTENTION_PATTERN.md` (stesso folder).
 

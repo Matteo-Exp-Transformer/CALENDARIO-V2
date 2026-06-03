@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 03-06-26 | Prenota — limiti testo vetrina + cap silenzioso form cliente ✅ **report finale** | [Report](Sessioni%20di%20lavoro/03-06-26/Report-prenota-limiti-testo-03-06-26.md) — `bookingPrenotaTextLimits.ts`; admin contatore / cliente no; edge sync; validate **284**; FU ingredienti Tab Menu |
 | 03-06-26 | Meta senior — hook `stop` v3 (`followup_message`) + mappa hook Cursor + regola «allineamento skill implicito» ✅ **report finale** | [Report](Sessioni%20di%20lavoro/03-06-26/Report-meta-senior-hook-followup-e-mappa-cursor-03-06-26.md) — nudge da passivo a rilancio attivo; guardia `loop_count`+`loop_limit:1`; regola in `comandi-base`+`CHIUSURA_SESSIONE`; Playbook senior matrice file/chat×durante/dopo; osservazioni 03-06 archiviate |
 | 03-06-26 | Personalizza form — chiusura editor card/carosello dopo Salva ✅ **report finale** · QA Matteo OK | **light** — `closeSubTabEditors` in `BookingFormConfigPanel`; chiusura bozza+accordion dopo `persistModesSection` (Salva piccolo + footer); typecheck+lint OK |
 | 03-06-26 | Revisore — allineamento skill layout stack righe ingredienti Prenota ✅ **report finale** | [Report](Sessioni%20di%20lavoro/03-06-26/Report-revisore-allineamento-skill-layout-ingredienti-03-06-26.md) — `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` §5/§7; correzione `ItemPriceRow`; post-merge main |
