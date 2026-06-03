@@ -9,9 +9,14 @@ import {
 } from './BookingPublicDateTimePickers'
 import { getCurrentTimeHHMM, getTodayIso } from '../../utils/bookingPublicDateHelpers'
 import {
+  BOOKING_PUBLIC_CLIENT_TEXT_LIMITS,
+} from '../../constants/bookingPrenotaTextLimits'
+import {
   publicFormDateTimeErrorClass,
   publicFormFieldErrorClass,
 } from '../../constants/bookingPublicFieldStyles'
+
+const C = BOOKING_PUBLIC_CLIENT_TEXT_LIMITS
 
 interface BookingFormFieldsProps {
   formData: Pick<
@@ -126,9 +131,9 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
           label="Nome Completo *"
           value={formData.client_name}
           autoComplete="name"
-          maxLength={60}
+          maxLength={C.clientName}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            onFieldChange('client_name', e.target.value)
+            onFieldChange('client_name', e.target.value.slice(0, C.clientName))
             setErrors({ ...errors, client_name: '' })
           }}
           required
@@ -191,10 +196,10 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
           type="tel"
           inputMode="tel"
           autoComplete="tel"
-          maxLength={20}
+          maxLength={C.clientPhone}
           value={formData.client_phone ?? ''}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            onFieldChange('client_phone', e.target.value)
+            onFieldChange('client_phone', e.target.value.slice(0, C.clientPhone))
             setErrors({ ...errors, client_phone: '' })
           }}
           required
@@ -233,10 +238,10 @@ export const BookingFormFields: React.FC<BookingFormFieldsProps> = ({
             type="email"
             inputMode="email"
             autoComplete="email"
-            maxLength={120}
+            maxLength={C.clientEmail}
             value={formData.client_email}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              onFieldChange('client_email', e.target.value)
+              onFieldChange('client_email', e.target.value.slice(0, C.clientEmail))
               setErrors({ ...errors, client_email: '' })
             }}
             hasError={!!errors.client_email}

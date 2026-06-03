@@ -6,6 +6,31 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
 };
 
+/** Sync con src/features/booking/constants/bookingPrenotaTextLimits.ts (BOOKING_PUBLIC_CLIENT_TEXT_LIMITS). */
+const BOOKING_PUBLIC_CLIENT_TEXT_LIMITS = {
+  clientName: 65,
+  clientEmail: 65,
+  clientPhone: 30,
+  dietaryText: 700,
+  specialRequests: 700,
+  numGuestsMax: 999,
+} as const;
+
+const TEXT_TOO_LONG_ERROR = "Testo troppo lungo";
+
+function getDietaryRestrictionsTextLength(
+  restrictions: unknown,
+): number {
+  if (!Array.isArray(restrictions)) return 0;
+  return restrictions.reduce((sum: number, entry: unknown) => {
+    if (!entry || typeof entry !== "object") return sum;
+    const r = entry as { restriction?: unknown; notes?: unknown };
+    const restriction = typeof r.restriction === "string" ? r.restriction.trim() : "";
+    const notes = typeof r.notes === "string" ? r.notes.trim() : "";
+    return sum + restriction.length + notes.length;
+  }, 0);
+}
+
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -67,9 +92,48 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (client_name.length > 200) {
+    if (client_name.length > BOOKING_PUBLIC_CLIENT_TEXT_LIMITS.clientName) {
       return new Response(
-        JSON.stringify({ error: "client_name non può superare 200 caratteri" }),
+        JSON.stringify({ error: TEXT_TOO_LONG_ERROR }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (
+      clientEmailNormalized.length > BOOKING_PUBLIC_CLIENT_TEXT_LIMITS.clientEmail
+    ) {
+      return new Response(
+        JSON.stringify({ error: TEXT_TOO_LONG_ERROR }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (
+      typeof client_phone === "string" &&
+      client_phone.length > BOOKING_PUBLIC_CLIENT_TEXT_LIMITS.clientPhone
+    ) {
+      return new Response(
+        JSON.stringify({ error: TEXT_TOO_LONG_ERROR }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (
+      typeof special_requests === "string" &&
+      special_requests.length > BOOKING_PUBLIC_CLIENT_TEXT_LIMITS.specialRequests
+    ) {
+      return new Response(
+        JSON.stringify({ error: TEXT_TOO_LONG_ERROR }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (
+      getDietaryRestrictionsTextLength(dietary_restrictions) >
+      BOOKING_PUBLIC_CLIENT_TEXT_LIMITS.dietaryText
+    ) {
+      return new Response(
+        JSON.stringify({ error: TEXT_TOO_LONG_ERROR }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -84,6 +148,13 @@ Deno.serve(async (req: Request) => {
     if (!num_guests || typeof num_guests !== "number" || num_guests < 1) {
       return new Response(
         JSON.stringify({ error: "num_guests è obbligatorio e deve essere >= 1" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (num_guests > BOOKING_PUBLIC_CLIENT_TEXT_LIMITS.numGuestsMax) {
+      return new Response(
+        JSON.stringify({ error: TEXT_TOO_LONG_ERROR }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

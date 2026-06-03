@@ -23,7 +23,6 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 import {
   BOOKING_HEADER_FONT_OPTIONS,
-  BOOKING_HEADER_FONT_SIZE_MAX,
   BOOKING_HEADER_FONT_SIZE_MIN,
   applyLegacySubTabLabelOverrides,
   DEFAULT_BOOKING_FORM_CONFIG,
@@ -50,73 +49,15 @@ import {
   FieldAutosaveIndicator,
   SettingsSaveFooter,
 } from '@/features/booking/components/settings/SettingsSaveUi'
+import { AdminFieldWithCharCount } from '@/features/booking/components/settings/AdminFieldWithCharCount'
+import {
+  BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS,
+  getBookingHeaderFontSizeMax,
+} from '@/features/booking/constants/bookingPrenotaTextLimits'
 
-const SUB_TAB_LABEL_MAX = 30
-const SUB_TAB_DESCRIPTION_MAX = 80
-const SUB_TAB_COURSES_LABEL_MAX = 40
-const BOOKING_MODE_DESCRIPTION_MAX = 61
+const L = BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS
 
 const charCountClass = 'text-right text-[11px] text-slate-400 tabular-nums'
-
-function AdminFieldWithCharCount({
-  id,
-  label,
-  value,
-  maxLength,
-  onChange,
-  placeholder,
-  className,
-  singleLine = false,
-}: {
-  id?: string
-  label: string
-  value: string
-  maxLength: number
-  onChange: (value: string) => void
-  placeholder?: string
-  className?: string
-  /** Forza input riga singola (default: textarea multi-riga). */
-  singleLine?: boolean
-}) {
-  return (
-    <div className={cn('w-full min-w-0 space-y-1.5', className)}>
-      <Label htmlFor={id} className="block text-sm">
-        {label}
-      </Label>
-      {singleLine ? (
-        <Input
-          id={id}
-          value={value}
-          onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
-          onBlur={(e) => {
-            const trimmed = e.target.value.trim()
-            if (trimmed !== value) onChange(trimmed)
-          }}
-          maxLength={maxLength}
-          placeholder={placeholder}
-          className="w-full"
-        />
-      ) : (
-        <textarea
-          id={id}
-          value={value}
-          onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
-          onBlur={(e) => {
-            const trimmed = e.target.value.trim()
-            if (trimmed !== value) onChange(trimmed)
-          }}
-          maxLength={maxLength}
-          rows={3}
-          placeholder={placeholder}
-          className="block w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-        />
-      )}
-      <p className={cn(charCountClass, value.length >= maxLength && 'text-red-500')}>
-        {value.length}/{maxLength}
-      </p>
-    </div>
-  )
-}
 
 function newSubTab(display: SubTab['display']): SubTab {
   return {
@@ -489,7 +430,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     const isFixedMenu = preset.is_fixed_menu !== false
     return {
       preset_id: preset.id,
-      label: preset.name.slice(0, SUB_TAB_LABEL_MAX),
+      label: preset.name.slice(0, L.subTabLabel),
       description: preset.description?.trim() || undefined,
       price_per_person:
         isFixedMenu && preset.price_per_person && preset.price_per_person > 0
@@ -794,6 +735,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     const style = headerStyles[target] ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles[target]
     const currentAlign = style.textAlign ?? 'center'
     const fontSizeDraft = headerFontSizeDraftByTarget[target]
+    const fontSizeMax = getBookingHeaderFontSizeMax(target)
     const fontSizeInputValue =
       fontSizeDraft !== undefined ? fontSizeDraft : String(style.fontSize)
     const isBold = style.fontWeight === 'bold'
@@ -830,13 +772,13 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           </label>
           <label className="block">
             <span className="mb-1 block text-[11px] font-semibold text-slate-500">
-              Dimensione (8–38)
+              Dimensione ({BOOKING_HEADER_FONT_SIZE_MIN}–{fontSizeMax})
             </span>
             <input
               type="text"
               inputMode="numeric"
               aria-valuemin={BOOKING_HEADER_FONT_SIZE_MIN}
-              aria-valuemax={BOOKING_HEADER_FONT_SIZE_MAX}
+              aria-valuemax={fontSizeMax}
               value={fontSizeInputValue}
               onChange={(e) => {
                 const raw = e.target.value.trim()
@@ -911,7 +853,9 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
             S
           </button>
         </div>
-        <p className="text-[10px] text-slate-400">Valore da 8 a 38 (px)</p>
+        <p className="text-[10px] text-slate-400">
+          Valore da {BOOKING_HEADER_FONT_SIZE_MIN} a {fontSizeMax} (px)
+        </p>
       </div>
     )
   }
@@ -1076,7 +1020,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
             <AdminFieldWithCharCount
               label="Nome carosello"
               value={tab.label}
-              maxLength={SUB_TAB_LABEL_MAX}
+              maxLength={L.subTabLabel}
               onChange={(label) => patchTab({ label })}
               placeholder="Nome tecnico per admin"
               singleLine
@@ -1097,7 +1041,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
             <AdminFieldWithCharCount
               label="Titolo card"
               value={tab.label ?? ''}
-              maxLength={SUB_TAB_LABEL_MAX}
+              maxLength={L.subTabLabel}
               onChange={(label) => patchTab({ label })}
               placeholder="Nome card scorrevole"
               singleLine
@@ -1146,7 +1090,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           <AdminFieldWithCharCount
             label="Descrizione breve (opzionale)"
             value={tab.description ?? ''}
-            maxLength={SUB_TAB_DESCRIPTION_MAX}
+            maxLength={L.subTabDescription}
             onChange={(description) =>
               patchTab({
                 description: description === '' ? undefined : description,
@@ -1171,7 +1115,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
               value={tab.courses_label ?? ''}
               onChange={(e) =>
                 patchTab({
-                  courses_label: e.target.value.slice(0, SUB_TAB_COURSES_LABEL_MAX) || undefined,
+                  courses_label: e.target.value.slice(0, L.subTabCoursesLabel) || undefined,
                 })
               }
               onBlur={(e) => {
@@ -1180,7 +1124,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                   patchTab({ courses_label: trimmed || undefined })
                 }
               }}
-              maxLength={SUB_TAB_COURSES_LABEL_MAX}
+              maxLength={L.subTabCoursesLabel}
               placeholder="es. 4 portate"
             />
           </div>
@@ -1373,13 +1317,16 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
             <Input
               id="page_title"
               value={config.page_title}
-              onChange={(e) => updateField('page_title', e.target.value)}
+              onChange={(e) => updateField('page_title', e.target.value.slice(0, L.pageTitle))}
               onBlur={() => headerAutosave.flushField('page_title')}
               placeholder="es. Richiesta Prenotazione"
-              maxLength={80}
+              maxLength={L.pageTitle}
               className="min-h-[3rem] py-3 leading-tight sm:min-h-[2.625rem] sm:py-2.5"
               style={getBookingHeaderTextStyle('page_title', headerStyles)}
             />
+            <p className={cn(charCountClass, config.page_title.length >= L.pageTitle && 'text-red-500')}>
+              {config.page_title.length}/{L.pageTitle}
+            </p>
             {SETTINGS_AUTOSAVE_ENABLED ? (
               <FieldAutosaveIndicator status={headerAutosave.fieldStatus.page_title} />
             ) : null}
@@ -1390,14 +1337,24 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
             <textarea
               id="page_description"
               value={config.page_description}
-              onChange={(e) => updateField('page_description', e.target.value)}
+              onChange={(e) =>
+                updateField('page_description', e.target.value.slice(0, L.pageDescription))
+              }
               onBlur={() => headerAutosave.flushField('page_description')}
               placeholder="Breve descrizione mostrata sotto il titolo"
-              maxLength={300}
+              maxLength={L.pageDescription}
               rows={3}
               className="block w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-400 transition-colors duration-150 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 sm:py-2.5"
               style={getBookingHeaderTextStyle('page_description', headerStyles)}
             />
+            <p
+              className={cn(
+                charCountClass,
+                config.page_description.length >= L.pageDescription && 'text-red-500',
+              )}
+            >
+              {config.page_description.length}/{L.pageDescription}
+            </p>
             {SETTINGS_AUTOSAVE_ENABLED ? (
               <FieldAutosaveIndicator status={headerAutosave.fieldStatus.page_description} />
             ) : null}
@@ -1463,16 +1420,15 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                       </label>
                     </div>
 
-                    <div>
-                      <Label htmlFor={`mode-label-${mode.id}`} className="block mb-1 text-sm">Titolo Card</Label>
-                      <Input
-                        id={`mode-label-${mode.id}`}
-                        value={mode.label}
-                        onChange={(e) => updateMode(mode.id, { label: e.target.value })}
-                        maxLength={60}
-                        placeholder="Nome della modalità"
-                      />
-                    </div>
+                    <AdminFieldWithCharCount
+                      id={`mode-label-${mode.id}`}
+                      label="Titolo Card"
+                      singleLine
+                      value={mode.label}
+                      maxLength={L.modeLabel}
+                      onChange={(value) => updateMode(mode.id, { label: value })}
+                      placeholder="Nome della modalità"
+                    />
 
                     <div>
                       <Label htmlFor={`mode-desc-${mode.id}`} className="block mb-1 text-sm">Descrizione breve</Label>
@@ -1481,16 +1437,16 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                         value={mode.description}
                         onChange={(e) =>
                           updateMode(mode.id, {
-                            description: e.target.value.slice(0, BOOKING_MODE_DESCRIPTION_MAX),
+                            description: e.target.value.slice(0, L.modeDescription),
                           })
                         }
-                        maxLength={BOOKING_MODE_DESCRIPTION_MAX}
+                        maxLength={L.modeDescription}
                         rows={3}
                         placeholder="Una riga descrittiva"
                         className="block w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                       <p className={charCountClass}>
-                        {mode.description.length}/{BOOKING_MODE_DESCRIPTION_MAX}
+                        {mode.description.length}/{L.modeDescription}
                       </p>
                     </div>
 

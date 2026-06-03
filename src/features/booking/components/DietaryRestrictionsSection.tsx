@@ -5,10 +5,16 @@ import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { BookingPublicInsetField } from './publicBooking/BookingPublicInsetField'
 import {
+  BOOKING_PUBLIC_CLIENT_TEXT_LIMITS,
+} from '../constants/bookingPrenotaTextLimits'
+
+import {
   BOOKING_PUBLIC_FIELD_ATTENTION_CLASS,
   BOOKING_PUBLIC_FIELD_SCROLL_MARGIN,
   shouldDismissBookingPublicAttention,
 } from '../utils/bookingPublicFormAttention'
+
+const C = BOOKING_PUBLIC_CLIENT_TEXT_LIMITS
 
 interface DietaryRestrictionsSectionProps {
   dietaryText: string
@@ -59,9 +65,9 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
             label="Intolleranze o esigenze alimentari"
             multiline
             value={dietaryText}
-            maxLength={300}
+            maxLength={C.dietaryText}
             autoComplete="off"
-            onChange={(e) => onDietaryTextChange(e.target.value.slice(0, 300))}
+            onChange={(e) => onDietaryTextChange(e.target.value.slice(0, C.dietaryText))}
           />
         ) : (
           <>
@@ -71,8 +77,8 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
             <Input
               id="dietary-notes"
               value={dietaryText}
-              maxLength={300}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onDietaryTextChange(e.target.value.slice(0, 300))}
+              maxLength={C.dietaryText}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onDietaryTextChange(e.target.value.slice(0, C.dietaryText))}
               className={CONTROL_CLASS}
             />
           </>
@@ -87,9 +93,9 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
               label="Altre Richieste"
               multiline
               value={specialRequests}
-              maxLength={300}
+              maxLength={C.specialRequests}
               autoComplete="off"
-              onChange={(e) => onSpecialRequestsChange(e.target.value.slice(0, 300))}
+              onChange={(e) => onSpecialRequestsChange(e.target.value.slice(0, C.specialRequests))}
             />
           ) : (
             <>
@@ -99,8 +105,8 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
               <Input
                 id="special_requests"
                 value={specialRequests}
-                maxLength={300}
-                onChange={(e) => onSpecialRequestsChange(e.target.value.slice(0, 300))}
+                maxLength={C.specialRequests}
+                onChange={(e) => onSpecialRequestsChange(e.target.value.slice(0, C.specialRequests))}
                 className={CONTROL_CLASS}
               />
             </>

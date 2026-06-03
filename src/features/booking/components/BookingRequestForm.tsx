@@ -43,6 +43,11 @@ import {
   DEFAULT_BOOKING_FORM_CONFIG,
   getSubTabPricePerPerson,
 } from '../constants/bookingPublicFormConfig'
+import {
+  BOOKING_CLIENT_TEXT_TOO_LONG_MESSAGE,
+  BOOKING_PUBLIC_CLIENT_TEXT_LIMITS,
+  isWithinBookingTextLimit,
+} from '../constants/bookingPrenotaTextLimits'
 import { BookingSubTabCards } from './publicBooking/BookingSubTabCards'
 import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
 import { resolveBookingStoredIconKey } from '@/features/public-menu/categoryIcons'
@@ -599,6 +604,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     const newErrors: Record<string, string> = {}
     let isValid = true
     let firstErrorKey: string | null = null
+    const textTooLong = BOOKING_CLIENT_TEXT_TOO_LONG_MESSAGE
+    const C = BOOKING_PUBLIC_CLIENT_TEXT_LIMITS
 
     // Name validation
     if (!formData.client_name.trim()) {
@@ -686,6 +693,10 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       newErrors.num_guests = 'Numero ospiti obbligatorio (min 1)'
       isValid = false
       if (!firstErrorKey) firstErrorKey = 'num_guests'
+    } else if (formData.num_guests > C.numGuestsMax) {
+      newErrors.num_guests = textTooLong
+      isValid = false
+      if (!firstErrorKey) firstErrorKey = 'num_guests'
     }
 
     // Booking type validation
@@ -728,6 +739,40 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       newErrors.privacyAccepted = 'È necessario accettare la Privacy Policy per inviare la richiesta'
       isValid = false
       if (!firstErrorKey) firstErrorKey = 'privacyAccepted'
+    }
+
+    if (!isWithinBookingTextLimit(formData.client_name, C.clientName)) {
+      newErrors.client_name = textTooLong
+      isValid = false
+      if (!firstErrorKey) firstErrorKey = 'client_name'
+    }
+    if (
+      formData.client_email.trim() &&
+      !isWithinBookingTextLimit(formData.client_email, C.clientEmail)
+    ) {
+      newErrors.client_email = textTooLong
+      isValid = false
+      if (!firstErrorKey) firstErrorKey = 'client_email'
+    }
+    if (
+      formData.client_phone &&
+      !isWithinBookingTextLimit(formData.client_phone, C.clientPhone)
+    ) {
+      newErrors.client_phone = textTooLong
+      isValid = false
+      if (!firstErrorKey) firstErrorKey = 'client_phone'
+    }
+    const dietaryText = dietaryRestrictionsToText(formData.dietary_restrictions)
+    if (!isWithinBookingTextLimit(dietaryText, C.dietaryText)) {
+      newErrors.dietary = textTooLong
+      isValid = false
+      if (!firstErrorKey) firstErrorKey = 'dietary'
+    }
+    const specialRequestsText = formData.special_requests ?? ''
+    if (!isWithinBookingTextLimit(specialRequestsText, C.specialRequests)) {
+      newErrors.special_requests = textTooLong
+      isValid = false
+      if (!firstErrorKey) firstErrorKey = 'special_requests'
     }
 
     setErrors(newErrors)

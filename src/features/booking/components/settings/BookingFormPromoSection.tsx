@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Textarea } from '@/components/ui/Textarea'
 import type { BookingMode } from '@/features/booking/constants/bookingPublicFormConfig'
+import { BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS } from '@/features/booking/constants/bookingPrenotaTextLimits'
 import {
   applyMenuPromoWithReplacement,
   dedupeBookingTypes,
@@ -489,10 +490,12 @@ export const BookingFormPromoSection = forwardRef<BookingFormPromoSectionHandle,
                   value={draftLabel}
                   onChange={(e) => setDraftLabel(e.target.value)}
                   placeholder="Es. Promo estate 2026"
-                  maxLength={80}
+                  maxLength={BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.promoTitle}
                   className="h-10"
                 />
-                <p className="mt-1 text-xs text-slate-500">{draftLabel.length}/80</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {draftLabel.length}/{BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.promoTitle}
+                </p>
               </div>
 
               <div>
@@ -505,10 +508,12 @@ export const BookingFormPromoSection = forwardRef<BookingFormPromoSectionHandle,
                   onChange={(e) => setDraftMessage(e.target.value)}
                   placeholder={MENU_PROMO_PLACEHOLDER}
                   rows={4}
-                  maxLength={500}
+                  maxLength={BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.promoMessage}
                   className="text-sm"
                 />
-                <p className="mt-1 text-xs text-slate-500">{draftMessage.length}/500</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {draftMessage.length}/{BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.promoMessage}
+                </p>
               </div>
 
               <div className="space-y-3 rounded-lg border border-slate-200 bg-white/80 p-3">

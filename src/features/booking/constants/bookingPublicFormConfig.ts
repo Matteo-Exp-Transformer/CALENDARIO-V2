@@ -5,19 +5,18 @@ import {
   resolveBookingStoredIconKey,
   type MenuQrCategoryIconKey,
 } from '@/features/public-menu/categoryIcons'
+import {
+  BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS,
+  BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS,
+  clampBookingText,
+  clampBookingTextOptional,
+  normalizeBookingHeaderFontSizeForTarget,
+} from './bookingPrenotaTextLimits'
 
-/** Icone card scorrevoli / carosello Prenota — stesso namespace del Menù QR. */
-export type SubTabIcon = MenuQrCategoryIconKey
-
-/** Icone tipologie prenotazione — stesso namespace del Menù QR. */
-export type BookingModeIcon = MenuQrCategoryIconKey
-
-/** Limiti testi slide carosello Prenota (editor Personalizza form + normalizzazione DB). */
-export const BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS = {
-  eyebrow: 19,
-  title: 18,
-  description: 38,
-} as const
+export {
+  BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS,
+  BOOKING_HEADER_FONT_SIZE_MIN,
+} from './bookingPrenotaTextLimits'
 
 function clampCarouselSlideText(
   value: string | undefined,
@@ -40,6 +39,13 @@ export function normalizeCarouselSlideItem(item: CarouselItem, sortOrder: number
     sort_order: typeof item.sort_order === 'number' ? item.sort_order : sortOrder,
   }
 }
+
+/** Icone card scorrevoli / carosello Prenota — stesso namespace del Menù QR. */
+export type SubTabIcon = MenuQrCategoryIconKey
+
+/** Icone tipologie prenotazione — stesso namespace del Menù QR. */
+export type BookingModeIcon = MenuQrCategoryIconKey
+
 export const BOOKING_HEADER_FONT_OPTIONS = [
   {
     id: 'playfair',
@@ -142,7 +148,7 @@ export interface BookingHeaderTextStyle {
 
 export type BookingHeaderStyles = Record<BookingHeaderTextTarget, BookingHeaderTextStyle>
 
-export const BOOKING_HEADER_FONT_SIZE_MIN = 8
+/** Legacy alias — preferire getBookingHeaderFontSizeMax(target) da bookingPrenotaTextLimits. */
 export const BOOKING_HEADER_FONT_SIZE_MAX = 38
 
 /** Default px per target quando `fontSize` assente o non valido (migrate-on-read, FU-023). */
@@ -226,14 +232,7 @@ export function normalizeBookingHeaderFontSize(
   target: BookingHeaderTextTarget,
 ): number {
   const fallback = DEFAULT_BOOKING_HEADER_FONT_SIZE_PX[target]
-  if (value === undefined || value === null || value === '') return fallback
-  const num = typeof value === 'number' ? value : Number(value)
-  if (!Number.isFinite(num)) return fallback
-  const rounded = Math.round(num)
-  return Math.min(
-    BOOKING_HEADER_FONT_SIZE_MAX,
-    Math.max(BOOKING_HEADER_FONT_SIZE_MIN, rounded),
-  )
+  return normalizeBookingHeaderFontSizeForTarget(value, target, fallback)
 }
 
 export function getBookingHeaderTextStyle(
@@ -681,14 +680,15 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
 export function normalizeBookingPublicFormConfig(
   config: BookingPublicFormConfig,
 ): BookingPublicFormConfig {
+  const L = BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS
   return {
-    page_title: config.page_title.trim(),
-    page_description: config.page_description.trim(),
+    page_title: clampBookingText(config.page_title.trim(), L.pageTitle),
+    page_description: clampBookingText(config.page_description.trim(), L.pageDescription),
     header_styles: parseBookingHeaderStylesFromUnknown(config.header_styles),
     booking_modes: config.booking_modes.map((mode) => ({
       ...mode,
-      label: mode.label.trim(),
-      description: mode.description.trim(),
+      label: clampBookingText(mode.label.trim(), L.modeLabel),
+      description: clampBookingText(mode.description.trim(), L.modeDescription),
       icon: parseBookingIconRequired(mode.icon, MENU_QR_DEFAULT_CATEGORY_ICON_KEY),
       sub_tabs_presentation: mode.sub_tabs_presentation ?? null,
       sub_tabs: (mode.sub_tabs ?? []).map((tab): SubTab => {
@@ -698,7 +698,7 @@ export function normalizeBookingPublicFormConfig(
           ...tab,
           display,
           icon: tab.icon ? parseBookingIconOptional(tab.icon) : undefined,
-          label: tab.label.trim(),
+          label: clampBookingText(tab.label.trim(), L.subTabLabel),
           is_fixed_menu: isPersonalizzabileCard ? false : undefined,
           price_per_person: isPersonalizzabileCard ? undefined : tab.price_per_person,
           hidden_category_keys: tab.hidden_category_keys?.filter((v) => v.trim()) ?? undefined,
@@ -706,7 +706,7 @@ export function normalizeBookingPublicFormConfig(
           carousel_items: tab.carousel_items,
           courses_label:
             display === 'cards' && tab.courses_label?.trim()
-              ? tab.courses_label.trim()
+              ? clampBookingTextOptional(tab.courses_label, L.subTabCoursesLabel)
               : undefined,
           field_overrides: tab.field_overrides,
         }
@@ -733,7 +733,9 @@ export function normalizeBookingPublicFormConfig(
         }
         return {
           ...base,
-          description: tab.description?.trim() ? tab.description.trim() : undefined,
+          description: tab.description?.trim()
+            ? clampBookingTextOptional(tab.description, L.subTabDescription)
+            : undefined,
         }
       }),
     })),

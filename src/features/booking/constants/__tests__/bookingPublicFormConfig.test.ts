@@ -36,6 +36,13 @@ describe('parseBookingHeaderStylesFromUnknown — fontSize migrate-on-read', () 
     expect(styles.page_description.fontSize).toBe(16)
   })
 
+  it('page_description fontSize oltre 22 → clamp a 22', () => {
+    const styles = parseBookingHeaderStylesFromUnknown({
+      page_description: { font: 'montserrat', color: '#4a2d19', fontSize: 50 },
+    })
+    expect(styles.page_description.fontSize).toBe(22)
+  })
+
   it('font id sconosciuto → fallback font del target', () => {
     const styles = parseBookingHeaderStylesFromUnknown({
       page_title: { font: 'not-a-font', color: '#6b4226', fontSize: 22 },
@@ -196,6 +203,48 @@ describe('icone Prenota — migrate-on-read', () => {
     const normalized = normalizeBookingPublicFormConfig(config)
     expect(normalized.booking_modes[0].icon).toBe('fork_knife')
     expect(normalized.booking_modes[0].sub_tabs[0].icon).toBe('lucide_salad')
+  })
+
+  it('normalize clamp testi ristoratore ai limiti Prenota', () => {
+    const long = 'x'.repeat(200)
+    const config: BookingPublicFormConfig = {
+      page_title: long,
+      page_description: long,
+      header_styles: parseBookingHeaderStylesFromUnknown({
+        restaurant_name: { font: 'playfair', color: '#6b4226' },
+        page_title: { font: 'playfair', color: '#6b4226' },
+        page_description: { font: 'montserrat', color: '#4a2d19' },
+      }),
+      booking_modes: [
+        {
+          id: 'm1',
+          booking_type: 'tavolo',
+          enabled: true,
+          label: long,
+          description: long,
+          icon: 'fork_knife',
+          sub_tabs_enabled: true,
+          sub_tabs_presentation: 'cards',
+          sub_tabs: [
+            {
+              id: 's1',
+              display: 'cards',
+              label: long,
+              description: long,
+              courses_label: long,
+            },
+          ],
+        },
+      ],
+    }
+    const normalized = normalizeBookingPublicFormConfig(config)
+    expect(normalized.page_title.length).toBe(65)
+    expect(normalized.page_description.length).toBe(120)
+    expect(normalized.booking_modes[0].label.length).toBe(40)
+    expect(normalized.booking_modes[0].description.length).toBe(61)
+    expect(normalized.booking_modes[0].sub_tabs[0].label.length).toBe(30)
+    expect(normalized.booking_modes[0].sub_tabs[0].description!.length).toBe(65)
+    expect(normalized.booking_modes[0].sub_tabs[0].courses_label!.length).toBe(12)
   })
 })
 
