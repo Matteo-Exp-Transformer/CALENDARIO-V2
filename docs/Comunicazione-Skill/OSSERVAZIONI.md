@@ -48,11 +48,20 @@
 
 ## Sessioni registrate (append-only)
 
+### 03-06-26 — Layout card ingredienti Prenota (stack + divisori; lacuna prompt nel report)
+- **Area:** `BookingMenuCategoryCard` — pannello ingredienti Pagina Prenota (titolo/descrizione a tutta larghezza; footer checkbox sx + prezzo dx; linea divisoria inset tra righe).
+- **Pattern:** task partito da wrap nome/prezzo solo striscia → pivot «annulla modifiche» a layout verticale; screenshot decisivi.
+- **Lacuna processo (agente):** al primo «lavoro ok» il report **non** riportava i prompt verbatim di Matteo (solo sintesi); corretto solo dopo domanda esplicita P8. Hook `stop` **non** intercettato in chat agent.
+- **Richiesta Matteo (03-06-26):** deve ancora **specificare agli agenti** di riportare i suoi prompt nel report (non si assume che lo facciano da soli finché non lo chiede o non c’è voce Liv.1 consolidata). Valutare voce tipo «lavoro ok → sempre blocco prompt verbatim» in VOCABOLARIO / nudge hook.
+- **Report:** [Report layout card ingredienti](Sessioni%20di%20lavoro/03-06-26/Report-prenota-layout-card-ingredienti-03-06-26.md) — report finale con commit.
+
 ### 03-06-26 — Prezzo ingredienti Prenota (prepara-prompt, chiarimento regola)
 - **Area:** Pagina Prenota — card ingredienti (`BookingMenuCategoryCard`) + riepilogo (`BookingSummarySidebar`).
 - **Pattern:** Matteo descrive il task con DOM path + componente; la regola di prodotto emerge dopo 2–3 turni (prezzo sottotab vs personalizzabile). Chiede al prepara-prompt di **annotare nel report** anche un «prompt iniziale ideale» in poche righe — la frase che avrebbe evitato ambiguità fin dall’inizio.
 - **Proposta processo (Matteo 03-06-26, da valutare revisore):** in ogni sessione **prepara-prompt**, nel report o sotto il blocco copia-incolla, aggiungere sezione **«Prompt ideale (retroattivo)»** — 2–4 righe auto-contenute che Matteo avrebbe potuto incollare al posto del flusso grezzo (es. «Se la sottotab ha prezzo fisso: niente € sugli ingredienti; se personalizzabile: € come ora»). Non sostituisce il prompt esecutore; serve come memoria per sessioni simili e per affinare come Matteo formula le richieste.
 - **Prompt ideale (retroattivo) per questa sessione:** «Pagina Prenota: dopo tab + sottotab card, se la sottotab ha prezzo/persona → mostra solo quello nel riepilogo (× coperti), nascondi € su ogni ingrediente in card e in «Il tuo menu»; se menù personalizzabile (senza prezzo fisso) → € ingredienti come ora. Solo questo, nient’altro.»
+
+- **Esito:** esecuzione `485b7a2`, revisione rapida prepara OK, **QA Matteo OK** (03-06-26); commit docs `7d4d6aa`; ciclo chiuso.
 
 ### 02-06-26 — Prenota full-page freeze layout (prepara + esecuzione parziale, multi-turno)
 - **Area:** Pagina Prenota pubblica, solo `isFullPagePhoto && !showPhotoStrip` — cap form 1168px, riepilogo esterno da 1600px.
