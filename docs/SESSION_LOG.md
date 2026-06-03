@@ -13,7 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
-| 03-06-26 | Prenota — layout card ingredienti (titolo/descrizione + checkbox/prezzo + divisori) ✅ **report finale** | [Report](Sessioni%20di%20lavoro/03-06-26/Report-prenota-layout-card-ingredienti-03-06-26.md) — stack + divisori; report integrato post-P8 (prompt verbatim); validate **278** |
+| 03-06-26 | Prenota — layout card ingredienti (titolo/descrizione + checkbox/prezzo + divisori) ✅ **report finale** | [Report](Sessioni%20di%20lavoro/03-06-26/Report-prenota-layout-card-ingredienti-03-06-26.md) — `d76e251`+`bd8f3a5` su `origin/env/test`; stack + divisori; lacuna prompt al 1º lavoro ok documentata in report + OSSERVAZIONI |
 | 03-06-26 | Prenota — nascondere € ingredienti se sottotab ha prezzo fisso ✅ **light** · QA Matteo OK | `485b7a2`+`7d4d6aa` su `origin/env/test` — `getSubTabPricePerPerson` + `showIngredientPrices` su card categorie e «Il tuo menu»; totali opzione × coperti invariati; validate **278**; smoke Prenota sottotab fissa/personalizzabile OK. |
 | 03-06-26 | Prenota — riduzione padding orizzontale colonna form layout striscia ✅ **light** | `cee87db` su `origin/env/test` — `BOOKING_PAGE_CONTENT_PAD_STRIP` da `px-8 md:px-10` a `px-4 md:px-6`; card carousel si ridimensionano da sole (% sul contenitore). |
 
