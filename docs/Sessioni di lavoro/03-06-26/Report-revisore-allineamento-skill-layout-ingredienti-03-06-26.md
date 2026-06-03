@@ -2,7 +2,7 @@
 
 **Data:** 03-06-26  
 **Modalità:** standard · **Profilo:** Revisore / Verifica  
-**Stato:** ✅ **report finale** (appendice R4–R5 + § migliorie skill system)
+**Stato:** ✅ **report finale** (appendice R4–R6 + § migliorie + § hook `stop`)
 
 ---
 
@@ -22,6 +22,7 @@
 4. **`npm run validate`** prima del commit docs.
 5. **Polish (R4):** commenti `bookingMenuComposePanelLayout.ts`; OSSERVAZIONI pattern «agenti chiedono se allineare skill».
 6. **Appendice report (R5):** § «Migliorie skill system e procedure» + prompt verbatim R4–R5.
+7. **Appendice hook (R6):** § «Hook fine-chat (`stop`)» — esito in questa conversazione.
 
 ---
 
@@ -65,6 +66,7 @@
 | «aggiornalo perfavore… report finale… dettagli, osservazioni, miei prompt. grazie.» | 1 |
 | «sistema commento sticky + annota: mi chiedono se allineare skill» | 1 |
 | «scrivi che agenti mi chiedono allineamento skill (implicito) + impressioni report» | 1 |
+| «hai ricevuto hook? dettagli nel report; se no spiega stop Cursor / sessione finita» | 1 |
 
 ### Prompt di Matteo (verbatim)
 
@@ -102,6 +104,12 @@ Opzionale rimasto: il commento in bookingMenuComposePanelLayout.ts che cita anco
 scrivi che agenti , mi chiedono se voglio allineare skill system. cosa che dovrebbe essere implicita. annota nel report tue impressioni e osservaizioni per migliorare skill system, e procedure che hai riscontrato. 
 ```
 
+#### R6 — Hook `stop` / fine sessione Cursor
+
+```
+hai ricevuto hook durante questa sessione? fornisci dettagli in merito anche a questo nel report. se non li hai ricevuti spiega perchè e cos'è uno stop in cursor. cosa indica finita la sessione? 
+```
+
 ### Automatizzabile vs manuale
 
 | Automatizzabile | Manuale |
@@ -115,7 +123,7 @@ scrivi che agenti , mi chiedono se voglio allineare skill system. cosa che dovre
 
 | Metrica | Valore |
 |---------|--------|
-| Prompt sostanziali Matteo | **5** (R1–R5) |
+| Prompt sostanziali Matteo | **6** (R1–R6) |
 | Correzioni dopo 1ª risposta revisore | **1** (spiegazione gap skill → richiesta aggiornamento esplicito) |
 | Follow-up in FOLLOW_UP.md | **0** |
 | Turni codice | **0** (solo documentazione) |
@@ -183,6 +191,66 @@ scrivi che agenti , mi chiedono se voglio allineare skill system. cosa che dovre
 1. «Vuoi che aggiorni la skill / il contesto layout?» → **fare** se il diff lo richiede.
 2. «Al prossimo giro posso…» per debiti già noti a fine sessione revisore.
 3. Conferma merge se `validate` OK **senza** controllo skill area quando il task era layout Prenota.
+
+---
+
+## Hook fine-chat (`stop`) — esito e spiegazione (R6)
+
+### Ho ricevuto l’hook **in questa conversazione** (agente)?
+
+| Voce | Esito |
+|------|--------|
+| Messaggio hook visibile **nel thread** mentre rispondevo (turni R1–R6) | **No** — nessun blocco di sistema tipo «FINE-SESSIONE» o `agent_message` dello script tra i turni |
+| Evento `stop` già eseguito per **questa** chat | **No** — la chat è ancora aperta; `stop` scatta quando **chiudi** la conversazione in Cursor (nuova chat, chiusura pannello agente, fine sessione IDE secondo Cursor) |
+| Hook eseguito ma non “visto” dall’agente | Possibile **solo dopo** la chiusura: vedi sotto |
+
+**Conclusione per il report:** fino al turno R6 l’agente **non ha ricevuto** l’hook nel flusso della chat; non può confermare cosa comparirà nel **tuo** client al momento dello `stop` (quello lo vedi tu, eventualmente come promemoria verso l’agente o notifica UI).
+
+### Cos’è `stop` in Cursor (nel repo)
+
+- In `.cursor/hooks.json` è registrato l’evento **`stop`**: alla **fine di una sessione chat** Cursor lancia `node .cursor/hooks/fine-sessione-nudge.mjs` (timeout 10s).
+- **Non** è un errore del progetto: è un promemoria **voluto** dello skill system comunicazione (`CHIUSURA_SESSIONE.md` § «Cos'è l'hook di fine-chat»).
+- Lo script legge i file `docs/Sessioni di lavoro/**/Report-*.md` modificati negli **ultimi 20 minuti** (`RECENT_MINUTES = 20`) e controlla sezioni obbligatorie (almeno intestazioni «Dati comunicazione», «Analisi flusso prompt»).
+- Risposta sempre **`permission: allow`** (smart-allow): **non blocca** la chiusura della chat; può aggiungere `agent_message` con istruzioni.
+
+### Cosa indica «sessione finita»
+
+| Significato | Dettaglio |
+|-------------|-----------|
+| Per **Cursor / hook** | La **sessione chat corrente** termina (evento `stop`) → momento in cui ha senso controllare report e chiusura (`lavoro ok` / `fai report finale` già fatti o da completare). |
+| Per **lavoro sul repo** | **Non** equivale a «task mergiato su main»: il codice può essere già su `main` mentre la chat è ancora aperta (come in questa sessione revisore). |
+| Per **Matteo** | Fine conversazione con l’agente; opzionale leggere il nudge hook e completare sezioni se segnalate. |
+
+### Cosa succederà **probabilmente** allo `stop` di questa chat (se chiudi entro ~20 min dall’ultimo salvataggio report)
+
+| Controllo | Questo report revisore |
+|-----------|------------------------|
+| Nome file | `Report-revisore-allineamento-skill-layout-ingredienti-03-06-26.md` |
+| Escluso come «solo revisione»? | **No** — il filtro hook esclude solo pattern `Report-(revisione\|verifica\|meta\|audit\|analisi\|dossier)`; **`revisore` non è nel pattern** → il file **entra** nel controllo |
+| «Dati comunicazione» / «Analisi flusso prompt» | **Presenti** → caso script **senza sezioni mancanti** |
+| Messaggio atteso | Promemoria a **rileggere** `CHIUSURA_SESSIONE.md` Parte A, in particolare **§8 lettura sessione**, verificare che le sezioni siano **piene** (non solo titoli) + promemoria esiti **Liv.2** se usate |
+
+Se chiudi la chat **dopo >20 min** dall’ultimo salvataggio di questo report → hook in **silenzio** (nessun report «fresco»), anche se il lavoro c’è.
+
+### Perché l’agente esecuzione layout card (03-06) non «vide» l’hook
+
+Dal report layout card (P8): stesso fenomeno — tra «lavoro ok» e report completo **nessun** messaggio hook nel thread agente. Cause coerenti con la doc:
+
+1. **Chat non ancora chiusa** al momento del primo «lavoro ok» (stop non ancora scattato).
+2. **Report scritto/aggiornato** in momenti diversi rispetto allo `stop` → finestra 20 min non allineata.
+3. **Cloud Agent** (se usato): gli hook `stop` **non girano** su Cloud Agents (limite Cursor, commento in `fine-sessione-nudge.mjs` L25–27) — solo IDE locale.
+4. Il nudge può comparire **nel client Matteo** o come messaggio **dopo** stop, non necessariamente come turno visibile durante la stesura del report.
+
+### Limite noto (dato per Meta)
+
+- L’hook verifica **presenza** delle sezioni (regex), non la **qualità** (es. prompt verbatim incompleti al primo lavoro ok) → da qui la regola Matteo 02-06-26: anche con sezioni presenti, chiedere di **rileggere** e allineare al diff reale.
+- Valutare in Meta: includere `revisore` in `NON_EXECUTION_REPORT` **solo se** si vuole silenzio hook sui report revisore (oggi **non** esclusi).
+
+### Cosa fare a fine **questa** chat (Matteo)
+
+1. Chiudi la chat → osserva se compare il nudge «FINE-SESSIONE» / promemoria Parte A.
+2. Se compare: confronta con §8 e prompt R1–R6 di questo file; se manca qualcosa, un ultimo messaggio prima di archiviare.
+3. Se **non** compare: probabile silenzio (nessun report nei 20 min) o sessione Cloud / hook disattivato — non è fallimento del task revisore.
 
 ---
 
