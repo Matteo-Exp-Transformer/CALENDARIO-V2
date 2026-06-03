@@ -34,36 +34,75 @@ export interface BookingMenuCategoryCardProps {
   showIngredientPrices?: boolean
 }
 
-function ItemPriceRow({
+function ComposeMenuItemPanelContent({
   item,
   formatPrice,
-  showPrice = true,
+  showPrice,
+  locked,
+  inputId,
+  isSelected,
+  onToggleItem,
 }: {
   item: ComposeMenuItem
   formatPrice: (item: ComposeMenuItem) => string
-  showPrice?: boolean
+  showPrice: boolean
+  locked: boolean
+  inputId: string
+  isSelected: boolean
+  onToggleItem: (item: ComposeMenuItem) => void
 }) {
   const hasDesc = Boolean(item.description?.trim())
-  return (
-    <div className="min-w-0 flex-1">
+  const itemImageSrc = item.image_url?.trim() || undefined
+
+  const imageBlock = itemImageSrc ? (
+    <div className="aspect-4/3 overflow-hidden rounded-lg border border-black/10 bg-warm-beige/20 sm:aspect-3/2">
+      <img src={itemImageSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
+    </div>
+  ) : null
+
+  const textBlock = (
+    <div className="flex w-full min-w-0 flex-col gap-1">
+      <span className="w-full min-w-0 text-sm font-bold leading-snug text-warm-wood wrap-break-word">
+        {item.name}
+      </span>
+      {hasDesc ? (
+        <span className="w-full min-w-0 text-xs leading-snug text-warm-wood-dark/65 wrap-break-word">
+          {item.description}
+        </span>
+      ) : null}
       <div
         className={cn(
-          'flex items-start gap-2',
-          showPrice ? 'justify-between' : 'justify-start',
+          'flex min-h-[44px] w-full items-center gap-2',
+          showPrice || !locked ? 'justify-between' : 'justify-start',
         )}
       >
-        <span className="text-sm font-bold leading-snug text-warm-wood wrap-break-word">{item.name}</span>
+        {!locked ? (
+          <input
+            id={inputId}
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggleItem(item)}
+            className="h-4 w-4 shrink-0 accent-warm-orange"
+          />
+        ) : null}
         {showPrice ? (
-          <span className="shrink-0 text-sm font-bold tabular-nums text-warm-wood">
+          <span
+            className={cn(
+              'shrink-0 text-sm font-bold tabular-nums text-warm-wood',
+              locked && 'ml-auto',
+            )}
+          >
             {formatPrice(item)}
           </span>
         ) : null}
       </div>
-      {hasDesc ? (
-        <span className="mt-0.5 block text-xs leading-snug text-warm-wood-dark/65 wrap-break-word">
-          {item.description}
-        </span>
-      ) : null}
+    </div>
+  )
+
+  return (
+    <div className="flex w-full min-w-0 flex-col gap-2">
+      {imageBlock}
+      {textBlock}
     </div>
   )
 }
@@ -163,35 +202,42 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
   )
 
   const itemsList = (
-    <ul className="flex flex-col gap-px px-0 pb-2">
-      {items.map((item) => {
+    <ul className="flex flex-col px-0 pb-2">
+      {items.map((item, index) => {
         const isSelected = selectedItems.some((s) => s.id === item.id)
         const inputId = `compose-${categoryKey}-${item.id}`
-        const itemImageSrc = item.image_url?.trim() || undefined
+        const divider =
+          index > 0 ? (
+            <li key={`${item.id}-divider`} aria-hidden className="list-none px-3">
+              <div className="h-px bg-black/10" />
+            </li>
+          ) : null
 
         if (locked) {
           return (
-            <li key={item.id} className="min-w-0">
+            <React.Fragment key={item.id}>
+              {divider}
+              <li className="min-w-0">
               <div className="min-w-0 rounded-xl px-2 py-2">
-                {itemImageSrc ? (
-                  <div className="mb-2 aspect-4/3 overflow-hidden rounded-lg border border-black/10 bg-warm-beige/20 sm:aspect-3/2">
-                    <img src={itemImageSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
-                  </div>
-                ) : null}
-                <div className="flex min-h-[44px] gap-2.5">
-                  <ItemPriceRow
-                    item={item}
-                    formatPrice={formatPrice}
-                    showPrice={showIngredientPrices}
-                  />
-                </div>
+                <ComposeMenuItemPanelContent
+                  item={item}
+                  formatPrice={formatPrice}
+                  showPrice={showIngredientPrices}
+                  locked
+                  inputId={inputId}
+                  isSelected={false}
+                  onToggleItem={onToggleItem}
+                />
               </div>
-            </li>
+              </li>
+            </React.Fragment>
           )
         }
 
         return (
-          <li key={item.id} className="min-w-0">
+          <React.Fragment key={item.id}>
+            {divider}
+            <li className="min-w-0">
             <label
               htmlFor={inputId}
               className={cn(
@@ -200,27 +246,18 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
                 !isSelected && 'hover:bg-warm-beige/50',
               )}
             >
-              {itemImageSrc ? (
-                <div className="mb-2 aspect-4/3 overflow-hidden rounded-lg border border-black/10 bg-warm-beige/20 sm:aspect-3/2">
-                  <img src={itemImageSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
-                </div>
-              ) : null}
-              <div className="flex min-h-[44px] gap-2.5">
-                <input
-                  id={inputId}
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => onToggleItem(item)}
-                  className="mt-1 h-4 w-4 shrink-0 accent-warm-orange"
-                />
-                <ItemPriceRow
-                  item={item}
-                  formatPrice={formatPrice}
-                  showPrice={showIngredientPrices}
-                />
-              </div>
+              <ComposeMenuItemPanelContent
+                item={item}
+                formatPrice={formatPrice}
+                showPrice={showIngredientPrices}
+                locked={false}
+                inputId={inputId}
+                isSelected={isSelected}
+                onToggleItem={onToggleItem}
+              />
             </label>
-          </li>
+            </li>
+          </React.Fragment>
         )
       })}
     </ul>
