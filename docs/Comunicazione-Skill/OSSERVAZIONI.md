@@ -48,6 +48,12 @@
 
 ## Sessioni registrate (append-only)
 
+### 03-06-26 — Revisore: Matteo chiede se allineare i file skill (non dovrebbe essere una scelta)
+- **Contesto:** dopo merge layout ingredienti, l’agente esecuzione aveva lasciato `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` indietro (report «File skill: nessuno») nonostante `CHIUSURA_SESSIONE` Parte B («allinea skill se mancante»). Il revisore aveva proposto l’aggiornamento come **opzionale** («al prossimo giro»); Matteo ha chiesto esplicitamente di aggiornare e ha notato la discrepanza con la procedura di fine lavoro.
+- **Pattern:** Matteo viene messo di fronte a **scegliere** se allineare skill system / contesto layout oppure no — invece di applicare in automatico il debito documentale quando il codice è già cambiato.
+- **Preferenza emersa (03-06-26):** se il task tocca layout/comportamento pubblico documentato in skill area → **allineare subito** skill + commenti sorgente correlati in chiusura (esecuzione o revisore), **senza** chiedere Sì/No a Matteo, salvo sessione solo meta/prepara.
+- **Follow-up skill system (dato, non implementato):** checklist revisore: grep nomi componenti obsoleti in skill vs codice; se report dice «nessuno skill» ma cambia componenti LOCK/layout → flag obbligatorio.
+
 ### 03-06-26 — Layout card ingredienti Prenota (stack + divisori; lacuna prompt nel report)
 - **Area:** `BookingMenuCategoryCard` — pannello ingredienti Pagina Prenota (titolo/descrizione a tutta larghezza; footer checkbox sx + prezzo dx; linea divisoria inset tra righe).
 - **Pattern:** task partito da wrap nome/prezzo solo striscia → pivot «annulla modifiche» a layout verticale; screenshot decisivi.
