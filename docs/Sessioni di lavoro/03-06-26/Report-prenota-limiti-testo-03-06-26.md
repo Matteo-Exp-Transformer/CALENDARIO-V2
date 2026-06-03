@@ -1,6 +1,6 @@
 # Report — Limiti testo Pagina Prenota (03-06-26)
 
-**Commit:** `111277e` (codice) · `06c9d9a` · `64530d7` · `a9bca14` · `1309618` (docs/chiusura) · branch `env/test` → `origin/env/test`
+**Commit:** `111277e` (codice) · `06c9d9a` · `64530d7` · `a9bca14` · `1309618` · `17d159e` (docs/chiusura) · branch `env/test` → `origin/env/test`
 
 ## Cappello
 
@@ -18,13 +18,13 @@
 4. **Form prenotazione cliente:** chi compila nome, email, telefono, intolleranze e altre richieste **non** vede contatori; se supera il cap generoso, al click Invia compare solo «Testo troppo lungo» (stesso messaggio anche lato server).
 5. **Revisione + chiusura (hook 1):** mappa markdown mancante aggiunta; skill §6 validazione allineata (prima citava ancora 60/120/20/300); report riscritto con sez. 8 e prompt verbatim (`64530d7`).
 6. **Annotazioni processo (Matteo):** log errori esecutore su allineamento skill in `ERRORI_PROCESSO.md`; sessione + hook in `OSSERVAZIONI.md` (`a9bca14`).
-7. **Hook stop (2° passaggio):** report completato con sezione effetto hook + commit mancanti in tabella revisione (`1309618`).
+7. **Hook 2–3 (chiusura):** sezione **Effetto hook stop** (`17d159e`); 3° passaggio hook — verifica Parte A completa, nessun nuovo fix skill/codice.
 
 ---
 
 ## Effetto hook stop `FINE-SESSIONE` (`.cursor/hooks/fine-sessione-nudge.mjs`)
 
-Hook ricevuto **2 volte** in questa chat (Matteo incolla il messaggio «📄 FINE-SESSIONE — 2 report toccato/i…»). Senza hook la chiusura si sarebbe fermata al primo «lavoro ok» + commit `111277e`/`06c9d9a` con debiti sotto.
+Hook ricevuto **3 volte** in questa chat (Matteo incolla «📄 FINE-SESSIONE…»). Senza hook la chiusura si sarebbe fermata al primo «lavoro ok» + commit `111277e`/`06c9d9a` con debiti sotto.
 
 ### Cosa **non** sarebbe successo senza hook
 
@@ -45,7 +45,9 @@ In sintesi: il codice (`111277e`) era ok; **documentazione, skill incoerente e c
 |-----------|---------|--------|--------|
 | **Hook 1** | Primo «📄 FINE-SESSIONE…» dopo «lavoro ok» | Rilettura `CHIUSURA_SESSIONE` Parte A; grep skill vs codice → trovato §6 stale; report **riscritto** (sez. 8, verbatim, derivazione errori, FU); creato/completato mappa se mancante; §6 allineata a 65/30/700 | `64530d7` |
 | **Post-hook 1** | Matteo: «annota errori altro agente… e hook» | Log tabellare in `ERRORI_PROCESSO.md` (7 errori esecutore + 2 pattern); blocco sessione in `OSSERVAZIONI.md` | `a9bca14` |
-| **Hook 2** | Secondo «📄 FINE-SESSIONE…» | Verifica report **pieno** (non solo titoli sezione): aggiunti prompt 6–7, commit mancanti, ERRORI/OSSERVAZIONI in tabella §5, sez. effetto hook (questa) | `1309618` |
+| **Hook 2** | Secondo «📄 FINE-SESSIONE…» | Verifica report **pieno**: prompt 6–7, commit mancanti, ERRORI/OSSERVAZIONI in tabella §5 | `1309618` |
+| **Matteo** | «cita cosa hook ha sistemato» | Sezione **Effetto hook stop** (tabelle senza/dopo + valore misurabile) | `17d159e` |
+| **Hook 3** | Terzo «📄 FINE-SESSIONE…» | Rilettura CHIUSURA Parte A: sezioni piene confermate; sync commit `17d159e` + prompt 8–9 | (questo passaggio) |
 
 **Valore misurabile dell’hook:** ha trasformato una chiusura «codice ok + skill a metà» in ciclo tracciabile (mappa, §6 coerente, FU, ERRORI_PROCESSO, report utilizzabile dal revisore Meta).
 
@@ -112,7 +114,11 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 
 6. **«annota tutti gli errori di altro agente nell allineamento dei file skills al lavoro eseguito. e anmota anche se tu hai ricevuto hook in questa sessiome di lavoro»**
 
-7. **«📄 FINE-SESSIONE — 2 report toccato/i…»** (secondo passaggio hook — stesso testo standard stop v3)
+7. **«📄 FINE-SESSIONE — 2 report toccato/i…»** (2° passaggio hook)
+
+8. **«nel tuo report, citw le cose che hook ti ha fatto sistemare. (cosa non sarebbe succwsso senza hook e cosa hao fatto dopo averlo ricevuto»**
+
+9. **«📄 FINE-SESSIONE — 2 report toccato/i…»** (3° passaggio hook — verifica finale CHIUSURA Parte A)
 
 ### Frasi ricorrenti (conteggio)
 
@@ -121,7 +127,7 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 | Admin contatore / cliente no | 3 |
 | Limite abbondante / sistema invisibile | 2 |
 | Mappatura 1:1 Prenota | 1 |
-| Hook FINE-SESSIONE / stop | 2 |
+| Hook FINE-SESSIONE / stop | 3 |
 | Annota errori altro agente | 1 |
 
 ### Formato che ha funzionato
@@ -143,7 +149,7 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 |------|-------|
 | **prepara** / prepara prompt | **ok** — prompt esecutore + fasi; scope Prenota chiuso |
 | **lavoro ok** | **ok** — revisione + report + commit |
-| **fai report finale** (scritto «fwi») | **ok** — commit `111277e`→`a9bca14`, push `env/test` |
+| **fai report finale** (scritto «fwi») | **ok** — commit `111277e`→`17d159e`, push `env/test` |
 
 (Nessun’altra voce Liv.2 del VOCABOLARIO usata in questa sessione oltre a prepara / lavoro ok / report finale.)
 
@@ -151,7 +157,7 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 
 ## Analisi flusso prompt, efficienza e statistiche
 
-- **Prompt sostanziali Matteo:** 7 (prepara + 3 UX + lavoro ok + annota errori + hook stop ×2)
+- **Prompt sostanziali Matteo:** 9 (prepara + 3 UX + lavoro ok + annota errori + citare effetto hook + hook stop ×3)
 - **Correzioni dopo 1ª risposta:** 2 (inclusione campi cliente; limite invisibile in UI)
 - **Follow-up generati:** 3 (FU-030/031/032)
 - **Modalità alzata:** no (deep già da prepara-prompt)
@@ -164,7 +170,7 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 
 ### Impressioni lavorando con lo skill system
 
-- **Funzionato bene:** il ciclo prepara → esecuzione → «lavoro ok» → revisione; skill area Prenota assorbono la regola senza APP_CONTEXT intero. **Hook stop ricevuto 2 volte** in questa chat: al primo ha scoperto §6 stale + report scarno; al secondo ha verificato che ERRORI/OSSERVAZIONI fossero tracciati e che il report citasse tutti i commit.
+- **Funzionato bene:** il ciclo prepara → esecuzione → «lavoro ok» → revisione; skill Prenota coerenti post-hook. **Hook ×3:** (1) §6 stale + report scarno; (2) tabella skill comunicazione + commit; (3) verifica finale — nessun nuovo debito skill/codice, solo allineamento report a `17d159e`.
 - **Funzionato meno bene:** esecutore ha aggiornato §8.1 skill ma non §6 (pattern «skill a metà»). Link a mappa prima che il file esistesse. Edge Deno duplica costanti cliente — vincolo strutturale, non dimenticanza.
 
 ### Difficoltà incontrate + soluzioni
@@ -222,7 +228,7 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 | Skill allineate al diff (§6 + mappa + ERRORI/OSSERVAZIONI) | OK |
 | Edge sync limiti cliente | OK (duplicate + commento) |
 | LOCK griglia BookingRequestPage | Non toccato |
-| Commit + push `env/test` | OK `111277e` … `1309618` |
-| Hook stop ×2 — report sez. 8 + verbatim + **§ Effetto hook** | OK |
+| Commit + push `env/test` | OK `111277e` … `17d159e` |
+| Hook stop ×3 — CHIUSURA Parte A completa | OK (3° passaggio: nessuna correzione skill/codice) |
 
 **Verdetto revisione:** approvato — ciclo chiuso.
