@@ -1,6 +1,6 @@
 # Report — Limiti testo Pagina Prenota (03-06-26)
 
-**Commit:** `111277e` (codice) · `06c9d9a` (docs) · branch `env/test` → `origin/env/test`
+**Commit:** `111277e` (codice) · `06c9d9a` · `64530d7` · `a9bca14` (docs/chiusura) · branch `env/test` → `origin/env/test`
 
 ## Cappello
 
@@ -16,7 +16,8 @@
 2. **Esecuzione:** creato `bookingPrenotaTextLimits.ts` — un solo posto per numeri ristoratore, cliente, carosello, tetto font header.
 3. **Personalizza form:** il ristoratore continua a vedere `12/30`, `45/65`, ecc. su titoli, descrizioni, tipologie, sottotab, promo; descrizione intro pagina non può superare **22px** di font (nome/titolo restano fino **38px**).
 4. **Form prenotazione cliente:** chi compila nome, email, telefono, intolleranze e altre richieste **non** vede contatori; se supera il cap generoso, al click Invia compare solo «Testo troppo lungo» (stesso messaggio anche lato server).
-5. **Revisione + chiusura:** mappa markdown mancante aggiunta; skill §6 validazione allineata (prima citava ancora 60/120/20/300); commit e push su `env/test`.
+5. **Revisione + chiusura (hook 1):** mappa markdown mancante aggiunta; skill §6 validazione allineata (prima citava ancora 60/120/20/300); report riscritto con sez. 8 e prompt verbatim (`64530d7`).
+6. **Annotazioni processo (Matteo):** log errori esecutore su allineamento skill in `ERRORI_PROCESSO.md`; sessione + hook in `OSSERVAZIONI.md` (`a9bca14`).
 
 ---
 
@@ -34,6 +35,9 @@
 | `supabase/functions/create-booking/index.ts` | Stessi cap server-side (duplicate + commento sync) |
 | `__tests__/bookingPrenotaTextLimits.test.ts` | Test helper e fontSize |
 | `docs/per-ui-design-skill/BOOKING_*` | Skill + mappa |
+| `docs/Comunicazione-Skill/ERRORI_PROCESSO.md` | Log errori allineamento skill esecutore |
+| `docs/Comunicazione-Skill/OSSERVAZIONI.md` | Hook stop + sessione limiti testo |
+| `docs/FOLLOW_UP.md` | FU-030/031/032 |
 
 ---
 
@@ -55,6 +59,8 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 | `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md` | § Limiti testo 03-06-26 + tabella | Admin Personalizza form |
 | `BOOKING_PRENOTA_TEXT_LIMITS_MAP.md` | Nuovo — mappa 1:1 A–I | Riferimento citato dalle skill |
 | `docs/SESSION_LOG.md` | Riga sessione 03-06-26 | Indice cronologico |
+| `ERRORI_PROCESSO.md` | § 03-06-26 limiti testo + 2 pattern tabella | Errori esecutore skill stale / link mappa |
+| `OSSERVAZIONI.md` | Blocco sessione + riga tabella frasi | Hook ricevuto + richiesta annotazione errori |
 
 **Correzione hook fine-sessione (03-06-26):** §6 layout context citava ancora limiti pre-refactor (60/120/20/300) — aggiornato a valori reali in chiusura.
 
@@ -74,6 +80,10 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 
 5. **«lavoro ok. fwi revisione e report finale»**
 
+6. **«annota tutti gli errori di altro agente nell allineamento dei file skills al lavoro eseguito. e anmota anche se tu hai ricevuto hook in questa sessiome di lavoro»**
+
+7. **«📄 FINE-SESSIONE — 2 report toccato/i…»** (secondo passaggio hook — stesso testo standard stop v3)
+
 ### Frasi ricorrenti (conteggio)
 
 | Frase / tema | N |
@@ -81,6 +91,8 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 | Admin contatore / cliente no | 3 |
 | Limite abbondante / sistema invisibile | 2 |
 | Mappatura 1:1 Prenota | 1 |
+| Hook FINE-SESSIONE / stop | 2 |
+| Annota errori altro agente | 1 |
 
 ### Formato che ha funzionato
 
@@ -101,13 +113,15 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 |------|-------|
 | **prepara** / prepara prompt | **ok** — prompt esecutore + fasi; scope Prenota chiuso |
 | **lavoro ok** | **ok** — revisione + report + commit |
-| **fai report finale** (scritto «fwi») | **ok** — commit `111277e`+`06c9d9a`, push `env/test` |
+| **fai report finale** (scritto «fwi») | **ok** — commit `111277e`→`a9bca14`, push `env/test` |
+
+(Nessun’altra voce Liv.2 del VOCABOLARIO usata in questa sessione oltre a prepara / lavoro ok / report finale.)
 
 ---
 
 ## Analisi flusso prompt, efficienza e statistiche
 
-- **Prompt sostanziali Matteo:** 5 (prepara + 3 correzioni UX + lavoro ok)
+- **Prompt sostanziali Matteo:** 7 (prepara + 3 UX + lavoro ok + annota errori + hook stop ×2)
 - **Correzioni dopo 1ª risposta:** 2 (inclusione campi cliente; limite invisibile in UI)
 - **Follow-up generati:** 3 (FU-030/031/032)
 - **Modalità alzata:** no (deep già da prepara-prompt)
@@ -120,8 +134,8 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 
 ### Impressioni lavorando con lo skill system
 
-- **Funzionato bene:** il ciclo prepara → esecuzione → «lavoro ok» → revisione; `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT` e `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT` hanno assorbito la regola senza toccare APP_CONTEXT intero. La regola implicita «allineamento skill in chiusura» ha fatto emergere §6 stale solo grazie all’hook stop.
-- **Funzionato meno bene:** due skill puntavano a `BOOKING_PRENOTA_TEXT_LIMITS_MAP.md` prima che il file esistesse — rischio per agenti futuri. Edge function non può importare TS: duplicate costanti cliente è vincolo strutturale Deno, non dimenticanza.
+- **Funzionato bene:** il ciclo prepara → esecuzione → «lavoro ok» → revisione; skill area Prenota assorbono la regola senza APP_CONTEXT intero. **Hook stop ricevuto 2 volte** in questa chat: al primo ha scoperto §6 stale + report scarno; al secondo ha verificato che ERRORI/OSSERVAZIONI fossero tracciati e che il report citasse tutti i commit.
+- **Funzionato meno bene:** esecutore ha aggiornato §8.1 skill ma non §6 (pattern «skill a metà»). Link a mappa prima che il file esistesse. Edge Deno duplica costanti cliente — vincolo strutturale, non dimenticanza.
 
 ### Difficoltà incontrate + soluzioni
 
@@ -130,12 +144,14 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 | Mappa markdown assente a «lavoro ok» | Scritta in revisione/chiusura + citata in skill |
 | §6 layout context con numeri vecchi (60/120/20/300) | Riletta in hook stop; aggiornata a 65/30/700 |
 | Commit docs con `.gitignore` su `docs/` | `git add -f` su file nuovi (procedura PREPARA_PROMPT) |
+| Matteo chiede log errori esecutore | Tabella in ERRORI_PROCESSO + blocco OSSERVAZIONI (`a9bca14`) |
+| Secondo hook stop | Rilettura report: commit mancanti, prompt 6–7, skill comunicazione non in tabella §5 |
 
 ### Migliorie suggerite (dato — non implementate qui)
 
 1. Test CI che fallisce se `create-booking/index.ts` duplicate diverge da `bookingPrenotaTextLimits.ts`.
 2. In prepara-prompt, checklist «Output attesi presenti su disco» prima di accettare lavoro ok.
-3. Segnalare in `ERRORI_PROCESSO.md` pattern «skill aggiornata che referenzia file non ancora creato».
+3. ~~Segnalare in `ERRORI_PROCESSO.md` pattern «skill aggiornata che referenzia file non ancora creato».~~ **Fatto** in `a9bca14` (tabella pattern + log § 03-06-26).
 
 ### Errori e correzioni in chiusura
 
@@ -153,6 +169,7 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 | 3 | Ingredienti/categorie senza cap | **scope parziale** (non bug) | Sezione E mappa esplicita follow-up | Sessione dedicata Tab Menu |
 | 4 | Edge duplicate costanti | **vincolo strutturale** | Deno edge non importa `src/` | Test parità o shared package futuro |
 | 5 | `restaurant_name` 40 vs 200 | **bug preesistente** | Anagrafica vs Zod registry | Follow-up FU-032 |
+| 6 | Report incompleto al 1° hook | **errore agente** (chiusura) | Mancavano commit 64530d7/a9bca14, prompt 6–7 | Secondo passaggio hook |
 
 ---
 
@@ -172,9 +189,10 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 |-------|-------|
 | Admin contatore / cliente silenzioso | OK |
 | `npm run validate` | OK (284) |
-| Skill allineate al diff (incl. §6 post-hook) | OK |
+| Skill allineate al diff (§6 + mappa + ERRORI/OSSERVAZIONI) | OK |
 | Edge sync limiti cliente | OK (duplicate + commento) |
 | LOCK griglia BookingRequestPage | Non toccato |
-| Commit + push `env/test` | OK `111277e`, `06c9d9a` |
+| Commit + push `env/test` | OK `111277e` … `a9bca14` |
+| Hook stop ×2 — report sez. 8 + verbatim | OK (questo passaggio) |
 
-**Verdetto revisione:** approvato.
+**Verdetto revisione:** approvato — ciclo chiuso.
