@@ -40,6 +40,16 @@ Scoperta tecnica chiave (doc ufficiale Cursor): `stop` può emettere **`followup
 ### 2.3 Mappa hook Cursor + matrice decisionale (Playbook senior)
 Aggiunto al Playbook (§2-bis/ter/quater): la matrice **file/chat × durante/dopo** che decide dove va una regola, la meccanica `followup_message`+`loop_count`, e la tabella dei 20+ hook con i **soli 3 che parlano all'agente** (`sessionStart`, `postToolUse`, `stop`). Trappola registrata: `preToolUse`/`beforeSubmitPrompt` NON iniettano istruzioni.
 
+### 2.4 Hook `Stop` per il SENIOR in Claude Code (aggiunto a fine sessione)
+**Innesco:** Matteo nota che il senior gira **solo in Claude Code** e che in chat lunghe di reasoning deve **ricordare a voce** di aggiornare il template v.0 e il Playbook. → hook che lo rende automatico.
+**Fatto:** `.claude/hooks/fine-sessione-senior.mjs` + registrazione in `settings.local.json` (`hooks.Stop`). **Stessa logica** dell'hook Cursor v3 (rilancia 1× sempre su report fresco, anche completo), con sintassi Claude Code:
+- guardia anti-loop: `stop_hook_active` (bool) invece di `loop_count`;
+- output: `{"decision":"block","reason":"..."}` invece di `followup_message` — il `reason` torna all'agente come turno.
+**Checklist nel rilancio:** sezioni report standard (1–4) **+ 2 punti specifici senior** (5: propaga template v.0 REVISIONE §6b; 6: aggiorna Playbook). Questo è il valore aggiunto rispetto a Cursor, dove gira l'esecutore e non servono.
+**Test:** giro1 (`stop_hook_active:false`, report fresco) → `decision:block` con checklist; giro2 (`stop_hook_active:true`) → tace; nessun report → silenzio. ✅
+**Auto-prova sul campo:** questo stesso hook è scattato a fine sessione e ha fatto emergere che **questo report non documentava l'hook Claude Code** (era stato committato prima) → la presente sezione 2.4 è la correzione che l'hook ha sollecitato. Prova concreta che il meccanismo funziona.
+**Gitignored:** hook + `settings.local.json` restano locali (config Claude Code di Matteo, come il template v.0). Su git solo il tracciamento nel Log idee + questa sezione.
+
 ---
 
 ## 3. File di skill aggiornati
@@ -167,7 +177,7 @@ inserisci anche domande ricevute da me e le spiegazioni che mi hai dato
 ## 9. Cosa resta per la prossima sessione
 
 - **Discussione aperta (richiesta Matteo R6):** quali hook M4 integrare — candidati `beforeMCPExecution` guard PROD (forte: scritture DB reali), `beforeShellExecution` fallback. In PAUSA-RACCOLTA → decidere sui dati.
-- **Debito template v.0:** `_skill-system-v0/comunicazione/` non ha `hooks/` né `CHIUSURA_SESSIONE` generico → sessione igiene template dedicata.
+- **Debito template v.0:** `_skill-system-v0/comunicazione/` non ha `hooks/` né `CHIUSURA_SESSIONE` generico → sessione igiene template dedicata. **Da aggiungere al piano:** propagare anche l'**hook `Stop` senior Claude Code** (`fine-sessione-senior.mjs`) in forma generica nel template, accanto all'hook Cursor — così un nuovo progetto eredita entrambe le leve fine-chat (esecutore Cursor + senior Claude Code).
 - **FOLLOW_UP.md:** nessuna nuova riga.
 
 ---
