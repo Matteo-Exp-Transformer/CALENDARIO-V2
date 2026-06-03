@@ -202,8 +202,9 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
 - **€ per ingrediente (03-06-26):** criterio unico `getSubTabPricePerPerson` in
   `bookingPublicFormConfig.ts` — se restituisce un numero (prezzo fisso sottotab), prop
   `showIngredientPrices={false}` da `BookingRequestForm` → `MenuSelection` →
-  `BookingMenuComposeGrid` → `BookingMenuCategoryCard` (`ItemPriceRow` senza colonna prezzo) e
-  sidebar «Il tuo menu» senza € riga; se `undefined` (personalizzabile) comportamento precedente.
+  `BookingMenuComposeGrid` → `BookingMenuCategoryCard` (`ComposeMenuItemPanelContent`: footer senza
+  colonna prezzo) e sidebar «Il tuo menu» senza € riga; se `undefined` (personalizzabile) prezzo in
+  footer a destra come da §7.
 - `preset_id` resta fonte per precompilare ingredienti e seguire il menu staff. Visibilità
   ingredienti/categorie per card filtrata da `hidden_category_keys`/`hidden_item_ids`.
 - Card scorrevole `display='cards'` senza `preset_id` (compilata a mano): no griglia ingredienti,
@@ -262,6 +263,35 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
   `top`/`left`/`width` del portal via ref DOM (no `setState` per frame — evita lag visivo); listener
   `scroll` capture su `window`, `resize`, `ResizeObserver` su shell, più `scroll` sul contenitore
   orizzontale `ComposeScrollRow` (`horizontalScrollRef` passato alle card layout `scroll`).
+- **Portal z-index:** `BOOKING_MENU_CATEGORY_EXPANDED_PORTAL_CLASS` → `fixed z-[160]` (sopra form e
+  riepilogo in scroll; **non** esiste più sticky bar mobile — rimossa 02-06-26).
+
+### Righe ingredienti nel pannello — layout stack (03-06-26)
+
+Implementazione: `ComposeMenuItemPanelContent` in `BookingMenuCategoryCard.tsx` (sostituisce il vecchio
+`ItemPriceRow` nome/prezzo affiancati). **Stesso stack** in pannello aperto per striscia laterale,
+full-page e griglia mobile/desktop — **nessuna** prop `showPhotoStrip` / wrap CSS per modalità pagina.
+
+Ordine verticale per ogni ingrediente nella lista `#booking-menu-cat-panel-*`:
+
+1. **Foto** (solo se `item.image_url`): `aspect-4/3 sm:aspect-3/2`, bordo leggero.
+2. **Titolo** a tutta larghezza (`text-sm font-bold`, `wrap-break-word`).
+3. **Descrizione** opzionale sotto il titolo (`text-xs`).
+4. **Footer azioni** `min-h-[44px]`: checkbox a **sinistra** (se menù non `locked`); prezzo a **destra**
+   solo se `showIngredientPrices === true` (`formatPrice`). Se prezzo fisso sottotab → prop `false` da
+   catena §5; se `locked` → niente checkbox, prezzo eventualmente `ml-auto`.
+
+**Divisori tra ingredienti:** `<li aria-hidden>` con `px-3` + `h-px bg-black/10` **tra** le righe, non
+dopo l’ultima. Lista `<ul>` senza `gap` verticale globale (spaziatura = padding riga + divisore).
+
+**Non reintrodurre** layout wrap/float/misura JS nome↔prezzo affiancati: la card aperta è stretta
+(~240–320px in scroll orizzontale) e il testo deve usare tutta la colonna; il pivot stack (03-06-26) è
+il pattern consolidato. In prepara-prompt: se il task chiede «testo sotto l’€» in colonna stretta,
+proporre stack invece di wrap.
+
+Riga selezionabile: `<label htmlFor={inputId}>` avvolge tutto `ComposeMenuItemPanelContent`; `locked` usa
+`<div>` senza checkbox. La formula `BOOKING_MENU_CATEGORY_PANEL_SCROLL_CLASS` assume footer `44px` e
+foto `aspect-4/3` / `sm:aspect-3/2` (vedi commento in `bookingMenuComposePanelLayout.ts`).
 
 ### Riepilogo carosello (summary display)
 Per `display='carousel'` il resolver mantiene `price_per_person` sulla sottotab; in Prenota
