@@ -463,8 +463,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
         m.id === modeId ? { ...m, sub_tabs_presentation: null, sub_tabs: [] } : m,
       ),
     }))
-    setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
-    setExpandedSubTabByMode((prev) => ({ ...prev, [modeId]: null }))
+    closeSubTabEditors(modeId)
     markModesDirty()
   }
 
@@ -668,6 +667,16 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     setHeaderStylesDirty(false)
   }
 
+  const closeSubTabEditors = (modeId?: string) => {
+    if (modeId !== undefined) {
+      setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
+      setExpandedSubTabByMode((prev) => ({ ...prev, [modeId]: null }))
+    } else {
+      setDraftSubTabsByMode({})
+      setExpandedSubTabByMode({})
+    }
+  }
+
   const persistModesSection = async (bookingModes: BookingPublicFormConfig['booking_modes']) => {
     const saved = getSavedBaseline()
     const modesForDb = bookingModes.map((m) => ({
@@ -681,6 +690,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     await upsert.mutateAsync([{ key: 'booking_public_form_config', value: normalized }])
     mergeConfigAfterPartialSave(normalized, 'modes')
     setModesDirty(false)
+    closeSubTabEditors()
   }
 
   const saveModesSection = async () => {
@@ -696,10 +706,8 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       bookingModes = config.booking_modes.map((m) =>
         m.id === modeId ? { ...m, sub_tabs: [...(m.sub_tabs ?? []), draft] } : m,
       )
-      setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
       setConfig((prev) => ({ ...prev, booking_modes: bookingModes }))
     }
-    setExpandedSubTabByMode((prev) => ({ ...prev, [modeId]: null }))
     try {
       await persistModesSection(bookingModes)
     } catch {
@@ -724,8 +732,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     } else if (modesDirty) {
       setConfig((prev) => ({ ...prev, booking_modes: baseline.booking_modes }))
     }
-    setDraftSubTabsByMode({})
-    setExpandedSubTabByMode({})
+    closeSubTabEditors()
     setHeaderTextDirty(false)
     setHeaderStylesDirty(false)
     setModesDirty(false)
@@ -1508,7 +1515,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                           const nextEnabled = !mode.sub_tabs_enabled
                           if (!nextEnabled) {
                             cancelDraftSubTab(mode.id)
-                            setExpandedSubTabByMode((prev) => ({ ...prev, [mode.id]: null }))
+                            closeSubTabEditors(mode.id)
                           }
                           updateMode(mode.id, { sub_tabs_enabled: nextEnabled })
                         }}
