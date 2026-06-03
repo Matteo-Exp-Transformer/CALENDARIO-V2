@@ -37,9 +37,40 @@ Una regola markdown che già c'è e viene saltata **non si ripara con un'altra m
 **2. Cosa fa (e cosa NON fa) un hook.** L'hook **sposta il momento** in cui l'informazione arriva
 (es. «come scrivere il report» consegnato a fine chat, non tenuto in testa tutta la sessione). NON
 rende il sistema più piccolo da solo: è il *fattorino*, non chi riordina la casa. Il dimagrimento vero
-lo fa la **riorganizzazione** (mettere le cose nei file giusti). L'hook `stop` di Cursor verifica i
-file, gira solo su IDE locale (non Cloud Agent), e può `allow` (avvisa) o `deny` (blocca). Default
-scelto: **smart-allow** — avvisa mirato, non blocca (no falsi positivi che irritano).
+lo fa la **riorganizzazione** (mettere le cose nei file giusti).
+
+**2-bis. La matrice che decide DOVE va una regola (estende il punto 1 — 03-06-26).** Due assi, non uno:
+- **Asse A — cosa verifica:** FILE (hook possibile) vs CHAT (solo vincolo nel prompt). [già nel punto 1]
+- **Asse B — QUANDO agisce:** *durante* il lavoro (preventivo) vs *dopo* (a posteriori).
+
+|                          | Verificabile dai **file**            | Verificabile solo dalla **chat**        |
+|--------------------------|--------------------------------------|-----------------------------------------|
+| **Agisce DURANTE** (prev.) | riga obbligatoria nel **prompt**     | vincolo nel **prompt** / `comandi-base` |
+| **Agisce DOPO** (a post.)  | **hook `stop`** (legge i report)     | *impossibile* (chat finita, niente la legge) |
+
+Esempio risolto 03-06: «allinea la skill» è verificabile dai file MA va fatta *durante* la chiusura
+→ è andata in `comandi-base` (preventivo) + check nell'hook `stop` (rete a posteriori). **Due leve.**
+
+**2-ter. `stop` non è un promemoria, è un RILANCIO (scoperta 03-06-26).** L'`agent_message` dell'hook
+`stop` NON è visibile all'agente (la chat è chiusa) → arrivava a vuoto. Ma `stop` può emettere
+**`followup_message`**: auto-invia un turno che riapre il loop → l'agente RICEVE e RISPONDE. È «il
+potenziale di `stop`» che cercava Matteo. Guardia anti-loop: lo stdin porta `loop_count` (parte da 0);
+politica scelta «rilancia 1 volta sola» → `if (loop_count >= 1) tace`. Rete extra: `loop_limit:1` in
+`hooks.json`. **L'hook `stop` v3 (03-06-26) usa questo: rilancia SEMPRE 1 turno se c'è report fresco,
+anche se completo (Matteo: «ripeti anche se a posto, la presenza del titolo non garantisce il contenuto»).**
+
+**2-quater. Mappa hook Cursor — solo 3 parlano all'agente (riferimento 03-06-26).** Cursor ha 20+
+eventi, ma per iniettare/rilanciare ne contano 3 + il blocco:
+| Hook | Quando | Cosa può fare | Uso skill system |
+|------|--------|---------------|------------------|
+| `sessionStart` | avvio chat (1×) | inietta `additional_context` | = `comandi-base` (già coperto da `alwaysApply`) |
+| `postToolUse` | dopo OGNI tool ok | inietta `additional_context` | regole contestuali su un file (rumoroso → futuro) |
+| `stop` | fine loop agente | `followup_message` (rilancia) | **nudge fine-chat v3** ✅ |
+| `preToolUse`/`beforeMCPExecution`/`beforeShellExecution` | prima azione/MCP/shell | **solo `allow`/`deny`** (NON inietta testo) | guard PROD/LOCK (enforcement vero, futuro M4) |
+
+> ⚠️ Trappola da non ripetere: `preToolUse` e `beforeSubmitPrompt` NON possono iniettare istruzioni
+> (solo bloccare / informare). «Istruisci l'agente prima che scriva» NON si fa con loro → si fa con
+> `sessionStart`/`comandi-base`. Verificato su `cursor.com/docs/hooks.md` (03-06-26).
 
 **3. Alleggerire i file (principi di ingegneria applicati).**
 - **Cohesion by lifecycle phase:** raggruppa per *quando* serve, non per *tipo*. Tutto il «fine chat»
@@ -134,7 +165,13 @@ conferma. La macchina li esegue, non dipende dalla buona volontà dell'agente.
 > (caso normale) funzionano.
 >
 > **Leve Cursor mappate per lo skill system** (ordine di valore):
-> 1. **`stop` → nudge fine-chat MIRATO** ✅ **v2 INSTALLATA 02-06-26** (v1 statica 01-06-26).
+> 1. **`stop` → nudge fine-chat ATTIVO** ✅ **v3 INSTALLATA 03-06-26** (v2 mirata 02-06, v1 statica 01-06).
+>    **Salto v2→v3 (03-06-26):** da `agent_message` passivo (invisibile a chat chiusa → nudge a vuoto,
+>    confermato dai report 03-06) a **`followup_message`** che AUTO-RILANCIA un turno visibile.
+>    Rilancia SEMPRE 1 volta se c'è report fresco (anche completo). Guardia: `loop_count>=1`→tace +
+>    `loop_limit:1` in hooks.json. Aggiunto al messaggio il check **prompt verbatim** + **allineamento
+>    skill** (le due lacune dei report 03-06). Test: primo giro→followup, secondo→`{}`, no report→`{}`.
+>    [storico v1/v2 sotto resta valido per la logica di lettura report — solo l'OUTPUT è cambiato]
 >    File: `.cursor/hooks/fine-sessione-nudge.mjs` (Node, cross-platform) + `.cursor/hooks.json`.
 >    **Salto v1→v2:** la v1 era un promemoria **statico** (stesso testo sempre, giudizio delegato
 >    all'agente = la stessa buona volontà che già falliva). La v2 **legge lo stato reale**: trova i
@@ -252,3 +289,6 @@ quando i criteri saranno tarati.
 - 01-06-26 · [statistica] · **score chat 31-05 = 6,5/10** — 11 sessioni operative, 1 in prod, 1 misrouting grave (Prenota vs QR), ~12 giri correzione, follow-up netti positivi. Causa rumore: validate verde ≠ QA visivo. Vedi report revisione-controverifica 01-06.
 - 01-06-26 · [raffinamento] · **sezione report «Analisi flusso prompt ed efficienza»** — Matteo: statistiche fasi prepara→esecuzione + anti-gonfiaggio report su «test fatti tutto ok»; vedi PROPOSTE + OSSERVAZIONI 01-06-26; alimenta M2/M5.
 - 02-06-26 · [automazione] · **hook `stop` v2 mirato INSTALLATO** (senior, da dossier revisore) — da promemoria statico a controllo che legge i Report-*.md freschi e verifica le sezioni obbligatorie. Sblocca M4. Decisione Matteo: smart-allow (avvisa, non blocca); `deny` predisposto. Cura il guasto #1 dal lato «sezioni report», non «buona volontà».
+- 03-06-26 · [automazione] · **hook `stop` v3 — `followup_message` INSTALLATO** (senior) — il nudge ora RILANCIA un turno visibile invece di scrivere `agent_message` a vuoto. Cura il limite «hook non intercettato in chat» (report 03-06). Rilancia 1× sempre (anche report completo, richiesta Matteo); guardia `loop_count`+`loop_limit:1`. Aggiunto check prompt-verbatim + allineamento-skill. + promossa regola «allineamento skill implicito» (comandi-base + CHIUSURA A§5/B§1).
+- 03-06-26 · [tecnica] · **mappa hook Cursor completata + matrice file/chat × durante/dopo** (Playbook §2-bis/ter/quater) — solo 3 hook iniettano (`sessionStart`/`postToolUse`/`stop`); `preToolUse`/`beforeSubmitPrompt` NON iniettano (solo bloccano). Candidati futuri M4: `beforeMCPExecution` guard PROD (scritture DB reali passano da MCP), `beforeShellExecution` fallback. **In PAUSA-RACCOLTA: non costruire, valutare sui dati.**
+- 03-06-26 · [raffinamento] · **debito propagazione template v.0** — `_skill-system-v0/comunicazione/` NON ha `hooks/` né `CHIUSURA_SESSIONE` generico (manca la fase fine-chat introdotta 02-06). Da propagare in forma generica (hook+CHIUSURA+matrice Playbook) in una sessione igiene template dedicata. Annotato, non eseguito 03-06.

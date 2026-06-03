@@ -6,6 +6,24 @@
 
 ---
 
+## Sessioni registrate 03-06-26 (chiuse — regola promossa)
+
+> Spostate qui 03-06-26 (Meta senior): l'osservazione «agenti chiedono se allineare skill» è
+> diventata **regola** («allineamento skill implicito» in `comandi-base` + `CHIUSURA_SESSIONE` A§5/B§1).
+> Pattern chiuso → archiviate. Restano in OSSERVAZIONI solo le voci ancora vive.
+
+### 03-06-26 — Agenti chiedono a Matteo se allineare lo skill system (PROMOSSA a regola)
+- **Pattern:** esecuzione e revisore **chiedevano** a Matteo se allineare file skill/contesto layout — per lui implicito se il diff cambia layout/comportamento documentato.
+- **Esito:** ✅ promossa (Meta senior 03-06-26, ratifica Matteo). Codificata in `comandi-base.mdc` (sotto «lavoro ok»), `CHIUSURA_SESSIONE.md` Parte A §5 + Parte B §1. Il revisore NON la ripropone come «da valutare».
+- **Report:** `Sessioni di lavoro/03-06-26/Report-revisore-allineamento-skill-layout-ingredienti-03-06-26.md` § Migliorie.
+
+### 03-06-26 — Layout card ingredienti Prenota (stack + divisori; lacuna prompt verbatim nel report)
+- **Area:** `BookingMenuCategoryCard` — pannello ingredienti Pagina Prenota (titolo/descrizione full-width; footer checkbox sx + prezzo dx; divisori inset).
+- **Lacuna processo:** al primo «lavoro ok» il report **non** riportava i prompt verbatim (solo sintesi); corretto dopo domanda esplicita. Hook `stop` non intercettato in chat (limite curato 03-06 con `followup_message`).
+- **Esito:** confluito nel rinforzo hook v3 + nota «prompt verbatim» nel nudge. Report: `Report-prenota-layout-card-ingredienti-03-06-26.md`.
+
+---
+
 ## Sessioni registrate 01-06 -> 29-05-26 (storiche)
 
 ### 01-06-26 — FU-025 freeze desktop PublicMenuCategoryPage (Esecuzione, 1 turno)

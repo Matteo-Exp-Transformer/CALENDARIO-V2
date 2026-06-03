@@ -45,6 +45,13 @@ Tabella o elenco: file + perché. Compresi i file dello skill system se li hai t
 Colonne: **file · modifica · perché**. Elenca TUTTI i file skill toccati (skill area, COMUNICAZIONE,
 APP_CONTEXT, Comunicazione-Skill/*, SESSION_LOG, report, .cursor/*).
 
+> **Allineamento skill = implicito, non una domanda a Matteo.** Se il diff ha cambiato un
+> layout/comportamento **descritto in una skill area**, quella skill va aggiornata **in questa
+> chiusura** e la riga va in questa tabella con scritto **cosa** hai allineato. La riga «nessuno»
+> è valida SOLO se per la zona toccata non esiste un file skill da aggiornare — e in quel caso
+> scrivi il motivo («nessuno — nessuna skill area copre questo componente»). **Vietato** formulare
+> l'allineamento come follow-up opzionale o «al prossimo giro»: vale per esecuzione e revisore.
+
 ### 6. «Dati comunicazione» (obbligatoria standard/deep)
 - Frasi/richieste ricorrenti di Matteo in questa chat (con conteggio).
 - Spiegazioni date e formato che ha funzionato.
@@ -116,7 +123,10 @@ la chiusura (smart-allow). Se la chat non aveva report (es. domanda veloce), l'h
 
 ## 1. Prima di committare: report allineato al codice
 Controlla che il report descriva il **diff reale** (nessuna sezione rimasta indietro rispetto a fix
-successivi). Allinea le skill §7.2 delle aree toccate se mancante.
+successivi). **Allinea le skill area toccate** (vedi Parte A §5): se il diff ha cambiato un
+layout/comportamento documentato in una skill e quella skill è ancora indietro → aggiornala **ora**,
+non dopo il merge. Il revisore che approva un merge con la skill stale ha lasciato passare un debito
+(caso 03-06-26: `ItemPriceRow` citato nella skill dopo il refactor a `ComposeMenuItemPanelContent`).
 
 ## 2. Commit — separati per tipo
 - **Codice** (`feat`/`fix`) e **documentazione** (`docs(...)`) in **commit distinti** (punti di

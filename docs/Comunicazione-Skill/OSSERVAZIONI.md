@@ -48,19 +48,9 @@
 
 ## Sessioni registrate (append-only)
 
-### 03-06-26 — Agenti chiedono a Matteo se allineare lo skill system (dovrebbe essere implicito)
-- **Frase ricorrente emersa (Matteo 03-06-26):** gli agenti (esecuzione e revisore) gli **chiedono** se vuole allineare file dello skill system / contesto layout — es. «al prossimo giro posso aggiornare BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT» o equivalente. Per Matteo questo **non è una scelta**: se il codice layout/comportamento è cambiato, l’allineamento skill in chiusura è **implicito** (`CHIUSURA_SESSIONE` Parte B, `TESTING_SKILL` §7 per revisore).
-- **Contesto ciclo Prenota 03-06:** agente esecuzione → report «File skill: nessuno»; revisore → merge OK + offerta opzionale skill; Matteo → «non è già aggiornato da procedura fine lavoro?» → poi «aggiornalo» + annotare il pattern.
-- **Preferenza Matteo:** allineare subito skill area + commenti sorgente correlati in chiusura (esecuzione o revisore), **senza** Sì/No, salvo chat solo meta/prepara.
-- **Dato per revisore/Meta:** promuovere solo dopo ratifica — voce comportamento agente tipo «non chiedere a Matteo se aggiornare skill; fare e segnalare nel report cosa è stato allineato».
-- **Report dettaglio:** [Report revisore allineamento skill](Sessioni%20di%20lavoro/03-06-26/Report-revisore-allineamento-skill-layout-ingredienti-03-06-26.md) — § «Migliorie skill system e procedure».
-
-### 03-06-26 — Layout card ingredienti Prenota (stack + divisori; lacuna prompt nel report)
-- **Area:** `BookingMenuCategoryCard` — pannello ingredienti Pagina Prenota (titolo/descrizione a tutta larghezza; footer checkbox sx + prezzo dx; linea divisoria inset tra righe).
-- **Pattern:** task partito da wrap nome/prezzo solo striscia → pivot «annulla modifiche» a layout verticale; screenshot decisivi.
-- **Lacuna processo (agente):** al primo «lavoro ok» il report **non** riportava i prompt verbatim di Matteo (solo sintesi); corretto solo dopo domanda esplicita P8. Hook `stop` **non** intercettato in chat agent.
-- **Richiesta Matteo (03-06-26):** deve ancora **specificare agli agenti** di riportare i suoi prompt nel report (non si assume che lo facciano da soli finché non lo chiede o non c’è voce Liv.1 consolidata). Valutare voce tipo «lavoro ok → sempre blocco prompt verbatim» in VOCABOLARIO / nudge hook.
-- **Report:** [Report layout card ingredienti](Sessioni%20di%20lavoro/03-06-26/Report-prenota-layout-card-ingredienti-03-06-26.md) — report finale con commit.
+> 📦 **Sessioni 03-06-26 «allineamento skill» e «layout card ingredienti» → archiviate** in
+> [ARCHIVIO_OSSERVAZIONI.md](ARCHIVIO_OSSERVAZIONI.md): la prima è diventata regola, la seconda è
+> confluita nel rinforzo hook v3. La richiesta «riportare i prompt verbatim» è ora nel nudge hook.
 
 ### 03-06-26 — Prezzo ingredienti Prenota (prepara-prompt, chiarimento regola)
 - **Area:** Pagina Prenota — card ingredienti (`BookingMenuCategoryCard`) + riepilogo (`BookingSummarySidebar`).
