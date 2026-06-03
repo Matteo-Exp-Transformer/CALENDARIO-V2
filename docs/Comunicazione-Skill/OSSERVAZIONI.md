@@ -52,6 +52,15 @@
 > [ARCHIVIO_OSSERVAZIONI.md](ARCHIVIO_OSSERVAZIONI.md): la prima è diventata regola, la seconda è
 > confluita nel rinforzo hook v3. La richiesta «riportare i prompt verbatim» è ora nel nudge hook.
 
+### 03-06-26 — Limiti testo Pagina Prenota (prepara-prompt + esecutore + hook stop)
+- **Area:** Pagina Prenota — limiti caratteri vetrina (`bookingPrenotaTextLimits.ts`) + form cliente silenzioso.
+- **Ciclo:** prepara-prompt (chat A) → esecutore (chat B) → «lavoro ok» → revisore/chiusura (stessa chat) → **hook stop** da Matteo.
+- **Hook stop ricevuto in questa sessione:** **sì** — messaggio «📄 FINE-SESSIONE — 2 report toccato/i…» (`.cursor/hooks/fine-sessione-nudge.mjs`). Ha obbligato sez. 8 piena, prompt verbatim, verifica skill; ha scoperto §6 layout context ancora con 60/120/20/300.
+- **Errori allineamento skill (agente esecutore, non prepara):** log dettagliato in [ERRORI_PROCESSO.md](ERRORI_PROCESSO.md) § 03-06-26 limiti testo — sintesi: (1) mappa MD mancante a lavoro ok; (2) §8.1 ok ma §6 stale; (3) link skill a file inesistente; (4) report v1 scarno; (5) Tab Menu fuori scope → FU-030.
+- **Richiesta Matteo (03-06-26):** annotare errori altro agente su skill + confermare hook → questo blocco + ERRORI_PROCESSO.
+- **Esiti Liv.2:** prepara **ok** · lavoro ok **ok** · fai report finale (scritto «fwi») **ok**.
+- **Report:** [Report limiti testo 03-06-26](../Sessioni%20di%20lavoro/03-06-26/Report-prenota-limiti-testo-03-06-26.md) · commit `111277e`+`06c9d9a`+`64530d7`.
+
 ### 03-06-26 — Prezzo ingredienti Prenota (prepara-prompt, chiarimento regola)
 - **Area:** Pagina Prenota — card ingredienti (`BookingMenuCategoryCard`) + riepilogo (`BookingSummarySidebar`).
 - **Pattern:** Matteo descrive il task con DOM path + componente; la regola di prodotto emerge dopo 2–3 turni (prezzo sottotab vs personalizzabile). Chiede al prepara-prompt di **annotare nel report** anche un «prompt iniziale ideale» in poche righe — la frase che avrebbe evitato ambiguità fin dall’inizio.
@@ -110,6 +119,7 @@
 | footer mobile 50% + sfondo trasparente | 1 | decisioni UX esplicite dopo mockup HTML |
 | domande non bloccanti lasciate al revisore | 1 | Classic vs Pro, smoke Prenota pubblica — ok lasciare ? in QA |
 | «annota prompt ideale / come avrei dovuto dirlo» (prepara-prompt) | 1 | nel report prepara: sezione breve «Prompt ideale (retroattivo)» — 2–4 righe che catturano la regola di prodotto senza DOM path; candidato PROPOSTE per PREPARA_PROMPT §5 |
+| «annota errori altro agente» + «hook in questa sessione» | 1 | tracciamento in ERRORI_PROCESSO + OSSERVAZIONI (03-06 limiti testo) |
 
 ## Spiegazioni date e formato che ha funzionato
 
