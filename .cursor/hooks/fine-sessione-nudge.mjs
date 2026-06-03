@@ -12,15 +12,20 @@
  * LEGGE LO STATO REALE: trova i Report-*.md toccati di recente e controlla se le sezioni obbligatorie
  * ci sono davvero. Così l'avviso è SPECIFICO («il report X non ha Dati comunicazione») e contabile.
  *
- * COMPORTAMENTO (aggiornato 02-06-26, richiesta Matteo «dammi il file fresco SEMPRE»):
- *  - report fresco con sezioni MANCANTI → avviso mirato (cosa manca) + procedura completa.
- *  - report fresco con sezioni PRESENTI → comunque la procedura completa + monito a verificare che
- *    siano PIENE e allineate, non solo presenti (l'hook non può giudicare la qualità → non finge
- *    «sei a posto», chiede di rileggere). Vale anche sugli AGGIORNAMENTI di report (no aggiornamenti
- *    superficiali): un report ri-toccato rientra nella finestra e riceve di nuovo il promemoria.
- *  - nessun report fresco → silenzio.
- * Decisione: **smart-allow** — non blocca (permission: allow). Niente falsi positivi che bloccano una
- * chat legittima. Il salto a `deny` sui soli casi certi è già predisposto sotto (vedi NOTA).
+ * COMPORTAMENTO (aggiornato 03-06-26 — da `agent_message` passivo a `followup_message` ATTIVO):
+ *  - report fresco con sezioni MANCANTI → rilancia un turno mirato (cosa manca) + procedura.
+ *  - report fresco con sezioni PRESENTI → rilancia COMUNQUE 1 turno con la procedura + monito a
+ *    verificare che siano PIENE e allineate, non solo presenti (Matteo: «ripeti anche se completo»).
+ *  - nessun report fresco → silenzio (niente followup).
+ *
+ * PERCHÉ v3 (03-06-26): la v2 usava `agent_message`, che a `stop` (chat ormai chiusa) NON era
+ * visibile all'agente — il nudge arrivava a vuoto (confermato dai report 03-06: «hook non
+ * intercettato in chat»). Cursor permette a `stop` di emettere `followup_message`: AUTO-INVIA un
+ * turno che riapre il loop, così l'agente RICEVE e RISPONDE al promemoria invece di ignorarlo.
+ *
+ * GUARDIA ANTI-LOOP: lo stdin dello `stop` porta `loop_count` (quante volte lo stop ha già
+ * rilanciato in questa chat; parte da 0). Politica Matteo 03-06-26: **1 solo rilancio** →
+ * se loop_count >= 1 l'hook tace. (Rete aggiuntiva: `loop_limit` in hooks.json.)
  *
  * LIMITE NOTO: gli hook `stop` NON girano sui Cloud Agents (solo IDE locale — limite Cursor). Per il
  * lavoro IDE di Matteo (caso normale, confermato 02-06-26) è la leva principale. Fallback Cloud =
@@ -67,6 +72,19 @@ function resolveRoot(stdinRaw) {
     // stdin non-JSON o vuoto → cwd
   }
   return process.cwd()
+}
+
+/** Quante volte lo `stop` ha già auto-rilanciato in QUESTA conversazione (Cursor: parte da 0).
+ *  loop_count === 0 → primo stop, possiamo rilanciare; >= 1 → siamo già nel turno rilanciato,
+ *  dobbiamo tacere per non ciclare. È la guardia anti-loop (decisione Matteo: «rilancia 1 volta sola»). */
+function resolveLoopCount(stdinRaw) {
+  try {
+    const parsed = JSON.parse(stdinRaw)
+    if (typeof parsed.loop_count === 'number') return parsed.loop_count
+  } catch {
+    // stdin non-JSON → trattiamo come primo giro (0)
+  }
+  return 0
 }
 
 /** Elenca i Report-*.md sotto docs/Sessioni di lavoro modificati negli ultimi RECENT_MINUTES. */
@@ -125,14 +143,24 @@ function auditReports(reports) {
 async function main() {
   const stdinRaw = await readStdin().catch(() => '')
   const root = resolveRoot(stdinRaw)
+  const loopCount = resolveLoopCount(stdinRaw)
+
+  // GUARDIA ANTI-LOOP: se siamo GIÀ nel turno rilanciato (loop_count >= 1) → tace e basta.
+  // Decisione Matteo 03-06-26: «rilancia 1 volta sola, poi taci». Senza questa guardia, ogni
+  // followup_message farebbe ri-scattare lo stop → loop. (Cursor ha anche un loop_limit di rete,
+  // ma la nostra politica è 1 solo rilancio, non 5.)
+  if (loopCount >= 1) {
+    process.stdout.write(JSON.stringify({}))
+    process.exit(0)
+  }
 
   const recentReports = findRecentReports(root)
   const findings = auditReports(recentReports)
 
-  // Caso 1: nessun report recente → silenzio. Niente muro di testo a ogni micro-chat.
-  // (Le chat senza report — domande veloci, light — non devono ricevere il nudge.)
+  // Caso 1: nessun report recente → silenzio (niente followup). Le chat senza report — domande
+  // veloci, light — non devono ricevere il rilancio.
   if (recentReports.length === 0) {
-    process.stdout.write(JSON.stringify({ permission: 'allow' }))
+    process.stdout.write(JSON.stringify({}))
     process.exit(0)
   }
 
@@ -145,31 +173,33 @@ async function main() {
     'In particolare la SEZIONE 8 «La tua lettura della sessione» (la più saltata): impressioni',
     'lavorando con lo skill system, difficoltà+soluzioni, migliorie che suggeriresti, errori+correzioni',
     'con causa classificata. Come DATI e versione dell\'agente, NON come voto sintetico (il voto è del revisore).',
+    '',
+    'Verifica anche: PROMPT VERBATIM di Matteo presenti (non solo sintesi) e ALLINEAMENTO SKILL fatto',
+    '(se il diff ha cambiato un layout/comportamento documentato, la skill area va aggiornata in questa',
+    'chiusura — NON è una domanda da fare a Matteo: vedi CHIUSURA_SESSIONE Parte A §5 + comandi-base).',
   ]
 
-  // Caso 2: report fresco (nuovo O aggiornato) con TUTTE le sezioni presenti.
-  // Decisione Matteo 02-06-26: dare SEMPRE la procedura fresca, non solo quando manca un buco —
-  // perché la presenza del titolo NON garantisce il contenuto (rischio aggiornamenti superficiali).
-  // L'hook non può giudicare la qualità → invece di fingere «sei a posto», chiede di RILEGGERE il
-  // file e verificare che ogni sezione sia piena e allineata, non solo presente.
+  // Caso 2: report fresco con TUTTE le sezioni presenti → rilancia COMUNQUE 1 volta.
+  // Decisione Matteo 03-06-26: ripetere la procedura anche a report completo (la presenza del
+  // titolo non garantisce il contenuto). Ora via followup_message: AUTO-INVIA un turno che l'agente
+  // vede e a cui RISPONDE — non più agent_message passivo che a chat chiusa nessuno legge.
   if (findings.length === 0) {
     const ok = [
-      `📄 ${recentReports.length} report toccato/i in questa sessione — prima di chiudere, RILEGGI la procedura`,
-      'e verifica che le sezioni siano PIENE e allineate, non solo presenti (no aggiornamenti superficiali):',
+      `📄 FINE-SESSIONE — ${recentReports.length} report toccato/i. Prima che la chat chiuda, RILEGGI la`,
+      'procedura e verifica che le sezioni siano PIENE e allineate, non solo presenti (no aggiornamenti',
+      'superficiali). Poi conferma cosa hai verificato/corretto in 2-3 righe.',
       '',
       ...qualityInstruction,
       '',
       'Se hai usato voci Liv.2 del VOCABOLARIO, segnane l\'esito (ok / domanda-superflua / corretto-da-Matteo).',
     ]
-    process.stdout.write(
-      JSON.stringify({ permission: 'allow', agent_message: ok.join('\n') })
-    )
+    process.stdout.write(JSON.stringify({ followup_message: ok.join('\n') }))
     process.exit(0)
   }
 
-  // Caso 3: manca almeno una sezione obbligatoria → avviso mirato + istruzione qualitativa + Liv.2.
+  // Caso 3: manca almeno una sezione obbligatoria → rilancio mirato (cosa manca) + qualità + Liv.2.
   const lines = ['⚠️ FINE-SESSIONE (skill system comunicazione) — controllo mirato sui report di oggi:', '']
-  lines.push('SEZIONI OBBLIGATORIE MANCANTI (APP_CONTEXT §7.1) — completa prima di chiudere:')
+  lines.push('SEZIONI OBBLIGATORIE MANCANTI (APP_CONTEXT §7.1) — completa PRIMA di chiudere e conferma:')
   for (const f of findings) {
     const rel = relative(root, f.path).split(sep).join('/')
     lines.push(`  • ${rel}`)
@@ -182,15 +212,7 @@ async function main() {
   lines.push('Hai usato VOCI Liv.2 del VOCABOLARIO in questa chat (es. «main dell\'app», «menù originale»,')
   lines.push('«revisiona e committa»)? Segna l\'esito nel campo «Dati Liv.2»: ok / domanda-superflua / corretto-da-Matteo.')
 
-  // NOTA salto futuro a enforcement vero: per bloccare i casi CERTI, sostituire 'allow' con 'deny'
-  // SOLO quando findings.length > 0 (report esiste ma manca l'intestazione obbligatoria) e aggiungere
-  // un campo agent_message con l'istruzione. I casi Liv.2 NON vanno mai a deny (falsi positivi).
-  process.stdout.write(
-    JSON.stringify({
-      permission: 'allow',
-      agent_message: lines.join('\n'),
-    })
-  )
+  process.stdout.write(JSON.stringify({ followup_message: lines.join('\n') }))
   process.exit(0)
 }
 
