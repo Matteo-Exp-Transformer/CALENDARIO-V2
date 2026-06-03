@@ -235,9 +235,12 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
   `BOOKING_PUBLIC_FIELD_BOX_MULTILINE` (label sopra, textarea sotto): cresce con `scrollHeight`,
   testo a sx (`resize-none overflow-hidden`). In `DietaryRestrictionsSection`: «Intolleranze o
   esigenze alimentari» e «Altre Richieste».
-- **Validazione:** email `isValidEmail()`, telefono `isValidPhone()` (`utils/validation.ts`);
-  `maxLength` nome 60, email 120, telefono 20, intolleranze 300. `BookingFormFields` usa
-  `autoComplete`/`inputMode` HTML5.
+- **Validazione:** email `isValidEmail()`, telefono `isValidPhone()` (`utils/validation.ts`).
+  Cap caratteri cliente in `BOOKING_PUBLIC_CLIENT_TEXT_LIMITS` (`bookingPrenotaTextLimits.ts`):
+  nome **65**, email **65**, telefono **30**, intolleranze aggregate **700**, altre richieste **700** —
+  **solo sistema** (maxLength silenzioso, nessun contatore in pagina); messaggio submit/edge
+  «Testo troppo lungo». Dettaglio: §8.1 e `BOOKING_PRENOTA_TEXT_LIMITS_MAP.md` §H.
+  `BookingFormFields` usa `autoComplete`/`inputMode` HTML5.
 - **Submit fallito (29-05-26):** il `<form id="booking-request-form">` ha **`noValidate`** — la validazione è solo React (`validate()`), altrimenti i `required` HTML bloccano l'evento submit **prima** di `handleSubmit` (niente toast, chiusura card, scroll, lampeggio). Sequenza `focusFirstValidationIssue`:
   1) `dispatchBookingMenuComposeCollapse()` (evento sincrono su `window` — chiude tutte le card,
      incluse istanze mobile+desktop montate in parallelo) + incremento `composeCollapseNonce`;
