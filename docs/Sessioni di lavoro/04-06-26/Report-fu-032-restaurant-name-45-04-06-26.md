@@ -1,7 +1,7 @@
 # Report — FU-032: limite unico 45 caratteri per nome locale (`restaurant_name`)
 
 **Data:** 04-06-26 · **Profilo:** Esecuzione · **Modalità:** standard  
-**Branch:** env/test (working tree) · **Conferma Matteo:** implicita (chiusura fine-sessione)
+**Branch:** `main` / `env/test` · **Commit:** `a79a5af` (include scope FU-032 + report) · **Conferma Matteo:** implicita (chiusura fine-sessione)
 
 ---
 
@@ -112,7 +112,7 @@ Nuovo test: `restaurantName max 45` in `bookingPrenotaTextLimits.test.ts`. Nessu
 ## 9. Cosa resta per la prossima sessione
 
 - **FU-030** (cap ingredienti/categorie), **FU-031** (QA limiti form cliente) — invariati.
-- **Commit:** non eseguito; su «fai report finale» usare path mirati ai **7 file** sopra se il tree è misto con altre sessioni 04-06-26.
+- **Commit:** eseguito in `a79a5af` (merge `env/test` → `main`); scope FU-032 = 7 file come §2.
 
 ---
 
@@ -127,23 +127,23 @@ Nuovo test: `restaurantName max 45` in `bookingPrenotaTextLimits.test.ts`. Nessu
 ## 11. Domande di chiusura
 
 ❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.  
-✅ R1 — Prompt 1 (task FU-032): brief Esecuzione — limite **45** («Decisione Matteo 04-06-26: 45 va bene» nel testo), costante + Anagrafica + Zod + §A + FOLLOW_UP + validate. Prompt 2–3: fine-sessione / controllo post-hook. Prompt 4–5: «📄 FINE-SESSIONE — **3 report** …» (controllo a mente fredda; incrocio con `courses_label` + verifica FU-031).
+✅ R1 — Prompt 1 (task FU-032): brief Esecuzione — limite **45** («Decisione Matteo 04-06-26: 45 va bene» nel testo), costante + Anagrafica + Zod + §A + FOLLOW_UP + validate. Prompt 2–3: fine-sessione / controllo post-hook. Prompt 4+: «📄 FINE-SESSIONE — **7 report** …» (controllo a mente fredda; incrocio con `courses_label` + verifica FU-031).
 
 ❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.  
-✅ R2 — Controllo fine-sessione (3 report, diff invariato): `git diff --stat` mirato FU-032 = **+57 −12**, **7 file** (lista §2). Valori riaperti: `restaurantName: 45`; Zod ex **200** → **45**; Anagrafica ex **40** → **45** + contatore; clamp `useRestaurantName` + `parseFromDb`; test +1; §A **45**; FU-032 **Fatto**. `docs/FOLLOW_UP.md` nel mirato: **2 righe** tabella (FU-031 Aperto + FU-032 Fatto) — non attribuire tutto il hunk solo a FU-032. Tree totale **25 file** — non confondere con `BookingSubTabCards` (+45 −21, report `courses_label`). **291** test OK (ri-eseguito). `BookingRequestPage.tsx` fuori scope FU-032 (h1 via hook).
+✅ R2 — Controllo fine-sessione **7 report** (diff codice in `a79a5af` invariato; doc §11/E-A in working tree): `git diff --stat` mirato FU-032 = **+57 −12**, **7 file** (lista §2). Valori riaperti: `restaurantName: 45`; Zod ex **200** → **45**; Anagrafica ex **40** → **45** + contatore; clamp `useRestaurantName` + `parseFromDb`; test +1; §A **45**; FU-032 **Fatto**. `docs/FOLLOW_UP.md` nel mirato: **2 righe** tabella (FU-031 Aperto + FU-032 Fatto) — non attribuire tutto il hunk solo a FU-032. Tree pre-commit fine-sessione **25 file** → unificato in **`a79a5af` (31 file)**; non confondere con `BookingSubTabCards` (+45 −21, report `courses_label`). **291** test OK (ri-eseguito 04-06-26). `BookingRequestPage.tsx` fuori scope FU-032 (h1 via `useRestaurantName`).
 
 ❓ Q3 — File correlati allineati? Quali file erano collegati alla modifica (skill area, context, test, tipi) e hai verificato che siano aggiornati? Elencali (o «nessuno + perché»).  
-✅ R3 — Allineati: `PRENOTA_TEXT_LIMITS_MAP.md` §A, `FOLLOW_UP.md`, test `bookingPrenotaTextLimits.test.ts`, tipi invariati (`RestaurantSettingValueMap.restaurant_name` resta `string`). Verificati senza gap: `PRENOTA_SKILL` (rimanda a mappa, no numeri duplicati); `PRENOTA_FORM_CONFIG_CONTEXT` (anteprima read-only, non toccata); `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT` (nessun cap nome). **E-A:** nessuna sezione skill lasciata con 40/200/FU-032 aperto dopo il diff. `useRestaurantSetting` eredita clamp da `parseFromDb` — coerente con Anagrafica.
+✅ R3 — Allineati: `PRENOTA_TEXT_LIMITS_MAP.md` §A, `FOLLOW_UP.md`, test `bookingPrenotaTextLimits.test.ts`, tipi invariati (`RestaurantSettingValueMap.restaurant_name` resta `string`). `PRENOTA_SKILL` rimanda a mappa (no numeri duplicati). **E-A corretto (controllo 7 report):** `PRENOTA_FORM_CONFIG_CONTEXT.md` citava ancora **max 40** in Anagrafica → aggiornato a **45** + rimando §A. Stub `BOOKING_*` non necessari per il numero. `useRestaurantSetting` eredita clamp da `parseFromDb` — coerente con Anagrafica.
 
 ❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato? (vietato «tutto ok» a vuoto: se davvero nulla, scrivilo e di' perché ne sei certo.)  
-✅ R4 — Non aggiornato `PRENOTA_SKILL.md` (richiesta «§7.2» non esiste; numeri solo in TEXT_LIMITS — documentato in §4 report). Non toccato `BookingFormConfigPanel` anteprima header (brief: solo se anteprima). Nessuna migrazione DB né job che riscrive nomi legacy in massa (clamp a lettura/salvataggio basta). Nessun test `restaurantSettingRegistry` Zod. Non commit/push. Non eseguito smoke browser 46° carattere (non nel deliverable).
+✅ R4 — Non aggiornato `PRENOTA_SKILL.md` (richiesta «§7.2» non esiste; numeri solo in TEXT_LIMITS — documentato in §4 report). Non toccato `BookingFormConfigPanel` anteprima header (brief: solo se anteprima). Nessuna migrazione DB né job che riscrive nomi legacy in massa (clamp a lettura/salvataggio basta). Nessun test `restaurantSettingRegistry` Zod. **Commit/push:** fatto in `a79a5af` (post controllo fine-sessione). Non eseguito smoke browser 46° carattere (non nel deliverable).
 
 ❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti? (critica + proposta nella stessa riga; se non hai avuto attriti, immagina quello più probabile.)  
 ✅ R5 — Attrito leggero: prompt citava «§7.2» skill inesistente (mappa §A è il posto giusto). Miglioria: in brief FU-032 puntare esplicitamente a `PRENOTA_TEXT_LIMITS_MAP.md` §A invece di §7.2, e una riga in `PRENOTA_SKILL` §3 «nome locale → §A, 45 char».
 
 ❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuto ti sono stati utili o rumore?  
-✅ R6 — Contesto giusto per FU-032. Hook fine-sessione **3 report** utile: incrocio con `courses_label` (§C) e FU-031 (§H) nello stesso `PRENOTA_TEXT_LIMITS_MAP.md` — hunks distinti, scope separati.
+✅ R6 — Contesto giusto per FU-032. Hook fine-sessione **7 report** utile: incrocio con `courses_label` (§C) e FU-031 (§H) nello stesso `PRENOTA_TEXT_LIMITS_MAP.md` — hunks distinti, scope separati.
 
 ---
 
-*Fine report — pronto per «fai report finale» (commit mirato ai 7 file se il working tree è misto).*
+*Fine report — pubblicato in `a79a5af`; FU-032 chiuso in FOLLOW_UP.*

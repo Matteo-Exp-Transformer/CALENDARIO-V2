@@ -215,7 +215,7 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 |----|-------|-----------|
 | FU-030 | Aperto | Cap layout **nome/descrizione ingrediente e categoria** (Tab Menu → card Prenota). Mappa §E. |
 | FU-031 | Aperto | QA manuale Prenota **375 / 900 / 1256** — testo lungo intolleranze/richieste, verifica assenza contatore UI. |
-| FU-032 | Aperto | Allineare **`restaurant_name`**: input Anagrafica 40 vs Zod 200 — un solo numero coerente. |
+| FU-032 | **Fatto** (04-06-26) | ~~Allineare `restaurant_name`~~ — limite unico **45** (`a79a5af`). Vedi [Report FU-032 04-06-26](../04-06-26/Report-fu-032-restaurant-name-45-04-06-26.md). |
 
 ---
 
@@ -232,3 +232,25 @@ QA manuale viewport 375 / 900 / 1256: **non eseguito** (agente + revisore static
 | Hook stop ×3 — CHIUSURA Parte A completa | OK (3° passaggio: nessuna correzione skill/codice) |
 
 **Verdetto revisione:** approvato — ciclo chiuso.
+
+---
+
+## 11. Domande di chiusura
+
+❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.  
+✅ R1 — Già in **Dati comunicazione → Prompt verbatim di Matteo (sessione)** (prompt 1–9): (1) «prepara prompt» con DOM Path per mappa 1:1 limiti Prenota; (2) campi cliente limite abbondante; (3) non scrivere limite in UI cliente; (4) admin sì contatore, cliente no; (5) «lavoro ok. fwi revisione e report finale»; (6) annota errori altro agente + hook ricevuto; (7–9) tre «📄 FINE-SESSIONE…» (2° e 3° passaggio hook). Coerente con **Dati comunicazione** e **Analisi flusso**.
+
+❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.  
+✅ R2 — Controllo 7 report (diff storico invariato). Ri-verificato su git: `111277e` = **10 file**, **+408 −140** — `bookingPrenotaTextLimits.ts` creato; `BOOKING_PUBLIC_CLIENT_TEXT_LIMITS` al commit **nome/email 65, tel 30, dietary/special 700** (non 550 — tuning 03-06 successivo); `BookingFormConfigPanel` refactor limiti ristoratore; `create-booking/index.ts` duplicate + commento sync; test `bookingPrenotaTextLimits.test.ts` **36** righe nuove. `06c9d9a` = mappa `BOOKING_PRENOTA_TEXT_LIMITS_MAP.md` + skill; `64530d7`/`a9bca14`/`17d159e` = report + §6 layout da 60/120/20/300 → **65/30/700**; `FOLLOW_UP` FU-030/031/032. `npm run validate` **284** test (coerente § Test). Promo ristoratore: `promoTitle` **60**, `promoMessage` **350** in `bookingPrenotaTextLimits.ts` al commit — coerente tabella File toccati. **Nota:** valori cliente **550** sono stato **posteriore** (report tuning 03-06); questo report descrive correttamente lo stato a `111277e`/`64530d7`.
+
+❓ Q3 — File correlati allineati? Quali file erano collegati alla modifica (skill area, context, test, tipi) e hai verificato che siano aggiornati? Elencali (o «nessuno + perché»).  
+✅ R3 — Allineati post-hook: mappa limiti (creato `06c9d9a` come `BOOKING_PRENOTA_TEXT_LIMITS_MAP.md`; oggi `docs/Prenota-Skill/contesto/PRENOTA_TEXT_LIMITS_MAP.md` dopo pilota 04-06), `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` §6+§8.1+§9, `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md` § limiti, `ERRORI_PROCESSO.md`, `OSSERVAZIONI.md`, `FOLLOW_UP.md`, `SESSION_LOG`. Codice: `bookingPrenotaTextLimits.ts`, form admin/cliente, edge. **E-A chiuso in hook:** §6 non più 60/120/20/300. **Non** aggiornato `PRENOTA_SKILL/` (cartella non esisteva il 03-06 — migrazione 04-06). LOCK `BookingRequestPage` griglia non toccato (corretto). Test Vitest helper + fontSize presenti.
+
+❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato? (vietato «tutto ok» a vuoto: se davvero nulla, scrivilo e di' perché ne sei certo.)  
+✅ R4 — QA manuale viewport 375/900/1256 non eseguito (FU-031 aperto). Cap ingredienti/categorie Tab Menu non implementati (FU-030). `restaurant_name` 40 vs 200 non risolto (FU-032, chiuso 04-06-26). Esecutore iniziale non consegnò mappa MD prima del primo «lavoro ok» — recuperato in revisione hook. Edge Deno resta duplicate (vincolo strutturale, non package condiviso). Test CI parità TS↔edge non aggiunto.
+
+❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti? (critica + proposta nella stessa riga; se non hai avuto attriti, immagina quello più probabile.)  
+✅ R5 — Attrito: esecutore aggiornò §8.1 skill ma lasciò §6 stale (60/120/20/300) — pattern «skill a metà»; hook ×3 ha dovuto recuperare. Miglioria: checklist «Output attesi su disco» in prepara-prompt prima di «lavoro ok»; test che fallisce se skill §6/§8 citano numeri diversi da `bookingPrenotaTextLimits.ts` (proposta §7, non fatta).
+
+❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuto ti sono stati utili o rumore?  
+✅ R6 — Contesto giusto: skill Prenota (`BOOKING_*`) + `PREPARA_PROMPT` + `CHIUSURA_SESSIONE` Parte A. Hook FINE-SESSIONE **×3 molto utile**: ha forzato mappa, §6, report completo, ERRORI_PROCESSO, tabella skill comunicazione — senza hook la chiusura sarebbe rimasta «codice ok, doc a metà». Non rumore.

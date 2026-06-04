@@ -72,7 +72,7 @@ description: >-
 
 - Sezione admin: `BookingFormConfigPanel`, blocco **Intestazione pagina Prenota**.
 - Campi testo:
-  - nome azienda: solo lettura, letto da `restaurant_name`/tenant; modifica altrove in Anagrafica Azienda (**max 40** in Anagrafica).
+  - nome azienda: solo lettura, letto da `restaurant_name`/tenant; modifica altrove in Anagrafica Azienda (**max 45** — vedi `PRENOTA_TEXT_LIMITS_MAP.md` §A).
   - titolo: `page_title` — **max 50** caratteri + contatore `N/max` in admin
   - descrizione: `page_description` — **max 120** caratteri + contatore
 - Stile header pubblico:
