@@ -104,7 +104,9 @@ Password admin: `TestE2E2026!`
 
 ### 3. Ricreare i tenant di test (se lo staging viene resettato)
 
-Esegui questi SQL nel progetto staging via Supabase Studio o MCP:
+**Svuotare tutto lo staging** (zero tenant/utenti, schema intatto): `supabase/scripts/reset_test_database.sql` — procedura in `supabase/scripts/README_RESET_TEST_DATABASE.md`. Solo progetto TEST (`docnnernvp`).
+
+Poi, per ripopolare i due tenant E2E, esegui questi SQL nel progetto staging via Supabase Studio o MCP:
 
 ```sql
 -- Tenant

@@ -86,7 +86,13 @@ feat(db): ...   fix(db): ...   update(db): ...
 
 ---
 
-## 5. Verifica post-modifica
+## 5. Reset dati TEST (non schema)
+
+Per azzerare tenant, prenotazioni e `auth.users` su staging: [`RESET_TEST_DATABASE.md`](RESET_TEST_DATABASE.md) + [`scripts/reset_test_database.sql`](scripts/reset_test_database.sql). Mai su PROD.
+
+---
+
+## 6. Verifica post-modifica
 
 ```bash
 npm run db:types:linked   # rigenera src/types/database.ts
