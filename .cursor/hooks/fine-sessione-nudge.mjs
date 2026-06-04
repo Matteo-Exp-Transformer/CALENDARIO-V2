@@ -44,10 +44,12 @@ const RECENT_MINUTES = 20
  *  di file palesemente non-report se mai servisse (per ora: nessuna esclusione, tutti i Report-*). */
 const EXCLUDE_REPORT = null
 
-/** Marca una domanda di chiusura: `❓ Q1 — …` (numero opzionale). */
-const QUESTION_RE = /❓\s*Q\s*(\d+)?/i
-/** Cattura le righe risposta: `✅ R1: testo`. Gruppo 1 = numero (opz), gruppo 2 = testo dopo i due punti. */
-const ANSWER_RE = /✅\s*R\s*(\d+)?\s*:?(.*)/i
+/** Marca una domanda di chiusura: `❓ Q1 — …` a INIZIO riga (con eventuale spazio o bullet markdown).
+ *  L'ancora `^[\s>\-*]*` evita che un `❓Q` CITATO in mezzo a una risposta (es. «nel formato ❓Q/✅R»)
+ *  venga scambiato per una nuova domanda — bug reale rilevato 04-06-26. */
+const QUESTION_RE = /^[\s>\-*]*❓\s*Q\s*(\d+)?/i
+/** Cattura le righe risposta: `✅ R1: testo` a INIZIO riga. Stessa ancora, stessa ragione. */
+const ANSWER_RE = /^[\s>\-*]*✅\s*R\s*(\d+)?\s*:?(.*)/i
 /** Una risposta è «vuota» se dopo `R:` non c'è sostanza: stringa vuota, trattini, placeholder. */
 const PLACEHOLDER_RE = /^[\s\-–—_.·•]*$|^(todo|tbd|n\/?a|\.\.\.|_+|\(.*\))$/i
 
