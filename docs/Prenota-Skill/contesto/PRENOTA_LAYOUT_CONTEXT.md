@@ -3,8 +3,8 @@
 > Mappa di dettaglio della pagina pubblica di prenotazione (`/prenota/:slug`). Caricala quando il
 > task tocca layout, griglia striscia, sfondo, header, ordine form, caselle, card ingredienti,
 > sidebar riepilogo o sticky bar della pagina Prenota. Per la **configurazione admin** (Personalizza
-> form) vedi `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md`; per il **flusso dati** (resolver,
-> field_overrides) vedi `BOOKING_DATA_FLOW_SKILL.md`.
+> form) vedi `PRENOTA_FORM_CONFIG_CONTEXT.md`; per il **flusso dati** (resolver,
+> field_overrides) vedi `PRENOTA_DATA_FLOW_CONTEXT.md`.
 
 > **Trigger di routing:** «Pagina Prenota» · «form prenotazione clienti» → questo file +
 > `UI_RESPONSIVE_SKILL` / `UI_EDIT_SKILL`.
@@ -237,9 +237,9 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
   esigenze alimentari» e «Altre Richieste».
 - **Validazione:** email `isValidEmail()`, telefono `isValidPhone()` (`utils/validation.ts`).
   Cap caratteri cliente in `BOOKING_PUBLIC_CLIENT_TEXT_LIMITS` (`bookingPrenotaTextLimits.ts`):
-  nome **65**, email **65**, telefono **30**, intolleranze aggregate **700**, altre richieste **700** —
+  nome **65**, email **65**, telefono **30**, intolleranze aggregate **550**, altre richieste **550** —
   **solo sistema** (maxLength silenzioso, nessun contatore in pagina); messaggio submit/edge
-  «Testo troppo lungo». Dettaglio: §8.1 e `BOOKING_PRENOTA_TEXT_LIMITS_MAP.md` §H.
+  «Testo troppo lungo». Dettaglio: §8.1 e `PRENOTA_TEXT_LIMITS_MAP.md` §H.
   `BookingFormFields` usa `autoComplete`/`inputMode` HTML5.
 - **Submit fallito (29-05-26):** il `<form id="booking-request-form">` ha **`noValidate`** — la validazione è solo React (`validate()`), altrimenti i `required` HTML bloccano l'evento submit **prima** di `handleSubmit` (niente toast, chiusura card, scroll, lampeggio). Sequenza `focusFirstValidationIssue`:
   1) `dispatchBookingMenuComposeCollapse()` (evento sincrono su `window` — chiude tutte le card,
@@ -326,10 +326,10 @@ caricano; `BookingRequestForm` mantiene il preset e lo riapplica a catalogo pron
 
 ### 8.1 Limiti testo (03-06-26)
 
-Mappa completa: **`BOOKING_PRENOTA_TEXT_LIMITS_MAP.md`**. Costanti: `bookingPrenotaTextLimits.ts`.
+Mappa completa: **`PRENOTA_TEXT_LIMITS_MAP.md`**. Costanti: `bookingPrenotaTextLimits.ts`.
 
 - **Ristoratore (A–F):** cap legati al layout + contatore `N/max` in Personalizza form / promo. Descrizione header max **22px** (titolo/nome fino **38px**).
-- **Cliente (H):** cap generoso (**65** nome/email, **30** tel, **700** intolleranze/richieste) — **solo sistema**: `maxLength` silenzioso, nessun contatore in pagina; edge `create-booking` allineato.
+- **Cliente (H):** cap generoso (**65** nome/email, **30** tel, **550** intolleranze e altre richieste) — **solo sistema**: `maxLength` silenzioso, nessun contatore in pagina; edge `create-booking` allineato.
 - **`courses_label`:** salvato in JSON, **non** renderizzato in pubblico (max **12** in admin).
 
 ## 9. Validazione submit fallito (29-05-26)

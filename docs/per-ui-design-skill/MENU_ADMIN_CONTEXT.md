@@ -2,12 +2,12 @@
 
 > Mappa di dettaglio della **gestione menù lato admin**: tab Menu come magazzino unico di prezzi e
 > ingredienti, form prodotto, categorie, promo testuali, menù preselezionati. Per il **flusso dati**
-> (resolver, override, come Prenota/QR pescano i dati) vedi `BOOKING_DATA_FLOW_SKILL.md`. Per la
-> **pagina pubblica Prenota** vedi `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md`. Per il **menu QR
+> (resolver, override, come Prenota/QR pescano i dati) vedi `../Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md`. Per la
+> **pagina pubblica Prenota** vedi `../Prenota-Skill/PRENOTA_SKILL.md` (entry: senso+mappa). Per il **menu QR
 > pubblico** vedi `PUBLIC_MENU_SKILL.md`.
 
 > **Trigger di routing:** «menù fonte di verità» · «menu pagina impostazioni» · «tab Menu» →
-> questo file (+ `BOOKING_DATA_FLOW_SKILL` se tocca il flusso dati, `DB_SKILL` se tocca lo schema).
+> questo file (+ `../Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md` se tocca il flusso dati, `DB_SKILL` se tocca lo schema).
 
 ---
 
@@ -63,7 +63,7 @@ mostra solo `message`; admin vede `label` in lista promo, card richiesta e modal
 omaggio automatico** nel codice.
 
 > Nota (29-05-26): l'editor promo è stato spostato dalla tab Menu alla sezione **Messaggio
-> Promozionale** in Personalizza form — vedi `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md`. Il
+> Promozionale** in Personalizza form — vedi `../Prenota-Skill/contesto/PRENOTA_FORM_CONFIG_CONTEXT.md`. Il
 > modello dati promo resta qui descritto.
 
 ## 5. Menù preselezionati (preset staff)
@@ -76,7 +76,7 @@ In `booking_custom_staff_presets` (`name`, `description?`, `price_per_person?`, 
 - Cancellare un menù preselezionato avvisa l'admin e rimuove anche le card collegate in
   `booking_public_form_config`.
 - Modificare un preset **non** elimina card e **non** sovrascrive campi personalizzati: il pubblico
-  segue il resolver `field_overrides` (vedi `BOOKING_DATA_FLOW_SKILL.md`).
+  segue il resolver `field_overrides` (vedi `../Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md`).
 - `sub_tabs[].is_fixed_menu: false` → cliente può modificare ingredienti in `MenuSelection`, nessun
   prezzo fisso.
 

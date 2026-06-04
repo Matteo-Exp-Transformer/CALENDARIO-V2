@@ -77,7 +77,7 @@ Dal flusso di Matteo deduci:
   fissa:
   - `Profilo: Esecuzione | Verifica | Meta`
   - `Modalità: light | standard | deep`
-  - `Skill da leggere: …` (i file d'area pertinenti, es. `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md`)
+  - `Skill da leggere: …` (i file d'area pertinenti, es. `Prenota-Skill/PRENOTA_SKILL.md`)
   - `Non caricare: …` (opzionale — es. «APP_CONTEXT intero» quando il prompt è stretto, per non
     sovraccaricare il contesto)
   - `Output attesi: …` (**obbligatorio — freno scope creep, 02-06-26**) — elenca **esattamente** i

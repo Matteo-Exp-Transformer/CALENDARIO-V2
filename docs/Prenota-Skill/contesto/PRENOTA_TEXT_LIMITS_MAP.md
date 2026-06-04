@@ -15,7 +15,7 @@ Legenda colonna **Limite in UI**:
 | Superficie UI | Componente | Storage / chiave | Dove si edita | Max char | Limite in UI | Note |
 |---------------|------------|------------------|---------------|----------|--------------|------|
 | h1 nome locale | `BookingRequestPage` | `restaurant_settings.restaurant_name` | Anagrafica Azienda | 40 (input) / 200 (Zod) | admin-contatore | Anteprima read-only in Personalizza form |
-| h2 titolo pagina | idem | `booking_public_form_config.page_title` | Personalizza form | 65 | admin-contatore | |
+| h2 titolo pagina | idem | `booking_public_form_config.page_title` | Personalizza form | 50 | admin-contatore | |
 | p intro | idem | `page_description` | Personalizza form | 120 | admin-contatore | |
 | fontSize header | inline style | `header_styles.*.fontSize` | Personalizza form | 8–38 (nome/titolo), **22** (descrizione) | layout | `BOOKING_HEADER_FONT_SIZE_MAX_BY_TARGET` |
 
@@ -34,10 +34,10 @@ Legenda colonna **Limite in UI**:
 
 | Superficie UI | Storage | Max | Limite in UI | Visibilità pubblica |
 |---------------|---------|-----|--------------|---------------------|
-| Titolo card | `sub_tabs[].label` | 30 | admin-contatore | Card: `line-clamp-2` |
-| Descrizione sottotab | `sub_tabs[].description` | 65 | admin-contatore | **Non** sulla card; sotto sezione menù in `MenuSelection` |
+| Titolo card | `sub_tabs[].label` | 24 | admin-contatore | Card: `line-clamp-2` |
+| Descrizione sottotab | `sub_tabs[].description` | 79 | admin-contatore | **Non** sulla card; sotto sezione menù in `MenuSelection` |
 | Numero portate | `sub_tabs[].courses_label` | 12 | admin-contatore | **Non renderizzato** in pubblico (salvato JSON) |
-| Nome carosello (admin) | `sub_tabs[].label` (carousel) | 30 | admin-contatore | Solo admin / riepilogo interno |
+| Nome carosello (admin) | `sub_tabs[].label` (carousel) | 24 | admin-contatore | Solo admin / riepilogo interno |
 
 Fallback descrizione menù da preset staff (`MenuPricesTab`): max **80** (campo descrizione menù consigliato).
 
@@ -70,7 +70,7 @@ Normalizer: `normalizeCarouselSlideItem` + migration `040_clamp_booking_carousel
 
 | Superficie UI | Storage | Max | Limite in UI |
 |---------------|---------|-----|--------------|
-| Messaggio banner | `booking_menu_promos[].message` | 350 | admin-contatore |
+| Messaggio banner | `booking_menu_promos[].message` | 200 | admin-contatore |
 | Nome promo (admin) | `.label` | 60 | admin-contatore (non in pagina pubblica) |
 
 ---
@@ -93,8 +93,8 @@ Normalizer: `normalizeCarouselSlideItem` + migration `040_clamp_booking_carousel
 | Email | idem | `client_email` | 65 | sistema-silenzioso | idem |
 | Telefono | idem | `client_phone` | 30 | sistema-silenzioso | idem |
 | Ospiti | idem | `num_guests` | 999 | sistema-silenzioso | numero, non testo |
-| Intolleranze | `DietaryRestrictionsSection` | `dietary_restrictions` (JSONB) | 700 (somma testi) | sistema-silenzioso | idem |
-| Altre richieste | idem | `special_requests` | 700 | sistema-silenzioso | idem |
+| Intolleranze | `DietaryRestrictionsSection` | `dietary_restrictions` (JSONB) | 550 (somma testi) | sistema-silenzioso | idem |
+| Altre richieste | idem | `special_requests` | 550 | sistema-silenzioso | idem |
 
 Messaggio errore unico al submit: **`Testo troppo lungo`** (senza numero in UI).
 

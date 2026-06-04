@@ -41,9 +41,9 @@ description: >-
 - **Guard:** `UnsavedChangesContext` + `confirmNavigation`. Sorgente unica `booking-form-config` (promo + sfondo inclusi). Reset su cambio `tenantId`.
 - **Salva sottotab:** `commitSubTabEditor` — upsert parziale `booking_modes`.
 - **Dettaglio promo (CRUD):** persistenza con footer; conflitto abbinamento → `PromoPlacementConflictDialog`. Vedi report promo 29-05-26.
-- **Editor sottotab Card scorrevole** (`display === 'cards'`): titolo tecnico nell'editor aperto `Card N` / bozza `Nuova card · Card N` (o `Titolo · Card N` se già digitato); campo **Titolo card** (30) per il testo sulla Pagina Prenota — **vuoto** su nuova card (`newSubTab` → `label: ''`), placeholder **«Nome card scorrevole»**; **riempito** col nome del menù solo dopo scelta in **Importa menù preselezionato**; tornando a **Compila manualmente** (`preset_id` cleared) anche `label` si azzera. Select con tutti i `booking_custom_staff_presets`, senza filtro tipologia/visibilità. Descrizione breve (**65**); **Numero Portate** opzionale (`courses_label`, max **12**); Icona; «Categorie e ingredienti visibili» solo con `preset_id`; toggle **Menù personalizzabile** solo con `preset_id`; Prezzo (live preset se non personalizzato). `parseSubTabFromUnknown` accetta `label` vuoto sulle card.
+- **Editor sottotab Card scorrevole** (`display === 'cards'`): titolo tecnico nell'editor aperto `Card N` / bozza `Nuova card · Card N` (o `Titolo · Card N` se già digitato); campo **Titolo card** (24) per il testo sulla Pagina Prenota — **vuoto** su nuova card (`newSubTab` → `label: ''`), placeholder **«Nome card scorrevole»**; **riempito** col nome del menù solo dopo scelta in **Importa menù preselezionato**; tornando a **Compila manualmente** (`preset_id` cleared) anche `label` si azzera. Select con tutti i `booking_custom_staff_presets`, senza filtro tipologia/visibilità. Descrizione breve (**79**); **Numero Portate** opzionale (`courses_label`, max **12**); Icona; «Categorie e ingredienti visibili» solo con `preset_id`; toggle **Menù personalizzabile** solo con `preset_id`; Prezzo (live preset se non personalizzato). `parseSubTabFromUnknown` accetta `label` vuoto sulle card.
 - **Editor sottotab carosello** (`display === 'carousel'` + `BookingFormCarouselEditor`): flusso **foto-first**; campi per slide: **Testo Etichetta** → `eyebrow`, **Testo Titolo** → `title`, **Scegli Icona** → `icon`, **Testo Etichetta / Titolo / Descrizione** → `eyebrow` / `title` / `description` (max **19 / 18 / 38** — `BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS` in `bookingPrenotaTextLimits.ts`). Migrazione dati legacy: `040_clamp_booking_carousel_slide_text_limits.sql` su `restaurant_settings.booking_public_form_config`. Intestazione slide: **Foto N° X** (ordine carosello, 1 = prima a sinistra). Pulsante matita **Modifica foto** (`replaceAt` su `useCarouselPhotoUpload`) accanto a rimuovi. **Blocco prezzo** (solo label + input €). **Sotto**, blocco toggle stile «Menù personalizzabile»: titolo «Mostra dettaglio offerta» + help `text-xs` solo lì; switch `show_offer_details_in_summary` a destra. **Non** è in `field_overrides`. Helper pubblici: `resolveCarouselSummaryDisplay`, `getCarouselStickyMiniPanelLine`. Riepilogo + sticky bar mobile seguono gli stessi helper. Nessun toggle fisso/personalizzabile. Upload bucket `menu-photos`, path dedicato Prenota `{tenantId}/booking-form/{modeId}/{subTabId}/carousel/{uuid}.webp` (non `qr/...`).
-- **Sottotab salvate (card + carosello)** in lista: riga compatta con titolo da `getSubTabCollapsedRowTitle` — card: **`{label trimmato} · Card N`** o solo **`Card N`** se titolo vuoto; carosello: **Nome carosello** / `Carosello N`. Azioni nella testata; click apre/chiude (`expandedSubTabByMode`). Editor distinti: card = Titolo card + import preset + visibilità + toggle + prezzo; carosello = Nome carosello + `BookingFormCarouselEditor`. Titolo pubblico card solo da campo **Titolo card** (30). Carosello senza matita né frecce sposta sulle card. Ordine editor card: campi base → categorie → toggle personalizzabile → prezzo. **Salva** (`commitSubTabEditor`) chiude il pannello.
+- **Sottotab salvate (card + carosello)** in lista: riga compatta con titolo da `getSubTabCollapsedRowTitle` — card: **`{label trimmato} · Card N`** o solo **`Card N`** se titolo vuoto; carosello: **Nome carosello** / `Carosello N`. Azioni nella testata; click apre/chiude (`expandedSubTabByMode`). Editor distinti: card = Titolo card + import preset + visibilità + toggle + prezzo; carosello = Nome carosello + `BookingFormCarouselEditor`. Titolo pubblico card solo da campo **Titolo card** (24). Carosello senza matita né frecce sposta sulle card. Ordine editor card: campi base → categorie → toggle personalizzabile → prezzo. **Salva** (`commitSubTabEditor`) chiude il pannello.
 - **Help Card/Carosello** (`SubTabsDisplayHelpPanel`): pulsante collassabile **? Dettagli** subito sotto la riga «Abilita Card o Carosello»; visibile **sempre** (anche con toggle off). Chiuso: `?` + «Dettagli»; aperto: stesso pulsante espanso con elenco **Card scorrevole** vs Carosello. Editor sottotab solo se `sub_tabs_enabled`; disattivando il toggle si annullano bozze/editor aperti.
 - **XOR card/carosello per modalità** (`sub_tabs_presentation: ‘cards’ | ‘carousel’ | null`):
   - `null` = nessuna scelta ancora → `SubTabAddButtons` mostra entrambi i pulsanti; alla prima aggiunta `sub_tabs_presentation` viene impostato automaticamente.
@@ -63,7 +63,7 @@ description: >-
 - Sezione admin: `BookingFormConfigPanel`, blocco **Intestazione pagina Prenota**.
 - Campi testo:
   - nome azienda: solo lettura, letto da `restaurant_name`/tenant; modifica altrove in Anagrafica Azienda (**max 40** in Anagrafica).
-  - titolo: `page_title` — **max 65** caratteri + contatore `N/max` in admin
+  - titolo: `page_title` — **max 50** caratteri + contatore `N/max` in admin
   - descrizione: `page_description` — **max 120** caratteri + contatore
 - Stile header pubblico:
   - `header_styles.restaurant_name`
@@ -88,7 +88,7 @@ description: >-
 - I dati visuali **Card scorrevole** sono sulla sottotab: `label`, `description`, `courses_label`, `price_per_person`, `is_fixed_menu`, `hidden_*`, `preset_id`.
 - Il **Carosello** salva testi/icona per slide in `carousel_items[]` (`eyebrow`, `title`, `description`, `icon`); il titolo tecnico nell'editor (campo admin **Nome carosello** = `sub_tabs[].label`) è modificabile e non viene sovrascritto dai testi slide né dal normalizer; può salvare `price_per_person` e in Prenota quel prezzo viene usato come prezzo a persona.
 - `preset_id` collega un menu preselezionato solo per precompilare gli ingredienti del form pubblico. Importare un preset in Personalizza form compila i campi della card (nome preset come etichetta iniziale), ma non modifica `booking_custom_staff_presets` nella tab Menu.
-- **Titolo pubblico (card scorrevole + `h2` menù):** sempre `sub_tabs[].label` (campo admin **Titolo card**, max 30), mai il titolo tecnico `Card N` né il nome del preset staff se l’etichetta è stata personalizzata. `MenuSelection` riceve `presetSectionTitle` dalla sottotab attiva; `BookingSubTabCards` legge `tab.label`. Helper `applyLegacySubTabLabelOverrides` in `bookingPublicFormConfig.ts`: se in DB resta `label` = nome preset ma esiste ancora `sub_tabs_overrides[].custom_label`, usa l’override fino al prossimo salvataggio admin (che azzera `sub_tabs_overrides`).
+- **Titolo pubblico (card scorrevole + `h2` menù):** sempre `sub_tabs[].label` (campo admin **Titolo card**, max 24), mai il titolo tecnico `Card N` né il nome del preset staff se l’etichetta è stata personalizzata. `MenuSelection` riceve `presetSectionTitle` dalla sottotab attiva; `BookingSubTabCards` legge `tab.label`. Helper `applyLegacySubTabLabelOverrides` in `bookingPublicFormConfig.ts`: se in DB resta `label` = nome preset ma esiste ancora `sub_tabs_overrides[].custom_label`, usa l’override fino al prossimo salvataggio admin (che azzera `sub_tabs_overrides`).
 - **Titolo sopra ingredienti:** `MenuSelection` mostra **Crea il tuo menù** solo quando la card e davvero personalizzabile. Se il toggle **Menù personalizzabile** e off, il titolo deve essere la label della card o, in fallback, il nome del menù preselezionato.
 - **Categorie ingredienti pubblico:** `BookingMenuCategoryCard` parte chiusa con foto categoria e nome categoria; al click la foto categoria sparisce e viene mostrata la lista ingredienti della categoria. Un nuovo click sull'intestazione categoria richiude la lista e ripristina la foto categoria. Quando cambia card/preset selezionato, le categorie tornano chiuse.
 - **Responsive card scorrevoli:** in `BookingSubTabCards`, mobile e tablet mostrano l'icona grande centrata nell'area descrizione; il testo descrizione della card si mostra solo da desktop (`lg`).
@@ -149,15 +149,15 @@ Font attuali (17): Playfair, Cormorant, Libre Baskerville, Cinzel, Montserrat, L
 
 ## Limiti testo (03-06-26)
 
-Tabella 1:1: **`BOOKING_PRENOTA_TEXT_LIMITS_MAP.md`**. Costanti: `src/features/booking/constants/bookingPrenotaTextLimits.ts`.
+Tabella 1:1: **`PRENOTA_TEXT_LIMITS_MAP.md`**. Costanti: `src/features/booking/constants/bookingPrenotaTextLimits.ts`.
 
 | Area admin | Limiti chiave |
 |------------|---------------|
-| Header | titolo **65**, descrizione **120**, font descrizione **8–22px** |
+| Header | titolo **50**, descrizione **120**, font descrizione **8–22px** |
 | Tipologie | titolo **40**, descrizione **61** |
-| Sottotab card | titolo **30**, descrizione **65**, portate **12** (non in pubblico) |
+| Sottotab card | titolo **24**, descrizione **79**, portate **12** (non in pubblico) |
 | Carosello slide | **19 / 18 / 38** (`BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS`) |
-| Promo (setting separato) | titolo **60**, messaggio **350** |
+| Promo (setting separato) | titolo **60**, messaggio **200** |
 
 **Form cliente pubblico:** vietato contatore o hint limite; cap in `BOOKING_PUBLIC_CLIENT_TEXT_LIMITS` (edge sync).
 

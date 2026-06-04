@@ -102,7 +102,7 @@ Tre meccanismi **in parallelo** (ridondanza intenzionale per timing portal):
 
 ## 5. Ancoraggio overlay `position: fixed` (solo card ingredienti)
 
-Vedi `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` §7 — sync rAF su ref DOM, non `setState` per frame.
+Vedi `../Prenota-Skill/contesto/PRENOTA_LAYOUT_CONTEXT.md` §7 — sync rAF su ref DOM, non `setState` per frame.
 
 ---
 

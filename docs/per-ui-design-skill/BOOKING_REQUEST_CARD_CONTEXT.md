@@ -1,7 +1,7 @@
 # BookingRequestCard — contesto agenti (admin richieste pending)
 
 > Mappa come una prenotazione arrivata dal form pubblico viene mostrata al ristoratore in **Admin → Prenotazioni → Richieste in attesa**.
-> Per il flusso submit e la Pagina Prenota: `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md`, `BOOKING_DATA_FLOW_SKILL.md`.
+> Per il flusso submit e la Pagina Prenota: `../Prenota-Skill/contesto/PRENOTA_LAYOUT_CONTEXT.md`, `../Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md`.
 > Report sessione mappa: `docs/Sessioni di lavoro/29-05-26/Report-mappatura-booking-request-card-29-05-26.md`.
 
 **Trigger routing:** «Richieste in attesa» · «BookingRequestCard» · «digest prenotazione» · «prezzo menù card admin» → questo file + `ADMIN_CLASSIC_SKILL.md`.
