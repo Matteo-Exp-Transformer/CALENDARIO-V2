@@ -1,4 +1,4 @@
-// Type definitions for Al Ritrovo Booking System
+// Type definitions for booking system
 import type { SelectedMenuItem } from './menu'
 import type { PresetMenuType } from '../features/booking/constants/presetMenus'
 

@@ -31,10 +31,15 @@ import {
   type SubTabOverride,
   DEFAULT_BOOKING_FORM_CONFIG,
   migrateOverridesToSubTabs,
+  normalizeBookingPublicFormConfig,
   parseBookingHeaderStylesFromUnknown,
   parseSubTabFromUnknown,
 } from '@/features/booking/constants/bookingPublicFormConfig'
 import { resolveBookingStoredIconKey } from '@/features/public-menu/categoryIcons'
+import {
+  BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS,
+  clampBookingText,
+} from '@/features/booking/constants/bookingPrenotaTextLimits'
 
 export const RESTAURANT_SETTING_KEYS_V1 = [
   'restaurant_name',
@@ -101,7 +106,12 @@ export const businessHoursSettingSchema = z
     })
   )
 
-const restaurantNameSchema = z.string().trim().min(1, 'Il nome e obbligatorio').max(200)
+const restaurantNameMax = BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.restaurantName
+const restaurantNameSchema = z
+  .string()
+  .trim()
+  .min(1, 'Il nome e obbligatorio')
+  .max(restaurantNameMax, `Massimo ${restaurantNameMax} caratteri`)
 const timezoneSchema = z.string().trim().min(1, 'Il fuso orario e obbligatorio').max(80)
 const genericTextSchema = z.string().trim().min(1, 'Campo obbligatorio').max(200)
 const emailSchema = z.string().trim().email('Email non valida').max(200)
@@ -354,7 +364,8 @@ export const restaurantSettingRegistry: {
 } = {
   restaurant_name: {
     key: 'restaurant_name',
-    parseFromDb: (raw) => parseJsonScalarString(raw),
+    parseFromDb: (raw) =>
+      clampBookingText(parseJsonScalarString(raw).trim(), restaurantNameMax),
     serializeToDb: (value) => value as Json,
     validate: (value) => {
       const r = restaurantNameSchema.safeParse(value)
@@ -572,7 +583,7 @@ export const restaurantSettingRegistry: {
       const obj = raw as Record<string, unknown>
       const modes = Array.isArray(obj.booking_modes) ? obj.booking_modes : null
       if (!modes || modes.length === 0) return DEFAULT_BOOKING_FORM_CONFIG
-      return {
+      return normalizeBookingPublicFormConfig({
         page_title: typeof obj.page_title === 'string' ? obj.page_title : DEFAULT_BOOKING_FORM_CONFIG.page_title,
         page_description:
           typeof obj.page_description === 'string'
@@ -651,7 +662,7 @@ export const restaurantSettingRegistry: {
               : undefined,
           }
         }),
-      }
+      })
     },
     serializeToDb: (value) => value as unknown as Json,
     validate: (value) => {

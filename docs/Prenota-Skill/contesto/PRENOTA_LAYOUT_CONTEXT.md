@@ -171,8 +171,11 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
 2. **Sottotab** (`BookingSubTabCards`): scrollabili, frecce desktop + touch; icona centrata **senza
    sfondo** (`MenuQrCategoryIconGlyph`, ~`h-7` `text-warm-wood-dark` su card chiara) **solo se**
    `sub_tabs[].icon` è valorizzata in config (admin Personalizza form → «Nessuna» = campo omesso;
-   nessun fallback a icona default). **Descrizione mai nella card** (appare solo in `MenuSelection` dopo selezione); prezzo
-   `/persona` solo se presente e menu fisso. Centratura: `justify-center` su flex interno (1-3 card
+   nessun fallback a icona default). **Descrizione mai nella card** (appare solo in `MenuSelection` dopo selezione).
+   **Footer card `display='cards'` (04-06-26):** fascia inferiore `mt-auto` — a sinistra
+   `sub_tabs[].courses_label` (max 12 char, `line-clamp-1`); a destra importo `X,XX€` + riga
+   «a persona» se `price_per_person > 0`. Non su carosello (`BookingSubTabCards` assente se
+   presentazione carosello). Centratura titolo/icona: `justify-center` su flex interno (1-3 card
    centrate; 4+ scroll). Wrapper diviso outer `overflow-x-auto scrollbar-hide` + inner
    `flex flex-nowrap justify-center mx-auto` (evita bug `justify-center` che blocca scroll). Max 3
    colonne (`bookingPublicRowCardWidthClass`).
@@ -183,13 +186,15 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
    `resolveBookingStoredIconKey`; «Nessuna» in admin = assenza icona); prezzo opzionale;
    nessuna griglia menù). Carosello = **una sola card con N foto** per modalità: `BookingSubTabCards`
    non renderizzato per modalità carosello (auto-selezione sottotab unica + carosello diretto).
-4. **Menù** (se `display='cards'`): `MenuSelection` → `BookingMenuComposeGrid`. Mobile: colonna stack
+4. **Menù** (solo se `display='cards'` e la card ha un preset collegato): `MenuSelection` → `BookingMenuComposeGrid`. Senza card/carousel valide salvate non esiste fallback pubblico legacy. Mobile: colonna stack
    `BookingMenuCategoryCard`, header con miniatura 76px a filo bordo. Desktop md+: griglia (con 3
    categorie `grid-cols-3` già da `md`); card senza `max-w-[320px]`, piena larghezza colonna.
 5. **Dati cliente** (`BookingFormFields` + `DietaryRestrictionsSection` con `BookingPublicInsetField`:
    label dentro la card in alto a sx, valore sotto; data/ora con `BookingPublicDateTimePickers`
    (bottom sheet mobile / popover desktop, `TimePicker24h`). Larghezza `BOOKING_PUBLIC_CONTENT_WIDTH`
    = `w-full min-w-0`. **Nessun** banner «Menù fisso» — solo UI read-only se `is_fixed_menu`.
+6. **Footer pubblico:** orari e contatti si mostrano solo se salvati dal tenant. La pagina pubblica
+   non usa `getDefaultBusinessHours()` come fallback; orari mancanti = blocco Orari assente.
 
 ### Titolo card e menù fisso
 - Titolo pubblico sottotab = `sub_tabs[].label` (campo «Titolo card»);
@@ -330,7 +335,7 @@ Mappa completa: **`PRENOTA_TEXT_LIMITS_MAP.md`**. Costanti: `bookingPrenotaTextL
 
 - **Ristoratore (A–F):** cap legati al layout + contatore `N/max` in Personalizza form / promo. Descrizione header max **22px** (titolo/nome fino **38px**).
 - **Cliente (H):** cap generoso (**65** nome/email, **30** tel, **550** intolleranze e altre richieste) — **solo sistema**: `maxLength` silenzioso, nessun contatore in pagina; edge `create-booking` allineato.
-- **`courses_label`:** salvato in JSON, **non** renderizzato in pubblico (max **12** in admin).
+- **`courses_label`:** max **12** in admin; in pubblico footer basso sx su card `display='cards'` (`BookingSubTabCards`, vedi §5.2); non in carosello.
 
 ## 9. Validazione submit fallito (29-05-26)
 

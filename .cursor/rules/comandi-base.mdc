@@ -27,7 +27,7 @@ Dettaglio completo: docs/Comunicazione-Skill/VOCABOLARIO.md (caricalo per le sfu
   fonte unica per la fase fine-chat. NON committa, NON fa push.
 - **Allineamento skill = implicito, NON una domanda a Matteo.** Se il diff ha
   cambiato un layout/comportamento descritto in una skill area (es.
-  BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT), aggiorna quella skill nello STESSO ciclo
+  PRENOTA_SKILL / PRENOTA_LAYOUT_CONTEXT), aggiorna quella skill nello STESSO ciclo
   di chiusura e SCRIVI nel report cosa hai allineato. NON chiedere «vuoi che
   aggiorni la skill?» né rimandare «al prossimo giro»: è parte del «lavoro ok».
 - **Nota hook fine-chat:** a fine chat un hook Cursor (`stop`) legge i report

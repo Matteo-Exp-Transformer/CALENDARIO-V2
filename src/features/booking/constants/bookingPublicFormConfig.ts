@@ -40,6 +40,28 @@ export function normalizeCarouselSlideItem(item: CarouselItem, sortOrder: number
   }
 }
 
+function carouselHasVisiblePhoto(items: CarouselItem[] | undefined): boolean {
+  return (items ?? []).some((item) => item.image_url?.trim())
+}
+
+function cardHasMinimumContent(label: string): boolean {
+  return Boolean(label.trim())
+}
+
+function normalizeSubTabsPresentation(
+  presentation: BookingMode['sub_tabs_presentation'],
+  subTabs: SubTab[],
+): BookingMode['sub_tabs_presentation'] {
+  if (subTabs.length === 0) return null
+  if (presentation === 'cards' || presentation === 'carousel') {
+    return subTabs.some((tab) => tab.display === presentation) ? presentation : null
+  }
+  const cardsCount = subTabs.filter((tab) => tab.display === 'cards').length
+  const carouselCount = subTabs.filter((tab) => tab.display === 'carousel').length
+  if (carouselCount === 0 && cardsCount === 0) return null
+  return carouselCount > cardsCount ? 'carousel' : 'cards'
+}
+
 /** Icone card scorrevoli / carosello Prenota — stesso namespace del Menù QR. */
 export type SubTabIcon = MenuQrCategoryIconKey
 
@@ -389,7 +411,7 @@ export function resolveCarouselSummaryDisplay(
     tab.price_per_person != null && tab.price_per_person > 0 ? tab.price_per_person : null
 
   if (showDetails && explicitTitles.length > 0) {
-    return { kind: 'titles', titles: getCarouselSlideTitles(tab) }
+    return { kind: 'titles', titles: explicitTitles }
   }
   if (price != null) return { kind: 'price', amount: price }
   return null
@@ -542,10 +564,14 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
         )
     : undefined
 
+  if (display === 'carousel' && !carouselHasVisiblePhoto(carousel_items)) return null
+
   const preset_id =
     legacyType !== 'manual' && typeof o.preset_id === 'string' && o.preset_id.trim()
       ? o.preset_id.trim()
       : undefined
+
+  if (display === 'cards' && !cardHasMinimumContent(label)) return null
 
   const field_overrides = parseFieldOverridesFromUnknown(o.field_overrides)
 
@@ -635,17 +661,17 @@ export function applyLegacySubTabLabelOverrides(
 }
 
 export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
-  page_title: 'Richiesta Prenotazione',
+  page_title: 'Configura la pagina Prenota',
   page_description:
-    'Compilando questo form invierai una richiesta allo staff. Ti contatteremo al più presto per comunicarti l\'esito!',
+    'Compila titolo, descrizione e tipologie prima di pubblicare il form.',
   header_styles: DEFAULT_BOOKING_HEADER_STYLES,
   booking_modes: [
     {
       id: 'tavolo',
       booking_type: 'tavolo',
-      enabled: true,
-      label: 'Prenota un Tavolo',
-      description: 'Semplice prenotazione tavolo senza menu predefinito.',
+      enabled: false,
+      label: 'Compila nome tipologia',
+      description: 'Compila la descrizione mostrata al cliente.',
       icon: 'fork_knife',
       sub_tabs_enabled: false,
       sub_tabs_presentation: null,
@@ -654,9 +680,9 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
     {
       id: 'menu_prezzo_fisso',
       booking_type: 'menu_prezzo_fisso',
-      enabled: true,
-      label: 'Menu a Prezzo Fisso',
-      description: 'Scegli il tuo menu componendo le portate a prezzo fisso.',
+      enabled: false,
+      label: 'Compila nome tipologia',
+      description: 'Compila la descrizione mostrata al cliente.',
       icon: 'bowl_food',
       sub_tabs_enabled: false,
       sub_tabs_presentation: null,
@@ -665,9 +691,9 @@ export const DEFAULT_BOOKING_FORM_CONFIG: BookingPublicFormConfig = {
     {
       id: 'rinfresco_laurea',
       booking_type: 'rinfresco_laurea',
-      enabled: true,
-      label: 'Rinfresco di Laurea',
-      description: 'Organizza il tuo rinfresco di laurea con menu personalizzato.',
+      enabled: false,
+      label: 'Compila nome tipologia',
+      description: 'Compila la descrizione mostrata al cliente.',
       icon: 'lucide_chef_hat',
       sub_tabs_enabled: false,
       sub_tabs_presentation: null,
@@ -685,13 +711,9 @@ export function normalizeBookingPublicFormConfig(
     page_title: clampBookingText(config.page_title.trim(), L.pageTitle),
     page_description: clampBookingText(config.page_description.trim(), L.pageDescription),
     header_styles: parseBookingHeaderStylesFromUnknown(config.header_styles),
-    booking_modes: config.booking_modes.map((mode) => ({
-      ...mode,
-      label: clampBookingText(mode.label.trim(), L.modeLabel),
-      description: clampBookingText(mode.description.trim(), L.modeDescription),
-      icon: parseBookingIconRequired(mode.icon, MENU_QR_DEFAULT_CATEGORY_ICON_KEY),
-      sub_tabs_presentation: mode.sub_tabs_presentation ?? null,
-      sub_tabs: (mode.sub_tabs ?? []).map((tab): SubTab => {
+    booking_modes: config.booking_modes.map((mode) => {
+      const subTabs = (mode.sub_tabs ?? [])
+        .map((tab): SubTab | null => {
         const display: SubTab['display'] = tab.display === 'carousel' ? 'carousel' : 'cards'
         const isPersonalizzabileCard = display === 'cards' && tab.is_fixed_menu === false
         const base: SubTab = {
@@ -711,7 +733,7 @@ export function normalizeBookingPublicFormConfig(
           field_overrides: tab.field_overrides,
         }
         if (display === 'carousel') {
-          return migrateLegacyCarouselSubTab({
+          const normalizedCarousel = migrateLegacyCarouselSubTab({
             ...base,
             description: undefined,
             icon: undefined,
@@ -730,14 +752,27 @@ export function normalizeBookingPublicFormConfig(
               }
             }),
           })
+          return carouselHasVisiblePhoto(normalizedCarousel.carousel_items)
+            ? normalizedCarousel
+            : null
         }
+        if (!cardHasMinimumContent(base.label)) return null
         return {
           ...base,
           description: tab.description?.trim()
             ? clampBookingTextOptional(tab.description, L.subTabDescription)
             : undefined,
         }
-      }),
-    })),
+      })
+        .filter((tab): tab is SubTab => tab != null)
+      return {
+        ...mode,
+        label: clampBookingText(mode.label.trim(), L.modeLabel),
+        description: clampBookingText(mode.description.trim(), L.modeDescription),
+        icon: parseBookingIconRequired(mode.icon, MENU_QR_DEFAULT_CATEGORY_ICON_KEY),
+        sub_tabs_presentation: normalizeSubTabsPresentation(mode.sub_tabs_presentation, subTabs),
+        sub_tabs: subTabs,
+      }
+    }),
   }
 }

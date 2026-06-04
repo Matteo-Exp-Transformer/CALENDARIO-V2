@@ -13,6 +13,9 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 04-06-26 | Prenota — **FU-031 QA limiti testo cliente** 🔶 Verifica · **non chiuso** | [Report](Sessioni%20di%20lavoro/04-06-26/Report-fu-031-limiti-cliente-prenota-04-06-26.md) — cap UI OK 375/834/1280; gap edge TEST deploy + messaggio «Testo troppo lungo» dietary/special; FU-031 **Aperto** con prompt Esecuzione |
+| 04-06-26 | Prenota — **FU-032 nome locale 45 char** ✅ **report finale** | [Report](Sessioni%20di%20lavoro/04-06-26/Report-fu-032-restaurant-name-45-04-06-26.md) — Anagrafica N/45, Zod/registry, `useRestaurantName` clamp; FU-032 **Fatto** |
+| 04-06-26 | Prenota — **`courses_label` card sottotab** ✅ **lavoro ok** · QA Matteo OK | [Report](Sessioni%20di%20lavoro/04-06-26/Report-courses-label-card-sottotab-prenota-04-06-26.md) — `BookingSubTabCards` footer sx/dx; skill §4/§C/§5+§8.1 |
 | 04-06-26 | Senior — **pilota context-knowledge (Pagina Prenota)**: skill snello + senso + flusso + file riorganizzati; regole mappatura decise; sistema didattico Matteo (piano+prompt); punto di ripresa ✅ **deep** | [Report](Sessioni%20di%20lavoro/04-06-26/Report-senior-context-knowledge-pilota-prenota-04-06-26.md) — commit `e66c0ae`/`fad207f`/`188b8a6`/`558b6fc`; nessun codice; resta verifica sub-agent |
 | 04-06-26 | Revisore comunicazione + dossier senior — analisi skill system, errori E-A/E-B, stato hook M4, Liv.2, 5 debiti aperti ✅ **light** | [Dossier](Sessioni%20di%20lavoro/04-06-26/Dossier-senior-evoluzione-skill-04-06-26.md) — nessun codice; input pronto per sessione senior evoluzione skill |
 | 03-06-26 | Prenota — tuning limiti testo (card 24/79, promo 200, titolo 50, intolleranze 550) ✅ **report finale** | [Report](Sessioni%20di%20lavoro/03-06-26/Report-prenota-limiti-tuning-03-06-26.md) — post `820a223`; costanti + edge + skill; validate **284**; FU-030/031/032 invariati |

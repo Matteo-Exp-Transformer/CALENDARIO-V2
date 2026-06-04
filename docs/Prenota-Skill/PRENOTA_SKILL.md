@@ -94,6 +94,17 @@ Il flusso dati che collega i due mondi (magazzino menù ↔ vetrina ↔ pagina p
   «permettere anche entrambi per flessibilità».
 - **Carosello = una sola card con N foto.** In modalità carosello la modalità mostra **una** card con
   più foto (auto-selezione), niente griglia di sottotab. Non «manca la griglia».
+- **Sottotab abilitate ma vuote = non mostrare niente.** Se Mario abilita Card/Carosello ma non ha
+  almeno una card valida o un carosello valido, la pagina pubblica **non** deve cadere nella vecchia
+  griglia menù/fallback. Card valida = titolo compilato; importare un menù preselezionato lo compila,
+  ma se Mario lo svuota il salvataggio deve bloccarsi;
+  carosello valido = almeno una foto. La presentazione torna `null` quando resta senza sottotab valide.
+- **Nessun menù pubblico hardcoded.** La vecchia `MenuSelection` non è un fallback pubblico autonomo:
+  compare solo dopo una card scorrevole valida collegata a un menù preselezionato. Se non c'è una
+  card/carousel salvato non si mostra niente.
+- **Nessun dato aziendale inventato nel pubblico.** Nome ristorante, orari, contatti, tipologie e
+  menù devono arrivare da impostazioni salvate dal tenant. Se mancano, non usare fallback tipo
+  `Al Ritrovo`, orari default o menù built-in con ingredienti hardcoded.
 - **Sotto 1256px: un solo riepilogo, niente barra fissa.** Su schermi `<1256px` niente barra fixed
   in basso né secondo pulsante Invia: il cliente scrolla fino al riepilogo per inviare (deciso
   02-06-26). Non «manca il pulsante sticky mobile».
@@ -110,11 +121,6 @@ Il flusso dati che collega i due mondi (magazzino menù ↔ vetrina ↔ pagina p
 > agente che le incontra sa che NON deve «sistemarle» di sua iniziativa, ma può proporne
 > l'implementazione quando il task è pertinente. Tracciate in `docs/FOLLOW_UP.md`.
 
-- **Numero portate (`courses_label`) — da mostrare.** Oggi salvato (max 12 char) ma **non
-  renderizzato** in pagina. Decisione (04-06-26): mostrarlo **nella card, in basso a sinistra**, con
-  il **prezzo allineato orizzontalmente in basso a destra**. File pubblico primario:
-  `src/features/booking/components/publicBooking/BookingSubTabCards.tsx`; contesto:
-  `contesto/PRENOTA_LAYOUT_CONTEXT.md` §5 + `contesto/PRENOTA_TEXT_LIMITS_MAP.md` §C.
 - **Testi menù ingredienti — da cappare.** Nome categoria / nome / descrizione ingrediente oggi
   **senza limite**. Decisione (04-06-26): **vanno cappati** con un limite sensato per il caso (stesso
   principio anti-rottura mobile del §3). → `docs/FOLLOW_UP.md` **FU-030**; sezione E in

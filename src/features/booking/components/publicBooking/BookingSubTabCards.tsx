@@ -96,8 +96,13 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
         <div className="flex w-full flex-nowrap gap-1.5 sm:gap-2 snap-x snap-mandatory scroll-px-2">
         {subTabs.map((tab) => {
           const isActive = activeSubTabId === tab.id
-          const priceAmount =
-            tab.display === 'carousel' ? null : formatPriceAmountLabel(tab.price_per_person)
+          const isCardDisplay = tab.display !== 'carousel'
+          const coursesLabel =
+            isCardDisplay && tab.courses_label?.trim() ? tab.courses_label.trim() : null
+          const priceAmount = isCardDisplay
+            ? formatPriceAmountLabel(tab.price_per_person)
+            : null
+          const showCardFooter = isCardDisplay && !!(coursesLabel || priceAmount)
           return (
             <button
               key={tab.id}
@@ -117,7 +122,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
               <div
                 className={cn(
                   'flex min-h-0 w-full flex-1 flex-col',
-                  tab.display !== 'carousel' && !tab.icon && 'justify-center',
+                  isCardDisplay && !tab.icon && 'justify-center',
                 )}
               >
                 <p
@@ -128,7 +133,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                 >
                   {tab.label}
                 </p>
-                {tab.display !== 'carousel' && tab.icon ? (
+                {isCardDisplay && tab.icon ? (
                   <div className="flex min-h-0 flex-1 items-center justify-center py-2 sm:py-3">
                     <span
                       className={cn(
@@ -145,24 +150,43 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                     </span>
                   </div>
                 ) : null}
-                <div
-                  className={cn(
-                    'h-px w-full shrink-0',
-                    isActive ? 'bg-warm-orange/35' : 'bg-warm-wood/15',
-                  )}
-                  aria-hidden
-                />
-                {priceAmount && (
-                  <div className="flex shrink-0 flex-col items-center justify-end pt-2 text-center sm:pt-3">
-                    <p className="text-sm font-normal leading-none tracking-normal text-warm-orange tabular-nums sm:text-lg min-[782px]:text-xl">
-                      {priceAmount}
-                    </p>
-                    <p className="mt-1 hidden text-xs font-normal leading-none text-warm-orange lg:block">
-                      a persona
-                    </p>
-                  </div>
-                )}
               </div>
+              {showCardFooter ? (
+                <>
+                  <div
+                    className={cn(
+                      'mt-auto h-px w-full shrink-0',
+                      isActive ? 'bg-warm-orange/35' : 'bg-warm-wood/15',
+                    )}
+                    aria-hidden
+                  />
+                  <div
+                    className="mt-1.5 flex shrink-0 items-end justify-between gap-1 sm:mt-2 sm:gap-1.5"
+                    data-testid={`booking-sub-tab-card-footer-${tab.id}`}
+                  >
+                    {coursesLabel ? (
+                      <p
+                        className="min-w-0 flex-1 text-left text-[11px] font-normal leading-tight line-clamp-1 text-warm-wood-dark sm:text-xs"
+                        data-testid={`booking-sub-tab-card-courses-${tab.id}`}
+                      >
+                        {coursesLabel}
+                      </p>
+                    ) : (
+                      <span className="min-w-0 flex-1" aria-hidden />
+                    )}
+                    {priceAmount ? (
+                      <div className="flex shrink-0 flex-col items-end leading-none">
+                        <p className="text-sm font-normal tracking-normal text-warm-orange tabular-nums sm:text-lg min-[782px]:text-xl">
+                          {priceAmount}
+                        </p>
+                        <p className="mt-0.5 text-[10px] font-normal text-warm-orange sm:text-xs">
+                          a persona
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
+                </>
+              ) : null}
             </button>
           )
         })}

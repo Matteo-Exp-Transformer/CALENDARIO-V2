@@ -58,7 +58,7 @@ giusti. Il punto 4 è la prova vera.
 
 | Area | Stato | Note |
 |------|-------|------|
-| **Pagina Prenota** | ✅ | Blindata 04-06-26: mappata + flusso scritto (commit `e66c0ae`, `fad207f`), test mirati limiti testo verdi, verifica sub-agent reale **PASSA**. Lacune minori emerse dalla verifica rifinite in `PRENOTA_SKILL.md` e `PRENOTA_FORM_CONFIG_CONTEXT.md`. Cartella `docs/Prenota-Skill/`. |
+| **Pagina Prenota** | ✅ | Blindata 04-06-26: mappata + flusso scritto (commit `e66c0ae`, `fad207f`), test mirati limiti testo verdi, verifica sub-agent reale **PASSA**. Limit/audit test con sub-agent: corretti fallback pubblici su sottotab vuote, card vuote, caroselli senza foto, `MenuSelection` legacy, brand hardcoded, orari pubblici default, preset built-in e config nuovo tenant. Cartella `docs/Prenota-Skill/`. |
 | **Menu QR pubblico** | ⬜ | Candidato naturale prossimo (molto flusso utente cliente). File oggi: `per-ui-design-skill/PUBLIC_MENU_*`. |
 | **Tab Menu admin (magazzino)** | ⬜ | `per-ui-design-skill/MENU_ADMIN_CONTEXT.md`. |
 | **Admin shell + pagine** | ⬜ | `Dashboard-laterale-skill/`. Già ha context per-pagina, da riorganizzare col pattern. |
@@ -73,6 +73,11 @@ fatti in fretta.
 
 ## Debiti aperti collegati
 
+- **Prenota — rimandi obsoleti + revisione senior (04-06-26):** stub in
+  `per-ui-design-skill/BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` e
+  `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md`; analisi decisionale →
+  `docs/Comunicazione-Skill/ANALISI_REVISIONE_SENIOR_PRENOTA_POST_BLINDATURA.md`.
+  Fix prodotto semplici: prompt preparati in chat (courses_label, FU-032, FU-031).
 - **Propagazione template v.0 — HOOK ALLINEATI 04-06-26** (guard-prod + nudge v4 + senior + §11
   domande di chiusura + hooks.json, generici e testati). Resta sospesa la propagazione della
   **struttura context-knowledge** (cartella-area) finché la milestone non è matura (≥2-3 aree blindate).

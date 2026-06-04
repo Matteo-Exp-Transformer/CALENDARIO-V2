@@ -7,7 +7,8 @@ import { MapPin, Clock, Phone, Mail, ChevronDown, Send } from 'lucide-react'
 import { useBookingPublicViewport } from '@/hooks/useBookingPublicViewport'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
-import { formatHours, getDefaultBusinessHours } from '@/lib/businessHours'
+import { formatHours } from '@/lib/businessHours'
+import type { BusinessHours } from '@/lib/businessHours'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 import { cn } from '@/lib/utils'
@@ -53,7 +54,6 @@ export const BookingRequestPage: React.FC = () => {
 
   const { data: businessHours, isLoading } = useBusinessHours()
   const [mobileInfoOpen, setMobileInfoOpen] = useState<'hours' | 'contacts'>('hours')
-  const hours = businessHours || getDefaultBusinessHours()
   const { data: contactEmail } = useRestaurantSetting('contact_email')
   const { data: contactPhone } = useRestaurantSetting('contact_phone')
   const { data: contactAddress } = useRestaurantSetting('contact_address')
@@ -82,7 +82,7 @@ export const BookingRequestPage: React.FC = () => {
     return dayMap[day] || day
   }
 
-  const dayOrder: (keyof typeof hours)[] = [
+  const dayOrder: (keyof BusinessHours)[] = [
     'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
   ]
 
@@ -95,10 +95,19 @@ export const BookingRequestPage: React.FC = () => {
   // clamp usato 3 volte: mantiene allineamento simmetrico tra colonna Orari e Contatti
   const hoursInset = 'clamp(0.4rem, 2vw, 1rem)'
 
-  const displayName = restaurantName || 'Al Ritrovo'
+  const displayName = restaurantName?.trim() ?? ''
   const displayContactEmail = (contactEmail ?? '').trim()
   const displayContactPhone = (contactPhone ?? '').trim()
   const displayContactAddress = (contactAddress ?? '').trim()
+  const showHoursSection = isLoading || businessHours != null
+  const showContactSection = Boolean(displayContactEmail || displayContactPhone || displayContactAddress)
+  const showInfoFooter = showHoursSection || showContactSection
+
+  useEffect(() => {
+    if (!showHoursSection && showContactSection && mobileInfoOpen === 'hours') {
+      setMobileInfoOpen('contacts')
+    }
+  }, [mobileInfoOpen, showContactSection, showHoursSection])
   const bookingPageBackground: BookingPageBackgroundId =
     publicBookingBg ?? DEFAULT_BOOKING_PAGE_BACKGROUND
   const showPhotoStrip = stripPhotoId != null
@@ -192,6 +201,7 @@ export const BookingRequestPage: React.FC = () => {
     menu_total_booking: sharedFormData.menu_total_booking,
     preset_menu: sharedFormData.preset_menu,
   }
+  const hasEnabledBookingModes = resolvedConfig.booking_modes.some((mode) => mode.enabled)
   const summarySubmitButton = (
     <button
       type="submit"
@@ -203,7 +213,7 @@ export const BookingRequestPage: React.FC = () => {
       Invia Prenotazione
     </button>
   )
-  const summarySidebarStacked = (
+  const summarySidebarStacked = hasEnabledBookingModes ? (
     <BookingSummarySidebar
       formData={summaryFormData}
       modes={resolvedConfig.booking_modes}
@@ -219,8 +229,8 @@ export const BookingRequestPage: React.FC = () => {
           : 'order-2 mb-6 min-[1256px]:mb-0 min-[1256px]:sticky min-[1256px]:top-4'
       }
     />
-  )
-  const summarySidebarDesktopExternal = (
+  ) : null
+  const summarySidebarDesktopExternal = hasEnabledBookingModes ? (
     <BookingSummarySidebar
       formData={summaryFormData}
       modes={resolvedConfig.booking_modes}
@@ -230,8 +240,8 @@ export const BookingRequestPage: React.FC = () => {
       // Istanza esterna ≥1600px: colonna laterale sticky.
       className="sticky top-4"
     />
-  )
-  const bookingRequestForm = (
+  ) : null
+  const bookingRequestForm = hasEnabledBookingModes ? (
     <BookingRequestForm
       tenantSlug={tenantSlug}
       formConfig={resolvedConfig}
@@ -242,7 +252,7 @@ export const BookingRequestPage: React.FC = () => {
       externalSummaryLayout={useFullPageDesktopFreezeLayout}
       summarySidebar={summarySidebarStacked}
     />
-  )
+  ) : null
 
   const fullPageDesktopCapStyle = {
     ['--booking-full-page-form-max' as string]: `${BOOKING_FULL_PAGE_FORM_MAX_WIDTH_PX}px`,
@@ -251,12 +261,14 @@ export const BookingRequestPage: React.FC = () => {
 
   const bookingPageHeader = (
     <div className="flex w-full flex-col gap-1.5 py-1.5 animate-fade-in">
-      <h1
-        className="m-0 w-full"
-        style={getBookingHeaderTextStyle('restaurant_name', headerStyles)}
-      >
-        {displayName}
-      </h1>
+      {displayName && (
+        <h1
+          className="m-0 w-full"
+          style={getBookingHeaderTextStyle('restaurant_name', headerStyles)}
+        >
+          {displayName}
+        </h1>
+      )}
       <div className="flex w-full flex-col gap-1.5">
         <h2
           className="m-0 w-full"
@@ -386,12 +398,19 @@ export const BookingRequestPage: React.FC = () => {
         </div>{/* fine griglia [striscia foto | contenuto] */}
 
         {/* Footer Orari+Contatti — fuori dalla griglia, a tutta larghezza viewport */}
+        {showInfoFooter && (
         <div className="w-full px-0">
           <div className="rounded-none shadow-xl px-6 md:px-10 bg-white border-t border-slate-100 py-5 md:py-7 mt-0 animate-fade-in">
 
             {/* Layout desktop/tablet (≥480px): 2 colonne Orari | Contatti */}
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2 md:gap-x-10 items-start max-[480px]:hidden">
+            <div
+              className={cn(
+                'grid gap-x-6 gap-y-2 md:gap-x-10 items-start max-[480px]:hidden',
+                showHoursSection && showContactSection ? 'grid-cols-2' : 'grid-cols-1',
+              )}
+            >
 
+              {showHoursSection && (
               <div className="min-w-0 w-full space-y-2 text-left pr-1.5">
                 <div className="flex items-center gap-2 mb-2" style={{ paddingLeft: hoursInset }}>
                   <div className="shrink-0 w-9 h-9 rounded-md flex items-center justify-center bg-linear-to-br from-terracotta to-warm-orange shadow-md">
@@ -413,7 +432,7 @@ export const BookingRequestPage: React.FC = () => {
                     openingHoursColumns.map((columnDays, colIdx) => (
                       <div key={colIdx} className="shrink-0 space-y-0.5">
                         {columnDays.map((day) => {
-                          const dayHours = hours[day]
+                          const dayHours = businessHours?.[day]
                           const isOpen = !!dayHours && dayHours.length > 0
                           return (
                             <div key={day} className="font-medium text-sm text-warm-wood-dark leading-snug">
@@ -426,7 +445,9 @@ export const BookingRequestPage: React.FC = () => {
                   )}
                 </div>
               </div>
+              )}
 
+              {showContactSection && (
               <div className="min-w-0 space-y-1 justify-self-end text-right" style={{ paddingRight: hoursInset }}>
                 <div className="flex items-center justify-end gap-2 mb-2">
                   <div className="shrink-0 w-9 h-9 rounded-md flex items-center justify-center bg-linear-to-br from-terracotta to-warm-orange shadow-md">
@@ -457,11 +478,13 @@ export const BookingRequestPage: React.FC = () => {
                   </div>
                 )}
               </div>
+              )}
 
             </div>
 
             {/* Layout mobile (<480px): accordion Orari / Contatti */}
             <div className="hidden max-[480px]:block space-y-2">
+              {showHoursSection && (
               <div className="rounded-xl bg-white border border-slate-100">
                 <button
                   type="button"
@@ -485,7 +508,7 @@ export const BookingRequestPage: React.FC = () => {
                       <div className="font-medium text-xs text-warm-wood-dark">Caricamento orari...</div>
                     ) : (
                       dayOrder.map((day) => {
-                        const dayHours = hours[day]
+                        const dayHours = businessHours?.[day]
                         const isOpen = !!dayHours && dayHours.length > 0
                         return (
                           <div key={day} className="font-medium text-xs text-warm-wood-dark leading-tight">
@@ -497,7 +520,9 @@ export const BookingRequestPage: React.FC = () => {
                   </div>
                 )}
               </div>
+              )}
 
+              {showContactSection && (
               <div className="rounded-xl bg-white border border-slate-100">
                 <button
                   type="button"
@@ -540,10 +565,12 @@ export const BookingRequestPage: React.FC = () => {
                   </div>
                 )}
               </div>
+              )}
             </div>
 
           </div>
-        </div>{/* fine footer */}
+        </div>
+        )}
 
       </div>
     </div>

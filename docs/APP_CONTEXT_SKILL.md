@@ -306,7 +306,7 @@ Obiettivo unico: **eliminare elementi hardcodati di test/demo** e sostituirli co
 |---------|-------------|
 | **Perimetro** | Tutta l'app: dashboard admin, Pagina Prenota, Menu QR, email, resolver form (`bookingFormResolver`), impostazioni, componenti con `??` / `\|\|` su testi, immagini, prezzi, orari. |
 | **Cosa cercare** | Valori fissi nel JSX/TS quando la query è vuota o fallisce; slug/tenant di prova; immagini stock; label «Lorem» o copy di sviluppo; default che non esistono in `restaurant_settings` o config pubblica. |
-| **Fonti corrette** | Storage per tenant (vedi skill DB / `BOOKING_DATA_FLOW` / `DATA_FLOW`); mai duplicare in componente ciò che già vive in Supabase o in registry impostazioni. |
+| **Fonti corrette** | Storage per tenant (vedi skill DB / `PRENOTA_DATA_FLOW_CONTEXT.md` / `DATA_FLOW`); mai duplicare in componente ciò che già vive in Supabase o in registry impostazioni. |
 | **Come mappare (checklist)** | Per ogni elemento: (1) **se pieno** — da dove arriva (tabella/colonna o chiave settings); (2) **se vuoto** — fallback attuale nel codice; (3) **verdetto** — ok prod · da sostituire · vuoto intenzionale (`EmptyState`). |
 | **Esecuzione** | Sessione dedicata o incrementale per area (profilo **Esecuzione** + skill della tabella § 0). Non confondere con FU-009 (mappatura impostazioni Prenota): FU-023 è l'**audit globale** sui fallback. |
 | **Registro** | `docs/FOLLOW_UP.md` riga **FU-023**; aggiornare a fine sessione (§7.1). |

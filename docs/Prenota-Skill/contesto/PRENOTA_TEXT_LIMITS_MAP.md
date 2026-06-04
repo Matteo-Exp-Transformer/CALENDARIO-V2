@@ -14,7 +14,7 @@ Legenda colonna **Limite in UI**:
 
 | Superficie UI | Componente | Storage / chiave | Dove si edita | Max char | Limite in UI | Note |
 |---------------|------------|------------------|---------------|----------|--------------|------|
-| h1 nome locale | `BookingRequestPage` | `restaurant_settings.restaurant_name` | Anagrafica Azienda | 40 (input) / 200 (Zod) | admin-contatore | Anteprima read-only in Personalizza form |
+| h1 nome locale | `BookingRequestPage` | `restaurant_settings.restaurant_name` | Anagrafica Azienda | **45** | admin-contatore | Anteprima read-only in Personalizza form; legacy >45: clamp in lettura + al salvataggio |
 | h2 titolo pagina | idem | `booking_public_form_config.page_title` | Personalizza form | 50 | admin-contatore | |
 | p intro | idem | `page_description` | Personalizza form | 120 | admin-contatore | |
 | fontSize header | inline style | `header_styles.*.fontSize` | Personalizza form | 8–38 (nome/titolo), **22** (descrizione) | layout | `BOOKING_HEADER_FONT_SIZE_MAX_BY_TARGET` |
@@ -36,7 +36,7 @@ Legenda colonna **Limite in UI**:
 |---------------|---------|-----|--------------|---------------------|
 | Titolo card | `sub_tabs[].label` | 24 | admin-contatore | Card: `line-clamp-2` |
 | Descrizione sottotab | `sub_tabs[].description` | 79 | admin-contatore | **Non** sulla card; sotto sezione menù in `MenuSelection` |
-| Numero portate | `sub_tabs[].courses_label` | 12 | admin-contatore | **Non renderizzato** in pubblico (salvato JSON) |
+| Numero portate | `sub_tabs[].courses_label` | 12 | admin-contatore | Card `display='cards'`: footer basso sx (`line-clamp-1`); non in carosello |
 | Nome carosello (admin) | `sub_tabs[].label` (carousel) | 24 | admin-contatore | Solo admin / riepilogo interno |
 
 Fallback descrizione menù da preset staff (`MenuPricesTab`): max **80** (campo descrizione menù consigliato).

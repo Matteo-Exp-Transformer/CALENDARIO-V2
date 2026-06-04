@@ -120,6 +120,20 @@ function presetImportFieldOverrides(): NonNullable<SubTab['field_overrides']> {
   }
 }
 
+function subTabCarouselHasPhoto(tab: SubTab): boolean {
+  return tab.display !== 'carousel' || (tab.carousel_items ?? []).some((item) => item.image_url?.trim())
+}
+
+function subTabValidationError(tab: SubTab): string | null {
+  if (tab.display === 'carousel' && !subTabCarouselHasPhoto(tab)) {
+    return 'Aggiungi almeno una foto al carosello prima di salvarlo.'
+  }
+  if (tab.display === 'cards' && !tab.label.trim()) {
+    return 'Inserisci il titolo della card prima di salvarla.'
+  }
+  return null
+}
+
 function bookingTypeUsesMenuItems(bookingType: BookingMode['booking_type'], items: MenuItem[]): boolean {
   return items.some((item) => normalizeMenuItemBookingTypes(item.booking_types).includes(bookingType))
 }
@@ -418,6 +432,10 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
   const cancelDraftSubTab = (modeId: string) => {
     setDraftSubTabsByMode((prev) => ({ ...prev, [modeId]: null }))
+    const mode = config.booking_modes.find((m) => m.id === modeId)
+    if ((mode?.sub_tabs ?? []).length === 0) {
+      updateMode(modeId, { sub_tabs_presentation: null })
+    }
   }
 
   /**
@@ -483,9 +501,15 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       ...prev,
       booking_modes: prev.booking_modes.map((m) => {
         if (m.id !== modeId) return m
-        return { ...m, sub_tabs: (m.sub_tabs ?? []).filter((t) => t.id !== subTabId) }
+        const subTabs = (m.sub_tabs ?? []).filter((t) => t.id !== subTabId)
+        return {
+          ...m,
+          sub_tabs: subTabs,
+          sub_tabs_presentation: subTabs.length === 0 ? null : m.sub_tabs_presentation,
+        }
       }),
     }))
+    setExpandedSubTabByMode((prev) => ({ ...prev, [modeId]: null }))
     markModesDirty()
   }
 
@@ -644,10 +668,21 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     if (isDraft) {
       const draft = draftSubTabsByMode[modeId]
       if (!draft) return
+      const draftError = subTabValidationError(draft)
+      if (draftError) {
+        toast.error(draftError)
+        return
+      }
       bookingModes = config.booking_modes.map((m) =>
         m.id === modeId ? { ...m, sub_tabs: [...(m.sub_tabs ?? []), draft] } : m,
       )
       setConfig((prev) => ({ ...prev, booking_modes: bookingModes }))
+    }
+    const modeToSave = bookingModes.find((mode) => mode.id === modeId)
+    const invalidSubTab = modeToSave?.sub_tabs.find((tab) => subTabValidationError(tab))
+    if (invalidSubTab) {
+      toast.error(subTabValidationError(invalidSubTab) ?? 'Completa o elimina la sottotab prima di salvarla.')
+      return
     }
     try {
       await persistModesSection(bookingModes)

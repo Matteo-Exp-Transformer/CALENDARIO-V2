@@ -1,4 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
+import {
+  BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS,
+  clampBookingText,
+} from '@/features/booking/constants/bookingPrenotaTextLimits'
 import { supabasePublic } from '@/lib/supabasePublic'
 import { useTenantContext } from '@/contexts/TenantContext'
 
@@ -22,8 +26,15 @@ export const useRestaurantName = (): string | null => {
       if (error || !data) return null
 
       const raw = (data as any).setting_value
-      if (typeof raw === 'string') return raw.trim() || null
-      if (typeof raw === 'number' || typeof raw === 'boolean') return String(raw)
+      const max = BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.restaurantName
+      if (typeof raw === 'string') {
+        const trimmed = raw.trim()
+        return trimmed ? clampBookingText(trimmed, max) : null
+      }
+      if (typeof raw === 'number' || typeof raw === 'boolean') {
+        const s = String(raw).trim()
+        return s ? clampBookingText(s, max) : null
+      }
       return null
     },
     enabled: !!tenantId,

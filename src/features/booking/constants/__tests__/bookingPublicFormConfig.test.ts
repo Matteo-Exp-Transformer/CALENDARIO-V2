@@ -10,6 +10,7 @@ import {
   resolveCarouselSummaryDisplay,
   type BookingPublicFormConfig,
 } from '../bookingPublicFormConfig'
+import { restaurantSettingRegistry } from '@/features/booking/lib/restaurantSettingRegistry'
 
 describe('parseBookingHeaderStylesFromUnknown — fontSize migrate-on-read', () => {
   it('usa default 34/30/16 quando fontSize assente (legacy)', () => {
@@ -283,14 +284,34 @@ describe('parseSubTabFromUnknown — show_offer_details_in_summary', () => {
     expect(tab!.show_offer_details_in_summary).toBeUndefined()
   })
 
-  it('accetta label vuoto sulle card scorrevoli', () => {
+  it('rifiuta card scorrevole senza titolo', () => {
+    expect(
+      parseSubTabFromUnknown({
+        id: 'card-empty',
+        label: '',
+        display: 'cards',
+      }),
+    ).toBeNull()
+    expect(
+      parseSubTabFromUnknown({
+        id: 'card-preset-no-title',
+        label: '',
+        display: 'cards',
+        preset_id: 'preset-1',
+      }),
+    ).toBeNull()
+  })
+
+  it('accetta card scorrevole con titolo modificato e preset importato', () => {
     const tab = parseSubTabFromUnknown({
-      id: 'card-empty',
-      label: '',
+      id: 'card-preset',
+      label: 'Titolo personalizzato',
       display: 'cards',
+      preset_id: 'preset-1',
     })
     expect(tab).not.toBeNull()
-    expect(tab!.label).toBe('')
+    expect(tab!.label).toBe('Titolo personalizzato')
+    expect(tab!.preset_id).toBe('preset-1')
   })
 
   it('rifiuta carosello senza label', () => {
@@ -302,6 +323,121 @@ describe('parseSubTabFromUnknown — show_offer_details_in_summary', () => {
         carousel_items: [{ image_url: 'https://example.com/a.jpg' }],
       }),
     ).toBeNull()
+  })
+
+  it('rifiuta carosello senza foto visibile', () => {
+    expect(
+      parseSubTabFromUnknown({
+        id: 'carousel-no-photo',
+        label: 'Carosello',
+        display: 'carousel',
+        carousel_items: [],
+      }),
+    ).toBeNull()
+    expect(
+      parseSubTabFromUnknown({
+        id: 'carousel-blank-photo',
+        label: 'Carosello',
+        display: 'carousel',
+        carousel_items: [{ image_url: '   ' }],
+      }),
+    ).toBeNull()
+  })
+
+  it('normalize rimuove caroselli vuoti e resetta la presentazione se non restano sottotab valide', () => {
+    const config: BookingPublicFormConfig = {
+      page_title: 'Prenota',
+      page_description: 'Desc',
+      header_styles: parseBookingHeaderStylesFromUnknown({}),
+      booking_modes: [
+        {
+          id: 'm1',
+          booking_type: 'tavolo',
+          enabled: true,
+          label: 'Tavolo',
+          description: 'D',
+          icon: 'fork_knife',
+          sub_tabs_enabled: true,
+          sub_tabs_presentation: 'carousel',
+          sub_tabs: [
+            {
+              id: 'empty-carousel',
+              label: 'Carosello',
+              display: 'carousel',
+              carousel_items: [],
+            },
+          ],
+        },
+      ],
+    }
+    const normalized = normalizeBookingPublicFormConfig(config)
+    expect(normalized.booking_modes[0].sub_tabs).toEqual([])
+    expect(normalized.booking_modes[0].sub_tabs_presentation).toBeNull()
+  })
+
+  it('normalize rimuove card senza titolo e resetta la presentazione se non restano sottotab valide', () => {
+    const config: BookingPublicFormConfig = {
+      page_title: 'Prenota',
+      page_description: 'Desc',
+      header_styles: parseBookingHeaderStylesFromUnknown({}),
+      booking_modes: [
+        {
+          id: 'm1',
+          booking_type: 'tavolo',
+          enabled: true,
+          label: 'Tavolo',
+          description: 'D',
+          icon: 'fork_knife',
+          sub_tabs_enabled: true,
+          sub_tabs_presentation: 'cards',
+          sub_tabs: [
+            {
+              id: 'empty-card',
+              label: '',
+              display: 'cards',
+              preset_id: 'preset-1',
+            },
+          ],
+        },
+      ],
+    }
+    const normalized = normalizeBookingPublicFormConfig(config)
+    expect(normalized.booking_modes[0].sub_tabs).toEqual([])
+    expect(normalized.booking_modes[0].sub_tabs_presentation).toBeNull()
+  })
+
+  it('parseFromDb ricappa testi raw e non mantiene caroselli vuoti come presentazione attiva', () => {
+    const long = 'x'.repeat(200)
+    const parsed = restaurantSettingRegistry.booking_public_form_config.parseFromDb({
+      page_title: long,
+      page_description: long,
+      booking_modes: [
+        {
+          id: 'm1',
+          booking_type: 'tavolo',
+          enabled: true,
+          label: long,
+          description: long,
+          icon: 'fork_knife',
+          sub_tabs_enabled: true,
+          sub_tabs_presentation: 'carousel',
+          sub_tabs: [
+            {
+              id: 'empty-carousel',
+              label: 'Carosello',
+              display: 'carousel',
+              carousel_items: [],
+            },
+          ],
+        },
+      ],
+    })
+    expect(parsed.page_title.length).toBe(50)
+    expect(parsed.page_description.length).toBe(120)
+    expect(parsed.booking_modes[0].label.length).toBe(40)
+    expect(parsed.booking_modes[0].description.length).toBe(61)
+    expect(parsed.booking_modes[0].sub_tabs).toEqual([])
+    expect(parsed.booking_modes[0].sub_tabs_presentation).toBeNull()
   })
 })
 
@@ -320,6 +456,20 @@ describe('resolveCarouselSummaryDisplay / sticky mini-pannello', () => {
     const tab = parseSubTabFromUnknown(base)
     expect(resolveCarouselSummaryDisplay(tab)?.kind).toBe('titles')
     expect(getCarouselStickyMiniPanelLine(tab)).toBe('Prima offerta')
+  })
+
+  it('non inventa label Foto N per slide senza titolo nel riepilogo', () => {
+    const tab = parseSubTabFromUnknown({
+      ...base,
+      carousel_items: [
+        { image_url: 'https://example.com/1.jpg', title: 'Prima offerta' },
+        { image_url: 'https://example.com/2.jpg' },
+      ],
+    })
+    expect(resolveCarouselSummaryDisplay(tab)).toEqual({
+      kind: 'titles',
+      titles: ['Prima offerta'],
+    })
   })
 
   it('toggle OFF con prezzo → solo prezzo', () => {

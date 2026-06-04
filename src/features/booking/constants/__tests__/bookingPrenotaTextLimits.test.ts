@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS,
   BOOKING_PUBLIC_CLIENT_TEXT_LIMITS,
   clampBookingText,
   getDietaryRestrictionsTextLength,
@@ -8,6 +9,13 @@ import {
 } from '../bookingPrenotaTextLimits'
 
 describe('bookingPrenotaTextLimits', () => {
+  it('restaurantName max 45', () => {
+    expect(BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.restaurantName).toBe(45)
+    expect(clampBookingText('x'.repeat(50), BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.restaurantName)).toHaveLength(
+      45,
+    )
+  })
+
   it('clampBookingText tronca oltre max', () => {
     expect(clampBookingText('abcdef', 4)).toBe('abcd')
   })

@@ -55,8 +55,9 @@ import {
   FieldAutosaveIndicator,
   SettingsSaveFooter,
 } from './settings/SettingsSaveUi'
+import { BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS } from '@/features/booking/constants/bookingPrenotaTextLimits'
 
-const RESTAURANT_NAME_MAX_LENGTH = 40
+const RESTAURANT_NAME_MAX_LENGTH = BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.restaurantName
 const SLOT_NAME_MAX_LENGTH = 40
 const TEMP_SLOT_ID_PREFIX = 'temp-'
 const isTempSlotId = (id: string) => id.startsWith(TEMP_SLOT_ID_PREFIX)
@@ -103,6 +104,7 @@ const previewPickHoverScaleClass =
 
 type SettingsPreviewPickCardProps = {
   label: string
+  mutedLabel?: boolean
   selected: boolean
   disabled: boolean
   pickButtonClass: (selected: boolean) => string
@@ -119,6 +121,7 @@ type SettingsPreviewPickCardProps = {
 
 const SettingsPreviewPickCard: React.FC<SettingsPreviewPickCardProps> = ({
   label,
+  mutedLabel = false,
   selected,
   disabled,
   pickButtonClass,
@@ -216,7 +219,8 @@ const SettingsPreviewPickCard: React.FC<SettingsPreviewPickCardProps> = ({
           type="button"
           disabled={disabled}
           className={cn(
-            'line-clamp-2 min-h-[1.5em] w-full cursor-pointer border-0 bg-transparent px-px text-center text-[0.625rem] font-semibold leading-snug text-slate-700 sm:text-[11px]',
+            'line-clamp-2 min-h-[1.5em] w-full cursor-pointer border-0 bg-transparent px-px text-center text-[0.625rem] leading-snug sm:text-[11px]',
+            mutedLabel ? 'font-medium text-slate-400' : 'font-semibold text-slate-700',
             previewPickFocusRingClass,
             disabled && 'cursor-not-allowed opacity-65',
           )}
@@ -903,6 +907,7 @@ export const RestaurantSettingsTab: React.FC = () => {
               <SettingsPreviewPickCard
                 key={id}
                 label={label}
+                mutedLabel
                 selected={stripPhoto === id}
                 disabled={upsert.isPending}
                 pickButtonClass={bookingBgPickButtonClass}
@@ -1017,6 +1022,14 @@ export const RestaurantSettingsTab: React.FC = () => {
               className={anagraficaInputClassName}
               style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
             />
+            <p
+              className={cn(
+                'text-right text-[11px] tabular-nums',
+                restaurantName.length >= RESTAURANT_NAME_MAX_LENGTH ? 'text-red-500' : 'text-slate-400',
+              )}
+            >
+              {restaurantName.length}/{RESTAURANT_NAME_MAX_LENGTH}
+            </p>
             {SETTINGS_AUTOSAVE_ENABLED ? (
               <FieldAutosaveIndicator status={anagraficaAutosave.fieldStatus.restaurant_name} />
             ) : null}

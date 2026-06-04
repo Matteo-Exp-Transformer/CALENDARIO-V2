@@ -219,10 +219,12 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   const [composeCollapseNonce, setComposeCollapseNonce] = useState(0)
   const [attentionFieldKey, setAttentionFieldKey] = useState<string | null>(null)
 
+  const enabledBookingModes = formConfig.booking_modes.filter((m) => m.enabled)
+
   // Trova il modo attivo in base a booking_type
-  const activeMode = formConfig.booking_modes.find(
-    (m) => m.enabled && m.booking_type === formData.booking_type,
-  ) ?? formConfig.booking_modes.find((m) => m.enabled)
+  const activeMode = enabledBookingModes.find(
+    (m) => m.booking_type === formData.booking_type,
+  ) ?? enabledBookingModes[0]
 
   const activeModeId = activeMode?.id ?? 'tavolo'
 
@@ -292,14 +294,19 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     return activeMode?.sub_tabs_overrides ?? []
   }, [activeMode, activeModeSubTabs])
 
-  /** Con sottotab: griglia menù solo dopo click su card (`display !== 'carousel'`). */
+  /** Menu pubblico solo da sottotab valide: niente fallback legacy se non ci sono card salvate. */
   const showMenuSelectionSection = useMemo(() => {
     if (!bookingTypeUsesMenuSelections(formData.booking_type)) return false
-    if (activeModeSubTabs.length === 0) return true
+    if (activeModeSubTabs.length === 0) return false
     if (!activeSubTab) return false
     if (!activeSubTabLinkedPreset) return false
     return activeSubTab.display !== 'carousel'
-  }, [formData.booking_type, activeModeSubTabs.length, activeSubTab, activeSubTabLinkedPreset])
+  }, [
+    formData.booking_type,
+    activeModeSubTabs.length,
+    activeSubTab,
+    activeSubTabLinkedPreset,
+  ])
 
   // Notifica il parent ad ogni cambio formData (per sidebar riepilogo)
   useEffect(() => {
@@ -947,6 +954,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       },
     )
   }
+
+  if (enabledBookingModes.length === 0) return null
 
   return (
     <>

@@ -107,72 +107,31 @@ export function isStaffPresetSelectableForBookingType(
 export interface PresetMenu {
   id: BuiltinPresetMenuType
   label: string
-  itemNames: string[] // Nomi degli items come nel database (match flessibile lato client)
+  itemNames: string[] // Legacy: vuoto per non inventare ingredienti su tenant nuovi.
 }
 
-/**
- * Menù 1: Base
- * Caraffe drink + Pizza Margherita
- */
 export const MENU_1: PresetMenu = {
   id: 'menu_1',
-  label: 'Menù 1 Rinfresco Leggero',
-  itemNames: [
-    'Caraffe drink',
-    'Pizza Margherita'
-  ]
+  label: 'Menù legacy 1',
+  itemNames: [],
 }
 
-/**
- * Menù 2: Medio
- * Caraffe drink + Pizza Margherita + Farinata + Olive Ascolana + Anelli di Cipolla + Patatine Fritte
- */
 export const MENU_2: PresetMenu = {
   id: 'menu_2',
-  label: 'Menù 2 Rinfresco Completo',
-  itemNames: [
-    'Caraffe drink',
-    'Pizza Margherita',
-    'Farinata',
-    'Olive Ascolana',
-    'Anelli di Cipolla',
-    'Patatine fritte'
-  ]
+  label: 'Menù legacy 2',
+  itemNames: [],
 }
 
-/**
- * Menù 3: Completo
- * Menù 2 + Cannelloni Ricotta e Spinaci
- */
 export const MENU_3: PresetMenu = {
   id: 'menu_3',
-  label: 'Menù 3 Pranzo o Cena',
-  itemNames: [
-    'Caraffe drink',
-    'Pizza Margherita',
-    'Farinata',
-    'Anelli di Cipolla',
-    'Patatine fritte',
-    'Olive Ascolana',
-    'Cannelloni Ricotta e Spinaci'
-  ]
+  label: 'Menù legacy 3',
+  itemNames: [],
 }
 
-/**
- * Menù 4: Gourmet
- * Caraffe Premium + Panelle + Camembert + Lasagne Ragù + Polpette vegane di Lenticchie e Curry + Cannoli siciliani
- */
 export const MENU_4: PresetMenu = {
   id: 'menu_4',
-  label: 'Menù 4 Gourmet',
-  itemNames: [
-    'Caraffe Premium',
-    'Panelle',
-    'Camembert',
-    'Lasagne Ragù',
-    'Polpette vegane di Lenticchie e Curry',
-    'Cannoli siciliani'
-  ]
+  label: 'Menù legacy 4',
+  itemNames: [],
 }
 
 /**

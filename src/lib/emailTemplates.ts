@@ -1,4 +1,4 @@
-// Email templates for Al Ritrovo Booking System
+// Email templates for booking notifications
 
 import type { BookingRequest } from '@/types/booking'
 import { format } from 'date-fns'
@@ -36,7 +36,7 @@ export const getBookingAcceptedEmail = (booking: BookingRequest) => {
     ? formatDateTime(booking.confirmed_start)
     : formatDateOnly(booking.desired_date)
 
-  const subject = `✅ Prenotazione Confermata - Al Ritrovo`
+  const subject = 'Prenotazione confermata'
 
   const html = `
     <!DOCTYPE html>
@@ -112,7 +112,7 @@ export const getBookingAcceptedEmail = (booking: BookingRequest) => {
     </head>
     <body>
       <div class="header">
-        <h1>🍽️ Al Ritrovo</h1>
+        <h1>Prenotazione</h1>
         <p>La tua prenotazione è stata confermata!</p>
       </div>
       
@@ -123,7 +123,7 @@ export const getBookingAcceptedEmail = (booking: BookingRequest) => {
 
         <p>Ciao <strong>${booking.client_name}</strong>,</p>
 
-        <p>Siamo felici di confermare la tua prenotazione presso Al Ritrovo!</p>
+        <p>Siamo felici di confermare la tua prenotazione.</p>
 
         <div class="info-box">
           <div class="info-row">
@@ -144,15 +144,14 @@ export const getBookingAcceptedEmail = (booking: BookingRequest) => {
         <p><strong>📝 Note:</strong> ${booking.special_requests}</p>
         ` : ''}
 
-        <p>Non vediamo l'ora di ospitarti presso il nostro ristorante!</p>
+        <p>Non vediamo l'ora di ospitarti.</p>
 
-        <p>In caso di necessità, contattaci al nostro numero di telefono.</p>
+        <p>In caso di necessità, contatta lo staff.</p>
 
-        <p>A presto,<br><strong>Il Team di Al Ritrovo</strong></p>
+        <p>A presto,<br><strong>Lo staff</strong></p>
       </div>
 
       <div class="footer">
-        <p>Al Ritrovo - Bologna, Italia</p>
         <p>Questa è un'email automatica, non rispondere a questo messaggio.</p>
       </div>
     </body>
@@ -166,7 +165,7 @@ export const getBookingAcceptedEmail = (booking: BookingRequest) => {
  * Email template: Booking Rejected
  */
 export const getBookingRejectedEmail = (booking: BookingRequest) => {
-  const subject = `⚠️ Prenotazione non Disponibile - Al Ritrovo`
+  const subject = 'Prenotazione non disponibile'
 
   const html = `
     <!DOCTYPE html>
@@ -219,7 +218,7 @@ export const getBookingRejectedEmail = (booking: BookingRequest) => {
     </head>
     <body>
       <div class="header">
-        <h1>🍽️ Al Ritrovo</h1>
+        <h1>Prenotazione</h1>
         <p>Prenotazione non disponibile</p>
       </div>
       
@@ -244,11 +243,10 @@ export const getBookingRejectedEmail = (booking: BookingRequest) => {
 
         <p>Ci scusiamo per l'inconveniente.</p>
 
-        <p>Cordiali saluti,<br><strong>Il Team di Al Ritrovo</strong></p>
+        <p>Cordiali saluti,<br><strong>Lo staff</strong></p>
       </div>
 
       <div class="footer">
-        <p>Al Ritrovo - Bologna, Italia</p>
         <p>Questa è un'email automatica, non rispondere a questo messaggio.</p>
       </div>
     </body>
@@ -266,7 +264,7 @@ export const getBookingCancelledEmail = (booking: BookingRequest) => {
     ? formatDateTime(booking.confirmed_start)
     : formatDateOnly(booking.desired_date)
 
-  const subject = `❌ Prenotazione Cancellata - Al Ritrovo`
+  const subject = 'Prenotazione cancellata'
 
   const html = `
     <!DOCTYPE html>
@@ -312,7 +310,7 @@ export const getBookingCancelledEmail = (booking: BookingRequest) => {
     </head>
     <body>
       <div class="header">
-        <h1>🍽️ Al Ritrovo</h1>
+        <h1>Prenotazione</h1>
         <p>Prenotazione Cancellata</p>
       </div>
       
@@ -333,11 +331,10 @@ export const getBookingCancelledEmail = (booking: BookingRequest) => {
 
         <p>Se desideri riprogrammare o hai domande, contattaci.</p>
 
-        <p>Cordiali saluti,<br><strong>Il Team di Al Ritrovo</strong></p>
+        <p>Cordiali saluti,<br><strong>Lo staff</strong></p>
       </div>
 
       <div class="footer">
-        <p>Al Ritrovo - Bologna, Italia</p>
         <p>Questa è un'email automatica, non rispondere a questo messaggio.</p>
       </div>
     </body>
@@ -346,4 +343,3 @@ export const getBookingCancelledEmail = (booking: BookingRequest) => {
 
   return { subject, html }
 }
-
