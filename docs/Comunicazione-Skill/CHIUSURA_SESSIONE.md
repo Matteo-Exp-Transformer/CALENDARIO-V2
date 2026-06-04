@@ -122,6 +122,32 @@ Sincronizza con `docs/FOLLOW_UP.md` (nuove righe FU-NNN; stato `fatto` se chiusi
 ✅ R6:
 ```
 
+### 12. Self-review del report ⭐ (la fai TU, prima che scatti l'hook)
+
+> **L'hook controlla solo che tu abbia risposto; la qualità la garantisci tu qui.** Prima di dire
+> «report pronto», rileggi il tuo report **a mente fredda** e passa questa checklist. Non è un
+> doppione delle domande Q1-Q6: lì *rispondi*, qui *ti correggi*. L'obiettivo è arrivare all'hook
+> con il report già pulito, così il suo rilancio (max 2) trova poco o niente da segnalare.
+
+Checklist (4 punti, veloce):
+1. **Dati = diff reale.** Apri il diff: i file, i numeri, i nomi citati nel report esistono davvero e
+   sono quelli giusti? Niente copiato a memoria, niente sezione rimasta indietro rispetto a un fix
+   successivo.
+2. **File correlati allineati.** Se hai cambiato un comportamento documentato in una skill area /
+   context / test / tipi → quel file è aggiornato *in questa chiusura*? (vedi §5 — non è un follow-up.)
+3. **Q1-Q6 coerenti.** Le risposte non si contraddicono tra loro né col lavoro svolto; ognuna ha
+   sostanza (non «ok» a vuoto). Per Q2 e Q3 hai davvero riaperto i file.
+4. **Tono utente.** Le parti rivolte a Matteo parlano per flussi/schermate, non nomi-file isolati.
+
+Se un punto fallisce → **correggi ora** e annota in 1 riga cosa hai sistemato. Solo dopo dichiari il
+report pronto.
+
+> **Dopo il «report finale» (non «lavoro ok») scatta la controverifica imparziale.** Un sub-agente
+> che NON ha eseguito il lavoro pesa report + diff contro i prompt di Matteo e il flusso dati/utente
+> (scope creep? vocabolario reinterpretato?) ed emette un verdetto. Vive in
+> [`CONTROVERIFICA.md`](CONTROVERIFICA.md). La self-review qui sopra la fai *tu* prima; la
+> controverifica la fa *un altro agente* dopo.
+
 ---
 
 ## Tono (vale per le parti rivolte a Matteo, non per i dati tecnici interni)
@@ -144,14 +170,29 @@ Errori in linguaggio umano («permesso negato», non `PGRST301`). Default sintet
 
 ## Cos'è l'hook di fine-chat (così non ti confonde)
 
-A fine chat un hook Cursor (`stop`) legge i `Report-*.md` che hai appena scritto e:
+A fine chat un hook Cursor (`stop`) legge **il `Report-*.md` più recente** che hai appena scritto e:
 - controlla la **sezione 11 «Domande di chiusura»**: per ogni `❓ Q` verifica che la `✅ R` non sia
-  vuota. **Se una risposta manca → rilancia e BLOCCA la chiusura** finché non la compili (decisione
-  Matteo 04-06-26: partiamo severi, poi eventualmente allentiamo). Ti dice ESATTAMENTE quali R sono vuote;
+  vuota. **Se una risposta manca → rilancia** chiedendoti di compilarla. Ti dice ESATTAMENTE quali R sono vuote;
 - se tutte le risposte ci sono → un rilancio **leggero** una volta sola: rileggi a mente fredda e
   conferma che dati e file correlati siano coerenti col lavoro vero (no incongruenze).
+
+**Tre tarature (decise 04-06-26 — v5 dell'hook), perché prima insisteva troppo:**
+- **Solo il report più recente.** L'hook guarda UN report (la chat che chiudi), non più tutti quelli
+  toccati negli ultimi 20 min. Non ti blocca più la chiusura di oggi per una `R` vuota in un report
+  di un'altra sessione.
+- **Massimo 3 rilanci, su qualsiasi ramo.** Dopo 3 nudge l'hook tace comunque (`loop_limit: 3` +
+  guardia interna). Non ti muri la chiusura all'infinito. (Era 2 in bozza, riportato a 3: la vera
+  causa dell'insistenza era «troppi report insieme», risolta dal punto sopra.)
+- **Meno falsi «risposta mancante».** Una risposta breve fra parentesi (es. «nessuno (nessuna skill
+  copre il componente)») ora è accettata. Conta come vuota solo il vero vuoto / placeholder secco
+  (`...`, `TODO`, `-`).
+
 **È normale e voluto: assecondalo, completa ciò che segnala, non è un errore del sistema.** Se la chat
 non aveva report (es. domanda veloce), l'hook tace.
+
+> **L'hook è il guardiano meccanico, non il revisore.** Controlla che tu abbia *risposto*, non che le
+> risposte siano *vere*. La revisione del CONTENUTO la fai TU, con la self-review qui sotto (§12),
+> prima che l'hook scatti.
 
 ---
 
