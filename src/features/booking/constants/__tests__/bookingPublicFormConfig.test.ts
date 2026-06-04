@@ -238,12 +238,12 @@ describe('icone Prenota — migrate-on-read', () => {
       ],
     }
     const normalized = normalizeBookingPublicFormConfig(config)
-    expect(normalized.page_title.length).toBe(65)
+    expect(normalized.page_title.length).toBe(50)
     expect(normalized.page_description.length).toBe(120)
     expect(normalized.booking_modes[0].label.length).toBe(40)
     expect(normalized.booking_modes[0].description.length).toBe(61)
-    expect(normalized.booking_modes[0].sub_tabs[0].label.length).toBe(30)
-    expect(normalized.booking_modes[0].sub_tabs[0].description!.length).toBe(65)
+    expect(normalized.booking_modes[0].sub_tabs[0].label.length).toBe(24)
+    expect(normalized.booking_modes[0].sub_tabs[0].description!.length).toBe(79)
     expect(normalized.booking_modes[0].sub_tabs[0].courses_label!.length).toBe(12)
   })
 })

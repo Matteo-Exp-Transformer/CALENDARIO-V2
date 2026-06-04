@@ -12,7 +12,9 @@ description: >-
 
 ## Workflow consigliato
 
-1. Leggi `APP_CONTEXT_SKILL.md` §4 RULE Pagina Prenota v2.
+1. Leggi `docs/Prenota-Skill/PRENOTA_SKILL.md` (entry point: senso, limiti voluti e mappa). Se il
+   cambio tocca anche render/layout pubblico, apri `PRENOTA_LAYOUT_CONTEXT.md`; se tocca resolver o
+   `field_overrides`, apri `PRENOTA_DATA_FLOW_CONTEXT.md`.
 2. Leggi interamente:
    - `src/features/booking/components/settings/BookingFormConfigPanel.tsx`
    - `src/features/booking/components/settings/SettingsSaveUi.tsx`

@@ -112,7 +112,9 @@ Il flusso dati che collega i due mondi (magazzino menù ↔ vetrina ↔ pagina p
 
 - **Numero portate (`courses_label`) — da mostrare.** Oggi salvato (max 12 char) ma **non
   renderizzato** in pagina. Decisione (04-06-26): mostrarlo **nella card, in basso a sinistra**, con
-  il **prezzo allineato orizzontalmente in basso a destra**.
+  il **prezzo allineato orizzontalmente in basso a destra**. File pubblico primario:
+  `src/features/booking/components/publicBooking/BookingSubTabCards.tsx`; contesto:
+  `contesto/PRENOTA_LAYOUT_CONTEXT.md` §5 + `contesto/PRENOTA_TEXT_LIMITS_MAP.md` §C.
 - **Testi menù ingredienti — da cappare.** Nome categoria / nome / descrizione ingrediente oggi
   **senza limite**. Decisione (04-06-26): **vanno cappati** con un limite sensato per il caso (stesso
   principio anti-rottura mobile del §3). → `docs/FOLLOW_UP.md` **FU-030**; sezione E in
@@ -142,7 +144,7 @@ Altri invarianti da non rompere senza conferma:
 
 | Se il task tocca… | Apri (e leggi intero) |
 |---|---|
-| Layout, griglia striscia, sfondo, header, ordine form, caselle, card ingredienti, sidebar riepilogo, validazione submit | `contesto/PRENOTA_LAYOUT_CONTEXT.md` |
+| Layout, griglia striscia, sfondo, header, ordine form, caselle, card sottotab pubbliche (`BookingSubTabCards`), card ingredienti, sidebar riepilogo, validazione submit | `contesto/PRENOTA_LAYOUT_CONTEXT.md` |
 | Limiti/cap testo (admin o cliente), contatori, `bookingPrenotaTextLimits.ts` | `contesto/PRENOTA_TEXT_LIMITS_MAP.md` (numeri ↔ codice) |
 | Config admin «Personalizza form», `BookingFormConfigPanel`, salvataggio/autosave, XOR card/carosello, editor sottotab/carosello, card Sfondo | `contesto/PRENOTA_FORM_CONFIG_CONTEXT.md` |
 | Flusso dati magazzino ↔ vetrina ↔ pubblico, `bookingFormResolver`, `field_overrides`, aggiungere campi a `SubTab`/`BookingMode` | `contesto/PRENOTA_DATA_FLOW_CONTEXT.md` **(OBBLIGATORIO prima di modificare)** |

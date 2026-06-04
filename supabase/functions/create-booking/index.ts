@@ -11,8 +11,8 @@ const BOOKING_PUBLIC_CLIENT_TEXT_LIMITS = {
   clientName: 65,
   clientEmail: 65,
   clientPhone: 30,
-  dietaryText: 700,
-  specialRequests: 700,
+  dietaryText: 550,
+  specialRequests: 550,
   numGuestsMax: 999,
 } as const;
 

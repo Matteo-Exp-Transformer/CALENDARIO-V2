@@ -12,22 +12,22 @@ export const BOOKING_PUBLIC_CLIENT_TEXT_LIMITS = {
   clientName: 65,
   clientEmail: 65,
   clientPhone: 30,
-  dietaryText: 700,
-  specialRequests: 700,
+  dietaryText: 550,
+  specialRequests: 550,
   numGuestsMax: 999,
 } as const
 
 /** Copy ristoratore su Pagina Prenota — contatore admin. */
 export const BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS = {
-  pageTitle: 65,
+  pageTitle: 50,
   pageDescription: 120,
   modeLabel: 40,
   modeDescription: 61,
-  subTabLabel: 30,
-  subTabDescription: 65,
+  subTabLabel: 24,
+  subTabDescription: 79,
   subTabCoursesLabel: 12,
   promoTitle: 60,
-  promoMessage: 350,
+  promoMessage: 200,
 } as const
 
 export const BOOKING_HEADER_FONT_SIZE_MIN = 8

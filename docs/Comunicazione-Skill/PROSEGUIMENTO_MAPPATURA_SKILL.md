@@ -58,22 +58,28 @@ giusti. Il punto 4 è la prova vera.
 
 | Area | Stato | Note |
 |------|-------|------|
-| **Pagina Prenota** | 🔶 | Mappata + flusso scritto (commit `e66c0ae`, `fad207f`). **Manca solo:** verifica sub-agent → poi ✅. Cartella `docs/Prenota-Skill/`. |
+| **Pagina Prenota** | ✅ | Blindata 04-06-26: mappata + flusso scritto (commit `e66c0ae`, `fad207f`), test mirati limiti testo verdi, verifica sub-agent reale **PASSA**. Lacune minori emerse dalla verifica rifinite in `PRENOTA_SKILL.md` e `PRENOTA_FORM_CONFIG_CONTEXT.md`. Cartella `docs/Prenota-Skill/`. |
 | **Menu QR pubblico** | ⬜ | Candidato naturale prossimo (molto flusso utente cliente). File oggi: `per-ui-design-skill/PUBLIC_MENU_*`. |
 | **Tab Menu admin (magazzino)** | ⬜ | `per-ui-design-skill/MENU_ADMIN_CONTEXT.md`. |
 | **Admin shell + pagine** | ⬜ | `Dashboard-laterale-skill/`. Già ha context per-pagina, da riorganizzare col pattern. |
 | **Database** | ⬜ | `Database-Skill/`. Valutare se il pattern senso/flusso calza (è infrastruttura, non UI). |
 | **Card richiesta admin** | ⬜ | `per-ui-design-skill/BOOKING_REQUEST_CARD_CONTEXT.md` (area Prenotazioni admin). |
 
-**Ordine consigliato:** prima chiudi Prenota (verifica) → poi Menu QR (simile, validi il pattern su
-una 2ª area) → poi le aree admin. Una per sessione, senza fretta: file leggeri e verificati battono
-tanti file fatti in fretta.
+**Ordine consigliato:** ora passa a Menu QR (simile a Prenota, valida il pattern su una 2ª area) →
+poi le aree admin. Una per sessione, senza fretta: file leggeri e verificati battono tanti file
+fatti in fretta.
 
 ---
 
 ## Debiti aperti collegati
 
-- **Verifica Prenota col sub-agent** — il passo che manca per la prima ✅.
-- **Propagazione template v.0** — SOSPESA finché la milestone non è matura (≥2-3 aree blindate). Vedi
-  Log idee `EVOLUZIONE_SKILLS.md` 03-06/04-06.
-- **Sistema didattico di Matteo** — parallelo, non blocca questo. File in `_lavoro/Per matteo/` (privati).
+- **Propagazione template v.0 — HOOK ALLINEATI 04-06-26** (guard-prod + nudge v4 + senior + §11
+  domande di chiusura + hooks.json, generici e testati). Resta sospesa la propagazione della
+  **struttura context-knowledge** (cartella-area) finché la milestone non è matura (≥2-3 aree blindate).
+- **[FOLLOW-UP SENIOR 04-06-26] Check segnaposto v.0** — verificare che OGNI `{{segnaposto}}` usato nei
+  file del template `_skill-system-v0/` (es. `{{frase-richiesta-lezione}}`, `{{GLOSSARIO_VIVO}}`,
+  `{{PROFILO_SCOLASTICO}}`, `{{es. scope creep…}}`) sia **documentato in `_skill-system-v0/MANUALE_AVVIO.md`**
+  con cosa va messo al suo posto. Obiettivo: un nuovo progetto che adotta il v.0 sa compilare tutti i
+  segnaposto senza indovinare. Check incrociato in una prossima sessione senior (non bloccante).
+- **Sistema didattico di Matteo** — COSTRUITO 04-06-26 (qualità verificata). File in `_lavoro/Per matteo/`
+  (privati): glossario, profilo, roadmap, materiale-didattico. Si alimenta a ogni chat senior.
