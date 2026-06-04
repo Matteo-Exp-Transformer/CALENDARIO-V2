@@ -96,6 +96,11 @@ Sincronizza con `docs/FOLLOW_UP.md` (nuove righe FU-NNN; stato `fatto` se chiusi
 > **Formato esatto (rispettalo o l'hook non trova la risposta):** copia il blocco, scrivi dopo `R:`.
 > Vale per QUALSIASI report (esecutore, verifica, meta). Le risposte sono i DATI che fanno evolvere
 > il sistema — anche le critiche «a vuoto» sono utili: se non trovi un problema, inventane uno plausibile.
+>
+> ⚠️ **Mai mettere i simboli `❓ Q` o `✅ R` a INIZIO riga dentro una risposta.** L'hook li conta come
+> struttura solo a inizio riga: se devi CITARE il formato dentro una tua risposta (es. «uso il formato
+> ❓Q/✅R»), tienili **a metà frase**, non a capo. A inizio riga verrebbero scambiati per una nuova
+> domanda/risposta e sballerebbero il conteggio (falso «risposta mancante»). Bug visto e corretto 04-06-26.
 
 ```
 ❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.
