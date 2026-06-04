@@ -127,10 +127,10 @@ Nuovo test: `restaurantName max 45` in `bookingPrenotaTextLimits.test.ts`. Nessu
 ## 11. Domande di chiusura
 
 ❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.  
-✅ R1 — Prompt 1 (task FU-032): brief Esecuzione — limite **45** («Decisione Matteo 04-06-26: 45 va bene» nel testo), costante + Anagrafica + Zod + §A + FOLLOW_UP + validate. Prompt 2–3: fine-sessione / controllo post-hook. Prompt 4+: «📄 FINE-SESSIONE — **8 report** …» (controllo a mente fredda; incrocio con `courses_label` + verifica FU-031).
+✅ R1 — Prompt 1 (task FU-032): brief Esecuzione — limite **45** («Decisione Matteo 04-06-26: 45 va bene» nel testo), costante + Anagrafica + Zod + §A + FOLLOW_UP + validate. Prompt 2–3: fine-sessione / controllo post-hook. Prompt 4+: «📄 FINE-SESSIONE — **7 report** …» (controllo a mente fredda; incrocio con `courses_label` + verifica FU-031).
 
 ❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.  
-✅ R2 — Controllo fine-sessione **8 report** (diff codice in `a79a5af` invariato; E-A skill in `ae1d993`): `git diff --stat` mirato FU-032 = **+57 −12**, **7 file** (lista §2). Valori riaperti: `restaurantName: 45`; Zod ex **200** → **45**; Anagrafica ex **40** → **45** + contatore; clamp `useRestaurantName` + `parseFromDb`; test +1; §A **45**; FU-032 **Fatto**. `PRENOTA_FORM_CONFIG_CONTEXT.md` **max 45** in commit `ae1d993`. Non confondere con `BookingSubTabCards` (+45 −21). **291** test OK (ri-eseguito 04-06-26). `BookingRequestPage.tsx` fuori scope FU-032 (h1 via `useRestaurantName`).
+✅ R2 — Controllo fine-sessione **7 report** (diff codice in `a79a5af` invariato; E-A skill in `ae1d993`): `git diff --stat` mirato FU-032 = **+57 −12**, **7 file** (lista §2). Valori riaperti: `restaurantName: 45`; Zod ex **200** → **45**; Anagrafica ex **40** → **45** + contatore; clamp `useRestaurantName` + `parseFromDb`; test +1; §A **45**; FU-032 **Fatto**. `PRENOTA_FORM_CONFIG_CONTEXT.md` **max 45** in commit `ae1d993`. Non confondere con `BookingSubTabCards` (+45 −21). **291** test OK (ri-eseguito 04-06-26). `BookingRequestPage.tsx` fuori scope FU-032 (h1 via `useRestaurantName`).
 
 ❓ Q3 — File correlati allineati? Quali file erano collegati alla modifica (skill area, context, test, tipi) e hai verificato che siano aggiornati? Elencali (o «nessuno + perché»).  
 ✅ R3 — Allineati: `PRENOTA_TEXT_LIMITS_MAP.md` §A, `FOLLOW_UP.md`, test `bookingPrenotaTextLimits.test.ts`, tipi invariati. `PRENOTA_SKILL` rimanda a mappa. **E-A chiuso in `ae1d993`:** `PRENOTA_FORM_CONFIG_CONTEXT.md` **max 45** + rimando §A (verificato su disco). `useRestaurantSetting` eredita clamp da `parseFromDb` — coerente con Anagrafica.
@@ -142,7 +142,7 @@ Nuovo test: `restaurantName max 45` in `bookingPrenotaTextLimits.test.ts`. Nessu
 ✅ R5 — Attrito leggero: prompt citava «§7.2» skill inesistente (mappa §A è il posto giusto). Miglioria: in brief FU-032 puntare esplicitamente a `PRENOTA_TEXT_LIMITS_MAP.md` §A invece di §7.2, e una riga in `PRENOTA_SKILL` §3 «nome locale → §A, 45 char».
 
 ❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuto ti sono stati utili o rumore?  
-✅ R6 — Contesto giusto per FU-032. Hook fine-sessione **8 report** utile: incrocio con `courses_label` (§C) e FU-031 (§H) in `PRENOTA_TEXT_LIMITS_MAP.md` — hunks distinti, scope separati.
+✅ R6 — Contesto giusto per FU-032. Hook fine-sessione **7 report** utile: incrocio con `courses_label` (§C) e FU-031 (§H) in `PRENOTA_TEXT_LIMITS_MAP.md` — hunks distinti, scope separati.
 
 ---
 
