@@ -86,6 +86,37 @@ Per ognuno: cosa è successo, da cosa derivava, come si sarebbe evitato. I patte
 ### 10. Cosa resta per la prossima sessione
 Sincronizza con `docs/FOLLOW_UP.md` (nuove righe FU-NNN; stato `fatto` se chiusi).
 
+### 11. «Domande di chiusura» ⭐ (OBBLIGATORIA — l'hook la controlla riga per riga)
+> **Questa sezione è contabile dalla macchina.** L'hook `stop` cerca ogni `❓ Q` e verifica che la
+> riga `✅ R` corrispondente **non sia vuota** (né un placeholder tipo `...`, `-`, `TODO`, `_(…)_`).
+> Se una risposta manca → **rilancia e blocca la chiusura** finché non la compili. Non è un fastidio:
+> è ciò che impedisce i report superficiali. Rispondi sul serio — per rispondere ad alcune **devi**
+> rileggere il diff e i file, ed è il punto.
+>
+> **Formato esatto (rispettalo o l'hook non trova la risposta):** copia il blocco, scrivi dopo `R:`.
+> Vale per QUALSIASI report (esecutore, verifica, meta). Le risposte sono i DATI che fanno evolvere
+> il sistema — anche le critiche «a vuoto» sono utili: se non trovi un problema, inventane uno plausibile.
+
+```
+❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.
+✅ R1:
+
+❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.
+✅ R2:
+
+❓ Q3 — File correlati allineati? Quali file erano collegati alla modifica (skill area, context, test, tipi) e hai verificato che siano aggiornati? Elencali (o «nessuno + perché»).
+✅ R3:
+
+❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato? (vietato «tutto ok» a vuoto: se davvero nulla, scrivilo e di' perché ne sei certo.)
+✅ R4:
+
+❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti? (critica + proposta nella stessa riga; se non hai avuto attriti, immagina quello più probabile.)
+✅ R5:
+
+❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuto ti sono stati utili o rumore?
+✅ R6:
+```
+
 ---
 
 ## Tono (vale per le parti rivolte a Matteo, non per i dati tecnici interni)
@@ -109,10 +140,13 @@ Errori in linguaggio umano («permesso negato», non `PGRST301`). Default sintet
 ## Cos'è l'hook di fine-chat (così non ti confonde)
 
 A fine chat un hook Cursor (`stop`) legge i `Report-*.md` che hai appena scritto e:
-- se manca una sezione obbligatoria → te lo dice citando il file;
-- ti ricorda di scrivere **la sezione 8** (la tua lettura) e gli esiti delle voci Liv.2 usate.
-**È normale e voluto: assecondalo, completa ciò che segnala, non è un errore del sistema.** Non blocca
-la chiusura (smart-allow). Se la chat non aveva report (es. domanda veloce), l'hook tace.
+- controlla la **sezione 11 «Domande di chiusura»**: per ogni `❓ Q` verifica che la `✅ R` non sia
+  vuota. **Se una risposta manca → rilancia e BLOCCA la chiusura** finché non la compili (decisione
+  Matteo 04-06-26: partiamo severi, poi eventualmente allentiamo). Ti dice ESATTAMENTE quali R sono vuote;
+- se tutte le risposte ci sono → un rilancio **leggero** una volta sola: rileggi a mente fredda e
+  conferma che dati e file correlati siano coerenti col lavoro vero (no incongruenze).
+**È normale e voluto: assecondalo, completa ciò che segnala, non è un errore del sistema.** Se la chat
+non aveva report (es. domanda veloce), l'hook tace.
 
 ---
 
