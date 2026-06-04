@@ -119,10 +119,10 @@ Resolver: `resolveSubTabView` → `BookingRequestForm` passa `courses_label` a `
 ## 11. Domande di chiusura
 
 ❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.  
-✅ R1 — Prompt 1 (task): «Profilo: Esecuzione … render pubblico di sub_tabs[].courses_label in BookingSubTabCards.tsx …». Prompt 2: «lavoro ok funziona.» Prompt 3+: fine-sessione / controllo **7 report** (incrocio FU-032 + verifica FU-031).
+✅ R1 — Prompt 1 (task): «Profilo: Esecuzione … render pubblico di sub_tabs[].courses_label in BookingSubTabCards.tsx …». Prompt 2: «lavoro ok funziona.» Prompt 3+: fine-sessione / controllo **8 report** (incrocio FU-032 + verifica FU-031).
 
 ❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.  
-✅ R2 — Controllo fine-sessione **7 report** (diff in `a79a5af` invariato): `git diff --stat` mirato `BookingSubTabCards.tsx` = **+45 −21**, 1 file. Footer: `showCardFooter`, `coursesLabel`, testid. Skill §4/§C/§5.2/§8.1 coerenti (no «non renderizzato»). `PRENOTA_TEXT_LIMITS_MAP.md` nel tree: hunk **§C** = questo task; hunk **§A** (45) = report FU-032. Tree pre-commit **25 file** → **`a79a5af` (31 file)**; FU-032 (7 file, **+57 −12**) e `BookingRequestForm` fallback menù **non** di questo task. `npm run validate` **291** OK (ri-eseguito 04-06-26).
+✅ R2 — Controllo fine-sessione **8 report** (diff in `a79a5af` invariato): `git diff --stat` mirato `BookingSubTabCards.tsx` = **+45 −21**, 1 file. Footer: `showCardFooter`, `coursesLabel`, testid. Skill §4/§C/§5.2/§8.1 coerenti (no «non renderizzato»). `PRENOTA_TEXT_LIMITS_MAP.md` nel tree: hunk **§C** = questo task; hunk **§A** (45) = report FU-032. Tree pre-commit **25 file** → **`a79a5af` (31 file)**; FU-032 (7 file, **+57 −12**) e `BookingRequestForm` fallback menù **non** di questo task. `npm run validate` **291** OK (ri-eseguito 04-06-26).
 
 ❓ Q3 — File correlati allineati? Quali file erano collegati alla modifica (skill area, context, test, tipi) e hai verificato che siano aggiornati? Elencali (o «nessuno + perché»).  
 ✅ R3 — `courses_label`: §4 PRENOTA, §C, §5.2, §8.1 LAYOUT allineati (E-A §8.1 chiuso al 2° passaggio). Resolver/test preesistenti OK. `PRENOTA_FORM_CONFIG`: campo admin già documentato. FU-030 resta in §4. **FU-032:** chiuso altrove (§A + codice 45) — fuori scope report; non va riaperto qui. Diff misto §3/§5.4/§5.6: altri lavori nel tree.
@@ -134,7 +134,7 @@ Resolver: `resolveSubTabView` → `BookingRequestForm` passa `courses_label` a `
 ✅ R5 — Attrito basso: §5 LAYOUT non aveva ancora la nota footer pre-implementazione (aggiunta in chiusura). Miglioria: in `PRENOTA_LAYOUT_CONTEXT` §5 includere sempre una riga «footer card» accanto a titolo/icona/prezzo quando esiste un campo vetrina nuovo, così l’esecutore non dipende solo da PRENOTA_SKILL §4 «questioni aperte».
 
 ❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuto ti sono stati utili o rumore?  
-✅ R6 — Contesto giusto per `courses_label`. Hook **7 report** utile: separare scope da FU-032 (§A) e FU-031 (§H) in `PRENOTA_TEXT_LIMITS_MAP.md`; tree unificato in **`a79a5af` (31 file)**.
+✅ R6 — Contesto giusto per `courses_label`. Hook **8 report** utile: separare scope da FU-032 (§A) e FU-031 (§H) in `PRENOTA_TEXT_LIMITS_MAP.md`; tree unificato in **`a79a5af` (31 file)**.
 
 ---
 

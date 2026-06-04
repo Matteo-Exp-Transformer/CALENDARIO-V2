@@ -106,37 +106,9 @@ Password admin: `TestE2E2026!`
 
 **Svuotare tutto lo staging** (zero tenant/utenti, schema intatto): `supabase/scripts/reset_test_database.sql` — procedura in `supabase/scripts/README_RESET_TEST_DATABASE.md`. Solo progetto TEST (`docnnernvp`).
 
-Poi, per ripopolare i due tenant E2E, esegui questi SQL nel progetto staging via Supabase Studio o MCP:
+Poi esegui **`supabase/scripts/seed_e2e_test_tenants.sql`** (Supabase Studio o MCP `user-supabase-test`).
 
-```sql
--- Tenant
-INSERT INTO organizations (id, name, slug, edition)
-VALUES
-  ('11111111-1111-1111-1111-111111111111', 'Ristorante Test Pro',     'ristorante-test-pro',     'pro'),
-  ('22222222-2222-2222-2222-222222222222', 'Ristorante Test Classic', 'ristorante-test-classic', 'classic');
-
--- Auth user (in auth.users)
-INSERT INTO auth.users (id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data, confirmation_token, recovery_token, email_change_token_new, email_change)
-VALUES
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'authenticated', 'authenticated', 'admin-pro@test.local',
-   crypt('TestE2E2026!', gen_salt('bf')), NOW(), NOW(), NOW(),
-   '{"provider":"email","providers":["email"]}', '{}', '', '', '', ''),
-  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'authenticated', 'authenticated', 'admin-classic@test.local',
-   crypt('TestE2E2026!', gen_salt('bf')), NOW(), NOW(), NOW(),
-   '{"provider":"email","providers":["email"]}', '{}', '', '', '', '');
-
--- Admin users
-INSERT INTO admin_users (email, name, tenant_id)
-VALUES
-  ('admin-pro@test.local',     'Admin Pro Test',     '11111111-1111-1111-1111-111111111111'),
-  ('admin-classic@test.local', 'Admin Classic Test', '22222222-2222-2222-2222-222222222222');
-
--- Dati minimi tenant Classic
-INSERT INTO booking_requests (tenant_id, client_name, client_email, desired_date, num_guests, status, source)
-VALUES
-  ('22222222-2222-2222-2222-222222222222', 'Luca Ferrari', 'luca@example.com', CURRENT_DATE+1, 4, 'pending', 'public_form'),
-  ('22222222-2222-2222-2222-222222222222', 'Sara Conti',   'sara@example.com', CURRENT_DATE+2, 2, 'pending', 'public_form');
-```
+Include: 2 tenant, login auth (`auth.users` + `auth.identities`), 2 admin, **3 clienti** Pro (CRM E2E), **3 prenotazioni** Classic (2 pending + 1 accepted). Password: `TestE2E2026!`.
 
 ---
 

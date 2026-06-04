@@ -17,6 +17,6 @@ Prima di ogni DELETE: MCP `get_project_url` sul server **`user-supabase-test`**.
 
 ## Dopo il reset
 
-Seed tenant E2E: `tests/README.md` § «Ricreare i tenant di test».
+Seed tenant E2E: `supabase/scripts/seed_e2e_test_tenants.sql` (vedi `tests/README.md` §3).
 
 Copia locale per agenti (cartella `docs/` in `.gitignore`): `docs/Database-Skill/scripts/reset_test_database.sql` — tenere allineata a questo file.
