@@ -39,6 +39,43 @@ Il flusso dati che collega i due mondi (magazzino menù ↔ vetrina ↔ pagina p
 
 ---
 
+## 2-bis. Il flusso completo (percorso utente + flusso dati affiancati)
+
+> Questa è la mappa «cosa succede dall'inizio alla fine». A sinistra il **percorso di Anna** (cosa
+> vede e fa); a destra **dove vanno i dati**. Serve a un agente per capire dove si inserisce una
+> modifica e cosa NON deve rompere a valle.
+
+**Prima — Mario configura (in admin, una volta):**
+1. In **Personalizza form** decide header (testi/font/colore), tipologie, sottotab/carosello, sfondo
+   (striscia o pagina intera), promo. → salvato in `restaurant_settings.booking_public_form_config`
+   (un JSON) + `restaurant_name`/`contact_*` in Anagrafica.
+2. In **tab Menu** (magazzino) gestisce categorie, ingredienti, menù preselezionati (preset), promo.
+   → tabelle `menu_categories`/`menu_items` + JSON `booking_custom_staff_presets`/`booking_menu_promos`.
+3. Clicca **«Visualizza form»** = lo specchio di prova: apre la pagina come la vede Anna, per
+   controllare che testi e foto stiano bene. Modifica e ri-testa finché è soddisfatto.
+
+**Poi — Anna prenota (sulla pagina pubblica `/prenota/:slug`):**
+
+| Passo di Anna (user journey) | Cosa fa il sistema ai dati (data flow) |
+|---|---|
+| Apre il link col **`:slug`** del locale | `TenantContext` risolve lo `slug` → `tenantId`; client **pubblico anonimo** (`supabasePublic`, niente sessione) carica config + menù |
+| Vede header, foto, **sceglie una tipologia** (`BookingMode`) | la vetrina mostra i valori passati dal **resolver** `field_overrides`: alcuni «congelati» nella card di Mario, altri «live» dal preset |
+| Se la modalità ha menù: **compone il menù** (o lo vede fisso) | `MenuSelection`/`BookingMenuComposeGrid` leggono il preset; prezzo = somma piatti **oppure** prezzo×ospiti se menù fisso |
+| Se carosello: **scorre le foto** (niente griglia) | una sola card con N slide (vedi XOR, §3) |
+| **Compila i suoi dati** (nome, contatti, data/ora, ospiti, intolleranze, richieste) | validazione **solo React** (`noValidate` sul form); cap testo **silenziosi** (§3) |
+| Clicca **Invia** | se invalido → scroll + lampeggio arancione sul primo errore (niente toast). Se valido → **POST** all'edge function `create-booking` |
+| Vede conferma | `create-booking` (Deno) **ri-valida** i limiti (difesa server), poi scrive la riga in **`booking_requests`** col **service key** (bypassa RLS perché Anna è anonima) |
+
+**Dopo — Mario riceve:** la richiesta appare in **Admin → Prenotazioni → Richieste in attesa**
+(`BookingRequestCard`, **altra area** — vedi `../per-ui-design-skill/BOOKING_REQUEST_CARD_CONTEXT.md`).
+
+**Tre confini da non confondere** (un agente che li mescola rompe il flusso):
+- **Magazzino** (tab Menu) ≠ **vetrina** (Personalizza form) ≠ **pagina pubblica** (cosa vede Anna).
+- **Client pubblico anonimo** (`supabasePublic`, no sessione) ≠ client admin autenticato.
+- **Config** (JSON `booking_public_form_config`) ≠ **dati prenotazione** (tabella `booking_requests`).
+
+---
+
 ## 3. Limiti e regole VOLUTE — NON «aggiustarle»
 
 > Questo è il pezzo che evita upgrade dannosi. Sono scelte di Matteo, non bug né dimenticanze. Un
