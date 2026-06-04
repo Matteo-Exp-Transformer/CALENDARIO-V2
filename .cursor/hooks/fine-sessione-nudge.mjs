@@ -10,23 +10,28 @@
  * «Domande di chiusura» (vedi CHIUSURA_SESSIONE.md §11): 6 domande marcate `❓ Q…` con una riga
  * risposta `✅ R…`. L'hook estrae ogni coppia e verifica che la risposta NON sia vuota/placeholder.
  *   - risposta mancante → rilancia un turno MIRATO (quali R sono vuote) e CHIEDE di compilarle.
- *     Politica Matteo 04-06: BLOCCA la chiusura finché non sono compilate (loop_limit alzato in
- *     hooks.json; la guardia interna evita il loop infinito solo se l'agente le compila davvero).
  *   - tutte le risposte presenti → rilancio LEGGERO 1× : rileggi a mente fredda, verifica che dati e
  *     file correlati siano coerenti col lavoro vero (mantiene l'effetto «si accorgono di errori
- *     rileggendo» che Matteo apprezzava di v3, ma senza il muro di testo).
+ *     rileggendo», ma senza il muro di testo).
  *   - nessun report fresco → silenzio.
+ *
+ * v5 (04-06-26) — tre tarature decise con Matteo perché l'hook insisteva troppo e su troppi report:
+ *   1. SOLO IL REPORT PIÙ RECENTE: `findRecentReports` ritorna unicamente il report con mtime più
+ *      alto = la chat che si sta chiudendo. Prima revisionava TUTTI i Report-*.md toccati negli ultimi
+ *      20 min → bloccava la chiusura di oggi per una R vuota in un report di un'altra sessione.
+ *   2. TETTO DURO A 3 NUDGE: `if (loopCount >= 3) return` all'inizio di main(), su QUALSIASI ramo.
+ *      Prima il ramo «mancanti» poteva sforare (era fermato solo da loop_limit). Ora max 3, e basta.
+ *   3. MENO FALSI «risposta mancante»: `PLACEHOLDER_RE` non scarta più le risposte brevi fra parentesi
+ *      (es. «nessuno (nessuna skill copre il componente)»); una risposta vale se ha ≥3 alfanumerici
+ *      (isSubstantive). L'auto-revisione vera del CONTENUTO la fa l'agente via self-review nel prompt
+ *      di chiusura (CHIUSURA_SESSIONE.md), non l'hook: l'hook resta il guardiano meccanico.
  *
  * PERCHÉ le domande-a-risposta invece del titolo: per rispondere a Q2 (dati=diff?) e Q3 (file
  * correlati) l'agente DEVE rileggere il diff e i file → la verifica intelligente la fa lui (l'hook
- * non vede il diff), l'hook controlla solo che abbia risposto. È il meccanismo più forte senza un
- * agente-revisore separato.
+ * non vede il diff), l'hook controlla solo che abbia risposto.
  *
- * GUARDIA ANTI-LOOP: `loop_count` (Cursor, parte da 0). Per il caso «tutte presenti» basta 1 rilancio
- * (loop_count>=1 → tace). Per il caso «mancanti» NON tacciamo solo per loop_count: ricontrolliamo lo
- * stato — se l'agente ha compilato, le R ora ci sono e si passa al ramo leggero (che a sua volta tace
- * al giro dopo). Se l'agente IGNORA e lascia vuoto, `loop_limit` in hooks.json è la rete dura che
- * impedisce il loop infinito. Così «blocca» = insiste, ma non si incastra.
+ * GUARDIA ANTI-LOOP: `loop_count` (Cursor, parte da 0). Tetto duro a 2 (sopra). Per il caso «tutte
+ * presenti» basta 1 rilancio (loop_count>=1 → tace). `loop_limit: 2` in hooks.json è la rete finale.
  *
  * LIMITE NOTO: gli hook `stop` NON girano sui Cloud Agents (solo IDE locale). Fallback Cloud =
  * checklist-di-chiusura nel prompt esecutore.
@@ -50,8 +55,16 @@ const EXCLUDE_REPORT = null
 const QUESTION_RE = /^[\s>\-*]*❓\s*Q\s*(\d+)?/i
 /** Cattura le righe risposta: `✅ R1: testo` a INIZIO riga. Stessa ancora, stessa ragione. */
 const ANSWER_RE = /^[\s>\-*]*✅\s*R\s*(\d+)?\s*:?(.*)/i
-/** Una risposta è «vuota» se dopo `R:` non c'è sostanza: stringa vuota, trattini, placeholder. */
-const PLACEHOLDER_RE = /^[\s\-–—_.·•]*$|^(todo|tbd|n\/?a|\.\.\.|_+|\(.*\))$/i
+/** Una risposta è «vuota» se dopo `R:` non c'è sostanza: stringa vuota, soli trattini, o placeholder
+ *  secco (todo/tbd/n.a./puntini/underscore). NON conta più come vuota una risposta breve fra parentesi
+ *  tipo «nessuno (nessuna skill copre il componente)»: era un FALSO «risposta mancante» frequente —
+ *  alleggerimento Matteo 04-06. Una risposta è accettata se contiene ≥3 caratteri alfanumerici. */
+const PLACEHOLDER_RE = /^[\s\-–—_.·•]*$|^(todo|tbd|n\/?a|\.\.\.|_+)$/i
+/** Conta i caratteri «di sostanza»: serve almeno qualche lettera/cifra perché la risposta valga. */
+function isSubstantive(txt) {
+  const alnum = (txt.match(/[\p{L}\p{N}]/gu) || []).length
+  return alnum >= 3
+}
 
 function readStdin() {
   return new Promise((resolve) => {
@@ -108,13 +121,19 @@ function findRecentReports(root) {
       if (EXCLUDE_REPORT && EXCLUDE_REPORT.test(f.name)) continue
       const full = join(dayPath, f.name)
       try {
-        if (statSync(full).mtimeMs >= cutoff) out.push(full)
+        const mtimeMs = statSync(full).mtimeMs
+        if (mtimeMs >= cutoff) out.push({ full, mtimeMs })
       } catch {
         /* sparito */
       }
     }
   }
-  return out
+  // Solo il report PIÙ RECENTE = quello della chat che si sta chiudendo. Decisione Matteo 04-06:
+  // l'hook non deve più bloccare la chiusura di OGGI per una R vuota in un report di un'altra
+  // sessione toccato nella stessa finestra di 20 min (era il «revisiona tutti» troppo invadente).
+  if (out.length === 0) return []
+  out.sort((a, b) => b.mtimeMs - a.mtimeMs)
+  return [out[0].full]
 }
 
 /** Estrae lo stato delle domande di chiusura di un report.
@@ -161,7 +180,7 @@ function auditQuestions(content) {
       answerText = txt
       break
     }
-    if (answerText === null || PLACEHOLDER_RE.test(answerText)) {
+    if (answerText === null || PLACEHOLDER_RE.test(answerText) || !isSubstantive(answerText)) {
       unanswered.push(`Q${questions[q].num}`)
     }
   }
@@ -177,6 +196,13 @@ async function main() {
   const stdinRaw = await readStdin().catch(() => '')
   const root = resolveRoot(stdinRaw)
   const loopCount = resolveLoopCount(stdinRaw)
+
+  // Tetto DURO: max 3 nudge in assoluto, su QUALSIASI ramo. Decisione Matteo 04-06: anche se restano
+  // risposte vuote, dopo 3 rilanci l'hook tace e non muri la chiusura all'infinito. Questo rende il
+  // limite vero (prima il ramo «mancanti» poteva sforare oltre, fermato solo da loop_limit in hooks.json).
+  // Riportato a 3 (era 2) perché la vera causa dell'insistenza era «troppi report insieme», ora risolta
+  // dal «solo il più recente» sotto: con un report solo, 3 è ampiamente sufficiente.
+  if (loopCount >= 3) return send({})
 
   const recentReports = findRecentReports(root)
 
