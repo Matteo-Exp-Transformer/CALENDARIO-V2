@@ -695,13 +695,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       }
     }
 
-    // Num guests validation
+    // Num guests validation. Solo il minimo: l'input cappa già a C.numGuestsMax
+    // (handleNumGuestsChange), quindi un check >max qui sarebbe un vicolo cieco
+    // muto (blocca senza messaggio visibile). La rete server è l'edge create-booking.
     if (!formData.num_guests || formData.num_guests < 1) {
       newErrors.num_guests = 'Numero ospiti obbligatorio (min 1)'
-      isValid = false
-      if (!firstErrorKey) firstErrorKey = 'num_guests'
-    } else if (formData.num_guests > C.numGuestsMax) {
-      newErrors.num_guests = textTooLong
       isValid = false
       if (!firstErrorKey) firstErrorKey = 'num_guests'
     }
@@ -769,18 +767,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       isValid = false
       if (!firstErrorKey) firstErrorKey = 'client_phone'
     }
-    const dietaryText = dietaryRestrictionsToText(formData.dietary_restrictions)
-    if (!isWithinBookingTextLimit(dietaryText, C.dietaryText)) {
-      newErrors.dietary = textTooLong
-      isValid = false
-      if (!firstErrorKey) firstErrorKey = 'dietary'
-    }
-    const specialRequestsText = formData.special_requests ?? ''
-    if (!isWithinBookingTextLimit(specialRequestsText, C.specialRequests)) {
-      newErrors.special_requests = textTooLong
-      isValid = false
-      if (!firstErrorKey) firstErrorKey = 'special_requests'
-    }
+    // Intolleranze e «altre richieste»: nessun check qui. Il taglio è silenzioso
+    // (maxLength + slice in DietaryRestrictionsSection, decisione PRENOTA_SKILL §3),
+    // e a special_requests viene aggiunta DOPO la validate la nota sottotab (vedi
+    // handleSubmit): la stringa finale può superare il cap senza che validate la veda.
+    // La difesa vera sul payload completo è l'edge create-booking.
 
     setErrors(newErrors)
 

@@ -14,7 +14,7 @@ export const BOOKING_PUBLIC_CLIENT_TEXT_LIMITS = {
   clientPhone: 30,
   dietaryText: 550,
   specialRequests: 550,
-  numGuestsMax: 999,
+  numGuestsMax: 110,
 } as const
 
 /** Copy ristoratore su Pagina Prenota — contatore admin. */
