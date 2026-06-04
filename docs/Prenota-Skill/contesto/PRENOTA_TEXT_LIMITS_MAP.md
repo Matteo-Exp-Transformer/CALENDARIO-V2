@@ -92,11 +92,16 @@ Normalizer: `normalizeCarouselSlideItem` + migration `040_clamp_booking_carousel
 | Nome completo | `BookingFormFields` | `client_name` | 65 | sistema-silenzioso | UI + `validate()` + edge |
 | Email | idem | `client_email` | 65 | sistema-silenzioso | idem |
 | Telefono | idem | `client_phone` | 30 | sistema-silenzioso | idem |
-| Ospiti | idem | `num_guests` | 999 | sistema-silenzioso | numero, non testo |
-| Intolleranze | `DietaryRestrictionsSection` | `dietary_restrictions` (JSONB) | 550 (somma testi) | sistema-silenzioso | idem |
-| Altre richieste | idem | `special_requests` | 550 | sistema-silenzioso | idem |
+| Ospiti | idem | `num_guests` | 110 | input cappato 1–110 | UI (`handleNumGuestsChange`) + edge; nessun check in `validate()` |
+| Intolleranze | `DietaryRestrictionsSection` | `dietary_restrictions` (JSONB) | 550 (somma testi) | sistema-silenzioso | UI (`maxLength`+slice) + edge — **no `validate()`** |
+| Altre richieste | idem | `special_requests` | 550 | sistema-silenzioso | UI (`maxLength`+slice) + edge — **no `validate()`** |
 
-Messaggio errore unico al submit: **`Testo troppo lungo`** (senza numero in UI).
+Messaggio errore unico al submit: **`Testo troppo lungo`** (resta su nome/email/telefono). Per
+ospiti/intolleranze/altre richieste **non** compare in UI: il cap è già garantito dall'input
+(taglio silenzioso) e la sola rete è l'edge `create-booking`. Per «altre richieste» il check
+`validate()` sarebbe comunque cieco: la nota sottotab viene aggiunta al payload **dopo** `validate()`
+(`BookingRequestForm` handleSubmit) — l'edge vede la stringa finale, `validate()` no.
+**Allineato 04-06-26 (chiusura runtime FU-031): 999→110, rimossi i check `validate()` morti.**
 
 Edge function: `supabase/functions/create-booking/index.ts` — costanti duplicate con commento sync (Deno).
 
