@@ -83,7 +83,7 @@ questo lavoro è la **verifica col sub-agent**, rimandata alla prossima sessione
 ✅ R3 — Sì. Rimandi verificati con grep: 0 riferimenti ai vecchi nomi nei file vivi; rimandi interni alla cartella Prenota-Skill aggiornati; report storici intatti per scelta.
 
 ❓ Q4 — Cosa NON è stato fatto?
-✅ R4 — Al momento del report: sub-agent Prenota **rimandato**. **Aggiornamento controllo 7 report:** sub-agent poi **PASS** → area **✅ blindata** in `PROSEGUIMENTO_MAPPATURA_SKILL.md`; `courses_label` chiuso in `a79a5af`; cap ingredienti resta **FU-030**. Generalizzazione altre aree (Menu QR). Sistema didattico: solo piano+prompt (intervista profilo → **FU-033**). Propagazione template v.0 (sospesa).
+✅ R4 — Al momento del report: sub-agent Prenota **rimandato**. **Aggiornamento controllo 8 report:** sub-agent poi **PASS** → area **✅ blindata** in `PROSEGUIMENTO_MAPPATURA_SKILL.md`; `courses_label` chiuso in `a79a5af`; cap ingredienti resta **FU-030**. Generalizzazione altre aree (Menu QR). Sistema didattico: solo piano+prompt (intervista profilo → **FU-033**). Propagazione template v.0 (sospesa).
 
 ❓ Q5 — Attrito incontrato + miglioria?
 ✅ R5 — Attrito: `git mv` falliva senza cartella destinazione (creata prima); here-string bash rotta da apostrofo/parentesi (riscritta). Miglioria: i file `/Per matteo` resi self-contained perché Matteo li passa a mano (gitignored).
