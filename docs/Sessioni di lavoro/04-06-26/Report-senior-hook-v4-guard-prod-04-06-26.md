@@ -116,6 +116,13 @@ Sessione di **design di metodo**, non di codice-app. Il valore vero non è stato
 
 - **errore agente (mio, minore):** test hook falliti per JSON malformato da bash. Causa: backslash non escappati nei path Windows passati via `echo`. Evitabile serializzando l'input con un programma. Già annotato come lezione in EVOLUZIONE_SKILLS.
 - **vincolo strutturale (gestito):** su Claude Code un `ask` non vince un `allow` già concesso → rimossi i 3 `allow` di scrittura PROD perché la guard sia efficace. Annotato.
+- **errore agente — bug nell'hook stesso, scoperto dall'hook (post-commit):** i marcatori `❓`/`✅`
+  non erano ancorati a inizio riga, quindi un `❓Q` **citato dentro una risposta** (in R2 avevo scritto
+  «nel formato `❓Q/✅R`») veniva contato come nuova domanda → numerazione sballata → falso «Q2 vuota».
+  Causa: regex troppo permissivo. Fix: ancorare a `^[\s>\-*]*` in entrambi gli hook. È un caso quasi
+  certo (la doc usa quei simboli), quindi correzione alla radice, non aggiramento. **Lezione meta: l'hook
+  v4 ha trovato un suo stesso difetto al primo uso reale — il sistema si auto-controlla, ma i marcatori
+  di un controllo automatico non devono mai poter comparire nel contenuto controllato senza ancora.**
 - Nessun bug preesistente né prompt ambiguo in questa sessione.
 
 ---
