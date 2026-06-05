@@ -7,6 +7,31 @@
 
 ---
 
+## LO SCOPO (tienilo a mente per ogni area — è triplo, non solo «scrivere doc»)
+
+Ogni sessione su un'area persegue **tre obiettivi insieme**, non solo il primo:
+
+1. **MAPPARE** — dare all'area un senso chiuso: a che serve, chi fa cosa, flusso utente+dati, divieti
+   voluti, mappa «tocchi X → apri Y». (la ricetta sotto)
+2. **TESTARE per BLINDARE** — verificare nel codice ciò che scrivi (**codice = verità**, non fidarsi
+   dei report vecchi: spesso sono disallineati) e, dove l'area lo richiede, mettere/segnare i test che
+   bloccano i comportamenti voluti. «Blindata» = un sub-agent terzo si orienta e apre i file giusti.
+3. **SNELLIRE lo skill system** — la mappatura **non aggiunge un layer in più**: sfrutta la divisione
+   **contesto / procedura / codice-verità** per **tagliare la ridondanza**. Lo skill diventa breve
+   (senso + mappa); i dettagli scendono in `contesto/`; i numeri restano nel codice. Guarda lo skill
+   system **nell'insieme**: ogni volta che mappi un'area, chiediti *cosa diventa ridondante e si può
+   togliere* (cronologie di sessione negli indici, §4 di `APP_CONTEXT_SKILL.md` già estratte nei
+   context, file doppi). Lo snellimento è parte del lavoro, non un extra opzionale.
+
+> **Metodo provato (sessioni Prenota 04-06 e Menu QR 06-06):** intervista l'utente sul senso che solo
+> lui ha (`AskUserQuestion`) → verifica TUTTO nel codice prima di scriverlo → `git mv` per i file
+> esistenti (storia) → commit intermedio pulito (stage selettivo: NON committare lavoro altrui nel
+> working tree) → aggiorna QUESTO file + memory → report a fine sessione. Confine di scope **deciso con
+> l'utente** a inizio sessione (es. «solo area X oggi»): lo snellimento d'insieme può eccedere lo scope
+> → in quel caso **traccialo nei Debiti** invece di eseguirlo.
+
+---
+
 ## Come avviare una sessione che continua questo lavoro
 
 Apri una chat e usa il grilletto **«evolvi skill system senior»** (o «meta senior»), poi indica
@@ -32,6 +57,9 @@ pattern, senza ridiscutere le regole già decise.
 4. **Codice = verità** per i numeri; i `.md` li specchiano e spiegano il perché.
 5. **Lettura integrale:** pochi file ma letti INTERI (tranne micro-fix).
 6. **I report storici in `Sessioni di lavoro/` NON si toccano** (fotografie del passato).
+7. **Snellire è attivo, non passivo:** quando mappi, cerca e taglia la ridondanza che la nuova
+   struttura rende inutile (cronologie negli indici skill, doc doppi, §4 già estratta). Se il taglio
+   eccede lo scope concordato, **tracciarlo nei Debiti** (vedi sotto), non lasciarlo implicito.
 
 ## Il procedimento per ogni area (ricetta ripetibile)
 
@@ -59,7 +87,7 @@ giusti. Il punto 4 è la prova vera.
 | Area | Stato | Note |
 |------|-------|------|
 | **Pagina Prenota** | ✅ | Blindata 04-06-26: mappata + flusso scritto (commit `e66c0ae`, `fad207f`), test mirati limiti testo verdi, verifica sub-agent reale **PASSA**. Limit/audit test con sub-agent: corretti fallback pubblici su sottotab vuote, card vuote, caroselli senza foto, `MenuSelection` legacy, brand hardcoded, orari pubblici default, preset built-in e config nuovo tenant. Cartella `docs/Prenota-Skill/`. |
-| **Menu QR pubblico** | ⬜ | Candidato naturale prossimo (molto flusso utente cliente). File oggi: `per-ui-design-skill/PUBLIC_MENU_*`. |
+| **Menu QR pubblico** | 🔶 | Mappata 06-06-26 (commit `a22108c`): `docs/Menu-QR-Skill/` (SKILL + contesto LAYOUT/DATA_FLOW/TEXT_LIMITS_MAP/TEST_SUITE_INDEX/REFERENCE). Vecchi `PUBLIC_MENU_*` spostati con git mv. **Scoperte (codice=verità):** `content_type`/preset/menù-evento via QR = codice morto irraggiungibile (modale forza `a_la_carte`) → da RIMUOVERE; titoli/descrizioni categoria per-QR senza cap → **FU-MQR-1** da cappare; nome QR voluto interno. **Manca verifica sub-agent** (rimandata, scelta utente). Report sessione: a fine sessione. |
 | **Tab Menu admin (magazzino)** | ⬜ | `per-ui-design-skill/MENU_ADMIN_CONTEXT.md`. |
 | **Admin shell + pagine** | ⬜ | `Dashboard-laterale-skill/`. Già ha context per-pagina, da riorganizzare col pattern. |
 | **Database** | ⬜ | `Database-Skill/`. Valutare se il pattern senso/flusso calza (è infrastruttura, non UI). |
@@ -72,6 +100,19 @@ fatti in fretta.
 ---
 
 ## Debiti aperti collegati
+
+- **Menu QR — FU-MQR-1 (06-06-26):** titoli/descrizioni categoria per-QR (`MenuQrCategoryCardsSection`,
+  due `<input>` nudi) **senza cap** → cappare con `AdminFieldWithCharCount` come il carosello. Dettaglio
+  e punto codice: `docs/Menu-QR-Skill/contesto/MENU_QR_TEXT_LIMITS_MAP.md` §B.
+- **Menu QR — rimozione codice morto (06-06-26):** `content_type`/`preset_ids`/`PublicMenuPresetPage`/
+  rami preset = irraggiungibili dall'UI (decisione Matteo: rimuovere). Mappa di cosa togliere:
+  `docs/Menu-QR-Skill/contesto/MENU_QR_DATA_FLOW_CONTEXT.md` §0. Sessione di pulizia dedicata.
+- **Snellimento skill system d'insieme (deciso 06-06-26, NON eseguito):** usare la divisione
+  contesto/procedura/codice-verità per tagliare ridondanze. Due candidati identificati: (1) indice
+  `.cursor/skills/calendarbackup-app-context/SKILL.md` ha ~20 righe «report di sessione» che ripetono
+  dettagli ora nei file di contesto → sostituire con mappa pulita area→file; (2) `APP_CONTEXT_SKILL.md`
+  (490 righe) possibile §4 duplicata coi context estratti → esaminare e snellire con rimandi. Confine
+  scelto per la sessione 06-06-26: «solo Menu QR» → questi due restano per la prossima sessione senior.
 
 - **Prenota — rimandi obsoleti + revisione senior (04-06-26):** stub in
   `per-ui-design-skill/BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` e
