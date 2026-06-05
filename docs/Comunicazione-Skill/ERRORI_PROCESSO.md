@@ -41,10 +41,19 @@ filtro `PREPARA_PROMPT`, o una Nota in skill d'area. La promozione la decide il 
 | **Confusione Prenota↔QR in chat ESPLORATIVA** (non preparata) — il gate §2 prepara-prompt non copre le chat dirette | errore agente | 1 (02-06) | ✅ **RISOLTA 02-06-26** → blocco «Zone che si confondono» in `.cursor/rules/comandi-base.mdc` (`alwaysApply: true` → vale anche senza prepara-prompt) |
 | **Skill aggiornata a metà** — una sezione skill allineata al diff, altra sezione stessa skill ancora con numeri/comportamento pre-refactor | errore agente | 1 (03-06) | 🔶 candidato: checklist chiusura «grep limiti vecchi in tutto il file skill toccato» + hook stop verifica coerenza cross-sezione |
 | **Skill che referenzia file non ancora creato** — link a `BOOKING_PRENOTA_TEXT_LIMITS_MAP.md` prima che l’esecutore lo scriva | errore agente | 1 (03-06) | 🔶 candidato: regola «file citato in skill solo dopo esiste su disco» o ordine deliverable: mappa prima di skill |
+| **Scroll row Prenota: `%` width su inner `w-max` gonfia card** — dopo fix allineamento outer/inner | errore agente + vincolo strutturale | 1 (05-06) | ✅ Nota in `PRENOTA_LAYOUT_CONTEXT.md` §5 + CSS var viewport; misurare fit prima di justify |
 
 ---
 
 ## Log per data
+
+### 05-06-26 — Allineamento card scorrevoli + carosello Pagina Prenota
+- **errore agente:** prima implementazione `justify-center mx-auto` fisso su inner → clip sinistro mobile; poi `justify-start` fisso → perso centro desktop; `%` mobile su inner `w-max` → card gonfiate.
+- **prompt ambiguo:** correzione «solo sinistra» senza «se entra, centro» (chiarito al messaggio successivo).
+- **vincolo strutturale:** righe scroll orizzontale richiedono outer `overflow-x-auto` + inner `w-max`; `%` sul inner non risolve rispetto al viewport.
+- **Causa radice:** skill §5.2 non distingueva fit vs overflow; mancava hook misura `scrollWidth` vs `clientWidth`.
+- **Report:** [Report-prenota-allineamento-card-carosello-05-06-26.md](../Sessioni%20di%20lavoro/05-06-26/Report-prenota-allineamento-card-carosello-05-06-26.md)
+- **Azione:** `useBookingPublicScrollRowAlign` + `--booking-sub-tab-viewport-px` / `--booking-carousel-viewport-px`.
 
 ### 31-05-26 — Sfondo scroll footer: fix su Menu QR, sintomo su Pagina Prenota (#8)
 - **prompt ambiguo:** checklist ciclo 8 note ha voce **#8 = «homepage QR»**; Matteo aveva indicato **Pagina Prenota** a ≥3 agenti. «Stile Prenota» (layout card QR) confuso con «fix **su** Prenota».

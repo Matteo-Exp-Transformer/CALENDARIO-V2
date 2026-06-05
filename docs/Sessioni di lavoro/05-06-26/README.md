@@ -41,6 +41,11 @@ Due filoni su **Pagina Prenota**: (1) tentativo feature **ordine categorie** `ca
 |--------|-------|----------------|------|
 | [Report-prenota-menu-sottotab-fix-05-06-26.md](./Report-prenota-menu-sottotab-fix-05-06-26.md) | ✅ | Checkbox vuote (`subTabGuestComposable`); descrizione card manuale in MenuSelection; no «a persona» | validate **412**; **FU-037** QA browser aperto |
 
+### Allineamento card scorrevoli + carosello (colonna form)
+| Report | Stato | Effetto / task | Note |
+|--------|-------|----------------|------|
+| [Report-prenota-allineamento-card-carosello-05-06-26.md](./Report-prenota-allineamento-card-carosello-05-06-26.md) | ✅ | Centro dinamico se il gruppo entra; mobile prima card intera a sinistra; dimensioni mobile 41% viewport | validate **412**; QA iterativa Matteo OK; non committato |
+
 ## Da non confondere
 
 - **Ordine categorie** (admin frecce, `category_order_keys`) ≠ **gate menù capability** (chi vede la griglia compose).

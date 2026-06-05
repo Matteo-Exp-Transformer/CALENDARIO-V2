@@ -176,10 +176,17 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
    **Footer card `display='cards'` (04-06-26, agg. 05-06-26):** fascia inferiore `mt-auto` — a sinistra
    `sub_tabs[].courses_label` (max 12 char, `line-clamp-1`); a destra solo importo `X,XX€` se
    `price_per_person > 0` (nessuna riga «a persona» sotto l'importo). Non su carosello (`BookingSubTabCards` assente se
-   presentazione carosello). Centratura titolo/icona: `justify-center` su flex interno (1-3 card
-   centrate; 4+ scroll). Wrapper diviso outer `overflow-x-auto scrollbar-hide` + inner
-   `flex flex-nowrap justify-center mx-auto` (evita bug `justify-center` che blocca scroll). Max 3
-   colonne (`bookingPublicRowCardWidthClass`).
+   presentazione carosello). Centratura titolo/icona: `justify-center` su flex interno card.
+   **Allineamento riga card scrollabili (05-06-26):** wrapper **outer** `overflow-x-auto
+   scrollbar-hide` + **inner** `flex flex-nowrap w-max` (`useBookingPublicScrollRowAlign`):
+   se `inner.scrollWidth ≤ outer.clientWidth` → `mx-auto justify-center` (gruppo centrato);
+   se overflow → `justify-start` (prima card intera sul bordo sx, scroll verso destra; **non**
+   `justify-center` sull'outer — blocca lo scroll). ≤3 card: inner `w-full`, `flex-1` per card.
+   Larghezza mobile ≥4 card: `--booking-sub-tab-viewport-px` sull'outer (ResizeObserver) +
+   `calc(var(--booking-sub-tab-viewport-px)*0.41)` in
+   `bookingPublicSubTabScrollCardWidthClass()` — **non** `%` sul inner `w-max` (gonfia le card).
+   Snap: `snap-start` se overflow, `snap-center` se gruppo centrato. Max 3 colonne non scroll
+   (`bookingPublicRowCardWidthClass`).
 3. **Presentazione XOR** (`BookingMode.sub_tabs_presentation: 'cards'|'carousel'|null`): filtro
    difensivo in `activeModeSubTabs`. Se `display='carousel'`: mostra **solo** `BookingSubTabCarousel`
    (foto + overlay per slide da `carousel_items[].eyebrow/title/description`; badge icona in alto a
@@ -187,6 +194,10 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
    `resolveBookingStoredIconKey`; «Nessuna» in admin = assenza icona); prezzo opzionale;
    nessuna griglia menù). Carosello = **una sola card con N foto** per modalità: `BookingSubTabCards`
    non renderizzato per modalità carosello (auto-selezione sottotab unica + carosello diretto).
+   **Allineamento carosello pubblico (05-06-26):** **1 slide** → centrata, `w-full max-w-[280px]`
+   (sm 320px), niente % ristretta. **≥2 slide** → stesso pattern outer/inner +
+   `useBookingPublicScrollRowAlign`; larghezze slide via `--booking-carousel-viewport-px` e
+   `min(280px,72%)` / `min(320px,60%)` / `46%` (md); frecce desktop se ≥2 foto.
 4. **Menù** (card scorrevole `display='cards'` con preset collegato **oppure** card manuale senza preset):
    `MenuSelection` → griglia `BookingMenuComposeGrid` solo con preset; card manuale = solo blocco titolo/descrizione.
    Senza card/carousel valide salvate non esiste fallback pubblico legacy. Mobile: colonna stack
