@@ -189,6 +189,9 @@ A fine chat un hook Cursor (`stop`) legge **il `Report-*.md` più recente** che 
 - **Cold-check al commit.** Il pre-commit scatta su ogni commit con file staged, anche quando nello
   stage non c'è un report: chiede una revisione a mente fredda una volta per versione staged. Se nello
   stage c'è un report incompleto, blocca finché Q1-Q6 non sono compilate.
+- **Prerequisito Git locale.** Il cold-check gira solo se Git invoca Husky: `git config core.hooksPath`
+  deve restituire `.husky` (non `nul`) e `.husky/pre-commit` deve avere shebang `#!/usr/bin/env sh`.
+  Se un commit passa senza messaggio `PRE-COMMIT fine-sessione`, controlla prima questi due punti.
 
 **È normale e voluto: assecondalo, completa ciò che segnala, non è un errore del sistema.** Se la chat
 non aveva report (es. domanda veloce), l'hook tace.
@@ -217,6 +220,8 @@ non dopo il merge. Il revisore che approva un merge con la skill stale ha lascia
 - Il primo tentativo di commit può fermarsi per il **cold-check pre-commit**: rileggi report, diff e
   file correlati, correggi e ristagia se serve, poi rilancia lo stesso commit. Se non c'è report nello
   stage, conferma che sia voluto (task light, report già committato, o commit separato).
+- Se il cold-check non compare affatto, verifica `git config core.hooksPath`: se vale `nul`, riattiva
+  Husky con `git config core.hooksPath .husky`.
 - Conventional Commits: `feat(scope):` · `fix(scope):` · `docs(scope):`.
 - Corpo del commit: sezione **`Review:`** con i path per revisionare (report, SESSION_LOG, skill toccati).
 - **Trappola gitignore `docs/`:** la cartella `docs/` è gitignored → i file **nuovi** lì dentro

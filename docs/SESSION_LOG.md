@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 05-06-26 | Hook — **pre-commit cold-check riattivato** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-hook-precommit-riattivazione-husky-05-06-26.md) — `core.hooksPath=.husky`; shebang `.husky/pre-commit`; test runtime cold-check OK; senior aggiornato in EVOLUZIONE |
 | 05-06-26 | Prepara-prompt — **ciclo centratura card/carosello** (chiusura + controverifica) | [Report](Sessioni%20di%20lavoro/05-06-26/Report-prepara-prompt-ciclo-centratura-card-05-06-26.md) — hook layout OK; hook fine-sessione Cursor OK (v6); **FU-038–041**; validate **412** |
 | 05-06-26 | Prenota — **revisione centratura card/carosello** ✅ **Approva con riserve** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-revisione-prenota-centratura-card-carosello-05-06-26.md) — Verifica Profilo; validate **412**; QA Playwright `trattoria-da-tommaso`; slug `test` assente; C1/C3 non coperti |
 | 05-06-26 | Prenota — **allineamento card scorrevoli + carosello** (colonna form) ✅ **lavoro ok** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-prenota-allineamento-card-carosello-05-06-26.md) — hook fit/overflow; centro se entra / sinistra mobile; CSS var 41% viewport; validate **412**; commit `354da7f`/`dec0d9b`; QA iterativa Matteo OK |

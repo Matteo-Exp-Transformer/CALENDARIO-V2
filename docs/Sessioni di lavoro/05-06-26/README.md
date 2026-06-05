@@ -56,6 +56,11 @@ Due filoni su **Pagina Prenota**: (1) tentativo feature **ordine categorie** `ca
 |--------|-------|----------------|------|
 | [Report-prepara-prompt-ciclo-centratura-card-05-06-26.md](./Report-prepara-prompt-ciclo-centratura-card-05-06-26.md) | ✅ | Sintesi ciclo; hook layout §3 + hook fine-sessione Cursor §14; controverifica ⚠️3; **FU-038–041** aperti | validate **412**; fix visivo approvabile |
 
+### Hook fine-sessione / pre-commit
+| Report | Stato | Effetto / task | Note |
+|--------|-------|----------------|------|
+| [Report-hook-precommit-riattivazione-husky-05-06-26.md](./Report-hook-precommit-riattivazione-husky-05-06-26.md) | ✅ | Cold-check pre-commit riattivato: `core.hooksPath=.husky` + shebang `.husky/pre-commit` | Test runtime: 1° commit bloccato da `PRE-COMMIT fine-sessione`; senior aggiornato in `EVOLUZIONE_SKILLS.md` |
+
 ## Da non confondere
 
 - **Ordine categorie** (admin frecce, `category_order_keys`) ≠ **gate menù capability** (chi vede la griglia compose).

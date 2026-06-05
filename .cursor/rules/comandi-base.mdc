@@ -35,7 +35,9 @@ Dettaglio completo: docs/Comunicazione-Skill/VOCABOLARIO.md (caricalo per le sfu
   completo tace: il controllo «mente fredda» scatta invece al pre-commit, su
   ogni commit con file staged. È normale che il primo commit si fermi per
   chiederti di rileggere report/diff/file correlati; dopo la revisione rilancia
-  lo stesso commit. Se la chat non aveva report → lo `stop` tace.
+  lo stesso commit. Se non compare il messaggio `PRE-COMMIT fine-sessione`,
+  controlla `git config core.hooksPath`: deve essere `.husky`, non `nul`.
+  Se la chat non aveva report → lo `stop` tace.
 - **«fai report finale»** → il capitolo è chiuso: il report è già completo.
   CONTROLLA brevemente che il report sia allineato allo stato ATTUALE del
   codice (corrisponde al diff reale), poi proponi/esegui COMMIT + PUSH.

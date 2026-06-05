@@ -279,9 +279,27 @@ Quando un agente sta per chiudere la chat, Cursor esegue lo script in `.cursor/h
 | **Hook pre-commit in shell agente (commit `1ab737b`)** | ⚠️ **Non testato in runtime** — disattivato da `core.hooksPath=nul`, non da bug dello script |
 | **Comportamento atteso se hooks attivi** | Corretto per design: 1° commit = cold check; 2° commit stesso stage = pass |
 
-**Nota per Matteo:** sul tuo PC, se `core.hooksPath` punta a `.husky` (o Husky è attivo), al prossimo commit con report in stage dovresti vedere il cold check al **primo** tentativo. Nell’ambiente agente di questa sessione **non** l’abbiamo visto — né prima né dopo — perché gli hook git erano spenti.
+**Nota per Matteo:** sul tuo PC, se `core.hooksPath` punta a `.husky` (o Husky è attivo), al prossimo commit con report in stage dovresti vedere il cold check al **primo** tentativo.
 
-**Debito documentale:** aggiornare `CHIUSURA_SESSIONE.md` o skill hook con nota «agente/shell con `hooksPath=nul` → pre-commit non gira» (candidato FU processo, non aperto in FOLLOW_UP).
+#### Test runtime hook (05-06-26, dopo push `96ca3da`)
+
+| Tentativo | `core.hooksPath` | Esito | Output |
+|-----------|------------------|-------|--------|
+| Commit chiusura `1ab737b` (sessione precedente) | `nul` | Hook **non partito** | Commit OK al 1° colpo; nessun messaggio PRE-COMMIT |
+| **Prova dedicata** (report in stage, §11 completa) | **`.husky`** | Hook **partito** | Vedi sotto |
+
+**Prova dedicata — sequenza osservata:**
+
+1. **1° `git commit`** → **bloccato** (exit 1) con messaggio:
+   `PRE-COMMIT fine-sessione: ultimo controllo a mente fredda richiesto.` + checklist self-review.
+   Prima riga da `lint-staged`: `No staged files match` (solo `.md` in stage — normale).
+2. Creato **`.cursor/hooks/.fine-sessione-commit-state.json`** con `reviewedSignatures` e `lastReports` = report prepara-prompt.
+3. **2° `git commit`** (stesso stage, stesso messaggio) → **passato** (exit 0).
+4. Commit di prova **annullato** con `git reset --hard HEAD~1` — history pulita, test non pushato.
+
+**Conclusione:** con `hooksPath=.husky` il comportamento v6 è **corretto** (cold check al 1° tentativo, pass al 2°). Il commit `1ab737b` non l’ha mostrato perché in quella shell `hooksPath` era `nul`.
+
+**Debito documentale:** nota in skill/CHIUSURA — shell agente con `hooksPath=nul` vs IDE locale con `.husky` (candidato FU processo).
 
 ---
 
@@ -300,4 +318,4 @@ L’**hook fine-sessione Cursor** (§14) si è comportato **correttamente**: ha 
 
 **Pre-commit cold check (§14.1):** al commit `1ab737b` **non** è stato richiesto — né prima né dopo — perché nella shell agente `core.hooksPath=nul` (hook git disattivati). Commit e push su `main`/`env/test` completati (`1ab737b`).
 
-**Prossimo passo:** debiti aperti **FU-038–041**; verificare cold check pre-commit sul tuo ambiente locale se `hooksPath` ≠ `nul`.
+**Prossimo passo:** debiti aperti **FU-038–041**; cold check pre-commit **verificato** con prova runtime (§14.1).
