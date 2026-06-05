@@ -211,7 +211,9 @@ export function resolvePresetDisplayTitle(
 
 /**
  * Intestazione «Crea il tuo menù» solo se il cliente può comporre gli ingredienti.
- * Non dipende dalla tipologia tab (es. Rinfresco): conta `is_fixed_menu` sul preset staff.
+ * Con un preset staff conta `is_fixed_menu`. Senza preset (caso «componi da zero») dipende dalla
+ * CAPACITÀ «usa menù» della tipologia (Livello C via `defaultModeCapabilities`), non dal NOME:
+ * `rinfresco_laurea`/`menu_prezzo_fisso` → mostra l'header; `tavolo`/assente → no.
  */
 export function shouldShowComposeMenuHeader(
   presetMenu: PresetMenuType,
@@ -224,5 +226,5 @@ export function shouldShowComposeMenuHeader(
   if (presetMenu && isBuiltinPresetMenuType(presetMenu)) {
     return false
   }
-  return !presetMenu && bookingType === 'rinfresco_laurea'
+  return !presetMenu && defaultModeCapabilities(bookingType as BookingType | null | undefined).uses_menu
 }

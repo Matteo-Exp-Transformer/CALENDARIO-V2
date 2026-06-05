@@ -959,10 +959,13 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       categorySortOrderMap,
     )
     const categoryByKey = new Map(menuCategories.map((cat) => [cat.key, cat]))
-    const resolveCategoryOrderForMove = (): string[] =>
-      tab.field_overrides?.category_order_keys && tab.category_order_keys?.length
-        ? [...tab.category_order_keys]
-        : [...orderedPresetCategoryKeys]
+    // Lo swap delle frecce deve operare sulle STESSE chiavi mostrate all'admin
+    // (`orderedPresetCategoryKeys`: orfane già filtrate, duplicati rimossi, ordine salvato
+    // preservato). Usare il `tab.category_order_keys` grezzo disallineerebbe l'index della riga
+    // visualizzata dall'array su cui si fa lo swap quando ci sono chiavi stale → la freccia
+    // sposterebbe la categoria sbagliata o sembrerebbe inerte. Scrivere l'ordine pulito ripara
+    // anche eventuali residui stale/duplicati salvati in precedenza.
+    const resolveCategoryOrderForMove = (): string[] => [...orderedPresetCategoryKeys]
     const moveCategoryUp = (index: number) => {
       if (index <= 0) return
       const order = resolveCategoryOrderForMove()

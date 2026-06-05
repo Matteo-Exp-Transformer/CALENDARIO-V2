@@ -77,8 +77,8 @@ describe('isValidName', () => {
     expect(isValidName('   ')).toBe(false)
   })
 
-  it('rifiuta più di 60 caratteri', () => {
-    expect(isValidName('a'.repeat(61))).toBe(false)
-    expect(isValidName('a'.repeat(60))).toBe(true)
+  it('rifiuta oltre il cap nome cliente (65, allineato a edge/limiti)', () => {
+    expect(isValidName('a'.repeat(66))).toBe(false)
+    expect(isValidName('a'.repeat(65))).toBe(true)
   })
 })

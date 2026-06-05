@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { BookingRequestInput } from '@/types/booking'
-import { activeSubTabShowsMenu } from '../utils/bookingCapabilities'
+import { activeSubTabShowsMenu, modeUsesDietary } from '../utils/bookingCapabilities'
 import { useCreateBookingRequest } from '../hooks/useBookingRequests'
 import { useCheckSlotAvailability } from '../hooks/useCheckSlotAvailability'
 import { useRateLimit } from '@/hooks/useRateLimit'
@@ -435,7 +435,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     }
     if (/^\d+$/.test(inputValue)) {
       const value = parseInt(inputValue, 10)
-      if (!isNaN(value) && value >= 1 && value <= 110) {
+      if (!isNaN(value) && value >= 1 && value <= BOOKING_PUBLIC_CLIENT_TEXT_LIMITS.numGuestsMax) {
         const totalPerPerson = activeSubTabUsesFixedPricing ? presetPricePerPerson : formData.menu_total_per_person
         setFormData({ ...formData, num_guests: value, menu_total_booking: totalPerPerson ? totalPerPerson * value : undefined })
         setErrors({ ...errors, num_guests: '' })
@@ -1052,25 +1052,22 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           onChange={(_modeId, bookingType) => {
             setActiveSubTabId(null)
             setSelectedPreset(null)
-            if (bookingType === 'tavolo') {
-              setFormData({
-                ...formData,
-                booking_type: bookingType,
-                preset_menu: null,
-                menu_selection: { items: [] },
-                menu_total_per_person: undefined,
-                menu_total_booking: undefined,
-                dietary_restrictions: [],
-              })
+            // Reset intolleranze per CAPACITÀ, non per NOME: la modalità esatta si trova dal modeId
+            // (più preciso del booking_type). Se la nuova modalità non usa le intolleranze le si
+            // svuota — per i tipi storici (tavolo sì, rinfresco/menu_fisso no) è identico a prima.
+            const nextMode = formConfig.booking_modes.find((m) => m.id === _modeId)
+            const baseReset = {
+              ...formData,
+              booking_type: bookingType,
+              preset_menu: null,
+              menu_selection: { items: [] },
+              menu_total_per_person: undefined,
+              menu_total_booking: undefined,
+            }
+            if (!modeUsesDietary(nextMode ?? { booking_type: bookingType })) {
+              setFormData({ ...baseReset, dietary_restrictions: [] })
             } else {
-              setFormData({
-                ...formData,
-                booking_type: bookingType,
-                preset_menu: null,
-                menu_selection: { items: [] },
-                menu_total_per_person: undefined,
-                menu_total_booking: undefined,
-              })
+              setFormData(baseReset)
             }
             setErrors({ ...errors, booking_type: '', menu: '' })
           }}

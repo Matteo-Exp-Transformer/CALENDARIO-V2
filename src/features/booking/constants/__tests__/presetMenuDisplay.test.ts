@@ -44,9 +44,14 @@ describe('shouldShowComposeMenuHeader', () => {
     ).toBe(false)
   })
 
-  it('shows compose title on rinfresco only when no preset selected yet', () => {
+  it('shows compose title (no preset) per CAPACITÀ della tipologia, non per nome', () => {
+    // Entrambe le tipologie che «usano menù» mostrano l'header quando non c'è ancora un preset.
     expect(shouldShowComposeMenuHeader(null, undefined, 'rinfresco_laurea')).toBe(true)
-    expect(shouldShowComposeMenuHeader(null, undefined, 'menu_prezzo_fisso')).toBe(false)
+    expect(shouldShowComposeMenuHeader(null, undefined, 'menu_prezzo_fisso')).toBe(true)
+    // Tipologia senza capacità menù (Livello C) → niente header.
+    expect(shouldShowComposeMenuHeader(null, undefined, 'tavolo')).toBe(false)
+    expect(shouldShowComposeMenuHeader(null, undefined, null)).toBe(false)
+    expect(shouldShowComposeMenuHeader(null, undefined, undefined)).toBe(false)
   })
 })
 
