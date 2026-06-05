@@ -1,4 +1,4 @@
-import type { BookingPublicFormConfig } from '../constants/bookingPublicFormConfig'
+import type { BookingPublicFormConfig, SubTab } from '../constants/bookingPublicFormConfig'
 import { normalizeBookingPublicFormConfig } from '../constants/bookingPublicFormConfig'
 
 function replaceKeyInStringArray(
@@ -21,9 +21,27 @@ function replaceKeyInStringArray(
   return { next: [...new Set(mapped)], changed: true }
 }
 
+function syncKeyInSubTabArrays(
+  tab: SubTab,
+  previousKey: string,
+  newKey: string,
+): { tab: SubTab; changed: boolean } {
+  const hidden = replaceKeyInStringArray(tab.hidden_category_keys, previousKey, newKey)
+  const order = replaceKeyInStringArray(tab.category_order_keys, previousKey, newKey)
+  if (!hidden.changed && !order.changed) return { tab, changed: false }
+  return {
+    tab: {
+      ...tab,
+      hidden_category_keys: hidden.next,
+      category_order_keys: order.next,
+    },
+    changed: true,
+  }
+}
+
 /**
  * Sostituisce `previousKey` con `newKey` in `sub_tabs[].hidden_category_keys`
- * (Personalizza form). Non modifica `field_overrides` né altri campi vetrina.
+ * e `category_order_keys` (Personalizza form). Non modifica `field_overrides`.
  */
 export function renameCategoryKeyInBookingPublicFormConfig(
   config: BookingPublicFormConfig,
@@ -37,14 +55,10 @@ export function renameCategoryKeyInBookingPublicFormConfig(
   let anyChanged = false
   const booking_modes = config.booking_modes.map((mode) => {
     const sub_tabs = (mode.sub_tabs ?? []).map((tab) => {
-      const { next, changed } = replaceKeyInStringArray(
-        tab.hidden_category_keys,
-        previousKey,
-        newKey,
-      )
+      const { tab: nextTab, changed } = syncKeyInSubTabArrays(tab, previousKey, newKey)
       if (!changed) return tab
       anyChanged = true
-      return { ...tab, hidden_category_keys: next }
+      return nextTab
     })
     return sub_tabs === mode.sub_tabs ? mode : { ...mode, sub_tabs }
   })
@@ -74,8 +88,8 @@ function removeKeyFromStringArray(
 }
 
 /**
- * Rimuove `categoryKey` da `sub_tabs[].hidden_category_keys` (Personalizza form).
- * Non modifica `field_overrides` né altri campi vetrina.
+ * Rimuove `categoryKey` da `sub_tabs[].hidden_category_keys` e `category_order_keys`
+ * (Personalizza form). Non modifica `field_overrides`.
  */
 export function removeCategoryKeyFromBookingPublicFormConfig(
   config: BookingPublicFormConfig,
@@ -84,10 +98,15 @@ export function removeCategoryKeyFromBookingPublicFormConfig(
   let anyChanged = false
   const booking_modes = config.booking_modes.map((mode) => {
     const sub_tabs = (mode.sub_tabs ?? []).map((tab) => {
-      const { next, changed } = removeKeyFromStringArray(tab.hidden_category_keys, categoryKey)
-      if (!changed) return tab
+      const hidden = removeKeyFromStringArray(tab.hidden_category_keys, categoryKey)
+      const order = removeKeyFromStringArray(tab.category_order_keys, categoryKey)
+      if (!hidden.changed && !order.changed) return tab
       anyChanged = true
-      return { ...tab, hidden_category_keys: next }
+      return {
+        ...tab,
+        hidden_category_keys: hidden.next,
+        category_order_keys: order.next,
+      }
     })
     return sub_tabs === mode.sub_tabs ? mode : { ...mode, sub_tabs }
   })

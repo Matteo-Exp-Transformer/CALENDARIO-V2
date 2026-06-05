@@ -441,6 +441,70 @@ describe('parseSubTabFromUnknown — show_offer_details_in_summary', () => {
   })
 })
 
+describe('capabilities BookingMode — round-trip + legacy (LOCK Parser/normalizer accoppiati)', () => {
+  function modeBase(extra: Record<string, unknown> = {}) {
+    return {
+      id: 'm1',
+      booking_type: 'tavolo' as const,
+      enabled: true,
+      label: 'Tavolo',
+      description: 'D',
+      icon: 'fork_knife' as BookingPublicFormConfig['booking_modes'][0]['icon'],
+      sub_tabs_enabled: true,
+      sub_tabs_presentation: null,
+      sub_tabs: [],
+      ...extra,
+    }
+  }
+  function configWith(mode: Record<string, unknown>): BookingPublicFormConfig {
+    return {
+      page_title: 'Prenota',
+      page_description: 'Desc',
+      header_styles: parseBookingHeaderStylesFromUnknown({
+        restaurant_name: { font: 'playfair', color: '#6b4226' },
+        page_title: { font: 'playfair', color: '#6b4226' },
+        page_description: { font: 'montserrat', color: '#4a2d19' },
+      }),
+      booking_modes: [mode as unknown as BookingPublicFormConfig['booking_modes'][0]],
+    }
+  }
+
+  it('normalize: config legacy senza capabilities → campo assente (fallback Livello C)', () => {
+    const normalized = normalizeBookingPublicFormConfig(configWith(modeBase()))
+    expect(normalized.booking_modes[0].capabilities).toBeUndefined()
+  })
+
+  it('normalize: capabilities esplicite preservate', () => {
+    const normalized = normalizeBookingPublicFormConfig(
+      configWith(modeBase({ capabilities: { uses_menu: true, uses_dietary: false } })),
+    )
+    expect(normalized.booking_modes[0].capabilities).toEqual({ uses_menu: true, uses_dietary: false })
+  })
+
+  it('normalize: capabilities malformate scartate (no campo)', () => {
+    const normalized = normalizeBookingPublicFormConfig(
+      configWith(modeBase({ capabilities: { uses_menu: 'sì' } })),
+    )
+    expect(normalized.booking_modes[0].capabilities).toBeUndefined()
+  })
+
+  it('parseFromDb: legacy senza capabilities → assente; con capabilities → preservate', () => {
+    const legacy = restaurantSettingRegistry.booking_public_form_config.parseFromDb({
+      page_title: 'Prenota',
+      page_description: 'Desc',
+      booking_modes: [modeBase()],
+    })
+    expect(legacy.booking_modes[0].capabilities).toBeUndefined()
+
+    const withCaps = restaurantSettingRegistry.booking_public_form_config.parseFromDb({
+      page_title: 'Prenota',
+      page_description: 'Desc',
+      booking_modes: [modeBase({ capabilities: { uses_menu: true } })],
+    })
+    expect(withCaps.booking_modes[0].capabilities).toEqual({ uses_menu: true })
+  })
+})
+
 describe('resolveCarouselSummaryDisplay / sticky mini-pannello', () => {
   const base = {
     id: 'c1',

@@ -88,6 +88,22 @@ describe('resolveSubTabView — campi non personalizzati seguono il preset live'
     expect(resolved.label).toBe('Menu Estate')
   })
 
+  it('senza override category_order_keys restituisce undefined', () => {
+    const tab = baseSubTab()
+    const resolved = resolveSubTabView(tab, [PRESET])
+    expect(resolved.category_order_keys).toBeUndefined()
+  })
+
+  it('con category_order_keys override usa l\'ordine salvato', () => {
+    const tab = {
+      ...baseSubTab(),
+      category_order_keys: ['dolci', 'primi'],
+      field_overrides: { category_order_keys: true },
+    }
+    const resolved = resolveSubTabView(tab, [PRESET])
+    expect(resolved.category_order_keys).toEqual(['dolci', 'primi'])
+  })
+
   it('carosello: mantiene il prezzo salvato senza ereditarlo dal preset', () => {
     const tab: SubTab = {
       ...baseSubTab(),
@@ -137,6 +153,7 @@ describe('resetSubTabToPreset', () => {
     expect(reset.price_per_person).toBe(40)
     expect(isFieldOverridden(reset, 'label')).toBe(false)
     expect(isFieldOverridden(reset, 'price_per_person')).toBe(false)
+    expect(isFieldOverridden(reset, 'category_order_keys')).toBe(false)
   })
 
   it('carosello non viene toccato', () => {

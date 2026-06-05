@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { ChevronUp, ChevronDown } from 'lucide-react'
 import { CaretUpIcon } from '@phosphor-icons/react/dist/csr/CaretUp'
 import { CaretDownIcon } from '@phosphor-icons/react/dist/csr/CaretDown'
 import { TrashIcon } from '@phosphor-icons/react/dist/csr/Trash'
@@ -21,6 +22,10 @@ import {
 } from '@/features/booking/hooks/useRestaurantSetting'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
+import {
+  buildCategorySortOrderMap,
+  orderCategoryKeys,
+} from '@/features/booking/utils/orderCategoryKeys'
 import {
   BOOKING_HEADER_FONT_OPTIONS,
   BOOKING_HEADER_FONT_SIZE_MIN,
@@ -93,6 +98,7 @@ const SUB_TAB_OVERRIDABLE_KEYS: ReadonlyArray<SubTabOverridableField> = [
   'price_per_person',
   'hidden_item_ids',
   'hidden_category_keys',
+  'category_order_keys',
 ]
 
 /**
@@ -117,6 +123,7 @@ function presetImportFieldOverrides(): NonNullable<SubTab['field_overrides']> {
     price_per_person: false,
     hidden_item_ids: false,
     hidden_category_keys: false,
+    category_order_keys: false,
   }
 }
 
@@ -457,6 +464,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       is_fixed_menu: isFixedMenu ? undefined : false,
       hidden_item_ids: [],
       hidden_category_keys: [],
+      category_order_keys: undefined,
       field_overrides: overrides,
     }
   }
@@ -929,11 +937,46 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
       else hidden.add(itemId)
       patchTab({ hidden_item_ids: Array.from(hidden) })
     }
-
-    const editorTitle = getSubTabEditorTitle(tab, subTabNumber, isDraft)
     const linkedPreset = tab.preset_id
       ? relevantPresets.find((preset) => preset.id === tab.preset_id)
       : undefined
+    const presetItemIds = new Set(linkedPreset?.item_ids ?? [])
+    const presetCategoryKeys =
+      linkedPreset != null
+        ? menuCategories
+            .filter((cat) =>
+              menuItems.some(
+                (item) => item.category === cat.key && presetItemIds.has(item.id),
+              ),
+            )
+            .map((cat) => cat.key)
+        : []
+    const categorySortOrderMap = buildCategorySortOrderMap(menuCategories)
+    // Chiavi nascoste restano nell'array ordine; in Pagina Prenota vengono filtrate dopo l'ordinamento.
+    const orderedPresetCategoryKeys = orderCategoryKeys(
+      presetCategoryKeys,
+      tab.field_overrides?.category_order_keys ? tab.category_order_keys : undefined,
+      categorySortOrderMap,
+    )
+    const categoryByKey = new Map(menuCategories.map((cat) => [cat.key, cat]))
+    const resolveCategoryOrderForMove = (): string[] =>
+      tab.field_overrides?.category_order_keys && tab.category_order_keys?.length
+        ? [...tab.category_order_keys]
+        : [...orderedPresetCategoryKeys]
+    const moveCategoryUp = (index: number) => {
+      if (index <= 0) return
+      const order = resolveCategoryOrderForMove()
+      ;[order[index - 1], order[index]] = [order[index], order[index - 1]]
+      patchTab({ category_order_keys: order })
+    }
+    const moveCategoryDown = (index: number) => {
+      if (index >= orderedPresetCategoryKeys.length - 1) return
+      const order = resolveCategoryOrderForMove()
+      ;[order[index], order[index + 1]] = [order[index + 1], order[index]]
+      patchTab({ category_order_keys: order })
+    }
+
+    const editorTitle = getSubTabEditorTitle(tab, subTabNumber, isDraft)
     const isLinkedCard = tab.display === 'cards' && Boolean(linkedPreset)
     const isFixedMenu = tab.display === 'carousel' || !isLinkedCard || tab.is_fixed_menu !== false
     const cardPriceInputValue =
@@ -1101,6 +1144,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                       label: '',
                       hidden_category_keys: [],
                       hidden_item_ids: [],
+                      category_order_keys: undefined,
                     })
                   }
                 }}
@@ -1181,12 +1225,18 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
           linkedPreset &&
           bookingTypeUsesMenuItems(mode.booking_type, menuItems) && (
           <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-3">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-700">
-              Categorie e ingredienti visibili
-            </p>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                Categorie e ingredienti visibili
+              </p>
+              <p className="mt-0.5 text-xs text-slate-500">
+                L&apos;ordine si vede nella pagina Prenota per questa tipologia. Non modifica il Menu QR.
+              </p>
+            </div>
             <div className="space-y-2">
-              {menuCategories.map((cat) => {
-                const presetItemIds = new Set(linkedPreset?.item_ids ?? [])
+              {orderedPresetCategoryKeys.map((categoryKey, categoryIndex) => {
+                const cat = categoryByKey.get(categoryKey)
+                if (!cat) return null
                 const itemsForCat = menuItems.filter(
                   (item) =>
                     item.category === cat.key &&
@@ -1201,6 +1251,32 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
                 return (
                   <details key={cat.key} className="rounded-lg border border-slate-200 bg-slate-50">
                     <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2">
+                      <div className="flex shrink-0 flex-col gap-0.5">
+                        <button
+                          type="button"
+                          disabled={categoryIndex === 0}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            moveCategoryUp(categoryIndex)
+                          }}
+                          className="rounded p-0.5 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                          aria-label={`Sposta ${cat.label} su`}
+                        >
+                          <ChevronUp className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={categoryIndex === orderedPresetCategoryKeys.length - 1}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            moveCategoryDown(categoryIndex)
+                          }}
+                          className="rounded p-0.5 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                          aria-label={`Sposta ${cat.label} giù`}
+                        >
+                          <ChevronDown className="h-4 w-4" />
+                        </button>
+                      </div>
                       <button
                         type="button"
                         aria-label={catHidden ? `Mostra ${cat.label}` : `Nascondi ${cat.label}`}

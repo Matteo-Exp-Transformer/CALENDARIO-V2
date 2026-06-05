@@ -36,6 +36,7 @@ import {
   parseSubTabFromUnknown,
 } from '@/features/booking/constants/bookingPublicFormConfig'
 import { resolveBookingStoredIconKey } from '@/features/public-menu/categoryIcons'
+import { parseModeCapabilities } from '@/features/booking/utils/bookingCapabilities'
 import {
   BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS,
   clampBookingText,
@@ -660,6 +661,12 @@ export const restaurantSettingRegistry: {
                     custom_label: (o as SubTabOverride).custom_label,
                   }))
               : undefined,
+            // Capabilities (Livello A): parse difensivo. Config legacy senza capabilities →
+            // undefined → fallback Livello C → invariato. LOCK Parser/normalizer accoppiati.
+            ...(() => {
+              const capabilities = parseModeCapabilities(mode.capabilities)
+              return capabilities ? { capabilities } : {}
+            })(),
           }
         }),
       })

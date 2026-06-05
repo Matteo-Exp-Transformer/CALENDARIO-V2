@@ -23,6 +23,7 @@ export interface ResolvedSubTab {
   is_fixed_menu?: boolean
   hidden_category_keys?: string[]
   hidden_item_ids?: string[]
+  category_order_keys?: string[]
   preset_id?: string
   icon?: SubTab['icon']
   carousel_items?: SubTab['carousel_items']
@@ -87,6 +88,9 @@ export function resolveSubTabView(
   const hidden_category_keys = isFieldOverridden(subTab, 'hidden_category_keys')
     ? subTab.hidden_category_keys
     : undefined
+  const category_order_keys = isFieldOverridden(subTab, 'category_order_keys')
+    ? subTab.category_order_keys
+    : undefined
 
   return {
     id: subTab.id,
@@ -98,6 +102,7 @@ export function resolveSubTabView(
     is_fixed_menu,
     hidden_category_keys,
     hidden_item_ids,
+    category_order_keys,
     preset_id: subTab.preset_id,
     icon: subTab.icon,
     carousel_items: subTab.carousel_items,
@@ -121,7 +126,17 @@ export function markFieldOverridden(
  */
 export function patchSubTabAsOverride(
   subTab: SubTab,
-  patch: Partial<Pick<SubTab, 'label' | 'description' | 'price_per_person' | 'hidden_item_ids' | 'hidden_category_keys'>>,
+  patch: Partial<
+    Pick<
+      SubTab,
+      | 'label'
+      | 'description'
+      | 'price_per_person'
+      | 'hidden_item_ids'
+      | 'hidden_category_keys'
+      | 'category_order_keys'
+    >
+  >,
 ): SubTab {
   const overrides: NonNullable<SubTab['field_overrides']> = { ...(subTab.field_overrides ?? {}) }
   let next: SubTab = { ...subTab }
@@ -145,6 +160,10 @@ export function patchSubTabAsOverride(
   if ('hidden_category_keys' in patch) {
     next = { ...next, hidden_category_keys: patch.hidden_category_keys }
     overrides.hidden_category_keys = true
+  }
+  if ('category_order_keys' in patch) {
+    next = { ...next, category_order_keys: patch.category_order_keys }
+    overrides.category_order_keys = true
   }
 
   return { ...next, field_overrides: overrides }
@@ -171,12 +190,14 @@ export function resetSubTabToPreset(
     is_fixed_menu: subTab.is_fixed_menu === false ? false : undefined,
     hidden_item_ids: undefined,
     hidden_category_keys: undefined,
+    category_order_keys: undefined,
     field_overrides: {
       label: false,
       description: false,
       price_per_person: false,
       hidden_item_ids: false,
       hidden_category_keys: false,
+      category_order_keys: false,
     },
   }
 }

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { BookingRequestInput } from '@/types/booking'
-import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
+import { activeSubTabShowsMenu } from '../utils/bookingCapabilities'
 import { useCreateBookingRequest } from '../hooks/useBookingRequests'
 import { useCheckSlotAvailability } from '../hooks/useCheckSlotAvailability'
 import { useRateLimit } from '@/hooks/useRateLimit'
@@ -269,6 +269,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         courses_label: resolved.courses_label,
         hidden_category_keys: resolved.hidden_category_keys,
         hidden_item_ids: resolved.hidden_item_ids,
+        category_order_keys: resolved.category_order_keys,
       }
     })
   }, [activeMode, customStaffPresets])
@@ -294,15 +295,16 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     return activeMode?.sub_tabs_overrides ?? []
   }, [activeMode, activeModeSubTabs])
 
-  /** Menu pubblico solo da sottotab valide: niente fallback legacy se non ci sono card salvate. */
+  /**
+   * Menu pubblico solo da sottotab valide: niente fallback legacy se non ci sono card salvate.
+   * La visibilità dipende dalla CAPACITÀ calcolata (card scorrevole + preset risolto), non dal
+   * nome della tipologia: una card con menù preselegato collegato mostra il menù per ogni
+   * booking_type (rispetta la LOCK "Ingredienti preset custom").
+   */
   const showMenuSelectionSection = useMemo(() => {
-    if (!bookingTypeUsesMenuSelections(formData.booking_type)) return false
     if (activeModeSubTabs.length === 0) return false
-    if (!activeSubTab) return false
-    if (!activeSubTabLinkedPreset) return false
-    return activeSubTab.display !== 'carousel'
+    return activeSubTabShowsMenu(activeSubTab, activeSubTabLinkedPreset)
   }, [
-    formData.booking_type,
     activeModeSubTabs.length,
     activeSubTab,
     activeSubTabLinkedPreset,
@@ -515,6 +517,73 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     })
   }
 
+  // Una sola card con preset: seleziona automaticamente così la griglia ingredienti è subito disponibile.
+  useEffect(() => {
+    if (activeMode?.sub_tabs_presentation !== 'cards') return
+    if (activeSubTabId) return
+    if (activeModeSubTabs.length !== 1) return
+    const only = activeModeSubTabs[0]
+    if (only.display !== 'cards' || !only.preset_id) return
+    const linkedPreset = customStaffPresets.find((preset) => preset.id === only.preset_id)
+    if (!linkedPreset) return
+
+    setActiveSubTabId(only.id)
+    const presetType = customPresetStorageId(linkedPreset.id)
+    setSelectedPreset(presetType)
+
+    if (presetCatalogLoading) {
+      const fallbackPrice = getSubTabPricePerPerson(only)
+      const numGuests = formData.num_guests || 0
+      setFormData((prev) => ({
+        ...prev,
+        preset_menu: presetType,
+        menu_selection: { items: [] },
+        menu_total_per_person: fallbackPrice,
+        menu_total_booking:
+          fallbackPrice && numGuests > 0 ? fallbackPrice * numGuests : undefined,
+      }))
+      return
+    }
+
+    const resolved = applyPresetTypeToBookingFormPayload(
+      presetType,
+      menuItems,
+      customStaffPresets,
+    )
+    if (!resolved) return
+
+    const numGuests = formData.num_guests || 0
+    const presetPricePerPerson = getSubTabPricePerPerson(only)
+    const { totalPerPerson, menu_total_booking } = computeMenuTotalsWithPresetPrice(
+      resolved.items,
+      numGuests,
+      presetPricePerPerson,
+    )
+    const usesFixedSubTabPricing = presetPricePerPerson != null
+    const effectiveTotalPerPerson = usesFixedSubTabPricing ? presetPricePerPerson : totalPerPerson
+
+    setFormData((prev) => ({
+      ...prev,
+      preset_menu: presetType,
+      menu_selection: { items: resolved.items },
+      menu_total_per_person: effectiveTotalPerPerson,
+      menu_total_booking:
+        effectiveTotalPerPerson && numGuests > 0
+          ? effectiveTotalPerPerson * numGuests
+          : usesFixedSubTabPricing
+            ? undefined
+            : menu_total_booking,
+    }))
+  }, [
+    activeMode?.sub_tabs_presentation,
+    activeModeSubTabs,
+    activeSubTabId,
+    customStaffPresets,
+    formData.num_guests,
+    menuItems,
+    presetCatalogLoading,
+  ])
+
   useEffect(() => {
     if (presetCatalogLoading || !selectedPreset) return
     if (formData.preset_menu !== selectedPreset) return
@@ -711,18 +780,16 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       if (!firstErrorKey) firstErrorKey = 'booking_type'
     }
 
-    // Sottotab menù: obbligo scelta card prima del submit
-    if (
-      bookingTypeUsesMenuSelections(formData.booking_type) &&
-      activeModeSubTabs.length > 0 &&
-      !activeSubTab
-    ) {
+    // Sottotab menù: obbligo scelta card prima del submit.
+    // Allineato alla sezione resa visibile: se ci sono card configurate ma nessuna è
+    // selezionata, blocca — qualunque sia il booking_type. Senza card (length===0) nessun obbligo.
+    if (activeModeSubTabs.length > 0 && !activeSubTab) {
       newErrors.menu = 'Seleziona un\'opzione menù tra le card sopra'
       isValid = false
       if (!firstErrorKey) firstErrorKey = 'menu'
     }
 
-    // Menu validation (Rinfresco di Laurea / menù a prezzo fisso)
+    // Menu validation (card scorrevole con menù preselezionato collegato)
     if (showMenuSelectionSection) {
       if (
         !activeSubTabUsesFixedPricing &&
@@ -1093,6 +1160,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             publicFormLightTextOnDarkBackground={publicFormLightTextOnDarkBackground}
             hiddenCategoryKeys={activeSubTab?.hidden_category_keys ?? []}
             hiddenItemIds={activeSubTab?.hidden_item_ids ?? []}
+            categoryOrderKeys={activeSubTab?.category_order_keys}
             subTabOverrides={activeSubTabOverrides}
             presetSectionTitle={activeSubTab?.label?.trim() || undefined}
             presetDescription={activeSubTab?.description}

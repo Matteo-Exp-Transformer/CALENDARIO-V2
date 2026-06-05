@@ -36,7 +36,9 @@ export function resolveLockedPresetAllowedItemIds(
   if (isCustomPresetMenuType(presetMenu)) {
     const uuid = getCustomPresetUuid(presetMenu)
     const preset = uuid ? customStaffPresets.find((p) => p.id === uuid) : undefined
-    if (!preset?.item_ids?.length) return new Set()
+    // Preset non ancora risolto (catalogo in caricamento): non filtrare la griglia.
+    if (!preset) return null
+    if (!preset.item_ids?.length) return new Set()
     // Personalizzabile: mostra solo il catalogo preset, senza pre-selezioni
     return new Set(preset.item_ids)
   }

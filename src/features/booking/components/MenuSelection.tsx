@@ -21,9 +21,10 @@ import {
 } from '../constants/presetMenus'
 import { isCaraffeDrinkPremium, isCaraffeDrinkStandard } from '../utils/caraffePricing'
 import { groupMenuItemsByCategory } from '../utils/menuCatalogGrouping'
+import { buildOrderedCategoryEntries } from '../utils/orderCategoryKeys'
 import type { BookingType } from '@/types/booking'
-import { normalizeMenuItemBookingTypes } from '@/types/menu'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
+import { isMenuItemVisibleForSelection } from '../utils/bookingCapabilities'
 import { MENU_CARD_MAX_WIDTH_PX } from './menuPricesCatalogLayout'
 import { BookingMenuComposeGrid } from './publicBooking/BookingMenuComposeGrid'
 import { BOOKING_PUBLIC_CONTENT_WIDTH } from '@/features/booking/constants/bookingPublicFieldStyles'
@@ -53,6 +54,8 @@ interface MenuSelectionProps {
   hideMenuGrid?: boolean
   /** Categorie nascoste dalla card sottotab scelta. */
   hiddenCategoryKeys?: string[]
+  /** Ordine categorie da Personalizza form (sub-tab); assente = sort_order DB. */
+  categoryOrderKeys?: string[]
   /** Ingredienti nascosti dalla card sottotab scelta. */
   hiddenItemIds?: string[]
   /** Form /prenota: blocchi centrati al 75% larghezza viewport */
@@ -89,6 +92,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   hideMenuGrid = false,
   hiddenCategoryKeys = [],
   hiddenItemIds = [],
+  categoryOrderKeys,
   publicFormLayout = false,
   publicFormLightTextOnDarkBackground = false,
   presetDescription,
@@ -163,15 +167,19 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     const hiddenItems = new Set(hiddenItemIds)
     const activePresetItemIds = new Set(activeCustomPreset?.item_ids ?? [])
     return menuItems
-      .filter((item) => {
-        if (hiddenCategories.has(item.category) || hiddenItems.has(item.id)) return false
-        if (activePresetItemIds.has(item.id)) return true
-        if (!bookingTypeUsesMenuSelections(bookingType)) {
-          return true
-        }
-        const types = normalizeMenuItemBookingTypes(item.booking_types)
-        return bookingType ? types.includes(bookingType) : true
-      })
+      .filter((item) =>
+        // Fonte unica testabile del predicato (LOCK Ingredienti preset custom): card con preset
+        // → SOLO item del preset per ogni booking_type; senza preset → legacy per tipo.
+        isMenuItemVisibleForSelection({
+          itemId: item.id,
+          itemCategory: item.category,
+          itemBookingTypes: item.booking_types,
+          bookingType,
+          activePresetItemIds,
+          hiddenCategoryKeys: hiddenCategories,
+          hiddenItemIds: hiddenItems,
+        }),
+      )
       .map<NormalizedMenuItem>((item) => ({
         id: item.id,
         name: item.name,
@@ -183,10 +191,21 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       }))
   }, [menuItems, bookingType, hiddenCategoryKeys, hiddenItemIds, activeCustomPreset])
 
-  const categoryEntries = useMemo(
-    () => dbCategories.map((category) => [category.key, category.label] as const),
-    [dbCategories],
-  )
+  const categoryEntries = useMemo(() => {
+    // Parti SEMPRE dal catalogo DB: le card categoria non devono sparire quando
+    // un preset/bookingType filtra via gli ingredienti (la griglia nasconde da
+    // sé le categorie senza ingredienti visibili). Aggiungi solo le categorie
+    // extra presenti negli item ma non in DB, per non perderle.
+    const catalogKeys = dbCategories.map((category) => category.key)
+    const itemCategoryKeys = [...new Set(normalizedMenuItems.map((item) => item.category))]
+    const extraKeys = itemCategoryKeys.filter((key) => !catalogKeys.includes(key))
+    const keys = [...catalogKeys, ...extraKeys]
+    const categoriesForOrder = [
+      ...dbCategories,
+      ...extraKeys.map((key, index) => ({ key, label: key, sort_order: 1000 + index })),
+    ]
+    return buildOrderedCategoryEntries(categoriesForOrder, keys, categoryOrderKeys)
+  }, [dbCategories, categoryOrderKeys, normalizedMenuItems])
 
   const categoryImageByKey = useMemo(() => {
     const map: Record<string, string | null | undefined> = {}

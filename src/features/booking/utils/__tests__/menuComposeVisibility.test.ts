@@ -45,6 +45,12 @@ describe('resolveLockedPresetAllowedItemIds', () => {
     expect(resolveLockedPresetAllowedItemIds(null, menuItems, [])).toBeNull()
   })
 
+  it('returns null when staff preset is not resolved yet (catalogo in caricamento)', () => {
+    expect(
+      resolveLockedPresetAllowedItemIds(customPresetStorageId('preset-uuid'), menuItems, []),
+    ).toBeNull()
+  })
+
   it('returns catalog item_ids for customizable staff preset (no pre-selection)', () => {
     const presetId = 'preset-uuid'
     expect(

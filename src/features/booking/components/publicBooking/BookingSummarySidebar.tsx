@@ -8,6 +8,7 @@ import {
   type SubTab,
 } from '@/features/booking/constants/bookingPublicFormConfig'
 import { useMenuCategories } from '@/features/booking/hooks/useMenuCategories'
+import { orderCategoryKeys, buildCategorySortOrderMap } from '@/features/booking/utils/orderCategoryKeys'
 import { computeMenuTotalsFromItems } from '@/features/booking/utils/buildPresetMenuSelection'
 import { cn } from '@/lib/utils'
 import { getModeLabelByType } from '../../utils/bookingModeLabels'
@@ -75,19 +76,25 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
     return map
   }, [menuCategories])
 
-  const categoryOrder = useMemo(
-    () => new Map(menuCategories.map((c, i) => [c.key, c.sort_order ?? i])),
-    [menuCategories],
-  )
+  const categorySortRank = useMemo(() => {
+    const keys = [...new Set(items.map((item) => item.category))]
+    const sortOrderMap = buildCategorySortOrderMap(menuCategories)
+    const orderedKeys = orderCategoryKeys(
+      keys,
+      activeSubTab?.category_order_keys,
+      sortOrderMap,
+    )
+    return new Map(orderedKeys.map((key, index) => [key, index]))
+  }, [items, menuCategories, activeSubTab?.category_order_keys])
 
   const sortedMenuItems = useMemo(() => {
     return [...items].sort((a, b) => {
-      const orderA = categoryOrder.get(a.category) ?? 999
-      const orderB = categoryOrder.get(b.category) ?? 999
+      const orderA = categorySortRank.get(a.category) ?? 999
+      const orderB = categorySortRank.get(b.category) ?? 999
       if (orderA !== orderB) return orderA - orderB
       return a.name.localeCompare(b.name, 'it')
     })
-  }, [items, categoryOrder])
+  }, [items, categorySortRank])
 
   const menuItemsTotalWithoutPreset = useMemo(
     () => computeMenuTotalsFromItems(items, formData.num_guests).menu_total_booking,

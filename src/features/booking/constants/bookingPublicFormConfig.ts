@@ -1,5 +1,6 @@
 import type { BookingType } from '@/types/booking'
 import type { CarouselItem } from '@/types/menu'
+import { parseModeCapabilities, type BookingModeCapabilities } from '../utils/bookingCapabilities'
 import {
   MENU_QR_DEFAULT_CATEGORY_ICON_KEY,
   resolveBookingStoredIconKey,
@@ -327,6 +328,7 @@ export type SubTabOverridableField =
   | 'price_per_person'
   | 'hidden_item_ids'
   | 'hidden_category_keys'
+  | 'category_order_keys'
 
 export type SubTabFieldOverrides = Partial<Record<SubTabOverridableField, boolean>>
 
@@ -343,6 +345,8 @@ export interface SubTab {
   courses_label?: string
   hidden_category_keys?: string[]
   hidden_item_ids?: string[]
+  /** Ordine card categorie in Pagina Prenota (solo sub-tab con preset). */
+  category_order_keys?: string[]
   carousel_items?: CarouselItem[]
   /**
    * Carosello: se `false`, il riepilogo Prenota non elenca i titoli slide in «Offerta selezionata»
@@ -453,6 +457,11 @@ export interface BookingMode {
   sub_tabs: SubTab[]
   /** @deprecated Migrato a runtime in `sub_tabs` se vuoto. */
   sub_tabs_overrides?: SubTabOverride[]
+  /**
+   * Capacità esplicite della tipologia (Livello A). Assente → fallback per tipo (Livello C).
+   * Vedi `utils/bookingCapabilities.ts`. Scritto solo dal pannello admin (Fase 3).
+   */
+  capabilities?: BookingModeCapabilities
 }
 
 export interface BookingPublicFormConfig {
@@ -539,6 +548,11 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
   const hidden_item_ids = Array.isArray(o.hidden_item_ids)
     ? o.hidden_item_ids.filter((v): v is string => typeof v === 'string' && v.trim().length > 0).map((v) => v.trim())
     : undefined
+  const category_order_keys = Array.isArray(o.category_order_keys)
+    ? o.category_order_keys
+        .filter((v): v is string => typeof v === 'string' && v.trim().length > 0)
+        .map((v) => v.trim())
+    : undefined
   const carousel_items = Array.isArray(o.carousel_items)
     ? o.carousel_items
         .filter((v): v is CarouselItem => {
@@ -592,6 +606,7 @@ export function parseSubTabFromUnknown(raw: unknown): SubTab | null {
     courses_label: display === 'carousel' ? undefined : courses_label,
     hidden_category_keys,
     hidden_item_ids,
+    category_order_keys,
     carousel_items,
     show_offer_details_in_summary:
       display === 'carousel' ? show_offer_details_in_summary : undefined,
@@ -607,6 +622,7 @@ const OVERRIDABLE_FIELDS: SubTabOverridableField[] = [
   'price_per_person',
   'hidden_item_ids',
   'hidden_category_keys',
+  'category_order_keys',
 ]
 
 function parseFieldOverridesFromUnknown(raw: unknown): SubTabFieldOverrides | undefined {
@@ -725,6 +741,7 @@ export function normalizeBookingPublicFormConfig(
           price_per_person: isPersonalizzabileCard ? undefined : tab.price_per_person,
           hidden_category_keys: tab.hidden_category_keys?.filter((v) => v.trim()) ?? undefined,
           hidden_item_ids: tab.hidden_item_ids?.filter((v) => v.trim()) ?? undefined,
+          category_order_keys: tab.category_order_keys?.filter((v) => v.trim()) ?? undefined,
           carousel_items: tab.carousel_items,
           courses_label:
             display === 'cards' && tab.courses_label?.trim()
@@ -765,13 +782,19 @@ export function normalizeBookingPublicFormConfig(
         }
       })
         .filter((tab): tab is SubTab => tab != null)
+      // capabilities (Livello A): preserva solo se presenti e valide; mai scrivere default
+      // (assente → fallback Livello C → comportamento invariato). LOCK Parser/normalizer accoppiati.
+      // `capabilities` raw escluso dallo spread per scartare valori malformati passati dall'admin.
+      const { capabilities: rawCapabilities, ...modeRest } = mode
+      const capabilities = parseModeCapabilities(rawCapabilities)
       return {
-        ...mode,
+        ...modeRest,
         label: clampBookingText(mode.label.trim(), L.modeLabel),
         description: clampBookingText(mode.description.trim(), L.modeDescription),
         icon: parseBookingIconRequired(mode.icon, MENU_QR_DEFAULT_CATEGORY_ICON_KEY),
         sub_tabs_presentation: normalizeSubTabsPresentation(mode.sub_tabs_presentation, subTabs),
         sub_tabs: subTabs,
+        ...(capabilities ? { capabilities } : {}),
       }
     }),
   }
