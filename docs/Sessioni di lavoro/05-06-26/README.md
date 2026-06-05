@@ -34,7 +34,7 @@ Due filoni su **Pagina Prenota**: (1) tentativo feature **ordine categorie** `ca
 ### Merge in main + allineamento PROD (FU-034)
 | Report | Stato | Effetto / task | Note |
 |--------|-------|----------------|------|
-| [Report-merge-main-allineamento-prod-FU-034-05-06-26.md](./Report-merge-main-allineamento-prod-FU-034-05-06-26.md) | ✅ | Merge `env/test`→`main` (ff `30dc5b9`); edge `create-booking` allineata su PROD (v8) | **FU-034 Fatto**; probe runtime PROD non eseguita (scelta Matteo); aggiornamento FOLLOW_UP nel working tree |
+| [Report-merge-main-allineamento-prod-FU-034-05-06-26.md](./Report-merge-main-allineamento-prod-FU-034-05-06-26.md) | ✅ | Merge `env/test`→`main` (ff `30dc5b9`); edge `create-booking` allineata su PROD (v8) | **FU-034 Fatto**; probe runtime PROD non eseguita (scelta Matteo); FOLLOW_UP in `a109b17` |
 
 ## Da non confondere
 

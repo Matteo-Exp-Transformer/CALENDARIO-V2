@@ -3,7 +3,7 @@
 **Data:** 05-06-26
 **Branch:** env/test (→ main)
 **Area:** Chiusura/rilascio Pagina Prenota (merge + edge function PROD)
-**Stato:** FU-034 chiuso. Merge in main fatto e pushato; edge `create-booking` allineata su PROD. Aggiornamento FU-034 nel working tree (non committato).
+**Stato:** FU-034 chiuso. Merge in main fatto e pushato; edge `create-booking` allineata su PROD. FOLLOW_UP FU-034 Fatto in commit `a109b17`.
 
 ---
 
