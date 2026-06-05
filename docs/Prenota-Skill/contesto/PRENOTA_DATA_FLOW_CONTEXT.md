@@ -25,7 +25,7 @@ description: >-
 
 **Regola operativa:** la vetrina **non** legge il magazzino in tempo reale per tutto. Per i campi vetrina (`label`, `description`, `price_per_person`, `hidden_*`) c'è un **resolver** che decide caso per caso se mostrare il valore live del preset o quello «congelato» nella card.
 
-**Delete categoria magazzino → vetrina:** eliminando una categoria in tab Menu (`useDeleteMenuCategory`), `syncMenuCategoryKeyDelete` rimuove la `category_key` da `sub_tabs[].hidden_category_keys` in `booking_public_form_config` (non tocca `field_overrides`). Helper: `bookingFormCategoryKeySync.removeCategoryKeyFromBookingPublicFormConfig`. Stesso momento del sync Menù QR — vedi `PUBLIC_MENU_DATA_FLOW_CONTEXT.md` § delete sync.
+**Delete categoria magazzino → vetrina:** eliminando una categoria in tab Menu (`useDeleteMenuCategory`), `syncMenuCategoryKeyDelete` rimuove la `category_key` da `sub_tabs[].hidden_category_keys` e `category_order_keys` in `booking_public_form_config` (non tocca `field_overrides`). Helper: `bookingFormCategoryKeySync.removeCategoryKeyFromBookingPublicFormConfig`. Stesso momento del sync Menù QR — vedi `PUBLIC_MENU_DATA_FLOW_CONTEXT.md` § delete sync.
 
 ---
 
@@ -33,7 +33,7 @@ description: >-
 
 File: `src/features/booking/services/bookingFormResolver.ts`.
 
-Ogni `SubTab` può avere un oggetto `field_overrides: { label?, description?, price_per_person?, hidden_item_ids?, hidden_category_keys? }` con valori `boolean`.
+Ogni `SubTab` può avere un oggetto `field_overrides: { label?, description?, price_per_person?, hidden_item_ids?, hidden_category_keys?, category_order_keys? }` con valori `boolean`.
 
 - `field_overrides[campo] === true` → quel campo è **personalizzato** dal ristoratore. La pagina Prenota mostra il valore salvato nella card. Modifiche al preset in tab Menu **non** la toccano.
 - `field_overrides[campo]` assente o `false` → quel campo è **ereditato dal preset**. La pagina Prenota legge il valore live dal preset corrente in `booking_custom_staff_presets`. Se il preset cambia in tab Menu, la card si aggiorna senza riaprire Personalizza form.
@@ -169,8 +169,9 @@ LOCK  Due client Supabase
 LOCK  Rename chiave categoria (magazzino)
       Solo al save categoria in tab Menu (`useUpdateMenuCategory`): oltre a
       `menu_items.category`, allinea in background `menu_qr_codes` /
-      `menu_qrcode_categories` e `sub_tabs[].hidden_category_keys` in
-      `booking_public_form_config` (`bookingFormCategoryKeySync.ts`). Non toccare
+      `menu_qrcode_categories` e `sub_tabs[].hidden_category_keys` /
+      `category_order_keys` in `booking_public_form_config`
+      (`bookingFormCategoryKeySync.ts`). Non toccare
       `field_overrides` né altri campi vetrina. Sync non automatica aprendo tab Menu
       o modale QR senza save categoria. UX rename: modale conferma in overlay Categorie
       (non toast laterale) — vedi FU-029 / `MenuPricesTab`.
