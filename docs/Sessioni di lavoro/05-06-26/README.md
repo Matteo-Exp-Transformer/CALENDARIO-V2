@@ -44,7 +44,12 @@ Due filoni su **Pagina Prenota**: (1) tentativo feature **ordine categorie** `ca
 ### Allineamento card scorrevoli + carosello (colonna form)
 | Report | Stato | Effetto / task | Note |
 |--------|-------|----------------|------|
-| [Report-prenota-allineamento-card-carosello-05-06-26.md](./Report-prenota-allineamento-card-carosello-05-06-26.md) | ✅ | Centro dinamico se il gruppo entra; mobile prima card intera a sinistra; dimensioni mobile 41% viewport | validate **412**; QA iterativa Matteo OK; non committato |
+| [Report-prenota-allineamento-card-carosello-05-06-26.md](./Report-prenota-allineamento-card-carosello-05-06-26.md) | ✅ | Centro dinamico se il gruppo entra; mobile prima card intera a sinistra; dimensioni mobile 41% viewport | validate **412**; commit `354da7f`/`dec0d9b`; QA iterativa Matteo OK |
+
+### Revisione centratura card/carosello
+| Report | Stato | Effetto / task | Note |
+|--------|-------|----------------|------|
+| [Report-revisione-prenota-centratura-card-carosello-05-06-26.md](./Report-revisione-prenota-centratura-card-carosello-05-06-26.md) | ✅ riserve | Verifica Profilo: **Approva con riserve** — codice OK, slug `test` assente, C1/C3 non coperti | validate **412**; QA Playwright su `trattoria-da-tommaso`; 806px OK |
 
 ## Da non confondere
 

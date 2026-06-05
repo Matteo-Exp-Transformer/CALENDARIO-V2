@@ -13,7 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
-| 05-06-26 | Prenota — **allineamento card scorrevoli + carosello** (colonna form) ✅ **lavoro ok** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-prenota-allineamento-card-carosello-05-06-26.md) — hook fit/overflow; centro se entra / sinistra mobile; CSS var 41% viewport; validate **412**; QA iterativa Matteo OK |
+| 05-06-26 | Prenota — **revisione centratura card/carosello** ✅ **Approva con riserve** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-revisione-prenota-centratura-card-carosello-05-06-26.md) — Verifica Profilo; validate **412**; QA Playwright `trattoria-da-tommaso`; slug `test` assente; C1/C3 non coperti |
+| 05-06-26 | Prenota — **allineamento card scorrevoli + carosello** (colonna form) ✅ **lavoro ok** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-prenota-allineamento-card-carosello-05-06-26.md) — hook fit/overflow; centro se entra / sinistra mobile; CSS var 41% viewport; validate **412**; commit `354da7f`/`dec0d9b`; QA iterativa Matteo OK |
 | 05-06-26 | Prenota — **fix menù personalizzabile + descrizione card manuale + footer sottotab** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-prenota-menu-sottotab-fix-05-06-26.md) — checkbox vuote (`subTabGuestComposable`); card manuale in MenuSelection; no «a persona»; validate **412**; FU-037 QA browser |
 | 05-06-26 | Docs - **README indici** cartelle sessioni (155 report, percorsi rapidi agente) | [Indice](Sessioni%20di%20lavoro/README.md) - 18 README (root + 14 giornate + 3 sottocartelle); ogni DD-MM-YY punta ai report; no rewrite contenuti |
 | 05-06-26 | Prenota — **tipologie capability-driven Fase 1-2** ✅ **report finale** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-tipologie-capability-driven-Fase1-2-05-06-26.md) — gate menù card+preset; FU-035 **Fatto**; commit 67d3df9/852f0a7/08b2bb4; validate **409** |
