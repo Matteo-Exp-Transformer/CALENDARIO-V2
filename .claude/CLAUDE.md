@@ -2,6 +2,23 @@
 
 Questo file orienta le sessioni Claude Code su questo progetto.
 
+## Prima di toccare il codice — instradati all'area giusta
+
+Il progetto è organizzato in **aree** (Pagina Prenota, Menu QR, Admin shell, Database…), ognuna con
+una **skill d'area** che ne tiene il senso, i flussi, i divieti voluti e i valori. **Non navigare il
+codice a tappeto:** apri prima il routing e fatti guidare al file d'area.
+
+1. Apri `docs/APP_CONTEXT_SKILL.md` **§0** — è la tabella «il task riguarda X → carica skill Y».
+   Trova la riga che combacia col task e carica quella skill d'area **prima** di aprire i file da modificare.
+2. Aree già mappate col pattern senso/contesto (entry point + cartella `contesto/`):
+   - **Pagina Prenota** (pubblica) → `docs/Prenota-Skill/PRENOTA_SKILL.md`
+   - **Menu QR** (pubblico) → `docs/Menu-QR-Skill/MENU_QR_SKILL.md`
+   - Altre aree (Tab Menu admin, Admin shell, Database, PWA): vedi la §0 sopra.
+3. Leggi la skill d'area **intera**, poi apri **solo** il file di `contesto/` che ti serve (anch'esso intero).
+
+> I valori (limiti, soglie) vivono nel **codice** = verità; i file `.md` li specchiano e spiegano il
+> perché. Dopo un edit di codice aggiorni il file di contesto mappato, non copie sparse.
+
 ## File critici
 
 | File | Perché è importante |

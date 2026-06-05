@@ -14,41 +14,30 @@ description: >-
 
 1. Leggere **per intero** (strumento Read) questi file nel repository, in quest’ordine:
    - `docs/APP_CONTEXT_SKILL.md` — Skill 0: tabella aree → skill, invarianti LOCK, routing admin, convenzioni fine sessione.
-   - `docs/CLAUDE.md` — file critici, comandi (`npm run validate`, ecc.), zone delicate, struttura `src/`.
+   - `.claude/CLAUDE.md` — file critici, comandi (`npm run validate`, ecc.), zone delicate, struttura `src/`.
 
-2. Quando `docs/APP_CONTEXT_SKILL.md` indica il “file master `CLAUDE.md`” per comandi e setup, usare **`docs/CLAUDE.md`** come riferimento in Cursor (contenuto allineato a `.claude/CLAUDE.md` dove presente).
-
-3. Dalla sezione 0 di `docs/APP_CONTEXT_SKILL.md`, caricare **subito dopo** lo skill/documento d’area indicato (es. `docs/ADMIN_CLASSIC_SKILL.md`, `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md`, `docs/Database-Skill/DB_SKILL.md`, ecc.) **prima** di aprire file da modificare.
-4. Task su **layout tab Calendario** (celle mese, titolo responsive, padding, Oggi+data): leggere anche `docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md` (oltre a `ADMIN_CLASSIC_SKILL.md` §4c).
+2. Dalla sezione 0 di `docs/APP_CONTEXT_SKILL.md`, caricare **subito dopo** lo skill/documento d’area indicato (vedi la **Mappa aree → file d'area** sotto) **prima** di aprire file da modificare.
+3. Task su **layout tab Calendario** (celle mese, titolo responsive, padding, Oggi+data): leggere anche `docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md` (oltre a `ADMIN_CLASSIC_SKILL.md` §4c).
 
 ## Cosa non duplicare qui
 
-Regole, tabelle LOCK, comandi e report di sessione stanno solo nei due file sopra: aggiornare quelli quando cambiano architettura o invarianti; questa skill resta un puntatore stabile per Cursor.
+Regole, tabelle LOCK, comandi, valori e cronologie di sessione stanno solo nei due file sopra e nei file d'area: aggiornare quelli quando cambiano architettura o invarianti; questa skill resta un **puntatore stabile** per Cursor. Niente changelog qui — i report di sessione vivono in `docs/Sessioni di lavoro/`.
 
-**Ultimo refactor promo menù (23-05-26):** chiave `booking_menu_promos`, niente omaggio automatico in `MenuSelection` — report `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`, invariante in `docs/APP_CONTEXT_SKILL.md` §4 RULE Menu Prenota.
+## Mappa aree → file d'area
 
-**Menu QR (area mappata 06-06-26):** entry unica `docs/Menu-QR-Skill/MENU_QR_SKILL.md` (senso + flusso + divieti + mappa) → `contesto/` (LAYOUT, DATA_FLOW, TEXT_LIMITS_MAP, TEST_SUITE_INDEX, REFERENCE tecnico). I vecchi `PUBLIC_MENU_*` in `per-ui-design-skill/` sono spostati lì.
+Ogni area dell'app ha una cartella `docs/<Area>-Skill/` con un file d'ingresso (senso + flusso + divieti + mappa) e una sottocartella `contesto/` per il dettaglio. Apri l'ingresso dell'area **prima** dei file da modificare; il routing ufficiale e completo è in `docs/APP_CONTEXT_SKILL.md` § 0.
 
-**Prenota v2 sottotab orizzontali (25-05-26):** `BookingMode.sub_tabs[]` (preset/manuale), `BookingSubTabCards`, editor in `BookingFormConfigPanel` — report `docs/Sessioni di lavoro/25-05-26/Report-sottotab-orizzontali-prenota-v2.md`, RULE in `docs/APP_CONTEXT_SKILL.md` §4.
+| Area | Ingresso |
+|------|----------|
+| **Pagina Prenota** (pubblica) | `docs/Prenota-Skill/PRENOTA_SKILL.md` → `contesto/*` |
+| **Menu QR** (pubblico) | `docs/Menu-QR-Skill/MENU_QR_SKILL.md` → `contesto/*` |
+| **Tab Menu admin** (magazzino) | `docs/per-ui-design-skill/MENU_ADMIN_CONTEXT.md` |
+| **Admin shell + pagine** | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
+| **Database** | `docs/Database-Skill/DB_SKILL.md` |
+| **PWA** | `docs/PWA_CONTEXT.md` |
 
-**Impostazioni salvataggio condiviso (29-05-26):** footer compatto destra, autosave toggle, guard modale — report `docs/Sessioni di lavoro/29-05-26/Report-ciclo-salvataggio-admin-29-05-26.md`, RULE in `APP_CONTEXT_SKILL.md` §4.
+> Le aree mappate col pattern senso/contesto (Prenota, Menu QR) hanno gli stub vecchi in `per-ui-design-skill/` ridotti a rimandi. Lo stato della mappatura è in `docs/Comunicazione-Skill/PROSEGUIMENTO_MAPPATURA_SKILL.md`.
 
-**Personalizza form carosello + help (26-05-26):** `CarouselAddPhotoBlock`, `SubTabsDisplayHelpPanel`, `SubTabAddButtons`; sottotab carousel in Prenota **senza** griglia menù — report `docs/Sessioni di lavoro/26-05-26/Report-personalizza-form-carosello-help-26-05-26.md`, `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md`, RULE Pagina Prenota v2 in `APP_CONTEXT_SKILL.md` §4.
+**Follow-up post-sessione:** debiti e controlli differiti → [`docs/FOLLOW_UP.md`](../../docs/FOLLOW_UP.md). Fallback prod trasversale → §4c; milestone agenti tier avanzato → §4d (entrambe in `docs/APP_CONTEXT_SKILL.md`). Agente prepara-prompt: follow-up in `docs/PREPARA_PROMPT_SKILL.md`.
 
-**Prenota carosello overlay campi (26-05-26):** report `Report-prenota-carosello-overlay-campi-26-05-26.md` (sostituito dal modello per-slide).
-
-**Carosello editor per slide (26-05-26):** `BookingFormCarouselEditor` foto-first; `carousel_items[].eyebrow/title/description/icon`; nessun prezzo — report `docs/Sessioni di lavoro/26-05-26/Report-carosello-editor-per-slide-26-05-26.md`.
-
-**Personalizza form: etichetta card sottotab (26-05-26):** import menù solo su Card scorrevole; titolo Prenota = `sub_tabs[].label`; `applyLegacySubTabLabelOverrides`; `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md` + RULE §4 Personalizza form / Prenota v2.
-
-**Card scorrevole titolo admin (29-05-26):** no prefill label; placeholder «Nome card scorrevole»; clear label su Compila manualmente; riga lista `Titolo · Card N` — report `docs/Sessioni di lavoro/29-05-26/Report-card-scorrevole-titolo-admin-29-05-26.md`.
-
-**Promo in Personalizza form (29-05-26):** editor promo spostato da Tab Menu a sezione **Messaggio Promozionale**; modello `MenuPromo.placement` + array `booking_types` / `sub_tab_refs` (multi-target); banner singolo Prenota + snapshot multi-promo — report `docs/Sessioni di lavoro/29-05-26/Report-promo-personalizza-form-29-05-26.md`, correzione multi-target `Report-promo-multi-target-29-05-26.md`, `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md` § Salvataggio admin.
-
-**Carosello toggle riepilogo offerta (28-05-26):** `sub_tabs[].show_offer_details_in_summary` (default ON); switch in editor carosello `BookingFormConfigPanel`; `BookingSummarySidebar` condiziona «Offerta selezionata» — report `docs/Sessioni di lavoro/28-05-26/Report-carosello-riepilogo-toggle-offerta-28-05-26.md`, `BOOKING_DATA_FLOW_SKILL.md` §5, `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md`.
-
-**Skill snellito — file di contesto per zona (29-05-26):** i dettagli della §4 di `APP_CONTEXT_SKILL.md` sono stati estratti in file di contesto dedicati. **Pagina Prenota (04-06-26):** area in `docs/Prenota-Skill/` (`PRENOTA_SKILL.md` + `contesto/*`); i vecchi path `BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` / `BOOKING_FORM_CONFIG_PANEL_CURSOR_CONTEXT.md` in `per-ui-design-skill/` sono solo stub di rimando. Tab Menu admin → `MENU_ADMIN_CONTEXT.md`; PWA → `PWA_CONTEXT.md`; Servizio → `ADMIN_PAGES_CONTEXT.md` § Servizio. Routing ufficiale: `APP_CONTEXT_SKILL.md` § 0.
-
-**Follow-up post-sessione:** debiti e controlli differiti → [`docs/FOLLOW_UP.md`](../../docs/FOLLOW_UP.md) (es. FU-001 modal calendario promo). **Fallback prod (trasversale):** FU-023 — mappare tutti i fallback, togliere hardcoded di test → regola §4c in `docs/APP_CONTEXT_SKILL.md`. **Milestone lontana:** FU-024 — skill/entry point per agenti tier avanzato (Codex, Cursor intelligent, ecc.) → §4d, non implementare senza sessione Meta. Agente prepara-prompt: cerca follow-up in `docs/PREPARA_PROMPT_SKILL.md`.
-
-**Profilo Verifica (revisione lavoro altrui):** leggere `docs/Testing-Skill/TESTING_SKILL.md` **§7** — dopo `npm run validate`, eseguire QA manuale su **mobile 375×812, tablet 834×1194, desktop 1280×800** (stessi casi funzionali per ogni viewport); credenziali in `.env.local.test`; documentare tabella esiti nel report sessione. Non dichiarare «verificato» con una sola larghezza schermo.
+**Profilo Verifica (revisione lavoro altrui):** leggere `docs/Testing-Skill/TESTING_SKILL.md` **§7** — dopo `npm run validate`, QA manuale su **mobile 375×812, tablet 834×1194, desktop 1280×800** (stessi casi per ogni viewport); credenziali in `.env.local.test`; tabella esiti nel report. Non dichiarare «verificato» con una sola larghezza.

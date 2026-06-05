@@ -54,12 +54,12 @@ Leggi il task ricevuto e applica questa tabella:
 | **TenantContext / useFeatures / edition / tenant_features / login / auth / feature flag / featureOverrides** | `docs/DATA_FLOW_SKILL.md` — flusso identitario end-to-end |
 | **Edition / pricing / add-on / vendita / cliente / pacchetto / commerciale / feature_key / bundle** | `docs/Marketing-Skill/MARKETING_SKILL.md` |
 | **tenant_features** (tabella DB, RPC, override) | `docs/Database-Skill/DB_SKILL.md` + `docs/DATA_FLOW_SKILL.md` |
-| **Menu QR pubblico / QR code / foto piatti / pagina mobile menu / menu digitale** | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` — report sessione layout: `docs/Sessioni di lavoro/24-05-26/Report-menu-qr-homepage-layout-sessione.md` |
+| **Menu QR pubblico / QR code / foto piatti / pagina mobile menu / menu digitale** | **`docs/Menu-QR-Skill/MENU_QR_SKILL.md`** (entry point area — senso + flusso + divieti + mappa verso `contesto/*`) |
 | **Pagina Prenota v2 / BookingRequestPage / BookingRequestForm / card tipologia / sidebar riepilogo / BookingModeCards / BookingSubTabCards / booking_public_form_config / sub_tabs / layout striscia / sfondo / caselle form** | **`docs/Prenota-Skill/PRENOTA_SKILL.md`** (entry point area — senso + mappa verso i file di dettaglio) + `UI_RESPONSIVE_SKILL.md` + `UI_EDIT_SKILL.md`. |
 | **Tab Menu admin / MenuPricesTab / form ingrediente / categorie menu / promo testuali / menù preselezionati (preset staff) / booking_menu_promos / booking_custom_staff_presets** | **`docs/per-ui-design-skill/MENU_ADMIN_CONTEXT.md`** (+ `docs/Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md` se tocca il flusso dati, `DB_SKILL.md` se tocca lo schema) |
 | **PWA / service worker / aggiornamento app / cache / VitePWA / registerSW / vercel.json cache header / __APP_VERSION__** | **`docs/PWA_CONTEXT.md`** |
 | **Flusso dati tab Menu ↔ Personalizza form ↔ Pagina Prenota / bookingFormResolver / field_overrides / SubTab.label legato a preset / "aggiorna solo se non personalizzato" / aggiunta campi a SubTab o BookingMode** | **`docs/Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md` OBBLIGATORIO** prima di qualsiasi modifica — spiega il resolver, gli invarianti, come estendere senza rompere. |
-| **Layout pagina menu pubblica / card categorie / carosello / hero section / pill icone / testo su immagini / griglie / sfondi tema** | `docs/per-ui-design-skill/PUBLIC_MENU_LAYOUT_CONTEXT.md` |
+| **Layout pagina menu pubblica / card categorie / carosello / hero section / pill icone / testo su immagini / griglie / sfondi tema** | `docs/Menu-QR-Skill/contesto/MENU_QR_LAYOUT_CONTEXT.md` |
 | UI / className / Tailwind / layout / componenti / tema / colori / index.css | `docs/per-ui-design-skill/UI_EDIT_SKILL.md` |
 | **Responsive / breakpoint / mobile / grid che collassa / padding-gap adattivi / max-width container / contenuto pagina vs sidebar** | `docs/per-ui-design-skill/UI_RESPONSIVE_SKILL.md` |
 | **BookingCalendar — layout tab Calendario, celle mese, titolo responsive, data su Oggi, padding tab** | **`docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md`** + `ADMIN_CLASSIC_SKILL.md` §4c |
@@ -285,7 +285,7 @@ RULE  !important Tailwind v4: suffisso → `border-red-500!` (non `!border-red-5
 RULE  data-admin-theme: nessun cleanup — il tema deve persistere per tutta la sessione
 RULE  Due client Supabase: non mischiare supabase ↔ supabasePublic
 RULE  Feature flag commerciali: governate da `tenant_features` (tabella DB) + `edition` (bundle base). `useFeatures()` legge da `TenantContext.featureOverrides` → `buildFeatures(edition, featureOverrides)` → `FeatureFlags`. Mai leggere colonne `_enabled` da `organizations` né `featureOverrides` direttamente per gating UI — usare solo `features.X`. **Per attivare una feature a un'azienda la fonte di verità è la riga in `tenant_features` (via `get_tenant_features`); `organizations.qr_menu_enabled` è legacy e NON viene letta dal codice.** Flusso completo in `docs/DATA_FLOW_SKILL.md`. **Procedura passo-passo (con avvertenza fonte di verità + ambiente PROD) in `docs/Marketing-Skill/MARKETING_SKILL.md` § 3.**
-RULE  **Menu QR** (qrMenu flag: auto-true Pro/Enterprise, Classic via `tenant_features`). Pagine pubbliche `/menu/:slug` ecc.; aspetto per-QR su `menu_qr_codes` (migrazioni **036/037** obbligatorie su ogni Supabase del deploy). **Dettaglio completo → `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`**.
+RULE  **Menu QR** (qrMenu flag: auto-true Pro/Enterprise, Classic via `tenant_features`). Pagine pubbliche `/menu/:slug` ecc.; aspetto per-QR su `menu_qr_codes` (migrazioni **036/037** obbligatorie su ogni Supabase del deploy). **Dettaglio completo → `docs/Menu-QR-Skill/MENU_QR_SKILL.md`** (+ `contesto/*`).
 RULE  Email CRM: normalizeCustomerEmail() prima di confronto o scrittura
 RULE  UUID: cancelled_by è UUID auth.users.id — mai passare email a campi UUID
 RULE  Admin **Personalizza form** (`BookingFormConfigPanel`) + tab **Anagrafica Azienda**: UI salvataggio condivisa `SettingsSaveUi.tsx`, autosave whitelist, guard navigazione, XOR card/carosello (`sub_tabs_presentation`), editor sottotab/carosello, card Sfondo (striscia vs pagina intera). **Dettaglio completo → `docs/Prenota-Skill/contesto/PRENOTA_FORM_CONFIG_CONTEXT.md`**.
@@ -470,12 +470,12 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | Qualsiasi file LOCK | Aggiorna sezione "stato attuale" nello skill di area |
 | `restaurantSettingRegistry.ts` (validazione, range, campi) | `APP_CONTEXT_SKILL.md` §4 RULE walk_in_max_guests |
 | `MenuPricesTab.tsx` / `MenuSelection.tsx` / `menuPricesCatalogLayout.ts` / `presetMenus.ts` / `menuCatalogGrouping.ts` | `MENU_ADMIN_CONTEXT.md` (+ `Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md`) |
-| `MenuQrManager.tsx` / `MenuQrModal.tsx` / `useMenuQrCodes.ts` / pagine pubbliche menu | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` + `APP_CONTEXT_SKILL.md` §4 RULE Menu QR |
+| `MenuQrManager.tsx` / `MenuQrModal.tsx` / `useMenuQrCodes.ts` / pagine pubbliche menu | `docs/Menu-QR-Skill/MENU_QR_SKILL.md` + `APP_CONTEXT_SKILL.md` §4 RULE Menu QR |
 | `tenant_features` / `buildFeatures` / `featureOverrides` / `TenantContext` / `useFeatures` | `APP_CONTEXT_SKILL.md` §4 RULE Feature flag commerciali + `DATA_FLOW_SKILL.md` |
 | `docs/Marketing-Skill/FEATURE_CATALOG_CONTEXT.md` (nuova feature add-on) | Aggiorna tabella catalogo feature |
 | `check_admin_email` RPC / `organizations_public` vista | `DATA_FLOW_SKILL.md` §2 + §5 |
-| `menuPhotoUpload.ts` / `shortCodeGenerator.ts` | `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md` |
-| `035_menu_categories_image_url.sql` / `menu_categories.image_url` | `docs/DATABASE.md` + `DB_MIGRATIONS_CONTEXT.md` + `DB_SCHEMA_CONTEXT.md` + `PUBLIC_MENU_SKILL.md` |
+| `menuPhotoUpload.ts` / `shortCodeGenerator.ts` | `docs/Menu-QR-Skill/MENU_QR_SKILL.md` |
+| `035_menu_categories_image_url.sql` / `menu_categories.image_url` | `docs/DATABASE.md` + `DB_MIGRATIONS_CONTEXT.md` + `DB_SCHEMA_CONTEXT.md` + `Menu-QR-Skill/MENU_QR_SKILL.md` |
 | `useBookingMutations.ts` / `useWalkInMutation.ts` / qualsiasi mutation che scrive `confirmed_start` o `desired_time` | `ADMIN_CLASSIC_SKILL.md` §4 + §4b |
 | `dateUtils.ts` (createBookingDateTime, extractTimeFromISO, getAccurateStartTime) | `ADMIN_CLASSIC_SKILL.md` §4b + `TESTING_CONTEXT.md` se cambiano i test |
 | `serviceSlotBookingFilter.ts` / logica filtro fascia in `useUnassignedBookings` | `ADMIN_PAGES_CONTEXT.md` § Servizio → Assegnazione tavoli + `TESTING_CONTEXT.md` se cambiano i test |

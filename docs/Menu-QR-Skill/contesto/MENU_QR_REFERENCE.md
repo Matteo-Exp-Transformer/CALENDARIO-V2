@@ -154,7 +154,7 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 5. **Griglia categorie** — 1 col &lt;520 · **2 col ≥520** (stesso layout card a tutte le larghezze dentro `max-w-[1024px]`). **Con foto**: tile `aspect-[7/2]` (da 520 `5/2`), gradiente, titolo su immagine. **Senza foto**: riga ~**30%** icona su bianco + ~**70%** header PNG con titolo/chevron; descrizione opzionale **sotto il titolo nel 70%**. Mix foto: da 520px card senza foto `aspect-[5/2]` come le tile con foto. **Nessun** ramo thumb orizzontale da 1025px. **Mai emoji** (FU-023). Sfondo pagina: `useMenuPageBackgroundStyle()` full-bleed; contenuto centrato oltre 1024px.
 6. **Footer `MenuFooterCard`** — data e ora IT, `mt-auto` in fondo pagina.
 
-> Dettaglio componenti: **`docs/per-ui-design-skill/PUBLIC_MENU_LAYOUT_CONTEXT.md`**
+> Dettaglio componenti: **`docs/Menu-QR-Skill/contesto/MENU_QR_LAYOUT_CONTEXT.md`**
 
 **Limiti admin carosello** (`MenuQrCarouselSection`): campi con `AdminFieldWithCharCount` — **Etichetta** (eyebrow) max **40** (placeholder «Esempio: Specialità della casa», **nessun prefill**), **Titolo slide** max **60**, **Descrizione breve** max **125**; rimozione slide con `Modal` conferma. Pubblico: eyebrow **solo se compilato** in `carousel_items`; slide senza `image_url` escluse dal parse.
 
