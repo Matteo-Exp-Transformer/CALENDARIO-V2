@@ -71,9 +71,9 @@ export const BOOKING_PUBLIC_FIELD_INNER_TEXTAREA =
  */
 export function bookingPublicSubTabScrollCardWidthClass(): string {
   return [
-    // base mobile: ~2,4 slot proporzionali (card più larga → icona/contenuti non compressi)
-    'w-[41%]',
-    'max-w-[41%]',
+    // base mobile: ~2,4 slot — % sul viewport outer (--booking-sub-tab-viewport-px), non sul inner w-max
+    'w-[calc(var(--booking-sub-tab-viewport-px,100%)*0.41)]',
+    'max-w-[calc(var(--booking-sub-tab-viewport-px,100%)*0.41)]',
     // ≥782px: quadrato a lato fisso, allineato alle card ingredienti
     'min-[782px]:w-[200px]',
     'min-[782px]:max-w-[200px]',

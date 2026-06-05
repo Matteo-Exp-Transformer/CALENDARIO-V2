@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { CaretLeftIcon } from '@phosphor-icons/react/dist/csr/CaretLeft'
 import { CaretRightIcon } from '@phosphor-icons/react/dist/csr/CaretRight'
 import { cn } from '@/lib/utils'
@@ -8,6 +8,7 @@ import {
   bookingPublicSubTabScrollCardWidthClass,
 } from '@/features/booking/constants/bookingPublicFieldStyles'
 import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
+import { useBookingPublicScrollRowAlign } from '@/features/booking/hooks/useBookingPublicScrollRowAlign'
 
 const SUB_TAB_SCROLL_STEP_PX = 240
 
@@ -32,20 +33,35 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
   activeSubTabId,
   onChange,
 }) => {
-  const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
+  const { outerRef, innerRef, rowOverflows, innerRowAlignClass } =
+    useBookingPublicScrollRowAlign(subTabs.length)
+
+  const isScrollable = subTabs.length > 3
+
+  useEffect(() => {
+    const el = outerRef.current
+    if (!el || !isScrollable) return
+    const syncViewport = () => {
+      el.style.setProperty('--booking-sub-tab-viewport-px', `${el.clientWidth}px`)
+    }
+    syncViewport()
+    const ro = new ResizeObserver(syncViewport)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [isScrollable, subTabs.length, outerRef])
 
   const updateScrollHints = useCallback(() => {
-    const el = scrollRef.current
+    const el = outerRef.current
     if (!el) return
     const { scrollLeft, scrollWidth, clientWidth } = el
     setCanScrollLeft(scrollLeft > 4)
     setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4)
-  }, [])
+  }, [outerRef])
 
   useEffect(() => {
-    const el = scrollRef.current
+    const el = outerRef.current
     if (!el) return
     updateScrollHints()
     el.addEventListener('scroll', updateScrollHints, { passive: true })
@@ -55,17 +71,16 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
       el.removeEventListener('scroll', updateScrollHints)
       ro.disconnect()
     }
-  }, [subTabs.length, updateScrollHints])
+  }, [subTabs.length, updateScrollHints, outerRef])
 
   const scrollBy = (delta: number) => {
-    scrollRef.current?.scrollBy({ left: delta, behavior: 'smooth' })
+    outerRef.current?.scrollBy({ left: delta, behavior: 'smooth' })
   }
 
   if (subTabs.length === 0) return null
   // ≤3 card: flex-1 su ogni card → si espandono a riempire la riga, centrate (altezza fissa).
   // ≥4 card: comportamento responsive validato nel report agente:
   // 3 slot proporzionali su mobile, lato fisso da 782px e scatto a 1400px.
-  const isScrollable = subTabs.length > 3
   const cardFlexClass = isScrollable
     ? bookingPublicSubTabScrollCardWidthClass()
     : 'flex-1 min-w-0'
@@ -90,10 +105,16 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
         </button>
       )}
       <div
-        ref={scrollRef}
+        ref={outerRef}
         className="w-full min-w-0 overflow-x-auto overscroll-x-contain scrollbar-hide py-1 touch-pan-x [-webkit-overflow-scrolling:touch]"
       >
-        <div className="flex w-full flex-nowrap gap-1.5 sm:gap-2 snap-x snap-mandatory scroll-px-2">
+        <div
+          ref={isScrollable ? innerRef : undefined}
+          className={cn(
+            'flex flex-nowrap gap-1.5 sm:gap-2 snap-x snap-mandatory scroll-px-2',
+            isScrollable ? cn('w-max', innerRowAlignClass) : 'w-full justify-center',
+          )}
+        >
         {subTabs.map((tab) => {
           const isActive = activeSubTabId === tab.id
           const isCardDisplay = tab.display !== 'carousel'
@@ -110,7 +131,8 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
               data-testid={`booking-sub-tab-card-${tab.id}`}
               onClick={() => onChange(isActive ? null : tab)}
               className={cn(
-                'flex snap-center flex-col rounded-xl border px-2.5 py-2.5 text-left transition-all sm:rounded-2xl sm:px-4 sm:py-4',
+                'flex flex-col rounded-xl border px-2.5 py-2.5 text-left transition-all sm:rounded-2xl sm:px-4 sm:py-4',
+                isScrollable ? (rowOverflows ? 'snap-start' : 'snap-center') : 'snap-center',
                 cardFlexClass,
                 cardHeightClass,
                 'bg-white/95 backdrop-blur-[1px] shadow-[0_12px_34px_rgba(49,22,12,0.10)]',

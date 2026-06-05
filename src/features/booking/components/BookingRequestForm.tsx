@@ -49,6 +49,7 @@ import {
   isWithinBookingTextLimit,
 } from '../constants/bookingPrenotaTextLimits'
 import { BookingSubTabCards } from './publicBooking/BookingSubTabCards'
+import { useBookingPublicScrollRowAlign } from '../hooks/useBookingPublicScrollRowAlign'
 import { MenuQrCategoryIconGlyph } from '@/features/public-menu/MenuQrCategoryIconGlyph'
 import { resolveBookingStoredIconKey } from '@/features/public-menu/categoryIcons'
 import {
@@ -83,41 +84,117 @@ interface BookingRequestFormProps {
   publicFormLightTextOnDarkBackground?: boolean
 }
 
+const BOOKING_CAROUSEL_SLIDE_WIDTH_CLASS =
+  'w-[min(280px,calc(var(--booking-carousel-viewport-px,100%)*0.72))] sm:w-[min(320px,calc(var(--booking-carousel-viewport-px,100%)*0.6))] md:w-[calc(var(--booking-carousel-viewport-px,100%)*0.46)]'
+
 function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
-  const scrollerRef = useRef<HTMLDivElement>(null)
   const visible = (subTab.carousel_items ?? []).filter((item) => item.image_url?.trim())
+  const { outerRef, innerRef, rowOverflows, innerRowAlignClass, measureRow } =
+    useBookingPublicScrollRowAlign(visible.length)
+
+  useEffect(() => {
+    const el = outerRef.current
+    if (!el || visible.length <= 1) return
+    const syncViewport = () => {
+      el.style.setProperty('--booking-carousel-viewport-px', `${el.clientWidth}px`)
+      measureRow()
+    }
+    syncViewport()
+    const ro = new ResizeObserver(syncViewport)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [visible.length, measureRow, outerRef])
+
   if (visible.length === 0) return null
 
   const scrollCarousel = (direction: 'left' | 'right') => {
-    const el = scrollerRef.current
+    const el = outerRef.current
     if (!el) return
     const delta = Math.max(280, Math.round(el.clientWidth * 0.7))
     el.scrollBy({ left: direction === 'left' ? -delta : delta, behavior: 'smooth' })
   }
 
+  if (visible.length === 1) {
+    const item = visible[0]
+    const cardLabel = item.eyebrow?.trim() || ''
+    const title = item.title?.trim() || ''
+    const description = item.description?.trim() || ''
+    const hasOverlay = Boolean(cardLabel || title || description)
+
+    return (
+      <div className={cn('relative', BOOKING_PUBLIC_CONTENT_WIDTH)}>
+        <div className="flex w-full justify-center">
+          <article className="relative h-36 w-full max-w-[280px] shrink-0 overflow-hidden rounded-2xl bg-warm-wood text-white shadow-lg sm:h-52 sm:max-w-[320px] md:h-64">
+            <img
+              src={item.image_url}
+              alt={title || cardLabel || ''}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+            {item.icon ? (
+              <span
+                className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white shadow-md backdrop-blur-[1px] sm:right-4 sm:top-4 sm:h-10 sm:w-10"
+                aria-hidden
+              >
+                <MenuQrCategoryIconGlyph
+                  iconKey={resolveBookingStoredIconKey(item.icon)}
+                  className="h-5 w-5 sm:h-6 sm:w-6 text-white"
+                />
+              </span>
+            ) : null}
+            {hasOverlay ? (
+              <div className="absolute inset-x-0 bottom-0 p-4 text-left">
+                {cardLabel ? (
+                  <p className="ml-[-9px] mr-[-9px] px-0 text-xs font-bold uppercase tracking-wide text-white/80">
+                    {cardLabel}
+                  </p>
+                ) : null}
+                {title ? (
+                  <h3 className="mt-1 ml-[-9px] mr-[-11px] px-0 text-lg font-bold leading-tight">{title}</h3>
+                ) : null}
+                {description ? (
+                  <p className="mt-1 ml-[-9px] mr-[-11px] line-clamp-3 text-sm font-medium leading-snug text-white/85">
+                    {description}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+          </article>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={cn('relative', BOOKING_PUBLIC_CONTENT_WIDTH)}>
-      {visible.length > 1 ? (
-        <>
-          <button
-            type="button"
-            aria-label="Scorri foto precedenti"
-            onClick={() => scrollCarousel('left')}
-            className="absolute left-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange md:flex"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            aria-label="Scorri foto successive"
-            onClick={() => scrollCarousel('right')}
-            className="absolute right-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange md:flex"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </>
-      ) : null}
-      <div ref={scrollerRef} className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+      <button
+        type="button"
+        aria-label="Scorri foto precedenti"
+        onClick={() => scrollCarousel('left')}
+        className="absolute left-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange md:flex"
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </button>
+      <button
+        type="button"
+        aria-label="Scorri foto successive"
+        onClick={() => scrollCarousel('right')}
+        className="absolute right-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white/90 text-warm-wood shadow-lg backdrop-blur-sm transition hover:bg-white hover:text-warm-orange md:flex"
+      >
+        <ChevronRight className="h-5 w-5" />
+      </button>
+      <div
+        ref={outerRef}
+        className="w-full min-w-0 overflow-x-auto overscroll-x-contain pb-1 scrollbar-hide touch-pan-x [-webkit-overflow-scrolling:touch]"
+      >
+        <div
+          ref={innerRef}
+          className={cn(
+            'flex w-max flex-nowrap snap-x snap-mandatory scroll-px-2 gap-3',
+            innerRowAlignClass,
+          )}
+        >
         {visible.map((item, idx) => {
           const cardLabel = item.eyebrow?.trim() || ''
           const title = item.title?.trim() || ''
@@ -127,7 +204,11 @@ function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
           return (
             <article
               key={`${item.image_url}-${idx}`}
-              className="relative h-36 w-[72%] max-w-[280px] shrink-0 overflow-hidden rounded-2xl bg-warm-wood text-white shadow-lg sm:h-52 sm:w-[60%] sm:max-w-[320px] md:h-64 md:w-[46%]"
+              className={cn(
+                'relative h-36 shrink-0 overflow-hidden rounded-2xl bg-warm-wood text-white shadow-lg sm:h-52 md:h-64',
+                rowOverflows ? 'snap-start' : 'snap-center',
+                BOOKING_CAROUSEL_SLIDE_WIDTH_CLASS,
+              )}
             >
               <img
                 src={item.image_url}
@@ -167,6 +248,7 @@ function BookingSubTabCarousel({ subTab }: { subTab: SubTab }) {
             </article>
           )
         })}
+        </div>
       </div>
     </div>
   )
