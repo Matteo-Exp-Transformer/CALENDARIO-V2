@@ -29,7 +29,12 @@ Due filoni su **Pagina Prenota**: (1) tentativo feature **ordine categorie** `ca
 ### Blindatura FU-036 + suite test
 | Report | Stato | Effetto / task | Note |
 |--------|-------|----------------|------|
-| [Report-blindatura-prenota-multiagent-FU-036-05-06-26.md](./Report-blindatura-prenota-multiagent-FU-036-05-06-26.md) | ✅ | Residui per-nome chiusi; bug frecce stale fixato; suite 409 test | **FU-036 Fatto**; lavoro codice+test **non committato**; HEAD `991ded7` solo README |
+| [Report-blindatura-prenota-multiagent-FU-036-05-06-26.md](./Report-blindatura-prenota-multiagent-FU-036-05-06-26.md) | ✅ | Residui per-nome chiusi; bug frecce stale fixato; suite 409 test | **FU-036 Fatto**; codice in `026dd42`, suite test in `30dc5b9` (mergiati in `main`) |
+
+### Merge in main + allineamento PROD (FU-034)
+| Report | Stato | Effetto / task | Note |
+|--------|-------|----------------|------|
+| [Report-merge-main-allineamento-prod-FU-034-05-06-26.md](./Report-merge-main-allineamento-prod-FU-034-05-06-26.md) | ✅ | Merge `env/test`→`main` (ff `30dc5b9`); edge `create-booking` allineata su PROD (v8) | **FU-034 Fatto**; probe runtime PROD non eseguita (scelta Matteo); aggiornamento FOLLOW_UP nel working tree |
 
 ## Da non confondere
 
