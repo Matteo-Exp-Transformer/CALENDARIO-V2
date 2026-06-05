@@ -12,9 +12,8 @@
 - **Cosa è cambiato:** in pagina Prenota, la tipologia "Prenota un tavolo" con un menù collegato ora
   mostra le card delle categorie ingredienti (prima non mostrava nulla).
 - **Cosa resta:** Fase 3/4 non richieste; gancio intolleranze pronto ma non cablato; allineamento
-  skill PRENOTA sul deprecato e finding feature `category_order_keys` da gestire al commit.
-- **Serve una tua azione:** sì — decidere come committare separando questo lavoro dalla feature
-  `category_order_keys` già presente nel working tree.
+  skill PRENOTA sul deprecato (follow-up, vedi §10).
+- **Commit:** `67d3df9` (feat capability + ordine categorie), `852f0a7` (docs report), `08b2bb4` (fix preset per capacità).
 
 ## 5. File di skill aggiornati
 
@@ -79,7 +78,7 @@ come le altre tipologie.
 
 - **typecheck**: zero errori.
 - **lint**: zero warning.
-- **test booking**: 269 verdi (erano 241; +28 nuovi tra filtro preset, capabilities, round-trip legacy).
+- **test (npm run validate):** 409 verdi (46 file, suite completa al 05-06-26 fine sessione).
 - **Test manuale (Matteo)**: `/prenota` "Prenota un tavolo" mostra le 3 card categoria; funziona anche
   responsive.
 - **Verifica dati DB TEST (sola lettura)**: nessuna modalità ha card senza preset
@@ -269,8 +268,7 @@ name-agnostic, nessuna sorpresa. Commit `6c67f9d`.
 e 3 file nuovi (bookingCapabilities.ts, 2 test). **Correzione importante emersa dalla riverifica:**
 `BookingRequestForm.tsx` e `MenuSelection.tsx` contengono ANCHE modifiche della feature
 `category_order_keys` (righe `category_order_keys`/`categoryOrderKeys` nel diff), non solo le mie. Ho
-aggiunto la nota «diff intrecciato» in §7 per non attribuirmi codice altrui. Il conteggio test (269,
-+28) corrisponde all'ultima esecuzione vitest. La verifica DB TEST (`cards_without_preset = 0`) è
+aggiunto la nota «diff intrecciato» in §7 per non attribuirmi codice altrui. Il conteggio test (409, `npm run validate` 05-06-26 fine sessione) corrisponde all'ultima esecuzione. La verifica DB TEST (`cards_without_preset = 0`) è
 reale, eseguita via MCP Supabase_test in sola lettura su docnnernvp.
 
 ❓ Q3 — File correlati allineati? Quali file erano collegati alla modifica (skill area, context, test, tipi) e hai verificato che siano aggiornati? Elencali (o «nessuno + perché»).

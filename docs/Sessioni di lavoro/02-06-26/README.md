@@ -28,7 +28,7 @@
 ### Layout full-page freeze
 | Report | Stato | Effetto / task | Note |
 |--------|-------|----------------|------|
-| [Report-prenota-full-page-freeze-ciclo-layout-02-06-26.md](./Report-prenota-full-page-freeze-ciclo-layout-02-06-26.md) | 🔶 | Prepara-prompt; freeze base `166b5a2`; 2 fix pendenti | Ciclo **non chiuso** in questo report |
+| [Report-prenota-full-page-freeze-ciclo-layout-02-06-26.md](./Report-prenota-full-page-freeze-ciclo-layout-02-06-26.md) | ↩️ | Prepara-prompt; freeze base `166b5a2`; 2 fix pendenti | verificato 05-06-26: chiuso da fix-sticky-card-scorrevoli |
 | [Report-prenota-full-page-fix-sticky-card-scorrevoli-02-06-26.md](./Report-prenota-full-page-fix-sticky-card-scorrevoli-02-06-26.md) | ✅ | Sticky 1256–1599 + card sottotab ≥4 | Chiuso; QA Matteo; 276 test |
 | [Report-card-sottotab-template-menu-compatto-02-06-26.md](./Report-card-sottotab-template-menu-compatto-02-06-26.md) | ✅ | Card sottotab compatte; `a persona` solo desktop | Push eseguito |
 

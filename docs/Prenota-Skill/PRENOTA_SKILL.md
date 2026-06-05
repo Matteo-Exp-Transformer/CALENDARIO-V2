@@ -138,12 +138,18 @@ Il flusso dati che collega i due mondi (magazzino menù ↔ vetrina ↔ pagina p
 **Conseguenza onesta da sapere:** finché il Livello A non ha UI, il comportamento menù/intolleranze
 dipende ancora dai NOMI via Livello C (più il Livello B nel pubblico). Il sistema è **metà costruito**.
 
-**Residui per-nome ancora presenti (debito noto — FU-036, NON aggiungerne altri):** tre punti nel
-pubblico decidono ancora per nome e vanno migrati a `modeUsesMenu`/`modeUsesDietary`:
-`BookingSummarySidebar` (`hasMenu = booking_type !== 'tavolo'`), reset intolleranze in
-`BookingRequestForm` (`if bookingType === 'tavolo'`), `shouldShowComposeMenuHeader` in `presetMenus.ts`
-(`=== 'rinfresco_laurea'`). La sezione **Intolleranze è oggi mostrata per OGNI tipologia**
-(`modeUsesDietary` non è ancora collegata nel pubblico): è uno stato di fatto, non una scelta blindata.
+**Residui per-nome nel pubblico — CHIUSI 05-06-26 (FU-036, NON reintrodurli):** i tre punti che
+decidevano per nome sono stati migrati a `modeUsesMenu`/`modeUsesDietary` e blindati con test:
+`BookingSummarySidebar` (ora `modeUsesMenu(activeMode)`), reset intolleranze in `BookingRequestForm`
+(ora `modeUsesDietary(nextMode)`), `shouldShowComposeMenuHeader` in `presetMenus.ts` (ora
+`defaultModeCapabilities(...).uses_menu`, include anche `menu_prezzo_fisso`). Caccia multi-agent
+05-06-26: nessun altro residuo per-nome nel pubblico; quelli rimasti in **area admin**
+(`AdminBookingForm`, `DetailsTab`) operano su prenotazioni GIÀ SALVATE → legittimi. La sezione
+**Intolleranze è mostrata per OGNI tipologia** — questa è una **scelta deliberata di Matteo**
+(05-06-26): `modeUsesDietary` esiste come gancio ma NON è collegata al gate di render nel pubblico,
+così la sezione resta universale. Per disattivarla su una tipologia, Matteo collega `modeUsesDietary`
+davanti al render della sezione (un punto solo) quando gli serve. **Non** «collegarla d'iniziativa».
+Cosa è coperto da test → `contesto/PRENOTA_TEST_SUITE_INDEX.md`.
 
 **Valori magici ordinamento categorie (non arbitrari, documentati qui):** categorie presenti negli
 item ma assenti dal catalogo DB → `sort_order: 1000 + index` (in fondo); chiave senza `sort_order`
@@ -197,6 +203,7 @@ Altri invarianti da non rompere senza conferma:
 | Pattern lampeggio/attenzione validazione (riusabile su altri form) | `../per-ui-design-skill/FORM_VALIDATION_ATTENTION_PATTERN.md` |
 | Tab Menu admin (magazzino: ingredienti, categorie, promo, preset) | `../per-ui-design-skill/MENU_ADMIN_CONTEXT.md` |
 | Card richiesta lato admin (Richieste in attesa) — **altra area** | `../per-ui-design-skill/BOOKING_REQUEST_CARD_CONTEXT.md` |
+| **Test della pagina** (cosa è già blindato, dove aggiungere test, come girarli per fronte) | `contesto/PRENOTA_TEST_SUITE_INDEX.md` |
 
 ---
 

@@ -12,7 +12,7 @@ Due filoni su **Pagina Prenota**: (1) tentativo feature **ordine categorie** `ca
 |------|-------|-------------------|
 | Griglia ingredienti vuota dopo card+preset | Sì | [Report capability-driven](./Report-tipologie-capability-driven-Fase1-2-05-06-26.md) |
 | Frecce ordine categorie admin | Sì | [Report ordine categorie (storico)](./Report-ordine-categorie-prenota-bug-griglia-05-06-26.md) |
-| Residui «decidi per nome» nel pubblico | Sì | [Report capability-driven](./Report-tipologie-capability-driven-Fase1-2-05-06-26.md) §10 → **FU-036** |
+| Residui «decidi per nome» + blindatura test | Sì | [Report blindatura FU-036](./Report-blindatura-prenota-multiagent-FU-036-05-06-26.md) |
 
 ## Report per gruppo
 
@@ -24,7 +24,12 @@ Due filoni su **Pagina Prenota**: (1) tentativo feature **ordine categorie** `ca
 ### Tipologie capability-driven (Fase 1–2)
 | Report | Stato | Effetto / task | Note |
 |--------|-------|----------------|------|
-| [Report-tipologie-capability-driven-Fase1-2-05-06-26.md](./Report-tipologie-capability-driven-Fase1-2-05-06-26.md) | ✅ | Menù visibile per capacità (card+preset), non per nome tipologia | QA Matteo OK; commit `67d3df9`/`852f0a7`/`08b2bb4`; **FU-035 Fatto**; Fase 3/4 non eseguite; **FU-036** aperto |
+| [Report-tipologie-capability-driven-Fase1-2-05-06-26.md](./Report-tipologie-capability-driven-Fase1-2-05-06-26.md) | ✅ | Menù visibile per capacità (card+preset), non per nome tipologia | QA Matteo OK; commit `67d3df9`/`852f0a7`/`08b2bb4`; **FU-035 Fatto**; Fase 3/4 non eseguite |
+
+### Blindatura FU-036 + suite test
+| Report | Stato | Effetto / task | Note |
+|--------|-------|----------------|------|
+| [Report-blindatura-prenota-multiagent-FU-036-05-06-26.md](./Report-blindatura-prenota-multiagent-FU-036-05-06-26.md) | ✅ | Residui per-nome chiusi; bug frecce stale fixato; suite 409 test | **FU-036 Fatto**; lavoro codice+test **non committato**; HEAD `991ded7` solo README |
 
 ## Da non confondere
 

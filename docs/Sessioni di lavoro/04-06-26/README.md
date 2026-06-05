@@ -22,7 +22,7 @@ Giornata **senior + Prenota**: pilota skill **Prenota-Skill**, hook v4 + guard P
 ### Pagina Prenota — limiti e UI pubblica
 | Report | Stato | Effetto / task | Note |
 |--------|-------|----------------|------|
-| [Report-fu-031-limiti-cliente-prenota-04-06-26.md](./Report-fu-031-limiti-cliente-prenota-04-06-26.md) | 🔶 | Verifica cap UI OK; edge TEST non rifiutava oltre cap | Report Verifica **non chiuso**; chiusura nella sessione hook stesso giorno |
+| [Report-fu-031-limiti-cliente-prenota-04-06-26.md](./Report-fu-031-limiti-cliente-prenota-04-06-26.md) | ✅ | Verifica cap UI OK; edge TEST non rifiutava oltre cap | verificato codice 05-06-26: FU-031 Fatto; edge+client sync 110 ospiti |
 | [Report-fu-032-restaurant-name-45-04-06-26.md](./Report-fu-032-restaurant-name-45-04-06-26.md) | ✅ | Anagrafica N/45, clamp lettura, h1 Prenota | Commit `a79a5af`; **FU-032 Fatto** |
 | [Report-courses-label-card-sottotab-prenota-04-06-26.md](./Report-courses-label-card-sottotab-prenota-04-06-26.md) | ✅ | Footer card: portate sx, prezzo «a persona» dx | QA Matteo OK; commit `a79a5af` |
 | [Report-meta-hook-controverifica-prenota-runtime-04-06-26.md](./Report-meta-hook-controverifica-prenota-runtime-04-06-26.md) | ✅ | Deploy edge v7 TEST; ospiti 110; **FU-031** chiuso | Commit `147145d`…`5445640`; **FU-034** PROD aperto |

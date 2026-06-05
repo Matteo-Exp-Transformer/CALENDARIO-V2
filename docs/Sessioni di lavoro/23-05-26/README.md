@@ -31,7 +31,7 @@ Prime sessioni versionate: **sicurezza DB PROD**, incident Impostazioni bloccate
 | [Report-refactor-promo-menu-rimozione-vol-au-vent.md](./Report-refactor-promo-menu-rimozione-vol-au-vent.md) | ✅ | `booking_menu_promos`; niente omaggio automatico | Migrazione 029; `a78e41d` |
 | [Report-promo-menu-label-prenotazione.md](./Report-promo-menu-label-prenotazione.md) | ✅ | Campo nome promo admin + snapshot su prenotazione | `02d0772` |
 | [Report-sessione-chat-admin-ux-promo-23-05-26.md](./Report-sessione-chat-admin-ux-promo-23-05-26.md) | ✅ | Riepilogo chat: nav, modal dettagli, promo UX | Branch `Sviluppo-Dashboard-laterale` |
-| [Report-sessione-promo-menu-db-allineamento.md](./Report-sessione-promo-menu-db-allineamento.md) | 🔶 | Allineamento DB test/prod 028–029 | **Merge su main in attesa** revisione Matteo |
+| [Report-sessione-promo-menu-db-allineamento.md](./Report-sessione-promo-menu-db-allineamento.md) | ✅ | Allineamento DB test/prod 028–029 | verificato 05-06-26: a78e41d su main, migrazione 029 |
 
 ### UI admin e skill system
 | Report | Stato | Effetto / task | Note |

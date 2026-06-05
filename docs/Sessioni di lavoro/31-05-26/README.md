@@ -22,7 +22,7 @@
 |--------|-------|----------------|------|
 | [Report-finale-ciclo-prenota-sfondo-31-05-26.md](./Report-finale-ciclo-prenota-sfondo-31-05-26.md) | ✅ | Sintesi QA: fixed+cover, padding, header, loop admin | FU-024/025/027 OK; FU-021 annullato |
 | [Report-verifica-prenota-header-personalizza-form-31-05-26.md](./Report-verifica-prenota-header-personalizza-form-31-05-26.md) | ✅ | Header `px-8 md:px-10`; fix loop promo/autosave | QA Matteo ✅ |
-| [Report-prenota-sfondo-fixed-padding-31-05-26.md](./Report-prenota-sfondo-fixed-padding-31-05-26.md) | 🔶 | Fixed+cover; asset sfondo3; padding ↑ | Header KO → fix in verifica |
+| [Report-prenota-sfondo-fixed-padding-31-05-26.md](./Report-prenota-sfondo-fixed-padding-31-05-26.md) | ↩️ | Fixed+cover; asset sfondo3; padding ↑ | verificato 05-06-26: assorbito da verifica-header + finale ciclo sfondo |
 | [Report-integrazione-asset-sfondo-prenota-prova-31-05-26.md](./Report-integrazione-asset-sfondo-prenota-prova-31-05-26.md) | ✅ | WebP full-01…04 da PNG prove | QA visivo ⬜ in report |
 | [Report-fix-prenota-sfondo-display-hero-31-05-26.md](./Report-fix-prenota-sfondo-display-hero-31-05-26.md) | ✅ | Hero `cover` senza banda crema | Step intermedio ciclo |
 | [Report-fix-prenota-footer-scroll-sfondo-31-05-26.md](./Report-fix-prenota-footer-scroll-sfondo-31-05-26.md) | ✅ | Tile/gradiente `absolute` scrollabile | Precursore FU-028 |
