@@ -15,7 +15,9 @@ Ogni sessione su un'area persegue **tre obiettivi insieme**, non solo il primo:
    voluti, mappa «tocchi X → apri Y». (la ricetta sotto)
 2. **TESTARE per BLINDARE** — verificare nel codice ciò che scrivi (**codice = verità**, non fidarsi
    dei report vecchi: spesso sono disallineati) e, dove l'area lo richiede, mettere/segnare i test che
-   bloccano i comportamenti voluti. «Blindata» = un sub-agent terzo si orienta e apre i file giusti.
+   bloccano i comportamenti voluti. «Blindata» ha **due livelli**: *doc* (un sub-agent si orienta
+   guidato dalla skill) e *prodotto* (la pagina è pulita e funzionante — admin↔UI allineati, zero
+   mock/codice morto, controtest sub-agent su flusso dati + utente). Vedi il criterio completo sotto.
 3. **SNELLIRE lo skill system** — la mappatura **non aggiunge un layer in più**: sfrutta la divisione
    **contesto / procedura / codice-verità** per **tagliare la ridondanza**. Lo skill diventa breve
    (senso + mappa); i dettagli scendono in `contesto/`; i numeri restano nel codice. Guarda lo skill
@@ -74,9 +76,29 @@ pattern, senza ridiscutere le regole già decise.
 7. **Verifica col sub-agent** (criterio «blindata»): dagli un compito finto sull'area, guarda se apre
    i file giusti senza aver vissuto la chat. Passa → area BLINDATA.
 
-**Criterio «area BLINDATA»:** (1) ogni elemento ha senso scritto, nessun pezzo misterioso; (2) limiti
-voluti blindati; (3) questioni aperte tracciate; (4) **un sub-agent terzo si orienta** e apre i file
-giusti. Il punto 4 è la prova vera.
+**Criterio «area BLINDATA» — DUE livelli (chiarito 06-06-26).**
+
+- **Blindata DOC** (orientamento): (1) ogni elemento ha senso scritto; (2) limiti voluti blindati;
+  (3) questioni aperte tracciate; (4) un sub-agent terzo si orienta **guidato dalla skill** (catena
+  `.claude/CLAUDE.md`→`APP_CONTEXT §0`→skill area→`contesto/*`) e apre i file giusti. Il punto 4 è la
+  prova: guarda la **catena di rimandi** che segue, non solo se «trova i file» (può azzeccarli navigando
+  il codice = falso PASSA).
+
+- **Blindata di PRODOTTO** (la pagina funziona davvero — richiesta Matteo 06-06-26): oltre alla doc,
+  la pagina è **pulita e da produzione**. (a) ogni componente renderizzato ha senso ed è allineato tra
+  **admin e UI cliente** (niente configurato-ma-non-mostrato, niente mostrato-ma-non-configurabile);
+  (b) **zero dati mock/hardcoded/placeholder** che fingono dati veri — i fallback vuoti sono neutri e
+  decisi con Matteo; nessun dato di azienda specifica (verificato anche su PROD read-only); (c) **zero
+  codice morto** (rami irraggiungibili dall'UI rimossi); (d) **controtest sub-agent** che esercita
+  **flusso dati** (ogni campo admin salvato → mostrato corretto, casi limite) **e flusso utente +
+  responsive** (375/834/1280, link/console, layout che non si rompe) cercando bug residui.
+
+> **Procedura di blindatura di prodotto:** la esegue un **orchestratore Opus** che intervista Matteo
+> sul senso (Fase A), pulisce codice morto (B), allinea admin↔UI e mock/fallback (C), fa **controtestare
+> a sub-agent** flusso dati + utente (D), poi verifica finale (E). I sub-agent **riportano** i bug;
+> l'orchestratore decide se fixare lui o **delegare con prompt anti-rottura** (cosa toccare, cosa NON
+> toccare, senso da preservare). Template eseguibile: `docs/<Area>-Skill/PLAN_BLINDATURA_<AREA>.md`
+> (primo esemplare: `docs/Menu-QR-Skill/PLAN_BLINDATURA_MENU_QR.md`, 06-06-26).
 
 ---
 
@@ -87,7 +109,7 @@ giusti. Il punto 4 è la prova vera.
 | Area | Stato | Note |
 |------|-------|------|
 | **Pagina Prenota** | ✅ | Blindata 04-06-26: mappata + flusso scritto (commit `e66c0ae`, `fad207f`), test mirati limiti testo verdi, verifica sub-agent reale **PASSA**. Limit/audit test con sub-agent: corretti fallback pubblici su sottotab vuote, card vuote, caroselli senza foto, `MenuSelection` legacy, brand hardcoded, orari pubblici default, preset built-in e config nuovo tenant. Cartella `docs/Prenota-Skill/`. |
-| **Menu QR pubblico** | ✅ | Mappata 06-06-26 (commit `a22108c`): `docs/Menu-QR-Skill/` (SKILL + contesto LAYOUT/DATA_FLOW/TEXT_LIMITS_MAP/TEST_SUITE_INDEX/REFERENCE). Vecchi `PUBLIC_MENU_*` spostati con git mv. **Scoperte (codice=verità):** `content_type`/preset/menù-evento via QR = codice morto irraggiungibile (modale forza `a_la_carte`) → da RIMUOVERE; titoli/descrizioni categoria per-QR senza cap → **FU-MQR-1** da cappare; nome QR voluto interno. **Blindata 06-06-26 (commit `2e6ecac`):** verifica sub-agent reale **PASSA** guidato dalla skill (catena `.claude/CLAUDE.md` → `APP_CONTEXT §0` → `MENU_QR_SKILL` → `contesto/*`), zero rimandi rotti. La 1ª verifica aveva scoperto che la porta `.claude/CLAUDE.md` non instradava alle skill → fix nello stesso commit (vedi sotto), poi re-verifica PASSA. |
+| **Menu QR pubblico** | ✅ DOC · 🔶 PROD | Mappata 06-06-26 (commit `a22108c`): `docs/Menu-QR-Skill/`. **Blindata DOC 06-06-26 (commit `2e6ecac`):** verifica sub-agent PASSA guidato dalla skill, zero rimandi rotti. **Blindatura di PRODOTTO: plan pronto, da eseguire** → `docs/Menu-QR-Skill/PLAN_BLINDATURA_MENU_QR.md` (orchestratore Opus). Da chiudere col plan: rimozione codice morto preset (mappato file-per-file), FU-MQR-1 (cap titolo/descrizione categoria), fallback eyebrow «Specialità della casa» documentato-ma-non-implementato (`PublicMenuPage.tsx:199-202`), allineamento admin↔UI, controtest sub-agent flusso dati+utente su 375/834/1280. Inventario completo verificato: nel plan §1. Nessun hardcoded di aziende trovato. |
 | **Tab Menu admin (magazzino)** | ⬜ | `per-ui-design-skill/MENU_ADMIN_CONTEXT.md`. |
 | **Admin shell + pagine** | ⬜ | `Dashboard-laterale-skill/`. Già ha context per-pagina, da riorganizzare col pattern. |
 | **Database** | ⬜ | `Database-Skill/`. Valutare se il pattern senso/flusso calza (è infrastruttura, non UI). |
