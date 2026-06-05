@@ -10,9 +10,7 @@
  * «Domande di chiusura» (vedi CHIUSURA_SESSIONE.md §11): 6 domande marcate `❓ Q…` con una riga
  * risposta `✅ R…`. L'hook estrae ogni coppia e verifica che la risposta NON sia vuota/placeholder.
  *   - risposta mancante → rilancia un turno MIRATO (quali R sono vuote) e CHIEDE di compilarle.
- *   - tutte le risposte presenti → rilancio LEGGERO 1× : rileggi a mente fredda, verifica che dati e
- *     file correlati siano coerenti col lavoro vero (mantiene l'effetto «si accorgono di errori
- *     rileggendo», ma senza il muro di testo).
+ *   - tutte le risposte presenti → silenzio: il controllo «mente fredda» vive nel pre-commit.
  *   - nessun report fresco → silenzio.
  *
  * v5 (04-06-26) — tre tarature decise con Matteo perché l'hook insisteva troppo e su troppi report:
@@ -30,12 +28,17 @@
  *      (isSubstantive). L'auto-revisione vera del CONTENUTO la fa l'agente via self-review nel prompt
  *      di chiusura (CHIUSURA_SESSIONE.md), non l'hook: l'hook resta il guardiano meccanico.
  *
+ * v6 (05-06-26) — separazione stop/commit: lo `stop` controlla SOLO report incompleti. Il ramo
+ * «tutte le risposte presenti» non rilancia piu un followup, perche nel runtime Cursor osservato
+ * `loop_count` puo mancare/resettarsi e il cold-check si ripete a ogni fine risposta. Il controllo
+ * «mente fredda» si sposta al pre-commit (`fine-sessione-commit-check.mjs`).
+ *
  * PERCHÉ le domande-a-risposta invece del titolo: per rispondere a Q2 (dati=diff?) e Q3 (file
  * correlati) l'agente DEVE rileggere il diff e i file → la verifica intelligente la fa lui (l'hook
  * non vede il diff), l'hook controlla solo che abbia risposto.
  *
- * GUARDIA ANTI-LOOP: `loop_count` (Cursor, parte da 0). Tetto duro a 2 (sopra). Per il caso «tutte
- * presenti» basta 1 rilancio (loop_count>=1 → tace). `loop_limit: 2` in hooks.json è la rete finale.
+ * GUARDIA ANTI-LOOP: `loop_count` (Cursor, parte da 0). Tetto duro a 3 per il solo caso
+ * «risposte mancanti». Per report completo lo hook tace sempre.
  *
  * LIMITE NOTO: gli hook `stop` NON girano sui Cloud Agents (solo IDE locale). Fallback Cloud =
  * checklist-di-chiusura nel prompt esecutore.
@@ -263,19 +266,8 @@ async function main() {
     return send({ followup_message: lines.join('\n') })
   }
 
-  // CASO B: tutte le risposte presenti. Rilancio LEGGERO una volta sola (loop_count>=1 → tace).
-  if (loopCount >= 1) return send({})
-
-  const ok = [
-    `📄 FINE-SESSIONE — ${reports.length} report, domande di chiusura compilate. Ultimo controllo a mente fredda:`,
-    '',
-    '  • I DATI del report (numeri, file, valori) corrispondono al DIFF reale? (no copie a memoria)',
-    '  • I FILE CORRELATI (skill area, context, test, tipi) sono allineati alla modifica? (caso E-A: sezioni lasciate indietro)',
-    '  • Le risposte Q1-Q6 sono coerenti tra loro e col lavoro svolto (nessuna incongruenza)?',
-    '',
-    'Se trovi un disallineamento → correggilo ora. Poi conferma in 2 righe cosa hai verificato/corretto e chiudi.',
-  ]
-  return send({ followup_message: ok.join('\n') })
+  // CASO B: tutte le risposte presenti. Silenzio: il cold-check ora scatta al commit.
+  return send({})
 }
 
 main()

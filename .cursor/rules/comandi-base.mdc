@@ -31,9 +31,11 @@ Dettaglio completo: docs/Comunicazione-Skill/VOCABOLARIO.md (caricalo per le sfu
   di chiusura e SCRIVI nel report cosa hai allineato. NON chiedere «vuoi che
   aggiorni la skill?» né rimandare «al prossimo giro»: è parte del «lavoro ok».
 - **Nota hook fine-chat:** a fine chat un hook Cursor (`stop`) legge i report
-  appena scritti e ti ricorda le sezioni mancanti + la tua lettura/esiti Liv.2.
-  È normale e voluto (non blocca): assecondalo, completa ciò che segnala. Non è
-  un errore del sistema. Se la chat non aveva report → l'hook tace.
+  appena scritti e rilancia solo se la sezione Q/R è incompleta. Se il report è
+  completo tace: il controllo «mente fredda» scatta invece al pre-commit, su
+  ogni commit con file staged. È normale che il primo commit si fermi per
+  chiederti di rileggere report/diff/file correlati; dopo la revisione rilancia
+  lo stesso commit. Se la chat non aveva report → lo `stop` tace.
 - **«fai report finale»** → il capitolo è chiuso: il report è già completo.
   CONTROLLA brevemente che il report sia allineato allo stato ATTUALE del
   codice (corrisponde al diff reale), poi proponi/esegui COMMIT + PUSH.

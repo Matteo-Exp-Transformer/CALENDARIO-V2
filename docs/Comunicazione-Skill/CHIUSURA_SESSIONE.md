@@ -173,10 +173,10 @@ Errori in linguaggio umano («permesso negato», non `PGRST301`). Default sintet
 A fine chat un hook Cursor (`stop`) legge **il `Report-*.md` più recente** che hai appena scritto e:
 - controlla la **sezione 11 «Domande di chiusura»**: per ogni `❓ Q` verifica che la `✅ R` non sia
   vuota. **Se una risposta manca → rilancia** chiedendoti di compilarla. Ti dice ESATTAMENTE quali R sono vuote;
-- se tutte le risposte ci sono → un rilancio **leggero** una volta sola: rileggi a mente fredda e
-  conferma che dati e file correlati siano coerenti col lavoro vero (no incongruenze).
+- se tutte le risposte ci sono → **silenzio**. Il controllo **a mente fredda** vive nel `pre-commit`,
+  perché nel runtime Cursor osservato il rilancio leggero poteva ripetersi a ogni fine risposta.
 
-**Tre tarature (decise 04-06-26 — v5 dell'hook), perché prima insisteva troppo:**
+**Tarature principali:**
 - **Solo il report più recente.** L'hook guarda UN report (la chat che chiudi), non più tutti quelli
   toccati negli ultimi 20 min. Non ti blocca più la chiusura di oggi per una `R` vuota in un report
   di un'altra sessione.
@@ -186,6 +186,9 @@ A fine chat un hook Cursor (`stop`) legge **il `Report-*.md` più recente** che 
 - **Meno falsi «risposta mancante».** Una risposta breve fra parentesi (es. «nessuno (nessuna skill
   copre il componente)») ora è accettata. Conta come vuota solo il vero vuoto / placeholder secco
   (`...`, `TODO`, `-`).
+- **Cold-check al commit.** Il pre-commit scatta su ogni commit con file staged, anche quando nello
+  stage non c'è un report: chiede una revisione a mente fredda una volta per versione staged. Se nello
+  stage c'è un report incompleto, blocca finché Q1-Q6 non sono compilate.
 
 **È normale e voluto: assecondalo, completa ciò che segnala, non è un errore del sistema.** Se la chat
 non aveva report (es. domanda veloce), l'hook tace.
@@ -211,6 +214,9 @@ non dopo il merge. Il revisore che approva un merge con la skill stale ha lascia
 ## 2. Commit — separati per tipo
 - **Codice** (`feat`/`fix`) e **documentazione** (`docs(...)`) in **commit distinti** (punti di
   ripristino indipendenti — Matteo lo preferisce).
+- Il primo tentativo di commit può fermarsi per il **cold-check pre-commit**: rileggi report, diff e
+  file correlati, correggi e ristagia se serve, poi rilancia lo stesso commit. Se non c'è report nello
+  stage, conferma che sia voluto (task light, report già committato, o commit separato).
 - Conventional Commits: `feat(scope):` · `fix(scope):` · `docs(scope):`.
 - Corpo del commit: sezione **`Review:`** con i path per revisionare (report, SESSION_LOG, skill toccati).
 - **Trappola gitignore `docs/`:** la cartella `docs/` è gitignored → i file **nuovi** lì dentro
