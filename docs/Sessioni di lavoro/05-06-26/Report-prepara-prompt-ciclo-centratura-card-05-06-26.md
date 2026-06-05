@@ -10,7 +10,7 @@
 ## 0. Cappello
 
 - **Cosa è cambiato:** sulla **Pagina Prenota** (`/prenota/:slug`), le **card scorrevoli** e il **carosello** nella colonna del form si **centrano** quando il gruppo entra in larghezza; su viewport stretto la **prima card/slide resta intera** a sinistra con scroll verso destra — caso **~806px** con **sfondo pagina intera** incluso.
-- **Cosa resta:** debiti tracciati in **FU-038** (seed slug `test`) · **FU-039** (QA C1/C3) · **FU-040** (polish hook layout, opzionale) · **FU-041** (header report esecutore); commit/push quando Matteo dirà «fai report finale».
+- **Cosa resta:** debiti **FU-038–041**; nota §14.1 pre-commit non testato in shell agente (`hooksPath=nul`). Git: commit `1ab737b` + push + merge `main` ✅.
 - **Serve una tua azione:** no per accettare il fix visivo (Matteo «lavoro ok» + revisore Approva con riserve). Sì solo se vuoi chiudere formalmente i buchi processo (seed `test`, commit finale).
 
 ---
@@ -183,7 +183,7 @@ QA browser formale: delegato al revisore (tabella in report revisione). Prepara-
 ✅ R5: Attrito: mandato slug `test` su DB inesistente ha fatto perdere C1/C3; miglioria: in prepara-prompt verificare slug TEST via MCP/lista tenant prima di scrivere «crea config su test», oppure tabella slug noti in TESTING_SKILL §7.3.
 
 ❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuti ti sono stati utili o rumore?
-✅ R6: Contesto giusto per filtro (PRENOTA §5 + gate Prenota/QR). Hook **fine-sessione Cursor** (§14): comportamento corretto in questo ciclo — ha bloccato il revisore finché §11 incompleta, poi silenzio dopo completamento (v6). Sub-agent CONTROVERIFICA: utile — P1/P2 confermati. Distinzione: §3 = hook **layout** `useBookingPublicScrollRowAlign`; §14 = hook **Cursor** `stop`.
+✅ R6: Contesto giusto per filtro (PRENOTA §5 + gate Prenota/QR). Hook **fine-sessione Cursor** `stop` (§14): OK — revisore bloccato su §11, poi silenzio v6. Hook **pre-commit** cold check (§14.1): **non visto** al commit `1ab737b` — né prima né dopo — perché `core.hooksPath=nul` in shell agente; `.fine-sessione-commit-state.json` assente. Sub-agent CONTROVERIFICA: utile. §3 = hook layout; §14 = Cursor stop; §14.1 = git pre-commit.
 
 ---
 
@@ -215,7 +215,7 @@ Quando un agente sta per chiudere la chat, Cursor esegue lo script in `.cursor/h
 | Chiusura **revisore** | Hook ha segnalato: `Report-revisione-prenota-centratura-card-carosello-05-06-26.md` — **manca intera sezione 11** | ✅ **Corretto** — l’agente ha aggiunto Q1–Q6 e risposto |
 | Dopo completamento §11 revisore | Hook **tace** (CASO B v6) | ✅ **Corretto** — niente loop infinito |
 | Chiusura **esecutore** | Matteo ha chiesto manualmente «hai risposto a tutte le domande?» (l’esecutore aveva lacune prima del secondo giro) | ✅ Hook + domanda Matteo hanno convergito sullo stesso obiettivo |
-| **Pre-commit** | `fine-sessione-commit-check.mjs` — blocca commit se report staged incompleto; chiede self-review se completo | Non testato in questo ciclo prepara-prompt (nessun commit richiesto) |
+| **Pre-commit** (commit `1ab737b`, 05-06-26) | Vedi sotto §14.1 — **cold check non osservato** | Hook non invocato in shell agente |
 
 ### Ha funzionato? Comportamento corretto?
 
@@ -244,6 +244,45 @@ Quando un agente sta per chiudere la chat, Cursor esegue lo script in `.cursor/h
 
 **Giudizio prepara-prompt:** l’hook fine-sessione in questo ciclo ha fatto il suo lavoro; il revisore è stato riportato in carreggiata una volta, poi silenzio. Nessuna modifica urgente allo script.
 
+### 14.1 Hook pre-commit (`fine-sessione-commit-check.mjs`) — cold check al commit
+
+> Distinto dall’hook Cursor `stop` (§14 sopra). Qui: lo script in `.husky/pre-commit` che dovrebbe girare **al momento del `git commit`**.
+
+#### Cosa dovrebbe fare (v6, commit `d675e1d`)
+
+1. Se in stage c’è un `Report-*.md` con §11 **incompleta** → **blocca** il commit (`PRE-COMMIT fine-sessione: report incompleto`).
+2. Se il report in stage ha §11 **completa** e quella combinazione di file **non è già stata “rivista”** → **blocca** al **primo** tentativo con:
+   `PRE-COMMIT fine-sessione: ultimo controllo a mente fredda richiesto.`  
+   Poi chiede di rilanciare lo **stesso** `git commit` (secondo tentativo, stesso stage → passa).
+3. Se non ci sono report in stage (solo codice/FOLLOW_UP/SESSION_LOG) → il controllo sul report **non scatta**; lo script può uscire subito se non c’è nulla da auditare sui report.
+
+#### Cosa è successo al commit di chiusura sessione (`1ab737b`)
+
+| Fase | Cold check richiesto? | Evidenza |
+|------|----------------------|----------|
+| **Prima** del commit (1° `git commit`) | **No** | Commit riuscito al primo colpo; nessun messaggio `PRE-COMMIT fine-sessione` in stdout/stderr |
+| **Dopo** il commit | **No** | Push + merge ff su `main` non creano un nuovo commit; nessun secondo giro pre-commit |
+
+**File in stage al commit `1ab737b`:** `Report-prepara-prompt-ciclo-centratura-card-05-06-26.md` (§11 completa) + `FOLLOW_UP.md` + `SESSION_LOG.md` + `README.md`.
+
+**Perché il cold check non è comparso (diagnosi):**
+
+- `git config core.hooksPath` = **`nul`** nell’ambiente shell usato dall’agente → **Git non esegue** `.husky/pre-commit` (né `lint-staged`, né `fine-sessione-commit-check.mjs`).
+- File stato **`.cursor/hooks/.fine-sessione-commit-state.json`** **assente** dopo il commit → coerente con hook **mai eseguito** (il file si crea solo quando lo script arriva al ramo cold-check).
+- Esecuzione manuale `node .cursor/hooks/fine-sessione-commit-check.mjs` **senza** file in stage → exit 0 silenzioso (comportamento script corretto a vuoto).
+
+#### Ha funzionato? Comportamento corretto?
+
+| Ambiente | Valutazione |
+|----------|-------------|
+| **Hook Cursor `stop` (§14)** | ✅ Funzionato nel ciclo revisore |
+| **Hook pre-commit in shell agente (commit `1ab737b`)** | ⚠️ **Non testato in runtime** — disattivato da `core.hooksPath=nul`, non da bug dello script |
+| **Comportamento atteso se hooks attivi** | Corretto per design: 1° commit = cold check; 2° commit stesso stage = pass |
+
+**Nota per Matteo:** sul tuo PC, se `core.hooksPath` punta a `.husky` (o Husky è attivo), al prossimo commit con report in stage dovresti vedere il cold check al **primo** tentativo. Nell’ambiente agente di questa sessione **non** l’abbiamo visto — né prima né dopo — perché gli hook git erano spenti.
+
+**Debito documentale:** aggiornare `CHIUSURA_SESSIONE.md` o skill hook con nota «agente/shell con `hooksPath=nul` → pre-commit non gira» (candidato FU processo, non aperto in FOLLOW_UP).
+
 ---
 
 ## 15. Riepilogo per Matteo
@@ -259,4 +298,6 @@ Il ciclo è **tecnicamente ok** per chiudere il capitolo. Debiti aperti in **FOL
 
 L’**hook fine-sessione Cursor** (§14) si è comportato **correttamente**: ha costretto il revisore a completare §11, poi ha taciuto.
 
-**Prossimo passo:** «lavoro ok» già dato → quando vuoi chiudere git: «fai report finale».
+**Pre-commit cold check (§14.1):** al commit `1ab737b` **non** è stato richiesto — né prima né dopo — perché nella shell agente `core.hooksPath=nul` (hook git disattivati). Commit e push su `main`/`env/test` completati (`1ab737b`).
+
+**Prossimo passo:** debiti aperti **FU-038–041**; verificare cold check pre-commit sul tuo ambiente locale se `hooksPath` ≠ `nul`.
