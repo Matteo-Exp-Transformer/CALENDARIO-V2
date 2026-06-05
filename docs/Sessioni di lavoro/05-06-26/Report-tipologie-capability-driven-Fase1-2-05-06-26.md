@@ -186,13 +186,17 @@ pubblico **non condividono ancora la stessa logica**: restano 7 call-site che de
 (`bookingTypeUsesMenuSelections`) invece che per capacità. Finché la migrazione allo shim/capability
 non è completata, la zona è un cantiere a metà, non bloccabile come consolidata.
 
-**Bug gemello latente trovato:** `isStaffPresetSelectableForBookingType` in
-`src/features/booking/constants/presetMenus.ts:103` — stessa identica causa del bug appena risolto:
-`return false` se `booking_type ≠ rinfresco_laurea/menu_prezzo_fisso`, cioè esclude `tavolo` PER NOME.
-Oggi non esplode perché nel flusso card+preset il dropdown preset è già nascosto
-(`staffPresetsDropdownVisible=false`), ma è una mina: esponendo quel dropdown per `tavolo` si
-ripresenta lo stesso bug. **Contraddizione codice/commento:** il commento sopra la funzione dice «la
-tipologia è gestita dalle card/subtab in Personalizza Form», ma il codice filtra per nome.
+**Bug gemello latente trovato E FIXATO (commit `08b2bb4`):**
+`isStaffPresetSelectableForBookingType` in `src/features/booking/constants/presetMenus.ts` —
+stessa identica causa del bug principale: escludeva `tavolo` PER NOME, in contraddizione col proprio
+commento. **Fix applicato** (sub-agent + verifica chiamante): ora delega a
+`defaultModeCapabilities(bookingType).uses_menu` (Livello C del layer capability), eliminando la
+duplicazione. Comportamento storico preservato byte-per-byte (rinfresco/menu_fisso selezionabili,
+tavolo no), cambia solo la fonte della decisione. Test `presetMenuDisplay.test.ts` aggiornati con
+casi capability-driven. Verifica indipendente: 271 test verdi, typecheck+lint puliti.
+**Correzione del chiamante (me):** il sub-agent aveva lasciato un commento che reintroduceva la
+contraddizione codice/commento («tavolo torna selezionabile» mentre il codice dà false) → riscritto
+per dire il vero e documentare come abilitarlo in futuro (passare la BookingMode + modeUsesMenu).
 
 **Gli altri 6 call-site sono corretti per design** (calendario, BookingRequestCard, AdminBookingForm,
 BookingDetailsModal, menuPricing): usano lo shim su prenotazioni GIÀ SALVATE, dove il `booking_type`
@@ -219,9 +223,8 @@ BookingDetailsModal, menuPricing): usano lo shim su prenotazioni GIÀ SALVATE, d
 - **Finding della feature `category_order_keys`** (non di questa sessione): bug indici frecce su/giù
   nel pannello admin con chiavi stale, dedup mancante in scrittura, LOCK resolver da formalizzare.
   Da gestire separatamente con chi ha fatto quella feature.
-- **Bug gemello `isStaffPresetSelectableForBookingType`** (`presetMenus.ts:103`): esclude `tavolo`
-  per nome — stessa causa del bug risolto oggi. Latente (dropdown nascosto), da allineare alla
-  capability. In attesa di decisione Matteo se fixarlo ora o in sessione dedicata.
+- ~~Bug gemello `isStaffPresetSelectableForBookingType`~~ → **FATTO** in questa sessione (commit
+  `08b2bb4`), vedi §9-bis.
 - **Completare la migrazione allo shim/capability** dei call-site pubblici/admin che hanno la
   `BookingMode` disponibile (prerequisito per poter dichiarare Pagina Prenota «LOCK»).
 - **Allineare le skill PRENOTA** sul deprecato `bookingTypeUsesMenuSelections` → `modeUsesMenu`
@@ -272,11 +275,12 @@ reale, eseguita via MCP Supabase_test in sola lettura su docnnernvp.
 ❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato?
 ✅ R4: Non ho fatto: (1) Fase 3 e 4 (per scelta esplicita di Matteo). (2) Il collegamento di
 `modeUsesDietary` alla sezione intolleranze: l'ho lasciato come gancio pronto, non cablato, perché
-Matteo ha detto «per ora non mi servono interruttori». (3) Non ho committato (in attesa della tua
-decisione su come separare il mio lavoro dalla feature `category_order_keys` già presente). (4) Non ho
-allineato la skill PRENOTA sul deprecato `bookingTypeUsesMenuSelections` per non mescolare con il diff
-altrui — vedi R3. Non ho toccato i 3 finding della feature `category_order_keys` perché non sono di
-questa sessione.
+Matteo ha detto «per ora non mi servono interruttori». (3) Allineamento skill PRENOTA sul deprecato
+`bookingTypeUsesMenuSelections` → `modeUsesMenu`: NON fatto in questa chiusura, resta follow-up
+(§10). (4) Migrazione completa dei restanti call-site allo shim: non necessaria ora, sono corretti per
+design (record storici). *Aggiornamento fine sessione:* committato tutto (feat `67d3df9`, docs
+`852f0a7`, fix gemello `08b2bb4`) e fixato il bug gemello — quindi (3 della versione precedente
+«non committato») è superato.
 
 ❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti?
 ✅ R5: Attrito principale: il working tree partiva già sporco di un altro lavoro non committato, e né
