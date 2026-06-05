@@ -87,15 +87,25 @@ giusti. Il punto 4 è la prova vera.
 | Area | Stato | Note |
 |------|-------|------|
 | **Pagina Prenota** | ✅ | Blindata 04-06-26: mappata + flusso scritto (commit `e66c0ae`, `fad207f`), test mirati limiti testo verdi, verifica sub-agent reale **PASSA**. Limit/audit test con sub-agent: corretti fallback pubblici su sottotab vuote, card vuote, caroselli senza foto, `MenuSelection` legacy, brand hardcoded, orari pubblici default, preset built-in e config nuovo tenant. Cartella `docs/Prenota-Skill/`. |
-| **Menu QR pubblico** | 🔶 | Mappata 06-06-26 (commit `a22108c`): `docs/Menu-QR-Skill/` (SKILL + contesto LAYOUT/DATA_FLOW/TEXT_LIMITS_MAP/TEST_SUITE_INDEX/REFERENCE). Vecchi `PUBLIC_MENU_*` spostati con git mv. **Scoperte (codice=verità):** `content_type`/preset/menù-evento via QR = codice morto irraggiungibile (modale forza `a_la_carte`) → da RIMUOVERE; titoli/descrizioni categoria per-QR senza cap → **FU-MQR-1** da cappare; nome QR voluto interno. **Manca verifica sub-agent** (rimandata, scelta utente). Report sessione: a fine sessione. |
+| **Menu QR pubblico** | ✅ | Mappata 06-06-26 (commit `a22108c`): `docs/Menu-QR-Skill/` (SKILL + contesto LAYOUT/DATA_FLOW/TEXT_LIMITS_MAP/TEST_SUITE_INDEX/REFERENCE). Vecchi `PUBLIC_MENU_*` spostati con git mv. **Scoperte (codice=verità):** `content_type`/preset/menù-evento via QR = codice morto irraggiungibile (modale forza `a_la_carte`) → da RIMUOVERE; titoli/descrizioni categoria per-QR senza cap → **FU-MQR-1** da cappare; nome QR voluto interno. **Blindata 06-06-26 (commit `2e6ecac`):** verifica sub-agent reale **PASSA** guidato dalla skill (catena `.claude/CLAUDE.md` → `APP_CONTEXT §0` → `MENU_QR_SKILL` → `contesto/*`), zero rimandi rotti. La 1ª verifica aveva scoperto che la porta `.claude/CLAUDE.md` non instradava alle skill → fix nello stesso commit (vedi sotto), poi re-verifica PASSA. |
 | **Tab Menu admin (magazzino)** | ⬜ | `per-ui-design-skill/MENU_ADMIN_CONTEXT.md`. |
 | **Admin shell + pagine** | ⬜ | `Dashboard-laterale-skill/`. Già ha context per-pagina, da riorganizzare col pattern. |
 | **Database** | ⬜ | `Database-Skill/`. Valutare se il pattern senso/flusso calza (è infrastruttura, non UI). |
 | **Card richiesta admin** | ⬜ | `per-ui-design-skill/BOOKING_REQUEST_CARD_CONTEXT.md` (area Prenotazioni admin). |
 
-**Ordine consigliato:** ora passa a Menu QR (simile a Prenota, valida il pattern su una 2ª area) →
-poi le aree admin. Una per sessione, senza fretta: file leggeri e verificati battono tanti file
-fatti in fretta.
+**Ordine consigliato:** Prenota ✅ + Menu QR ✅ (pattern validato su 2 aree). **Prossima area:**
+Admin shell / Tab Menu admin / Database (candidati). Una per sessione, senza fretta: file leggeri e
+verificati battono tanti file fatti in fretta.
+
+> **Blindato il routing per Claude Code (06-06-26, commit `2e6ecac`).** La verifica sub-agent di Menu
+> QR ha scoperto che `.claude/CLAUDE.md` — la porta che un agente Claude Code carica in automatico —
+> **non instradava** alle skill d'area: l'agente trovava i file giusti solo navigando il codice a mano
+> (per fortuna). Il routing alle aree viveva solo nel mondo Cursor (file `.cursor/skills/...` +
+> `APP_CONTEXT §0`). Fix: aggiunto in testa a `.claude/CLAUDE.md` un blocco «instradati all'area
+> giusta» che manda ad `APP_CONTEXT_SKILL.md §0` prima di toccare il codice. **Vale per TUTTE le aree.**
+> Lezione di metodo: il criterio «blindata» è *guidato dalla skill*, non «ha trovato i file» — un
+> sub-agent può azzeccare i file navigando il codice e dare un falso PASSA. Guarda la **catena di
+> rimandi** che ha seguito, non solo la risposta finale.
 
 ---
 
@@ -107,12 +117,15 @@ fatti in fretta.
 - **Menu QR — rimozione codice morto (06-06-26):** `content_type`/`preset_ids`/`PublicMenuPresetPage`/
   rami preset = irraggiungibili dall'UI (decisione Matteo: rimuovere). Mappa di cosa togliere:
   `docs/Menu-QR-Skill/contesto/MENU_QR_DATA_FLOW_CONTEXT.md` §0. Sessione di pulizia dedicata.
-- **Snellimento skill system d'insieme (deciso 06-06-26, NON eseguito):** usare la divisione
-  contesto/procedura/codice-verità per tagliare ridondanze. Due candidati identificati: (1) indice
-  `.cursor/skills/calendarbackup-app-context/SKILL.md` ha ~20 righe «report di sessione» che ripetono
-  dettagli ora nei file di contesto → sostituire con mappa pulita area→file; (2) `APP_CONTEXT_SKILL.md`
-  (490 righe) possibile §4 duplicata coi context estratti → esaminare e snellire con rimandi. Confine
-  scelto per la sessione 06-06-26: «solo Menu QR» → questi due restano per la prossima sessione senior.
+- **Snellimento skill system d'insieme — ESEGUITO 06-06-26 (commit `2e6ecac`).** (1) `.cursor/skills/
+  calendarbackup-app-context/SKILL.md`: tolte ~21 righe di cronologia di sessione → **mappa pulita
+  area→file** (54→~40 righe). (2) `APP_CONTEXT_SKILL.md` (490 righe): la §4 era **già snellita** in una
+  sessione precedente (sono già rimandi, non duplicati testuali) — il proseguimento la sovrastimava;
+  il valore vero trovato qui sono stati **6 link rotti** verso i vecchi `per-ui-design-skill/PUBLIC_MENU_*`
+  (rinominati col git mv del 06-06) → corretti. **Bonus link rotti** scoperti e corretti lungo la
+  verifica: `docs/CLAUDE.md` inesistente nel file Cursor (→ `.claude/CLAUDE.md`), auto-rimando interno
+  in `MENU_QR_REFERENCE.md`, FU-019 in `FOLLOW_UP.md`. Lezione: «file = verità» vale anche per i
+  rimandi — il proseguimento può sovrastimare un bersaglio, verifica nel file prima di tagliare.
 
 - **Prenota — rimandi obsoleti + revisione senior (04-06-26):** stub in
   `per-ui-design-skill/BOOKING_REQUEST_PAGE_LAYOUT_CONTEXT.md` e
