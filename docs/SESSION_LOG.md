@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 05-06-26 | Prenota — **fix menù personalizzabile + descrizione card manuale + footer sottotab** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-prenota-menu-sottotab-fix-05-06-26.md) — checkbox vuote (`subTabGuestComposable`); card manuale in MenuSelection; no «a persona»; validate **412**; FU-037 QA browser |
 | 05-06-26 | Docs - **README indici** cartelle sessioni (155 report, percorsi rapidi agente) | [Indice](Sessioni%20di%20lavoro/README.md) - 18 README (root + 14 giornate + 3 sottocartelle); ogni DD-MM-YY punta ai report; no rewrite contenuti |
 | 05-06-26 | Prenota — **tipologie capability-driven Fase 1-2** ✅ **report finale** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-tipologie-capability-driven-Fase1-2-05-06-26.md) — gate menù card+preset; FU-035 **Fatto**; commit 67d3df9/852f0a7/08b2bb4; validate **409** |
 | 05-06-26 | Prenota — **blindatura FU-036** + suite test multi-agent ✅ **report finale** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-blindatura-prenota-multiagent-FU-036-05-06-26.md) — residui per-nome; fix frecce stale; PRENOTA_TEST_SUITE_INDEX; codice 026dd42, suite 30dc5b9 |

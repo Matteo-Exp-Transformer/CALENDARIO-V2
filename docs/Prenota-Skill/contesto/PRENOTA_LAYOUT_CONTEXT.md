@@ -171,10 +171,11 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
 2. **Sottotab** (`BookingSubTabCards`): scrollabili, frecce desktop + touch; icona centrata **senza
    sfondo** (`MenuQrCategoryIconGlyph`, ~`h-7` `text-warm-wood-dark` su card chiara) **solo se**
    `sub_tabs[].icon` è valorizzata in config (admin Personalizza form → «Nessuna» = campo omesso;
-   nessun fallback a icona default). **Descrizione mai nella card** (appare solo in `MenuSelection` dopo selezione).
-   **Footer card `display='cards'` (04-06-26):** fascia inferiore `mt-auto` — a sinistra
-   `sub_tabs[].courses_label` (max 12 char, `line-clamp-1`); a destra importo `X,XX€` + riga
-   «a persona» se `price_per_person > 0`. Non su carosello (`BookingSubTabCards` assente se
+   nessun fallback a icona default). **Descrizione mai nella card** (appare solo in `MenuSelection` dopo selezione — anche card
+   manuale senza `preset_id`, blocco «Hai selezionato :» con titolo + descrizione).
+   **Footer card `display='cards'` (04-06-26, agg. 05-06-26):** fascia inferiore `mt-auto` — a sinistra
+   `sub_tabs[].courses_label` (max 12 char, `line-clamp-1`); a destra solo importo `X,XX€` se
+   `price_per_person > 0` (nessuna riga «a persona» sotto l'importo). Non su carosello (`BookingSubTabCards` assente se
    presentazione carosello). Centratura titolo/icona: `justify-center` su flex interno (1-3 card
    centrate; 4+ scroll). Wrapper diviso outer `overflow-x-auto scrollbar-hide` + inner
    `flex flex-nowrap justify-center mx-auto` (evita bug `justify-center` che blocca scroll). Max 3
@@ -186,7 +187,9 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
    `resolveBookingStoredIconKey`; «Nessuna» in admin = assenza icona); prezzo opzionale;
    nessuna griglia menù). Carosello = **una sola card con N foto** per modalità: `BookingSubTabCards`
    non renderizzato per modalità carosello (auto-selezione sottotab unica + carosello diretto).
-4. **Menù** (solo se `display='cards'` e la card ha un preset collegato): `MenuSelection` → `BookingMenuComposeGrid`. Senza card/carousel valide salvate non esiste fallback pubblico legacy. Mobile: colonna stack
+4. **Menù** (card scorrevole `display='cards'` con preset collegato **oppure** card manuale senza preset):
+   `MenuSelection` → griglia `BookingMenuComposeGrid` solo con preset; card manuale = solo blocco titolo/descrizione.
+   Senza card/carousel valide salvate non esiste fallback pubblico legacy. Mobile: colonna stack
    `BookingMenuCategoryCard`, header con miniatura 76px a filo bordo. Desktop md+: griglia (con 3
    categorie `grid-cols-3` già da `md`); card senza `max-w-[320px]`, piena larghezza colonna.
 5. **Dati cliente** (`BookingFormFields` + `DietaryRestrictionsSection` con `BookingPublicInsetField`:
@@ -200,7 +203,10 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
 - Titolo pubblico sottotab = `sub_tabs[].label` (campo «Titolo card»);
   `applyLegacySubTabLabelOverrides` per legacy; salvataggio modalità azzera `sub_tabs_overrides`.
 - `MenuSelection`: titolo "Crea il tuo menu" solo se card personalizzabile (`is_fixed_menu === false`
-  / `menuSelectionLocked === false`); se fisso mostra label/nome menù preselezionato.
+  / `menuSelectionLocked === false`) **e** griglia ingredienti visibile; se fisso mostra label/nome menù preselezionato.
+  Card manuale senza preset: blocco «Hai selezionato :» con titolo + descrizione, griglia assente.
+  Menù personalizzabile (preset o card): ingredienti **non** pre-spuntati all'apertura — selezione iniziale vuota
+  (`applyPresetTypeToBookingFormPayload` + `subTabGuestComposable`).
 - Se `is_fixed_menu !== false` e `price_per_person > 0`: riepilogo/submit usano prezzo × ospiti (non
   somma piatti) e mostrano totale ingredienti barrato come confronto; senza prezzo o
   `is_fixed_menu === false` nessun riepilogo prezzo.

@@ -141,8 +141,16 @@ LOCK  Card scorrevole senza preset
       Una `display='cards'` senza `preset_id` e una card compilata manualmente:
       non ha griglia ingredienti, non mostra controlli categoria/ingrediente,
       non mostra toggle "Menù personalizzabile" e puo mantenere un prezzo
-      salvato. Le card importate da preset, invece, ereditano
-      fisso/personalizzabile dal preset tramite resolver.
+      salvato. Dopo selezione mostra in `MenuSelection` il blocco «Hai selezionato :»
+      (titolo + descrizione risolti) se `label` valorizzato — gate
+      `activeSubTabShowsMenu` (card manuale con label, senza preset). Le card importate da preset, invece, ereditano
+      fisso/personalizzabile dal preset tramite resolver (con override card `is_fixed_menu === false`).
+
+LOCK  Selezione iniziale menù personalizzabile (card o preset)
+      Con toggle «Menù personalizzabile» ON sulla card (`subTab.is_fixed_menu === false`)
+      oppure preset staff con `is_fixed_menu === false`, la selezione ingredienti parte **vuota**
+      (`applyPresetTypeToBookingFormPayload` + opzione `subTabGuestComposable: true`).
+      Il catalogo visibile resta filtrato dal preset; solo lo **stato checkbox** parte off.
 
 LOCK  Ingredienti preset custom
       Per una card con `preset_id`, gli ingredienti salvati in

@@ -127,8 +127,9 @@ Il flusso dati che collega i due mondi (magazzino menù ↔ vetrina ↔ pagina p
 - **Livello A (esplicito):** `BookingMode.capabilities.uses_menu/uses_dietary`, impostate dall'admin.
   ⚠️ **Oggi NON ha interfaccia** (nessun controllo in `BookingFormConfigPanel`): il campo è
   parsato e preservato (LOCK Parser/normalizer) ma **nessuno lo scrive**. È un gancio per il futuro.
-- **Livello B (dati, solo pubblico):** card `display:'cards'` + `preset_id` risolto → mostra menù.
-  È ciò che usa il gate pubblico (`activeSubTabShowsMenu` in `BookingRequestForm`).
+- **Livello B (dati, solo pubblico):** card `display:'cards'` con `preset_id` risolto → griglia menù in
+  `MenuSelection`; **oppure** card manuale senza `preset_id` ma con `label` → solo blocco titolo/descrizione
+  (senza griglia). Gate: `activeSubTabShowsMenu` in `BookingRequestForm`.
 - **Livello C (default per tipo):** riproduce il comportamento storico
   (`rinfresco_laurea`/`menu_prezzo_fisso` → menù+intolleranze; `tavolo` → no). Funzione
   `defaultModeCapabilities`. Lo shim **deprecato** `bookingTypeUsesMenuSelections` delega qui — usalo

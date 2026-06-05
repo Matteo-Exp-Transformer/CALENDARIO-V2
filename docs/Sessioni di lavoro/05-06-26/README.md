@@ -36,6 +36,11 @@ Due filoni su **Pagina Prenota**: (1) tentativo feature **ordine categorie** `ca
 |--------|-------|----------------|------|
 | [Report-merge-main-allineamento-prod-FU-034-05-06-26.md](./Report-merge-main-allineamento-prod-FU-034-05-06-26.md) | ✅ | Merge `env/test`→`main` (ff `30dc5b9`); edge `create-booking` allineata su PROD (v8) | **FU-034 Fatto**; probe runtime PROD non eseguita (scelta Matteo); FOLLOW_UP in `a109b17` |
 
+### Fix menù personalizzabile + card manuale + footer sottotab
+| Report | Stato | Effetto / task | Note |
+|--------|-------|----------------|------|
+| [Report-prenota-menu-sottotab-fix-05-06-26.md](./Report-prenota-menu-sottotab-fix-05-06-26.md) | ✅ | Checkbox vuote (`subTabGuestComposable`); descrizione card manuale in MenuSelection; no «a persona» | validate **412**; **FU-037** QA browser aperto |
+
 ## Da non confondere
 
 - **Ordine categorie** (admin frecce, `category_order_keys`) ≠ **gate menù capability** (chi vede la griglia compose).
