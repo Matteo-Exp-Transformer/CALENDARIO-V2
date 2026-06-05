@@ -51,6 +51,11 @@ Due filoni su **Pagina Prenota**: (1) tentativo feature **ordine categorie** `ca
 |--------|-------|----------------|------|
 | [Report-revisione-prenota-centratura-card-carosello-05-06-26.md](./Report-revisione-prenota-centratura-card-carosello-05-06-26.md) | ✅ riserve | Verifica Profilo: **Approva con riserve** — codice OK, slug `test` assente, C1/C3 non coperti | validate **412**; QA Playwright su `trattoria-da-tommaso`; 806px OK |
 
+### Ciclo prepara-prompt (chiusura + controverifica)
+| Report | Stato | Effetto / task | Note |
+|--------|-------|----------------|------|
+| [Report-prepara-prompt-ciclo-centratura-card-05-06-26.md](./Report-prepara-prompt-ciclo-centratura-card-05-06-26.md) | ✅ | Sintesi ciclo; hook layout §3 + hook fine-sessione Cursor §14; controverifica ⚠️3; **FU-038–041** aperti | validate **412**; fix visivo approvabile |
+
 ## Da non confondere
 
 - **Ordine categorie** (admin frecce, `category_order_keys`) ≠ **gate menù capability** (chi vede la griglia compose).
