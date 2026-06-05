@@ -202,6 +202,20 @@ per dire il vero e documentare come abilitarlo in futuro (passare la BookingMode
 BookingDetailsModal, menuPricing): usano lo shim su prenotazioni GIÀ SALVATE, dove il `booking_type`
 è il tipo storico del record — lì il nome è la fonte giusta, non un bug.
 
+### Indagine «vincoli nascosti» (sub-agent + verifica chiamante) → FU-036
+
+Richiesta Matteo: stanare regole/vincoli che lui non conosce (come il filtro-per-nome). Indagine
+sub-agent su tutto il codice Prenota, findings verificati sul codice reale. Esito: **3 residui dello
+stesso anti-pattern «decidi per nome» sopravvivono nel pubblico** —
+`BookingSummarySidebar.tsx:60` (`hasMenu = booking_type !== 'tavolo'`),
+`BookingRequestForm.tsx:1055` (reset intolleranze solo per `tavolo`),
+`presetMenus.ts:227` (`shouldShowComposeMenuHeader === 'rinfresco_laurea'`). Inoltre il **Livello A**
+del layer capability (interruttori admin) non ha UI → comportamento ancora deciso dai nomi via
+Livello C; `modeUsesDietary` è codice morto nel pubblico (sezione intolleranze sempre visibile).
+**Azioni di questa sessione:** documentato tutto in skill PRENOTA §3-bis (così non è più nascosto) +
+aperto **FU-036** per la rimozione. Il resto (edge `create-booking`, promo, resolver) verificato
+name-agnostic, nessuna sorpresa. Commit `6c67f9d`.
+
 ### Mappa test ↔ codice consolidato (riferimenti)
 
 | Comportamento consolidato | Test di riferimento | Stato |
@@ -287,7 +301,10 @@ design (record storici). *Aggiornamento fine sessione:* committato tutto (feat `
 il prompt né lo skill system me lo segnalavano in modo strutturato — l'ho scoperto solo facendo
 `git status`/`git diff` dopo la revisione. Miglioria: un controllo di pre-sessione (hook o riga nel
 prompt) che dichiari «attenzione: working tree contiene N file modificati non da te» con la lista,
-così l'esecuzione e soprattutto la revisione partono sapendo cosa è in scope.
+così l'esecuzione e soprattutto la revisione partono sapendo cosa è in scope. Secondo attrito minore:
+i sub-agent vanno verificati non solo nel codice ma anche nei COMMENTI — quello del bug gemello aveva
+lasciato un commento che contraddiceva il codice (stesso difetto che doveva risolvere); l'ho corretto
+io. Metodo confermato: dopo ogni sub-agent rileggo diff reale + rieseguo i test, non mi fido del report.
 
 ❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuto ti sono stati utili o rumore?
 ✅ R6: Contesto **giusto**: i due file della skill Prenota (entry + data flow) contenevano esattamente
