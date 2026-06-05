@@ -1,10 +1,37 @@
 # Menu QR — contesto agenti (flusso dati admin ↔ pubblico)
 
 > Mappa come il ristoratore configura il menù digitale QR in **Admin → Tab Menu → QR Code** e cosa vede il cliente su **`/menu/:slug/qr/:shortCode`**.
-> Layout visivo homepage: `PUBLIC_MENU_LAYOUT_CONTEXT.md`. Skill entry: `PUBLIC_MENU_SKILL.md`.
+> Layout visivo homepage: `MENU_QR_LAYOUT_CONTEXT.md`. Skill entry: `../MENU_QR_SKILL.md`.
 > Report sessione mappa: `docs/Sessioni di lavoro/29-05-26/Report-mappatura-menu-qr-admin-pubblico-29-05-26.md`.
+> ⚠️ **Stato verificato 06-06-26 (codice = verità).** Alcuni INC dei report sotto (§8) sono ormai
+> **risolti o irraggiungibili** — vedi la sezione «Codice morto» qui sotto e §3-bis dello skill. Non
+> fidarti della colonna «Stato» dei report vecchi senza ricontrollare il codice.
 
-**Trigger routing:** «Menu QR» · «Impostazione Menù QR» · «PublicMenuPage» · «category_filter» · «hidden_menu_item_ids» · «aspetto per-QR» → questo file + `PUBLIC_MENU_SKILL.md`.
+**Trigger routing:** «Menu QR» · «Impostazione Menù QR» · «PublicMenuPage» · «category_filter» · «hidden_menu_item_ids» · «aspetto per-QR» → questo file + `../MENU_QR_SKILL.md`.
+
+---
+
+## 0. Codice morto da rimuovere — `content_type` / preset / menù-evento (06-06-26)
+
+> Decisione di Matteo nella sessione di mappatura. **Da rimuovere in una sessione di pulizia dedicata
+> — non oggi, non a pezzi.** Un agente NON deve costruirci sopra né «fixare» gli INC che lo riguardano.
+
+Il campo `menu_qr_codes.content_type` (`a_la_carte` / `preset_menus` / `mixed`) e `preset_ids`
+attiverebbero i **menù-evento dentro il QR**. **Ma il modale `MenuQrModal` non li espone**: salva sempre
+`content_type: 'a_la_carte'` e preserva soltanto `preset_ids` esistente. Quindi tutta la logica preset
+è **irraggiungibile dall'interfaccia**. Il caso «evento» Matteo lo copre con carosello + nome QR.
+
+**Cosa appartiene alla rimozione (mappa, non toccare ora):**
+- `src/pages/PublicMenuPresetPage.tsx` (intera pagina) + route `…/preset/:presetId`
+- In `PublicMenuPage.tsx`: rami `showPresets`/`usePresets`, sezione preset, `preset_ids`,
+  uso di `content_type` (`showCart`/`showPresets`) → resta solo il ramo `a_la_carte`
+- In `MenuNavTabs`: tab preset (e l'INC-06 «preset nascondono categorie» sparisce con la rimozione)
+- Tipi/colonne `content_type`, `preset_ids` (valutare migrazione di pulizia col DB-Skill)
+- INC collegati (latenti, NON fixare separatamente): INC-05 (foto preset), INC-06 (tab),
+  INC-15 (hidden su preset), INC-16 (`tenantReady` su preset)
+
+**Conservare invece:** il concetto di preset resta vivo SOLO in **Pagina Prenota** (menù staff
+preselezionati) — lì non è codice morto. La rimozione riguarda solo l'uso **dentro il QR**.
 
 ---
 

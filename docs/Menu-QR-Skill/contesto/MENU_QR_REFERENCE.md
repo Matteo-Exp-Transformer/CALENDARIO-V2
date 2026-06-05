@@ -1,14 +1,13 @@
----
-name: public-menu
-description: >-
-  Skill per il menu digitale pubblico QR. Caricalo quando lavori su pagine pubbliche
-  /menu/:slug, gestione QR code admin, upload foto piatti, o flag qrMenu.
----
+# MENU QR — Riferimento tecnico (migrazioni · storage · hook · regole)
 
-# Menu Digitale Pubblico via QR — Skill
-
-> Feature introdotta nella sessione 24-05-26 con migrazione 030.
-> **Flusso dati admin ↔ pubblico:** [`PUBLIC_MENU_DATA_FLOW_CONTEXT.md`](PUBLIC_MENU_DATA_FLOW_CONTEXT.md) — mappa campi, storage, incoerenze (report 29-05-26).
+> **Cos'è e perché è separato.** Questo file NON è lo skill: è il **registro tecnico denso** dell'area
+> (tabelle DB, path storage, hook, ~40 RULE operative). Vive in `contesto/` perché un agente lo apre
+> **solo** quando serve il dettaglio implementativo, non per orientarsi. Per il **senso, il flusso e i
+> divieti voluti** parti sempre da `../MENU_QR_SKILL.md`. I valori qui **specchiano il codice** (codice
+> = verità): se diverge dal codice, vince il codice.
+>
+> Feature introdotta 24-05-26 con migrazione 030.
+> Flusso dati admin ↔ pubblico: `MENU_QR_DATA_FLOW_CONTEXT.md` · Layout: `MENU_QR_LAYOUT_CONTEXT.md`.
 
 ---
 

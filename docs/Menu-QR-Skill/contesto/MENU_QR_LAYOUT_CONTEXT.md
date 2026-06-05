@@ -9,7 +9,7 @@ description: >-
 # PublicMenuPage — Layout & Componenti
 
 > File principale: `src/pages/PublicMenuPage.tsx`
-> Skill entry point: `docs/per-ui-design-skill/PUBLIC_MENU_SKILL.md`
+> Skill entry point: `../MENU_QR_SKILL.md` · Flusso dati: `MENU_QR_DATA_FLOW_CONTEXT.md`
 > Ultima revisione: 2026-06-01 — FU-025 esteso a `PublicMenuCategoryPage`; costante `publicMenuLayout.ts`; griglia 520, sfondo repeat-y homepage
 
 ---
