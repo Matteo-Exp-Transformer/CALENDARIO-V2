@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 05-06-26 | Docs - **README indici** cartelle sessioni (155 report, percorsi rapidi agente) | [Indice](Sessioni%20di%20lavoro/README.md) - 18 README (root + 14 giornate + 3 sottocartelle); ogni DD-MM-YY punta ai report; no rewrite contenuti |
 | 05-06-26 | Prenota — **ordine categorie `category_order_keys`** + bug griglia compose 🔶 **non chiuso** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-ordine-categorie-prenota-bug-griglia-05-06-26.md) — feature admin frecce + resolver/sync; regressione griglia card+preset; FU-035 **Aperto**; validate 300; no commit |
 | 04-06-26 | Prenota — **FU-031 QA limiti testo cliente** 🔶 Verifica · **non chiuso** | [Report](Sessioni%20di%20lavoro/04-06-26/Report-fu-031-limiti-cliente-prenota-04-06-26.md) — cap UI OK 375/834/1280; gap edge TEST deploy + messaggio «Testo troppo lungo» dietary/special; FU-031 **Aperto** con prompt Esecuzione |
 | 04-06-26 | Prenota — **FU-032 nome locale 45 char** ✅ **report finale** | [Report](Sessioni%20di%20lavoro/04-06-26/Report-fu-032-restaurant-name-45-04-06-26.md) — Anagrafica N/45, Zod/registry, `useRestaurantName` clamp; FU-032 **Fatto** |
