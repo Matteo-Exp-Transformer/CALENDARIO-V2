@@ -115,6 +115,46 @@ Il flusso dati che collega i due mondi (magazzino menù ↔ vetrina ↔ pagina p
 
 ---
 
+## 3-bis. Comportamento per CAPACITÀ, non per nome (sistema capability — 05-06-26)
+
+> **Regola di fondo, perché in passato era nascosta nel codice.** Cosa una tipologia *fa* (mostra
+> menù sì/no, intolleranze sì/no) **non deve dipendere dal NOME** (`tavolo` / `rinfresco_laurea` /
+> `menu_prezzo_fisso`): i nomi sono etichette. Deve dipendere dalla **capacità**, risolta a cascata.
+> Un agente che aggiunge un `=== 'tavolo'` o `=== 'rinfresco_laurea'` per decidere cosa mostrare sta
+> reintroducendo un bug già chiuso. Fonte: `src/features/booking/utils/bookingCapabilities.ts`.
+
+**I tre livelli (risoluzione a cascata, runtime, nessuna migrazione DB):**
+- **Livello A (esplicito):** `BookingMode.capabilities.uses_menu/uses_dietary`, impostate dall'admin.
+  ⚠️ **Oggi NON ha interfaccia** (nessun controllo in `BookingFormConfigPanel`): il campo è
+  parsato e preservato (LOCK Parser/normalizer) ma **nessuno lo scrive**. È un gancio per il futuro.
+- **Livello B (dati, solo pubblico):** card `display:'cards'` + `preset_id` risolto → mostra menù.
+  È ciò che usa il gate pubblico (`activeSubTabShowsMenu` in `BookingRequestForm`).
+- **Livello C (default per tipo):** riproduce il comportamento storico
+  (`rinfresco_laurea`/`menu_prezzo_fisso` → menù+intolleranze; `tavolo` → no). Funzione
+  `defaultModeCapabilities`. Lo shim **deprecato** `bookingTypeUsesMenuSelections` delega qui — usalo
+  solo dove c'è il `booking_type` di una prenotazione GIÀ SALVATA (calendario, card richiesta,
+  `menuPricing`), mai per nuove decisioni di vetrina. Per le decisioni nuove usa `modeUsesMenu(mode)`.
+
+**Conseguenza onesta da sapere:** finché il Livello A non ha UI, il comportamento menù/intolleranze
+dipende ancora dai NOMI via Livello C (più il Livello B nel pubblico). Il sistema è **metà costruito**.
+
+**Residui per-nome ancora presenti (debito noto — FU-036, NON aggiungerne altri):** tre punti nel
+pubblico decidono ancora per nome e vanno migrati a `modeUsesMenu`/`modeUsesDietary`:
+`BookingSummarySidebar` (`hasMenu = booking_type !== 'tavolo'`), reset intolleranze in
+`BookingRequestForm` (`if bookingType === 'tavolo'`), `shouldShowComposeMenuHeader` in `presetMenus.ts`
+(`=== 'rinfresco_laurea'`). La sezione **Intolleranze è oggi mostrata per OGNI tipologia**
+(`modeUsesDietary` non è ancora collegata nel pubblico): è uno stato di fatto, non una scelta blindata.
+
+**Valori magici ordinamento categorie (non arbitrari, documentati qui):** categorie presenti negli
+item ma assenti dal catalogo DB → `sort_order: 1000 + index` (in fondo); chiave senza `sort_order`
+DB → fallback `999`. Coerenti tra `MenuSelection`, `orderCategoryKeys`, `BookingSummarySidebar`.
+
+**Cosa è già testato (riferimenti):** gate menù + filtro preset → `bookingCapabilities.test.ts` +
+`MenuSelectionCategoryEntries.test.ts`; capabilities round-trip → `bookingPublicFormConfig.test.ts`;
+preset selezionabile per capacità → `presetMenuDisplay.test.ts`; resolver → `bookingFormResolver.test.ts`.
+
+---
+
 ## 4. Questioni aperte (decise, da implementare)
 
 > Non sono dimenticanze: sono decisioni di Matteo **in attesa di una sessione di esecuzione**. Un
