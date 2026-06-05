@@ -7,6 +7,7 @@
 
 import type { BookingType } from '@/types/booking'
 import type { SubTab } from '@/features/booking/constants/bookingPublicFormConfig'
+import { defaultModeCapabilities } from '@/features/booking/utils/bookingCapabilities'
 
 export const CUSTOM_PRESET_PREFIX = 'custom:' as const
 
@@ -94,14 +95,22 @@ export function isStaffPresetVisibleOnBooking(p: CustomStaffPreset): boolean {
   return p.visible_on_booking !== false
 }
 
-/** Preset visibile in pagina Prenota: la tipologia è gestita dalle card/subtab in Personalizza Form. */
+/**
+ * Preset selezionabile in pagina Prenota.
+ *
+ * La decisione segue la CAPACITÀ della tipologia («usa menù»), non il NOME (anti-pattern
+ * «decidi per nome»). Qui è disponibile solo il `booking_type`, quindi si risolve il Livello C
+ * (default per tipo): `rinfresco_laurea`/`menu_prezzo_fisso` → selezionabile; `tavolo`/assente →
+ * no. Comportamento storico preservato. Se in futuro serve far selezionare il preset anche per
+ * `tavolo` via capacità esplicita (Livello A/B), passare la `BookingMode` e usare `modeUsesMenu`.
+ * La visibilità `visible_on_booking` resta sempre rispettata.
+ */
 export function isStaffPresetSelectableForBookingType(
   p: CustomStaffPreset,
   bookingType: BookingType | string | null | undefined,
 ): boolean {
   if (!isStaffPresetVisibleOnBooking(p)) return false
-  if (bookingType !== 'rinfresco_laurea' && bookingType !== 'menu_prezzo_fisso') return false
-  return true
+  return defaultModeCapabilities(bookingType as BookingType | null | undefined).uses_menu
 }
 
 export interface PresetMenu {

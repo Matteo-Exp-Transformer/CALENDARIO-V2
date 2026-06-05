@@ -68,12 +68,33 @@ describe('isStaffPresetSelectableForBookingType', () => {
       booking_types: ['menu_prezzo_fisso'],
     }
 
+    // La selezionabilità NON dipende dai booking_types del preset: anche un preset associato
+    // solo a menu_prezzo_fisso resta selezionabile su una tipologia rinfresco_laurea.
     expect(isStaffPresetSelectableForBookingType(onlyFixedPricePreset, 'rinfresco_laurea')).toBe(true)
-    expect(isStaffPresetSelectableForBookingType(onlyFixedPricePreset, 'tavolo')).toBe(false)
     expect(
       isStaffPresetSelectableForBookingType(
         { ...onlyFixedPricePreset, visible_on_booking: false },
         'menu_prezzo_fisso',
+      ),
+    ).toBe(false)
+  })
+
+  it('decide per CAPACITÀ (Livello C), non per nome della tipologia', () => {
+    // Tipi storici che «usano menù» → selezionabili (comportamento preservato).
+    expect(isStaffPresetSelectableForBookingType(composablePreset, 'rinfresco_laurea')).toBe(true)
+    expect(isStaffPresetSelectableForBookingType(composablePreset, 'menu_prezzo_fisso')).toBe(true)
+    // Tipo senza capacità menù di default → non selezionabile (Livello C: tavolo uses_menu=false).
+    expect(isStaffPresetSelectableForBookingType(composablePreset, 'tavolo')).toBe(false)
+    // Tipologia assente → default niente menù → non selezionabile.
+    expect(isStaffPresetSelectableForBookingType(composablePreset, null)).toBe(false)
+    expect(isStaffPresetSelectableForBookingType(composablePreset, undefined)).toBe(false)
+  })
+
+  it('visible_on_booking=false vince sempre, anche su tipologia con menù', () => {
+    expect(
+      isStaffPresetSelectableForBookingType(
+        { ...composablePreset, visible_on_booking: false },
+        'rinfresco_laurea',
       ),
     ).toBe(false)
   })
