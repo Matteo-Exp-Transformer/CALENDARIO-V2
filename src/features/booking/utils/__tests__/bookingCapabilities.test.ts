@@ -79,7 +79,14 @@ describe('activeSubTabShowsMenu (Livello B — pubblico)', () => {
   it('carosello → false', () => {
     expect(activeSubTabShowsMenu({ display: 'carousel', preset_id: 'p1' }, preset)).toBe(false)
   })
-  it('senza preset_id → false', () => {
+  it('senza preset_id ma con label → true (blocco titolo/descrizione in MenuSelection)', () => {
+    expect(activeSubTabShowsMenu({ display: 'cards', label: 'Menu Laurea' }, null)).toBe(true)
+  })
+  it('senza preset_id e senza label → false', () => {
+    expect(activeSubTabShowsMenu({ display: 'cards', label: '  ' }, null)).toBe(false)
+    expect(activeSubTabShowsMenu({ display: 'cards' }, null)).toBe(false)
+  })
+  it('senza preset_id → false (legacy: richiedeva preset)', () => {
     expect(activeSubTabShowsMenu({ display: 'cards' }, preset)).toBe(false)
   })
   it('preset non risolto (null) → false', () => {

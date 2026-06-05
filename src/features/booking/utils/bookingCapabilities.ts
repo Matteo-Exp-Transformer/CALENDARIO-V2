@@ -102,8 +102,12 @@ export function isMenuItemVisibleForSelection(params: {
  * con preset collegato e risolto. È la capability già calcolata oggi dal gate pubblico.
  */
 export function activeSubTabShowsMenu(
-  subTab: { display?: string; preset_id?: string } | null | undefined,
+  subTab: { display?: string; preset_id?: string; label?: string } | null | undefined,
   linkedPreset: unknown,
 ): boolean {
-  return !!subTab && subTab.display === 'cards' && !!subTab.preset_id && !!linkedPreset
+  if (!subTab || subTab.display !== 'cards') return false
+  if (subTab.preset_id && linkedPreset) return true
+  // Card manuale (senza preset): blocco titolo/descrizione in MenuSelection, senza griglia.
+  if (!subTab.preset_id && subTab.label?.trim()) return true
+  return false
 }

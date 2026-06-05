@@ -175,14 +175,9 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
                       <span className="min-w-0 flex-1" aria-hidden />
                     )}
                     {priceAmount ? (
-                      <div className="flex shrink-0 flex-col items-end leading-none">
-                        <p className="text-sm font-normal tracking-normal text-warm-orange tabular-nums sm:text-lg min-[782px]:text-xl">
-                          {priceAmount}
-                        </p>
-                        <p className="mt-0.5 text-[10px] font-normal text-warm-orange sm:text-xs">
-                          a persona
-                        </p>
-                      </div>
+                      <p className="shrink-0 text-sm font-normal tracking-normal text-warm-orange tabular-nums sm:text-lg min-[782px]:text-xl">
+                        {priceAmount}
+                      </p>
                     ) : null}
                   </div>
                 </>

@@ -468,7 +468,9 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       return
     }
 
-    const resolved = applyPresetTypeToBookingFormPayload(presetType, menuItems, customStaffPresets)
+    const resolved = applyPresetTypeToBookingFormPayload(presetType, menuItems, customStaffPresets, {
+      subTabGuestComposable: sourceSubTab?.is_fixed_menu === false,
+    })
     if (!resolved) {
       if (presetCatalogLoading) {
         const fallbackPrice = getSubTabPricePerPerson(sourceSubTab)
@@ -549,6 +551,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
       presetType,
       menuItems,
       customStaffPresets,
+      { subTabGuestComposable: only.is_fixed_menu === false },
     )
     if (!resolved) return
 
@@ -589,7 +592,9 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     if (formData.preset_menu !== selectedPreset) return
     if ((formData.menu_selection?.items.length ?? 0) > 0) return
 
-    const resolved = applyPresetTypeToBookingFormPayload(selectedPreset, menuItems, customStaffPresets)
+    const resolved = applyPresetTypeToBookingFormPayload(selectedPreset, menuItems, customStaffPresets, {
+      subTabGuestComposable: activeSubTab?.is_fixed_menu === false,
+    })
     if (!resolved || resolved.items.length === 0) return
 
     const numGuests = formData.num_guests || 0
@@ -1162,6 +1167,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             presetSectionTitle={activeSubTab?.label?.trim() || undefined}
             presetDescription={activeSubTab?.description}
             disablePresetDescriptionFallback={activeModeSubTabs.length > 0}
+            hideMenuGrid={!activeSubTab?.preset_id || !activeSubTabLinkedPreset}
             menuSelectionLockedOverride={
               activeSubTab ? activeSubTab.is_fixed_menu !== false : undefined
             }

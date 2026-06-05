@@ -216,6 +216,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
   }, [dbCategories])
 
   const showComposeHeader =
+    !hideMenuGrid &&
     !menuSelectionLocked &&
     shouldShowComposeMenuHeader(
       presetMenu ?? null,

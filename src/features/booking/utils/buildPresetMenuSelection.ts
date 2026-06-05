@@ -180,6 +180,21 @@ export function isGuestComposableStaffPreset(
   return preset?.is_fixed_menu === false
 }
 
+export type ApplyPresetMenuSelectionOptions = {
+  /** Card Prenota con toggle «Menù personalizzabile» ON (`subTab.is_fixed_menu === false`). */
+  subTabGuestComposable?: boolean
+}
+
+/** Catalogo vuoto in partenza se il cliente compone (preset o card sottotab personalizzabile). */
+export function isGuestComposableMenuSelection(
+  presetType: PresetMenuType,
+  customPresets: CustomStaffPreset[],
+  options?: ApplyPresetMenuSelectionOptions,
+): boolean {
+  if (options?.subTabGuestComposable === true) return true
+  return isGuestComposableStaffPreset(presetType, customPresets)
+}
+
 /** Catalogo preset valido per form pubblico (almeno una voce menu nel DB). */
 export function presetCatalogHasMenuItems(
   presetType: Exclude<PresetMenuType, null>,
@@ -200,12 +215,13 @@ export function applyPresetTypeToBookingFormPayload(
   presetType: Exclude<PresetMenuType, null>,
   menuItems: MenuItem[],
   customPresets: CustomStaffPreset[],
+  options?: ApplyPresetMenuSelectionOptions,
 ): { items: SelectedMenuItem[]; preset_menu: PresetMenuType } | null {
   if (!presetCatalogHasMenuItems(presetType, menuItems, customPresets)) {
     return null
   }
 
-  if (isGuestComposableStaffPreset(presetType, customPresets)) {
+  if (isGuestComposableMenuSelection(presetType, customPresets, options)) {
     return {
       items: [],
       preset_menu: presetType,

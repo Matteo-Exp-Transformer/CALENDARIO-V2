@@ -86,6 +86,15 @@ describe('preset personalizzabile (is_fixed_menu=false)', () => {
     expect(result!.preset_menu).toBe(COMP_KEY)
   })
 
+  it('card sottotab personalizzabile (subTabGuestComposable) → items vuoti anche se preset staff è fisso', () => {
+    const result = applyPresetTypeToBookingFormPayload(FIXED_KEY, MENU_ITEMS, [FIXED_PRESET], {
+      subTabGuestComposable: true,
+    })
+    expect(result).not.toBeNull()
+    expect(result!.items).toEqual([])
+    expect(result!.preset_menu).toBe(FIXED_KEY)
+  })
+
   it('personalizzabile ma item_ids del preset non esistono più nel catalogo → null', () => {
     const orphanPreset: CustomStaffPreset = { ...COMPOSABLE_PRESET, item_ids: ['sparito-1'] }
     expect(applyPresetTypeToBookingFormPayload(COMP_KEY, MENU_ITEMS, [orphanPreset])).toBeNull()
