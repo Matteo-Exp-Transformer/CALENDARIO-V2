@@ -52,6 +52,18 @@
 > [ARCHIVIO_OSSERVAZIONI.md](ARCHIVIO_OSSERVAZIONI.md): la prima è diventata regola, la seconda è
 > confluita nel rinforzo hook v3. La richiesta «riportare i prompt verbatim» è ora nel nudge hook.
 
+### 06-06-26 — Admin Area 1 Shell (mappatura + blindatura avviata)
+- **Area:** Admin autenticato — Shell / ingresso / navigazione globale.
+- **Prompt:** Matteo ha usato profilo "Meta senior / orchestratore Admin", modalita deep, lista skill
+  esplicita, vincolo "non modificare codice applicativo finche intervista non chiusa", poi
+  "lavoro ok fai report finale".
+- **Dato comunicazione:** Matteo ha scritto "dammi hand off per proseguire mappatura con nuovo agente".
+  La frase ha lo stesso intento operativo di "dammi follow up" ma non va promossa automaticamente:
+  registrare come candidata/variante da valutare in revisione, non come voce attiva.
+- **Esiti Liv.2:** nessuna voce Liv.2 applicata.
+- **Esito:** Area 1 intervista chiusa, fix shell avviati, validate verde (426 test), report
+  `Report-blindatura-admin-area1-shell-06-06-26.md`.
+
 ### 03-06-26 — Limiti testo Pagina Prenota (prepara-prompt + esecutore + hook stop)
 - **Area:** Pagina Prenota — limiti caratteri vetrina (`bookingPrenotaTextLimits.ts`) + form cliente silenzioso.
 - **Ciclo:** prepara-prompt (chat A) → esecutore (chat B) → «lavoro ok» → revisore/chiusura (stessa chat) → **hook stop** da Matteo.
