@@ -29,6 +29,12 @@ const TenantNotFound = () => (
   </div>
 )
 
+const protectedAdminShell = (
+  <ProtectedRoute>
+    <AdminShell />
+  </ProtectedRoute>
+)
+
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
@@ -88,11 +94,11 @@ export const router = createBrowserRouter([
       // Dashboard admin (protetta)
       {
         path: '/admin',
-        element: (
-          <ProtectedRoute>
-            <AdminShell />
-          </ProtectedRoute>
-        )
+        element: protectedAdminShell
+      },
+      {
+        path: '/admin/:adminSection',
+        element: protectedAdminShell
       },
       {
         path: '*',

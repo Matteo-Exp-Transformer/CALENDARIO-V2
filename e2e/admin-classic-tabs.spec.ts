@@ -1,4 +1,7 @@
 /**
+ * // @admin-blindatura: shell-edition
+ * // Copre: Classic senza sidebar e dashboard operativa con tab interne.
+ *
  * Test E2E — Admin Classic: copertura tab Archivio, Impostazioni e cancellazione prenotazione.
  *
  * Copre le lacune identificate in GUIDA-TEST-SISTEMA.md § "Parte 3":

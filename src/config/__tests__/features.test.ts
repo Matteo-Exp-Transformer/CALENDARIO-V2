@@ -48,4 +48,11 @@ describe('buildFeatures', () => {
     const allTrue = Object.values(f).every((v) => v === true)
     expect(allTrue).toBe(true)
   })
+
+  it('qrMenu puo essere aggiunto a Classic o rimosso da Pro via override', () => {
+    // @admin-blindatura: shell-edition
+    // Copre: Menu QR e una feature vendibile, non un vincolo fisso della sidebar.
+    expect(buildFeatures('classic', ['qrMenu']).qrMenu).toBe(true)
+    expect(buildFeatures('pro', ['-qrMenu']).qrMenu).toBe(false)
+  })
 })

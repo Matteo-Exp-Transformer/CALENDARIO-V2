@@ -43,6 +43,7 @@ import { useFeatures } from '@/hooks/useFeatures'
 import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 
 type Tab = 'calendar' | 'pending' | 'archive' | 'menu' | 'settings-restaurant'
+const ADMIN_HEADER_FALLBACK_NAME = 'Sistema Gestionale Prenotazioni'
 
 /* ─── NavItem ─── */
 interface NavItemProps {
@@ -153,6 +154,8 @@ export type AdminDashboardProps = {
   bodyOverride?: React.ReactNode
   /** Chiamato quando si clicca un NavItem mentre bodyOverride è attivo — segnala ad AdminShell di uscire dalla Home. */
   onBodyOverrideExit?: () => void
+  /** Logout centralizzato dalla shell: passa dal guard modifiche non salvate. */
+  onLogout?: () => void | Promise<void>
 }
 
 /* ─── Dashboard ─── */
@@ -160,6 +163,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   restaurantSettingsSignal = 0,
   bodyOverride,
   onBodyOverrideExit,
+  onLogout,
 }) => {
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
   const [calendarTargetDate, setCalendarTargetDate] = useState<string | null>(null)
@@ -239,6 +243,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     window.open(`/prenota/${tenantSlug}`, '_blank', 'noopener,noreferrer')
   }
 
+  const handleLogout = onLogout ?? logout
+
   /** Con bodyOverride (Home Pro) non mostrare statistiche Calendario, filtri Archivio, toolbar Menu, intro Impostazioni, blocco Nuova prenotazione. */
   const showTabSecondaryChrome = !bodyOverride
 
@@ -262,7 +268,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <h1
                 className="relative -left-16 mx-auto max-w-[calc(100%-4.5rem)] max-[645px]:left-0 max-[645px]:mx-auto max-[645px]:max-w-[min(100%,calc(100vw-5rem))] sm:max-w-[calc(100%-9rem)] md:max-w-[calc(100%-11rem)] overflow-hidden line-clamp-2 wrap-anywhere text-[22px] font-semibold italic font-serif tracking-wide text-white drop-shadow-sm leading-tight sm:text-2xl md:text-[28px] lg:text-[30px]"
               >
-                {restaurantName || 'Booking SaaS'}
+                {restaurantName || ADMIN_HEADER_FALLBACK_NAME}
               </h1>
             </div>
           </div>
@@ -547,7 +553,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </button>
               <button
                 type="button"
-                onClick={logout}
+                onClick={() => void handleLogout()}
                 className={cn('flex shrink-0 items-center gap-2', adminBlueCtaSurfaceClass)}
               >
                 <LogOut className="h-3.5 w-3.5 text-white" />
