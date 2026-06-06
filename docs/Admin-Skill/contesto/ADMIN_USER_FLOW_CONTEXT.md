@@ -14,8 +14,8 @@
 
 ## 2. Struttura navigazione
 
-`/admin` monta la shell protetta. Le sezioni principali hanno sotto-route leggere; le tab interne
-della dashboard restano stati React:
+`/admin` monta la shell protetta. Le sezioni principali hanno sotto-route leggere; anche le tab
+operative della dashboard hanno URL leggeri per preservare refresh/back:
 
 - `AdminShell.section`: `home`, `prenotazioni`, `crm`, `servizio`, `analytics`.
 - `AdminDashboard.activeTab`: `calendar`, `pending`, `archive`, `menu`, `settings-restaurant`.
@@ -27,7 +27,11 @@ flag. Home rispetta `features.home`; se il flag e false la default diventa Preno
 Path shell:
 
 - `/admin` -> Home se abilitata, altrimenti Prenotazioni.
-- `/admin/prenotazioni` -> dashboard classica.
+- `/admin/calendario` -> dashboard classica, tab Calendario.
+- `/admin/prenotazioni` -> dashboard classica, tab Prenotazioni.
+- `/admin/archivio` -> dashboard classica, tab Archivio.
+- `/admin/menu` -> dashboard classica, tab Menu.
+- `/admin/impostazioni` -> dashboard classica, tab Impostazioni.
 - `/admin/crm`, `/admin/servizio`, `/admin/analytics` -> sezioni Pro se abilitate.
 
 ## 3. Percorsi principali

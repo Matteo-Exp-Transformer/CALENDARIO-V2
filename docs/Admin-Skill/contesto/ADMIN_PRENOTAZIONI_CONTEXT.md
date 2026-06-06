@@ -6,6 +6,9 @@
 ## 1. Dove vive
 
 - `AdminDashboard` tab `calendar`, `pending`, `archive`.
+- URL tab: `/admin/calendario`, `/admin/prenotazioni`, `/admin/archivio`.
+- Refresh/back devono riaprire la stessa tab indicata dall'URL; `/admin/prenotazioni` non deve
+  ricadere su Calendario.
 - Componenti principali: `BookingCalendarTab`, `PendingRequestsTab`, `ArchiveTab`, `AdminBookingForm`,
   `BookingRequestCard`, `BookingDetailsModal`, `RejectBookingModal`, `CapacityWarningModal`,
   `PastStartTimeWarningModal`, `QuickTableAssignModal`.

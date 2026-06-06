@@ -124,7 +124,7 @@ File e flussi principali:
 - `src/router.tsx`: `/admin` e `/admin/:adminSection` protette.
 - `src/pages/AdminLoginPage.tsx`: ingresso login.
 - `src/components/layout/AdminShell.tsx`: sezione corrente, sidebar, logout, theme effect.
-- `src/pages/AdminDashboard.tsx`: tab interne e `bodyOverride` Home.
+- `src/pages/AdminDashboard.tsx`: tab interne, URL tab e `bodyOverride` Home.
 - `src/features/booking/hooks/useAdminAuth.ts`: sessione, `admin_users`, tenant, logout.
 - `src/hooks/useFeatures.ts` + `src/config/features.ts`: Classic/Pro/Enterprise.
 - `src/contexts/UnsavedChangesContext.tsx`: dirty state, save/discard, beforeunload.
@@ -148,7 +148,7 @@ Scenari minimi:
 - cambio sezione con dirty state mostra guard;
 - logout con dirty state mostra il guard;
 - `features.home=false` nasconde Home e porta a Prenotazioni;
-- refresh/back da sezione interna usa sotto-route shell.
+- refresh/back da sezione interna o tab dashboard usa sotto-route leggere.
 
 ### 3.4 Criterio uscita Area 1
 

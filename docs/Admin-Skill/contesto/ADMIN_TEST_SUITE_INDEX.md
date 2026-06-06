@@ -114,7 +114,7 @@ Decisioni Matteo recepite nei test:
 - Pro/Enterprise con sidebar e feature modulabili;
 - Home nascosta se `features.home=false`;
 - logout bloccato dal guard modifiche non salvate;
-- refresh/back migliorati con sotto-route `/admin/:adminSection`;
+- refresh/back migliorati con sotto-route per sezioni shell e tab dashboard;
 - fallback header neutro `Sistema Gestionale Prenotazioni`.
 
 Test marcati o creati:
@@ -125,7 +125,9 @@ Test marcati o creati:
 - `src/components/layout/__tests__/adminShellRouting.test.ts`:
   - `@admin-blindatura: shell-edition` su Classic e route Pro non accessibili;
   - `@admin-blindatura: shell-sidebar` su `features.home=false`;
-  - `@admin-blindatura: shell-refresh-back` su path canonici e risoluzione route;
+  - `@admin-blindatura: shell-refresh-back` su path canonici, risoluzione route e URL tab dashboard
+    (`/admin/calendario`, `/admin/prenotazioni`, `/admin/archivio`, `/admin/menu`,
+    `/admin/impostazioni`);
   - `@admin-blindatura: shell-logout` su logout subordinato al guard.
 - `src/config/__tests__/features.test.ts` -> `@admin-blindatura: shell-edition` su QR Menu
   aggiungibile/rimuovibile via override.

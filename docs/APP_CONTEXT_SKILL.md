@@ -147,9 +147,10 @@ main      →  PRODUZIONE: è il branch che Vercel pubblica come app reale
 
 ## 2. Mappa routing admin
 
-Il routing admin ha **sotto-route leggere per la shell** e stato React per le tab interne.
+Il routing admin ha **sotto-route leggere per la shell** e per le tab operative della dashboard.
 `AdminShell.tsx` gestisce lo stato `section`, sincronizzato con `/admin/:adminSection`, e monta il
-componente corretto.
+componente corretto. `AdminDashboard.tsx` sincronizza `activeTab` con gli URL tab per preservare
+refresh/back.
 
 **Il comportamento varia in base all'edition del tenant** (letto da `useFeatures()`):
 
@@ -161,7 +162,11 @@ componente corretto.
 | Path | Section |
 |------|---------|
 | `/admin` | Home se abilitata, altrimenti Prenotazioni |
-| `/admin/prenotazioni` | `'prenotazioni'` |
+| `/admin/calendario` | `'prenotazioni'`, tab Calendario |
+| `/admin/prenotazioni` | `'prenotazioni'`, tab Prenotazioni |
+| `/admin/archivio` | `'prenotazioni'`, tab Archivio |
+| `/admin/menu` | `'prenotazioni'`, tab Menu |
+| `/admin/impostazioni` | `'prenotazioni'`, tab Impostazioni |
 | `/admin/crm` | `'crm'` se feature abilitata |
 | `/admin/servizio` | `'servizio'` se feature abilitata |
 | `/admin/analytics` | `'analytics'` se feature abilitata |

@@ -45,8 +45,9 @@ Ha tre funzioni insieme:
 ## 3. Confini da non confondere
 
 - `/admin` resta la route protetta principale, con sotto-route leggere per le sezioni shell
-  (`/admin/crm`, `/admin/servizio`, `/admin/analytics`, `/admin/prenotazioni`). Le tab interne della
-  dashboard restano stati React.
+  (`/admin/crm`, `/admin/servizio`, `/admin/analytics`) e per le tab operative della dashboard
+  (`/admin/calendario`, `/admin/prenotazioni`, `/admin/archivio`, `/admin/menu`,
+  `/admin/impostazioni`).
 - **Admin autenticato** usa `supabase`; pagine pubbliche usano `supabasePublic`.
 - **Magazzino Menu** (`menu_items`, `menu_categories`) diverso da **vetrina Prenota**
   (`booking_public_form_config`) e da **vista QR per-QR** (`menu_qr_codes`).
@@ -68,8 +69,9 @@ Ha tre funzioni insieme:
 
 ## 5. Regole volute / da rispettare
 
-- Le sezioni shell principali hanno sotto-route leggere per refresh/back. Non trasformare le tab
-  interne della dashboard in sotto-route senza nuova decisione esplicita.
+- Le sezioni shell principali e le tab operative della dashboard hanno sotto-route leggere per
+  refresh/back. Non aggiungere route nuove senza aggiornare `adminShellRouting` e i test
+  `@admin-blindatura: shell-refresh-back`.
 - Logout deve passare dal guard modifiche non salvate: l'utente salva, annulla o resta prima di uscire.
 - Se manca il nome ristorante nell'header admin, il fallback e `Sistema Gestionale Prenotazioni`.
 - Home deve rispettare `features.home`: se il flag e false, non compare anche con sidebar attiva.
@@ -88,7 +90,7 @@ Decisioni Area 1 chiuse con Matteo il 06-06-26:
 - Logout con modifiche non salvate deve bloccare con guard.
 - Fallback header admin: `Sistema Gestionale Prenotazioni`.
 - `features.home=false` nasconde Home anche se sidebar resta attiva.
-- Refresh/back delle sezioni shell vanno migliorati con sotto-route leggere.
+- Refresh/back delle sezioni shell e delle tab dashboard usano sotto-route leggere.
 
 Questioni ancora aperte:
 

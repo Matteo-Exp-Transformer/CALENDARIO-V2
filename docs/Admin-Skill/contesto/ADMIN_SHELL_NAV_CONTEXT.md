@@ -15,13 +15,18 @@
 Le sotto-route supportate dalla shell sono:
 
 - `/admin` -> Home se `features.home=true`, altrimenti Prenotazioni.
-- `/admin/prenotazioni` -> dashboard classica.
+- `/admin/calendario` -> dashboard classica, tab Calendario.
+- `/admin/prenotazioni` -> dashboard classica, tab Prenotazioni.
+- `/admin/archivio` -> dashboard classica, tab Archivio.
+- `/admin/menu` -> dashboard classica, tab Menu.
+- `/admin/impostazioni` -> dashboard classica, tab Impostazioni.
 - `/admin/crm` -> CRM se `features.crm=true`.
 - `/admin/servizio` -> Servizio se `features.servizio=true`.
 - `/admin/analytics` -> Analytics se `features.analytics=true`.
 
 Le route non abilitate o sconosciute tornano alla sezione di default e vengono normalizzate sul path
-canonico. Le tab interne della dashboard restano stato React, non sotto-route.
+canonico. Le tab operative della dashboard hanno URL leggeri per refresh/back; lo stato React resta
+la fonte locale dell'interazione mentre l'URL mantiene la tab attiva.
 
 ## 2. Auth e tenant
 
@@ -74,11 +79,11 @@ sidebar "Impostazioni": percorso latente.
 
 `AdminDashboard.activeTab`:
 
-- `calendar`
-- `pending`
-- `archive`
-- `menu`
-- `settings-restaurant`
+- `calendar` -> `/admin/calendario`
+- `pending` -> `/admin/prenotazioni`
+- `archive` -> `/admin/archivio`
+- `menu` -> `/admin/menu`
+- `settings-restaurant` -> `/admin/impostazioni`
 
 Quando Home Pro e attiva, `AdminDashboard` riceve `bodyOverride`: restano header ristorante e nav tab,
 ma il corpo e sostituito da `AdminHomePage` e il chrome secondario dei tab viene nascosto.
@@ -97,6 +102,7 @@ Header: se manca il nome ristorante, il fallback e `Sistema Gestionale Prenotazi
 - `confirmNavigation` mostra `UnsavedNavigationGuardModal`.
 - `allowPrenotazioniDashboard` permette alcuni ritorni senza blocco.
 - `beforeunload` protegge refresh/chiusura tab.
+- Il back/forward browser tra URL tab dashboard passa dal guard quando ci sono modifiche dirty.
 - Logout passa dal guard e non procede finche l'utente non salva o annulla le modifiche.
 
 ## 8. Rischi da testare dopo mappatura
@@ -117,7 +123,7 @@ Header: se manca il nome ristorante, il fallback e `Sistema Gestionale Prenotazi
 | Logout con dirty state | Deve bloccare con guard: salva/annulla/resta |
 | Fallback header | `Sistema Gestionale Prenotazioni` |
 | `features.home=false` con sidebar attiva | Home nascosta, default Prenotazioni |
-| Refresh/back senza sotto-route | Da migliorare: route leggere `/admin/:adminSection` |
+| Refresh/back senza sotto-route | Migliorato: route leggere per sezioni shell e tab dashboard |
 
 ## 10. Test di blindatura Shell previsti
 
