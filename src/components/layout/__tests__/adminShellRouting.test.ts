@@ -1,8 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
+  getAdminDashboardTabPath,
   getAdminSectionPath,
   getDefaultAdminSection,
   isAdminSectionEnabled,
+  resolveAdminDashboardTabFromPath,
+  resolveAdminRouteFromPath,
   resolveAdminSectionFromPath,
   runGuardedAdminLogout,
 } from '../adminShellRouting'
@@ -63,11 +66,58 @@ describe('adminShellRouting', () => {
     expect(resolveAdminSectionFromPath('/admin/sezione-sconosciuta', pro)).toBe('home')
   })
 
+  it('mantiene la tab dashboard indicata dall URL su refresh e back browser', () => {
+    // @admin-blindatura: shell-refresh-back
+    // Copre: le tab interne non ricadono su Calendario dopo reload.
+    expect(resolveAdminRouteFromPath('/admin/calendario', pro)).toEqual({
+      section: 'prenotazioni',
+      dashboardTab: 'calendar',
+      canonicalPath: '/admin/calendario',
+    })
+    expect(resolveAdminRouteFromPath('/admin/prenotazioni', pro)).toEqual({
+      section: 'prenotazioni',
+      dashboardTab: 'pending',
+      canonicalPath: '/admin/prenotazioni',
+    })
+    expect(resolveAdminRouteFromPath('/admin/archivio', pro)).toEqual({
+      section: 'prenotazioni',
+      dashboardTab: 'archive',
+      canonicalPath: '/admin/archivio',
+    })
+    expect(resolveAdminRouteFromPath('/admin/menu', pro)).toEqual({
+      section: 'prenotazioni',
+      dashboardTab: 'menu',
+      canonicalPath: '/admin/menu',
+    })
+    expect(resolveAdminRouteFromPath('/admin/impostazioni', pro)).toEqual({
+      section: 'prenotazioni',
+      dashboardTab: 'settings-restaurant',
+      canonicalPath: '/admin/impostazioni',
+    })
+  })
+
+  it('risolve e genera path canonici per tutte le tab dashboard', () => {
+    // @admin-blindatura: shell-refresh-back
+    // Copre: ogni NavItem interno ha URL simmetrico per refresh/back.
+    expect(getAdminDashboardTabPath('calendar')).toBe('/admin/calendario')
+    expect(getAdminDashboardTabPath('pending')).toBe('/admin/prenotazioni')
+    expect(getAdminDashboardTabPath('archive')).toBe('/admin/archivio')
+    expect(getAdminDashboardTabPath('menu')).toBe('/admin/menu')
+    expect(getAdminDashboardTabPath('settings-restaurant')).toBe('/admin/impostazioni')
+
+    expect(resolveAdminDashboardTabFromPath('/admin/calendario')).toBe('calendar')
+    expect(resolveAdminDashboardTabFromPath('/admin/prenotazioni')).toBe('pending')
+    expect(resolveAdminDashboardTabFromPath('/admin/archivio')).toBe('archive')
+    expect(resolveAdminDashboardTabFromPath('/admin/menu')).toBe('menu')
+    expect(resolveAdminDashboardTabFromPath('/admin/impostazioni')).toBe('settings-restaurant')
+    expect(resolveAdminDashboardTabFromPath('/admin/crm')).toBeNull()
+  })
+
   it('genera path canonici per la cronologia browser', () => {
     // @admin-blindatura: shell-refresh-back
-    // Copre: la Home resta /admin, le altre sezioni entrano nella history.
+    // Copre: la Home resta /admin, la dashboard torna a Calendario, le sezioni Pro entrano nella history.
     expect(getAdminSectionPath('home')).toBe('/admin')
-    expect(getAdminSectionPath('prenotazioni')).toBe('/admin/prenotazioni')
+    expect(getAdminSectionPath('prenotazioni')).toBe('/admin/calendario')
     expect(getAdminSectionPath('crm')).toBe('/admin/crm')
     expect(getAdminSectionPath('servizio')).toBe('/admin/servizio')
     expect(getAdminSectionPath('analytics')).toBe('/admin/analytics')

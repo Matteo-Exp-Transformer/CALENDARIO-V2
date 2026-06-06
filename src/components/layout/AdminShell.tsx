@@ -21,6 +21,7 @@ import { useFeatures } from '@/hooks/useFeatures'
 import { UnsavedChangesProvider, useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 import {
   getAdminSectionPath,
+  resolveAdminRouteFromPath,
   resolveAdminSectionFromPath,
   runGuardedAdminLogout,
   type AdminShellSection,
@@ -139,14 +140,13 @@ const AdminShellInner: FC = () => {
   const isDrawerOpen = sidebarMode === 'expanded'
 
   useEffect(() => {
-    const resolvedSection = resolveAdminSectionFromPath(location.pathname, features)
-    const canonicalPath = getAdminSectionPath(resolvedSection)
+    const resolvedRoute = resolveAdminRouteFromPath(location.pathname, features)
 
-    setSection(resolvedSection)
-    setActiveSidebarItem(sidebarItemForSection(resolvedSection))
+    setSection(resolvedRoute.section)
+    setActiveSidebarItem(sidebarItemForSection(resolvedRoute.section))
 
-    if (location.pathname !== canonicalPath) {
-      navigate(canonicalPath, { replace: true })
+    if (location.pathname !== resolvedRoute.canonicalPath) {
+      navigate(resolvedRoute.canonicalPath, { replace: true })
     }
   }, [features, location.pathname, navigate])
 
@@ -214,6 +214,12 @@ const AdminShellInner: FC = () => {
     },
     [openSection],
   )
+
+  const exitBodyOverrideToDashboard = useCallback(() => {
+    if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
+    setSection('prenotazioni')
+    setActiveSidebarItem(null)
+  }, [isNarrow, sidebarMode])
 
   const handleLogout = useCallback(
     () => runGuardedAdminLogout(confirmNavigation, logout),
@@ -464,7 +470,7 @@ const AdminShellInner: FC = () => {
                 </Suspense>
               ) : undefined
             }
-            onBodyOverrideExit={() => openSection('prenotazioni', null)}
+            onBodyOverrideExit={exitBodyOverrideToDashboard}
           />
         )}
 

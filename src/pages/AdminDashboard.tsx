@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useBlocker, useLocation, useNavigate } from 'react-router-dom'
 import { useBookingStats } from '@/features/booking/hooks/useBookingQueries'
 import { PendingRequestsTab } from '@/features/booking/components/PendingRequestsTab'
 import {
@@ -41,8 +42,13 @@ import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
 import { useFeatures } from '@/hooks/useFeatures'
 import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
+import {
+  getAdminDashboardTabPath,
+  resolveAdminDashboardTabFromPath,
+  type AdminDashboardTab,
+} from '@/components/layout/adminShellRouting'
 
-type Tab = 'calendar' | 'pending' | 'archive' | 'menu' | 'settings-restaurant'
+type Tab = AdminDashboardTab
 const ADMIN_HEADER_FALLBACK_NAME = 'Sistema Gestionale Prenotazioni'
 
 /* ─── NavItem ─── */
@@ -165,24 +171,57 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onBodyOverrideExit,
   onLogout,
 }) => {
-  const [activeTab, setActiveTab] = useState<Tab>('calendar')
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState<Tab>(
+    () => resolveAdminDashboardTabFromPath(location.pathname) ?? 'calendar',
+  )
   const [calendarTargetDate, setCalendarTargetDate] = useState<string | null>(null)
   const [showNewBookingPanel, setShowNewBookingPanel] = useState(false)
   const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>('all')
   const [archiveSortOrder, setArchiveSortOrder] = useState<SortOrder>('booking_date')
   const menuPricesTabRef = useRef<MenuPricesTabHandle>(null)
   const features = useFeatures()
-  const { confirmNavigation } = useUnsavedChangesGuard()
+  const { confirmNavigation, hasUnsavedChanges } = useUnsavedChangesGuard()
   const dashboardRootRef = useRef<HTMLDivElement>(null)
   const { data: stats } = useBookingStats()
+
+  useEffect(() => {
+    const tabFromPath = resolveAdminDashboardTabFromPath(location.pathname)
+    if (tabFromPath && tabFromPath !== activeTab) {
+      setActiveTab(tabFromPath)
+    }
+  }, [activeTab, location.pathname])
+
+  const dashboardTabHistoryBlocker = useBlocker(({ currentLocation, historyAction, nextLocation }) => {
+    if (historyAction !== 'POP' || !hasUnsavedChanges) return false
+
+    const currentTab = resolveAdminDashboardTabFromPath(currentLocation.pathname)
+    const nextTab = resolveAdminDashboardTabFromPath(nextLocation.pathname)
+    return Boolean(currentTab && nextTab && currentTab !== nextTab)
+  })
+
+  useEffect(() => {
+    if (dashboardTabHistoryBlocker.state !== 'blocked') return
+
+    void confirmNavigation().then((ok) => {
+      if (ok) {
+        dashboardTabHistoryBlocker.proceed()
+        return
+      }
+      dashboardTabHistoryBlocker.reset()
+    })
+  }, [confirmNavigation, dashboardTabHistoryBlocker])
 
   useEffect(() => {
     if (restaurantSettingsSignal === 0) return
     if (activeTab === 'settings-restaurant') return
     void confirmNavigation().then((ok) => {
-      if (ok) setActiveTab('settings-restaurant')
+      if (!ok) return
+      setActiveTab('settings-restaurant')
+      navigate(getAdminDashboardTabPath('settings-restaurant'))
     })
-  }, [activeTab, confirmNavigation, restaurantSettingsSignal])
+  }, [activeTab, confirmNavigation, navigate, restaurantSettingsSignal])
 
   useEffect(() => {
     if (activeTab !== 'pending') setShowNewBookingPanel(false)
@@ -205,6 +244,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (!(await confirmNavigation())) return
     setCalendarTargetDate(date)
     setActiveTab('calendar')
+    navigate(getAdminDashboardTabPath('calendar'))
   }
 
   const scrollToTop = () => {
@@ -229,13 +269,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleTabClick = async (tab: Tab) => {
     const tabChange = tab !== activeTab
-    if (tabChange && !(await confirmNavigation())) return
+    const navigationChange = tabChange || Boolean(bodyOverride)
+    if (navigationChange && !(await confirmNavigation())) return
     if (bodyOverride) {
       onBodyOverrideExit?.()
       if (tabChange) setActiveTab(tab)
+      navigate(getAdminDashboardTabPath(tab))
       return
     }
     if (tabChange) setActiveTab(tab)
+    navigate(getAdminDashboardTabPath(tab))
   }
 
   const handleOpenPublicForm = () => {
