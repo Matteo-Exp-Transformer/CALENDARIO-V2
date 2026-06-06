@@ -46,6 +46,9 @@ Dettaglio completo: docs/Comunicazione-Skill/VOCABOLARIO.md (caricalo per le sfu
   prossima chat, auto-contenuto (contesto, obiettivo, file, punto esatto).
   Niente altro attorno. (ex «dammi prompt proseguimento».)
 - **«spiegamelo semplice»** → effetto concreto + chi fa cosa, breve, no gergo.
+- **«ragioniamo»** → fermati a ragionare PRIMA di eseguire: rispondi con spiegazione breve +
+  effetto per te + tabellina riassuntiva + checklist (case insensitive). È l'unico caso, con la
+  chiusura, in cui la tabella è attesa. Dettaglio: VOCABOLARIO.md → «ragioniamo» (Liv. 1).
 
 ## Zone che si confondono (chiedi PRIMA di toccare codice — vale anche in chat esplorativa)
 Tre zone diverse si chiamano «menu» e due pagine pubbliche si confondono. Se il

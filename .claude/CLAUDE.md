@@ -19,6 +19,31 @@ codice a tappeto:** apri prima il routing e fatti guidare al file d'area.
 > I valori (limiti, soglie) vivono nel **codice** = verità; i file `.md` li specchiano e spiegano il
 > perché. Dopo un edit di codice aggiorni il file di contesto mappato, non copie sparse.
 
+## Comandi e vocabolario di Matteo (leggi a inizio sessione)
+
+> Questa sezione è il **gemello per Claude Code** di `.cursor/rules/comandi-base.mdc` (che lo legge
+> solo Cursor) e di `AGENTS.md` (che lo legge Codex). La fonte di verità unica dei comportamenti è
+> **`docs/Comunicazione-Skill/VOCABOLARIO.md`** — caricalo a inizio sessione e applica la voce quando
+> Matteo usa una parola mappata.
+
+**Livelli di libertà** di ogni voce (quanto sei libero di agire):
+- **Liv. 1** → applica subito, niente domande.
+- **Liv. 2** → applica, ma se il contesto è ambiguo fai **una** domanda breve prima.
+- **Liv. 3** → chiedi sempre conferma, salvo match identico a un caso già registrato come ok.
+
+**Grilletti principali** (dettaglio completo in `.cursor/rules/comandi-base.mdc` + VOCABOLARIO):
+- **«prepara» / «prepara prompt»** → NON eseguire codice; modalità filtro, consegna solo il prompt.
+- **«implementa» / «fai» / «sistema» / «aggiungi» / «crea»** → profilo Esecuzione (carica skill area, `APP_CONTEXT_SKILL.md` §0).
+- **«revisiona» / «verifica» / «debugga» / «non funziona»** → profilo Verifica (Testing-Skill + skill area).
+- **«migliora/analizza/revisiona comunicazione»** → Meta revisore. **«evolvi … senior»** → Meta senior.
+- **«lavoro ok»** → scrivi/aggiorna il report COMPLETO (no commit). **«fai report finale»** → commit + push.
+- **«dammi follow up»** → solo il prompt per la prossima chat. **«spiegamelo semplice»** → effetto concreto, breve.
+- **«ragioniamo»** → fermati a ragionare: spiegazione + effetto per te + tabellina + checklist (vedi voce nel VOCABOLARIO).
+
+**Salvaguardie sempre attive:** stile con Matteo (parla per schermate/flussi, non nomi-file isolati);
+sicurezza PROD (prima di INSERT/UPDATE/DELETE via MCP verifica `get_project_url` — se `rwuxgvld` chiedi
+conferma); **comando non riconosciuto → non dedurre, chiedi prima** (mai inventare voci di vocabolario).
+
 ## File critici
 
 | File | Perché è importante |

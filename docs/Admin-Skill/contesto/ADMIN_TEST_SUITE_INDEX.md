@@ -129,10 +129,17 @@ Test marcati o creati:
     (`/admin/calendario`, `/admin/prenotazioni`, `/admin/archivio`, `/admin/menu`,
     `/admin/impostazioni`);
   - `@admin-blindatura: shell-logout` su logout subordinato al guard.
+- `src/pages/__tests__/AdminDashboard.adminRouting.test.tsx` -> `@admin-blindatura: shell-refresh-back`
+  su trigger Impostazioni consumato una sola volta: cambiare tab dopo Impostazioni non deve riaprire
+  la tab Impostazioni.
 - `src/config/__tests__/features.test.ts` -> `@admin-blindatura: shell-edition` su QR Menu
   aggiungibile/rimuovibile via override.
 - `src/contexts/__tests__/UnsavedChangesContext.adminBlindatura.test.tsx` ->
   `@admin-blindatura: shell-dirty-guard`.
+- `src/components/layout/__tests__/adminShellTabFlash.test.tsx` ->
+  `@admin-blindatura: shell-refresh-back` su **assenza di flash** al cambio tab dashboard e al cambio
+  sezione sidebar (la schermata vecchia non riappare per un render intermedio). Regressione del bug
+  "stato duplicato tab/sezione che si rincorre con l'URL", risolto 06-06-26 derivando da URL.
 
 Test esistenti ancora candidati da valutare nel giro E2E completo:
 

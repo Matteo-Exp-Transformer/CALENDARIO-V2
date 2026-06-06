@@ -25,8 +25,17 @@ Le sotto-route supportate dalla shell sono:
 - `/admin/analytics` -> Analytics se `features.analytics=true`.
 
 Le route non abilitate o sconosciute tornano alla sezione di default e vengono normalizzate sul path
-canonico. Le tab operative della dashboard hanno URL leggeri per refresh/back; lo stato React resta
-la fonte locale dell'interazione mentre l'URL mantiene la tab attiva.
+canonico. Le tab operative della dashboard hanno URL leggeri per refresh/back.
+
+**Fonte di verità = URL (fix flash 06-06-26).** Sia la `section` della shell sia l'`activeTab` della
+dashboard sono **derivati dall'URL** (`resolveAdminSectionFromPath` / `resolveAdminDashboardTabFromPath`),
+non stato React separato. In precedenza erano stato locale sincronizzato all'URL via `useEffect`: poiché
+`setState` e `navigate` non sono atomici (gli handler sono async, ripresi dopo `await confirmNavigation`),
+per 1-2 render lo stato e l'URL puntavano a tab/sezioni diverse → la schermata vecchia riappariva per un
+istante (flash). Derivando dall'URL c'è un solo render coerente. Gli handler (`handleTabClick`,
+`openSection`, `exitBodyOverrideToDashboard`, `handleViewInCalendar`) chiamano **solo `navigate`**: la
+vista segue. Regressione bloccata da `src/components/layout/__tests__/adminShellTabFlash.test.tsx`
+(`@admin-blindatura: shell-refresh-back`, casi tab + sezione).
 
 ## 2. Auth e tenant
 
@@ -75,9 +84,13 @@ Azioni:
 Esiste una action `settings` con `restaurantSettingsSignal`, ma nella lista corrente non c'e una voce
 sidebar "Impostazioni": percorso latente.
 
+`restaurantSettingsSignal` e un evento, non uno stato di tab persistente: `AdminDashboard` deve
+consumare ogni incremento una sola volta. Se resta > 0 e viene riletto a ogni cambio tab, la tab
+Impostazioni puo riaprirsi per un frame dopo che l'utente ha selezionato un'altra tab.
+
 ## 5. Dashboard interna
 
-`AdminDashboard.activeTab`:
+`AdminDashboard.activeTab` (**derivato dall'URL**, vedi §1):
 
 - `calendar` -> `/admin/calendario`
 - `pending` -> `/admin/prenotazioni`
@@ -113,6 +126,9 @@ Header: se manca il nome ristorante, il fallback e `Sistema Gestionale Prenotazi
 - Home deve sparire se `features.home=false`.
 - `settings` latente non raggiungibile da sidebar.
 - Doppio `useAdminAuth` e doppio theme effect.
+- ✅ **Flash cambio tab/sezione (risolto 06-06-26):** la schermata vecchia non deve riapparire per un
+  istante al cambio. Causa era stato duplicato che si rincorreva con l'URL; fix = derivare da URL (§1).
+  Coperto da `adminShellTabFlash.test.tsx`.
 
 ## 9. Decisioni Area 1 chiuse con Matteo
 

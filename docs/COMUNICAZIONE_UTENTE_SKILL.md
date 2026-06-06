@@ -65,6 +65,12 @@ minimo:** dai abbastanza per capire e agire, non un muro di testo da decifrare.
 Origine: feedback Matteo 30-05-26 — «perdo dettagli per troppi token a display; voglio focalizzarmi
 subito sulle cose importanti, i dettagli li chiedo». Stesso stile già in `PREPARA_PROMPT_SKILL.md` § 3.
 
+> **Quando Matteo dice «ragioniamo»** (voce Liv. 1 in `Comunicazione-Skill/VOCABOLARIO.md`): vuole
+> fermarsi a ragionare PRIMA di eseguire. La risposta usa esplicitamente il formato strutturato —
+> spiegazione breve + effetto per te + **tabellina riassuntiva** + **checklist** — anche se di norma
+> tabelle/checklist non vanno nel default. È, con la chiusura di sessione, l'unico caso in cui la
+> tabella è attesa. Senza «ragioniamo» resta il default sintetico qui sopra.
+
 ---
 
 ## Errori e bug: niente dettaglio tecnico non richiesto
