@@ -101,16 +101,16 @@ capacity, time handling, table assignment e details placement.
 
 ## 9. Fase D — finding controtest (07-06-26)
 
-Controtest completato su 4 fronti. Fix in attesa decisione Matteo (PLAN §4 prompt anti-rottura).
+Controtest completato su 4 fronti. **Batch fix 07-06-26 (Matteo):** D1, R1, D4, D5, D2/U4/U8 **chiusi in codice**.
 
-| ID | Gravità | Sintesi |
-|---|---|---|
-| D1 | ALTO | Race multi-tab: rifiuto su card stale sovrascrive booking già `accepted` |
-| R1 | ALTO | 375px: modale con textarea (Elimina/Rifiuta) senza scroll → bottoni fuori viewport |
-| D2, U4, U8 | MEDIO | Doppio click accept / conferma danger modal |
-| D3 | MEDIO | Reinserisci incrementa di nuovo `tenant_usage.bookings_count` |
-| U2, U6 | MEDIO | Annulla modifica non ripristina campi; drawer calendario con dati stale |
-| D4, U3, U5, U7 | MEDIO | Reinserisci senza orari; tab switch durante mutation; scroll lock |
-| D5, D6, D7, U1, U9, U10 | BASSO | Metadata restore, guard DB assenti, doppio toast, errori UX |
-| L4, L10–L12 | FU | Ospiti 0/negativi/enormi passano hook — validazione DB/form da valutare |
-| R2–R4 | MEDIO/BASSO | Bottoni affiancati, padding doppio su 375px |
+| ID | Gravità | Sintesi | Stato batch 07-06-26 |
+|---|---|---|---|
+| D1 | ALTO | Race multi-tab: rifiuto su card stale sovrascrive booking già `accepted` | ✅ `.eq('status','pending')` su accept/reject + toast se 0 righe |
+| R1 | ALTO | 375px: modale con textarea (Elimina/Rifiuta) senza scroll → bottoni fuori viewport | ✅ `max-h-[90vh]`, scroll area, bottoni stack mobile |
+| D2, U4, U8 | MEDIO | Doppio click accept / conferma danger modal | ✅ `isPending` disabilita card + guard mutate + `confirmDisabled` capienza |
+| D3 | MEDIO | Reinserisci incrementa di nuovo `tenant_usage.bookings_count` | ⬜ FU-046 (fuori batch) |
+| U2, U6 | MEDIO | Annulla modifica non ripristina campi; drawer calendario con dati stale | ⬜ FU-046 |
+| D4, U3, U5, U7 | MEDIO | Reinserisci senza orari; tab switch durante mutation; scroll lock | ✅ D4 UI hint; U3/U5/U7 ⬜ FU-046 |
+| D5, D6, D7, U1, U9, U10 | BASSO | Metadata restore, guard DB assenti, doppio toast, errori UX | ✅ D5 azzera `cancellation_*`; resto ⬜ |
+| L4, L10–L12 | FU | Ospiti 0/negativi/enormi passano hook — validazione DB/form da valutare | ⬜ fuori batch |
+| R2–R4 | MEDIO/BASSO | Bottoni affiancati, padding doppio su 375px | R2 parziale (stack mobile); R3/R4 ⬜ |
