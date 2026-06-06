@@ -57,9 +57,7 @@ export const useSaveMenuQrSettings = () => {
 
       const row = {
         name: input.name,
-        content_type: input.content_type,
         category_filter: input.category_filter ?? null,
-        preset_ids: input.preset_ids ?? null,
         is_active: input.is_active ?? true,
         sort_order: input.sort_order ?? 0,
         theme_key: input.theme_key ?? 'mediterranean_teal',
@@ -160,9 +158,7 @@ export const useCreateMenuQrCode = () => {
           tenant_id: tenantId,
           short_code: shortCode,
           name: input.name,
-          content_type: input.content_type,
           category_filter: input.category_filter ?? null,
-          preset_ids: input.preset_ids ?? null,
           is_active: input.is_active ?? true,
           sort_order: input.sort_order ?? 0,
           theme_key: input.theme_key ?? 'mediterranean_teal',

@@ -371,9 +371,7 @@ export function MenuQrModal({
       draftShortCode: editing ? null : draftShortCode,
       input: {
         name: trimmed,
-        content_type: editing?.content_type ?? 'a_la_carte',
         category_filter: categoryFilter,
-        preset_ids: editing?.preset_ids ?? null,
         is_active: editing?.is_active ?? true,
         theme_key: themeKey,
         carousel_items: carouselItems,

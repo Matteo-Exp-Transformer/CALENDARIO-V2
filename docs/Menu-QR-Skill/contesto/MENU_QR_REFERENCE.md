@@ -47,6 +47,7 @@ qrMenu: isProOrAbove || qrMenuEnabled
 | `036` | **Per-QR**: su `menu_qr_codes` → `theme_key`, `carousel_items`, `category_images`. Su `menu_qrcode_categories` → `menu_qr_code_id` FK, UNIQUE `(menu_qr_code_id, category_key)`. Migrazione dati da `menu_homepage_config` su ogni QR. `menu_homepage_config` **deprecata** (solo storico, non più scritta dall'admin). **Richiesta su TEST e produzione** prima del deploy app che salva il modale QR. |
 | `037` | `menu_qr_codes.hidden_menu_item_ids` (JSONB UUID[] — ingredienti nascosti per QR). Rimozione tema `wine_bistrot` (CHECK a 4 temi; QR esistenti → `mediterranean_teal`). Applicare insieme a `036` su ogni ambiente. |
 | `042` | `menu_qrcode_categories.icon TEXT NULL` — icona Phosphor scelta in modale QR quando manca foto in `category_images` (per singolo QR, non su `menu_categories`). |
+| `043` | **Rimozione codice morto preset**: DROP `menu_qr_codes.content_type` + `preset_ids` + CHECK constraint. Verificato 0 righe non-`a_la_carte` su PROD e TEST prima del drop. Applicare insieme alla rimozione del codice preset dal client. |
 
 **Colonne `menu_qr_codes`** (post-037): campi 030 + `theme_key`, `carousel_items` (JSONB), `category_images` (JSONB), `hidden_menu_item_ids` (JSONB, default `[]`).
 
@@ -113,7 +114,7 @@ File: `src/features/booking/hooks/useMenuQrCodes.ts`
 | Componente | File |
 |------------|------|
 | `MenuQrManager` | `src/features/booking/components/MenuQrManager.tsx` — solo lista «I miei QR» (tab Aspetto homepage spostato in modale) |
-| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia; **Salva** su riga «Nome QR *» + fondo; checkbox categorie **solo con ≥1 ingrediente** (attiva/disattiva, **senza** riordino); sezione card «Titoli e descrizioni categorie» con **frecce Su/Giù** per ordine → persiste in `category_filter`; titoli/foto + picker ingredienti nascosti; **picker icone (12 Phosphor + 8 Lucide, griglia)** per categoria senza foto QR; **guard chiusura** (overlay/Esc/X) se draft dirty (`serializeMenuQrDraft` non ordina `categoryFilter`). **Nessuna UI** per `preset_ids` (menù eventi staff restano in impostazioni Prenota; in salvataggio si preserva solo il valore DB esistente su QR già creati). Richiede migrazioni `036`+`037`+`042` su ogni ambiente Supabase collegato all’app deployata. |
+| `MenuQrModal` | Titolo **«Impostazione Menù QR»**; link pubblico + copia; **Salva** su riga «Nome QR *» + fondo; checkbox categorie **solo con ≥1 ingrediente** (attiva/disattiva, **senza** riordino); sezione card «Titoli e descrizioni categorie» con **frecce Su/Giù** per ordine → persiste in `category_filter`; titoli/foto + picker ingredienti nascosti; **picker icone (12 Phosphor + 8 Lucide, griglia)** per categoria senza foto QR; **guard chiusura** (overlay/Esc/X) se draft dirty (`serializeMenuQrDraft` non ordina `categoryFilter`). Titoli/descrizioni card categoria **cappati** (30/70, `AdminFieldWithCharCount`, FU-MQR-1). I menù-evento staff (preset) restano solo in impostazioni Prenota: nel QR il concetto è stato rimosso (migrazione 043). Richiede migrazioni `036`+`037`+`042`+`043` su ogni ambiente Supabase collegato all’app deployata. |
 | `MenuHomepageConfigPanel` | Sezioni controllate QR (`MenuQrCarouselSection`, `MenuQrCategoryCardsSection`, `MenuQrHiddenItemsPicker`, `MenuQrThemeSection`) — upload anche su **nuovo** QR via path `qr/draft/{shortCode}/` (migrazione a `qr/{id}/` al Salva). La logica upload condivisa sta in `src/features/booking/hooks/useCarouselPhotoUpload.ts`, non nel pannello QR. |
 
 ### Icone categoria senza foto (20 preset — 01-06-26)
@@ -141,7 +142,6 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 | `/menu/:slug` | `PublicMenuPage` | `src/pages/PublicMenuPage.tsx` |
 | `/menu/:slug/qr/:shortCode` | `PublicMenuPage` | idem |
 | `/menu/:slug/qr/:shortCode/c/:categoryKey` | `PublicMenuCategoryPage` | `src/pages/PublicMenuCategoryPage.tsx` |
-| `/menu/:slug/qr/:shortCode/preset/:presetId` | `PublicMenuPresetPage` | `src/pages/PublicMenuPresetPage.tsx` |
 
 **Temi**: 5 palette in `src/features/public-menu/menuThemes.ts` (`mediterranean_teal`, `cream_sage`, `dark_gold`, `rustic_terracotta`, `green_wellness`). PNG sfondo in `public/menu-themes/`. Default: `mediterranean_teal`.
 
@@ -169,10 +169,8 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 - `ItemCardWithPhoto`: immagine full-width `h-44` + testo sotto
 - `ItemCardText`: solo testo (fallback quando `image_url` assente)
 
-**`PublicMenuPresetPage`** — dettaglio menù evento:
-- Carica il preset da `restaurant_settings.booking_custom_staff_presets`
-- Carica i piatti per ids preservando l'ordine di `item_ids`
-- Lista numerata `1. 2. 3.` con prezzo
+> **`PublicMenuPresetPage` rimosso (06-06-26).** I menù-evento via QR erano codice irraggiungibile;
+> pagina, route e colonne DB sono stati rimossi (migrazione 043). Il preset resta vivo solo in Prenota.
 
 ---
 
@@ -183,7 +181,8 @@ RULE  Le pagine /menu/* usano SOLO supabasePublic — mai supabase autenticato
 RULE  Il bucket menu-photos è pubblico — le URL sono stabili e cacheable
 RULE  Non aggiungere cursor-pointer inline — usa la regola globale .is-clickable
 RULE  Icone categorie QR: **20** chiavi picker (12 Phosphor + 8 Lucide `lucide_*`) in `categoryIcons.ts`; render con `MenuQrCategoryIconGlyph`; override DB → mapping Phosphor per `category_key` → default `lucide_salad`; chiavi Lucide rimosse → fallback Phosphor esplicito (`cooking_pot` / `fork_knife`); picker in `MenuQrCategoryCardsSection` — **mai emoji** in card/tab pubbliche
-RULE  content_type valori: 'a_la_carte' | 'preset_menus' | 'mixed' — non aggiungere altri
+RULE  Menù-evento via QR (content_type/preset_ids/PublicMenuPresetPage) RIMOSSO (migrazione 043) — non reintrodurlo nel QR; il preset vive solo in Prenota
+RULE  Card categoria QR: titolo cappato 30 (QR_CATEGORY_TITLE_MAX), descrizione 70 (QR_CATEGORY_DESCRIPTION_MAX) in MenuHomepageConfigPanel; titoli <h2> con line-clamp-2 difensivo per il fallback menu_categories.label senza cap
 RULE  La pagina /menu/:slug senza short_code usa il QR default (primo is_active=true, sort_order ASC)
 RULE  Se short_code non trovato → messaggio «Menù QR non trovato» (nessun redirect al menu default — evita di mostrare sempre il primo QR)
 RULE  Lookup QR pubblico solo quando `tenantSlug` del context coincide con lo slug nell’URL (`tenantReady` in PublicMenuPage)

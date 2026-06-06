@@ -98,7 +98,7 @@ PNG in `public/menu-themes/` con naming `{tema-key}-header.png` / `{tema-key}-bo
 
 ### `MenuNavTabs`
 
-Sticky in cima durante lo scroll. Usa preset se `presets.length > 0`, altrimenti categorie.
+Sticky in cima durante lo scroll. Mostra **sempre** le tab categoria (il ramo preset è stato rimosso).
 
 ```tsx
 {/* sentinel 1px + barra sticky */}
@@ -132,6 +132,8 @@ Scroll orizzontale: classe `.scrollbar-hide` in `index.css` (niente barra su mob
 **Senza foto** — riga 30/70: icona su bianco a sinistra; titolo (+ descrizione opzionale sotto il titolo) nella fascia `theme.headerImage` a destra (`categoryCardNoPhotoBackgroundStyle`), testo in `headerTextColor`. Se **almeno una** categoria ha foto in `category_images`, le card senza foto usano `aspect-[7/2]` sotto 520px e `aspect-[5/2]` da 520px come le tile con foto (`matchPhotoTileHeight`). Senza mix foto: `min-h-[64px]` mobile, `min-h-[72px]` da 520px.
 
 **Titolo e icona**: override `menu_qrcode_categories` → fallback `menu_categories` / `resolveMenuQrCategoryIcon`.
+I due `<h2>` titolo (con/senza foto) hanno **`line-clamp-2`** difensivo: l'override QR è cappato a 30,
+ma il fallback `menu_categories.label` non ha cap, quindi il clamp evita che un nome lungo sfondi la card.
 
 ### `MenuFooterCard`
 
@@ -156,12 +158,11 @@ Il testo è posizionato in assoluto sul 50% sinistro (`inset-y-0 left-0 w-1/2`),
 | Impostazione | Dove si salva (admin) | Dove si usa (pubblico) |
 |---|---|---|
 | Tema visivo | `MenuHomepageConfigPanel` → "Tema homepage" | `getMenuTheme(homepageConfig.theme_key)` in `MenuContent` |
-| Foto carosello | "Specialità della casa" (titolo + descrizione slide) | `carouselItems` via `usePublicMenuHomepageConfig` |
+| Foto carosello | sezione carosello (etichetta/titolo/descrizione slide) | `carousel_items` via `usePublicMenuQr` (colonna per-QR) |
 | Foto categoria | "Foto categorie" | `categoryImages[cat.key]` come `imageUrl` in `CategoryCard` |
-| Titolo card QR | "Titoli e descrizioni card categorie" → campo Titolo | `menu_qrcode_categories.title` (override) o `menu_categories.label` |
+| Titolo card QR (cap **30**) | "Titoli e descrizioni card categorie" → campo Titolo | `menu_qrcode_categories.title` (override) o `menu_categories.label` |
+| Descrizione card QR (cap **70**) | "Titoli e descrizioni card categorie" → campo Descrizione | `menu_qrcode_categories.description` (override) o `menu_categories.description` |
 | Icona card/tab (senza foto) | Modale QR → picker icona Phosphor | `menu_qrcode_categories.icon` → `resolveMenuQrCategoryIcon()` |
-
-| Descrizione card QR | "Titoli e descrizioni card categorie" → campo Descrizione | `menu_qrcode_categories.description` (override) o `menu_categories.description` |
 
 **Hook pubblici** (per-QR, post-migrazione 036):
 - `usePublicMenuQr` / `usePublicDefaultMenuQr` — risolve QR + `theme_key`, `carousel_items`, `category_images`

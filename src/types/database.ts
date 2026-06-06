@@ -606,13 +606,11 @@ export type Database = {
           carousel_items: Json
           category_filter: string[] | null
           category_images: Json
-          content_type: string
           created_at: string
           hidden_menu_item_ids: Json
           id: string
           is_active: boolean
           name: string
-          preset_ids: string[] | null
           short_code: string
           sort_order: number
           tenant_id: string
@@ -623,13 +621,11 @@ export type Database = {
           carousel_items?: Json
           category_filter?: string[] | null
           category_images?: Json
-          content_type?: string
           created_at?: string
           hidden_menu_item_ids?: Json
           id?: string
           is_active?: boolean
           name: string
-          preset_ids?: string[] | null
           short_code: string
           sort_order?: number
           tenant_id: string
@@ -640,13 +636,11 @@ export type Database = {
           carousel_items?: Json
           category_filter?: string[] | null
           category_images?: Json
-          content_type?: string
           created_at?: string
           hidden_menu_item_ids?: Json
           id?: string
           is_active?: boolean
           name?: string
-          preset_ids?: string[] | null
           short_code?: string
           sort_order?: number
           tenant_id?: string

@@ -8,7 +8,6 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { TenantProvider } from './contexts/TenantContext'
 import { PublicMenuPage } from './pages/PublicMenuPage'
 import { PublicMenuCategoryPage } from './pages/PublicMenuCategoryPage'
-import { PublicMenuPresetPage } from './pages/PublicMenuPresetPage'
 
 const RootLayout = () => (
   <TenantProvider>
@@ -51,10 +50,6 @@ export const router = createBrowserRouter([
       {
         path: '/menu/:tenantSlug/qr/:shortCode/c/:categoryKey',
         element: <PublicMenuCategoryPage />
-      },
-      {
-        path: '/menu/:tenantSlug/qr/:shortCode/preset/:presetId',
-        element: <PublicMenuPresetPage />
       },
       // Predisposta per v2 ordini al tavolo (parametro tableNumber ignorato in fase 1)
       {

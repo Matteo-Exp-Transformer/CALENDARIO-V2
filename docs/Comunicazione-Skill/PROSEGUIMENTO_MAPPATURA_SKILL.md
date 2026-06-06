@@ -109,7 +109,7 @@ pattern, senza ridiscutere le regole già decise.
 | Area | Stato | Note |
 |------|-------|------|
 | **Pagina Prenota** | ✅ | Blindata 04-06-26: mappata + flusso scritto (commit `e66c0ae`, `fad207f`), test mirati limiti testo verdi, verifica sub-agent reale **PASSA**. Limit/audit test con sub-agent: corretti fallback pubblici su sottotab vuote, card vuote, caroselli senza foto, `MenuSelection` legacy, brand hardcoded, orari pubblici default, preset built-in e config nuovo tenant. Cartella `docs/Prenota-Skill/`. |
-| **Menu QR pubblico** | ✅ DOC · 🔶 PROD | Mappata 06-06-26 (commit `a22108c`): `docs/Menu-QR-Skill/`. **Blindata DOC 06-06-26 (commit `2e6ecac`):** verifica sub-agent PASSA guidato dalla skill, zero rimandi rotti. **Blindatura di PRODOTTO: plan pronto, da eseguire** → `docs/Menu-QR-Skill/PLAN_BLINDATURA_MENU_QR.md` (orchestratore Opus). Da chiudere col plan: rimozione codice morto preset (mappato file-per-file), FU-MQR-1 (cap titolo/descrizione categoria), fallback eyebrow «Specialità della casa» documentato-ma-non-implementato (`PublicMenuPage.tsx:199-202`), allineamento admin↔UI, controtest sub-agent flusso dati+utente su 375/834/1280. Inventario completo verificato: nel plan §1. Nessun hardcoded di aziende trovato. |
+| **Menu QR pubblico** | ✅ DOC · ✅ PROD | Mappata 06-06-26 (`a22108c`), DOC blindata (`2e6ecac`). **Blindatura di PRODOTTO completata 06-06-26** (orchestratore Opus, plan `PLAN_BLINDATURA_MENU_QR.md`): rimosso codice morto preset (pagina/route/rami/tipi + colonne DB via migrazione `043`, verificato 0 righe non-`a_la_carte` su PROD+TEST); FU-MQR-1 chiuso (cap titolo 30 / descrizione 70 + test); decisi i fallback (eyebrow vuota = niente, nome locale = «Menu», footer data/ora = voluto); aggiunto `line-clamp-2` difensivo ai titoli card (controtest responsive). Controtest sub-agent flusso dati + utente/responsive 375/834/1280: nessun bug bloccante. `npm run validate` verde (419 test). Report: `docs/Menu-QR-Skill/REPORT_BLINDATURA_06-06-26.md`. Nuovo follow-up: **FU-MQR-2** (ordine piatti per-QR). |
 | **Tab Menu admin (magazzino)** | ⬜ | `per-ui-design-skill/MENU_ADMIN_CONTEXT.md`. |
 | **Admin shell + pagine** | ⬜ | `Dashboard-laterale-skill/`. Già ha context per-pagina, da riorganizzare col pattern. |
 | **Database** | ⬜ | `Database-Skill/`. Valutare se il pattern senso/flusso calza (è infrastruttura, non UI). |
@@ -133,12 +133,13 @@ verificati battono tanti file fatti in fretta.
 
 ## Debiti aperti collegati
 
-- **Menu QR — FU-MQR-1 (06-06-26):** titoli/descrizioni categoria per-QR (`MenuQrCategoryCardsSection`,
-  due `<input>` nudi) **senza cap** → cappare con `AdminFieldWithCharCount` come il carosello. Dettaglio
-  e punto codice: `docs/Menu-QR-Skill/contesto/MENU_QR_TEXT_LIMITS_MAP.md` §B.
-- **Menu QR — rimozione codice morto (06-06-26):** `content_type`/`preset_ids`/`PublicMenuPresetPage`/
-  rami preset = irraggiungibili dall'UI (decisione Matteo: rimuovere). Mappa di cosa togliere:
-  `docs/Menu-QR-Skill/contesto/MENU_QR_DATA_FLOW_CONTEXT.md` §0. Sessione di pulizia dedicata.
+- ✅ **Menu QR — FU-MQR-1 CHIUSO (06-06-26):** titoli/descrizioni categoria per-QR cappati (30/70,
+  `AdminFieldWithCharCount` + test). Vedi `docs/Menu-QR-Skill/contesto/MENU_QR_TEXT_LIMITS_MAP.md` §B.
+- ✅ **Menu QR — codice morto preset RIMOSSO (06-06-26):** pagina/route/rami/tipi + colonne DB
+  (migrazione `043`). Vedi `MENU_QR_DATA_FLOW_CONTEXT.md` §0.
+- **Menu QR — FU-MQR-2 (NUOVO, 06-06-26):** ordine piatti dentro la categoria, configurabile per-QR.
+  Oggi i piatti seguono il sort_order del magazzino. Matteo: è un buco. Lavoro grosso (dati + form),
+  fuori dalla blindatura. Vedi `MENU_QR_SKILL.md` §5.
 - **Snellimento skill system d'insieme — ESEGUITO 06-06-26 (commit `2e6ecac`).** (1) `.cursor/skills/
   calendarbackup-app-context/SKILL.md`: tolte ~21 righe di cronologia di sessione → **mappa pulita
   area→file** (54→~40 righe). (2) `APP_CONTEXT_SKILL.md` (490 righe): la §4 era **già snellita** in una

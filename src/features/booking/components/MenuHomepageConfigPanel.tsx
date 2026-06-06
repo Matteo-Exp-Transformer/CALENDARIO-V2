@@ -35,6 +35,13 @@ export const CAROUSEL_SLIDE_DESCRIPTION_MAX = 125
 export const CAROUSEL_SLIDE_EYEBROW_MAX = 40
 export const CAROUSEL_SLIDE_EYEBROW_PLACEHOLDER = 'Esempio: Specialità della casa'
 
+// Cap titolo/descrizione card categoria per-QR (FU-MQR-1). Stesso principio anti-rottura
+// mobile del carosello: il titolo vive nello spazio del nome categoria (card "senza foto"
+// 30/70), la descrizione nella riga sotto al titolo dentro la fascia header. Vedi
+// docs/Menu-QR-Skill/contesto/MENU_QR_TEXT_LIMITS_MAP.md.
+export const QR_CATEGORY_TITLE_MAX = 30
+export const QR_CATEGORY_DESCRIPTION_MAX = 70
+
 export function MenuQrThemeSection({
   value,
   onChange,
@@ -564,29 +571,33 @@ export function MenuQrCategoryCardsSection({
                 />
               </div>
             ) : null}
-            <input
-              type="text"
+            <AdminFieldWithCharCount
+              id={`qr-cat-title-${cat.key}`}
+              label="Titolo card"
               value={draft.title}
-              onChange={(e) =>
+              maxLength={QR_CATEGORY_TITLE_MAX}
+              onChange={(value) =>
                 onOverrideDraftsChange({
                   ...overrideDrafts,
-                  [cat.key]: { ...draft, title: e.target.value },
+                  [cat.key]: { ...draft, title: value },
                 })
               }
-              placeholder={`Titolo card (default: "${cat.label}")`}
-              className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
+              placeholder={`Default: "${cat.label}"`}
+              singleLine
             />
-            <input
-              type="text"
+            <AdminFieldWithCharCount
+              id={`qr-cat-desc-${cat.key}`}
+              label="Descrizione breve"
               value={draft.description}
-              onChange={(e) =>
+              maxLength={QR_CATEGORY_DESCRIPTION_MAX}
+              onChange={(value) =>
                 onOverrideDraftsChange({
                   ...overrideDrafts,
-                  [cat.key]: { ...draft, description: e.target.value },
+                  [cat.key]: { ...draft, description: value },
                 })
               }
               placeholder="Descrizione breve (opzionale)"
-              className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-gray-400"
+              singleLine
             />
             <MenuQrHiddenItemsPicker
               categoryLabel={cat.label}

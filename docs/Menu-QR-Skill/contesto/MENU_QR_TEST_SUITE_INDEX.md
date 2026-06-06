@@ -6,7 +6,7 @@
 
 ---
 
-## Test esistenti (5 file)
+## Test esistenti (6 file)
 
 | File | Cosa blinda |
 |---|---|
@@ -15,6 +15,7 @@
 | `src/features/booking/utils/__tests__/menuQrStorage.test.ts` | Helper storage/prefill foto (`buildCatalogPrefillForKeys`, refresh prefill catalogo → QR). |
 | `src/features/booking/utils/__tests__/menuQrCategoryKeySync.test.ts` | Sync rename/delete di una chiave categoria sui QR (pure functions). |
 | `src/features/public-menu/__tests__/categoryIcons.test.ts` | Risoluzione icone categoria (mapping Phosphor/Lucide, default `lucide_salad`, mai emoji). |
+| `src/features/booking/components/__tests__/menuQrCategoryFieldCap.test.tsx` | **FU-MQR-1**: cap titolo (30) / descrizione (70) card categoria — valori + taglio difensivo via `AdminFieldWithCharCount`. |
 
 ---
 
@@ -23,7 +24,7 @@
 | Modifica | Test da aggiungere/estendere |
 |---|---|
 | Nuovo requisito o messaggio nel form QR | `menuQrValidation.test.ts` |
-| **Cap titoli/descrizioni categoria (FU-MQR-1)** — quando si esegue | nuovo test sul taglio difensivo (come fa il carosello); vedi `MENU_QR_TEXT_LIMITS_MAP.md` §B |
+| Cap titoli/descrizioni categoria (FU-MQR-1) | `menuQrCategoryFieldCap.test.tsx` (già presente) |
 | Ordine/filtro categorie | `menuQrCategoryOrder.test.ts` |
 | Rename/delete categoria propagato ai QR | `menuQrCategoryKeySync.test.ts` |
 | Icone categoria | `categoryIcons.test.ts` |
@@ -35,5 +36,5 @@
 - **Pagine pubbliche** (`PublicMenuPage`, `PublicMenuCategoryPage`) non hanno test di rendering
   dedicati: il comportamento è verificato a occhio. Se si toccano gli invarianti pubblici
   (`tenantReady`, `supabasePublic`, filtro `hidden_menu_item_ids`) vale la pena aggiungerli.
-- **Codice morto preset** (`PublicMenuPresetPage`, rami `content_type`): non testarlo — è candidato
-  rimozione (vedi `MENU_QR_DATA_FLOW_CONTEXT.md` § codice morto).
+- **Codice preset**: rimosso il 06-06-26 (`PublicMenuPresetPage`, rami `content_type`, colonne DB).
+  Non esiste più nulla da testare lì.

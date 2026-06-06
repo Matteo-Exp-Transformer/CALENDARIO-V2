@@ -58,29 +58,6 @@ function usePublicCategories(tenantId: string | null, categoryFilter: string[] |
   })
 }
 
-function usePublicPresets(tenantId: string | null, presetIds: string[] | null) {
-  return useQuery({
-    queryKey: ['public-menu-presets', tenantId, presetIds],
-    queryFn: async () => {
-      const { data, error } = await (supabasePublic
-        .from('restaurant_settings') as any)
-        .select('setting_value')
-        .eq('tenant_id', tenantId)
-        .eq('setting_key', 'booking_custom_staff_presets')
-        .maybeSingle()
-
-      if (error || !data) return []
-
-      const all: { id: string; name: string; item_ids: string[] }[] = Array.isArray(data.setting_value)
-        ? data.setting_value
-        : []
-      if (!presetIds || presetIds.length === 0) return all
-      return all.filter((p: { id: string }) => presetIds.includes(p.id))
-    },
-    enabled: !!tenantId,
-  })
-}
-
 /**
  * Homepage menu QR: un solo PNG (`bodyImage`) per tutto lo sfondo.
  * `headerImage` è solo su PublicMenuCategoryPage (barra categoria).
@@ -251,21 +228,18 @@ function MenuCarousel({
 const TAB_BAR_FADE_SCROLL_PX = 56
 const TAB_BAR_SCROLL_STEP_PX = 220
 
-type MenuNavTabItem =
-  | { key: string; label: string; href: string }
-  | { key: string; label: string; href: string; iconKey?: string | null; categoryKey: string }
-
-function isCategoryNavTab(
-  item: MenuNavTabItem,
-): item is Extract<MenuNavTabItem, { categoryKey: string }> {
-  return 'categoryKey' in item
+type MenuNavTabItem = {
+  key: string
+  label: string
+  href: string
+  iconKey?: string | null
+  categoryKey: string
 }
 
 // ── Tab navigazione sticky ────────────────────────────────────────────────────
 
 function MenuNavTabs({
   categories,
-  presets,
   slug,
   shortCode,
   accentColor,
@@ -273,7 +247,6 @@ function MenuNavTabs({
   overridesByKey,
 }: {
   categories: MenuCategoryRecord[]
-  presets: { id: string; name: string }[]
   slug: string
   shortCode: string
   accentColor: string
@@ -286,20 +259,16 @@ function MenuNavTabs({
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
 
-  const usePresets = presets.length > 0
-
-  const items: MenuNavTabItem[] = usePresets
-    ? presets.map((p) => ({ key: p.id, label: p.name, href: `/menu/${slug}/qr/${shortCode}/preset/${p.id}` }))
-    : categories.map((c) => {
-        const ov = overridesByKey[c.key]
-        return {
-          key: c.key,
-          label: c.label,
-          href: `/menu/${slug}/qr/${shortCode}/c/${c.key}`,
-          iconKey: ov?.icon,
-          categoryKey: c.key,
-        }
-      })
+  const items: MenuNavTabItem[] = categories.map((c) => {
+    const ov = overridesByKey[c.key]
+    return {
+      key: c.key,
+      label: c.label,
+      href: `/menu/${slug}/qr/${shortCode}/c/${c.key}`,
+      iconKey: ov?.icon,
+      categoryKey: c.key,
+    }
+  })
 
   const updateScrollHints = () => {
     const el = scrollRef.current
@@ -393,14 +362,12 @@ function MenuNavTabs({
                   backgroundColor: pillBg,
                 }}
               >
-                {isCategoryNavTab(item) ? (
-                  <MenuQrCategoryIconGlyph
-                    iconKey={item.iconKey}
-                    categoryKey={item.categoryKey}
-                    size={16}
-                    className="shrink-0"
-                  />
-                ) : null}
+                <MenuQrCategoryIconGlyph
+                  iconKey={item.iconKey}
+                  categoryKey={item.categoryKey}
+                  size={16}
+                  className="shrink-0"
+                />
                 <span className="whitespace-nowrap">{item.label}</span>
               </Link>
             ))}
@@ -464,7 +431,7 @@ function CategoryCard({
             <img src={imageUrl} alt="" className="h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 flex items-end gap-1 p-2 text-white min-[520px]:p-2.5">
-              <h2 className="min-w-0 flex-1 text-xs font-bold uppercase leading-tight tracking-wide min-[520px]:text-sm">
+              <h2 className="min-w-0 flex-1 text-xs font-bold uppercase leading-tight tracking-wide line-clamp-2 min-[520px]:text-sm">
                 {displayTitle}
               </h2>
               <ChevronRight className="size-3.5 shrink-0 opacity-80 min-[520px]:size-4" aria-hidden />
@@ -487,7 +454,7 @@ function CategoryCard({
             >
               <div className="flex w-full min-w-0 items-center justify-center gap-1.5 min-[520px]:gap-2">
                 <h2
-                  className="min-w-0 text-center text-sm font-bold uppercase leading-tight tracking-wide min-[520px]:text-base"
+                  className="min-w-0 text-center text-sm font-bold uppercase leading-tight tracking-wide line-clamp-2 min-[520px]:text-base"
                   style={{ color: theme.headerTextColor }}
                 >
                   {displayTitle}
@@ -554,17 +521,11 @@ function MenuContent({
 }) {
   const { data: categories = [], isLoading: catLoading } = usePublicCategories(
     qr.tenant_id,
-    qr.content_type !== 'preset_menus' ? qr.category_filter : [],
-  )
-  const { data: presets = [], isLoading: presetLoading } = usePublicPresets(
-    qr.tenant_id,
-    qr.content_type !== 'a_la_carte' ? qr.preset_ids : [],
+    qr.category_filter,
   )
   const { data: qrCatOverrides = [] } = usePublicMenuQrcodeCategories(qr.id)
 
-  const showCart = qr.content_type === 'a_la_carte' || qr.content_type === 'mixed'
-  const showPresets = qr.content_type === 'preset_menus' || qr.content_type === 'mixed'
-  const isLoading = catLoading || presetLoading
+  const isLoading = catLoading
 
   const carouselItems = qr.carousel_items ?? []
   const categoryImages = qr.category_images ?? {}
@@ -610,19 +571,16 @@ function MenuContent({
       </header>
 
       <div className="flex flex-1 flex-col">
-        {showCart && (
-          <MenuNavTabs
-            categories={categories}
-            presets={showPresets ? presets : []}
-            slug={slug}
-            shortCode={shortCode}
-            accentColor={theme.accentColor}
-            tabBarStickyRgb={theme.tabBarStickyRgb}
-            overridesByKey={overridesByKey}
-          />
-        )}
+        <MenuNavTabs
+          categories={categories}
+          slug={slug}
+          shortCode={shortCode}
+          accentColor={theme.accentColor}
+          tabBarStickyRgb={theme.tabBarStickyRgb}
+          overridesByKey={overridesByKey}
+        />
 
-        {showCart && categories.length > 0 && (
+        {categories.length > 0 ? (
           <main className="flex-1 px-4 pt-4">
             <div className="grid grid-cols-1 items-stretch gap-1.5 min-[520px]:grid-cols-2 min-[520px]:gap-2 min-[1025px]:gap-3">
               {categories.map((cat) => {
@@ -643,42 +601,12 @@ function MenuContent({
               })}
             </div>
           </main>
-        )}
-
-        {showCart && categories.length === 0 && (
+        ) : (
           <main className="flex-1 px-4 py-6">
             <p className="rounded-2xl bg-white px-4 py-8 text-center text-sm text-gray-500 shadow-sm">
               Menu in preparazione
             </p>
           </main>
-        )}
-
-        {showPresets && (
-          <section className="flex-1 px-4 pb-4 pt-4">
-            {presets.length === 0 ? (
-              <p className="rounded-2xl bg-white px-4 py-8 text-center text-sm text-gray-500 shadow-sm">
-                Menu in preparazione
-              </p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {presets.map((preset) => (
-                  <Link
-                    key={preset.id}
-                    to={`/menu/${slug}/qr/${shortCode}/preset/${preset.id}`}
-                    className="flex flex-col gap-1 rounded-2xl bg-white px-4 py-4 shadow-sm active:bg-stone-50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-base font-semibold text-gray-900">{preset.name}</span>
-                      <ChevronRight size={18} className="shrink-0 text-gray-400" />
-                    </div>
-                    <span className="text-sm text-gray-500">
-                      {Array.isArray(preset.item_ids) ? preset.item_ids.length : 0} voci
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </section>
         )}
 
         <div className="mt-auto pt-2">

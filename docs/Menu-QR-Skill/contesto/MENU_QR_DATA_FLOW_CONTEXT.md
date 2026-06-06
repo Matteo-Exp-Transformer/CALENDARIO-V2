@@ -11,27 +11,24 @@
 
 ---
 
-## 0. Codice morto da rimuovere — `content_type` / preset / menù-evento (06-06-26)
+## 0. Preset/menù-evento via QR — RIMOSSO (blindatura 06-06-26)
 
-> Decisione di Matteo nella sessione di mappatura. **Da rimuovere in una sessione di pulizia dedicata
-> — non oggi, non a pezzi.** Un agente NON deve costruirci sopra né «fixare» gli INC che lo riguardano.
+> **Fatto, non più da fare.** Il campo `menu_qr_codes.content_type` (`a_la_carte`/`preset_menus`/`mixed`)
+> e `preset_ids` attivavano i menù-evento dentro il QR, ma il modale non li ha mai esposti → logica
+> irraggiungibile. **Rimossi nella blindatura del 06-06-26.** Un agente NON deve reintrodurli nel QR.
 
-Il campo `menu_qr_codes.content_type` (`a_la_carte` / `preset_menus` / `mixed`) e `preset_ids`
-attiverebbero i **menù-evento dentro il QR**. **Ma il modale `MenuQrModal` non li espone**: salva sempre
-`content_type: 'a_la_carte'` e preserva soltanto `preset_ids` esistente. Quindi tutta la logica preset
-è **irraggiungibile dall'interfaccia**. Il caso «evento» Matteo lo copre con carosello + nome QR.
+**Cosa è stato rimosso:**
+- `src/pages/PublicMenuPresetPage.tsx` (file cancellato) + route `…/preset/:presetId` (via da `router.tsx`)
+- In `PublicMenuPage.tsx`: hook `usePublicPresets`, rami `showPresets`/`showCart`, sezione preset, prop
+  `presets` di `MenuNavTabs` → resta solo il flusso categorie (`category_filter` letto sempre)
+- Tipi `content_type`/`preset_ids` (`menu.ts`, `database.ts`), scrittura nel modale e in `useMenuQrCodes`,
+  parse in `menuQrAppearance.parseMenuQrCodeRow`
+- **Colonne DB** `content_type`/`preset_ids` + CHECK → **migrazione `043`** (`043_drop_menu_qr_preset_columns.sql`).
+  Prima del drop verificato su PROD (`rwuxgvld`) e TEST (`docnnernvp`): 0 righe non-`a_la_carte`, 0 preset.
+- INC latenti spariti con la rimozione: INC-05, INC-06, INC-15, INC-16.
 
-**Cosa appartiene alla rimozione (mappa, non toccare ora):**
-- `src/pages/PublicMenuPresetPage.tsx` (intera pagina) + route `…/preset/:presetId`
-- In `PublicMenuPage.tsx`: rami `showPresets`/`usePresets`, sezione preset, `preset_ids`,
-  uso di `content_type` (`showCart`/`showPresets`) → resta solo il ramo `a_la_carte`
-- In `MenuNavTabs`: tab preset (e l'INC-06 «preset nascondono categorie» sparisce con la rimozione)
-- Tipi/colonne `content_type`, `preset_ids` (valutare migrazione di pulizia col DB-Skill)
-- INC collegati (latenti, NON fixare separatamente): INC-05 (foto preset), INC-06 (tab),
-  INC-15 (hidden su preset), INC-16 (`tenantReady` su preset)
-
-**Conservare invece:** il concetto di preset resta vivo SOLO in **Pagina Prenota** (menù staff
-preselezionati) — lì non è codice morto. La rimozione riguarda solo l'uso **dentro il QR**.
+**Resta vivo (NON toccato):** il preset di **Pagina Prenota** (`booking_custom_staff_presets`,
+`CustomStaffPreset`, `bookingFormResolver`). La rimozione ha riguardato solo l'uso *dentro il QR*.
 
 ---
 
@@ -44,13 +41,12 @@ preselezionati) — lì non è codice morto. La rimozione riguarda solo l'uso **
 | Sezioni aspetto | Dentro modale | `MenuQrThemeSection`, `MenuQrCarouselSection`, `MenuQrCategoryCardsSection`, `MenuQrHiddenItemsPicker` (in `MenuHomepageConfigPanel.tsx`) |
 | Homepage QR cliente | `/menu/:slug/qr/:shortCode` | **`PublicMenuPage`** |
 | Dettaglio categoria | `…/c/:categoryKey` | **`PublicMenuCategoryPage`** |
-| Dettaglio menù evento | `…/preset/:presetId` | **`PublicMenuPresetPage`** |
 
 **Dati principali:**
 
 | Storage | Cosa contiene |
 |---------|---------------|
-| **`menu_qr_codes`** | Un QR = una riga: `short_code`, `name`, `content_type`, `category_filter`, `preset_ids`, `theme_key`, `carousel_items`, `category_images`, `hidden_menu_item_ids`, `is_active`, `sort_order` |
+| **`menu_qr_codes`** | Un QR = una riga: `short_code`, `name`, `category_filter`, `theme_key`, `carousel_items`, `category_images`, `hidden_menu_item_ids`, `is_active`, `sort_order` (colonne `content_type`/`preset_ids` rimosse, migrazione 043) |
 | **`menu_qrcode_categories`** | Override titolo/descrizione card per `(menu_qr_code_id, category_key)` |
 | **`menu_categories`** / **`menu_items`** | Magazzino menu condiviso (tab Menu + QR + Pagina Prenota) |
 | **`restaurant_settings`** chiave `booking_custom_staff_presets` | Menù evento staff (JSON array `{ id, name, item_ids[] }`) — condiviso con Pagina Prenota |
@@ -88,7 +84,7 @@ MenuQrModal.buildPayload()
 | Titolo/descrizione card | `menu_qrcode_categories.title/description` |
 | Ingredienti nascosti | `hidden_menu_item_ids` JSONB UUID[] |
 
-**Preservati senza UI nel modale:** `content_type` (default `a_la_carte`), `preset_ids`, `is_active`, `sort_order`, `short_code` (generato al create).
+**Preservati senza UI nel modale:** `is_active`, `sort_order`, `short_code` (generato al create).
 
 File: `src/features/booking/components/MenuQrModal.tsx`, `src/features/booking/hooks/useMenuQrCodes.ts`.
 
@@ -115,7 +111,7 @@ URL /menu/:tenantSlug/qr/:shortCode
 | `usePublicDefaultMenuQr` | `menu_qr_codes` | `/menu/:slug` senza shortCode → primo attivo |
 | `usePublicMenuQrcodeCategories(qrId)` | `menu_qrcode_categories` | Override titoli card homepage |
 
-**Inline in `PublicMenuPage`:** `usePublicCategories`, `usePublicPresets` (da `menu_categories` e `booking_custom_staff_presets`).
+**Inline in `PublicMenuPage`:** `usePublicCategories` (da `menu_categories`). Il vecchio `usePublicPresets` è stato rimosso con il codice preset (§0).
 
 **Deprecato:** `menu_homepage_config`, `usePublicMenuHomepageConfig` — sostituiti da colonne per-QR (migrazione **036**).
 
@@ -133,29 +129,29 @@ Admin UI: `resolveCategoryFilterForUi` tratta `null` come «tutte le categorie c
 
 ---
 
-## 5. Regole `content_type` (layout homepage)
+## 5. Layout homepage (post-rimozione preset)
 
-| Valore | Griglia categorie + tab cat | Sezione preset |
-|--------|----------------------------|----------------|
-| `a_la_carte` | Sì | No |
-| `preset_menus` | No | Sì |
-| `mixed` | Sì | Sì |
-
-**Attenzione INC-06:** `MenuNavTabs` se `presets.length > 0` mostra **solo** tab preset, nascondendo tab categorie anche in `mixed`.
+La homepage QR mostra **sempre** tab categorie + griglia categorie: non c'è più un `content_type` che
+ne cambi il layout (rimosso, §0). `MenuContent`/`MenuNavTabs` hanno un solo ramo: le categorie da
+`category_filter`. Se non ci sono categorie da mostrare → stato vuoto «Menu in preparazione».
 
 File: `src/pages/PublicMenuPage.tsx` (`MenuContent`, `MenuNavTabs`).
 
 ---
 
-## 6. Limiti admin carosello
+## 6. Limiti admin testo
 
 | Campo | Max char | Costante |
 |-------|----------|----------|
-| Eyebrow | 40 | `CAROUSEL_SLIDE_EYEBROW_MAX` |
-| Titolo | 60 | `CAROUSEL_SLIDE_TITLE_MAX` |
-| Descrizione | 125 | `CAROUSEL_SLIDE_DESCRIPTION_MAX` |
+| Carosello — Eyebrow | 40 | `CAROUSEL_SLIDE_EYEBROW_MAX` |
+| Carosello — Titolo | 60 | `CAROUSEL_SLIDE_TITLE_MAX` |
+| Carosello — Descrizione | 125 | `CAROUSEL_SLIDE_DESCRIPTION_MAX` |
+| Card categoria — Titolo | 30 | `QR_CATEGORY_TITLE_MAX` (FU-MQR-1, 06-06-26) |
+| Card categoria — Descrizione | 70 | `QR_CATEGORY_DESCRIPTION_MAX` (FU-MQR-1, 06-06-26) |
 
-Pubblico: eyebrow fallback «Specialità della casa»; slide senza `image_url` escluse dal parse.
+Pubblico: eyebrow **NON ha fallback** — slide con eyebrow vuota non mostra nulla al suo posto («Specialità
+della casa» è solo placeholder admin). Slide senza `image_url` escluse dal parse. Dettaglio cap categoria:
+`MENU_QR_TEXT_LIMITS_MAP.md`.
 
 ---
 
@@ -166,8 +162,8 @@ Pubblico: eyebrow fallback «Specialità della casa»; slide senza `image_url` e
 3. Aspetto visivo homepage da **`menu_qr_codes`**, non `menu_homepage_config`
 4. Override card: prima `menu_qrcode_categories`, fallback `menu_categories.label/description`
 5. Thumb card: `category_images[key]` su QR — **non** `menu_categories.image_url` (foto Prenota)
-6. Hidden items: filtrati in **`PublicMenuCategoryPage`** — **non** in preset page (INC-15)
-7. Temi: 4 chiavi in `menuThemes.ts`; sconosciuti → `mediterranean_teal`
+6. Hidden items: filtrati in **`PublicMenuCategoryPage`**
+7. Temi: 5 chiavi in `menuThemes.ts`; sconosciuti → `mediterranean_teal`
 8. Nuovo QR: foto in `qr/draft/{shortCode}/` → migrate al primo Salva
 
 ---
@@ -215,7 +211,7 @@ Dettaglio: report mappa § Incoerenze. Fix Fase 3 in §11 sotto.
 SELECT id, name, slug FROM organizations WHERE slug = 'test-pro';
 
 -- QR tenant
-SELECT id, short_code, name, content_type, category_filter, theme_key,
+SELECT id, short_code, name, category_filter, theme_key,
        carousel_items, category_images, hidden_menu_item_ids
 FROM menu_qr_codes WHERE tenant_id = '<tenant_id>';
 
@@ -251,6 +247,5 @@ Guida generica query: aggiungere § Menu QR (**FU-017**).
 | Storage path | `src/features/booking/utils/menuQrStorage.ts` |
 | Homepage pubblica | `src/pages/PublicMenuPage.tsx` |
 | Categoria pubblica | `src/pages/PublicMenuCategoryPage.tsx` |
-| Preset pubblico | `src/pages/PublicMenuPresetPage.tsx` |
 | Temi | `src/features/public-menu/menuThemes.ts` |
 | Tipi | `src/types/menu.ts` (`MenuQrCode`, `CarouselItem`) |

@@ -16,9 +16,11 @@
 | Carosello — **Etichetta** (eyebrow) | 40 | `CAROUSEL_SLIDE_EYEBROW_MAX` | `MenuHomepageConfigPanel.tsx` | sì (`AdminFieldWithCharCount`) |
 | Carosello — **Titolo slide** | 60 | `CAROUSEL_SLIDE_TITLE_MAX` | idem | sì |
 | Carosello — **Descrizione breve** | 125 | `CAROUSEL_SLIDE_DESCRIPTION_MAX` | idem | sì |
+| Card categoria — **Titolo card** | 30 | `QR_CATEGORY_TITLE_MAX` | `MenuHomepageConfigPanel.tsx` (`MenuQrCategoryCardsSection`) | sì (`AdminFieldWithCharCount`) |
+| Card categoria — **Descrizione breve** | 70 | `QR_CATEGORY_DESCRIPTION_MAX` | idem | sì |
 
-Le 3 costanti carosello sono definite in cima a `MenuHomepageConfigPanel.tsx` e usate sia nel
-`maxLength` dei campi sia nel taglio difensivo `value.slice(0, maxLen)` (funzione `updateField`).
+Le costanti carosello + categoria sono definite in cima a `MenuHomepageConfigPanel.tsx` e usate sia nel
+`maxLength` dei campi sia nel taglio difensivo `value.slice(0, maxLen)` dentro `AdminFieldWithCharCount`.
 
 > ⚠️ **Non confondere con Prenota.** La Pagina Prenota usa limiti carosello **separati** (19/18/38),
 > tarati su una card più piccola. Stessi nomi concettuali, numeri diversi, file diverso
@@ -26,26 +28,26 @@ Le 3 costanti carosello sono definite in cima a `MenuHomepageConfigPanel.tsx` e 
 
 ---
 
-## B. DA CAPPARE — questione aperta FU-MQR-1 (titoli/descrizioni categoria per-QR)
+## B. FU-MQR-1 — titoli/descrizioni categoria per-QR ✅ CAPPATO (06-06-26)
 
-> Decisione 06-06-26 (Matteo): **vanno cappati**. Oggi **non** lo sono — è la lacuna emersa nella
-> mappatura. Niente fix in questa sessione (solo mappatura): qui resta tracciato dove e come.
+> Era la lacuna emersa nella mappatura: i due campi erano `<input>` nudi senza `maxLength`. **Chiuso
+> nella blindatura del 06-06-26.**
 
-**Dove vive il buco:** `MenuHomepageConfigPanel.tsx`, dentro `MenuQrCategoryCardsSection`, i due
-`<input type="text">` per **titolo card** e **descrizione card** della categoria (scritti su
-`overrideDrafts[cat.key].title` / `.description`). Sono input nudi: **nessun `maxLength`, nessun
-`AdminFieldWithCharCount`** — a differenza del carosello accanto.
+**Dove:** `MenuHomepageConfigPanel.tsx`, dentro `MenuQrCategoryCardsSection`. I due campi **titolo card**
+e **descrizione card** (scritti su `overrideDrafts[cat.key].title` / `.description`) ora usano
+`AdminFieldWithCharCount` con `maxLength` + taglio difensivo + contatore, come il carosello.
 
-**Cosa fare quando si esegue:**
-1. Definire due costanti vicino a `CAROUSEL_SLIDE_*` (es. `QR_CATEGORY_TITLE_MAX`,
-   `QR_CATEGORY_DESCRIPTION_MAX`) con limiti tarati sullo spazio reale della card categoria
-   (riferirsi alla card «senza foto» 30/70 e «con foto» del layout — vedi `MENU_QR_LAYOUT_CONTEXT.md`
-   §3 `CategoryCard`). Valori da decidere con Matteo (principio: stare nello spazio della card mobile).
-2. Sostituire i due `<input>` nudi con `AdminFieldWithCharCount` (coerenza col carosello: contatore +
-   `maxLength` + taglio difensivo).
-3. Aggiungere un test che blinda il taglio (vedi `MENU_QR_TEST_SUITE_INDEX.md`).
+**Valori decisi con Matteo:** titolo **30** (`QR_CATEGORY_TITLE_MAX`), descrizione **70**
+(`QR_CATEGORY_DESCRIPTION_MAX`) — tarati sullo spazio della card «senza foto» 30/70 (vedi
+`MENU_QR_LAYOUT_CONTEXT.md` §3 `CategoryCard`).
 
-Tracciato anche in `../MENU_QR_SKILL.md` §5 e (se usato) `docs/FOLLOW_UP.md`.
+**Nota di blindatura (controtest responsive):** il cap copre l'**override QR**; quando il titolo ricade
+sul fallback `menu_categories.label` (magazzino, **senza** cap) il troncamento visivo è garantito dal
+`line-clamp-2` aggiunto ai due `<h2>` titolo in `PublicMenuPage.tsx`. Cappare `menu_categories.label`
+resterebbe lavoro dell'area Menu admin (magazzino condiviso con Prenota), fuori scope qui.
+
+**Test:** `src/features/booking/components/__tests__/menuQrCategoryFieldCap.test.tsx` (blinda 30/70 +
+taglio). Vedi `MENU_QR_TEST_SUITE_INDEX.md`.
 
 ---
 

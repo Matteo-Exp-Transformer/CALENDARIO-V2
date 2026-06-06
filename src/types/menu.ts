@@ -52,9 +52,7 @@ export interface MenuQrCode {
   tenant_id: string
   short_code: string
   name: string
-  content_type: 'a_la_carte' | 'preset_menus' | 'mixed'
   category_filter: string[] | null
-  preset_ids: string[] | null
   is_active: boolean
   sort_order: number
   theme_key: string
@@ -68,9 +66,7 @@ export interface MenuQrCode {
 
 export interface MenuQrCodeInput {
   name: string
-  content_type: 'a_la_carte' | 'preset_menus' | 'mixed'
   category_filter?: string[] | null
-  preset_ids?: string[] | null
   is_active?: boolean
   sort_order?: number
   theme_key?: string

@@ -63,11 +63,9 @@ export function parseMenuQrCodeRow(raw: Record<string, unknown>): MenuQrCode {
     tenant_id: String(raw.tenant_id),
     short_code: String(raw.short_code),
     name: String(raw.name),
-    content_type: raw.content_type as MenuQrCode['content_type'],
     category_filter: Array.isArray(raw.category_filter)
       ? (raw.category_filter as string[])
       : null,
-    preset_ids: Array.isArray(raw.preset_ids) ? (raw.preset_ids as string[]) : null,
     is_active: Boolean(raw.is_active),
     sort_order: typeof raw.sort_order === 'number' ? raw.sort_order : 0,
     created_at: String(raw.created_at),
