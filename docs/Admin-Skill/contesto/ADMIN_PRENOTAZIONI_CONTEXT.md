@@ -96,6 +96,15 @@ tutto il flusso. Questo va testato come comportamento esplicito nella fase succe
   Reinserisci resta visibile e apre `RestoreBookingTimeModal` (orario inizio + fine calcolata +3h via
   `dateUtils`); Annulla lascia in archivio. Con orari già salvati → conferma breve `BookingDangerActionModal`.
   `useRestoreBooking` accetta `RestoreBookingInput` (id stringa o payload con slot).
+- **Drawer dettagli — auto-chiusura (07-06-26, U6):** `BookingDetailsModal` si chiude da solo se la
+  prenotazione aperta non è più tra le `accepted` (eliminata/cambiata altrove). L'effect aspetta che la
+  query sia caricata e ferma, e non chiude in edit o durante un salvataggio. **Annulla modifica** (U2)
+  ripristina i campi originali; **chiusura** (X/overlay, U7) è bloccata mentre il salvataggio è in corso.
+- **Contatore prenotazioni (D3, migrazione 044):** `tenant_usage.bookings_count` conta il **primo**
+  passaggio a `accepted` (da pending/rejected/insert). Il **reinserimento** dall'archivio
+  (`deleted → accepted`) **non** riconta — il trigger `increment_booking_count_on_accept` esclude
+  `OLD.status IN ('accepted','deleted')`. Semantica scelta: "accettazioni nette", il contatore non cala
+  sull'eliminazione.
 - `placement` come nome/tavolo/id va chiarito con Servizio per evitare mismatch.
 
 ## 8. Test collegati
@@ -106,15 +115,18 @@ capacity, time handling, table assignment e details placement.
 ## 9. Fase D — finding controtest (07-06-26)
 
 Controtest completato su 4 fronti. **Batch fix 07-06-26 (Matteo):** D1, R1, D4, D5, D2/U4/U8 **chiusi in codice**.
+**Batch residuo FU-046 chiuso 07-06-26 (2° giro):** D3, U2, U5, U6, U7, U1, U4(guard sincrono), U10.
 
 | ID | Gravità | Sintesi | Stato batch 07-06-26 |
 |---|---|---|---|
 | D1 | ALTO | Race multi-tab: rifiuto su card stale sovrascrive booking già `accepted` | ✅ `.eq('status','pending')` su accept/reject + toast se 0 righe |
 | R1 | ALTO | 375px: modale con textarea (Elimina/Rifiuta) senza scroll → bottoni fuori viewport | ✅ `max-h-[90vh]`, scroll area, bottoni stack mobile |
-| D2, U4, U8 | MEDIO | Doppio click accept / conferma danger modal | ✅ `isPending` disabilita card + guard mutate + `confirmDisabled` capienza |
-| D3 | MEDIO | Reinserisci incrementa di nuovo `tenant_usage.bookings_count` | ⬜ FU-046 (fuori batch) |
-| U2, U6 | MEDIO | Annulla modifica non ripristina campi; drawer calendario con dati stale | ⬜ FU-046 |
-| D4, U3, U5, U7 | MEDIO | Reinserisci senza orari; tab switch durante mutation; scroll lock | ✅ D4 modale orario (`RestoreBookingTimeModal` + `RestoreBookingInput`); U3/U5/U7 ⬜ FU-046 |
-| D5, D6, D7, U1, U9, U10 | BASSO | Metadata restore, guard DB assenti, doppio toast, errori UX | ✅ D5 azzera `cancellation_*`; resto ⬜ |
+| D2, U4, U8 | MEDIO | Doppio click accept / conferma danger modal | ✅ `isPending` disabilita card; **U4** ora anche guard sincrono `useRef` in `BookingDangerActionModal` (copre finestra pre-`isLoading`) |
+| D3 | MEDIO | Reinserisci incrementa di nuovo `tenant_usage.bookings_count` | ✅ migrazione `044` — trigger esclude transizione `deleted → accepted` (opzione "accettazioni nette", scelta Matteo 07-06-26). Controtestato su DB TEST |
+| U2 | MEDIO | Annulla modifica non ripristina campi | ✅ `handleCancelEdit` risincronizza `formData` da `booking` (helper `buildFormDataFromBooking`) |
+| U6 | MEDIO-ALTO | Drawer calendario con dati stale se la prenotazione sparisce dalla lista | ✅ effect chiude il drawer se assente da `useAcceptedBookings` (guard su loading/fetching/edit/save) |
+| U5, U7 | MEDIO | Scroll lock non ripristinato; chiusura durante save/edit | ✅ U5 danger modal ripristina overflow originale (non forza `unset`); U7 `handleRequestClose` blocca chiusura durante `isPending`, annulla pulito in edit |
+| D4, U3 | MEDIO | Reinserisci senza orari; tab switch durante mutation | ✅ D4 modale orario; **U3 ⬜ FU-046** (vincolo strutturale dashboard, tab unmount) |
+| D5, D6, D7, U1, U9, U10 | BASSO | Metadata restore, guard DB assenti, doppio toast, errori UX | ✅ D5 azzera `cancellation_*`; ✅ U1 toast unico (rimosso da `BookingDetailsModal`, resta in `useUpdateBooking`); ✅ U10 `logger` al posto di `console.error`; **U9 ⬜** (banner inline opzionale, toast già presente); D6/D7 ⬜ |
 | L4, L10–L12 | FU | Ospiti 0/negativi/enormi passano hook — validazione DB/form da valutare | ⬜ fuori batch |
 | R2–R4 | MEDIO/BASSO | Bottoni affiancati, padding doppio su 375px | R2 parziale (stack mobile); R3/R4 ⬜ |

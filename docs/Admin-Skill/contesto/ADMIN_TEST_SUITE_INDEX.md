@@ -105,14 +105,15 @@ Fronti previsti:
 
 ## 8. Area 2 — Prenotazioni operative
 
-Stato: **batch fix Fase D 07-06-26** — D1/R1/D4/D5/D2 chiusi; bloccanti ALTO risolti; restano item FU-046.
+Stato: **Fase D + FU-046 chiusi 07-06-26** — batch1 D1/R1/D4/D5/D2 + batch2 D3/U1/U2/U4/U5/U6/U7/U10; bloccanti ALTO+MEDIO risolti; restano U3/U9/D6-D7/L* + QA reale (FU-043).
 
-Test marcati (31 test, verdi):
+Test marcati (32 test, verdi):
 
 - `src/features/booking/hooks/__tests__/useBookingMutations.prenotazioni.adminBlindatura.test.tsx` (17) →
   accept/reject/soft-delete/restore/requeue/no-show + **race guard pending** (D1) + **restore azzera cancellation_*** (D5) + **restore con orario fornito** (D4 affinamento 07-06-26) + **LIMIT mutation payload** (L8–L15).
-- `src/features/booking/components/__tests__/prenotazioni.adminBlindatura.test.tsx` (14) → conferme
-  coerenti archivio + **D4 modale orario reinserisci senza slot salvati** + **R1/D2 modal layout** + LIMIT UI/capienza.
+- `src/features/booking/components/__tests__/prenotazioni.adminBlindatura.test.tsx` (15) → conferme
+  coerenti archivio + **D4 modale orario reinserisci senza slot salvati** + **R1/D2 modal layout** + **U4 doppio click guard sincrono** + LIMIT UI/capienza.
+- **D3 contatore restore** (migrazione `044`): controtestato direttamente su DB TEST (ciclo accetta→elimina→reinserisci, `bookings_count` invariato al restore); logica del trigger SQL, nessun unit.
 - `e2e/admin-booking-mgmt.spec.ts` → marcatore E2E (staging, solo Desktop Chrome).
 
 Componente conferma riusabile: `BookingDangerActionModal.tsx` (Elimina, No-show, Reinserisci con orari
@@ -123,8 +124,8 @@ Fase D — esiti controtest (07-06-26) post-fix batch:
 
 | Fronte | Esito | Finding principali |
 |---|---|---|
-| Flusso dati | D1/D5 ✅ | Race pending guard; restore pulisce `cancellation_*`; D3 contatore ⬜ FU-046 |
-| Flusso utente | D2/D4 ✅ | No doppio submit card/modal; reinserisci senza orari = hint; U2/U6 ⬜ FU-046 |
+| Flusso dati | D1/D5/D3 ✅ | Race pending guard; restore pulisce `cancellation_*`; **D3 contatore restore (migr. 044)** |
+| Flusso utente | D2/D4/U2/U6/U7 ✅ | No doppio submit; reinserisci orario; **annulla ripristina campi (U2); drawer auto-chiusura (U6); chiusura bloccata in save (U7)** |
 | Limit test | 15 test | L4/L10–L12 FU validazione ospiti (fuori batch) |
 | Responsive | R1 ✅ QA browser | 375/834/1280: bottoni Elimina/Rifiuta in viewport con textarea piena |
 
@@ -132,7 +133,7 @@ act() warning risolti in `prenotazioni.adminBlindatura.test.tsx` (ArchiveTab exp
 
 Buchi residui (post-batch):
 
-- FU-046: D3 contatore usage, U2 annulla modifica, U6 drawer stale, U5 scroll lock, test integrazione PendingRequestsTab warning.
+- **U3** tab switch durante mutation (vincolo strutturale dashboard); **U9** banner errore inline (toast già presente); **D6/D7** guard DB difensivi; L4/L10–L12 validazione ospiti; test integrazione PendingRequestsTab warning capienza/orario passato; **QA browser reale modali admin loggato** (FU-043).
 - E2E Playwright su accept capienza/orario passato (warning non blocco) con dati staging.
 - E2E responsive modali conferma in admin loggato (E1–E5).
 - Test email fallita non blocca mutation (§6 `ADMIN_PRENOTAZIONI_CONTEXT.md`).

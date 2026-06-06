@@ -274,7 +274,7 @@ Aggiornare a fine area.
 | Area | Stato | Report / note |
 |---|---|---|
 | Shell / ingresso / navigazione globale | 🔶 blindatura avviata | Intervista chiusa; sotto-route, logout guard, fallback header e test unitari avviati |
-| Prenotazioni operative | 🔶 batch D1/R1 chiuso | Fix D1/R1/D4/D5/D2 07-06-26; bloccanti ALTO risolti; FU-046 resta per D3/U2/U6 |
+| Prenotazioni operative | 🔶 batch FU-046 chiuso | Fix D1/R1/D4/D5/D2 + 2° giro FU-046 (D3 migr.044, U2/U5/U6/U7/U1/U4/U10) 07-06-26; bloccanti ALTO+MEDIO risolti. Restano U3/U9/D6/D7/L* + E2E/QA reale (FU-043, FU-046 residuo) |
 | Impostazioni / Personalizza Form | ⬜ | Da avviare dopo Prenotazioni o secondo priorita Matteo |
 | Menu admin / magazzino | ⬜ | Da coordinare con Prenota/Menu QR gia blindate |
 | Servizio | ⬜ | Include walk-in e tavoli occupati |
