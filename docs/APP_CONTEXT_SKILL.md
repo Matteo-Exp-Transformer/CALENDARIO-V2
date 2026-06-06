@@ -47,6 +47,7 @@ Leggi il task ricevuto e applica questa tabella:
 
 | Il task riguarda… | Skill da caricare |
 |-------------------|-------------------|
+| **Area Admin autenticata completa / pagina admin / dashboard ristoratore / mappatura o blindatura Admin / lavoro multi-area su `/admin`** | **`docs/Admin-Skill/ADMIN_SKILL.md`** (entry point area: senso + mappa) + `docs/Admin-Skill/PLAN_BLINDATURA_ADMIN.md` se il task riguarda blindatura/test/sub-agent. Per file LOCK storici restano obbligatorie anche le righe specifiche sotto. |
 | **AdminDashboard / BookingCalendar / BookingForm / BookingsList / BookingDetailsModal / useBookingMutations / pagina admin classica / tab Calendario-Prenotazioni-Settings** | `docs/ADMIN_CLASSIC_SKILL.md` ⚠️ **OBBLIGATORIO PRIMA DI MODIFICARE** |
 | AdminShell / sidebar / nav / sezioni / routing admin | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
 | CRM / clienti / customer / useCustomers / CustomerProfile | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
@@ -146,18 +147,33 @@ main      →  PRODUZIONE: è il branch che Vercel pubblica come app reale
 
 ## 2. Mappa routing admin
 
-Il routing admin è **state-based** (nessun cambio URL). `AdminShell.tsx` gestisce uno stato `section` e monta il componente corretto.
+Il routing admin ha **sotto-route leggere per la shell** e per le tab operative della dashboard.
+`AdminShell.tsx` gestisce lo stato `section`, sincronizzato con `/admin/:adminSection`, e monta il
+componente corretto. `AdminDashboard.tsx` sincronizza `activeTab` con gli URL tab per preservare
+refresh/back.
 
 **Il comportamento varia in base all'edition del tenant** (letto da `useFeatures()`):
 
 | Edition | Section default | Layout |
 |---------|----------------|--------|
 | `classic` | `'prenotazioni'` | Nessuna sidebar — AdminDashboard standalone |
-| `pro` / `enterprise` | `'home'` | Sidebar completa + sezioni avanzate |
+| `pro` / `enterprise` | `'home'` se `features.home=true`, altrimenti `'prenotazioni'` | Sidebar completa + sezioni abilitate |
+
+| Path | Section |
+|------|---------|
+| `/admin` | Home se abilitata, altrimenti Prenotazioni |
+| `/admin/calendario` | `'prenotazioni'`, tab Calendario |
+| `/admin/prenotazioni` | `'prenotazioni'`, tab Prenotazioni |
+| `/admin/archivio` | `'prenotazioni'`, tab Archivio |
+| `/admin/menu` | `'prenotazioni'`, tab Menu |
+| `/admin/impostazioni` | `'prenotazioni'`, tab Impostazioni |
+| `/admin/crm` | `'crm'` se feature abilitata |
+| `/admin/servizio` | `'servizio'` se feature abilitata |
+| `/admin/analytics` | `'analytics'` se feature abilitata |
 
 | `section` | Componente montato | Visibile in |
 |-----------|-------------------|-------------|
-| `'home'` ← DEFAULT Pro | `<AdminDashboard bodyOverride={<AdminHomePage />} />` | Pro, Enterprise |
+| `'home'` ← DEFAULT Pro se abilitata | `<AdminDashboard bodyOverride={<AdminHomePage />} />` | Pro, Enterprise con `features.home=true` |
 | `'prenotazioni'` ← DEFAULT Classic | `<AdminDashboard />` | tutte le edition |
 | `'crm'` | `<CrmPage />` | Pro, Enterprise |
 | `'servizio'` | `<ServizioPage />` | Pro, Enterprise |

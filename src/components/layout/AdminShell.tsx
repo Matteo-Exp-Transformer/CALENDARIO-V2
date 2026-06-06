@@ -1,5 +1,6 @@
 import type { FC } from 'react'
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { DEFAULT_APP_THEME } from '@/features/booking/constants/appTheme'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 import {
@@ -18,6 +19,13 @@ import { AdminDashboard } from '@/pages/AdminDashboard'
 import { Button } from '@/components/ui'
 import { useFeatures } from '@/hooks/useFeatures'
 import { UnsavedChangesProvider, useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
+import {
+  getAdminSectionPath,
+  resolveAdminRouteFromPath,
+  resolveAdminSectionFromPath,
+  runGuardedAdminLogout,
+  type AdminShellSection,
+} from './adminShellRouting'
 
 const AdminHomePage = lazy(() =>
   import('@/pages/AdminHomePage').then((m) => ({ default: m.AdminHomePage })),
@@ -36,7 +44,6 @@ const SectionFallback: FC = () => (
   </div>
 )
 
-export type AdminShellSection = 'home' | 'prenotazioni' | 'crm' | 'servizio' | 'analytics'
 type SidebarActiveItem = 'home' | 'analytics' | 'servizio' | 'crm' | 'settings' | 'dashboard-tab' | null
 
 function useIsNarrow() {
@@ -96,16 +103,27 @@ const SIDEBAR_NAV_ITEMS: {
   },
 ]
 
+function sidebarItemForSection(section: AdminShellSection): SidebarActiveItem {
+  if (section === 'home') return 'home'
+  if (section === 'crm') return 'crm'
+  if (section === 'servizio') return 'servizio'
+  if (section === 'analytics') return 'analytics'
+  return null
+}
+
 const AdminShellInner: FC = () => {
+  const location = useLocation()
+  const navigate = useNavigate()
   const isNarrow = useIsNarrow()
   const features = useFeatures()
   const [sidebarMode, setSidebarMode] = useState<'hidden' | 'icons' | 'expanded'>('icons')
-  const [section, setSection] = useState<AdminShellSection>(() =>
-    features.sidebar ? 'home' : 'prenotazioni',
-  )
-  const [activeSidebarItem, setActiveSidebarItem] = useState<SidebarActiveItem>(() =>
-    features.sidebar ? 'home' : null,
-  )
+  // section e activeSidebarItem sono DERIVATI dall'URL (unica fonte di verità).
+  // Tenerli come stato sincronizzato via effetto causava un flash: setSection e
+  // navigate (in openSection / exit) non sono atomici, quindi per 1-2 render la
+  // sezione montata e l'URL puntavano a sezioni diverse e la sezione vecchia
+  // riappariva per un istante. Stesso fix applicato ad AdminDashboard.activeTab.
+  const section: AdminShellSection = resolveAdminSectionFromPath(location.pathname, features)
+  const activeSidebarItem: SidebarActiveItem = sidebarItemForSection(section)
   const [restaurantSettingsSignal, setRestaurantSettingsSignal] = useState(0)
   const { user, logout } = useAdminAuth()
   const { confirmNavigation } = useUnsavedChangesGuard()
@@ -121,6 +139,15 @@ const AdminShellInner: FC = () => {
   }, [savedAppTheme, isAppThemePending])
 
   const isDrawerOpen = sidebarMode === 'expanded'
+
+  // section/activeSidebarItem derivano dall'URL (sopra). Qui resta solo la
+  // canonicalizzazione del path (es. route sconosciuta → sezione di default).
+  useEffect(() => {
+    const resolvedRoute = resolveAdminRouteFromPath(location.pathname, features)
+    if (location.pathname !== resolvedRoute.canonicalPath) {
+      navigate(resolvedRoute.canonicalPath, { replace: true })
+    }
+  }, [features, location.pathname, navigate])
 
   // Click-outside: chiude la sidebar quando si clicca fuori dall'aside
   useEffect(() => {
@@ -150,8 +177,9 @@ const AdminShellInner: FC = () => {
   }, [])
 
   const openSection = useCallback(
-    (s: AdminShellSection, sidebarItem: SidebarActiveItem = null) => {
+    (s: AdminShellSection) => {
       const sectionChange = s !== section
+      // section/activeSidebarItem derivano dall'URL: basta navigare, lo stato segue.
       if (sectionChange) {
         const allowReturn = s === 'prenotazioni'
         void confirmNavigation(
@@ -159,42 +187,48 @@ const AdminShellInner: FC = () => {
         ).then((ok) => {
           if (!ok) return
           if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
-          setSection(s)
-          setActiveSidebarItem(sidebarItem)
+          navigate(getAdminSectionPath(s))
         })
         return
       }
       if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
-      setSection(s)
-      setActiveSidebarItem(sidebarItem)
+      navigate(getAdminSectionPath(s))
     },
-    [confirmNavigation, isNarrow, section, sidebarMode],
+    [confirmNavigation, isNarrow, navigate, section, sidebarMode],
   )
 
   const runSidebarAction = useCallback(
     (action: SidebarNavAction) => {
       if (action.type === 'section') {
-        const item: SidebarActiveItem =
-          action.section === 'analytics' ? 'analytics'
-          : action.section === 'servizio' ? 'servizio'
-          : action.section === 'crm' ? 'crm'
-          : null
-        openSection(action.section, item)
+        openSection(action.section)
         return
       }
       if (action.type === 'settings') {
-        openSection('prenotazioni', 'settings')
+        openSection('prenotazioni')
         setRestaurantSettingsSignal((n) => n + 1)
       }
     },
     [openSection],
   )
 
+  const exitBodyOverrideToDashboard = useCallback(() => {
+    if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
+    navigate(getAdminSectionPath('prenotazioni'))
+  }, [isNarrow, navigate, sidebarMode])
+
+  const handleLogout = useCallback(
+    () => runGuardedAdminLogout(confirmNavigation, logout),
+    [confirmNavigation, logout],
+  )
+
   // Edition Classic: nessuna sidebar, AdminDashboard occupa tutta la pagina
   if (!features.sidebar) {
     return (
       <div className="flex min-h-screen flex-col">
-        <AdminDashboard restaurantSettingsSignal={restaurantSettingsSignal} />
+        <AdminDashboard
+          restaurantSettingsSignal={restaurantSettingsSignal}
+          onLogout={handleLogout}
+        />
       </div>
     )
   }
@@ -240,36 +274,53 @@ const AdminShellInner: FC = () => {
         aria-expanded={isDrawerOpen}
       >
         <div className="flex flex-1 flex-col gap-1 px-2">
-          {/* Home — voce principale */}
-          <div
-            className={cn(
-              'mb-1 flex',
-              isDrawerOpen ? 'items-center justify-between gap-1 px-1' : 'justify-center',
-            )}
-          >
-            <button
-              type="button"
-              onClick={() => openSection('home', 'home')}
-              title="Home"
-              aria-label="Home"
+          {features.home && (
+            <div
               className={cn(
-                'flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
-                activeSidebarItem === 'home'
-                  ? 'bg-primary-600 text-white'
-                  : 'text-primary-900 hover:bg-primary-50',
-                !isDrawerOpen && 'w-10 justify-center px-0',
+                'mb-1 flex',
+                isDrawerOpen ? 'items-center justify-between gap-1 px-1' : 'justify-center',
               )}
             >
-              <Home
+              <button
+                type="button"
+                onClick={() => openSection('home')}
+                title="Home"
+                aria-label="Home"
                 className={cn(
-                  'h-5 w-5 shrink-0',
-                  activeSidebarItem === 'home' ? 'text-white' : 'text-primary-900',
+                  'flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+                  activeSidebarItem === 'home'
+                    ? 'bg-primary-600 text-white'
+                    : 'text-primary-900 hover:bg-primary-50',
+                  !isDrawerOpen && 'w-10 justify-center px-0',
                 )}
-                aria-hidden
-              />
-              {isDrawerOpen && <span className="truncate">Home</span>}
-            </button>
-            {isDrawerOpen && (
+              >
+                <Home
+                  className={cn(
+                    'h-5 w-5 shrink-0',
+                    activeSidebarItem === 'home' ? 'text-white' : 'text-primary-900',
+                  )}
+                  aria-hidden
+                />
+                {isDrawerOpen && <span className="truncate">Home</span>}
+              </button>
+              {isDrawerOpen && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-expanded={isDrawerOpen}
+                  aria-label="Comprimi menu"
+                  title="Comprimi menu"
+                  onClick={toggleSidebar}
+                  className="shrink-0 text-primary-900"
+                >
+                  <ChevronLeft className="h-4 w-4" aria-hidden />
+                </Button>
+              )}
+            </div>
+          )}
+          {!features.home && isDrawerOpen && (
+            <div className="mb-1 flex justify-end px-1">
               <Button
                 type="button"
                 variant="ghost"
@@ -282,8 +333,8 @@ const AdminShellInner: FC = () => {
               >
                 <ChevronLeft className="h-4 w-4" aria-hidden />
               </Button>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="my-1 border-t border-(--color-border)" />
 
@@ -388,7 +439,7 @@ const AdminShellInner: FC = () => {
               'w-full text-primary-900',
               isDrawerOpen ? 'justify-start gap-2' : 'justify-center',
             )}
-            onClick={() => void logout()}
+            onClick={() => void handleLogout()}
             title="Esci"
           >
             <LogOut className="h-4 w-4 shrink-0" aria-hidden />
@@ -403,17 +454,18 @@ const AdminShellInner: FC = () => {
         {(section === 'prenotazioni' || section === 'home') && (
           <AdminDashboard
             restaurantSettingsSignal={restaurantSettingsSignal}
+            onLogout={handleLogout}
             bodyOverride={
-              section === 'home' ? (
+              section === 'home' && features.home ? (
                 <Suspense fallback={<SectionFallback />}>
                   <AdminHomePage
-                    onOpenCrm={() => openSection('crm', 'crm')}
-                    onOpenServizio={() => openSection('servizio', 'servizio')}
+                    onOpenCrm={() => openSection('crm')}
+                    onOpenServizio={() => openSection('servizio')}
                   />
                 </Suspense>
               ) : undefined
             }
-            onBodyOverrideExit={() => openSection('prenotazioni', null)}
+            onBodyOverrideExit={exitBodyOverrideToDashboard}
           />
         )}
 
@@ -423,7 +475,7 @@ const AdminShellInner: FC = () => {
             <div className="flex justify-end px-3 pt-3">
               <button
                 type="button"
-                onClick={() => openSection('prenotazioni', null)}
+                onClick={() => openSection('prenotazioni')}
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-(--color-border) bg-surface text-primary-900 shadow-sm transition-colors hover:border-primary-300 hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 aria-label="Torna alla dashboard"
                 title="Torna alla dashboard"

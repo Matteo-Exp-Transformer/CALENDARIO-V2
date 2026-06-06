@@ -135,6 +135,19 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 
 ## Stile di comunicazione
 
+### «ragioniamo» · «Ragioniamo» — Liv. 1
+- **Intende:** fermarsi a parlare/ragionare insieme **prima** di eseguire; vuole capire con un formato strutturato (tabella + checklist), non un muro di testo né un'esecuzione diretta.
+- **Comportamento agente:** la risposta segue questo formato (riconosciuto **case insensitive**):
+  1. **Spiegazione breve** — di cosa parliamo, in linguaggio chiaro.
+  2. **Effetto per te** — cosa cambia, cosa devi decidere o fare.
+  3. **Tabellina riassuntiva** — i punti chiave (è l'unico caso, con la chiusura, in cui la tabella è attesa nonostante la regola «no tabelle di default»).
+  4. **Checklist per te** — i passi o le decisioni che ti servono per procedere.
+  Resta valido lo stile di default (no gergo, no nomi-file isolati): «ragioniamo» **aggiunge struttura, non allenta** le regole di comunicazione. Se Matteo **non** dice «ragioniamo» → resta il default sintetico, senza tabella/checklist extra.
+- **Livello:** 1 (automatico)
+- **Casi identici già ok:** —
+- **Approvata il:** 06-06-26
+- **Origine:** richiesta Matteo 06-06-26 — portare il trigger «ragioniamo» dall'app Trade-Analyst-Agent (lì è in `COMUNICAZIONE_SKILL.md` §1b)
+
 ### «spiegamelo semplice» · «in modo sintetico» — Liv. 1
 - **Intende:** non una lezione tecnica, ma l'effetto concreto e chi fa cosa
 - **Comportamento agente:** immagine concreta + esempio nell'app + dichiara esplicitamente chi fa l'azione (tu / il tool / config una-tantum / scelta UX); pochi blocchi, breve; niente codice salvo richiesta. Vedi `Metodo_spiegazioni_agenti_coding.md`.

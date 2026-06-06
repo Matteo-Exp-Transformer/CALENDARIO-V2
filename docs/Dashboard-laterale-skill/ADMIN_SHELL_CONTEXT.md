@@ -14,7 +14,7 @@ AdminShell (src/components/layout/AdminShell.tsx)
 │   └── <div className="min-h-screen"> <AdminDashboard /> </div>  ← standalone, nessuna sidebar
 │
 └── [se features.sidebar → edition Pro/Enterprise]
-    ├── <aside> sidebar sinistra — routing state-based (NO cambio URL)
+    ├── <aside> sidebar sinistra — routing sincronizzato con URL leggero
     │   ├── Pulsante "Home" (icona Home, in cima → sezione 'home')   ← DEFAULT Pro/Enterprise
     │   ├── SIDEBAR_NAV_ITEMS (4 voci, filtrate per features):
     │   │   ├── Form Pubblico  (ExternalLink → window.open '/prenota/:slug', _blank)
@@ -23,7 +23,7 @@ AdminShell (src/components/layout/AdminShell.tsx)
     │   │   └── Analytics      (BarChart3 → sezione 'analytics',    featureKey: 'analytics')
     │   └── Bottom dock: avatar utente + logout
     │
-    └── <main> contenuto — switch su `section` state
+    └── <main> contenuto — switch su `section` state sincronizzato con `/admin/*`
         ├── 'home'         → <AdminDashboard bodyOverride={<Suspense><AdminHomePage /></Suspense>} />
         ├── 'prenotazioni' → <AdminDashboard />                    ← DEFAULT Classic
         ├── 'crm'          → <Suspense><CrmPage /></Suspense>       [solo se features.crm]

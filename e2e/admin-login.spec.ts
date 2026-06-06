@@ -1,4 +1,7 @@
 /**
+ * // @admin-blindatura: shell-login
+ * // Copre: redirect ospite, login admin e logout base.
+ *
  * Pre-requisiti staging:
  *   E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD → admin registrato nel DB staging
  */

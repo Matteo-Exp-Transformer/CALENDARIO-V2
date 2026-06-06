@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useBlocker, useLocation, useNavigate } from 'react-router-dom'
 import { useBookingStats } from '@/features/booking/hooks/useBookingQueries'
 import { PendingRequestsTab } from '@/features/booking/components/PendingRequestsTab'
 import {
@@ -41,8 +42,14 @@ import { cn } from '@/lib/utils'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
 import { useFeatures } from '@/hooks/useFeatures'
 import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
+import {
+  getAdminDashboardTabPath,
+  resolveAdminDashboardTabFromPath,
+  type AdminDashboardTab,
+} from '@/components/layout/adminShellRouting'
 
-type Tab = 'calendar' | 'pending' | 'archive' | 'menu' | 'settings-restaurant'
+type Tab = AdminDashboardTab
+const ADMIN_HEADER_FALLBACK_NAME = 'Sistema Gestionale Prenotazioni'
 
 /* ─── NavItem ─── */
 interface NavItemProps {
@@ -153,6 +160,8 @@ export type AdminDashboardProps = {
   bodyOverride?: React.ReactNode
   /** Chiamato quando si clicca un NavItem mentre bodyOverride è attivo — segnala ad AdminShell di uscire dalla Home. */
   onBodyOverrideExit?: () => void
+  /** Logout centralizzato dalla shell: passa dal guard modifiche non salvate. */
+  onLogout?: () => void | Promise<void>
 }
 
 /* ─── Dashboard ─── */
@@ -160,25 +169,62 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   restaurantSettingsSignal = 0,
   bodyOverride,
   onBodyOverrideExit,
+  onLogout,
 }) => {
-  const [activeTab, setActiveTab] = useState<Tab>('calendar')
+  const location = useLocation()
+  const navigate = useNavigate()
+  // activeTab è DERIVATO dall'URL (unica fonte di verità). Tenere uno stato
+  // separato sincronizzato via effetto causava un flash: setActiveTab e
+  // navigate non sono atomici (handleTabClick è async, ripreso dopo await),
+  // quindi per 1-2 render stato e URL puntavano a tab diverse e il corpo
+  // mostrava prima la tab nuova, poi la vecchia, poi di nuovo la nuova.
+  const activeTab: Tab = resolveAdminDashboardTabFromPath(location.pathname) ?? 'calendar'
   const [calendarTargetDate, setCalendarTargetDate] = useState<string | null>(null)
   const [showNewBookingPanel, setShowNewBookingPanel] = useState(false)
   const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>('all')
   const [archiveSortOrder, setArchiveSortOrder] = useState<SortOrder>('booking_date')
   const menuPricesTabRef = useRef<MenuPricesTabHandle>(null)
   const features = useFeatures()
-  const { confirmNavigation } = useUnsavedChangesGuard()
+  const { confirmNavigation, hasUnsavedChanges } = useUnsavedChangesGuard()
   const dashboardRootRef = useRef<HTMLDivElement>(null)
   const { data: stats } = useBookingStats()
+  const handledRestaurantSettingsSignalRef = useRef(0)
+
+  const dashboardTabHistoryBlocker = useBlocker(({ currentLocation, historyAction, nextLocation }) => {
+    if (historyAction !== 'POP' || !hasUnsavedChanges) return false
+
+    const currentTab = resolveAdminDashboardTabFromPath(currentLocation.pathname)
+    const nextTab = resolveAdminDashboardTabFromPath(nextLocation.pathname)
+    return Boolean(currentTab && nextTab && currentTab !== nextTab)
+  })
+
+  useEffect(() => {
+    if (dashboardTabHistoryBlocker.state !== 'blocked') return
+
+    void confirmNavigation().then((ok) => {
+      if (ok) {
+        dashboardTabHistoryBlocker.proceed()
+        return
+      }
+      dashboardTabHistoryBlocker.reset()
+    })
+  }, [confirmNavigation, dashboardTabHistoryBlocker])
 
   useEffect(() => {
     if (restaurantSettingsSignal === 0) return
-    if (activeTab === 'settings-restaurant') return
+    if (restaurantSettingsSignal === handledRestaurantSettingsSignalRef.current) return
+    handledRestaurantSettingsSignalRef.current = restaurantSettingsSignal
+
+    if (activeTab === 'settings-restaurant') {
+      navigate(getAdminDashboardTabPath('settings-restaurant'))
+      return
+    }
+
     void confirmNavigation().then((ok) => {
-      if (ok) setActiveTab('settings-restaurant')
+      if (!ok) return
+      navigate(getAdminDashboardTabPath('settings-restaurant'))
     })
-  }, [activeTab, confirmNavigation, restaurantSettingsSignal])
+  }, [activeTab, confirmNavigation, navigate, restaurantSettingsSignal])
 
   useEffect(() => {
     if (activeTab !== 'pending') setShowNewBookingPanel(false)
@@ -200,7 +246,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleViewInCalendar = async (date: string) => {
     if (!(await confirmNavigation())) return
     setCalendarTargetDate(date)
-    setActiveTab('calendar')
+    navigate(getAdminDashboardTabPath('calendar'))
   }
 
   const scrollToTop = () => {
@@ -225,19 +271,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleTabClick = async (tab: Tab) => {
     const tabChange = tab !== activeTab
-    if (tabChange && !(await confirmNavigation())) return
+    const navigationChange = tabChange || Boolean(bodyOverride)
+    if (navigationChange && !(await confirmNavigation())) return
     if (bodyOverride) {
       onBodyOverrideExit?.()
-      if (tabChange) setActiveTab(tab)
+      navigate(getAdminDashboardTabPath(tab))
       return
     }
-    if (tabChange) setActiveTab(tab)
+    navigate(getAdminDashboardTabPath(tab))
   }
 
   const handleOpenPublicForm = () => {
     if (!tenantSlug) return
     window.open(`/prenota/${tenantSlug}`, '_blank', 'noopener,noreferrer')
   }
+
+  const handleLogout = onLogout ?? logout
 
   /** Con bodyOverride (Home Pro) non mostrare statistiche Calendario, filtri Archivio, toolbar Menu, intro Impostazioni, blocco Nuova prenotazione. */
   const showTabSecondaryChrome = !bodyOverride
@@ -262,7 +311,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <h1
                 className="relative -left-16 mx-auto max-w-[calc(100%-4.5rem)] max-[645px]:left-0 max-[645px]:mx-auto max-[645px]:max-w-[min(100%,calc(100vw-5rem))] sm:max-w-[calc(100%-9rem)] md:max-w-[calc(100%-11rem)] overflow-hidden line-clamp-2 wrap-anywhere text-[22px] font-semibold italic font-serif tracking-wide text-white drop-shadow-sm leading-tight sm:text-2xl md:text-[28px] lg:text-[30px]"
               >
-                {restaurantName || 'Booking SaaS'}
+                {restaurantName || ADMIN_HEADER_FALLBACK_NAME}
               </h1>
             </div>
           </div>
@@ -547,7 +596,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </button>
               <button
                 type="button"
-                onClick={logout}
+                onClick={() => void handleLogout()}
                 className={cn('flex shrink-0 items-center gap-2', adminBlueCtaSurfaceClass)}
               >
                 <LogOut className="h-3.5 w-3.5 text-white" />

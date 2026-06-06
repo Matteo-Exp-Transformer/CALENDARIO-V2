@@ -1,4 +1,7 @@
 /**
+ * // @admin-blindatura: shell-sidebar
+ * // Copre: sidebar Pro, sezioni avanzate e ritorno alla dashboard prenotazioni.
+ *
  * Test E2E — Admin Pro: sidebar visibile e navigazione tra sezioni.
  *
  * Verifica che la sidebar Pro contenga i bottoni di navigazione corretti
