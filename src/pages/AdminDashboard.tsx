@@ -173,9 +173,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const location = useLocation()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<Tab>(
-    () => resolveAdminDashboardTabFromPath(location.pathname) ?? 'calendar',
-  )
+  // activeTab è DERIVATO dall'URL (unica fonte di verità). Tenere uno stato
+  // separato sincronizzato via effetto causava un flash: setActiveTab e
+  // navigate non sono atomici (handleTabClick è async, ripreso dopo await),
+  // quindi per 1-2 render stato e URL puntavano a tab diverse e il corpo
+  // mostrava prima la tab nuova, poi la vecchia, poi di nuovo la nuova.
+  const activeTab: Tab = resolveAdminDashboardTabFromPath(location.pathname) ?? 'calendar'
   const [calendarTargetDate, setCalendarTargetDate] = useState<string | null>(null)
   const [showNewBookingPanel, setShowNewBookingPanel] = useState(false)
   const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>('all')
@@ -185,13 +188,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const { confirmNavigation, hasUnsavedChanges } = useUnsavedChangesGuard()
   const dashboardRootRef = useRef<HTMLDivElement>(null)
   const { data: stats } = useBookingStats()
-
-  useEffect(() => {
-    const tabFromPath = resolveAdminDashboardTabFromPath(location.pathname)
-    if (tabFromPath && tabFromPath !== activeTab) {
-      setActiveTab(tabFromPath)
-    }
-  }, [activeTab, location.pathname])
+  const handledRestaurantSettingsSignalRef = useRef(0)
 
   const dashboardTabHistoryBlocker = useBlocker(({ currentLocation, historyAction, nextLocation }) => {
     if (historyAction !== 'POP' || !hasUnsavedChanges) return false
@@ -215,10 +212,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   useEffect(() => {
     if (restaurantSettingsSignal === 0) return
-    if (activeTab === 'settings-restaurant') return
+    if (restaurantSettingsSignal === handledRestaurantSettingsSignalRef.current) return
+    handledRestaurantSettingsSignalRef.current = restaurantSettingsSignal
+
+    if (activeTab === 'settings-restaurant') {
+      navigate(getAdminDashboardTabPath('settings-restaurant'))
+      return
+    }
+
     void confirmNavigation().then((ok) => {
       if (!ok) return
-      setActiveTab('settings-restaurant')
       navigate(getAdminDashboardTabPath('settings-restaurant'))
     })
   }, [activeTab, confirmNavigation, navigate, restaurantSettingsSignal])
@@ -243,7 +246,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleViewInCalendar = async (date: string) => {
     if (!(await confirmNavigation())) return
     setCalendarTargetDate(date)
-    setActiveTab('calendar')
     navigate(getAdminDashboardTabPath('calendar'))
   }
 
@@ -273,11 +275,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (navigationChange && !(await confirmNavigation())) return
     if (bodyOverride) {
       onBodyOverrideExit?.()
-      if (tabChange) setActiveTab(tab)
       navigate(getAdminDashboardTabPath(tab))
       return
     }
-    if (tabChange) setActiveTab(tab)
     navigate(getAdminDashboardTabPath(tab))
   }
 

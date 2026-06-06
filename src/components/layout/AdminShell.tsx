@@ -117,12 +117,13 @@ const AdminShellInner: FC = () => {
   const isNarrow = useIsNarrow()
   const features = useFeatures()
   const [sidebarMode, setSidebarMode] = useState<'hidden' | 'icons' | 'expanded'>('icons')
-  const [section, setSection] = useState<AdminShellSection>(() =>
-    resolveAdminSectionFromPath(location.pathname, features),
-  )
-  const [activeSidebarItem, setActiveSidebarItem] = useState<SidebarActiveItem>(() =>
-    sidebarItemForSection(resolveAdminSectionFromPath(location.pathname, features)),
-  )
+  // section e activeSidebarItem sono DERIVATI dall'URL (unica fonte di verità).
+  // Tenerli come stato sincronizzato via effetto causava un flash: setSection e
+  // navigate (in openSection / exit) non sono atomici, quindi per 1-2 render la
+  // sezione montata e l'URL puntavano a sezioni diverse e la sezione vecchia
+  // riappariva per un istante. Stesso fix applicato ad AdminDashboard.activeTab.
+  const section: AdminShellSection = resolveAdminSectionFromPath(location.pathname, features)
+  const activeSidebarItem: SidebarActiveItem = sidebarItemForSection(section)
   const [restaurantSettingsSignal, setRestaurantSettingsSignal] = useState(0)
   const { user, logout } = useAdminAuth()
   const { confirmNavigation } = useUnsavedChangesGuard()
@@ -139,12 +140,10 @@ const AdminShellInner: FC = () => {
 
   const isDrawerOpen = sidebarMode === 'expanded'
 
+  // section/activeSidebarItem derivano dall'URL (sopra). Qui resta solo la
+  // canonicalizzazione del path (es. route sconosciuta → sezione di default).
   useEffect(() => {
     const resolvedRoute = resolveAdminRouteFromPath(location.pathname, features)
-
-    setSection(resolvedRoute.section)
-    setActiveSidebarItem(sidebarItemForSection(resolvedRoute.section))
-
     if (location.pathname !== resolvedRoute.canonicalPath) {
       navigate(resolvedRoute.canonicalPath, { replace: true })
     }
@@ -178,8 +177,9 @@ const AdminShellInner: FC = () => {
   }, [])
 
   const openSection = useCallback(
-    (s: AdminShellSection, sidebarItem: SidebarActiveItem = null) => {
+    (s: AdminShellSection) => {
       const sectionChange = s !== section
+      // section/activeSidebarItem derivano dall'URL: basta navigare, lo stato segue.
       if (sectionChange) {
         const allowReturn = s === 'prenotazioni'
         void confirmNavigation(
@@ -187,15 +187,11 @@ const AdminShellInner: FC = () => {
         ).then((ok) => {
           if (!ok) return
           if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
-          setSection(s)
-          setActiveSidebarItem(sidebarItem)
           navigate(getAdminSectionPath(s))
         })
         return
       }
       if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
-      setSection(s)
-      setActiveSidebarItem(sidebarItem)
       navigate(getAdminSectionPath(s))
     },
     [confirmNavigation, isNarrow, navigate, section, sidebarMode],
@@ -204,11 +200,11 @@ const AdminShellInner: FC = () => {
   const runSidebarAction = useCallback(
     (action: SidebarNavAction) => {
       if (action.type === 'section') {
-        openSection(action.section, sidebarItemForSection(action.section))
+        openSection(action.section)
         return
       }
       if (action.type === 'settings') {
-        openSection('prenotazioni', 'settings')
+        openSection('prenotazioni')
         setRestaurantSettingsSignal((n) => n + 1)
       }
     },
@@ -217,9 +213,8 @@ const AdminShellInner: FC = () => {
 
   const exitBodyOverrideToDashboard = useCallback(() => {
     if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
-    setSection('prenotazioni')
-    setActiveSidebarItem(null)
-  }, [isNarrow, sidebarMode])
+    navigate(getAdminSectionPath('prenotazioni'))
+  }, [isNarrow, navigate, sidebarMode])
 
   const handleLogout = useCallback(
     () => runGuardedAdminLogout(confirmNavigation, logout),
@@ -288,7 +283,7 @@ const AdminShellInner: FC = () => {
             >
               <button
                 type="button"
-                onClick={() => openSection('home', 'home')}
+                onClick={() => openSection('home')}
                 title="Home"
                 aria-label="Home"
                 className={cn(
@@ -464,8 +459,8 @@ const AdminShellInner: FC = () => {
               section === 'home' && features.home ? (
                 <Suspense fallback={<SectionFallback />}>
                   <AdminHomePage
-                    onOpenCrm={() => openSection('crm', 'crm')}
-                    onOpenServizio={() => openSection('servizio', 'servizio')}
+                    onOpenCrm={() => openSection('crm')}
+                    onOpenServizio={() => openSection('servizio')}
                   />
                 </Suspense>
               ) : undefined
@@ -480,7 +475,7 @@ const AdminShellInner: FC = () => {
             <div className="flex justify-end px-3 pt-3">
               <button
                 type="button"
-                onClick={() => openSection('prenotazioni', null)}
+                onClick={() => openSection('prenotazioni')}
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-(--color-border) bg-surface text-primary-900 shadow-sm transition-colors hover:border-primary-300 hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 aria-label="Torna alla dashboard"
                 title="Torna alla dashboard"
