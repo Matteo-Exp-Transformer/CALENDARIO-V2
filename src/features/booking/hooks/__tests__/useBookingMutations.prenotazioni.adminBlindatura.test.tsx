@@ -211,6 +211,31 @@ describe('@admin-blindatura prenotazioni — useRestoreBooking', () => {
     expect(updateArg.cancellation_reason).toBeNull()
     expect(updateArg.cancelled_at).toBeNull()
   })
+
+  it('reinserisci con orario fornito — scrive slot e salta fetch orari', async () => {
+    const updateChain = buildUpdateSingleChain({ data: { id: 'b1', status: 'accepted' }, error: null })
+    mockFrom.mockReturnValueOnce(updateChain)
+
+    const { result } = renderHook(() => useRestoreBooking(), { wrapper: makeWrapper() })
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        bookingId: 'b1',
+        confirmedStart: '2026-06-10T20:00:00+02:00',
+        confirmedEnd: '2026-06-10T23:00:00+02:00',
+        desiredTime: '20:00',
+      })
+    })
+
+    expect(mockFrom).toHaveBeenCalledTimes(1)
+    const updateArg = (updateChain['update'] as ReturnType<typeof vi.fn>).mock.calls[0][0]
+    expect(updateArg.status).toBe('accepted')
+    expect(updateArg.confirmed_start).toBe('2026-06-10T20:00:00+02:00')
+    expect(updateArg.confirmed_end).toBe('2026-06-10T23:00:00+02:00')
+    expect(updateArg.desired_time).toBe('20:00')
+    expect(updateArg.cancellation_reason).toBeNull()
+    expect(updateArg.cancelled_at).toBeNull()
+  })
 })
 
 describe('@admin-blindatura prenotazioni — useRequeueRejectedBooking', () => {

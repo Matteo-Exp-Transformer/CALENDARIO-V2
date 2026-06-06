@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { useAllBookings } from '../hooks/useBookingQueries'
 import { useRestoreBooking, useRequeueRejectedBooking } from '../hooks/useBookingMutations'
 import { BookingDangerActionModal } from './BookingDangerActionModal'
+import { RestoreBookingTimeModal } from './RestoreBookingTimeModal'
+import type { BookingRequest } from '@/types/booking'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import {
@@ -59,7 +61,7 @@ const STATUS_LABELS: Record<string, { label: string; bgColor: string; textColor:
 interface ArchiveBookingCardProps {
   booking: any
   onViewInCalendar?: (date: string) => void
-  onRestore?: (bookingId: string) => void
+  onRestore?: (booking: BookingRequest) => void
   onRequeueToPending?: (bookingId: string) => void
 }
 
@@ -375,27 +377,21 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
             </div>
           )}
 
-          {/* Pulsante Reinserisci — solo eliminate (torna accepted in calendario se ha slot confermati) */}
+          {/* Pulsante Reinserisci — eliminate: torna accepted in calendario (con orari salvati o inseriti al volo) */}
           {booking.status === 'deleted' && onRestore && (
             <div className="flex flex-col gap-2 pt-3 md:pt-4 border-t border-[var(--color-border)] mt-4 md:mt-6">
-              {booking.confirmed_start && booking.confirmed_end ? (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onRestore(booking.id)
-                  }}
-                  style={{ backgroundColor: '#0891b2', color: 'white' }}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 md:px-6 py-3 md:py-4 hover:bg-cyan-700 font-bold text-sm md:text-lg shadow-xl rounded-xl transition-all"
-                >
-                  <RotateCcw className="w-4 h-4 md:w-5 md:h-5" />
-                  <span>Reinserisci</span>
-                </button>
-              ) : (
-                <p className="text-sm text-gray-600 italic">
-                  Reinserimento non disponibile: mancano orari di inizio/fine confermati salvati in archivio.
-                </p>
-              )}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRestore(booking)
+                }}
+                style={{ backgroundColor: '#0891b2', color: 'white' }}
+                className="flex-1 flex items-center justify-center gap-2 px-4 md:px-6 py-3 md:py-4 hover:bg-cyan-700 font-bold text-sm md:text-lg shadow-xl rounded-xl transition-all"
+              >
+                <RotateCcw className="w-4 h-4 md:w-5 md:h-5" />
+                <span>Reinserisci</span>
+              </button>
             </div>
           )}
 
@@ -556,9 +552,14 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar, filter
   const [pendingArchiveAction, setPendingArchiveAction] = useState<
     { type: 'restore' | 'requeue'; bookingId: string } | null
   >(null)
+  const [restoreTimeBooking, setRestoreTimeBooking] = useState<BookingRequest | null>(null)
 
-  const handleRestore = (bookingId: string) => {
-    setPendingArchiveAction({ type: 'restore', bookingId })
+  const handleRestore = (booking: BookingRequest) => {
+    if (booking.confirmed_start && booking.confirmed_end) {
+      setPendingArchiveAction({ type: 'restore', bookingId: booking.id })
+      return
+    }
+    setRestoreTimeBooking(booking)
   }
 
   const handleRequeueToPending = (bookingId: string) => {
@@ -577,6 +578,25 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar, filter
       setPendingArchiveAction(null)
     } catch (err) {
       console.error('Error applying archive action:', err)
+    }
+  }
+
+  const confirmRestoreWithTime = async (data: {
+    confirmedStart: string
+    confirmedEnd: string
+    desiredTime: string
+  }) => {
+    if (!restoreTimeBooking) return
+    try {
+      await restoreBooking.mutateAsync({
+        bookingId: restoreTimeBooking.id,
+        confirmedStart: data.confirmedStart,
+        confirmedEnd: data.confirmedEnd,
+        desiredTime: data.desiredTime,
+      })
+      setRestoreTimeBooking(null)
+    } catch (err) {
+      console.error('Error restoring booking with time:', err)
     }
   }
 
@@ -698,10 +718,17 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar, filter
         onConfirm={() => void confirmArchiveAction()}
         title="Reinserisci prenotazione"
         message="Sei sicuro di voler reinserire questa prenotazione nel calendario?"
-        detail="La prenotazione tornerà visibile tra le confermate, se ha orari validi."
+        detail="La prenotazione tornerà visibile tra le confermate con gli orari già salvati."
         confirmLabel={archiveConfirmLoading ? 'Reinserimento…' : 'Reinserisci'}
         variant="warning"
         isLoading={archiveConfirmLoading}
+      />
+      <RestoreBookingTimeModal
+        isOpen={restoreTimeBooking !== null}
+        onClose={() => setRestoreTimeBooking(null)}
+        booking={restoreTimeBooking}
+        onConfirm={(data) => void confirmRestoreWithTime(data)}
+        isLoading={restoreBooking.isPending}
       />
       <BookingDangerActionModal
         isOpen={pendingArchiveAction?.type === 'requeue'}

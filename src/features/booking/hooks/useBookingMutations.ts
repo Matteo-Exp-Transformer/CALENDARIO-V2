@@ -327,36 +327,56 @@ export const useUpdateBooking = () => {
   })
 }
 
+export type RestoreBookingInput =
+  | string
+  | {
+      bookingId: string
+      confirmedStart: string
+      confirmedEnd: string
+      desiredTime: string
+    }
+
 // Mutation per ripristinare una prenotazione eliminata
 export const useRestoreBooking = () => {
   const queryClient = useQueryClient()
   const { tenantId } = useTenantContext()
 
   return useMutation({
-    mutationFn: async (bookingId: string) => {
-      const { data: bookingToRestore, error: fetchError } = await (supabase
-        .from('booking_requests') as any)
-        .select('id, confirmed_start, confirmed_end')
-        .eq('id', bookingId)
-        .eq('tenant_id', tenantId!)
-        .single()
+    mutationFn: async (input: RestoreBookingInput) => {
+      const bookingId = typeof input === 'string' ? input : input.bookingId
+      const providedTimes = typeof input === 'string' ? null : input
 
-      if (fetchError) {
-        throw new Error(handleSupabaseError(fetchError))
+      const updatePayload: Record<string, unknown> = {
+        status: 'accepted',
+        cancellation_reason: null,
+        cancelled_at: null,
+        updated_at: new Date().toISOString(),
       }
 
-      if (!bookingToRestore?.confirmed_start || !bookingToRestore?.confirmed_end) {
-        throw new Error('Impossibile reinserire: mancano orario di inizio/fine confermati.')
+      if (providedTimes) {
+        updatePayload.confirmed_start = providedTimes.confirmedStart
+        updatePayload.confirmed_end = providedTimes.confirmedEnd
+        updatePayload.desired_time = providedTimes.desiredTime
+      } else {
+        const { data: bookingToRestore, error: fetchError } = await (supabase
+          .from('booking_requests') as any)
+          .select('id, confirmed_start, confirmed_end')
+          .eq('id', bookingId)
+          .eq('tenant_id', tenantId!)
+          .single()
+
+        if (fetchError) {
+          throw new Error(handleSupabaseError(fetchError))
+        }
+
+        if (!bookingToRestore?.confirmed_start || !bookingToRestore?.confirmed_end) {
+          throw new Error('Impossibile reinserire: mancano orario di inizio/fine confermati.')
+        }
       }
 
       const { data, error } = await (supabase
         .from('booking_requests') as any)
-        .update({
-          status: 'accepted',
-          cancellation_reason: null,
-          cancelled_at: null,
-          updated_at: new Date().toISOString(),
-        } as any)
+        .update(updatePayload as any)
         .eq('id', bookingId)
         .eq('tenant_id', tenantId!)
         .select()

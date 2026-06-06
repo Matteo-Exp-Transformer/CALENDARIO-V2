@@ -92,6 +92,10 @@ tutto il flusso. Questo va testato come comportamento esplicito nella fase succe
   da `desired_time`, fine +3h) senza aprire questo modale. Quindi: vivo per la nuova prenotazione admin,
   non usato per l'accept-da-card. Non rimuovere senza verificare entrambi i percorsi.
 - Refetch periodici e invalidazioni miste possono creare brevi stati non sincronizzati.
+- **Archivio Reinserisci (07-06-26):** su prenotazioni `deleted` **senza** `confirmed_start/end`, il tasto
+  Reinserisci resta visibile e apre `RestoreBookingTimeModal` (orario inizio + fine calcolata +3h via
+  `dateUtils`); Annulla lascia in archivio. Con orari già salvati → conferma breve `BookingDangerActionModal`.
+  `useRestoreBooking` accetta `RestoreBookingInput` (id stringa o payload con slot).
 - `placement` come nome/tavolo/id va chiarito con Servizio per evitare mismatch.
 
 ## 8. Test collegati
@@ -110,7 +114,7 @@ Controtest completato su 4 fronti. **Batch fix 07-06-26 (Matteo):** D1, R1, D4, 
 | D2, U4, U8 | MEDIO | Doppio click accept / conferma danger modal | ✅ `isPending` disabilita card + guard mutate + `confirmDisabled` capienza |
 | D3 | MEDIO | Reinserisci incrementa di nuovo `tenant_usage.bookings_count` | ⬜ FU-046 (fuori batch) |
 | U2, U6 | MEDIO | Annulla modifica non ripristina campi; drawer calendario con dati stale | ⬜ FU-046 |
-| D4, U3, U5, U7 | MEDIO | Reinserisci senza orari; tab switch durante mutation; scroll lock | ✅ D4 UI hint; U3/U5/U7 ⬜ FU-046 |
+| D4, U3, U5, U7 | MEDIO | Reinserisci senza orari; tab switch durante mutation; scroll lock | ✅ D4 modale orario (`RestoreBookingTimeModal` + `RestoreBookingInput`); U3/U5/U7 ⬜ FU-046 |
 | D5, D6, D7, U1, U9, U10 | BASSO | Metadata restore, guard DB assenti, doppio toast, errori UX | ✅ D5 azzera `cancellation_*`; resto ⬜ |
 | L4, L10–L12 | FU | Ospiti 0/negativi/enormi passano hook — validazione DB/form da valutare | ⬜ fuori batch |
 | R2–R4 | MEDIO/BASSO | Bottoni affiancati, padding doppio su 375px | R2 parziale (stack mobile); R3/R4 ⬜ |

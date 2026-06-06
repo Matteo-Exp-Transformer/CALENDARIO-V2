@@ -127,7 +127,7 @@ describe('ArchiveTab — conferme coerenti', () => {
     })
   })
 
-  it('D4: deleted senza orari confermati — niente bottone Reinserisci, hint visibile', async () => {
+  it('deleted senza orari — bottone Reinserisci apre modale orario; annulla resta in archivio', async () => {
     const user = userEvent.setup()
     mockAllBookingsState.data = [{
       id: 'deleted-no-times',
@@ -143,8 +143,56 @@ describe('ArchiveTab — conferme coerenti', () => {
 
     await expandArchiveCard(user, 'Senza Orari')
 
-    expect(screen.queryByRole('button', { name: /reinserisci/i })).not.toBeInTheDocument()
-    expect(screen.getByText(/reinserimento non disponibile/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /reinserisci/i })).toBeInTheDocument()
+    expect(screen.queryByText(/reinserimento non disponibile/i)).not.toBeInTheDocument()
+
+    await clickAndFlush(user, screen.getByRole('button', { name: /reinserisci/i }))
+
+    const dialog = await waitFor(() => screen.getByRole('dialog'))
+    expect(within(dialog).getByRole('heading', { name: /reinserisci nel calendario/i })).toBeInTheDocument()
+    expect(within(dialog).getByLabelText(/orario di inizio/i)).toBeInTheDocument()
+
+    await clickAndFlush(user, within(dialog).getByRole('button', { name: /^Annulla$/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+    expect(mockMutateAsyncRestore).not.toHaveBeenCalled()
+  })
+
+  it('deleted senza orari — conferma orario chiama restore con slot calcolati', async () => {
+    const user = userEvent.setup()
+    mockAllBookingsState.data = [{
+      id: 'deleted-no-times',
+      status: 'deleted',
+      client_name: 'Senza Orari',
+      client_email: 'no-times@test.it',
+      desired_date: '2026-06-10',
+      num_guests: 2,
+      created_at: '2026-06-01T10:00:00Z',
+    }]
+
+    render(<ArchiveTab filter="deleted" sortOrder="booking_date" />, { wrapper })
+
+    await expandArchiveCard(user, 'Senza Orari')
+    await clickAndFlush(user, screen.getByRole('button', { name: /reinserisci/i }))
+
+    const dialog = await waitFor(() => screen.getByRole('dialog'))
+    await clickAndFlush(user, within(dialog).getByRole('button', { name: /^Reinserisci$/i }))
+
+    await waitFor(() => {
+      expect(mockMutateAsyncRestore).toHaveBeenCalledWith(
+        expect.objectContaining({
+          bookingId: 'deleted-no-times',
+          desiredTime: '20:00',
+          confirmedStart: expect.any(String),
+          confirmedEnd: expect.any(String),
+        }),
+      )
+    })
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
   })
 
   it('riporta in attesa apre modale custom e chiama requeue', async () => {

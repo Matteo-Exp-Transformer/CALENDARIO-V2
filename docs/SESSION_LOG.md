@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 07-06-26 | Admin — **Archivio Reinserisci con orario** ✅ **report finale** | [Report](Sessioni%20di%20lavoro/07-06-26/Report-archivio-reinserisci-orario-07-06-26.md) — D4 affinato: bottone sempre visibile; modale orario se mancano slot; validate **463**; 31 test blindatura |
 | 07-06-26 | Docs — **P2/P3 tracciamento Area 2** ✅ **report finale** | [Report](Sessioni%20di%20lavoro/07-06-26/Report-docs-p2-p3-tracciamento-area2-07-06-26.md) — QA R1 CSS-equivalent onesto (FU-043/045); footnote report revisione D2/U4/U8; nessun codice |
 | 07-06-26 | Docs — **P3 footnote report revisione** allineata a batch fix D2/U4/U8 (light) | `Report-revisione-fase-d-e-scoping-fix-07-06-26.md` §3 + R4 — sequenza scoping iniziale → inclusi e chiusi nel batch 07-06-26 |
 | 07-06-26 | Docs — **P2 tracciamento QA R1** (light) | `FOLLOW_UP.md` FU-045/FU-043 + report batch §QA R1 — qualifica CSS-equivalent vs browser reale; FU-043 resta Aperto |

@@ -107,16 +107,17 @@ Fronti previsti:
 
 Stato: **batch fix Fase D 07-06-26** — D1/R1/D4/D5/D2 chiusi; bloccanti ALTO risolti; restano item FU-046.
 
-Test marcati (29 test, verdi):
+Test marcati (31 test, verdi):
 
-- `src/features/booking/hooks/__tests__/useBookingMutations.prenotazioni.adminBlindatura.test.tsx` (16) →
-  accept/reject/soft-delete/restore/requeue/no-show + **race guard pending** (D1) + **restore azzera cancellation_*** (D5) + **LIMIT mutation payload** (L8–L15).
-- `src/features/booking/components/__tests__/prenotazioni.adminBlindatura.test.tsx` (13) → conferme
-  coerenti archivio + **D4 hint reinserisci senza orari** + **R1/D2 modal layout** + LIMIT UI/capienza.
+- `src/features/booking/hooks/__tests__/useBookingMutations.prenotazioni.adminBlindatura.test.tsx` (17) →
+  accept/reject/soft-delete/restore/requeue/no-show + **race guard pending** (D1) + **restore azzera cancellation_*** (D5) + **restore con orario fornito** (D4 affinamento 07-06-26) + **LIMIT mutation payload** (L8–L15).
+- `src/features/booking/components/__tests__/prenotazioni.adminBlindatura.test.tsx` (14) → conferme
+  coerenti archivio + **D4 modale orario reinserisci senza slot salvati** + **R1/D2 modal layout** + LIMIT UI/capienza.
 - `e2e/admin-booking-mgmt.spec.ts` → marcatore E2E (staging, solo Desktop Chrome).
 
-Componente conferma riusabile: `BookingDangerActionModal.tsx` (Elimina, No-show, Reinserisci,
-Riporta in attesa, Rifiuta) — **R1:** `max-h-[90vh]`, area scroll, bottoni `flex-col sm:flex-row`.
+Componente conferma riusabile: `BookingDangerActionModal.tsx` (Elimina, No-show, Reinserisci con orari
+già salvati, Riporta in attesa, Rifiuta) — **R1:** `max-h-[90vh]`, area scroll, bottoni `flex-col sm:flex-row`.
+Modale orario reinserisci: `RestoreBookingTimeModal.tsx` (deleted senza slot confermati).
 
 Fase D — esiti controtest (07-06-26) post-fix batch:
 
