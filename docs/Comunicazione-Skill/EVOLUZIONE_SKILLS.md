@@ -109,6 +109,19 @@ hai imparato un metodo nuovo, propaga gli upgrade strutturali nel template v.0 (
 - Dettaglio sistema didattico (profilo, glossario, roadmap, rubric): `_lavoro/Per matteo/PIANO_SISTEMA_DIDATTICO.md`
   (file PRIVATO gitignored). Memory: `feedback_educare_vocabolario_matteo`.
 
+**7. Controtest = ricerca ATTIVA di rotture, non conferma (metodo, 07-06-26).** Chiudere un'area di
+blindatura **non è «i test sono verdi»** — il verde dimostra solo che ciò che hai pensato di testare
+funziona, non che la sezione è robusta. La chiusura è **cercare attivamente cosa la rompe**: si
+lanciano sub-agent con mandato esplicito di *trovare bug*, guidati dalla domanda **«cosa può rompere
+la sezione e cosa può fare l'utente per romperla?»**. Quattro fronti: flusso dati (sporcalo: nulli,
+doppio click, race, azione su record già in altro stato), flusso utente (rompilo: fuori sequenza,
+navigazione durante mutation, back/refresh), limit test (confini: testi enormi, numeri 0/negativi,
+date limite, liste lunghe, capienza ±1), responsive 375/834/1280. **Un controtest che non ha *provato*
+a rompere nulla non chiude l'area.** Anti-pattern che cura: il *falso PASSA da copertura* («verde =
+blindato»). Scritto in `PLAN_BLINDATURA_<AREA>.md` Fase D + criterio «blindata di prodotto» del
+proseguimento. Candidato template v.0 quando avrà ≥2 occorrenze *eseguite* (oggi 0: Area 2 Admin l'ha
+definito ma la Fase D non è ancora girata).
+
 > 🛑 **PAUSA-RACCOLTA (decisa 29-05-26).** Lo skill system ha avuto molte aggiunte in pochi giorni.
 > **Stop a nuovi meccanismi/regole** finché non si accumulano ~5-10 sessioni di dati con gli
 > strumenti già esistenti (modalità, metriche successo chat, log idee). Il prossimo passo è
@@ -305,6 +318,7 @@ quando i criteri saranno tarati.
 > Una riga per idea. Formato: `GG-MM-AA · [automazione|statistica|tecnica|raffinamento] · idea — perché`.
 > Non cancellare: il senior pota da qui spostando le idee mature nelle milestone.
 
+- 07-06-26 · [tecnica] · **controtest «ROMPI» formalizzato (Playbook §7) + DEBITO propagazione v.0.** Area 2 Admin: deciso con Matteo che la chiusura area = ricerca attiva di rotture (4 fronti: flusso dati/utente/limit/responsive), non «test verdi». Scritto in PLAN Fase D + criterio prodotto del proseguimento. NON propagato a `_skill-system-v0/`: ha 1 sola occorrenza e nemmeno eseguita (Fase D Area 2 ancora da girare) → soglia ≥2-eseguite non raggiunta, tracciato qui invece di propagarlo prematuramente. Anti-pattern curato: falso-PASSA-da-copertura.
 - 29-05-26 · [raffinamento] · creato questo file con M1–M5 + ruolo junior/senior — origine analisi agente revisore skill system v0 + decisione Matteo
 - 29-05-26 · [raffinamento] · mockup HTML multi-stato prima dell'esecutore — Matteo «quasi sempre» per scelte UX; già in PREPARA_PROMPT §1.B; alimenta M1
 - 29-05-26 · [raffinamento] · QA viewport 375/834/1280 obbligatorio per revisore su task UI — proposta Matteo; regola già in TESTING §7 ma bypassata in pratica; vedi PROPOSTE «revisione UI»
