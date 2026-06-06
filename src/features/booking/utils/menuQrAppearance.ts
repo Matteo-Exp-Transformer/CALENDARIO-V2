@@ -1,5 +1,6 @@
 import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
 import type { CarouselItem, MenuQrCode } from '@/types/menu'
+import { DEFAULT_THEME_KEY } from '@/features/public-menu/menuThemes'
 
 /** Ordine pubblico: sequenza `category_filter` del QR; legacy `null` = ordine già da query (`sort_order`). */
 export function orderMenuCategoriesByFilter(
@@ -70,7 +71,7 @@ export function parseMenuQrCodeRow(raw: Record<string, unknown>): MenuQrCode {
     sort_order: typeof raw.sort_order === 'number' ? raw.sort_order : 0,
     created_at: String(raw.created_at),
     updated_at: String(raw.updated_at),
-    theme_key: typeof raw.theme_key === 'string' ? raw.theme_key : 'mediterranean_teal',
+    theme_key: typeof raw.theme_key === 'string' ? raw.theme_key : DEFAULT_THEME_KEY,
     carousel_items: parseCarouselItems(raw.carousel_items),
     category_images: parseCategoryImages(raw.category_images),
     hidden_menu_item_ids: parseHiddenMenuItemIds(raw.hidden_menu_item_ids),

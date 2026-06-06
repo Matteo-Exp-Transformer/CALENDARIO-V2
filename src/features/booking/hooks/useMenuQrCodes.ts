@@ -4,6 +4,7 @@ import { supabasePublic } from '@/lib/supabasePublic'
 import { toast } from 'react-toastify'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { parseMenuQrCodeRow } from '../utils/menuQrAppearance'
+import { DEFAULT_THEME_KEY } from '@/features/public-menu/menuThemes'
 import {
   importCatalogCategoryImagesToQrStorage,
   menuQrStorageSegment,
@@ -60,7 +61,7 @@ export const useSaveMenuQrSettings = () => {
         category_filter: input.category_filter ?? null,
         is_active: input.is_active ?? true,
         sort_order: input.sort_order ?? 0,
-        theme_key: input.theme_key ?? 'mediterranean_teal',
+        theme_key: input.theme_key ?? DEFAULT_THEME_KEY,
         carousel_items: input.carousel_items ?? [],
         category_images: categoryImages,
         hidden_menu_item_ids: input.hidden_menu_item_ids ?? [],
@@ -161,7 +162,7 @@ export const useCreateMenuQrCode = () => {
           category_filter: input.category_filter ?? null,
           is_active: input.is_active ?? true,
           sort_order: input.sort_order ?? 0,
-          theme_key: input.theme_key ?? 'mediterranean_teal',
+          theme_key: input.theme_key ?? DEFAULT_THEME_KEY,
           carousel_items: input.carousel_items ?? [],
           category_images: input.category_images ?? {},
         })

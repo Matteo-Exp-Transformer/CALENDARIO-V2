@@ -1,12 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { supabasePublic } from '@/lib/supabasePublic'
 import { useTenantContext } from '@/contexts/TenantContext'
-import { handleSupabaseError } from '@/lib/supabase'
-import type {
-  MenuQrcodeCategoryOverride,
-  MenuQrcodeCategoryOverrideDraft,
-} from '@/types/menu'
+import type { MenuQrcodeCategoryOverride } from '@/types/menu'
 
 const QUERY_KEY = 'menu-qrcode-categories'
 
@@ -56,59 +52,5 @@ export function useMenuQrcodeCategoriesForQr(menuQrCodeId: string | null) {
       return (data as Record<string, unknown>[]).map(parseOverride)
     },
     enabled: !!tenantId && !!menuQrCodeId,
-  })
-}
-
-/** @deprecated Usare useMenuQrcodeCategoriesForQr */
-export function useMenuQrcodeCategories() {
-  const { tenantId } = useTenantContext()
-  return useQuery({
-    queryKey: [QUERY_KEY, 'admin', tenantId],
-    queryFn: async (): Promise<MenuQrcodeCategoryOverride[]> => {
-      const { data, error } = await (supabase
-        .from('menu_qrcode_categories') as any)
-        .select('*')
-        .eq('tenant_id', tenantId)
-
-      if (error || !data) return []
-      return (data as Record<string, unknown>[]).map(parseOverride)
-    },
-    enabled: !!tenantId,
-  })
-}
-
-export function useUpsertMenuQrcodeCategoriesBatch() {
-  const { tenantId } = useTenantContext()
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async ({
-      menuQrCodeId,
-      rows,
-    }: {
-      menuQrCodeId: string
-      rows: MenuQrcodeCategoryOverrideDraft[]
-    }) => {
-      if (rows.length === 0) return
-
-      const payload = rows.map((row) => ({
-        tenant_id: tenantId,
-        menu_qr_code_id: menuQrCodeId,
-        category_key: row.category_key,
-        title: row.title,
-        description: row.description,
-        icon: row.icon ?? null,
-        updated_at: new Date().toISOString(),
-      }))
-
-      const { error } = await (supabase.from('menu_qrcode_categories') as any).upsert(payload, {
-        onConflict: 'menu_qr_code_id,category_key',
-      })
-
-      if (error) throw new Error(handleSupabaseError(error))
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] })
-    },
   })
 }

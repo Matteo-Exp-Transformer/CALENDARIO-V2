@@ -3,7 +3,6 @@ import { toast } from 'react-toastify'
 import { ImagePlus, Trash2, ChevronUp, ChevronDown, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { Modal } from '@/components/ui/Modal'
-import { useMenuCategories } from '../hooks/useMenuCategories'
 import { MENU_THEMES, type MenuThemeKey } from '@/features/public-menu/menuThemes'
 import type { CarouselItem, MenuItem } from '@/types/menu'
 import type { MenuCategoryRecord } from '../hooks/useMenuCategories'
@@ -20,7 +19,6 @@ import {
   useCarouselPhotoUpload,
 } from '@/features/booking/hooks/useCarouselPhotoUpload'
 import { AdminFieldWithCharCount } from './settings/AdminFieldWithCharCount'
-import { cn } from '@/lib/utils'
 import {
   defaultIconKeyForCategory,
   isMenuQrCategoryIconKey,
@@ -77,89 +75,19 @@ export function MenuQrThemeSection({
 
 const carouselAddPhotoButtonClass = 'gap-1.5 text-xs'
 
-/** Pulsante + anteprima foto sotto l’etichetta card (editor Prenota). */
-export function CarouselAddPhotoBlock({
-  tenantId,
-  menuQrCodeId,
-  draftShortCode,
-  items,
-  onChange,
-}: {
-  tenantId: string
-  menuQrCodeId: string | null
-  draftShortCode: string | null
-  items: CarouselItem[]
-  onChange: (items: CarouselItem[]) => void
-}) {
-  const storageSegment = menuQrStorageSegment(menuQrCodeId, draftShortCode)
-  const { fileRef, uploading, canUpload, handleAddFile, removeAt } = useCarouselPhotoUpload({
-    storagePrefix: storageSegment ? menuQrStoragePrefix(tenantId, storageSegment) : null,
-    items,
-    onChange,
-  })
-
-  return (
-    <div className="flex w-full min-w-0 flex-col gap-2">
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/webp,image/jpeg,image/png,image/avif"
-        className="hidden"
-        onChange={handleAddFile}
-      />
-      <Button
-        variant="outline"
-        size="sm"
-        type="button"
-        disabled={uploading || !canUpload}
-        onClick={() => fileRef.current?.click()}
-        className={cn('self-start', carouselAddPhotoButtonClass)}
-      >
-        <ImagePlus className="h-3.5 w-3.5" />
-        {uploading ? 'Caricamento…' : 'Aggiungi foto'}
-      </Button>
-      {items.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {items.map((item, i) => (
-            <div key={item.image_url} className="relative shrink-0">
-              <img
-                src={item.image_url}
-                alt=""
-                className="h-20 w-28 rounded-lg border border-slate-200 object-cover sm:h-24 sm:w-32"
-              />
-              <button
-                type="button"
-                onClick={() => void removeAt(i)}
-                className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow"
-                aria-label="Rimuovi foto"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
 export function MenuQrCarouselSection({
   tenantId,
   menuQrCodeId,
   draftShortCode,
   items,
   onChange,
-  hideToolbarLabel: _hideToolbarLabel = false,
 }: {
   tenantId: string
   menuQrCodeId: string | null
   draftShortCode: string | null
   items: CarouselItem[]
   onChange: (items: CarouselItem[]) => void
-  /** @deprecated Toolbar label rimossa — placeholder solo sul campo Etichetta. */
-  hideToolbarLabel?: boolean
 }) {
-  void _hideToolbarLabel
   const [slideToRemove, setSlideToRemove] = useState<number | null>(null)
   const storageSegment = menuQrStorageSegment(menuQrCodeId, draftShortCode)
   const { fileRef, uploading, canUpload, handleAddFile } = useCarouselPhotoUpload({
@@ -658,15 +586,4 @@ export function buildCategoryOverrideDrafts(
     }
   }
   return initial
-}
-
-/** @deprecated Usare sezioni controllate nel modale MenuQrModal */
-export function MenuHomepageConfigPanel() {
-  const { data: categories = [] } = useMenuCategories()
-  void categories
-  return (
-    <p className="text-xs text-gray-500">
-      Le impostazioni homepage sono nel modale di ogni Menù QR.
-    </p>
-  )
 }

@@ -69,12 +69,6 @@ export function validateMenuQrSettings(input: {
   return { ok: true }
 }
 
-/** Primo messaggio di errore (stesso ordine di `validateMenuQrSettings`). */
-export function getMenuQrValidationMessage(input: Parameters<typeof validateMenuQrSettings>[0]): string | null {
-  const result = validateMenuQrSettings(input)
-  return result.ok ? null : result.message
-}
-
 export function isMenuQrSettingsValid(input: Parameters<typeof validateMenuQrSettings>[0]): boolean {
   return validateMenuQrSettings(input).ok
 }
