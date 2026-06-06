@@ -90,14 +90,37 @@ Ogni test di blindatura deve avere in testa:
 // Copre: <flusso utente/dati blindato>
 ```
 
-### FASE D — Controtest e chiusura area
+### FASE D — Controtest: ricerca ATTIVA di rotture (non solo "i test passano")
 
-Checklist minima:
+> Principio (deciso da Matteo 07-06-26, vale per TUTTE le aree). La chiusura di un'area non e
+> "i test verdi". E **cercare attivamente cosa puo rompere la sezione**: come orchestratore lanci
+> sub-agent con il mandato esplicito di *trovare bug*, non di confermare che funziona. La domanda
+> guida e: **"cosa puo romperla, e cosa puo fare l'utente per romperla?"**. Un controtest che non
+> ha provato a rompere nulla NON chiude l'area.
 
-- test mirati dell'area verdi;
+I sub-agent di controtest hanno questo mandato (riportano finding, non fixano):
+
+1. **Flusso dati — prova a sporcarlo.** Per ogni azione: lo stato DB finale e quello giusto? Cosa
+   succede con dati mancanti/nulli (orario assente, email vuota, capienza non configurata, tenant
+   senza anagrafica)? Doppio click / azione ripetuta / race tra invalidazioni? Stati intermedi non
+   sincronizzati? L'azione su un record gia in un altro stato (es. accettare una gia accettata)?
+2. **Flusso utente — prova a romperlo da utente.** Click fuori sequenza, modale chiusa a meta,
+   conferma annullata e ri-aperta, navigazione via mentre una mutation gira, back/refresh durante
+   un'azione. Cosa vede l'utente se va storto: errore chiaro o schermata rotta?
+3. **Limit test della sezione.** Spingere i confini: testi lunghissimi, numero ospiti enorme/0/negativo,
+   date limite (mezzanotte, passato, anni avanti), liste molto lunghe (archivio con tante righe),
+   capienza al limite esatto e +1. Cosa fa la UI ai bordi?
+4. **Responsive 375 / 834 / 1280.** Ogni modale/azione nuova: layout che non si rompe, bottoni
+   raggiungibili, niente overflow/sovrapposizioni, console senza errori. I modali di conferma nuovi
+   vanno guardati su tutti e tre.
+
+Checklist minima di chiusura:
+
+- i 4 fronti sopra esercitati da sub-agent con mandato "rompi", finding raccolti e decisi
+  (fix / follow-up / "voluto");
+- test mirati dell'area verdi (inclusi i **limit test** aggiunti);
 - `npm run validate` verde;
-- smoke o Playwright su 375 / 834 / 1280 se l'area ha UI;
-- console senza errori bloccanti;
+- console senza errori bloccanti su 375 / 834 / 1280;
 - doc e test index aggiornati;
 - `PROSEGUIMENTO_MAPPATURA_SKILL.md` aggiornato con stato area;
 - report sessione con esiti e decisioni.
@@ -162,6 +185,68 @@ Area 1 diventa `✅ PROD` solo se:
 
 ---
 
+## 3-bis. Area 2 — Prenotazioni operative
+
+### 3-bis.1 Intervista chiusa con Matteo (06-06-26)
+
+Decisioni (dettaglio in `contesto/ADMIN_PRENOTAZIONI_CONTEXT.md` §5-bis):
+
+- Capienza/fasce/orario passato = **solo avviso, mai blocco**.
+- Stati `pending/accepted/rejected/deleted` + `no_show` **tutti voluti**, non toccare.
+- Archivio = **solo soft-delete** recuperabile per sempre; **nessun hard-delete lato app**
+  (Matteo pulira i record vecchi da DB con criterio temporale futuro).
+- **Conferme da rendere coerenti** (una sola lingua di conferma):
+  - Elimina: tiene la conferma+motivo attuale;
+  - No-show: **aggiungere conferma** (oggi parte al primo click);
+  - Reinserisci / Riporta in attesa: **sostituire `window.confirm()` nativo** con conferma custom;
+  - Rifiuta: **allineare lo stile** al resto (ha gia il box motivo, non aggiungere passaggi).
+
+### 3-bis.2 Stato reale del codice (verificato 06-06-26, codice=verita)
+
+- `AcceptBookingModal` **NON e dead code**: importato/usato da `AdminBookingForm.tsx` (nuova
+  prenotazione admin). L'accept-da-card (`PendingRequestsTab.handleAccept`) NON lo usa: accetta diretto.
+  → Correggere ogni report/context che lo dava per "non cablato".
+- Mutation reali in `useBookingMutations.ts`: `useAcceptBooking`, `useRejectBooking`, `useUpdateBooking`,
+  `useRestoreBooking`, `useRequeueRejectedBooking`, `useMarkNoShow`, `useCancelBooking`.
+- Conferme miste: `window.confirm()` (ArchiveTab restore/requeue), modale custom (cancel,
+  capienza, orario passato), nessuna (no-show, reject diretto).
+
+### 3-bis.3 Inventario file
+
+- `src/features/booking/components/PendingRequestsTab.tsx` — accept/reject da card, avvisi non bloccanti.
+- `src/features/booking/components/ArchiveTab.tsx` — restore/requeue con `confirm()` nativo.
+- `src/features/booking/components/BookingDetailsModal.tsx` — **LOCK strutturale** (cancel, no-show,
+  modifica). Leggere `docs/ADMIN_CLASSIC_SKILL.md` prima di toccare.
+- `src/features/booking/components/AcceptBookingModal.tsx`, `RejectBookingModal.tsx`,
+  `CapacityWarningModal.tsx`, `PastStartTimeWarningModal.tsx`, `BookingRequestCard.tsx`.
+- `src/features/booking/hooks/useBookingMutations.ts` — **LOCK core**.
+
+### 3-bis.4 Test da costruire (marcatore `@admin-blindatura: prenotazioni`)
+
+Scenari minimi:
+
+- accept-da-card su pending → scrive `accepted` + orari + `desired_time`;
+- accept che sfora capienza → mostra warning ma **non blocca** (conferma → mutate);
+- accept su orario passato → mostra warning ma **non blocca**;
+- rifiuta con/senza motivo → `rejected` + `rejection_reason`;
+- elimina → `deleted` + `cancelled_at` + `cancellation_reason` (soft-delete, niente hard-delete);
+- reinserisci (deleted→accepted, richiede `confirmed_start/end`);
+- riporta in attesa (rejected→pending, azzera `rejection_reason`);
+- no-show → `no_show=true`, sparisce dal calendario, resta nel DB;
+- **conferme coerenti**: ogni azione pericolosa passa dalla conferma custom (regressione anti
+  `window.confirm` nativo + no-show senza conferma).
+
+### 3-bis.5 Criterio uscita Area 2
+
+- decisioni intervista registrate (fatto: context §5-bis + skill §6 + questo §3-bis);
+- conferme rese coerenti senza rompere i flussi LOCK;
+- test `@admin-blindatura: prenotazioni` sui flussi sopra, verdi;
+- `npm run validate` verde;
+- doc (context, test index, skill) e `PROSEGUIMENTO_MAPPATURA_SKILL.md` allineati;
+- controtest sub-agent flusso dati + utente/responsive.
+
+---
+
 ## 4. Prompt anti-rottura per sub-agent
 
 Quando si delega un fix:
@@ -189,7 +274,7 @@ Aggiornare a fine area.
 | Area | Stato | Report / note |
 |---|---|---|
 | Shell / ingresso / navigazione globale | 🔶 blindatura avviata | Intervista chiusa; sotto-route, logout guard, fallback header e test unitari avviati |
-| Prenotazioni operative | ⬜ | Da avviare dopo Area 1 |
+| Prenotazioni operative | 🔶 blindatura avviata | Decisioni 06-06-26; conferme + test prenotazioni avviati |
 | Impostazioni / Personalizza Form | ⬜ | Da avviare dopo Prenotazioni o secondo priorita Matteo |
 | Menu admin / magazzino | ⬜ | Da coordinare con Prenota/Menu QR gia blindate |
 | Servizio | ⬜ | Include walk-in e tavoli occupati |

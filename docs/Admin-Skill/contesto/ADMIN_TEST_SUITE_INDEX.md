@@ -103,7 +103,36 @@ Fronti previsti:
 - Service slot override `date_from/date_to`.
 - Analytics booking create fuori periodo ma evento dentro periodo.
 
-## 8. Area 1 — Shell, ingresso, navigazione
+## 8. Area 2 — Prenotazioni operative
+
+Stato: **blindatura avviata** (06-06-26).
+
+Test marcati:
+
+- `src/features/booking/hooks/__tests__/useBookingMutations.prenotazioni.adminBlindatura.test.tsx` →
+  accept/reject/soft-delete/restore/requeue/no-show su `booking_requests`.
+- `src/features/booking/components/__tests__/prenotazioni.adminBlindatura.test.tsx` → conferme
+  coerenti archivio (no `window.confirm`) + `BookingDangerActionModal`.
+- `e2e/admin-booking-mgmt.spec.ts` → marcatore E2E (staging).
+
+Componente conferma riusabile: `BookingDangerActionModal.tsx` (Elimina, No-show, Reinserisci,
+Riporta in attesa, Rifiuta).
+
+Buchi residui:
+
+- E2E Playwright su accept capienza/orario passato (warning non blocco) con dati staging.
+- Test component `PendingRequestsTab` su `CapacityWarningModal` / `PastStartTimeWarningModal`.
+- Controtest responsive 375/834/1280 su modali conferma.
+
+## 9. Area 1 — Shell (aggiornamento decisioni 06-06-26)
+
+Matteo: **Area 1 ✅ PROD solo con E2E browser reali** (non basta solo unit). Strategia test: provare a
+rompere layout responsive e logiche conflittuali, verificare che l'app protegga l'utente.
+
+Debiti chiusi in codice:
+
+- `AdminAuthProvider` — sessione admin condivisa (fix doppio hook).
+- Rimosso percorso `settings` latente sidebar + `restaurantSettingsSignal`.
 
 Stato: **intervista chiusa, blindatura avviata**.
 
@@ -130,12 +159,12 @@ Test marcati o creati:
     `/admin/impostazioni`);
   - `@admin-blindatura: shell-logout` su logout subordinato al guard.
 - `src/pages/__tests__/AdminDashboard.adminRouting.test.tsx` -> `@admin-blindatura: shell-refresh-back`
-  su trigger Impostazioni consumato una sola volta: cambiare tab dopo Impostazioni non deve riaprire
-  la tab Impostazioni.
+  su URL `/admin/prenotazioni` (tab Prenotazioni, non Calendario) e cambio tab via NavItem.
 - `src/config/__tests__/features.test.ts` -> `@admin-blindatura: shell-edition` su QR Menu
   aggiungibile/rimuovibile via override.
-- `src/contexts/__tests__/UnsavedChangesContext.adminBlindatura.test.tsx` ->
-  `@admin-blindatura: shell-dirty-guard`.
+- **Buco:** test dedicato `@admin-blindatura: shell-dirty-guard` su `UnsavedChangesContext` — file
+  `UnsavedChangesContext.adminBlindatura.test.tsx` **non ancora creato** (guard coperto indirettamente
+  da AdminShell routing/logout test).
 - `src/components/layout/__tests__/adminShellTabFlash.test.tsx` ->
   `@admin-blindatura: shell-refresh-back` su **assenza di flash** al cambio tab dashboard e al cambio
   sezione sidebar (la schermata vecchia non riappare per un render intermedio). Regressione del bug

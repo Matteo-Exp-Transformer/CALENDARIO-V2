@@ -42,6 +42,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
+import { AdminAuthProvider } from '@/contexts/AdminAuthContext'
 import { useAdminAuth } from '../useAdminAuth'
 
 function buildChain(result: { data: unknown; error: unknown }) {
@@ -53,7 +54,9 @@ function buildChain(result: { data: unknown; error: unknown }) {
 }
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter>{children}</MemoryRouter>
+  <MemoryRouter>
+    <AdminAuthProvider>{children}</AdminAuthProvider>
+  </MemoryRouter>
 )
 
 describe('useAdminAuth', () => {

@@ -51,6 +51,32 @@
 - `placement`/assegnazioni tavolo sono legate a feature Pro.
 - Unique tavolo+fascia+data+turno protegge collisioni a DB.
 
+## 5-bis. Decisioni intervista Area 2 (chiuse con Matteo 06-06-26)
+
+> Fase A del `PLAN_BLINDATURA_ADMIN.md`. Sono il senso voluto: non vanno "migliorate" d'ufficio.
+
+1. **Capienza/fasce/orario passato = SOLO AVVISO, mai blocco.** Il ristoratore decide sempre, anche
+   in overbooking o su orario gia passato. Il comportamento attuale (`CapacityWarningModal` /
+   `PastStartTimeWarningModal` che lasciano confermare) e VOLUTO. Non introdurre blocchi assoluti.
+2. **Stati prenotazione tutti VOLUTI, non toccare:** `pending`, `accepted`, `rejected`, `deleted`
+   + flag `no_show`. Nessuna "pulizia" di stati durante la blindatura.
+3. **Archivio = SOLO soft-delete, recuperabile per sempre.** Eliminare scrive `status='deleted'`
+   (+`cancelled_at`, `cancellation_reason`), la riga resta nel DB e si reinserisce dall'archivio.
+   **Nessun "elimina definitivo" lato app** — la pulizia dei record vecchi la fara Matteo da DB in
+   futuro (criterio temporale da definire). Non aggiungere hard-delete nell'UI.
+4. **Conferme da rendere COERENTI** (oggi sono miste: popup nativo del browser in archivio, conferma
+   custom su Elimina, nessuna conferma su No-show, box-motivo diretto su Rifiuta). Il senso voluto e
+   **una sola lingua di conferma** in tutta l'area, allineata al resto dell'app:
+   - **Elimina** — gia con conferma+motivo (`showCancelConfirm`): tenere.
+   - **No-show** — oggi `mutate` al primo click: **aggiungere conferma** (azione che marca il cliente).
+   - **Reinserisci / Riporta in attesa** — oggi `window.confirm()` nativo: **sostituire** con la
+     conferma custom coerente con le altre.
+   - **Rifiuta** — ha gia il box motivo: **allinearne lo stile** alle altre conferme, non aggiungere
+     un passaggio in piu.
+   > Questo e un fronte di blindatura prodotto (coerenza UI + azioni pericolose), marcatore
+   > `@admin-blindatura: prenotazioni`. Tocca file LOCK (`BookingDetailsModal`): leggere
+   > `docs/ADMIN_CLASSIC_SKILL.md` prima di modificare.
+
 ## 6. Email e side effect
 
 Email/notification sono accessorie rispetto alla mutazione booking: possono fallire senza bloccare
@@ -58,7 +84,13 @@ tutto il flusso. Questo va testato come comportamento esplicito nella fase succe
 
 ## 7. Codice residuo / rischio
 
-- `AcceptBookingModal` esiste ma non risulta cablato nel flusso attuale.
+- **Conferme (aggiornato 06-06-26):** `BookingDangerActionModal` unifica Elimina, No-show, Reinserisci,
+  Riporta in attesa e Rifiuta. Archivio non usa più `window.confirm()` nativo.
+- **`AcceptBookingModal` E CABLATO (correzione 06-06-26, codice=verita).** I report storici lo davano
+  per "non cablato/dead code": **falso**. E importato e usato da `AdminBookingForm.tsx`. Il flusso
+  pending invece accetta **direttamente dalla card** (`PendingRequestsTab.handleAccept`, deriva orario
+  da `desired_time`, fine +3h) senza aprire questo modale. Quindi: vivo per la nuova prenotazione admin,
+  non usato per l'accept-da-card. Non rimuovere senza verificare entrambi i percorsi.
 - Refetch periodici e invalidazioni miste possono creare brevi stati non sincronizzati.
 - `placement` come nome/tavolo/id va chiarito con Servizio per evitare mismatch.
 

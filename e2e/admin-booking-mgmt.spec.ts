@@ -1,4 +1,7 @@
 /**
+ * // @admin-blindatura: prenotazioni
+ * // Copre: gestione prenotazioni admin — accept/reject da dashboard (staging).
+ *
  * Pre-requisiti staging:
  *   E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD → admin staging
  *   DB staging deve avere almeno una prenotazione in stato "pending"

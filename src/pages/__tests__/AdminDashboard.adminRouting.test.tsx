@@ -90,28 +90,35 @@ describe('AdminDashboard routing tab', () => {
     mockUseBlocker.mockReturnValue({ state: 'unblocked' })
   })
 
-  it('consuma il segnale Impostazioni una sola volta e non riapre la tab dopo cambio tab', async () => {
+  it('apre la tab Prenotazioni dall’URL /admin/prenotazioni', async () => {
     // @admin-blindatura: shell-refresh-back
-    // Copre: il trigger sidebar Impostazioni non deve rieseguire dopo che l'utente cambia tab.
+    // Copre: refresh/back su tab dashboard — URL prenotazioni non ricade su Calendario.
+    render(
+      <MemoryRouter initialEntries={['/admin/prenotazioni']}>
+        <AdminDashboard />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByTestId('tab-pending')).toBeInTheDocument()
+    expect(screen.queryByTestId('tab-calendar')).not.toBeInTheDocument()
+  })
+
+  it('cambia tab via NavItem e mostra Archivio', async () => {
+    // @admin-blindatura: shell-refresh-back
     const user = userEvent.setup()
 
     render(
       <MemoryRouter initialEntries={['/admin/calendario']}>
-        <AdminDashboard restaurantSettingsSignal={1} />
+        <AdminDashboard />
       </MemoryRouter>,
     )
 
-    await waitFor(() => expect(mockConfirmNavigation).toHaveBeenCalledTimes(1))
-    expect(await screen.findByTestId('tab-settings')).toBeInTheDocument()
+    expect(await screen.findByTestId('tab-calendar')).toBeInTheDocument()
 
     await act(async () => {
-      await user.click(screen.getByRole('button', { name: /^Prenotazioni$/i }))
-    })
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0))
+      await user.click(screen.getByRole('button', { name: /^Archivio$/i }))
     })
 
-    expect(screen.getByTestId('tab-pending')).toBeInTheDocument()
-    expect(screen.queryByTestId('tab-settings')).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.getByTestId('tab-archive')).toBeInTheDocument())
   })
 })

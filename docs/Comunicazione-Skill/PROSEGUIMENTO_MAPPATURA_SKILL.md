@@ -89,9 +89,14 @@ pattern, senza ridiscutere le regole già decise.
   **admin e UI cliente** (niente configurato-ma-non-mostrato, niente mostrato-ma-non-configurabile);
   (b) **zero dati mock/hardcoded/placeholder** che fingono dati veri — i fallback vuoti sono neutri e
   decisi con Matteo; nessun dato di azienda specifica (verificato anche su PROD read-only); (c) **zero
-  codice morto** (rami irraggiungibili dall'UI rimossi); (d) **controtest sub-agent** che esercita
-  **flusso dati** (ogni campo admin salvato → mostrato corretto, casi limite) **e flusso utente +
-  responsive** (375/834/1280, link/console, layout che non si rompe) cercando bug residui.
+  codice morto** (rami irraggiungibili dall'UI rimossi); (d) **controtest sub-agent con mandato
+  «ROMPI», non «conferma»** (chiarito 07-06-26): la domanda guida è *«cosa può rompere la sezione e
+  cosa può fare l'utente per romperla?»*. Quattro fronti — **flusso dati** (stato DB giusto? dati
+  mancanti/nulli, doppio click, race invalidazioni, azione su record già in altro stato), **flusso
+  utente** (click fuori sequenza, modale a metà, navigazione durante una mutation, back/refresh),
+  **limit test** (testi lunghissimi, numeri 0/negativi/enormi, date limite, liste lunghe, capienza al
+  bordo ±1) e **responsive 375/834/1280** (layout/console/overflow). Un controtest che non ha *provato*
+  a rompere nulla NON chiude l'area. Procedura operativa: `PLAN_BLINDATURA_<AREA>.md` Fase D.
 
 > **Procedura di blindatura di prodotto:** la esegue un **orchestratore Opus** che intervista Matteo
 > sul senso (Fase A), pulisce codice morto (B), allinea admin↔UI e mock/fallback (C), fa **controtestare
@@ -111,14 +116,14 @@ pattern, senza ridiscutere le regole già decise.
 | **Pagina Prenota** | ✅ | Blindata 04-06-26: mappata + flusso scritto (commit `e66c0ae`, `fad207f`), test mirati limiti testo verdi, verifica sub-agent reale **PASSA**. Limit/audit test con sub-agent: corretti fallback pubblici su sottotab vuote, card vuote, caroselli senza foto, `MenuSelection` legacy, brand hardcoded, orari pubblici default, preset built-in e config nuovo tenant. Cartella `docs/Prenota-Skill/`. |
 | **Menu QR pubblico** | ✅ DOC · ✅ PROD | Mappata 06-06-26 (`a22108c`), DOC blindata (`2e6ecac`). **Blindatura di PRODOTTO completata 06-06-26** (orchestratore Opus, plan `PLAN_BLINDATURA_MENU_QR.md`): rimosso codice morto preset (pagina/route/rami/tipi + colonne DB via migrazione `043`, verificato 0 righe non-`a_la_carte` su PROD+TEST); FU-MQR-1 chiuso (cap titolo 30 / descrizione 70 + test); decisi i fallback (eyebrow vuota = niente, nome locale = «Menu», footer data/ora = voluto); aggiunto `line-clamp-2` difensivo ai titoli card (controtest responsive). Controtest sub-agent flusso dati + utente/responsive 375/834/1280: nessun bug bloccante. `npm run validate` verde (419 test). Report: `docs/Menu-QR-Skill/REPORT_BLINDATURA_06-06-26.md`. Nuovo follow-up: **FU-MQR-2** (ordine piatti per-QR). |
 | **Tab Menu admin (magazzino)** | ⬜ | `per-ui-design-skill/MENU_ADMIN_CONTEXT.md`. |
-| **Admin shell + pagine** | 🔶 | Prima mappa documentale creata in `docs/Admin-Skill/` (entry + 11 context: shell, flussi, dati, prenotazioni, menu magazzino, settings, servizio, CRM, home/analytics, conflitti, test index). **Piano operativo creato:** `docs/Admin-Skill/PLAN_BLINDATURA_ADMIN.md`. **Area 1 Shell intervista chiusa 06-06-26 e blindatura avviata:** staff/admin stesso accesso; Classic senza sidebar; Pro/Enterprise con sidebar e feature modulabili; logout dirty bloccato dal guard; fallback header neutro; Home rispetta `features.home`; refresh/back migliorati con sotto-route per sezioni shell e tab dashboard (`/admin/calendario`, `/admin/prenotazioni`, `/admin/archivio`, `/admin/menu`, `/admin/impostazioni`). Test `@admin-blindatura: shell-*` avviati con unitari + marcatori E2E. Restano controtest E2E reali e poi Area 2 Prenotazioni operative. |
+| **Admin shell + pagine** | 🔶 | **Area 1 Shell:** intervista chiusa + fix flash + `AdminAuthProvider` (debito doppio `useAdminAuth` risolto, autorizzato) + rimosso settings latente sidebar; test `shell-*` verdi. Resta E2E reale per ✅ PROD (debito #1). **Area 2 Prenotazioni: intervista chiusa 06-06-26 + lavoro prodotto fatto 07-06-26** — `BookingDangerActionModal` unifica le conferme (Elimina/No-show/Reinserisci/Riporta/Rifiuta), tolto `window.confirm()` nativo archivio; test `@admin-blindatura: prenotazioni` (13, verdi); **revisione senior 07-06-26: validate verde 441 test, LOCK booking integri, refactor auth autorizzato**. **Manca solo Fase D** (controtest "ROMPI" + limit test) per chiudere Area 2 a ✅. Report: `docs/Sessioni di lavoro/07-06-26/Report-blindatura-admin-area2-conferme.md`. |
 | **Database** | ⬜ | `Database-Skill/`. Valutare se il pattern senso/flusso calza (è infrastruttura, non UI). |
 | **Card richiesta admin** | ⬜ | `per-ui-design-skill/BOOKING_REQUEST_CARD_CONTEXT.md` (area Prenotazioni admin). |
 
-**Ordine consigliato:** Prenota ✅ + Menu QR ✅ (pattern validato su 2 aree). **Prossima area:**
-Admin Area 1 — completare controtest E2E shell se disponibili, poi Area 2 Prenotazioni operative
-(`PLAN_BLINDATURA_ADMIN.md` §3-4), una sola area alla volta. File leggeri e verificati battono tanti
-file fatti in fretta.
+**Ordine consigliato:** Prenota ✅ + Menu QR ✅. **Prossimo passo Admin:** chiudere **Area 2 con la
+Fase D** (controtest a mandato "ROMPI" + limit test — prompt orchestratore pronto, vedi report
+07-06-26), poi Area 3 Settings. Debiti Area 1 da chiudere prima del ✅ PROD finale: E2E reali shell
+(#1). Una sola area alla volta. File leggeri e verificati battono tanti file fatti in fretta.
 
 > **Blindato il routing per Claude Code (06-06-26, commit `2e6ecac`).** La verifica sub-agent di Menu
 > QR ha scoperto che `.claude/CLAUDE.md` — la porta che un agente Claude Code carica in automatico —

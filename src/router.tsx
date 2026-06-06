@@ -5,13 +5,16 @@ import { AdminShell } from './components/layout/AdminShell'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage'
 import { InvitePage } from './pages/InvitePage'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { AdminAuthProvider } from './contexts/AdminAuthContext'
 import { TenantProvider } from './contexts/TenantContext'
 import { PublicMenuPage } from './pages/PublicMenuPage'
 import { PublicMenuCategoryPage } from './pages/PublicMenuCategoryPage'
 
 const RootLayout = () => (
   <TenantProvider>
-    <Outlet />
+    <AdminAuthProvider>
+      <Outlet />
+    </AdminAuthProvider>
   </TenantProvider>
 )
 

@@ -10,15 +10,16 @@
 |---|---|---|
 | Shell | Logout passa da unsaved guard | deciso/fix Area 1 |
 | Shell | `features.home` governa Home iniziale anche se sidebar attiva | deciso/fix Area 1 |
-| Shell | action `settings` presente ma voce sidebar mancante | percorso latente |
+| Shell | action `settings` latente in sidebar | **RIMOSSO 06-06-26** — codice morto; Impostazioni resta solo tab dashboard |
+| Shell | doppio `useAdminAuth` (ProtectedRoute + shell) | **CHIUSO 06-06-26** — `AdminAuthProvider` unico |
 | Header admin | fallback neutro `Sistema Gestionale Prenotazioni` se manca nome ristorante | deciso/fix Area 1 |
 | Ruoli | admin/staff senza permessi distinti nel codice | voluto per ora |
 | Settings | quali sezioni staff puo modificare | senso da intervistare |
 
 ## 2. Codice residuo / non cablato
 
-- `AcceptBookingModal` esiste ma il flusso pending attuale accetta direttamente dalla card.
-- `runSidebarAction({ type: 'settings' })` gestisce impostazioni sidebar, ma non c'e voce sidebar.
+- ~~`runSidebarAction({ type: 'settings' })`~~ rimosso 06-06-26 (nessuna voce sidebar; tab Impostazioni solo da dashboard).
+- `AcceptBookingModal` è usato da `AdminBookingForm` (nuova prenotazione admin); il flusso pending accetta dalla card senza modale.
 - `useShiftBriefing` ha TODO su join tavoli/sale: briefing oggi non mostra sala/tavolo.
 
 ## 3. Rischi data flow
@@ -57,9 +58,9 @@ Da distinguere:
 
 ## 7. Priorita futura test/blindatura
 
-0. Shell/ingresso/navigazione globale: controtest E2E su sotto-route, back/refresh, logout dirty con
-   handler reale.
-1. Accetta/rifiuta/cancella/ripristina prenotazione.
+0. Shell/ingresso/navigazione globale: **E2E reali obbligatori per ✅ PROD Area 1** (decisione Matteo
+   06-06-26); controtest attivo su responsive/logiche conflittuali. Unit `shell-*` verdi + E2E staging.
+1. Accetta/rifiuta/cancella/ripristina prenotazione — **test `@admin-blindatura: prenotazioni` avviati**.
 2. Nuova prenotazione admin e conflitti capienza/fasce.
 3. Walk-in + tavolo occupato.
 4. Rename/delete categoria menu.

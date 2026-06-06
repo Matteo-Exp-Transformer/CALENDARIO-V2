@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useAllBookings } from '../hooks/useBookingQueries'
 import { useRestoreBooking, useRequeueRejectedBooking } from '../hooks/useBookingMutations'
+import { BookingDangerActionModal } from './BookingDangerActionModal'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import {
@@ -546,26 +547,39 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar, filter
   const { data: allBookings, isLoading, error } = useAllBookings()
   const restoreBooking = useRestoreBooking()
   const requeueRejectedBooking = useRequeueRejectedBooking()
+  const [pendingArchiveAction, setPendingArchiveAction] = useState<
+    { type: 'restore' | 'requeue'; bookingId: string } | null
+  >(null)
 
-  const handleRestore = async (bookingId: string) => {
-    if (!confirm('Sei sicuro di voler reinserire questa prenotazione?')) return
+  const handleRestore = (bookingId: string) => {
+    setPendingArchiveAction({ type: 'restore', bookingId })
+  }
 
+  const handleRequeueToPending = (bookingId: string) => {
+    setPendingArchiveAction({ type: 'requeue', bookingId })
+  }
+
+  const confirmArchiveAction = async () => {
+    if (!pendingArchiveAction) return
+    const { type, bookingId } = pendingArchiveAction
     try {
-      await restoreBooking.mutateAsync(bookingId)
-    } catch (error) {
-      console.error('Error restoring booking:', error)
+      if (type === 'restore') {
+        await restoreBooking.mutateAsync(bookingId)
+      } else {
+        await requeueRejectedBooking.mutateAsync(bookingId)
+      }
+      setPendingArchiveAction(null)
+    } catch (err) {
+      console.error('Error applying archive action:', err)
     }
   }
 
-  const handleRequeueToPending = async (bookingId: string) => {
-    if (!confirm('Riportare questa prenotazione tra le richieste in attesa?')) return
-
-    try {
-      await requeueRejectedBooking.mutateAsync(bookingId)
-    } catch (error) {
-      console.error('Error requeueing rejected booking:', error)
-    }
-  }
+  const archiveConfirmLoading =
+    pendingArchiveAction?.type === 'restore'
+      ? restoreBooking.isPending
+      : pendingArchiveAction?.type === 'requeue'
+        ? requeueRejectedBooking.isPending
+        : false
 
   const filteredBookings = React.useMemo(() => {
     if (!allBookings) return []
@@ -671,6 +685,29 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar, filter
           </div>
         )}
       </div>
+
+      <BookingDangerActionModal
+        isOpen={pendingArchiveAction?.type === 'restore'}
+        onClose={() => setPendingArchiveAction(null)}
+        onConfirm={() => void confirmArchiveAction()}
+        title="Reinserisci prenotazione"
+        message="Sei sicuro di voler reinserire questa prenotazione nel calendario?"
+        detail="La prenotazione tornerà visibile tra le confermate, se ha orari validi."
+        confirmLabel={archiveConfirmLoading ? 'Reinserimento…' : 'Reinserisci'}
+        variant="warning"
+        isLoading={archiveConfirmLoading}
+      />
+      <BookingDangerActionModal
+        isOpen={pendingArchiveAction?.type === 'requeue'}
+        onClose={() => setPendingArchiveAction(null)}
+        onConfirm={() => void confirmArchiveAction()}
+        title="Riporta in attesa"
+        message="Riportare questa prenotazione tra le richieste in attesa?"
+        detail="Il motivo di rifiuto verrà azzerato e la richiesta comparirà di nuovo in Prenotazioni."
+        confirmLabel={archiveConfirmLoading ? 'Salvataggio…' : 'Riporta in attesa'}
+        variant="warning"
+        isLoading={archiveConfirmLoading}
+      />
     </div>
   )
 }
