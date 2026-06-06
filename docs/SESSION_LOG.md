@@ -13,6 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 06-06-26 | Menu QR — **controverifica prod-ready cliente-nuovo** ✅ | [Report](Sessioni%20di%20lavoro/06-06-26/Report-controverifica-menu-qr-prod-ready-06-06-26.md) — 3 sub-agent read-only + orchestratore; codice QR pulito (fix QR-1 `DEFAULT_THEME_KEY` + rimossi 6 export morti, −152 righe); **dati bonificati PROD+TEST** (carosello spazzatura, `restaurant_name` «Matteo Cavallaro», refuso «Secondi piattie»); validate **419**; merge `main`; **FU-MQR-3** |
+| 06-06-26 | Admin — **mappatura completa area `/admin`** 🔶 doc | [Report](Sessioni%20di%20lavoro/06-06-26/Report-mappatura-admin-area-06-06-26.md) — nuova `docs/Admin-Skill/` (entry + 11 context); sub-agent read-only; controverifica doc PASS dopo route azioni pericolose; nessun codice/test |
 | 05-06-26 | Hook — **pre-commit cold-check riattivato** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-hook-precommit-riattivazione-husky-05-06-26.md) — `core.hooksPath=.husky`; shebang `.husky/pre-commit`; test runtime cold-check OK; senior aggiornato in EVOLUZIONE |
 | 05-06-26 | Prepara-prompt — **ciclo centratura card/carosello** (chiusura + controverifica) | [Report](Sessioni%20di%20lavoro/05-06-26/Report-prepara-prompt-ciclo-centratura-card-05-06-26.md) — hook layout OK; hook fine-sessione Cursor OK (v6); **FU-038–041**; validate **412** |
 | 05-06-26 | Prenota — **revisione centratura card/carosello** ✅ **Approva con riserve** | [Report](Sessioni%20di%20lavoro/05-06-26/Report-revisione-prenota-centratura-card-carosello-05-06-26.md) — Verifica Profilo; validate **412**; QA Playwright `trattoria-da-tommaso`; slug `test` assente; C1/C3 non coperti |

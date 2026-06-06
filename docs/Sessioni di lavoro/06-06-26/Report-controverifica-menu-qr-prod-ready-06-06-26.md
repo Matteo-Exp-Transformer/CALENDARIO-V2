@@ -111,6 +111,31 @@ coerenza admin→pubblico confermata, dati PROD e TEST bonificati da spazzatura 
 branch `audit/menu-qr-prod-ready` validato; bonifiche dati già applicate sui DB (non versionate, sono
 dati).
 
+## 9-bis. File toccati (riepilogo)
+
+**Codice** (commit `848620a`): `src/features/booking/utils/menuQrAppearance.ts`,
+`src/features/booking/hooks/useMenuQrCodes.ts` (fix QR-1) · `src/features/booking/hooks/useMenuQrcodeCategories.ts`,
+`src/features/booking/utils/menuQrValidation.ts`, `src/features/booking/components/MenuHomepageConfigPanel.tsx`
+(rimozione codice morto).
+**Doc** (commit `355e921`): questo report · `docs/Menu-QR-Skill/MENU_QR_SKILL.md` (FU-MQR-3) ·
+`docs/Sessioni di lavoro/README.md`. + riga in `docs/SESSION_LOG.md` (chiusura).
+**Dati** (non versionati): UPDATE su PROD `rwuxgvld` e TEST `docnnernvp` (vedi §5).
+**Branch**: `audit/menu-qr-prod-ready` → merge ff in `env/test` + `main`, push origin, branch cancellato.
+
+## 10-bis. Dati comunicazione
+
+| Frase / richiesta di Matteo | Effetto sul lavoro |
+|---|---|
+| «sii approfondito… controlla documenti di contesto in skill system e report» | Lettura catena skill + report blindatura gemello prima di agire. |
+| «tu agisci come revisore del lavoro dei sub agent… tu rimarrai orchestrator» | 3 sub-agent read-only; ogni finding riverificato dal parent prima del fix. |
+| «non ci devono essere elementi di test o di altre aziende hardcodate» | Obiettivo-guida: separato audit codice (pulito) da audit dati (vero rischio). |
+| «se hai dubbi fammi domande prima di iniziare» | 3 domande di scope + 2 domande su bonifica TEST/PROD prima di scrivere. |
+| «al momento non clienti attivi su prod. possiamo modificarlo» | Sbloccata la bonifica dati PROD (altrimenti solo lista). |
+| «sistemiamo gli export e poi fai commit push e merge con main» | Rimozione 6 export morti + 2 commit + merge `main`. |
+
+Vocabolario: nessun termine nuovo coniato. Tono utente nelle risposte: per flussi concreti
+(«chi scansiona il QR vede…»), non nomi-file isolati.
+
 ## 11. Domande di chiusura
 
 ❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.
