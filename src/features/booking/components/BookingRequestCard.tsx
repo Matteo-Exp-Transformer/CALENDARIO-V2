@@ -38,6 +38,8 @@ interface BookingRequestCardProps {
   booking: BookingRequest
   onAccept: (booking: BookingRequest) => void
   onReject: (booking: BookingRequest) => void
+  acceptDisabled?: boolean
+  rejectDisabled?: boolean
 }
 
 /** Badge digest allineato ad ArchiveTab / ArchiveBookingCard */
@@ -72,6 +74,8 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
   booking,
   onAccept,
   onReject,
+  acceptDisabled = false,
+  rejectDisabled = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
@@ -409,15 +413,17 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
             <button
               type="button"
               onClick={() => onAccept(booking)}
-              className="flex min-h-[50px] flex-1 items-center justify-center gap-2 rounded-lg px-4 py-3 text-[1em] font-medium text-white shadow-sm transition-all duration-200 active:scale-95 bg-[var(--color-success)] hover:bg-[#059669] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-success)] focus-visible:ring-offset-2"
+              disabled={acceptDisabled}
+              className="flex min-h-[50px] flex-1 items-center justify-center gap-2 rounded-lg px-4 py-3 text-[1em] font-medium text-white shadow-sm transition-all duration-200 active:scale-95 bg-[var(--color-success)] hover:bg-[#059669] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-success)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <CheckCircle className="h-6 w-6" />
-              Accetta Prenotazione
+              {acceptDisabled ? 'Accettazione…' : 'Accetta Prenotazione'}
             </button>
             <button
               type="button"
               onClick={() => onReject(booking)}
-              className="booking-request-reject-booking-btn flex min-h-[50px] flex-1 items-center justify-center gap-2 rounded-lg px-4 py-3 text-[1em] font-semibold shadow-sm transition-colors duration-200 active:scale-[0.98] focus:outline-none"
+              disabled={rejectDisabled}
+              className="booking-request-reject-booking-btn flex min-h-[50px] flex-1 items-center justify-center gap-2 rounded-lg px-4 py-3 text-[1em] font-semibold shadow-sm transition-colors duration-200 active:scale-[0.98] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             >
               <XCircle className="h-6 w-6" />
               Rifiuta

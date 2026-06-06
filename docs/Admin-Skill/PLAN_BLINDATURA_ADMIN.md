@@ -274,7 +274,7 @@ Aggiornare a fine area.
 | Area | Stato | Report / note |
 |---|---|---|
 | Shell / ingresso / navigazione globale | 🔶 blindatura avviata | Intervista chiusa; sotto-route, logout guard, fallback header e test unitari avviati |
-| Prenotazioni operative | 🔶 blindatura avviata | Decisioni 06-06-26; conferme + test prenotazioni avviati |
+| Prenotazioni operative | 🔶 Fase D completata | Conferme coerenti + 24 test `@admin-blindatura: prenotazioni` verdi; controtest 07-06-26: D1 ALTO race pending/accepted, R1 ALTO responsive 375px, 16 finding MEDIO/BASSO — fix in attesa Matteo |
 | Impostazioni / Personalizza Form | ⬜ | Da avviare dopo Prenotazioni o secondo priorita Matteo |
 | Menu admin / magazzino | ⬜ | Da coordinare con Prenota/Menu QR gia blindate |
 | Servizio | ⬜ | Include walk-in e tavoli occupati |

@@ -105,24 +105,40 @@ Fronti previsti:
 
 ## 8. Area 2 — Prenotazioni operative
 
-Stato: **blindatura avviata** (06-06-26).
+Stato: **Fase D completata 07-06-26** — finding raccolti, fix in attesa decisione Matteo.
 
-Test marcati:
+Test marcati (24 test, verdi):
 
-- `src/features/booking/hooks/__tests__/useBookingMutations.prenotazioni.adminBlindatura.test.tsx` →
-  accept/reject/soft-delete/restore/requeue/no-show su `booking_requests`.
-- `src/features/booking/components/__tests__/prenotazioni.adminBlindatura.test.tsx` → conferme
-  coerenti archivio (no `window.confirm`) + `BookingDangerActionModal`.
-- `e2e/admin-booking-mgmt.spec.ts` → marcatore E2E (staging).
+- `src/features/booking/hooks/__tests__/useBookingMutations.prenotazioni.adminBlindatura.test.tsx` (14) →
+  accept/reject/soft-delete/restore/requeue/no-show + **LIMIT mutation payload** (L8–L15: testi lunghi,
+  ospiti 0/negativi/enormi, date mezzanotte/passato/+10 anni).
+- `src/features/booking/components/__tests__/prenotazioni.adminBlindatura.test.tsx` (10) → conferme
+  coerenti archivio (no `window.confirm`) + `BookingDangerActionModal` + **LIMIT UI archivio** (L1–L5:
+  testi lunghi, ospiti anomali, 200 card) + **LIMIT capienza** (L6–L7: bordo esatto e +1).
+- `e2e/admin-booking-mgmt.spec.ts` → marcatore E2E (staging, solo Desktop Chrome).
 
 Componente conferma riusabile: `BookingDangerActionModal.tsx` (Elimina, No-show, Reinserisci,
 Riporta in attesa, Rifiuta).
 
-Buchi residui:
+Fase D — esiti controtest (07-06-26):
 
+| Fronte | Esito | Finding principali |
+|---|---|---|
+| Flusso dati | 7 finding | **D1 ALTO** race pending→accepted sovrascritto; D2/D3 MEDIO doppio accept email + contatore usage |
+| Flusso utente | 10 finding | **U6** drawer stale; U2 annulla modifica; U3/U4/U5/U7/U8 doppio submit / tab unmount / scroll |
+| Limit test | 15 test aggiunti | L4/L10–L12 FU validazione ospiti; L14 FU integrazione PastStartTimeWarningModal |
+| Responsive | analisi statica | **R1 ALTO** 375px bottoni fuori viewport con textarea; R2 MEDIO bottoni affiancati |
+
+act() warning risolti in `prenotazioni.adminBlindatura.test.tsx` (ArchiveTab expand/modale).
+
+Buchi residui (post-Fase D):
+
+- Fix prodotto su finding D1, R1, U2, U6 (priorità — decisione Matteo).
 - E2E Playwright su accept capienza/orario passato (warning non blocco) con dati staging.
+- E2E responsive 375/834/1280 su modali conferma (E1–E5 suggeriti dal sub-agent responsive).
 - Test component `PendingRequestsTab` su `CapacityWarningModal` / `PastStartTimeWarningModal`.
-- Controtest responsive 375/834/1280 su modali conferma.
+- Test `BookingDetailsModal` — annulla modifica, no doppio toast, drawer stale.
+- Test email fallita non blocca mutation (§6 `ADMIN_PRENOTAZIONI_CONTEXT.md`).
 
 ## 9. Area 1 — Shell (aggiornamento decisioni 06-06-26)
 

@@ -106,9 +106,10 @@ export const BookingDangerActionModal: React.FC<BookingDangerActionModalProps> =
         aria-hidden
       />
       <div
-        className="relative z-[1] mx-4 w-full max-w-lg rounded-2xl border-2 border-[var(--color-border-strong)] bg-[var(--color-surface)] p-8 shadow-2xl"
+        className="relative z-[1] mx-4 flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border-2 border-[var(--color-border-strong)] bg-[var(--color-surface)] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="overflow-y-auto p-5 sm:p-8">
         <div className="mb-6 flex items-center gap-4 border-b-2 border-[var(--color-border)] pb-4">
           <div
             className={cn(
@@ -157,13 +158,14 @@ export const BookingDangerActionModal: React.FC<BookingDangerActionModalProps> =
             />
           </div>
         ) : null}
+        </div>
 
-        <div className="flex gap-4 border-t-2 border-[var(--color-border)] pt-4">
+        <div className="flex shrink-0 flex-col gap-3 border-t-2 border-[var(--color-border)] p-5 pt-4 sm:flex-row sm:gap-4 sm:px-8 sm:pb-8">
           <button
             type="button"
             onClick={onClose}
             disabled={isLoading}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-green-600 px-6 py-4 text-lg font-bold text-white transition-colors hover:bg-green-700 disabled:opacity-50"
+            className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-green-600 px-6 py-4 text-lg font-bold text-white transition-colors hover:bg-green-700 disabled:opacity-50"
           >
             <X className="h-5 w-5" aria-hidden />
             {cancelLabel}
@@ -173,7 +175,7 @@ export const BookingDangerActionModal: React.FC<BookingDangerActionModalProps> =
             onClick={handleConfirm}
             disabled={isLoading}
             className={cn(
-              'flex flex-1 items-center justify-center gap-2 rounded-xl px-6 py-4 text-lg font-bold text-white transition-colors disabled:opacity-50',
+              'flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl px-6 py-4 text-lg font-bold text-white transition-colors disabled:opacity-50',
               styles.confirmBg,
               styles.confirmHover,
             )}

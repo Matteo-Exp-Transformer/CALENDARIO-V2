@@ -377,19 +377,25 @@ const ArchiveBookingCard: React.FC<ArchiveBookingCardProps> = ({
 
           {/* Pulsante Reinserisci — solo eliminate (torna accepted in calendario se ha slot confermati) */}
           {booking.status === 'deleted' && onRestore && (
-            <div className="flex gap-2 md:gap-4 pt-3 md:pt-4 border-t border-[var(--color-border)] mt-4 md:mt-6">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onRestore(booking.id)
-                }}
-                style={{ backgroundColor: '#0891b2', color: 'white' }}
-                className="flex-1 flex items-center justify-center gap-2 px-4 md:px-6 py-3 md:py-4 hover:bg-cyan-700 font-bold text-sm md:text-lg shadow-xl rounded-xl transition-all"
-              >
-                <RotateCcw className="w-4 h-4 md:w-5 md:h-5" />
-                <span>Reinserisci</span>
-              </button>
+            <div className="flex flex-col gap-2 pt-3 md:pt-4 border-t border-[var(--color-border)] mt-4 md:mt-6">
+              {booking.confirmed_start && booking.confirmed_end ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onRestore(booking.id)
+                  }}
+                  style={{ backgroundColor: '#0891b2', color: 'white' }}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 md:px-6 py-3 md:py-4 hover:bg-cyan-700 font-bold text-sm md:text-lg shadow-xl rounded-xl transition-all"
+                >
+                  <RotateCcw className="w-4 h-4 md:w-5 md:h-5" />
+                  <span>Reinserisci</span>
+                </button>
+              ) : (
+                <p className="text-sm text-gray-600 italic">
+                  Reinserimento non disponibile: mancano orari di inizio/fine confermati salvati in archivio.
+                </p>
+              )}
             </div>
           )}
 

@@ -123,6 +123,7 @@ export const PendingRequestsTab: React.FC = () => {
     desiredTime: string
     numGuests: number
   }) => {
+    if (acceptMutation.isPending) return
     acceptMutation.mutate(
       {
         bookingId: payload.bookingId,
@@ -172,6 +173,7 @@ export const PendingRequestsTab: React.FC = () => {
   }
 
   const handleAccept = (booking: BookingRequest) => {
+    if (acceptMutation.isPending) return
 
     // ✅ VALIDAZIONE: desired_time deve essere presente
     if (!booking.desired_time || booking.desired_time.trim() === '') {
@@ -205,7 +207,8 @@ export const PendingRequestsTab: React.FC = () => {
 
   // Apre il modal quando si clicca su "Rifiuta"
   const handleReject = (booking: BookingRequest) => {
-    
+    if (rejectMutation.isPending) return
+
     // Imposta entrambi gli stati contemporaneamente
     // React batching li applicherà insieme
     setSelectedBookingForReject(booking)
@@ -296,6 +299,8 @@ export const PendingRequestsTab: React.FC = () => {
             booking={booking}
             onAccept={handleAccept}
             onReject={handleReject}
+            acceptDisabled={acceptMutation.isPending}
+            rejectDisabled={rejectMutation.isPending}
           />
         ))}
       </div>
@@ -336,13 +341,13 @@ export const PendingRequestsTab: React.FC = () => {
             setPendingAcceptData(null)
           }}
           onConfirm={() => {
-            if (pendingAcceptData) {
-              runAcceptMutate(pendingAcceptData)
-            }
+            if (acceptMutation.isPending || !pendingAcceptData) return
+            runAcceptMutate(pendingAcceptData)
             setShowOverbookingConfirm(false)
             setOverbookingSlotInfo(null)
             setPendingAcceptData(null)
           }}
+          confirmDisabled={acceptMutation.isPending}
           onCancel={() => {
             setShowOverbookingConfirm(false)
             setOverbookingSlotInfo(null)

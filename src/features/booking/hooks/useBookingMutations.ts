@@ -13,6 +13,23 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import { logger } from '@/lib/logger'
 import { extractTimeFromISO } from '@/features/booking/utils/dateUtils'
 
+/** Race guard: update con 0 righe (record non più pending). */
+const BOOKING_ALREADY_HANDLED = 'BOOKING_ALREADY_HANDLED'
+
+async function invalidateAllBookingQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+  tenantId: string | null | undefined,
+) {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: ['bookings'], refetchType: 'all' }),
+    queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'], refetchType: 'all' }),
+    queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
+    queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
+    queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
+    queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId], refetchType: 'all' }),
+  ])
+}
+
 interface AcceptBookingInput {
   bookingId: string
   confirmedStart: string
@@ -73,26 +90,21 @@ export const useAcceptBooking = () => {
         .update(updateData as any)
         .eq('id', input.bookingId)
         .eq('tenant_id', tenantId!)
+        .eq('status', 'pending')
         .select()
-        .single()
 
       if (error) {
         throw new Error(handleSupabaseError(error))
       }
 
-      return data as BookingRequest
+      if (!data?.length) {
+        throw new Error(BOOKING_ALREADY_HANDLED)
+      }
+
+      return data[0] as BookingRequest
     },
     onSuccess: async (booking: BookingRequest) => {
-      // Invalida tutte le queries per refresh automatico completo
-      // This will refresh the calendar automatically
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['bookings'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId], refetchType: 'all' }),
-      ])
+      await invalidateAllBookingQueries(queryClient, tenantId)
 
       // Send email notification
       const emailEnabled = areEmailNotificationsEnabled()
@@ -106,7 +118,12 @@ export const useAcceptBooking = () => {
       } else {
       }
     },
-    onError: (error: Error) => {
+    onError: async (error: Error) => {
+      if (error.message === BOOKING_ALREADY_HANDLED) {
+        toast.warn('Questa prenotazione è già stata gestita')
+        await invalidateAllBookingQueries(queryClient, tenantId)
+        return
+      }
       logger.error('[useAcceptBooking] mutation error', error)
     },
   })
@@ -128,26 +145,21 @@ export const useRejectBooking = () => {
         } as any)
         .eq('id', input.bookingId)
         .eq('tenant_id', tenantId!)
+        .eq('status', 'pending')
         .select()
-        .single()
 
       if (error) {
         throw new Error(handleSupabaseError(error))
       }
 
-      return data as BookingRequest
+      if (!data?.length) {
+        throw new Error(BOOKING_ALREADY_HANDLED)
+      }
+
+      return data[0] as BookingRequest
     },
     onSuccess: async (booking: BookingRequest) => {
-      // Invalida tutte le queries per refresh automatico completo
-      // This will refresh the calendar automatically
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['bookings'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId], refetchType: 'all' }),
-      ])
+      await invalidateAllBookingQueries(queryClient, tenantId)
 
       // Send email notification
       if (areEmailNotificationsEnabled()) {
@@ -158,7 +170,12 @@ export const useRejectBooking = () => {
         }
       }
     },
-    onError: (error: Error) => {
+    onError: async (error: Error) => {
+      if (error.message === BOOKING_ALREADY_HANDLED) {
+        toast.warn('Questa prenotazione è già stata gestita')
+        await invalidateAllBookingQueries(queryClient, tenantId)
+        return
+      }
       logger.error('[useRejectBooking] mutation error', error)
     },
   })
@@ -336,6 +353,8 @@ export const useRestoreBooking = () => {
         .from('booking_requests') as any)
         .update({
           status: 'accepted',
+          cancellation_reason: null,
+          cancelled_at: null,
           updated_at: new Date().toISOString(),
         } as any)
         .eq('id', bookingId)

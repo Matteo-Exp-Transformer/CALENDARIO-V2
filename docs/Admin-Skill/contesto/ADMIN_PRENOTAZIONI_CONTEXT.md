@@ -98,3 +98,19 @@ tutto il flusso. Questo va testato come comportamento esplicito nella fase succe
 
 Vedi `ADMIN_TEST_SUITE_INDEX.md`. I test piu pertinenti sono e2e admin booking, mutation booking,
 capacity, time handling, table assignment e details placement.
+
+## 9. Fase D — finding controtest (07-06-26)
+
+Controtest completato su 4 fronti. Fix in attesa decisione Matteo (PLAN §4 prompt anti-rottura).
+
+| ID | Gravità | Sintesi |
+|---|---|---|
+| D1 | ALTO | Race multi-tab: rifiuto su card stale sovrascrive booking già `accepted` |
+| R1 | ALTO | 375px: modale con textarea (Elimina/Rifiuta) senza scroll → bottoni fuori viewport |
+| D2, U4, U8 | MEDIO | Doppio click accept / conferma danger modal |
+| D3 | MEDIO | Reinserisci incrementa di nuovo `tenant_usage.bookings_count` |
+| U2, U6 | MEDIO | Annulla modifica non ripristina campi; drawer calendario con dati stale |
+| D4, U3, U5, U7 | MEDIO | Reinserisci senza orari; tab switch durante mutation; scroll lock |
+| D5, D6, D7, U1, U9, U10 | BASSO | Metadata restore, guard DB assenti, doppio toast, errori UX |
+| L4, L10–L12 | FU | Ospiti 0/negativi/enormi passano hook — validazione DB/form da valutare |
+| R2–R4 | MEDIO/BASSO | Bottoni affiancati, padding doppio su 375px |
