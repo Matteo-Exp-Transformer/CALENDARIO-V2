@@ -68,6 +68,7 @@ entrato come vincolo esplicito nel prompt batch.
 | **R1** | ALTO | pannello `flex flex-col max-h-[90vh] overflow-hidden`, corpo `overflow-y-auto p-5 sm:p-8`, footer bottoni `shrink-0 flex-col sm:flex-row` | ✅ pattern giusto — **manca QA video 375px** |
 | **D4** | MEDIO | bottone "Reinserisci" reso condizionale a `confirmed_start && confirmed_end` | ✅ corretto |
 | **D5** | BASSO | restore azzera `cancellation_reason:null` + `cancelled_at:null` | ✅ corretto |
+| **D2/U4/U8** | MEDIO | doppio submit — `PendingRequestsTab`/`BookingRequestCard`/`CapacityWarningModal` | ✅ inclusi post-scoping, chiusi nel batch fix 07-06-26 |
 
 > Punto tecnico revisionato: il passaggio da `.single()` a `.select()`+`data?.length`/`data[0]` cambia
 > il ritorno ma non rompe i chiamanti — `npm run validate` verde (typecheck incluso). 461 test (+5 vs 456).
@@ -76,8 +77,10 @@ entrato come vincolo esplicito nel prompt batch.
 Rifiuta con textarea piena) prima di dichiarare Area 2 ✅ PROD. Il fix CSS è col pattern corretto ma
 non ancora visto a video.
 
-**Fuori batch (tracciati FU-046):** D2/U4/U8 doppio submit (non incluso in questo giro), D3 contatore
-DB, U2/U5/U6 drawer/scroll, validazione ospiti L4/L10-12.
+**Fuori batch iniziale (poi inclusi nel batch 07-06-26):** D2/U4/U8 doppio submit — chiusi nel report
+batch fix (`PendingRequestsTab`/`BookingRequestCard`/`CapacityWarningModal`).
+
+**Restano fuori batch (FU-046):** D3 contatore DB, U2/U5/U6 drawer/scroll, validazione ospiti L4/L10-12.
 
 ---
 
@@ -126,8 +129,9 @@ disallineamento E-A introdotto.
 
 ❓ Q4 — Cosa NON è stato fatto?
 ✅ R4: Non fatto il **QA visivo di R1 a 375px in browser reale** — il fix CSS c'è ed è col pattern
-giusto, ma nessuno l'ha ancora guardato a video (è il gate per ✅ PROD). Non incluso D2/U4/U8 (doppio
-submit) in questo batch. Non eseguiti gli E2E Playwright reali (FU-042/043). Tutto tracciato.
+giusto, ma nessuno l'ha ancora guardato a video (è il gate per ✅ PROD). D2/U4/U8 (doppio submit)
+erano fuori scope iniziale del prompt revisione, poi inclusi e chiusi nel batch fix 07-06-26. Non
+eseguiti gli E2E Playwright reali (FU-042/043). Tutto tracciato.
 
 ❓ Q5 — Attrito + miglioria?
 ✅ R5: Attrito = i 4 sub-agent producono finding con overlap (D2=U8) e numerazione non condivisa →

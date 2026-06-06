@@ -13,6 +13,9 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 07-06-26 | Docs — **P2/P3 tracciamento Area 2** ✅ **report finale** | [Report](Sessioni%20di%20lavoro/07-06-26/Report-docs-p2-p3-tracciamento-area2-07-06-26.md) — QA R1 CSS-equivalent onesto (FU-043/045); footnote report revisione D2/U4/U8; nessun codice |
+| 07-06-26 | Docs — **P3 footnote report revisione** allineata a batch fix D2/U4/U8 (light) | `Report-revisione-fase-d-e-scoping-fix-07-06-26.md` §3 + R4 — sequenza scoping iniziale → inclusi e chiusi nel batch 07-06-26 |
+| 07-06-26 | Docs — **P2 tracciamento QA R1** (light) | `FOLLOW_UP.md` FU-045/FU-043 + report batch §QA R1 — qualifica CSS-equivalent vs browser reale; FU-043 resta Aperto |
 | 07-06-26 | Admin — **Area 2 Fase D controtest Prenotazioni** 🔶 **lavoro ok** | [Report](Sessioni%20di%20lavoro/07-06-26/Report-fase-d-admin-area2-prenotazioni-07-06-26.md) — 4 sub-agent ROMPI (dati/utente/limit/responsive); +15 limit test (24 blindatura); **D1 ALTO** race tab stale + **R1 ALTO** 375px; validate **456**; non ✅ PROD |
 | 06-06-26 | Admin — **Area 2 Prenotazioni + debiti Shell** ✅ **lavoro ok** | [Report](Sessioni%20di%20lavoro/06-06-26/Report-blindatura-admin-area2-prenotazioni.md) — conferme coerenti (`BookingDangerActionModal`); No-show chiede conferma; Archivio senza popup browser; `AdminAuthProvider`; rimosso settings latente sidebar; test `@admin-blindatura: prenotazioni` (+9); validate **441** |
 | 06-06-26 | Admin — **fix flash cambio tab/sezione (Pro)** ✅ **report finale** | [Report](Sessioni%20di%20lavoro/06-06-26/Report-fix-flash-tab-admin-06-06-26.md) — la schermata vecchia non riappare più al cambio; causa = stato `activeTab`/`section` duplicato che si rincorreva con l'URL → derivati da URL; bug gemello trovato e corretto anche in AdminShell; test non-regressione `adminShellTabFlash` (`shell-refresh-back`); validate **431** |
