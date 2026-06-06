@@ -64,7 +64,7 @@ export function resolveSubTabView(
     : (preset.description?.trim() || subTab.description)
 
   const is_fixed_menu =
-    subTab.display === 'cards' && subTab.is_fixed_menu === false
+    subTab.display === 'cards' && (subTab.is_fixed_menu === false || preset?.is_fixed_menu === false)
       ? false
       : undefined
 

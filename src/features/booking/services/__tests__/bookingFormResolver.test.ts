@@ -68,6 +68,14 @@ describe('resolveSubTabView — campi non personalizzati seguono il preset live'
     expect(resolved.price_per_person).toBe(32)
   })
 
+  it('senza override segue live il flag menù personalizzabile del preset', () => {
+    const presetPersonalizzabile: CustomStaffPreset = { ...PRESET_UPDATED, is_fixed_menu: false }
+    const tab = { ...baseSubTab(), is_fixed_menu: undefined }
+    const resolved = resolveSubTabView(tab, [presetPersonalizzabile])
+    expect(resolved.is_fixed_menu).toBe(false)
+    expect(resolved.price_per_person).toBeUndefined()
+  })
+
   it('senza preset collegato restituisce testi e prezzo salvati', () => {
     const tab: SubTab = { id: 't', display: 'cards', label: 'Manuale', price_per_person: 50 }
     const resolved = resolveSubTabView(tab, [])

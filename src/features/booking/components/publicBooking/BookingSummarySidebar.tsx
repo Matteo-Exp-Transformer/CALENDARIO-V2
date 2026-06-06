@@ -12,7 +12,7 @@ import { orderCategoryKeys, buildCategorySortOrderMap } from '@/features/booking
 import { computeMenuTotalsFromItems } from '@/features/booking/utils/buildPresetMenuSelection'
 import { cn } from '@/lib/utils'
 import { getModeLabelByType } from '../../utils/bookingModeLabels'
-import { modeUsesMenu } from '@/features/booking/utils/bookingCapabilities'
+import { activeSubTabShowsMenu, modeUsesMenu } from '@/features/booking/utils/bookingCapabilities'
 
 interface BookingSummarySidebarProps {
   formData: {
@@ -62,7 +62,9 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
   // getModeLabelByType) e chiede a modeUsesMenu. Per le tipologie storiche (tavolo no, rinfresco/
   // menu_fisso sì) il risultato è identico al precedente `booking_type !== 'tavolo'`.
   const activeMode = modes.find((m) => m.booking_type === formData.booking_type && m.enabled)
-  const hasMenu = modeUsesMenu(activeMode ?? { booking_type: formData.booking_type })
+  const hasMenu = activeSubTab
+    ? activeSubTabShowsMenu(activeSubTab, activeSubTab.preset_id ? true : null)
+    : modeUsesMenu(activeMode ?? { booking_type: formData.booking_type })
   const items = formData.menu_selection?.items ?? []
   const totalPerPerson = formData.menu_total_per_person ?? 0
   const totalBooking = formData.menu_total_booking ?? 0

@@ -27,31 +27,6 @@ const matchesName = (itemName: string, presetName: string): boolean => {
 
   if (normalizedItem === normalizedPreset) return true
 
-  const presetHasCaraffe = normalizedPreset.includes('caraffe')
-  const presetHasDrink = normalizedPreset.includes('drink')
-  const presetHasPremium = normalizedPreset.includes('premium')
-
-  if (presetHasCaraffe) {
-    const hasCaraffe = normalizedItem.includes('caraffe')
-    const hasDrink = normalizedItem.includes('drink')
-    const hasPremium = normalizedItem.includes('premium')
-
-    if (presetHasPremium && !presetHasDrink) {
-      if (hasCaraffe && hasPremium) return true
-      return false
-    }
-
-    if (presetHasDrink && !presetHasPremium) {
-      if (hasCaraffe && hasDrink && !hasPremium) return true
-      return false
-    }
-
-    if (presetHasDrink && presetHasPremium) {
-      if (hasCaraffe && hasDrink && hasPremium) return true
-      return false
-    }
-  }
-
   if (normalizedItem.includes(normalizedPreset) || normalizedPreset.includes(normalizedItem)) return true
 
   return false

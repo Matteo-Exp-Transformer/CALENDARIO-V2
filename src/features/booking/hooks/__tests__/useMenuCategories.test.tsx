@@ -16,6 +16,10 @@ vi.mock('@/lib/supabase', () => ({
   },
 }))
 
+vi.mock('@/lib/supabasePublic', () => ({
+  supabasePublic: { from: mockFrom },
+}))
+
 vi.mock('@/contexts/TenantContext', () => ({
   useTenantContext: vi.fn(() => ({ tenantId: mockTenantId.value })),
 }))

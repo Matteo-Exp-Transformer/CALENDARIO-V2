@@ -19,7 +19,6 @@ import {
   type CustomStaffPreset,
   type PresetMenuType,
 } from '../constants/presetMenus'
-import { isCaraffeDrinkPremium, isCaraffeDrinkStandard } from '../utils/caraffePricing'
 import { groupMenuItemsByCategory } from '../utils/menuCatalogGrouping'
 import { buildOrderedCategoryEntries } from '../utils/orderCategoryKeys'
 import type { BookingType } from '@/types/booking'
@@ -282,21 +281,6 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
       return
     }
 
-    let updatedItems: SelectedMenuItem[] = selectedItems
-
-    // === BEVANDE RULES ===
-    if (item.category === 'bevande') {
-      const isCaraffe = isCaraffeDrinkStandard(item.name) || isCaraffeDrinkPremium(item.name)
-      if (isCaraffe) {
-        updatedItems = selectedItems.filter(selected =>
-          !(
-            selected.category === 'bevande' &&
-            (isCaraffeDrinkStandard(selected.name) || isCaraffeDrinkPremium(selected.name))
-          )
-        )
-      }
-    }
-
     const newItem: SelectedMenuItem = {
       id: item.id,
       name: item.name,
@@ -305,7 +289,7 @@ export const MenuSelection: React.FC<MenuSelectionProps> = ({
     }
 
     emitMenuSelectionChange([
-      ...updatedItems.filter(selected => selected.id !== item.id),
+      ...selectedItems.filter(selected => selected.id !== item.id),
       newItem
     ])
   }

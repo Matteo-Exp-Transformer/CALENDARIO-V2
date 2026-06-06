@@ -3,6 +3,7 @@ import { toast } from 'react-toastify'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { deleteMenuCategoryPhoto } from '@/lib/menuPhotoUpload'
 import { handleSupabaseError, supabase } from '@/lib/supabase'
+import { supabasePublic } from '@/lib/supabasePublic'
 import { syncMenuCategoryKeyRename } from '@/features/booking/services/syncMenuCategoryKeyRename'
 import { syncMenuCategoryKeyDelete } from '@/features/booking/services/syncMenuCategoryKeyDelete'
 
@@ -67,7 +68,7 @@ export const useMenuCategories = () => {
   return useQuery({
     queryKey: ['menu-categories', tenantId],
     queryFn: async () => {
-      const { data, error } = await ((supabase as any).from('menu_categories') as any)
+      const { data, error } = await ((supabasePublic as any).from('menu_categories') as any)
         .select('*')
         .eq('tenant_id', tenantId)
         .order('sort_order', { ascending: true })

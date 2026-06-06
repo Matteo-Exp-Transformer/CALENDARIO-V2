@@ -10,7 +10,7 @@
 
 import '@testing-library/jest-dom/vitest'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
 const mutateSpy = vi.fn()
@@ -128,6 +128,20 @@ describe('BookingRequestForm — cap testo cliente silenzioso (§3: nessun conta
 })
 
 describe('BookingRequestForm — cambio tipologia resetta lo stato (§2-bis + §3-bis capability)', () => {
+  it('se Tavolo è disabilitato inizializza il payload sulla prima modalità abilitata', async () => {
+    const updates: Array<Record<string, unknown>> = []
+    const config = makeConfig([
+      makeMode({ id: 'tav', booking_type: 'tavolo', label: 'Tavolo', enabled: false }),
+      makeMode({ id: 'menu', booking_type: 'menu_prezzo_fisso', label: 'Menu fisso' }),
+    ])
+    renderForm(config, (d) => updates.push(d as Record<string, unknown>))
+
+    await waitFor(() => {
+      expect(updates[updates.length - 1]?.booking_type).toBe('menu_prezzo_fisso')
+    })
+    expect(screen.getByTestId('booking-mode-card-menu')).toHaveClass('border-warm-orange')
+  })
+
   it('passando a una modalità SENZA intolleranze (tavolo) le intolleranze si svuotano', () => {
     const updates: Array<Record<string, unknown>> = []
     const config = makeConfig([

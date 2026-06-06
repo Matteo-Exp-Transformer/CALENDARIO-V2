@@ -43,6 +43,24 @@ describe('BookingSummarySidebar — menù per CAPACITÀ non per nome', () => {
     expect(screen.getByText('Antipasto')).toBeInTheDocument()
   })
 
+  it('mostra «Il tuo menu» per Livello B: card tavolo con preset collegato', () => {
+    const modes = [makeMode({ booking_type: 'tavolo' })]
+    render(
+      <BookingSummarySidebar
+        formData={{ num_guests: 2, booking_type: 'tavolo', menu_selection: MENU_SELECTION }}
+        modes={modes}
+        activeSubTab={{
+          id: 'tab-preset',
+          display: 'cards',
+          label: 'Menu collegato',
+          preset_id: 'preset-1',
+        }}
+      />,
+    )
+    expect(screen.getByText('Il tuo menu')).toBeInTheDocument()
+    expect(screen.getByText('Antipasto')).toBeInTheDocument()
+  })
+
   it('NON mostra «Il tuo menu» quando la modalità NON usa il menù anche se rinfresco_laurea', () => {
     // rinfresco_laurea per NOME mostrerebbe il menù, ma la capability esplicita lo disattiva.
     const modes = [makeMode({ booking_type: 'rinfresco_laurea', capabilities: { uses_menu: false } })]

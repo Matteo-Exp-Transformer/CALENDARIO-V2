@@ -15,7 +15,7 @@ export interface MenuPriceDisplay {
   prezzoMenuLabel: string
   breakdownLabel?: string
   
-  // Prezzo Totale: prezzo totale prenotazione (con tiramisu se presente)
+  // Prezzo Totale: prezzo totale prenotazione, preferendo eventuali totalPrice salvati.
   prezzoTotale: number | null
   prezzoTotaleLabel: string | null
   
@@ -99,4 +99,3 @@ export function getResolvedMenuPriceDisplay(booking: BookingRequest): MenuPriceD
 
   return null
 }
-

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase, handleSupabaseError } from '@/lib/supabase'
+import { supabasePublic } from '@/lib/supabasePublic'
 import type { MenuItem, MenuItemInput } from '@/types/menu'
 import { toast } from 'react-toastify'
 import { useTenantContext } from '@/contexts/TenantContext'
@@ -26,7 +27,7 @@ export const useMenuItems = () => {
   return useQuery({
     queryKey: ['menu-items', tenantId],
     queryFn: async () => {
-      const { data, error } = await (supabase
+      const { data, error } = await (supabasePublic
         .from('menu_items') as any)
         .select('*')
         .eq('tenant_id', tenantId)
@@ -50,7 +51,7 @@ export const useMenuItemsByCategory = (category?: string) => {
   return useQuery({
     queryKey: ['menu-items', 'by-category', category, tenantId],
     queryFn: async () => {
-      let query = (supabase
+      let query = (supabasePublic
         .from('menu_items') as any)
         .select('*')
         .eq('tenant_id', tenantId)

@@ -279,7 +279,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
     client_name: '',
     client_email: '',
     client_phone: '',
-    booking_type: 'tavolo',
+    booking_type: formConfig.booking_modes.find((m) => m.enabled)?.booking_type ?? 'tavolo',
     desired_date: getCurrentDate(),
     desired_time: getDefaultTime(),
     num_guests: 0,
@@ -301,7 +301,11 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   const [composeCollapseNonce, setComposeCollapseNonce] = useState(0)
   const [attentionFieldKey, setAttentionFieldKey] = useState<string | null>(null)
 
-  const enabledBookingModes = formConfig.booking_modes.filter((m) => m.enabled)
+  const enabledBookingModes = useMemo(
+    () => formConfig.booking_modes.filter((m) => m.enabled),
+    [formConfig.booking_modes],
+  )
+  const initialBookingType = enabledBookingModes[0]?.booking_type ?? 'tavolo'
 
   // Trova il modo attivo in base a booking_type
   const activeMode = enabledBookingModes.find(
@@ -309,6 +313,23 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   ) ?? enabledBookingModes[0]
 
   const activeModeId = activeMode?.id ?? 'tavolo'
+
+  useEffect(() => {
+    if (enabledBookingModes.length === 0) return
+    const currentStillEnabled = enabledBookingModes.some((m) => m.booking_type === formData.booking_type)
+    if (currentStillEnabled) return
+    setActiveSubTabId(null)
+    setSelectedPreset(null)
+    setFormData((prev) => ({
+      ...prev,
+      booking_type: initialBookingType,
+      preset_menu: null,
+      menu_selection: { items: [] },
+      menu_total_per_person: undefined,
+      menu_total_booking: undefined,
+      dietary_restrictions: modeUsesDietary(enabledBookingModes[0]) ? prev.dietary_restrictions : [],
+    }))
+  }, [enabledBookingModes, formData.booking_type, initialBookingType])
 
   const {
     data: customStaffPresets = [],
@@ -1023,7 +1044,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
     // Chiama mutate — il guard server-side in create-booking è la garanzia definitiva
     const finalSubTabPromo = resolveMenuPromoForBookingView({
-      bookingType: formData.booking_type ?? 'tavolo',
+      bookingType: formData.booking_type ?? initialBookingType,
       modeId: activeModeId,
       subTabId: activeSubTabId,
       promos: menuPromos,
@@ -1060,9 +1081,9 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
           client_name: '',
           client_email: '',
           client_phone: '',
-          booking_type: 'tavolo',
+          booking_type: initialBookingType,
           desired_date: getCurrentDate(),
-          desired_time: '16:00',
+          desired_time: getDefaultTime(),
           num_guests: 0,
           special_requests: '',
           menu_selection: { items: [] },

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase, handleSupabaseError } from '@/lib/supabase'
+import { supabasePublic } from '@/lib/supabasePublic'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { toast } from 'react-toastify'
 import {
@@ -14,7 +15,7 @@ export function useRestaurantSetting<K extends RestaurantSettingKeyV1>(key: K) {
   return useQuery({
     queryKey: ['restaurant_settings', key, tenantId],
     queryFn: async (): Promise<RestaurantSettingValueMap[K]> => {
-      const { data, error } = await (supabase
+      const { data, error } = await (supabasePublic
         .from('restaurant_settings') as any)
         .select('setting_value')
         .eq('tenant_id', tenantId!)
