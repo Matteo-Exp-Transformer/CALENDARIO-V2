@@ -454,4 +454,26 @@ describe('BookingDangerActionModal — regressione conferme', () => {
     await user.click(confirmBtn)
     expect(onConfirm).not.toHaveBeenCalled()
   })
+
+  it('U4: doppio click rapido senza isLoading — guard sincrono, onConfirm una sola volta', async () => {
+    // Il chiamante non ha ancora settato isLoading (arriva async): il guard useRef
+    // interno deve impedire la seconda mutation prima del re-render.
+    const onConfirm = vi.fn()
+    const user = userEvent.setup()
+
+    render(
+      <BookingDangerActionModal
+        isOpen
+        onClose={() => undefined}
+        onConfirm={onConfirm}
+        title="Elimina Prenotazione"
+        message="Conferma eliminazione"
+        confirmLabel="Elimina"
+      />,
+    )
+
+    const confirmBtn = screen.getByRole('button', { name: /^Elimina$/i })
+    await user.dblClick(confirmBtn)
+    expect(onConfirm).toHaveBeenCalledTimes(1)
+  })
 })

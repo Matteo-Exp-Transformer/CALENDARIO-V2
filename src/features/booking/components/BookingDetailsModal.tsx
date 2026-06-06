@@ -52,6 +52,41 @@ interface Tab {
   icon: string
 }
 
+type DetailsFormData = {
+  booking_type: BookingType
+  client_name: string
+  client_email: string
+  client_phone: string
+  date: string
+  startTime: string
+  endTime: string
+  numGuests: number
+  specialRequests: string
+  menu_selection: BookingRequest['menu_selection']
+  dietary_restrictions: NonNullable<BookingRequest['dietary_restrictions']>
+  preset_menu: BookingRequest['preset_menu']
+  placement: string
+}
+
+// Punto unico di verità per derivare i campi del form dalla prenotazione.
+// Usato dall'init, dal re-sync su cambio booking e dall'Annulla modifica (U2): premere
+// Annulla deve riportare i campi ai valori originali, non lasciare i valori "annullati".
+const buildFormDataFromBooking = (booking: BookingRequest): DetailsFormData => ({
+  booking_type: (booking.booking_type || 'tavolo') as BookingType,
+  client_name: booking.client_name || '',
+  client_email: booking.client_email || '',
+  client_phone: booking.client_phone || '',
+  date: extractDateFromISO(booking.confirmed_start || booking.desired_date || ''),
+  startTime: getAccurateStartTime(booking),
+  endTime: getAccurateEndTime(booking),
+  numGuests: booking.num_guests || 0,
+  specialRequests: booking.special_requests || '',
+  menu_selection: booking.menu_selection,
+  dietary_restrictions: booking.dietary_restrictions || [],
+  preset_menu: booking.preset_menu,
+  placement: booking.placement || '',
+})
+
 export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   isOpen,
   onClose,
@@ -144,7 +179,11 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     !booking.no_show &&
     !!booking.confirmed_start &&
     new Date(booking.confirmed_start) < new Date()
-  const { data: acceptedBookings = [] } = useAcceptedBookings()
+  const {
+    data: acceptedBookings = [],
+    isSuccess: acceptedBookingsLoaded,
+    isFetching: acceptedBookingsFetching,
+  } = useAcceptedBookings()
   const { data: menuItems = [] } = useMenuItems()
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
@@ -157,26 +196,9 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const timeSlotsEnabled = features.servizio ? true : timeSlotsEnabledRaw
 
   // Initialize form data from booking
-  const [formData, setFormData] = useState(() => {
+  const [formData, setFormData] = useState<DetailsFormData>(() => {
     try {
-      const startTime = getAccurateStartTime(booking)
-      const endTime = getAccurateEndTime(booking)
-
-      return {
-        booking_type: (booking.booking_type || 'tavolo') as BookingType,
-        client_name: booking.client_name || '',
-        client_email: booking.client_email || '',
-        client_phone: booking.client_phone || '',
-        date: extractDateFromISO(booking.confirmed_start || booking.desired_date || ''),
-        startTime,
-        endTime,
-        numGuests: booking.num_guests || 0,
-        specialRequests: booking.special_requests || '',
-        menu_selection: booking.menu_selection,
-        dietary_restrictions: booking.dietary_restrictions || [],
-        preset_menu: booking.preset_menu,
-        placement: booking.placement || ''
-      }
+      return buildFormDataFromBooking(booking)
     } catch (error) {
       logger.error('[BookingDetailsModal] Error initializing form data:', error)
       // Return default values if initialization fails
@@ -213,24 +235,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     }
 
     try {
-      const startTime = getAccurateStartTime(booking)
-      const endTime = getAccurateEndTime(booking)
-
-      setFormData({
-        booking_type: (booking.booking_type || 'tavolo') as BookingType,
-        client_name: booking.client_name || '',
-        client_email: booking.client_email || '', // Può essere null/undefined, quindi stringa vuota
-        client_phone: booking.client_phone || '',
-        date: extractDateFromISO(booking.confirmed_start || booking.desired_date || ''),
-        startTime,
-        endTime,
-        numGuests: booking.num_guests || 0,
-        specialRequests: booking.special_requests || '',
-        menu_selection: booking.menu_selection,
-        dietary_restrictions: booking.dietary_restrictions || [],
-        preset_menu: booking.preset_menu,
-        placement: booking.placement || ''
-      })
+      setFormData(buildFormDataFromBooking(booking))
     } catch (error) {
       logger.error('[BookingDetailsModal] Error updating form data:', error)
     }
@@ -240,6 +245,28 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   useEffect(() => {
     previousBookingIdRef.current = booking.id
   }, [booking.id])
+
+  // U6 — Drawer stale: se la prenotazione aperta sparisce dalla lista accepted (eliminata
+  // da un'altra tab/scheda o cambiata di stato), chiudi il drawer invece di mostrare dati
+  // obsoleti. Non chiudere durante caricamento/refetch, in edit o durante un salvataggio.
+  useEffect(() => {
+    if (!isOpen) return
+    if (isEditMode || updateMutation.isPending) return
+    if (!acceptedBookingsLoaded || acceptedBookingsFetching) return
+    const stillPresent = acceptedBookings.some((b) => b.id === booking.id)
+    if (!stillPresent) {
+      onClose()
+    }
+  }, [
+    isOpen,
+    isEditMode,
+    updateMutation.isPending,
+    acceptedBookingsLoaded,
+    acceptedBookingsFetching,
+    acceptedBookings,
+    booking.id,
+    onClose,
+  ])
 
   // Dynamic tabs based on booking_type
   const tabs = useMemo<Tab[]>(() => {
@@ -490,11 +517,12 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       },
       {
         onSuccess: () => {
+          // Il toast di successo è già mostrato da useUpdateBooking (fonte unica): qui
+          // gestiamo solo il reset dello stato locale, evitando il doppio toast (U1).
           setIsEditMode(false)
           setEndTimeManuallyModified(false)
           setShowOverbookingConfirm(false)
           setOverbookingSlotInfo(null)
-          toast.success('Prenotazione modificata con successo!')
         },
         onError: (error) => {
           logger.error('❌ [BookingDetailsModal] Save failed:', error)
@@ -573,6 +601,29 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     })
   }
 
+  // U2 — Annulla modifica: riporta i campi ai valori originali della prenotazione,
+  // non lasciare i valori "annullati" che riapparirebbero al rientro in edit.
+  const handleCancelEdit = () => {
+    try {
+      setFormData(buildFormDataFromBooking(booking))
+    } catch (error) {
+      logger.error('[BookingDetailsModal] Error resetting form data on cancel:', error)
+    }
+    setEndTimeManuallyModified(false)
+    setIsEditMode(false)
+  }
+
+  // U7 — Chiusura sicura: non chiudere mentre un salvataggio è in corso (perderebbe il
+  // feedback) né scartare silenziosamente modifiche in edit; in edit, l'annulla resetta prima.
+  const handleRequestClose = () => {
+    if (updateMutation.isPending) return
+    if (isEditMode) {
+      handleCancelEdit()
+      return
+    }
+    onClose()
+  }
+
   if (!isOpen) {
     return null
   }
@@ -637,7 +688,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
         onMouseDown={(e) => setMouseDownTarget(e.target)}
         onClick={(e) => {
           if (e.target === mouseDownTarget) {
-            onClose()
+            handleRequestClose()
           }
           setMouseDownTarget(null)
         }}
@@ -668,7 +719,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                   Dettagli Prenotazione
                 </h2>
                 <button
-                  onClick={onClose}
+                  onClick={handleRequestClose}
                   className="flex flex-shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] p-1.5 shadow-sm transition-all hover:bg-[var(--color-surface-2)]"
                   aria-label="Chiudi"
                   style={{ width: '32px', height: '32px' }}
@@ -793,7 +844,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                       <span className="truncate">{updateMutation.isPending ? 'Salvataggio...' : 'Salva'}</span>
                     </button>
                     <button
-                      onClick={() => setIsEditMode(false)}
+                      onClick={handleCancelEdit}
                       className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30 shadow-md hover:shadow-lg flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
                     >
                       <X className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />

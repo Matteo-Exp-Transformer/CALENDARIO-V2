@@ -31,6 +31,7 @@ import {
 import { extractTimeFromISO } from '../utils/dateUtils'
 import { getBookingEventTypeLabel } from '../utils/eventTypeLabels'
 import { cn } from '@/lib/utils'
+import { logger } from '@/lib/logger'
 
 const AFTER_COLON = '\u2002'
 
@@ -577,7 +578,7 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar, filter
       }
       setPendingArchiveAction(null)
     } catch (err) {
-      console.error('Error applying archive action:', err)
+      logger.error('Error applying archive action:', err)
     }
   }
 
@@ -596,7 +597,7 @@ export const ArchiveTab: React.FC<ArchiveTabProps> = ({ onViewInCalendar, filter
       })
       setRestoreTimeBooking(null)
     } catch (err) {
-      console.error('Error restoring booking with time:', err)
+      logger.error('Error restoring booking with time:', err)
     }
   }
 

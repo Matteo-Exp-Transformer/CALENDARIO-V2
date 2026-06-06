@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useState } from 'react'
+import React, { useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Trash2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -65,15 +65,23 @@ export const BookingDangerActionModal: React.FC<BookingDangerActionModalProps> =
   const reasonId = reasonField?.id ?? fallbackReasonId
   const [reason, setReason] = useState('')
   const styles = variantStyles[variant]
+  // Guard sincrono contro il doppio click: isLoading dal chiamante arriva async dopo il
+  // primo click, lasciando una finestra in cui un secondo click lancia onConfirm due volte (U4).
+  const confirmInFlightRef = useRef(false)
 
   useEffect(() => {
     if (!isOpen) {
       setReason('')
       return
     }
+    // Salva il valore corrente invece di forzare 'unset' in cleanup: questo modale può
+    // aprirsi SOPRA un drawer (BookingDetailsModal) che ha già bloccato lo scroll a 'hidden'.
+    // Ripristinare 'unset' sbloccherebbe la pagina sotto mentre il drawer è ancora aperto (U5).
+    const originalOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    confirmInFlightRef.current = false
     return () => {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = originalOverflow
     }
   }, [isOpen])
 
@@ -89,6 +97,8 @@ export const BookingDangerActionModal: React.FC<BookingDangerActionModalProps> =
   if (!isOpen) return null
 
   const handleConfirm = () => {
+    if (confirmInFlightRef.current || isLoading) return
+    confirmInFlightRef.current = true
     onConfirm(reasonField ? reason : undefined)
   }
 
