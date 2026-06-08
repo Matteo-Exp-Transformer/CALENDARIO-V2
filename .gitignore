@@ -46,6 +46,10 @@ icone-nuove/
 # in root e restano tracciati. Tutto docs/ (skill, archivio, sessioni, immagini mock) no.
 docs/
 
+# Feature "agenti locali" (runner + mode/skill + guide + esiti): vive in locale, MAI online.
+# I wrapper in .github/ restano tracciati per convenzione dei tool, ma sono self-contained.
+/agenti-locali/
+
 # Script Playwright usa-e-getta (debug locale, mai committati)
 pw-*.mjs
 

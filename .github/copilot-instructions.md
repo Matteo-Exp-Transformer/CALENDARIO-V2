@@ -13,5 +13,13 @@ Regole sempre valide:
 - Non fare commit, push, merge o deploy senza richiesta esplicita.
 - Supabase: TEST = `docnnernvp`, PROD = `rwuxgvld`. Su scritture PROD fermati e chiedi conferma.
 
+Regola per modelli locali / agenti junior:
+
+- Fonte di verita locale: `agenti-locali/local-agent/`.
+- Prima applica `local-agent/skills/calendarbackup-entrypoint.md`, poi `calendarbackup-routing.md`
+  e il mode corrispondente al ruolo.
+- Se non puoi leggere davvero un file di contesto, non fingere: chiedi a Matteo quel file e marca il
+  resto come `NON VERIFICATO`.
+
 Per task con modelli locali, preferisci prompt leggeri e contesto mirato. Non caricare tutta la
 documentazione se basta leggere `AGENTS.md` e la skill d'area.
