@@ -11,6 +11,7 @@
  */
 
 import { test, expect } from '@playwright/test'
+import { assertProSidebarVisible, proSidebar } from '../helpers/adminShell'
 
 test.skip(!process.env.E2E_PRO_ADMIN_EMAIL, 'richiede staging Pro configurato (E2E_PRO_ADMIN_EMAIL non impostato)')
 
@@ -22,15 +23,13 @@ async function loginAsProAdmin(page: import('@playwright/test').Page) {
   await page.getByLabel(/email/i).fill(PRO_EMAIL)
   await page.getByLabel(/password/i).fill(PRO_PASSWORD)
   await page.getByRole('button', { name: /accedi|login/i }).click()
-  await expect(page.getByRole('navigation', { name: /navigazione principale/i })).toBeVisible({
-    timeout: 15000,
-  })
+  await assertProSidebarVisible(page)
 }
 
 test.describe('Admin Pro — CRM Clienti', () => {
   test('sezione CRM è accessibile dalla sidebar', async ({ page }) => {
     await loginAsProAdmin(page)
-    await page.getByRole('navigation', { name: /navigazione principale/i })
+    await proSidebar(page)
       .getByRole('button', { name: /crm clienti/i })
       .click()
     // La pagina CRM deve caricarsi senza errori
@@ -43,7 +42,7 @@ test.describe('Admin Pro — CRM Clienti', () => {
 
   test('lista clienti contiene almeno 3 clienti nel DB staging', async ({ page }) => {
     await loginAsProAdmin(page)
-    await page.getByRole('navigation', { name: /navigazione principale/i })
+    await proSidebar(page)
       .getByRole('button', { name: /crm clienti/i })
       .click()
 

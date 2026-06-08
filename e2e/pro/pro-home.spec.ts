@@ -11,6 +11,7 @@
  */
 
 import { test, expect } from '@playwright/test'
+import { assertProSidebarVisible, proSidebar } from '../helpers/adminShell'
 
 test.skip(!process.env.E2E_PRO_ADMIN_EMAIL, 'richiede staging Pro configurato (E2E_PRO_ADMIN_EMAIL non impostato)')
 
@@ -22,9 +23,7 @@ async function loginAsProAdmin(page: import('@playwright/test').Page) {
   await page.getByLabel(/email/i).fill(PRO_EMAIL)
   await page.getByLabel(/password/i).fill(PRO_PASSWORD)
   await page.getByRole('button', { name: /accedi|login/i }).click()
-  await expect(page.getByRole('navigation', { name: /navigazione principale/i })).toBeVisible({
-    timeout: 15000,
-  })
+  await assertProSidebarVisible(page)
 }
 
 test.describe('Admin Pro — Home page', () => {
@@ -40,9 +39,8 @@ test.describe('Admin Pro — Home page', () => {
 
   test('da Home, click sidebar "Home" non produce errori', async ({ page }) => {
     await loginAsProAdmin(page)
-    const sidebar = page.getByRole('navigation', { name: /navigazione principale/i })
-    // Clicca Home dalla sidebar (dovrebbe essere già attivo, ma il click deve essere idempotente)
-    await sidebar.getByRole('button', { name: /home/i }).click()
+    const sidebar = proSidebar(page)
+    await sidebar.getByRole('button', { name: /^home$/i }).click()
     await expect(sidebar).toBeVisible({ timeout: 3000 })
   })
 
@@ -60,16 +58,15 @@ test.describe('Admin Pro — Home page', () => {
 
   test('sidebar rimane visibile durante la navigazione tra sezioni', async ({ page }) => {
     await loginAsProAdmin(page)
-    const sidebar = page.getByRole('navigation', { name: /navigazione principale/i })
+    const sidebar = proSidebar(page)
 
-    // Naviga CRM → Servizio → Home e verifica che la sidebar rimanga
     await sidebar.getByRole('button', { name: /crm clienti/i }).click()
     await expect(sidebar).toBeVisible({ timeout: 3000 })
 
-    await sidebar.getByRole('button', { name: /servizio/i }).click()
+    await sidebar.getByRole('button', { name: /^servizio$/i }).click()
     await expect(sidebar).toBeVisible({ timeout: 3000 })
 
-    await sidebar.getByRole('button', { name: /home/i }).click()
+    await sidebar.getByRole('button', { name: /^home$/i }).click()
     await expect(sidebar).toBeVisible({ timeout: 3000 })
   })
 })

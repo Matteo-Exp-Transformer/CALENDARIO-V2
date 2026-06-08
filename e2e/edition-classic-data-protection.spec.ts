@@ -9,19 +9,17 @@
  */
 
 import { test, expect } from '@playwright/test'
+import { loginAdminFromRoute } from './helpers/adminShell'
 
-test.skip(!process.env.E2E_ADMIN_EMAIL, 'richiede staging Supabase (E2E_ADMIN_EMAIL non impostato)')
+test.skip(!process.env.E2E_CLASSIC_ADMIN_EMAIL, 'richiede tenant Classic (E2E_CLASSIC_ADMIN_EMAIL)')
 
-const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? ''
-const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? ''
+const ADMIN_EMAIL = process.env.E2E_CLASSIC_ADMIN_EMAIL ?? ''
+const ADMIN_PASSWORD = process.env.E2E_CLASSIC_ADMIN_PASSWORD ?? ''
 
 test.describe('Edition Classic — protezione dati RLS', () => {
   test('lista clienti vuota anche con UI CRM sbloccata via JS', async ({ page }) => {
     // 1. Login come admin Classic
-    await page.goto('/admin')
-    await page.getByLabel(/email/i).fill(ADMIN_EMAIL)
-    await page.getByLabel(/password/i).fill(ADMIN_PASSWORD)
-    await page.getByRole('button', { name: /accedi|login/i }).click()
+    await loginAdminFromRoute(page, ADMIN_EMAIL, ADMIN_PASSWORD)
     await page.waitForLoadState('networkidle')
 
     // 2. Sblocca la UI CRM via JS injection (simula devtools bypass)

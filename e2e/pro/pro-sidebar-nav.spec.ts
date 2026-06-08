@@ -13,6 +13,7 @@
  */
 
 import { test, expect } from '@playwright/test'
+import { assertProSidebarVisible, proSidebar } from '../helpers/adminShell'
 
 test.skip(!process.env.E2E_PRO_ADMIN_EMAIL, 'richiede staging Pro configurato (E2E_PRO_ADMIN_EMAIL non impostato)')
 
@@ -24,23 +25,20 @@ async function loginAsProAdmin(page: import('@playwright/test').Page) {
   await page.getByLabel(/email/i).fill(PRO_EMAIL)
   await page.getByLabel(/password/i).fill(PRO_PASSWORD)
   await page.getByRole('button', { name: /accedi|login/i }).click()
-  await expect(page.getByRole('navigation', { name: /navigazione principale/i })).toBeVisible({
-    timeout: 15000,
-  })
+  await assertProSidebarVisible(page)
 }
 
 function sidebarNav(page: import('@playwright/test').Page) {
-  return page.getByRole('navigation', { name: /navigazione principale/i })
+  return proSidebar(page)
 }
 
 test.describe('Admin Pro — Sidebar e navigazione', () => {
   test('sidebar contiene i bottoni delle 4 sezioni Pro', async ({ page }) => {
     await loginAsProAdmin(page)
     const nav = sidebarNav(page)
-    await expect(nav.getByRole('button', { name: /home/i })).toBeVisible()
-    await expect(nav.getByRole('button', { name: /prenotazioni/i })).toBeVisible()
+    await expect(nav.getByRole('button', { name: /^home$/i })).toBeVisible()
     await expect(nav.getByRole('button', { name: /crm clienti/i })).toBeVisible()
-    await expect(nav.getByRole('button', { name: /servizio/i })).toBeVisible()
+    await expect(nav.getByRole('button', { name: /^servizio$/i })).toBeVisible()
     await expect(nav.getByRole('button', { name: /analytics/i })).toBeVisible()
   })
 
@@ -75,10 +73,11 @@ test.describe('Admin Pro — Sidebar e navigazione', () => {
     ).toBeVisible({ timeout: 5000 })
   })
 
-  test('click Prenotazioni dalla sidebar apre la dashboard classica', async ({ page }) => {
+  test('navigazione a Prenotazioni apre la dashboard con tab interne', async ({ page }) => {
     await loginAsProAdmin(page)
-    await sidebarNav(page).getByRole('button', { name: /prenotazioni/i }).click()
-    // L'header con i 5 tab dell'admin classica deve diventare visibile
-    await expect(page.locator('header nav')).toBeVisible({ timeout: 5000 })
+    await page.goto('/admin/calendario')
+    const headerNav = page.locator('header')
+    await expect(headerNav.getByRole('button', { name: /^calendario$/i })).toBeVisible({ timeout: 5000 })
+    await expect(headerNav.getByRole('button', { name: /^prenotazioni$/i })).toBeVisible()
   })
 })

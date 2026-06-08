@@ -8,6 +8,7 @@ import type { UserEvent } from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
 import { ArchiveTab } from '../ArchiveTab'
+import { PendingRequestsTab } from '../PendingRequestsTab'
 import { BookingDangerActionModal } from '../BookingDangerActionModal'
 import { calculateDailyCapacityV2 } from '../../utils/capacityCalculator'
 import type { SlotConfig } from '../../utils/bookingTimeSlots'
@@ -18,7 +19,18 @@ const confirmSpy = vi.spyOn(window, 'confirm')
 const mockMutateAsyncRestore = vi.fn()
 const mockMutateAsyncRequeue = vi.fn()
 
-const { mockAllBookingsState, DEFAULT_ARCHIVE_BOOKINGS } = vi.hoisted(() => {
+const {
+  mockAllBookingsState,
+  DEFAULT_ARCHIVE_BOOKINGS,
+  mockPendingBookingsState,
+  mockAcceptedBookingsState,
+  mockDigestSlotsState,
+  mockServiceSlotsState,
+  mockSlotOverridesState,
+  mockSlotGuestCapacitiesState,
+  mockAcceptBookingMutation,
+  mockRejectBookingMutation,
+} = vi.hoisted(() => {
   const defaults = [
     {
       id: 'deleted-1',
@@ -49,11 +61,34 @@ const { mockAllBookingsState, DEFAULT_ARCHIVE_BOOKINGS } = vi.hoisted(() => {
       isLoading: false,
       error: null as null,
     },
+    mockPendingBookingsState: {
+      data: [] as any[],
+      isLoading: false,
+      error: null as null,
+      refetch: vi.fn().mockResolvedValue(undefined),
+    },
+    mockAcceptedBookingsState: { data: [] as any[] },
+    mockDigestSlotsState: { data: [] as any[] },
+    mockServiceSlotsState: { data: [] as any[] },
+    mockSlotOverridesState: { data: [] as any[] },
+    mockSlotGuestCapacitiesState: { data: { cena: 10 } as Record<string, number> },
+    mockAcceptBookingMutation: {
+      mutate: vi.fn(),
+      mutateAsync: vi.fn(),
+      isPending: false,
+    },
+    mockRejectBookingMutation: {
+      mutate: vi.fn(),
+      mutateAsync: vi.fn(),
+      isPending: false,
+    },
   }
 })
 
 vi.mock('../../hooks/useBookingQueries', () => ({
   useAllBookings: () => mockAllBookingsState,
+  usePendingBookings: () => mockPendingBookingsState,
+  useAcceptedBookings: () => mockAcceptedBookingsState,
 }))
 
 vi.mock('../../hooks/useBookingMutations', () => ({
@@ -65,7 +100,20 @@ vi.mock('../../hooks/useBookingMutations', () => ({
     mutateAsync: mockMutateAsyncRequeue,
     isPending: false,
   }),
+  useAcceptBooking: () => mockAcceptBookingMutation,
+  useRejectBooking: () => mockRejectBookingMutation,
 }))
+
+vi.mock('../../hooks/useRestaurantSetting', () => ({
+  useRestaurantSetting: () => mockSlotGuestCapacitiesState,
+}))
+
+vi.mock('../../hooks/useServiceSlots', () => ({
+  useDigestSlotConfigs: () => mockDigestSlotsState,
+  useServiceSlots: () => mockServiceSlotsState,
+}))
+
+
 
 function wrapper({ children }: { children: React.ReactNode }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -475,5 +523,110 @@ describe('BookingDangerActionModal — regressione conferme', () => {
     const confirmBtn = screen.getByRole('button', { name: /^Elimina$/i })
     await user.dblClick(confirmBtn)
     expect(onConfirm).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('PendingRequestsTab — warnings capienza e orario passato', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockPendingBookingsState.isLoading = false
+    mockPendingBookingsState.error = null
+    mockPendingBookingsState.data = []
+    mockAcceptedBookingsState.data = []
+    mockDigestSlotsState.data = []
+    mockServiceSlotsState.data = []
+    mockSlotGuestCapacitiesState.data = { cena: 10 }
+    mockAcceptBookingMutation.isPending = false
+    mockAcceptBookingMutation.mutate = vi.fn()
+  })
+
+  it('accetta prenotazione che sfora capienza — mostra CapacityWarningModal e non blocca se confermata', async () => {
+    const user = userEvent.setup()
+
+    mockPendingBookingsState.data = [{
+      id: 'pending-overbooking',
+      status: 'pending',
+      client_name: 'Overbooking Client',
+      client_email: 'over@test.it',
+      desired_date: '2026-06-10',
+      desired_time: '20:00',
+      num_guests: 6,
+      created_at: '2026-06-01T10:00:00Z',
+    }]
+
+    mockDigestSlotsState.data = [{
+      id: 'cena',
+      name: 'Cena',
+      start_time: '19:00',
+      end_time: '23:00',
+      display_order: 1,
+      is_canonical: true,
+    }]
+
+    mockServiceSlotsState.data = [{
+      id: 'cena',
+      name: 'Cena',
+      max_guests: 5,
+    }]
+
+    render(<PendingRequestsTab />, { wrapper })
+
+    const acceptBtn = screen.getByRole('button', { name: /accetta/i })
+    await clickAndFlush(user, acceptBtn)
+
+    // Si aspetta la comparsa del CapacityWarningModal
+    const dialog = await waitFor(() => screen.getByRole('dialog'))
+    expect(within(dialog).getByText(/attenzione: superamento capienza/i)).toBeInTheDocument()
+
+    // Cliccando conferma, chiama mutate
+    await clickAndFlush(user, within(dialog).getByRole('button', { name: /conferma/i }))
+
+    await waitFor(() => {
+      expect(mockAcceptBookingMutation.mutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          bookingId: 'pending-overbooking',
+          numGuests: 6,
+        }),
+        expect.any(Object)
+      )
+    })
+  })
+
+  it('accetta prenotazione con orario passato — mostra PastStartTimeWarningModal e prosegue', async () => {
+    const user = userEvent.setup()
+
+    // Usa una data passata sicura
+    mockPendingBookingsState.data = [{
+      id: 'pending-past',
+      status: 'pending',
+      client_name: 'Past Client',
+      client_email: 'past@test.it',
+      desired_date: '2020-01-01',
+      desired_time: '12:00',
+      num_guests: 2,
+      created_at: '2020-01-01T10:00:00Z',
+    }]
+
+    render(<PendingRequestsTab />, { wrapper })
+
+    const acceptBtn = screen.getByRole('button', { name: /accetta/i })
+    await clickAndFlush(user, acceptBtn)
+
+    // Si aspetta PastStartTimeWarningModal
+    const dialog = await waitFor(() => screen.getByRole('dialog'))
+    expect(within(dialog).getByText(/orario di inizio nel passato/i)).toBeInTheDocument()
+
+    // Conferma avviso orario passato
+    await clickAndFlush(user, within(dialog).getByRole('button', { name: /prosegui comunque/i }))
+
+    // Chiama mutate direttamente (perché non sfora capienza)
+    await waitFor(() => {
+      expect(mockAcceptBookingMutation.mutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          bookingId: 'pending-past',
+        }),
+        expect.any(Object)
+      )
+    })
   })
 })

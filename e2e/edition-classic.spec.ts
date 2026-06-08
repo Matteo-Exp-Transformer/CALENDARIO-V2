@@ -11,37 +11,31 @@
  */
 
 import { test, expect } from '@playwright/test'
+import {
+  dashboardHeaderNav,
+  loginAsClassicAdmin as loginClassic,
+  proSidebar,
+} from './helpers/adminShell'
+import { openCalendarTab, openFirstCalendarBookingModal, openPendingTab } from './helpers/pendingBookings'
 
 // SKIP: richiede staging Supabase configurato con tenant edition='classic'
-test.skip(!process.env.E2E_ADMIN_EMAIL, 'richiede staging Supabase (E2E_ADMIN_EMAIL non impostato)')
+test.skip(!process.env.E2E_CLASSIC_ADMIN_EMAIL, 'richiede tenant Classic (E2E_CLASSIC_ADMIN_EMAIL)')
 
-const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? ''
-const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? ''
+const ADMIN_EMAIL = process.env.E2E_CLASSIC_ADMIN_EMAIL ?? ''
+const ADMIN_PASSWORD = process.env.E2E_CLASSIC_ADMIN_PASSWORD ?? ''
 
 async function loginAsClassicAdmin(page: import('@playwright/test').Page) {
-  await page.goto('/admin')
-  await page.getByLabel(/email/i).fill(ADMIN_EMAIL)
-  await page.getByLabel(/password/i).fill(ADMIN_PASSWORD)
-  await page.getByRole('button', { name: /accedi|login/i }).click()
-  // Attende che la dashboard sia visibile (Classic: sidebar assente)
-  await expect(page.getByRole('navigation', { name: /navigazione principale/i })).not.toBeVisible({
-    timeout: 10000,
-  })
+  await loginClassic(page, ADMIN_EMAIL, ADMIN_PASSWORD)
 }
 
-/**
- * Restituisce il locator dei NavItem dell'header AdminDashboard.
- * Scende nel <nav> del header per evitare ambiguità con bottoni omonimi
- * presenti in altri tab (es. "Calendario" in ArchiveTab su mobile).
- */
 function dashboardNav(page: import('@playwright/test').Page) {
-  return page.locator('header nav')
+  return dashboardHeaderNav(page)
 }
 
 test.describe('Edition Classic — UI base', () => {
   test('nessuna sidebar visibile dopo login', async ({ page }) => {
     await loginAsClassicAdmin(page)
-    await expect(page.getByRole('navigation', { name: /navigazione principale/i })).not.toBeVisible()
+    await expect(proSidebar(page)).not.toBeVisible()
   })
 
   test('5 tab operativi visibili (Calendario, Prenotazioni, Archivio, Menu, Impostazioni)', async ({
@@ -72,12 +66,17 @@ test.describe('Edition Classic — UI base', () => {
 
   test('nessun bottone no-show nel modal dettagli prenotazione', async ({ page }) => {
     await loginAsClassicAdmin(page)
-    await dashboardNav(page).getByRole('button', { name: /prenotazioni/i }).click()
-    // Clicca la prima prenotazione se esiste
-    const firstBooking = page.locator('tr[role="row"], [data-testid="booking-row"]').first()
-    if (await firstBooking.isVisible()) {
-      await firstBooking.click()
-      // Il bottone no-show (gated da features.noShow) non deve apparire
+    await openPendingTab(page)
+    await expect(page.getByRole('button', { name: /no.?show/i })).not.toBeVisible()
+
+    await openCalendarTab(page)
+    const calendarBooking = page
+      .locator('.fc-event')
+      .filter({ hasText: /E2E Test/i })
+      .first()
+      .or(page.locator('main').getByRole('button').filter({ hasText: /E2E Test/i }).first())
+    if (await calendarBooking.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await openFirstCalendarBookingModal(page)
       await expect(page.getByRole('button', { name: /no.?show/i })).not.toBeVisible()
     }
   })

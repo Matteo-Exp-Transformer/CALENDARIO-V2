@@ -55,3 +55,4 @@ pw-*.mjs
 # Pagine HTML salvate dal browser (es. export Supabase Dashboard)
 /*.html
 /*_files/
+.vercel

@@ -5,8 +5,19 @@
  */
 import { test, expect } from '@playwright/test'
 
-const TENANT_SLUG = process.env.E2E_TENANT_SLUG || 'test-ristorante'
+const TENANT_SLUG =
+  process.env.E2E_PUBLIC_BOOKING_SLUG ||
+  process.env.E2E_CLASSIC_TENANT_SLUG ||
+  process.env.E2E_TENANT_SLUG ||
+  'test-ristorante'
 const BOOKING_URL = `/prenota/${TENANT_SLUG}`
+
+async function pickValidBookingTime(page: import('@playwright/test').Page) {
+  await page.getByRole('button', { name: /^ora \*/i }).click()
+  await page.getByLabel(/ora \(formato 24 ore\)/i).selectOption('19')
+  await page.getByLabel(/^minuti$/i).selectOption('00')
+  await page.getByRole('button', { name: /conferma orario/i }).click()
+}
 
 test.describe('Form prenotazione pubblica', () => {
   test('la pagina di prenotazione si apre correttamente', async ({ page }) => {
@@ -52,21 +63,23 @@ test.describe('Form prenotazione pubblica', () => {
   test('submit con dati validi crea la prenotazione', async ({ page }) => {
     await page.goto(BOOKING_URL)
 
-    const nameInput = page.locator('input[id="client_name"], input[placeholder*="Nome"]').first()
-    const emailInput = page.locator('input[type="email"]').first()
-    const phoneInput = page.locator('input[type="tel"], input[id="client_phone"]').first()
-    const guestsInput = page.locator('input[id="num_guests"]').first()
+    await expect(page.getByTestId('booking-mode-cards')).toBeVisible({ timeout: 10000 })
+    await page.getByTestId('booking-mode-card-tavolo').click()
 
-    if (await nameInput.isVisible()) await nameInput.fill('Mario Rossi')
-    if (await emailInput.isVisible()) await emailInput.fill('mario.rossi@test.it')
-    if (await phoneInput.isVisible()) await phoneInput.fill('+39 333 1234567')
-    if (await guestsInput.isVisible()) await guestsInput.fill('2')
+    await pickValidBookingTime(page)
+    await page.getByRole('textbox', { name: /nome completo/i }).fill(`E2E Test ${Date.now()}`)
+    await page.getByRole('textbox', { name: /^ospiti/i }).fill('2')
+    await page.getByRole('textbox', { name: /telefono/i }).fill('+39 333 1234567')
+    await page.getByRole('textbox', { name: /^email/i }).fill('e2e.test@example.com')
 
-    await page.locator('button[type="submit"]').first().click()
+    await page.getByRole('checkbox', { name: /privacy policy/i }).check()
 
-    const successSignal = page.locator(
-      '[class*="toast"], [role="status"], [class*="success"], [class*="confirm"]'
-    ).first()
-    await expect(successSignal).toBeVisible({ timeout: 8000 })
+    await page.getByRole('button', { name: /invia prenotazione/i }).click()
+
+    const successSignal = page
+      .getByRole('heading', { name: /richiesta di prenotazione inviata/i })
+      .or(page.locator('.Toastify__toast--success'))
+      .first()
+    await expect(successSignal).toBeVisible({ timeout: 12000 })
   })
 })

@@ -10,6 +10,7 @@
  */
 
 import { test, expect } from '@playwright/test'
+import { assertProSidebarVisible } from '../helpers/adminShell'
 
 test.skip(!process.env.E2E_PRO_ADMIN_EMAIL, 'richiede staging Pro configurato (E2E_PRO_ADMIN_EMAIL non impostato)')
 
@@ -24,9 +25,7 @@ test.describe('Admin Pro — Login', () => {
     await page.getByRole('button', { name: /accedi|login/i }).click()
 
     // Pro ha la sidebar — la sua presenza conferma edition Pro attiva
-    await expect(page.getByRole('navigation', { name: /navigazione principale/i })).toBeVisible({
-      timeout: 15000,
-    })
+    await assertProSidebarVisible(page)
   })
 
   test('senza sessione attiva, /admin reindirizza a /login', async ({ page }) => {
@@ -41,8 +40,7 @@ test.describe('Admin Pro — Login', () => {
     await page.getByLabel(/password/i).fill('password-sbagliata-xyz')
     await page.getByRole('button', { name: /accedi|login/i }).click()
     // Deve comparire un toast o messaggio di errore
-    await expect(
-      page.getByRole('alert').or(page.locator('[class*="toast"], [class*="error"]')).first()
-    ).toBeVisible({ timeout: 5000 })
+    const errorToast = page.locator('.Toastify__toast--error')
+    await expect(errorToast).toBeVisible({ timeout: 5000 })
   })
 })
