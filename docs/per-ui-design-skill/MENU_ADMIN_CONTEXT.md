@@ -54,6 +54,11 @@ Scroll al form (anche **Modifica** su un’altra card con form già aperto): `sc
 su titolo form (`productFormTitleRef` / `categoryFormTitleRef`), `scrollMarginTop` ~132px,
 `ensureVisible: true` — stesso helper dell’overlay Categorie Menu (`adminScroll.ts`).
 
+**Cap testo compose Prenota (FU-030 Fase 1, 10-06-26):** `BOOKING_MENU_COMPOSE_TEXT_LIMITS` —
+nome prodotto **24**, descrizione **79** (`maxLength` + contatore `N/max` nel form prodotto);
+titolo categoria **24** nell'overlay «Categorie Menu». Allineati ai cap sottotab card. Il pubblico
+tronca in silenzio al render (`clampBookingText`); vedi `Prenota-Skill/contesto/PRENOTA_TEXT_LIMITS_MAP.md` §E.
+
 ## 4. Promo testuali
 
 In `booking_menu_promos` (campi `label` admin + `message` cliente, `booking_types`,
