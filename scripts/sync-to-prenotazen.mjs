@@ -9,7 +9,11 @@
  *   3. Sovrascrive l'albero di PrenotaZen con l'export, RIMUOVENDO prima i vecchi file di codice
  *      (così un file cancellato in dev sparisce anche dalla pubblica).
  *   4. Rimuove dall'export ciò che NON va in pubblico (docs/, .cursor/, .claude/, AGENTS.md, ecc.).
- *   5. Lascia PrenotaZen pronta: mostra `git status` e i comandi finali da lanciare.
+ *   5. Riapplica gli OVERRIDE pubblici: file che in pubblico devono essere DIVERSI da dev
+ *      (README utente, .gitignore pubblico, husky trimmato, .env.example redatti). Le versioni
+ *      "buone" vivono in scripts/prenotazen-overrides/ e vincono sempre sull'export.
+ *   6. Rimuove i README tecnici interni che non vanno pubblicati.
+ *   7. Lascia PrenotaZen pronta: mostra `git status` e i comandi finali da lanciare.
  *
  * COSA NON FA (di proposito): non committa e non pusha. L'ultimo passo lo fai tu/l'agente,
  * dopo aver guardato il diff. Così non si pubblica mai nulla alla cieca.
@@ -25,7 +29,7 @@
  */
 
 import { execSync } from 'node:child_process'
-import { existsSync, rmSync, readdirSync } from 'node:fs'
+import { existsSync, rmSync, readdirSync, cpSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -33,6 +37,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const DEV_ROOT = resolve(__dirname, '..') // CalendarBackup-v2
 // PrenotaZen è la repo sorella, accanto a CalendarBackup-v2
 const PUBLIC_ROOT = resolve(DEV_ROOT, '..', 'PrenotaZen')
+// Versioni "pubbliche" dei file che differiscono da dev (vincono sull'export).
+const OVERRIDES_ROOT = resolve(__dirname, 'prenotazen-overrides')
 
 // File/cartelle che NON devono MAI finire nella repo pubblica, anche se tracciati in dev.
 // (git archive porta tutti i file tracciati; questi li ri-rimuoviamo a valle.)
@@ -47,6 +53,27 @@ const STRIP_FROM_PUBLIC = [
   'CHANGELOG.md',
   'Report idea workflow per sviluppatore',
 ]
+
+// README/guide tecniche di sviluppo che NON vanno pubblicate (citano project-id, MCP, skill).
+// Stanno dentro cartelle whitelisted (tests/, e2e/, supabase/) quindi vanno tolte una a una.
+const STRIP_TECH_DOCS = [
+  'tests/README.md',
+  'e2e/GUIDA_USO_QUERIES_TEST_VERIFICATION.md',
+  'supabase/scripts/README_RESET_TEST_DATABASE.md',
+]
+
+// File la cui versione PUBBLICA differisce da dev: la versione corretta è in OVERRIDES_ROOT
+// e viene copiata sopra l'export. Path relativi alla root della repo.
+const PUBLIC_OVERRIDES = [
+  'README.md', // README per il ristoratore, non per dev
+  '.gitignore', // gitignore pubblico (ignora docs/.cursor/.claude/.vercel + niente /*.html)
+  '.husky/pre-commit', // solo lint-staged, senza hook .cursor
+  '.env.example', // project-id redatti a placeholder
+  '.env.production.local.example', // project-id prod redatto
+]
+// package.json NON è un override congelato (perderebbe le dipendenze nuove di dev):
+// applichiamo solo la patch del campo "name" sull'export reale.
+const PUBLIC_PACKAGE_NAME = 'prenotazen'
 
 // Cosa cancellare dall'albero pubblico PRIMA di estrarre il nuovo export, così i file
 // rimossi in dev spariscono anche in pubblico. NON tocchiamo .git, node_modules, dist.
@@ -131,7 +158,46 @@ for (const rel of STRIP_FROM_PUBLIC) {
   }
 }
 
-// --- 5. Esito + istruzioni finali -------------------------------------------
+// --- 5. Rimuovo i README tecnici interni ------------------------------------
+log('Rimuovo i README tecnici di sviluppo (non vanno in pubblico)')
+for (const rel of STRIP_TECH_DOCS) {
+  const p = join(PUBLIC_ROOT, rel)
+  if (existsSync(p)) {
+    rmSync(p, { force: true })
+    ok(`rimosso ${rel}`)
+  }
+}
+
+// --- 6. Riapplico gli override pubblici -------------------------------------
+log('Applico gli override pubblici (README utente, gitignore, husky, env redatti)')
+if (!existsSync(OVERRIDES_ROOT)) {
+  fail(
+    `Cartella override mancante: ${OVERRIDES_ROOT}\n` +
+      `  Deve contenere le versioni pubbliche dei file (README.md, .gitignore, ...).`,
+  )
+}
+for (const rel of PUBLIC_OVERRIDES) {
+  const src = join(OVERRIDES_ROOT, rel)
+  const dst = join(PUBLIC_ROOT, rel)
+  if (!existsSync(src)) {
+    fail(`Override atteso ma assente: ${src}\n  Aggiungilo o rimuovilo da PUBLIC_OVERRIDES.`)
+  }
+  cpSync(src, dst)
+  ok(`override applicato: ${rel}`)
+}
+
+// package.json: patch del solo "name" (mantiene dipendenze/script aggiornati da dev)
+const pkgPath = join(PUBLIC_ROOT, 'package.json')
+const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
+if (pkg.name !== PUBLIC_PACKAGE_NAME) {
+  pkg.name = PUBLIC_PACKAGE_NAME
+  writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
+  ok(`package.json name → "${PUBLIC_PACKAGE_NAME}"`)
+} else {
+  ok('package.json name già corretto')
+}
+
+// --- 7. Esito + istruzioni finali -------------------------------------------
 log('Stato finale di PrenotaZen')
 const status = sh('git status --short', { cwd: PUBLIC_ROOT })
 console.log(status ? status : '  (nessuna differenza: PrenotaZen è già allineata a main)')
