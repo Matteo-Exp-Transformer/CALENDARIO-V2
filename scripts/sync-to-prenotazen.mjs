@@ -52,6 +52,9 @@ const STRIP_FROM_PUBLIC = [
   'CONTRIBUTING.md',
   'CHANGELOG.md',
   'Report idea workflow per sviluppatore',
+  // Meccanica di rilascio interna: non appartiene alla repo pubblica.
+  'scripts/sync-to-prenotazen.mjs',
+  'scripts/prenotazen-overrides',
 ]
 
 // README/guide tecniche di sviluppo che NON vanno pubblicate (citano project-id, MCP, skill).
