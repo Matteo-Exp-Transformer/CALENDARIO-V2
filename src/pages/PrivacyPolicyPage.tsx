@@ -1,8 +1,9 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeft, Shield } from 'lucide-react'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
+import { resolvePrivacyReturnPath } from '@/features/booking/utils/privacyPolicyNavigation'
 
 /**
  * Privacy Policy — pagina pubblica (`/privacy`).
@@ -23,19 +24,21 @@ const PRIVACY_POLICY_VERSION = '2.0'
 const PRIVACY_POLICY_LAST_UPDATE = '2026-05-23'
 
 export const PrivacyPolicyPage: React.FC = () => {
+  const location = useLocation()
   const { organizationName } = useTenantContext()
   const restaurantName = useRestaurantName() || organizationName || 'il ristorante'
+  const returnPath = resolvePrivacyReturnPath(location.search, location.state)
 
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-3xl mx-auto px-4 py-12">
         {/* Back */}
         <Link
-          to="/"
+          to={returnPath ?? '/'}
           className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-primary-600 mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Torna alla home
+          {returnPath ? 'Torna alla prenotazione' : 'Torna alla home'}
         </Link>
 
         {/* Header */}

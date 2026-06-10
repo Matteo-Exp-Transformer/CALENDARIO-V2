@@ -1377,6 +1377,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             onPrivacyAttentionInteract={clearAttentionField}
             publicFormFields
             lightTextOnDarkBackground={publicFormLightTextOnDarkBackground}
+            tenantSlug={tenantSlug}
           />
         </div>
       </div>

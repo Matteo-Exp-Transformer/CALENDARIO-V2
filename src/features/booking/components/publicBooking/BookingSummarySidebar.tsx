@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import { CalendarDays, Clock, Users, UtensilsCrossed, Phone } from 'lucide-react'
 import type { BookingRequestInput } from '@/types/booking'
 import {
+  getShowOfferDetailsInSummary,
   getSubTabPricePerPerson,
   resolveCarouselSummaryDisplay,
   type BookingMode,
@@ -111,6 +112,19 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
     () => (isCarouselSummary ? resolveCarouselSummaryDisplay(activeSubTab) : null),
     [activeSubTab, isCarouselSummary],
   )
+  const subTabLabel = activeSubTab?.label?.trim() ?? ''
+  const showCarouselOfferDetails =
+    isCarouselSummary && getShowOfferDetailsInSummary(activeSubTab)
+  const showTipoRow = isCarouselSummary ? showCarouselOfferDetails && subTabLabel.length > 0 : true
+  const tipoValue = isCarouselSummary
+    ? subTabLabel
+    : getModeLabelByType(modes, formData.booking_type)
+  const showOpzioneMenu =
+    activeSubTab &&
+    (isCarouselSummary
+      ? showCarouselOfferDetails && subTabLabel.length > 0
+      : subTabLabel.length > 0 ||
+        (activeSubTab.price_per_person != null && activeSubTab.price_per_person > 0))
 
   return (
     <div className={cn('w-full max-w-full self-start', className)}>
@@ -157,33 +171,25 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
           </div>
         </div>
 
-        {/* Modalità */}
-        <div className="flex items-start gap-2.5">
-          <UtensilsCrossed className="h-4 w-4 text-warm-orange mt-0.5 shrink-0" />
-          <div className="min-w-0">
-            <p className="text-[13px] text-warm-wood-dark/60 font-semibold uppercase tracking-wide">Tipo</p>
-            <p className="text-base font-bold text-warm-wood">
-              {getModeLabelByType(modes, formData.booking_type)}
-            </p>
+        {/* Modalità / nome carosello (carosello: solo se show_offer_details_in_summary) */}
+        {showTipoRow && (
+          <div className="flex items-start gap-2.5">
+            <UtensilsCrossed className="h-4 w-4 text-warm-orange mt-0.5 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[13px] text-warm-wood-dark/60 font-semibold uppercase tracking-wide">Tipo</p>
+              <p className="text-base font-bold text-warm-wood">{tipoValue}</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Sottotab selezionata */}
-        {activeSubTab &&
-          (activeSubTab.label.trim() ||
-            (activeSubTab.price_per_person != null && activeSubTab.price_per_person > 0)) && (
+        {showOpzioneMenu && activeSubTab && (
             <div className="border-t border-black/10 pt-3">
               <p className="text-[13px] text-warm-wood-dark/60 font-semibold uppercase tracking-wide">
                 Opzione menu
               </p>
               <p className="text-base font-bold text-warm-wood leading-tight mt-0.5">
-                {activeSubTab.label}
-                {hasPresetPrice && presetPricePerPerson != null && (
-                  <span className="text-warm-wood-dark/80 font-semibold">
-                    {' '}
-                    — {formatCurrency(presetPricePerPerson)}/persona
-                  </span>
-                )}
+                {subTabLabel}
               </p>
             </div>
           )}
@@ -259,14 +265,11 @@ export const BookingSummarySidebar: React.FC<BookingSummarySidebarProps> = ({
         {/* Totali */}
         {showTotals && (
           <div className="border-t border-black/10 pt-3 space-y-1">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-sm text-warm-wood-dark/70 font-semibold">A persona</span>
-              <span className="text-base font-bold text-warm-wood">
-                {hasPresetPrice && formData.num_guests > 0
-                  ? `${formatCurrency(totalPerPerson)} x ${formData.num_guests} ospiti`
-                  : formatCurrency(totalPerPerson)}
-              </span>
-            </div>
+            <p className="text-base font-bold text-warm-wood">
+              {hasPresetPrice && formData.num_guests > 0
+                ? `${formatCurrency(totalPerPerson)} x ${formData.num_guests} ospiti`
+                : formatCurrency(totalPerPerson)}
+            </p>
             {formData.num_guests > 0 && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-warm-wood-dark/70 font-semibold">Totale stimato</span>

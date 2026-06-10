@@ -73,7 +73,7 @@ const SectionSaveButton: React.FC<{
   </Button>
 )
 
-/** Annulla + Salva per una sola sezione (card/modulo). Eccezione: editor sottotab (`commitSubTabEditor`). */
+/** Annulla + Salva per una sola sezione (card/modulo). Editor sottotab: solo «Annulla» bozza; persist dal footer. */
 export const SectionActionBar: React.FC<{
   onCancel: () => void
   onSave: () => void

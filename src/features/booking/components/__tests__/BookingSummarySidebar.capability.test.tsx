@@ -84,3 +84,86 @@ describe('BookingSummarySidebar — menù per CAPACITÀ non per nome', () => {
     expect(screen.queryByText('Il tuo menu')).not.toBeInTheDocument()
   })
 })
+
+const CAROUSEL_SUBTAB = {
+  id: 'carousel-1',
+  display: 'carousel' as const,
+  label: 'Benvenuto!',
+  carousel_items: [
+    { image_url: 'https://example.com/1.jpg', title: 'Prima offerta', sort_order: 0 },
+    { image_url: 'https://example.com/2.jpg', title: 'Seconda offerta', sort_order: 1 },
+  ],
+}
+
+describe('BookingSummarySidebar — carosello show_offer_details_in_summary', () => {
+  const modes = [makeMode({ booking_type: 'rinfresco_laurea', label: 'Rinfresco' })]
+
+  it('toggle ON: nome carosello in Tipo e Opzione menu + titoli slide', () => {
+    render(
+      <BookingSummarySidebar
+        formData={{ num_guests: 2, booking_type: 'rinfresco_laurea', menu_total_per_person: 33, menu_total_booking: 66 }}
+        modes={modes}
+        activeSubTab={{ ...CAROUSEL_SUBTAB, price_per_person: 33 }}
+      />,
+    )
+    expect(screen.getByText('Tipo')).toBeInTheDocument()
+    expect(screen.getAllByText('Benvenuto!').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByText('Opzione menu')).toBeInTheDocument()
+    expect(screen.getByText('Offerta selezionata')).toBeInTheDocument()
+    expect(screen.getByText('Prima offerta')).toBeInTheDocument()
+  })
+
+  it('toggle OFF con prezzo: nasconde nome e titoli, prezzo nel blocco carosello', () => {
+    render(
+      <BookingSummarySidebar
+        formData={{ num_guests: 2, booking_type: 'rinfresco_laurea' }}
+        modes={modes}
+        activeSubTab={{
+          ...CAROUSEL_SUBTAB,
+          show_offer_details_in_summary: false,
+          price_per_person: 33,
+        }}
+      />,
+    )
+    expect(screen.queryByText('Tipo')).not.toBeInTheDocument()
+    expect(screen.queryByText('Benvenuto!')).not.toBeInTheDocument()
+    expect(screen.queryByText('Opzione menu')).not.toBeInTheDocument()
+    expect(screen.queryByText('Offerta selezionata')).not.toBeInTheDocument()
+    expect(screen.queryByText('Prima offerta')).not.toBeInTheDocument()
+    expect(screen.getByText('33,00 €')).toBeInTheDocument()
+    expect(screen.getByText('/persona')).toBeInTheDocument()
+  })
+
+  it('toggle OFF senza prezzo: niente nome, titoli né prezzo carosello', () => {
+    render(
+      <BookingSummarySidebar
+        formData={{ num_guests: 2, booking_type: 'rinfresco_laurea' }}
+        modes={modes}
+        activeSubTab={{ ...CAROUSEL_SUBTAB, show_offer_details_in_summary: false }}
+      />,
+    )
+    expect(screen.queryByText('Benvenuto!')).not.toBeInTheDocument()
+    expect(screen.queryByText('Offerta selezionata')).not.toBeInTheDocument()
+    expect(screen.queryByText('Prima offerta')).not.toBeInTheDocument()
+    expect(screen.queryByText(/\/persona/)).not.toBeInTheDocument()
+  })
+
+  it('card sottotab: Tipo mostra etichetta modalità, non influenzata dal toggle carosello', () => {
+    render(
+      <BookingSummarySidebar
+        formData={{ num_guests: 2, booking_type: 'rinfresco_laurea' }}
+        modes={modes}
+        activeSubTab={{
+          id: 'card-1',
+          display: 'cards',
+          label: 'Menu festa',
+          price_per_person: 40,
+          is_fixed_menu: true,
+        }}
+      />,
+    )
+    expect(screen.getByText('Tipo')).toBeInTheDocument()
+    expect(screen.getByText('Rinfresco')).toBeInTheDocument()
+    expect(screen.getByText('Menu festa')).toBeInTheDocument()
+  })
+})

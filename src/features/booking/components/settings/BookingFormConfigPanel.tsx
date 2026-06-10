@@ -141,6 +141,30 @@ function subTabValidationError(tab: SubTab): string | null {
   return null
 }
 
+/** Integra bozze sottotab ancora aperte nell'editor prima del persist footer. */
+function mergeOpenSubTabEditorsIntoModes(
+  bookingModes: BookingPublicFormConfig['booking_modes'],
+  drafts: Record<string, SubTab | null>,
+): BookingPublicFormConfig['booking_modes'] {
+  return bookingModes.map((mode) => {
+    const draft = drafts[mode.id]
+    if (!draft) return mode
+    return { ...mode, sub_tabs: [...(mode.sub_tabs ?? []), draft] }
+  })
+}
+
+function findSubTabValidationError(
+  bookingModes: BookingPublicFormConfig['booking_modes'],
+): string | null {
+  for (const mode of bookingModes) {
+    for (const tab of mode.sub_tabs ?? []) {
+      const err = subTabValidationError(tab)
+      if (err) return err
+    }
+  }
+  return null
+}
+
 function bookingTypeUsesMenuItems(bookingType: BookingMode['booking_type'], items: MenuItem[]): boolean {
   return items.some((item) => normalizeMenuItemBookingTypes(item.booking_types).includes(bookingType))
 }
@@ -667,36 +691,21 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   }
 
   const saveModesSection = async () => {
-    await persistModesSection(config.booking_modes)
-  }
-
-  /** Salva su DB le modalità (incl. sottotab appena modificate) e chiude l'editor — niente secondo Salva sulla card. */
-  const commitSubTabEditor = async (modeId: string, isDraft: boolean) => {
-    let bookingModes = config.booking_modes
-    if (isDraft) {
-      const draft = draftSubTabsByMode[modeId]
-      if (!draft) return
-      const draftError = subTabValidationError(draft)
-      if (draftError) {
-        toast.error(draftError)
-        return
-      }
-      bookingModes = config.booking_modes.map((m) =>
-        m.id === modeId ? { ...m, sub_tabs: [...(m.sub_tabs ?? []), draft] } : m,
-      )
-      setConfig((prev) => ({ ...prev, booking_modes: bookingModes }))
-    }
-    const modeToSave = bookingModes.find((mode) => mode.id === modeId)
-    const invalidSubTab = modeToSave?.sub_tabs.find((tab) => subTabValidationError(tab))
-    if (invalidSubTab) {
-      toast.error(subTabValidationError(invalidSubTab) ?? 'Completa o elimina la sottotab prima di salvarla.')
+    const bookingModes = mergeOpenSubTabEditorsIntoModes(config.booking_modes, draftSubTabsByMode)
+    const validationError = findSubTabValidationError(bookingModes)
+    if (validationError) {
+      toast.error(validationError)
       return
+    }
+    const hasOpenDrafts = Object.values(draftSubTabsByMode).some(Boolean)
+    if (hasOpenDrafts) {
+      setConfig((prev) => ({ ...prev, booking_modes: bookingModes }))
     }
     try {
       await persistModesSection(bookingModes)
     } catch {
       markModesDirty()
-      toast.error('Errore nel salvataggio sottotab')
+      toast.error('Errore nel salvataggio modalità')
     }
   }
 
@@ -1034,7 +1043,9 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
             <div className="min-w-0">
               <p className="text-sm font-medium text-slate-700">Mostra dettaglio offerta</p>
               <p className="text-xs text-slate-500">
-                Se disattivo, il cliente vede solo il prezzo nel riepilogo prenotazione
+                Nel riepilogo Prenota mostra o nasconde il nome carosello e i titoli delle slide.
+                Il prezzo a persona resta visibile solo se compilato sotto, indipendentemente da questo
+                interruttore.
               </p>
             </div>
             <button
@@ -1381,21 +1392,13 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
         {tab.display === 'cards' && cardPriceSection}
 
-        <div className="flex justify-end gap-2">
-          {isDraft && (
+        {isDraft ? (
+          <div className="flex justify-end">
             <Button type="button" variant="ghost" size="sm" onClick={() => cancelDraftSubTab(mode.id)}>
               Annulla
             </Button>
-          )}
-          <Button
-            type="button"
-            size="sm"
-            disabled={upsert.isPending}
-            onClick={() => void commitSubTabEditor(mode.id, isDraft)}
-          >
-            Salva
-          </Button>
-        </div>
+          </div>
+        ) : null}
       </div>
     )
   }

@@ -13,6 +13,10 @@ import {
   BOOKING_PUBLIC_FIELD_SCROLL_MARGIN,
   shouldDismissBookingPublicAttention,
 } from '../utils/bookingPublicFormAttention'
+import {
+  buildPrenotaReturnPath,
+  buildPrivacyPolicyLink,
+} from '../utils/privacyPolicyNavigation'
 
 const C = BOOKING_PUBLIC_CLIENT_TEXT_LIMITS
 
@@ -33,6 +37,8 @@ interface DietaryRestrictionsSectionProps {
   publicFormFields?: boolean
   /** Testo privacy/obbligatori in bianco solo su sfondo full-page foto. */
   lightTextOnDarkBackground?: boolean
+  /** Slug tenant: il link Privacy include ?from=/prenota/:slug per il ritorno. */
+  tenantSlug?: string
 }
 
 const FIELD_LABEL_CLASS =
@@ -55,7 +61,11 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
   omitSpecialRequestsSection = false,
   publicFormFields = false,
   lightTextOnDarkBackground = false,
+  tenantSlug,
 }) => {
+  const privacyReturnPath = buildPrenotaReturnPath(tenantSlug)
+  const privacyPolicyTo = buildPrivacyPolicyLink(privacyReturnPath)
+
   return (
     <div className={publicFormFields ? 'w-full space-y-5' : 'space-y-5'}>
       <div className="space-y-1">
@@ -165,7 +175,8 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
               >
                 Accetto la{' '}
                 <Link
-                  to="/privacy"
+                  to={privacyPolicyTo}
+                  state={privacyReturnPath ? { from: privacyReturnPath } : undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(
