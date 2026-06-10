@@ -343,6 +343,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [timeSlotsHelpOpen, setTimeSlotsHelpOpen] = useState(false)
   const [slotValidationError, setSlotValidationError] = useState<string | null>(null)
   const [businessHours, setBusinessHours] = useState<BusinessHours>(() => getDefaultBusinessHours())
+  const businessHoursValidationError = validateBusinessHours(businessHours)
   const [contactEmail, setContactEmail] = useState('')
   const [contactPhone, setContactPhone] = useState('')
   const [contactAddress, setContactAddress] = useState('')
@@ -745,9 +746,8 @@ export const RestaurantSettingsTab: React.FC = () => {
   }
 
   const handleSave = async () => {
-    const businessHoursError = validateBusinessHours(businessHours)
-    if (businessHoursError) {
-      toast.error(businessHoursError)
+    if (businessHoursValidationError) {
+      toast.error(businessHoursValidationError)
       return
     }
 
@@ -1380,7 +1380,7 @@ export const RestaurantSettingsTab: React.FC = () => {
           onSave={handleSave}
           pending={upsert.isPending}
           cancelDisabled={upsert.isPending || !dirty}
-          saveDisabled={upsert.isPending || !tenantId}
+          saveDisabled={upsert.isPending || !tenantId || businessHoursValidationError != null}
         />
       )}
 
