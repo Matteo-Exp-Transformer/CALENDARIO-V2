@@ -20,7 +20,7 @@ export const BOOKING_PUBLIC_CLIENT_TEXT_LIMITS = {
 /** Copy ristoratore su Pagina Prenota — contatore admin. */
 export const BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS = {
   /** Nome locale (Anagrafica + h1 Pagina Prenota). */
-  restaurantName: 45,
+  restaurantName: 40,
   pageTitle: 50,
   pageDescription: 120,
   modeLabel: 40,
@@ -38,7 +38,7 @@ export const BOOKING_HEADER_FONT_SIZE_MIN = 8
 export const BOOKING_HEADER_FONT_SIZE_MAX_BY_TARGET: Record<BookingHeaderTextTarget, number> = {
   restaurant_name: 38,
   page_title: 38,
-  page_description: 22,
+  page_description: 28,
 }
 
 /** Legacy globale (nome + titolo); preferire BOOKING_HEADER_FONT_SIZE_MAX_BY_TARGET. */

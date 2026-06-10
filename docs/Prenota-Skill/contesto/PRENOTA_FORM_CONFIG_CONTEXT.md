@@ -83,7 +83,7 @@ description: >-
 - Ogni stile contiene:
   - `font`: id in `BOOKING_HEADER_FONT_OPTIONS` (Google Fonts OFL + **Mistral** solo sistema). Legacy DB `thirsty-script` → migrate-on-read a `dancing-script` (Dancing Script, Google).
   - `color`: hex `#RRGGBB`
-  - `fontSize`: intero px; **min 8**; **max per target:** nome e titolo **38**, descrizione **22** (default: nome **34**, titolo **30**, descrizione **16**). Costanti in `bookingPrenotaTextLimits.ts` (`BOOKING_HEADER_FONT_SIZE_MAX_BY_TARGET`).
+  - `fontSize`: intero px; **min 8**; **max per target:** nome e titolo **38**, descrizione **28** (default: nome **34**, titolo **30**, descrizione **16**). Costanti in `bookingPrenotaTextLimits.ts` (`BOOKING_HEADER_FONT_SIZE_MAX_BY_TARGET`).
   - `fontWeight`: `normal` | `bold` — default bold su nome/titolo, normal su descrizione
   - `textDecoration`: `none` | `underline` — default `none`
   - `textAlign?`: `left` | `center` | `right`
@@ -167,7 +167,7 @@ Tabella 1:1: **`PRENOTA_TEXT_LIMITS_MAP.md`**. Costanti: `src/features/booking/c
 
 | Area admin | Limiti chiave |
 |------------|---------------|
-| Header | titolo **50**, descrizione **120**, font descrizione **8–22px** |
+| Header | titolo **50**, descrizione **120**, font descrizione **8–28px** |
 | Tipologie | titolo **40**, descrizione **61** |
 | Sottotab card | titolo **24**, descrizione **79**, portate **12** (non in pubblico) |
 | Carosello slide | **19 / 18 / 38** (`BOOKING_CAROUSEL_SLIDE_TEXT_LIMITS`) |

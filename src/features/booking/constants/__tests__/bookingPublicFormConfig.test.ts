@@ -37,11 +37,11 @@ describe('parseBookingHeaderStylesFromUnknown — fontSize migrate-on-read', () 
     expect(styles.page_description.fontSize).toBe(16)
   })
 
-  it('page_description fontSize oltre 22 → clamp a 22', () => {
+  it('page_description fontSize oltre 28 → clamp a 28', () => {
     const styles = parseBookingHeaderStylesFromUnknown({
       page_description: { font: 'montserrat', color: '#4a2d19', fontSize: 50 },
     })
-    expect(styles.page_description.fontSize).toBe(22)
+    expect(styles.page_description.fontSize).toBe(28)
   })
 
   it('font id sconosciuto → fallback font del target', () => {

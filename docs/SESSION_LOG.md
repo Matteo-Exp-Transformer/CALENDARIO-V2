@@ -13,6 +13,11 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 10-06-26 | Prenota — **footer Salva integra bozze carosello/card** 🔶 **lavoro ok** | [Report](Sessioni%20di%20lavoro/10-06-26/Report-prenota-footer-salva-carosello-bozza-10-06-26.md) — Personalizza form: rimosso Salva interno editor; footer unico persiste `draftSubTabsByMode`; skill `PRENOTA_FORM_CONFIG_CONTEXT` § salvataggio; lint/typecheck OK; validate globale rosso `agenti-locali/` preesistente |
+| 10-06-26 | Batch **P1–P3** (orari overlap + nome 40 + font 28) ✅ **report finale** | [Report revisione](Sessioni%20di%20lavoro/10-06-26/Report-revisione-batch-p1-p2-p3-10-06-26.md) — 3 fix OK; test **13** dedicati + typecheck OK; P4 in tree non incluso nel commit |
+| 10-06-26 | Admin — **nome locale max 40 caratteri** (light) 🔶 **lavoro ok** | → incluso nel batch P1–P3 sopra |
+| 10-06-26 | Admin — **anti-overlap orari apertura** 🔶 **lavoro ok** | → incluso nel batch P1–P3 sopra |
+| 10-06-26 | Prenota — **tetto font descrizione header 28px** (light) 🔶 **lavoro ok** | → incluso nel batch P1–P3 sopra |
 | 07-06-26 | Admin — **Archivio Reinserisci con orario** ✅ **report finale** | [Report](Sessioni%20di%20lavoro/07-06-26/Report-archivio-reinserisci-orario-07-06-26.md) — D4 affinato: bottone sempre visibile; modale orario se mancano slot; validate **463**; 31 test blindatura |
 | 07-06-26 | Docs — **P2/P3 tracciamento Area 2** ✅ **report finale** | [Report](Sessioni%20di%20lavoro/07-06-26/Report-docs-p2-p3-tracciamento-area2-07-06-26.md) — QA R1 CSS-equivalent onesto (FU-043/045); footnote report revisione D2/U4/U8; nessun codice |
 | 07-06-26 | Docs — **P3 footnote report revisione** allineata a batch fix D2/U4/U8 (light) | `Report-revisione-fase-d-e-scoping-fix-07-06-26.md` §3 + R4 — sequenza scoping iniziale → inclusi e chiusi nel batch 07-06-26 |

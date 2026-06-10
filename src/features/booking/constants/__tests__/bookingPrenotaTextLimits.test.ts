@@ -9,10 +9,10 @@ import {
 } from '../bookingPrenotaTextLimits'
 
 describe('bookingPrenotaTextLimits', () => {
-  it('restaurantName max 45', () => {
-    expect(BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.restaurantName).toBe(45)
+  it('restaurantName max 40', () => {
+    expect(BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.restaurantName).toBe(40)
     expect(clampBookingText('x'.repeat(50), BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.restaurantName)).toHaveLength(
-      45,
+      40,
     )
   })
 
@@ -33,10 +33,16 @@ describe('bookingPrenotaTextLimits', () => {
     ).toBe('Glutine'.length + 'leggero'.length)
   })
 
-  it('page_description fontSize max 22', () => {
+  it('page_description fontSize max 28', () => {
     expect(
       normalizeBookingHeaderFontSizeForTarget(50, 'page_description', 16),
-    ).toBe(22)
+    ).toBe(28)
+    expect(
+      normalizeBookingHeaderFontSizeForTarget(29, 'page_description', 16),
+    ).toBe(28)
+    expect(
+      normalizeBookingHeaderFontSizeForTarget(28, 'page_description', 16),
+    ).toBe(28)
     expect(
       normalizeBookingHeaderFontSizeForTarget(50, 'page_title', 30),
     ).toBe(38)

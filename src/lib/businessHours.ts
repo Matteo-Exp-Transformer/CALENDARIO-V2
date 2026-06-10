@@ -3,6 +3,8 @@
  * Validates booking date/time against restaurant opening hours
  */
 
+import { slotRangesOverlap } from '@/features/booking/utils/bookingTimeSlots'
+
 export interface BusinessHourSlot {
   open: string // Format: "HH:mm" (e.g., "11:00")
   close: string // Format: "HH:mm" (e.g., "00:00" or "01:00")
@@ -124,6 +126,93 @@ export function formatHours(slots: BusinessHourSlot[]): string {
 /**
  * Get default hardcoded business hours (fallback)
  */
+const HH_MM = /^([01]\d|2[0-3]):[0-5]\d$/
+
+export const BUSINESS_HOURS_DAY_LABELS: Record<keyof BusinessHours, string> = {
+  monday: 'Lunedì',
+  tuesday: 'Martedì',
+  wednesday: 'Mercoledì',
+  thursday: 'Giovedì',
+  friday: 'Venerdì',
+  saturday: 'Sabato',
+  sunday: 'Domenica',
+}
+
+const BUSINESS_HOURS_DAY_ORDER: (keyof BusinessHours)[] = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+]
+
+/** Ordina fasce per orario di apertura prima di validare o confrontare. */
+export function sortBusinessHourSlots(slots: BusinessHourSlot[]): BusinessHourSlot[] {
+  return [...slots].sort((a, b) => a.open.localeCompare(b.open))
+}
+
+/**
+ * Valida le fasce di un singolo giorno: formato HH:mm, no apertura=chiusura, no sovrapposizioni.
+ * Usa slotRangesOverlap mappando open→start e close→end (include fasce oltre mezzanotte).
+ */
+export function validateBusinessHourSlots(slots: BusinessHourSlot[]): string | null {
+  if (slots.length < 2) return null
+
+  const sorted = sortBusinessHourSlots(slots)
+  for (const slot of sorted) {
+    if (!HH_MM.test(slot.open) || !HH_MM.test(slot.close)) {
+      return 'Orari nel formato HH:mm richiesti'
+    }
+    if (slot.open === slot.close) {
+      return 'Apertura e chiusura non possono coincidere'
+    }
+  }
+
+  for (let i = 0; i < sorted.length; i++) {
+    for (let j = i + 1; j < sorted.length; j++) {
+      if (
+        slotRangesOverlap(
+          sorted[i].open,
+          sorted[i].close,
+          sorted[j].open,
+          sorted[j].close
+        )
+      ) {
+        return 'Due fasce di apertura si sovrappongono'
+      }
+    }
+  }
+
+  return null
+}
+
+/** Errore per giorno (chiave = giorno) per feedback live nell'editor. */
+export function getBusinessHoursDayErrors(
+  hours: BusinessHours
+): Partial<Record<keyof BusinessHours, string>> {
+  const errors: Partial<Record<keyof BusinessHours, string>> = {}
+  for (const day of BUSINESS_HOURS_DAY_ORDER) {
+    const slots = hours[day]
+    if (!slots || slots.length < 2) continue
+    const err = validateBusinessHourSlots(slots)
+    if (err) errors[day] = err
+  }
+  return errors
+}
+
+/** Prima occorrenza di errore su tutti i giorni, con etichetta giorno (salvataggio / toast). */
+export function validateBusinessHours(hours: BusinessHours): string | null {
+  for (const day of BUSINESS_HOURS_DAY_ORDER) {
+    const slots = hours[day]
+    if (!slots || slots.length < 2) continue
+    const err = validateBusinessHourSlots(slots)
+    if (err) return `${BUSINESS_HOURS_DAY_LABELS[day]}: ${err}`
+  }
+  return null
+}
+
 export function getDefaultBusinessHours(): BusinessHours {
   return {
     monday: [{ open: '11:00', close: '00:00' }],

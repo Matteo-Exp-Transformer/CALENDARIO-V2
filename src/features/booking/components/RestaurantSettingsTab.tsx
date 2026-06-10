@@ -9,7 +9,7 @@ import { TimePicker24h } from '@/components/ui/TimePicker24h'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 import type { BusinessHours } from '@/lib/businessHours'
-import { getDefaultBusinessHours } from '@/lib/businessHours'
+import { getDefaultBusinessHours, validateBusinessHours } from '@/lib/businessHours'
 import { cn, stripDirectionalFormattingChars } from '@/lib/utils'
 import { ADMIN_WARM_BORDER } from '@/lib/adminWarmGradientSurface'
 import { BusinessHoursEditor } from './BusinessHoursEditor'
@@ -745,6 +745,12 @@ export const RestaurantSettingsTab: React.FC = () => {
   }
 
   const handleSave = async () => {
+    const businessHoursError = validateBusinessHours(businessHours)
+    if (businessHoursError) {
+      toast.error(businessHoursError)
+      return
+    }
+
     if (!features.servizio && timeSlotsEnabled) {
       const validationError = validateEditingSlots(editingSlots)
       if (validationError) {

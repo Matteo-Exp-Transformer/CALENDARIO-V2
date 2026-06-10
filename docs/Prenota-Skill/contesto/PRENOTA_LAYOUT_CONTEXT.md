@@ -350,7 +350,7 @@ caricano; `BookingRequestForm` mantiene il preset e lo riapplica a catalogo pron
 
 Mappa completa: **`PRENOTA_TEXT_LIMITS_MAP.md`**. Costanti: `bookingPrenotaTextLimits.ts`.
 
-- **Ristoratore (A–F):** cap legati al layout + contatore `N/max` in Personalizza form / promo. Descrizione header max **22px** (titolo/nome fino **38px**).
+- **Ristoratore (A–F):** cap legati al layout + contatore `N/max` in Personalizza form / promo. Descrizione header max **28px** (titolo/nome fino **38px**).
 - **Cliente (H):** cap generoso (**65** nome/email, **30** tel, **550** intolleranze e altre richieste) — **solo sistema**: `maxLength` silenzioso, nessun contatore in pagina; edge `create-booking` allineato.
 - **`courses_label`:** max **12** in admin; in pubblico footer basso sx su card `display='cards'` (`BookingSubTabCards`, vedi §5.2); non in carosello.
 
