@@ -149,7 +149,7 @@ export const BookingSubTabCards: React.FC<BookingSubTabCardsProps> = ({
               >
                 <p
                   className={cn(
-                    'text-center text-[13px] font-bold leading-tight line-clamp-2 sm:text-base lg:text-sm xl:text-base',
+                    'text-center text-sm font-bold leading-tight line-clamp-2 sm:text-base lg:text-base xl:text-lg',
                     isActive ? 'text-warm-orange' : 'text-warm-wood',
                   )}
                 >

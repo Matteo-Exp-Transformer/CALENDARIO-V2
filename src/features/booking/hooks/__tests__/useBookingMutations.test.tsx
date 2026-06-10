@@ -36,6 +36,14 @@ function buildUpdateChain(result: { data: unknown; error: null | { message: stri
   const chain: Record<string, unknown> = {}
   chain['update'] = vi.fn(() => chain)
   chain['eq'] = vi.fn(() => chain)
+  chain['select'] = vi.fn().mockResolvedValue(result)
+  return chain
+}
+
+function buildUpdateSingleChain(result: { data: unknown; error: null | { message: string } }) {
+  const chain: Record<string, unknown> = {}
+  chain['update'] = vi.fn(() => chain)
+  chain['eq'] = vi.fn(() => chain)
   chain['select'] = vi.fn(() => chain)
   chain['single'] = vi.fn().mockResolvedValue(result)
   return chain
@@ -66,7 +74,7 @@ describe('useAcceptBooking', () => {
   })
 
   it('chiama supabase.update con status accepted', async () => {
-    const chain = buildUpdateChain({ data: BOOKING_BASE, error: null })
+    const chain = buildUpdateChain({ data: [BOOKING_BASE], error: null })
     mockFrom.mockReturnValue(chain)
 
     const { result } = renderHook(() => useAcceptBooking(), { wrapper: makeWrapper() })
@@ -107,7 +115,7 @@ describe('useRejectBooking', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('chiama supabase.update con status rejected e motivo', async () => {
-    const chain = buildUpdateChain({ data: { ...BOOKING_BASE, status: 'rejected' }, error: null })
+    const chain = buildUpdateChain({ data: [{ ...BOOKING_BASE, status: 'rejected' }], error: null })
     mockFrom.mockReturnValue(chain)
 
     const { result } = renderHook(() => useRejectBooking(), { wrapper: makeWrapper() })
@@ -126,7 +134,7 @@ describe('useCancelBooking — soft-delete', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('chiama supabase.update con status deleted', async () => {
-    const chain = buildUpdateChain({ data: { ...BOOKING_BASE, status: 'deleted' }, error: null })
+    const chain = buildUpdateSingleChain({ data: { ...BOOKING_BASE, status: 'deleted' }, error: null })
     mockFrom.mockReturnValue(chain)
 
     const { result } = renderHook(() => useCancelBooking(), { wrapper: makeWrapper() })

@@ -41,10 +41,14 @@ Lavoro/
 Immagini-sfondo/
 icone-nuove/
 
-# Skill system e documentazione interna: vive in locale per gli agenti, MAI online.
-# I file di doc professionale (README, CONTRIBUTING, ONBOARDING, CHANGELOG) stanno
-# in root e restano tracciati. Tutto docs/ (skill, archivio, sessioni, immagini mock) no.
-docs/
+# Lavoro privato personale (note, materiale didattico) — mai versionato, neanche in dev
+docs/_lavoro/
+
+# Harness agenti locali: vive nella repo privata TestingAgentHarness, non qui.
+agenti-locali/
+
+# Artefatti Vercel locali (project link) — mai versionati
+.vercel/
 
 # Script Playwright usa-e-getta (debug locale, mai committati)
 pw-*.mjs

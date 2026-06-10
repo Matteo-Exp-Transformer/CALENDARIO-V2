@@ -44,7 +44,7 @@ const SectionFallback: FC = () => (
   </div>
 )
 
-type SidebarActiveItem = 'home' | 'analytics' | 'servizio' | 'crm' | 'settings' | 'dashboard-tab' | null
+type SidebarActiveItem = 'home' | 'analytics' | 'servizio' | 'crm' | 'dashboard-tab' | null
 
 function useIsNarrow() {
   const [narrow, setNarrow] = useState(() =>
@@ -69,36 +69,32 @@ function initials(user: { name?: string; email: string }): string {
   return user.email.slice(0, 2).toUpperCase()
 }
 
-type SidebarNavAction =
-  | { type: 'section'; section: AdminShellSection }
-  | { type: 'settings' }
-
 const SIDEBAR_NAV_ITEMS: {
   id: string
   label: string
   icon: typeof Home
-  action: SidebarNavAction
+  section: AdminShellSection
   featureKey?: 'servizio' | 'crm' | 'analytics'
 }[] = [
   {
     id: 'servizio',
     label: 'Servizio',
     icon: ConciergeBell,
-    action: { type: 'section', section: 'servizio' },
+    section: 'servizio',
     featureKey: 'servizio',
   },
   {
     id: 'crm',
     label: 'CRM Clienti',
     icon: Users,
-    action: { type: 'section', section: 'crm' },
+    section: 'crm',
     featureKey: 'crm',
   },
   {
     id: 'analytics',
     label: 'Analytics',
     icon: BarChart3,
-    action: { type: 'section', section: 'analytics' },
+    section: 'analytics',
     featureKey: 'analytics',
   },
 ]
@@ -124,7 +120,6 @@ const AdminShellInner: FC = () => {
   // riappariva per un istante. Stesso fix applicato ad AdminDashboard.activeTab.
   const section: AdminShellSection = resolveAdminSectionFromPath(location.pathname, features)
   const activeSidebarItem: SidebarActiveItem = sidebarItemForSection(section)
-  const [restaurantSettingsSignal, setRestaurantSettingsSignal] = useState(0)
   const { user, logout } = useAdminAuth()
   const { confirmNavigation } = useUnsavedChangesGuard()
   const asideRef = useRef<HTMLDivElement | null>(null)
@@ -197,20 +192,6 @@ const AdminShellInner: FC = () => {
     [confirmNavigation, isNarrow, navigate, section, sidebarMode],
   )
 
-  const runSidebarAction = useCallback(
-    (action: SidebarNavAction) => {
-      if (action.type === 'section') {
-        openSection(action.section)
-        return
-      }
-      if (action.type === 'settings') {
-        openSection('prenotazioni')
-        setRestaurantSettingsSignal((n) => n + 1)
-      }
-    },
-    [openSection],
-  )
-
   const exitBodyOverrideToDashboard = useCallback(() => {
     if (isNarrow && sidebarMode === 'expanded') setSidebarMode('icons')
     navigate(getAdminSectionPath('prenotazioni'))
@@ -225,10 +206,7 @@ const AdminShellInner: FC = () => {
   if (!features.sidebar) {
     return (
       <div className="flex min-h-screen flex-col">
-        <AdminDashboard
-          restaurantSettingsSignal={restaurantSettingsSignal}
-          onLogout={handleLogout}
-        />
+        <AdminDashboard onLogout={handleLogout} />
       </div>
     )
   }
@@ -341,17 +319,15 @@ const AdminShellInner: FC = () => {
           {/* Voci nav */}
           {SIDEBAR_NAV_ITEMS.filter((item) =>
             item.featureKey ? features[item.featureKey] : true,
-          ).map(({ id, label, icon: Icon, action }) => {
+          ).map(({ id, label, icon: Icon, section: itemSection }) => {
               const active =
-                action.type === 'section'
-                  ? activeSidebarItem === id ||
-                    (!activeSidebarItem && section === action.section)
-                  : activeSidebarItem === id
+                activeSidebarItem === id ||
+                (!activeSidebarItem && section === itemSection)
               return (
                 <button
                   key={id}
                   type="button"
-                  onClick={() => runSidebarAction(action)}
+                  onClick={() => openSection(itemSection)}
                   title={label}
                   className={cn(
                     'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
@@ -453,7 +429,6 @@ const AdminShellInner: FC = () => {
       <main className={cn('flex min-h-0 flex-1 flex-col overflow-y-auto', sidebarMode !== 'hidden' && 'pl-16')}>
         {(section === 'prenotazioni' || section === 'home') && (
           <AdminDashboard
-            restaurantSettingsSignal={restaurantSettingsSignal}
             onLogout={handleLogout}
             bodyOverride={
               section === 'home' && features.home ? (

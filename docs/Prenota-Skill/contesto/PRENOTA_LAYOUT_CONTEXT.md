@@ -173,6 +173,9 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
    `sub_tabs[].icon` è valorizzata in config (admin Personalizza form → «Nessuna» = campo omesso;
    nessun fallback a icona default). **Descrizione mai nella card** (appare solo in `MenuSelection` dopo selezione — anche card
    manuale senza `preset_id`, blocco «Hai selezionato :» con titolo + descrizione).
+   **Titolo card (`tab.label`, 10-06-26):** scala monotona crescente — `text-sm` (mobile) →
+   `sm:text-base` → `lg:text-base` → `xl:text-lg`; `line-clamp-2`. **Non** usare `lg:text-sm`
+   (creava titolo più piccolo tra ~1024px e 1280px rispetto a `sm`).
    **Footer card `display='cards'` (04-06-26, agg. 05-06-26):** fascia inferiore `mt-auto` — a sinistra
    `sub_tabs[].courses_label` (max 12 char, `line-clamp-1`); a destra solo importo `X,XX€` se
    `price_per_person > 0` (nessuna riga «a persona» sotto l'importo). Non su carosello (`BookingSubTabCards` assente se
@@ -257,6 +260,12 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
   `BOOKING_PUBLIC_FIELD_BOX_MULTILINE` (label sopra, textarea sotto): cresce con `scrollHeight`,
   testo a sx (`resize-none overflow-hidden`). In `DietaryRestrictionsSection`: «Intolleranze o
   esigenze alimentari» e «Altre Richieste».
+- **Privacy Policy (10-06-26):** nel checkbox obbligatorio (`DietaryRestrictionsSection`), il link
+  «Privacy Policy» apre `/privacy?from=/prenota/:slug` in nuova scheda (`target="_blank"`); il
+  query `from` è validato in `privacyPolicyNavigation.ts` (solo percorsi `/prenota/:slug`, niente
+  redirect esterni). `PrivacyPolicyPage` legge `?from=` (o `location.state` come fallback) e mostra
+  «Torna alla prenotazione» verso lo stesso slug; accesso diretto a `/privacy` senza parametro →
+  «Torna alla home» (`/`).
 - **Validazione:** email `isValidEmail()`, telefono `isValidPhone()` (`utils/validation.ts`).
   Cap caratteri cliente in `BOOKING_PUBLIC_CLIENT_TEXT_LIMITS` (`bookingPrenotaTextLimits.ts`):
   nome **65**, email **65**, telefono **30**, intolleranze aggregate **550**, altre richieste **550** —
@@ -320,13 +329,14 @@ foto `aspect-4/3` / `sm:aspect-3/2` (vedi commento in `bookingMenuComposePanelLa
 
 ### Riepilogo carosello (summary display)
 Per `display='carousel'` il resolver mantiene `price_per_person` sulla sottotab; in Prenota
-`resolveCarouselSummaryDisplay` (`bookingPublicFormConfig.ts`) governa il riepilogo in sidebar:
-toggle dettaglio ON + titoli slide → «Offerta
-selezionata» + lista; altrimenti solo prezzo se `price_per_person > 0` (anche con toggle ON ma
-senza titoli); toggle OFF senza prezzo → nessuna sezione offerta. Campo
-`show_offer_details_in_summary` su `sub_tabs[]`; editor carosello in `BookingFormConfigPanel`
-(blocco prezzo separato + toggle «Mostra dettaglio offerta»). Carosello pubblico: swipe/scroll
-mobile + frecce laterali da desktop/tablet con ≥2 foto.
+`getShowOfferDetailsInSummary` + `resolveCarouselSummaryDisplay` (`bookingPublicFormConfig.ts`)
+governano `BookingSummarySidebar`: toggle ON (default) → nome carosello (`label`) in righe «Tipo» e
+«Opzione menu» + titoli slide in «Offerta selezionata»; toggle OFF → nasconde nome e titoli (righe
+«Tipo»/«Opzione menu» assenti se non resta altro); prezzo nel blocco carosello solo se
+`price_per_person > 0`, indipendentemente dal toggle (toggle ON senza titoli → solo prezzo nel
+blocco offerta). Campo `show_offer_details_in_summary` su `sub_tabs[]`; editor carosello in
+`BookingFormConfigPanel` (blocco prezzo separato + toggle «Mostra dettaglio offerta»). Carosello
+pubblico: swipe/scroll mobile + frecce laterali da desktop/tablet con ≥2 foto.
 
 ### Card scorrevole con preset
 `BookingSubTabCards` con `preset_id`: `booking_custom_staff_presets[].item_ids` è la fonte del
@@ -350,7 +360,7 @@ caricano; `BookingRequestForm` mantiene il preset e lo riapplica a catalogo pron
 
 Mappa completa: **`PRENOTA_TEXT_LIMITS_MAP.md`**. Costanti: `bookingPrenotaTextLimits.ts`.
 
-- **Ristoratore (A–F):** cap legati al layout + contatore `N/max` in Personalizza form / promo. Descrizione header max **22px** (titolo/nome fino **38px**).
+- **Ristoratore (A–F):** cap legati al layout + contatore `N/max` in Personalizza form / promo. Descrizione header max **28px** (titolo/nome fino **38px**).
 - **Cliente (H):** cap generoso (**65** nome/email, **30** tel, **550** intolleranze e altre richieste) — **solo sistema**: `maxLength` silenzioso, nessun contatore in pagina; edge `create-booking` allineato.
 - **`courses_label`:** max **12** in admin; in pubblico footer basso sx su card `display='cards'` (`BookingSubTabCards`, vedi §5.2); non in carosello.
 

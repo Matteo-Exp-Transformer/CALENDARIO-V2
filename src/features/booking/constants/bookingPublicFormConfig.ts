@@ -349,8 +349,10 @@ export interface SubTab {
   category_order_keys?: string[]
   carousel_items?: CarouselItem[]
   /**
-   * Carosello: se `false`, il riepilogo Prenota non elenca i titoli slide in «Offerta selezionata»
-   * (può mostrare solo il prezzo). Omesso o `true` = comportamento legacy (dettaglio visibile).
+   * Carosello: se `false`, il riepilogo Prenota nasconde il nome carosello (`label`) nelle righe
+   * «Tipo» e «Opzione menu» e non elenca i titoli slide in «Offerta selezionata». Il prezzo a
+   * persona resta visibile solo se `price_per_person` > 0 (regola indipendente). Omesso o `true`
+   * = nome carosello + titoli slide visibili nel riepilogo.
    */
   show_offer_details_in_summary?: boolean
   /**
@@ -371,7 +373,10 @@ export function getSubTabPricePerPerson(subTab: SubTab | null | undefined): numb
     : undefined
 }
 
-/** Carosello Prenota: dettaglio slide nel riepilogo laterale (default true se assente). */
+/**
+ * Carosello Prenota: nome carosello + titoli slide nel riepilogo laterale (default true se assente).
+ * Non governa il prezzo a persona (visibile solo se `price_per_person` > 0).
+ */
 export function getShowOfferDetailsInSummary(tab: SubTab | null | undefined): boolean {
   return tab?.show_offer_details_in_summary !== false
 }

@@ -1,7 +1,12 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { ADMIN_WARM_BORDER } from '@/lib/adminWarmGradientSurface'
 import { cn } from '@/lib/utils'
-import type { BusinessHours, BusinessHourSlot } from '@/lib/businessHours'
+import {
+  BUSINESS_HOURS_DAY_LABELS,
+  getBusinessHoursDayErrors,
+  type BusinessHours,
+  type BusinessHourSlot,
+} from '@/lib/businessHours'
 import { Button } from '@/components/ui/Button'
 import { TimePicker24h } from '@/components/ui'
 import { Plus, Trash2 } from 'lucide-react'
@@ -15,16 +20,6 @@ const DAY_ORDER: (keyof BusinessHours)[] = [
   'saturday',
   'sunday',
 ]
-
-const DAY_LABEL: Record<keyof BusinessHours, string> = {
-  monday: 'Lunedì',
-  tuesday: 'Martedì',
-  wednesday: 'Mercoledì',
-  thursday: 'Giovedì',
-  friday: 'Venerdì',
-  saturday: 'Sabato',
-  sunday: 'Domenica',
-}
 
 const defaultSlot = (): BusinessHourSlot => ({ open: '11:00', close: '00:00' })
 
@@ -43,6 +38,8 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
   onChange,
   disabled = false,
 }) => {
+  const dayErrors = useMemo(() => getBusinessHoursDayErrors(value), [value])
+
   /** Slot mostrati (non editabili) quando il giorno è chiuso: non persistono nel valore salvato (`null`). */
   const [closedDaySnapshots, setClosedDaySnapshots] = useState<
     Partial<Record<keyof BusinessHours, BusinessHourSlot[]>>
@@ -102,16 +99,20 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
         const rowSlots: BusinessHourSlot[] = closed
           ? closedDaySnapshots[day] ?? [defaultSlot()]
           : slots ?? [defaultSlot()]
+        const dayError = closed ? null : dayErrors[day]
 
         return (
           <div
             key={day}
-            className="w-full space-y-3 rounded-xl border bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]"
-            style={{ borderColor: ADMIN_WARM_BORDER }}
+            className={cn(
+              'w-full space-y-3 rounded-xl border bg-white/75 p-4 text-center shadow-md backdrop-blur-[2px]',
+              dayError && 'border-red-300'
+            )}
+            style={dayError ? undefined : { borderColor: ADMIN_WARM_BORDER }}
           >
             <div className="flex w-full min-w-0 flex-row flex-wrap items-start justify-between gap-x-4 gap-y-2">
               <strong className="min-w-0 flex-1 text-left text-lg font-extrabold text-slate-900 tracking-tight md:text-xl">
-                {DAY_LABEL[day]}
+                {BUSINESS_HOURS_DAY_LABELS[day]}
               </strong>
               <label className="flex shrink-0 cursor-pointer select-none items-center gap-2 text-sm text-slate-600">
                 <input
@@ -125,6 +126,15 @@ export const BusinessHoursEditor: React.FC<BusinessHoursEditorProps> = ({
                 Chiuso
               </label>
             </div>
+
+            {dayError ? (
+              <div
+                role="alert"
+                className="mx-auto w-full max-w-md rounded-[1.25rem] border-2 border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-800 shadow-sm"
+              >
+                {dayError}
+              </div>
+            ) : null}
 
             <div
               className={cn(

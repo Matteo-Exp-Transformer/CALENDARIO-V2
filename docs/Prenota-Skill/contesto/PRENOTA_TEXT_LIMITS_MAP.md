@@ -14,10 +14,10 @@ Legenda colonna **Limite in UI**:
 
 | Superficie UI | Componente | Storage / chiave | Dove si edita | Max char | Limite in UI | Note |
 |---------------|------------|------------------|---------------|----------|--------------|------|
-| h1 nome locale | `BookingRequestPage` | `restaurant_settings.restaurant_name` | Anagrafica Azienda | **45** | admin-contatore | Anteprima read-only in Personalizza form; legacy >45: clamp in lettura + al salvataggio |
+| h1 nome locale | `BookingRequestPage` | `restaurant_settings.restaurant_name` | Anagrafica Azienda | **40** | admin-contatore | Anteprima read-only in Personalizza form; legacy >40: clamp in lettura + al salvataggio |
 | h2 titolo pagina | idem | `booking_public_form_config.page_title` | Personalizza form | 50 | admin-contatore | |
 | p intro | idem | `page_description` | Personalizza form | 120 | admin-contatore | |
-| fontSize header | inline style | `header_styles.*.fontSize` | Personalizza form | 8–38 (nome/titolo), **22** (descrizione) | layout | `BOOKING_HEADER_FONT_SIZE_MAX_BY_TARGET` |
+| fontSize header | inline style | `header_styles.*.fontSize` | Personalizza form | 8–38 (nome/titolo), **28** (descrizione) | layout | `BOOKING_HEADER_FONT_SIZE_MAX_BY_TARGET` |
 
 ---
 

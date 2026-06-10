@@ -33,6 +33,7 @@ import {
 } from '../utils/buildPresetMenuSelection'
 import { CapacityWarningModal } from './CapacityWarningModal'
 import { PastStartTimeWarningModal } from './PastStartTimeWarningModal'
+import { BookingDangerActionModal } from './BookingDangerActionModal'
 import { cn } from '@/lib/utils'
 import { logger } from '@/lib/logger'
 import { adminBlueCtaSurfaceClass } from '@/lib/adminBlueCtaClass'
@@ -51,6 +52,41 @@ interface Tab {
   icon: string
 }
 
+type DetailsFormData = {
+  booking_type: BookingType
+  client_name: string
+  client_email: string
+  client_phone: string
+  date: string
+  startTime: string
+  endTime: string
+  numGuests: number
+  specialRequests: string
+  menu_selection: BookingRequest['menu_selection']
+  dietary_restrictions: NonNullable<BookingRequest['dietary_restrictions']>
+  preset_menu: BookingRequest['preset_menu']
+  placement: string
+}
+
+// Punto unico di verità per derivare i campi del form dalla prenotazione.
+// Usato dall'init, dal re-sync su cambio booking e dall'Annulla modifica (U2): premere
+// Annulla deve riportare i campi ai valori originali, non lasciare i valori "annullati".
+const buildFormDataFromBooking = (booking: BookingRequest): DetailsFormData => ({
+  booking_type: (booking.booking_type || 'tavolo') as BookingType,
+  client_name: booking.client_name || '',
+  client_email: booking.client_email || '',
+  client_phone: booking.client_phone || '',
+  date: extractDateFromISO(booking.confirmed_start || booking.desired_date || ''),
+  startTime: getAccurateStartTime(booking),
+  endTime: getAccurateEndTime(booking),
+  numGuests: booking.num_guests || 0,
+  specialRequests: booking.special_requests || '',
+  menu_selection: booking.menu_selection,
+  dietary_restrictions: booking.dietary_restrictions || [],
+  preset_menu: booking.preset_menu,
+  placement: booking.placement || '',
+})
+
 export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   isOpen,
   onClose,
@@ -59,11 +95,11 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
   const [isEditMode, setIsEditMode] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [showNoShowConfirm, setShowNoShowConfirm] = useState(false)
   const [showTypeChangeWarning, setShowTypeChangeWarning] = useState(false)
   const [pendingBookingType, setPendingBookingType] = useState<BookingType>('tavolo')
   const [activeTab, setActiveTab] = useState<TabId>('details')
   const [isMenuExpanded, setIsMenuExpanded] = useState(false)
-  const [cancellationReason, setCancellationReason] = useState('')
   const [endTimeManuallyModified, setEndTimeManuallyModified] = useState(false)
   const [mouseDownTarget, setMouseDownTarget] = useState<EventTarget | null>(null)
   const [showOverbookingConfirm, setShowOverbookingConfirm] = useState(false)
@@ -143,7 +179,11 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     !booking.no_show &&
     !!booking.confirmed_start &&
     new Date(booking.confirmed_start) < new Date()
-  const { data: acceptedBookings = [] } = useAcceptedBookings()
+  const {
+    data: acceptedBookings = [],
+    isSuccess: acceptedBookingsLoaded,
+    isFetching: acceptedBookingsFetching,
+  } = useAcceptedBookings()
   const { data: menuItems = [] } = useMenuItems()
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
   const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets')
@@ -156,26 +196,9 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   const timeSlotsEnabled = features.servizio ? true : timeSlotsEnabledRaw
 
   // Initialize form data from booking
-  const [formData, setFormData] = useState(() => {
+  const [formData, setFormData] = useState<DetailsFormData>(() => {
     try {
-      const startTime = getAccurateStartTime(booking)
-      const endTime = getAccurateEndTime(booking)
-
-      return {
-        booking_type: (booking.booking_type || 'tavolo') as BookingType,
-        client_name: booking.client_name || '',
-        client_email: booking.client_email || '',
-        client_phone: booking.client_phone || '',
-        date: extractDateFromISO(booking.confirmed_start || booking.desired_date || ''),
-        startTime,
-        endTime,
-        numGuests: booking.num_guests || 0,
-        specialRequests: booking.special_requests || '',
-        menu_selection: booking.menu_selection,
-        dietary_restrictions: booking.dietary_restrictions || [],
-        preset_menu: booking.preset_menu,
-        placement: booking.placement || ''
-      }
+      return buildFormDataFromBooking(booking)
     } catch (error) {
       logger.error('[BookingDetailsModal] Error initializing form data:', error)
       // Return default values if initialization fails
@@ -212,24 +235,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     }
 
     try {
-      const startTime = getAccurateStartTime(booking)
-      const endTime = getAccurateEndTime(booking)
-
-      setFormData({
-        booking_type: (booking.booking_type || 'tavolo') as BookingType,
-        client_name: booking.client_name || '',
-        client_email: booking.client_email || '', // Può essere null/undefined, quindi stringa vuota
-        client_phone: booking.client_phone || '',
-        date: extractDateFromISO(booking.confirmed_start || booking.desired_date || ''),
-        startTime,
-        endTime,
-        numGuests: booking.num_guests || 0,
-        specialRequests: booking.special_requests || '',
-        menu_selection: booking.menu_selection,
-        dietary_restrictions: booking.dietary_restrictions || [],
-        preset_menu: booking.preset_menu,
-        placement: booking.placement || ''
-      })
+      setFormData(buildFormDataFromBooking(booking))
     } catch (error) {
       logger.error('[BookingDetailsModal] Error updating form data:', error)
     }
@@ -239,6 +245,28 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   useEffect(() => {
     previousBookingIdRef.current = booking.id
   }, [booking.id])
+
+  // U6 — Drawer stale: se la prenotazione aperta sparisce dalla lista accepted (eliminata
+  // da un'altra tab/scheda o cambiata di stato), chiudi il drawer invece di mostrare dati
+  // obsoleti. Non chiudere durante caricamento/refetch, in edit o durante un salvataggio.
+  useEffect(() => {
+    if (!isOpen) return
+    if (isEditMode || updateMutation.isPending) return
+    if (!acceptedBookingsLoaded || acceptedBookingsFetching) return
+    const stillPresent = acceptedBookings.some((b) => b.id === booking.id)
+    if (!stillPresent) {
+      onClose()
+    }
+  }, [
+    isOpen,
+    isEditMode,
+    updateMutation.isPending,
+    acceptedBookingsLoaded,
+    acceptedBookingsFetching,
+    acceptedBookings,
+    booking.id,
+    onClose,
+  ])
 
   // Dynamic tabs based on booking_type
   const tabs = useMemo<Tab[]>(() => {
@@ -278,28 +306,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     }
   }, [isEditMode, booking.id])
 
-  // Reset cancellation reason when cancel confirm modal closes
-  useEffect(() => {
-    if (!showCancelConfirm) {
-      setCancellationReason('')
-    }
-  }, [showCancelConfirm])
-
-  // Handle ESC key for cancel confirmation modal
-  useEffect(() => {
-    if (!showCancelConfirm) return
-
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setShowCancelConfirm(false)
-      }
-    }
-
-    document.addEventListener('keydown', handleEscape)
-    return () => {
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [showCancelConfirm])
+  const dangerOverlayOpen = showCancelConfirm || showNoShowConfirm
 
   // Capacita per slot: service_slots.max_guests > override > slot_guest_capacities
   const getSlotCap = (slotId: string, date: string): number | null => {
@@ -510,11 +517,12 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
       },
       {
         onSuccess: () => {
+          // Il toast di successo è già mostrato da useUpdateBooking (fonte unica): qui
+          // gestiamo solo il reset dello stato locale, evitando il doppio toast (U1).
           setIsEditMode(false)
           setEndTimeManuallyModified(false)
           setShowOverbookingConfirm(false)
           setOverbookingSlotInfo(null)
-          toast.success('Prenotazione modificata con successo!')
         },
         onError: (error) => {
           logger.error('❌ [BookingDetailsModal] Save failed:', error)
@@ -569,20 +577,51 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     runCapacityCheckAndSave()
   }
 
-  const handleCancelBooking = () => {
+  const handleCancelBooking = (reason?: string) => {
     cancelMutation.mutate(
       {
         bookingId: booking.id,
-        cancellationReason: cancellationReason || 'Cancellato dall\'amministratore',
+        cancellationReason: reason?.trim() || 'Cancellato dall\'amministratore',
       },
       {
         onSuccess: () => {
-          setCancellationReason('')
           setShowCancelConfirm(false)
           onClose()
         },
       }
     )
+  }
+
+  const handleConfirmNoShow = () => {
+    markNoShowMutation.mutate(booking.id, {
+      onSuccess: () => {
+        setShowNoShowConfirm(false)
+        onClose()
+      },
+    })
+  }
+
+  // U2 — Annulla modifica: riporta i campi ai valori originali della prenotazione,
+  // non lasciare i valori "annullati" che riapparirebbero al rientro in edit.
+  const handleCancelEdit = () => {
+    try {
+      setFormData(buildFormDataFromBooking(booking))
+    } catch (error) {
+      logger.error('[BookingDetailsModal] Error resetting form data on cancel:', error)
+    }
+    setEndTimeManuallyModified(false)
+    setIsEditMode(false)
+  }
+
+  // U7 — Chiusura sicura: non chiudere mentre un salvataggio è in corso (perderebbe il
+  // feedback) né scartare silenziosamente modifiche in edit; in edit, l'annulla resetta prima.
+  const handleRequestClose = () => {
+    if (updateMutation.isPending) return
+    if (isEditMode) {
+      handleCancelEdit()
+      return
+    }
+    onClose()
   }
 
   if (!isOpen) {
@@ -639,18 +678,17 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
           overflowX: 'hidden',
           overflowY: 'hidden',
           // Oscurare ulteriormente quando cancel confirmation è aperto
-          backgroundColor: showCancelConfirm ? 'rgba(0, 0, 0, 0.7)' : 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: dangerOverlayOpen ? 'rgba(0, 0, 0, 0.7)' : 'rgba(0, 0, 0, 0.5)',
           width: '100vw',
           height: '100vh',
-          // Disable pointer events when cancel confirmation modal is open
-          pointerEvents: showCancelConfirm ? 'none' : 'auto',
+          pointerEvents: dangerOverlayOpen ? 'none' : 'auto',
           // Transizione smooth per il cambio di opacità
           transition: 'background-color 0.2s ease-in-out'
         }}
         onMouseDown={(e) => setMouseDownTarget(e.target)}
         onClick={(e) => {
           if (e.target === mouseDownTarget) {
-            onClose()
+            handleRequestClose()
           }
           setMouseDownTarget(null)
         }}
@@ -665,7 +703,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
             bottom: 0,
             width: '100%',
             maxWidth: modalMaxWidth,
-            pointerEvents: showCancelConfirm ? 'none' : 'auto',
+            pointerEvents: dangerOverlayOpen ? 'none' : 'auto',
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -681,7 +719,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                   Dettagli Prenotazione
                 </h2>
                 <button
-                  onClick={onClose}
+                  onClick={handleRequestClose}
                   className="flex flex-shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] p-1.5 shadow-sm transition-all hover:bg-[var(--color-surface-2)]"
                   aria-label="Chiudi"
                   style={{ width: '32px', height: '32px' }}
@@ -789,7 +827,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
           </div>
 
           {/* Footer Actions - Sticky */}
-          {!showCancelConfirm && (
+          {!dangerOverlayOpen && (
             <div
               className="flex-shrink-0 border-t-2 border-[var(--color-border)] bg-[var(--color-surface)]"
               style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '8px', paddingBottom: '8px' }}
@@ -806,7 +844,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                       <span className="truncate">{updateMutation.isPending ? 'Salvataggio...' : 'Salva'}</span>
                     </button>
                     <button
-                      onClick={() => setIsEditMode(false)}
+                      onClick={handleCancelEdit}
                       className="flex-1 px-2 sm:px-6 py-2.5 sm:py-3 border-2 border-red-600 text-red-600 font-semibold rounded-xl transition-all duration-300 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-500/30 shadow-md hover:shadow-lg flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
                     >
                       <X className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
@@ -838,7 +876,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                     {features.noShow && canMarkNoShow && (
                       <button
                         type="button"
-                        onClick={() => markNoShowMutation.mutate(booking.id)}
+                        onClick={() => setShowNoShowConfirm(true)}
                         disabled={markNoShowMutation.isPending}
                         className="flex-1 px-2 sm:px-4 py-2.5 sm:py-3 border-2 border-amber-500 text-amber-700 font-semibold rounded-xl transition-all duration-300 hover:bg-amber-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-amber-500/30 shadow-md hover:shadow-lg flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm min-h-[44px] sm:min-h-[56px] disabled:opacity-60 disabled:cursor-not-allowed"
                       >
@@ -904,106 +942,40 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
     </>
   )
 
-  // Render cancel confirmation modal separately to avoid z-index/overflow issues
-  const cancelConfirmationPortal = showCancelConfirm ? createPortal(
-    <div
-      className="fixed inset-0 flex items-center justify-center"
-      style={{
-        zIndex: 60,
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1rem'
-      }}
-    >
-      {/* Overlay scuro con blur per distinguere dal modal sottostante */}
-      <div 
-        className="absolute inset-0" 
-        style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)'
-        }}
-        onClick={() => setShowCancelConfirm(false)} 
-      />
-      {/* Dialog box con ombra forte e bordo marcato */}
-      <div
-        className="relative z-[1] mx-4 max-w-lg w-full rounded-2xl border-2 border-[var(--color-border-strong)] bg-[var(--color-surface)] p-8 shadow-2xl"
-        style={{
-          boxShadow: '0 25px 50px -12px rgba(24, 50, 74, 0.35)',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header con icona e titolo */}
-        <div className="mb-6 flex items-center gap-4 border-b-2 border-[var(--color-border)] pb-4">
-          <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 shadow-md">
-            <span className="text-2xl">⚠️</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-primary-900">Elimina Prenotazione Accettata</h3>
-            <p className="mt-1 text-sm text-[var(--color-text-muted)]">Potrà essere reinserita dall&apos;archivio</p>
-          </div>
-        </div>
-
-        {/* Messaggio di conferma */}
-        <div className="mb-6">
-          <p className="mb-2 text-sm font-medium text-[var(--color-text)]">
-            Sei sicuro di voler eliminare questa prenotazione?
-          </p>
-          <p className="text-sm text-[var(--color-text-muted)]">
-            La prenotazione verrà spostata nell'archivio e potrà essere reinserita in seguito.
-          </p>
-        </div>
-
-        {/* Textarea per motivazione */}
-        <div className="mb-6">
-          <label htmlFor="cancellation-reason" className="mb-2 block text-sm font-semibold text-[var(--color-text)]">
-            Motivazione eliminazione{' '}
-            <span className="font-normal text-[var(--color-text-muted)]">(facoltativa)</span>
-          </label>
-          <textarea
-            id="cancellation-reason"
-            value={cancellationReason}
-            onChange={(e) => setCancellationReason(e.target.value)}
-            placeholder="Esempio: Cliente ha richiesto cancellazione, cambio programma..."
-            className="min-h-[100px] w-full resize-y rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 transition-all focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
-            rows={4}
-          />
-        </div>
-
-        {/* Bottoni azione */}
-        <div className="flex gap-4 border-t-2 border-[var(--color-border)] pt-4">
-          <button
-            onClick={() => setShowCancelConfirm(false)}
-            className="flex-1 px-6 py-4 bg-green-600 text-white hover:bg-green-700 font-bold text-lg rounded-xl transition-colors flex items-center justify-center gap-2"
-          >
-            <X className="h-5 w-5" />
-            Annulla
-          </button>
-          <button
-            onClick={handleCancelBooking}
-            className="flex-1 px-6 py-4 text-white hover:bg-red-700 font-bold text-lg rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-            style={{ backgroundColor: '#dc2626' }}
-            disabled={cancelMutation.isPending}
-          >
-            <Trash2 className="h-5 w-5" />
-            {cancelMutation.isPending ? 'Eliminazione...' : 'Elimina Prenotazione'}
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body
-  ) : null
-
   return (
     <>
       {createPortal(modalContent, document.body)}
-      {cancelConfirmationPortal}
+      <BookingDangerActionModal
+        isOpen={showCancelConfirm}
+        onClose={() => setShowCancelConfirm(false)}
+        onConfirm={handleCancelBooking}
+        title="Elimina Prenotazione Accettata"
+        subtitle="Potrà essere reinserita dall'archivio"
+        message="Sei sicuro di voler eliminare questa prenotazione?"
+        detail="La prenotazione verrà spostata nell'archivio e potrà essere reinserita in seguito."
+        confirmLabel={cancelMutation.isPending ? 'Eliminazione…' : 'Elimina Prenotazione'}
+        variant="danger"
+        isLoading={cancelMutation.isPending}
+        reasonField={{
+          id: 'cancellation-reason',
+          label: 'Motivazione eliminazione',
+          placeholder: 'Esempio: Cliente ha richiesto cancellazione, cambio programma…',
+          optional: true,
+        }}
+      />
+      <BookingDangerActionModal
+        isOpen={showNoShowConfirm}
+        onClose={() => setShowNoShowConfirm(false)}
+        onConfirm={handleConfirmNoShow}
+        title="Segna come No-show"
+        subtitle={booking.client_name}
+        message="Confermi che il cliente non si è presentato?"
+        detail="La prenotazione resterà nel database ma non comparirà più nel calendario operativo."
+        confirmLabel={markNoShowMutation.isPending ? 'Salvataggio…' : 'Conferma No-show'}
+        variant="warning"
+        isLoading={markNoShowMutation.isPending}
+        zIndex={70}
+      />
     </>
   )
 }

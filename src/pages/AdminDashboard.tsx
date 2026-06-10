@@ -154,8 +154,6 @@ const StatCard: React.FC<{ label: string; value: number }> = ({ label, value }) 
 )
 
 export type AdminDashboardProps = {
-  /** Incrementato da AdminShell quando si apre Impostazioni dalla sidebar. */
-  restaurantSettingsSignal?: number
   /** Se passato, sostituisce il corpo dei tab con il contenuto fornito (es. AdminHomePage). Restano visibili solo banner ristorante e nav a 5 voci (niente sotto-righe per tab). */
   bodyOverride?: React.ReactNode
   /** Chiamato quando si clicca un NavItem mentre bodyOverride è attivo — segnala ad AdminShell di uscire dalla Home. */
@@ -166,7 +164,6 @@ export type AdminDashboardProps = {
 
 /* ─── Dashboard ─── */
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
-  restaurantSettingsSignal = 0,
   bodyOverride,
   onBodyOverrideExit,
   onLogout,
@@ -188,7 +185,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const { confirmNavigation, hasUnsavedChanges } = useUnsavedChangesGuard()
   const dashboardRootRef = useRef<HTMLDivElement>(null)
   const { data: stats } = useBookingStats()
-  const handledRestaurantSettingsSignalRef = useRef(0)
 
   const dashboardTabHistoryBlocker = useBlocker(({ currentLocation, historyAction, nextLocation }) => {
     if (historyAction !== 'POP' || !hasUnsavedChanges) return false
@@ -209,22 +205,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       dashboardTabHistoryBlocker.reset()
     })
   }, [confirmNavigation, dashboardTabHistoryBlocker])
-
-  useEffect(() => {
-    if (restaurantSettingsSignal === 0) return
-    if (restaurantSettingsSignal === handledRestaurantSettingsSignalRef.current) return
-    handledRestaurantSettingsSignalRef.current = restaurantSettingsSignal
-
-    if (activeTab === 'settings-restaurant') {
-      navigate(getAdminDashboardTabPath('settings-restaurant'))
-      return
-    }
-
-    void confirmNavigation().then((ok) => {
-      if (!ok) return
-      navigate(getAdminDashboardTabPath('settings-restaurant'))
-    })
-  }, [activeTab, confirmNavigation, navigate, restaurantSettingsSignal])
 
   useEffect(() => {
     if (activeTab !== 'pending') setShowNewBookingPanel(false)

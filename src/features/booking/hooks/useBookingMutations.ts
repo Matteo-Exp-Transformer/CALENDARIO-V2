@@ -13,6 +13,23 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import { logger } from '@/lib/logger'
 import { extractTimeFromISO } from '@/features/booking/utils/dateUtils'
 
+/** Race guard: update con 0 righe (record non più pending). */
+const BOOKING_ALREADY_HANDLED = 'BOOKING_ALREADY_HANDLED'
+
+async function invalidateAllBookingQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+  tenantId: string | null | undefined,
+) {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: ['bookings'], refetchType: 'all' }),
+    queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'], refetchType: 'all' }),
+    queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
+    queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
+    queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
+    queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId], refetchType: 'all' }),
+  ])
+}
+
 interface AcceptBookingInput {
   bookingId: string
   confirmedStart: string
@@ -73,26 +90,21 @@ export const useAcceptBooking = () => {
         .update(updateData as any)
         .eq('id', input.bookingId)
         .eq('tenant_id', tenantId!)
+        .eq('status', 'pending')
         .select()
-        .single()
 
       if (error) {
         throw new Error(handleSupabaseError(error))
       }
 
-      return data as BookingRequest
+      if (!data?.length) {
+        throw new Error(BOOKING_ALREADY_HANDLED)
+      }
+
+      return data[0] as BookingRequest
     },
     onSuccess: async (booking: BookingRequest) => {
-      // Invalida tutte le queries per refresh automatico completo
-      // This will refresh the calendar automatically
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['bookings'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId], refetchType: 'all' }),
-      ])
+      await invalidateAllBookingQueries(queryClient, tenantId)
 
       // Send email notification
       const emailEnabled = areEmailNotificationsEnabled()
@@ -106,7 +118,12 @@ export const useAcceptBooking = () => {
       } else {
       }
     },
-    onError: (error: Error) => {
+    onError: async (error: Error) => {
+      if (error.message === BOOKING_ALREADY_HANDLED) {
+        toast.warn('Questa prenotazione è già stata gestita')
+        await invalidateAllBookingQueries(queryClient, tenantId)
+        return
+      }
       logger.error('[useAcceptBooking] mutation error', error)
     },
   })
@@ -128,26 +145,21 @@ export const useRejectBooking = () => {
         } as any)
         .eq('id', input.bookingId)
         .eq('tenant_id', tenantId!)
+        .eq('status', 'pending')
         .select()
-        .single()
 
       if (error) {
         throw new Error(handleSupabaseError(error))
       }
 
-      return data as BookingRequest
+      if (!data?.length) {
+        throw new Error(BOOKING_ALREADY_HANDLED)
+      }
+
+      return data[0] as BookingRequest
     },
     onSuccess: async (booking: BookingRequest) => {
-      // Invalida tutte le queries per refresh automatico completo
-      // This will refresh the calendar automatically
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['bookings'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
-        queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId], refetchType: 'all' }),
-      ])
+      await invalidateAllBookingQueries(queryClient, tenantId)
 
       // Send email notification
       if (areEmailNotificationsEnabled()) {
@@ -158,7 +170,12 @@ export const useRejectBooking = () => {
         }
       }
     },
-    onError: (error: Error) => {
+    onError: async (error: Error) => {
+      if (error.message === BOOKING_ALREADY_HANDLED) {
+        toast.warn('Questa prenotazione è già stata gestita')
+        await invalidateAllBookingQueries(queryClient, tenantId)
+        return
+      }
       logger.error('[useRejectBooking] mutation error', error)
     },
   })
@@ -310,34 +327,56 @@ export const useUpdateBooking = () => {
   })
 }
 
+export type RestoreBookingInput =
+  | string
+  | {
+      bookingId: string
+      confirmedStart: string
+      confirmedEnd: string
+      desiredTime: string
+    }
+
 // Mutation per ripristinare una prenotazione eliminata
 export const useRestoreBooking = () => {
   const queryClient = useQueryClient()
   const { tenantId } = useTenantContext()
 
   return useMutation({
-    mutationFn: async (bookingId: string) => {
-      const { data: bookingToRestore, error: fetchError } = await (supabase
-        .from('booking_requests') as any)
-        .select('id, confirmed_start, confirmed_end')
-        .eq('id', bookingId)
-        .eq('tenant_id', tenantId!)
-        .single()
+    mutationFn: async (input: RestoreBookingInput) => {
+      const bookingId = typeof input === 'string' ? input : input.bookingId
+      const providedTimes = typeof input === 'string' ? null : input
 
-      if (fetchError) {
-        throw new Error(handleSupabaseError(fetchError))
+      const updatePayload: Record<string, unknown> = {
+        status: 'accepted',
+        cancellation_reason: null,
+        cancelled_at: null,
+        updated_at: new Date().toISOString(),
       }
 
-      if (!bookingToRestore?.confirmed_start || !bookingToRestore?.confirmed_end) {
-        throw new Error('Impossibile reinserire: mancano orario di inizio/fine confermati.')
+      if (providedTimes) {
+        updatePayload.confirmed_start = providedTimes.confirmedStart
+        updatePayload.confirmed_end = providedTimes.confirmedEnd
+        updatePayload.desired_time = providedTimes.desiredTime
+      } else {
+        const { data: bookingToRestore, error: fetchError } = await (supabase
+          .from('booking_requests') as any)
+          .select('id, confirmed_start, confirmed_end')
+          .eq('id', bookingId)
+          .eq('tenant_id', tenantId!)
+          .single()
+
+        if (fetchError) {
+          throw new Error(handleSupabaseError(fetchError))
+        }
+
+        if (!bookingToRestore?.confirmed_start || !bookingToRestore?.confirmed_end) {
+          throw new Error('Impossibile reinserire: mancano orario di inizio/fine confermati.')
+        }
       }
 
       const { data, error } = await (supabase
         .from('booking_requests') as any)
-        .update({
-          status: 'accepted',
-          updated_at: new Date().toISOString(),
-        } as any)
+        .update(updatePayload as any)
         .eq('id', bookingId)
         .eq('tenant_id', tenantId!)
         .select()

@@ -60,7 +60,12 @@ chiave gia registrata.
 ## 6. Vincoli e fallback
 
 - `app_theme` accetta solo ID noti in `APP_THEME_IDS`.
-- `business_hours` usa orari `HH:mm`.
+- `business_hours` usa orari `HH:mm`. Con **2+ fasce nello stesso giorno** non sono ammesse
+  sovrapposizioni: validazione **live** in `BusinessHoursEditor` (banner rosso per giorno) e
+  **blocco al Salva** anagrafica (`validateBusinessHours` in `@/lib/businessHours`: footer
+  **Salva modifiche** disabilitato + toast se si tenta il persist). Logica overlap riusa
+  `slotRangesOverlap` (`open`→`start`, `close`→`end`), con sort per
+  `open` prima del controllo; fasce che attraversano mezzanotte incluse.
 - `booking_public_form_config` normalizza mode, sub-tab, icone, testi e display.
 - Una modalita puo avere card o carosello secondo regole Prenota; non inventare fallback pubblici.
 - `app_theme` non cambia tema Prenota o QR.

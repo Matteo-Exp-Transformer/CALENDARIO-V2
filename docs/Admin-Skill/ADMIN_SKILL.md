@@ -92,9 +92,18 @@ Decisioni Area 1 chiuse con Matteo il 06-06-26:
 - `features.home=false` nasconde Home anche se sidebar resta attiva.
 - Refresh/back delle sezioni shell e delle tab dashboard usano sotto-route leggere.
 
+Decisioni Area 2 (Prenotazioni operative) chiuse con Matteo il 06-06-26 — dettaglio in
+`contesto/ADMIN_PRENOTAZIONI_CONTEXT.md` §5-bis:
+
+- Capienza/fasce/orario passato = solo avviso, mai blocco (il ristoratore decide).
+- Stati `pending/accepted/rejected/deleted` + `no_show` tutti voluti: non toccare.
+- Archivio = solo soft-delete recuperabile; nessun hard-delete lato app (Matteo pulisce da DB).
+- Conferme azioni pericolose **allineate** via `BookingDangerActionModal` (06-06-26).
+
 Questioni ancora aperte:
 
-- Quali azioni devono essere considerate pericolose e testate per prime?
+- E2E staging su warning capienza/orario passato (mai blocco).
+- Test responsive modali conferma.
 
 ## 7. Mappa: tocchi X -> apri Y
 
@@ -146,7 +155,7 @@ Stato operativo aggiornato:
 | Area | Stato | Nota |
 |---|---|---|
 | Shell / ingresso / navigazione globale | 🔶 blindatura avviata | Intervista chiusa; fix e test `shell-*` avviati, vedi `PLAN_BLINDATURA_ADMIN.md` §3 |
-| Prenotazioni operative | ⬜ | Da avviare dopo Shell |
+| Prenotazioni operative | 🔶 blindatura avviata | Conferme coerenti + test `@admin-blindatura: prenotazioni` (06-06-26) |
 | Impostazioni / Personalizza Form | ⬜ | Da coordinare con Pagina Prenota |
 | Menu admin / magazzino | ⬜ | Da coordinare con Prenota e Menu QR |
 | Servizio | ⬜ | Include walk-in, tavoli e briefing |

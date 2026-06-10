@@ -9,7 +9,7 @@ import { TimePicker24h } from '@/components/ui/TimePicker24h'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 import type { BusinessHours } from '@/lib/businessHours'
-import { getDefaultBusinessHours } from '@/lib/businessHours'
+import { getDefaultBusinessHours, validateBusinessHours } from '@/lib/businessHours'
 import { cn, stripDirectionalFormattingChars } from '@/lib/utils'
 import { ADMIN_WARM_BORDER } from '@/lib/adminWarmGradientSurface'
 import { BusinessHoursEditor } from './BusinessHoursEditor'
@@ -343,6 +343,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const [timeSlotsHelpOpen, setTimeSlotsHelpOpen] = useState(false)
   const [slotValidationError, setSlotValidationError] = useState<string | null>(null)
   const [businessHours, setBusinessHours] = useState<BusinessHours>(() => getDefaultBusinessHours())
+  const businessHoursValidationError = validateBusinessHours(businessHours)
   const [contactEmail, setContactEmail] = useState('')
   const [contactPhone, setContactPhone] = useState('')
   const [contactAddress, setContactAddress] = useState('')
@@ -745,6 +746,11 @@ export const RestaurantSettingsTab: React.FC = () => {
   }
 
   const handleSave = async () => {
+    if (businessHoursValidationError) {
+      toast.error(businessHoursValidationError)
+      return
+    }
+
     if (!features.servizio && timeSlotsEnabled) {
       const validationError = validateEditingSlots(editingSlots)
       if (validationError) {
@@ -1374,7 +1380,7 @@ export const RestaurantSettingsTab: React.FC = () => {
           onSave={handleSave}
           pending={upsert.isPending}
           cancelDisabled={upsert.isPending || !dirty}
-          saveDisabled={upsert.isPending || !tenantId}
+          saveDisabled={upsert.isPending || !tenantId || businessHoursValidationError != null}
         />
       )}
 

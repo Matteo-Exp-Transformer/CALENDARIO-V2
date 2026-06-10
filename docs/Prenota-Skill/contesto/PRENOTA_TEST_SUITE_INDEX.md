@@ -52,6 +52,7 @@ Per fronte, i file sono elencati qui sotto: lancia `npx vitest run <path>` sul s
 | `src/features/booking/utils/__tests__/bookingTotals.flussoUtente.test.ts` | Calcolo totali: menù componibile (somma piatti × ospiti), menù fisso (prezzo × ospiti), ospiti 0/negativi, prezzo preset 0. |
 | `src/features/booking/components/__tests__/BookingRequestForm.flussoUtente.test.tsx` | Submit a form vuoto → niente POST + attenzione primo campo; cambio tipologia → reset menù/preset/totali + reset intolleranze **per capacità**; cap testo cliente silenzioso. |
 | `src/features/booking/components/__tests__/BookingSummarySidebar.capability.test.tsx` | Riepilogo mostra/nasconde i totali per **capacità** (`modeUsesMenu(activeMode)`), non per nome tipologia (FU-036 #1). |
+| `src/features/booking/utils/__tests__/privacyPolicyNavigation.test.ts` | Link privacy → ritorno Pagina Prenota: build `?from=/prenota/:slug`, validazione anti-open-redirect, resolve da query/state. |
 
 ## Fronte `server-config` (3 file)
 

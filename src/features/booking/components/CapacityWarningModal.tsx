@@ -13,6 +13,7 @@ interface CapacityWarningModalProps {
   totalOccupied: number
   capacity: number
   variant?: 'new_booking' | 'edit_booking'
+  confirmDisabled?: boolean
 }
 
 export const CapacityWarningModal: React.FC<CapacityWarningModalProps> = ({
@@ -25,6 +26,7 @@ export const CapacityWarningModal: React.FC<CapacityWarningModalProps> = ({
   totalOccupied,
   capacity,
   variant = 'new_booking',
+  confirmDisabled = false,
 }) => {
   useEffect(() => {
     if (isOpen) {
@@ -196,12 +198,14 @@ export const CapacityWarningModal: React.FC<CapacityWarningModalProps> = ({
             <button
               type="button"
               onClick={() => {
+                if (confirmDisabled) return
                 onConfirm()
                 onClose()
               }}
-              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              disabled={confirmDisabled}
+              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Procedi Comunque
+              {confirmDisabled ? 'Salvataggio…' : 'Procedi Comunque'}
             </button>
           </div>
         </div>

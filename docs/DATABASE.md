@@ -37,8 +37,10 @@ I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati
 | 037 | `037_menu_qr_hidden_items_and_theme.sql` | TEST ✅ prod ✅ — ingredienti nascosti per QR e tema QR |
 | 038 | `038_clear_menu_items_booking_types.sql` | TEST ✅ — `menu_items.booking_types` legacy: default `{}` e pulizia valori ingredienti; **prod da applicare** |
 | 039 | `039_harden_organizations_public_view.sql` | prod ✅ — `organizations_public` resa `security_invoker`, grant vista ridotti a solo SELECT |
+| 043 | `043_drop_menu_qr_preset_columns.sql` | TEST ✅ prod ✅ — rimozione colonne preset Menu QR (codice morto) |
+| 044 | `044_fix_booking_count_skip_restore.sql` | TEST ✅ — `increment_booking_count_on_accept` non riconta il reinserimento `deleted → accepted` (D3, contatore "accettazioni nette"); **prod da applicare al rollout** |
 
-La prossima migrazione deve usare il prefisso **`040_`**.
+La prossima migrazione deve usare il prefisso **`045_`**.
 
 > Promo menù (23-05-26): impostazioni solo su `restaurant_settings.setting_key = booking_menu_promos`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
 

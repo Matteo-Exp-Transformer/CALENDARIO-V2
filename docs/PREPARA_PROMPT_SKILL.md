@@ -9,10 +9,8 @@ description: >-
 
 # Prepara Prompt — agente-ciclo (filtro a monte + raccolta dati a valle)
 
-> ⚠️ **REGOLA ECCEZIONALE TEMPORANEA (commit su `docs/`)** — all'avvio. Il `.gitignore` esclude
-> `docs/` (migrazione repo pubblico in corso), ma i file `docs/` già tracciati vanno versionati:
-> per committarli usa **`git add -f <file>`**. I file `src/`/config non richiedono `-f`. Si toglie
-> a migrazione completata.
+> ℹ️ **Commit su `docs/` — normale.** Dopo lo split repo (giugno 2026) questa repo è privata e
+> `docs/` non è più gitignored: `git add` normale, senza `-f`. Solo `docs/_lavoro/` resta gitignored.
 
 > Sei l'**interlocutore principale** di Matteo nel ciclo di lavoro. NON scrivi codice dell'app, non
 > esegui i task. Stai leggero di contesto: il tuo valore è preparare bene i prompt e raccogliere

@@ -103,7 +103,50 @@ Fronti previsti:
 - Service slot override `date_from/date_to`.
 - Analytics booking create fuori periodo ma evento dentro periodo.
 
-## 8. Area 1 — Shell, ingresso, navigazione
+## 8. Area 2 — Prenotazioni operative
+
+Stato: **Fase D + FU-046 chiusi 07-06-26** — batch1 D1/R1/D4/D5/D2 + batch2 D3/U1/U2/U4/U5/U6/U7/U10; bloccanti ALTO+MEDIO risolti; restano U3/U9/D6-D7/L* + QA reale (FU-043).
+
+Test marcati (32 test, verdi):
+
+- `src/features/booking/hooks/__tests__/useBookingMutations.prenotazioni.adminBlindatura.test.tsx` (17) →
+  accept/reject/soft-delete/restore/requeue/no-show + **race guard pending** (D1) + **restore azzera cancellation_*** (D5) + **restore con orario fornito** (D4 affinamento 07-06-26) + **LIMIT mutation payload** (L8–L15).
+- `src/features/booking/components/__tests__/prenotazioni.adminBlindatura.test.tsx` (15) → conferme
+  coerenti archivio + **D4 modale orario reinserisci senza slot salvati** + **R1/D2 modal layout** + **U4 doppio click guard sincrono** + LIMIT UI/capienza.
+- **D3 contatore restore** (migrazione `044`): controtestato direttamente su DB TEST (ciclo accetta→elimina→reinserisci, `bookings_count` invariato al restore); logica del trigger SQL, nessun unit.
+- `e2e/admin-booking-mgmt.spec.ts` → marcatore E2E (staging, solo Desktop Chrome).
+
+Componente conferma riusabile: `BookingDangerActionModal.tsx` (Elimina, No-show, Reinserisci con orari
+già salvati, Riporta in attesa, Rifiuta) — **R1:** `max-h-[90vh]`, area scroll, bottoni `flex-col sm:flex-row`.
+Modale orario reinserisci: `RestoreBookingTimeModal.tsx` (deleted senza slot confermati).
+
+Fase D — esiti controtest (07-06-26) post-fix batch:
+
+| Fronte | Esito | Finding principali |
+|---|---|---|
+| Flusso dati | D1/D5/D3 ✅ | Race pending guard; restore pulisce `cancellation_*`; **D3 contatore restore (migr. 044)** |
+| Flusso utente | D2/D4/U2/U6/U7 ✅ | No doppio submit; reinserisci orario; **annulla ripristina campi (U2); drawer auto-chiusura (U6); chiusura bloccata in save (U7)** |
+| Limit test | 15 test | L4/L10–L12 FU validazione ospiti (fuori batch) |
+| Responsive | R1 ✅ QA browser | 375/834/1280: bottoni Elimina/Rifiuta in viewport con textarea piena |
+
+act() warning risolti in `prenotazioni.adminBlindatura.test.tsx` (ArchiveTab expand/modale).
+
+Buchi residui (post-batch):
+
+- **U3** tab switch durante mutation (vincolo strutturale dashboard); **U9** banner errore inline (toast già presente); **D6/D7** guard DB difensivi; L4/L10–L12 validazione ospiti; test integrazione PendingRequestsTab warning capienza/orario passato; **QA browser reale modali admin loggato** (FU-043).
+- E2E Playwright su accept capienza/orario passato (warning non blocco) con dati staging.
+- E2E responsive modali conferma in admin loggato (E1–E5).
+- Test email fallita non blocca mutation (§6 `ADMIN_PRENOTAZIONI_CONTEXT.md`).
+
+## 9. Area 1 — Shell (aggiornamento decisioni 06-06-26)
+
+Matteo: **Area 1 ✅ PROD solo con E2E browser reali** (non basta solo unit). Strategia test: provare a
+rompere layout responsive e logiche conflittuali, verificare che l'app protegga l'utente.
+
+Debiti chiusi in codice:
+
+- `AdminAuthProvider` — sessione admin condivisa (fix doppio hook).
+- Rimosso percorso `settings` latente sidebar + `restaurantSettingsSignal`.
 
 Stato: **intervista chiusa, blindatura avviata**.
 
@@ -130,12 +173,12 @@ Test marcati o creati:
     `/admin/impostazioni`);
   - `@admin-blindatura: shell-logout` su logout subordinato al guard.
 - `src/pages/__tests__/AdminDashboard.adminRouting.test.tsx` -> `@admin-blindatura: shell-refresh-back`
-  su trigger Impostazioni consumato una sola volta: cambiare tab dopo Impostazioni non deve riaprire
-  la tab Impostazioni.
+  su URL `/admin/prenotazioni` (tab Prenotazioni, non Calendario) e cambio tab via NavItem.
 - `src/config/__tests__/features.test.ts` -> `@admin-blindatura: shell-edition` su QR Menu
   aggiungibile/rimuovibile via override.
-- `src/contexts/__tests__/UnsavedChangesContext.adminBlindatura.test.tsx` ->
-  `@admin-blindatura: shell-dirty-guard`.
+- **Buco:** test dedicato `@admin-blindatura: shell-dirty-guard` su `UnsavedChangesContext` — file
+  `UnsavedChangesContext.adminBlindatura.test.tsx` **non ancora creato** (guard coperto indirettamente
+  da AdminShell routing/logout test).
 - `src/components/layout/__tests__/adminShellTabFlash.test.tsx` ->
   `@admin-blindatura: shell-refresh-back` su **assenza di flash** al cambio tab dashboard e al cambio
   sezione sidebar (la schermata vecchia non riappare per un render intermedio). Regressione del bug

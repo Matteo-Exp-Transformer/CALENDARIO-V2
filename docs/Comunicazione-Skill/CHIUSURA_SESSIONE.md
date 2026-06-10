@@ -224,9 +224,8 @@ non dopo il merge. Il revisore che approva un merge con la skill stale ha lascia
   Husky con `git config core.hooksPath .husky`.
 - Conventional Commits: `feat(scope):` · `fix(scope):` · `docs(scope):`.
 - Corpo del commit: sezione **`Review:`** con i path per revisionare (report, SESSION_LOG, skill toccati).
-- **Trappola gitignore `docs/`:** la cartella `docs/` è gitignored → i file **nuovi** lì dentro
-  (report nuovi) richiedono `git add -f`. I file **già tracciati** si committano normali. Se un `git add`
-  misto fallisce «paths are ignored», forza con `-f` il file nuovo e ripeti.
+- **`docs/` si committa normale:** dopo lo split repo (giugno 2026) questa repo è privata e `docs/`
+  non è più gitignored — `git add` senza `-f`. Unica eccezione: `docs/_lavoro/` (privato, gitignored).
 - Aggiungi SOLO i tuoi file: non includere modifiche/untracked altrui nel commit del task.
 
 ## 3. Allineamento branch `env/test` → `main` (se richiesto)
