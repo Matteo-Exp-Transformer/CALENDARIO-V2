@@ -50,6 +50,9 @@ agenti-locali/
 # Artefatti Vercel locali (project link) — mai versionati
 .vercel/
 
+# Piani di lavoro scratch di Cursor — temporanei, mai versionati
+.cursor/plans/
+
 # Script Playwright usa-e-getta (debug locale, mai committati)
 pw-*.mjs
 
