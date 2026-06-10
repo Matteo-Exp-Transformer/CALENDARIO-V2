@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 10-06-26 | Admin — **M1 Shell smoke flusso base** 🔶 (Matteo OK) | [MASTERPLAN](MASTERPLAN_BLINDATURA.md) §M1 — login, tab dashboard Classic, refresh/back ok; blindatura formale resta 🔶 (FU-042 E2E staging) |
 | 10-06-26 | Prenota — **Milestone M0 blindatura** ✅ **report finale** | [Report finale M0](Sessioni%20di%20lavoro/10-06-26/Report-finale-m0-prenota-10-06-26.md) — FU-030 cap 24/24/79 + FU-038 seed `/prenota/test` + FU-039 QA C1/C3 + revisione + fix overlay ghost row; validate **482**; merge production da fare |
 | 10-06-26 | Prenota — **riepilogo sidebar pulizia copy prezzi** (light) 🔶 **lavoro ok** | `BookingSummarySidebar`: Opzione menu solo nome (rimosso suffisso «— €/persona»); blocco totali senza etichetta «A persona», restano riga «€ x N ospiti» + Totale stimato; test capability 8/8; validate globale rosso `agenti-locali/` preesistente |
 | 10-06-26 | Prenota — **toggle dettaglio offerta → riepilogo carosello** 🔶 **lavoro ok** | [Report](Sessioni%20di%20lavoro/10-06-26/Report-prenota-toggle-dettaglio-offerta-riepilogo-10-06-26.md) — `show_offer_details_in_summary`: nome in Tipo/Opzione menu + titoli slide; prezzo indipendente; copy admin; +4 test sidebar; skill FORM_CONFIG + LAYOUT; typecheck OK; validate rosso `agenti-locali/` preesistente |
