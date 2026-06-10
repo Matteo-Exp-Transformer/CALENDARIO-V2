@@ -21,9 +21,8 @@ piani) e li ha confrontati col codice, ha corretto diverse cose che davo per fat
   riserve; fix polish overlay `showActionRow`. **Merge production M0** ancora da eseguire (procedura § merge).
 - **Menu QR confermato blindato**, ma restano 2 follow-up reali: FU-MQR-2 (ordine piatti per-QR) e
   FU-MQR-3 (chiave categoria malformata su PROD).
-- **Admin Shell (M1):** intervista + mappatura + test unit `shell-*` (06-06); **smoke flusso base Matteo
-  OK (10-06-26)** — login, navigazione tab dashboard Classic, refresh/back percepiti ok. Resta **FU-042**
-  (E2E Playwright staging Pro) per chiusura formale blindatura / merge prod M1.
+- **Admin Shell (M1):** ✅ blindato 10-06-26 — unit `shell-*` + E2E FU-042 su TEST; smoke Matteo pre-E2E OK;
+  merge prod M1 ⬜.
 
 ### Il flusso per ogni sezione nuova (regola di Matteo)
 
@@ -51,7 +50,7 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 |---|---|---|---|---|---|
 | **Prenota — form pubblico/vetrina** | ✅ (04-06) | ✅ | ✅ Vitest + QA browser C1/C3 | ✅ **M0 chiuso** — merge prod ⬜ | **M0** ✔️ ready |
 | **Menu QR — pagina clienti** | ✅ (06-06) | ✅ | ✅ | ✅ (FU-MQR-2/3 aperti, fuori blind.) | ✅ già mergeable |
-| **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + **smoke Matteo flusso base (10-06-26)** | 🔶 (manca E2E FU-042) | **M1** 🔶 smoke OK |
+| **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 (10-06-26) + smoke Matteo | ✅ **M1 blindato** — merge prod ⬜ | **M1** ✔️ ready |
 | **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | 🔶 `@admin-blindatura` | 🔶 (residui U/D/L + E2E) | **M2** |
 | **Admin — tab Calendario** | ⬜ **DA ZERO** | ⬜ | ⬜ | ⬜ | **M2** (parte di Dashboard) |
 | **Admin — Menu / magazzino** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M3** |
@@ -105,7 +104,7 @@ area (ciclo A–D del `PLAN_BLINDATURA_ADMIN.md`: intervista → mappatura → t
 - **Prossimo passo:** merge production (§ procedura merge) — senior + Matteo.
 - **Fuori M0 (aperti):** FU-040 hook Vitest, FU-041 doc stale 05-06, cap server edge ingredienti (M6 opzionale).
 
-### M1 — Admin Shell / ingresso / navigazione globale 🔶 **smoke Matteo OK** (10-06-26)
+### M1 — Admin Shell / ingresso / navigazione globale ✅ **BLINDATO** (10-06-26)
 - **Dettaglio:** `docs/Admin-Skill/PLAN_BLINDATURA_ADMIN.md` §3 · report Area 1
   `docs/Sessioni di lavoro/06-06-26/Report-blindatura-admin-area1-shell-06-06-26.md`.
 - **Stato:** intervista chiusa (06-06); sotto-route refresh/back + logout dirty guard in codice; test
@@ -115,12 +114,12 @@ area (ciclo A–D del `PLAN_BLINDATURA_ADMIN.md`: intervista → mappatura → t
 - **QA Matteo (10-06-26):** **flusso base utente OK** — ingresso admin, navigazione tab principali
   (Prenotazioni / Calendario / Menu / Impostazioni in edition Classic), refresh e back percepiti
   corretti; nessun blocco segnalato in smoke manuale.
-- **Cosa resta per ✅ blindatura / merge prod M1:**
-  - **FU-042** — E2E Playwright reali su staging (`.env.local.test` + tenant Pro): refresh/back
-    `/admin/crm`, logout con dirty + handler Impostazioni, buchi `ADMIN_TEST_SUITE_INDEX` §9.
-  - Controverifica routing doc-guided (opzionale se E2E verdi).
-- **Prossimo passo:** chiudere FU-042 **oppure** merge prod M1 su base smoke + unit (decisione senior
-  con Matteo) — E2E restano gate consigliato da decisione 06-06.
+- **Completato (10-06-26):** **FU-042** — `e2e/admin-shell-blindatura.spec.ts` (5 test): refresh/back
+  Pro `/admin/crm` + browser back; Classic `/admin/prenotazioni`; dirty guard + logout Classic
+  (tema Impostazioni). Allineati `admin-login`, `pro-sidebar-nav` (sidebar `complementary`). Suite E2E
+  shell: **19 passed, 1 skipped** su staging TEST (4 file shell); `npm run validate` **482** verde.
+- **Report:** `docs/Sessioni di lavoro/10-06-26/Report-chiusura-m1-admin-shell-10-06-26.md`
+- **Prossimo passo:** merge production M1 (§ procedura merge) — senior + Matteo.
 
 ### M2 — Admin Dashboard prenotazioni (operative + Calendario)
 - **Dettaglio:** `docs/Admin-Skill/PLAN_BLINDATURA_ADMIN.md` §3-bis (operative). **Calendario: sezione
@@ -206,7 +205,7 @@ Decisione (10-06-26): **questo è un masterplan nuovo separato**, indice sopra i
 ## 7. Come finire di blindare Admin (sequenza operativa)
 
 1. **M0 (Prenota):** ✅ chiuso 10-06-26 — cap FU-030, seed FU-038, QA FU-039, revisione, polish overlay. **Merge prod ⬜.**
-2. **M1 (Shell):** smoke Matteo flusso base ✅ (10-06-26) · resta **FU-042** E2E staging → merge Classic.
+2. **M1 (Shell):** ✅ blindato 10-06-26 (FU-042 E2E) · merge Classic ⬜.
 3. **M2 (Dashboard prenotazioni):** **intervistare + costruire tab Calendario da zero**; chiudere
    residui operative + E2E/QA reale + controtest responsive → merge.
 4. **M3 (Menu admin):** intervista → mappa → test, focus race rename/delete categoria (chiude FU-MQR-3) → merge.
@@ -229,8 +228,8 @@ mappatura, poi test, poi controtest "rompi" sui 4 fronti — non si chiude un'ar
   "test avviati" del plan è confermato, non gonfiato.
 - **M0 Prenota (10-06-26):** FU-030 cap 24/24/79 in codice + test Vitest; seed `/prenota/test` su TEST;
   QA browser C1/C3 indipendente OK; fix `showActionRow` overlay verificato in chiusura report finale.
-- **M1 Shell (10-06-26):** smoke manuale Matteo — flusso base admin Classic OK (login, tab dashboard,
-  refresh/back); blindatura formale ancora 🔶 per **FU-042** E2E staging.
+- **M1 Shell (10-06-26):** FU-042 chiuso — E2E `admin-shell-blindatura.spec.ts` + suite shell **19+1 skip**
+  su TEST; blindatura formale ✅; merge prod ⬜.
 - **Merge production:** `npm run release:prenotazen` → in PrenotaZen `npm run build` verde → deploy
   Vercel → smoke test live (login admin, creare/accettare prenotazione, calendario, menu QR pubblico).
 - **Dopo ogni milestone:** aggiornare la tabella «Stato per sezione» (in cima),

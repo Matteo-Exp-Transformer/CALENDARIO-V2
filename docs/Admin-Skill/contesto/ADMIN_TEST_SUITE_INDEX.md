@@ -36,11 +36,12 @@ Fronti previsti:
 | File | Area |
 |---|---|
 | `e2e/admin-login.spec.ts` | login admin |
+| `e2e/admin-shell-blindatura.spec.ts` | shell refresh/back, dirty guard, logout (FU-042) |
 | `e2e/admin-classic-tabs.spec.ts` | tab Classic |
 | `e2e/admin-booking-mgmt.spec.ts` | gestione prenotazioni admin |
 | `e2e/menu-crud.spec.ts` | CRUD menu |
 | `e2e/pro/pro-login.spec.ts` | login Pro |
-| `e2e/pro/pro-sidebar-nav.spec.ts` | sidebar Pro |
+| `e2e/pro/pro-sidebar-nav.spec.ts` | sidebar Pro — `aside` con `role="complementary"` (non `navigation`); ritorno dashboard da CRM via pulsante X |
 | `e2e/pro/pro-home.spec.ts` | Home Pro |
 | `e2e/pro/pro-crm.spec.ts` | CRM Pro |
 | `e2e/edition-classic.spec.ts` | gating Classic |
@@ -94,8 +95,8 @@ Fronti previsti:
 
 ## 7. Buchi iniziali da trasformare in test
 
-- Logout con dirty state.
-- Refresh/back da sezioni interne non URL.
+- ~~Logout con dirty state.~~ ✅ chiuso M1 — §9 / `admin-shell-blindatura.spec.ts`
+- ~~Refresh/back da sezioni interne non URL.~~ ✅ chiuso M1 — §9 / `admin-shell-blindatura.spec.ts` (refresh/back URL; eventuale tab state-only → §9)
 - Home con `features.home=false` e sidebar attiva.
 - Delete cliente CRM con booking collegate.
 - Rename/delete categoria menu con sync QR/Prenota.
@@ -176,9 +177,8 @@ Test marcati o creati:
   su URL `/admin/prenotazioni` (tab Prenotazioni, non Calendario) e cambio tab via NavItem.
 - `src/config/__tests__/features.test.ts` -> `@admin-blindatura: shell-edition` su QR Menu
   aggiungibile/rimuovibile via override.
-- **Buco:** test dedicato `@admin-blindatura: shell-dirty-guard` su `UnsavedChangesContext` — file
-  `UnsavedChangesContext.adminBlindatura.test.tsx` **non ancora creato** (guard coperto indirettamente
-  da AdminShell routing/logout test).
+- `src/contexts/__tests__/UnsavedChangesContext.adminBlindatura.test.tsx` ->
+  `@admin-blindatura: shell-dirty-guard` (creato 06-06; E2E dirty/logout anche in `admin-shell-blindatura.spec.ts`).
 - `src/components/layout/__tests__/adminShellTabFlash.test.tsx` ->
   `@admin-blindatura: shell-refresh-back` su **assenza di flash** al cambio tab dashboard e al cambio
   sezione sidebar (la schermata vecchia non riappare per un render intermedio). Regressione del bug
@@ -191,8 +191,21 @@ Test esistenti ancora candidati da valutare nel giro E2E completo:
 - `e2e/edition-classic.spec.ts` -> candidato `@admin-blindatura: shell-edition`.
 - `e2e/edition-upgrade.spec.ts` -> candidato `@admin-blindatura: shell-edition`.
 
-Buchi / controlli residui Shell:
+E2E FU-042 chiusi (10-06-26) in `e2e/admin-shell-blindatura.spec.ts`:
 
-- E2E reale su `/admin/crm` refresh e back browser con tenant Pro configurato.
-- E2E reale su logout dirty dentro una schermata impostazioni con handler di salvataggio attivo.
-- Verifica che la action `settings` latente resti non esposta o venga rimossa in Area Settings.
+- `@admin-blindatura: shell-refresh-back` — Pro: reload `/admin/crm`, CRM→Servizio→browser back; Classic:
+  reload `/admin/prenotazioni` mantiene tab Prenotazioni.
+- `@admin-blindatura: shell-dirty-guard` + `shell-logout` — Classic: cambio tema Impostazioni senza Salva →
+  logout → modale guard → Resta qui / Annulla e continua.
+
+Allineamenti mirati suite esistente (stesso giro):
+
+- `e2e/admin-login.spec.ts` — selettori logout/toast errore aggiornati.
+- `e2e/pro/pro-sidebar-nav.spec.ts` — sidebar `complementary` (non `navigation`); rimosso bottone
+  Prenotazioni in sidebar (ritorno dashboard via X da CRM).
+
+Buchi / controlli residui Shell (fuori M1):
+
+- Verifica che la action `settings` latente resti non esposta o venga rimossa in Area Settings (M4).
+- E2E anagrafica testo con autosave OFF (comportamento prod FU-004) — oggi dirty guard E2E usa tema
+  (non in autosave) per affidabilità in `npm run dev`.

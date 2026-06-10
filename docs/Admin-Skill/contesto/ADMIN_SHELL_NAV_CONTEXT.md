@@ -151,3 +151,8 @@ I test nuovi o aggiornati devono avere uno dei marcatori:
 - `@admin-blindatura: shell-dirty-guard`
 - `@admin-blindatura: shell-logout`
 - `@admin-blindatura: shell-refresh-back`
+
+**E2E staging (FU-042, chiuso 10-06-26):** `e2e/admin-shell-blindatura.spec.ts` copre `shell-refresh-back`,
+`shell-dirty-guard`, `shell-logout` su DB TEST (`.env.local.test`). Sidebar Pro: ruolo accessibilità
+`complementary` + `aria-label="Navigazione principale"` (non `<nav>`). Ritorno alla dashboard prenotazioni
+da sezioni Pro: pulsante **X** «Torna alla dashboard», non voce sidebar Prenotazioni (rimossa da `SIDEBAR_NAV`).

@@ -76,6 +76,14 @@ feat(crm): ...     fix(crm): ...
 ```bash
 npm run typecheck   # zero errori TS
 npm run lint        # zero warning
-npm run test        # 132/132 Vitest
+npm run test        # Vitest (incl. @admin-blindatura shell-* unit)
 npm run validate    # per PR: tutto in sequenza
 ```
+
+**E2E shell (M1, staging TEST):** dopo modifiche a `AdminShell`, routing o guard logout:
+
+```bash
+npm run test:e2e -- e2e/admin-shell-blindatura.spec.ts e2e/admin-login.spec.ts e2e/admin-classic-tabs.spec.ts e2e/pro/pro-sidebar-nav.spec.ts
+```
+
+Credenziali in `.env.local.test` (`E2E_CLASSIC_ADMIN_*`, `E2E_PRO_ADMIN_*`). Sidebar Pro: `getByRole('complementary', { name: /navigazione principale/i })`.
