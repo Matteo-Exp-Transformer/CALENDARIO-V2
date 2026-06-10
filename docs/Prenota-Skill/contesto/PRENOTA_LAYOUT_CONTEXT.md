@@ -311,9 +311,10 @@ Ordine verticale per ogni ingrediente nella lista `#booking-menu-cat-panel-*`:
 1. **Foto** (solo se `item.image_url`): `aspect-4/3 sm:aspect-3/2`, bordo leggero.
 2. **Titolo** a tutta larghezza (`text-sm font-bold`, `wrap-break-word`).
 3. **Descrizione** opzionale sotto il titolo (`text-xs`).
-4. **Footer azioni** `min-h-[44px]`: checkbox a **sinistra** (se menù non `locked`); prezzo a **destra**
-   solo se `showIngredientPrices === true` (`formatPrice`). Se prezzo fisso sottotab → prop `false` da
-   catena §5; se `locked` → niente checkbox, prezzo eventualmente `ml-auto`.
+4. **Footer azioni** `min-h-[44px]`: montato **solo se** `showActionRow = !locked || showIngredientPrices`
+   (checkbox a sinistra se menù non `locked`; prezzo a destra solo se `showIngredientPrices === true`).
+   Se menù preselezionato **e** prezzo fisso sottotab (nessun € per ingrediente) → **nessun footer** —
+   evita buco ~44px sotto descrizione (10-06-26).
 
 **Divisori tra ingredienti:** `<li aria-hidden>` con `px-3` + `h-px bg-black/10` **tra** le righe, non
 dopo l’ultima. Lista `<ul>` senza `gap` verticale globale (spaziatura = padding riga + divisore).
@@ -363,6 +364,7 @@ Mappa completa: **`PRENOTA_TEXT_LIMITS_MAP.md`**. Costanti: `bookingPrenotaTextL
 - **Ristoratore (A–F):** cap legati al layout + contatore `N/max` in Personalizza form / promo. Descrizione header max **28px** (titolo/nome fino **38px**).
 - **Cliente (H):** cap generoso (**65** nome/email, **30** tel, **550** intolleranze e altre richieste) — **solo sistema**: `maxLength` silenzioso, nessun contatore in pagina; edge `create-booking` allineato.
 - **`courses_label`:** max **12** in admin; in pubblico footer basso sx su card `display='cards'` (`BookingSubTabCards`, vedi §5.2); non in carosello.
+- **Menù compose ingredienti (FU-030 Fase 1, 10-06-26):** `BOOKING_MENU_COMPOSE_TEXT_LIMITS` — categoria/nome **24**, descrizione **79**. Pubblico: `clampBookingText` in `BookingMenuCategoryCard` + nomi in `BookingSummarySidebar` (nessun contatore). Admin: `MenuPricesTab` form prodotto + titolo categoria overlay. Dettaglio §E mappa limiti.
 
 ## 9. Validazione submit fallito (29-05-26)
 

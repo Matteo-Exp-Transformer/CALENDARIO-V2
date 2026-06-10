@@ -57,12 +57,16 @@ Normalizer: `normalizeCarouselSlideItem` + migration `040_clamp_booking_carousel
 
 ## E. Menù ingredienti (Tab Menu → pubblico)
 
-| Superficie UI | Storage | Max oggi | Limite in UI | Follow-up |
-|---------------|---------|----------|--------------|-----------|
-| Nome categoria (h3 overlay) | `menu_categories.label` | nessuno | — | FU: cap layout |
-| Nome ingrediente | `menu_items.name` | nessuno | — | FU: cap layout |
-| Descrizione ingrediente | `menu_items.description` | nessuno | — | FU: cap layout |
-| Teaser card chiusa | hardcoded | «Scopri cosa è incluso» | — | Non editabile |
+Costante: `BOOKING_MENU_COMPOSE_TEXT_LIMITS` in `bookingPrenotaTextLimits.ts` (prova FU-030 Fase 1, 10-06-26).
+
+| Superficie UI | Componente | Storage | Max | Limite in UI | Note |
+|---------------|------------|---------|-----|--------------|------|
+| Nome categoria (header card chiusa/aperta + overlay portal) | `BookingMenuCategoryCard` | `menu_categories.label` | **24** | admin-contatore (`MenuPricesTab` overlay Categorie) · pubblico `clampBookingText` silenzioso | Allineato a `subTabLabel` |
+| Nome ingrediente (pannello + riepilogo) | `BookingMenuCategoryCard`, `BookingSummarySidebar` | `menu_items.name` | **24** | admin-contatore (form prodotto) · pubblico silenzioso | Allineato a `subTabLabel` |
+| Descrizione ingrediente | `BookingMenuCategoryCard` | `menu_items.description` | **79** | admin-contatore (form prodotto) · pubblico silenzioso | Allineato a `subTabDescription` |
+| Teaser card chiusa | `BookingMenuCategoryCard` | hardcoded | «Scopri cosa è incluso» | — | Non editabile |
+
+Legacy in DB oltre cap: il pubblico tronca al render; l'admin non può superare il max in digitazione.
 
 ---
 
