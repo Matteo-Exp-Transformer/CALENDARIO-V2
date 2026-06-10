@@ -13,11 +13,10 @@ description: >-
 
 ---
 
-> ⚠️ **REGOLA ECCEZIONALE TEMPORANEA (commit su `docs/`)** — vale per ogni agente, all'avvio.
-> Il `.gitignore` esclude `docs/` in vista della migrazione a repo pubblico, ma i file `docs/` già
-> tracciati vanno ancora versionati in questo repo. Quindi per committare un file `docs/` usa
-> **`git add -f <file>`** (senza `-f` git lo rifiuta). I file di codice (`src/`, config) NON
-> richiedono `-f`. Questa regola si rimuove a migrazione completata.
+> ℹ️ **Commit su `docs/` — normale.** Dopo lo split repo (giugno 2026) questa repo è **privata**
+> e `docs/` non è più gitignored: i file `docs/` si committano con `git add` normale, senza `-f`.
+> Il codice app pubblico vive nella repo separata **PrenotaZen** (sync a milestone). Solo
+> `docs/_lavoro/` resta gitignored (privato personale).
 
 ## 0. Prima cosa: instrada al skill corretto
 

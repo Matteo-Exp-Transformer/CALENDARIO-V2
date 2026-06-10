@@ -48,6 +48,16 @@
 
 ## Sessioni registrate (append-only)
 
+### 10-06-26 — Ruolo agente senior: plan per milestone + gate merge (osservazione processo)
+- **Area:** skill system / workflow senior (non codice app).
+- **Osservazione Matteo:** in chat con lui, l’**agente senior** deve fornire **plan strutturati** per
+  sviluppare l’app in base a **milestone** e **visione del progetto** (`CONTESTO_PRODOTTO` §4).
+  Ogni milestone va abbinata a: **debug strutturale approfondito** + **test sistematico** del flusso
+  dati e del flusso utente → poi **merge con main/production**.
+- **Scopo per Matteo:** capire **quanto lavorare** (e su cosa) prima di fare merge in sicurezza — non
+  solo «feature pronta» ma «area blindata abbastanza per prod».
+- **Esito:** annotazione processo; nessuna promozione a VOCABOLARIO finché non approvata.
+
 > 📦 **Sessioni 03-06-26 «allineamento skill» e «layout card ingredienti» → archiviate** in
 > [ARCHIVIO_OSSERVAZIONI.md](ARCHIVIO_OSSERVAZIONI.md): la prima è diventata regola, la seconda è
 > confluita nel rinforzo hook v3. La richiesta «riportare i prompt verbatim» è ora nel nudge hook.
@@ -96,6 +106,7 @@
 | 02-06-26 | In chat **prepara**, se corregge il prompt: l’agente deve ridare il **prompt completo**, non solo la parte cambiata (evita errori incollando delta su prompt vecchio). | ✅ **PROMOSSA a regola di formato** in PREPARA_PROMPT §1.B (Meta senior 02-06-26) — non voce VOCABOLARIO, è formato del prepara-prompt come «profilo+skill nel prompt». |
 | 02-06-26 | Chiede spesso la frase lunga «aggiungi tutti i dati… prompt… skill system… osservazioni e dubbi» — **non** perché manchi nel sistema: **`lavoro ok`** e **`fai report finale`** già la coprono (`comandi-base` + voce «lavoro ok»). La ripete quando gli agenti **saltano** sezioni del report (stesso problema della voce Liv.2 «compila report comunicazione» = pezza alla dimenticanza). | Preferire **`lavoro ok`** a fine task; **`fai report finale`** solo commit/push; frase lunga solo se report scarno o chat solo meta. |
 | 02-06-26 | **`sticky` e regole comunicazione nuove** → annotare in **OSSERVAZIONI** come osservazione sua, **non** aggiungere da solo in VOCABOLARIO. | Solo revisore/Meta senior + approvazione esplicita Matteo per promuovere voce. |
+| 10-06-26 | **Agente senior in chat:** deve consegnare **plan strutturati** per sviluppo app allineati a **milestone + visione progetto**; per ogni milestone prevedere **debug strutturale approfondito** + **test sistematico** flusso dati e flusso utente → poi **merge main/production**. Serve a stimare **quanto lavorare prima del merge in sicurezza**. | Sessione senior / Meta: output = piano per milestone con gate (blindatura, test, criteri ✅ PROD) — non solo lista task. Collegare a blindatura Admin (`PLAN_BLINDATURA_ADMIN`), `CONTROVERIFICA.md`, `TESTING_SKILL` §7, chiusura merge `CHIUSURA_SESSIONE` Parte B. |
 
 
 ## Frasi / richieste ricorrenti (con conteggio)
