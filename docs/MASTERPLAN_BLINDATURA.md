@@ -48,7 +48,7 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 
 | Pagina / Sezione | Intervistato | Mappato | Testato | Blindato | Milestone |
 |---|---|---|---|---|---|
-| **Prenota — form pubblico/vetrina** | ✅ (04-06) | ✅ | ✅ Vitest + QA browser C1/C3 | ✅ **M0 chiuso** — merge prod ⬜ | **M0** ✔️ ready |
+| **Prenota — form pubblico/vetrina** | ✅ (04-06) | ✅ | ✅ Vitest + QA browser C1/C3 | ✅ **M0 chiuso** | **M0** ✔️ **MERGED PROD (10-06)** |
 | **Menu QR — pagina clienti** | ✅ (06-06) | ✅ | ✅ | ✅ (FU-MQR-2/3 aperti, fuori blind.) | ✅ già mergeable |
 | **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 (10-06-26) + smoke Matteo | ✅ **M1 blindato** — merge prod ⬜ | **M1** ✔️ ready |
 | **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | 🔶 `@admin-blindatura` | 🔶 (residui U/D/L + E2E) | **M2** |
@@ -93,9 +93,10 @@ area (ciclo A–D del `PLAN_BLINDATURA_ADMIN.md`: intervista → mappatura → t
 
 ---
 
-### M0 — Prenota: chiudere la blindatura ✅ **CHIUSO 10-06-26** (merge prod ⬜)
+### M0 — Prenota: chiudere la blindatura ✅ **CHIUSO + MERGED PROD 10-06-26**
 - **Dettaglio:** `docs/Prenota-Skill/PRENOTA_SKILL.md` + `contesto/*`.
 - **Stato:** ✅ intervistata, mappata, testata, revisione indipendente, `npm run validate` **482** verde.
+- **MERGE PRODUCTION (10-06-26):** revisione senior indipendente nel codice (2 sub-agent + validate ri-eseguito 482/482) → merge `env/test`→`main` (`d8f8851`, push CALENDARIO-V2) → `release:prenotazen` (solo 5 file src) → PrenotaZen `npm run build` verde → commit `f6e3d13` + push → deploy Vercel. **LIVE.**
 - **Completato:**
   - **FU-030** — `BOOKING_MENU_COMPOSE_TEXT_LIMITS` 24/24/79; clamp pubblico + contatori admin; accettazione Matteo.
   - **FU-038/039** — seed TEST slug `test` (`33333333-…`); QA browser C1 (3 card) + C3 (1 slide) su 375/806/834/1256/1280.
@@ -185,6 +186,7 @@ milestone naturale di competenza.
 | FU-RESP-1 | Larghezze fisse non responsive | `BookingRequestForm.tsx:1456`, `MenuSelection.tsx:463/506`, `CustomerListTable.tsx:89` | basso | nel controtest responsive dell'area (M2/M3/M5) |
 | FU-AUTH-1 | Admin rimosso da `admin_users` resta loggato finché refresh token valido | `AdminAuthContext.tsx` | medio (sicurezza) | M6 |
 | FU-AUTH-2 | Se RPC `check_admin_email` fallisce, tenant=null ma user loggato | `TenantContext.tsx` | medio | M1/M6 |
+| FU-FASE-D-M1 | M1 Shell mergiato senza controtest "rompi" Fase D (4 fronti). Accettato perché M1 tocca **zero codice applicativo** (solo E2E + config + doc), coperto da 5 E2E reali + smoke Matteo → il comportamento app non cambia, niente da "rompere". Gap solo formale. | decisione senior 10-06-26 | basso (formale) | M6 (recuperabile se si tocca lo shell in futuro) |
 | FU-002/003/023 | Pattern salvataggio unificato / conferma delete unica / guard modale su tutti i modali | trasversali aperti | basso-medio | M6 |
 
 ---
