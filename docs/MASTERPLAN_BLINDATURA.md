@@ -54,7 +54,7 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 | **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 + smoke Matteo | ✅ **M1 blindato** — su `main` privato (NON in pubblico: zero codice servito, vedi §merge) | **M1** ✔️ **MERGED (10-06)** |
 | **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | ✅ Vitest **32** + E2E **7** (FU-043) | ✅ **BLINDATO** (11-06-26) | **M2** ✔️ |
 | **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (41 test M2 +2 No-show; validate **527**, 11-06-26) | ✅ **BLINDATO** (11-06-26) — Fase C + batch A/B + C-U2 + QA badge §9 OK Matteo | **M2** ✔️ **MERGED PROD (11-06)** |
-| **Admin — Menu / magazzino** | ✅ (11-06) | ✅ (11-06) | 🔶 Fase 1+2+3 (26 Vitest: limiti 9 + availability 8 + sync 9; validate **553**) | ⬜ | **M3** |
+| **Admin — Menu / magazzino** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest **27** + E2E `@admin-blindatura: menu-magazzino` (375/834/1280; validate **554**) | ✅ **BLINDATO** (11-06-26) — QA Matteo toggle+propagazione; fix modal `b9f283f` | **M3** pronta merge |
 | **Admin — Impostazioni/Personalizza Form** | 🔶 trasversali* | 🔶 doc | 🔶 salvataggio fase1 | ⬜ | **M4** |
 | **Admin — Servizio (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
 | **Admin — CRM (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
@@ -152,7 +152,13 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 - **Stato:** ✅ intervistato + ✅ mappato (11-06-26). **Fase 1 ✅:** limiti + cap + avviso (9 test limits).
   **Fase 2 ✅ (11-06-26):** toggle `is_available` magazzino + migrazione `045` TEST + 8 test availability.
   **Fase 3 ✅ (11-06-26, FU-M3-3):** Vitest `@admin-blindatura: menu-magazzino-sync` (9 test rename/delete +
-  controtest parziale); validate **553**. **Prossimo:** QA manuale + cancello blindatura M3 (non dichiarato).
+  controtest parziale). **QA E2E base ✅ (11-06-26, FU-M3-QA-E2E):** Playwright
+  `e2e/admin-menu-magazzino-blindatura.spec.ts` su 1280/375/834. **Fix modal config ✅ (`b9f283f`):**
+  filtro `is_available` in modal QR + card scorrevoli. **Blindato ✅ 11-06-26** — report
+  [`Report-finale-m3-menu-blindato-11-06-26.md`](Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md);
+  validate **554**; QA Matteo toggle+propagazione. **Fuori cancello:** FU-M3-QA-L3 (tenant oltre soglia),
+  FU-M3-QA-CT (controtest browser esteso); roadmap E2E completo per area (OSSERVAZIONI 11-06-26).
+  **Prossimo:** merge production M3 (senior + Matteo, §merge).
 - **Decisioni chiave (vedi `ADMIN_MENU_MAGAZZINO_CONTEXT.md §9`):** limiti duri 7/12/6/6; cap 24/79;
   **toggle disponibilità magazzino** ✅ (`is_available`, spento = nascosto Prenota+QR, snapshot intatto);
   avviso propagazione su save/toggle; QR `is_active` spento → "menu non disponibile".

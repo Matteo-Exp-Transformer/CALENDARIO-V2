@@ -48,6 +48,13 @@
 
 ## Sessioni registrate (append-only)
 
+### 11-06-26 — Chiusura FU-M3-QA-E2E: "commit alla fine" più specifico di "push"
+- **Area:** Admin Menu / magazzino — QA browser Playwright.
+- **Prompt:** Matteo ha confermato il lavoro e chiesto "aggiorna documentazione di lavoro come dice chiusura sessione", "report completo finale" e "fai commit alla fine".
+- **Dato comunicazione:** anche quando la chiusura richiama il protocollo finale, se Matteo specifica solo **commit** non dedurre automaticamente **push**. Seguire la richiesta più precisa e annotare in report che il push non è stato eseguito.
+- **Esiti Liv.2:** nessuna voce Liv.2 applicata.
+- **Report:** `docs/Sessioni di lavoro/11-06-26/Report-finale-fu-m3-qa-e2e-playwright-11-06-26.md`.
+
 ### 10-06-26 — Esecutori: non aggiornare plan/roadmap (confine deliverable)
 - **Area:** skill system / workflow esecutore (non codice app).
 - **Osservazione Matteo:** gli agenti **esecutori** non devono modificare file di **piano/roadmap**

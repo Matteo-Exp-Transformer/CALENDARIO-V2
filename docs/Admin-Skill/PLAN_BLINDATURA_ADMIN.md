@@ -38,7 +38,7 @@
 | 1 | Shell / ingresso / navigazione globale | `ADMIN_SHELL_NAV_CONTEXT.md` | ✅ blindato (FU-042 E2E 10-06-26) | login, edition, sidebar, dirty guard, logout, refresh/back — unit + E2E staging |
 | 2 | Prenotazioni operative | `ADMIN_PRENOTAZIONI_CONTEXT.md` | fatto (11-06-26) | Vitest 32 + E2E FU-043; accetta/rifiuta/cancella/ripristina/warning testati |
 | 3 | Impostazioni / Personalizza Form | `ADMIN_SETTINGS_CONTEXT.md` | da fare | salvataggi, autosave, guard e impatto Prenota verificati |
-| 4 | Menu admin / magazzino | `ADMIN_MENU_MAGAZZINO_CONTEXT.md` | da fare | categorie, ingredienti, QR, rename/delete e sync testati |
+| 4 | Menu admin / magazzino | `ADMIN_MENU_MAGAZZINO_CONTEXT.md` | in corso (Fase 1+2+3 + QA E2E base 11-06-26) | categorie, ingredienti, QR, rename/delete, availability e propagazione browser testati; restano tenant oltre soglia + controtest extra |
 | 5 | Servizio | `ADMIN_SERVIZIO_CONTEXT.md` | da fare | sale/tavoli/slot/walk-in/briefing testati |
 | 6 | CRM | `ADMIN_CRM_CONTEXT.md` | da fare | create/edit/delete cliente e booking collegate testati |
 | 7 | Home / Analytics | `ADMIN_ANALYTICS_HOME_CONTEXT.md` | da fare | KPI, finestre data, quick action e responsive testati |
