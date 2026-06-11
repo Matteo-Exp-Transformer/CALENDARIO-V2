@@ -118,6 +118,9 @@ Senso: calendario **leggero come vista d'insieme** (dice solo quanto è pieno og
 
 ### Decisioni aggiuntive emerse dal controtest (11-06-26)
 
+8-bis. **Casella "Coperti massimi al giorno" sta FUORI dalla sezione fasce orarie** (è un blocco
+    indipendente in Impostazioni, dopo "Orari di apertura"). Il limite giornaliero vale sia Classic sia
+    Pro, mentre le fasce sono gated `!features.servizio`: annidarla lì la faceva sparire in Pro. Fix 11-06-26.
 9. **`0` coperti giornalieri = nessun limite** (oltre al campo vuoto). Lo schema accetta 0; serializer e
    parser trattano 0 e -1 come «illimitato». (Prima 0 rompeva il salvataggio dell'intera pagina Impostazioni.)
 10. **Blocco per-fascia pubblico RIMOSSO dal comportamento** (decisione Matteo: «non serve, avevo deciso
