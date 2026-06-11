@@ -57,10 +57,18 @@ Scroll al form (anche **Modifica** su un’altra card con form già aperto): `sc
 su titolo form (`productFormTitleRef` / `categoryFormTitleRef`), `scrollMarginTop` ~132px,
 `ensureVisible: true` — stesso helper dell’overlay Categorie Menu (`adminScroll.ts`).
 
-**Cap testo compose Prenota (FU-030 Fase 1, 10-06-26):** `BOOKING_MENU_COMPOSE_TEXT_LIMITS` —
+**Cap testo compose Prenota (FU-030 Fase 1, 10-06-26; completato M3 Fase 1 11-06-26):** `BOOKING_MENU_COMPOSE_TEXT_LIMITS` —
 nome prodotto **24**, descrizione **79** (`maxLength` + contatore `N/max` nel form prodotto);
-titolo categoria **24** nell'overlay «Categorie Menu». Allineati ai cap sottotab card. Il pubblico
+titolo categoria **24** e **descrizione categoria 79** nell'overlay «Categorie Menu». Allineati ai cap sottotab. Il pubblico
 tronca in silenzio al render (`clampBookingText`); vedi `Prenota-Skill/contesto/PRENOTA_TEXT_LIMITS_MAP.md` §E.
+
+**Limiti duri magazzino (M3 Fase 1, 11-06-26):** costante `MENU_MAGAZZINO_HARD_LIMITS` in `menuMagazzinoLimits.ts` —
+**7** categorie · **12** prodotti/categoria · **6** preset staff · **6** QR. Blocco solo su **nuovi** inserimenti
+(tenant già oltre soglia: nessuna cancellazione). UX: pulsante disabilitato + `MenuMagazzinoLimitNotice` con messaggio
+esplicito. Helper puri testati `@admin-blindatura: menu-magazzino-limits`.
+
+**Avviso propagazione (M3 Fase 1):** form Nuovo/Modifica Prodotto mostra `MenuMagazzinoPropagationNotice` prima di Salva
+(aggiorna subito Prenota + QR; snapshot prenotazioni intatto). Overlay categorie: hint per-campo già presenti.
 
 ## 4. Promo testuali
 

@@ -52,9 +52,9 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 | **Prenota — form pubblico/vetrina** | ✅ (04-06) | ✅ | ✅ Vitest + QA browser C1/C3 | ✅ **M0 chiuso** | **M0** ✔️ **MERGED PROD (10-06)** |
 | **Menu QR — pagina clienti** | ✅ (06-06) | ✅ | ✅ | ✅ (FU-MQR-2/3 aperti, fuori blind.) | ✅ già mergeable |
 | **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 + smoke Matteo | ✅ **M1 blindato** — su `main` privato (NON in pubblico: zero codice servito, vedi §merge) | **M1** ✔️ **MERGED (10-06)** |
-| **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | 🔶 `@admin-blindatura` | 🔶 (residui U/D/L + E2E) | **M2** |
+| **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | ✅ Vitest **32** + E2E **7** (FU-043) | ✅ **BLINDATO** (11-06-26) | **M2** ✔️ |
 | **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (41 test M2 +2 No-show; validate **527**, 11-06-26) | ✅ **BLINDATO** (11-06-26) — Fase C + batch A/B + C-U2 + QA badge §9 OK Matteo | **M2** ✔️ **MERGED PROD (11-06)** |
-| **Admin — Menu / magazzino** | ✅ (11-06) | ✅ (11-06) | ⬜ | ⬜ | **M3** |
+| **Admin — Menu / magazzino** | ✅ (11-06) | ✅ (11-06) | 🔶 Fase 1 (9 Vitest limiti) | ⬜ | **M3** |
 | **Admin — Impostazioni/Personalizza Form** | 🔶 trasversali* | 🔶 doc | 🔶 salvataggio fase1 | ⬜ | **M4** |
 | **Admin — Servizio (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
 | **Admin — CRM (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
@@ -130,7 +130,7 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 ### M2 — Admin Dashboard prenotazioni (operative + Calendario)
 - **Dettaglio:** `docs/Admin-Skill/PLAN_BLINDATURA_ADMIN.md` §3-bis (operative). **Calendario: sezione
   nuova da aggiungere al plan.**
-- **Stato:** operative 🔶 (batch FU-046 chiuso 07-06, residui U3/U9/D6/D7/L* + E2E aperti); **tab
+- **Stato:** operative ✅ **BLINDATO** 11-06-26 (FU-043 E2E + QA 375/834; residui U3/U9/D6/D7/L* fuori cancello); **tab
   Calendario: intervista ✅ + mappa ✅ + implementazione ✅ + 4 fix QA ✅ + test Vitest
   `@admin-blindatura: calendario` ✅ (41 test M2 +2 No-show, 11-06-26)**; Fase C controtest ✅ (report
   `docs/Sessioni di lavoro/11-06-26/Report-fase-c-controtest-calendario-11-06-26.md`).
@@ -149,12 +149,13 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 ### M3 — Admin Menu / magazzino
 - **Dettaglio:** sezione Area 4 da aggiungere a `PLAN_BLINDATURA_ADMIN.md`; context
   `ADMIN_MENU_MAGAZZINO_CONTEXT.md` — **mappa intervista in §9** (decisioni 11-06-26).
-- **Stato:** ✅ intervistato + ✅ mappato (11-06-26). **Prossimo step: implementare i pezzi nuovi + test.**
+- **Stato:** ✅ intervistato + ✅ mappato (11-06-26). **Fase 1 ✅ (11-06-26):** limiti duri + cap testo
+  completi + avviso propagazione ingredienti + 9 test `@admin-blindatura: menu-magazzino-limits` (validate **536**).
+  **Prossimo:** Fase 2 toggle disponibilità (**FU-M3-2**) + controtest rename/delete + blindatura completa.
 - **Decisioni chiave (vedi `ADMIN_MENU_MAGAZZINO_CONTEXT.md §9`):** limiti duri 7 categorie / 12 prodotti
   per categoria / 6 preset / 6 QR (solo su nuovi inserimenti, non rompere chi ha già sforato); cap nome
-  + descrizione (piatti e categorie); **toggle disponibilità nel magazzino** = NUOVA colonna su
-  `menu_items` + `menu_categories`, "spento qui = nascosto in Prenota e QR" (oggi assente); avviso
-  "tocchi anche Prenota/QR" da estendere agli **ingredienti** (oggi solo su categoria); QR spento →
+  + descrizione (piatti e categorie) — **Fase 1 in codice**; **toggle disponibilità nel magazzino** = Fase 2
+  (**FU-M3-2**, migrazione); avviso propagazione Prenota/QR su ingredienti — **Fase 1**; QR spento →
   "menu non disponibile".
 - **Invariante confermato (già nel codice):** prenotazioni pending/accettate/archivio conservano lo
   **snapshot congelato** del menù (`booking_requests.menu_selection`: nome+prezzo+quantità) — cambiare

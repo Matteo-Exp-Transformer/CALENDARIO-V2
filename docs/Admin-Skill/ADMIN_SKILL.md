@@ -155,7 +155,7 @@ Stato operativo aggiornato:
 | Area | Stato | Nota |
 |---|---|---|
 | Shell / ingresso / navigazione globale | 🔶 blindatura avviata | Intervista chiusa; fix e test `shell-*` avviati, vedi `PLAN_BLINDATURA_ADMIN.md` §3 |
-| Prenotazioni operative | 🔶 blindatura avviata | Conferme coerenti + test `@admin-blindatura: prenotazioni` (06-06-26) |
+| Prenotazioni operative | ✅ cancello M2 (11-06-26) | Vitest **32** + E2E FU-043 (warning accept + modali 375/834); residui U3/U9 non bloccanti |
 | Impostazioni / Personalizza Form | ⬜ | Da coordinare con Pagina Prenota |
 | Menu admin / magazzino | ⬜ | Da coordinare con Prenota e Menu QR |
 | Servizio | ⬜ | Include walk-in, tavoli e briefing |

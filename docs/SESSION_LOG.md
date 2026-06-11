@@ -13,6 +13,9 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 11-06-26 | Admin — **Revisione M3 Fase 1 menu magazzino** 🔶 **lavoro ok** | [Report](Sessioni%20di%20lavoro/11-06-26/Report-revisione-m3-fase1-menu-magazzino-limiti-11-06-26.md) — **Approva con riserve**; validate **536** ri-verificato; 6 finding info/bassa; nessun fix |
+| 11-06-26 | Admin — **M2 Prenotazioni operative E2E FU-043** ✅ cancello | [Report](Sessioni%20di%20lavoro/11-06-26/Report-m2-prenotazioni-operative-e2e-fu043-11-06-26.md) — E2E 7 (capienza/orario passato + modali 375/834); Vitest 32; validate **536**; nessun fix UI |
+| 11-06-26 | Admin — **M3 Menu magazzino Fase 1** (limiti + cap + avviso) 🔶 **lavoro ok** | [Report](Sessioni%20di%20lavoro/11-06-26/Report-m3-fase1-menu-magazzino-limiti-11-06-26.md) — 7/12/6/6 solo nuovi; cap 24/79; avviso Prenota/QR su ingredienti; 9 test `@admin-blindatura: menu-magazzino-limits`; validate **536**; **FU-M3-2** Fase 2 toggle |
 | 11-06-26 | Admin — **Calendario data responsive tablet** 🔶 **lavoro ok** | [Report](Sessioni%20di%20lavoro/11-06-26/Report-calendario-data-responsive-tablet-11-06-26.md) — data accanto a **Oggi** nascosta sotto `lg` (1024px); skill layout + §4c; typecheck+lint OK |
 | 11-06-26 | Admin — **M2 Calendario BLINDATO** ✅ **report finale** | [Report finale blindato](Sessioni%20di%20lavoro/11-06-26/Report-finale-m2-calendario-blindato-11-06-26.md) — batch A+B+C-U2; validate **527**; QA badge §9 OK Matteo; commit+push `env/test` |
 | 11-06-26 | Admin — **M2 Calendario allineamento doc test** (light) | §8-bis + FU-047: M2 **41** (+2 No-show fuori conteggio); validate **527**; cappelli batch A/B senza debito C-U2 |
