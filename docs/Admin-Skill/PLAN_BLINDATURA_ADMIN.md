@@ -38,7 +38,7 @@
 | 1 | Shell / ingresso / navigazione globale | `ADMIN_SHELL_NAV_CONTEXT.md` | ✅ blindato (FU-042 E2E 10-06-26) | login, edition, sidebar, dirty guard, logout, refresh/back — unit + E2E staging |
 | 2 | Prenotazioni operative | `ADMIN_PRENOTAZIONI_CONTEXT.md` | fatto (11-06-26) | Vitest 32 + E2E FU-043; accetta/rifiuta/cancella/ripristina/warning testati |
 | 3 | Impostazioni / Personalizza Form | `ADMIN_SETTINGS_CONTEXT.md` | da fare | salvataggi, autosave, guard e impatto Prenota verificati |
-| 4 | Menu admin / magazzino | `ADMIN_MENU_MAGAZZINO_CONTEXT.md` | in corso (Fase 1+2+3 + QA E2E base 11-06-26) | categorie, ingredienti, QR, rename/delete, availability e propagazione browser testati; restano tenant oltre soglia + controtest extra |
+| 4 | Menu admin / magazzino | `ADMIN_MENU_MAGAZZINO_CONTEXT.md` | ✅ **blindato** (11-06-26) | Vitest 27 + E2E `@admin-blindatura: menu-magazzino`; QA Matteo; report finale M3 |
 | 5 | Servizio | `ADMIN_SERVIZIO_CONTEXT.md` | da fare | sale/tavoli/slot/walk-in/briefing testati |
 | 6 | CRM | `ADMIN_CRM_CONTEXT.md` | da fare | create/edit/delete cliente e booking collegate testati |
 | 7 | Home / Analytics | `ADMIN_ANALYTICS_HOME_CONTEXT.md` | da fare | KPI, finestre data, quick action e responsive testati |
@@ -399,7 +399,7 @@ Aggiornare a fine area.
 | Prenotazioni operative | ✅ cancello M2 (11-06-26) | Vitest **32** + E2E **7** (FU-043: capienza/orario passato + modali 375/834); validate **536**. Residui U3/U9/D6/D7/L* fuori cancello |
 | Tab Calendario (M2) | 🔶 FU-047 chiuso doc | Batch A+B + Fase C + **C-U2** guard tab modale; validate **527**; QA §9 badge prima di Blindato ✅; C-U3 → FU-048 Pro |
 | Impostazioni / Personalizza Form | ⬜ | Da avviare dopo Prenotazioni o secondo priorita Matteo |
-| Menu admin / magazzino | ⬜ | Da coordinare con Prenota/Menu QR gia blindate |
+| Menu admin / magazzino | ✅ **BLINDATO** (11-06-26) | Report [`Report-finale-m3-menu-blindato-11-06-26.md`](../Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md); validate **554**; FU-M3-QA-L3/CT fuori cancello |
 | Servizio | ⬜ | Include walk-in e tavoli occupati |
 | CRM | ⬜ | Attenzione email normalizzata e delete multi-step |
 | Home / Analytics | ⬜ | Attenzione finestre data e KPI |

@@ -48,6 +48,12 @@
 
 ## Sessioni registrate (append-only)
 
+### 11-06-26 — Roadmap E2E browser per ogni area blindata (Matteo)
+- **Area:** Testing / blindatura trasversale.
+- **Osservazione Matteo:** vuole **completare test E2E browser completi** (Playwright, viewport 375/834/1280, flussi reali) per **ogni area già blindata** — non solo Vitest.
+- **Snapshot 11-06-26:** M1 shell ✅ E2E; M2 operative ✅ E2E; M3 menu ✅ E2E base; M0 Prenota parziale (FU-038/039); M2 Calendario ❌ spec dedicata (solo Vitest + QA manuale); Menu QR pubblico parziale; M4/M5 ⬜.
+- **Esito:** candidato milestone trasversale (M6 o sessione senior «E2E matrix»); tracciare priorità con Matteo. Non promosso a VOCABOLARIO.
+
 ### 11-06-26 — Chiusura FU-M3-QA-E2E: "commit alla fine" più specifico di "push"
 - **Area:** Admin Menu / magazzino — QA browser Playwright.
 - **Prompt:** Matteo ha confermato il lavoro e chiesto "aggiorna documentazione di lavoro come dice chiusura sessione", "report completo finale" e "fai commit alla fine".

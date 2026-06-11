@@ -13,7 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
-| 11-06-26 | Admin — **M3 QA E2E Playwright Menu magazzino** ✅ `FU-M3-QA-E2E` | [Report finale](Sessioni%20di%20lavoro/11-06-26/Report-finale-fu-m3-qa-e2e-playwright-11-06-26.md) — spec ufficiale `e2e/admin-menu-magazzino-blindatura.spec.ts`; Admin toggle + Menu QR + Prenota su 1280/375/834; Playwright **3 passed**; validate **554**; M3 ancora ⬜ per L3+controtest extra |
+| 11-06-26 | Admin — **M3 Menu magazzino BLINDATO** ✅ report finale | [Report finale](Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md) — Vitest 27 + E2E; QA Matteo; MASTERPLAN Blindato ✅; push `env/test` |
+| 11-06-26 | Admin — **M3 QA E2E Playwright Menu magazzino** ✅ `FU-M3-QA-E2E` | [Report](Sessioni%20di%20lavoro/11-06-26/Report-finale-fu-m3-qa-e2e-playwright-11-06-26.md) — spec `e2e/admin-menu-magazzino-blindatura.spec.ts`; Playwright **3 passed**; validate **554** |
 | 11-06-26 | Admin — **M3 fix filtro `is_available` modal QR + card scorrevoli** ✅ lavoro ok | [Report](Sessioni%20di%20lavoro/11-06-26/Report-m3-fix-availability-filter-admin-config-11-06-26.md) — QA Matteo; `MenuQrModal` + `BookingFormConfigPanel` + `PresetMenuBuilder`; +1 Vitest; validate **554** |
 | 11-06-26 | **Prepara-prompt — ciclo M3 + M2** ✅ chiusura | [Report](Sessioni%20di%20lavoro/11-06-26/Report-prepara-prompt-ciclo-m3-m2-11-06-26.md) — 6 prompt; commit `8916427`+`5c9c12a`+`a024db3`; Fase 2/3/UX unstaged; handoff blindatura M3 |
 | 11-06-26 | Admin — **M3 Fase 2 toggle UX panoramica Menu** 🔶 **lavoro ok** | [Report](Sessioni%20di%20lavoro/11-06-26/Report-m3-fase2-toggle-ux-panoramica-menu-11-06-26.md) — toggle solo panoramica Menu; rimossi da form/overlay; preserve `is_available` al save; skill §3+§9.3; validate **544** |
