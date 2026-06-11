@@ -66,11 +66,11 @@ Note: `npm run validate` mostra warning React `act(...)` già presenti in test e
 
 ### Cronologia / prompt di Matteo
 
-1. **Prompt iniziale:** "analizza ultimo report e follow up e sistema i test per blindatura admin. Nuova riga FU-M3-QA-E2E - sistemare i test QA browser Playwright"  
+1. **Prompt iniziale:** "analizza ultimo report e follow up e sistema i test per blindatura admin. Nuova riga FU-M3-QA-E2E - sistemare i test QA browser Playwright"
    **Intento:** non una verifica astratta, ma chiudere il debito E2E creato dal report M3.
-2. **Ripresa:** "riprendi il lavoro."  
+2. **Ripresa:** "riprendi il lavoro."
    **Intento:** continuare dal punto sospeso senza ripartire da zero.
-3. **Chiusura:** "ottimo lavoro. aggiorna documentazione di lavoro come dice chiusura sessione e compila il tuo report completo finale. fai commit alla fine."  
+3. **Chiusura:** "ottimo lavoro. aggiorna documentazione di lavoro come dice chiusura sessione e compila il tuo report completo finale. fai commit alla fine."
    **Intento:** applicare protocollo fine sessione, aggiornare documenti di lavoro e fare commit locale.
 
 ### Formato che ha funzionato

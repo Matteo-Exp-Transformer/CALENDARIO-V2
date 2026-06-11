@@ -67,15 +67,15 @@ Nessun file `src/` o test Vitest modificato (sessione verifica only).
 | `@admin-blindatura: menu-magazzino-availability` | ✅ 8/8 |
 | `@admin-blindatura: menu-magazzino-sync` | ✅ 9/9 |
 
-**Ambiente:** Supabase TEST `docnnernvp`. Dev `localhost:5173`.  
-**Tenant QA:** `trattoria-da-tommaso` (`.env.local.test`).  
+**Ambiente:** Supabase TEST `docnnernvp`. Dev `localhost:5173`.
+**Tenant QA:** `trattoria-da-tommaso` (`.env.local.test`).
 **QR smoke:** shortCode **`ypyayc6`** → `/menu/trattoria-da-tommaso/qr/ypyayc6`.
 
 ---
 
 ## Tabella QA (Fase B)
 
-Legenda: **OK** / **KO** / **NT**. Ingrediente probe: **tortellini** (Primi piatti).  
+Legenda: **OK** / **KO** / **NT**. Ingrediente probe: **tortellini** (Primi piatti).
 ⚠️ Esiti T1–T2 da script ad hoc — **non affidabili** finché non passa **FU-M3-QA-E2E**.
 
 | ID | Caso | mobile | tablet | desktop | Nota |

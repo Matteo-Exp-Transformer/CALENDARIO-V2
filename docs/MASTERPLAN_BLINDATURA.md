@@ -16,12 +16,12 @@ reali: serve una cadenza a milestone con **revisione senior prima di ogni merge*
 Una controverifica con sub-agent multipli (10-06-26), che ha letto i **report di sessione** (non i
 piani) e li ha confrontati col codice, ha corretto diverse cose che davo per fatte. Le scoperte chiave:
 
-- **Prenota M0 chiuso in repo (10-06-26):** FU-030 cap compose 24/24/79 implementato + accettazione
+- **Prenota M0 chiuso e live (10-06-26):** FU-030 cap compose 24/24/79 implementato + accettazione
   visiva; FU-038 seed `/prenota/test`; FU-039 QA browser C1/C3; revisione indipendente Approva con
-  riserve; fix polish overlay `showActionRow`. **Merge production M0** ancora da eseguire (procedura § merge).
+  riserve; fix polish overlay `showActionRow`; **merge production M0 eseguito**.
 - **Menu QR confermato blindato**; resta **FU-MQR-2** (ordine piatti per-QR). ~~FU-MQR-3~~ chiuso 11-06-26 (categoria assente su PROD `da-tommaso`).
 - **Admin Shell (M1):** ✅ blindato 10-06-26 — unit `shell-*` + E2E FU-042 su TEST; smoke Matteo pre-E2E OK;
-  merge prod M1 ⬜.
+  M1 su `main` privato (nessun sync pubblico: zero codice servito da pubblicare).
 
 ### Il flusso per ogni sezione nuova (regola di Matteo)
 
@@ -106,7 +106,7 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
   - **FU-038/039** — seed TEST slug `test` (`33333333-…`); QA browser C1 (3 card) + C3 (1 slide) su 375/806/834/1256/1280.
   - **Polish 10-06-26** — `showActionRow` in overlay compose (no buco 44px se locked + no € ingredienti).
 - **Report consolidato:** `docs/Sessioni di lavoro/10-06-26/Report-finale-m0-prenota-10-06-26.md`
-- **Prossimo passo:** merge production (§ procedura merge) — senior + Matteo.
+- **Stato merge:** ✅ production M0 eseguita il 10-06-26 (vedi riga MERGE PRODUCTION sopra).
 - **Fuori M0 (aperti):** FU-040 hook Vitest, FU-041 doc stale 05-06, cap server edge ingredienti (M6 opzionale).
 
 ### M1 — Admin Shell / ingresso / navigazione globale ✅ **BLINDATO** (10-06-26)
@@ -124,7 +124,7 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
   (tema Impostazioni). Allineati `admin-login`, `pro-sidebar-nav` (sidebar `complementary`). Suite E2E
   shell: **19 passed, 1 skipped** su staging TEST (4 file shell); `npm run validate` **482** verde.
 - **Report:** `docs/Sessioni di lavoro/10-06-26/Report-chiusura-m1-admin-shell-10-06-26.md`
-- **Prossimo passo:** merge production M1 (§ procedura merge) — senior + Matteo.
+- **Stato merge:** ✅ M1 su `main` privato; nessun sync PrenotaZen necessario perché non cambiava codice servito.
 
 ### M2 — Admin Dashboard prenotazioni (operative + Calendario)
 - **Dettaglio:** `docs/Admin-Skill/PLAN_BLINDATURA_ADMIN.md` §3-bis (operative). **Calendario: sezione
@@ -146,10 +146,10 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 - **Operative:** chiudere residui FU-046 + E2E/QA reale + controtest responsive sui modali di conferma nuovi.
 
 ### M3 — Admin Menu / magazzino
-- **Dettaglio:** sezione Area 4 da aggiungere a `PLAN_BLINDATURA_ADMIN.md`; context
+- **Dettaglio:** sezione Area 4 in `PLAN_BLINDATURA_ADMIN.md`; context
   `ADMIN_MENU_MAGAZZINO_CONTEXT.md` — **mappa intervista in §9** (decisioni 11-06-26).
 - **Stato:** ✅ intervistato + ✅ mappato (11-06-26). **Fase 1 ✅:** limiti + cap + avviso (9 test limits).
-  **Fase 2 ✅ (11-06-26):** toggle `is_available` magazzino + migrazione `045` TEST + 8 test availability.
+  **Fase 2 ✅ (11-06-26):** toggle `is_available` magazzino + migrazione `045` TEST + 9 test availability.
   **Fase 3 ✅ (11-06-26, FU-M3-3):** Vitest `@admin-blindatura: menu-magazzino-sync` (9 test rename/delete +
   controtest parziale). **QA E2E base ✅ (11-06-26, FU-M3-QA-E2E):** Playwright
   `e2e/admin-menu-magazzino-blindatura.spec.ts` su 1280/375/834. **Fix modal config ✅ (`b9f283f`):**
@@ -233,10 +233,10 @@ Decisione (10-06-26): **questo è un masterplan nuovo separato**, indice sopra i
 
 ## 7. Come finire di blindare Admin (sequenza operativa)
 
-1. **M0 (Prenota):** ✅ chiuso 10-06-26 — cap FU-030, seed FU-038, QA FU-039, revisione, polish overlay. **Merge prod ⬜.**
-2. **M1 (Shell):** ✅ blindato 10-06-26 (FU-042 E2E) · merge Classic ⬜.
-3. **M2 (Dashboard prenotazioni):** **intervistare + costruire tab Calendario da zero**; chiudere
-   residui operative + E2E/QA reale + controtest responsive → merge.
+1. **M0 (Prenota):** ✅ chiuso 10-06-26 — cap FU-030, seed FU-038, QA FU-039, revisione, polish overlay. **Merged prod 10-06.**
+2. **M1 (Shell):** ✅ blindato 10-06-26 (FU-042 E2E) · su `main` privato; sync pubblico non necessario.
+3. **M2 (Dashboard prenotazioni):** ✅ operative + Calendario blindati; Calendario **merged prod 11-06**.
+   Residui operative restano fuori cancello e passano a M6/milestone naturale.
 4. **M3 (Menu admin):** ✅ blindato 11-06-26 — merge production ⬜ (senior + Matteo, §merge). FU-MQR-3 chiuso (categoria assente PROD).
 5. **M4 (Settings):** intervista di sezione → salvataggio fase2 + cross-impatto Prenota → merge.
 6. **M5 (Pro/sidebar):** intervistare+blindare su TEST, **NON mergiare in main**; chiude FU-TEST-1/TABLE-1/BRIEF-1.
@@ -258,7 +258,7 @@ mappatura, poi test, poi controtest "rompi" sui 4 fronti — non si chiude un'ar
 - **M0 Prenota (10-06-26):** FU-030 cap 24/24/79 in codice + test Vitest; seed `/prenota/test` su TEST;
   QA browser C1/C3 indipendente OK; fix `showActionRow` overlay verificato in chiusura report finale.
 - **M1 Shell (10-06-26):** FU-042 chiuso — E2E `admin-shell-blindatura.spec.ts` + suite shell **19+1 skip**
-  su TEST; blindatura formale ✅; merge prod ⬜.
+  su TEST; blindatura formale ✅; M1 su `main` privato, nessun sync pubblico richiesto.
 - **Merge production:** `npm run release:prenotazen` → in PrenotaZen `npm run build` verde → deploy
   Vercel → smoke test live (login admin, creare/accettare prenotazione, calendario, menu QR pubblico).
 - **Dopo ogni milestone:** aggiornare la tabella «Stato per sezione» (in cima),

@@ -3,7 +3,7 @@
 > Il tab Menu e il magazzino/listino unico del tenant. Alimenta sia Pagina Prenota sia Menu QR,
 > ma non coincide con nessuna delle due viste pubbliche.
 
-> **Stato blindatura (M3):** intervista Matteo ✅ (11-06-26) · mappa ✅ (11-06-26) · test 🔶 Fase 1+2+3 + QA E2E base (limiti 9 + availability 9 + sync rename/delete 9 Vitest + Playwright 1280/375/834, 11-06-26) · blindato ⬜.
+> **Stato blindatura (M3):** intervista Matteo ✅ (11-06-26) · mappa ✅ (11-06-26) · test ✅ Fase 1+2+3 + QA E2E base (limiti 9 + availability 9 + sync rename/delete 9 Vitest + Playwright 1280/375/834, validate 554, 11-06-26) · blindato ✅.
 > Decisioni intervista + flusso dati + cosa è nuovo → **§9** in fondo (fonte autorevole delle scelte di
 > prodotto per quest'area). App unica: **nessuna distinzione admin/staff** (chi entra può tutto).
 
