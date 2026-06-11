@@ -20,6 +20,7 @@ description: >-
 | Scrivere / correggere spec Playwright | **TESTING_SKILL** (questo) |
 | Configurare staging Supabase | **TESTING_SKILL** (questo) |
 | Analizzare un test che fallisce | **TESTING_SKILL** (questo) |
+| **Blindare una sezione** (quali test dopo la mappatura, quando il "rompi" è dovuto) | **[MANUALE_BLINDATURA.md](MANUALE_BLINDATURA.md)** |
 | Modificare il codice applicativo (non i test) | skill area (ADMIN_CLASSIC, ADMIN_SHELL, DB…) |
 | Modificare schema DB per far girare un test | **DB_SKILL** + TESTING_SKILL |
 
@@ -114,6 +115,7 @@ it("classic → nessuna feature Pro", () => {
 | File | Cosa contiene |
 |------|---------------|
 | `TESTING_SKILL.md` | Entry point — quando e come usare il sistema testing |
+| `MANUALE_BLINDATURA.md` | **Metodo di blindatura**: sequenza test dopo mappatura, quando il controtest "rompi" è dovuto, cancello "blindato". Referenziato dal masterplan |
 | `TESTING_CONTEXT.md` | Mappa completa test, setup MSW, come ricreare staging |
 | `TESTING_PATTERNS.md` | Template snippet pronti per Vitest, Playwright, edition |
 | `tests/README.md` | Guida operativa per sviluppatori — comandi, troubleshooting |

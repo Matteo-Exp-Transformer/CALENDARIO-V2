@@ -117,6 +117,45 @@ Layout riga titolo (≥640px): `sm:items-center sm:justify-center` sul flex; ico
 
 ---
 
+## 7-bis. Badge riempimento cella-giorno (vista mese, 11-06-26)
+
+Montaggio: `dayCellDidMount` → `.booking-day-fill-holder` nel `.fc-daygrid-day-frame` (non
+`dayCellContent` — anniderebbe nel numero giorno).
+
+| Classe | Significato |
+|--------|-------------|
+| `.booking-day-fill--ok` | &lt; 80% |
+| `.booking-day-fill--high` | 80–100% incluso («pieno») |
+| `.booking-day-fill--over` | **solo** &gt; 100% |
+| `.booking-day-fill--neutral` | conteggio senza limite giornaliero |
+
+**Responsive badge** (`index.css`):
+
+- Desktop: `top: 4px; left: 4px`
+- Mobile ≤640px: `bottom: 3px; left: 3px` (non sovrapporsi al numero giorno)
+- Anti-sbordo 375px (batch A 11-06): `.booking-day-fill-holder { overflow: hidden }`; badge
+  `max-width: calc(100% - 6px); overflow: hidden; text-overflow: ellipsis`
+
+`BookingCalendarTab`: stato errore query mostra pulsante **Riprova** (invalida `useAcceptedBookings`).
+
+**Badge solo vista mese (C-R2, voluto M2):** `dayCellDidMount` monta `.booking-day-fill` **solo** in
+`dayGridMonth`. Viste Settimana/Giorno/Lista FC **non** hanno badge % — il segnale «quanto è pieno»
+resta sul mese + digest sotto. Nessun fix M2; indicatore compatto altrove → follow-up opzionale M6.
+
+---
+
+## 7-ter. Finding Fase C — classificazione UI calendario (11-06-26)
+
+| ID | Superficie | Stato | Senso per lo staff |
+|----|------------|-------|-------------------|
+| **C-R2** | Viste FC Settimana/Giorno/Lista senza badge % | **Voluto M2** | La % giornaliera si legge solo in vista **Mese**; sotto restano digest e lista per fascia. |
+| **C-R3** | Digest Settimana compatto senza pallino tavolo Pro | **✅ Chiuso batch A** | `hasTurns={hasTurnsFeature}` — pallino «Assegna tavolo» come in vista Giorno (ex FU-CAL-6). |
+| **C-U3** | Pro + turni: orfani senza tavolo visibili solo al **turno 1** | **Differito M5/Pro** | Comportamento voluto dal fix QA #4 (`filterByTurn`). Al turno 2 lo staff può non vedere le «da assegnare» → copy o toggle in **FU-048**, non bloccante Classic. |
+
+Dettaglio prodotto C-U3/C-D1/C-U2: `ADMIN_PRENOTAZIONI_CONTEXT.md` §5-ter punti 21–22 e follow-up FU-048.
+
+---
+
 ## 8. Media query `index.css` — ambiti distinti
 
 | Query | Ambito |
