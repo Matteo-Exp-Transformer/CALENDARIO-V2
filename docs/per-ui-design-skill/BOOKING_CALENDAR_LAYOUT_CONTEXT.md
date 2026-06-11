@@ -113,6 +113,7 @@ Layout riga titolo (≥640px): `sm:items-center sm:justify-center` sul flex; ico
 
 - **Non** più nella card titolo (rimossa accanto all’icona).
 - Accanto al pulsante **Oggi** sopra FullCalendar (`currentDateLabel`, formato `dd/MM/yy`).
+- **Responsive (11-06-26):** nascosta sotto **`lg` (1024px)** — su mobile/tablet resta solo **Oggi** per non invadere il titolo mese FC; visibile da desktop in su (`hidden lg:inline`).
 - Wrapper: `absolute left-0 top-0 z-20 flex items-center gap-2` dentro `.booking-calendar-fc`.
 
 ---
@@ -183,7 +184,7 @@ Non riusare i breakpoint FC (537px…) per il titolo o altri componenti.
 
 1. Tab Calendario — FC quasi edge-to-edge; card titolo con margine “classico”.
 2. Vista mese — celle ≥112/128px altezza minima (vuote o con pochi eventi).
-3. **Oggi** + data sulla stessa riga sopra il calendario.
+3. **Oggi** sopra il calendario; data accanto solo da **lg** in su (1280px QA: visibile).
 4. Titolo: sinistra a 399px e 450px; centrato a 700px e 1200px; 470–639px a 1.5rem sinistra.
 
 ```bash

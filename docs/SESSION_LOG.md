@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 11-06-26 | Admin — **Calendario data responsive tablet** 🔶 **lavoro ok** | [Report](Sessioni%20di%20lavoro/11-06-26/Report-calendario-data-responsive-tablet-11-06-26.md) — data accanto a **Oggi** nascosta sotto `lg` (1024px); skill layout + §4c; typecheck+lint OK |
 | 11-06-26 | Admin — **M2 Calendario BLINDATO** ✅ **report finale** | [Report finale blindato](Sessioni%20di%20lavoro/11-06-26/Report-finale-m2-calendario-blindato-11-06-26.md) — batch A+B+C-U2; validate **527**; QA badge §9 OK Matteo; commit+push `env/test` |
 | 11-06-26 | Admin — **M2 Calendario allineamento doc test** (light) | §8-bis + FU-047: M2 **41** (+2 No-show fuori conteggio); validate **527**; cappelli batch A/B senza debito C-U2 |
 | 11-06-26 | Admin — **M2 Calendario C-U2 guard modale** 🔶 **lavoro ok** | [Report C-U2](Sessioni%20di%20lavoro/11-06-26/Report-c-u2-guard-tab-calendario-11-06-26.md) — guard tab + overlay/X/Esc (fix QA Matteo); validate **527**; §5-ter.22 + FU-047; test guard +2 |
