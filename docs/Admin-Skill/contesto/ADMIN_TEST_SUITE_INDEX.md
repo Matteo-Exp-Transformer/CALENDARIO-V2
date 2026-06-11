@@ -238,15 +238,15 @@ Test marcati o creati:
 
 ### 8-ter. M3 Menu magazzino — limiti + availability + sync (11-06-26)
 
-Stato: **Fase 1+2+3** — 9 test `@admin-blindatura: menu-magazzino-limits` + 8 test
-`@admin-blindatura: menu-magazzino-availability` + 9 test `@admin-blindatura: menu-magazzino-sync`;
-validate **553** verde.
+Stato: **Fase 1+2+3** — 9 test `@admin-blindatura: menu-magazzino-limits` + **9** test
+`@admin-blindatura: menu-magazzino-availability` (+1 catalogo admin config QR/card 11-06-26) + 9 test
+`@admin-blindatura: menu-magazzino-sync`; validate **554** verde.
 **Non** dichiarare M3 blindato — mancano QA toggle/limiti su tenant oltre soglia + cancello formale.
 
 | File | Cosa copre |
 |---|---|
 | `src/features/booking/constants/__tests__/menuMagazzinoLimits.adminBlindatura.test.ts` | Soglie 7/12/6/6; retroattività (blocca solo +1); conteggio per categoria; cap 24/24/79 allineati a FU-030 |
-| `src/features/booking/constants/__tests__/menuMagazzinoAvailability.adminBlindatura.test.ts` | Default `is_available` true; categoria/item off; preset+magazzino; QR hidden+magazzino; snapshot intatto |
+| `src/features/booking/constants/__tests__/menuMagazzinoAvailability.adminBlindatura.test.ts` | Default `is_available` true; categoria/item off; preset+magazzino; QR hidden+magazzino; snapshot intatto; catalogo admin config (filter pubblico) |
 | `src/features/booking/services/__tests__/menuMagazzinoSync.adminBlindatura.test.ts` | Rename/delete sync orchestrato (`syncMenuCategoryKeyRename`/`Delete`): QR filter+images, `menu_qrcode_categories`, `hidden_category_keys`/`category_order_keys` form; messaggi modale; **3 controtest parziale** (QR ok/form fail; 2° QR fail; delete ok/form fail); rename con `is_available` off + filtri pubblici |
 
 Prossimo batch M3: QA manuale browser (toggle, rename/delete overlay) + tenant oltre soglia.

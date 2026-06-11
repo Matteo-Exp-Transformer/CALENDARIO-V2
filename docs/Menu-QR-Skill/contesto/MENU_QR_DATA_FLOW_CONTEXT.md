@@ -163,6 +163,7 @@ della casa» è solo placeholder admin). Slide senza `image_url` escluse dal par
 4. Override card: prima `menu_qrcode_categories`, fallback `menu_categories.label/description`
 5. Thumb card: `category_images[key]` su QR — **non** `menu_categories.image_url` (foto Prenota)
 6. Hidden items: filtrati in **`PublicMenuCategoryPage`** insieme a `is_available` magazzino (`filterMenuItemsForPublicQr`); categorie off in `PublicMenuPage` via `filterMenuCategoriesForPublic`
+6-bis. **Admin `MenuQrModal`:** checkbox categorie e lista ingredienti per-QR usano lo stesso filtro magazzino (`filterMenuItemsForPublic` / `filterMenuCategoriesForPublic`); al save `category_filter` prunato da chiavi spente. Distinto da `hidden_menu_item_ids` (override per questo QR).
 7. Temi: 5 chiavi in `menuThemes.ts`; sconosciuti → `mediterranean_teal`
 8. Nuovo QR: foto in `qr/draft/{shortCode}/` → migrate al primo Salva
 

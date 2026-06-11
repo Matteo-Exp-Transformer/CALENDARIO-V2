@@ -108,3 +108,13 @@ describe('@admin-blindatura menu-magazzino-availability — snapshot prenotazion
     expect(filterMenuItemsForPublic(catalogAfterOff, [...categories])).toHaveLength(0)
   })
 })
+
+describe('@admin-blindatura menu-magazzino-availability — catalogo admin config (QR + card scorrevoli)', () => {
+  it('filterMenuCategoriesForPublic + filterMenuItemsForPublic escludono categorie/ingredienti spenti', () => {
+    const publicCategories = filterMenuCategoriesForPublic([...categories])
+    expect(publicCategories.map((c) => c.key)).toEqual(['antipasti', 'dolci'])
+
+    const publicItems = filterMenuItemsForPublic([...items], [...categories])
+    expect(publicItems.map((i) => i.id)).toEqual(['a1', 'd2'])
+  })
+})

@@ -74,8 +74,10 @@ esplicito. Helper puri testati `@admin-blindatura: menu-magazzino-limits`.
 `menu_items` (migrazione `045`). Unica superficie toggle: **panoramica Menu** — occhio nell’header di ogni
 `CollapsibleCard` categoria (griglia Antipasti / Primi / …) e su ogni riga `AdminMenuIngredientCard` (sempre visibile,
 non solo in modifica). Form «Crea / Modifica Prodotto» e overlay «Crea / Modifica Categoria»: **nessun** toggle; al save
-si preserva `is_available` esistente (o `true` su nuovo). Voci spente restano visibili in admin con opacità. Spento =
-nascosto in Pagina Prenota e Menu QR. Helper: `menuMagazzinoLimits.ts`. Test: `@admin-blindatura: menu-magazzino-availability`.
+si preserva `is_available` esistente (o `true` su nuovo). Voci spente restano visibili in admin con opacità **solo
+in panoramica Menu**. Spento = nascosto in Pagina Prenota, Menu QR pubblico e nei **modal di config**
+(`MenuQrModal`, editor card scorrevoli in Personalizza form, `PresetMenuBuilder`). Helper:
+`menuMagazzinoLimits.ts`. Test: `@admin-blindatura: menu-magazzino-availability` (9 Vitest).
 
 ## 4. Promo testuali
 

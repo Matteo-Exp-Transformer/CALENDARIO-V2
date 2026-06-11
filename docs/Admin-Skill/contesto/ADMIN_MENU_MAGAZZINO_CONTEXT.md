@@ -139,8 +139,14 @@ caso che può fallire → messaggio gentile (no blocco preventivo dei formati).
    **Superficie toggle (UX 11-06-26):** solo panoramica tab Menu — occhio header `CollapsibleCard`
    categoria + riga ingrediente (`AdminMenuIngredientCard`, sempre visibile); **non** nei form
    Crea/Modifica Prodotto né overlay Categorie. Al save form si preserva `is_available` esistente.
-   Admin vede voci spente (opacità). Snapshot `booking_requests.menu_selection` intatto.
-   Test: `@admin-blindatura: menu-magazzino-availability` (8 Vitest).
+   Admin vede voci spente (opacità) **solo in panoramica tab Menu**. Snapshot
+   `booking_requests.menu_selection` intatto.
+   **Superfici admin config (11-06-26):** stesso filtro magazzino anche nei pannelli che
+   *configurano* la vetrina — `MenuQrModal` (checkbox categorie + ingredienti per-QR),
+   `BookingFormConfigPanel` (card scorrevoli → «Categorie e ingredienti visibili»),
+   `PresetMenuBuilder` (menù preselezionato). Spento nel magazzino = **non elencato** lì
+   (non confondere con `hidden_*` per-card/per-QR, che restano override vetrina).
+   Test: `@admin-blindatura: menu-magazzino-availability` (**9** Vitest, incluso catalogo admin config).
 
 ### 9.4 Controtest obbligatori in blindatura
 

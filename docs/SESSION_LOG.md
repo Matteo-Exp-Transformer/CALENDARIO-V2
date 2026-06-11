@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 11-06-26 | Admin — **M3 fix filtro `is_available` modal QR + card scorrevoli** ✅ lavoro ok | [Report](Sessioni%20di%20lavoro/11-06-26/Report-m3-fix-availability-filter-admin-config-11-06-26.md) — QA Matteo; `MenuQrModal` + `BookingFormConfigPanel` + `PresetMenuBuilder`; +1 Vitest; validate **554** |
 | 11-06-26 | **Prepara-prompt — ciclo M3 + M2** ✅ chiusura | [Report](Sessioni%20di%20lavoro/11-06-26/Report-prepara-prompt-ciclo-m3-m2-11-06-26.md) — 6 prompt; commit `8916427`+`5c9c12a`+`a024db3`; Fase 2/3/UX unstaged; handoff blindatura M3 |
 | 11-06-26 | Admin — **M3 Fase 2 toggle UX panoramica Menu** 🔶 **lavoro ok** | [Report](Sessioni%20di%20lavoro/11-06-26/Report-m3-fase2-toggle-ux-panoramica-menu-11-06-26.md) — toggle solo panoramica Menu; rimossi da form/overlay; preserve `is_available` al save; skill §3+§9.3; validate **544** |
 | 11-06-26 | Admin — **Revisione M3 Fase 1 menu magazzino** 🔶 **lavoro ok** | [Report](Sessioni%20di%20lavoro/11-06-26/Report-revisione-m3-fase1-menu-magazzino-limiti-11-06-26.md) — **Approva con riserve**; validate **536** ri-verificato; 6 finding info/bassa; nessun fix |
