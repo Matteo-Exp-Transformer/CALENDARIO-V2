@@ -276,12 +276,19 @@ Deno.serve(async (req: Request) => {
         .from("restaurant_settings")
         .select("setting_key, setting_value")
         .eq("tenant_id", orgId)
-        .eq("setting_key", "booking_time_slots_enabled");
+        .in("setting_key", [
+          "booking_time_slots_enabled",
+          "daily_guest_limit",
+          "slot_limit_enabled",
+        ]);
 
       const sMap: Record<string, unknown> = {};
       for (const r of settingsRows ?? []) sMap[r.setting_key] = r.setting_value;
       const timeSlotsEnabled: boolean =
         sMap["booking_time_slots_enabled"] === false ? false : true;
+      // Blocco per-fascia: disattivato di default (decisione Matteo 11-06-26).
+      // Riattivabile impostando restaurant_settings.slot_limit_enabled = true.
+      const slotLimitEnabled: boolean = sMap["slot_limit_enabled"] === true;
 
       // Prenotazioni accettate del giorno
       const dateStart = `${desired_date}T00:00:00`;
@@ -291,11 +298,34 @@ Deno.serve(async (req: Request) => {
         .select("confirmed_start, confirmed_end, num_guests")
         .eq("tenant_id", orgId)
         .eq("status", "accepted")
+        // I no-show liberano il posto: non occupano coperti verso il limite (decisione Matteo 11-06-26).
+        .neq("no_show", true)
         .gte("confirmed_start", dateStart)
         .lte("confirmed_start", dateEnd);
 
-      // Check per-fascia
-      if (timeSlotsEnabled) {
+      // --- Check limite GIORNALIERO coperti (esterno, verso il pubblico) ---
+      // Sentinella DB: -1 = nessun limite. Conta solo le accettate (sopra). Indipendente dal per-fascia.
+      const rawDailyLimit = sMap["daily_guest_limit"];
+      const dailyLimit: number | null =
+        typeof rawDailyLimit === "number" && rawDailyLimit > 0 ? rawDailyLimit : null;
+      if (dailyLimit != null) {
+        const dayTotal = (dayBookings ?? []).reduce(
+          (acc: number, b: { num_guests: number }) => acc + (b.num_guests ?? 0),
+          0
+        );
+        if (dayTotal + num_guests > dailyLimit) {
+          return new Response(
+            JSON.stringify({
+              error: "Spiacenti, abbiamo raggiunto il numero massimo di coperti per questa data.",
+              code: "DAILY_LIMIT",
+            }),
+            { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+
+      // Check per-fascia — disattivato di default, riattivabile via slot_limit_enabled
+      if (slotLimitEnabled && timeSlotsEnabled) {
         const { data: slotsRows } = await supabaseAdmin
           .from("service_slots")
           .select("id, name, start_time, end_time, max_guests, display_order")

@@ -29,20 +29,22 @@ import { useFeatures } from '@/hooks/useFeatures'
 
 interface AdminBookingFormProps {
   onSubmit?: () => void
+  /** Data (YYYY-MM-DD) precompilata, es. dalla scorciatoia "crea da giorno" del calendario. */
+  initialDate?: string
 }
 
 const ADMIN_FROSTED_TEXT_INPUT_CLASS_NAME =
   '!border-black/20 text-center !text-[18px] sm:!text-[16px] !font-medium text-warm-wood placeholder:text-warm-wood/50 rounded-[12px] focus:!border-warm-wood focus:!ring-2 focus:!ring-warm-wood/40'
 const DEFAULT_PLACEMENT_AREAS = ['Sala A', 'Sala B', 'Deorr'] as const
 
-export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit }) => {
+export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({ onSubmit, initialDate }) => {
   const features = useFeatures()
   const [formData, setFormData] = useState<BookingRequestInput>({
     client_name: '',
     client_email: '',
     client_phone: '',
     booking_type: 'tavolo',
-    desired_date: '',
+    desired_date: initialDate ?? '',
     desired_time: '',
     num_guests: 0,
     special_requests: '',

@@ -77,6 +77,72 @@
    > `@admin-blindatura: prenotazioni`. Tocca file LOCK (`BookingDetailsModal`): leggere
    > `docs/ADMIN_CLASSIC_SKILL.md` prima di modificare.
 
+## 5-ter. Decisioni intervista Tab Calendario (chiuse con Matteo 11-06-26)
+
+> Fase A del `PLAN_BLINDATURA_ADMIN.md` §3-ter (M2). Sono il senso voluto: non vanno "migliorati"
+> d'ufficio. Dettaglio piano: `PLAN_BLINDATURA_ADMIN.md` §3-ter.
+
+Senso: calendario **leggero come vista d'insieme** (dice solo quanto è pieno ogni giorno) + sotto la
+**lista di lavoro** delle prenotazioni per fascia oraria, cliccabili → modale dettaglio.
+
+1. **Utenti:** admin **e staff di sala** → a prova di errore.
+2. **Mostra SOLO prenotazioni accettate.** Le pending vivono nella pagina Prenotazioni, non qui.
+3. **Azioni dal calendario:** click prenotazione → modale dettaglio (lettura). **Accetta NON da qui**
+   (è in Prenotazioni). **Rifiuta/Cancella** solo dentro il modale dettaglio con conferma (LOCK
+   `BookingDetailsModal`). **Mai drag&drop** per spostare data/ora.
+4. **Scorciatoia "assegna/cambia tavolo" = SOLO Pro+**, dietro feature flag (stesso flag di
+   "Servizio"). In **Classic non viene renderizzata** (non solo nascosta). `QuickTableAssignModal`
+   resta nel codice ma gated. Motivo: in Classic l'assegnazione tavoli non esiste come funzione.
+5. **Scorciatoia "crea prenotazione":** click su un giorno → apre la modale nuova-prenotazione
+   esistente. Attiva su **tutti i giorni, anche pieni**: mostra avviso-sforo ma **lascia procedere**
+   (coerente con "non legare le mani allo staff").
+6. **Due limiti coperti SEPARATI e MORBIDI** (non si vincolano a vicenda — i servizi sono
+   imprevedibili, lo staff deve poter sforare di qualche coperto):
+   - **Esterno giornaliero** — in **Impostazioni (Classic)**. `0`=nessun limite, oppure N coperti.
+     Quando raggiunto **blocca solo la pagina pubblica Prenota** (la richiesta cliente non va a buon
+     fine). Conta **solo prenotazioni accettate**. È il numero che alimenta la % riempimento.
+   - **Interno per fascia** — in **Servizio (Pro)**, facoltativo ("domani a pranzo max 24"). È un
+     **avviso/semaforo** per decidere se accettare le pending, **non blocca** automaticamente nulla.
+7. **% riempimento nel calendario:** limite=0/assente → **nessuna percentuale**, solo conteggio
+   coperti (niente numero finto). Limite=N → "75% · 18/24". Oltre il limite → **mostra il valore
+   reale (101%, 108%…)** senza cap, con indicatore "pieno/oltre". Anche da admin la creazione manuale
+   **non è mai bloccata**: avvisa e lascia fare.
+8. **Vista sotto il calendario:** **Giorno** (dettaglio pieno) + **Settimana** (righe compatte:
+   nome/ora/coperti/icona tipo). Soglia UI oltre cui la settimana suggerisce "passa a vista giorno"
+   da definire in mappatura.
+
+> Da risolvere in MAPPATURA (codice=verità): flag esatto Servizio/tavoli; campo "coperti max
+> giornaliero" esiste o va creato; dove il pubblico conta già coperti/giorno; stato reale di
+> `BookingCalendar.tsx` (drag&drop da disabilitare? click-giorno cablato?). Marcatore test:
+> `@admin-blindatura: calendario`.
+
+### Decisioni aggiuntive emerse dal controtest (11-06-26)
+
+9. **`0` coperti giornalieri = nessun limite** (oltre al campo vuoto). Lo schema accetta 0; serializer e
+   parser trattano 0 e -1 come «illimitato». (Prima 0 rompeva il salvataggio dell'intera pagina Impostazioni.)
+10. **Blocco per-fascia pubblico RIMOSSO dal comportamento** (decisione Matteo: «non serve, avevo deciso
+    male»). Resta nel codice ma **disattivato dietro flag `slot_limit_enabled`** (default false), riattivabile.
+    Resta SOLO il limite giornaliero. Il limite per-fascia (`slot_guest_capacities`) vive come avviso admin.
+11. **No-show LIBERANO il posto:** non contano nel limite giornaliero pubblico (edge filtra `no_show != true`),
+    coerente col calendario che già li esclude. Pubblico e calendario contano la stessa cosa.
+12. **Scorciatoia crea-da-giorno NON apre il form al click.** Click su giorno = seleziona + mostra pulsante
+    «+ Nuova prenotazione il GG/MM»; ri-click sullo stesso giorno = toggle del pulsante (vista non ingombra).
+    Il form si apre solo dal pulsante. (Prima il click apriva sempre il form, anche su «···» mobile e griglia
+    oraria settimana/giorno — invadente.)
+
+### Follow-up tracciati (non bloccanti M2)
+
+- **FU-CAL-1** — vista Settimana digest: non si cambia settimana/giorno restando nel digest (si dipende
+  dal calendario sopra). Aggiungere navigazione settimana propria.
+- **FU-CAL-2** — % riempimento visibile solo in vista Mese; in Settimana/Giorno il segnale «quanto è pieno»
+  sparisce. Valutare un indicatore anche lì.
+- **FU-CAL-3** — badge `"108/100 · 108%"` può essere stretto nella cella mese su 375px; verificare wrapping.
+- **FU-CAL-4** — colori soglia riempimento solo cromatici (rosso/verde): aggiungere icona/simbolo per daltonici/staff.
+- **FU-CAL-5** — vista Settimana satura (>40 pren.) avvisa ma non virtualizza: tenere d'occhio performance.
+- **FU-CAL-6** — in vista Settimana anche Pro perde indicazione turni/assegnazione tavolo (righe compatte). Valutare.
+- **FU-CAL-7** (minore) — richiesta pubblica POST diretta senza `desired_time` bypassa il guard giornaliero
+  (limite morbido, ma è un bypass server-side). Il race tra richieste concorrenti è atteso (morbido).
+
 ## 6. Email e side effect
 
 Email/notification sono accessorie rispetto alla mutazione booking: possono fallire senza bloccare

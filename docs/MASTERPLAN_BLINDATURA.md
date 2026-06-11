@@ -53,7 +53,7 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 | **Menu QR — pagina clienti** | ✅ (06-06) | ✅ | ✅ | ✅ (FU-MQR-2/3 aperti, fuori blind.) | ✅ già mergeable |
 | **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 + smoke Matteo | ✅ **M1 blindato** — su `main` privato (NON in pubblico: zero codice servito, vedi §merge) | **M1** ✔️ **MERGED (10-06)** |
 | **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | 🔶 `@admin-blindatura` | 🔶 (residui U/D/L + E2E) | **M2** |
-| **Admin — tab Calendario** | ⬜ **DA ZERO** | ⬜ | ⬜ | ⬜ | **M2** (parte di Dashboard) |
+| **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | 🔶 implementato + controtest 2 sub-agent (11-06); test `@admin-blindatura: calendario` ⬜ | ⬜ | **M2** (parte di Dashboard) |
 | **Admin — Menu / magazzino** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M3** |
 | **Admin — Impostazioni/Personalizza Form** | 🔶 trasversali* | 🔶 doc | 🔶 salvataggio fase1 | ⬜ | **M4** |
 | **Admin — Servizio (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
@@ -131,10 +131,13 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 - **Dettaglio:** `docs/Admin-Skill/PLAN_BLINDATURA_ADMIN.md` §3-bis (operative). **Calendario: sezione
   nuova da aggiungere al plan.**
 - **Stato:** operative 🔶 (batch FU-046 chiuso 07-06, residui U3/U9/D6/D7/L* + E2E aperti); **tab
-  Calendario ⬜ da fare da zero**.
+  Calendario: intervista ✅ chiusa 11-06**, mappa/test/blinda ⬜.
 - **Cosa resta:**
-  - **Calendario:** ciclo completo → **(1) intervista** Matteo (senso, cosa mostra, limiti, azioni da
-    calendario, vista giorno/settimana/mese) → mappa → test → blinda. `BookingCalendar.tsx` (1165 LOC).
+  - **Calendario:** intervista ✅ (esito in `PLAN_BLINDATURA_ADMIN.md` §3-ter +
+    `ADMIN_PRENOTAZIONI_CONTEXT.md` §5-ter) → **prossimo: mappa** (4 punti aperti §3-ter.2: flag tavoli
+    Pro, campo coperti-max-giornaliero, aggancio blocco pubblico, stato `BookingCalendar.tsx` 1165 LOC)
+    → test `@admin-blindatura: calendario` → blinda. **Nuovo lavoro deciso:** limite coperti
+    giornaliero in Impostazioni (Classic) + scorciatoia tavolo gated Pro + % riempimento (anche >100%).
   - **Operative:** chiudere residui + E2E/QA reale + controtest responsive sui modali di conferma nuovi.
 
 ### M3 — Admin Menu / magazzino

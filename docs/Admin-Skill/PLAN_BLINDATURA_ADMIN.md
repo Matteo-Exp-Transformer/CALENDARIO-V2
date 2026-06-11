@@ -247,6 +247,106 @@ Scenari minimi:
 
 ---
 
+## 3-ter. Area 2-bis — Tab Calendario (M2, da zero)
+
+### 3-ter.1 Intervista chiusa con Matteo (11-06-26)
+
+Senso: il Calendario è una **vista d'insieme leggera** (in alto il calendario dice solo *quanto è
+pieno ogni giorno*: % riempimento o conteggio coperti) + una **lista di lavoro sotto**, le
+prenotazioni del giorno/settimana raggruppate per fascia oraria, cliccabili → modale dettaglio.
+
+Decisioni (dettaglio in `contesto/ADMIN_PRENOTAZIONI_CONTEXT.md` §5-ter):
+
+- **Utenti:** admin **e staff di sala** → a prova di errore, niente azioni pericolose facili.
+- **Mostra solo prenotazioni accettate.** Le pending restano nella pagina Prenotazioni.
+- **Azioni dal calendario:**
+  - click prenotazione → **modale dettaglio** (lettura);
+  - **Accetta** → ❌ non da qui (vive in Prenotazioni);
+  - **Rifiuta / Cancella** → solo dentro il modale dettaglio, con conferma (già LOCK in `BookingDetailsModal`);
+  - **Assegna/cambia tavolo** → ✅ **solo Pro+**, dietro feature flag (stesso flag di "Servizio");
+    in Classic **non renderizzato**. `QuickTableAssignModal` resta ma gated;
+  - **Crea prenotazione** → click su un giorno → apre modale "nuova prenotazione" esistente,
+    su **tutti i giorni anche pieni** (mostra avviso-sforo ma lascia procedere).
+- **Limiti anti-rottura:** mai drag&drop per spostare data/ora; nessuna azione distruttiva senza
+  conferma; solo accettate in calendario.
+- **Due limiti coperti, SEPARATI e MORBIDI (non si vincolano a vicenda):**
+  - **Esterno giornaliero** — vive in **Impostazioni (Classic)**. `0`=nessun limite, o N. Quando
+    raggiunto blocca **solo la pagina pubblica Prenota** (conta **solo accettate**). È il numero
+    della % riempimento. Lo staff da admin può sempre sforare.
+  - **Interno per fascia** — vive in **Servizio (Pro)**, facoltativo. È un **avviso/semaforo** per
+    decidere le pending, **non blocca** nulla automaticamente.
+- **% riempimento:** limite=0/assente → nessuna %, solo conteggio coperti (onesto, niente numero
+  finto). Limite=N → "75% · 18/24". Oltre il limite → mostra il **valore reale (101%, 108%…)** con
+  indicatore "pieno/oltre", **non blocca** la creazione manuale (avvisa e lascia fare anche da admin).
+- **Vista sotto:** **Giorno** (dettaglio pieno) + **Settimana** (righe compatte: nome/ora/coperti/
+  icona tipo) — soglia UI oltre cui la settimana suggerisce "passa a vista giorno" da definire in mappa.
+
+### 3-ter.2 MAPPATURA chiusa (11-06-26, sub-agent + controverifica senior nel codice)
+
+I 4 punti aperti, risolti nel codice (riferimenti verificati riga per riga):
+
+1. **Flag tavolo.** Il gate è **`features.servizio` (+ `serviceSlots.length > 0`)**, NON `tableAssignments`
+   (che esiste ma è inutilizzato qui). Allinearsi a `features.servizio`. La scorciatoia tavolo è **già
+   correttamente gated**: `BookingCalendar.tsx:404` (`hasTurnsFeature`), pallino renderizzato solo se vero,
+   `handleDotClick:592-596` apre `QuickTableAssignModal` solo se vero. In Classic senza service_slots non
+   è renderizzata → decisione Matteo **già rispettata**. `PRO_BUNDLE` ON pro/enterprise, OFF classic.
+2. **Campo coperti giornaliero → ESISTE MA È ORFANO (dead code).** `daily_guest_limit` è dichiarato nel
+   `restaurantSettingRegistry.ts` (key riga 49, schema 125-129, parser 202-218 con sentinella DB `-1`=nessun
+   limite, entry 394-408) **ma non è letto/scritto/renderizzato da nessun'altra parte** (grep: solo il
+   registry). Il guscio c'è, va **completato**, non reinventato: aggiungere input in `RestaurantSettingsTab`
+   (Classic, accanto a `booking_window_days`) + salvataggio (pattern `slot_guest_capacities`). ⚠️ Non
+   confonderlo con `slot_guest_capacities` = limite **interno per-fascia**, quello sì già vivo e salvato.
+3. **Conteggio pubblico → punto unico ESISTE, ma è solo per-fascia.** Edge `create-booking/index.ts`:
+   carica le accettate del giorno (`.eq("status","accepted")`, `num_guests`, righe 289-295) e blocca per
+   fascia (`SLOT_LIMIT` 409, somma 350-367). **Nessun blocco giornaliero.** Agganciare il giornaliero
+   **qui, allo stesso loop**: sommare `num_guests` di tutte le accettate del giorno vs `daily_guest_limit`
+   da `restaurant_settings` (già letto a riga 275, stesso pattern) → nuovo `code` es. `DAILY_LIMIT`. Conta
+   solo `accepted` (già così — decisione Matteo rispettata). Separato e indipendente dal check per-fascia.
+4. **Stato `BookingCalendar.tsx`:**
+   - **Viste:** tutte e 4 attive (mese/settimana/giorno/lista), default per viewport (lista <630px).
+   - **Drag&drop:** ✅ **già spento** (nessun `editable`/`eventDrop`/`selectable` — verificato vuoto).
+     Solo da aggiungere un **test di regressione** che asserisca resti spento.
+   - **Click evento** (`eventClick:502-511`): apre `BookingDetailsModal` in lettura. ✅ conforme.
+   - **Click giorno** (`handleDateClick:513-520`): fa **solo `setSelectedDate`**, NON crea. → scorciatoia
+     "crea prenotazione da giorno" **da costruire**.
+   - **Solo accettate:** ✅ garantito a monte (`useAcceptedBookings` `.eq('status','accepted')` +
+     filtro `!no_show`). Nessun pending mostrato.
+   - **Digest per fasce sotto:** ✅ **esiste già e ricco** (righe 902-1135, raggruppa per fascia, con/solo-
+     tavolo/orfani, turni+pallini in Pro), **ma solo per il GIORNO selezionato**. Vista **Settimana compatta
+     da costruire**.
+   - **% riempimento / coperti per cella-giorno:** ❌ **non esiste**, da costruire da zero.
+
+### 3-ter.2-bis Lavoro da costruire (esito mappa — ordine suggerito)
+
+1. **Settings:** completare `daily_guest_limit` orfano → input in `RestaurantSettingsTab` (Classic) + salvataggio.
+2. **Edge:** blocco giornaliero esterno nel loop esistente di `create-booking` (`DAILY_LIMIT`, solo accettate).
+3. **Calendario:** % riempimento / coperti per cella-giorno (0/assente→solo conteggio; N→"18/24·75%"; >100% reale, mai bloccante).
+4. **Calendario:** scorciatoia crea-prenotazione da `handleDateClick` (data preselezionata, anche giorni pieni, avviso non bloccante).
+5. **Calendario:** vista Settimana compatta del digest (righe nome/ora/coperti/icona + soglia "passa a giorno").
+6. **Test:** regressione drag&drop spento + gate tavolo Classic/Pro.
+
+### 3-ter.3 Test da costruire (marcatore `@admin-blindatura: calendario`)
+
+Scenari minimi (definitivi dopo la mappa):
+
+- calendario mostra **solo accettate** (pending assenti);
+- % riempimento: assente con limite 0; "N/M" con limite; **>100% mostrato reale** senza cap;
+- scorciatoia tavolo **assente in Classic**, presente in Pro (test su entrambe le edition);
+- click-giorno apre nuova-prenotazione anche su giorno pieno (con avviso-sforo);
+- **nessun drag&drop** sposta data/ora (regressione);
+- rifiuta/cancella raggiungibili **solo** da modale dettaglio con conferma.
+
+### 3-ter.4 Criterio uscita Area 2-bis
+
+- mappa chiusa (4 punti §3-ter.2 risolti nel codice);
+- limite esterno giornaliero implementato in Impostazioni + agganciato al blocco pubblico;
+- scorciatoia tavolo gated dietro feature flag, invisibile in Classic;
+- test `@admin-blindatura: calendario` verdi; `npm run validate` verde;
+- controtest sub-agent (flusso dati + utente/responsive vista settimana);
+- doc (context §5-ter, test index, skill) allineati.
+
+---
+
 ## 4. Prompt anti-rottura per sub-agent
 
 Quando si delega un fix:

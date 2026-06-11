@@ -21,12 +21,15 @@ import type { BookingRequest, BookingType } from '@/types/booking'
 import { transformBookingsToCalendarEvents } from '../utils/bookingEventTransform'
 import { BookingDetailsModal } from './BookingDetailsModal'
 import { QuickTableAssignModal } from './QuickTableAssignModal'
+import { AdminBookingForm } from './AdminBookingForm'
+import { Modal } from '@/components/ui/Modal'
 import {
   extractDateFromISO,
   getAccurateStartTime,
   startTimeToMinutesSinceMidnight,
 } from '../utils/dateUtils'
 import { getResolvedMenuPriceDisplay } from '../utils/menuPricing'
+import { sumGuestsByDate } from '../utils/capacityCalculator'
 import {
   getSlotLabel,
   parseHmToMinutes,
@@ -499,6 +502,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   const visibleBookings = bookings.filter((b) => !b.no_show)
   const events = transformBookingsToCalendarEvents(visibleBookings)
 
+  // Limite coperti giornaliero (esterno): null = nessun limite → nel calendario mostriamo solo il conteggio.
+  const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
+  const dailyGuestLimit = dailyGuestLimitQuery.data ?? null
+
+  // Somma coperti per data (YYYY-MM-DD) → alimenta % riempimento e badge cella-giorno.
+  // Logica pura in sumGuestsByDate (testata): solo accettate, non no-show, con orario confermato.
+  const guestsByDate = useMemo(() => sumGuestsByDate(bookings), [bookings])
+
   const handleEventClick = (clickInfo: any) => {
     const booking = clickInfo.event.extendedProps as BookingRequest
     
@@ -510,18 +521,60 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     setIsModalOpen(true)
   }
 
+  // Scorciatoia "crea da giorno": il click su una cella NON apre il form (sarebbe invadente). Click =
+  // seleziona il giorno e mostra il pulsante "+ Nuova prenotazione"; ri-cliccare lo stesso giorno fa
+  // toggle del pulsante (così la vista non resta ingombra). Il form si apre solo dal pulsante.
+  const [newBookingDate, setNewBookingDate] = useState<string | null>(null)
+  const [showCreateButton, setShowCreateButton] = useState(false)
+
   const handleDateClick = useCallback((clickInfo: any) => {
     const d = new Date(clickInfo.date)
     const year = d.getFullYear()
     const month = String(d.getMonth() + 1).padStart(2, '0')
     const day = String(d.getDate()).padStart(2, '0')
     const date = `${year}-${month}-${day}`
-    setSelectedDate(date)
+    setSelectedDate((prev) => {
+      // Stesso giorno ri-cliccato → toggle del pulsante; giorno nuovo → seleziona e mostra il pulsante.
+      setShowCreateButton((shown) => (prev === date ? !shown : true))
+      return date
+    })
   }, [])
 
   const selectedDateData = useMemo(() => {
     return { date: selectedDate }
   }, [selectedDate])
+
+  // Toggle digest sotto il calendario: Giorno (dettaglio pieno) o Settimana (righe compatte).
+  const [digestRange, setDigestRange] = useState<'day' | 'week'>('day')
+
+  // Vista Settimana: 7 giorni a partire dal lunedì della settimana del giorno selezionato.
+  // Righe compatte per farcene stare tante; oltre la soglia suggeriamo di passare a Giorno.
+  const DIGEST_WEEK_BUSY_THRESHOLD = 40
+  const weekDigest = useMemo(() => {
+    const [y, m, d] = selectedDate.split('-').map(Number)
+    const base = new Date(y, m - 1, d)
+    const dow = (base.getDay() + 6) % 7 // 0 = lunedì
+    const monday = new Date(base)
+    monday.setDate(base.getDate() - dow)
+    const days: { date: string; label: string; bookings: BookingRequest[] }[] = []
+    let total = 0
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(monday)
+      day.setDate(monday.getDate() + i)
+      const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
+      const dayBookings = bookings
+        .filter((b) => b.status === 'accepted' && !b.no_show && b.confirmed_start && b.confirmed_end)
+        .filter((b) => extractDateFromISO(b.confirmed_start!) === dateStr)
+        .sort((a, b) => {
+          const ma = startTimeToMinutesSinceMidnight(getAccurateStartTime(a)) ?? 24 * 60
+          const mb = startTimeToMinutesSinceMidnight(getAccurateStartTime(b)) ?? 24 * 60
+          return ma - mb
+        })
+      total += dayBookings.length
+      days.push({ date: dateStr, label: format(day, 'EEE dd/MM', { locale: it }), bookings: dayBookings })
+    }
+    return { days, total }
+  }, [bookings, selectedDate])
 
   const { selectedDayDigestBookings, digestWithMenu, digestTableOnly } = useMemo(() => {
     const sorted = bookings
@@ -700,6 +753,27 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
         cellDateStr === todayStr ? 'calendar-day-today' : '',
         cellDateStr === selectedDate ? 'calendar-day-selected' : '',
       ].filter(Boolean)
+    },
+    // Badge riempimento per cella-giorno (solo vista mese): coperti del giorno + % se c'è il limite.
+    dayCellContent: (arg: any) => {
+      const isMonth = (arg.view?.type as string | undefined) === 'dayGridMonth'
+      const d = new Date(arg.date)
+      const cellDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      const guests = guestsByDate[cellDateStr] ?? 0
+      const dayNumber = arg.dayNumberText
+      if (!isMonth || guests === 0) {
+        return { html: `<span class="fc-daygrid-day-number">${dayNumber}</span>` }
+      }
+      let badge: string
+      if (dailyGuestLimit != null && dailyGuestLimit > 0) {
+        const pct = Math.round((guests / dailyGuestLimit) * 100)
+        // Onesto: oltre il 100% mostriamo il valore reale, senza cap. Mai bloccante.
+        const tone = pct >= 100 ? 'booking-day-fill--over' : pct >= 80 ? 'booking-day-fill--high' : 'booking-day-fill--ok'
+        badge = `<span class="booking-day-fill ${tone}" title="${guests} coperti su ${dailyGuestLimit}">${guests}/${dailyGuestLimit} · ${pct}%</span>`
+      } else {
+        badge = `<span class="booking-day-fill booking-day-fill--neutral" title="${guests} coperti">${guests} cop.</span>`
+      }
+      return { html: `<span class="fc-daygrid-day-number">${dayNumber}</span>${badge}` }
     },
     // Custom event rendering per card eventi migliorate
     eventContent: (arg: any) => {
@@ -901,6 +975,92 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
 
         {/* Giornata selezionata: elenco prenotazioni e fasce */}
         <div>
+          {/* Toggle Giorno / Settimana */}
+          <div className="mb-4 flex items-center justify-center gap-1 rounded-xl border border-(--color-border) bg-surface/80 p-1 w-fit mx-auto shadow-sm">
+            {(['day', 'week'] as const).map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setDigestRange(r)}
+                className={cn(
+                  'rounded-lg px-4 py-1.5 text-sm font-medium transition-colors',
+                  digestRange === r
+                    ? 'bg-primary-600 text-white shadow-sm'
+                    : 'text-primary-900 hover:bg-primary-50'
+                )}
+              >
+                {r === 'day' ? 'Giorno' : 'Settimana'}
+              </button>
+            ))}
+          </div>
+
+          {/* Pulsante crea-da-giorno: compare quando si seleziona un giorno nel calendario (toggle al ri-click) */}
+          {showCreateButton && (
+            <div className="mb-4 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setNewBookingDate(selectedDate)}
+                className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:ring-offset-2"
+              >
+                <span className="text-base leading-none">+</span>
+                Nuova prenotazione il {format(new Date(selectedDate), 'dd/MM', { locale: it })}
+              </button>
+            </div>
+          )}
+
+          {digestRange === 'week' ? (
+            <div className="mb-8 w-full">
+              <h4 className="text-center text-base font-semibold text-primary-900 mb-3 leading-snug">
+                Settimana{' '}
+                {weekDigest.days.length > 0 && (
+                  <span className="font-normal">
+                    {format(new Date(weekDigest.days[0].date), 'dd MMM', { locale: it })} –{' '}
+                    {format(new Date(weekDigest.days[6].date), 'dd MMM', { locale: it })}
+                  </span>
+                )}{' '}
+                ={' '}
+                <span className="font-normal text-(--color-text-muted)">
+                  {weekDigest.total} {weekDigest.total === 1 ? 'Prenotazione' : 'Prenotazioni'}
+                </span>
+              </h4>
+              {weekDigest.total > DIGEST_WEEK_BUSY_THRESHOLD && (
+                <p className="mb-3 text-center text-xs text-amber-700">
+                  Tante prenotazioni questa settimana: per i dettagli completi passa alla vista Giorno.
+                </p>
+              )}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {weekDigest.days.map((day) => (
+                  <div
+                    key={day.date}
+                    className={cn(
+                      'rounded-xl border bg-surface/90 p-2 shadow-inner',
+                      day.date === selectedDate ? 'border-primary-400' : 'border-(--color-border)'
+                    )}
+                  >
+                    <h6 className="mb-2 flex items-center justify-between rounded-lg bg-primary-50 px-2 py-1 text-sm font-semibold capitalize text-primary-900">
+                      <span>{day.label}</span>
+                      <span className="font-normal text-(--color-text-muted)">{day.bookings.length}</span>
+                    </h6>
+                    {day.bookings.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {day.bookings.map((booking) => (
+                          <DigestBookingListRow
+                            key={booking.id}
+                            booking={booking}
+                            onOpen={openDigestBooking}
+                            compactGrid
+                            hasTurns={false}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="px-1 py-2 text-xs italic text-(--color-text-muted)">—</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
           <div className="mb-8 w-full">
             <h4 className="text-center text-base font-semibold text-primary-900 mb-3 leading-snug">
               Prenotazioni del giorno:{' '}
@@ -1133,6 +1293,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
               </p>
             )}
           </div>
+          )}
 
         </div>
       </div>
@@ -1158,6 +1319,21 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
           tableAssignments={tableAssignments as BookingTableAssignment[]}
           onClose={() => setQuickAssignBooking(null)}
         />
+      )}
+
+      {/* Scorciatoia crea-da-giorno: form nuova prenotazione con data precompilata */}
+      {newBookingDate && (
+        <Modal
+          isOpen={!!newBookingDate}
+          onClose={() => setNewBookingDate(null)}
+          title="Nuova prenotazione"
+          size="2xl"
+        >
+          <AdminBookingForm
+            initialDate={newBookingDate}
+            onSubmit={() => setNewBookingDate(null)}
+          />
+        </Modal>
       )}
     </>
   )
