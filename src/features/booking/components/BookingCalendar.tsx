@@ -510,6 +510,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   // Logica pura in sumGuestsByDate (testata): solo accettate, non no-show, con orario confermato.
   const guestsByDate = useMemo(() => sumGuestsByDate(bookings), [bookings])
 
+
   const handleEventClick = (clickInfo: any) => {
     const booking = clickInfo.event.extendedProps as BookingRequest
     
@@ -522,10 +523,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   }
 
   // Scorciatoia "crea da giorno": il click su una cella NON apre il form (sarebbe invadente). Click =
-  // seleziona il giorno e mostra il pulsante "+ Nuova prenotazione"; ri-cliccare lo stesso giorno fa
-  // toggle del pulsante (così la vista non resta ingombra). Il form si apre solo dal pulsante.
+  // seleziona il giorno; il pulsante "+ Nuova prenotazione" è sempre visibile sul giorno selezionato
+  // (deciso da Matteo 11-06: niente toggle mostra/nascondi). Il form si apre solo dal pulsante.
   const [newBookingDate, setNewBookingDate] = useState<string | null>(null)
-  const [showCreateButton, setShowCreateButton] = useState(false)
 
   const handleDateClick = useCallback((clickInfo: any) => {
     const d = new Date(clickInfo.date)
@@ -533,11 +533,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     const month = String(d.getMonth() + 1).padStart(2, '0')
     const day = String(d.getDate()).padStart(2, '0')
     const date = `${year}-${month}-${day}`
-    setSelectedDate((prev) => {
-      // Stesso giorno ri-cliccato → toggle del pulsante; giorno nuovo → seleziona e mostra il pulsante.
-      setShowCreateButton((shown) => (prev === date ? !shown : true))
-      return date
-    })
+    setSelectedDate(date)
   }, [])
 
   const selectedDateData = useMemo(() => {
@@ -669,6 +665,24 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     setIsModalOpen(true)
   }
 
+  // Badge riempimento per cella-giorno (solo vista mese, deciso da Matteo 11-06):
+  //  - con limite giornaliero → SOLO la percentuale di occupazione (oltre 100% mostrata reale);
+  //  - senza limite → solo il conteggio coperti (niente percentuale finta).
+  // Montato via dayCellDidMount come figlio del frame cella (non dentro il numero), così il
+  // posizionamento assoluto si ancora alla cella e non resta ammassato accanto al numero giorno.
+  const buildDayFillBadgesHtml = useCallback((cellDateStr: string): string => {
+    const guests = guestsByDate[cellDateStr] ?? 0
+    if (guests === 0) return ''
+    const hasLimit = dailyGuestLimit != null && dailyGuestLimit > 0
+    if (hasLimit) {
+      const pct = Math.round((guests / dailyGuestLimit!) * 100)
+      // Onesto: oltre il 100% mostriamo il valore reale, senza cap. Mai bloccante.
+      const tone = pct >= 100 ? 'booking-day-fill--over' : pct >= 80 ? 'booking-day-fill--high' : 'booking-day-fill--ok'
+      return `<span class="booking-day-fill ${tone}" title="${guests} coperti su ${dailyGuestLimit}">${pct}%</span>`
+    }
+    return `<span class="booking-day-fill booking-day-fill--neutral" title="${guests} coperti">${guests}</span>`
+  }, [guestsByDate, dailyGuestLimit])
+
   const config = {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
     initialView: currentView,
@@ -754,26 +768,21 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
         cellDateStr === selectedDate ? 'calendar-day-selected' : '',
       ].filter(Boolean)
     },
-    // Badge riempimento per cella-giorno (solo vista mese): coperti del giorno + % se c'è il limite.
-    dayCellContent: (arg: any) => {
+    // Badge riempimento cella-giorno (solo vista mese): montati come figli del frame cella, NON
+    // dentro il numero (vedi buildDayFillBadgesHtml). Coperti in alto a sinistra, % al centro.
+    dayCellDidMount: (arg: any) => {
       const isMonth = (arg.view?.type as string | undefined) === 'dayGridMonth'
+      if (!isMonth) return
       const d = new Date(arg.date)
       const cellDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-      const guests = guestsByDate[cellDateStr] ?? 0
-      const dayNumber = arg.dayNumberText
-      if (!isMonth || guests === 0) {
-        return { html: `<span class="fc-daygrid-day-number">${dayNumber}</span>` }
-      }
-      let badge: string
-      if (dailyGuestLimit != null && dailyGuestLimit > 0) {
-        const pct = Math.round((guests / dailyGuestLimit) * 100)
-        // Onesto: oltre il 100% mostriamo il valore reale, senza cap. Mai bloccante.
-        const tone = pct >= 100 ? 'booking-day-fill--over' : pct >= 80 ? 'booking-day-fill--high' : 'booking-day-fill--ok'
-        badge = `<span class="booking-day-fill ${tone}" title="${guests} coperti su ${dailyGuestLimit}">${guests}/${dailyGuestLimit} · ${pct}%</span>`
-      } else {
-        badge = `<span class="booking-day-fill booking-day-fill--neutral" title="${guests} coperti">${guests} cop.</span>`
-      }
-      return { html: `<span class="fc-daygrid-day-number">${dayNumber}</span>${badge}` }
+      const html = buildDayFillBadgesHtml(cellDateStr)
+      if (!html) return
+      const frame = (arg.el as HTMLElement).querySelector('.fc-daygrid-day-frame')
+      if (!frame) return
+      const holder = document.createElement('div')
+      holder.className = 'booking-day-fill-holder'
+      holder.innerHTML = html
+      frame.appendChild(holder)
     },
     // Custom event rendering per card eventi migliorate
     eventContent: (arg: any) => {
@@ -994,9 +1003,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
             ))}
           </div>
 
-          {/* Pulsante crea-da-giorno: compare quando si seleziona un giorno nel calendario (toggle al ri-click) */}
-          {showCreateButton && (
-            <div className="mb-4 flex justify-center">
+          {/* Pulsante crea-da-giorno: sempre visibile sul giorno selezionato (niente toggle mostra/nascondi) */}
+          <div className="mb-4 flex justify-center">
               <button
                 type="button"
                 onClick={() => setNewBookingDate(selectedDate)}
@@ -1006,7 +1014,6 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                 Nuova prenotazione il {format(new Date(selectedDate), 'dd/MM', { locale: it })}
               </button>
             </div>
-          )}
 
           {digestRange === 'week' ? (
             <div className="mb-8 w-full">

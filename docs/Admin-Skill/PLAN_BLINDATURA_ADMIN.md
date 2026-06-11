@@ -325,6 +325,28 @@ I 4 punti aperti, risolti nel codice (riferimenti verificati riga per riga):
 5. **Calendario:** vista Settimana compatta del digest (righe nome/ora/coperti/icona + soglia "passa a giorno").
 6. **Test:** regressione drag&drop spento + gate tavolo Classic/Pro.
 
+### 3-ter.2-ter ⚠️ FIX PRIORITARI da QA Matteo (11-06-26) — ✅ CHIUSI (11-06-26)
+
+Trovati testando in dev. Risolti tutti e 4 (uno annullato perché non-bug). Report:
+`docs/Sessioni di lavoro/11-06-26/Report-m2-calendario-fix-qa-11-06-26.md`.
+
+1. ✅ **Badge cella-giorno — RISOLTO.** Il badge ora è montato via **`dayCellDidMount`** come figlio del
+   `.fc-daygrid-day-frame` (non dentro il numero giorno → niente più ammasso a destra). Decisione finale
+   Matteo: mostra **solo la percentuale di occupazione** (con limite) oppure il **solo conteggio coperti**
+   (senza limite); niente `N/Nmax`. Posizione **in alto a sinistra** su desktop (font ingrandito a 0.8125rem),
+   **in basso a sinistra** su mobile ≤640px (per non sovrapporsi al numero giorno). File: `BookingCalendar.tsx`
+   `buildDayFillBadgesHtml` + `dayCellDidMount`; `index.css` `.booking-day-fill` + `.booking-day-fill-holder`.
+2. ✅ **Help fascia — RISOLTO.** Il testo residuo era in **`ServiceSlotsManager.tsx:587`** (FormInfoPanel
+   "coperti massimi", non in `RestaurantSettingsTab`). Ora dice che il limite per-fascia è un **avviso/
+   semaforo che non blocca né rifiuta** — coerente con la regola dei due limiti morbidi.
+3. ✅ **Pulsante "Nuova prenotazione" — RISOLTO.** Rimosso il toggle `showCreateButton`: il pulsante è
+   **sempre visibile** sul giorno selezionato. `handleDateClick` ora fa solo `setSelectedDate`. File:
+   `BookingCalendar.tsx`. *(Nota: supera la decisione 12 del context §5-ter, che descriveva il toggle.)*
+4. ✅ **Vista Giorno — ANNULLATO (non era un bug).** Verificato con Matteo: le prenotazioni che non
+   comparivano nella fascia erano semplicemente **fuori fascia oraria** (finiscono nella sezione "Fuori
+   fascia", corretto). Il raggruppamento per orario funziona già. `filterByTurn` e l'apparato turni Pro
+   **lasciati invariati**.
+
 ### 3-ter.3 Test da costruire (marcatore `@admin-blindatura: calendario`)
 
 Scenari minimi (definitivi dopo la mappa):

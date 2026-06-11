@@ -128,10 +128,21 @@ Senso: calendario **leggero come vista d'insieme** (dice solo quanto è pieno og
     Resta SOLO il limite giornaliero. Il limite per-fascia (`slot_guest_capacities`) vive come avviso admin.
 11. **No-show LIBERANO il posto:** non contano nel limite giornaliero pubblico (edge filtra `no_show != true`),
     coerente col calendario che già li esclude. Pubblico e calendario contano la stessa cosa.
-12. **Scorciatoia crea-da-giorno NON apre il form al click.** Click su giorno = seleziona + mostra pulsante
-    «+ Nuova prenotazione il GG/MM»; ri-click sullo stesso giorno = toggle del pulsante (vista non ingombra).
-    Il form si apre solo dal pulsante. (Prima il click apriva sempre il form, anche su «···» mobile e griglia
-    oraria settimana/giorno — invadente.)
+12. **Scorciatoia crea-da-giorno NON apre il form al click.** Click su giorno = seleziona il giorno; il
+    pulsante «+ Nuova prenotazione il GG/MM» è **sempre visibile** sul giorno selezionato. Il form si apre
+    solo dal pulsante. (Prima il click apriva sempre il form — invadente.)
+    **Aggiornamento 11-06 (fix QA #3):** rimosso il toggle mostra/nascondi al ri-click (`showCreateButton`):
+    Matteo lo vuole fisso, sempre visibile. `handleDateClick` fa solo `setSelectedDate`.
+
+13. **Badge riempimento cella-giorno (vista mese) = SOLO percentuale** (fix QA #1, 11-06). Con limite
+    giornaliero → mostra solo `NN%` (oltre 100% reale, colore soglia ok/high/over); senza limite → solo il
+    conteggio coperti `N`. **Niente `N/Nmax`.** Montato via `dayCellDidMount` come figlio del frame cella
+    (non dentro il numero → niente ammasso a destra). Responsive: alto-sinistra desktop, **basso-sinistra
+    su mobile ≤640px** per non sovrapporsi al numero del giorno.
+
+14. **Limite per-fascia (Servizio Pro) = avviso, mai blocco anche nei testi UI** (fix QA #2, 11-06). Il
+    FormInfoPanel "coperti massimi" in `ServiceSlotsManager` diceva ancora "verranno rifiutate
+    automaticamente": corretto in semaforo/avviso che non blocca né rifiuta. Coerente con i due limiti morbidi.
 
 ### Follow-up tracciati (non bloccanti M2)
 
