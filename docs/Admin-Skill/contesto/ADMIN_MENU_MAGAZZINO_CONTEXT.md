@@ -167,7 +167,7 @@ caso che può fallire → messaggio gentile (no blocco preventivo dei formati).
 **M3 BLINDATO ✅** — cancello `MANUALE_BLINDATURA` §4 chiuso; report
 [`Report-finale-m3-menu-blindato-11-06-26.md`](../../Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md).
 Vitest **27** + E2E `e2e/admin-menu-magazzino-blindatura.spec.ts`; validate **554**. Merge prod: procedura MASTERPLAN §merge (non ancora eseguito).
-Debiti fuori cancello: **FU-M3-QA-L3** (tenant oltre soglia), **FU-M3-QA-CT** (controtest browser esteso).
+Debiti fuori cancello: **FU-M3-QA-CT** (controtest browser extra, sessioni future).
 
 ## 8. Rimandi
 

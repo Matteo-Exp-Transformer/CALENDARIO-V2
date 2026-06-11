@@ -19,8 +19,7 @@ piani) e li ha confrontati col codice, ha corretto diverse cose che davo per fat
 - **Prenota M0 chiuso in repo (10-06-26):** FU-030 cap compose 24/24/79 implementato + accettazione
   visiva; FU-038 seed `/prenota/test`; FU-039 QA browser C1/C3; revisione indipendente Approva con
   riserve; fix polish overlay `showActionRow`. **Merge production M0** ancora da eseguire (procedura § merge).
-- **Menu QR confermato blindato**, ma restano 2 follow-up reali: FU-MQR-2 (ordine piatti per-QR) e
-  FU-MQR-3 (chiave categoria malformata su PROD).
+- **Menu QR confermato blindato**; resta **FU-MQR-2** (ordine piatti per-QR). ~~FU-MQR-3~~ chiuso 11-06-26 (categoria assente su PROD `da-tommaso`).
 - **Admin Shell (M1):** ✅ blindato 10-06-26 — unit `shell-*` + E2E FU-042 su TEST; smoke Matteo pre-E2E OK;
   merge prod M1 ⬜.
 
@@ -50,7 +49,7 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 | Pagina / Sezione | Intervistato | Mappato | Testato | Blindato | Milestone |
 |---|---|---|---|---|---|
 | **Prenota — form pubblico/vetrina** | ✅ (04-06) | ✅ | ✅ Vitest + QA browser C1/C3 | ✅ **M0 chiuso** | **M0** ✔️ **MERGED PROD (10-06)** |
-| **Menu QR — pagina clienti** | ✅ (06-06) | ✅ | ✅ | ✅ (FU-MQR-2/3 aperti, fuori blind.) | ✅ già mergeable |
+| **Menu QR — pagina clienti** | ✅ (06-06) | ✅ | ✅ | ✅ (FU-MQR-2 aperto, fuori blind.) | ✅ già mergeable |
 | **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 + smoke Matteo | ✅ **M1 blindato** — su `main` privato (NON in pubblico: zero codice servito, vedi §merge) | **M1** ✔️ **MERGED (10-06)** |
 | **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | ✅ Vitest **32** + E2E **7** (FU-043) | ✅ **BLINDATO** (11-06-26) | **M2** ✔️ |
 | **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (41 test M2 +2 No-show; validate **527**, 11-06-26) | ✅ **BLINDATO** (11-06-26) — Fase C + batch A/B + C-U2 + QA badge §9 OK Matteo | **M2** ✔️ **MERGED PROD (11-06)** |
@@ -156,8 +155,7 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
   `e2e/admin-menu-magazzino-blindatura.spec.ts` su 1280/375/834. **Fix modal config ✅ (`b9f283f`):**
   filtro `is_available` in modal QR + card scorrevoli. **Blindato ✅ 11-06-26** — report
   [`Report-finale-m3-menu-blindato-11-06-26.md`](Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md);
-  validate **554**; QA Matteo toggle+propagazione. **Fuori cancello:** FU-M3-QA-L3 (tenant oltre soglia),
-  FU-M3-QA-CT (controtest browser esteso); roadmap E2E completo per area (OSSERVAZIONI 11-06-26).
+  validate **554**; QA Matteo toggle+propagazione. **Fuori cancello:** FU-M3-QA-CT (controtest browser extra, sessioni future); roadmap E2E completo per area (OSSERVAZIONI 11-06-26).
   **Prossimo:** merge production M3 (senior + Matteo, §merge).
 - **Decisioni chiave (vedi `ADMIN_MENU_MAGAZZINO_CONTEXT.md §9`):** limiti duri 7/12/6/6; cap 24/79;
   **toggle disponibilità magazzino** ✅ (`is_available`, spento = nascosto Prenota+QR, snapshot intatto);
@@ -205,7 +203,7 @@ milestone naturale di competenza.
 | FU-030 | ~~Cap testi menù~~ | ✅ Chiuso M0 10-06-26 | — | **M0** ✅ |
 | FU-038/039 | ~~Seed TEST + QA centratura~~ | ✅ Chiuso M0 10-06-26 | — | **M0** ✅ |
 | FU-MQR-2 | Ordine piatti per-QR non gestibile (segue `menu_items.sort_order`) | `MENU_QR_SKILL.md §5` | medio | milestone dedicata Menu QR |
-| FU-MQR-3 | Chiave categoria malformata `secondi_piattie` su PROD `da-tommaso` — **fix operativo:** rename confermato in overlay Categorie Menu (modale pre-save → `syncMenuCategoryKeyRename`; Vitest FU-M3-3 copre il flusso). Esecuzione su PROD ancora manuale da Matteo; mai SQL diretto. | `MENU_QR_SKILL.md §5` | basso (chiave interna) | M3 (test ✅; azione PROD ⬜) |
+| FU-MQR-3 | ~~Chiave categoria `secondi_piattie` su PROD `da-tommaso`~~ — **Chiuso 11-06-26:** Matteo su PROD account test `da-tommaso` — categoria/chiave **non presente** in overlay Categorie; nessuna azione rename. Vitest rename (FU-M3-3) resta copertura codice. | `MENU_QR_SKILL.md §5` | — | chiuso |
 | FU-EMAIL-1 | Edge function `send-email` **non esiste**: email accept/reject/cancel falliscono in silenzio | `src/lib/email.ts:37`; gated da `VITE_ENABLE_SEND_EMAIL` in `useBookingMutations.ts:110-171` | alto (UX) | M6 o milestone email |
 | FU-EMAIL-2 | Nessuna UI admin per `email_logs` | `database.ts` (`email_logs`) | medio | M6 |
 | FU-TEST-1 | 0% test su pagine Pro (CRM/Servizio/Analytics/Home) | nessun `*.test.tsx` | alto (no regression Pro) | M5 (criterio uscita) |
@@ -239,7 +237,7 @@ Decisione (10-06-26): **questo è un masterplan nuovo separato**, indice sopra i
 2. **M1 (Shell):** ✅ blindato 10-06-26 (FU-042 E2E) · merge Classic ⬜.
 3. **M2 (Dashboard prenotazioni):** **intervistare + costruire tab Calendario da zero**; chiudere
    residui operative + E2E/QA reale + controtest responsive → merge.
-4. **M3 (Menu admin):** intervista → mappa → test, focus race rename/delete categoria (chiude FU-MQR-3) → merge.
+4. **M3 (Menu admin):** ✅ blindato 11-06-26 — merge production ⬜ (senior + Matteo, §merge). FU-MQR-3 chiuso (categoria assente PROD).
 5. **M4 (Settings):** intervista di sezione → salvataggio fase2 + cross-impatto Prenota → merge.
 6. **M5 (Pro/sidebar):** intervistare+blindare su TEST, **NON mergiare in main**; chiude FU-TEST-1/TABLE-1/BRIEF-1.
 7. **M6 (cross-area):** chiudere FU-EMAIL, FU-TYPES, FU-LOG, FU-AUTH, FU-002/003/023.

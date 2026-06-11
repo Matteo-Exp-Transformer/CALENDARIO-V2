@@ -2,13 +2,14 @@
 
 > Chiusura capitolo blindatura tab Menu (magazzino) · branch `env/test` · 11-06-26.
 > Consolidamento: Fase 1–3 + UX toggle + fix modal config + E2E Playwright + QA Matteo + commit + push.
+> **Aggiornamento finale 11-06-26 (2ª chiusura):** chiusura follow-up **FU-M3-QA-L3** e **FU-MQR-3** su conferma QA Matteo; allineamento governance doc.
 
 ---
 
 ## 1. Cappello
 
-- **Cosa è cambiato:** la tab **Menu** admin (magazzino prezzi/ingredienti, QR, menù preselezionati) è **blindata**: limiti 7/12/6/6, toggle disponibilità in panoramica, filtri Prenota+QR+modal config, sync rename/delete coperto da Vitest, **E2E browser** su 375/834/1280, validate **554** verdi.
-- **Cosa resta (non blocca M3):** tenant oltre soglia limiti (**FU-M3-QA-L3**); controtest browser esteso doppio-click/refresh (**FU-M3-QA-CT**); migrazione `045` su PROD solo su richiesta; **FU-MQR-2/3** fuori cancello; roadmap **E2E browser completo per ogni area blindata** (OSSERVAZIONI 11-06-26).
+- **Cosa è cambiato:** la tab **Menu** admin (magazzino prezzi/ingredienti, QR, menù preselezionati) è **blindata**: limiti 7/12/6/6, toggle disponibilità in panoramica, filtri Prenota+QR+modal config, sync rename/delete coperto da Vitest, **E2E browser** su 375/834/1280, validate **554** verdi. **Follow-up chiusi:** limite 7 categorie (Matteo QA); refuso categoria PROD assente su `da-tommaso`.
+- **Cosa resta (non blocca M3):** controtest browser «rompi» extra (**FU-M3-QA-CT**, sessioni future); migrazione `045` su PROD solo su richiesta; **FU-MQR-2** (ordine piatti per-QR); roadmap **E2E browser completo per ogni area blindata** (OSSERVAZIONI 11-06-26).
 - **Serve azione Matteo:** **no** per blindatura — merge production M3 quando senior pronto (procedura MASTERPLAN §merge).
 
 ---
@@ -24,6 +25,7 @@
 7. **E2E** — `e2e/admin-menu-magazzino-blindatura.spec.ts` (FU-M3-QA-E2E): toggle admin, propagazione QR+Prenota, 1280/375/834.
 8. **QA Matteo** — toggle panoramica OK; propagazione OK; modal config OK dopo fix.
 9. **Report finale** — MASTERPLAN Blindato ✅ M3; push `env/test`.
+10. **Chiusura FU (Matteo)** — **FU-M3-QA-L3** fatto (blocco 8ª categoria); **FU-MQR-3** fatto (categoria refuso assente su PROD `da-tommaso`); **FU-M3-QA-CT** e **FU-MQR-2** restano aperti; doc governance allineata.
 
 ---
 
@@ -37,8 +39,19 @@
 | T4 | Form prodotto senza «Disponibile al pubblico» | **OK** |
 | T5 | Spento in magazzino → sparisce Prenota + QR pubblico | **OK** |
 | T6 | Modal QR + card scorrevoli — no voci spente | **OK** (post `b9f283f`) |
+| T7 | Limite max **7 categorie** — blocco ottava | **OK** (FU-M3-QA-L3 chiuso) |
+| T8 | PROD `da-tommaso` — categoria refuso `secondi_piattie` | **Assente** — FU-MQR-3 chiuso senza fix |
 
 Nota: KO T1 dello script ad hoc verifica → **falso positivo**; QA umano prevale.
+
+### Follow-up chiusi (2ª chiusura 11-06-26)
+
+| ID | Esito | Motivo |
+|----|-------|--------|
+| FU-M3-QA-L3 | **Fatto** | Matteo: blocco ottava categoria confermato in tab Menu |
+| FU-MQR-3 | **Fatto** | Categoria/chiave refuso **non presente** su PROD account test `da-tommaso` |
+| FU-M3-QA-CT | Aperto | Controtest «rompi» browser extra — sessioni future |
+| FU-MQR-2 | Aperto | Ordine piatti per-QR — milestone Menu QR dedicata |
 
 ---
 
@@ -75,7 +88,8 @@ Playwright: e2e/admin-menu-magazzino-blindatura.spec.ts — 3 passed (1280/375/8
 | `4df46c5` | test(admin): M3 sync rename/delete |
 | `46cf7c2` | docs(admin): M3 Fase 2/3 + skill |
 | `b9f283f` | fix(admin): filtro is_available modal config |
-| *(questa sessione)* | test(e2e) + docs blindatura finale |
+| `2d1d706` | docs(admin): M3 blindato report finale + masterplan |
+| *(questo commit)* | docs: chiusura FU-M3-QA-L3 + FU-MQR-3 |
 
 Migrazione **`045`** applicata su TEST (`docnnernvp`) — **non** PROD senza conferma.
 
@@ -85,19 +99,21 @@ Migrazione **`045`** applicata su TEST (`docnnernvp`) — **non** PROD senza con
 
 | File | Modifica |
 |------|----------|
-| `MASTERPLAN_BLINDATURA.md` | M3 **Blindato ✅**; validate 554 |
-| `ADMIN_MENU_MAGAZZINO_CONTEXT.md` §9 | Stato blindatura + E2E |
-| `ADMIN_TEST_SUITE_INDEX.md` §8-ter | 27 Vitest + spec E2E |
+| `MASTERPLAN_BLINDATURA.md` | M3 **Blindato ✅**; FU-MQR-3 chiuso; solo FU-MQR-2 aperto |
+| `ADMIN_MENU_MAGAZZINO_CONTEXT.md` §9 | Stato blindatura + debiti (solo CT) |
+| `ADMIN_TEST_SUITE_INDEX.md` §8-ter | 27 Vitest + spec E2E; batch opzionale CT |
 | `PLAN_BLINDATURA_ADMIN.md` | Area 4 blindata |
-| `FOLLOW_UP.md` | FU-M3-QA-E2E fatto; FU-M3-QA-L3/CT aperti |
-| `SESSION_LOG.md` | Riga report finale |
-| `Comunicazione-Skill/OSSERVAZIONI.md` | Roadmap E2E per area blindata |
+| `FOLLOW_UP.md` | FU-M3-QA-L3 fatto; FU-M3-QA-CT aperto (extra); FU-M3-QA-E2E fatto |
+| `MENU_QR_SKILL.md` §5 | FU-MQR-3 chiuso; FU-MQR-2 aperto |
+| `SESSION_LOG.md` | Riga aggiornamento chiusura FU |
+| `Comunicazione-Skill/OSSERVAZIONI.md` | Voce chiusura FU M3/MQR + roadmap E2E |
 
 ---
 
 ## 8. Dati comunicazione
 
 - Matteo ha chiuso con **bug report mirato** (modal QR/card) + «lavoro ok» + richiesta report/push — formato efficace.
+- **Chiusura FU esplicita:** «considera FU-M3-QA-L3 chiuso» (limite 7 cat); «FU-MQR-3 chiuso» (categoria assente PROD); CT e MQR-2 restano annotati.
 - **«E2E senior sarà ok comunque»** — blindatura non bloccata su E2E in corso; spec committata nella stessa sessione.
 - **Roadmap esplicita:** completare test E2E browser **completi** per ogni area già blindata (non solo Vitest) — annotato OSSERVAZIONI.
 
@@ -109,7 +125,7 @@ Migrazione **`045`** applicata su TEST (`docnnernvp`) — **non** PROD senza con
 |---------|--------|
 | Prompt sostanziali Matteo (ciclo M3 completo) | ~8 (implementazione, QA, fix modal, verifica, chiusura) |
 | Correzioni dopo 1ª risposta | 1 (gap modal config) |
-| Follow-up generati | FU-M3-QA-L3, FU-M3-QA-CT (fuori cancello); FU-M3-QA-E2E chiuso |
+| Follow-up generati | FU-M3-QA-CT (fuori cancello); FU-MQR-2 (Menu QR); chiusi L3 + MQR-3 + E2E |
 | Modalità alzata | no |
 
 ---
@@ -128,29 +144,30 @@ Migrazione **`045`** applicata su TEST (`docnnernvp`) — **non** PROD senza con
 |-------|-----------------|
 | Modal QR/card mostravano voci spente | bug preesistente scope Fase 2 |
 | Script verifica T1 KO | errore agente (selettori) — QA Matteo OK |
-| L3 tenant oltre soglia NT | vincolo strutturale TEST data → FU-M3-QA-L3 |
+| L3 limite 7 categorie | QA Matteo OK → FU-M3-QA-L3 chiuso |
+| FU-MQR-3 rename PROD | categoria assente su `da-tommaso` → chiuso senza azione |
 
 ---
 
 ## 12. Domande di chiusura
 
 ❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.
-✅ R1: (1) «3. propagazione funziona. ma nei modal per modificare QR menu, e modal per modificare card scorrevoli vedo ancora le categorie o i prodotti anche se in menu source of true, sono disabilitati… il resto tutto testato e funziona senza problemi.» (2) «lavoro ok. fai commit e report di questo allineamento e aggiorna skill system dove necessario» (3) «(annota in osservazioni che dovrei completare test e2e browser completi per ogni area blindata dell'app. ) agente ha completato sessione di test. aggiorna documentazione e fai report finale + push .»
+✅ R1: (1) «3. propagazione funziona. ma nei modal per modificare QR menu, e modal per modificare card scorrevoli vedo ancora le categorie o i prodotti anche se in menu source of true, sono disabilitati… il resto tutto testato e funziona senza problemi.» (2) «lavoro ok. fai commit e report di questo allineamento e aggiorna skill system dove necessario» (3) «(annota in osservazioni che dovrei completare test e2e browser completi per ogni area blindata dell'app. ) agente ha completato sessione di test. aggiorna documentazione e fai report finale + push .» (4) «aggiorna se in agent. considera FU-M3-QA-L3 chiuso. non c'è quella categoria nell'account.» (5) «fai report finale e commit e push»
 
 ❓ Q2 — Dati = diff reale?
-✅ R2: Ri-verificato: `npm run validate` **554**/68; Vitest M3 **27** (9+9+9); E2E spec presente; MASTERPLAN riga M3 aggiornata; commit `b9f283f` fix modal; working tree include E2E + doc unstaged pre-commit.
+✅ R2: Ri-verificato working tree: 8 file doc modificati (FOLLOW_UP, MASTERPLAN, 3 Admin skill, MENU_QR_SKILL, OSSERVAZIONI, report finale); nessun codice app. Stato FU: L3/MQR-3 → Fatto in FOLLOW_UP; CT/MQR-2 → Aperto. Branch `env/test` allineato a origin pre-commit; validate **554** invariato (nessun rerun in questa micro-chiusura — solo doc).
 
 ❓ Q3 — File correlati allineati?
-✅ R3: MASTERPLAN, ADMIN_MENU §9, TEST_SUITE §8-ter, PLAN_BLINDATURA area 4, FOLLOW_UP, SESSION_LOG, OSSERVAZIONI, report verifica staged, report finale creato. FU-MQR-2/3 non toccati.
+✅ R3: FOLLOW_UP, MASTERPLAN (intro + tabella Menu QR + §M3 + §5 FU-MQR + roadmap M3), ADMIN_MENU §9.5, ADMIN_TEST_SUITE §8-ter, PLAN_BLINDATURA area 4, MENU_QR_SKILL §5, OSSERVAZIONI voce 11-06-26, report finale aggiornato. Non toccati: codice sorgente, E2E spec, SESSION_LOG (riga aggiunta in commit).
 
 ❓ Q4 — Cosa NON hai fatto?
-✅ R4: Non merge prod; non migrazione 045 PROD; non M4; non script qa-m3 temp; non report prepara-prompt untracked; FU-M3-QA-L3/L3 seed tenant; controtest CT esteso browser.
+✅ R4: Non merge prod; non migrazione 045 PROD; non M4; non controtest CT browser; non FU-MQR-2 implementazione; non commit delete `Comandi per terminale.md` (fuori scope); non script `qa-m3-output.json` / report prepara-prompt untracked.
 
 ❓ Q5 — Attrito + miglioria?
-✅ R5: Chiusura M3 con E2E e report in parallelo richiede coordinamento senior+esecutore — miglioria: checklist «E2E in repo» nel prompt chiusura blindatura (ora in OSSERVAZIONI per tutte le aree).
+✅ R5: Chiusura FU in chat separata dal report finale iniziale — rischio disallineamento doc/report; miglioria: aggiornare FOLLOW_UP e report finale nello stesso commit della conferma QA Matteo (checklist chiusura blindatura).
 
 ❓ Q6 — Contesto & hook?
-✅ R6: Modello report M2 calendario finale utile; hook pre-commit ha richiesto report+skill in stage — corretto.
+✅ R6: Skill Admin + Menu QR sufficienti per aggiornamento governance; nessun hook pre-commit atteso su solo-doc (report Q/R completo per stop hook).
 
 ---
 

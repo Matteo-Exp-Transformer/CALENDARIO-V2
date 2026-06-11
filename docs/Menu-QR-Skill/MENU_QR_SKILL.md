@@ -197,15 +197,14 @@ col primo messaggio. (Preferenza utente: `Modal` per successo/conferme; toast so
   card» (max **30**) e «Descrizione breve» (max **70**) ora usano `AdminFieldWithCharCount` con taglio
   difensivo e contatore, come il carosello. Test: `__tests__/menuQrCategoryFieldCap.test.tsx`.
 - ✅ **Codice morto preset rimosso (CHIUSO 06-06-26)** — vedi §3-bis.
-- **FU-MQR-2 (NUOVO, aperto) — Ordine piatti dentro la categoria, per-QR.** Oggi i piatti seguono
+- **FU-MQR-2 (aperto) — Ordine piatti dentro la categoria, per-QR.** Oggi i piatti seguono
   l'ordine del magazzino (`menu_categories`/`menu_items` sort_order), non configurabile per-QR. Matteo
   (06-06-26): è un **buco**, da poter ordinare per-QR in futuro. Lavoro grosso (tocca dati + form),
   fuori dalla blindatura. Non implementarlo di iniziativa.
-- **FU-MQR-3 (NUOVO, aperto) — Chiave categoria malformata `secondi_piattie` su PROD `da-tommaso`.**
-  La label visibile è già corretta («Secondi piatti», controverifica 06-06-26) ma la **chiave** resta
-  `secondi_piattie`. È interna (mai mostrata) e lega 3 piatti + 2 QR + 2 override. Rinominarla solo dal
-  modale admin (overlay «Categorie ingredienti» → salva con conferma rename) così `syncMenuCategoryKeyRename`
-  coordina tutte le tabelle + storage. **Mai a mano via SQL** (rischio piatti orfani). Solo igiene.
+- ✅ **FU-MQR-3 — Chiave categoria `secondi_piattie` (CHIUSO 11-06-26).** Matteo su PROD account test
+  `da-tommaso`: categoria/chiave **non presente** in tab Menu → overlay Categorie; nessun rename richiesto.
+  (Controverifica 06-06-26 aveva corretto la label visibile; chiave interna assente o già bonificata.)
+  Vitest rename/sync (FU-M3-3) copre il flusso modale se ricompare.
 
 ---
 

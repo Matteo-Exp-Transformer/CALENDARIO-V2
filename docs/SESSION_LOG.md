@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 11-06-26 | Admin — **M3 Menu magazzino BLINDATO** ✅ report finale (chiusura FU L3 + MQR-3) | [Report finale](Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md) — Vitest 27 + E2E; QA Matteo; FU-M3-QA-L3 + FU-MQR-3 chiusi; push `env/test` |
 | 11-06-26 | Admin — **M3 Menu magazzino BLINDATO** ✅ report finale | [Report finale](Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md) — Vitest 27 + E2E; QA Matteo; MASTERPLAN Blindato ✅; push `env/test` |
 | 11-06-26 | Admin — **M3 QA E2E Playwright Menu magazzino** ✅ `FU-M3-QA-E2E` | [Report](Sessioni%20di%20lavoro/11-06-26/Report-finale-fu-m3-qa-e2e-playwright-11-06-26.md) — spec `e2e/admin-menu-magazzino-blindatura.spec.ts`; Playwright **3 passed**; validate **554** |
 | 11-06-26 | Admin — **M3 fix filtro `is_available` modal QR + card scorrevoli** ✅ lavoro ok | [Report](Sessioni%20di%20lavoro/11-06-26/Report-m3-fix-availability-filter-admin-config-11-06-26.md) — QA Matteo; `MenuQrModal` + `BookingFormConfigPanel` + `PresetMenuBuilder`; +1 Vitest; validate **554** |

@@ -48,6 +48,12 @@
 
 ## Sessioni registrate (append-only)
 
+### 11-06-26 — Chiusura FU M3/MQR (Matteo QA)
+- **FU-M3-QA-L3 fatto:** limite max **7 categorie** confermato in app da Matteo.
+- **FU-M3-QA-CT:** resta **aperto** — controtest «rompi» browser extra, **sessioni future** (non blocca M3).
+- **FU-MQR-3 fatto:** su PROD `da-tommaso` la categoria refuso **non c’è** — nessun fix.
+- **FU-MQR-2:** resta **aperto** (ordine piatti per-QR).
+
 ### 11-06-26 — Roadmap E2E browser per ogni area blindata (Matteo)
 - **Area:** Testing / blindatura trasversale.
 - **Osservazione Matteo:** vuole **completare test E2E browser completi** (Playwright, viewport 375/834/1280, flussi reali) per **ogni area già blindata** — non solo Vitest.

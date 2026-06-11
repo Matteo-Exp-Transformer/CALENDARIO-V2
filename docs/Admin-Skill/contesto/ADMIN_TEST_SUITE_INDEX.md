@@ -243,7 +243,7 @@ Stato: **Fase 1+2+3 + QA E2E base** — 9 test `@admin-blindatura: menu-magazzin
 `@admin-blindatura: menu-magazzino-sync`; E2E Playwright `@admin-blindatura: menu-magazzino` su 1280/375/834;
 validate **554** verde.
 **Blindato ✅ 11-06-26** — report [`Report-finale-m3-menu-blindato-11-06-26.md`](../Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md).
-Debiti fuori cancello: FU-M3-QA-L3 (tenant oltre soglia), FU-M3-QA-CT (controtest browser esteso).
+Debiti fuori cancello: **FU-M3-QA-CT** (controtest browser extra, sessioni future).
 
 | File | Cosa copre |
 |---|---|
@@ -252,7 +252,7 @@ Debiti fuori cancello: FU-M3-QA-L3 (tenant oltre soglia), FU-M3-QA-CT (controtes
 | `src/features/booking/services/__tests__/menuMagazzinoSync.adminBlindatura.test.ts` | Rename/delete sync orchestrato (`syncMenuCategoryKeyRename`/`Delete`): QR filter+images, `menu_qrcode_categories`, `hidden_category_keys`/`category_order_keys` form; messaggi modale; **3 controtest parziale** (QR ok/form fail; 2° QR fail; delete ok/form fail); rename con `is_available` off + filtri pubblici |
 | `e2e/admin-menu-magazzino-blindatura.spec.ts` | FU-M3-QA-E2E: login staging TEST, toggle categoria/prodotto da Admin Menu, niente toggle disponibilità nell'overlay categoria, propagazione pubblica Menu QR + Prenota, viewport 1280/375/834, teardown `is_available` + dati E2E |
 
-Prossimo batch M3: tenant oltre soglia (FU-M3-QA-L3) + controtest browser extra doppio click/refresh/mutation (FU-M3-QA-CT).
+Prossimo batch M3 (opzionale): controtest browser extra doppio click/refresh/mutation (**FU-M3-QA-CT**, sessioni future).
 
 Test esistenti ancora candidati da valutare nel giro E2E completo:
 
