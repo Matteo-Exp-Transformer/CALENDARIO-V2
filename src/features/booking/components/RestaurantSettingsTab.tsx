@@ -1135,7 +1135,8 @@ export const RestaurantSettingsTab: React.FC = () => {
       </section>
       </div>
 
-      {!features.servizio && (
+      {/* Coperti massimi al giorno — limite esterno verso il pubblico, vale sia Classic sia Pro.
+          DEVE stare FUORI dal gate !features.servizio (altrimenti spariva in Pro). */}
       <div className="w-full max-w-2xl mx-auto">
       <section className={sectionSurfaceClass}>
         <div className="w-full space-y-1.5">
@@ -1168,7 +1169,10 @@ export const RestaurantSettingsTab: React.FC = () => {
           />
         </div>
       </section>
+      </div>
 
+      {!features.servizio && (
+      <div className="w-full max-w-2xl mx-auto">
       <section className={sectionSurfaceClass}>
         <div className="mb-5 w-full space-y-1.5 md:mb-6">
           <h3 className="text-center text-lg font-semibold leading-tight text-slate-800">

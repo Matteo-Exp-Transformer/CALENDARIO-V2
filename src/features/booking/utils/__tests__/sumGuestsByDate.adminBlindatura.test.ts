@@ -18,6 +18,7 @@ function booking(partial: Partial<BookingRequest>): BookingRequest {
     confirmed_end: '2026-06-12T23:00:00+00:00',
     desired_date: '2026-06-12',
     client_name: 'Test',
+    ...partial,
   } as BookingRequest
 }
 
