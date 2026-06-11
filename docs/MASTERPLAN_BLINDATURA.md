@@ -54,7 +54,7 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 | **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 + smoke Matteo | ✅ **M1 blindato** — su `main` privato (NON in pubblico: zero codice servito, vedi §merge) | **M1** ✔️ **MERGED (10-06)** |
 | **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | ✅ Vitest **32** + E2E **7** (FU-043) | ✅ **BLINDATO** (11-06-26) | **M2** ✔️ |
 | **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (41 test M2 +2 No-show; validate **527**, 11-06-26) | ✅ **BLINDATO** (11-06-26) — Fase C + batch A/B + C-U2 + QA badge §9 OK Matteo | **M2** ✔️ **MERGED PROD (11-06)** |
-| **Admin — Menu / magazzino** | ✅ (11-06) | ✅ (11-06) | 🔶 Fase 1 (9 Vitest limiti) | ⬜ | **M3** |
+| **Admin — Menu / magazzino** | ✅ (11-06) | ✅ (11-06) | 🔶 Fase 1+2+3 (26 Vitest: limiti 9 + availability 8 + sync 9; validate **553**) | ⬜ | **M3** |
 | **Admin — Impostazioni/Personalizza Form** | 🔶 trasversali* | 🔶 doc | 🔶 salvataggio fase1 | ⬜ | **M4** |
 | **Admin — Servizio (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
 | **Admin — CRM (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
@@ -149,19 +149,19 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 ### M3 — Admin Menu / magazzino
 - **Dettaglio:** sezione Area 4 da aggiungere a `PLAN_BLINDATURA_ADMIN.md`; context
   `ADMIN_MENU_MAGAZZINO_CONTEXT.md` — **mappa intervista in §9** (decisioni 11-06-26).
-- **Stato:** ✅ intervistato + ✅ mappato (11-06-26). **Fase 1 ✅ (11-06-26):** limiti duri + cap testo
-  completi + avviso propagazione ingredienti + 9 test `@admin-blindatura: menu-magazzino-limits` (validate **536**).
-  **Prossimo:** Fase 2 toggle disponibilità (**FU-M3-2**) + controtest rename/delete + blindatura completa.
-- **Decisioni chiave (vedi `ADMIN_MENU_MAGAZZINO_CONTEXT.md §9`):** limiti duri 7 categorie / 12 prodotti
-  per categoria / 6 preset / 6 QR (solo su nuovi inserimenti, non rompere chi ha già sforato); cap nome
-  + descrizione (piatti e categorie) — **Fase 1 in codice**; **toggle disponibilità nel magazzino** = Fase 2
-  (**FU-M3-2**, migrazione); avviso propagazione Prenota/QR su ingredienti — **Fase 1**; QR spento →
-  "menu non disponibile".
+- **Stato:** ✅ intervistato + ✅ mappato (11-06-26). **Fase 1 ✅:** limiti + cap + avviso (9 test limits).
+  **Fase 2 ✅ (11-06-26):** toggle `is_available` magazzino + migrazione `045` TEST + 8 test availability.
+  **Fase 3 ✅ (11-06-26, FU-M3-3):** Vitest `@admin-blindatura: menu-magazzino-sync` (9 test rename/delete +
+  controtest parziale); validate **553**. **Prossimo:** QA manuale + cancello blindatura M3 (non dichiarato).
+- **Decisioni chiave (vedi `ADMIN_MENU_MAGAZZINO_CONTEXT.md §9`):** limiti duri 7/12/6/6; cap 24/79;
+  **toggle disponibilità magazzino** ✅ (`is_available`, spento = nascosto Prenota+QR, snapshot intatto);
+  avviso propagazione su save/toggle; QR `is_active` spento → "menu non disponibile".
 - **Invariante confermato (già nel codice):** prenotazioni pending/accettate/archivio conservano lo
   **snapshot congelato** del menù (`booking_requests.menu_selection`: nome+prezzo+quantità) — cambiare
   il magazzino non altera mai lo storico.
 - **Controtest obbligatori:** rename/delete categoria sincronizza più risorse (QR + Prenota + settings +
-  storage) **senza transazione unica** → controtest race/parziale (radice di FU-MQR-3); nuovo toggle
+  storage) **senza transazione unica** → **Vitest FU-M3-3 ✅** (stato parziale documentato; no rollback);
+  nuovo toggle
   disponibilità (off sparisce in entrambe le vetrine, snapshot intatto); cap retroattivi. File pesante:
   `MenuPricesTab.tsx` (~1900 LOC). Coordinare con Menu QR e Prenota già blindate.
 
@@ -199,7 +199,7 @@ milestone naturale di competenza.
 | FU-030 | ~~Cap testi menù~~ | ✅ Chiuso M0 10-06-26 | — | **M0** ✅ |
 | FU-038/039 | ~~Seed TEST + QA centratura~~ | ✅ Chiuso M0 10-06-26 | — | **M0** ✅ |
 | FU-MQR-2 | Ordine piatti per-QR non gestibile (segue `menu_items.sort_order`) | `MENU_QR_SKILL.md §5` | medio | milestone dedicata Menu QR |
-| FU-MQR-3 | Chiave categoria malformata `secondi_piattie` su PROD `da-tommaso` (rename solo via modale admin, mai SQL) | `MENU_QR_SKILL.md §5` | basso (chiave interna) | M3 (radice rename categoria) |
+| FU-MQR-3 | Chiave categoria malformata `secondi_piattie` su PROD `da-tommaso` — **fix operativo:** rename confermato in overlay Categorie Menu (modale pre-save → `syncMenuCategoryKeyRename`; Vitest FU-M3-3 copre il flusso). Esecuzione su PROD ancora manuale da Matteo; mai SQL diretto. | `MENU_QR_SKILL.md §5` | basso (chiave interna) | M3 (test ✅; azione PROD ⬜) |
 | FU-EMAIL-1 | Edge function `send-email` **non esiste**: email accept/reject/cancel falliscono in silenzio | `src/lib/email.ts:37`; gated da `VITE_ENABLE_SEND_EMAIL` in `useBookingMutations.ts:110-171` | alto (UX) | M6 o milestone email |
 | FU-EMAIL-2 | Nessuna UI admin per `email_logs` | `database.ts` (`email_logs`) | medio | M6 |
 | FU-TEST-1 | 0% test su pagine Pro (CRM/Servizio/Analytics/Home) | nessun `*.test.tsx` | alto (no regression Pro) | M5 (criterio uscita) |

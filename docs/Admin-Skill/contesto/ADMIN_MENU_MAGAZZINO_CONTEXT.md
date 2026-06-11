@@ -3,7 +3,7 @@
 > Il tab Menu e il magazzino/listino unico del tenant. Alimenta sia Pagina Prenota sia Menu QR,
 > ma non coincide con nessuna delle due viste pubbliche.
 
-> **Stato blindatura (M3):** intervista Matteo ✅ (11-06-26) · mappa ✅ (11-06-26) · test 🔶 Fase 1 (9 Vitest limiti, 11-06-26) · blindato ⬜.
+> **Stato blindatura (M3):** intervista Matteo ✅ (11-06-26) · mappa ✅ (11-06-26) · test 🔶 Fase 1+2+3 (limiti 9 + availability 8 + sync rename/delete 9 Vitest, 11-06-26) · blindato ⬜.
 > Decisioni intervista + flusso dati + cosa è nuovo → **§9** in fondo (fonte autorevole delle scelte di
 > prodotto per quest'area). App unica: **nessuna distinzione admin/staff** (chi entra può tutto).
 
@@ -77,8 +77,8 @@ test futuri.
 ## 7. Rischi aperti
 
 - `useMenuCategories` ritorna `[]` se la tabella non esiste: utile legacy, ma puo mascherare un errore.
-- Sync rename/delete parziale puo lasciare dati incoerenti.
-- **M3 Fase 2 (aperto):** toggle disponibilità nel magazzino (migrazione + vetrine) — vedi §9.3 e **FU-M3-2**.
+- Sync rename/delete parziale puo lasciare dati incoerenti (nessun rollback automatico oggi).
+- **M3 controtest rename/delete ✅ Vitest (11-06-26, FU-M3-3):** suite `@admin-blindatura: menu-magazzino-sync` — happy path rename/delete + 3 scenari fallimento a metà (QR ok / form fail; secondo QR fail; delete QR ok / form fail). Comportamento atteso: throw + stato parziale documentato; hook `useUpdateMenuCategory`/`useDeleteMenuCategory` propagano errore con toast. Radice storica FU-MQR-3: rename via modale admin (`secondi_piattie` → slug corretto) allinea QR/form senza SQL manuale.
 
 ## 9. Mappatura M3 — decisioni intervista (11-06-26)
 
@@ -128,19 +128,27 @@ caso che può fallire → messaggio gentile (no blocco preventivo dei formati).
 2. **Cap nome + descrizione** piatti e categorie — `BOOKING_MENU_COMPOSE_TEXT_LIMITS` 24/24/79; contatore anche su **descrizione categoria** overlay.
 3. **Avviso propagazione Prenota/QR** sul salvataggio **ingredienti** (`MenuMagazzinoPropagationNotice` — stesso messaggio costante condiviso).
 
-**Fase 2 ⬜ (follow-up FU-M3-2):**
+**Fase 2 ✅ (11-06-26, FU-M3-2)** — implementato in codice (`045_menu_magazzino_is_available.sql`,
+`menuMagazzinoLimits.ts` helper `isMenuCategoryAvailable` / `filterMenuItemsForPublic*`,
+`MenuPricesTab` toggle occhio in **panoramica Menu** (fix UX 11-06-26), filtri `MenuSelection` +
+`PublicMenuPage` + `PublicMenuCategoryPage`):
 
-4. **Toggle disponibilità nel magazzino** — nuova colonna booleana su `menu_items` **e**
-   `menu_categories` (oggi assente: lo schema ha solo `sort_order`, no campo disponibilità). Regola:
-   **spento qui = nascosto ovunque** (Prenota resolver + QR). Distinto dal toggle disponibilità
-   per-preset, che resta locale al singolo preset. Richiede migrazione + far rispettare il flag dalle
-   due vetrine, **senza rompere lo snapshot** delle prenotazioni passate.
+4. **Toggle disponibilità nel magazzino** — colonna `is_available` (default `true`) su `menu_items` **e**
+   `menu_categories`. Regola: **spento qui = nascosto ovunque** (Prenota + QR). Distinto da
+   `visible_on_booking` preset e da `hidden_menu_item_ids` per-QR (si combinano; magazzino off vince).
+   **Superficie toggle (UX 11-06-26):** solo panoramica tab Menu — occhio header `CollapsibleCard`
+   categoria + riga ingrediente (`AdminMenuIngredientCard`, sempre visibile); **non** nei form
+   Crea/Modifica Prodotto né overlay Categorie. Al save form si preserva `is_available` esistente.
+   Admin vede voci spente (opacità). Snapshot `booking_requests.menu_selection` intatto.
+   Test: `@admin-blindatura: menu-magazzino-availability` (8 Vitest).
 
 ### 9.4 Controtest obbligatori in blindatura
 
 - **Rename/delete categoria** (sync `menu_categories` → `menu_items` → QR → form Prenota → storage,
-  §5): non è transazione unica → controtest "a metà strada" (passo che fallisce = dati incoerenti).
-  Radice storica della chiave categoria malformata (FU-MQR-3).
+  §5): non è transazione unica → **Vitest FU-M3-3 ✅ (11-06-26)** documenta stato parziale se un passo
+  fallisce (QR aggiornato, form no; oppure primo QR ok, secondo fail). Nessun rollback automatico in codice.
+  Radice storica della chiave categoria malformata (FU-MQR-3): fix operativo = rename confermato in overlay
+  Categorie Menu (modale pre-save), non UPDATE SQL a mano.
 - **Nuovo toggle disponibilità:** "spento" sparisce in Prenota **e** in QR; snapshot prenotazioni
   vecchie intatto.
 - **Cap retroattivi:** tenant già oltre soglia non viene rotto.

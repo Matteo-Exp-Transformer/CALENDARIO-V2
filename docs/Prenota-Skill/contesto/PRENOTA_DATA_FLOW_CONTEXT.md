@@ -20,10 +20,12 @@ description: >-
 
 | Mondo | Cosa contiene | Storage | Owner UI |
 |-------|--------------|---------|----------|
-| **Magazzino menu** | Categorie ingredienti, ingredienti, **menù preselezionati**, promo | Tabelle `menu_categories`, `menu_items` + JSONB `restaurant_settings.booking_custom_staff_presets`, `booking_menu_promos` | Tab **Menu** (`MenuPricesTab`) |
+| **Magazzino menu** | Categorie ingredienti, ingredienti, **menù preselezionati**, promo; disponibilità `is_available` (M3 Fase 2) | Tabelle `menu_categories`, `menu_items` + JSONB `restaurant_settings.booking_custom_staff_presets`, `booking_menu_promos` | Tab **Menu** (`MenuPricesTab`) |
 | **Vetrina Prenota** | Testi/foto/icone che il **cliente** vede in pagina Prenota | JSONB `restaurant_settings.booking_public_form_config` | Tab **Impostazioni → Personalizza form** (`BookingFormConfigPanel`) |
 
 **Regola operativa:** la vetrina **non** legge il magazzino in tempo reale per tutto. Per i campi vetrina (`label`, `description`, `price_per_person`, `hidden_*`) c'è un **resolver** che decide caso per caso se mostrare il valore live del preset o quello «congelato» nella card.
+
+**Disponibilità magazzino (M3 Fase 2):** `menu_categories.is_available` e `menu_items.is_available` (default `true`) filtrano il catalogo pubblico in `MenuSelection` via `filterMenuItemsForPublic` / `filterMenuCategoriesForPublic` (`menuMagazzinoLimits.ts`) **prima** del predicato card/preset. Spento = nascosto in compose; **non** altera `booking_requests.menu_selection` già inviato (snapshot nome+prezzo+quantità).
 
 **Delete categoria magazzino → vetrina:** eliminando una categoria in tab Menu (`useDeleteMenuCategory`), `syncMenuCategoryKeyDelete` rimuove la `category_key` da `sub_tabs[].hidden_category_keys` e `category_order_keys` in `booking_public_form_config` (non tocca `field_overrides`). Helper: `bookingFormCategoryKeySync.removeCategoryKeyFromBookingPublicFormConfig`. Stesso momento del sync Menù QR — vedi `PUBLIC_MENU_DATA_FLOW_CONTEXT.md` § delete sync.
 

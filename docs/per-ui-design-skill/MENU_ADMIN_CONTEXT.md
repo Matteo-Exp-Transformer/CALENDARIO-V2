@@ -70,6 +70,13 @@ esplicito. Helper puri testati `@admin-blindatura: menu-magazzino-limits`.
 **Avviso propagazione (M3 Fase 1):** form Nuovo/Modifica Prodotto mostra `MenuMagazzinoPropagationNotice` prima di Salva
 (aggiorna subito Prenota + QR; snapshot prenotazioni intatto). Overlay categorie: hint per-campo già presenti.
 
+**Toggle disponibilità magazzino (M3 Fase 2, 11-06-26; UX panoramica 11-06-26):** `is_available` su `menu_categories` +
+`menu_items` (migrazione `045`). Unica superficie toggle: **panoramica Menu** — occhio nell’header di ogni
+`CollapsibleCard` categoria (griglia Antipasti / Primi / …) e su ogni riga `AdminMenuIngredientCard` (sempre visibile,
+non solo in modifica). Form «Crea / Modifica Prodotto» e overlay «Crea / Modifica Categoria»: **nessun** toggle; al save
+si preserva `is_available` esistente (o `true` su nuovo). Voci spente restano visibili in admin con opacità. Spento =
+nascosto in Pagina Prenota e Menu QR. Helper: `menuMagazzinoLimits.ts`. Test: `@admin-blindatura: menu-magazzino-availability`.
+
 ## 4. Promo testuali
 
 In `booking_menu_promos` (campi `label` admin + `message` cliente, `booking_types`,

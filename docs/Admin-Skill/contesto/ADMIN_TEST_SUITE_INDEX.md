@@ -27,6 +27,7 @@ Fronti previsti:
 | `@admin-blindatura: calendario` | Tab Calendario admin (M2 Area 2-bis) |
 | `@admin-blindatura: settings` | Impostazioni, salvataggi e Personalizza Form |
 | `@admin-blindatura: menu-magazzino` | Tab Menu, categorie, ingredienti, sync |
+| `@admin-blindatura: menu-magazzino-sync` | Rename/delete categoria → sync QR + form (controtest parziale) |
 | `@admin-blindatura: servizio` | Sale, tavoli, slot, walk-in, briefing |
 | `@admin-blindatura: crm` | Clienti e booking collegate |
 | `@admin-blindatura: home-analytics` | Home, KPI e analytics |
@@ -74,6 +75,8 @@ Fronti previsti:
 - `src/features/booking/components/__tests__/PresetMenuBuilder.prodReady.test.tsx`
 - `src/features/booking/components/__tests__/menuQrCategoryFieldCap.test.tsx`
 - `src/features/booking/utils/__tests__/menuQrCategoryKeySync.test.ts`
+- `src/features/booking/utils/__tests__/bookingFormCategoryKeySync.test.ts`
+- `src/features/booking/services/__tests__/menuMagazzinoSync.adminBlindatura.test.ts`
 - `src/features/booking/utils/__tests__/menuQrStorage.test.ts`
 - `src/features/booking/utils/__tests__/menuQrValidation.test.ts`
 - `src/features/booking/utils/__tests__/menuQrCategoryOrder.test.ts`
@@ -100,7 +103,7 @@ Fronti previsti:
 - ~~Refresh/back da sezioni interne non URL.~~ ✅ chiuso M1 — §9 / `admin-shell-blindatura.spec.ts` (refresh/back URL; eventuale tab state-only → §9)
 - Home con `features.home=false` e sidebar attiva.
 - Delete cliente CRM con booking collegate.
-- Rename/delete categoria menu con sync QR/Prenota.
+- ~~Rename/delete categoria menu con sync QR/Prenota.~~ ✅ Vitest `@admin-blindatura: menu-magazzino-sync` (FU-M3-3, 11-06-26).
 - Walk-in tavolo occupato.
 - Service slot override `date_from/date_to`.
 - Analytics booking create fuori periodo ma evento dentro periodo.
@@ -233,16 +236,20 @@ Test marcati o creati:
   sezione sidebar (la schermata vecchia non riappare per un render intermedio). Regressione del bug
   "stato duplicato tab/sezione che si rincorre con l'URL", risolto 06-06-26 derivando da URL.
 
-### 8-ter. M3 Menu magazzino — limiti Fase 1 (11-06-26)
+### 8-ter. M3 Menu magazzino — limiti + availability + sync (11-06-26)
 
-Stato: **Fase 1** — 9 test Vitest `@admin-blindatura: menu-magazzino-limits`; validate **536** verde.
-**Non** dichiarare M3 blindato — mancano Fase 2 toggle + controtest rename/delete + QA limite su tenant oltre soglia.
+Stato: **Fase 1+2+3** — 9 test `@admin-blindatura: menu-magazzino-limits` + 8 test
+`@admin-blindatura: menu-magazzino-availability` + 9 test `@admin-blindatura: menu-magazzino-sync`;
+validate **553** verde.
+**Non** dichiarare M3 blindato — mancano QA toggle/limiti su tenant oltre soglia + cancello formale.
 
 | File | Cosa copre |
 |---|---|
 | `src/features/booking/constants/__tests__/menuMagazzinoLimits.adminBlindatura.test.ts` | Soglie 7/12/6/6; retroattività (blocca solo +1); conteggio per categoria; cap 24/24/79 allineati a FU-030 |
+| `src/features/booking/constants/__tests__/menuMagazzinoAvailability.adminBlindatura.test.ts` | Default `is_available` true; categoria/item off; preset+magazzino; QR hidden+magazzino; snapshot intatto |
+| `src/features/booking/services/__tests__/menuMagazzinoSync.adminBlindatura.test.ts` | Rename/delete sync orchestrato (`syncMenuCategoryKeyRename`/`Delete`): QR filter+images, `menu_qrcode_categories`, `hidden_category_keys`/`category_order_keys` form; messaggi modale; **3 controtest parziale** (QR ok/form fail; 2° QR fail; delete ok/form fail); rename con `is_available` off + filtri pubblici |
 
-Prossimo batch `@admin-blindatura: menu-magazzino`: rename/delete sync, toggle disponibilità (post FU-M3-2).
+Prossimo batch M3: QA manuale browser (toggle, rename/delete overlay) + tenant oltre soglia.
 
 Test esistenti ancora candidati da valutare nel giro E2E completo:
 

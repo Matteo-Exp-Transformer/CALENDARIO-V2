@@ -48,7 +48,7 @@
 |---------|---------------|
 | **`menu_qr_codes`** | Un QR = una riga: `short_code`, `name`, `category_filter`, `theme_key`, `carousel_items`, `category_images`, `hidden_menu_item_ids`, `is_active`, `sort_order` (colonne `content_type`/`preset_ids` rimosse, migrazione 043) |
 | **`menu_qrcode_categories`** | Override titolo/descrizione card per `(menu_qr_code_id, category_key)` |
-| **`menu_categories`** / **`menu_items`** | Magazzino menu condiviso (tab Menu + QR + Pagina Prenota) |
+| **`menu_categories`** / **`menu_items`** | Magazzino menu condiviso (tab Menu + QR + Pagina Prenota); `is_available` (M3 Fase 2) — spento = nascosto anche su QR |
 | **`restaurant_settings`** chiave `booking_custom_staff_presets` | Menù evento staff (JSON array `{ id, name, item_ids[] }`) — condiviso con Pagina Prenota |
 | **Storage `menu-photos`** | `{tenantId}/qr/{id\|draft/…}/carousel/` e `…/cat/{categoryKey}.webp` |
 
@@ -162,7 +162,7 @@ della casa» è solo placeholder admin). Slide senza `image_url` escluse dal par
 3. Aspetto visivo homepage da **`menu_qr_codes`**, non `menu_homepage_config`
 4. Override card: prima `menu_qrcode_categories`, fallback `menu_categories.label/description`
 5. Thumb card: `category_images[key]` su QR — **non** `menu_categories.image_url` (foto Prenota)
-6. Hidden items: filtrati in **`PublicMenuCategoryPage`**
+6. Hidden items: filtrati in **`PublicMenuCategoryPage`** insieme a `is_available` magazzino (`filterMenuItemsForPublicQr`); categorie off in `PublicMenuPage` via `filterMenuCategoriesForPublic`
 7. Temi: 5 chiavi in `menuThemes.ts`; sconosciuti → `mediterranean_teal`
 8. Nuovo QR: foto in `qr/draft/{shortCode}/` → migrate al primo Salva
 
