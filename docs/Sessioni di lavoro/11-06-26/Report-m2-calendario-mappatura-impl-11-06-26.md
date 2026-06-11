@@ -125,3 +125,29 @@ L'edge function `create-booking` e stata modificata, richiede **`supabase functi
 
 ❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuto ti sono stati utili o rumore?
 ✅ R6: **Contesto giusto** per M2: PLAN §3-ter + ADMIN_PRENOTAZIONI_CONTEXT bastavano per mappa e implementazione; ADMIN_CLASSIC_SKILL intero sarebbe stato rumore (non caricato, coerente col prompt). **Troppo poco** solo su deploy edge e test index — non c’è una checklist «dopo modifica create-booking → deploy TEST» nel flusso chiusura. **Hook fine-sessione (questa chat):** utile — ha segnalato §11 mancante sul report M2; nessun rumore finché le R sono vuote.
+
+---
+
+## 12. Postilla allineamento diff (aggiunta a fine sessione)
+
+Dopo la stesura iniziale del report il lavoro è proseguito; lo stato REALE finale (3 commit su `env/test`):
+
+- **`81c90c2`** feat M2 (auto-commit): include implementazione + i 2 file test `@admin-blindatura: calendario`
+  (`restaurantSettingRegistry.dailyGuestLimit...` 9 test, `sumGuestsByDate...` 7 test) + util `sumGuestsByDate`
+  estratta in `capacityCalculator.ts`. **NB:** questo auto-commit ha incluso anche
+  `docs/_lavoro/Per matteo/Comandi per terminale.md` (+210) e la cancellazione di `Query base utili.md`
+  — **file NON toccati dall'agente in questa sessione** (violazione regola "solo i tuoi file"). Da decidere
+  con Matteo se ripristinarli (`_lavoro/` è privato).
+- **`420a520`** fix(admin): casella "Coperti massimi al giorno" spostata FUORI dal gate `!features.servizio`
+  → ora visibile sia Classic sia Pro (prima spariva in Pro perché annidata nelle fasce). + fix factory test.
+- **`eeb05ab`** docs(admin): nota 8-bis in `ADMIN_PRENOTAZIONI_CONTEXT §5-ter`.
+
+**Suite finale: 498 test verdi** (erano 482; +16 calendario). **Aggiornamento a R4:** i test `@admin-blindatura:
+calendario` ORA esistono (16) e il fix visibilità Pro è fatto — entrambi inizialmente segnati "non fatto" sono
+stati completati. **Restano aperti** (debito reale, prossima sessione): `ADMIN_TEST_SUITE_INDEX.md` non indicizza
+i nuovi test; deploy edge `create-booking` su TEST; merge production M2; FU-CAL-1…7.
+
+**Pratiche senior verificate:** template v.0 `_skill-system-v0/` NON toccato (nessun upgrade strutturale allo
+skill system, solo contenuto d'area → niente da propagare). PLAYBOOK `EVOLUZIONE_SKILLS.md` NON modificato
+(nessun metodo nuovo: ciclo intervista→mappa→impl→controtest→fix è già codificato). Push solo su `env/test`
+privato (backup), NON su main/production.
