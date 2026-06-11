@@ -13,6 +13,10 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 11-06-26 | Admin — **M2 Calendario BLINDATO** ✅ **report finale** | [Report finale blindato](Sessioni%20di%20lavoro/11-06-26/Report-finale-m2-calendario-blindato-11-06-26.md) — batch A+B+C-U2; validate **527**; QA badge §9 OK Matteo; commit+push `env/test` |
+| 11-06-26 | Admin — **M2 Calendario allineamento doc test** (light) | §8-bis + FU-047: M2 **41** (+2 No-show fuori conteggio); validate **527**; cappelli batch A/B senza debito C-U2 |
+| 11-06-26 | Admin — **M2 Calendario C-U2 guard modale** 🔶 **lavoro ok** | [Report C-U2](Sessioni%20di%20lavoro/11-06-26/Report-c-u2-guard-tab-calendario-11-06-26.md) — guard tab + overlay/X/Esc (fix QA Matteo); validate **527**; §5-ter.22 + FU-047; test guard +2 |
+| 11-06-26 | Admin — **M2 Calendario classificazione FU-047** (light, solo doc) | FU-047 chiuso doc (13 finding fix/voluto/differito); §5-ter C-D1/C-U2; layout §7-ter C-U3/C-R2/C-R3; **FU-048** C-U3 Pro; Blindato ⬜ (manca validate+QA §9) |
 | 11-06-26 | Admin — **M2 Calendario ciclo blindatura** (test + revisione + Fase C) ✅ **report finale** | [Report finale ciclo](Sessioni%20di%20lavoro/11-06-26/Report-finale-m2-calendario-ciclo-blindatura-11-06-26.md) — 29 test Vitest `@admin-blindatura: calendario`; revisione ACCETTA CON RISERVE; Fase C 13 finding (0 ALTO); **FU-047** batch fix; Blindato ⬜ |
 | 11-06-26 | Admin — **M2 Calendario badge simbolo %** 🔶 **lavoro ok** | [Report](Sessioni%20di%20lavoro/11-06-26/Report-m2-calendario-badge-simbolo-percentuale-11-06-26.md) — **richiesta esplicita Matteo**; `%` visibile + refresh badge quando arriva `daily_guest_limit`; validate **498**; skill decisione 13 allineata |
 | 11-06-26 | Senior — **revisione + merge M0/M1 + Manuale blindatura** ✅ **report finale** | [Report senior](Sessioni%20di%20lavoro/11-06-26/Report-senior-revisione-merge-M0-M1-manuale-blindatura-11-06-26.md) — **M0 Prenota LIVE prod** (`f6e3d13`); M1 Shell merged main privato (non pubblico, zero `src/`); nuovo `MANUALE_BLINDATURA.md` (source of truth metodo test); regola merge pubblico/privato `EVOLUZIONE` §8; validate 482 ri-verificato |

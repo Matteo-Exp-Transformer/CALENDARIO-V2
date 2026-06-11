@@ -148,16 +148,65 @@ Senso: calendario **leggero come vista d'insieme** (dice solo quanto è pieno og
     FormInfoPanel "coperti massimi" in `ServiceSlotsManager` diceva ancora "verranno rifiutate
     automaticamente": corretto in semaforo/avviso che non blocca né rifiuta. Coerente con i due limiti morbidi.
 
+15. **Criterio unico conteggio coperti** (batch A Fase C, 11-06-26): badge mese, digest, eventi FC,
+    `sumGuestsByDate`, blocco pubblico e avviso admin giornaliero contano **solo** prenotazioni
+    `accepted`, **non** `no_show`, con **`confirmed_start` e `confirmed_end`**. Legacy senza
+    `confirmed_end` → assenti da badge/digest/eventi (non gonfiano la %).
+
+| Superficie | `confirmed_end` | `no_show` | `pending` |
+|------------|-----------------|-----------|-----------|
+| Badge % mese | richiesto | escluso | escluso |
+| Digest / eventi FC | richiesto | escluso | escluso |
+| `sumGuestsByDate` / edge pubblico | richiesto | escluso | escluso |
+| `useCapacityCheck` per-fascia | richiesto (occupazione) | escluso | escluso (solo accepted in hook) |
+
+16. **Navigazione mese FC** (C-U1, 11-06-26): su `datesSet` in vista mese, se il giorno selezionato
+    non appartiene al mese visibile, `selectedDate` si riallinea allo **stesso giorno del mese**
+    (es. 12/06 → 12/07), clampato all'ultimo giorno se il mese è più corto. Digest, evidenziazione
+    `calendar-day-selected` e pulsante «Nuova prenotazione il GG/MM» restano coerenti col mese in griglia.
+
+17. **Avviso sforo giornaliero su crea admin** (C-D2, 11-06-26): `AdminBookingForm` (anche da
+    calendario) mostra `CapacityWarningModal` se `sumGuestsByDate + num_guests > daily_guest_limit`;
+    submit admin **sempre** consentito dopo conferma (come per-fascia).
+
+18. **Badge 100% = «pieno» (high), non over** (C-L1): classe `booking-day-fill--over` solo se
+    `pct > 100`; esattamente 100% usa tono `high`.
+
+19. **Pulsante No-show in modale dettaglio** (da digest calendario): visibile solo se
+    `features.noShow` (edition Pro/Enterprise) **e** `canMarkNoShow` (`accepted`, non walk-in,
+    **orario di inizio** a muro nel passato — `isWallClockStartBeforeNow`, non la fine —, non già
+    no-show). Classic: pulsante assente per edition, non per bug.
+
+20. **Badge % solo vista mese FC** (C-R2, **voluto**): Settimana/Giorno/Lista non mostrano badge
+    riempimento; nessun fix previsto in M2.
+
+21. **Allineamento `confirmed_end` — legacy vs flusso attuale (C-D1, ✅ batch A 11-06-26):** badge
+    mese, digest, eventi FC, `sumGuestsByDate` e blocco pubblico contano solo prenotazioni con
+    **sia** `confirmed_start` **sia** `confirmed_end`. Nel flusso normale l'accettazione (card
+    pending o nuova admin) imposta sempre `confirmed_end` (**+3h** da inizio). Record `accepted`
+    **senza** `confirmed_end` sono **legacy DB** o dati incompleti: **esclusi** ovunque (niente % «piena»
+    con lista sotto vuota). Caso **raro** oggi; fix batch A ha allineato il badge al digest. Reinserisci
+    da archivio senza orari → `RestoreBookingTimeModal` prima di tornare `accepted`.
+
+22. **Tab switch + chiusura modale calendario (C-U2, ✅ fix 11-06-26):** dettaglio in **modifica**
+    dirty o «Nuova prenotazione» con bozza dirty → **`UnsavedNavigationGuardModal`** (Resta qui ·
+    Salva e continua · Annulla e continua) sia su **cambio tab admin** sia su **chiusura modale**
+    (click overlay scuro, X, Esc). Dopo Salva o Annulla la modale si chiude (e il cambio tab
+    procede se era quello il gesto). **Senza modifiche** chiusura/tab come prima; niente portale
+    `AdminShell`. Wiring: `BookingCalendar` sorgente `calendar-modal` + guard locale su
+    `Modal` nuova prenotazione; `BookingDetailsModal` guard su drawer (mutations invariate).
+    Edit senza dirty: overlay/X esce da edit (U7) senza guard.
+
 ### Follow-up tracciati (non bloccanti M2)
 
 - **FU-CAL-1** — vista Settimana digest: non si cambia settimana/giorno restando nel digest (si dipende
   dal calendario sopra). Aggiungere navigazione settimana propria.
-- **FU-CAL-2** — % riempimento visibile solo in vista Mese; in Settimana/Giorno il segnale «quanto è pieno»
-  sparisce. Valutare un indicatore anche lì.
-- **FU-CAL-3** — badge `"108/100 · 108%"` può essere stretto nella cella mese su 375px; verificare wrapping.
+- **FU-CAL-2** — ✅ **voluto** (decisione 11-06-26, §5-ter punto 20): % solo vista mese.
+- **FU-CAL-3** — ✅ chiuso batch A 11-06-26: `max-width` + `overflow` su holder/badge mobile.
 - **FU-CAL-4** — colori soglia riempimento solo cromatici (rosso/verde): aggiungere icona/simbolo per daltonici/staff.
 - **FU-CAL-5** — vista Settimana satura (>40 pren.) avvisa ma non virtualizza: tenere d'occhio performance.
-- **FU-CAL-6** — in vista Settimana anche Pro perde indicazione turni/assegnazione tavolo (righe compatte). Valutare.
+- **FU-CAL-6** — ✅ chiuso batch A 11-06-26 (C-R3): digest Settimana passa `hasTurns={hasTurnsFeature}` (pallino Pro).
+- **FU-048** — C-U3 turni Pro: copy/toggle «mostra tutti i turni» nel digest (differito **M5/Pro**, non M2 Classic).
 - **FU-CAL-7** (minore) — richiesta pubblica POST diretta senza `desired_time` bypassa il guard giornaliero
   (limite morbido, ma è un bypass server-side). Il race tra richieste concorrenti è atteso (morbido).
 

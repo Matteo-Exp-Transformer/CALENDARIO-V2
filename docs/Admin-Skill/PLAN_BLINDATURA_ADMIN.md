@@ -397,6 +397,7 @@ Aggiornare a fine area.
 |---|---|---|
 | Shell / ingresso / navigazione globale | 🔶 blindatura avviata | Intervista chiusa; sotto-route, logout guard, fallback header e test unitari avviati |
 | Prenotazioni operative | 🔶 batch FU-046 chiuso | Fix D1/R1/D4/D5/D2 + 2° giro FU-046 (D3 migr.044, U2/U5/U6/U7/U1/U4/U10) 07-06-26; bloccanti ALTO+MEDIO risolti. Restano U3/U9/D6/D7/L* + E2E/QA reale (FU-043, FU-046 residuo) |
+| Tab Calendario (M2) | 🔶 FU-047 chiuso doc | Batch A+B + Fase C + **C-U2** guard tab modale; validate **527**; QA §9 badge prima di Blindato ✅; C-U3 → FU-048 Pro |
 | Impostazioni / Personalizza Form | ⬜ | Da avviare dopo Prenotazioni o secondo priorita Matteo |
 | Menu admin / magazzino | ⬜ | Da coordinare con Prenota/Menu QR gia blindate |
 | Servizio | ⬜ | Include walk-in e tavoli occupati |

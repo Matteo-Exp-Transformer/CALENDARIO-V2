@@ -53,7 +53,7 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 | **Menu QR — pagina clienti** | ✅ (06-06) | ✅ | ✅ | ✅ (FU-MQR-2/3 aperti, fuori blind.) | ✅ già mergeable |
 | **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 + smoke Matteo | ✅ **M1 blindato** — su `main` privato (NON in pubblico: zero codice servito, vedi §merge) | **M1** ✔️ **MERGED (10-06)** |
 | **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | 🔶 `@admin-blindatura` | 🔶 (residui U/D/L + E2E) | **M2** |
-| **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (29 test, 11-06-26); Fase C controtest ✅ (13 finding, 0 ALTO, 11-06-26) | 🔶 (fix batch FU-047 + QA badge opzionale) | **M2** (parte di Dashboard) |
+| **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (41 test M2 +2 No-show; validate **527**, 11-06-26) | ✅ **BLINDATO** (11-06-26) — Fase C + batch A/B + C-U2 + QA badge §9 OK Matteo | **M2** (parte di Dashboard) |
 | **Admin — Menu / magazzino** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M3** |
 | **Admin — Impostazioni/Personalizza Form** | 🔶 trasversali* | 🔶 doc | 🔶 salvataggio fase1 | ⬜ | **M4** |
 | **Admin — Servizio (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
@@ -134,10 +134,11 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
   Calendario: intervista ✅ + mappa ✅ + implementazione ✅ + 4 fix QA ✅ + test Vitest
   `@admin-blindatura: calendario` ✅ (29 test, 11-06-26)**; Fase C controtest ✅ (report
   `docs/Sessioni di lavoro/11-06-26/Report-fase-c-controtest-calendario-11-06-26.md`).
-- **Cosa resta:**
-  - **Calendario:** batch fix post-rompi **FU-047** (13 finding C-D/U/L/R — priorità C-D2, C-U1, C-L1, C-R1);
-    poi colonna Blindato ✅ + eventuale QA responsive badge 375/834/1280.
-  - **Operative:** chiudere residui + E2E/QA reale + controtest responsive sui modali di conferma nuovi.
+- **Calendario:** ✅ **BLINDATO** 11-06-26 — report
+  [`Report-finale-m2-calendario-blindato-11-06-26.md`](Sessioni%20di%20lavoro/11-06-26/Report-finale-m2-calendario-blindato-11-06-26.md);
+  FU-047 chiuso; validate **527**; QA badge §9 OK Matteo. Fuori scope Calendario Classic: **FU-048** (C-U3 Pro),
+  deploy edge TEST C-D5 (repo ok).
+- **Operative:** chiudere residui FU-046 + E2E/QA reale + controtest responsive sui modali di conferma nuovi.
 
 ### M3 — Admin Menu / magazzino
 - **Dettaglio:** sezione Area 4 da aggiungere a `PLAN_BLINDATURA_ADMIN.md`; context

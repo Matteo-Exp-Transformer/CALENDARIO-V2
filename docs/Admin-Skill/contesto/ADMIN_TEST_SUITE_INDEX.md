@@ -107,15 +107,18 @@ Fronti previsti:
 
 ## 8-bis. Area 2-bis — Tab Calendario (M2)
 
-Stato: **Fase A–B + Fase C chiusi 11-06-26** — 29 test Vitest `@admin-blindatura: calendario`, validate **511**; controtest «rompi» → 13 finding (0 ALTO), report `Report-fase-c-controtest-calendario-11-06-26.md`. Nessun E2E calendario (decisione Matteo). **Resta:** batch fix **FU-047** + QA responsive badge opzionale.
+Stato: **batch A+B FU-047 + classificazione doc (11-06-26)** — **41** test Vitest `@admin-blindatura: calendario` (+ **2** test No-show `bookingDetailsModal.noShow`, **fuori** conteggio M2), validate **527** verde. FU-047 **chiuso**: finding Fase C tutti fix o voluto/differito (§5-ter punti 21–22, layout §7-ter). Prossimo cancello: QA badge §9.
 
 ### Mapping scenari PLAN §3-ter.3 → test
 
 | # | Scenario | File / describe |
 |---|---|---|
-| 1 | Solo accettate (no-show assenti; digest senza orario) | `sumGuestsByDate.adminBlindatura.test.ts` (pending/rejected/deleted/no-show) + `calendario.adminBlindatura.test.tsx` → events FC + digest |
-| 2 | Badge % — senza limite conteggio; con limite solo %; >100% reale | `calendario.adminBlindatura.test.tsx` → `dayCellDidMount` + `restaurantSettingRegistry.dailyGuestLimit.adminBlindatura.test.ts` (0=illimitato) |
-| 3 | Gate tavolo Classic assente / Pro+servizio presente | `calendario.adminBlindatura.test.tsx` → pallino `Assegna tavolo` |
+| 1 | Solo accettate (no-show/pending assenti; digest senza orario) | `sumGuestsByDate.adminBlindatura.test.ts` (pending/rejected/deleted/no-show) + `calendario.adminBlindatura.test.tsx` → events FC + digest (FU-REV-CAL-1) |
+| 2 | Badge % — senza limite conteggio; con limite solo %; 100%=high; >100% over | `calendario.adminBlindatura.test.tsx` → `dayCellDidMount` + registry daily limit |
+| 2-bis | Navigazione mese FC → `datesSet` sync `selectedDate` | `calendario.adminBlindatura.test.tsx` → handler `datesSet` |
+| 2-ter | Avviso sforo giornaliero form admin (non bloccante) | `adminBookingForm.dailyLimit.adminBlindatura.test.tsx` |
+| 2-quater | `sumGuestsByDate` / transform / `useCapacityCheck` allineati | `sumGuestsByDate`, `bookingEventTransform`, `useCapacityCheck` test dedicati |
+| 3 | Gate tavolo Classic assente / Pro+slot / Pro senza slot (FU-REV-CAL-2) | `calendario.adminBlindatura.test.tsx` → pallino `Assegna tavolo` + servizio on + `slots:[]` |
 | 4 | Crea da giorno — `dateClick` seleziona; pulsante apre form; giorno pieno non blocca | `calendario.adminBlindatura.test.tsx` → `dateClick` + `AdminBookingForm` mock `initialDate` |
 | 5 | No drag&drop — config FC senza `editable`/`eventDrop`/`selectable` | `calendario.adminBlindatura.test.tsx` → assert props mock FullCalendar |
 | 6 | Elimina solo da modale dettaglio — conferma custom, no `window.confirm` | `calendario.adminBlindatura.test.tsx` → digest → `BookingDetailsModal` → `BookingDangerActionModal` |
@@ -124,16 +127,25 @@ Stato: **Fase A–B + Fase C chiusi 11-06-26** — 29 test Vitest `@admin-blinda
 
 - `src/features/booking/utils/__tests__/sumGuestsByDate.adminBlindatura.test.ts` (7) → conteggio coperti/giorno (stesso criterio blocco pubblico `DAILY_LIMIT`).
 - `src/features/booking/lib/__tests__/restaurantSettingRegistry.dailyGuestLimit.adminBlindatura.test.ts` (9) → limite giornaliero `0`/vuoto = illimitato (fix salvataggio Impostazioni).
-- `src/features/booking/components/__tests__/calendario.adminBlindatura.test.tsx` (13) → UI `BookingCalendar`: badge, gate tavolo, crea-da-giorno, no DnD, elimina da dettaglio.
+- `src/features/booking/components/__tests__/calendario.adminBlindatura.test.tsx` (18) → UI `BookingCalendar`: badge, datesSet, gate tavolo (+ Pro slot vuoti), pending assenti, crea-da-giorno, no DnD, elimina da dettaglio (render con `UnsavedChangesProvider`).
+- `src/features/booking/components/__tests__/bookingCalendarGuard.adminBlindatura.test.tsx` (2) → **C-U2** guard tab: dirty → modale Salva/Annulla/Resta; pulito → nessun guard.
+- `src/features/booking/components/__tests__/bookingCalendarTab.adminBlindatura.test.tsx` (1) → C-U4 Riprova su errore `useAcceptedBookings`.
+- `src/features/booking/components/__tests__/adminBookingForm.dailyLimit.adminBlindatura.test.tsx` (1) → FU-REV-CAL-3 avviso giornaliero.
+- `src/features/booking/utils/__tests__/bookingEventTransform.adminBlindatura.test.ts` (2) → no-show + confirmed_end in transform.
+- `src/features/booking/hooks/__tests__/useCapacityCheck.adminBlindatura.test.ts` (2) → no-show esclusi per-fascia.
+- `src/features/booking/components/__tests__/bookingDetailsModal.noShow.adminBlindatura.test.tsx` (2) → pulsante No-show su orario **inizio** (addendum Matteo batch B); **fuori** conteggio M2 41.
 
 Pattern: mock `@fullcalendar/react` cattura props (`dateClick`, `dayCellDidMount`, assenza drag); `AdminBookingForm` mock per `initialDate`; `BookingDetailsModal` reale con tab stub + mutation mock.
 
-### Buchi residui (post Fase C)
+### Buchi residui (post classificazione FU-047)
 
-- **Batch fix FU-047** — finding C-D/U/L/R (priorità C-D2, C-U1, C-L1, C-R1).
-- **Lacune test** — FU-REV-CAL-1/2/3/4 (vedi report revisione + Fase C §8).
-- **QA browser** badge responsive 375/834/1280 (opzionale se QA dev 11-06 ancora valido).
-- **E2E Playwright calendario** — fuori scope; opzionale.
+- **C-U2** — ✅ **chiuso 11-06-26** (guard tab modale calendario dirty); doc §5-ter punto 22 + test `bookingCalendarGuard`.
+- **C-U3** — ⬜ **FU-048** (copy/toggle turni Pro, M5 — non blocca M2 Classic).
+- **C-R2** — ✅ **voluto** (badge % solo vista mese); doc §5-ter punto 20 + layout §7-bis.
+- **Lacune test** — FU-REV-CAL-4 (nota selettori RTL digest, opzionale); **C-U2 overlay** — test guard copre solo cambio tab simulato, non click overlay (QA manuale Matteo).
+- **Deploy edge** — `create-booking` C-D5 parser: fix in repo; deploy TEST su richiesta Matteo.
+- **QA browser** badge 375/834/1280 — **cancello Blindato** (MANUALE §9).
+- **E2E Playwright calendario** — fuori scope M2.
 
 ---
 
