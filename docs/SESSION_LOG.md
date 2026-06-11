@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 12-06-26 | Senior — **merge production M3 Menu magazzino** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-merge-production-m3-menu-12-06-26.md) — PROD migration `045`; merge privato `7d8fd56`; build private+PrenotaZen verde; release pubblica `b324df0` |
 | 11-06-26 | Admin — **M3 Menu magazzino BLINDATO** ✅ report finale (chiusura FU L3 + MQR-3) | [Report finale](Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md) — Vitest 27 + E2E; QA Matteo; FU-M3-QA-L3 + FU-MQR-3 chiusi; push `env/test` |
 | 11-06-26 | Admin — **M3 Menu magazzino BLINDATO** ✅ report finale | [Report finale](Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md) — Vitest 27 + E2E; QA Matteo; MASTERPLAN Blindato ✅; push `env/test` |
 | 11-06-26 | Admin — **M3 QA E2E Playwright Menu magazzino** ✅ `FU-M3-QA-E2E` | [Report](Sessioni%20di%20lavoro/11-06-26/Report-finale-fu-m3-qa-e2e-playwright-11-06-26.md) — spec `e2e/admin-menu-magazzino-blindatura.spec.ts`; Playwright **3 passed**; validate **554** |

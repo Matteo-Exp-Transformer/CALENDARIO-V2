@@ -3,13 +3,15 @@
 > Chiusura capitolo blindatura tab Menu (magazzino) · branch `env/test` · 11-06-26.
 > Consolidamento: Fase 1–3 + UX toggle + fix modal config + E2E Playwright + QA Matteo + commit + push.
 > **Aggiornamento finale 11-06-26 (2ª chiusura):** chiusura follow-up **FU-M3-QA-L3** e **FU-MQR-3** su conferma QA Matteo; allineamento governance doc.
+> **Aggiornamento post-merge 12-06-26:** migrazione `045` applicata su PROD; merge privato `7d8fd56`;
+> release PrenotaZen `b324df0`; build produzione verde.
 
 ---
 
 ## 1. Cappello
 
 - **Cosa è cambiato:** la tab **Menu** admin (magazzino prezzi/ingredienti, QR, menù preselezionati) è **blindata**: limiti 7/12/6/6, toggle disponibilità in panoramica, filtri Prenota+QR+modal config, sync rename/delete coperto da Vitest, **E2E browser** su 375/834/1280, validate **554** verdi. **Follow-up chiusi:** limite 7 categorie (Matteo QA); refuso categoria PROD assente su `da-tommaso`.
-- **Cosa resta (non blocca M3):** controtest browser «rompi» extra (**FU-M3-QA-CT**, sessioni future); migrazione `045` su PROD solo su richiesta; **FU-MQR-2** (ordine piatti per-QR); roadmap **E2E browser completo per ogni area blindata** (OSSERVAZIONI 11-06-26).
+- **Cosa resta (non blocca M3):** controtest browser «rompi» extra (**FU-M3-QA-CT**, sessioni future); **FU-MQR-2** (ordine piatti per-QR); roadmap **E2E browser completo per ogni area blindata** (OSSERVAZIONI 11-06-26).
 - **Serve azione Matteo:** **no** per blindatura — merge production M3 quando senior pronto (procedura MASTERPLAN §merge).
 
 ---
@@ -91,7 +93,7 @@ Playwright: e2e/admin-menu-magazzino-blindatura.spec.ts — 3 passed (1280/375/8
 | `2d1d706` | docs(admin): M3 blindato report finale + masterplan |
 | *(questo commit)* | docs: chiusura FU-M3-QA-L3 + FU-MQR-3 |
 
-Migrazione **`045`** applicata su TEST (`docnnernvp`) — **non** PROD senza conferma.
+Migrazione **`045`** applicata su TEST (`docnnernvp`) e su **PROD** (`rwuxgvld`) nel merge production M3 del 12-06-26.
 
 ---
 

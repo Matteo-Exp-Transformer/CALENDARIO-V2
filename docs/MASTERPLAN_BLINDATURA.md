@@ -53,7 +53,7 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 | **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 + smoke Matteo | ✅ **M1 blindato** — su `main` privato (NON in pubblico: zero codice servito, vedi §merge) | **M1** ✔️ **MERGED (10-06)** |
 | **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | ✅ Vitest **32** + E2E **7** (FU-043) | ✅ **BLINDATO** (11-06-26) | **M2** ✔️ |
 | **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (41 test M2 +2 No-show; validate **527**, 11-06-26) | ✅ **BLINDATO** (11-06-26) — Fase C + batch A/B + C-U2 + QA badge §9 OK Matteo | **M2** ✔️ **MERGED PROD (11-06)** |
-| **Admin — Menu / magazzino** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest **27** + E2E `@admin-blindatura: menu-magazzino` (375/834/1280; validate **554**) | ✅ **BLINDATO** (11-06-26) — QA Matteo toggle+propagazione; fix modal `b9f283f` | **M3** pronta merge |
+| **Admin — Menu / magazzino** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest **27** + E2E `@admin-blindatura: menu-magazzino` (375/834/1280; validate **554**) | ✅ **BLINDATO** (11-06-26) — QA Matteo toggle+propagazione; fix modal `b9f283f` | **M3** ✔️ **MERGED PROD (12-06)** |
 | **Admin — Impostazioni/Personalizza Form** | 🔶 trasversali* | 🔶 doc | 🔶 salvataggio fase1 | ⬜ | **M4** |
 | **Admin — Servizio (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
 | **Admin — CRM (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
@@ -156,7 +156,11 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
   filtro `is_available` in modal QR + card scorrevoli. **Blindato ✅ 11-06-26** — report
   [`Report-finale-m3-menu-blindato-11-06-26.md`](Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md);
   validate **554**; QA Matteo toggle+propagazione. **Fuori cancello:** FU-M3-QA-CT (controtest browser extra, sessioni future); roadmap E2E completo per area (OSSERVAZIONI 11-06-26).
-  **Prossimo:** merge production M3 (senior + Matteo, §merge).
+  **MERGE PRODUCTION M3 (12-06-26):** ✅ controverifica sub-agent doc/codice → `validate` **554** verde →
+  E2E M3 `--workers=1` **3/3** → migrazione `045_menu_magazzino_is_available` applicata su **PROD**
+  (`rwuxgvld`, colonne `is_available` su `menu_categories` + `menu_items`, default `true`) → merge
+  `env/test`→`main` privato (`7d8fd56`) → build privata verde → `release:prenotazen` → build PrenotaZen
+  verde → commit pubblico `b324df0` → push. Vercel deploya da PrenotaZen `main`.
 - **Decisioni chiave (vedi `ADMIN_MENU_MAGAZZINO_CONTEXT.md §9`):** limiti duri 7/12/6/6; cap 24/79;
   **toggle disponibilità magazzino** ✅ (`is_available`, spento = nascosto Prenota+QR, snapshot intatto);
   avviso propagazione su save/toggle; QR `is_active` spento → "menu non disponibile".
@@ -237,7 +241,7 @@ Decisione (10-06-26): **questo è un masterplan nuovo separato**, indice sopra i
 2. **M1 (Shell):** ✅ blindato 10-06-26 (FU-042 E2E) · su `main` privato; sync pubblico non necessario.
 3. **M2 (Dashboard prenotazioni):** ✅ operative + Calendario blindati; Calendario **merged prod 11-06**.
    Residui operative restano fuori cancello e passano a M6/milestone naturale.
-4. **M3 (Menu admin):** ✅ blindato 11-06-26 — merge production ⬜ (senior + Matteo, §merge). FU-MQR-3 chiuso (categoria assente PROD).
+4. **M3 (Menu admin):** ✅ blindato 11-06-26 — **merged prod 12-06**; FU-MQR-3 chiuso (categoria assente PROD).
 5. **M4 (Settings):** intervista di sezione → salvataggio fase2 + cross-impatto Prenota → merge.
 6. **M5 (Pro/sidebar):** intervistare+blindare su TEST, **NON mergiare in main**; chiude FU-TEST-1/TABLE-1/BRIEF-1.
 7. **M6 (cross-area):** chiudere FU-EMAIL, FU-TYPES, FU-LOG, FU-AUTH, FU-002/003/023.
