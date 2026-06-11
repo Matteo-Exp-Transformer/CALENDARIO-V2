@@ -115,6 +115,20 @@
 
 ---
 
+## 10-bis. Propagazione template v.0 (pratica senior)
+
+Upgrade strutturale di questa sessione propagato nel template riusabile `_skill-system-v0/`
+(**gitignored, NON committato** — è il seme per progetti futuri, non parte della repo):
+- **NUOVO** `_skill-system-v0/aree/MANUALE_BLINDATURA.md.template` — versione generalizzata del manuale
+  di blindatura (placeholder `{{area}}`, `{{comando validate}}`, viewport astratti). Così il metodo
+  «quando il controtest rompi è dovuto + sequenza A→D + cancello blindato» nasce già in ogni nuovo
+  progetto, non va re-inventato.
+
+Verificato: `git check-ignore` conferma il file ignorato; working tree pulito (nessun rischio di commit
+accidentale del template).
+
+---
+
 ## 11. «Domande di chiusura»
 
 ❓ Q1 — Prompt ricevuti VERBATIM.
