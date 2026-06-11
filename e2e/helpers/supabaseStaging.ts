@@ -6,6 +6,7 @@
 import fs from 'fs'
 
 export const E2E_BOOKING_PREFIX = 'E2E-FU043-'
+export const E2E_MENU_PREFIX = 'E2E-M3-'
 
 function ensureStagingEnvLoaded() {
   if (process.env.VITE_SUPABASE_URL && serviceKey()) return
@@ -28,6 +29,9 @@ function requireStagingConfig() {
   ensureStagingEnvLoaded()
   if (!stagingUrl() || !serviceKey()) {
     throw new Error('VITE_SUPABASE_URL e E2E_SUPABASE_SERVICE_KEY richiesti in .env.local.test')
+  }
+  if (!stagingUrl().includes('docnnernvp')) {
+    throw new Error('E2E staging bloccato: VITE_SUPABASE_URL non punta al progetto TEST docnnernvp')
   }
 }
 
@@ -57,6 +61,287 @@ async function rest<T>(path: string, init?: RequestInit): Promise<T> {
   if (resp.status === 204) return undefined as T
   const text = await resp.text()
   return (text ? JSON.parse(text) : undefined) as T
+}
+
+type MenuCategoryE2eInput = {
+  tenantId: string
+  key: string
+  label: string
+  description?: string | null
+  isAvailable?: boolean
+  sortOrder?: number
+}
+
+export type MenuCategoryE2eRow = {
+  id: string
+  key: string
+  label: string
+  is_available: boolean | null
+}
+
+type MenuItemE2eInput = {
+  tenantId: string
+  categoryKey: string
+  name: string
+  price?: number
+  description?: string | null
+  isAvailable?: boolean
+  sortOrder?: number
+  bookingTypes?: string[]
+}
+
+export type MenuItemE2eRow = {
+  id: string
+  name: string
+  category: string
+  is_available: boolean | null
+}
+
+type MenuQrE2eInput = {
+  tenantId: string
+  shortCode: string
+  name: string
+  categoryFilter: string[]
+  hiddenMenuItemIds?: string[]
+}
+
+export type MenuQrE2eRow = {
+  id: string
+  short_code: string
+  category_filter: string[] | null
+  hidden_menu_item_ids: string[] | null
+  is_active: boolean
+}
+
+export type RestaurantSettingSnapshot = {
+  exists: boolean
+  value: unknown
+}
+
+export async function upsertMenuCategory(input: MenuCategoryE2eInput): Promise<MenuCategoryE2eRow> {
+  const existing = await rest<MenuCategoryE2eRow[]>(
+    `menu_categories?tenant_id=eq.${input.tenantId}&key=eq.${encodeURIComponent(input.key)}&select=id,key,label,is_available&limit=1`,
+  )
+  const row = {
+    tenant_id: input.tenantId,
+    key: input.key,
+    label: input.label,
+    description: input.description ?? null,
+    is_available: input.isAvailable ?? true,
+    sort_order: input.sortOrder ?? 9000,
+    updated_at: new Date().toISOString(),
+  }
+
+  if (existing[0]?.id) {
+    const updated = await rest<MenuCategoryE2eRow[]>(
+      `menu_categories?id=eq.${existing[0].id}`,
+      {
+        method: 'PATCH',
+        headers: restHeaders({ Prefer: 'return=representation' }),
+        body: JSON.stringify(row),
+      },
+    )
+    return updated[0]
+  }
+
+  const created = await rest<MenuCategoryE2eRow[]>('menu_categories', {
+    method: 'POST',
+    headers: restHeaders({ Prefer: 'return=representation' }),
+    body: JSON.stringify(row),
+  })
+  return created[0]
+}
+
+export async function upsertMenuItem(input: MenuItemE2eInput): Promise<MenuItemE2eRow> {
+  const existing = await rest<MenuItemE2eRow[]>(
+    `menu_items?tenant_id=eq.${input.tenantId}&category=eq.${encodeURIComponent(input.categoryKey)}&name=eq.${encodeURIComponent(input.name)}&select=id,name,category,is_available&limit=1`,
+  )
+  const row = {
+    tenant_id: input.tenantId,
+    name: input.name,
+    category: input.categoryKey,
+    price: input.price ?? 9.5,
+    description: input.description ?? 'Prodotto E2E per blindatura Menu',
+    is_available: input.isAvailable ?? true,
+    sort_order: input.sortOrder ?? 9000,
+    booking_types: input.bookingTypes ?? ['rinfresco_laurea', 'menu_prezzo_fisso'],
+    updated_at: new Date().toISOString(),
+  }
+
+  if (existing[0]?.id) {
+    const updated = await rest<MenuItemE2eRow[]>(`menu_items?id=eq.${existing[0].id}`, {
+      method: 'PATCH',
+      headers: restHeaders({ Prefer: 'return=representation' }),
+      body: JSON.stringify(row),
+    })
+    return updated[0]
+  }
+
+  const created = await rest<MenuItemE2eRow[]>('menu_items', {
+    method: 'POST',
+    headers: restHeaders({ Prefer: 'return=representation' }),
+    body: JSON.stringify(row),
+  })
+  return created[0]
+}
+
+export async function setMenuCategoryAvailability(
+  tenantId: string,
+  categoryId: string,
+  isAvailable: boolean,
+): Promise<void> {
+  await rest(`menu_categories?id=eq.${categoryId}&tenant_id=eq.${tenantId}`, {
+    method: 'PATCH',
+    headers: restHeaders({ Prefer: 'return=minimal' }),
+    body: JSON.stringify({ is_available: isAvailable, updated_at: new Date().toISOString() }),
+  })
+}
+
+export async function setMenuItemAvailability(
+  tenantId: string,
+  itemId: string,
+  isAvailable: boolean,
+): Promise<void> {
+  await rest(`menu_items?id=eq.${itemId}&tenant_id=eq.${tenantId}`, {
+    method: 'PATCH',
+    headers: restHeaders({ Prefer: 'return=minimal' }),
+    body: JSON.stringify({ is_available: isAvailable, updated_at: new Date().toISOString() }),
+  })
+}
+
+export async function getMenuCategoryAvailability(categoryId: string): Promise<boolean | null> {
+  const rows = await rest<Array<{ is_available: boolean | null }>>(
+    `menu_categories?id=eq.${categoryId}&select=is_available&limit=1`,
+  )
+  return rows[0]?.is_available ?? null
+}
+
+export async function getMenuItemAvailability(itemId: string): Promise<boolean | null> {
+  const rows = await rest<Array<{ is_available: boolean | null }>>(
+    `menu_items?id=eq.${itemId}&select=is_available&limit=1`,
+  )
+  return rows[0]?.is_available ?? null
+}
+
+export async function upsertMenuQrCode(input: MenuQrE2eInput): Promise<MenuQrE2eRow> {
+  const existing = await rest<MenuQrE2eRow[]>(
+    `menu_qr_codes?tenant_id=eq.${input.tenantId}&short_code=eq.${encodeURIComponent(input.shortCode)}&select=id,short_code,category_filter,hidden_menu_item_ids,is_active&limit=1`,
+  )
+  const row = {
+    tenant_id: input.tenantId,
+    short_code: input.shortCode,
+    name: input.name,
+    category_filter: input.categoryFilter,
+    hidden_menu_item_ids: input.hiddenMenuItemIds ?? [],
+    is_active: true,
+    sort_order: 9000,
+    theme_key: 'mediterranean_teal',
+    carousel_items: [],
+    category_images: {},
+    updated_at: new Date().toISOString(),
+  }
+
+  if (existing[0]?.id) {
+    const updated = await rest<MenuQrE2eRow[]>(`menu_qr_codes?id=eq.${existing[0].id}`, {
+      method: 'PATCH',
+      headers: restHeaders({ Prefer: 'return=representation' }),
+      body: JSON.stringify(row),
+    })
+    return updated[0]
+  }
+
+  const created = await rest<MenuQrE2eRow[]>('menu_qr_codes', {
+    method: 'POST',
+    headers: restHeaders({ Prefer: 'return=representation' }),
+    body: JSON.stringify(row),
+  })
+  return created[0]
+}
+
+export async function deleteMenuE2eData(
+  tenantId: string,
+  categoryKey: string,
+  shortCode: string,
+): Promise<void> {
+  await rest(
+    `menu_qr_codes?tenant_id=eq.${tenantId}&short_code=eq.${encodeURIComponent(shortCode)}`,
+    {
+      method: 'DELETE',
+      headers: restHeaders({ Prefer: 'return=minimal' }),
+    },
+  )
+  await rest(
+    `menu_items?tenant_id=eq.${tenantId}&category=eq.${encodeURIComponent(categoryKey)}`,
+    {
+      method: 'DELETE',
+      headers: restHeaders({ Prefer: 'return=minimal' }),
+    },
+  )
+  await rest(
+    `menu_categories?tenant_id=eq.${tenantId}&key=eq.${encodeURIComponent(categoryKey)}`,
+    {
+      method: 'DELETE',
+      headers: restHeaders({ Prefer: 'return=minimal' }),
+    },
+  )
+}
+
+export async function getRestaurantSettingSnapshot(
+  tenantId: string,
+  settingKey: string,
+): Promise<RestaurantSettingSnapshot> {
+  const rows = await rest<Array<{ setting_value: unknown }>>(
+    `restaurant_settings?tenant_id=eq.${tenantId}&setting_key=eq.${encodeURIComponent(settingKey)}&select=setting_value&limit=1`,
+  )
+  if (!rows[0]) return { exists: false, value: null }
+  return { exists: true, value: rows[0].setting_value }
+}
+
+export async function upsertRestaurantSettingValue(
+  tenantId: string,
+  settingKey: string,
+  value: unknown,
+): Promise<void> {
+  const existing = await rest<Array<{ id: string }>>(
+    `restaurant_settings?tenant_id=eq.${tenantId}&setting_key=eq.${encodeURIComponent(settingKey)}&select=id&limit=1`,
+  )
+  const row = {
+    tenant_id: tenantId,
+    setting_key: settingKey,
+    setting_value: value,
+    updated_at: new Date().toISOString(),
+  }
+  if (existing[0]?.id) {
+    await rest(`restaurant_settings?id=eq.${existing[0].id}`, {
+      method: 'PATCH',
+      headers: restHeaders({ Prefer: 'return=minimal' }),
+      body: JSON.stringify(row),
+    })
+    return
+  }
+  await rest('restaurant_settings', {
+    method: 'POST',
+    headers: restHeaders({ Prefer: 'return=minimal' }),
+    body: JSON.stringify(row),
+  })
+}
+
+export async function restoreRestaurantSettingSnapshot(
+  tenantId: string,
+  settingKey: string,
+  snapshot: RestaurantSettingSnapshot,
+): Promise<void> {
+  if (snapshot.exists) {
+    await upsertRestaurantSettingValue(tenantId, settingKey, snapshot.value)
+    return
+  }
+  await rest(
+    `restaurant_settings?tenant_id=eq.${tenantId}&setting_key=eq.${encodeURIComponent(settingKey)}`,
+    {
+      method: 'DELETE',
+      headers: restHeaders({ Prefer: 'return=minimal' }),
+    },
+  )
 }
 
 export async function getTenantIdBySlug(slug: string): Promise<string> {
