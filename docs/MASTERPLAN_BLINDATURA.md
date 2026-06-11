@@ -44,13 +44,14 @@ parte di main. I merge production riguardano solo la superficie Classic: Shell, 
 ## Stato per sezione e per fase
 
 Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non applicabile.
-"Blindato" = intervistato + mappato + testato + controtest "rompi" sui 4 fronti + `validate` verde.
+"Blindato" = il cancello di chiusura del **[Manuale di blindatura](Testing-Skill/MANUALE_BLINDATURA.md)**
+(intervista + mappatura + test di copertura + controtest "rompi" *se dovuto* + QA responsive + doc allineata).
 
 | Pagina / Sezione | Intervistato | Mappato | Testato | Blindato | Milestone |
 |---|---|---|---|---|---|
 | **Prenota — form pubblico/vetrina** | ✅ (04-06) | ✅ | ✅ Vitest + QA browser C1/C3 | ✅ **M0 chiuso** | **M0** ✔️ **MERGED PROD (10-06)** |
 | **Menu QR — pagina clienti** | ✅ (06-06) | ✅ | ✅ | ✅ (FU-MQR-2/3 aperti, fuori blind.) | ✅ già mergeable |
-| **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 (10-06-26) + smoke Matteo | ✅ **M1 blindato** — merge prod ⬜ | **M1** ✔️ ready |
+| **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 + smoke Matteo | ✅ **M1 blindato** — su `main` privato (NON in pubblico: zero codice servito, vedi §merge) | **M1** ✔️ **MERGED (10-06)** |
 | **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | 🔶 `@admin-blindatura` | 🔶 (residui U/D/L + E2E) | **M2** |
 | **Admin — tab Calendario** | ⬜ **DA ZERO** | ⬜ | ⬜ | ⬜ | **M2** (parte di Dashboard) |
 | **Admin — Menu / magazzino** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M3** |
@@ -74,22 +75,26 @@ unificato (FU-002), conferma delete unica app-wide (FU-003), guard chiusura moda
 ## Milestone = cancelli di merge
 
 Ogni milestone è **una sezione/area blindata = un merge in production** (granularità per-area, decisa
-con Matteo). Una milestone è "pronta al merge" solo quando soddisfa i **criteri di uscita** della sua
-area (ciclo A–D del `PLAN_BLINDATURA_ADMIN.md`: intervista → mappatura → test → controtest "rompi" sui
-4 fronti dati/utente/limit/responsive 375-834-1280 + `npm run validate` verde + doc allineata).
+con Matteo). Una milestone è "pronta al merge" solo quando supera il **cancello di chiusura** del
+**[Manuale di blindatura](Testing-Skill/MANUALE_BLINDATURA.md)** — che è il riferimento unico per
+*quali test fare dopo la mappatura* e *quando il controtest "rompi" è obbligatorio* (regola: dovuto
+solo se il diff tocca codice `src/` con logica/stato; non dovuto se tocca solo test/config/doc).
+Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 
 **Procedura merge (la eseguo io, senior, con Matteo):**
 1. Revisione del lavoro dell'agente che ha chiuso la sezione (diff + test + report).
 2. `npm run validate` verde su `env/test`.
-3. Merge `env/test` → `main`.
-4. `npm run release:prenotazen` (= `scripts/sync-to-prenotazen.mjs`): esporta main via `git archive`,
-   riapplica override pubblici, **non committa**. Poi in PrenotaZen: `npm run build` → commit
-   `release: …` → push.
-5. Vercel deploya da PrenotaZen/main → smoke test live.
+3. **Classifica il diff:** `git diff --name-only main..env/test -- src/` — tocca codice servito sì/no?
+4. Merge `env/test` → `main` + push privato (sempre, è il backup).
+5. **Solo se il diff tocca `src/`:** `npm run release:prenotazen` → PrenotaZen `npm run build` →
+   commit `release: …` → push → Vercel deploya → smoke live.
+   **Se NON tocca `src/`** (solo E2E/config/doc): STOP — il bundle clienti è identico, NON pubblicare.
+   Dopo il sync ripulire PrenotaZen (`git checkout -- …` + `rm` untracked). Vedi Playbook §8 in
+   `EVOLUZIONE_SKILLS.md`.
 6. Aggiorno la tabella «Stato per sezione» e marco la sezione ✔️ merged.
 
 > Niente script nuovo da creare: il merge usa `npm run release:prenotazen` già esistente. Vedi memory
-> `project_repo_split_3repos`.
+> `project_repo_split_3repos` e Playbook §8 (`EVOLUZIONE_SKILLS.md`) per la regola pubblico/privato.
 
 ---
 
@@ -186,7 +191,6 @@ milestone naturale di competenza.
 | FU-RESP-1 | Larghezze fisse non responsive | `BookingRequestForm.tsx:1456`, `MenuSelection.tsx:463/506`, `CustomerListTable.tsx:89` | basso | nel controtest responsive dell'area (M2/M3/M5) |
 | FU-AUTH-1 | Admin rimosso da `admin_users` resta loggato finché refresh token valido | `AdminAuthContext.tsx` | medio (sicurezza) | M6 |
 | FU-AUTH-2 | Se RPC `check_admin_email` fallisce, tenant=null ma user loggato | `TenantContext.tsx` | medio | M1/M6 |
-| FU-FASE-D-M1 | M1 Shell mergiato senza controtest "rompi" Fase D (4 fronti). Accettato perché M1 tocca **zero codice applicativo** (solo E2E + config + doc), coperto da 5 E2E reali + smoke Matteo → il comportamento app non cambia, niente da "rompere". Gap solo formale. | decisione senior 10-06-26 | basso (formale) | M6 (recuperabile se si tocca lo shell in futuro) |
 | FU-002/003/023 | Pattern salvataggio unificato / conferma delete unica / guard modale su tutti i modali | trasversali aperti | basso-medio | M6 |
 
 ---

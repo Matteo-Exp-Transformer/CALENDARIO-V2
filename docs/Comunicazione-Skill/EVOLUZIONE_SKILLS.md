@@ -122,6 +122,27 @@ blindato»). Scritto in `PLAN_BLINDATURA_<AREA>.md` Fase D + criterio «blindata
 proseguimento. Candidato template v.0 quando avrà ≥2 occorrenze *eseguite* (oggi 0: Area 2 Admin l'ha
 definito ma la Fase D non è ancora girata).
 
+**8. Merge in production — cosa va in pubblico e cosa no (metodo, 10-06-26, prime sessioni di merge).**
+La repo pubblica (PrenotaZen, deploy Vercel) deve ricevere **solo ciò che cambia per i clienti**, non
+materiale di sviluppo. Lo script `release:prenotazen` strippa già `docs/`, `.claude/`, `.cursor/`,
+`AGENTS.md` ecc. — ma **NON strippa `e2e/` né `playwright.config.ts`** (sono whitelisted). Regola
+decisa con Matteo:
+- **Prima di ogni merge production, classifica il diff `main..env/test`:** tocca file `src/`
+  (= codice servito) sì/no? Comando: `git diff --name-only main..env/test -- src/`.
+- **Se tocca `src/`** (es. M0 Prenota): merge → push privato → `release:prenotazen` → build → push
+  pubblico. Il bundle clienti cambia, va pubblicato.
+- **Se NON tocca `src/`** (es. M1 Shell = solo E2E + config + doc): il merge va su `main` privato
+  (backup), ma **NON si pusha in pubblico**. Motivo: il bundle servito è identico → un push pubblico
+  ri-deploierebbe Vercel a vuoto e porterebbe test E2E (materiale di sviluppo) tra gli artefatti
+  pubblici. Dopo il sync, annullare le modifiche pendenti in PrenotaZen (`git checkout -- …` + `rm`
+  degli untracked) e lasciare la pubblica pulita.
+- **Principio sottostante:** *la repo pubblica è il prodotto, non lo specchio del lavoro.* Allinearla
+  solo quando il prodotto cambia. I test restano patrimonio privato (CALENDARIO-V2).
+- **Niente FU per gate non dovuti:** se un merge non tocca codice servito, il controtest "rompi" (Fase
+  D) **non è dovuto** — non c'è comportamento applicativo da rompere → non si traccia come debito.
+  Quando la Fase D è necessaria lo decide la matrice in `MASTERPLAN_BLINDATURA.md` § «Quando servono i
+  test "rompi"».
+
 > 🛑 **PAUSA-RACCOLTA (decisa 29-05-26).** Lo skill system ha avuto molte aggiunte in pochi giorni.
 > **Stop a nuovi meccanismi/regole** finché non si accumulano ~5-10 sessioni di dati con gli
 > strumenti già esistenti (modalità, metriche successo chat, log idee). Il prossimo passo è
