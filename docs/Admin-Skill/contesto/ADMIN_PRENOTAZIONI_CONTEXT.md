@@ -135,10 +135,14 @@ Senso: calendario **leggero come vista d'insieme** (dice solo quanto è pieno og
     Matteo lo vuole fisso, sempre visibile. `handleDateClick` fa solo `setSelectedDate`.
 
 13. **Badge riempimento cella-giorno (vista mese) = SOLO percentuale** (fix QA #1, 11-06). Con limite
-    giornaliero → mostra solo `NN%` (oltre 100% reale, colore soglia ok/high/over); senza limite → solo il
-    conteggio coperti `N`. **Niente `N/Nmax`.** Montato via `dayCellDidMount` come figlio del frame cella
-    (non dentro il numero → niente ammasso a destra). Responsive: alto-sinistra desktop, **basso-sinistra
-    su mobile ≤640px** per non sovrapporsi al numero del giorno.
+    giornaliero → mostra solo `NN%` (numero + simbolo `%` esplicito in `.booking-day-fill-sym`; oltre 100%
+    reale, colore soglia ok/high/over); senza limite → solo il conteggio coperti `N` (senza `%`). **Niente
+    `N/Nmax`.** Montato via `dayCellDidMount` come figlio del frame cella (non dentro il numero → niente
+    ammasso a destra); **`useEffect` aggiorna i badge** quando `daily_guest_limit` arriva da cache (il mount
+    iniziale può precedere il setting → altrimenti resta il solo conteggio coperti). `dayCellDidUnmount`
+    rimuove il holder. **Richiesta esplicita Matteo 11-06 (post fix QA):** simbolo `%` visibile accanto al
+    numero nel badge. Responsive: alto-sinistra desktop, **basso-sinistra su mobile ≤640px** per non
+    sovrapporsi al numero del giorno.
 
 14. **Limite per-fascia (Servizio Pro) = avviso, mai blocco anche nei testi UI** (fix QA #2, 11-06). Il
     FormInfoPanel "coperti massimi" in `ServiceSlotsManager` diceva ancora "verranno rifiutate
