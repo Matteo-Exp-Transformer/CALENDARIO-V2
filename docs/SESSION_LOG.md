@@ -13,6 +13,10 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 10-06-26 | Admin — **M1 doc post-revisione** (light) | Fix numerici doc: MASTERPLAN §M1 **19+1 skip**, `ADMIN_TEST_SUITE_INDEX` §7/§1/§9, report R2 (12 file doc) — codice/E2E invariati |
+| 10-06-26 | Admin — **M1 Shell controverifica** ⚠️ **lavoro ok** | [Report controverifica M1](Sessioni%20di%20lavoro/10-06-26/Report-controverifica-m1-admin-shell-10-06-26.md) — ⚠️ 2 problemi doc (MASTERPLAN 20/20, §7 stale); E2E 5/5 + 19+1 skip + validate 482 ri-verificati; FU-AUTH-2 → M6; merge prod ⬜ |
+| 10-06-26 | Admin — **M1 Shell blindatura** ✅ **lavoro ok** | [Report chiusura M1](Sessioni%20di%20lavoro/10-06-26/Report-chiusura-m1-admin-shell-10-06-26.md) — FU-042 E2E 5 test + suite shell 19+1 skip TEST; validate 482; merge prod ⬜ |
+| 10-06-26 | Admin — **M1 Shell smoke flusso base** 🔶 (Matteo OK) | [MASTERPLAN](MASTERPLAN_BLINDATURA.md) §M1 — smoke manuale pre-E2E |
 | 10-06-26 | Prenota — **Milestone M0 blindatura** ✅ **report finale** | [Report finale M0](Sessioni%20di%20lavoro/10-06-26/Report-finale-m0-prenota-10-06-26.md) — FU-030 cap 24/24/79 + FU-038 seed `/prenota/test` + FU-039 QA C1/C3 + revisione + fix overlay ghost row; validate **482**; merge production da fare |
 | 10-06-26 | Prenota — **riepilogo sidebar pulizia copy prezzi** (light) 🔶 **lavoro ok** | `BookingSummarySidebar`: Opzione menu solo nome (rimosso suffisso «— €/persona»); blocco totali senza etichetta «A persona», restano riga «€ x N ospiti» + Totale stimato; test capability 8/8; validate globale rosso `agenti-locali/` preesistente |
 | 10-06-26 | Prenota — **toggle dettaglio offerta → riepilogo carosello** 🔶 **lavoro ok** | [Report](Sessioni%20di%20lavoro/10-06-26/Report-prenota-toggle-dettaglio-offerta-riepilogo-10-06-26.md) — `show_offer_details_in_summary`: nome in Tipo/Opzione menu + titoli slide; prezzo indipendente; copy admin; +4 test sidebar; skill FORM_CONFIG + LAYOUT; typecheck OK; validate rosso `agenti-locali/` preesistente |

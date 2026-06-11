@@ -48,6 +48,17 @@
 
 ## Sessioni registrate (append-only)
 
+### 10-06-26 — Esecutori: non aggiornare plan/roadmap (confine deliverable)
+- **Area:** skill system / workflow esecutore (non codice app).
+- **Osservazione Matteo:** gli agenti **esecutori** non devono modificare file di **piano/roadmap**
+  (`MASTERPLAN_BLINDATURA.md`, `PLAN_BLINDATURA_*.md`, handoff strategici, indici milestone) — solo
+  file del **task in corso** (codice, test, skill d'area contestuali al diff) e **report di sessione**.
+  La roadmap resta a senior / prepara-prompt salvo riga esplicita nel prompt.
+- **Nota sessione M1:** il prompt A chiedeva aggiornare MASTERPLAN/FOLLOW_UP — eccezione voluta per
+  quella chat; la regola di default resta «esecutore = task + report, non indice milestone».
+- **Esito:** candidato per vincolo in `Output attesi:` dei prompt esecutore; non promosso a
+  VOCABOLARIO senza revisore Meta.
+
 ### 10-06-26 — Ruolo agente senior: plan per milestone + gate merge (osservazione processo)
 - **Area:** skill system / workflow senior (non codice app).
 - **Osservazione Matteo:** in chat con lui, l’**agente senior** deve fornire **plan strutturati** per
