@@ -19,9 +19,12 @@ Prenota e Menu QR pescano i dati. È la fonte di verità delle voci di menù.
 ## 2. Categorie e foto
 
 - Categorie in `menu_categories` (`label`, `description`, `image_url` per Prenota).
-- Foto thumbnail homepage QR in `menu_homepage_config.category_images` (path Storage
-  `{tenantId}/cat/{key}.webp`) — **non mischiare** con la foto categoria Prenota
-  (`menu_categories.image_url`, path `{tenantId}/booking-cat/{categoryId}.webp`).
+- Foto thumbnail **homepage QR legacy** in `menu_homepage_config.category_images` (path Storage
+  `{tenantId}/cat/{key}.webp`) — **non mischiare** con: (a) la foto categoria Prenota
+  (`menu_categories.image_url`, path `{tenantId}/booking-cat/{categoryId}.webp`); (b) le foto
+  categoria **per-QR** del sistema attuale (`menu_qr_codes` / `menu_qrcode_categories`,
+  path `{tenantId}/qr/{qrId|draft}/cat/{categoryKey}.webp`). `menu_homepage_config` è l'impianto
+  **homepage QR storico**, distinto dal per-QR usato oggi.
 - Panoramica categorie/ingredienti condivisa via `menuPricesCatalogLayout.ts` (griglia
   CollapsibleCard, righe `menu-prices-item-row`, selezione `menu-prices-item-row--selected`).
   - Griglia categorie `MENU_INGREDIENT_OVERVIEW_GRID_CLASS`: `grid-cols-1` fino a **1050px** →
@@ -54,10 +57,27 @@ Scroll al form (anche **Modifica** su un’altra card con form già aperto): `sc
 su titolo form (`productFormTitleRef` / `categoryFormTitleRef`), `scrollMarginTop` ~132px,
 `ensureVisible: true` — stesso helper dell’overlay Categorie Menu (`adminScroll.ts`).
 
-**Cap testo compose Prenota (FU-030 Fase 1, 10-06-26):** `BOOKING_MENU_COMPOSE_TEXT_LIMITS` —
+**Cap testo compose Prenota (FU-030 Fase 1, 10-06-26; completato M3 Fase 1 11-06-26):** `BOOKING_MENU_COMPOSE_TEXT_LIMITS` —
 nome prodotto **24**, descrizione **79** (`maxLength` + contatore `N/max` nel form prodotto);
-titolo categoria **24** nell'overlay «Categorie Menu». Allineati ai cap sottotab card. Il pubblico
+titolo categoria **24** e **descrizione categoria 79** nell'overlay «Categorie Menu». Allineati ai cap sottotab. Il pubblico
 tronca in silenzio al render (`clampBookingText`); vedi `Prenota-Skill/contesto/PRENOTA_TEXT_LIMITS_MAP.md` §E.
+
+**Limiti duri magazzino (M3 Fase 1, 11-06-26):** costante `MENU_MAGAZZINO_HARD_LIMITS` in `menuMagazzinoLimits.ts` —
+**7** categorie · **12** prodotti/categoria · **6** preset staff · **6** QR. Blocco solo su **nuovi** inserimenti
+(tenant già oltre soglia: nessuna cancellazione). UX: pulsante disabilitato + `MenuMagazzinoLimitNotice` con messaggio
+esplicito. Helper puri testati `@admin-blindatura: menu-magazzino-limits`.
+
+**Avviso propagazione (M3 Fase 1):** form Nuovo/Modifica Prodotto mostra `MenuMagazzinoPropagationNotice` prima di Salva
+(aggiorna subito Prenota + QR; snapshot prenotazioni intatto). Overlay categorie: hint per-campo già presenti.
+
+**Toggle disponibilità magazzino (M3 Fase 2, 11-06-26; UX panoramica 11-06-26):** `is_available` su `menu_categories` +
+`menu_items` (migrazione `045`). Unica superficie toggle: **panoramica Menu** — occhio nell’header di ogni
+`CollapsibleCard` categoria (griglia Antipasti / Primi / …) e su ogni riga `AdminMenuIngredientCard` (sempre visibile,
+non solo in modifica). Form «Crea / Modifica Prodotto» e overlay «Crea / Modifica Categoria»: **nessun** toggle; al save
+si preserva `is_available` esistente (o `true` su nuovo). Voci spente restano visibili in admin con opacità **solo
+in panoramica Menu**. Spento = nascosto in Pagina Prenota, Menu QR pubblico e nei **modal di config**
+(`MenuQrModal`, editor card scorrevoli in Personalizza form, `PresetMenuBuilder`). Helper:
+`menuMagazzinoLimits.ts`. Test: `@admin-blindatura: menu-magazzino-availability` (9 Vitest).
 
 ## 4. Promo testuali
 

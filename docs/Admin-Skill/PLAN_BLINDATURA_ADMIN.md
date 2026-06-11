@@ -36,9 +36,9 @@
 | # | Area | Context principale | Stato iniziale | Criterio di uscita |
 |---|---|---|---|---|
 | 1 | Shell / ingresso / navigazione globale | `ADMIN_SHELL_NAV_CONTEXT.md` | ✅ blindato (FU-042 E2E 10-06-26) | login, edition, sidebar, dirty guard, logout, refresh/back — unit + E2E staging |
-| 2 | Prenotazioni operative | `ADMIN_PRENOTAZIONI_CONTEXT.md` | da fare | accetta/rifiuta/cancella/ripristina/nuova booking testati |
+| 2 | Prenotazioni operative | `ADMIN_PRENOTAZIONI_CONTEXT.md` | fatto (11-06-26) | Vitest 32 + E2E FU-043; accetta/rifiuta/cancella/ripristina/warning testati |
 | 3 | Impostazioni / Personalizza Form | `ADMIN_SETTINGS_CONTEXT.md` | da fare | salvataggi, autosave, guard e impatto Prenota verificati |
-| 4 | Menu admin / magazzino | `ADMIN_MENU_MAGAZZINO_CONTEXT.md` | da fare | categorie, ingredienti, QR, rename/delete e sync testati |
+| 4 | Menu admin / magazzino | `ADMIN_MENU_MAGAZZINO_CONTEXT.md` | ✅ **blindato** (11-06-26) | Vitest 27 + E2E `@admin-blindatura: menu-magazzino`; QA Matteo; report finale M3 |
 | 5 | Servizio | `ADMIN_SERVIZIO_CONTEXT.md` | da fare | sale/tavoli/slot/walk-in/briefing testati |
 | 6 | CRM | `ADMIN_CRM_CONTEXT.md` | da fare | create/edit/delete cliente e booking collegate testati |
 | 7 | Home / Analytics | `ADMIN_ANALYTICS_HOME_CONTEXT.md` | da fare | KPI, finestre data, quick action e responsive testati |
@@ -395,11 +395,11 @@ Aggiornare a fine area.
 
 | Area | Stato | Report / note |
 |---|---|---|
-| Shell / ingresso / navigazione globale | 🔶 blindatura avviata | Intervista chiusa; sotto-route, logout guard, fallback header e test unitari avviati |
-| Prenotazioni operative | 🔶 batch FU-046 chiuso | Fix D1/R1/D4/D5/D2 + 2° giro FU-046 (D3 migr.044, U2/U5/U6/U7/U1/U4/U10) 07-06-26; bloccanti ALTO+MEDIO risolti. Restano U3/U9/D6/D7/L* + E2E/QA reale (FU-043, FU-046 residuo) |
-| Tab Calendario (M2) | 🔶 FU-047 chiuso doc | Batch A+B + Fase C + **C-U2** guard tab modale; validate **527**; QA §9 badge prima di Blindato ✅; C-U3 → FU-048 Pro |
+| Shell / ingresso / navigazione globale | ✅ blindato (10-06-26) | FU-042 E2E + suite shell; M1 su `main` privato |
+| Prenotazioni operative | ✅ cancello M2 (11-06-26) | Vitest **32** + E2E **7** (FU-043: capienza/orario passato + modali 375/834); validate **536**. Residui U3/U9/D6/D7/L* fuori cancello |
+| Tab Calendario (M2) | ✅ blindato + merged prod (11-06-26) | Batch A+B + Fase C + **C-U2** guard tab modale; validate **527**; QA badge §9 OK; C-U3 → FU-048 Pro |
 | Impostazioni / Personalizza Form | ⬜ | Da avviare dopo Prenotazioni o secondo priorita Matteo |
-| Menu admin / magazzino | ⬜ | Da coordinare con Prenota/Menu QR gia blindate |
+| Menu admin / magazzino | ✅ **BLINDATO** (11-06-26) | Report [`Report-finale-m3-menu-blindato-11-06-26.md`](../Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md); validate **554**; solo FU-M3-QA-CT extra fuori cancello |
 | Servizio | ⬜ | Include walk-in e tavoli occupati |
 | CRM | ⬜ | Attenzione email normalizzata e delete multi-step |
 | Home / Analytics | ⬜ | Attenzione finestre data e KPI |

@@ -27,6 +27,7 @@ Fronti previsti:
 | `@admin-blindatura: calendario` | Tab Calendario admin (M2 Area 2-bis) |
 | `@admin-blindatura: settings` | Impostazioni, salvataggi e Personalizza Form |
 | `@admin-blindatura: menu-magazzino` | Tab Menu, categorie, ingredienti, sync |
+| `@admin-blindatura: menu-magazzino-sync` | Rename/delete categoria → sync QR + form (controtest parziale) |
 | `@admin-blindatura: servizio` | Sale, tavoli, slot, walk-in, briefing |
 | `@admin-blindatura: crm` | Clienti e booking collegate |
 | `@admin-blindatura: home-analytics` | Home, KPI e analytics |
@@ -74,6 +75,8 @@ Fronti previsti:
 - `src/features/booking/components/__tests__/PresetMenuBuilder.prodReady.test.tsx`
 - `src/features/booking/components/__tests__/menuQrCategoryFieldCap.test.tsx`
 - `src/features/booking/utils/__tests__/menuQrCategoryKeySync.test.ts`
+- `src/features/booking/utils/__tests__/bookingFormCategoryKeySync.test.ts`
+- `src/features/booking/services/__tests__/menuMagazzinoSync.adminBlindatura.test.ts`
 - `src/features/booking/utils/__tests__/menuQrStorage.test.ts`
 - `src/features/booking/utils/__tests__/menuQrValidation.test.ts`
 - `src/features/booking/utils/__tests__/menuQrCategoryOrder.test.ts`
@@ -100,7 +103,7 @@ Fronti previsti:
 - ~~Refresh/back da sezioni interne non URL.~~ ✅ chiuso M1 — §9 / `admin-shell-blindatura.spec.ts` (refresh/back URL; eventuale tab state-only → §9)
 - Home con `features.home=false` e sidebar attiva.
 - Delete cliente CRM con booking collegate.
-- Rename/delete categoria menu con sync QR/Prenota.
+- ~~Rename/delete categoria menu con sync QR/Prenota.~~ ✅ Vitest `@admin-blindatura: menu-magazzino-sync` (FU-M3-3, 11-06-26).
 - Walk-in tavolo occupato.
 - Service slot override `date_from/date_to`.
 - Analytics booking create fuori periodo ma evento dentro periodo.
@@ -151,16 +154,22 @@ Pattern: mock `@fullcalendar/react` cattura props (`dateClick`, `dayCellDidMount
 
 ## 8. Area 2 — Prenotazioni operative
 
-Stato: **Fase D + FU-046 chiusi 07-06-26** — batch1 D1/R1/D4/D5/D2 + batch2 D3/U1/U2/U4/U5/U6/U7/U10; bloccanti ALTO+MEDIO risolti; restano U3/U9/D6-D7/L* + QA reale (FU-043).
+Stato: **✅ cancello M2 operative chiuso 11-06-26 (FU-043)** — Fase D + FU-046 batch + E2E Playwright staging + QA browser 375/834. Residui non bloccanti: U3/U9/D6-D7/L* (follow-up).
 
-Test marcati (32 test, verdi):
+Test marcati Vitest (32 test, verdi):
 
 - `src/features/booking/hooks/__tests__/useBookingMutations.prenotazioni.adminBlindatura.test.tsx` (17) →
   accept/reject/soft-delete/restore/requeue/no-show + **race guard pending** (D1) + **restore azzera cancellation_*** (D5) + **restore con orario fornito** (D4 affinamento 07-06-26) + **LIMIT mutation payload** (L8–L15).
 - `src/features/booking/components/__tests__/prenotazioni.adminBlindatura.test.tsx` (15) → conferme
   coerenti archivio + **D4 modale orario reinserisci senza slot salvati** + **R1/D2 modal layout** + **U4 doppio click guard sincrono** + LIMIT UI/capienza.
 - **D3 contatore restore** (migrazione `044`): controtestato direttamente su DB TEST (ciclo accetta→elimina→reinserisci, `bookings_count` invariato al restore); logica del trigger SQL, nessun unit.
-- `e2e/admin-booking-mgmt.spec.ts` → marcatore E2E (staging, solo Desktop Chrome).
+- `e2e/admin-booking-mgmt.spec.ts` → `@admin-blindatura: prenotazioni-e2e` (**7 test**, staging TEST):
+  - accept capienza superata → `CapacityWarningModal` → Procedi → `accepted`;
+  - accept orario passato → `PastStartTimeWarningModal` → Procedi → `accepted`;
+  - Rifiuta/Elimina con textarea lunga — bottoni in viewport a **375** e **834** (admin loggato);
+  - seed/cleanup via `e2e/helpers/supabaseStaging.ts` (service role, prefisso `E2E-FU043-`);
+  - progetti Playwright: `chromium` + `mobile-chrome` + `tablet-chrome` (`grep`/`grepInvert` su `@viewport:*`).
+  - **Nota:** esecuzione consigliata `--workers=1` (seed DB condiviso).
 
 Componente conferma riusabile: `BookingDangerActionModal.tsx` (Elimina, No-show, Reinserisci con orari
 già salvati, Riporta in attesa, Rifiuta) — **R1:** `max-h-[90vh]`, area scroll, bottoni `flex-col sm:flex-row`.
@@ -173,15 +182,13 @@ Fase D — esiti controtest (07-06-26) post-fix batch:
 | Flusso dati | D1/D5/D3 ✅ | Race pending guard; restore pulisce `cancellation_*`; **D3 contatore restore (migr. 044)** |
 | Flusso utente | D2/D4/U2/U6/U7 ✅ | No doppio submit; reinserisci orario; **annulla ripristina campi (U2); drawer auto-chiusura (U6); chiusura bloccata in save (U7)** |
 | Limit test | 15 test | L4/L10–L12 FU validazione ospiti (fuori batch) |
-| Responsive | R1 ✅ QA browser | 375/834/1280: bottoni Elimina/Rifiuta in viewport con textarea piena |
+| Responsive | R1 ✅ QA browser | 375/834: E2E Playwright admin loggato (FU-043); 1280 coperto da unit R1 |
 
 act() warning risolti in `prenotazioni.adminBlindatura.test.tsx` (ArchiveTab expand/modale).
 
-Buchi residui (post-batch):
+Buchi residui (post FU-043, non bloccanti cancello M2):
 
-- **U3** tab switch durante mutation (vincolo strutturale dashboard); **U9** banner errore inline (toast già presente); **D6/D7** guard DB difensivi; L4/L10–L12 validazione ospiti; test integrazione PendingRequestsTab warning capienza/orario passato; **QA browser reale modali admin loggato** (FU-043).
-- E2E Playwright su accept capienza/orario passato (warning non blocco) con dati staging.
-- E2E responsive modali conferma in admin loggato (E1–E5).
+- **U3** tab switch durante mutation (vincolo strutturale dashboard); **U9** banner errore inline (toast già presente); **D6/D7** guard DB difensivi; L4/L10–L12 validazione ospiti.
 - Test email fallita non blocca mutation (§6 `ADMIN_PRENOTAZIONI_CONTEXT.md`).
 
 ## 9. Area 1 — Shell (aggiornamento decisioni 06-06-26)
@@ -228,6 +235,24 @@ Test marcati o creati:
   `@admin-blindatura: shell-refresh-back` su **assenza di flash** al cambio tab dashboard e al cambio
   sezione sidebar (la schermata vecchia non riappare per un render intermedio). Regressione del bug
   "stato duplicato tab/sezione che si rincorre con l'URL", risolto 06-06-26 derivando da URL.
+
+### 8-ter. M3 Menu magazzino — limiti + availability + sync (11-06-26)
+
+Stato: **Fase 1+2+3 + QA E2E base** — 9 test `@admin-blindatura: menu-magazzino-limits` + **9** test
+`@admin-blindatura: menu-magazzino-availability` (+1 catalogo admin config QR/card 11-06-26) + 9 test
+`@admin-blindatura: menu-magazzino-sync`; E2E Playwright `@admin-blindatura: menu-magazzino` su 1280/375/834;
+validate **554** verde.
+**Blindato ✅ 11-06-26** — report [`Report-finale-m3-menu-blindato-11-06-26.md`](../Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md).
+Debiti fuori cancello: **FU-M3-QA-CT** (controtest browser extra, sessioni future).
+
+| File | Cosa copre |
+|---|---|
+| `src/features/booking/constants/__tests__/menuMagazzinoLimits.adminBlindatura.test.ts` | Soglie 7/12/6/6; retroattività (blocca solo +1); conteggio per categoria; cap 24/24/79 allineati a FU-030 |
+| `src/features/booking/constants/__tests__/menuMagazzinoAvailability.adminBlindatura.test.ts` | Default `is_available` true; categoria/item off; preset+magazzino; QR hidden+magazzino; snapshot intatto; catalogo admin config (filter pubblico) |
+| `src/features/booking/services/__tests__/menuMagazzinoSync.adminBlindatura.test.ts` | Rename/delete sync orchestrato (`syncMenuCategoryKeyRename`/`Delete`): QR filter+images, `menu_qrcode_categories`, `hidden_category_keys`/`category_order_keys` form; messaggi modale; **3 controtest parziale** (QR ok/form fail; 2° QR fail; delete ok/form fail); rename con `is_available` off + filtri pubblici |
+| `e2e/admin-menu-magazzino-blindatura.spec.ts` | FU-M3-QA-E2E: login staging TEST, toggle categoria/prodotto da Admin Menu, niente toggle disponibilità nell'overlay categoria, propagazione pubblica Menu QR + Prenota, viewport 1280/375/834, teardown `is_available` + dati E2E. Eseguire con `--workers=1` perché i progetti condividono dati staging temporanei |
+
+Prossimo batch M3 (opzionale): controtest browser extra doppio click/refresh/mutation (**FU-M3-QA-CT**, sessioni future).
 
 Test esistenti ancora candidati da valutare nel giro E2E completo:
 

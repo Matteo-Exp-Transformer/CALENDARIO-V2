@@ -67,8 +67,10 @@ Per tutto il resto: procedi, ma comunicare il flusso utente impattato **dopo** l
 
 ---
 
-### `src/features/booking/components/BookingForm.tsx` — LOCK core
-**A cosa serve**: form per creare/modificare una prenotazione. Usata sia dal ristoratore (admin) sia dal cliente finale (form pubblico).
+### `src/features/booking/components/AdminBookingForm.tsx` + `BookingRequestForm.tsx` — LOCK core
+> ⚠️ Nota refactor: il vecchio `BookingForm.tsx` **non esiste più**, è stato diviso in due file. `AdminBookingForm.tsx` = form lato ristoratore («Inserisci Nuova Prenotazione»); `BookingRequestForm.tsx` = form pubblico cliente (pagina Prenota).
+
+**A cosa serve**: form per creare/modificare una prenotazione. Versione admin (ristoratore) e versione pubblica (cliente finale) condividono campi e validazioni ma vivono in due componenti separati.
 
 **Cosa si rompe se la tocchi senza criterio**:
 > Una cliente, Anna, va sul sito del ristorante per prenotare un tavolo per il suo anniversario. Se la form è rotta, non può prenotare. Il ristorante perde il cliente, l'app non funziona per la sua promessa base.
@@ -78,10 +80,12 @@ Per tutto il resto: procedi, ma comunicare il flusso utente impattato **dopo** l
 
 ---
 
-### `src/features/booking/components/BookingsList.tsx` — LOCK core
-**A cosa serve**: lista tabellare delle prenotazioni con filtri e azioni rapide. Vista alternativa al calendario.
+### `src/features/booking/components/PendingRequestsTab.tsx` + `ArchiveTab.tsx` — LOCK core
+> ⚠️ Nota refactor: il vecchio `BookingsList.tsx` **non esiste più**. L'elenco prenotazioni vive nei tab `PendingRequestsTab.tsx` (richieste da gestire) e `ArchiveTab.tsx` (storico), con `BookingRequestCard.tsx` per ogni riga.
 
-**Cosa si rompe**: il ristoratore non vede l'elenco prenotazioni, non può accettarle/rifiutarle in massa.
+**A cosa serve**: liste delle prenotazioni con filtri e azioni rapide. Vista alternativa al calendario.
+
+**Cosa si rompe**: il ristoratore non vede l'elenco prenotazioni, non può accettarle/rifiutarle.
 
 ---
 
@@ -234,7 +238,7 @@ In sintesi (non sostituisce il file sopra):
 | Card titolo | `max-w-7xl` + `CALENDAR_TITLE_SECTION_INSET_CLASS` |
 | Celle mese FC | `--booking-calendar-day-min-height`: 128px / 112px (≤630px JS) — **no** `dayMinHeight` FC |
 | Titolo h2 | CSS `index.css`: &lt;470px 1.375rem sx; 470–639 1.5rem sx; ≥640 centrato 1.5rem; ≥768 1.875rem |
-| Data | Accanto a pulsante **Oggi**, non in card titolo |
+| Data | Accanto a **Oggi** da **lg** (1024px) in su; sotto tablet/mobile solo pulsante **Oggi** (dettaglio in `BOOKING_CALENDAR_LAYOUT_CONTEXT.md` §7) |
 
 ---
 

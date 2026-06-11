@@ -16,13 +16,12 @@ reali: serve una cadenza a milestone con **revisione senior prima di ogni merge*
 Una controverifica con sub-agent multipli (10-06-26), che ha letto i **report di sessione** (non i
 piani) e li ha confrontati col codice, ha corretto diverse cose che davo per fatte. Le scoperte chiave:
 
-- **Prenota M0 chiuso in repo (10-06-26):** FU-030 cap compose 24/24/79 implementato + accettazione
+- **Prenota M0 chiuso e live (10-06-26):** FU-030 cap compose 24/24/79 implementato + accettazione
   visiva; FU-038 seed `/prenota/test`; FU-039 QA browser C1/C3; revisione indipendente Approva con
-  riserve; fix polish overlay `showActionRow`. **Merge production M0** ancora da eseguire (procedura § merge).
-- **Menu QR confermato blindato**, ma restano 2 follow-up reali: FU-MQR-2 (ordine piatti per-QR) e
-  FU-MQR-3 (chiave categoria malformata su PROD).
+  riserve; fix polish overlay `showActionRow`; **merge production M0 eseguito**.
+- **Menu QR confermato blindato**; resta **FU-MQR-2** (ordine piatti per-QR). ~~FU-MQR-3~~ chiuso 11-06-26 (categoria assente su PROD `da-tommaso`).
 - **Admin Shell (M1):** ✅ blindato 10-06-26 — unit `shell-*` + E2E FU-042 su TEST; smoke Matteo pre-E2E OK;
-  merge prod M1 ⬜.
+  M1 su `main` privato (nessun sync pubblico: zero codice servito da pubblicare).
 
 ### Il flusso per ogni sezione nuova (regola di Matteo)
 
@@ -50,11 +49,11 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 | Pagina / Sezione | Intervistato | Mappato | Testato | Blindato | Milestone |
 |---|---|---|---|---|---|
 | **Prenota — form pubblico/vetrina** | ✅ (04-06) | ✅ | ✅ Vitest + QA browser C1/C3 | ✅ **M0 chiuso** | **M0** ✔️ **MERGED PROD (10-06)** |
-| **Menu QR — pagina clienti** | ✅ (06-06) | ✅ | ✅ | ✅ (FU-MQR-2/3 aperti, fuori blind.) | ✅ già mergeable |
+| **Menu QR — pagina clienti** | ✅ (06-06) | ✅ | ✅ | ✅ (FU-MQR-2 aperto, fuori blind.) | ✅ già mergeable |
 | **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 + smoke Matteo | ✅ **M1 blindato** — su `main` privato (NON in pubblico: zero codice servito, vedi §merge) | **M1** ✔️ **MERGED (10-06)** |
-| **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | 🔶 `@admin-blindatura` | 🔶 (residui U/D/L + E2E) | **M2** |
-| **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (41 test M2 +2 No-show; validate **527**, 11-06-26) | ✅ **BLINDATO** (11-06-26) — Fase C + batch A/B + C-U2 + QA badge §9 OK Matteo | **M2** (parte di Dashboard) |
-| **Admin — Menu / magazzino** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M3** |
+| **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | ✅ Vitest **32** + E2E **7** (FU-043) | ✅ **BLINDATO** (11-06-26) | **M2** ✔️ |
+| **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (41 test M2 +2 No-show; validate **527**, 11-06-26) | ✅ **BLINDATO** (11-06-26) — Fase C + batch A/B + C-U2 + QA badge §9 OK Matteo | **M2** ✔️ **MERGED PROD (11-06)** |
+| **Admin — Menu / magazzino** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest **27** + E2E `@admin-blindatura: menu-magazzino` (375/834/1280; validate **554**) | ✅ **BLINDATO** (11-06-26) — QA Matteo toggle+propagazione; fix modal `b9f283f` | **M3** pronta merge |
 | **Admin — Impostazioni/Personalizza Form** | 🔶 trasversali* | 🔶 doc | 🔶 salvataggio fase1 | ⬜ | **M4** |
 | **Admin — Servizio (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
 | **Admin — CRM (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
@@ -107,7 +106,7 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
   - **FU-038/039** — seed TEST slug `test` (`33333333-…`); QA browser C1 (3 card) + C3 (1 slide) su 375/806/834/1256/1280.
   - **Polish 10-06-26** — `showActionRow` in overlay compose (no buco 44px se locked + no € ingredienti).
 - **Report consolidato:** `docs/Sessioni di lavoro/10-06-26/Report-finale-m0-prenota-10-06-26.md`
-- **Prossimo passo:** merge production (§ procedura merge) — senior + Matteo.
+- **Stato merge:** ✅ production M0 eseguita il 10-06-26 (vedi riga MERGE PRODUCTION sopra).
 - **Fuori M0 (aperti):** FU-040 hook Vitest, FU-041 doc stale 05-06, cap server edge ingredienti (M6 opzionale).
 
 ### M1 — Admin Shell / ingresso / navigazione globale ✅ **BLINDATO** (10-06-26)
@@ -125,29 +124,50 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
   (tema Impostazioni). Allineati `admin-login`, `pro-sidebar-nav` (sidebar `complementary`). Suite E2E
   shell: **19 passed, 1 skipped** su staging TEST (4 file shell); `npm run validate` **482** verde.
 - **Report:** `docs/Sessioni di lavoro/10-06-26/Report-chiusura-m1-admin-shell-10-06-26.md`
-- **Prossimo passo:** merge production M1 (§ procedura merge) — senior + Matteo.
+- **Stato merge:** ✅ M1 su `main` privato; nessun sync PrenotaZen necessario perché non cambiava codice servito.
 
 ### M2 — Admin Dashboard prenotazioni (operative + Calendario)
 - **Dettaglio:** `docs/Admin-Skill/PLAN_BLINDATURA_ADMIN.md` §3-bis (operative). **Calendario: sezione
   nuova da aggiungere al plan.**
-- **Stato:** operative 🔶 (batch FU-046 chiuso 07-06, residui U3/U9/D6/D7/L* + E2E aperti); **tab
+- **Stato:** operative ✅ **BLINDATO** 11-06-26 (FU-043 E2E + QA 375/834; residui U3/U9/D6/D7/L* fuori cancello); **tab
   Calendario: intervista ✅ + mappa ✅ + implementazione ✅ + 4 fix QA ✅ + test Vitest
-  `@admin-blindatura: calendario` ✅ (29 test, 11-06-26)**; Fase C controtest ✅ (report
+  `@admin-blindatura: calendario` ✅ (41 test M2 +2 No-show, 11-06-26)**; Fase C controtest ✅ (report
   `docs/Sessioni di lavoro/11-06-26/Report-fase-c-controtest-calendario-11-06-26.md`).
 - **Calendario:** ✅ **BLINDATO** 11-06-26 — report
   [`Report-finale-m2-calendario-blindato-11-06-26.md`](Sessioni%20di%20lavoro/11-06-26/Report-finale-m2-calendario-blindato-11-06-26.md);
-  FU-047 chiuso; validate **527**; QA badge §9 OK Matteo. Fuori scope Calendario Classic: **FU-048** (C-U3 Pro),
-  deploy edge TEST C-D5 (repo ok).
+  FU-047 chiuso; validate **527**; QA badge §9 OK Matteo. Fuori scope Calendario Classic: **FU-048** (C-U3 Pro).
+- **MERGE PRODUCTION Calendario (11-06-26):** ✅ revisione senior nel codice + `validate` **527** verde →
+  merge `env/test`→`main` (`f2a08e6`, push privato CALENDARIO-V2) → edge `create-booking` deployata + smoke su
+  TEST (6/6 scenari: limite giornaliero blocca/passa, no-show libera, per-fascia off-di-default + riattivabile) e
+  su **PROD** (v13, prova live `DAILY_LIMIT` 409 OK, zero residui) → frontend `release:prenotazen` → PrenotaZen
+  `npm run build` verde → `dad49ee` → push → Vercel. **C-D5 chiuso** (edge ora live su TEST e PROD).
+  Verifica prod pre-deploy: i 3 ristoranti reali (al-ritrovo/da-matteo/da-tommaso) non usavano tetti per-fascia
+  né limiti giornalieri → la modifica non ha rimosso alcuna protezione esistente.
 - **Operative:** chiudere residui FU-046 + E2E/QA reale + controtest responsive sui modali di conferma nuovi.
 
 ### M3 — Admin Menu / magazzino
-- **Dettaglio:** sezione Area 4 da aggiungere a `PLAN_BLINDATURA_ADMIN.md`; context
-  `ADMIN_MENU_MAGAZZINO_CONTEXT.md` esiste.
-- **Stato:** ⬜ mappato a doc, **non intervistato**.
-- **Cosa serve:** ciclo completo dall'intervista. Attenzione (da `ADMIN_CONFLICTS_AND_DEBTS.md` §3):
-  rename/delete categoria sincronizza più risorse (QR + Prenota + settings + storage) **senza
-  transazione unica** → controtest race/parziale (è anche la radice di FU-MQR-3). File pesante:
-  `MenuPricesTab.tsx` (1900 LOC). Coordinare con Menu QR e Prenota già blindate.
+- **Dettaglio:** sezione Area 4 in `PLAN_BLINDATURA_ADMIN.md`; context
+  `ADMIN_MENU_MAGAZZINO_CONTEXT.md` — **mappa intervista in §9** (decisioni 11-06-26).
+- **Stato:** ✅ intervistato + ✅ mappato (11-06-26). **Fase 1 ✅:** limiti + cap + avviso (9 test limits).
+  **Fase 2 ✅ (11-06-26):** toggle `is_available` magazzino + migrazione `045` TEST + 9 test availability.
+  **Fase 3 ✅ (11-06-26, FU-M3-3):** Vitest `@admin-blindatura: menu-magazzino-sync` (9 test rename/delete +
+  controtest parziale). **QA E2E base ✅ (11-06-26, FU-M3-QA-E2E):** Playwright
+  `e2e/admin-menu-magazzino-blindatura.spec.ts` su 1280/375/834. **Fix modal config ✅ (`b9f283f`):**
+  filtro `is_available` in modal QR + card scorrevoli. **Blindato ✅ 11-06-26** — report
+  [`Report-finale-m3-menu-blindato-11-06-26.md`](Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md);
+  validate **554**; QA Matteo toggle+propagazione. **Fuori cancello:** FU-M3-QA-CT (controtest browser extra, sessioni future); roadmap E2E completo per area (OSSERVAZIONI 11-06-26).
+  **Prossimo:** merge production M3 (senior + Matteo, §merge).
+- **Decisioni chiave (vedi `ADMIN_MENU_MAGAZZINO_CONTEXT.md §9`):** limiti duri 7/12/6/6; cap 24/79;
+  **toggle disponibilità magazzino** ✅ (`is_available`, spento = nascosto Prenota+QR, snapshot intatto);
+  avviso propagazione su save/toggle; QR `is_active` spento → "menu non disponibile".
+- **Invariante confermato (già nel codice):** prenotazioni pending/accettate/archivio conservano lo
+  **snapshot congelato** del menù (`booking_requests.menu_selection`: nome+prezzo+quantità) — cambiare
+  il magazzino non altera mai lo storico.
+- **Controtest obbligatori:** rename/delete categoria sincronizza più risorse (QR + Prenota + settings +
+  storage) **senza transazione unica** → **Vitest FU-M3-3 ✅** (stato parziale documentato; no rollback);
+  nuovo toggle
+  disponibilità (off sparisce in entrambe le vetrine, snapshot intatto); cap retroattivi. File pesante:
+  `MenuPricesTab.tsx` (~1900 LOC). Coordinare con Menu QR e Prenota già blindate.
 
 ### M4 — Admin Impostazioni / Personalizza Form
 - **Dettaglio:** sezione Area 3 da aggiungere a `PLAN_BLINDATURA_ADMIN.md`; context
@@ -183,7 +203,7 @@ milestone naturale di competenza.
 | FU-030 | ~~Cap testi menù~~ | ✅ Chiuso M0 10-06-26 | — | **M0** ✅ |
 | FU-038/039 | ~~Seed TEST + QA centratura~~ | ✅ Chiuso M0 10-06-26 | — | **M0** ✅ |
 | FU-MQR-2 | Ordine piatti per-QR non gestibile (segue `menu_items.sort_order`) | `MENU_QR_SKILL.md §5` | medio | milestone dedicata Menu QR |
-| FU-MQR-3 | Chiave categoria malformata `secondi_piattie` su PROD `da-tommaso` (rename solo via modale admin, mai SQL) | `MENU_QR_SKILL.md §5` | basso (chiave interna) | M3 (radice rename categoria) |
+| FU-MQR-3 | ~~Chiave categoria `secondi_piattie` su PROD `da-tommaso`~~ — **Chiuso 11-06-26:** Matteo su PROD account test `da-tommaso` — categoria/chiave **non presente** in overlay Categorie; nessuna azione rename. Vitest rename (FU-M3-3) resta copertura codice. | `MENU_QR_SKILL.md §5` | — | chiuso |
 | FU-EMAIL-1 | Edge function `send-email` **non esiste**: email accept/reject/cancel falliscono in silenzio | `src/lib/email.ts:37`; gated da `VITE_ENABLE_SEND_EMAIL` in `useBookingMutations.ts:110-171` | alto (UX) | M6 o milestone email |
 | FU-EMAIL-2 | Nessuna UI admin per `email_logs` | `database.ts` (`email_logs`) | medio | M6 |
 | FU-TEST-1 | 0% test su pagine Pro (CRM/Servizio/Analytics/Home) | nessun `*.test.tsx` | alto (no regression Pro) | M5 (criterio uscita) |
@@ -213,11 +233,11 @@ Decisione (10-06-26): **questo è un masterplan nuovo separato**, indice sopra i
 
 ## 7. Come finire di blindare Admin (sequenza operativa)
 
-1. **M0 (Prenota):** ✅ chiuso 10-06-26 — cap FU-030, seed FU-038, QA FU-039, revisione, polish overlay. **Merge prod ⬜.**
-2. **M1 (Shell):** ✅ blindato 10-06-26 (FU-042 E2E) · merge Classic ⬜.
-3. **M2 (Dashboard prenotazioni):** **intervistare + costruire tab Calendario da zero**; chiudere
-   residui operative + E2E/QA reale + controtest responsive → merge.
-4. **M3 (Menu admin):** intervista → mappa → test, focus race rename/delete categoria (chiude FU-MQR-3) → merge.
+1. **M0 (Prenota):** ✅ chiuso 10-06-26 — cap FU-030, seed FU-038, QA FU-039, revisione, polish overlay. **Merged prod 10-06.**
+2. **M1 (Shell):** ✅ blindato 10-06-26 (FU-042 E2E) · su `main` privato; sync pubblico non necessario.
+3. **M2 (Dashboard prenotazioni):** ✅ operative + Calendario blindati; Calendario **merged prod 11-06**.
+   Residui operative restano fuori cancello e passano a M6/milestone naturale.
+4. **M3 (Menu admin):** ✅ blindato 11-06-26 — merge production ⬜ (senior + Matteo, §merge). FU-MQR-3 chiuso (categoria assente PROD).
 5. **M4 (Settings):** intervista di sezione → salvataggio fase2 + cross-impatto Prenota → merge.
 6. **M5 (Pro/sidebar):** intervistare+blindare su TEST, **NON mergiare in main**; chiude FU-TEST-1/TABLE-1/BRIEF-1.
 7. **M6 (cross-area):** chiudere FU-EMAIL, FU-TYPES, FU-LOG, FU-AUTH, FU-002/003/023.
@@ -238,7 +258,7 @@ mappatura, poi test, poi controtest "rompi" sui 4 fronti — non si chiude un'ar
 - **M0 Prenota (10-06-26):** FU-030 cap 24/24/79 in codice + test Vitest; seed `/prenota/test` su TEST;
   QA browser C1/C3 indipendente OK; fix `showActionRow` overlay verificato in chiusura report finale.
 - **M1 Shell (10-06-26):** FU-042 chiuso — E2E `admin-shell-blindatura.spec.ts` + suite shell **19+1 skip**
-  su TEST; blindatura formale ✅; merge prod ⬜.
+  su TEST; blindatura formale ✅; M1 su `main` privato, nessun sync pubblico richiesto.
 - **Merge production:** `npm run release:prenotazen` → in PrenotaZen `npm run build` verde → deploy
   Vercel → smoke test live (login admin, creare/accettare prenotazione, calendario, menu QR pubblico).
 - **Dopo ogni milestone:** aggiornare la tabella «Stato per sezione» (in cima),

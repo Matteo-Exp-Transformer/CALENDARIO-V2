@@ -48,6 +48,25 @@
 
 ## Sessioni registrate (append-only)
 
+### 11-06-26 — Chiusura FU M3/MQR (Matteo QA)
+- **FU-M3-QA-L3 fatto:** limite max **7 categorie** confermato in app da Matteo.
+- **FU-M3-QA-CT:** resta **aperto** — controtest «rompi» browser extra, **sessioni future** (non blocca M3).
+- **FU-MQR-3 fatto:** su PROD `da-tommaso` la categoria refuso **non c’è** — nessun fix.
+- **FU-MQR-2:** resta **aperto** (ordine piatti per-QR).
+
+### 11-06-26 — Roadmap E2E browser per ogni area blindata (Matteo)
+- **Area:** Testing / blindatura trasversale.
+- **Osservazione Matteo:** vuole **completare test E2E browser completi** (Playwright, viewport 375/834/1280, flussi reali) per **ogni area già blindata** — non solo Vitest.
+- **Snapshot 11-06-26:** M1 shell ✅ E2E; M2 operative ✅ E2E; M3 menu ✅ E2E base; M0 Prenota parziale (FU-038/039); M2 Calendario ❌ spec dedicata (solo Vitest + QA manuale); Menu QR pubblico parziale; M4/M5 ⬜.
+- **Esito:** candidato milestone trasversale (M6 o sessione senior «E2E matrix»); tracciare priorità con Matteo. Non promosso a VOCABOLARIO.
+
+### 11-06-26 — Chiusura FU-M3-QA-E2E: "commit alla fine" più specifico di "push"
+- **Area:** Admin Menu / magazzino — QA browser Playwright.
+- **Prompt:** Matteo ha confermato il lavoro e chiesto "aggiorna documentazione di lavoro come dice chiusura sessione", "report completo finale" e "fai commit alla fine".
+- **Dato comunicazione:** anche quando la chiusura richiama il protocollo finale, se Matteo specifica solo **commit** non dedurre automaticamente **push**. Seguire la richiesta più precisa e annotare in report che il push non è stato eseguito.
+- **Esiti Liv.2:** nessuna voce Liv.2 applicata.
+- **Report:** `docs/Sessioni di lavoro/11-06-26/Report-finale-fu-m3-qa-e2e-playwright-11-06-26.md`.
+
 ### 10-06-26 — Esecutori: non aggiornare plan/roadmap (confine deliverable)
 - **Area:** skill system / workflow esecutore (non codice app).
 - **Osservazione Matteo:** gli agenti **esecutori** non devono modificare file di **piano/roadmap**
@@ -119,6 +138,7 @@
 | 02-06-26 | **`sticky` e regole comunicazione nuove** → annotare in **OSSERVAZIONI** come osservazione sua, **non** aggiungere da solo in VOCABOLARIO. | Solo revisore/Meta senior + approvazione esplicita Matteo per promuovere voce. |
 | 10-06-26 | **Agente senior in chat:** deve consegnare **plan strutturati** per sviluppo app allineati a **milestone + visione progetto**; per ogni milestone prevedere **debug strutturale approfondito** + **test sistematico** flusso dati e flusso utente → poi **merge main/production**. Serve a stimare **quanto lavorare prima del merge in sicurezza**. | Sessione senior / Meta: output = piano per milestone con gate (blindatura, test, criteri ✅ PROD) — non solo lista task. Collegare a blindatura Admin (`PLAN_BLINDATURA_ADMIN`), `CONTROVERIFICA.md`, `TESTING_SKILL` §7, chiusura merge `CHIUSURA_SESSIONE` Parte B. |
 | 11-06-26 | **Stop ripetizioni post-decisione:** quando Matteo ha già classificato/deciso, non riformulare 3–4 volte (tabella + raccomandato + «confermi?» + riepilogo). Una risposta compatta + prompt copia-incolla. Ripetere solo su «spiegamelo» / «ragioniamo». | Liv.1 prepara-prompt verso Matteo dopo decisione presa. |
+| 11-06-26 | **Niente elenchi minimali con sigle** (es. «FU-048 — C-U3 turni Pro» a riga secca): non capisce cosa manca. In chiusura sessione e «cosa resta» usare **parole intere** — schermata admin, effetto per lo staff, cosa fare — e citare il codice follow-up solo in seconda riga o tra parentesi. | Liv.1 comunicazione verso Matteo; vale report, chat, MASTERPLAN in sintesi per lui. |
 
 
 ## Frasi / richieste ricorrenti (con conteggio)
