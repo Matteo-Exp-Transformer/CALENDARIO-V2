@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 11-06-26 | Admin — **M2 Calendario ciclo blindatura** (test + revisione + Fase C) ✅ **report finale** | [Report finale ciclo](Sessioni%20di%20lavoro/11-06-26/Report-finale-m2-calendario-ciclo-blindatura-11-06-26.md) — 29 test Vitest `@admin-blindatura: calendario`; revisione ACCETTA CON RISERVE; Fase C 13 finding (0 ALTO); **FU-047** batch fix; Blindato ⬜ |
 | 11-06-26 | Admin — **M2 Calendario badge simbolo %** 🔶 **lavoro ok** | [Report](Sessioni%20di%20lavoro/11-06-26/Report-m2-calendario-badge-simbolo-percentuale-11-06-26.md) — **richiesta esplicita Matteo**; `%` visibile + refresh badge quando arriva `daily_guest_limit`; validate **498**; skill decisione 13 allineata |
 | 11-06-26 | Senior — **revisione + merge M0/M1 + Manuale blindatura** ✅ **report finale** | [Report senior](Sessioni%20di%20lavoro/11-06-26/Report-senior-revisione-merge-M0-M1-manuale-blindatura-11-06-26.md) — **M0 Prenota LIVE prod** (`f6e3d13`); M1 Shell merged main privato (non pubblico, zero `src/`); nuovo `MANUALE_BLINDATURA.md` (source of truth metodo test); regola merge pubblico/privato `EVOLUZIONE` §8; validate 482 ri-verificato |
 | 10-06-26 | Admin — **M1 doc post-revisione** (light) | Fix numerici doc: MASTERPLAN §M1 **19+1 skip**, `ADMIN_TEST_SUITE_INDEX` §7/§1/§9, report R2 (12 file doc) — codice/E2E invariati |

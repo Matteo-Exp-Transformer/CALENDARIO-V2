@@ -53,7 +53,7 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 | **Menu QR — pagina clienti** | ✅ (06-06) | ✅ | ✅ | ✅ (FU-MQR-2/3 aperti, fuori blind.) | ✅ già mergeable |
 | **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 + smoke Matteo | ✅ **M1 blindato** — su `main` privato (NON in pubblico: zero codice servito, vedi §merge) | **M1** ✔️ **MERGED (10-06)** |
 | **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | 🔶 `@admin-blindatura` | 🔶 (residui U/D/L + E2E) | **M2** |
-| **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | 🔶 implementato + controtest + QA Matteo (11-06); **4 fix prioritari QA ✅ chiusi** (PLAN §3-ter.2-ter); restano i test `@admin-blindatura: calendario` | ⬜ | **M2** (parte di Dashboard) |
+| **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (29 test, 11-06-26); Fase C controtest ✅ (13 finding, 0 ALTO, 11-06-26) | 🔶 (fix batch FU-047 + QA badge opzionale) | **M2** (parte di Dashboard) |
 | **Admin — Menu / magazzino** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M3** |
 | **Admin — Impostazioni/Personalizza Form** | 🔶 trasversali* | 🔶 doc | 🔶 salvataggio fase1 | ⬜ | **M4** |
 | **Admin — Servizio (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
@@ -131,15 +131,12 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 - **Dettaglio:** `docs/Admin-Skill/PLAN_BLINDATURA_ADMIN.md` §3-bis (operative). **Calendario: sezione
   nuova da aggiungere al plan.**
 - **Stato:** operative 🔶 (batch FU-046 chiuso 07-06, residui U3/U9/D6/D7/L* + E2E aperti); **tab
-  Calendario: intervista ✅ + mappa ✅ + implementazione ✅ + 4 fix QA ✅ chiusi 11-06**; restano i test
-  `@admin-blindatura: calendario` + controtest.
+  Calendario: intervista ✅ + mappa ✅ + implementazione ✅ + 4 fix QA ✅ + test Vitest
+  `@admin-blindatura: calendario` ✅ (29 test, 11-06-26)**; Fase C controtest ✅ (report
+  `docs/Sessioni di lavoro/11-06-26/Report-fase-c-controtest-calendario-11-06-26.md`).
 - **Cosa resta:**
-  - **Calendario:** intervista ✅ + mappa ✅ (esito in `PLAN_BLINDATURA_ADMIN.md` §3-ter +
-    `ADMIN_PRENOTAZIONI_CONTEXT.md` §5-ter); implementazione ✅ (limite giornaliero in Impostazioni,
-    blocco pubblico `DAILY_LIMIT`, badge % riempimento, scorciatoia crea-da-giorno, vista Settimana);
-    **4 fix prioritari da QA ✅ chiusi 11-06** (badge solo-percentuale responsive, testo help fascia,
-    pulsante crea sempre visibile, vista Giorno non-bug). **Prossimo:** test `@admin-blindatura:
-    calendario` (solo accettate, % >100% reale, gate tavolo Classic/Pro, no drag&drop) + controtest → blinda.
+  - **Calendario:** batch fix post-rompi **FU-047** (13 finding C-D/U/L/R — priorità C-D2, C-U1, C-L1, C-R1);
+    poi colonna Blindato ✅ + eventuale QA responsive badge 375/834/1280.
   - **Operative:** chiudere residui + E2E/QA reale + controtest responsive sui modali di conferma nuovi.
 
 ### M3 — Admin Menu / magazzino
