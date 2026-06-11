@@ -30,7 +30,7 @@ Permette all'admin di configurare:
 - `useUpsertRestaurantSetting`
 - `useDebouncedSettingsAutosave`
 - `restaurantSettingRegistry`
-- `settingsAutosave`
+- `@/config/settingsAutosave` (flag `SETTINGS_AUTOSAVE_ENABLED`)
 - `UnsavedChangesContext`
 
 Il registry parse/serializza valori e fallback. Non bypassarlo con scritture dirette se esiste una
@@ -38,18 +38,20 @@ chiave gia registrata.
 
 ## 4. Chiavi principali
 
-| Chiave | Uso |
+> ⚠️ **Fonte di verità unica = `restaurantSettingRegistry.ts`** (`RESTAURANT_SETTING_KEYS_V1`). Non
+> mantenere qui un elenco completo: si disallinea dal codice (è già successo — mancava
+> `daily_guest_limit`). La tabella sotto è solo un **orientamento per famiglia**; per l'elenco
+> autorevole, i tipi e i fallback aprire il registry. Anche `ADMIN_DATA_FLOW_CONTEXT.md §3` deve
+> rimandare qui, non duplicare.
+
+| Famiglia | Chiavi (orientamento, non esaustivo — vedi registry) |
 |---|---|
-| `restaurant_name` | nome locale admin/pubblico |
-| `contact_email`, `contact_phone`, `contact_address` | contatti pubblici |
-| `business_hours` | orari e shift |
-| `slot_guest_capacities` | capienze per fascia legacy/supporto |
-| `booking_time_slots_enabled` | abilita slot |
-| `app_theme` | tema solo admin |
-| `booking_public_form_config` | vetrina Pagina Prenota |
-| `booking_menu_promos` | promo admin/Prenota |
-| `booking_custom_staff_presets` | preset staff |
-| `public_booking_page_background`, `public_booking_strip_photo` | sfondo/striscia Prenota |
+| Anagrafica/contatti | `restaurant_name`, `contact_email`, `contact_phone`, `contact_address` |
+| Orari e capienze | `business_hours`, `slot_guest_capacities` (legacy/supporto), `booking_time_slots_enabled`, `timezone`, `booking_window_days` |
+| **Limiti coperti** | **`daily_guest_limit`** (limite giornaliero esterno — blindato M2 Calendario, applicato anche server-side in `create-booking`), `walk_in_max_guests` |
+| Tema | `app_theme` (solo admin, ID in `APP_THEME_IDS`) |
+| Pagina Prenota | `booking_public_form_config`, `public_booking_page_background`, `public_booking_strip_photo`, `booking_placement_areas` |
+| Promo/preset | `booking_menu_promos`, `booking_custom_staff_presets`, `booking_staff_presets_visible` |
 
 ## 5. Autosave vs salvataggio
 

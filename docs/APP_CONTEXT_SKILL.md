@@ -47,7 +47,7 @@ Leggi il task ricevuto e applica questa tabella:
 | Il task riguarda… | Skill da caricare |
 |-------------------|-------------------|
 | **Area Admin autenticata completa / pagina admin / dashboard ristoratore / mappatura o blindatura Admin / lavoro multi-area su `/admin`** | **`docs/Admin-Skill/ADMIN_SKILL.md`** (entry point area: senso + mappa) + `docs/Admin-Skill/PLAN_BLINDATURA_ADMIN.md` se il task riguarda blindatura/test/sub-agent. Per file LOCK storici restano obbligatorie anche le righe specifiche sotto. |
-| **AdminDashboard / BookingCalendar / BookingForm / BookingsList / BookingDetailsModal / useBookingMutations / pagina admin classica / tab Calendario-Prenotazioni-Settings** | `docs/ADMIN_CLASSIC_SKILL.md` ⚠️ **OBBLIGATORIO PRIMA DI MODIFICARE** |
+| **AdminDashboard / BookingCalendar / AdminBookingForm / BookingRequestForm / PendingRequestsTab / ArchiveTab / BookingRequestCard / BookingDetailsModal / useBookingMutations / pagina admin classica / tab Calendario-Prenotazioni-Settings** | `docs/ADMIN_CLASSIC_SKILL.md` ⚠️ **OBBLIGATORIO PRIMA DI MODIFICARE** |
 | AdminShell / sidebar / nav / sezioni / routing admin | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
 | CRM / clienti / customer / useCustomers / CustomerProfile | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
 | Edition / FEATURES flag / useFeatures / features.sidebar / buildFeatures | `docs/APP_CONTEXT_SKILL.md` § 2 + `src/config/features.ts` + `src/hooks/useFeatures.ts` |
@@ -196,6 +196,7 @@ src/
 ├── contexts/            TenantContext.tsx  ← LOCKED (eccezione: campo edition + featureOverrides)
 ├── features/booking/
 │   ├── components/      componenti dashboard (BookingCalendar, CRM, MenuQrManager, MenuQrModal, ecc.)
+│   │   ├── publicBooking/ componenti pagina Prenota pubblica (BookingModeCards, BookingSubTabCards, BookingPhotoStrip, BookingSummarySidebar) — NB: BookingRequestPage.tsx vive in src/pages/
 │   │   └── settings/    BookingFormConfigPanel, SettingsSaveUi (footer/barre sezione Impostazioni)
 │   ├── hooks/           useAdminAuth, useBookingMutations, useMenuQrCodes, useCustomers, ecc.
 │   ├── lib/             restaurantSettingRegistry
@@ -252,8 +253,8 @@ LOCK  src/router.tsx               — solo su esplicita richiesta
 LOCK  ADMIN CLASSICA — vedi docs/ADMIN_CLASSIC_SKILL.md
       • src/pages/AdminDashboard.tsx
       • src/features/booking/components/BookingCalendar.tsx
-      • src/features/booking/components/BookingForm.tsx
-      • src/features/booking/components/BookingsList.tsx
+      • src/features/booking/components/AdminBookingForm.tsx (+ BookingRequestForm.tsx pubblico) ← ex BookingForm.tsx (diviso)
+      • src/features/booking/components/PendingRequestsTab.tsx + ArchiveTab.tsx (+ BookingRequestCard.tsx) ← ex BookingsList.tsx (diviso)
       • src/features/booking/components/BookingDetailsModal.tsx
       • src/features/booking/components/RestaurantSettingsTab.tsx
       • src/features/booking/hooks/useBookingMutations.ts

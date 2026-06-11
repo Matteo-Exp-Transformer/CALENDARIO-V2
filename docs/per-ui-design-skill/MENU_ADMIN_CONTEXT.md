@@ -19,9 +19,12 @@ Prenota e Menu QR pescano i dati. È la fonte di verità delle voci di menù.
 ## 2. Categorie e foto
 
 - Categorie in `menu_categories` (`label`, `description`, `image_url` per Prenota).
-- Foto thumbnail homepage QR in `menu_homepage_config.category_images` (path Storage
-  `{tenantId}/cat/{key}.webp`) — **non mischiare** con la foto categoria Prenota
-  (`menu_categories.image_url`, path `{tenantId}/booking-cat/{categoryId}.webp`).
+- Foto thumbnail **homepage QR legacy** in `menu_homepage_config.category_images` (path Storage
+  `{tenantId}/cat/{key}.webp`) — **non mischiare** con: (a) la foto categoria Prenota
+  (`menu_categories.image_url`, path `{tenantId}/booking-cat/{categoryId}.webp`); (b) le foto
+  categoria **per-QR** del sistema attuale (`menu_qr_codes` / `menu_qrcode_categories`,
+  path `{tenantId}/qr/{qrId|draft}/cat/{categoryKey}.webp`). `menu_homepage_config` è l'impianto
+  **homepage QR storico**, distinto dal per-QR usato oggi.
 - Panoramica categorie/ingredienti condivisa via `menuPricesCatalogLayout.ts` (griglia
   CollapsibleCard, righe `menu-prices-item-row`, selezione `menu-prices-item-row--selected`).
   - Griglia categorie `MENU_INGREDIENT_OVERVIEW_GRID_CLASS`: `grid-cols-1` fino a **1050px** →
