@@ -678,10 +678,37 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       const pct = Math.round((guests / dailyGuestLimit!) * 100)
       // Onesto: oltre il 100% mostriamo il valore reale, senza cap. Mai bloccante.
       const tone = pct >= 100 ? 'booking-day-fill--over' : pct >= 80 ? 'booking-day-fill--high' : 'booking-day-fill--ok'
-      return `<span class="booking-day-fill ${tone}" title="${guests} coperti su ${dailyGuestLimit}">${pct}%</span>`
+      return `<span class="booking-day-fill ${tone}" title="${guests} coperti su ${dailyGuestLimit}"><span class="booking-day-fill-num">${pct}</span><span class="booking-day-fill-sym" aria-hidden="true">%</span></span>`
     }
     return `<span class="booking-day-fill booking-day-fill--neutral" title="${guests} coperti">${guests}</span>`
   }, [guestsByDate, dailyGuestLimit])
+
+  const mountDayFillBadge = useCallback(
+    (frame: Element, cellDateStr: string) => {
+      frame.querySelector('.booking-day-fill-holder')?.remove()
+      const html = buildDayFillBadgesHtml(cellDateStr)
+      if (!html) return
+      const holder = document.createElement('div')
+      holder.className = 'booking-day-fill-holder'
+      holder.innerHTML = html
+      frame.appendChild(holder)
+    },
+    [buildDayFillBadgesHtml],
+  )
+
+  // dayCellDidMount gira prima che dailyGuestLimit sia in cache → aggiorniamo i badge quando arriva.
+  useEffect(() => {
+    if (currentView !== 'dayGridMonth') return
+    const calendarRoot = document.querySelector('.booking-calendar-fc')
+    if (!calendarRoot) return
+    calendarRoot.querySelectorAll<HTMLElement>('.fc-daygrid-day[data-date]').forEach((dayEl) => {
+      const cellDateStr = dayEl.dataset.date
+      if (!cellDateStr) return
+      const frame = dayEl.querySelector('.fc-daygrid-day-frame')
+      if (!frame) return
+      mountDayFillBadge(frame, cellDateStr)
+    })
+  }, [currentView, dailyGuestLimit, guestsByDate, mountDayFillBadge])
 
   const config = {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
@@ -775,14 +802,13 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       if (!isMonth) return
       const d = new Date(arg.date)
       const cellDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-      const html = buildDayFillBadgesHtml(cellDateStr)
-      if (!html) return
       const frame = (arg.el as HTMLElement).querySelector('.fc-daygrid-day-frame')
       if (!frame) return
-      const holder = document.createElement('div')
-      holder.className = 'booking-day-fill-holder'
-      holder.innerHTML = html
-      frame.appendChild(holder)
+      mountDayFillBadge(frame, cellDateStr)
+    },
+    dayCellDidUnmount: (arg: any) => {
+      const frame = (arg.el as HTMLElement).querySelector('.fc-daygrid-day-frame')
+      frame?.querySelector('.booking-day-fill-holder')?.remove()
     },
     // Custom event rendering per card eventi migliorate
     eventContent: (arg: any) => {
