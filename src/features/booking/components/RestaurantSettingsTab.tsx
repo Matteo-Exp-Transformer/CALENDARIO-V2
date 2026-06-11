@@ -1163,8 +1163,18 @@ export const RestaurantSettingsTab: React.FC = () => {
             className="w-32 rounded-xl border-2 border-slate-200 bg-white px-3 py-1.5 text-center text-sm font-medium text-slate-900 shadow-sm outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             onChange={(e) => {
               setSlotsDirty(true)
-              const raw = e.target.value
-              setDailyGuestLimit(raw === '' ? '' : parseInt(raw, 10))
+              const raw = e.target.value.trim()
+              if (raw === '') {
+                setDailyGuestLimit('')
+                return
+              }
+              if (!/^\d+$/.test(raw)) return
+              const n = parseInt(raw, 10)
+              if (n <= 0) {
+                setDailyGuestLimit('')
+                return
+              }
+              if (n <= 1000) setDailyGuestLimit(n)
             }}
           />
         </div>

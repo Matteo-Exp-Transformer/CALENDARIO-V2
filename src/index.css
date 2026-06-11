@@ -1240,6 +1240,7 @@ button.admin-nav-item.admin-nav-tab-active.archive-tab-filter-btn {
   inset: 0;
   pointer-events: none;
   z-index: 1;
+  overflow: hidden;
 }
 /* Percentuale (o conteggio) riempimento — desktop: in alto a sinistra del frame cella, leggibile. */
 .booking-calendar-fc .fc .booking-day-fill {
@@ -1257,6 +1258,9 @@ button.admin-nav-item.admin-nav-tab-active.archive-tab-filter-btn {
   line-height: 1.3;
   white-space: nowrap;
   pointer-events: none;
+  max-width: calc(100% - 6px);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .booking-calendar-fc .fc .booking-day-fill-sym {
   font-size: 0.72em;

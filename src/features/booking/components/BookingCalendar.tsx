@@ -19,10 +19,15 @@ import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import type { BookingRequest, BookingType } from '@/types/booking'
 import { transformBookingsToCalendarEvents } from '../utils/bookingEventTransform'
-import { BookingDetailsModal } from './BookingDetailsModal'
+import {
+  BookingDetailsModal,
+  type BookingDetailsNavigationGuardHandle,
+} from './BookingDetailsModal'
 import { QuickTableAssignModal } from './QuickTableAssignModal'
-import { AdminBookingForm } from './AdminBookingForm'
+import { AdminBookingForm, type AdminBookingFormNavigationGuardHandle } from './AdminBookingForm'
+import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 import { Modal } from '@/components/ui/Modal'
+import { UnsavedNavigationGuardModal } from './settings/SettingsSaveUi'
 import {
   extractDateFromISO,
   getAccurateStartTime,
@@ -52,6 +57,7 @@ const CALENDAR_EVENT_ICON_ONLY_MAX_WIDTH_PX = 500
  */
 const CALENDAR_DAY_GRID_MONTH_MIN_HEIGHT_PX = 128
 const CALENDAR_DAY_GRID_MONTH_MIN_HEIGHT_NARROW_PX = 112
+const CALENDAR_MODAL_UNSAVED_SOURCE_ID = 'calendar-modal'
 /** Tab Calendario usa px-1 sul contenitore pagina: questo ripristina px-4 md:px-6 solo sulla card titolo. */
 const CALENDAR_TITLE_SECTION_INSET_CLASS = 'mx-auto w-full max-w-7xl px-3 md:px-[1.125rem]'
 
@@ -396,6 +402,11 @@ interface BookingCalendarProps {
 }
 
 export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, initialDate }) => {
+  const {
+    registerUnsavedSource,
+    registerUnsavedHandlers,
+    clearUnsavedSource,
+  } = useUnsavedChangesGuard()
   const features = useFeatures()
   const { data: digestSlots = [] } = useDigestSlotConfigs()
   const timeSlotsEnabledQuery = useRestaurantSetting('booking_time_slots_enabled')
@@ -526,6 +537,122 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   // seleziona il giorno; il pulsante "+ Nuova prenotazione" è sempre visibile sul giorno selezionato
   // (deciso da Matteo 11-06: niente toggle mostra/nascondi). Il form si apre solo dal pulsante.
   const [newBookingDate, setNewBookingDate] = useState<string | null>(null)
+  const [detailsEditDirty, setDetailsEditDirty] = useState(false)
+  const [createFormDirty, setCreateFormDirty] = useState(false)
+  const [createCloseGuardOpen, setCreateCloseGuardOpen] = useState(false)
+  const [createCloseGuardPending, setCreateCloseGuardPending] = useState(false)
+  const detailsGuardRef = useRef<BookingDetailsNavigationGuardHandle | null>(null)
+  const createFormGuardRef = useRef<AdminBookingFormNavigationGuardHandle | null>(null)
+
+  const detailsModalOpen = isModalOpen && Boolean(selectedBooking)
+  const createModalOpen = Boolean(newBookingDate)
+  const calendarGuardDirty =
+    (detailsModalOpen && detailsEditDirty) || (createModalOpen && createFormDirty)
+
+  const closeDetailsModal = useCallback(() => {
+    setIsModalOpen(false)
+    setSelectedBooking(null)
+    setDetailsEditDirty(false)
+  }, [])
+
+  const closeCreateModal = useCallback(() => {
+    setNewBookingDate(null)
+    setCreateFormDirty(false)
+    setCreateCloseGuardOpen(false)
+    setCreateCloseGuardPending(false)
+  }, [])
+
+  const requestCloseCreateModal = useCallback(() => {
+    if (createFormDirty) {
+      setCreateCloseGuardOpen(true)
+      return
+    }
+    closeCreateModal()
+  }, [closeCreateModal, createFormDirty])
+
+  const handleCreateCloseGuardStay = useCallback(() => {
+    setCreateCloseGuardOpen(false)
+  }, [])
+
+  const handleCreateCloseGuardSave = useCallback(async () => {
+    if (!createFormGuardRef.current) return
+    setCreateCloseGuardPending(true)
+    try {
+      await createFormGuardRef.current.saveAll()
+      closeCreateModal()
+    } catch {
+      // validazione / avviso: resta nel form
+    } finally {
+      setCreateCloseGuardPending(false)
+    }
+  }, [closeCreateModal])
+
+  const handleCreateCloseGuardDiscard = useCallback(() => {
+    createFormGuardRef.current?.discardAll()
+    closeCreateModal()
+  }, [closeCreateModal])
+
+  useEffect(() => {
+    if (!calendarGuardDirty) {
+      clearUnsavedSource(CALENDAR_MODAL_UNSAVED_SOURCE_ID)
+      return
+    }
+    const label =
+      createModalOpen && createFormDirty ? 'Nuova prenotazione' : 'Dettaglio prenotazione'
+    registerUnsavedSource(CALENDAR_MODAL_UNSAVED_SOURCE_ID, label, true)
+    return () => {
+      clearUnsavedSource(CALENDAR_MODAL_UNSAVED_SOURCE_ID)
+    }
+  }, [
+    calendarGuardDirty,
+    createModalOpen,
+    createFormDirty,
+    clearUnsavedSource,
+    registerUnsavedSource,
+  ])
+
+  useEffect(() => {
+    if (!calendarGuardDirty) {
+      registerUnsavedHandlers(CALENDAR_MODAL_UNSAVED_SOURCE_ID, null)
+      return
+    }
+    registerUnsavedHandlers(CALENDAR_MODAL_UNSAVED_SOURCE_ID, {
+      saveAll: async () => {
+        if (createModalOpen && createFormDirty && createFormGuardRef.current) {
+          await createFormGuardRef.current.saveAll()
+          closeCreateModal()
+          return
+        }
+        if (detailsModalOpen && detailsEditDirty && detailsGuardRef.current) {
+          await detailsGuardRef.current.saveAll()
+          closeDetailsModal()
+        }
+      },
+      discardAll: () => {
+        if (createModalOpen && createFormGuardRef.current) {
+          createFormGuardRef.current.discardAll()
+          closeCreateModal()
+          return
+        }
+        if (detailsModalOpen && detailsGuardRef.current) {
+          detailsGuardRef.current.discardAll()
+          closeDetailsModal()
+        }
+      },
+    })
+    return () => {
+      registerUnsavedHandlers(CALENDAR_MODAL_UNSAVED_SOURCE_ID, null)
+    }
+  }, [
+    calendarGuardDirty,
+    createModalOpen,
+    createFormDirty,
+    detailsModalOpen,
+    detailsEditDirty,
+    closeCreateModal,
+    closeDetailsModal,
+    registerUnsavedHandlers,
+  ])
 
   const handleDateClick = useCallback((clickInfo: any) => {
     const d = new Date(clickInfo.date)
@@ -535,6 +662,25 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     const date = `${year}-${month}-${day}`
     setSelectedDate(date)
   }, [])
+
+  /** Navigazione mese FC (prev/next): se il giorno selezionato non è nel mese visibile,
+   *  riallinea al giorno del mese corrispondente (es. 12/06 → 12/07), clampato all'ultimo del mese. */
+  const handleDatesSet = useCallback((arg: { view: { type: string; currentStart?: Date } }) => {
+    if (arg.view?.type !== 'dayGridMonth') return
+    const anchor = arg.view.currentStart
+    if (!anchor) return
+
+    const visibleYear = anchor.getFullYear()
+    const visibleMonth = anchor.getMonth()
+    const [selY, selM, selD] = selectedDate.split('-').map(Number)
+
+    if (selY === visibleYear && selM - 1 === visibleMonth) return
+
+    const daysInMonth = new Date(visibleYear, visibleMonth + 1, 0).getDate()
+    const day = Math.min(selD, daysInMonth)
+    const synced = `${visibleYear}-${String(visibleMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    setSelectedDate(synced)
+  }, [selectedDate])
 
   const selectedDateData = useMemo(() => {
     return { date: selectedDate }
@@ -677,7 +823,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     if (hasLimit) {
       const pct = Math.round((guests / dailyGuestLimit!) * 100)
       // Onesto: oltre il 100% mostriamo il valore reale, senza cap. Mai bloccante.
-      const tone = pct >= 100 ? 'booking-day-fill--over' : pct >= 80 ? 'booking-day-fill--high' : 'booking-day-fill--ok'
+      const tone =
+        pct > 100 ? 'booking-day-fill--over' : pct >= 80 ? 'booking-day-fill--high' : 'booking-day-fill--ok'
       return `<span class="booking-day-fill ${tone}" title="${guests} coperti su ${dailyGuestLimit}"><span class="booking-day-fill-num">${pct}</span><span class="booking-day-fill-sym" aria-hidden="true">%</span></span>`
     }
     return `<span class="booking-day-fill booking-day-fill--neutral" title="${guests} coperti">${guests}</span>`
@@ -753,6 +900,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     },
     eventClick: handleEventClick,
     dateClick: handleDateClick,
+    datesSet: handleDatesSet,
     eventDisplay: 'block',
     eventTextColor: '#000000',
     eventTimeFormat: {
@@ -1082,7 +1230,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                             booking={booking}
                             onOpen={openDigestBooking}
                             compactGrid
-                            hasTurns={false}
+                            hasTurns={hasTurnsFeature}
                           />
                         ))}
                       </div>
@@ -1335,11 +1483,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       {selectedBooking && (
         <BookingDetailsModal
           isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false)
-            setSelectedBooking(null)
-          }}
+          onClose={closeDetailsModal}
           booking={selectedBooking}
+          onEditDirtyChange={setDetailsEditDirty}
+          navigationGuardRef={detailsGuardRef}
         />
       )}
 
@@ -1358,16 +1505,27 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       {newBookingDate && (
         <Modal
           isOpen={!!newBookingDate}
-          onClose={() => setNewBookingDate(null)}
+          onClose={requestCloseCreateModal}
           title="Nuova prenotazione"
           size="2xl"
         >
           <AdminBookingForm
             initialDate={newBookingDate}
-            onSubmit={() => setNewBookingDate(null)}
+            onSubmit={closeCreateModal}
+            onDirtyChange={setCreateFormDirty}
+            navigationGuardRef={createFormGuardRef}
           />
         </Modal>
       )}
+
+      <UnsavedNavigationGuardModal
+        isOpen={createCloseGuardOpen}
+        dirtyLabels={['Nuova prenotazione']}
+        pending={createCloseGuardPending}
+        onStay={handleCreateCloseGuardStay}
+        onSaveAndContinue={() => void handleCreateCloseGuardSave()}
+        onDiscardAndContinue={handleCreateCloseGuardDiscard}
+      />
     </>
   )
 }

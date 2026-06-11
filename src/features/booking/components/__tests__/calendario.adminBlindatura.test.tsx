@@ -127,7 +127,12 @@ vi.mock('../../hooks/useBookingQueries', () => ({
   useAcceptedBookings: () => mockAcceptedBookingsState,
 }))
 
+import { UnsavedChangesProvider } from '@/contexts/UnsavedChangesContext'
 import { BookingCalendar } from '../BookingCalendar'
+
+function renderCalendar(ui: React.ReactElement) {
+  return render(<UnsavedChangesProvider>{ui}</UnsavedChangesProvider>)
+}
 
 function acceptedBooking(partial: Partial<BookingRequest> = {}): BookingRequest {
   return {
@@ -202,12 +207,33 @@ describe('@admin-blindatura calendario — solo accettate in vista', () => {
       acceptedBooking({ id: 'noshow', client_name: 'No Show', no_show: true }),
     ]
 
-    render(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
 
     await waitFor(() => expect(fcPropsCapture.current).toBeTruthy())
     const events = fcPropsCapture.current!.events as Array<{ extendedProps: BookingRequest }>
     expect(events).toHaveLength(1)
     expect(events[0].extendedProps.client_name).toBe('Visibile')
+  })
+
+  it('events FullCalendar e digest escludono pending anche se passate nel prop bookings', async () => {
+    const bookings = [
+      acceptedBooking({ id: 'accepted-1', client_name: 'Accettata' }),
+      acceptedBooking({
+        id: 'pending-1',
+        client_name: 'In Attesa',
+        status: 'pending',
+      }),
+    ]
+
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+
+    await waitFor(() => expect(fcPropsCapture.current).toBeTruthy())
+    const events = fcPropsCapture.current!.events as Array<{ extendedProps: BookingRequest }>
+    expect(events).toHaveLength(1)
+    expect(events[0].extendedProps.client_name).toBe('Accettata')
+
+    expect(screen.getByText('Accettata')).toBeInTheDocument()
+    expect(screen.queryByText('In Attesa')).not.toBeInTheDocument()
   })
 
   it('digest giorno mostra solo accettate con orario confermato; esclude no-show', () => {
@@ -225,7 +251,7 @@ describe('@admin-blindatura calendario — solo accettate in vista', () => {
       }),
     ]
 
-    render(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
 
     expect(screen.getByText('In calendario')).toBeInTheDocument()
     expect(screen.queryByText('No Show Digest')).not.toBeInTheDocument()
@@ -247,7 +273,7 @@ describe('@admin-blindatura calendario — badge % riempimento (dayCellDidMount)
     restaurantSettings.daily_guest_limit = null
     const bookings = [acceptedBooking({ num_guests: 18, confirmed_start: '2026-06-12T20:00:00+00:00' })]
 
-    render(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
     await waitFor(() => expect(fcPropsCapture.current?.dayCellDidMount).toBeTypeOf('function'))
 
     const frame = mountDayBadge(
@@ -264,7 +290,7 @@ describe('@admin-blindatura calendario — badge % riempimento (dayCellDidMount)
     restaurantSettings.daily_guest_limit = 24
     const bookings = [acceptedBooking({ num_guests: 18, confirmed_start: '2026-06-12T20:00:00+00:00' })]
 
-    render(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
     await waitFor(() => expect(fcPropsCapture.current?.dayCellDidMount).toBeTypeOf('function'))
 
     const frame = mountDayBadge(
@@ -277,11 +303,28 @@ describe('@admin-blindatura calendario — badge % riempimento (dayCellDidMount)
     expect(frame.innerHTML).not.toMatch(/18\/24/)
   })
 
+  it('esattamente 100% usa tono high (pieno), non over', async () => {
+    restaurantSettings.daily_guest_limit = 100
+    const bookings = [acceptedBooking({ num_guests: 100, confirmed_start: '2026-06-12T20:00:00+00:00' })]
+
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+    await waitFor(() => expect(fcPropsCapture.current?.dayCellDidMount).toBeTypeOf('function'))
+
+    const frame = mountDayBadge(
+      fcPropsCapture.current!.dayCellDidMount as (arg: { date: Date; view: { type: string }; el: HTMLElement }) => void,
+      '2026-06-12',
+    )
+
+    expect(frame.textContent).toContain('100')
+    expect(frame.innerHTML).toContain('booking-day-fill--high')
+    expect(frame.innerHTML).not.toContain('booking-day-fill--over')
+  })
+
   it('oltre il 100% mostra valore reale (es. 108%), mai cappato', async () => {
     restaurantSettings.daily_guest_limit = 100
     const bookings = [acceptedBooking({ num_guests: 108, confirmed_start: '2026-06-12T20:00:00+00:00' })]
 
-    render(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
     await waitFor(() => expect(fcPropsCapture.current?.dayCellDidMount).toBeTypeOf('function'))
 
     const frame = mountDayBadge(
@@ -309,7 +352,7 @@ describe('@admin-blindatura calendario — gate tavolo Classic vs Pro', () => {
     serviceSlotsState.slots = []
     const bookings = [acceptedBooking({ client_name: 'Classic Cliente' })]
 
-    render(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
 
     expect(screen.queryByLabelText(/assegna tavolo/i)).not.toBeInTheDocument()
     expect(screen.queryByLabelText(/tavolo assegnato/i)).not.toBeInTheDocument()
@@ -324,9 +367,21 @@ describe('@admin-blindatura calendario — gate tavolo Classic vs Pro', () => {
     tableAssignmentsState.data = []
     const bookings = [acceptedBooking({ client_name: 'Pro Cliente' })]
 
-    render(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
 
     expect(screen.getByLabelText('Assegna tavolo')).toBeInTheDocument()
+  })
+
+  it('Pro con servizio on ma slot vuoti: nessun pallino turno/tavolo nel digest', () => {
+    featuresState.servizio = true
+    serviceSlotsState.slots = []
+    const bookings = [acceptedBooking({ client_name: 'Pro Senza Slot' })]
+
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+
+    expect(screen.queryByLabelText(/assegna tavolo/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/tavolo assegnato/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/turno 1/i)).not.toBeInTheDocument()
   })
 })
 
@@ -342,7 +397,7 @@ describe('@admin-blindatura calendario — crea da giorno (dateClick + pulsante)
   })
 
   it('dateClick seleziona il giorno senza aprire il form', async () => {
-    render(<BookingCalendar bookings={[]} initialDate="2026-06-12" />)
+    renderCalendar(<BookingCalendar bookings={[]} initialDate="2026-06-12" />)
     await waitFor(() => expect(fcPropsCapture.current?.dateClick).toBeTypeOf('function'))
 
     act(() => {
@@ -357,7 +412,7 @@ describe('@admin-blindatura calendario — crea da giorno (dateClick + pulsante)
 
   it('pulsante Nuova prenotazione apre form con data preselezionata', async () => {
     const user = userEvent.setup()
-    render(<BookingCalendar bookings={[]} initialDate="2026-06-12" />)
+    renderCalendar(<BookingCalendar bookings={[]} initialDate="2026-06-12" />)
 
     await clickAndFlush(user, screen.getByRole('button', { name: /nuova prenotazione il 12\/06/i }))
 
@@ -369,11 +424,51 @@ describe('@admin-blindatura calendario — crea da giorno (dateClick + pulsante)
     const user = userEvent.setup()
     const bookings = [acceptedBooking({ num_guests: 120, confirmed_start: '2026-06-12T20:00:00+00:00' })]
 
-    render(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
 
     await clickAndFlush(user, screen.getByRole('button', { name: /nuova prenotazione il 12\/06/i }))
 
     expect(screen.getByTestId('admin-booking-form')).toHaveAttribute('data-initial-date', '2026-06-12')
+  })
+})
+
+describe('@admin-blindatura calendario — navigazione mese FC (datesSet)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    fcPropsCapture.current = null
+    featuresState.servizio = false
+    restaurantSettings.daily_guest_limit = null
+    setupMatchMedia(true)
+  })
+
+  it('datesSet riallinea selectedDate al mese visibile (stesso giorno del mese)', async () => {
+    renderCalendar(<BookingCalendar bookings={[]} initialDate="2026-06-12" />)
+    await waitFor(() => expect(fcPropsCapture.current?.datesSet).toBeTypeOf('function'))
+
+    act(() => {
+      ;(fcPropsCapture.current!.datesSet as (arg: {
+        view: { type: string; currentStart: Date }
+      }) => void)({
+        view: { type: 'dayGridMonth', currentStart: new Date(2026, 6, 1) },
+      })
+    })
+
+    expect(screen.getByRole('button', { name: /nuova prenotazione il 12\/07/i })).toBeInTheDocument()
+  })
+
+  it('datesSet ignora viste non-mese', async () => {
+    renderCalendar(<BookingCalendar bookings={[]} initialDate="2026-06-12" />)
+    await waitFor(() => expect(fcPropsCapture.current?.datesSet).toBeTypeOf('function'))
+
+    act(() => {
+      ;(fcPropsCapture.current!.datesSet as (arg: {
+        view: { type: string; currentStart: Date }
+      }) => void)({
+        view: { type: 'timeGridWeek', currentStart: new Date(2026, 6, 1) },
+      })
+    })
+
+    expect(screen.getByRole('button', { name: /nuova prenotazione il 12\/06/i })).toBeInTheDocument()
   })
 })
 
@@ -385,7 +480,7 @@ describe('@admin-blindatura calendario — no drag&drop', () => {
   })
 
   it('config FullCalendar senza editable/eventDrop/selectable che spostino data/ora', async () => {
-    render(<BookingCalendar bookings={[]} initialDate="2026-06-12" />)
+    renderCalendar(<BookingCalendar bookings={[]} initialDate="2026-06-12" />)
     await waitFor(() => expect(fcPropsCapture.current).toBeTruthy())
 
     const props = fcPropsCapture.current!
@@ -413,7 +508,7 @@ describe('@admin-blindatura calendario — elimina solo da modale dettaglio', ()
   it('superficie calendario senza Elimina/Rifiuta', () => {
     const bookings = [acceptedBooking({ client_name: 'Solo Dettaglio' })]
 
-    render(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
 
     expect(screen.queryByRole('button', { name: /^elimina$/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /rifiuta/i })).not.toBeInTheDocument()
@@ -424,7 +519,7 @@ describe('@admin-blindatura calendario — elimina solo da modale dettaglio', ()
     const booking = acceptedBooking({ client_name: 'Da Eliminare' })
     mockAcceptedBookingsState.data = [booking]
 
-    render(<BookingCalendar bookings={[booking]} initialDate="2026-06-12" />)
+    renderCalendar(<BookingCalendar bookings={[booking]} initialDate="2026-06-12" />)
 
     await clickAndFlush(user, screen.getByRole('button', { name: /da eliminare/i }))
 

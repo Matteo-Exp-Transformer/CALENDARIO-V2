@@ -18,6 +18,27 @@ const BOOKING_PUBLIC_CLIENT_TEXT_LIMITS = {
 
 const TEXT_TOO_LONG_ERROR = "Testo troppo lungo";
 
+/** Sync con `parseDailyGuestLimitFromDb` in `restaurantSettingRegistry.ts`. */
+const DAILY_GUEST_LIMIT_UNLIMITED_DB_VALUE = -1;
+
+function parseDailyGuestLimitFromDb(raw: unknown): number | null {
+  if (raw == null) return null;
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    if (raw === DAILY_GUEST_LIMIT_UNLIMITED_DB_VALUE || raw <= 0) return null;
+    return raw;
+  }
+  if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    if (trimmed === "") return null;
+    const n = parseInt(trimmed, 10);
+    if (!Number.isNaN(n)) {
+      if (n === DAILY_GUEST_LIMIT_UNLIMITED_DB_VALUE || n <= 0) return null;
+      return n;
+    }
+  }
+  return null;
+}
+
 function getDietaryRestrictionsTextLength(
   restrictions: unknown,
 ): number {
@@ -305,9 +326,7 @@ Deno.serve(async (req: Request) => {
 
       // --- Check limite GIORNALIERO coperti (esterno, verso il pubblico) ---
       // Sentinella DB: -1 = nessun limite. Conta solo le accettate (sopra). Indipendente dal per-fascia.
-      const rawDailyLimit = sMap["daily_guest_limit"];
-      const dailyLimit: number | null =
-        typeof rawDailyLimit === "number" && rawDailyLimit > 0 ? rawDailyLimit : null;
+      const dailyLimit = parseDailyGuestLimitFromDb(sMap["daily_guest_limit"]);
       if (dailyLimit != null) {
         const dayTotal = (dayBookings ?? []).reduce(
           (acc: number, b: { num_guests: number }) => acc + (b.num_guests ?? 0),

@@ -65,6 +65,14 @@ describe('sumGuestsByDate — conteggio coperti per giorno (admin-blindatura cal
     expect(Object.keys(result)).toHaveLength(0)
   })
 
+  it('ESCLUDE accepted con confirmed_start ma senza confirmed_end (legacy) — allineato a digest/eventi', () => {
+    const result = sumGuestsByDate([
+      booking({ confirmed_start: '2026-06-12T20:00:00+00:00', confirmed_end: null as unknown as string, num_guests: 8 }),
+      booking({ confirmed_start: '2026-06-12T13:00:00+00:00', num_guests: 4 }),
+    ])
+    expect(result['2026-06-12']).toBe(4)
+  })
+
   it('tratta num_guests mancante come 0', () => {
     const result = sumGuestsByDate([
       booking({ confirmed_start: '2026-06-12T20:00:00+00:00', num_guests: undefined as unknown as number }),
