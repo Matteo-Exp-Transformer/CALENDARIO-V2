@@ -157,6 +157,33 @@ Dettaglio prodotto C-U3/C-D1/C-U2: `ADMIN_PRENOTAZIONI_CONTEXT.md` §5-ter punti
 
 ---
 
+## 7-quater. Digest «Prenotazioni del giorno» — fasce orarie (12-06-26)
+
+Quando `booking_time_slots_enabled` è attivo e ci sono fasce in `service_slots` (`useDigestSlotConfigs`), le sezioni **Prenotazioni con menu** e **Solo tavolo** mostrano le prenotazioni **sotto l’intestazione della fascia corretta** (Colazione, Pranzo, Aperitivo, Cena, Notturna, …), in ordine `display_order`.
+
+### Layout unico (tutte le larghezze)
+
+Un solo blocco verticale per sezione — **nessun** layout affiancato a breakpoint desktop:
+
+```
+space-y-3
+  └─ per ogni fascia (digestSlots)
+       ├─ DigestSlotHeader (nome fascia)
+       └─ DigestBookingListRow × N (prenotazioni del turno/filtro corrente)
+```
+
+- Vale per **mobile, tablet e desktop** (≥1400px incluso).
+- Supporta **N fasce** (non solo 3): la vecchia griglia `grid-cols-3` da ≥1390px è **rimossa** (disallineava header/prenotazioni e falliva con più di 3 slot).
+- Senza fasce attive o con slot vuoti: griglia piatta `grid-cols-1 sm:grid-cols-2` (invariata).
+- Sezione **Fuori fascia** (orfani): griglia piatta, invariata.
+- Pro + turni: `filterByTurn` e `DigestTurnNav` restano sul digest; il layout per fascia non cambia tra Classic e Pro.
+
+### Verifica visiva consigliata
+
+Con sidebar icone (`pl-16`): ~375px, ~900px, ~1280px, desktop ≥1400px — ogni fascia deve mostrare header + lista sotto, senza secondo blocco DOM duplicato.
+
+---
+
 ## 8. Media query `index.css` — ambiti distinti
 
 | Query | Ambito |
