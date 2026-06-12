@@ -78,9 +78,11 @@ Da distinguere:
 
 - **Auth residuo chiuso:** se una sessione Supabase esiste ma la riga `admin_users` non esiste più,
   `AdminAuthContext` esegue `signOut`, pulisce tenant su route admin e non ripristina l'utente.
-- **Type safety parziale:** ripuliti da `as any` i flussi auth/tenant e le query/mutation booking più
-  critiche; restano cast in storage, Menu QR/categories/settings e servizi sync da affrontare per area.
+- **Type safety parziale:** ripuliti da `as any` i flussi auth/tenant/booking e `menuQrStorage`; restano
+  cast su hook Supabase (`.from() as any`) da affrontare per area.
+- **Fallback prod (3° giro):** `getDefaultBusinessHours()` non inietta più fasce demo; Pagina Prenota
+  senza `public_booking_page_background` mostra crema neutra, non foto stock `full-01`.
 - **Conferme custom:** delete ingrediente, delete menù preselezionato, delete promo e reset
   Card/Carosello usano `Modal` in-app. Il pattern è bloccato da test statico anti-regressione.
-- **Ancora aperto:** email transazionali, logging completo, audit fallback globale residuo e guard dirty
+- **Ancora aperto:** email transazionali, logging edge/scripts, audit fallback form config, guard dirty
   su Servizio/altri modali Pro (CRM + Categorie Menu + nuova prenotazione coperti in 2° giro M6).
