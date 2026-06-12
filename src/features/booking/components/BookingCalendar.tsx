@@ -26,6 +26,7 @@ import {
 import { QuickTableAssignModal } from './QuickTableAssignModal'
 import { AdminBookingForm, type AdminBookingFormNavigationGuardHandle } from './AdminBookingForm'
 import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
+import { logger } from '@/lib/logger'
 import { Modal } from '@/components/ui/Modal'
 import { UnsavedNavigationGuardModal } from './settings/SettingsSaveUi'
 import {
@@ -504,7 +505,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
         calendarApi.gotoDate(targetDate)
         setSelectedDate(initialDate)
       } catch (error) {
-        console.error('Error navigating to calendar date:', error)
+        logger.error('Error navigating to calendar date:', error)
       }
     }
   }, [initialDate])

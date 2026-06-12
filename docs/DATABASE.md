@@ -6,41 +6,27 @@ Il DB remoto fu inizializzato con naming timestamped prima di adottare il naming
 
 I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati come `reverted` il 2026-05-13 tramite `supabase migration repair --status reverted`, eliminando il blocco su `db push`.
 
-### Stato migrazioni (aggiornato 2026-05-27)
+### Stato migrazioni
 
-| Versione | File | Stato |
-|----------|------|-------|
-| 001 | `001_schema_completo.sql` | applicata |
-| 002 | `002_rls_admin_users.sql` | applicata |
-| 003 | `003_fix_tenant_usage_triggers_security_definer.sql` | applicata |
-| 003 | `003_menu_categories.sql` | applicata (falso positivo in `migration list` — vedi sotto) |
-| 004 | `004_default_menu_categories_new_organization.sql` | applicata |
-| 005 | `005_menu_items_booking_types.sql` | applicata |
-| 006 | `006_customers_crm.sql` | applicata |
-| 007 | `007_tables.sql` | applicata |
-| 008 | `008_rooms_and_table_layout.sql` | applicata |
-| 009 | `009_booking_source_and_noshow.sql` | applicata |
-| 010 | `010_service_slots.sql` | applicata |
-| 011 | `011_booking_table_assignments.sql` | applicata |
-| 012 | `012_service_slots_preset_signup.sql` | applicata |
-| 013 | `013_tenants_edition.sql` | applicata via MCP Supabase (2026-05-14) |
-| 014–021 | edition gates, service_slots canonical/max_guests, RPC jsonb | applicate (vedi `Database-Skill/DB_MIGRATIONS_CONTEXT.md`) |
-| 022 | `022_service_slot_overrides.sql` | TEST ✅ — prod ❌ (da applicare al rollout) |
-| 023 | `023_service_slots_max_turns_resume.sql` | TEST ✅ — prod ❌ (da applicare al rollout) |
-| 024 | `024_n_canonical_slots.sql` | TEST ✅ — prod ❌ (da applicare al rollout) |
-| 019 | `019_cleanup_booking_time_slots.sql` | applicata TEST + prod (vedi `DB_MIGRATIONS_CONTEXT.md`) |
-| 028 | `028_booking_menu_promo_labels.sql` | TEST ✅ — colonna `menu_promo_labels` su `booking_requests` |
-| 029 | `029_rename_booking_menu_promo_settings.sql` | TEST ✅ — pulizia chiavi `booking_vol_au_vent_*` e JSON omaggio menù; **prod da applicare** |
-| 030–034 | menu QR, homepage config, description categorie, override QR | vedi `Database-Skill/DB_MIGRATIONS_CONTEXT.md` |
-| 035 | `035_menu_categories_image_url.sql` | TEST ✅ — `menu_categories.image_url` (foto categoria Prenota); **prod da applicare** |
-| 036 | `036_menu_qr_per_qr_appearance.sql` | TEST ✅ — aspetto homepage per `menu_qr_codes`; `menu_qrcode_categories.menu_qr_code_id`; **prod da applicare** |
-| 037 | `037_menu_qr_hidden_items_and_theme.sql` | TEST ✅ prod ✅ — ingredienti nascosti per QR e tema QR |
-| 038 | `038_clear_menu_items_booking_types.sql` | TEST ✅ — `menu_items.booking_types` legacy: default `{}` e pulizia valori ingredienti; **prod da applicare** |
-| 039 | `039_harden_organizations_public_view.sql` | prod ✅ — `organizations_public` resa `security_invoker`, grant vista ridotti a solo SELECT |
-| 043 | `043_drop_menu_qr_preset_columns.sql` | TEST ✅ prod ✅ — rimozione colonne preset Menu QR (codice morto) |
-| 044 | `044_fix_booking_count_skip_restore.sql` | TEST ✅ — `increment_booking_count_on_accept` non riconta il reinserimento `deleted → accepted` (D3, contatore "accettazioni nette"); **prod da applicare al rollout** |
+> **Fonte di verità (non questo riepilogo):** elenco file in `supabase/migrations/` + stato remoto via MCP `list_migrations` dopo `get_project_url` (TEST `docnnernvp`, PROD `rwuxgvld` sola lettura). Dettaglio workflow e anomalie storiche: `Database-Skill/DB_MIGRATIONS_CONTEXT.md`.
 
-La prossima migrazione deve usare il prefisso **`045_`**.
+Ultimo file in repo (verificato 12-06-26): `045_menu_magazzino_is_available.sql`. La prossima migrazione deve usare il prefisso **`046_`**.
+
+| Versione | File | Note sintetiche |
+|----------|------|-----------------|
+| 001–012 | schema base, RLS, CRM, tavoli, service_slots | vedi file in `supabase/migrations/` |
+| 013–021 | edition, RLS gates, RPC jsonb service_slots | applicate via MCP (naming timestamp in prod) |
+| 019 | `019_cleanup_booking_time_slots.sql` | DELETE chiave legacy `booking_time_slots` |
+| 022–025 | overrides, max_turns_resume, slot_color, RLS classic | rollout prod 2026-05-22 |
+| 026–027 | security hardening, ip_blacklist | |
+| 028–029 | promo menù (`menu_promo_labels`, pulizia vol-au-vent) | report 23-05-26 |
+| 030–039 | menu QR, foto, tenant_features, homepage config, hardening vista pubblica | schema in `DB_SCHEMA_CONTEXT.md` |
+| 040 | `040_clamp_booking_carousel_slide_text_limits.sql` | funzioni clamp testi carosello Prenota + UPDATE `booking_public_form_config` |
+| 041 | `041_menu_qr_theme_green_wellness.sql` | tema `green_wellness` su `menu_qr_codes` e `menu_homepage_config` |
+| 042 | `042_menu_qrcode_categories_icon.sql` | colonna `menu_qrcode_categories.icon` |
+| 043 | `043_drop_menu_qr_preset_columns.sql` | DROP `menu_qr_codes.content_type`, `preset_ids` (codice morto) |
+| 044 | `044_fix_booking_count_skip_restore.sql` | trigger `increment_booking_count_on_accept`: skip `deleted → accepted` |
+| 045 | `045_menu_magazzino_is_available.sql` | `is_available` su `menu_categories` e `menu_items` (magazzino M3) |
 
 > Promo menù (23-05-26): impostazioni solo su `restaurant_settings.setting_key = booking_menu_promos`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
 

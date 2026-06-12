@@ -199,6 +199,7 @@ Altri invarianti da non rompere senza conferma:
 |---|---|
 | Layout, griglia striscia, sfondo, header, ordine form, caselle, card sottotab pubbliche (`BookingSubTabCards`), card ingredienti, sidebar riepilogo, validazione submit | `contesto/PRENOTA_LAYOUT_CONTEXT.md` |
 | Limiti/cap testo (admin o cliente), contatori, `bookingPrenotaTextLimits.ts` | `contesto/PRENOTA_TEXT_LIMITS_MAP.md` (numeri ↔ codice) |
+| Limiti **capienza/coperti** (posti disponibili per fascia — non caratteri testo) | `../Admin-Skill/contesto/ADMIN_SETTINGS_CONTEXT.md` + edge **`supabase/functions/create-booking/`** — NON confondere con `PRENOTA_TEXT_LIMITS_MAP` |
 | Config admin «Personalizza form», `BookingFormConfigPanel`, salvataggio/autosave, XOR card/carosello, editor sottotab/carosello, card Sfondo | `contesto/PRENOTA_FORM_CONFIG_CONTEXT.md` |
 | Flusso dati magazzino ↔ vetrina ↔ pubblico, `bookingFormResolver`, `field_overrides`, aggiungere campi a `SubTab`/`BookingMode` | `contesto/PRENOTA_DATA_FLOW_CONTEXT.md` **(OBBLIGATORIO prima di modificare)** |
 | Pattern lampeggio/attenzione validazione (riusabile su altri form) | `../per-ui-design-skill/FORM_VALIDATION_ATTENTION_PATTERN.md` |

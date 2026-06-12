@@ -41,16 +41,16 @@ Legenda: ✅ fatto · 🔶 in corso/parziale · ⬜ da fare.
 | AL-A | WP-A2 — FU-ALL fallback/tier | ✅ | FU nuovi non riciclati e registro coerente | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a2-fu-all-fallback-tier-12-06-26.md) |
 | AL-A | WP-A3 — Contatori test nei docs | ✅ | Nessun contatore test hardcoded nei file target | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a3-contatori-test-12-06-26.md) |
 | AL-A | WP-A4 — APP_CONTEXT/ADMIN_CLASSIC puntuali | ✅ | Routing e struttura docs coerenti col codice | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a4-app-context-admin-classic-12-06-26.md) |
-| AL-A | WP-A5 — Database-Skill | ⬜ | DB docs puntano alle fonti vive e note anomalie | — |
-| AL-A | WP-A6 — Routing masterplan/capienza | ⬜ | §0 instrada capienza e masterplan senza vicoli ciechi | — |
+| AL-A | WP-A5 — Database-Skill | ✅ | DB docs puntano alle fonti vive e note anomalie | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a5-database-skill-12-06-26.md) |
+| AL-A | WP-A6 — Routing masterplan/capienza | ✅ | §0 instrada capienza e masterplan senza vicoli ciechi | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a6-routing-capienza-masterplan-12-06-26.md) |
 | AL-B | WP-B1 — Migrazioni ↔ DB reale | ⬜ | Drift critico codificato o documentato con QA senior | — |
 | AL-B | WP-B2 — `restaurant_settings` cross-tenant | ⬜ | Lettura anon ristretta senza rompere Prenota/Menu QR | — |
 | AL-B | WP-B3 — Guard tenant pubblico/admin | ⬜ | Tenant pubblico non sovrascritto da sessione admin | — |
 | AL-B | WP-B4 — `create-booking` hardening | ⬜ | Tenant inattivi bloccati e rate limit conta i respinti | — |
 | AL-B | WP-B5 — Slot availability + cleanup rate limits | ⬜ | Scelta applicata e deploy/deprecazione coerenti | — |
-| AL-C | WP-C1 — Codice morto | ⬜ | Import zero prima delete, validate verde dopo | — |
-| AL-C | WP-C2 — Logger | ⬜ | Convenzione `logger.*` rispettata nei target | — |
-| AL-C | WP-C3 — `package.json` | ⬜ | Dipendenze classificate senza regressione build | — |
+| AL-C | WP-C1 — Codice morto | ✅ | Import zero prima delete, validate verde dopo | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c1-codice-morto-12-06-26.md) |
+| AL-C | WP-C2 — Logger | ✅ | Convenzione `logger.*` rispettata nei target | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c2-logger-12-06-26.md) |
+| AL-C | WP-C3 — `package.json` | ✅ | Dipendenze classificate senza regressione build | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c3-package-json-12-06-26.md) |
 | AL-D | WP-D1 — Fusione Menu admin context | ⬜ | Ok Matteo file per file, rimandi aggiornati | — |
 | AL-D | WP-D2 — Fusione Dashboard-laterale | ⬜ | Ok Matteo file per file, una sola area Admin | — |
 | AL-D | WP-D3 — Potatura `ADMIN_CLASSIC_SKILL.md` | ⬜ | Changelog obsoleto rimosso, LOCK vivi preservati | — |

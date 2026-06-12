@@ -19,6 +19,7 @@
 | `max_bookings_per_year` | INTEGER | Default 3600 |
 | `max_booking_requests_per_year` | INTEGER | Default 5000 |
 | `is_active` | BOOLEAN | `false` blocca login admin |
+| `qr_menu_enabled` | BOOLEAN | Override feature Menu QR per tenant Classic (migrazione 030) |
 | `created_at`, `updated_at` | TIMESTAMPTZ | |
 
 `edition` controlla quali feature sono attive per il tenant (letto da `TenantContext` → `useFeatures()`). Migrazione: `013_tenants_edition.sql`.
@@ -85,6 +86,9 @@ Indici: `(tenant_id, desired_date)`, `(tenant_id, status)`.
 | `category` | TEXT NOT NULL | |
 | `price` | NUMERIC NOT NULL | |
 | `description` | TEXT | |
+| `image_url` | TEXT NULL | Foto piatto (migrazione 030) |
+| `booking_types` | JSONB | Campo legacy; default `{}` e valori ingredienti puliti da migrazione 038 |
+| `is_available` | BOOLEAN NOT NULL DEFAULT true | `false` = ingrediente nascosto in Prenota e Menu QR (magazzino M3, migrazione 045) |
 | `sort_order` | INTEGER DEFAULT 0 | |
 
 Vincolo: `UNIQUE(tenant_id, name, category)`. Indice: `(tenant_id, category, sort_order)`.
@@ -101,6 +105,7 @@ Vincolo: `UNIQUE(tenant_id, name, category)`. Indice: `(tenant_id, category, sor
 | `label` | TEXT NOT NULL | Etichetta visualizzata |
 | `description` | TEXT NULL | Testo opzionale sotto il nome (migrazione 033) |
 | `image_url` | TEXT NULL | Foto categoria per pagina Prenota (migrazione 035); non è la thumb QR in `menu_homepage_config.category_images` |
+| `is_available` | BOOLEAN NOT NULL DEFAULT true | `false` = categoria nascosta in Prenota e Menu QR (magazzino M3, migrazione 045) |
 | `sort_order` | INTEGER DEFAULT 999 | |
 | `created_at`, `updated_at` | TIMESTAMPTZ | |
 
@@ -119,7 +124,7 @@ Indice: `(tenant_id, sort_order, label)`.
 | `tenant_id` | UUID FK → organizations | UNIQUE (1 record per tenant) |
 | `carousel_items` | JSONB | Array `CarouselItem[]`: `{image_url, title?, description?, label?, sort_order}` |
 | `category_images` | JSONB | Map `{ [catKey]: url }` foto thumbnail categorie |
-| `theme_key` | TEXT NOT NULL DEFAULT `'mediterranean_teal'` | CHECK 5 valori: `mediterranean_teal`, `cream_sage`, `dark_gold`, `rustic_terracotta`, `wine_bistrot` |
+| `theme_key` | TEXT NOT NULL DEFAULT `'mediterranean_teal'` | CHECK 5 valori: `mediterranean_teal`, `cream_sage`, `dark_gold`, `rustic_terracotta`, `green_wellness` (041; `wine_bistrot` rimosso in 037) |
 | `created_at`, `updated_at` | TIMESTAMPTZ | |
 
 **RLS:** `admin_manage_homepage_config` (ALL authenticated) + `public_read_homepage_config` (SELECT anon).
@@ -132,14 +137,37 @@ Indice: `(tenant_id, sort_order, label)`.
 |---------|------|------|
 | `id` | UUID PK | |
 | `tenant_id` | UUID FK → organizations | ON DELETE CASCADE |
+| `menu_qr_code_id` | UUID FK → menu_qr_codes | ON DELETE CASCADE — override per singolo QR (migrazione 036) |
 | `category_key` | TEXT NOT NULL | Chiave categoria (es. `'pizza'`) |
 | `title` | TEXT NULL | Titolo card QR — sovrascrive `menu_categories.label` solo nella homepage QR |
 | `description` | TEXT NULL | Descrizione breve — sovrascrive `menu_categories.description` solo nella homepage QR |
+| `icon` | TEXT NULL | Chiave icona Phosphor per card categoria QR (migrazione 042) |
 | `created_at`, `updated_at` | TIMESTAMPTZ | |
 
-Vincolo UNIQUE: `(tenant_id, category_key)`.
+Vincolo UNIQUE: `(tenant_id, menu_qr_code_id, category_key)` (dopo 036; prima era `(tenant_id, category_key)`).
 **RLS:** `admin_manage_qrcode_categories` (ALL authenticated) + `public_read_qrcode_categories` (SELECT anon).
 **Indipendente da `menu_categories`**: modificare questi valori non impatta il nome/descrizione visibili nella pagina Prenota.
+
+---
+
+### `menu_qr_codes` — QR multipli per tenant (030, aspetto per-QR 036–037, preset rimossi 043)
+
+| Colonna | Tipo | Note |
+|---------|------|------|
+| `id` | UUID PK | |
+| `tenant_id` | UUID FK → organizations | ON DELETE CASCADE |
+| `short_code` | TEXT NOT NULL | Parte URL `/menu/:slug/:shortCode` |
+| `name` | TEXT NOT NULL | Etichetta admin |
+| `category_filter` | TEXT[] | Filtro categorie opzionale |
+| `theme_key` | TEXT NOT NULL DEFAULT `'mediterranean_teal'` | CHECK come `menu_homepage_config` (041: include `green_wellness`) |
+| `carousel_items` | JSONB NOT NULL DEFAULT `[]` | Carosello homepage per questo QR (036) |
+| `category_images` | JSONB NOT NULL DEFAULT `{}` | Map `{ [catKey]: url }` thumb categorie per QR (036) |
+| `hidden_menu_item_ids` | JSONB NOT NULL DEFAULT `[]` | ID ingredienti nascosti su questo QR (037) |
+| `created_at`, `updated_at` | TIMESTAMPTZ | |
+
+Colonne **rimosse** in 043 (codice morto): `content_type`, `preset_ids`.
+
+**RLS:** policy admin + lettura pubblica anon su QR attivi (vedi migrazione 030).
 
 ---
 
@@ -156,7 +184,8 @@ Vincolo UNIQUE: `(tenant_id, category_key)`.
 | `max_guests` | INTEGER | NULL = nessun limite coperti per fascia (migrazione 017) |
 | `display_order` | INTEGER NOT NULL DEFAULT 0 | Ordinamento UI |
 | `is_canonical` | BOOLEAN NOT NULL DEFAULT false | **Deprecato funzionalmente** — mantenuto per il trigger di signup. Non usare per filtrare fasce attive (migrazione 016 + 024) |
-| `slot_color` | TEXT | Colore hex opzionale per la fascia in UI (migrazione 024, TEST only — da applicare in prod al rollout) |
+| `slot_color` | TEXT | Colore hex opzionale per la fascia in UI (migrazione 024) |
+| `max_turns_resume` | INTEGER | Limite turni in ripresa (migrazione 023) |
 | `created_at`, `updated_at` | TIMESTAMPTZ | |
 
 **`is_canonical`**: storicamente le 3 fasce canoniche (`Colazione`, `Pranzo`, `Cena`) avevano `is_canonical = true`. Dopo la migrazione 024 il campo è **deprecato funzionalmente** — il codice usa tutte le fasce attive del tenant (non filtra su `is_canonical`). Il campo rimane nel DB perché il trigger di signup (`seed_default_service_slots_for_organization`) lo imposta ancora. **Non eliminare** fino a pulizia esplicita.
@@ -221,6 +250,8 @@ ciascuno). Gli scope a intervallo partono da oggi incluso.
 Vincolo: `UNIQUE(tenant_id, setting_key)`.
 
 **Chiavi promo menù (23-05-26):** `booking_menu_promos` — JSON array `{ id, label, message, booking_types, visible_on_booking? }`. Chiavi legacy `booking_vol_au_vent_*` rimosse da migrazione 029. Nessun `booking_menu_promo_message` (solo array).
+
+**Chiave form pubblico Prenota:** `booking_public_form_config` — JSON con `booking_modes`, sottotab, caroselli. Migrazione 040: funzioni `normalize_booking_public_form_config_carousel` clampano eyebrow/title/description slide ai limiti editor (19/18/38 caratteri).
 
 ---
 
@@ -410,6 +441,8 @@ Verificano che il `tenant_id` dell'admin JWT corrisponda al `tenant_id` della ri
 ### `increment_booking_request_count()` / `increment_booking_count_on_accept()`
 
 `SECURITY DEFINER` — aggiornano `tenant_usage` dai trigger su `booking_requests`. Definite in `003_fix_tenant_usage_triggers_security_definer.sql`.
+
+**Migrazione 044 (accettazioni nette):** `increment_booking_count_on_accept` conta +1 solo se `NEW.status = 'accepted'` e `OLD.status` non è già `'accepted'` né `'deleted'`. Il reinserimento dall'archivio (`deleted → accepted`) **non** incrementa di nuovo `tenant_usage.bookings_count`.
 
 ---
 

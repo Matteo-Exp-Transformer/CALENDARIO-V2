@@ -4,72 +4,55 @@
 
 ---
 
-## 1. Stato migrazioni (aggiornato 2026-05-27 — TEST aggiornato)
+## 1. Fonte di verità migrazioni
 
-> ⚠️ **DUE ambienti Supabase distinti — non confonderli:**
-> - **PRODUZIONE**: `rwuxgvldzrkabglkasym.supabase.co` — MCP server "Supabase".
-> - **TEST/staging**: `docnnernvpyrbwuzzach.supabase.co` — MCP server "Supabase test". È l'ambiente che l'utente usa di solito da browser in sviluppo (l'URL appare nei suoi errori console).
->
-> Una migrazione applicata via MCP su un ambiente **NON** si propaga all'altro. Vanno applicate esplicitamente a entrambi. La colonna "Remote" qui sotto si riferisce a **produzione**. Prima di diagnosticare un errore DB visto dall'utente, verificare su quale ambiente sta testando (guardare l'URL Supabase negli errori: `docnnernvp`=test, `rwuxgvld`=prod).
+**Non usare questo file come elenco statico Local|Remote** — gli elenchi marciti invecchiano in pochi giorni.
 
-```
- Local | Remote | File
--------|--------|----------------------------------------------
- 001   | 001    | 001_schema_completo.sql
- 002   | 002    | 002_rls_admin_users.sql
- 003   | 003    | 003_fix_tenant_usage_triggers_security_definer.sql
- 003   |        | 003_menu_categories.sql  ← falso positivo (vedi § 3)
- 004   | 004    | 004_default_menu_categories_new_organization.sql
- 005   | 005    | 005_menu_items_booking_types.sql
- 006   | 006    | 006_customers_crm.sql
- 007   | 007    | 007_tables.sql
- 008   | 008    | 008_rooms_and_table_layout.sql
- 009   | 009    | 009_booking_source_and_noshow.sql
- 010   | 010    | 010_service_slots.sql
- 011   | 011    | 011_booking_table_assignments.sql
- 012   | 012    | 012_service_slots_preset_signup.sql
- 013   | 013*   | 013_tenants_edition.sql  ← applicata via MCP (2026-05-14)
- 014   | 014*   | 014_rls_edition_gates.sql  ← RLS Pro-only su customers/service_slots/bta/rooms/tables (2026-05-14)
- 015   | 015*   | 015_check_admin_email_with_edition.sql  ← RPC estesa con slug/org_name/edition (2026-05-14)
- 016   | 016*   | 016_service_slots_canonical.sql  ← colonna is_canonical su service_slots; 3 canoniche marcate; trigger signup aggiornato (2026-05-15)
- 017   | 017*   | 017_service_slots_max_guests.sql  ← colonna max_guests INTEGER DEFAULT NULL su service_slots (2026-05-15)
- 018   | 018*   | 018_rpc_update_service_slot.sql  ← RPC insert + update_service_slot a 9 param (poi superata da 021) (2026-05-15)
- 019   | prod ✅ TEST ✅ | 019_cleanup_booking_time_slots.sql  ← DELETE chiave booking_time_slots da restaurant_settings. PROD (2026-05-22 rollout). TEST (2026-05-22 allineamento MCP): registro `20260522165025`; DELETE idempotente (0 righe residue).
- 020   | 020*   | 020_drop_legacy_update_service_slot.sql  ← DROP firma legacy update_service_slot a 8 param (fix PGRST202 overloading) (2026-05-15)
- 021   | 021*   | 021_update_service_slot_jsonb.sql  ← update_service_slot riscritta con SINGOLO param jsonb (firma univoca, immune a PGRST202); DROP firma a 9 param (2026-05-15)
- 022   | TEST ✅ prod ✅ | 022_service_slot_overrides.sql  ← tabella service_slot_overrides + RPC insert_service_slot_override(jsonb). TEST già presente (`20260516112543`) prima dell'allineamento 2026-05-22.
- 023   | TEST ✅ prod ✅ | 023_service_slots_max_turns_resume.sql  ← colonna max_turns_resume + update_service_slot(jsonb) estesa. TEST (`20260517095034`).
- 024   | TEST ✅ prod ✅ | 024_n_canonical_slots.sql  ← colonna slot_color su service_slots + aggiornamento commento is_canonical. TEST (`20260519145528`).
- 025   | TEST ✅ prod ✅ | 025_rls_service_slots_classic.sql  ← rimuove gate edition dalle policy RLS di service_slots. Classic può leggere/scrivere le proprie fasce. TEST (`20260522140650`).
- 027   | prod ✅ TEST ✅ | 027_ip_blacklist.sql  ← tabella `ip_blacklist` per ban automatico 24h IP che sforano rate limit ripetutamente. RLS attiva, nessuna policy (solo service_role tramite Edge Function `create-booking`). Auto-scadenza 24h via `expires_at` per non bannare permanentemente IP dinamici (NAT/mobile/WiFi pubblici). Applicata 2026-05-23.
-  026   | prod ✅ TEST ✅ | 026_security_hardening.sql + 026b_fix_organizations_public_view  ← AUDIT SICUREZZA. (1) revoca SELECT pubblica organizations → vista organizations_public (campi safe + GRANT per-colonna anon su tabella per security_invoker). (2) revoca policy anon su invite_tokens. (3) check_admin_email solo authenticated → frontend usa client `supabase` autenticato (chiude phishing enumeration). (4) RPC insert/update_service_slot[_override] revocate da anon + check interno `p_tenant_id = current_admin_tenant_id()` (riscritte in plpgsql). (5) lockdown EXECUTE su tutte le SECURITY DEFINER. (6) FORCE ROW LEVEL SECURITY su customers/booking_requests/email_logs/admin_users/invite_tokens. (7) revoca GRANT pericolosi (TRUNCATE/TRIGGER/REFERENCES) su tutte le tabelle anon/authenticated. (8) search_path fisso su 8 funzioni. (9) indici FK mancanti. Applicata PROD 2026-05-23. TEST allineato 2026-05-23 (stesso giorno, dopo errore 404 su organizations_public dal form pubblico).
-  028   | TEST ✅ prod ? | 028_booking_menu_promo_labels.sql  ← colonna `booking_requests.menu_promo_labels` (JSONB snapshot nomi promo al submit). TEST (`20260523152147`). Prod: applicare al rollout.
-  029   | TEST ✅ prod ? | 029_rename_booking_menu_promo_settings.sql  ← DELETE `restaurant_settings` `booking_vol_au_vent%`; pulizia omaggio virtuale in `menu_selection`; COMMENT su `menu_promo_labels`. TEST applicata 2026-05-23 MCP. Dettaglio: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
-  030   | TEST ✅ prod ? | 030_menu_qr_and_photos.sql  ← `menu_items.image_url`, tabella `menu_qr_codes`, `organizations.qr_menu_enabled`, bucket `menu-photos`, RLS public read su `menu_items` e `menu_categories`.
-  031   | TEST ✅ prod ? | 031_tenant_features_system.sql  ← tabella `tenant_features` + RPC per feature add-on commerciali.
-  032   | TEST ✅ prod ? | 032_menu_homepage_config.sql  ← tabella `menu_homepage_config` (JSONB) per carosello e foto categorie per tenant.
-  033   | TEST ✅ prod ? | 033_menu_categories_description.sql  ← `ALTER TABLE menu_categories ADD COLUMN description text` (NULL, opzionale). Applicata 2026-05-24 MCP test.
-  034   | TEST ✅ prod ? | 034_menu_qrcode_categories_and_theme.sql  ← (1) `theme_key TEXT NOT NULL DEFAULT 'mediterranean_teal'` su `menu_homepage_config` (CHECK 5 valori). (2) Nuova tabella `menu_qrcode_categories`: override titolo/descrizione per card categoria nella homepage QR, separati da `menu_categories` (non impattano la pagina Prenota). Applicata 2026-05-24 MCP test.
-  035   | TEST ✅ prod ✅ | 035_menu_categories_image_url.sql  ← `menu_categories.image_url TEXT NULL` — foto categoria per flusso Prenota (Storage `{tenantId}/booking-cat/{categoryId}.webp`). Indipendente da `menu_homepage_config.category_images` (QR). Applicata 2026-05-25 MCP test.
-  036   | TEST ✅ prod ✅ | 036_menu_qr_per_qr_appearance.sql  ← colonne aspetto su `menu_qr_codes` (`theme_key`, `carousel_items`, `category_images`); `menu_qrcode_categories.menu_qr_code_id` FK per-QR. Applicata TEST + prod 2026-05-25/26.
-  037   | TEST ✅ prod ✅ | 037_menu_qr_hidden_items_and_theme.sql  ← `hidden_menu_item_ids` JSONB; rimozione tema `wine_bistrot` dal CHECK. Applicata TEST + prod 2026-05-26.
-  038   | TEST ✅ prod ? | 038_clear_menu_items_booking_types.sql  ← `menu_items.booking_types` resta campo legacy, default `{}` e pulizia valori esistenti degli ingredienti. Applicata TEST 2026-05-27; prod da applicare.
-  039   | TEST ? prod ✅ | 039_harden_organizations_public_view.sql  ← hardening produzione: `organizations_public` con `security_invoker=true`, grant vista ridotti a SELECT, grant per-colonna anon solo sui campi pubblici di `organizations`. Applicata PROD 2026-05-27 via MCP dopo warning Supabase prima di query manuali.
-```
+### Fonti verificabili (ordine obbligatorio)
 
-*Le 013-018, 020, 021 sono applicate sul DB **produzione** via MCP `apply_migration` (versioni timestamp `20260513...`–`20260515183055` nel registro prod). Sul **DB di test** sono state applicate via MCP solo 016, 017, 018(insert)+021 (allineamento 2026-05-15).
+1. **Repo (versionato):** `supabase/migrations/*.sql` — naming `NNN_descrizione.sql`. Glob dalla root del progetto.
+2. **Remoto (sola lettura per consultazione):** MCP `get_project_url` → deve rispondere TEST `docnnernvp` (sviluppo) o PROD `rwuxgvld` (sola lettura salvo conferma esplicita). Poi `list_migrations`.
+3. **Schema colonne/tabelle:** `DB_SCHEMA_CONTEXT.md` — aggiornare dopo ogni migrazione che introduce colonne.
 
-> **Rollout produzione completato (2026-05-22)**: 019, 022, 023, 024, 025 applicate in prod via MCP in quest'ordine. Smoke test OK. Branch mergiato su main. Deploy attivo su Vercel.
+Ultimo file in repo (verificato 12-06-26): **`045_menu_magazzino_is_available.sql`**. Prossima nuova migrazione: prefisso **`046_`**.
 
-> **Allineamento TEST (2026-05-22)**: verificato `get_project_url` → `docnnernvp`. `list_migrations` TEST: 022–025 già nel registro; **mancava solo 019** (schema già coerente: nessuna riga `booking_time_slots`, colonne/tabelle 022–024 presenti, policy 025 attive). Applicata via MCP solo `019_cleanup_booking_time_slots`. Smoke: `cnt=0` su `booking_time_slots`, 019 in `list_migrations`.
+### Indice repo 040–045 (sintesi schema — non sostituisce i file SQL)
 
-> **Nota PGRST202 — soluzione definitiva (2026-05-15)**: il bug è ricomparso più volte perché una RPC con N parametri opzionali è fragile con PostgREST (qualsiasi ambiguità o schema cache stale → "function not found"). Storia: 018 v1 creò la firma a 8 param; 018 v2 ne aggiunse una a 9 param senza sostituire la prima (overloading → PGRST202); 020 droppò la 8 param ma il problema poteva tornare per cache stale. **021 risolve alla radice**: `update_service_slot(payload jsonb)` — un solo parametro, firma univoca, niente più risoluzione di overload. Semantica PATCH: chiave assente = mantieni; `"max_guests": null` = azzera (presenza della chiave = intento). Il flag `p_clear_max_guests` non serve più.
+| File | Contenuto |
+|------|-----------|
+| `040_clamp_booking_carousel_slide_text_limits.sql` | Funzioni `clamp_text_jsonb_field`, `normalize_booking_carousel_slide_item`, `normalize_booking_public_form_config_carousel`; UPDATE `restaurant_settings` dove `setting_key = 'booking_public_form_config'` |
+| `041_menu_qr_theme_green_wellness.sql` | CHECK `theme_key` include `green_wellness` su `menu_qr_codes` e `menu_homepage_config` |
+| `042_menu_qrcode_categories_icon.sql` | `menu_qrcode_categories.icon TEXT NULL` |
+| `043_drop_menu_qr_preset_columns.sql` | DROP `menu_qr_codes.content_type`, `preset_ids` |
+| `044_fix_booking_count_skip_restore.sql` | `increment_booking_count_on_accept()` — non conta transizione `deleted → accepted` |
+| `045_menu_magazzino_is_available.sql` | `menu_categories.is_available`, `menu_items.is_available` BOOLEAN NOT NULL DEFAULT true |
 
-Su **produzione**: 001–025 tutte applicate. Su **TEST**: rollout 019–025 allineato a prod (2026-05-22); storico numerico 018/020 ancora assente nel registro MCP (sostituiti da 021 su TEST) — vedi nota * sopra.
+### Due ambienti Supabase — non confonderli
 
-> **Direttiva ambiente (2026-05-16)**: lo sviluppo punta al **server di TEST**. Migrazioni / RPC / rigenerazione tipi via MCP `Supabase_test__*` (`docnnernvp`), mai su produzione (`rwuxgvld`, MCP `Supabase__*`, sola lettura). Verificare sempre con `get_project_url` prima di `apply_migration`. Vedi `APP_CONTEXT_SKILL.md` §1b.
+- **PRODUZIONE**: `rwuxgvldzrkabglkasym.supabase.co` — MCP `user-supabase-prod`. Sola lettura salvo conferma esplicita.
+- **TEST/staging**: `docnnernvpyrbwuzzach.supabase.co` — MCP `user-supabase-test`. Ambiente di sviluppo abituale.
 
-> **Supabase Data API — GRANT espliciti (email Supabase, 2026-05-28)**: dal **30 maggio 2026** i nuovi progetti non espongono più automaticamente le tabelle `public` alla Data API; dal **30 ottobre 2026** il requisito arriva anche sulle nuove tabelle dei progetti esistenti. Ogni nuova migrazione che crea una tabella deve dichiarare i GRANT minimi richiesti da PostgREST / GraphQL / `supabase-js`, oltre a RLS e policy. Per tabelle admin usare `GRANT SELECT, INSERT, UPDATE, DELETE ... TO authenticated`; per letture pubbliche usare `GRANT SELECT ... TO anon, authenticated` solo quando il dato è davvero pubblico; per tabelle solo Edge Function/service_role non concedere accesso ai client.
+Una migrazione applicata su un ambiente **NON** si propaga all'altro. Prima di diagnosticare un errore DB, verificare su quale ambiente sta testando l'utente (`docnnernvp` = test, `rwuxgvld` = prod).
+
+### Snapshot remoto TEST (12-06-26, MCP `list_migrations` dopo `get_project_url` → docnnernvp)
+
+Registro remoto include tutte le migrazioni fino a `045_menu_magazzino_is_available` (versione timestamp `20260611193908`). I nomi nel registro remoto usano spesso suffissi descrittivi senza prefisso numerico (es. `clamp_booking_carousel_slide_text_limits` per il file `040_…`). Confrontare sempre per **nome descrittivo**, non solo per numero.
+
+> **Nota PROD:** per stato produzione usare MCP prod in sola lettura. Report merge M3 (12-06-26) documenta `045` applicata anche in PROD.
+
+### Anomalie storiche utili (permanenti)
+
+**Doppio prefisso 003:** due file locali `003_fix_tenant_usage_triggers_security_definer.sql` e `003_menu_categories.sql`. `schema_migrations` ha PK su `version` — una sola riga `003` in Remote. Riga Remote vuota per il secondo file in `migration list --linked` = falso positivo atteso. **NON** eseguire `db push --include-all` per questo warning.
+
+**CLI `db push` post-013:** da migrazione 013 applicata via MCP, `npx supabase db push` può fallire con `Remote migration versions not found in local migrations directory`. Workaround adottato: DDL via MCP `apply_migration` + file `.sql` locale come documentazione.
+
+**PGRST202 / RPC service_slots:** risolto in `021_update_service_slot_jsonb.sql` con firma univoca `update_service_slot(payload jsonb)`. Storia overloading 018→020 documentata nei report 2026-05-15. Non reintrodurre RPC multi-param opzionali.
+
+**Rollout produzione 019–025 (2026-05-22):** applicate in prod via MCP; smoke test OK.
+
+**Allineamento TEST 019 (2026-05-22):** mancava solo 019 nel registro MCP; schema già coerente.
+
+**Registro prod versioni timestamp:** prod usa versioni timestamp (`20260513…`–`20260515183055`) per le 008–021, più numeriche `001`–`007`. Per applicare nuove migrazioni in prod: MCP `apply_migration`, non `supabase db push`.
 
 ---
 
@@ -77,7 +60,7 @@ Su **produzione**: 001–025 tutte applicate. Su **TEST**: rollout 019–025 all
 
 ```bash
 # 1. Crea il file (naming numerico progressivo)
-# supabase/migrations/026_nome_descrittivo.sql
+# supabase/migrations/046_nome_descrittivo.sql
 
 # 2. Verifica ambiente prima di qualunque SQL remoto
 # MCP Supabase test: get_project_url deve rispondere docnnernvp
@@ -168,7 +151,7 @@ npm run db:types:linked
 
 | Pattern | Esempio | Note |
 |---------|---------|------|
-| ✅ Numerico progressivo | `026_nome_funzionalita.sql` | Standard del progetto |
+| ✅ Numerico progressivo | `046_nome_funzionalita.sql` | Standard del progetto |
 | ❌ Timestamp | `20260514000000_nome.sql` | Non usare — rompe l'allineamento |
 | ❌ Rinominare esistenti | — | **LOCK** — mai rinominare file già applicati |
 
