@@ -194,11 +194,12 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 
 ### M6 — Cross-area prod-ready
 - **Dettaglio:** `docs/Admin-Skill/contesto/ADMIN_CONFLICTS_AND_DEBTS.md`.
-- **Stato:** 🔶 parziale 12-06-26 — chiusi auth admin rimossa, popup nativi, cast critici booking/auth,
-  fallback demo `booking_placement_areas`, **orari default, sfondo e form config Pagina Prenota** (EmptyState
-  se `booking_public_form_config` assente), guard dirty su CRM + overlay Categorie Menu + collapse nuova
-  prenotazione, `menuQrStorage` senza `as any`.
-  Restano email, logging edge/scripts, guard Servizio/altri modali Pro, hook Supabase `as any`.
+- **Stato:** 🔶 parziale 12-06-26 — chiusi auth admin rimossa, popup nativi, **FU-TYPES-1** (hook Supabase
+  perimetro typed), fallback demo `booking_placement_areas`, **orari default, sfondo e form config Pagina
+  Prenota** (EmptyState se `booking_public_form_config` assente), guard dirty su CRM + overlay Categorie
+  Menu + collapse nuova prenotazione, `menuQrStorage` senza `as any`.
+  Restano email (FU-EMAIL), logging edge/scripts (FU-LOG-1), guard Servizio/modali Pro (FU-023),
+  Admin Area 2 residui UX (FU-046 U3/U9…), M4/M5.
 
 ---
 
@@ -218,7 +219,7 @@ milestone naturale di competenza.
 | FU-TEST-1 | 0% test su pagine Pro (CRM/Servizio/Analytics/Home) | nessun `*.test.tsx` | alto (no regression Pro) | M5 (criterio uscita) |
 | FU-TABLE-1 | `useTableStatuses` mancante: tavoli sempre verdi | `TableShape.tsx:35` | medio (solo Pro) | M5 |
 | FU-BRIEF-1 | Briefing senza join sala/tavolo | `useShiftBriefing.ts:85` | basso (Pro) | M5 |
-| FU-TYPES-1 | Uso massivo `as any` su query (bypassa type safety) — **progresso M6 12-06-26:** ripuliti auth/tenant/booking + `menuQrStorage`; restano `.from() as any` in hook menu/settings/booking_requests. | hook Supabase vari | medio | M6 |
+| FU-TYPES-1 | ~~Uso massivo `as any` su query~~ — **Chiuso 12-06-26:** hook perimetro + sync + pagine QR + storage; residuo voluto `WalkInLimitCard` (Servizio). | — | **M6** ✅ |
 | FU-LOG-1 | Logging misto `console.error` vs `logger` — **`src/` app pulito** (WP-C2); restano edge/scripts/debug log | edge, scripts | basso | M6 |
 | FU-RESP-1 | Larghezze fisse non responsive | `BookingRequestForm.tsx:1456`, `MenuSelection.tsx:463/506`, `CustomerListTable.tsx:89` | basso | nel controtest responsive dell'area (M2/M3/M5) |
 | FU-AUTH-1 | ~~Admin rimosso da `admin_users` resta loggato finché refresh token valido~~ — **chiuso M6 12-06-26:** restore sessione senza riga `admin_users` esegue `signOut`, pulisce tenant su route admin e non chiama `setTenantFromAdmin`; test dedicato. | `AdminAuthContext.tsx` | — | M6 ✅ |

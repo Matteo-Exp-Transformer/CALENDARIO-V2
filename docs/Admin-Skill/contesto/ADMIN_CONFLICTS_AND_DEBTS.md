@@ -45,8 +45,9 @@ Da distinguere:
   messaggi di sistema.
 - **Fallback prodotto deciso**: `Sistema Gestionale Prenotazioni` nell'header admin se manca il nome
   ristorante.
-- **Audit globale fallback**: resta aperto in `FU-ALL-FALLBACK` (email, hook Supabase, guard Servizio);
+- **Audit globale fallback**: resta aperto in `FU-ALL-FALLBACK` (email, guard Servizio, logging edge);
   M6 12-06-26 (4° giro) ha chiuso form config default sul pubblico (`parseFromDb` → `null` + EmptyState).
+  ~~hook Supabase~~ chiuso FU-TYPES-1 12-06-26.
 
 ## 5. Elementi mostrati ma non configurabili
 

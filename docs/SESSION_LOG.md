@@ -13,7 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
-| 12-06-26 | Controverifica — **FU-TYPES-1 + M6 merge readiness** 🔶 | [Report](Sessioni%20di%20lavoro/12-06-26/Report-controverifica-fu-types-1-merge-readiness-12-06-26.md) — perimetro hook chiuso sul tree; validate **570** + build verdi; ~21 file non committati; doc M6 ok nel tree; `ADMIN_CONFLICTS` §8 1 riga stale; prompt senior merge in report |
+| 12-06-26 | Docs — **chiusura M6 + prompt FU-046/FU-023/FU-LOG** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-chiusura-m6-docs-prompts-prossimi-12-06-26.md) — MASTERPLAN M6 + ADMIN_CONFLICTS allineati post FU-TYPES-1; 3 prompt esecutivi in chat; main @ 93d075d |
+| 12-06-26 | Codice+docs — **FU-TYPES-1 merge** ✅ | commit `ac7ae18` + `93d075d`; main/env/test allineati; PrenotaZen → senior |
 | 12-06-26 | Codice — **FU-TYPES-1 chiusura residuo A–D** ✅ (non committato) | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu-types-1-chiusura-residuo-12-06-26.md) — T1b+T6 sync+pagine QR+storage; 0 `as any` salvo WalkInLimitCard; smoke TEST OK Matteo; FOLLOW_UP FU-TYPES-1 Fatto |
 | 12-06-26 | Codice — **FU-TYPES-1 hook perimetro T1–T5** ✅ (non committato) | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu-types-1-hook-perimetro-t1-t5-12-06-26.md) — rimossi ~44 `as any` su 8 hook (settings, menu, QR, booking legacy); validate verde post-implement; WIP parallelo `PublicMenuCategoryPage` da chiudere prima commit; prompt follow-up T1b/T6 pronto |
 | 12-06-26 | Controverifica — **M6 FU-ALL-FALLBACK form EmptyState** 🔶 | [Report](Sessioni%20di%20lavoro/12-06-26/Report-controverifica-m6-fu-all-fallback-form-empty-12-06-26.md) — codice ok; validate **570**; PrenotaZen `94259e0`; riserve doc report esecutore Q6 + `ADMIN_CONFLICTS` §8 |
