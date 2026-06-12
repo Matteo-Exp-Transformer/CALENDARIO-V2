@@ -2,7 +2,7 @@
 
 **Cosa è cambiato:** sulla Pagina Prenota (`/prenota/:slug`), se il ristorante non ha ancora salvato la configurazione del form in `restaurant_settings`, il cliente non vede più tipologie demo ma un messaggio neutro con invito a contattare il ristorante.
 **Cosa resta:** FU-ALL-FALLBACK parziale (hook Supabase, email, guard Servizio, M4/M5); FU-TYPES-1, FU-LOG-1.
-**Serve una tua azione:** no (release PrenotaZen eseguita post-merge se richiesto dal flusso branch).
+**Serve una tua azione:** no. Release PrenotaZen **eseguita** — repo pubblica commit `94259e0` (privato `main`/`env/test` @ `efa3c69`, codice form EmptyState `757dd4f`).
 
 ---
 
@@ -22,7 +22,9 @@
 | Orari default | ✅ chiuso (giorni null) |
 | Sfondo Pagina Prenota | ✅ chiuso (crema neutra) |
 | Strip admin picker | ✅ ok prod — `strip-01` solo editor; pubblico dopo Salva |
-| Form config pubblico | ✅ chiuso questa sessione (EmptyState) |
+| Form config pubblico | ✅ chiuso questa sessione (EmptyState se assente in DB) |
+
+**Edge case pubblico (non EmptyState):** se in DB esiste `booking_public_form_config` valido ma **nessuna** `booking_mode.enabled === true`, il cliente vede **header** (titolo/descrizione) **senza** form inviabile — diverso da assenza totale in DB (`parseFromDb` → `null` → messaggio «Form prenotazione non ancora configurato»).
 
 ## 3. File toccati
 
@@ -90,4 +92,4 @@ Nessuna difficoltà tecnica rilevante; lint su import inutili nei sync risolto s
 ✅ R5: Attrito minimo; pattern `hasUsableBookingModesInRaw` riusabile se servono altri gate su JSON parziale.
 
 ❓ Q6 — Classic placement e release?
-✅ R6: Classic placement non toccato; release PrenotaZen da eseguire post-merge main perché `BookingRequestPage` è codice servito pubblicamente.
+✅ R6: Classic placement non toccato. Release PrenotaZen **eseguita** post-merge: privato `main`/`env/test` @ `efa3c69` (codice `757dd4f` + docs); repo pubblica PrenotaZen commit `94259e0`, validate/build verdi.

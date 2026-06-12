@@ -101,7 +101,9 @@ description: >-
 - **Default nuovo tenant (solo admin):** `DEFAULT_BOOKING_FORM_CONFIG` è seed dell’editor Personalizza
   form (`BookingFormConfigPanel`), non viene più iniettato sulla Pagina Prenota pubblica. Se in DB
   manca `booking_public_form_config` o non ha `booking_modes` utilizzabili, `parseFromDb` → `null` e
-  il cliente vede EmptyState («Form prenotazione non ancora configurato»). Placeholder admin
+  il cliente vede EmptyState («Form prenotazione non ancora configurato»). **Edge case:** config
+  salvata in DB ma tutte le tipologie con `enabled: false` → header pagina (titolo/descrizione) sì,
+  form prenotazione no (non è EmptyState). Placeholder admin
   (“Compila…”) e tipologie disabilitate finché Mario non salva.
 - I dati visuali **Card scorrevole** sono sulla sottotab: `label`, `description`, `courses_label`, `price_per_person`, `is_fixed_menu`, `hidden_*`, `preset_id`.
 - Il **Carosello** salva testi/icona per slide in `carousel_items[]` (`eyebrow`, `title`, `description`, `icon`); il titolo tecnico nell'editor (campo admin **Nome carosello** = `sub_tabs[].label`) è modificabile e non viene sovrascritto dai testi slide né dal normalizer; può salvare `price_per_person` e in Prenota quel prezzo viene usato come prezzo a persona.
