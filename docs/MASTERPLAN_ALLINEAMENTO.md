@@ -56,11 +56,11 @@ Legenda: ✅ fatto · 🔶 in corso/parziale · ⬜ da fare.
 | AL-D | WP-D3 — Potatura `ADMIN_CLASSIC_SKILL.md` | ✅ | Changelog obsoleto rimosso, LOCK vivi preservati | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-al-d-fusioni-docs-12-06-26.md) |
 | AL-D | WP-D4 — Snellimento `.claude/CLAUDE.md` | ✅ | Gemello stile `AGENTS.md`, senza duplicazioni vive | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-al-d-fusioni-docs-12-06-26.md) |
 | AL-D | WP-D5 — Archiviazione plan/report Menu QR | ✅ | File storici spostati e rimandi non rotti | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-al-d-fusioni-docs-12-06-26.md) |
-| AL-F | WP-F1 — Prezzi edition | ⬜ | Prezzi approvati da Matteo scritti nel context | — |
-| AL-F | WP-F2 — Stato legale produzione | ⬜ | Nuove voci legali approvate e tracciate | — |
-| AL-E | WP-E1 — Mini-pack area | ⬜ | Decisione Meta e design approvati | — |
-| AL-E | WP-E2 — Check automatico path docs | ⬜ | Decisione Meta e design approvati | — |
-| AL-E | WP-E3 — Anti-storia + protocollo §7 | ⬜ | Decisione Meta e design approvati | — |
+| AL-F | WP-F1 — Prezzi edition | ✅ | Prezzi approvati da Matteo scritti nel context | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-f1-prezzi-edition-12-06-26.md) |
+| AL-F | WP-F2 — Stato legale produzione | ✅ | Nuove voci legali approvate e tracciate | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-f2-stato-legale-produzione-12-06-26.md) |
+| AL-E | WP-E1 — Mini-pack area | ✅ | Decisione Meta e design approvati | [Design](Sessioni%20di%20lavoro/12-06-26/Design-wp-e1-mini-pack-area-12-06-26.md) · [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-e1-mini-pack-area-12-06-26.md) |
+| AL-E | WP-E2 — Check automatico path docs | ✅ | Decisione Meta e design approvati | [Design](Sessioni%20di%20lavoro/12-06-26/Design-wp-e2-doc-path-check-12-06-26.md) · [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-e2-doc-path-check-12-06-26.md) |
+| AL-E | WP-E3 — Anti-storia + protocollo §7 | ✅ | Decisione Meta e design approvati | [Design](Sessioni%20di%20lavoro/12-06-26/Design-wp-e3-anti-storia-protocollo-7-12-06-26.md) · [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-e3-anti-storia-protocollo-7-12-06-26.md) |
 
 ---
 

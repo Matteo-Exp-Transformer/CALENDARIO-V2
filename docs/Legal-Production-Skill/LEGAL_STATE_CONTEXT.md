@@ -1,14 +1,48 @@
 # Stato compliance — CalendarBackup-v2
 
-> Aggiornato: 2026-05-23
+> Aggiornato: **2026-06-12** (WP-F2 — intervista vendita Italia)
 > Single source of truth per "cosa è fatto / cosa manca" lato legale.
 > Aggiornare SEMPRE dopo ogni sessione di questa skill.
 
+⚠️ **Disclaimer:** questo file è **analisi orientativa** da sviluppatore senior. **Non sostituisce** commercialista né avvocato. Prima del primo contratto firmato e del primo incasso, validare ogni voce bloccante con i professionisti.
+
+Fonte analisi vendita: `docs/Sessioni di lavoro/12-06-26/Report-analisi-legale-vendita-12-06-26.md`.
+
 ---
 
-## Stato per fase
+## Vendita in Italia — sintesi priorità (decisioni Matteo 12-06-26)
 
-### FASE 0 — Sicurezza tecnica DB
+### BLOCCANTI (prima del 1° cliente pagante / 1° incasso)
+
+| Voce | Stato | Percorso approvato |
+|------|-------|-------------------|
+| **Partita IVA** | ⬜ Da aprire | **Ipotesi forfettario** (report 12-06-26) — **da confermare con commercialista** prima del 1° incasso |
+| **Contratto B2B** (Termini di Servizio / abbonamento) | ⬜ Da creare | **Bozza template in repo** → revisione **avvocato** (~500–1.000€ una tantum). Recesso: **mensile disdicibile sempre**; annuale con **30 gg preavviso** |
+| **Fatturazione elettronica** | ⬜ Da attivare | Strumento **gratuito ADE** (Agenzia delle Entrate) |
+| **Registro trattamenti art. 30 GDPR** | ⬜ Da creare | Sessione **agente senior** (bozza) → passaggio **commercialista** |
+| **Runbook data breach** | ⬜ Da creare | Stesso percorso (senior → commercialista) |
+| **Lista sub-processor pubblica** (`docs/legal/sub-processors.md`) | ⬜ Da pubblicare | Stesso percorso (senior → commercialista) |
+
+### CONSIGLIATI (non bloccano il 1° contratto se sopra è chiuso)
+
+| Voce | Stato | Nota |
+|------|-------|------|
+| **Marchio «PrenotaZen»** | ⬜ Da depositare | Logo GPT già in app (login admin + header — asset `icons/Icona-per-adminPage-no-bg.png`); uso commerciale con scritta **PrenotaZen**. Prima di materiale stampato: **ricerca TMview** + deposito **UIBM** ~200€ fai-da-te |
+| **RC professionale + cyber** | ⬜ Da valutare | ~300–600€/anno — consigliata prima di scalare clienti |
+| **European Accessibility Act (EAA)** | ℹ️ Informativo | Microimpresa esente obbligo legale; pagine **Prenota** e **Menu QR** usate dai consumatori → **argomento vendita** (accessibilità come plus) |
+| **Email `privacy@<dominio>`** | ⏸️ Rimandata | Contatto privacy temporaneo: **matteo.sistemigestionali@gmail.com** |
+
+### Budget indicativo anno 1 (orientativo)
+
+**~1.500–2.500€** il primo anno: commercialista (P.IVA + consulenza) + avvocato contratto una tantum + fatturazione elettronica (ADE gratis; eventuale commercialista) + eventuale deposito marchio UIBM.
+
+Mercato dichiarato: **solo Italia** per ora (vendita mista: diretta all'inizio, self-service in seguito).
+
+---
+
+## Stato per fase (tecnico / GDPR)
+
+### FASE 0 — Sicurezza tecnica DB ✅
 - [x] Audit sicurezza prod (2026-05-23) — migrazione `026_security_hardening`
 - [x] FORCE RLS su tabelle PII
 - [x] Service role key ruotata (2026-05-23)
@@ -28,11 +62,11 @@
 
 ### FASE 2 — Documenti per pre-vendita
 - [x] Privacy Policy riscritta e aggiornata (2026-05-23, v2.0 — `src/pages/PrivacyPolicyPage.tsx`)
-- [ ] Lista sub-processor pubblica (file `docs/legal/sub-processors.md`)
+- [ ] **Lista sub-processor pubblica** — `docs/legal/sub-processors.md` — **BLOCCANTE vendita** (senior → commercialista)
 - [x] **Template DPA per ristoranti clienti creato** (2026-05-23) — `docs/_lavoro/Per matteo/Documenti Legali/DPA-template-clienti-ristoranti.md` (cartella locale, gitignored). v1.0, italiano, conforme art. 28 GDPR. Da personalizzare per ogni nuovo cliente.
-- [ ] Registro trattamenti art. 30 GDPR
-- [ ] Runbook data breach
-- [ ] Email `privacy@<dominio>` creata
+- [ ] **Registro trattamenti art. 30 GDPR** — **BLOCCANTE vendita** (senior → commercialista)
+- [ ] **Runbook data breach** — **BLOCCANTE vendita** (senior → commercialista)
+- [ ] Email `privacy@<dominio>` — **rimandata**; temporaneo: matteo.sistemigestionali@gmail.com
 
 ### FASE 3 — Operativi e config
 - [ ] Upgrade Supabase Pro (per PITR)
@@ -42,9 +76,9 @@
 - [ ] Backup mensile PDF Privacy Policy (per provare cosa diceva a data X)
 
 ### FASE 4 — Solo se servono in futuro
-- [ ] Cookie banner (oggi NO — vedi `COOKIE_CONTEXT.md`)
+- [x] Cookie banner — **NO** (decisione 2026-05-23 — vedi `COOKIE_CONTEXT.md`)
 - [ ] Cookie policy separata
-- [ ] DPIA (Data Protection Impact Assessment) — se aggiungiamo dati sensibili (es. dati salute, biometrici)
+- [ ] DPIA — se aggiungiamo dati sensibili
 - [ ] Nomina DPO formale — solo se >250 dipendenti o trattamento sistematico larga scala
 
 ---
@@ -53,28 +87,33 @@
 
 | Servizio | Cosa fa | Dove (region) | DPA con loro |
 |---|---|---|---|
-| Supabase Inc. | Hosting DB + Auth + Edge Functions | EU (Frankfurt) — verifica region dashboard | ✅ Firmato 2026-05-23 — Ref `Q4RYF-5FVPD-4LXZY-8JABB` |
+| Supabase Inc. | Hosting DB + Auth + Edge Functions | **EU — West EU (Ireland)** — confermato Matteo 12-06-26 | ✅ Firmato 2026-05-23 — Ref `Q4RYF-5FVPD-4LXZY-8JABB` |
 | Supabase Pte. Ltd | Sub-processor Supabase (support services) | Singapore | Coperto da DPA Supabase Schedule 3 |
 | Active Campaign / Postmark | Sub-processor Supabase (email a Authorized Users) | USA | Coperto da DPA Supabase Schedule 3 |
 | Amazon Web Services Inc. | Sub-processor Supabase (hosting infrastructure) | Multi-region | Coperto da DPA Supabase Schedule 3 |
 | Vercel Inc. | Hosting frontend statico (sito Matteo) | Edge globale (USA-first) | Standard incluso nei ToS |
 | (Email provider applicativo) | Invio email transazionali ai clienti finali | NON CONFIGURATO ANCORA | N/A — vedi `EDGE_FUNCTIONS.md` |
 
-⚠️ **L'email provider `send-email` Edge Function non esiste ancora.** Quando verrà aggiunto (Resend? SendGrid? Postmark?), AGGIORNARE questa tabella + Privacy Policy + DPA verso clienti.
+⚠️ **L'email provider `send-email` Edge Function non esiste ancora.** Quando verrà aggiunto (Resend? SendGrid? Postmark?), AGGIORNARE questa tabella + Privacy Policy + DPA verso clienti + file sub-processor pubblico.
 
 ---
 
 ## Region Supabase del progetto prod
 
 Project ref: `rwuxgvldzrkabglkasym`
-Region: **da verificare in dashboard Supabase → Settings → General**
+Region: **West EU (Ireland)** — confermato Matteo 12-06-26 (dashboard Supabase → Settings → General)
 
-Se la region è USA, dichiararlo esplicitamente in Privacy Policy + giustificare con SCC (Standard Contractual Clauses) o DPF (Data Privacy Framework).
-Se è EU, è più semplice — dichiarare comunque per trasparenza.
+Hosting primario in **UE** → dichiarare in Privacy Policy per trasparenza; nessun obbligo di narrativa USA/DPF per il DB principale. Restano rilevanti i sub-processor extra-UE coperti dal DPA Supabase (SCC).
+
+*Nota storica:* fino al 12-06-26 il file indicava «Frankfurt / da verificare» — sostituito con Ireland.
 
 ---
 
 ## Decisioni prese e perché
+
+### 2026-06-12 — Vendita Italia: blocchi e consigli (WP-F2)
+**Decisione:** tabella priorità in cima a questo file; P.IVA forfettario da confermare con commercialista; contratto B2B da bozza repo + avvocato; fattura elettronica ADE gratis; registro/runbook/sub-processor = bloccanti con flusso senior → commercialista; marchio **PrenotaZen** con logo esistente + UIBM prima di stampa; RC cyber consigliata; EAA come argomento vendita; budget ~1.500–2.500€ anno 1.
+**Motivo:** allineare skill legale alle decisioni operative del report legale-vendita 12-06-26 senza scrivere contratti al posto dei professionisti.
 
 ### 2026-05-23 — No Iubenda / OneTrust / Cookiebot
 **Decisione**: Matteo gestisce tutti i documenti come file in repo, scritti dall'agente legal-production.
@@ -85,7 +124,7 @@ Se è EU, è più semplice — dichiarare comunque per trasparenza.
 **Motivo**: Permette di iniettare dinamicamente il nome del ristorante (TenantContext), così ogni cliente vede "Privacy Policy di <Nome Ristorante>" senza duplicare file.
 
 ### 2026-05-23 — DPA verso clienti come template markdown
-**Decisione**: Tenere `docs/legal/DPA-template-clienti.md` da personalizzare manualmente all'onboarding.
+**Decisione**: Tenere template DPA clienti in cartella locale gitignored da personalizzare all'onboarding.
 **Motivo**: I DPA sono firmati offline (PDF), non serve dinamicità in app. Template versionato + bump versione quando cambia.
 
 ---
@@ -94,9 +133,10 @@ Se è EU, è più semplice — dichiarare comunque per trasparenza.
 
 | Data | Documento | Cambiamento | Skill session |
 |---|---|---|---|
+| 2026-06-12 | `LEGAL_STATE_CONTEXT.md` | WP-F2: vendita Italia, blocchi/consigli, region Ireland, PrenotaZen/marchio, budget | intervista Matteo |
 | 2026-05-23 | (creazione skill) | Skill `legal-production` inizializzata | — |
 | 2026-05-23 | `PrivacyPolicyPage.tsx` | Riscrittura completa post-audit | sessione iniziale |
 | 2026-05-23 | `DATA_INVENTORY_CONTEXT.md` | Aggiunta tabella `ip_blacklist` (PII: IP) per ban automatico | rate limit hardening |
-| 2026-05-23 | Template DPA clienti (locale) | Generato v1.0 italiano, conforme art. 28 GDPR, con Allegato sub-processor (incl. Ref DPA Supabase) e Allegato misure sicurezza (incl. rate limit + RLS) | post-firma DPA Supabase |
+| 2026-05-23 | Template DPA clienti (locale) | Generato v1.0 italiano, conforme art. 28 GDPR | post-firma DPA Supabase |
 
 Aggiornare quando vengono modificati i documenti.

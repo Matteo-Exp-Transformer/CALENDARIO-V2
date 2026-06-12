@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 12-06-26 | **Masterplan AL-F + AL-E — intervista decisioni (F1,F2,E1,E2,E3)** ✅ | [Report ciclo](Sessioni%20di%20lavoro/12-06-26/Report-ciclo-masterplan-al-f-al-e-intervista-12-06-26.md) — listino vendita, legale vendita IT, design mini-pack/check-path/anti-storia; masterplan righe 59–63 ✅; FU-LEGAL-1/2/3, FU-ALL-TIER, FU-ALL-DOCPATH, FU-ALL-ANTISTORIA; validate verde; **revisione senior tabelle decisioni** |
 | 12-06-26 | DB — **completamento WP-B5 TEST 048** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-completamento-wp-b5-test-apply-12-06-26.md) — con conferma Matteo, Codex ha applicato 048 su TEST via CLI; registro `048`; verificati `pg_cron`, funzione, job, schedule e revoche; WP-B5 ✅ |
 | 12-06-26 | DB — **diagnosi WP-B5 apply TEST 048** ✅ storico | [Report](Sessioni%20di%20lavoro/12-06-26/Report-diagnosi-wp-b5-test-apply-12-06-26.md) — diagnosi causa MCP Codex: connettore GPT vede solo PROD, mentre CLI/Cursor vedono TEST; completato poi via CLI Codex |
 | 12-06-26 | Codice/DB — **WP-B5 slot availability + cleanup rate limits** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b5-slot-availability-cleanup-rate-limits-12-06-26.md) — chiamata client `check-slot-availability` rimossa; EF locale rimossa; migrazione 048 applicata/verificata su PROD e TEST |
