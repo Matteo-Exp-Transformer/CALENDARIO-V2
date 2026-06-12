@@ -218,7 +218,7 @@ col primo messaggio. (Preferenza utente: `Modal` per successo/conferme; toast so
 | Form crea/modifica QR, validazione/messaggi-requisito, salvataggio modale | §4 qui sopra + `MenuQrModal.tsx`, `menuQrValidation.ts` |
 | Test dell'area (cosa è blindato, dove aggiungere) | `contesto/MENU_QR_TEST_SUITE_INDEX.md` |
 | **Dettaglio tecnico** (migrazioni DB, path storage foto, short code, hook admin/pubblici, le ~40 RULE operative) | `contesto/MENU_QR_REFERENCE.md` |
-| Magazzino menu admin (ingredienti, categorie, foto Prenota) — **altra area** | `../per-ui-design-skill/MENU_ADMIN_CONTEXT.md` |
+| Magazzino menu admin (ingredienti, categorie, foto Prenota) — **altra area** | `../Admin-Skill/contesto/ADMIN_MENU_MAGAZZINO_CONTEXT.md` |
 | Pagina Prenota (vetrina prenotazioni, stesso magazzino) — **altra area** | `../Prenota-Skill/PRENOTA_SKILL.md` |
 
 ---

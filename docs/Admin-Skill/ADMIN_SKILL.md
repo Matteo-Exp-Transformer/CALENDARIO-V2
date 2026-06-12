@@ -110,6 +110,7 @@ Questioni ancora aperte:
 | Se il task tocca... | Apri |
 |---|---|
 | Mappatura/blindatura Admin, lavoro multi-area, orchestrazione sub-agent, test `@admin-blindatura` | `PLAN_BLINDATURA_ADMIN.md` + context del dominio |
+| Workflow agente shell (routing, layout, E2E M1) | `ADMIN_SHELL_SKILL.md` → NAV / ARCHITECTURE / PAGES context |
 | Route `/admin`, sidebar, Classic/Pro, feature flags, logout, guard dirty | `contesto/ADMIN_SHELL_NAV_CONTEXT.md` |
 | Flusso utente complessivo tra sezioni e tab | `contesto/ADMIN_USER_FLOW_CONTEXT.md` |
 | Tabelle, hook, storage, `restaurant_settings`, Supabase | `contesto/ADMIN_DATA_FLOW_CONTEXT.md` |

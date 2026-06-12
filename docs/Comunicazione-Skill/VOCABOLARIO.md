@@ -315,7 +315,7 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 
 ### Menu magazzino (fonte di verità) — «menù fonte di verità» · «menu pagina impostazioni» (Liv. 1) · «menù originale» (Liv. 2) — Liv. 1/2
 - **Punta a:** la **tab Menu** = magazzino unico di prezzi e ingredienti (`MenuPricesTab`), da cui Pagina Prenota e QR pescano i dati
-- **Comportamento agente:** carica `docs/per-ui-design-skill/MENU_ADMIN_CONTEXT.md` (+ `docs/Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md` per il flusso, `DB_SKILL` per lo schema). «menù originale» è Liv. 2: se ambiguo rispetto alle altre due zone menu, chiedi.
+- **Comportamento agente:** carica `docs/Admin-Skill/contesto/ADMIN_MENU_MAGAZZINO_CONTEXT.md` (+ `docs/Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md` per il flusso, `DB_SKILL` per lo schema). «menù originale» è Liv. 2: se ambiguo rispetto alle altre due zone menu, chiedi.
 - **Livello:** «fonte di verità»/«pagina impostazioni» = 1; «menù originale» = 2
 - **Dati Liv.2 (solo «menù originale»):**
 - **Approvata il:** 28-05-26

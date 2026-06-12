@@ -204,25 +204,66 @@ Non serve una spiegazione formale 5 punti a meno che la modifica non tocchi un i
 
 > Cronologia sessioni e commit chiave: vedi [`docs/SESSION_LOG.md`](SESSION_LOG.md).
 
-Branch `Sviluppo-Dashboard-laterale` rispetto a `main`:
+Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). Per orari DB → **§4b**; per layout tab Calendario → **§4c** + `BOOKING_CALENDAR_LAYOUT_CONTEXT.md`.
 
-- **AdminDashboard.tsx**: integrato in AdminShell. Layout `min-h-0 flex-1`. Aggiunte due prop opzionali: `bodyOverride?: React.ReactNode` (mostra contenuto alternativo nel corpo, Header+NavItem restano visibili) e `onBodyOverrideExit?: () => void` (chiamata al click NavItem quando bodyOverride è attivo). `handleTabClick()` wrappa `setActiveTab` e chiama `onBodyOverrideExit` se necessario. **Tab Prenotazioni — collapse «Inserisci Nuova Prenotazione»**: i 5 NavItem (Calendario, Prenotazioni, Archivio, Menu, Impostazioni) restano **sempre** visibili; con il pannello form aperto si nascondono solo le sotto-righe del tab (statistiche Calendario, filtri Archivio, toolbar Menu, intro Impostazioni, bottone Form Pubblico). Il `<main>` con la lista richieste resta nascosto (`hidden`) finché il form è aperto, salvo `bodyOverride` (Home Pro).
-- **BookingCalendar.tsx**: feature opt-in **gated** con `useFeatures()` — icona walk-in condizionata a `features.walkIn`, turni/badge “Da assegnare” condizionati a `features.servizio`. Usa `useCanonicalTimeSlots()` per gli orari delle fasce (fonte: `service_slots` DB, non più JSON in `restaurant_settings`). **Novità 19-05-26**: `DigestBookingListRow` senza prop `slot`; card digest `bg-surface border-(--color-border)`; pallino assegnazione tavolo (Pro); `DigestSlotHeader`; griglia digest `sm:grid-cols-2`; `QuickTableAssignModal` senza prop `serviceSlots`. **Layout UI 23-05-26**: vedi **§4c** e `docs/per-ui-design-skill/BOOKING_CALENDAR_LAYOUT_CONTEXT.md` (celle mese 128/112px, tab full-width, titolo responsive, data su **Oggi**).
-- **AdminDashboard.tsx** (tab Calendario): eccezione `max-w-none px-1 md:px-1.5` — §4c.
-- **BookingDetailsModal.tsx**: bottone No-show gated con `features.noShow && canMarkNoShow`. Avviso «orario già trascorso» su **Salva** (`PastStartTimeWarningModal` + `isWallClockStartBeforeNow`). Usa `useCanonicalTimeSlots()` per il display della fascia. **Promo menù (23-05-26):** in edit menù passa `menuPromoMessages` a `MenuTab` da `booking_menu_promos` (`menuPromo.ts`); nessun omaggio automatico in `MenuSelection`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`. **Conferme azioni (06-06-26):** No-show ed Elimina passano da `BookingDangerActionModal` (conferma prima del mutate; signature mutation invariata).
-- **useBookingMutations.ts**: aggiunte invalidazioni per `HOME_STATS_QUERY_KEY` e `ANALYTICS_QUERY_ROOT` — no-op in edition Classic, **safe**. ⚠️ **Fix orario**: `useAcceptBooking` ora scrive sempre `desired_time` nel DB — se il chiamante non lo passa, lo deriva da `confirmedStart` con `extractTimeFromISO` (che è ancora nella forma `+00:00` prima del round-trip). Senza questa garanzia, il display potrebbe mostrare l’orario sbagliato (es. +2h in CEST).
-- **RestaurantSettingsTab.tsx**: la sezione “Imposta Fasce Orarie” è visibile solo in Classic (`!features.servizio`). Legge e salva le 3 fasce canoniche direttamente su `service_slots` via `useUpdateServiceSlot` (RPC). Al salvataggio: se `canonicalSlotIds` è null (tenant pre-migrazione 016), le fasce vengono saltate con `logger.warn` — le altre impostazioni vengono salvate comunque. Se `end_time < start_time` su una fascia, mostra l’avviso `OVERNIGHT_TIME_END_HINT`. **Novità 19-05-26**: rimossa la sezione “Aree di posizionamento” (`<section aria-labelledby=”placement-areas-heading”>`) — incluse costanti, funzioni, stati, handler e query `booking_placement_areas`. Il campo non viene più né letto né scritto in `restaurant_settings`.
-- **AdminBookingForm.tsx** + **DetailsTab.tsx** (23-05-26): il campo **Posizionamento** (preferenza sala su `booking_requests.placement`, opzioni da `booking_placement_areas`) è visibile e selezionabile **solo in Pro/Enterprise** (`features.servizio`). In Classic: nessun selettore nel form “Inserisci Nuova Prenotazione”, nessuna riga nel modale dettaglio (view/edit); creazione admin forza `placement: null` (`useCreateAdminBooking` + payload form). `BookingDetailsModal.tsx` non modificato.
-- **useCapacityCheck.ts**: usa `useServiceSlots()` oltre a `useCanonicalTimeSlots()`. La capacità per fascia segue questa priorità: `service_slots.max_guests` (impostabile in Pro da Servizio) → fallback su `slot_guest_capacities` in `restaurant_settings`. Classic funziona identicamente a prima se `max_guests` è null.
-- **useCanonicalTimeSlots()** in `useServiceSlots.ts`: non ridefinisce più la queryFn — chiama direttamente `useServiceSlots()` e filtra le canoniche. Una sola query al DB condivisa con tutti i consumer.
-- **Bug Home risolto**: cliccando Home nella sidebar, Header e NavItem restano visibili. Il contenuto Home passa via `bodyOverride`.
-- **AdminHomePage.tsx**: sezione “prossime 3 ore” ora mostra `b.start_time` (stringa HH:mm sicura) invece di `format(b.start, ‘HH:mm’)` su oggetto Date — eliminato il +2h in CEST.
-- **useHomeStats.ts**: `UpcomingBooking` espone `start_time: string` (da `desired_time` o `extractTimeFromISO`) in luogo di `start_iso`.
-- **PastStartTimeWarningModal** + `isWallClockStartBeforeNow` in `dateUtils.ts`: prima di accettare dalla tab *Richieste in attesa*, di salvare modifiche in **BookingDetailsModal**, o di inviare **AdminBookingForm** (“Inserisci Nuova Prenotazione”), se data e ora di inizio (orologio locale) sono già nel passato si mostra un dialog di conferma; dopo OK si ripete la catena capienza → `CapacityWarningModal` → mutate/salvataggio/creazione come prima.
+### `AdminDashboard.tsx` (in `AdminShell`)
 
-- **Check disponibilità fascia pubblica** (A5, 22-05-26): `supabase/functions/create-booking/index.ts` contiene guard server-side che calcola `cap - occupied` per la fascia corrispondente all'orario richiesto, usando `service_slot_overrides` per override data-specifica. `supabase/functions/check-slot-availability/index.ts` è la EF pre-check chiamata da `useCheckSlotAvailability` hook (usato in `BookingRequestForm` prima del submit). Doppia guardia: client blocca con toast, server blocca con 409 SLOT_LIMIT contro race condition. Logica: `confirmed_start` delle prenotazioni accepted nel range `desired_date T00:00:00`–`T23:59:59` + overlap fascia → somma `num_guests` → confronto con cap. Verificato funzionante su Pro e Classic (22-05-26).
+- Montato dentro `AdminShell`; layout corpo `min-h-0 flex-1`.
+- Prop opzionali: `bodyOverride?: React.ReactNode` (contenuto alternativo nel corpo, Header+NavItem restano) e `onBodyOverrideExit?: () => void` (click NavItem mentre `bodyOverride` è attivo — es. uscita da Home Pro).
+- Tab **Prenotazioni — collapse «Inserisci Nuova Prenotazione»**: i 5 NavItem restano sempre visibili; con il pannello form aperto si nascondono solo le sotto-righe del tab (statistiche Calendario, filtri Archivio, toolbar Menu, intro Impostazioni, bottone Form Pubblico). Il `<main>` con la lista richieste resta `hidden` finché il form è aperto, salvo `bodyOverride`.
+- Tab **Calendario**: eccezione padding `max-w-none px-1 md:px-1.5` — dettaglio in **§4c**.
 
-**Riferimento completo**: `docs/Sessioni di lavoro/15-05-26/Revisionate da claude/Report-unificazione-fasce-orarie-canoniche.md` (sessione 15-05). `docs/Sessioni di lavoro/19-05-26/Report-pallino-assegnazione-tavolo.md` (sessione 19-05). `docs/Sessioni di lavoro/22-05-26/Report-A5-check-disponibilita-fascia-pubblica.md` (sessione 22-05).
+### `BookingCalendar.tsx`
+
+- Feature opt-in gated: icona walk-in se `features.walkIn`; turni/badge “Da assegnare” se `features.servizio`.
+- Orari fasce: `useServiceSlots()` + `useDigestSlotConfigs()` da `useServiceSlots.ts` (tabella `service_slots`, non JSON in `restaurant_settings`).
+- Digest: componenti interni `DigestBookingListRow`, `DigestSlotHeader`; assegnazione rapida tavolo via `QuickTableAssignModal` (Pro).
+- Layout responsive tab Calendario: **§4c**.
+
+### `BookingDetailsModal.tsx`
+
+- No-show: `features.noShow && canMarkNoShow`.
+- Conferme azioni distruttive: `BookingDangerActionModal` per No-show ed Elimina (signature mutation invariata).
+- Orario passato: `PastStartTimeWarningModal` + `isWallClockStartBeforeNow` prima di Salva.
+- Display fascia: `useDigestSlotConfigs()`.
+
+### `useBookingMutations.ts`
+
+- Invalidazioni `HOME_STATS_QUERY_KEY` e `ANALYTICS_QUERY_ROOT` — no-op in Classic, safe.
+- Ogni accept/modifica che scrive `confirmed_start` deve scrivere anche `desired_time` — vedi **§4b** (`useAcceptBooking` deriva `desired_time` da `confirmedStart` se assente).
+
+### `RestaurantSettingsTab.tsx`
+
+- Sezione «Imposta Fasce Orarie» solo Classic (`!features.servizio`); lettura/scrittura su `service_slots` via `useUpdateServiceSlot`.
+- Se `end_time < start_time` su una fascia: avviso `OVERNIGHT_TIME_END_HINT`.
+- Sezione «Aree di posizionamento» **rimossa** da Impostazioni (non si legge/scrive più `booking_placement_areas` da questo tab).
+
+### `AdminBookingForm.tsx` + `DetailsTab.tsx`
+
+- Campo **Posizionamento** (`booking_requests.placement`, opzioni da `booking_placement_areas`) visibile solo Pro/Enterprise (`features.servizio`). In Classic: nessun selettore nel form admin, nessuna riga nel modale dettaglio; creazione admin forza `placement: null` (`useCreateAdminBooking`).
+- Promo menù in dettaglio: `DetailsTab` risolve etichette da `booking_menu_promos` (`menuPromo.ts` / `resolveMenuPromoLabelsForBooking`).
+
+### `useCapacityCheck.ts`
+
+- Usa `useServiceSlots()` e `useDigestSlotConfigs()`. Priorità capienza per fascia: `service_slots.max_guests` → fallback `slot_guest_capacities` in `restaurant_settings`. Classic invariato se `max_guests` è null.
+
+### Fasce orarie — hook condiviso (`useServiceSlots.ts`)
+
+- `useServiceSlots()`: query unica su `service_slots`.
+- `useDigestSlotConfigs()`: mappa gli slot in `SlotConfig[]` per digest, capacity e display — **nessuna query DB aggiuntiva**.
+
+### `AdminHomePage.tsx` + `useHomeStats.ts`
+
+- Sezione “prossime 3 ore”: `UpcomingBooking.start_time` è stringa `HH:mm` (da `desired_time` o `extractTimeFromISO`), non `format()` su `Date`.
+
+### `PastStartTimeWarningModal` (UX orario passato)
+
+- Prima di accettare da *Richieste in attesa*, salvare in **BookingDetailsModal**, o inviare **AdminBookingForm**: se data+ora locale sono nel passato → dialog di conferma; dopo OK → catena capienza → `CapacityWarningModal` → mutate/salvataggio come prima.
+
+### Check disponibilità fascia (form pubblico Prenota)
+
+- Server: `supabase/functions/create-booking/index.ts` (guard cap `cap - occupied`, override `service_slot_overrides`).
+- Pre-check client: `supabase/functions/check-slot-availability/index.ts` via `useCheckSlotAvailability` in `BookingRequestForm` (toast client + 409 server contro race).
 
 ---
 

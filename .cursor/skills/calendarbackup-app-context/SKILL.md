@@ -31,8 +31,8 @@ Ogni area dell'app ha una cartella `docs/<Area>-Skill/` con un file d'ingresso (
 |------|----------|
 | **Pagina Prenota** (pubblica) | `docs/Prenota-Skill/PRENOTA_SKILL.md` → `contesto/*` |
 | **Menu QR** (pubblico) | `docs/Menu-QR-Skill/MENU_QR_SKILL.md` → `contesto/*` |
-| **Tab Menu admin** (magazzino) | `docs/per-ui-design-skill/MENU_ADMIN_CONTEXT.md` |
-| **Admin shell + pagine** | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
+| **Tab Menu admin** (magazzino) | `docs/Admin-Skill/contesto/ADMIN_MENU_MAGAZZINO_CONTEXT.md` |
+| **Admin shell + pagine** | `docs/Admin-Skill/ADMIN_SHELL_SKILL.md` |
 | **Database** | `docs/Database-Skill/DB_SKILL.md` |
 | **PWA** | `docs/PWA_CONTEXT.md` |
 

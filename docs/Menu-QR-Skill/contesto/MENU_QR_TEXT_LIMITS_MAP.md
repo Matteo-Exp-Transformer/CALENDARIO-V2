@@ -55,6 +55,6 @@ taglio). Vedi `MENU_QR_TEST_SUITE_INDEX.md`.
 
 - I **piatti** (`menu_items` nome/descrizione) e i **nomi categoria magazzino** (`menu_categories`)
   appartengono all'area **Menu admin**, non al QR: eventuali cap si decidono lì
-  (`../../per-ui-design-skill/MENU_ADMIN_CONTEXT.md`). Il QR li **mostra**, non li scrive.
+  (`../../Admin-Skill/contesto/ADMIN_MENU_MAGAZZINO_CONTEXT.md` §3.3). Il QR li **mostra**, non li scrive.
 - Anna (cliente) **non scrive testo** sul Menu QR (è sola consultazione): nessun cap lato cliente,
   a differenza di Prenota dove Anna compila il form.

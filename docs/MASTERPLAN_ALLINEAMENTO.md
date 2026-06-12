@@ -51,11 +51,11 @@ Legenda: ✅ fatto · 🔶 in corso/parziale · ⬜ da fare.
 | AL-C | WP-C1 — Codice morto | ✅ | Import zero prima delete, validate verde dopo | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c1-codice-morto-12-06-26.md) |
 | AL-C | WP-C2 — Logger | ✅ | Convenzione `logger.*` rispettata nei target | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c2-logger-12-06-26.md) |
 | AL-C | WP-C3 — `package.json` | ✅ | Dipendenze classificate senza regressione build | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c3-package-json-12-06-26.md) |
-| AL-D | WP-D1 — Fusione Menu admin context | ⬜ | Ok Matteo file per file, rimandi aggiornati | — |
-| AL-D | WP-D2 — Fusione Dashboard-laterale | ⬜ | Ok Matteo file per file, una sola area Admin | — |
-| AL-D | WP-D3 — Potatura `ADMIN_CLASSIC_SKILL.md` | ⬜ | Changelog obsoleto rimosso, LOCK vivi preservati | — |
-| AL-D | WP-D4 — Snellimento `.claude/CLAUDE.md` | ⬜ | Gemello stile `AGENTS.md`, senza duplicazioni vive | — |
-| AL-D | WP-D5 — Archiviazione plan/report Menu QR | ⬜ | File storici spostati e rimandi non rotti | — |
+| AL-D | WP-D1 — Fusione Menu admin context | ✅ | Ok Matteo file per file, rimandi aggiornati | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-al-d-fusioni-docs-12-06-26.md) |
+| AL-D | WP-D2 — Fusione Dashboard-laterale | ✅ | Ok Matteo file per file, una sola area Admin | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-al-d-fusioni-docs-12-06-26.md) |
+| AL-D | WP-D3 — Potatura `ADMIN_CLASSIC_SKILL.md` | ✅ | Changelog obsoleto rimosso, LOCK vivi preservati | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-al-d-fusioni-docs-12-06-26.md) |
+| AL-D | WP-D4 — Snellimento `.claude/CLAUDE.md` | ✅ | Gemello stile `AGENTS.md`, senza duplicazioni vive | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-al-d-fusioni-docs-12-06-26.md) |
+| AL-D | WP-D5 — Archiviazione plan/report Menu QR | ✅ | File storici spostati e rimandi non rotti | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-al-d-fusioni-docs-12-06-26.md) |
 | AL-F | WP-F1 — Prezzi edition | ⬜ | Prezzi approvati da Matteo scritti nel context | — |
 | AL-F | WP-F2 — Stato legale produzione | ⬜ | Nuove voci legali approvate e tracciate | — |
 | AL-E | WP-E1 — Mini-pack area | ⬜ | Decisione Meta e design approvati | — |

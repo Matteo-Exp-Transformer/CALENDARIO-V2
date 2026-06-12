@@ -103,7 +103,7 @@ pattern, senza ridiscutere le regole già decise.
 > a sub-agent** flusso dati + utente (D), poi verifica finale (E). I sub-agent **riportano** i bug;
 > l'orchestratore decide se fixare lui o **delegare con prompt anti-rottura** (cosa toccare, cosa NON
 > toccare, senso da preservare). Template eseguibile: `docs/<Area>-Skill/PLAN_BLINDATURA_<AREA>.md`
-> (primo esemplare: `docs/Menu-QR-Skill/PLAN_BLINDATURA_MENU_QR.md`, 06-06-26).
+> (primo esemplare: `docs/Sessioni di lavoro/06-06-26/PLAN_BLINDATURA_MENU_QR.md`, 06-06-26).
 
 ---
 
@@ -114,8 +114,8 @@ pattern, senza ridiscutere le regole già decise.
 | Area | Stato | Note |
 |------|-------|------|
 | **Pagina Prenota** | ✅ | Blindata 04-06-26: mappata + flusso scritto (commit `e66c0ae`, `fad207f`), test mirati limiti testo verdi, verifica sub-agent reale **PASSA**. Limit/audit test con sub-agent: corretti fallback pubblici su sottotab vuote, card vuote, caroselli senza foto, `MenuSelection` legacy, brand hardcoded, orari pubblici default, preset built-in e config nuovo tenant. Cartella `docs/Prenota-Skill/`. |
-| **Menu QR pubblico** | ✅ DOC · ✅ PROD | Mappata 06-06-26 (`a22108c`), DOC blindata (`2e6ecac`). **Blindatura di PRODOTTO completata 06-06-26** (orchestratore Opus, plan `PLAN_BLINDATURA_MENU_QR.md`): rimosso codice morto preset (pagina/route/rami/tipi + colonne DB via migrazione `043`, verificato 0 righe non-`a_la_carte` su PROD+TEST); FU-MQR-1 chiuso (cap titolo 30 / descrizione 70 + test); decisi i fallback (eyebrow vuota = niente, nome locale = «Menu», footer data/ora = voluto); aggiunto `line-clamp-2` difensivo ai titoli card (controtest responsive). Controtest sub-agent flusso dati + utente/responsive 375/834/1280: nessun bug bloccante. `npm run validate` verde (419 test). Report: `docs/Menu-QR-Skill/REPORT_BLINDATURA_06-06-26.md`. Nuovo follow-up: **FU-MQR-2** (ordine piatti per-QR). |
-| **Tab Menu admin (magazzino)** | ⬜ | `per-ui-design-skill/MENU_ADMIN_CONTEXT.md`. |
+| **Menu QR pubblico** | ✅ DOC · ✅ PROD | Mappata 06-06-26 (`a22108c`), DOC blindata (`2e6ecac`). **Blindatura di PRODOTTO completata 06-06-26** (orchestratore Opus, plan `docs/Sessioni di lavoro/06-06-26/PLAN_BLINDATURA_MENU_QR.md`): rimosso codice morto preset (pagina/route/rami/tipi + colonne DB via migrazione `043`, verificato 0 righe non-`a_la_carte` su PROD+TEST); FU-MQR-1 chiuso (cap titolo 30 / descrizione 70 + test); decisi i fallback (eyebrow vuota = niente, nome locale = «Menu», footer data/ora = voluto); aggiunto `line-clamp-2` difensivo ai titoli card (controtest responsive). Controtest sub-agent flusso dati + utente/responsive 375/834/1280: nessun bug bloccante. `npm run validate` verde (419 test). Report: `docs/Sessioni di lavoro/06-06-26/REPORT_BLINDATURA_06-06-26.md`. Nuovo follow-up: **FU-MQR-2** (ordine piatti per-QR). |
+| **Tab Menu admin (magazzino)** | ✅ DOC | `Admin-Skill/contesto/ADMIN_MENU_MAGAZZINO_CONTEXT.md` (fusione WP-D1, 12-06-26). |
 | **Admin shell + pagine** | 🔶 | **Area 1 Shell: ✅ blindata 10-06-26** (FU-042 E2E + unit `shell-*`). **Area 2 Prenotazioni: Fase D + FU-046 chiusi 07-06-26** — batch1 (D1 race, R1 responsive, D4/D5/D2) + batch2 FU-046 (D3 migr.044 contatore restore, U2 annulla modifica, U5/U7 scroll+chiusura, U6 drawer stale, U1 toast unico, U4 guard sincrono, U10 logger). `npm run validate` verde **464 test**. Bloccanti ALTO+MEDIO chiusi. Restano U3 (vincolo struttura)/U9/D6-D7/L* + **QA browser reale modali admin loggato 375/834/1280** + E2E staging. **Non ✅ PROD** finché FU-043 (QA reale) + E2E. |
 | **Database** | ⬜ | `Database-Skill/`. Valutare se il pattern senso/flusso calza (è infrastruttura, non UI). |
 | **Card richiesta admin** | ⬜ | `per-ui-design-skill/BOOKING_REQUEST_CARD_CONTEXT.md` (area Prenotazioni admin). |

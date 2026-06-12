@@ -28,7 +28,7 @@ riferimento Classic, breakpoint, scala spacing, griglie, checklist).
 
 | Il task tocca… | Leggi anche |
 |----------------|-------------|
-| `AdminShell.tsx`, comportamento sidebar, overlay, drawer, z-index shell | `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` |
+| `AdminShell.tsx`, comportamento sidebar, overlay, drawer, z-index shell | `docs/Admin-Skill/ADMIN_SHELL_SKILL.md` |
 | Componenti `src/components/ui/` (Modal, Button, Card…) | `docs/per-ui-design-skill/UI_COMPONENTS_CONTEXT.md` |
 | Token, colori, `index.css`, `tailwind.config.js` | `docs/per-ui-design-skill/UI_THEME_CONTEXT.md` |
 | File admin classica (AdminDashboard, BookingCalendar, …) | `docs/ADMIN_CLASSIC_SKILL.md` — spiegazione preventiva obbligatoria |

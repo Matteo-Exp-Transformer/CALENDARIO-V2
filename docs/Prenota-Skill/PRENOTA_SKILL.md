@@ -203,7 +203,7 @@ Altri invarianti da non rompere senza conferma:
 | Config admin «Personalizza form», `BookingFormConfigPanel`, salvataggio/autosave, XOR card/carosello, editor sottotab/carosello, card Sfondo | `contesto/PRENOTA_FORM_CONFIG_CONTEXT.md` |
 | Flusso dati magazzino ↔ vetrina ↔ pubblico, `bookingFormResolver`, `field_overrides`, aggiungere campi a `SubTab`/`BookingMode` | `contesto/PRENOTA_DATA_FLOW_CONTEXT.md` **(OBBLIGATORIO prima di modificare)** |
 | Pattern lampeggio/attenzione validazione (riusabile su altri form) | `../per-ui-design-skill/FORM_VALIDATION_ATTENTION_PATTERN.md` |
-| Tab Menu admin (magazzino: ingredienti, categorie, promo, preset) | `../per-ui-design-skill/MENU_ADMIN_CONTEXT.md` |
+| Tab Menu admin (magazzino: ingredienti, categorie, promo, preset) | `../Admin-Skill/contesto/ADMIN_MENU_MAGAZZINO_CONTEXT.md` |
 | Card richiesta lato admin (Richieste in attesa) — **altra area** | `../per-ui-design-skill/BOOKING_REQUEST_CARD_CONTEXT.md` |
 | **Test della pagina** (cosa è già blindato, dove aggiungere test, come girarli per fronte) | `contesto/PRENOTA_TEST_SUITE_INDEX.md` |
 

@@ -30,7 +30,7 @@ Stato attuale del codice (`AdminShell.tsx`):
 
 > Quando lavori su una pagina: progettala per il viewport pieno. Se devi toccare
 > `AdminShell.tsx` per il comportamento sidebar, è file di area shell — vedi
-> `docs/Dashboard-laterale-skill/ADMIN_SHELL_SKILL.md` e produci spiegazione
+> `docs/Admin-Skill/ADMIN_SHELL_SKILL.md` e produci spiegazione
 > preventiva prima di modificare.
 
 ---
