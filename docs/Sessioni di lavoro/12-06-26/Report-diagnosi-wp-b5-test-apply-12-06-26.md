@@ -2,11 +2,11 @@
 
 Data: 12-06-26  
 Branch: `env/test`  
-Esito: 🔶 bloccato su apply TEST: CLI vede `docnnernvp`, MCP no.
+Esito storico: diagnosi del blocco MCP TEST. **Stato aggiornato 12-06-26:** sbloccato via CLI Codex con conferma Matteo; vedi [Report completamento TEST](Report-completamento-wp-b5-test-apply-12-06-26.md).
 
-**Cosa è cambiato:** nessuna modifica a DB o codice; la diagnosi del blocco TEST è più precisa.  
-**Cosa resta:** applicare/verificare `048_schedule_rate_limits_cleanup.sql` su TEST appena MCP ha accesso al progetto.  
-**Serve una tua azione:** sì — allineare/autorizzare il connettore MCP Supabase anche sull'organizzazione TEST.
+**Cosa è cambiato:** questo report resta come diagnosi storica; il completamento TEST è documentato nel report successivo.
+**Cosa resta:** niente per WP-B5 TEST.
+**Serve una tua azione:** no.
 
 ## 1. Obiettivo
 
@@ -39,7 +39,7 @@ Per questo non ho applicato SQL remoto via CLI: le regole di sessione chiedono `
 
 ## 4. Stato DB
 
-- **TEST `docnnernvpyrbwuzzach`**: `048_schedule_rate_limits_cleanup.sql` non applicata/verificata in questa chat.
+- **TEST `docnnernvpyrbwuzzach`**: stato storico di questa chat = non applicata. Stato successivo 12-06-26 = applicata/verificata via CLI Codex con registro `048`.
 - **PROD `rwuxgvldzrkabglkasym`**: non toccato in questa chat; stato precedente invariato, 048 già applicata/verificata il 12-06-26.
 - **Edge Function legacy TEST**: `check-slot-availability` risulta ancora deployata e active; non rimossa perché il task opzionale richiede motivazione e comando sicuro, e il blocco principale resta DB/MCP.
 
@@ -50,7 +50,7 @@ Per chiudere WP-B5 serve uno di questi sblocchi:
 1. Autorizzare il connettore MCP Supabase sull'organizzazione TEST `ytrppzjekipjubnygaos`, poi ripetere `get_project_url` su `docnnernvpyrbwuzzach`.
 2. Oppure autorizzare esplicitamente in una prossima sessione un canale SQL CLI equivalente, accettando che il check ambiente sia fatto con `projects list`/link CLI invece che con MCP `get_project_url`.
 
-Senza uno di questi due passaggi WP-B5 resta 🔶.
+Nota aggiornata: questo blocco è stato superato in sessione successiva con conferma Matteo e CLI Codex su TEST; WP-B5 ora è ✅.
 
 ## 5b. Decisione procedurale
 
@@ -88,7 +88,7 @@ Limite da ricordare: CLI `db query` esegue SQL, ma non equivale a MCP `apply_mig
 ✅ R4: Non ho applicato la migrazione 048 su TEST perché MCP `get_project_url` sul target fallisce e la procedura non autorizzava SQL CLI senza conferma/strategia registro. Non ho toccato PROD e non ho rimosso la Edge Function legacy TEST.
 
 ❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti?  
-✅ R5: Attrito principale: le docs dicevano “MCP TEST” ma gli accessi reali erano split: MCP solo PROD, CLI solo TEST. Miglioria applicata: procedura con fallback CLI TEST, checklist ambiente, divieto CLI PROD e nota sul registro migrazioni.
+✅ R5: Attrito principale: le docs dicevano “MCP TEST” ma gli accessi reali Codex erano split: connettore GPT solo PROD, CLI/Cursor anche TEST. Miglioria successiva: regola CLI TEST confinata a `AGENTS.md` per Codex, non alla documentazione generale.
 
 ❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuto ti sono stati utili o rumore?  
 ✅ R6: Contesto giusto per task DB: APP_CONTEXT, DB_SKILL, DB_MIGRATIONS_CONTEXT, DATABASE, masterplan/FU/report WP-B5. Hook pre-commit utile: ha bloccato il report incompleto prima del commit.

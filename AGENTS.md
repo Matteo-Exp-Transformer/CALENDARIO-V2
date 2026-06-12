@@ -16,6 +16,29 @@ una **skill d'area**. **Non navigare il codice a tappeto:** apri prima il routin
    `docs/Menu-QR-Skill/MENU_QR_SKILL.md`; le altre nella §0.
 3. Leggi la skill d'area **intera**, poi apri **solo** il file di `contesto/` che ti serve.
 
+## Regola Codex per Supabase TEST
+
+Questa sezione vale per gli agenti Codex/ChatGPT che leggono `AGENTS.md`. Non è una procedura
+generale per Claude/Cursor.
+
+- Il connettore Supabase di ChatGPT può vedere solo i progetti autorizzati nell'account GPT; la
+  configurazione MCP di Cursor (`C:\Users\matte.MIO\.cursor\mcp.json`) **non** viene caricata nella
+  sessione Codex.
+- In questo progetto, se il connettore Codex non vede TEST `docnnernvpyrbwuzzach`, Codex deve usare
+  la **CLI Supabase** per parlare con il DB TEST.
+- Prima di qualsiasi SQL CLI su TEST, verificare sempre:
+  - branch `env/test`;
+  - `supabase/.temp/project-ref` = `docnnernvpyrbwuzzach`;
+  - `npx supabase projects list -o json` mostra `id/ref = docnnernvpyrbwuzzach`, host
+    `db.docnnernvpyrbwuzzach.supabase.co`, org `ytrppzjekipjubnygaos`, status `ACTIVE_HEALTHY`;
+  - `npx supabase migration list --linked` si collega al remoto TEST.
+- Per applicare una migrazione su TEST via CLI: eseguire il file con
+  `npx supabase db query --linked -f supabase/migrations/NNN_nome.sql`, verificare gli oggetti DB,
+  poi aggiornare il registro con `npx supabase migration repair --status applied NNN --linked`.
+- `supabase db push` resta vietato.
+- Mai usare la CLI per scrivere su PROD `rwuxgvldzrkabglkasym`; PROD resta MCP e solo con conferma
+  esplicita di Matteo per scritture/migrazioni.
+
 ## Comandi e vocabolario di Matteo (leggi a inizio sessione)
 
 > Fonte di verità unica dei comportamenti: **`docs/Comunicazione-Skill/VOCABOLARIO.md`**. Caricalo a
@@ -38,8 +61,8 @@ una **skill d'area**. **Non navigare il codice a tappeto:** apri prima il routin
 **Salvaguardie sempre attive:** stile con Matteo (parla per schermate/flussi concreti, non nomi-file
 isolati; breve di default); **sicurezza PROD** (prima di INSERT/UPDATE/DELETE/migrazioni via MCP
 verifica l'ambiente con `get_project_url` — se è PROD `rwuxgvld` FERMATI e chiedi conferma; su TEST
-`docnnernvp` procedi. Se il canale è CLI su TEST, usa la checklist di `docs/APP_CONTEXT_SKILL.md`
-§1b: project ref/host/org devono essere `docnnernvp`, mai usare CLI per scrivere PROD);
+`docnnernvp` procedi. Per Codex su TEST vale la sezione dedicata sopra; mai usare CLI per scrivere
+PROD);
 **comando non riconosciuto → non dedurre, chiedi prima** (mai inventare voci di vocabolario).
 
 ## Dettaglio operativo
