@@ -263,7 +263,7 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
 ### Check disponibilità fascia (form pubblico Prenota)
 
 - Server: `supabase/functions/create-booking/index.ts` (guard cap `cap - occupied`, override `service_slot_overrides`).
-- Pre-check client: `supabase/functions/check-slot-availability/index.ts` via `useCheckSlotAvailability` in `BookingRequestForm` (toast client + 409 server contro race).
+- Decisione WP-B5 (12-06-26): il pre-check client `check-slot-availability` è rimosso dal repo e da `BookingRequestForm`. La fonte unica resta `create-booking`: se la fascia supera il limite, risponde 409 al submit. Non reintrodurre chiamate fail-open a Edge Function non deployate.
 
 ---
 

@@ -45,9 +45,9 @@ Legenda: ✅ fatto · 🔶 in corso/parziale · ⬜ da fare.
 | AL-A | WP-A6 — Routing masterplan/capienza | ✅ | §0 instrada capienza e masterplan senza vicoli ciechi | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a6-routing-capienza-masterplan-12-06-26.md) |
 | AL-B | WP-B1 — Migrazioni ↔ DB reale | ✅ | Drift critico codificato o documentato con QA senior | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b1-migrazioni-db-12-06-26.md) |
 | AL-B | WP-B2 — `restaurant_settings` cross-tenant | ✅ | Lettura anon ristretta senza rompere Prenota/Menu QR | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b2-restaurant-settings-cross-tenant-12-06-26.md) |
-| AL-B | WP-B3 — Guard tenant pubblico/admin | ✅ | Tenant pubblico non sovrascritto da sessione admin | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b3-guard-tenant-pubblico-admin-12-06-26.md) |
+| AL-B | WP-B3 — Guard tenant pubblico/admin | ✅ | Tenant pubblico non sovrascritto da sessione admin | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b3-guard-tenant-pubblico-admin-12-06-26.md) · [Verifica Menu QR](Sessioni%20di%20lavoro/12-06-26/Report-verifica-wp-b3-menu-qr-12-06-26.md) |
 | AL-B | WP-B4 — `create-booking` hardening | ⬜ | Tenant inattivi bloccati e rate limit conta i respinti | — |
-| AL-B | WP-B5 — Slot availability + cleanup rate limits | ⬜ | Scelta applicata e deploy/deprecazione coerenti | — |
+| AL-B | WP-B5 — Slot availability + cleanup rate limits | 🔶 | Repo allineato; apply remoto TEST 048 bloccato da permessi | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b5-slot-availability-cleanup-rate-limits-12-06-26.md) |
 | AL-C | WP-C1 — Codice morto | ✅ | Import zero prima delete, validate verde dopo | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c1-codice-morto-12-06-26.md) |
 | AL-C | WP-C2 — Logger | ✅ | Convenzione `logger.*` rispettata nei target | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c2-logger-12-06-26.md) |
 | AL-C | WP-C3 — `package.json` | ✅ | Dipendenze classificate senza regressione build | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c3-package-json-12-06-26.md) |
@@ -270,15 +270,15 @@ Questa milestone chiude rischi reali. B1 e B2 richiedono profilo senior + Matteo
   - migrazioni/funzioni DB legate a `cleanup_rate_limits`
   - docs DB/Prenota toccati
 - **Passi numerati:**
-  1. Verificare funzioni deployate su TEST e PROD in sola lettura.
-  2. Decidere con Matteo: deployare `check-slot-availability` o rimuovere la chiamata client fail-open.
-  3. Decidere con Matteo: schedulare cleanup con supporto reale o deprecare `cleanup_rate_limits`.
-  4. Applicare su TEST.
-  5. QA prenotazione pubblica.
-  6. PROD solo con conferma esplicita.
+  1. ✅ Verificare funzioni deployate su TEST e PROD in sola lettura.
+  2. ✅ Decisione Matteo: rimuovere la chiamata client fail-open e non deployare `check-slot-availability` su PROD.
+  3. ✅ Decisione Matteo: schedulare `cleanup_rate_limits` con supporto reale.
+  4. 🔶 Applicare su TEST: codice repo pronto; migrazione 048 non applicata perché MCP/CLI non hanno permessi su `docnnernvp` in questa sessione.
+  5. ✅ QA codice locale Prenota: niente chiamate residue a Edge Function rimossa; `npm run validate` verde.
+  6. ⬜ PROD solo con conferma esplicita.
 - **Verifica:** niente chiamate a funzioni non deployate; rate limit ha strategia di pulizia o deprecazione documentata; validate verde.
 - **Vietato:** non lasciare una chiamata fail-open non documentata; non installare estensioni PROD senza conferma.
-- **Cancello:** decisione Matteo + QA TEST.
+- **Cancello:** decisione Matteo + QA codice locale; apply remoto TEST 048 tracciato in `FU-B5-TEST-APPLY` prima di chiusura piena/PROD.
 
 ---
 

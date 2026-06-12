@@ -1,0 +1,106 @@
+# Report WP-B5 — slot availability + cleanup rate limits
+
+Data: 12-06-26  
+Branch: `env/test`  
+Esito: 🔶 repo e QA locale completati; applicazione remota TEST della migrazione 048 bloccata da permessi.
+
+## 1. Cappello
+
+Ho applicato la decisione confermata da Matteo: non deployare `check-slot-availability` su PROD e rimuovere la chiamata client fail-open dal form pubblico.  
+Il controllo disponibilità resta centralizzato in `create-booking`, che è la sorgente runtime definitiva al submit.  
+Per `cleanup_rate_limits()` ho preparato la migrazione 048 con job orario `pg_cron`; il deploy DB su TEST resta da fare appena il canale MCP/CLI ha permessi corretti.
+
+## 2. Cosa è cambiato
+
+- Rimossa la dipendenza del form pubblico da `useCheckSlotAvailability`.
+- Rimossi stati/copy UI legati alla verifica pre-submit: niente più `Verifica disponibilità...`, `slot_availability`, `resetAvailability`.
+- Eliminati dal repo hook e Edge Function locale `check-slot-availability`.
+- Aggiunta migrazione `048_schedule_rate_limits_cleanup.sql`:
+  - `CREATE EXTENSION IF NOT EXISTS pg_cron`;
+  - funzione `public.cleanup_rate_limits()`;
+  - job `cleanup-rate-limits-hourly` ogni ora al minuto 17;
+  - cleanup `rate_limits` oltre 1 ora;
+  - cleanup `ip_blacklist` scadute da oltre 1 giorno.
+
+## 3. File toccati
+
+- `src/features/booking/components/BookingRequestForm.tsx`
+- `src/features/booking/components/publicBooking/BookingFormFields.tsx`
+- `src/features/booking/components/__tests__/BookingRequestForm.flussoUtente.test.tsx`
+- `src/features/booking/constants/bookingPublicFieldStyles.ts`
+- `src/features/booking/hooks/useCheckSlotAvailability.ts` — eliminato
+- `supabase/functions/check-slot-availability/index.ts` — eliminato
+- `supabase/migrations/048_schedule_rate_limits_cleanup.sql` — nuovo
+- `docs/ADMIN_CLASSIC_SKILL.md`
+- `docs/Admin-Skill/contesto/ADMIN_SERVIZIO_CONTEXT.md`
+- `docs/DATABASE.md`
+- `docs/Database-Skill/DB_MIGRATIONS_CONTEXT.md`
+- `docs/Database-Skill/DB_SCHEMA_CONTEXT.md`
+- `docs/Legal-Production-Skill/DATA_INVENTORY_CONTEXT.md`
+- `docs/MASTERPLAN_ALLINEAMENTO.md`
+- `docs/FOLLOW_UP.md`
+- `docs/SESSION_LOG.md`
+
+## 4. Verifiche ambiente
+
+- Branch verificato: `env/test`.
+- PROD MCP letto solo in consultazione: `rwuxgvldzrkabglkasym.supabase.co`.
+- PROD: `check-slot-availability` non risulta deployata; `create-booking` presente; nessuna modifica applicata.
+- TEST via CLI: `check-slot-availability` risulta ancora deployata come legacy remoto, ma non viene più chiamata dal codice.
+- TEST via MCP/CLI: applicazione migrazione 048 non eseguita perché il progetto `docnnernvpyrbwuzzach` non era accessibile con i permessi disponibili in sessione.
+
+## 5. QA
+
+- `npm run test -- src/features/booking/components/__tests__/BookingRequestForm.flussoUtente.test.tsx` → 5 passed.
+- `npm run typecheck` → OK.
+- `npm run validate` → OK: lint + typecheck + 68 file test, 560 test passed.
+- Grep codice `src supabase` per `useCheckSlotAvailability` / `check-slot-availability` → nessun residuo runtime.
+
+Note: `validate` stampa warning React `act(...)` già presenti in suite non collegate al WP; non bloccano e non derivano da questa modifica.
+
+## 6. Esito per Matteo
+
+Per il cliente che prenota cambia una cosa concreta: il form non fa più una chiamata intermedia fragile prima di inviare. Se la fascia è piena, il blocco arriva dal server al momento del submit, cioè dallo stesso punto che crea davvero la prenotazione.
+
+Per il ristoratore non cambia la schermata admin. Il debito utile è lato infrastruttura: il cleanup IP/rate-limit è pronto in migrazione, ma va ancora applicato al database TEST reale.
+
+## 7. Debiti e follow-up
+
+- Creato `FU-B5-TEST-APPLY`: applicare/verificare migrazione 048 su TEST con `get_project_url` corretto, controllare `cron.job`, valutare rimozione deploy legacy TEST `check-slot-availability`.
+- `MASTERPLAN_ALLINEAMENTO.md`: WP-B5 segnato 🔶, non ✅, perché il cancello remoto TEST non è stato superato.
+- PROD resta fermo: nessuna estensione, migrazione o deploy senza conferma esplicita.
+
+## 8. Skill e documentazione aggiornate
+
+- `ADMIN_CLASSIC_SKILL.md`: pre-check client dichiarato rimosso; `create-booking` resta fonte unica.
+- `ADMIN_SERVIZIO_CONTEXT.md`: rischio override slot circoscritto a `create-booking`; `check-slot-availability` non più fonte runtime.
+- `DB_SCHEMA_CONTEXT.md` / `DB_MIGRATIONS_CONTEXT.md` / `DATABASE.md`: indice aggiornato alla 048.
+- `DATA_INVENTORY_CONTEXT.md`: retention target rate-limit/blacklist aggiornata, con nota che vale a runtime solo dopo apply remoto.
+- Riferimento tecnico esterno usato per il modello cron: docs Supabase Cron, `https://supabase.com/docs/guides/cron`.
+
+## 11. Domande di chiusura
+
+❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.
+✅ R1: «sei agente senior . Profilo: Esecuzione + Verifica · Modalità: standard Branch: env/test — se diverso, fermati ... Inizia da: leggi masterplan AL-B/F, poi B3 (verifica FU-AUTH-2 vs gap Menu QR)»; «confermo completa!»; «ho i token procedi».
+
+❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.
+✅ R2: Sì. Ri-verificati `git diff --cached --stat`, grep runtime su `src supabase`, `BookingRequestForm.tsx`, `BookingFormFields.tsx`, test form pubblico, migration 048 e docs aggiornati. Numeri QA reali: test mirato 5 passed; `npm run validate` 68 file test e 560 test passed.
+
+❓ Q3 — File correlati allineati? Quali file erano collegati alla modifica (skill area, context, test, tipi) e hai verificato che siano aggiornati? Elencali (o «nessuno + perché»).
+✅ R3: Allineati `ADMIN_CLASSIC_SKILL.md`, `ADMIN_SERVIZIO_CONTEXT.md`, `DB_SCHEMA_CONTEXT.md`, `DB_MIGRATIONS_CONTEXT.md`, `DATABASE.md`, `DATA_INVENTORY_CONTEXT.md`, `FOLLOW_UP.md`, `MASTERPLAN_ALLINEAMENTO.md`, `SESSION_LOG.md`, test `BookingRequestForm.flussoUtente.test.tsx`; tipi TS invariati e `typecheck` verde.
+
+❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato?
+✅ R4: Non ho applicato la migrazione 048 sul DB TEST perché MCP/CLI non avevano permessi su `docnnernvp`; non ho toccato PROD; non ho rimosso il deploy legacy TEST `check-slot-availability`; non ho cambiato contratto `supabase` / `supabasePublic`.
+
+❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti?
+✅ R5: Attrito principale: MCP TEST non accessibile ma istruzioni WP richiedono apply TEST; miglioria: aggiungere nel masterplan una voce esplicita “se TEST MCP non disponibile, chiudi 🔶 e crea FU apply remoto” per evitare false chiusure.
+
+❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuto ti sono stati utili o rumore?
+✅ R6: Contesto giusto per un WP DB+Prenota: APP_CONTEXT, Prenota, DB, Admin Classic, report fonte e Supabase skill erano necessari. Hook utile: il pre-commit ha intercettato il formato Q1-Q6 non conforme prima del commit.
+
+## 12. Autorevisione
+
+- Scelta implementata senza ampliare il contratto API pubblico.
+- Il rischio race non aumenta davvero: il pre-check era solo informativo e fail-open; il server resta l'unico punto autoritativo.
+- La migrazione è idempotente sul job: se il job esiste, viene unschedulato e ricreato.
+- Il masterplan resta 🔶 per evitare una falsa chiusura: manca l'applicazione DB TEST.

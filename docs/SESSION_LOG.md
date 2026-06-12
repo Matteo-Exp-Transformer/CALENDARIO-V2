@@ -13,6 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 12-06-26 | Codice — **WP-B5 slot availability + cleanup rate limits** 🔶 | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b5-slot-availability-cleanup-rate-limits-12-06-26.md) — chiamata client `check-slot-availability` rimossa; EF locale rimossa; migrazione 048 pronta per cleanup orario; apply TEST bloccato da permessi → `FU-B5-TEST-APPLY`; PROD non toccata |
+| 12-06-26 | Verifica — **WP-B3 Menu QR coperto** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-verifica-wp-b3-menu-qr-12-06-26.md) — nessun codice nuovo; controllato che `/menu/:slug` e pagine QR usano lo slug pubblico anche con sessione admin; test auth 7/7 + validate **560**; `FU-AUTH-2` resta Fatto |
 | 12-06-26 | Codice — **WP-B3 guard tenant pubblico/admin** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b3-guard-tenant-pubblico-admin-12-06-26.md) — sessione admin non sovrascrive `/prenota/:slug` e `/menu/:slug`; QA TEST slug `trattoria-da-tommaso`; validate **560**; privato `89c4c14`, PrenotaZen `ac9aeec`; MASTERPLAN AL-B WP-B3 ✅ |
 | 12-06-26 | **Prepara-prompt — ciclo MASTERPLAN task semplici** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-prepara-prompt-ciclo-masterplan-semplici-12-06-26.md) — 4 sub-agent (A6,C1,C3,C2); AL-A **6/6** + AL-C **3/3** ✅; AL-B/D/F/E rimandati senior/Matteo/Meta; validate **557** |
 | 12-06-26 | Codice — **WP-C2 Logger** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c2-logger-12-06-26.md) — 10 file `src/`: `console.error/warn` → `logger.*`; residuo solo `logger.ts`; validate **557**; FU-LOG-1 nota progresso (Aperto); MASTERPLAN AL-C WP-C2 ✅ |

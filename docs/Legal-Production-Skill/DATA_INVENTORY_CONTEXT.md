@@ -74,7 +74,7 @@ Gestita da Supabase. Retention secondo contratto.
 
 ⚠️ **L'indirizzo IP è dato personale** (Corte Giustizia UE C-582/14). Va dichiarato in Privacy Policy.
 **Base giuridica**: legittimo interesse (sicurezza, anti-abuse).
-**Retention reale**: ∞ — c'è funzione `cleanup_rate_limits()` ma non schedulata. **Va schedulata** (es. cron settimanale per cancellare righe >30 giorni).
+**Retention repo target**: migrazione `048_schedule_rate_limits_cleanup.sql` programma cleanup orario via `pg_cron`: cancella `rate_limits` più vecchi di 1 ora. **Nota operativa 12-06-26:** applicazione remota TEST rimasta bloccata da permessi MCP/CLI; finché 048 non è applicata sull'ambiente, la retention runtime resta indefinita.
 **Soglia attiva**: max 3 richieste/min per IP (Edge Function `create-booking`, deploy 2026-05-23).
 
 ### `ip_blacklist` — Ban automatico IP per abuso (aggiunta 2026-05-23)
@@ -85,7 +85,7 @@ Gestita da Supabase. Retention secondo contratto.
 
 **Base giuridica**: legittimo interesse (sicurezza informatica, prevenzione attacchi).
 **Trigger ban**: se IP fa ≥6 richieste in 10 min (= 2 sforamenti consecutivi del rate limit 3/min) → ban 24h.
-**Retention**: auto-scadenza 24h via `expires_at`. La riga NON viene cancellata automaticamente — andrebbe schedulato un cleanup per cancellare righe con `expires_at < now() - 30 giorni` per non accumulare log indefinitamente.
+**Retention repo target**: ban inattivo dopo 24h via `expires_at`; migrazione `048_schedule_rate_limits_cleanup.sql` cancella le righe scadute da oltre 1 giorno. **Nota operativa 12-06-26:** vale a runtime solo dopo applicazione remota della migrazione.
 **Da dichiarare in Privacy Policy** sez. 2 (dati raccolti automaticamente) e sez. 3 (finalità sicurezza).
 
 ### `email_logs` — Log invii email

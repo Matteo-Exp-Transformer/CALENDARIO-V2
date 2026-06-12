@@ -56,8 +56,7 @@
 
 ## 6. Rischi emersi
 
-- `create-booking` e `check-slot-availability` citano `service_slot_overrides.override_date`, mentre
-  schema/hook moderni usano `date_from/date_to`: da verificare prima dei test flusso slot.
+- `create-booking` cita `service_slot_overrides.override_date`, mentre schema/hook moderni usano `date_from/date_to`: da verificare prima dei test flusso slot con `slot_limit_enabled=true`. Il vecchio pre-check `check-slot-availability` è stato rimosso in WP-B5 (12-06-26), quindi non va più considerato fonte runtime.
 - In `WalkInModal`, busy check confronta `booking.placement` con `tableId`, ma il walk-in salva
   `placement` come nome tavolo. Possibile mismatch.
 - `AssignmentMapPanel` e renderizzato da `ServizioPage` senza controllo diretto `features.tableAssignments`.

@@ -358,7 +358,7 @@ Aggiornata via trigger da `booking_requests`. Vincolo: `UNIQUE(organization_id, 
 | `endpoint` | TEXT | Es. `'create-booking'` |
 | `requested_at` | TIMESTAMPTZ DEFAULT NOW() | |
 
-**RLS:** permissiva su INSERT per anon (necessaria per registrare le richieste). SELECT solo authenticated/service_role. Cleanup automatico NON schedulato — `cleanup_rate_limits()` esiste ma deve essere chiamata manualmente o via cron.
+**RLS:** permissiva su INSERT per anon (necessaria per registrare le richieste). SELECT solo authenticated/service_role. Migrazione `048_schedule_rate_limits_cleanup.sql` definisce `cleanup_rate_limits()` e programma `cleanup-rate-limits-hourly` via `pg_cron` per cancellare righe più vecchie di 1 ora.
 
 **Soglia attuale (Edge Function `create-booking`):** max **3 richieste/minuto** per IP. Sopra soglia → 429. Se l'IP ha anche ≥6 richieste in 10 min (= 2 sforamenti consecutivi della soglia) → ban 24h in `ip_blacklist`.
 
@@ -381,7 +381,9 @@ Aggiornata via trigger da `booking_requests`. Vincolo: `UNIQUE(organization_id, 
 
 **Perché auto-scadenza 24h e non permanente:** IP dinamici (NAT aziendali, WiFi pubblici, hotspot mobili) cambiano cliente frequentemente. Ban permanente bloccherebbe utenti onesti dopo riassegnazione DHCP. 24h è il compromesso tra protezione e accessibilità.
 
-Migrazione: `027_ip_blacklist.sql` (2026-05-23).
+Cleanup: la migrazione `048_schedule_rate_limits_cleanup.sql` cancella le righe con `expires_at < now() - interval '1 day'` tramite job orario `cleanup-rate-limits-hourly`.
+
+Migrazioni: `027_ip_blacklist.sql` (2026-05-23), cleanup schedulato in `048_schedule_rate_limits_cleanup.sql` (12-06-26).
 
 ---
 

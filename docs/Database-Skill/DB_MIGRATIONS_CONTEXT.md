@@ -14,9 +14,9 @@
 2. **Remoto (sola lettura per consultazione):** MCP `get_project_url` → deve rispondere TEST `docnnernvp` (sviluppo) o PROD `rwuxgvld` (sola lettura salvo conferma esplicita). Poi `list_migrations`.
 3. **Schema colonne/tabelle:** `DB_SCHEMA_CONTEXT.md` — aggiornare dopo ogni migrazione che introduce colonne.
 
-Ultimo file in repo (verificato 12-06-26): **`046_codify_policy_drift.sql`**. Prossima nuova migrazione: prefisso **`047_`**.
+Ultimo file in repo (verificato 12-06-26): **`048_schedule_rate_limits_cleanup.sql`**. Prossima nuova migrazione: prefisso **`049_`**.
 
-### Indice repo 040–046 (sintesi schema — non sostituisce i file SQL)
+### Indice repo 040–048 (sintesi schema — non sostituisce i file SQL)
 
 | File | Contenuto |
 |------|-----------|
@@ -27,6 +27,8 @@ Ultimo file in repo (verificato 12-06-26): **`046_codify_policy_drift.sql`**. Pr
 | `044_fix_booking_count_skip_restore.sql` | `increment_booking_count_on_accept()` — non conta transizione `deleted → accepted` |
 | `045_menu_magazzino_is_available.sql` | `menu_categories.is_available`, `menu_items.is_available` BOOLEAN NOT NULL DEFAULT true |
 | `046_codify_policy_drift.sql` | Codifica policy RLS `anon_select_active_organizations` (anon SELECT su `organizations`, `is_active = true`), prima presente sul DB ma fuori dalle migrazioni. Idempotente. NON restringe `restaurant_settings` (→ WP-B2) |
+| `047_restrict_anon_restaurant_settings.sql` | WP-B2: restringe anon SELECT su `restaurant_settings` a whitelist di key pubbliche; nuove key pubbliche richiedono update registry + nuova migrazione policy |
+| `048_schedule_rate_limits_cleanup.sql` | WP-B5: abilita `pg_cron`, definisce `cleanup_rate_limits()` e programma job orario `cleanup-rate-limits-hourly` |
 
 ### Due ambienti Supabase — non confonderli
 
@@ -37,7 +39,7 @@ Una migrazione applicata su un ambiente **NON** si propaga all'altro. Prima di d
 
 ### Snapshot remoto TEST (12-06-26, MCP `list_migrations` dopo `get_project_url` → docnnernvp)
 
-Registro remoto include tutte le migrazioni fino a `045_menu_magazzino_is_available` (versione timestamp `20260611193908`). I nomi nel registro remoto usano spesso suffissi descrittivi senza prefisso numerico (es. `clamp_booking_carousel_slide_text_limits` per il file `040_…`). Confrontare sempre per **nome descrittivo**, non solo per numero.
+Snapshot precedente: registro remoto includeva tutte le migrazioni fino a `045_menu_magazzino_is_available` (versione timestamp `20260611193908`). Dopo WP-B1/WP-B2 risultano versionate anche `046` e `047` nel repo; verificare sempre lo stato remoto con MCP `list_migrations`. La migrazione `048` è pronta in repo ma in sessione WP-B5 l'applicazione remota TEST è rimasta bloccata da permessi MCP/CLI.
 
 > **Nota PROD:** per stato produzione usare MCP prod in sola lettura. Report merge M3 (12-06-26) documenta `045` applicata anche in PROD.
 
@@ -61,7 +63,7 @@ Registro remoto include tutte le migrazioni fino a `045_menu_magazzino_is_availa
 
 ```bash
 # 1. Crea il file (naming numerico progressivo)
-# supabase/migrations/046_nome_descrittivo.sql
+# supabase/migrations/049_nome_descrittivo.sql
 
 # 2. Verifica ambiente prima di qualunque SQL remoto
 # MCP Supabase test: get_project_url deve rispondere docnnernvp
@@ -152,7 +154,7 @@ npm run db:types:linked
 
 | Pattern | Esempio | Note |
 |---------|---------|------|
-| ✅ Numerico progressivo | `046_nome_funzionalita.sql` | Standard del progetto |
+| ✅ Numerico progressivo | `049_nome_funzionalita.sql` | Standard del progetto |
 | ❌ Timestamp | `20260514000000_nome.sql` | Non usare — rompe l'allineamento |
 | ❌ Rinominare esistenti | — | **LOCK** — mai rinominare file già applicati |
 
