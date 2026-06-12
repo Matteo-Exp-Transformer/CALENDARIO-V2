@@ -53,6 +53,7 @@
 - Drag mappa disabilitato sotto 768px.
 - Slot supportano overnight; `max_turns=0` indica servizio chiuso.
 - Walk-in usa limite default 20 se setting assente; registry ammette 0..500, modal richiede 1..max.
+- **Guard modifiche non salvate (FU-023, M6 12-06-26):** modali sala/tavolo/fascia (`RoomConfigModal`, `TableFormModal`, `SlotModal` in `ServiceSlotsManager`) e card `WalkInLimitCard` usano `DiscardChangesConfirmModal` + `UnsavedChangesContext` (sorgenti `servizio-room-modal`, `servizio-table-modal`, `servizio-slot-modal`, `servizio-walk-in-limit`). Chiusura X/overlay/Annulla con form dirty → conferma in-app; navigazione sidebar Pro bloccata finché dirty. Pattern: `CustomerFormModal` / `MenuQrModal`. Test: `servizioModalsGuard.adminBlindatura.test.tsx`.
 
 ## 6. Rischi emersi
 
