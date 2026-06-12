@@ -371,8 +371,27 @@ npm run dev           # dev server :5173
 npm run typecheck     # tsc --noEmit — zero errori
 npm run lint          # ESLint — zero warning
 npm run test          # Vitest — npm run test deve essere verde
+npm run validate:docs # SOLO repo privata: link `.md` vivi (docs/ non esiste in PrenotaZen)
 npm run validate      # lint + typecheck + test (usare pre-PR)
+npm run release:prenotazen  # sync main → repo pubblica (vedi sotto)
 ```
+
+### 5b. Release PrenotaZen (repo pubblica)
+
+La repo **PrenotaZen** contiene solo codice app + README utente — **non** `docs/`, skill, agenti.
+Per questo motivo:
+
+| Controllo | Repo privata (CalendarBackup-v2) | PrenotaZen (pubblica) |
+|-----------|----------------------------------|------------------------|
+| `npm run validate:docs` | ✅ sì (CI + locale) | ❌ **no** — cartella `docs/` assente |
+| `npm run validate` | ✅ | ✅ |
+| `npm run build` | ✅ | ✅ obbligatorio pre-push |
+
+**Regola agente merge/release:** `scripts/sync-to-prenotazen.mjs` (`npm run release:prenotazen`) rimuove
+automaticamente da PrenotaZen: script `check-doc-paths.mjs`, allowlist, script `validate:docs` in
+`package.json` e step CI «Validate doc paths». **Non reintrodurre** questi artefatti nella pubblica
+né copiare `validate:docs` nel workflow CI di PrenotaZen. Fonte operativa: `CHIUSURA_SESSIONE.md`
+Parte B §5 + commenti in `sync-to-prenotazen.mjs`.
 
 ---
 

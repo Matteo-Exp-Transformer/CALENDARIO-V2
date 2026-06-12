@@ -194,9 +194,9 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 
 ### M6 — Cross-area prod-ready
 - **Dettaglio:** `docs/Admin-Skill/contesto/ADMIN_CONFLICTS_AND_DEBTS.md`.
-- **Stato:** 🔶 parziale 12-06-26 — chiusi i residui critici su auth admin rimossa, popup nativi
-  (`window.confirm`) nei file app vivi e `as any` nei punti booking/auth più critici. Restano aperti
-  email, audit fallback globale, logging completo e guard modali app-wide fuori Classic.
+- **Stato:** 🔶 parziale 12-06-26 — chiusi auth admin rimossa, popup nativi, cast critici, fallback demo
+  `booking_placement_areas`, guard dirty su CRM + overlay Categorie Menu + collapse nuova prenotazione.
+  Restano email, logging completo, audit fallback globale residuo, guard su Servizio/altri modali Pro.
 
 ---
 

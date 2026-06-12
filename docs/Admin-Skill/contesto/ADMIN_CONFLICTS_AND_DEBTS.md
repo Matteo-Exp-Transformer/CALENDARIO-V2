@@ -82,5 +82,5 @@ Da distinguere:
   critiche; restano cast in storage, Menu QR/categories/settings e servizi sync da affrontare per area.
 - **Conferme custom:** delete ingrediente, delete menù preselezionato, delete promo e reset
   Card/Carosello usano `Modal` in-app. Il pattern è bloccato da test statico anti-regressione.
-- **Ancora aperto:** email transazionali, logging completo, audit fallback globale e guard dirty
-  app-wide fuori superficie Classic.
+- **Ancora aperto:** email transazionali, logging completo, audit fallback globale residuo e guard dirty
+  su Servizio/altri modali Pro (CRM + Categorie Menu + nuova prenotazione coperti in 2° giro M6).

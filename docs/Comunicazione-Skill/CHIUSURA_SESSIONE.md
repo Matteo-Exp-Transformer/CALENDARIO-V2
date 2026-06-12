@@ -240,6 +240,17 @@ non dopo il merge. Il revisore che approva un merge con la skill stale ha lascia
   versionamento diversi). Differenze storiche note (003 duplicate, RPC consolidate) ≠ disallineamento.
 - **Mai scrivere su PROD** senza conferma esplicita di Matteo.
 
-## 5. Terminali (nota obbligatoria in chiusura chat, 1-2 righe)
+## 5. Release PrenotaZen (se il diff tocca codice servito)
+
+Flusso: `main` privato allineato → `npm run release:prenotazen` → in PrenotaZen `npm run validate` +
+`npm run build` → commit/push pubblico.
+
+**Regola docs/CI (obbligatoria):** PrenotaZen **non** contiene `docs/`. Lo script
+`scripts/sync-to-prenotazen.mjs` rimuove `validate:docs`, `scripts/check-doc-paths.mjs`,
+allowlist e lo step CI «Validate doc paths». **Non** portare questi controlli nella repo pubblica:
+`npm run validate` in PrenotaZen = lint + typecheck + test soltanto. In privato resta
+`validate:docs` + step CI docs.
+
+## 6. Terminali (nota obbligatoria in chiusura chat, 1-2 righe)
 - Suggerisci di chiudere SOLO i terminali aperti **dall'agente** (validate, `npm run dev` in background avviati da tool).
 - **Non** toccare il `npm run dev` che ha lanciato **Matteo** (può servirgli in locale).
