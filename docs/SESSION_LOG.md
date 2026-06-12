@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 12-06-26 | DB — **diagnosi WP-B5 apply TEST 048** 🔶 | [Report](Sessioni%20di%20lavoro/12-06-26/Report-diagnosi-wp-b5-test-apply-12-06-26.md) — CLI vede TEST `docnnernvp` e conferma 048 pendente; MCP vede solo PROD e nega `get_project_url` TEST; procedura aggiornata: fallback CLI TEST con checklist, no `db push` |
 | 12-06-26 | Codice/DB — **WP-B5 slot availability + cleanup rate limits** 🔶 | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b5-slot-availability-cleanup-rate-limits-12-06-26.md) — chiamata client `check-slot-availability` rimossa; EF locale rimossa; migrazione 048 applicata/verificata su PROD (`20260612131057`); apply TEST bloccato da permessi → `FU-B5-TEST-APPLY` |
 | 12-06-26 | Verifica — **WP-B3 Menu QR coperto** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-verifica-wp-b3-menu-qr-12-06-26.md) — nessun codice nuovo; controllato che `/menu/:slug` e pagine QR usano lo slug pubblico anche con sessione admin; test auth 7/7 + validate **560**; `FU-AUTH-2` resta Fatto |
 | 12-06-26 | Codice — **WP-B3 guard tenant pubblico/admin** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b3-guard-tenant-pubblico-admin-12-06-26.md) — sessione admin non sovrascrive `/prenota/:slug` e `/menu/:slug`; QA TEST slug `trattoria-da-tommaso`; validate **560**; privato `89c4c14`, PrenotaZen `ac9aeec`; MASTERPLAN AL-B WP-B3 ✅ |

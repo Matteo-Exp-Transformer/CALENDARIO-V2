@@ -37,8 +37,8 @@ Carica i file indicati **prima** di aprire qualsiasi file da modificare.
 1. Carica context (step 0)
 2. **Leggi** le migrazioni esistenti rilevanti — mai modificare quelle già applicate
 3. **Crea** il file migrazione numerato progressivamente (`008_*.sql`, `009_*.sql`, …)
-4. **Verifica ambiente** con MCP `get_project_url`: deve essere TEST `docnnernvp`, non produzione `rwuxgvld`
-5. **Applica** con MCP `Supabase_test__apply_migration`
+4. **Verifica ambiente**: con MCP `get_project_url` deve essere TEST `docnnernvp`; se usi CLI TEST, applica la checklist di `DB_MIGRATIONS_CONTEXT.md`/`APP_CONTEXT_SKILL.md` §1b
+5. **Applica** con MCP `Supabase_test__apply_migration` quando disponibile; fallback CLI TEST solo con conferma esplicita e strategia registro migrazioni documentata
 6. **Rigenera** tipi con MCP test / `npm run db:types:linked` solo se il link punta al DB test corretto
 7. **Valida**: `npm run typecheck && npm run lint && npm run test`
 
@@ -74,7 +74,7 @@ Due file hanno prefisso `003`:
 - `003_fix_tenant_usage_triggers_security_definer.sql`
 - `003_menu_categories.sql`
 
-`migration list --linked` mostra sempre una riga `003` con Remote vuoto — **falso positivo**, non un problema. `db push` normale funziona correttamente da 008 in poi. Non eseguire `db push --include-all`.
+`migration list --linked` mostra sempre una riga `003` con Remote vuoto — **falso positivo**, non un problema. Regola corrente del progetto: non usare `db push` né `db push --include-all`; applicare via MCP o fallback CLI documentato in `DB_MIGRATIONS_CONTEXT.md`.
 
 ---
 

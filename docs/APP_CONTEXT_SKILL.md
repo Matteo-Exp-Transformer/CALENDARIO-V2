@@ -108,9 +108,11 @@ Non mischiare mai i due client. `supabase` è per operazioni admin autenticate; 
 | PRODUZIONE — non toccare | `rwuxgvld` | `rwuxgvldzrkabglkasym.supabase.co` | `Supabase__*` (solo lettura, su richiesta esplicita) |
 
 - Prima di `apply_migration` / `execute_sql` / `generate_typescript_types`: chiamare `get_project_url` e **verificare che risponda `docnnernvp`**. Se risponde `rwuxgvld` è produzione → fermarsi.
-- `supabase db push` da CLI non è disponibile in questo ambiente: applicare le migrazioni via MCP `Supabase_test__apply_migration`.
-- I due DB si disallineano nella numerazione migrazioni. Allinearsi sempre allo stato del **test** con `Supabase_test__list_migrations`.
-- Il file in `supabase/migrations/` resta la fonte versionata; la migrazione va comunque scritta lì oltre che applicata via MCP sul test.
+- **Split operativo 12-06-26:** può capitare che il MCP veda solo PROD mentre la CLI vede solo TEST. In quel caso la CLI è il canale TEST ammesso per diagnostica (`projects list`, `orgs list`, `functions list`, `migration list`) e, solo con conferma esplicita di Matteo, per SQL TEST.
+- Checklist CLI TEST prima di qualunque SQL: `npx supabase projects list -o json` deve mostrare `id/ref = docnnernvpyrbwuzzach`, host `db.docnnernvpyrbwuzzach.supabase.co`, org `ytrppzjekipjubnygaos`; `supabase/.temp/project-ref` deve essere `docnnernvpyrbwuzzach`; `npx supabase migration list --linked` deve connettersi al remoto TEST. Se uno di questi controlli non combacia → STOP.
+- `supabase db push` resta vietato. Se si usa CLI per applicare SQL TEST, documentare prima come verrà aggiornato/verificato il registro migrazioni: `db query` esegue SQL ma non è equivalente a MCP `apply_migration`.
+- I due DB si disallineano nella numerazione migrazioni. Allinearsi sempre allo stato del **test** con `Supabase_test__list_migrations` se MCP TEST è disponibile, altrimenti con `npx supabase migration list --linked` dopo checklist CLI.
+- Il file in `supabase/migrations/` resta la fonte versionata; la migrazione va comunque scritta lì oltre che applicata sul test.
 
 ### 1b.1 Flusso branch + deploy (2 branch — deciso 30-05-26)
 

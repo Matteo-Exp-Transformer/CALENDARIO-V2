@@ -48,7 +48,7 @@ Per `cleanup_rate_limits()` ho preparato la migrazione 048 con job orario `pg_cr
 - PROD: `check-slot-availability` non risulta deployata; `create-booking` presente; migrazione `048_schedule_rate_limits_cleanup` applicata (`20260612131057`) e verificata.
 - Verifica PROD 048: `pg_cron_installed=true`, `cleanup_function_exists=true`, `cleanup_job_exists=true`, schedule `17 * * * *`, command `SELECT public.cleanup_rate_limits();`, `anon/authenticated` senza EXECUTE.
 - TEST via CLI: `check-slot-availability` risulta ancora deployata come legacy remoto, ma non viene più chiamata dal codice.
-- TEST via MCP/CLI: applicazione migrazione 048 non eseguita perché il progetto `docnnernvpyrbwuzzach` non era accessibile con i permessi disponibili in sessione.
+- TEST via MCP/CLI: applicazione migrazione 048 non eseguita. Diagnosi successiva 12-06-26: CLI vede `docnnernvpyrbwuzzach` e conferma `048` pendente; MCP vede solo PROD e nega `get_project_url` TEST.
 
 ## 5. QA
 
@@ -67,7 +67,7 @@ Per il ristoratore non cambia la schermata admin. In produzione il cleanup IP/ra
 
 ## 7. Debiti e follow-up
 
-- Aggiornato `FU-B5-TEST-APPLY`: PROD ok; resta applicare/verificare migrazione 048 su TEST con `get_project_url` corretto, controllare `cron.job`, valutare rimozione deploy legacy TEST `check-slot-availability`.
+- Aggiornato `FU-B5-TEST-APPLY`: PROD ok; resta applicare/verificare migrazione 048 su TEST. Serve MCP autorizzato su TEST oppure conferma esplicita per canale CLI TEST con checklist e strategia registro migrazioni; poi controllare `cron.job` e valutare rimozione deploy legacy TEST `check-slot-availability`.
 - `MASTERPLAN_ALLINEAMENTO.md`: WP-B5 resta 🔶, non ✅, perché il cancello remoto TEST non è stato superato.
 - PROD DB completato con conferma esplicita; nessun deploy Edge e nessuna prenotazione di test creata.
 
@@ -91,7 +91,7 @@ Per il ristoratore non cambia la schermata admin. In produzione il cleanup IP/ra
 ✅ R3: Allineati `ADMIN_CLASSIC_SKILL.md`, `ADMIN_SERVIZIO_CONTEXT.md`, `DB_SCHEMA_CONTEXT.md`, `DB_MIGRATIONS_CONTEXT.md`, `DATABASE.md`, `DATA_INVENTORY_CONTEXT.md`, `FOLLOW_UP.md`, `MASTERPLAN_ALLINEAMENTO.md`, `SESSION_LOG.md`, test `BookingRequestForm.flussoUtente.test.tsx`; tipi TS invariati e `typecheck` verde.
 
 ❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato?
-✅ R4: Non ho applicato la migrazione 048 sul DB TEST perché MCP/CLI non avevano permessi su `docnnernvp`; non ho rimosso il deploy legacy TEST `check-slot-availability`; non ho cambiato contratto `supabase` / `supabasePublic`. PROD è stata applicata solo dopo conferma esplicita Matteo.
+✅ R4: Non ho applicato la migrazione 048 sul DB TEST. Diagnosi aggiornata: CLI ha accesso TEST, MCP no; non ho forzato SQL CLI senza la salvaguardia/strategia registro. Non ho rimosso il deploy legacy TEST `check-slot-availability`; non ho cambiato contratto `supabase` / `supabasePublic`. PROD è stata applicata solo dopo conferma esplicita Matteo.
 
 ❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti?
 ✅ R5: Attrito principale: MCP TEST non accessibile ma istruzioni WP richiedono apply TEST; miglioria: aggiungere nel masterplan una voce esplicita “se TEST MCP non disponibile, chiudi 🔶 e crea FU apply remoto” per evitare false chiusure.
