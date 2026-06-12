@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 12-06-26 | Codice — **FU-LOG-1 edge functions** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu-log-1-edge-functions-12-06-26.md) — `_shared/log.ts`; `create-booking` + `validate-invite` (7 log strutturati); grep edge pulito salvo delega; validate **576**; FU-LOG-1 resta Aperto (scripts/debug) |
 | 12-06-26 | Docs — **chiusura M6 + prompt FU-046/FU-023/FU-LOG** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-chiusura-m6-docs-prompts-prossimi-12-06-26.md) — MASTERPLAN M6 + ADMIN_CONFLICTS allineati post FU-TYPES-1; 3 prompt esecutivi in chat; main @ 93d075d |
 | 12-06-26 | Codice+docs — **FU-TYPES-1 merge** ✅ | commit `ac7ae18` + `93d075d`; main/env/test allineati; PrenotaZen → senior |
 | 12-06-26 | Codice — **FU-TYPES-1 chiusura residuo A–D** ✅ (non committato) | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu-types-1-chiusura-residuo-12-06-26.md) — T1b+T6 sync+pagine QR+storage; 0 `as any` salvo WalkInLimitCard; smoke TEST OK Matteo; FOLLOW_UP FU-TYPES-1 Fatto |
