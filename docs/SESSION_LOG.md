@@ -13,6 +13,10 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 12-06-26 | Senior merge — **FU-LOG-1 edge già su main** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu-log-1-merge-commit-12-06-26.md) — commit `516317c` + `17e7843` già presenti; main/env/test @ `cff8bf6`; validate **576**; push/ff no-op; deploy edge TEST a Matteo; **lavoro ok** |
+| 12-06-26 | Controverifica — **FU-LOG-1 edge functions** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-controverifica-fu-log-1-edge-functions-12-06-26.md) — verdetto ✅ riserve minime; FAQ debito residuo (scripts/debug/lint); validate **576**; docs non committati; **lavoro ok** ×2 Matteo |
+| 12-06-26 | Codice+docs — **FU-046 U3/U9 merge** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu046-residui-u3-u9-12-06-26.md) — blocking tab drawer durante save + banner errore inline; commit `08408d3` + `1d9c769`; main/env/test @ `1d9c769`; validate **576**; suite prenotazioni **35**; PrenotaZen skip; FU-046 quasi chiuso (D6/D7/L*) |
+| 12-06-26 | Codice+docs — **M6 guard Servizio + FU-TYPES-1 WalkInLimitCard** 🔶 ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-m6-servizio-guard-fu-types-walkin-12-06-26.md) — modali sala/tavolo/slot + card walk-in: guard in-app + hook tipizzato; commit `a46a98f` + `cff8bf6`; main/env/test @ `cff8bf6`; validate **576**; controverifica 🔶 (smoke TEST opzionale); **lavoro ok** Matteo |
 | 12-06-26 | Codice — **FU-LOG-1 edge functions** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu-log-1-edge-functions-12-06-26.md) — `_shared/log.ts`; `create-booking` + `validate-invite` (7 log strutturati); grep edge pulito salvo delega; validate **576**; FU-LOG-1 resta Aperto (scripts/debug) |
 | 12-06-26 | Docs — **chiusura M6 + prompt FU-046/FU-023/FU-LOG** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-chiusura-m6-docs-prompts-prossimi-12-06-26.md) — MASTERPLAN M6 + ADMIN_CONFLICTS allineati post FU-TYPES-1; 3 prompt esecutivi in chat; main @ 93d075d |
 | 12-06-26 | Codice+docs — **FU-TYPES-1 merge** ✅ | commit `ac7ae18` + `93d075d`; main/env/test allineati; PrenotaZen → senior |

@@ -91,6 +91,7 @@ Fronti previsti:
 - `src/features/booking/utils/__tests__/serviceSlotBookingFilter.test.ts`
 - `src/features/booking/utils/__tests__/unassignedBookingsFilter.test.ts`
 - `src/features/booking/utils/__tests__/tableCheckout.test.ts`
+- `src/features/booking/components/__tests__/servizioModalsGuard.adminBlindatura.test.tsx` (3) → **FU-023** guard discard modale sala (`RoomConfigModal`: dirty → Annulla → `DiscardChangesConfirmModal`; Resta qui / Annulla modifiche). Tavolo/slot/walk-in: stesso pattern codice + anti-regressione `m6ProdReadyPatterns` (12-06-26).
 
 ## 6. CRM
 

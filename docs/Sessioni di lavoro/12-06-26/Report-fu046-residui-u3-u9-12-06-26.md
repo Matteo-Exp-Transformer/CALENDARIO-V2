@@ -3,8 +3,8 @@
 ## Cappello
 
 - **Cosa è cambiato:** sulla pagina admin Prenotazioni/Calendario, mentre il drawer dettaglio sta salvando (o elimina/no-show), **non puoi più cambiare tab** — compare un avviso e resti sulla sezione. Se il salvataggio fallisce, oltre al toast vedi un **messaggio rosso fisso dentro il drawer** che non sparisce finché non modifichi qualcosa o riprovi.
-- **Cosa resta:** D6/D7 guard difensivi DB, validazione ospiti L4/L10–L12 (FU-046 quasi chiuso); blocking su mutazioni fuori drawer (accetta/rifiuta in lista Prenotazioni) non esteso — fuori scope minimo U3.
-- **Serve una tua azione:** no per il codice; al «fai report finale» commit **atomico** FU-046 (vedi nota working tree sotto).
+- **Cosa resta:** D6/D7 guard difensivi DB, validazione ospiti L4/L10–L12 (FU-046 quasi chiuso); smoke browser tab-block durante save a 375/834 (follow-up manuale); batch B M6/Servizio ancora unstaged in locale.
+- **Serve una tua azione:** no — commit/push FU-046 completati (`08408d3` + `1d9c769`); `main`/`env/test` @ `1d9c769`.
 
 ---
 
@@ -42,9 +42,24 @@ Il guard **dirty** (C-U2) resta invariato: edit con campi cambiati → Salva/Ann
 - `bookingDetailsModal.u3u9.adminBlindatura.test.tsx` — +2 (U3 flag blocking, U9 alert).
 - Mock aggiornati: `AdminDashboard.adminRouting`, `bookingDetailsModal.noShow`.
 
-### Controverifica (post «lavoro ok»)
+### Controverifica (pre-commit)
 
-Sub-agente imparziale: verdetto **🔶** — U3/U9/LOCK/validate OK; attenzione commit (test `u3u9` untracked, tree misto con Servizio/M6 parallelo). Nessun fix codice richiesto dalla controverifica.
+Sub-agente imparziale: verdetto **🔶 accettabile** — U3/U9/LOCK/validate OK; attenzione hygiene commit (test `u3u9` untracked, tree misto con Servizio/M6). Nessun fix codice richiesto.
+
+### Batch A — commit/push (post controverifica)
+
+Profilo Senior merge/commit · branch `env/test` · HEAD base atteso `ea6c3c6`, effettivo `17e7843` (+2 commit FU-LOG-1 edge già locali).
+
+| Commit | Hash | Contenuto |
+|---|---|---|
+| 1 codice+test | `08408d3` | 7 file src — U3 blocking + U9 banner + test u3u9 (2) + context blocking (+1) |
+| 2 docs | `1d9c769` | report, ADMIN_PRENOTAZIONI §9, TEST_SUITE_INDEX §8, FOLLOW_UP FU-046 |
+
+- `npm run validate` pre-commit: **576** test verdi.
+- Pre-commit cold-check: 2 passate (codice + docs) — OK.
+- Push `origin/env/test` → `1d9c769`; FF merge `main` ← `env/test`; push `origin/main`.
+- PrenotaZen: **skip** (solo admin shell/drawer).
+- Tree post-push: M6/Servizio **unstaged** (stash temporaneo per checkout main, poi ripristinato).
 
 ---
 
@@ -56,7 +71,7 @@ Sub-agente imparziale: verdetto **🔶** — U3/U9/LOCK/validate OK; attenzione 
 | `src/features/booking/components/BookingDetailsModal.tsx` (LOCK) | U3 registration + U9 banner |
 | `src/pages/AdminDashboard.tsx` (LOCK) | history blocker + `hasBlockingOperations` |
 | `src/contexts/__tests__/UnsavedChangesContext.adminBlindatura.test.tsx` | test blocking |
-| `src/features/booking/components/__tests__/bookingDetailsModal.u3u9.adminBlindatura.test.tsx` | test U3/U9 (**untracked** — va staged al commit) |
+| `src/features/booking/components/__tests__/bookingDetailsModal.u3u9.adminBlindatura.test.tsx` | test U3/U9 (2 test, committato in `08408d3`) |
 | `src/pages/__tests__/AdminDashboard.adminRouting.test.tsx` | mock API context |
 | `src/features/booking/components/__tests__/bookingDetailsModal.noShow.adminBlindatura.test.tsx` | mock context |
 | `docs/Admin-Skill/contesto/ADMIN_PRENOTAZIONI_CONTEXT.md` §9 | U3/U9 ✅ |
@@ -67,9 +82,9 @@ Sub-agente imparziale: verdetto **🔶** — U3/U9/LOCK/validate OK; attenzione 
 
 `BookingDetailsModal` e `AdminDashboard`: nessuna prop obbligatoria nuova, nessuna signature mutation cambiata (`useBookingMutations.ts` non toccato), nessun tab rimosso, nessun `window.confirm`. Aggiunte solo: effect blocking, stato `saveError`, banner DOM, estensione context (opt-in).
 
-### Nota working tree (commit)
+### Nota working tree post-commit
 
-Il tree locale contiene **anche** modifiche parallele M6/Servizio (`RoomConfigModal`, `ServiceSlotsManager`, edge functions, ecc.) **fuori scope FU-046**. Al commit usare solo i file della tabella sopra + questo report.
+FU-046 committato in isolamento. Restano **unstaged** (batch B): `servizio/*`, `servizioModalsGuard.adminBlindatura.test.tsx`, `m6ProdReadyPatterns.test.ts`, riga M6 in `ADMIN_TEST_SUITE_INDEX.md`, `ADMIN_SERVIZIO_CONTEXT.md`, report M6 untracked.
 
 ---
 
@@ -98,15 +113,16 @@ Il tree locale contiene **anche** modifiche parallele M6/Servizio (`RoomConfigMo
 
 - **Prompt esecutivo (sessione lavoro):** FU-046 residui U3/U9 su `env/test`; priorità U3 → U9; LOCK `BookingDetailsModal`; patch minima; test `@admin-blindatura: prenotazioni`; `npm run validate`; fuori scope DB/email/Servizio/M4/M5.
 - **Prompt controverifica (questa chat):** profilo Verifica imparziale vs diff/report/FOLLOW_UP; tabella U3/U9/LOCK/test/validate/scope; max 5 finding; no commit.
-- **Prompt chiusura:** «lavoro ok» — report completo, no commit.
-- **Formato efficace:** obiettivo numerato (U3/U9), vincoli LOCK espliciti, scope negativo («non rifare U1–U7») — ha evitato re-lavoro batch 07-06-26.
+- **Prompt Batch A commit:** «Batch A — FU-046 U3/U9 commit/push; stage selettivo 10 src + doc; escludi Servizio/M6; 2 commit separati; validate; push env/test + FF main; skip PrenotaZen».
+- **Prompt chiusura:** «lavoro ok» — report completo aggiornato post-merge, no commit aggiuntivo.
+- **Formato efficace:** obiettivo numerato (U3/U9), lista file stage/esclusi esplicita, scope negativo («non rifare U1–U7») — ha evitato re-lavoro batch 07-06-26 e merge accidentale con Servizio.
 
 ---
 
 ## Analisi flusso prompt, efficienza e statistiche
 
-- **Prompt sostanziali Matteo:** 2 (esecuzione FU-046 implicita in sessione precedente + controverifica + lavoro ok).
-- **Correzioni dopo 1ª risposta:** 0 sul codice U3/U9; controverifica ha segnalato solo hygiene commit/doc.
+- **Prompt sostanziali Matteo:** 4 (esecuzione FU-046 sessione precedente + controverifica + Batch A commit/push + lavoro ok).
+- **Correzioni dopo 1ª risposta:** 0 sul codice U3/U9; Batch A ha richiesto stash M6 per checkout main (SESSION_LOG + TEST_SUITE_INDEX riga servizio).
 - **Follow-up generati:** 0 nuovi FU; FU-046 aggiornato a «quasi chiuso».
 - **Modalità alzata:** no (standard → verifica → chiusura).
 - **Cosa ha reso efficace il prompt:** riferimento esplicito a item già chiusi (U1–U7/U10/D3), pattern C-U2 come precedente, vincolo «no window.confirm».
@@ -116,9 +132,9 @@ Il tree locale contiene **anche** modifiche parallele M6/Servizio (`RoomConfigMo
 
 ## La TUA lettura della sessione
 
-**Impressioni:** il mandato FU-046 era stretto e ben delimitato; estendere `UnsavedChangesContext` invece di abusare `registerUnsavedSource` è stata la scelta giusta per non confondere blocking e dirty guard. La controverifica ha funzionato: ha intercettato il rischio commit (file untracked + tree misto) senza falsi negativi sul comportamento.
+**Impressioni:** mandato FU-046 stretto e ben delimitato; API `registerBlockingSource` separata dal dirty guard è stata la scelta giusta. Controverifica 🔶 + prompt Batch A con lista file hanno permesso commit pulito senza trascinare Servizio. Split commit codice/docs + cold-check pre-commit hanno funzionato come previsto.
 
-**Difficoltà:** test U9 inizialmente non raggiungeva `performSave` perché `isWallClockStartBeforeNow` apriva la modale orario passato — risolto mockando `dateUtils` nel test. Conteggio validate diverso (576 vs 573) perché lo stesso tree contiene lavoro M6 parallelo, non un bug U3/U9.
+**Difficoltà:** test U9 bloccato da `isWallClockStartBeforeNow` — fix mock `dateUtils`. Checkout main bloccato da modifiche M6 su `ADMIN_TEST_SUITE_INDEX.md` e `SESSION_LOG.md` — risolto con stash selettivo. HEAD locale `17e7843` ≠ `ea6c3c6` atteso nel prompt Batch A (2 commit FU-LOG-1 già presenti) — push ha portato tutto fino a `1d9c769` senza conflitti.
 
 **Migliorie suggerite (dato, non implementate):**
 - Nel prompt FU-046 futuro, aggiungere riga esplicita «commit atomico: lista file» per evitare merge accidentale con Servizio nello stesso stage.
@@ -134,32 +150,33 @@ Il tree locale contiene **anche** modifiche parallele M6/Servizio (`RoomConfigMo
 | Regex «blocca navigazione» match doppio | Matchava anche «Sblocca navigazione» | **errore agente** (test) — rinominati bottoni harness |
 | `FOLLOW_UP` FU-046 ancora con U3/U9 aperti | Allineamento doc non applicato in tree prima della chiusura | **errore agente** (doc) — fix in questo report |
 | `ADMIN_TEST_SUITE_INDEX` §8 header stale | Aggiornamento parziale (solo footnote riga 194) | **errore agente** (doc) — fix in chiusura |
-| Tree misto Servizio/M6 + test u3u9 untracked | Sessioni parallele sullo stesso branch senza stage selettivo | **vincolo strutturale** (workflow) — nota per «fai report finale» |
+| Tree misto Servizio/M6 + test u3u9 untracked | Sessioni parallele sullo stesso branch senza stage selettivo | **vincolo strutturale** (workflow) — risolto con stage selettivo Batch A |
+| Checkout main bloccato da M6 su TEST_SUITE_INDEX/SESSION_LOG | Modifiche parallele non stashed | **vincolo strutturale** — stash + pop; M6 resta unstaged |
 
 ---
 
 ## Cosa resta per la prossima sessione
 
 - **FU-046 quasi chiuso:** restano D6/D7, L4/L10–L12 (non bloccanti M2).
-- **Commit FU-046:** su «fai report finale» — stage solo file tabella § File toccati + report; includere `bookingDetailsModal.u3u9.adminBlindatura.test.tsx`.
-- **QA browser opzionale:** smoke tab-block durante save reale a 375/834 (non richiesto dal prompt esecutivo).
-- **Lavoro parallelo M6/Servizio:** commit separato (report dedicato in tree: `Report-m6-servizio-guard-fu-types-walkin-12-06-26.md`).
+- **Batch B — FU-023 Servizio guard:** tree locale pronto (modali sala/tavolo/slot, test `servizioModalsGuard`, report M6 untracked).
+- **QA browser opzionale:** smoke tab-block durante save reale a 375/834 (follow-up manuale Matteo).
+- **Report aggiornato post-merge:** questo file ha sezione Batch A; al «fai report finale» eventuale commit doc-only se serve allineare report committato in `1d9c769`.
 
 ---
 
 ## 11. Domande di chiusura
 
 ❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.
-✅ R1: (1) Esecuzione FU-046 U3/U9 — «Obiettivo FU-046 residui Admin Area 2: U3 bloccare/gestire cambio tab durante mutation/drawer dirty; U9 banner errore inline drawer; priorità U3→U9; LOCK BookingDetailsModal; patch minima; test @admin-blindatura prenotazioni; validate verde; fuori scope DB/email/Servizio/M4/M5». (2) Controverifica — «Profilo Verifica imparziale; confronta prompt vs diff vs report; tabella U3/U9/LOCK/test/validate/scope/FOLLOW_UP; verdetto; NON committare». (3) «lavoro ok».
+✅ R1: (1) Esecuzione FU-046 U3/U9 — «Obiettivo FU-046 residui Admin Area 2: U3 bloccare/gestire cambio tab durante mutation/drawer dirty; U9 banner errore inline drawer; priorità U3→U9; LOCK BookingDetailsModal; patch minima; test @admin-blindatura prenotazioni; validate verde; fuori scope DB/email/Servizio/M4/M5». (2) Controverifica — «Profilo Verifica imparziale; confronta prompt vs diff vs report; tabella U3/U9/LOCK/test/validate/scope/FOLLOW_UP; verdetto; NON committare». (3) Batch A — «Batch A — FU-046 U3/U9 commit/push; stage selettivo; escludi Servizio/M6; 2 commit; validate; push env/test + FF main; skip PrenotaZen». (4) «lavoro ok».
 
 ❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.
-✅ R2: Ri-verificato: `UnsavedChangesContext.tsx` (+53 righe, `registerBlockingSource`/`hasBlockingOperations`); `BookingDetailsModal.tsx` (+39, effect U3 + `saveError` banner U9); `AdminDashboard.tsx` (+13, history blocker); test u3u9 (2 `it`), context (+1 `it` blocking); `useBookingMutations.ts` **non** nel diff FU-046. Validate 576 verde (23:28). File u3u9 **untracked**. Tree include anche Servizio — escluso dal perimetro FU-046.
+✅ R2: Ri-verificato post-merge: commit `08408d3` = 7 file, +364/−6 righe; `1d9c769` = 4 doc + report. `git show 08408d3 --stat` conferma u3u9 tracked (188 righe, 2 test). Suite prenotazioni core **35** (+3). Validate **576** verde pre-commit Batch A. `main`/`env/test` @ `1d9c769`. Servizio/M6 fuori commit — ancora modified/untracked in working tree locale.
 
 ❓ Q3 — File correlati allineati? Quali file erano collegati alla modifica e hai verificato che siano aggiornati?
 ✅ R3: Allineati in chiusura: `ADMIN_PRENOTAZIONI_CONTEXT` §9, `ADMIN_TEST_SUITE_INDEX` §8 (header + elenco 35 test), `FOLLOW_UP` FU-046. `ADMIN_CLASSIC_SKILL` non modificato — contratti LOCK invariati, comportamento coerente con §4 snapshot (dirty guard C-U2 + U7 chiusura).
 
 ❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato?
-✅ R4: D6/D7 guard DB difensivi; L4/L10–L12 validazione ospiti; blocking su PendingRequestsTab/ArchiveTab (mutazioni fuori drawer); portale modale shell; QA browser 375/834; commit/push (vietato su «lavoro ok»). U9 solo su errore **Salva** — cancel/no-show restano su toast/modale esistenti (voluto, coerente prompt).
+✅ R4: D6/D7 guard DB difensivi; L4/L10–L12 validazione ospiti; blocking su PendingRequestsTab/ArchiveTab; portale modale shell; QA browser 375/834 tab-block durante save; PrenotaZen release; batch B M6/Servizio commit. U9 solo su errore **Salva** (voluto). Commit/push FU-046 eseguiti in Batch A (prompt dedicato), non su «lavoro ok».
 
 ❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti?
 ✅ R5: Attrito = distinguere blocking da dirty nel context senza rompere C-U2 — risolto con API separata. Attrito commit = tree misto M6+FU-046 nello stesso working tree — miglioria: checklist «file da stage» nel prompt esecutivo o in PREPARA_PROMPT per batch paralleli. Test drawer: mockare sempre `isWallClockStartBeforeNow` quando la data booking è «oggi».
@@ -171,9 +188,9 @@ Il tree locale contiene **anche** modifiche parallele M6/Servizio (`RoomConfigMo
 
 ## 12. Self-review (checklist pre-hook)
 
-1. **Dati = diff reale** — ✅ riletto diff FU-046 (8 file, ~181 righe); validate 576; nota tree misto.
-2. **File correlati allineati** — ✅ FOLLOW_UP + TEST_SUITE_INDEX corretti in questa chiusura.
-3. **Q1-Q6 coerenti** — ✅ nessuna contraddizione con controverifica 🔶.
-4. **Tono utente** — ✅ cappello e sezioni per flusso ristoratore.
+1. **Dati = diff reale** — ✅ commit `08408d3`/`1d9c769` riletti; hash e conteggi test allineati.
+2. **File correlati allineati** — ✅ skill committate in `1d9c769`; SESSION_LOG aggiornato in chiusura «lavoro ok».
+3. **Q1-Q6 coerenti** — ✅ include Batch A commit + stato post-push.
+4. **Tono utente** — ✅ cappello per flusso ristoratore (drawer, tab, banner errore).
 
-Correzioni applicate in self-review: aggiornati `FOLLOW_UP.md` FU-046 e `ADMIN_TEST_SUITE_INDEX.md` §8 header (erano stale rispetto al footnote U3/U9).
+Correzioni applicate in self-review «lavoro ok»: sezione Batch A commit/push; cappello post-merge; Q1–Q4 aggiornate; nota working tree M6 unstaged.
