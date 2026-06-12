@@ -195,10 +195,10 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 ### M6 — Cross-area prod-ready
 - **Dettaglio:** `docs/Admin-Skill/contesto/ADMIN_CONFLICTS_AND_DEBTS.md`.
 - **Stato:** 🔶 parziale 12-06-26 — chiusi auth admin rimossa, popup nativi, cast critici booking/auth,
-  fallback demo `booking_placement_areas`, **orari default e sfondo Pagina Prenota (3° giro)**, guard dirty
-  su CRM + overlay Categorie Menu + collapse nuova prenotazione, `menuQrStorage` senza `as any`.
-  Restano email, logging edge/scripts, audit fallback residuo (form config), guard Servizio/altri modali Pro,
-  hook Supabase `as any`.
+  fallback demo `booking_placement_areas`, **orari default, sfondo e form config Pagina Prenota** (EmptyState
+  se `booking_public_form_config` assente), guard dirty su CRM + overlay Categorie Menu + collapse nuova
+  prenotazione, `menuQrStorage` senza `as any`.
+  Restano email, logging edge/scripts, guard Servizio/altri modali Pro, hook Supabase `as any`.
 
 ---
 

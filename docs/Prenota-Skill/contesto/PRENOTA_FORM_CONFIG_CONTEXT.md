@@ -98,9 +98,11 @@ description: >-
 - Le sottotab stanno in `booking_public_form_config.booking_modes[].sub_tabs[]`.
 - Non usare piu la vecchia distinzione salvata `type: preset|manual`: la scelta admin e `display: 'cards' | 'carousel'`.
 - **Pagina Prenota pubblica:** sottotab `display: 'carousel'` → solo carosello (`carousel_items`); **nessuna** griglia `MenuSelection` sotto. Sottotab `display: 'cards'` → card + griglia menù (se tipologia con menù e preset collegato). Senza sottotab card/carousel valide salvate, nessuna `MenuSelection` legacy.
-- **Default nuovo tenant:** `DEFAULT_BOOKING_FORM_CONFIG` non deve contenere nomi specifici tipo
-  tavolo/rinfresco/menù fisso come contenuto pubblico già attivo. Usa testi placeholder admin
-  (“Compila…”) e tipologie disabilitate finché Mario non salva la configurazione.
+- **Default nuovo tenant (solo admin):** `DEFAULT_BOOKING_FORM_CONFIG` è seed dell’editor Personalizza
+  form (`BookingFormConfigPanel`), non viene più iniettato sulla Pagina Prenota pubblica. Se in DB
+  manca `booking_public_form_config` o non ha `booking_modes` utilizzabili, `parseFromDb` → `null` e
+  il cliente vede EmptyState («Form prenotazione non ancora configurato»). Placeholder admin
+  (“Compila…”) e tipologie disabilitate finché Mario non salva.
 - I dati visuali **Card scorrevole** sono sulla sottotab: `label`, `description`, `courses_label`, `price_per_person`, `is_fixed_menu`, `hidden_*`, `preset_id`.
 - Il **Carosello** salva testi/icona per slide in `carousel_items[]` (`eyebrow`, `title`, `description`, `icon`); il titolo tecnico nell'editor (campo admin **Nome carosello** = `sub_tabs[].label`) è modificabile e non viene sovrascritto dai testi slide né dal normalizer; può salvare `price_per_person` e in Prenota quel prezzo viene usato come prezzo a persona.
 - `preset_id` collega un menu preselezionato solo per precompilare gli ingredienti del form pubblico. Importare un preset in Personalizza form compila i campi della card (nome preset come etichetta iniziale), ma non modifica `booking_custom_staff_presets` nella tab Menu.
