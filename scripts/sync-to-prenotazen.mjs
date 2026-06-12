@@ -32,6 +32,9 @@ import { execSync } from 'node:child_process'
 import { existsSync, rmSync, readdirSync, cpSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createCliLogger } from './_cliLog.mjs'
+
+const { log, ok, fail } = createCliLogger('sync-to-prenotazen')
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const DEV_ROOT = resolve(__dirname, '..') // CalendarBackup-v2
@@ -89,29 +92,23 @@ const PUBLIC_PACKAGE_NAME = 'prenotazen'
 // rimossi in dev spariscono anche in pubblico. NON tocchiamo .git, node_modules, dist.
 const PRESERVE_IN_PUBLIC = new Set(['.git', 'node_modules', 'dist', '.vercel'])
 
-const log = (msg) => console.log(`\n▶ ${msg}`)
-const ok = (msg) => console.log(`  ✓ ${msg}`)
-const fail = (msg) => {
-  console.error(`\n✖ ${msg}\n`)
-  process.exit(1)
-}
-
 const sh = (cmd, opts = {}) =>
   execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], ...opts }).trim()
 
 // --- 1. Controlli di sicurezza su CalendarBackup-v2 -------------------------
-log('Controllo stato repo dev (CalendarBackup-v2)')
+log('\n▶ Controllo stato repo dev (CalendarBackup-v2)')
 
 let branch
 try {
   branch = sh('git rev-parse --abbrev-ref HEAD', { cwd: DEV_ROOT })
 } catch {
-  fail('Non sono in una repo git? Lancia lo script da dentro CalendarBackup-v2.')
+  fail('Non sono in una repo git? Lancia lo script da dentro CalendarBackup-v2.', 1)
 }
 if (branch !== 'main') {
   fail(
     `Sei sul branch "${branch}", ma la release pubblica parte SOLO da main.\n` +
       `  Fai prima: git checkout main && git merge env/test (o il tuo branch) && git pull`,
+    1,
   )
 }
 ok('sei su main')
@@ -125,6 +122,7 @@ if (dirty) {
         .slice(0, 10)
         .map((l) => '    ' + l)
         .join('\n'),
+    1,
   )
 }
 ok('working tree pulito')
@@ -134,6 +132,7 @@ if (!existsSync(PUBLIC_ROOT)) {
     `Repo pubblica non trovata in: ${PUBLIC_ROOT}\n` +
       `  Deve esistere il clone sorella PrenotaZen accanto a CalendarBackup-v2.\n` +
       `  Clona con: git clone https://github.com/Matteo-Exp-Transformer/PrenotaZen.git`,
+    1,
   )
 }
 ok(`repo pubblica trovata: ${PUBLIC_ROOT}`)
@@ -193,13 +192,14 @@ if (!existsSync(OVERRIDES_ROOT)) {
   fail(
     `Cartella override mancante: ${OVERRIDES_ROOT}\n` +
       `  Deve contenere le versioni pubbliche dei file (README.md, .gitignore, ...).`,
+    1,
   )
 }
 for (const rel of PUBLIC_OVERRIDES) {
   const src = join(OVERRIDES_ROOT, rel)
   const dst = join(PUBLIC_ROOT, rel)
   if (!existsSync(src)) {
-    fail(`Override atteso ma assente: ${src}\n  Aggiungilo o rimuovilo da PUBLIC_OVERRIDES.`)
+    fail(`Override atteso ma assente: ${src}\n  Aggiungilo o rimuovilo da PUBLIC_OVERRIDES.`, 1)
   }
   cpSync(src, dst)
   ok(`override applicato: ${rel}`)
@@ -235,11 +235,11 @@ if (existsSync(publicCiPath)) {
 }
 
 // --- 7. Esito + istruzioni finali -------------------------------------------
-log('Stato finale di PrenotaZen')
+log('\n▶ Stato finale di PrenotaZen')
 const status = sh('git status --short', { cwd: PUBLIC_ROOT })
-console.log(status ? status : '  (nessuna differenza: PrenotaZen è già allineata a main)')
+log(status ? status : '  (nessuna differenza: PrenotaZen è già allineata a main)')
 
-console.log(`
+log(`
 ────────────────────────────────────────────────────────────
 ✅ Sync completato — main@${headSha} copiato in PrenotaZen.
 

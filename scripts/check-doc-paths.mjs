@@ -31,6 +31,9 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createCliLogger } from './_cliLog.mjs'
+
+const { log, fail } = createCliLogger('check-doc-paths')
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(__dirname, '..')
@@ -44,8 +47,6 @@ const EXCLUDED_DIRS = ['Sessioni di lavoro', '_lavoro', 'Archivio']
 const toPosix = (p) => p.split('\\').join('/')
 const relFromRepo = (absPath) => toPosix(absPath).slice(toPosix(REPO_ROOT).length + 1)
 
-const log = (msg) => console.log(msg)
-
 // --- 0. allowlist -----------------------------------------------------------
 let allowlist = new Set()
 if (existsSync(ALLOWLIST_PATH)) {
@@ -55,8 +56,7 @@ if (existsSync(ALLOWLIST_PATH)) {
       allowlist = new Set(raw.map((e) => toPosix(String(e.path)).replace(/^\.?\//, '')))
     }
   } catch (err) {
-    console.error(`\n✖ Allowlist illeggibile (${ALLOWLIST_PATH}): ${err.message}\n`)
-    process.exit(1)
+    fail(`Allowlist illeggibile (${ALLOWLIST_PATH})`, err, 1)
   }
 }
 
@@ -79,8 +79,7 @@ function collectDocs(dir) {
 }
 
 if (!existsSync(DOCS_ROOT)) {
-  console.error(`\n✖ Cartella docs/ non trovata in ${DOCS_ROOT}\n`)
-  process.exit(1)
+  fail(`Cartella docs/ non trovata in ${DOCS_ROOT}`, 1)
 }
 
 const docFiles = collectDocs(DOCS_ROOT)
