@@ -2,13 +2,13 @@
 
 Data: 12-06-26  
 Branch: `env/test`  
-Esito: 🔶 repo, QA locale e PROD completati; applicazione remota TEST della migrazione 048 bloccata da permessi.
+Esito: ✅ repo, QA locale, TEST e PROD completati. TEST chiuso in sessione successiva 12-06-26 via CLI Codex autorizzata da Matteo.
 
 ## 1. Cappello
 
 Ho applicato la decisione confermata da Matteo: non deployare `check-slot-availability` su PROD e rimuovere la chiamata client fail-open dal form pubblico.  
 Il controllo disponibilità resta centralizzato in `create-booking`, che è la sorgente runtime definitiva al submit.  
-Per `cleanup_rate_limits()` ho preparato la migrazione 048 con job orario `pg_cron`; dopo conferma esplicita Matteo del 12-06-26 è stata applicata e verificata su PROD. Il deploy DB su TEST resta da fare appena il canale MCP/CLI ha permessi corretti.
+Per `cleanup_rate_limits()` ho preparato la migrazione 048 con job orario `pg_cron`; dopo conferma esplicita Matteo del 12-06-26 è stata applicata e verificata su PROD. In sessione successiva, con conferma Matteo, Codex l'ha applicata e verificata anche su TEST.
 
 ## 2. Cosa è cambiato
 
@@ -48,7 +48,7 @@ Per `cleanup_rate_limits()` ho preparato la migrazione 048 con job orario `pg_cr
 - PROD: `check-slot-availability` non risulta deployata; `create-booking` presente; migrazione `048_schedule_rate_limits_cleanup` applicata (`20260612131057`) e verificata.
 - Verifica PROD 048: `pg_cron_installed=true`, `cleanup_function_exists=true`, `cleanup_job_exists=true`, schedule `17 * * * *`, command `SELECT public.cleanup_rate_limits();`, `anon/authenticated` senza EXECUTE.
 - TEST via CLI: `check-slot-availability` risulta ancora deployata come legacy remoto, ma non viene più chiamata dal codice.
-- TEST via MCP/CLI: applicazione migrazione 048 non eseguita perché il progetto `docnnernvpyrbwuzzach` non era accessibile con i permessi disponibili in sessione.
+- TEST via CLI Codex: migrazione 048 applicata e verificata il 12-06-26 su `docnnernvpyrbwuzzach`; registro remoto marcato `048`. Verificati `pg_cron`, funzione `public.cleanup_rate_limits()`, job `cleanup-rate-limits-hourly`, schedule `17 * * * *`, comando `SELECT public.cleanup_rate_limits();`, revoche EXECUTE per `anon/authenticated`.
 
 ## 5. QA
 
@@ -67,8 +67,8 @@ Per il ristoratore non cambia la schermata admin. In produzione il cleanup IP/ra
 
 ## 7. Debiti e follow-up
 
-- Aggiornato `FU-B5-TEST-APPLY`: PROD ok; resta applicare/verificare migrazione 048 su TEST con `get_project_url` corretto, controllare `cron.job`, valutare rimozione deploy legacy TEST `check-slot-availability`.
-- `MASTERPLAN_ALLINEAMENTO.md`: WP-B5 resta 🔶, non ✅, perché il cancello remoto TEST non è stato superato.
+- Chiuso `FU-B5-TEST-APPLY`: TEST ok e PROD ok.
+- `MASTERPLAN_ALLINEAMENTO.md`: WP-B5 passa ✅.
 - PROD DB completato con conferma esplicita; nessun deploy Edge e nessuna prenotazione di test creata.
 
 ## 8. Skill e documentazione aggiornate
@@ -91,7 +91,7 @@ Per il ristoratore non cambia la schermata admin. In produzione il cleanup IP/ra
 ✅ R3: Allineati `ADMIN_CLASSIC_SKILL.md`, `ADMIN_SERVIZIO_CONTEXT.md`, `DB_SCHEMA_CONTEXT.md`, `DB_MIGRATIONS_CONTEXT.md`, `DATABASE.md`, `DATA_INVENTORY_CONTEXT.md`, `FOLLOW_UP.md`, `MASTERPLAN_ALLINEAMENTO.md`, `SESSION_LOG.md`, test `BookingRequestForm.flussoUtente.test.tsx`; tipi TS invariati e `typecheck` verde.
 
 ❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato?
-✅ R4: Non ho applicato la migrazione 048 sul DB TEST perché MCP/CLI non avevano permessi su `docnnernvp`; non ho rimosso il deploy legacy TEST `check-slot-availability`; non ho cambiato contratto `supabase` / `supabasePublic`. PROD è stata applicata solo dopo conferma esplicita Matteo.
+✅ R4: Non ho applicato la migrazione 048 sul DB TEST. Diagnosi aggiornata: CLI ha accesso TEST, MCP no; non ho forzato SQL CLI senza la salvaguardia/strategia registro. Non ho rimosso il deploy legacy TEST `check-slot-availability`; non ho cambiato contratto `supabase` / `supabasePublic`. PROD è stata applicata solo dopo conferma esplicita Matteo.
 
 ❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti?
 ✅ R5: Attrito principale: MCP TEST non accessibile ma istruzioni WP richiedono apply TEST; miglioria: aggiungere nel masterplan una voce esplicita “se TEST MCP non disponibile, chiudi 🔶 e crea FU apply remoto” per evitare false chiusure.

@@ -11,7 +11,7 @@
 ### Fonti verificabili (ordine obbligatorio)
 
 1. **Repo (versionato):** `supabase/migrations/*.sql` — naming `NNN_descrizione.sql`. Glob dalla root del progetto.
-2. **Remoto (sola lettura per consultazione):** MCP `get_project_url` → deve rispondere TEST `docnnernvp` (sviluppo) o PROD `rwuxgvld` (sola lettura salvo conferma esplicita). Poi `list_migrations`.
+2. **Remoto (sola lettura per consultazione):** MCP `get_project_url` → deve rispondere TEST `docnnernvp` (sviluppo) o PROD `rwuxgvld` (sola lettura salvo conferma esplicita). Poi `list_migrations`. Se l'agente ha un canale TEST specifico, seguire le istruzioni dedicate dell'agente senza estenderle agli altri ambienti.
 3. **Schema colonne/tabelle:** `DB_SCHEMA_CONTEXT.md` — aggiornare dopo ogni migrazione che introduce colonne.
 
 Ultimo file in repo (verificato 12-06-26): **`048_schedule_rate_limits_cleanup.sql`**. Prossima nuova migrazione: prefisso **`049_`**.
@@ -28,18 +28,18 @@ Ultimo file in repo (verificato 12-06-26): **`048_schedule_rate_limits_cleanup.s
 | `045_menu_magazzino_is_available.sql` | `menu_categories.is_available`, `menu_items.is_available` BOOLEAN NOT NULL DEFAULT true |
 | `046_codify_policy_drift.sql` | Codifica policy RLS `anon_select_active_organizations` (anon SELECT su `organizations`, `is_active = true`), prima presente sul DB ma fuori dalle migrazioni. Idempotente. NON restringe `restaurant_settings` (→ WP-B2) |
 | `047_restrict_anon_restaurant_settings.sql` | WP-B2: restringe anon SELECT su `restaurant_settings` a whitelist di key pubbliche; nuove key pubbliche richiedono update registry + nuova migrazione policy |
-| `048_schedule_rate_limits_cleanup.sql` | WP-B5: abilita `pg_cron`, definisce `cleanup_rate_limits()` e programma job orario `cleanup-rate-limits-hourly`. PROD applicata/verificata 12-06-26 (`20260612131057`); TEST bloccata da permessi MCP/CLI |
+| `048_schedule_rate_limits_cleanup.sql` | WP-B5: abilita `pg_cron`, definisce `cleanup_rate_limits()` e programma job orario `cleanup-rate-limits-hourly`. TEST applicata/verificata 12-06-26 (`048`); PROD applicata/verificata 12-06-26 (`20260612131057`) |
 
 ### Due ambienti Supabase — non confonderli
 
-- **PRODUZIONE**: `rwuxgvldzrkabglkasym.supabase.co` — MCP `user-supabase-prod`. Sola lettura salvo conferma esplicita.
-- **TEST/staging**: `docnnernvpyrbwuzzach.supabase.co` — MCP `user-supabase-test`. Ambiente di sviluppo abituale.
+- **PRODUZIONE**: `rwuxgvldzrkabglkasym.supabase.co` — canale PROD autorizzato, sola lettura salvo conferma esplicita.
+- **TEST/staging**: `docnnernvpyrbwuzzach.supabase.co` — canale TEST autorizzato nell'ambiente agente. Ambiente di sviluppo abituale.
 
 Una migrazione applicata su un ambiente **NON** si propaga all'altro. Prima di diagnosticare un errore DB, verificare su quale ambiente sta testando l'utente (`docnnernvp` = test, `rwuxgvld` = prod).
 
-### Snapshot remoto TEST (12-06-26, MCP `list_migrations` dopo `get_project_url` → docnnernvp)
+### Snapshot remoto TEST (12-06-26)
 
-Snapshot precedente: registro remoto includeva tutte le migrazioni fino a `045_menu_magazzino_is_available` (versione timestamp `20260611193908`). Dopo WP-B1/WP-B2 risultano versionate anche `046` e `047` nel repo; verificare sempre lo stato remoto con MCP `list_migrations`. La migrazione `048` è pronta in repo ma in sessione WP-B5 l'applicazione remota TEST è rimasta bloccata da permessi MCP/CLI.
+Registro remoto TEST allineato a `048` il 12-06-26. In sessione Codex, il connettore Supabase ChatGPT vedeva solo l'organizzazione PROD; con conferma esplicita Matteo, Codex ha applicato `048` su TEST via CLI Supabase dopo checklist progetto/link, poi ha marcato il registro con `migration repair --status applied 048 --linked`. Verificati `pg_cron`, funzione `public.cleanup_rate_limits()`, job `cleanup-rate-limits-hourly` (`17 * * * *`) e revoke execute da `anon/authenticated`.
 
 > **Nota PROD:** `048_schedule_rate_limits_cleanup` applicata su PROD `rwuxgvld` il 12-06-26 con conferma Matteo; registro `20260612131057`; verificati `pg_cron`, funzione `public.cleanup_rate_limits()`, job `cleanup-rate-limits-hourly` (`17 * * * *`) e revoke execute da `anon/authenticated`.
 
@@ -66,10 +66,11 @@ Snapshot precedente: registro remoto includeva tutte le migrazioni fino a `045_m
 # supabase/migrations/049_nome_descrittivo.sql
 
 # 2. Verifica ambiente prima di qualunque SQL remoto
-# MCP Supabase test: get_project_url deve rispondere docnnernvp
+# Il canale TEST autorizzato deve rispondere docnnernvp.
 
-# 3. Applica via MCP sul DB TEST
-# Supabase_test__apply_migration(name, query)
+# 3. Applica sul DB TEST dal canale autorizzato dell'agente
+# Non usare db push. Se il canale non aggiorna il registro, definire prima
+# strategia di verifica schema + repair della migration history.
 
 # 4. Rigenera i tipi TypeScript dal DB test corretto
 npm run db:types:linked
@@ -130,11 +131,11 @@ Il registro remoto ora contiene le versioni numeriche 001–007 + versioni times
 # Verifica stato migrazioni
 npx supabase migration list --linked
 
-# Dry run (vedi cosa verrebbe applicato)
+# Dry run storico/diagnostico: NON usare come via di applicazione in questo repo
 npx supabase db push --dry-run
 
-# Applica migrazioni pendenti
-npx supabase db push
+# Vietato in questo repo
+# npx supabase db push
 
 # Marca una versione come applicata (senza eseguire SQL)
 npx supabase migration repair --status applied <version>

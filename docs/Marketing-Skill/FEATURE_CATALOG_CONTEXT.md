@@ -10,7 +10,7 @@ description: >-
 
 | feature_key | Descrizione per il cliente | Edition di default | Vendibile come add-on | Prezzo add-on |
 |-------------|---------------------------|-------------------|----------------------|---------------|
-| `qrMenu` | Menu digitale via QR code — i clienti scansionano il QR e vedono il menu sul telefono, con foto dei piatti | Pro/Enterprise incluso | ✅ Sì — anche per Classic | Da definire |
+| `qrMenu` | Menu digitale via QR code — i clienti scansionano il QR e vedono il menu sul telefono, con foto dei piatti | Pro/Enterprise incluso | ✅ Sì — anche per Classic | **+16€/mese** (+160€/anno) — vedi `EDITION_PRICING_CONTEXT.md` |
 | `sidebar` | Dashboard con sidebar completa (CRM, Servizio, Analytics, Home) | Pro/Enterprise incluso | — (è il Pro stesso) | — |
 | `servizio` | Gestione turni e assegnazione tavoli | Pro/Enterprise incluso | ❌ No (richiede sidebar) | — |
 | `analytics` | Report e statistiche prenotazioni | Pro/Enterprise incluso | 🔜 Previsto | Da definire |

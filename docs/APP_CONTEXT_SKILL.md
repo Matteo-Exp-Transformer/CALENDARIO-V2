@@ -102,15 +102,16 @@ Non mischiare mai i due client. `supabase` è per operazioni admin autenticate; 
 
 **Tutto lo sviluppo (migrazioni, RPC, query manuali, rigenerazione tipi) va fatto sul server di TEST, mai su produzione.**
 
-| Ambiente | Project ref | URL | MCP tool da usare |
+| Ambiente | Project ref | URL | Canale DB |
 |----------|-------------|-----|-------------------|
-| **TEST** ← usare sempre | `docnnernvp` | `docnnernvpyrbwuzzach.supabase.co` | `Supabase_test__*` |
-| PRODUZIONE — non toccare | `rwuxgvld` | `rwuxgvldzrkabglkasym.supabase.co` | `Supabase__*` (solo lettura, su richiesta esplicita) |
+| **TEST** ← usare sempre | `docnnernvp` | `docnnernvpyrbwuzzach.supabase.co` | MCP TEST configurato nell'ambiente agente |
+| PRODUZIONE — non toccare | `rwuxgvld` | `rwuxgvldzrkabglkasym.supabase.co` | MCP PROD, sola lettura salvo conferma esplicita |
 
 - Prima di `apply_migration` / `execute_sql` / `generate_typescript_types`: chiamare `get_project_url` e **verificare che risponda `docnnernvp`**. Se risponde `rwuxgvld` è produzione → fermarsi.
-- `supabase db push` da CLI non è disponibile in questo ambiente: applicare le migrazioni via MCP `Supabase_test__apply_migration`.
-- I due DB si disallineano nella numerazione migrazioni. Allinearsi sempre allo stato del **test** con `Supabase_test__list_migrations`.
-- Il file in `supabase/migrations/` resta la fonte versionata; la migrazione va comunque scritta lì oltre che applicata via MCP sul test.
+- Se l'ambiente agente non espone MCP TEST, fermarsi e seguire le istruzioni specifiche dell'agente (per Codex: `AGENTS.md`, sezione "Regola Codex per Supabase TEST"). Non trasformare scorciatoie locali in regola generale.
+- `supabase db push` resta vietato.
+- I due DB si disallineano nella numerazione migrazioni. Allinearsi sempre allo stato del **test** con il canale TEST autorizzato nell'ambiente agente.
+- Il file in `supabase/migrations/` resta la fonte versionata; la migrazione va comunque scritta lì oltre che applicata sul test.
 
 ### 1b.1 Flusso branch + deploy (2 branch — deciso 30-05-26)
 

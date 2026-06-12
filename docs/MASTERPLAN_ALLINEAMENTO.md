@@ -47,7 +47,7 @@ Legenda: ✅ fatto · 🔶 in corso/parziale · ⬜ da fare.
 | AL-B | WP-B2 — `restaurant_settings` cross-tenant | ✅ | Lettura anon ristretta senza rompere Prenota/Menu QR | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b2-restaurant-settings-cross-tenant-12-06-26.md) |
 | AL-B | WP-B3 — Guard tenant pubblico/admin | ✅ | Tenant pubblico non sovrascritto da sessione admin | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b3-guard-tenant-pubblico-admin-12-06-26.md) · [Verifica Menu QR](Sessioni%20di%20lavoro/12-06-26/Report-verifica-wp-b3-menu-qr-12-06-26.md) |
 | AL-B | WP-B4 — `create-booking` hardening | ⬜ | Tenant inattivi bloccati e rate limit conta i respinti | — |
-| AL-B | WP-B5 — Slot availability + cleanup rate limits | 🔶 | Repo+PROD allineati; TEST 048 bloccata da permessi | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b5-slot-availability-cleanup-rate-limits-12-06-26.md) |
+| AL-B | WP-B5 — Slot availability + cleanup rate limits | ✅ | Repo+TEST+PROD allineati; cleanup rate limits attivo e verificato | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b5-slot-availability-cleanup-rate-limits-12-06-26.md) · [Completamento TEST](Sessioni%20di%20lavoro/12-06-26/Report-completamento-wp-b5-test-apply-12-06-26.md) |
 | AL-C | WP-C1 — Codice morto | ✅ | Import zero prima delete, validate verde dopo | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c1-codice-morto-12-06-26.md) |
 | AL-C | WP-C2 — Logger | ✅ | Convenzione `logger.*` rispettata nei target | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c2-logger-12-06-26.md) |
 | AL-C | WP-C3 — `package.json` | ✅ | Dipendenze classificate senza regressione build | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c3-package-json-12-06-26.md) |
@@ -56,11 +56,11 @@ Legenda: ✅ fatto · 🔶 in corso/parziale · ⬜ da fare.
 | AL-D | WP-D3 — Potatura `ADMIN_CLASSIC_SKILL.md` | ✅ | Changelog obsoleto rimosso, LOCK vivi preservati | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-al-d-fusioni-docs-12-06-26.md) |
 | AL-D | WP-D4 — Snellimento `.claude/CLAUDE.md` | ✅ | Gemello stile `AGENTS.md`, senza duplicazioni vive | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-al-d-fusioni-docs-12-06-26.md) |
 | AL-D | WP-D5 — Archiviazione plan/report Menu QR | ✅ | File storici spostati e rimandi non rotti | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-al-d-fusioni-docs-12-06-26.md) |
-| AL-F | WP-F1 — Prezzi edition | ⬜ | Prezzi approvati da Matteo scritti nel context | — |
-| AL-F | WP-F2 — Stato legale produzione | ⬜ | Nuove voci legali approvate e tracciate | — |
-| AL-E | WP-E1 — Mini-pack area | ⬜ | Decisione Meta e design approvati | — |
-| AL-E | WP-E2 — Check automatico path docs | ⬜ | Decisione Meta e design approvati | — |
-| AL-E | WP-E3 — Anti-storia + protocollo §7 | ⬜ | Decisione Meta e design approvati | — |
+| AL-F | WP-F1 — Prezzi edition | ✅ | Prezzi approvati da Matteo scritti nel context | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-f1-prezzi-edition-12-06-26.md) |
+| AL-F | WP-F2 — Stato legale produzione | ✅ | Nuove voci legali approvate e tracciate | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-f2-stato-legale-produzione-12-06-26.md) |
+| AL-E | WP-E1 — Mini-pack area | ✅ | Decisione Meta e design approvati | [Design](Sessioni%20di%20lavoro/12-06-26/Design-wp-e1-mini-pack-area-12-06-26.md) · [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-e1-mini-pack-area-12-06-26.md) |
+| AL-E | WP-E2 — Check automatico path docs | ✅ | Decisione Meta e design approvati | [Design](Sessioni%20di%20lavoro/12-06-26/Design-wp-e2-doc-path-check-12-06-26.md) · [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-e2-doc-path-check-12-06-26.md) |
+| AL-E | WP-E3 — Anti-storia + protocollo §7 | ✅ | Decisione Meta e design approvati | [Design](Sessioni%20di%20lavoro/12-06-26/Design-wp-e3-anti-storia-protocollo-7-12-06-26.md) · [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-e3-anti-storia-protocollo-7-12-06-26.md) |
 
 ---
 
@@ -273,12 +273,12 @@ Questa milestone chiude rischi reali. B1 e B2 richiedono profilo senior + Matteo
   1. ✅ Verificare funzioni deployate su TEST e PROD in sola lettura.
   2. ✅ Decisione Matteo: rimuovere la chiamata client fail-open e non deployare `check-slot-availability` su PROD.
   3. ✅ Decisione Matteo: schedulare `cleanup_rate_limits` con supporto reale.
-  4. 🔶 Applicare su TEST: codice repo pronto; migrazione 048 non applicata perché MCP/CLI non hanno permessi su `docnnernvp` in questa sessione.
+  4. ✅ Applicata/verificata su TEST `docnnernvp` 12-06-26: migrazione `048`, `pg_cron` + job verificati. In sessione Codex il canale TEST è stato CLI per limite del connettore ChatGPT; regola documentata solo in `AGENTS.md`.
   5. ✅ QA codice locale Prenota: niente chiamate residue a Edge Function rimossa; `npm run validate` verde.
   6. ✅ PROD applicata con conferma esplicita Matteo 12-06-26: `rwuxgvld` → migration `048_schedule_rate_limits_cleanup` versione `20260612131057`, `pg_cron` + job verificati.
 - **Verifica:** niente chiamate a funzioni non deployate; rate limit ha strategia di pulizia o deprecazione documentata; validate verde.
 - **Vietato:** non lasciare una chiamata fail-open non documentata; non installare estensioni PROD senza conferma.
-- **Cancello:** decisione Matteo + QA codice locale + PROD ok; apply remoto TEST 048 tracciato in `FU-B5-TEST-APPLY` prima di chiusura piena.
+- **Cancello:** ✅ decisione Matteo + QA codice locale + TEST ok + PROD ok. WP-B5 chiuso.
 
 ---
 

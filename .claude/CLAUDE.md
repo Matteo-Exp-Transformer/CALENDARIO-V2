@@ -45,8 +45,9 @@ una **skill d'area**. **Non navigare il codice a tappeto:** apri prima il routin
 **Salvaguardie sempre attive:** stile con Matteo (parla per schermate/flussi concreti, non nomi-file
 isolati; breve di default); **sicurezza PROD** (prima di INSERT/UPDATE/DELETE/migrazioni via MCP
 verifica l'ambiente con `get_project_url` — se è PROD `rwuxgvld` FERMATI e chiedi conferma; su TEST
-`docnnernvp` procedi); **comando non riconosciuto → non dedurre, chiedi prima** (mai inventare voci di
-vocabolario).
+`docnnernvp` procedi. Se il canale è CLI su TEST, usa la checklist di `docs/APP_CONTEXT_SKILL.md`
+§1b: project ref/host/org devono essere `docnnernvp`, mai usare CLI per scrivere PROD);
+**comando non riconosciuto → non dedurre, chiedi prima** (mai inventare voci di vocabolario).
 
 ## Dettaglio operativo
 
@@ -113,6 +114,8 @@ Mappa estesa invarianti globali: **`docs/APP_CONTEXT_SKILL.md` §4**.
 
 Prima di ogni INSERT/UPDATE/DELETE/migrazione via MCP: `get_project_url` → `docnnernvp` = TEST ok;
 `rwuxgvld` = PROD → chiedi conferma esplicita. I MCP non leggono `.env.local`.
+Per operazioni CLI su TEST seguire la checklist di `APP_CONTEXT_SKILL.md` §1b; la CLI non va usata
+per scrivere PROD. `supabase db push` resta vietato.
 
 ### Variabili d'ambiente
 

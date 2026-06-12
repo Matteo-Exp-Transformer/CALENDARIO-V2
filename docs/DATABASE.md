@@ -8,7 +8,7 @@ I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati
 
 ### Stato migrazioni
 
-> **Fonte di verità (non questo riepilogo):** elenco file in `supabase/migrations/` + stato remoto via MCP `list_migrations` dopo `get_project_url` (TEST `docnnernvp`, PROD `rwuxgvld` sola lettura). Dettaglio workflow e anomalie storiche: `Database-Skill/DB_MIGRATIONS_CONTEXT.md`.
+> **Fonte di verità (non questo riepilogo):** elenco file in `supabase/migrations/` + stato remoto via MCP `list_migrations` dopo `get_project_url` (TEST `docnnernvp`, PROD `rwuxgvld` sola lettura). Se l'agente ha un canale TEST specifico, seguire le sue istruzioni dedicate. Dettaglio workflow e anomalie storiche: `Database-Skill/DB_MIGRATIONS_CONTEXT.md`.
 
 Ultimo file in repo (verificato 12-06-26): `048_schedule_rate_limits_cleanup.sql`. La prossima migrazione deve usare il prefisso **`049_`**.
 
@@ -29,11 +29,11 @@ Ultimo file in repo (verificato 12-06-26): `048_schedule_rate_limits_cleanup.sql
 | 045 | `045_menu_magazzino_is_available.sql` | `is_available` su `menu_categories` e `menu_items` (magazzino M3) |
 | 046 | `046_codify_policy_drift.sql` | WP-B1: codifica la policy `anon_select_active_organizations` (anon SELECT su `organizations`, `is_active = true`) che esisteva su TEST+PROD ma non era versionata. Necessaria alla vista `organizations_public` security_invoker (039). Applicata TEST+PROD 12-06-26. Nessuna restrizione (chiusura lettura cross-tenant `restaurant_settings` = WP-B2) |
 | 047 | `047_restrict_anon_restaurant_settings.sql` | WP-B2: restringe la lettura anon di `restaurant_settings` alle key pubbliche whitelistate; nuove key pubbliche richiedono update registry + migrazione policy |
-| 048 | `048_schedule_rate_limits_cleanup.sql` | WP-B5: definisce `cleanup_rate_limits()` e job `pg_cron` orario `cleanup-rate-limits-hourly`. Applicata su PROD `rwuxgvld` 12-06-26 (`20260612131057`) e verificata (`pg_cron`, funzione, job). TEST `docnnernvp` resta da applicare/verificare perché MCP/CLI non hanno permessi sul progetto |
+| 048 | `048_schedule_rate_limits_cleanup.sql` | WP-B5: definisce `cleanup_rate_limits()` e job `pg_cron` orario `cleanup-rate-limits-hourly`. Applicata/verificata su TEST `docnnernvp` 12-06-26 (`048`) e su PROD `rwuxgvld` 12-06-26 (`20260612131057`): `pg_cron`, funzione, job e revoche EXECUTE ok |
 
 > Promo menù (23-05-26): impostazioni solo su `restaurant_settings.setting_key = booking_menu_promos`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
 
-> **Ambiente (2026-05-16)**: lo sviluppo punta al **server di TEST** (`docnnernvp`, MCP `Supabase_test`). Produzione (`rwuxgvld`) è sola lettura salvo richiesta esplicita. Dettaglio in `APP_CONTEXT_SKILL.md` §1b.
+> **Ambiente (agg. 2026-06-12)**: lo sviluppo punta al **server di TEST** (`docnnernvp`). Produzione (`rwuxgvld`) è sola lettura salvo richiesta esplicita. Dettaglio in `APP_CONTEXT_SKILL.md` §1b; regole specifiche Codex in `AGENTS.md`.
 
 > **Data API Supabase (2026-05-28)**: dal 30 maggio 2026 sui nuovi progetti, e dal 30 ottobre 2026 sulle nuove tabelle dei progetti esistenti, le tabelle `public` non sono esposte alla Data API senza GRANT espliciti. Ogni nuova tabella deve avere nella migrazione i GRANT minimi coerenti con l'uso: admin `authenticated`, pubblico `anon` solo se davvero pubblico, nessun grant client per tabelle solo service_role.
 

@@ -115,7 +115,7 @@ Vedi `docs/Marketing-Skill/FEATURE_CATALOG_CONTEXT.md` per tabella completa.
 
 ## 6. Pricing
 
-Vedi `docs/Marketing-Skill/EDITION_PRICING_CONTEXT.md` — da compilare con Matteo.
+Vedi `docs/Marketing-Skill/EDITION_PRICING_CONTEXT.md` — listino approvato Matteo 12-06-26 (WP-F1).
 
 ---
 
