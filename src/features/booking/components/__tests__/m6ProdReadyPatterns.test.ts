@@ -17,6 +17,9 @@ describe('M6 prod-ready patterns', () => {
       'src/features/booking/components/MenuPricesTab.tsx',
       'src/features/booking/components/settings/BookingFormConfigPanel.tsx',
       'src/features/booking/components/settings/BookingFormPromoSection.tsx',
+      'src/features/booking/components/servizio/RoomConfigModal.tsx',
+      'src/features/booking/components/servizio/TableFormModal.tsx',
+      'src/features/booking/components/servizio/ServiceSlotsManager.tsx',
     ]
 
     for (const file of files) {
@@ -47,6 +50,10 @@ describe('M6 prod-ready patterns', () => {
       'src/pages/PublicMenuCategoryPage.tsx',
       'src/lib/menuPhotoUpload.ts',
       'src/features/booking/hooks/useCarouselPhotoUpload.ts',
+      'src/features/booking/components/servizio/WalkInLimitCard.tsx',
+      'src/features/booking/components/servizio/RoomConfigModal.tsx',
+      'src/features/booking/components/servizio/TableFormModal.tsx',
+      'src/features/booking/components/servizio/ServiceSlotsManager.tsx',
     ]
 
     for (const file of files) {
