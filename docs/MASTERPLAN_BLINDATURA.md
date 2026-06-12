@@ -60,7 +60,7 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 | **Admin — Servizio (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
 | **Admin — CRM (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
 | **Admin — Home/Analytics (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
-| **Cross-area prod-ready (debiti §5)** | n/a | n/a | n/a | ⬜ | **M6** |
+| **Cross-area prod-ready (debiti §5)** | n/a | n/a | n/a | 🔶 **parziale** | **M6** |
 
 \* *Impostazioni: alcune funzionalità trasversali sono già state intervistate (salvataggio admin fase 1,
 promo/offerte, limiti testo). Manca l'intervista di SEZIONE su anagrafica/orari/tema come insieme.*
@@ -194,8 +194,9 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 
 ### M6 — Cross-area prod-ready
 - **Dettaglio:** `docs/Admin-Skill/contesto/ADMIN_CONFLICTS_AND_DEBTS.md`.
-- **Stato:** ⬜ — chiude i debiti §5 e gli elementi latenti; conferma niente mock/hardcoded residui,
-  azioni pericolose tutte sotto conferma custom.
+- **Stato:** 🔶 parziale 12-06-26 — chiusi i residui critici su auth admin rimossa, popup nativi
+  (`window.confirm`) nei file app vivi e `as any` nei punti booking/auth più critici. Restano aperti
+  email, audit fallback globale, logging completo e guard modali app-wide fuori Classic.
 
 ---
 
@@ -215,12 +216,12 @@ milestone naturale di competenza.
 | FU-TEST-1 | 0% test su pagine Pro (CRM/Servizio/Analytics/Home) | nessun `*.test.tsx` | alto (no regression Pro) | M5 (criterio uscita) |
 | FU-TABLE-1 | `useTableStatuses` mancante: tavoli sempre verdi | `TableShape.tsx:35` | medio (solo Pro) | M5 |
 | FU-BRIEF-1 | Briefing senza join sala/tavolo | `useShiftBriefing.ts:85` | basso (Pro) | M5 |
-| FU-TYPES-1 | Uso massivo `as any` su query (bypassa type safety) | `useBookingMutations.ts` (15+), `useBookingQueries.ts`, `useAdminBookingRequests.ts:62` | medio | M6 |
+| FU-TYPES-1 | Uso massivo `as any` su query (bypassa type safety) — **progresso M6 12-06-26:** ripuliti `AdminAuthContext`, `TenantContext`, `useBookingMutations`, `useBookingQueries`, `useAdminBookingRequests`, lock submit pubblico; restano cast in storage/menu QR/settings da audit dedicato. | `useBookingMutations.ts`, `useBookingQueries.ts`, `useAdminBookingRequests.ts`, contesti auth | medio | M6 |
 | FU-LOG-1 | Logging misto `console.error` vs `logger` | `useEmailNotifications.ts:33/62/91` | basso | M6 |
 | FU-RESP-1 | Larghezze fisse non responsive | `BookingRequestForm.tsx:1456`, `MenuSelection.tsx:463/506`, `CustomerListTable.tsx:89` | basso | nel controtest responsive dell'area (M2/M3/M5) |
-| FU-AUTH-1 | Admin rimosso da `admin_users` resta loggato finché refresh token valido | `AdminAuthContext.tsx` | medio (sicurezza) | M6 |
+| FU-AUTH-1 | ~~Admin rimosso da `admin_users` resta loggato finché refresh token valido~~ — **chiuso M6 12-06-26:** restore sessione senza riga `admin_users` esegue `signOut`, pulisce tenant su route admin e non chiama `setTenantFromAdmin`; test dedicato. | `AdminAuthContext.tsx` | — | M6 ✅ |
 | FU-AUTH-2 | Se RPC `check_admin_email` fallisce, tenant=null ma user loggato | `TenantContext.tsx` | medio | M1/M6 |
-| FU-002/003/023 | Pattern salvataggio unificato / conferma delete unica / guard modale su tutti i modali | trasversali aperti | basso-medio | M6 |
+| FU-002/003/023 | Pattern salvataggio unificato / conferma delete unica / guard modale su tutti i modali — **progresso M6 12-06-26:** niente `window.confirm` nei file app vivi; delete ingrediente/preset/promo e cambio Card/Carosello usano `Modal` in-app + test statico. Restano guard modali app-wide e salvataggio pubblico dati (FU-004/005). | trasversali aperti | basso-medio | M6 |
 
 ---
 

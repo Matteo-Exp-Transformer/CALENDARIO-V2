@@ -9,9 +9,9 @@
 > prodotto per quest'area). App unica: **nessuna distinzione admin/staff** (chi entra può tutto).
 
 > **Trigger di routing:** «menù fonte di verità» · «menu pagina impostazioni» · «tab Menu» ·
-> «MenuPricesTab» · «magazzino menu» → questo file (+ `../Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md`
+> «MenuPricesTab» · «magazzino menu» → questo file (+ `../../Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md`
 > se tocca il flusso dati, `DB_SKILL.md` se tocca lo schema). Per la **pagina pubblica Prenota** vedi
-> `../Prenota-Skill/PRENOTA_SKILL.md`. Per il **menu QR pubblico** vedi `../Menu-QR-Skill/MENU_QR_SKILL.md`.
+> `../../Prenota-Skill/PRENOTA_SKILL.md`. Per il **menu QR pubblico** vedi `../../Menu-QR-Skill/MENU_QR_SKILL.md`.
 
 ---
 
@@ -93,7 +93,7 @@ su titolo form (`productFormTitleRef` / `categoryFormTitleRef`), `scrollMarginTo
 **Cap testo compose Prenota (FU-030 Fase 1, 10-06-26; completato M3 Fase 1 11-06-26):** `BOOKING_MENU_COMPOSE_TEXT_LIMITS` —
 nome prodotto **24**, descrizione **79** (`maxLength` + contatore `N/max` nel form prodotto);
 titolo categoria **24** e **descrizione categoria 79** nell'overlay «Categorie Menu». Allineati ai cap sottotab. Il pubblico
-tronca in silenzio al render (`clampBookingText`); vedi `../Prenota-Skill/contesto/PRENOTA_TEXT_LIMITS_MAP.md` §E.
+tronca in silenzio al render (`clampBookingText`); vedi `../../Prenota-Skill/contesto/PRENOTA_TEXT_LIMITS_MAP.md` §E.
 
 **Limiti duri magazzino (M3 Fase 1, 11-06-26):** costante `MENU_MAGAZZINO_HARD_LIMITS` in `menuMagazzinoLimits.ts` —
 **7** categorie · **12** prodotti/categoria · **6** preset staff · **6** QR. Blocco solo su **nuovi** inserimenti
@@ -120,7 +120,7 @@ mostra solo `message`; admin vede `label` in lista promo, card richiesta e modal
 omaggio automatico** nel codice.
 
 > Nota (29-05-26): l'editor promo è stato spostato dalla tab Menu alla sezione **Messaggio
-> Promozionale** in Personalizza form — vedi `../Prenota-Skill/contesto/PRENOTA_FORM_CONFIG_CONTEXT.md`. Il
+> Promozionale** in Personalizza form — vedi `../../Prenota-Skill/contesto/PRENOTA_FORM_CONFIG_CONTEXT.md`. Il
 > modello dati promo resta descritto qui.
 
 ### 3.5 Menù preselezionati (preset staff)
@@ -131,10 +131,10 @@ In `booking_custom_staff_presets` (`name`, `description?`, `price_per_person?`, 
 - **NON** esiste più UI per abbinarli a tipologie né per renderli fissi/personalizzabili: l'abbinamento
   e il toggle fisso/personalizzabile si fanno solo in **Personalizza Form** (`sub_tabs[].preset_id`,
   `sub_tabs[].is_fixed_menu`).
-- Cancellare un menù preselezionato avvisa l'admin e rimuove anche le card collegate in
-  `booking_public_form_config`.
+- Cancellare un menù preselezionato apre modale in-app (non popup browser) e rimuove anche le card
+  collegate in `booking_public_form_config`.
 - Modificare un preset **non** elimina card e **non** sovrascrive campi personalizzati: il pubblico
-  segue il resolver `field_overrides` (vedi `../Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md`).
+  segue il resolver `field_overrides` (vedi `../../Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md`).
 - `sub_tabs[].is_fixed_menu: false` → cliente può modificare ingredienti in `MenuSelection`, nessun
   prezzo fisso.
 
@@ -149,7 +149,7 @@ tipologie nella UI.
 - **UI:** titolo «Icona categoria (senza foto)» + picker **20 icone** (12 Phosphor + 8 Lucide «Altre icone») in `MenuQrCategoryCardsSection` (`MenuHomepageConfigPanel.tsx`).
 - **Default:** `lucide_salad` (Insalata) per categorie senza mapping e senza icona DB valida; mapping Phosphor per key comuni in `categoryIcons.ts` (`pizza` → `pizza_slice`, `birre` → `beer`, …) — costante `MENU_QR_DEFAULT_CATEGORY_ICON_KEY`.
 - **DB:** `menu_qrcode_categories.icon` (migrazione 042) — una delle 12 chiavi; prefill su nuovo QR senza upload foto automatico.
-- Dettaglio pubblico: `../Menu-QR-Skill/MENU_QR_SKILL.md` § Icone categoria senza foto.
+- Dettaglio pubblico: `../../Menu-QR-Skill/MENU_QR_SKILL.md` § Icone categoria senza foto.
 
 ## 4. Confini con Prenota e QR
 
@@ -169,7 +169,7 @@ Rename categoria:
 5. aggiorna `booking_public_form_config.hidden_category_keys/category_order_keys`;
 6. coordina storage dove previsto.
 
-**UI rename:** se il nome cambia lo slug (`key`), modale **Conferma e salva** prima del persist (come elimina categoria); poi `useUpdateMenuCategory` allinea `menu_items`, Menù QR e `hidden_category_keys` in Personalizza form. Solo al save confermato, non in digitazione o cambio tab. Vedi `../Menu-QR-Skill/contesto/MENU_QR_DATA_FLOW_CONTEXT.md` § rename · FU-029.
+**UI rename:** se il nome cambia lo slug (`key`), modale **Conferma e salva** prima del persist (come elimina categoria); poi `useUpdateMenuCategory` allinea `menu_items`, Menù QR e `hidden_category_keys` in Personalizza form. Solo al save confermato, non in digitazione o cambio tab. Vedi `../../Menu-QR-Skill/contesto/MENU_QR_DATA_FLOW_CONTEXT.md` § rename · FU-029.
 
 Delete categoria:
 
@@ -177,7 +177,10 @@ Delete categoria:
 2. elimina categoria;
 3. sincronizza QR/Form/foto.
 
-**UI delete:** modale **Elimina categoria** con avviso QR/form (`CATEGORY_KEY_DELETE_INFO_MESSAGE`); al click Elimina `useDeleteMenuCategory` esegue sync immediato (`syncMenuCategoryKeyDelete`) — non al Salva modale QR. Vedi `../Menu-QR-Skill/contesto/MENU_QR_DATA_FLOW_CONTEXT.md` § delete sync.
+**UI delete:** modale **Elimina categoria** con avviso QR/form (`CATEGORY_KEY_DELETE_INFO_MESSAGE`);
+delete ingrediente e delete menù preselezionato usano anch'essi `Modal` in-app, mai `window.confirm`.
+Al click Elimina categoria `useDeleteMenuCategory` esegue sync immediato (`syncMenuCategoryKeyDelete`)
+— non al Salva modale QR. Vedi `../../Menu-QR-Skill/contesto/MENU_QR_DATA_FLOW_CONTEXT.md` § delete sync.
 
 Questi flussi non sono una transazione unica tra tutte le risorse. Sono da considerare critici in
 test futuri.
@@ -198,13 +201,13 @@ test futuri.
 
 ## 8. Rimandi
 
-- Pagina Prenota: `../Prenota-Skill/PRENOTA_SKILL.md`.
-- Menu QR: `../Menu-QR-Skill/MENU_QR_SKILL.md`.
+- Pagina Prenota: `../../Prenota-Skill/PRENOTA_SKILL.md`.
+- Menu QR: `../../Menu-QR-Skill/MENU_QR_SKILL.md`.
 - Flusso dati Menu (snapshot, propagazione, toggle): **§9 di questo file** è la fonte d'area;
-  il resolver Prenota in dettaglio → `../Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md`.
-- Cap testo Prenota (mappa completa): `../Prenota-Skill/contesto/PRENOTA_TEXT_LIMITS_MAP.md` §E.
-- Promo editor UI: `../Prenota-Skill/contesto/PRENOTA_FORM_CONFIG_CONTEXT.md`.
-- Rename/delete QR sync: `../Menu-QR-Skill/contesto/MENU_QR_DATA_FLOW_CONTEXT.md`.
+  il resolver Prenota in dettaglio → `../../Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md`.
+- Cap testo Prenota (mappa completa): `../../Prenota-Skill/contesto/PRENOTA_TEXT_LIMITS_MAP.md` §E.
+- Promo editor UI: `../../Prenota-Skill/contesto/PRENOTA_FORM_CONFIG_CONTEXT.md`.
+- Rename/delete QR sync: `../../Menu-QR-Skill/contesto/MENU_QR_DATA_FLOW_CONTEXT.md`.
 
 ## 9. Mappatura M3 — decisioni intervista (11-06-26)
 

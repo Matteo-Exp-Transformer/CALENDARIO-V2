@@ -19,6 +19,13 @@ Fonte analisi vendita: `docs/Sessioni di lavoro/12-06-26/Report-analisi-legale-v
 | **Partita IVA** | ⬜ Da aprire | **Ipotesi forfettario** (report 12-06-26) — **da confermare con commercialista** prima del 1° incasso |
 | **Contratto B2B** (Termini di Servizio / abbonamento) | ⬜ Da creare | **Bozza template in repo** → revisione **avvocato** (~500–1.000€ una tantum). Recesso: **mensile disdicibile sempre**; annuale con **30 gg preavviso** |
 | **Fatturazione elettronica** | ⬜ Da attivare | Strumento **gratuito ADE** (Agenzia delle Entrate) |
+
+### DA FARE ENTRO IL PRIMO MESE DI ATTIVITÀ (non bloccano la 1ª vendita)
+
+> Revisione 12-06-26 (post-analisi senior): questi tre adempimenti GDPR erano stati segnati «bloccanti». **Declassati a «entro il primo mese»**: il GDPR li richiede in tempi ragionevoli, non come precondizione al primo contratto. I veri blocchi pre-vendita restano i tre sopra (P.IVA, contratto, fattura elettronica). Evita di rimandare la prima vendita per carte che la norma non pretende prima dell'incasso.
+
+| Voce | Stato | Percorso approvato |
+|------|-------|-------------------|
 | **Registro trattamenti art. 30 GDPR** | ⬜ Da creare | Sessione **agente senior** (bozza) → passaggio **commercialista** |
 | **Runbook data breach** | ⬜ Da creare | Stesso percorso (senior → commercialista) |
 | **Lista sub-processor pubblica** (`docs/legal/sub-processors.md`) | ⬜ Da pubblicare | Stesso percorso (senior → commercialista) |
@@ -62,10 +69,10 @@ Mercato dichiarato: **solo Italia** per ora (vendita mista: diretta all'inizio, 
 
 ### FASE 2 — Documenti per pre-vendita
 - [x] Privacy Policy riscritta e aggiornata (2026-05-23, v2.0 — `src/pages/PrivacyPolicyPage.tsx`)
-- [ ] **Lista sub-processor pubblica** — `docs/legal/sub-processors.md` — **BLOCCANTE vendita** (senior → commercialista)
+- [ ] **Lista sub-processor pubblica** — `docs/legal/sub-processors.md` — **entro 1° mese** (non bloccante 1ª vendita; senior → commercialista)
 - [x] **Template DPA per ristoranti clienti creato** (2026-05-23) — `docs/_lavoro/Per matteo/Documenti Legali/DPA-template-clienti-ristoranti.md` (cartella locale, gitignored). v1.0, italiano, conforme art. 28 GDPR. Da personalizzare per ogni nuovo cliente.
-- [ ] **Registro trattamenti art. 30 GDPR** — **BLOCCANTE vendita** (senior → commercialista)
-- [ ] **Runbook data breach** — **BLOCCANTE vendita** (senior → commercialista)
+- [ ] **Registro trattamenti art. 30 GDPR** — **entro 1° mese** (non bloccante 1ª vendita; senior → commercialista)
+- [ ] **Runbook data breach** — **entro 1° mese** (non bloccante 1ª vendita; senior → commercialista)
 - [ ] Email `privacy@<dominio>` — **rimandata**; temporaneo: matteo.sistemigestionali@gmail.com
 
 ### FASE 3 — Operativi e config
@@ -112,8 +119,8 @@ Hosting primario in **UE** → dichiarare in Privacy Policy per trasparenza; nes
 ## Decisioni prese e perché
 
 ### 2026-06-12 — Vendita Italia: blocchi e consigli (WP-F2)
-**Decisione:** tabella priorità in cima a questo file; P.IVA forfettario da confermare con commercialista; contratto B2B da bozza repo + avvocato; fattura elettronica ADE gratis; registro/runbook/sub-processor = bloccanti con flusso senior → commercialista; marchio **PrenotaZen** con logo esistente + UIBM prima di stampa; RC cyber consigliata; EAA come argomento vendita; budget ~1.500–2.500€ anno 1.
-**Motivo:** allineare skill legale alle decisioni operative del report legale-vendita 12-06-26 senza scrivere contratti al posto dei professionisti.
+**Decisione:** tabella priorità in cima a questo file; P.IVA forfettario da confermare con commercialista; contratto B2B da bozza repo + avvocato; fattura elettronica ADE gratis; registro/runbook/sub-processor = **entro il primo mese** (declassati da bloccanti in revisione senior 12-06-26); marchio **PrenotaZen** con logo esistente + UIBM prima di stampa; RC cyber consigliata; EAA come argomento vendita; budget ~1.500–2.500€ anno 1.
+**Motivo:** allineare skill legale alle decisioni operative del report legale-vendita 12-06-26 senza scrivere contratti al posto dei professionisti. Revisione senior 12-06-26: i veri blocchi pre-vendita sono solo P.IVA + contratto + fattura; i 3 adempimenti GDPR operativi non devono ritardare il primo incasso.
 
 ### 2026-05-23 — No Iubenda / OneTrust / Cookiebot
 **Decisione**: Matteo gestisce tutti i documenti come file in repo, scritti dall'agente legal-production.

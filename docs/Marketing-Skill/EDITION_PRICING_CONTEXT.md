@@ -8,6 +8,7 @@ description: >-
 # Edition Pricing
 
 > **Stato:** prezzi **approvati** da Matteo il 12-06-26 (WP-F1, `MASTERPLAN_ALLINEAMENTO.md`).
+> **Revisione 12-06-26 (post-analisi senior):** Pro 79→**69€**, offerta fondatori da 3→**6 mesi**. Resto invariato.
 > Fonte analisi: `docs/Sessioni di lavoro/12-06-26/Report-analisi-legale-vendita-12-06-26.md`.
 > Non modifica il codice edition — solo listino e condizioni commerciali per vendita/demo.
 
@@ -22,7 +23,7 @@ description: >-
 | Edition | Mensile | Annuale (2 mesi gratis) | Incluso |
 |---------|---------|-------------------------|---------|
 | **Classic** | **29€** | **290€/anno** | Prenotazioni, calendario, form pubblico, impostazioni |
-| **Pro** | **79€** | **790€/anno** | Tutto Classic + sidebar, Home KPI, CRM, Servizio/tavoli, walk-in, no-show, Analytics, **Menu QR incluso** |
+| **Pro** | **69€** | **690€/anno** | Tutto Classic + sidebar, Home KPI, CRM, Servizio/tavoli, walk-in, no-show, Analytics, **Menu QR incluso** |
 | **Enterprise** | **129€/sede** | **1.290€/anno per sede** | Tutto Pro + multi-sede / features enterprise future — **solo su preventivo**, non self-service |
 
 *Annuale = paga 10 mesi, 2 gratis (stessa regola su tutti i piani).*
@@ -42,13 +43,13 @@ Su **Pro** e **Enterprise** il Menu QR è già incluso nel canone.
 
 ## Offerta fondatori (fase vendita diretta)
 
-Sconto **−50% sui primi 3 mesi** di abbonamento. A scadenza il ristoratore può **cambiare piano** o **rinnovare allo stesso piano** al listino standard.
+Sconto **−50% sui primi 6 mesi** di abbonamento. A scadenza il ristoratore può **cambiare piano** o **rinnovare allo stesso piano** al listino standard.
 
-| Piano | Prezzo fondatori (mesi 1–3) | Poi (listino standard) |
+| Piano | Prezzo fondatori (mesi 1–6) | Poi (listino standard) |
 |-------|----------------------------|-------------------------|
 | Classic | 14,50€/mese | 29€/mese |
 | Classic + Menu QR | 22,50€/mese (14,50 + 8) | 45€/mese (29 + 16) |
-| Pro | 39,50€/mese | 79€/mese |
+| Pro | 34,50€/mese | 69€/mese |
 | Enterprise | 64,50€/sede/mese | 129€/sede/mese |
 
 In cambio dello sconto: feedback, testimonianza/recensione quando possibile, disponibilità come referenza.

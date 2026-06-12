@@ -1,0 +1,107 @@
+[
+  {
+    "path": "docs/legal/sub-processors.md",
+    "reason": "Da pubblicare — FU-LEGAL-2",
+    "fu": "FU-LEGAL-2"
+  },
+  {
+    "path": "docs/legal/cookie-policy.md",
+    "reason": "Pianificato, non ancora creato — documento legale da redigere (LEGAL_PRODUCTION_SKILL / COOKIE_CONTEXT)",
+    "tipo": "lavoro-futuro"
+  },
+  {
+    "path": "docs/legal/runbook-data-breach.md",
+    "reason": "Pianificato, non ancora creato — runbook data breach da redigere (LEGAL_PRODUCTION_SKILL / DATA_BREACH_CONTEXT)",
+    "tipo": "lavoro-futuro"
+  },
+  {
+    "path": "docs/legal/registro-trattamenti.md",
+    "reason": "Pianificato, non ancora creato — registro trattamenti GDPR da redigere (LEGAL_PRODUCTION_SKILL / REGISTRO_TRATTAMENTI_CONTEXT)",
+    "tipo": "lavoro-futuro"
+  },
+  {
+    "path": "docs/legal/DPA-template-clienti.md",
+    "reason": "Pianificato, non ancora creato — template DPA clienti da redigere (LEGAL_PRODUCTION_SKILL / DPA_CLIENTI_CONTEXT)",
+    "tipo": "lavoro-futuro"
+  },
+  {
+    "path": "src/components/CookieBanner.tsx",
+    "reason": "Pianificato, non ancora creato — banner cookie Opzione A descritto in COOKIE_CONTEXT, da implementare",
+    "tipo": "lavoro-futuro"
+  },
+  {
+    "path": "src/components/ui/Card.tsx",
+    "reason": "Pianificato, non ancora creato — mattoncino grafico UI documentato in UI_COMPONENTS_CONTEXT / STYLING_AGENT_CONTEXT, da costruire",
+    "tipo": "lavoro-futuro"
+  },
+  {
+    "path": "src/components/ui/Badge.tsx",
+    "reason": "Pianificato, non ancora creato — mattoncino grafico UI documentato in UI_COMPONENTS_CONTEXT / STYLING_AGENT_CONTEXT, da costruire",
+    "tipo": "lavoro-futuro"
+  },
+  {
+    "path": "src/components/ui/Alert.tsx",
+    "reason": "Pianificato, non ancora creato — mattoncino grafico UI documentato in UI_COMPONENTS_CONTEXT / STYLING_AGENT_CONTEXT, da costruire",
+    "tipo": "lavoro-futuro"
+  },
+  {
+    "path": "src/components/ui/EmptyState.tsx",
+    "reason": "Pianificato, non ancora creato — mattoncino grafico UI documentato in UI_COMPONENTS_CONTEXT / STYLING_AGENT_CONTEXT, da costruire",
+    "tipo": "lavoro-futuro"
+  },
+  {
+    "path": "src/components/ui/Spinner.tsx",
+    "reason": "Pianificato, non ancora creato — mattoncino grafico UI documentato in UI_COMPONENTS_CONTEXT / STYLING_AGENT_CONTEXT, da costruire",
+    "tipo": "lavoro-futuro"
+  },
+  {
+    "path": "src/components/ui/SectionHeader.tsx",
+    "reason": "Pianificato, non ancora creato — mattoncino grafico UI documentato in UI_COMPONENTS_CONTEXT / STYLING_AGENT_CONTEXT, da costruire",
+    "tipo": "lavoro-futuro"
+  },
+  {
+    "path": "src/components/ui/Separator.tsx",
+    "reason": "Pianificato, non ancora creato — mattoncino grafico UI documentato in UI_COMPONENTS_CONTEXT / STYLING_AGENT_CONTEXT, da costruire",
+    "tipo": "lavoro-futuro"
+  },
+  {
+    "path": "src/features/booking/components/AcceptBookingModal.tsx",
+    "reason": "Riferimento storico/narrativo — codice morto rimosso volutamente (WP-C1 in MASTERPLAN_ALLINEAMENTO, inventario PLAN_BLINDATURA_ADMIN)",
+    "tipo": "storico"
+  },
+  {
+    "path": "src/features/booking/components/publicBooking/BookingCrossShineSubmitButton.tsx",
+    "reason": "Riferimento storico/narrativo — componente morto rimosso volutamente (WP-C1 in MASTERPLAN_ALLINEAMENTO)",
+    "tipo": "storico"
+  },
+  {
+    "path": "src/features/booking/components/PublicMenuPageHeader.tsx",
+    "reason": "Riferimento storico/narrativo — componente morto rimosso volutamente (WP-C1 in MASTERPLAN_ALLINEAMENTO)",
+    "tipo": "storico"
+  },
+  {
+    "path": "src/features/booking/hooks/useUpdateBookingStatus.ts",
+    "reason": "Riferimento storico/narrativo — hook morto rimosso volutamente (WP-C1 in MASTERPLAN_ALLINEAMENTO)",
+    "tipo": "storico"
+  },
+  {
+    "path": "src/features/booking/hooks/useCheckSlotAvailability.ts",
+    "reason": "Riferimento storico/narrativo — hook precheck disponibilita rimosso volutamente (WP-B5 in MASTERPLAN_ALLINEAMENTO)",
+    "tipo": "storico"
+  },
+  {
+    "path": "src/pages/PublicMenuPresetPage.tsx",
+    "reason": "Riferimento storico/narrativo — pagina preset QR cancellata volutamente nella blindatura 06-06-26 (MENU_QR_DATA_FLOW_CONTEXT)",
+    "tipo": "storico"
+  },
+  {
+    "path": "src/pages/NomePaginaPage.tsx",
+    "reason": "Placeholder/template narrativo — nome segnaposto nel pattern «nuove sezioni» di ADMIN_SHELL_ARCHITECTURE_CONTEXT, non un file reale",
+    "tipo": "storico"
+  },
+  {
+    "path": "docs/CLAUDE.md",
+    "reason": "Riferimento storico/narrativo — citato a parole come esempio di link rotto passato (corretto in .claude/CLAUDE.md) in PROSEGUIMENTO_MAPPATURA_SKILL",
+    "tipo": "storico"
+  }
+]
