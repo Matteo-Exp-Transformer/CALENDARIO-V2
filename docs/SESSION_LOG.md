@@ -13,6 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 12-06-26 | Admin — **fix guard fantasma post-modale calendario** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fix-guard-fantasma-calendario-12-06-26.md) — `UnsavedChangesContext` chiude dialog stale; validate **557**; smoke Pro OK Matteo |
+| 12-06-26 | Governance docs — **creazione MASTERPLAN_ALLINEAMENTO** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-creazione-masterplan-allineamento-12-06-26.md) — nuovo masterplan skill↔codice; puntatore in `MASTERPLAN_BLINDATURA`; nessun WP eseguito; prossimo passo `WP-A1` |
 | 12-06-26 | Senior — **merge production M3 Menu magazzino** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-merge-production-m3-menu-12-06-26.md) — PROD migration `045`; merge privato `7d8fd56`; build private+PrenotaZen verde; release pubblica `b324df0` |
 | 11-06-26 | Admin — **M3 Menu magazzino BLINDATO** ✅ report finale (chiusura FU L3 + MQR-3) | [Report finale](Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md) — Vitest 27 + E2E; QA Matteo; FU-M3-QA-L3 + FU-MQR-3 chiusi; push `env/test` |
 | 11-06-26 | Admin — **M3 Menu magazzino BLINDATO** ✅ report finale | [Report finale](Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md) — Vitest 27 + E2E; QA Matteo; MASTERPLAN Blindato ✅; push `env/test` |
