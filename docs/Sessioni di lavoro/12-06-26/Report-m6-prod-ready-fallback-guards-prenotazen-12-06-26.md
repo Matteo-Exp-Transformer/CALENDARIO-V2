@@ -46,7 +46,7 @@
 ## 6. Dati comunicazione
 
 - Prompt esecutivo M6 con branch `env/test`, esclusione email/legal/grafica, release PrenotaZen se codice servito.
-- Verifica allineamento atteso: privato `ee2caa3`, PrenotaZen `cc35f1d` pre-release.
+- Stato finale: privato `main`/`env/test` @ `6c4488d` (codice `70ace37` + docs); PrenotaZen @ `353d82c`.
 
 ## 7. Analisi flusso
 
