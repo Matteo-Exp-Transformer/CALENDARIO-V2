@@ -259,7 +259,7 @@ Controtest completato su 4 fronti. **Batch fix 07-06-26 (Matteo):** D1, R1, D4, 
 | U2 | MEDIO | Annulla modifica non ripristina campi | ✅ `handleCancelEdit` risincronizza `formData` da `booking` (helper `buildFormDataFromBooking`) |
 | U6 | MEDIO-ALTO | Drawer calendario con dati stale se la prenotazione sparisce dalla lista | ✅ effect chiude il drawer se assente da `useAcceptedBookings` (guard su loading/fetching/edit/save) |
 | U5, U7 | MEDIO | Scroll lock non ripristinato; chiusura durante save/edit | ✅ U5 danger modal ripristina overflow originale (non forza `unset`); U7 `handleRequestClose` blocca chiusura durante `isPending`, annulla pulito in edit |
-| D4, U3 | MEDIO | Reinserisci senza orari; tab switch durante mutation | ✅ D4 modale orario; **U3 ⬜ FU-046** (vincolo strutturale dashboard, tab unmount) |
-| D5, D6, D7, U1, U9, U10 | BASSO | Metadata restore, guard DB assenti, doppio toast, errori UX | ✅ D5 azzera `cancellation_*`; ✅ U1 toast unico (rimosso da `BookingDetailsModal`, resta in `useUpdateBooking`); ✅ U10 `logger` al posto di `console.error`; **U9 ⬜** (banner inline opzionale, toast già presente); D6/D7 ⬜ |
+| D4, U3 | MEDIO | Reinserisci senza orari; tab switch durante mutation | ✅ D4 modale orario; ✅ **U3** (12-06-26): `registerBlockingSource` in `UnsavedChangesContext` + drawer `BookingDetailsModal` durante `isPending` — cambio tab bloccato con toast, senza modale dirty |
+| D5, D6, D7, U1, U9, U10 | BASSO | Metadata restore, guard DB assenti, doppio toast, errori UX | ✅ D5 azzera `cancellation_*`; ✅ U1 toast unico; ✅ U10 `logger`; ✅ **U9** (12-06-26): banner `role="alert"` inline nel drawer oltre al toast; D6/D7 ⬜ |
 | L4, L10–L12 | FU | Ospiti 0/negativi/enormi passano hook — validazione DB/form da valutare | ⬜ fuori batch |
 | R2–R4 | MEDIO/BASSO | Bottoni affiancati, padding doppio su 375px | R2 parziale (stack mobile); R3/R4 ⬜ |

@@ -154,14 +154,16 @@ Pattern: mock `@fullcalendar/react` cattura props (`dateClick`, `dayCellDidMount
 
 ## 8. Area 2 — Prenotazioni operative
 
-Stato: **✅ cancello M2 operative chiuso 11-06-26 (FU-043)** — Fase D + FU-046 batch + E2E Playwright staging + QA browser 375/834. Residui non bloccanti: U3/U9/D6-D7/L* (follow-up).
+Stato: **✅ cancello M2 operative chiuso 11-06-26 (FU-043)** — Fase D + FU-046 batch + E2E Playwright staging + QA browser 375/834. **U3/U9 chiusi 12-06-26.** Residui non bloccanti: D6-D7/L* (follow-up).
 
-Test marcati Vitest (32 test, verdi):
+Test marcati Vitest (35 test core `@admin-blindatura: prenotazioni`, verdi):
 
 - `src/features/booking/hooks/__tests__/useBookingMutations.prenotazioni.adminBlindatura.test.tsx` (17) →
   accept/reject/soft-delete/restore/requeue/no-show + **race guard pending** (D1) + **restore azzera cancellation_*** (D5) + **restore con orario fornito** (D4 affinamento 07-06-26) + **LIMIT mutation payload** (L8–L15).
 - `src/features/booking/components/__tests__/prenotazioni.adminBlindatura.test.tsx` (15) → conferme
   coerenti archivio + **D4 modale orario reinserisci senza slot salvati** + **R1/D2 modal layout** + **U4 doppio click guard sincrono** + LIMIT UI/capienza.
+- `src/features/booking/components/__tests__/bookingDetailsModal.u3u9.adminBlindatura.test.tsx` (2) → **U3** blocking source durante mutation; **U9** banner `role="alert"` su save fallito.
+- `src/contexts/__tests__/UnsavedChangesContext.adminBlindatura.test.tsx` (1, tag prenotazioni) → **U3** `confirmNavigation` con blocking senza modale dirty.
 - **D3 contatore restore** (migrazione `044`): controtestato direttamente su DB TEST (ciclo accetta→elimina→reinserisci, `bookings_count` invariato al restore); logica del trigger SQL, nessun unit.
 - `e2e/admin-booking-mgmt.spec.ts` → `@admin-blindatura: prenotazioni-e2e` (**7 test**, staging TEST):
   - accept capienza superata → `CapacityWarningModal` → Procedi → `accepted`;
@@ -188,8 +190,10 @@ act() warning risolti in `prenotazioni.adminBlindatura.test.tsx` (ArchiveTab exp
 
 Buchi residui (post FU-043, non bloccanti cancello M2):
 
-- **U3** tab switch durante mutation (vincolo strutturale dashboard); **U9** banner errore inline (toast già presente); **D6/D7** guard DB difensivi; L4/L10–L12 validazione ospiti.
+- **D6/D7** guard DB difensivi; **L4/L10–L12** validazione ospiti.
 - Test email fallita non blocca mutation (§6 `ADMIN_PRENOTAZIONI_CONTEXT.md`).
+
+**U3/U9 chiusi 12-06-26:** blocking tab durante mutation (`UnsavedChangesContext.registerBlockingSource` + `BookingDetailsModal`); banner errore inline su save fallito. Test **+3** (`bookingDetailsModal.u3u9` ×2, `UnsavedChangesContext` blocking ×1); suite `@admin-blindatura: prenotazioni` **35**; validate verde (576 test totali al tree 12-06-26, include modifiche parallele M6).
 
 ## 9. Area 1 — Shell (aggiornamento decisioni 06-06-26)
 
