@@ -131,7 +131,7 @@ Stato: **batch A+B FU-047 + classificazione doc (11-06-26)** — **41** test Vit
 - `src/features/booking/utils/__tests__/sumGuestsByDate.adminBlindatura.test.ts` (7) → conteggio coperti/giorno (stesso criterio blocco pubblico `DAILY_LIMIT`).
 - `src/features/booking/lib/__tests__/restaurantSettingRegistry.dailyGuestLimit.adminBlindatura.test.ts` (9) → limite giornaliero `0`/vuoto = illimitato (fix salvataggio Impostazioni).
 - `src/features/booking/components/__tests__/calendario.adminBlindatura.test.tsx` (18) → UI `BookingCalendar`: badge, datesSet, gate tavolo (+ Pro slot vuoti), pending assenti, crea-da-giorno, no DnD, elimina da dettaglio (render con `UnsavedChangesProvider`).
-- `src/features/booking/components/__tests__/bookingCalendarGuard.adminBlindatura.test.tsx` (2) → **C-U2** guard tab: dirty → modale Salva/Annulla/Resta; pulito → nessun guard.
+- `src/features/booking/components/__tests__/bookingCalendarGuard.adminBlindatura.test.tsx` (4) → **C-U2** guard tab: dirty → modale Salva/Annulla/Resta; pulito → nessun guard; chiusura modale → guard stale assente.
 - `src/features/booking/components/__tests__/bookingCalendarTab.adminBlindatura.test.tsx` (1) → C-U4 Riprova su errore `useAcceptedBookings`.
 - `src/features/booking/components/__tests__/adminBookingForm.dailyLimit.adminBlindatura.test.tsx` (1) → FU-REV-CAL-3 avviso giornaliero.
 - `src/features/booking/utils/__tests__/bookingEventTransform.adminBlindatura.test.ts` (2) → no-show + confirmed_end in transform.
@@ -229,8 +229,9 @@ Test marcati o creati:
   su URL `/admin/prenotazioni` (tab Prenotazioni, non Calendario) e cambio tab via NavItem.
 - `src/config/__tests__/features.test.ts` -> `@admin-blindatura: shell-edition` su QR Menu
   aggiungibile/rimuovibile via override.
-- `src/contexts/__tests__/UnsavedChangesContext.adminBlindatura.test.tsx` ->
+- `src/contexts/__tests__/UnsavedChangesContext.adminBlindatura.test.tsx` (2) ->
   `@admin-blindatura: shell-dirty-guard` (creato 06-06; E2E dirty/logout anche in `admin-shell-blindatura.spec.ts`).
+  Include chiusura guard stale quando le sorgenti dirty si azzerano.
 - `src/components/layout/__tests__/adminShellTabFlash.test.tsx` ->
   `@admin-blindatura: shell-refresh-back` su **assenza di flash** al cambio tab dashboard e al cambio
   sezione sidebar (la schermata vecchia non riappare per un render intermedio). Regressione del bug

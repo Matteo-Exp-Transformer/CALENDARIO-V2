@@ -113,6 +113,9 @@ Header: se manca il nome ristorante, il fallback e `Sistema Gestionale Prenotazi
 `UnsavedChangesProvider` mantiene sorgenti dirty e handler `saveAll`/`discardAll`.
 
 - `confirmNavigation` mostra `UnsavedNavigationGuardModal`.
+- Se le sorgenti dirty si azzerano mentre il dialog è ancora aperto (es. chiusura modale
+  calendario dopo un tentativo di cambio tab), il provider **chiude automaticamente** il guard stale
+  — altrimenti resterebbe visibile anche senza modifiche reali.
 - `allowPrenotazioniDashboard` permette alcuni ritorni senza blocco.
 - `beforeunload` protegge refresh/chiusura tab.
 - Il back/forward browser tra URL tab dashboard passa dal guard quando ci sono modifiche dirty.
