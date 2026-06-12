@@ -28,7 +28,7 @@ Ultimo file in repo (verificato 12-06-26): **`048_schedule_rate_limits_cleanup.s
 | `045_menu_magazzino_is_available.sql` | `menu_categories.is_available`, `menu_items.is_available` BOOLEAN NOT NULL DEFAULT true |
 | `046_codify_policy_drift.sql` | Codifica policy RLS `anon_select_active_organizations` (anon SELECT su `organizations`, `is_active = true`), prima presente sul DB ma fuori dalle migrazioni. Idempotente. NON restringe `restaurant_settings` (→ WP-B2) |
 | `047_restrict_anon_restaurant_settings.sql` | WP-B2: restringe anon SELECT su `restaurant_settings` a whitelist di key pubbliche; nuove key pubbliche richiedono update registry + nuova migrazione policy |
-| `048_schedule_rate_limits_cleanup.sql` | WP-B5: abilita `pg_cron`, definisce `cleanup_rate_limits()` e programma job orario `cleanup-rate-limits-hourly` |
+| `048_schedule_rate_limits_cleanup.sql` | WP-B5: abilita `pg_cron`, definisce `cleanup_rate_limits()` e programma job orario `cleanup-rate-limits-hourly`. PROD applicata/verificata 12-06-26 (`20260612131057`); TEST bloccata da permessi MCP/CLI |
 
 ### Due ambienti Supabase — non confonderli
 
@@ -41,7 +41,7 @@ Una migrazione applicata su un ambiente **NON** si propaga all'altro. Prima di d
 
 Snapshot precedente: registro remoto includeva tutte le migrazioni fino a `045_menu_magazzino_is_available` (versione timestamp `20260611193908`). Dopo WP-B1/WP-B2 risultano versionate anche `046` e `047` nel repo; verificare sempre lo stato remoto con MCP `list_migrations`. La migrazione `048` è pronta in repo ma in sessione WP-B5 l'applicazione remota TEST è rimasta bloccata da permessi MCP/CLI.
 
-> **Nota PROD:** per stato produzione usare MCP prod in sola lettura. Report merge M3 (12-06-26) documenta `045` applicata anche in PROD.
+> **Nota PROD:** `048_schedule_rate_limits_cleanup` applicata su PROD `rwuxgvld` il 12-06-26 con conferma Matteo; registro `20260612131057`; verificati `pg_cron`, funzione `public.cleanup_rate_limits()`, job `cleanup-rate-limits-hourly` (`17 * * * *`) e revoke execute da `anon/authenticated`.
 
 ### Anomalie storiche utili (permanenti)
 
