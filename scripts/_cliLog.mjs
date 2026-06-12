@@ -77,6 +77,10 @@ export function createCliLogger(scriptName) {
   const prefix = `[${scriptName}]`
 
   const log = (msg, meta) => {
+    if (msg === '') {
+      process.stdout.write('\n')
+      return
+    }
     process.stdout.write(`${prefix} ${msg}${formatMeta(meta)}\n`)
   }
 
