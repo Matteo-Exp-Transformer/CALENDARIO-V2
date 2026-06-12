@@ -13,7 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
-| 12-06-26 | Codice+docs — **FU-LOG-1 chiusura scripts + eslint** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu-log-1-chiusura-scripts-12-06-26.md) — commit `6077028`/`6374168`; validate **576** |
+| 12-06-26 | Chiusura — **FU-LOG-1 review + handoff senior** ✅ | FOLLOW_UP **FU-LOG-1-H** (hardening), **FU-049** (PROD mig. 044), **FU-050** (deploy edge + PrenotaZen); git pulito @ `0d475ff`; DB 045–048 ok salvo FU-049 |
+| 12-06-26 | Codice+docs — **FU-LOG-1 chiusura scripts + eslint** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu-log-1-chiusura-scripts-12-06-26.md) — `_cliLog.mjs` + 5 script; eslint allowlist; commit `6077028`/`6374168`/`0d475ff`; validate **576**; **lavoro ok** Matteo |
 | 12-06-26 | Senior merge — **FU-LOG-1 edge già su main** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu-log-1-merge-commit-12-06-26.md) — commit `516317c` + `17e7843` già presenti; main/env/test @ `cff8bf6`; validate **576**; push/ff no-op; deploy edge TEST a Matteo; **lavoro ok** |
 | 12-06-26 | Controverifica — **FU-LOG-1 edge functions** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-controverifica-fu-log-1-edge-functions-12-06-26.md) — verdetto ✅ riserve minime; FAQ debito residuo (scripts/debug/lint); validate **576**; docs non committati; **lavoro ok** ×2 Matteo |
 | 12-06-26 | Codice+docs — **FU-046 U3/U9 merge** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu046-residui-u3-u9-12-06-26.md) — blocking tab drawer durante save + banner errore inline; commit `08408d3` + `1d9c769`; main/env/test @ `1d9c769`; validate **576**; suite prenotazioni **35**; PrenotaZen skip; FU-046 quasi chiuso (D6/D7/L*) |
