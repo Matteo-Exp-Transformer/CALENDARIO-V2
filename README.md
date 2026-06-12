@@ -30,7 +30,7 @@ Per orientarti nel progetto leggi i file in quest'ordine. Ognuno ha uno scopo pr
 | [docs/DATABASE.md](docs/DATABASE.md) | Schema DB completo: tabelle, RLS, funzioni (`current_admin_tenant_id`, `check_admin_email`), trigger, indici, come applicare migrazioni e rigenerare i tipi TS. |
 | [docs/EDGE_FUNCTIONS.md](docs/EDGE_FUNCTIONS.md) | Edge Functions Supabase: `create-booking` e `validate-invite` (input/output, logica), specifica della `send-email` mancante. |
 | [docs/MANUAL_TEST_PLAN.md](docs/MANUAL_TEST_PLAN.md) | Checklist di smoke test manuale (~30 voci su 10 aree) da eseguire prima di ogni deploy. |
-| [docs/TESTING.md](docs/TESTING.md) | Stack di test installato: 29 test Vitest + suite Playwright e2e + CI GitHub Actions + husky pre-commit. |
+| [docs/TESTING.md](docs/TESTING.md) | Stack di test installato: Vitest (`npm run test` deve essere verde) + suite Playwright e2e + CI GitHub Actions + husky pre-commit. |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Convenzioni commit (Conventional Commits), branching, workflow PR, code review checklist. |
 | [CLAUDE.md](CLAUDE.md) | Orientamento per sessioni AI future: file critici, comandi, convenzioni, zone delicate. |
 | [CHANGELOG.md](CHANGELOG.md) | Storico versioni (v2.0.0 + link al report dettagliato in `docs/CHANGELOG_v2.md`). |
@@ -48,7 +48,7 @@ npm run dev                # dev server
 npm run build              # typecheck + build produzione
 npm run lint               # ESLint, zero warning tollerati
 npm run typecheck          # tsc --noEmit
-npm run test               # 29 test Vitest
+npm run test               # npm run test deve essere verde
 npm run test:e2e           # test Playwright (richiede staging Supabase)
 npm run validate           # lint + typecheck + test (pre-PR)
 npm run db:types:linked    # rigenera src/types/database.ts dal DB remoto

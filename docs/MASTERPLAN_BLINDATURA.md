@@ -255,7 +255,7 @@ mappatura, poi test, poi controtest "rompi" sui 4 fronti — non si chiude un'ar
 
 ## 8. Verifica
 
-- **Per sezione, prima del merge:** `npm run validate` (lint + typecheck + ~480 test Vitest) verde su
+- **Per sezione, prima del merge:** `npm run validate` (lint + typecheck + test) verde su
   `env/test`; controtest sub-agent sui 4 fronti con finding decisi (fix/follow-up/voluto);
   `npm run test:e2e` su staging per le sezioni che lo richiedono (M1, M2).
 - **Verificato nel codice (10-06-26, non solo dai report):** i test admin `@admin-blindatura` esistono

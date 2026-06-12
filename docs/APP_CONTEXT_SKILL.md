@@ -75,8 +75,8 @@ Leggi il task ricevuto e applica questa tabella:
 | **Revisione skill comunicazione / promuovere-regredire voci / valutare i dati raccolti / riformare lo skill system comunicazione** | `docs/Comunicazione-Skill/REVISIONE.md` — **sessione dedicata** col revisore, non in una chat di lavoro |
 | **«report finale» / controverifica del lavoro complessivo / revisione imparziale di fine sessione** | `docs/Comunicazione-Skill/CONTROVERIFICA.md` — sub-agente imparziale (non ha eseguito il lavoro) che pesa report+diff vs prompt di Matteo e flusso dati/utente; emette verdetto + prompt grezzo per `prepara-prompt`. Profilo **Verifica**. |
 | **Visione prodotto / perché una scelta / modello commerciale / roadmap / decisioni strutturali / dove trovo cosa** | `docs/Archivio/CONTESTO_PRODOTTO.md` — fonte di verità riassuntiva (no dati sensibili) |
-| **Follow-up / debito post-sessione / controlli rimandati / FU-NNN** | `docs/FOLLOW_UP.md` — collegare al report in `docs/Sessioni di lavoro/`; aggiornare a fine sessione (§7.1). Debito trasversale **fallback prod** → **FU-023** + §4c. **Milestone lontana skill agenti tier avanzato** → **FU-024** + §4d. Agente **prepara-prompt**: ruolo attivo nel trovare follow-up (`docs/PREPARA_PROMPT_SKILL.md`). |
-| **Skill system / agenti Cursor / Codex / contesto chat / entry point / tier modello** | `docs/FOLLOW_UP.md` **FU-024** + §4d (solo design, non implementare senza sessione Meta) |
+| **Follow-up / debito post-sessione / controlli rimandati / FU-NNN** | `docs/FOLLOW_UP.md` — collegare al report in `docs/Sessioni di lavoro/`; aggiornare a fine sessione (§7.1). Debito trasversale **fallback prod** → **FU-ALL-FALLBACK** + §4c. **Milestone lontana skill agenti tier avanzato** → **FU-ALL-TIER** + §4d. Agente **prepara-prompt**: ruolo attivo nel trovare follow-up (`docs/PREPARA_PROMPT_SKILL.md`). |
+| **Skill system / agenti Cursor / Codex / contesto chat / entry point / tier modello** | `docs/FOLLOW_UP.md` **FU-ALL-TIER** + §4d (solo design, non implementare senza sessione Meta) |
 | Non è chiaro di quale area si tratti | Leggi `CLAUDE.md`, poi usa questa tabella |
 
 Carica il skill indicato **prima** di aprire qualsiasi file da modificare.
@@ -200,12 +200,13 @@ src/
 │   │   └── settings/    BookingFormConfigPanel, SettingsSaveUi (footer/barre sezione Impostazioni)
 │   ├── hooks/           useAdminAuth, useBookingMutations, useMenuQrCodes, useCustomers, ecc.
 │   ├── lib/             restaurantSettingRegistry
+│   ├── services/        bookingFormResolver, syncMenuCategoryKeyRename/Delete, …
 │   └── utils/           helper puri (date, prezzi, menuCatalogGrouping)
 ├── hooks/               useFeatures.ts, useBusinessHours.ts, useRateLimit.ts…
 ├── lib/                 supabase.ts, supabasePublic.ts, email.ts, logger.ts, utils.ts
 │                        menuPhotoUpload.ts, shortCodeGenerator.ts
 ├── pages/               AdminDashboard, AdminHomePage, CrmPage, ServizioPage, AnalyticsPage…
-│                        PublicMenuPage, PublicMenuCategoryPage, PublicMenuPresetPage
+│                        PublicMenuPage, PublicMenuCategoryPage
 ├── router.tsx           ← solo su esplicita richiesta
 └── types/               database.ts (generato), booking.ts, customer.ts, edition.ts, menu.ts
 ```
@@ -217,7 +218,7 @@ Tab impostazioni attivo: `RestaurantSettingsTab.tsx` (LOCK strutturale in `ADMIN
 ```
 docs/
 ├── APP_CONTEXT_SKILL.md        ← Skill 0, indice/routing (questo file, resta in root)
-│                               ← futuro: eventuali entry tier avanzato → FU-024 §4d (non ancora creati)
+│                               ← futuro: eventuali entry tier avanzato → FU-ALL-TIER §4d (non ancora creati)
 ├── ADMIN_CLASSIC_SKILL.md      ┐ skill "radice" citate da molti file → restano in root
 ├── DATA_FLOW_SKILL.md          │
 ├── COMUNICAZIONE_UTENTE_SKILL.md ┘
@@ -243,7 +244,7 @@ referenziarlo come contesto obbligatorio per agenti post-produzione.
 ## 4. Invarianti globali — valgono in ogni task, in ogni file
 
 ```
-LOCK  CollapsibleCard.tsx          — 57 test — mai toccare
+LOCK  CollapsibleCard.tsx          — mai toccare
 LOCK  Modal.tsx  z-[10050]         — stack calibrato con Toast z-100000
 LOCK  TenantContext.tsx            — core multi-tenancy — MAI (eccezione: edition + featureOverrides)
 LOCK  src/lib/supabase.ts          — client autenticato — MAI
@@ -312,10 +313,10 @@ RULE  **PWA / aggiornamento app (service worker)** — file: `vite.config.ts`, `
 
 LOCK  **`BookingRequestPage.tsx` — struttura griglia con striscia laterale** (consolidata, testata su 3 breakpoint). Prima di toccarla: valutare se basta agire sui componenti figli; se serve toccare la griglia, leggere per intero `BookingRequestPage` + `BookingPhotoStrip` + `BookingSummarySidebar` + `BookingRequestForm`; non violare gli invarianti strutturali (griglia `w-full`, strip `sticky top-0 h-screen`, footer fuori griglia, spacer `h-20/h-4`). **Invarianti dettagliati + tutte le note layout → `docs/Prenota-Skill/contesto/PRENOTA_LAYOUT_CONTEXT.md` §0.** Modifiche che li violano vanno discusse con l'utente prima.
 
-RULE  **Fallback e placeholder (prod-ready):** quando manca un dato da DB o config del tenant, non lasciare stringhe/URL/immagini hardcodate «per far funzionare la demo» senza tracciarle. In produzione commerciale preferire: valore da storage del ristorante (`restaurant_settings`, `booking_public_form_config`, catalogo menu, `menu_qr_codes`, ecc.), stato vuoto esplicito (`EmptyState`, testo neutro), o costante centralizzata in `src/features/booking/constants/` / `@/config/` documentata nello skill d'area. Audit trasversale pianificato → `docs/FOLLOW_UP.md` **FU-023** (§4c). Se in sessione tocchi un fallback sospetto: nota nel report §7.1 e sotto-riga in FU-023 (o nuovo FU collegato).
+RULE  **Fallback e placeholder (prod-ready):** quando manca un dato da DB o config del tenant, non lasciare stringhe/URL/immagini hardcodate «per far funzionare la demo» senza tracciarle. In produzione commerciale preferire: valore da storage del ristorante (`restaurant_settings`, `booking_public_form_config`, catalogo menu, `menu_qr_codes`, ecc.), stato vuoto esplicito (`EmptyState`, testo neutro), o costante centralizzata in `src/features/booking/constants/` / `@/config/` documentata nello skill d'area. Audit trasversale pianificato → `docs/FOLLOW_UP.md` **FU-ALL-FALLBACK** (§4c). Se in sessione tocchi un fallback sospetto: nota nel report §7.1 e sotto-riga in FU-ALL-FALLBACK (o nuovo FU collegato).
 ```
 
-### 4c. Debito trasversale — mappatura fallback (FU-023)
+### 4c. Debito trasversale — mappatura fallback (FU-ALL-FALLBACK)
 
 Obiettivo unico: **eliminare elementi hardcodati di test/demo** e sostituirli con comportamento **affidabile in produzione** per ogni ristorante (tenant).
 
@@ -325,10 +326,10 @@ Obiettivo unico: **eliminare elementi hardcodati di test/demo** e sostituirli co
 | **Cosa cercare** | Valori fissi nel JSX/TS quando la query è vuota o fallisce; slug/tenant di prova; immagini stock; label «Lorem» o copy di sviluppo; default che non esistono in `restaurant_settings` o config pubblica. |
 | **Fonti corrette** | Storage per tenant (vedi skill DB / `PRENOTA_DATA_FLOW_CONTEXT.md` / `DATA_FLOW`); mai duplicare in componente ciò che già vive in Supabase o in registry impostazioni. |
 | **Come mappare (checklist)** | Per ogni elemento: (1) **se pieno** — da dove arriva (tabella/colonna o chiave settings); (2) **se vuoto** — fallback attuale nel codice; (3) **verdetto** — ok prod · da sostituire · vuoto intenzionale (`EmptyState`). |
-| **Esecuzione** | Sessione dedicata o incrementale per area (profilo **Esecuzione** + skill della tabella § 0). Non confondere con FU-009 (mappatura impostazioni Prenota): FU-023 è l'**audit globale** sui fallback. |
-| **Registro** | `docs/FOLLOW_UP.md` riga **FU-023**; aggiornare a fine sessione (§7.1). |
+| **Esecuzione** | Sessione dedicata o incrementale per area (profilo **Esecuzione** + skill della tabella § 0). Non confondere con FU-009 (mappatura impostazioni Prenota): **FU-ALL-FALLBACK** è l'**audit globale** sui fallback. |
+| **Registro** | `docs/FOLLOW_UP.md` riga **FU-ALL-FALLBACK**; aggiornare a fine sessione (§7.1). |
 
-### 4d. Milestone lontana — skill system per agenti più competenti (FU-024)
+### 4d. Milestone lontana — skill system per agenti più competenti (FU-ALL-TIER)
 
 > **Non è lavoro corrente.** Tenere traccia finché non si fa una sessione Meta dedicata al design.
 > Lo skill system attuale (Skill 0 + skill d’area + `PREPARA_PROMPT` + `.cursor/skills/` puntatori)
@@ -354,7 +355,7 @@ invece di un solo `APP_CONTEXT_SKILL.md` monolitico.
 in due versioni diverse; (3) agente forte riceve contesto sufficiente per task multi-area senza leggere tutto `docs/`;
 (4) agente leggero non carica Legal/DB se fa solo un fix UI.
 
-**Registro e trigger:** `docs/FOLLOW_UP.md` **FU-024** (stato `Milestone lontana`). Roadmap prodotto:
+**Registro e trigger:** `docs/FOLLOW_UP.md` **FU-ALL-TIER** (stato `Milestone lontana`). Roadmap prodotto:
 `docs/Archivio/CONTESTO_PRODOTTO.md` §4. **Non** creare nuovi file `.cursor/skills/` in chat di lavoro
 normale — solo in sessione approvata che produce un mini-piano (anche 1 pagina in `docs/_lavoro/Supporto/` se serve).
 
@@ -366,7 +367,7 @@ normale — solo in sessione approvata che produce un mini-piano (anche 1 pagina
 npm run dev           # dev server :5173
 npm run typecheck     # tsc --noEmit — zero errori
 npm run lint          # ESLint — zero warning
-npm run test          # Vitest — tutti devono passare (137/137)
+npm run test          # Vitest — npm run test deve essere verde
 npm run validate      # lint + typecheck + test (usare pre-PR)
 ```
 
@@ -502,5 +503,5 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | `bookingFormResolver.ts` / `SubTab.field_overrides` / `patchSubTabAsOverride` / `resetSubTabToPreset` | `Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md` (resolver e override) |
 | `bookingPublicDateHelpers.ts` (getTodayIso, dateToIso, getCurrentTimeHHMM) / `bookingModeLabels.ts` (getModeLabelByType) | `APP_CONTEXT_SKILL.md` §4 RULE Anti-duplicazione — sono i punti di verità per date locali e label modalità del form pubblico |
 | `docs/FOLLOW_UP.md` (nuova riga o chiusura FU) | Nessun altro file obbligatorio; opzionale puntatore in `.cursor/skills/calendarbackup-app-context/SKILL.md` se il follow-up è rilevante per sessioni future |
-| Fallback / placeholder / `??` / `\|\|` su copy o asset quando config o DB è vuoto | `docs/FOLLOW_UP.md` **FU-023** + §4c; skill d'area del componente toccato |
+| Fallback / placeholder / `??` / `\|\|` su copy o asset quando config o DB è vuoto | `docs/FOLLOW_UP.md` **FU-ALL-FALLBACK** + §4c; skill d'area del componente toccato |
 | `vite.config.ts` (VitePWA/define) / `src/main.tsx` (registerSW) / `index.html` (splash) / `vercel.json` (cache header) / `src/vite-env.d.ts` (globali build) | `docs/PWA_CONTEXT.md` |

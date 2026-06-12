@@ -12,10 +12,10 @@
 ## Comandi
 
 ```bash
-npm run test              # 54 test Vitest in run mode (veloci, nessun browser)
+npm run test              # npm run test deve essere verde (veloci, nessun browser)
 npm run test:watch        # Vitest in watch mode durante sviluppo
 npm run test:e2e          # Playwright completo (tutti i file in e2e/)
-npm run test:e2e -- --grep edition   # Solo i 7 test edition su staging
+npm run test:e2e -- --grep edition   # Solo test edition su staging — deve essere verde
 npm run validate          # lint + typecheck + test (obbligatorio pre-PR)
 ```
 

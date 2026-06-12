@@ -13,6 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 12-06-26 | Docs — **WP-A4 APP_CONTEXT/ADMIN_CLASSIC puntuali** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a4-app-context-admin-classic-12-06-26.md) — albero §3 allineato (no PublicMenuPresetPage, +services/); LOCK CollapsibleCard senza contatore; §3a rimosso; validate verde; MASTERPLAN AL-A WP-A4 ✅ |
+| 12-06-26 | Docs — **WP-A2 FU-ALL fallback/tier + WP-A3 contatori test docs** ✅ | [WP-A2](Sessioni%20di%20lavoro/12-06-26/Report-wp-a2-fu-all-fallback-tier-12-06-26.md) · [WP-A3](Sessioni%20di%20lavoro/12-06-26/Report-wp-a3-contatori-test-12-06-26.md) — router FU coerente; 9 file vivi senza contatori suite; validate verde; MASTERPLAN AL-A WP-A2/A3 ✅ |
 | 12-06-26 | Docs — **WP-A1 rimandi PUBLIC_MENU_* → Menu QR** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a1-public-menu-rimandi-12-06-26.md) — 5 file vivi; grep pulito; validate **557**; MASTERPLAN AL-A WP-A1 ✅ |
 | 12-06-26 | Senior — **merge production guard fantasma calendario** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-merge-production-guard-fantasma-12-06-26.md) — privato `a19b663`; PrenotaZen `6cef8de`; build verde; no migrazione DB |
 | 12-06-26 | Admin — **fix guard fantasma post-modale calendario** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fix-guard-fantasma-calendario-12-06-26.md) — `UnsavedChangesContext` chiude dialog stale; validate **557**; smoke Pro OK Matteo |

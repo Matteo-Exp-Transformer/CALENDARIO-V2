@@ -73,7 +73,7 @@ npm run build                # TypeScript check + Vite build
 npm run lint                 # ESLint, zero warning tollerati
 npm run lint:fix             # Fix automatico ESLint
 npm run typecheck            # tsc --noEmit
-npm run test                 # 29 test Vitest (run mode)
+npm run test                 # npm run test deve essere verde (run mode)
 npm run test:watch           # Vitest in watch mode
 npm run test:e2e             # Playwright e2e (richiede staging Supabase)
 npm run validate             # lint + typecheck + test (pre-PR)

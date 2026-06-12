@@ -38,9 +38,9 @@ Legenda: ✅ fatto · 🔶 in corso/parziale · ⬜ da fare.
 | Milestone | WP | Stato | Cancello | Report |
 |---|---|---|---|---|
 | AL-A | WP-A1 — Rimandi `PUBLIC_MENU_*` | ✅ | Nessun rimando attivo rotto nei file vivi | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a1-public-menu-rimandi-12-06-26.md) |
-| AL-A | WP-A2 — FU-ALL fallback/tier | ⬜ | FU nuovi non riciclati e registro coerente | — |
-| AL-A | WP-A3 — Contatori test nei docs | ⬜ | Nessun contatore test hardcoded nei file target | — |
-| AL-A | WP-A4 — APP_CONTEXT/ADMIN_CLASSIC puntuali | ⬜ | Routing e struttura docs coerenti col codice | — |
+| AL-A | WP-A2 — FU-ALL fallback/tier | ✅ | FU nuovi non riciclati e registro coerente | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a2-fu-all-fallback-tier-12-06-26.md) |
+| AL-A | WP-A3 — Contatori test nei docs | ✅ | Nessun contatore test hardcoded nei file target | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a3-contatori-test-12-06-26.md) |
+| AL-A | WP-A4 — APP_CONTEXT/ADMIN_CLASSIC puntuali | ✅ | Routing e struttura docs coerenti col codice | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a4-app-context-admin-classic-12-06-26.md) |
 | AL-A | WP-A5 — Database-Skill | ⬜ | DB docs puntano alle fonti vive e note anomalie | — |
 | AL-A | WP-A6 — Routing masterplan/capienza | ⬜ | §0 instrada capienza e masterplan senza vicoli ciechi | — |
 | AL-B | WP-B1 — Migrazioni ↔ DB reale | ⬜ | Drift critico codificato o documentato con QA senior | — |

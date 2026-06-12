@@ -57,10 +57,10 @@ Se stai simulando un utente che clicca su qualcosa → Playwright
 ## 3. Comandi principali
 
 ```bash
-npm run test                          # 54 test Vitest — veloci, nessun browser
+npm run test                          # npm run test deve essere verde — veloci, nessun browser
 npm run test:watch                    # watch mode durante sviluppo
 npm run test:e2e                      # Playwright completo
-npm run test:e2e -- --grep edition    # Solo test edition (7 test su staging)
+npm run test:e2e -- --grep edition    # Solo test edition su staging — deve essere verde
 npm run validate                      # lint + typecheck + test (pre-PR)
 npx playwright install chromium       # Prima volta: installa il browser
 ```

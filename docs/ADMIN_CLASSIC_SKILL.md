@@ -105,7 +105,7 @@ Per tutto il resto: procedi, ma comunicare il flusso utente impattato **dopo** l
 
 **Cosa si rompe**: il ristoratore non può configurare il suo ristorante. Onboarding bloccato.
 
-> ⚠️ Esiste anche `SettingsTab.tsx` (più `EmailLogsModal.tsx`, `TestEmailModal.tsx`, `useEmailLogs.ts`): **dead code**, sostituito da `RestaurantSettingsTab.tsx`. Non importarlo, non riusarlo — vedi `APP_CONTEXT_SKILL.md` §3a.
+> ⚠️ I vecchi `SettingsTab.tsx`, `EmailLogsModal.tsx`, `TestEmailModal.tsx`, `useEmailLogs.ts` **non esistono più** — sostituiti da `RestaurantSettingsTab.tsx`. Non reintrodurli.
 
 ---
 

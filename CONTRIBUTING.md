@@ -55,7 +55,7 @@ npm run build         # build di produzione
 
 ## Code review checklist
 
-- [ ] `npm run validate` passa (lint + typecheck + 29 test)
+- [ ] `npm run validate` passa (lint + typecheck + test — deve essere verde)
 - [ ] I nuovi hook/funzioni hanno test corrispondenti in `__tests__/`
 - [ ] I `console.log` sono stati sostituiti con `logger.debug` (vedi `src/lib/logger.ts`)
 - [ ] Le modifiche al DB hanno una migrazione corrispondente in `supabase/migrations/`
