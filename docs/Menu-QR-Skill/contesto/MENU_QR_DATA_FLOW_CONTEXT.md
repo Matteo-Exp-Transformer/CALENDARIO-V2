@@ -201,7 +201,7 @@ Dettaglio: report mappa § Incoerenze. Fix Fase 3 in §11 sotto.
 | Pubblico header | Nome da `restaurant_settings.restaurant_name` via `useRestaurantName` | `PublicMenuPage.tsx` |
 | Pubblico categoria | Guard `category_filter`; messaggio + link indietro se categoria esclusa | `PublicMenuCategoryPage.tsx`, `menuQrAppearance.ts` |
 | Pubblico categoria header | Fascia sticky con PNG header del `theme_key` QR (asset finali FU-021) | `PublicMenuCategoryPage.tsx` |
-| Doc layout | Rimosso riferimento attivo a `menu_homepage_config` in tabella §7 | `PUBLIC_MENU_LAYOUT_CONTEXT.md` |
+| Doc layout | Rimosso riferimento attivo a `menu_homepage_config` in tabella §7 | `MENU_QR_LAYOUT_CONTEXT.md` |
 
 ---
 

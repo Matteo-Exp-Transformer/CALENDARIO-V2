@@ -188,8 +188,8 @@ Il testo è posizionato in assoluto sul 50% sinistro (`inset-y-0 left-0 w-1/2`),
 
 | Area | Skill da caricare prima |
 |------|------------------------|
-| Hook `useMenuQrCodes` / logica QR code | `PUBLIC_MENU_SKILL.md` §6 |
+| Hook `useMenuQrCodes` / logica QR code | `../MENU_QR_SKILL.md` §6 |
 | Pagina `PublicMenuCategoryPage` (lista piatti) | Leggere l'intero file prima |
-| `MenuHomepageConfigPanel` — upload storage | `PUBLIC_MENU_SKILL.md` §4 + §7 |
-| `menu_qrcode_categories` / colonne per-QR su `menu_qr_codes` | `DB_SKILL.md` + `DB_SCHEMA_CONTEXT.md` + `PUBLIC_MENU_DATA_FLOW_CONTEXT.md` |
+| `MenuHomepageConfigPanel` — upload storage | `../MENU_QR_SKILL.md` §4 + §7 |
+| `menu_qrcode_categories` / colonne per-QR su `menu_qr_codes` | `DB_SKILL.md` + `DB_SCHEMA_CONTEXT.md` + `MENU_QR_DATA_FLOW_CONTEXT.md` |
 | `menuThemes.ts` — aggiungere/modificare un tema | Aggiornare anche PNG in `public/menu-themes/` e CHECK in migrazione 034 |

@@ -4,7 +4,7 @@
 > ingredienti, form prodotto, categorie, promo testuali, menù preselezionati. Per il **flusso dati**
 > (resolver, override, come Prenota/QR pescano i dati) vedi `../Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md`. Per la
 > **pagina pubblica Prenota** vedi `../Prenota-Skill/PRENOTA_SKILL.md` (entry: senso+mappa). Per il **menu QR
-> pubblico** vedi `PUBLIC_MENU_SKILL.md`.
+> pubblico** vedi `docs/Menu-QR-Skill/MENU_QR_SKILL.md`.
 
 > **Trigger di routing:** «menù fonte di verità» · «menu pagina impostazioni» · «tab Menu» →
 > questo file (+ `../Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md` se tocca il flusso dati, `DB_SKILL` se tocca lo schema).
@@ -38,8 +38,8 @@ Prenota e Menu QR pescano i dati. È la fonte di verità delle voci di menù.
 - **Overlay «Categorie Menu»** (`viewMode === 'categories'`): form in alto; scroll al form con
   `scrollIntoAdminShellView` (`adminScroll.ts`) sul `<main>` AdminShell Pro; guard chiusura (X / Esc)
   se form aperto e dirty — `DiscardChangesConfirmModal` (pattern Impostazioni 29-05-26).
-- **Rename chiave categoria:** se il nome cambia lo slug (`key`), modale **Conferma e salva** prima del persist (come elimina categoria); poi `useUpdateMenuCategory` allinea `menu_items`, Menù QR e `hidden_category_keys` in Personalizza form. Solo al save confermato, non in digitazione o cambio tab. Vedi `PUBLIC_MENU_DATA_FLOW_CONTEXT.md` § rename · FU-029.
-- **Elimina categoria:** modale **Elimina categoria** con avviso QR/form (`CATEGORY_KEY_DELETE_INFO_MESSAGE`); al click Elimina `useDeleteMenuCategory` esegue sync immediato (`syncMenuCategoryKeyDelete`) — non al Salva modale QR. Vedi `PUBLIC_MENU_DATA_FLOW_CONTEXT.md` § delete sync.
+- **Rename chiave categoria:** se il nome cambia lo slug (`key`), modale **Conferma e salva** prima del persist (come elimina categoria); poi `useUpdateMenuCategory` allinea `menu_items`, Menù QR e `hidden_category_keys` in Personalizza form. Solo al save confermato, non in digitazione o cambio tab. Vedi `docs/Menu-QR-Skill/contesto/MENU_QR_DATA_FLOW_CONTEXT.md` § rename · FU-029.
+- **Elimina categoria:** modale **Elimina categoria** con avviso QR/form (`CATEGORY_KEY_DELETE_INFO_MESSAGE`); al click Elimina `useDeleteMenuCategory` esegue sync immediato (`syncMenuCategoryKeyDelete`) — non al Salva modale QR. Vedi `docs/Menu-QR-Skill/contesto/MENU_QR_DATA_FLOW_CONTEXT.md` § delete sync.
 - **Card categoria admin** (`AdminMenuCategoryLabelCard`): flex `.menu-prices-category-label-card`
   (CSS in `index.css`). **Mobile (&lt;1050px): nessuna thumb** — solo titolo + azioni in colonna
   (`.menu-prices-category-label-card__body`). **Desktop (≥1050px):** thumb Prenota
@@ -116,7 +116,7 @@ tipologie nella UI.
 - **UI:** titolo «Icona categoria (senza foto)» + picker **20 icone** (12 Phosphor + 8 Lucide «Altre icone») in `MenuQrCategoryCardsSection` (`MenuHomepageConfigPanel.tsx`).
 - **Default:** `lucide_salad` (Insalata) per categorie senza mapping e senza icona DB valida; mapping Phosphor per key comuni in `categoryIcons.ts` (`pizza` → `pizza_slice`, `birre` → `beer`, …) — costante `MENU_QR_DEFAULT_CATEGORY_ICON_KEY`.
 - **DB:** `menu_qrcode_categories.icon` (migrazione 042) — una delle 12 chiavi; prefill su nuovo QR senza upload foto automatico.
-- Dettaglio pubblico: `PUBLIC_MENU_SKILL.md` § Icone categoria senza foto.
+- Dettaglio pubblico: `docs/Menu-QR-Skill/MENU_QR_SKILL.md` § Icone categoria senza foto.
 
 ## 7. Report di sessione collegati
 

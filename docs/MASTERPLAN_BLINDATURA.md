@@ -13,6 +13,8 @@ Stiamo blindando le tre pagine dell'app (Prenota, Menu QR, Admin) per portarle a
 è già **online in production** (Vercel → repo pubblica PrenotaZen), quindi ogni merge tocca utenti
 reali: serve una cadenza a milestone con **revisione senior prima di ogni merge**.
 
+Allineamento skill↔codice (post-analisi 12-06-26): vedi [MASTERPLAN_ALLINEAMENTO.md](MASTERPLAN_ALLINEAMENTO.md).
+
 Una controverifica con sub-agent multipli (10-06-26), che ha letto i **report di sessione** (non i
 piani) e li ha confrontati col codice, ha corretto diverse cose che davo per fatte. Le scoperte chiave:
 

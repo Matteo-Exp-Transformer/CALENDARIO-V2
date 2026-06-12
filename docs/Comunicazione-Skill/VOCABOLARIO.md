@@ -286,7 +286,7 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 
 ### Pagina Menu pubblica — «Pagina menù» · «pagina QR code» — Liv. 1
 - **Punta a:** il menu digitale pubblico mobile (pagine `/menu/:slug`, QR)
-- **Comportamento agente:** carica `PUBLIC_MENU_SKILL` + RULE Menu QR (APP_CONTEXT § 4).
+- **Comportamento agente:** carica `docs/Menu-QR-Skill/MENU_QR_SKILL.md` + RULE Menu QR (APP_CONTEXT § 4).
 - **Livello:** 1 (automatico)
 - **Approvata il:** 28-05-26
 - **Origine:** chat mappatura
@@ -308,7 +308,7 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 
 ### Menu per Pagina QR — «Menu qr code» · «menu pagina qr menù» — Liv. 1
 - **Punta a:** la gestione del menu pubblico QR (`MenuQrManager` / `MenuQrModal`)
-- **Comportamento agente:** carica `PUBLIC_MENU_SKILL` + RULE Menu QR.
+- **Comportamento agente:** carica `docs/Menu-QR-Skill/MENU_QR_SKILL.md` + RULE Menu QR.
 - **Livello:** 1 (automatico)
 - **Approvata il:** 28-05-26
 - **Origine:** chat mappatura
