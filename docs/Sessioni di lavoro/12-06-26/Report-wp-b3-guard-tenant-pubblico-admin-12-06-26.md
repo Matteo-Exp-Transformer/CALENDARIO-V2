@@ -117,7 +117,8 @@ Il workflow multi-agente ha aiutato perché la mappa read-only ha identificato i
 - CalendarBackup-v2:
   - `a20d233` — `fix(auth): guard tenant pubblico da restore admin`
   - `89c4c14` — `docs(allineamento): chiude WP-B3 guard tenant pubblico`
-  - `env/test`, `main`, `origin/env/test`, `origin/main` allineati a `89c4c14`
+  - report finale complessivo aggiunto dopo il rilascio WP-B3
+  - `env/test`, `main`, `origin/env/test`, `origin/main` allineati al commit finale del report
 - PrenotaZen:
   - `ac9aeec` — `release: guard tenant pubblico admin`
   - `origin/main` allineato a `ac9aeec`
