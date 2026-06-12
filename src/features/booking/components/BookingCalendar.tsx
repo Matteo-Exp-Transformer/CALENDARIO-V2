@@ -410,7 +410,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   } = useUnsavedChangesGuard()
   const features = useFeatures()
   const { data: digestSlots = [] } = useDigestSlotConfigs()
-  const timeSlotsEnabledQuery = useRestaurantSetting('booking_time_slots_enabled')
+  const timeSlotsEnabledQuery = useRestaurantSetting('booking_time_slots_enabled', {
+    authenticated: true,
+  })
   // In Pro le fasce sono sempre attive; in Classic rispetta il flag
   const timeSlotsEnabled = features.servizio ? true : (timeSlotsEnabledQuery.data ?? true)
 
@@ -515,7 +517,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   const events = transformBookingsToCalendarEvents(visibleBookings)
 
   // Limite coperti giornaliero (esterno): null = nessun limite → nel calendario mostriamo solo il conteggio.
-  const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit')
+  const dailyGuestLimitQuery = useRestaurantSetting('daily_guest_limit', {
+    authenticated: true,
+  })
   const dailyGuestLimit = dailyGuestLimitQuery.data ?? null
 
   // Somma coperti per data (YYYY-MM-DD) → alimenta % riempimento e badge cella-giorno.
