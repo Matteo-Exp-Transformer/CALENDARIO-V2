@@ -143,6 +143,19 @@ decisa con Matteo:
   Quando la Fase D è necessaria lo decide la matrice in `MASTERPLAN_BLINDATURA.md` § «Quando servono i
   test "rompi"».
 
+**9. Revisione di un'analisi «drift migrazioni ↔ DB» — traccia la policy per NOME su tutta la catena (metodo, 12-06-26, WP-B1).**
+Quando un sub-agent confronta migrazioni versionate e stato reale del DB e dichiara un «drift», il
+revisore senior NON si fida del confronto: lo rifà cercando ogni policy/oggetto **per nome lungo
+l'intera catena DROP/CREATE** delle migrazioni, non solo nella prima migrazione che lo nomina. Caso
+reale: il sub-agent ha segnalato le policy admin di `restaurant_settings` come «mancanti» perché
+guardava solo la `001` (che le crea come `tenant_*`), senza vedere la `002` che le droppa e ricrea
+come `admin_*` con `current_admin_tenant_id()`. Risultato: bozza di migrazione sovra-dimensionata che
+ri-dichiarava policy già versionate. Intercettato in revisione, ridotto al solo drift vero (1 policy
+anon su `organizations`). **Anti-pattern curato:** *false drift da confronto parziale* (= concludere
+da una sola migrazione invece che dallo stato risultante dell'intera catena). Vale per tutti i WP DB
+del masterplan allineamento (B2-B5). Pattern «sub-agent fase-1 read-only + bozza, senior rivede prima
+di scrivere»: ha funzionato, ha pagato proprio sul caso che sembrava banale.
+
 > 🛑 **PAUSA-RACCOLTA (decisa 29-05-26).** Lo skill system ha avuto molte aggiunte in pochi giorni.
 > **Stop a nuovi meccanismi/regole** finché non si accumulano ~5-10 sessioni di dati con gli
 > strumenti già esistenti (modalità, metriche successo chat, log idee). Il prossimo passo è

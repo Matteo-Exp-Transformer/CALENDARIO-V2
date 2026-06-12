@@ -43,8 +43,8 @@ Legenda: ✅ fatto · 🔶 in corso/parziale · ⬜ da fare.
 | AL-A | WP-A4 — APP_CONTEXT/ADMIN_CLASSIC puntuali | ✅ | Routing e struttura docs coerenti col codice | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a4-app-context-admin-classic-12-06-26.md) |
 | AL-A | WP-A5 — Database-Skill | ✅ | DB docs puntano alle fonti vive e note anomalie | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a5-database-skill-12-06-26.md) |
 | AL-A | WP-A6 — Routing masterplan/capienza | ✅ | §0 instrada capienza e masterplan senza vicoli ciechi | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a6-routing-capienza-masterplan-12-06-26.md) |
-| AL-B | WP-B1 — Migrazioni ↔ DB reale | ⬜ | Drift critico codificato o documentato con QA senior | — |
-| AL-B | WP-B2 — `restaurant_settings` cross-tenant | ⬜ | Lettura anon ristretta senza rompere Prenota/Menu QR | — |
+| AL-B | WP-B1 — Migrazioni ↔ DB reale | ✅ | Drift critico codificato o documentato con QA senior | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b1-migrazioni-db-12-06-26.md) |
+| AL-B | WP-B2 — `restaurant_settings` cross-tenant | 🔶 | Lettura anon ristretta senza rompere Prenota/Menu QR | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b2-restaurant-settings-cross-tenant-12-06-26.md) |
 | AL-B | WP-B3 — Guard tenant pubblico/admin | ⬜ | Tenant pubblico non sovrascritto da sessione admin | — |
 | AL-B | WP-B4 — `create-booking` hardening | ⬜ | Tenant inattivi bloccati e rate limit conta i respinti | — |
 | AL-B | WP-B5 — Slot availability + cleanup rate limits | ⬜ | Scelta applicata e deploy/deprecazione coerenti | — |
@@ -408,11 +408,11 @@ Ogni WP richiede ok esplicito di Matteo file per file. Sono cambi strutturali de
   - `.cursor/rules/comandi-base.mdc`
   - `docs/Comunicazione-Skill/VOCABOLARIO.md` (fonte, sola lettura salvo ok)
 - **Passi numerati:**
-  1. Chiedere ok a Matteo.
-  2. Rimuovere duplicazioni di struttura `src/` e contatori test.
-  3. Tenere puntatori a `APP_CONTEXT_SKILL.md`, VOCABOLARIO e regole DB.
-  4. Confrontare con `AGENTS.md` per non perdere obblighi.
-  5. Verificare che Claude/Cursor/Codex puntino alle stesse fonti.
+ 
+  1. Rimuovere duplicazioni di struttura `src/` e contatori test.
+  2. Tenere puntatori a `APP_CONTEXT_SKILL.md`, VOCABOLARIO e regole DB.
+  3. Confrontare con `AGENTS.md` per non perdere obblighi.
+  4. Verificare che Claude/Cursor/Codex puntino alle stesse fonti.
 - **Verifica:** meno duplicazioni, nessun valore vivo hardcoded, regole principali ancora raggiungibili.
 - **Vietato:** non cambiare comportamento dei grilletti senza sessione Meta; non aggiornare vocabolario.
 - **Cancello:** Matteo approva il nuovo assetto.
@@ -426,14 +426,14 @@ Ogni WP richiede ok esplicito di Matteo file per file. Sono cambi strutturali de
   - `docs/Sessioni di lavoro/06-06-26/`
   - rimandi entranti trovati da grep
 - **Passi numerati:**
-  1. Chiedere ok a Matteo sui file.
+  1. Matteo ha gia approvato.
   2. Spostare i file storici in `docs/Sessioni di lavoro/06-06-26/`.
   3. Aggiornare rimandi vivi.
   4. Lasciare puntatore breve nella skill solo se serve.
   5. Verificare link e grep entranti.
 - **Verifica:** file storici fuori dalla skill viva; nessun link rotto.
 - **Vietato:** non cancellare report; non modificare il contenuto storico oltre ai path se necessario.
-- **Cancello:** conferma Matteo file per file.
+- **Cancello:** conferma Matteo (gia consentito).
 
 ---
 

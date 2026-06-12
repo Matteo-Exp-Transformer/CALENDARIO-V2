@@ -14,9 +14,9 @@
 2. **Remoto (sola lettura per consultazione):** MCP `get_project_url` → deve rispondere TEST `docnnernvp` (sviluppo) o PROD `rwuxgvld` (sola lettura salvo conferma esplicita). Poi `list_migrations`.
 3. **Schema colonne/tabelle:** `DB_SCHEMA_CONTEXT.md` — aggiornare dopo ogni migrazione che introduce colonne.
 
-Ultimo file in repo (verificato 12-06-26): **`045_menu_magazzino_is_available.sql`**. Prossima nuova migrazione: prefisso **`046_`**.
+Ultimo file in repo (verificato 12-06-26): **`046_codify_policy_drift.sql`**. Prossima nuova migrazione: prefisso **`047_`**.
 
-### Indice repo 040–045 (sintesi schema — non sostituisce i file SQL)
+### Indice repo 040–046 (sintesi schema — non sostituisce i file SQL)
 
 | File | Contenuto |
 |------|-----------|
@@ -26,6 +26,7 @@ Ultimo file in repo (verificato 12-06-26): **`045_menu_magazzino_is_available.sq
 | `043_drop_menu_qr_preset_columns.sql` | DROP `menu_qr_codes.content_type`, `preset_ids` |
 | `044_fix_booking_count_skip_restore.sql` | `increment_booking_count_on_accept()` — non conta transizione `deleted → accepted` |
 | `045_menu_magazzino_is_available.sql` | `menu_categories.is_available`, `menu_items.is_available` BOOLEAN NOT NULL DEFAULT true |
+| `046_codify_policy_drift.sql` | Codifica policy RLS `anon_select_active_organizations` (anon SELECT su `organizations`, `is_active = true`), prima presente sul DB ma fuori dalle migrazioni. Idempotente. NON restringe `restaurant_settings` (→ WP-B2) |
 
 ### Due ambienti Supabase — non confonderli
 

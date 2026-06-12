@@ -175,6 +175,12 @@ LOCK  Cancellazione preset staff
 LOCK  Due client Supabase
       Admin: `supabase` (autenticato). Pubblico Prenota: `supabasePublic` (anonimo).
       Il resolver è puro, non sa di client — lo chiama chi ha già i dati in mano.
+      WP-B2 (migrazione 047): la lettura anon di `restaurant_settings` è ristretta
+      a una whitelist di 11 key pubbliche. La pagina pubblica Prenota legge SOLO
+      quelle (nome, contatti, orari, sfondo/striscia, `booking_public_form_config`,
+      `booking_staff_presets_visible`, `booking_custom_staff_presets`,
+      `booking_menu_promos`). Le key operative (tema, limiti coperti, capienze,
+      aree sala, walk-in…) sono solo-admin: `useRestaurantSetting(key, { authenticated:true })`.
 
 LOCK  Rename chiave categoria (magazzino)
       Solo al save categoria in tab Menu (`useUpdateMenuCategory`): oltre a

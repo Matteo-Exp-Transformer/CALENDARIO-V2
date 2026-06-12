@@ -201,6 +201,7 @@ Dettaglio: report mappa § Incoerenze. Fix Fase 3 in §11 sotto.
 | Pubblico header | Nome da `restaurant_settings.restaurant_name` via `useRestaurantName` | `PublicMenuPage.tsx` |
 | Pubblico categoria | Guard `category_filter`; messaggio + link indietro se categoria esclusa | `PublicMenuCategoryPage.tsx`, `menuQrAppearance.ts` |
 | Pubblico categoria header | Fascia sticky con PNG header del `theme_key` QR (asset finali FU-021) | `PublicMenuCategoryPage.tsx` |
+| WP-B2 lettura settings | Anon legge `restaurant_settings` solo via whitelist 11 key (migr. 047); il Menu QR pubblico usa solo `restaurant_name` (in whitelist) → nessun impatto | `047_restrict_anon_restaurant_settings.sql` |
 | Doc layout | Rimosso riferimento attivo a `menu_homepage_config` in tabella §7 | `MENU_QR_LAYOUT_CONTEXT.md` |
 
 ---

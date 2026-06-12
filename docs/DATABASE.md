@@ -10,7 +10,7 @@ I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati
 
 > **Fonte di verità (non questo riepilogo):** elenco file in `supabase/migrations/` + stato remoto via MCP `list_migrations` dopo `get_project_url` (TEST `docnnernvp`, PROD `rwuxgvld` sola lettura). Dettaglio workflow e anomalie storiche: `Database-Skill/DB_MIGRATIONS_CONTEXT.md`.
 
-Ultimo file in repo (verificato 12-06-26): `045_menu_magazzino_is_available.sql`. La prossima migrazione deve usare il prefisso **`046_`**.
+Ultimo file in repo (verificato 12-06-26): `046_codify_policy_drift.sql`. La prossima migrazione deve usare il prefisso **`047_`**.
 
 | Versione | File | Note sintetiche |
 |----------|------|-----------------|
@@ -27,6 +27,7 @@ Ultimo file in repo (verificato 12-06-26): `045_menu_magazzino_is_available.sql`
 | 043 | `043_drop_menu_qr_preset_columns.sql` | DROP `menu_qr_codes.content_type`, `preset_ids` (codice morto) |
 | 044 | `044_fix_booking_count_skip_restore.sql` | trigger `increment_booking_count_on_accept`: skip `deleted → accepted` |
 | 045 | `045_menu_magazzino_is_available.sql` | `is_available` su `menu_categories` e `menu_items` (magazzino M3) |
+| 046 | `046_codify_policy_drift.sql` | WP-B1: codifica la policy `anon_select_active_organizations` (anon SELECT su `organizations`, `is_active = true`) che esisteva su TEST+PROD ma non era versionata. Necessaria alla vista `organizations_public` security_invoker (039). Applicata TEST+PROD 12-06-26. Nessuna restrizione (chiusura lettura cross-tenant `restaurant_settings` = WP-B2) |
 
 > Promo menù (23-05-26): impostazioni solo su `restaurant_settings.setting_key = booking_menu_promos`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
 

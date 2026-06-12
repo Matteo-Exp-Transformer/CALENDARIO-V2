@@ -25,7 +25,9 @@
 `edition` controlla quali feature sono attive per il tenant (letto da `TenantContext` → `useFeatures()`). Migrazione: `013_tenants_edition.sql`.
 
 Indici: `idx_organizations_slug`, `idx_organizations_active` (partial su `is_active = true`).
-**RLS:** nessuna policy — letta via service role o `supabasePublic`.
+**RLS:** RLS attiva con due policy SELECT:
+- `admin_select_own_organization` (authenticated) — solo il proprio tenant `id = current_admin_tenant_id()` (migrazione 026).
+- `anon_select_active_organizations` (anon) — righe con `is_active = true`; necessaria alla vista `organizations_public` con `security_invoker = true` (vedi § Vista `organizations_public`). Esisteva sul DB fuori da ogni migrazione fino alla **046** (WP-B1, 12-06-26) che la codifica. NON è una lettura cross-tenant ristretta: espone solo i campi safe via GRANT per-colonna (irrigidimento eventuale = WP-B2).
 
 ---
 
@@ -248,6 +250,11 @@ ciascuno). Gli scope a intervallo partono da oggi incluso.
 | `setting_value` | JSONB NOT NULL | Struttura variabile per chiave |
 
 Vincolo: `UNIQUE(tenant_id, setting_key)`.
+
+**RLS (whitelist anon, migrazione 047 — WP-B2 12-06-26):**
+- **Lettura anon** (`anon_select_restaurant_settings`): ristretta a una **whitelist di 11 setting_key pubbliche** — `restaurant_name`, `contact_email`, `contact_phone`, `contact_address`, `business_hours`, `public_booking_page_background`, `public_booking_strip_photo`, `booking_public_form_config`, `booking_staff_presets_visible`, `booking_custom_staff_presets`, `booking_menu_promos`. Sono le sole lette dalle pagine pubbliche `/prenota/:slug` e `/menu/:slug` via `supabasePublic`. Prima era `USING (true)` (anon leggeva qualsiasi key di qualsiasi tenant).
+- **8 key SOLO-ADMIN** (`app_theme`, `booking_placement_areas`, `daily_guest_limit`, `slot_guest_capacities`, `booking_time_slots_enabled`, `walk_in_max_guests`, `timezone`, `booking_window_days`): NON in whitelist → invisibili ad anon. La dashboard le legge dal client autenticato `supabase` passando `useRestaurantSetting(key, { authenticated: true })` (policy `admin_*` di 002). I limiti pubblici (cap giornaliero/slot) restano applicati dalle Edge Function con service_role.
+- **Scritture admin**: sempre client autenticato `supabase` (policy `admin_*`). **NUOVA setting_key pubblica futura** → va aggiunta sia al registry sia alla whitelist della policy (debito di manutenzione noto).
 
 **Chiavi promo menù (23-05-26):** `booking_menu_promos` — JSON array `{ id, label, message, booking_types, visible_on_booking? }`. Chiavi legacy `booking_vol_au_vent_*` rimosse da migrazione 029. Nessun `booking_menu_promo_message` (solo array).
 
