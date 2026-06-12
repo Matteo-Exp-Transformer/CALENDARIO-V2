@@ -156,6 +156,9 @@ da una sola migrazione invece che dallo stato risultante dell'intera catena). Va
 del masterplan allineamento (B2-B5). Pattern «sub-agent fase-1 read-only + bozza, senior rivede prima
 di scrivere»: ha funzionato, ha pagato proprio sul caso che sembrava banale.
 
+**10. Restringere una RLS pubblica — mappa CHI legge la tabella in TUTTA l'app prima di toccarla (metodo, 12-06-26, WP-B2).**
+Prima di restringere una policy anon (`USING (true)` → whitelist/filtro), il primo passo OBBLIGATORIO non è scrivere la migrazione: è mappare **ogni** punto che legge la tabella via client anonimo (`supabasePublic`) in tutta l'app, non solo nelle pagine pubbliche. Caso reale: `restaurant_settings` era letta via anon **anche dentro la dashboard /admin** (gli hook `useRestaurantSetting`/`useBusinessHours`/`useRestaurantName` usano `supabasePublic`), quindi una whitelist ingenua avrebbe rotto l'admin. Il fix corretto: classificare ogni chiave pubblica vs solo-admin → ri-instradare le letture solo-admin sul client autenticato → poi restringere la policy alle sole chiavi davvero pubbliche. **Ordine di deploy obbligatorio:** prima il codice live (che legge via client autenticato), POI la migrazione restrittiva su PROD — altrimenti la dashboard live si rompe nella finestra tra i due (lezione `project_prod_main_lag_026`). **Anti-pattern curato:** *restrizione RLS a scope parziale* (assumere che solo il pubblico legga da anon). Il masterplan AL-B (B2-B5) tocca altre RLS: vale per tutti. Schema operativo: sub-agent mappa read-only → senior verifica la classificazione (è lì che un errore rompe le pagine) → sub-agent implementa.
+
 > 🛑 **PAUSA-RACCOLTA (decisa 29-05-26).** Lo skill system ha avuto molte aggiunte in pochi giorni.
 > **Stop a nuovi meccanismi/regole** finché non si accumulano ~5-10 sessioni di dati con gli
 > strumenti già esistenti (modalità, metriche successo chat, log idee). Il prossimo passo è

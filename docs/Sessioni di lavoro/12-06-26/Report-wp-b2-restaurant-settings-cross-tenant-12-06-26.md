@@ -7,8 +7,8 @@ Profilo: Esecuzione (2 sub-agent) + Revisione senior · Modalità: deep · Branc
 ## 1. Cappello
 
 - **Cosa è cambiato:** un estraneo non può più sbirciare le impostazioni operative di un altro ristorante (limiti coperti, capienze, aree sala, walk-in, tema, ecc.). Restano leggibili pubblicamente solo le 11 impostazioni che servono davvero alle pagine pubbliche (nome, contatti, orari, aspetto, form, promo).
-- **Cosa resta:** applicazione su PROD da fare in coda al rilascio del codice (ordine obbligatorio: prima il codice live, poi la serratura). WP-B2 chiude del tutto quando PROD è allineato.
-- **Serve una tua azione:** sì — confermare il via libera PROD dopo che il nuovo codice è pubblicato (lo chiedo io al momento giusto).
+- **Cosa resta:** niente — codice live in produzione (deploy Vercel `20a7d00` READY) e migrazione 047 applicata su TEST **e PROD**. WP-B2 chiuso.
+- **Serve una tua azione:** no.
 
 ---
 
@@ -71,7 +71,7 @@ Profilo: Esecuzione (2 sub-agent) + Revisione senior · Modalità: deep · Branc
 
 ## 10. Cosa resta per la prossima sessione
 
-- **PROD:** applicare 047 dopo deploy del codice (in corso in questa sessione di rilascio).
+- **PROD: fatto** — codice rilasciato (merge `main` + deploy Vercel `20a7d00` READY) e migrazione 047 applicata su PROD `rwuxgvld` (policy verificata: 11 pubbliche dentro, admin-only fuori). TEST e PROD allineati.
 - **FU nuovo:** `FU-B2-WHITELIST` — ogni nuova `setting_key` pubblica va aggiunta SIA al registry SIA alla whitelist della policy 047. Debito di manutenzione da sorvegliare (documentato in `DB_SCHEMA_CONTEXT.md`).
 
 ## 11. Domande di chiusura
@@ -86,7 +86,7 @@ Profilo: Esecuzione (2 sub-agent) + Revisione senior · Modalità: deep · Branc
 ✅ R3: DB_SCHEMA_CONTEXT (policy), PRENOTA + MENU_QR data-flow context, masterplan: aggiornati in questa chiusura. Tipi DB invariati (nessuna colonna nuova). Test invariati (nessun mock rotto).
 
 ❓ Q4 — Cosa NON hai fatto?
-✅ R4: NON ho applicato 047 su PROD (volutamente: il codice nuovo deve essere live prima, altrimenti la dashboard PROD si rompe). NON ho ancora flippato il masterplan a ✅ (resta 🔶 finché PROD non è allineato). NON ho fatto un browser-smoke automatico: lo smoke su TEST l'ha confermato Matteo.
+✅ R4: Tutto completato. La 047 è stata applicata su PROD SOLO dopo aver verificato che il codice nuovo fosse live (deploy Vercel `20a7d00` READY) — ordine rispettato per non rompere la dashboard. Browser-smoke su TEST confermato da Matteo; su PROD verificata la policy via SQL (non smoke browser). Masterplan flippato a ✅ in chiusura.
 
 ❓ Q5 — Attrito + miglioria?
 ✅ R5: Attrito: lo scope è cambiato a metà (scoperta admin-via-anon). Miglioria: nei WP che restringono RLS, primo passo obbligatorio = "mappa chi legge la tabella via client anonimo in TUTTA l'app", non solo nelle pagine pubbliche, così lo scope è chiaro dal prompt.
