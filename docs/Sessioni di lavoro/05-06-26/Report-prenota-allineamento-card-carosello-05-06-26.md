@@ -1,18 +1,18 @@
 # Report — Prenota: allineamento card scorrevoli + carosello (colonna form)
 
 **Data:** 05-06-26  
-**Branch:** env/test (working tree, non committato)  
+**Branch:** env/test  
 **Area:** Pagina Prenota pubblica — sottotab card scroll + carosello  
 **Modalità:** standard  
 **Stato:** ✅ **lavoro ok** — QA iterativa Matteo OK; validate **412** verdi  
-**Commit:** nessuno (Matteo: «lavoro ok», non «fai report finale»)
+**Commit:** `354da7f` (fix codice) + `dec0d9b` (report + skill layout) — header allineato il 13-06-26 (FU-041; in origine «working tree, non committato»)
 
 ---
 
 ## 0. Cappello
 
 - **Cosa è cambiato:** Anna sulla Pagina Prenota vede le **card scorrevoli** (≥4 opzioni) e il **carosello** (≥2 foto) **centrati** nella colonna del form quando il gruppo entra in larghezza; su mobile stretto la **prima card/slide resta intera** appoggiata a sinistra, con scroll verso destra — niente taglio laterale né card gonfiate.
-- **Cosa resta:** commit + push quando Matteo chiederà «fai report finale»; eventuale smoke formale con slug TEST documentato (non bloccante — feedback visivo già ricevuto in chat).
+- **Cosa resta:** ~~commit + push~~ fatti (`354da7f`/`dec0d9b`); eventuale smoke formale con slug TEST documentato (non bloccante — feedback visivo già ricevuto in chat; QA browser C1/C3 poi chiusa con FU-039 il 10-06-26).
 - **Serve una tua azione:** no (accettazione «ottimo lavoro»).
 
 ---

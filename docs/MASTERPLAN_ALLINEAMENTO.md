@@ -420,11 +420,12 @@ Ogni WP richiede ok esplicito di Matteo file per file. Sono cambi strutturali de
 ### WP-D5 — Spostare plan/report storici Menu QR
 
 - **Obiettivo:** togliere storia di blindatura dalla skill viva Menu QR.
-- **File esatti:**
-  - `docs/Menu-QR-Skill/PLAN_BLINDATURA_MENU_QR.md`
-  - `docs/Menu-QR-Skill/REPORT_BLINDATURA_06-06-26.md`
+- **File esatti** (path originali in `Menu-QR-Skill/`; spostati — ora vivono in):
+  - `docs/Sessioni di lavoro/06-06-26/PLAN_BLINDATURA_MENU_QR.md`
+  - `docs/Sessioni di lavoro/06-06-26/REPORT_BLINDATURA_06-06-26.md`
   - `docs/Sessioni di lavoro/06-06-26/`
   - rimandi entranti trovati da grep
+  - *Nota 13-06-26: i 2 tombstone lasciati in `Menu-QR-Skill/` sono stati rimossi (nessun link vivo li puntava — pulizia §7 report finale Fable).*
 - **Passi numerati:**
   1. Matteo ha gia approvato.
   2. Spostare i file storici in `docs/Sessioni di lavoro/06-06-26/`.

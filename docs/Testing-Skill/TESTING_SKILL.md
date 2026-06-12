@@ -154,7 +154,7 @@ Per ogni viewport ripetere **gli stessi passi funzionali** (es. cambio tipologia
 - **DB:** solo TEST (`docnnernvp`) — mai validare su produzione.
 - **Dev server:** `npm run dev` (legge `.env.local` = test).
 - **Credenziali QA:** `.env.local.test` → `MANUAL_ADMIN_EMAIL`, `MANUAL_ADMIN_PASSWORD`, `MANUAL_TENANT_SLUG` (gitignored). Riferimento: `docs/_lavoro/Per matteo/Comandi per terminale.md`.
-- **Pagina pubblica:** `/prenota/{MANUAL_TENANT_SLUG}` (es. `test-pro`).
+- **Pagina pubblica:** `/prenota/{MANUAL_TENANT_SLUG}`. Per smoke Prenota usare il tenant QA seedato **`test`** (`/prenota/test`, FU-038); `test-pro` è il tenant Pro (admin/sidebar), non il riferimento smoke pubblico.
 
 Strumenti ammessi: **Playwright MCP** (browser), DevTools, o test E2E esistenti — l’agente deve **eseguire** i passi, non solo elencarli a Matteo.
 
