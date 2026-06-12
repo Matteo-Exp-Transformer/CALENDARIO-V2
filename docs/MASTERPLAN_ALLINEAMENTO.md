@@ -46,7 +46,7 @@ Legenda: ✅ fatto · 🔶 in corso/parziale · ⬜ da fare.
 | AL-B | WP-B1 — Migrazioni ↔ DB reale | ✅ | Drift critico codificato o documentato con QA senior | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b1-migrazioni-db-12-06-26.md) |
 | AL-B | WP-B2 — `restaurant_settings` cross-tenant | ✅ | Lettura anon ristretta senza rompere Prenota/Menu QR | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b2-restaurant-settings-cross-tenant-12-06-26.md) |
 | AL-B | WP-B3 — Guard tenant pubblico/admin | ✅ | Tenant pubblico non sovrascritto da sessione admin | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b3-guard-tenant-pubblico-admin-12-06-26.md) · [Verifica Menu QR](Sessioni%20di%20lavoro/12-06-26/Report-verifica-wp-b3-menu-qr-12-06-26.md) |
-| AL-B | WP-B4 — `create-booking` hardening | ⬜ | Tenant inattivi bloccati e rate limit conta i respinti | — |
+| AL-B | WP-B4 — `create-booking` hardening | ✅ | Tenant inattivi bloccati e rate limit conta i respinti | [Report](Sessioni%20di%20lavoro/12-06-26/Report-chiusura-ciclo-fable-allineamento-sicurezza-12-06-26.md) |
 | AL-B | WP-B5 — Slot availability + cleanup rate limits | ✅ | Repo+TEST+PROD allineati; cleanup rate limits attivo e verificato | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b5-slot-availability-cleanup-rate-limits-12-06-26.md) · [Completamento TEST](Sessioni%20di%20lavoro/12-06-26/Report-completamento-wp-b5-test-apply-12-06-26.md) |
 | AL-C | WP-C1 — Codice morto | ✅ | Import zero prima delete, validate verde dopo | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c1-codice-morto-12-06-26.md) |
 | AL-C | WP-C2 — Logger | ✅ | Convenzione `logger.*` rispettata nei target | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c2-logger-12-06-26.md) |
@@ -258,7 +258,7 @@ Questa milestone chiude rischi reali. B1 e B2 richiedono profilo senior + Matteo
   6. Aggiornare docs collegati.
 - **Verifica:** tenant inattivo non riceve prenotazioni; tentativi respinti incrementano rate limit; validate verde.
 - **Vietato:** non cambiare `verify_jwt:false`; non alterare limiti testo/capienza fuori scope.
-- **Cancello:** smoke TEST ok + conferma Matteo per PROD.
+- **Cancello:** ✅ Chiuso 12-06-26 — codice aggiornato, deploy PROD verificato in sola lettura (`create-booking` v14, `verify_jwt:false`), nessuna prenotazione/dato di test creato in PROD. Verifica locale finale nel report di chiusura ciclo.
 
 ### WP-B5 — `check-slot-availability` e `cleanup_rate_limits`
 

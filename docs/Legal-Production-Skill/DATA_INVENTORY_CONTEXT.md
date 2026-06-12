@@ -1,6 +1,6 @@
 # Data Inventory — cosa raccoglie davvero CalendarBackup-v2
 
-> Aggiornato: 2026-05-23
+> Aggiornato: 2026-06-12
 > Fonte verità per Privacy Policy + Registro Trattamenti.
 > Ogni nuova migrazione che aggiunge PII deve aggiornare questo file.
 
@@ -74,7 +74,7 @@ Gestita da Supabase. Retention secondo contratto.
 
 ⚠️ **L'indirizzo IP è dato personale** (Corte Giustizia UE C-582/14). Va dichiarato in Privacy Policy.
 **Base giuridica**: legittimo interesse (sicurezza, anti-abuse).
-**Retention PROD runtime**: migrazione `048_schedule_rate_limits_cleanup.sql` applicata su PROD `rwuxgvld` il 12-06-26; cleanup orario via `pg_cron` cancella `rate_limits` più vecchi di 1 ora. **Nota TEST:** applicazione remota TEST rimasta bloccata da permessi MCP/CLI; finché 048 non è applicata su TEST, la retention runtime TEST resta indefinita.
+**Retention runtime**: migrazione `048_schedule_rate_limits_cleanup.sql` applicata e verificata su TEST `docnnernvp` e PROD `rwuxgvld` il 12-06-26; cleanup orario via `pg_cron` cancella `rate_limits` più vecchi di 1 ora.
 **Soglia attiva**: max 3 richieste/min per IP (Edge Function `create-booking`, deploy 2026-05-23).
 
 ### `ip_blacklist` — Ban automatico IP per abuso (aggiunta 2026-05-23)
@@ -85,7 +85,7 @@ Gestita da Supabase. Retention secondo contratto.
 
 **Base giuridica**: legittimo interesse (sicurezza informatica, prevenzione attacchi).
 **Trigger ban**: se IP fa ≥6 richieste in 10 min (= 2 sforamenti consecutivi del rate limit 3/min) → ban 24h.
-**Retention PROD runtime**: ban inattivo dopo 24h via `expires_at`; migrazione `048_schedule_rate_limits_cleanup.sql` applicata su PROD cancella le righe scadute da oltre 1 giorno. **Nota TEST:** vale a runtime TEST solo dopo applicazione remota della migrazione.
+**Retention runtime**: ban inattivo dopo 24h via `expires_at`; migrazione `048_schedule_rate_limits_cleanup.sql` applicata e verificata su TEST e PROD cancella le righe scadute da oltre 1 giorno.
 **Da dichiarare in Privacy Policy** sez. 2 (dati raccolti automaticamente) e sez. 3 (finalità sicurezza).
 
 ### `email_logs` — Log invii email

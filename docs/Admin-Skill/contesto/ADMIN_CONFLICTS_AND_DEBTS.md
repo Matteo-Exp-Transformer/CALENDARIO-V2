@@ -21,6 +21,9 @@
 - ~~`runSidebarAction({ type: 'settings' })`~~ rimosso 06-06-26 (nessuna voce sidebar; tab Impostazioni solo da dashboard).
 - `AcceptBookingModal` è usato da `AdminBookingForm` (nuova prenotazione admin); il flusso pending accetta dalla card senza modale.
 - `useShiftBriefing` ha TODO su join tavoli/sale: briefing oggi non mostra sala/tavolo.
+- M6 12-06-26: nessun `window.confirm` residuo nei file app vivi; i popup nativi rimossi sono coperti
+  da test statico `m6ProdReadyPatterns`. Restano da auditare comportamenti Pro/CRM/Servizio, non la
+  presenza del popup nativo.
 
 ## 3. Rischi data flow
 
@@ -42,6 +45,8 @@ Da distinguere:
   messaggi di sistema.
 - **Fallback prodotto deciso**: `Sistema Gestionale Prenotazioni` nell'header admin se manca il nome
   ristorante.
+- **Audit globale fallback**: resta aperto in `FU-ALL-FALLBACK`; M6 12-06-26 non ha introdotto nuovi
+  fallback demo, ma non marca chiuso l'audit app-wide.
 
 ## 5. Elementi mostrati ma non configurabili
 
@@ -68,3 +73,14 @@ Da distinguere:
 6. Service slots e override.
 7. Unsaved guard su tab/sezioni/logout.
 8. Analytics date window.
+
+## 8. M6 — stato 12-06-26
+
+- **Auth residuo chiuso:** se una sessione Supabase esiste ma la riga `admin_users` non esiste più,
+  `AdminAuthContext` esegue `signOut`, pulisce tenant su route admin e non ripristina l'utente.
+- **Type safety parziale:** ripuliti da `as any` i flussi auth/tenant e le query/mutation booking più
+  critiche; restano cast in storage, Menu QR/categories/settings e servizi sync da affrontare per area.
+- **Conferme custom:** delete ingrediente, delete menù preselezionato, delete promo e reset
+  Card/Carosello usano `Modal` in-app. Il pattern è bloccato da test statico anti-regressione.
+- **Ancora aperto:** email transazionali, logging completo, audit fallback globale e guard dirty
+  app-wide fuori superficie Classic.
