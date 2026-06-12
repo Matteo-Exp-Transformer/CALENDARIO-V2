@@ -65,6 +65,13 @@ const STRIP_TECH_DOCS = [
   'supabase/scripts/README_RESET_TEST_DATABASE.md',
 ]
 
+// Controlli legati ai docs interni: servono nella repo privata, ma in PrenotaZen
+// docs/ viene rimosso dallo stesso sync, quindi non devono arrivare in pubblico.
+const STRIP_PRIVATE_DOC_CHECKS = [
+  'scripts/check-doc-paths.mjs',
+  'scripts/doc-path-check-allowlist.json',
+]
+
 // File la cui versione PUBBLICA differisce da dev: la versione corretta è in OVERRIDES_ROOT
 // e viene copiata sopra l'export. Path relativi alla root della repo.
 const PUBLIC_OVERRIDES = [
@@ -171,6 +178,15 @@ for (const rel of STRIP_TECH_DOCS) {
   }
 }
 
+log('Rimuovo controlli docs privati non applicabili alla repo pubblica')
+for (const rel of STRIP_PRIVATE_DOC_CHECKS) {
+  const p = join(PUBLIC_ROOT, rel)
+  if (existsSync(p)) {
+    rmSync(p, { force: true })
+    ok(`rimosso ${rel}`)
+  }
+}
+
 // --- 6. Riapplico gli override pubblici -------------------------------------
 log('Applico gli override pubblici (README utente, gitignore, husky, env redatti)')
 if (!existsSync(OVERRIDES_ROOT)) {
@@ -198,6 +214,24 @@ if (pkg.name !== PUBLIC_PACKAGE_NAME) {
   ok(`package.json name → "${PUBLIC_PACKAGE_NAME}"`)
 } else {
   ok('package.json name già corretto')
+}
+if (pkg.scripts?.['validate:docs']) {
+  delete pkg.scripts['validate:docs']
+  writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
+  ok('package.json validate:docs rimosso dalla pubblica')
+}
+
+const publicCiPath = join(PUBLIC_ROOT, '.github', 'workflows', 'ci.yml')
+if (existsSync(publicCiPath)) {
+  const publicCi = readFileSync(publicCiPath, 'utf8')
+  const nextPublicCi = publicCi.replace(
+    /\r?\n      - name: Validate doc paths\r?\n        run: npm run validate:docs\r?\n/g,
+    '\n',
+  )
+  if (nextPublicCi !== publicCi) {
+    writeFileSync(publicCiPath, nextPublicCi)
+    ok('CI pubblica: step validate:docs rimosso')
+  }
 }
 
 // --- 7. Esito + istruzioni finali -------------------------------------------

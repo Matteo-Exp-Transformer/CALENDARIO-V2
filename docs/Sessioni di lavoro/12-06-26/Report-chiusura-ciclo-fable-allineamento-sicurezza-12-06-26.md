@@ -30,6 +30,7 @@ Chiudere il ciclo nato dalle analisi Fable del 12-06-26: verificare il diff real
 | `package.json` | Aggiunto script `npm run validate:docs`. |
 | `scripts/check-doc-paths.mjs` | Nuovo controllo path locali nei docs vivi. |
 | `scripts/doc-path-check-allowlist.json` | Eccezioni documentate per path futuri/storici accettati. |
+| `scripts/sync-to-prenotazen.mjs` | Release pubblica aggiornata: rimuove dalla repo PrenotaZen i controlli `validate:docs`, perché i docs interni vengono esclusi dal sync. |
 | `supabase/functions/create-booking/index.ts` | Rate limit anticipato e filtro tenant attivi. |
 | `supabase/functions/validate-invite/index.ts` | Consumo atomico del token invito prima della creazione utente. |
 | `supabase/migrations/046_codify_policy_drift.sql` | Commento aggiornato: WP-B1 applicato su TEST e PROD. |
@@ -86,6 +87,8 @@ Non sono stati creati dati di test in PROD. Non sono state fatte scritture su PR
 - `npm run typecheck` — verde dopo riduzione cast M6.
 - `npm run lint` — verde.
 - `npm run validate` — verde: lint OK, typecheck OK, 69 file test, 563 test passati. Restano warning React `act(...)` già presenti in suite, non bloccanti.
+- `npm run build` su `main` privato — verde; restano warning Vite/CSS/chunk preesistenti, non bloccanti.
+- Primo sync PrenotaZen: build verde, ma `validate:docs` falliva perché la repo pubblica non contiene `docs/`. Risolto aggiornando `sync-to-prenotazen.mjs` per rimuovere script/step CI docs dalla pubblica.
 
 ## 6. File di skill aggiornati
 
@@ -161,6 +164,7 @@ Suggerimento come dato per revisore Meta: quando un WP passa da design a impleme
 | Conferme native delete/config | Debito UX prod-ready | Sostituite con modali coerenti con UI app in Menu/Magazzino, Promo e Card/Carosello. |
 | `as any` in punti critici | Type safety indebolita | Rimossi dai contesti auth/tenant, form prenotazione e hook prenotazioni principali; rimangono residui fuori da questo perimetro. |
 | Verifica migrazioni TEST inizialmente impossibile | Blocco operativo esterno risolto | MCP non vede TEST, ma dopo fix CLI `projects list` e `migration list --linked` leggono TEST; verifica completata in sola lettura. |
+| CI pubblica PrenotaZen ereditava `validate:docs` | Incompatibilità release privata/pubblica | La repo pubblica non contiene `docs/`; lo script di sync ora elimina script e step CI non applicabili alla pubblica. |
 
 ## 11. Cosa resta per la prossima sessione
 
