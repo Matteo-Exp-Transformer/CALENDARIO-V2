@@ -79,6 +79,17 @@ Triggerato da: `useAdminAuth` dopo login con email verificata.
 
 Client usato: `supabase` (autenticato, sessione in localStorage).
 
+### Guard route pubbliche vs sessione admin
+
+`AdminAuthProvider` è montato nel root layout e quindi vede anche le route pubbliche. Su `/prenota/*`
+e `/menu/*` il restore di una sessione admin già presente **non deve** chiamare `setTenantFromAdmin`:
+il tenant resta quello risolto dallo slug pubblico con `setTenantFromSlug`. Quando l'utente torna in
+`/admin`, il check sessione riparte e ripopola il tenant admin.
+
+`BookingRequestPage` applica lo stesso criterio già usato dal Menu QR: monta le query tenant-scoped
+solo quando `TenantContext.tenantSlug` combacia con lo slug URL. Così una sessione admin in memoria
+non può far leggere impostazioni pubbliche del tenant sbagliato.
+
 ---
 
 ## 3. Regola "una fonte di verità"
@@ -136,6 +147,9 @@ Esempio spiegazione da dare all'utente:
 3. Query anonima su `organizations_public` → restituisce `{id, edition:'classic', feature_overrides:['qrMenu']}`
 4. `features.qrMenu=true` → la pagina carica il menu digitale
 5. Luigi vede il menu senza doversi autenticare
+
+Se nello stesso browser c'è anche una sessione admin, quella sessione resta valida ma non cambia il
+tenant del menu pubblico: lo slug URL continua a vincere finché Luigi resta su `/menu/*`.
 
 ### Attivo Analytics a un Classic per trial (operazione manuale)
 

@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 12-06-26 | Codice — **WP-B3 guard tenant pubblico/admin** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b3-guard-tenant-pubblico-admin-12-06-26.md) — sessione admin non sovrascrive `/prenota/:slug` e `/menu/:slug`; QA TEST slug `trattoria-da-tommaso`; validate **560**; MASTERPLAN AL-B WP-B3 ✅ |
 | 12-06-26 | **Prepara-prompt — ciclo MASTERPLAN task semplici** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-prepara-prompt-ciclo-masterplan-semplici-12-06-26.md) — 4 sub-agent (A6,C1,C3,C2); AL-A **6/6** + AL-C **3/3** ✅; AL-B/D/F/E rimandati senior/Matteo/Meta; validate **557** |
 | 12-06-26 | Codice — **WP-C2 Logger** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c2-logger-12-06-26.md) — 10 file `src/`: `console.error/warn` → `logger.*`; residuo solo `logger.ts`; validate **557**; FU-LOG-1 nota progresso (Aperto); MASTERPLAN AL-C WP-C2 ✅ |
 | 12-06-26 | Codice — **WP-C3 package.json** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c3-package-json-12-06-26.md) — `@types/qrcode` → devDependencies; `@vercel/node` rimosso (0 import); validate **557**; MASTERPLAN AL-C WP-C3 ✅ |

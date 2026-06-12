@@ -55,6 +55,11 @@ Path shell:
 - `Briefing turno` usa stampa browser o PDF locale.
 - Logout porta a `/login`.
 
+Nota auth/tenant (WP-B3 12-06-26): se l'admin ha una sessione attiva e apre un link pubblico
+`/prenota/*` o `/menu/*`, il tenant della pagina pubblica resta quello dello slug URL. Il restore
+sessione admin non chiama `setTenantFromAdmin` su quelle route; tornando in `/admin` il check sessione
+riparte e ricarica il tenant admin.
+
 ## 5. Guard modifiche non salvate
 
 `UnsavedChangesProvider` avvolge tutta `AdminShell`.

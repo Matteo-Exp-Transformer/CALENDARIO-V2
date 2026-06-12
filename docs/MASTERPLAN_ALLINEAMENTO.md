@@ -45,7 +45,7 @@ Legenda: ✅ fatto · 🔶 in corso/parziale · ⬜ da fare.
 | AL-A | WP-A6 — Routing masterplan/capienza | ✅ | §0 instrada capienza e masterplan senza vicoli ciechi | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-a6-routing-capienza-masterplan-12-06-26.md) |
 | AL-B | WP-B1 — Migrazioni ↔ DB reale | ✅ | Drift critico codificato o documentato con QA senior | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b1-migrazioni-db-12-06-26.md) |
 | AL-B | WP-B2 — `restaurant_settings` cross-tenant | ✅ | Lettura anon ristretta senza rompere Prenota/Menu QR | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b2-restaurant-settings-cross-tenant-12-06-26.md) |
-| AL-B | WP-B3 — Guard tenant pubblico/admin | ⬜ | Tenant pubblico non sovrascritto da sessione admin | — |
+| AL-B | WP-B3 — Guard tenant pubblico/admin | ✅ | Tenant pubblico non sovrascritto da sessione admin | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-b3-guard-tenant-pubblico-admin-12-06-26.md) |
 | AL-B | WP-B4 — `create-booking` hardening | ⬜ | Tenant inattivi bloccati e rate limit conta i respinti | — |
 | AL-B | WP-B5 — Slot availability + cleanup rate limits | ⬜ | Scelta applicata e deploy/deprecazione coerenti | — |
 | AL-C | WP-C1 — Codice morto | ✅ | Import zero prima delete, validate verde dopo | [Report](Sessioni%20di%20lavoro/12-06-26/Report-wp-c1-codice-morto-12-06-26.md) |
