@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import {
   sendBookingAcceptedEmail,
   sendBookingRejectedEmail,
+  sendBookingCancelledEmail,
   areEmailNotificationsEnabled,
 } from './useEmailNotifications'
 import { ANALYTICS_QUERY_ROOT } from './useAnalytics'
@@ -521,13 +522,22 @@ export const useCancelBooking = () => {
 
       return data as unknown as BookingRequest
     },
-    onSuccess: async () => {
+    onSuccess: async (booking: BookingRequest) => {
       // Invalida tutte le queries per refresh automatico completo
       await queryClient.invalidateQueries({ queryKey: ['bookings'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'] })
       await queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId] })
       await queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId] })
+
+      if (areEmailNotificationsEnabled()) {
+        try {
+          await sendBookingCancelledEmail(booking)
+        } catch (error) {
+          logger.warn('[useCancelBooking] Email cancellazione non inviata:', error)
+        }
+      }
+
       toast.success('Prenotazione cancellata con successo!')
     },
     onError: (error: Error) => {

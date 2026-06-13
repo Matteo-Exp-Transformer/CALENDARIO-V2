@@ -55,8 +55,10 @@ chiave gia registrata.
 
 ## 5. Autosave vs salvataggio
 
-- Autosave limitato ad anagrafica semplice e alcuni campi header.
+- Autosave limitato ad anagrafica semplice e alcuni campi header (`SETTINGS_AUTOSAVE_ENABLED` = OFF in PROD build salvo `VITE_SETTINGS_AUTOSAVE=true`; hook preservato ma inerte — FU-004).
 - Le aree complesse usano salvataggio esplicito/guard.
+- **Promo CRUD save-on-apply (FU-002 fase 2):** Applica/Elimina/toggle-visibilità su promo persistono immediatamente via `useUpsertRestaurantSetting` in modalità `silent: true`, senza toccare il footer. Se la chiamata fallisce, il dirty state viene alzato per permettere retry manuale.
+- **Conferma dati pubblici (FU-005):** il footer «Salva modifiche» in anagrafica (`RestaurantSettingsTab`) e in Personalizza Form (`BookingFormConfigPanel`) apre `PublicDataSaveConfirmModal` prima di persistere — avvisa che le modifiche saranno visibili ai clienti. Il salvataggio effettivo avviene solo alla conferma.
 - Dirty state registrato nel contesto globale: cambio tab/sezione puo mostrare modal save/discard.
 
 ## 6. Vincoli e fallback
