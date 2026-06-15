@@ -184,9 +184,11 @@ findings prima. Se trovi buchi, prepara un prompt fix puntuale; non allargare sc
 
 ---
 
-## 3. settings-time-slots — fasce Classic
+## 3. settings-time-slots — fasce Classic ✅ approved (15-06-26)
 
-### 3A — Prompt esecutore
+### 3A — Prompt esecutore ✅ approved
+
+Eseguito 15-06-26 — 18 test fronte (9 UI + 5 helper + 4 registry), validate 691/691. Commit incluso in `2a496e1` (con fix 3C).
 
 ```text
 Profilo: Esecuzione deep — test settings-time-slots.
@@ -225,7 +227,7 @@ Aggiorna ADMIN_TEST_SUITE_INDEX.md e ADMIN_SETTINGS_CONTEXT.md solo se il compor
 Niente commit/push.
 ```
 
-### 3B — Prompt revisore controverifica
+### 3B — Prompt revisore controverifica ✅ approved
 
 ```text
 Profilo: Verifica deep — controverifica settings-time-slots.
@@ -251,11 +253,21 @@ Rilancia test mirato e poi npm run validate se verde.
 Output con findings prima.
 ```
 
+### 3C — Prompt fix (post-3B revisore) ✅ approved
+
+Fix puntuale gap revisore 3B: cap per-fascia invalido/alto (0/5001) blocca save + elimina Conferma + Salva → `deleteServiceSlot('slot-pranzo')`. Eseguito 15-06-26 — 11/11 mirato component, 20/20 fronte aggregato, validate 693/693. Commit `2a496e1`.
+
 ---
 
-## 4. settings-theme — tema solo admin
+## 4. settings-theme — tema solo admin ✅ approved (15-06-26)
 
-### 4A — Prompt esecutore
+### 4A — Prompt esecutore ✅ approved
+
+Eseguito 15-06-26 — 13 test fronte (6 helper + 7 UI), validate 706/706.
+
+### 4B — Prompt revisore controverifica ✅ approved
+
+Controverificato 15-06-26 — 13/13 mirato, validate 706/706; residuo P2 opzionale mutation fail tema-only. Report: `Report-settings-theme-15-06-26.md`.
 
 ```text
 Profilo: Esecuzione deep — test settings-theme.
@@ -288,8 +300,6 @@ Test:
 
 Niente commit/push.
 ```
-
-### 4B — Prompt revisore controverifica
 
 ```text
 Profilo: Verifica deep — controverifica settings-theme.
