@@ -20,9 +20,9 @@
 
 ---
 
-## 1. Gate Batch 1/2 — stabilizzare test D-M1/D-M2
+## 1. Gate Batch 1/2 — stabilizzare test D-M1/D-M2 ✅ approved (15-06-26)
 
-### 1A — Prompt esecutore
+### 1A — Prompt esecutore ✅ approved
 
 ```text
 Profilo: Esecuzione deep — stabilizzazione test Batch 1/2 Admin Impostazioni.
@@ -70,7 +70,7 @@ Output atteso:
 Niente commit/push.
 ```
 
-### 1B — Prompt revisore controverifica
+### 1B — Prompt revisore controverifica ✅ approved
 
 ```text
 Profilo: Verifica deep — controverifica gate test Batch 1/2.
@@ -103,6 +103,10 @@ Output:
 findings prima, con severita. Se tutto e verde, dichiara quali comandi hai rilanciato e quanti test passano.
 Niente commit/push.
 ```
+
+### 1C — Prompt fix carosello (post-1B revisore) ✅ approved
+
+Fix puntuale su gap P2 revisore: Annulla + delete headerActions carosello in `settingsFormConfig.settingsM4.adminBlindatura.test.tsx`. Eseguito e controverificato 15-06-26 — gate aggregato 20/20, validate 663/663.
 
 ---
 

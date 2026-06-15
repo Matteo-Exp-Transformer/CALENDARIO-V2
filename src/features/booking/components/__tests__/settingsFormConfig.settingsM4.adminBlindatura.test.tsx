@@ -1,5 +1,5 @@
 // @admin-blindatura: settings-form-config
-// Copre: modale conferma delete card/carosello (riga collassata + editor), annulla non rimuove, conferma alza dirty
+// Copre: modale conferma delete card/carosello (riga collassata + editor/headerActions), annulla non rimuove, conferma alza dirty
 
 import '@testing-library/jest-dom/vitest'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
@@ -211,27 +211,78 @@ describe('settings-form-config delete card/carosello', () => {
     expect(onDirtyChange).toHaveBeenCalledWith(true)
   })
 
-  it('copre anche il carosello sulla riga collassata', async () => {
+  describe('carosello', () => {
     const carousel = makeCarousel(CAROUSEL_ID, 'Offerte estate')
-    restaurantSettingsData.booking_public_form_config = makeConfig('carousel', [carousel])
+    const carouselRowSummary = 'Offerte estate'
 
-    const user = userEvent.setup()
-    const onDirtyChange = vi.fn()
-    renderPanel(onDirtyChange)
+    beforeEach(() => {
+      restaurantSettingsData.booking_public_form_config = makeConfig('carousel', [carousel])
+    })
 
-    await expandMode(user)
-    await waitFor(() => {
+    it('riga collassata: annulla non rimuove, conferma alza dirty', async () => {
+      const user = userEvent.setup()
+      const onDirtyChange = vi.fn()
+      renderPanel(onDirtyChange)
+
+      await expandMode(user)
+      await waitFor(() => {
+        expect(screen.getByText(/offerte estate/i)).toBeInTheDocument()
+      })
+
+      await user.click(screen.getByRole('button', { name: deleteButtonLabel(carouselRowSummary) }))
+
+      const dialog = await screen.findByRole('dialog', { name: /eliminare card\/carosello/i })
+      expect(within(dialog).getByText(/offerte estate/i)).toBeInTheDocument()
+
+      await user.click(within(dialog).getByRole('button', { name: /^annulla$/i }))
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog', { name: /eliminare card\/carosello/i })).not.toBeInTheDocument()
+      })
       expect(screen.getByText(/offerte estate/i)).toBeInTheDocument()
+      expect(onDirtyChange).not.toHaveBeenCalledWith(true)
+
+      await user.click(screen.getByRole('button', { name: deleteButtonLabel(carouselRowSummary) }))
+      const dialogAgain = await screen.findByRole('dialog', { name: /eliminare card\/carosello/i })
+      await user.click(within(dialogAgain).getByRole('button', { name: /^elimina$/i }))
+
+      await waitFor(() => {
+        expect(screen.queryByText(/offerte estate/i)).not.toBeInTheDocument()
+      })
+      expect(onDirtyChange).toHaveBeenCalledWith(true)
     })
 
-    await user.click(screen.getByRole('button', { name: deleteButtonLabel('Offerte estate') }))
+    it('riga espansa: cestino in headerActions, delete con modale alza dirty', async () => {
+      const user = userEvent.setup()
+      const onDirtyChange = vi.fn()
+      renderPanel(onDirtyChange)
 
-    const dialog = await screen.findByRole('dialog', { name: /eliminare card\/carosello/i })
-    await user.click(within(dialog).getByRole('button', { name: /^elimina$/i }))
+      await expandMode(user)
+      await waitFor(() => {
+        expect(screen.getByText(/offerte estate/i)).toBeInTheDocument()
+      })
 
-    await waitFor(() => {
-      expect(screen.queryByText(/offerte estate/i)).not.toBeInTheDocument()
+      await user.click(screen.getByText(/offerte estate/i))
+
+      await waitFor(() => {
+        expect(screen.getByText('Nome carosello')).toBeInTheDocument()
+        expect(screen.getByTestId('carousel-editor-stub')).toBeInTheDocument()
+      })
+
+      const deleteButtons = screen.getAllByRole('button', { name: deleteButtonLabel(carouselRowSummary) })
+      expect(deleteButtons).toHaveLength(1)
+
+      await user.click(deleteButtons[0])
+
+      const dialog = await screen.findByRole('dialog', { name: /eliminare card\/carosello/i })
+      expect(within(dialog).getByText(/offerte estate/i)).toBeInTheDocument()
+
+      await user.click(within(dialog).getByRole('button', { name: /^elimina$/i }))
+
+      await waitFor(() => {
+        expect(screen.queryByText(/offerte estate/i)).not.toBeInTheDocument()
+        expect(screen.queryByTestId('carousel-editor-stub')).not.toBeInTheDocument()
+      })
+      expect(onDirtyChange).toHaveBeenCalledWith(true)
     })
-    expect(onDirtyChange).toHaveBeenCalledWith(true)
   })
 })

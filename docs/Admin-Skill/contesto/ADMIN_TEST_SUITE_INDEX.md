@@ -78,8 +78,12 @@ Fronti previsti:
 | `settings-anagrafica-ui` | `settingsAnagraficaUi.settingsM4.adminBlindatura.test.tsx` | saveDisabled, contatti vuoti OK, modale pubblica una volta |
 | `settings-business-hours` | `businessHours.settingsM4.adminBlindatura.test.ts` | tutti chiusi → no sezione; overlap admin; parse pubblico safe |
 | `settings-background` | `settingsBackground.adminBlindatura.test.ts` + `publicBookingSurface.test.ts` | XOR striscia/full-page; legacy gradient/tile → neutro; superficie light = crema |
+| `settings-form-config` | `settingsFormConfig.settingsM4.adminBlindatura.test.tsx` | 4 — delete card riga collassata (annulla/conferma/dirty), delete card editor espanso, delete carosello riga + headerActions |
+| `settings-promo` | `settingsPromo.settingsM4.adminBlindatura.test.tsx` | 1 — copy modale delete «salvata subito» + `saveSilently` su conferma (scope D-M1 gate; estensione toggle/apply in prompt 5) |
 
-Residuo: E2E smoke Impostazioni 375/834/1280 (manuale opzionale); **FU-009** slide carosello.
+Gate Batch 1/2 (15-06-26): run aggregato **20 test** verdi — `settingsFormConfig.settingsM4`, `settingsPromo.settingsM4`, `settingsBackground.adminBlindatura`, `publicBookingSurface`.
+
+Residuo: E2E smoke Impostazioni 375/834/1280 (manuale opzionale); **FU-009** slide carosello; estensione `settings-promo` oltre delete copy (prompt sequenziale §5).
 
 ## 4. Unit/component per menu magazzino/QR
 

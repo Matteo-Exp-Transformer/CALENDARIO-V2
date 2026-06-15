@@ -21,13 +21,16 @@ const savedPromo: MenuPromo = {
   visible_on_booking: true,
 }
 
+/** Riferimento stabile: `[savedPromo]` inline nel mock ricrea l'array a ogni render → loop useEffect sync. */
+const savedPromosData: MenuPromo[] = [savedPromo]
+
 vi.mock('react-toastify', () => ({
   toast: { error: vi.fn(), warn: vi.fn(), success: vi.fn() },
 }))
 
 vi.mock('@/features/booking/hooks/useRestaurantSetting', () => ({
   useRestaurantSetting: (key: string) => ({
-    data: key === 'booking_menu_promos' ? [savedPromo] : null,
+    data: key === 'booking_menu_promos' ? savedPromosData : null,
     isSuccess: true,
     isPending: false,
     error: null,
