@@ -379,6 +379,57 @@ export type Database = {
           },
         ]
       }
+      email_templates: {
+        Row: {
+          closing: string | null
+          created_at: string
+          enabled: boolean
+          id: string
+          intro: string | null
+          subject: string | null
+          template_key: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          closing?: string | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          intro?: string | null
+          subject?: string | null
+          template_key: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          closing?: string | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          intro?: string | null
+          subject?: string | null
+          template_key?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invite_tokens: {
         Row: {
           created_at: string
@@ -616,6 +667,7 @@ export type Database = {
           hidden_menu_item_ids: Json
           id: string
           is_active: boolean
+          item_sort_overrides: Json | null
           name: string
           short_code: string
           sort_order: number
@@ -631,6 +683,7 @@ export type Database = {
           hidden_menu_item_ids?: Json
           id?: string
           is_active?: boolean
+          item_sort_overrides?: Json | null
           name: string
           short_code: string
           sort_order?: number
@@ -646,6 +699,7 @@ export type Database = {
           hidden_menu_item_ids?: Json
           id?: string
           is_active?: boolean
+          item_sort_overrides?: Json | null
           name?: string
           short_code?: string
           sort_order?: number
@@ -1201,6 +1255,10 @@ export type Database = {
           tenant_id: string
         }[]
       }
+      clamp_text_jsonb_field: {
+        Args: { max_len: number; val: Json }
+        Returns: Json
+      }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       current_admin_tenant_id: { Args: never; Returns: string }
       get_tenant_features: { Args: { p_tenant_id: string }; Returns: string[] }
@@ -1254,6 +1312,14 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      normalize_booking_carousel_slide_item: {
+        Args: { item: Json }
+        Returns: Json
+      }
+      normalize_booking_public_form_config_carousel: {
+        Args: { config: Json }
+        Returns: Json
       }
       update_service_slot: {
         Args: { payload: Json }

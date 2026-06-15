@@ -13,6 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 15-06-26 | **Controverifica FU-EMAIL-3** + plan campagne (FU-EMAIL-7/8) ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-controverifica-fu-email-3-plan-campagne-15-06-26.md) — verdetto ✅ lavoro agente idoneo (validate 614, DB/edge TEST verificati via MCP, PROD intatto); gap minore anteprima; piano mini-gestore campagne (5/tenant, link, cadenza fase 1) — **esecuzione in altra chat** |
+| 15-06-26 | CRM Pro — **FU-EMAIL-3** Personalizza email ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-fu-email-3-personalizza-email-crm-15-06-26.md) — tab 2-vie CRM (Rubrica + Personalizza email); editor accetta/rifiuta + promo uno-a-uno; migr. 050 TEST; edge send-email v6; validate **614** |
 | 15-06-26 | Email — **PROD Brevo** accetta/rifiuta OK ✅ | FOLLOW_UP **FU-EMAIL-PROD** chiuso; secret Brevo corretto; **FU-EMAIL-6** (toast fail, opzionale, non in release PrenotaZen) |
 | 15-06-26 | **Report finale** Ciclo 8 + FU-EMAIL-4 + FU-026 esteso | [Report](Sessioni%20di%20lavoro/15-06-26/Report-finale-15-06-26-ciclo8-email-fu026.md) — sintesi lavoro agente; validate **598**; working tree non committato |
 | 15-06-26 | Email — **FU-EMAIL-4** riepilogo Prenota in template ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-fu-email-4-riepilogo-email-15-06-26.md) — `buildBookingEmailSummary`; no `EVENT_TYPE_LABELS`; smoke Brevo a Matteo |
