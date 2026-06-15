@@ -12,7 +12,7 @@ interface Props {
 }
 
 function hasValidEmail(c: CustomerProfile): boolean {
-  return !!c.email && c.email.includes('@')
+  return c.source === 'booking' && !!c.email && c.email.includes('@')
 }
 
 export const PromoRecipientPicker: FC<Props> = ({ isOpen, onClose, onConfirm }) => {
@@ -76,7 +76,7 @@ export const PromoRecipientPicker: FC<Props> = ({ isOpen, onClose, onConfirm }) 
         />
 
         <p className="text-sm text-slate-500">
-          {eligible.length} clienti con email •{' '}
+          {eligible.length} clienti con prenotazioni •{' '}
           <button
             type="button"
             onClick={toggleAll}

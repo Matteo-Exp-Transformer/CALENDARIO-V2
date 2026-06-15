@@ -1,11 +1,12 @@
 import type { FC } from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Button, Input, Textarea, Label } from '@/components/ui'
 import { toast } from 'react-toastify'
 import { useUpsertEmailTemplate } from '@/features/booking/hooks/useEmailTemplateMutations'
 import { useDeleteEmailTemplate } from '@/features/booking/hooks/useEmailTemplateMutations'
 import type { EmailTemplateKey } from '@/features/booking/hooks/useEmailTemplates'
 import type { EmailTemplate } from '@/features/booking/hooks/useEmailTemplates'
+import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 
 interface Props {
   templateKey: EmailTemplateKey
@@ -19,6 +20,8 @@ interface Props {
   label: string
   /** Componente anteprima (opzionale). */
   preview?: React.ReactNode
+  /** Se true, omette wrapper esterno e titolo h3 — usato dentro CollapsibleCard. */
+  bare?: boolean
 }
 
 export const EmailTemplateEditor: FC<Props> = ({
@@ -30,9 +33,11 @@ export const EmailTemplateEditor: FC<Props> = ({
   hideClosing = false,
   label,
   preview,
+  bare = false,
 }) => {
   const upsert = useUpsertEmailTemplate()
   const remove = useDeleteEmailTemplate()
+  const { registerUnsavedSource, registerUnsavedHandlers, clearUnsavedSource } = useUnsavedChangesGuard()
 
   const [subject, setSubject] = useState(saved?.subject ?? '')
   const [intro, setIntro] = useState(saved?.intro ?? '')
@@ -45,20 +50,48 @@ export const EmailTemplateEditor: FC<Props> = ({
     setClosing(saved?.closing ?? '')
   }, [saved?.subject, saved?.intro, saved?.closing])
 
-  const handleSave = () => {
-    upsert.mutate(
-      {
-        template_key: templateKey,
-        subject: subject.trim() || null,
-        intro: intro.trim() || null,
-        closing: hideClosing ? null : closing.trim() || null,
-      },
-      {
-        onSuccess: () => toast.success(`"${label}" salvato`),
-        onError: (e) => toast.error(`Errore salvataggio: ${e.message}`),
-      },
-    )
-  }
+  const dirty = useMemo(
+    () =>
+      subject !== (saved?.subject ?? '') ||
+      intro !== (saved?.intro ?? '') ||
+      (!hideClosing && closing !== (saved?.closing ?? '')),
+    [subject, intro, closing, saved?.subject, saved?.intro, saved?.closing, hideClosing],
+  )
+
+  const guardId = `email-template-${templateKey}`
+
+  const handleSave = useCallback((): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      upsert.mutate(
+        {
+          template_key: templateKey,
+          subject: subject.trim() || null,
+          intro: intro.trim() || null,
+          closing: hideClosing ? null : closing.trim() || null,
+        },
+        {
+          onSuccess: () => { toast.success(`"${label}" salvato`); resolve() },
+          onError: (e) => { toast.error(`Errore salvataggio: ${e.message}`); reject(e) },
+        },
+      )
+    })
+  }, [upsert, templateKey, subject, intro, closing, hideClosing, label])
+
+  const handleDiscard = useCallback(() => {
+    setSubject(saved?.subject ?? '')
+    setIntro(saved?.intro ?? '')
+    setClosing(saved?.closing ?? '')
+  }, [saved?.subject, saved?.intro, saved?.closing])
+
+  useEffect(() => {
+    registerUnsavedSource(guardId, label, dirty)
+    return () => clearUnsavedSource(guardId)
+  }, [dirty, guardId, label, registerUnsavedSource, clearUnsavedSource])
+
+  useEffect(() => {
+    registerUnsavedHandlers(guardId, { saveAll: handleSave, discardAll: handleDiscard })
+    return () => registerUnsavedHandlers(guardId, null)
+  }, [guardId, handleSave, handleDiscard, registerUnsavedHandlers])
 
   const handleReset = () => {
     remove.mutate(templateKey, {
@@ -72,10 +105,8 @@ export const EmailTemplateEditor: FC<Props> = ({
     })
   }
 
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
-      <h3 className="font-semibold text-slate-800">{label}</h3>
-
+  const fields = (
+    <div className="space-y-4">
       <div className="space-y-1">
         <Label htmlFor={`${templateKey}-subject`}>Oggetto email</Label>
         <Input
@@ -122,7 +153,7 @@ export const EmailTemplateEditor: FC<Props> = ({
           type="button"
           variant="primary"
           size="sm"
-          onClick={handleSave}
+          onClick={() => void handleSave()}
           disabled={upsert.isPending}
         >
           {upsert.isPending ? 'Salvataggio…' : 'Salva'}
@@ -137,6 +168,15 @@ export const EmailTemplateEditor: FC<Props> = ({
           Ripristina predefinito
         </Button>
       </div>
+    </div>
+  )
+
+  if (bare) return fields
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
+      <h3 className="font-semibold text-slate-800 mb-4">{label}</h3>
+      {fields}
     </div>
   )
 }

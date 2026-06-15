@@ -13,6 +13,9 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 15-06-26 | CRM — **3 fix finali**: no creazione manuale, guard dirty editor email, card stabile ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-crm-3fix-rubrica-guard-card-15-06-26.md) — picker solo `source='booking'`; guard dirty su `EmailTemplateEditor` + `CampaignEditor`; CollapsibleCard email controlled state; validate **631** |
+| 15-06-26 | CRM Pro — **«Invia ora» card + firma tenant** campagne email ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-email-invia-card-firma-tenant-15-06-26.md) — «Invia ora» spostato sulla card (solo manuale, guard modale); firma tenant (nome/tel/email) in ogni email campagna; validate **631** |
+| 15-06-26 | CRM Pro — **FU-EMAIL-7** mini-gestore campagne email (fase 1) ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-fu-email-7-campagne-email-15-06-26.md) — migr. 051 TEST, `getCampaignEmail` (escape+auto-link+pulsanti), 4 nuovi componenti UI + 3 hook, anteprima live; validate **627** |
 | 15-06-26 | **Controverifica FU-EMAIL-3** + plan campagne (FU-EMAIL-7/8) ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-controverifica-fu-email-3-plan-campagne-15-06-26.md) — verdetto ✅ lavoro agente idoneo (validate 614, DB/edge TEST verificati via MCP, PROD intatto); gap minore anteprima; piano mini-gestore campagne (5/tenant, link, cadenza fase 1) — **esecuzione in altra chat** |
 | 15-06-26 | CRM Pro — **FU-EMAIL-3** Personalizza email ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-fu-email-3-personalizza-email-crm-15-06-26.md) — tab 2-vie CRM (Rubrica + Personalizza email); editor accetta/rifiuta + promo uno-a-uno; migr. 050 TEST; edge send-email v6; validate **614** |
 | 15-06-26 | Email — **PROD Brevo** accetta/rifiuta OK ✅ | FOLLOW_UP **FU-EMAIL-PROD** chiuso; secret Brevo corretto; **FU-EMAIL-6** (toast fail, opzionale, non in release PrenotaZen) |

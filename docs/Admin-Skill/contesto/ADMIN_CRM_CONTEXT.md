@@ -3,7 +3,10 @@
 > Area Pro/Enterprise per gestione clienti. Il CRM fonde dati manuali e prenotazioni usando email
 > normalizzata, non una FK diretta.
 >
-> **Aggiornato 15-06-26:** CrmPage è ora a **due tab** — Rubrica clienti e Personalizza email.
+> **Aggiornato 15-06-26 (polish FU-EMAIL-7):** CrmPage è ora a **due tab** — Rubrica clienti e Personalizza email.
+> La tab "Personalizza email" è strutturata in **due gruppi separati**:
+> - **Email automatiche** — due CollapsibleCard (`defaultExpanded={false}`, chiuse di default), Accetta e Rifiuta.
+> - **Email personalizzate** — `CampaignsManager` (ex "Campagne email").
 
 ## 1. Flussi utente
 
@@ -13,15 +16,19 @@
 - Filtra per ultima prenotazione: tutte, settimana, mese, anno.
 - Ordina tabella.
 - Seleziona riga e apre dettaglio.
-- Crea cliente manuale.
+- **Nessuna creazione manuale** — il pulsante "Nuovo cliente" è stato rimosso (fix 15-06-26). I clienti entrano in rubrica solo tramite prenotazioni dal form pubblico (`source='booking'`), che impone l'accettazione della privacy policy.
 - Modifica contatti/note.
 - Elimina cliente.
 
 **Tab "Personalizza email":**
-- Editor accetta prenotazione: oggetto + apertura + chiusura (placeholder = default cablati; campo null o assente = usa il default).
+
+*Gruppo «Email automatiche»* (CollapsibleCard, chiuse di default):
+- Editor accetta prenotazione: oggetto + apertura + chiusura (placeholder = default cablati; campo null o assente = usa il default). Usa `EmailTemplateEditor` con prop `bare` dentro CollapsibleCard.
 - Editor rifiuta prenotazione: idem.
 - Pulsante «Ripristina predefinito» cancella la riga DB → torna ai testi di default.
-- Sezione promo: oggetto + corpo + footer privacy fisso (aggiunto automaticamente). Pulsante «Scegli destinatari e invia…» apre il picker rubrica (solo clienti con email); modale di conferma con conteggio; invio uno-a-uno via `useSendPromoEmail`.
+
+*Gruppo «Email personalizzate»* (separato da `<hr>`):
+- **Gestore campagne email personalizzate** (fino a 5 per tenant, limite DURO via trigger): lista campagne con nome/oggetto/cadenza; pulsante **«Invia ora»** sulla card chiusa, visibile solo per campagne con `cadence_type === 'none'` (Solo manuale); click apre guard di conferma con nome campagna + conteggio destinatari, invio al gruppo salvato solo dopo conferma; `useSendCampaignEmail` usato da `CampaignsManager`; editor per ogni campagna (`CampaignEditor`) con nome, oggetto, **titolo in cima all'email** (`heading`, placeholder = `DEFAULT_CAMPAIGN_HEADING = 'Un messaggio per te'`), corpo, link strutturati (`CampaignLinksEditor`), cadenza (`CampaignCadenceSelector`: none/weekly/monthly/custom — in fase 1 solo salvata, nessun invio automatico), gruppo destinatari salvato, anteprima live `<iframe srcDoc>`, pulsanti Salva / Annulla / Elimina. L'invio **non** è più nell'editor.
 
 ## 2. Componenti
 
@@ -29,9 +36,13 @@
 |---|---|---|
 | `CrmPage` | `src/pages/CrmPage.tsx` | Contenitore a 2 tab |
 | `CustomerDirectoryTab` | `src/features/booking/components/crm/` | Estratto da CrmPage (invariato) |
-| `EmailTemplatesTab` | `src/features/booking/components/crm/` | Editor accetta + rifiuta + promo |
+| `EmailTemplatesTab` | `src/features/booking/components/crm/` | Editor accetta + rifiuta + gestore campagne |
 | `EmailTemplateEditor` | `src/features/booking/components/crm/` | Form generico per una chiave template |
-| `PromoRecipientPicker` | `src/features/booking/components/crm/` | Modal selezione destinatari promo |
+| `PromoRecipientPicker` | `src/features/booking/components/crm/` | Modal selezione destinatari (riusato nelle campagne) |
+| `CampaignsManager` | `src/features/booking/components/crm/` | Lista campagne + routing verso CampaignEditor |
+| `CampaignEditor` | `src/features/booking/components/crm/` | Form edit/crea campagna con anteprima live |
+| `CampaignLinksEditor` | `src/features/booking/components/crm/` | Editor pulsanti link (etichetta+URL, validazione http/https) |
+| `CampaignCadenceSelector` | `src/features/booking/components/crm/` | Selettore cadenza campagna (none/weekly/monthly/custom) |
 | `CustomerSearchBar` | `src/features/booking/components/crm/` | – |
 | `CustomerListTable` | `src/features/booking/components/crm/` | – |
 | `CustomerDetailPanel` | `src/features/booking/components/crm/` | – |
@@ -45,11 +56,18 @@
 - `useCustomerMutations` crea/aggiorna/elimina.
 - `useAdminAuth` fornisce admin id per alcune mutazioni.
 
-**Template email (nuovo):**
+**Template email (override accetta/rifiuta):**
 - `useEmailTemplates` — legge `email_templates` del tenant (query key `['email-templates', tenantId]`).
 - `useUpsertEmailTemplate` — insert/update by `(tenant_id, template_key)`; invalida la query.
 - `useDeleteEmailTemplate` — rimuove la riga per chiave (= ripristina il default cablato).
-- `useSendPromoEmail` — loop uno-a-uno su `sendAndLogEmail`, raccoglie `{ sent, failed }`.
+- `useSendPromoEmail` — loop uno-a-uno su `sendAndLogEmail`, raccoglie `{ sent, failed }` (legacy; nuove campagne usano `useSendCampaignEmail`).
+
+**Campagne email (nuovo — migr. 051):**
+- `useEmailCampaigns` — legge `email_campaigns` del tenant (query key `['email-campaigns', tenantId]`), ordinati per `created_at`.
+- `useCreateCampaign` / `useUpdateCampaign` / `useDeleteCampaign` — CRUD campagne; guard client-side limite 5 su create; invalidano la query.
+- `useSendCampaignEmail` — loop uno-a-uno via `getCampaignEmail` + `sendAndLogEmail('promo')`.
+- `parseCampaignLinks(raw: Json)` / `parseCampaignRecipients(raw: Json)` — cast sicuro da JSONB.
+- Tipi `CadenceType` e `CadenceConfig` definiti in `useEmailCampaignMutations.ts`.
 
 ## 4. DB — tabella `email_templates` (migr. 050)
 
@@ -107,6 +125,9 @@ Non c'e FK diretta. `useCustomers`:
 - CRM gated da `features.crm` e edition Pro/Enterprise.
 - Invio promo richiede `VITE_ENABLE_SEND_EMAIL=true`; se false, `useSendPromoEmail` lancia errore UI.
 - Invio promo uno-a-uno: nessun limite Brevo array (cap 10 per batch → non tocca quel limite).
+- **Destinatari email solo da prenotazione** — `PromoRecipientPicker` mostra solo clienti con `source === 'booking'` (accettazione privacy garantita dal form pubblico); clienti `source='manual'` esclusi dal picker.
+- **Guard dirty attivo su editor email** — `EmailTemplateEditor` e `CampaignEditor` si registrano a `UnsavedChangesContext`; cambiare tab/sezione con modifiche aperte apre la modale Salva/Annulla/Esci.
+- **CollapsibleCard email automatiche in stato controllato** — `EmailTemplatesTab` gestisce `acceptedExpanded`/`rejectedExpanded` come state locale; la card non si chiude per re-render o refetch query.
 
 ## 8. Rischi
 
@@ -117,12 +138,37 @@ Non c'e FK diretta. `useCustomers`:
 - E2E CRM usa selettori deboli: servira attenzione nella blindatura.
 - Migrazione 050 applicata su TEST; promozione a PROD è passo separato (M-Settings/blindatura).
 
-## 9. Pianificato — mini-gestore campagne (FU-EMAIL-7, plan pronto)
+## 9. DB — tabella `email_campaigns` (migr. 051 + 052, TEST `docnnernvp`)
 
-> Non ancora implementato. La sezione promo singola evolverà in un gestore di **fino a 5 campagne per
-> tenant** (limite DURO via trigger), nuova tabella `email_campaigns` (migr. 051), con: corpo + **link a
-> pulsanti** (whitelist http/https) e auto-link URL, **gruppo destinatari salvato** alla creazione,
-> **cadenza** opzionale (settimanale/mensile/custom) — in fase 1 **solo salvata** (avviso UI: invio
-> automatico = FU-EMAIL-8, scheduler pg_cron). Builder `getCampaignEmail` con escape HTML; hook
-> `useEmailCampaigns`/`useEmailCampaignMutations`/`useSendCampaignEmail`; anteprima live (chiude il gap
-> anteprima di FU-EMAIL-3). Dettaglio: report 15-06-26 «Controverifica FU-EMAIL-3 + plan campagne».
+| colonna | tipo | note |
+|---|---|---|
+| `id` | uuid pk | |
+| `tenant_id` | uuid → organizations(id) cascade | |
+| `name` | text not null | etichetta campagna |
+| `subject` | text not null | oggetto |
+| `body` | text not null | corpo (testo semplice; escape+auto-link nel builder) |
+| `links` | jsonb not null default '[]' | array `[{label, url}]` pulsanti link |
+| `recipient_emails` | jsonb not null default '[]' | gruppo destinatari fisso (array email) |
+| `enabled` | boolean not null default true | |
+| `cadence_type` | text not null default 'none' | CHECK `in ('none','weekly','monthly','custom')` |
+| `cadence_config` | jsonb | `{weekday}` / `{day_of_month}` / `{interval_days}` |
+| `heading` | text nullable | titolo `<h1>` nell'header email; null = usa `DEFAULT_CAMPAIGN_HEADING` ('Un messaggio per te') — migr. 052 |
+| `last_sent_at` | timestamptz | riservato FU-EMAIL-8 scheduler |
+| `next_run_at` | timestamptz | riservato FU-EMAIL-8 scheduler |
+| `created_at` / `updated_at` | timestamptz | trigger `update_updated_at` |
+
+- **Limite DURO 5**: trigger `BEFORE INSERT` → `RAISE EXCEPTION` se già 5 campagne per tenant.
+- **RLS**: FORCE RLS, 4 policy identiche a 050 con `current_admin_tenant_id()`.
+- **Cadenza fase 1**: salvata ma non eseguita. Invio automatico = FU-EMAIL-8 (pg_cron + edge `send-campaigns`).
+
+## 10. Vincoli campagne
+
+- Limite 5 per tenant (trigger DB + guard hook client-side).
+- Links solo http/https (`isValidHttpUrl`); URL `javascript:` etc. scartatI lato builder e UI.
+- Gruppo `recipient_emails` fisso alla creazione — non si aggiorna coi nuovi clienti (decisione Matteo 15-06-26).
+- Cadenza in fase 1 = solo salvata; avviso UI obbligatorio nell'editor.
+- Promozione PROD = passo separato (M-Settings/blindatura).
+
+## 11. Precedente sezione "promo singola" (rimossa in FU-EMAIL-7)
+
+La sezione «Email promo / offerte» (`savedPromo`, `useSendPromoEmail`, stato locale promo) è stata rimossa da `EmailTemplatesTab` il 15-06-26 e sostituita dal gestore campagne. La tabella `email_templates` con `template_key='promo'` rimane in DB (non è stata eliminata) ma non è più letta dall'UI.

@@ -1,6 +1,5 @@
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui'
 import { useCustomers } from '@/features/booking/hooks/useCustomers'
 import { useDeleteCustomer } from '@/features/booking/hooks/useCustomerMutations'
 import { useAdminAuth } from '@/features/booking/hooks/useAdminAuth'
@@ -18,18 +17,10 @@ export const CustomerDirectoryTab: FC = () => {
   const [selected, setSelected] = useState<CustomerProfile | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
-  const [formMode, setFormMode] = useState<'create' | 'edit'>('create')
   const [formProfile, setFormProfile] = useState<CustomerProfile | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<CustomerProfile | null>(null)
 
-  const openCreate = () => {
-    setFormMode('create')
-    setFormProfile(null)
-    setFormOpen(true)
-  }
-
   const openEdit = (p: CustomerProfile) => {
-    setFormMode('edit')
     setFormProfile(p)
     setFormOpen(true)
   }
@@ -88,18 +79,6 @@ export const CustomerDirectoryTab: FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Button
-          type="button"
-          variant="primary"
-          size="sm"
-          onClick={openCreate}
-          className="w-full shrink-0 sm:w-auto"
-        >
-          + Nuovo cliente
-        </Button>
-      </div>
-
       <CustomerSearchBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -136,7 +115,7 @@ export const CustomerDirectoryTab: FC = () => {
       <CustomerFormModal
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
-        mode={formMode}
+        mode="edit"
         initialProfile={formProfile}
       />
 

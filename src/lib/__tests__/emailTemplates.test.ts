@@ -3,12 +3,15 @@ import {
   getBookingAcceptedEmail,
   getBookingRejectedEmail,
   getPromoEmail,
+  getCampaignEmail,
+  isValidHttpUrl,
   DEFAULT_ACCEPTED_SUBJECT,
   DEFAULT_ACCEPTED_INTRO,
   DEFAULT_ACCEPTED_CLOSING,
   DEFAULT_REJECTED_SUBJECT,
   DEFAULT_REJECTED_INTRO,
   DEFAULT_REJECTED_CLOSING,
+  DEFAULT_CAMPAIGN_HEADING,
 } from '@/lib/emailTemplates'
 import type { BookingRequest } from '@/types/booking'
 
@@ -142,5 +145,128 @@ describe('DEFAULT_* costanti esportate', () => {
     expect(DEFAULT_REJECTED_SUBJECT.length).toBeGreaterThan(0)
     expect(DEFAULT_REJECTED_INTRO.length).toBeGreaterThan(0)
     expect(DEFAULT_REJECTED_CLOSING.length).toBeGreaterThan(0)
+  })
+})
+
+describe('isValidHttpUrl', () => {
+  it('accetta http e https', () => {
+    expect(isValidHttpUrl('https://example.com')).toBe(true)
+    expect(isValidHttpUrl('http://example.com/path?q=1')).toBe(true)
+  })
+
+  it('scarta javascript: e data:', () => {
+    expect(isValidHttpUrl('javascript:alert(1)')).toBe(false)
+    expect(isValidHttpUrl('data:text/html,<b>x</b>')).toBe(false)
+  })
+
+  it('scarta stringhe non URL', () => {
+    expect(isValidHttpUrl('non-un-url')).toBe(false)
+    expect(isValidHttpUrl('')).toBe(false)
+  })
+})
+
+describe('getCampaignEmail', () => {
+  it('include il corpo del messaggio nel HTML', () => {
+    const { html } = getCampaignEmail({ subject: 'Offerta', body: 'Testo campagna', links: [] })
+    expect(html).toContain('Testo campagna')
+  })
+
+  it('include il footer privacy fisso', () => {
+    const { html } = getCampaignEmail({ subject: 'S', body: 'B', links: [] })
+    expect(html).toContain('Hai ricevuto questa email perché sei nostro cliente')
+  })
+
+  it('escape HTML nel body (<script> non viene eseguito)', () => {
+    const { html } = getCampaignEmail({
+      subject: 'S',
+      body: '<script>alert("xss")</script>Testo',
+      links: [],
+    })
+    expect(html).toContain('&lt;script&gt;')
+    expect(html).not.toContain('<script>')
+  })
+
+  it('auto-linkify URL https nel body', () => {
+    const { html } = getCampaignEmail({
+      subject: 'S',
+      body: 'Visita https://example.com per info',
+      links: [],
+    })
+    expect(html).toContain('href="https://example.com"')
+    expect(html).toContain('target="_blank"')
+  })
+
+  it('auto-linkify URL www nel body', () => {
+    const { html } = getCampaignEmail({ subject: 'S', body: 'Vai su www.example.com', links: [] })
+    expect(html).toContain('href="https://www.example.com"')
+  })
+
+  it('render pulsanti per link validi', () => {
+    const { html } = getCampaignEmail({
+      subject: 'S',
+      body: 'B',
+      links: [{ label: 'Visita il sito', url: 'https://example.com' }],
+    })
+    expect(html).toContain('Visita il sito')
+    expect(html).toContain('https://example.com')
+    expect(html).toContain('rel="noopener noreferrer"')
+  })
+
+  it('scarta link con URL non http(s)', () => {
+    const { html } = getCampaignEmail({
+      subject: 'S',
+      body: 'B',
+      links: [{ label: 'Hack', url: 'javascript:alert(1)' }],
+    })
+    expect(html).not.toContain('javascript:')
+    expect(html).not.toContain('Hack')
+  })
+
+  it('NON contiene riepilogo prenotazione', () => {
+    const { html } = getCampaignEmail({ subject: 'S', body: 'B', links: [] })
+    expect(html).not.toContain('success-badge')
+    expect(html).not.toContain('PRENOTAZIONE CONFERMATA')
+    expect(html).not.toContain('summary-block')
+  })
+
+  it('restituisce il subject corretto', () => {
+    const { subject } = getCampaignEmail({ subject: 'Promo estate', body: 'B', links: [] })
+    expect(subject).toBe('Promo estate')
+  })
+
+  it('include la firma se tenantInfo fornito', () => {
+    const { html } = getCampaignEmail(
+      { subject: 'S', body: 'B', links: [] },
+      { name: 'Ristorante Da Mario', phone: '02-0000000' },
+    )
+    expect(html).toContain('Ristorante Da Mario')
+    expect(html).toContain('Lo staff')
+  })
+
+  it('usa heading quando fornito', () => {
+    const { html } = getCampaignEmail({ subject: 'S', body: 'B', links: [], heading: 'Offerta speciale' })
+    expect(html).toContain('Offerta speciale')
+    expect(html).not.toContain(DEFAULT_CAMPAIGN_HEADING)
+  })
+
+  it('fallback a DEFAULT_CAMPAIGN_HEADING quando heading assente', () => {
+    const { html } = getCampaignEmail({ subject: 'S', body: 'B', links: [] })
+    expect(html).toContain(DEFAULT_CAMPAIGN_HEADING)
+  })
+
+  it('fallback a DEFAULT_CAMPAIGN_HEADING quando heading è stringa vuota', () => {
+    const { html } = getCampaignEmail({ subject: 'S', body: 'B', links: [], heading: '   ' })
+    expect(html).toContain(DEFAULT_CAMPAIGN_HEADING)
+  })
+
+  it('escape del heading (<script> non viene eseguito)', () => {
+    const { html } = getCampaignEmail({
+      subject: 'S',
+      body: 'B',
+      links: [],
+      heading: '<script>alert("xss")</script>Titolo',
+    })
+    expect(html).toContain('&lt;script&gt;')
+    expect(html).not.toContain('<script>')
   })
 })

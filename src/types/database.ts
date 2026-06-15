@@ -321,6 +321,75 @@ export type Database = {
           },
         ]
       }
+      email_campaigns: {
+        Row: {
+          body: string
+          cadence_config: Json | null
+          cadence_type: string
+          created_at: string
+          enabled: boolean
+          heading: string | null
+          id: string
+          last_sent_at: string | null
+          links: Json
+          name: string
+          next_run_at: string | null
+          recipient_emails: Json
+          subject: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          cadence_config?: Json | null
+          cadence_type?: string
+          created_at?: string
+          enabled?: boolean
+          heading?: string | null
+          id?: string
+          last_sent_at?: string | null
+          links?: Json
+          name: string
+          next_run_at?: string | null
+          recipient_emails?: Json
+          subject: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          cadence_config?: Json | null
+          cadence_type?: string
+          created_at?: string
+          enabled?: boolean
+          heading?: string | null
+          id?: string
+          last_sent_at?: string | null
+          links?: Json
+          name?: string
+          next_run_at?: string | null
+          recipient_emails?: Json
+          subject?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_campaigns_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_campaigns_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_logs: {
         Row: {
           booking_id: string | null
