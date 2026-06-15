@@ -12,7 +12,7 @@
 | 3 | settings-time-slots | ✅ approved | `2a496e1` |
 | 4 | settings-theme | ✅ approved | `d8c9dab` · `Report-settings-theme-15-06-26.md` |
 | 5 | form-config + promo (estensione) | ✅ approved | `2cdc724` · `Report-settings-form-config-promo-15-06-26.md` |
-| 6 | FU-009 carousel CRUD | ✅ approved | report §6 · commit in corso |
+| 6 | FU-009 carousel CRUD | ✅ approved | `95f2128` · `Report-settings-carousel-crud-15-06-26.md` |
 | 7 | Fase D rompi + QA 375/834/1280 | ⏳ aperto | — |
 
 **Prossimo prompt consigliato:** §7A esecutore (Fase D rompi + QA 375/834/1280).
@@ -490,6 +490,9 @@ Niente commit/push.
 ```
 
 ### 6B — Prompt revisore controverifica (testo originale)
+
+```text
+Profilo: Verifica deep — controverifica FU-009 settings-carousel-crud.
 Branch: env/test. DB solo TEST. PROD vietato.
 
 Leggi:
