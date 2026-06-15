@@ -176,10 +176,10 @@ della casa» è solo placeholder admin). Slide senza `image_url` escluse dal par
 | INC-01 | Header usa `organizations_public.name`, non `restaurant_name` | **Risolto** — `useRestaurantName()` in `PublicMenuPage` |
 | INC-02 | `menu_qr_codes.name` non mostrato al cliente | Aperto |
 | INC-03 | Nessuna UI per `content_type` / `preset_ids` | Posticipato (fuori scope Fase 3) |
-| INC-04 | Tema QR ignorato su pagine categoria/preset | **Parziale** — fascia header categoria da `theme_key` (D2); corpo/preset restano stone |
-| INC-05 | Preset page: no foto piatti | Aperto |
-| INC-06 | Tab preset nasconde tab categorie se preset presenti | Posticipato |
-| INC-08 | Titolo override non usato in pagina categoria | Aperto (solo D2 header bg) |
+| INC-04 | Tema QR ignorato su pagine categoria/preset | **Risolto** — `theme_key` header + `hidden_menu_item_ids` + foto categoria (`qr.category_images[key]`) su `PublicMenuCategoryPage` (13-06-26) |
+| INC-05 | Preset page: no foto piatti | **N/A** — `PublicMenuPresetPage` rimossa (migr. 043) |
+| INC-06 | Tab preset nasconde tab categorie se preset presenti | **N/A** — codice preset rimosso (migr. 043); nessun tab-preset in `PublicMenuPage` |
+| INC-08 | Titolo override non usato in pagina categoria | **Risolto** — `usePublicMenuQrcodeCategories` in `PublicMenuCategoryPage`; titolo override nella `<h1>` header (13-06-26) |
 | INC-09 | URL categoria bypassa `category_filter` | **Risolto** — `isCategoryInQrFilter` in `PublicMenuCategoryPage` |
 | INC-15 | `hidden_menu_item_ids` non su preset page | Aperto |
 | INC-16 | Preset page senza `tenantReady` | Aperto |

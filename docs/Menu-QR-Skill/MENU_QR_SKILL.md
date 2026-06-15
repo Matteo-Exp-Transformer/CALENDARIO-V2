@@ -188,19 +188,29 @@ col primo messaggio. (Preferenza utente: `Modal` per successo/conferme; toast so
 
 ---
 
-## 5. Questioni aperte
+## 5. Questioni aperte e chiuse (Ciclo 3 — 13-06-26)
 
 > Decisioni di Matteo in attesa di esecuzione. Un agente che le incontra NON le «sistema» di
 > iniziativa; può proporne l'implementazione se il task è pertinente.
+
+- ✅ **FU-019 (CHIUSO 13-06-26) — Applicare theme_key/hidden_menu_item_ids/foto su
+  PublicMenuCategoryPage.** Override titolo da `menu_qrcode_categories` nel `<h1>` della pagina;
+  hero foto (`qr.category_images[categoryKey]`) mostrata tra header e lista piatti se disponibile.
+  `hidden_menu_item_ids` e `theme_key` erano già applicati.
+- ✅ **Import preset staff nel modal QR (CHIUSO 13-06-26) — «Importa da preset».** Sezione in cima
+  al modal: dropdown preset staff + pulsante Importa. Calcola automaticamente `categoryFilter`
+  (solo categorie con item del preset) e `hiddenItemIds` (item fuori preset). Il carosello non
+  viene toccato. Nessuna nuova colonna DB. Preset restano read-only nel loro tab.
 
 - ✅ **FU-MQR-1 — Titoli/descrizioni categoria per-QR cappati (CHIUSO 06-06-26).** I due campi «Titolo
   card» (max **30**) e «Descrizione breve» (max **70**) ora usano `AdminFieldWithCharCount` con taglio
   difensivo e contatore, come il carosello. Test: `__tests__/menuQrCategoryFieldCap.test.tsx`.
 - ✅ **Codice morto preset rimosso (CHIUSO 06-06-26)** — vedi §3-bis.
-- **FU-MQR-2 (aperto) — Ordine piatti dentro la categoria, per-QR.** Oggi i piatti seguono
-  l'ordine del magazzino (`menu_categories`/`menu_items` sort_order), non configurabile per-QR. Matteo
-  (06-06-26): è un **buco**, da poter ordinare per-QR in futuro. Lavoro grosso (tocca dati + form),
-  fuori dalla blindatura. Non implementarlo di iniziativa.
+- ✅ **FU-MQR-2 (CHIUSO 13-06-26) — Ordine piatti dentro la categoria, per-QR.** Implementato con
+  migrazione `049` (`item_sort_overrides JSONB DEFAULT NULL` su `menu_qr_codes`). UI: frecce Su/Giù
+  dentro `MenuQrHiddenItemsPicker` (ora rinominato "Visibilità e ordine ingredienti"); il pannello
+  combina nasconde-ingredienti + riordina-per-QR. Lettura pubblica: `applyQrItemSortOverride` in
+  `menuQrAppearance.ts`; se null usa ordine default magazzino + foto-prima.
 - ✅ **FU-MQR-3 — Chiave categoria `secondi_piattie` (CHIUSO 11-06-26).** Matteo su PROD account test
   `da-tommaso`: categoria/chiave **non presente** in tab Menu → overlay Categorie; nessun rename richiesto.
   (Controverifica 06-06-26 aveva corretto la label visibile; chiave interna assente o già bonificata.)

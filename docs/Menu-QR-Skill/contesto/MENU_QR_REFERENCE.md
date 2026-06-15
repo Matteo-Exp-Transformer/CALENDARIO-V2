@@ -48,8 +48,9 @@ qrMenu: isProOrAbove || qrMenuEnabled
 | `037` | `menu_qr_codes.hidden_menu_item_ids` (JSONB UUID[] — ingredienti nascosti per QR). Rimozione tema `wine_bistrot` (CHECK a 4 temi; QR esistenti → `mediterranean_teal`). Applicare insieme a `036` su ogni ambiente. |
 | `042` | `menu_qrcode_categories.icon TEXT NULL` — icona Phosphor scelta in modale QR quando manca foto in `category_images` (per singolo QR, non su `menu_categories`). |
 | `043` | **Rimozione codice morto preset**: DROP `menu_qr_codes.content_type` + `preset_ids` + CHECK constraint. Verificato 0 righe non-`a_la_carte` su PROD e TEST prima del drop. Applicare insieme alla rimozione del codice preset dal client. |
+| `049` | **Ordine piatti per-QR**: `menu_qr_codes.item_sort_overrides JSONB DEFAULT NULL`. Format: `{ "category_key": ["item_uuid", ...] }`. null o chiave assente = ordine magazzino. Applicare su TEST prima del deploy; su PROD a milestone M3. |
 
-**Colonne `menu_qr_codes`** (post-037): campi 030 + `theme_key`, `carousel_items` (JSONB), `category_images` (JSONB), `hidden_menu_item_ids` (JSONB, default `[]`).
+**Colonne `menu_qr_codes`** (post-049): campi 030 + `theme_key`, `carousel_items` (JSONB), `category_images` (JSONB), `hidden_menu_item_ids` (JSONB, default `[]`), `item_sort_overrides` (JSONB, default null).
 
 **Colonne `menu_qrcode_categories`** (post-042): `id`, `tenant_id`, `menu_qr_code_id`, `category_key`, `title`, `description`, `icon`, timestamps. UNIQUE `(menu_qr_code_id, category_key)`.
 

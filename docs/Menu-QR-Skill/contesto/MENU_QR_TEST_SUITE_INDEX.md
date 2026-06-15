@@ -28,6 +28,9 @@
 | Ordine/filtro categorie | `menuQrCategoryOrder.test.ts` |
 | Rename/delete categoria propagato ai QR | `menuQrCategoryKeySync.test.ts` |
 | Icone categoria | `categoryIcons.test.ts` |
+| Ordinamento piatti per-QR (`item_sort_overrides`) | Aggiungere `menuQrItemSortOverrides.test.ts` — da creare: casi `applyQrItemSortOverride` (null/vuoto/override parziale/override completo) + `parseItemSortOverrides` (JSONB malformato → null) |
+| Importa-da-preset nel modal QR | Non ancora coperto: comportamento pure di `computeImportFromPreset` (categorie estratte, hiddenItemIds calcolati, preset senza item nella categoria) è candidato per unit test in `menuQrPresetImport.test.ts` |
+| Hero foto e titolo override in pagina categoria pubblica | `PublicMenuCategoryPage` non ha test rendering; INC-04/08 verificabili a occhio su TEST |
 
 ---
 

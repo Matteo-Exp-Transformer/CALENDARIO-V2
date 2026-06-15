@@ -1,6 +1,21 @@
 Plan per agente Sonnet — task mancanti (in ordine)
 Regole per ogni ciclo: carica prima docs/APP_CONTEXT_SKILL.md §0 + skill d'area; npm run validate verde a fine ciclo; report in Sessioni di lavoro/; mai scrivere su PROD (rwuxgvld); commit solo a «fai report finale». Un ciclo = una chat.
 
+────────────────────────────────────────────────────────────────────
+STATO AVANZAMENTO (aggiornato 13-06-26)
+- Ciclo 1 — ✅ FATTO (commit 13b1e50, salvataggio admin fase 2).
+- Ciclo 2 — 🟡 QUASI: edge send-email su TEST, UI collegata; BLOCCANTE chiave Brevo non valida (FU-EMAIL-1). Invio email NON ancora completato.
+- Ciclo 3 — ✅ FATTO (Menu QR pack: import preset, FU-019, FU-MQR-2 ordine piatti, FU-017/020). BUG salvataggio modal QR risolto 13-06: migrazione 049 (`item_sort_overrides`) applicata su TEST (mancava la colonna → errore 42703).
+- Ciclo 4 — ✅ FATTO. D6 guard stato pre-mutation (update/restore/no-show/cancel); D7 feedback orario mancante; L4/L10-L12 cap ospiti a video (110, costante esistente); FU-001 promo come chip in BookingDetailsModal (✅ accettazione visiva Matteo 13-06). validate 577.
+- Ciclo 5 — ✅ FATTO. FU-023: guard chiusura editor preset (menù preselezionati) in MenuPricesTab; Personalizza form già guardato. FU-003 chiuso: audit delete Pro/CRM/Servizio tutte con conferma, zero window.confirm. validate 577.
+- Ciclo 6 — ✅ FATTO. Fallback check_admin_email (FU-AUTH-3): setTenantFromAdmin → boolean, AdminAuthContext fa signOut se tenant non risolto (no admin loggato con tenant nullo). validate 580.
+- Ciclo 7 — ⬜ DA FARE (chat dedicata: skill system, design alla lettera).
+- Ciclo 8 — ⬜ DA FARE (polish + test opzionali).
+- Ciclo 9 — ⬜ DA FARE (bozze legali → avvocato/commercialista).
+
+Nota PROD: migrazione 049 (`item_sort_overrides`) applicata su TEST, NON ancora su PROD — va applicata insieme al rilascio production (vedi report finale).
+────────────────────────────────────────────────────────────────────
+
 Ciclo 1 — P1 · Salvataggio admin fase 2 (FU-002/004/005)
 Prompt: «implementa FU-002 fase 2 + FU-004 + FU-005». Skill: Admin Classic + ADMIN_SETTINGS. Estendere footer unico+guard al resto app (promo save-on-apply, no doppio Salva); autosave disattivabile per prod via VITE_SETTINGS_AUTOSAVE/edition (non rimuovere l'hook); modale conferma al Salva su campi visibili in Pagina Prenota (whitelist da PRENOTA_DATA_FLOW + chiavi pubbliche 047). Decisioni Matteo 29-05 già registrate.
 
