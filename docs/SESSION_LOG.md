@@ -13,6 +13,10 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 15-06-26 | **Inventario test** — controverificati vs gap E2E (handoff senior) | [Analisi](Sessioni%20di%20lavoro/15-06-26/Analisi-inventario-test-controverificati-vs-gap-15-06-26.md) — cat. A (598 Vitest + E2E documentati) vs cat. B (mock/gap E2E per area); matrice priorità senior |
+| 15-06-26 | **Report finale** Ciclo 8 + FU-EMAIL-4 + FU-026 esteso | [Report](Sessioni%20di%20lavoro/15-06-26/Report-finale-15-06-26-ciclo8-email-fu026.md) — sintesi lavoro agente; validate **598**; working tree non committato |
+| 15-06-26 | Email — **FU-EMAIL-4** riepilogo Prenota in template ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-fu-email-4-riepilogo-email-15-06-26.md) — `buildBookingEmailSummary`; no `EVENT_TYPE_LABELS`; smoke Brevo a Matteo |
+| 15-06-26 | Admin — **Ciclo 8 completamento** FU-026/010/M3-QA-CT ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-ciclo8-fu026-fu010-fu-m3-qa-ct-15-06-26.md) — icone card (categorie+ingredienti+promo); hook validazione admin; E2E CT **1 passed**; validate **591**; **lavoro ok** ×2 Matteo |
 | 15-06-26 | Cicli 7-8-9 — **skill system mini-pack + anti-storia + polish/test + bozze legali** | [Report](Sessioni%20di%20lavoro/15-06-26/Report-cicli-7-8-9-skill-system-polish-legale-15-06-26.md) — 8 mini-pack + §0.0b + 6 puntatori Cursor (FU-ALL-TIER ✅); anti-storia §8 + potatura Menu QR + §7 snellito (FU-ALL-ANTISTORIA ✅); FU-040/014/LOG-1-H ✅, FU-026/010/M3-QA-CT differiti; bozze legali `docs/legal/` (FU-LEGAL-1/2); validate **591**; docs non committati |
 | 12-06-26 | Chiusura — **FU-LOG-1 review + handoff senior** ✅ | FOLLOW_UP **FU-LOG-1-H** (hardening), **FU-049** (PROD mig. 044), **FU-050** (deploy edge + PrenotaZen); git pulito @ `0d475ff`; DB 045–048 ok salvo FU-049 |
 | 12-06-26 | Codice+docs — **FU-LOG-1 chiusura scripts + eslint** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu-log-1-chiusura-scripts-12-06-26.md) — `_cliLog.mjs` + 5 script; eslint allowlist; commit `6077028`/`6374168`/`0d475ff`; validate **576**; **lavoro ok** Matteo |

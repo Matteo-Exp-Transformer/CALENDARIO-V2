@@ -73,12 +73,15 @@ Gestisce:
 - **Overlay «Categorie Menu»** (`viewMode === 'categories'`): form in alto; scroll al form con
   `scrollIntoAdminShellView` sul `<main>` AdminShell Pro; guard chiusura (X / Esc) se form aperto e dirty —
   `DiscardChangesConfirmModal` (pattern Impostazioni 29-05-26).
-- **Card categoria admin** (`AdminMenuCategoryLabelCard`): flex `.menu-prices-category-label-card`
-  (CSS in `index.css`). **Mobile (&lt;1050px): nessuna thumb** — solo titolo + azioni in colonna
-  (`.menu-prices-category-label-card__body`). **Desktop (≥1050px):** thumb Prenota
-  (`menu_categories.image_url`) in `.menu-prices-category-label-card__thumb` (`hidden min-[1050px]:block`).
-  Titolo centrato in `.menu-prices-category-label-card__title`; icone in
-  `.menu-prices-category-label-card__actions` in basso, centrate (no overlap ~375px).
+- **Card categoria admin** (`AdminMenuCategoryLabelCard`, overlay «Categorie Menu», FU-026 Ciclo 8):
+  shell `menu-prices-item-row` + `MENU_CARD_INNER_SHELL_CLASS` — titolo in `.menu-prices-item-text`
+  (riga superiore; thumb Prenota `menu_categories.image_url` in `.menu-prices-category-label-card__thumb`,
+  `hidden min-[1050px]:block`); matita/cestino in `.menu-prices-item-actions` **riga dedicata in basso a
+  destra** (`justify-end`), stesso pattern dei menù preselezionati — evita overlap testo/icone su 375px.
+- **Card ingrediente admin** (`AdminMenuIngredientCard`, FU-026): stesso pattern — riga 1 nome + prezzo;
+  descrizione opzionale sotto; toggle disponibilità + matita/cestino (se `showActions`) in
+  `.menu-prices-item-actions` **riga dedicata in basso a destra**. Vale in lista categorie (tab Menu) e in
+  modalità «Modifica Ingredienti».
 
 ### 3.3 Form prodotto/ingrediente
 

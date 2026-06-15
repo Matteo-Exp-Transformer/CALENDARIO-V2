@@ -249,7 +249,7 @@ Stato: **Fase 1+2+3 + QA E2E base** — 9 test `@admin-blindatura: menu-magazzin
 `@admin-blindatura: menu-magazzino-sync`; E2E Playwright `@admin-blindatura: menu-magazzino` su 1280/375/834;
 validate **554** verde.
 **Blindato ✅ 11-06-26** — report [`Report-finale-m3-menu-blindato-11-06-26.md`](../Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md).
-Debiti fuori cancello: **FU-M3-QA-CT** (controtest browser extra, sessioni future).
+Debiti fuori cancello: ~~**FU-M3-QA-CT**~~ chiuso Ciclo 8 (15-06-26) — spec CT sotto.
 
 | File | Cosa copre |
 |---|---|
@@ -257,8 +257,9 @@ Debiti fuori cancello: **FU-M3-QA-CT** (controtest browser extra, sessioni futur
 | `src/features/booking/constants/__tests__/menuMagazzinoAvailability.adminBlindatura.test.ts` | Default `is_available` true; categoria/item off; preset+magazzino; QR hidden+magazzino; snapshot intatto; catalogo admin config (filter pubblico) |
 | `src/features/booking/services/__tests__/menuMagazzinoSync.adminBlindatura.test.ts` | Rename/delete sync orchestrato (`syncMenuCategoryKeyRename`/`Delete`): QR filter+images, `menu_qrcode_categories`, `hidden_category_keys`/`category_order_keys` form; messaggi modale; **3 controtest parziale** (QR ok/form fail; 2° QR fail; delete ok/form fail); rename con `is_available` off + filtri pubblici |
 | `e2e/admin-menu-magazzino-blindatura.spec.ts` | FU-M3-QA-E2E: login staging TEST, toggle categoria/prodotto da Admin Menu, niente toggle disponibilità nell'overlay categoria, propagazione pubblica Menu QR + Prenota, viewport 1280/375/834, teardown `is_available` + dati E2E. Eseguire con `--workers=1` perché i progetti condividono dati staging temporanei |
+| `e2e/admin-menu-magazzino-ct.spec.ts` | **FU-M3-QA-CT** (Ciclo 8): controtest «rompi» toggle item — doppio click, refresh con `is_available=false`, «Crea / Modifica Prodotto» durante PATCH lenta; tag `@admin-blindatura: menu-magazzino-ct`; `--workers=1` |
 
-Prossimo batch M3 (opzionale): controtest browser extra doppio click/refresh/mutation (**FU-M3-QA-CT**, sessioni future).
+~~Prossimo batch M3 (opzionale): controtest browser extra doppio click/refresh/mutation (**FU-M3-QA-CT**, sessioni future).~~
 
 Test esistenti ancora candidati da valutare nel giro E2E completo:
 

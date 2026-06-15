@@ -1,7 +1,7 @@
 # Pattern — Validazione form con attenzione visiva (scroll + pulse + pannelli)
 
 > **Riferimento implementato:** Pagina Prenota (`BookingRequestForm`, 29-05-26).  
-> **Debito aperto:** [FU-010](../FOLLOW_UP.md) — estrarre hook condiviso per `AdminBookingForm` e modali admin.  
+> **Debito aperto:** ~~[FU-010](../FOLLOW_UP.md)~~ — hook condiviso estratto (`useFormValidationAttention`); collegato a `AdminBookingForm`. Estensione modali admin opzionale.  
 > **Report sessione:** [Report validazione UX](../Sessioni%20di%20lavoro/29-05-26/Report-validazione-ux-prenota-29-05-26.md) · [Report revisione](../Sessioni%20di%20lavoro/29-05-26/Report-revisione-validazione-ux-prenota-29-05-26.md)
 
 Usa questo file quando devi replicare su **un altro form o modale** il comportamento:
@@ -31,11 +31,16 @@ Altri form nel repo che già usano il pattern: `WalkInModal`, `TableFormModal`, 
 
 | Export | File | Ruolo |
 |--------|------|--------|
+| `useFormValidationAttention` | `hooks/useFormValidationAttention.ts` | Hook: nonce collapse + `attentionFieldKey` + `focusFirstValidationIssue` |
+| `runAfterTripleAnimationFrame` | `utils/formValidationAttention.ts` | Attende tre rAF prima dello scroll |
+| `scrollToFormValidationError` | `utils/formValidationAttention.ts` | Scroll generico con mappa `errorFieldIds` |
+| `getFormFieldAttentionProps` | `utils/formValidationAttention.ts` | Pulse + dismiss `isTrusted` su wrapper campo |
+| `ADMIN_BOOKING_ERROR_FIELD_IDS` | `utils/formValidationAttention.ts` | Mappa errori form prenotazione admin |
 | `BOOKING_MENU_COMPOSE_COLLAPSE_EVENT` | `bookingPublicFormAttention.ts` | Nome evento per chiudere card ingredienti |
 | `dispatchBookingMenuComposeCollapse()` | idem | Chiamata sincrona prima dello scroll |
 | `shouldDismissBookingPublicAttention(event)` | idem | `true` solo se `event.isTrusted` (ignora focus programmatico) |
-| `BOOKING_PUBLIC_ERROR_FIELD_IDS` | idem | Mappa `errorKey` → `id` DOM |
-| `scrollToBookingPublicError(errorKey)` | idem | `scrollIntoView({ block: 'center' })` |
+| `BOOKING_PUBLIC_ERROR_FIELD_IDS` | idem | Mappa `errorKey` → `id` DOM (Pagina Prenota) |
+| `scrollToBookingPublicError(errorKey)` | idem | `scrollIntoView({ block: 'center' })` con fallback sottotab |
 | `BOOKING_PUBLIC_FIELD_ATTENTION_CLASS` | idem | Classe CSS pulse (`booking-public-field-attention`) |
 | `BOOKING_PUBLIC_FIELD_SCROLL_MARGIN` | idem | `scroll-mt-*` / `scroll-mb-*` per sticky bar |
 
@@ -111,7 +116,7 @@ Vedi `../Prenota-Skill/contesto/PRENOTA_LAYOUT_CONTEXT.md` §7 — sync rAF su r
 - [ ] `<form noValidate>` se ci sono attributi HTML5 di validazione
 - [ ] `validate()` ritorna `firstErrorKey` nell’ordine desiderato
 - [ ] Mappa `errorKey` → `id` DOM (estendere `BOOKING_PUBLIC_ERROR_FIELD_IDS` o nuova mappa)
-- [ ] `focusFirstValidationIssue` (o hook estratto FU-010) dopo `setErrors`
+- [ ] `focusFirstValidationIssue` (hook `useFormValidationAttention` — FU-010) dopo `setErrors`
 - [ ] Chiusura pannelli che coprono il target **prima** dello scroll
 - [ ] Pulse su wrapper con `shouldDismissBookingPublicAttention`
 - [ ] Nessun `focus()` automatico post-scroll
@@ -124,7 +129,7 @@ Vedi `../Prenota-Skill/contesto/PRENOTA_LAYOUT_CONTEXT.md` §7 — sync rAF su r
 
 | Form | File | Note |
 |------|------|------|
-| Admin prenotazione | `AdminBookingForm.tsx` | Ha già `validate()` simile; manca pulse/collapse/scroll centrato |
+| Admin prenotazione | `AdminBookingForm.tsx` | ✅ Hook `useFormValidationAttention` + `noValidate` + pulse/scroll (Ciclo 8) |
 | Walk-in | `WalkInModal.tsx` | Già `noValidate`; aggiungere attenzione se richiesto |
 | Tavolo / sala | `TableFormModal.tsx`, `RoomConfigModal.tsx` | Stesso pattern minimo |
 

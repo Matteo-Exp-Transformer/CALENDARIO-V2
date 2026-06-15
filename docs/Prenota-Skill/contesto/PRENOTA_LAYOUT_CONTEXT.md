@@ -236,7 +236,7 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
   Menù personalizzabile (preset o card): ingredienti **non** pre-spuntati all'apertura — selezione iniziale vuota
   (`applyPresetTypeToBookingFormPayload` + `subTabGuestComposable`).
 - Se `is_fixed_menu !== false` e `price_per_person > 0`: riepilogo/submit usano prezzo × ospiti (non
-  somma piatti) e mostrano totale ingredienti barrato come confronto; senza prezzo o
+  somma piatti) e mostrano totale ingredienti barrato come confronto in **sidebar** (non in email conferma); label totale prenotazione: **«Totale»** (non «Totale stimato»); senza prezzo o
   `is_fixed_menu === false` nessun riepilogo prezzo.
 - **€ per ingrediente (03-06-26):** criterio unico `getSubTabPricePerPerson` in
   `bookingPublicFormConfig.ts` — se restituisce un numero (prezzo fisso sottotab), prop

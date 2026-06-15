@@ -53,7 +53,7 @@ stringa vuota o default.
 | Rename categoria menu | sincronizza `menu_categories`, `menu_items`, QR, override, form Prenota e storage |
 | Delete categoria menu | elimina ingredienti e poi sincronizza QR/Form/foto |
 | Delete cliente CRM | soft-delete booking collegate e cancella riga `customers` |
-| Accept/reject booking | cambia stato, orari, capienza, **email al cliente** (solo accetta/rifiuta se `VITE_ENABLE_SEND_EMAIL`), calendar/analytics |
+| Accept/reject booking | cambia stato, orari, capienza, **email al cliente** (solo accetta/rifiuta se `VITE_ENABLE_SEND_EMAIL`), calendar/analytics. **Corpo email (15-06-26):** builder `buildBookingEmailSummary.ts` — **conferma:** riepilogo allineato al laterale Prenota (data, orario, ospiti, tipo da `booking_modes[]`, opzione menu/offerta carosello, voci `menu_selection`, totali con label **Totale**, intolleranze, note senza prefisso auto-sottotab); **nessuna** riga barrata «Totale senza menù preselezionato»; **nessuna** promo in email. **Rifiuto:** solo copy del template, **senza** box riepilogo. Contesto in `useEmailNotifications` da `booking_public_form_config`, `booking_custom_staff_presets`, `menu_categories`. **Mai** `event_type` / `EVENT_TYPE_LABELS`. Conferma: data/ora da `confirmed_start` se presente. |
 | Cancel booking (elimina accettata) | soft-delete in archivio — **nessuna email** al cliente |
 | Assign tavolo | vincoli su fascia/data/turno e conflitti tavolo |
 | Service slots | incide su disponibilita pubblica e accettazione admin |
