@@ -53,7 +53,8 @@ stringa vuota o default.
 | Rename categoria menu | sincronizza `menu_categories`, `menu_items`, QR, override, form Prenota e storage |
 | Delete categoria menu | elimina ingredienti e poi sincronizza QR/Form/foto |
 | Delete cliente CRM | soft-delete booking collegate e cancella riga `customers` |
-| Accept/reject/cancel booking | cambia stato, orari, capienza, email opzionali, calendar/analytics |
+| Accept/reject booking | cambia stato, orari, capienza, **email al cliente** (solo accetta/rifiuta se `VITE_ENABLE_SEND_EMAIL`), calendar/analytics |
+| Cancel booking (elimina accettata) | soft-delete in archivio — **nessuna email** al cliente |
 | Assign tavolo | vincoli su fascia/data/turno e conflitti tavolo |
 | Service slots | incide su disponibilita pubblica e accettazione admin |
 | Autosave settings | alcune sezioni autosalvano, altre richiedono salvataggio/guard |
