@@ -40,6 +40,8 @@ import {
   BOOKING_STRIP_PHOTO_IDS,
   bookingFullPageBackgroundPublicHref,
   bookingStripPhotoPublicHref,
+  hydrateAdminBookingBackgroundEditor,
+  isAdminBookingBackgroundDirty,
   type BookingPageBackgroundId,
   type BookingStripPhotoId,
 } from '@/features/booking/constants/bookingPageBackground'
@@ -456,10 +458,12 @@ export const RestaurantSettingsTab: React.FC = () => {
     }
   }, [clearUnsavedSource, combinedDirty, registerUnsavedSource])
 
-  const savedBookingPageBackground = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
+  const savedBookingPageBackground = publicBookingPageBgQuery.data ?? null
   const savedStripPhoto = stripPhotoQuery.data ?? null
-  const bookingBgDirty =
-    bookingPageBackground !== savedBookingPageBackground || stripPhoto !== savedStripPhoto
+  const bookingBgDirty = isAdminBookingBackgroundDirty(
+    { stripPhotoId: savedStripPhoto, pageBackground: savedBookingPageBackground },
+    { stripPhoto, pageBackground: bookingPageBackground },
+  )
   bookingBgDirtyRef.current = bookingBgDirty
 
   const allSuccess =
@@ -511,11 +515,13 @@ export const RestaurantSettingsTab: React.FC = () => {
     setContactAddress(
       clampBookingText(stripDirectionalFormattingChars(contactAddressQuery.data ?? ''), CONTACT_ADDRESS_MAX_LENGTH),
     )
-    const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
-    setBookingPageBackground(resolvedBg)
-    const resolvedStripPhoto = stripPhotoQuery.data ?? null
-    setStripPhoto(resolvedStripPhoto)
-    setBookingBgMode(resolvedStripPhoto ? 'strip' : 'full')
+    const bgEditor = hydrateAdminBookingBackgroundEditor({
+      stripPhotoId: stripPhotoQuery.data ?? null,
+      pageBackground: publicBookingPageBgQuery.data ?? null,
+    })
+    setBookingPageBackground(bgEditor.pageBackground)
+    setStripPhoto(bgEditor.stripPhoto)
+    setBookingBgMode(bgEditor.mode)
     setAppTheme(appThemeQuery.data ?? DEFAULT_APP_THEME)
     hydratedRef.current = true
   }, [
@@ -620,11 +626,13 @@ export const RestaurantSettingsTab: React.FC = () => {
     hydrateAnagraficaFromQueries()
     hydrateSlotsFromQueries()
     hydrateHoursFromQueries()
-    const resolvedBg = publicBookingPageBgQuery.data ?? DEFAULT_BOOKING_PAGE_BACKGROUND
-    setBookingPageBackground(resolvedBg)
-    const resolvedStripPhoto = stripPhotoQuery.data ?? null
-    setStripPhoto(resolvedStripPhoto)
-    setBookingBgMode(resolvedStripPhoto ? 'strip' : 'full')
+    const bgEditor = hydrateAdminBookingBackgroundEditor({
+      stripPhotoId: stripPhotoQuery.data ?? null,
+      pageBackground: publicBookingPageBgQuery.data ?? null,
+    })
+    setBookingPageBackground(bgEditor.pageBackground)
+    setStripPhoto(bgEditor.stripPhoto)
+    setBookingBgMode(bgEditor.mode)
     hydrateThemeFromQueries()
   }
 
@@ -735,9 +743,13 @@ export const RestaurantSettingsTab: React.FC = () => {
   }
 
   const handleCancelBookingBackgroundOnly = () => {
-    setBookingPageBackground(savedBookingPageBackground)
-    setStripPhoto(savedStripPhoto)
-    setBookingBgMode(savedStripPhoto ? 'strip' : 'full')
+    const bgEditor = hydrateAdminBookingBackgroundEditor({
+      stripPhotoId: savedStripPhoto,
+      pageBackground: savedBookingPageBackground,
+    })
+    setBookingPageBackground(bgEditor.pageBackground)
+    setStripPhoto(bgEditor.stripPhoto)
+    setBookingBgMode(bgEditor.mode)
   }
 
   const handleRestaurantNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -837,8 +849,12 @@ export const RestaurantSettingsTab: React.FC = () => {
       { key: 'contact_email', value: safeEmail },
       { key: 'contact_phone', value: safePhone },
       { key: 'contact_address', value: safeAddress },
-      { key: 'public_booking_page_background', value: bookingPageBackground },
-      { key: 'public_booking_strip_photo', value: stripPhoto },
+      ...(bookingBgDirty
+        ? ([
+            { key: 'public_booking_page_background' as const, value: bookingPageBackground },
+            { key: 'public_booking_strip_photo' as const, value: stripPhoto },
+          ] as const)
+        : []),
       { key: 'app_theme', value: appTheme },
     ])
     await refetchRestaurantSettings()

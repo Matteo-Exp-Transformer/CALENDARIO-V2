@@ -59,6 +59,7 @@ import { useDebouncedSettingsAutosave } from '@/features/booking/hooks/useDeboun
 import {
   FieldAutosaveIndicator,
   PublicDataSaveConfirmModal,
+  DestructiveActionConfirmModal,
   SettingsSaveFooter,
 } from '@/features/booking/components/settings/SettingsSaveUi'
 import { AdminFieldWithCharCount } from '@/features/booking/components/settings/AdminFieldWithCharCount'
@@ -84,7 +85,7 @@ function newSubTab(display: SubTab['display']): SubTab {
 }
 
 /** Riga collassata lista card salvate (non carosello). */
-function getSubTabCollapsedRowTitle(tab: SubTab, number: number): string {
+export function getSubTabCollapsedRowTitle(tab: SubTab, number: number): string {
   if (tab.display === 'carousel') {
     const name = tab.label?.trim()
     return name || `Carosello ${number}`
@@ -92,6 +93,31 @@ function getSubTabCollapsedRowTitle(tab: SubTab, number: number): string {
   const trimmed = tab.label?.trim() ?? ''
   const suffix = `Card ${number}`
   return trimmed ? `${trimmed} · ${suffix}` : suffix
+}
+
+function SubTabDeleteButton({
+  summary,
+  onClick,
+  stopPropagation,
+}: {
+  summary: string
+  onClick: () => void
+  stopPropagation?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      title="Elimina"
+      aria-label={`Elimina ${summary}`}
+      onClick={(e) => {
+        if (stopPropagation) e.stopPropagation()
+        onClick()
+      }}
+      className="p-1.5 rounded border border-red-200 text-red-600 hover:bg-red-50"
+    >
+      <TrashIcon weight="regular" className="h-4 w-4" />
+    </button>
+  )
 }
 
 /**
@@ -400,6 +426,11 @@ export const BookingFormConfigPanel = forwardRef<
   const [expandedMode, setExpandedMode] = useState<string | null>(null)
   const [draftSubTabsByMode, setDraftSubTabsByMode] = useState<Record<string, SubTab | null>>({})
   const [expandedSubTabByMode, setExpandedSubTabByMode] = useState<Record<string, string | null>>({})
+  const [deleteConfirmSubTab, setDeleteConfirmSubTab] = useState<{
+    modeId: string
+    subTabId: string
+    summary: string
+  } | null>(null)
   /** Testo grezzo dimensione font mentre l'utente digita (evita clamp 8–38 fino al blur). */
   const [headerFontSizeDraftByTarget, setHeaderFontSizeDraftByTarget] = useState<
     Partial<Record<BookingHeaderTextTarget, string>>
@@ -603,6 +634,26 @@ export const BookingFormConfigPanel = forwardRef<
     }))
     setExpandedSubTabByMode((prev) => ({ ...prev, [modeId]: null }))
     markModesDirty()
+  }
+
+  const requestRemoveSubTab = (modeId: string, subTabId: string) => {
+    const mode = config.booking_modes.find((m) => m.id === modeId)
+    const tabs = mode?.sub_tabs ?? []
+    const tabIdx = tabs.findIndex((t) => t.id === subTabId)
+    const tab = tabIdx >= 0 ? tabs[tabIdx] : undefined
+    if (!tab) return
+    setDeleteConfirmSubTab({
+      modeId,
+      subTabId,
+      summary: getSubTabCollapsedRowTitle(tab, tabIdx + 1),
+    })
+  }
+
+  const confirmRemoveSubTab = () => {
+    if (!deleteConfirmSubTab) return
+    const { modeId, subTabId } = deleteConfirmSubTab
+    removeSubTab(modeId, subTabId)
+    setDeleteConfirmSubTab(null)
   }
 
   const moveSubTab = (modeId: string, subTabId: string, direction: 'up' | 'down') => {
@@ -1161,17 +1212,7 @@ export const BookingFormConfigPanel = forwardRef<
               {tab.display === 'carousel' && (tab.carousel_items?.length ?? 0) > 0 ? (
                 <span className="text-xs font-semibold text-slate-600 sm:hidden">Foto N° 1</span>
               ) : null}
-              {headerActions ??
-                (!isDraft ? (
-                  <button
-                    type="button"
-                    title="Elimina"
-                    onClick={() => removeSubTab(mode.id, tab.id)}
-                    className="p-1.5 rounded border border-red-200 text-red-600 hover:bg-red-50"
-                  >
-                    <TrashIcon weight="regular" className="h-4 w-4" />
-                  </button>
-                ) : null)}
+              {headerActions}
             </div>
           </div>
         ) : headerActions ? (
@@ -1574,6 +1615,7 @@ export const BookingFormConfigPanel = forwardRef<
               <div key={mode.id} className="rounded-lg border border-slate-200 overflow-hidden">
                 <button
                   type="button"
+                  data-mode-id={mode.id}
                   onClick={() => setExpandedMode(isOpen ? null : mode.id)}
                   className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
                 >
@@ -1721,11 +1763,19 @@ export const BookingFormConfigPanel = forwardRef<
                           <div className="w-full min-w-0 space-y-3">
                             {subTabs.map((tab, tabIdx) => {
                               const savedOpen = expandedSubTabId === tab.id
+                              const rowSummary = getSubTabCollapsedRowTitle(tab, tabIdx + 1)
                               const toggleSavedSubTab = () =>
                                 setExpandedSubTabByMode((prev) => ({
                                   ...prev,
                                   [mode.id]: savedOpen ? null : tab.id,
                                 }))
+                              const deleteButton = (
+                                <SubTabDeleteButton
+                                  summary={rowSummary}
+                                  stopPropagation={!savedOpen}
+                                  onClick={() => requestRemoveSubTab(mode.id, tab.id)}
+                                />
+                              )
 
                               return (
                                 <div
@@ -1772,17 +1822,7 @@ export const BookingFormConfigPanel = forwardRef<
                                           </button>
                                         </>
                                       ) : null}
-                                      <button
-                                        type="button"
-                                        title="Elimina"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          removeSubTab(mode.id, tab.id)
-                                        }}
-                                        className="p-1.5 rounded border border-red-200 text-red-600 hover:bg-red-50"
-                                      >
-                                        <TrashIcon weight="regular" className="h-4 w-4" />
-                                      </button>
+                                      {!savedOpen ? deleteButton : null}
                                     </div>
                                   </div>
                                   {savedOpen ? (
@@ -1794,6 +1834,7 @@ export const BookingFormConfigPanel = forwardRef<
                                         subTabNumber: tabIdx + 1,
                                         isDraft: false,
                                         embedded: true,
+                                        headerActions: deleteButton,
                                       })}
                                     </div>
                                   ) : null}
@@ -1841,6 +1882,21 @@ export const BookingFormConfigPanel = forwardRef<
           onCancel={() => setPublicSaveConfirmOpen(false)}
         />
       )}
+
+      <DestructiveActionConfirmModal
+        isOpen={deleteConfirmSubTab != null}
+        onClose={() => setDeleteConfirmSubTab(null)}
+        onConfirm={confirmRemoveSubTab}
+        title="Eliminare card/carosello?"
+        message={
+          deleteConfirmSubTab ? (
+            <p>
+              Sei sicuro di voler eliminare «{deleteConfirmSubTab.summary}»? La rimozione resta in bozza
+              finché non premi «Salva modifiche» nel footer.
+            </p>
+          ) : null
+        }
+      />
     </div>
   )
 })

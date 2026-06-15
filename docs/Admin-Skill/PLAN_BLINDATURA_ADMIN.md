@@ -41,7 +41,7 @@
 |---|---|---|---|---|
 | 1 | Shell / ingresso / navigazione globale | `ADMIN_SHELL_NAV_CONTEXT.md` | ✅ blindato (FU-042 E2E 10-06-26) | login, edition, sidebar, dirty guard, logout, refresh/back — unit + E2E staging |
 | 2 | Prenotazioni operative | `ADMIN_PRENOTAZIONI_CONTEXT.md` | fatto (11-06-26) | Vitest 32 + E2E FU-043; accetta/rifiuta/cancella/ripristina/warning testati |
-| 3 | Impostazioni / Personalizza Form | `ADMIN_SETTINGS_CONTEXT.md` | **Fase C chiusa** (15-06-26) · blindatura Vitest `settings-*` | gap §report M4 implementati; test `@admin-blindatura: settings-*`; validate verde; E2E smoke opzionale manuale |
+| 3 | Impostazioni / Personalizza Form | `ADMIN_SETTINGS_CONTEXT.md` | **M4 Fase C chiusa** (15-06-26) · **Fase D completa da fare** | gap M4 implementati; ora serve mappa completa elementi/vincoli/conflitti della pagina Impostazioni locale + controtest/QA 375/834/1280 |
 | 4 | Menu admin / magazzino | `ADMIN_MENU_MAGAZZINO_CONTEXT.md` | ✅ **blindato** (11-06-26) | Vitest 27 + E2E `@admin-blindatura: menu-magazzino`; QA Matteo; report finale M3 |
 | 5 | Servizio | `ADMIN_SERVIZIO_CONTEXT.md` | da fare | sale/tavoli/slot/walk-in/briefing testati |
 | 6 | CRM | `ADMIN_CRM_CONTEXT.md` | da fare | create/edit/delete cliente e booking collegate testati |
@@ -415,6 +415,134 @@ Gap principali (dettaglio tabella §3 report M4):
 - `ADMIN_SETTINGS_CONTEXT.md`, `ADMIN_TEST_SUITE_INDEX.md`, registro stati §5 aggiornati;
 - controtest sub-agent (flusso dati + utente/responsive Impostazioni + Prenota footer).
 
+### 3-quater.5 Priorita attuale — mappa completa pagina Impostazioni locale
+
+Richiesta Matteo 15-06-26: dare priorita alla **blindatura della pagina admin Impostazioni** ed essere
+sicuri che ogni elemento visibile abbia definizione, vincoli, comportamento di salvataggio e risoluzione
+conflitti. M4 Fase C ha chiuso i gap anagrafica/orari/salvataggio, ma **non equivale ancora a pagina
+Impostazioni blindata end-to-end**.
+
+Obiettivo del prossimo ciclo: produrre una matrice completa **elemento -> fonte dati -> vincoli ->
+salvataggio -> effetto pubblico/admin -> conflitti -> test**. Ogni riga deve finire in uno dei tre
+stati: **blindato**, **voluto/documentato**, **gap da fixare**.
+
+#### 3-quater.5.A Elementi da mappare e definire
+
+| Schermata/blocco | Elementi da mappare | Decisione/vincolo noto | Gap lavoro |
+|---|---|---|---|
+| Ingresso Impostazioni | header "Impostazioni locale"; pill Anagrafica Azienda / Personalizza Form; cambio pill con dirty | cambio tab/pill passa dal guard; admin=staff | verificare responsive e dirty durante save |
+| Anagrafica | nome, email, telefono, indirizzo, contatori, autosave dev/prod | nome obbligatorio 45; contatti opzionali 65/30/120; no fallback pubblico inventato | gia coperto M4; aggiungere solo smoke browser se serve |
+| Orari apertura | `BusinessHoursEditor`, giorni chiusi, fasce multiple, overlap, mezzanotte | opzionali; tutti chiusi => footer Orari pubblico nascosto; overlap/malformed blocca admin; pubblico safe | copertura Vitest ok; manca QA UI 375/834/1280 |
+| Limite giornaliero | `daily_guest_limit` | 0/vuoto = nessun limite; blocca solo Prenota pubblica via edge; admin puo sforare con avviso; solo admin, non whitelist anon | verificare UI vuoto/0/1000 e messaggio admin in smoke |
+| Fasce orarie Classic | `booking_time_slots_enabled`, `service_slots`, `slot_guest_capacities`, add/delete fascia, cap per fascia | visibili solo quando `features.servizio=false`; servono come raggruppamento/semaforo, non blocco automatico pubblico; delete con modale in-app | **mappa incompleta**: definire conflitti add/delete/save, overlap, fasce overnight, cap vuoto/invalid, mutation fail, responsive |
+| Tema app | `app_theme`, preview card, modal anteprima, scelta tema | solo back-office; non cambia Prenota/QR; ID ammessi in `APP_THEME_IDS` | **mappa/test mancanti**: salvataggio, annulla, anteprima, immagini mancanti, responsive |
+| Sfondo Prenota | `public_booking_strip_photo`, `public_booking_page_background`, anteprima/modal preview | XOR: striscia vince su full-page; `strip` scrive `''`/null compatibile DB; pubblico segue `PRENOTA_LAYOUT_CONTEXT` | **mappa da consolidare**: conflitti striscia/full-page/nessuno, annulla/salva aggregato, preview asset fallito |
+| Personalizza form — intestazione | nome locale read-only, titolo, descrizione, font/color/size/allineamento/bold/underline | titolo 50, descrizione 120; nome locale si modifica in Anagrafica; header pubblico usa config salvata | verificare autosave OFF prod vs footer; lunghezze/font estremi/responsive |
+| Personalizza form — modalita | enable modalita, titolo, descrizione, icona, ordine implicito, nessuna modalita attiva | `booking_public_form_config` e fonte; config assente => EmptyState pubblico; modalita disabilitate non mostrano form | definire cosa succede con zero modalita attive e copy admin/pubblico |
+| Personalizza form — Card scorrevole | add/edit/delete/reorder card, import preset, titolo card, descrizione, portate, icona, prezzo, categorie/ingredienti visibili, menu personalizzabile | card e core; titolo obbligatorio; import preset azzera override; modifiche manuali marcano `field_overrides` | **mappa/test incompleti**: delete senza conferma? doppio click, bozza aperta + cambio pill, preset assente/stale, lista lunga categorie |
+| Personalizza form — Carosello | un carosello per modalita, N foto/slide, upload/replace/delete/reorder, testi slide, icona, prezzo, toggle "Mostra dettaglio offerta" | carosello core; almeno una foto; cambio presentazione e distruttivo con modale; residuo FU-009 QA CRUD slide | **priorita alta**: chiudere FU-009 con QA CRUD + test rompi |
+| Personalizza form — Promo | create/edit/delete/toggle visibilita, abbinamento tipologia vs card/carosello, conflitti | apply/delete/toggle salvano silent; se fallisce alzano dirty per retry footer; label tipologia da config, non hardcoded | verificare coerenza doc: PRENOTA_FORM_CONFIG_CONTEXT cita anche footer; allineare a codice corrente `saveSilently` |
+| Salvataggio globale | footer unico, `PublicDataSaveConfirmModal`, `hideSaveUi`, guard globale, annulla tutte | un solo footer/modale padre in `RestaurantSettingsTab`; figlio rilancia errori; modale resta aperta su fallimento save | coperto M4 in Vitest; serve controtest browser: doppio click Salva, cambio pill/sezione durante pending, errore mutation |
+| Chiavi tecniche/fuoriscope | `timezone`, `booking_window_days`, whitelist anon | `timezone` tecnico nascosto; `booking_window_days` fuoriscope, non implementare; 053/054 solo cronologia TEST | non toccare DB/PROD; eventuale riallineamento TEST solo sessione DB dedicata |
+
+#### 3-quater.5.B Lavoro operativo da fare
+
+1. **Mappa read-only della pagina Impostazioni locale.** Aprire solo i file pertinenti:
+   `RestaurantSettingsTab`, `BookingFormConfigPanel`, `BookingFormPromoSection`,
+   `BookingFormCarouselEditor`, `BusinessHoursEditor`, `SettingsSaveUi`,
+   `restaurantSettingRegistry`, `PRENOTA_FORM_CONFIG_CONTEXT`, `PRENOTA_LAYOUT_CONTEXT`.
+   Output: matrice elemento/vincolo/conflitto/test.
+2. **Allineamento definizioni.** Aggiornare `ADMIN_SETTINGS_CONTEXT.md` con stato stabile, senza storia:
+   cosa si vede, cosa salva, cosa e pubblico, cosa e solo admin, cosa e fuoriscope.
+3. **Gap da decidere/fixare.** Segnalare a Matteo solo conflitti prodotto veri. I sospetti tecnici
+   piccoli si possono trasformare in test/fix se coerenti con le decisioni gia prese.
+4. **FU-009 Carosello admin.** QA CRUD slide: crea carosello, aggiungi foto, modifica testi, sostituisci
+   foto, elimina slide, riordina, salva, ricarica, verifica pubblico. Eseguire anche con dati legacy/null.
+5. **Fase D rompi.** Mandato esplicito "trova bug" su: doppio click, cambio pill/sezione durante dirty/save,
+   annulla/riapri modali, testi lunghi, campi vuoti, dati legacy/null, mutation fail, viewport 375/834/1280.
+6. **FU-051 separato ma prioritario se tocca test.** Se gli agenti modificano test con date, sostituire
+   solo le date che devono restare future/relative a oggi; non toccare parser/mezzanotte.
+7. **Gate chiusura.** Test mirati verdi, poi `npm run validate`; report con matrice esiti; aggiornare
+   `ADMIN_TEST_SUITE_INDEX.md`, `ADMIN_SETTINGS_CONTEXT.md`, `FOLLOW_UP.md` se cambia lo stato FU.
+
+#### 3-quater.5.C Marcatori test da usare/estendere
+
+- `@admin-blindatura: settings-map` — matrice elementi Impostazioni locale, se diventa test statico/contract.
+- `@admin-blindatura: settings-save-guard` — footer unico, modale pubblica, dirty guard, mutation fail.
+- `@admin-blindatura: settings-time-slots` — fasce Classic: enable, add/delete, overlap, overnight, cap.
+- `@admin-blindatura: settings-theme` — tema admin-only, preview, annulla/salva.
+- `@admin-blindatura: settings-background` — XOR striscia/full-page/nessuno, salvataggio aggregato.
+- `@admin-blindatura: settings-form-config` — header/modalita/card/card override/config zero modalita.
+- `@admin-blindatura: settings-carousel-crud` — FU-009 CRUD slide carosello.
+- `@admin-blindatura: settings-promo` — promo silent save/fallback dirty/conflitti label dinamiche.
+
+#### 3-quater.5.D Protocollo test per i prossimi agenti
+
+I prossimi prompt devono trattare i test come lavoro di prodotto, non come appendice. Ogni esecutore
+deve partire da un fronte piccolo, farlo diventare verde in isolamento, poi consegnarlo a un revisore
+che prova a romperlo e rilancia gli stessi comandi. Non dichiarare un fronte chiuso se il comando resta
+in timeout o se passa solo una parte della suite.
+
+Stato verificato sul working tree del 15-06-26:
+
+- **D-M2 sfondi Prenota:** test mirati verdi con
+  `npx vitest run src/features/booking/lib/__tests__/settingsBackground.adminBlindatura.test.ts src/features/booking/constants/__tests__/publicBookingSurface.test.ts --reporter=verbose`
+  (15 test passati).
+- **D-M1 form-config:** test mirato verde con
+  `npx vitest run settingsFormConfig.settingsM4 --reporter=verbose`
+  (3 test passati), ma restano warning `act(...)` da stabilizzare se ricompaiono in validate.
+- **D-M1 promo:** il run
+  `npx vitest run settingsPromo.settingsM4 --reporter=verbose`
+  e andato in timeout: non e verde finche un agente non isola la causa e rilancia il comando con esito
+  completo.
+
+Ordine obbligatorio dei fronti test:
+
+1. **Gate test Batch 1/2.** Prima chiudere `settings-promo` e rilanciare insieme
+   `settingsFormConfig.settingsM4`, `settingsPromo.settingsM4`, `settingsBackground.adminBlindatura`
+   e `publicBookingSurface`. Se il run aggregato va in timeout, il report deve indicare quale file blocca
+   e quale comando isolato passa/fallisce.
+2. **`settings-save-guard`.** Testare footer unico, modale dati pubblici, doppio click Salva, errore
+   mutation, cambio pill/sezione/logout con dirty o save pending. Usare mock `UnsavedChangesProvider` e
+   mutation controllata; niente DB reale.
+3. **`settings-time-slots`.** Testare Classic: abilita fasce, aggiungi, elimina con modale in-app,
+   overlap, overnight, cap vuoto/invalid/limite alto, mutation fail. Non confondere cap per-fascia
+   (semaforo/avviso) con `daily_guest_limit` pubblico.
+4. **`settings-theme`.** Testare solo back-office: scelta tema, anteprima, annulla, Salva, immagine/ID
+   tema mancante. Deve restare esplicito che non cambia Prenota o QR.
+5. **`settings-form-config` + `settings-promo`.** Estendere oltre D-M1: zero modalita attive, testi
+   lunghi, config legacy/null, label dinamiche promo, fallback dirty su `saveSilently` fallito.
+6. **`settings-carousel-crud` / FU-009.** QA CRUD slide carosello: crea, aggiungi foto, modifica testi,
+   sostituisci foto, elimina, riordina, salva, ricarica, verifica Prenota pubblico. Se non e tutto
+   automatizzabile, separare Vitest contract + QA browser documentata.
+7. **Fase D rompi responsive.** Solo dopo i fronti sopra: Playwright/manual QA su 375 / 834 / 1280 per
+   Anagrafica, Orari, Sfondo, Personalizza form, Promo, Carosello e Prenota pubblico.
+
+Pattern di sviluppo test:
+
+- Prima cercare test esistenti e aggiungere casi nella suite piu vicina; creare file nuovo solo se il
+  fronte non ha una suite naturale.
+- Preferire mock deterministici di hook/settings; evitare wait su UI che dipende da query mock immutabili.
+- Ogni test nuovo deve avere in testa `// @admin-blindatura: settings-*` e `// Copre: ...`.
+- Ogni esecutore deve consegnare i comandi eseguiti con esito reale. "Test avviato" o timeout non vale
+  come verde.
+- Ogni revisore deve rilanciare almeno il comando mirato del fronte e poi, se verde, `npm run validate`.
+- Aggiornare `ADMIN_TEST_SUITE_INDEX.md`, `ADMIN_SETTINGS_CONTEXT.md`, `PRENOTA_FORM_CONFIG_CONTEXT.md`
+  o `PRENOTA_LAYOUT_CONTEXT.md` solo quando il comportamento stabile cambia o un fronte passa a blindato.
+
+Prompt sequenziali per gli agenti: `docs/Sessioni di lavoro/15-06-26/Blindatura ADMIN/Prompt-agenti-test-blindatura-admin-impostazioni.md`.
+
+### 3-quater.6 Criterio aggiornato di uscita Area 3
+
+Area 3 puo passare a **blindata** solo quando:
+
+- la matrice §3-quater.5.A e completata e riportata nel report/context vivo;
+- ogni elemento e classificato **blindato / voluto / gap da fixare o follow-up**;
+- FU-009 e chiuso oppure resta follow-up esplicito con motivo non bloccante approvato da Matteo;
+- Fase D rompi e QA 375/834/1280 sono stati eseguiti su Anagrafica + Personalizza form + Prenota pubblico;
+- `ADMIN_SETTINGS_CONTEXT.md` e `ADMIN_TEST_SUITE_INDEX.md` sono allineati alla definizione finale;
+- `npm run validate` e verde.
+
 ---
 
 ## 4. Prompt anti-rottura per sub-agent
@@ -446,7 +574,7 @@ Aggiornare a fine area.
 | Shell / ingresso / navigazione globale | ✅ blindato (10-06-26) | FU-042 E2E + suite shell; M1 su `main` privato |
 | Prenotazioni operative | ✅ cancello M2 (11-06-26) | Vitest **32** + E2E **7** (FU-043: capienza/orario passato + modali 375/834); validate **536**. Residui U3/U9/D6/D7/L* fuori cancello |
 | Tab Calendario (M2) | ✅ blindato + merged prod (11-06-26) | Batch A+B + Fase C + **C-U2** guard tab modale; validate **527**; QA badge §9 OK; C-U3 → FU-048 Pro |
-| Impostazioni / Personalizza Form | 🟢 Fase C (15-06-26) | Report Fase C; G2–G9, G20 chiusi; G16 fuoriscope rimosso |
+| Impostazioni / Personalizza Form | 🟡 Fase D mappa completa da fare | M4 Fase C chiusa (G2–G9, G20; G16 fuoriscope). Prossimo ciclo: matrice completa elementi/vincoli/conflitti + FU-009 + controtest responsive/rompi |
 | Menu admin / magazzino | ✅ **BLINDATO** (11-06-26) | Report [`Report-finale-m3-menu-blindato-11-06-26.md`](../Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md); validate **554**; solo FU-M3-QA-CT extra fuori cancello |
 | Servizio | ⬜ | Include walk-in e tavoli occupati |
 | CRM | ⬜ | Attenzione email normalizzata e delete multi-step |

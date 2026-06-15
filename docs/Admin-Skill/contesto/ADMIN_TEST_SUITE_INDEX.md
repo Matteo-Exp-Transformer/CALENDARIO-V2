@@ -77,6 +77,7 @@ Fronti previsti:
 | `settings-registry` | `restaurantSettingRegistry.settingsM4.adminBlindatura.test.ts` | nome obbligatorio, contatti opzionali, cap 45/65/30/120, daily 0/vuoto |
 | `settings-anagrafica-ui` | `settingsAnagraficaUi.settingsM4.adminBlindatura.test.tsx` | saveDisabled, contatti vuoti OK, modale pubblica una volta |
 | `settings-business-hours` | `businessHours.settingsM4.adminBlindatura.test.ts` | tutti chiusi → no sezione; overlap admin; parse pubblico safe |
+| `settings-background` | `settingsBackground.adminBlindatura.test.ts` + `publicBookingSurface.test.ts` | XOR striscia/full-page; legacy gradient/tile → neutro; superficie light = crema |
 
 Residuo: E2E smoke Impostazioni 375/834/1280 (manuale opzionale); **FU-009** slide carosello.
 

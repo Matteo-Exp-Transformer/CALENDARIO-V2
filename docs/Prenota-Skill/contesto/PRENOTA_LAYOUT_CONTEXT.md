@@ -53,15 +53,15 @@ resta a colonna unica anche su desktop e lo sfondo occupa tutta la viewport.
 
 ## 2. Sfondo viewport (striscia vs full-page)
 
-> **Superficie → palette (FU-014).** La superficie è calcolata in **un punto solo** (`BookingRequestPage`)
-> con `resolvePublicBookingSurface({ showPhotoStrip, isFullPagePhoto })` e decide il colore di testo/errori
-> via `surfaceUsesLightText` (in `constants/bookingPublicFieldStyles.ts`). Niente più booleani sparsi.
+> **Superficie → palette (FU-014, agg. D-M2).** Input DB → **`resolvePublicBookingPageLayout`**
+> in `bookingPageBackground.ts` (mode + surface + fullPagePhotoId in un punto). La pagina non
+> ricalcola booleani sparsi; palette testo/errori da `surfaceUsesLightText(layout.surface)`.
 
 | Superficie | Quando | Sfondo | Testo/errori |
 |---|---|---|---|
 | `strip` | `public_booking_strip_photo` valorizzato (striscia laterale) | crema `#faf7f1` | scuro (warm-wood / rossi) |
 | `full-page-photo` | niente striscia + `public_booking_page_background` = `full-NN` | foto a pagina intera | **bianco** (`text-white`) |
-| `light` | niente striscia, nessuna foto full-page (gradiente/tile/nessuno sfondo) | chiaro | scuro |
+| `light` | niente striscia, nessuna foto full-page (nessuno sfondo decorativo / legacy gradient-tile migrato a null) | crema `#faf7f1` | scuro |
 | `dark` | riservato a un futuro tema scuro | — | bianco (gancio, non ancora emesso) |
 
 Equivalenza blindata da test: `surfaceUsesLightText(surface)` === vecchio `!showPhotoStrip && isFullPagePhoto`
@@ -69,9 +69,9 @@ Equivalenza blindata da test: `surfaceUsesLightText(surface)` === vecchio `!show
 
 - **Modalità striscia:** quando `public_booking_strip_photo` è valorizzato, il root ignora
   `public_booking_page_background` e applica tinta crema `#faf7f1` (`STRIP_MODE_PAGE_BG`).
-- **Modalità full-page:** l'immagine `public_booking_page_background` (`full-01`…`full-06` via
-  `bookingFullPageBackgroundPublicHref`) o i fallback legacy si applicano alla viewport **solo**
-  quando la striscia è disattivata. Le card del form restano bianche/opache in entrambe.
+- **Modalità full-page:** l'immagine `public_booking_page_background` (`full-01`…`full-04` via
+  `bookingFullPageBackgroundPublicHref`) si applica alla viewport **solo** quando la striscia è
+  disattivata. Le card del form restano bianche/opache in entrambe.
 - `public_booking_page_background` **non accetta** `strip-01`…`strip-06`: quelle appartengono solo
   a `public_booking_strip_photo`.
 - **Vincolo NOT NULL su `restaurant_settings.setting_value`:** "Nessuna striscia" si scrive come
@@ -99,12 +99,11 @@ Equivalenza blindata da test: `surfaceUsesLightText(surface)` === vecchio `!show
   (`usePublicMenuViewport`) ma classe separata per evitare effetti su altre route.
 - **Trade-off fixed vs scroll (31-05-26):** in fondo pagina (footer Orari/Contatti) lo sfondo resta
   ancorato alla viewport — accettato; verificare scroll fondo↔su a 375px e 1280px.
-- **Stacking context sfondo (31-05-26)**:
-  1. root `BookingRequestPage` = `relative isolate` + colore fallback crema (`#faf7f1` full-page) o marrone (gradiente);
-  2. foto full-page = layer `fixed top-0 left-0 right-0 h-[100lvh] -z-10` (solo viewport); tile/gradiente = layer `absolute inset-0 -z-10` (altezza documento, scroll col contenuto);
+- **Stacking context sfondo (31-05-26, agg. D-M2 15-06-26)**:
+  1. root `BookingRequestPage` = `relative isolate` + colore fallback crema `#faf7f1` sempre;
+  2. foto full-page = layer `fixed top-0 left-0 right-0 h-[100lvh] -z-10` (solo viewport);
   3. wrapper contenuto = `relative z-10 w-full`.
-- **Tile legacy + gradiente** — stesso layer `absolute` scrollabile; gradiente `background-size: 100% 100%`
-  (non `cover` sul root).
+- **Legacy gradiente/tile (rimosso D-M2):** non più renderizzati; `parseBookingPageBackgroundFromDb` → `null` → superficie `light` + crema.
 
 ## 3. Header pubblico
 
@@ -140,7 +139,7 @@ Nome e titolo stessa scala grande, descrizione più piccola. Font in `BOOKING_HE
 `full-01`…`full-04`, layer fixed cover — **non** gradiente/tile legacy). Attivo solo da
 **≥1256px** via classi `min-[1256px]:*` (stesso breakpoint di `BOOKING_PUBLIC_SUMMARY_SIDEBAR_MIN_PX`).
 
-**Fuori scope (layout invariato):** striscia laterale; sfondo gradiente/tile senza full-page;
+**Fuori scope (layout invariato):** striscia laterale; assenza sfondo decorativo (crema tecnica).
 viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fixed).
 
 **Desktop full-page:**
@@ -389,7 +388,7 @@ Quando il cliente clicca **Invia** con dati invalidi:
 3. **Scroll** al primo errore (`scrollToBookingPublicError` in `bookingPublicFormAttention.ts`).
 4. **Pulse arancione** sul wrapper del campo (`.booking-public-field-attention`) fino a click reale (`shouldDismissBookingPublicAttention` / `isTrusted`).
 5. **Lunghezza testo cliente (03-06-26):** `validate()` controlla cap in `BOOKING_PUBLIC_CLIENT_TEXT_LIMITS` (`bookingPrenotaTextLimits.ts`) — nome, email, tel, intolleranze aggregate, richieste speciali, ospiti max. Messaggio unico **`Testo troppo lungo`**; nessun contatore in UI (cap silenzioso + edge `create-booking`).
-6. Messaggi errore / privacy / riepilogo menù: palette condizionata da `publicFormLightTextOnDarkBackground` (`!showPhotoStrip && isFullPagePhoto`) — **bianco** solo su sfondo full-page foto; su striscia laterale / crema / gradiente → warm-wood e rossi come pre-29-05 (helper in `bookingPublicFieldStyles.ts`).
+6. Messaggi errore / privacy / riepilogo menù: palette condizionata da `publicFormLightTextOnDarkBackground` (`!showPhotoStrip && isFullPagePhoto`) — **bianco** solo su sfondo full-page foto; su striscia laterale / crema → warm-wood e rossi come pre-29-05 (helper in `bookingPublicFieldStyles.ts`).
 
 **Guida per replicare su altri form/modali:** `FORM_VALIDATION_ATTENTION_PATTERN.md` (stesso folder).
 

@@ -126,6 +126,15 @@ chiave gia registrata.
 - **Footer unificato M4 (15-06-26):** un solo `SettingsSaveFooter` + una sola `PublicDataSaveConfirmModal` nel padre `RestaurantSettingsTab` per Anagrafica + Personalizza form (`hideSaveUi` su `BookingFormConfigPanel`); Salva aggregato se entrambe le aree sono dirty.
 - Form non configurato su Classic → **EmptyState** chiaro su `/prenota`; niente `DEFAULT_BOOKING_FORM_CONFIG` sul pubblico (M6).
 
+### Sfondo Pagina Prenota (`public_booking_strip_photo`, `public_booking_page_background`) — D-M2 (15-06-26)
+
+- **Admin:** due modalità esclusive in UI — **striscia laterale** (`strip-01`…`strip-06`) oppure **foto pagina intera** (`full-01`…`full-04`). Nessun gradiente né tile.
+- **XOR pubblico:** se `public_booking_strip_photo` è valorizzato, la striscia vince e `public_booking_page_background` è ignorato sul rendering.
+- **Nessuna scelta decorativa:** valori legacy gradiente/tile in DB → `parseFromDb` restituisce `null` (migrate-on-read); il pubblico usa crema `#faf7f1` (superficie `light`), senza crash.
+- **Striscia disattiva:** `serializeToDb(null)` → `''` (colonna `setting_value` NOT NULL); `parseFromDb('')` → `null`.
+- Helper pubblico: **`resolvePublicBookingPageLayout`** (contratto unico: mode, surface, fullPagePhotoId, crema); palette da `surfaceUsesLightText`. Admin: `hydrateAdminBookingBackgroundEditor` + `isAdminBookingBackgroundDirty`; sfondo persistito **solo se dirty** (evita migrazione silenziosa legacy→full-01 al Salva anagrafica).
+- Test: `@admin-blindatura: settings-background` + `publicBookingSurface.test.ts`.
+
 ### Stato mappatura (15-06-26)
 
 - Fase A+B **chiuse** (intervista + gap read-only). Fase C **chiusa** (15-06-26): gap G2–G9, G20 implementati; **G16 fuoriscope** (finestra prenotazione rimossa). Validate verde post-rimozione. Residuo QA: **FU-009** (slide carosello admin); E2E smoke Impostazioni 375/834/1280 opzionale manuale.

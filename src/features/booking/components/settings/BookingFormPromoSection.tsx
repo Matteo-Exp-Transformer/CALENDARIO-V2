@@ -3,6 +3,7 @@ import { Edit, Eye, EyeOff, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { DestructiveActionConfirmModal } from '@/features/booking/components/settings/SettingsSaveUi'
 import { Modal } from '@/components/ui/Modal'
 import { Textarea } from '@/components/ui/Textarea'
 import type { BookingMode } from '@/features/booking/constants/bookingPublicFormConfig'
@@ -486,32 +487,21 @@ export const BookingFormPromoSection = forwardRef<BookingFormPromoSectionHandle,
             onConfirm={confirmConflictReplacement}
           />
         ) : null}
-        <Modal
+        <DestructiveActionConfirmModal
           isOpen={deleteConfirm != null}
           onClose={() => setDeleteConfirm(null)}
+          onConfirm={confirmDeletePromo}
           title="Eliminare la promo?"
-          size="sm"
-          showCloseButton
-          closeOnOverlayClick
-          closeOnEscape
-        >
-          {deleteConfirm ? (
-            <div className="space-y-4">
-              <p className="text-sm text-slate-700">
-                Sei sicuro di voler eliminare «{deleteConfirm.summary}»? La modifica verrà applicata solo al
-                prossimo salvataggio della sezione.
+          confirmLabel="Elimina promo"
+          message={
+            deleteConfirm ? (
+              <p>
+                Sei sicuro di voler eliminare «{deleteConfirm.summary}»? L&apos;eliminazione viene salvata
+                subito sulla pagina Prenota.
               </p>
-              <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
-                <Button type="button" variant="outline" size="sm" onClick={() => setDeleteConfirm(null)}>
-                  Annulla
-                </Button>
-                <Button type="button" variant="danger" size="sm" onClick={confirmDeletePromo}>
-                  Elimina promo
-                </Button>
-              </div>
-            </div>
-          ) : null}
-        </Modal>
+            ) : null
+          }
+        />
         <section className="admin-warm-surface rounded-xl border p-5 space-y-4 shadow-sm">
           <div>
             <h3 className="text-base font-semibold text-slate-800">Messaggio Promozionale</h3>
