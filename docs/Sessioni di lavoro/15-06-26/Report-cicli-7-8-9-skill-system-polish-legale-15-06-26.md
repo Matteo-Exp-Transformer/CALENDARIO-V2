@@ -109,6 +109,17 @@ alimentari (art. 9).
 LEGAL_STATE_CONTEXT, FOLLOW_UP (FU-ALL-TIER/ANTISTORIA/040/014/LOG-1-H/009/LEGAL-1/2/026/010/M3-QA-CT),
 Plan-Completamento.
 
+## Test creati (dettaglio — cosa coprono e perché)
+
+3 nuovi file di test (9 casi totali). Servono a **blindare** i due polish di codice (FU-040, FU-014) e
+l'hardening del logger (FU-LOG-1-H) contro regressioni future.
+
+| File | Casi | Cosa blinda | Perché serve |
+|---|---|---|---|
+| `src/features/booking/hooks/__tests__/useBookingPublicScrollRowAlign.test.tsx` | 4 | L'hook che **centra le card/slide tipologia** sulla Pagina Prenota: se il gruppo entra nel viewport → centrato (`mx-auto justify-center`), se sfora → ancorato a sinistra (`justify-start`); tolleranza +1px; transizione fit→overflow. Usa un **mock di `ResizeObserver`** (jsdom non ce l'ha). | Prima era logica non testata (FU-040): un refactor del layout card poteva romperne silenziosamente la centratura su mobile/desktop. Ora un test fallisce subito. |
+| `src/features/booking/constants/__tests__/publicBookingSurface.test.ts` | 5 | La nuova mappa **layout → superficie → colore testo** (FU-014): `strip`/`full-page-photo`/`light`/`dark` e `surfaceUsesLightText`. Include un test di **equivalenza** che dimostra che il nuovo helper dà lo stesso risultato del vecchio booleano `!showPhotoStrip && isFullPagePhoto` per tutte le combinazioni. | Garantisce che il refactor di FU-014 **non cambia nulla a video** (testo bianco solo su foto a pagina intera). È la prova che la centralizzazione è sicura. |
+| `supabase/functions/_shared/log.test.ts` | 8 (Deno) | Il logger condiviso delle Edge Function: prefisso `[fn][request-id]`, redazione chiavi PII per nome (`email`/`phone`/`token`), **redazione del valore** per chiavi-contenitore (`customer`/`payload`…), `serializeError` senza stack grezzo, chiavi neutre in chiaro, `null` preservato. | Blinda l'hardening privacy di FU-LOG-1-H: evita che in futuro un log stampi dati personali. **Gira con `deno test`** (non in `npm run validate` che è Vitest); la logica è stata anche verificata con una replica in Node. |
+
 ## QA / verifica
 - `npm run validate` → **591 test verdi** (lint + typecheck + Vitest). I warning `act()` provengono da
   `adminBookingForm.dailyLimit` (pre-esistenti, non introdotti qui).
