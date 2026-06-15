@@ -9,9 +9,9 @@ STATO AVANZAMENTO (aggiornato 13-06-26)
 - Ciclo 4 — ✅ FATTO. D6 guard stato pre-mutation (update/restore/no-show/cancel); D7 feedback orario mancante; L4/L10-L12 cap ospiti a video (110, costante esistente); FU-001 promo come chip in BookingDetailsModal (✅ accettazione visiva Matteo 13-06). validate 577.
 - Ciclo 5 — ✅ FATTO. FU-023: guard chiusura editor preset (menù preselezionati) in MenuPricesTab; Personalizza form già guardato. FU-003 chiuso: audit delete Pro/CRM/Servizio tutte con conferma, zero window.confirm. validate 577.
 - Ciclo 6 — ✅ FATTO. Fallback check_admin_email (FU-AUTH-3): setTenantFromAdmin → boolean, AdminAuthContext fa signOut se tenant non risolto (no admin loggato con tenant nullo). validate 580.
-- Ciclo 7 — ⬜ DA FARE (chat dedicata: skill system, design alla lettera).
-- Ciclo 8 — ⬜ DA FARE (polish + test opzionali).
-- Ciclo 9 — ⬜ DA FARE (bozze legali → avvocato/commercialista).
+- Ciclo 7 — ✅ FATTO (15-06-26). Mini-pack: 8 `*_MINI.md` + §0.0b in APP_CONTEXT + 6 puntatori Cursor nuovi (FU-ALL-TIER chiuso). Anti-storia: §8 APP_CONTEXT + potatura Menu QR a guardrail S1b + §7 snellito (§7.3 Terminali → CHIUSURA §6) (FU-ALL-ANTISTORIA chiuso). PLAN_BLINDATURA_ADMIN allineato (mini-pack + nota anti-storia); FU-009 declassato a «quasi chiuso» (elementi ora mappati in PRENOTA_LAYOUT_CONTEXT). `validate:docs` verde.
+- Ciclo 8 — 🟡 PARZIALE (15-06-26). ✅ FU-040 (test hook centratura, 4 Vitest), FU-014 (`PublicBookingSurface` + helper, 5 Vitest + doc), FU-LOG-1-H (redazione value-based in `log.ts` + test Deno). ⬜ **Differiti** (richiedono QA visiva/staging): FU-026 (icone card, accettazione Matteo), FU-010 (hook validazione condiviso, tocca AdminBookingForm), FU-M3-QA-CT (E2E «rompi» staging). Note nei rispettivi FU.
+- Ciclo 9 — ✅ FATTO (15-06-26). Bozze v0.1 in `docs/legal/`: ToS B2B (FU-LEGAL-1), registro art. 30 + runbook breach + sub-processors (FU-LEGAL-2). Testo only; revisione avvocato/commercialista resta a Matteo. `LEGAL_STATE_CONTEXT` aggiornato.
 
 Nota PROD: migrazione 049 (`item_sort_overrides`) applicata su TEST **e su PROD** (15-06-26, conferma Matteo). Cicli 1-6 rilasciati in produzione: merge `env/test → main` (ff `ee2dca7..46779d7`) + release PrenotaZen (push `a6833f0..da0be7c`, deploy Vercel).
 ────────────────────────────────────────────────────────────────────

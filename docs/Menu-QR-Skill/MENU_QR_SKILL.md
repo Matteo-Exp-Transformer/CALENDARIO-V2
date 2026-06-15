@@ -143,20 +143,11 @@ QR**, non in un «tipo di menù» strutturato. Il `content_type` strutturato è 
 
 ---
 
-## 3-bis. Preset/menù-evento via QR — RIMOSSO (blindatura 06-06-26)
+## 3-bis. Preset/menù-evento via QR — RIMOSSO
 
-> **Storia, perché un agente non lo ricostruisca.** Fino al 06-06-26 un QR aveva un campo
-> `content_type` (`a_la_carte` / `preset_menus` / `mixed`) + `preset_ids` che *avrebbero* attivato i
-> menù-evento dentro il QR (tab «eventi», pagina `PublicMenuPresetPage`, rami `showPresets`). Ma il
-> modale `MenuQrModal` non ha **mai** esposto un controllo per impostarli: ogni QR si salvava
-> `a_la_carte` con `preset_ids` vuoto → tutta quella logica era **irraggiungibile dall'interfaccia**.
-
-**Rimosso nella blindatura del 06-06-26** (decisione di Matteo): il caso «evento» si copre col
-**carosello + nome QR**, non con un tipo strutturato. Tolti dal codice: `PublicMenuPresetPage`,
-la route `…/preset/:presetId`, i rami `showPresets`/`usePublicPresets` in `PublicMenuPage`, i campi
-`content_type`/`preset_ids` nei tipi e nel modale. Droppate le **colonne DB** `content_type`/`preset_ids`
-(migrazione `043`, su TEST e PROD verificati 0 righe non-`a_la_carte` prima del drop). Spariti con la
-rimozione anche gli INC latenti INC-05/06/15/16. **Un agente NON deve reintrodurre questo concetto nel QR.**
+> **Divieto:** NON reintrodurre `content_type`/`preset_ids` né i menù-evento dentro il QR (route
+> `…/preset/:presetId`, `PublicMenuPresetPage`, rami `showPresets`). Colonne DB droppate (migr. `043`).
+> Il caso «evento» si copre con **carosello + nome QR**. Dettaglio storico: [Report blindatura Menu QR 06-06-26](../Sessioni%20di%20lavoro/06-06-26/REPORT_BLINDATURA_06-06-26.md).
 
 > ⚠️ **Da non confondere:** il preset di **Pagina Prenota** (`CustomStaffPreset`,
 > `booking_custom_staff_presets`, `bookingFormResolver`) è **vivo e legittimo** — la rimozione ha
@@ -188,33 +179,24 @@ col primo messaggio. (Preferenza utente: `Modal` per successo/conferme; toast so
 
 ---
 
-## 5. Questioni aperte e chiuse (Ciclo 3 — 13-06-26)
+## 5. Stato funzioni e divieti correlati
 
-> Decisioni di Matteo in attesa di esecuzione. Un agente che le incontra NON le «sistema» di
-> iniziativa; può proporne l'implementazione se il task è pertinente.
+> Stato attuale + divieti. La **cronologia** delle decisioni (chi/quando/perché) vive nei report di
+> `Sessioni di lavoro/` e in `docs/FOLLOW_UP.md` — qui solo ciò che un agente deve sapere oggi.
 
-- ✅ **FU-019 (CHIUSO 13-06-26) — Applicare theme_key/hidden_menu_item_ids/foto su
-  PublicMenuCategoryPage.** Override titolo da `menu_qrcode_categories` nel `<h1>` della pagina;
-  hero foto (`qr.category_images[categoryKey]`) mostrata tra header e lista piatti se disponibile.
-  `hidden_menu_item_ids` e `theme_key` erano già applicati.
-- ✅ **Import preset staff nel modal QR (CHIUSO 13-06-26) — «Importa da preset».** Sezione in cima
-  al modal: dropdown preset staff + pulsante Importa. Calcola automaticamente `categoryFilter`
-  (solo categorie con item del preset) e `hiddenItemIds` (item fuori preset). Il carosello non
-  viene toccato. Nessuna nuova colonna DB. Preset restano read-only nel loro tab.
+- **Ordine piatti per-QR** (`item_sort_overrides` su `menu_qr_codes`): frecce Su/Giù in
+  `MenuQrHiddenItemsPicker` («Visibilità e ordine ingredienti»). Lettura pubblica
+  `applyQrItemSortOverride` (`menuQrAppearance.ts`); `null` = ordine default magazzino + foto-prima.
+- **Import preset staff nel modal QR** («Importa da preset»): precompila `categoryFilter` +
+  `hiddenItemIds` dal preset, carosello escluso; preset **read-only** (vivono nel loro tab). Nessuna
+  colonna DB nuova.
+- **`PublicMenuCategoryPage`** applica override titolo (`menu_qrcode_categories`) + hero foto
+  (`qr.category_images[categoryKey]`); `hidden_menu_item_ids`/`theme_key` già applicati.
+- **Titoli/descrizioni categoria per-QR cappati** (30/70, `AdminFieldWithCharCount`) — vedi §4 +
+  `contesto/MENU_QR_TEXT_LIMITS_MAP.md`.
+- **Divieto:** codice morto preset QR rimosso — non reintrodurlo (§3-bis).
 
-- ✅ **FU-MQR-1 — Titoli/descrizioni categoria per-QR cappati (CHIUSO 06-06-26).** I due campi «Titolo
-  card» (max **30**) e «Descrizione breve» (max **70**) ora usano `AdminFieldWithCharCount` con taglio
-  difensivo e contatore, come il carosello. Test: `__tests__/menuQrCategoryFieldCap.test.tsx`.
-- ✅ **Codice morto preset rimosso (CHIUSO 06-06-26)** — vedi §3-bis.
-- ✅ **FU-MQR-2 (CHIUSO 13-06-26) — Ordine piatti dentro la categoria, per-QR.** Implementato con
-  migrazione `049` (`item_sort_overrides JSONB DEFAULT NULL` su `menu_qr_codes`). UI: frecce Su/Giù
-  dentro `MenuQrHiddenItemsPicker` (ora rinominato "Visibilità e ordine ingredienti"); il pannello
-  combina nasconde-ingredienti + riordina-per-QR. Lettura pubblica: `applyQrItemSortOverride` in
-  `menuQrAppearance.ts`; se null usa ordine default magazzino + foto-prima.
-- ✅ **FU-MQR-3 — Chiave categoria `secondi_piattie` (CHIUSO 11-06-26).** Matteo su PROD account test
-  `da-tommaso`: categoria/chiave **non presente** in tab Menu → overlay Categorie; nessun rename richiesto.
-  (Controverifica 06-06-26 aveva corretto la label visibile; chiave interna assente o già bonificata.)
-  Vitest rename/sync (FU-M3-3) copre il flusso modale se ricompare.
+Cronologia chiusure FU (FU-019/MQR-1/MQR-2/MQR-3, import preset): [Report Ciclo 3 13-06-26](../Sessioni%20di%20lavoro/13-06-26/Report-Ciclo3-Menu-QR-Pack-13-06-26.md) · `docs/FOLLOW_UP.md`.
 
 ---
 

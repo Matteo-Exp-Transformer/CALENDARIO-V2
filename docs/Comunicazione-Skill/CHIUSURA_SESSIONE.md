@@ -254,3 +254,5 @@ allowlist e lo step CI «Validate doc paths». **Non** portare questi controlli 
 ## 6. Terminali (nota obbligatoria in chiusura chat, 1-2 righe)
 - Suggerisci di chiudere SOLO i terminali aperti **dall'agente** (validate, `npm run dev` in background avviati da tool).
 - **Non** toccare il `npm run dev` che ha lanciato **Matteo** (può servirgli in locale).
+- **Come riconoscere:** conta solo ciò avviato da tool agente in chat; tab vuote o «History restored» senza comando agente → opzionale chiudere, senza insistere. Non è obbligatorio terminare i processi dall'agente — è obbligatorio **ricordarglielo**.
+- **Testo tipo:** «Puoi chiudere le tab terminale lasciate dall'agente (es. vecchi `npm run dev` su 5174/5175); tieni quella con il tuo dev se stai ancora lavorando in locale.»

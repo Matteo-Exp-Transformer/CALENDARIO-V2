@@ -87,6 +87,28 @@ Carica il skill indicato **prima** di aprire qualsiasi file da modificare.
 
 ---
 
+### 0.0b Mini-pack — ingresso rapido per area
+
+Se conosci già l'area, leggi il **mini-pack** `*_MINI.md` **prima** della skill piena: meno token,
+stessi LOCK via link (nessuna duplicazione). Il mini-pack ha sempre 5 sezioni — Trigger · Carica
+subito · Divieti top-3 · Mappa file · LOCK (solo link). La tabella §0 sopra **non si duplica**: §0.0b
+è solo una scorciatoia. Design: `Sessioni di lavoro/12-06-26/Design-wp-e1-mini-pack-area-12-06-26.md`.
+
+| Area | Mini-pack | Skill piena |
+|------|-----------|-------------|
+| Pagina Prenota | `Prenota-Skill/PRENOTA_MINI.md` | `Prenota-Skill/PRENOTA_SKILL.md` |
+| Menu QR | `Menu-QR-Skill/MENU_QR_MINI.md` | `Menu-QR-Skill/MENU_QR_SKILL.md` |
+| Admin (shell + classica) | `Admin-Skill/ADMIN_MINI.md` | `Admin-Skill/ADMIN_SKILL.md` + `ADMIN_SHELL_SKILL.md` / `ADMIN_CLASSIC_SKILL.md` |
+| Tab Menu admin (magazzino) | `Admin-Skill/ADMIN_MENU_MAGAZZINO_MINI.md` | `Admin-Skill/contesto/ADMIN_MENU_MAGAZZINO_CONTEXT.md` |
+| Database | `Database-Skill/DB_MINI.md` | `Database-Skill/DB_SKILL.md` |
+| Marketing / edition | `Marketing-Skill/MARKETING_MINI.md` | `Marketing-Skill/MARKETING_SKILL.md` |
+| Legale / produzione | `Legal-Production-Skill/LEGAL_MINI.md` | `Legal-Production-Skill/LEGAL_PRODUCTION_SKILL.md` |
+| Testing | `Testing-Skill/TESTING_MINI.md` | `Testing-Skill/TESTING_SKILL.md` |
+
+I profili **Esecuzione / Verifica / Meta** restano in §0.0 (il mini-pack non li sostituisce).
+
+---
+
 ## 1. Due aree dell'app
 
 | Area | Entry point | Client Supabase | Session |
@@ -414,35 +436,15 @@ Al termine di ogni sessione di lavoro se utente di da conferma che il lavoro è 
 
 ### 7.0 Protocollo comunicazione (carica la skill comunicazione)
 
-Lo stile delle risposte e il **flusso di fine-chat** sono governati da
-[`docs/COMUNICAZIONE_UTENTE_SKILL.md`](COMUNICAZIONE_UTENTE_SKILL.md) + i file di supporto in
-[`docs/Comunicazione-Skill/`](Comunicazione-Skill/) (`VOCABOLARIO.md`, `OSSERVAZIONI.md`,
-`PROPOSTE.md`, `REVISIONE.md`).
+Stile risposte e **flusso fine-chat** → [`docs/COMUNICAZIONE_UTENTE_SKILL.md`](COMUNICAZIONE_UTENTE_SKILL.md)
++ supporto in [`docs/Comunicazione-Skill/`](Comunicazione-Skill/). **Due ruoli separati:** l'**agente
+di lavoro** (chat normale) carica la skill all'inizio se serve il vocabolario e alla fine per
+applicarlo/raccogliere dati/scrivere il report; l'**agente revisore** (sessione dedicata,
+`Comunicazione-Skill/REVISIONE.md`) valuta i dati e decide promozioni/regressioni — non è nelle chat
+di lavoro. Il report (§7.1) e l'allineamento skill (§7.2) sono parte del flusso dell'agente di lavoro.
 
-**Due ruoli separati** (per non appesantire ogni chat):
-- **Agente di lavoro** (tu, in una chat normale): carica la skill (a) **all'inizio** se userai il
-  vocabolario o devi fare domande prima di eseguire; (b) **alla fine**, dopo conferma successo di
-  Matteo, per: applicare il vocabolario, **raccogliere dati** (esiti voci Liv.2), aggiornare
-  `OSSERVAZIONI.md`, scrivere il report con sezione **"Dati comunicazione"** esaustiva, commit
-  dedicato `docs(comunicazione):`. Aggiorni lo skill system **solo se Matteo lo autorizza sul
-  momento**; altrimenti **segnali** i candidati nel report/`PROPOSTE.md` senza proporre riforme in
-  chat.
-- **Agente revisore** (sessione dedicata, vedi `Comunicazione-Skill/REVISIONE.md`): valuta i dati
-  accumulati, decide promozioni/regressioni delle voci, propone riforme a Matteo. Non è coinvolto
-  nelle chat di lavoro.
-
-Il report (§7.1) e l'allineamento skill (§7.2) sono parte del flusso dell'agente di lavoro.
-
-### 7.3 Terminali Cursor — nota obbligatoria a chiusura (attiva 30-05-26)
-
-Quando Matteo dice **«fai report finale»** (o equivalente: chiusura sessione con report §7), nella **risposta finale in chat** (ultime 2–4 righe, insieme a ciclo completato / resta commit) l'agente DEVE includere **1–2 righe** sui terminali:
-
-- **Suggerire di chiudere solo** le tab o processi terminale che **l’agente** ha aperto in quella sessione (comandi da Shell tool, `npm run dev` in background, validate lunghi, ecc.).
-- **Non** chiedere di chiudere il terminale dove **Matteo** ha lanciato a mano `npm run dev` (o altro) se può servire ancora per provare in locale.
-- **Come riconoscere (agente):** conta solo ciò avviato da tool agente in chat; le tab vuote o «History restored» senza comando agente attivo → opzionale chiudere, senza insistere.
-- **Testo tipo:** «Puoi chiudere le tab terminale lasciate dall’agente (es. vecchi `npm run dev` su porte 5174/5175); tieni quella con il tuo dev se stai ancora lavorando in locale.»
-
-Non è obbligatorio **terminare** i processi dall’agente (Matteo chiude le tab); è obbligatorio **ricordarglielo** a fine report.
+> **Terminali a chiusura, sezioni report, tono, commit/push/allineamento branch:** procedure complete
+> in `docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md` (Parte B). Qui resta solo il *quando*.
 
 ### 7.1 Scrivere il report
 
@@ -527,3 +529,23 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | `docs/FOLLOW_UP.md` (nuova riga o chiusura FU) | Nessun altro file obbligatorio; opzionale puntatore in `.cursor/skills/calendarbackup-app-context/SKILL.md` se il follow-up è rilevante per sessioni future |
 | Fallback / placeholder / `??` / `\|\|` su copy o asset quando config o DB è vuoto | `docs/FOLLOW_UP.md` **FU-ALL-FALLBACK** + §4c; skill d'area del componente toccato |
 | `vite.config.ts` (VitePWA/define) / `src/main.tsx` (registerSW) / `index.html` (splash) / `vercel.json` (cache header) / `src/vite-env.d.ts` (globali build) | `docs/PWA_CONTEXT.md` |
+| Mini-pack d'area `*_MINI.md` (nuova area o cambio routing §0) | Aggiorna §0.0b + il `*_MINI.md` dell'area (template 5 sezioni, no copy-paste LOCK) |
+
+---
+
+## 8. Regole documentazione skill (anti-storia)
+
+- **Storia** → solo `docs/Sessioni di lavoro/` (report), non nelle skill vive.
+- **Skill/context vivi** → stato attuale + divieti + link al report (max 3 righe guardrail, senza date lunghe).
+- **Nuovi blocchi «fino al…» / changelog sessione** → vietati nelle skill vive.
+- **Migrazione:** Menu QR potatura dedicata (FU-ALL-ANTISTORIA Imp-E3-1); altre aree on-touch al prossimo WP.
+
+Formato guardrail ammesso in skill viva (eccezione, ≤3 righe):
+
+```markdown
+> **Divieto:** NON reintrodurre `content_type=evento` nel QR.
+> Dettaglio storico: [Report blindatura Menu QR 06-06-26](Sessioni%20di%20lavoro/06-06-26/...).
+```
+
+La tabella §7.2 «Se hai modificato… → Aggiorna…» resta — è operativa, non cronologia.
+Design: `Sessioni di lavoro/12-06-26/Design-wp-e3-anti-storia-protocollo-7-12-06-26.md`.

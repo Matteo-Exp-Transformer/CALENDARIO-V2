@@ -11,21 +11,12 @@
 
 ---
 
-## 0. Preset/menù-evento via QR — RIMOSSO (blindatura 06-06-26)
+## 0. Preset/menù-evento via QR — RIMOSSO
 
-> **Fatto, non più da fare.** Il campo `menu_qr_codes.content_type` (`a_la_carte`/`preset_menus`/`mixed`)
-> e `preset_ids` attivavano i menù-evento dentro il QR, ma il modale non li ha mai esposti → logica
-> irraggiungibile. **Rimossi nella blindatura del 06-06-26.** Un agente NON deve reintrodurli nel QR.
-
-**Cosa è stato rimosso:**
-- `src/pages/PublicMenuPresetPage.tsx` (file cancellato) + route `…/preset/:presetId` (via da `router.tsx`)
-- In `PublicMenuPage.tsx`: hook `usePublicPresets`, rami `showPresets`/`showCart`, sezione preset, prop
-  `presets` di `MenuNavTabs` → resta solo il flusso categorie (`category_filter` letto sempre)
-- Tipi `content_type`/`preset_ids` (`menu.ts`, `database.ts`), scrittura nel modale e in `useMenuQrCodes`,
-  parse in `menuQrAppearance.parseMenuQrCodeRow`
-- **Colonne DB** `content_type`/`preset_ids` + CHECK → **migrazione `043`** (`043_drop_menu_qr_preset_columns.sql`).
-  Prima del drop verificato su PROD (`rwuxgvld`) e TEST (`docnnernvp`): 0 righe non-`a_la_carte`, 0 preset.
-- INC latenti spariti con la rimozione: INC-05, INC-06, INC-15, INC-16.
+> **Divieto:** NON reintrodurre `menu_qr_codes.content_type`/`preset_ids` né i menù-evento nel QR
+> (`PublicMenuPresetPage`, route `…/preset/:presetId`, rami `showPresets`/`usePublicPresets`). Colonne
+> DB droppate (migr. `043`); resta solo il flusso categorie (`category_filter` letto sempre).
+> Dettaglio storico: [Report blindatura Menu QR 06-06-26](../../Sessioni%20di%20lavoro/06-06-26/REPORT_BLINDATURA_06-06-26.md).
 
 **Resta vivo (NON toccato):** il preset di **Pagina Prenota** (`booking_custom_staff_presets`,
 `CustomStaffPreset`, `bookingFormResolver`). La rimozione ha riguardato solo l'uso *dentro il QR*.

@@ -28,10 +28,10 @@ Le costanti carosello + categoria sono definite in cima a `MenuHomepageConfigPan
 
 ---
 
-## B. FU-MQR-1 — titoli/descrizioni categoria per-QR ✅ CAPPATO (06-06-26)
+## B. Titoli/descrizioni categoria per-QR — CAPPATI
 
-> Era la lacuna emersa nella mappatura: i due campi erano `<input>` nudi senza `maxLength`. **Chiuso
-> nella blindatura del 06-06-26.**
+> **Stato:** i due campi titolo/descrizione card categoria sono cappati (30/70) con contatore. Storia
+> della chiusura (FU-MQR-1): [Report blindatura Menu QR 06-06-26](../../Sessioni%20di%20lavoro/06-06-26/REPORT_BLINDATURA_06-06-26.md).
 
 **Dove:** `MenuHomepageConfigPanel.tsx`, dentro `MenuQrCategoryCardsSection`. I due campi **titolo card**
 e **descrizione card** (scritti su `overrideDrafts[cat.key].title` / `.description`) ora usano

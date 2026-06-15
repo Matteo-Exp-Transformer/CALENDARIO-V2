@@ -69,10 +69,11 @@ Mercato dichiarato: **solo Italia** per ora (vendita mista: diretta all'inizio, 
 
 ### FASE 2 — Documenti per pre-vendita
 - [x] Privacy Policy riscritta e aggiornata (2026-05-23, v2.0 — `src/pages/PrivacyPolicyPage.tsx`)
-- [ ] **Lista sub-processor pubblica** — `docs/legal/sub-processors.md` — **entro 1° mese** (non bloccante 1ª vendita; senior → commercialista)
+- [~] **Lista sub-processor pubblica** — **bozza v0.1 creata 2026-06-15** (`docs/legal/sub-processors.md`, FU-LEGAL-2) → resta passaggio professionista + decisione pubblicazione
 - [x] **Template DPA per ristoranti clienti creato** (2026-05-23) — `docs/_lavoro/Per matteo/Documenti Legali/DPA-template-clienti-ristoranti.md` (cartella locale, gitignored). v1.0, italiano, conforme art. 28 GDPR. Da personalizzare per ogni nuovo cliente.
-- [ ] **Registro trattamenti art. 30 GDPR** — **entro 1° mese** (non bloccante 1ª vendita; senior → commercialista)
-- [ ] **Runbook data breach** — **entro 1° mese** (non bloccante 1ª vendita; senior → commercialista)
+- [~] **Contratto B2B / ToS abbonamento** — **bozza v0.1 creata 2026-06-15** (`docs/legal/ToS-B2B-abbonamento-template.md`, FU-LEGAL-1; recesso mensile sempre / annuale 30gg) → **revisione avvocato** prima del 1° cliente
+- [~] **Registro trattamenti art. 30 GDPR** — **bozza v0.1 creata 2026-06-15** (`docs/legal/registro-trattamenti.md`, FU-LEGAL-2) → passaggio professionista; aperta decisione retention T1/T2
+- [~] **Runbook data breach** — **bozza v0.1 creata 2026-06-15** (`docs/legal/runbook-data-breach.md`, FU-LEGAL-2) → validare ripartizione Titolare/Responsabile col professionista
 - [ ] Email `privacy@<dominio>` — **rimandata**; temporaneo: matteo.sistemigestionali@gmail.com
 
 ### FASE 3 — Operativi e config
@@ -140,6 +141,7 @@ Hosting primario in **UE** → dichiarare in Privacy Policy per trasparenza; nes
 
 | Data | Documento | Cambiamento | Skill session |
 |---|---|---|---|
+| 2026-06-15 | `docs/legal/ToS-B2B-abbonamento-template.md`, `registro-trattamenti.md`, `runbook-data-breach.md`, `sub-processors.md` | **Bozze v0.1 create** (FU-LEGAL-1 + FU-LEGAL-2) — testo only, da revisione avvocato/commercialista | Ciclo 9 Plan-Completamento |
 | 2026-06-12 | `LEGAL_STATE_CONTEXT.md` | WP-F2: vendita Italia, blocchi/consigli, region Ireland, PrenotaZen/marchio, budget | intervista Matteo |
 | 2026-05-23 | (creazione skill) | Skill `legal-production` inizializzata | — |
 | 2026-05-23 | `PrivacyPolicyPage.tsx` | Riscrittura completa post-audit | sessione iniziale |

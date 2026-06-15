@@ -16,6 +16,8 @@ description: >-
 
 ## Obbligo prima di assistere
 
+0. **Ingresso rapido (~1 schermata):** `docs/Legal-Production-Skill/LEGAL_MINI.md` (trigger, divieti
+   top-3, mappa file, LOCK) — leggilo prima della skill piena quando conosci già l'area.
 1. **WebSearch** per info aggiornate (norme, URL fornitori, modelli). Vedi §0.1 nella skill master.
 2. Leggi nel repository, nell'ordine:
    - `docs/Legal-Production-Skill/LEGAL_PRODUCTION_SKILL.md` (entry point completo)

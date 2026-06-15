@@ -3,8 +3,12 @@
 > **Cos'e questo file.** Il piano operativo vivo per portare l'area **Admin autenticata** (`/admin`)
 > da mappata a livello documentale a **blindata di prodotto**. Lo usa un orchestratore senior per
 > dirigere interviste, sub-agent, test e aggiornamenti dello skill system. Ogni agente che lavora su
-> Admin deve partire da `ADMIN_SKILL.md`, poi aprire questo piano se il task riguarda mappatura,
-> blindatura, test di area o lavoro multi-dominio.
+> Admin deve partire da `ADMIN_SKILL.md` (ingresso rapido: `ADMIN_MINI.md`, §0.0b di `APP_CONTEXT`),
+> poi aprire questo piano se il task riguarda mappatura, blindatura, test di area o lavoro multi-dominio.
+
+> **Anti-storia (APP_CONTEXT §8).** Questo è un **piano operativo**, non una skill viva: la cronologia
+> di orchestrazione resta qui. Ma quando una decisione diventa *stato stabile dell'area*, va nel
+> context vivo (`contesto/*`) come «stato + divieto + link al report», non come narrativa datata.
 
 > **Definizione di blindata per Admin.** Admin e blindata solo quando: (1) la doc guida un sub-agent
 > terzo tramite `AGENTS.md` -> `APP_CONTEXT_SKILL.md` -> `ADMIN_SKILL.md` -> `contesto/*`; (2) i flussi

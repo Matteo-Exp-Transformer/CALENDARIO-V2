@@ -53,6 +53,20 @@ resta a colonna unica anche su desktop e lo sfondo occupa tutta la viewport.
 
 ## 2. Sfondo viewport (striscia vs full-page)
 
+> **Superficie → palette (FU-014).** La superficie è calcolata in **un punto solo** (`BookingRequestPage`)
+> con `resolvePublicBookingSurface({ showPhotoStrip, isFullPagePhoto })` e decide il colore di testo/errori
+> via `surfaceUsesLightText` (in `constants/bookingPublicFieldStyles.ts`). Niente più booleani sparsi.
+
+| Superficie | Quando | Sfondo | Testo/errori |
+|---|---|---|---|
+| `strip` | `public_booking_strip_photo` valorizzato (striscia laterale) | crema `#faf7f1` | scuro (warm-wood / rossi) |
+| `full-page-photo` | niente striscia + `public_booking_page_background` = `full-NN` | foto a pagina intera | **bianco** (`text-white`) |
+| `light` | niente striscia, nessuna foto full-page (gradiente/tile/nessuno sfondo) | chiaro | scuro |
+| `dark` | riservato a un futuro tema scuro | — | bianco (gancio, non ancora emesso) |
+
+Equivalenza blindata da test: `surfaceUsesLightText(surface)` === vecchio `!showPhotoStrip && isFullPagePhoto`
+(`__tests__/publicBookingSurface.test.ts`).
+
 - **Modalità striscia:** quando `public_booking_strip_photo` è valorizzato, il root ignora
   `public_booking_page_background` e applica tinta crema `#faf7f1` (`STRIP_MODE_PAGE_BG`).
 - **Modalità full-page:** l'immagine `public_booking_page_background` (`full-01`…`full-06` via

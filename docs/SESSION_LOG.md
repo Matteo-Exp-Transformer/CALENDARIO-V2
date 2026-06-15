@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 15-06-26 | Cicli 7-8-9 — **skill system mini-pack + anti-storia + polish/test + bozze legali** | [Report](Sessioni%20di%20lavoro/15-06-26/Report-cicli-7-8-9-skill-system-polish-legale-15-06-26.md) — 8 mini-pack + §0.0b + 6 puntatori Cursor (FU-ALL-TIER ✅); anti-storia §8 + potatura Menu QR + §7 snellito (FU-ALL-ANTISTORIA ✅); FU-040/014/LOG-1-H ✅, FU-026/010/M3-QA-CT differiti; bozze legali `docs/legal/` (FU-LEGAL-1/2); validate **591**; docs non committati |
 | 12-06-26 | Chiusura — **FU-LOG-1 review + handoff senior** ✅ | FOLLOW_UP **FU-LOG-1-H** (hardening), **FU-049** (PROD mig. 044), **FU-050** (deploy edge + PrenotaZen); git pulito @ `0d475ff`; DB 045–048 ok salvo FU-049 |
 | 12-06-26 | Codice+docs — **FU-LOG-1 chiusura scripts + eslint** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu-log-1-chiusura-scripts-12-06-26.md) — `_cliLog.mjs` + 5 script; eslint allowlist; commit `6077028`/`6374168`/`0d475ff`; validate **576**; **lavoro ok** Matteo |
 | 12-06-26 | Senior merge — **FU-LOG-1 edge già su main** ✅ | [Report](Sessioni%20di%20lavoro/12-06-26/Report-fu-log-1-merge-commit-12-06-26.md) — commit `516317c` + `17e7843` già presenti; main/env/test @ `cff8bf6`; validate **576**; push/ff no-op; deploy edge TEST a Matteo; **lavoro ok** |
