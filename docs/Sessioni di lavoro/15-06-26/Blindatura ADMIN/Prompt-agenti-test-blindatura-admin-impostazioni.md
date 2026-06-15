@@ -11,11 +11,11 @@
 | 2 | settings-save-guard | ✅ approved | `db99c3a` · `Report-settings-save-guard-15-06-26.md` |
 | 3 | settings-time-slots | ✅ approved | `2a496e1` |
 | 4 | settings-theme | ✅ approved | `d8c9dab` · `Report-settings-theme-15-06-26.md` |
-| 5 | form-config + promo (estensione) | ✅ approved | report §5 · commit in corso |
-| 6 | FU-009 carousel CRUD | ⏳ aperto | — |
+| 5 | form-config + promo (estensione) | ✅ approved | `2cdc724` · `Report-settings-form-config-promo-15-06-26.md` |
+| 6 | FU-009 carousel CRUD | ✅ approved | report §6 · commit in corso |
 | 7 | Fase D rompi + QA 375/834/1280 | ⏳ aperto | — |
 
-**Prossimo prompt consigliato:** §6A esecutore (FU-009 carousel CRUD).
+**Prossimo prompt consigliato:** §7A esecutore (Fase D rompi + QA 375/834/1280).
 
 ---
 
@@ -354,9 +354,11 @@ Gap P2 revisore: mutation fail + retry con dirty solo-tema in `settingsTheme.set
 
 ---
 
-## 5. settings-form-config + settings-promo — estensione oltre D-M1
+## 5. settings-form-config + settings-promo — estensione oltre D-M1 ✅ approved (15-06-26)
 
-### 5A — Prompt esecutore
+### 5A — Prompt esecutore ✅ approved
+
+Eseguito 15-06-26 — estensione test form-config/promo oltre D-M1; fix post-5B → **12+8** casi, gate **35/35**, validate **721/721**. Commit `2cdc724`. Report: `Report-settings-form-config-promo-15-06-26.md`.
 
 ```text
 Profilo: Esecuzione deep — estensione test settings-form-config/settings-promo.
@@ -395,7 +397,9 @@ Aggiorna context/test index solo se nuovi casi diventano parte del cancello.
 Niente commit/push.
 ```
 
-### 5B — Prompt revisore controverifica
+### 5B — Prompt revisore controverifica ✅ approved
+
+Controverificato 15-06-26 — gate **31/31**, validate **717/717**; gap P2 cap card, legacy pubblico, fail delete/apply → fix §5C.
 
 ```text
 Profilo: Verifica deep — controverifica settings-form-config/settings-promo.
@@ -425,11 +429,23 @@ Rilancia:
 Output findings prima.
 ```
 
+### 5C — Prompt fix (post-5B revisore) ✅ approved
+
+Fix puntuale gap revisore 5B: cap `subTabLabel`/`subTabDescription` su card in editor; `BookingRequestForm` con config legacy `parseFromDb`; fail `saveSilently` su delete e apply promo → dirty footer. Eseguito e controverificato 15-06-26 — **20/20** mirato, gate **35/35**, validate **721/721**. Commit `2cdc724`.
+
 ---
 
-## 6. settings-carousel-crud — FU-009
+## 6. settings-carousel-crud — FU-009 ✅ approved (15-06-26)
 
-### 6A — Prompt esecutore
+### 6A — Prompt esecutore ✅ approved
+
+Eseguito 15-06-26 — **12** test fronte (5 helper + 7 UI), validate **733/733**. Upload reale fuori Vitest (mock). Report: `Report-settings-carousel-crud-15-06-26.md`.
+
+### 6B — Prompt revisore controverifica ✅ approved
+
+Controverificato 15-06-26 — **12/12** mirato, validate **733/733**; FU-009 **quasi chiuso** (residuo upload browser → §7); gap P2 opzionali icona/Sposta su/multi-slide → fix §6C opzionale.
+
+### 6A — Prompt esecutore (testo originale)
 
 ```text
 Profilo: Esecuzione deep — FU-009 settings-carousel-crud.
@@ -473,10 +489,7 @@ Run:
 Niente commit/push.
 ```
 
-### 6B — Prompt revisore controverifica
-
-```text
-Profilo: Verifica deep — controverifica FU-009 settings-carousel-crud.
+### 6B — Prompt revisore controverifica (testo originale)
 Branch: env/test. DB solo TEST. PROD vietato.
 
 Leggi:
