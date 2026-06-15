@@ -4,7 +4,7 @@ Regole per ogni ciclo: carica prima docs/APP_CONTEXT_SKILL.md §0 + skill d'area
 ────────────────────────────────────────────────────────────────────
 STATO AVANZAMENTO (aggiornato 15-06-26)
 - Ciclo 1 — ✅ FATTO (commit 13b1e50, salvataggio admin fase 2).
-- Ciclo 2 — ✅ FATTO: email Brevo TEST + **PROD** (FU-EMAIL-1 + FU-EMAIL-PROD chiusi 15-06-26). FU-EMAIL-2 (UI log) e FU-EMAIL-5 (mittente branded add-on) in coda.
+- Ciclo 2 — ✅ FATTO: email Brevo TEST + **PROD** (FU-EMAIL-1 + FU-EMAIL-PROD chiusi 15-06-26). FU-EMAIL-2 (UI log), FU-EMAIL-5 (mittente branded add-on), **FU-EMAIL-6** (toast fail, opzionale) in coda.
 - Ciclo 3 — ✅ FATTO (Menu QR pack: import preset, FU-019, FU-MQR-2 ordine piatti, FU-017/020). BUG salvataggio modal QR risolto 13-06: migrazione 049 (`item_sort_overrides`) applicata su TEST (mancava la colonna → errore 42703).
 - Ciclo 4 — ✅ FATTO. D6 guard stato pre-mutation (update/restore/no-show/cancel); D7 feedback orario mancante; L4/L10-L12 cap ospiti a video (110, costante esistente); FU-001 promo come chip in BookingDetailsModal (✅ accettazione visiva Matteo 13-06). validate 577.
 - Ciclo 5 — ✅ FATTO. FU-023: guard chiusura editor preset (menù preselezionati) in MenuPricesTab; Personalizza form già guardato. FU-003 chiuso: audit delete Pro/CRM/Servizio tutte con conferma, zero window.confirm. validate 577.

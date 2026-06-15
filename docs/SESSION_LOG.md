@@ -13,7 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
-| 15-06-26 | Email — **PROD Brevo** accetta/rifiuta OK ✅ | FOLLOW_UP **FU-EMAIL-PROD** chiuso; secret Brevo corretto; toast warn se invio fallisce; doc Plan/FOLLOW_UP/ADMIN_DATA_FLOW allineati |
+| 15-06-26 | Email — **PROD Brevo** accetta/rifiuta OK ✅ | FOLLOW_UP **FU-EMAIL-PROD** chiuso; secret Brevo corretto; **FU-EMAIL-6** (toast fail, opzionale, non in release PrenotaZen) |
 | 15-06-26 | **Report finale** Ciclo 8 + FU-EMAIL-4 + FU-026 esteso | [Report](Sessioni%20di%20lavoro/15-06-26/Report-finale-15-06-26-ciclo8-email-fu026.md) — sintesi lavoro agente; validate **598**; working tree non committato |
 | 15-06-26 | Email — **FU-EMAIL-4** riepilogo Prenota in template ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-fu-email-4-riepilogo-email-15-06-26.md) — `buildBookingEmailSummary`; no `EVENT_TYPE_LABELS`; smoke Brevo a Matteo |
 | 15-06-26 | Admin — **Ciclo 8 completamento** FU-026/010/M3-QA-CT ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-ciclo8-fu026-fu010-fu-m3-qa-ct-15-06-26.md) — icone card (categorie+ingredienti+promo); hook validazione admin; E2E CT **1 passed**; validate **591**; **lavoro ok** ×2 Matteo |
