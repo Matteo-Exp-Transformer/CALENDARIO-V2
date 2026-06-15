@@ -108,8 +108,8 @@ Due filoni paralleli nello stesso working tree: polish admin/test (Ciclo 8) e al
 ## Cosa resta
 
 1. **FU-EMAIL-2** — pannello log `email_logs` (coda).
-2. **Vercel PROD** — confermare `VITE_ENABLE_SEND_EMAIL=true` + edge `send-email` + secrets Brevo se non già attivi post-release.
-3. **Inventario test senior** — `Analisi-inventario-test-controverificati-vs-gap-15-06-26.md` (guida semplificata E2E per Matteo in `docs/_lavoro/Per matteo/Comandi/E2E Comandi Matteo.md`, gitignored).
+2. **FU-EMAIL-5** — add-on mittente «Da:» con nome ristorante (oggi globale `PrenotaZen`).
+3. **Inventario test senior** — `Analisi-inventario-test-controverificati-vs-gap-15-06-26.md` (guida E2E locale in `docs/_lavoro/Per matteo/Comandi/`).
 
 ---
 

@@ -2,9 +2,9 @@ Plan per agente Sonnet — task mancanti (in ordine)
 Regole per ogni ciclo: carica prima docs/APP_CONTEXT_SKILL.md §0 + skill d'area; npm run validate verde a fine ciclo; report in Sessioni di lavoro/; mai scrivere su PROD (rwuxgvld); commit solo a «fai report finale». Un ciclo = una chat.
 
 ────────────────────────────────────────────────────────────────────
-STATO AVANZAMENTO (aggiornato 13-06-26)
+STATO AVANZAMENTO (aggiornato 15-06-26)
 - Ciclo 1 — ✅ FATTO (commit 13b1e50, salvataggio admin fase 2).
-- Ciclo 2 — ✅ FATTO: email Brevo su TEST verificata (FU-EMAIL-1 chiuso 15-06-26). FU-EMAIL-2 (UI log) in coda.
+- Ciclo 2 — ✅ FATTO: email Brevo TEST + **PROD** (FU-EMAIL-1 + FU-EMAIL-PROD chiusi 15-06-26). FU-EMAIL-2 (UI log) e FU-EMAIL-5 (mittente branded add-on) in coda.
 - Ciclo 3 — ✅ FATTO (Menu QR pack: import preset, FU-019, FU-MQR-2 ordine piatti, FU-017/020). BUG salvataggio modal QR risolto 13-06: migrazione 049 (`item_sort_overrides`) applicata su TEST (mancava la colonna → errore 42703).
 - Ciclo 4 — ✅ FATTO. D6 guard stato pre-mutation (update/restore/no-show/cancel); D7 feedback orario mancante; L4/L10-L12 cap ospiti a video (110, costante esistente); FU-001 promo come chip in BookingDetailsModal (✅ accettazione visiva Matteo 13-06). validate 577.
 - Ciclo 5 — ✅ FATTO. FU-023: guard chiusura editor preset (menù preselezionati) in MenuPricesTab; Personalizza form già guardato. FU-003 chiuso: audit delete Pro/CRM/Servizio tutte con conferma, zero window.confirm. validate 577.
@@ -13,14 +13,14 @@ STATO AVANZAMENTO (aggiornato 13-06-26)
 - Ciclo 8 — ✅ FATTO (15-06-26). ✅ FU-040, FU-014, FU-LOG-1-H (sessione precedente). ✅ FU-010, FU-M3-QA-CT, **FU-026** (categorie + ingredienti + promo). validate 591 (pre-estensione FU-026); estensione ingredienti/promo senza nuovi test.
 - Ciclo 9 — ✅ FATTO (15-06-26). Bozze v0.1 in `docs/legal/`: ToS B2B (FU-LEGAL-1), registro art. 30 + runbook breach + sub-processors (FU-LEGAL-2). Testo only; revisione avvocato/commercialista resta a Matteo. `LEGAL_STATE_CONTEXT` aggiornato.
 
-Nota PROD: migrazione 049 (`item_sort_overrides`) applicata su TEST **e su PROD** (15-06-26, conferma Matteo). Cicli 1-6 rilasciati in produzione: merge `env/test → main` (ff `ee2dca7..46779d7`) + release PrenotaZen (push `a6833f0..da0be7c`, deploy Vercel).
+Nota PROD: migrazione 049 (`item_sort_overrides`) applicata su TEST **e su PROD** (15-06-26, conferma Matteo). Cicli 1-6 rilasciati in produzione: merge `env/test → main` (ff `ee2dca7..46779d7`) + release PrenotaZen (push `a6833f0..da0be7c`, deploy Vercel). **Email Brevo PROD (15-06-26):** edge `send-email` deployata; secrets Brevo + `VITE_ENABLE_SEND_EMAIL` Vercel; QA accetta/rifiuta OK (release PrenotaZen `ced66c2` + fix secret post-release).
 ────────────────────────────────────────────────────────────────────
 
 Ciclo 1 — P1 · Salvataggio admin fase 2 (FU-002/004/005)
 Prompt: «implementa FU-002 fase 2 + FU-004 + FU-005». Skill: Admin Classic + ADMIN_SETTINGS. Estendere footer unico+guard al resto app (promo save-on-apply, no doppio Salva); autosave disattivabile per prod via VITE_SETTINGS_AUTOSAVE/edition (non rimuovere l'hook); modale conferma al Salva su campi visibili in Pagina Prenota (whitelist da PRENOTA_DATA_FLOW + chiavi pubbliche 047). Decisioni Matteo 29-05 già registrate.
 
 Ciclo 2 — P1 · Email Brevo (FU-EMAIL-1, poi FU-EMAIL-2)
-Prompt: «implementa FU-EMAIL-1 con Brevo». Partire valutando il branch esistente feature/brevo-send-email. Edge send-email, collegare useBookingMutations + sendBookingCancelledEmail, tabella email_logs. Vincoli: deploy solo TEST; VITE_ENABLE_SEND_EMAIL resta SPENTO in prod; bozza copy IT dei template → approvazione Matteo prima di attivare. FU-EMAIL-2 (UI admin log email) in coda allo stesso ciclo o chat successiva.
+Prompt: «implementa FU-EMAIL-1 con Brevo». Edge `send-email`, `useBookingMutations` (solo accetta/rifiuta), `email_logs`. **Stato 15-06-26:** TEST + PROD attivi; `VITE_ENABLE_SEND_EMAIL=true` su Vercel PROD; secrets `BREVO_*` su Supabase PROD; mittente «Da:» globale `PrenotaZen` (FU-EMAIL-5 add-on futuro). FU-EMAIL-2 (UI admin log) in coda.
 
 Ciclo 3 — P2 · Menu QR pack (decisioni 13-06)
 Prompt: «implementa import preset nel modal QR + fix e residui Menu QR». Skill: MENU_QR_SKILL.

@@ -8,8 +8,8 @@
 
 ## Cappello
 
-- **Cosa è cambiato:** il cliente riceve email solo quando lo staff **accetta** o **rifiuta** una prenotazione; eliminando una prenotazione accettata **non** parte più alcuna email. Brevo su TEST verificato da Matteo (Gmail ok).
-- **Cosa resta:** FU-EMAIL-2 (UI log email in admin) — non in questa sessione.
+- **Cosa è cambiato:** il cliente riceve email solo quando lo staff **accetta** o **rifiuta** una prenotazione; eliminando una prenotazione accettata **non** parte più alcuna email. Brevo su TEST e **PROD** verificato da Matteo (Gmail ok; fix secret Brevo PROD 15-06-26).
+- **Cosa resta:** FU-EMAIL-2 (UI log); FU-EMAIL-5 (mittente «Da:» branded add-on; oggi `PrenotaZen` globale).
 - **Serve una tua azione:** no — commit e push eseguiti dall’agente su richiesta «fai report finale».
 
 ---
