@@ -13,7 +13,7 @@ STATO AVANZAMENTO (aggiornato 13-06-26)
 - Ciclo 8 — ⬜ DA FARE (polish + test opzionali).
 - Ciclo 9 — ⬜ DA FARE (bozze legali → avvocato/commercialista).
 
-Nota PROD: migrazione 049 (`item_sort_overrides`) applicata su TEST, NON ancora su PROD — va applicata insieme al rilascio production (vedi report finale).
+Nota PROD: migrazione 049 (`item_sort_overrides`) applicata su TEST **e su PROD** (15-06-26, conferma Matteo). Cicli 1-6 rilasciati in produzione: merge `env/test → main` (ff `ee2dca7..46779d7`) + release PrenotaZen (push `a6833f0..da0be7c`, deploy Vercel).
 ────────────────────────────────────────────────────────────────────
 
 Ciclo 1 — P1 · Salvataggio admin fase 2 (FU-002/004/005)

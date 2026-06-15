@@ -78,11 +78,15 @@ aggiunte race-guard D6.
 - Email (FU-EMAIL-1): **resta incompleta** (chiave Brevo non valida) — fuori da questo diff, già committata
   nel Ciclo 2. Nota nota a Matteo: non bloccante per questi cicli.
 
-## 5. Allineamento PRODUCTION (in corso / vincoli)
+## 5. Allineamento PRODUCTION — ✅ COMPLETATO (15-06-26)
 
-- **Migrazione 049 su PROD:** prerequisito al rilascio (vedi §0). Richiede `get_project_url` = `rwuxgvld`
-  + conferma esplicita Matteo (regola PROD).
-- **Release PrenotaZen:** `env/test → main → npm run release:prenotazen`.
+Con conferma esplicita Matteo («Sì, procedi con tutto»), verificato ambiente con `get_project_url`:
+- **Migrazione 049 su PROD** (`rwuxgvld`): applicata via MCP `apply_migration` (additiva `ADD COLUMN IF NOT
+  EXISTS item_sort_overrides`, nessun dato toccato). Verificato pre-apply che mancava (migrazioni PROD
+  ferme a 048/044). Salvataggio QR ora funziona anche in produzione.
+- **Merge `env/test` → `main`**: fast-forward `ee2dca7..46779d7`, push `origin/main`.
+- **Release PrenotaZen**: `npm run release:prenotazen` (git archive di main, niente segreti) → build verde
+  → commit + push `PrenotaZen` (`a6833f0..da0be7c`) → deploy Vercel automatico.
 - **FU-GUARD-AUDIT** registrato: estendere l'audit guard modali + guard concorrenza multi-scheda (pattern
   D6 Ciclo 4) alle altre aree dell'app dove manca.
 
@@ -120,9 +124,9 @@ nuovo FU-GUARD-AUDIT); `ADMIN_PRENOTAZIONI_CONTEXT.md` (righe D6/D7/L4); `Plan-C
 cicli). Test di blindatura aggiornati col nuovo pattern mutation. Skill Menu QR già allineate dal Ciclo 3.
 
 ❓ Q4 — Cosa NON hai fatto?
-✅ R4: (1) Cicli 7-9 (scelta Matteo). (2) Migrazione 049 su PROD + release PrenotaZen: in corso dopo il
-commit, con gate di conferma PROD. (3) FU-EMAIL-1 invio email (blocco chiave Brevo, fuori scope). (4) QA
-browser reale dei flussi Ciclo 4 (solo validate).
+✅ R4: (1) Cicli 7-9 (scelta Matteo: chat dedicate). (2) FU-EMAIL-1 invio email (blocco chiave Brevo, fuori
+scope). (3) QA browser reale dei flussi Ciclo 4 (solo validate; FU-001 verificato a occhio da Matteo).
+NB: migrazione 049 su PROD + merge main + release PrenotaZen sono stati **fatti** (§5), non restano aperti.
 
 ❓ Q5 — Attrito + miglioria.
 ✅ R5: Attrito: il bug Ciclo 3 era una **migrazione non applicata** scambiabile per baco di codice — diagnosi
