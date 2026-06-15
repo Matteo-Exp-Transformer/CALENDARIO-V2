@@ -142,6 +142,24 @@ l'hardening del logger (FU-LOG-1-H) contro regressioni future.
 
 ---
 
+## Pratiche senior — propagazione v.0 + playbook
+
+- **Template v.0 propagato** (`_skill-system-v0/`, **gitignored → NON committato**, elencato qui come
+  da prassi): creato `aree/_TEMPLATE_MINI.md` (mini-pack portabile, 5 sezioni + istruzioni e trappola
+  path); rimando al mini-pack in `aree/_TEMPLATE_AREA_SKILL.md`; nuova **regola 6 «Anti-storia»** in
+  `REGOLE_ORGANIZZATIVE.md` (+ header «Le 6 regole»). Così un futuro progetto bootstrappato dal v.0
+  eredita sia il tier mini-pack sia la regola anti-storia.
+- **Playbook aggiornato** (committabile): voce **11** in `docs/Comunicazione-Skill/EVOLUZIONE_SKILLS.md`
+  — mini-pack come tier d'ingresso + anti-storia come regola di documentazione (esecuzione di WP-E1/WP-E3
+  già approvati, non nuovo meccanismo → coerente con la PAUSA-RACCOLTA).
+
+## Pubblicazione
+
+- `main` ← `env/test` **ff** (`48dcef7..d65e1cf`), push origin/main (Vercel builda).
+- **PrenotaZen** release: `release:prenotazen` (sync main@d65e1cf, solo codice) → build verde → commit
+  `63bad22` push pubblico. ⚠️ Le **Edge Function non sono state ri-deployate**: la redazione log
+  avanzata (FU-LOG-1-H) è in repo ma «viva» solo al prossimo deploy edge.
+
 ## 11. Domande di chiusura
 
 ❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.
