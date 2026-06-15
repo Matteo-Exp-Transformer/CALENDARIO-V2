@@ -136,9 +136,12 @@ chiave gia registrata.
 - Helper pubblico: **`resolvePublicBookingPageLayout`** (contratto unico: mode, surface, fullPagePhotoId, crema); palette da `surfaceUsesLightText`. Admin: `hydrateAdminBookingBackgroundEditor` + `isAdminBookingBackgroundDirty`; sfondo persistito **solo se dirty** (evita migrazione silenziosa legacy→full-01 al Salva anagrafica).
 - Test: `@admin-blindatura: settings-background` + `publicBookingSurface.test.ts`.
 
-### Stato mappatura (15-06-26)
+### Stato mappatura (16-06-26 — chiusura Area 3 M4)
 
-- Fase A+B **chiuse** (intervista + gap read-only). Fase C **chiusa** (15-06-26): gap G2–G9, G20 implementati; **G16 fuoriscope** (finestra prenotazione rimossa). Validate verde post-rimozione. Residuo QA: **FU-009** (slide carosello admin); E2E smoke Impostazioni 375/834/1280 opzionale manuale.
+- Fase A+B **chiuse** (intervista + gap read-only). Fase C **chiusa** (15-06-26): gap G2–G9, G20 implementati; **G16 fuoriscope** (finestra prenotazione rimossa).
+- **Fronti test `@admin-blindatura: settings-*`:** tutti verdi in run aggregato (**69/69**, gate §7A + §7B); `npm run validate` **733/733** (16-06-26).
+- **FU-009 (carosello admin):** chiuso — QA browser upload reale Supabase Storage + overlay su `/prenota/:slug` (`tomas@t.com`, tenant Trattoria Da Tommaso); Vitest `settings-carousel-crud` **12/12**.
+- **Fase D rompi + QA viewport:** eseguiti e documentati in `Report-fase-d-rompi-7a-15-06-26.md` (375/834/1280 Impostazioni save-guard + smoke Prenota); fasce Classic accettate via Vitest `settings-time-slots` **20/20** (tenant Pro non espone blocco fasce — voluto).
 
 ### Divieti (anti-regressione)
 

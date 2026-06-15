@@ -87,7 +87,7 @@ Fronti previsti:
 
 Gate Batch 1/2 (15-06-26, agg. §5A/§5B P2): run aggregato **35 test** verdi — `settingsFormConfig.settingsM4`, `settingsPromo.settingsM4`, `settingsBackground.adminBlindatura`, `publicBookingSurface`.
 
-Residuo: E2E smoke Impostazioni 375/834/1280 (manuale opzionale); upload foto carosello reale (Supabase storage) — fuori Vitest, QA browser opzionale.
+**QA browser Area 3 (16-06-26):** Fase D rompi + viewport **375 / 834 / 1280** documentati in `Report-fase-d-rompi-7a-15-06-26.md` (save-guard, pill, modale pubblica, smoke Prenota); **FU-009** upload foto carosello reale Supabase + overlay pubblico verificato su TEST (`Report-finale-area3-impostazioni-15-06-26.md`). Residuo infra: Playwright admin login headless locale intermittente — QA Impostazioni coperta da browser IDE + spec ad hoc; non blocca blindatura Area 3.
 
 ## 4. Unit/component per menu magazzino/QR
 

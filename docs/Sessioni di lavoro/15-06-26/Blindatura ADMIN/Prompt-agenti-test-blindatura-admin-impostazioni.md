@@ -13,9 +13,9 @@
 | 4 | settings-theme | ✅ approved | `d8c9dab` · `Report-settings-theme-15-06-26.md` |
 | 5 | form-config + promo (estensione) | ✅ approved | `2cdc724` · `Report-settings-form-config-promo-15-06-26.md` |
 | 6 | FU-009 carousel CRUD | ✅ approved | `95f2128` · `Report-settings-carousel-crud-15-06-26.md` |
-| 7 | Fase D rompi + QA 375/834/1280 | ⏳ aperto | — |
+| 7 | Fase D rompi + QA 375/834/1280 | ✅ chiuso | `Report-fase-d-rompi-7a-15-06-26.md` · chiusura `Report-finale-area3-impostazioni-15-06-26.md` — **Area 3: blindata** |
 
-**Prossimo prompt consigliato:** §7A esecutore (Fase D rompi + QA 375/834/1280).
+**Sequenza Area 3 Impostazioni (M4) chiusa (16-06-26).** Residui fuori cancello: FU-051 date mock; infra Playwright admin headless locale.
 
 ---
 
@@ -519,7 +519,11 @@ Se FU-009 resta aperto, scrivi motivo e prompt fix successivo.
 
 ## 7. Fase D rompi + QA responsive 375 / 834 / 1280
 
-### 7A — Prompt esecutore
+### 7A — Prompt esecutore ✅ approved (16-06-26, gap QA documentati)
+
+Eseguito 16-06-26 — validate **733/733**, fronti Vitest aggregati **69/69**; QA manuale browser `tomas@t.com` su `:5173` (save-guard rompi OK 1280; pill 375; Prenota 375). Playwright admin login headless ❌ locale (spec `settings-m4-phase-d-7a` creata e rimossa). Report: `Report-fase-d-rompi-7a-15-06-26.md`. **Verdetto Area 3: non blindata** (FU-009 upload, doc context, QA rompi parziale). Controverifica **7B 16-06-26**: comandi rilanciati **733/733** + **69/69**; gap QA §7A dichiarati onesti (promo/sfondo/delete/logout/doppio-click non ripetuti in browser).
+
+### 7A — Prompt esecutore (testo originale)
 
 ```text
 Profilo: Verifica deep — Fase D rompi Admin Impostazioni.
@@ -559,7 +563,11 @@ Non dichiarare Area 3 blindata se FU-009, validate o QA responsive restano apert
 Niente commit/push.
 ```
 
-### 7B — Prompt revisore controverifica
+### 7B — Prompt revisore controverifica ✅ controverificato (16-06-26)
+
+Controverificato 16-06-26 — validate **733/733**, aggregato M4 **69/69**; report 7A coerente con comandi reali; **Area 3: non blindata** (FU-009 upload browser, doc context obsoleti, QA rompi incompleta vs lista §7A). Residui accettabili: fasce Classic su tenant Pro N/A → copertura Vitest `settings-time-slots` 20/20.
+
+### 7B — Prompt revisore controverifica (testo originale)
 
 ```text
 Profilo: Verifica deep — revisione finale Area 3 Impostazioni.
