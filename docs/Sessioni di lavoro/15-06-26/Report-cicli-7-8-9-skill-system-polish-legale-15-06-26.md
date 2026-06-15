@@ -157,8 +157,12 @@ l'hardening del logger (FU-LOG-1-H) contro regressioni future.
 
 - `main` ← `env/test` **ff** (`48dcef7..d65e1cf`), push origin/main (Vercel builda).
 - **PrenotaZen** release: `release:prenotazen` (sync main@d65e1cf, solo codice) → build verde → commit
-  `63bad22` push pubblico. ⚠️ Le **Edge Function non sono state ri-deployate**: la redazione log
-  avanzata (FU-LOG-1-H) è in repo ma «viva» solo al prossimo deploy edge.
+  `63bad22` push pubblico.
+- **Edge Function ri-deployate su PROD `rwuxgvld`** (15-06-26, autorizzazione esplicita Matteo +
+  `get_project_url` verificato): `create-booking` **v15→v16** (`verify_jwt:false` preservato),
+  `validate-invite` **v9→v10** (`verify_jwt:true` preservato), entrambe con il nuovo `_shared/log.ts`
+  (redazione value-based FU-LOG-1-H). `send-email` non toccata (non deployata su PROD, intenzionale).
+  La redazione log avanzata è ora **viva in produzione**.
 
 ## 11. Domande di chiusura
 
