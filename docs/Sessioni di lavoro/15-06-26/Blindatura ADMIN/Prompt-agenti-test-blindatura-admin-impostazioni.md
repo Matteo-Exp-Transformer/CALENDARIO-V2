@@ -3,6 +3,22 @@
 > Uso: lanciare i prompt in ordine. Per ogni sezione: prima **Esecutore**, poi **Revisore controverifica**.
 > Nessun agente deve dichiarare verde un fronte se il comando resta in timeout o non arriva al riepilogo finale.
 
+## Stato sequenza (15-06-26)
+
+| § | Fronte | Stato | Commit / report |
+|---|---|---|---|
+| 1 | Gate Batch 1/2 (D-M1/D-M2) | ✅ approved | `9d7d997` · `Report-gate-batch1-2-15-06-26.md` |
+| 2 | settings-save-guard | ✅ approved | `db99c3a` · `Report-settings-save-guard-15-06-26.md` |
+| 3 | settings-time-slots | ✅ approved | `2a496e1` |
+| 4 | settings-theme | ✅ approved | `d8c9dab` · `Report-settings-theme-15-06-26.md` |
+| 5 | form-config + promo (estensione) | ✅ approved | report §5 · commit in corso |
+| 6 | FU-009 carousel CRUD | ⏳ aperto | — |
+| 7 | Fase D rompi + QA 375/834/1280 | ⏳ aperto | — |
+
+**Prossimo prompt consigliato:** §6A esecutore (FU-009 carousel CRUD).
+
+---
+
 ## 0. Regole comuni per tutti i prompt
 
 - Branch: `env/test`.
@@ -23,6 +39,8 @@
 ## 1. Gate Batch 1/2 — stabilizzare test D-M1/D-M2 ✅ approved (15-06-26)
 
 ### 1A — Prompt esecutore ✅ approved
+
+Eseguito 15-06-26 — gate aggregato **20/20**, validate **663/663**. Commit `9d7d997`. Report: `Report-gate-batch1-2-15-06-26.md`.
 
 ```text
 Profilo: Esecuzione deep — stabilizzazione test Batch 1/2 Admin Impostazioni.
@@ -72,6 +90,8 @@ Niente commit/push.
 
 ### 1B — Prompt revisore controverifica ✅ approved
 
+Controverificato 15-06-26 — gate **20/20**; gap P2 delete carosello headerActions → fix §1C.
+
 ```text
 Profilo: Verifica deep — controverifica gate test Batch 1/2.
 Branch: env/test. DB solo TEST. PROD vietato.
@@ -113,6 +133,8 @@ Fix puntuale su gap P2 revisore: Annulla + delete headerActions carosello in `se
 ## 2. settings-save-guard — footer unico, modale pubblica, dirty guard ✅ approved (15-06-26)
 
 ### 2A — Prompt esecutore ✅ approved
+
+Eseguito 15-06-26 — 9 casi iniziali; fix post-2B → **10/10**, validate **673/673**. Commit `db99c3a`. Report: `Report-settings-save-guard-15-06-26.md`.
 
 ```text
 Profilo: Esecuzione deep — test settings-save-guard.
@@ -229,6 +251,8 @@ Niente commit/push.
 
 ### 3B — Prompt revisore controverifica ✅ approved
 
+Controverificato 15-06-26 — gap cap per-fascia invalido/alto + delete Conferma + Salva → `deleteServiceSlot` → fix §3C. Fronte aggregato **20/20**, validate **693/693**. Commit `2a496e1`.
+
 ```text
 Profilo: Verifica deep — controverifica settings-time-slots.
 Branch: env/test. DB solo TEST. PROD vietato.
@@ -263,11 +287,7 @@ Fix puntuale gap revisore 3B: cap per-fascia invalido/alto (0/5001) blocca save 
 
 ### 4A — Prompt esecutore ✅ approved
 
-Eseguito 15-06-26 — 13 test fronte (6 helper + 7 UI), validate 706/706.
-
-### 4B — Prompt revisore controverifica ✅ approved
-
-Controverificato 15-06-26 — 13/13 mirato, validate 706/706; residuo P2 opzionale mutation fail tema-only. Report: `Report-settings-theme-15-06-26.md`.
+Eseguito 15-06-26 — **13** test fronte (6 helper + 7 UI), validate **706/706**. Commit `d8c9dab`.
 
 ```text
 Profilo: Esecuzione deep — test settings-theme.
@@ -301,6 +321,10 @@ Test:
 Niente commit/push.
 ```
 
+### 4B — Prompt revisore controverifica ✅ approved
+
+Controverificato 15-06-26 — **13/13** mirato, validate **706/706**; residuo **P2 opzionale** mutation fail tema-only (coperto indirettamente da `settings-save-guard`). Report: `Report-settings-theme-15-06-26.md`. Commit incluso in `d8c9dab`.
+
 ```text
 Profilo: Verifica deep — controverifica settings-theme.
 Branch: env/test. DB solo TEST. PROD vietato.
@@ -323,6 +347,10 @@ Controlla:
 Rilancia test mirato e poi npm run validate se verde.
 Output con findings prima.
 ```
+
+### 4C — Prompt fix (post-4B revisore, opzionale)
+
+Gap P2 revisore: mutation fail + retry con dirty solo-tema in `settingsTheme.settingsM4.adminBlindatura.test.tsx` (pattern `settings-save-guard`). **Non eseguito** — fronte approvabile senza.
 
 ---
 

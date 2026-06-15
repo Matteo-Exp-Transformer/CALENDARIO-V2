@@ -1,19 +1,24 @@
 // @admin-blindatura: settings-form-config
-// Copre: modale conferma delete card/carosello (riga collassata + editor/headerActions), annulla non rimuove, conferma alza dirty
+// Copre: delete card/carosello (riga collassata + editor/headerActions); zero modalità attive;
+// cap testi header/modalità/card; config legacy/null safe; pubblico senza form inventato
 
 import '@testing-library/jest-dom/vitest'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MemoryRouter } from 'react-router-dom'
 import {
   DEFAULT_BOOKING_FORM_CONFIG,
   normalizeBookingPublicFormConfig,
   type BookingPublicFormConfig,
   type SubTab,
 } from '@/features/booking/constants/bookingPublicFormConfig'
+import { BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS } from '@/features/booking/constants/bookingPrenotaTextLimits'
+import { restaurantSettingRegistry } from '@/features/booking/lib/restaurantSettingRegistry'
 import { UnsavedChangesProvider } from '@/contexts/UnsavedChangesContext'
 import { BookingFormConfigPanel } from '../settings/BookingFormConfigPanel'
+import { BookingRequestForm } from '../BookingRequestForm'
 
 const MODE_ID = 'tavolo'
 const CARD_ID_1 = 'card-aaaa-1111-1111-111111111111'
@@ -74,6 +79,16 @@ vi.mock('@/features/booking/hooks/useDebouncedSettingsAutosave', () => ({
 
 vi.mock('@/features/booking/components/settings/BookingFormCarouselEditor', () => ({
   BookingFormCarouselEditor: () => <div data-testid="carousel-editor-stub" />,
+}))
+
+vi.mock('@/features/booking/hooks/useBookingRequests', () => ({
+  useCreateBookingRequest: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+vi.mock('@/hooks/useRateLimit', () => ({
+  useRateLimit: () => ({ checkRateLimit: () => true, isBlocked: false }),
+}))
+vi.mock('@/hooks/useBusinessHours', () => ({
+  useBusinessHours: () => ({ data: null, isLoading: false, error: null }),
 }))
 
 function makeCard(id: string, label: string): SubTab {
@@ -283,6 +298,186 @@ describe('settings-form-config delete card/carosello', () => {
         expect(screen.queryByTestId('carousel-editor-stub')).not.toBeInTheDocument()
       })
       expect(onDirtyChange).toHaveBeenCalledWith(true)
+    })
+  })
+})
+
+function makeAllModesDisabledConfig(): BookingPublicFormConfig {
+  return normalizeBookingPublicFormConfig({
+    ...DEFAULT_BOOKING_FORM_CONFIG,
+    page_title: 'Titolo salvato',
+    page_description: 'Descrizione salvata',
+    booking_modes: DEFAULT_BOOKING_FORM_CONFIG.booking_modes.map((mode) => ({
+      ...mode,
+      enabled: false,
+    })),
+  })
+}
+
+describe('settings-form-config zero modalità attive', () => {
+  beforeEach(() => {
+    restaurantSettingsData.booking_public_form_config = makeAllModesDisabledConfig()
+  })
+
+  it('admin: nessuna modalità abilitata mostra placeholder editor, non form demo pubblico', async () => {
+    const user = userEvent.setup()
+    renderPanel()
+
+    expect(await screen.findByText(/intestazione pagina prenota/i)).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Titolo salvato')).toBeInTheDocument()
+
+    await expandMode(user)
+    expect(screen.getByPlaceholderText(/nome della modalità/i)).toHaveValue('Compila nome tipologia')
+    expect(screen.queryByText(/pranzo al tavolo|menu degustazione|rinfresco di laurea/i)).not.toBeInTheDocument()
+  })
+
+  it('pubblico: BookingRequestForm non renderizza il form se tutte le modalità sono disabilitate', () => {
+    const config = makeAllModesDisabledConfig()
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const { container } = render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter>
+          <BookingRequestForm formConfig={config} />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+
+    expect(container.querySelector('#booking-request-form')).toBeNull()
+    expect(screen.queryByRole('button', { name: /invia prenotazione/i })).not.toBeInTheDocument()
+  })
+})
+
+describe('settings-form-config cap testi header/modalità', () => {
+  beforeEach(() => {
+    restaurantSettingsData.booking_public_form_config = makeConfig('cards', [])
+  })
+
+  it('page_title rispetta il cap UI senza superare il limite Prenota', async () => {
+    renderPanel()
+
+    const titleInput = await screen.findByLabelText(/^titolo$/i)
+    const overCap = 'T'.repeat(BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.pageTitle + 15)
+    fireEvent.change(titleInput, { target: { value: overCap } })
+
+    expect((titleInput as HTMLInputElement).value).toHaveLength(
+      BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.pageTitle,
+    )
+    expect(
+      screen.getByText(`${BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.pageTitle}/${BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.pageTitle}`),
+    ).toHaveClass('text-red-500')
+  })
+
+  it('titolo modalità rispetta il cap modeLabel in admin', async () => {
+    const user = userEvent.setup()
+    renderPanel()
+
+    await expandMode(user)
+    const modeLabelInput = await screen.findByLabelText(/titolo card/i)
+    const overCap = 'M'.repeat(BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.modeLabel + 10)
+    fireEvent.change(modeLabelInput, { target: { value: overCap } })
+
+    expect((modeLabelInput as HTMLInputElement).value).toHaveLength(
+      BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.modeLabel,
+    )
+  })
+
+  it('card salvata in editor: titolo e descrizione rispettano subTabLabel/subTabDescription', async () => {
+    const card = { ...makeCard(CARD_ID_1, 'Pranzo domenicale'), description: 'Breve intro' }
+    restaurantSettingsData.booking_public_form_config = makeConfig('cards', [card])
+
+    const user = userEvent.setup()
+    renderPanel()
+
+    await expandMode(user)
+    await waitFor(() => {
+      expect(screen.getByText(/pranzo domenicale · card 1/i)).toBeInTheDocument()
+    })
+    await user.click(screen.getByText(/pranzo domenicale · card 1/i))
+
+    const cardTitleInput = await screen.findByPlaceholderText('Nome card scorrevole')
+    const cardDescInput = screen.getByPlaceholderText('Sottotitolo sulla card')
+
+    const overLabel = 'L'.repeat(BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.subTabLabel + 8)
+    fireEvent.change(cardTitleInput, { target: { value: overLabel } })
+    expect((cardTitleInput as HTMLInputElement).value).toHaveLength(
+      BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.subTabLabel,
+    )
+
+    const overDesc = 'D'.repeat(BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.subTabDescription + 12)
+    fireEvent.change(cardDescInput, { target: { value: overDesc } })
+    expect((cardDescInput as HTMLTextAreaElement).value).toHaveLength(
+      BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.subTabDescription,
+    )
+  })
+})
+
+describe('settings-form-config legacy/null safe', () => {
+  it('config null in DB: pannello admin monta con seed editor, non crash', async () => {
+    restaurantSettingsData.booking_public_form_config = null
+    renderPanel()
+
+    expect(await screen.findByText(/intestazione pagina prenota/i)).toBeInTheDocument()
+    expect(screen.getByDisplayValue(DEFAULT_BOOKING_FORM_CONFIG.page_title)).toBeInTheDocument()
+  })
+
+  it('config legacy malformata parsata: pannello admin monta senza crash', async () => {
+    const parsed = restaurantSettingRegistry.booking_public_form_config.parseFromDb({
+      page_title: 'Prenota',
+      page_description: 'Desc',
+      booking_modes: [
+        'non-un-oggetto',
+        {
+          id: 'm2',
+          booking_type: 'menu_prezzo_fisso',
+          enabled: true,
+          label: 'Menu valido',
+          description: 'D',
+          icon: 'bowl_food',
+          sub_tabs_enabled: false,
+          sub_tabs: [null, { id: 'ok', label: 'Card ok', display: 'cards' }],
+        },
+      ],
+    })
+    expect(parsed).not.toBeNull()
+    restaurantSettingsData.booking_public_form_config = parsed
+    renderPanel()
+
+    expect(await screen.findByText(/intestazione pagina prenota/i)).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Prenota')).toBeInTheDocument()
+  })
+
+  it('pubblico: config legacy parsata da parseFromDb monta BookingRequestForm senza crash', async () => {
+    const parsed = restaurantSettingRegistry.booking_public_form_config.parseFromDb({
+      page_title: 'Prenota legacy',
+      page_description: 'Desc legacy',
+      booking_modes: [
+        'non-un-oggetto',
+        {
+          id: 'tavolo',
+          booking_type: 'tavolo',
+          enabled: true,
+          label: 'Tavolo storico',
+          description: 'D',
+          icon: 'fork_knife',
+          sub_tabs_enabled: false,
+          sub_tabs: [],
+        },
+      ],
+    })
+    expect(parsed).not.toBeNull()
+
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const { container } = render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter>
+          <BookingRequestForm formConfig={parsed!} />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+
+    expect(container.querySelector('#booking-request-form')).toBeTruthy()
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /tavolo storico/i })).toBeInTheDocument()
     })
   })
 })
