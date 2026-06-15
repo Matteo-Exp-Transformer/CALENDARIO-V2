@@ -76,6 +76,7 @@ Fronti previsti:
 |---|---|---|
 | `settings-registry` | `restaurantSettingRegistry.settingsM4.adminBlindatura.test.ts` | nome obbligatorio, contatti opzionali, cap 45/65/30/120, daily 0/vuoto |
 | `settings-anagrafica-ui` | `settingsAnagraficaUi.settingsM4.adminBlindatura.test.tsx` | saveDisabled, contatti vuoti OK, modale pubblica una volta |
+| `settings-save-guard` | `settingsSaveGuard.settingsM4.adminBlindatura.test.tsx` | 10 — footer unico padre, modale pubblica singola, no doppia mutation, fail+retry, guard pill/logout durante pending, guard «Salva e continua» durante save pubblico |
 | `settings-business-hours` | `businessHours.settingsM4.adminBlindatura.test.ts` | tutti chiusi → no sezione; overlap admin; parse pubblico safe |
 | `settings-background` | `settingsBackground.adminBlindatura.test.ts` + `publicBookingSurface.test.ts` | XOR striscia/full-page; legacy gradient/tile → neutro; superficie light = crema |
 | `settings-form-config` | `settingsFormConfig.settingsM4.adminBlindatura.test.tsx` | 4 — delete card riga collassata (annulla/conferma/dirty), delete card editor espanso, delete carosello riga + headerActions |

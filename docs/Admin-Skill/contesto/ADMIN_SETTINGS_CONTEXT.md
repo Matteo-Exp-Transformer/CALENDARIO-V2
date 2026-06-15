@@ -124,6 +124,7 @@ chiave gia registrata.
 - Salvataggio esplicito (autosave debug OFF su PROD — FU-004); **modale dati pubblici** al Salva (FU-005).
 - **Guard** globale su cambio tab Impostazioni, sezione admin, logout (`UnsavedChangesContext`).
 - **Footer unificato M4 (15-06-26):** un solo `SettingsSaveFooter` + una sola `PublicDataSaveConfirmModal` nel padre `RestaurantSettingsTab` per Anagrafica + Personalizza form (`hideSaveUi` su `BookingFormConfigPanel`); Salva aggregato se entrambe le aree sono dirty.
+- **Save pending + guard (15-06-26):** se il Salva della modale pubblica è già in corso (`upsert.isPending`), `handleCombinedSave` rifiuta un secondo avvio (es. «Salva e continua» sul guard navigazione) — il guard resta aperto, una sola mutation. Il guard «Salva e continua» rispetta anche `hasBlockingOperations` (toast, zero seconda mutation) per altre aree admin.
 - Form non configurato su Classic → **EmptyState** chiaro su `/prenota`; niente `DEFAULT_BOOKING_FORM_CONFIG` sul pubblico (M6).
 
 ### Sfondo Pagina Prenota (`public_booking_strip_photo`, `public_booking_page_background`) — D-M2 (15-06-26)

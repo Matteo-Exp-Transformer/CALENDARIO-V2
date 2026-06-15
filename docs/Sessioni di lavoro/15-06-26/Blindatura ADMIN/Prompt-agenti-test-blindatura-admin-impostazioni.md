@@ -110,9 +110,9 @@ Fix puntuale su gap P2 revisore: Annulla + delete headerActions carosello in `se
 
 ---
 
-## 2. settings-save-guard — footer unico, modale pubblica, dirty guard
+## 2. settings-save-guard — footer unico, modale pubblica, dirty guard ✅ approved (15-06-26)
 
-### 2A — Prompt esecutore
+### 2A — Prompt esecutore ✅ approved
 
 ```text
 Profilo: Esecuzione deep — test settings-save-guard.
@@ -150,7 +150,9 @@ Aggiorna ADMIN_TEST_SUITE_INDEX.md solo se il fronte diventa verde.
 Niente commit/push.
 ```
 
-### 2B — Prompt revisore controverifica
+### 2B — Prompt revisore controverifica ✅ approved
+
+Fix post-2B (guard «Salva e continua» vs save pubblico pending): `combinedSaveInFlightRef` + test #10. Eseguito e controverificato 15-06-26 — 10/10, validate 673/673. Report: `Report-settings-save-guard-15-06-26.md`.
 
 ```text
 Profilo: Verifica deep — controverifica settings-save-guard.

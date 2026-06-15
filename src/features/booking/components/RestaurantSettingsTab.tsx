@@ -349,6 +349,7 @@ export const RestaurantSettingsTab: React.FC = () => {
   const combinedDirty = dirty || formPanelDirty
   const dirtyRef = useRef(false)
   dirtyRef.current = dirty
+  const combinedSaveInFlightRef = useRef(false)
   const bookingBgDirtyRef = useRef(false)
   const [restaurantName, setRestaurantName] = useState('')
   const [slotCapacities, setSlotCapacities] = useState<Record<string, number | ''>>({})
@@ -648,8 +649,16 @@ export const RestaurantSettingsTab: React.FC = () => {
   }
 
   const handleCombinedSave = async () => {
-    if (dirtyRef.current) await handleSave()
-    await formConfigPanelRef.current?.saveAll()
+    if (combinedSaveInFlightRef.current || upsert.isPending) {
+      throw new Error('Combined save already in progress')
+    }
+    combinedSaveInFlightRef.current = true
+    try {
+      if (dirtyRef.current) await handleSave()
+      await formConfigPanelRef.current?.saveAll()
+    } finally {
+      combinedSaveInFlightRef.current = false
+    }
   }
 
   const refetchRestaurantSettings = async () => {
