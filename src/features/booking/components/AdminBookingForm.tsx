@@ -362,7 +362,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({
     return isValid
   }
 
-  /** Dopo eventuale OK su orario passato: capienza → eventuale modale → creazione. */
+  /** Dopo eventuale OK su orario passato: capienza → modale → creazione. */
   const continueSubmitAfterPastTimeCheck = () => {
     setCapacityWarningOverride(null)
 

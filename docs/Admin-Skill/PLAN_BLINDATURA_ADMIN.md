@@ -41,7 +41,7 @@
 |---|---|---|---|---|
 | 1 | Shell / ingresso / navigazione globale | `ADMIN_SHELL_NAV_CONTEXT.md` | ✅ blindato (FU-042 E2E 10-06-26) | login, edition, sidebar, dirty guard, logout, refresh/back — unit + E2E staging |
 | 2 | Prenotazioni operative | `ADMIN_PRENOTAZIONI_CONTEXT.md` | fatto (11-06-26) | Vitest 32 + E2E FU-043; accetta/rifiuta/cancella/ripristina/warning testati |
-| 3 | Impostazioni / Personalizza Form | `ADMIN_SETTINGS_CONTEXT.md` | da fare | salvataggi, autosave, guard e impatto Prenota verificati |
+| 3 | Impostazioni / Personalizza Form | `ADMIN_SETTINGS_CONTEXT.md` | **Fase C chiusa** (15-06-26) · blindatura Vitest `settings-*` | gap §report M4 implementati; test `@admin-blindatura: settings-*`; validate verde; E2E smoke opzionale manuale |
 | 4 | Menu admin / magazzino | `ADMIN_MENU_MAGAZZINO_CONTEXT.md` | ✅ **blindato** (11-06-26) | Vitest 27 + E2E `@admin-blindatura: menu-magazzino`; QA Matteo; report finale M3 |
 | 5 | Servizio | `ADMIN_SERVIZIO_CONTEXT.md` | da fare | sale/tavoli/slot/walk-in/briefing testati |
 | 6 | CRM | `ADMIN_CRM_CONTEXT.md` | da fare | create/edit/delete cliente e booking collegate testati |
@@ -373,6 +373,50 @@ Scenari minimi (definitivi dopo la mappa):
 
 ---
 
+## 3-quater. Area 3 — Impostazioni / Personalizza Form (M4)
+
+### 3-quater.1 Intervista chiusa con Matteo (15-06-26)
+
+Decisioni in `ADMIN_SETTINGS_CONTEXT.md` §8 e report
+[`Report-intervista-m4-admin-impostazioni-15-06-26.md`](../Sessioni%20di%20lavoro/15-06-26/Report-intervista-m4-admin-impostazioni-15-06-26.md).
+
+Sintesi operativa:
+
+- Anagrafica: nome obbligatorio; contatti opzionali con cap 45/65/30/120; no fallback nome finto in Prenota.
+- Orari: opzionali; malformati → admin non salva; pubblico safe e senza sezione se tutti chiusi.
+- Limiti: `daily_guest_limit` vivo (pubblico + avviso admin); **`booking_window_days` orfano** (registry only, fuoriscope — rimosso da Fase C 15-06-26).
+- Personalizza form: card + carosello core; cambio presentazione con conferma distruttiva (già cablato).
+- Salvataggio: footer esplicito + `PublicDataSaveConfirmModal` (FU-005); guard multi-sorgente (`restaurant-settings`, `booking-form-config`).
+
+### 3-quater.2 MAPPATURA chiusa (15-06-26, read-only nel codice)
+
+Gap principali (dettaglio tabella §3 report M4):
+
+| # | Gap | File toccati in Fase C |
+|---|-----|------------------------|
+| G3/G4/G6/G7 | Nome fallback `organizationName`; indirizzo obbligatorio in registry; cap nome 40≠45; cap contatti assenti in UI | `useRestaurantName.ts`, `restaurantSettingRegistry.ts`, `bookingPrenotaTextLimits.ts`, `RestaurantSettingsTab.tsx` |
+| G9 | Footer Prenota mostra «Chiuso» invece di nascondere Orari | `BookingRequestPage.tsx`, `businessHours.ts` |
+| G16 | `booking_window_days` — **fuoriscope** (implementato poi rimosso 15-06-26) | registry only; nessun consumer UI/pubblico |
+| G2/G20 | Salva con nome vuoto non disabilitato; due footer/modali per sotto-tab Impostazioni | `RestaurantSettingsTab.tsx`, eventuale unificazione padre |
+
+**Già conformi (non rifare):** `daily_guest_limit` + edge `DAILY_LIMIT`, EmptyState form (M6), modale dati pubblici (FU-005), presentazione card/carosello + conferma, avviso capienza admin non bloccante, `app_theme` solo admin.
+
+### 3-quater.3 Test da costruire (marcatore `@admin-blindatura: settings`)
+
+- `@admin-blindatura: settings-registry` — validate registry (nome, contatti, cap, daily 0/vuoto).
+- `@admin-blindatura: settings-anagrafica-ui` — save blocked nome vuoto; contatti vuoti OK; modale pubblica.
+- `@admin-blindatura: settings-business-hours` — orari tutti chiusi → niente footer Orari; overlap blocca admin.
+- E2E smoke 375/834/1280: Anagrafica, Orari disattivati, Personalizza form, guard uscita, EmptyState Prenota.
+
+### 3-quater.4 Criterio uscita Area 3
+
+- Gap §3-quater.2 implementati o tracciati come voluto/M5;
+- test `@admin-blindatura: settings-*` verdi; `npm run validate` verde;
+- `ADMIN_SETTINGS_CONTEXT.md`, `ADMIN_TEST_SUITE_INDEX.md`, registro stati §5 aggiornati;
+- controtest sub-agent (flusso dati + utente/responsive Impostazioni + Prenota footer).
+
+---
+
 ## 4. Prompt anti-rottura per sub-agent
 
 Quando si delega un fix:
@@ -402,7 +446,7 @@ Aggiornare a fine area.
 | Shell / ingresso / navigazione globale | ✅ blindato (10-06-26) | FU-042 E2E + suite shell; M1 su `main` privato |
 | Prenotazioni operative | ✅ cancello M2 (11-06-26) | Vitest **32** + E2E **7** (FU-043: capienza/orario passato + modali 375/834); validate **536**. Residui U3/U9/D6/D7/L* fuori cancello |
 | Tab Calendario (M2) | ✅ blindato + merged prod (11-06-26) | Batch A+B + Fase C + **C-U2** guard tab modale; validate **527**; QA badge §9 OK; C-U3 → FU-048 Pro |
-| Impostazioni / Personalizza Form | ⬜ | Da avviare dopo Prenotazioni o secondo priorita Matteo |
+| Impostazioni / Personalizza Form | 🟢 Fase C (15-06-26) | Report Fase C; G2–G9, G20 chiusi; G16 fuoriscope rimosso |
 | Menu admin / magazzino | ✅ **BLINDATO** (11-06-26) | Report [`Report-finale-m3-menu-blindato-11-06-26.md`](../Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md); validate **554**; solo FU-M3-QA-CT extra fuori cancello |
 | Servizio | ⬜ | Include walk-in e tavoli occupati |
 | CRM | ⬜ | Attenzione email normalizzata e delete multi-step |

@@ -67,7 +67,18 @@ Fronti previsti:
 - `src/features/booking/constants/__tests__/bookingPublicFormConfig.malformed.flusso-dati.test.ts`
 - `src/features/booking/constants/__tests__/menuPromo.test.ts`
 - `src/features/booking/lib/__tests__/restaurantSettingRegistry.stripPhoto.test.ts`
+- `src/features/booking/lib/__tests__/restaurantSettingRegistry.dailyGuestLimit.adminBlindatura.test.ts`
 - `src/features/booking/components/__tests__/BookingRequestForm.flussoUtente.test.tsx`
+
+### 3-bis. M4 Impostazioni — `@admin-blindatura: settings-*` (15-06-26)
+
+| Marcatore | File | Casi |
+|---|---|---|
+| `settings-registry` | `restaurantSettingRegistry.settingsM4.adminBlindatura.test.ts` | nome obbligatorio, contatti opzionali, cap 45/65/30/120, daily 0/vuoto |
+| `settings-anagrafica-ui` | `settingsAnagraficaUi.settingsM4.adminBlindatura.test.tsx` | saveDisabled, contatti vuoti OK, modale pubblica una volta |
+| `settings-business-hours` | `businessHours.settingsM4.adminBlindatura.test.ts` | tutti chiusi → no sezione; overlap admin; parse pubblico safe |
+
+Residuo: E2E smoke Impostazioni 375/834/1280 (manuale opzionale); **FU-009** slide carosello.
 
 ## 4. Unit/component per menu magazzino/QR
 

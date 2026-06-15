@@ -84,8 +84,55 @@ chiave gia registrata.
 - Se nessuna modalita Prenota e attiva, la pagina pubblica non mostra il form.
 - Il tab Impostazioni e raggiungibile da dashboard; la action settings sidebar e latente.
 
-## 8. Da intervistare
+## 8. Decisioni intervista M4 (15-06-26)
 
-- Quali settings puo toccare lo staff?
-- Quali fallback anagrafica sono accettabili in admin?
-- Quali cambi devono essere autosave e quali sempre salvataggio esplicito?
+> Stato stabile post-intervista Matteo. Report completo + tabella gap codice:
+> [`Report-intervista-m4-admin-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Report-intervista-m4-admin-impostazioni-15-06-26.md).
+
+### Permessi e utenti
+
+- **Admin = staff** per Impostazioni: nessun permesso ridotto; chi entra in `/admin` configura tutto il tab.
+
+### Anagrafica e contatti (`restaurant_name`, `contact_*`)
+
+- **`restaurant_name` obbligatorio** al Salva anagrafica. Se mai salvato → Pagina Prenota **senza titolo inventato**
+  (niente fallback da `organizations.name` sul pubblico).
+- **Email, telefono, indirizzo opzionali**; campi vuoti **non** compaiono nel footer Prenota.
+- **Cap UI** (allineare costanti + registry + input): nome **45**, email **65**, telefono **30**, indirizzo **120**.
+
+### Orari (`business_hours`)
+
+- Sezione **opzionale** verso il pubblico: tutti i giorni chiusi/disattivati → **nessuna sezione Orari** in Prenota.
+- **Non** condizionano la possibilità di prenotare (validazione cliente solo se orari configurati e parsabili).
+- Struttura/overlap **malformati** → admin **non salva**; pubblico **non crasha** e **non** mostra orari invalidi.
+
+### Fasce, capienze, limiti
+
+- **Fasce/capienze Classic** e **limite per-fascia** (se attivo): admin **avviso**, mai blocco operativo (allineato M2).
+- **`daily_guest_limit`**: `0`/vuoto = nessun limite; blocca **solo** Prenota pubblica (edge `DAILY_LIMIT`); admin può sforare con avviso.
+- **`booking_window_days`**: chiave registry **orfana** (solo admin, nessuna UI consumer) — fuoriscope M4; implementazione Fase C **rimossa** su richiesta 15-06-26 (vedi report Fase C §Fuoriscope). **Non implementare senza nuova decisione esplicita di Matteo.**
+
+### Timezone, tema, presentazione form
+
+- **`timezone`**: setting tecnico **senza UI Classic**; default documentato **`Europe/Rome`**; non esporre in form admin.
+- **`app_theme`**: solo back-office admin; **non** cambia Prenota né Menu QR.
+- **Card scorrevole + Carosello**: entrambi core in Personalizza form; cambio `sub_tabs_presentation` → **conferma distruttiva**
+  (già in `BookingFormConfigPanel`). Residuo QA slide admin = **FU-009**, non M4.
+
+### Salvataggio, guard, Classic production
+
+- Salvataggio esplicito (autosave debug OFF su PROD — FU-004); **modale dati pubblici** al Salva (FU-005).
+- **Guard** globale su cambio tab Impostazioni, sezione admin, logout (`UnsavedChangesContext`).
+- **Footer unificato M4 (15-06-26):** un solo `SettingsSaveFooter` + una sola `PublicDataSaveConfirmModal` nel padre `RestaurantSettingsTab` per Anagrafica + Personalizza form (`hideSaveUi` su `BookingFormConfigPanel`); Salva aggregato se entrambe le aree sono dirty.
+- Form non configurato su Classic → **EmptyState** chiaro su `/prenota`; niente `DEFAULT_BOOKING_FORM_CONFIG` sul pubblico (M6).
+
+### Stato mappatura (15-06-26)
+
+- Fase A+B **chiuse** (intervista + gap read-only). Fase C **chiusa** (15-06-26): gap G2–G9, G20 implementati; **G16 fuoriscope** (finestra prenotazione rimossa). Validate verde post-rimozione. Residuo QA: **FU-009** (slide carosello admin); E2E smoke Impostazioni 375/834/1280 opzionale manuale.
+
+### Divieti (anti-regressione)
+
+- **Non** rendere obbligatori contatti o orari per salvare anagrafica (salvo nome locale).
+- **Non** mostrare nome/orari/contatti **demo** se il tenant non ha salvato i dati.
+- **Non** esporre `timezone` / `daily_guest_limit` / `booking_window_days` in whitelist anon senza migrazione dedicata e decisione prodotto esplicita.
+- Pro / CRM / Servizio fuori cancello M4 → tracciare in M5 se emerge.

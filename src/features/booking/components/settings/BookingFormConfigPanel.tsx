@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { ChevronUp, ChevronDown } from 'lucide-react'
 import { CaretUpIcon } from '@phosphor-icons/react/dist/csr/CaretUp'
 import { CaretDownIcon } from '@phosphor-icons/react/dist/csr/CaretDown'
@@ -329,16 +329,33 @@ type BookingFormConfigPanelProps = {
   bookingBgDirty?: boolean
   onSaveBookingBackground?: () => void | Promise<void>
   onCancelBookingBackground?: () => void
+  /** Salva/modale gestiti dal padre (`RestaurantSettingsTab`) — footer unificato M4. */
+  hideSaveUi?: boolean
+  onDirtyChange?: (dirty: boolean) => void
+}
+
+export type BookingFormConfigPanelHandle = {
+  /** Persiste tutte le sezioni dirty; rilancia in caso di errore o validazione fallita. */
+  saveAll: () => Promise<void>
+  discardAll: () => void
 }
 
 export { FormSectionFloatingActions } from '@/features/booking/components/settings/SettingsSaveUi'
 
-export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
-  afterBookingModesSection,
-  bookingBgDirty = false,
-  onSaveBookingBackground,
-  onCancelBookingBackground,
-}) => {
+export const BookingFormConfigPanel = forwardRef<
+  BookingFormConfigPanelHandle,
+  BookingFormConfigPanelProps
+>(function BookingFormConfigPanel(
+  {
+    afterBookingModesSection,
+    bookingBgDirty = false,
+    onSaveBookingBackground,
+    onCancelBookingBackground,
+    hideSaveUi = false,
+    onDirtyChange,
+  },
+  ref,
+) {
   const { organizationName, tenantId } = useTenantContext()
   const { registerUnsavedSource, registerUnsavedHandlers, clearUnsavedSource } =
     useUnsavedChangesGuard()
@@ -416,10 +433,11 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     setDraftSubTabsByMode({})
     setExpandedSubTabByMode({})
     setExpandedMode(null)
-    clearUnsavedSource('booking-form-config')
-  }, [tenantId, clearUnsavedSource])
+    if (!hideSaveUi) clearUnsavedSource('booking-form-config')
+  }, [tenantId, clearUnsavedSource, hideSaveUi])
 
   useEffect(() => {
+    if (hideSaveUi) return
     registerUnsavedSource('booking-form-config', 'Personalizza form', personalizzaFormDirty)
     return () => {
       if (
@@ -431,7 +449,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
         clearUnsavedSource('booking-form-config')
       }
     }
-  }, [clearUnsavedSource, personalizzaFormDirty, registerUnsavedSource])
+  }, [clearUnsavedSource, hideSaveUi, personalizzaFormDirty, registerUnsavedSource])
 
   const markHeaderTextDirty = () => setHeaderTextDirty(true)
   const markHeaderStylesDirty = () => setHeaderStylesDirty(true)
@@ -737,7 +755,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     const validationError = findSubTabValidationError(bookingModes)
     if (validationError) {
       toast.error(validationError)
-      return
+      throw new Error(validationError)
     }
     const hasOpenDrafts = Object.values(draftSubTabsByMode).some(Boolean)
     if (hasOpenDrafts) {
@@ -745,9 +763,10 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     }
     try {
       await persistModesSection(bookingModes)
-    } catch {
+    } catch (err) {
       markModesDirty()
       toast.error('Errore nel salvataggio modalità')
+      throw err
     }
   }
 
@@ -776,14 +795,10 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
   const pageHasUnsaved = personalizzaFormDirty
 
   const handleSaveAllPage = async () => {
-    try {
-      if (headerTextDirty || headerStylesDirty) await saveHeaderSection()
-      if (modesDirty) await saveModesSection()
-      if (promoDirty && promoSectionRef.current) await promoSectionRef.current.save()
-      if (bookingBgDirty && onSaveBookingBackground) await onSaveBookingBackground()
-    } catch {
-      toast.error('Errore nel salvataggio')
-    }
+    if (headerTextDirty || headerStylesDirty) await saveHeaderSection()
+    if (modesDirty) await saveModesSection()
+    if (promoDirty && promoSectionRef.current) await promoSectionRef.current.save()
+    if (bookingBgDirty && onSaveBookingBackground) await onSaveBookingBackground()
   }
 
   const handleCancelAllPage = () => {
@@ -792,13 +807,27 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
     onCancelBookingBackground?.()
   }
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      saveAll: handleSaveAllPage,
+      discardAll: handleCancelAllPage,
+    }),
+    [handleCancelAllPage, handleSaveAllPage],
+  )
+
   useEffect(() => {
+    onDirtyChange?.(personalizzaFormDirty)
+  }, [onDirtyChange, personalizzaFormDirty])
+
+  useEffect(() => {
+    if (hideSaveUi) return
     registerUnsavedHandlers('booking-form-config', {
       saveAll: handleSaveAllPage,
       discardAll: handleCancelAllPage,
     })
     return () => registerUnsavedHandlers('booking-form-config', null)
-  }, [handleCancelAllPage, handleSaveAllPage, registerUnsavedHandlers])
+  }, [handleCancelAllPage, handleSaveAllPage, hideSaveUi, registerUnsavedHandlers])
 
   const headerStyles = config.header_styles ?? DEFAULT_BOOKING_FORM_CONFIG.header_styles
 
@@ -1791,7 +1820,7 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
 
       {afterBookingModesSection != null && afterBookingModesSection}
 
-      {pageHasUnsaved && (
+      {!hideSaveUi && pageHasUnsaved && (
         <SettingsSaveFooter
           onCancel={handleCancelAllPage}
           onSave={() => setPublicSaveConfirmOpen(true)}
@@ -1801,15 +1830,17 @@ export const BookingFormConfigPanel: React.FC<BookingFormConfigPanelProps> = ({
         />
       )}
 
-      <PublicDataSaveConfirmModal
-        isOpen={publicSaveConfirmOpen}
-        pending={upsert.isPending}
-        onConfirm={async () => {
-          await handleSaveAllPage()
-          setPublicSaveConfirmOpen(false)
-        }}
-        onCancel={() => setPublicSaveConfirmOpen(false)}
-      />
+      {!hideSaveUi && (
+        <PublicDataSaveConfirmModal
+          isOpen={publicSaveConfirmOpen}
+          pending={upsert.isPending}
+          onConfirm={async () => {
+            await handleSaveAllPage()
+            setPublicSaveConfirmOpen(false)
+          }}
+          onCancel={() => setPublicSaveConfirmOpen(false)}
+        />
+      )}
     </div>
   )
-}
+})

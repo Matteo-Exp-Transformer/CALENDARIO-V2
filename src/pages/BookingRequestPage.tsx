@@ -8,7 +8,7 @@ import { useBookingPublicViewport } from '@/hooks/useBookingPublicViewport'
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
 import { formatHours } from '@/lib/businessHours'
-import type { BusinessHours } from '@/lib/businessHours'
+import { hasAnyBusinessHoursConfigured, type BusinessHours } from '@/lib/businessHours'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 import { cn } from '@/lib/utils'
@@ -173,7 +173,8 @@ const BookingRequestPageContent: React.FC<BookingRequestPageContentProps> = ({ t
   const displayContactEmail = (contactEmail ?? '').trim()
   const displayContactPhone = (contactPhone ?? '').trim()
   const displayContactAddress = (contactAddress ?? '').trim()
-  const showHoursSection = isLoading || businessHours != null
+  const showHoursSection =
+    isLoading || (businessHours != null && hasAnyBusinessHoursConfigured(businessHours))
   const showContactSection = Boolean(displayContactEmail || displayContactPhone || displayContactAddress)
   const showInfoFooter = showHoursSection || showContactSection
 
