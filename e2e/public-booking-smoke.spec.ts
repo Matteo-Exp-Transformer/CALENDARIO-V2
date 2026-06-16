@@ -46,6 +46,77 @@ function makeE2eBookingFormConfig() {
   }
 }
 
+function makeE2ePricedCarouselFormConfig() {
+  return {
+    page_title: 'Prenota E2E Totale',
+    page_description: 'Config temporanea per verificare il riepilogo.',
+    booking_modes: [
+      {
+        id: 'e2e-riepilogo',
+        booking_type: 'rinfresco_laurea',
+        enabled: true,
+        label: 'Rinfresco E2E',
+        description: 'Offerta con prezzo a persona.',
+        icon: 'sparkles',
+        sub_tabs_enabled: true,
+        sub_tabs_presentation: 'carousel',
+        sub_tabs: [
+          {
+            id: 'e2e-riepilogo-carousel',
+            display: 'carousel',
+            label: 'Menu E2E',
+            price_per_person: 25,
+            carousel_items: [
+              {
+                image_url: '/booking/tiles/tile-01.png',
+                eyebrow: 'E2E',
+                title: 'Offerta Totale',
+                description: 'Slide temporanea per smoke Playwright.',
+                sort_order: 0,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  }
+}
+
+function makeE2eCardsXorFormConfig() {
+  return {
+    page_title: 'Prenota E2E Card',
+    page_description: 'Config temporanea per verificare card e XOR.',
+    booking_modes: [
+      {
+        id: 'e2e-card-mode',
+        booking_type: 'rinfresco_laurea',
+        enabled: true,
+        label: 'Card E2E',
+        description: 'Modalità con card scorrevoli.',
+        icon: 'sparkles',
+        sub_tabs_enabled: true,
+        sub_tabs_presentation: 'cards',
+        sub_tabs: [
+          {
+            id: 'e2e-card-valida',
+            display: 'cards',
+            label: 'Card valida E2E',
+            description: 'Questa card deve comparire.',
+            price_per_person: 18,
+          },
+          {
+            id: 'e2e-card-senza-titolo',
+            display: 'cards',
+            label: '   ',
+            description: 'Questa card non deve comparire.',
+            price_per_person: 22,
+          },
+        ],
+      },
+    ],
+  }
+}
+
 async function seedBookingFormConfigForSmoke(): Promise<{
   tenantId: string
   formConfigSnapshot: RestaurantSettingSnapshot
@@ -128,6 +199,80 @@ test.describe('Pagina Prenota smoke', () => {
 
     await privacyPage.getByRole('link', { name: /torna alla prenotazione/i }).click()
     await expect(privacyPage).toHaveURL(new RegExp(`/prenota/${tenantSlug}$`))
+  })
+
+  // @prenota-blindatura: e2e-summary-total-label
+  // Copre: il riepilogo pubblico mostra la label "Totale", mai "Totale stimato".
+  test('riepilogo mostra Totale, non Totale stimato', async ({ page }) => {
+    test.setTimeout(120000)
+
+    const tenantId = await getTenantIdBySlug(tenantSlug)
+    const currentConfigSnapshot = await getRestaurantSettingSnapshot(tenantId, 'booking_public_form_config')
+
+    try {
+      await upsertRestaurantSettingValue(
+        tenantId,
+        'booking_public_form_config',
+        makeE2ePricedCarouselFormConfig(),
+      )
+
+      await page.goto(`${bookingUrl}?e2e=summary-total`, { waitUntil: 'domcontentloaded' })
+      await expect(page.locator('#booking-request-form')).toBeVisible({ timeout: 15000 })
+
+      const summary = page.getByTestId('booking-summary-sidebar').first()
+      await expect(summary).toBeVisible()
+      await page.locator('#num_guests-control').fill('2')
+
+      await expect(summary.getByText('Totale', { exact: true })).toBeVisible({ timeout: 10000 })
+      await expect(summary.getByText('Totale stimato', { exact: true })).toHaveCount(0)
+      await expect(summary.getByText('50,00 €', { exact: true })).toBeVisible()
+    } finally {
+      await restoreRestaurantSettingSnapshot(
+        tenantId,
+        'booking_public_form_config',
+        currentConfigSnapshot,
+      ).catch(() => {})
+    }
+  })
+
+  // @prenota-blindatura: e2e-xor-card-carousel
+  // Copre: card scorrevoli oppure carosello, mai entrambi; card senza titolo non appare.
+  test('card e carosello restano XOR e la card senza titolo non appare', async ({ page }) => {
+    test.setTimeout(120000)
+
+    const tenantId = await getTenantIdBySlug(tenantSlug)
+    const currentConfigSnapshot = await getRestaurantSettingSnapshot(tenantId, 'booking_public_form_config')
+
+    try {
+      await upsertRestaurantSettingValue(
+        tenantId,
+        'booking_public_form_config',
+        makeE2ePricedCarouselFormConfig(),
+      )
+      await page.goto(`${bookingUrl}?e2e=xor-carousel`, { waitUntil: 'domcontentloaded' })
+
+      await expect(page.locator('#booking-request-form')).toBeVisible({ timeout: 15000 })
+      await expect(page.getByRole('heading', { name: 'Offerta Totale' })).toBeVisible()
+      await expect(page.getByTestId('booking-sub-tab-cards')).toHaveCount(0)
+
+      await upsertRestaurantSettingValue(
+        tenantId,
+        'booking_public_form_config',
+        makeE2eCardsXorFormConfig(),
+      )
+      await page.goto(`${bookingUrl}?e2e=xor-cards`, { waitUntil: 'domcontentloaded' })
+
+      await expect(page.getByTestId('booking-sub-tab-cards')).toBeVisible({ timeout: 15000 })
+      await expect(page.getByTestId('booking-sub-tab-card-e2e-card-valida')).toBeVisible()
+      await expect(page.getByTestId('booking-sub-tab-card-e2e-card-senza-titolo')).toHaveCount(0)
+      await expect(page.getByRole('heading', { name: 'Offerta Totale' })).toHaveCount(0)
+    } finally {
+      await restoreRestaurantSettingSnapshot(
+        tenantId,
+        'booking_public_form_config',
+        currentConfigSnapshot,
+      ).catch(() => {})
+    }
   })
 
   for (const viewport of [

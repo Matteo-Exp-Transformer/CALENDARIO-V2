@@ -160,6 +160,29 @@ Comando di controllo documentale:
 
 Sono rimasti non spuntati i check visuali fini non oggettivi (gesture swipe, asset reali), i casi Classic-specifici non provabili se le credenziali staging non sono disponibili, e le verifiche Pro profonde che richiedono M5/intervista prodotto.
 
+### Addendum Codex — riepilogo Prenota "Totale" + XOR card/carosello (16-06-26)
+
+Ho aggiunto due E2E oggettivi su Pagina Prenota per check ancora aperti: con una config temporanea carosello/prezzo a persona, il cliente vede la label `Totale` e non `Totale stimato`; con config temporanee card/carosello, la pagina mostra una sola presentazione alla volta e scarta la card senza titolo.
+
+File toccati:
+
+- `e2e/public-booking-smoke.spec.ts`
+- `docs/STATO_BLINDATURA_CHECKLIST.md`
+- `docs/Prenota-Skill/contesto/PRENOTA_TEST_SUITE_INDEX.md`
+- questo report
+
+Comandi eseguiti:
+
+| Comando | Esito reale |
+|---|---|
+| `npx playwright test e2e/public-booking-smoke.spec.ts --workers=1` | ✅ 11 passed |
+| `npx playwright test e2e/public-booking-smoke.spec.ts e2e/public-menu-qr.spec.ts --workers=1` | ✅ 14 passed |
+
+Checklist spuntata:
+
+- Pagina Prenota: riepilogo mostra `Totale`, non `Totale stimato`.
+- Pagina Prenota: card scorrevoli oppure carosello, mai entrambi; card senza titolo non appare.
+
 ---
 
 ## Documentazione aggiornata
