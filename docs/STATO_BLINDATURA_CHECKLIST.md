@@ -117,6 +117,7 @@ quando li tocchi.
 - [x] Sfondo striscia/foto-intera/crema corretti; footer orari assente se non configurati.
 - [x] Submit/riepilogo raggiungibile a 375px, 834px e 1280px.
 - [x] Riepilogo: "Totale" (non "stimato").
+- [x] Carosello categorie menù desktop (≥700px): una sola categoria ingredienti aperta; chiusura su frecce scroll o se la card esce dal viewport del carosello (Vitest `bookingModeCardsAndCategoryCard`, 16-06-26).
 
 ---
 

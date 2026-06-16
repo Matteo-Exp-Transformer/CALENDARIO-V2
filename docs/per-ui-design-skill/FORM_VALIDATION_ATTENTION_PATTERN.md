@@ -37,7 +37,7 @@ Altri form nel repo che già usano il pattern: `WalkInModal`, `TableFormModal`, 
 | `getFormFieldAttentionProps` | `utils/formValidationAttention.ts` | Pulse + dismiss `isTrusted` su wrapper campo |
 | `ADMIN_BOOKING_ERROR_FIELD_IDS` | `utils/formValidationAttention.ts` | Mappa errori form prenotazione admin |
 | `BOOKING_MENU_COMPOSE_COLLAPSE_EVENT` | `bookingPublicFormAttention.ts` | Nome evento per chiudere card ingredienti |
-| `dispatchBookingMenuComposeCollapse()` | idem | Chiamata sincrona prima dello scroll |
+| `dispatchBookingMenuComposeCollapse()` | idem | Chiamata sincrona: submit con errori, accordion apertura altra categoria, frecce carosello `ComposeScrollRow` |
 | `shouldDismissBookingPublicAttention(event)` | idem | `true` solo se `event.isTrusted` (ignora focus programmatico) |
 | `BOOKING_PUBLIC_ERROR_FIELD_IDS` | idem | Mappa `errorKey` → `id` DOM (Pagina Prenota) |
 | `scrollToBookingPublicError(errorKey)` | idem | `scrollIntoView({ block: 'center' })` con fallback sottotab |
@@ -98,6 +98,8 @@ Tre meccanismi **in parallelo** (ridondanza intenzionale per timing portal):
 | Meccanismo | Dove | Effetto |
 |------------|------|---------|
 | CustomEvent `booking-menu-compose-collapse` | `BookingMenuCategoryCard` listener | `setExpanded(false)` immediato |
+| Stesso evento — accordion desktop | `handleExpand` layout `scroll` | chiude le altre categorie prima di aprire quella cliccata |
+| Stesso evento — frecce carosello | `ComposeScrollRow.scrollBy` | chiude tutte le card prima di scorrere il carosello categorie |
 | `resetKey` su prop card | `BookingMenuComposeGrid` ← `composeCollapseKey` | `useLayoutEffect` → collapse |
 | `key={menu-compose-${nonce}}` su `MenuSelection` | `BookingRequestForm` | remount → stato UI interno reset |
 

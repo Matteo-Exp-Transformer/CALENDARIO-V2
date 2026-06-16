@@ -315,6 +315,11 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
   `top`/`left`/`width` del portal via ref DOM (no `setState` per frame — evita lag visivo); listener
   `scroll` capture su `window`, `resize`, `ResizeObserver` su shell, più `scroll` sul contenitore
   orizzontale `ComposeScrollRow` (`horizontalScrollRef` passato alle card layout `scroll`).
+- **Accordion scroll (16-06-26):** in layout `scroll` (≥700px) una sola categoria aperta alla volta
+  (`dispatchBookingMenuComposeCollapse` all'apertura di un'altra). Se la card aperta esce dal viewport
+  del carosello (scroll manuale o frecce avanti/indietro in `ComposeScrollRow` — queste chiudono subito
+  via stesso evento), si chiude da sola (`isElementFullyVisibleInHorizontalContainer` su scroll
+  orizzontale; 700ms di suppress dopo `scrollIntoView` all'apertura).
 - **Portal z-index:** `BOOKING_MENU_CATEGORY_EXPANDED_PORTAL_CLASS` → `fixed z-[160]` (sopra form e
   riepilogo in scroll; **non** esiste più sticky bar mobile — rimossa 02-06-26).
 

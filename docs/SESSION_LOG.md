@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 16-06-26 | Prenota — **accordion carosello menù** + chiusura su scroll freche ✅ | [Report](Sessioni%20di%20lavoro/16-06-26/Report-accordion-carosello-menu-prenota-16-06-26.md) — una categoria aperta alla volta; frecce avanti/indietro chiudono; collasso se card fuori viewport; validate **760/760** |
 | 16-06-26 | Prenota — **validazione menù al submit** (2 regole, FU-053/054) ✅ | [Report](Sessioni%20di%20lavoro/16-06-26/Report-validazione-menu-submit-prenota-16-06-26.md) — copy «Scegli almeno un piatto dal menù!»; rimosso check totale > 0 su Prenota + admin; validate **758/758**; FU-054 errore card persistente |
 | 16-06-26 | E2E blindatura multi-area — Admin, Prenota, Menu QR ✅ | [Report](Sessioni%20di%20lavoro/16-06-26/Report-e2e-blindatura-multiarea-16-06-26.md) — nuovi smoke E2E Admin/Calendario/Impostazioni, Prenota, Menu QR; Vitest ordine piatti/import preset QR; checklist/masterplan allineati; guide private con `--debug`/`--ui`; test mirati verdi |
 | 16-06-26 | Admin — **Area 3 Impostazioni (M4) blindata** ✅ | [Report finale](Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md) · [7A](Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-fase-d-rompi-7a-15-06-26.md) — FU-009 upload carosello Storage + overlay Prenota; context/index/FOLLOW_UP allineati; validate **733/733** + Vitest settings-* **69/69** |
