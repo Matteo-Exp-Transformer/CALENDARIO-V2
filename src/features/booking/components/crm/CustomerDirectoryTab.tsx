@@ -115,7 +115,6 @@ export const CustomerDirectoryTab: FC = () => {
       <CustomerFormModal
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
-        mode="edit"
         initialProfile={formProfile}
       />
 

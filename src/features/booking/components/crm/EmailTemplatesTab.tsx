@@ -4,6 +4,7 @@ import { CollapsibleCard } from '@/components/ui'
 import { EmailTemplateEditor } from './EmailTemplateEditor'
 import { CampaignsManager } from './CampaignsManager'
 import { useEmailTemplates } from '@/features/booking/hooks/useEmailTemplates'
+import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 import {
   DEFAULT_ACCEPTED_SUBJECT,
   DEFAULT_ACCEPTED_INTRO,
@@ -15,13 +16,29 @@ import {
 
 export const EmailTemplatesTab: FC = () => {
   const { data: templates = [], isLoading } = useEmailTemplates()
+  const { confirmNavigation } = useUnsavedChangesGuard()
 
   // Stato controllato: la card resta aperta indipendentemente da re-render/refetch
   const [acceptedExpanded, setAcceptedExpanded] = useState(false)
   const [rejectedExpanded, setRejectedExpanded] = useState(false)
+  const [acceptedDirty, setAcceptedDirty] = useState(false)
+  const [rejectedDirty, setRejectedDirty] = useState(false)
 
   const savedAccepted = templates.find((t) => t.template_key === 'booking_accepted')
   const savedRejected = templates.find((t) => t.template_key === 'booking_rejected')
+
+  // Chiudere la card con modifiche non salvate passa per il guard (Salva/Annulla/Esci).
+  // Card pulita o apertura: nessuna conferma. Dopo "Salva" la card si chiude (onSaved).
+  const makeToggle =
+    (dirty: boolean, setExpanded: (v: boolean) => void) => (next: boolean) => {
+      if (next || !dirty) {
+        setExpanded(next)
+        return
+      }
+      void confirmNavigation().then((ok) => {
+        if (ok) setExpanded(false)
+      })
+    }
 
   if (isLoading) {
     return <p className="text-body text-(--color-text-muted)">Caricamento template…</p>
@@ -38,7 +55,7 @@ export const EmailTemplatesTab: FC = () => {
         <CollapsibleCard
           title="Accetta prenotazione"
           expanded={acceptedExpanded}
-          onExpandedChange={setAcceptedExpanded}
+          onExpandedChange={makeToggle(acceptedDirty, setAcceptedExpanded)}
           contentClassName="p-5"
         >
           <EmailTemplateEditor
@@ -49,13 +66,15 @@ export const EmailTemplatesTab: FC = () => {
             defaultClosing={DEFAULT_ACCEPTED_CLOSING}
             label="Accetta prenotazione"
             bare
+            onSaved={() => setAcceptedExpanded(false)}
+            onDirtyChange={setAcceptedDirty}
           />
         </CollapsibleCard>
 
         <CollapsibleCard
           title="Rifiuta prenotazione"
           expanded={rejectedExpanded}
-          onExpandedChange={setRejectedExpanded}
+          onExpandedChange={makeToggle(rejectedDirty, setRejectedExpanded)}
           contentClassName="p-5"
         >
           <EmailTemplateEditor
@@ -66,6 +85,8 @@ export const EmailTemplatesTab: FC = () => {
             defaultClosing={DEFAULT_REJECTED_CLOSING}
             label="Rifiuta prenotazione"
             bare
+            onSaved={() => setRejectedExpanded(false)}
+            onDirtyChange={setRejectedDirty}
           />
         </CollapsibleCard>
       </section>

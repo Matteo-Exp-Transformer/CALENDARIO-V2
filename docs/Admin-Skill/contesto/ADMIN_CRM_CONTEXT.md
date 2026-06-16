@@ -5,7 +5,7 @@
 >
 > **Aggiornato 15-06-26 (polish FU-EMAIL-7):** CrmPage è ora a **due tab** — Rubrica clienti e Personalizza email.
 > La tab "Personalizza email" è strutturata in **due gruppi separati**:
-> - **Email automatiche** — due CollapsibleCard (`defaultExpanded={false}`, chiuse di default), Accetta e Rifiuta.
+> - **Email automatiche** — due CollapsibleCard controllate (chiuse di default), Accetta e Rifiuta; si chiudono al click/dopo Salva, con conferma guard se dirty (vedi §7).
 > - **Email personalizzate** — `CampaignsManager` (ex "Campagne email").
 
 ## 1. Flussi utente
@@ -114,7 +114,7 @@ Non c'e FK diretta. `useCustomers`:
 
 | Azione | Scrittura |
 |---|---|
-| Crea cliente | insert `customers source='manual'` |
+| ~~Crea cliente~~ | **Rimossa** — `CustomerFormModal` è solo `edit`; `useCreateCustomer` resta nel hook ma non è più cablato a UI |
 | Modifica cliente | update `customers`; se solo booking, crea riga synced; patch booking collegate |
 | Elimina cliente | soft-delete booking collegate e delete fisico riga `customers` |
 
@@ -126,8 +126,8 @@ Non c'e FK diretta. `useCustomers`:
 - Invio promo richiede `VITE_ENABLE_SEND_EMAIL=true`; se false, `useSendPromoEmail` lancia errore UI.
 - Invio promo uno-a-uno: nessun limite Brevo array (cap 10 per batch → non tocca quel limite).
 - **Destinatari email solo da prenotazione** — `PromoRecipientPicker` mostra solo clienti con `source === 'booking'` (accettazione privacy garantita dal form pubblico); clienti `source='manual'` esclusi dal picker.
-- **Guard dirty attivo su editor email** — `EmailTemplateEditor` e `CampaignEditor` si registrano a `UnsavedChangesContext`; cambiare tab/sezione con modifiche aperte apre la modale Salva/Annulla/Esci.
-- **CollapsibleCard email automatiche in stato controllato** — `EmailTemplatesTab` gestisce `acceptedExpanded`/`rejectedExpanded` come state locale; la card non si chiude per re-render o refetch query.
+- **Guard dirty attivo su editor email** — `EmailTemplateEditor` e `CampaignEditor` si registrano a `UnsavedChangesContext`. La modale Salva/Annulla/Esci scatta su: **cambio tab** Rubrica↔Personalizza email (`CrmPage.handleTabChange → confirmNavigation`) e **chiusura della CollapsibleCard** (vedi sotto). **Eccezione aperta:** la X in alto a destra/ritorno dashboard bypassa ancora il guard per `allowPrenotazioniDashboard`; tracciato in FU-EMAIL-11.
+- **CollapsibleCard email automatiche in stato controllato** — `EmailTemplatesTab` gestisce `acceptedExpanded`/`rejectedExpanded` + `acceptedDirty`/`rejectedDirty`. Comportamento voluto per le card-con-form del CRM: la card **si chiude** al click sull'header e **dopo il salvataggio** (`onSaved` → collassa); **ma** se il form è dirty la chiusura passa per `confirmNavigation()` (`makeToggle`), così appare la modale Salva/Annulla/Esci prima di collassare. La card non si chiude per re-render/refetch (stato controllato). `EmailTemplateEditor` espone `onSaved` e `onDirtyChange` al parent.
 
 ## 8. Rischi
 

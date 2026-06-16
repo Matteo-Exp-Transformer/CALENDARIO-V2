@@ -22,6 +22,10 @@ interface Props {
   preview?: React.ReactNode
   /** Se true, omette wrapper esterno e titolo h3 — usato dentro CollapsibleCard. */
   bare?: boolean
+  /** Chiamato dopo un salvataggio/ripristino riuscito (es. per chiudere la card). */
+  onSaved?: () => void
+  /** Notifica il parent dello stato dirty (per intercettare la chiusura della card). */
+  onDirtyChange?: (dirty: boolean) => void
 }
 
 export const EmailTemplateEditor: FC<Props> = ({
@@ -34,6 +38,8 @@ export const EmailTemplateEditor: FC<Props> = ({
   label,
   preview,
   bare = false,
+  onSaved,
+  onDirtyChange,
 }) => {
   const upsert = useUpsertEmailTemplate()
   const remove = useDeleteEmailTemplate()
@@ -70,12 +76,12 @@ export const EmailTemplateEditor: FC<Props> = ({
           closing: hideClosing ? null : closing.trim() || null,
         },
         {
-          onSuccess: () => { toast.success(`"${label}" salvato`); resolve() },
+          onSuccess: () => { toast.success(`"${label}" salvato`); resolve(); onSaved?.() },
           onError: (e) => { toast.error(`Errore salvataggio: ${e.message}`); reject(e) },
         },
       )
     })
-  }, [upsert, templateKey, subject, intro, closing, hideClosing, label])
+  }, [upsert, templateKey, subject, intro, closing, hideClosing, label, onSaved])
 
   const handleDiscard = useCallback(() => {
     setSubject(saved?.subject ?? '')
@@ -93,6 +99,13 @@ export const EmailTemplateEditor: FC<Props> = ({
     return () => registerUnsavedHandlers(guardId, null)
   }, [guardId, handleSave, handleDiscard, registerUnsavedHandlers])
 
+  // Notifica il parent dello stato dirty (per intercettare la chiusura della card)
+  // e azzera alla smontaggio della card collassata.
+  useEffect(() => {
+    onDirtyChange?.(dirty)
+  }, [dirty, onDirtyChange])
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange])
+
   const handleReset = () => {
     remove.mutate(templateKey, {
       onSuccess: () => {
@@ -100,6 +113,7 @@ export const EmailTemplateEditor: FC<Props> = ({
         setIntro('')
         setClosing('')
         toast.success(`"${label}" ripristinato ai valori predefiniti`)
+        onSaved?.()
       },
       onError: (e) => toast.error(`Errore ripristino: ${e.message}`),
     })
