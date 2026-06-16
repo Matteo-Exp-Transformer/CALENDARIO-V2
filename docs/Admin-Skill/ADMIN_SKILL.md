@@ -157,7 +157,7 @@ Stato operativo aggiornato:
 |---|---|---|
 | Shell / ingresso / navigazione globale | ✅ blindato (10-06-26) | FU-042 E2E + validate; M1 su `main` privato, nessun sync pubblico richiesto |
 | Prenotazioni operative | ✅ cancello M2 (11-06-26) | Vitest **32** + E2E FU-043 (warning accept + modali 375/834); residui U3/U9 non bloccanti |
-| Impostazioni / Personalizza Form | ✅ blindato M4 (16-06-26) | Vitest `settings-*` **107/107** (15 file); Fase D + QA 375/834/1280; FU-009 chiuso; report finale Area 3 |
+| Impostazioni / Personalizza Form | ✅ blindato M4 (16-06-26) | Vitest `settings-*` **120/120** (17 file); E2E settings **6/6** con QA anteprime 375/900/1256; FU-002 riscritto; FU-009 chiuso |
 | Menu admin / magazzino | ✅ blindato M3 (11-06-26) | Vitest **27** + E2E `@admin-blindatura: menu-magazzino`; QA Matteo; pronto merge production |
 | Servizio | ⬜ | Include walk-in, tavoli e briefing |
 | CRM | ⬜ | Include clienti e booking collegate |

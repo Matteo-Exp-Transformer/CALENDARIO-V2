@@ -42,7 +42,7 @@ Fronti previsti:
 | `e2e/admin-classic-tabs.spec.ts` | tab Classic |
 | `e2e/admin-booking-mgmt.spec.ts` | gestione prenotazioni admin |
 | `e2e/admin-calendar-blindatura.spec.ts` | smoke Calendario: badge mese con limite/>100%, badge senza limite, digest, nuova prenotazione |
-| `e2e/admin-settings-blindatura.spec.ts` | smoke Impostazioni: anagrafica, footer, dirty guard tema |
+| `e2e/admin-settings-blindatura.spec.ts` | smoke Impostazioni: anagrafica, footer, dirty guard tema, anteprime tema/sfondo 375/900/1256 |
 | `e2e/admin-menu-magazzino-blindatura.spec.ts` | Menu/Magazzino: toggle disponibilità, propagazione Prenota/QR, responsive |
 | `e2e/admin-menu-magazzino-ct.spec.ts` | Menu/Magazzino controtest browser |
 | `e2e/pro/pro-login.spec.ts` | login Pro |
@@ -79,13 +79,13 @@ Fronti previsti:
 ### E2E smoke settings / calendario
 
 - `e2e/admin-calendar-blindatura.spec.ts` -> smoke browser su badge mese con limite/>100%, badge senza limite, digest e `+ Nuova prenotazione`
-- `e2e/admin-settings-blindatura.spec.ts` -> smoke browser su anagrafica, footer e dirty guard tema
+- `e2e/admin-settings-blindatura.spec.ts` -> smoke browser su anagrafica, footer, dirty guard tema e modali anteprima tema/sfondo 375/900/1256
 
 ### 3-bis. M4 Impostazioni — `@admin-blindatura: settings-*` (15-06-26)
 
 | Marcatore | File | Casi |
 |---|---|---|
-| `settings-registry` | `restaurantSettingRegistry.settingsM4.adminBlindatura.test.ts` | nome obbligatorio, contatti opzionali, cap 45/65/30/120, daily 0/vuoto |
+| `settings-registry` | `restaurantSettingRegistry.settingsM4.adminBlindatura.test.ts` | 5 — nome obbligatorio, contatti opzionali, cap 45/65/30/120, daily 0/vuoto |
 | `settings-anagrafica-ui` | `settingsAnagraficaUi.settingsM4.adminBlindatura.test.tsx` | 8 — contatti vuoti OK, nome vuoto blocca con toast+scroll+pulse, modale pubblica una volta, guard pill, errore save, save aggregato |
 | `settings-save-guard` | `settingsSaveGuard.settingsM4.adminBlindatura.test.tsx` | 12 — footer unico padre, modale pubblica singola, no doppia mutation, fail+retry, guard pill/logout durante pending, guard «Salva e continua» durante save pubblico, FIX 4 scroll+pulse su primo errore nome/orari |
 | `settings-time-slots` | `settingsTimeSlots.settingsM4.adminBlindatura.test.tsx` + `bookingTimeSlots.settingsM4.adminBlindatura.test.ts` + `restaurantSettingRegistry.slotGuestCapacities.settingsM4.adminBlindatura.test.ts` | 24 — enable/disable, add, delete modale in-app (Annulla/Conferma, no `window.confirm`), overlap blocca save con scroll+pulse, overnight hint, cap per-fascia vs `daily_guest_limit`, cap invalido/alto, delete+save→`deleteServiceSlot`, mutation fail+retry, FIX 3 riordino manuale con `display_order` e capienze per-id |
@@ -102,11 +102,11 @@ Gate Batch 1/2 (15-06-26, agg. §5A/§5B P2): run aggregato **35 test** verdi �
 
 Gate Area B2 (16-06-26): run aggregato **35 test** verdi — `settingsSaveGuard.settingsM4` 12/12, `settingsTimeSlots.settingsM4` 15/15, `settingsPromo.settingsM4` 8/8.
 
-**QA browser Area 3 (16-06-26):** Fase D rompi + viewport **375 / 834 / 1280** documentati in `Report-fase-d-rompi-7a-15-06-26.md` (save-guard, pill, modale pubblica, smoke Prenota); **FU-009** upload foto carosello reale Supabase + overlay pubblico verificato su TEST (`Report-finale-area3-impostazioni-15-06-26.md`). **Area 3 Impostazioni = blindata** (16-06-26). Residuo infra: Playwright admin login headless locale intermittente — non blocca blindatura.
+**QA browser Area 3 / M4 (16-06-26):** Fase D rompi + viewport documentati; addendum finale `admin-settings-blindatura.spec.ts` **6/6** su **375 / 900 / 1256** copre footer/guard e modali anteprima tema + sfondo senza click intercettati, console pulita. **FU-009** upload foto carosello reale Supabase + overlay pubblico verificato su TEST (`Report-finale-area3-impostazioni-15-06-26.md`). **M4 Impostazioni = blindata** (16-06-26). Residuo infra: Playwright admin login headless locale intermittente — non blocca blindatura.
 
 ## 3-ter. Area 3 — Impostazioni locale (M4) — blindato ✅ (16-06-26)
 
-Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **107/107** (15 file, gate Batch 1/2 **35/35** incluso); `npm run validate` **739/739** al 16-06-26; E2E smoke `admin-settings-blindatura.spec.ts` copre anagrafica/footer/dirty guard 375/834; report finale [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md). Prompt sequenziali: [`Prompt-agenti-test-blindatura-admin-impostazioni.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Prompt-agenti-test-blindatura-admin-impostazioni.md). Residuo fuori cancello: **FU-051** date mock.
+Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **120/120** (17 file, gate Batch 1/2 **35/35** incluso); `npm run validate` **758/758** al 16-06-26; E2E smoke `admin-settings-blindatura.spec.ts` **6/6** copre anagrafica/footer/dirty guard e anteprime tema/sfondo su 375/900/1256; report finale [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md). Prompt sequenziali: [`Prompt-agenti-test-blindatura-admin-impostazioni.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Prompt-agenti-test-blindatura-admin-impostazioni.md). Residuo fuori cancello: **FU-051** date mock; copertura E2E calendario post-riordino fasce da valutare come follow-up dedicato.
 
 ## 4. Unit/component per menu magazzino/QR
 

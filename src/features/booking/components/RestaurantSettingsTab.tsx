@@ -118,7 +118,7 @@ const previewPickFocusRingClass =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 sm:focus-visible:ring-offset-2'
 
 const previewPickEyeButtonClass =
-  'absolute left-1/2 top-1/2 z-[10] flex min-h-11 min-w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-0 bg-black/50 text-white shadow-md transition-opacity duration-200 sm:min-h-[3rem] sm:min-w-[3rem] pointer-events-none opacity-0 [@media(hover:hover)]:group-hover:pointer-events-auto [@media(hover:hover)]:group-hover:opacity-100 max-sm:pointer-events-auto max-sm:opacity-100 max-sm:bg-black/45 [@media(pointer:coarse)]:pointer-events-auto [@media(pointer:coarse)]:opacity-100 [@media(pointer:coarse)]:bg-black/45'
+  'absolute left-1/2 top-1/2 z-[10] flex min-h-11 min-w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-0 bg-black/50 text-white opacity-0 shadow-md transition-opacity duration-200 sm:min-h-[3rem] sm:min-w-[3rem] [@media(hover:hover)]:group-hover:opacity-100 max-sm:opacity-100 max-sm:bg-black/45 [@media(pointer:coarse)]:opacity-100 [@media(pointer:coarse)]:bg-black/45'
 
 const previewPickHoverScaleClass =
   'h-full w-full transition-transform duration-300 ease-out [@media(hover:hover)]:group-hover:scale-105'

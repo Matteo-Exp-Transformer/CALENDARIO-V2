@@ -56,19 +56,19 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 | **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | ✅ Vitest **32** + E2E **7** (FU-043) | ✅ **BLINDATO** (11-06-26) | **M2** ✔️ |
 | **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (41 test M2 +2 No-show; validate **527**, 11-06-26) + E2E smoke | ✅ **BLINDATO** (11-06-26) — Fase C + batch A/B + C-U2 + QA badge §9 OK Matteo | **M2** ✔️ **MERGED PROD (11-06)** |
 | **Admin — Menu / magazzino** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest **27** + E2E `@admin-blindatura: menu-magazzino` (375/834/1280; validate **554**) | ✅ **BLINDATO** (11-06-26) — QA Matteo toggle+propagazione; fix modal `b9f283f` | **M3** ✔️ **MERGED PROD (12-06)** |
-| **Admin — Impostazioni/Personalizza Form** | ✅ (15-06) | ✅ (15-06) | ✅ Vitest `settings-*` **107** (15 file) + E2E smoke + QA 375/834/1280; validate **739** | ✅ **BLINDATO** (16-06-26) — FU-009 carosello chiuso; report finale Area 3 | **M4** ✔️ |
+| **Admin — Impostazioni/Personalizza Form** | ✅ (15-06) | ✅ (15-06) | ✅ Vitest `settings-*` **120** (17 file) + E2E settings **6/6** + QA 375/900/1256; validate **758** | ✅ **BLINDATO** (16-06-26) — FU-002 riscritto, FU-009 carosello chiuso, QA anteprime chiusa | **M4** ✔️ |
 | **Admin — Servizio (Pro)** | ⬜ | 🔶 doc | ✅ smoke E2E + 3 Vitest hook | ⬜ | **M5 (NON in main)** |
 | **Admin — CRM (Pro)** | ⬜ | 🔶 doc | ✅ smoke E2E + 1 Vitest email/form | ⬜ | **M5 (NON in main)** |
 | **Admin — Home/Analytics (Pro)** | ⬜ | 🔶 doc | ✅ smoke E2E Home/Analytics | ⬜ | **M5 (NON in main)** |
 | **Cross-area prod-ready (debiti §5)** | n/a | n/a | n/a | 🔶 **parziale** | **M6** |
 
-\* *Impostazioni: intervista di SEZIONE chiusa 15-06-26 (anagrafica/orari/tema/sfondo/form/carosello/promo come insieme); Area 3 blindata 16-06-26. Residuo fuori cancello: FU-051 date mock.*
+\* *Impostazioni: intervista di SEZIONE chiusa 15-06-26 (anagrafica/orari/tema/sfondo/form/carosello/promo come insieme); M4 blindata 16-06-26. Residui fuori cancello: FU-051 date mock; follow-up da valutare per E2E calendario dopo riordino fasce.*
 
 **Trasversali già intervistate** (valgono su più sezioni, non ripetere): limiti testo anti-rottura
 (03/04-06), validazione/comportamento form (29-05), salvataggio admin fase 1 (29-05), promo/offerte
-(29-05), release/sync versioni (parziale, 05-06). **Trasversali ancora aperte:** pattern salvataggio
-unificato (FU-002), conferma delete unica app-wide (FU-003), guard chiusura modale su tutti i modali
-(FU-023).
+(29-05), release/sync versioni (parziale, 05-06), promo allineato al footer (FU-002 riscritto in M4).
+**Trasversali ancora aperte:** conferma delete unica app-wide (FU-003), guard chiusura modale su tutti i
+modali (FU-023), salvataggio pubblico dati (FU-004/005).
 
 ---
 
@@ -177,8 +177,8 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 ### M4 — Admin Impostazioni / Personalizza Form
 - **Dettaglio:** sezione Area 3 da aggiungere a `PLAN_BLINDATURA_ADMIN.md`; context
   `ADMIN_SETTINGS_CONTEXT.md` esiste.
-- **Stato:** ✅ **BLINDATO** 16-06-26. Intervista e mappa chiuse per anagrafica/orari/tema/sfondo/form/carosello/promo; suite `settings-*` + smoke E2E + QA responsive allineati.
-- **Resta fuori cancello:** FU-051 date mock e verifiche visuali fini quando si toccano sfondi, tema, carosello e asset reali.
+- **Stato:** ✅ **BLINDATO** 16-06-26. Intervista e mappa chiuse per anagrafica/orari/tema/sfondo/form/carosello/promo; suite `settings-*` **120/120** (17 file), `npm run validate` **758/758**, E2E settings **6/6** su 375/900/1256 con anteprime tema/sfondo e console pulita.
+- **Resta fuori cancello:** FU-051 date mock; follow-up da valutare per E2E calendario dopo riordino fasce; verifiche visuali fini quando si toccano sfondi, tema, carosello e asset reali.
 
 ### M5 — Sidebar + pagine Pro (Servizio / CRM / Home / Analytics) — **NON in main**
 - **Dettaglio:** Aree 5/6/7 di `PLAN_BLINDATURA_ADMIN.md`.
@@ -222,7 +222,7 @@ milestone naturale di competenza.
 | FU-RESP-1 | Larghezze fisse non responsive | `BookingRequestForm.tsx:1456`, `MenuSelection.tsx:463/506`, `CustomerListTable.tsx:89` | basso | nel controtest responsive dell'area (M2/M3/M5) |
 | FU-AUTH-1 | ~~Admin rimosso da `admin_users` resta loggato finché refresh token valido~~ — **chiuso M6 12-06-26:** restore sessione senza riga `admin_users` esegue `signOut`, pulisce tenant su route admin e non chiama `setTenantFromAdmin`; test dedicato. | `AdminAuthContext.tsx` | — | M6 ✅ |
 | FU-AUTH-2 | Se RPC `check_admin_email` fallisce, tenant=null ma user loggato | `TenantContext.tsx` | medio | M1/M6 |
-| FU-002/003/023 | Pattern salvataggio unificato / conferma delete unica / guard modale su tutti i modali — **progresso M6 12-06-26:** niente `window.confirm` nei file app vivi; delete ingrediente/preset/promo e cambio Card/Carosello usano `Modal` in-app + test statico. Restano guard modali app-wide e salvataggio pubblico dati (FU-004/005). | trasversali aperti | basso-medio | M6 |
+| FU-002/003/023 | Pattern salvataggio unificato / conferma delete unica / guard modale su tutti i modali — **FU-002 riscritto in M4:** promo apply/delete/toggle sono locali+dirty e persistono solo dal footer; niente `window.confirm` nei file app vivi; delete ingrediente/preset/promo e cambio Card/Carosello usano `Modal` in-app + test statico. Restano guard modali app-wide e salvataggio pubblico dati (FU-004/005). | trasversali aperti | basso-medio | M6 |
 
 ---
 
@@ -246,7 +246,7 @@ Decisione (10-06-26): **questo è un masterplan nuovo separato**, indice sopra i
 3. **M2 (Dashboard prenotazioni):** ✅ operative + Calendario blindati; Calendario **merged prod 11-06**.
    Residui operative restano fuori cancello e passano a M6/milestone naturale.
 4. **M3 (Menu admin):** ✅ blindato 11-06-26 — **merged prod 12-06**; FU-MQR-3 chiuso (categoria assente PROD).
-5. **M4 (Settings):** intervista di sezione → salvataggio fase2 + cross-impatto Prenota → merge.
+5. **M4 (Settings):** ✅ blindato 16-06-26 — salvataggio unificato, tema/sfondo, promo, fasce/orari e QA anteprime chiusi; merge da gestire dopo conferma Matteo.
 6. **M5 (Pro/sidebar):** intervistare+blindare su TEST, **NON mergiare in main**; chiude FU-TEST-1/TABLE-1/BRIEF-1.
 7. **M6 (cross-area):** chiudere FU-EMAIL, FU-TYPES, FU-LOG, FU-AUTH, FU-002/003/023.
 

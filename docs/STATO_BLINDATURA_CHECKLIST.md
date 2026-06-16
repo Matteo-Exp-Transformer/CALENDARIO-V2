@@ -11,6 +11,7 @@
 > Aggiornato: **2026-06-16**.
 > Ultimo run E2E Codex: `npx playwright test --workers=1` → **58 passed, 16 skipped** su staging TEST.
 > Addendum mirato Codex: `public-booking-smoke` → **11 passed**; `public-booking-smoke + public-menu-qr` → **14 passed**; `admin-calendar-blindatura` → **2 passed**.
+> Addendum M4 finale: `admin-settings-blindatura.spec.ts` → **6 passed** con anteprime tema/sfondo a 375/900/1256.
 > Gli skip sono prerequisiti non disponibili o suite legacy disattivate; le spunte sotto indicano solo
 > i flussi davvero verificati da Playwright.
 
@@ -34,7 +35,7 @@
 | **Admin — Shell/Navigazione** (M1) | ✅ blindato (10-06) | ~14 Vitest + 15 E2E | Smoke login/sidebar/guard; header fallback |
 | **Admin — Prenotazioni operative** (M2) | ✅ blindato (11-06) | 35 Vitest + 7 E2E | No-show/archivio in dev; responsive 375 su tutti i modali |
 | **Admin — Tab Calendario** (M2) | ✅ blindato + prod (11-06) | 43 Vitest + 2 E2E smoke | Gate tavolo Pro; guard overlay |
-| **Admin — Impostazioni/Personalizza Form** (M4) | ✅ blindato (16-06) | 107 Vitest + 1 E2E smoke | Tema/carosello admin restano browser/visuali se tocchi la UI |
+| **Admin — Impostazioni/Personalizza Form** (M4) | ✅ blindato (16-06) | 120 Vitest + 6 E2E smoke | Tema/carosello admin restano browser/visuali se tocchi la UI |
 | **Admin — Menu/Magazzino** (M3) | ✅ blindato (11-06) | 27 Vitest + 4 E2E | Sync rename/delete; snapshot prenotazioni; HEIC |
 | **Admin — Servizio** (Pro) | ⬜ non mappato | 3 Vitest + 1 E2E smoke | Tutto il prodotto: sale/tavoli/slot/walk-in/briefing |
 | **Admin — CRM** (Pro) | ⬜ non mappato | 1 Vitest + 1 E2E smoke | Delete multi-step, email normalizzata, campagne |
@@ -82,14 +83,15 @@ quando li tocchi.
 
 ### 2.4 Impostazioni / Personalizza Form (M4) ✅
 - [x] Impostazioni apre Anagrafica Azienda / Personalizza Form.
-- [x] Nome locale **obbligatorio** al Salva: nome vuoto disabilita "Salva modifiche".
+- [x] Nome locale **obbligatorio** al Salva: nome vuoto blocca il persist, scrolla al campo e non apre la modale pubblica.
 - [ ] Contatti opzionali (cap 45/65/30/120).
 - [ ] `daily_guest_limit` 0/vuoto = nessun limite; se attivo blocca **solo** Prenota pubblica.
 - [x] Orari tutti chiusi → sezione Orari **assente** su Prenota; overlap blocca il Salva admin.
 - [ ] Tema admin **non** cambia Prenota né Menu QR.
 - [x] Sfondo XOR: striscia **oppure** foto pagina intera, mai entrambe; niente → crema.
-- [x] Footer "Salva modifiche" raggiungibile su 375px e 834px; guard dirty tema appare.
-- [ ] Una sola modale "dati pubblici"; doppio click = una mutation.
+- [x] Footer "Salva modifiche" raggiungibile su 375px e 900px; guard dirty tema appare.
+- [x] Anteprima tema/sfondo apre modale usabile a 375px, 900px e 1256px; nessun bottone invisibile intercetta il click.
+- [x] Una sola modale "dati pubblici"; doppio click = una mutation.
 - [x] Form non configurato → EmptyState su `/prenota` (niente form demo).
 
 ### 2.5 Menu / Magazzino (M3) ✅
@@ -149,7 +151,7 @@ Trovate nella controverifica 16-06-26 e **risolte**: la documentazione viva ora 
 ## 6. Promemoria comandi
 
 ```bash
-npm run validate        # gate quotidiano: TUTTI i Vitest in mock devono essere verdi (739/739 al 16-06)
+npm run validate        # gate quotidiano: TUTTI i Vitest in mock devono essere verdi (758/758 al 16-06)
 npm run dev             # app in locale su :5173 per la verifica manuale
 npx playwright test e2e/<spec>.spec.ts --workers=1   # E2E su staging TEST (serve .env.local.test)
 npx playwright test e2e/public-menu-qr.spec.ts --workers=1

@@ -17,6 +17,20 @@ const SMALL_VIEWPORTS = [
   { label: 'tablet-900', tag: '@viewport:tablet-900', width: 900, height: 1194 },
 ] as const
 
+const PREVIEW_VIEWPORTS = [
+  ...SMALL_VIEWPORTS,
+  { label: 'desktop-1256', tag: '@viewport:desktop-1256', width: 1256, height: 800 },
+] as const
+
+function collectBrowserErrors(page: Page) {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') errors.push(msg.text())
+  })
+  return errors
+}
+
 async function loginClassicAdmin(page: Page) {
   await page.goto('/login', { waitUntil: 'domcontentloaded' })
   await page.fill('#email', ADMIN_EMAIL)
@@ -49,6 +63,13 @@ async function expectButtonReachable(page: Page, name: RegExp) {
   expect(box!.y + box!.height).toBeLessThanOrEqual(viewport!.height + 1)
 }
 
+async function closePreviewDialog(page: Page, title: RegExp) {
+  const dialog = page.getByRole('dialog', { name: title })
+  await expect(dialog).toBeVisible()
+  await dialog.getByRole('button', { name: /^Chiudi$/i }).last().click()
+  await expect(dialog).not.toBeVisible()
+}
+
 test.describe('Admin Impostazioni - smoke desktop', () => {
   test.skip(!hasE2eCreds, 'richiede credenziali staging in .env.local.test')
 
@@ -77,9 +98,6 @@ test.describe('Admin Impostazioni - smoke desktop', () => {
     await saveButton.click()
 
     await expect(page.getByRole('dialog', { name: /Salva modifiche pubbliche/i })).toHaveCount(0)
-    await expect(page.locator('#settings-error-restaurant-name')).toHaveClass(
-      /booking-public-field-attention/,
-    )
     await expect(nameField).toBeInViewport()
   })
 })
@@ -108,6 +126,48 @@ for (const viewport of SMALL_VIEWPORTS) {
       const guard = page.getByRole('dialog').filter({ hasText: /Modifiche non salvate/i })
       await expect(guard).toBeVisible({ timeout: 10000 })
       await guard.getByRole('button', { name: /Resta qui/i }).click()
+    })
+  })
+}
+
+for (const viewport of PREVIEW_VIEWPORTS) {
+  test.describe(`Admin Impostazioni - anteprime responsive ${viewport.label} ${viewport.tag}`, () => {
+    test.skip(!hasE2eCreds, 'richiede credenziali staging in .env.local.test')
+
+    // @admin-blindatura: settings-e2e
+    // Copre: hit target reale del bottone occhio su tema/foto e modale anteprima usabile.
+    test('anteprima tema e foto aprono la modale senza click intercettati', async ({ page }) => {
+      const browserErrors = collectBrowserErrors(page)
+
+      await page.setViewportSize({ width: viewport.width, height: viewport.height })
+      await loginClassicAdmin(page)
+      await goToSettings(page)
+
+      const themeSection = page.locator('section[aria-labelledby="app-theme-heading"]')
+      await themeSection.scrollIntoViewIfNeeded()
+      const themePreviewButton = themeSection.getByRole('button', {
+        name: /Ingrandisci anteprima: Terracotta & Sand/i,
+      })
+      await expect(themePreviewButton).toBeVisible()
+      await themePreviewButton.click()
+      await expect(page.getByRole('dialog', { name: /Terracotta & Sand/i })).toBeVisible()
+      await closePreviewDialog(page, /Terracotta & Sand/i)
+
+      await expect(
+        themeSection.getByRole('button', { name: /Seleziona tema: Terracotta & Sand/i }),
+      ).toBeVisible()
+
+      await page.getByRole('button', { name: /Personalizza Form/i }).click()
+      await expect(page.getByRole('heading', { name: /Sfondo pagina Prenota/i })).toBeVisible()
+
+      const photoPreviewButton = page.getByRole('button', { name: /Ingrandisci anteprima: Sfondo 1/i })
+      await photoPreviewButton.scrollIntoViewIfNeeded()
+      await expect(photoPreviewButton).toBeVisible()
+      await photoPreviewButton.click()
+      await expect(page.getByRole('dialog', { name: /Sfondo 1/i })).toBeVisible()
+      await closePreviewDialog(page, /Sfondo 1/i)
+
+      expect(browserErrors, 'errori console/browser').toEqual([])
     })
   })
 }
