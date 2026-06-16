@@ -4,8 +4,8 @@
  */
 import { test, expect, Page } from '@playwright/test'
 
-const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || 'admin@staging.it'
-const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || 'password-staging'
+const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || 'testc@c.com'
+const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || '123456'
 
 async function loginAdmin(page: Page) {
   await page.goto('/login')
