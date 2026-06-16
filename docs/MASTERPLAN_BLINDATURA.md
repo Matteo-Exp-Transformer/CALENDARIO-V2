@@ -56,14 +56,13 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 | **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | ✅ Vitest **32** + E2E **7** (FU-043) | ✅ **BLINDATO** (11-06-26) | **M2** ✔️ |
 | **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (41 test M2 +2 No-show; validate **527**, 11-06-26) | ✅ **BLINDATO** (11-06-26) — Fase C + batch A/B + C-U2 + QA badge §9 OK Matteo | **M2** ✔️ **MERGED PROD (11-06)** |
 | **Admin — Menu / magazzino** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest **27** + E2E `@admin-blindatura: menu-magazzino` (375/834/1280; validate **554**) | ✅ **BLINDATO** (11-06-26) — QA Matteo toggle+propagazione; fix modal `b9f283f` | **M3** ✔️ **MERGED PROD (12-06)** |
-| **Admin — Impostazioni/Personalizza Form** | 🔶 trasversali* | 🔶 doc | 🔶 salvataggio fase1 | ⬜ | **M4** |
+| **Admin — Impostazioni/Personalizza Form** | ✅ (15-06) | ✅ (15-06) | ✅ Vitest `settings-*` **107** (15 file) + QA 375/834/1280; validate **733** | ✅ **BLINDATO** (16-06-26) — FU-009 carosello chiuso; report finale Area 3 | **M4** ✔️ |
 | **Admin — Servizio (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
 | **Admin — CRM (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
 | **Admin — Home/Analytics (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
 | **Cross-area prod-ready (debiti §5)** | n/a | n/a | n/a | 🔶 **parziale** | **M6** |
 
-\* *Impostazioni: alcune funzionalità trasversali sono già state intervistate (salvataggio admin fase 1,
-promo/offerte, limiti testo). Manca l'intervista di SEZIONE su anagrafica/orari/tema come insieme.*
+\* *Impostazioni: intervista di SEZIONE chiusa 15-06-26 (anagrafica/orari/tema/sfondo/form/carosello/promo come insieme); Area 3 blindata 16-06-26. Residuo fuori cancello: FU-051 date mock.*
 
 **Trasversali già intervistate** (valgono su più sezioni, non ripetere): limiti testo anti-rottura
 (03/04-06), validazione/comportamento form (29-05), salvataggio admin fase 1 (29-05), promo/offerte
