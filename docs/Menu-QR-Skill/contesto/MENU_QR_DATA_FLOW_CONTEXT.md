@@ -165,7 +165,7 @@ della casa» è solo placeholder admin). Slide senza `image_url` escluse dal par
 | ID | Sintesi | Stato Fase 3 (30-05-26) |
 |----|---------|-------------------------|
 | INC-01 | Header usa `organizations_public.name`, non `restaurant_name` | **Risolto** — `useRestaurantName()` in `PublicMenuPage` |
-| INC-02 | `menu_qr_codes.name` non mostrato al cliente | Aperto |
+| INC-02 | `menu_qr_codes.name` non mostrato al cliente | **Voluto** — nome QR interno per Mario, non titolo pubblico |
 | INC-03 | Nessuna UI per `content_type` / `preset_ids` | Posticipato (fuori scope Fase 3) |
 | INC-04 | Tema QR ignorato su pagine categoria/preset | **Risolto** — `theme_key` header + `hidden_menu_item_ids` + foto categoria (`qr.category_images[key]`) su `PublicMenuCategoryPage` (13-06-26) |
 | INC-05 | Preset page: no foto piatti | **N/A** — `PublicMenuPresetPage` rimossa (migr. 043) |

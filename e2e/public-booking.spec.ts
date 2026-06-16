@@ -1,11 +1,11 @@
 /**
  * Pre-requisiti staging:
  *   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY → progetto Supabase staging
- *   E2E_TENANT_SLUG → slug di un'organizzazione attiva nel DB staging
+ *   E2E_TENANT_SLUG → slug di un'organizzazione attiva nel DB staging (default: 'test')
  */
 import { test, expect, type Page } from '@playwright/test'
 
-const TENANT_SLUG = process.env.E2E_TENANT_SLUG || 'test-ristorante'
+const TENANT_SLUG = process.env.E2E_TENANT_SLUG || 'test'
 const BOOKING_URL = `/prenota/${TENANT_SLUG}`
 
 /** ≥1256px: submit nel form; <1256px: submit nel riepilogo (`form="booking-request-form"`). */

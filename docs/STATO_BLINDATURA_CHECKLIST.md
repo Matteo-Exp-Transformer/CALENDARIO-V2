@@ -114,15 +114,17 @@ copre il **flusso cliente pubblico del Menu QR** — va guardato a mano (vedi gu
 
 ---
 
-## 5. Divergenze doc↔codice note (non bloccanti, da sistemare quando si passa di lì)
+## 5. Divergenze doc↔codice note
 
-Trovate nella controverifica 16-06-26. Non rompono nulla, ma allineare evita confusione futura:
+Trovate nella controverifica 16-06-26 e **risolte**: la documentazione viva ora riflette il codice.
 
-1. **Prenota** — `e2e/public-booking.spec.ts` ha fallback slug `test-ristorante` (stale): lo slug TEST reale è `test`. Usa sempre `E2E_TENANT_SLUG=test`.
-2. **Prenota** — `PRENOTA_TEXT_LIMITS_MAP.md` dice nome locale **40**, ma il cap reale è **45** (registry + `bookingPrenotaTextLimits.ts`). Allineare la mappa.
-3. **Menu QR** — `MENU_QR_REFERENCE.md §2` descrive il flag `qrMenu` come `isProOrAbove || qrMenuEnabled`; il codice usa `buildFeatures(edition, overrides)` (Set di override DB). Stesso risultato, descrizione da aggiornare.
-4. **Menu QR** — tabella INC in `MENU_QR_DATA_FLOW_CONTEXT.md`: INC-02 (nome QR invisibile al cliente) è **voluto**, non una lacuna — la tabella non lo riflette.
-5. **Admin Shell** — voce sidebar `settings` "latente" citata come debito in `ADMIN_SHELL_NAV_CONTEXT.md`: verificare se è ancora in `SIDEBAR_NAV` o già rimossa.
+1. **Prenota** — fallback E2E allineato a `E2E_TENANT_SLUG=test`.
+2. **Prenota** — mappa limiti testo allineata al cap nome locale **45**.
+3. **Menu QR** — flag `qrMenu` documentato su `buildFeatures(edition, featureOverrides)` +
+   `tenant_features`.
+4. **Menu QR** — INC-02 marcato come scelta voluta: il nome QR è interno e non si mostra al cliente.
+5. **Admin Shell** — rimosso il debito `settings` latente: Impostazioni resta tab dashboard
+   `/admin/impostazioni`, non voce sidebar.
 
 ---
 

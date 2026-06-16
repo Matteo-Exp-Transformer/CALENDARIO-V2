@@ -23,15 +23,18 @@ Il ristoratore (admin) crea i QR code dalla sezione **Menu → QR Code** (pulsan
 
 | Edition | Valore di default |
 |---------|-------------------|
-| `pro` / `enterprise` | `true` (sempre) |
-| `classic` | `false` — override manuale via colonna `organizations.qr_menu_enabled = true` |
+| `pro` / `enterprise` | `true` (bundle Pro) |
+| `classic` | `false` — attivabile con override `tenant_features.feature_key = 'qrMenu'` |
 
 Definizione in `src/config/features.ts`:
 ```ts
-qrMenu: isProOrAbove || qrMenuEnabled
+qrMenu: active.has('qrMenu')
 ```
 
-`qrMenuEnabled` viene letto da `TenantContext` (campo `qrMenuEnabled: boolean`), che lo legge dalla view `organizations_public.qr_menu_enabled` durante `setTenantFromSlug`.
+`TenantContext` espone `featureOverrides` dalla view `organizations_public` (aggregato da
+`tenant_features`). `useFeatures()` chiama `buildFeatures(edition, featureOverrides)`: il bundle Pro
+aggiunge `qrMenu` di default, mentre Classic lo riceve solo tramite override DB. La vecchia colonna
+`organizations.qr_menu_enabled` è legacy e non governa più la UI.
 
 ---
 

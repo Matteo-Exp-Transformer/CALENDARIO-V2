@@ -307,6 +307,7 @@ Allineamenti mirati suite esistente (stesso giro):
 
 Buchi / controlli residui Shell (fuori M1):
 
-- Verifica che la action `settings` latente resti non esposta o venga rimossa in Area Settings (M4).
+- ~~Action `settings` latente sidebar~~ — rimossa; Impostazioni resta tab dashboard
+  (`/admin/impostazioni`), coperta dal routing shell.
 - E2E anagrafica testo con autosave OFF (comportamento prod FU-004) — oggi dirty guard E2E usa tema
   (non in autosave) per affidabilità in `npm run dev`.

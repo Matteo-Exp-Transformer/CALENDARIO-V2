@@ -84,7 +84,8 @@ chiave gia registrata.
 - `restaurant_settings` e leggibile in parte dal pubblico: non salvare segreti.
 - Alcune chiavi hanno fallback operativi: da distinguere da dati inventati.
 - Se nessuna modalita Prenota e attiva, la pagina pubblica non mostra il form.
-- Il tab Impostazioni e raggiungibile da dashboard; la action settings sidebar e latente.
+- Il tab Impostazioni e raggiungibile dalla dashboard (`/admin/impostazioni`); non esiste una action
+  sidebar dedicata.
 
 ## 8. Decisioni intervista M4 (15-06-26)
 

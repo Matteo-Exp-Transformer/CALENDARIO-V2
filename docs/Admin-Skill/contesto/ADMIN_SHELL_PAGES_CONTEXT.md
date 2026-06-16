@@ -155,7 +155,9 @@ customer.email === searchTerm  // case-sensitive, manca trim
 
 ### Note
 
-- Da sidebar, **Impostazioni** usa `restaurantSettingsSignal` verso `AdminDashboard`. Con Home attiva, l'azione `open-settings` naviga a Prenotazioni per montare `AdminDashboard` (unico consumer del segnale). Vedi NAV §4–§5.
+- **Impostazioni** non è una sezione shell Pro: resta una tab di `AdminDashboard`
+  (`/admin/impostazioni`). Il vecchio ponte `restaurantSettingsSignal` / `open-settings` è stato
+  rimosso.
 
 ---
 

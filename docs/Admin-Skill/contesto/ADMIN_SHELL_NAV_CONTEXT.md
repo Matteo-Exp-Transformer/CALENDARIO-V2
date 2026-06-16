@@ -81,12 +81,9 @@ Azioni:
 - X nelle sezioni -> torna a dashboard prenotazioni.
 - Logout -> esce.
 
-Esiste una action `settings` con `restaurantSettingsSignal`, ma nella lista corrente non c'e una voce
-sidebar "Impostazioni": percorso latente.
-
-`restaurantSettingsSignal` e un evento, non uno stato di tab persistente: `AdminDashboard` deve
-consumare ogni incremento una sola volta. Se resta > 0 e viene riletto a ogni cambio tab, la tab
-Impostazioni puo riaprirsi per un frame dopo che l'utente ha selezionato un'altra tab.
+Non esiste una voce sidebar "Impostazioni". Le impostazioni restano una tab interna della dashboard
+classica, raggiungibile da `/admin/impostazioni` e dai nav item di `AdminDashboard`.
+Il vecchio percorso `settings` via `restaurantSettingsSignal` è stato rimosso.
 
 ## 5. Dashboard interna
 
@@ -127,7 +124,7 @@ Header: se manca il nome ristorante, il fallback e `Sistema Gestionale Prenotazi
 - Back/forward browser deve ripercorrere le sezioni principali.
 - Logout con modifiche dirty deve mostrare il guard.
 - Home deve sparire se `features.home=false`.
-- `settings` latente non raggiungibile da sidebar.
+- Impostazioni raggiungibile solo come tab dashboard (`/admin/impostazioni`), non come sezione sidebar.
 - Doppio `useAdminAuth` e doppio theme effect.
 - ✅ **Flash cambio tab/sezione (risolto 06-06-26):** la schermata vecchia non deve riapparire per un
   istante al cambio. Causa era stato duplicato che si rincorreva con l'URL; fix = derivare da URL (§1).
