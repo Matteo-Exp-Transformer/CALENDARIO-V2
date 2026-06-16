@@ -270,7 +270,10 @@ referenziarlo come contesto obbligatorio per agenti post-produzione.
 
 ```
 LOCK  CollapsibleCard.tsx          — mai toccare
-LOCK  Modal.tsx  z-[10050]         — stack calibrato con Toast z-100000
+LOCK  Modal.tsx  z-[10050]         — stack calibrato con Toast z-100000. FIX 7 (16-06-26): all'apertura
+      il dialog riceve `.focus()` + `.scrollIntoView({block:'start'})` (sincrono, niente rAF — un
+      ritardo ruba il focus a un campo che l'utente sta già compilando) per inquadrarlo dal titolo
+      anche se più alto del viewport. Non toccare z-index/struttura portal per estendere questo fix.
 LOCK  TenantContext.tsx            — core multi-tenancy — MAI (eccezione: edition + featureOverrides)
 LOCK  src/lib/supabase.ts          — client autenticato — MAI
 LOCK  supabase/migrations/         — DB remoto già applicato — MAI

@@ -59,7 +59,11 @@ chiave gia registrata.
 
 - Autosave limitato ad anagrafica semplice e alcuni campi header (`SETTINGS_AUTOSAVE_ENABLED` = OFF in PROD build salvo `VITE_SETTINGS_AUTOSAVE=true`; hook preservato ma inerte — FU-004).
 - Le aree complesse usano salvataggio esplicito/guard.
-- **Promo CRUD save-on-apply (FU-002 fase 2):** Applica/Elimina/toggle-visibilità su promo persistono immediatamente via `useUpsertRestaurantSetting` in modalità `silent: true`, senza toccare il footer. Se la chiamata fallisce, il dirty state viene alzato per permettere retry manuale.
+- **Promo CRUD allineato al footer (FU-002 riscritto, FIX 6, 16-06-26):** Applica/Elimina/toggle-visibilità
+  su promo aggiornano solo la lista locale e alzano dirty. Non esiste piu persistenza autonoma
+  `silent` scollegata dal footer: il persist di `booking_menu_promos` passa da `saveSection()` via
+  ref, dentro il Salva unificato di Impostazioni. Se il persist fallisce, l'errore risale al
+  chiamante/footer e la UI locale resta modificata per retry.
 - **Lista promo** (`BookingFormPromoSection`, FU-026): card riga `menu-prices-item-row` — testo in
   `.menu-prices-item-text`; matita/occhio/cestino in `.menu-prices-item-actions` in basso a destra
   (classi `menu-prices-icon-btn`, stesso pattern tab Menu magazzino).
@@ -71,8 +75,8 @@ chiave gia registrata.
 - `app_theme` accetta solo ID noti in `APP_THEME_IDS`.
 - `business_hours` usa orari `HH:mm`. Con **2+ fasce nello stesso giorno** non sono ammesse
   sovrapposizioni: validazione **live** in `BusinessHoursEditor` (banner rosso per giorno) e
-  **blocco al Salva** anagrafica (`validateBusinessHours` in `@/lib/businessHours`: footer
-  **Salva modifiche** disabilitato + toast se si tenta il persist). Logica overlap riusa
+  **blocco al Salva** anagrafica (`validateBusinessHours` in `@/lib/businessHours`: il footer resta
+  cliccabile, poi mostra toast, scrolla al primo errore e lampeggia la sezione). Logica overlap riusa
   `slotRangesOverlap` (`open`→`start`, `close`→`end`), con sort per
   `open` prima del controllo; fasce che attraversano mezzanotte incluse.
 - `booking_public_form_config` normalizza mode, sub-tab, icone, testi e display.
@@ -108,10 +112,21 @@ chiave gia registrata.
 - Sezione **opzionale** verso il pubblico: tutti i giorni chiusi/disattivati → **nessuna sezione Orari** in Prenota.
 - **Non** condizionano la possibilità di prenotare (validazione cliente solo se orari configurati e parsabili).
 - Struttura/overlap **malformati** → admin **non salva**; pubblico **non crasha** e **non** mostra orari invalidi.
+- **Default all'apertura giorno (FIX 2, 16-06-26):** quando un giorno passa da "Chiuso" ad aperto senza
+  uno snapshot precedente (mai configurato), `BusinessHoursEditor` popola insieme **due** fasce —
+  pranzo `06:30–16:30` e cena `17:30–23:30` — invece del singolo slot generico `11:00–00:00` di prima.
+  Stesso default anche nel ramo defensive di `addSlot()` se il giorno risultasse senza fasce. Un
+  giorno **con fasce già esistenti** non viene mai sovrascritto: "Aggiungi apertura" aggiunge solo una
+  fascia in più (`11:00–00:00`). Annulla (rispunta "Chiuso") resta sullo snapshot esistente, non sui
+  nuovi default. Test: `@admin-blindatura: settings-business-hours-editor`.
 
 ### Fasce, capienze, limiti
 
 - **Fasce/capienze Classic** e **limite per-fascia** (se attivo): admin **avviso**, mai blocco operativo (allineato M2).
+- **Riordino manuale fasce (FIX 3, 16-06-26):** in Classic l'utente sposta le fasce con frecce
+  Su/Giu nella sezione "Imposta Fasce Orarie". Al Salva `display_order` viene riassegnato in base
+  all'ordine UI; le capienze restano agganciate per `slot.id`, non per posizione. Il pubblico legge
+  lo stesso ordine tramite i path esistenti dei service slot.
 - **`daily_guest_limit`**: `0`/vuoto = nessun limite; blocca **solo** Prenota pubblica (edge `DAILY_LIMIT`); admin può sforare con avviso.
 - **`booking_window_days`**: chiave registry **orfana** (solo admin, nessuna UI consumer) — fuoriscope M4; implementazione Fase C **rimossa** su richiesta 15-06-26 (vedi report Fase C §Fuoriscope). **Non implementare senza nuova decisione esplicita di Matteo.**
 
@@ -127,6 +142,9 @@ chiave gia registrata.
 - Salvataggio esplicito (autosave debug OFF su PROD — FU-004); **modale dati pubblici** al Salva (FU-005).
 - **Guard** globale su cambio tab Impostazioni, sezione admin, logout (`UnsavedChangesContext`).
 - **Footer unificato M4 (15-06-26):** un solo `SettingsSaveFooter` + una sola `PublicDataSaveConfirmModal` nel padre `RestaurantSettingsTab` per Anagrafica + Personalizza form (`hideSaveUi` su `BookingFormConfigPanel`); Salva aggregato se entrambe le aree sono dirty.
+- **Primo errore al Salva (FIX 4, 16-06-26):** se Anagrafica/Orari/Fasce sono invalidi, il footer
+  non apre la modale pubblica: scrolla con `block:'center'` sul primo errore visivo e applica la
+  pulse `booking-public-field-attention`. Priorita mappa: nome locale, orari di apertura, fasce orarie.
 - **Save pending + guard (15-06-26):** se il Salva della modale pubblica è già in corso (`upsert.isPending`), `handleCombinedSave` rifiuta un secondo avvio (es. «Salva e continua» sul guard navigazione) — il guard resta aperto, una sola mutation. Il guard «Salva e continua» rispetta anche `hasBlockingOperations` (toast, zero seconda mutation) per altre aree admin.
 - Form non configurato su Classic → **EmptyState** chiaro su `/prenota`; niente `DEFAULT_BOOKING_FORM_CONFIG` sul pubblico (M6).
 

@@ -1,5 +1,6 @@
 // @admin-blindatura: settings-save-guard
 // Copre: footer unico padre, PublicDataSaveConfirmModal singola, no doppia mutation, fail retry, guard pill/sezione/logout durante pending, guard «Salva e continua» vs save pubblico pending
+// FIX 4: Salva con nome/orari invalidi resta sulla pagina, scrolla al primo errore e applica pulse.
 
 import '@testing-library/jest-dom/vitest'
 import { describe, expect, it, vi, beforeEach, beforeAll } from 'vitest'
@@ -184,6 +185,7 @@ describe('settings-save-guard M4 — footer, modale pubblica, guard', () => {
     vi.stubGlobal('__APP_VERSION__', 'test')
     vi.stubGlobal('__BUILD_COMMIT__', 'test-commit')
     vi.stubGlobal('__BUILD_DATE__', '2026-01-01')
+    Element.prototype.scrollIntoView = vi.fn()
   })
 
   beforeEach(() => {
@@ -230,6 +232,56 @@ describe('settings-save-guard M4 — footer, modale pubblica, guard', () => {
 
     expect(screen.getAllByRole('dialog')).toHaveLength(1)
     expect(screen.getByRole('dialog', { name: /salva modifiche pubbliche/i })).toBeInTheDocument()
+  })
+
+  it('Salva con nome vuoto → niente modale pubblica, scroll + pulse sul nome locale', async () => {
+    const user = userEvent.setup()
+    const scrollSpy = vi.fn()
+    Element.prototype.scrollIntoView = scrollSpy
+    renderSettingsTab()
+
+    const nameInput = await screen.findByLabelText(/nome ristorante/i)
+    await user.clear(nameInput)
+
+    await waitFor(() => {
+      expect(screen.getByRole('region', { name: /modifiche non salvate/i })).toBeInTheDocument()
+    })
+    await user.click(screen.getByRole('button', { name: /salva modifiche/i }))
+
+    expect(screen.queryByRole('dialog', { name: /salva modifiche pubbliche/i })).not.toBeInTheDocument()
+    expect(toast.error).toHaveBeenCalledWith('Il nome del ristorante è obbligatorio')
+    await waitFor(() => {
+      expect(scrollSpy).toHaveBeenCalledWith(expect.objectContaining({ block: 'center' }))
+    })
+    expect(document.getElementById('settings-error-restaurant-name')).toHaveClass(
+      'booking-public-field-attention',
+    )
+  })
+
+  it('Salva con orari apertura sovrapposti → scroll + pulse su Orari prima della modale', async () => {
+    restaurantSettingsData.business_hours = {
+      ...getDefaultBusinessHours(),
+      monday: [
+        { open: '12:00', close: '15:00' },
+        { open: '14:00', close: '16:00' },
+      ],
+    }
+    const user = userEvent.setup()
+    const scrollSpy = vi.fn()
+    Element.prototype.scrollIntoView = scrollSpy
+    renderSettingsTab()
+
+    const nameInput = await screen.findByLabelText(/nome ristorante/i)
+    await user.type(nameInput, 'X')
+    await user.click(screen.getByRole('button', { name: /salva modifiche/i }))
+
+    expect(screen.queryByRole('dialog', { name: /salva modifiche pubbliche/i })).not.toBeInTheDocument()
+    expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/luned/i))
+    await waitFor(() => {
+      expect(scrollSpy).toHaveBeenCalledWith(expect.objectContaining({ block: 'center' }))
+    })
+    const businessHoursSection = document.getElementById('settings-error-business-hours')
+    expect(businessHoursSection?.querySelector('.booking-public-field-attention')).not.toBeNull()
   })
 
   it('doppio click footer Salva non apre modali duplicate', async () => {

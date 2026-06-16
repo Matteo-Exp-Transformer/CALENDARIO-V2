@@ -1,19 +1,24 @@
 // @admin-blindatura: settings-promo
-// Copre: delete/toggle/apply saveSilently (no «prossimo salvataggio»); label tipologie da config;
-// fallimento saveSilently alza dirty per retry footer
+// Copre: FIX 6 (16-06-26) — apply/delete/toggle aggiornano SOLO lo stato locale + dirty, nessuna
+// persistenza autonoma (FU-002 ribaltato); save() via ref persiste e azzera dirty; fail di save()
+// rilancia (lo gestisce il chiamante/footer) lasciando promo in UI locale; label tipologie da config
 
 import '@testing-library/jest-dom/vitest'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createRef } from 'react'
 import {
   DEFAULT_BOOKING_FORM_CONFIG,
   type BookingMode,
 } from '@/features/booking/constants/bookingPublicFormConfig'
 import type { MenuPromo } from '@/features/booking/constants/menuPromo'
 import { toast } from 'react-toastify'
-import { BookingFormPromoSection } from '../settings/BookingFormPromoSection'
+import {
+  BookingFormPromoSection,
+  type BookingFormPromoSectionHandle,
+} from '../settings/BookingFormPromoSection'
 
 const mutateAsyncSpy = vi.fn()
 
@@ -64,16 +69,22 @@ function makeCustomBookingModes(): BookingMode[] {
 function renderPromoSection(options?: {
   bookingModes?: BookingMode[]
   onDirtyChange?: (dirty: boolean) => void
+  ref?: React.RefObject<BookingFormPromoSectionHandle>
 }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <QueryClientProvider client={client}>
       <BookingFormPromoSection
+        ref={options?.ref}
         bookingModes={options?.bookingModes ?? DEFAULT_BOOKING_FORM_CONFIG.booking_modes}
         onDirtyChange={options?.onDirtyChange}
       />
     </QueryClientProvider>,
   )
+}
+
+function createPromoRef(): React.RefObject<BookingFormPromoSectionHandle> {
+  return createRef<BookingFormPromoSectionHandle>() as React.RefObject<BookingFormPromoSectionHandle>
 }
 
 describe('settings-promo delete copy', () => {
@@ -83,9 +94,10 @@ describe('settings-promo delete copy', () => {
     mutateAsyncSpy.mockResolvedValue(undefined)
   })
 
-  it('la modale delete non parla di prossimo salvataggio e conferma chiama saveSilently', async () => {
+  it('la modale delete parla di footer, non di salvataggio autonomo, e l’elimina è solo locale', async () => {
+    const onDirtyChange = vi.fn()
     const user = userEvent.setup()
-    renderPromoSection()
+    renderPromoSection({ onDirtyChange })
 
     await waitFor(() => {
       expect(screen.getByText('Promo weekend')).toBeInTheDocument()
@@ -97,20 +109,14 @@ describe('settings-promo delete copy', () => {
 
     const dialog = await screen.findByRole('dialog', { name: /eliminare la promo/i })
     const body = within(dialog).getByText(/sei sicuro di voler eliminare/i).textContent ?? ''
-    expect(body).toMatch(/salvata subito/i)
-    expect(body).not.toMatch(/prossimo salvataggio/i)
+    expect(body).toMatch(/salva modifiche.*footer/i)
+    expect(body).not.toMatch(/salvata subito/i)
 
     await user.click(within(dialog).getByRole('button', { name: /elimina promo/i }))
 
-    await waitFor(() => {
-      expect(mutateAsyncSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          items: [{ key: 'booking_menu_promos', value: [] }],
-          options: { silent: true },
-        }),
-      )
-    })
     expect(screen.queryByText('Promo weekend')).not.toBeInTheDocument()
+    expect(onDirtyChange).toHaveBeenCalledWith(true)
+    expect(mutateAsyncSpy).not.toHaveBeenCalled()
   })
 })
 
@@ -152,16 +158,15 @@ describe('settings-promo label dinamiche da config', () => {
   })
 })
 
-describe('settings-promo saveSilently failure', () => {
+describe('settings-promo: apply/toggle/delete sono locali, niente persistenza autonoma', () => {
   beforeEach(() => {
     resetSavedPromos()
     mutateAsyncSpy.mockReset()
     mutateAsyncSpy.mockResolvedValue(undefined)
   })
 
-  it('toggle visibilità fallito alza dirty per retry footer', async () => {
+  it('toggle visibilità: aggiorna solo lo stato locale e alza dirty, nessuna mutation', async () => {
     const onDirtyChange = vi.fn()
-    mutateAsyncSpy.mockRejectedValueOnce(new Error('network'))
     const user = userEvent.setup()
     renderPromoSection({ onDirtyChange })
 
@@ -172,18 +177,86 @@ describe('settings-promo saveSilently failure', () => {
     const row = screen.getByText('Promo weekend').closest('.menu-prices-item-row')
     await user.click(within(row as HTMLElement).getByRole('button', { name: /nascondi nella pagina prenota/i }))
 
-    await waitFor(() => {
-      expect(mutateAsyncSpy).toHaveBeenCalled()
-      expect(onDirtyChange).toHaveBeenCalledWith(true)
-      expect(toast.error).toHaveBeenCalledWith('Errore nel salvataggio della promo')
-    })
+    expect(screen.getByRole('button', { name: /mostra nella pagina prenota/i })).toBeInTheDocument()
+    expect(onDirtyChange).toHaveBeenCalledWith(true)
+    expect(mutateAsyncSpy).not.toHaveBeenCalled()
   })
 
-  it('delete fallito: promo resta assente in UI locale e alza dirty per retry footer', async () => {
+  it('Applica nuova promo: entra nella lista locale e alza dirty, nessuna mutation', async () => {
+    resetSavedPromos([])
     const onDirtyChange = vi.fn()
-    mutateAsyncSpy.mockRejectedValueOnce(new Error('network'))
     const user = userEvent.setup()
-    renderPromoSection({ onDirtyChange })
+    renderPromoSection({ bookingModes: makeCustomBookingModes(), onDirtyChange })
+
+    await user.click(await screen.findByRole('button', { name: /nuova promo/i }))
+    await user.type(screen.getByLabelText(/nome promo \(admin\)/i), 'Promo nuova')
+    await user.type(screen.getByLabelText(/testo promo \(prenota\)/i), 'Messaggio promo')
+    await user.click(screen.getByLabelText('Tavolo Estivo'))
+    await user.click(screen.getByRole('button', { name: /aggiungi alla lista/i }))
+
+    expect(screen.getByText('Promo nuova')).toBeInTheDocument()
+    expect(onDirtyChange).toHaveBeenCalledWith(true)
+    expect(mutateAsyncSpy).not.toHaveBeenCalled()
+  })
+})
+
+describe('settings-promo: save() via ref persiste tutta la lista (chiamato dal footer)', () => {
+  beforeEach(() => {
+    resetSavedPromos()
+    mutateAsyncSpy.mockReset()
+    mutateAsyncSpy.mockResolvedValue(undefined)
+  })
+
+  it('apply locale + ref.save() persiste la lista intera e azzera dirty', async () => {
+    resetSavedPromos([])
+    const onDirtyChange = vi.fn()
+    const ref = createPromoRef()
+    const user = userEvent.setup()
+    renderPromoSection({ bookingModes: makeCustomBookingModes(), onDirtyChange, ref })
+
+    await user.click(await screen.findByRole('button', { name: /nuova promo/i }))
+    await user.type(screen.getByLabelText(/nome promo \(admin\)/i), 'Promo nuova')
+    await user.type(screen.getByLabelText(/testo promo \(prenota\)/i), 'Messaggio promo')
+    await user.click(screen.getByLabelText('Tavolo Estivo'))
+    await user.click(screen.getByRole('button', { name: /aggiungi alla lista/i }))
+
+    expect(mutateAsyncSpy).not.toHaveBeenCalled()
+
+    await act(async () => {
+      await ref.current!.save()
+    })
+
+    expect(mutateAsyncSpy).toHaveBeenCalledWith([
+      expect.objectContaining({ key: 'booking_menu_promos' }),
+    ])
+    expect(ref.current!.isDirty()).toBe(false)
+    expect(toast.success).toHaveBeenCalled()
+  })
+
+  it('ref.save() fallito rilancia l’errore e lascia la promo in UI locale (footer gestisce il toast/dirty)', async () => {
+    mutateAsyncSpy.mockRejectedValueOnce(new Error('network'))
+    const ref = createPromoRef()
+    const user = userEvent.setup()
+    renderPromoSection({ ref })
+
+    await waitFor(() => {
+      expect(screen.getByText('Promo weekend')).toBeInTheDocument()
+    })
+
+    const row = screen.getByText('Promo weekend').closest('.menu-prices-item-row')
+    await user.click(within(row as HTMLElement).getByRole('button', { name: /nascondi nella pagina prenota/i }))
+
+    await act(async () => {
+      await expect(ref.current!.save()).rejects.toThrow('network')
+    })
+    expect(screen.getByText('Promo weekend')).toBeInTheDocument()
+  })
+
+  it('ref.cancel() ripristina i promo salvati e azzera dirty', async () => {
+    const onDirtyChange = vi.fn()
+    const ref = createPromoRef()
+    const user = userEvent.setup()
+    renderPromoSection({ onDirtyChange, ref })
 
     await waitFor(() => {
       expect(screen.getByText('Promo weekend')).toBeInTheDocument()
@@ -194,86 +267,13 @@ describe('settings-promo saveSilently failure', () => {
     const dialog = await screen.findByRole('dialog', { name: /eliminare la promo/i })
     await user.click(within(dialog).getByRole('button', { name: /elimina promo/i }))
 
-    await waitFor(() => {
-      expect(mutateAsyncSpy).toHaveBeenCalled()
-      expect(onDirtyChange).toHaveBeenCalledWith(true)
-      expect(toast.error).toHaveBeenCalledWith('Errore nel salvataggio della promo')
-      expect(screen.queryByText('Promo weekend')).not.toBeInTheDocument()
-    })
-  })
+    expect(screen.queryByText('Promo weekend')).not.toBeInTheDocument()
 
-  it('apply fallito: promo resta in UI locale e alza dirty per retry footer', async () => {
-    resetSavedPromos([])
-    const onDirtyChange = vi.fn()
-    mutateAsyncSpy.mockRejectedValueOnce(new Error('network'))
-    const user = userEvent.setup()
-    renderPromoSection({ bookingModes: makeCustomBookingModes(), onDirtyChange })
-
-    await user.click(await screen.findByRole('button', { name: /nuova promo/i }))
-    await user.type(screen.getByLabelText(/nome promo \(admin\)/i), 'Promo nuova')
-    await user.type(screen.getByLabelText(/testo promo \(prenota\)/i), 'Messaggio promo')
-    await user.click(screen.getByLabelText('Tavolo Estivo'))
-    await user.click(screen.getByRole('button', { name: /aggiungi alla lista/i }))
-
-    await waitFor(() => {
-      expect(mutateAsyncSpy).toHaveBeenCalled()
-      expect(onDirtyChange).toHaveBeenCalledWith(true)
-      expect(toast.error).toHaveBeenCalledWith('Errore nel salvataggio della promo')
-      expect(screen.getByText('Promo nuova')).toBeInTheDocument()
-    })
-  })
-})
-
-describe('settings-promo toggle/apply senza «prossimo salvataggio»', () => {
-  beforeEach(() => {
-    resetSavedPromos()
-    mutateAsyncSpy.mockReset()
-    mutateAsyncSpy.mockResolvedValue(undefined)
-  })
-
-  it('toggle visibilità persiste subito in silent mode', async () => {
-    const user = userEvent.setup()
-    renderPromoSection()
-
-    await waitFor(() => {
-      expect(screen.getByText('Promo weekend')).toBeInTheDocument()
+    act(() => {
+      ref.current!.cancel()
     })
 
-    const row = screen.getByText('Promo weekend').closest('.menu-prices-item-row')
-    await user.click(within(row as HTMLElement).getByRole('button', { name: /nascondi nella pagina prenota/i }))
-
-    await waitFor(() => {
-      expect(mutateAsyncSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          items: expect.arrayContaining([
-            expect.objectContaining({ key: 'booking_menu_promos' }),
-          ]),
-          options: { silent: true },
-        }),
-      )
-    })
-    expect(document.body.textContent ?? '').not.toMatch(/prossimo salvataggio/i)
-  })
-
-  it('Applica nuova promo persiste subito in silent mode senza copy «prossimo salvataggio»', async () => {
-    resetSavedPromos([])
-    const user = userEvent.setup()
-    renderPromoSection({ bookingModes: makeCustomBookingModes() })
-
-    await user.click(await screen.findByRole('button', { name: /nuova promo/i }))
-    await user.type(screen.getByLabelText(/nome promo \(admin\)/i), 'Promo nuova')
-    await user.type(screen.getByLabelText(/testo promo \(prenota\)/i), 'Messaggio promo')
-    await user.click(screen.getByLabelText('Tavolo Estivo'))
-    await user.click(screen.getByRole('button', { name: /aggiungi alla lista/i }))
-
-    await waitFor(() => {
-      expect(mutateAsyncSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          options: { silent: true },
-        }),
-      )
-    })
-    expect(document.body.textContent ?? '').not.toMatch(/prossimo salvataggio/i)
-    expect(screen.getByText('Promo nuova')).toBeInTheDocument()
+    expect(screen.getByText('Promo weekend')).toBeInTheDocument()
+    expect(ref.current!.isDirty()).toBe(false)
   })
 })

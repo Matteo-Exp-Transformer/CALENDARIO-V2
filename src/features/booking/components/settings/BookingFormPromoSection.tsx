@@ -260,18 +260,13 @@ export const BookingFormPromoSection = forwardRef<BookingFormPromoSectionHandle,
       onDirtyChange?.(dirty)
     }, [dirty, onDirtyChange])
 
-    const saveSilently = async (nextPromos: MenuPromo[]) => {
-      const normalized = normalizeMenuPromosList(nextPromos)
-      const uniqueness = validateMenuPromoUniqueness(normalized)
-      if (!uniqueness.ok) return
-      try {
-        await upsert.mutateAsync({ items: [{ key: 'booking_menu_promos', value: normalized }], options: { silent: true } })
-        setDirty(false)
-      } catch {
-        // Se il salvataggio silenzioso fallisce, segna dirty per retry via footer.
-        setDirty(true)
-        toast.error('Errore nel salvataggio della promo')
-      }
+    /** FIX 6 (16-06-26): «Applica»/elimina/visibilità aggiornano solo lo stato locale e alzano dirty
+     *  — niente persistenza autonoma scollegata dal footer (era FU-002, ribaltato su richiesta).
+     *  Il salvataggio vero avviene da `saveSection()`, chiamata dal footer Impostazioni via ref
+     *  (`BookingFormConfigPanel.handleSaveAllPage` quando `promoDirty`). */
+    const commitPromosLocally = (nextPromos: MenuPromo[]) => {
+      setPromos(nextPromos)
+      setDirty(true)
     }
 
     const resetEditorDraft = () => {
@@ -388,9 +383,8 @@ export const BookingFormPromoSection = forwardRef<BookingFormPromoSectionHandle,
         toast.error(uniqueness.message)
         return false
       }
-      setPromos(next)
+      commitPromosLocally(next)
       resetEditorDraft()
-      void saveSilently(next)
       return true
     }
 
@@ -435,18 +429,16 @@ export const BookingFormPromoSection = forwardRef<BookingFormPromoSectionHandle,
       if (!deleteConfirm) return
       const { promoId } = deleteConfirm
       const next = promos.filter((p) => p.id !== promoId)
-      setPromos(next)
       if (editingId === promoId) resetEditorDraft()
       setDeleteConfirm(null)
-      void saveSilently(next)
+      commitPromosLocally(next)
     }
 
     const toggleVisibility = (promoId: string) => {
       const next = promos.map((p) =>
         p.id === promoId ? { ...p, visible_on_booking: !isMenuPromoVisibleOnBooking(p) } : p,
       )
-      setPromos(next)
-      void saveSilently(next)
+      commitPromosLocally(next)
     }
 
     const saveSection = async () => {
@@ -496,8 +488,8 @@ export const BookingFormPromoSection = forwardRef<BookingFormPromoSectionHandle,
           message={
             deleteConfirm ? (
               <p>
-                Sei sicuro di voler eliminare «{deleteConfirm.summary}»? L&apos;eliminazione viene salvata
-                subito sulla pagina Prenota.
+                Sei sicuro di voler eliminare «{deleteConfirm.summary}»? L&apos;eliminazione si applica
+                subito alla lista e verrà salvata con il pulsante «Salva modifiche» del footer.
               </p>
             ) : null
           }

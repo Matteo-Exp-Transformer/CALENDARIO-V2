@@ -1,7 +1,7 @@
 /**
  * @admin-blindatura: settings-e2e
  * Copre: Anagrafica Azienda / Personalizza Form, footer salvataggio, guard dirty tema e
- * reachability responsive 375/834.
+ * reachability responsive 375/900/1256.
  *
  * Pre-requisiti staging (.env.local.test):
  *   E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD, E2E_TENANT_SLUG, E2E_SUPABASE_SERVICE_KEY
@@ -14,7 +14,7 @@ const hasE2eCreds = Boolean(ADMIN_EMAIL && ADMIN_PASSWORD)
 
 const SMALL_VIEWPORTS = [
   { label: 'mobile-375', tag: '@viewport:mobile-375', width: 375, height: 812 },
-  { label: 'tablet-834', tag: '@viewport:tablet-834', width: 834, height: 1194 },
+  { label: 'tablet-900', tag: '@viewport:tablet-900', width: 900, height: 1194 },
 ] as const
 
 async function loginClassicAdmin(page: Page) {
@@ -53,9 +53,9 @@ test.describe('Admin Impostazioni - smoke desktop', () => {
   test.skip(!hasE2eCreds, 'richiede credenziali staging in .env.local.test')
 
   // @admin-blindatura: settings-e2e
-  // Copre: pill Anagrafica/Personalizza Form, nome vuoto che disabilita Salva e footer visibile.
-  test('pill visibili e nome vuoto disabilita il salvataggio', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 })
+  // Copre: pill Anagrafica/Personalizza Form, nome vuoto che blocca il persist con scroll/pulse e footer visibile.
+  test('pill visibili e nome vuoto scrolla al primo errore senza modale pubblica', async ({ page }) => {
+    await page.setViewportSize({ width: 1256, height: 800 })
     await loginClassicAdmin(page)
     await goToSettings(page)
 
@@ -72,7 +72,15 @@ test.describe('Admin Impostazioni - smoke desktop', () => {
 
     const footer = saveFooter(page)
     await expect(footer).toBeVisible()
-    await expect(footer.getByRole('button', { name: /Salva modifiche/i })).toBeDisabled()
+    const saveButton = footer.getByRole('button', { name: /Salva modifiche/i })
+    await expect(saveButton).toBeEnabled()
+    await saveButton.click()
+
+    await expect(page.getByRole('dialog', { name: /Salva modifiche pubbliche/i })).toHaveCount(0)
+    await expect(page.locator('#settings-error-restaurant-name')).toHaveClass(
+      /booking-public-field-attention/,
+    )
+    await expect(nameField).toBeInViewport()
   })
 })
 

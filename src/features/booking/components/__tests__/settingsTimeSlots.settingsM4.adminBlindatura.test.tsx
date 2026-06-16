@@ -1,6 +1,7 @@
 // @admin-blindatura: settings-time-slots
 // Copre: enable/disable fasce, add, delete modale in-app (Annulla/Conferma), overlap blocca save,
-// overnight hint, cap per-fascia in save, mutation fail + retry
+// overnight hint, cap per-fascia in save, mutation fail + retry, riordino manuale fasce (FIX 3),
+// scroll+pulse al primo errore overlap (FIX 4)
 
 import '@testing-library/jest-dom/vitest'
 import { describe, expect, it, vi, beforeEach, beforeAll } from 'vitest'
@@ -194,6 +195,9 @@ describe('settings-time-slots M4 — fasce Classic in RestaurantSettingsTab', ()
     vi.stubGlobal('__APP_VERSION__', 'test')
     vi.stubGlobal('__BUILD_COMMIT__', 'test-commit')
     vi.stubGlobal('__BUILD_DATE__', '2026-01-01')
+    // FIX 4 (16-06-26): overlap blocca il salvataggio e scrolla al primo errore — jsdom non
+    // implementa scrollIntoView di default.
+    Element.prototype.scrollIntoView = vi.fn()
   })
 
   beforeEach(() => {
@@ -317,11 +321,12 @@ describe('settings-time-slots M4 — fasce Classic in RestaurantSettingsTab', ()
     await user.click(screen.getByRole('button', { name: /aggiungi fascia oraria/i }))
     await screen.findByLabelText(/nome fascia 2/i)
 
-    await confirmPublicSave(user)
+    await user.click(screen.getByRole('button', { name: /salva modifiche/i }))
 
     await waitFor(() => {
       expect(screen.getByText(/si sovrappongono/i)).toBeInTheDocument()
     })
+    expect(screen.queryByRole('dialog', { name: /salva modifiche pubbliche/i })).not.toBeInTheDocument()
     expect(mutateAsyncSpy).not.toHaveBeenCalled()
     expect(toast.error).toHaveBeenCalled()
     expect(screen.getByRole('region', { name: /modifiche non salvate/i })).toBeInTheDocument()
@@ -484,5 +489,182 @@ describe('settings-time-slots M4 — fasce Classic in RestaurantSettingsTab', ()
     await waitFor(() => {
       expect(mutateAsyncSpy).toHaveBeenCalledTimes(2)
     })
+  })
+})
+
+describe('settings-time-slots M4 — riordino manuale fasce (FIX 3, 16-06-26)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mutateAsyncSpy.mockResolvedValue(undefined)
+    createServiceSlotSpy.mockResolvedValue(undefined)
+    updateServiceSlotSpy.mockResolvedValue(undefined)
+    deleteServiceSlotSpy.mockResolvedValue(undefined)
+
+    restaurantSettingsData.restaurant_name = 'Locale Test'
+    restaurantSettingsData.slot_guest_capacities = { 'slot-pranzo': 50 }
+    restaurantSettingsData.daily_guest_limit = null
+    restaurantSettingsData.booking_time_slots_enabled = true
+    restaurantSettingsData.business_hours = getDefaultBusinessHours()
+    restaurantSettingsData.public_booking_page_background = DEFAULT_BOOKING_PAGE_BACKGROUND
+    restaurantSettingsData.public_booking_strip_photo = DEFAULT_BOOKING_STRIP_PHOTO
+    restaurantSettingsData.app_theme = DEFAULT_APP_THEME
+
+    serviceSlotsState.slots = [
+      {
+        id: 'slot-pranzo',
+        tenant_id: 'tenant-test',
+        name: 'Pranzo',
+        start_time: '12:00:00',
+        end_time: '15:00:00',
+        max_turns: null,
+        max_guests: null,
+        display_order: 0,
+        is_canonical: true,
+        created_at: '',
+        updated_at: '',
+      },
+      {
+        id: 'slot-cena',
+        tenant_id: 'tenant-test',
+        name: 'Cena',
+        start_time: '19:00:00',
+        end_time: '22:00:00',
+        max_turns: null,
+        max_guests: null,
+        display_order: 1,
+        is_canonical: true,
+        created_at: '',
+        updated_at: '',
+      },
+    ]
+  })
+
+  it('freccia giù su Pranzo scambia l’ordine in UI e disabilita ai confini', async () => {
+    const user = userEvent.setup()
+    renderSettingsTab()
+
+    await screen.findByLabelText(/nome fascia 1/i)
+    expect(screen.getByLabelText(/nome fascia 1/i)).toHaveValue('Pranzo')
+    expect(screen.getByLabelText(/nome fascia 2/i)).toHaveValue('Cena')
+    expect(screen.getByRole('button', { name: /sposta su fascia pranzo/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /sposta giù fascia cena/i })).toBeDisabled()
+
+    await user.click(screen.getByRole('button', { name: /sposta giù fascia pranzo/i }))
+
+    expect(screen.getByLabelText(/nome fascia 1/i)).toHaveValue('Cena')
+    expect(screen.getByLabelText(/nome fascia 2/i)).toHaveValue('Pranzo')
+    expect(screen.getByRole('region', { name: /modifiche non salvate/i })).toBeInTheDocument()
+  })
+
+  it('rompi: riordino + Salva → display_order persistito nel nuovo ordine, capienze restano per-id', async () => {
+    const user = userEvent.setup()
+    renderSettingsTab()
+
+    await screen.findByLabelText(/nome fascia 1/i)
+    await user.click(screen.getByRole('button', { name: /sposta giù fascia pranzo/i }))
+    await confirmPublicSave(user)
+
+    await waitFor(() => {
+      expect(updateServiceSlotSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'slot-cena', display_order: 0 }),
+      )
+      expect(updateServiceSlotSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'slot-pranzo', display_order: 1 }),
+      )
+    })
+
+    // Capienza agganciata a slot-pranzo per id, non per posizione — invariata dopo lo scambio.
+    const slotCaps = getUpsertItemValue('slot_guest_capacities') as Record<string, number | null>
+    expect(slotCaps['slot-pranzo']).toBe(50)
+  })
+
+  it('rompi: riordino + add + delete insieme non scambia gli id delle capienze', async () => {
+    const user = userEvent.setup()
+    renderSettingsTab()
+
+    await screen.findByLabelText(/nome fascia 1/i)
+    await user.click(screen.getByRole('button', { name: /sposta giù fascia pranzo/i }))
+    await user.click(screen.getByRole('button', { name: /aggiungi fascia oraria/i }))
+    await screen.findByLabelText(/nome fascia 3/i)
+
+    await user.click(screen.getByRole('button', { name: /rimuovi fascia nuova fascia/i }))
+    let deleteDialog = await screen.findByRole('dialog', { name: /elimina fascia oraria/i })
+    await user.click(within(deleteDialog).getByRole('button', { name: /^elimina$/i }))
+
+    await user.click(screen.getByRole('button', { name: /rimuovi fascia cena/i }))
+    deleteDialog = await screen.findByRole('dialog', { name: /elimina fascia oraria/i })
+    await user.click(within(deleteDialog).getByRole('button', { name: /^elimina$/i }))
+
+    await confirmPublicSave(user)
+
+    await waitFor(() => {
+      expect(mutateAsyncSpy).toHaveBeenCalled()
+      expect(deleteServiceSlotSpy).toHaveBeenCalledWith('slot-cena')
+    })
+
+    const slotCaps = getUpsertItemValue('slot_guest_capacities') as Record<string, number | null>
+    expect(slotCaps['slot-pranzo']).toBe(50)
+    expect(slotCaps['slot-cena']).toBeUndefined()
+  })
+})
+
+describe('settings-time-slots M4 — scroll+pulse al primo errore (FIX 4, 16-06-26)', () => {
+  beforeAll(() => {
+    // jsdom non implementa scrollIntoView di default.
+    Element.prototype.scrollIntoView = vi.fn()
+  })
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mutateAsyncSpy.mockResolvedValue(undefined)
+
+    restaurantSettingsData.restaurant_name = 'Locale Test'
+    restaurantSettingsData.slot_guest_capacities = {}
+    restaurantSettingsData.daily_guest_limit = null
+    restaurantSettingsData.booking_time_slots_enabled = true
+    restaurantSettingsData.business_hours = getDefaultBusinessHours()
+    restaurantSettingsData.public_booking_page_background = DEFAULT_BOOKING_PAGE_BACKGROUND
+    restaurantSettingsData.public_booking_strip_photo = DEFAULT_BOOKING_STRIP_PHOTO
+    restaurantSettingsData.app_theme = DEFAULT_APP_THEME
+
+    serviceSlotsState.slots = [
+      {
+        id: 'slot-pranzo',
+        tenant_id: 'tenant-test',
+        name: 'Pranzo',
+        start_time: '12:00:00',
+        end_time: '15:00:00',
+        max_turns: null,
+        max_guests: null,
+        display_order: 0,
+        is_canonical: true,
+        created_at: '',
+        updated_at: '',
+      },
+    ]
+  })
+
+  it('overlap fasce → scroll sul primo errore + pulse sulla sezione «Imposta Fasce Orarie»', async () => {
+    const user = userEvent.setup()
+    const scrollSpy = vi.fn()
+    Element.prototype.scrollIntoView = scrollSpy
+    renderSettingsTab()
+
+    await user.click(screen.getByRole('button', { name: /aggiungi fascia oraria/i }))
+    await screen.findByLabelText(/nome fascia 2/i)
+
+    await user.click(screen.getByRole('button', { name: /salva modifiche/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/si sovrappongono/i)).toBeInTheDocument()
+    })
+    expect(screen.queryByRole('dialog', { name: /salva modifiche pubbliche/i })).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(scrollSpy).toHaveBeenCalledWith(expect.objectContaining({ block: 'center' }))
+    })
+
+    const timeSlotsSection = document.getElementById('settings-error-time-slots')
+    expect(timeSlotsSection).not.toBeNull()
+    expect(timeSlotsSection?.querySelector('.booking-public-field-attention')).not.toBeNull()
   })
 })

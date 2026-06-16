@@ -132,6 +132,7 @@ vi.mock('@/contexts/UnsavedChangesContext', async (importOriginal) => {
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
 import { DEFAULT_BOOKING_FORM_CONFIG } from '@/features/booking/constants/bookingPublicFormConfig'
 import { getDefaultBusinessHours } from '@/lib/businessHours'
 import { DEFAULT_APP_THEME } from '@/features/booking/constants/appTheme'
@@ -168,6 +169,7 @@ describe('settings-anagrafica-ui M4 — flusso reale Impostazioni', () => {
     vi.stubGlobal('__APP_VERSION__', 'test')
     vi.stubGlobal('__BUILD_COMMIT__', 'test-commit')
     vi.stubGlobal('__BUILD_DATE__', '2026-01-01')
+    Element.prototype.scrollIntoView = vi.fn()
   })
 
   beforeEach(() => {
@@ -193,14 +195,24 @@ describe('settings-anagrafica-ui M4 — flusso reale Impostazioni', () => {
     expect(restaurantSettingRegistry.contact_address.validate('')).toBeNull()
   })
 
-  it('footer Salva disabilitato se nome vuoto', async () => {
+  it('footer Salva con nome vuoto scrolla e lampeggia sul campo, senza aprire la modale pubblica', async () => {
     const user = userEvent.setup()
+    const scrollSpy = vi.fn()
+    Element.prototype.scrollIntoView = scrollSpy
     renderSettingsTab()
 
     const nameInput = await screen.findByLabelText(/nome ristorante/i)
     await user.clear(nameInput)
+    await user.click(screen.getByRole('button', { name: /salva modifiche/i }))
 
-    expect(screen.getByRole('button', { name: /salva modifiche/i })).toBeDisabled()
+    expect(screen.queryByRole('dialog', { name: /salva modifiche pubbliche/i })).not.toBeInTheDocument()
+    expect(toast.error).toHaveBeenCalledWith('Il nome del ristorante è obbligatorio')
+    await waitFor(() => {
+      expect(scrollSpy).toHaveBeenCalledWith(expect.objectContaining({ block: 'center' }))
+    })
+    expect(document.getElementById('settings-error-restaurant-name')).toHaveClass(
+      'booking-public-field-attention',
+    )
   })
 
   it('footer Salva apre una sola PublicDataSaveConfirmModal', async () => {
