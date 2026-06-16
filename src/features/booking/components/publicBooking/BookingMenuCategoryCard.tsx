@@ -147,6 +147,13 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
     setExpanded(false)
   }, [])
 
+  const handleExpand = useCallback(() => {
+    if (layout === 'scroll' && horizontalScrollRef?.current) {
+      shellRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    }
+    setExpanded(true)
+  }, [layout, horizontalScrollRef])
+
   useLayoutEffect(() => {
     collapseExpanded()
   }, [resetKey, collapseExpanded])
@@ -344,7 +351,7 @@ export const BookingMenuCategoryCard: React.FC<BookingMenuCategoryCardProps> = (
             aria-expanded={false}
             aria-controls={panelId}
             className="group relative block w-full overflow-hidden rounded-[inherit] text-left"
-            onClick={() => setExpanded(true)}
+            onClick={handleExpand}
           >
             <div className={cn('relative w-full overflow-hidden bg-warm-beige/40', closedImageClass)}>
               {heroSrc ? (

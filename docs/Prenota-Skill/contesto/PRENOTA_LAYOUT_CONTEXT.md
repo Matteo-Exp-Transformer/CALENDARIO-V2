@@ -181,6 +181,11 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
    icone da catalogo unificato Menù QR (`MenuQrCategoryIconKey` in
    `booking_modes[].icon`) renderizzate con `MenuQrCategoryIconGlyph` (Phosphor `regular` + Lucide
    `strokeWidth` 1.75). Chiavi legacy in DB mappate in lettura (`BOOKING_LEGACY_ICON_TO_MENU_QR_KEY`).
+   **Titolo card (`mode.label`, 16-06-26, FIX 5 batch 9-fix Area A):** `text-[16px]` (mobile) →
+   `sm:text-[19px]` → `lg:text-[17px]` → `xl:text-[19px]`; descrizione `text-sm` (era `text-xs`).
+   Prima del fix il titolo usava `text-[13px] … lg:text-sm xl:text-base`, con lo stesso anti-pattern
+   `lg:text-sm` descritto sotto per `BookingSubTabCards` (titolo più piccolo tra ~1024px e 1280px):
+   ora il salto sm→lg resta ≤2px invece di peggiorare.
 2. **Sottotab** (`BookingSubTabCards`): scrollabili, frecce desktop + touch; icona centrata **senza
    sfondo** (`MenuQrCategoryIconGlyph`, ~`h-7` `text-warm-wood-dark` su card chiara) **solo se**
    `sub_tabs[].icon` è valorizzata in config (admin Personalizza form → «Nessuna» = campo omesso;

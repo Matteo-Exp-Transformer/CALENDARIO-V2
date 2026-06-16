@@ -107,6 +107,7 @@ Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **107/107** (
 ## 4. Unit/component per menu magazzino/QR
 
 - `src/features/booking/hooks/__tests__/useMenuCategories.test.tsx`
+- `src/features/booking/components/__tests__/menuPricesEditClose.adminBlindatura.test.tsx` — FIX 1 (batch UX 9-fix, Area A): chiude il form di Modifica Prodotto dopo «Salva» con lo stesso reset usato da «Nuovo Prodotto»; rompi Modifica→Annulla→Modifica riparte pulito
 - `src/features/booking/components/__tests__/PresetMenuBuilder.prodReady.test.tsx`
 - `src/features/booking/components/__tests__/menuQrCategoryFieldCap.test.tsx`
 - `src/features/booking/utils/__tests__/menuQrCategoryKeySync.test.ts`

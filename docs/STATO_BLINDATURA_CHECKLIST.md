@@ -10,7 +10,7 @@
 >
 > Aggiornato: **2026-06-16**.
 > Ultimo run E2E Codex: `npx playwright test --workers=1` → **58 passed, 16 skipped** su staging TEST.
-> Addendum mirato Codex: `public-booking-smoke + public-menu-qr` → **12 passed**; `admin-calendar-blindatura` → **2 passed**.
+> Addendum mirato Codex: `public-booking-smoke` → **11 passed**; `public-booking-smoke + public-menu-qr` → **14 passed**; `admin-calendar-blindatura` → **2 passed**.
 > Gli skip sono prerequisiti non disponibili o suite legacy disattivate; le spunte sotto indicano solo
 > i flussi davvero verificati da Playwright.
 
@@ -107,14 +107,14 @@ quando li tocchi.
 - [x] Form non configurato → EmptyState con recapiti (no form demo).
 - [x] Scelta tipologia è visibile/selezionabile e può mostrare la sezione menù.
 - [ ] Cambio tipologia resetta menu/totali/intolleranze.
-- [ ] Card scorrevoli **oppure** carosello (XOR), mai entrambi; card senza titolo non appare.
+- [x] Card scorrevoli **oppure** carosello (XOR), mai entrambi; card senza titolo non appare.
 - [x] Piatto con disponibilità OFF → assente dal menù pubblico Prenota.
 - [x] Submit invalido → alert/attenzione sul primo campo; email non valida → errore inline.
 - [x] Privacy link apre `/privacy?from=/prenota/:slug` e torna indietro.
 - [ ] Limite coperti pieno → "abbiamo raggiunto il numero massimo di coperti" (no salvataggio).
 - [x] Sfondo striscia/foto-intera/crema corretti; footer orari assente se non configurati.
 - [x] Submit/riepilogo raggiungibile a 375px, 834px e 1280px.
-- [ ] Riepilogo: "Totale" (non "stimato").
+- [x] Riepilogo: "Totale" (non "stimato").
 
 ---
 
