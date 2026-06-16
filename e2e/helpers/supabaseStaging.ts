@@ -103,6 +103,9 @@ type MenuQrE2eInput = {
   name: string
   categoryFilter: string[]
   hiddenMenuItemIds?: string[]
+  themeKey?: string
+  carouselItems?: unknown[]
+  categoryImages?: Record<string, string>
 }
 
 export type MenuQrE2eRow = {
@@ -235,9 +238,9 @@ export async function upsertMenuQrCode(input: MenuQrE2eInput): Promise<MenuQrE2e
     hidden_menu_item_ids: input.hiddenMenuItemIds ?? [],
     is_active: true,
     sort_order: 9000,
-    theme_key: 'mediterranean_teal',
-    carousel_items: [],
-    category_images: {},
+    theme_key: input.themeKey ?? 'mediterranean_teal',
+    carousel_items: input.carouselItems ?? [],
+    category_images: input.categoryImages ?? {},
     updated_at: new Date().toISOString(),
   }
 
@@ -261,15 +264,17 @@ export async function upsertMenuQrCode(input: MenuQrE2eInput): Promise<MenuQrE2e
 export async function deleteMenuE2eData(
   tenantId: string,
   categoryKey: string,
-  shortCode: string,
+  shortCode?: string,
 ): Promise<void> {
-  await rest(
-    `menu_qr_codes?tenant_id=eq.${tenantId}&short_code=eq.${encodeURIComponent(shortCode)}`,
-    {
-      method: 'DELETE',
-      headers: restHeaders({ Prefer: 'return=minimal' }),
-    },
-  )
+  if (shortCode) {
+    await rest(
+      `menu_qr_codes?tenant_id=eq.${tenantId}&short_code=eq.${encodeURIComponent(shortCode)}`,
+      {
+        method: 'DELETE',
+        headers: restHeaders({ Prefer: 'return=minimal' }),
+      },
+    )
+  }
   await rest(
     `menu_items?tenant_id=eq.${tenantId}&category=eq.${encodeURIComponent(categoryKey)}`,
     {

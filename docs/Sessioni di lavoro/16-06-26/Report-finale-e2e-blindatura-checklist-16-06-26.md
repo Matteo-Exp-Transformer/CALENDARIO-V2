@@ -12,7 +12,7 @@ Ho stabilizzato il run Playwright completo e aggiornato checklist, masterplan, i
 
 | Comando | Esito |
 |---|---|
-| `npx playwright test --workers=1` | ✅ 55 passed, 16 skipped |
+| `npx playwright test --workers=1` | ✅ 58 passed, 16 skipped |
 | `npx playwright test e2e/pro/pro-login.spec.ts e2e/pro/pro-sidebar-nav.spec.ts e2e/pro/pro-home.spec.ts e2e/pro/pro-crm.spec.ts e2e/pro/pro-service.spec.ts e2e/pro/pro-analytics.spec.ts --workers=1` | ✅ 15 passed |
 | `npm run validate` | ✅ verde |
 | `npx vitest run --reporter=dot --silent` | ✅ 91 file / 739 test passed |
@@ -49,6 +49,35 @@ Ho poi integrato e supervisionato i risultati, correggendo le suite legacy e i t
 
 Sono inclusi anche i test gia' creati nella sessione multi-area precedente: `public-menu-qr`, `public-booking-smoke`, `admin-calendar-blindatura`, `admin-settings-blindatura` e Vitest QR dedicati.
 
+### Addendum Codex — test visuali checklist (16-06-26)
+
+Ho proseguito il lavoro sui check visuali rimasti aperti nella checklist.
+
+Sub-agent usato:
+
+| Sub-agent | Output | Revisione |
+|---|---|---|
+| Parfit (`gpt-5.4-mini`) | Bozza `e2e/visual-blindatura-checklist.spec.ts` con 2 smoke su fixture staging esistenti | Non mantenuta: passava, ma dipendeva da shortCode/card gia presenti nel TEST; ho assorbito lo spunto in test seedati e ripristinabili. |
+
+Test aggiunti/stabilizzati:
+
+- `e2e/public-booking-smoke.spec.ts`: visual checklist Prenota con seed temporaneo su `restaurant_settings` — striscia vs foto pagina intera vs crema, e footer Orari assente quando tutti i giorni sono chiusi.
+- `e2e/public-menu-qr.spec.ts`: visual checklist Menu QR con seed temporaneo — carosello, tema, ordine categorie da `category_filter`, footer data/ora.
+- `e2e/helpers/supabaseStaging.ts`: helper QR esteso per seedare `theme_key`, `carousel_items`, `category_images`; cleanup QR reso opzionale per riuso helper.
+
+Comandi eseguiti:
+
+| Comando | Esito |
+|---|---|
+| `npx playwright test e2e/public-menu-qr.spec.ts e2e/public-booking-smoke.spec.ts --workers=1` | ✅ 10 passed |
+| `npx playwright test --workers=1` | ✅ 58 passed, 16 skipped |
+
+Checklist aggiornata:
+
+- Prenota: sfondo striscia/foto-intera/crema + footer Orari assente se non configurati.
+- Impostazioni: voce Orari chiusa combinando E2E pubblico + Vitest overlap gia presenti.
+- Menu QR: categorie nell'ordine impostato dal QR, non nell'ordine magazzino.
+
 ---
 
 ## Checklist spuntata
@@ -62,8 +91,9 @@ In `docs/STATO_BLINDATURA_CHECKLIST.md` ho spuntato solo check verificati da Pla
 - Menu/Magazzino: toggle disponibilita' propagato a Prenota e Menu QR.
 - Prenota: slug inesistente, scelta tipologia/menu, item OFF assente, submit invalido/email, privacy ritorno, submit responsive.
 - Menu QR: pagina QR, shortcode errato, item/categoria OFF assenti, browser back.
+- Addendum visuale: Prenota sfondo striscia/full-page/crema + footer Orari assente; Menu QR carosello/tema/ordine categorie/footer data-ora.
 
-Sono rimasti non spuntati i check visuali fini, i casi Classic-specifici non provabili con le credenziali staging correnti, e le verifiche Pro profonde che richiedono M5/intervista prodotto.
+Sono rimasti non spuntati i check visuali fini non oggettivi (gesture swipe, asset reali), i casi Classic-specifici non provabili se le credenziali staging non sono disponibili, e le verifiche Pro profonde che richiedono M5/intervista prodotto.
 
 ---
 
@@ -85,7 +115,7 @@ Sono rimasti non spuntati i check visuali fini, i casi Classic-specifici non pro
 - Inserire/validare credenziali `E2E_CLASSIC_ADMIN_EMAIL` / `E2E_CLASSIC_ADMIN_PASSWORD` per spuntare anche i check Classic-specifici nel run completo.
 - Configurare `E2E_VALID_INVITE_TOKEN` se vuoi coprire anche il flusso invito valido in Playwright.
 - Fare M5 vero per Pro: intervista, mappatura, test profondi su Servizio/CRM/Home/Analytics.
-- Lasciare manuali le verifiche visuali fini: sfondi, tema, caroselli, asset reali, Gmail/email reale.
+- Lasciare manuali le verifiche visuali fini non oggettive: gesture swipe, asset reali, UI admin tema/carosello quando la tocchi, Gmail/email reale.
 
 ---
 

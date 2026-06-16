@@ -147,9 +147,13 @@ Run Codex 16-06-26:
 npx playwright test --workers=1
 ```
 
-Esito: **55 passed, 16 skipped**. Gli skip sono prerequisiti assenti (`E2E_VALID_INVITE_TOKEN` /
+Esito: **58 passed, 16 skipped**. Gli skip sono prerequisiti assenti (`E2E_VALID_INVITE_TOKEN` /
 credenziali Classic dedicate non valide in questo staging) o suite legacy (`menu-crud`) sostituita dai
 test Menu/Magazzino di blindatura.
+
+Addendum visual checklist (16-06-26): `public-booking-smoke.spec.ts` copre sfondo striscia/full-page/
+crema + footer Orari assente; `public-menu-qr.spec.ts` copre carosello, tema, ordine categorie e
+footer data/ora con seed/cleanup su TEST.
 
 ## 7. Buchi iniziali da trasformare in test
 

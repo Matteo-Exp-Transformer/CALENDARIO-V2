@@ -97,4 +97,119 @@ test.describe('Menu QR pubblico — flusso cliente', () => {
       await deleteMenuE2eData(tenantId, categoryKey, shortCode).catch(() => {})
     }
   })
+
+  test('visual: carosello, tema, ordine categorie e footer data/ora', async ({ page }) => {
+    test.setTimeout(120000)
+
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    page.on('console', (msg) => {
+      if (msg.type() !== 'error') return
+      const text = msg.text()
+      if (/Failed to load resource|favicon/i.test(text)) return
+      errors.push(text)
+    })
+
+    const tenantId = await getTenantIdBySlug(TENANT_SLUG)
+    const suffix = crypto.randomUUID().replace(/-/g, '').slice(0, 8)
+    const firstCategoryKey = `e2e_qr_order_a_${suffix}`
+    const secondCategoryKey = `e2e_qr_order_b_${suffix}`
+    const firstCategoryLabel = `E2E Ordine A ${suffix}`
+    const secondCategoryLabel = `E2E Ordine B ${suffix}`
+    const shortCode = `e2ev${suffix}`
+
+    try {
+      await deleteMenuE2eData(tenantId, firstCategoryKey, shortCode)
+      await deleteMenuE2eData(tenantId, secondCategoryKey, shortCode)
+
+      await upsertMenuCategory({
+        tenantId,
+        key: firstCategoryKey,
+        label: firstCategoryLabel,
+        isAvailable: true,
+        sortOrder: 1,
+      })
+      await upsertMenuCategory({
+        tenantId,
+        key: secondCategoryKey,
+        label: secondCategoryLabel,
+        isAvailable: true,
+        sortOrder: 2,
+      })
+      await upsertMenuItem({
+        tenantId,
+        categoryKey: firstCategoryKey,
+        name: `Piatto A ${suffix}`,
+        isAvailable: true,
+      })
+      await upsertMenuItem({
+        tenantId,
+        categoryKey: secondCategoryKey,
+        name: `Piatto B ${suffix}`,
+        isAvailable: true,
+      })
+      await upsertMenuQrCode({
+        tenantId,
+        shortCode,
+        name: `QR Visual ${suffix}`,
+        categoryFilter: [secondCategoryKey, firstCategoryKey],
+        themeKey: 'dark_gold',
+        carouselItems: [
+          {
+            image_url: '/menu-themes/cream-sage-header.png',
+            eyebrow: 'E2E visual',
+            title: `Slide Prima ${suffix}`,
+            description: 'Controllo carosello QR',
+          },
+          {
+            image_url: '/menu-themes/rustic-terracotta-header.png',
+            eyebrow: 'E2E visual',
+            title: `Slide Seconda ${suffix}`,
+            description: 'Seconda slide QR',
+          },
+        ],
+      })
+
+      await page.goto(`/menu/${TENANT_SLUG}/qr/${shortCode}`, {
+        waitUntil: 'domcontentloaded',
+      })
+
+      await expect(page.getByText(`Slide Prima ${suffix}`, { exact: true })).toBeVisible({
+        timeout: 15000,
+      })
+      await expect(page.locator('img[src*="cream-sage-header.png"]').first()).toBeVisible()
+      await expect(page.getByRole('tablist', { name: /Slide specialità/i })).toBeVisible()
+      await expect(page.getByRole('tab', { name: /Slide 2 di 2/i })).toBeVisible()
+
+      await expect
+        .poll(
+          () =>
+            page.evaluate(() =>
+              Array.from(document.querySelectorAll<HTMLElement>('div')).some((el) =>
+                el.style.backgroundImage.includes('dark-gold-body.png'),
+              ),
+            ),
+          { timeout: 15000 },
+        )
+        .toBe(true)
+
+      const categoryCards = page.locator('main a')
+      await expect(categoryCards).toHaveCount(2)
+      await expect(categoryCards.nth(0)).toContainText(secondCategoryLabel)
+      await expect(categoryCards.nth(1)).toContainText(firstCategoryLabel)
+
+      const today = new Intl.DateTimeFormat('it-IT', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      }).format(new Date())
+      await expect(page.getByText(today, { exact: true })).toBeVisible()
+      await expect(page.getByText(/^\d{2}:\d{2}$/).last()).toBeVisible()
+
+      expect(errors, 'errori console/browser').toEqual([])
+    } finally {
+      await deleteMenuE2eData(tenantId, firstCategoryKey, shortCode).catch(() => {})
+      await deleteMenuE2eData(tenantId, secondCategoryKey, shortCode).catch(() => {})
+    }
+  })
 })

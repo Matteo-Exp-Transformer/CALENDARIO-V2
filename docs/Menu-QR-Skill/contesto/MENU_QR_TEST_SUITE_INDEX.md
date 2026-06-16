@@ -18,7 +18,7 @@
 | `src/features/public-menu/__tests__/categoryIcons.test.ts` | Risoluzione icone categoria (mapping Phosphor/Lucide, default `lucide_salad`, mai emoji). |
 | `src/features/booking/components/__tests__/menuQrCategoryFieldCap.test.tsx` | **FU-MQR-1**: cap titolo (30) / descrizione (70) card categoria — valori + taglio difensivo via `AdminFieldWithCharCount`. |
 | `src/features/booking/components/__tests__/menuQrPresetImport.test.ts` | Import preset staff nel QR (`computeImportFromPreset`): categorie + hidden item precompilati, carosello escluso. |
-| `e2e/public-menu-qr.spec.ts` | Flusso cliente pubblico: homepage QR, apertura categoria, browser back, shortCode mancante, fallback `/menu/:slug`. |
+| `e2e/public-menu-qr.spec.ts` | Flusso cliente pubblico: homepage QR, apertura categoria, browser back, shortCode mancante, fallback `/menu/:slug`; visual checklist seedata con carosello, tema, ordine categorie da `category_filter` e footer data/ora. |
 
 ---
 
@@ -34,13 +34,13 @@
 | Ordinamento piatti per-QR (`item_sort_overrides`) | `menuQrItemSortOverrides.test.ts` |
 | Importa-da-preset nel modal QR | `menuQrPresetImport.test.ts` |
 | Flusso cliente pubblico QR | `e2e/public-menu-qr.spec.ts` |
-| Hero foto, swipe carosello, temi e footer data/ora | ancora manuale su TEST (`VERIFICA-IN-DEV.md`) |
+| Hero foto, swipe carosello, temi e footer data/ora | E2E seedato in `public-menu-qr.spec.ts`; resta manuale solo il gesto swipe/asset reali quando tocchi la UI |
 
 ---
 
 ## Buchi di copertura noti (onesti)
 
-- **E2E pubblica** copre il flusso cliente base, ma non il dettaglio visivo di carousel, temi e
-  footer: quelli restano da guardare a mano quando si tocca il rendering.
+- **E2E pubblica** copre flusso cliente base + visual checklist seedata per carousel, tema, ordine
+  categorie e footer. Restano da guardare a mano solo gesture swipe e asset reali quando si tocca il rendering.
 - **Codice preset**: rimosso il 06-06-26 (`PublicMenuPresetPage`, rami `content_type`, colonne DB).
   Non esiste più nulla da testare lì.

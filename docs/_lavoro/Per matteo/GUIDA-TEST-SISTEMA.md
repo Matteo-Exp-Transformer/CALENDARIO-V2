@@ -203,7 +203,7 @@ Questi test aprono Chrome e usano l'app come farebbe un utente reale. Richiedono
 npx playwright test --workers=1
 ```
 
-Ultimo run Codex 16-06-26: **55 passed, 16 skipped**. Gli skip sono attesi se mancano token invito valido o credenziali Classic dedicate nello staging corrente; la suite legacy `e2e/menu-crud.spec.ts` è saltata perché sostituita dai test Menu/Magazzino blindati.
+Ultimo run Codex 16-06-26: **58 passed, 16 skipped**. Gli skip sono attesi se mancano token invito valido o credenziali Classic dedicate nello staging corrente; la suite legacy `e2e/menu-crud.spec.ts` è saltata perché sostituita dai test Menu/Magazzino blindati.
 
 ---
 
