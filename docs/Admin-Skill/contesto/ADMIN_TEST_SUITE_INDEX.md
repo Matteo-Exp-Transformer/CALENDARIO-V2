@@ -41,7 +41,7 @@ Fronti previsti:
 | `e2e/admin-shell-blindatura.spec.ts` | shell refresh/back, dirty guard, logout (FU-042) |
 | `e2e/admin-classic-tabs.spec.ts` | tab Classic |
 | `e2e/admin-booking-mgmt.spec.ts` | gestione prenotazioni admin |
-| `e2e/admin-calendar-blindatura.spec.ts` | smoke Calendario: badge mese con limite/>100%, badge senza limite, digest, nuova prenotazione |
+| `e2e/admin-calendar-blindatura.spec.ts` | smoke Calendario: badge mese con limite/>100%, badge senza limite, digest, nuova prenotazione, **ordine fasce digest post-riordino `display_order`** |
 | `e2e/admin-settings-blindatura.spec.ts` | smoke Impostazioni: anagrafica, footer, dirty guard tema, anteprime tema/sfondo 375/900/1256 |
 | `e2e/admin-menu-magazzino-blindatura.spec.ts` | Menu/Magazzino: toggle disponibilità, propagazione Prenota/QR, responsive |
 | `e2e/admin-menu-magazzino-ct.spec.ts` | Menu/Magazzino controtest browser |
@@ -106,7 +106,7 @@ Gate Area B2 (16-06-26): run aggregato **35 test** verdi — `settingsSaveGuard.
 
 ## 3-ter. Area 3 — Impostazioni locale (M4) — blindato ✅ (16-06-26)
 
-Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **120/120** (17 file, gate Batch 1/2 **35/35** incluso); `npm run validate` **758/758** al 16-06-26; E2E smoke `admin-settings-blindatura.spec.ts` **6/6** copre anagrafica/footer/dirty guard e anteprime tema/sfondo su 375/900/1256; report finale [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md). Prompt sequenziali: [`Prompt-agenti-test-blindatura-admin-impostazioni.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Prompt-agenti-test-blindatura-admin-impostazioni.md). Residuo fuori cancello: **FU-051** date mock; copertura E2E calendario post-riordino fasce da valutare come follow-up dedicato.
+Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **120/120** (17 file, gate Batch 1/2 **35/35** incluso); `npm run validate` **758/758** al 16-06-26; E2E smoke `admin-settings-blindatura.spec.ts` **6/6** copre anagrafica/footer/dirty guard e anteprime tema/sfondo su 375/900/1256; report finale [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md). Prompt sequenziali: [`Prompt-agenti-test-blindatura-admin-impostazioni.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Prompt-agenti-test-blindatura-admin-impostazioni.md). Residuo fuori cancello: **FU-051** date mock; ~~copertura E2E calendario post-riordino fasce~~ ✅ chiuso 17-06-26 (`admin-calendar-blindatura.spec.ts` scenario `display_order`).
 
 ## 4. Unit/component per menu magazzino/QR
 
@@ -201,7 +201,7 @@ Stato: **batch A+B FU-047 + classificazione doc (11-06-26)** — **41** test Vit
 - `src/features/booking/utils/__tests__/bookingEventTransform.adminBlindatura.test.ts` (2) → no-show + confirmed_end in transform.
 - `src/features/booking/hooks/__tests__/useCapacityCheck.adminBlindatura.test.ts` (2) → no-show esclusi per-fascia.
 - `src/features/booking/components/__tests__/bookingDetailsModal.noShow.adminBlindatura.test.tsx` (2) → pulsante No-show su orario **inizio** (addendum Matteo batch B); **fuori** conteggio M2 41.
-- `e2e/admin-calendar-blindatura.spec.ts` → smoke browser su badge mese con limite/>100%, badge senza limite, digest, pending/no-show e `+ Nuova prenotazione`.
+- `e2e/admin-calendar-blindatura.spec.ts` → smoke browser su badge mese con limite/>100%, badge senza limite, digest, pending/no-show, `+ Nuova prenotazione`, **ordine fasce digest rispetto a `display_order` salvato (3 fasce non cronologiche + prenotazioni per fascia)**.
 
 Pattern: mock `@fullcalendar/react` cattura props (`dateClick`, `dayCellDidMount`, assenza drag); `AdminBookingForm` mock per `initialDate`; `BookingDetailsModal` reale con tab stub + mutation mock.
 

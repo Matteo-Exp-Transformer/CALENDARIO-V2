@@ -380,9 +380,75 @@ export type ServiceSlotRow = {
   max_guests: number | null
 }
 
+export type ServiceSlotFullRow = {
+  id: string
+  tenant_id: string
+  name: string
+  start_time: string
+  end_time: string
+  display_order: number
+  is_canonical: boolean
+  max_guests: number | null
+  max_turns: number | null
+  max_turns_resume: number | null
+  slot_color: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+export type ServiceSlotsSnapshot = {
+  slots: ServiceSlotFullRow[]
+}
+
 export async function getServiceSlots(tenantId: string): Promise<ServiceSlotRow[]> {
   return rest<ServiceSlotRow[]>(
     `service_slots?tenant_id=eq.${tenantId}&select=id,name,start_time,end_time,max_guests&order=display_order`,
+  )
+}
+
+export async function getServiceSlotsSnapshot(tenantId: string): Promise<ServiceSlotsSnapshot> {
+  const slots = await rest<ServiceSlotFullRow[]>(
+    `service_slots?tenant_id=eq.${tenantId}&select=*&order=display_order`,
+  )
+  return { slots }
+}
+
+export async function deleteAllServiceSlots(tenantId: string): Promise<void> {
+  await rest(`service_slots?tenant_id=eq.${tenantId}`, {
+    method: 'DELETE',
+    headers: restHeaders({ Prefer: 'return=minimal' }),
+  })
+}
+
+export async function insertServiceSlots(
+  slots: Array<Omit<ServiceSlotFullRow, 'created_at' | 'updated_at'>>,
+): Promise<void> {
+  if (slots.length === 0) return
+  const now = new Date().toISOString()
+  await rest('service_slots', {
+    method: 'POST',
+    headers: restHeaders({ Prefer: 'return=minimal' }),
+    body: JSON.stringify(
+      slots.map((slot) => ({
+        ...slot,
+        created_at: now,
+        updated_at: now,
+      })),
+    ),
+  })
+}
+
+export async function restoreServiceSlotsSnapshot(
+  tenantId: string,
+  snapshot: ServiceSlotsSnapshot,
+): Promise<void> {
+  await deleteAllServiceSlots(tenantId)
+  if (snapshot.slots.length === 0) return
+  await insertServiceSlots(
+    snapshot.slots.map((slot) => ({
+      ...slot,
+      tenant_id: tenantId,
+    })),
   )
 }
 

@@ -13,6 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 16-06-26 | E2E Calendario — **digest ordine fasce `display_order`** (Milestone D §2) ✅ | [Report](Sessioni%20di%20lavoro/16-06-26/Report-e2e-calendario-display-order-16-06-26.md) — 3 fasce non cronologiche + 3 prenotazioni; `admin-calendar-blindatura.spec.ts` **3/3** `--workers=1`; helper snapshot `service_slots` |
+| 16-06-26 | Docs — **FU-052 validate:docs** (Milestone D §1) ✅ | [Report](Sessioni%20di%20lavoro/16-06-26/Report-fu-052-validate-docs-16-06-26.md) — path `seed_e2e_test_tenants.sql` reso non-checkable in FU-052; `npm run validate:docs` **0 path rotti** |
 | 16-06-26 | Prenota — **accordion carosello menù** + chiusura su scroll freche ✅ | [Report](Sessioni%20di%20lavoro/16-06-26/Report-accordion-carosello-menu-prenota-16-06-26.md) — una categoria aperta alla volta; frecce avanti/indietro chiudono; collasso se card fuori viewport; validate **760/760** |
 | 16-06-26 | Prenota — **validazione menù al submit** (2 regole, FU-053/054) ✅ | [Report](Sessioni%20di%20lavoro/16-06-26/Report-validazione-menu-submit-prenota-16-06-26.md) — copy «Scegli almeno un piatto dal menù!»; rimosso check totale > 0 su Prenota + admin; validate **758/758**; FU-054 errore card persistente |
 | 16-06-26 | E2E blindatura multi-area — Admin, Prenota, Menu QR ✅ | [Report](Sessioni%20di%20lavoro/16-06-26/Report-e2e-blindatura-multiarea-16-06-26.md) — nuovi smoke E2E Admin/Calendario/Impostazioni, Prenota, Menu QR; Vitest ordine piatti/import preset QR; checklist/masterplan allineati; guide private con `--debug`/`--ui`; test mirati verdi |
