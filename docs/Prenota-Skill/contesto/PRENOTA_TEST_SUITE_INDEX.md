@@ -36,6 +36,19 @@ Per fronte, i file sono elencati qui sotto: lancia `npx vitest run <path>` sul s
 
 ---
 
+## E2E Playwright smoke (2 file)
+
+| File | Cosa protegge |
+|------|---------------|
+| `e2e/public-booking.spec.ts` | Submit completo su staging TEST: form valido → conferma invio reale. |
+| `e2e/public-booking-smoke.spec.ts` | Gap documentati ma automatizzabili: slug inesistente, submit invalido con alert sul primo campo, link Privacy + ritorno, submit raggiungibile a 375/834/1280. |
+
+```bash
+npx playwright test e2e/public-booking.spec.ts e2e/public-booking-smoke.spec.ts --workers=1
+```
+
+---
+
 ## Fronte `flusso-dati` (4 file)
 
 | File | Cosa protegge |

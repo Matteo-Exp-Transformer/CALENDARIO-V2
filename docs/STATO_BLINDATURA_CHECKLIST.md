@@ -9,6 +9,9 @@
 > `docs/Admin-Skill/PLAN_BLINDATURA_ADMIN.md`, `docs/Prenota-Skill/`, `docs/Menu-QR-Skill/`.
 >
 > Aggiornato: **2026-06-16**.
+> Ultimo run E2E Codex: `npx playwright test --workers=1` → **55 passed, 16 skipped** su staging TEST.
+> Gli skip sono prerequisiti non disponibili o suite legacy disattivate; le spunte sotto indicano solo
+> i flussi davvero verificati da Playwright.
 
 ---
 
@@ -25,92 +28,105 @@
 
 | Area / Sezione | Stato | Test automatici | Cosa resta a mano |
 |---|---|---|---|
-| **Pagina Prenota** (pubblica) | ✅ blindato (M0, live in prod 10-06) | ~120 Vitest + 5 E2E | Flusso visivo completo, sfondo/striscia, footer orari, carosello swipe |
-| **Menu QR** (pubblica) | ✅ blindato (FU-MQR-2 aperto) | 41 Vitest + 3 E2E (indiretti) | **Flusso cliente pubblico intero** (gap E2E), carosello/temi, ordine piatti per-QR |
+| **Pagina Prenota** (pubblica) | ✅ blindato (M0, live in prod 10-06) | ~120 Vitest + 11 E2E | Sfondo/striscia, footer orari e carosello swipe restano visuali |
+| **Menu QR** (pubblica) | ✅ blindato | 47 Vitest + 1 E2E dedicato + 3 E2E indiretti | Carosello/temi/footer data-ora restano visuali |
 | **Admin — Shell/Navigazione** (M1) | ✅ blindato (10-06) | ~14 Vitest + 15 E2E | Smoke login/sidebar/guard; header fallback |
 | **Admin — Prenotazioni operative** (M2) | ✅ blindato (11-06) | 35 Vitest + 7 E2E | No-show/archivio in dev; responsive 375 su tutti i modali |
-| **Admin — Tab Calendario** (M2) | ✅ blindato + prod (11-06) | 43 Vitest + 0 E2E | Badge % su 375/834/1280; gate tavolo Classic/Pro; guard overlay |
-| **Admin — Impostazioni/Personalizza Form** (M4) | ✅ blindato (16-06) | 107 Vitest + 0 E2E stabile | QA 375/834 fasce; sfondo/tema/carosello in browser |
+| **Admin — Tab Calendario** (M2) | ✅ blindato + prod (11-06) | 43 Vitest + 1 E2E smoke | Badge % su 375/834/1280; gate tavolo Pro; guard overlay |
+| **Admin — Impostazioni/Personalizza Form** (M4) | ✅ blindato (16-06) | 107 Vitest + 1 E2E smoke | Sfondo/tema/carosello restano browser/visuali |
 | **Admin — Menu/Magazzino** (M3) | ✅ blindato (11-06) | 27 Vitest + 4 E2E | Sync rename/delete; snapshot prenotazioni; HEIC |
-| **Admin — Servizio** (Pro) | ⬜ non mappato | 3 (solo guard modale sala) | Tutto: sale/tavoli/slot/walk-in/briefing |
-| **Admin — CRM** (Pro) | ⬜ non mappato | 1 + 1 E2E candidato | Tutto: delete multi-step, email normalizzata |
-| **Admin — Home/Analytics** (Pro) | ⬜ non mappato | 0 (+1 E2E candidato) | Tutto: KPI, finestre data |
+| **Admin — Servizio** (Pro) | ⬜ non mappato | 3 Vitest + 1 E2E smoke | Tutto il prodotto: sale/tavoli/slot/walk-in/briefing |
+| **Admin — CRM** (Pro) | ⬜ non mappato | 1 Vitest + 1 E2E smoke | Delete multi-step, email normalizzata, campagne |
+| **Admin — Home/Analytics** (Pro) | ⬜ non mappato | 2 E2E smoke | KPI/finestra date da blindare a prodotto |
 | **Cross-area prod-ready** (debiti M6) | 🟡 parziale | `m6ProdReadyPatterns` statico | Audit fallback email/guard Pro |
 
 **In sintesi:** tutta la superficie **Classic in produzione** (Prenota + Menu QR + Admin Shell/Prenotazioni/
 Calendario/Impostazioni/Menu) è ✅ blindata. Le aree **Pro** (Servizio/CRM/Home/Analytics) sono ⬜ fuori
-da main, da intervistare a partire da zero (M5). Il **gap più rilevante da occhio umano**: nessun E2E
-copre il **flusso cliente pubblico del Menu QR** — va guardato a mano (vedi guida Menu QR).
+da main, da intervistare a partire da zero (M5). Il **gap più rilevante da occhio umano** ora è solo
+visuale: caroselli, temi, sfondi e asset reali vanno ancora guardati in browser quando li tocchi.
 
 ---
 
 ## 2. Admin — checklist "cosa deve funzionare"
 
 ### 2.1 Shell / Navigazione (M1) ✅
-- [ ] Senza login `/admin` → reindirizza a `/login`.
-- [ ] Classic: nessuna sidebar, solo tab dashboard. Pro: sidebar Home/CRM/Servizio/Analytics.
+- [x] Senza login `/admin` → reindirizza a `/login`.
+- [ ] Classic: nessuna sidebar, solo tab dashboard. *(Non spuntato in questo run: credenziali Classic dedicate non disponibili/valide.)*
+- [x] Pro: sidebar Home/CRM/Servizio/Analytics visibile e navigabile.
+- [x] Pro: refresh su `/admin/crm` resta in CRM; CRM → Servizio → Indietro torna a CRM.
 - [ ] Modifiche non salvate + Logout → modale guard (Resta qui / Annulla e continua).
-- [ ] Refresh su `/admin/prenotazioni` → resta su Prenotazioni (non Calendario).
+- [ ] Classic: refresh su `/admin/prenotazioni` → resta su Prenotazioni (non Calendario).
 - [ ] Header senza nome ristorante → fallback "Sistema Gestionale Prenotazioni" (no blank/crash).
 
 ### 2.2 Prenotazioni operative (M2) ✅
-- [ ] Accetta con capienza superata → avviso **non bloccante** → Procedi → accepted.
-- [ ] Accetta orario passato → avviso non bloccante → Procedi → accepted.
+- [x] `/admin/prenotazioni` mostra richieste in attesa o stato vuoto senza crash.
+- [x] Accetta con capienza superata → avviso **non bloccante** → Procedi → accepted.
+- [x] Accetta orario passato → avviso non bloccante → Procedi → accepted.
 - [ ] Rifiuta con motivo → rejected. Elimina → soft-delete (recuperabile).
 - [ ] Reinserisci / Riporta in attesa → **modale custom** (mai popup nativo del browser).
 - [ ] No-show → sparisce dal calendario, resta in archivio.
-- [ ] 375px: bottoni dei modali con testo lungo restano visibili/cliccabili.
+- [x] 375px e 834px: bottoni dei modali Rifiuta/Elimina con testo lungo restano visibili/cliccabili.
 
 ### 2.3 Tab Calendario (M2) ✅
-- [ ] Mostra **solo prenotazioni accettate** (no pending, no no-show).
-- [ ] Badge cella: con limite giornaliero → `NN%`; senza limite → solo conteggio coperti.
+- [x] `/admin/calendario` apre la vista Calendario senza crash.
+- [x] Mostra **solo prenotazioni accettate** nel digest E2E (no pending, no no-show).
+- [x] Badge cella con limite giornaliero → percentuale visibile.
+- [ ] Badge cella senza limite giornaliero → solo conteggio coperti.
 - [ ] Oltre 100% → mostra valore reale (es. 108%), **non** blocca/cappa.
 - [ ] **Niente drag&drop** per spostare data/ora.
 - [ ] Scorciatoia "Assegna tavolo": assente in Classic, presente in Pro con slot.
-- [ ] Rifiuta/Cancella **solo** dentro la modale dettaglio, con conferma.
+- [x] Click giorno → `+ Nuova prenotazione` apre il form con data preimpostata.
+- [x] Elimina da dettaglio apre conferma custom e bottoni responsive.
 
 ### 2.4 Impostazioni / Personalizza Form (M4) ✅
-- [ ] Nome locale **obbligatorio** al Salva; contatti opzionali (cap 45/65/30/120).
+- [x] Impostazioni apre Anagrafica Azienda / Personalizza Form.
+- [x] Nome locale **obbligatorio** al Salva: nome vuoto disabilita "Salva modifiche".
+- [ ] Contatti opzionali (cap 45/65/30/120).
 - [ ] `daily_guest_limit` 0/vuoto = nessun limite; se attivo blocca **solo** Prenota pubblica.
 - [ ] Orari tutti chiusi → sezione Orari **assente** su Prenota; overlap blocca il Salva admin.
 - [ ] Tema admin **non** cambia Prenota né Menu QR.
 - [ ] Sfondo XOR: striscia **oppure** foto pagina intera, mai entrambe; niente → crema.
-- [ ] Un solo footer "Salva modifiche" + una sola modale "dati pubblici"; doppio click = una mutation.
+- [x] Footer "Salva modifiche" raggiungibile su 375px e 834px; guard dirty tema appare.
+- [ ] Una sola modale "dati pubblici"; doppio click = una mutation.
 - [ ] Form non configurato → EmptyState su `/prenota` (niente form demo).
 
 ### 2.5 Menu / Magazzino (M3) ✅
 - [ ] Limiti duri (solo nuovi inserimenti): 7 categorie / 12 prodotti / 6 preset / 6 QR.
-- [ ] Toggle disponibilità OFF → piatto/categoria sparisce da **Prenota e Menu QR**.
+- [x] Toggle disponibilità OFF → piatto/categoria sparisce da **Prenota e Menu QR**.
 - [ ] Cancellare/cambiare un piatto **non** altera le prenotazioni già inviate (snapshot congelato).
 - [ ] Delete categoria/ingrediente → **modale in-app** (mai popup nativo).
 - [ ] Rename categoria con cambio slug → modale "Conferma e salva".
+- [x] Menu/Magazzino responsive 375px/834px: toggle disponibilità e propagazione restano funzionanti.
 
 ---
 
 ## 3. Pagina Prenota — checklist "cosa deve funzionare" ✅
-- [ ] Slug inesistente/disattivato → "Prenotazioni temporaneamente non disponibili" (no crash).
+- [x] Slug inesistente/disattivato → "Prenotazioni temporaneamente non disponibili" (no crash).
 - [ ] Form non configurato → EmptyState con recapiti (no form demo).
-- [ ] Scelta tipologia sblocca il form; cambio tipologia resetta menu/totali/intolleranze.
+- [x] Scelta tipologia è visibile/selezionabile e può mostrare la sezione menù.
+- [ ] Cambio tipologia resetta menu/totali/intolleranze.
 - [ ] Card scorrevoli **oppure** carosello (XOR), mai entrambi; card senza titolo non appare.
-- [ ] Piatti con disponibilità OFF / categoria nascosta → assenti dal menù pubblico.
-- [ ] Validazione: nome/email/telefono/privacy; submit invalido → **lampeggio arancione** sul campo (no popup).
-- [ ] Privacy link apre `/privacy?from=/prenota/:slug` e torna indietro.
+- [x] Piatto con disponibilità OFF → assente dal menù pubblico Prenota.
+- [x] Submit invalido → alert/attenzione sul primo campo; email non valida → errore inline.
+- [x] Privacy link apre `/privacy?from=/prenota/:slug` e torna indietro.
 - [ ] Limite coperti pieno → "abbiamo raggiunto il numero massimo di coperti" (no salvataggio).
 - [ ] Sfondo striscia/foto-intera/crema corretti; footer orari assente se non configurati.
-- [ ] Riepilogo: laterale ≥1256px, sotto il form su mobile; "Totale" (non "stimato").
+- [x] Submit/riepilogo raggiungibile a 375px, 834px e 1280px.
+- [ ] Riepilogo: "Totale" (non "stimato").
 
 ---
 
-## 4. Menu QR — checklist "cosa deve funzionare" ✅ (+ 🟡 ordine piatti)
-- [ ] `/menu/:slug/qr/:code` carica nome locale + carosello + categorie, senza login.
-- [ ] shortCode sbagliato → "Menù QR non trovato" (no redirect al default).
+## 4. Menu QR — checklist "cosa deve funzionare" ✅
+- [x] `/menu/:slug/qr/:code` carica nome locale + carosello + categorie, senza login.
+- [x] shortCode sbagliato → "Menù QR non trovato" (no redirect al default).
 - [ ] Categorie nell'ordine impostato in admin (frecce Su/Giù), non ordine magazzino.
-- [ ] Piatto/categoria con disponibilità OFF → assente anche nel QR.
+- [x] Piatto/categoria con disponibilità OFF → assente anche nel QR.
 - [ ] Cap testi con contatore (titolo card 30, desc 70, carosello…); nome QR max 80.
 - [ ] Icone categoria dai 20 preset (mai emoji); default insalata se non configurata.
 - [ ] Limite 6 QR: pulsante "Nuovo QR" disabilitato a quota 6.
-- [ ] 🟡 **Ordine piatti per-QR (FU-MQR-2):** implementato ma **senza test** — verificare a mano.
-- [ ] 🟡 **Import preset staff nel QR:** implementato ma **senza test** — verificare a mano.
+- [ ] **Ordine piatti per-QR (FU-MQR-2):** override testato in Vitest; verifica visuale solo se tocchi la UI frecce.
+- [ ] **Import preset staff nel QR:** helper testato in Vitest; verifica visuale solo se tocchi il modale.
+- [x] Browser back da categoria QR torna alla homepage QR senza crash.
 
 ---
 
@@ -131,9 +147,13 @@ Trovate nella controverifica 16-06-26 e **risolte**: la documentazione viva ora 
 ## 6. Promemoria comandi
 
 ```bash
-npm run validate        # gate quotidiano: TUTTI i Vitest in mock devono essere verdi (733/733 al 16-06)
+npm run validate        # gate quotidiano: TUTTI i Vitest in mock devono essere verdi (739/739 al 16-06)
 npm run dev             # app in locale su :5173 per la verifica manuale
 npx playwright test e2e/<spec>.spec.ts --workers=1   # E2E su staging TEST (serve .env.local.test)
+npx playwright test e2e/public-menu-qr.spec.ts --workers=1
+npx playwright test e2e/public-booking.spec.ts e2e/public-booking-smoke.spec.ts --workers=1
+npx playwright test e2e/admin-calendar-blindatura.spec.ts e2e/admin-settings-blindatura.spec.ts --workers=1
+npx playwright test --workers=1   # run E2E completo: 55 passed / 16 skipped al 16-06-26
 ```
 
 Comandi mirati per area e cosa devono mostrare: vedi le guide in

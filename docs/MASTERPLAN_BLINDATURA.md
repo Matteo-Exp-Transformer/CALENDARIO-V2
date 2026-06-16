@@ -21,7 +21,7 @@ piani) e li ha confrontati col codice, ha corretto diverse cose che davo per fat
 - **Prenota M0 chiuso e live (10-06-26):** FU-030 cap compose 24/24/79 implementato + accettazione
   visiva; FU-038 seed `/prenota/test`; FU-039 QA browser C1/C3; revisione indipendente Approva con
   riserve; fix polish overlay `showActionRow`; **merge production M0 eseguito**.
-- **Menu QR confermato blindato**; resta **FU-MQR-2** (ordine piatti per-QR). ~~FU-MQR-3~~ chiuso 11-06-26 (categoria assente su PROD `da-tommaso`).
+- **Menu QR confermato blindato**; gap test FU-MQR-2 chiuso con Vitest ordine piatti per-QR + E2E pubblico dedicato. ~~FU-MQR-3~~ chiuso 11-06-26 (categoria assente su PROD `da-tommaso`).
 - **Admin Shell (M1):** ✅ blindato 10-06-26 — unit `shell-*` + E2E FU-042 su TEST; smoke Matteo pre-E2E OK;
   M1 su `main` privato (nessun sync pubblico: zero codice servito da pubblicare).
 
@@ -51,15 +51,15 @@ Legenda fase: ✅ fatto · 🔶 parziale/in corso · ⬜ da fare · n/a non appl
 | Pagina / Sezione | Intervistato | Mappato | Testato | Blindato | Milestone |
 |---|---|---|---|---|---|
 | **Prenota — form pubblico/vetrina** | ✅ (04-06) | ✅ | ✅ Vitest + QA browser C1/C3 | ✅ **M0 chiuso** | **M0** ✔️ **MERGED PROD (10-06)** |
-| **Menu QR — pagina clienti** | ✅ (06-06) | ✅ | ✅ | ✅ (FU-MQR-2 aperto, fuori blind.) | ✅ già mergeable |
+| **Menu QR — pagina clienti** | ✅ (06-06) | ✅ | ✅ 47 Vitest + E2E pubblico dedicato | ✅ | ✅ già mergeable |
 | **Admin — Shell/ingresso/nav** | ✅ (06-06) | ✅ | ✅ unit `shell-*` + E2E FU-042 + smoke Matteo | ✅ **M1 blindato** — su `main` privato (NON in pubblico: zero codice servito, vedi §merge) | **M1** ✔️ **MERGED (10-06)** |
 | **Admin — Prenotazioni operative** | ✅ (06-06) | ✅ | ✅ Vitest **32** + E2E **7** (FU-043) | ✅ **BLINDATO** (11-06-26) | **M2** ✔️ |
-| **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (41 test M2 +2 No-show; validate **527**, 11-06-26) | ✅ **BLINDATO** (11-06-26) — Fase C + batch A/B + C-U2 + QA badge §9 OK Matteo | **M2** ✔️ **MERGED PROD (11-06)** |
+| **Admin — tab Calendario** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest `@admin-blindatura: calendario` (41 test M2 +2 No-show; validate **527**, 11-06-26) + E2E smoke | ✅ **BLINDATO** (11-06-26) — Fase C + batch A/B + C-U2 + QA badge §9 OK Matteo | **M2** ✔️ **MERGED PROD (11-06)** |
 | **Admin — Menu / magazzino** | ✅ (11-06) | ✅ (11-06) | ✅ Vitest **27** + E2E `@admin-blindatura: menu-magazzino` (375/834/1280; validate **554**) | ✅ **BLINDATO** (11-06-26) — QA Matteo toggle+propagazione; fix modal `b9f283f` | **M3** ✔️ **MERGED PROD (12-06)** |
-| **Admin — Impostazioni/Personalizza Form** | ✅ (15-06) | ✅ (15-06) | ✅ Vitest `settings-*` **107** (15 file) + QA 375/834/1280; validate **733** | ✅ **BLINDATO** (16-06-26) — FU-009 carosello chiuso; report finale Area 3 | **M4** ✔️ |
-| **Admin — Servizio (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
-| **Admin — CRM (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
-| **Admin — Home/Analytics (Pro)** | ⬜ | 🔶 doc | ⬜ | ⬜ | **M5 (NON in main)** |
+| **Admin — Impostazioni/Personalizza Form** | ✅ (15-06) | ✅ (15-06) | ✅ Vitest `settings-*` **107** (15 file) + E2E smoke + QA 375/834/1280; validate **739** | ✅ **BLINDATO** (16-06-26) — FU-009 carosello chiuso; report finale Area 3 | **M4** ✔️ |
+| **Admin — Servizio (Pro)** | ⬜ | 🔶 doc | ✅ smoke E2E + 3 Vitest hook | ⬜ | **M5 (NON in main)** |
+| **Admin — CRM (Pro)** | ⬜ | 🔶 doc | ✅ smoke E2E + 1 Vitest email/form | ⬜ | **M5 (NON in main)** |
+| **Admin — Home/Analytics (Pro)** | ⬜ | 🔶 doc | ✅ smoke E2E Home/Analytics | ⬜ | **M5 (NON in main)** |
 | **Cross-area prod-ready (debiti §5)** | n/a | n/a | n/a | 🔶 **parziale** | **M6** |
 
 \* *Impostazioni: intervista di SEZIONE chiusa 15-06-26 (anagrafica/orari/tema/sfondo/form/carosello/promo come insieme); Area 3 blindata 16-06-26. Residuo fuori cancello: FU-051 date mock.*
@@ -177,10 +177,8 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 ### M4 — Admin Impostazioni / Personalizza Form
 - **Dettaglio:** sezione Area 3 da aggiungere a `PLAN_BLINDATURA_ADMIN.md`; context
   `ADMIN_SETTINGS_CONTEXT.md` esiste.
-- **Stato:** ⬜ intervista di sezione mancante (solo trasversali fatte: salvataggio fase1, promo).
-- **Cosa serve:** intervista di sezione su anagrafica/orari/tema; chiudere salvataggio fase 2+
-  (FU-004 autosave→manuale, FU-005 conferma «dati pubblici»); verificare **cross-impatto Prenota**
-  (Personalizza Form alimenta la vetrina). File pesante: `RestaurantSettingsTab.tsx` (1392 LOC).
+- **Stato:** ✅ **BLINDATO** 16-06-26. Intervista e mappa chiuse per anagrafica/orari/tema/sfondo/form/carosello/promo; suite `settings-*` + smoke E2E + QA responsive allineati.
+- **Resta fuori cancello:** FU-051 date mock e verifiche visuali fini quando si toccano sfondi, tema, carosello e asset reali.
 
 ### M5 — Sidebar + pagine Pro (Servizio / CRM / Home / Analytics) — **NON in main**
 - **Dettaglio:** Aree 5/6/7 di `PLAN_BLINDATURA_ADMIN.md`.
@@ -189,7 +187,8 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
   decidi di attivare/vendere edition Pro. Merge production gestito separatamente quando Pro andrà live.
 - **Attenzioni note:** `useTableStatuses` mancante (tavoli sempre verdi, `TableShape.tsx:35`); walk-in
   busy-check placement vs table id; CRM link cliente↔booking via email normalizzata non-FK + delete
-  multi-step; Analytics query su `created_at` ma KPI su data evento; **0% test su tutte e quattro**.
+  multi-step; Analytics query su `created_at` ma KPI su data evento. Dal 16-06-26 esistono smoke E2E
+  per Home/CRM/Servizio/Analytics, ma non sostituiscono intervista, mappatura e test profondi M5.
 
 ### M6 — Cross-area prod-ready
 - **Dettaglio:** `docs/Admin-Skill/contesto/ADMIN_CONFLICTS_AND_DEBTS.md`.
@@ -211,11 +210,11 @@ milestone naturale di competenza.
 |---|---|---|---|---|
 | FU-030 | ~~Cap testi menù~~ | ✅ Chiuso M0 10-06-26 | — | **M0** ✅ |
 | FU-038/039 | ~~Seed TEST + QA centratura~~ | ✅ Chiuso M0 10-06-26 | — | **M0** ✅ |
-| FU-MQR-2 | Ordine piatti per-QR non gestibile (segue `menu_items.sort_order`) | `MENU_QR_SKILL.md §5` | medio | milestone dedicata Menu QR |
+| FU-MQR-2 | ~~Ordine piatti per-QR senza test dedicato~~ — **Chiuso 16-06-26:** `menuQrItemSortOverrides.test.ts` copre parser/override; E2E `public-menu-qr.spec.ts` copre flusso cliente pubblico base. | `MENU_QR_SKILL.md §5` | — | chiuso |
 | FU-MQR-3 | ~~Chiave categoria `secondi_piattie` su PROD `da-tommaso`~~ — **Chiuso 11-06-26:** Matteo su PROD account test `da-tommaso` — categoria/chiave **non presente** in overlay Categorie; nessuna azione rename. Vitest rename (FU-M3-3) resta copertura codice. | `MENU_QR_SKILL.md §5` | — | chiuso |
 | FU-EMAIL-1 | Edge function `send-email` **non esiste**: email accept/reject/cancel falliscono in silenzio | `src/lib/email.ts:37`; gated da `VITE_ENABLE_SEND_EMAIL` in `useBookingMutations.ts:110-171` | alto (UX) | M6 o milestone email |
 | FU-EMAIL-2 | Nessuna UI admin per `email_logs` | `database.ts` (`email_logs`) | medio | M6 |
-| FU-TEST-1 | 0% test su pagine Pro (CRM/Servizio/Analytics/Home) | nessun `*.test.tsx` | alto (no regression Pro) | M5 (criterio uscita) |
+| FU-TEST-1 | ~~0% test su pagine Pro (CRM/Servizio/Analytics/Home)~~ — **Parzialmente chiuso 16-06-26:** smoke E2E `e2e/pro/pro-home.spec.ts`, `pro-crm.spec.ts`, `pro-service.spec.ts`, `pro-analytics.spec.ts` + sidebar/login Pro. Restano test profondi post-intervista M5. | smoke Playwright presenti; Vitest parziali CRM/Servizio | medio (regressioni profonde Pro ancora possibili) | M5 |
 | FU-TABLE-1 | `useTableStatuses` mancante: tavoli sempre verdi | `TableShape.tsx:35` | medio (solo Pro) | M5 |
 | FU-BRIEF-1 | Briefing senza join sala/tavolo | `useShiftBriefing.ts:85` | basso (Pro) | M5 |
 | FU-TYPES-1 | ~~Uso massivo `as any` su query~~ — **Chiuso 12-06-26:** hook perimetro + sync + pagine QR + storage; residuo voluto `WalkInLimitCard` (Servizio). | — | **M6** ✅ |

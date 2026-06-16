@@ -435,6 +435,20 @@ export async function insertBooking(input: SeedBookingInput): Promise<string> {
   return id
 }
 
+export async function patchBookingById(
+  bookingId: string,
+  patch: Record<string, unknown>,
+): Promise<void> {
+  await rest(`booking_requests?id=eq.${bookingId}`, {
+    method: 'PATCH',
+    headers: restHeaders({ Prefer: 'return=minimal' }),
+    body: JSON.stringify({
+      ...patch,
+      updated_at: new Date().toISOString(),
+    }),
+  })
+}
+
 export async function deleteBookingsByPrefix(tenantId: string, prefix = E2E_BOOKING_PREFIX): Promise<void> {
   await rest(
     `booking_requests?tenant_id=eq.${tenantId}&client_name=like.${encodeURIComponent(prefix)}*`,

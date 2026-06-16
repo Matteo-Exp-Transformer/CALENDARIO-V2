@@ -41,15 +41,21 @@ Fronti previsti:
 | `e2e/admin-shell-blindatura.spec.ts` | shell refresh/back, dirty guard, logout (FU-042) |
 | `e2e/admin-classic-tabs.spec.ts` | tab Classic |
 | `e2e/admin-booking-mgmt.spec.ts` | gestione prenotazioni admin |
-| `e2e/menu-crud.spec.ts` | CRUD menu |
+| `e2e/admin-calendar-blindatura.spec.ts` | smoke Calendario: badge mese, digest, nuova prenotazione |
+| `e2e/admin-settings-blindatura.spec.ts` | smoke Impostazioni: anagrafica, footer, dirty guard tema |
+| `e2e/admin-menu-magazzino-blindatura.spec.ts` | Menu/Magazzino: toggle disponibilità, propagazione Prenota/QR, responsive |
+| `e2e/admin-menu-magazzino-ct.spec.ts` | Menu/Magazzino controtest browser |
 | `e2e/pro/pro-login.spec.ts` | login Pro |
 | `e2e/pro/pro-sidebar-nav.spec.ts` | sidebar Pro — `aside` con `role="complementary"` (non `navigation`); ritorno dashboard da CRM via pulsante X |
 | `e2e/pro/pro-home.spec.ts` | Home Pro |
-| `e2e/pro/pro-crm.spec.ts` | CRM Pro |
+| `e2e/pro/pro-crm.spec.ts` | CRM Pro smoke: Rubrica, Personalizza email, stati vuoti stabili |
+| `e2e/pro/pro-service.spec.ts` | Servizio Pro smoke: apertura da sidebar, Lista/Mappa, ritorno dashboard |
+| `e2e/pro/pro-analytics.spec.ts` | Analytics Pro smoke: KPI/stati vuoti, periodi e filtro turno |
 | `e2e/edition-classic.spec.ts` | gating Classic |
 | `e2e/edition-classic-data-protection.spec.ts` | protezione dati Classic |
 | `e2e/edition-upgrade.spec.ts` | upgrade edition/feature |
 | `e2e/public-booking.spec.ts` | collegamento admin/Prenota lato pubblico |
+| `e2e/menu-crud.spec.ts` | suite legacy saltata: sostituita da `admin-menu-magazzino-*` |
 
 ## 2. Unit/component per prenotazioni
 
@@ -69,6 +75,11 @@ Fronti previsti:
 - `src/features/booking/lib/__tests__/restaurantSettingRegistry.stripPhoto.test.ts`
 - `src/features/booking/lib/__tests__/restaurantSettingRegistry.dailyGuestLimit.adminBlindatura.test.ts`
 - `src/features/booking/components/__tests__/BookingRequestForm.flussoUtente.test.tsx`
+
+### E2E smoke settings / calendario
+
+- `e2e/admin-calendar-blindatura.spec.ts` -> smoke browser su badge mese, digest e `+ Nuova prenotazione`
+- `e2e/admin-settings-blindatura.spec.ts` -> smoke browser su anagrafica, footer e dirty guard tema
 
 ### 3-bis. M4 Impostazioni — `@admin-blindatura: settings-*` (15-06-26)
 
@@ -91,7 +102,7 @@ Gate Batch 1/2 (15-06-26, agg. §5A/§5B P2): run aggregato **35 test** verdi �
 
 ## 3-ter. Area 3 — Impostazioni locale (M4) — blindato ✅ (16-06-26)
 
-Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **107/107** (15 file, gate Batch 1/2 **35/35** incluso); `npm run validate` **733/733**; report finale [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md). Prompt sequenziali: [`Prompt-agenti-test-blindatura-admin-impostazioni.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Prompt-agenti-test-blindatura-admin-impostazioni.md). Residuo fuori cancello: **FU-051** date mock.
+Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **107/107** (15 file, gate Batch 1/2 **35/35** incluso); `npm run validate` **739/739** al 16-06-26; E2E smoke `admin-settings-blindatura.spec.ts` copre anagrafica/footer/dirty guard 375/834; report finale [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md). Prompt sequenziali: [`Prompt-agenti-test-blindatura-admin-impostazioni.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Prompt-agenti-test-blindatura-admin-impostazioni.md). Residuo fuori cancello: **FU-051** date mock.
 
 ## 4. Unit/component per menu magazzino/QR
 
@@ -116,11 +127,29 @@ Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **107/107** (
 - `src/features/booking/utils/__tests__/unassignedBookingsFilter.test.ts`
 - `src/features/booking/utils/__tests__/tableCheckout.test.ts`
 - `src/features/booking/components/__tests__/servizioModalsGuard.adminBlindatura.test.tsx` (3) → **FU-023** guard discard modale sala (`RoomConfigModal`: dirty → Annulla → `DiscardChangesConfirmModal`; Resta qui / Annulla modifiche). Tavolo/slot/walk-in: stesso pattern codice + anti-regressione `m6ProdReadyPatterns` (12-06-26).
+- `e2e/pro/pro-service.spec.ts` → `@admin-blindatura: servizio` smoke browser Pro senza scritture DB (sidebar → Servizio, Lista/Mappa, Nuova sala, X ritorno dashboard).
 
 ## 6. CRM
 
 - `e2e/pro/pro-crm.spec.ts`
 - `src/features/booking/utils/__tests__/createBookingCustomerUpsert.test.ts`
+
+## 6-bis. Home / Analytics Pro
+
+- `e2e/pro/pro-home.spec.ts` → Home Pro come entry point e nav verso Calendario/CRM/Servizio.
+- `e2e/pro/pro-analytics.spec.ts` → `@admin-blindatura: home-analytics` smoke Analytics: heading, KPI/stati vuoti, periodi, filtro turno.
+
+## 6-ter. Run E2E completo
+
+Run Codex 16-06-26:
+
+```bash
+npx playwright test --workers=1
+```
+
+Esito: **55 passed, 16 skipped**. Gli skip sono prerequisiti assenti (`E2E_VALID_INVITE_TOKEN` /
+credenziali Classic dedicate non valide in questo staging) o suite legacy (`menu-crud`) sostituita dai
+test Menu/Magazzino di blindatura.
 
 ## 7. Buchi iniziali da trasformare in test
 
@@ -135,7 +164,7 @@ Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **107/107** (
 
 ## 8-bis. Area 2-bis — Tab Calendario (M2)
 
-Stato: **batch A+B FU-047 + classificazione doc (11-06-26)** — **41** test Vitest `@admin-blindatura: calendario` (+ **2** test No-show `bookingDetailsModal.noShow`, **fuori** conteggio M2), validate **527** verde. FU-047 **chiuso**: finding Fase C tutti fix o voluto/differito (§5-ter punti 21–22, layout §7-ter). Prossimo cancello: QA badge §9.
+Stato: **batch A+B FU-047 + classificazione doc (11-06-26)** — **41** test Vitest `@admin-blindatura: calendario` (+ **2** test No-show `bookingDetailsModal.noShow`, **fuori** conteggio M2), validate **527** verde. FU-047 **chiuso**: finding Fase C tutti fix o voluto/differito (§5-ter punti 21–22, layout §7-ter). E2E smoke `admin-calendar-blindatura.spec.ts` aggiunto per badge/digest/form. Prossimo cancello: QA badge §9.
 
 ### Mapping scenari PLAN §3-ter.3 → test
 
@@ -162,6 +191,7 @@ Stato: **batch A+B FU-047 + classificazione doc (11-06-26)** — **41** test Vit
 - `src/features/booking/utils/__tests__/bookingEventTransform.adminBlindatura.test.ts` (2) → no-show + confirmed_end in transform.
 - `src/features/booking/hooks/__tests__/useCapacityCheck.adminBlindatura.test.ts` (2) → no-show esclusi per-fascia.
 - `src/features/booking/components/__tests__/bookingDetailsModal.noShow.adminBlindatura.test.tsx` (2) → pulsante No-show su orario **inizio** (addendum Matteo batch B); **fuori** conteggio M2 41.
+- `e2e/admin-calendar-blindatura.spec.ts` → smoke browser su badge mese, digest, pending/no-show e `+ Nuova prenotazione`.
 
 Pattern: mock `@fullcalendar/react` cattura props (`dateClick`, `dayCellDidMount`, assenza drag); `AdminBookingForm` mock per `initialDate`; `BookingDetailsModal` reale con tab stub + mutation mock.
 
@@ -173,7 +203,7 @@ Pattern: mock `@fullcalendar/react` cattura props (`dateClick`, `dayCellDidMount
 - **Lacune test** — FU-REV-CAL-4 (nota selettori RTL digest, opzionale); **C-U2 overlay** — test guard copre solo cambio tab simulato, non click overlay (QA manuale Matteo).
 - **Deploy edge** — `create-booking` C-D5 parser: fix in repo; deploy TEST su richiesta Matteo.
 - **QA browser** badge 375/834/1280 — **cancello Blindato** (MANUALE §9).
-- **E2E Playwright calendario** — fuori scope M2.
+- **E2E Playwright calendario** — smoke browser aggiunto su staging TEST (`admin-calendar-blindatura.spec.ts`).
 
 ---
 
@@ -285,12 +315,17 @@ Debiti fuori cancello: ~~**FU-M3-QA-CT**~~ chiuso Ciclo 8 (15-06-26) — spec CT
 
 ~~Prossimo batch M3 (opzionale): controtest browser extra doppio click/refresh/mutation (**FU-M3-QA-CT**, sessioni future).~~
 
-Test esistenti ancora candidati da valutare nel giro E2E completo:
+Test Pro consolidati nel giro E2E completo 16-06-26:
 
-- `e2e/pro/pro-login.spec.ts` -> candidato `@admin-blindatura: shell-login`.
-- `e2e/pro/pro-home.spec.ts` -> candidato `@admin-blindatura: shell-sidebar` / `shell-edition`.
-- `e2e/edition-classic.spec.ts` -> candidato `@admin-blindatura: shell-edition`.
-- `e2e/edition-upgrade.spec.ts` -> candidato `@admin-blindatura: shell-edition`.
+- `e2e/pro/pro-login.spec.ts` -> `@admin-blindatura: shell-login`.
+- `e2e/pro/pro-home.spec.ts` -> `@admin-blindatura: home-analytics`.
+- `e2e/pro/pro-sidebar-nav.spec.ts` -> `@admin-blindatura: shell-sidebar`.
+- `e2e/pro/pro-crm.spec.ts` -> `@admin-blindatura: crm`.
+- `e2e/pro/pro-service.spec.ts` -> `@admin-blindatura: servizio`.
+- `e2e/pro/pro-analytics.spec.ts` -> `@admin-blindatura: home-analytics`.
+
+`e2e/edition-classic.spec.ts` e `e2e/edition-upgrade.spec.ts` restano validi ma saltano se le credenziali
+Classic dedicate non sono configurate correttamente nello staging locale.
 
 E2E FU-042 chiusi (10-06-26) in `e2e/admin-shell-blindatura.spec.ts`:
 

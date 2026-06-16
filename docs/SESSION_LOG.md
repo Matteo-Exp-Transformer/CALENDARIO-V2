@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 16-06-26 | E2E blindatura multi-area — Admin, Prenota, Menu QR ✅ | [Report](Sessioni%20di%20lavoro/16-06-26/Report-e2e-blindatura-multiarea-16-06-26.md) — nuovi smoke E2E Admin/Calendario/Impostazioni, Prenota, Menu QR; Vitest ordine piatti/import preset QR; checklist/masterplan allineati; guide private con `--debug`/`--ui`; test mirati verdi |
 | 16-06-26 | Admin — **Area 3 Impostazioni (M4) blindata** ✅ | [Report finale](Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md) · [7A](Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-fase-d-rompi-7a-15-06-26.md) — FU-009 upload carosello Storage + overlay Prenota; context/index/FOLLOW_UP allineati; validate **733/733** + Vitest settings-* **69/69** |
 | 15-06-26 | CRM — **3 fix finali**: no creazione manuale, guard dirty editor email, card stabile ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-crm-3fix-rubrica-guard-card-15-06-26.md) — picker solo `source='booking'`; guard dirty su `EmailTemplateEditor` + `CampaignEditor`; CollapsibleCard email controlled state; validate **631** |
 | 15-06-26 | CRM Pro — **«Invia ora» card + firma tenant** campagne email ✅ | [Report](Sessioni%20di%20lavoro/15-06-26/Report-email-invia-card-firma-tenant-15-06-26.md) — «Invia ora» spostato sulla card (solo manuale, guard modale); firma tenant (nome/tel/email) in ogni email campagna; validate **631** |

@@ -26,6 +26,8 @@ async function navigateToMenuSection(page: Page) {
 }
 
 test.describe('Gestione menu admin', () => {
+  test.skip(true, 'suite legacy sostituita da admin-menu-magazzino-blindatura.spec.ts e admin-menu-magazzino-ct.spec.ts')
+
   test.beforeEach(async ({ page }) => {
     await loginAdmin(page)
     await navigateToMenuSection(page)

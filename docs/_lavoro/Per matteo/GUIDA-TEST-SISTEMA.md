@@ -25,6 +25,12 @@ npm run test
 # Tutti i test browser (Playwright) — richiede staging configurato
 npm run test:e2e
 
+# Run browser completo usato da Codex per spuntare la checklist
+npx playwright test --workers=1
+
+# Solo smoke Pro disponibili
+npx playwright test e2e/pro/pro-login.spec.ts e2e/pro/pro-sidebar-nav.spec.ts e2e/pro/pro-home.spec.ts e2e/pro/pro-crm.spec.ts e2e/pro/pro-service.spec.ts e2e/pro/pro-analytics.spec.ts --workers=1
+
 # Solo i test dell'edizione Classic (i più importanti per l'admin senza sidebar)
 npm run test:e2e -- --grep "edition|login|booking|menu"
 
@@ -37,7 +43,7 @@ npm run test:watch
 
 ---
 
-## Parte 1 — Test logica interna (Vitest, 54 test)
+## Parte 1 — Test logica interna (Vitest)
 
 Questi test non aprono browser e non toccano mai il database reale. Usano dati finti (mock).
 
@@ -186,11 +192,18 @@ npm run test -- useBookingMutations
 
 ---
 
-## Parte 2 — Test browser (Playwright, 13 spec file)
+## Parte 2 — Test browser (Playwright)
 
 Questi test aprono Chrome e usano l'app come farebbe un utente reale. Richiedono il database di staging (`docnnernvpyrbwuzzach`) e il file `.env.local.test` nella root.
 
 > **Prima di eseguire**: verifica che `.env.local.test` esista con le credenziali corrette (vedi `tests/README.md` § "Configurare lo staging").
+
+**Run completo disponibile**:
+```bash
+npx playwright test --workers=1
+```
+
+Ultimo run Codex 16-06-26: **55 passed, 16 skipped**. Gli skip sono attesi se mancano token invito valido o credenziali Classic dedicate nello staging corrente; la suite legacy `e2e/menu-crud.spec.ts` è saltata perché sostituita dai test Menu/Magazzino blindati.
 
 ---
 
@@ -266,28 +279,25 @@ Ospiti:   2
 
 ---
 
-### 2.4 · `e2e/menu-crud.spec.ts` — 3 test
+### 2.4 · Menu/Magazzino Admin — test blindatura
 
-**Cosa testa**: la gestione del menu nella dashboard — aggiungere categorie, aggiungere piatti, eliminare voci.
+**Cosa testa**: la gestione Menu/Magazzino blindata — disponibilità categorie/piatti e propagazione alle pagine pubbliche Prenota/Menu QR.
 
 **Come avviarlo**:
 ```bash
-npm run test:e2e -- --grep "Gestione menu"
+npx playwright test e2e/admin-menu-magazzino-blindatura.spec.ts e2e/admin-menu-magazzino-ct.spec.ts --workers=1
 ```
 
-**Dati usati dai test**:
-- Categoria creata: `Test Categoria E2E`
-- Piatto creato: `Bruschetta al pomodoro`, prezzo `8.50`
+**Nota**: `e2e/menu-crud.spec.ts` resta nel repository come suite legacy ma ora è saltata intenzionalmente. Per la checklist usare i file `admin-menu-magazzino-*`.
 
 **Risultati attesi**:
-- Click "Aggiungi categoria" → form si apre, compilando il nome e salvando → toast di successo
-- Click "Aggiungi piatto" → form si apre, compilando nome e prezzo e salvando → toast di successo
-- Click "Elimina" su un piatto → eventuale conferma → toast di successo
+- Toggle disponibilità da Admin → l'elemento non compare in Prenota/Menu QR
+- Responsive 375/834/1280 → i controlli restano raggiungibili
+- Snapshot prenotazioni esistenti → non viene alterato dal magazzino
 
 **Come modificarlo**:
-- Per usare un nome categoria diverso: cambia `'Test Categoria E2E'` nel test.
-- Per testare un prezzo diverso: cambia `'8.50'` nell'input `priceInput`.
-- I test usano `test.skip()` automaticamente se i bottoni non sono visibili — questo è intenzionale per renderli robusti anche con DB vuoto.
+- Per cambiare dati/slug staging, usa le variabili `E2E_*` in `.env.local.test`.
+- Per testare una nuova regola Menu/Magazzino, aggiungila ai file `admin-menu-magazzino-*`, non a `menu-crud.spec.ts`.
 
 ---
 
@@ -325,7 +335,7 @@ npm run test:e2e -- --grep "Flusso invito"
 npm run test:e2e -- --grep "Edition Classic — UI base"
 ```
 
-**Credenziali usate**: `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` in `.env.local.test` → devono puntare all'admin `admin-classic@test.local`.
+**Credenziali usate**: `E2E_CLASSIC_ADMIN_EMAIL` / `E2E_CLASSIC_ADMIN_PASSWORD` in `.env.local.test` → devono puntare a un admin Classic reale di staging. Se mancano o non entrano in `/admin`, i test Classic vengono saltati.
 
 **Risultati attesi**:
 1. Dopo login → **nessuna sidebar** visibile (niente menu laterale)
@@ -335,7 +345,7 @@ npm run test:e2e -- --grep "Edition Classic — UI base"
 5. Nel modal di una prenotazione → **nessun bottone "No-show"** (funzione non inclusa in Classic)
 
 **Come modificarlo**:
-- Per cambiare l'admin Classic testato: modifica `E2E_ADMIN_EMAIL` in `.env.local.test` (deve essere un admin con edition Classic nello staging).
+- Per cambiare l'admin Classic testato: modifica `E2E_CLASSIC_ADMIN_EMAIL` in `.env.local.test` (deve essere un admin con edition Classic nello staging).
 - Per aggiungere un test "nessun bottone X": duplica il pattern del test walk-in cambiando il selettore `[aria-label*="walk"i]` con quello del bottone che vuoi verificare assente.
 
 ---
@@ -389,7 +399,7 @@ npm run test:e2e -- --grep "Edition Upgrade"
 npm run test:e2e -- --grep "Admin Classic"
 ```
 
-**Credenziali usate**: `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` — stesse del tenant Classic.
+**Credenziali usate**: `E2E_CLASSIC_ADMIN_EMAIL` / `E2E_CLASSIC_ADMIN_PASSWORD` quando vuoi verificare davvero l'UI Classic. Con le sole credenziali Pro, le suite Classic dedicate vengono saltate o non coprono i check Classic-specifici.
 
 **Risultati attesi**:
 - Click "Archivio" → la sezione si apre senza errori (può essere vuota)
@@ -430,28 +440,28 @@ npm run test:e2e -- --grep "Admin Pro — Sidebar"
 ```
 
 **Risultati attesi**:
-1. Sidebar contiene: Home, Prenotazioni, CRM Clienti, Servizio, Analytics
+1. Sidebar contiene: Home, CRM Clienti, Servizio, Analytics
 2. Click "CRM Clienti" → appare l'intestazione della sezione CRM
 3. Click "Servizio" → appare l'intestazione della sezione Servizio
 4. Click "Analytics" → appare l'intestazione della sezione Analytics
-5. Click "Prenotazioni" → torna alla dashboard con i 5 tab (Calendario, ecc.)
+5. Dalla sezione CRM, il pulsante `X` torna alla dashboard/Home Pro senza rompere la sidebar
 
 ---
 
-### 2.12 · `e2e/pro/pro-crm.spec.ts` — 2 test attivi + 1 documentale
+### 2.12 · `e2e/pro/pro-crm.spec.ts` — smoke CRM Pro
 
-**Cosa testa**: che la sezione CRM mostri la lista clienti con almeno 3 clienti nel DB staging.
+**Cosa testa**: che la sezione CRM Pro si apra, mostri la rubrica clienti e carichi anche Personalizza email / stati vuoti senza bloccare l'admin.
 
 **Come avviarlo**:
 ```bash
 npm run test:e2e -- --grep "Admin Pro — CRM"
 ```
 
-**Dati richiesti**: il tenant Pro (`11111111-...`) deve avere almeno 3 clienti in tabella `customers` (già inseriti nello staging).
-
 **Risultati attesi**:
 - Click "CRM Clienti" dalla sidebar → la pagina CRM si carica
-- Lista clienti → almeno 3 righe visibili
+- Rubrica clienti → lista o stato vuoto leggibile
+- Personalizza email → sezione raggiungibile
+- Stato senza dati → non rompe layout o navigazione
 
 ---
 
@@ -471,7 +481,40 @@ npm run test:e2e -- --grep "Admin Pro — Home"
 4. Navigazione CRM → Servizio → Home → la sidebar rimane sempre visibile
 
 ---
-### 2.14 - test per controllare flusso orario da pagina prenotazione e da pagina admin:
+
+### 2.14 · `e2e/pro/pro-service.spec.ts` — smoke Servizio Pro
+
+**Cosa testa**: che la sezione Servizio Pro si apra e mostri i pannelli operativi principali senza errori browser.
+
+**Come avviarlo**:
+```bash
+npx playwright test e2e/pro/pro-service.spec.ts --workers=1
+```
+
+**Risultati attesi**:
+- Click "Servizio" dalla sidebar → la pagina Servizio si carica
+- I pannelli operativi/placeholder sono visibili
+- La navigazione resta stabile tornando alle altre sezioni Pro
+
+---
+
+### 2.15 · `e2e/pro/pro-analytics.spec.ts` — smoke Analytics Pro
+
+**Cosa testa**: che la sezione Analytics Pro si apra e mostri KPI, intervalli/stati vuoti o dati disponibili senza rompere la dashboard.
+
+**Come avviarlo**:
+```bash
+npx playwright test e2e/pro/pro-analytics.spec.ts --workers=1
+```
+
+**Risultati attesi**:
+- Click "Analytics" dalla sidebar → la pagina Analytics si carica
+- KPI o stati vuoti sono leggibili
+- Cambiare vista/intervallo non rompe sidebar o layout
+
+---
+
+### 2.16 - test per controllare flusso orario da pagina prenotazione e da pagina admin:
  
 src\features\booking\utils\__tests__\CONTROLLA_ORARIO-PRENOTAZIONI.test.ts
 
@@ -490,7 +533,7 @@ src\features\booking\utils\__tests__\CONTROLLA_ORARIO-PRENOTAZIONI.test.ts
 | Accetta prenotazione | ✅ mutation | ✅ booking-mgmt | |
 | Rifiuta prenotazione | ✅ mutation | ✅ booking-mgmt | |
 | Cancella prenotazione | ✅ mutation (soft-delete) | ✅ admin-classic-tabs | |
-| Categorie menu (CRUD) | ✅ useMenuCategories | ✅ menu-crud | |
+| Categorie/menu-magazzino | ✅ useMenuCategories + sync | ✅ admin-menu-magazzino-* | `menu-crud` è legacy skipped |
 | Tab Calendario | — | ✅ edition-classic | visibilità |
 | Tab Archivio | — | ✅ admin-classic-tabs | aggiunto sessione 14-05-26 |
 | Tab Impostazioni | — | ✅ admin-classic-tabs | aggiunto sessione 14-05-26 |
@@ -504,12 +547,12 @@ src\features\booking\utils\__tests__\CONTROLLA_ORARIO-PRENOTAZIONI.test.ts
 | Funzionalità | Vitest | Playwright | Note |
 |-------------|--------|------------|------|
 | Feature flags Pro | ✅ buildFeatures | — | logica ok |
-| Sidebar visibile | — | ✅ edition-upgrade + pro-login | |
-| Home page (AdminHomePage) | — | ✅ pro-home | aggiunto sessione 14-05-26 |
-| Sezione CRM | — | ✅ pro-crm | aggiunto sessione 14-05-26 |
-| Sezione Servizio | — | ✅ pro-sidebar-nav | verifica navigazione |
-| Sezione Analytics | — | ✅ pro-sidebar-nav | verifica navigazione |
-| Navigazione sidebar | — | ✅ pro-sidebar-nav + pro-home | aggiunto sessione 14-05-26 |
+| Sidebar visibile | — | ✅ pro-login + pro-sidebar-nav | Classic upgrade resta skip se mancano credenziali Classic |
+| Home page (AdminHomePage) | — | ✅ pro-home | default Pro + navigazione |
+| Sezione CRM | ✅ crmEmailTemplates / form state | ✅ pro-crm | rubrica + Personalizza email + stati vuoti |
+| Sezione Servizio | ✅ service hooks smoke | ✅ pro-service | smoke dedicato |
+| Sezione Analytics | — | ✅ pro-analytics | smoke dedicato |
+| Navigazione sidebar | — | ✅ pro-sidebar-nav + pro-home | Home/CRM/Servizio/Analytics |
 
 ---
 

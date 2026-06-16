@@ -2,11 +2,11 @@
 
 > **Cos'è.** L'inventario dei test dell'area Menu QR: cosa è già coperto, dove aggiungere quando
 > tocchi qualcosa. Skill entry: `../MENU_QR_SKILL.md`. Girali con `npm run test` (Vitest).
-> **Verificato nel codice il 06-06-26** (lista file reale, non da report).
+> **Verificato nel codice il 16-06-26** (lista file reale, non da report).
 
 ---
 
-## Test esistenti (6 file)
+## Test esistenti (8 file Vitest + 1 E2E)
 
 | File | Cosa blinda |
 |---|---|
@@ -14,8 +14,11 @@
 | `src/features/booking/utils/__tests__/menuQrCategoryOrder.test.ts` | Ordinamento categorie da `category_filter` (la sequenza dell'array = ordine di visualizzazione). |
 | `src/features/booking/utils/__tests__/menuQrStorage.test.ts` | Helper storage/prefill foto (`buildCatalogPrefillForKeys`, refresh prefill catalogo → QR). |
 | `src/features/booking/utils/__tests__/menuQrCategoryKeySync.test.ts` | Sync rename/delete di una chiave categoria sui QR (pure functions). |
+| `src/features/booking/utils/__tests__/menuQrItemSortOverrides.test.ts` | Override ordine piatti per-QR (`parseItemSortOverrides`, `applyQrItemSortOverride`). |
 | `src/features/public-menu/__tests__/categoryIcons.test.ts` | Risoluzione icone categoria (mapping Phosphor/Lucide, default `lucide_salad`, mai emoji). |
 | `src/features/booking/components/__tests__/menuQrCategoryFieldCap.test.tsx` | **FU-MQR-1**: cap titolo (30) / descrizione (70) card categoria — valori + taglio difensivo via `AdminFieldWithCharCount`. |
+| `src/features/booking/components/__tests__/menuQrPresetImport.test.ts` | Import preset staff nel QR (`computeImportFromPreset`): categorie + hidden item precompilati, carosello escluso. |
+| `e2e/public-menu-qr.spec.ts` | Flusso cliente pubblico: homepage QR, apertura categoria, browser back, shortCode mancante, fallback `/menu/:slug`. |
 
 ---
 
@@ -28,16 +31,16 @@
 | Ordine/filtro categorie | `menuQrCategoryOrder.test.ts` |
 | Rename/delete categoria propagato ai QR | `menuQrCategoryKeySync.test.ts` |
 | Icone categoria | `categoryIcons.test.ts` |
-| Ordinamento piatti per-QR (`item_sort_overrides`) | Aggiungere `menuQrItemSortOverrides.test.ts` — da creare: casi `applyQrItemSortOverride` (null/vuoto/override parziale/override completo) + `parseItemSortOverrides` (JSONB malformato → null) |
-| Importa-da-preset nel modal QR | Non ancora coperto: comportamento pure di `computeImportFromPreset` (categorie estratte, hiddenItemIds calcolati, preset senza item nella categoria) è candidato per unit test in `menuQrPresetImport.test.ts` |
-| Hero foto e titolo override in pagina categoria pubblica | `PublicMenuCategoryPage` non ha test rendering; INC-04/08 verificabili a occhio su TEST |
+| Ordinamento piatti per-QR (`item_sort_overrides`) | `menuQrItemSortOverrides.test.ts` |
+| Importa-da-preset nel modal QR | `menuQrPresetImport.test.ts` |
+| Flusso cliente pubblico QR | `e2e/public-menu-qr.spec.ts` |
+| Hero foto, swipe carosello, temi e footer data/ora | ancora manuale su TEST (`VERIFICA-IN-DEV.md`) |
 
 ---
 
 ## Buchi di copertura noti (onesti)
 
-- **Pagine pubbliche** (`PublicMenuPage`, `PublicMenuCategoryPage`) non hanno test di rendering
-  dedicati: il comportamento è verificato a occhio. Se si toccano gli invarianti pubblici
-  (`tenantReady`, `supabasePublic`, filtro `hidden_menu_item_ids`) vale la pena aggiungerli.
+- **E2E pubblica** copre il flusso cliente base, ma non il dettaglio visivo di carousel, temi e
+  footer: quelli restano da guardare a mano quando si tocca il rendering.
 - **Codice preset**: rimosso il 06-06-26 (`PublicMenuPresetPage`, rami `content_type`, colonne DB).
   Non esiste più nulla da testare lì.

@@ -27,8 +27,9 @@ async function fillPublicBookingBasics(page: Page) {
     await cards.first().click()
   }
 
-  await page.locator('#client_name-control').scrollIntoViewIfNeeded()
-  await page.locator('#client_name-control').fill('Mario Rossi E2E')
+  const nameInput = page.locator('#client_name-control')
+  await expect(nameInput).toBeVisible({ timeout: 8000 })
+  await nameInput.fill('Mario Rossi E2E')
   await page.locator('#client_email-control').fill('mario.rossi@test.it')
   await page.locator('#client_phone-control').fill('+39 333 1234567')
   await page.locator('#num_guests-control').fill('2')
