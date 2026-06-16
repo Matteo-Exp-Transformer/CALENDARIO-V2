@@ -13,9 +13,9 @@
 | 4 | settings-theme | ✅ approved | `d8c9dab` · `Report-settings-theme-15-06-26.md` |
 | 5 | form-config + promo (estensione) | ✅ approved | `2cdc724` · `Report-settings-form-config-promo-15-06-26.md` |
 | 6 | FU-009 carousel CRUD | ✅ approved | `95f2128` · `Report-settings-carousel-crud-15-06-26.md` |
-| 7 | Fase D rompi + QA 375/834/1280 | ✅ chiuso | `Report-fase-d-rompi-7a-15-06-26.md` · chiusura `Report-finale-area3-impostazioni-15-06-26.md` — **Area 3: blindata** |
+| 7 | Fase D rompi + QA 375/834/1280 | ✅ approved | `f74d9bf` · `Report-fase-d-rompi-7a-15-06-26.md` · `Report-finale-area3-impostazioni-15-06-26.md` — **Area 3: blindata** |
 
-**Sequenza Area 3 Impostazioni (M4) chiusa (16-06-26).** Residui fuori cancello: FU-051 date mock; infra Playwright admin headless locale.
+**Sequenza Area 3 Impostazioni (M4) chiusa (16-06-26).** Prompt sequenziali §1–§7 completi (esecutore + revisore o chiusura doc). Residui fuori cancello: **FU-051** date mock; infra Playwright admin headless locale intermittente.
 
 ---
 
@@ -443,7 +443,7 @@ Eseguito 15-06-26 — **12** test fronte (5 helper + 7 UI), validate **733/733**
 
 ### 6B — Prompt revisore controverifica ✅ approved
 
-Controverificato 15-06-26 — **12/12** mirato, validate **733/733**; FU-009 **quasi chiuso** (residuo upload browser → §7); gap P2 opzionali icona/Sposta su/multi-slide → fix §6C opzionale.
+Controverificato 15-06-26 — **12/12** mirato, validate **733/733**; FU-009 **quasi chiuso** al momento (residuo upload browser → §7). **Agg. 16-06-26:** FU-009 **chiuso** in chiusura Area 3 (`Report-finale-area3-impostazioni-15-06-26.md`). Gap P2 opzionali icona/Sposta su/multi-slide → §6C non eseguito (non bloccante).
 
 ### 6A — Prompt esecutore (testo originale)
 
@@ -519,9 +519,9 @@ Se FU-009 resta aperto, scrivi motivo e prompt fix successivo.
 
 ## 7. Fase D rompi + QA responsive 375 / 834 / 1280
 
-### 7A — Prompt esecutore ✅ approved (16-06-26, gap QA documentati)
+### 7A — Prompt esecutore ✅ approved (16-06-26)
 
-Eseguito 16-06-26 — validate **733/733**, fronti Vitest aggregati **69/69**; QA manuale browser `tomas@t.com` su `:5173` (save-guard rompi OK 1280; pill 375; Prenota 375). Playwright admin login headless ❌ locale (spec `settings-m4-phase-d-7a` creata e rimossa). Report: `Report-fase-d-rompi-7a-15-06-26.md`. **Verdetto Area 3: non blindata** (FU-009 upload, doc context, QA rompi parziale). Controverifica **7B 16-06-26**: comandi rilanciati **733/733** + **69/69**; gap QA §7A dichiarati onesti (promo/sfondo/delete/logout/doppio-click non ripetuti in browser).
+Eseguito 16-06-26 — validate **733/733**, fronti Vitest aggregati **69/69**; QA manuale browser `tomas@t.com` su `:5173` (save-guard rompi OK 1280; pill 375; Prenota 375). Playwright admin login headless ❌ locale (spec temporanea creata e rimossa). Report: `Report-fase-d-rompi-7a-15-06-26.md`. Verdetto intermedio: **non blindata** (FU-009 upload + doc + QA rompi parziale). Chiusura residui + FU-009 upload → `Report-finale-area3-impostazioni-15-06-26.md` commit `f74d9bf`.
 
 ### 7A — Prompt esecutore (testo originale)
 
@@ -563,9 +563,11 @@ Non dichiarare Area 3 blindata se FU-009, validate o QA responsive restano apert
 Niente commit/push.
 ```
 
-### 7B — Prompt revisore controverifica ✅ controverificato (16-06-26)
+### 7B — Prompt revisore controverifica ✅ approved (16-06-26)
 
-Controverificato 16-06-26 — validate **733/733**, aggregato M4 **69/69**; report 7A coerente con comandi reali; **Area 3: non blindata** (FU-009 upload browser, doc context obsoleti, QA rompi incompleta vs lista §7A). Residui accettabili: fasce Classic su tenant Pro N/A → copertura Vitest `settings-time-slots` 20/20.
+**Prima passata (pre-chiusura):** validate **733/733**, aggregato M4 **69/69**; report 7A coerente; verdetto intermedio **non blindata** (FU-009, doc, QA parziale).
+
+**Chiusura + seconda passata:** FU-009 upload Storage + overlay Prenota verificati (`Report-finale-area3-impostazioni-15-06-26.md`); context/index/FOLLOW_UP allineati commit `f74d9bf`; validate **733/733** e build verde. **Verdetto finale Area 3: blindata.** Residui non bloccanti: gap QA browser dichiarati in report (coperti Vitest); fasce Classic UI su tenant Pro N/A → Vitest `settings-time-slots` **20/20**; FU-051 date mock; Playwright admin headless locale.
 
 ### 7B — Prompt revisore controverifica (testo originale)
 

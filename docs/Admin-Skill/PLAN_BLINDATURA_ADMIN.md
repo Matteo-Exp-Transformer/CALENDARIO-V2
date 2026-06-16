@@ -41,7 +41,7 @@
 |---|---|---|---|---|
 | 1 | Shell / ingresso / navigazione globale | `ADMIN_SHELL_NAV_CONTEXT.md` | ✅ blindato (FU-042 E2E 10-06-26) | login, edition, sidebar, dirty guard, logout, refresh/back — unit + E2E staging |
 | 2 | Prenotazioni operative | `ADMIN_PRENOTAZIONI_CONTEXT.md` | fatto (11-06-26) | Vitest 32 + E2E FU-043; accetta/rifiuta/cancella/ripristina/warning testati |
-| 3 | Impostazioni / Personalizza Form | `ADMIN_SETTINGS_CONTEXT.md` | **M4 Fase C chiusa** (15-06-26) · **Fase D completa da fare** | gap M4 implementati; ora serve mappa completa elementi/vincoli/conflitti della pagina Impostazioni locale + controtest/QA 375/834/1280 |
+| 3 | Impostazioni / Personalizza Form | `ADMIN_SETTINGS_CONTEXT.md` | ✅ **blindata** (16-06-26) | Vitest `settings-*` **107/107** (15 file); Fase D rompi + QA 375/834/1280 documentati; FU-009 upload carosello chiuso; validate **733/733** |
 | 4 | Menu admin / magazzino | `ADMIN_MENU_MAGAZZINO_CONTEXT.md` | ✅ **blindato** (11-06-26) | Vitest 27 + E2E `@admin-blindatura: menu-magazzino`; QA Matteo; report finale M3 |
 | 5 | Servizio | `ADMIN_SERVIZIO_CONTEXT.md` | da fare | sale/tavoli/slot/walk-in/briefing testati |
 | 6 | CRM | `ADMIN_CRM_CONTEXT.md` | da fare | create/edit/delete cliente e booking collegate testati |
@@ -483,18 +483,18 @@ deve partire da un fronte piccolo, farlo diventare verde in isolamento, poi cons
 che prova a romperlo e rilancia gli stessi comandi. Non dichiarare un fronte chiuso se il comando resta
 in timeout o se passa solo una parte della suite.
 
-Stato verificato sul working tree del 15-06-26:
+Stato verificato sul working tree del 15-06-26 (**superato il 16-06-26** — Area 3 chiusa, tutti i fronti
+verdi; lasciato come traccia storica del primo gate Batch 1/2):
 
 - **D-M2 sfondi Prenota:** test mirati verdi con
   `npx vitest run src/features/booking/lib/__tests__/settingsBackground.adminBlindatura.test.ts src/features/booking/constants/__tests__/publicBookingSurface.test.ts --reporter=verbose`
   (15 test passati).
 - **D-M1 form-config:** test mirato verde con
   `npx vitest run settingsFormConfig.settingsM4 --reporter=verbose`
-  (3 test passati), ma restano warning `act(...)` da stabilizzare se ricompaiono in validate.
-- **D-M1 promo:** il run
-  `npx vitest run settingsPromo.settingsM4 --reporter=verbose`
-  e andato in timeout: non e verde finche un agente non isola la causa e rilancia il comando con esito
-  completo.
+  (esteso poi a 12 casi); warning `act(...)` noti ma non bloccano validate.
+- **D-M1 promo:** il run `npx vitest run settingsPromo.settingsM4 --reporter=verbose` era andato in timeout
+  al 15-06; **risolto 15-06-26** (gate §1) — ora **8/8 verde**. Conteggio settings-* aggregato: **107/107**
+  su 15 file (run `settingsM4 settingsBackground.adminBlindatura publicBookingSurface`).
 
 Ordine obbligatorio dei fronti test:
 
@@ -574,7 +574,7 @@ Aggiornare a fine area.
 | Shell / ingresso / navigazione globale | ✅ blindato (10-06-26) | FU-042 E2E + suite shell; M1 su `main` privato |
 | Prenotazioni operative | ✅ cancello M2 (11-06-26) | Vitest **32** + E2E **7** (FU-043: capienza/orario passato + modali 375/834); validate **536**. Residui U3/U9/D6/D7/L* fuori cancello |
 | Tab Calendario (M2) | ✅ blindato + merged prod (11-06-26) | Batch A+B + Fase C + **C-U2** guard tab modale; validate **527**; QA badge §9 OK; C-U3 → FU-048 Pro |
-| Impostazioni / Personalizza Form | 🟡 Fase D mappa completa da fare | M4 Fase C chiusa (G2–G9, G20; G16 fuoriscope). Prossimo ciclo: matrice completa elementi/vincoli/conflitti + FU-009 + controtest responsive/rompi |
+| Impostazioni / Personalizza Form | ✅ **BLINDATO** (16-06-26) | Report [`Report-finale-area3-impostazioni-15-06-26.md`](../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md); Vitest `settings-*` **107/107** (15 file); FU-009 + QA 375/834/1280; validate **733/733**. Residuo fuori cancello: FU-051 date mock |
 | Menu admin / magazzino | ✅ **BLINDATO** (11-06-26) | Report [`Report-finale-m3-menu-blindato-11-06-26.md`](../Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md); validate **554**; solo FU-M3-QA-CT extra fuori cancello |
 | Servizio | ⬜ | Include walk-in e tavoli occupati |
 | CRM | ⬜ | Attenzione email normalizzata e delete multi-step |

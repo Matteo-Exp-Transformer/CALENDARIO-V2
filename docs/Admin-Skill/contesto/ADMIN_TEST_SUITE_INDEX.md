@@ -87,7 +87,11 @@ Fronti previsti:
 
 Gate Batch 1/2 (15-06-26, agg. §5A/§5B P2): run aggregato **35 test** verdi — `settingsFormConfig.settingsM4`, `settingsPromo.settingsM4`, `settingsBackground.adminBlindatura`, `publicBookingSurface`.
 
-**QA browser Area 3 (16-06-26):** Fase D rompi + viewport **375 / 834 / 1280** documentati in `Report-fase-d-rompi-7a-15-06-26.md` (save-guard, pill, modale pubblica, smoke Prenota); **FU-009** upload foto carosello reale Supabase + overlay pubblico verificato su TEST (`Report-finale-area3-impostazioni-15-06-26.md`). Residuo infra: Playwright admin login headless locale intermittente — QA Impostazioni coperta da browser IDE + spec ad hoc; non blocca blindatura Area 3.
+**QA browser Area 3 (16-06-26):** Fase D rompi + viewport **375 / 834 / 1280** documentati in `Report-fase-d-rompi-7a-15-06-26.md` (save-guard, pill, modale pubblica, smoke Prenota); **FU-009** upload foto carosello reale Supabase + overlay pubblico verificato su TEST (`Report-finale-area3-impostazioni-15-06-26.md`). **Area 3 Impostazioni = blindata** (16-06-26). Residuo infra: Playwright admin login headless locale intermittente — non blocca blindatura.
+
+## 3-ter. Area 3 — Impostazioni locale (M4) — blindato ✅ (16-06-26)
+
+Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **107/107** (15 file, gate Batch 1/2 **35/35** incluso); `npm run validate` **733/733**; report finale [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md). Prompt sequenziali: [`Prompt-agenti-test-blindatura-admin-impostazioni.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Prompt-agenti-test-blindatura-admin-impostazioni.md). Residuo fuori cancello: **FU-051** date mock.
 
 ## 4. Unit/component per menu magazzino/QR
 

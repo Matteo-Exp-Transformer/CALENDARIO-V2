@@ -1,3 +1,5 @@
+// @admin-blindatura: settings-background
+// Copre: superficie pubblica Prenota (light = crema #faf7f1) e contrasto testo (surfaceUsesLightText)
 import { describe, expect, it } from 'vitest'
 import {
   resolvePublicBookingSurface,

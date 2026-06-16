@@ -30,18 +30,21 @@ disabilita una feature del bundle.
 
 ## 3. `restaurant_settings`
 
-Chiavi admin rilevanti:
+> ⚠️ **Fonte di verità unica delle chiavi = `restaurantSettingRegistry.ts`** (`RESTAURANT_SETTING_KEYS_V1`)
+> e, per famiglia/decisioni, `ADMIN_SETTINGS_CONTEXT.md §4`. **Non** tenere qui un elenco completo: si
+> disallinea dal codice (è già successo — mancava `daily_guest_limit`). Sotto solo le **famiglie** che
+> toccano il flusso dati admin; per tipi, fallback ed elenco autorevole aprire il registry.
 
-- `restaurant_name`, `contact_email`, `contact_phone`, `contact_address`
-- `business_hours`
-- `slot_guest_capacities`, `booking_time_slots_enabled`
-- `public_booking_page_background`, `public_booking_strip_photo`
-- `app_theme`
-- `booking_public_form_config`
-- `booking_menu_promos`
-- `booking_custom_staff_presets`
-- `booking_staff_presets_visible`
-- `walk_in_max_guests`
+- **Anagrafica/contatti:** `restaurant_name`, `contact_*`.
+- **Orari/fasce/capienze:** `business_hours`, `slot_guest_capacities`, `booking_time_slots_enabled`.
+- **Limiti coperti:** `daily_guest_limit` (limite giornaliero esterno — applicato server-side in
+  `create-booking`, `DAILY_LIMIT`), `walk_in_max_guests`.
+- **Pagina Prenota:** `public_booking_page_background`, `public_booking_strip_photo`,
+  `booking_public_form_config`, `booking_placement_areas`.
+- **Tema:** `app_theme` (solo admin).
+- **Promo/preset:** `booking_menu_promos`, `booking_custom_staff_presets`, `booking_staff_presets_visible`.
+- **Tecniche/fuoriscope:** `timezone` (default `Europe/Rome`, niente UI), `booking_window_days` (orfana,
+  solo registry, non implementare senza decisione Matteo).
 
 Vincolo importante: `setting_value` e `JSONB NOT NULL`; non salvare `NULL` dove il registry si aspetta
 stringa vuota o default.

@@ -1,6 +1,8 @@
 # ADMIN — Settings Context
 
 > Impostazioni ristorante e Personalizza Form. Questo dominio scrive soprattutto `restaurant_settings`.
+>
+> **Stato blindatura (M4):** intervista ✅ (15-06-26) · Fase C ✅ · test `@admin-blindatura: settings-*` **107/107** (15 file) · Fase D rompi + QA 375/834/1280 ✅ · FU-009 chiuso ✅ · **blindato** ✅ (16-06-26). Report: [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md).
 
 ## 1. Scopo
 
@@ -117,7 +119,7 @@ chiave gia registrata.
 - **`timezone`**: setting tecnico **senza UI Classic**; default documentato **`Europe/Rome`**; non esporre in form admin.
 - **`app_theme`**: solo back-office admin; **non** cambia Prenota né Menu QR.
 - **Card scorrevole + Carosello**: entrambi core in Personalizza form; cambio `sub_tabs_presentation` → **conferma distruttiva**
-  (già in `BookingFormConfigPanel`). Residuo QA slide admin = **FU-009**, non M4.
+  (già in `BookingFormConfigPanel`). CRUD slide carosello + upload Storage: **FU-009 chiuso** (16-06-26) — Vitest `settings-carousel-crud` **12/12** + QA browser TEST; vedi § Stato mappatura sotto.
 
 ### Salvataggio, guard, Classic production
 
@@ -139,7 +141,7 @@ chiave gia registrata.
 ### Stato mappatura (16-06-26 — chiusura Area 3 M4)
 
 - Fase A+B **chiuse** (intervista + gap read-only). Fase C **chiusa** (15-06-26): gap G2–G9, G20 implementati; **G16 fuoriscope** (finestra prenotazione rimossa).
-- **Fronti test `@admin-blindatura: settings-*`:** tutti verdi in run aggregato (**69/69**, gate §7A + §7B); `npm run validate` **733/733** (16-06-26).
+- **Fronti test `@admin-blindatura: settings-*`:** tutti verdi in run aggregato (**107/107** su 15 file, gate Batch 1/2 incluso); `npm run validate` **733/733** (16-06-26).
 - **FU-009 (carosello admin):** chiuso — QA browser upload reale Supabase Storage + overlay su `/prenota/:slug` (`tomas@t.com`, tenant Trattoria Da Tommaso); Vitest `settings-carousel-crud` **12/12**.
 - **Fase D rompi + QA viewport:** eseguiti e documentati in `Report-fase-d-rompi-7a-15-06-26.md` (375/834/1280 Impostazioni save-guard + smoke Prenota); fasce Classic accettate via Vitest `settings-time-slots` **20/20** (tenant Pro non espone blocco fasce — voluto).
 
