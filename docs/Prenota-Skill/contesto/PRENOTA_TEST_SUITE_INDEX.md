@@ -41,7 +41,7 @@ Per fronte, i file sono elencati qui sotto: lancia `npx vitest run <path>` sul s
 | File | Cosa protegge |
 |------|---------------|
 | `e2e/public-booking.spec.ts` | Submit completo su staging TEST: form valido → conferma invio reale. |
-| `e2e/public-booking-smoke.spec.ts` | Gap documentati ma automatizzabili: slug inesistente, submit invalido con alert sul primo campo, link Privacy + ritorno, submit raggiungibile a 375/834/1280; visual checklist sfondo striscia/full-page/crema + footer Orari assente quando tutti i giorni sono chiusi. |
+| `e2e/public-booking-smoke.spec.ts` | Gap documentati ma automatizzabili: slug inesistente, submit invalido con alert sul primo campo, link Privacy + ritorno, submit raggiungibile a 375/834/1280; visual checklist sfondo striscia/full-page/crema + footer Orari assente quando tutti i giorni sono chiusi; EmptyState con recapiti quando manca `booking_public_form_config`. |
 
 ```bash
 npx playwright test e2e/public-booking.spec.ts e2e/public-booking-smoke.spec.ts --workers=1

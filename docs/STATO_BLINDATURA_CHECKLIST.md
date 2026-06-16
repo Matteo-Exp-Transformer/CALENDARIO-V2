@@ -10,6 +10,7 @@
 >
 > Aggiornato: **2026-06-16**.
 > Ultimo run E2E Codex: `npx playwright test --workers=1` → **58 passed, 16 skipped** su staging TEST.
+> Addendum mirato Codex: `public-booking-smoke + public-menu-qr` → **12 passed**; `admin-calendar-blindatura` → **2 passed**.
 > Gli skip sono prerequisiti non disponibili o suite legacy disattivate; le spunte sotto indicano solo
 > i flussi davvero verificati da Playwright.
 
@@ -28,11 +29,11 @@
 
 | Area / Sezione | Stato | Test automatici | Cosa resta a mano |
 |---|---|---|---|
-| **Pagina Prenota** (pubblica) | ✅ blindato (M0, live in prod 10-06) | ~120 Vitest + 13 E2E | Carosello swipe resta visuale; sfondo/footer coperti da E2E |
-| **Menu QR** (pubblica) | ✅ blindato | 47 Vitest + 2 E2E dedicati + 3 E2E indiretti | Icone categoria/asset reali restano visuali se tocchi la UI |
+| **Pagina Prenota** (pubblica) | ✅ blindato (M0, live in prod 10-06) | ~120 Vitest + 14 E2E | Carosello swipe resta visuale; sfondo/footer/EmptyState coperti da E2E |
+| **Menu QR** (pubblica) | ✅ blindato | 47 Vitest + 3 E2E dedicati + 3 E2E indiretti | Asset reali restano visuali se tocchi la UI |
 | **Admin — Shell/Navigazione** (M1) | ✅ blindato (10-06) | ~14 Vitest + 15 E2E | Smoke login/sidebar/guard; header fallback |
 | **Admin — Prenotazioni operative** (M2) | ✅ blindato (11-06) | 35 Vitest + 7 E2E | No-show/archivio in dev; responsive 375 su tutti i modali |
-| **Admin — Tab Calendario** (M2) | ✅ blindato + prod (11-06) | 43 Vitest + 1 E2E smoke | Badge % su 375/834/1280; gate tavolo Pro; guard overlay |
+| **Admin — Tab Calendario** (M2) | ✅ blindato + prod (11-06) | 43 Vitest + 2 E2E smoke | Gate tavolo Pro; guard overlay |
 | **Admin — Impostazioni/Personalizza Form** (M4) | ✅ blindato (16-06) | 107 Vitest + 1 E2E smoke | Tema/carosello admin restano browser/visuali se tocchi la UI |
 | **Admin — Menu/Magazzino** (M3) | ✅ blindato (11-06) | 27 Vitest + 4 E2E | Sync rename/delete; snapshot prenotazioni; HEIC |
 | **Admin — Servizio** (Pro) | ⬜ non mappato | 3 Vitest + 1 E2E smoke | Tutto il prodotto: sale/tavoli/slot/walk-in/briefing |
@@ -72,8 +73,8 @@ quando li tocchi.
 - [x] `/admin/calendario` apre la vista Calendario senza crash.
 - [x] Mostra **solo prenotazioni accettate** nel digest E2E (no pending, no no-show).
 - [x] Badge cella con limite giornaliero → percentuale visibile.
-- [ ] Badge cella senza limite giornaliero → solo conteggio coperti.
-- [ ] Oltre 100% → mostra valore reale (es. 108%), **non** blocca/cappa.
+- [x] Badge cella senza limite giornaliero → solo conteggio coperti.
+- [x] Oltre 100% → mostra valore reale (es. 108%), **non** blocca/cappa.
 - [ ] **Niente drag&drop** per spostare data/ora.
 - [ ] Scorciatoia "Assegna tavolo": assente in Classic, presente in Pro con slot.
 - [x] Click giorno → `+ Nuova prenotazione` apre il form con data preimpostata.
@@ -89,7 +90,7 @@ quando li tocchi.
 - [x] Sfondo XOR: striscia **oppure** foto pagina intera, mai entrambe; niente → crema.
 - [x] Footer "Salva modifiche" raggiungibile su 375px e 834px; guard dirty tema appare.
 - [ ] Una sola modale "dati pubblici"; doppio click = una mutation.
-- [ ] Form non configurato → EmptyState su `/prenota` (niente form demo).
+- [x] Form non configurato → EmptyState su `/prenota` (niente form demo).
 
 ### 2.5 Menu / Magazzino (M3) ✅
 - [ ] Limiti duri (solo nuovi inserimenti): 7 categorie / 12 prodotti / 6 preset / 6 QR.
@@ -103,7 +104,7 @@ quando li tocchi.
 
 ## 3. Pagina Prenota — checklist "cosa deve funzionare" ✅
 - [x] Slug inesistente/disattivato → "Prenotazioni temporaneamente non disponibili" (no crash).
-- [ ] Form non configurato → EmptyState con recapiti (no form demo).
+- [x] Form non configurato → EmptyState con recapiti (no form demo).
 - [x] Scelta tipologia è visibile/selezionabile e può mostrare la sezione menù.
 - [ ] Cambio tipologia resetta menu/totali/intolleranze.
 - [ ] Card scorrevoli **oppure** carosello (XOR), mai entrambi; card senza titolo non appare.
@@ -123,7 +124,7 @@ quando li tocchi.
 - [x] Categorie nell'ordine impostato in admin (frecce Su/Giù), non ordine magazzino.
 - [x] Piatto/categoria con disponibilità OFF → assente anche nel QR.
 - [ ] Cap testi con contatore (titolo card 30, desc 70, carosello…); nome QR max 80.
-- [ ] Icone categoria dai 20 preset (mai emoji); default insalata se non configurata.
+- [x] Icone categoria dai 20 preset (mai emoji); default insalata se non configurata.
 - [ ] Limite 6 QR: pulsante "Nuovo QR" disabilitato a quota 6.
 - [ ] **Ordine piatti per-QR (FU-MQR-2):** override testato in Vitest; verifica visuale solo se tocchi la UI frecce.
 - [ ] **Import preset staff nel QR:** helper testato in Vitest; verifica visuale solo se tocchi il modale.
@@ -135,7 +136,7 @@ quando li tocchi.
 
 Trovate nella controverifica 16-06-26 e **risolte**: la documentazione viva ora riflette il codice.
 
-1. **Prenota** — fallback E2E allineato a `E2E_TENANT_SLUG=test`.
+1. **Prenota/Menu QR** — fallback E2E allineato agli slug TEST attuali (`da-tommaso`, `test-classic`, `test-pro`) anche se `.env.local.test` contiene uno slug obsoleto.
 2. **Prenota** — mappa limiti testo allineata al cap nome locale **45**.
 3. **Menu QR** — flag `qrMenu` documentato su `buildFeatures(edition, featureOverrides)` +
    `tenant_features`.

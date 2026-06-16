@@ -93,6 +93,71 @@ In `docs/STATO_BLINDATURA_CHECKLIST.md` ho spuntato solo check verificati da Pla
 - Menu QR: pagina QR, shortcode errato, item/categoria OFF assenti, browser back.
 - Addendum visuale: Prenota sfondo striscia/full-page/crema + footer Orari assente; Menu QR carosello/tema/ordine categorie/footer data-ora.
 
+### Addendum Codex — ripresa env/test con nuovi account TEST (16-06-26)
+
+Ho revisionato il diff del sub-agent Franklin, corretto gli E2E per gli slug/account TEST aggiornati e aggiunto altri check automatizzabili. Dati account recepiti: Classic `test-classic` (`testc@c.com`), Pro `test-pro` (`testp@p.com`), admin compilato `da-tommaso` (`tomas@t.com`).
+
+File toccati:
+
+- `e2e/helpers/supabaseStaging.ts`
+- `e2e/public-booking-smoke.spec.ts`
+- `e2e/public-menu-qr.spec.ts`
+- `e2e/admin-calendar-blindatura.spec.ts`
+- `docs/STATO_BLINDATURA_CHECKLIST.md`
+- `docs/Admin-Skill/contesto/ADMIN_TEST_SUITE_INDEX.md`
+- `docs/Prenota-Skill/contesto/PRENOTA_TEST_SUITE_INDEX.md`
+- `docs/Menu-QR-Skill/contesto/MENU_QR_TEST_SUITE_INDEX.md`
+- questo report
+
+Test aggiunti/stabilizzati:
+
+- Prenota: form non configurato -> EmptyState con recapiti, nessun form demo, nessun submit.
+- Menu QR: card categoria senza foto -> nessuna immagine, icona default `lucide_salad`, nessuna emoji.
+- Calendario: badge oltre 100% mostra valore reale (`300%` nel seed E2E), non cappato; badge senza limite giornaliero mostra solo conteggio coperti (`4`), senza `%`.
+- Helper E2E: fallback sugli slug TEST reali (`da-tommaso`, `test-classic`, `test-pro`) quando `.env.local.test` contiene slug obsoleto.
+
+Comandi eseguiti:
+
+| Comando | Esito reale |
+|---|---|
+| `npx playwright test e2e/public-booking-smoke.spec.ts e2e/public-menu-qr.spec.ts --workers=1` | ❌ prima rosso: `.env.local.test` puntava a `trattoria-da-tommaso`, slug non presente su TEST |
+| `$env:E2E_TENANT_SLUG='da-tommaso'; npx playwright test e2e/public-booking-smoke.spec.ts e2e/public-menu-qr.spec.ts --workers=1` | ❌ QR verde, Prenota base rosso nel run precedente ai dati account aggiornati; EmptyState aveva strict mode sui recapiti |
+| `npx playwright test e2e/public-booking-smoke.spec.ts e2e/public-menu-qr.spec.ts --workers=1` | ✅ 12 passed |
+| `npx playwright test e2e/admin-calendar-blindatura.spec.ts --workers=1` | ❌ prima rosso su login/seed `null`; corretto con credenziali Classic nuove e `0 = nessun limite` |
+| `npx playwright test e2e/admin-calendar-blindatura.spec.ts --workers=1` | ✅ 2 passed |
+
+Checklist spuntata:
+
+- Admin Calendario: badge senza limite giornaliero -> solo conteggio coperti.
+- Admin Calendario: oltre 100% -> valore reale, non cappato.
+- Impostazioni/Prenota: form non configurato -> EmptyState su `/prenota`, niente form demo.
+- Pagina Prenota: EmptyState con recapiti, niente form demo.
+- Menu QR: icone categoria dai preset/default, mai emoji, default insalata se non configurata.
+
+### Addendum Codex — aggiornamento skill Testing/E2E (16-06-26)
+
+Ho aggiornato in modo mirato lo skill system per instradare i prossimi agenti verso E2E funzionanti sullo stile usato in questa sessione.
+
+File skill toccati:
+
+- `docs/Testing-Skill/TESTING_SKILL.md`
+- `docs/Testing-Skill/TESTING_MINI.md`
+- `docs/Testing-Skill/TESTING_PATTERNS.md`
+- `docs/Testing-Skill/MANUALE_BLINDATURA.md`
+
+Cosa è cambiato:
+
+- Aggiunta una sezione operativa “Pattern Playwright E2E che devono funzionare davvero”: TEST `docnnernvp`, helper `supabaseStaging`, slug TEST correnti, snapshot/restore, locator strict, assert oggettivi, run mirato prima di spuntare checklist.
+- Rimossa/ritirata la pratica obsoleta dello smoke Prenota su `/prenota/test`; ora la skill indica `da-tommaso`, `test-classic`, `test-pro` e seed temporaneo con restore.
+- Aggiornati i template E2E: niente dipendenza da dati permanenti casuali; usare seed/cleanup e fallback controllato su credenziali TEST configurate.
+- Riallineati i riferimenti interni da §7 a §8 dopo l’inserimento della nuova sezione E2E.
+
+Comando di controllo documentale:
+
+| Comando | Esito |
+|---|---|
+| `git diff --check` | ✅ verde |
+
 Sono rimasti non spuntati i check visuali fini non oggettivi (gesture swipe, asset reali), i casi Classic-specifici non provabili se le credenziali staging non sono disponibili, e le verifiche Pro profonde che richiedono M5/intervista prodotto.
 
 ---

@@ -6,18 +6,25 @@
 import { test, expect } from '@playwright/test'
 import {
   deleteMenuE2eData,
+  getExistingTenantSlug,
   getTenantIdBySlug,
   upsertMenuCategory,
   upsertMenuItem,
   upsertMenuQrCode,
 } from './helpers/supabaseStaging'
 
-const TENANT_SLUG = process.env.E2E_TENANT_SLUG ?? 'trattoria-da-tommaso'
+const PREFERRED_TENANT_SLUG = process.env.E2E_TENANT_SLUG ?? 'da-tommaso'
 const HAS_STAGING_CONFIG = Boolean(process.env.VITE_SUPABASE_URL && process.env.E2E_SUPABASE_SERVICE_KEY)
 
 test.skip(!HAS_STAGING_CONFIG, 'richiede .env.local.test con staging Supabase TEST')
 
 test.describe('Menu QR pubblico — flusso cliente', () => {
+  let tenantSlug = PREFERRED_TENANT_SLUG
+
+  test.beforeAll(async () => {
+    tenantSlug = await getExistingTenantSlug(PREFERRED_TENANT_SLUG, ['da-tommaso', 'test-classic', 'test-pro'])
+  })
+
   test('homepage, categoria, back, shortCode assente e fallback /menu/:slug', async ({ page }) => {
     test.setTimeout(120000)
 
@@ -30,7 +37,7 @@ test.describe('Menu QR pubblico — flusso cliente', () => {
       errors.push(text)
     })
 
-    const tenantId = await getTenantIdBySlug(TENANT_SLUG)
+    const tenantId = await getTenantIdBySlug(tenantSlug)
     const suffix = crypto.randomUUID().replace(/-/g, '').slice(0, 8)
     const categoryKey = `e2e_qr_${suffix}`
     const categoryLabel = `E2E QR ${suffix}`
@@ -62,7 +69,7 @@ test.describe('Menu QR pubblico — flusso cliente', () => {
         categoryFilter: [categoryKey],
       })
 
-      await page.goto(`/menu/${TENANT_SLUG}/qr/${shortCode}`, {
+      await page.goto(`/menu/${tenantSlug}/qr/${shortCode}`, {
         waitUntil: 'domcontentloaded',
       })
 
@@ -73,22 +80,22 @@ test.describe('Menu QR pubblico — flusso cliente', () => {
       await categoryLink.click()
 
       await expect(page).toHaveURL(
-        new RegExp(`/menu/${TENANT_SLUG}/qr/${shortCode}/c/${categoryKey}$`),
+        new RegExp(`/menu/${tenantSlug}/qr/${shortCode}/c/${categoryKey}$`),
       )
       await expect(page.getByText(itemName, { exact: true })).toBeVisible({ timeout: 15000 })
 
       await page.goBack({ waitUntil: 'domcontentloaded' })
-      await expect(page).toHaveURL(new RegExp(`/menu/${TENANT_SLUG}/qr/${shortCode}$`))
+      await expect(page).toHaveURL(new RegExp(`/menu/${tenantSlug}/qr/${shortCode}$`))
       await expect(categoryLink).toBeVisible({ timeout: 15000 })
 
-      await page.goto(`/menu/${TENANT_SLUG}/qr/${fakeShortCode}`, {
+      await page.goto(`/menu/${tenantSlug}/qr/${fakeShortCode}`, {
         waitUntil: 'domcontentloaded',
       })
-      await expect(page).toHaveURL(new RegExp(`/menu/${TENANT_SLUG}/qr/${fakeShortCode}$`))
+      await expect(page).toHaveURL(new RegExp(`/menu/${tenantSlug}/qr/${fakeShortCode}$`))
       await expect(page.getByText('Menù QR non trovato')).toBeVisible({ timeout: 15000 })
 
-      await page.goto(`/menu/${TENANT_SLUG}`, { waitUntil: 'domcontentloaded' })
-      await expect(page).toHaveURL(new RegExp(`/menu/${TENANT_SLUG}$`))
+      await page.goto(`/menu/${tenantSlug}`, { waitUntil: 'domcontentloaded' })
+      await expect(page).toHaveURL(new RegExp(`/menu/${tenantSlug}$`))
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15000 })
       await expect(page.getByText('Menù QR non trovato')).not.toBeVisible()
 
@@ -110,7 +117,7 @@ test.describe('Menu QR pubblico — flusso cliente', () => {
       errors.push(text)
     })
 
-    const tenantId = await getTenantIdBySlug(TENANT_SLUG)
+    const tenantId = await getTenantIdBySlug(tenantSlug)
     const suffix = crypto.randomUUID().replace(/-/g, '').slice(0, 8)
     const firstCategoryKey = `e2e_qr_order_a_${suffix}`
     const secondCategoryKey = `e2e_qr_order_b_${suffix}`
@@ -170,7 +177,7 @@ test.describe('Menu QR pubblico — flusso cliente', () => {
         ],
       })
 
-      await page.goto(`/menu/${TENANT_SLUG}/qr/${shortCode}`, {
+      await page.goto(`/menu/${tenantSlug}/qr/${shortCode}`, {
         waitUntil: 'domcontentloaded',
       })
 
@@ -210,6 +217,65 @@ test.describe('Menu QR pubblico — flusso cliente', () => {
     } finally {
       await deleteMenuE2eData(tenantId, firstCategoryKey, shortCode).catch(() => {})
       await deleteMenuE2eData(tenantId, secondCategoryKey, shortCode).catch(() => {})
+    }
+  })
+
+  // @menu-qr-blindatura: public-menu-qr-icons
+  // Copre: card categoria senza foto -> default lucide_salad visibile, nessuna immagine/emoji inventata.
+  test('category card senza foto mostra icona default lucide_salad', async ({ page }) => {
+    test.setTimeout(120000)
+
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    page.on('console', (msg) => {
+      if (msg.type() !== 'error') return
+      const text = msg.text()
+      if (/Failed to load resource|favicon/i.test(text)) return
+      errors.push(text)
+    })
+
+    const tenantId = await getTenantIdBySlug(tenantSlug)
+    const suffix = crypto.randomUUID().replace(/-/g, '').slice(0, 8)
+    const categoryKey = `e2e_qr_icon_${suffix}`
+    const categoryLabel = `E2E Icon ${suffix}`
+    const shortCode = `e2ei${suffix}`
+
+    try {
+      await deleteMenuE2eData(tenantId, categoryKey, shortCode)
+
+      await upsertMenuCategory({
+        tenantId,
+        key: categoryKey,
+        label: categoryLabel,
+        isAvailable: true,
+        sortOrder: 1,
+      })
+      await upsertMenuItem({
+        tenantId,
+        categoryKey,
+        name: `Piatto icona ${suffix}`,
+        isAvailable: true,
+      })
+      await upsertMenuQrCode({
+        tenantId,
+        shortCode,
+        name: `QR Icon ${suffix}`,
+        categoryFilter: [categoryKey],
+      })
+
+      await page.goto(`/menu/${tenantSlug}/qr/${shortCode}`, {
+        waitUntil: 'domcontentloaded',
+      })
+
+      const categoryCard = page.getByRole('link', { name: new RegExp(categoryLabel, 'i') }).first()
+      await expect(categoryCard).toBeVisible({ timeout: 15000 })
+      await expect(categoryCard.locator('img')).toHaveCount(0)
+      await expect(categoryCard.locator('svg.lucide-salad')).toBeVisible()
+      await expect(categoryCard).not.toContainText(/\p{Extended_Pictographic}/u)
+
+      expect(errors, 'errori console/browser').toEqual([])
+    } finally {
+      await deleteMenuE2eData(tenantId, categoryKey, shortCode).catch(() => {})
     }
   })
 })

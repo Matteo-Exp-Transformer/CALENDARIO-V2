@@ -11,16 +11,52 @@
 
 import { test, expect, type Page } from '@playwright/test'
 import {
+  getExistingTenantSlug,
   getRestaurantSettingSnapshot,
   getTenantIdBySlug,
+  type RestaurantSettingSnapshot,
   restoreRestaurantSettingSnapshot,
   upsertRestaurantSettingValue,
 } from './helpers/supabaseStaging'
 
-const TENANT_SLUG = process.env.E2E_TENANT_SLUG || 'test'
-const BOOKING_URL = `/prenota/${TENANT_SLUG}`
+const PREFERRED_TENANT_SLUG = process.env.E2E_TENANT_SLUG || 'da-tommaso'
 const MISSING_SLUG_URL = '/prenota/__slug-inesistente__'
 const HAS_STAGING_CONFIG = Boolean(process.env.VITE_SUPABASE_URL && process.env.E2E_SUPABASE_SERVICE_KEY)
+
+let tenantSlug = PREFERRED_TENANT_SLUG
+let bookingUrl = `/prenota/${tenantSlug}`
+
+function makeE2eBookingFormConfig() {
+  return {
+    page_title: 'Prenota E2E',
+    page_description: 'Config temporanea per smoke Playwright.',
+    booking_modes: [
+      {
+        id: 'tavolo',
+        booking_type: 'tavolo',
+        enabled: true,
+        label: 'Tavolo',
+        description: 'Prenota un tavolo.',
+        icon: 'fork_knife',
+        sub_tabs_enabled: false,
+        sub_tabs_presentation: null,
+        sub_tabs: [],
+      },
+    ],
+  }
+}
+
+async function seedBookingFormConfigForSmoke(): Promise<{
+  tenantId: string
+  formConfigSnapshot: RestaurantSettingSnapshot
+}> {
+  tenantSlug = await getExistingTenantSlug(PREFERRED_TENANT_SLUG, ['da-tommaso', 'test-classic', 'test-pro'])
+  bookingUrl = `/prenota/${tenantSlug}`
+  const tenantId = await getTenantIdBySlug(tenantSlug)
+  const formConfigSnapshot = await getRestaurantSettingSnapshot(tenantId, 'booking_public_form_config')
+  await upsertRestaurantSettingValue(tenantId, 'booking_public_form_config', makeE2eBookingFormConfig())
+  return { tenantId, formConfigSnapshot }
+}
 
 test.use({ viewport: { width: 1280, height: 900 } })
 
@@ -34,6 +70,27 @@ function visibleSubmitForViewport(page: Page) {
 }
 
 test.describe('Pagina Prenota smoke', () => {
+  test.describe.configure({ mode: 'serial' })
+  test.skip(!HAS_STAGING_CONFIG, 'richiede .env.local.test con staging Supabase TEST')
+
+  let seededTenantId = ''
+  let formConfigSnapshot: RestaurantSettingSnapshot = { exists: false, value: null }
+
+  test.beforeAll(async () => {
+    const seeded = await seedBookingFormConfigForSmoke()
+    seededTenantId = seeded.tenantId
+    formConfigSnapshot = seeded.formConfigSnapshot
+  })
+
+  test.afterAll(async () => {
+    if (!seededTenantId) return
+    await restoreRestaurantSettingSnapshot(
+      seededTenantId,
+      'booking_public_form_config',
+      formConfigSnapshot,
+    ).catch(() => {})
+  })
+
   test('slug inesistente mostra la pagina non disponibile', async ({ page }) => {
     await page.goto(MISSING_SLUG_URL)
 
@@ -42,7 +99,7 @@ test.describe('Pagina Prenota smoke', () => {
   })
 
   test('submit invalido attiva alert sul primo campo', async ({ page }) => {
-    await page.goto(BOOKING_URL)
+    await page.goto(bookingUrl)
 
     await expect(page.locator('#booking-request-form')).toBeVisible({ timeout: 10000 })
     await visibleSubmitForViewport(page).click()
@@ -54,23 +111,23 @@ test.describe('Pagina Prenota smoke', () => {
   })
 
   test('link privacy ritorna a /prenota/:slug', async ({ page }) => {
-    await page.goto(BOOKING_URL)
+    await page.goto(bookingUrl)
 
     const privacyLink = page.getByRole('link', { name: /privacy policy/i })
-    await expect(privacyLink).toHaveAttribute('href', new RegExp(`/privacy\\?from=%2Fprenota%2F${TENANT_SLUG}$`))
+    await expect(privacyLink).toHaveAttribute('href', new RegExp(`/privacy\\?from=%2Fprenota%2F${tenantSlug}$`))
 
     const popupPromise = page.waitForEvent('popup')
     await privacyLink.click()
     const privacyPage = await popupPromise
 
-    await expect(privacyPage).toHaveURL(new RegExp(`/privacy\\?from=%2Fprenota%2F${TENANT_SLUG}$`))
+    await expect(privacyPage).toHaveURL(new RegExp(`/privacy\\?from=%2Fprenota%2F${tenantSlug}$`))
     await expect(privacyPage.getByRole('link', { name: /torna alla prenotazione/i })).toHaveAttribute(
       'href',
-      new RegExp(`/prenota/${TENANT_SLUG}$`),
+      new RegExp(`/prenota/${tenantSlug}$`),
     )
 
     await privacyPage.getByRole('link', { name: /torna alla prenotazione/i }).click()
-    await expect(privacyPage).toHaveURL(new RegExp(`/prenota/${TENANT_SLUG}$`))
+    await expect(privacyPage).toHaveURL(new RegExp(`/prenota/${tenantSlug}$`))
   })
 
   for (const viewport of [
@@ -80,7 +137,7 @@ test.describe('Pagina Prenota smoke', () => {
   ]) {
     test(`submit raggiungibile a ${viewport.width}px`, async ({ page }) => {
       await page.setViewportSize(viewport)
-      await page.goto(BOOKING_URL)
+      await page.goto(bookingUrl)
 
       await expect(page.locator('#booking-request-form')).toBeVisible({ timeout: 10000 })
       await expect(page.getByTestId('booking-summary-sidebar').first()).toBeVisible()
@@ -123,7 +180,9 @@ test.describe('Pagina Prenota visual checklist', () => {
   test('sfondo: striscia vince su foto intera, foto intera senza striscia, crema senza scelta', async ({ page }) => {
     test.setTimeout(120000)
 
-    const tenantId = await getTenantIdBySlug(TENANT_SLUG)
+    tenantSlug = await getExistingTenantSlug(PREFERRED_TENANT_SLUG, ['da-tommaso', 'test-classic', 'test-pro'])
+    bookingUrl = `/prenota/${tenantSlug}`
+    const tenantId = await getTenantIdBySlug(tenantSlug)
     const stripSnapshot = await getRestaurantSettingSnapshot(tenantId, 'public_booking_strip_photo')
     const pageBgSnapshot = await getRestaurantSettingSnapshot(tenantId, 'public_booking_page_background')
 
@@ -131,7 +190,7 @@ test.describe('Pagina Prenota visual checklist', () => {
       await upsertRestaurantSettingValue(tenantId, 'public_booking_strip_photo', 'strip-04')
       await upsertRestaurantSettingValue(tenantId, 'public_booking_page_background', 'full-02')
 
-      await page.goto(`${BOOKING_URL}?e2e=strip`, { waitUntil: 'domcontentloaded' })
+      await page.goto(`${bookingUrl}?e2e=strip`, { waitUntil: 'domcontentloaded' })
       await expect(page.locator('img[src*="asset/strip/strip-04.webp"]').first()).toBeVisible({
         timeout: 15000,
       })
@@ -140,14 +199,14 @@ test.describe('Pagina Prenota visual checklist', () => {
       await upsertRestaurantSettingValue(tenantId, 'public_booking_strip_photo', '')
       await upsertRestaurantSettingValue(tenantId, 'public_booking_page_background', 'full-02')
 
-      await page.goto(`${BOOKING_URL}?e2e=full`, { waitUntil: 'domcontentloaded' })
+      await page.goto(`${bookingUrl}?e2e=full`, { waitUntil: 'domcontentloaded' })
       await expect(page.locator('img[src*="asset/strip/"]')).toHaveCount(0)
       await expect.poll(() => hasFullPageBackground(page, 'full-02'), { timeout: 15000 }).toBe(true)
 
       await upsertRestaurantSettingValue(tenantId, 'public_booking_strip_photo', '')
       await upsertRestaurantSettingValue(tenantId, 'public_booking_page_background', '')
 
-      await page.goto(`${BOOKING_URL}?e2e=neutral`, { waitUntil: 'domcontentloaded' })
+      await page.goto(`${bookingUrl}?e2e=neutral`, { waitUntil: 'domcontentloaded' })
       await expect(page.locator('img[src*="asset/strip/"]')).toHaveCount(0)
       await expect.poll(() => hasFullPageBackground(page, 'full-02'), { timeout: 15000 }).toBe(false)
       await expect.poll(() => rootBackgroundColor(page), { timeout: 15000 }).toBe('rgb(250, 247, 241)')
@@ -168,7 +227,9 @@ test.describe('Pagina Prenota visual checklist', () => {
   test('footer Orari assente quando tutti i giorni sono chiusi', async ({ page }) => {
     test.setTimeout(120000)
 
-    const tenantId = await getTenantIdBySlug(TENANT_SLUG)
+    tenantSlug = await getExistingTenantSlug(PREFERRED_TENANT_SLUG, ['da-tommaso', 'test-classic', 'test-pro'])
+    bookingUrl = `/prenota/${tenantSlug}`
+    const tenantId = await getTenantIdBySlug(tenantSlug)
     const hoursSnapshot = await getRestaurantSettingSnapshot(tenantId, 'business_hours')
     const closedHours = {
       monday: null,
@@ -183,12 +244,53 @@ test.describe('Pagina Prenota visual checklist', () => {
     try {
       await upsertRestaurantSettingValue(tenantId, 'business_hours', closedHours)
 
-      await page.goto(`${BOOKING_URL}?e2e=hours-closed`, { waitUntil: 'domcontentloaded' })
+      await page.goto(`${bookingUrl}?e2e=hours-closed`, { waitUntil: 'domcontentloaded' })
       await expect(page.getByRole('heading', { name: /^Orari$/i })).not.toBeVisible({
         timeout: 15000,
       })
     } finally {
       await restoreRestaurantSettingSnapshot(tenantId, 'business_hours', hoursSnapshot).catch(() => {})
+    }
+  })
+
+  // @prenota-blindatura: e2e-empty-state
+  // Copre: form non configurato → EmptyState con recapiti e nessun form demo pubblico.
+  test('form non configurato mostra EmptyState con recapiti', async ({ page }) => {
+    test.setTimeout(120000)
+
+    tenantSlug = await getExistingTenantSlug(PREFERRED_TENANT_SLUG, ['da-tommaso', 'test-classic', 'test-pro'])
+    bookingUrl = `/prenota/${tenantSlug}`
+    const tenantId = await getTenantIdBySlug(tenantSlug)
+    const formConfigSnapshot = await getRestaurantSettingSnapshot(tenantId, 'booking_public_form_config')
+    const emailSnapshot = await getRestaurantSettingSnapshot(tenantId, 'contact_email')
+    const phoneSnapshot = await getRestaurantSettingSnapshot(tenantId, 'contact_phone')
+
+    const contactEmail = 'e2e.empty-state@test.it'
+    const contactPhone = '+39 333 888 7777'
+
+    try {
+      await restoreRestaurantSettingSnapshot(tenantId, 'booking_public_form_config', {
+        exists: false,
+        value: null,
+      })
+      await upsertRestaurantSettingValue(tenantId, 'contact_email', contactEmail)
+      await upsertRestaurantSettingValue(tenantId, 'contact_phone', contactPhone)
+
+      await page.goto(`${bookingUrl}?e2e=empty-form`, { waitUntil: 'domcontentloaded' })
+
+      const emptyState = page.getByRole('status')
+      await expect(emptyState.getByRole('heading', { name: /form prenotazione non ancora configurato/i })).toBeVisible({
+        timeout: 15000,
+      })
+      await expect(emptyState.getByText(/contatta il ristorante usando i recapiti qui sotto/i)).toBeVisible()
+      await expect(page.locator('#booking-request-form')).toHaveCount(0)
+      await expect(page.getByRole('button', { name: /invia prenotazione/i })).toHaveCount(0)
+      await expect(page.getByText(contactEmail, { exact: true }).first()).toBeVisible()
+      await expect(page.getByText(contactPhone, { exact: true }).first()).toBeVisible()
+    } finally {
+      await restoreRestaurantSettingSnapshot(tenantId, 'booking_public_form_config', formConfigSnapshot).catch(() => {})
+      await restoreRestaurantSettingSnapshot(tenantId, 'contact_email', emailSnapshot).catch(() => {})
+      await restoreRestaurantSettingSnapshot(tenantId, 'contact_phone', phoneSnapshot).catch(() => {})
     }
   })
 })

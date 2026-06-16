@@ -358,6 +358,20 @@ export async function getTenantIdBySlug(slug: string): Promise<string> {
   return id
 }
 
+export async function getExistingTenantSlug(
+  preferredSlug: string,
+  fallbacks: string[] = ['da-tommaso', 'test-classic', 'test-pro'],
+): Promise<string> {
+  const rows = await rest<Array<{ slug: string }>>(
+    `organizations?select=slug&order=slug`,
+  )
+  const available = new Set(rows.map((row) => row.slug))
+  if (available.has(preferredSlug)) return preferredSlug
+  const fallback = fallbacks.find((slug) => available.has(slug)) ?? rows[0]?.slug
+  if (!fallback) throw new Error('Nessun tenant disponibile su staging TEST')
+  return fallback
+}
+
 export type ServiceSlotRow = {
   id: string
   name: string

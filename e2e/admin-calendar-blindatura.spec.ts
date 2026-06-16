@@ -9,6 +9,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import {
   deleteBookingsByPrefix,
+  getExistingTenantSlug,
   getRestaurantSettingSnapshot,
   getTenantIdBySlug,
   insertBooking,
@@ -19,23 +20,36 @@ import {
   upsertRestaurantSettingValue,
 } from './helpers/supabaseStaging'
 
-const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? process.env.E2E_CLASSIC_ADMIN_EMAIL ?? ''
-const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? process.env.E2E_CLASSIC_ADMIN_PASSWORD ?? ''
-const TENANT_SLUG = process.env.E2E_TENANT_SLUG ?? ''
+const PREFERRED_TENANT_SLUG = process.env.E2E_CLASSIC_TENANT_SLUG ?? 'test-classic'
 const SERVICE_KEY = process.env.E2E_SUPABASE_SERVICE_KEY ?? ''
+const ADMIN_CREDENTIALS = [
+  { email: 'testc@c.com', password: '123456' },
+  { email: process.env.E2E_CLASSIC_ADMIN_EMAIL ?? '', password: process.env.E2E_CLASSIC_ADMIN_PASSWORD ?? '' },
+  { email: process.env.E2E_ADMIN_EMAIL ?? '', password: process.env.E2E_ADMIN_PASSWORD ?? '' },
+].filter((cred, index, all) =>
+  Boolean(cred.email && cred.password) && all.findIndex((item) => item.email === cred.email) === index,
+)
 
-const hasE2eCreds = Boolean(ADMIN_EMAIL && ADMIN_PASSWORD && TENANT_SLUG && SERVICE_KEY)
+const hasE2eCreds = Boolean(ADMIN_CREDENTIALS.length > 0 && SERVICE_KEY)
 
 const CALENDAR_PREFIX = 'E2E-CAL-'
 
 test.use({ viewport: { width: 1280, height: 800 } })
 
 async function loginClassicAdmin(page: Page) {
-  await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  await page.fill('#email', ADMIN_EMAIL)
-  await page.fill('#password', ADMIN_PASSWORD)
-  await page.locator('button[type="submit"]').click()
-  await expect(page).toHaveURL(/\/admin/, { timeout: 15000 })
+  for (const credentials of ADMIN_CREDENTIALS) {
+    await page.goto('/login', { waitUntil: 'domcontentloaded' })
+    await page.fill('#email', credentials.email)
+    await page.fill('#password', credentials.password)
+    await page.locator('button[type="submit"]').click()
+    try {
+      await expect(page).toHaveURL(/\/admin/, { timeout: 8000 })
+      return
+    } catch {
+      // Prova la credenziale successiva: lo staging puo avere .env.local.test obsoleto.
+    }
+  }
+  throw new Error('Login Classic E2E fallito con tutte le credenziali configurate')
 }
 
 async function goToCalendar(page: Page) {
@@ -63,10 +77,12 @@ test.describe('Admin Calendario - smoke', () => {
   test.skip(!hasE2eCreds, 'richiede credenziali staging in .env.local.test')
 
   let tenantId = ''
+  let tenantSlug = PREFERRED_TENANT_SLUG
   let dailyGuestLimitSnapshot = { exists: false, value: null as unknown }
 
   test.beforeAll(async () => {
-    tenantId = await getTenantIdBySlug(TENANT_SLUG)
+    tenantSlug = await getExistingTenantSlug(PREFERRED_TENANT_SLUG, ['test-classic'])
+    tenantId = await getTenantIdBySlug(tenantSlug)
     dailyGuestLimitSnapshot = await getRestaurantSettingSnapshot(tenantId, 'daily_guest_limit')
     await deleteBookingsByPrefix(tenantId, CALENDAR_PREFIX)
   })
@@ -136,6 +152,7 @@ test.describe('Admin Calendario - smoke', () => {
     await expect(digestCell).toBeVisible({ timeout: 15000 })
     await expect(digestCell.locator('.booking-day-fill')).toBeVisible({ timeout: 15000 })
     await expect(digestCell.locator('.booking-day-fill')).toContainText('%', { timeout: 15000 })
+    await expect(digestCell.locator('.booking-day-fill')).toContainText('300%', { timeout: 15000 })
 
     await dayNumber(page, digestDate).click()
     await expect(page.getByRole('button', { name: new RegExp(`Nuova prenotazione il ${formatDayMonth(digestDate)}`, 'i') })).toBeVisible()
@@ -155,5 +172,37 @@ test.describe('Admin Calendario - smoke', () => {
     const dialog = page.getByRole('dialog').filter({ hasText: /Nuova prenotazione/i })
     await expect(dialog).toBeVisible({ timeout: 10000 })
     await expect(dialog.locator('#desired_date-control')).toHaveValue(formDate)
+  })
+
+  // @admin-blindatura: calendario-e2e
+  // Copre: senza limite giornaliero il badge mese mostra solo il conteggio coperti, niente percentuale.
+  test('badge mese senza limite giornaliero mostra solo conteggio coperti', async ({ page }) => {
+    const noLimitDate = offsetIsoDate(4)
+    const noLimitName = `${CALENDAR_PREFIX}NoLimit`
+    const { start, end } = isoStartEnd(noLimitDate, '19:30')
+
+    await upsertRestaurantSettingValue(tenantId, 'daily_guest_limit', 0)
+    await insertBooking({
+      tenantId,
+      clientName: noLimitName,
+      status: 'accepted',
+      desiredDate: noLimitDate,
+      desiredTime: '19:30',
+      numGuests: 4,
+      confirmedStart: start,
+      confirmedEnd: end,
+    })
+
+    await goToCalendar(page)
+
+    const noLimitCell = dayCell(page, noLimitDate)
+    await expect(noLimitCell).toBeVisible({ timeout: 15000 })
+    const badge = noLimitCell.locator('.booking-day-fill')
+    await expect(badge).toBeVisible({ timeout: 15000 })
+    await expect(badge).toHaveText('4', { timeout: 15000 })
+    await expect(badge).not.toContainText('%')
+
+    await dayNumber(page, noLimitDate).click()
+    await expect(page.locator('body')).toContainText(noLimitName)
   })
 })

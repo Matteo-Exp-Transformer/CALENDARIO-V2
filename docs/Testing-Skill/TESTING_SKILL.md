@@ -79,12 +79,38 @@ npx playwright install chromium       # Prima volta: installa il browser
 - Config: `playwright.config.ts` — carica automaticamente `.env.local.test` se presente
 - Browser: solo Chromium (headless in CI, headed in debug)
 - Base URL: `http://localhost:5173` — dev server avviato automaticamente da webServer
-- Variabili: `E2E_ADMIN_EMAIL`, `E2E_ADMIN_PASSWORD`, `E2E_CLASSIC_TENANT_ID`, `E2E_SUPABASE_SERVICE_KEY`
+- Variabili: `E2E_ADMIN_EMAIL`, `E2E_ADMIN_PASSWORD`, `E2E_TENANT_SLUG`, `E2E_CLASSIC_TENANT_SLUG`, `E2E_SUPABASE_SERVICE_KEY`
 - File di credenziali: `.env.local.test` (gitignored) — vedi `tests/README.md` per ricreare
 
 ---
 
-## 5. Pattern edition-gated
+## 5. Pattern Playwright E2E che devono funzionare davvero
+
+Usare questo schema per E2E su staging TEST. Serve a evitare test verdi solo sul DB "com'era ieri".
+
+1. **Ambiente:** validare sempre che `VITE_SUPABASE_URL` punti a `docnnernvp`. Se lo spec scrive dati,
+   usare solo helper in `e2e/helpers/supabaseStaging.ts`; mai query libere su PROD.
+2. **Slug e account:** non assumere slug storici. Usare gli slug TEST correnti (`da-tommaso`,
+   `test-classic`, `test-pro`) o un helper che verifica lo slug prima del test. Se `.env.local.test`
+   contiene uno slug non più presente, il test deve fallire con messaggio chiaro o cadere su uno slug
+   TEST esplicito.
+3. **Dati:** non dipendere da dati permanenti se il caso può essere seedato. Fai snapshot prima,
+   seed minimo, assert, poi restore/cleanup in `finally` o `afterAll`. Esempi: `getRestaurantSettingSnapshot`,
+   `restoreRestaurantSettingSnapshot`, `upsertRestaurantSettingValue`, `deleteBookingsByPrefix`,
+   `deleteMenuE2eData`.
+4. **Assert oggettivi:** per visual checklist assertare DOM verificabile, non "sembra giusto":
+   classi/ruoli/testo/assenza immagini, icona SVG specifica, `toHaveText`, `toHaveCount(0)`,
+   niente emoji se il requisito è "mai emoji".
+5. **Locator strict:** se un testo appare in più punti responsive, circoscrivere il contenitore o usare
+   `.first()` solo quando il requisito è "almeno un recapito visibile". Non lasciare locator ambigui.
+6. **Debug onesto:** se un comando è rosso per dati staging obsoleti, documentarlo e correggere lo spec
+   o l'ambiente. Non spuntare checklist finché il comando mirato non torna verde nello stato attuale.
+7. **Run:** dopo ogni modifica E2E rilanciare il comando mirato dichiarato nel report; se aggiorni docs
+   o checklist, controlla `git diff` e allinea il report allo stesso esito reale.
+
+---
+
+## 6. Pattern edition-gated
 
 I test E2E edition si attivano/disattivano automaticamente in base alle variabili:
 
@@ -110,7 +136,7 @@ it("classic → nessuna feature Pro", () => {
 
 ---
 
-## 6. Tabella file di contesto
+## 7. Tabella file di contesto
 
 | File | Cosa contiene |
 |------|---------------|
@@ -125,17 +151,17 @@ it("classic → nessuna feature Pro", () => {
 
 ---
 
-## 7. Profilo **Verifica** — protocollo QA manuale (obbligatorio)
+## 8. Profilo **Verifica** — protocollo QA manuale (obbligatorio)
 
 > Caricare questa sezione quando Matteo chiede **revisiona / verifica / controlla** un lavoro già fatto, o a fine sessione prima di dichiarare «fatto». Vale per ogni area (promo, form Prenota, admin, CRM…), non solo per i test automatici.
 
-### 7.1 Ordine delle verifiche
+### 8.1 Ordine delle verifiche
 
 1. **`npm run validate`** — gate automatico (lint + typecheck + Vitest). Se fallisce, la revisione si ferma qui.
-2. **QA manuale funzionale** — stessi casi su **tre viewport** (vedi §7.2). Non basta un solo zoom del browser.
+2. **QA manuale funzionale** — stessi casi su **tre viewport** (vedi §8.2). Non basta un solo zoom del browser.
 3. **Registro esiti** — tabella nel report sessione (`docs/Sessioni di lavoro/…/Report-*.md`) con colonne: ID test · viewport · esito · nota.
 
-### 7.2 Viewport standard CalendarBackup
+### 8.2 Viewport standard CalendarBackup
 
 Usare queste larghezze (Playwright: `page.setViewportSize`, DevTools device toolbar equivalente):
 
@@ -149,16 +175,16 @@ Per feature **solo admin classica** (Calendario, lista prenotazioni): aggiungere
 
 Per ogni viewport ripetere **gli stessi passi funzionali** (es. cambio tipologia → banner promo → altra tipologia). L’UI può cambiare (sticky bar, colonne) ma il **comportamento dati** deve restare coerente.
 
-### 7.3 Credenziali e ambiente
+### 8.3 Credenziali e ambiente
 
 - **DB:** solo TEST (`docnnernvp`) — mai validare su produzione.
 - **Dev server:** `npm run dev` (legge `.env.local` = test).
 - **Credenziali QA:** `.env.local.test` → `MANUAL_ADMIN_EMAIL`, `MANUAL_ADMIN_PASSWORD`, `MANUAL_TENANT_SLUG` (gitignored). Riferimento: `docs/_lavoro/Per matteo/Comandi per terminale.md`.
-- **Pagina pubblica:** `/prenota/{MANUAL_TENANT_SLUG}`. Per smoke Prenota usare il tenant QA seedato **`test`** (`/prenota/test`, FU-038); `test-pro` è il tenant Pro (admin/sidebar), non il riferimento smoke pubblico.
+- **Pagina pubblica:** `/prenota/{MANUAL_TENANT_SLUG}`. Non usare più lo slug storico `test`: su TEST gli slug correnti sono `da-tommaso`, `test-classic`, `test-pro`. Per smoke pubblici preferire `da-tommaso` o seed temporaneo con snapshot/restore.
 
 Strumenti ammessi: **Playwright MCP** (browser), DevTools, o test E2E esistenti — l’agente deve **eseguire** i passi, non solo elencarli a Matteo.
 
-### 7.4 Cosa documentare per ogni revisione
+### 8.4 Cosa documentare per ogni revisione
 
 Nel report, sezione **«QA manuale»** (o **«QA manuale responsive»**):
 
@@ -167,7 +193,7 @@ Nel report, sezione **«QA manuale»** (o **«QA manuale responsive»**):
 - Segnalare **Non testato** esplicitamente (es. submit + snapshot DB).
 - Allegare follow-up in `docs/FOLLOW_UP.md` se il polish UI resta fuori scope (es. FU-001).
 
-### 7.5 Esempio — feature Promo (Prenota + Personalizza form)
+### 8.5 Esempio — feature Promo (Prenota + Personalizza form)
 
 | ID | Caso | mobile | tablet | desktop |
 |----|------|--------|--------|---------|
@@ -179,7 +205,7 @@ Nel report, sezione **«QA manuale»** (o **«QA manuale responsive»**):
 
 Comportamento atteso Prenota (invariato tra viewport): un solo `region` «Promozioni menù»; priorità card > tipologia; sotto **1256px** tipicamente presente sticky riepilogo, da **≥1256px** riepilogo laterale.
 
-### 7.6 Cosa non sostituisce il manuale
+### 8.6 Cosa non sostituisce il manuale
 
 - Vitest su `menuPromo.ts` (o altri helper) — necessario ma non sufficiente.
 - Una sola verifica a 1920px senza mobile/tablet.

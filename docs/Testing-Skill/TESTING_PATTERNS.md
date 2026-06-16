@@ -74,32 +74,51 @@ describe('buildFeatures', () => {
 
 ---
 
-## 3. Template Playwright E2E — flusso admin base
+## 3. Template Playwright E2E — staging TEST con seed/cleanup
 
 ```ts
 import { test, expect } from '@playwright/test'
+import {
+  getExistingTenantSlug,
+  getRestaurantSettingSnapshot,
+  getTenantIdBySlug,
+  restoreRestaurantSettingSnapshot,
+  upsertRestaurantSettingValue,
+} from './helpers/supabaseStaging'
 
-// Skip automatico se staging non configurato
-test.skip(!process.env.E2E_ADMIN_EMAIL, 'richiede staging Supabase')
+const HAS_STAGING_CONFIG = Boolean(process.env.VITE_SUPABASE_URL && process.env.E2E_SUPABASE_SERVICE_KEY)
+const PREFERRED_TENANT_SLUG = process.env.E2E_TENANT_SLUG ?? 'da-tommaso'
 
-const EMAIL = process.env.E2E_ADMIN_EMAIL ?? ''
-const PWD   = process.env.E2E_ADMIN_PASSWORD ?? ''
+test.skip(!HAS_STAGING_CONFIG, 'richiede staging Supabase TEST')
 
-async function login(page: import('@playwright/test').Page) {
-  await page.goto('/admin')
-  await page.getByLabel(/email/i).fill(EMAIL)
-  await page.getByLabel(/password/i).fill(PWD)
-  await page.getByRole('button', { name: /accedi|login/i }).click()
-  await page.waitForLoadState('networkidle')
-}
+test.describe('Pagina pubblica — [caso]', () => {
+  test('seed temporaneo + restore', async ({ page }) => {
+    const tenantSlug = await getExistingTenantSlug(PREFERRED_TENANT_SLUG, [
+      'da-tommaso',
+      'test-classic',
+      'test-pro',
+    ])
+    const tenantId = await getTenantIdBySlug(tenantSlug)
+    const snapshot = await getRestaurantSettingSnapshot(tenantId, 'setting_da_modificare')
 
-test.describe('Flusso admin — [nome flusso]', () => {
-  test('[cosa verifica]', async ({ page }) => {
-    await login(page)
-    // assertions…
+    try {
+      await upsertRestaurantSettingValue(tenantId, 'setting_da_modificare', 'valore-e2e')
+      await page.goto(`/prenota/${tenantSlug}?e2e=caso`, { waitUntil: 'domcontentloaded' })
+
+      const container = page.getByRole('status')
+      await expect(container.getByText(/testo atteso/i)).toBeVisible()
+      await expect(page.locator('#elemento-che-non-deve-esistere')).toHaveCount(0)
+    } finally {
+      await restoreRestaurantSettingSnapshot(tenantId, 'setting_da_modificare', snapshot).catch(() => {})
+    }
   })
 })
 ```
+
+Regole del template:
+- Validare TEST (`docnnernvp`) passa dagli helper; non usare query REST sparse nello spec.
+- Snapshot/restore per settings; prefisso + delete per booking/QR/menu seedati.
+- Se un testo è duplicato responsive, assertare dentro un contenitore o usare `.first()` solo per "almeno uno visibile".
 
 ---
 
@@ -108,17 +127,32 @@ test.describe('Flusso admin — [nome flusso]', () => {
 ```ts
 import { test, expect } from '@playwright/test'
 
-const REQUIRED = ['E2E_ADMIN_EMAIL', 'E2E_ADMIN_PASSWORD', 'E2E_CLASSIC_TENANT_ID']
-const missing  = REQUIRED.find(v => !process.env[v])
-test.skip(!!missing, `richiede staging (${missing ?? ''} non impostato)`)
+const CREDENTIALS = [
+  { email: process.env.E2E_CLASSIC_ADMIN_EMAIL ?? '', password: process.env.E2E_CLASSIC_ADMIN_PASSWORD ?? '' },
+  { email: process.env.E2E_ADMIN_EMAIL ?? '', password: process.env.E2E_ADMIN_PASSWORD ?? '' },
+].filter((cred) => cred.email && cred.password)
+
+test.skip(CREDENTIALS.length === 0, 'richiede credenziali admin TEST')
+
+async function loginWithAnyConfiguredCredential(page: import('@playwright/test').Page) {
+  for (const credentials of CREDENTIALS) {
+    await page.goto('/login', { waitUntil: 'domcontentloaded' })
+    await page.fill('#email', credentials.email)
+    await page.fill('#password', credentials.password)
+    await page.locator('button[type="submit"]').click()
+    try {
+      await expect(page).toHaveURL(/\/admin/, { timeout: 8000 })
+      return
+    } catch {
+      // .env.local.test puo essere obsoleto: prova la prossima credenziale TEST configurata.
+    }
+  }
+  throw new Error('Login E2E fallito con tutte le credenziali configurate')
+}
 
 test.describe('Edition Classic — [feature]', () => {
   test('[feature] non visibile per Classic', async ({ page }) => {
-    await page.goto('/admin')
-    await page.getByLabel(/email/i).fill(process.env.E2E_ADMIN_EMAIL!)
-    await page.getByLabel(/password/i).fill(process.env.E2E_ADMIN_PASSWORD!)
-    await page.getByRole('button', { name: /accedi|login/i }).click()
-    await page.waitForLoadState('networkidle')
+    await loginWithAnyConfiguredCredential(page)
 
     // Classic non deve vedere questa feature
     await expect(page.locator('[data-testid="feature-element"]')).not.toBeVisible()
@@ -156,9 +190,14 @@ await expect(page.locator('.booking-list')).toBeVisible()
 // ❌ SBAGLIATO — assume che esistano prenotazioni con ID specifico
 await page.goto('/admin?booking=abc123')
 
-// ✅ CORRETTO — usa dati minimi garantiti dallo staging setup
-const firstRow = page.locator('tr[role="row"]').first()
-if (await firstRow.isVisible()) { /* test condizionale */ }
+// ✅ CORRETTO — se serve un dato, seedalo e puliscilo
+const id = await insertBooking({ tenantId, clientName: 'E2E-CASO-...', status: 'accepted', ... })
+try {
+  await page.goto('/admin/calendario')
+  await expect(page.getByText('E2E-CASO-...')).toBeVisible()
+} finally {
+  await deleteBookingsByPrefix(tenantId, 'E2E-CASO-').catch(() => {})
+}
 ```
 
 ### Mock troppo dettagliati

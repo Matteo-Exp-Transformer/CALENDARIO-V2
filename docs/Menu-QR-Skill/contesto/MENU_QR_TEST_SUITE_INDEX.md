@@ -18,7 +18,7 @@
 | `src/features/public-menu/__tests__/categoryIcons.test.ts` | Risoluzione icone categoria (mapping Phosphor/Lucide, default `lucide_salad`, mai emoji). |
 | `src/features/booking/components/__tests__/menuQrCategoryFieldCap.test.tsx` | **FU-MQR-1**: cap titolo (30) / descrizione (70) card categoria — valori + taglio difensivo via `AdminFieldWithCharCount`. |
 | `src/features/booking/components/__tests__/menuQrPresetImport.test.ts` | Import preset staff nel QR (`computeImportFromPreset`): categorie + hidden item precompilati, carosello escluso. |
-| `e2e/public-menu-qr.spec.ts` | Flusso cliente pubblico: homepage QR, apertura categoria, browser back, shortCode mancante, fallback `/menu/:slug`; visual checklist seedata con carosello, tema, ordine categorie da `category_filter` e footer data/ora. |
+| `e2e/public-menu-qr.spec.ts` | Flusso cliente pubblico: homepage QR, apertura categoria, browser back, shortCode mancante, fallback `/menu/:slug`; visual checklist seedata con carosello, tema, ordine categorie da `category_filter`, footer data/ora e card categoria senza foto con default `lucide_salad` (no immagine/emoji). |
 
 ---
 
@@ -41,6 +41,7 @@
 ## Buchi di copertura noti (onesti)
 
 - **E2E pubblica** copre flusso cliente base + visual checklist seedata per carousel, tema, ordine
-  categorie e footer. Restano da guardare a mano solo gesture swipe e asset reali quando si tocca il rendering.
+  categorie, footer e icona default sulle card senza foto. Restano da guardare a mano solo gesture
+  swipe e asset reali quando si tocca il rendering.
 - **Codice preset**: rimosso il 06-06-26 (`PublicMenuPresetPage`, rami `content_type`, colonne DB).
   Non esiste più nulla da testare lì.

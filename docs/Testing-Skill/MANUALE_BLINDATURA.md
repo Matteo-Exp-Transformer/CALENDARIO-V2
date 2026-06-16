@@ -6,7 +6,7 @@
 > Lo referenzia il `MASTERPLAN_BLINDATURA.md` da ogni milestone.
 >
 > **Non duplica.** Per lo *stack* (Vitest vs Playwright, comandi) → `TESTING_SKILL.md`. Per i
-> *viewport standard* → `TESTING_SKILL.md` §7.2. Per la *definizione di controtest "rompi"* →
+> *viewport standard* → `TESTING_SKILL.md` §8.2. Per la *definizione di controtest "rompi"* →
 > `EVOLUZIONE_SKILLS.md` §7. Qui c'è solo il **metodo**: quando applicare cosa.
 
 ---
@@ -44,7 +44,7 @@ Ogni sezione, dopo intervista + mappatura, segue questo ciclo. È il riferimento
    ferma qui.
 3. **Fase C — Controtest "rompi" (se dovuto, §2).** Sub-agent con mandato esplicito *trova bug* sui 4
    fronti (§3). Riportano finding; l'orchestratore decide per ognuno: fix / follow-up / "voluto".
-4. **Fase D — QA responsive + chiusura.** QA su 375/834/1280 (`TESTING_SKILL.md` §7.2), doc e test
+4. **Fase D — QA responsive + chiusura.** QA su 375/834/1280 (`TESTING_SKILL.md` §8.2), doc e test
    index aggiornati, report sessione con esiti.
 
 ---
@@ -114,7 +114,7 @@ Una sezione è **blindata** (e quindi candidabile al merge) solo se tutte le cas
 | File | Cosa tiene (source of truth) |
 |------|------------------------------|
 | **Questo (`MANUALE_BLINDATURA.md`)** | *metodo*: sequenza A→D, quando il "rompi" è dovuto, cancello blindato |
-| `TESTING_SKILL.md` | *stack*: Vitest vs Playwright, comandi, §7 QA manuale + viewport |
+| `TESTING_SKILL.md` | *stack*: Vitest vs Playwright, comandi, §8 QA manuale + viewport |
 | `EVOLUZIONE_SKILLS.md` §7 | *principio* del controtest "rompi" (perché verde ≠ robusto) |
 | `EVOLUZIONE_SKILLS.md` §8 | *regola merge* pubblico/privato (classifica diff) |
 | `CONTROVERIFICA.md` | *sub-agente imparziale* di fine sessione (giudizio d'insieme) |

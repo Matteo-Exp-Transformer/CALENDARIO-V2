@@ -41,7 +41,7 @@ Fronti previsti:
 | `e2e/admin-shell-blindatura.spec.ts` | shell refresh/back, dirty guard, logout (FU-042) |
 | `e2e/admin-classic-tabs.spec.ts` | tab Classic |
 | `e2e/admin-booking-mgmt.spec.ts` | gestione prenotazioni admin |
-| `e2e/admin-calendar-blindatura.spec.ts` | smoke Calendario: badge mese, digest, nuova prenotazione |
+| `e2e/admin-calendar-blindatura.spec.ts` | smoke Calendario: badge mese con limite/>100%, badge senza limite, digest, nuova prenotazione |
 | `e2e/admin-settings-blindatura.spec.ts` | smoke Impostazioni: anagrafica, footer, dirty guard tema |
 | `e2e/admin-menu-magazzino-blindatura.spec.ts` | Menu/Magazzino: toggle disponibilità, propagazione Prenota/QR, responsive |
 | `e2e/admin-menu-magazzino-ct.spec.ts` | Menu/Magazzino controtest browser |
@@ -78,7 +78,7 @@ Fronti previsti:
 
 ### E2E smoke settings / calendario
 
-- `e2e/admin-calendar-blindatura.spec.ts` -> smoke browser su badge mese, digest e `+ Nuova prenotazione`
+- `e2e/admin-calendar-blindatura.spec.ts` -> smoke browser su badge mese con limite/>100%, badge senza limite, digest e `+ Nuova prenotazione`
 - `e2e/admin-settings-blindatura.spec.ts` -> smoke browser su anagrafica, footer e dirty guard tema
 
 ### 3-bis. M4 Impostazioni — `@admin-blindatura: settings-*` (15-06-26)
@@ -152,8 +152,9 @@ credenziali Classic dedicate non valide in questo staging) o suite legacy (`menu
 test Menu/Magazzino di blindatura.
 
 Addendum visual checklist (16-06-26): `public-booking-smoke.spec.ts` copre sfondo striscia/full-page/
-crema + footer Orari assente; `public-menu-qr.spec.ts` copre carosello, tema, ordine categorie e
-footer data/ora con seed/cleanup su TEST.
+crema + footer Orari assente + EmptyState form non configurato; `public-menu-qr.spec.ts` copre
+carosello, tema, ordine categorie, footer data/ora e icona default card senza foto con seed/cleanup
+su TEST. `admin-calendar-blindatura.spec.ts` esteso a badge senza limite e oltre 100% reale.
 
 ## 7. Buchi iniziali da trasformare in test
 
@@ -195,7 +196,7 @@ Stato: **batch A+B FU-047 + classificazione doc (11-06-26)** — **41** test Vit
 - `src/features/booking/utils/__tests__/bookingEventTransform.adminBlindatura.test.ts` (2) → no-show + confirmed_end in transform.
 - `src/features/booking/hooks/__tests__/useCapacityCheck.adminBlindatura.test.ts` (2) → no-show esclusi per-fascia.
 - `src/features/booking/components/__tests__/bookingDetailsModal.noShow.adminBlindatura.test.tsx` (2) → pulsante No-show su orario **inizio** (addendum Matteo batch B); **fuori** conteggio M2 41.
-- `e2e/admin-calendar-blindatura.spec.ts` → smoke browser su badge mese, digest, pending/no-show e `+ Nuova prenotazione`.
+- `e2e/admin-calendar-blindatura.spec.ts` → smoke browser su badge mese con limite/>100%, badge senza limite, digest, pending/no-show e `+ Nuova prenotazione`.
 
 Pattern: mock `@fullcalendar/react` cattura props (`dateClick`, `dayCellDidMount`, assenza drag); `AdminBookingForm` mock per `initialDate`; `BookingDetailsModal` reale con tab stub + mutation mock.
 
