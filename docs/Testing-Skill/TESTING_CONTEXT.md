@@ -77,12 +77,13 @@ Progetto: `docnnernvpyrbwuzzach` (separato da produzione `rwuxgvldzrkabglkasym`)
 
 **Tenant di test**:
 
-| ID | Nome | Edition | Admin |
-|----|------|---------|-------|
-| `11111111-1111-1111-1111-111111111111` | Ristorante Test Pro | `pro` | `admin-pro@test.local` |
-| `22222222-2222-2222-2222-222222222222` | Ristorante Test Classic | `classic` | `admin-classic@test.local` |
+| ID | Nome | Slug | Edition | Admin |
+|----|------|------|---------|-------|
+| `9360d73c-ae21-4176-b68f-8ad8ab2505da` | Ristorante PRO | `test-pro` | `pro` | `testp@p.com` |
+| `c97a2fa5-3675-4578-ad23-654ae71d06a7` | Ristorante Classic | `test-classic` | `classic` | `testc@c.com` |
+| `8ff744f4-7a38-4030-bb2d-a846045cbeb6` | Trattoria da Tommaso | `da-tommaso` | `pro` | `tomas@t.com` |
 
-Password: `TestE2E2026!`
+Password: `123456`
 
 **Dati presenti**:
 - Tenant Pro: 3 clienti in `customers`
@@ -107,8 +108,8 @@ I test in `e2e/pro/` usano credenziali separate dalle Classic:
 
 | Variabile | Valore staging | Usata da |
 |-----------|---------------|----------|
-| `E2E_PRO_ADMIN_EMAIL` | `admin-pro@test.local` | tutti gli spec in `e2e/pro/` |
-| `E2E_PRO_ADMIN_PASSWORD` | `TestE2E2026!` | tutti gli spec in `e2e/pro/` |
+| `E2E_PRO_ADMIN_EMAIL` | `testp@p.com` | tutti gli spec in `e2e/pro/` |
+| `E2E_PRO_ADMIN_PASSWORD` | `123456` | tutti gli spec in `e2e/pro/` |
 
 I test Pro si auto-saltano se `E2E_PRO_ADMIN_EMAIL` non è impostato:
 ```ts

@@ -78,15 +78,15 @@ VITE_SUPABASE_ANON_KEY=<anon-key-staging>
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key-staging>
 
 # Admin Classic (richiesto dalla maggior parte dei test E2E)
-E2E_ADMIN_EMAIL=admin-classic@test.local
-E2E_ADMIN_PASSWORD=TestE2E2026!
-E2E_TENANT_SLUG=ristorante-test-classic
-E2E_CLASSIC_TENANT_ID=22222222-2222-2222-2222-222222222222
+E2E_ADMIN_EMAIL=testc@c.com
+E2E_ADMIN_PASSWORD=123456
+E2E_TENANT_SLUG=test-classic
+E2E_CLASSIC_TENANT_ID=c97a2fa5-3675-4578-ad23-654ae71d06a7
 E2E_SUPABASE_SERVICE_KEY=<service-role-key-staging>
 
 # Admin Pro (richiesto solo dai test in e2e/pro/ — ometti per saltarli)
-E2E_PRO_ADMIN_EMAIL=admin-pro@test.local
-E2E_PRO_ADMIN_PASSWORD=TestE2E2026!
+E2E_PRO_ADMIN_EMAIL=testp@p.com
+E2E_PRO_ADMIN_PASSWORD=123456
 ```
 
 `playwright.config.ts` carica automaticamente questo file se presente.
@@ -97,18 +97,17 @@ Lo staging è già popolato con:
 
 | Tenant | Edition | Slug | Admin |
 |--------|---------|------|-------|
-| Ristorante Test Pro | `pro` | `ristorante-test-pro` | `admin-pro@test.local` |
-| Ristorante Test Classic | `classic` | `ristorante-test-classic` | `admin-classic@test.local` |
+| Ristorante PRO | `pro` | `test-pro` | `testp@p.com` |
+| Ristorante Classic | `classic` | `test-classic` | `testc@c.com` |
+| Trattoria da Tommaso | `pro` | `da-tommaso` | `tomas@t.com` |
 
-Password admin: `TestE2E2026!`
+Password admin: `123456`
 
 ### 3. Ricreare i tenant di test (se lo staging viene resettato)
 
 **Svuotare tutto lo staging** (zero tenant/utenti, schema intatto): `supabase/scripts/reset_test_database.sql` — procedura in `supabase/scripts/README_RESET_TEST_DATABASE.md`. Solo progetto TEST (`docnnernvp`).
 
-Poi esegui **`supabase/scripts/seed_e2e_test_tenants.sql`** (Supabase Studio o MCP `user-supabase-test`).
-
-Include: 2 tenant, login auth (`auth.users` + `auth.identities`), 2 admin, **3 clienti** Pro (CRM E2E), **3 prenotazioni** Classic (2 pending + 1 accepted). Password: `TestE2E2026!`.
+**Attenzione:** lo script `seed_e2e_test_tenants.sql` che creava utenti via INSERT diretto in `auth.users` è stato **rimosso (16-06-26)** — GoTrue non riconosce questi utenti per il login (`signInWithPassword` fallisce anche con hash valido; vedi `docs/Comunicazione-Skill/EVOLUZIONE_SKILLS.md`, voce 13-06-26). Per ricreare gli account, usa **`supabase.auth.admin.createUser()`** via SDK (service role) o il portale Supabase Auth — **mai** INSERT SQL diretto in `auth.users` — poi crea le righe corrispondenti in `organizations`/`admin_users`. Mapping account corrente: vedi tabella sopra. Tracciato in `docs/FOLLOW_UP.md` → **FU-052**.
 
 ---
 

@@ -6,8 +6,8 @@ Eseguile su Supabase Studio puntando al progetto **staging**
 (`docnnernvpyrbwuzzach`).
 
 Tenant di test:
-- Pro: `11111111-1111-1111-1111-111111111111`
-- Classic: `22222222-2222-2222-2222-222222222222`
+- Pro: `9360d73c-ae21-4176-b68f-8ad8ab2505da` (slug `test-pro`)
+- Classic: `c97a2fa5-3675-4578-ad23-654ae71d06a7` (slug `test-classic`)
 
 ---
 
@@ -17,8 +17,8 @@ Tenant di test:
 SELECT id, name, slug, edition, is_active
 FROM organizations
 WHERE id IN (
-  '11111111-1111-1111-1111-111111111111',
-  '22222222-2222-2222-2222-222222222222'
+  '9360d73c-ae21-4176-b68f-8ad8ab2505da',
+  'c97a2fa5-3675-4578-ad23-654ae71d06a7'
 );
 ```
 
@@ -32,12 +32,12 @@ Atteso: 2 righe — una `edition = 'pro'`, una `edition = 'classic'`.
 SELECT email, name, tenant_id
 FROM admin_users
 WHERE tenant_id IN (
-  '11111111-1111-1111-1111-111111111111',
-  '22222222-2222-2222-2222-222222222222'
+  '9360d73c-ae21-4176-b68f-8ad8ab2505da',
+  'c97a2fa5-3675-4578-ad23-654ae71d06a7'
 );
 ```
 
-Atteso: almeno `admin-pro@test.local` e `admin-classic@test.local`.
+Atteso: almeno `testp@p.com` e `testc@c.com`.
 
 ---
 
@@ -46,7 +46,7 @@ Atteso: almeno `admin-pro@test.local` e `admin-classic@test.local`.
 ```sql
 SELECT id, name, email, source, created_at
 FROM customers
-WHERE tenant_id = '11111111-1111-1111-1111-111111111111'
+WHERE tenant_id = '9360d73c-ae21-4176-b68f-8ad8ab2505da'
 ORDER BY created_at DESC;
 ```
 
@@ -59,7 +59,7 @@ Atteso: almeno 3 righe. Se ne mancano, il test `pro-crm.spec.ts` fallirà.
 ```sql
 SELECT id, client_name, desired_date, status, booking_source
 FROM booking_requests
-WHERE tenant_id = '22222222-2222-2222-2222-222222222222'
+WHERE tenant_id = 'c97a2fa5-3675-4578-ad23-654ae71d06a7'
 ORDER BY created_at DESC;
 ```
 
@@ -75,13 +75,13 @@ Dopo aver eseguito una prenotazione dal form pubblico in staging:
 -- Prima: conta clienti con source='synced'
 SELECT count(*) AS clienti_da_form_pubblico
 FROM customers
-WHERE tenant_id = '11111111-1111-1111-1111-111111111111'
+WHERE tenant_id = '9360d73c-ae21-4176-b68f-8ad8ab2505da'
   AND source = 'synced';
 
 -- Poi: verifica che non ci siano duplicati per la stessa email
 SELECT email, count(*) AS occorrenze
 FROM customers
-WHERE tenant_id = '11111111-1111-1111-1111-111111111111'
+WHERE tenant_id = '9360d73c-ae21-4176-b68f-8ad8ab2505da'
 GROUP BY email
 HAVING count(*) > 1;
 ```
@@ -98,7 +98,7 @@ Verifica che il tenant Classic non abbia clienti nel CRM
 ```sql
 SELECT count(*) AS clienti_classic
 FROM customers
-WHERE tenant_id = '22222222-2222-2222-2222-222222222222';
+WHERE tenant_id = 'c97a2fa5-3675-4578-ad23-654ae71d06a7';
 ```
 
 Atteso: `0` — il tenant Classic non dovrebbe avere clienti nel staging.
@@ -110,7 +110,7 @@ Atteso: `0` — il tenant Classic non dovrebbe avere clienti nel staging.
 ```sql
 SELECT id, client_name, status, cancellation_reason, cancelled_at
 FROM booking_requests
-WHERE tenant_id = '22222222-2222-2222-2222-222222222222'
+WHERE tenant_id = 'c97a2fa5-3675-4578-ad23-654ae71d06a7'
   AND status = 'deleted'
 ORDER BY cancelled_at DESC;
 ```
@@ -126,8 +126,8 @@ SELECT o.name, tu.year, tu.booking_requests_count, tu.bookings_count
 FROM tenant_usage tu
 JOIN organizations o ON o.id = tu.organization_id
 WHERE tu.organization_id IN (
-  '11111111-1111-1111-1111-111111111111',
-  '22222222-2222-2222-2222-222222222222'
+  '9360d73c-ae21-4176-b68f-8ad8ab2505da',
+  'c97a2fa5-3675-4578-ad23-654ae71d06a7'
 )
 ORDER BY tu.year DESC;
 ```
