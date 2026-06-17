@@ -179,6 +179,11 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
   `ADMIN_SETTINGS_CONTEXT.md` esiste.
 - **Stato:** ✅ **BLINDATO** 16-06-26. Intervista e mappa chiuse per anagrafica/orari/tema/sfondo/form/carosello/promo; suite `settings-*` **120/120** (17 file), `npm run validate` **758/758**, E2E settings **6/6** su 375/900/1256 con anteprime tema/sfondo e console pulita.
 - **Resta fuori cancello:** FU-051 date mock; follow-up da valutare per E2E calendario dopo riordino fasce; verifiche visuali fini quando si toccano sfondi, tema, carosello e asset reali.
+- **FIX 9 / Milestone D (17-06-26) — `compilable_category_keys`:**
+  - §3A admin: toggle per-categoria visibile nell'editor card scorrevole con `is_fixed_menu: false`; `settingsFormConfigCompilable.settingsM4.adminBlindatura.test.tsx` **9/9**. Commit `4e6afb4`.
+  - §3B pubblica: `BookingMenuComposeGrid` → `MenuSelection` → `BookingRequestForm` propagano `compilable_category_keys`; per-category `locked` in `BookingMenuCategoryCard`; sidebar totali corretti automaticamente (item non compilabili mai in `menu_selection.items`).
+  - **Test aggiuntivi FIX 9:** Vitest **+6** (`MenuSelectionCategoryEntries` +5 `flusso-dati`, `BookingSummarySidebar` +1 `flusso-utente`); E2E `public-booking-fix9-compilable.spec.ts` (casi 3/4/5 a 375/900/1256).
+  - `npm run validate` **786/786** (17-06-26). Nessuna migrazione DB. Batch 9 / Milestone D chiuso.
 
 ### M5 — Sidebar + pagine Pro (Servizio / CRM / Home / Analytics) — **NON in main**
 - **Dettaglio:** Aree 5/6/7 di `PLAN_BLINDATURA_ADMIN.md`.
@@ -212,7 +217,7 @@ milestone naturale di competenza.
 | FU-038/039 | ~~Seed TEST + QA centratura~~ | ✅ Chiuso M0 10-06-26 | — | **M0** ✅ |
 | FU-MQR-2 | ~~Ordine piatti per-QR senza test dedicato~~ — **Chiuso 16-06-26:** `menuQrItemSortOverrides.test.ts` copre parser/override; E2E `public-menu-qr.spec.ts` copre flusso cliente pubblico base. | `MENU_QR_SKILL.md §5` | — | chiuso |
 | FU-MQR-3 | ~~Chiave categoria `secondi_piattie` su PROD `da-tommaso`~~ — **Chiuso 11-06-26:** Matteo su PROD account test `da-tommaso` — categoria/chiave **non presente** in overlay Categorie; nessuna azione rename. Vitest rename (FU-M3-3) resta copertura codice. | `MENU_QR_SKILL.md §5` | — | chiuso |
-| FU-EMAIL-1 | Edge function `send-email` **non esiste**: email accept/reject/cancel falliscono in silenzio | `src/lib/email.ts:37`; gated da `VITE_ENABLE_SEND_EMAIL` in `useBookingMutations.ts:110-171` | alto (UX) | M6 o milestone email |
+| FU-EMAIL-1 | ~~Edge function `send-email` non esiste~~ — **Chiuso 15-06/17-06-26:** `send-email` deployata in PROD (`rwuxgvld` v3) + secret Brevo; accetta/rifiuta ricevuti. Tabelle `email_templates`/`email_campaigns` allineate su PROD (mig. 050-052, 17-06). Gate client `VITE_ENABLE_SEND_EMAIL`. Resta FU-EMAIL-8 (scheduler campagne). | `src/lib/email.ts`; `useBookingMutations.ts` | — | chiuso |
 | FU-EMAIL-2 | Nessuna UI admin per `email_logs` | `database.ts` (`email_logs`) | medio | M6 |
 | FU-TEST-1 | ~~0% test su pagine Pro (CRM/Servizio/Analytics/Home)~~ — **Parzialmente chiuso 16-06-26:** smoke E2E `e2e/pro/pro-home.spec.ts`, `pro-crm.spec.ts`, `pro-service.spec.ts`, `pro-analytics.spec.ts` + sidebar/login Pro. Restano test profondi post-intervista M5. | smoke Playwright presenti; Vitest parziali CRM/Servizio | medio (regressioni profonde Pro ancora possibili) | M5 |
 | FU-TABLE-1 | `useTableStatuses` mancante: tavoli sempre verdi | `TableShape.tsx:35` | medio (solo Pro) | M5 |

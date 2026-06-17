@@ -8,10 +8,11 @@
 > Fonte canonica dello stato: [`MASTERPLAN_BLINDATURA.md`](MASTERPLAN_BLINDATURA.md). Dettaglio per area:
 > `docs/Admin-Skill/PLAN_BLINDATURA_ADMIN.md`, `docs/Prenota-Skill/`, `docs/Menu-QR-Skill/`.
 >
-> Aggiornato: **2026-06-16**.
-> Ultimo run E2E Codex: `npx playwright test --workers=1` → **58 passed, 16 skipped** su staging TEST.
+> Aggiornato: **2026-06-17**.
+> Ultimo run E2E Codex: `npx playwright test --workers=1` → **58 passed, 16 skipped** su staging TEST (16-06-26).
 > Addendum mirato Codex: `public-booking-smoke` → **11 passed**; `public-booking-smoke + public-menu-qr` → **14 passed**; `admin-calendar-blindatura` → **2 passed**.
 > Addendum M4 finale: `admin-settings-blindatura.spec.ts` → **6 passed** con anteprime tema/sfondo a 375/900/1256.
+> **FIX 9 (17-06-26):** `public-booking-fix9-compilable.spec.ts` aggiunto — richiede staging TEST con `.env.local.test`; copre casi (3)/(4)/(5) a 375/900/1256.
 > Gli skip sono prerequisiti non disponibili o suite legacy disattivate; le spunte sotto indicano solo
 > i flussi davvero verificati da Playwright.
 
@@ -152,7 +153,7 @@ Trovate nella controverifica 16-06-26 e **risolte**: la documentazione viva ora 
 ## 6. Promemoria comandi
 
 ```bash
-npm run validate        # gate quotidiano: TUTTI i Vitest in mock devono essere verdi (758/758 al 16-06)
+npm run validate        # gate quotidiano: TUTTI i Vitest in mock devono essere verdi (786/786 al 17-06)
 npm run dev             # app in locale su :5173 per la verifica manuale
 npx playwright test e2e/<spec>.spec.ts --workers=1   # E2E su staging TEST (serve .env.local.test)
 npx playwright test e2e/public-menu-qr.spec.ts --workers=1

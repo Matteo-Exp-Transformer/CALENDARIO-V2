@@ -2,7 +2,7 @@
 
 > Impostazioni ristorante e Personalizza Form. Questo dominio scrive soprattutto `restaurant_settings`.
 >
-> **Stato blindatura (M4):** intervista ✅ (15-06-26) · Fase C ✅ · test `@admin-blindatura: settings-*` **120/120** (17 file) · QA Playwright 375/900/1256 su anteprima tema + sfondo ✅ · FU-002 riscritto ✅ · FU-009 chiuso ✅ · **blindato** ✅ (16-06-26). Report: [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md).
+> **Stato blindatura (M4):** intervista ✅ (15-06-26) · Fase C ✅ · test `@admin-blindatura: settings-*` **129/129** (18 file, incluso `settings-form-config-compilable` FIX 9 §3A 17-06-26) · QA Playwright 375/900/1256 su anteprima tema + sfondo ✅ · FU-002 riscritto ✅ · FU-009 chiuso ✅ · **blindato** ✅ (16-06-26). FIX 9 §3A/§3B aggiunto 17-06-26 senza riaprire il cancello M4. Report: [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md).
 
 ## 1. Scopo
 
@@ -136,6 +136,7 @@ chiave gia registrata.
 - **`app_theme`**: solo back-office admin; **non** cambia Prenota né Menu QR.
 - **Card scorrevole + Carosello**: entrambi core in Personalizza form; cambio `sub_tabs_presentation` → **conferma distruttiva**
   (già in `BookingFormConfigPanel`). CRUD slide carosello + upload Storage: **FU-009 chiuso** (16-06-26) — Vitest `settings-carousel-crud` **12/12** + QA browser TEST; vedi § Stato mappatura sotto.
+- **Toggle Menù personalizzabile per-categoria (`compilable_category_keys`, FIX 9 §3A, 17-06-26):** quando `is_fixed_menu: false` è attivo su una card, l'editor mostra una lista di checkbox per categoria (categorie del preset collegato). Le categorie selezionate → `compilable_category_keys[]` sulla sottotab; le altre visibili ma bloccate (senza checkbox) nella Pagina Prenota. Campo assente = tutte le categorie compilabili (backward compat). Test: `@admin-blindatura: settings-form-config-compilable` — `settingsFormConfigCompilable.settingsM4.adminBlindatura.test.tsx` (9 test).
 
 ### Salvataggio, guard, Classic production
 

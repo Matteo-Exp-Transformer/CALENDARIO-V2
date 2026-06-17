@@ -97,6 +97,7 @@ Fronti previsti:
 | `settings-form-config` | `settingsFormConfig.settingsM4.adminBlindatura.test.tsx` | 12 — delete card/carosello (D-M1); zero modalità; cap header/modalità/card; config null/legacy; pubblico legacy parseFromDb |
 | `settings-promo` | `settingsPromo.settingsM4.adminBlindatura.test.tsx` | 8 — FIX 6: delete/toggle/apply solo locale+dirty, nessuna mutation autonoma; `ref.save()` persiste dal footer; fail save rilanciato; `ref.cancel()` ripristina; label da config |
 | `settings-carousel-crud` | `settingsCarouselCrud.settingsM4.adminBlindatura.test.ts` + `settingsCarouselCrud.settingsM4.adminBlindatura.test.tsx` | 12 — crea carosello; add/replace/delete/reorder slide (upload mock); testi slide; salva+parseFromDb; legacy/null safe; effetto Prenota pubblico |
+| `settings-form-config-compilable` | `settingsFormConfigCompilable.settingsM4.adminBlindatura.test.tsx` | **9 (FIX 9 §3A, 17-06-26)** — toggle per-categoria visibile SOLO con personalizzabile ON; scompare con OFF; click checkbox cambia stato; round-trip parse/serializza; campo assente = all compilable (backward compat); categorie nascoste non appaiono; toggle disabilita/riabilita checkbox; 2 categorie + 1 compilabile; legacy (tutti selezionati) |
 
 Gate Batch 1/2 (15-06-26, agg. §5A/§5B P2): run aggregato **35 test** verdi — `settingsFormConfig.settingsM4`, `settingsPromo.settingsM4`, `settingsBackground.adminBlindatura`, `publicBookingSurface`.
 

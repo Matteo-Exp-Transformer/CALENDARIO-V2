@@ -42,6 +42,7 @@ Per fronte, i file sono elencati qui sotto: lancia `npx vitest run <path>` sul s
 |------|---------------|
 | `e2e/public-booking.spec.ts` | Submit completo su staging TEST: form valido → conferma invio reale. |
 | `e2e/public-booking-smoke.spec.ts` | Gap documentati ma automatizzabili: slug inesistente, submit invalido con alert sul primo campo, link Privacy + ritorno, submit raggiungibile a 375/834/1280; riepilogo con label `Totale` e non `Totale stimato`; XOR card/carosello e card senza titolo non renderizzata; visual checklist sfondo striscia/full-page/crema + footer Orari assente quando tutti i giorni sono chiusi; EmptyState con recapiti quando manca `booking_public_form_config`. |
+| `e2e/public-booking-fix9-compilable.spec.ts` | **FIX 9 fase pubblica** `compilable_category_keys`: categoria non compilabile visibile senza checkbox (caso 3) a 375/900/1256; categoria compilabile con checkbox (caso 3+); item non compilabile assente dal riepilogo (caso 4); submit non include item non compilabili (caso 5). Seed/cleanup su staging TEST. |
 
 ```bash
 npx playwright test e2e/public-booking.spec.ts e2e/public-booking-smoke.spec.ts --workers=1
@@ -64,7 +65,8 @@ npx playwright test e2e/public-booking.spec.ts e2e/public-booking-smoke.spec.ts 
 |------|---------------|
 | `src/features/booking/utils/__tests__/bookingTotals.flussoUtente.test.ts` | Calcolo totali: menù componibile (somma piatti × ospiti), menù fisso (prezzo × ospiti), ospiti 0/negativi, prezzo preset 0. |
 | `src/features/booking/components/__tests__/BookingRequestForm.flussoUtente.test.tsx` | Submit a form vuoto → niente POST + attenzione primo campo; cambio tipologia → reset menù/preset/totali + reset intolleranze **per capacità**; cap testo cliente silenzioso. |
-| `src/features/booking/components/__tests__/BookingSummarySidebar.capability.test.tsx` | Riepilogo mostra/nasconde i totali per **capacità** (`modeUsesMenu(activeMode)`), non per nome tipologia (FU-036 #1). |
+| `src/features/booking/components/__tests__/BookingSummarySidebar.capability.test.tsx` | Riepilogo mostra/nasconde i totali per **capacità** (`modeUsesMenu(activeMode)`), non per nome tipologia (FU-036 #1). **+1 test FIX 9:** esclusione automatica totale item non compilabili (mai in `menu_selection.items` → totale corretto senza logica aggiuntiva). |
+| `src/features/booking/components/__tests__/MenuSelectionCategoryEntries.test.ts` | Regressione card categorie + filtro preset per ogni `booking_type` (LOCK ingredienti). **+5 test FIX 9** (`compilable_category_keys`): backward compat campo assente, array vuoto, parziale, locked globale, mix compilabile+non. |
 | `src/features/booking/utils/__tests__/privacyPolicyNavigation.test.ts` | Link privacy → ritorno Pagina Prenota: build `?from=/prenota/:slug`, validazione anti-open-redirect, resolve da query/state. |
 | `src/features/booking/components/publicBooking/__tests__/bookingModeCardsAndCategoryCard.prenotaM0.adminBlindatura.test.tsx` | FIX 5: classi testo card tipologia ingrandite (+20%, no peggioramento gap lg-vs-sm); FIX 8: `BookingMenuCategoryCard` scrolla al centro dello strip prima di espandersi solo su desktop (`layout="scroll"` + `horizontalScrollRef`), non su mobile (`layout="grid"`); accordion desktop (16-06-26): una sola categoria aperta, collasso se shell fuori viewport carosello; rompi: click rapidi multipli scrollano una sola volta. **6 test.** |
 
