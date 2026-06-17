@@ -183,7 +183,7 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
   - §3A admin: toggle per-categoria visibile nell'editor card scorrevole con `is_fixed_menu: false`; `settingsFormConfigCompilable.settingsM4.adminBlindatura.test.tsx` **9/9**. Commit `4e6afb4`.
   - §3B pubblica: `BookingMenuComposeGrid` → `MenuSelection` → `BookingRequestForm` propagano `compilable_category_keys`; per-category `locked` in `BookingMenuCategoryCard`; sidebar totali corretti automaticamente (item non compilabili mai in `menu_selection.items`).
   - **Test aggiuntivi FIX 9:** Vitest **+6** (`MenuSelectionCategoryEntries` +5 `flusso-dati`, `BookingSummarySidebar` +1 `flusso-utente`); E2E `public-booking-fix9-compilable.spec.ts` (casi 3/4/5 a 375/900/1256).
-  - `npm run validate` **786/786** (17-06-26). Nessuna migrazione DB. Batch 9 / Milestone D chiuso.
+  - `npm run validate` **813/813** (17-06-26, dopo batch 7 fix UX). Nessuna migrazione DB. Batch 9 / Milestone D chiuso.
 
 ### M5 — Sidebar + pagine Pro (Servizio / CRM / Home / Analytics) — **NON in main**
 - **Dettaglio:** Aree 5/6/7 di `PLAN_BLINDATURA_ADMIN.md`.

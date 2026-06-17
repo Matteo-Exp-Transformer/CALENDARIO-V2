@@ -162,7 +162,7 @@ chiave gia registrata.
 ### Stato mappatura (16-06-26 — chiusura Area 3 M4)
 
 - Fase A+B **chiuse** (intervista + gap read-only). Fase C **chiusa** (15-06-26): gap G2–G9, G20 implementati; **G16 fuoriscope** (finestra prenotazione rimossa).
-- **Fronti test `@admin-blindatura: settings-*`:** tutti verdi in run aggregato (**120/120** su 17 file, gate Batch 1/2 incluso); `npm run validate` **758/758** (16-06-26).
+- **Fronti test `@admin-blindatura: settings-*`:** tutti verdi in run aggregato (**120/120** su 17 file, gate Batch 1/2 incluso); `npm run validate` **813/813** (17-06-26).
 - **FU-009 (carosello admin):** chiuso — QA browser upload reale Supabase Storage + overlay su `/prenota/:slug` (`tomas@t.com`, tenant Trattoria Da Tommaso); Vitest `settings-carousel-crud` **12/12**.
 - **Fase D rompi + QA viewport:** eseguiti e documentati; addendum finale Playwright `admin-settings-blindatura.spec.ts` **6/6** su 375/900/1256 copre apertura modale anteprima tema e sfondo, footer/guard, console pulita e nessun click intercettato. `Modal.tsx` non modificato nel fix finale: `z-[10050]` e `createPortal` invariati.
 

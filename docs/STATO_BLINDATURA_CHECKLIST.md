@@ -153,7 +153,7 @@ Trovate nella controverifica 16-06-26 e **risolte**: la documentazione viva ora 
 ## 6. Promemoria comandi
 
 ```bash
-npm run validate        # gate quotidiano: TUTTI i Vitest in mock devono essere verdi (786/786 al 17-06)
+npm run validate        # gate quotidiano: TUTTI i Vitest in mock devono essere verdi (813/813 al 17-06)
 npm run dev             # app in locale su :5173 per la verifica manuale
 npx playwright test e2e/<spec>.spec.ts --workers=1   # E2E su staging TEST (serve .env.local.test)
 npx playwright test e2e/public-menu-qr.spec.ts --workers=1
