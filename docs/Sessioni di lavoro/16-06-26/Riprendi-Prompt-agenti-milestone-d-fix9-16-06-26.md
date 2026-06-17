@@ -8,7 +8,7 @@
 
 ## ⏩ Riprendi da qui (17-06-26)
 
-**Prossimo prompt da incollare:** [§3A — FIX 9 Admin](#3-fix-9--admin-json--personalizza-form) (poi §3B revisore).
+**Prossimo prompt da incollare:** [§3B — Revisore FIX 9 Admin](#3-fix-9--admin-json--personalizza-form) (poi §4A esecutore pubblico).
 
 | Già chiuso | Commit / esito |
 |------------|----------------|
@@ -25,8 +25,8 @@
 | 0 | Preflight (regole comuni) | ✅ | applicato su §1–§2 |
 | 1 | Fix `validate:docs` (FU-052) | ✅ | `734e5ed` · [Report-fu-052-validate-docs-16-06-26.md](Report-fu-052-validate-docs-16-06-26.md) · §1B ✅ PULITO |
 | 2 | E2E Calendario post-riordino fasce | ✅ | `734e5ed` · [Report-e2e-calendario-display-order-16-06-26.md](Report-e2e-calendario-display-order-16-06-26.md) · §2B saltato (commit diretto post-esecutore) |
-| 3 | FIX 9 — Admin (JSON + Personalizza Form) | ⬜ | **prossimo** |
-| 4 | FIX 9 — Pubblico + riepilogo + test/E2E | ⬜ | — |
+| 3 | FIX 9 — Admin (JSON + Personalizza Form) | ✅ §3B ⚠️1 (doc gap) | [Report-fix9-admin-compilable-categories-17-06-26.md](Report-fix9-admin-compilable-categories-17-06-26.md) · validate **780/780** · §3B: logica ✅ PULITA, gap doc (ADMIN_SETTINGS_CONTEXT / PRENOTA_FORM_CONFIG_CONTEXT / ADMIN_TEST_SUITE_INDEX non aggiornati col campo) → ok per §4, da chiudere in §4/§5 |
+| 4 | FIX 9 — Pubblico + riepilogo + test/E2E | ⬜ | **prossimo** |
 | 5 | Rev-D milestone D (gate + skill) | ⬜ | — |
 
 **Gate finali milestone (dopo §5 ✅):**

@@ -13,6 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 17-06-26 | **Rilascio 8/9 fix UX Classic** in PROD/PrenotaZen + **allineamento DB** ✅ | [Report](Sessioni%20di%20lavoro/17-06-26/Report-rilascio-8fix-allineamento-db-17-06-26.md) — merge env/test→main (`db6cd12`) + `release:prenotazen` (`f0499e5`); PROD email tables `050/051/052` applicate (gap tab «Personalizza email» per 2 tenant Pro); `049` item_sort_overrides → TEST; email PROD confermata end-to-end; validate **760/760** |
+| 17-06-26 | FIX 9 §3A — **Admin `compilable_category_keys`** toggle per-categoria in `BookingFormConfigPanel` ✅ | [Report](Sessioni%20di%20lavoro/16-06-26/Report-fix9-admin-compilable-categories-17-06-26.md) — JSON field + parse/normalize + UI admin toggle; nessuna migrazione; validate **780/780** (+20 test) |
 | 16-06-26 | E2E Calendario — **digest ordine fasce `display_order`** (Milestone D §2) ✅ | [Report](Sessioni%20di%20lavoro/16-06-26/Report-e2e-calendario-display-order-16-06-26.md) — 3 fasce non cronologiche + 3 prenotazioni; `admin-calendar-blindatura.spec.ts` **3/3** `--workers=1`; helper snapshot `service_slots` |
 | 16-06-26 | Docs — **FU-052 validate:docs** (Milestone D §1) ✅ | [Report](Sessioni%20di%20lavoro/16-06-26/Report-fu-052-validate-docs-16-06-26.md) — path `seed_e2e_test_tenants.sql` reso non-checkable in FU-052; `npm run validate:docs` **0 path rotti** |
 | 16-06-26 | Prenota — **accordion carosello menù** + chiusura su scroll freche ✅ | [Report](Sessioni%20di%20lavoro/16-06-26/Report-accordion-carosello-menu-prenota-16-06-26.md) — una categoria aperta alla volta; frecce avanti/indietro chiudono; collasso se card fuori viewport; validate **760/760** |
