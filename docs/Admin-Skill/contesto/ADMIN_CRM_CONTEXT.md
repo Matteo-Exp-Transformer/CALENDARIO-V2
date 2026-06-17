@@ -38,7 +38,7 @@
 | `CustomerDirectoryTab` | `src/features/booking/components/crm/` | Estratto da CrmPage (invariato) |
 | `EmailTemplatesTab` | `src/features/booking/components/crm/` | Editor accetta + rifiuta + gestore campagne |
 | `EmailTemplateEditor` | `src/features/booking/components/crm/` | Form generico per una chiave template |
-| `PromoRecipientPicker` | `src/features/booking/components/crm/` | Modal selezione destinatari (riusato nelle campagne) |
+| `PromoRecipientPicker` | `src/features/booking/components/crm/` | Modal selezione destinatari (riusato nelle campagne); draft stabile fino a Conferma/Annulla |
 | `CampaignsManager` | `src/features/booking/components/crm/` | Lista campagne + routing verso CampaignEditor |
 | `CampaignEditor` | `src/features/booking/components/crm/` | Form edit/crea campagna con anteprima live |
 | `CampaignLinksEditor` | `src/features/booking/components/crm/` | Editor pulsanti link (etichetta+URL, validazione http/https) |
@@ -126,6 +126,7 @@ Non c'e FK diretta. `useCustomers`:
 - Invio promo richiede `VITE_ENABLE_SEND_EMAIL=true`; se false, `useSendPromoEmail` lancia errore UI.
 - Invio promo uno-a-uno: nessun limite Brevo array (cap 10 per batch → non tocca quel limite).
 - **Destinatari email solo da prenotazione** — `PromoRecipientPicker` mostra solo clienti con `source === 'booking'` (accettazione privacy garantita dal form pubblico); clienti `source='manual'` esclusi dal picker.
+- **Selezione destinatari campagna stabile (17-06-26)** — nel picker, le checkbox restano finché l'admin non clicca **Conferma** o **Annulla**; il draft non si resetta su refetch rubrica o su edit altri campi campagna. `CampaignEditor` passa `initialRecipients` al picker; la sync da prop `campaign` avviene solo al **cambio id** campagna (non su refetch TanStack Query con stesso id), così `recipient_emails` locale non si azzera dopo conferma nel picker ma prima del Salva campagna.
 - **Guard dirty attivo su editor email** — `EmailTemplateEditor` e `CampaignEditor` si registrano a `UnsavedChangesContext`. La modale Salva/Annulla/Esci scatta su: **cambio tab** Rubrica↔Personalizza email (`CrmPage.handleTabChange → confirmNavigation`) e **chiusura della CollapsibleCard** (vedi sotto). **Eccezione aperta:** la X in alto a destra/ritorno dashboard bypassa ancora il guard per `allowPrenotazioniDashboard`; tracciato in FU-EMAIL-11.
 - **CollapsibleCard email automatiche in stato controllato** — `EmailTemplatesTab` gestisce `acceptedExpanded`/`rejectedExpanded` + `acceptedDirty`/`rejectedDirty`. Comportamento voluto per le card-con-form del CRM: la card **si chiude** al click sull'header e **dopo il salvataggio** (`onSaved` → collassa); **ma** se il form è dirty la chiusura passa per `confirmNavigation()` (`makeToggle`), così appare la modale Salva/Annulla/Esci prima di collassare. La card non si chiude per re-render/refetch (stato controllato). `EmailTemplateEditor` espone `onSaved` e `onDirtyChange` al parent.
 

@@ -34,10 +34,11 @@ description: >-
 
 ### Salvataggio admin (Personalizza form + Anagrafica — pattern 29-05-26)
 
-- UI: `SettingsSaveUi.tsx` — `SettingsSaveFooter` (~50% destra, mobile trasparente), `FieldAutosaveIndicator`, `UnsavedNavigationGuardModal`.
+- UI: `SettingsSaveUi.tsx` — `SettingsSaveFooter` (~50% destra, mobile trasparente), `FieldAutosaveIndicator`, `UnsavedNavigationGuardModal`. Footer dirty: pulsanti Salva/Annulla con pulse `settings-save-footer-btn-attention` (17-06-26).
 - **Niente `SectionActionBar`** sulle card standard. Editor sottotab/card/carosello: solo **Annulla** su bozza aperta; nessun Salva interno.
 - **Autosave** (`useDebouncedSettingsAutosave`, toggle `VITE_SETTINGS_AUTOSAVE` in `src/config/settingsAutosave.ts`): dev ON, prod OFF (FU-004). Whitelist: `restaurant_name`, `contact_*`, `page_title`, `page_description` — non `header_styles`. Upsert `{ silent: true }` + invalidazione mirata per chiave.
 - **Footer** quando dirty: orari/fasce/tema (Anagrafica), stili header/modalità/promo/sfondo (Personalizza form).
+- **Persistenza header in PROD (footer):** `saveHeaderSection` scrive `page_title` / `page_description` / `header_styles` da `config` in memoria. `persistModesSection` **deve** riusare gli stessi campi header da `config` (non solo `getSavedBaseline()`): dopo `saveHeaderSection` la cache react-query può essere ancora stale e un secondo upsert modalità riscriveva il JSON con la descrizione placeholder. `useUpsertRestaurantSetting` fa `setQueryData` ottimistico prima dell'invalidazione.
 - **Promo** (`BookingFormPromoSection.tsx`): apply / delete / toggle visibilità → **`saveSilently`** (upsert immediato `{ silent: true }`, niente «prossimo salvataggio»); se la mutation fallisce → stato **dirty** + retry con **Salva modifiche** footer; conflitto abbinamento → `PromoPlacementConflictDialog`. Logica: `menuPromo.ts`.
   - **Label tipologia = config, non hardcodate (15-06-26).** Le checkbox/riepilogo/dialog mostrano le tipologie da `booking_public_form_config.booking_modes[]`: opzioni derivate con `getMenuPromoBookingTypeOptions(modes)` (solo modalità **abilitate**, label via `getModeLabelByType` — RULE Anti-duplicazione APP_CONTEXT §4). Rinominando una modalità in «Modalità di prenotazione», la promo mostra subito il nuovo nome. Fallback neutro (`booking_type` grezzo) nei messaggi puri di `validateMenuPromoUniqueness` dove i `modes` non sono disponibili — mai i 3 nomi demo. Stesso helper centralizza anche le `<option>` tipologia in `AdminBookingForm` e `DetailsTab` (incluso il display read-only del dettaglio).
 - **Sfondo pagina Prenota**: dirty nel footer Personalizza form unificato (`public_booking_strip_photo` / `public_booking_page_background`).
@@ -91,7 +92,7 @@ description: >-
   - `textDecoration`: `none` | `underline` — default `none`
   - `textAlign?`: `left` | `center` | `right`
 - Script (Lobster, Pacifico, Great Vibes, Dancing Script): `fontFamily` con fallback `cursive` generico (non altri font della lista).
-- Admin: `renderHeaderStyleControls` — Font, Colore, Dimensione, Allineamento + toggle **G** (grassetto) / **S** (sottolineato). Anteprima solo sul campo testo.
+- Admin: `renderHeaderStyleControls` — Font, Colore, Dimensione, Allineamento + toggle **G** (grassetto) / **S** (sottolineato). Anteprima solo sul campo testo. Select **Font**: ogni `<option>` usa `style={{ fontFamily }}` da `BOOKING_HEADER_FONT_OPTIONS` (anteprima carattere nel menu a tendina).
 - Pubblico: `getBookingHeaderTextStyle` → `fontFamily`, `fontSize`, `fontWeight`, `textDecoration`, `textAlign` (niente `font-bold` fisso su `BookingRequestPage`).
 
 ## Sottotab Prenota

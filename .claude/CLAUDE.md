@@ -105,7 +105,7 @@ Mappa estesa invarianti globali: **`docs/APP_CONTEXT_SKILL.md` §4**.
 - **`TenantContext`**: slug URL (pubblico) o email admin → qualsiasi hook dati tenant dipende da qui.
 - **Due client Supabase**: admin persiste sessione in localStorage; pubblico no — non mischiare.
 - **Migrazioni `003_*` doppie**: già applicate; non rinominare — `docs/DATABASE.md` + `DB_SKILL.md` §3.
-- **`send-email` assente**: `src/lib/email.ts` chiama Edge Function non deployata; email falliscono in prod.
+- **`send-email` attiva in PROD** (dal 15-06; tabelle email allineate 17-06): Edge Function `send-email` deployata su `rwuxgvld` (v3) con secret Brevo (`BREVO_API_KEY`/`BREVO_SENDER_EMAIL`); accetta/rifiuta inviati e ricevuti. Tabelle `email_templates`/`email_campaigns` presenti anche in PROD (mig. 050/051/052). Resta `VITE_ENABLE_SEND_EMAIL` come gate client; invio campagne automatico = FU-EMAIL-8 (non attivo).
 - **Button**: varianti in componente (`primary`, `secondary`, …); **non** aggiungere CSS globale in `index.css`. Tailwind JIT richiede classi letterali statiche.
 
 ### Ambienti DB

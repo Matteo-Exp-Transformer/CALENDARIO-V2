@@ -103,8 +103,11 @@ tronca in silenzio al render (`clampBookingText`); vedi `../../Prenota-Skill/con
 (tenant già oltre soglia: nessuna cancellazione). UX: pulsante disabilitato + `MenuMagazzinoLimitNotice` con messaggio
 esplicito. Helper puri testati `@admin-blindatura: menu-magazzino-limits`.
 
-**Avviso propagazione (M3 Fase 1):** form Nuovo/Modifica Prodotto mostra `MenuMagazzinoPropagationNotice` prima di Salva
-(aggiorna subito Prenota + QR; snapshot prenotazioni intatto). Overlay categorie: hint per-campo già presenti.
+**Avviso propagazione (M3 Fase 1; edition-aware 17-06-26):** form Nuovo/Modifica Prodotto mostra
+`MenuMagazzinoPropagationNotice` prima di Salva — copy da `getMenuMagazzinoSavePropagationMessage(features.qrMenu)`:
+Classic senza add-on QR cita solo **Pagina Prenota**; con `features.qrMenu` attivo cita anche **Menu QR** (fonte:
+`tenant_features` via `useFeatures`, non `organizations.qr_menu_enabled`). Snapshot prenotazioni intatto. Overlay
+categorie: hint per-campo già presenti.
 
 **Toggle disponibilità magazzino (M3 Fase 2, 11-06-26; UX panoramica 11-06-26):** `is_available` su `menu_categories` +
 `menu_items` (migrazione `045`). Unica superficie toggle: **panoramica Menu** — occhio nell’header di ogni
@@ -258,7 +261,8 @@ caso che può fallire → messaggio gentile (no blocco preventivo dei formati).
 
 1. **Blocchi duri** 7 categorie / 12 prodotti / 6 preset / 6 QR — solo su **nuovi** inserimenti; pulsante disabilitato + messaggio («Hai raggiunto il massimo di …»); tenant già oltre soglia non rotto.
 2. **Cap nome + descrizione** piatti e categorie — `BOOKING_MENU_COMPOSE_TEXT_LIMITS` 24/24/79; contatore anche su **descrizione categoria** overlay.
-3. **Avviso propagazione Prenota/QR** sul salvataggio **ingredienti** (`MenuMagazzinoPropagationNotice` — stesso messaggio costante condiviso).
+3. **Avviso propagazione edition-aware** sul salvataggio **ingredienti** (`MenuMagazzinoPropagationNotice` +
+   `getMenuMagazzinoSavePropagationMessage` — Prenota sempre; Menu QR solo se `features.qrMenu`).
 
 **Fase 2 ✅ (11-06-26, FU-M3-2)** — implementato in codice (`045_menu_magazzino_is_available.sql`,
 `menuMagazzinoLimits.ts` helper `isMenuCategoryAvailable` / `filterMenuItemsForPublic*`,

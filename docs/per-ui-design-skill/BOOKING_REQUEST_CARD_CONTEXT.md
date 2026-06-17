@@ -76,7 +76,7 @@ Testo UI: «Promo visualizzate da cliente : …» (digest ed espanso).
 
 | Campo | Digest | Espanso | Note |
 |-------|--------|---------|------|
-| Tipo (strip) | `getBookingEventTypeLabel` da `booking_type` | — | Non `event_type` su form pubblico |
+| Tipo (strip) | `getBookingEventTypeLabel(booking, booking_modes)` — label da `booking_public_form_config` via `getModeLabelByType`; fallback statico solo ultimo livello | — | Non `event_type` su form pubblico |
 | Preset menù | — | `getPresetMenuLabel` + `booking_custom_staff_presets` | Solo se `preset_menu` valorizzato |
 | Prodotti | — | Lista `menu_selection.items` | Prezzo riga in UI |
 | Intolleranze | — | `dietary_restrictions` JSON | |
@@ -137,4 +137,6 @@ Non usare chiavi `booking_vol_au_vent_promo_*` (obsolete).
 | `menuPromo.ts` | Snapshot e fallback promo |
 | `presetMenus.ts` | Label preset |
 | `bookingTypeMenu.ts` | `bookingTypeUsesMenuSelections` |
+| `bookingModeLabels.ts` | `getModeLabelByType` (label tipologia da config) |
+| `eventTypeLabels.ts` | `getBookingEventTypeLabel` (strip card pending/archivio) |
 | `usePendingBookings` | `select *` da `booking_requests` status pending |

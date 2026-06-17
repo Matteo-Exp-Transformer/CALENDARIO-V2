@@ -143,6 +143,7 @@ chiave gia registrata.
 - Salvataggio esplicito (autosave debug OFF su PROD — FU-004); **modale dati pubblici** al Salva (FU-005).
 - **Guard** globale su cambio tab Impostazioni, sezione admin, logout (`UnsavedChangesContext`).
 - **Footer unificato M4 (15-06-26):** un solo `SettingsSaveFooter` + una sola `PublicDataSaveConfirmModal` nel padre `RestaurantSettingsTab` per Anagrafica + Personalizza form (`hideSaveUi` su `BookingFormConfigPanel`); Salva aggregato se entrambe le aree sono dirty.
+- **Footer dirty — pulse Salva/Annulla (17-06-26):** quando il footer «Modifiche non salvate» è visibile, i pulsanti **Salva modifiche** e **Annulla tutte** applicano la classe `settings-save-footer-btn-attention` (box-shadow arancione pulsato, senza layout shift; `prefers-reduced-motion` → anello fisso). Stesso pattern su **Salva** in `PublicDataSaveConfirmModal` e su **Salva e continua** / **Annulla e continua** in `UnsavedNavigationGuardModal`. Logica dirty/save/guard invariata.
 - **Primo errore al Salva (FIX 4, 16-06-26):** se Anagrafica/Orari/Fasce sono invalidi, il footer
   non apre la modale pubblica: scrolla con `block:'center'` sul primo errore visivo e applica la
   pulse `booking-public-field-attention`. Priorita mappa: nome locale, orari di apertura, fasce orarie.

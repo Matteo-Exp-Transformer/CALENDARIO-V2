@@ -87,7 +87,7 @@ Fronti previsti:
 |---|---|---|
 | `settings-registry` | `restaurantSettingRegistry.settingsM4.adminBlindatura.test.ts` | 5 — nome obbligatorio, contatti opzionali, cap 45/65/30/120, daily 0/vuoto |
 | `settings-anagrafica-ui` | `settingsAnagraficaUi.settingsM4.adminBlindatura.test.tsx` | 8 — contatti vuoti OK, nome vuoto blocca con toast+scroll+pulse, modale pubblica una volta, guard pill, errore save, save aggregato |
-| `settings-save-guard` | `settingsSaveGuard.settingsM4.adminBlindatura.test.tsx` | 12 — footer unico padre, modale pubblica singola, no doppia mutation, fail+retry, guard pill/logout durante pending, guard «Salva e continua» durante save pubblico, FIX 4 scroll+pulse su primo errore nome/orari |
+| `settings-save-guard` | `settingsSaveGuard.settingsM4.adminBlindatura.test.tsx` | 13 — footer unico padre, modale pubblica singola, no doppia mutation, fail+retry, guard pill/logout durante pending, guard «Salva e continua» durante save pubblico, FIX 4 scroll+pulse su primo errore nome/orari, footer dirty pulse Salva/Annulla |
 | `settings-time-slots` | `settingsTimeSlots.settingsM4.adminBlindatura.test.tsx` + `bookingTimeSlots.settingsM4.adminBlindatura.test.ts` + `restaurantSettingRegistry.slotGuestCapacities.settingsM4.adminBlindatura.test.ts` | 24 — enable/disable, add, delete modale in-app (Annulla/Conferma, no `window.confirm`), overlap blocca save con scroll+pulse, overnight hint, cap per-fascia vs `daily_guest_limit`, cap invalido/alto, delete+save→`deleteServiceSlot`, mutation fail+retry, FIX 3 riordino manuale con `display_order` e capienze per-id |
 | `settings-theme` | `appTheme.settingsM4.adminBlindatura.test.ts` + `settingsTheme.settingsM4.adminBlindatura.test.tsx` | 13 — dirty tema, anteprima senza persist, Annulla ripristina, Salva `app_theme` senza sfondo Prenota, ID/asset sconosciuti safe, isolamento Prenota/Menu QR |
 | `settings-business-hours` | `businessHours.settingsM4.adminBlindatura.test.ts` | tutti chiusi → no sezione; overlap admin; parse pubblico safe |
@@ -139,6 +139,8 @@ Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **120/120** (
 
 - `e2e/pro/pro-crm.spec.ts`
 - `src/features/booking/utils/__tests__/createBookingCustomerUpsert.test.ts`
+- `src/features/booking/components/crm/__tests__/promoRecipientPicker.crm.adminBlindatura.test.tsx` → `@admin-blindatura: crm` — picker destinatari campagna: pre-selezione da `initialRecipients`, draft stabile su refetch rubrica, Conferma/Annulla, solo `source=booking` (5 test).
+- `src/features/booking/components/crm/__tests__/campaignEditorRecipients.crm.adminBlindatura.test.tsx` → `@admin-blindatura: crm` — `CampaignEditor` non resetta destinatari confermati nel picker su refetch campagna stesso id (1 test).
 
 ## 6-bis. Home / Analytics Pro
 

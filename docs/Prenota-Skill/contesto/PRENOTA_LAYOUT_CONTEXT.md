@@ -169,6 +169,9 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
 - **Bilanciamento card ingredienti:** `BookingMenuCategoryCard` layout `scroll` da **1400px** passa da
   280→320px, in coppia con le sottotab. Tipologie con `bookingPublicRowCardWidthClass(N)` (no `lg:px-16`).
 - Pulsante Invia: `form="booking-request-form"` in sidebar (mobile) e submit grande nel form (desktop).
+- **Telefono nel riepilogo (17-06-26):** `BookingSummarySidebar` mostra il **telefono cliente**
+  (`client_phone` da `sharedFormData`), non `contact_phone` del ristorante. Il contatto del locale
+  resta solo nel footer Orari+Contatti (`BookingRequestPage`).
 - Header ristorante **sopra** form+riepilogo, nello stesso wrapper centrato (testo con
   `header_styles.textAlign`; il box segue la larghezza del blocco 1168+360).
 
@@ -265,12 +268,15 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
   `BookingPublicInsetFieldShell`, `BookingPublicDatePickerField`, `BookingPublicTimePickerField`
   condividono il layout; picker date/time button con `justify-end text-right`.
 - **Trigger ridotto Data/Ora (02-06-26):** la card resta uguale; solo icona + valore formattato apre
-  il picker (bottom sheet mobile / popover desktop). Label «Data \*» / «Ora \*» non è cliccabile
-  (`span` + `aria-labelledby` sul trigger, niente `htmlFor`). **Data:** area valore =
-  `flex` con trigger `inline-flex` (calendario + testo) + filler destro `pointer-events-none`.
-  **Ora:** area valore = `grid grid-cols-2` — metà sx (icona + ora) = trigger; metà dx = area morta
-  `pointer-events-none`. Tab e screen reader raggiungono solo il trigger; `focus-within` sul box
-  quando il trigger ha focus.
+  il picker (bottom sheet mobile / popover desktop). **Label cliccabile (17-06-26):** «Data \*» /
+  «Ora \*» usa `<label htmlFor={id-control}>` sul trigger button (prima `span` non cliccabile).
+  **Data:** area valore = `flex` con trigger `inline-flex` (calendario + testo) + filler destro
+  `pointer-events-none`. **Ora:** area valore = `grid grid-cols-2` — metà sx (icona + ora) =
+  trigger; metà dx = area morta `pointer-events-none`. Tab e screen reader raggiungono il trigger;
+  `focus-within` sul box quando il trigger ha focus.
+- **Label single-row cliccabili (17-06-26):** `BOOKING_PUBLIC_FIELD_INNER_LABEL` senza
+  `pointer-events-none` + `cursor-pointer`; `BookingPublicInsetField` collega label/input con
+  `htmlFor`/`id-control` (nome, email, telefono, ospiti).
 - **Griglia campi (28-05-26):** ordine Nome → **Ora | Ospiti** (`sm:grid-cols-2`) → **Telefono**
   full-width → **Data | Email** (`sm:grid-cols-[minmax(0,1fr)_9rem_7rem]`, Email in `sm:col-span-2`).
   Label "Data \*". Mobile <640px colonna singola. Non tornare a `1fr` fisso per Data.

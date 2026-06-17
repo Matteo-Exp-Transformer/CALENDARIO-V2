@@ -793,8 +793,13 @@ export const BookingFormConfigPanel = forwardRef<
       ...m,
       sub_tabs_overrides: undefined,
     }))
+    // Header da `config` in memoria: dopo saveHeaderSection la cache react-query può essere
+    // ancora stale (PROD senza autosave); `saved` qui riporterebbe page_description/titolo vecchi.
     const normalized = normalizeBookingPublicFormConfig({
       ...saved,
+      page_title: config.page_title,
+      page_description: config.page_description,
+      header_styles: config.header_styles,
       booking_modes: modesForDb,
     })
     await upsert.mutateAsync([{ key: 'booking_public_form_config', value: normalized }])
@@ -931,7 +936,7 @@ export const BookingFormConfigPanel = forwardRef<
               className={headerControlClass}
             >
               {BOOKING_HEADER_FONT_OPTIONS.map((font) => (
-                <option key={font.id} value={font.id}>
+                <option key={font.id} value={font.id} style={{ fontFamily: font.fontFamily }}>
                   {font.label}
                 </option>
               ))}
