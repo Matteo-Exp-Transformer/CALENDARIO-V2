@@ -13,6 +13,7 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 18-06-26 | **Consenso dati alimentari GDPR art. 9** — ciclo completo (mig. 054, DietaryConsentModal, edge v23 TEST, admin display) ✅ | [Report](Sessioni%20di%20lavoro/18-06-26/Report-consenso-alimentare-gdpr-18-06-26.md) — 3 col DB + cleanup legacy; modale 3 pulsanti; intercezione submit; edge 400 server-side; DetailsTab per tutti i tipi incl. tavolo; controtestato in dev; validate **844/844** |
 | 18-06-26 | **P1 batch 2** — fasce/capienza: toggle Pro, stop falso alert accettazione, copy Limiti Prenotazioni Classic/Pro ✅ | [Report](Sessioni%20di%20lavoro/18-06-26/Report-fix-p1-fasce-capienza-batch2-18-06-26.md) — prefill nome modale Servizio; `PendingRequestsTab` gate fasce OFF; validate **828/828**; skill ADMIN_SETTINGS + PREPARA_PROMPT |
 | 18-06-26 | **P3 batch 2** — consenso marketing campagne CRM (picker + guard invio) ✅ | [Report](Sessioni%20di%20lavoro/18-06-26/Report-fix-p3-consenso-marketing-campagne-18-06-26.md) — filtro `marketing_consent` picker + `useSendCampaignEmail`; skill `ADMIN_CRM_CONTEXT` §7; validate **828/828** |
 | 18-06-26 | **P2 batch 2** — orario notturno Pagina Prenota (`isValidBookingDateTime` → `isTimeInsideSlot`) ✅ | [Report P2](Sessioni%20di%20lavoro/18-06-26/Report-orario-notturno-prenota-18-06-26.md) · validate 818/818 · QA manuale 375/834/1280 da fare |
