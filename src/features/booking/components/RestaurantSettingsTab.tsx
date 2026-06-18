@@ -123,6 +123,69 @@ const previewPickEyeButtonClass =
 const previewPickHoverScaleClass =
   'h-full w-full transition-transform duration-300 ease-out [@media(hover:hover)]:group-hover:scale-105'
 
+type PublicSlotLimitTogglesProps = {
+  variant: 'classic' | 'pro'
+  slotLimitEnabled: boolean
+  rejectOutOfSlot: boolean
+  disabled: boolean
+  onSlotLimitChange: (checked: boolean) => void
+  onRejectOutOfSlotChange: (checked: boolean) => void
+}
+
+const REJECT_OUT_OF_SLOT_HELP: Record<PublicSlotLimitTogglesProps['variant'], string> = {
+  classic:
+    'Se attivo, le richieste di prenotazione verranno accettate solo se rientrano negli orari delle fasce orarie configurate nella sezione Imposta Fasce Orarie in Impostazioni.',
+  pro:
+    'Se attivo, le richieste di prenotazione verranno accettate solo se rientrano negli orari delle fasce orarie configurate nella sezione Servizio.',
+}
+
+/** Interruttori vincoli verso la pagina pubblica (Classic + Pro). */
+const PublicSlotLimitToggles: React.FC<PublicSlotLimitTogglesProps> = ({
+  variant,
+  slotLimitEnabled,
+  rejectOutOfSlot,
+  disabled,
+  onSlotLimitChange,
+  onRejectOutOfSlotChange,
+}) => (
+  <div className="mx-auto w-full max-w-md space-y-2.5 rounded-xl border border-slate-200 bg-white/70 p-3.5 text-left shadow-sm">
+    <label className="flex cursor-pointer select-none items-start gap-2.5 text-sm text-slate-700">
+      <input
+        type="checkbox"
+        checked={slotLimitEnabled}
+        disabled={disabled}
+        className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+        onChange={(e) => onSlotLimitChange(e.target.checked)}
+      />
+      <span>
+        <span className="font-medium">Attiva limiti coperti per fascia oraria</span>
+        <span className="block text-xs leading-relaxed text-slate-500">
+          Quando raggiungi la massima capienza di coperti in una fascia oraria, non verranno accettate
+          nuove richieste di prenotazioni.
+        </span>
+        <span className="mt-1 block text-xs leading-relaxed text-slate-500">
+          Se lasciato spento, i clienti potranno prenotare anche se sei al completo in quella fascia oraria.
+        </span>
+      </span>
+    </label>
+    <label className="flex cursor-pointer select-none items-start gap-2.5 text-sm text-slate-700">
+      <input
+        type="checkbox"
+        checked={rejectOutOfSlot}
+        disabled={disabled}
+        className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+        onChange={(e) => onRejectOutOfSlotChange(e.target.checked)}
+      />
+      <span>
+        <span className="font-medium">Rifiuta richieste fuori dalle fasce orarie</span>
+        <span className="block text-xs leading-relaxed text-slate-500">
+          {REJECT_OUT_OF_SLOT_HELP[variant]}
+        </span>
+      </span>
+    </label>
+  </div>
+)
+
 type SettingsPreviewPickCardProps = {
   label: string
   mutedLabel?: boolean
@@ -1391,47 +1454,20 @@ export const RestaurantSettingsTab: React.FC = () => {
 
         <div className={cn('flex w-full flex-col items-center gap-4 transition-opacity', !timeSlotsEnabled && 'pointer-events-none opacity-50')}>
           {/* Vincoli verso la pagina pubblica (mai bloccano l'admin). Inerti se la sezione è OFF. */}
-          <div className="mx-auto w-full max-w-md space-y-2.5 rounded-xl border border-slate-200 bg-white/70 p-3.5 text-left shadow-sm">
-            <label className="flex cursor-pointer select-none items-start gap-2.5 text-sm text-slate-700">
-              <input
-                type="checkbox"
-                checked={slotLimitEnabled}
-                disabled={upsert.isPending}
-                className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
-                onChange={(e) => {
-                  setSlotsDirty(true)
-                  setSlotLimitEnabled(e.target.checked)
-                }}
-              />
-              <span>
-                <span className="font-medium">Attiva limiti coperti per fascia</span>
-                <span className="block text-xs leading-relaxed text-slate-500">
-                  Quando una fascia raggiunge il suo numero di coperti, la pagina pubblica non accetta
-                  nuove richieste per quella fascia. Se spento, i valori sotto restano solo come
-                  riferimento e non bloccano nulla.
-                </span>
-              </span>
-            </label>
-            <label className="flex cursor-pointer select-none items-start gap-2.5 text-sm text-slate-700">
-              <input
-                type="checkbox"
-                checked={rejectOutOfSlot}
-                disabled={upsert.isPending}
-                className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
-                onChange={(e) => {
-                  setSlotsDirty(true)
-                  setRejectOutOfSlot(e.target.checked)
-                }}
-              />
-              <span>
-                <span className="font-medium">Rifiuta richieste fuori dalle fasce</span>
-                <span className="block text-xs leading-relaxed text-slate-500">
-                  La pagina pubblica accetta solo richieste con orario dentro una delle fasce qui sotto.
-                  Gli orari fuori da ogni fascia vengono rifiutati.
-                </span>
-              </span>
-            </label>
-          </div>
+          <PublicSlotLimitToggles
+            variant="classic"
+            slotLimitEnabled={slotLimitEnabled}
+            rejectOutOfSlot={rejectOutOfSlot}
+            disabled={upsert.isPending}
+            onSlotLimitChange={(checked) => {
+              setSlotsDirty(true)
+              setSlotLimitEnabled(checked)
+            }}
+            onRejectOutOfSlotChange={(checked) => {
+              setSlotsDirty(true)
+              setRejectOutOfSlot(checked)
+            }}
+          />
 
           {slotValidationError && (
             <div className="mx-auto w-full max-w-[14rem] rounded-[1.25rem] border-2 border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-800 shadow-sm">
@@ -1621,6 +1657,36 @@ export const RestaurantSettingsTab: React.FC = () => {
           </Modal>
         )}
       </section>
+      </div>
+      )}
+
+      {features.servizio && (
+      <div className="w-full max-w-2xl mx-auto rounded-xl">
+        <section className={sectionSurfaceClass}>
+          <div className="mb-5 w-full space-y-1.5 md:mb-6">
+            <h3 className="text-center text-lg font-semibold leading-tight text-slate-800">
+              Limiti Prenotazioni
+            </h3>
+          </div>
+          <p className="mb-4 text-sm leading-relaxed text-slate-600">
+            Le fasce orarie a cui fanno riferimento i Limiti Prenotazioni, si possono configurare nella
+            sezione &quot;Servizio&quot; della sidebar laterale.
+          </p>
+          <PublicSlotLimitToggles
+            variant="pro"
+            slotLimitEnabled={slotLimitEnabled}
+            rejectOutOfSlot={rejectOutOfSlot}
+            disabled={upsert.isPending}
+            onSlotLimitChange={(checked) => {
+              setSlotsDirty(true)
+              setSlotLimitEnabled(checked)
+            }}
+            onRejectOutOfSlotChange={(checked) => {
+              setSlotsDirty(true)
+              setRejectOutOfSlot(checked)
+            }}
+          />
+        </section>
       </div>
       )}
 

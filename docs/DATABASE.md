@@ -35,7 +35,7 @@ Ultimo file in repo (verificato 12-06-26): `048_schedule_rate_limits_cleanup.sql
 
 > **Ambiente (agg. 2026-06-12)**: lo sviluppo punta al **server di TEST** (`docnnernvp`). Produzione (`rwuxgvld`) è sola lettura salvo richiesta esplicita. Dettaglio in `APP_CONTEXT_SKILL.md` §1b; regole specifiche Codex in `AGENTS.md`.
 
-> **Data API Supabase (2026-05-28)**: dal 30 maggio 2026 sui nuovi progetti, e dal 30 ottobre 2026 sulle nuove tabelle dei progetti esistenti, le tabelle `public` non sono esposte alla Data API senza GRANT espliciti. Ogni nuova tabella deve avere nella migrazione i GRANT minimi coerenti con l'uso: admin `authenticated`, pubblico `anon` solo se davvero pubblico, nessun grant client per tabelle solo service_role.
+> **Data API Supabase:** dal 30-05-2026 (nuovi progetti) e dal 30-10-2026 (nuove tabelle su progetti esistenti) le tabelle `public` richiedono GRANT espliciti oltre a RLS. Guardrail operativo: [`Database-Skill/DB_SKILL.md`](Database-Skill/DB_SKILL.md) §1.
 
 > **Registro prod (verificato 2026-05-22)**: prod usa versioni timestamp (`20260513...`–`20260515183055`) per le 008–021, più versioni numeriche `001`–`007`. Le 022/023/024 **non sono nel registro prod**. Per applicarle usare `Supabase__apply_migration` (mai `supabase db push`).
 

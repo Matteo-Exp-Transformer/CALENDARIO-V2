@@ -23,7 +23,7 @@ interface DietaryRestriction {
 }
 
 export const DietaryTab: React.FC<Props> = ({
-  booking: _booking,
+  booking,
   isEditMode,
   dietaryRestrictions,
   specialRequests,
@@ -195,21 +195,35 @@ export const DietaryTab: React.FC<Props> = ({
             )}
           </>
         ) : (
-          <div>
-            {dietaryRestrictions.length > 0 ? (
-              <ul className="space-y-2">
-                {dietaryRestrictions.map((restriction, index) => (
-                  <li key={index} className="text-sm text-gray-900">
-                    <span className="font-medium">• {restriction.restriction}</span>
-                    <span className="text-gray-600"> - {restriction.guest_count} {restriction.guest_count === 1 ? 'ospite' : 'ospiti'}</span>
-                    {restriction.notes && restriction.restriction === 'Altro' && (
-                      <span className="text-gray-500 italic block ml-4">Note: {restriction.notes}</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
+          <div className="space-y-3">
+            {/* Banner off-platform: nasconde la lista per sicurezza */}
+            {booking.dietary_off_platform_notice === true ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                ⚠️ Il cliente comunicherà direttamente le proprie esigenze alimentari — nessun dettaglio su piattaforma.
+              </div>
             ) : (
-              <p className="text-sm text-gray-500 italic">Nessuna intolleranza segnalata</p>
+              <>
+                {booking.dietary_data_consent === true && (
+                  <span className="inline-block rounded-full bg-green-100 px-3 py-0.5 text-xs font-bold text-green-700">
+                    ✓ Consenso esplicito fornito
+                  </span>
+                )}
+                {dietaryRestrictions.length > 0 ? (
+                  <ul className="space-y-2">
+                    {dietaryRestrictions.map((restriction, index) => (
+                      <li key={index} className="text-sm text-gray-900">
+                        <span className="font-medium">• {restriction.restriction}</span>
+                        <span className="text-gray-600"> - {restriction.guest_count} {restriction.guest_count === 1 ? 'ospite' : 'ospiti'}</span>
+                        {restriction.notes && restriction.restriction === 'Altro' && (
+                          <span className="text-gray-500 italic block ml-4">Note: {restriction.notes}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">Nessuna intolleranza segnalata</p>
+                )}
+              </>
             )}
           </div>
         )}

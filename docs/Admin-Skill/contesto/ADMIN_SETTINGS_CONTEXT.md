@@ -137,8 +137,14 @@ chiave gia registrata.
     `override → service_slots.max_guests → slot_guest_capacities[slotId]`. L'edge legge questa chiave
     (prima leggeva solo `service_slots.max_guests`, sempre null in Classic → non bloccava).
   - **Principio MORBIDO invariato:** ogni vincolo blocca SOLO il pubblico (edge `create-booking`,
-    codici `SLOT_LIMIT`/`OUT_OF_SLOT`); l'admin crea sempre (avviso per-fascia via `useCapacityCheck`,
-    mai blocco). Disattivando la sezione "Imposta Fasce Orarie" i limiti restano inerti.
+    codici `SLOT_LIMIT`/`OUT_OF_SLOT`); l'admin crea sempre (avviso per-fascia via `useCapacityCheck`
+    e stesso gate in `PendingRequestsTab`/`BookingDetailsModal`, mai blocco). Disattivando la sezione
+    "Imposta Fasce Orarie" (`booking_time_slots_enabled` = false in Classic) i limiti restano inerti
+    anche in admin (nessun avviso capienza per-fascia).
+  - **Edition Pro:** sezione Impostazioni **«Limiti Prenotazioni»** con i due interruttori pubblici
+    (`slot_limit_enabled`, `booking_reject_out_of_slot`); testi di aiuto Pro rimandano a **Servizio**
+    in sidebar. Classic: stessi interruttori dentro **«Imposta Fasce Orarie»** (editor fasce inline);
+    testo rifiuto fuori-fascia rimanda a quella sezione, non a Servizio. Salvataggio identico.
   - **Nessun limite di default** per nuove aziende: seed fasce con `max_guests` NULL, nessun seed limiti.
 - **`booking_window_days`**: chiave registry **orfana** (solo admin, nessuna UI consumer) — fuoriscope M4; implementazione Fase C **rimossa** su richiesta 15-06-26 (vedi report Fase C §Fuoriscope). **Non implementare senza nuova decisione esplicita di Matteo.**
 

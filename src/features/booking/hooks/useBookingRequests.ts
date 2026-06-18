@@ -108,6 +108,9 @@ export const useCreateBookingRequest = () => {
                 ? data.menu_promo_labels
                 : null,
             marketing_consent: data.marketing_consent === true,
+            dietary_data_consent: data.dietary_data_consent === true,
+            dietary_off_platform_notice: data.dietary_off_platform_notice === true,
+            dietary_data_consent_at: data.dietary_data_consent_at ?? null,
           })
         })
 

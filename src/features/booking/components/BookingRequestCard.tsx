@@ -368,10 +368,13 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
             </div>
           )}
 
-          {/* Intolleranze - Solo per Rinfresco di Laurea */}
-          {booking.dietary_restrictions && Array.isArray(booking.dietary_restrictions) && booking.dietary_restrictions.length > 0 && (
+          {/* Intolleranze — con consenso esplicito art. 9 GDPR */}
+          {booking.dietary_data_consent === true && Array.isArray(booking.dietary_restrictions) && booking.dietary_restrictions.length > 0 && (
             <div className="pt-6 mt-6 border-t border-[var(--color-border)]">
-              <p className="mb-3 text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Intolleranze Alimentari</p>
+              <div className="flex items-center gap-2 mb-3">
+                <p className="text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Intolleranze Alimentari</p>
+                <span className="rounded-full bg-green-100 px-2 py-0.5 text-[0.72em] font-bold text-green-700">Consenso esplicito</span>
+              </div>
               <div className="space-y-2">
                 {booking.dietary_restrictions.map((restriction: any, idx: number) => (
                   <p key={idx} className="text-gray-700">
@@ -389,6 +392,16 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                   </p>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Intolleranze — cliente comunicherà direttamente */}
+          {booking.dietary_off_platform_notice === true && (
+            <div className="pt-6 mt-6 border-t border-[var(--color-border)]">
+              <p className="mb-2 text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Intolleranze Alimentari</p>
+              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                ⚠️ Il cliente comunicherà eventuali esigenze alimentari direttamente al ristorante.
+              </p>
             </div>
           )}
 

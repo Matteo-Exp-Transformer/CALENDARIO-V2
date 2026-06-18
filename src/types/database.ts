@@ -96,6 +96,9 @@ export type Database = {
           created_at: string
           desired_date: string
           desired_time: string | null
+          dietary_data_consent: boolean
+          dietary_data_consent_at: string | null
+          dietary_off_platform_notice: boolean
           dietary_restrictions: Json | null
           event_type: string | null
           id: string
@@ -130,6 +133,9 @@ export type Database = {
           created_at?: string
           desired_date: string
           desired_time?: string | null
+          dietary_data_consent?: boolean
+          dietary_data_consent_at?: string | null
+          dietary_off_platform_notice?: boolean
           dietary_restrictions?: Json | null
           event_type?: string | null
           id?: string
@@ -164,6 +170,9 @@ export type Database = {
           created_at?: string
           desired_date?: string
           desired_time?: string | null
+          dietary_data_consent?: boolean
+          dietary_data_consent_at?: string | null
+          dietary_off_platform_notice?: boolean
           dietary_restrictions?: Json | null
           event_type?: string | null
           id?: string

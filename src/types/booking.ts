@@ -65,6 +65,14 @@ export interface BookingRequest {
 
   // Multi-tenant
   tenant_id: string
+
+  /** Consenso a ricevere comunicazioni promozionali via email (art. 6.1.a GDPR). */
+  marketing_consent?: boolean
+
+  /** Consenso esplicito art. 9 GDPR per dati alimentari (allergie/intolleranze). */
+  dietary_data_consent?: boolean
+  dietary_off_platform_notice?: boolean
+  dietary_data_consent_at?: string | null
 }
 
 export interface BookingRequestInput {
@@ -90,6 +98,11 @@ export interface BookingRequestInput {
   booking_source?: 'public' | 'admin'
   /** Consenso a ricevere comunicazioni promozionali via email (art. 6.1.a GDPR). Facoltativo, default false. */
   marketing_consent?: boolean
+
+  /** Consenso esplicito art. 9 GDPR per dati alimentari (allergie/intolleranze). */
+  dietary_data_consent?: boolean
+  dietary_off_platform_notice?: boolean
+  dietary_data_consent_at?: string | null
 
   // Multi-tenant
   tenant_id?: string

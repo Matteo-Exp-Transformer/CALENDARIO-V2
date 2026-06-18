@@ -47,6 +47,8 @@ Superfici: Impostazioni → «Imposta Fasce Orarie» (modale fascia + toggle) in
 
 Criterio di fatto: in modifica fascia il nome è precompilato; i 2 toggle sono presenti e funzionanti in Pro; nessun alert capienza per-fascia in admin quando le fasce sono disattivate (con limite impostato + toggle attivo). `npm run validate` verde.
 
+Chiusura verso Matteo: al termine, consegnare una checklist in linguaggio semplice (senza sigle, abbreviazioni o termini tecnici) di cosa verificare in app se le modifiche sono più di una; se la modifica è una sola, una breve spiegazione.
+
 Chiusura (APP_CONTEXT §7): report deep + allineamento skill §7.2 (ADMIN_SETTINGS_CONTEXT) + aggiornare la memoria/decisione del modello capienza se cambia un comportamento documentato.
 ```
 
@@ -179,6 +181,10 @@ Trasversale:
 - Nessuna regressione sul modello capienza appena rilasciato (badge calendario, blocco pubblico per-fascia, EmptyState).
 
 Output: report di revisione con verdetto per fix (Approva / Approva con riserve / Richiede fix), difetti con file:riga, e punti che restano da verificare a mano da Matteo (specie ciò che dipende da staging/PROD edge). Non deployare nulla su PROD.
+
+Chiusura verso Matteo: al termine, consegnare una checklist in linguaggio semplice (senza sigle, abbreviazioni o termini tecnici) di cosa verificare in app se le modifiche revisionate sono più di una; se il fix è uno solo, una breve spiegazione.
+
+dammi checklist per controverificare in dev modifiche corrette quando hai finito. 
 ```
 
 ---

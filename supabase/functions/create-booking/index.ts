@@ -182,6 +182,9 @@ Deno.serve(async (req: Request) => {
       menu,
       menu_promo_labels,
       marketing_consent,
+      dietary_data_consent,
+      dietary_off_platform_notice,
+      dietary_data_consent_at,
     } = body;
 
     // DB: client_email è NOT NULL (default ''). Non usare `|| null`: stringa vuota è falsy e diventerebbe NULL.
@@ -245,6 +248,22 @@ Deno.serve(async (req: Request) => {
     ) {
       return new Response(
         JSON.stringify({ error: TEXT_TOO_LONG_ERROR }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Consenso art. 9 GDPR obbligatorio se sono presenti dati alimentari
+    if (getDietaryRestrictionsTextLength(dietary_restrictions) > 0 && dietary_data_consent !== true) {
+      return new Response(
+        JSON.stringify({ error: "Consenso per dati alimentari obbligatorio" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // off_platform e dati presenti sono in conflitto (non deve succedere dal client)
+    if (dietary_off_platform_notice === true && getDietaryRestrictionsTextLength(dietary_restrictions) > 0) {
+      return new Response(
+        JSON.stringify({ error: "Conflitto: off-platform con dati alimentari presenti" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -518,6 +537,11 @@ Deno.serve(async (req: Request) => {
       booking_source: "public",
       status: "pending",
       marketing_consent: marketing_consent === true,
+      dietary_data_consent: dietary_data_consent === true,
+      dietary_off_platform_notice: dietary_off_platform_notice === true,
+      dietary_data_consent_at: dietary_data_consent === true
+        ? (dietary_data_consent_at ?? new Date().toISOString())
+        : null,
     };
 
     const { data: booking, error: insertError } = await supabaseAdmin

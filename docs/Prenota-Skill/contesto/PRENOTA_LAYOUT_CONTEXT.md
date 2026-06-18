@@ -231,6 +231,8 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
    label dentro la card in alto a sx, valore sotto; data/ora con `BookingPublicDateTimePickers`
    (bottom sheet mobile / popover desktop, `TimePicker24h`). Larghezza `BOOKING_PUBLIC_CONTENT_WIDTH`
    = `w-full min-w-0`. **Nessun** banner «Menù fisso» — solo UI read-only se `is_fixed_menu`.
+   Validazione orario vs `business_hours`: `isValidBookingDateTime` → `isTimeInsideSlot` (stessa
+   logica overnight di `slotRangesOverlap` / admin: fine &lt; inizio ⇒ [inizio→24:00) ∪ [00:00→fine]).
 6. **Footer pubblico:** orari e contatti si mostrano solo se salvati dal tenant. La pagina pubblica
    non usa `getDefaultBusinessHours()` come fallback; orari mancanti = blocco Orari assente.
 

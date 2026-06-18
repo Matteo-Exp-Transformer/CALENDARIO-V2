@@ -35,3 +35,22 @@ export function resolvePrivacyReturnPath(
 
   return null
 }
+
+export type PrivacyBackAction =
+  | { kind: 'history-back' }
+  | { kind: 'replace'; path: string }
+  | { kind: 'navigate'; path: string }
+
+/** Strategia «indietro» dalla Privacy: non impilare una nuova entry su Prenota. */
+export function resolvePrivacyBackAction(
+  returnPath: string | null,
+  context: { historyLength: number; locationKey: string | undefined },
+): PrivacyBackAction {
+  if (returnPath) {
+    if (context.historyLength > 1 && context.locationKey !== 'default') {
+      return { kind: 'history-back' }
+    }
+    return { kind: 'replace', path: returnPath }
+  }
+  return { kind: 'navigate', path: '/' }
+}

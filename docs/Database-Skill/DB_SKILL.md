@@ -42,6 +42,8 @@ Carica i file indicati **prima** di aprire qualsiasi file da modificare.
 6. **Rigenera** tipi con MCP test / `npm run db:types:linked` solo se il link punta al DB test corretto
 7. **Valida**: `npm run typecheck && npm run lint && npm run test`
 
+> **Guardrail Data API (Supabase 2026):** Dal **30-05-2026** i nuovi progetti non espongono le tabelle `public` alla Data API (PostgREST / GraphQL / supabase-js) senza GRANT espliciti; sui progetti esistenti vale per ogni nuova tabella dal **30-10-2026**. Ogni migrazione con `CREATE TABLE` in `public` deve includere i GRANT necessari + RLS coerente — pattern in `DB_MIGRATIONS_CONTEXT.md` §2 e `DB_SCHEMA_CONTEXT.md` §5.
+
 ---
 
 ## 2. Invarianti — non negoziabili
@@ -58,10 +60,7 @@ RULE  Trigger di tenant enforcement (enforce_*_tenant) su ogni nuova tabella
 RULE  Naming migrazioni: 008_*, 009_*, … (numerico progressivo, MAI timestamp)
 RULE  Dopo ogni migrazione applicata: npm run db:types:linked
 RULE  Due client Supabase: supabase (admin auth) / supabasePublic (anonimo) — non mischiare
-RULE  Supabase Data API 2026: ogni nuova tabella in schema public richiede GRANT espliciti minimi nella migrazione
-      - Tabelle admin: GRANT SELECT, INSERT, UPDATE, DELETE TO authenticated + RLS admin_*
-      - Tabelle pubbliche read-only: GRANT SELECT TO anon, authenticated + policy SELECT anon mirata
-      - Tabelle scritte solo da Edge Function/service_role: nessun GRANT anon/authenticated se non serve al client
+RULE  Data API 2026: vedi guardrail §1 — GRANT espliciti nella migrazione oltre a RLS
 RULE  Email customers: normalizeCustomerEmail() prima di confronto o scrittura
 RULE  cancelled_by è UUID auth.users.id — MAI passare email a campi UUID
 ```

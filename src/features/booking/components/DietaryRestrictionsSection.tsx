@@ -34,6 +34,12 @@ interface DietaryRestrictionsSectionProps {
   /** Consenso marketing facoltativo (email promozionali). Default non dato. */
   marketingConsent?: boolean
   onMarketingConsentChange?: (value: boolean) => void
+  /** Consenso art. 9 GDPR per dati alimentari (allergie/intolleranze). Mostrato solo se dietaryText non vuoto. */
+  dietaryConsentAccepted?: boolean
+  onDietaryConsentChange?: (v: boolean) => void
+  dietaryConsentError?: string
+  showDietaryConsentAttention?: boolean
+  onDietaryConsentAttentionInteract?: () => void
   /** Nasconde il blocco "Altre Richieste" (es. renderizzato sotto la griglia in AdminBookingForm) */
   omitSpecialRequestsSection?: boolean
   /** Layout /prenota: campi al 75% larghezza, stessa altezza e font delle card sottotab */
@@ -63,6 +69,11 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
   onPrivacyAttentionInteract,
   marketingConsent,
   onMarketingConsentChange,
+  dietaryConsentAccepted,
+  onDietaryConsentChange,
+  dietaryConsentError,
+  showDietaryConsentAttention = false,
+  onDietaryConsentAttentionInteract,
   omitSpecialRequestsSection = false,
   publicFormFields = false,
   lightTextOnDarkBackground = false,
@@ -99,6 +110,67 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
           </>
         )}
       </div>
+
+      {dietaryText.trim().length > 0 && dietaryConsentAccepted !== undefined && onDietaryConsentChange && (
+        <div
+          className={cn(
+            'flex min-w-0 flex-1 items-start gap-3',
+            showDietaryConsentAttention && BOOKING_PUBLIC_FIELD_ATTENTION_CLASS,
+            'rounded-lg',
+          )}
+        >
+          <div className="group relative size-5 shrink-0">
+            <input
+              type="checkbox"
+              id="dietary-consent-input"
+              checked={dietaryConsentAccepted}
+              onChange={(e) => onDietaryConsentChange(e.target.checked)}
+              onFocus={(event) => {
+                if (showDietaryConsentAttention && shouldDismissBookingPublicAttention(event)) {
+                  onDietaryConsentAttentionInteract?.()
+                }
+              }}
+              onPointerDown={(event) => {
+                if (showDietaryConsentAttention && shouldDismissBookingPublicAttention(event)) {
+                  onDietaryConsentAttentionInteract?.()
+                }
+              }}
+              className="peer absolute inset-0 z-10 size-5 cursor-pointer appearance-none opacity-0 focus:outline-none"
+            />
+            <div
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-0 flex items-center justify-center rounded border-2 bg-white shadow-sm transition-all duration-300 group-hover:shadow-md peer-checked:border-warm-orange peer-checked:bg-warm-orange peer-checked:shadow-lg peer-focus-visible:ring-4 peer-focus-visible:ring-warm-wood/20 ${
+                dietaryConsentError || showDietaryConsentAttention
+                  ? 'border-red-500 group-hover:border-red-600'
+                  : 'border-warm-wood/40 group-hover:border-warm-wood'
+              }`}
+            >
+              <Check
+                className={`h-3.5 w-3.5 text-white transition-all duration-300 ${
+                  dietaryConsentAccepted ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                }`}
+                strokeWidth={3}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor="dietary-consent-input"
+              className={cn(
+                'cursor-pointer text-sm',
+                lightTextOnDarkBackground ? 'text-white/85' : 'text-warm-wood-dark/80',
+              )}
+            >
+              Acconsento al trattamento delle informazioni su allergie, intolleranze o esigenze alimentari esclusivamente per consentire al ristorante di gestire la prenotazione in sicurezza.
+            </label>
+            {dietaryConsentError && (
+              <p className={cn('text-sm font-semibold', lightTextOnDarkBackground ? 'text-white' : 'text-red-500')}>
+                {dietaryConsentError}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {!omitSpecialRequestsSection && (
         <div className="space-y-1">
@@ -182,8 +254,6 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                 <Link
                   to={privacyPolicyTo}
                   state={privacyReturnPath ? { from: privacyReturnPath } : undefined}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className={cn(
                     'font-semibold underline underline-offset-2',
                     lightTextOnDarkBackground

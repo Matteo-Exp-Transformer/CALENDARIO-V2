@@ -1,9 +1,12 @@
 import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Shield } from 'lucide-react'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { useRestaurantName } from '@/hooks/useRestaurantName'
-import { resolvePrivacyReturnPath } from '@/features/booking/utils/privacyPolicyNavigation'
+import {
+  resolvePrivacyBackAction,
+  resolvePrivacyReturnPath,
+} from '@/features/booking/utils/privacyPolicyNavigation'
 
 /**
  * Privacy Policy — pagina pubblica (`/privacy`).
@@ -25,21 +28,39 @@ const PRIVACY_POLICY_LAST_UPDATE = '2026-06-18'
 
 export const PrivacyPolicyPage: React.FC = () => {
   const location = useLocation()
+  const navigate = useNavigate()
   const { organizationName } = useTenantContext()
   const restaurantName = useRestaurantName() || organizationName || 'il ristorante'
   const returnPath = resolvePrivacyReturnPath(location.search, location.state)
+
+  const handleBack = () => {
+    const action = resolvePrivacyBackAction(returnPath, {
+      historyLength: window.history.length,
+      locationKey: location.key,
+    })
+    if (action.kind === 'history-back') {
+      navigate(-1)
+      return
+    }
+    if (action.kind === 'replace') {
+      navigate(action.path, { replace: true })
+      return
+    }
+    navigate(action.path)
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-3xl mx-auto px-4 py-12">
         {/* Back */}
-        <Link
-          to={returnPath ?? '/'}
+        <button
+          type="button"
+          onClick={handleBack}
           className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-primary-600 mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           {returnPath ? 'Torna alla prenotazione' : 'Torna alla home'}
-        </Link>
+        </button>
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">

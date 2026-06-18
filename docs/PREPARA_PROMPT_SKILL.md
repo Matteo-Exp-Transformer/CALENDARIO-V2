@@ -139,6 +139,11 @@ spiegazione per Matteo). Deve essere auto-contenuto e contenere, quando pertinen
 - **Cosa NON fare** / fuori scope, se Matteo l'ha delimitato. **Mai** scrivere «fuori scope
   aggiornamento skill»: l'allineamento skill è già obbligatorio (APP_CONTEXT § 7.2) — vedi § C.
 - **Criterio di fatto**: come si capisce che è finito (comportamento atteso, `npm run validate`).
+- **Chiusura verso Matteo (obbligatoria nel prompt esecutore e revisore):** alla fine del lavoro,
+  l'agente deve consegnare a Matteo — in linguaggio semplice, senza sigle, abbreviazioni o termini
+  tecnici — **una checklist di cosa verificare in app** se ha fatto più di una modifica, oppure
+  **una breve spiegazione** se la modifica è una sola. Non sostituisce report/checklist tecnica §7:
+  è il riassunto leggibile per il ristoratore che controlla a mano.
 
 **Usa il VOCABOLARIO come lessico-comando.** Il vocabolario è l'insieme delle parole *definite e
 approvate* da Matteo per generare comandi: quando nel prompt indichi un'area, un'azione o un
@@ -182,7 +187,8 @@ giri di chat e reinterpretazioni dell'agente esecutore.
 **Chiusura nel prompt.** Includi sempre un blocco fine-sessione che richiama APP_CONTEXT § 7: a
 conferma di Matteo → report § 7.1 + **allineamento skill § 7.2** delle aree toccate + righe in
 `docs/FOLLOW_UP.md` per controlli rimandati. È già obbligatorio: non presentarlo come opzione né
-escluderlo.
+escluderlo. Aggiungi anche la riga **«Chiusura verso Matteo»** (checklist semplice o spiegazione
+breve se una sola modifica — vedi bullet sopra in §1.B).
 
 **Follow-up attivo (ruolo prepara-prompt).** Oltre a ciò che Matteo dice esplicitamente, **cerca**
 controlli o lavori che tendono a sfuggire:

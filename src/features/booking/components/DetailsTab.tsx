@@ -244,6 +244,31 @@ export const DetailsTab: React.FC<Props> = ({
           )}
         </div>
       )}
+
+      {/* Intolleranze alimentari — read-only, tutti i booking_type */}
+      {(booking.dietary_data_consent === true || booking.dietary_off_platform_notice === true) && (
+        <div className="space-y-2">
+          <h3 className="text-title-subtitle font-bold uppercase tracking-wide text-gray-900">
+            Intolleranze Alimentari
+          </h3>
+          {booking.dietary_data_consent === true ? (
+            <p className="text-sm text-gray-700 md:text-base">
+              <span className="mr-2 rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">Consenso esplicito</span>
+              {Array.isArray(booking.dietary_restrictions) && booking.dietary_restrictions.length > 0
+                ? booking.dietary_restrictions
+                    .map((r: any) =>
+                      r.restriction === 'Altro' && r.notes ? r.notes : r.restriction,
+                    )
+                    .join(', ')
+                : 'Dati comunicati con consenso esplicito'}
+            </p>
+          ) : (
+            <p className="text-sm text-amber-700 md:text-base">
+              Il cliente comunicherà esigenze direttamente al ristorante.
+            </p>
+          )}
+        </div>
+      )}
       </div>
 
       <div className="flex min-w-0 flex-col gap-6">
