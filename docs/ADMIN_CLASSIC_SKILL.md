@@ -237,6 +237,11 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
 - Sezione «Imposta Fasce Orarie» solo Classic (`!features.servizio`); lettura/scrittura su `service_slots` via `useUpdateServiceSlot`.
 - Se `end_time < start_time` su una fascia: avviso `OVERNIGHT_TIME_END_HINT`.
 - Sezione «Aree di posizionamento» **rimossa** da Impostazioni (non si legge/scrive più `booking_placement_areas` da questo tab).
+- **Limiti coperti — nuovo modello (18-06-26):** sezione «Coperti massimi al giorno» (`daily_guest_limit`)
+  **RIMOSSA**. Dentro «Imposta Fasce Orarie» due toggle: «Attiva limiti coperti per fascia»
+  (`slot_limit_enabled`, interruttore globale) e «Rifiuta richieste fuori dalle fasce»
+  (`booking_reject_out_of_slot`). Cap per-fascia restano in `slot_guest_capacities`. Tutti bloccano solo
+  il pubblico via edge (`SLOT_LIMIT`/`OUT_OF_SLOT`), mai l'admin. Dettaglio: `ADMIN_SETTINGS_CONTEXT.md §8`.
 
 ### `AdminBookingForm.tsx` + `DetailsTab.tsx`
 
@@ -264,6 +269,12 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
 
 - Server: `supabase/functions/create-booking/index.ts` (guard cap `cap - occupied`, override `service_slot_overrides`).
 - Decisione WP-B5 (12-06-26): il pre-check client `check-slot-availability` è rimosso dal repo e da `BookingRequestForm`. La fonte unica resta `create-booking`: se la fascia supera il limite, risponde 409 al submit. Non reintrodurre chiamate fail-open a Edge Function non deployate.
+- **Nuovo modello limiti (18-06-26):** edge ha **rimosso** il blocco `DAILY_LIMIT`. Cap per-fascia letto da
+  `slot_guest_capacities` (priorità `override → service_slots.max_guests → slot_guest_capacities[id]`),
+  gated da `slot_limit_enabled`. Nuovo blocco `OUT_OF_SLOT` (gated da `booking_reject_out_of_slot`) se
+  l'orario non cade in nessuna fascia. Entrambi default OFF. Badge calendario `BookingCalendar`: % sulla
+  SOMMA dei cap per-fascia del giorno solo se limiti ON e TUTTE le fasce hanno cap, altrimenti conteggio.
+  **Edge deployata su TEST `docnnernvp` (v21); PROD `rwuxgvld` NON deployata** (vedi FOLLOW_UP).
 
 ---
 

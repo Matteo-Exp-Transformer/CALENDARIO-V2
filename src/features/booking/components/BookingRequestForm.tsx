@@ -291,6 +291,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   const [formData, setFormData] = useState<BookingRequestInput>(createInitialFormData)
 
   const [privacyAccepted, setPrivacyAccepted] = useState(false)
+  const [marketingConsent, setMarketingConsent] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false) // Stato per triggerare re-render e disabilitare button
@@ -1025,6 +1026,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         dietary_restrictions: normalizeDietaryRestrictionsForSubmit(formData.dietary_restrictions),
         tenantSlug,
         menu_promo_labels: menuPromoLabels.length > 0 ? menuPromoLabels : null,
+        marketing_consent: marketingConsent,
       },
       {
         onSuccess: () => {
@@ -1047,6 +1049,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
         setActiveSubTabId(null)
         resetViewedPromos()
         setPrivacyAccepted(false)
+        setMarketingConsent(false)
         
         // Reset tutti i flag di submit e rilascia lock
         const savedLockId = submitLockIdRef.current
@@ -1325,6 +1328,8 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             privacyError={errors.privacyAccepted}
             showPrivacyAttention={attentionFieldKey === 'privacyAccepted'}
             onPrivacyAttentionInteract={clearAttentionField}
+            marketingConsent={marketingConsent}
+            onMarketingConsentChange={setMarketingConsent}
             publicFormFields
             lightTextOnDarkBackground={publicFormLightTextOnDarkBackground}
             tenantSlug={tenantSlug}

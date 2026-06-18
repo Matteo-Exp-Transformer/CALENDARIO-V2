@@ -31,6 +31,9 @@ interface DietaryRestrictionsSectionProps {
   /** Lampeggio attenzione sul checkbox privacy. */
   showPrivacyAttention?: boolean
   onPrivacyAttentionInteract?: () => void
+  /** Consenso marketing facoltativo (email promozionali). Default non dato. */
+  marketingConsent?: boolean
+  onMarketingConsentChange?: (value: boolean) => void
   /** Nasconde il blocco "Altre Richieste" (es. renderizzato sotto la griglia in AdminBookingForm) */
   omitSpecialRequestsSection?: boolean
   /** Layout /prenota: campi al 75% larghezza, stessa altezza e font delle card sottotab */
@@ -47,7 +50,7 @@ const FIELD_LABEL_CLASS =
 const CONTROL_CLASS =
   'w-full min-h-[50px] h-[50px] rounded-lg border border-slate-200 bg-white px-4 text-sm sm:text-base font-medium text-warm-wood focus:border-warm-wood focus:outline-none focus:ring-2 focus:ring-warm-wood/40'
 
-/** Form pubblico Prenota: intolleranze come testo libero + altre richieste + privacy. */
+/** Form pubblico Prenota: intolleranze come testo libero + altre richieste + privacy + consenso marketing facoltativo. */
 export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProps> = ({
   dietaryText,
   onDietaryTextChange,
@@ -58,6 +61,8 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
   privacyError,
   showPrivacyAttention = false,
   onPrivacyAttentionInteract,
+  marketingConsent,
+  onMarketingConsentChange,
   omitSpecialRequestsSection = false,
   publicFormFields = false,
   lightTextOnDarkBackground = false,
@@ -211,6 +216,40 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
               {privacyError}
             </p>
           )}
+        </div>
+      )}
+
+      {marketingConsent !== undefined && onMarketingConsentChange && (
+        <div className="flex min-w-0 flex-1 items-start gap-3 pt-1">
+          <div className="group relative size-5 shrink-0">
+            <input
+              type="checkbox"
+              id="marketing-consent-input"
+              checked={marketingConsent}
+              onChange={(e) => onMarketingConsentChange(e.target.checked)}
+              className="peer absolute inset-0 z-10 size-5 cursor-pointer appearance-none opacity-0 focus:outline-none"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 flex items-center justify-center rounded border-2 bg-white shadow-sm transition-all duration-300 group-hover:shadow-md peer-checked:border-warm-orange peer-checked:bg-warm-orange peer-checked:shadow-lg peer-focus-visible:ring-4 peer-focus-visible:ring-warm-wood/20 border-warm-wood/40 group-hover:border-warm-wood"
+            >
+              <Check
+                className={`h-3.5 w-3.5 text-white transition-all duration-300 ${
+                  marketingConsent ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                }`}
+                strokeWidth={3}
+              />
+            </div>
+          </div>
+          <label
+            htmlFor="marketing-consent-input"
+            className={cn(
+              'cursor-pointer text-sm',
+              lightTextOnDarkBackground ? 'text-white/85' : 'text-warm-wood-dark/80',
+            )}
+          >
+            Acconsento a ricevere via email sconti esclusivi, promozioni e offerte speciali dall&apos;azienda. Posso revocare il consenso in qualsiasi momento.
+          </label>
         </div>
       )}
     </div>

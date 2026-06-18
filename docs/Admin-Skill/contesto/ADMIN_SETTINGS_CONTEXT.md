@@ -50,7 +50,7 @@ chiave gia registrata.
 |---|---|
 | Anagrafica/contatti | `restaurant_name`, `contact_email`, `contact_phone`, `contact_address` |
 | Orari e capienze | `business_hours`, `slot_guest_capacities` (legacy/supporto), `booking_time_slots_enabled`, `timezone`, `booking_window_days` |
-| **Limiti coperti** | **`daily_guest_limit`** (limite giornaliero esterno — blindato M2 Calendario, applicato anche server-side in `create-booking`), `walk_in_max_guests` |
+| **Limiti coperti** | **`slot_guest_capacities`** (cap per-fascia, fonte autoritativa letta da edge+badge), **`slot_limit_enabled`** (interruttore globale limiti per-fascia), **`booking_reject_out_of_slot`** (vincolo orario fuori-fascia), `walk_in_max_guests`. ⚠️ `daily_guest_limit` **RIMOSSO** (18-06-26, cambio modello — vedi §8) |
 | Tema | `app_theme` (solo admin, ID in `APP_THEME_IDS`) |
 | Pagina Prenota | `booking_public_form_config`, `public_booking_page_background`, `public_booking_strip_photo`, `booking_placement_areas` |
 | Promo/preset | `booking_menu_promos`, `booking_custom_staff_presets`, `booking_staff_presets_visible` |
@@ -127,7 +127,19 @@ chiave gia registrata.
   Su/Giu nella sezione "Imposta Fasce Orarie". Al Salva `display_order` viene riassegnato in base
   all'ordine UI; le capienze restano agganciate per `slot.id`, non per posizione. Il pubblico legge
   lo stesso ordine tramite i path esistenti dei service slot.
-- **`daily_guest_limit`**: `0`/vuoto = nessun limite; blocca **solo** Prenota pubblica (edge `DAILY_LIMIT`); admin può sforare con avviso.
+- **NUOVO MODELLO LIMITI COPERTI (18-06-26, sostituisce M2 — `daily_guest_limit` RIMOSSO):**
+  - **Niente limite giornaliero.** L'unico limite verso il pubblico è **per-fascia**, opzionale, con
+    **interruttore globale** `slot_limit_enabled` (default OFF) + i valori "Coperti max" per fascia in
+    `slot_guest_capacities`. Vuoto/OFF = nessun blocco.
+  - **Vincolo orario** `booking_reject_out_of_slot` (default OFF): se ON, la pagina pubblica rifiuta gli
+    orari che non cadono in nessuna fascia (edge `OUT_OF_SLOT`). Toggle dedicato in "Imposta Fasce Orarie".
+  - **Fonte cap edge = `slot_guest_capacities`** (allineata al client `useCapacityCheck`): priorità
+    `override → service_slots.max_guests → slot_guest_capacities[slotId]`. L'edge legge questa chiave
+    (prima leggeva solo `service_slots.max_guests`, sempre null in Classic → non bloccava).
+  - **Principio MORBIDO invariato:** ogni vincolo blocca SOLO il pubblico (edge `create-booking`,
+    codici `SLOT_LIMIT`/`OUT_OF_SLOT`); l'admin crea sempre (avviso per-fascia via `useCapacityCheck`,
+    mai blocco). Disattivando la sezione "Imposta Fasce Orarie" i limiti restano inerti.
+  - **Nessun limite di default** per nuove aziende: seed fasce con `max_guests` NULL, nessun seed limiti.
 - **`booking_window_days`**: chiave registry **orfana** (solo admin, nessuna UI consumer) — fuoriscope M4; implementazione Fase C **rimossa** su richiesta 15-06-26 (vedi report Fase C §Fuoriscope). **Non implementare senza nuova decisione esplicita di Matteo.**
 
 ### Timezone, tema, presentazione form
@@ -170,5 +182,5 @@ chiave gia registrata.
 
 - **Non** rendere obbligatori contatti o orari per salvare anagrafica (salvo nome locale).
 - **Non** mostrare nome/orari/contatti **demo** se il tenant non ha salvato i dati.
-- **Non** esporre `timezone` / `daily_guest_limit` / `booking_window_days` in whitelist anon senza migrazione dedicata e decisione prodotto esplicita.
+- **Non** esporre `timezone` / `slot_limit_enabled` / `booking_reject_out_of_slot` / `booking_window_days` in whitelist anon senza migrazione dedicata e decisione prodotto esplicita (le legge l'edge via service_role).
 - Pro / CRM / Servizio fuori cancello M4 → tracciare in M5 se emerge.

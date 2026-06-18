@@ -20,8 +20,8 @@ import { resolvePrivacyReturnPath } from '@/features/booking/utils/privacyPolicy
  * Modifiche a questo file: passare per skill `legal-production`
  * (`docs/Legal-Production-Skill/`).
  */
-const PRIVACY_POLICY_VERSION = '2.0'
-const PRIVACY_POLICY_LAST_UPDATE = '2026-05-23'
+const PRIVACY_POLICY_VERSION = '2.1'
+const PRIVACY_POLICY_LAST_UPDATE = '2026-06-18'
 
 export const PrivacyPolicyPage: React.FC = () => {
   const location = useLocation()
@@ -108,10 +108,36 @@ export const PrivacyPolicyPage: React.FC = () => {
             </p>
           </Section>
 
+          <Section title="3-bis. Comunicazioni informative e promozionali via email">
+            <p className="mb-2">
+              Se presti il consenso selezionando l&apos;apposita casella nel modulo di prenotazione,{' '}
+              <strong>{restaurantName}</strong> potrà inviarti via email comunicazioni commerciali
+              e promozionali, tra cui:
+            </p>
+            <ul className="list-disc list-inside space-y-1 mb-3">
+              <li>Sconti esclusivi e offerte speciali riservati ai clienti</li>
+              <li>Promozioni stagionali o eventi particolari</li>
+              <li>Novità del menù o aggiornamenti sull&apos;attività del ristorante</li>
+            </ul>
+            <p className="mb-2">
+              <strong>Base giuridica</strong>: il trattamento è fondato sul tuo consenso libero,
+              specifico, informato e inequivocabile (art. 6.1.a GDPR). Il mancato conferimento
+              di questo consenso non pregiudica in alcun modo la possibilità di effettuare
+              la prenotazione.
+            </p>
+            <p>
+              <strong>Revoca del consenso</strong>: puoi revocare in qualsiasi momento questo
+              consenso contattando direttamente <strong>{restaurantName}</strong> tramite i recapiti
+              pubblicati. La revoca non pregiudica la liceità del trattamento effettuato prima
+              della revoca stessa.
+            </p>
+          </Section>
+
           <Section title="4. Su quale base giuridica trattiamo i tuoi dati">
             <ul className="list-disc list-inside space-y-1">
               <li><strong>Esecuzione di misure precontrattuali e contrattuali</strong> (art. 6.1.b GDPR) per i dati strettamente necessari alla gestione della prenotazione</li>
               <li><strong>Consenso esplicito</strong> (art. 6.1.a e art. 9.2.a GDPR) per le preferenze alimentari e allergie, che presti tramite la checkbox di accettazione di questa policy</li>
+              <li><strong>Consenso libero e facoltativo</strong> (art. 6.1.a GDPR) per l&apos;invio di comunicazioni promozionali via email, che presti tramite l&apos;apposita casella di consenso marketing nel modulo di prenotazione</li>
               <li><strong>Legittimo interesse</strong> (art. 6.1.f GDPR) del Titolare alla sicurezza dei sistemi, per il trattamento dell&apos;indirizzo IP a fini anti-abuso</li>
               <li><strong>Obbligo legale</strong> (art. 6.1.c GDPR) quando il trattamento è richiesto da norme di legge</li>
             </ul>

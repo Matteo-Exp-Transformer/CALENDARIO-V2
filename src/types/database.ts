@@ -99,6 +99,7 @@ export type Database = {
           dietary_restrictions: Json | null
           event_type: string | null
           id: string
+          marketing_consent: boolean
           menu: string | null
           menu_promo_labels: Json | null
           menu_selection: Json | null
@@ -132,6 +133,7 @@ export type Database = {
           dietary_restrictions?: Json | null
           event_type?: string | null
           id?: string
+          marketing_consent?: boolean
           menu?: string | null
           menu_promo_labels?: Json | null
           menu_selection?: Json | null
@@ -165,6 +167,7 @@ export type Database = {
           dietary_restrictions?: Json | null
           event_type?: string | null
           id?: string
+          marketing_consent?: boolean
           menu?: string | null
           menu_promo_labels?: Json | null
           menu_selection?: Json | null
@@ -275,6 +278,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          marketing_consent: boolean
           name: string
           notes: string | null
           phone: string | null
@@ -286,6 +290,7 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          marketing_consent?: boolean
           name: string
           notes?: string | null
           phone?: string | null
@@ -297,6 +302,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          marketing_consent?: boolean
           name?: string
           notes?: string | null
           phone?: string | null

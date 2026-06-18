@@ -53,6 +53,11 @@ vi.mock('../../hooks/useServiceSlots', () => ({
   useDigestSlotConfigs: () => ({ data: [] }),
 }))
 
+vi.mock('../../hooks/useServiceSlotOverrides', () => ({
+  useServiceSlotOverrides: () => ({ data: [] }),
+  resolveSlotOverride: () => null,
+}))
+
 vi.mock('../../hooks/useTableAssignments', () => ({
   useTableAssignments: () => ({ data: [] }),
 }))

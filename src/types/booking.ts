@@ -88,6 +88,8 @@ export interface BookingRequestInput {
   menu_promo_labels?: string[] | null
   placement?: string
   booking_source?: 'public' | 'admin'
+  /** Consenso a ricevere comunicazioni promozionali via email (art. 6.1.a GDPR). Facoltativo, default false. */
+  marketing_consent?: boolean
 
   // Multi-tenant
   tenant_id?: string

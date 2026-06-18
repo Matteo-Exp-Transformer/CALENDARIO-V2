@@ -107,6 +107,7 @@ export const useCreateBookingRequest = () => {
               Array.isArray(data.menu_promo_labels) && data.menu_promo_labels.length > 0
                 ? data.menu_promo_labels
                 : null,
+            marketing_consent: data.marketing_consent === true,
           })
         })
 

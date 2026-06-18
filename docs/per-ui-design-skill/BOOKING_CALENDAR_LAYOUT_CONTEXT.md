@@ -1,6 +1,6 @@
 # BookingCalendar — layout e responsive (contesto agente)
 
-> Sessione **23-05-26**. Tab **Calendario** admin (Classic e Pro via `AdminDashboard` / `BookingCalendarTab`).
+> Sessioni **23-05-26**, **18-06-26**. Tab **Calendario** admin (Classic e Pro via `AdminDashboard` / `BookingCalendarTab`).
 > File LOCK: `BookingCalendar.tsx` — leggere anche `docs/ADMIN_CLASSIC_SKILL.md` prima di modificare.
 
 ---
@@ -50,6 +50,22 @@ Wrapper FC imposta la variabile runtime:
 ```tsx
 style={{ '--booking-calendar-day-min-height': `${isCalendarNarrowViewport ? NARROW : DESKTOP}px` }}
 ```
+
+---
+
+## 3-bis. Limite eventi per cella — vista mese (18-06-26)
+
+| Viewport | `dayMaxEvents` | Indicatore overflow | Click su indicatore |
+|----------|---------------|---------------------|---------------------|
+| Mobile ≤630px | `3` | `···` (classe `.booking-calendar-more-dots`) | `moreLinkClick` → `handleDateClick` (seleziona il giorno, nessun popover) |
+| Desktop >630px | `5` | `…` (testo plain, nessuna classe custom) | stesso `moreLinkClick` → nessun popover |
+
+**Implementazione**: `config.dayMaxEvents` = valore numerico (mai `false` per desktop).
+`moreLinkClick` è estratto fuori dal conditional spread — si applica a entrambe le superfici e
+**previene il popover nativo FC** restituendo la view corrente.
+
+**Anti-pattern**: non usare `dayMaxEvents: false` per desktop; non lasciare il `moreLinkClick` solo
+nel branch `isCalendarNarrowViewport` (il popover nativo FC si aprirebbe su desktop).
 
 ---
 
@@ -118,17 +134,24 @@ Layout riga titolo (≥640px): `sm:items-center sm:justify-center` sul flex; ico
 
 ---
 
-## 7-bis. Badge riempimento cella-giorno (vista mese, 11-06-26)
+## 7-bis. Badge riempimento cella-giorno (vista mese, 11-06-26 · aggiornato 18-06-26)
 
 Montaggio: `dayCellDidMount` → `.booking-day-fill-holder` nel `.fc-daygrid-day-frame` (non
 `dayCellContent` — anniderebbe nel numero giorno).
+
+**Denominatore % (nuovo modello 18-06-26):** non più `daily_guest_limit` (rimosso) ma la **SOMMA dei cap
+per-fascia del giorno** (`resolveDayDenominator`: per ogni fascia `override(data) → service_slots.max_guests
+→ slot_guest_capacities[id]`). La % si mostra **solo se** `slot_limit_enabled` ON **e**
+`booking_time_slots_enabled` ON **e** esiste ≥1 fascia **e TUTTE** hanno un cap non-null. Altrimenti
+(limiti OFF / nessuna fascia / anche una fascia senza cap) → badge `--neutral` con il **solo conteggio**.
+Somma solo fasce esistenti (no chiavi orfane in `slot_guest_capacities`).
 
 | Classe | Significato |
 |--------|-------------|
 | `.booking-day-fill--ok` | &lt; 80% |
 | `.booking-day-fill--high` | 80–100% incluso («pieno») |
-| `.booking-day-fill--over` | **solo** &gt; 100% |
-| `.booking-day-fill--neutral` | conteggio senza limite giornaliero |
+| `.booking-day-fill--over` | **solo** &gt; 100% (valore reale, mai cappato) |
+| `.booking-day-fill--neutral` | conteggio senza % (limiti per-fascia OFF o incompleti) |
 
 **Responsive badge** (`index.css`):
 
