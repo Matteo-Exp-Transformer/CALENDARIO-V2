@@ -42,6 +42,7 @@ filtro `PREPARA_PROMPT`, o una Nota in skill d'area. La promozione la decide il 
 | **Skill aggiornata a metà** — una sezione skill allineata al diff, altra sezione stessa skill ancora con numeri/comportamento pre-refactor | errore agente | 1 (03-06) | 🔶 candidato: checklist chiusura «grep limiti vecchi in tutto il file skill toccato» + hook stop verifica coerenza cross-sezione |
 | **Skill che referenzia file non ancora creato** — link a `BOOKING_PRENOTA_TEXT_LIMITS_MAP.md` prima che l’esecutore lo scriva | errore agente | 1 (03-06) | 🔶 candidato: regola «file citato in skill solo dopo esiste su disco» o ordine deliverable: mappa prima di skill |
 | **Scroll row Prenota: `%` width su inner `w-max` gonfia card** — dopo fix allineamento outer/inner | errore agente + vincolo strutturale | 1 (05-06) | ✅ Nota in `PRENOTA_LAYOUT_CONTEXT.md` §5 + CSS var viewport; misurare fit prima di justify |
+| **Linter rimuove import «non usato» tra edit sequenziali** — `ChevronUp` aggiunto all'import poi rimosso automaticamente da ESLint prima che il JSX che lo usava fosse salvato → errore TS al typecheck | vincolo strutturale | 1 (19-06) | 🔶 candidato: regola esecutore «import nuovo + primo uso nello stesso edit block»; o fare import e JSX in un'unica Edit call |
 
 ---
 

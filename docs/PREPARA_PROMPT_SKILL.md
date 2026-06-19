@@ -400,6 +400,13 @@ Quando hai completato revisione (se rapida), aggiornamento report e raccolta dat
   per il lavoro richiesto (codice/validate/checklist/report skill area).
 - **Dati skill system:** report sessione + «Dati comunicazione» (e OSSERVAZIONI/PROPOSTE se aggiornati);
   la **sessione revisore vocabolario** è separata e **non** blocca la chiusura.
+- **Checklist flussi utente da testare (OBBLIGATORIO per il profilo Esecuzione):** se il lavoro
+  **introduce o cambia un flusso che Matteo deve provare a video** (UI, comportamento utente, messaggi,
+  validazioni), aggiungi una voce a `docs/_lavoro/Per matteo/Test e2e/CHECKLIST_FLUSSI_DA_TESTARE.md`
+  (ID · area · cosa testare · passi · risultato atteso · rilascio). Se il lavoro **non** è testabile a
+  mano (refactor interno, solo test, solo doc) **non** scrivere nulla e dichiaralo in chiusura.
+  Non spuntare tu: la `X` la mette Matteo; i passati li archivia lui nei `contesto-testato/` per area.
+  Sistema completo in `docs/Comunicazione-Skill/EVOLUZIONE_SKILLS.md` § «Miglioria attiva — Checklist flussi utente».
 - **Resta fuori** (solo se applicabile): commit non fatto, smoke non confermato, follow-up esplicito.
 - **Terminali:** se in sessione l’esecutore ha avviato shell/`npm run dev`, ricorda a Matteo di chiudere **solo** quelle tab agente (`APP_CONTEXT` §7.3) — non il suo dev locale.
 

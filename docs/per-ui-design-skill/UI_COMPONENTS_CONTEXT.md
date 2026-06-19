@@ -158,7 +158,7 @@ Stack z-index: Modal `z-[10050]` < Toast `z-index: 100000`. Calibrato — non al
 <Input type="number" min={1} max={100} value={coperti} onChange={...} />
 ```
 
-- Con `type="number"`, la rotella del mouse **non** incrementa/decrementa il valore mentre il campo ha focus (`src/lib/suppressNumberInputWheel.ts`). Digitazione, stepper nativo e tastiera restano invariati; senza focus lo scroll della pagina non viene bloccato.
+- Con `type="number"`, la rotella del mouse **non** incrementa/decrementa il valore mentre il campo ha focus. Implementato in `Input.tsx` con un **listener nativo** `addEventListener('wheel', …, { passive: false })` (l'`onWheel` di React è delegato alla radice → `preventDefault()` viene ignorato sui wheel passivi). Digitazione, stepper nativo e tastiera restano invariati; senza focus lo scroll della pagina non viene bloccato.
 
 ---
 

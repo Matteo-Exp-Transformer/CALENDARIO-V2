@@ -356,6 +356,45 @@ quando i criteri saranno tarati.
 
 ---
 
+## Miglioria attiva — Checklist flussi utente da testare (Per Matteo) 🟢
+
+> Decisa con Matteo 19-06-26. Obiettivo: dare a Matteo **un solo posto** dove trova i flussi utente
+> da provare a mano (QA visivo), invece di pescarli dai report sparsi. Chiude il buco storico
+> «validate verde ≠ QA visivo».
+
+**Regola per il profilo ESECUTORE (da aggiungere alla chiusura §7 / PREPARA_PROMPT):** quando un
+agente esecutore finisce, oltre ad aggiornare gli skill/context dell'area, **se il suo lavoro
+introduce o cambia un flusso che Matteo deve testare visivamente**, aggiunge una voce al file vivo
+`docs/_lavoro/Per matteo/Test e2e/CHECKLIST_FLUSSI_DA_TESTARE.md`. Se il lavoro NON è testabile a
+mano (refactor interno, test, doc) non scrive nulla. Una voce = ID, area, cosa testare, passi,
+risultato atteso, rilascio.
+
+**Ciclo di vita della checklist (la tiene snella):**
+1. L'esecutore **aggiunge** i flussi nuovi al file vivo.
+2. Matteo testa e mette **`X`** (o ✅/❌) sulla voce.
+3. Le voci **passate** si **tolgono** dal file vivo e si **archiviano** nei file di contesto per
+   area in `docs/_lavoro/Per matteo/Test e2e/contesto-testato/` (uno per area: Pagina Prenota,
+   Impostazioni, Calendario, CRM/Email, Backend/Dati) — registro storico di «cosa Matteo ha già
+   verificato visivamente». Le voci **fallite** restano nel file vivo (o tornano come fix).
+
+**Posizione:** `docs/_lavoro/` è **gitignored** (privato, mai committato) → questi file restano locali
+per Matteo. Seed iniziale ricavato da `CHECKLIST_TEST_PRENOTAZEN_RELEASE_15-19-giugno-26.md`
+(19-06-26): le voci «fatto» archiviate per area, le 3 con problemi (PR-11 scroll menù, SET-05 rotella
+input, CAL-04 frecce Pro) restano «da ritestare dopo fix».
+
+**Enforcement — FATTO (19-06-26):** la regola è ora un passo **obbligatorio** del profilo Esecuzione
+in `PREPARA_PROMPT_SKILL.md` § «Chiusura verso Matteo» (bullet «Checklist flussi utente da testare»);
+ogni prompt esecutore generato dalla prepara-prompt la include in §7. Resta «markdown, non hook» (M4):
+l'agente Cursor *dovrebbe* seguirla — l'enforcement vero dipende da M4.
+
+**Prima applicazione reale (19-06-26):** le 3 voci con problema (PR-11 scroll menù, SET-05 rotella,
+CAL-04 frecce Pro) sono state fixate da 3 agenti esecutori, **testate a video da Matteo (tutte ✅)** e
+archiviate nei `contesto-testato/` (A/B/C); file vivo svuotato. Cleanup collegato: rimosso
+`src/lib/suppressNumberInputWheel.ts` (codice morto dopo il fix SET-05 a listener nativo in
+`Input.tsx`), doc `UI_COMPONENTS_CONTEXT.md` § Input allineata. `npm run validate` 859 verde.
+
+---
+
 ## Log idee (append-only — i Meta junior scrivono qui)
 
 > Una riga per idea. Formato: `GG-MM-AA · [automazione|statistica|tecnica|raffinamento] · idea — perché`.
@@ -377,6 +416,7 @@ quando i criteri saranno tarati.
 - 01-06-26 · [automazione] · **nudge fine-sessione progettato (non installato)** — vedi M4. Scoperto che gli esecutori girano su **Cursor** → l'hook Claude Code non li copre; serve checklist-di-chiusura nel prompt esecutore come leva Cursor. Due leve, non una. Sessione enforcement dedicata da pianificare.
 - 01-06-26 · [statistica] · **score chat 31-05 = 6,5/10** — 11 sessioni operative, 1 in prod, 1 misrouting grave (Prenota vs QR), ~12 giri correzione, follow-up netti positivi. Causa rumore: validate verde ≠ QA visivo. Vedi report revisione-controverifica 01-06.
 - 01-06-26 · [raffinamento] · **sezione report «Analisi flusso prompt ed efficienza»** — Matteo: statistiche fasi prepara→esecuzione + anti-gonfiaggio report su «test fatti tutto ok»; vedi PROPOSTE + OSSERVAZIONI 01-06-26; alimenta M2/M5.
+- 19-06-26 · [automazione] · **Checklist flussi utente da testare (Per Matteo)** — l'esecutore, a fine lavoro, aggiunge i flussi da QA visivo a `docs/_lavoro/Per matteo/Test e2e/CHECKLIST_FLUSSI_DA_TESTARE.md`; Matteo mette X; i passati si archiviano nei contesto-testato per area. Vedi sezione «Miglioria attiva» sopra. Enforcement (regola nel profilo esecutore) da fare. Idea Matteo.
 - 02-06-26 · [automazione] · **hook `stop` v2 mirato INSTALLATO** (senior, da dossier revisore) — da promemoria statico a controllo che legge i Report-*.md freschi e verifica le sezioni obbligatorie. Sblocca M4. Decisione Matteo: smart-allow (avvisa, non blocca); `deny` predisposto. Cura il guasto #1 dal lato «sezioni report», non «buona volontà».
 - 03-06-26 · [automazione] · **hook `stop` v3 — `followup_message` INSTALLATO** (senior) — il nudge ora RILANCIA un turno visibile invece di scrivere `agent_message` a vuoto. Cura il limite «hook non intercettato in chat» (report 03-06). Rilancia 1× sempre (anche report completo, richiesta Matteo); guardia `loop_count`+`loop_limit:1`. Aggiunto check prompt-verbatim + allineamento-skill. + promossa regola «allineamento skill implicito» (comandi-base + CHIUSURA A§5/B§1).
 - 03-06-26 · [tecnica] · **mappa hook Cursor completata + matrice file/chat × durante/dopo** (Playbook §2-bis/ter/quater) — solo 3 hook iniettano (`sessionStart`/`postToolUse`/`stop`); `preToolUse`/`beforeSubmitPrompt` NON iniettano (solo bloccano). Candidati futuri M4: `beforeMCPExecution` guard PROD (scritture DB reali passano da MCP), `beforeShellExecution` fallback. **In PAUSA-RACCOLTA: non costruire, valutare sui dati.**

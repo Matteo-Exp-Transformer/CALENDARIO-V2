@@ -408,7 +408,7 @@ Quando il cliente clicca **Invia** con dati invalidi:
 
 1. **`noValidate`** su `#booking-request-form` — obbligatorio se i campi hanno `required`; altrimenti il browser blocca `validate()` React.
 2. **Chiudi** card ingredienti aperte (`dispatchBookingMenuComposeCollapse` + `composeCollapseNonce` + remount `MenuSelection`).
-3. **Scroll** al primo errore (`scrollToBookingPublicError` in `bookingPublicFormAttention.ts`).
+3. **Scroll** al primo errore: `useFormValidationAttention` chiama `scrollToFormValidationError` passando `resolveBookingPublicErrorElementId` come resolver (da `bookingPublicFormAttention.ts`). Il resolver ha fallback integrato: se `id="menu-section"` non è nel DOM (es. nessuna card sottotab selezionata → `showMenuSelectionSection=false`), ricade su `id="booking-sub-tabs-section"`. Questo garantisce scroll anche nel caso 1 (nessuna sottotab selezionata).
 4. **Pulse arancione** sul wrapper del campo (`.booking-public-field-attention`) fino a click reale (`shouldDismissBookingPublicAttention` / `isTrusted`).
 5. **Lunghezza testo cliente (03-06-26):** `validate()` controlla cap in `BOOKING_PUBLIC_CLIENT_TEXT_LIMITS` (`bookingPrenotaTextLimits.ts`) — nome, email, tel, intolleranze aggregate, richieste speciali, ospiti max. Messaggio unico **`Testo troppo lungo`**; nessun contatore in UI (cap silenzioso + edge `create-booking`).
 6. Messaggi errore / privacy / riepilogo menù: palette condizionata da `publicFormLightTextOnDarkBackground` (`!showPhotoStrip && isFullPagePhoto`) — **bianco** solo su sfondo full-page foto; su striscia laterale / crema → warm-wood e rossi come pre-29-05 (helper in `bookingPublicFieldStyles.ts`).
