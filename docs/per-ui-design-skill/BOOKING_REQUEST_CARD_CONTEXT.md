@@ -79,7 +79,7 @@ Testo UI: «Promo visualizzate da cliente : …» (digest ed espanso).
 | Tipo (strip) | `getBookingEventTypeLabel(booking, booking_modes)` — label da `booking_public_form_config` via `getModeLabelByType`; fallback statico solo ultimo livello | — | Non `event_type` su form pubblico |
 | Preset menù | — | `getPresetMenuLabel` + `booking_custom_staff_presets` | Solo se `preset_menu` valorizzato |
 | Prodotti | — | Lista `menu_selection.items` | Prezzo riga in UI |
-| Intolleranze | — | `dietary_restrictions` JSON | |
+| Intolleranze | — | `dietary_restrictions` JSON | Suffisso «— N ospite/i» solo se `guest_count >= 1` (`shouldShowDietaryGuestCount` in `dietaryRestrictionsText.ts`). Testo libero da Pagina Prenota salva `guest_count: 0` → nessun suffisso. Inserimento strutturato admin (≥1) → suffisso visibile. |
 | Note | line-clamp digest | testo pieno | Submit può aggiungere prefisso card senza preset |
 | Stato | badge `STATUS_CONFIG` | — | `pending` / `accepted` / `rejected` |
 

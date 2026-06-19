@@ -247,6 +247,7 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
 
 - Campo **Posizionamento** (`booking_requests.placement`, opzioni da `booking_placement_areas`) visibile solo Pro/Enterprise (`features.servizio`). In Classic: nessun selettore nel form admin, nessuna riga nel modale dettaglio; creazione admin forza `placement: null` (`useCreateAdminBooking`).
 - Promo menù in dettaglio: `DetailsTab` risolve etichette da `booking_menu_promos` (`menuPromo.ts` / `resolveMenuPromoLabelsForBooking`).
+- **Intolleranze — suffisso ospiti:** in viste read-only admin (`BookingRequestCard` espanso, `DietaryTab` view) il suffisso «- N ospite/i» compare solo se `guest_count >= 1` (`shouldShowDietaryGuestCount`). Il testo libero da Pagina Prenota salva `guest_count: 0`; l'inserimento strutturato in admin (`DietaryTab` / `DietaryRestrictionsStructuredSection` edit) resta con conteggio ≥1.
 
 ### `useCapacityCheck.ts`
 

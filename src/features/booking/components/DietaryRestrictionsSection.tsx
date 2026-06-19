@@ -1,6 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Input } from '@/components/ui'
-import { Link } from 'react-router-dom'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { BookingPublicInsetField } from './publicBooking/BookingPublicInsetField'
@@ -13,10 +12,7 @@ import {
   BOOKING_PUBLIC_FIELD_SCROLL_MARGIN,
   shouldDismissBookingPublicAttention,
 } from '../utils/bookingPublicFormAttention'
-import {
-  buildPrenotaReturnPath,
-  buildPrivacyPolicyLink,
-} from '../utils/privacyPolicyNavigation'
+import { PrivacyPolicyModal } from './PrivacyPolicyModal'
 
 const C = BOOKING_PUBLIC_CLIENT_TEXT_LIMITS
 
@@ -46,8 +42,6 @@ interface DietaryRestrictionsSectionProps {
   publicFormFields?: boolean
   /** Testo privacy/obbligatori in bianco solo su sfondo full-page foto. */
   lightTextOnDarkBackground?: boolean
-  /** Slug tenant: il link Privacy include ?from=/prenota/:slug per il ritorno. */
-  tenantSlug?: string
 }
 
 const FIELD_LABEL_CLASS =
@@ -77,10 +71,8 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
   omitSpecialRequestsSection = false,
   publicFormFields = false,
   lightTextOnDarkBackground = false,
-  tenantSlug,
 }) => {
-  const privacyReturnPath = buildPrenotaReturnPath(tenantSlug)
-  const privacyPolicyTo = buildPrivacyPolicyLink(privacyReturnPath)
+  const [privacyModalOpen, setPrivacyModalOpen] = useState(false)
 
   return (
     <div className={publicFormFields ? 'w-full space-y-5' : 'space-y-5'}>
@@ -251,19 +243,21 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
                 )}
               >
                 Accetto la{' '}
-                <Link
-                  to={privacyPolicyTo}
-                  state={privacyReturnPath ? { from: privacyReturnPath } : undefined}
+                <button
+                  type="button"
                   className={cn(
-                    'font-semibold underline underline-offset-2',
+                    'font-semibold underline underline-offset-2 cursor-pointer',
                     lightTextOnDarkBackground
                       ? 'text-white decoration-white hover:text-white/90'
                       : 'text-warm-orange decoration-warm-orange hover:text-warm-orange',
                   )}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setPrivacyModalOpen(true)
+                  }}
                 >
                   Privacy Policy
-                </Link>
+                </button>
                 {' '}*
               </label>
             </div>
@@ -286,6 +280,7 @@ export const DietaryRestrictionsSection: React.FC<DietaryRestrictionsSectionProp
               {privacyError}
             </p>
           )}
+          {privacyModalOpen && <PrivacyPolicyModal onClose={() => setPrivacyModalOpen(false)} />}
         </div>
       )}
 

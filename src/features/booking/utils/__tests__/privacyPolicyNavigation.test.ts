@@ -38,7 +38,7 @@ describe('privacyPolicyNavigation', () => {
     expect(resolvePrivacyReturnPath('', null)).toBeNull()
   })
 
-  it('prefers history back when privacy was opened in-app from prenota', () => {
+  it('prefers history back when privacy was opened in-app from prenota (same tab)', () => {
     expect(
       resolvePrivacyBackAction('/prenota/demo-slug', {
         historyLength: 2,
@@ -47,7 +47,7 @@ describe('privacyPolicyNavigation', () => {
     ).toEqual({ kind: 'history-back' })
   })
 
-  it('replaces history on deep-link with from param but no prior stack', () => {
+  it('replaces to return path on a fresh standalone /privacy visit (no stacked entry)', () => {
     expect(
       resolvePrivacyBackAction('/prenota/demo-slug', {
         historyLength: 1,

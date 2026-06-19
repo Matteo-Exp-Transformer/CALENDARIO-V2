@@ -286,12 +286,17 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
   `BOOKING_PUBLIC_FIELD_BOX_MULTILINE` (label sopra, textarea sotto): cresce con `scrollHeight`,
   testo a sx (`resize-none overflow-hidden`). In `DietaryRestrictionsSection`: «Intolleranze o
   esigenze alimentari» e «Altre Richieste».
-- **Privacy Policy (10-06-26):** nel checkbox obbligatorio (`DietaryRestrictionsSection`), il link
-  «Privacy Policy» apre `/privacy?from=/prenota/:slug` in nuova scheda (`target="_blank"`); il
-  query `from` è validato in `privacyPolicyNavigation.ts` (solo percorsi `/prenota/:slug`, niente
-  redirect esterni). `PrivacyPolicyPage` legge `?from=` (o `location.state` come fallback) e mostra
-  «Torna alla prenotazione» verso lo stesso slug; accesso diretto a `/privacy` senza parametro →
-  «Torna alla home» (`/`).
+- **Privacy Policy (10-06-26, riscritto a modale 18-06-26):** nel checkbox obbligatorio
+  (`DietaryRestrictionsSection`), il link «Privacy Policy» apre una **finestra in-page**
+  (`PrivacyPolicyModal`, componente `Modal` di `@/components/ui`) **sopra il form**, sulla stessa
+  scheda. Il form NON viene smontato → lo stato React (campi compilati) resta intatto alla chiusura.
+  Nessuna nuova scheda, nessuna dipendenza da `window.opener`/`window.close()` → funziona ovunque
+  (mobile, browser embedded). Chiusura: X, click overlay, Esc.
+  Il **contenuto legale** vive in `PrivacyPolicyContent` (`src/pages/privacy/`), condiviso tra la
+  modale e la pagina standalone `/privacy` (`PrivacyPolicyPage`, per link diretti). Modifiche al
+  testo passano per skill `legal-production`. La pagina standalone legge ancora `?from=/prenota/:slug`
+  (validato in `privacyPolicyNavigation.ts`, solo `/prenota/:slug`) per il bottone «Torna…»
+  (`resolvePrivacyBackAction`: `history-back` / `replace` / `navigate '/'`).
 - **Validazione:** email `isValidEmail()`, telefono `isValidPhone()` (`utils/validation.ts`).
   Cap caratteri cliente in `BOOKING_PUBLIC_CLIENT_TEXT_LIMITS` (`bookingPrenotaTextLimits.ts`):
   nome **65**, email **65**, telefono **30**, intolleranze aggregate **550**, altre richieste **550** —

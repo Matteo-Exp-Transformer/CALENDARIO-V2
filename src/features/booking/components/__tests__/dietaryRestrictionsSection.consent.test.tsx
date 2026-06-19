@@ -5,6 +5,13 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { DietaryRestrictionsSection } from '../DietaryRestrictionsSection'
 
+// La modale Privacy (PrivacyPolicyModal) risolve il nome ristorante via hook: mock per
+// evitare setup provider. Mockati solo perché il blocco privacy monta la modale.
+vi.mock('@/hooks/useRestaurantName', () => ({ useRestaurantName: () => 'Trattoria Demo' }))
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenantContext: () => ({ organizationName: 'Trattoria Demo' }),
+}))
+
 const renderSection = (props: Partial<React.ComponentProps<typeof DietaryRestrictionsSection>> = {}) =>
   render(
     <MemoryRouter>
@@ -59,5 +66,25 @@ describe('DietaryRestrictionsSection — checkbox consenso dietary', () => {
   it('non mostra la checkbox se le props non sono passate (contesto admin)', () => {
     renderSection({ dietaryText: 'glutine' })
     expect(screen.queryByLabelText(/acconsento al trattamento/i)).toBeNull()
+  })
+})
+
+describe('DietaryRestrictionsSection — link Privacy Policy (modale in-page)', () => {
+  it('apre la modale al click sul link e la chiude senza smontare il form', () => {
+    renderSection({
+      privacyAccepted: false,
+      onPrivacyChange: vi.fn(),
+    })
+    // Modale chiusa di default: il contenuto della policy non è in pagina.
+    expect(screen.queryByText('1. Chi tratta i tuoi dati')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: /privacy policy/i }))
+    expect(screen.getByText('1. Chi tratta i tuoi dati')).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: /chiudi/i }))
+    expect(screen.queryByText('1. Chi tratta i tuoi dati')).toBeNull()
+    // Il form (checkbox privacy + link) resta montato dopo la chiusura.
+    expect(screen.getByRole('checkbox')).toBeTruthy()
+    expect(screen.getByRole('button', { name: /privacy policy/i })).toBeTruthy()
   })
 })

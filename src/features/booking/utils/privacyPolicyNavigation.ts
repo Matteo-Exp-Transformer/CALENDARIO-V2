@@ -41,7 +41,10 @@ export type PrivacyBackAction =
   | { kind: 'replace'; path: string }
   | { kind: 'navigate'; path: string }
 
-/** Strategia «indietro» dalla Privacy: non impilare una nuova entry su Prenota. */
+/**
+ * Strategia «indietro» dalla pagina standalone `/privacy`: non impilare una nuova entry su Prenota.
+ * (Dal form Prenota la policy è una modale in-page, qui non passa.)
+ */
 export function resolvePrivacyBackAction(
   returnPath: string | null,
   context: { historyLength: number; locationKey: string | undefined },

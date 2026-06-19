@@ -13,6 +13,7 @@ import {
 import { BOOKING_PUBLIC_CLIENT_TEXT_LIMITS } from '@/features/booking/constants/bookingPrenotaTextLimits'
 import { Tag } from 'lucide-react'
 import { useFeatures } from '@/hooks/useFeatures'
+import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
 
 interface Props {
   booking: BookingRequest
@@ -245,8 +246,9 @@ export const DetailsTab: React.FC<Props> = ({
         </div>
       )}
 
-      {/* Intolleranze alimentari — read-only, tutti i booking_type */}
-      {(booking.dietary_data_consent === true || booking.dietary_off_platform_notice === true) && (
+      {/* Intolleranze alimentari — solo tavolo (tipologie con menu: tab Intolleranze e Note) */}
+      {!bookingTypeUsesMenuSelections(formData.booking_type) &&
+        (booking.dietary_data_consent === true || booking.dietary_off_platform_notice === true) && (
         <div className="space-y-2">
           <h3 className="text-title-subtitle font-bold uppercase tracking-wide text-gray-900">
             Intolleranze Alimentari

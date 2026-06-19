@@ -2,6 +2,10 @@ import React, { useState } from 'react'
 import type { BookingRequest } from '@/types/booking'
 import { DIETARY_RESTRICTIONS, type DietaryRestrictionType } from '@/types/menu'
 import { Plus, Trash2 } from 'lucide-react'
+import {
+  formatDietaryGuestCountLabel,
+  shouldShowDietaryGuestCount,
+} from '../utils/dietaryRestrictionsText'
 
 interface Props {
   booking: BookingRequest
@@ -175,9 +179,11 @@ export const DietaryTab: React.FC<Props> = ({
                         {restriction.restriction === 'Altro' && restriction.notes && (
                           <span className="text-sm text-gray-600 italic ml-2">({restriction.notes})</span>
                         )}
-                        <span className="text-gray-600 ml-2">
-                          - {restriction.guest_count} {restriction.guest_count === 1 ? 'ospite' : 'ospiti'}
-                        </span>
+                        {shouldShowDietaryGuestCount(restriction) && (
+                          <span className="text-gray-600 ml-2">
+                            - {formatDietaryGuestCountLabel(restriction.guest_count)}
+                          </span>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <button
@@ -213,7 +219,12 @@ export const DietaryTab: React.FC<Props> = ({
                     {dietaryRestrictions.map((restriction, index) => (
                       <li key={index} className="text-sm text-gray-900">
                         <span className="font-medium">• {restriction.restriction}</span>
-                        <span className="text-gray-600"> - {restriction.guest_count} {restriction.guest_count === 1 ? 'ospite' : 'ospiti'}</span>
+                        {shouldShowDietaryGuestCount(restriction) && (
+                          <span className="text-gray-600">
+                            {' '}
+                            - {formatDietaryGuestCountLabel(restriction.guest_count)}
+                          </span>
+                        )}
                         {restriction.notes && restriction.restriction === 'Altro' && (
                           <span className="text-gray-500 italic block ml-4">Note: {restriction.notes}</span>
                         )}

@@ -34,6 +34,10 @@ import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
 import {
   resolveMenuPromoLabelsForBooking,
 } from '../constants/menuPromo'
+import {
+  formatDietaryGuestCountLabel,
+  shouldShowDietaryGuestCount,
+} from '../utils/dietaryRestrictionsText'
 
 interface BookingRequestCardProps {
   booking: BookingRequest
@@ -383,10 +387,10 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                         ? restriction.notes
                         : restriction.restriction}
                     </span>
-                    {restriction.guest_count > 1 && (
+                    {shouldShowDietaryGuestCount(restriction) && (
                       <>
                         {' — '}
-                        {restriction.guest_count} ospiti
+                        {formatDietaryGuestCountLabel(restriction.guest_count)}
                       </>
                     )}
                   </p>
@@ -395,12 +399,15 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
             </div>
           )}
 
-          {/* Intolleranze — cliente comunicherà direttamente */}
+          {/* Intolleranze — cliente non ha autorizzato trattamento dati art. 9 */}
           {booking.dietary_off_platform_notice === true && (
             <div className="pt-6 mt-6 border-t border-[var(--color-border)]">
-              <p className="mb-2 text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Intolleranze Alimentari</p>
+              <div className="flex items-center gap-2 mb-3">
+                <p className="text-[0.82em] font-semibold tracking-wide text-gray-500 uppercase">Intolleranze Alimentari</p>
+                <span className="rounded-full bg-red-100 px-2 py-0.5 text-[0.72em] font-bold text-red-700">Consenso non fornito</span>
+              </div>
               <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                ⚠️ Il cliente comunicherà eventuali esigenze alimentari direttamente al ristorante.
+                ⚠️ Il cliente ha intolleranze o allergie alimentari, ma non ha autorizzato il trattamento dei dati. contattare il cliente per maggiori info
               </p>
             </div>
           )}

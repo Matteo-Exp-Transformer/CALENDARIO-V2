@@ -842,7 +842,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
 
   const { mutate, isPending } = useCreateBookingRequest()
   const { checkRateLimit, isBlocked } = useRateLimit({
-    maxAttempts: 3,
+    maxAttempts: 7,
     timeWindow: 60000 // 1 minuto
   })
   const { data: staffPresetsDropdownVisible = true } = useRestaurantSetting('booking_staff_presets_visible')
@@ -1382,7 +1382,6 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
             onDietaryConsentChange={setDietaryConsent}
             publicFormFields
             lightTextOnDarkBackground={publicFormLightTextOnDarkBackground}
-            tenantSlug={tenantSlug}
           />
         </div>
       </div>
