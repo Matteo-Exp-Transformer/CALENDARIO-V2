@@ -99,3 +99,11 @@ npm run typecheck         # zero errori TS
 npm run lint              # zero warning
 npm run test              # 29/29 Vitest
 ```
+
+## 7. Edge Functions — deploy MCP con helper condivisi
+
+Se deployi una Edge Function via MCP e includi helper condivisi da `supabase/functions/_shared/log.ts`,
+ricorda che il bundler MCP mette i file della function dentro una cartella temporanea `source/`.
+Quando il codice importa lo shared salendo di un livello, nel payload `files` il nome del file
+condiviso deve usare lo stesso percorso parent (`../_shared/log` + estensione TypeScript), altrimenti
+il deploy parte ma il bundle non trova l'helper.

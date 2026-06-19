@@ -402,7 +402,7 @@ Quando hai completato revisione (se rapida), aggiornamento report e raccolta dat
   la **sessione revisore vocabolario** è separata e **non** blocca la chiusura.
 - **Checklist flussi utente da testare (OBBLIGATORIO per il profilo Esecuzione):** se il lavoro
   **introduce o cambia un flusso che Matteo deve provare a video** (UI, comportamento utente, messaggi,
-  validazioni), aggiungi una voce a `docs/_lavoro/Per matteo/Test e2e/CHECKLIST_FLUSSI_DA_TESTARE.md`
+  validazioni), aggiungi una voce a `docs/_lavoro/Per%20matteo/Test%20e2e/CHECKLIST_FLUSSI_DA_TESTARE.md`
   (ID · area · cosa testare · passi · risultato atteso · rilascio). Se il lavoro **non** è testabile a
   mano (refactor interno, solo test, solo doc) **non** scrivere nulla e dichiaralo in chiusura.
   Non spuntare tu: la `X` la mette Matteo; i passati li archivia lui nei `contesto-testato/` per area.

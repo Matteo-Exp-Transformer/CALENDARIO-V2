@@ -32,6 +32,7 @@ Fronti previsti:
 | `@admin-blindatura: crm` | Clienti e booking collegate |
 | `@admin-blindatura: home-analytics` | Home, KPI e analytics |
 | `@admin-blindatura: fallback-prod-ready` | Fallback, mock, hardcoded, codice morto |
+| `@admin-blindatura: input-number-wheel` | Input numerici admin: la rotella non cambia il valore con focus |
 
 ## 1. E2E admin
 
@@ -73,7 +74,7 @@ Fronti previsti:
 - `src/features/booking/constants/__tests__/bookingPublicFormConfig.malformed.flusso-dati.test.ts`
 - `src/features/booking/constants/__tests__/menuPromo.test.ts`
 - `src/features/booking/lib/__tests__/restaurantSettingRegistry.stripPhoto.test.ts`
-- `src/features/booking/lib/__tests__/restaurantSettingRegistry.dailyGuestLimit.adminBlindatura.test.ts`
+- `src/features/booking/lib/__tests__/restaurantSettingRegistry.slotLimitToggles.adminBlindatura.test.ts`
 - `src/features/booking/components/__tests__/BookingRequestForm.flussoUtente.test.tsx`
 
 ### E2E smoke settings / calendario
@@ -85,10 +86,10 @@ Fronti previsti:
 
 | Marcatore | File | Casi |
 |---|---|---|
-| `settings-registry` | `restaurantSettingRegistry.settingsM4.adminBlindatura.test.ts` | 5 — nome obbligatorio, contatti opzionali, cap 45/65/30/120, daily 0/vuoto |
+| `settings-registry` | `restaurantSettingRegistry.settingsM4.adminBlindatura.test.ts` | 5 — nome obbligatorio, contatti opzionali, cap 45/65/30/120, registry stabile |
 | `settings-anagrafica-ui` | `settingsAnagraficaUi.settingsM4.adminBlindatura.test.tsx` | 8 — contatti vuoti OK, nome vuoto blocca con toast+scroll+pulse, modale pubblica una volta, guard pill, errore save, save aggregato |
 | `settings-save-guard` | `settingsSaveGuard.settingsM4.adminBlindatura.test.tsx` | 13 — footer unico padre, modale pubblica singola, no doppia mutation, fail+retry, guard pill/logout durante pending, guard «Salva e continua» durante save pubblico, FIX 4 scroll+pulse su primo errore nome/orari, footer dirty pulse Salva/Annulla |
-| `settings-time-slots` | `settingsTimeSlots.settingsM4.adminBlindatura.test.tsx` + `bookingTimeSlots.settingsM4.adminBlindatura.test.ts` + `restaurantSettingRegistry.slotGuestCapacities.settingsM4.adminBlindatura.test.ts` | 24 — enable/disable, add, delete modale in-app (Annulla/Conferma, no `window.confirm`), overlap blocca save con scroll+pulse, overnight hint, cap per-fascia vs `daily_guest_limit`, cap invalido/alto, delete+save→`deleteServiceSlot`, mutation fail+retry, FIX 3 riordino manuale con `display_order` e capienze per-id |
+| `settings-time-slots` | `settingsTimeSlots.settingsM4.adminBlindatura.test.tsx` + `bookingTimeSlots.settingsM4.adminBlindatura.test.ts` + `restaurantSettingRegistry.slotGuestCapacities.settingsM4.adminBlindatura.test.ts` | 24 — enable/disable, add, delete modale in-app (Annulla/Conferma, no `window.confirm`), overlap blocca save con scroll+pulse, overnight hint, cap per-fascia + `slot_limit_enabled`, cap invalido/alto, delete+save→`deleteServiceSlot`, mutation fail+retry, FIX 3 riordino manuale con `display_order` e capienze per-id |
 | `settings-theme` | `appTheme.settingsM4.adminBlindatura.test.ts` + `settingsTheme.settingsM4.adminBlindatura.test.tsx` | 13 — dirty tema, anteprima senza persist, Annulla ripristina, Salva `app_theme` senza sfondo Prenota, ID/asset sconosciuti safe, isolamento Prenota/Menu QR |
 | `settings-business-hours` | `businessHours.settingsM4.adminBlindatura.test.ts` | tutti chiusi → no sezione; overlap admin; parse pubblico safe |
 | `settings-business-hours-editor` | `businessHoursEditor.settingsM4.adminBlindatura.test.tsx` | 4 (FIX 2, 16-06-26) — giorno chiuso→aperto popola pranzo 06:30–16:30 + cena 17:30–23:30 insieme; giorno con apertura esistente: "Aggiungi apertura" non sovrascrive, solo append; Annulla (rispunta Chiuso) ripristina lo snapshot, non i nuovi default; overlap manuale resta bloccato |
@@ -134,6 +135,7 @@ Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **120/120** (
 - `src/features/booking/utils/__tests__/tableCheckout.test.ts`
 - `src/features/booking/components/__tests__/servizioModalsGuard.adminBlindatura.test.tsx` (3) → **FU-023** guard discard modale sala (`RoomConfigModal`: dirty → Annulla → `DiscardChangesConfirmModal`; Resta qui / Annulla modifiche). Tavolo/slot/walk-in: stesso pattern codice + anti-regressione `m6ProdReadyPatterns` (12-06-26).
 - `e2e/pro/pro-service.spec.ts` → `@admin-blindatura: servizio` smoke browser Pro senza scritture DB (sidebar → Servizio, Lista/Mappa, Nuova sala, X ritorno dashboard).
+- `src/components/ui/__tests__/Input.numberWheel.test.tsx` (4) → `@admin-blindatura: input-number-wheel`: sugli input numerici admin la rotella è bloccata solo con focus; testo, `onWheel` custom e scroll pagina senza focus restano invariati.
 
 ## 6. CRM
 
@@ -184,9 +186,9 @@ Stato: **batch A+B FU-047 + classificazione doc (11-06-26)** — **41** test Vit
 | # | Scenario | File / describe |
 |---|---|---|
 | 1 | Solo accettate (no-show/pending assenti; digest senza orario) | `sumGuestsByDate.adminBlindatura.test.ts` (pending/rejected/deleted/no-show) + `calendario.adminBlindatura.test.tsx` → events FC + digest (FU-REV-CAL-1) |
-| 2 | Badge % — senza limite conteggio; con limite solo %; 100%=high; >100% over | `calendario.adminBlindatura.test.tsx` → `dayCellDidMount` + registry daily limit |
+| 2 | Badge capienza — senza limite conteggio; con limite solo %; 100%=high; >100% over | `calendario.adminBlindatura.test.tsx` → `dayCellDidMount` + capienza per fascia |
 | 2-bis | Navigazione mese FC → `datesSet` sync `selectedDate` | `calendario.adminBlindatura.test.tsx` → handler `datesSet` |
-| 2-ter | Avviso sforo giornaliero form admin (non bloccante) | `adminBookingForm.dailyLimit.adminBlindatura.test.tsx` |
+| 2-ter | Interruttori limiti per-fascia / fuori orario default OFF | `restaurantSettingRegistry.slotLimitToggles.adminBlindatura.test.ts` |
 | 2-quater | `sumGuestsByDate` / transform / `useCapacityCheck` allineati | `sumGuestsByDate`, `bookingEventTransform`, `useCapacityCheck` test dedicati |
 | 3 | Gate tavolo Classic assente / Pro+slot / Pro senza slot (FU-REV-CAL-2) | `calendario.adminBlindatura.test.tsx` → pallino `Assegna tavolo` + servizio on + `slots:[]` |
 | 4 | Crea da giorno — `dateClick` seleziona; pulsante apre form; giorno pieno non blocca | `calendario.adminBlindatura.test.tsx` → `dateClick` + `AdminBookingForm` mock `initialDate` |
@@ -196,11 +198,10 @@ Stato: **batch A+B FU-047 + classificazione doc (11-06-26)** — **41** test Vit
 ### File test marcati
 
 - `src/features/booking/utils/__tests__/sumGuestsByDate.adminBlindatura.test.ts` (7) → conteggio coperti/giorno (stesso criterio blocco pubblico `DAILY_LIMIT`).
-- `src/features/booking/lib/__tests__/restaurantSettingRegistry.dailyGuestLimit.adminBlindatura.test.ts` (9) → limite giornaliero `0`/vuoto = illimitato (fix salvataggio Impostazioni).
+- `src/features/booking/lib/__tests__/restaurantSettingRegistry.slotLimitToggles.adminBlindatura.test.ts` (10) → `slot_limit_enabled` / `booking_reject_out_of_slot`: assente o sporco = OFF, boolean round-trip stabile.
 - `src/features/booking/components/__tests__/calendario.adminBlindatura.test.tsx` (18) → UI `BookingCalendar`: badge, datesSet, gate tavolo (+ Pro slot vuoti), pending assenti, crea-da-giorno, no DnD, elimina da dettaglio (render con `UnsavedChangesProvider`).
 - `src/features/booking/components/__tests__/bookingCalendarGuard.adminBlindatura.test.tsx` (4) → **C-U2** guard tab: dirty → modale Salva/Annulla/Resta; pulito → nessun guard; chiusura modale → guard stale assente.
 - `src/features/booking/components/__tests__/bookingCalendarTab.adminBlindatura.test.tsx` (1) → C-U4 Riprova su errore `useAcceptedBookings`.
-- `src/features/booking/components/__tests__/adminBookingForm.dailyLimit.adminBlindatura.test.tsx` (1) → FU-REV-CAL-3 avviso giornaliero.
 - `src/features/booking/utils/__tests__/bookingEventTransform.adminBlindatura.test.ts` (2) → no-show + confirmed_end in transform.
 - `src/features/booking/hooks/__tests__/useCapacityCheck.adminBlindatura.test.ts` (2) → no-show esclusi per-fascia.
 - `src/features/booking/components/__tests__/bookingDetailsModal.noShow.adminBlindatura.test.tsx` (2) → pulsante No-show su orario **inizio** (addendum Matteo batch B); **fuori** conteggio M2 41.

@@ -25,3 +25,13 @@
 - **Validazione public:** lint OK, typecheck OK, test OK, build OK.
 - **Asset verificati:** main asset `index-DB5dyPTc` contiene commit `2758519`; chunk CRM `CrmPage-CUuFaY4M` contiene i fix editor campagne («Campagna aggiornata», «Nuova campagna», guard/toggle).
 - **Nota cache/PWA:** se su browser/app installata la UI online sembra vecchia, prima prova chiusura completa/reload o incognito: il server PROD è aggiornato, ma service worker/cache può tenere asset precedenti in sessione.
+
+## Fix CRM — Contatori destinatari campagna allineati al consenso
+- **Implementato:** lista picker, «N selezionati», «N contatti salvati» editor e modale «Invia a N contatti» contano solo clienti con consenso marketing; riallineamento live su disiscrizione con editor aperto (opzione B, senza Salva); helper `filterRecipientsToEligible` condiviso.
+- **Validazione:** `npm run validate` verde (878 test, 113 file).
+- **Skill CRM aggiornata:** sì (ADMIN_CRM_CONTEXT §7.2).
+
+## Fix CRM — Prune disiscritti + refresh chiusura editor (release)
+- **Implementato:** prune automatico `recipient_emails` al load (opzione B); `useCustomers` consenso cliente vince su vecchie prenotazioni; refresh rubrica+campagne alla chiusura editor (`handleCloseCampaignEditor`) — «Invia ora» allineato senza riaprire card.
+- **Validazione:** `npm run validate` verde (883 test, 114 file); 5 test `campaignsManagerCloseRefresh`.
+- **Release:** vedi [Report release CRM destinatari](Report-release-crm-destinatari-campagne-19-06-26.md).
