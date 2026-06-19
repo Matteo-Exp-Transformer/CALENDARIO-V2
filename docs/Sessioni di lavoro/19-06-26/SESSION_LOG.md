@@ -34,4 +34,5 @@
 ## Fix CRM — Prune disiscritti + refresh chiusura editor (release)
 - **Implementato:** prune automatico `recipient_emails` al load (opzione B); `useCustomers` consenso cliente vince su vecchie prenotazioni; refresh rubrica+campagne alla chiusura editor (`handleCloseCampaignEditor`) — «Invia ora» allineato senza riaprire card.
 - **Validazione:** `npm run validate` verde (883 test, 114 file); 5 test `campaignsManagerCloseRefresh`.
-- **Release:** vedi [Report release CRM destinatari](Report-release-crm-destinatari-campagne-19-06-26.md).
+- **Release:** private `main`/`env/test` commit `4deb987`; PrenotaZen `3d97245`; solo frontend — DB/Edge PROD già da release `1753132`/`2758519`.
+- **Report:** [Report release CRM destinatari](Report-release-crm-destinatari-campagne-19-06-26.md).
