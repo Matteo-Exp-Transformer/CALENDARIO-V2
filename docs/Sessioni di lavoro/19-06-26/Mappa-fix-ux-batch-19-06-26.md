@@ -201,9 +201,9 @@
 > Se utente revoca consenso mantenere il cliente nella rubrica dell'azienda, ma non è più selezionabile cliente per campagne email.
 
 **Checklist Matteo:**
-- [ ] La revoca del consenso non deve avvenire contattando direttamente l'azienda.
-- [ ] L'utente deve disiscriversi cliccando il link presente in fondo all'email.
-- [ ] Il footer dell'email deve essere modificato per includere un link cliccabile per la disiscrizione e la rimozione del consenso dal DB.
+- [x] La revoca del consenso non deve avvenire contattando direttamente l'azienda.
+- [x] L'utente deve disiscriversi cliccando il link presente in fondo all'email.
+- [x] Il footer dell'email deve essere modificato per includere un link cliccabile per la disiscrizione e la rimozione del consenso dal DB.
 
 ### Mappatura nell’app
 | Cosa vede chi | Componente / layer | Storage |
@@ -211,7 +211,7 @@
 | Cliente — checkbox consenso promo in form Prenota | `DietaryRestrictionsSection.tsx` (testo: *«Posso revocare il consenso in qualsiasi momento»*) | Scrittura: `booking_requests.marketing_consent` + sync `customers.marketing_consent` (migrazione `053_marketing_consent.sql`, edge `create-booking`) |
 | Cliente — testo legale revoca | `PrivacyPolicyContent.tsx` §3-bis (oggi: *contattare il ristorante*) | Testo statico — **da aggiornare** insieme al link |
 | Admin — invio campagne / promo | `useSendCampaignEmail.ts`, `useSendPromoEmail.ts` | Filtra già con `filterEmailsWithMarketingConsent` (`promoRecipientEligibility.ts`) |
-| Template HTML email promo/campagne | **`src/lib/emailTemplates.ts`** — `getPromoEmail`, `getCampaignEmail` | Footer oggi: *«Per non riceverne più, **contattaci**»* (righe ~438, ~565) |
+| Template HTML email promo/campagne | **`src/lib/emailTemplates.ts`** — `getPromoEmail`, `getCampaignEmail` | Footer marketing con placeholder `{{UNSUBSCRIBE_URL}}`, risolto da `send-email` v6 per singolo destinatario |
 | Admin — rubrica CRM | `useCustomers.ts`, picker campagne CRM | `customers.marketing_consent` — se `false`, escluso da campagne (già previsto) |
 
 ### ✅ Decisione Matteo (19-06-26)
@@ -224,14 +224,17 @@
   4. **Poi** si mostra il messaggio di conferma scritto da noi (es. disiscrizione andata a buon fine, non riceverà più promo).
 - L’admin non deve più dover gestire la revoca manualmente; il picker campagne continua a escludere chi ha `marketing_consent = false`.
 
-**Oggi NON esiste:** route pubblica disiscrizione, edge per revoca, token/link per-destinatario, pagina conferma.
+**Stato 19-06-26:** implementato, testato su email reale da Matteo e rilasciato in PROD.
 
-**Pezzi da costruire (riferimento tecnico, non prompt):**
-- Edge o API pubblica sicura (token per `tenant_id` + email) → UPDATE consenso.
-- Pagina pubblica + route in `router.tsx`.
-- Footer in `emailTemplates.ts` + passaggio email in fase invio campagna/promo.
-- Allineare `PrivacyPolicyContent` §3-bis (niente più «contatta il ristorante» per revoca marketing).
-- Legal doc se necessario (`LEGAL_STATE_CONTEXT`, `DATA_INVENTORY_CONTEXT`).
+**Pezzi costruiti:**
+- Migrazione 055 `unsubscribe_tokens` in PROD; token UUID opaco generato lato Edge con `service_role`.
+- Edge `send-email` v6: risolve `{{UNSUBSCRIBE_URL}}` solo per email marketing a singolo destinatario; fallisce se token/base URL/link non sono validi, così non invia footer non cliccabili.
+- Edge pubblica `unsubscribe` v1 (`verify_jwt=false`): valida token e imposta `customers.marketing_consent=false`.
+- Pagina/route pubblica `/disiscrivi?t=<token>` con conferma lato cliente.
+- `PrivacyPolicyContent` §3-bis allineata: la revoca marketing passa dal link email, non dal contatto manuale.
+- Cliente resta in rubrica CRM; picker campagne continua a escludere chi ha `marketing_consent=false`.
+
+**Release:** private `main`/`env/test` commit `1753132`; PrenotaZen pubblico commit `2758519`; Vercel PROD `prenota-mk7j0i9bi` alias `prenota-zen.vercel.app`. Se l'app online mostra ancora vecchia UI CRM, controllare cache/PWA/service worker prima di riaprire il fix: la build PROD serve già asset `index-DB5dyPTc` e chunk CRM `CrmPage-CUuFaY4M`.
 
 **Collegamenti:** `FU-EMAIL-8`; batch 18-06 P3 (filtro consenso picker — complementare).
 
