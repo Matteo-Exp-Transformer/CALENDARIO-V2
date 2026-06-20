@@ -180,30 +180,36 @@ Dettaglio prodotto C-U3/C-D1/C-U2: `ADMIN_PRENOTAZIONI_CONTEXT.md` §5-ter punti
 
 ---
 
-## 7-quater. Digest «Prenotazioni del giorno» — fasce orarie (12-06-26)
+## 7-quater. Digest «Prenotazioni del giorno» — fasce collapse + griglia card (20-06-26)
 
-Quando `booking_time_slots_enabled` è attivo e ci sono fasce in `service_slots` (`useDigestSlotConfigs`), le sezioni **Prenotazioni con menu** e **Solo tavolo** mostrano le prenotazioni **sotto l’intestazione della fascia corretta** (Colazione, Pranzo, Aperitivo, Cena, Notturna, …), in ordine `display_order`.
-
-### Layout unico (tutte le larghezze)
-
-Un solo blocco verticale per sezione — **nessun** layout affiancato a breakpoint desktop:
+La vista **Giorno** sotto FullCalendar non è più divisa in **Prenotazioni con menu** e **Solo tavolo**.
+La struttura attuale è una sintesi in alto + card collassabili per fascia oraria; la distinzione
+MENU/TAVOLO vive dentro la card prenotazione come badge.
 
 ```
-space-y-3
-  └─ per ogni fascia (digestSlots)
-       ├─ DigestSlotHeader (nome fascia)
-       └─ DigestBookingListRow × N (prenotazioni del turno/filtro corrente)
+DayDigestSummaryPanel
+  └─ DayServiceGroupCard × N (Colazione, Pranzo, Aperitivo, Cena, ...)
+       └─ DayHourGroup × N (13:00, 14:00, ...)
+            └─ BookingDigestCard × N
+  └─ DayServiceGroupCard "Fuori fascia" solo se esistono prenotazioni fuori fascia
 ```
 
-- Vale per **mobile, tablet e desktop** (≥1400px incluso).
-- Supporta **N fasce** (non solo 3): la vecchia griglia `grid-cols-3` da ≥1390px è **rimossa** (disallineava header/prenotazioni e falliva con più di 3 slot).
-- Senza fasce attive o con slot vuoti: griglia piatta `grid-cols-1 sm:grid-cols-2` (invariata).
-- Sezione **Fuori fascia** (orfani): griglia piatta, invariata.
-- Pro + turni: `filterByTurn` e `DigestTurnNav` restano sul digest; il layout per fascia non cambia tra Classic e Pro.
+- `DayServiceGroupCard` usa `CollapsibleCard` con `defaultExpanded={false}`: tutte le fasce partono
+  chiuse e possono restare aperte insieme.
+- `DayHourGroup` usa una griglia card: `grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4`.
+  La vecchia nota “no `grid-cols-3`” è **superata**: la griglia a 3/4 colonne ora è voluta dentro
+  ogni gruppo orario, non come griglia delle fasce.
+- Se non ci sono fasce attive, la vista giorno usa una griglia piatta di `BookingDigestCard`
+  mantenendo gli stessi handler di dettaglio e assegnazione tavolo.
+- Sezione **Fuori fascia**: card finale con stile di attenzione, mostrata solo se il view model
+  espone `outOfSlotCount > 0`.
+- Pro + turni: `filterByTurn`, `DigestTurnNav`, `assignedBookingIds` e `QuickTableAssignModal`
+  restano invariati; in Classic non compaiono badge/stati “da assegnare”.
 
 ### Verifica visiva consigliata
 
-Con sidebar icone (`pl-16`): ~375px, ~900px, ~1280px, desktop ≥1400px — ogni fascia deve mostrare header + lista sotto, senza secondo blocco DOM duplicato.
+Con sidebar icone (`pl-16`): 375px, 834px, 1280px, desktop ≥1536px — riepilogo leggibile, fasce chiuse
+all’apertura, gruppi orari ordinati, card senza overflow e massimo 4 per riga su desktop largo.
 
 ---
 
