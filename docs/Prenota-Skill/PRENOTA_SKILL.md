@@ -190,6 +190,11 @@ Altri invarianti da non rompere senza conferma:
   va scritto `''`. Un «pulisci NULL» rompe il salvataggio — è già stato un incident. Serializer in
   `restaurantSettingRegistry.public_booking_strip_photo`. Dettaglio: `contesto/PRENOTA_LAYOUT_CONTEXT.md` §2.
 - **Submit invariato — logica mutation.** Il payload e il lock di `useCreateBookingRequest` restano invariati; il **feedback visivo** errori POST (inline + pulse + toast) vive in `BookingRequestForm` via `bookingPublicFormErrorFeedback.ts`.
+- **Card categoria ingredienti.** Quando Anna apre una categoria menù, la lista si chiude solo con
+  click sul suo header o click fuori dalla card; i click su ingredienti/checkbox restano dentro il
+  pannello e non devono chiuderlo. Sulle card collegate a preset personalizzabile, il preset resta
+  agganciato mentre Anna compone gli ingredienti: azzerarlo al primo click cambia la chiave di reset
+  della griglia e richiude la categoria. Dettaglio: `contesto/PRENOTA_LAYOUT_CONTEXT.md` §7.
 
 ---
 

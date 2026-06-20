@@ -330,6 +330,16 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
   del carosello (scroll manuale o frecce avanti/indietro in `ComposeScrollRow` — queste chiudono subito
   via stesso evento), si chiude da sola (`isElementFullyVisibleInHorizontalContainer` su scroll
   orizzontale; 700ms di suppress dopo `scrollIntoView` all'apertura).
+- **Chiusura pannello:** la card aperta si chiude con click fuori dalla card (listener `pointerdown`
+  su `document`, valido anche touch) oppure con click esplicito sull'header
+  `#booking-menu-cat-header-*`. Click interni su ingredienti, checkbox, contatori o contenuto del
+  portal NON chiudono il pannello.
+- **Preset card personalizzabile:** in `BookingRequestForm`, quando la categoria arriva da una
+  sottotab/card con `preset_id`, la selezione manuale degli ingredienti NON deve azzerare
+  `selectedPreset`/`preset_menu` solo perché non coincide più con tutti gli item del preset. Quel
+  preset è anche contesto/filtro della griglia e parte del `resetKey` di `BookingMenuComposeGrid`:
+  cambiarlo a `no-preset` al primo ingrediente richiude la categoria aperta. Test di regressione:
+  `BookingRequestForm.flussoUtente.test.tsx`.
 - **Portal z-index:** `BOOKING_MENU_CATEGORY_EXPANDED_PORTAL_CLASS` → `fixed z-[160]` (sopra form e
   riepilogo in scroll; **non** esiste più sticky bar mobile — rimossa 02-06-26).
 
