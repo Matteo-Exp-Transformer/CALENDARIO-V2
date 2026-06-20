@@ -1289,6 +1289,22 @@ export const BookingFormConfigPanel = forwardRef<
               placeholder="Nome card scorrevole"
               singleLine
             />
+            <AdminFieldWithCharCount
+              label="Badge prenotazione"
+              value={tab.booking_badge_label ?? ''}
+              maxLength={L.bookingBadgeLabel}
+              onChange={(booking_badge_label) =>
+                patchTab({
+                  booking_badge_label:
+                    booking_badge_label.trim() === '' ? undefined : booking_badge_label,
+                })
+              }
+              placeholder={tab.label?.trim() || 'Badge admin'}
+              singleLine
+            />
+            <p className="-mt-2 text-xs text-slate-500">
+              Testo mostrato nella card prenotazione admin
+            </p>
           </>
         )}
 
@@ -1736,6 +1752,23 @@ export const BookingFormConfigPanel = forwardRef<
                       onChange={(value) => updateMode(mode.id, { label: value })}
                       placeholder="Nome della modalità"
                     />
+
+                    <AdminFieldWithCharCount
+                      id={`mode-booking-badge-${mode.id}`}
+                      label="Badge prenotazione"
+                      singleLine
+                      value={mode.booking_badge_label ?? ''}
+                      maxLength={L.bookingBadgeLabel}
+                      onChange={(value) =>
+                        updateMode(mode.id, {
+                          booking_badge_label: value.trim() === '' ? undefined : value,
+                        })
+                      }
+                      placeholder={mode.label?.trim() || 'Badge admin'}
+                    />
+                    <p className="-mt-3 text-xs text-slate-500">
+                      Testo mostrato nella card prenotazione admin
+                    </p>
 
                     <div>
                       <Label htmlFor={`mode-desc-${mode.id}`} className="block mb-1 text-sm">Descrizione breve</Label>

@@ -453,6 +453,12 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   const slotLimitEnabledQuery = useRestaurantSetting('slot_limit_enabled', {
     authenticated: true,
   })
+  const { data: bookingFormConfig } = useRestaurantSetting('booking_public_form_config', {
+    authenticated: true,
+  })
+  const { data: customStaffPresets = [] } = useRestaurantSetting('booking_custom_staff_presets', {
+    authenticated: true,
+  })
   const slotGuestCapacitiesQuery = useRestaurantSetting('slot_guest_capacities', {
     authenticated: true,
   })
@@ -1231,6 +1237,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         isPro={hasTurnsFeature}
                         assignedBookingIds={assignedBookingIds}
                         filterByTurn={filterByTurn}
+                        bookingModes={bookingFormConfig?.booking_modes ?? []}
+                        customStaffPresets={customStaffPresets}
                         onOpenBooking={openDigestBooking}
                         onDotClick={handleDotClick}
                       />
@@ -1242,6 +1250,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         isPro={hasTurnsFeature}
                         assignedBookingIds={assignedBookingIds}
                         filterByTurn={filterByTurn}
+                        bookingModes={bookingFormConfig?.booking_modes ?? []}
+                        customStaffPresets={customStaffPresets}
                         onOpenBooking={openDigestBooking}
                         onDotClick={handleDotClick}
                       />
@@ -1258,6 +1268,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
                         assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
                         hasTurns={hasTurnsFeature}
+                        bookingModes={bookingFormConfig?.booking_modes ?? []}
+                        customStaffPresets={customStaffPresets}
                         onDotClick={handleDotClick}
                       />
                     ))}

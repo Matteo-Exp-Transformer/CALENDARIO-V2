@@ -1,8 +1,11 @@
 import React from 'react'
 import type { BookingRequest } from '@/types/booking'
+import type { BookingMode } from '@/features/booking/constants/bookingPublicFormConfig'
+import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
 import { getAccurateStartTime } from '../../utils/dateUtils'
 import { getResolvedMenuPriceDisplay } from '../../utils/menuPricing'
-import { digestBookingHasMenuContext } from '../../utils/digestBookingUtils'
+import { resolveSubTabFromBooking } from '../../utils/buildBookingEmailSummary'
+import { getModeLabelByType } from '../../utils/bookingModeLabels'
 import { DigestBookingTypeIcon } from '../DigestBookingTypeIcon'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils'
@@ -17,10 +20,88 @@ interface BookingDigestCardProps {
   unassigned?: boolean
   /** Pro: prenotazione con tavolo già assegnato. */
   assigned?: boolean
-  /** Pro: mostrare il pallino di stato. */
+  /** Pro: mostrare lo stato tavolo. */
   hasTurns?: boolean
-  /** Pro: click sul pallino → apre modal assegnazione rapida. */
+  bookingModes?: BookingMode[]
+  customStaffPresets?: CustomStaffPreset[]
+  /** Pro: click sullo stato tavolo → apre modal assegnazione rapida. */
   onDotClick?: (booking: BookingRequest, e: React.MouseEvent) => void
+}
+
+type DigestBadge = {
+  key: string
+  label: string
+  variant: React.ComponentProps<typeof Badge>['variant']
+  interactive?: boolean
+  ariaLabel?: string
+}
+
+function cleanBadgeLabel(value: string | null | undefined): string | null {
+  const label = value?.trim()
+  return label ? label : null
+}
+
+function addUniqueBadge(
+  badges: DigestBadge[],
+  seen: Set<string>,
+  badge: DigestBadge,
+): void {
+  const normalized = badge.label.trim().toLocaleLowerCase('it-IT')
+  if (!normalized || seen.has(normalized)) return
+  seen.add(normalized)
+  badges.push(badge)
+}
+
+function buildDigestBadges({
+  booking,
+  unassigned,
+  hasTurns,
+  bookingModes = [],
+  customStaffPresets = [],
+}: {
+  booking: BookingRequest
+  unassigned: boolean
+  hasTurns: boolean
+  bookingModes?: BookingMode[]
+  customStaffPresets?: CustomStaffPreset[]
+}): DigestBadge[] {
+  const badges: DigestBadge[] = []
+  const seen = new Set<string>()
+
+  if (hasTurns && unassigned) {
+    addUniqueBadge(badges, seen, {
+      key: 'unassigned',
+      label: 'DA ASSEGNARE',
+      variant: 'warning',
+      interactive: true,
+      ariaLabel: 'Assegna tavolo',
+    })
+  }
+
+  const mode = bookingModes.find((m) => m.booking_type === booking.booking_type && m.enabled)
+  const modeLabel =
+    cleanBadgeLabel(mode?.booking_badge_label) ||
+    cleanBadgeLabel(mode?.label) ||
+    cleanBadgeLabel(getModeLabelByType(bookingModes, booking.booking_type))
+  if (modeLabel) {
+    addUniqueBadge(badges, seen, {
+      key: 'booking-type',
+      label: modeLabel,
+      variant: 'primary',
+    })
+  }
+
+  const subTab = resolveSubTabFromBooking(booking, mode, customStaffPresets)
+  const subTabLabel = cleanBadgeLabel(subTab?.booking_badge_label) || cleanBadgeLabel(subTab?.label)
+  if (subTabLabel) {
+    addUniqueBadge(badges, seen, {
+      key: 'sub-tab',
+      label: subTabLabel,
+      variant: 'outline',
+    })
+  }
+
+  return badges.slice(0, 3)
 }
 
 export function BookingDigestCard({
@@ -29,15 +110,21 @@ export function BookingDigestCard({
   showMenuPricing = false,
   compactGrid: _compactGrid,
   unassigned = false,
-  assigned = false,
   hasTurns = false,
+  bookingModes = [],
+  customStaffPresets = [],
   onDotClick,
 }: BookingDigestCardProps) {
   const menuPriceRow = showMenuPricing ? getResolvedMenuPriceDisplay(booking) : null
   const bookingTimeLabel =
     booking.desired_time || booking.confirmed_start ? getAccurateStartTime(booking) : null
-  const hasMenuContext = digestBookingHasMenuContext(booking)
-  const hasSpecialNote = !!booking.special_requests?.trim()
+  const badges = buildDigestBadges({
+    booking,
+    unassigned,
+    hasTurns,
+    bookingModes,
+    customStaffPresets,
+  })
 
   return (
     <div
@@ -56,57 +143,80 @@ export function BookingDigestCard({
         'transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
       )}
     >
-      <div className="flex flex-col gap-2 px-4 py-3.5">
+      <div className="flex flex-col gap-2.5 px-4 py-4 md:px-5">
         {/* (1) Nome cliente — elemento più evidente */}
-        <div className="flex min-w-0 items-center gap-2 pr-5">
-          <DigestBookingTypeIcon booking={booking} className="h-5 w-5 shrink-0 text-primary-500" />
-          <span className="min-w-0 truncate text-title-section font-semibold leading-snug text-primary-900">
+        <div className="flex min-w-0 items-center pr-8">
+          <span className="min-w-0 truncate text-[1.125rem] font-bold leading-snug text-primary-900 sm:text-[1.25rem]">
             {booking.client_name}
           </span>
         </div>
 
         {/* (2) Numero ospiti — nero, grande; (3) orario preciso */}
-        <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-          <span className="text-title-section font-bold leading-none tabular-nums text-primary-900">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <span className="text-[1rem] font-normal leading-none tabular-nums text-gray-900 sm:text-[1.125rem]">
             {booking.num_guests}
           </span>
-          <span className="text-body text-(--color-text-muted)">
+          <span className="text-[1.0625rem] font-normal leading-snug text-gray-900">
             {booking.num_guests === 1 ? 'ospite' : 'ospiti'}
           </span>
           {bookingTimeLabel && (
             <>
-              <span className="text-body text-(--color-text-muted)">·</span>
-              <span className="text-value font-medium text-primary-900">{bookingTimeLabel}</span>
+              <span className="text-[1.0625rem] leading-snug text-(--color-text-muted)">·</span>
+              <span className="text-[1.0625rem] font-normal leading-snug tabular-nums text-primary-900">
+                {bookingTimeLabel}
+              </span>
             </>
           )}
         </div>
 
-        {/* (4) Stato assegnazione — solo PRO */}
-        {hasTurns && (unassigned || assigned) && (
-          <div>
-            {unassigned && <Badge variant="warning" className="text-label!">DA ASSEGNARE</Badge>}
-            {assigned && <Badge variant="success" className="text-label!">ASSEGNATO</Badge>}
-          </div>
-        )}
-
-        {/* (5) Badge contesto: MENU / TAVOLO / NOTE */}
-        <div className="flex flex-wrap gap-1.5 pt-0.5">
-          {hasMenuContext ? (
-            <Badge variant="primary" className="text-label!">MENU</Badge>
-          ) : (
-            <Badge variant="neutral" className="text-label!">TAVOLO</Badge>
+        {/* (4) Badge: stato PRO + tipologia + card sulla stessa riga visiva */}
+        <div className="flex max-w-full flex-wrap items-center gap-1.5 pt-0.5">
+          {badges.map((badge) =>
+            badge.interactive ? (
+              <span
+                key={badge.key}
+                role="button"
+                tabIndex={0}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  onDotClick?.(booking, e)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    onDotClick?.(booking, e as unknown as React.MouseEvent)
+                  }
+                }}
+                aria-label={badge.ariaLabel}
+                className="is-clickable inline-flex min-w-0 shrink-0"
+              >
+                <Badge variant={badge.variant} className="max-w-full shrink-0 truncate text-label! font-normal">
+                  {badge.label}
+                </Badge>
+              </span>
+            ) : (
+              <Badge
+                key={badge.key}
+                variant={badge.variant}
+                className="max-w-full shrink-0 truncate text-label! font-normal"
+              >
+                {badge.label}
+              </Badge>
+            )
           )}
-          {hasSpecialNote && <Badge variant="outline" className="text-label!">NOTE</Badge>}
         </div>
 
         {/* Prezzo menù (opzionale, se showMenuPricing=true) */}
         {menuPriceRow && (
           <div className="flex items-baseline justify-between gap-3 border-t border-(--color-border) pt-2">
-            <span className="min-w-0 text-value font-semibold text-primary-900">
+            <span className="min-w-0 text-title-subtitle font-normal text-primary-900">
               {menuPriceRow.prezzoMenuLabel}
             </span>
             {menuPriceRow.prezzoTotaleLabel && (
-              <span className="shrink-0 text-body font-normal text-(--color-text-muted)">
+              <span className="shrink-0 text-value font-normal text-(--color-text-muted)">
                 Tot. {menuPriceRow.prezzoTotaleLabel}
               </span>
             )}
@@ -114,22 +224,10 @@ export function BookingDigestCard({
         )}
       </div>
 
-      {/* PRO: pallino di stato assegnazione (top-right) */}
-      {hasTurns && (
-        <span
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => {
-            e.stopPropagation()
-            e.preventDefault()
-            onDotClick?.(booking, e)
-          }}
-          aria-label={assigned ? 'Tavolo assegnato' : 'Assegna tavolo'}
-          className={cn(
-            'absolute right-2 top-2 z-10 h-2.5 w-2.5 rounded-full',
-            assigned ? 'bg-(--color-status-accepted)' : 'bg-primary-300',
-          )}
-        />
-      )}
+      <DigestBookingTypeIcon
+        booking={booking}
+        className="pointer-events-none absolute right-2 top-2 z-10 h-5 w-5 text-primary-500"
+      />
     </div>
   )
 }
