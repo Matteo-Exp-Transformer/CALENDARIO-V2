@@ -480,6 +480,51 @@ describe('@admin-blindatura calendario — gate tavolo Classic vs Pro', () => {
     expect(screen.queryByText('NOTE')).not.toBeInTheDocument()
     expect(screen.queryByText('ASSEGNATO')).not.toBeInTheDocument()
   })
+
+  it('digest giorno non mostra il badge del carosello quando la prenotazione arriva da carosello', () => {
+    featuresState.servizio = true
+    serviceSlotsState.slots = [
+      { id: 'slot-1', name: 'Cena', start_time: '19:00', end_time: '23:00' },
+    ]
+    restaurantSettings.booking_public_form_config = {
+      page_title: 'Prenota',
+      page_description: 'Desc',
+      header_styles: {},
+      booking_modes: [
+        {
+          id: 'mode-menu',
+          booking_type: 'menu_prezzo_fisso',
+          enabled: true,
+          label: 'Menu degustazione lungo',
+          booking_badge_label: 'Menu',
+          description: 'D',
+          icon: 'bowl_food',
+          sub_tabs_enabled: true,
+          sub_tabs_presentation: 'carousel',
+          sub_tabs: [
+            {
+              id: 'sub-carousel',
+              display: 'carousel',
+              label: 'Carosello admin',
+              booking_badge_label: 'CaroselloBadge',
+              carousel_items: [{ image_url: 'https://example.com/offerta.jpg' }],
+            },
+          ],
+        },
+      ],
+    } as BookingPublicFormConfig
+    const booking = acceptedBooking({
+      client_name: 'Cliente Carosello',
+      booking_type: 'menu_prezzo_fisso',
+    })
+
+    renderCalendar(<BookingCalendar bookings={[booking]} initialDate="2026-06-12" />)
+
+    expect(screen.getByText('DA ASSEGNARE')).toBeInTheDocument()
+    expect(screen.getByText('Menu')).toBeInTheDocument()
+    expect(screen.queryByText('CaroselloBadge')).not.toBeInTheDocument()
+    expect(screen.queryByText('Carosello admin')).not.toBeInTheDocument()
+  })
 })
 
 describe('@admin-blindatura calendario — crea da giorno (dateClick + pulsante)', () => {

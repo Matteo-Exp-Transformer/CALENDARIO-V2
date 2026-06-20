@@ -298,8 +298,8 @@ describe('icone Prenota — migrate-on-read', () => {
       ],
     })
     expect(parsed).not.toBeNull()
-    expect(parsed!.booking_modes[0].booking_badge_label).toBe('B'.repeat(18))
-    expect(parsed!.booking_modes[0].sub_tabs[0].booking_badge_label).toBe('B'.repeat(18))
+    expect(parsed!.booking_modes[0].booking_badge_label).toBe('B'.repeat(12))
+    expect(parsed!.booking_modes[0].sub_tabs[0].booking_badge_label).toBe('B'.repeat(12))
   })
 })
 

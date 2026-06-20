@@ -200,18 +200,22 @@ DayDigestSummaryPanel
   (`Colazione    07:00 - 11:30`), con spazio ampio fra i due; il riepilogo sotto mostra solo
   conteggi/coperti/assegnazioni. Non usare `actions` del `CollapsibleCard` per il range, altrimenti
   l'orario torna appoggiato al margine destro.
-- `DayHourGroup` usa una griglia card: `grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4`.
-  La vecchia nota “no `grid-cols-3`” è **superata**: la griglia a 3/4 colonne ora è voluta dentro
-  ogni gruppo orario, non come griglia delle fasce.
+- `DayHourGroup` usa una griglia card: `grid-cols-1 min-[450px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5`.
+  La vecchia nota “no `grid-cols-3`” è **superata**: la griglia fino a 5 colonne ora è voluta dentro
+  ogni gruppo orario, non come griglia delle fasce. Il breakpoint `min-[450px]` è esplicito (2 card
+  da 450px in su).
 - Le label ora in `DayHourGroup` sono badge compatti ma leggibili (`13:00`) e i gruppi successivi al
   primo hanno una riga divisoria interna al digest.
-- `BookingDigestCard` mostra al massimo 3 badge, senza duplicati: `DA ASSEGNARE` solo per Pro senza
-  tavolo, tipologia prenotazione, card scorrevole. Le label arrivano da `booking_badge_label`
-  (tipologia/card) con fallback a titolo tipologia/card. Su mobile la riga puo andare a capo in modo
-  controllato, senza overflow.
-- Pro + tavoli: il vecchio pallino di assegnazione top-right non c'è più. L'azione di assegnazione
-  tavolo vive sul badge `DA ASSEGNARE`; l'angolo top-right mostra solo l'icona tipologia prenotazione,
-  sempre compatta anche su tablet/desktop.
+- `BookingDigestCard` struttura fissa su tutti i viewport: (1) nome cliente a tutta larghezza
+  (nessuna icona tipologia: rimossa); (2) ospiti + orario; (3) badge tipologia (tipologia prenotazione
+  + card scorrevole) **sotto** i dati, sulla stessa riga con wrap controllato; massimo 3 badge senza
+  duplicati. Il badge `DA ASSEGNARE` (PRO) NON sta nel flusso: è **esterno** alla card, agganciato al
+  bordo in alto a destra (`absolute right-3 top-0 -translate-y-full`, sfondo `bg-surface` coerente con
+  la card, bordo proprio `border-(--color-border)`, `rounded-b-none` per saldarsi al bordo superiore),
+  così non sottrae spazio al nome; cliccabile apre `QuickTableAssignModal`; in Classic non compare. Il
+  badge card scorrevole compare solo per sotto-tab `display === 'cards'`, mai per carosello.
+- Barra % occupazione: `h-2.5`; soglie colore: verde-primario <80%, ambra 80-110%, rosso >110%.
+  La barra è cappata visivamente a 100% ma il testo mostra il valore reale.
 - Se non ci sono fasce attive, la vista giorno usa una griglia piatta di `BookingDigestCard`
   mantenendo gli stessi handler di dettaglio e assegnazione tavolo.
 - Sezione **Fuori fascia**: card finale con stile di attenzione, mostrata solo se il view model

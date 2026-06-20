@@ -472,21 +472,32 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
 
   // Cap per-fascia risolto come nel client (useCapacityCheck): override(data) → service_slots.max_guests
   // → slot_guest_capacities[slotId]. Considera SOLO fasce esistenti (no chiavi orfane "appese").
+  const resolveSlotCapacityForDate = useCallback(
+    (slotId: string | null, cellDateStr: string): number | null => {
+      if (!slotId || !slotLimitEnabled || !timeSlotsEnabled) return null
+      const slot = serviceSlots.find((item) => item.id === slotId)
+      if (!slot) return null
+      const ov = resolveSlotOverride(slotOverrides, slot.id, cellDateStr)
+      const cap = ov ? ov.max_guests : (slot.max_guests ?? slotGuestCapacities[slot.id] ?? null)
+      return typeof cap === 'number' && cap > 0 ? cap : null
+    },
+    [slotLimitEnabled, timeSlotsEnabled, serviceSlots, slotOverrides, slotGuestCapacities],
+  )
+
   const resolveDayDenominator = useCallback(
     (cellDateStr: string): number | null => {
       if (!slotLimitEnabled || !timeSlotsEnabled) return null
       if (serviceSlots.length === 0) return null
       let sum = 0
       for (const slot of serviceSlots) {
-        const ov = resolveSlotOverride(slotOverrides, slot.id, cellDateStr)
-        const cap = ov ? ov.max_guests : (slot.max_guests ?? slotGuestCapacities[slot.id] ?? null)
+        const cap = resolveSlotCapacityForDate(slot.id, cellDateStr)
         // Se anche una sola fascia del giorno è senza limite → niente %, solo conteggio.
         if (cap == null) return null
         sum += cap
       }
       return sum > 0 ? sum : null
     },
-    [slotLimitEnabled, timeSlotsEnabled, serviceSlots, slotOverrides, slotGuestCapacities],
+    [slotLimitEnabled, timeSlotsEnabled, serviceSlots, resolveSlotCapacityForDate],
   )
 
 
@@ -1237,6 +1248,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         isPro={hasTurnsFeature}
                         assignedBookingIds={assignedBookingIds}
                         filterByTurn={filterByTurn}
+                        occupancyCapacity={resolveSlotCapacityForDate(group.slotId, selectedDate)}
                         bookingModes={bookingFormConfig?.booking_modes ?? []}
                         customStaffPresets={customStaffPresets}
                         onOpenBooking={openDigestBooking}
@@ -1250,6 +1262,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         isPro={hasTurnsFeature}
                         assignedBookingIds={assignedBookingIds}
                         filterByTurn={filterByTurn}
+                        occupancyCapacity={null}
                         bookingModes={bookingFormConfig?.booking_modes ?? []}
                         customStaffPresets={customStaffPresets}
                         onOpenBooking={openDigestBooking}
