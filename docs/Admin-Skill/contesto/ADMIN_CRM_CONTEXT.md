@@ -15,7 +15,7 @@
 - Cerca per nome/email/telefono.
 - Filtra per ultima prenotazione: tutte, settimana, mese, anno.
 - Ordina lista card (default: ultima prenotazione decrescente).
-- Click su card → espansione inline (accordion, una sola card aperta): note interne + storico prenotazioni.
+- Click su card → espansione inline (accordion, una sola card aperta): storico prenotazioni (sopra) + note interne (sotto).
 - Storico ordinato per `created_at` decrescente; date in **GG/MM/AAAA**; intolleranze art. 9 (No / Sì cliccabile con regole consenso).
 - **Nessuna creazione manuale** — il pulsante "Nuovo cliente" è stato rimosso (fix 15-06-26). I clienti entrano in rubrica solo tramite prenotazioni dal form pubblico (`source='booking'`), che impone l'accettazione della privacy policy.
 - Modifica contatti / Elimina dalla card (stessi modali di prima).
@@ -46,7 +46,7 @@
 | `CampaignCadenceSelector` | `src/features/booking/components/crm/` | Selettore cadenza campagna (none/weekly/monthly/custom) |
 | `CustomerSearchBar` | `src/features/booking/components/crm/` | – |
 | `CustomerCardList` | `src/features/booking/components/crm/` | Lista card a tutta larghezza + toolbar ordinamento |
-| `CustomerCardExpandedContent` | `src/features/booking/components/crm/` | Area espansa: note interne + storico prenotazioni (7 campi) |
+| `CustomerCardExpandedContent` | `src/features/booking/components/crm/` | Area espansa: storico prenotazioni (sopra) + note interne (sotto); riga storico = Tipologia/Offerta/Ospiti/Prenotato il/Per il giorno/Importo/Intolleranze |
 | `CustomerFormModal` | `src/features/booking/components/crm/` | – |
 | `CustomerDeleteConfirm` | `src/features/booking/components/crm/` | – |
 
@@ -150,9 +150,9 @@ Chiave UI stabile: `CustomerProfile.profileKey` (`customerProfileKey` in `lib/cu
 - Update/delete multi-step client-side non transazionali.
 - Cambio email puo fallire per duplicato.
 - E2E CRM usa selettori deboli: servira attenzione nella blindatura.
-- Migrazione 050 applicata su TEST; promozione a PROD è passo separato (M-Settings/blindatura).
+- Email migrations (050 templates, 051/052 campagne, 053 marketing_consent, 054 dietary_consent, 055 unsubscribe) **applicate sia su TEST che su PROD** (verificato 20-06-26: PROD `rwuxgvld` e TEST `docnnernvp` entrambi alla 055).
 
-## 9. DB — tabella `email_campaigns` (migr. 051 + 052, TEST `docnnernvp`)
+## 9. DB — tabella `email_campaigns` (migr. 051 + 052, su TEST `docnnernvp` **e PROD `rwuxgvld`**)
 
 | colonna | tipo | note |
 |---|---|---|
@@ -181,17 +181,18 @@ Chiave UI stabile: `CustomerProfile.profileKey` (`customerProfileKey` in `lib/cu
 - Links solo http/https (`isValidHttpUrl`); URL `javascript:` etc. scartatI lato builder e UI.
 - Gruppo `recipient_emails` fisso alla creazione — non si aggiorna coi nuovi clienti (decisione Matteo 15-06-26). Eccezione obbligatoria: i clienti che revocano il consenso marketing vengono rimossi automaticamente dal gruppo salvato al load della campagna e la lista ripulita viene persistita su DB.
 - Cadenza in fase 1 = solo salvata; avviso UI obbligatorio nell'editor.
-- Promozione PROD = passo separato (M-Settings/blindatura).
+- Schema campagne **già su PROD** (mig. 051/052); resta da attivare l'invio automatico (FU-EMAIL-8).
 
 ## 11. Precedente sezione "promo singola" (rimossa in FU-EMAIL-7)
 
 La sezione «Email promo / offerte» (`savedPromo`, `useSendPromoEmail`, stato locale promo) è stata rimossa da `EmailTemplatesTab` il 15-06-26 e sostituita dal gestore campagne. La tabella `email_templates` con `template_key='promo'` rimane in DB (non è stata eliminata) ma non è più letta dall'UI.
 
-## 12. Pendenze rubrica card — controverifica 20-06-26
+## 12. Redesign rubrica card — log fix 20-06-26 (TUTTI CHIUSI)
 
-> Stato verificato in controverifica: redesign card (`CustomerCardList` + `CustomerCardExpandedContent`)
-> **compila** (`tsc` verde) e i test blindatura CRM passano (5 test). I punti sotto sono
-> **fix richiesti da Matteo ancora APERTI** sul redesign — non implementarli come "già fatti".
+> Redesign card (`CustomerCardList` + `CustomerCardExpandedContent`, al posto di tabella+pannello)
+> rilasciato il 20-06-26: dev `main@b3ce985`, PrenotaZen pubblica `029a9f3`. `npm run validate`
+> verde (913 test). I 3 fix richiesti da Matteo sotto sono **tutti implementati e verificati** —
+> sezione tenuta come storico, non più pendenze.
 
 1. ~~**Clienti senza email**~~ — **FATTO 20-06-26**: `resolveContactKey` in `customerEmail.ts` + `mergeProfiles`
    aggiornato. Booking con solo-telefono entrano in rubrica (`email = ''`). Picker promo li esclude già
