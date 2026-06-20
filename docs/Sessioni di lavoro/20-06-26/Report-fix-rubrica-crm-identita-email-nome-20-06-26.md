@@ -160,12 +160,12 @@ Niente legato a questo fix. `docs/FOLLOW_UP.md` invariato.
 
 ## Checklist QA per Matteo (Rubrica)
 
-- [ ] Due prenotazioni stessa email, nomi diversi → **2 righe** con N° prenotazioni e date corrette per ciascun nome
-- [ ] Elimina una riga → sparisce solo quel nome; l’altra riga resta
-- [ ] Modifica nome/telefono su una riga → aggiorna solo le prenotazioni di quell’identità
-- [ ] Personalizza email → picker campagna: stessa email **non** duplicata
+- [x] Due prenotazioni stessa email, nomi diversi → **2 righe** con N° prenotazioni e date corrette per ciascun nome
+- [x] Elimina una riga → sparisce solo quel nome; l’altra riga resta
+- [x] Modifica nome/telefono su una riga → aggiorna solo le prenotazioni di quell’identità
+- [x] Personalizza email → picker campagna: stessa email **non** duplicata
 
-*(Matteo ha dichiarato controtestato — checklist presumibilmente già percorsa.)*
+**✅ Verificato live in PROD da Matteo (20-06-26): tutti i punti OK.**
 
 ---
 

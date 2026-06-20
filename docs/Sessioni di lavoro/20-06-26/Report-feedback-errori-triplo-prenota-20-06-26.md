@@ -3,7 +3,7 @@
 ## 1. Cappello
 - **Cosa è cambiato:** ogni errore di compilazione o invio sulla Pagina Prenota mostra messaggio sotto il campo, lampeggio arancione con scroll, e toast chiaro in alto al centro.
 - **Cosa resta:** niente follow-up aperti su questo task (FU-054 chiuso).
-- **Serve una tua azione:** no — QA manuale consigliato su fascia piena e consenso allergie.
+- **Serve una tua azione:** no — QA manuale **eseguito live in PROD (20-06-26): tutto OK**, incluse fascia piena e consenso allergie.
 
 ## 2. Cosa è stato fatto
 1. Inventario errori client + edge → matrice audit (§ Matrice).
@@ -79,13 +79,15 @@ Il gap era chiaro (POST solo toast): centralizzare in `mapCreateBookingError` ev
 - **bug preesistente:** post-invio senza inline/pulse; toast generico pre-invio; FU-054 menu error sticky.
 - **prompt chiaro:** decisione tripla feedback già definita — implementazione diretta.
 
-## 9. Checklist QA — Matteo (5 righe)
+## 9. Checklist QA — Matteo (5 righe) — ✅ ESEGUITA LIVE IN PROD 20-06-26
 
 1. **Schermata:** Pagina Prenota `/prenota/:slug` — form pubblico cliente.
-2. **Prova A:** clicca Invia con form vuoto → devi vedere «Nome obbligatorio» sotto il nome, lampeggio arancione sul campo nome, toast in alto al centro con lo stesso testo (non «N campi»).
-3. **Prova B:** compila tutto tranne privacy → stesso triplo feedback sul checkbox Privacy Policy in fondo al form.
-4. **Prova C (se possibile):** simula fascia piena (SLOT_LIMIT) → messaggio sotto Ora, lampeggio su Data/Ora, toast «prova altro orario o giorno».
-5. **Prova D:** intolleranze compilate senza consenso art.9 → modale consenso; se server rifiuta, triplo feedback sul consenso dietary + toast esplicativo.
+2. [x] **Prova A:** clicca Invia con form vuoto → devi vedere «Nome obbligatorio» sotto il nome, lampeggio arancione sul campo nome, toast in alto al centro con lo stesso testo (non «N campi»).
+3. [x] **Prova B:** compila tutto tranne privacy → stesso triplo feedback sul checkbox Privacy Policy in fondo al form.
+4. [x] **Prova C:** fascia piena (SLOT_LIMIT) → messaggio sotto Ora, lampeggio su Data/Ora, toast «prova altro orario o giorno».
+5. [x] **Prova D:** intolleranze compilate senza consenso art.9 → modale consenso; se server rifiuta, triplo feedback sul consenso dietary + toast esplicativo.
+
+**Esito:** tutte le prove verificate da Matteo direttamente in produzione — comportamento atteso confermato.
 
 ## 10. Domande di chiusura
 

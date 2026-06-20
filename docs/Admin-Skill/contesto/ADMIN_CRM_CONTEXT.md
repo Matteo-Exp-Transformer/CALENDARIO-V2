@@ -191,8 +191,8 @@ La sezione «Email promo / offerte» (`savedPromo`, `useSendPromoEmail`, stato l
 
 > Redesign card (`CustomerCardList` + `CustomerCardExpandedContent`, al posto di tabella+pannello)
 > rilasciato il 20-06-26: dev `main@b3ce985`, PrenotaZen pubblica `029a9f3`. `npm run validate`
-> verde (913 test). I 3 fix richiesti da Matteo sotto sono **tutti implementati e verificati** —
-> sezione tenuta come storico, non più pendenze.
+> verde (913 test). I 3 fix richiesti da Matteo sotto sono **tutti implementati e verificati live in
+> PROD da Matteo (test visivo 20-06-26: OK)** — sezione tenuta come storico, non più pendenze.
 
 1. ~~**Clienti senza email**~~ — **FATTO 20-06-26**: `resolveContactKey` in `customerEmail.ts` + `mergeProfiles`
    aggiornato. Booking con solo-telefono entrano in rubrica (`email = ''`). Picker promo li esclude già

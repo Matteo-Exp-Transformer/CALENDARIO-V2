@@ -37,6 +37,13 @@
 - `npm run lint` → verde.
 - `npm run typecheck` → verde.
 - `npm run validate` → verde.
+- **Revisione Codex 20-06-26:** `npm run validate` → verde (lint + typecheck + Vitest).
+- **QA browser revisione Codex 20-06-26** su TEST `da-tommaso`, con seed temporaneo e restore finale:
+
+| ID | Caso | 375 | 834 | 1280 | Nota |
+|----|------|-----|-----|------|------|
+| PRN-04 | Pagina Prenota: card ingredienti aperta, 2 selezioni consecutive, click fuori chiude | OK | OK | OK | Pannello resta aperto su ingredienti; chiude al click fuori |
+| ADM-FORM-01 | Admin Personalizza form: apertura modalità/card/carosello centra nel `<main>` admin | OK | OK | OK | Helper usa il contenitore scrollabile admin, non `window` |
 
 ## 5. File di skill aggiornati
 | File | Modifica | Perché |
@@ -103,9 +110,9 @@ La parte più delicata era la card pubblica: il primo fix ha coperto bene il por
    CHECKLIST_FLUSSI_DA_TESTARE e SESSION_LOG. Nessun DATA_FLOW_CONTEXT: resolver/field_overrides non toccati.
 
 ❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato? (vietato «tutto ok» a vuoto: se davvero nulla, scrivilo e di' perché ne sei certo.)
-✅ R4: Non ho toccato DB, resolver, field_overrides, Admin Classic, Menu magazzino, edge function o PROD.
-   Il QA browser manuale PRN-04/ADM-FORM-01 è stato confermato da Matteo il 20-06-26 e archiviato
-   nella doc E2E privata; non ho eseguito io un Playwright browser a 375/834/1280.
+✅ R4: Non ho toccato resolver, field_overrides, Admin Classic, Menu magazzino, edge function o PROD.
+   La revisione Codex ha eseguito QA browser su 375/834/1280 con seed temporaneo su TEST
+   `da-tommaso` e restore finale; nessuna scrittura PROD.
 
 ❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti? (critica + proposta nella stessa riga; se non hai avuto attriti, immagina quello più probabile.)
 ✅ R5: Attrito contenuto: il prompt diceva skill PRENOTA_FORM_CONFIG e UI, ma la mappa Prenota richiedeva
