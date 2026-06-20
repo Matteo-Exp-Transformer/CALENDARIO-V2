@@ -3,7 +3,7 @@
 > Area Pro/Enterprise per gestione clienti. Il CRM fonde dati manuali e prenotazioni usando email
 > normalizzata, non una FK diretta.
 >
-> **Aggiornato 15-06-26 (polish FU-EMAIL-7):** CrmPage è ora a **due tab** — Rubrica clienti e Personalizza email.
+> **Aggiornato 20-06-26 (redesign Rubrica card):** CrmPage è ora a **due tab** — Rubrica clienti e Personalizza email.
 > La tab "Personalizza email" è strutturata in **due gruppi separati**:
 > - **Email automatiche** — due CollapsibleCard controllate (chiuse di default), Accetta e Rifiuta; si chiudono al click/dopo Salva, con conferma guard se dirty (vedi §7).
 > - **Email personalizzate** — `CampaignsManager` (ex "Campagne email").
@@ -14,10 +14,11 @@
 - Sidebar → `CRM Clienti` → tab Rubrica.
 - Cerca per nome/email/telefono.
 - Filtra per ultima prenotazione: tutte, settimana, mese, anno.
-- Ordina tabella.
-- Seleziona riga e apre dettaglio.
+- Ordina lista card (default: ultima prenotazione decrescente).
+- Click su card → espansione inline (accordion, una sola card aperta): note interne + storico prenotazioni.
+- Storico ordinato per `created_at` decrescente; date in **GG/MM/AAAA**; intolleranze art. 9 (No / Sì cliccabile con regole consenso).
 - **Nessuna creazione manuale** — il pulsante "Nuovo cliente" è stato rimosso (fix 15-06-26). I clienti entrano in rubrica solo tramite prenotazioni dal form pubblico (`source='booking'`), che impone l'accettazione della privacy policy.
-- Modifica contatti/note.
+- Modifica contatti / Elimina dalla card (stessi modali di prima).
 - Elimina cliente.
 
 **Tab "Personalizza email":**
@@ -44,17 +45,18 @@
 | `CampaignLinksEditor` | `src/features/booking/components/crm/` | Editor pulsanti link (etichetta+URL, validazione http/https) |
 | `CampaignCadenceSelector` | `src/features/booking/components/crm/` | Selettore cadenza campagna (none/weekly/monthly/custom) |
 | `CustomerSearchBar` | `src/features/booking/components/crm/` | – |
-| `CustomerListTable` | `src/features/booking/components/crm/` | – |
-| `CustomerDetailPanel` | `src/features/booking/components/crm/` | – |
+| `CustomerCardList` | `src/features/booking/components/crm/` | Lista card a tutta larghezza + toolbar ordinamento |
+| `CustomerCardExpandedContent` | `src/features/booking/components/crm/` | Area espansa: note interne + storico prenotazioni (7 campi) |
 | `CustomerFormModal` | `src/features/booking/components/crm/` | – |
 | `CustomerDeleteConfirm` | `src/features/booking/components/crm/` | – |
 
 ## 3. Hook e dati
 
 **CRM rubrica:**
-- `useCustomers` legge `customers` e `booking_requests`.
+- `useCustomers` legge `customers` e `booking_requests` (select estesa: `created_at`, intolleranze, importo menu, preset/special_requests per euristica carosello).
 - `useCustomerMutations` crea/aggiorna/elimina.
 - `useAdminAuth` fornisce admin id per alcune mutazioni.
+- Helper display: `formatItalianDateDisplay`, `customerBookingHistoryDisplay` (label tipologia, card carosello, intolleranze art. 9).
 
 **Template email (override accetta/rifiuta):**
 - `useEmailTemplates` — legge `email_templates` del tenant (query key `['email-templates', tenantId]`).
@@ -97,26 +99,34 @@ Gli override vengono letti in `fetchTenantEmailBundle` dentro `useEmailNotificat
 Relazione logica:
 
 ```text
-booking_requests.client_email -> normalize(trim/lowercase) -> customers.email
+booking_requests.(client_email, client_phone, client_name)
+  -> resolveContactKey(email, phone) -> contatto (email norm. | "tel:<cifre>") -> profilo rubrica
+customers.email -> normalize(trim/lowercase) -> dati condivisi per indirizzo (consenso marketing, note)
 ```
 
-Non c'e FK diretta. `useCustomers`:
+Non c'è FK diretta. `useCustomers` / `mergeProfiles`:
 
 1. legge clienti manuali/synced;
 2. legge booking non `deleted`;
-3. raggruppa per email;
-4. sovrappone dati manuali a dati booking;
-5. calcola count e ultima prenotazione.
+3. **raggruppa per identità `(contatto, client_name normalizzato)`** — `contatto` = email normalizzata se presente, altrimenti `tel:<cifre>` (≥4 cifre); booking senza email né telefono → scartati; stessa identità con nomi diversi → righe distinte;
+4. sovrappone dati riga `customers` (per email) su tutti i profili con email valida (`marketing_consent`, `manual_id`, note); profili solo-telefono non trovano riga `customers` → `email = ''`;
+5. calcola count e ultima prenotazione **per cluster nome**.
 
-`create-booking` pubblico inserisce booking e poi upserta `customers` con `source='synced'`.
+Chiave UI stabile: `CustomerProfile.profileKey` (`customerProfileKey` in `lib/customerEmail.ts`).
+
+**Profili solo-telefono:** `CustomerProfile.email = ''`; compaiono in rubrica, cercabili per telefono. Non eleggibili per campagne email (`isEligiblePromoRecipient` richiede `!!email && email.includes('@')`). Non modificabili/eliminabili finché l'admin non aggiunge un'email nel form (campo `required`).
+
+`create-booking` pubblico inserisce booking e poi upserta `customers` con `source='synced'` (una riga max per email).
+
+**Campagne email:** il picker (`PromoRecipientPicker`) e i contatori eleggibili restano **per email unica** — `dedupeProfilesByEmail` prima del filtro consenso; la rubrica può mostrare più righe stesso indirizzo.
 
 ## 6. Mutazioni CRM rubrica
 
 | Azione | Scrittura |
 |---|---|
 | ~~Crea cliente~~ | **Rimossa** — `CustomerFormModal` è solo `edit`; `useCreateCustomer` resta nel hook ma non è più cablato a UI |
-| Modifica cliente | update `customers`; se solo booking, crea riga synced; patch booking collegate |
-| Elimina cliente | soft-delete booking collegate e delete fisico riga `customers` |
+| Modifica cliente | update `customers` (riga per email); patch **solo** `booking_requests` con stessa email + stesso `client_name` di partenza (`previousName`); crea riga synced se assente |
+| Elimina cliente | soft-delete **solo** prenotazioni della coppia email+nome della riga; riga `customers` eliminata fisicamente **solo** se non restano prenotazioni attive per quell'email |
 
 ## 7. Vincoli
 
@@ -136,7 +146,6 @@ Non c'e FK diretta. `useCustomers`:
 
 ## 8. Rischi
 
-- Prenotazioni senza email non entrano nel CRM né nel picker promo.
 - Filtro data diverso da `all` nasconde clienti manuali senza booking.
 - Update/delete multi-step client-side non transazionali.
 - Cambio email puo fallire per duplicato.
@@ -177,3 +186,20 @@ Non c'e FK diretta. `useCustomers`:
 ## 11. Precedente sezione "promo singola" (rimossa in FU-EMAIL-7)
 
 La sezione «Email promo / offerte» (`savedPromo`, `useSendPromoEmail`, stato locale promo) è stata rimossa da `EmailTemplatesTab` il 15-06-26 e sostituita dal gestore campagne. La tabella `email_templates` con `template_key='promo'` rimane in DB (non è stata eliminata) ma non è più letta dall'UI.
+
+## 12. Pendenze rubrica card — controverifica 20-06-26
+
+> Stato verificato in controverifica: redesign card (`CustomerCardList` + `CustomerCardExpandedContent`)
+> **compila** (`tsc` verde) e i test blindatura CRM passano (5 test). I punti sotto sono
+> **fix richiesti da Matteo ancora APERTI** sul redesign — non implementarli come "già fatti".
+
+1. ~~**Clienti senza email**~~ — **FATTO 20-06-26**: `resolveContactKey` in `customerEmail.ts` + `mergeProfiles`
+   aggiornato. Booking con solo-telefono entrano in rubrica (`email = ''`). Picker promo li esclude già
+   (`isEligiblePromoRecipient` richiede email valida). Chiave identità ora `(contatto, nome)` — vedi §5.
+2. ✅ **Cella intolleranze — caso "le comunicherò io al ristorante"** — **RISOLTO 20-06-26**.
+   `dietary_off_platform_notice` aggiunto alla select in `useCustomers.ts`; `hasDietary` in
+   `buildCustomerBookingHistoryRow` include ora `|| booking.dietary_off_platform_notice === true`.
+   Test off-platform aggiunto in `customerCardList.crm.adminBlindatura.test.tsx`.
+3. ✅ **Micro-fix UI card** (FATTO 20-06-26): chevron accanto al nome rimossa; sezioni invertite
+   (Storico prenotazioni **sopra**, Note interne **sotto**); etichetta "Card:" → "Offerta" in
+   `BookingHistoryRow`. Toolbar "Ordina per" lasciata invariata.

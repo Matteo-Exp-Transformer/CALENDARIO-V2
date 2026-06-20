@@ -303,13 +303,10 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
   **solo sistema** (maxLength silenzioso, nessun contatore in pagina); messaggio submit/edge
   «Testo troppo lungo». Dettaglio: §8.1 e `PRENOTA_TEXT_LIMITS_MAP.md` §H.
   `BookingFormFields` usa `autoComplete`/`inputMode` HTML5.
-- **Submit fallito (29-05-26):** il `<form id="booking-request-form">` ha **`noValidate`** — la validazione è solo React (`validate()`), altrimenti i `required` HTML bloccano l'evento submit **prima** di `handleSubmit` (niente toast, chiusura card, scroll, lampeggio). Sequenza `focusFirstValidationIssue`:
-  1) `dispatchBookingMenuComposeCollapse()` (evento sincrono su `window` — chiude tutte le card,
-     incluse istanze mobile+desktop montate in parallelo) + incremento `composeCollapseNonce`;
-  2) triplo `requestAnimationFrame` poi scroll (`scrollToBookingPublicError`);
-  3) lampeggio `.booking-public-field-attention` sul solo primo campo — colore **`--color-warm-orange`** (arancione tema; il rosso resta solo su `hasError`/testo errore); stop solo su interazione
-     **utente** (`event.isTrusted` via `shouldDismissBookingPublicAttention`); niente `focus()`
-     programmatico post-scroll (causava stop immediato del lampeggio).
+- **Submit fallito (29-05-26, agg. 20-06-26):** il `<form id="booking-request-form">` ha **`noValidate`** — la validazione è solo React (`validate()`), altrimenti i `required` HTML bloccano l'evento submit **prima** di `handleSubmit` (niente chiusura card, scroll, lampeggio, toast). **Feedback triplo** su ogni errore riconosciuto (pre-invio `validate()` e post-invio edge `create-booking`):
+  1. **Inline** — messaggio sotto campo/sezione (`errors` + copy da `mapCreateBookingError` per errori server);
+  2. **Pulse + scroll** — `focusFirstValidationIssue` → `dispatchBookingMenuComposeCollapse()` + triplo rAF + `scrollToBookingPublicError`; lampeggio `.booking-public-field-attention` (`--color-warm-orange`); stop solo su interazione utente (`isTrusted`); niente `focus()` programmatico post-scroll;
+  3. **Toast** — `top-center`, messaggio **del primo errore** (client) o copy azionabile mappato (server: es. SLOT_LIMIT «prova altro orario o giorno»); **non** toast generico «N campi». Helper: `applyBookingPublicFormError` in `bookingPublicFormErrorFeedback.ts`.
 
 ## 7. Card categoria ingredienti (`BookingMenuCategoryCard`)
 

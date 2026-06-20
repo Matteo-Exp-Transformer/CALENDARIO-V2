@@ -63,7 +63,7 @@ Il flusso dati che collega i due mondi (magazzino menù ↔ vetrina ↔ pagina p
 | Se la modalità ha menù: **compone il menù** (o lo vede fisso) | `MenuSelection`/`BookingMenuComposeGrid` leggono il preset; prezzo = somma piatti **oppure** prezzo×ospiti se menù fisso |
 | Se carosello: **scorre le foto** (niente griglia) | una sola card con N slide (vedi XOR, §3) |
 | **Compila i suoi dati** (nome, contatti, data/ora, ospiti, intolleranze, richieste) | validazione **solo React** (`noValidate` sul form); cap testo **silenziosi** (§3) |
-| Clicca **Invia** | se invalido → scroll + lampeggio arancione sul primo errore (niente toast). Se valido → **POST** all'edge function `create-booking` |
+| Clicca **Invia** | se invalido → **triplo feedback** (messaggio sotto campo + lampeggio arancione + scroll + toast chiaro col primo errore). Se valido → **POST** all'edge function `create-booking` |
 | Vede conferma | `create-booking` (Deno) **ri-valida** i limiti (difesa server), poi scrive la riga in **`booking_requests`** col **service key** (bypassa RLS perché Anna è anonima) |
 
 **Dopo — Mario riceve:** la richiesta appare in **Admin → Prenotazioni → Richieste in attesa**
@@ -189,7 +189,7 @@ Altri invarianti da non rompere senza conferma:
   `NOT NULL`). Capita quando Mario passa a sfondo pagina-intera: la striscia si svuota e quel vuoto
   va scritto `''`. Un «pulisci NULL» rompe il salvataggio — è già stato un incident. Serializer in
   `restaurantSettingRegistry.public_booking_strip_photo`. Dettaglio: `contesto/PRENOTA_LAYOUT_CONTEXT.md` §2.
-- **Submit invariato — non toccare `useCreateBookingRequest`.**
+- **Submit invariato — logica mutation.** Il payload e il lock di `useCreateBookingRequest` restano invariati; il **feedback visivo** errori POST (inline + pulse + toast) vive in `BookingRequestForm` via `bookingPublicFormErrorFeedback.ts`.
 
 ---
 
