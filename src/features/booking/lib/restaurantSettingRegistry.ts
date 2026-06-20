@@ -604,6 +604,8 @@ export const restaurantSettingRegistry: {
                     BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS.bookingBadgeLabel,
                   )
                 : undefined,
+            booking_badge_enabled:
+              typeof mode.booking_badge_enabled === 'boolean' ? mode.booking_badge_enabled : undefined,
             description: typeof mode.description === 'string' ? mode.description : dm.description,
             icon: resolveBookingStoredIconKey(
               typeof mode.icon === 'string' ? mode.icon : undefined,

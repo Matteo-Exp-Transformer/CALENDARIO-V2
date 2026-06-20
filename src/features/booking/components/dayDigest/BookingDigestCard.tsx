@@ -70,29 +70,31 @@ function buildDigestBadges({
   const seen = new Set<string>()
 
   const mode = bookingModes.find((m) => m.booking_type === booking.booking_type && m.enabled)
-  const modeLabel =
-    cleanBadgeLabel(mode?.booking_badge_label) ||
-    cleanBadgeLabel(mode?.label) ||
-    cleanBadgeLabel(getModeLabelByType(bookingModes, booking.booking_type))
-  if (modeLabel) {
-    addUniqueBadge(badges, seen, {
-      key: 'booking-type',
-      label: modeLabel,
-      variant: 'default',
-    })
+  if (mode?.booking_badge_enabled !== false) {
+    const modeLabel =
+      cleanBadgeLabel(mode?.booking_badge_label) ||
+      cleanBadgeLabel(mode?.label) ||
+      cleanBadgeLabel(getModeLabelByType(bookingModes, booking.booking_type))
+    if (modeLabel) {
+      addUniqueBadge(badges, seen, {
+        key: 'booking-type',
+        label: modeLabel,
+        variant: 'default',
+      })
+    }
   }
 
   const subTab = resolveSubTabFromBooking(booking, mode, customStaffPresets)
-  const subTabLabel =
-    subTab?.display === 'cards'
-      ? cleanBadgeLabel(subTab.booking_badge_label) || cleanBadgeLabel(subTab.label)
-      : null
-  if (subTabLabel) {
-    addUniqueBadge(badges, seen, {
-      key: 'sub-tab',
-      label: subTabLabel,
-      variant: 'outline',
-    })
+  if (subTab?.display === 'cards' && subTab.booking_badge_enabled !== false) {
+    const subTabLabel =
+      cleanBadgeLabel(subTab.booking_badge_label) || cleanBadgeLabel(subTab.label)
+    if (subTabLabel) {
+      addUniqueBadge(badges, seen, {
+        key: 'sub-tab',
+        label: subTabLabel,
+        variant: 'outline',
+      })
+    }
   }
 
   return badges.slice(0, 3)
@@ -113,6 +115,7 @@ export function BookingDigestCard({
   const bookingTimeLabel =
     booking.desired_time || booking.confirmed_start ? getAccurateStartTime(booking) : null
   const badges = buildDigestBadges({ booking, bookingModes, customStaffPresets })
+  const noBadges = badges.length === 0
 
   return (
     <div
@@ -166,7 +169,12 @@ export function BookingDigestCard({
             avanza spazio nella card; su card strette riempie e resta allineato a sinistra. */}
         <div className="mx-auto flex w-fit max-w-full flex-col gap-2.5 text-center">
           {/* Nome cliente */}
-          <div className="min-w-0 max-w-full truncate text-base font-semibold leading-snug text-primary-900 sm:text-[1.0625rem]">
+          <div
+            className={cn(
+              'min-w-0 max-w-full truncate font-semibold leading-snug text-primary-900',
+              noBadges ? 'text-[1.0625rem] sm:text-lg' : 'text-base sm:text-[1.0625rem]',
+            )}
+          >
             {booking.client_name}
           </div>
 
@@ -178,7 +186,12 @@ export function BookingDigestCard({
                 <Users className="h-3.5 w-3.5 text-gray-400" aria-hidden />
                 <span className="text-xs text-(--color-text-muted)">Ospiti</span>
               </div>
-              <span className="text-base font-semibold tabular-nums text-primary-900">
+              <span
+                className={cn(
+                  'font-semibold tabular-nums text-primary-900',
+                  noBadges ? 'text-[1.0625rem] sm:text-lg' : 'text-base',
+                )}
+              >
                 {booking.num_guests}
               </span>
             </div>
@@ -190,7 +203,12 @@ export function BookingDigestCard({
                   <Clock className="h-3.5 w-3.5 text-gray-400" aria-hidden />
                   <span className="text-xs text-(--color-text-muted)">Orario</span>
                 </div>
-                <span className="text-base font-semibold tabular-nums text-primary-900">
+                <span
+                  className={cn(
+                    'font-semibold tabular-nums text-primary-900',
+                    noBadges ? 'text-[1.0625rem] sm:text-lg' : 'text-base',
+                  )}
+                >
                   {bookingTimeLabel}
                 </span>
               </div>
@@ -203,7 +221,12 @@ export function BookingDigestCard({
                   <Euro className="h-3.5 w-3.5 text-gray-400" aria-hidden />
                   <span className="text-xs text-(--color-text-muted)">Prezzo/pers</span>
                 </div>
-                <span className="text-base font-semibold tabular-nums text-primary-900">
+                <span
+                  className={cn(
+                    'font-semibold tabular-nums text-primary-900',
+                    noBadges ? 'text-[1.0625rem] sm:text-lg' : 'text-base',
+                  )}
+                >
                   {formatPriceShort(menuPriceRow.prezzoMenu)}
                 </span>
               </div>

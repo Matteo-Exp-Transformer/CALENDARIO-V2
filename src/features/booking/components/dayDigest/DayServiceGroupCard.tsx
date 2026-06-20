@@ -103,8 +103,8 @@ export function DayServiceGroupCard({
             isPro ? 'max-sm:grid-cols-3' : 'max-sm:grid-cols-2',
           )}
         >
+          <GroupMetric label="Coperti" value={group.totalGuests} max={occupancyCapacity} />
           <GroupMetric label="Prenotazioni" value={group.totalBookings} />
-          <GroupMetric label="Coperti" value={group.totalGuests} />
           {isPro && <GroupMetric label="Da assegnare" value={group.pendingAssignments} />}
         </span>
 
@@ -161,12 +161,21 @@ export function DayServiceGroupCard({
   )
 }
 
-function GroupMetric({ label, value }: { label: string; value: number }) {
+function GroupMetric({ label, value, max }: { label: string; value: number; max?: number | null }) {
+  const showMax = max != null && max > 0
   return (
     <span className="flex min-w-[5.75rem] flex-col items-center justify-center border-(--color-border) px-3 py-2 text-center first:border-l-0 sm:border-l sm:py-0">
       <span className="text-label leading-tight text-(--color-text-muted)">{label}</span>
       <span className="mt-1 text-title-subtitle font-semibold leading-none text-primary-950 tabular-nums">
-        {value}
+        {showMax ? (
+          <>
+            <span className="text-base">{value}</span>
+            {' / '}
+            {max}
+          </>
+        ) : (
+          value
+        )}
       </span>
     </span>
   )
