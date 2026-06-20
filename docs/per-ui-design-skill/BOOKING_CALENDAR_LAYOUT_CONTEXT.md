@@ -200,16 +200,20 @@ DayDigestSummaryPanel
   (`Colazione    07:00 - 11:30`), con spazio ampio fra i due; il riepilogo sotto mostra solo
   conteggi/coperti/assegnazioni. Non usare `actions` del `CollapsibleCard` per il range, altrimenti
   l'orario torna appoggiato al margine destro.
-- `DayHourGroup` usa una griglia card: `grid-cols-1 min-[450px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5`.
+- `DayHourGroup` usa una griglia card: `grid-cols-1 min-[576px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5`.
   La vecchia nota “no `grid-cols-3`” è **superata**: la griglia fino a 5 colonne ora è voluta dentro
-  ogni gruppo orario, non come griglia delle fasce. Il breakpoint `min-[450px]` è esplicito (2 card
-  da 450px in su).
+  ogni gruppo orario, non come griglia delle fasce. Il breakpoint `min-[576px]` è esplicito: sotto i
+  576px sempre **1 sola card per riga** (mobile, ~300–575px), 2 card da 576px in su.
 - Le label ora in `DayHourGroup` sono badge compatti ma leggibili (`13:00`) e i gruppi successivi al
   primo hanno una riga divisoria interna al digest.
-- `BookingDigestCard` struttura fissa su tutti i viewport: (1) nome cliente a tutta larghezza
-  (nessuna icona tipologia: rimossa); (2) ospiti + orario; (3) badge tipologia (tipologia prenotazione
+- `BookingDigestCard` struttura fissa su tutti i viewport: (1) nome cliente (nessuna icona tipologia:
+  rimossa); (2) colonne statistiche **Ospiti · Orario · Prezzo/pers** (label piccola con icona sopra,
+  valore sotto); la colonna Prezzo/pers compare **solo** quando `menuPriceRow` è valorizzato (prenotazione
+  con card scorrevole/carosello a prezzo), valore a persona; (3) badge tipologia (tipologia prenotazione
   + card scorrevole) **sotto** i dati, sulla stessa riga con wrap controllato; massimo 3 badge senza
-  duplicati. Il badge `DA ASSEGNARE` (PRO) NON sta nel flusso: è **esterno** alla card, agganciato al
+  duplicati. **Allineamento auto-centrato**: il contenuto sta in un blocco `mx-auto w-fit max-w-full`,
+  quindi prende la larghezza naturale e si centra da solo quando la card è larga (spazio libero), mentre
+  su card strette riempie e resta a sinistra — niente JS/misurazioni. Il badge `DA ASSEGNARE` (PRO) NON sta nel flusso: è **esterno** alla card, agganciato al
   bordo in alto a destra (`absolute right-3 top-0 -translate-y-full`, sfondo `bg-surface` coerente con
   la card, bordo proprio `border-(--color-border)`, `rounded-b-none` per saldarsi al bordo superiore),
   così non sottrae spazio al nome; cliccabile apre `QuickTableAssignModal`; in Classic non compare. Il

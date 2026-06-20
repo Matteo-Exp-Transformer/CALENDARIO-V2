@@ -6,8 +6,6 @@ import interactionPlugin from '@fullcalendar/interaction'
 import listPlugin from '@fullcalendar/list'
 import {
   Calendar,
-  ChevronLeft,
-  ChevronRight,
   PenLine,
   Tag,
 } from 'lucide-react'
@@ -316,44 +314,6 @@ function DigestBookingListRow({
   )
 }
 
-/** Navigazione turni: freccia sx, count centrale, freccia dx */
-function DigestTurnNav({
-  turn,
-  maxTurn,
-  onPrev,
-  onNext,
-}: {
-  turn: number
-  maxTurn: number
-  onPrev: () => void
-  onNext: () => void
-}) {
-  return (
-    <div className="flex items-center justify-center gap-2 py-1">
-      <button
-        type="button"
-        onClick={onPrev}
-        disabled={turn <= 1}
-        aria-label="Turno precedente"
-        className="flex h-7 w-7 items-center justify-center rounded-lg border border-(--color-border) bg-surface text-primary-900 shadow-sm transition-colors hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        <ChevronLeft className="h-4 w-4" aria-hidden />
-      </button>
-      <span className="min-w-16 text-center text-sm font-semibold text-primary-900 tabular-nums">
-        Turno {turn} / {maxTurn}
-      </span>
-      <button
-        type="button"
-        onClick={onNext}
-        disabled={turn >= maxTurn}
-        aria-label="Turno successivo"
-        className="flex h-7 w-7 items-center justify-center rounded-lg border border-(--color-border) bg-surface text-primary-900 shadow-sm transition-colors hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        <ChevronRight className="h-4 w-4" aria-hidden />
-      </button>
-    </div>
-  )
-}
 
 interface BookingCalendarProps {
   bookings: BookingRequest[]
@@ -387,8 +347,6 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     return initialDate || new Date().toISOString().split('T')[0]
   })
-  // Pro: navigazione turni nel digest — si resetta a 1 quando cambia data
-  const [activeTurn, setActiveTurn] = useState(1)
   const { data: tableAssignments = [] } = useTableAssignments(selectedDate)
   const [currentView, setCurrentView] = useState<FullCalendarViewId>(getDefaultCalendarViewForViewport)
   const [isCalendarNarrowViewport, setIsCalendarNarrowViewport] =
@@ -411,11 +369,6 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       mql500.removeEventListener('change', sync)
     }
   }, [])
-
-  // Resetta il turno attivo quando cambia la data selezionata
-  useEffect(() => {
-    setActiveTurn(1)
-  }, [selectedDate])
 
   // Aggiorna il selectedBooking quando i bookings cambiano (dopo modifica)
   useEffect(() => {
@@ -736,27 +689,6 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     [selectedDayDigestBookings, digestSlots, hasTurnsFeature, assignedBookingIds],
   )
 
-  // Pro: mappa booking_id → turn_number per la data selezionata
-  const turnByBookingId = useMemo<Record<string, number>>(() => {
-    if (!hasTurnsFeature) return {}
-    const map: Record<string, number> = {}
-    for (const a of tableAssignments as BookingTableAssignment[]) {
-      // Usa il turn_number più basso (turno attivo) per ogni prenotazione
-      if (map[a.booking_id] === undefined || a.turn_number < map[a.booking_id]) {
-        map[a.booking_id] = a.turn_number
-      }
-    }
-    return map
-  }, [hasTurnsFeature, tableAssignments])
-
-  // Turno massimo rilevato dagli assignments della data selezionata
-  const maxTurnFromAssignments = useMemo(() => {
-    if (!hasTurnsFeature || tableAssignments.length === 0) return 1
-    return Math.max(...(tableAssignments as BookingTableAssignment[]).map((a) => a.turn_number))
-  }, [hasTurnsFeature, tableAssignments])
-
-  const maxTurn = Math.max(activeTurn, maxTurnFromAssignments)
-
   // Pro: booking selezionato per assegnazione/riassegnazione rapida tavolo dal pallino
   const [quickAssignBooking, setQuickAssignBooking] = useState<BookingRequest | null>(null)
 
@@ -766,20 +698,10 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     }
   }, [hasTurnsFeature])
 
-  /** Filtra prenotazioni per turno attivo.
-   *  - Con feature pro: mostra solo quelle assegnate al turno corrente.
-   *    Le prenotazioni senza assignment (non ancora assegnate) appaiono al turno 1.
-   *  - Senza feature pro: restituisce tutto invariato. */
+  /** Navigazione turni spostata in pagina Servizio — restituisce la lista invariata. */
   const filterByTurn = useCallback(
-    (list: BookingRequest[]): BookingRequest[] => {
-      if (!hasTurnsFeature) return list
-      return list.filter((b) => {
-        const t = turnByBookingId[b.id]
-        // Prenotazione senza assignment → sempre turno 1
-        return (t ?? 1) === activeTurn
-      })
-    },
-    [hasTurnsFeature, turnByBookingId, activeTurn],
+    (list: BookingRequest[]): BookingRequest[] => list,
+    [],
   )
 
   const openDigestBooking = (booking: BookingRequest) => {
@@ -934,7 +856,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       if (!frame) return
       mountDayFillBadge(frame, cellDateStr)
     },
-    dayCellDidUnmount: (arg: any) => {
+    dayCellWillUnmount: (arg: any) => {
       const frame = (arg.el as HTMLElement).querySelector('.fc-daygrid-day-frame')
       frame?.querySelector('.booking-day-fill-holder')?.remove()
     },
@@ -1230,15 +1152,6 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
             />
             {selectedDayDigestBookings.length > 0 ? (
               <div className="space-y-8">
-                {/* Navigazione turni — visibile solo in versione pro con service_slots configurati */}
-                {hasTurnsFeature && (
-                  <DigestTurnNav
-                    turn={activeTurn}
-                    maxTurn={maxTurn}
-                    onPrev={() => setActiveTurn((t) => Math.max(1, t - 1))}
-                    onNext={() => setActiveTurn((t) => Math.min(maxTurn, t + 1))}
-                  />
-                )}
                 {timeSlotsEnabled && digestSlots.length > 0 ? (
                   <div className="space-y-3">
                     {dayModel.groups.map((group) => (

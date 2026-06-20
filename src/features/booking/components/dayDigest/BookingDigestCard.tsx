@@ -1,4 +1,5 @@
 import React from 'react'
+import { Users, Clock, Euro } from 'lucide-react'
 import type { BookingRequest } from '@/types/booking'
 import type { BookingMode } from '@/features/booking/constants/bookingPublicFormConfig'
 import type { CustomStaffPreset } from '@/features/booking/constants/presetMenus'
@@ -8,6 +9,13 @@ import { resolveSubTabFromBooking } from '../../utils/buildBookingEmailSummary'
 import { getModeLabelByType } from '../../utils/bookingModeLabels'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils'
+
+function formatPriceShort(amount: number): string {
+  const [intPart, decPart] = Math.abs(amount).toFixed(2).split('.')
+  const sign = amount < 0 ? '-' : ''
+  const intWithSep = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "'")
+  return decPart === '00' ? `${sign}${intWithSep}€` : `${sign}${intWithSep}.${decPart}€`
+}
 
 interface BookingDigestCardProps {
   booking: BookingRequest
@@ -62,29 +70,31 @@ function buildDigestBadges({
   const seen = new Set<string>()
 
   const mode = bookingModes.find((m) => m.booking_type === booking.booking_type && m.enabled)
-  const modeLabel =
-    cleanBadgeLabel(mode?.booking_badge_label) ||
-    cleanBadgeLabel(mode?.label) ||
-    cleanBadgeLabel(getModeLabelByType(bookingModes, booking.booking_type))
-  if (modeLabel) {
-    addUniqueBadge(badges, seen, {
-      key: 'booking-type',
-      label: modeLabel,
-      variant: 'default',
-    })
+  if (mode?.booking_badge_enabled !== false) {
+    const modeLabel =
+      cleanBadgeLabel(mode?.booking_badge_label) ||
+      cleanBadgeLabel(mode?.label) ||
+      cleanBadgeLabel(getModeLabelByType(bookingModes, booking.booking_type))
+    if (modeLabel) {
+      addUniqueBadge(badges, seen, {
+        key: 'booking-type',
+        label: modeLabel,
+        variant: 'default',
+      })
+    }
   }
 
   const subTab = resolveSubTabFromBooking(booking, mode, customStaffPresets)
-  const subTabLabel =
-    subTab?.display === 'cards'
-      ? cleanBadgeLabel(subTab.booking_badge_label) || cleanBadgeLabel(subTab.label)
-      : null
-  if (subTabLabel) {
-    addUniqueBadge(badges, seen, {
-      key: 'sub-tab',
-      label: subTabLabel,
-      variant: 'outline',
-    })
+  if (subTab?.display === 'cards' && subTab.booking_badge_enabled !== false) {
+    const subTabLabel =
+      cleanBadgeLabel(subTab.booking_badge_label) || cleanBadgeLabel(subTab.label)
+    if (subTabLabel) {
+      addUniqueBadge(badges, seen, {
+        key: 'sub-tab',
+        label: subTabLabel,
+        variant: 'outline',
+      })
+    }
   }
 
   return badges.slice(0, 3)
@@ -105,6 +115,7 @@ export function BookingDigestCard({
   const bookingTimeLabel =
     booking.desired_time || booking.confirmed_start ? getAccurateStartTime(booking) : null
   const badges = buildDigestBadges({ booking, bookingModes, customStaffPresets })
+  const noBadges = badges.length === 0
 
   return (
     <div
@@ -153,58 +164,90 @@ export function BookingDigestCard({
         </span>
       )}
 
-      <div className="flex flex-col gap-2.5 px-4 py-4 md:px-5">
-        {/* Nome cliente */}
-        <div className="min-w-0 truncate text-base font-bold leading-snug text-primary-900 sm:text-[1.125rem]">
-          {booking.client_name}
-        </div>
-
-        {/* Numero ospiti + orario */}
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <span className="text-[0.9375rem] font-normal leading-none tabular-nums text-gray-900 sm:text-base">
-            {booking.num_guests}
-          </span>
-          <span className="text-[0.9375rem] font-normal leading-snug text-gray-900">
-            {booking.num_guests === 1 ? 'ospite' : 'ospiti'}
-          </span>
-          {bookingTimeLabel && (
-            <>
-              <span className="text-[0.9375rem] leading-snug text-(--color-text-muted)">·</span>
-              <span className="text-[0.9375rem] font-normal leading-snug tabular-nums text-primary-900">
-                {bookingTimeLabel}
-              </span>
-            </>
-          )}
-        </div>
-
-        {/* Badge tipologia prenotazione + card scorrevole (sotto i dati prenotazione) */}
-        {badges.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1">
-            {badges.map((badge) => (
-              <Badge
-                key={badge.key}
-                variant={badge.variant}
-                className="max-w-40 truncate text-label! font-normal"
-              >
-                {badge.label}
-              </Badge>
-            ))}
+      <div className="px-4 py-4 md:px-5">
+        {/* Contenuto auto-centrato: prende la larghezza naturale e si centra solo quando
+            avanza spazio nella card; su card strette riempie e resta allineato a sinistra. */}
+        <div className="mx-auto flex w-fit max-w-full flex-col gap-2.5 text-center">
+          {/* Nome cliente */}
+          <div
+            className={cn(
+              'min-w-0 max-w-full truncate font-semibold leading-snug text-primary-900',
+              noBadges ? 'text-[1.0625rem] sm:text-lg' : 'text-base sm:text-[1.0625rem]',
+            )}
+          >
+            {booking.client_name}
           </div>
-        )}
 
-        {/* Prezzo menù (opzionale) */}
-        {menuPriceRow && (
-          <div className="flex items-baseline justify-between gap-3 border-t border-(--color-border) pt-2">
-            <span className="min-w-0 text-title-subtitle font-normal text-primary-900">
-              {menuPriceRow.prezzoMenuLabel}
-            </span>
-            {menuPriceRow.prezzoTotaleLabel && (
-              <span className="shrink-0 text-value font-normal text-(--color-text-muted)">
-                Tot. {menuPriceRow.prezzoTotaleLabel}
+          {/* Colonne statistiche: Ospiti · Orario · Prezzo/pers */}
+          <div className="flex items-start justify-center gap-5">
+            {/* Ospiti */}
+            <div className="flex flex-col gap-0.5">
+              <div className="flex items-center gap-1">
+                <Users className="h-3.5 w-3.5 text-gray-400" aria-hidden />
+                <span className="text-xs text-(--color-text-muted)">Ospiti</span>
+              </div>
+              <span
+                className={cn(
+                  'font-semibold tabular-nums text-primary-900',
+                  noBadges ? 'text-[1.0625rem] sm:text-lg' : 'text-base',
+                )}
+              >
+                {booking.num_guests}
               </span>
+            </div>
+
+            {/* Orario */}
+            {bookingTimeLabel && (
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5 text-gray-400" aria-hidden />
+                  <span className="text-xs text-(--color-text-muted)">Orario</span>
+                </div>
+                <span
+                  className={cn(
+                    'font-semibold tabular-nums text-primary-900',
+                    noBadges ? 'text-[1.0625rem] sm:text-lg' : 'text-base',
+                  )}
+                >
+                  {bookingTimeLabel}
+                </span>
+              </div>
+            )}
+
+            {/* Prezzo/pers (solo quando menuPriceRow è valorizzato) */}
+            {menuPriceRow && (
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-1">
+                  <Euro className="h-3.5 w-3.5 text-gray-400" aria-hidden />
+                  <span className="text-xs text-(--color-text-muted)">Prezzo/pers</span>
+                </div>
+                <span
+                  className={cn(
+                    'font-semibold tabular-nums text-primary-900',
+                    noBadges ? 'text-[1.0625rem] sm:text-lg' : 'text-base',
+                  )}
+                >
+                  {formatPriceShort(menuPriceRow.prezzoMenu)}
+                </span>
+              </div>
             )}
           </div>
-        )}
+
+          {/* Badge tipologia prenotazione + card scorrevole (sotto i dati prenotazione) */}
+          {badges.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-1">
+              {badges.map((badge) => (
+                <Badge
+                  key={badge.key}
+                  variant={badge.variant}
+                  className="max-w-40 truncate text-label! font-normal"
+                >
+                  {badge.label}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

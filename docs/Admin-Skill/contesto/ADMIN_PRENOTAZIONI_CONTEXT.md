@@ -139,7 +139,7 @@ Senso: calendario **leggero come vista d'insieme** (dice solo quanto è pieno og
     reale, colore soglia ok/high/over); senza limite → solo il conteggio coperti `N` (senza `%`). **Niente
     `N/Nmax`.** Montato via `dayCellDidMount` come figlio del frame cella (non dentro il numero → niente
     ammasso a destra); **`useEffect` aggiorna i badge** quando `daily_guest_limit` arriva da cache (il mount
-    iniziale può precedere il setting → altrimenti resta il solo conteggio coperti). `dayCellDidUnmount`
+    iniziale può precedere il setting → altrimenti resta il solo conteggio coperti). `dayCellWillUnmount`
     rimuove il holder. **Richiesta esplicita Matteo 11-06 (post fix QA):** simbolo `%` visibile accanto al
     numero nel badge. Responsive: alto-sinistra desktop, **basso-sinistra su mobile ≤640px** per non
     sovrapporsi al numero del giorno.
