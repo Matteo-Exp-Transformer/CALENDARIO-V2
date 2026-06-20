@@ -217,7 +217,7 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
 
 - Feature opt-in gated: icona walk-in se `features.walkIn`; turni/badge “Da assegnare” se `features.servizio`.
 - Orari fasce: `useServiceSlots()` + `useDigestSlotConfigs()` da `useServiceSlots.ts` (tabella `service_slots`, non JSON in `restaurant_settings`).
-- Digest giorno: `DayDigestSummaryPanel` + `DayServiceGroupCard` collapse + `DayHourGroup` + `BookingDigestCard`; MENU/TAVOLO sono badge dentro la card, non sezioni separate. Assegnazione rapida tavolo via `QuickTableAssignModal` (Pro).
+- Digest giorno: `DayDigestSummaryPanel` + `DayServiceGroupCard` collapse + `DayHourGroup` + `BookingDigestCard`; la card mostra al massimo 3 badge: `Da assegnare` solo se Pro senza tavolo, tipologia prenotazione, card scorrevole. Le label arrivano da `booking_public_form_config.booking_modes[].booking_badge_label` / `sub_tabs[].booking_badge_label`, con fallback a label tipologia/card. Assegnazione rapida tavolo via badge `Da assegnare` + `QuickTableAssignModal` (Pro).
 - Digest settimana: resta compatto e usa `DigestBookingListRow`.
 - Layout responsive tab Calendario: **§4c**.
 

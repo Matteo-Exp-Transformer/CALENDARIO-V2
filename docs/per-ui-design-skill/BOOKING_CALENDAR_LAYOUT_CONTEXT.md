@@ -184,7 +184,7 @@ Dettaglio prodotto C-U3/C-D1/C-U2: `ADMIN_PRENOTAZIONI_CONTEXT.md` §5-ter punti
 
 La vista **Giorno** sotto FullCalendar non è più divisa in **Prenotazioni con menu** e **Solo tavolo**.
 La struttura attuale è una sintesi in alto + card collassabili per fascia oraria; la distinzione
-MENU/TAVOLO vive dentro la card prenotazione come badge.
+tipologia/card scelta vive dentro la card prenotazione come badge configurabile.
 
 ```
 DayDigestSummaryPanel
@@ -196,9 +196,22 @@ DayDigestSummaryPanel
 
 - `DayServiceGroupCard` usa `CollapsibleCard` con `defaultExpanded={false}`: tutte le fasce partono
   chiuse e possono restare aperte insieme.
+- Header fascia: nome fascia e range orario stanno nello stesso titolo visuale
+  (`Colazione    07:00 - 11:30`), con spazio ampio fra i due; il riepilogo sotto mostra solo
+  conteggi/coperti/assegnazioni. Non usare `actions` del `CollapsibleCard` per il range, altrimenti
+  l'orario torna appoggiato al margine destro.
 - `DayHourGroup` usa una griglia card: `grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4`.
   La vecchia nota “no `grid-cols-3`” è **superata**: la griglia a 3/4 colonne ora è voluta dentro
   ogni gruppo orario, non come griglia delle fasce.
+- Le label ora in `DayHourGroup` sono badge compatti ma leggibili (`13:00`) e i gruppi successivi al
+  primo hanno una riga divisoria interna al digest.
+- `BookingDigestCard` mostra al massimo 3 badge, senza duplicati: `DA ASSEGNARE` solo per Pro senza
+  tavolo, tipologia prenotazione, card scorrevole. Le label arrivano da `booking_badge_label`
+  (tipologia/card) con fallback a titolo tipologia/card. Su mobile la riga puo andare a capo in modo
+  controllato, senza overflow.
+- Pro + tavoli: il vecchio pallino di assegnazione top-right non c'è più. L'azione di assegnazione
+  tavolo vive sul badge `DA ASSEGNARE`; l'angolo top-right mostra solo l'icona tipologia prenotazione,
+  sempre compatta anche su tablet/desktop.
 - Se non ci sono fasce attive, la vista giorno usa una griglia piatta di `BookingDigestCard`
   mantenendo gli stessi handler di dettaglio e assegnazione tavolo.
 - Sezione **Fuori fascia**: card finale con stile di attenzione, mostrata solo se il view model

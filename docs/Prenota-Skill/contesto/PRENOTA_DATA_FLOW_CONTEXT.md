@@ -23,7 +23,7 @@ description: >-
 | **Magazzino menu** | Categorie ingredienti, ingredienti, **menù preselezionati**, promo; disponibilità `is_available` (M3 Fase 2) | Tabelle `menu_categories`, `menu_items` + JSONB `restaurant_settings.booking_custom_staff_presets`, `booking_menu_promos` | Tab **Menu** (`MenuPricesTab`) |
 | **Vetrina Prenota** | Testi/foto/icone che il **cliente** vede in pagina Prenota | JSONB `restaurant_settings.booking_public_form_config` | Tab **Impostazioni → Personalizza form** (`BookingFormConfigPanel`) |
 
-**Regola operativa:** la vetrina **non** legge il magazzino in tempo reale per tutto. Per i campi vetrina (`label`, `description`, `price_per_person`, `hidden_*`) c'è un **resolver** che decide caso per caso se mostrare il valore live del preset o quello «congelato» nella card.
+**Regola operativa:** la vetrina **non** legge il magazzino in tempo reale per tutto. Per i campi vetrina (`label`, `description`, `price_per_person`, `hidden_*`) c'è un **resolver** che decide caso per caso se mostrare il valore live del preset o quello «congelato» nella card. Il campo opzionale `booking_badge_label` (modalità + sottotab) è admin-only per i badge del digest prenotazioni: non è un campo overridable e non cambia la Pagina Prenota.
 
 **Disponibilità magazzino (M3 Fase 2):** `menu_categories.is_available` e `menu_items.is_available` (default `true`) filtrano il catalogo via `filterMenuItemsForPublic` / `filterMenuCategoriesForPublic` (`menuMagazzinoLimits.ts`) in **Pagina Prenota** (`MenuSelection`) e negli **editor admin** che mostrano il catalogo per configurare la vetrina: `BookingFormConfigPanel` (card scorrevoli → categorie/ingredienti visibili), `PresetMenuBuilder` (menù preselezionato tab Menu). Spento = nascosto in compose pubblico e **non elencato** in quei editor; **non** altera `booking_requests.menu_selection` già inviato (snapshot nome+prezzo+quantità). Override `hidden_*` sulla card restano distinti (mascherano solo ciò che il magazzino lascia on).
 
@@ -66,10 +66,11 @@ ADMIN
 [Tab Impostazioni → Personalizza form]
    BookingFormConfigPanel
      ├─ Intestazione → booking_public_form_config.page_title/description/header_styles
-     └─ Modalità (BookingMode[])
+     └─ Modalità (BookingMode[], incl. booking_badge_label admin-only)
            ├─ sub_tabs_presentation: XOR cards | carousel | null
            └─ sub_tabs (SubTab[])
                 ├─ preset_id        ─── legame con preset staff (magazzino)
+                ├─ booking_badge_label ─ testo badge digest admin (fallback label)
                 ├─ label, description, courses_label, price_per_person, is_fixed_menu, hidden_*  (snapshot vetrina)
                 ├─ field_overrides  ─── decide per ogni campo: live o congelato
                 └─ carousel_items (solo display='carousel')

@@ -26,6 +26,7 @@ Legenda colonna **Limite in UI**:
 | Superficie UI | Storage | Max | Limite in UI | Visibilità pubblica |
 |---------------|---------|-----|--------------|---------------------|
 | Titolo card | `booking_modes[].label` | 40 | admin-contatore | Sempre |
+| Badge prenotazione admin | `booking_modes[].booking_badge_label` | 18 | admin-contatore | Non pubblico; fallback a titolo card |
 | Descrizione breve | `booking_modes[].description` | 61 | admin-contatore | Solo ≥700px; `line-clamp-2/3` |
 
 ---
@@ -35,6 +36,7 @@ Legenda colonna **Limite in UI**:
 | Superficie UI | Storage | Max | Limite in UI | Visibilità pubblica |
 |---------------|---------|-----|--------------|---------------------|
 | Titolo card | `sub_tabs[].label` | 24 | admin-contatore | Card: `line-clamp-2` |
+| Badge prenotazione admin | `sub_tabs[].booking_badge_label` | 18 | admin-contatore | Non pubblico; fallback a titolo card |
 | Descrizione sottotab | `sub_tabs[].description` | 79 | admin-contatore | **Non** sulla card; sotto sezione menù in `MenuSelection` |
 | Numero portate | `sub_tabs[].courses_label` | 12 | admin-contatore | Card `display='cards'`: footer basso sx (`line-clamp-1`); non in carosello |
 | Nome carosello (admin) | `sub_tabs[].label` (carousel) | 24 | admin-contatore | Solo admin / riepilogo interno |
