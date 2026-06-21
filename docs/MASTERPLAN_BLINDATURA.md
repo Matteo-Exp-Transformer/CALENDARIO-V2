@@ -187,6 +187,11 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
 
 ### M5 — Sidebar + pagine Pro (Servizio / CRM / Home / Analytics) — **NON in main**
 - **Dettaglio:** Aree 5/6/7 di `PLAN_BLINDATURA_ADMIN.md`.
+- **🔵 Servizio + motore disponibilità → masterplan dedicato:** `docs/MASTERPLAN_SERVIZIO.md` (indice
+  canonico, 21-06-26). Decompone Servizio in sotto-aree S0–S6 + nuovo motore durata/intervalli/turni
+  automatici/Live; fissa decisioni D1–D42, registro rischi #1–#9 (incl. bug Edge `override_date`, race
+  condition, doppia verità), matrice edition L0–L4 e lente time-to-revenue R0–R6. L'intervista/blindatura
+  di Servizio passa da lì.
 - **Stato:** ⬜ implementate, **non intervistate**, dietro feature flag, fuori da production Classic.
 - **Confine:** si blindano e si testano su TEST/Pro ma **non si mergiano nella pubblica** finché non
   decidi di attivare/vendere edition Pro. Merge production gestito separatamente quando Pro andrà live.

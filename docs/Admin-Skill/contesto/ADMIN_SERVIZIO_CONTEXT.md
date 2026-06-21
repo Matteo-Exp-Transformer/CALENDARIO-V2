@@ -58,7 +58,15 @@
 
 ## 6. Rischi emersi
 
-- `create-booking` cita `service_slot_overrides.override_date`, mentre schema/hook moderni usano `date_from/date_to`: da verificare prima dei test flusso slot con `slot_limit_enabled=true`. Il vecchio pre-check `check-slot-availability` è stato rimosso in WP-B5 (12-06-26), quindi non va più considerato fonte runtime.
+> **Cantiere Servizio + motore disponibilità:** masterplan canonico in `docs/MASTERPLAN_SERVIZIO.md`
+> (decisioni D1–D42, sotto-aree S0–S6, registro rischi #1–#9). I rischi sotto vi sono mappati.
+
+- **🔴 BUG Edge confermato (rischio #1 / azione S0-D8):** `create-booking` interroga
+  `service_slot_overrides.override_date`, mentre schema/hook moderni usano `date_from/date_to` → gli
+  override morbidi **non scattano mai**. Va corretto come mini-PR isolata (deploy PROD controllato) prima
+  dei test flusso slot con `slot_limit_enabled=true`, altrimenti ogni test permanenza dà falsi positivi.
+  Il vecchio pre-check `check-slot-availability` è stato rimosso in WP-B5 (12-06-26), quindi non va più
+  considerato fonte runtime.
 - In `WalkInModal`, busy check confronta `booking.placement` con `tableId`, ma il walk-in salva
   `placement` come nome tavolo. Possibile mismatch.
 - `AssignmentMapPanel` e renderizzato da `ServizioPage` senza controllo diretto `features.tableAssignments`.
