@@ -74,12 +74,12 @@ describe('MenuTab — vista admin edit (fix 7)', () => {
     expect(payload.items.map((i: SelectedMenuItem) => i.id)).toEqual(['i3'])
   })
 
-  it('cambia il menù predefinito usando la pipeline preset del parent', async () => {
+  it('cambia il menù preselezionato usando la pipeline preset del parent', async () => {
     const user = userEvent.setup()
     const { onPresetMenuChange } = renderEdit()
 
     await user.selectOptions(
-      screen.getByLabelText(/menù predefinito/i),
+      screen.getByLabelText(/menù preselezionato/i),
       customPresetStorageId('p-1'),
     )
 
@@ -105,7 +105,9 @@ describe('MenuTab — vista admin edit (fix 7)', () => {
         onMenuChange={vi.fn()}
       />,
     )
-    expect(screen.getByText(/menu selezionato/i)).toBeInTheDocument()
+    // FIX 4: il menù è già visibile senza click — CollapsibleSection rimosso.
+    expect(screen.getByText('ANTIPASTI')).toBeInTheDocument()
+    expect(screen.getByText(/bruschetta/i)).toBeInTheDocument()
     expect(screen.getByText('RIEPILOGO COSTI')).toBeInTheDocument()
   })
 })

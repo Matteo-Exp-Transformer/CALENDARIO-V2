@@ -150,7 +150,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
             htmlFor="admin-preset-menu"
             className="mb-2 block text-base font-semibold uppercase tracking-wide text-(--color-text-muted)"
           >
-            Menù predefinito
+            Menù preselezionato
           </label>
           <select
             id="admin-preset-menu"
@@ -161,7 +161,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
             }}
             className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-base font-semibold text-(--color-text) focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30"
           >
-            <option value="">Nessun menù predefinito</option>
+            <option value="">Nessun menù preselezionato</option>
             {presetOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
@@ -310,7 +310,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
       {presetMenu && (
         <div>
           <p className="text-lg font-semibold text-gray-900">
-            📋 Menu Predefinito:{' '}
+            📋 Menu Preselezionato:{' '}
             <span>{getPresetMenuLabel(presetMenu as PresetMenuType, customStaffPresets)}</span>
           </p>
         </div>
