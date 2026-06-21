@@ -228,6 +228,7 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
 - Orario passato: `PastStartTimeWarningModal` + `isWallClockStartBeforeNow` prima di Salva.
 - Display fascia: `useDigestSlotConfigs()`.
 - **Appunti admin (21-06-26):** `DetailsFormData` include `adminNotes: string`; `buildFormDataFromBooking` legge `booking.admin_notes`; `performSave` scrive `adminNotes` → `useUpdateBooking`. La dirty-detection (`isDetailsFormDirty`) copre il campo in automatico (JSON.stringify del formData). Nessuna prop extra sul componente: `formData` è già passato intero a `DetailsTab`.
+- **Layout mobile (21-06-26 / 21-06-26 bis):** content area (`flex-1`) ha `min-h-0` per il footer sticky. **Il contenitore esterno del modal usa `height: '100dvh'` (non `100vh`):** con lo scroll del body bloccato la barra del browser mobile resta visibile, quindi `100vh` spingeva il footer (Modifica/Elimina/No-show) sotto la barra e su mobile non era raggiungibile. Non reintrodurre `100vh`.
 
 ### `useBookingMutations.ts`
 
@@ -251,6 +252,8 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
 - **Card «Appunti» (21-06-26):** `DetailsTab` mostra una card full-width sotto «Info Prenotazione». In edit: `textarea` legata a `formData.adminNotes` via `onFormDataChange`. In view: testo salvato o «Nessun appunto» se vuoto. Salvataggio via il Salva generale del modal (`performSave → useUpdateBooking → admin_notes`). Niente salva dedicato. Disponibile su tutte le tipologie (non gated edition).
 - Promo menù in dettaglio: `DetailsTab` mostra il **testo cliente** (`message`) della promo via `resolveMenuPromoMessageForBookingView` dalle impostazioni correnti. Non usa lo snapshot `menu_promo_labels` per la vista — se il testo cambia dopo la prenotazione si vede quello attuale. Blocco assente se nessuna promo abbinata alla tipologia. Sola lettura (nessun blocco in modifica).
 - **Intolleranze — suffisso ospiti:** in viste read-only admin (`BookingRequestCard` espanso, `DietaryTab` view) il suffisso «- N ospite/i» compare solo se `guest_count >= 1` (`shouldShowDietaryGuestCount`). Il testo libero da Pagina Prenota salva `guest_count: 0`; l'inserimento strutturato in admin (`DietaryTab` / `DietaryRestrictionsStructuredSection` edit) resta con conteggio ≥1.
+- **DetailsTab layout mobile (21-06-26 bis):** l'ordine mobile è garantito dall'**ordine del DOM**, non solo dalle classi `order-*` (su alcuni browser mobile risultavano ignorate). **Informazioni Cliente è il primo figlio** della griglia (`md:order-2`), poi Dati Prenotazione + Note (`md:order-1`). Mobile: Informazioni Cliente → Dati Prenotazione → Note Speciali. Desktop (2 colonne) invariato via `md:order-*` (Dati a sinistra, Cliente a destra).
+- **DietaryTab note lunghe (21-06-26):** `<li>` e `<span>` note usano `wrap-break-word` (Tailwind v4) per evitare overflow orizzontale su mobile.
 
 ### `useCapacityCheck.ts`
 

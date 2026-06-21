@@ -120,3 +120,41 @@ Ordine desktop invariato: colonna sinistra Dati Prenotazione, colonna destra Inf
 4. **Tono utente** — la checklist di chiusura per Matteo usa «tab admin», «pulsanti azione», «sezioni nel modal» (schermate), non nomi file.
 
 Corretto dopo self-review: aggiunta sezione «File toccati» e «File di skill aggiornati» mancanti dal report iniziale.
+
+---
+
+## 13. Correzione post-controtest Matteo (21-06-26 bis)
+
+Controtest su device reale (375px): **Fix 1 OK · Fix 3 OK · Fix 2 NO · Fix 4 NO**. Le soluzioni
+CSS della prima iterazione non reggevano sul mobile reale. Cause individuate e correzioni:
+
+### Fix 2 — footer ancora invisibile su mobile → `100dvh`
+**Causa reale:** il `min-h-0` era necessario ma non sufficiente. Il contenitore esterno del modal
+usava `height: '100vh'`. Con lo scroll del body bloccato la barra del browser mobile resta sempre
+visibile, quindi `100vh` (altezza del layout viewport, barra esclusa) è più alto dell'area
+realmente visibile: il footer sticky finiva **sotto** la barra del browser.
+**Fix:** `height: '100vh'` → `height: '100dvh'` (dynamic viewport height = altezza effettivamente
+visibile) sul contenitore esterno in `BookingDetailsModal.tsx`. Coerente con `h-dvh` già usato
+nello shell. Nessun tocco a z-index / `Modal.tsx`.
+
+### Fix 4 — ordine sezioni ancora sbagliato su mobile → riordino DOM
+**Causa probabile:** le classi CSS `order-*` non venivano applicate/onorate sul browser mobile di
+Matteo, quindi valeva l'ordine del DOM (Dati Prenotazione prima).
+**Fix:** reso indipendente dalle classi `order`. In `DetailsTab.tsx` il blocco **Informazioni
+Cliente è ora il primo figlio** della griglia (`md:order-2`), seguito da Dati Prenotazione + Note
+(`md:order-1`). Su mobile l'ordine è corretto **per costruzione del DOM**; su desktop le classi
+`md:order-*` ripristinano le 2 colonne (Dati a sinistra, Cliente a destra).
+
+**Validate dopo le correzioni:** lint + typecheck OK, **959/959 test verdi**.
+
+**Follow-up aperti in questa iterazione:**
+- **FU-058-CARD-SCORREVOLE-TEXT** — testo/descrizione card scorrevole Pagina Prenota che cresce con la viewport (tablet/desktop).
+- **FU-PERF-BUNDLE** — primo caricamento lungo dopo un rilascio: misurare peso bundle ed eventuale code-splitting.
+
+**File toccati nella correzione:**
+| File | Modifica |
+|------|----------|
+| `src/features/booking/components/BookingDetailsModal.tsx` | `height: '100vh'` → `'100dvh'` |
+| `src/features/booking/components/DetailsTab.tsx` | Informazioni Cliente spostato come primo figlio del DOM; `order-*` mobile rimosse, `md:order-*` mantenute |
+| `docs/ADMIN_CLASSIC_SKILL.md` §4 | Note BookingDetailsModal/DetailsTab aggiornate al nuovo approccio |
+| `docs/FOLLOW_UP.md` | FU-058 + FU-PERF-BUNDLE |
