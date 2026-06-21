@@ -2,7 +2,7 @@
 
 > **Cosa è cambiato:** l'ordine categorie scelto nella tab Menu è rispettato anche nel dettaglio
 > prenotazione; il Salva QR resta cliccabile e indica il primo dato mancante.
-> **Cosa resta:** niente sul perimetro funzionale; pubblicazione autorizzata da Matteo in corso.
+> **Cosa resta:** niente; release PrenotaZen pubblicata.
 > **Serve una tua azione:** no.
 
 ## 1. Contesto e richiesta
@@ -76,11 +76,13 @@ app e confermato: **«funziona»**.
   → **7/7** verdi.
 - `npm run validate` → lint + typecheck + **963/963 test** verdi.
 - `git diff --check` → verde.
+- PrenotaZen: `npm run validate` + `npm run build` → verdi prima del push.
 
 ## 5. Stato finale
 - **3/3 fix completati** e controtestati da Matteo.
 - Nessuna migrazione o scrittura DB: `menu_categories.sort_order` esisteva già.
-- `env/test` validato; commit, push, merge `main` e release PrenotaZen autorizzati da Matteo.
+- Privata: codice `b870959`, docs `1351763`; `env/test` e `main` pushati/allineati.
+- Pubblica: PrenotaZen `main` release **`7057ebb`**; validate + build verdi.
 
 ## 6. File di skill aggiornati
 
@@ -110,6 +112,7 @@ app e confermato: **«funziona»**.
 | Retry | 1 tecnico: primo `validate` aveva timeout tool troppo corto; rilancio completo verde |
 | Domande agente | 0 |
 | DB / migrazioni | nessuno |
+| Release | privata `1351763`; PrenotaZen `7057ebb` |
 
 Il prompt efficace separava causa radice e fix atteso, evitando una nuova diagnosi esplorativa. Da
 replicare: indicare entrambi i render quando un componente ha viste edit/read-only. Da migliorare nel
@@ -166,9 +169,9 @@ restano invariati. Nessuna voce nuova in `FOLLOW_UP.md`.
    Nessun tipo o schema da aggiornare: `sort_order` e `SelectedMenuItem.category` esistevano già.
 
 ❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato? (vietato «tutto ok» a vuoto: se davvero nulla, scrivilo e di' perché ne sei certo.)
-✅ R4: Nessun lavoro funzionale lasciato aperto. Non ho incluso la modifica preesistente a
-   `.husky/pre-commit`; non ho toccato DB/Edge perché il fix è solo frontend. Label e icone categoria
-   hardcoded restano fuori scope: non influenzano l'ordine richiesto.
+✅ R4: Nessun lavoro funzionale o di pubblicazione lasciato aperto. Non ho incluso la modifica
+   preesistente a `.husky/pre-commit`; non ho toccato DB/Edge perché il fix è solo frontend. Label e
+   icone categoria hardcoded restano fuori scope: non influenzano l'ordine richiesto.
 
 ❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti? (critica + proposta nella stessa riga; se non hai avuto attriti, immagina quello più probabile.)
 ✅ R5: Attrito storico: il primo agente aveva assunto che il dettaglio passasse da `MenuSelection`;
