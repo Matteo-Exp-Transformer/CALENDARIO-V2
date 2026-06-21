@@ -283,7 +283,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
           <div className="mt-6 pt-4 border-t-2 border-gray-300">
             <h4 className="text-lg font-bold text-gray-900 mb-3">RIEPILOGO COSTI</h4>
 
-            <div className="flex justify-between items-center text-base mb-2">
+            <div className="flex justify-between items-center text-lg mb-2">
               <span className="text-gray-700">
                 Prezzo a persona: €{baseTotal.toFixed(2)} × {numGuests} ospiti
               </span>
@@ -291,7 +291,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
             </div>
 
             <div className="flex justify-between items-center text-lg font-bold mt-3 pt-3 border-t border-gray-300">
-              <span className="text-gray-900">TOTALE RINFRESCO</span>
+              <span className="text-gray-900">TOTALE</span>
               <span className="text-gray-900">€{prezzoPersonaTotal.toFixed(2)}</span>
             </div>
           </div>
@@ -309,7 +309,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
       {/* Preset Menu Label (if applicable) — view mode */}
       {presetMenu && (
         <div>
-          <p className="text-sm font-semibold text-gray-900">
+          <p className="text-base font-semibold text-gray-900">
             📋 Menu Predefinito:{' '}
             <span>{getPresetMenuLabel(presetMenu as PresetMenuType, customStaffPresets)}</span>
           </p>
