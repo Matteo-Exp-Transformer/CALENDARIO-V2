@@ -26,7 +26,7 @@ AdminDashboard <main>
        └─ BookingCalendar
             ├─ CALENDAR_TITLE_SECTION_INSET_CLASS (max-w-7xl, padding compensato)
             │    └─ card titolo: h2 + icona calendario
-            ├─ pulsanti vista (Mese / Settimana / Giorno / Lista) — centrati, full width
+            ├─ pulsanti vista — mobile/tablet: Mese + Lista; desktop: tutte le viste
             ├─ .booking-calendar-fc (full width)
             │    ├─ riga «Oggi» + data (currentDateLabel, es. 23/05/26)
             │    └─ FullCalendar (height: 'auto')
@@ -40,6 +40,7 @@ AdminDashboard <main>
 | Costante | Valore | Uso |
 |----------|--------|-----|
 | `CALENDAR_DEFAULT_LIST_MAX_WIDTH_PX` | `630` | Sotto questa larghezza: vista lista predefinita; `dayMaxEvents: 3` su FC |
+| `CALENDAR_DESKTOP_MIN_WIDTH_PX` | `1024` (`lg`) | Da questa larghezza mostra anche Settimana/Giorno; sotto restano Mese/Lista |
 | `CALENDAR_EVENT_ICON_ONLY_MAX_WIDTH_PX` | `500` | Vista mese: solo icona evento sotto questa larghezza |
 | `CALENDAR_DAY_GRID_MONTH_MIN_HEIGHT_PX` | `128` | Min-height celle mese (viewport > 630px) |
 | `CALENDAR_DAY_GRID_MONTH_MIN_HEIGHT_NARROW_PX` | `112` | Min-height celle mese (viewport ≤ 630px) |
@@ -131,6 +132,15 @@ Layout riga titolo (≥640px): `sm:items-center sm:justify-center` sul flex; ico
 - Accanto al pulsante **Oggi** sopra FullCalendar (`currentDateLabel`, formato `dd/MM/yy`).
 - **Responsive (11-06-26):** nascosta sotto **`lg` (1024px)** — su mobile/tablet resta solo **Oggi** per non invadere il titolo mese FC; visibile da desktop in su (`hidden lg:inline`).
 - Wrapper: `absolute left-0 top-0 z-20 flex items-center gap-2` dentro `.booking-calendar-fc`.
+
+### Selettore viste
+
+- **Mobile e tablet (`< lg`)**: sono renderizzati solo **Mese** e **Lista**.
+- **Desktop (`≥ lg`, 1024px)**: sono renderizzati **Mese**, **Settimana**, **Giorno** e **Lista**.
+- Se il viewport passa sotto `lg` con Settimana o Giorno attivi, `currentView` e FullCalendar passano
+  a **Mese**. Mese/Lista restano selezionabili normalmente.
+- Tornando desktop ricompaiono tutte le viste senza ripristinare quella precedente: resta attiva la
+  vista corrente.
 
 ---
 
@@ -266,6 +276,7 @@ Non riusare i breakpoint FC (537px…) per il titolo o altri componenti.
 2. Vista mese — celle ≥112/128px altezza minima (vuote o con pochi eventi).
 3. **Oggi** sopra il calendario; data accanto solo da **lg** in su (1280px QA: visibile).
 4. Titolo: sinistra a 399px e 450px; centrato a 700px e 1200px; 470–639px a 1.5rem sinistra.
+5. Selettore viste: 375/834px solo Mese+Lista con fallback a Mese; 1280px tutte le viste.
 
 ```bash
 npm run typecheck && npm run lint

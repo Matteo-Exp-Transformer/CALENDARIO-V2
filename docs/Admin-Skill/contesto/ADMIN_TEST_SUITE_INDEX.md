@@ -42,7 +42,7 @@ Fronti previsti:
 | `e2e/admin-shell-blindatura.spec.ts` | shell refresh/back, dirty guard, logout (FU-042) |
 | `e2e/admin-classic-tabs.spec.ts` | tab Classic |
 | `e2e/admin-booking-mgmt.spec.ts` | gestione prenotazioni admin |
-| `e2e/admin-calendar-blindatura.spec.ts` | smoke Calendario: badge mese con limite/>100%, badge senza limite, digest, nuova prenotazione, **ordine fasce digest post-riordino `display_order`** |
+| `e2e/admin-calendar-blindatura.spec.ts` | smoke Calendario: selettore viste a 375/834/1280, badge mese con limite/>100%, badge senza limite, digest, nuova prenotazione, **ordine fasce digest post-riordino `display_order`** |
 | `e2e/admin-settings-blindatura.spec.ts` | smoke Impostazioni: anagrafica, footer, dirty guard tema, anteprime tema/sfondo 375/900/1256 |
 | `e2e/admin-menu-magazzino-blindatura.spec.ts` | Menu/Magazzino: toggle disponibilità, propagazione Prenota/QR, responsive |
 | `e2e/admin-menu-magazzino-ct.spec.ts` | Menu/Magazzino controtest browser |
@@ -179,7 +179,9 @@ su TEST. `admin-calendar-blindatura.spec.ts` esteso a badge senza limite e oltre
 
 ## 8-bis. Area 2-bis — Tab Calendario (M2)
 
-Stato: **batch A+B FU-047 + classificazione doc (11-06-26)** — **41** test Vitest `@admin-blindatura: calendario` (+ **2** test No-show `bookingDetailsModal.noShow`, **fuori** conteggio M2), validate **527** verde. FU-047 **chiuso**: finding Fase C tutti fix o voluto/differito (§5-ter punti 21–22, layout §7-ter). E2E smoke `admin-calendar-blindatura.spec.ts` aggiunto per badge/digest/form. Prossimo cancello: QA badge §9.
+Stato: **blindatura Calendario attiva** — suite Vitest mirata + E2E smoke
+`admin-calendar-blindatura.spec.ts` per selettore viste 375/834/1280, badge, digest e form. FU-047
+**chiuso**: finding Fase C tutti fix o voluto/differito (§5-ter punti 21–22, layout §7-ter).
 
 ### Mapping scenari PLAN §3-ter.3 → test
 
@@ -199,13 +201,13 @@ Stato: **batch A+B FU-047 + classificazione doc (11-06-26)** — **41** test Vit
 
 - `src/features/booking/utils/__tests__/sumGuestsByDate.adminBlindatura.test.ts` (7) → conteggio coperti/giorno (stesso criterio blocco pubblico `DAILY_LIMIT`).
 - `src/features/booking/lib/__tests__/restaurantSettingRegistry.slotLimitToggles.adminBlindatura.test.ts` (10) → `slot_limit_enabled` / `booking_reject_out_of_slot`: assente o sporco = OFF, boolean round-trip stabile.
-- `src/features/booking/components/__tests__/calendario.adminBlindatura.test.tsx` (18) → UI `BookingCalendar`: badge, datesSet, gate tavolo (+ Pro slot vuoti), pending assenti, crea-da-giorno, no DnD, elimina da dettaglio (render con `UnsavedChangesProvider`).
+- `src/features/booking/components/__tests__/calendario.adminBlindatura.test.tsx` (28) → UI `BookingCalendar`: badge, datesSet, gate tavolo (+ Pro slot vuoti), pending assenti, crea-da-giorno, no DnD, elimina da dettaglio e selettore viste responsive (375/834/1280, fallback a Mese, Mese↔Lista e ritorno desktop; render con `UnsavedChangesProvider`).
 - `src/features/booking/components/__tests__/bookingCalendarGuard.adminBlindatura.test.tsx` (4) → **C-U2** guard tab: dirty → modale Salva/Annulla/Resta; pulito → nessun guard; chiusura modale → guard stale assente.
 - `src/features/booking/components/__tests__/bookingCalendarTab.adminBlindatura.test.tsx` (1) → C-U4 Riprova su errore `useAcceptedBookings`.
 - `src/features/booking/utils/__tests__/bookingEventTransform.adminBlindatura.test.ts` (2) → no-show + confirmed_end in transform.
 - `src/features/booking/hooks/__tests__/useCapacityCheck.adminBlindatura.test.ts` (2) → no-show esclusi per-fascia.
 - `src/features/booking/components/__tests__/bookingDetailsModal.noShow.adminBlindatura.test.tsx` (2) → pulsante No-show su orario **inizio** (addendum Matteo batch B); **fuori** conteggio M2 41.
-- `e2e/admin-calendar-blindatura.spec.ts` → smoke browser su badge mese con limite/>100%, badge senza limite, digest, pending/no-show, `+ Nuova prenotazione`, **ordine fasce digest rispetto a `display_order` salvato (3 fasce non cronologiche + prenotazioni per fascia)**.
+- `e2e/admin-calendar-blindatura.spec.ts` → smoke browser su selettore viste e fallback a 375/834/1280, badge mese con limite/>100%, badge senza limite, digest, pending/no-show, `+ Nuova prenotazione`, **ordine fasce digest rispetto a `display_order` salvato (3 fasce non cronologiche + prenotazioni per fascia)**.
 
 Pattern: mock `@fullcalendar/react` cattura props (`dateClick`, `dayCellDidMount`, assenza drag); `AdminBookingForm` mock per `initialDate`; `BookingDetailsModal` reale con tab stub + mutation mock.
 

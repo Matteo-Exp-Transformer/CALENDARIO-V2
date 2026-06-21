@@ -216,6 +216,9 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
 ### `BookingCalendar.tsx`
 
 - Feature opt-in gated: icona walk-in se `features.walkIn`; turni/badge “Da assegnare” se `features.servizio`.
+- Selettore viste FullCalendar: sotto `lg` (mobile/tablet) renderizza solo **Mese** e **Lista**; da
+  `lg` mostra anche **Settimana** e **Giorno**. Se il viewport scende sotto `lg` mentre è attiva una
+  vista desktop-only, passa a **Mese**; tornando desktop mantiene la vista corrente.
 - Orari fasce: `useServiceSlots()` + `useDigestSlotConfigs()` da `useServiceSlots.ts` (tabella `service_slots`, non JSON in `restaurant_settings`).
 - Digest giorno: `DayDigestSummaryPanel` + `DayServiceGroupCard` collapse + `DayHourGroup` + `BookingDigestCard`; la card ha: (1) nome cliente a tutta larghezza (nessuna icona tipologia — rimossa); (2) ospiti + orario; (3) badge tipologia (tipologia prenotazione + card scorrevole) sotto i dati, sulla stessa riga con wrap — massimo 3 badge senza duplicati, label da `booking_public_form_config.booking_modes[].booking_badge_label` / `sub_tabs[].booking_badge_label`, fallback a label tipologia/card scorrevole; `booking_badge_enabled === false` nasconde quel badge, e il badge card compare solo per sotto-tab `display === 'cards'`, mai per carosello; (4) badge `DA ASSEGNARE` solo se Pro senza tavolo, **esterno** alla card agganciato al bordo in alto a destra (`absolute -translate-y-full`, `bg-surface` + bordo, `rounded-b-none`), così non ruba spazio al nome — cliccabile apre `QuickTableAssignModal`. Assegnazione rapida tavolo via badge `DA ASSEGNARE` + `QuickTableAssignModal` (Pro).
 - Digest settimana: resta compatto e usa `DigestBookingListRow`.
