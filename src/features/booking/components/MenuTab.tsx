@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react'
 import { Trash2, X } from 'lucide-react'
-import { CollapsibleSection } from './CollapsibleSection'
 import type { SelectedMenuItem } from '@/types/menu'
 import type { BookingType } from '@/types/booking'
 import { bookingTypeUsesMenuSelections } from '../utils/bookingTypeMenu'
@@ -27,8 +26,8 @@ interface MenuTabProps {
   presetMenu?: string | null
   staffPresetsDropdownVisible?: boolean
   customStaffPresets?: CustomStaffPreset[]
-  isMenuExpanded: boolean
-  onMenuExpandToggle: () => void
+  isMenuExpanded?: boolean
+  onMenuExpandToggle?: () => void
   onMenuChange: (payload: {
     items: SelectedMenuItem[]
     totalPerPerson: number
@@ -67,8 +66,8 @@ export const MenuTab: React.FC<MenuTabProps> = ({
   presetMenu,
   staffPresetsDropdownVisible = true,
   customStaffPresets = [],
-  isMenuExpanded,
-  onMenuExpandToggle,
+  isMenuExpanded: _isMenuExpanded,
+  onMenuExpandToggle: _onMenuExpandToggle,
   onMenuChange,
   onPresetMenuChange
 }) => {
@@ -146,10 +145,10 @@ export const MenuTab: React.FC<MenuTabProps> = ({
   const adminEditContent = (
     <div className="space-y-4">
       {showPresetSelect && (
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
           <label
             htmlFor="admin-preset-menu"
-            className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]"
+            className="mb-2 block text-base font-semibold uppercase tracking-wide text-(--color-text-muted)"
           >
             Menù predefinito
           </label>
@@ -160,7 +159,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
               const value = e.target.value
               onPresetMenuChange?.(value === '' ? null : (value as Exclude<PresetMenuType, null>))
             }}
-            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm font-semibold text-[var(--color-text)] focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-base font-semibold text-(--color-text) focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30"
           >
             <option value="">Nessun menù predefinito</option>
             {presetOptions.map((opt) => (
@@ -169,7 +168,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
               </option>
             ))}
           </select>
-          <p className="mt-1.5 text-xs text-[var(--color-text-muted)]">
+          <p className="mt-2 text-base text-(--color-text-muted)">
             Cambiando menù si sostituiscono gli ingredienti di questa prenotazione.
           </p>
         </div>
@@ -182,21 +181,21 @@ export const MenuTab: React.FC<MenuTabProps> = ({
             return (
               <div
                 key={category}
-                className="overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]"
+                className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]"
               >
-                <div className="flex items-center justify-between gap-2 border-b border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2">
+                <div className="flex items-center justify-between gap-2 border-b border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2.5">
                   <div className="flex min-w-0 items-center gap-2">
-                    <span className="truncate text-sm font-bold text-[var(--color-text)]">
+                    <span className="truncate text-lg font-bold text-(--color-text)">
                       {categoryLabel(category)}
                     </span>
-                    <span className="flex-shrink-0 text-xs text-[var(--color-text-muted)]">
+                    <span className="flex-shrink-0 text-base text-(--color-text-muted)">
                       {items.length} {items.length === 1 ? 'voce' : 'voci'} · €{categoryTotal.toFixed(2)}
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleRemoveCategory(category)}
-                    className="flex flex-shrink-0 items-center gap-1 rounded-md border border-red-200 px-2 py-1 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50"
+                    className="flex flex-shrink-0 items-center gap-1 rounded-md border border-red-200 px-2 py-1 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Rimuovi categoria</span>
@@ -207,11 +206,11 @@ export const MenuTab: React.FC<MenuTabProps> = ({
                   {items.map((item, idx) => (
                     <li
                       key={`${item.id}-${idx}`}
-                      className="flex items-center justify-between gap-2 px-3 py-2"
+                      className="flex items-center justify-between gap-2 px-4 py-2.5"
                     >
-                      <span className="min-w-0 truncate text-sm text-[var(--color-text)]">{item.name}</span>
+                      <span className="min-w-0 truncate text-base text-(--color-text)">{item.name}</span>
                       <div className="flex flex-shrink-0 items-center gap-2">
-                        <span className="text-sm font-semibold text-[var(--color-text)]">
+                        <span className="text-lg font-semibold text-(--color-text)">
                           €{item.price.toFixed(2)}
                         </span>
                         <button
@@ -230,22 +229,22 @@ export const MenuTab: React.FC<MenuTabProps> = ({
             )
           })}
 
-          <div className="rounded-lg border border-primary-200 bg-primary-50 px-3 py-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[var(--color-text)]">Totale a persona</span>
-              <span className="font-bold text-[var(--color-text)]">€{totalPerPerson.toFixed(2)}</span>
+          <div className="rounded-xl border border-primary-200 bg-primary-50 px-4 py-3">
+            <div className="flex items-center justify-between text-lg">
+              <span className="text-(--color-text)">Totale a persona</span>
+              <span className="font-bold text-(--color-text)">€{totalPerPerson.toFixed(2)}</span>
             </div>
-            <div className="mt-2 flex items-center justify-between border-t border-primary-200 pt-2 text-base font-bold">
+            <div className="mt-2 flex items-center justify-between border-t border-primary-200 pt-2 text-lg font-bold">
               <span className="text-primary-900">Totale prenotazione</span>
               <span className="text-primary-900">€{totalBooking.toFixed(2)}</span>
             </div>
-            <p className="mt-1 text-xs text-[var(--color-text-muted)]">{numGuests} ospiti</p>
+            <p className="mt-1 text-base text-(--color-text-muted)">{numGuests} ospiti</p>
           </div>
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-6 text-center">
-          <p className="text-sm font-medium text-[var(--color-text)]">Nessun ingrediente in questa prenotazione</p>
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+        <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-6 text-center">
+          <p className="text-base font-medium text-(--color-text)">Nessun ingrediente in questa prenotazione</p>
+          <p className="mt-1 text-base text-(--color-text-muted)">
             Scegli un menù predefinito qui sopra, oppure salva la prenotazione senza menù.
           </p>
         </div>
@@ -253,41 +252,22 @@ export const MenuTab: React.FC<MenuTabProps> = ({
     </div>
   )
 
-  // Menu summary (always visible, view mode)
-  const menuSummary = (
-    <div className="space-y-1 text-sm">
-      <p className="font-semibold text-gray-700">
-        {itemCount} {itemCount === 1 ? 'item selezionato' : 'items selezionati'}
-      </p>
-      <p className="text-gray-600">
-        Totale a persona: <span className="font-bold text-gray-900">€{totalPerPerson.toFixed(2)}</span>
-      </p>
-      <p className="text-gray-600">
-        Totale prenotazione: <span className="font-bold text-gray-900">€{totalBooking.toFixed(2)}</span>
-        {' '}<span className="text-xs">({numGuests} ospiti)</span>
-      </p>
-    </div>
-  )
-
   // Menu expanded content (view mode)
   const menuViewContent = (
     <div className="space-y-4">
       {Object.entries(groupedItems).map(([category, items]) => {
-        const categoryTotal = items.reduce((sum, item) => sum + item.price, 0)
-
         return (
           <div key={category} className="space-y-2">
-            <h4 className="text-base font-bold text-gray-900 flex items-center gap-2">
+            <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
               <span>{CATEGORY_ICONS[category] || '📦'}</span>
               <span>{categoryLabel(category)}</span>
-              <span className="text-sm text-gray-600">({items.length} {items.length === 1 ? 'item' : 'items'})</span>
-              <span className="ml-auto text-sm font-bold text-gray-700">€{categoryTotal.toFixed(2)}</span>
+              <span className="text-base text-gray-600">({items.length} {items.length === 1 ? 'item' : 'items'})</span>
             </h4>
             <ul className="space-y-1 pl-6">
               {items.map((item, idx) => (
-                <li key={`${item.id}-${idx}`} className="text-sm text-gray-700 flex items-center justify-between">
+                <li key={`${item.id}-${idx}`} className="text-base text-gray-700 flex items-center justify-between">
                   <span>• {item.name}</span>
-                  <span className="font-semibold">€{item.price.toFixed(2)}</span>
+                  <span className="text-lg font-semibold">€{item.price.toFixed(2)}</span>
                 </li>
               ))}
             </ul>
@@ -301,16 +281,16 @@ export const MenuTab: React.FC<MenuTabProps> = ({
 
         return (
           <div className="mt-6 pt-4 border-t-2 border-gray-300">
-            <h4 className="text-base font-bold text-gray-900 mb-3">RIEPILOGO COSTI</h4>
+            <h4 className="text-lg font-bold text-gray-900 mb-3">RIEPILOGO COSTI</h4>
 
-            <div className="flex justify-between items-center text-sm mb-2">
+            <div className="flex justify-between items-center text-base mb-2">
               <span className="text-gray-700">
                 Prezzo a persona: €{baseTotal.toFixed(2)} × {numGuests} ospiti
               </span>
               <span className="font-bold text-gray-900">€{prezzoPersonaTotal.toFixed(2)}</span>
             </div>
 
-            <div className="flex justify-between items-center text-base font-bold mt-3 pt-3 border-t border-gray-300">
+            <div className="flex justify-between items-center text-lg font-bold mt-3 pt-3 border-t border-gray-300">
               <span className="text-gray-900">TOTALE RINFRESCO</span>
               <span className="text-gray-900">€{prezzoPersonaTotal.toFixed(2)}</span>
             </div>
@@ -336,17 +316,8 @@ export const MenuTab: React.FC<MenuTabProps> = ({
         </div>
       )}
 
-      {/* Collapsible Menu Section */}
       {menuSelection?.items && menuSelection.items.length > 0 ? (
-        <CollapsibleSection
-          title="Menu Selezionato"
-          icon="🍽️"
-          summary={menuSummary}
-          isExpanded={isMenuExpanded}
-          onToggle={onMenuExpandToggle}
-        >
-          {menuViewContent}
-        </CollapsibleSection>
+        menuViewContent
       ) : (
         <div className="text-center">
           <p className="text-gray-600 italic">Nessun menu selezionato</p>
