@@ -998,7 +998,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
 
           {/* Content Area - Scrollable */}
           <div
-            className="flex-1 bg-[var(--color-bg)]"
+            className="min-h-0 flex-1 bg-[var(--color-bg)]"
             style={{
               paddingLeft: '12px',
               paddingRight: '12px',

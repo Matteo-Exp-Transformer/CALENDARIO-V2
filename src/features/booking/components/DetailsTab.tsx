@@ -122,9 +122,15 @@ export const DetailsTab: React.FC<Props> = ({
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
+      {/*
+        Su mobile (grid-cols-1) l'ordine CSS è invertito rispetto al DOM:
+        - Informazioni Cliente (RIGHT, order-1) appare prima
+        - Dati Prenotazione + Note (LEFT, order-2) appare dopo
+        Desktop (md:grid-cols-2): md:order-1 = colonna sinistra, md:order-2 = colonna destra.
+      */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 md:items-start">
         {/* LEFT column: Dati Prenotazione + Note/Intolleranze */}
-        <div className="flex min-w-0 flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4 order-2 md:order-1">
           {/* Dati Prenotazione (ex Dettagli Evento) */}
           <div className={SECTION_CARD}>
             <h3 className="text-title-subtitle font-bold uppercase tracking-wide text-gray-900">
@@ -285,7 +291,7 @@ export const DetailsTab: React.FC<Props> = ({
         </div>
 
         {/* RIGHT column: Informazioni Cliente */}
-        <div className="flex min-w-0 flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4 order-1 md:order-2">
           <div className={SECTION_CARD}>
             <h3 className="text-title-subtitle font-bold uppercase tracking-wide text-gray-900">
               Informazioni Cliente
