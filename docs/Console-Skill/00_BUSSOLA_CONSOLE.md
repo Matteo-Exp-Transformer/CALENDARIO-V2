@@ -40,6 +40,17 @@ RULE-4  CODICE SOLO IN console/. Non toccare src/ o supabase/. La Console NON im
 > Queste sono **regole sempre attive**, non parole-grilletto. L'unica parola nuova è «plan per
 > matteo» (vedi VOCABOLARIO).
 
+### 1b. Regola d'oro 5 — TRACCIABILITÀ (priorità n.1)
+
+```
+RULE-5  Niente accade in silenzio. Ogni decisione non banale → DEC-NNN in sessioni/DECISION_LOG.md;
+        ogni fase → blocco in sessioni/PHASE_AUDIT.md prima del commit; ogni scrittura DB → tracciata;
+        ogni commit cita fase + DEC. Esecutore ≠ Revisore (no auto-approvazione).
+```
+
+> Matteo ha dato **consenso pieno** «per ora» (DEC-013): si procede senza chiedere conferma, **ma si
+> logga tutto** per renderlo revisionabile. Protocollo completo: **`TRACCIABILITA.md`**.
+
 ---
 
 ## 2. Scegli il profilo e instrada

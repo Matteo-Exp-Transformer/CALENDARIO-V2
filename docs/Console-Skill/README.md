@@ -30,4 +30,8 @@
 | `comunicazione/VOCABOLARIO.md` | parole-comando (riuso Matteo + «plan per matteo») |
 | `comunicazione/COMUNICAZIONE_SKILL.md` | stile didattico |
 | `plan-per-matteo/README.md` | convenzione + template per le modifiche DB di Matteo |
+| `TRACCIABILITA.md` | **priorità n.1**: come si revisiona tutto (5 registri, regole TRACE) |
+| `sessioni/DECISION_LOG.md` | registro decisioni `DEC-NNN` (chi, perché, prova) |
+| `sessioni/PHASE_AUDIT.md` | audit trail per fase del master-plan (esecutore/revisore/verdetto/commit) |
+| `sessioni/HANDOFF-orchestrator-masterplan.md` | hand-off per l'agente orchestrator (workflow automode) |
 | `sessioni/SESSION_LOG.md` · `FOLLOW_UP.md` | memoria di sessione + debiti differiti |

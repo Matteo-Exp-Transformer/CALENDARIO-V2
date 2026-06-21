@@ -9,10 +9,14 @@
 | FU-CONSOLE-3 | Scaffolding dell'app `console/` (Vite+React+TS+Supabase isolata) + esclusione dalla pipeline root | Sessione successiva |
 | FU-CONSOLE-4 | Decidere meccanismo Edge per scritture privilegiate della Console | Dipende dalle risposte di Matteo |
 
-## Domande aperte per Matteo (vedi README del Console-Skill)
+## Domande a Matteo — ✅ TUTTE RISOLTE (2026-06-22, consenso pieno)
 
-1. Indirizzo/dominio + dove si deploya la Console.
-2. `tenant_features` vs `organizations.edition`/`qr_menu_enabled`: la Console pilota gli add-on via `tenant_features` (legacy `qr_menu_enabled` da ignorare)? Confermare.
-3. Mappatura «+QR»: classic + riga `tenant_features` `qrMenu`?
-4. Ok creare un'Edge Function dedicata alle scritture Console su TEST?
-5. Login Console: Supabase Auth con allowlist email solo Matteo?
+Vedi `DECISION_LOG.md`:
+1. Deploy → Vercel root `console/`, `console.<dominio>` (dominio TBD) — DEC-012.
+2. Add-on via `tenant_features`; `qr_menu_enabled` legacy — DEC-008.
+3. «+QR» = classic + `tenant_features` `qrMenu` — DEC-009.
+4. Edge Function scritture privilegiate su TEST → OK — DEC-010.
+5. Login = Supabase Auth allowlist email — DEC-011.
+
+> **Standing authorization** attiva (DEC-013): si procede senza chiedere conferma, ma **tracciando
+> tutto** (`TRACCIABILITA.md`).

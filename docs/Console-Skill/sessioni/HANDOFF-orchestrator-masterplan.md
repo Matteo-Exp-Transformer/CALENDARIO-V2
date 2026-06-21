@@ -16,6 +16,8 @@ Console super-admin e **guidarne l'esecuzione** lanciando subagent, in ciclo aut
 1. `.claude/CLAUDE.md` (master del branch, già personalizzato per questo lavoro).
 2. `docs/Console-Skill/00_BUSSOLA_CONSOLE.md` (Skill 0: profili, routing, **4 regole d'oro**, LOCK).
 3. `docs/Console-Skill/context/CONSOLE_DATA_MODEL_CONTEXT.md` e `…/CONSOLE_APP_CONTEXT.md`.
+   3b. **`docs/Console-Skill/TRACCIABILITA.md`** + `sessioni/DECISION_LOG.md` + `sessioni/PHASE_AUDIT.md`
+       — il protocollo di tracciabilità (priorità n.1) e i registri da compilare.
 4. `docs/Console-Skill/comunicazione/VOCABOLARIO.md` e `…/COMUNICAZIONE_SKILL.md`.
 5. Contesto prodotto: `docs/Servizio-Config/` (BENVENUTO, INVENTARIO, GUIDA, ROADMAP).
 6. Formato dei prompt operativi: `docs/PREPARA_PROMPT_SKILL.md` (skill di Matteo, **sola lettura**).
@@ -31,7 +33,13 @@ RULE-1  SOLO TEST docnnernvp. Prima di OGNI scrittura DB: get_project_url == doc
 RULE-2  Scritture DATI solo sui sandbox: console-classic / console-pro. Ogni altro tenant = sola lettura.
 RULE-3  Schema/DDL/RLS/migrazioni → MAI eseguiti dall'agente: file in docs/Console-Skill/plan-per-matteo/ → li esegue Matteo.
 RULE-4  Codice solo in console/. Non toccare src/ né supabase/. La Console NON importa da ../src. Service role MAI nel browser.
+RULE-5  TRACCIABILITÀ (priorità n.1): logga tutto. DEC-NNN per ogni decisione, PHASE_AUDIT per ogni fase,
+        commit che citano fase+DEC. Esecutore ≠ Revisore. Vedi TRACCIABILITA.md.
 ```
+
+> **Standing authorization (DEC-013):** Matteo dà consenso pieno «per ora». Procedi **senza chiedere
+> conferma** sulle scelte ordinarie, **ma logga tutto** (RULE-5) così il lavoro resta interamente
+> revisionabile. Segnala comunque a Cristiano le scelte **irreversibili** o **fuori scope**.
 
 > Il **canale MCP scrivibile su TEST** è **`CONSOLE`** (`mcp__claude_ai_CONSOLE__*`). Verifica sempre
 > `get_project_url` prima di scrivere. Gli altri MCP non scrivono il DB di Matteo.
@@ -73,12 +81,15 @@ RULE-4  Codice solo in console/. Non toccare src/ né supabase/. La Console NON 
 Per ogni fase `Fi`, nell'ordine:
 1. **Lancia subagent ESECUTORE** (Agent `general-purpose`) col *prompt esecutore* di `Fi`.
 2. Quando finisce → **lancia subagent REVISORE** (Agent `general-purpose`) col *prompt controverifica* di `Fi`.
-3. **Se la revisione passa** → l'orchestrator fa **commit sul branch** (Conventional Commits,
-   es. `feat(console): …`) con riferimento alla fase. Poi passa a `Fi+1`.
+3. **Se la revisione passa** → compila il blocco di `Fi` in **`PHASE_AUDIT.md`** (fino al verdetto),
+   registra eventuali **`DEC-NNN`** nel `DECISION_LOG.md`, poi **commit sul branch** (Conventional
+   Commits, es. `feat(console): … (F2, DEC-014)`) con riferimento a fase + DEC. Poi passa a `Fi+1`.
 4. **Se la revisione trova problemi** → rilancia l'ESECUTORE con le correzioni richieste dal revisore;
-   ripeti 2–3. Non avanzare finché la fase non è verde.
-5. Aggiorna `docs/Console-Skill/sessioni/SESSION_LOG.md` (1 riga per fase) e, se restano debiti,
-   `FOLLOW_UP.md`.
+   ripeti 2–3 (annota i round nel blocco audit). Non avanzare finché la fase non è verde.
+5. Aggiorna `SESSION_LOG.md` (1 riga per fase) e, se restano debiti, `FOLLOW_UP.md`.
+
+> **Tracciabilità obbligatoria (RULE-5):** una fase **non è chiusa** se manca il suo blocco in
+> `PHASE_AUDIT.md` o le `DEC` collegate. Protocollo: `docs/Console-Skill/TRACCIABILITA.md`.
 
 ### Regole del ciclo
 - **Subagent = cold start:** ogni prompt (esecutore e revisore) deve essere **autosufficiente**
@@ -101,12 +112,12 @@ Ordine coerente con `BENVENUTO_SVILUPPATORE_CONSOLE.md` (primo mattone = elenco 
 |------|-----------|----------|-----------|
 | **F1** | Scaffolding `console/` isolata (Vite+React+TS+Supabase), esclusa da tsconfig/ESLint/Vitest root; connessione al DB TEST con sola chiave pubblica; placeholder login | deep | — |
 | **F2** | Schermata **elenco ristoranti** (legge `organizations`: nome, slug, edition, is_active) — sola lettura | standard | F1 |
-| **F3** | Schermata **cambio edition** di un tenant (scrittura su **sandbox**; per i tenant reali predisponi la chiamata a un'Edge, vedi domande Matteo) | deep | F2 + risposta Matteo (Edge) |
-| **F4** | **Feature flag** per tenant via `tenant_features` (accendi/spegni add-on; `qr_menu_enabled` ignorata) | deep | F3 |
+| **F3** | Schermata **cambio edition** di un tenant (scrittura su **sandbox**; per i tenant reali via Edge — DEC-010) | deep | F2 |
+| **F4** | **Feature flag** per tenant via `tenant_features` (accendi/spegni add-on; `qr_menu_enabled` ignorata — DEC-008/009) | deep | F3 |
 | **F5** | **Impostazioni ristorante** (numeri tecnici dal `restaurantSettingRegistry`) su sandbox | deep | F4 |
 
-> F1–F2 sono **eseguibili subito** (non bloccate da Matteo). F3+ dipendono dalla decisione sull'Edge
-> per le scritture privilegiate e sul login.
+> Tutte eseguibili: Matteo ha risposto (§6). Valuta una **F0/F1-bis** per login Supabase Auth +
+> Edge Function scritture (DEC-010/011) come prerequisito di F3.
 
 ---
 
@@ -146,16 +157,17 @@ NON modificare il codice tu stesso; NON committare.
 
 ---
 
-## 6. Domande aperte per Matteo (bloccano alcune fasi, non F1–F2)
+## 6. Risposte di Matteo (✅ RISOLTE — niente più bloccato)
 
-1. **Indirizzo/dominio** della Console e dove si deploya (Vercel root `console/`?).
-2. **`tenant_features` vs `edition`/`qr_menu_enabled`**: confermare che gli add-on (incl. Menu QR) si
-   pilotano via `tenant_features` e che `qr_menu_enabled` è legacy da ignorare.
-3. **Mappatura «+QR»**: classic + riga `tenant_features` `qrMenu`?
-4. **Edge Function** dedicata alle scritture privilegiate della Console su TEST: ok? quale forma?
-5. **Login Console** (solo Matteo): Supabase Auth con allowlist email?
+Matteo ha dato **consenso pieno** (DEC-013). Le 5 questioni sono chiuse:
 
-> Dettaglio anche in `docs/Console-Skill/sessioni/FOLLOW_UP.md`.
+1. **Deploy** → Vercel root `console/`, indirizzo `console.<dominio>` (dominio esatto TBD) — `DEC-012`.
+2. **Add-on** → fonte di verità `tenant_features`; `qr_menu_enabled` legacy da ignorare — `DEC-008`.
+3. **«+QR»** → edition `classic` + riga `tenant_features` `qrMenu` — `DEC-009`.
+4. **Edge Function** per scritture privilegiate su TEST → OK — `DEC-010`.
+5. **Login** → Supabase Auth con allowlist email (solo Matteo) — `DEC-011`.
+
+> Quindi anche F3+ sono **eseguibili**. Dettaglio in `DECISION_LOG.md`.
 
 ---
 
