@@ -265,7 +265,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
             </h4>
             <ul className="space-y-1 pl-6">
               {items.map((item, idx) => (
-                <li key={`${item.id}-${idx}`} className="text-base text-gray-700 flex items-center justify-between">
+                <li key={`${item.id}-${idx}`} className="text-lg text-gray-700 flex items-center justify-between">
                   <span>• {item.name}</span>
                   <span className="text-lg font-semibold">€{item.price.toFixed(2)}</span>
                 </li>
@@ -309,7 +309,7 @@ export const MenuTab: React.FC<MenuTabProps> = ({
       {/* Preset Menu Label (if applicable) — view mode */}
       {presetMenu && (
         <div>
-          <p className="text-base font-semibold text-gray-900">
+          <p className="text-lg font-semibold text-gray-900">
             📋 Menu Predefinito:{' '}
             <span>{getPresetMenuLabel(presetMenu as PresetMenuType, customStaffPresets)}</span>
           </p>
