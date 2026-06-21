@@ -29,7 +29,7 @@
 | Accetta pending | card richiesta -> accetta | `status`, `confirmed_start`, `confirmed_end`, `desired_time`, `num_guests` |
 | Rifiuta pending | apre `RejectBookingModal` | `status='rejected'`, `rejection_reason` |
 | Nuova prenotazione admin | pannello collassabile | insert `booking_requests` accepted, `booking_source='admin'` |
-| Calendario dettagli | apre modal dettagli | update/cancel/no-show/assegnazioni |
+| Calendario dettagli | apre modal dettagli | update/cancel/no-show/assegnazioni; `admin_notes` via Salva generale |
 | Archivio | filtra e ripristina/requeue | cambia `deleted/rejected` verso stati operativi |
 | Assegna tavolo | quick assign Pro | scrive `booking_table_assignments` |
 
@@ -206,7 +206,9 @@ Senso: calendario **leggero come vista d'insieme** (dice solo quanto è pieno og
 - **FU-CAL-4** — colori soglia riempimento solo cromatici (rosso/verde): aggiungere icona/simbolo per daltonici/staff.
 - **FU-CAL-5** — vista Settimana satura (>40 pren.) avvisa ma non virtualizza: tenere d'occhio performance.
 - **FU-CAL-6** — ✅ chiuso batch A 11-06-26 (C-R3): digest Settimana passa `hasTurns={hasTurnsFeature}` (pallino Pro).
-- **FU-048** — C-U3 turni Pro: copy/toggle «mostra tutti i turni» nel digest (differito **M5/Pro**, non M2 Classic).
+- **FU-048** — ✅ superato 20-06-26: la navigazione turni e il filtro per turno sono stati rimossi
+  dal digest Calendario; la gestione turni resta nella pagina Servizio. Nel Calendario resta solo il
+  badge assegnazione tavolo Pro.
 - **FU-CAL-7** (minore) — richiesta pubblica POST diretta senza `desired_time` bypassa il guard giornaliero
   (limite morbido, ma è un bypass server-side). Il race tra richieste concorrenti è atteso (morbido).
 

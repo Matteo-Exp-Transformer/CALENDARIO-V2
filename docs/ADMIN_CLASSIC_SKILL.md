@@ -217,7 +217,7 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
 
 - Feature opt-in gated: icona walk-in se `features.walkIn`; turni/badge “Da assegnare” se `features.servizio`.
 - Orari fasce: `useServiceSlots()` + `useDigestSlotConfigs()` da `useServiceSlots.ts` (tabella `service_slots`, non JSON in `restaurant_settings`).
-- Digest giorno: `DayDigestSummaryPanel` + `DayServiceGroupCard` collapse + `DayHourGroup` + `BookingDigestCard`; la card ha: (1) nome cliente a tutta larghezza (nessuna icona tipologia — rimossa); (2) ospiti + orario; (3) badge tipologia (tipologia prenotazione + card scorrevole) sotto i dati, sulla stessa riga con wrap — massimo 3 badge senza duplicati, label da `booking_public_form_config.booking_modes[].booking_badge_label` / `sub_tabs[].booking_badge_label`, fallback a label tipologia/card scorrevole (il badge card compare solo per sotto-tab `display === 'cards'`, mai per carosello); (4) badge `DA ASSEGNARE` solo se Pro senza tavolo, **esterno** alla card agganciato al bordo in alto a destra (`absolute -translate-y-full`, `bg-surface` + bordo, `rounded-b-none`), così non ruba spazio al nome — cliccabile apre `QuickTableAssignModal`. Assegnazione rapida tavolo via badge `DA ASSEGNARE` + `QuickTableAssignModal` (Pro).
+- Digest giorno: `DayDigestSummaryPanel` + `DayServiceGroupCard` collapse + `DayHourGroup` + `BookingDigestCard`; la card ha: (1) nome cliente a tutta larghezza (nessuna icona tipologia — rimossa); (2) ospiti + orario; (3) badge tipologia (tipologia prenotazione + card scorrevole) sotto i dati, sulla stessa riga con wrap — massimo 3 badge senza duplicati, label da `booking_public_form_config.booking_modes[].booking_badge_label` / `sub_tabs[].booking_badge_label`, fallback a label tipologia/card scorrevole; `booking_badge_enabled === false` nasconde quel badge, e il badge card compare solo per sotto-tab `display === 'cards'`, mai per carosello; (4) badge `DA ASSEGNARE` solo se Pro senza tavolo, **esterno** alla card agganciato al bordo in alto a destra (`absolute -translate-y-full`, `bg-surface` + bordo, `rounded-b-none`), così non ruba spazio al nome — cliccabile apre `QuickTableAssignModal`. Assegnazione rapida tavolo via badge `DA ASSEGNARE` + `QuickTableAssignModal` (Pro).
 - Digest settimana: resta compatto e usa `DigestBookingListRow`.
 - Layout responsive tab Calendario: **§4c**.
 
@@ -227,6 +227,7 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
 - Conferme azioni distruttive: `BookingDangerActionModal` per No-show ed Elimina (signature mutation invariata).
 - Orario passato: `PastStartTimeWarningModal` + `isWallClockStartBeforeNow` prima di Salva.
 - Display fascia: `useDigestSlotConfigs()`.
+- **Appunti admin (21-06-26):** `DetailsFormData` include `adminNotes: string`; `buildFormDataFromBooking` legge `booking.admin_notes`; `performSave` scrive `adminNotes` → `useUpdateBooking`. La dirty-detection (`isDetailsFormDirty`) copre il campo in automatico (JSON.stringify del formData). Nessuna prop extra sul componente: `formData` è già passato intero a `DetailsTab`.
 
 ### `useBookingMutations.ts`
 
@@ -247,7 +248,8 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
 ### `AdminBookingForm.tsx` + `DetailsTab.tsx`
 
 - Campo **Posizionamento** (`booking_requests.placement`, opzioni da `booking_placement_areas`) visibile solo Pro/Enterprise (`features.servizio`). In Classic: nessun selettore nel form admin, nessuna riga nel modale dettaglio; creazione admin forza `placement: null` (`useCreateAdminBooking`).
-- Promo menù in dettaglio: `DetailsTab` risolve etichette da `booking_menu_promos` (`menuPromo.ts` / `resolveMenuPromoLabelsForBooking`).
+- **Card «Appunti» (21-06-26):** `DetailsTab` mostra una card full-width sotto «Info Prenotazione». In edit: `textarea` legata a `formData.adminNotes` via `onFormDataChange`. In view: testo salvato o «Nessun appunto» se vuoto. Salvataggio via il Salva generale del modal (`performSave → useUpdateBooking → admin_notes`). Niente salva dedicato. Disponibile su tutte le tipologie (non gated edition).
+- Promo menù in dettaglio: `DetailsTab` mostra il **testo cliente** (`message`) della promo via `resolveMenuPromoMessageForBookingView` dalle impostazioni correnti. Non usa lo snapshot `menu_promo_labels` per la vista — se il testo cambia dopo la prenotazione si vede quello attuale. Blocco assente se nessuna promo abbinata alla tipologia. Sola lettura (nessun blocco in modifica).
 - **Intolleranze — suffisso ospiti:** in viste read-only admin (`BookingRequestCard` espanso, `DietaryTab` view) il suffisso «- N ospite/i» compare solo se `guest_count >= 1` (`shouldShowDietaryGuestCount`). Il testo libero da Pagina Prenota salva `guest_count: 0`; l'inserimento strutturato in admin (`DietaryTab` / `DietaryRestrictionsStructuredSection` edit) resta con conteggio ≥1.
 
 ### `useCapacityCheck.ts`

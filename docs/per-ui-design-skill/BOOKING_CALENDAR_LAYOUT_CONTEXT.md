@@ -174,9 +174,10 @@ resta sul mese + digest sotto. Nessun fix M2; indicatore compatto altrove → fo
 |----|------------|-------|-------------------|
 | **C-R2** | Viste FC Settimana/Giorno/Lista senza badge % | **Voluto M2** | La % giornaliera si legge solo in vista **Mese**; sotto restano digest e lista per fascia. |
 | **C-R3** | Digest Settimana compatto senza pallino tavolo Pro | **✅ Chiuso batch A** | `hasTurns={hasTurnsFeature}` — pallino «Assegna tavolo» come in vista Giorno (ex FU-CAL-6). |
-| **C-U3** | Pro + turni: orfani senza tavolo visibili solo al **turno 1** | **Differito M5/Pro** | Comportamento voluto dal fix QA #4 (`filterByTurn`). Al turno 2 lo staff può non vedere le «da assegnare» → copy o toggle in **FU-048**, non bloccante Classic. |
+| **C-U3** | Pro + turni: navigazione turni nel digest giorno | **Superato 20-06** | Il digest giorno non filtra più per turno: `filterByTurn` è passthrough e non esiste più `DigestTurnNav`. La gestione turni vive nella pagina Servizio; nel Calendario resta il badge assegnazione tavolo. |
 
-Dettaglio prodotto C-U3/C-D1/C-U2: `ADMIN_PRENOTAZIONI_CONTEXT.md` §5-ter punti 21–22 e follow-up FU-048.
+Dettaglio prodotto C-U3/C-D1/C-U2: `ADMIN_PRENOTAZIONI_CONTEXT.md` §5-ter punti 21–22 e FU-048
+marcato superato.
 
 ---
 
@@ -211,7 +212,8 @@ DayDigestSummaryPanel
   valore sotto); la colonna Prezzo/pers compare **solo** quando `menuPriceRow` è valorizzato (prenotazione
   con card scorrevole/carosello a prezzo), valore a persona; (3) badge tipologia (tipologia prenotazione
   + card scorrevole) **sotto** i dati, sulla stessa riga con wrap controllato; massimo 3 badge senza
-  duplicati. **Allineamento auto-centrato**: il contenuto sta in un blocco `mx-auto w-fit max-w-full`,
+  duplicati; se `booking_badge_enabled === false` sulla modalità o sulla card, quel badge non viene
+  renderizzato. **Allineamento auto-centrato**: il contenuto sta in un blocco `mx-auto w-fit max-w-full`,
   quindi prende la larghezza naturale e si centra da solo quando la card è larga (spazio libero), mentre
   su card strette riempie e resta a sinistra — niente JS/misurazioni. Il badge `DA ASSEGNARE` (PRO) NON sta nel flusso: è **esterno** alla card, agganciato al
   bordo in alto a destra (`absolute right-3 top-0 -translate-y-full`, sfondo `bg-surface` coerente con
@@ -224,8 +226,9 @@ DayDigestSummaryPanel
   mantenendo gli stessi handler di dettaglio e assegnazione tavolo.
 - Sezione **Fuori fascia**: card finale con stile di attenzione, mostrata solo se il view model
   espone `outOfSlotCount > 0`.
-- Pro + turni: `filterByTurn`, `DigestTurnNav`, `assignedBookingIds` e `QuickTableAssignModal`
-  restano invariati; in Classic non compaiono badge/stati “da assegnare”.
+- Pro + tavoli: `filterByTurn` è passthrough (nessuna navigazione turni nel digest giorno);
+  `assignedBookingIds` e `QuickTableAssignModal` restano per il badge “da assegnare”. In Classic non
+  compaiono badge/stati “da assegnare”.
 
 ### Verifica visiva consigliata
 

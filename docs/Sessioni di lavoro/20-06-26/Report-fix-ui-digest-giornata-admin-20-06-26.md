@@ -1,8 +1,8 @@
 # Report fix UI digest giornata admin — 20-06-26
 
 **Cosa è cambiato:** nella vista Admin → Calendario → Giorno le fasce e le card prenotazione sono più equilibrate: orari meno invasivi, card più leggibili e badge tavolo usabile per assegnare.
-**Cosa resta:** commit e push online da fare dopo conferma di Matteo.
-**Serve una tua azione:** sì — controllare visivamente la schermata e poi confermare commit + push.
+**Cosa resta:** niente per questo ciclo; commit/push eseguiti nel rilascio `31eca5f` del 21-06-26.
+**Serve una tua azione:** no.
 
 ## Cosa è stato fatto
 
@@ -12,6 +12,10 @@
 4. Il nome cliente nella card è tornato in grassetto, mentre i dettagli interni restano più leggeri.
 5. Il vecchio pallino di assegnazione tavolo è stato rimosso. Ora il click per assegnare/cambiare tavolo vive sul badge `DA ASSEGNARE` / `ASSEGNATO`.
 6. L'icona tipologia prenotazione è stata spostata in alto a destra al posto del pallino ed è compatta anche su tablet e desktop.
+
+### Nota revisione post-commit — 21-06-26
+
+Il lavoro è stato poi chiuso nel commit `06ef148` e mergiato su `main` con `31eca5f`. Rispetto al report iniziale sono entrati anche: toggle on/off per i badge prenotazione di modalità/card, fix `dayCellWillUnmount`, rimozione della navigazione turni dal digest Calendario, conteggio coperti fascia `N confermati / Nmax limite`, ordine metriche Coperti/Prenotazioni e layout card auto-centrato.
 
 ## File toccati e perché
 
@@ -75,7 +79,7 @@ Anatomia prompt: completo per esecuzione UI, perché indicava schermata, compone
 ## Cosa resta per la prossima sessione
 
 - Controllo visivo finale di Matteo su desktop/tablet/mobile nella vista Admin → Calendario → Giorno.
-- Dopo conferma: commit separati codice/docs e push online.
+- Commit/push già eseguiti nel rilascio `31eca5f`; nessun altro passaggio aperto per questo ciclo.
 - Nessun nuovo follow-up tecnico aperto da questo lavoro.
 
 ## Domande di chiusura
