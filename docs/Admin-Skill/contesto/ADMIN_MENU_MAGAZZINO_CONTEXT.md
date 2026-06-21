@@ -70,6 +70,17 @@ Gestisce:
   overview ingredienti e soglia tab Menu principale.
 - Subtitle card categoria: `N ingredienti` (con pluralizzazione) in tutti e 3 i componenti — non usare
   `selected/total`. Card categorie `defaultExpanded={false}`.
+- **Ordine canonico categorie (21-06-26):** colonna `menu_categories.sort_order` (già esistente, mig. 003).
+  Riordino dall'admin via **frecce su/giù** nell'header di ogni `CollapsibleCard` categoria nella
+  **panoramica Menu** (`viewMode==='menu'`), accanto al toggle occhio — `handleMoveCategory` +
+  `useReorderMenuCategories` (riscrive `sort_order` sequenziale 0,10,20… su tutte le categorie, normalizza i
+  legacy a 999). Le frecce fanno `e.stopPropagation()` per non espandere la card; disabilitate agli estremi.
+  Questo è l'**ordine canonico unico**: lo rispettano già — perché leggono `useMenuCategories` (ordinato per
+  `sort_order`→`label`) — la panoramica, i menù preselezionati (`PresetMenuBuilder`) e il dettaglio
+  prenotazione (`MenuTab`, sia modifica sia sola lettura; le categorie legacy vanno in coda in ordine
+  alfabetico). **Override invariati per design:**
+  Pagina Prenota (`booking_public_form_config.category_order_keys`) e per-QR mantengono il loro ordine
+  personalizzato, che vince sul canonico. Test: `useMenuCategories.test.tsx` (`useReorderMenuCategories`).
 - **Overlay «Categorie Menu»** (`viewMode === 'categories'`): form in alto; scroll al form con
   `scrollIntoAdminShellView` sul `<main>` AdminShell Pro; guard chiusura (X / Esc) se form aperto e dirty —
   `DiscardChangesConfirmModal` (pattern Impostazioni 29-05-26).
@@ -156,6 +167,14 @@ tipologie nella UI.
 - **Default:** `lucide_salad` (Insalata) per categorie senza mapping e senza icona DB valida; mapping Phosphor per key comuni in `categoryIcons.ts` (`pizza` → `pizza_slice`, `birre` → `beer`, …) — costante `MENU_QR_DEFAULT_CATEGORY_ICON_KEY`.
 - **DB:** `menu_qrcode_categories.icon` (migrazione 042) — una delle 12 chiavi; prefill su nuovo QR senza upload foto automatico.
 - Dettaglio pubblico: `../../Menu-QR-Skill/MENU_QR_SKILL.md` § Icone categoria senza foto.
+
+### 3.8 Salva modale QR — sempre cliccabile con errori in chiaro (21-06-26)
+
+In `MenuQrModal` i due pulsanti **Salva** sono `disabled={isPending}` (non più `disabled={!canSave}`): restano
+cliccabili anche a form invalido così l'utente riceve un errore esplicito invece di un bottone spento e muto.
+`handleSave` → `validateBeforeSave` mostra `toast.warn` con messaggio mirato; **primo** check = **nome QR vuoto**
+(`'Dai un nome al menù QR per salvarlo.'`), poi categorie/carosello da `validateMenuQrSettings`
+(`menuQrValidation.ts`). Rimossi `canSave`/`canSaveSettings` (non più usati).
 
 ## 4. Confini con Prenota e QR
 

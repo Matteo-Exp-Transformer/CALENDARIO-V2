@@ -48,6 +48,12 @@
 
 ## Sessioni registrate (append-only)
 
+### 21-06-26 — Ordine categorie Menu / dettaglio prenotazione (QA Matteo)
+- **Prompt di ripartenza:** profilo, area, causa, punto di modifica, test e branch già espliciti; nessuna domanda necessaria.
+- **QA:** Matteo ha controtestato il dettaglio prenotazione e confermato «funziona».
+- **Chiusura autorizzata:** commit + push `env/test`, fast-forward `main` e release PrenotaZen richiesti nello stesso turno.
+- **Esiti Liv.2:** nessuna voce Liv.2 applicata.
+
 ### 11-06-26 — Chiusura FU M3/MQR (Matteo QA)
 - **FU-M3-QA-L3 fatto:** limite max **7 categorie** confermato in app da Matteo.
 - **FU-M3-QA-CT:** resta **aperto** — controtest «rompi» browser extra, **sessioni future** (non blocca M3).

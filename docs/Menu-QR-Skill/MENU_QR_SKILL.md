@@ -74,8 +74,9 @@ QR**, non in un «tipo di menù» strutturato. Il `content_type` strutturato è 
 2. Mette **Nome QR** (etichetta sua, interna), sceglie **categorie visibili** + ordine, carica il
    **carosello**, scrive **titoli/descrizioni/icone** per categoria, sceglie il **tema**, eventualmente
    **nasconde ingredienti**. → tutto su `menu_qr_codes` (+ `menu_qrcode_categories` per i titoli).
-3. Salva (il pulsante è attivo solo se i requisiti sono ok, §4) → ottiene il **link pubblico** con lo
-   `shortCode` da stampare al tavolo.
+3. Salva: il pulsante resta cliccabile anche se manca un requisito; al click mostra il primo errore
+   da correggere (§4). Quando i dati sono validi ottiene il **link pubblico** con lo `shortCode` da
+   stampare al tavolo.
 
 **Poi — Anna consulta (su `/menu/:slug/qr/:shortCode`):**
 
@@ -168,14 +169,16 @@ ordine) · Carosello specialità · Titoli/descrizioni/icone categorie · Tema h
 - Nome QR: **80** · Carosello: etichetta **40**, titolo **60**, descrizione **125** · Card categoria:
   titolo **30**, descrizione **70** — tutti con contatore `AdminFieldWithCharCount` (FU-MQR-1 chiuso 06-06-26).
 
-**Messaggi-requisito al Salva** (validazione in `menuQrValidation.ts`, in quest'ordine di priorità):
-1. «Seleziona almeno una categoria di prodotti visibili nel menù QR.»
-2. «Almeno una categoria selezionata deve avere almeno un ingrediente visibile per il cliente.»
-3. «Il carosello è obbligatorio: aggiungi almeno una foto con etichetta e titolo compilati.»
-4. «Ogni foto del carosello deve avere etichetta e titolo compilati, oppure rimuovi la slide.»
+**Messaggi-requisito al Salva** (in quest'ordine di priorità):
+1. «Dai un nome al menù QR per salvarlo.» (`MenuQrModal`)
+2. «Seleziona almeno una categoria di prodotti visibili nel menù QR.»
+3. «Almeno una categoria selezionata deve avere almeno un ingrediente visibile per il cliente.»
+4. «Il carosello è obbligatorio: aggiungi almeno una foto con etichetta e titolo compilati.»
+5. «Ogni foto del carosello deve avere etichetta e titolo compilati, oppure rimuovi la slide.»
 
-Il pulsante **Salva** è disabilitato finché nome + requisiti non sono ok; se forzato → toast d'avviso
-col primo messaggio. (Preferenza utente: `Modal` per successo/conferme; toast solo per la validazione.)
+Il pulsante **Salva** resta cliccabile durante la compilazione ed è disabilitato solo mentre il
+salvataggio è in corso. Al click, un toast mostra il primo requisito mancante; nessun errore resta
+silenzioso. (Preferenza utente: `Modal` per successo/conferme; toast solo per la validazione.)
 
 ---
 
