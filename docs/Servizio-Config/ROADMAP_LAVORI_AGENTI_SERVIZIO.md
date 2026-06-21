@@ -94,7 +94,9 @@ Schema fisso. Sostituisci `S?` con la sotto-area.
 ## Glossario minimo (per non confondersi)
 
 - **Onboarding** = la prima configurazione fatta dal ristoratore.
-- **Console privata** = il tuo pannello da super-admin (passo 8), oggi sostituito dall'Inventario su carta.
+- **Console privata** = il tuo pannello da super-admin (passo 8): **app web separata** (responsive, anche
+  da telefono) collegata allo stesso database. Finché non esiste, è sostituita dall'Inventario su carta.
+  Dettagli per chi la costruisce: `BENVENUTO_SVILUPPATORE_CONSOLE.md` §2.
 - **Card / esperienza** = quello che il cliente sceglie quando prenota (es. «Prenota un Tavolo», «Degustazione», «Evento»).
 - **Tipologia** = la categoria con la durata, dietro le card (la vedi tu, non il cliente).
 - **Fascia** = il turno di servizio (Pranzo / Cena).
