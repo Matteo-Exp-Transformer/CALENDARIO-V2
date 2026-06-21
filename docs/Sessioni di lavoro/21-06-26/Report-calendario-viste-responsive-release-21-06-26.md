@@ -31,6 +31,7 @@ La modifica presente in `docs/Comunicazione-Skill/EVOLUZIONE_SKILLS.md` appartie
 - `npm run validate` → verde: lint, typecheck e suite Vitest completa.
 - `npm run validate:docs` → verde: 104 file Markdown, 756 riferimenti locali, 0 path rotti.
 - Test mirato Calendario → **28/28 verdi**.
+- PrenotaZen: `npm run validate` e `npm run build` → verdi.
 - `git diff --check` → verde.
 - Smoke Playwright/browser → **non eseguito su richiesta esplicita di Matteo**; controllo manuale dopo la release.
 
@@ -89,6 +90,11 @@ Il routing Admin Classic e il context Calendario hanno delimitato correttamente 
 ## 9. Cosa resta
 
 Nessun follow-up aperto nel registro. Matteo verificherà la release sui tre formati; eventuali problemi saranno gestiti in una nuova chat.
+
+Stato pubblicazione:
+
+- Repo privata: `env/test` e `main` allineati al codice/documentazione della sessione (`c28f66f`, `a03ba0d`).
+- Repo pubblica PrenotaZen: release `7af5e4a` su `main`.
 
 ## 10. Checklist QA post-release
 
