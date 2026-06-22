@@ -45,6 +45,7 @@ Non cancellare le sezioni: il file racconta l'intero ciclo di vita della richies
 | **Branch** | `feature/console-super-admin` |
 | **Commit** | `<sha>` (… altri …) |
 | **build / typecheck / lint** | ✅ / ❌ + note |
+| **Mobile / responsive (~375px)** | ✅ / ❌ — **obbligatorio**: la UI deve funzionare perfettamente da telefono |
 | **File toccati (solo `console/`)** | … |
 | **Decisioni** | DEC-NNN (se presenti) |
 | **Fase / audit** | blocco in `PHASE_AUDIT.md` (se applicabile) |

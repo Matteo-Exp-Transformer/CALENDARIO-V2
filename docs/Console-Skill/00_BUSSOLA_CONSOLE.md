@@ -17,10 +17,15 @@ description: >-
 
 ## 0. Cosa stiamo costruendo
 
-La **Console super-admin** (FU-SERV-ADMIN-PANEL-1): un'app web **separata e responsive**, solo per
+La **Console super-admin** (FU-SERV-ADMIN-PANEL-1): un'app web **separata e mobile-first**, solo per
 Matteo, che legge/scrive lo **stesso DB Supabase TEST** (`docnnernvp`) per configurare i ristoranti
 (tenant): edition, feature flag, durate/numeri tecnici, card/menu, preset. Il codice vive nella
 sottocartella isolata **`console/`**; l'app di Matteo (`src/`, `supabase/`) **non si tocca**.
+
+> **Invariante UI — DEVE funzionare perfettamente anche da MOBILE.** Matteo usa la Console anche dal
+> telefono (in vendita, sul campo): ogni schermata, tabella, modale e form va progettata e testata
+> responsive (target reale ~375px). Non è un "nice to have": una REQ non è consegnabile se la sua UI
+> non è usabile da telefono. Verifica mobile **obbligatoria** prima di ogni consegna.
 
 ---
 

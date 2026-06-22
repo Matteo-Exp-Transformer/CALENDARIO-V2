@@ -71,7 +71,7 @@ Stati: `BOZZA · DA-FARE · IN-SVILUPPO · CONSEGNATA · IN-TEST · ACCETTATA ·
 4. Carica la bussola `docs/Console-Skill/00_BUSSOLA_CONSOLE.md` (Skill 0). Se tocchi il DB: `get_project_url` deve essere `docnnernvp` (TEST), **mai PROD**.
 
 ### 🔴 Chiusura — Team
-1. `npm run validate` verde (riportalo nella REQ).
+1. `npm run validate` verde (riportalo nella REQ) **+ verifica mobile**: la UI deve funzionare perfettamente da telefono (~375px) — requisito obbligatorio, non consegnare se la schermata non è usabile da mobile.
 2. Compila la sezione **«② Consegna»** della REQ: commit/SHA, modifiche, *cosa testare*, *azioni lato Matteo* (env/secret/plan/deploy).
 3. Aggiorna `SESSION_LOG.md` (sempre); se hai cambiato TEST, aggiorna `STATO_AMBIENTE_TEST.md`.
 4. Metti la REQ **CONSEGNATA**, **commit + push**, avvisa Matteo.
