@@ -1,82 +1,39 @@
-# Collaborazione — Guida Team Console + Matteo
+# Collaborazione — Team Console ⟷ Matteo
 
-> **Cartella per la documentazione del workflow di collaborazione tra team console e Matteo.**
->
-> Indice canonico per orientarsi nei file.
-
----
-
-## 📋 File principali
-
-### 1. **WORKFLOW.md** — Il processo di sviluppo
-**Chi lo legge:** Team console + Matteo  
-**Cosa contiene:** 
-- I tre branch principali (main, env/test, feature/console-super-admin)
-- Workflow passo-passo per il team console (inizio sessione, durante lavoro, push)
-- Workflow passo-passo per Matteo (valida, integra, decide)
-- Gestione conflitti
-- Branch protection rules (GitHub)
-- Checklist prima di push (team) e prima di integrare (Matteo)
+> Indice della cartella. Qui vivono **il processo di lavoro** e **la lavagna delle richieste** tra il
+> Team console (sviluppo su `feature/console-super-admin`) e Matteo (test su `env/test`, rilascio su `main`).
 
 ---
 
-### 2. **SKILL_SYSTEM_CONSOLE.md** — Due skill system indipendenti
-**Chi lo legge:** Agenti orchetratori + team console  
-**Cosa contiene:**
-- Spiegazione: PrenotaZen skill system vs Console skill system
-- Come il team console personalizza il suo skill system (docs/Console-Skill/)
-- Come agenti capiscono quale skill caricare (branch detection)
-- Come Matteo importerà i file console nel sistema principale (dopo)
+## Processo (leggi questi)
+
+| File | A cosa serve | Chi lo legge |
+|------|--------------|--------------|
+| **WORKFLOW.md** | **Fonte di verità del processo:** i 3 branch, i comandi git giusti, il ciclo per-richiesta (avvio/chiusura), conflitti, convenzioni commit. | Team + Matteo |
+| **REGISTRO_RICHIESTE.md** | La **lavagna**: una riga per richiesta con stato. Per sapere "a che punto siamo" si guarda qui. | Team + Matteo |
+| **STATO_AMBIENTE_TEST.md** | Cosa è già attivo su TEST (baseline): non rifare cose fatte. | Team |
+| **_TEMPLATE_RICHIESTA.md** | Modello da copiare per aprire una nuova `richieste/REQ-NNN-*.md`. | Matteo |
+| **richieste/REQ-NNN-*.md** | Il **dettaglio** di ogni richiesta + le 3 sezioni del ciclo (① Istruzioni · ② Consegna · ③ Esito test). | Team + Matteo |
+
+## Setup skill system del branch (riferimento, non quotidiano)
+
+| File | A cosa serve |
+|------|--------------|
+| **SKILL_SYSTEM_CONSOLE.md** | Come il branch console ha uno skill system separato da quello di PrenotaZen, e come Matteo lo integrerà. |
+| **CLAUDE_MD_CONSOLE.md** | Template `.claude/CLAUDE.md` da usare nel branch console (entry point skill, vocabolario, sicurezza PROD). |
 
 ---
 
-### 3. **CLAUDE_MD_CONSOLE.md** — Template .claude/CLAUDE.md per il branch console
-**Chi lo legge:** Team console (copia nel loro .claude/CLAUDE.md)  
-**Cosa contiene:**
-- Configurazione agenti per il branch console
-- Entry point skill system (CONSOLE_SKILL_SYSTEM.md, non APP_CONTEXT_SKILL.md)
-- Vocabolario Cristiano (come applicarlo)
-- Testing obbligatorio
-- Sicurezza PROD
+## Flusso in 5 righe
+
+1. **Team** parte: `git fetch && git merge origin/main`, prende una REQ **DA-FARE** dal registro → **IN-SVILUPPO**.
+2. **Team** sviluppa su `feature/console-super-admin` (`get_project_url` = `docnnernvp` TEST, mai PROD).
+3. **Team** chiude: `npm run validate` verde, compila «② Consegna» nella REQ, push → REQ **CONSEGNATA**, avvisa Matteo.
+4. **Matteo** tira su `env/test`, valida, compila «③ Esito test» → **ACCETTATA** o **RIMANDATA**.
+5. **Matteo** promuove il solido in `main`; il **Team** si riallinea con `git merge origin/main`.
+
+> I comandi git completi (e perché **merge e non rebase+force**) sono in **WORKFLOW.md §2**.
 
 ---
 
-## 📁 Struttura console
-
-```
-docs/Console-Skill/
-├── collaborazione/          ← Tu sei qui
-│   ├── WORKFLOW.md
-│   ├── SKILL_SYSTEM_CONSOLE.md
-│   ├── CLAUDE_MD_CONSOLE.md
-│   └── README.md
-├── CONSOLE_SKILL_SYSTEM.md  ← Entry point agenti (team crea)
-├── contesto/                ← Schema, RLS, routing (team crea)
-├── feature-*-Skill/         ← Feature skills (team crea)
-└── sessioni/                ← Log lavoro
-```
-
----
-
-## ⚡ Quick start
-
-**Team console — inizio sessione:**
-```bash
-git pull --rebase origin main
-npm run validate
-# Agenti caricano: docs/Console-Skill/CONSOLE_SKILL_SYSTEM.md
-```
-
-**Matteo — quando il team pushes:**
-```bash
-git fetch origin feature/console-super-admin
-git log env/test..origin/feature/console-super-admin --oneline
-git merge --no-ff origin/feature/console-super-admin  # in env/test
-npm run validate
-git checkout main && git merge --squash env/test && git push
-```
-
----
-
-**Versione:** 23-06-2026  
-**Responsabile:** Matteo
+**Versione:** 23-06-2026 · **Owner:** Matteo
