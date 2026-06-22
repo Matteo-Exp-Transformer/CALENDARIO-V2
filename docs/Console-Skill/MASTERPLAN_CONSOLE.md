@@ -420,5 +420,5 @@ Esito: VERDE o ROSSO con correzioni puntuali. NON toccare il codice; NON committ
 | F3 | ✅ | ✅ | 🟢 VERDE | sì | Magic Link + allowlist; PLAN-DB-002 |
 | F4 | ✅ (R2) | ✅ | 🟢 VERDE | sì | function+helper+PLAN-DB-003; deploy a Matteo |
 | F5 | ✅ | ✅ | 🟢 VERDE | sì | UI cambio edition; E2E dopo deploy |
-| F6 | ⏳ | — | — | — | in avvio |
-| F7 | ⬜ | — | — | — | |
+| F6 | ✅ | ✅ | 🟢 VERDE | sì | feature flag; override reali dopo PLAN-DB-004 |
+| F7 | ⏳ | — | — | — | in avvio |

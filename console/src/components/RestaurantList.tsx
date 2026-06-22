@@ -25,6 +25,7 @@ import {
 } from '@console/lib/editionUtils'
 import { isSandboxTenant } from '@console/lib/sandbox'
 import { EditionSelector } from './EditionSelector'
+import { FeatureFlagsPanel } from './FeatureFlagsPanel'
 
 // ---------------------------------------------------------------------------
 // Tipi
@@ -200,6 +201,12 @@ function OrgCard({ org, onEditionSuccess }: OrgCardProps) {
           <span>Sola lettura</span>
         </div>
       )}
+
+      {/* Divisore prima del pannello feature */}
+      <hr style={styles.divider} />
+
+      {/* Pannello feature flag (F6): sandbox = toggle, non sandbox = sola lettura */}
+      <FeatureFlagsPanel tenantId={org.id} edition={org.edition} />
     </div>
   )
 }

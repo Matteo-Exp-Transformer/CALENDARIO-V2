@@ -14,7 +14,8 @@
 | F2 | Elenco ristoranti (sola lettura) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `49c0230` | DEC-017 |
 | F3 | Login reale (Supabase Auth + allowlist) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `8ca16cf` | DEC-018, DEC-019, DEC-020; PLAN-DB-002 |
 | F4 | Edge Function scritture privilegiate (deploy a Matteo) | Sonnet (R1) + Haiku (R2 fix) | Sonnet (R1) + Haiku (R2) | 🟢 VERDE (round 2) | `bd7d038` | DEC-021/022/023/024/025/026; PLAN-DB-003 |
-| F5 | Cambio edition (sandbox, via Edge) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | _(vedi git log)_ | DEC-027 |
+| F5 | Cambio edition (sandbox, via Edge) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `37bd836` | DEC-027 |
+| F6 | Feature flag (`tenant_features`) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | _(vedi git log)_ | DEC-028, DEC-029; PLAN-DB-004 |
 
 ---
 
@@ -150,9 +151,36 @@
 - Ri-lavorazioni: nessuna (verde al round 1).
 
 **Chiusura fase**
-- **Commit:** _(vedi git log — feat(console): cambio edition (F5, DEC-027))_
+- **Commit:** `37bd836` — feat(console): cambio edition tenant sandbox (F5, DEC-027)
 - Riga aggiunta a SESSION_LOG.md: sì
 - Follow-up aperti: FU-CONSOLE-6 (lint console.log Edge); test E2E cambio edition = manuale di Matteo dopo deploy
+
+---
+
+### Fase F6 — Feature flag (`tenant_features`)
+- **Obiettivo / effetto:** accendere/spegnere add-on per-tenant via `tenant_features` (DEC-008), «+QR»=classic+`qrMenu` (DEC-009), ignorando `qr_menu_enabled` legacy. Effetto: gestione add-on oltre il bundle dell'edition.
+- **Modalità:** deep
+- **Dipendenze:** F5; E2E dipende da deploy Edge (PLAN-DB-003) + lettura override (PLAN-DB-004)
+
+**Esecutore**
+- Prompt usato: `MASTERPLAN_CONSOLE.md` §F6 (prompt esecutore) + nota deploy-deferred
+- Sintesi: `features.ts` ricrea fedelmente `buildFeatures` (9 chiavi; classic=vuoto, pro/enterprise=bundle pieno) + `buildFeatureDetails`/`isOverrideActive` (gestione `expires_at`); hook `useFeatureFlags` (legge `tenant_features`, calcola effetto combinato, stato `rls-blocked`) e `useFeatureToggle` (`callConsoleAdmin('upsert_tenant_feature')`); `FeatureFlagsPanel` (lista feature con sorgente bundle/override-on/override-off/absent, toggle solo sandbox); integrato in `RestaurantList`.
+- File toccati: `console/src/lib/features.ts` (nuovo), `console/src/hooks/useFeatureFlags.ts` (nuovo), `console/src/hooks/useFeatureToggle.ts` (nuovo), `console/src/components/FeatureFlagsPanel.tsx` (nuovo), `console/src/components/RestaurantList.tsx` (mod).
+- Decisioni autonome prese: DEC-028 (lettura `tenant_features` col client anon torna vuota finché PLAN-DB-004 non eseguito → pannello mostra solo bundle; logica UI corretta, manca il dato), DEC-029 (feature già nel bundle con override `enabled=true` mostrata come `bundle`, override ridondante).
+- Scritture DB: nessuna diretta (via Edge non deployata). Letture via client pubblico.
+- Plan per Matteo generati: **PLAN-DB-004** (policy RLS SELECT su `tenant_features` per la Console).
+
+**Revisore (controverifica)**
+- Controllo critico fedeltà `buildFeatures`: ✓ identico all'originale (9 chiavi, bundle, logica override con prefisso `-`).
+- Done-criteria verificati: toggle via `callConsoleAdmin('upsert_tenant_feature', {tenant_id, feature_key, is_enabled})` ✓ · gate sandbox (`isSandboxTenant`) + guard in `handleToggle` ✓ · `qr_menu_enabled` non usata (solo commento) ✓ · effetto combinato + `expires_at` gestito ✓ · stati loading/disabled/successo/errore/`rls-blocked` + refetch ✓ · nessuna scrittura DB diretta (grep) + nessun import da `../src` ✓ · build 87 moduli + typecheck 0 errori ✓ · PLAN-DB-004 ben formato, nessun DDL ✓
+- Regole d'oro rispettate: ✓ (`src/`/`supabase/` root intatti; service role solo lato Edge)
+- **Verdetto:** 🟢 VERDE
+- Ri-lavorazioni: nessuna (verde al round 1).
+
+**Chiusura fase**
+- **Commit:** _(vedi git log — feat(console): feature flag tenant_features (F6, DEC-028/029))_
+- Riga aggiunta a SESSION_LOG.md: sì
+- Follow-up aperti: **PLAN-DB-004 da eseguire (Matteo)** per leggere gli override reali; test E2E toggle = manuale di Matteo dopo deploy Edge + PLAN-DB-004
 
 ---
 
