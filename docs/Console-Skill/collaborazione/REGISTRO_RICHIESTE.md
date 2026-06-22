@@ -6,9 +6,15 @@
 
 | REQ | Titolo | Priorità | Stato | Branch / commit | File |
 |-----|--------|----------|-------|-----------------|------|
-| REQ-001 | Vista "Tutti gli utenti" + CRUD utente | alta | IN-SVILUPPO (sviluppo ✅, attesa push) | F8 `50555f9`, F10 `f94b075`, F11 `9b2fd7f`+`ad2e619` | `richieste/REQ-001-vista-tutti-utenti-crud.md` |
-| REQ-002 | Scheda focus singolo utente/azienda (setup completo) | alta | IN-SVILUPPO (tappa 1 ✅, attesa push) | F9 `6f5f4b0` | `richieste/REQ-002-scheda-singolo-utente-azienda.md` |
-| REQ-003 | Crea / elimina aziende (tenant) + associazione utente | alta | IN-SVILUPPO (sviluppo ✅, attesa push) | F10 `f94b075`, F12 `abd0f74` | `richieste/REQ-003-crea-elimina-aziende.md` |
+| REQ-001 | Vista "Tutti gli utenti" + CRUD utente | alta | CONSEGNATA (pushata + mergiata in env/test) | F8 `50555f9`, F10 `f94b075`, F11 `9b2fd7f`+`ad2e619` | `richieste/REQ-001-vista-tutti-utenti-crud.md` |
+| REQ-002 | Scheda focus singolo utente/azienda (setup completo) | alta | CONSEGNATA (tappa 1; pushata + mergiata in env/test) | F9 `6f5f4b0` | `richieste/REQ-002-scheda-singolo-utente-azienda.md` |
+| REQ-003 | Crea / elimina aziende (tenant) + associazione utente | alta | CONSEGNATA (pushata + mergiata in env/test) | F10 `f94b075`, F12 `abd0f74` | `richieste/REQ-003-crea-elimina-aziende.md` |
+
+> **2026-06-22 — Orchestrator (sync sessione):** il branch è stato **pushato e mergiato in `env/test`**
+> da Matteo (`f4a6e4b`) per il test → le 3 REQ passano da IN-SVILUPPO a **CONSEGNATA**. Ora tocca a
+> Matteo: compilare l'«Esito test» di ciascuna REQ (→ ACCETTATA o RIMANDATA). Prerequisiti suoi per il
+> test effettivo: **PLAN-DB-005** (lista utenti), **re-deploy Edge** `console-admin` (azioni F10),
+> **PLAN-DB-006** opzionale (CASCADE delete_tenant). Nessuna REQ nuova in DA-FARE.
 
 > **2026-06-22 — Orchestrator (ciclo F8→F12 completato):** sviluppo delle 3 REQ chiuso e committato
 > sul branch (esecutore→revisore→commit, tutte 🟢). **Le REQ passano a CONSEGNATA dopo il push del
