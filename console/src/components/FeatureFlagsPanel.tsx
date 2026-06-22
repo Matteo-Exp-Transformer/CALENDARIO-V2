@@ -5,9 +5,8 @@
  *   - Legge tenant_features dal DB tramite useFeatureFlags.
  *   - Mostra ogni feature con: stato ON/OFF risultante, sorgente (bundle / override),
  *     eventuale scadenza override.
- *   - Per i tenant SANDBOX: toggle per accendere/spegnere ogni add-on via
- *     callConsoleAdmin('upsert_tenant_feature').
- *   - Per i tenant NON-SANDBOX: tutto in sola lettura (nessun controllo).
+ *   - Toggle abilitato per TUTTI i tenant (DEC-052 / F13): il gate vero è
+ *     Edge console-admin + allowlist. Le scritture passano sempre da callConsoleAdmin.
  *
  * EFFETTO COMBINATO:
  *   buildFeatureDetails() (in lib/features.ts) calcola per ogni feature:
@@ -30,7 +29,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useFeatureFlags } from '@console/hooks/useFeatureFlags'
 import { useFeatureToggle } from '@console/hooks/useFeatureToggle'
-import { isSandboxTenant } from '@console/lib/sandbox'
 import type { Edition } from '@console/lib/editionUtils'
 import type { FeatureDetail } from '@console/lib/features'
 
@@ -50,7 +48,6 @@ interface FeatureFlagsPanelProps {
 export function FeatureFlagsPanel({ tenantId, edition }: FeatureFlagsPanelProps) {
   // refetchKey: incrementato dopo ogni toggle riuscito per rileggere tenant_features.
   const [refetchKey, setRefetchKey] = useState(0)
-  const sandbox = isSandboxTenant(tenantId)
 
   const { state: flagsState } = useFeatureFlags(tenantId, edition, refetchKey)
   const { state: toggleState, toggleFeature, reset: resetToggle } = useFeatureToggle()
@@ -66,12 +63,13 @@ export function FeatureFlagsPanel({ tenantId, edition }: FeatureFlagsPanelProps)
     // isSuccessForThisTenant è derivato da toggleState: cambia solo quando il toggle completa.
   }, [isSuccessForThisTenant])
 
+  // Gate vero = Edge console-admin + allowlist (DEC-052 / F13).
+  // Il toggle è abilitato per tutti i tenant; la difesa forte è lato server.
   const handleToggle = useCallback(
     (featureKey: string, currentActive: boolean) => {
-      if (!sandbox) return
       void toggleFeature(tenantId, featureKey, !currentActive)
     },
-    [sandbox, tenantId, toggleFeature],
+    [tenantId, toggleFeature],
   )
 
   const anyLoadingForTenant =
@@ -126,7 +124,6 @@ export function FeatureFlagsPanel({ tenantId, edition }: FeatureFlagsPanelProps)
             <FeatureRow
               key={detail.key}
               detail={detail}
-              sandbox={sandbox}
               loading={isToggleLoading(detail.key)}
               anyLoadingForTenant={anyLoadingForTenant}
               showError={isToggleError(detail.key)}
@@ -142,13 +139,6 @@ export function FeatureFlagsPanel({ tenantId, edition }: FeatureFlagsPanelProps)
           ))}
         </div>
       )}
-
-      {/* Badge sola lettura (non sandbox) */}
-      {!sandbox && flagsState.status === 'ok' && (
-        <p style={panelStyles.readOnlyHint}>
-          Solo lettura — modifica disponibile solo sui tenant sandbox
-        </p>
-      )}
     </div>
   )
 }
@@ -159,7 +149,6 @@ export function FeatureFlagsPanel({ tenantId, edition }: FeatureFlagsPanelProps)
 
 interface FeatureRowProps {
   detail: FeatureDetail
-  sandbox: boolean
   loading: boolean
   anyLoadingForTenant: boolean
   showError: boolean
@@ -171,7 +160,6 @@ interface FeatureRowProps {
 
 function FeatureRow({
   detail,
-  sandbox,
   loading,
   anyLoadingForTenant,
   showError,
@@ -217,25 +205,23 @@ function FeatureRow({
           </span>
         )}
 
-        {/* Toggle button (solo sandbox) */}
-        {sandbox && (
-          <button
-            onClick={() => onToggle(key, active)}
-            disabled={loading || anyLoadingForTenant}
-            style={{
-              ...panelStyles.toggleBtn,
-              background: active ? '#1e3a5f' : '#1a2a1a',
-              borderColor: active ? '#2563eb' : '#374151',
-              color: active ? '#93c5fd' : '#6b7280',
-              cursor: loading || anyLoadingForTenant ? 'not-allowed' : 'pointer',
-              opacity: anyLoadingForTenant && !loading ? 0.5 : 1,
-            }}
-            aria-label={active ? `Spegni ${label}` : `Accendi ${label}`}
-            aria-pressed={active}
-          >
-            {loading ? '…' : active ? 'ON' : 'OFF'}
-          </button>
-        )}
+        {/* Toggle — abilitato per tutti i tenant (DEC-052 / F13) */}
+        <button
+          onClick={() => onToggle(key, active)}
+          disabled={loading || anyLoadingForTenant}
+          style={{
+            ...panelStyles.toggleBtn,
+            background: active ? '#1e3a5f' : '#1a2a1a',
+            borderColor: active ? '#2563eb' : '#374151',
+            color: active ? '#93c5fd' : '#6b7280',
+            cursor: loading || anyLoadingForTenant ? 'not-allowed' : 'pointer',
+            opacity: anyLoadingForTenant && !loading ? 0.5 : 1,
+          }}
+          aria-label={active ? `Spegni ${label}` : `Accendi ${label}`}
+          aria-pressed={active}
+        >
+          {loading ? '…' : active ? 'ON' : 'OFF'}
+        </button>
       </div>
 
       {/* Feedback inline errore */}

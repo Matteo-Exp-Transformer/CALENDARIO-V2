@@ -4,9 +4,8 @@
  * COMPORTAMENTO:
  *   - Legge restaurant_settings dal DB tramite useRestaurantSettings.
  *   - Mostra ogni impostazione esposta con: label, valore corrente vs default, editor.
- *   - Per i tenant SANDBOX: editor abilitato con validazione inline; salvataggio via
- *     callConsoleAdmin('upsert_restaurant_setting').
- *   - Per i tenant NON-SANDBOX: tutto in sola lettura (editor disabilitati).
+ *   - Editor abilitato per TUTTI i tenant (DEC-052 / F13): il gate vero è
+ *     Edge console-admin + allowlist. Le scritture passano sempre da callConsoleAdmin.
  *
  * CHIAVI ESPOSTE (subset da EXPOSED_SETTINGS):
  *   booking_window_days, walk_in_max_guests (interi), slot_limit_enabled,
@@ -34,7 +33,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useRestaurantSettings } from '@console/hooks/useRestaurantSettings'
 import { useSettingSave } from '@console/hooks/useSettingSave'
-import { isSandboxTenant } from '@console/lib/sandbox'
 import type { ExposedSetting, ExposedSettingValue } from '@console/lib/restaurantSettings'
 import type { SettingState } from '@console/hooks/useRestaurantSettings'
 
@@ -52,7 +50,6 @@ interface RestaurantSettingsPanelProps {
 
 export function RestaurantSettingsPanel({ tenantId }: RestaurantSettingsPanelProps) {
   const [refetchKey, setRefetchKey] = useState(0)
-  const sandbox = isSandboxTenant(tenantId)
 
   const { state: settingsState } = useRestaurantSettings(tenantId, refetchKey)
   const { state: saveState, saveSetting, reset: resetSave } = useSettingSave()
@@ -66,12 +63,13 @@ export function RestaurantSettingsPanel({ tenantId }: RestaurantSettingsPanelPro
     }
   }, [isSuccessForThisTenant])
 
+  // Gate vero = Edge console-admin + allowlist (DEC-052 / F13).
+  // L'editor è abilitato per tutti i tenant; la difesa forte è lato server.
   const handleSave = useCallback(
     (settingKey: string, value: unknown) => {
-      if (!sandbox) return
       void saveSetting(tenantId, settingKey, value)
     },
-    [sandbox, tenantId, saveSetting],
+    [tenantId, saveSetting],
   )
 
   const isSavingKey = (key: string) =>
@@ -125,7 +123,6 @@ export function RestaurantSettingsPanel({ tenantId }: RestaurantSettingsPanelPro
             <SettingRow
               key={s.setting.key}
               settingState={s}
-              sandbox={sandbox}
               saving={isSavingKey(s.setting.key)}
               anyLoading={anyLoading}
               showError={isErrorKey(s.setting.key)}
@@ -141,13 +138,6 @@ export function RestaurantSettingsPanel({ tenantId }: RestaurantSettingsPanelPro
           ))}
         </div>
       )}
-
-      {/* Badge sola lettura (non sandbox) */}
-      {!sandbox && settingsState.status === 'ok' && (
-        <p style={panelStyles.readOnlyHint}>
-          Solo lettura — modifica disponibile solo sui tenant sandbox
-        </p>
-      )}
     </div>
   )
 }
@@ -158,7 +148,6 @@ export function RestaurantSettingsPanel({ tenantId }: RestaurantSettingsPanelPro
 
 interface SettingRowProps {
   settingState: SettingState
-  sandbox: boolean
   saving: boolean
   anyLoading: boolean
   showError: boolean
@@ -170,7 +159,6 @@ interface SettingRowProps {
 
 function SettingRow({
   settingState,
-  sandbox,
   saving,
   anyLoading,
   showError,
@@ -203,7 +191,6 @@ function SettingRow({
         <BoolEditor
           setting={setting}
           value={currentValue as boolean}
-          sandbox={sandbox}
           saving={saving}
           anyLoading={anyLoading}
           onSave={onSave}
@@ -212,7 +199,6 @@ function SettingRow({
         <IntEditor
           setting={setting}
           value={currentValue as number}
-          sandbox={sandbox}
           saving={saving}
           anyLoading={anyLoading}
           onSave={onSave}
@@ -249,21 +235,21 @@ function SettingRow({
 interface BoolEditorProps {
   setting: ExposedSetting
   value: boolean
-  sandbox: boolean
   saving: boolean
   anyLoading: boolean
   onSave: (settingKey: string, value: unknown) => void
 }
 
-function BoolEditor({ setting, value, sandbox, saving, anyLoading, onSave }: BoolEditorProps) {
+function BoolEditor({ setting, value, saving, anyLoading, onSave }: BoolEditorProps) {
+  // Gate vero = Edge console-admin + allowlist (DEC-052 / F13).
   const handleToggle = useCallback(() => {
-    if (!sandbox || saving || anyLoading) return
+    if (saving || anyLoading) return
     const newValue = !value
     // Validazione (per boolean è sempre ok, ma chiamiamo per coerenza col registro).
     const err = setting.validate(newValue)
     if (err) return // non dovrebbe mai succedere per boolean
     onSave(setting.key, newValue)
-  }, [sandbox, saving, anyLoading, value, setting, onSave])
+  }, [saving, anyLoading, value, setting, onSave])
 
   return (
     <div style={panelStyles.editorRow}>
@@ -276,24 +262,23 @@ function BoolEditor({ setting, value, sandbox, saving, anyLoading, onSave }: Boo
         <span style={panelStyles.dimSmall}>(default: {setting.defaultValue ? 'ON' : 'OFF'})</span>
       </span>
 
-      {sandbox && (
-        <button
-          onClick={handleToggle}
-          disabled={saving || anyLoading}
-          style={{
-            ...panelStyles.toggleBtn,
-            background: value ? '#1e3a5f' : '#1a2a1a',
-            borderColor: value ? '#2563eb' : '#374151',
-            color: value ? '#93c5fd' : '#6b7280',
-            cursor: saving || anyLoading ? 'not-allowed' : 'pointer',
-            opacity: anyLoading && !saving ? 0.5 : 1,
-          }}
-          aria-label={value ? `Spegni ${setting.label}` : `Accendi ${setting.label}`}
-          aria-pressed={value}
-        >
-          {saving ? '…' : value ? 'ON → OFF' : 'OFF → ON'}
-        </button>
-      )}
+      {/* Toggle — abilitato per tutti i tenant (DEC-052 / F13) */}
+      <button
+        onClick={handleToggle}
+        disabled={saving || anyLoading}
+        style={{
+          ...panelStyles.toggleBtn,
+          background: value ? '#1e3a5f' : '#1a2a1a',
+          borderColor: value ? '#2563eb' : '#374151',
+          color: value ? '#93c5fd' : '#6b7280',
+          cursor: saving || anyLoading ? 'not-allowed' : 'pointer',
+          opacity: anyLoading && !saving ? 0.5 : 1,
+        }}
+        aria-label={value ? `Spegni ${setting.label}` : `Accendi ${setting.label}`}
+        aria-pressed={value}
+      >
+        {saving ? '…' : value ? 'ON → OFF' : 'OFF → ON'}
+      </button>
     </div>
   )
 }
@@ -305,13 +290,12 @@ function BoolEditor({ setting, value, sandbox, saving, anyLoading, onSave }: Boo
 interface IntEditorProps {
   setting: ExposedSetting
   value: number
-  sandbox: boolean
   saving: boolean
   anyLoading: boolean
   onSave: (settingKey: string, value: unknown) => void
 }
 
-function IntEditor({ setting, value, sandbox, saving, anyLoading, onSave }: IntEditorProps) {
+function IntEditor({ setting, value, saving, anyLoading, onSave }: IntEditorProps) {
   // inputValue è la stringa nel campo; inizializzata dal valore corrente.
   const [inputValue, setInputValue] = useState<string>(String(value))
   // validationError: null = ok, stringa = messaggio errore.
@@ -341,8 +325,9 @@ function IntEditor({ setting, value, sandbox, saving, anyLoading, onSave }: IntE
     }
   }, [setting])
 
+  // Gate vero = Edge console-admin + allowlist (DEC-052 / F13).
   const handleSave = useCallback(() => {
-    if (!sandbox || saving || anyLoading) return
+    if (saving || anyLoading) return
     const parsed = parseInt(inputValue.trim(), 10)
     if (Number.isNaN(parsed)) {
       setValidationError('Inserisci un numero intero valido')
@@ -355,7 +340,7 @@ function IntEditor({ setting, value, sandbox, saving, anyLoading, onSave }: IntE
     }
     setValidationError(null)
     onSave(setting.key, parsed)
-  }, [sandbox, saving, anyLoading, inputValue, setting, onSave])
+  }, [saving, anyLoading, inputValue, setting, onSave])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -377,39 +362,38 @@ function IntEditor({ setting, value, sandbox, saving, anyLoading, onSave }: IntE
         </span>
       </div>
 
-      {sandbox && (
-        <div style={panelStyles.intEditorRow}>
-          <input
-            type="number"
-            value={inputValue}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            disabled={saving || anyLoading}
-            style={{
-              ...panelStyles.numberInput,
-              borderColor: validationError ? '#ef4444' : '#334155',
-              opacity: anyLoading && !saving ? 0.5 : 1,
-            }}
-            aria-label={`Nuovo valore per ${setting.label}`}
-            aria-invalid={validationError !== null}
-          />
-          <button
-            onClick={handleSave}
-            disabled={saving || anyLoading || !hasChange || validationError !== null}
-            style={{
-              ...panelStyles.saveBtn,
-              opacity: saving || anyLoading || !hasChange || validationError !== null ? 0.4 : 1,
-              cursor:
-                saving || anyLoading || !hasChange || validationError !== null
-                  ? 'not-allowed'
-                  : 'pointer',
-            }}
-            aria-label={`Salva ${setting.label}`}
-          >
-            {saving ? '…' : 'Salva'}
-          </button>
-        </div>
-      )}
+      {/* Editor numerico — abilitato per tutti i tenant (DEC-052 / F13) */}
+      <div style={panelStyles.intEditorRow}>
+        <input
+          type="number"
+          value={inputValue}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          disabled={saving || anyLoading}
+          style={{
+            ...panelStyles.numberInput,
+            borderColor: validationError ? '#ef4444' : '#334155',
+            opacity: anyLoading && !saving ? 0.5 : 1,
+          }}
+          aria-label={`Nuovo valore per ${setting.label}`}
+          aria-invalid={validationError !== null}
+        />
+        <button
+          onClick={handleSave}
+          disabled={saving || anyLoading || !hasChange || validationError !== null}
+          style={{
+            ...panelStyles.saveBtn,
+            opacity: saving || anyLoading || !hasChange || validationError !== null ? 0.4 : 1,
+            cursor:
+              saving || anyLoading || !hasChange || validationError !== null
+                ? 'not-allowed'
+                : 'pointer',
+          }}
+          aria-label={`Salva ${setting.label}`}
+        >
+          {saving ? '…' : 'Salva'}
+        </button>
+      </div>
 
       {/* Errore di validazione lato client */}
       {validationError && (

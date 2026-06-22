@@ -312,7 +312,7 @@ Esito finale OBBLIGATORIO: ultima riga "VERDETTO: 🟢 VERDE" o "VERDETTO: 🔴 
 | F10 | 001/003 | ✅ | ✅ | 🟢 VERDE | sì | rosso→verde (4 fix audit); deploy + PLAN-DB-006 opz. (Matteo); DEC-047 |
 | F11 | 001 (W) | ✅ | ✅ | 🟢 VERDE | sì | rosso→verde (password 8, email case-insensitive, DEC-048..050); E2E dopo deploy F10 |
 | F12 | 003 | ✅ | ✅ | 🟢 VERDE | sì | verde round 1 (cleanup hint); E2E dopo deploy F10 + PLAN-DB-006 opz.; DEC-051 |
-| F13 | FU-12 | ⬜ | ⬜ | — | — | sblocco scrittura pannelli su tutte le aziende (DEC-037) |
+| F13 | FU-12 | ✅ | ✅ | 🟢 VERDE | sì | pannelli scrivibili su tutte le aziende; DEC-052; cleanup→FU-CONSOLE-13 |
 
 > **Plan DB a carico di Matteo per questo master-plan:** PLAN-DB-005 (SELECT admin_users), e — se F10 lo
 > richiede — PLAN-DB-006 (cascata/GRANT delete_tenant) + ri-deploy Edge `console-admin`.

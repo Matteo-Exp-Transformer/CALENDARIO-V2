@@ -346,6 +346,30 @@
 
 ---
 
+### Fase F13 — Sblocco scrittura pannelli su tutte le aziende (FU-CONSOLE-12)
+- **Obiettivo / effetto:** allineare la UI a DEC-037 — i pannelli edition/feature/impostazioni erano scrivibili solo sui sandbox; ora su qualunque azienda (il gate reale resta Edge+allowlist).
+- **Modalità:** standard · **Dipendenze:** F10 (Edge sblocca le scritture) + F12.
+
+**Esecutore** (general-purpose, Sonnet)
+- Prompt usato: `MASTERPLAN_CONSOLE_REQ-001-003.md` §F13
+- Sintesi: rimosso il write-gate `isSandboxTenant` da FeatureFlagsPanel e RestaurantSettingsPanel (toggle/editor abilitati per tutti; rimossi i badge "solo sandbox"); EditionSelector montato per tutti i tenant in RestaurantList e TenantDetail (rimosso ReadOnlyEditionBlock/readOnlyBadge); `isSandboxTenant` declassato a etichetta visiva (DEC-052). Nessuna conferma distruttiva aggiunta (modifiche reversibili).
+- File toccati: `console/src/components/{FeatureFlagsPanel,RestaurantSettingsPanel,RestaurantList,TenantDetail}.tsx`, `console/src/lib/sandbox.ts`
+- Decisioni autonome: DEC-052
+- Scritture DB: nessuna (via Edge a runtime). Root `package.json`/`package-lock.json` ripristinati (non toccati).
+
+**Revisore (controverifica)** (general-purpose, Sonnet — distinto)
+- Done-criteria: 3 pannelli scrivibili su tutti i tenant + badge sola-lettura rimossi ✓ · nessuna conferma distruttiva ✓ · scritture sempre via Edge, isSandbox solo visivo ✓ · no import morti, degrado invariato ✓ · RULE-4 (no modifiche src/supabase/package root) ✓ · DEC-052 coerente ✓
+- Test/lint/typecheck: 🟢 build (100 moduli), lint 0 warning, typecheck pulito
+- **Verdetto:** 🟢 VERDE (round 1)
+- Note non bloccanti → **FU-CONSOLE-13**: commenti obsoleti (3 hook + JSDoc EditionSelector/sandbox) e stili orfani (readOnly*) da pulire con /simplify.
+
+**Chiusura fase**
+- **Commit:** _(vedi git log — feat(console): scrittura pannelli su tutte le aziende (F13, DEC-052, FU-CONSOLE-12))_
+- Riga aggiunta a SESSION_LOG.md: sì
+- Follow-up aperti: FU-CONSOLE-13 (cleanup commenti/stili)
+
+---
+
 ## Template blocco di fase (copia per ogni Fi)
 
 ```markdown

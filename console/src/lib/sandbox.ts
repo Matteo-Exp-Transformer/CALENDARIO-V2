@@ -1,11 +1,12 @@
 /**
- * Tenant sandbox del branch console — gli unici su cui la Console può scrivere dati.
+ * Tenant sandbox del branch console — identificati per etichette visuali nell'UI.
  *
- * PERCHÉ ESISTE QUESTO FILE:
- *   Le 4 regole d'oro del branch vietano scritture di dati su qualsiasi tenant che non sia
- *   uno di questi due (RULE-2). La costante SANDBOX_TENANT_IDS è la fonte di verità
- *   client-side per decidere se un tenant è modificabile o in sola lettura.
- *   La difesa forte contro scritture non autorizzate è lato server (Edge Function + RLS).
+ * PERCHÉ ESISTE QUESTO FILE (DEC-052 / F13):
+ *   SANDBOX_TENANT_IDS non è più un gate di scrittura (DEC-037 revocato). Le scritture
+ *   sono consentite su tutti i tenant; il gate vero è Edge console-admin + allowlist.
+ *   isSandboxTenant() è mantenuto per etichette visuali opzionali (bordo card, nota
+ *   informativa nella scheda azienda) così resta chiaro quali sono i banchi di prova.
+ *   La difesa forte è solo lato server (Edge Function + gate allowlist).
  *
  * FONTE DI VERITÀ:
  *   Gli ID sono quelli del DB TEST (docnnernvp). Se cambiano (es. row delete/re-insert),

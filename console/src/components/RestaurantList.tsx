@@ -1,14 +1,12 @@
 /**
- * Lista ristoranti (organizations) con cambio edition per i tenant sandbox (F2 + F5).
+ * Lista ristoranti (organizations) con cambio edition per tutti i tenant (F2 + F5 + F13).
  *
- * F2: legge organizations dal DB via client pubblico (anon), mostra nome/slug/edition.
- * F5: per i tenant sandbox (console-classic, console-pro) mostra EditionSelector;
- *     per gli altri mostra badge "Sola lettura" — nessun controllo di modifica.
+ * F2:  legge organizations dal DB via client pubblico (anon), mostra nome/slug/edition.
+ * F5:  EditionSelector montato per ogni tenant.
+ * F13: gate sandbox rimosso (DEC-052 / DEC-037): EditionSelector è scrivibile su tutti i
+ *      tenant; il gate forte è Edge console-admin + allowlist. isSandboxTenant() è mantenuto
+ *      solo come etichetta visiva (bordo card leggermente diverso per i sandbox).
  * F12: pulsante "+ Nuova azienda" → CreateTenantModal (REQ-003, DEC-041).
- *
- * RESTRIZIONE SANDBOX (RULE-2):
- *   isSandboxTenant() decide se montare EditionSelector o il badge read-only.
- *   Il gate forte è lato server (Edge Function + RLS).
  *
  * REFETCH DOPO CAMBIO EDITION / CREAZIONE TENANT:
  *   EditionSelector chiama onSuccess() dopo un cambio riuscito.
@@ -204,7 +202,7 @@ function OrgCard({ org, onEditionSuccess, onOpenDetail }: OrgCardProps) {
   return (
     <div style={{
       ...styles.card,
-      // Bordo leggermente diverso per i sandbox: segnala visivamente che sono scrivibili.
+      // Bordo leggermente diverso per i sandbox: etichetta visiva (DEC-052), non gate di scrittura.
       borderColor: sandbox ? '#3b5268' : '#334155',
     }}>
       {/* Nome e stato attivo */}
@@ -237,30 +235,23 @@ function OrgCard({ org, onEditionSuccess, onOpenDetail }: OrgCardProps) {
       {/* Divisore */}
       <hr style={styles.divider} />
 
-      {/* Controlli: EditionSelector per sandbox, badge read-only per gli altri */}
-      {sandbox ? (
-        <EditionSelector
-          tenantId={org.id}
-          currentEdition={org.edition}
-          onSuccess={onEditionSuccess}
-        />
-      ) : (
-        <div style={styles.readOnlyBadge}>
-          <span style={styles.readOnlyIcon}>🔒</span>
-          <span>Sola lettura</span>
-        </div>
-      )}
+      {/* EditionSelector — abilitato per tutti i tenant (DEC-052 / F13) */}
+      <EditionSelector
+        tenantId={org.id}
+        currentEdition={org.edition}
+        onSuccess={onEditionSuccess}
+      />
 
       {/* Divisore prima del pannello feature */}
       <hr style={styles.divider} />
 
-      {/* Pannello feature flag (F6): sandbox = toggle, non sandbox = sola lettura */}
+      {/* Pannello feature flag (F6 + F13): toggle abilitato per tutti i tenant */}
       <FeatureFlagsPanel tenantId={org.id} edition={org.edition} />
 
       {/* Divisore prima del pannello impostazioni */}
       <hr style={styles.divider} />
 
-      {/* Pannello impostazioni ristorante (F7): sandbox = editor, non sandbox = sola lettura */}
+      {/* Pannello impostazioni ristorante (F7 + F13): editor abilitato per tutti i tenant */}
       <RestaurantSettingsPanel tenantId={org.id} />
     </div>
   )

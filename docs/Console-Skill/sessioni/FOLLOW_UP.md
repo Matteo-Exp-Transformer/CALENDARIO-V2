@@ -18,6 +18,8 @@
 | FU-CONSOLE-10 | **Formalizzare in migrazioni versionate** le modifiche SQL fatte in diretta su TEST (tabella `console_allowed_emails`, funzione `is_console_user()`, 3 policy SELECT) | DEC-034. Oggi vivono solo nel DB TEST, non in `supabase/migrations/`. Da fare prima di qualsiasi uso fuori da TEST. Vedi `collaborazione/STATO_AMBIENTE_TEST.md` |
 | FU-CONSOLE-11 | **Console: comandi per modificare anche i parametri della pagina Prenota** (Personalizza Form: tipologie/durate, campi, testi, card…) oltre a quelli di Servizio | Richiesto da Matteo 22-06-26 durante la validazione del Masterplan Servizio. Si lega a `FU-SERV-ADMIN-PANEL-1` (classificazione manopole onboarding/preset/console) e alla sotto-area **S6** del Masterplan Servizio. Obiettivo: che dalla console privata si possano cambiare i parametri-chiave di Prenota senza entrare nell'admin del tenant. Da progettare con la sessione manopole. |
 
+| FU-CONSOLE-13 | **Cleanup post-F13**: commenti obsoleti che citano ancora `isSandboxTenant`/RULE-2 come guard di scrittura (`useEditionChange.ts`, `useFeatureToggle.ts`, `useSettingSave.ts`, JSDoc di `EditionSelector.tsx`, JSDoc di `isSandboxTenant()` in `sandbox.ts`) + **stili orfani** non più referenziati (`readOnlyBadge` in RestaurantList, `readOnlyHint` in FeatureFlagsPanel/RestaurantSettingsPanel, `readOnlyHintInline` in TenantDetail) | Segnalato dal revisore F13 (non bloccante). Dead code/commenti fuorvianti dopo DEC-052. Pulibile con `/simplify` (accorpabile a FU-CONSOLE-8) |
+
 ## Domande a Matteo — ✅ TUTTE RISOLTE (2026-06-22, consenso pieno)
 
 Vedi `DECISION_LOG.md`:

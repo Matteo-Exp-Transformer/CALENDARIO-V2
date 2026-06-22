@@ -9,10 +9,11 @@
  *   EditionSelector, FeatureFlagsPanel, RestaurantSettingsPanel — gli stessi montati in
  *   RestaurantList per ogni OrgCard, ora racccolti qui per un solo tenant.
  *
- * GATE SANDBOX (RULE-2 / DEC-037):
- *   isSandboxTenant NON viene toccato in F9. I pannelli mostrano "sola lettura" per i
- *   tenant non-sandbox esattamente come in RestaurantList. Il gate sarà sbloccato in F10.
- *   Una nota visibile spiega questo limite in fondo alla scheda.
+ * GATE SANDBOX (DEC-052 / F13):
+ *   isSandboxTenant non gata più la scrittura (DEC-037 revocato). EditionSelector,
+ *   FeatureFlagsPanel e RestaurantSettingsPanel sono scrivibili per tutti i tenant.
+ *   Il gate vero è Edge console-admin + allowlist. isSandboxTenant resta per la nota visiva
+ *   informativa in fondo alla scheda (badge "tenant sandbox") e per il bordo della card.
  *
  * MAPPA DI COPERTURA INTERVISTA:
  *   Sezione 0 (anagrafica/versione) e Sez.2 (funzioni) e Sez.4 parziale (5 chiavi settings)
@@ -214,17 +215,13 @@ export function TenantDetail({ tenantId, onBack, onTenantDeleted }: TenantDetail
             <OrgFieldsGrid org={state.org} />
           </Section>
 
-          {/* ── Pannello Edition ── */}
+          {/* ── Pannello Edition — scrivibile per tutti i tenant (DEC-052 / F13) ── */}
           <Section title="Versione venduta">
-            {isSandboxTenant(tenantId) ? (
-              <EditionSelector
-                tenantId={tenantId}
-                currentEdition={state.org.edition}
-                onSuccess={handleEditionSuccess}
-              />
-            ) : (
-              <ReadOnlyEditionBlock edition={state.org.edition} />
-            )}
+            <EditionSelector
+              tenantId={tenantId}
+              currentEdition={state.org.edition}
+              onSuccess={handleEditionSuccess}
+            />
           </Section>
 
           {/* ── Pannello Feature Flags ── */}
@@ -242,8 +239,8 @@ export function TenantDetail({ tenantId, onBack, onTenantDeleted }: TenantDetail
             <InterviewCoverageMap org={state.org} />
           </Section>
 
-          {/* ── Nota gate sandbox ── */}
-          <SandboxGateNote isSandbox={isSandboxTenant(tenantId)} />
+          {/* ── Nota informativa sandbox ── */}
+          <SandboxInfoNote isSandbox={isSandboxTenant(tenantId)} />
         </div>
       )}
 
@@ -342,29 +339,6 @@ function FieldRow({ label, value, mono }: FieldRowProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Edition read-only (per tenant non-sandbox)
-// ---------------------------------------------------------------------------
-
-function ReadOnlyEditionBlock({ edition }: { edition: Edition }) {
-  const badge = editionBadgeColors(edition)
-  return (
-    <div style={styles.readOnlyEdition}>
-      <span style={styles.readOnlyEditionLabel}>Edition corrente:</span>
-      <span
-        style={{
-          ...styles.editionBadge,
-          background: badge.bg,
-          color: badge.text,
-        }}
-      >
-        {editionLabel(edition)}
-      </span>
-      <span style={styles.readOnlyHintInline}>(sola lettura — modificabile solo sui sandbox)</span>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
 // Sezione con titolo
 // ---------------------------------------------------------------------------
 
@@ -419,7 +393,7 @@ function InterviewCoverageMap({ org }: InterviewCoverageMapProps) {
       sez: 'Sez.2',
       title: 'Funzioni accese (feature / add-on)',
       status: '✅',
-      note: 'Gestita dal pannello Feature flags — toggle on/off per tenant sandbox',
+      note: 'Gestita dal pannello Feature flags — toggle on/off per tutti i tenant (DEC-052)',
     },
     {
       sez: 'Sez.3',
@@ -509,24 +483,29 @@ function CoverageRow({ sez, title, status, note }: CoverageRowProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Nota gate sandbox
+// Nota informativa sandbox (DEC-052 / F13)
 // ---------------------------------------------------------------------------
 
-function SandboxGateNote({ isSandbox }: { isSandbox: boolean }) {
+/**
+ * Nota visiva puramente informativa. Non è un gate di scrittura.
+ * I pannelli sono scrivibili per tutti i tenant; il gate vero è Edge + allowlist.
+ */
+function SandboxInfoNote({ isSandbox }: { isSandbox: boolean }) {
   if (isSandbox) {
     return (
       <div style={styles.sandboxNote}>
-        <strong>Tenant sandbox:</strong> scritture edition / feature / impostazioni abilitate.
+        <strong>Tenant sandbox:</strong> questo tenant è un banco di prova —
+        edition / feature / impostazioni sono scrivibili (come su tutti gli altri tenant).
       </div>
     )
   }
   return (
     <div style={styles.gateNote}>
-      <strong>Scritture disabilitate su questo tenant.</strong>
+      <strong>Tenant reale.</strong>
       <br />
-      I pannelli edition, feature flag e impostazioni sono in sola lettura perché questo tenant
-      non è un sandbox. La scrittura su tutte le aziende arriva con il{' '}
-      <strong>write-block (F10/DEC-037)</strong>: gate allowlist + Edge service-role.
+      Le modifiche edition, feature flag e impostazioni su questo tenant diventano immediatamente
+      operative per i clienti. Il gate di sicurezza è{' '}
+      <strong>Edge console-admin + allowlist</strong> (DEC-037).
     </div>
   )
 }
