@@ -60,7 +60,12 @@ type LoadState =
 // Componente principale
 // ---------------------------------------------------------------------------
 
-export function RestaurantList() {
+interface RestaurantListProps {
+  /** Callback per aprire la scheda di un tenant (F9). */
+  onOpenTenantDetail: (tenantId: string) => void
+}
+
+export function RestaurantList({ onOpenTenantDetail }: RestaurantListProps) {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   // Contatore refetch: incrementato da handleEditionSuccess per forzare il re-fetch.
   const [refetchCounter, setRefetchCounter] = useState(0)
@@ -137,6 +142,7 @@ export function RestaurantList() {
               key={org.id}
               org={org}
               onEditionSuccess={handleEditionSuccess}
+              onOpenDetail={() => onOpenTenantDetail(org.id)}
             />
           ))}
         </div>
@@ -152,9 +158,11 @@ export function RestaurantList() {
 interface OrgCardProps {
   org: Organization
   onEditionSuccess: () => void
+  /** Apre la scheda di questo tenant (F9). */
+  onOpenDetail: () => void
 }
 
-function OrgCard({ org, onEditionSuccess }: OrgCardProps) {
+function OrgCard({ org, onEditionSuccess, onOpenDetail }: OrgCardProps) {
   const badge = editionBadgeColors(org.edition)
   const sandbox = isSandboxTenant(org.id)
 
@@ -171,6 +179,11 @@ function OrgCard({ org, onEditionSuccess }: OrgCardProps) {
           {org.is_active ? 'Attivo' : 'Sospeso'}
         </span>
       </div>
+
+      {/* Pulsante "Apri scheda" — apre TenantDetail per questo tenant (F9) */}
+      <button onClick={onOpenDetail} style={styles.openDetailBtn}>
+        Apri scheda →
+      </button>
 
       {/* Slug */}
       <span style={styles.slug}>/{org.slug}</span>
@@ -333,5 +346,20 @@ const styles = {
 
   readOnlyIcon: {
     fontSize: '0.75rem',
+  } as React.CSSProperties,
+
+  // Pulsante "Apri scheda" — apre TenantDetail per questo tenant (F9).
+  openDetailBtn: {
+    alignSelf: 'flex-start',
+    background: 'transparent',
+    border: '1px solid #334155',
+    borderRadius: '6px',
+    color: '#93c5fd',
+    fontSize: '0.75rem',
+    fontWeight: 500,
+    padding: '0.3rem 0.65rem',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    whiteSpace: 'nowrap' as const,
   } as React.CSSProperties,
 } as const

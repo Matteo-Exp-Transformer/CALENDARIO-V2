@@ -67,7 +67,12 @@ type LoadState =
 // Componente principale
 // ---------------------------------------------------------------------------
 
-export function UserList() {
+interface UserListProps {
+  /** Callback per aprire la scheda di un tenant (F9). */
+  onOpenTenantDetail: (tenantId: string) => void
+}
+
+export function UserList({ onOpenTenantDetail }: UserListProps) {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const [search, setSearch] = useState('')
   const mountedRef = useRef(true)
@@ -182,7 +187,7 @@ export function UserList() {
             </thead>
             <tbody>
               {filtered.map((user) => (
-                <UserRow key={user.id} user={user} />
+                <UserRow key={user.id} user={user} onOpenTenantDetail={onOpenTenantDetail} />
               ))}
             </tbody>
           </table>
@@ -198,9 +203,11 @@ export function UserList() {
 
 interface UserRowProps {
   user: AdminUser
+  /** Callback per aprire la scheda del tenant associato all'utente (F9). */
+  onOpenTenantDetail: (tenantId: string) => void
 }
 
-function UserRow({ user }: UserRowProps) {
+function UserRow({ user, onOpenTenantDetail }: UserRowProps) {
   const org = user.organization
   const edition = org?.edition ?? 'classic'
   const badge = editionBadgeColors(edition)
@@ -258,13 +265,15 @@ function UserRow({ user }: UserRowProps) {
         )}
       </td>
 
-      {/* Azioni placeholder — disabilitate: verranno collegate in F9/F10/F11 */}
+      {/* Azioni: "Apri scheda" abilitato in F9; "Modifica"/"Elimina" placeholder per F11 */}
       <td style={styles.td}>
         <div style={styles.actionsRow}>
+          {/* "Apri scheda" è abilitato se l'utente ha un tenant associato. */}
           <button
-            disabled
-            title="Disponibile in F9"
-            style={styles.actionBtnDisabled}
+            onClick={() => onOpenTenantDetail(user.tenant_id)}
+            disabled={!user.tenant_id}
+            title={user.tenant_id ? `Apri scheda per tenant ${user.tenant_id}` : 'Nessun tenant associato'}
+            style={user.tenant_id ? styles.actionBtnActive : styles.actionBtnDisabled}
           >
             Apri scheda
           </button>
@@ -453,6 +462,19 @@ const styles = {
     display: 'flex',
     gap: '0.35rem',
     flexWrap: 'wrap' as const,
+  } as React.CSSProperties,
+
+  // Pulsante "Apri scheda" abilitato (F9): porta a TenantDetail.
+  actionBtnActive: {
+    background: 'transparent',
+    border: '1px solid #334155',
+    borderRadius: '5px',
+    color: '#93c5fd',
+    fontSize: '0.7rem',
+    padding: '0.2rem 0.5rem',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap' as const,
+    fontFamily: 'inherit',
   } as React.CSSProperties,
 
   actionBtnDisabled: {

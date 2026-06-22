@@ -243,6 +243,34 @@
 
 ---
 
+### Fase F9 — Scheda azienda, tappa 1 (REQ-002)
+- **Obiettivo / effetto:** vista focus su un singolo tenant che raccoglie i pannelli esistenti + mappa di copertura intervista.
+- **Modalità:** deep
+- **Dipendenze:** F8 (navigazione + vista Utenti da cui aprire la scheda)
+
+**Esecutore** (general-purpose, Sonnet)
+- Prompt usato: `MASTERPLAN_CONSOLE_REQ-001-003.md` §F9 (prompt esecutore)
+- Sintesi: nuovo `TenantDetail` (stato drill-down sovrapposto in `AppShell`, DEC-046) apribile da Utenti e Ristoranti, con "← Torna"; riusa EditionSelector/FeatureFlagsPanel/RestaurantSettingsPanel per il tenant + campi base `organizations` in lettura; mappa di copertura delle 9 sezioni intervista (Sez.0/2/4 ✅, le altre 🔒 con nota FU-CONSOLE-9); nota UI sul gate sandbox ancora attivo.
+- File toccati: `console/src/components/TenantDetail.tsx` (nuovo); `AppShell.tsx`, `RestaurantList.tsx`, `UserList.tsx` (mod)
+- Decisioni autonome: DEC-046 (drill-down sovrapposto)
+- Scritture DB: nessuna (solo SELECT `organizations`)
+- Plan per Matteo generati: nessuno
+
+**Revisore (controverifica)** (general-purpose, Sonnet — attore distinto)
+- Done-criteria verificati: scheda apribile da Utenti+Ristoranti con back ✓ · riuso 3 pannelli + campi base ✓ · mappa 9 sezioni con stati e FU ✓ · gate isSandboxTenant non toccato + nota UI ✓ · responsive/no import ../src/no modifiche root ✓
+- Test/lint/typecheck: 🟢 build (93 moduli), lint 0 warning, typecheck pulito
+- **Verdetto round 1:** 🔴 ROSSO — (1, obbligatorio) DEC-046 citata nel codice ma non in DECISION_LOG (RULE-5); (2, advisory) `useEffect` in TenantDetail dipendeva solo da `[refetchCounter]` con `eslint-disable`; (3, advisory) blocco PHASE_AUDIT F9 mancante.
+- **Ri-lavorazione (Orchestrator, audit):** (1) DEC-046 registrata; (2) `useEffect` corretto → deps `[fetchOrg, refetchCounter]`, rimosso `eslint-disable`; (3) questo blocco. Build/lint/typecheck ri-verificati 🟢.
+- **Verdetto finale:** 🟢 VERDE
+- Nota: stati ✅ di Sez.2/Sez.4 hardcoded (semplificazione tappa 1) → tracciato in FU-CONSOLE-9 (renderli dinamici).
+
+**Chiusura fase**
+- **Commit:** _(vedi git log — feat(console): scheda azienda drill-down (F9, DEC-046, REQ-002))_
+- Riga aggiunta a SESSION_LOG.md: sì
+- Follow-up aperti: FU-CONSOLE-9 ampliato (editor sezioni intervista 1/3/5/6/7/8 + stati copertura dinamici)
+
+---
+
 ## Template blocco di fase (copia per ogni Fi)
 
 ```markdown

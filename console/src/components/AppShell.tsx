@@ -6,15 +6,21 @@
 // aggiungerebbe complessità di setup (history, basename) e dipendenze non ancora
 // necessarie. Se le viste cresceranno a > 4 o servirà link-sharing/deep-link,
 // migrare a react-router-dom è immediato. (Candidata DEC — vedi report F8.)
+//
+// F9: aggiunto stato 'tenant-detail' con selectedTenantId per la scheda azienda.
+// La scheda è apribile da Ristoranti e da Utenti; il breadcrumb "← Torna" riporta
+// alla vista precedente (DEC-046).
 
 import type { User } from '@supabase/supabase-js'
 import { useState } from 'react'
 import { supabase } from '@console/lib/supabaseClient'
 import { RestaurantList } from './RestaurantList'
 import { UserList } from './UserList'
+import { TenantDetail } from './TenantDetail'
 
-// Viste disponibili nella Console. Aggiungere qui quando si introduce una nuova area.
-type ActiveView = 'restaurants' | 'users'
+// Viste disponibili nella Console. 'tenant-detail' è una vista drill-down che sovrappone
+// le tab (le tab restano visibili ma non attive durante la scheda).
+type ActiveView = 'restaurants' | 'users' | 'tenant-detail'
 
 interface AppShellProps {
   /** Utente autenticato (da useAuth). Usato per mostrare l'email in header. */
@@ -24,6 +30,29 @@ interface AppShellProps {
 export function AppShell({ user }: AppShellProps) {
   const [loggingOut, setLoggingOut] = useState(false)
   const [activeView, setActiveView] = useState<ActiveView>('restaurants')
+  // selectedTenantId: presente solo quando activeView === 'tenant-detail'.
+  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null)
+  // previousView: la vista da cui è stata aperta la scheda (per il "← Torna").
+  const [previousView, setPreviousView] = useState<'restaurants' | 'users'>('restaurants')
+
+  /** Apre la scheda di un tenant, ricordando da quale vista si viene. */
+  function openTenantDetail(tenantId: string, from: 'restaurants' | 'users') {
+    setSelectedTenantId(tenantId)
+    setPreviousView(from)
+    setActiveView('tenant-detail')
+  }
+
+  /** Torna alla vista precedente alla scheda. */
+  function closeTenantDetail() {
+    setSelectedTenantId(null)
+    setActiveView(previousView)
+  }
+
+  /** Cambia tab principale: se si è in tenant-detail, chiude la scheda prima. */
+  function handleTabChange(view: 'restaurants' | 'users') {
+    setSelectedTenantId(null)
+    setActiveView(view)
+  }
 
   async function handleLogout() {
     setLoggingOut(true)
@@ -90,20 +119,27 @@ export function AppShell({ user }: AppShellProps) {
       >
         <NavTab
           label="Ristoranti"
-          active={activeView === 'restaurants'}
-          onClick={() => setActiveView('restaurants')}
+          active={activeView === 'restaurants' || (activeView === 'tenant-detail' && previousView === 'restaurants')}
+          onClick={() => handleTabChange('restaurants')}
         />
         <NavTab
           label="Utenti"
-          active={activeView === 'users'}
-          onClick={() => setActiveView('users')}
+          active={activeView === 'users' || (activeView === 'tenant-detail' && previousView === 'users')}
+          onClick={() => handleTabChange('users')}
         />
       </nav>
 
       {/* Main content area */}
       <main style={{ padding: '2rem 1rem', maxWidth: '1100px', margin: '0 auto' }}>
-        {activeView === 'restaurants' && <RestaurantList />}
-        {activeView === 'users' && <UserList />}
+        {activeView === 'restaurants' && (
+          <RestaurantList onOpenTenantDetail={(id) => openTenantDetail(id, 'restaurants')} />
+        )}
+        {activeView === 'users' && (
+          <UserList onOpenTenantDetail={(id) => openTenantDetail(id, 'users')} />
+        )}
+        {activeView === 'tenant-detail' && selectedTenantId && (
+          <TenantDetail tenantId={selectedTenantId} onBack={closeTenantDetail} />
+        )}
       </main>
     </div>
   )
