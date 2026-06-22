@@ -12,7 +12,8 @@
 |------|-----------|-----------|----------|----------|--------|---------------|
 | F1 | Scaffolding `console/` isolata | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `c981fc0` | DEC-001, DEC-014, DEC-016 |
 | F2 | Elenco ristoranti (sola lettura) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `49c0230` | DEC-017 |
-| F3 | Login reale (Supabase Auth + allowlist) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | _(vedi git log)_ | DEC-018, DEC-019, DEC-020; PLAN-DB-002 |
+| F3 | Login reale (Supabase Auth + allowlist) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `8ca16cf` | DEC-018, DEC-019, DEC-020; PLAN-DB-002 |
+| F4 | Edge Function scritture privilegiate (deploy a Matteo) | Sonnet (R1) + Haiku (R2 fix) | Sonnet (R1) + Haiku (R2) | 🟢 VERDE (round 2) | _(vedi git log)_ | DEC-021/022/023/024/025; PLAN-DB-003 |
 
 ---
 
@@ -94,9 +95,36 @@
 - Ri-lavorazioni: nessun round esecutore; correzione commento applicata dall'Orchestrator.
 
 **Chiusura fase**
-- **Commit:** _(vedi git log — feat(console): login Supabase Auth + allowlist (F3, DEC-018/019/020))_
+- **Commit:** `8ca16cf` — feat(console): login Supabase Auth + allowlist (F3, DEC-018/019/020)
 - Riga aggiunta a SESSION_LOG.md: sì
 - Follow-up aperti: PLAN-DB-002 da eseguire (Matteo); redirect URL magic link `localhost:5174` da configurare in Supabase Dashboard; email reale di Matteo da inserire in `.env.local`; `LoginPlaceholder.tsx` orfano da rimuovere; test E2E magic link = manuale di Matteo
+
+---
+
+### Fase F4 — Edge Function per scritture privilegiate (deploy a Matteo)
+- **Obiettivo / effetto:** "braccio robotico" lato server che esegue le scritture potenti con service role fuori dal browser (DEC-010). Per scelta di Cristiano (DEC-021) l'agente prepara il codice, il deploy lo fa Matteo. Effetto: la Console potrà scrivere in modo sicuro senza esporre la chiave admin.
+- **Modalità:** deep
+- **Dipendenze:** F3
+
+**Esecutore**
+- Prompt usato: `MASTERPLAN_CONSOLE.md` §F4 (prompt esecutore) + vincolo DEC-021 (no deploy)
+- Sintesi: creata Edge Function Deno `console-admin` (verifica JWT + allowlist server-side `CONSOLE_ALLOWED_EMAILS` + sandbox guard sui 2 tenant + 3 azioni: `update_edition`, `upsert_tenant_feature`, `upsert_restaurant_setting`; service role solo da `Deno.env`; CORS). Helper client `consoleAdminClient.ts` (JWT della sessione, errori normalizzati). PLAN-DB-003 con istruzioni di deploy per Matteo. Esclusa la cartella `supabase` dalla build Vite (`console/tsconfig.json` exclude).
+- File toccati: `console/supabase/functions/console-admin/index.ts` (nuovo), `console/src/lib/consoleAdminClient.ts` (nuovo), `console/tsconfig.json` (mod, exclude), `docs/Console-Skill/plan-per-matteo/PLAN-DB-003-edge-console-admin.md` (nuovo).
+- Decisioni autonome prese: DEC-022 (function in `console/supabase/`, non root), DEC-023 (`--no-verify-jwt`, auth gestita in-function), DEC-024 (gate doppio: `CONSOLE_ALLOWED_EMAILS` server ≠ `VITE_CONSOLE_ALLOWED_EMAILS` client), DEC-025 (helper non lancia eccezioni, errori normalizzati).
+- Scritture DB: nessuna. Deploy: nessuno (a Matteo).
+- Plan per Matteo generati: **PLAN-DB-003** (deploy Edge `console-admin` su TEST).
+
+**Revisore (controverifica)**
+- **Round 1 → 🔴 ROSSO:** nomi colonna errati verificati contro lo schema live (via MCP read-only, `get_project_url`=docnnernvp): `organization_id`→`tenant_id`, `is_enabled`→`enabled`, `key`→`setting_key`, `value`→`setting_value` (in `tenant_features` e `restaurant_settings`, codice + PLAN-DB-003). Auth/allowlist/sandbox-guard/service-role/CORS/build già ✓.
+- **Round 2 (fix Haiku) → 🟢 VERDE:** confermato `tenant_id`/`enabled`/`feature_key` + `onConflict 'tenant_id,feature_key'`; `tenant_id`/`setting_key`/`setting_value` + `onConflict 'tenant_id,setting_key'`; `update_edition` invariata; grep: nessun residuo dei nomi errati; PLAN-DB-003 allineato; build+typecheck verdi.
+- Regole d'oro rispettate: ✓ (function in `console/supabase/`, non root Matteo; `src/`/`supabase/` root intatti; nessun deploy; nessuna scrittura DB; service role solo server).
+- **Verdetto:** 🟢 VERDE (al round 2)
+- Ri-lavorazioni: 1 round (correzione nomi colonna).
+
+**Chiusura fase**
+- **Commit:** _(vedi git log — feat(console): Edge Function console-admin (F4, DEC-022/023/024/025))_
+- Riga aggiunta a SESSION_LOG.md: sì
+- Follow-up aperti: **PLAN-DB-003 da eseguire (Matteo)** — finché la function non è deployata e `VITE_CONSOLE_ADMIN_FUNCTION_URL` impostata, le scritture di F5/F6/F7 dal browser non sono verificabili E2E (l'effetto sul DB resta verificabile dall'Orchestrator via MCP)
 
 ---
 
