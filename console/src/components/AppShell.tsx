@@ -1,8 +1,20 @@
-// App shell con elenco ristoranti (F2) + logout (F3).
+// App shell con navigazione a tab (switch di stato) tra le viste della Console.
+// Gestisce: header (titolo + email + logout) + nav tab + rendering della vista attiva.
+//
+// NAVIGAZIONE: switch di stato locale (useState) invece di react-router-dom.
+// Motivo: la Console ha oggi due viste flat (Ristoranti / Utenti); BrowserRouter
+// aggiungerebbe complessità di setup (history, basename) e dipendenze non ancora
+// necessarie. Se le viste cresceranno a > 4 o servirà link-sharing/deep-link,
+// migrare a react-router-dom è immediato. (Candidata DEC — vedi report F8.)
+
 import type { User } from '@supabase/supabase-js'
 import { useState } from 'react'
 import { supabase } from '@console/lib/supabaseClient'
 import { RestaurantList } from './RestaurantList'
+import { UserList } from './UserList'
+
+// Viste disponibili nella Console. Aggiungere qui quando si introduce una nuova area.
+type ActiveView = 'restaurants' | 'users'
 
 interface AppShellProps {
   /** Utente autenticato (da useAuth). Usato per mostrare l'email in header. */
@@ -11,6 +23,7 @@ interface AppShellProps {
 
 export function AppShell({ user }: AppShellProps) {
   const [loggingOut, setLoggingOut] = useState(false)
+  const [activeView, setActiveView] = useState<ActiveView>('restaurants')
 
   async function handleLogout() {
     setLoggingOut(true)
@@ -64,10 +77,67 @@ export function AppShell({ user }: AppShellProps) {
         </button>
       </header>
 
+      {/* Nav tab — switch tra le viste della Console */}
+      <nav
+        style={{
+          background: '#1e293b',
+          borderBottom: '1px solid #334155',
+          display: 'flex',
+          gap: '0',
+          padding: '0 1rem',
+        }}
+        aria-label="Navigazione Console"
+      >
+        <NavTab
+          label="Ristoranti"
+          active={activeView === 'restaurants'}
+          onClick={() => setActiveView('restaurants')}
+        />
+        <NavTab
+          label="Utenti"
+          active={activeView === 'users'}
+          onClick={() => setActiveView('users')}
+        />
+      </nav>
+
       {/* Main content area */}
-      <main style={{ padding: '2rem 1rem', maxWidth: '900px', margin: '0 auto' }}>
-        <RestaurantList />
+      <main style={{ padding: '2rem 1rem', maxWidth: '1100px', margin: '0 auto' }}>
+        {activeView === 'restaurants' && <RestaurantList />}
+        {activeView === 'users' && <UserList />}
       </main>
     </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Tab di navigazione (componente interno — non esportato)
+// ---------------------------------------------------------------------------
+
+interface NavTabProps {
+  label: string
+  active: boolean
+  onClick: () => void
+}
+
+function NavTab({ label, active, onClick }: NavTabProps) {
+  return (
+    <button
+      onClick={onClick}
+      aria-current={active ? 'page' : undefined}
+      style={{
+        background: 'transparent',
+        border: 'none',
+        borderBottom: active ? '2px solid #3b82f6' : '2px solid transparent',
+        color: active ? '#f1f5f9' : '#64748b',
+        cursor: 'pointer',
+        fontSize: '0.875rem',
+        fontWeight: active ? 600 : 400,
+        padding: '0.65rem 1rem',
+        transition: 'color 0.15s, border-bottom-color 0.15s',
+        whiteSpace: 'nowrap' as const,
+      }}
+    >
+      {label}
+    </button>
   )
 }

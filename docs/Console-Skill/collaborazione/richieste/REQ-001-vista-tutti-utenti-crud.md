@@ -73,7 +73,28 @@ admin con: email, azienda/tenant associato, ruolo, stato. (NON i clienti finali.
 
 ## ② Consegna (Team Console)
 
-_(da compilare alla consegna — vedi `_TEMPLATE_RICHIESTA.md`)_
+### F8 — Vista "Tutti gli utenti" in lettura (2026-06-22)
+
+**Cosa è stato fatto:**
+
+- Navigazione a tab (Ristoranti / Utenti) aggiunta in `AppShell.tsx` via switch di stato locale (DEC-045).
+- Nuovo componente `console/src/components/UserList.tsx`: legge `admin_users` con join lato server su `organizations`, mostra per riga email, nome, azienda (nome + /slug), edition (badge), stato attivo.
+- Ricerca per email (filtro lato client, case-insensitive).
+- Gestione caso RLS non attiva: se la query torna 0 righe mostra il messaggio «Nessun utente visibile — verifica che PLAN-DB-005 sia stato eseguito su TEST (docnnernvp)».
+- Azioni di riga placeholder disabilitati: "Apri scheda" (F9), "Modifica" e "Elimina" (F10/F11 — in arrivo).
+- Responsive: tabella con `overflow-x: auto` + `minWidth: 600px` per scorrimento orizzontale su 375px.
+- Nessuna dipendenza da `../src`, nessun service role nel browser, nessuna scrittura DB.
+
+**File toccati:**
+- `console/src/components/AppShell.tsx` — navigazione tab aggiunta
+- `console/src/components/UserList.tsx` — creato (nuova vista utenti)
+
+**Comandi di verifica (eseguiti, tutti verdi):**
+- `npm run build` → ✅ 92 moduli, 0 errori TypeScript
+- `npm run lint` → ✅ 0 warning
+- `npm run typecheck` → ✅ clean
+
+**Prossimo passo atteso da Matteo:** eseguire **PLAN-DB-005** su TEST (`docnnernvp`) per attivare la policy SELECT su `admin_users` e vedere la lista popolata.
 
 ## ③ Esito test (Matteo)
 

@@ -213,6 +213,36 @@
 
 ---
 
+### Fase F8 — Vista "Tutti gli utenti" + navigazione (REQ-001 lettura)
+- **Obiettivo / effetto:** elencare tutti gli admin (`admin_users`) con azienda associata; navigazione Ristoranti/Utenti. Sola lettura.
+- **Modalità:** deep
+- **Dipendenze:** PLAN-DB-005 (policy SELECT `admin_users`, a carico di Matteo); F1-F7 (scaffolding/auth/elenco)
+
+**Esecutore** (general-purpose, Sonnet)
+- Prompt usato: `MASTERPLAN_CONSOLE_REQ-001-003.md` §F8 (prompt esecutore)
+- Sintesi: navigazione a tab via switch di stato in `AppShell`; nuovo `UserList` con join PostgREST `admin_users(organizations(...))`, ricerca email lato client, gestione caso RLS-non-attiva con citazione PLAN-DB-005, azioni di riga placeholder disabilitate (Apri scheda/Modifica/Elimina).
+- File toccati: `console/src/components/AppShell.tsx` (mod), `console/src/components/UserList.tsx` (nuovo)
+- Decisioni autonome: DEC-045 (navigazione = switch di stato, non react-router)
+- Scritture DB: nessuna (sola lettura)
+- Plan per Matteo generati: PLAN-DB-005 era già generato dall'Orchestrator (non duplicato)
+
+**Revisore (controverifica)** (general-purpose, Sonnet — attore distinto)
+- Done-criteria verificati: navigazione ✓ · lista admin_users con tutti i campi + ricerca ✓ · caso RLS-non-attiva con messaggio PLAN-DB-005 senza aggirare RLS ✓ · azioni placeholder disabilitate ✓ · responsive/overflow-x + no import da ../src ✓ · DEC-045 motivata ✓
+- Regole d'oro rispettate: ✓ (RULE-4 `src/`/`supabase/` intatti, no service role nel browser; RULE-3 PLAN-DB-005 non eseguito)
+- Test/lint/typecheck: 🟢 build (92 moduli), lint (0 warning), typecheck puliti — eseguiti dal revisore
+- Regressioni: `RestaurantList` non toccato, monta correttamente; logout/header invariati
+- **Verdetto:** 🟢 VERDE (round 1)
+- Ri-lavorazioni: nessuna
+
+**Nota Orchestrator:** l'esecutore aveva incidentalmente modificato il `package-lock.json` di **root** (fuori da `console/`): ripristinato a HEAD prima del commit (RULE-4 — non si tocca la pipeline di Matteo).
+
+**Chiusura fase**
+- **Commit:** _(vedi git log — feat(console): vista "Tutti gli utenti" + navigazione (F8, DEC-045, REQ-001))_
+- Riga aggiunta a SESSION_LOG.md: sì
+- Follow-up aperti: nessuno nuovo (REQ-001 resta IN-SVILUPPO: manca la parte scrittura F11)
+
+---
+
 ## Template blocco di fase (copia per ogni Fi)
 
 ```markdown

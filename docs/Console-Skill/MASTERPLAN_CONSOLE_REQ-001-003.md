@@ -257,7 +257,7 @@ Esito: 🟢 VERDE o 🔴 ROSSO con correzioni puntuali. NON modificare il codice
 
 | Fase | REQ | Esecutore | Revisore | Verdetto | Commit | Note |
 |------|-----|-----------|----------|----------|--------|------|
-| F8 | 001 (R) | ⬜ | ⬜ | — | — | dipende da PLAN-DB-005 (Matteo) |
+| F8 | 001 (R) | ✅ | ✅ | 🟢 VERDE | sì | dipende da PLAN-DB-005 (Matteo) per i dati reali |
 | F9 | 002 (t1) | ⬜ | ⬜ | — | — | — |
 | F10 | 001/003 | ⬜ | ⬜ | — | — | deploy + eventuale PLAN-DB-006 (Matteo) |
 | F11 | 001 (W) | ⬜ | ⬜ | — | — | E2E dopo deploy F10 |
