@@ -63,8 +63,9 @@ Manager/POS) — la guerra è *zero commissioni, dati tuoi, prezzo fisso, te lo 
    4. **Minimo fascia** come *pavimento*: `durata = MAX(durata_del_livello_scelto, minimo_fascia, default_ristorante)`.
       La tipologia **non** entra nel `MAX` (altrimenti la card non potrebbe accorciare). Il "non si
       accorcia mai" vale rispetto al **pavimento-fascia**, non alla tipologia.
-4. **Una sola card per prenotazione — già così nel codice** (`BookingSubTabCards.tsx:132`, selezione
-   singola). Il compose multi-categoria (FIX-9) avviene DENTRO la card "personalizzata"
+4. **Una sola card per prenotazione — già così nel codice**
+   (`src/features/booking/components/publicBooking/BookingSubTabCards.tsx:132` — `onChange(isActive ? null : tab)`,
+   selezione singola con toggle). Il compose multi-categoria (FIX-9) avviene DENTRO la card "personalizzata"
    (`is_fixed_menu:false`) con **durata fissa di card**. Manca solo agganciare la durata.
 5. **Default libero = permanenza auto-attivata.** Senza alcuna durata configurata il sistema resta al
    "cap per-fascia morbido" odierno (L1). La permanenza si accende da sola quando esiste una durata →
@@ -96,8 +97,16 @@ Manager/POS) — la guerra è *zero commissioni, dati tuoi, prezzo fisso, te lo 
 - **D15 — Storico esistente intatto.** Il motore vale dalle nuove prenotazioni; i `confirmed_start/end`
   manuali già presenti non si ricalcolano.
 - **D17 — Inserimento admin: durata pre-compilata dal calcolo, override libero.**
-- **D35 — Card più corta della tipologia → la card vince.** Pavimento unico = minimo-fascia (aggiorna
-  D3.4 della gerarchia). *(Opzione futura "questa card non scende sotto la tipologia" = avanzata.)*
+- **D35 — La card scelta dal cliente VINCE sempre sulla tipologia, anche se più corta (e anche se più
+  lunga).** Regola deterministica (confermata Matteo 22-06-26): `durata_livello_scelto = durata_card`
+  **se la card ha una durata**; **altrimenti** `durata_tipologia` (se impostata); **altrimenti** default
+  ristorante. Pavimento unico = minimo-fascia. *Esempio:* tipologia "Tavolo" 90 min + card "Cena" 120 min
+  → l'app usa **120**. Card senza durata + tipologia "Tavolo" 90 → usa **90**.
+  > ⚠️ **Divergenza voluta dalle due review** (che raccomandavano `MAX` con la tipologia dentro, "la card
+  > non accorcia mai"): respinta consapevolmente da Matteo — la card è l'esperienza concreta scelta dal
+  > cliente e deve comandare. L'avviso "card < tipologia" [Q8] **non è un blocco**: la regola è chiara e
+  > intenzionale (la card senza durata già ricade sulla tipologia). Resta opzione futura un avviso morbido
+  > informativo, non un gate.
 
 ### Intervalli di arrivo e finestre
 - **D16 — Arrivo tardivo: blocco a monte CON avviso + toggle admin + pavimento 45 min.** Due tempi:
@@ -128,8 +137,12 @@ Manager/POS) — la guerra è *zero commissioni, dati tuoi, prezzo fisso, te lo 
 - **D39 — Una prenotazione può occupare PIÙ tavoli (DB non vincola a 1).** Tavolata da 10 = due tavoli
   da 5. `booking_table_assignments` (join) regge già più righe; UI MVP può assegnare 1 tavolo, ma
   l'architettura/`table_session` non deve imporre 1-tavolo-per-prenotazione.
-- **D41 — `max_turns` legacy = non è la base del nuovo motore** (esiste in `service_slots` ma confonde):
-  il motore si basa su `arrival_step` + `duration` + `turnover_buffer` + finestre di occupazione.
+- **D41 — `max_turns` non è la base del nuovo motore come *contatore turni*** — il motore si basa su
+  `arrival_step` + `duration` + `turnover_buffer` + finestre di occupazione. ⚠️ **MA `max_turns` NON è
+  morto:** oggi `max_turns = 0` = **servizio chiuso** ([`isServiceSlotClosed()`](../src/features/booking/hooks/useServiceSlots.ts),
+  con `max_turns_resume` per riaprire, mig. 023). Il nuovo motore deve **ignorarlo come contatore turni ma
+  preservare la semantica `0 = chiuso`** (o migrarla a un flag esplicito in S0/S4) — altrimenti si regredisce
+  il pulsante "chiudi servizio".
 - **Q19 confermato** — turno = **sequenza dinamica di occupazioni** del tavolo (`turn_number`), non
   turni fissi (quelli = S5 futuro). **Q17** — mostrare al cliente "tavolo disponibile fino alle ~X"
   **solo se la permanenza è attiva**.
@@ -160,7 +173,11 @@ Manager/POS) — la guerra è *zero commissioni, dati tuoi, prezzo fisso, te lo 
   "permanenza"/"durata 120 min". ⚠️ **Le frasi esatte si concordano con Matteo al momento della
   scrittura** (qui solo esempi di tono).
 - **D8 — Fix bug Edge `override_date` = subito, intervento isolato** (mini-PR, deploy PROD controllato),
-  prima di S1+.
+  prima di S1+. ⚠️ **Non è un semplice rename di colonna:** la query Edge usa `.eq("override_date", …)` +
+  `.maybeSingle()`, ma per scope `week/month/custom` più righe possono coprire la stessa data → il fix deve
+  filtrare `date_from <= desired_date <= date_to` **e replicare la regola "vince il più specifico"** di
+  [`resolveSlotOverride()`](../src/features/booking/hooks/useServiceSlotOverrides.ts) (oggi solo client-side),
+  non prendere una riga a caso. È il primo seme del resolver server-side condiviso.
 - **D9 — S0 = blindatura ATTIVA:** mentre si mappa si demoliscono rottami e si pongono basi solide.
 - **D10 — Debiti tavoli in S4** (`useTableStatuses`, walk-in placement/id, guard `features.tableAssignments`).
 - **D36 — Prenotazioni pending NON bloccano i posti, solo avviso.** `accepted/confirmed` consumano
@@ -172,10 +189,36 @@ Manager/POS) — la guerra è *zero commissioni, dati tuoi, prezzo fisso, te lo 
   `DURATION_EXCEEDS_SLOT`, `CUTOFF_EXPIRED`, `NO_TABLE_AVAILABLE`, `CAPACITY_EXCEEDED`,
   `INVALID_ARRIVAL_STEP`, `CONFIG_INCOMPLETE`, `SPECIAL_REQUEST_REQUIRED` (oltre a `OUT_OF_SLOT`/`SLOT_LIMIT`).
 
+### Stati che bloccano capacità (D43 — pre-requisito di S4-LIVE)
+Elenco unico e canonico di **cosa consuma capienza dura** (durante il calcolo Edge e nella Live). Allineato
+al comportamento Edge attuale ([create-booking/index.ts:362-370](../supabase/functions/create-booking/index.ts):
+oggi conta solo `status='accepted'` con `no_show != true`).
+
+**BLOCCANO la capienza dura** (occupano coperti/tavolo nelle finestre):
+- `accepted` / `confirmed`;
+- (futuri stati Live) `seated` / `in_service` — quando S4-LIVE li introdurrà;
+- assegnazione manuale/`manually_blocked` (tavolo bloccato a mano dall'admin);
+- override admin forzato (D25): blocca **e** registra `forced_by_admin` + motivo.
+
+**NON bloccano la capienza dura** (al massimo generano avviso/pressione visiva — D36):
+- `pending` (richiesta non ancora accettata) → **solo avviso** se troppe sulla stessa fascia;
+- `rejected` / `cancelled`;
+- `no_show` **dopo conferma admin** → libera la finestra (già così oggi: `.neq("no_show", true)`);
+- `archived` / `concluso`;
+- eventuale `waitlisted` (predisposizione S3, vedi §6) → mai capienza dura.
+
+**Regola di blindatura:** ogni nuovo stato introdotto da S4/S4-LIVE deve essere classificato qui PRIMA di
+essere scritto nel resolver. Il resolver server-side (D2/D40) è l'unico autorizzato a sommare l'occupazione,
+e somma **solo** gli stati di questo elenco.
+
 ### Da verificare in apertura S3 (non blocca il masterplan)
-- **Ordine form pubblico:** il cliente deve scegliere **card/tipologia PRIMA dell'orario**, altrimenti
-  gli orari disponibili non conoscono ancora la durata. Verificare l'ordine attuale degli step in
-  Prenota (M0) e, se l'orario precede la card, riordinare o ri-derivare gli slot dopo la scelta card.
+- **Ordine form pubblico — VERIFICATO (21-06-26): l'ordine è già corretto.** In
+  [BookingRequestForm.tsx](../src/features/booking/components/BookingRequestForm.tsx) il render è
+  `BookingModeCards` (riga ~1198) → `BookingSubTabCards` (riga ~1235) → `BookingFormFields` (riga ~1365,
+  che contiene i picker data/ora): **la card precede già l'orario**. Il lavoro reale di S3 NON è
+  riordinare, ma: (1) **sostituire il `TimeInput` libero** (oggi qualsiasi orario, validato solo contro
+  passato/orari attività) con **slot derivati dalla durata della card**; (2) **rimuovere il default
+  pre-compilato** dell'orario (`getDefaultTime`, riga ~289) che oggi salterebbe la ri-derivazione.
 
 ---
 
@@ -185,9 +228,9 @@ Manager/POS) — la guerra è *zero commissioni, dati tuoi, prezzo fisso, te lo 
 | Pezzo | Dove | Note riuso |
 |---|---|---|
 | Fasce orarie | `service_slots` (mig. 010): `start/end_time`, `max_guests`, `max_turns`, `display_order` | Base OK. Aggiungere `min_duration` come colonna nuova. |
-| Override fascia per periodo | `service_slot_overrides` (mig. 022) + `resolveSlotOverride()` (`useServiceSlotOverrides.ts:101`) | "Vince il più specifico" già implementato; scope forever/today/week/month/custom (`:38`). |
+| Override fascia per periodo | `service_slot_overrides` (mig. 022) + `resolveSlotOverride()` (`useServiceSlotOverrides.ts:101`) | "Vince il più specifico" già implementato **ma solo client-side**; scope forever/today/week/month/custom (`:38`). Da portare server-side nell'Edge (D8). |
 | Tavoli + sale | `tables` (mig. 007), `rooms` | Capienza, posizione, soft-delete `active=false`. |
-| Assegnazione + turni | `booking_table_assignments` (mig. 011): `turn_number`, `UNIQUE(table_id, slot_id, date, turn_number)` | Scheletro "turni" + multi-tavolo (join) già presente. |
+| Assegnazione + turni | `booking_table_assignments` (mig. 011): `turn_number`, `UNIQUE(table_id, service_slot_id, date, turn_number)` | Scheletro "turni" + multi-tavolo (join) già presente: il `UNIQUE` **non** include `booking_id` → una prenotazione può occupare più tavoli (D39). |
 | Pagina Servizio (UI) | `src/pages/ServizioPage.tsx` + `src/features/booking/components/servizio/*` | Lista/Mappa, drag-drop, walk-in, briefing — completi. |
 | Cap per-fascia (morbido) | `useCapacityCheck.ts` (cascata override→slot→legacy JSONB) | Resta come **Livello 1**. |
 | Hook CRUD | `useServiceSlots`, `useServizioTables`, `useRooms`, `useTableAssignments`, `useServiceSlotOverrides` | Riuso diretto. |
@@ -203,12 +246,15 @@ Manager/POS) — la guerra è *zero commissioni, dati tuoi, prezzo fisso, te lo 
   orari disponibili".
 - **`useTableStatuses`** (FU-TABLE-1): oggi i tavoli sono sempre verdi (`TableShape.tsx:35`).
 - **Snapshot disponibilità sulla prenotazione** (D14 + parere §6.4): oltre alla durata salvare
-  `arrival_time/duration_minutes/estimated_end/buffer_minutes/duration_source/capacity_mode_used/
-  forced_by_admin…`. Predisposizione multi-tavolo via `table_session` (D39).
+  `arrival_time/duration_minutes/estimated_end/buffer_minutes/occupancy_start/occupancy_end/duration_source/
+  duration_rule_version/selected_card_id/applied_slot_min_duration/capacity_mode_used/forced_by_admin/
+  force_reason…`. `occupancy_start/end` e `duration_rule_version` servono a Calendario, modifica prenotazione
+  e Analytics futura **senza ricalcoli**. Predisposizione multi-tavolo via `table_session` (D39).
 
 ### 🔴 Registro rischi globale (da blindare PRIMA del codice)
-1. **BUG Edge bloccante:** `create-booking/index.ts:~431` interroga `service_slot_overrides.override_date`
-   ma la colonna è `date_from/date_to` → gli override morbidi **non scattano mai**. Fix in S0 (D8).
+1. **BUG Edge bloccante:** `create-booking/index.ts:431` interroga `service_slot_overrides.override_date`
+   ma la colonna è `date_from/date_to` → gli override morbidi **non scattano mai**. Fix in S0 (D8); il fix
+   deve anche gestire N righe sovrapposte + "vince il più specifico" (vedi D8), non solo rinominare la colonna.
 2. **Riapertura aree blindate:** la config durata tocca **M4 Settings** e, se la durata sta sulle card,
    **M3 Menu** → controtest regressione `settings-*` / `menu-magazzino`.
 3. **~~Conflitto mono-card ⟷ compose~~ — RISOLTO/non esiste:** card già single-select; compose dentro la
@@ -263,6 +309,11 @@ degrado D42).
   Espone solo: form pubblico, calendario, gestione richieste, capienza per fascia, **durata media unica**,
   intervalli arrivo semplici, dati cliente, email conferma, QR add-on. **L2-lite invisibile**: il motore
   c'è ma poche decisioni, niente gergo, dietro **preset/default**.
+  > **Definizione operativa di L2-lite (cosa è ACCESO in Classic):** durata media **unica** del ristorante +
+  > step di arrivo **unico** + cut-off + capienza per fascia. **Spento in Classic** (vive nel motore ma non
+  > in UI Classic): durata per singola card/tipologia, step diversi pranzo/cena/eventi, suggerimento prossimo
+  > orario libero, gestione arrivi tardivi, diagnostica avanzata, buffer/cap operativo. Questo è il confine
+  > che rende Pro un upgrade reale (§ Matrice edition).
 - **Pro = "la vista operativa per chi deve governare la sala durante il turno".** La leva di upgrade a
   69€ **NON è il conto leggero** ma: *vedi la sala del turno — tavoli liberi, arrivi, ritardi e
   prenotazioni assegnate in un'unica vista*. Durata per tipologia/card, tavoli/sale, disponibilità reale
@@ -278,6 +329,11 @@ degrado D42).
   `table_session` separata dal tavolo; righe conto append-only; resolver disponibilità server-side
   riusato da tutti i flussi; onboarding state-machine; `tenant_id` + RLS su ogni tabella nuova; non
   assumere "1 account = 1 locale" (futuro `organization` sopra i tenant).
+  > **Proprietario per sotto-area (così le "porte" non restano orfane):** `source/channel` +
+  > `external_reservation_id` e stato `waitlisted` → si predispongono in **S3** (toccano già
+  > `booking_requests`); `table_session` separata dal tavolo + righe conto append-only → **S4-LIVE** (D26/D39);
+  > `booking_payments` → **solo schema**, nessuna UI, fuori MVP (riaprirà con Stripe, FU dedicato); resolver
+  > disponibilità server-side → nasce in **S0/D8** e cresce in S2/S3.
 
 ---
 
@@ -300,7 +356,10 @@ ad-hoc compila *funziona / riscrivere / può rompersi*.
 - **Da costruire (solo):** `default_duration` per i pochi tipi fissi (D11) + `duration` opzionale sulla
   card (override). UI campo durata in Personalizza Form, picker 90/120/150/180+altro con min/max (D13).
   Default libero. Nessun selettore tipologia pubblico (D12).
-- **[Q7]** se la durata-override si attacca a `SubTab` o `CustomStaffPreset` = decidere alla mappatura S1.
+- **[Q7] RISOLTO (Matteo 22-06-26) → Opzione A:** la durata vive sulla **card** (`SubTab`), con **eredità**
+  dal preset linkato (`CustomStaffPreset`) se la card non ha durata propria; poi tipologia; poi default.
+  Coerente con D12/D35 ("il cliente sceglie la card, la card comanda"). Le card senza preset possono comunque
+  avere una durata.
 - **Può rompersi:** riapre M4 e tocca `CustomStaffPreset`/`SubTab` → controtest `settings-*` (+ menu se la
   durata sta sulle card).
 
@@ -345,7 +404,11 @@ ad-hoc compila *funziona / riscrivere / può rompersi*.
 - **⚠️ Confine:** "conto leggero" interno, NON POS.
 - **Può rompersi:** `useTableStatuses` mancante, walk-in placement vs id, guard `features.tableAssignments`;
   asse SÌ: sicurezza ordini pubblici (mitigazione = approvazione cassa), tavolo sbagliato, merge clienti.
-- **FU annotato:** permessi staff (`FU-SERV-PERMESSI-1`) prima di aprire la console a più operatori.
+- **Accesso Live (MVP — Matteo 22-06-26):** la Live ha un **accesso dedicato distinto dall'admin owner**
+  (PIN per-locale o ruolo "staff" via Supabase Auth, PIN salvato hashed — mai in chiaro nel browser): apre
+  **solo** la Live, così non si consegnano le credenziali del titolare ai camerieri. L'audit è già garantito
+  dallo snapshot riga (autore + ora, D27). La **matrice ruoli completa** (owner / responsabile sala /
+  cameriere-solo-righe-proprie) è rimandata a `FU-SERV-PERMESSI-1`.
 
 ### S6 — Ordine-da-QR cliente *(Pro — riapre Menu QR, successiva — D5)*
 - **Da costruire:** identità tavolo via numero digitato (indizio) + conferma/correzione staff (D6); azione
@@ -469,7 +532,9 @@ Verso il **cliente**: niente gergo, frasi calde di conferma (D34), mai "permanen
   e spostarle in un pannello super-admin → abilita il self-service futuro (Fase 3 Stripe).
 - **FU-SERV-PERMESSI-1 — Ruoli/permessi staff per Live + conto** (parere §5.11). owner/admin (tutto),
   responsabile sala, cameriere (righe proprie entro pochi minuti); CRM/marketing fuori dalla Live. Non
-  MVP, ma da progettare prima di aprire la console a più operatori.
+  MVP, ma da progettare prima di aprire la console a più operatori. **MVP già deciso (22-06-26):** accesso
+  Live dedicato (PIN/ruolo staff) distinto dall'admin owner — vedi S4-LIVE; questa FU resta la **matrice
+  ruoli fine**, non l'accesso sì/no.
 
 ---
 
