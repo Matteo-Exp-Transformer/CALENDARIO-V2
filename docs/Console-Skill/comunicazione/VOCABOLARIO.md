@@ -22,7 +22,6 @@
 | **fai report finale** | Report completo **+ commit** sul branch (mai push/merge senza ok). | 2 |
 | **dammi follow up** | Solo il prompt per la prossima chat. | 1 |
 | **🆕 plan per matteo** | Genera un file `plan-per-matteo/PLAN-DB-…` con la modifica DB/schema proposta. **NON** esegue scritture di schema. | 1 |
-| **🆕 allinea console** | Passa in rassegna `docs/Console-Skill/`: rendi i puntatori coerenti con la **struttura reale** (file che esistono davvero), elimina doppioni/file-fantasma, tieni la doc snella. Se l'ambito è ampio, una domanda breve prima. | 2 |
 
 ---
 

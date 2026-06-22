@@ -131,6 +131,14 @@ Vale per **tutti** gli agenti che generano comandi dal vocabolario (per primo l'
 - **Approvata il:** 31-05-26
 - **Origine:** sessione test skill system 31-05-26 (Matteo: «se leggi evolvi ma non senior, chiedi per sicurezza»)
 
+### «allinea console» · «passa la documentazione al branch console» — Liv. 2
+- **Intende:** portare al branch di sviluppo console (`feature/console-super-admin`) la documentazione/lavoro che Matteo ha preparato su `env/test` (o `main`), così il team (Cristiano) la riceve e lavora **allineato allo stato reale dei lavori di Matteo**. NON è una passata di coerenza interna ai `.md` (quella è lavoro normale di doc).
+- **Comportamento agente:** porta i commit pertinenti da `env/test` sul branch `feature/console-super-admin` (merge di `env/test`, o cherry-pick dei soli commit doc) **e pusha sul branch console**. Prima verifica che il merge sia **pulito**; se il team ha lavoro divergente che genera conflitti, **fermati e chiedi** cosa propagare — il team non deve perdere il proprio lavoro già pushato. Coerente con il modello: il team **riceve** da Matteo, non viceversa.
+- **Livello:** 2 (cautela) — tocca un branch **condiviso** del team con un push; se lo scope (quali commit) è ambiguo, una domanda breve prima
+- **Dati Liv.2:**
+- **Approvata il:** 23-06-26
+- **Origine:** sessione pulizia worktree + sistema collaborazione console 23-06-26 (Matteo: «allinea console = passare documentazione di lavoro al branch di sviluppo console»)
+
 ---
 
 ## Stile di comunicazione
