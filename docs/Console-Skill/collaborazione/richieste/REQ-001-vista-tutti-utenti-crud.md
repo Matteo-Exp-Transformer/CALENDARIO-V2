@@ -38,26 +38,36 @@
 
 ---
 
-## ⚠️ Note architetturali / da decidere (per il Team — NON saltare)
+## ✅ Decisioni prese — istruzioni operative
 
-> Questa richiesta **supera il modello di sicurezza attuale** (oggi le scritture passano dall'Edge
-> `console-admin` e sono ristrette ai 2 tenant **sandbox** `console-classic`/`console-pro`). Creare/
-> modificare/eliminare **utenti e associazioni reali** richiede decisioni prima di sviluppare:
->
-> 1. **Sorgente "utenti"**: la lista è da `admin_users` (admin per tenant) o da Supabase **Auth users**,
->    o entrambi uniti? Definire il modello prima della UI.
-> 2. **Scritture privilegiate**: servono **nuove azioni** nell'Edge `console-admin` (es. `create_user`,
->    `update_user`, `delete_user`) con service role lato server. Il browser non scrive direttamente.
-> 3. **Guard sandbox**: il guard attuale blocca tutto fuori dai 2 sandbox. Per agire su utenti/aziende
->    reali serve **estendere o sostituire** il guard con un controllo diverso (es. solo super-admin in
->    `console_allowed_emails`, con conferme esplicite per le azioni distruttive). **Da concordare con
->    Matteo prima di rimuovere il guard** (è la protezione principale).
-> 4. **Eliminazioni**: definire cosa significa "elimina utente" (soft-delete? cascata su dati?). Le
->    azioni distruttive vanno con doppia conferma.
-> 5. **Schema/RLS**: ogni nuova policy o colonna → *plan per matteo*, non SQL diretto dall'agente.
+> Risolte con Matteo il 2026-06-22 (DEC-037..042). **Il Team può procedere** senza riaprire queste scelte.
 
-> Suggerimento: prima di sviluppare, proponi a Matteo un mini-piano (modello dati + azioni Edge + guard)
-> e apri i `plan-per-matteo` necessari. Registra le decisioni come `DEC-NNN`.
+**Chi è un "utente" (DEC-039):** l'**admin di un ristorante** — un'email collegata a un'azienda
+(`organizations`) con il suo ruolo. Sorgente: `admin_users` + Supabase Auth. La lista mostra tutti gli
+admin con: email, azienda/tenant associato, ruolo, stato. (NON i clienti finali.)
+
+**CRUD richiesto:**
+- **Modifica**: email, azienda associata, ruolo/dati dell'admin.
+- **Crea (DEC-041):** email + **password impostata da Matteo** (stesso modello del login console);
+  l'admin entra subito. La creazione può avvenire insieme all'azienda in un unico passaggio (REQ-003).
+- **Elimina (DEC-038):** **cancellazione definitiva (hard-delete)**, protetta: prima di cancellare
+  Matteo deve **riscrivere l'email/nome esatto** + avviso chiaro che l'azione è **irreversibile**.
+
+**Ambito (DEC-037):** le azioni valgono su **tutte le aziende/utenti** del progetto **TEST**
+(`docnnernvp`), non solo i sandbox. ⚠️ Questo **revoca RULE-2** (sandbox-only) per la gestione console.
+**Resta attiva RULE-1**: solo TEST `docnnernvp`, **mai** PROD `rwuxgvld` (`get_project_url` prima di scrivere).
+
+**Rete di sicurezza (sostituisce il guard sandbox):**
+1. Gate **allowlist** — solo email in `console_allowed_emails` / secret `CONSOLE_ALLOWED_EMAILS` (già attivo).
+2. Scritture **solo via Edge `console-admin`** con service role (mai dal browser).
+3. Azioni distruttive → conferma "**riscrivi il nome**" + avviso irreversibilità (DEC-038).
+
+**Implementazione lato Edge:** nuove azioni `create_admin_user`, `update_admin_user`, `delete_admin_user`;
+**estendere/rimuovere** `SANDBOX_TENANT_IDS` mantenendo il gate allowlist (DEC-037); utenti Auth via
+`supabase.auth.admin.*` (service role). Schema/colonne nuove → *plan per matteo* (mai SQL diretto).
+
+**Ordine (DEC-042):** prima la **lista in lettura** (questa REQ) + scheda (REQ-002); poi la parte
+**scrittura** (crea/modifica/elimina) insieme a REQ-003.
 
 ---
 
