@@ -394,8 +394,8 @@ Deno.serve(async (req: Request) => {
         if (!email || typeof email !== 'string' || !email.includes('@')) {
           return jsonResponse({ error: '"email" non valida.' }, 400, corsHeaders)
         }
-        if (!password || typeof password !== 'string' || password.length < 6) {
-          return jsonResponse({ error: '"password" richiesta (min 6 caratteri).' }, 400, corsHeaders)
+        if (!password || typeof password !== 'string' || password.length < 8) {
+          return jsonResponse({ error: '"password" richiesta (min 8 caratteri).' }, 400, corsHeaders)
         }
         if (!tenant_id || typeof tenant_id !== 'string') {
           return jsonResponse({ error: '"tenant_id" mancante o non valido.' }, 400, corsHeaders)
@@ -746,9 +746,9 @@ Deno.serve(async (req: Request) => {
             await adminClient.from('organizations').delete().eq('id', newTenantId)
             return jsonResponse({ error: 'Email admin non valida.' }, 400, corsHeaders)
           }
-          if (!adminPassword || adminPassword.length < 6) {
+          if (!adminPassword || adminPassword.length < 8) {
             await adminClient.from('organizations').delete().eq('id', newTenantId)
-            return jsonResponse({ error: 'Password admin richiesta (min 6 caratteri).' }, 400, corsHeaders)
+            return jsonResponse({ error: 'Password admin richiesta (min 8 caratteri).' }, 400, corsHeaders)
           }
 
           const { data: authData, error: authErr } = await adminClient.auth.admin.createUser({
