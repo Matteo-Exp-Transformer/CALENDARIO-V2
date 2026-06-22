@@ -1,118 +1,128 @@
-# CLAUDE.md — Guida sessioni AI · branch `feature/console-super-admin` (Console super-admin)
+# CLAUDE.md — Guida per sessioni AI
 
-> ⚠️ **Questo è il file master del branch Console**, personalizzato per il lavoro di **Cristiano**
-> (sviluppatore della Console privata di Matteo). Su questo branch **sostituisce** le regole operative
-> di Matteo. Lo skill system di Matteo (le skill in `docs/` diverse da `docs/Console-Skill/`) resta
-> **intatto** e si usa **solo come riferimento in sola lettura** per capire l'app esistente.
+Questo file orienta le sessioni Claude Code su questo progetto. È il **gemello** di `AGENTS.md`
+(Codex e simili) e di `.cursor/rules/comandi-base.mdc` (Cursor): tutti e tre puntano alla **stessa
+fonte di verità** per comportamento e routing.
+
+## Prima di toccare il codice — instradati all'area giusta
+
+Il progetto è organizzato in **aree** (Pagina Prenota, Menu QR, Admin shell, Database…), ognuna con
+una **skill d'area**. **Non navigare il codice a tappeto:** apri prima il routing.
+
+1. Apri `docs/APP_CONTEXT_SKILL.md` **§0** — tabella «il task riguarda X → carica skill Y». Carica la
+   skill d'area **prima** di aprire i file da modificare.
+2. Aree già mappate: Pagina Prenota → `docs/Prenota-Skill/PRENOTA_SKILL.md`; Menu QR →
+   `docs/Menu-QR-Skill/MENU_QR_SKILL.md`; le altre nella §0.
+3. Leggi la skill d'area **intera**, poi apri **solo** il file di `contesto/` che ti serve.
+
+> I valori (limiti, soglie) vivono nel **codice**; i file `.md` li specchiano. Dopo un edit aggiorna
+> il file di contesto mappato dalla skill d'area, non copie sparse.
+
+## Comandi e vocabolario di Matteo (leggi a inizio sessione)
+
+> Fonte di verità unica dei comportamenti: **`docs/Comunicazione-Skill/VOCABOLARIO.md`**. Caricalo a
+> inizio sessione e applica la voce quando Matteo usa una parola mappata.
 >
-> Obiettivo del branch: costruire la **Console super-admin** (FU-SERV-ADMIN-PANEL-1) — app web
-> separata e responsive, solo per Matteo, che legge/scrive lo stesso DB Supabase **TEST** per
-> configurare i ristoranti (tenant). Contesto prodotto: `docs/Servizio-Config/`.
+> **Puntatori estesi (non duplicare qui):** fine-chat e allineamento skill →
+> `docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md`; modalità «prepara» →
+> `docs/PREPARA_PROMPT_SKILL.md`; ambiguità Prenota ↔ Menu QR e tre zone «menu» →
+> `.cursor/rules/comandi-base.mdc` § «Zone che si confondono» + VOCABOLARIO «Scorciatoie d'area».
 
-## Prima di toccare il codice — carica la bussola Console
+**Livelli di libertà** di ogni voce (quanto sei libero di agire):
+- **Liv. 1** → applica subito, niente domande.
+- **Liv. 2** → applica, ma se il contesto è ambiguo fai **una** domanda breve prima.
+- **Liv. 3** → chiedi sempre conferma, salvo match identico a un caso già registrato come ok.
 
-1. Apri **`docs/Console-Skill/00_BUSSOLA_CONSOLE.md`** — è la Skill 0 del nostro lavoro: routing,
-   profili, regole operative del branch, LOCK. Caricala **prima** di aprire qualsiasi file.
-2. Da lì instradati al file di `docs/Console-Skill/context/` pertinente (modello dati / architettura).
-3. Le skill d'area di Matteo (`docs/Prenota-Skill/`, `docs/Menu-QR-Skill/`, `docs/Admin-Skill/`,
-   `docs/Database-Skill/`, `docs/Marketing-Skill/`…) servono **solo a capire** come funziona l'app:
-   leggile, **non** modificarle e **non** modificare `src/` o `supabase/` dell'app di Matteo.
+**Grilletti principali** (dettaglio completo in `.cursor/rules/comandi-base.mdc` + VOCABOLARIO):
+- **«prepara» / «prepara prompt»** → NON eseguire codice; modalità filtro, consegna solo il prompt.
+- **«implementa» / «fai» / «sistema» / «aggiungi» / «crea»** → profilo Esecuzione (carica skill area, `APP_CONTEXT_SKILL.md` §0).
+- **«revisiona» / «verifica» / «debugga» / «non funziona»** → profilo Verifica (Testing-Skill + skill area).
+- **«migliora/analizza/revisiona comunicazione»** → Meta revisore. **«evolvi … senior»** → Meta senior.
+- **«lavoro ok»** → scrivi/aggiorna il report COMPLETO (no commit). **«fai report finale»** → commit + push.
+- **«dammi follow up»** → solo il prompt per la prossima chat. **«spiegamelo semplice»** → effetto concreto, breve.
+- **«ragioniamo»** → fermati a ragionare: spiegazione + effetto per te + tabellina + checklist (vedi voce nel VOCABOLARIO).
 
-> I valori reali (limiti, edition, feature) vivono nel **codice/DB**; i `.md` li specchiano. Se un
-> documento `docs/Servizio-Config/` diverge dal DB, **vince il DB** (es. il tenant è `organizations`,
-> non `tenants`).
-
-## Le 4 regole d'oro del branch (sempre attive)
-
-1. **Solo TEST.** Si lavora solo su Supabase TEST `docnnernvp`. Prima di **ogni** scrittura DB:
-   `get_project_url` deve dare `docnnernvp`. Se `rwuxgvld` (PROD) → **FERMATI**.
-2. **Scrivo solo nei sandbox.** Le scritture di **dati** sono permesse **solo** sui due tenant
-   sandbox del branch (`console-classic`, `console-pro`). Ogni altro tenant = **sola lettura**.
-3. **Schema → plan per Matteo.** Modifiche di schema/DDL/RLS/migrazioni: **mai** eseguite
-   dall'agente. Si genera un file in `docs/Console-Skill/plan-per-matteo/` e lo esegue Matteo.
-4. **Codice solo in `console/`.** Il codice della Console vive nella sottocartella isolata
-   `console/`. Non si tocca `src/` né `supabase/`. La Console **non importa** da `../src` (client e
-   chiavi Supabase diversi): ricrea i concetti. La chiave privilegiata (service role) **mai nel
-   browser** → scritture potenti via Edge/serverless.
-
-## Comandi e vocabolario (leggi a inizio sessione)
-
-> Fonte di verità dei comportamenti: **`docs/Console-Skill/comunicazione/VOCABOLARIO.md`**.
-> Applica la voce quando Cristiano usa una parola mappata.
-
-**Livelli di libertà:** Liv. 1 = applica subito · Liv. 2 = applica, ma se ambiguo **una** domanda
-breve prima · Liv. 3 = chiedi sempre conferma salvo match identico già registrato come ok.
-
-**Grilletti principali** (riuso dal sistema di Matteo + uno nuovo):
-- **«prepara» / «prepara prompt»** → NON eseguire codice; consegna solo il prompt pronto.
-- **«implementa» / «fai» / «aggiungi» / «crea»** → profilo Esecuzione (carica la bussola Console).
-- **«revisiona» / «verifica» / «debugga» / «non funziona»** → profilo Verifica (test + context).
-- **«lavoro ok»** → scrivi/aggiorna il report (no commit). **«fai report finale»** → report + commit.
-- **«dammi follow up»** → solo il prompt per la prossima chat. **«spiegamelo semplice»** → breve.
-- **«ragioniamo»** → fermati: spiegazione + effetto per te + tabellina + checklist.
-- **🆕 «plan per matteo»** → genera il file `plan-per-matteo/PLAN-DB-…` con la modifica DB proposta;
-  **NON** esegue scritture di schema.
-
-**Salvaguardie sempre attive:** stile **didattico** (breve, ma per ogni scelta tecnica aggiungi
-«cosa cambia per te» in lingua semplice — vedi `docs/Console-Skill/comunicazione/COMUNICAZIONE_SKILL.md`);
-le **4 regole d'oro** qui sopra; **comando non riconosciuto → non dedurre, chiedi prima**.
+**Salvaguardie sempre attive:** stile con Matteo (parla per schermate/flussi concreti, non nomi-file
+isolati; breve di default); **sicurezza PROD** (prima di INSERT/UPDATE/DELETE/migrazioni via MCP
+verifica l'ambiente con `get_project_url` — se è PROD `rwuxgvld` FERMATI e chiedi conferma; su TEST
+`docnnernvp` procedi. Se il canale è CLI su TEST, usa la checklist di `docs/APP_CONTEXT_SKILL.md`
+§1b: project ref/host/org devono essere `docnnernvp`, mai usare CLI per scrivere PROD);
+**comando non riconosciuto → non dedurre, chiedi prima** (mai inventare voci di vocabolario).
 
 ## Dettaglio operativo
 
-### Comandi principali (app di riferimento, root del repo)
+Convenzioni, comandi, file critici e zone delicate — qui per Claude Code e per gli agenti che leggono
+`AGENTS.md` (che rimanda a questo blocco).
+
+### Comandi principali
 
 ```bash
-npm run dev                  # dev server app Matteo su :5173 (riferimento)
+npm run dev                  # dev server su :5173
 npm run build                # TypeScript check + Vite build
 npm run lint                 # ESLint, zero warning tollerati
+npm run lint:fix             # Fix automatico ESLint
 npm run typecheck            # tsc --noEmit
-npm run test                 # Vitest (run mode) — deve essere verde
+npm run test                 # npm run test deve essere verde (run mode)
+npm run test:watch           # Vitest in watch mode
+npm run test:e2e             # Playwright e2e (richiede staging Supabase)
 npm run validate             # lint + typecheck + test (pre-PR)
 npm run db:types:linked      # Rigenera src/types/database.ts dal DB remoto
 ```
 
-> Quando esisterà la sottocartella `console/`, avrà i **suoi** comandi (suo `package.json`) ed è
-> **esclusa** dalla pipeline root. Dettagli in `docs/Console-Skill/context/CONSOLE_APP_CONTEXT.md`.
-> Setup test del progetto: `docs/Testing-Skill/TESTING_SKILL.md`.
+Setup test, config Vitest/Playwright, CI e staging: **`docs/Testing-Skill/TESTING_SKILL.md`**.
 
 ### Convenzioni
 
-- **Conventional Commits**: `feat(scope):`, `fix(scope):`, `docs(scope):` ecc.
-- **Git su questo branch:** commit liberi sul branch; **mai** push/merge su altri branch o su
-  env/test **senza ok esplicito** di Cristiano.
-- **Import alias**: `@/` → `src/` nell'app di Matteo. La Console userà i propri alias.
-- **Logger**: usa il logger del progetto, **non** `console.log` in codice di produzione.
-- **Due client Supabase** nell'app: `supabasePublic` (anonimo) vs `supabase` (admin) — non mischiare.
-- **Commenti**: spiegano il PERCHÉ, non il COSA.
+- **Conventional Commits**: `feat(scope):`, `fix(scope):`, `update(scope):` ecc.
+- **Import alias**: `@/` → `src/` (`vite.config.ts`, `tsconfig.json`)
+- **Logger**: `src/lib/logger.ts` — `logger.debug/info/warn/error`, non `console.log`
+- **Due client Supabase**: `supabasePublic` (anonimo) vs `supabase` (admin autenticato) — non mischiare
+- **TanStack Query**: query server-state negli hook in `src/features/booking/hooks/`
+- **Commenti**: spiegano il PERCHÉ, non il COSA
 
-### Modello dati che la Console legge/scrive (sintesi — dettaglio nel context)
+### Struttura progetto
 
-- Tenant = tabella **`organizations`** (`id, slug, name, edition` ∈ {classic, pro, enterprise},
-  `is_active`, …). NON esiste `tenants`.
-- Edition + feature flag via `organizations.edition` + override **`tenant_features`** combinati da
-  `buildFeatures()` in `src/config/features.ts`. **`organizations.qr_menu_enabled` è legacy**: per gli
-  add-on (incl. Menu QR) la fonte di verità è `tenant_features`.
-- Impostazioni ristorante in **`restaurant_settings`** (specchio di
-  `src/features/booking/lib/restaurantSettingRegistry.ts`).
-- Dettaglio completo: `docs/Console-Skill/context/CONSOLE_DATA_MODEL_CONTEXT.md`.
+- **Cartelle `src/`** (dettaglio vivo): `docs/APP_CONTEXT_SKILL.md` **§3**
+- **Skill system `docs/`**: stesso file, §3 «Struttura docs/»
+- **Schema DB / migrazioni / RLS**: `docs/Database-Skill/DB_SKILL.md` + `docs/DATABASE.md`
 
-### File di riferimento dell'app (sola lettura — non modificare)
+### File critici (entry point)
 
-| File | Perché ci serve |
-|------|-----------------|
-| `src/config/features.ts` | `buildFeatures()`: edition + override `tenant_features` |
-| `src/features/booking/lib/restaurantSettingRegistry.ts` | registro delle impostazioni configurabili |
-| `src/contexts/TenantContext.tsx` | come l'app risolve il tenant (slug / email) e l'edition |
-| `src/types/database.ts` | tipi DB (schema reale) |
+| File | Perché |
+|------|--------|
+| `src/router.tsx` | Tutte le route |
+| `src/contexts/TenantContext.tsx` | Multi-tenancy: `tenantId` da slug o email admin |
+| `src/lib/supabase.ts` / `supabasePublic.ts` | Client admin (sessione) vs anonimo (form pubblici) |
+| `src/features/booking/hooks/useAdminAuth.ts` | Login, session, subscription |
+| `src/types/database.ts` | Tipi DB — rigenera con `npm run db:types:linked` |
+| `supabase/migrations/` | Schema — migrazioni già applicate NON si toccano |
+| `supabase/functions/create-booking/` | Edge Function prenotazioni pubbliche |
 
-### Sicurezza ambienti DB
+Mappa estesa invarianti globali: **`docs/APP_CONTEXT_SKILL.md` §4**.
 
-Prima di ogni INSERT/UPDATE/DELETE via MCP: `get_project_url` → `docnnernvp` = TEST ok;
-`rwuxgvld` = PROD → **stop**. `apply_migration`/DDL → **mai** dall'agente: vanno in un *plan per
-Matteo*. `supabase db push` e CLI di scrittura su PROD: **vietati**. I MCP non leggono `.env.local`.
+### Zone delicate
 
----
+- **`TenantContext`**: slug URL (pubblico) o email admin → qualsiasi hook dati tenant dipende da qui.
+- **Due client Supabase**: admin persiste sessione in localStorage; pubblico no — non mischiare.
+- **Migrazioni `003_*` doppie**: già applicate; non rinominare — `docs/DATABASE.md` + `DB_SKILL.md` §3.
+- **`send-email` attiva in PROD** (dal 15-06; aggiornata 19-06): Edge Function `send-email` deployata su `rwuxgvld` (**v6**) con secret Brevo (`BREVO_API_KEY`/`BREVO_SENDER_EMAIL`); accetta/rifiuta inviati e ricevuti. Tabelle `email_templates`/`email_campaigns` presenti anche in PROD (mig. 050/051/052). Dal 19-06 PROD ha anche mig. 055 `unsubscribe_tokens` + Edge pubblica `unsubscribe` v1: le email marketing sostituiscono server-side `{{UNSUBSCRIBE_URL}}`, fallendo se il link non è generabile. Resta `VITE_ENABLE_SEND_EMAIL` come gate client; invio campagne automatico = FU-EMAIL-8 (non attivo).
+- **Button**: varianti in componente (`primary`, `secondary`, …); **non** aggiungere CSS globale in `index.css`. Tailwind JIT richiede classi letterali statiche.
 
-> **Skill system del branch:** `docs/Console-Skill/` (bussola, context, comunicazione, sessioni,
-> plan-per-matteo). Template di origine: `_skill-system-v0/`. Contesto prodotto Console:
-> `docs/Servizio-Config/`.
+### Ambienti DB
+
+**Fonte di verità:** `docs/APP_CONTEXT_SKILL.md` **§1b** + `docs/Database-Skill/DB_SKILL.md`.
+
+Prima di ogni INSERT/UPDATE/DELETE/migrazione via MCP: `get_project_url` → `docnnernvp` = TEST ok;
+`rwuxgvld` = PROD → chiedi conferma esplicita. I MCP non leggono `.env.local`.
+Per operazioni CLI su TEST seguire la checklist di `APP_CONTEXT_SKILL.md` §1b; la CLI non va usata
+per scrivere PROD. `supabase db push` resta vietato.
+
+### Variabili d'ambiente
+
+Vedi `.env.example`. Prefisso `VITE_` = esposte al browser; senza prefisso = solo script Node locali.
+
+### Dev console (solo `npm run dev`)
+
+Strumento dev dietro `import.meta.env.DEV` — inerte in produzione. Dettaglio implementativo:
+`src/lib/devConsole.ts`, pannello `src/components/dev/DevFlowPanel.tsx`, nomi query
+`src/lib/devQueryNames.ts`. Tono messaggi: allineato a `docs/COMUNICAZIONE_UTENTE_SKILL.md`.
