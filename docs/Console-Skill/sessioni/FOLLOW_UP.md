@@ -14,6 +14,7 @@
 | FU-CONSOLE-8 | `prevValueRef` in `IntEditor` (`RestaurantSettingsPanel.tsx`) usa `useState` con nome da `useRef` — fuorviante | Solo leggibilità; funziona. Cleanup con `/simplify` in sessione futura |
 | FU-CONSOLE-9 | Chiavi impostazioni **avanzate** non esposte in F7 (`business_hours`, `slot_guest_capacities`, enum sfondo/tema, preset/promo…) | Eventuale **F8**: richiedono editor dedicati e/o ricreare valori enum dell'app |
 | FU-CONSOLE-10 | **Formalizzare in migrazioni versionate** le modifiche SQL fatte in diretta su TEST (tabella `console_allowed_emails`, funzione `is_console_user()`, 3 policy SELECT) | DEC-034. Oggi vivono solo nel DB TEST, non in `supabase/migrations/`. Da fare prima di qualsiasi uso fuori da TEST. Vedi `collaborazione/STATO_AMBIENTE_TEST.md` |
+| FU-CONSOLE-11 | **Console: comandi per modificare anche i parametri della pagina Prenota** (Personalizza Form: tipologie/durate, campi, testi, card…) oltre a quelli di Servizio | Richiesto da Matteo 22-06-26 durante la validazione del Masterplan Servizio. Si lega a `FU-SERV-ADMIN-PANEL-1` (classificazione manopole onboarding/preset/console) e alla sotto-area **S6** del Masterplan Servizio. Obiettivo: che dalla console privata si possano cambiare i parametri-chiave di Prenota senza entrare nell'admin del tenant. Da progettare con la sessione manopole. |
 
 ## Domande a Matteo — ✅ TUTTE RISOLTE (2026-06-22, consenso pieno)
 
