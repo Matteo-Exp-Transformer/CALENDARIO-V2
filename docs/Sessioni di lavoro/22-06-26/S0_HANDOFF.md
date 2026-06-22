@@ -75,11 +75,39 @@
 
 ---
 
-## FASE 4 — Intervista + mappa "as-is" Servizio [SONNET] — ⬜ DA FARE
+## FASE 4 — Intervista + mappa "as-is" Servizio [SONNET] — ✅ FATTO
+
+- Output: `docs/Sessioni di lavoro/22-06-26/SERVIZIO_BASELINE_MAP.md` (11 componenti + 7 hook;
+  lista A codice morto, lista B fondamenta S1-S4, lista C 8 domande).
+- **Intervista (lista C)** condotta dall'orchestratore sui punti che decidono la demolizione:
+  - A3 `useReleaseBookingAssignment` → VIVO (usato da `QuickTableAssignModal`), non toccare.
+  - A4 `businessHoursRaw` → VIVO (`AdminHomePage.tsx:214`), non toccare.
+  - A7 re-export `slotCrossesMidnight` → MORTO confermato (nessun import via `useServiceSlots.ts:11`).
+  - A1 `rotation` → RIMUOVERE dal tipo a mano (Matteo: "non mi serve"); DB/`database.ts` restano.
+  - A6 `display_order` sale → TENERE (Matteo: "numero a mano va bene").
+- 6 domande di design rimaste (C1/C3/C4/C5/C7/C8) = materiale S4, non bloccano S0.
 
 ---
 
-## FASE 5 — Demolizione codice morto [HAIKU/SONNET] — ⬜ DA FARE
+## FASE 5 — Demolizione codice morto [HAIKU] — ✅ FATTO
+
+Scope chirurgico (2 edit), validate verde, nessun PROD:
+1. `useServiceSlots.ts` — rimosso `export { slotCrossesMidnight }` (+ import orfano).
+2. `useServizioTables.ts` — rimosso `rotation` da `RestaurantTable` e `TableInput`.
+
+### Nota esecutore
+- Diff = esattamente i 2 edit prescritti, nessuno scope creep.
+- `npm run validate` → **✅ 122 file, 970 test passati** (lint + typecheck inclusi).
+- Revisione (Fase 6) fatta inline dall'orchestratore: rimozioni a rischio nullo, typecheck conferma
+  nessun caller rotto. Approvato.
+
+---
+
+## AZIONE 2 — Commit + doc [OPUS-orchestratore] — ✅ FATTO (Fase 7)
+
+- Commit `31cf53b` (intermedio): mappa AS-IS + 2 handoff.
+- Commit finale: 2 edit `src/` + §8 `ADMIN_SERVIZIO_CONTEXT.md` + stato S0 nel masterplan + handoff.
+- **S0 COMPLETA.** S1+ è altra sotto-area, fuori scope.
 
 ---
 

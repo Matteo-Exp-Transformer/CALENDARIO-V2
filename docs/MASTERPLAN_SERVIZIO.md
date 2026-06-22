@@ -342,7 +342,11 @@ degrado D42).
 Ogni sotto-area segue il ciclo **(1) intervista → (2) mappa → (3) test → (4) blindatura** e nel plan
 ad-hoc compila *funziona / riscrivere / può rompersi*.
 
-### S0 — Fondamenta: fix Edge + blindatura ATTIVA "as-is" *(Pro + 1 fix Classic)*
+### S0 — Fondamenta: fix Edge + blindatura ATTIVA "as-is" *(Pro + 1 fix Classic)* — ✅ COMPLETA (22-06-26)
+> **Azione 1 ✅** Edge `create-booking` v21 in PROD (override `date_from/date_to` + `resolveOverrideMaxGuests`).
+> **Azione 2 ✅** mappa AS-IS (`docs/Sessioni di lavoro/22-06-26/SERVIZIO_BASELINE_MAP.md`), intervista
+> (rimosso `rotation` + re-export `slotCrossesMidnight`; tenuti `display_order` sale, `useReleaseBookingAssignment`,
+> `businessHoursRaw`), validate verde. Handoff orchestratore: stessa cartella, `S0_ORCHESTRATOR_HANDOFF.md`.
 - **Scopo:** ratificare il riusabile e **buttare i rottami / porre basi solide mentre si mappa** (D9).
 - **Azione 1 (subito, isolata — D8):** fix bug Edge `override_date`→`date_from/date_to` come mini-PR,
   deploy PROD controllato; riproduzione su TEST prima/dopo.
