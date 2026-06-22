@@ -7,7 +7,8 @@
 | FU-CONSOLE-1 | Correggere `tenants` → `organizations` nei doc `docs/Servizio-Config/` (BENVENUTO, INVENTARIO) | Disallineamento col DB reale; vince il DB |
 | FU-CONSOLE-2 | Allineare i twin `AGENTS.md` / `.cursor/rules/comandi-base.mdc` alle regole del branch (se servono su questo branch) | Non in scope nel setup iniziale |
 | FU-CONSOLE-3 | Scaffolding dell'app `console/` (Vite+React+TS+Supabase isolata) + esclusione dalla pipeline root | Sessione successiva |
-| FU-CONSOLE-4 | Decidere meccanismo Edge per scritture privilegiate della Console | Dipende dalle risposte di Matteo |
+| FU-CONSOLE-4 | Decidere meccanismo Edge per scritture privilegiate della Console | Risolto in F4 (DEC-010): Edge Function dedicata |
+| FU-CONSOLE-5 | Tenant **sospesi** (`is_active=false`) non visibili al client anon (policy `anon_select_active_organizations` filtra solo gli attivi) | Rivalutare in F3/F5: con auth super-admin la lettura potrebbe mostrare tutti i tenant (eventuale policy RLS via plan-per-matteo) |
 
 ## Domande a Matteo — ✅ TUTTE RISOLTE (2026-06-22, consenso pieno)
 

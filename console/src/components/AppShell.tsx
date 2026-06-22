@@ -1,5 +1,7 @@
-// App shell vuota — verrà popolata nelle fasi successive del masterplan.
-// F2: elenco tenant + cambio edition. F3: auth reale.
+// App shell con elenco ristoranti (F2).
+// F3: auth reale — per ora isAuthenticated è hardcoded true in App.tsx.
+import { RestaurantList } from './RestaurantList'
+
 export function AppShell() {
   return (
     <div style={{
@@ -18,14 +20,12 @@ export function AppShell() {
         gap: '0.75rem',
       }}>
         <span style={{ fontWeight: 700, fontSize: '1rem' }}>Console super-admin</span>
-        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>· F1 scaffold</span>
+        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>· F2 elenco ristoranti</span>
       </header>
 
-      {/* Main content area — placeholder */}
+      {/* Main content area */}
       <main style={{ padding: '2rem 1rem', maxWidth: '900px', margin: '0 auto' }}>
-        <p style={{ color: '#64748b', fontSize: '0.875rem' }}>
-          App shell. I pannelli di gestione tenant verranno aggiunti nelle fasi successive.
-        </p>
+        <RestaurantList />
       </main>
     </div>
   )

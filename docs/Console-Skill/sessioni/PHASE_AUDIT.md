@@ -10,7 +10,8 @@
 
 | Fase | Obiettivo | Esecutore | Revisore | Verdetto | Commit | DEC collegate |
 |------|-----------|-----------|----------|----------|--------|---------------|
-| F1 | Scaffolding `console/` isolata | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | _(vedi sotto)_ | DEC-001, DEC-014, DEC-016 |
+| F1 | Scaffolding `console/` isolata | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `c981fc0` | DEC-001, DEC-014, DEC-016 |
+| F2 | Elenco ristoranti (sola lettura) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | _(vedi git log)_ | DEC-017 |
 
 ---
 
@@ -36,9 +37,37 @@
 - Ri-lavorazioni: nessuna (verde al round 1).
 
 **Chiusura fase**
-- **Commit:** _(vedi git log — feat(console): scaffolding isolato console/ (F1, DEC-016))_
+- **Commit:** `c981fc0` — feat(console): scaffolding isolato console/ (F1, DEC-016)
 - Riga aggiunta a SESSION_LOG.md: sì
 - Follow-up aperti: scelta UI library/Tailwind (F2), deploy Vercel (DEC-012, futuro)
+
+---
+
+### Fase F2 — Elenco ristoranti (sola lettura)
+- **Obiettivo / effetto:** prima schermata reale: la Console legge `organizations` e mostra l'elenco dei ristoranti. Effetto: si vedono i tenant veri dal browser, in sola lettura.
+- **Modalità:** standard
+- **Dipendenze:** F1
+
+**Esecutore**
+- Prompt usato: `MASTERPLAN_CONSOLE.md` §F2 (prompt esecutore)
+- Sintesi: creata `RestaurantList.tsx` (legge `organizations`, stati loading/error/empty), helper `editionUtils.ts` locale (normalize/label/colori edition), integrata in `AppShell`. Creato `console/.env.local` (gitignored) con URL+anon key TEST recuperati via MCP CONSOLE.
+- File toccati: `console/src/components/RestaurantList.tsx` (nuovo), `console/src/lib/editionUtils.ts` (nuovo), `console/src/components/AppShell.tsx` (mod), `console/src/App.tsx` (mod), `console/.env.local` (non tracciato).
+- Decisioni autonome prese: DEC-017 (anon key legacy JWT; `isAuthenticated=true` transitorio per mostrare la shell in attesa di F3; griglia responsive senza media query).
+- Scritture DB: nessuna. `get_project_url` verificato = docnnernvp (TEST). Lettura via client pubblico (policy `anon_select_active_organizations`): 7 tenant attivi.
+- Plan per Matteo generati: nessuno.
+
+**Revisore (controverifica)**
+- Done-criteria verificati: name/slug/edition/is_active ✓ · sola lettura (grep insert/update/upsert/delete/rpc = 0) ✓ · responsive + stati loading/error/empty ✓ · helper edition ricreato, nessun import da `../src`/`@/` ✓ · nessuna service role nel browser, `.env.local` non tracciato ✓ · build reale 77 moduli + tsc 0 errori ✓
+- Regole d'oro rispettate: ✓ (nessuna modifica fuori da `console/`; `src/`/`supabase/` intatti; RLS non aggirata)
+- Test/lint/typecheck: `npm run typecheck` exit 0; `npm run build` ok.
+- Regressioni controllate: diff confinato a `console/src/`.
+- **Verdetto:** 🟢 VERDE
+- Ri-lavorazioni: nessuna (verde al round 1).
+
+**Chiusura fase**
+- **Commit:** _(vedi git log — feat(console): elenco ristoranti (F2, DEC-017))_
+- Riga aggiunta a SESSION_LOG.md: sì
+- Follow-up aperti: FU-CONSOLE-5 (tenant sospesi non visibili al client anon — rivalutare in F3/F5 con auth super-admin)
 
 ---
 

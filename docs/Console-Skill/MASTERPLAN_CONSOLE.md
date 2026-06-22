@@ -416,8 +416,8 @@ Esito: VERDE o ROSSO con correzioni puntuali. NON toccare il codice; NON committ
 | Fase | Esecutore | Revisore | Verdetto | Commit | Note |
 |------|-----------|----------|----------|--------|------|
 | F1 | ✅ | ✅ | 🟢 VERDE | sì | scaffolding isolato, build verde |
-| F2 | ⏳ | — | — | — | in avvio |
-| F3 | ⬜ | — | — | — | |
+| F2 | ✅ | ✅ | 🟢 VERDE | sì | elenco 7 tenant, sola lettura |
+| F3 | ⏳ | — | — | — | in avvio |
 | F4 | ⬜ | — | — | — | |
 | F5 | ⬜ | — | — | — | |
 | F6 | ⬜ | — | — | — | |

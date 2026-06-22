@@ -1,12 +1,12 @@
 import { AppShell } from './components/AppShell'
 import { LoginPlaceholder } from './components/LoginPlaceholder'
 
-// Placeholder di fase F1: auth reale verrà in F3.
-// Per ora mostriamo sempre la schermata di login-placeholder + shell vuota.
-// In F3 qui andrà la logica di routing autenticato (ProtectedRoute).
+// F2: mostriamo l'AppShell con l'elenco ristoranti (sola lettura dal DB TEST).
+// isAuthenticated è hardcoded a true per questa fase — il login reale (Magic Link / OTP)
+// arriverà in F3 e qui gestirà la sessione Supabase reale (ProtectedRoute).
 function App() {
-  // F1: nessuna sessione reale — mostriamo placeholder
-  const isAuthenticated = false
+  // TODO F3: sostituire con la sessione reale da supabase.auth.getSession()
+  const isAuthenticated = true
 
   if (!isAuthenticated) {
     return <LoginPlaceholder />
