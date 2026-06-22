@@ -10,6 +10,9 @@
 // F9: aggiunto stato 'tenant-detail' con selectedTenantId per la scheda azienda.
 // La scheda è apribile da Ristoranti e da Utenti; il breadcrumb "← Torna" riporta
 // alla vista precedente (DEC-046).
+//
+// F12: aggiunto restaurantListKey per forzare il remount di RestaurantList dopo
+// che un tenant viene eliminato dalla TenantDetail (refetch della lista).
 
 import type { User } from '@supabase/supabase-js'
 import { useState } from 'react'
@@ -34,6 +37,8 @@ export function AppShell({ user }: AppShellProps) {
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null)
   // previousView: la vista da cui è stata aperta la scheda (per il "← Torna").
   const [previousView, setPreviousView] = useState<'restaurants' | 'users'>('restaurants')
+  // restaurantListKey: incrementato dopo eliminazione tenant per forzare il remount di RestaurantList (F12).
+  const [restaurantListKey, setRestaurantListKey] = useState(0)
 
   /** Apre la scheda di un tenant, ricordando da quale vista si viene. */
   function openTenantDetail(tenantId: string, from: 'restaurants' | 'users') {
@@ -46,6 +51,14 @@ export function AppShell({ user }: AppShellProps) {
   function closeTenantDetail() {
     setSelectedTenantId(null)
     setActiveView(previousView)
+  }
+
+  /**
+   * Chiamato da TenantDetail.onTenantDeleted (F12): forza il remount di RestaurantList
+   * incrementando la key, così la lista si ricarica dopo l'eliminazione di un tenant.
+   */
+  function handleTenantDeleted() {
+    setRestaurantListKey((k) => k + 1)
   }
 
   /** Cambia tab principale: se si è in tenant-detail, chiude la scheda prima. */
@@ -132,13 +145,20 @@ export function AppShell({ user }: AppShellProps) {
       {/* Main content area */}
       <main style={{ padding: '2rem 1rem', maxWidth: '1100px', margin: '0 auto' }}>
         {activeView === 'restaurants' && (
-          <RestaurantList onOpenTenantDetail={(id) => openTenantDetail(id, 'restaurants')} />
+          <RestaurantList
+            key={restaurantListKey}
+            onOpenTenantDetail={(id) => openTenantDetail(id, 'restaurants')}
+          />
         )}
         {activeView === 'users' && (
           <UserList onOpenTenantDetail={(id) => openTenantDetail(id, 'users')} />
         )}
         {activeView === 'tenant-detail' && selectedTenantId && (
-          <TenantDetail tenantId={selectedTenantId} onBack={closeTenantDetail} />
+          <TenantDetail
+            tenantId={selectedTenantId}
+            onBack={closeTenantDetail}
+            onTenantDeleted={handleTenantDeleted}
+          />
         )}
       </main>
     </div>

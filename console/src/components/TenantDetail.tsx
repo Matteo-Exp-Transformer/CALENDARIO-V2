@@ -1,5 +1,5 @@
 /**
- * Scheda azienda per un singolo tenant (F9 — REQ-002, tappa 1).
+ * Scheda azienda per un singolo tenant (F9 — REQ-002, tappa 1; F12 — eliminazione).
  *
  * NAVIGAZIONE (DEC-045 coerente):
  *   Usa lo stesso switch-di-stato di AppShell. La scheda riceve il tenantId via prop
@@ -24,6 +24,11 @@
  *   Fetch diretto per id (select singola riga). I campi base (name, slug, plan,
  *   max_bookings_per_year, max_booking_requests_per_year, is_active, edition)
  *   vengono mostrati in sola lettura — la modifica è nei pannelli dedicati.
+ *
+ * ELIMINA AZIENDA (F12 — REQ-003, DEC-038):
+ *   Pulsante "Elimina azienda" nell'header scheda → DeleteTenantModal.
+ *   Dopo eliminazione riuscita chiama onBack() per tornare alla lista (che si auto-ricarica).
+ *   onTenantDeleted è un callback opzionale per segnalare al genitore di fare refetch.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -35,6 +40,8 @@ import {
   type Edition,
 } from '@console/lib/editionUtils'
 import { isSandboxTenant } from '@console/lib/sandbox'
+import { useTenantMutations } from '@console/hooks/useTenantMutations'
+import { DeleteTenantModal, type DeleteTenantTarget } from './DeleteTenantModal'
 import { EditionSelector } from './EditionSelector'
 import { FeatureFlagsPanel } from './FeatureFlagsPanel'
 import { RestaurantSettingsPanel } from './RestaurantSettingsPanel'
@@ -79,17 +86,27 @@ interface TenantDetailProps {
   tenantId: string
   /** Callback per tornare alla vista precedente (breadcrumb "← Torna"). */
   onBack: () => void
+  /**
+   * Callback opzionale chiamato dopo che un tenant è stato eliminato con successo (F12).
+   * Il genitore può usarlo per fare refetch della lista ristoranti.
+   * Se non fornito, dopo l'eliminazione si chiama solo onBack().
+   */
+  onTenantDeleted?: () => void
 }
 
 // ---------------------------------------------------------------------------
 // Componente principale
 // ---------------------------------------------------------------------------
 
-export function TenantDetail({ tenantId, onBack }: TenantDetailProps) {
+export function TenantDetail({ tenantId, onBack, onTenantDeleted }: TenantDetailProps) {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   // refetchCounter: incrementato dopo un cambio edition per aggiornare i campi base.
   const [refetchCounter, setRefetchCounter] = useState(0)
   const mountedRef = useRef(true)
+  // Stato modale "Elimina azienda" (F12 — REQ-003).
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  // Hook mutazioni tenant (delete_tenant).
+  const tenantMutations = useTenantMutations()
 
   const fetchOrg = useCallback(async () => {
     setState({ status: 'loading' })
@@ -139,17 +156,37 @@ export function TenantDetail({ tenantId, onBack }: TenantDetailProps) {
     setRefetchCounter((c) => c + 1)
   }, [])
 
+  // Callback per DeleteTenantModal: torna alla lista + notifica il genitore.
+  const handleTenantDeleted = useCallback(() => {
+    setShowDeleteModal(false)
+    // Notifica il genitore (RestaurantList) di fare refetch, poi torna alla lista.
+    onTenantDeleted?.()
+    onBack()
+  }, [onBack, onTenantDeleted])
+
   return (
     <div style={styles.page}>
-      {/* Breadcrumb / torna indietro */}
+      {/* Breadcrumb / torna indietro + pulsante "Elimina azienda" (F12) */}
       <div style={styles.breadcrumb}>
-        <button onClick={onBack} style={styles.backBtn} aria-label="Torna alla vista precedente">
-          ← Torna
-        </button>
-        <span style={styles.breadcrumbSep}>/</span>
-        <span style={styles.breadcrumbCurrent}>
-          {state.status === 'ok' ? state.org.name : 'Scheda azienda'}
-        </span>
+        <div style={styles.breadcrumbLeft}>
+          <button onClick={onBack} style={styles.backBtn} aria-label="Torna alla vista precedente">
+            ← Torna
+          </button>
+          <span style={styles.breadcrumbSep}>/</span>
+          <span style={styles.breadcrumbCurrent}>
+            {state.status === 'ok' ? state.org.name : 'Scheda azienda'}
+          </span>
+        </div>
+        {/* Pulsante "Elimina azienda" — visibile solo quando la scheda è caricata */}
+        {state.status === 'ok' && (
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            style={styles.deleteTenantBtn}
+            aria-label={`Elimina azienda ${state.org.name}`}
+          >
+            Elimina azienda
+          </button>
+        )}
       </div>
 
       {/* Loading */}
@@ -208,6 +245,24 @@ export function TenantDetail({ tenantId, onBack }: TenantDetailProps) {
           {/* ── Nota gate sandbox ── */}
           <SandboxGateNote isSandbox={isSandboxTenant(tenantId)} />
         </div>
+      )}
+
+      {/* Modale "Elimina azienda" (F12 — REQ-003, DEC-038) */}
+      {showDeleteModal && state.status === 'ok' && (
+        <DeleteTenantModal
+          tenant={{
+            id: state.org.id,
+            name: state.org.name,
+            slug: state.org.slug,
+            edition: state.org.edition,
+          } satisfies DeleteTenantTarget}
+          mutations={tenantMutations}
+          onSuccess={handleTenantDeleted}
+          onClose={() => {
+            setShowDeleteModal(false)
+            tenantMutations.resetDelete()
+          }}
+        />
       )}
     </div>
   )
@@ -490,9 +545,33 @@ const styles = {
   breadcrumb: {
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'space-between',
     gap: '0.5rem',
     marginBottom: '1.5rem',
     flexWrap: 'wrap' as const,
+  } as React.CSSProperties,
+
+  // Lato sinistro del breadcrumb: ← Torna + separatore + nome azienda.
+  breadcrumbLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    flexWrap: 'wrap' as const,
+  } as React.CSSProperties,
+
+  // Pulsante "Elimina azienda" — rosso, a destra del breadcrumb (F12).
+  deleteTenantBtn: {
+    background: '#450a0a',
+    border: '1px solid #7f1d1d',
+    borderRadius: '6px',
+    color: '#fca5a5',
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    padding: '0.3rem 0.65rem',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    whiteSpace: 'nowrap' as const,
+    transition: 'opacity 0.15s',
   } as React.CSSProperties,
 
   backBtn: {

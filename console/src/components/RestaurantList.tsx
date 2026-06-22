@@ -4,13 +4,15 @@
  * F2: legge organizations dal DB via client pubblico (anon), mostra nome/slug/edition.
  * F5: per i tenant sandbox (console-classic, console-pro) mostra EditionSelector;
  *     per gli altri mostra badge "Sola lettura" — nessun controllo di modifica.
+ * F12: pulsante "+ Nuova azienda" → CreateTenantModal (REQ-003, DEC-041).
  *
  * RESTRIZIONE SANDBOX (RULE-2):
  *   isSandboxTenant() decide se montare EditionSelector o il badge read-only.
  *   Il gate forte è lato server (Edge Function + RLS).
  *
- * REFETCH DOPO CAMBIO EDITION:
+ * REFETCH DOPO CAMBIO EDITION / CREAZIONE TENANT:
  *   EditionSelector chiama onSuccess() dopo un cambio riuscito.
+ *   CreateTenantModal chiama onSuccess() dopo la creazione di un nuovo tenant.
  *   RestaurantList risponde con fetchOrgs() → rilegge organizations dal DB.
  *   Questo mantiene UI e DB allineati senza cache locale.
  */
@@ -24,6 +26,8 @@ import {
   type Edition,
 } from '@console/lib/editionUtils'
 import { isSandboxTenant } from '@console/lib/sandbox'
+import { useTenantMutations } from '@console/hooks/useTenantMutations'
+import { CreateTenantModal } from './CreateTenantModal'
 import { EditionSelector } from './EditionSelector'
 import { FeatureFlagsPanel } from './FeatureFlagsPanel'
 import { RestaurantSettingsPanel } from './RestaurantSettingsPanel'
@@ -67,10 +71,14 @@ interface RestaurantListProps {
 
 export function RestaurantList({ onOpenTenantDetail }: RestaurantListProps) {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
-  // Contatore refetch: incrementato da handleEditionSuccess per forzare il re-fetch.
+  // Contatore refetch: incrementato da handleEditionSuccess / handleTenantCreated per forzare il re-fetch.
   const [refetchCounter, setRefetchCounter] = useState(0)
   // Ref per prevenire aggiornamenti di stato dopo lo smontaggio del componente.
   const mountedRef = useRef(true)
+  // Stato modale "Nuova azienda" (F12).
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  // Hook mutazioni tenant (create_tenant, delete_tenant).
+  const tenantMutations = useTenantMutations()
 
   const fetchOrgs = useCallback(async () => {
     setState((prev) => prev.status === 'ok' ? { status: 'loading' } : prev)
@@ -115,9 +123,24 @@ export function RestaurantList({ onOpenTenantDetail }: RestaurantListProps) {
     setRefetchCounter((c) => c + 1)
   }, [])
 
+  // Callback per CreateTenantModal: chiude il modale e forza un re-fetch.
+  const handleTenantCreated = useCallback(() => {
+    setShowCreateModal(false)
+    setRefetchCounter((c) => c + 1)
+  }, [])
+
   return (
     <section>
-      <h2 style={styles.sectionTitle}>Ristoranti</h2>
+      <div style={styles.sectionHeader}>
+        <h2 style={styles.sectionTitle}>Ristoranti</h2>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          style={styles.newTenantBtn}
+          aria-label="Crea una nuova azienda"
+        >
+          + Nuova azienda
+        </button>
+      </div>
 
       {state.status === 'loading' && (
         <p style={styles.statusText}>Caricamento in corso…</p>
@@ -146,6 +169,18 @@ export function RestaurantList({ onOpenTenantDetail }: RestaurantListProps) {
             />
           ))}
         </div>
+      )}
+
+      {/* Modale "Nuova azienda" (F12 — REQ-003) */}
+      {showCreateModal && (
+        <CreateTenantModal
+          mutations={tenantMutations}
+          onSuccess={handleTenantCreated}
+          onClose={() => {
+            setShowCreateModal(false)
+            tenantMutations.resetCreate()
+          }}
+        />
       )}
     </section>
   )
@@ -236,11 +271,36 @@ function OrgCard({ org, onEditionSuccess, onOpenDetail }: OrgCardProps) {
 // ---------------------------------------------------------------------------
 
 const styles = {
+  // Header sezione con pulsante "+ Nuova azienda" (F12).
+  sectionHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '1rem',
+    flexWrap: 'wrap' as const,
+    gap: '0.5rem',
+  } as React.CSSProperties,
+
   sectionTitle: {
     fontSize: '1rem',
     fontWeight: 600,
     color: '#f8fafc',
-    marginBottom: '1rem',
+    margin: 0,
+  } as React.CSSProperties,
+
+  // Pulsante "+ Nuova azienda" — blu per azione positiva (F12).
+  newTenantBtn: {
+    background: '#1e3a5f',
+    border: '1px solid #2563eb',
+    borderRadius: '6px',
+    color: '#93c5fd',
+    fontSize: '0.8rem',
+    fontWeight: 700,
+    padding: '0.4rem 0.9rem',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    whiteSpace: 'nowrap' as const,
+    transition: 'opacity 0.15s',
   } as React.CSSProperties,
 
   statusText: {

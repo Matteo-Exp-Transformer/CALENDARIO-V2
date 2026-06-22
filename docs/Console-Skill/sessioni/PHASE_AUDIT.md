@@ -322,6 +322,30 @@
 
 ---
 
+### Fase F12 — Crea / elimina azienda dalla UI (REQ-003)
+- **Obiettivo / effetto:** creare un'azienda (+admin in un passaggio, DEC-041) ed eliminarla (hard-delete protetto, DEC-038).
+- **Modalità:** deep · **Dipendenze:** F10 (azioni Edge) + F9 (scheda). E2E dopo re-deploy Edge (Matteo).
+
+**Esecutore** (general-purpose, Sonnet)
+- Prompt usato: `MASTERPLAN_CONSOLE_REQ-001-003.md` §F12
+- Sintesi: hook `useTenantMutations` + `CreateTenantModal` ("+ Nuova azienda" in RestaurantList: nome, slug auto-generato/validato, edition, admin opzionale) + `DeleteTenantModal` (dalla scheda: riscrittura NOME esatto + irreversibilità + gestione 409 dati operativi→PLAN-DB-006). AppShell forza il refetch della lista dopo eliminazione.
+- File toccati: `console/src/hooks/useTenantMutations.ts` (nuovo), `console/src/components/{CreateTenantModal,DeleteTenantModal}.tsx` (nuovi), `RestaurantList.tsx`/`TenantDetail.tsx`/`AppShell.tsx` (mod)
+- Decisioni autonome: DEC-051 (conferma delete_tenant case-sensitive)
+- Scritture DB: nessuna (via Edge a runtime)
+
+**Revisore (controverifica)** (general-purpose, Sonnet — distinto)
+- Done-criteria: crea (payload+admin allineati, slug auto valido, refetch, 409 slug/email) ✓ · "+ Nuova azienda" ✓ · elimina con nome esatto + irreversibilità + 409 PLAN-DB-006 + refetch ✓ · validazione slug client ✓ · degrado senza crash ✓ · RULE-4 ✓ · DEC-051 coerente ✓
+- Test/lint/typecheck: 🟢 build (100 moduli), lint 0 warning, typecheck pulito
+- **Verdetto:** 🟢 VERDE (round 1) — unico rilievo non bloccante: hint dead-code `PLAN-DB-006` in `CreateTenantModal` (non si attiva mai in creazione).
+- **Ri-lavorazione (Orchestrator):** sostituito l'hint dead-code con un hint "email admin già registrata" (caso 409 reale in creazione). Build ri-verificata.
+
+**Chiusura fase**
+- **Commit:** _(vedi git log — feat(console): crea/elimina azienda dalla UI (F12, DEC-051, REQ-003))_
+- Riga aggiunta a SESSION_LOG.md: sì
+- Follow-up aperti: nessuno nuovo (E2E lato Matteo dopo re-deploy Edge F10 + eventuale PLAN-DB-006)
+
+---
+
 ## Template blocco di fase (copia per ogni Fi)
 
 ```markdown
