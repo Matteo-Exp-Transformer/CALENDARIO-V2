@@ -20,6 +20,8 @@
 
 | FU-CONSOLE-13 | **Cleanup post-F13**: commenti obsoleti che citano ancora `isSandboxTenant`/RULE-2 come guard di scrittura (`useEditionChange.ts`, `useFeatureToggle.ts`, `useSettingSave.ts`, JSDoc di `EditionSelector.tsx`, JSDoc di `isSandboxTenant()` in `sandbox.ts`) + **stili orfani** non più referenziati (`readOnlyBadge` in RestaurantList, `readOnlyHint` in FeatureFlagsPanel/RestaurantSettingsPanel, `readOnlyHintInline` in TenantDetail) | Segnalato dal revisore F13 (non bloccante). Dead code/commenti fuorvianti dopo DEC-052. Pulibile con `/simplify` (accorpabile a FU-CONSOLE-8) |
 
+| FU-CONSOLE-14 | **`console/.env.example` manca di `VITE_CONSOLE_ADMIN_FUNCTION_URL`** (e va verificato che elenchi tutte le env runtime della Console). Senza, chi crea `.env.local` dall'esempio non imposta la URL dell'Edge → ogni salvataggio mostra "VITE_CONSOLE_ADMIN_FUNCTION_URL non impostata" | Causa radice dell'errore riscontrato da Cristiano in dev (2026-06-22). Solo codice in `console/`. Vedi `HANDOFF-orchestrator-REQ-001-003.md` §2 |
+
 ## Domande a Matteo — ✅ TUTTE RISOLTE (2026-06-22, consenso pieno)
 
 Vedi `DECISION_LOG.md`:
