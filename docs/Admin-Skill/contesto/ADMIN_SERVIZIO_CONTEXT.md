@@ -84,3 +84,22 @@
 - Slot chiuso/override specifico.
 - Mobile mappa read-only.
 - Briefing con e senza prenotazioni.
+
+## 8. Baseline S0 — mappa AS-IS + pulizia (22-06-26)
+
+> Azione 2 di S0 (masterplan §7). Mappa completa AS-IS in
+> `docs/Sessioni di lavoro/22-06-26/SERVIZIO_BASELINE_MAP.md` (11 componenti + 7 hook;
+> fondamenta dati S1–S4 in lista B).
+
+- **Codice morto RIMOSSO** (intervista Matteo 22-06-26, validate verde):
+  - `rotation` tolto da `RestaurantTable`/`TableInput` in `useServizioTables.ts` — nessuna UI lo usava.
+    La **colonna DB `tables.rotation` resta** (e così `database.ts` generato); se servirà la rotazione
+    grafica del tavolo in S4 si riaggiunge al tipo.
+  - Re-export `export { slotCrossesMidnight }` tolto da `useServiceSlots.ts` — tutti i consumer
+    importano da `bookingTimeSlots` direttamente.
+- **Confermato VIVO (non toccato):** `useReleaseBookingAssignment` (usato da `QuickTableAssignModal`);
+  prop `businessHoursRaw` del briefing (popolata da `AdminHomePage`); `display_order` manuale sale
+  (Matteo lo usa — ordine sale a numero, da blindare).
+- **Debiti rimandati a S4 (D10), solo annotati:** `useTableStatuses` (tavoli sempre verdi),
+  mismatch walk-in `placement`/`table_id`, guard `features.tableAssignments` su `AssignmentMapPanel`,
+  race condition `useUnassignedBookings`.

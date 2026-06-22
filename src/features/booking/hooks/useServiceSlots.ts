@@ -4,11 +4,9 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import { toast } from 'react-toastify'
 import { logger } from '@/lib/logger'
 import {
-  slotCrossesMidnight,
   type SlotConfig,
 } from '@/features/booking/utils/bookingTimeSlots'
 
-export { slotCrossesMidnight }
 export type { SlotConfig }
 
 export interface ServiceSlot {

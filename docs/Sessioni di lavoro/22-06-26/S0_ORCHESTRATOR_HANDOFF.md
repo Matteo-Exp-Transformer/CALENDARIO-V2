@@ -48,22 +48,23 @@ lista A candidati codice morto; lista B fondamenta S1-S4; lista C 8 domande).
 **6 domande di design rimaste (C1 forma, C3 walk-in, C4 checkout, C5 guard, C7 ghost, C8 briefing)
 = materiale S4, NON bloccano S0.** Da riprendere all'apertura di S4.
 
-**Fase 5 (demolizione) — IN CORSO (Haiku).** Scope chirurgico = 2 soli edit:
-1. `src/features/booking/hooks/useServiceSlots.ts` — rimuovere riga `export { slotCrossesMidnight }`.
-2. `src/features/booking/hooks/useServizioTables.ts` — rimuovere `rotation` da `RestaurantTable` e `TableInput`.
-Vincolo: `npm run validate` verde, nessun commit (commit = Fase 7), nessun PROD.
-> Al momento di questo checkpoint i 2 file `src/` risultano già modificati nel working tree
-> (lavoro Haiku) ma **non committati**: il commit di Fase 5/7 li raccoglierà separatamente.
+**Fase 5 (demolizione) — ✅ FATTA (Haiku).** 2 edit chirurgici:
+1. `useServiceSlots.ts` — rimosso `export { slotCrossesMidnight }` (+ import orfano).
+2. `useServizioTables.ts` — rimosso `rotation` da `RestaurantTable` e `TableInput`.
+`npm run validate` → **✅ 122 file, 970 test**. Fase 6 (revisione) inline: approvata, rischio nullo.
+
+**Fase 7 (commit + doc) — ✅ FATTA (orchestratore).** §8 di `ADMIN_SERVIZIO_CONTEXT.md` aggiunta,
+stato S0 nel masterplan §7, handoff aggiornati. Nessun PROD.
+
+### ➡️ S0 COMPLETA (22-06-26). Niente altro in questo scope.
 
 ---
 
-## PROSSIMI PASSI (in ordine)
+## PROSSIMI PASSI
 
-1. **Fase 5** — attendere validate verde da Haiku sui 2 edit sopra.
-2. **Fase 6** — revisione area Servizio (`/code-review` o esecutore Sonnet).
-3. **Fase 7** — commit (Conventional Commits) dei 2 edit + `SERVIZIO_BASELINE_MAP.md` +
-   aggiornamento `ADMIN_SERVIZIO_CONTEXT.md` e tabella stato del masterplan. **Niente PROD.**
-4. Chiudere Azione 2 → **S0 completa.** S1+ è altra sotto-area, fuori da questo scope.
+- **S0 chiusa.** La prossima sotto-area è **S1** (Tipologia prenotazione + durata config, Classic) —
+  vedi masterplan §7. È un cantiere diverso: nuovo branch, nuova staffetta.
+- I 6 quesiti di design del Servizio (C1/C3/C4/C5/C7/C8 della lista C) restano materiale **S4**.
 
 ---
 

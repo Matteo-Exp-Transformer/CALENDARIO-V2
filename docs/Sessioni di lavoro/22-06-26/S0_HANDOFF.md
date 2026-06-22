@@ -89,14 +89,25 @@
 
 ---
 
-## FASE 5 — Demolizione codice morto [HAIKU] — ⏳ IN CORSO
+## FASE 5 — Demolizione codice morto [HAIKU] — ✅ FATTO
 
-Scope chirurgico (2 edit), validate verde, nessun commit, nessun PROD:
-1. `useServiceSlots.ts` — rimuovere `export { slotCrossesMidnight }`.
-2. `useServizioTables.ts` — rimuovere `rotation` da `RestaurantTable` e `TableInput`.
+Scope chirurgico (2 edit), validate verde, nessun PROD:
+1. `useServiceSlots.ts` — rimosso `export { slotCrossesMidnight }` (+ import orfano).
+2. `useServizioTables.ts` — rimosso `rotation` da `RestaurantTable` e `TableInput`.
 
 ### Nota esecutore
-> Haiku: scrivi qui l'esito (2 edit + riga riassuntiva `npm run validate`).
+- Diff = esattamente i 2 edit prescritti, nessuno scope creep.
+- `npm run validate` → **✅ 122 file, 970 test passati** (lint + typecheck inclusi).
+- Revisione (Fase 6) fatta inline dall'orchestratore: rimozioni a rischio nullo, typecheck conferma
+  nessun caller rotto. Approvato.
+
+---
+
+## AZIONE 2 — Commit + doc [OPUS-orchestratore] — ✅ FATTO (Fase 7)
+
+- Commit `31cf53b` (intermedio): mappa AS-IS + 2 handoff.
+- Commit finale: 2 edit `src/` + §8 `ADMIN_SERVIZIO_CONTEXT.md` + stato S0 nel masterplan + handoff.
+- **S0 COMPLETA.** S1+ è altra sotto-area, fuori scope.
 
 ---
 
