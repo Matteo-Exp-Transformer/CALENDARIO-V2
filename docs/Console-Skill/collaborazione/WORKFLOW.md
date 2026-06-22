@@ -68,7 +68,7 @@ Stati: `BOZZA · DA-FARE · IN-SVILUPPO · CONSEGNATA · IN-TEST · ACCETTATA ·
 1. `git fetch && git merge origin/main` (parti dall'ultimo, vedi §2).
 2. Apri `REGISTRO_RICHIESTE.md` → prendi una REQ in **DA-FARE**, mettila **IN-SVILUPPO**.
 3. Leggi `STATO_AMBIENTE_TEST.md` → non rifare cose già attive su TEST.
-4. Carica la bussola `CONSOLE_SKILL_SYSTEM.md`. Se tocchi il DB: `get_project_url` deve essere `docnnernvp` (TEST), **mai PROD**.
+4. Carica la bussola `docs/Console-Skill/00_BUSSOLA_CONSOLE.md` (Skill 0). Se tocchi il DB: `get_project_url` deve essere `docnnernvp` (TEST), **mai PROD**.
 
 ### 🔴 Chiusura — Team
 1. `npm run validate` verde (riportalo nella REQ).
