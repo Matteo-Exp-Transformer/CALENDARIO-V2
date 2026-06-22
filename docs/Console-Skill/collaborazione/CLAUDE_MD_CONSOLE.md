@@ -185,7 +185,7 @@ Vedi `docs/Console-Skill/contesto/CONSOLE_DB_CONTEXT.md` § Testing.
 ### Pre-lavoro (inizializzazione)
 ```bash
 # Nel branch feature/console-super-admin
-git pull --rebase origin main         # Sincronizza
+git fetch origin && git merge origin/main   # Sincronizza (NO rebase: branch condiviso — vedi WORKFLOW.md §2)
 npm install                           # Dipendenze (se cambiate)
 npm run db:types:linked               # Rigenera tipi DB
 ```
@@ -213,7 +213,7 @@ git push origin feature/console-super-admin
 (Matteo integra in env/test)
 (Matteo valida)
 (Matteo mergia in main)
-(Aggiorna il tuo branch: git pull --rebase origin main)
+(Aggiorna il tuo branch: git fetch origin && git merge origin/main)
 ```
 
 ---
@@ -267,16 +267,15 @@ cp -r docs/Console-Skill/ docs/Console-Admin-Skill/
 ### "Matteo ha fatto un merge in main, come mi aggiorno?"
 **Comando:**
 ```bash
-git pull --rebase origin main
+git fetch origin && git merge origin/main
 ```
 
 ---
 
 ## Regole anti-conflitto
 
-- ✅ Team tira da main **spesso** (ideale ogni sessione)
-- ✅ Team usa **squash commits** quando pushes (ogni push = 1 commit logico)
-- ✅ Team prefissa **tutti i commit** con `console:` (non toccare code Matteo)
+- ✅ Team si allinea da main **spesso** (ideale ogni sessione, con `merge` — non rebase)
+- ✅ Team prefissa **tutti i commit** con `console:` (lo squash in 1 commit lo fa Matteo promuovendo in main)
 - ✅ Matteo integra **regolarmente** da feature/console-super-admin
 
 ---
