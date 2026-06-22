@@ -1,8 +1,29 @@
-// App shell con elenco ristoranti (F2) + logout (F3).
+// App shell con navigazione a tab (switch di stato) tra le viste della Console.
+// Gestisce: header (titolo + email + logout) + nav tab + rendering della vista attiva.
+//
+// NAVIGAZIONE: switch di stato locale (useState) invece di react-router-dom.
+// Motivo: la Console ha oggi due viste flat (Ristoranti / Utenti); BrowserRouter
+// aggiungerebbe complessità di setup (history, basename) e dipendenze non ancora
+// necessarie. Se le viste cresceranno a > 4 o servirà link-sharing/deep-link,
+// migrare a react-router-dom è immediato. (Candidata DEC — vedi report F8.)
+//
+// F9: aggiunto stato 'tenant-detail' con selectedTenantId per la scheda azienda.
+// La scheda è apribile da Ristoranti e da Utenti; il breadcrumb "← Torna" riporta
+// alla vista precedente (DEC-046).
+//
+// F12: aggiunto restaurantListKey per forzare il remount di RestaurantList dopo
+// che un tenant viene eliminato dalla TenantDetail (refetch della lista).
+
 import type { User } from '@supabase/supabase-js'
 import { useState } from 'react'
 import { supabase } from '@console/lib/supabaseClient'
 import { RestaurantList } from './RestaurantList'
+import { UserList } from './UserList'
+import { TenantDetail } from './TenantDetail'
+
+// Viste disponibili nella Console. 'tenant-detail' è una vista drill-down che sovrappone
+// le tab (le tab restano visibili ma non attive durante la scheda).
+type ActiveView = 'restaurants' | 'users' | 'tenant-detail'
 
 interface AppShellProps {
   /** Utente autenticato (da useAuth). Usato per mostrare l'email in header. */
@@ -11,6 +32,40 @@ interface AppShellProps {
 
 export function AppShell({ user }: AppShellProps) {
   const [loggingOut, setLoggingOut] = useState(false)
+  const [activeView, setActiveView] = useState<ActiveView>('restaurants')
+  // selectedTenantId: presente solo quando activeView === 'tenant-detail'.
+  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null)
+  // previousView: la vista da cui è stata aperta la scheda (per il "← Torna").
+  const [previousView, setPreviousView] = useState<'restaurants' | 'users'>('restaurants')
+  // restaurantListKey: incrementato dopo eliminazione tenant per forzare il remount di RestaurantList (F12).
+  const [restaurantListKey, setRestaurantListKey] = useState(0)
+
+  /** Apre la scheda di un tenant, ricordando da quale vista si viene. */
+  function openTenantDetail(tenantId: string, from: 'restaurants' | 'users') {
+    setSelectedTenantId(tenantId)
+    setPreviousView(from)
+    setActiveView('tenant-detail')
+  }
+
+  /** Torna alla vista precedente alla scheda. */
+  function closeTenantDetail() {
+    setSelectedTenantId(null)
+    setActiveView(previousView)
+  }
+
+  /**
+   * Chiamato da TenantDetail.onTenantDeleted (F12): forza il remount di RestaurantList
+   * incrementando la key, così la lista si ricarica dopo l'eliminazione di un tenant.
+   */
+  function handleTenantDeleted() {
+    setRestaurantListKey((k) => k + 1)
+  }
+
+  /** Cambia tab principale: se si è in tenant-detail, chiude la scheda prima. */
+  function handleTabChange(view: 'restaurants' | 'users') {
+    setSelectedTenantId(null)
+    setActiveView(view)
+  }
 
   async function handleLogout() {
     setLoggingOut(true)
@@ -64,10 +119,81 @@ export function AppShell({ user }: AppShellProps) {
         </button>
       </header>
 
+      {/* Nav tab — switch tra le viste della Console */}
+      <nav
+        style={{
+          background: '#1e293b',
+          borderBottom: '1px solid #334155',
+          display: 'flex',
+          gap: '0',
+          padding: '0 1rem',
+        }}
+        aria-label="Navigazione Console"
+      >
+        <NavTab
+          label="Ristoranti"
+          active={activeView === 'restaurants' || (activeView === 'tenant-detail' && previousView === 'restaurants')}
+          onClick={() => handleTabChange('restaurants')}
+        />
+        <NavTab
+          label="Utenti"
+          active={activeView === 'users' || (activeView === 'tenant-detail' && previousView === 'users')}
+          onClick={() => handleTabChange('users')}
+        />
+      </nav>
+
       {/* Main content area */}
-      <main style={{ padding: '2rem 1rem', maxWidth: '900px', margin: '0 auto' }}>
-        <RestaurantList />
+      <main style={{ padding: '2rem 1rem', maxWidth: '1100px', margin: '0 auto' }}>
+        {activeView === 'restaurants' && (
+          <RestaurantList
+            key={restaurantListKey}
+            onOpenTenantDetail={(id) => openTenantDetail(id, 'restaurants')}
+          />
+        )}
+        {activeView === 'users' && (
+          <UserList onOpenTenantDetail={(id) => openTenantDetail(id, 'users')} />
+        )}
+        {activeView === 'tenant-detail' && selectedTenantId && (
+          <TenantDetail
+            tenantId={selectedTenantId}
+            onBack={closeTenantDetail}
+            onTenantDeleted={handleTenantDeleted}
+          />
+        )}
       </main>
     </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Tab di navigazione (componente interno — non esportato)
+// ---------------------------------------------------------------------------
+
+interface NavTabProps {
+  label: string
+  active: boolean
+  onClick: () => void
+}
+
+function NavTab({ label, active, onClick }: NavTabProps) {
+  return (
+    <button
+      onClick={onClick}
+      aria-current={active ? 'page' : undefined}
+      style={{
+        background: 'transparent',
+        border: 'none',
+        borderBottom: active ? '2px solid #3b82f6' : '2px solid transparent',
+        color: active ? '#f1f5f9' : '#64748b',
+        cursor: 'pointer',
+        fontSize: '0.875rem',
+        fontWeight: active ? 600 : 400,
+        padding: '0.65rem 1rem',
+        transition: 'color 0.15s, border-bottom-color 0.15s',
+        whiteSpace: 'nowrap' as const,
+      }}
+    >
+      {label}
+    </button>
   )
 }
