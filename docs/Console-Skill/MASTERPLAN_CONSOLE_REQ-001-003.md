@@ -43,6 +43,7 @@ RULE-5  TRACCIABILITÀ: DEC-NNN per ogni decisione, blocco PHASE_AUDIT per ogni 
 | **F10** | 001/003 (fondamenta scrittura) | **Estensione Edge** `console-admin`: azioni utenti/aziende + sblocco guard sandbox→allowlist (DEC-037). Codice pronto, deploy a Matteo | deep | F9 | ⬜ |
 | **F11** | 001 (scrittura) | **CRUD utente** dalla UI: crea (email+password+azienda), modifica, elimina (conferma "riscrivi email", DEC-038) | deep | F10 | ⬜ |
 | **F12** | 003 | **Crea/elimina azienda**: form unico azienda+admin (DEC-041), elimina con conferma "riscrivi nome" (DEC-038) | deep | F10 | ⬜ |
+| **F13** | FU-CONSOLE-12 | **Sblocco scrittura pannelli su tutte le aziende** (edition/feature/impostazioni): rimuovere il write-gate `isSandboxTenant` (allineamento UI a DEC-037; il gate vero resta Edge+allowlist) | standard | F10/F12 | ⬜ |
 
 > **Ordine (DEC-042):** prima il **read-block** (F8 lettura + F9 scheda) → vedere e configurare; poi il
 > **write-block** (F10 Edge → F11 utenti → F12 aziende) → azioni potenti.
@@ -239,6 +240,55 @@ Esito: 🟢 VERDE o 🔴 ROSSO con correzioni puntuali. NON modificare il codice
 
 ---
 
+### F13 — Sblocco scrittura pannelli su tutte le aziende (FU-CONSOLE-12)
+
+- **Obiettivo / effetto:** allineare la UI a DEC-037. Oggi `EditionSelector`/`FeatureFlagsPanel`/
+  `RestaurantSettingsPanel` abilitano la scrittura **solo** sui sandbox (`isSandboxTenant`), mentre
+  l'Edge (F10) la consente su tutte le aziende: nella scheda azienda i tenant reali restano in sola
+  lettura. *Cosa cambia per te:* dalla scheda puoi finalmente configurare edition/feature/impostazioni
+  dei clienti veri, non solo dei due sandbox.
+- **Modalità:** standard. **Dipendenze:** F10 (Edge sblocca le scritture) + F12.
+- **Done-criteria:**
+  1. I tre pannelli sono **scrivibili per qualunque tenant** (non solo sandbox), sia in `RestaurantList` che in `TenantDetail`. Sparisce il badge/blocco "sola lettura — solo sandbox".
+  2. Le modifiche restano **reversibili** (edition/feature/impostazioni) → **nessuna** conferma "riscrivi nome" (quella resta solo per le azioni distruttive F11/F12).
+  3. Il gate vero resta **Edge `console-admin` + allowlist** (lato server). `isSandboxTenant` può restare per un'eventuale **etichetta visiva** "sandbox", ma **non** gata più la scrittura.
+  4. Degrado invariato se l'Edge non è raggiungibile (messaggio, no crash). `build`+`lint`+`typecheck` verdi. Niente import da `../src`, nessuna modifica a `src/`/`supabase/` root.
+- **Note:** valutare un piccolo segnale visivo (es. badge) che distingue un tenant reale da un sandbox, per consapevolezza; non è un blocco.
+
+**Prompt ESECUTORE (F13):**
+```
+Lavori sul branch feature/console-super-admin, repo c:\Users\tulli\Documents\GitHub\CALENDARIO-V2. ESECUTORE cold-start della fase F13 (FU-CONSOLE-12).
+PRIMA leggi: docs/Console-Skill/00_BUSSOLA_CONSOLE.md, docs/Console-Skill/sessioni/FOLLOW_UP.md (FU-CONSOLE-12), docs/Console-Skill/MASTERPLAN_CONSOLE_REQ-001-003.md (sezione F13), e i file: console/src/lib/sandbox.ts, console/src/components/{FeatureFlagsPanel,RestaurantSettingsPanel,EditionSelector,RestaurantList,TenantDetail}.tsx.
+REGOLE D'ORO: RULE-1 solo TEST (nessuna scrittura DB da te: l'app scrive via Edge a runtime); DEC-037 RULE-2 REVOCATA per la console (scritture su tutte le aziende, gate = allowlist+Edge); RULE-4 codice solo in console/, no import da ../src, no service role nel browser; RULE-5 traccia decisioni (prossimo DEC libero: DEC-052).
+TASK (F13): rimuovere il write-gate isSandboxTenant dai 3 pannelli di configurazione, così sono scrivibili su QUALUNQUE tenant (allineamento a DEC-037).
+1) FeatureFlagsPanel: oggi `const sandbox = isSandboxTenant(tenantId)` gata il toggle + mostra "sola lettura — solo sandbox". Rendi i toggle abilitati per tutti i tenant; rimuovi/aggiorna il badge "sola lettura solo sandbox". Le scritture passano già da callConsoleAdmin (Edge).
+2) RestaurantSettingsPanel: stesso pattern (`const sandbox = isSandboxTenant(tenantId)` gata gli editor int/bool + readOnlyHint). Abilita gli editor per tutti i tenant; rimuovi/aggiorna l'hint sola-lettura.
+3) EditionSelector: in RestaurantList (OrgCard) e in TenantDetail viene mostrato SOLO per i sandbox, altrimenti un badge/blocco "Sola lettura". Mostra EditionSelector per TUTTI i tenant; rimuovi il blocco read-only edition.
+4) Le modifiche edition/feature/impostazioni sono REVERSIBILI → NON aggiungere conferme "riscrivi nome" (quelle restano solo per delete utente/azienda).
+5) isSandboxTenant/SANDBOX_TENANT_IDS: NON è più un gate di scrittura. Puoi: (a) tenerli per un'etichetta visiva opzionale "sandbox" (consigliato, così resta chiaro quali sono i banchi di prova), oppure (b) se diventano inutilizzati, lascia sandbox.ts ma evita import morti (niente warning lint unused). Documenta la scelta come DEC-052.
+6) Degrado invariato se l'Edge non è raggiungibile (callConsoleAdmin {data,error} → messaggio inline, no crash). Responsive, stile coerente.
+DONE quando: cd console && npm run build && npm run lint && npm run typecheck VERDI (eseguili, riporta output reale); i 3 pannelli sono editabili su un tenant NON-sandbox (verificabile in UI: editor/toggle/selettore attivi, niente badge "solo sandbox"); nessuna conferma distruttiva aggiunta; nessun import morto.
+Alla fine RIPORTA: file toccati, comandi con esito reale, candidate DEC, e cosa testa Matteo (dopo re-deploy Edge: cambiare edition/feature/impostazione di un'azienda reale dalla scheda). NON committare, NON git add, ripristina package-lock.json di root se npm lo tocca (git checkout HEAD -- package-lock.json) — NON toccare package.json/package-lock.json di root (lavoro di Matteo in corso).
+```
+
+**Prompt REVISORE (F13):**
+```
+Sei il REVISORE indipendente della fase F13 (FU-CONSOLE-12) sul branch feature/console-super-admin, repo c:\Users\tulli\Documents\GitHub\CALENDARIO-V2. Cold-start. NON sei l'esecutore.
+PRIMA leggi: 00_BUSSOLA_CONSOLE.md, FOLLOW_UP.md (FU-CONSOLE-12), MASTERPLAN_CONSOLE_REQ-001-003.md (F13). Poi git status + git diff HEAD e leggi i file modificati ({FeatureFlagsPanel,RestaurantSettingsPanel,EditionSelector,RestaurantList,TenantDetail}.tsx, sandbox.ts).
+Controverifica DONE-CRITERIA F13 (✓/✗ con motivo):
+1. I 3 pannelli sono scrivibili per qualunque tenant (non solo sandbox), sia in RestaurantList che in TenantDetail? Sparito il badge/blocco "sola lettura solo sandbox"?
+2. NESSUNA conferma "riscrivi nome" aggiunta (le modifiche sono reversibili)?
+3. Il gate resta Edge+allowlist (le scritture passano sempre da callConsoleAdmin)? isSandboxTenant non gata più la scrittura (al più etichetta visiva)?
+4. Nessun import morto / warning lint? Degrado se Edge non raggiungibile invariato?
+5. RULE-4: codice solo in console/, no import da ../src, nessuna modifica a src/ o supabase/ o package.json/package-lock root? Nessuna scrittura DB diretta dall'app?
+6. DEC-052 sensata?
+ESEGUI DAVVERO e riporta esito reale: cd console && npm run build ; npm run lint ; npm run typecheck.
+Cerca regressioni: i sandbox continuano a funzionare; nessun componente rotto da prop rimosse; refetch dopo modifica ancora ok.
+Esito finale OBBLIGATORIO: ultima riga "VERDETTO: 🟢 VERDE" o "VERDETTO: 🔴 ROSSO" con lista numerata di correzioni. NON modificare il codice; NON committare.
+```
+
+---
+
 ## 3. Protocollo del ciclo (per ogni F_i) — invariato dal MASTERPLAN_CONSOLE.md §3
 
 1. **Esecutore** (Agent, attore A) col prompt esecutore di `F_i`.
@@ -262,6 +312,7 @@ Esito: 🟢 VERDE o 🔴 ROSSO con correzioni puntuali. NON modificare il codice
 | F10 | 001/003 | ✅ | ✅ | 🟢 VERDE | sì | rosso→verde (4 fix audit); deploy + PLAN-DB-006 opz. (Matteo); DEC-047 |
 | F11 | 001 (W) | ✅ | ✅ | 🟢 VERDE | sì | rosso→verde (password 8, email case-insensitive, DEC-048..050); E2E dopo deploy F10 |
 | F12 | 003 | ✅ | ✅ | 🟢 VERDE | sì | verde round 1 (cleanup hint); E2E dopo deploy F10 + PLAN-DB-006 opz.; DEC-051 |
+| F13 | FU-12 | ⬜ | ⬜ | — | — | sblocco scrittura pannelli su tutte le aziende (DEC-037) |
 
 > **Plan DB a carico di Matteo per questo master-plan:** PLAN-DB-005 (SELECT admin_users), e — se F10 lo
 > richiede — PLAN-DB-006 (cascata/GRANT delete_tenant) + ri-deploy Edge `console-admin`.
