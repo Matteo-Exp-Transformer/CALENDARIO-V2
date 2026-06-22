@@ -11,7 +11,8 @@
 | Fase | Obiettivo | Esecutore | Revisore | Verdetto | Commit | DEC collegate |
 |------|-----------|-----------|----------|----------|--------|---------------|
 | F1 | Scaffolding `console/` isolata | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `c981fc0` | DEC-001, DEC-014, DEC-016 |
-| F2 | Elenco ristoranti (sola lettura) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | _(vedi git log)_ | DEC-017 |
+| F2 | Elenco ristoranti (sola lettura) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `49c0230` | DEC-017 |
+| F3 | Login reale (Supabase Auth + allowlist) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | _(vedi git log)_ | DEC-018, DEC-019, DEC-020; PLAN-DB-002 |
 
 ---
 
@@ -65,9 +66,37 @@
 - Ri-lavorazioni: nessuna (verde al round 1).
 
 **Chiusura fase**
-- **Commit:** _(vedi git log — feat(console): elenco ristoranti (F2, DEC-017))_
+- **Commit:** `49c0230` — feat(console): elenco ristoranti (F2, DEC-017)
 - Riga aggiunta a SESSION_LOG.md: sì
 - Follow-up aperti: FU-CONSOLE-5 (tenant sospesi non visibili al client anon — rivalutare in F3/F5 con auth super-admin)
+
+---
+
+### Fase F3 — Login reale (Supabase Auth + allowlist email)
+- **Obiettivo / effetto:** sostituito il gate transitorio con un login vero (Magic Link) che fa entrare solo le email in allowlist (DEC-011). Effetto: la Console è privata davvero.
+- **Modalità:** deep
+- **Dipendenze:** F1
+
+**Esecutore**
+- Prompt usato: `MASTERPLAN_CONSOLE.md` §F3 (prompt esecutore)
+- Sintesi: implementato login Magic Link (`signInWithOtp`, `shouldCreateUser:false`); hook `useAuth` (getSession + onAuthStateChange) con stati `loading|unauthenticated|denied|authenticated`; allowlist email pura/testabile via env `VITE_CONSOLE_ALLOWED_EMAILS` (case-insensitive, fail-safe vuota=nessuno); `LoginScreen` reale; logout in `AppShell`; rimosso `isAuthenticated=true` di F2.
+- File toccati: `console/src/lib/authAllowlist.ts` (nuovo), `console/src/hooks/useAuth.ts` (nuovo), `console/src/components/LoginScreen.tsx` (nuovo), `console/src/App.tsx` (mod), `console/src/components/AppShell.tsx` (mod), `console/.env.example` (mod). `LoginPlaceholder.tsx` orfano.
+- Decisioni autonome prese: DEC-018 (`shouldCreateUser:false`), DEC-019 (allowlist come Set singleton env-time), DEC-020 (`AuthState` union discriminata).
+- Scritture DB: nessuna.
+- Plan per Matteo generati: **PLAN-DB-002** (allowlist lato DB: tabella `console_allowed_emails` + `is_console_user()` SECURITY DEFINER + template RLS) — da eseguire da Matteo.
+
+**Revisore (controverifica)**
+- Done-criteria verificati: login Magic Link + getSession/onAuthStateChange ✓ · allowlist case-insensitive + fail-safe + signOut su denied ✓ · viste protette + gate F2 rimosso ✓ · logout ✓ · nessuna service role nel browser (grep) ✓ · build+typecheck+lint 0 errori/0 warning ✓
+- Regole d'oro rispettate: ✓ (`src/`/`supabase/` intatti; nessun DDL — allowlist DB solo come PLAN-DB-002; `.env.local` non tracciato)
+- Test/lint/typecheck: `npm run build`, `typecheck`, `lint` tutti verdi.
+- Regressioni controllate: diff confinato a `console/` + plan-per-matteo.
+- **Verdetto:** 🟢 VERDE (1 nota minore: commento citava PLAN-DB-001 → **corretto** dall'Orchestrator a PLAN-DB-002)
+- Ri-lavorazioni: nessun round esecutore; correzione commento applicata dall'Orchestrator.
+
+**Chiusura fase**
+- **Commit:** _(vedi git log — feat(console): login Supabase Auth + allowlist (F3, DEC-018/019/020))_
+- Riga aggiunta a SESSION_LOG.md: sì
+- Follow-up aperti: PLAN-DB-002 da eseguire (Matteo); redirect URL magic link `localhost:5174` da configurare in Supabase Dashboard; email reale di Matteo da inserire in `.env.local`; `LoginPlaceholder.tsx` orfano da rimuovere; test E2E magic link = manuale di Matteo
 
 ---
 

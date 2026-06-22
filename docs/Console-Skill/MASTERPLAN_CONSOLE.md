@@ -417,8 +417,8 @@ Esito: VERDE o ROSSO con correzioni puntuali. NON toccare il codice; NON committ
 |------|-----------|----------|----------|--------|------|
 | F1 | ✅ | ✅ | 🟢 VERDE | sì | scaffolding isolato, build verde |
 | F2 | ✅ | ✅ | 🟢 VERDE | sì | elenco 7 tenant, sola lettura |
-| F3 | ⏳ | — | — | — | in avvio |
-| F4 | ⬜ | — | — | — | |
+| F3 | ✅ | ✅ | 🟢 VERDE | sì | Magic Link + allowlist; PLAN-DB-002 |
+| F4 | ⏳ | — | — | — | in avvio (deploy → confine Matteo) |
 | F5 | ⬜ | — | — | — | |
 | F6 | ⬜ | — | — | — | |
 | F7 | ⬜ | — | — | — | |
