@@ -61,10 +61,15 @@
 > **Cantiere Servizio + motore disponibilità:** masterplan canonico in `docs/MASTERPLAN_SERVIZIO.md`
 > (decisioni D1–D42, sotto-aree S0–S6, registro rischi #1–#9). I rischi sotto vi sono mappati.
 
-- **🔴 BUG Edge confermato (rischio #1 / azione S0-D8):** `create-booking` interroga
-  `service_slot_overrides.override_date`, mentre schema/hook moderni usano `date_from/date_to` → gli
-  override morbidi **non scattano mai**. Va corretto come mini-PR isolata (deploy PROD controllato) prima
-  dei test flusso slot con `slot_limit_enabled=true`, altrimenti ogni test permanenza dà falsi positivi.
+- **✅ BUG Edge RISOLTO (rischio #1 / azione S0-D8):** `create-booking` interrogava
+  `service_slot_overrides.override_date` (colonna inesistente), mentre schema moderno usa `date_from/date_to`
+  → gli override morbidi non scattavano mai. Risolto su branch `s0/edge-override-fix`:
+  l'Edge ora legge tutte le righe della tabella che ricoprono la data (`date_from <= data <= date_to`),
+  applica "vince il più specifico" tramite funzione `resolveOverrideMaxGuests` (replica server-side
+  di `resolveSlotOverride`). Verificato su TEST: override respinge correttamente con 409 SLOT_LIMIT.
+  **Deployato in PRODUZIONE il 22-06-26: `create-booking` v21 su `rwuxgvld`** (deploy via MCP, bundle
+  a due file `source/index.ts` + `_shared/log.ts`, `verify_jwt:false`; diff vs PROD v20 = solo i due hunk
+  del fix, nessun altro drift; boot smoke 400 OK). TEST allineato (v27).
   Il vecchio pre-check `check-slot-availability` è stato rimosso in WP-B5 (12-06-26), quindi non va più
   considerato fonte runtime.
 - In `WalkInModal`, busy check confronta `booking.placement` con `tableId`, ma il walk-in salva
@@ -79,3 +84,22 @@
 - Slot chiuso/override specifico.
 - Mobile mappa read-only.
 - Briefing con e senza prenotazioni.
+
+## 8. Baseline S0 — mappa AS-IS + pulizia (22-06-26)
+
+> Azione 2 di S0 (masterplan §7). Mappa completa AS-IS in
+> `docs/Sessioni di lavoro/22-06-26/SERVIZIO_BASELINE_MAP.md` (11 componenti + 7 hook;
+> fondamenta dati S1–S4 in lista B).
+
+- **Codice morto RIMOSSO** (intervista Matteo 22-06-26, validate verde):
+  - `rotation` tolto da `RestaurantTable`/`TableInput` in `useServizioTables.ts` — nessuna UI lo usava.
+    La **colonna DB `tables.rotation` resta** (e così `database.ts` generato); se servirà la rotazione
+    grafica del tavolo in S4 si riaggiunge al tipo.
+  - Re-export `export { slotCrossesMidnight }` tolto da `useServiceSlots.ts` — tutti i consumer
+    importano da `bookingTimeSlots` direttamente.
+- **Confermato VIVO (non toccato):** `useReleaseBookingAssignment` (usato da `QuickTableAssignModal`);
+  prop `businessHoursRaw` del briefing (popolata da `AdminHomePage`); `display_order` manuale sale
+  (Matteo lo usa — ordine sale a numero, da blindare).
+- **Debiti rimandati a S4 (D10), solo annotati:** `useTableStatuses` (tavoli sempre verdi),
+  mismatch walk-in `placement`/`table_id`, guard `features.tableAssignments` su `AssignmentMapPanel`,
+  race condition `useUnassignedBookings`.

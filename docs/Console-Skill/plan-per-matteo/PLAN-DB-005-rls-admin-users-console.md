@@ -1,6 +1,7 @@
 # PLAN-DB-005 — RLS: policy SELECT su admin_users per la Console super-admin
 
-**Stato:** da eseguire · **Ambiente:** TEST docnnernvp · **Data:** 2026-06-22
+**Stato:** ✅ ESEGUITO su TEST (docnnernvp) il 2026-06-22 via MCP `apply_migration`
+(`console_admin_select_admin_users_rls`); verificato: policy presente, 5 admin letti · **Ambiente:** TEST docnnernvp · **Data:** 2026-06-22
 
 ## Obiettivo
 

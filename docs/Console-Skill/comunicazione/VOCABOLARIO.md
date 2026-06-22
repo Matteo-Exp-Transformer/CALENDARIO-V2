@@ -25,6 +25,17 @@
 
 ---
 
+## Profilo e stile Cristiano (come si applicano i comandi)
+
+Stesso vocabolario di Matteo, **profondità maggiore** perché il lavoro tocca DB/RLS/Edge/permessi:
+
+- **«ragioniamo»** → analisi profonda (pseudocode, albero decisionale, trace RLS), non sintesi rapida.
+- **«implementa»** → **test + doc obbligatori** prima del push (non facoltativi).
+- **«revisiona»** → **security + performance**, non solo funzionale.
+- **Debug** → log strutturato + SQL explain + audit RLS (mai `console.log`).
+
+---
+
 ## Regole sempre attive (non sono parole-grilletto)
 
 Valgono sempre, anche senza che Cristiano le nomini:
