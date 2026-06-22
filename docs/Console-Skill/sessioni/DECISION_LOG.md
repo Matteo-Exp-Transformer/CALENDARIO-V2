@@ -32,6 +32,9 @@
 | DEC-011 | 2026-06-22 | Matteo | **Login Console** = Supabase Auth con **allowlist email** (solo Matteo) | MVP accesso, solo proprietario | — | attiva |
 | DEC-012 | 2026-06-22 | Matteo | Deploy: OK proposta **Vercel root `console/`**, indirizzo `console.<dominio>`; dominio esatto da definire poi | Sblocca lo scaffolding | — | attiva (dominio TBD) |
 | DEC-013 | 2026-06-22 | Cristiano+Matteo | **Standing authorization**: Matteo dà consenso a tutto «per ora». Vincolo: **tracciabilità obbligatoria** di ogni decisione/azione di Orchestrator, Esecutori, Revisori | Velocità senza perdere l'auditabilità | `TRACCIABILITA.md` | attiva |
+| DEC-014 | 2026-06-22 | Orchestrator | **Master-plan a 7 fasi** (F1…F7): scomposto lo scope §4 dell'hand-off (5 fasi) separando **login reale** (F3) ed **Edge Function** (F4) in fasi proprie, prima di cambio edition/feature/impostazioni | Login ed Edge sono prerequisiti di sicurezza delle scritture (DEC-010/011): meritano fase e revisione dedicate, non un sotto-passo | `MASTERPLAN_CONSOLE.md` | attiva |
+| DEC-015 | 2026-06-22 | Cristiano | **Automode pieno**: dopo la creazione del master-plan, l'Orchestrator procede col ciclo esecutore→revisore→commit senza checkpoint per fase, fermandosi solo su bivi irreversibili/fuori scope o blocchi | Velocità (coerente con DEC-013); la tracciabilità resta il contrappeso | `AskUserQuestion` 2026-06-22 | attiva |
+| DEC-016 | 2026-06-22 | Esecutore-F1 | **Convenzioni scaffolding `console/`**: dev server porta **5174** (5173 è di Matteo); alias **`@console/`** (non `@/`); `postcss.config.js` locale vuoto (evita il PostCSS/Tailwind root); `isAuthenticated=false` hardcoded transitorio (auth vera in F3); `<meta robots noindex>` | Coesistenza con l'app di Matteo + sicurezza (no indicizzazione console) | `MASTERPLAN_CONSOLE.md` §F1; `console/` | attiva |
 
 ---
 
