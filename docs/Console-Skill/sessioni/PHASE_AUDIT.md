@@ -15,7 +15,8 @@
 | F3 | Login reale (Supabase Auth + allowlist) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `8ca16cf` | DEC-018, DEC-019, DEC-020; PLAN-DB-002 |
 | F4 | Edge Function scritture privilegiate (deploy a Matteo) | Sonnet (R1) + Haiku (R2 fix) | Sonnet (R1) + Haiku (R2) | 🟢 VERDE (round 2) | `bd7d038` | DEC-021/022/023/024/025/026; PLAN-DB-003 |
 | F5 | Cambio edition (sandbox, via Edge) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `37bd836` | DEC-027 |
-| F6 | Feature flag (`tenant_features`) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | _(vedi git log)_ | DEC-028, DEC-029; PLAN-DB-004 |
+| F6 | Feature flag (`tenant_features`) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `15da08a` | DEC-028, DEC-029; PLAN-DB-004 |
+| F7 | Impostazioni ristorante (`restaurant_settings`) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | _(vedi git log)_ | DEC-030, DEC-031 |
 
 ---
 
@@ -178,9 +179,37 @@
 - Ri-lavorazioni: nessuna (verde al round 1).
 
 **Chiusura fase**
-- **Commit:** _(vedi git log — feat(console): feature flag tenant_features (F6, DEC-028/029))_
+- **Commit:** `15da08a` — feat(console): feature flag tenant_features (F6, DEC-028/029)
 - Riga aggiunta a SESSION_LOG.md: sì
 - Follow-up aperti: **PLAN-DB-004 da eseguire (Matteo)** per leggere gli override reali; test E2E toggle = manuale di Matteo dopo deploy Edge + PLAN-DB-004
+
+---
+
+### Fase F7 — Impostazioni ristorante (`restaurant_settings`)
+- **Obiettivo / effetto:** configurare i «numeri tecnici» di un tenant sandbox usando solo le chiavi del registro. Effetto: la Console copre la configurazione fine del ristorante senza inventare chiavi.
+- **Modalità:** deep
+- **Dipendenze:** F6; E2E dipende da deploy Edge (PLAN-DB-003)
+
+**Esecutore**
+- Prompt usato: `MASTERPLAN_CONSOLE.md` §F7 (prompt esecutore) + nota deploy-deferred + freno scope creep (subset rappresentativo)
+- Sintesi: `restaurantSettings.ts` ricrea tutte le 20 chiavi di `RESTAURANT_SETTING_KEYS_V1` (`as const`) + 5 esposte con editor/validatori/default fedeli (`booking_window_days`, `walk_in_max_guests`, `slot_limit_enabled`, `booking_reject_out_of_slot`, `booking_time_slots_enabled`); hook `useRestaurantSettings` (lettura, default-se-assente, stato `rls-blocked`) e `useSettingSave` (`callConsoleAdmin('upsert_restaurant_setting')`); `RestaurantSettingsPanel` (valore vs default, validazione pre-invio, toggle solo sandbox); integrato in `RestaurantList`. Risolto FU-CONSOLE-6 (esclusa `supabase/` dall'ESLint Console + rimosso `eslint-disable` ridondante in `FeatureFlagsPanel`).
+- File toccati: `console/src/lib/restaurantSettings.ts` (nuovo), `console/src/hooks/useRestaurantSettings.ts` (nuovo), `console/src/hooks/useSettingSave.ts` (nuovo), `console/src/components/RestaurantSettingsPanel.tsx` (nuovo), `console/src/components/RestaurantList.tsx` (mod), `console/src/components/FeatureFlagsPanel.tsx` (mod, cleanup lint), `console/.eslintrc.cjs` (mod, ignore supabase).
+- Decisioni autonome prese: DEC-030 (subset di 5 chiavi esposte + registro completo ricreato; chiavi avanzate non esposte → eventuale F8), DEC-031 (ESLint ignora `supabase/` Deno, allineato a tsconfig → chiude FU-CONSOLE-6).
+- Scritture DB: nessuna diretta (via Edge non deployata). Letture via client pubblico.
+- Plan per Matteo generati: nessuno (lettura `restaurant_settings` non risultata bloccata; se in futuro bloccata → PLAN-DB-005 indicato dal messaggio UI).
+
+**Revisore (controverifica)**
+- Controllo critico fedeltà registro/validatori: ✓ chiavi identiche all'originale (nomi/ordine), validatori e default delle 5 esposte coerenti (es. `booking_window_days` int 1–365); nessuna chiave inventata.
+- Done-criteria verificati: scrittura via `callConsoleAdmin('upsert_restaurant_setting', {tenant_id, setting_key, value})` ✓ · gate sandbox (`isSandboxTenant`) + guard server ✓ · validazione pre-invio (salva disabilitato se invalido) ✓ · lettura client pubblico + default se assente + `rls-blocked` senza crash ✓ · stati loading/disabled/successo/errore + refetch ✓ · nessuna scrittura diretta (grep) + nessun import da `../src` ✓ · build 91 moduli + typecheck + lint 0 warning ✓
+- Controllo `.eslintrc.cjs`/`FeatureFlagsPanel`: modifiche solo di stile/config, nessun cambio di logica, build/lint verdi ✓
+- Regole d'oro rispettate: ✓ (`src/`/`supabase/` root intatti; service role solo lato Edge)
+- **Verdetto:** 🟢 VERDE (nota minore: `prevValueRef` con `useState` fuorviante → FU-CONSOLE-8, leggibilità)
+- Ri-lavorazioni: nessuna (verde al round 1).
+
+**Chiusura fase**
+- **Commit:** _(vedi git log — feat(console): impostazioni ristorante (F7, DEC-030/031))_
+- Riga aggiunta a SESSION_LOG.md: sì
+- Follow-up aperti: FU-CONSOLE-8 (leggibilità `prevValueRef`); chiavi avanzate non esposte (eventuale F8); test E2E = manuale di Matteo dopo deploy
 
 ---
 

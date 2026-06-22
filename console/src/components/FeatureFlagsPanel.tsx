@@ -64,7 +64,6 @@ export function FeatureFlagsPanel({ tenantId, edition }: FeatureFlagsPanelProps)
       setRefetchKey((k) => k + 1)
     }
     // isSuccessForThisTenant è derivato da toggleState: cambia solo quando il toggle completa.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccessForThisTenant])
 
   const handleToggle = useCallback(

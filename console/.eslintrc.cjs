@@ -25,5 +25,6 @@ module.exports = {
     ],
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
   },
-  ignorePatterns: ['dist', 'node_modules', '*.config.js', '*.config.ts'],
+  // supabase/ contiene Edge Functions Deno (non browser): esclusa come in tsconfig.json.
+  ignorePatterns: ['dist', 'node_modules', '*.config.js', '*.config.ts', 'supabase'],
 }

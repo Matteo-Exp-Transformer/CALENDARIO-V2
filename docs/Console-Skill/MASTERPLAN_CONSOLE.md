@@ -421,4 +421,7 @@ Esito: VERDE o ROSSO con correzioni puntuali. NON toccare il codice; NON committ
 | F4 | ✅ (R2) | ✅ | 🟢 VERDE | sì | function+helper+PLAN-DB-003; deploy a Matteo |
 | F5 | ✅ | ✅ | 🟢 VERDE | sì | UI cambio edition; E2E dopo deploy |
 | F6 | ✅ | ✅ | 🟢 VERDE | sì | feature flag; override reali dopo PLAN-DB-004 |
-| F7 | ⏳ | — | — | — | in avvio |
+| F7 | ✅ | ✅ | 🟢 VERDE | sì | impostazioni (5 chiavi esposte); E2E dopo deploy |
+
+> **Ciclo F1→F7 completato (2026-06-22).** Tutte le fasi 🟢 VERDE, auditate e committate.
+> Restano a Matteo: deploy Edge (PLAN-DB-003) + policy RLS (PLAN-DB-002, PLAN-DB-004) → poi test E2E delle scritture.

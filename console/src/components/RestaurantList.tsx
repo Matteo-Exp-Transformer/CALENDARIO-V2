@@ -26,6 +26,7 @@ import {
 import { isSandboxTenant } from '@console/lib/sandbox'
 import { EditionSelector } from './EditionSelector'
 import { FeatureFlagsPanel } from './FeatureFlagsPanel'
+import { RestaurantSettingsPanel } from './RestaurantSettingsPanel'
 
 // ---------------------------------------------------------------------------
 // Tipi
@@ -207,6 +208,12 @@ function OrgCard({ org, onEditionSuccess }: OrgCardProps) {
 
       {/* Pannello feature flag (F6): sandbox = toggle, non sandbox = sola lettura */}
       <FeatureFlagsPanel tenantId={org.id} edition={org.edition} />
+
+      {/* Divisore prima del pannello impostazioni */}
+      <hr style={styles.divider} />
+
+      {/* Pannello impostazioni ristorante (F7): sandbox = editor, non sandbox = sola lettura */}
+      <RestaurantSettingsPanel tenantId={org.id} />
     </div>
   )
 }
