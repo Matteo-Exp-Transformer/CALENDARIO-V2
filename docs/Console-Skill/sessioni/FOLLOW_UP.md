@@ -9,6 +9,7 @@
 | FU-CONSOLE-3 | Scaffolding dell'app `console/` (Vite+React+TS+Supabase isolata) + esclusione dalla pipeline root | Sessione successiva |
 | FU-CONSOLE-4 | Decidere meccanismo Edge per scritture privilegiate della Console | Risolto in F4 (DEC-010): Edge Function dedicata |
 | FU-CONSOLE-5 | Tenant **sospesi** (`is_active=false`) non visibili al client anon (policy `anon_select_active_organizations` filtra solo gli attivi) | Rivalutare in F3/F5: con auth super-admin la lettura potrebbe mostrare tutti i tenant (eventuale policy RLS via plan-per-matteo) |
+| FU-CONSOLE-6 | 3 warning ESLint `console.log` nell'Edge Function Deno `console/supabase/functions/console-admin/index.ts` (audit log server, lecito in Deno) | Far ignorare la cartella `supabase/functions` all'ESLint della Console o usare `console.info`; minore, non blocca |
 
 ## Domande a Matteo — ✅ TUTTE RISOLTE (2026-06-22, consenso pieno)
 

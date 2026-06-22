@@ -419,6 +419,6 @@ Esito: VERDE o ROSSO con correzioni puntuali. NON toccare il codice; NON committ
 | F2 | ✅ | ✅ | 🟢 VERDE | sì | elenco 7 tenant, sola lettura |
 | F3 | ✅ | ✅ | 🟢 VERDE | sì | Magic Link + allowlist; PLAN-DB-002 |
 | F4 | ✅ (R2) | ✅ | 🟢 VERDE | sì | function+helper+PLAN-DB-003; deploy a Matteo |
-| F5 | ⏳ | — | — | — | in avvio |
-| F6 | ⬜ | — | — | — | |
+| F5 | ✅ | ✅ | 🟢 VERDE | sì | UI cambio edition; E2E dopo deploy |
+| F6 | ⏳ | — | — | — | in avvio |
 | F7 | ⬜ | — | — | — | |

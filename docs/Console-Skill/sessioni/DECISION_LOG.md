@@ -45,6 +45,7 @@
 | DEC-024 | 2026-06-22 | Esecutore-F4 | **Doppio gate allowlist**: `CONSOLE_ALLOWED_EMAILS` (secret server della function) ≠ `VITE_CONSOLE_ALLOWED_EMAILS` (client). Client=UX, server=barriera vera | Difesa a strati; il client non è una barriera di sicurezza | `console/supabase/functions/console-admin/index.ts` | attiva |
 | DEC-025 | 2026-06-22 | Esecutore-F4 | Helper client `consoleAdminClient` **non lancia eccezioni**: errori normalizzati in `ConsoleAdminResult {data,error}` | Uso idiomatico in React senza try/catch | `console/src/lib/consoleAdminClient.ts` | attiva |
 | DEC-026 | 2026-06-22 | Revisore-F4 | **Nomi colonna allineati allo schema reale** (verificato via MCP): `tenant_features(tenant_id, feature_key, enabled)`, `restaurant_settings(tenant_id, setting_key, setting_value)`; corretti `organization_id/is_enabled/key/value` usati per errore nel round 1 | Le scritture sarebbero fallite a runtime; fonte di verità = DB | PHASE_AUDIT F4 round 2 | attiva |
+| DEC-027 | 2026-06-22 | Esecutore-F5 | **Pattern F5**: refetch della lista via **counter** incrementale (no React Query/SWR per non aggiungere dipendenze); stato di `useEditionChange` per-tenant (ogni `EditionSelector` ha la sua istanza) | Semplicità senza store globale; refetch isolato | `console/src/components/RestaurantList.tsx`; `console/src/hooks/useEditionChange.ts` | attiva |
 
 ---
 

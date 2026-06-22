@@ -13,7 +13,8 @@
 | F1 | Scaffolding `console/` isolata | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `c981fc0` | DEC-001, DEC-014, DEC-016 |
 | F2 | Elenco ristoranti (sola lettura) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `49c0230` | DEC-017 |
 | F3 | Login reale (Supabase Auth + allowlist) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | `8ca16cf` | DEC-018, DEC-019, DEC-020; PLAN-DB-002 |
-| F4 | Edge Function scritture privilegiate (deploy a Matteo) | Sonnet (R1) + Haiku (R2 fix) | Sonnet (R1) + Haiku (R2) | 🟢 VERDE (round 2) | _(vedi git log)_ | DEC-021/022/023/024/025; PLAN-DB-003 |
+| F4 | Edge Function scritture privilegiate (deploy a Matteo) | Sonnet (R1) + Haiku (R2 fix) | Sonnet (R1) + Haiku (R2) | 🟢 VERDE (round 2) | `bd7d038` | DEC-021/022/023/024/025/026; PLAN-DB-003 |
+| F5 | Cambio edition (sandbox, via Edge) | Sonnet (general-purpose) | Sonnet (general-purpose) | 🟢 VERDE | _(vedi git log)_ | DEC-027 |
 
 ---
 
@@ -122,9 +123,36 @@
 - Ri-lavorazioni: 1 round (correzione nomi colonna).
 
 **Chiusura fase**
-- **Commit:** _(vedi git log — feat(console): Edge Function console-admin (F4, DEC-022/023/024/025))_
+- **Commit:** `bd7d038` — feat(console): Edge Function console-admin (F4, DEC-022/023/024/025/026)
 - Riga aggiunta a SESSION_LOG.md: sì
 - Follow-up aperti: **PLAN-DB-003 da eseguire (Matteo)** — finché la function non è deployata e `VITE_CONSOLE_ADMIN_FUNCTION_URL` impostata, le scritture di F5/F6/F7 dal browser non sono verificabili E2E (l'effetto sul DB resta verificabile dall'Orchestrator via MCP)
+
+---
+
+### Fase F5 — Cambio edition (sandbox, via Edge)
+- **Obiettivo / effetto:** dalla Console si cambia la versione venduta (`organizations.edition`) di un tenant sandbox, via Edge. Effetto: primo vero comando di configurazione (classic↔pro↔enterprise) sui banchi di prova.
+- **Modalità:** deep
+- **Dipendenze:** F4 (helper `callConsoleAdmin`); E2E dipende dal deploy della Edge (PLAN-DB-003)
+
+**Esecutore**
+- Prompt usato: `MASTERPLAN_CONSOLE.md` §F5 (prompt esecutore) + nota deploy-deferred
+- Sintesi: `sandbox.ts` (`SANDBOX_TENANT_IDS` + `isSandboxTenant`), hook `useEditionChange` (chiama `callConsoleAdmin('update_edition')`, stati idle/loading/success/error), `EditionSelector` (3 bottoni edition, banner successo/errore, gestione "function non configurata"); `RestaurantList` mostra il selettore solo sui sandbox (altri "Sola lettura") e rilegge dopo successo (refetch counter).
+- File toccati: `console/src/lib/sandbox.ts` (nuovo), `console/src/hooks/useEditionChange.ts` (nuovo), `console/src/components/EditionSelector.tsx` (nuovo), `console/src/components/RestaurantList.tsx` (mod).
+- Decisioni autonome prese: DEC-027 (refetch via counter; stato `useEditionChange` per-tenant).
+- Scritture DB: nessuna diretta (passano dall'Edge, non deployata). Nessun `tenant_features` (è F6).
+- Plan per Matteo generati: nessuno.
+
+**Revisore (controverifica)**
+- Done-criteria verificati: invoca `callConsoleAdmin('update_edition', {tenant_id, edition})` ✓ · gate sandbox via `isSandboxTenant`, non-sandbox = "Sola lettura" ✓ · stati loading/disabled + successo/errore + caso function non configurata senza crash ✓ · refetch post-successo riflette la nuova edition ✓ · nessuna scrittura DB diretta (grep update/upsert/insert/delete = 0), nessun `tenant_features` ✓ · nessun import da `../src` ✓ · build 83 moduli + typecheck 0 errori ✓
+- Regole d'oro rispettate: ✓ (`src/`/`supabase/` root intatti; nessuna service role nel browser; nessuna modifica a `docs/` dall'esecutore)
+- Test/lint/typecheck: build+typecheck verdi. Lint: 3 warning `console.log` PRE-ESISTENTI nell'Edge di F4 (non di F5) → FU-CONSOLE-6.
+- **Verdetto:** 🟢 VERDE
+- Ri-lavorazioni: nessuna (verde al round 1).
+
+**Chiusura fase**
+- **Commit:** _(vedi git log — feat(console): cambio edition (F5, DEC-027))_
+- Riga aggiunta a SESSION_LOG.md: sì
+- Follow-up aperti: FU-CONSOLE-6 (lint console.log Edge); test E2E cambio edition = manuale di Matteo dopo deploy
 
 ---
 

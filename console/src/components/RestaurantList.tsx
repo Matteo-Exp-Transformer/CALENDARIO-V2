@@ -1,4 +1,21 @@
-import { useEffect, useState } from 'react'
+/**
+ * Lista ristoranti (organizations) con cambio edition per i tenant sandbox (F2 + F5).
+ *
+ * F2: legge organizations dal DB via client pubblico (anon), mostra nome/slug/edition.
+ * F5: per i tenant sandbox (console-classic, console-pro) mostra EditionSelector;
+ *     per gli altri mostra badge "Sola lettura" — nessun controllo di modifica.
+ *
+ * RESTRIZIONE SANDBOX (RULE-2):
+ *   isSandboxTenant() decide se montare EditionSelector o il badge read-only.
+ *   Il gate forte è lato server (Edge Function + RLS).
+ *
+ * REFETCH DOPO CAMBIO EDITION:
+ *   EditionSelector chiama onSuccess() dopo un cambio riuscito.
+ *   RestaurantList risponde con fetchOrgs() → rilegge organizations dal DB.
+ *   Questo mantiene UI e DB allineati senza cache locale.
+ */
+
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '@console/lib/supabaseClient'
 import {
   normalizeEdition,
@@ -6,9 +23,14 @@ import {
   editionBadgeColors,
   type Edition,
 } from '@console/lib/editionUtils'
+import { isSandboxTenant } from '@console/lib/sandbox'
+import { EditionSelector } from './EditionSelector'
+
+// ---------------------------------------------------------------------------
+// Tipi
+// ---------------------------------------------------------------------------
 
 // Tipo minimo che la Console legge da organizations (sola lettura).
-// Colonne: quelle visibili con la policy anon_select_active_organizations.
 interface Organization {
   id: string
   slug: string
@@ -32,38 +54,58 @@ type LoadState =
   | { status: 'error'; message: string }
   | { status: 'ok'; data: Organization[] }
 
+// ---------------------------------------------------------------------------
+// Componente principale
+// ---------------------------------------------------------------------------
+
 export function RestaurantList() {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
+  // Contatore refetch: incrementato da handleEditionSuccess per forzare il re-fetch.
+  const [refetchCounter, setRefetchCounter] = useState(0)
+  // Ref per prevenire aggiornamenti di stato dopo lo smontaggio del componente.
+  const mountedRef = useRef(true)
 
-  useEffect(() => {
-    let cancelled = false
+  const fetchOrgs = useCallback(async () => {
+    setState((prev) => prev.status === 'ok' ? { status: 'loading' } : prev)
 
-    async function fetchOrgs() {
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('id, slug, name, edition, is_active')
-        .order('name')
+    const { data, error } = await supabase
+      .from('organizations')
+      .select('id, slug, name, edition, is_active')
+      .order('name')
 
-      if (cancelled) return
+    if (!mountedRef.current) return
 
-      if (error) {
-        setState({ status: 'error', message: error.message })
-        return
-      }
-
-      const rows: Organization[] = (data as OrgRow[]).map((row) => ({
-        id: row.id,
-        slug: row.slug,
-        name: row.name,
-        edition: normalizeEdition(row.edition),
-        is_active: row.is_active,
-      }))
-
-      setState({ status: 'ok', data: rows })
+    if (error) {
+      setState({ status: 'error', message: error.message })
+      return
     }
 
+    const rows: Organization[] = (data as OrgRow[]).map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      edition: normalizeEdition(row.edition),
+      is_active: row.is_active,
+    }))
+
+    setState({ status: 'ok', data: rows })
+  }, [])
+
+  // Fetch iniziale + re-fetch quando refetchCounter cambia (post cambio edition).
+  useEffect(() => {
+    mountedRef.current = true
     fetchOrgs()
-    return () => { cancelled = true }
+    return () => {
+      mountedRef.current = false
+    }
+  // fetchOrgs è stabile (useCallback senza dipendenze variabili).
+  // refetchCounter forza il re-run quando EditionSelector segnala un successo.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refetchCounter])
+
+  // Callback per EditionSelector: forza un re-fetch della lista.
+  const handleEditionSuccess = useCallback(() => {
+    setRefetchCounter((c) => c + 1)
   }, [])
 
   return (
@@ -89,7 +131,11 @@ export function RestaurantList() {
       {state.status === 'ok' && state.data.length > 0 && (
         <div style={styles.grid}>
           {state.data.map((org) => (
-            <OrgCard key={org.id} org={org} />
+            <OrgCard
+              key={org.id}
+              org={org}
+              onEditionSuccess={handleEditionSuccess}
+            />
           ))}
         </div>
       )}
@@ -97,11 +143,25 @@ export function RestaurantList() {
   )
 }
 
-function OrgCard({ org }: { org: Organization }) {
+// ---------------------------------------------------------------------------
+// Card singola
+// ---------------------------------------------------------------------------
+
+interface OrgCardProps {
+  org: Organization
+  onEditionSuccess: () => void
+}
+
+function OrgCard({ org, onEditionSuccess }: OrgCardProps) {
   const badge = editionBadgeColors(org.edition)
+  const sandbox = isSandboxTenant(org.id)
 
   return (
-    <div style={styles.card}>
+    <div style={{
+      ...styles.card,
+      // Bordo leggermente diverso per i sandbox: segnala visivamente che sono scrivibili.
+      borderColor: sandbox ? '#3b5268' : '#334155',
+    }}>
       {/* Nome e stato attivo */}
       <div style={styles.cardHeader}>
         <span style={styles.orgName}>{org.name}</span>
@@ -123,11 +183,31 @@ function OrgCard({ org }: { org: Organization }) {
       >
         {editionLabel(org.edition)}
       </span>
+
+      {/* Divisore */}
+      <hr style={styles.divider} />
+
+      {/* Controlli: EditionSelector per sandbox, badge read-only per gli altri */}
+      {sandbox ? (
+        <EditionSelector
+          tenantId={org.id}
+          currentEdition={org.edition}
+          onSuccess={onEditionSuccess}
+        />
+      ) : (
+        <div style={styles.readOnlyBadge}>
+          <span style={styles.readOnlyIcon}>🔒</span>
+          <span>Sola lettura</span>
+        </div>
+      )}
     </div>
   )
 }
 
+// ---------------------------------------------------------------------------
 // Stili inline — nessuna dipendenza da file CSS dell'app di Matteo.
+// ---------------------------------------------------------------------------
+
 const styles = {
   sectionTitle: {
     fontSize: '1rem',
@@ -152,7 +232,6 @@ const styles = {
   } as React.CSSProperties,
 
   // Griglia responsive: 1 colonna su mobile, 2 su tablet, 3 su desktop.
-  // Usiamo minmax per colonne fluide senza media queries JS.
   grid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
@@ -161,7 +240,7 @@ const styles = {
 
   card: {
     background: '#1e293b',
-    border: '1px solid #334155',
+    border: '1px solid',
     borderRadius: '10px',
     padding: '1rem',
     display: 'flex',
@@ -180,7 +259,6 @@ const styles = {
     fontWeight: 600,
     fontSize: '0.9375rem',
     color: '#f1f5f9',
-    // Tronca se il nome è molto lungo su mobile
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap' as const,
@@ -222,5 +300,24 @@ const styles = {
     borderRadius: '6px',
     letterSpacing: '0.05em',
     textTransform: 'uppercase' as const,
+  } as React.CSSProperties,
+
+  divider: {
+    border: 'none',
+    borderTop: '1px solid #334155',
+    margin: '0.25rem 0',
+  } as React.CSSProperties,
+
+  readOnlyBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.4rem',
+    fontSize: '0.7rem',
+    color: '#475569',
+    fontWeight: 500,
+  } as React.CSSProperties,
+
+  readOnlyIcon: {
+    fontSize: '0.75rem',
   } as React.CSSProperties,
 } as const
