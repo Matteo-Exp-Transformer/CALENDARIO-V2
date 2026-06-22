@@ -33,25 +33,30 @@
 
 ---
 
-## ⚠️ Note architetturali / da decidere (per il Team — CRITICO)
+## ✅ Decisioni prese — istruzioni operative
 
-> Creare/eliminare **tenant reali** è l'azione **più delicata** di tutta la Console: tocca dati di
-> clienti veri, non i sandbox. Prima di sviluppare, concordare con Matteo:
->
-> 1. **Guard**: l'attuale guard sandbox-only va esteso. Creare un tenant *nuovo* è ammesso (non è un
->    sandbox né un tenant esistente di Matteo); **modificare/eliminare** tenant *esistenti* va protetto
->    con conferme forti e — idealmente — un flag che distingua "tenant gestiti dalla Console" da quelli
->    storici di Matteo.
-> 2. **Azioni Edge nuove**: `create_tenant`, `delete_tenant` (+ associazione admin) con service role
->    server-side. Validazione slug unico, edition valida.
-> 3. **GRANT + RLS su nuove tabelle/colonne** → *plan per matteo* (ricorda la regola Supabase Data API:
->    nuove tabelle `public` richiedono GRANT espliciti).
-> 4. **Eliminazione**: soft-delete (`is_active=false`) vs hard-delete con cascata? Definire e mettere
->    doppia conferma. Default consigliato: **soft-delete**.
-> 5. **Coerenza con i dati di Matteo**: NON toccare i tenant esistenti reali senza sua conferma esplicita.
+> Risolte con Matteo il 2026-06-22 (DEC-037/038/041/042). È l'azione **più potente** della Console:
+> seguire le protezioni alla lettera.
 
-> Apri i `plan-per-matteo` necessari e registra `DEC-NNN` per ogni scelta. Procedere a step:
-> prima creazione su un ambiente di prova, poi eliminazione, poi associazione utente.
+**Ambito (DEC-037): nessun limite** — la console può creare/modificare/eliminare **qualsiasi** azienda
+su **TEST** (`docnnernvp`). ⚠️ **RULE-2 (sandbox-only) revocata** per la gestione console. **RULE-1
+resta**: solo TEST, **mai** PROD `rwuxgvld` (`get_project_url` prima di ogni scrittura).
+
+**Creazione (DEC-041): azienda + admin in UN unico passaggio.** Form unico:
+- Azienda: **nome**, **slug** (proponilo auto dal nome, modificabile, unico), **edition** (`classic`/`pro`/`enterprise`), eventuali campi base.
+- Admin: **email + password impostate da Matteo** (login immediato). L'admin risulta associato all'azienda.
+
+**Eliminazione (DEC-038): cancellazione definitiva (hard-delete).** Protezione obbligatoria:
+- Prima di cancellare, Matteo deve **riscrivere il nome esatto** dell'azienda.
+- Avviso chiaro che l'azione è **irreversibile** (e cosa viene rimosso, es. dati collegati/cascata).
+
+**Implementazione lato Edge:** azioni `create_tenant` (+ admin), `delete_tenant`; validazione slug unico
+ed edition valida; **estendere/rimuovere** `SANDBOX_TENANT_IDS` mantenendo il gate **allowlist** (DEC-037).
+Nuove tabelle/colonne/GRANT/RLS → *plan per matteo* (ricorda: nuove tabelle `public` richiedono GRANT
+espliciti — vedi memoria Data API). Registra eventuali sotto-decisioni come `DEC-NNN`.
+
+**Ordine (DEC-042): questa REQ viene DOPO** REQ-001 (lettura) + REQ-002 (scheda). Procedere a step:
+prima creazione, poi associazione admin, poi eliminazione protetta.
 
 ---
 

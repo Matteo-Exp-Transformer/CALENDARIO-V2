@@ -39,17 +39,31 @@
 
 ---
 
-## ⚠️ Note architetturali / da decidere (per il Team)
+## ✅ Decisioni prese — istruzioni operative
 
-> - La scheda **riusa** i pannelli già esistenti (edition, feature flag, impostazioni) ma li raccoglie
->   per **un singolo tenant** e li **estende** alle sezioni dell'intervista non ancora esposte
->   (orari/fasce, sala/tavoli, menu/QR, aspetto): valutare cosa è leggibile/scrivibile oggi e cosa
->   richiede nuove azioni Edge o nuove letture RLS.
-> - **Mappare 1:1** le sezioni dell'intervista (`INTERVISTA_NUOVO_CLIENTE.md`) ai campi della scheda,
->   indicando per ciascuno: dove sta il dato (colonna/setting/feature/tabella), versione, scrivibile sì/no.
-> - Le chiavi impostazioni "avanzate" (`business_hours`, `slot_guest_capacities`, `booking_public_form_config`,
->   ecc.) oggi NON sono esposte (FU-CONSOLE-9): decidere se questa scheda le copre (richiede editor dedicati).
-> - Scritture solo via Edge; schema/RLS → *plan per matteo*.
+> Risolte con Matteo il 2026-06-22 (DEC-040, + DEC-037). **L'intervista la fa Matteo col cliente**; la
+> scheda serve a Matteo per **riversare** i dati raccolti e vedere cosa manca. Il Team non intervista nessuno.
+
+**Copertura (DEC-040): TUTTE le sezioni dell'intervista.** La scheda deve coprire, sezione per sezione,
+tutto `onboarding/INTERVISTA_NUOVO_CLIENTE.md`: anagrafica/versione, contatti, funzioni, orari/fasce,
+regole prenotazione, sala/tavoli (Pro), menu/QR, aspetto pagina, accessi. Si **costruisce a tappe** ma
+l'obiettivo è la copertura completa.
+
+**Come costruirla:**
+- **Mappare 1:1** le sezioni dell'intervista ai campi della scheda; per ciascun campo indicare dove sta
+  il dato (colonna `organizations` / chiave `restaurant_settings` / `tenant_features` / tabella sale-tavoli-menu),
+  la versione e se è scrivibile.
+- **Riusa** i pannelli esistenti (edition, feature flag, impostazioni) raccogliendoli per **un singolo
+  tenant**, ed **estendili** alle sezioni non ancora esposte.
+- Le chiavi "avanzate" oggi non esposte (`business_hours`, `slot_guest_capacities`,
+  `booking_public_form_config`, …, FU-CONSOLE-9) **vanno coperte**: richiedono editor dedicati →
+  pianificarle come sotto-tappe.
+- Mostra a colpo d'occhio **cosa è già configurato vs cosa manca** rispetto all'intervista.
+
+**Ambito e scritture (DEC-037):** la scheda agisce su **qualsiasi azienda** su TEST (non solo sandbox),
+con il gate allowlist + scritture via Edge. Resta RULE-1 (solo TEST). Schema/RLS nuovi → *plan per matteo*.
+
+**Ordine (DEC-042):** questa REQ è tra le **prime** (con REQ-001 in lettura), prima delle azioni crea/elimina.
 
 ---
 
