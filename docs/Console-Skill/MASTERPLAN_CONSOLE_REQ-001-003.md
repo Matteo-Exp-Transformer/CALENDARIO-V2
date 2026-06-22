@@ -260,7 +260,7 @@ Esito: 🟢 VERDE o 🔴 ROSSO con correzioni puntuali. NON modificare il codice
 | F8 | 001 (R) | ✅ | ✅ | 🟢 VERDE | sì | dipende da PLAN-DB-005 (Matteo) per i dati reali |
 | F9 | 002 (t1) | ✅ | ✅ | 🟢 VERDE | sì | rosso→verde (DEC-046 registrata, useEffect corretto); FU-CONSOLE-9 ampliato |
 | F10 | 001/003 | ✅ | ✅ | 🟢 VERDE | sì | rosso→verde (4 fix audit); deploy + PLAN-DB-006 opz. (Matteo); DEC-047 |
-| F11 | 001 (W) | ⬜ | ⬜ | — | — | E2E dopo deploy F10 |
+| F11 | 001 (W) | ✅ | ✅ | 🟢 VERDE | sì | rosso→verde (password 8, email case-insensitive, DEC-048..050); E2E dopo deploy F10 |
 | F12 | 003 | ⬜ | ⬜ | — | — | E2E dopo deploy F10 |
 
 > **Plan DB a carico di Matteo per questo master-plan:** PLAN-DB-005 (SELECT admin_users), e — se F10 lo

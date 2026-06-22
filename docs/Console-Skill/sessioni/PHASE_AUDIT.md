@@ -297,6 +297,31 @@
 
 ---
 
+### Fase F11 — CRUD utente dalla UI (REQ-001 scrittura)
+- **Obiettivo / effetto:** collegare la vista Utenti (F8) alle azioni Edge (F10): crea/modifica/elimina admin.
+- **Modalità:** deep · **Dipendenze:** F10 (azioni Edge) + F8 (vista). E2E dopo re-deploy Edge (Matteo).
+
+**Esecutore** (general-purpose, Sonnet)
+- Prompt usato: `MASTERPLAN_CONSOLE_REQ-001-003.md` §F11
+- Sintesi: hook `useAdminUserMutations` (stati separati) + 3 modali (Create/Edit/Delete); UserList con "+ Nuovo utente" e azioni di riga reali al posto dei placeholder; dropdown aziende on-demand; eliminazione con riscrittura email esatta + avviso irreversibilità (DEC-038); degrado con messaggio se l'Edge non è raggiungibile.
+- File toccati: `console/src/hooks/useAdminUserMutations.ts` (nuovo), `console/src/components/{CreateUserModal,EditUserModal,DeleteUserModal}.tsx` (nuovi), `UserList.tsx` (mod)
+- Decisioni autonome: DEC-048 (modali), DEC-049 (dropdown on-demand), DEC-050 (hook stati separati)
+- Scritture DB: nessuna (l'app scrive via Edge a runtime)
+
+**Revisore (controverifica)** (general-purpose, Sonnet — distinto)
+- Done-criteria: crea (payload allineato, refetch, email-duplicata) ✓ · modifica (solo campi cambiati) ✓ · elimina con conferma email + irreversibilità + confirm_email ✓ · placeholder sostituiti, azioni su tutte le aziende ✓ · degrado senza crash ✓ · RULE-4 ✓
+- Test/lint/typecheck: 🟢 build (97 moduli), lint 0 warning, typecheck pulito
+- **Verdetto round 1:** 🔴 ROSSO — (1, alta) validazione password client≥8 vs server≥6; (2, media) confronto email eliminazione case-sensitive client vs case-insensitive server + commento errato; (3, bassa) DEC-048/049/050 non registrate.
+- **Ri-lavorazione (Orchestrator, audit):** (1) server allineato a min 8 (entrambi i path create); (2) confronto modale reso case-insensitive + commento corretto; (3) DEC-048/049/050 registrate. Build/lint/typecheck ri-verificati 🟢.
+- **Verdetto finale:** 🟢 VERDE
+
+**Chiusura fase**
+- **Commit:** _(vedi git log — feat(console): CRUD utente dalla UI (F11, DEC-048..050, REQ-001))_
+- Riga aggiunta a SESSION_LOG.md: sì
+- Follow-up aperti: nessuno nuovo (E2E lato Matteo dopo re-deploy Edge F10)
+
+---
+
 ## Template blocco di fase (copia per ogni Fi)
 
 ```markdown

@@ -1,21 +1,26 @@
 /**
- * Vista "Tutti gli utenti" (F8 — REQ-001).
+ * Vista "Tutti gli utenti" (F8 + F11 — REQ-001).
  *
- * Mostra tutti i record di admin_users con l'azienda associata (join su organizations).
- * Fetch via client pubblico autenticato: funziona solo dopo che Matteo ha eseguito
- * PLAN-DB-005 (policy SELECT su admin_users per is_console_user()).
+ * F8: legge admin_users con join su organizations, ricerca per email, sola lettura.
+ * F11: collega le azioni Edge create/update/delete (useAdminUserMutations).
  *
- * PERCHÉ non usiamo join SQL sul client direttamente:
- *   Supabase JS v2 supporta la sintassi `select('*, organizations(...))`
- *   che il PostgREST traduce in un JOIN lato server. È la stessa tecnica
- *   usata in RestaurantList; evita due round-trip e mantiene il codice semplice.
+ * GESTIONE RLS NON ATTIVA (PLAN-DB-005):
+ *   Se la policy SELECT su admin_users non è ancora attiva, la query torna 0 righe.
+ *   Mostriamo un messaggio chiaro senza crash.
  *
- * CASO RLS NON ATTIVA:
- *   Se PLAN-DB-005 non è stato eseguito, la query restituisce 0 righe (non un errore).
- *   Mostriamo un messaggio che cita il piano, senza crash e senza aggirare la RLS.
+ * GESTIONE FUNCTION NON DEPLOYATA:
+ *   Se VITE_CONSOLE_ADMIN_FUNCTION_URL non è impostata o la Edge Function non è
+ *   ancora deployata, callConsoleAdmin restituisce un errore esplicito. I modali
+ *   mostrano quel messaggio senza crash — stesso pattern di RestaurantSettingsPanel.
  *
- * AZIONI DI RIGA:
- *   "Apri scheda" (F9), "Modifica" e "Elimina" sono placeholder disabilitati (in arrivo).
+ * DEC-037: le azioni valgono su TUTTE le aziende del progetto TEST (non solo sandbox).
+ * DEC-038: eliminazione richiede riscrittura email esatta + avviso irreversibilità.
+ * DEC-041: creazione con email + password impostati da Matteo.
+ *
+ * PERCHÉ UN FETCH SEPARATO PER LE ORGANIZATIONS (dropdown):
+ *   Il dropdown crea/modifica ha bisogno della lista completa di organizations.
+ *   La carichiamo una volta sola all'apertura del modale (non al mount del componente
+ *   principale) per non appesantire il rendering iniziale.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -26,9 +31,13 @@ import {
   editionBadgeColors,
   type Edition,
 } from '@console/lib/editionUtils'
+import { useAdminUserMutations } from '@console/hooks/useAdminUserMutations'
+import { CreateUserModal, type OrgOption } from '@console/components/CreateUserModal'
+import { EditUserModal, type EditUserTarget } from '@console/components/EditUserModal'
+import { DeleteUserModal, type DeleteUserTarget } from '@console/components/DeleteUserModal'
 
 // ---------------------------------------------------------------------------
-// Tipi
+// Tipi locali
 // ---------------------------------------------------------------------------
 
 interface AdminUser {
@@ -63,6 +72,12 @@ type LoadState =
   | { status: 'error'; message: string }
   | { status: 'ok'; data: AdminUser[] }
 
+// Modale attivo: null = nessuno aperto.
+type ActiveModal =
+  | { type: 'create' }
+  | { type: 'edit'; user: EditUserTarget }
+  | { type: 'delete'; user: DeleteUserTarget }
+
 // ---------------------------------------------------------------------------
 // Componente principale
 // ---------------------------------------------------------------------------
@@ -75,7 +90,16 @@ interface UserListProps {
 export function UserList({ onOpenTenantDetail }: UserListProps) {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const [search, setSearch] = useState('')
+  const [activeModal, setActiveModal] = useState<ActiveModal | null>(null)
+  const [organizations, setOrganizations] = useState<OrgOption[]>([])
   const mountedRef = useRef(true)
+
+  // Mutazioni CRUD: un unico hook per le 3 azioni (create/update/delete).
+  const mutations = useAdminUserMutations()
+
+  // -------------------------------------------------------------------------
+  // Fetch utenti
+  // -------------------------------------------------------------------------
 
   const fetchUsers = useCallback(async () => {
     setState({ status: 'loading' })
@@ -119,7 +143,73 @@ export function UserList({ onOpenTenantDetail }: UserListProps) {
     }
   }, [fetchUsers])
 
-  // Filtro lato client per email (case-insensitive).
+  // -------------------------------------------------------------------------
+  // Fetch organizations (per il dropdown create/edit)
+  // Caricato una volta sola quando si apre un modale che ne ha bisogno.
+  // -------------------------------------------------------------------------
+
+  const fetchOrganizations = useCallback(async () => {
+    // Se già caricato, non ri-fetchiamo.
+    if (organizations.length > 0) return
+    const { data } = await supabase
+      .from('organizations')
+      .select('id, name, slug')
+      .order('name')
+    if (data) {
+      setOrganizations(data as OrgOption[])
+    }
+  }, [organizations.length])
+
+  // -------------------------------------------------------------------------
+  // Gestione apertura modali
+  // -------------------------------------------------------------------------
+
+  const openCreate = useCallback(async () => {
+    await fetchOrganizations()
+    mutations.resetCreate()
+    setActiveModal({ type: 'create' })
+  }, [fetchOrganizations, mutations])
+
+  const openEdit = useCallback(async (user: AdminUser) => {
+    await fetchOrganizations()
+    mutations.resetUpdate()
+    setActiveModal({
+      type: 'edit',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        tenant_id: user.tenant_id,
+      },
+    })
+  }, [fetchOrganizations, mutations])
+
+  const openDelete = useCallback((user: AdminUser) => {
+    mutations.resetDelete()
+    setActiveModal({
+      type: 'delete',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+    })
+  }, [mutations])
+
+  const closeModal = useCallback(() => {
+    setActiveModal(null)
+  }, [])
+
+  // Dopo una mutazione riuscita: chiude il modale e rifetch la lista.
+  const handleMutationSuccess = useCallback(() => {
+    setActiveModal(null)
+    fetchUsers()
+  }, [fetchUsers])
+
+  // -------------------------------------------------------------------------
+  // Filtro lato client
+  // -------------------------------------------------------------------------
+
   const filtered =
     state.status === 'ok'
       ? state.data.filter((u) =>
@@ -127,11 +217,15 @@ export function UserList({ onOpenTenantDetail }: UserListProps) {
         )
       : []
 
+  // -------------------------------------------------------------------------
+  // Render
+  // -------------------------------------------------------------------------
+
   return (
     <section>
+      {/* Barra superiore: titolo + ricerca + pulsante "Nuovo utente" */}
       <div style={styles.topBar}>
         <h2 style={styles.sectionTitle}>Utenti admin</h2>
-        {/* Ricerca per email — filtro lato client */}
         <input
           type="search"
           placeholder="Cerca per email…"
@@ -140,6 +234,13 @@ export function UserList({ onOpenTenantDetail }: UserListProps) {
           style={styles.searchInput}
           aria-label="Cerca utente per email"
         />
+        <button
+          onClick={() => void openCreate()}
+          style={styles.newUserBtn}
+          title="Crea un nuovo utente admin"
+        >
+          + Nuovo utente
+        </button>
       </div>
 
       {state.status === 'loading' && (
@@ -187,11 +288,46 @@ export function UserList({ onOpenTenantDetail }: UserListProps) {
             </thead>
             <tbody>
               {filtered.map((user) => (
-                <UserRow key={user.id} user={user} onOpenTenantDetail={onOpenTenantDetail} />
+                <UserRow
+                  key={user.id}
+                  user={user}
+                  onOpenTenantDetail={onOpenTenantDetail}
+                  onEdit={() => void openEdit(user)}
+                  onDelete={() => openDelete(user)}
+                />
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* Modali CRUD — montati solo quando attivi */}
+      {activeModal?.type === 'create' && (
+        <CreateUserModal
+          organizations={organizations}
+          mutations={mutations}
+          onSuccess={handleMutationSuccess}
+          onClose={closeModal}
+        />
+      )}
+
+      {activeModal?.type === 'edit' && (
+        <EditUserModal
+          user={activeModal.user}
+          organizations={organizations}
+          mutations={mutations}
+          onSuccess={handleMutationSuccess}
+          onClose={closeModal}
+        />
+      )}
+
+      {activeModal?.type === 'delete' && (
+        <DeleteUserModal
+          user={activeModal.user}
+          mutations={mutations}
+          onSuccess={handleMutationSuccess}
+          onClose={closeModal}
+        />
       )}
     </section>
   )
@@ -203,11 +339,12 @@ export function UserList({ onOpenTenantDetail }: UserListProps) {
 
 interface UserRowProps {
   user: AdminUser
-  /** Callback per aprire la scheda del tenant associato all'utente (F9). */
   onOpenTenantDetail: (tenantId: string) => void
+  onEdit: () => void
+  onDelete: () => void
 }
 
-function UserRow({ user, onOpenTenantDetail }: UserRowProps) {
+function UserRow({ user, onOpenTenantDetail, onEdit, onDelete }: UserRowProps) {
   const org = user.organization
   const edition = org?.edition ?? 'classic'
   const badge = editionBadgeColors(edition)
@@ -265,7 +402,7 @@ function UserRow({ user, onOpenTenantDetail }: UserRowProps) {
         )}
       </td>
 
-      {/* Azioni: "Apri scheda" abilitato in F9; "Modifica"/"Elimina" placeholder per F11 */}
+      {/* Azioni: "Apri scheda" (F9 abilitato), "Modifica" e "Elimina" (F11 cablati) */}
       <td style={styles.td}>
         <div style={styles.actionsRow}>
           {/* "Apri scheda" è abilitato se l'utente ha un tenant associato. */}
@@ -277,17 +414,21 @@ function UserRow({ user, onOpenTenantDetail }: UserRowProps) {
           >
             Apri scheda
           </button>
+
+          {/* Modifica: apre il modale edit (F11) */}
           <button
-            disabled
-            title="In arrivo"
-            style={styles.actionBtnDisabled}
+            onClick={onEdit}
+            title="Modifica utente"
+            style={styles.actionBtnActive}
           >
             Modifica
           </button>
+
+          {/* Elimina: apre il modale delete con conferma email (DEC-038, F11) */}
           <button
-            disabled
-            title="In arrivo"
-            style={{ ...styles.actionBtnDisabled, ...styles.actionBtnDanger }}
+            onClick={onDelete}
+            title="Elimina utente (richiede conferma)"
+            style={{ ...styles.actionBtnActive, ...styles.actionBtnDangerActive }}
           >
             Elimina
           </button>
@@ -329,6 +470,19 @@ const styles = {
     outline: 'none',
     width: '220px',
     maxWidth: '100%',
+  } as React.CSSProperties,
+
+  newUserBtn: {
+    background: '#1e3a5f',
+    border: '1px solid #2563eb',
+    borderRadius: '6px',
+    color: '#93c5fd',
+    fontSize: '0.8rem',
+    fontWeight: 700,
+    padding: '0.35rem 0.75rem',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    whiteSpace: 'nowrap' as const,
   } as React.CSSProperties,
 
   statusText: {
@@ -464,7 +618,7 @@ const styles = {
     flexWrap: 'wrap' as const,
   } as React.CSSProperties,
 
-  // Pulsante "Apri scheda" abilitato (F9): porta a TenantDetail.
+  // Pulsante azione attivo (abilitato).
   actionBtnActive: {
     background: 'transparent',
     border: '1px solid #334155',
@@ -489,9 +643,9 @@ const styles = {
     whiteSpace: 'nowrap' as const,
   } as React.CSSProperties,
 
-  // Variante danger per "Elimina" — tono rosso attenuato, coerente con la palette.
-  actionBtnDanger: {
+  // Variante danger attiva per "Elimina" — tono rosso, cursore pointer (F11).
+  actionBtnDangerActive: {
     borderColor: '#7f1d1d',
-    color: '#ef4444',
+    color: '#f87171',
   } as React.CSSProperties,
 } as const
