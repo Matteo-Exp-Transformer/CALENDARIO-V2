@@ -69,7 +69,24 @@ con il gate allowlist + scritture via Edge. Resta RULE-1 (solo TEST). Schema/RLS
 
 ## ② Consegna (Team Console)
 
-_(da compilare alla consegna)_
+### F9 — Scheda azienda, tappa 1 (2026-06-22)
+
+**Cosa è stato fatto:**
+
+- Nuovo componente `console/src/components/TenantDetail.tsx`: vista **focus su un singolo tenant**, apribile da "Apri scheda" nella vista Utenti **e** da una card in Ristoranti (stato drill-down in `AppShell`, DEC-046; "← Torna" per rientrare).
+- Riusa i pannelli esistenti **EditionSelector / FeatureFlagsPanel / RestaurantSettingsPanel** per quel tenant + mostra i **campi base** di `organizations` in lettura (name, slug, plan, max_*, is_active, edition).
+- **Mappa di copertura intervista**: tutte le 9 sezioni di `onboarding/INTERVISTA_NUOVO_CLIENTE.md` con stato — Sez.0 (anagrafica/versione), Sez.2 (funzioni), Sez.4 (regole, 5 chiavi) **esposte**; Sez.1/3/5/6/7/8 marcate 🔒 «in arrivo» → **FU-CONSOLE-9**.
+- In F9 il gate `isSandboxTenant` **non** è toccato: per i tenant non-sandbox i pannelli restano in lettura (sbloccato da F10/F12 lato Edge; la UI dei pannelli edition/feature/impostazioni resta sandbox-gated, vedi nota sotto).
+
+**Commit:** `6f5f4b0` — branch `feature/console-super-admin`. **File:** `console/src/components/{TenantDetail,AppShell,RestaurantList,UserList}.tsx`.
+
+**Verifiche:** `build`/`lint`/`typecheck` verdi (93 moduli).
+
+**Copertura (DEC-040): tappa 1.** La struttura c'è e copre le sezioni già esposte; gli **editor delle altre sezioni** (contatti, orari/fasce, sala/tavoli, menu/QR, aspetto) sono pianificati come sotto-tappe in **FU-CONSOLE-9**, dopo il write-block.
+
+**Cosa deve testare Matteo:** dopo push + PLAN-DB-005, aprire la scheda di un'azienda da Utenti/Ristoranti, verificare campi base + pannelli + mappa di copertura.
+
+> Nota: i pannelli di **scrittura** edition/feature/impostazioni nella scheda restano oggi limitati ai sandbox (gate UI invariato in F9). L'estensione a tutte le aziende è una sotto-tappa successiva (allineamento UI a DEC-037); le azioni utenti/aziende (F11/F12) invece già valgono su tutte le aziende.
 
 ## ③ Esito test (Matteo)
 

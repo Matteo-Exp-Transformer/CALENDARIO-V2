@@ -62,7 +62,25 @@ prima creazione, poi associazione admin, poi eliminazione protetta.
 
 ## ② Consegna (Team Console)
 
-_(da compilare alla consegna)_
+### F10 (Edge) + F12 (UI) — Crea / elimina azienda (2026-06-22)
+
+**Cosa è stato fatto:**
+
+- **Edge `console-admin` (F10)**: azioni `create_tenant` (azienda + admin opzionale in **un unico passaggio**, DEC-041) e `delete_tenant` (hard-delete protetto da `confirm_name` rivalidato server-side, DEC-038). Validazione slug unico + edition. Cascata: pulizia applicativa dei figli di configurazione + **409** con rinvio a PLAN-DB-006 se restano dati operativi (DEC-047).
+- **UI (F12)**: hook `useTenantMutations` + `CreateTenantModal` (pulsante **"+ Nuova azienda"** in Ristoranti: nome, slug auto-generato/modificabile/validato, edition, sezione admin opzionale) + `DeleteTenantModal` (dalla scheda azienda: **riscrittura del nome esatto** + avviso irreversibilità e di cosa viene rimosso; gestione 409 dati operativi). La lista si aggiorna dopo creazione/eliminazione.
+
+**Commit:** `f94b075` (F10 Edge) · `abd0f74` (F12 UI) — branch `feature/console-super-admin`.
+
+**File principali:** `console/supabase/functions/console-admin/index.ts`, `console/src/lib/consoleAdminClient.ts`, `console/src/hooks/useTenantMutations.ts`, `console/src/components/{CreateTenantModal,DeleteTenantModal,RestaurantList,TenantDetail,AppShell}.tsx`.
+
+**Verifiche:** `build`/`lint`/`typecheck` verdi (100 moduli). Nessuna scrittura DB in sviluppo.
+
+**Cosa deve fare/testare Matteo (lato suo):**
+1. **Re-deploy** dell'Edge `console-admin` (PLAN-DB-003) per attivare `create_tenant`/`delete_tenant`.
+2. (Opzionale ma consigliato) eseguire **PLAN-DB-006** (`ON DELETE CASCADE` su `organizations`): senza, `delete_tenant` elimina solo aziende "vuote" (es. appena create) e risponde 409 su quelle con dati operativi.
+3. Testare: creare un'azienda (con e senza admin), aprirne la scheda, eliminarla riscrivendo il nome esatto.
+
+> ⚠️ Push del branch ancora **da fare** (serve ok esplicito di Cristiano): la REQ resta **IN-SVILUPPO** fino al push, poi → CONSEGNATA.
 
 ## ③ Esito test (Matteo)
 
