@@ -22,6 +22,11 @@
  *   VITE_CONSOLE_ADMIN_FUNCTION_URL deve puntare all'URL della Edge Function deployata.
  *   Esempio: https://docnnernvp.supabase.co/functions/v1/console-admin
  *   Vedi PLAN-DB-003 per come ricavare l'URL e deployare la function.
+ *
+ * NOTE F10 (DEC-037):
+ *   Il guard sandbox è stato rimosso lato server: le azioni valgono su qualunque tenant
+ *   del progetto TEST. La rete di sicurezza è gate allowlist + conferme forti per le
+ *   azioni distruttive (delete_admin_user / delete_tenant).
  */
 
 import { supabase } from '@console/lib/supabaseClient'
@@ -50,11 +55,77 @@ export interface ActionUpsertRestaurantSetting {
   value: unknown // jsonb — il tipo dipende dalla setting specifica
 }
 
+/** Crea un utente admin: crea l'utente Auth (email+password) e la riga admin_users. */
+export interface ActionCreateAdminUser {
+  action: 'create_admin_user'
+  email: string
+  password: string
+  name?: string
+  tenant_id: string
+}
+
+/** Aggiorna name/tenant_id/email di un admin esistente. */
+export interface ActionUpdateAdminUser {
+  action: 'update_admin_user'
+  admin_user_id: string
+  name?: string
+  tenant_id?: string
+  /** Nuova email: propagata sia in admin_users sia in Auth */
+  email?: string
+}
+
+/**
+ * Elimina un utente admin (hard-delete: rimuove admin_users + utente Auth).
+ * DEC-038: confirm_email deve corrispondere esattamente all'email del record.
+ * Il server rivalidata lato server prima di cancellare.
+ */
+export interface ActionDeleteAdminUser {
+  action: 'delete_admin_user'
+  admin_user_id: string
+  /** Matteo deve riscrivere l'email esatta dell'utente — rivalidata lato server. */
+  confirm_email: string
+}
+
+/** Crea un tenant (azienda). Admin opzionale = crea anche l'utente Auth associato in un passaggio. */
+export interface ActionCreateTenant {
+  action: 'create_tenant'
+  name: string
+  /** Slug unico, validato lato server. */
+  slug: string
+  edition: 'classic' | 'pro' | 'enterprise'
+  plan?: string
+  is_active?: boolean
+  /** Crea anche un admin associato (DEC-041): email + password impostati da Matteo. */
+  admin?: {
+    email: string
+    password: string
+    name?: string
+  }
+}
+
+/**
+ * Elimina un tenant (hard-delete).
+ * DEC-038: confirm_name deve corrispondere esattamente a organizations.name.
+ * Rivalidato lato server. Se esistono dati operativi (prenotazioni, ecc.)
+ * il server restituisce 409 con istruzioni su PLAN-DB-006.
+ */
+export interface ActionDeleteTenant {
+  action: 'delete_tenant'
+  tenant_id: string
+  /** Matteo deve riscrivere il nome esatto dell'azienda — rivalidato lato server. */
+  confirm_name: string
+}
+
 /** Unione discriminata di tutte le azioni supportate */
 export type ConsoleAdminAction =
   | ActionUpdateEdition
   | ActionUpsertTenantFeature
   | ActionUpsertRestaurantSetting
+  | ActionCreateAdminUser
+  | ActionUpdateAdminUser
+  | ActionDeleteAdminUser
+  | ActionCreateTenant
+  | ActionDeleteTenant
 
 // ---------------------------------------------------------------------------
 // Risposta della function
@@ -63,7 +134,8 @@ export type ConsoleAdminAction =
 export interface ConsoleAdminSuccess {
   ok: true
   action: string
-  tenant_id: string
+  /** Presente per azioni che operano su un tenant specifico. */
+  tenant_id?: string
   [key: string]: unknown // campi extra dipendono dall'action
 }
 

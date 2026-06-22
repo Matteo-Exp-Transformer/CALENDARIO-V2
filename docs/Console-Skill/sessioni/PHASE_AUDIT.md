@@ -271,6 +271,32 @@
 
 ---
 
+### Fase F10 — Estensione Edge `console-admin` (fondamenta write-block, REQ-001/003)
+- **Obiettivo / effetto:** dare all'Edge le azioni potenti su utenti/aziende e sostituire il guard sandbox con la rete di sicurezza DEC-037 (allowlist + conferme forti rivalidate). Nessuna UI.
+- **Modalità:** deep (sicurezza, service role, Auth admin)
+- **Dipendenze:** F9; deploy + eventuale PLAN-DB-006 a carico di Matteo
+
+**Esecutore** (general-purpose, Sonnet)
+- Prompt usato: `MASTERPLAN_CONSOLE_REQ-001-003.md` §F10
+- Sintesi: 5 nuove azioni (`create/update/delete_admin_user`, `create/delete_tenant`) con utenti via `auth.admin.*`, conferme distruttive `confirm_email`/`confirm_name` rivalidate server-side, rollback su create; rimosso il guard `SANDBOX_TENANT_IDS` (resta come costante informativa) mantenendo JWT+allowlist; tipi specchio aggiornati in `consoleAdminClient.ts`. Generato PLAN-DB-006 (CASCADE) + aggiornato PLAN-DB-003.
+- File toccati: `console/supabase/functions/console-admin/index.ts`, `console/src/lib/consoleAdminClient.ts`, `plan-per-matteo/PLAN-DB-003` (mod), `plan-per-matteo/PLAN-DB-006` (nuovo)
+- Decisioni autonome: DEC-047 (strategia cascata)
+- Scritture DB: nessuna (get_project_url=docnnernvp confermato; nessun dato scritto)
+
+**Revisore (controverifica)** (general-purpose, Sonnet — attore distinto, focus sicurezza)
+- Done-criteria: 5 azioni + 3 esistenti intatte ✓ · JWT+allowlist prima del dispatch, service role solo lato Edge ✓ · conferme distruttive rivalidate server-side ✓ · create con rollback ✓ · cascata+PLAN-DB-006 non eseguito ✓ · RULE-4 (Edge in console/supabase) ✓
+- Test/lint/typecheck: 🟢 build (93 moduli), lint 0 warning, typecheck pulito
+- **Verdetto round 1:** 🔴 ROSSO — obbligatori: (1) DEC-047 mancante in DECISION_LOG; (2) blocco PHASE_AUDIT F10 mancante; (3) PLAN-DB-003 §5d test obsoleto (descriveva il 403 del guard rimosso); (4) bug `update_admin_user`: email aggiornata su admin_users ma non su Auth → stato incoerente. Advisory: silent failure delete su tenant_features/restaurant_settings; `listUsers()` non paginato; `confirm_name` case-sensitive vs `confirm_email` case-insensitive.
+- **Ri-lavorazione (Orchestrator, audit — round 2):** (1) DEC-047 registrata; (2) questo blocco; (3) PLAN-DB-003 §5d riscritto (guard rimosso → test su conferma errata 409); (4) `update_admin_user` corretto: email propagata su Auth PRIMA di admin_users, con rollback Auth se admin_users fallisce; inoltre fix advisory silent-failure (errori espliciti su delete tenant_features/restaurant_settings). `listUsers` paginazione → FU-CONSOLE-11. `confirm_name` case-sensitive lasciato di proposito (DEC-038 "nome esatto"; l'email è per natura case-insensitive). Build/lint/typecheck ri-verificati 🟢.
+- **Verdetto finale:** 🟢 VERDE
+
+**Chiusura fase**
+- **Commit:** _(vedi git log — feat(console): estensione Edge console-admin utenti/aziende (F10, DEC-047, REQ-001/003))_
+- Riga aggiunta a SESSION_LOG.md: sì
+- Follow-up aperti: FU-CONSOLE-11 (paginazione listUsers); azioni Matteo = re-deploy Edge (PLAN-DB-003) + PLAN-DB-006 opzionale (CASCADE)
+
+---
+
 ## Template blocco di fase (copia per ogni Fi)
 
 ```markdown

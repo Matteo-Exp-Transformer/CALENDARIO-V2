@@ -1,13 +1,21 @@
 # PLAN-DB-003 — Deploy Edge Function `console-admin` su TEST
 
-**Stato:** da eseguire · **Ambiente:** TEST docnnernvp · **Data:** 2026-06-22
+**Stato:** da eseguire (aggiornato F10 / 2026-06-22) · **Ambiente:** TEST docnnernvp · **Data:** 2026-06-22
+
+> **Aggiornamento F10 (DEC-037):** la function è stata estesa con 5 nuove azioni
+> (gestione utenti e aziende). Il guard sandbox è stato rimosso e sostituito con la rete
+> di sicurezza DEC-037 (gate allowlist + conferme forti per azioni distruttive).
+> Se hai già deployato la versione precedente (F1-F7), **ri-deploya** seguendo il Passo 3.
+> I secret già impostati (`CONSOLE_ALLOWED_EMAILS`, `CONSOLE_CORS_ORIGIN`) sono invariati.
 
 ## Obiettivo
 
-La Console super-admin deve poter scrivere dati nel DB (edition, feature flag, restaurant_settings)
-senza esporre la service role nel browser. La soluzione è una **Edge Function Supabase** che:
+La Console super-admin deve poter scrivere dati nel DB senza esporre la service role nel
+browser. La soluzione è una **Edge Function Supabase** che:
 - verifica il JWT dell'utente e la sua email nella allowlist server-side,
-- limita le scritture ai soli tenant sandbox,
+- **NON** limita più le scritture ai soli tenant sandbox (DEC-037 / F10): agisce su qualunque
+  tenant del progetto TEST. La rete di sicurezza è gate allowlist + conferme forti sulle
+  azioni distruttive,
 - usa la service role **solo lato server** (iniettata da Supabase nel runtime Deno).
 
 Questo plan spiega come Matteo deploya la function e imposta i secret necessari.
@@ -185,18 +193,25 @@ Risposta attesa (se l'email è in allowlist):
 {"ok":true,"action":"update_edition","tenant_id":"4c694cb8-66af-478f-afd2-8719f07d64b4","edition":"pro"}
 ```
 
-### 5d. Test sandbox guard (deve restituire 403 per tenant non sandbox)
+### 5d. Test azioni su qualunque tenant (guard sandbox RIMOSSO — DEC-037 / F10)
+
+> ⚠️ Da F10 il guard sandbox **non esiste più**: con JWT valido + email in allowlist la function
+> scrive su **qualunque** tenant del progetto (che è TEST). Quindi una `update_edition` su un tenant
+> reale **NON** restituisce più 403, ma `200 ok` ed esegue la modifica. La barriera resta
+> l'allowlist (vedi 5b: senza email autorizzata → 403). Per un test non distruttivo, prova una delle
+> nuove azioni con conferma errata, che deve essere **rifiutata** dalla rivalidazione server-side:
 
 ```bash
+# delete_tenant con confirm_name SBAGLIATO → deve restituire 409, nessuna cancellazione
 curl -X POST https://docnnernvp.supabase.co/functions/v1/console-admin \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <IL_TUO_TOKEN>" \
-  -d '{"action":"update_edition","tenant_id":"id-di-un-tenant-reale","edition":"pro"}'
+  -d '{"action":"delete_tenant","tenant_id":"<id-tenant-sandbox>","confirm_name":"NOME-SBAGLIATO"}'
 ```
 
 Risposta attesa:
 ```json
-{"error":"Scrittura non consentita sul tenant \"id-di-un-tenant-reale\". Solo i tenant sandbox console-classic e console-pro sono scrivibili da questa function."}
+{"error":"Conferma nome non corrisponde. Riscrivi esattamente il nome dell'azienda."}
 ```
 
 ### 5e. Verifica i log della function
@@ -209,22 +224,41 @@ Oppure: Supabase Dashboard → docnnernvp → Edge Functions → console-admin �
 
 ---
 
+## Azioni disponibili (aggiornato F10)
+
+| Azione | Cosa fa | Richiede conferma? |
+|--------|---------|-------------------|
+| `update_edition` | Aggiorna `organizations.edition` | No |
+| `upsert_tenant_feature` | Upsert `tenant_features` | No |
+| `upsert_restaurant_setting` | Upsert `restaurant_settings` | No |
+| `create_admin_user` | Crea utente Auth + riga `admin_users` | No |
+| `update_admin_user` | Aggiorna name/tenant_id/email di admin | No |
+| `delete_admin_user` | Hard-delete utente Auth + `admin_users` | Sì — `confirm_email` rivalidata server-side |
+| `create_tenant` | Crea `organizations` + admin opzionale in un passaggio | No |
+| `delete_tenant` | Hard-delete tenant + pulizia figli sicuri | Sì — `confirm_name` rivalidata server-side |
+
 ## Tabelle/colonne toccate (al momento del primo uso reale)
 
-La function **scrive** su:
-- `organizations.edition` — UPDATE (solo sandbox)
-- `tenant_features` — UPSERT su `(tenant_id, feature_key)` con colonne `(tenant_id, feature_key, enabled)` (solo sandbox)
-- `restaurant_settings` — UPSERT su `(tenant_id, setting_key)` con colonne `(tenant_id, setting_key, setting_value)` (solo sandbox)
+La function **scrive** su (qualunque tenant su TEST):
+- `organizations` — UPDATE edition / INSERT (create_tenant) / DELETE (delete_tenant)
+- `tenant_features` — UPSERT su `(tenant_id, feature_key)`
+- `restaurant_settings` — UPSERT su `(tenant_id, setting_key)`
+- `admin_users` — INSERT (create_admin_user) / UPDATE (update_admin_user) / DELETE (delete_admin_user + delete_tenant)
+- `auth.users` (Supabase Auth) — via `auth.admin.*` service role: createUser / updateUserById / deleteUser / listUsers
 
 **Nessuna modifica di schema**: le tabelle esistono già. Questo plan riguarda solo il deploy.
+Per il problema FK/cascata su `delete_tenant`, vedi **PLAN-DB-006**.
 
 ---
 
 ## Impatto / rischi
 
 - **Service role bypassata dalla RLS**: il client admin della function usa la service role,
-  che ignora la RLS. Il guard tenant-sandbox nel codice è la prima e principale protezione.
-  Non rimuovere il guard senza discuterlo.
+  che ignora la RLS. La rete di sicurezza è: gate allowlist + conferme forti rivalidate
+  lato server per le azioni distruttive (DEC-038). NON rimuovere la verifica allowlist.
+- **Guard sandbox rimosso (DEC-037)**: la function ora può scrivere su qualunque tenant del
+  progetto. Il progetto è TEST per costruzione (SUPABASE_URL = docnnernvp). Non deployare
+  questa versione su PROD senza adeguato gate aggiuntivo.
 - **CONSOLE_ALLOWED_EMAILS vuota**: se dimentichi di impostare il secret, la function rifiuta
   tutte le richieste con 403 (fail-safe documentato nel codice).
 - **CORS `*` in sviluppo**: il default `*` è accettabile in sviluppo; in produzione imposta
@@ -232,6 +266,8 @@ La function **scrive** su:
 - **La cartella `console/supabase/` è separata da `supabase/`** (la cartella di Matteo):
   la CLI deploy in `console/supabase/functions/` non tocca le Edge Functions di Matteo.
   Verifica sempre con `supabase functions list` di essere sul progetto TEST.
+- **`delete_tenant` con dati operativi**: se il tenant ha prenotazioni, clienti ecc., la
+  function restituisce 409. Per sbloccare esegui **PLAN-DB-006** (ON DELETE CASCADE).
 
 ---
 
