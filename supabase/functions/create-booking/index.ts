@@ -49,6 +49,45 @@ function getDietaryRestrictionsTextLength(
   }, 0);
 }
 
+interface SlotOverrideRow {
+  max_guests: number | null;
+  date_from: string;
+  date_to: string;
+  created_at: string;
+}
+
+/**
+ * Replica server-side di resolveSlotOverride (useServiceSlotOverrides.ts).
+ * Tra gli override che coprono desiredDate, vince lo span più corto;
+ * a parità di span, vince created_at più recente (stringa ISO confrontabile).
+ * Ritorna max_guests del vincitore, o null se nessuna riga.
+ */
+export function resolveOverrideMaxGuests(
+  rows: SlotOverrideRow[],
+  desiredDate: string,
+): number | null {
+  const candidates = rows.filter(
+    (r) => r.date_from <= desiredDate && desiredDate <= r.date_to,
+  );
+  if (candidates.length === 0) return null;
+
+  const winner = candidates.reduce((best, cur) => {
+    const spanOf = (r: SlotOverrideRow) =>
+      Math.round(
+        (new Date(r.date_to + "T00:00:00").getTime() -
+          new Date(r.date_from + "T00:00:00").getTime()) /
+          86_400_000,
+      ) + 1;
+    const bs = spanOf(best);
+    const cs = spanOf(cur);
+    if (cs < bs) return cur;
+    if (cs > bs) return best;
+    return cur.created_at > best.created_at ? cur : best;
+  });
+
+  return winner.max_guests;
+}
+
 Deno.serve(async (req: Request) => {
   const log = createEdgeLogger("create-booking", req);
 
@@ -422,19 +461,23 @@ Deno.serve(async (req: Request) => {
               );
             }
           } else if (slotLimitEnabled) {
-            // Leggi override
-            const { data: ovRow } = await supabaseAdmin
+            // Leggi tutti gli override che coprono la data (intervallo date_from..date_to inclusivo).
+            const { data: ovRows } = await supabaseAdmin
               .from("service_slot_overrides")
-              .select("max_guests")
+              .select("max_guests, date_from, date_to, created_at")
               .eq("tenant_id", orgId)
               .eq("service_slot_id", matchedSlot.id)
-              .eq("override_date", desired_date)
-              .maybeSingle();
+              .lte("date_from", desired_date)
+              .gte("date_to", desired_date);
+
+            // "Vince il più specifico": tra gli override che coprono la data, lo span più corto;
+            // a parità di span, il created_at più recente. Replica resolveSlotOverride lato client.
+            const ovMaxGuests = resolveOverrideMaxGuests(ovRows ?? [], desired_date);
 
             // Priorità cap allineata al client (useCapacityCheck): override → service_slots.max_guests
             // → slot_guest_capacities[slotId] (dove la UI Classic scrive il limite per-fascia).
             const cap: number | null =
-              ovRow?.max_guests ?? matchedSlot.max_guests ?? slotGuestCapacities[matchedSlot.id] ?? null;
+              ovMaxGuests ?? matchedSlot.max_guests ?? slotGuestCapacities[matchedSlot.id] ?? null;
 
             if (cap != null) {
               const occupied = (dayBookings ?? []).reduce(

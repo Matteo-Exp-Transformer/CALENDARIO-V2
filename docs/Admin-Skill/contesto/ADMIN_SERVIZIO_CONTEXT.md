@@ -61,10 +61,12 @@
 > **Cantiere Servizio + motore disponibilità:** masterplan canonico in `docs/MASTERPLAN_SERVIZIO.md`
 > (decisioni D1–D42, sotto-aree S0–S6, registro rischi #1–#9). I rischi sotto vi sono mappati.
 
-- **🔴 BUG Edge confermato (rischio #1 / azione S0-D8):** `create-booking` interroga
-  `service_slot_overrides.override_date`, mentre schema/hook moderni usano `date_from/date_to` → gli
-  override morbidi **non scattano mai**. Va corretto come mini-PR isolata (deploy PROD controllato) prima
-  dei test flusso slot con `slot_limit_enabled=true`, altrimenti ogni test permanenza dà falsi positivi.
+- **✅ BUG Edge RISOLTO (rischio #1 / azione S0-D8):** `create-booking` interrogava
+  `service_slot_overrides.override_date` (colonna inesistente), mentre schema moderno usa `date_from/date_to`
+  → gli override morbidi non scattavano mai. Risolto su branch `s0/edge-override-fix`:
+  l'Edge ora legge tutte le righe della tabella che ricoprono la data (`date_from <= data <= date_to`),
+  applica "vince il più specifico" tramite funzione `resolveOverrideMaxGuests` (replica server-side
+  di `resolveSlotOverride`). Verificato su TEST: override respinge correttamente con 409 SLOT_LIMIT.
   Il vecchio pre-check `check-slot-availability` è stato rimosso in WP-B5 (12-06-26), quindi non va più
   considerato fonte runtime.
 - In `WalkInModal`, busy check confronta `booking.placement` con `tableId`, ma il walk-in salva
