@@ -1,32 +1,30 @@
 import { useState } from 'react'
 import { supabase } from '@console/lib/supabaseClient'
 
-type SendState =
+type SubmitState =
   | { status: 'idle' }
-  | { status: 'sending' }
-  | { status: 'sent'; email: string }
+  | { status: 'signing-in' }
   | { status: 'error'; message: string }
 
 /**
- * Schermata di login con Magic Link (passwordless email OTP).
+ * Schermata di login con email + password.
  *
- * Perché Magic Link e non email+password:
- *   - C'è un solo utente (Matteo): niente gestione password dimenticata, niente reset flow.
- *   - Il Magic Link è più sicuro: la password non esiste, quindi non può essere intercettata.
- *   - Esperienza mobile ottimale: Matteo può autenticarsi dal telefono senza digitare password.
+ * Perché email + password (e non Magic Link):
+ *   - C'è un solo utente (Matteo): imposta le credenziali una volta e poi entra direttamente.
+ *   - La sessione viene salvata da Supabase in localStorage → dopo il primo accesso non
+ *     viene più richiesta (finché non si fa logout o il token non scade).
+ *   - Nessuna dipendenza dall'invio email / click sul link a ogni accesso.
  *
  * Flusso:
- *   1. Matteo inserisce l'email e clicca "Invia link".
- *   2. Supabase invia una email con un link a 6 cifre OTP o un link magico.
- *   3. Matteo clicca il link → la sessione viene creata → onAuthStateChange in useAuth
+ *   1. Matteo inserisce email + password e clicca "Entra".
+ *   2. supabase.auth.signInWithPassword crea la sessione → onAuthStateChange in useAuth
  *      aggiorna lo stato → l'app mostra AppShell.
  *
  * Note sicurezza:
- *   - Il controllo allowlist avviene in useAuth DOPO che Supabase ha autenticato l'utente.
- *   - Questo significa che Supabase invierà il link anche a email non in allowlist
- *     (il link arriverà, ma al click l'app farà signOut e mostrerà il messaggio di accesso negato).
- *   - Per rinforzare l'allowlist lato DB/RLS, vedi PLAN-DB-002. Il blocco dell'invio
- *     OTP a livello Supabase Auth richiederebbe un Auth Hook dedicato (non ancora pianificato).
+ *   - Il controllo allowlist avviene in useAuth DOPO l'autenticazione: anche con credenziali
+ *     valide, se l'email non è in allowlist l'app fa signOut e mostra "accesso negato".
+ *   - L'utente va creato una volta sul DB TEST (Supabase Auth). Per rinforzare l'allowlist
+ *     lato DB/RLS vedi PLAN-DB-002.
  */
 
 interface LoginScreenProps {
@@ -36,37 +34,30 @@ interface LoginScreenProps {
 
 export function LoginScreen({ deniedEmail }: LoginScreenProps) {
   const [email, setEmail] = useState('')
-  const [sendState, setSendState] = useState<SendState>({ status: 'idle' })
+  const [password, setPassword] = useState('')
+  const [submitState, setSubmitState] = useState<SubmitState>({ status: 'idle' })
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const trimmedEmail = email.trim()
-    if (!trimmedEmail) return
+    if (!trimmedEmail || !password) return
 
-    setSendState({ status: 'sending' })
+    setSubmitState({ status: 'signing-in' })
 
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithPassword({
       email: trimmedEmail,
-      options: {
-        // shouldCreateUser: false evita la creazione di utenti nuovi non in allowlist.
-        // ATTENZIONE: se Matteo non è ancora registrato in Supabase Auth, questa opzione
-        // impedisce il primo login. Impostare a true SOLO per il primo setup, poi tornare a false.
-        // Alternativa robusta: creare Matteo manualmente in Supabase Dashboard → Auth → Users.
-        shouldCreateUser: false,
-      },
+      password,
     })
 
     if (error) {
-      // Supabase restituisce un errore generico se l'utente non esiste e shouldCreateUser=false.
-      // Mostriamo sempre un messaggio generico per non rivelare se l'email è registrata o meno.
-      setSendState({
+      // Messaggio generico per non rivelare se l'email è registrata o meno.
+      setSubmitState({
         status: 'error',
-        message: 'Impossibile inviare il link. Verifica l\'email o contatta il supporto.',
+        message: 'Email o password non corretti.',
       })
       return
     }
-
-    setSendState({ status: 'sent', email: trimmedEmail })
+    // Successo: onAuthStateChange in useAuth porta l'app su AppShell.
   }
 
   return (
@@ -89,66 +80,59 @@ export function LoginScreen({ deniedEmail }: LoginScreenProps) {
           </div>
         )}
 
-        {/* Form invio Magic Link */}
-        {sendState.status !== 'sent' && (
-          <form onSubmit={handleSubmit} style={styles.form}>
-            <label htmlFor="console-email" style={styles.label}>
-              Email
-            </label>
-            <input
-              id="console-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="matteo@esempio.com"
-              required
-              disabled={sendState.status === 'sending'}
-              style={styles.input}
-              autoComplete="email"
-              autoFocus
-            />
+        {/* Form email + password */}
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <label htmlFor="console-email" style={styles.label}>
+            Email
+          </label>
+          <input
+            id="console-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="matteo@esempio.com"
+            required
+            disabled={submitState.status === 'signing-in'}
+            style={styles.input}
+            autoComplete="email"
+            autoFocus
+          />
 
-            {sendState.status === 'error' && (
-              <p style={styles.errorText}>{sendState.message}</p>
-            )}
+          <label htmlFor="console-password" style={styles.label}>
+            Password
+          </label>
+          <input
+            id="console-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+            disabled={submitState.status === 'signing-in'}
+            style={styles.input}
+            autoComplete="current-password"
+          />
 
-            <button
-              type="submit"
-              disabled={sendState.status === 'sending' || !email.trim()}
-              style={{
-                ...styles.button,
-                opacity: sendState.status === 'sending' || !email.trim() ? 0.5 : 1,
-                cursor: sendState.status === 'sending' || !email.trim() ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {sendState.status === 'sending' ? 'Invio in corso…' : 'Invia link di accesso'}
-            </button>
-          </form>
-        )}
+          {submitState.status === 'error' && (
+            <p style={styles.errorText}>{submitState.message}</p>
+          )}
 
-        {/* Conferma invio */}
-        {sendState.status === 'sent' && (
-          <div style={styles.sentBox}>
-            <div style={styles.sentIcon}>✉️</div>
-            <p style={styles.sentTitle}>Link inviato</p>
-            <p style={styles.sentText}>
-              Controlla la casella di posta di{' '}
-              <strong style={{ color: '#93c5fd' }}>{sendState.email}</strong>.
-              <br />
-              Clicca il link nell'email per accedere.
-            </p>
-            <button
-              onClick={() => setSendState({ status: 'idle' })}
-              style={styles.resendButton}
-            >
-              Reinvia o cambia email
-            </button>
-          </div>
-        )}
+          <button
+            type="submit"
+            disabled={submitState.status === 'signing-in' || !email.trim() || !password}
+            style={{
+              ...styles.button,
+              opacity: submitState.status === 'signing-in' || !email.trim() || !password ? 0.5 : 1,
+              cursor: submitState.status === 'signing-in' || !email.trim() || !password ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {submitState.status === 'signing-in' ? 'Accesso in corso…' : 'Entra'}
+          </button>
+        </form>
 
         {/* Note */}
         <p style={styles.note}>
-          Accesso tramite Magic Link · Nessuna password
+          Accesso riservato · La sessione resta salvata su questo dispositivo
         </p>
       </div>
     </div>

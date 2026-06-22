@@ -35,3 +35,4 @@
 | `sessioni/PHASE_AUDIT.md` | audit trail per fase del master-plan (esecutore/revisore/verdetto/commit) |
 | `sessioni/HANDOFF-orchestrator-masterplan.md` | hand-off per l'agente orchestrator (workflow automode) |
 | `sessioni/SESSION_LOG.md` · `FOLLOW_UP.md` | memoria di sessione + debiti differiti |
+| `collaborazione/README.md` | **canale richieste↔consegne** Matteo↔Team (protocollo, registro, template, stato ambiente TEST) |
