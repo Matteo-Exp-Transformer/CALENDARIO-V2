@@ -110,7 +110,9 @@ export function TenantDetail({ tenantId, onBack, onTenantDeleted }: TenantDetail
   const tenantMutations = useTenantMutations()
 
   const fetchOrg = useCallback(async () => {
-    setState({ status: 'loading' })
+    // Al re-fetch (cambio edition → refetchCounter++) mantieni i dati correnti visibili:
+    // evita di smontare il contenuto e provocare il salto in cima alla pagina (DEC-054).
+    setState((prev) => (prev.status === 'ok' ? prev : { status: 'loading' }))
 
     const { data, error } = await supabase
       .from('organizations')

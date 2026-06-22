@@ -9,6 +9,7 @@
 | REQ-001 | Vista "Tutti gli utenti" + CRUD utente | alta | CONSEGNATA (pushata + mergiata in env/test) | F8 `50555f9`, F10 `f94b075`, F11 `9b2fd7f`+`ad2e619` | `richieste/REQ-001-vista-tutti-utenti-crud.md` |
 | REQ-002 | Scheda focus singolo utente/azienda (setup completo) | alta | CONSEGNATA (tappa 1; pushata + mergiata in env/test) | F9 `6f5f4b0` | `richieste/REQ-002-scheda-singolo-utente-azienda.md` |
 | REQ-003 | Crea / elimina aziende (tenant) + associazione utente | alta | CONSEGNATA (pushata + mergiata in env/test) | F10 `f94b075`, F12 `abd0f74` | `richieste/REQ-003-crea-elimina-aziende.md` |
+| REQ-004 | Vista Ristoranti comoda (50+) + ritorno alla posizione | media | DA-FARE | — | `richieste/REQ-004-vista-ristoranti-comoda.md` (+ `REQ-004-scenari-test-cliente.md`) |
 
 > **2026-06-22 — Orchestrator (sync sessione):** il branch è stato **pushato e mergiato in `env/test`**
 > da Matteo (`f4a6e4b`) per il test → le 3 REQ passano da IN-SVILUPPO a **CONSEGNATA**. Ora tocca a

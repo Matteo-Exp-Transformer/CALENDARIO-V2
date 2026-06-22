@@ -15,7 +15,7 @@
 // che un tenant viene eliminato dalla TenantDetail (refetch della lista).
 
 import type { User } from '@supabase/supabase-js'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { supabase } from '@console/lib/supabaseClient'
 import { RestaurantList } from './RestaurantList'
 import { UserList } from './UserList'
@@ -39,12 +39,33 @@ export function AppShell({ user }: AppShellProps) {
   const [previousView, setPreviousView] = useState<'restaurants' | 'users'>('restaurants')
   // restaurantListKey: incrementato dopo eliminazione tenant per forzare il remount di RestaurantList (F12).
   const [restaurantListKey, setRestaurantListKey] = useState(0)
+  // savedScrollY: posizione di scorrimento salvata quando si apre la scheda dalla lista ristoranti.
+  const savedScrollY = useRef<number | null>(null)
+  // pendingScrollRestore: true finché la lista non ha caricato i dati e ripristinato lo scroll (DEC-055).
+  const pendingScrollRestore = useRef(false)
 
   /** Apre la scheda di un tenant, ricordando da quale vista si viene. */
   function openTenantDetail(tenantId: string, from: 'restaurants' | 'users') {
+    if (from === 'restaurants') {
+      // Salva la posizione corrente per ripristinarla al rientro nella lista (DEC-055).
+      savedScrollY.current = window.scrollY
+      pendingScrollRestore.current = true
+    }
     setSelectedTenantId(tenantId)
     setPreviousView(from)
     setActiveView('tenant-detail')
+  }
+
+  /**
+   * Chiamato da RestaurantList quando i dati sono pronti per la prima volta dopo il mount.
+   * Ripristina la posizione di scorrimento salvata prima di aprire la scheda (DEC-055).
+   */
+  function handleRestaurantListReady() {
+    if (pendingScrollRestore.current && savedScrollY.current !== null) {
+      window.scrollTo(0, savedScrollY.current)
+      savedScrollY.current = null
+      pendingScrollRestore.current = false
+    }
   }
 
   /** Torna alla vista precedente alla scheda. */
@@ -148,6 +169,7 @@ export function AppShell({ user }: AppShellProps) {
           <RestaurantList
             key={restaurantListKey}
             onOpenTenantDetail={(id) => openTenantDetail(id, 'restaurants')}
+            onDataReady={handleRestaurantListReady}
           />
         )}
         {activeView === 'users' && (

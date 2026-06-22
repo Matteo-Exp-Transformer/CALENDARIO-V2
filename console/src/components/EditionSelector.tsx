@@ -1,26 +1,19 @@
 /**
- * Controllo inline per cambiare l'edition di un tenant sandbox.
+ * Controllo inline per cambiare l'edition di un tenant.
  *
- * REGOLA SANDBOX (RULE-2):
- *   Questo componente è pensato per essere montato SOLO su tenant sandbox (console-classic,
- *   console-pro). Il controllo isSandboxTenant è nel componente genitore (OrgCard in
- *   RestaurantList). Se per errore viene montato su un non-sandbox, non causa danni: la
- *   chiamata alla Edge Function è il gate lato server.
+ * Montato solo in TenantDetail (DEC-052 / REQ-004-DEC-D): scrivibile su tutti i tenant;
+ * il gate reale è Edge console-admin + allowlist, non questo componente.
  *
  * STATI GESTITI:
  *   - idle/loading: mostra i tre bottoni di selezione edition (disabilitati durante loading).
- *   - success: banner verde con la nuova edition (si chiude con reset o scompare al refetch).
+ *   - success: banner verde; scompare automaticamente quando TenantDetail ricarica e
+ *     passa il nuovo currentEdition (DEC-054). Chiudibile anche con "×".
  *   - error: banner rosso con il messaggio (include "function non configurata" se manca env).
  *
  * FEEDBACK "FUNCTION NON CONFIGURATA":
  *   L'helper callConsoleAdmin restituisce un errore esplicito se
  *   VITE_CONSOLE_ADMIN_FUNCTION_URL non è impostata. Quel messaggio appare nell'error banner
  *   senza crash dell'app.
- *
- * NOTA TEST E2E:
- *   La scrittura reale sul DB (update_edition) è testabile solo dopo che Matteo deploya
- *   la Edge Function e imposta VITE_CONSOLE_ADMIN_FUNCTION_URL (PLAN-DB-003).
- *   Finché non è deployata, il click produce il banner di errore "function non configurata".
  */
 
 import { useEffect } from 'react'
@@ -47,7 +40,6 @@ export function EditionSelector({ tenantId, currentEdition, onSuccess }: Edition
   const isMyError = state.status === 'error' && state.tenantId === tenantId
 
   // Quando la chiamata ha successo, notifica il genitore per il refetch.
-  // useEffect garantisce che sia un side-effect post-render, non durante il render.
   useEffect(() => {
     if (isMySuccess) {
       onSuccess()
@@ -56,6 +48,20 @@ export function EditionSelector({ tenantId, currentEdition, onSuccess }: Edition
     // causa re-run non desiderati se non è memoizzata → la escludiamo intenzionalmente.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMySuccess])
+
+  // Auto-reset del banner successo quando il genitore conferma il nuovo valore (refetch ok).
+  // Prima di DEC-054 il componente veniva smontato durante il refetch, azzerando lo stato da solo.
+  // Ora resta montato, quindi dobbiamo resettare esplicitamente quando currentEdition
+  // corrisponde al valore appena salvato (prova che il DB ha confermato la modifica).
+  useEffect(() => {
+    if (
+      state.status === 'success' &&
+      state.tenantId === tenantId &&
+      currentEdition === state.newEdition
+    ) {
+      reset()
+    }
+  }, [currentEdition, state, tenantId, reset])
 
   const handleChange = (edition: Edition) => {
     if (edition === currentEdition) return
@@ -98,12 +104,11 @@ export function EditionSelector({ tenantId, currentEdition, onSuccess }: Edition
         <p style={selectorStyles.loadingHint}>Aggiornamento in corso…</p>
       )}
 
-      {/* Feedback successo */}
+      {/* Feedback successo — scompare automaticamente al prossimo render dopo il refetch */}
       {isMySuccess && (
         <div style={feedbackStyles.successBox} role="status">
           <span>
-            Edition aggiornata a <strong>{editionLabel(state.newEdition)}</strong>.
-            La lista si sta aggiornando…
+            Versione aggiornata a <strong>{editionLabel(state.newEdition)}</strong>.
           </span>
           <button onClick={reset} style={feedbackStyles.closeBtn} aria-label="Chiudi">×</button>
         </div>
