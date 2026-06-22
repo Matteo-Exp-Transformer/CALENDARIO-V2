@@ -75,11 +75,28 @@
 
 ---
 
-## FASE 4 — Intervista + mappa "as-is" Servizio [SONNET] — ⬜ DA FARE
+## FASE 4 — Intervista + mappa "as-is" Servizio [SONNET] — ✅ FATTO
+
+- Output: `docs/Sessioni di lavoro/22-06-26/SERVIZIO_BASELINE_MAP.md` (11 componenti + 7 hook;
+  lista A codice morto, lista B fondamenta S1-S4, lista C 8 domande).
+- **Intervista (lista C)** condotta dall'orchestratore sui punti che decidono la demolizione:
+  - A3 `useReleaseBookingAssignment` → VIVO (usato da `QuickTableAssignModal`), non toccare.
+  - A4 `businessHoursRaw` → VIVO (`AdminHomePage.tsx:214`), non toccare.
+  - A7 re-export `slotCrossesMidnight` → MORTO confermato (nessun import via `useServiceSlots.ts:11`).
+  - A1 `rotation` → RIMUOVERE dal tipo a mano (Matteo: "non mi serve"); DB/`database.ts` restano.
+  - A6 `display_order` sale → TENERE (Matteo: "numero a mano va bene").
+- 6 domande di design rimaste (C1/C3/C4/C5/C7/C8) = materiale S4, non bloccano S0.
 
 ---
 
-## FASE 5 — Demolizione codice morto [HAIKU/SONNET] — ⬜ DA FARE
+## FASE 5 — Demolizione codice morto [HAIKU] — ⏳ IN CORSO
+
+Scope chirurgico (2 edit), validate verde, nessun commit, nessun PROD:
+1. `useServiceSlots.ts` — rimuovere `export { slotCrossesMidnight }`.
+2. `useServizioTables.ts` — rimuovere `rotation` da `RestaurantTable` e `TableInput`.
+
+### Nota esecutore
+> Haiku: scrivi qui l'esito (2 edit + riga riassuntiva `npm run validate`).
 
 ---
 
