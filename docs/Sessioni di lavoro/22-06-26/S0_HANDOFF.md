@@ -109,3 +109,16 @@ Revisione diretta dell'orchestratore sul diff Edge (mini-PR D8, isolato):
   - `docs/Admin-Skill/contesto/ADMIN_SERVIZIO_CONTEXT.md` (§6 aggiornata)
 - **Conferma §6:** aggiornata ✅ (bug 🔴 → 🟢 RISOLTO, dettagli date_from/date_to + resolveOverrideMaxGuests + TEST ok 409)
 - **Conferma operazioni:** nessun push, nessun merge, nessun deploy ✅ (commit locale su `s0/edge-override-fix`)
+
+---
+
+## ✅ GATE PROD — Deploy Edge `create-booking` (Azione 1 S0/D8) — 22-06-26
+
+> Eseguito dall'orchestratore (Opus) su autorizzazione esplicita di Matteo (non sa fare deploy).
+
+- **Ambiente verificato:** MCP "Supabase" = `rwuxgvldzrkabglkasym` (PROD); MCP "Supabase test" = `docnnernvpyrbwuzzach`.
+- **Anti-drift:** sorgente PROD v20 scaricato e confrontato col repo → uniche differenze = i due hunk del fix; `_shared/log.ts` identico.
+- **Canarino TEST (MCP):** deploy a due file → v27 ACTIVE, contenuto riletto byte-identico, boot smoke 400 OK.
+- **Deploy PROD (MCP):** `create-booking` **v21 ACTIVE**, `verify_jwt:false` preservato. Boot smoke PROD: HTTP 400 "tenantSlug è obbligatorio" = sana.
+- **No** smoke mutante dati PROD (correttezza già provata su TEST overlap; codice PROD byte-identico).
+- **Git consolidato:** `s0/edge-override-fix` mergiato (FF) in `env/test`; fix cherry-pickato su `main`. §6 aggiornata con PROD v21.

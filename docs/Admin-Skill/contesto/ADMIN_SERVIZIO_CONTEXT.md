@@ -67,6 +67,9 @@
   l'Edge ora legge tutte le righe della tabella che ricoprono la data (`date_from <= data <= date_to`),
   applica "vince il più specifico" tramite funzione `resolveOverrideMaxGuests` (replica server-side
   di `resolveSlotOverride`). Verificato su TEST: override respinge correttamente con 409 SLOT_LIMIT.
+  **Deployato in PRODUZIONE il 22-06-26: `create-booking` v21 su `rwuxgvld`** (deploy via MCP, bundle
+  a due file `source/index.ts` + `_shared/log.ts`, `verify_jwt:false`; diff vs PROD v20 = solo i due hunk
+  del fix, nessun altro drift; boot smoke 400 OK). TEST allineato (v27).
   Il vecchio pre-check `check-slot-availability` è stato rimosso in WP-B5 (12-06-26), quindi non va più
   considerato fonte runtime.
 - In `WalkInModal`, busy check confronta `booking.placement` con `tableId`, ma il walk-in salva
