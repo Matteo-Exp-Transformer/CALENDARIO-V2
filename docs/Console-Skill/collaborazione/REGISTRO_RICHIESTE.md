@@ -6,9 +6,14 @@
 
 | REQ | Titolo | Priorità | Stato | Branch / commit | File |
 |-----|--------|----------|-------|-----------------|------|
-| REQ-001 | Vista "Tutti gli utenti" + CRUD utente | alta | DA-FARE | — | `richieste/REQ-001-vista-tutti-utenti-crud.md` |
-| REQ-002 | Scheda focus singolo utente/azienda (setup completo) | alta | DA-FARE | — | `richieste/REQ-002-scheda-singolo-utente-azienda.md` |
-| REQ-003 | Crea / elimina aziende (tenant) + associazione utente | alta | DA-FARE | — | `richieste/REQ-003-crea-elimina-aziende.md` |
+| REQ-001 | Vista "Tutti gli utenti" + CRUD utente | alta | IN-SVILUPPO | `feature/console-super-admin` (F8 lettura, F11 scrittura) | `richieste/REQ-001-vista-tutti-utenti-crud.md` |
+| REQ-002 | Scheda focus singolo utente/azienda (setup completo) | alta | IN-SVILUPPO | `feature/console-super-admin` (F9 tappa 1) | `richieste/REQ-002-scheda-singolo-utente-azienda.md` |
+| REQ-003 | Crea / elimina aziende (tenant) + associazione utente | alta | IN-SVILUPPO | `feature/console-super-admin` (F12) | `richieste/REQ-003-crea-elimina-aziende.md` |
+
+> **2026-06-22 — Orchestrator:** master-plan eseguibile in `MASTERPLAN_CONSOLE_REQ-001-003.md`
+> (fasi **F8→F12**, ciclo esecutore→revisore→commit). Read-block prima (F8/F9), write-block poi
+> (F10 Edge → F11 utenti → F12 aziende). Plan DB a carico di Matteo: **PLAN-DB-005** (SELECT
+> `admin_users`) e — se serve — PLAN-DB-006 (cascata delete_tenant) + ri-deploy Edge.
 
 > **Tutte le decisioni di scope sono prese** (DEC-037..042): le 3 REQ contengono **istruzioni operative
 > complete**, il Team può iniziare.
