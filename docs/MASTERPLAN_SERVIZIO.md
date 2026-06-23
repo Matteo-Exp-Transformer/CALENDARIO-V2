@@ -355,7 +355,7 @@ ad-hoc compila *funziona / riscrivere / può rompersi*.
 - **Fuori S0 (→ S4, D10):** `useTableStatuses`, mismatch walk-in placement/id, guard `features.tableAssignments`.
 - **Esito:** bug Edge chiuso in PROD; Servizio baseline blindato e ripulito; fondamenta dati pronte.
 
-### S1 — Tipologia prenotazione + durata config *(Classic — Settings/Personalizza Form)* — ✅ BUILD COMPLETA (23-06-26, non committata)
+### S1 — Tipologia prenotazione + durata config *(Classic — Settings/Personalizza Form)* — ✅ COMPLETA (23-06-26)
 > **Esito:** campo `duration` aggiunto a `SubTab` (card **e** carosello, opzionale) + `default_duration`
 > a `BookingMode` (UI in Personalizza Form) e a `CustomStaffPreset` (**solo tipo+parser, niente UI** →
 > M3 non riaperta). Nessuna migrazione DB (tutto JSONB in `restaurant_settings`). Limiti 30–360 min,
@@ -373,13 +373,16 @@ ad-hoc compila *funziona / riscrivere / può rompersi*.
 - **Può rompersi:** riapre M4 e tocca `CustomStaffPreset`/`SubTab` → controtest `settings-*` (+ menu se la
   durata sta sulle card).
 
-### S2 — Motore durata (gerarchia) *(libreria condivisa — Classic core)*
-- **Scopo:** funzione pura `resolveBookingDuration()` (override > card > tipologia, pavimento = minimo
-  fascia, fallback = default) riusata da Edge + Calendario + Servizio + inserimento admin + modifica.
-- **Da costruire:** resolver + `service_slots.min_duration` + `turnover_buffer_minutes` (D37);
-  auto-attivazione permanenza solo se esiste una durata; durata **congelata** (D14); snapshot disponibilità
-  (D14 + parere §6.4). Due tempi distinti (D16): permanenza vs finestra di ordinazione.
-- **Può rompersi:** semantica `confirmed_start/end` (#5) — risolto da D15.
+### S2 — Motore durata (gerarchia) *(libreria condivisa — Classic core)* — ✅ COMPLETA (23-06-26)
+> **Esito:** `resolveBookingDuration()` pura (override > card > preset > booking_mode > restaurant_default,
+> pavimento = MAX(slot_min_duration, BOOKING_DURATION_MIN), D42 undefined). `service_slots.min_duration`
+> (nullable) + `turnover_buffer_minutes` (NOT NULL DEFAULT 0) — mig. 057 applicata TEST. Snapshot
+> `booking_requests.duration_minutes/source/rule_version` (nullable, retrocompatibile D15) — mig. 058
+> applicata TEST. Tipo `ServiceSlot` + `database.ts` rigenerati. `npm run validate` ✅ 123 file / 1008 test.
+> Plan+mappa+decisioni: `docs/Sessioni di lavoro/23-06-26/` (`S2_PLAN.md` §6bis, `S2_BASELINE_MAP.md`, `S2_HANDOFF.md`).
+> **NON in S2 (→ S3):** cablaggio Edge + form pubblico (Opzione A — client risolve, Edge valida).
+> **NON in S2 (→ S4):** uso di `turnover_buffer_minutes` nel calcolo finestre occupazione.
+> **PROD:** mig. 057/058 applicate solo su TEST. Push PROD richiede conferma Matteo (`rwuxgvld` gate).
 
 ### S3 — Intervalli di arrivo *(Classic — Prenota pubblico + Edge)*
 - **Da costruire:** step arrivo per-fascia con default unico (D18, in Servizio→Fasce); cut-off (D20);

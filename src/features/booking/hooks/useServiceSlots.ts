@@ -22,6 +22,11 @@ export interface ServiceSlot {
   display_order: number
   // is_canonical è managed dal DB (migration 016) — non incluso nei payload insert/update
   is_canonical: boolean
+  slot_color: string | null
+  /** Durata minima prenotazione in fascia (minuti). NULL = nessun pavimento. Migration 057. */
+  min_duration: number | null
+  /** Buffer pulizia/turnover tra prenotazioni (minuti). NOT NULL DEFAULT 0. Migration 057. */
+  turnover_buffer_minutes: number
   created_at: string
   updated_at: string
 }
@@ -33,8 +38,21 @@ export function isServiceSlotClosed(slot: Pick<ServiceSlot, 'max_turns'>): boole
 
 type ServiceSlotInsert = Omit<
   ServiceSlot,
-  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'is_canonical' | 'max_turns_resume'
-> & { max_turns_resume?: number | null }
+  | 'id'
+  | 'tenant_id'
+  | 'created_at'
+  | 'updated_at'
+  | 'is_canonical'
+  | 'max_turns_resume'
+  | 'slot_color'
+  | 'min_duration'
+  | 'turnover_buffer_minutes'
+> & {
+  max_turns_resume?: number | null
+  slot_color?: string | null
+  min_duration?: number | null
+  turnover_buffer_minutes?: number
+}
 type ServiceSlotUpdate = Partial<Omit<ServiceSlot, 'is_canonical'>> & {
   id: string
   /** Se true, non mostra il toast generico "Fascia oraria aggiornata". */
