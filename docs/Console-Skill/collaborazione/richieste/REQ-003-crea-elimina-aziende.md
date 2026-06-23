@@ -82,6 +82,11 @@ prima creazione, poi associazione admin, poi eliminazione protetta.
 
 > ⚠️ Push del branch ancora **da fare** (serve ok esplicito di Cristiano): la REQ resta **IN-SVILUPPO** fino al push, poi → CONSEGNATA.
 
-## ③ Esito test (Matteo)
+## ③ Esito test (Matteo / Cristiano)
 
-_(da compilare dopo il test)_
+**Esito:** ✅ **ACCETTATA** · **Testato da:** Cristiano · **Data:** 2026-06-23
+
+- Scenario 6 (crea "Locale di Prova" con accesso email+password) → ✅ l'azienda compare nella lista ed è apribile; l'accesso è creato.
+- Scenario 7 (elimina il "Locale di Prova" riscrivendo il nome esatto) → ✅ l'azienda sparisce dalla lista.
+
+Aggiornamento 2026-06-23: **PLAN-DB-006 (CASCADE) eseguito su TEST** (autorizzato da Matteo). Ora `delete_tenant` elimina anche aziende con **prenotazioni/clienti** già dentro (21/21 FK con `ON DELETE CASCADE`), mantenendo il gate "riscrivi il nome". ⚠️ Da riprovare lo scenario 7 **con un'azienda che ha dati operativi** per confermare end-to-end (prima era bloccato dal 409). Su PROD la cascata distruttiva è ancora da valutare.

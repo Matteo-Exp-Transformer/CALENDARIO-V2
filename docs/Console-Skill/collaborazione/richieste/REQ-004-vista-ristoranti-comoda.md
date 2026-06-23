@@ -142,4 +142,11 @@ Vedi scenari dettagliati in `REQ-004-scenari-test-cliente.md`.
 
 ## ③ Esito test (Cristiano, nei panni di Matteo)
 
-_(da compilare dopo il test — vedi scenari in `richieste/REQ-004-scenari-test-cliente.md`)_
+**Esito:** ✅ **ACCETTATA** · **Testato da:** Cristiano · **Data:** 2026-06-23
+
+- Scenario 1 (ricerca per nome azienda/utente) → ✅ funziona.
+- Scenario 2 (cambio versione dalla scheda, niente salto in cima) → ✅ funziona.
+- Scenario 9 (ritorno alla posizione di scorrimento dopo "← Torna") → ✅ funziona.
+- Card compatte (nome + utente + versione + stato + "Apri scheda"), nessun pannello inline → ✅ verificato.
+
+Nessun problema rilevato sugli scenari di REQ-004. La vista Ristoranti è comoda con tante aziende.

@@ -88,6 +88,21 @@ con il gate allowlist + scritture via Edge. Resta RULE-1 (solo TEST). Schema/RLS
 
 > Nota: i pannelli di **scrittura** edition/feature/impostazioni nella scheda restano oggi limitati ai sandbox (gate UI invariato in F9). L'estensione a tutte le aziende è una sotto-tappa successiva (allineamento UI a DEC-037); le azioni utenti/aziende (F11/F12) invece già valgono su tutte le aziende.
 
-## ③ Esito test (Matteo)
+## ③ Esito test (Matteo / Cristiano)
 
-_(da compilare dopo il test)_
+**Esito:** ✅ **ACCETTATA (con test residui)** · **Testato da:** Cristiano · **Data:** 2026-06-23
+
+- Apertura scheda azienda da Utenti/Ristoranti, campi base + pannelli → ✅ funziona.
+- Scenario 2 (cambio versione) / Scenario 4 (spegni funzione) / Scenario 5 (cambia giorni di prenotazione) → ✅ funzionano, niente salto in cima.
+
+**Test residui (rimandati — vedi FOLLOW_UP):**
+- Scenario 3 — **accendere una funzione extra** (es. menù QR) con la scritta "aggiunta a mano": ancora **da provare**.
+- **Sezioni bloccate nella mappa "Copertura intervista nuovo cliente"**: chiarito il perché (sotto). Non un bug → editor in arrivo con **FU-CONSOLE-9**.
+
+> **Perché alcune sezioni della "Copertura intervista nuovo cliente" sono bloccate (🔒).**
+> La scheda azienda oggi espone gli editor solo per **Sez.0** (anagrafica/versione), **Sez.2** (funzioni)
+> e **Sez.4** (regole, 5 chiavi). Le **Sez.1 contatti**, **Sez.3 orari/fasce**, **Sez.5 sala/tavoli**,
+> **Sez.6 menu/QR**, **Sez.7 aspetto** sono marcate 🔒 «in arrivo» perché la Console **non ha ancora gli
+> editor dedicati** per quei dati (alcuni toccano tabelle/valori che vanno ancora ricreati lato Console).
+> È una scelta voluta della tappa 1 (DEC-040/DEC-046), non un guasto: lo sblocco è pianificato in
+> **FU-CONSOLE-9**.
