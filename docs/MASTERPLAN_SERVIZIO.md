@@ -355,7 +355,13 @@ ad-hoc compila *funziona / riscrivere / può rompersi*.
 - **Fuori S0 (→ S4, D10):** `useTableStatuses`, mismatch walk-in placement/id, guard `features.tableAssignments`.
 - **Esito:** bug Edge chiuso in PROD; Servizio baseline blindato e ripulito; fondamenta dati pronte.
 
-### S1 — Tipologia prenotazione + durata config *(Classic — Settings/Personalizza Form)*
+### S1 — Tipologia prenotazione + durata config *(Classic — Settings/Personalizza Form)* — ✅ BUILD COMPLETA (23-06-26, non committata)
+> **Esito:** campo `duration` aggiunto a `SubTab` (card **e** carosello, opzionale) + `default_duration`
+> a `BookingMode` (UI in Personalizza Form) e a `CustomStaffPreset` (**solo tipo+parser, niente UI** →
+> M3 non riaperta). Nessuna migrazione DB (tutto JSONB in `restaurant_settings`). Limiti 30–360 min,
+> picker 90/120/150/180 + "Altro". `npm run validate` ✅ 122 file / 991 test. Plan+mappa+decisioni:
+> `docs/Sessioni di lavoro/23-06-26/` (`S1_PLAN.md` §6bis, `S1_BASELINE_MAP.md`, `S1_HANDOFF.md`).
+> **NON in S1 (→ S2):** `resolveBookingDuration()`, `min_duration` fascia, snapshot, permanenza, UI preset.
 - **Funziona già:** `BookingType`, `SubTab`/`CustomStaffPreset`, `is_fixed_menu`, card single-select.
 - **Da costruire (solo):** `default_duration` per i pochi tipi fissi (D11) + `duration` opzionale sulla
   card (override). UI campo durata in Personalizza Form, picker 90/120/150/180+altro con min/max (D13).
