@@ -42,6 +42,11 @@ import {
   BOOKING_PRENOTA_RESTAURANT_TEXT_LIMITS,
   clampBookingText,
 } from '@/features/booking/constants/bookingPrenotaTextLimits'
+import {
+  BOOKING_DURATION_MIN,
+  BOOKING_DURATION_MAX,
+  parseBookingDuration,
+} from '@/features/booking/constants/bookingDurationLimits'
 
 const DEFAULT_BOOKING_WINDOW_DAYS = 60
 
@@ -227,6 +232,7 @@ const customStaffPresetRowSchema = z.object({
   price_per_person: z.number().min(0).max(10000).optional(),
   is_fixed_menu: z.boolean().optional(),
   visible_on_booking: z.boolean().optional(),
+  default_duration: z.number().int().min(BOOKING_DURATION_MIN).max(BOOKING_DURATION_MAX).optional(),
 })
 
 const bookingCustomStaffPresetsSchema = z.array(customStaffPresetRowSchema).max(40)
@@ -242,16 +248,20 @@ function parseBookingStaffPresetsVisibleFromDb(raw: unknown): boolean {
 function parseBookingCustomStaffPresetsFromDb(raw: unknown): CustomStaffPreset[] {
   const parsed = bookingCustomStaffPresetsSchema.safeParse(raw)
   if (!parsed.success) return []
-  return parsed.data.map((row) => ({
-    id: row.id,
-    name: row.name,
-    item_ids: row.item_ids,
-    booking_types: normalizeStaffPresetBookingTypes(row.booking_types),
-    ...(row.description?.trim() ? { description: row.description.trim() } : {}),
-    ...(row.price_per_person != null && row.price_per_person > 0 ? { price_per_person: row.price_per_person } : {}),
-    ...(row.is_fixed_menu === false ? { is_fixed_menu: false as const } : {}),
-    ...(row.visible_on_booking === false ? { visible_on_booking: false as const } : {}),
-  }))
+  return parsed.data.map((row) => {
+    const parsedDuration = row.default_duration != null ? parseBookingDuration(row.default_duration) : undefined
+    return {
+      id: row.id,
+      name: row.name,
+      item_ids: row.item_ids,
+      booking_types: normalizeStaffPresetBookingTypes(row.booking_types),
+      ...(row.description?.trim() ? { description: row.description.trim() } : {}),
+      ...(row.price_per_person != null && row.price_per_person > 0 ? { price_per_person: row.price_per_person } : {}),
+      ...(row.is_fixed_menu === false ? { is_fixed_menu: false as const } : {}),
+      ...(row.visible_on_booking === false ? { visible_on_booking: false as const } : {}),
+      ...(parsedDuration != null ? { default_duration: parsedDuration } : {}),
+    }
+  })
 }
 
 const bookingTypeForPromoSchema = z.enum(['tavolo', 'rinfresco_laurea', 'menu_prezzo_fisso'])
@@ -673,6 +683,11 @@ export const restaurantSettingRegistry: {
               const capabilities = parseModeCapabilities(mode.capabilities)
               return capabilities ? { capabilities } : {}
             })(),
+            // default_duration: parse difensivo — il normalizer applica il clamp finale
+            ...((() => {
+              const d = parseBookingDuration(mode.default_duration)
+              return d != null ? { default_duration: d } : {}
+            })()),
           }
         }),
       })

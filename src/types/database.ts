@@ -101,6 +101,9 @@ export type Database = {
           dietary_data_consent_at: string | null
           dietary_off_platform_notice: boolean
           dietary_restrictions: Json | null
+          duration_minutes: number | null
+          duration_rule_version: number | null
+          duration_source: string | null
           event_type: string | null
           id: string
           marketing_consent: boolean
@@ -139,6 +142,9 @@ export type Database = {
           dietary_data_consent_at?: string | null
           dietary_off_platform_notice?: boolean
           dietary_restrictions?: Json | null
+          duration_minutes?: number | null
+          duration_rule_version?: number | null
+          duration_source?: string | null
           event_type?: string | null
           id?: string
           marketing_consent?: boolean
@@ -177,6 +183,9 @@ export type Database = {
           dietary_data_consent_at?: string | null
           dietary_off_platform_notice?: boolean
           dietary_restrictions?: Json | null
+          duration_minutes?: number | null
+          duration_rule_version?: number | null
+          duration_source?: string | null
           event_type?: string | null
           id?: string
           marketing_consent?: boolean
@@ -284,6 +293,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      console_allowed_emails: {
+        Row: {
+          created_at: string | null
+          email: string
+          note: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          note?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          note?: string | null
+        }
+        Relationships: []
       }
       customers: {
         Row: {
@@ -1084,10 +1111,12 @@ export type Database = {
           max_guests: number | null
           max_turns: number | null
           max_turns_resume: number | null
+          min_duration: number | null
           name: string
           slot_color: string | null
           start_time: string
           tenant_id: string
+          turnover_buffer_minutes: number
           updated_at: string
         }
         Insert: {
@@ -1099,10 +1128,12 @@ export type Database = {
           max_guests?: number | null
           max_turns?: number | null
           max_turns_resume?: number | null
+          min_duration?: number | null
           name: string
           slot_color?: string | null
           start_time: string
           tenant_id: string
+          turnover_buffer_minutes?: number
           updated_at?: string
         }
         Update: {
@@ -1114,10 +1145,12 @@ export type Database = {
           max_guests?: number | null
           max_turns?: number | null
           max_turns_resume?: number | null
+          min_duration?: number | null
           name?: string
           slot_color?: string | null
           start_time?: string
           tenant_id?: string
+          turnover_buffer_minutes?: number
           updated_at?: string
         }
         Relationships: [
@@ -1410,10 +1443,12 @@ export type Database = {
           max_guests: number | null
           max_turns: number | null
           max_turns_resume: number | null
+          min_duration: number | null
           name: string
           slot_color: string | null
           start_time: string
           tenant_id: string
+          turnover_buffer_minutes: number
           updated_at: string
         }[]
         SetofOptions: {
@@ -1442,6 +1477,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      is_console_user: { Args: never; Returns: boolean }
       normalize_booking_carousel_slide_item: {
         Args: { item: Json }
         Returns: Json
@@ -1461,10 +1497,12 @@ export type Database = {
           max_guests: number | null
           max_turns: number | null
           max_turns_resume: number | null
+          min_duration: number | null
           name: string
           slot_color: string | null
           start_time: string
           tenant_id: string
+          turnover_buffer_minutes: number
           updated_at: string
         }[]
         SetofOptions: {
