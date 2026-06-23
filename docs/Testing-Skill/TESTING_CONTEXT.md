@@ -7,6 +7,13 @@ description: >-
 
 # Testing Context
 
+## S3 — fronti aggiunti
+
+Marcatori `@s3-blindatura`: arrivi-slot, arrivi-hook-rpc, edge-arrival-validation e
+admin-duration-snapshot. Il picker riusa `public-booking-smoke.spec.ts` sui tre viewport standard.
+Deno locale non è installato: la logica Edge pura gira in Vitest e il bundle è verificato dal deploy
+server-side TEST; non dichiarare eseguito `deno test`.
+
 ## 1. Mappa test post-sessione 15-05-26
 
 ### Vitest (106 test, 12 file)

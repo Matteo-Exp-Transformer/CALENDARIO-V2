@@ -187,6 +187,9 @@ Colonne **rimosse** in 043 (codice morto): `content_type`, `preset_ids`.
 | `display_order` | INTEGER NOT NULL DEFAULT 0 | Ordinamento UI |
 | `is_canonical` | BOOLEAN NOT NULL DEFAULT false | **Deprecato funzionalmente** — mantenuto per il trigger di signup. Non usare per filtrare fasce attive (migrazione 016 + 024) |
 | `slot_color` | TEXT | Colore hex opzionale per la fascia in UI (migrazione 024) |
+| `arrival_step_minutes` | INTEGER NOT NULL DEFAULT 30 | Intervallo arrivi 5–120 minuti (migrazione 059, TEST) |
+| `min_duration` | INTEGER NULL | Pavimento durata fascia (migrazione 057, TEST) |
+| `turnover_buffer_minutes` | INTEGER NOT NULL DEFAULT 0 | Predisposizione S4 (migrazione 057, TEST) |
 | `max_turns_resume` | INTEGER | Limite turni in ripresa (migrazione 023) |
 | `created_at`, `updated_at` | TIMESTAMPTZ | |
 
@@ -201,6 +204,11 @@ Hook dedicato: `useCanonicalTimeSlots()` in `useServiceSlots.ts` — condivide l
 Trigger signup: `seed_default_service_slots_for_organization()` — inserisce 5 fasce di default (Colazione/Pranzo/Aperitivo/Cena/Notturna) con le 3 canoniche già marcate.
 
 **RLS:** policy `admin_*` — SELECT/INSERT/UPDATE/DELETE per `current_admin_tenant_id()`.
+
+**API pubbliche S3 (TEST):** `get_public_slot_config(slug)` espone solo fasce/soglie necessarie;
+`get_available_arrival_times(slug,date,duration,guests)` restituisce solo gli orari con capienza.
+Entrambe: `SECURITY DEFINER`, `search_path=public,pg_temp`, revoke `PUBLIC/authenticated`, grant `anon`,
+tenant attivo e input validati. Non espongono righe prenotazione né setting private.
 
 ### `service_slot_overrides` — Modifiche a tempo delle fasce (022)
 

@@ -9,6 +9,10 @@
 > **Trigger di routing:** «Pagina Prenota» · «form prenotazione clienti» → questo file +
 > `UI_RESPONSIVE_SKILL` / `UI_EDIT_SKILL`.
 
+> **Campo Ora S3:** resta nella stessa casella e nello stesso ordine della griglia LOCK. Con fasce
+> attive apre gruppi di pulsanti per fascia; al cambio data/card mantiene l'ora se ancora valida,
+> altrimenti la azzera. Senza fasce mantiene `TimePicker24h`.
+
 ---
 
 ## 0. LOCK struttura griglia

@@ -25,6 +25,9 @@ function git(args, cwd = process.cwd()) {
     cwd,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
+    // I merge di molti commit producono diff > 1MB (default execFileSync): senza un
+    // buffer ampio l'hook crasherebbe su `diff --cached --binary` e bloccherebbe il commit.
+    maxBuffer: 512 * 1024 * 1024,
   })
 }
 
