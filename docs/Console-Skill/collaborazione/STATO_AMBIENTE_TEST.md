@@ -62,10 +62,16 @@ Applicate policy di **sola lettura** per l'utente in allowlist (parte lettura di
 | PLAN-DB-002 (allowlist + RLS) | 🟡 **parte lettura eseguita** via SQL diretto (allowlist + `is_console_user` + SELECT policies). Parte UPDATE/scrittura RLS non necessaria (le scritture passano dall'Edge con service role) |
 | PLAN-DB-003 (deploy Edge) | ✅ eseguito (function deployata + secret impostato) |
 | PLAN-DB-004 (SELECT tenant_features) | ✅ eseguito (policy `console_admin_select_tenant_features`) |
+| PLAN-DB-005 (SELECT admin_users) | ✅ eseguito via MCP `apply_migration` (policy `console_admin_select_admin_users`) |
+| PLAN-DB-006 (CASCADE delete_tenant) | ✅ **eseguito 2026-06-23** via MCP `apply_migration` (`plan_db_006_cascade_delete_organizations`): 21/21 FK verso `organizations` con `ON DELETE CASCADE`. `delete_tenant` ora elimina aziende con dati operativi |
 
 ## 6. Cosa manca / debiti
 
-- **FU-CONSOLE-10**: trasformare le modifiche SQL dirette (allowlist, funzione, 3 policy) in **migrazioni
-  versionate** prima di portare la Console fuori da TEST. Oggi vivono solo nel DB TEST, non in `supabase/migrations/`.
+- **FU-CONSOLE-10**: trasformare in **migrazioni versionate** (file in `supabase/migrations/`) tutte le
+  modifiche di schema fatte su TEST fuori dal repo: SQL diretto (allowlist, funzione, 3 policy SELECT) +
+  policy `console_admin_select_admin_users` (PLAN-DB-005) + 21 FK `ON DELETE CASCADE` (PLAN-DB-006, 2026-06-23).
+  Quelle via MCP sono nello storico del DB remoto TEST ma non nei file del repo. **Owner: team Console**
+  (concordato con Matteo 2026-06-23), **in coordinamento** con Matteo per la cartella LOCK e per decidere
+  cosa portare in PROD (in particolare il CASCADE distruttivo su booking_requests/customers/email_logs).
 - Deploy pubblico della Console (Vercel `console.<dominio>`) — DEC-012, dominio TBD.
 - `console/.env.local` non è committato: chi clona il repo lo ricrea (vedi `console/.env.example`).

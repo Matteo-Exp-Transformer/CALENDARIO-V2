@@ -116,6 +116,12 @@ admin con: email, azienda/tenant associato, ruolo, stato. (NON i clienti finali.
 
 > ⚠️ Push del branch ancora **da fare** (serve ok esplicito di Cristiano, regola git del branch): finché non è pushato, Matteo non può importarlo in `env/test`. Per questo la REQ resta **IN-SVILUPPO** (passa a CONSEGNATA dopo il push).
 
-## ③ Esito test (Matteo)
+## ③ Esito test (Matteo / Cristiano)
 
-_(da compilare dopo il test)_
+**Esito:** ✅ **ACCETTATA (con un test residuo)** · **Testato da:** Cristiano · **Data:** 2026-06-23
+
+- Vista "Tutti gli utenti" con dati reali (join utenti × aziende) + ricerca → ✅ funziona.
+- Modifica / elimina utente (con riscrittura email esatta) → ✅ funziona.
+
+**Test residuo (rimandato — vedi FOLLOW_UP):**
+- Scenario 8 — **creare un utente collegato a un'azienda** da "+ Nuovo utente": ancora **da provare**.

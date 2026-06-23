@@ -1,7 +1,13 @@
 # PLAN-DB-006 — ON DELETE CASCADE su organizations per `delete_tenant`
 
-**Stato:** da eseguire · **Ambiente:** TEST docnnernvp · **Data:** 2026-06-22
+**Stato:** ✅ **ESEGUITO su TEST** (2026-06-23, via MCP `apply_migration` `plan_db_006_cascade_delete_organizations`, autorizzato da Matteo) · **Ambiente:** TEST docnnernvp · **Data:** 2026-06-22
 **Correlato a:** F10 (Edge `console-admin`), DEC-047, REQ-003
+
+> **Esito 2026-06-23:** migrazione applicata con la versione completa (tutte e 21 le FK). Verifica
+> `delete_rule` → **21/21 tabelle = CASCADE**. `delete_tenant` ora elimina qualsiasi azienda anche con
+> dati operativi (il gate `confirm_name` resta). ⚠️ **PROD non toccato** — su PROD valutare se conservare
+> booking_requests/customers/email_logs a fini di archivio (vedi «Note per Matteo»). Questa migrazione è
+> stata applicata via MCP: va ancora **formalizzata come file** in `supabase/migrations/` → **FU-CONSOLE-10**.
 
 ## Obiettivo
 

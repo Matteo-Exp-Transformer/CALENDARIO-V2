@@ -6,9 +6,21 @@
 
 | REQ | Titolo | Priorità | Stato | Branch / commit | File |
 |-----|--------|----------|-------|-----------------|------|
-| REQ-001 | Vista "Tutti gli utenti" + CRUD utente | alta | CONSEGNATA (pushata + mergiata in env/test) | F8 `50555f9`, F10 `f94b075`, F11 `9b2fd7f`+`ad2e619` | `richieste/REQ-001-vista-tutti-utenti-crud.md` |
-| REQ-002 | Scheda focus singolo utente/azienda (setup completo) | alta | CONSEGNATA (tappa 1; pushata + mergiata in env/test) | F9 `6f5f4b0` | `richieste/REQ-002-scheda-singolo-utente-azienda.md` |
-| REQ-003 | Crea / elimina aziende (tenant) + associazione utente | alta | CONSEGNATA (pushata + mergiata in env/test) | F10 `f94b075`, F12 `abd0f74` | `richieste/REQ-003-crea-elimina-aziende.md` |
+| REQ-001 | Vista "Tutti gli utenti" + CRUD utente | alta | ACCETTATA (1 test residuo: crea utente — vedi FOLLOW_UP) | F8 `50555f9`, F10 `f94b075`, F11 `9b2fd7f`+`ad2e619` | `richieste/REQ-001-vista-tutti-utenti-crud.md` |
+| REQ-002 | Scheda focus singolo utente/azienda (setup completo) | alta | ACCETTATA (test residui: accendi funzione + sezioni 🔒 → FU-CONSOLE-9) | F9 `6f5f4b0` | `richieste/REQ-002-scheda-singolo-utente-azienda.md` |
+| REQ-003 | Crea / elimina aziende (tenant) + associazione utente | alta | ACCETTATA | F10 `f94b075`, F12 `abd0f74` | `richieste/REQ-003-crea-elimina-aziende.md` |
+| REQ-004 | Vista Ristoranti comoda (50+) + ritorno alla posizione | media | ACCETTATA | `c77bdd1` | `richieste/REQ-004-vista-ristoranti-comoda.md` (+ `REQ-004-scenari-test-cliente.md`) |
+
+> **2026-06-23 — Cristiano (esito test):** test eseguiti nei panni di Matteo su `env/test`. **REQ-003 e
+> REQ-004 → ACCETTATA** (nessun problema). **REQ-001 e REQ-002 → ACCETTATA con test residui**, rimandati a
+> FOLLOW_UP: (a) creare un utente collegato a un'azienda (scenario 8 / REQ-001); (b) accendere una funzione
+> extra es. menù QR (scenario 3 / REQ-002); (c) capire le sezioni 🔒 della «Copertura intervista» — chiarito:
+> non è un bug, gli editor mancanti sono pianificati in **FU-CONSOLE-9**.
+
+> **2026-06-23 — PLAN-DB-006 ESEGUITO** (autorizzato da Matteo): 21 FK verso `organizations` con `ON DELETE
+> CASCADE` su TEST → `delete_tenant` elimina aziende anche con dati operativi. Debito aperto: **FU-CONSOLE-10**
+> (formalizzare in file `supabase/migrations/` le modifiche applicate via MCP, incl. PLAN-DB-005/006) — **owner
+> team Console**, in coordinamento con Matteo.
 
 > **2026-06-22 — Orchestrator (sync sessione):** il branch è stato **pushato e mergiato in `env/test`**
 > da Matteo (`f4a6e4b`) per il test → le 3 REQ passano da IN-SVILUPPO a **CONSEGNATA**. Ora tocca a
