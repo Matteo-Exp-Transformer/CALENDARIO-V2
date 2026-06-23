@@ -50,6 +50,9 @@ const STRIP_FROM_PUBLIC = [
   '.cursor',
   '.claude',
   '_skill-system-v0',
+  // Console super-admin: strumento interno multi-tenant (crea/elimina aziende).
+  // Tracciata in dev ma NON va nella repo pubblica.
+  'console',
   'AGENTS.md',
   'ONBOARDING.md',
   'CONTRIBUTING.md',

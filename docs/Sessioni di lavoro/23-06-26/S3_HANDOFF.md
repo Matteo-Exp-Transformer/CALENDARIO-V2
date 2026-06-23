@@ -1,15 +1,24 @@
 # S3 — Handoff: Intervalli di arrivo
 
 **Cosa è cambiato:** nella Pagina Prenota il cliente sceglie solo orari validi per fascia; senza fasce resta l'orario libero.
-**Cosa resta:** verifica di accettazione di Matteo; rollout PROD separato e non autorizzato.
-**Serve una tua azione:** sì — prova Pagina Prenota e Servizio → Fasce con la checklist in fondo.
+**Cosa resta:** nulla di S3 — rollout completato in produzione il 23-06-26 (vedi sotto).
+**Serve una tua azione:** no per S3; eventuale collaudo live su PrenotaZen a piacere.
 
 ## Stato consegnato
 
-- Branch `env/test`, base `be12b73`; working tree non committato preservato e completato.
-- Nessun commit, push o accesso PROD.
+- Branch `env/test` (824f205) → MERGIATO in `main` (merge 22befb6).
 - TEST `docnnernvpyrbwuzzach`: migrazioni 059–062 verificate e registrate; tipi rigenerati.
-- `create-booking` distribuita solo su TEST con `verify_jwt:false`.
+- `create-booking` su TEST con `verify_jwt:false` (v28).
+
+## Rollout PRODUZIONE (23-06-26, autorizzato Matteo)
+
+- **PROD `rwuxgvldzrkabglkasym`**: migrazioni **057→062** applicate (pulite, una volta sola);
+  advisor ok (solo i 2 warning attesi su RPC anon `get_available_arrival_times` / `get_public_slot_config`).
+- **Edge `create-booking` v22** deployata su PROD (`verify_jwt:false`); smoke test live:
+  boot 400 OK, off-step → 409 `INVALID_ARRIVAL_STEP`. Nessuna prenotazione di test creata.
+- **PrenotaZen** (client pubblico) rilasciata insieme all'edge per evitare il mismatch
+  edge-nuova/client-vecchio. La **console super-admin** è esclusa dalla repo pubblica
+  (aggiunta a `STRIP_FROM_PUBLIC` in `scripts/sync-to-prenotazen.mjs`).
 
 ## Implementazione
 
