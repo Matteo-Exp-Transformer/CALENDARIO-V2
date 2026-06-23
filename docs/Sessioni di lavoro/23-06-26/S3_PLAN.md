@@ -443,4 +443,23 @@ Test integrazione Edge (`npm run validate` + Playwright smoke PROD post-deploy):
 ---
 
 *Prodotto 23-06-26 — orchestratore Sonnet 4.6. Versione plan 1.1 (intervista chiusa, orchestratore Opus).*
-*Status: ✅ INTERVISTA CHIUSA (§6bis compilata) — pronto per l'esecuzione. Fase 1 = mig. 059 + 060 su TEST.*
+
+---
+
+## ✅ S3 COMPLETATA E IN PRODUZIONE (23-06-26)
+
+Tutte le fasi 1–8 eseguite + rollout. Stato per il prossimo orchestrator:
+
+- **Codice**: env/test (824f205) → `main` (merge 22befb6). `validate` verde (127 file / 1046 test).
+- **DB**: migrazioni 057→062 su **TEST** `docnnernvp` **e PROD** `rwuxgvld` (pulite, advisor ok).
+- **Edge** `create-booking`: TEST v28, **PROD v22** (verify_jwt:false); smoke live OK (boot 400, off-step 409).
+- **PrenotaZen** (client pubblico): rilasciata (commit pubblico f01bbae), edge+client insieme.
+- **4 fix UI Prenota** inclusi (casella "Altro", giorno chiuso→primo aperto, card unica auto-selez., guard ingredienti).
+- Handoff: `S3_HANDOFF.md`. Report: `Report-S3-rollout-prod-prenotazen-23-06-26.md`. Esecutore: `S4_REPORT.md`.
+
+**Per riprendere (prossima sotto-area, es. S4 motore tavoli):** partire da §6bis + `MASTERPLAN_SERVIZIO.md`.
+Q-S3-9 (`occupancy_start/end`) è rimandata a S4. Nota branch: `main` ha il fix `maxBuffer` del hook;
+`env/test` (66ec436) ha console-strip nello script di release + report. Il prossimo `release:prenotazen`
+parte da `main` e DEVE fare prima `git merge env/test`.
+
+*Status: ✅ CHIUSA — in produzione.*
