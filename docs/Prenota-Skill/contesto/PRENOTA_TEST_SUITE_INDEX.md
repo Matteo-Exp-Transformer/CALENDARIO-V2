@@ -6,6 +6,14 @@
 
 ## In parole semplici
 
+### S3 — intervalli arrivo
+
+- `deriveArrivalTimes.s3.test.ts`: 18 casi su step relativo, cutoff, durata, tardivo, overnight,
+  confini e input malformati.
+- `useArrivalSlots.s3.test.tsx`: gate capacità, fascia piena e nessuna lettura anon diretta di setting.
+- `edgeArrivalValidation.s3.test.ts` + `bookingDurationSnapshot.s3.test.ts`: Edge e snapshot admin.
+- `public-booking-smoke.spec.ts`: picker e submit a 375×812, 834×1194 e 1280×800.
+
 I test della Pagina Prenota sono divisi per **fronte** (di cosa si occupano), non per file.
 Ogni test della rete di blindatura ha in cima un **marcatore** in commento:
 

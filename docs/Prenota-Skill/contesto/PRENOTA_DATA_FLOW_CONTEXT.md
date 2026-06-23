@@ -9,6 +9,11 @@ description: >-
 
 # Booking Data Flow — flusso dati Prenota
 
+> **Orari S3:** con fasce attive la Pagina Prenota usa soltanto due RPC anon ristrette, propone
+> orari step-aligned e nasconde quelli pieni solo se il limite fascia è acceso. Senza fasce/toggle
+> torna al selettore libero. Il client invia la durata; `create-booking` la ri-valida e salva
+> `duration_source`/version proprie, senza fidarsi del browser.
+
 > **Quando usare questa skill:** prima di modificare uno di questi file
 > `bookingFormResolver.ts`, `bookingPublicFormConfig.ts`, `restaurantSettingRegistry.ts`,
 > `BookingFormConfigPanel.tsx`, `BookingFormCarouselEditor.tsx`, `BookingRequestForm.tsx`,

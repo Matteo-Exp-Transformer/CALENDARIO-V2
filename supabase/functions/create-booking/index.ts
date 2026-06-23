@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createEdgeLogger } from "../_shared/log.ts";
+import { validateArrivalRules } from "./arrivalValidation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -224,6 +225,9 @@ Deno.serve(async (req: Request) => {
       dietary_data_consent,
       dietary_off_platform_notice,
       dietary_data_consent_at,
+      duration_minutes,
+      duration_source: _duration_source,
+      duration_rule_version: _duration_rule_version,
     } = body;
 
     // DB: client_email è NOT NULL (default ''). Non usare `|| null`: stringa vuota è falsy e diventerebbe NULL.
@@ -328,6 +332,18 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const validatedDuration = duration_minutes == null
+      ? null
+      : Number.isInteger(duration_minutes) && duration_minutes >= 30 && duration_minutes <= 360
+        ? duration_minutes
+        : undefined;
+    if (validatedDuration === undefined) {
+      return new Response(
+        JSON.stringify({ error: "Durata prenotazione non valida", code: "INVALID_DURATION" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // --- Resolve tenant from slug ---
     // Falla chiusa: filtro is_active=true così un'organizzazione disattivata
     // (is_active=false) è trattata come inesistente — stesso errore/status.
@@ -379,6 +395,10 @@ Deno.serve(async (req: Request) => {
           "slot_limit_enabled",
           "booking_reject_out_of_slot",
           "slot_guest_capacities",
+          "cutoff_minutes",
+          "late_arrival_allowed",
+          "min_order_time_minutes",
+          "timezone",
         ]);
 
       const sMap: Record<string, unknown> = {};
@@ -394,6 +414,13 @@ Deno.serve(async (req: Request) => {
         sMap["booking_reject_out_of_slot"] === true || sMap["booking_reject_out_of_slot"] === "true";
       // Capienza per-fascia impostata dalla UI Classic (Record<slotId, number|null>).
       const slotGuestCapacities = parseSlotGuestCapacitiesFromDb(sMap["slot_guest_capacities"]);
+      const cutoffMinutes = Number.isFinite(Number(sMap["cutoff_minutes"]))
+        ? Math.max(0, Math.min(1440, Number(sMap["cutoff_minutes"]))) : 60;
+      const lateArrivalAllowed = sMap["late_arrival_allowed"] === true || sMap["late_arrival_allowed"] === "true";
+      const minOrderTimeMinutes = Number.isFinite(Number(sMap["min_order_time_minutes"]))
+        ? Math.max(1, Math.min(1440, Number(sMap["min_order_time_minutes"]))) : 45;
+      const restaurantTimezone = typeof sMap["timezone"] === "string" && sMap["timezone"].trim()
+        ? sMap["timezone"].trim() : "Europe/Rome";
 
       // Prenotazioni accettate del giorno
       const dateStart = `${desired_date}T00:00:00`;
@@ -409,10 +436,10 @@ Deno.serve(async (req: Request) => {
         .lte("confirmed_start", dateEnd);
 
       // Check per-fascia / vincolo orario — entrambi opzionali (default OFF), bloccano solo il pubblico.
-      if ((slotLimitEnabled || rejectOutOfSlot) && timeSlotsEnabled) {
+      if (timeSlotsEnabled) {
         const { data: slotsRows } = await supabaseAdmin
           .from("service_slots")
-          .select("id, name, start_time, end_time, max_guests, display_order")
+          .select("id, name, start_time, end_time, max_guests, min_duration, arrival_step_minutes, display_order")
           .eq("tenant_id", orgId)
           .order("display_order");
 
@@ -450,17 +477,43 @@ Deno.serve(async (req: Request) => {
             );
 
           if (!matchedSlot) {
-            // Vincolo orario: l'orario non cade in nessuna fascia → rifiuta solo se il toggle è attivo.
-            if (rejectOutOfSlot) {
-              return new Response(
-                JSON.stringify({
-                  error: "Spiacenti, l'orario scelto non rientra negli orari di servizio.",
-                  code: "OUT_OF_SLOT",
-                }),
-                { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-              );
-            }
-          } else if (slotLimitEnabled) {
+            return new Response(
+              JSON.stringify({ error: "Spiacenti, l'orario scelto non rientra negli orari di servizio.", code: "OUT_OF_SLOT" }),
+              { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+
+          const nowParts = new Intl.DateTimeFormat("en-CA", {
+            timeZone: restaurantTimezone, year: "numeric", month: "2-digit", day: "2-digit",
+            hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+          }).formatToParts(new Date());
+          const part = (type: string) => nowParts.find((entry) => entry.type === type)?.value ?? "00";
+          const restaurantToday = `${part("year")}-${part("month")}-${part("day")}`;
+          const restaurantNowMinutes = Number(part("hour")) * 60 + Number(part("minute"));
+          const arrivalError = validateArrivalRules({
+            desiredDate: desired_date, desiredTime: desired_time,
+            restaurantToday, restaurantNowMinutes,
+            slotStart: matchedSlot.start_time, slotEnd: matchedSlot.end_time,
+            arrivalStepMinutes: matchedSlot.arrival_step_minutes,
+            cutoffMinutes, lateArrivalAllowed, minOrderTimeMinutes,
+            slotMinDuration: matchedSlot.min_duration,
+            durationMinutes: validatedDuration,
+          });
+          if (arrivalError) {
+            const message = arrivalError === "INVALID_ARRIVAL_STEP"
+              ? "L'orario scelto non rispetta l'intervallo previsto."
+              : arrivalError === "INVALID_DURATION"
+                ? "La durata scelta è inferiore al minimo della fascia."
+                : arrivalError === "OUT_OF_SLOT"
+                  ? "Spiacenti, l'orario scelto non rientra negli orari di servizio."
+                  : "L'orario scelto non è più prenotabile.";
+            return new Response(
+              JSON.stringify({ error: message, code: arrivalError }),
+              { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+
+          if (slotLimitEnabled) {
             // Leggi tutti gli override che coprono la data (intervallo date_from..date_to inclusivo).
             const { data: ovRows } = await supabaseAdmin
               .from("service_slot_overrides")
@@ -585,6 +638,9 @@ Deno.serve(async (req: Request) => {
       dietary_data_consent_at: dietary_data_consent === true
         ? (dietary_data_consent_at ?? new Date().toISOString())
         : null,
+      duration_minutes: validatedDuration,
+      duration_source: validatedDuration == null ? null : "public_form",
+      duration_rule_version: validatedDuration == null ? null : 1,
     };
 
     const { data: booking, error: insertError } = await supabaseAdmin

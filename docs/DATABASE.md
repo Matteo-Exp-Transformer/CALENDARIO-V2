@@ -30,6 +30,11 @@ Ultimo file in repo (verificato 12-06-26): `048_schedule_rate_limits_cleanup.sql
 | 046 | `046_codify_policy_drift.sql` | WP-B1: codifica la policy `anon_select_active_organizations` (anon SELECT su `organizations`, `is_active = true`) che esisteva su TEST+PROD ma non era versionata. Necessaria alla vista `organizations_public` security_invoker (039). Applicata TEST+PROD 12-06-26. Nessuna restrizione (chiusura lettura cross-tenant `restaurant_settings` = WP-B2) |
 | 047 | `047_restrict_anon_restaurant_settings.sql` | WP-B2: restringe la lettura anon di `restaurant_settings` alle key pubbliche whitelistate; nuove key pubbliche richiedono update registry + migrazione policy |
 | 048 | `048_schedule_rate_limits_cleanup.sql` | WP-B5: definisce `cleanup_rate_limits()` e job `pg_cron` orario `cleanup-rate-limits-hourly`. Applicata/verificata su TEST `docnnernvp` 12-06-26 (`048`) e su PROD `rwuxgvld` 12-06-26 (`20260612131057`): `pg_cron`, funzione, job e revoche EXECUTE ok |
+| 057–058 | durata fasce + snapshot prenotazione | solo TEST; fondamenta S2 |
+| 059 | `059_service_slots_arrival_step.sql` | `arrival_step_minutes` 5–120, default 30; TEST registrata |
+| 060 | `060_rpc_get_available_arrival_times.sql` | RPC anon ristretta: capienza residua degli accettati; TEST registrata |
+| 061 | `061_rpc_get_public_slot_config.sql` | RPC anon ristretta: fasce + sole soglie operative; TEST registrata |
+| 062 | `062_update_service_slot_arrival_step.sql` | estende PATCH RPC Pro senza cambiare firma; TEST registrata |
 
 > Promo menù (23-05-26): impostazioni solo su `restaurant_settings.setting_key = booking_menu_promos`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
 

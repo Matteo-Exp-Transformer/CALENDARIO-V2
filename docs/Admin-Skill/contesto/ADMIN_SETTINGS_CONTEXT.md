@@ -93,6 +93,10 @@ chiave gia registrata.
 
 ## 8. Decisioni intervista M4 (15-06-26)
 
+> **S3:** `cutoff_minutes` (60), `min_order_time_minutes` (45) e `late_arrival_allowed` (false)
+> sono registrati e validati ma non esposti nella UI ristoratore. Restano console-tunable. Classic
+> non riceve una nuova manopola intervallo; il valore per-fascia si modifica solo in Servizio Pro.
+
 > Stato stabile post-intervista Matteo. Report completo + tabella gap codice:
 > [`Report-intervista-m4-admin-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Report-intervista-m4-admin-impostazioni-15-06-26.md).
 

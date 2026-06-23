@@ -43,6 +43,13 @@ Registro remoto TEST allineato a `048` il 12-06-26. In sessione Codex, il connet
 
 > **Nota PROD:** `048_schedule_rate_limits_cleanup` applicata su PROD `rwuxgvld` il 12-06-26 con conferma Matteo; registro `20260612131057`; verificati `pg_cron`, funzione `public.cleanup_rate_limits()`, job `cleanup-rate-limits-hourly` (`17 * * * *`) e revoke execute da `anon/authenticated`.
 
+### Snapshot S3 TEST (23-06-26)
+
+Versioni `059`, `060`, `061`, `062` verificate sullo schema reale e marcate applied via
+`migration repair --status applied ... --linked`. Tipi rigenerati dal TEST. Nessuna `063`: D36 rende
+i pending non-capacitivi, quindi il lock proposto non avrebbe enforcement reale oppure violerebbe il
+dominio. PROD non toccata.
+
 ### Anomalie storiche utili (permanenti)
 
 **Doppio prefisso 003:** due file locali `003_fix_tenant_usage_triggers_security_definer.sql` e `003_menu_categories.sql`. `schema_migrations` ha PK su `version` — una sola riga `003` in Remote. Riga Remote vuota per il secondo file in `migration list --linked` = falso positivo atteso. **NON** eseguire `db push --include-all` per questo warning.

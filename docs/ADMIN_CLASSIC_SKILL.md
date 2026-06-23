@@ -237,6 +237,9 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
 
 - Invalidazioni `HOME_STATS_QUERY_KEY` e `ANALYTICS_QUERY_ROOT` — no-op in Classic, safe.
 - Ogni accept/modifica che scrive `confirmed_start` deve scrivere anche `desired_time` — vedi **§4b** (`useAcceptBooking` deriva `desired_time` da `confirmedStart` se assente).
+- S3: i flussi accetta/modifica ricevono uno snapshot durata preservato se già presente; per legacy
+  senza snapshot congelano la durata effettiva `confirmed_start → confirmed_end`. La creazione admin
+  scrive lo stesso snapshot; nessuna firma pubblica delle mutation è cambiata.
 
 ### `RestaurantSettingsTab.tsx`
 

@@ -385,7 +385,9 @@ ad-hoc compila *funziona / riscrivere / può rompersi*.
 > **PROD:** mig. 057/058 applicate solo su TEST. Push PROD richiede conferma Matteo (`rwuxgvld` gate).
 
 ### S3 — Intervalli di arrivo *(Classic — Prenota pubblico + Edge)*
-- **Da costruire:** step arrivo per-fascia con default unico (D18, in Servizio→Fasce); cut-off (D20);
+- **Stato TEST:** implementata e validata; migrazioni 059–062 registrate su TEST, Edge TEST distribuita.
+  PROD resta invariata e richiede gate/conferma Matteo.
+- **Costruito:** step arrivo per-fascia con default unico (D18, in Servizio→Fasce Pro); cut-off (D20);
   tempo minimo ordine default 45 (D16); orari pieni nascosti (D19); vincolo selezione orario nel form;
   check Edge fonte di verità (D2) con codici dedicati (D42).
 - **Conflitti da blindare PRIMA del codice:** uovo/gallina durata↔orario (mostra slot su durata *base*
@@ -394,6 +396,9 @@ ad-hoc compila *funziona / riscrivere / può rompersi*.
   prova di mezzanotte); slot pieni nascosti vs grigi (UX+perf); riconciliare codici rifiuto; **ordine form
   pubblico card-prima-dell'orario** (§3 da verificare); **race condition (D40)**.
 - **Può rompersi:** form Prenota in produzione (M0) + Edge → controtest pubblico + E2E + smoke PROD.
+- **D40/D36:** gli invii pubblici restano `pending` e non consumano capienza; quindi due pending
+  concorrenti non sono overbooking. L'admin accetta con warning morbido, mai blocco. Nessuna `063`
+  fittizia è stata creata. Dettaglio: `Sessioni di lavoro/23-06-26/S3_HANDOFF.md`.
 
 ### S4 — Motore turni automatici / finestre di occupazione *(Pro — Servizio/Calendario)*
 - **Da costruire:** generazione finestre (arrivo + durata + buffer D37); disponibilità auto a fine durata

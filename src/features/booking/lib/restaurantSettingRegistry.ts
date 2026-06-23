@@ -83,6 +83,12 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'booking_time_slots_enabled',
   /** Configurazione UI pagina pubblica /prenota: titolo, descrizione, modalità di prenotazione visibili. */
   'booking_public_form_config',
+  /** S3/D20 — anticipo minimo (minuti) per prenotare (default 60). Console-tunable. */
+  'cutoff_minutes',
+  /** S3/D16 — pavimento tardivo: minuti minimi di ordine garantito (default 45). Console-tunable. */
+  'min_order_time_minutes',
+  /** S3/D16 — toggle tardivo con avviso (default false). Console-tunable solo. */
+  'late_arrival_allowed',
 ] as const
 
 export type RestaurantSettingKeyV1 = (typeof RESTAURANT_SETTING_KEYS_V1)[number]
@@ -354,6 +360,12 @@ export type RestaurantSettingValueMap = {
   booking_time_slots_enabled: boolean
   /** Configurazione UI pagina pubblica /prenota: titolo, descrizione e modalità di prenotazione. */
   booking_public_form_config: BookingPublicFormConfig | null
+  /** Anticipo minimo prenotazione in minuti (default 60, D20). Console-tunable. */
+  cutoff_minutes: number
+  /** Pavimento tardivo in minuti (default 45, D16). Console-tunable. */
+  min_order_time_minutes: number
+  /** Toggle tardivo con avviso (default false, D16). Console-tunable solo. */
+  late_arrival_allowed: boolean
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -701,5 +713,48 @@ export const restaurantSettingRegistry: {
       }
       return null
     },
+  },
+  cutoff_minutes: {
+    key: 'cutoff_minutes',
+    parseFromDb: (raw) => {
+      if (typeof raw === 'number' && Number.isFinite(raw) && raw >= 0) return raw
+      if (typeof raw === 'string') {
+        const n = parseInt(raw, 10)
+        if (!Number.isNaN(n) && n >= 0) return n
+      }
+      return 60
+    },
+    serializeToDb: (value) => value as Json,
+    validate: (value) => {
+      const n = Number(value)
+      if (!Number.isInteger(n) || n < 0 || n > 1440) return 'Deve essere un intero tra 0 e 1440 minuti'
+      return null
+    },
+  },
+  min_order_time_minutes: {
+    key: 'min_order_time_minutes',
+    parseFromDb: (raw) => {
+      if (typeof raw === 'number' && Number.isInteger(raw) && raw >= 1) return raw
+      if (typeof raw === 'string') {
+        const n = parseInt(raw, 10)
+        if (!Number.isNaN(n) && n >= 1) return n
+      }
+      return 45
+    },
+    serializeToDb: (value) => value as Json,
+    validate: (value) => {
+      const n = Number(value)
+      if (!Number.isInteger(n) || n < 1 || n > 1440) return 'Deve essere un intero tra 1 e 1440 minuti'
+      return null
+    },
+  },
+  late_arrival_allowed: {
+    key: 'late_arrival_allowed',
+    parseFromDb: (raw) => {
+      if (raw === true || raw === 'true') return true
+      return false
+    },
+    serializeToDb: (value) => value as Json,
+    validate: (value) => (typeof value === 'boolean' ? null : 'Valore non valido'),
   },
 }
