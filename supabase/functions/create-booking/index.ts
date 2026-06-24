@@ -422,12 +422,18 @@ Deno.serve(async (req: Request) => {
       const restaurantTimezone = typeof sMap["timezone"] === "string" && sMap["timezone"].trim()
         ? sMap["timezone"].trim() : "Europe/Rome";
 
-      // Prenotazioni accettate del giorno
+      // Prenotazioni accettate del giorno.
+      // D43 (server-side, fonte di verità): la somma occupazione conta SOLO gli stati che
+      // bloccano la capienza dura. Qui = status 'accepted' AND no_show != true; i 'pending'
+      // (richieste pubbliche non ancora accettate) NON consumano capienza (D36) → due invii
+      // pubblici concorrenti non sono overbooking (nessuna race da proteggere sul pubblico, D40).
+      // La protezione race vera (assegnazione tavolo) vive sul vincolo UNIQUE di
+      // booking_table_assignments lato admin, non qui.
       const dateStart = `${desired_date}T00:00:00`;
       const dateEnd = `${desired_date}T23:59:59`;
       const { data: dayBookings } = await supabaseAdmin
         .from("booking_requests")
-        .select("confirmed_start, confirmed_end, num_guests")
+        .select("confirmed_start, confirmed_end, occupancy_end, num_guests")
         .eq("tenant_id", orgId)
         .eq("status", "accepted")
         // I no-show liberano il posto: non occupano coperti verso il limite (decisione Matteo 11-06-26).
@@ -534,8 +540,11 @@ Deno.serve(async (req: Request) => {
 
             if (cap != null) {
               const occupied = (dayBookings ?? []).reduce(
-                (acc: number, b: { confirmed_start: string; confirmed_end: string; num_guests: number }) => {
-                  const ids = getOccupiedSlots(b.confirmed_start, b.confirmed_end);
+                (acc: number, b: { confirmed_start: string; confirmed_end: string; occupancy_end: string | null; num_guests: number }) => {
+                  // D37: usa la finestra di occupazione reale (occupancy_end = arrivo + durata + buffer)
+                  // quando disponibile; fallback a confirmed_end per lo storico (D15, retrocompatibile).
+                  const windowEnd = b.occupancy_end ?? b.confirmed_end;
+                  const ids = getOccupiedSlots(b.confirmed_start, windowEnd);
                   return ids.includes(matchedSlot.id) ? acc + (b.num_guests ?? 0) : acc;
                 }, 0
               );

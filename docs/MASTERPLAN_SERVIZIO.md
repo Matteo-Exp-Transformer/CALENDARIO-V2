@@ -442,12 +442,16 @@ ad-hoc compila *funziona / riscrivere / può rompersi*.
   fittizia è stata creata. Dettaglio: `Sessioni di lavoro/23-06-26/S3_HANDOFF.md`.
 
 ### S4 — Motore turni automatici / finestre di occupazione *(Pro — Servizio/Calendario)*
-> **Stato 24-06-26: intervista ✅ FATTA → build in corso su 2 tracce parallele** (`S4_PLAN.md`).
-> **Traccia A — coerenza strutturale (D44 forma quadrato · D50 elimina-sala morbida + mig. 063 · D52
-> briefing join): ✅ IMPLEMENTATA E AUTO-REVISIONATA** su branch `s4/track-a-strutturale` (TEST,
-> validate verde 1083 test, /code-review senza finding bloccanti) — manca solo integrazione+PROD con
-> Matteo (passo §6). **Traccia B — motore disponibilità (D45–D49 + finestre occupazione):** in corso/
-> separata. **Nessun freno GTM** (vedi §9 nota).
+> **Stato 24-06-26: intervista ✅ + BUILD ✅ + INTEGRAZIONE su `env/test` ✅.** Design bloccato (D44–D52,
+> §3); plan `docs/Sessioni di lavoro/24-06-26/S4_PLAN.md`. Le due tracce parallele sono state implementate,
+> auto-revisionate e **fuse in `env/test`** (branch di traccia chiusi).
+> - **Traccia A (strutturale, D44/D50/D52):** ✅ forma default quadrato · elimina-sala morbida (mig. 063) ·
+>   briefing join sala+tavolo condizionale.
+> - **Traccia B (motore disponibilità):** ✅ WP-B1→B4 — predicato modalità-tavoli + capienza somma-coperti
+>   (D49/D46) · walk-in coerente (D45/D25) · checkout append-only + 5 stati tavolo (D48/D24/D23) · finestre
+>   di occupazione + overbooking forzabile + Edge D43 (D37/D22/D39/D40). Mig. 064/065. `table_session` → S4-LIVE.
+> - **Residuo (step Matteo):** TEST collaudo manuale (checklist) → poi rollout PROD (mig. 063→065 + Edge +
+>   client insieme, §6). **Nessun freno GTM** (vedi §9 nota). Dettaglio: `ADMIN_SERVIZIO_CONTEXT.md` §9/§9.1.
 - **Decisioni di design (oltre a quelle sotto):** D44 forma=quadrato · D45 walk-in conta sempre + bug fix ·
   D46 capienza=somma coperti · D47 durata walk-in da console · D48 checkout append-only · D49 predicato
   "modalità-tavoli" (Pro E ≥1 tavolo) + stato-vuoto · D50 elimina-sala morbida con conferma · D51

@@ -10,6 +10,7 @@ import {
 } from '@/features/booking/utils/unassignedBookingsFilter'
 import { hasWaitingNextTurnOnTable } from '@/features/booking/utils/tableCheckout'
 import type { BookingRequest } from '@/types/booking'
+import { computeOccupancyWindow } from '@/features/booking/lib/resolveOccupancy'
 
 export interface BookingTableAssignment {
   id: string
@@ -146,6 +147,37 @@ interface AssignInput {
   date: string
   maxTurns: number | null
   existingAssignments: BookingTableAssignment[]
+  /**
+   * Forza l'assegnazione ignorando il limite turni / stato tavolo occupato (D25/D27/D32).
+   * Se presente, l'assignment viene inserito con forced_by_admin=true e force_reason impostato.
+   * PERCHÉ: lo staff può decidere consapevolmente di sovrapporre turni in situazioni eccezionali.
+   * La traccia audit (forced_by_admin + force_reason) documenta la decisione.
+   */
+  force?: { reason: string }
+  /**
+   * Prenotazione corrente (per snapshot occupancy su assegnazione, TASK 4 / D42).
+   * Best-effort: se assente, lo snapshot viene saltato senza errore.
+   */
+  booking?: Pick<BookingRequest, 'confirmed_start' | 'confirmed_end'> & { occupancy_start?: string | null }
+  /**
+   * Slot corrente (per leggere turnover_buffer_minutes, TASK 4 / D42).
+   * Best-effort: se assente, si usa buffer=0.
+   */
+  slot?: Pick<ServiceSlot, 'turnover_buffer_minutes'>
+}
+
+/** Errore specifico per turni esauriti — distinguibile dalla UI per offrire la forzatura. */
+export class TurniEsauritiError extends Error {
+  readonly tableId: string
+  readonly turnNumber: number
+  readonly maxTurns: number
+  constructor(tableId: string, turnNumber: number, maxTurns: number) {
+    super('Turni esauriti per questo tavolo in questa fascia.')
+    this.name = 'TurniEsauritiError'
+    this.tableId = tableId
+    this.turnNumber = turnNumber
+    this.maxTurns = maxTurns
+  }
 }
 
 export function useAssignBookingToTable() {
@@ -153,15 +185,20 @@ export function useAssignBookingToTable() {
   const { tenantId } = useTenantContext()
 
   return useMutation({
-    mutationFn: async ({ bookingId, tableId, slotId, date, maxTurns, existingAssignments }: AssignInput) => {
+    mutationFn: async ({ bookingId, tableId, slotId, date, maxTurns, existingAssignments, force, booking, slot }: AssignInput) => {
       const forThisTable = existingAssignments.filter(
         (a) => a.table_id === tableId && a.service_slot_id === slotId && a.date === date,
       )
       const turnNumber = forThisTable.length > 0 ? Math.max(...forThisTable.map((a) => a.turn_number)) + 1 : 1
 
-      if (maxTurns !== null && turnNumber > maxTurns) {
-        throw new Error('Turni esauriti per questo tavolo in questa fascia.')
+      // Blocco turni esauriti — saltato se force presente (D25: overbooking consapevole)
+      if (!force && maxTurns !== null && turnNumber > maxTurns) {
+        throw new TurniEsauritiError(tableId, turnNumber, maxTurns)
       }
+
+      // L'assignment è forzato dallo staff: traccio il motivo per audit (D25/D27/D32)
+      const isForcedByAdmin = force !== undefined
+      const forceReason = force?.reason ?? null
 
       const { data, error } = await supabase
         .from('booking_table_assignments')
@@ -173,11 +210,46 @@ export function useAssignBookingToTable() {
           turn_number: turnNumber,
           date,
           checked_out_at: null,
+          forced_by_admin: isForcedByAdmin,
+          force_reason: forceReason,
         })
         .select()
         .single()
 
       if (error) throw error
+
+      // TASK 4 / D42 — snapshot finestra di occupazione sulla prenotazione.
+      // PERCHÉ: valorizzare occupancy_start/end permette all'Edge e al calcolo capienza
+      // di usare la finestra reale senza ricalcolarla ogni volta. Best-effort: qualsiasi
+      // dato mancante causa skip silenzioso (non blocca l'assegnazione, D42 degrado).
+      // D15: non tocchiamo le righe già valorizzate (occupancy_start già presente → skip).
+      try {
+        if (
+          booking?.confirmed_start &&
+          booking?.confirmed_end &&
+          !booking?.occupancy_start // D15: non sovrascrivere snapshot già presente
+        ) {
+          const bufferMinutes = slot?.turnover_buffer_minutes ?? 0
+          const arrivalDate = new Date(booking.confirmed_start)
+          const endDate = new Date(booking.confirmed_end)
+          const durationMinutes = Math.max(0, (endDate.getTime() - arrivalDate.getTime()) / 60_000)
+          const window = computeOccupancyWindow({ arrival: arrivalDate, durationMinutes, bufferMinutes })
+
+          await supabase
+            .from('booking_requests')
+            .update({
+              occupancy_start: window.start.toISOString(),
+              occupancy_end: window.end.toISOString(),
+              turnover_buffer_minutes: bufferMinutes,
+            })
+            .eq('id', bookingId)
+            .eq('tenant_id', tenantId!)
+          // Errore non bloccante: loggato ma non rilanciato (D42)
+        }
+      } catch (snapshotErr) {
+        logger.warn('[useAssignBookingToTable] snapshot occupancy fallito (non bloccante)', snapshotErr)
+      }
+
       return data
     },
     onSuccess: (_data, vars) => {
@@ -187,6 +259,8 @@ export function useAssignBookingToTable() {
     },
     onError: (error: Error) => {
       logger.error('[useAssignBookingToTable] error', error)
+      // TurniEsauritiError viene gestita dalla UI per offrire la forzatura — non mostriamo toast
+      if (error instanceof TurniEsauritiError) return
       toast.error(error.message || 'Errore nell\'assegnazione')
     },
   })
@@ -223,20 +297,12 @@ export function useCheckoutTable() {
 
       const current = active[0]
 
-      if (hasWaitingNextTurnOnTable(assignments, current)) {
-        const { error } = await supabase
-          .from('booking_table_assignments')
-          .update({ checked_out_at: new Date().toISOString() })
-          .eq('id', current.id)
-          .eq('tenant_id', tenantId!)
-
-        if (error) throw error
-        return
-      }
-
+      // D48 append-only: il checkout lascia SEMPRE una riga in archivio
+      // con il timbro checked_out_at. Nessun DELETE fisico — la riga resta
+      // come traccia storica del turno; un secondo turno crea una nuova riga.
       const { error } = await supabase
         .from('booking_table_assignments')
-        .delete()
+        .update({ checked_out_at: new Date().toISOString() })
         .eq('id', current.id)
         .eq('tenant_id', tenantId!)
 
@@ -289,14 +355,17 @@ export function useReleaseBookingAssignment() {
 
       if (!current) throw new Error('Nessun assignment attivo da liberare per questa prenotazione.')
 
-      // Provvisorio: se sul tavolo c'è un turno successivo in attesa, blocca senza modificare DB
+      // D48 append-only: non usiamo più DELETE fisico nemmeno per la riassegnazione rapida.
+      // Se esiste un turno successivo in attesa sullo stesso tavolo, blocchiamo comunque
+      // la release per evitare conflitti (la riassegnazione creerebbe un buco di turno).
       if (hasWaitingNextTurnOnTable(assignments, current)) {
         return { blocked: 'waiting_next_turn' }
       }
 
+      // Marca come checked-out — il prossimo assegnamento creerà una nuova riga (nuovo turno).
       const { error } = await supabase
         .from('booking_table_assignments')
-        .delete()
+        .update({ checked_out_at: new Date().toISOString() })
         .eq('id', current.id)
         .eq('tenant_id', tenantId!)
 
