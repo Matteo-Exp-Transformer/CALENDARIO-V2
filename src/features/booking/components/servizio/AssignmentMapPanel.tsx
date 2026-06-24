@@ -12,28 +12,43 @@ import {
   useAcceptedBookingsForDate,
   useAssignBookingToTable,
   useCheckoutTable,
-  getTableStatus,
-  type TableStatus,
 } from '@/features/booking/hooks/useTableAssignments'
+import {
+  useTableStatuses,
+  type TableLiveStatus,
+} from '@/features/booking/hooks/useTableStatuses'
 import { getAccurateStartTime, trimTimeToHHmm } from '@/features/booking/utils/dateUtils'
 import type { RestaurantTable } from '@/features/booking/hooks/useServizioTables'
 import type { Room } from '@/features/booking/hooks/useRooms'
 import type { BookingRequest } from '@/types/booking'
 
 // ─────────────────────────────────────────────
-// Colori stato tavolo
+// Colori e label per i 5 stati live (D24)
 // ─────────────────────────────────────────────
 
-const STATUS_CLASSES: Record<TableStatus, string> = {
-  free: 'bg-emerald-100 border-emerald-300',
-  assigned: 'bg-amber-100 border-amber-400',
-  checked_out: 'bg-gray-100 border-gray-300',
+const STATUS_CLASSES: Record<TableLiveStatus, string> = {
+  free:     'bg-emerald-100 border-emerald-300',
+  upcoming: 'bg-cyan-100 border-cyan-400',
+  occupied: 'bg-amber-100 border-amber-400',
+  late:     'bg-red-100 border-red-400',
+  leaving:  'bg-violet-100 border-violet-300',
 }
 
-const STATUS_LABEL: Record<TableStatus, string> = {
-  free: 'Libero',
-  assigned: 'Occupato',
-  checked_out: 'Liberato',
+const STATUS_LABEL: Record<TableLiveStatus, string> = {
+  free:     'Libero',
+  upcoming: 'In arrivo',
+  occupied: 'Occupato',
+  late:     'In ritardo',
+  leaving:  'In uscita',
+}
+
+/** Badge inline per ogni stato — colori coerenti con STATUS_CLASSES. */
+const STATUS_BADGE_CLASSES: Record<TableLiveStatus, string> = {
+  free:     'bg-emerald-200 text-emerald-800',
+  upcoming: 'bg-cyan-200 text-cyan-800',
+  occupied: 'bg-amber-200 text-amber-800',
+  late:     'bg-red-200 text-red-800',
+  leaving:  'bg-violet-200 text-violet-800',
 }
 
 // ─────────────────────────────────────────────
@@ -75,7 +90,7 @@ const DraggableBookingCard: FC<DraggableBookingCardProps> = ({ booking }) => {
 
 interface DroppableTableProps {
   table: RestaurantTable
-  status: TableStatus
+  status: TableLiveStatus
   assignedBooking: BookingRequest | null
   onCheckout: () => void
   isCheckingOut: boolean
@@ -102,16 +117,13 @@ const DroppableTable: FC<DroppableTableProps> = ({ table, status, assignedBookin
           <p className="text-sm font-semibold text-primary-900">{table.name}</p>
           <p className="text-xs text-(--color-text-muted)">{table.capacity} posti</p>
         </div>
-        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-          status === 'free' ? 'bg-emerald-200 text-emerald-800' :
-          status === 'assigned' ? 'bg-amber-200 text-amber-800' :
-          'bg-gray-200 text-gray-700'
-        }`}>
+        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASSES[status]}`}>
           {STATUS_LABEL[status]}
         </span>
       </div>
 
-      {status === 'assigned' && assignedBooking && (
+      {/* Mostra dettaglio + pulsante libera per qualsiasi stato con assegnazione attiva */}
+      {status !== 'free' && assignedBooking && (
         <div className="mt-2 space-y-1">
           <p className="truncate text-xs font-medium text-amber-900">
             {assignedBooking.client_name}, {assignedBooking.num_guests}
@@ -155,7 +167,7 @@ const DroppableTable: FC<DroppableTableProps> = ({ table, status, assignedBookin
         </div>
       )}
 
-      {isOver && status !== 'assigned' && (
+      {isOver && status === 'free' && (
         <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-primary-100/50">
           <p className="text-xs font-semibold text-primary-700">Rilascia qui</p>
         </div>
@@ -190,6 +202,14 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
     () => new Map(acceptedOnDate.map((b) => [b.id, b])),
     [acceptedOnDate],
   )
+
+  // 5 stati live per tutti i tavoli nello slot+data correnti (D24)
+  const tableStatuses = useTableStatuses({
+    assignments,
+    bookingsById,
+    selectedSlotId,
+    selectedDate,
+  })
 
   const assignBooking = useAssignBookingToTable()
   const checkoutTable = useCheckoutTable()
@@ -297,7 +317,8 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
                     </p>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                       {roomTables.map((table) => {
-                        const status = getTableStatus(table.id, assignments, selectedSlotId, selectedDate)
+                        // Stato live dal hook (5 stati D24); fallback 'free' se tavolo non in mappa
+                        const status = tableStatuses.get(table.id) ?? 'free'
                         const activeAssignment = assignments.find(
                           (a) =>
                             a.table_id === table.id &&

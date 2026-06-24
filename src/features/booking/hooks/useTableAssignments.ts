@@ -223,20 +223,12 @@ export function useCheckoutTable() {
 
       const current = active[0]
 
-      if (hasWaitingNextTurnOnTable(assignments, current)) {
-        const { error } = await supabase
-          .from('booking_table_assignments')
-          .update({ checked_out_at: new Date().toISOString() })
-          .eq('id', current.id)
-          .eq('tenant_id', tenantId!)
-
-        if (error) throw error
-        return
-      }
-
+      // D48 append-only: il checkout lascia SEMPRE una riga in archivio
+      // con il timbro checked_out_at. Nessun DELETE fisico — la riga resta
+      // come traccia storica del turno; un secondo turno crea una nuova riga.
       const { error } = await supabase
         .from('booking_table_assignments')
-        .delete()
+        .update({ checked_out_at: new Date().toISOString() })
         .eq('id', current.id)
         .eq('tenant_id', tenantId!)
 
@@ -289,14 +281,17 @@ export function useReleaseBookingAssignment() {
 
       if (!current) throw new Error('Nessun assignment attivo da liberare per questa prenotazione.')
 
-      // Provvisorio: se sul tavolo c'è un turno successivo in attesa, blocca senza modificare DB
+      // D48 append-only: non usiamo più DELETE fisico nemmeno per la riassegnazione rapida.
+      // Se esiste un turno successivo in attesa sullo stesso tavolo, blocchiamo comunque
+      // la release per evitare conflitti (la riassegnazione creerebbe un buco di turno).
       if (hasWaitingNextTurnOnTable(assignments, current)) {
         return { blocked: 'waiting_next_turn' }
       }
 
+      // Marca come checked-out — il prossimo assegnamento creerà una nuova riga (nuovo turno).
       const { error } = await supabase
         .from('booking_table_assignments')
-        .delete()
+        .update({ checked_out_at: new Date().toISOString() })
         .eq('id', current.id)
         .eq('tenant_id', tenantId!)
 

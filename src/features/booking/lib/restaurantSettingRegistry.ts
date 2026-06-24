@@ -89,6 +89,8 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'min_order_time_minutes',
   /** S3/D16 — toggle tardivo con avviso (default false). Console-tunable solo. */
   'late_arrival_allowed',
+  /** S4/D23 — minuti di grazia dopo confirmed_start prima di marcare un tavolo "in ritardo" (default 15). */
+  'table_late_threshold_minutes',
 ] as const
 
 export type RestaurantSettingKeyV1 = (typeof RESTAURANT_SETTING_KEYS_V1)[number]
@@ -366,6 +368,8 @@ export type RestaurantSettingValueMap = {
   min_order_time_minutes: number
   /** Toggle tardivo con avviso (default false, D16). Console-tunable solo. */
   late_arrival_allowed: boolean
+  /** S4/D23 — minuti di grazia prima di "in ritardo" (default 15). Console-tunable. */
+  table_late_threshold_minutes: number
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -756,5 +760,23 @@ export const restaurantSettingRegistry: {
     },
     serializeToDb: (value) => value as Json,
     validate: (value) => (typeof value === 'boolean' ? null : 'Valore non valido'),
+  },
+  table_late_threshold_minutes: {
+    key: 'table_late_threshold_minutes',
+    parseFromDb: (raw) => {
+      // Default 15 minuti se chiave assente o non valida (nessuna migrazione DB richiesta)
+      if (typeof raw === 'number' && Number.isInteger(raw) && raw >= 0) return raw
+      if (typeof raw === 'string') {
+        const n = parseInt(raw, 10)
+        if (!Number.isNaN(n) && n >= 0) return n
+      }
+      return 15
+    },
+    serializeToDb: (value) => value as Json,
+    validate: (value) => {
+      const n = Number(value)
+      if (!Number.isInteger(n) || n < 0 || n > 120) return 'Deve essere un intero tra 0 e 120 minuti'
+      return null
+    },
   },
 }
