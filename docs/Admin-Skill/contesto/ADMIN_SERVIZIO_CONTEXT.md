@@ -48,7 +48,12 @@
 
 - Sale/tavoli sono tenant-scoped.
 - Delete tavolo = soft delete `active=false`.
-- Delete sala e bloccato lato UI se contiene tavoli.
+- **Delete sala = soft delete `active=false` (D50, S4-A, mig. 063).** Non più DELETE fisico né
+  soft-block: le query sale (`useRooms`) filtrano `active=true`; se la sala è "viva" (≥1 assignment
+  attivo `checked_out_at IS NULL` sui suoi tavoli) la modale chiede conferma con impatto quantificato
+  e al "Sì" timbra `checked_out_at` (release nel cassetto «da assegnare», append-only) prima di
+  archiviare; sala scarica → archiviazione diretta. Conta `useRoomLiveBookings`.
+- Tavolo nuovo nasce con forma `square` di default (D44, S4-A); il codice 3 forme resta.
 - Tavolo richiede capienza intera > 0; sala obbligatoria se esistono sale.
 - Drag mappa disabilitato sotto 768px.
 - Slot supportano overnight; `max_turns=0` indica servizio chiuso.
@@ -78,7 +83,10 @@
 - In `WalkInModal`, busy check confronta `booking.placement` con `tableId`, ma il walk-in salva
   `placement` come nome tavolo. Possibile mismatch.
 - `AssignmentMapPanel` e renderizzato da `ServizioPage` senza controllo diretto `features.tableAssignments`.
-- Briefing non mostra sala/tavolo: `useShiftBriefing` ha TODO join.
+  *(Resta debito D10 → Traccia B, predicato modalità-tavoli D49.)*
+- ~~Briefing non mostra sala/tavolo~~ **RISOLTO (D52, S4-A):** `useShiftBriefing` ora fa il join
+  `assignment→tables→rooms`; il modale ha la colonna "Tavolo" e mostra "T12" mono-sala / "Sala · T12"
+  multi-sala (campo `isMultiRoom`); non assegnate = "—". PDF briefing ancora senza colonna tavolo (FU).
 
 ## 7. Test critici futuri
 
@@ -107,23 +115,29 @@
   mismatch walk-in `placement`/`table_id`, guard `features.tableAssignments` su `AssignmentMapPanel`,
   race condition `useUnassignedBookings`.
 
-## 9. Design S4 — decisioni intervista (24-06-26, NON ancora implementate)
+## 9. S4 — decisioni intervista (24-06-26) — Traccia A IMPLEMENTATA, Traccia B design
 
-> Intervista di sezione S4 (masterplan §3, D44–D52). Sono **decisioni di design**, non codice: il build
-> segue `docs/Sessioni di lavoro/24-06-26/S4_PLAN.md`. Qui per orientare chi tocca l'area prima del build.
+> Intervista di sezione S4 (masterplan §3, D44–D52). Build su due tracce parallele
+> (`docs/Sessioni di lavoro/24-06-26/S4_PLAN.md`). **Traccia A (coerenza strutturale: D44, D50, D52)
+> IMPLEMENTATA** su branch `s4/track-a-strutturale` (TEST, mig. 063, validate verde) — in attesa di
+> integrazione+PROD con Matteo. **Traccia B (motore disponibilità: D45/D46/D47/D48/D49 + finestre)**
+> resta design finché la sua traccia non chiude.
 
-- **Forma tavolo (D44):** nessun selettore UI; default alla creazione = **quadrato** (non tondo). Codice
-  3 forme (`TableShape`) resta per riuso futuro.
+- **✅ Forma tavolo (D44, Traccia A FATTO):** nessun selettore UI; default alla creazione = **quadrato**
+  (`useCreateTable` insert `shape: input.shape ?? 'square'`). Codice 3 forme (`TableShape`) resta.
 - **Predicato "modalità-tavoli" (D49):** = (edizione Pro) E (≥1 tavolo configurato). Governa `AssignmentMapPanel`
   (chiude il debito guard), `WalkInModal` e il calcolo capienza. Pro-senza-tavoli → stato-vuoto invitante.
 - **Walk-in (D45/D46/D47):** conta **sempre** nella capienza complessiva (anche "solo coperti"); fix bug
   `placement`/`table_id`; capienza sala = **somma coperti dei tavoli**; durata default = manopola console.
 - **Checkout (D48):** sempre timbro `checked_out_at`, **rimuovere il DELETE fisico** (`useCheckoutTable` /
   `tableCheckout.ts`). Append-only ovunque.
-- **Elimina sala (D50):** passa da DELETE fisico (`useDeleteRoom`) a **cancellazione morbida** (`active=false`);
-  conferma esplicita se la sala è "viva" (tavoli con prenotazioni/sessioni); le prenotazioni tornano nel
-  cassetto "da assegnare", mai perse.
-- **Briefing (D52):** join `tables` da implementare (`useShiftBriefing` riga ~85, campi `table_name`/`room_name`
-  già pronti); mostra sala **solo se più di una sala**.
+- **✅ Elimina sala (D50, Traccia A FATTO):** `useDeleteRoom` ora **soft-delete** (`active=false`, mig. 063);
+  `useRooms` filtra `active=true`; nuovo `useRoomLiveBookings` conta i `booking_id` distinti con assignment
+  attivo (`checked_out_at IS NULL`) sui tavoli della sala. Sala viva → conferma con N quantificato +
+  release append-only (`checked_out_at = now()`) → cassetto «da assegnare»; sala scarica → archiviazione
+  diretta. Conti aperti = aggancio S4-LIVE (non ancora contati). "Ripristina sala" = FU.
+- **✅ Briefing (D52, Traccia A FATTO):** `useShiftBriefing` fa il join `assignment→tables→rooms`; ritorna
+  `isMultiRoom`; il modale ha colonna "Tavolo" → "T12" mono-sala / "Sala · T12" multi-sala; non assegnate
+  "—"; multi-tavolo (D39) = nomi uniti da ", ". PDF briefing senza colonna tavolo = FU.
 - **Conservazione dati (D51):** S4 rende i dati *archiviabili* (append-only + snapshot); la potatura/
   migrazione in Analytics è follow-up `FU-SERV-ANALYTICS-RETENTION-1`.

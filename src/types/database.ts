@@ -1000,6 +1000,7 @@ export type Database = {
       }
       rooms: {
         Row: {
+          active: boolean
           created_at: string
           display_order: number
           height: number
@@ -1010,6 +1011,7 @@ export type Database = {
           width: number
         }
         Insert: {
+          active?: boolean
           created_at?: string
           display_order?: number
           height?: number
@@ -1020,6 +1022,7 @@ export type Database = {
           width?: number
         }
         Update: {
+          active?: boolean
           created_at?: string
           display_order?: number
           height?: number

@@ -10,7 +10,7 @@ I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati
 
 > **Fonte di verità (non questo riepilogo):** elenco file in `supabase/migrations/` + stato remoto via MCP `list_migrations` dopo `get_project_url` (TEST `docnnernvp`, PROD `rwuxgvld` sola lettura). Se l'agente ha un canale TEST specifico, seguire le sue istruzioni dedicate. Dettaglio workflow e anomalie storiche: `Database-Skill/DB_MIGRATIONS_CONTEXT.md`.
 
-Ultimo file in repo (verificato 12-06-26): `048_schedule_rate_limits_cleanup.sql`. La prossima migrazione deve usare il prefisso **`049_`**.
+Ultimo file in repo (verificato 24-06-26): `063_rooms_soft_delete.sql` (S4 Traccia A, solo TEST). La prossima migrazione deve usare il prefisso **`064_`**.
 
 | Versione | File | Note sintetiche |
 |----------|------|-----------------|
@@ -35,6 +35,7 @@ Ultimo file in repo (verificato 12-06-26): `048_schedule_rate_limits_cleanup.sql
 | 060 | `060_rpc_get_available_arrival_times.sql` | RPC anon ristretta: capienza residua degli accettati; TEST registrata |
 | 061 | `061_rpc_get_public_slot_config.sql` | RPC anon ristretta: fasce + sole soglie operative; TEST registrata |
 | 062 | `062_update_service_slot_arrival_step.sql` | estende PATCH RPC Pro senza cambiare firma; TEST registrata |
+| 063 | `063_rooms_soft_delete.sql` | S4 Traccia A / D50: `rooms.active boolean NOT NULL DEFAULT true` + indice parziale `rooms_tenant_active_idx`. Eliminazione sala MORBIDA (`useDeleteRoom` soft-delete, `useRooms` filtra `active=true`). Solo aggiunta colonna su tabella esistente → nessun nuovo GRANT, RLS 008 `admin_update_rooms` già copre. **Solo TEST `docnnernvp`; PROD `rwuxgvld` invariata fino a rollout** |
 
 > Promo menù (23-05-26): impostazioni solo su `restaurant_settings.setting_key = booking_menu_promos`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
 

@@ -442,10 +442,12 @@ ad-hoc compila *funziona / riscrivere / può rompersi*.
   fittizia è stata creata. Dettaglio: `Sessioni di lavoro/23-06-26/S3_HANDOFF.md`.
 
 ### S4 — Motore turni automatici / finestre di occupazione *(Pro — Servizio/Calendario)*
-> **Stato 24-06-26: intervista di sezione ✅ FATTA → design bloccato (D44–D52, §3).** Le 6 domande lista C
-> risolte. Build non ancora partito: **plan ad-hoc** `docs/Sessioni di lavoro/24-06-26/S4_PLAN.md` (workflow
-> orchestratore → subagent con skill "prepara prompt" + revisione orchestratore a checkpoint/fine).
-> **Nessun freno GTM** (vedi §9 nota): S4 è libero di partire quando Matteo dà il via.
+> **Stato 24-06-26: intervista ✅ FATTA → build in corso su 2 tracce parallele** (`S4_PLAN.md`).
+> **Traccia A — coerenza strutturale (D44 forma quadrato · D50 elimina-sala morbida + mig. 063 · D52
+> briefing join): ✅ IMPLEMENTATA E AUTO-REVISIONATA** su branch `s4/track-a-strutturale` (TEST,
+> validate verde 1083 test, /code-review senza finding bloccanti) — manca solo integrazione+PROD con
+> Matteo (passo §6). **Traccia B — motore disponibilità (D45–D49 + finestre occupazione):** in corso/
+> separata. **Nessun freno GTM** (vedi §9 nota).
 - **Decisioni di design (oltre a quelle sotto):** D44 forma=quadrato · D45 walk-in conta sempre + bug fix ·
   D46 capienza=somma coperti · D47 durata walk-in da console · D48 checkout append-only · D49 predicato
   "modalità-tavoli" (Pro E ≥1 tavolo) + stato-vuoto · D50 elimina-sala morbida con conferma · D51

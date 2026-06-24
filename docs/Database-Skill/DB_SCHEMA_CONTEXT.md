@@ -300,12 +300,17 @@ Trigger: `trg_customers_normalize_email` (normalizza email), `trg_customers_upda
 | `name` | TEXT NOT NULL | |
 | `capacity` | INTEGER NOT NULL CHECK (> 0) | |
 | `placement` | TEXT NOT NULL DEFAULT '' | Zona sala |
+| `shape` | TEXT | `round` / `square` / `rect` (default DB `round`). **D44 (S4-A):** `useCreateTable` forza `shape: input.shape ?? 'square'` → i tavoli nuovi nascono **quadrati**; nessun selettore UI, il codice 3 forme resta |
 | `active` | BOOLEAN NOT NULL DEFAULT true | |
 | `created_at`, `updated_at` | TIMESTAMPTZ | |
 
 Indice: `tables_tenant_id_idx`.
 Trigger: `trg_tables_updated_at`, `trg_enforce_table_tenant`.
 **RLS:** policy `admin_*` — SELECT/INSERT/UPDATE/DELETE per `current_admin_tenant_id()`.
+
+> **`rooms` (sale, mig. 008):** non ha sezione dedicata qui. Colonna aggiunta da **mig. 063 (S4-A, solo
+> TEST):** `active boolean NOT NULL DEFAULT true` + indice parziale `rooms_tenant_active_idx`. Abilita il
+> soft-delete sala (`useDeleteRoom` → `active=false`, `useRooms` filtra `active=true`). Vedi DATABASE.md.
 
 ---
 

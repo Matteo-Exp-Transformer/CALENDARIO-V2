@@ -52,8 +52,11 @@ La lista prossime 3 ore e nascosta se vuota, salvo loading/error.
 - legge booking accepted/no_show=false di oggi;
 - stampa o genera PDF;
 - stato vuoto: nessuna prenotazione confermata per turno.
+- colonna "Tavolo" (D52, S4-A): `useShiftBriefing` fa il join `assignment→tables→rooms` e ritorna
+  `isMultiRoom` → "T12" se una sola sala, "Sala · T12" se più d'una; non assegnate "—"; multi-tavolo
+  = nomi uniti da ", ".
 
-Nota: sala/tavolo non sono ancora mostrati nel briefing per TODO join.
+Nota: il **PDF** del briefing (`shiftBriefingPdf.ts`) non ha ancora la colonna tavolo (follow-up).
 
 ## 5. Analytics
 

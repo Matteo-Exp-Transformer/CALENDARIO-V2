@@ -1,7 +1,7 @@
 import type { FC, FormEvent } from 'react'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Modal, Button, Input } from '@/components/ui'
-import { useCreateRoom, useUpdateRoom, useDeleteRoom } from '@/features/booking/hooks/useRooms'
+import { useCreateRoom, useUpdateRoom, useDeleteRoom, useRoomLiveBookings } from '@/features/booking/hooks/useRooms'
 import type { Room } from '@/features/booking/hooks/useRooms'
 import { DiscardChangesConfirmModal } from '@/features/booking/components/settings/SettingsSaveUi'
 import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
@@ -13,7 +13,7 @@ interface RoomConfigModalProps {
   onClose: () => void
   /** Sala da modificare. Null = modalità creazione. */
   initial?: Room | null
-  /** Numero di tavoli attivi assegnati alla sala corrente (per soft-block eliminazione). */
+  /** Numero di tavoli attivi assegnati alla sala corrente (mantenuto per compatibilità con ServizioPage). */
   tableCount?: number
 }
 
@@ -37,6 +37,10 @@ export const RoomConfigModal: FC<RoomConfigModalProps> = ({
   initial,
   tableCount = 0,
 }) => {
+  // tableCount è mantenuto nell'interfaccia per compatibilità con ServizioPage (che non possiamo toccare)
+  // ma non viene più usato per il soft-block: il blocco è sostituito dalla conferma con impatto.
+  void tableCount
+
   const isEdit = Boolean(initial)
 
   const [name, setName] = useState(initial?.name ?? '')
@@ -79,6 +83,7 @@ export const RoomConfigModal: FC<RoomConfigModalProps> = ({
   const createRoom = useCreateRoom()
   const updateRoom = useUpdateRoom()
   const deleteRoom = useDeleteRoom()
+  const { data: liveCount = 0, isLoading: isLiveLoading } = useRoomLiveBookings(initial?.id ?? null)
 
   const isPending = createRoom.isPending || updateRoom.isPending || deleteRoom.isPending
 
@@ -165,16 +170,13 @@ export const RoomConfigModal: FC<RoomConfigModalProps> = ({
 
   function handleDelete() {
     if (!initial) return
-    // Soft-block: se ci sono tavoli assegnati, non eliminare
-    if (tableCount > 0) {
-      setValidationError(
-        `Impossibile eliminare: ${tableCount} tavol${tableCount === 1 ? 'o ancora assegnato' : 'i ancora assegnati'} a questa sala. Rimuovi o riassegna i tavoli prima di eliminare.`,
-      )
-      setConfirmDelete(false)
-      return
-    }
     deleteRoom.mutate(initial.id, { onSuccess: onClose })
   }
+
+  // Testo di conferma per sala viva (con impatto quantificato)
+  const liveImpactText = liveCount > 0
+    ? `Questa sala ha ${liveCount} prenotazion${liveCount === 1 ? 'e' : 'i'} assegnat${liveCount === 1 ? 'a' : 'e'}. Eliminandola torner${liveCount === 1 ? 'à' : 'anno'} nel cassetto «da assegnare» e dovrai riassegnarl${liveCount === 1 ? 'a' : 'e'}.`
+    : null
 
   return (
     <>
@@ -270,14 +272,25 @@ export const RoomConfigModal: FC<RoomConfigModalProps> = ({
                 </Button>
               )}
               {isEdit && confirmDelete && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-red-600">Eliminare?</span>
-                  <Button type="button" variant="danger" size="sm" disabled={isPending} onClick={handleDelete}>
-                    Sì
-                  </Button>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>
-                    No
-                  </Button>
+                <div className="flex flex-col gap-2">
+                  {liveImpactText && (
+                    <p className="text-xs text-amber-700 max-w-xs">{liveImpactText}</p>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-red-600">Eliminare?</span>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      size="sm"
+                      disabled={isPending || isLiveLoading}
+                      onClick={handleDelete}
+                    >
+                      {liveCount > 0 ? 'Sì, elimina' : 'Sì'}
+                    </Button>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>
+                      No
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

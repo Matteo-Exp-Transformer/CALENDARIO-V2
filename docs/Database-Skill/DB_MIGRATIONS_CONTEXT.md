@@ -14,7 +14,7 @@
 2. **Remoto (sola lettura per consultazione):** MCP `get_project_url` → deve rispondere TEST `docnnernvp` (sviluppo) o PROD `rwuxgvld` (sola lettura salvo conferma esplicita). Poi `list_migrations`. Se l'agente ha un canale TEST specifico, seguire le istruzioni dedicate dell'agente senza estenderle agli altri ambienti.
 3. **Schema colonne/tabelle:** `DB_SCHEMA_CONTEXT.md` — aggiornare dopo ogni migrazione che introduce colonne.
 
-Ultimo file in repo (verificato 12-06-26): **`048_schedule_rate_limits_cleanup.sql`**. Prossima nuova migrazione: prefisso **`049_`**.
+Ultimo file in repo (verificato 24-06-26): **`063_rooms_soft_delete.sql`** (S4 Traccia A, solo TEST). Prossima nuova migrazione: prefisso **`064_`**.
 
 ### Indice repo 040–048 (sintesi schema — non sostituisce i file SQL)
 
@@ -29,6 +29,12 @@ Ultimo file in repo (verificato 12-06-26): **`048_schedule_rate_limits_cleanup.s
 | `046_codify_policy_drift.sql` | Codifica policy RLS `anon_select_active_organizations` (anon SELECT su `organizations`, `is_active = true`), prima presente sul DB ma fuori dalle migrazioni. Idempotente. NON restringe `restaurant_settings` (→ WP-B2) |
 | `047_restrict_anon_restaurant_settings.sql` | WP-B2: restringe anon SELECT su `restaurant_settings` a whitelist di key pubbliche; nuove key pubbliche richiedono update registry + nuova migrazione policy |
 | `048_schedule_rate_limits_cleanup.sql` | WP-B5: abilita `pg_cron`, definisce `cleanup_rate_limits()` e programma job orario `cleanup-rate-limits-hourly`. TEST applicata/verificata 12-06-26 (`048`); PROD applicata/verificata 12-06-26 (`20260612131057`) |
+| `057`–`058` | Durata fasce + snapshot prenotazione (fondamenta S2). **Solo TEST.** |
+| `059_service_slots_arrival_step.sql` | `arrival_step_minutes` 5–120, default 30 (S3). **Solo TEST.** |
+| `060_rpc_get_available_arrival_times.sql` | RPC anon ristretta: capienza residua accettati (S3). **Solo TEST.** |
+| `061_rpc_get_public_slot_config.sql` | RPC anon ristretta: fasce + soglie operative (S3). **Solo TEST.** |
+| `062_update_service_slot_arrival_step.sql` | Estende PATCH RPC Pro senza cambiare firma (S3). **Solo TEST.** |
+| `063_rooms_soft_delete.sql` | S4 Traccia A / D50: `rooms.active boolean NOT NULL DEFAULT true` + indice parziale `rooms_tenant_active_idx`. Abilita l'eliminazione sala MORBIDA (`useDeleteRoom` soft-delete). **Solo TEST `docnnernvp`; PROD invariata.** |
 
 ### Due ambienti Supabase — non confonderli
 
@@ -46,9 +52,21 @@ Registro remoto TEST allineato a `048` il 12-06-26. In sessione Codex, il connet
 ### Snapshot S3 TEST (23-06-26)
 
 Versioni `059`, `060`, `061`, `062` verificate sullo schema reale e marcate applied via
-`migration repair --status applied ... --linked`. Tipi rigenerati dal TEST. Nessuna `063`: D36 rende
-i pending non-capacitivi, quindi il lock proposto non avrebbe enforcement reale oppure violerebbe il
-dominio. PROD non toccata.
+`migration repair --status applied ... --linked`. Tipi rigenerati dal TEST. Il lock S3 proposto NON è
+stato fatto: D36 rende i pending non-capacitivi, quindi non avrebbe enforcement reale oppure violerebbe
+il dominio. PROD non toccata.
+
+> **Nota:** la `063` esiste ma è di un altro cantiere (S4 Traccia A, soft-delete sale — vedi voce
+> in tabella sotto), non il lock S3 qui scartato.
+
+### Snapshot S4 Traccia A TEST (24-06-26)
+
+`063_rooms_soft_delete.sql` aggiunge `rooms.active boolean NOT NULL DEFAULT true` + indice parziale
+`rooms_tenant_active_idx` (filtro `active = true`). Applicata **solo a TEST** (`docnnernvp`), **non in
+PROD** (`rwuxgvld` invariata fino a rollout con Matteo). Solo aggiunta colonna su tabella esistente →
+nessun nuovo GRANT, RLS `admin_update_rooms` (mig. 008) già copre il soft-delete. Lato client:
+`useDeleteRoom` fa soft-delete (`active=false`), `useRooms` filtra `active=true`, nuovo
+`useRoomLiveBookings`. Branch `s4/track-a-strutturale`.
 
 ### Anomalie storiche utili (permanenti)
 

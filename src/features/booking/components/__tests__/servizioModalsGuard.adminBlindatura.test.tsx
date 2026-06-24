@@ -17,6 +17,7 @@ vi.mock('@/features/booking/hooks/useRooms', () => ({
   useCreateRoom: () => ({ mutate: mutateCreate, isPending: false }),
   useUpdateRoom: () => ({ mutate: mutateUpdate, isPending: false }),
   useDeleteRoom: () => ({ mutate: mutateDelete, isPending: false }),
+  useRoomLiveBookings: () => ({ data: 0, isLoading: false }),
 }))
 
 function renderRoomModal(props: Partial<ComponentProps<typeof RoomConfigModal>> = {}) {
