@@ -151,6 +151,13 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
           for (const slot of slots) {
             const slotStart = new Date(`${date}T${slot.start_time}`)
             const slotEnd = new Date(`${date}T${slot.end_time}`)
+            // Fascia overnight (es. 23:00–02:00): end ≤ start → la fascia sfora a domani.
+            // Senza questo la finestra-fascia sarebbe invertita e l'overlap fallirebbe sempre,
+            // non contando le prenotazioni overnight (overbooking). resolveOccupancy è
+            // overnight-safe; qui dobbiamo costruire l'intervallo-fascia coerente.
+            if (slotEnd.getTime() <= slotStart.getTime()) {
+              slotEnd.setDate(slotEnd.getDate() + 1)
+            }
             const slotWindow = { start: slotStart, end: slotEnd }
             if (occupancyWindowsOverlap(bookingWindow, slotWindow)) {
               occupied[slot.id] = (occupied[slot.id] ?? 0) + (booking.num_guests ?? 0)
