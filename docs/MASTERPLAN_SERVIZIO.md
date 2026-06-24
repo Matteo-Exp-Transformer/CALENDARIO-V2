@@ -442,10 +442,15 @@ ad-hoc compila *funziona / riscrivere / può rompersi*.
   fittizia è stata creata. Dettaglio: `Sessioni di lavoro/23-06-26/S3_HANDOFF.md`.
 
 ### S4 — Motore turni automatici / finestre di occupazione *(Pro — Servizio/Calendario)*
-> **Stato 24-06-26: intervista di sezione ✅ FATTA → design bloccato (D44–D52, §3).** Le 6 domande lista C
-> risolte. Build non ancora partito: **plan ad-hoc** `docs/Sessioni di lavoro/24-06-26/S4_PLAN.md` (workflow
-> orchestratore → subagent con skill "prepara prompt" + revisione orchestratore a checkpoint/fine).
-> **Nessun freno GTM** (vedi §9 nota): S4 è libero di partire quando Matteo dà il via.
+> **Stato 24-06-26: intervista ✅ + BUILD in corso (2 tracce parallele).** Design bloccato (D44–D52, §3).
+> Plan `docs/Sessioni di lavoro/24-06-26/S4_PLAN.md`.
+> - **Traccia A (strutturale, D44/D50/D52):** ✅ su `s4/track-a-strutturale` (TEST, mig.063). Blindatura
+>   3 aree + integrazione = step residuo.
+> - **Traccia B (motore disponibilità):** ✅ WP-B1→B4 su `s4/track-b-motore` (TEST, mig.064/065),
+>   validate verde 1152 test. Dettaglio in `ADMIN_SERVIZIO_CONTEXT.md` §9.1. `table_session` → S4-LIVE;
+>   deploy+smoke Edge TEST → integrazione (§6, edge+client).
+> - **Residuo (step Matteo):** integrazione A↔B su env/test + blindatura congiunta + rollout PROD (mig.
+>   063→065, Edge nuova, client insieme). **Nessun freno GTM** (vedi §9 nota).
 - **Decisioni di design (oltre a quelle sotto):** D44 forma=quadrato · D45 walk-in conta sempre + bug fix ·
   D46 capienza=somma coperti · D47 durata walk-in da console · D48 checkout append-only · D49 predicato
   "modalità-tavoli" (Pro E ≥1 tavolo) + stato-vuoto · D50 elimina-sala morbida con conferma · D51

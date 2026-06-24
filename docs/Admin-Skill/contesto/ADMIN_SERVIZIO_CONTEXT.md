@@ -127,3 +127,28 @@
   già pronti); mostra sala **solo se più di una sala**.
 - **Conservazione dati (D51):** S4 rende i dati *archiviabili* (append-only + snapshot); la potatura/
   migrazione in Analytics è follow-up `FU-SERV-ANALYTICS-RETENTION-1`.
+
+### 9.1 Stato implementazione — Traccia B (motore disponibilità) ✅ su `s4/track-b-motore` (24-06-26)
+
+> Build su branch `s4/track-b-motore` (da env/test). Solo TEST (`docnnernvp`); integrazione + PROD = step
+> separato con Matteo (§6 del plan, edge+client insieme). `npm run validate` verde (137 file / 1152 test).
+
+- **WP-B1 (D49/D46/D1)** — `useTableMode()` (NUOVO): predicato unico modalità-tavoli = Pro **E** ≥1 tavolo
+  attivo, cortocircuito Classic. Guard su `AssignmentMapPanel` + stato-vuoto invitante in `ServizioPage`.
+  Capienza = somma coperti tavoli in modalità-tavoli (`useCapacityCheck`), cap per-fascia invariato fuori.
+- **WP-B2 (D45/D25/D46)** — walk-in coerente: fix bug #6 (`isBusy` per nome, `placement`=nome), durata dal
+  resolver S2 (fallback 90 se permanenza OFF), limiti morbidi/forzabili (avviso, mai blocco), walk-in conta
+  sempre in capienza.
+- **WP-B3 (D48/D24/D23/D22)** — checkout **append-only** (rimosso DELETE fisico da `useCheckoutTable` e
+  `useReleaseBookingAssignment`); `useTableStatuses` (NUOVO) a 5 stati (libero/in arrivo/occupato/in
+  ritardo/in uscita); soglia ritardo configurabile `table_late_threshold_minutes` (registry JSONB, default
+  15); `AssignmentMapPanel` + `TableShape` colorati.
+- **WP-B4 (D37/D22/Q19/D39/D43/D40/D25)** — `resolveOccupancy` (NUOVO): finestre arrivo+durata+buffer
+  (overnight/DST-safe), stati che bloccano capienza (D43), tavoli liberi + prossimo orario libero,
+  multi-tavolo (D39). `useCapacityCheck` window-aware in modalità-tavoli (auto-free a fine finestra, D22).
+  Overbooking forzabile (D25) con `forced_by_admin`/`force_reason`. Edge `create-booking`: conteggio
+  window-aware (`occupancy_end ?? confirmed_end`), D43 documentato; race tavolo = vincolo UNIQUE (D40,
+  test di concorrenza). **Migrazioni 064/065 applicate SOLO su TEST** (occupancy snapshot + force fields).
+- **Note di scope:** `table_session` (D39) rimandata a **S4-LIVE** (proprietà §6 masterplan, nessun consumer
+  in S4). **Edge: deploy+smoke su TEST rimandati all'integrazione** (§6, edge+client insieme — mai edge-sola).
+  Blindatura congiunta delle 3 aree + integrazione tracce A↔B = step con Matteo.
