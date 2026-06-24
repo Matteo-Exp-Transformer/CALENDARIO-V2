@@ -105,6 +105,11 @@ export type Database = {
           duration_rule_version: number | null
           duration_source: string | null
           event_type: string | null
+          force_reason: string | null
+          forced_by_admin: boolean
+          occupancy_end: string | null
+          occupancy_start: string | null
+          turnover_buffer_minutes: number | null
           id: string
           marketing_consent: boolean
           menu: string | null
@@ -159,6 +164,11 @@ export type Database = {
           preset_menu?: string | null
           rejection_reason?: string | null
           source?: string
+          force_reason?: string | null
+          forced_by_admin?: boolean
+          occupancy_end?: string | null
+          occupancy_start?: string | null
+          turnover_buffer_minutes?: number | null
           special_requests?: string | null
           status?: string
           tenant_id: string
@@ -200,6 +210,11 @@ export type Database = {
           preset_menu?: string | null
           rejection_reason?: string | null
           source?: string
+          force_reason?: string | null
+          forced_by_admin?: boolean
+          occupancy_end?: string | null
+          occupancy_start?: string | null
+          turnover_buffer_minutes?: number | null
           special_requests?: string | null
           status?: string
           tenant_id?: string
@@ -228,6 +243,8 @@ export type Database = {
           checked_out_at: string | null
           created_at: string
           date: string
+          force_reason: string | null
+          forced_by_admin: boolean
           id: string
           service_slot_id: string
           table_id: string
@@ -239,6 +256,8 @@ export type Database = {
           checked_out_at?: string | null
           created_at?: string
           date: string
+          force_reason?: string | null
+          forced_by_admin?: boolean
           id?: string
           service_slot_id: string
           table_id: string
@@ -250,6 +269,8 @@ export type Database = {
           checked_out_at?: string | null
           created_at?: string
           date?: string
+          force_reason?: string | null
+          forced_by_admin?: boolean
           id?: string
           service_slot_id?: string
           table_id?: string

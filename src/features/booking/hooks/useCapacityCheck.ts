@@ -8,6 +8,11 @@ import { useDigestSlotConfigs, useServiceSlots, type SlotConfig } from './useSer
 import { useServiceSlotOverrides, resolveSlotOverride } from './useServiceSlotOverrides'
 import { useFeatures } from '@/hooks/useFeatures'
 import { useTableMode } from './useTableMode'
+import {
+  computeOccupancyWindow,
+  occupancyWindowsOverlap,
+  statusBlocksCapacity,
+} from '@/features/booking/lib/resolveOccupancy'
 
 interface UseCapacityCheckParams {
   date: string
@@ -106,19 +111,61 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
 
     // Check per-fascia: solo se le fasce sono abilitate
     if (timeSlotsEnabled && slots.length > 0) {
-      // Calcola occupazione per ogni fascia
+      // Calcola occupazione per ogni fascia.
+      // In modalità-tavoli: usa le FINESTRE di occupazione (occupancy_start/end + buffer) invece
+      // del semplice overlap di fascia (D22/B4). La disponibilità si libera automaticamente
+      // a fine finestra, indipendente dal checkout fisico.
+      // In Classic/Pro-senza-tavoli: comportamento attuale INVARIATO (overlap di fascia).
       const occupied: Record<string, number> = {}
       for (const slot of slots) occupied[slot.id] = 0
 
       for (const booking of dayBookings) {
         if (!booking.confirmed_start || !booking.confirmed_end) continue
-        const bStart = booking.confirmed_start.match(/T(\d{2}):(\d{2})/)
-        const bEnd = booking.confirmed_end.match(/T(\d{2}):(\d{2})/)
-        if (!bStart || !bEnd) continue
-        const bStartStr = `${bStart[1]}:${bStart[2]}`
-        const bEndStr = `${bEnd[1]}:${bEnd[2]}`
-        for (const slotId of getSlotsOccupiedByTime(bStartStr, bEndStr, slots)) {
-          if (slotId in occupied) occupied[slotId] += booking.num_guests ?? 0
+
+        // D43: conta solo gli stati che bloccano capienza (accepted/confirmed/seated/in_service/manually_blocked)
+        // forced_by_admin blocca sempre (D25)
+        const blocks = statusBlocksCapacity(booking.status, {
+          forcedByAdmin: (booking as unknown as Record<string, unknown>).forced_by_admin === true,
+        })
+        if (!blocks) continue
+
+        if (isTableMode) {
+          // FINESTRE di occupazione (D37/D22): start=confirmed_start, end=confirmed_end+buffer
+          // Il buffer (turnover_buffer_minutes) è sullo slot, ma può essere anche snapshotted
+          // sulla prenotazione (colonna turnover_buffer_minutes da mig.064). Usa quello più specifico.
+          const bookingBuffer =
+            typeof (booking as unknown as Record<string, unknown>).turnover_buffer_minutes === 'number'
+              ? ((booking as unknown as Record<string, unknown>).turnover_buffer_minutes as number)
+              : 0
+          const arrivalDate = new Date(booking.confirmed_start)
+          const endDate = new Date(booking.confirmed_end)
+          const rawDurationMs = endDate.getTime() - arrivalDate.getTime()
+          const durationMinutes = Math.max(0, rawDurationMs / 60_000)
+          const bookingWindow = computeOccupancyWindow({
+            arrival: arrivalDate,
+            durationMinutes,
+            bufferMinutes: bookingBuffer,
+          })
+
+          // Controlla quali fasce si sovrappongono alla finestra di occupazione
+          for (const slot of slots) {
+            const slotStart = new Date(`${date}T${slot.start_time}`)
+            const slotEnd = new Date(`${date}T${slot.end_time}`)
+            const slotWindow = { start: slotStart, end: slotEnd }
+            if (occupancyWindowsOverlap(bookingWindow, slotWindow)) {
+              occupied[slot.id] = (occupied[slot.id] ?? 0) + (booking.num_guests ?? 0)
+            }
+          }
+        } else {
+          // Classic/Pro-senza-tavoli: overlap semplice di fascia, INVARIATO (zero regressioni)
+          const bStart = booking.confirmed_start.match(/T(\d{2}):(\d{2})/)
+          const bEnd = booking.confirmed_end.match(/T(\d{2}):(\d{2})/)
+          if (!bStart || !bEnd) continue
+          const bStartStr = `${bStart[1]}:${bStart[2]}`
+          const bEndStr = `${bEnd[1]}:${bEnd[2]}`
+          for (const slotId of getSlotsOccupiedByTime(bStartStr, bEndStr, slots)) {
+            if (slotId in occupied) occupied[slotId] += booking.num_guests ?? 0
+          }
         }
       }
 

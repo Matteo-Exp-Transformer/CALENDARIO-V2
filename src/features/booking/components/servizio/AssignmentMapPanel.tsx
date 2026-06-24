@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
-import { Users, LogOut, GripVertical } from 'lucide-react'
+import { Users, LogOut, GripVertical, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { useServiceSlots } from '@/features/booking/hooks/useServiceSlots'
 import {
@@ -12,6 +12,7 @@ import {
   useAcceptedBookingsForDate,
   useAssignBookingToTable,
   useCheckoutTable,
+  TurniEsauritiError,
 } from '@/features/booking/hooks/useTableAssignments'
 import {
   useTableStatuses,
@@ -185,11 +186,25 @@ interface AssignmentMapPanelProps {
   tables: RestaurantTable[]
 }
 
+/**
+ * Stato del dialogo di forzatura overbooking (D25).
+ * Appare quando un drop verrebbe rifiutato per turni esauriti — lo staff può
+ * scegliere di procedere comunque con un motivo (audit trail).
+ */
+interface ForceConfirmState {
+  bookingId: string
+  tableId: string
+  reason: string
+}
+
 export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables }) => {
   const today = new Date().toISOString().slice(0, 10)
 
   const [selectedDate, setSelectedDate] = useState(today)
   const [selectedSlotId, setSelectedSlotId] = useState<string>('')
+
+  // Dialogo di forzatura: presente quando un drop è bloccato per turni esauriti
+  const [forceConfirm, setForceConfirm] = useState<ForceConfirmState | null>(null)
 
   const { data: slots = [] } = useServiceSlots()
   const selectedSlot = slots.find((s) => s.id === selectedSlotId) ?? null
@@ -227,6 +242,36 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
 
     if (!selectedSlot) return
 
+    assignBooking.mutate(
+      {
+        bookingId,
+        tableId,
+        slotId: selectedSlotId,
+        date: selectedDate,
+        maxTurns: selectedSlot.max_turns,
+        existingAssignments: assignments,
+      },
+      {
+        onError: (error) => {
+          // Turni esauriti: offriamo la forzatura invece di fallire silenziosamente (D25)
+          if (error instanceof TurniEsauritiError) {
+            setForceConfirm({
+              bookingId,
+              tableId,
+              reason: 'Forzato dallo staff',
+            })
+          }
+          // Gli altri errori vengono gestiti dall'onError globale della mutation
+        },
+      },
+    )
+  }
+
+  /** Esegue l'assegnazione forzata dopo conferma staff (D25/D27/D32). */
+  function handleForceAssign() {
+    if (!forceConfirm || !selectedSlot) return
+    const { bookingId, tableId, reason } = forceConfirm
+    setForceConfirm(null)
     assignBooking.mutate({
       bookingId,
       tableId,
@@ -234,6 +279,7 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
       date: selectedDate,
       maxTurns: selectedSlot.max_turns,
       existingAssignments: assignments,
+      force: { reason },
     })
   }
 
@@ -247,6 +293,60 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
           Trascina una prenotazione su un tavolo per assegnarla.
         </p>
       </div>
+
+      {/* Dialogo forzatura overbooking (D25): appare quando i turni sono esauriti */}
+      {forceConfirm && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden />
+            <div className="flex-1 space-y-3">
+              <div>
+                <p className="text-sm font-semibold text-amber-900">Turni esauriti per questo tavolo</p>
+                <p className="mt-0.5 text-xs text-amber-800">
+                  Vuoi assegnare comunque la prenotazione? Questa azione verrà registrata per lo staff.
+                </p>
+              </div>
+              <div className="space-y-1">
+                <label
+                  htmlFor="force-reason"
+                  className="block text-xs font-medium text-amber-900"
+                >
+                  Motivo (opzionale)
+                </label>
+                <input
+                  id="force-reason"
+                  type="text"
+                  value={forceConfirm.reason}
+                  onChange={(e) =>
+                    setForceConfirm((prev) => prev ? { ...prev, reason: e.target.value } : prev)
+                  }
+                  placeholder="es. Richiesta speciale cliente"
+                  className="w-full rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={handleForceAssign}
+                  disabled={assignBooking.isPending}
+                >
+                  Assegna comunque
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setForceConfirm(null)}
+                >
+                  Annulla
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Selettore data + fascia */}
       <div className="flex flex-wrap gap-3">
