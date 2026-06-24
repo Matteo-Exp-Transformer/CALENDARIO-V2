@@ -34,6 +34,11 @@ vi.mock('../useServiceSlotOverrides', () => ({
   resolveSlotOverride: vi.fn(),
 }))
 
+// useTableMode: in questo test non siamo mai in modalità-tavoli → isTableMode sempre false
+vi.mock('../useTableMode', () => ({
+  useTableMode: () => ({ isTableMode: false, totalCovers: 0, activeTables: [] }),
+}))
+
 import { useCapacityCheck } from '../useCapacityCheck'
 
 function acceptedBooking(partial: Partial<BookingRequest> = {}): BookingRequest {

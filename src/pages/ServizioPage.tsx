@@ -12,6 +12,7 @@ import { useFeatures } from '@/hooks/useFeatures'
 import { AssignmentMapPanel } from '@/features/booking/components/servizio/AssignmentMapPanel'
 import { useTables, useDeleteTable, type RestaurantTable } from '@/features/booking/hooks/useServizioTables'
 import { useRooms, type Room } from '@/features/booking/hooks/useRooms'
+import { useTableMode } from '@/features/booking/hooks/useTableMode'
 import { cn } from '@/lib/utils'
 
 type ViewMode = 'list' | 'map'
@@ -101,6 +102,8 @@ export const ServizioPage: FC = () => {
   const { data: tables = [], isLoading: loadingTables, error } = useTables()
   const { data: rooms = [], isLoading: loadingRooms } = useRooms()
   const deleteTable = useDeleteTable()
+  // Predicato unico "modalità-tavoli" (D49): mostra AssignmentMapPanel solo se Pro+tavoli attivi
+  const { isTableMode } = useTableMode()
 
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
@@ -328,8 +331,20 @@ export const ServizioPage: FC = () => {
               />
             )}
 
-            {/* Assignment prenotazioni → tavoli (DndContext separato dal riposizionamento) */}
-            <AssignmentMapPanel rooms={rooms} tables={tables} />
+            {/* Assignment prenotazioni → tavoli (DndContext separato dal riposizionamento).
+                Guard D49: pannello visibile solo se Pro con almeno un tavolo attivo. */}
+            {isTableMode ? (
+              <AssignmentMapPanel rooms={rooms} tables={tables} />
+            ) : (
+              <div className="rounded-xl border border-(--color-border) bg-surface px-6 py-10 text-center shadow-sm">
+                <p className="text-title-section font-semibold text-primary-900">
+                  Attiva la mappa delle assegnazioni
+                </p>
+                <p className="text-body mt-2 text-(--color-text-muted)">
+                  Crea la prima sala e i primi tavoli per assegnare le prenotazioni dal vivo.
+                </p>
+              </div>
+            )}
 
             <div className="mt-8 border-t border-(--color-border) pt-6">
               <ServiceSlotsManager />

@@ -7,6 +7,7 @@ import { parseHmToMinutes, slotRangesOverlap } from '../utils/bookingTimeSlots'
 import { useDigestSlotConfigs, useServiceSlots, type SlotConfig } from './useServiceSlots'
 import { useServiceSlotOverrides, resolveSlotOverride } from './useServiceSlotOverrides'
 import { useFeatures } from '@/hooks/useFeatures'
+import { useTableMode } from './useTableMode'
 
 interface UseCapacityCheckParams {
   date: string
@@ -40,6 +41,8 @@ function getSlotsOccupiedByTime(
 export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCheck {
   const { date, startTime, endTime, numGuests, acceptedBookings, excludeBookingId } = params
   const features = useFeatures()
+  // Predicato D49: capienza fisica della sala entra in gioco solo in modalità-tavoli (D46)
+  const { isTableMode, totalCovers } = useTableMode()
   const { data: digestSlots } = useDigestSlotConfigs()
   const { data: serviceSlots = [] } = useServiceSlots()
   const { data: slotOverrides = [] } = useServiceSlotOverrides()
@@ -56,8 +59,14 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
   const timeSlotsEnabled = features.servizio ? true : (timeSlotsEnabledQuery.data ?? true)
 
   return useMemo(() => {
-    // Capacita per fascia: service_slots.max_guests > slot_guest_capacities (per slot.id o legacy key)
+    // Capacità per fascia.
+    // D46: in modalità-tavoli il tetto è totalCovers (capienza fisica sala = somma posti tavoli).
+    // In Classic/Pro-senza-tavoli: cascata override → service_slot.max_guests → slot_guest_capacities.
+    // Questo garantisce ZERO regressioni sul form pubblico (Classic) e per Pro senza tavoli.
     const getSlotCap = (slot: SlotConfig): number | null => {
+      // Modalità-tavoli attiva: la sala comanda, non la configurazione della fascia
+      if (isTableMode) return totalCovers
+
       const svcSlot = serviceSlots.find((s) => s.id === slot.id)
       if (date && svcSlot) {
         const ov = resolveSlotOverride(slotOverrides, slot.id, date)
@@ -173,5 +182,7 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
     legacySlotCapacities,
     timeSlotsEnabled,
     features.servizio,
+    isTableMode,
+    totalCovers,
   ])
 }
