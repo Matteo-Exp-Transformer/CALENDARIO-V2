@@ -90,6 +90,7 @@ const ROOM: Room = {
   width: 800,
   height: 600,
   display_order: 1,
+  active: true,
   created_at: '',
   updated_at: '',
 }
