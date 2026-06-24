@@ -21,6 +21,7 @@ export interface ShiftBriefingData {
   totalCovers: number
   date: string
   shiftLabel: string
+  isMultiRoom: boolean
 }
 
 export function useShiftBriefing(shift: ShiftFilter = 'all', businessHoursRaw?: unknown) {
@@ -37,6 +38,7 @@ export function useShiftBriefing(shift: ShiftFilter = 'all', businessHoursRaw?: 
       const todayStart = startOfDay(new Date()).toISOString()
       const todayEnd = new Date(startOfDay(new Date()).getTime() + 24 * 60 * 60 * 1000).toISOString()
 
+      // 1. Fetch bookings
       const { data, error } = await supabase
         .from('booking_requests')
         .select('id, client_name, num_guests, confirmed_start, special_requests')
@@ -50,6 +52,68 @@ export function useShiftBriefing(shift: ShiftFilter = 'all', businessHoursRaw?: 
       if (error) {
         logger.error('[useShiftBriefing] booking_requests', error)
         throw new Error(error.message)
+      }
+
+      // 2. Fetch active table assignments for today
+      const { data: assignmentsData, error: assignmentsError } = await supabase
+        .from('booking_table_assignments')
+        .select('booking_id, table_id')
+        .eq('tenant_id', tenantId)
+        .eq('date', today)
+        .is('checked_out_at', null)
+
+      if (assignmentsError) {
+        logger.error('[useShiftBriefing] booking_table_assignments', assignmentsError)
+        throw new Error(assignmentsError.message)
+      }
+
+      // 3. Fetch tables (all tenant tables to build a lookup map)
+      const { data: tablesData, error: tablesError } = await supabase
+        .from('tables')
+        .select('id, name, room_id')
+        .eq('tenant_id', tenantId)
+
+      if (tablesError) {
+        logger.error('[useShiftBriefing] tables', tablesError)
+        throw new Error(tablesError.message)
+      }
+
+      // 4. Fetch rooms
+      const { data: roomsData, error: roomsError } = await supabase
+        .from('rooms')
+        .select('id, name, active')
+        .eq('tenant_id', tenantId)
+
+      if (roomsError) {
+        logger.error('[useShiftBriefing] rooms', roomsError)
+        throw new Error(roomsError.message)
+      }
+
+      // Build lookup maps
+      const tableMap = new Map<string, { name: string; room_id: string | null }>(
+        (tablesData ?? []).map((t: { id: string; name: string; room_id: string | null }) => [
+          t.id,
+          { name: t.name, room_id: t.room_id },
+        ]),
+      )
+
+      const roomMap = new Map<string, string>(
+        (roomsData ?? []).map((r: { id: string; name: string; active: boolean }) => [r.id, r.name]),
+      )
+
+      const activeRoomCount = (roomsData ?? []).filter(
+        (r: { active: boolean }) => r.active,
+      ).length
+      const isMultiRoom = activeRoomCount > 1
+
+      // Build a map: bookingId -> list of table records (active assignments)
+      const assignmentsByBooking = new Map<string, string[]>()
+      for (const a of assignmentsData ?? []) {
+        const rec = a as { booking_id: string; table_id: string }
+        if (!assignmentsByBooking.has(rec.booking_id)) {
+          assignmentsByBooking.set(rec.booking_id, [])
+        }
+        assignmentsByBooking.get(rec.booking_id)!.push(rec.table_id)
       }
 
       const shiftRanges = getShiftRanges(businessHoursRaw)
@@ -76,15 +140,41 @@ export function useShiftBriefing(shift: ShiftFilter = 'all', businessHoursRaw?: 
         return hour >= shiftRanges.dinner.startHour && hour < shiftRanges.dinner.endHour
       })
 
-      const bookings: BriefingBooking[] = filtered.map((row) => ({
-        id: row.id,
-        client_name: row.client_name,
-        num_guests: row.num_guests ?? 0,
-        confirmed_start: row.confirmed_start,
-        special_requests: row.special_requests,
-        table_name: null, // TODO: join con tables in fase futura
-        room_name: null,
-      }))
+      const bookings: BriefingBooking[] = filtered.map((row) => {
+        const tableIds = assignmentsByBooking.get(row.id) ?? []
+
+        if (tableIds.length === 0) {
+          return {
+            id: row.id,
+            client_name: row.client_name,
+            num_guests: row.num_guests ?? 0,
+            confirmed_start: row.confirmed_start,
+            special_requests: row.special_requests,
+            table_name: null,
+            room_name: null,
+          }
+        }
+
+        // Join table names with ', ' for multi-table bookings (D39)
+        const tableNames = tableIds
+          .map((tid) => tableMap.get(tid)?.name)
+          .filter((name): name is string => Boolean(name))
+        const tableName = tableNames.length > 0 ? tableNames.join(', ') : null
+
+        // Room from the first assigned table
+        const firstTableRoomId = tableMap.get(tableIds[0])?.room_id ?? null
+        const roomName = firstTableRoomId ? (roomMap.get(firstTableRoomId) ?? null) : null
+
+        return {
+          id: row.id,
+          client_name: row.client_name,
+          num_guests: row.num_guests ?? 0,
+          confirmed_start: row.confirmed_start,
+          special_requests: row.special_requests,
+          table_name: tableName,
+          room_name: roomName,
+        }
+      })
 
       return {
         bookings,
@@ -92,6 +182,7 @@ export function useShiftBriefing(shift: ShiftFilter = 'all', businessHoursRaw?: 
         totalCovers: bookings.reduce((s, b) => s + b.num_guests, 0),
         date: today,
         shiftLabel: shiftLabels[shift],
+        isMultiRoom,
       }
     },
   })

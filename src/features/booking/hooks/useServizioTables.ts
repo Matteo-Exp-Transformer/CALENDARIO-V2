@@ -74,6 +74,7 @@ export function useCreateTable() {
           capacity: input.capacity,
           placement: input.placement,
           room_id: input.room_id,
+          shape: input.shape ?? 'square',
         })
         .select('id')
         .single()

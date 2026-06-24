@@ -6,8 +6,16 @@ import { Loader2, Printer, Download } from 'lucide-react'
 import { Modal, Button } from '@/components/ui'
 import { ShiftToggle } from '@/features/booking/components/analytics/ShiftToggle'
 import { useShiftBriefing } from '@/features/booking/hooks/useShiftBriefing'
+import type { BriefingBooking } from '@/features/booking/hooks/useShiftBriefing'
 import { generateBriefingPdf } from '@/lib/shiftBriefingPdf'
 import type { ShiftFilter } from '@/features/booking/hooks/useAnalytics'
+
+/** Returns the table placement label for a booking row. */
+function getTablePlacement(booking: BriefingBooking, isMultiRoom: boolean): string {
+  if (!booking.table_name) return '—'
+  if (isMultiRoom && booking.room_name) return `${booking.room_name} · ${booking.table_name}`
+  return booking.table_name
+}
 
 interface ShiftBriefingModalProps {
   isOpen: boolean
@@ -60,6 +68,7 @@ export const ShiftBriefingModal: FC<ShiftBriefingModalProps> = ({
                     <tr>
                       <th className="px-3 py-2 text-left font-semibold">Orario</th>
                       <th className="px-3 py-2 text-left font-semibold">Cliente</th>
+                      <th className="px-3 py-2 text-left font-semibold">Tavolo</th>
                       <th className="px-3 py-2 text-left font-semibold">Coperti</th>
                       <th className="px-3 py-2 text-left font-semibold">Note</th>
                     </tr>
@@ -71,6 +80,9 @@ export const ShiftBriefingModal: FC<ShiftBriefingModalProps> = ({
                           {format(new Date(b.confirmed_start), 'HH:mm')}
                         </td>
                         <td className="px-3 py-2 font-medium text-primary-900">{b.client_name}</td>
+                        <td className="px-3 py-2 text-(--color-text-muted) tabular-nums">
+                          {getTablePlacement(b, data.isMultiRoom)}
+                        </td>
                         <td className="px-3 py-2 text-(--color-text)">{b.num_guests}</td>
                         <td className="px-3 py-2 text-(--color-text-muted) max-w-xs truncate">
                           {b.special_requests ?? '—'}
@@ -80,7 +92,7 @@ export const ShiftBriefingModal: FC<ShiftBriefingModalProps> = ({
                   </tbody>
                   <tfoot>
                     <tr className="border-t-2 border-(--color-border) font-semibold">
-                      <td className="px-3 py-2 text-primary-900" colSpan={2}>
+                      <td className="px-3 py-2 text-primary-900" colSpan={3}>
                         Totale
                       </td>
                       <td className="px-3 py-2 text-primary-900">{data.totalCovers} coperti</td>
