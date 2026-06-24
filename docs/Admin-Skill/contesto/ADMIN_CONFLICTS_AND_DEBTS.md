@@ -20,7 +20,10 @@
 
 - ~~`runSidebarAction({ type: 'settings' })`~~ rimosso 06-06-26 (nessuna voce sidebar; tab Impostazioni solo da dashboard).
 - `AcceptBookingModal` è usato da `AdminBookingForm` (nuova prenotazione admin); il flusso pending accetta dalla card senza modale.
-- `useShiftBriefing` ha TODO su join tavoli/sale: briefing oggi non mostra sala/tavolo.
+- ~~`useShiftBriefing` ha TODO su join tavoli/sale: briefing oggi non mostra sala/tavolo.~~
+  **CHIUSO (D52, S4-A):** `useShiftBriefing` fa il join `assignment→tables→rooms`, ritorna `isMultiRoom`;
+  `ShiftBriefingModal` ha la colonna "Tavolo" ("T12" mono-sala / "Sala · T12" multi-sala). Resta FU il PDF
+  briefing (`shiftBriefingPdf.ts`) ancora senza colonna tavolo.
 - M6 12-06-26: nessun `window.confirm` residuo nei file app vivi; i popup nativi rimossi sono coperti
   da test statico `m6ProdReadyPatterns`. Restano da auditare comportamenti Pro/CRM/Servizio, non la
   presenza del popup nativo.
