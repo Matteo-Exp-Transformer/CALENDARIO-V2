@@ -106,3 +106,24 @@
 - **Debiti rimandati a S4 (D10), solo annotati:** `useTableStatuses` (tavoli sempre verdi),
   mismatch walk-in `placement`/`table_id`, guard `features.tableAssignments` su `AssignmentMapPanel`,
   race condition `useUnassignedBookings`.
+
+## 9. Design S4 — decisioni intervista (24-06-26, NON ancora implementate)
+
+> Intervista di sezione S4 (masterplan §3, D44–D52). Sono **decisioni di design**, non codice: il build
+> segue `docs/Sessioni di lavoro/24-06-26/S4_PLAN.md`. Qui per orientare chi tocca l'area prima del build.
+
+- **Forma tavolo (D44):** nessun selettore UI; default alla creazione = **quadrato** (non tondo). Codice
+  3 forme (`TableShape`) resta per riuso futuro.
+- **Predicato "modalità-tavoli" (D49):** = (edizione Pro) E (≥1 tavolo configurato). Governa `AssignmentMapPanel`
+  (chiude il debito guard), `WalkInModal` e il calcolo capienza. Pro-senza-tavoli → stato-vuoto invitante.
+- **Walk-in (D45/D46/D47):** conta **sempre** nella capienza complessiva (anche "solo coperti"); fix bug
+  `placement`/`table_id`; capienza sala = **somma coperti dei tavoli**; durata default = manopola console.
+- **Checkout (D48):** sempre timbro `checked_out_at`, **rimuovere il DELETE fisico** (`useCheckoutTable` /
+  `tableCheckout.ts`). Append-only ovunque.
+- **Elimina sala (D50):** passa da DELETE fisico (`useDeleteRoom`) a **cancellazione morbida** (`active=false`);
+  conferma esplicita se la sala è "viva" (tavoli con prenotazioni/sessioni); le prenotazioni tornano nel
+  cassetto "da assegnare", mai perse.
+- **Briefing (D52):** join `tables` da implementare (`useShiftBriefing` riga ~85, campi `table_name`/`room_name`
+  già pronti); mostra sala **solo se più di una sala**.
+- **Conservazione dati (D51):** S4 rende i dati *archiviabili* (append-only + snapshot); la potatura/
+  migrazione in Analytics è follow-up `FU-SERV-ANALYTICS-RETENTION-1`.

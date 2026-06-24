@@ -62,9 +62,19 @@ stato S0 nel masterplan §7, handoff aggiornati. Nessun PROD.
 
 ## PROSSIMI PASSI
 
-- **S0 chiusa.** La prossima sotto-area è **S1** (Tipologia prenotazione + durata config, Classic) —
-  vedi masterplan §7. È un cantiere diverso: nuovo branch, nuova staffetta.
-- I 6 quesiti di design del Servizio (C1/C3/C4/C5/C7/C8 della lista C) restano materiale **S4**.
+> ⚠️ **AGGIORNAMENTO 24-06-26 — questo handoff è di S0; il fronte è molto più avanti.** S0, **S1, S2, S3**
+> sono tutti **chiusi e IN PRODUZIONE** (S3 rollout PROD 23-06: edge `create-booking` v22, mig. 057→062,
+> PrenotaZen rilasciata — vedi `docs/Sessioni di lavoro/23-06-26/`). I 6 quesiti di design S4
+> (C1/C3/C4/C5/C7/C8) sono stati **risolti** nell'intervista S4 del 24-06-26 → decisioni **D44–D52** nel
+> masterplan §3.
+>
+> **Prossima regia = S4 (build).** Plan dedicato: `docs/Sessioni di lavoro/24-06-26/S4_PLAN.md`
+> (orchestratore Opus → subagent con skill "prepara prompt" + revisione orchestratore a checkpoint/fine).
+> **Nessun freno GTM** (masterplan §9 nota): il vincolo "10-15 clienti Classic" era parere esterno, non
+> adottato da Matteo.
+
+- ~~La prossima sotto-area è **S1**~~ → superato: S1/S2/S3 fatti e in PROD (vedi sopra).
+- ~~I 6 quesiti di design restano materiale **S4**~~ → risolti 24-06-26 (D44–D52).
 
 ---
 

@@ -211,6 +211,47 @@ oggi conta solo `status='accepted'` con `no_show != true`).
 essere scritto nel resolver. Il resolver server-side (D2/D40) è l'unico autorizzato a sommare l'occupazione,
 e somma **solo** gli stati di questo elenco.
 
+### Decisioni intervista S4 (D44–D52) — design bloccato 24-06-26
+> Intervista di sezione S4 condotta con Matteo (senior, 24-06-26) sulle 6 domande di design "materiale S4"
+> della lista C (`SERVIZIO_BASELINE_MAP.md`). Sblocca il **design** di S4; il build segue il plan dedicato
+> `docs/Sessioni di lavoro/24-06-26/S4_PLAN.md`. Nessun vincolo GTM "10-15 clienti" (vedi §9, nota).
+
+- **D44 (C1) — Forma tavolo.** Nessun selettore in UI (disciplina vendi-semplice): ogni tavolo nasce con
+  **default = quadrato** (non più tondo). Il codice delle 3 forme (round/square/rect, già reso da
+  `TableShape`) **resta** e si riusa in futuro se i clienti Pro lamentano la mappa poco leggibile.
+- **D45 (C3) — Walk-in obbedisce a D1.** (1) Il walk-in **conta sempre** nel conteggio complessivo di
+  capienza: anche "solo coperti" senza tavoli toglie posti al pubblico (altrimenti sovrapprenotazione).
+  (2) **Un unico predicato "modalità-tavoli"** decide a/b, condiviso con C5 (vedi D49). (3) Il bug
+  nome-vs-`table_id` (#6) si chiude in S4.
+- **D46 — Capienza sala = somma dei coperti dei tavoli.** In modalità-tavoli ogni gruppo sta su un tavolo;
+  la sala da 20 può essere "10×2" o "1×20". L'utente carica i coperti per tavolo e la pienezza sala si
+  deduce da sola. Conteggio fatto **col cliente in fase di onboarding**.
+- **D47 — Durata di default del walk-in = manopola di console super-admin.** Da console Matteo vede le fasce
+  del cliente e imposta il default-walk-in adatto a quell'azienda. La durata passa comunque dal risolutore
+  di S2; solo il *valore di default* è deciso in console → alimenta `FU-SERV-ADMIN-PANEL-1`.
+- **D48 (C4) — Checkout sempre con timbro, mai cancellazione fisica.** Ogni occupazione lascia una riga in
+  archivio (timbro `checked_out_at`); il DELETE fisico dell'ultimo turno viene rimosso. Un solo percorso,
+  coerente con D27 (conto append-only) e D32 (statistiche).
+- **D49 (C5) — Predicato unico "modalità-tavoli" = (edizione Pro) E (≥1 tavolo configurato).** Governa
+  pannello assegnazioni, walk-in (D45) e calcolo capienza (D46). **Classic** non vede il motore tavoli;
+  **Pro-senza-tavoli** → stato-vuoto invitante ("crea la prima sala…"), non una mappa rotta; **Pro-con-tavoli**
+  → mappa viva. Chiude il debito D10 (guard mancante su `AssignmentMapPanel`).
+- **D50 (C7) — Eliminazione sala: morbida + due livelli di attrito.** Sala diventa cancellazione morbida
+  (`active=false`, mai orfani — coerente con D46/D48). Sala **scarica** (nessun tavolo con prenotazioni
+  assegnate, nessuna sessione/conto aperto) → archiviazione diretta. Sala **viva** → **non bloccata ma
+  conferma esplicita** con impatto quantificato ("N prenotazioni torneranno da assegnare, dovrai
+  riassegnarle e ricreare la sala"). Le **prenotazioni non si perdono mai**: si staccano dai tavoli e
+  rientrano nel cassetto "da assegnare". Bonus futuro: "ripristina sala" (gratis dalla cancellazione
+  morbida). Aggancio S4-LIVE: il cancello-conferma dovrà contare anche i **conti aperti**.
+- **D51 — Conservazione dati a livelli, monetizzata da Analytics (FU).** Oltre la finestra operativa:
+  Analytics attivo → i dati storici migrano/si aggregano nella sezione Analytics; non attivo → potatura
+  oltre la finestra. **Mai toccare sessioni/conti aperti** ("cancella da servizio" = solo servizi chiusi e
+  saldati). Downgrade Analytics = **conserva-e-nascondi**, non distruggere (privacy). Costruzione = follow-up
+  (area Analytics); S4 si limita a rendere i dati **archiviabili** (append-only + campi snapshot, D14/§4).
+- **D52 (C8) — Briefing: sala + tavolo solo se più di una sala.** Implementato il join con `tables`, il
+  briefing mostra "T12" nel mono-sala e "Sala Giardino · T12" nel multi-sala (campo `room_name` già
+  predisposto). Le prenotazioni non ancora assegnate restano "—" (segnale operativo, non bug).
+
 ### Da verificare in apertura S3 (non blocca il masterplan)
 - **Ordine form pubblico — VERIFICATO (21-06-26): l'ordine è già corretto.** In
   [BookingRequestForm.tsx](../src/features/booking/components/BookingRequestForm.tsx) il render è
@@ -401,6 +442,14 @@ ad-hoc compila *funziona / riscrivere / può rompersi*.
   fittizia è stata creata. Dettaglio: `Sessioni di lavoro/23-06-26/S3_HANDOFF.md`.
 
 ### S4 — Motore turni automatici / finestre di occupazione *(Pro — Servizio/Calendario)*
+> **Stato 24-06-26: intervista di sezione ✅ FATTA → design bloccato (D44–D52, §3).** Le 6 domande lista C
+> risolte. Build non ancora partito: **plan ad-hoc** `docs/Sessioni di lavoro/24-06-26/S4_PLAN.md` (workflow
+> orchestratore → subagent con skill "prepara prompt" + revisione orchestratore a checkpoint/fine).
+> **Nessun freno GTM** (vedi §9 nota): S4 è libero di partire quando Matteo dà il via.
+- **Decisioni di design (oltre a quelle sotto):** D44 forma=quadrato · D45 walk-in conta sempre + bug fix ·
+  D46 capienza=somma coperti · D47 durata walk-in da console · D48 checkout append-only · D49 predicato
+  "modalità-tavoli" (Pro E ≥1 tavolo) + stato-vuoto · D50 elimina-sala morbida con conferma · D51
+  conservazione dati→Analytics (FU) · D52 briefing sala+tavolo condizionale.
 - **Da costruire:** generazione finestre (arrivo + durata + buffer D37); disponibilità auto a fine durata
   (D22); `useTableStatuses` con 5 stati (D24); ritardo configurabile (D23); "prossimo orario libero";
   auto-turno dinamico (Q19); overbooking forzabile (D25); **multi-tavolo per prenotazione (D39)**.
@@ -469,8 +518,13 @@ prima di tutto serve qualcosa di **dimostrabile in visita e vendibile**. R0 = bl
 R1 = Classic vendibile (form pubblico, dashboard, calendario, capienza, dati cliente, note allergie);
 R2 = QR add-on; R3 = **L2-lite invisibile** (durata media + intervalli semplici, dietro preset); R4 = Pro
 demo (sale/tavoli/vista turno); R5 = Pro paid pilot (2-3 ristoranti, poi conto leggero); R6 = self-service
-(signup + Stripe + wizard) **solo dopo 15-30 clienti paganti e onboarding ripetibile**. **Non costruire
-S4/S6 prima di avere 10-15 clienti che usano davvero Classic.**
+(signup + Stripe + wizard) **solo dopo 15-30 clienti paganti e onboarding ripetibile**.
+
+> ⚠️ **Nota 24-06-26 — vincolo GTM NON adottato.** La raccomandazione della review esterna "non costruire
+> S4/S6 prima di avere 10-15 clienti che usano davvero Classic" è un **parere esterno**, non una decisione
+> di Matteo, che **non l'ha mai richiesto e non lo adotta**. Resta agli atti come opinione della review, ma
+> **non è un cancello**: S4 può partire quando Matteo decide. La sequenza tecnica (S0→S1→S2→S3→**S4**) resta
+> la bussola dell'ordine, non un freno temporale legato al numero di clienti.
 
 Ogni cancello = sotto-area che supera il **Manuale di blindatura** (`docs/Testing-Skill/MANUALE_BLINDATURA.md`):
 intervista + mappa + test copertura + controtest "rompi" sui 4 fronti + QA responsive + doc allineata. Le
@@ -553,6 +607,13 @@ Verso il **cliente**: niente gergo, frasi calde di conferma (D34), mai "permanen
   MVP, ma da progettare prima di aprire la console a più operatori. **MVP già deciso (22-06-26):** accesso
   Live dedicato (PIN/ruolo staff) distinto dall'admin owner — vedi S4-LIVE; questa FU resta la **matrice
   ruoli fine**, non l'accesso sì/no.
+- **FU-SERV-ANALYTICS-RETENTION-1 — Conservazione dati Servizio monetizzata da Analytics (D51).** Oltre la
+  finestra operativa: pacchetto Analytics attivo → i dati storici di sala/tavoli/turni/conto migrano o si
+  aggregano nella sezione Analytics; non attivo → potatura oltre la finestra (risparmio storage). Mai
+  toccare sessioni/conti aperti; "cancella da servizio" = solo servizi chiusi e saldati. Downgrade =
+  **conserva-e-nascondi**, non distruggere (privacy/GDPR). Decidere granularità (righe grezze vs rollup) e
+  finestra operativa minima. Area Analytics; **fuori S4** (S4 rende solo i dati *archiviabili*: append-only
+  + snapshot). Possibile FU "ripristina sala" (gratis dalla cancellazione morbida D50).
 
 ---
 
