@@ -92,20 +92,18 @@ const DraggableBookingCard: FC<DraggableBookingCardProps> = ({ booking }) => {
 interface DroppableTableProps {
   table: RestaurantTable
   status: TableLiveStatus
-  assignedBooking: BookingRequest | null
+  assignedBookings: BookingRequest[]
   onCheckout: () => void
   isCheckingOut: boolean
 }
 
-const DroppableTable: FC<DroppableTableProps> = ({ table, status, assignedBooking, onCheckout, isCheckingOut }) => {
-  const arrivalTime = assignedBooking
-    ? trimTimeToHHmm(getAccurateStartTime(assignedBooking)) || null
-    : null
+const DroppableTable: FC<DroppableTableProps> = ({ table, status, assignedBookings, onCheckout, isCheckingOut }) => {
   const [confirmCheckout, setConfirmCheckout] = useState(false)
 
   const { setNodeRef, isOver } = useDroppable({
     id: `table-${table.id}`,
     data: { tableId: table.id },
+    disabled: status !== 'free',
   })
 
   return (
@@ -124,14 +122,21 @@ const DroppableTable: FC<DroppableTableProps> = ({ table, status, assignedBookin
       </div>
 
       {/* Mostra dettaglio + pulsante libera per qualsiasi stato con assegnazione attiva */}
-      {status !== 'free' && assignedBooking && (
+      {assignedBookings.length > 0 && (
         <div className="mt-2 space-y-1">
-          <p className="truncate text-xs font-medium text-amber-900">
-            {assignedBooking.client_name}, {assignedBooking.num_guests}
-          </p>
-          {arrivalTime && (
-            <p className="text-xs text-amber-800">{arrivalTime}</p>
-          )}
+          {assignedBookings.map((booking) => {
+            const arrivalTime = trimTimeToHHmm(getAccurateStartTime(booking)) || null
+            return (
+              <div key={booking.id} className="rounded-lg bg-white/55 px-2 py-1">
+                <p className="truncate text-xs font-medium text-amber-900">
+                  {booking.client_name}, {booking.num_guests}
+                </p>
+                {arrivalTime && (
+                  <p className="text-xs text-amber-800">{arrivalTime}</p>
+                )}
+              </div>
+            )
+          })}
           {confirmCheckout ? (
             <div className="flex items-center gap-1">
               <span className="text-xs text-red-700">Liberare?</span>
@@ -165,6 +170,12 @@ const DroppableTable: FC<DroppableTableProps> = ({ table, status, assignedBookin
               Libera tavolo
             </Button>
           )}
+        </div>
+      )}
+
+      {isOver && status !== 'free' && (
+        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/70">
+          <p className="px-2 text-center text-xs font-semibold text-amber-800">Libera prima il tavolo</p>
         </div>
       )}
 
@@ -241,6 +252,9 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
     const tableId = String(over.id).replace('table-', '')
 
     if (!selectedSlot) return
+    const targetStatus = tableStatuses.get(tableId) ?? 'free'
+    if (targetStatus !== 'free') return
+    const draggedBooking = unassigned.find((booking) => booking.id === bookingId) ?? null
 
     assignBooking.mutate(
       {
@@ -250,6 +264,8 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
         date: selectedDate,
         maxTurns: selectedSlot.max_turns,
         existingAssignments: assignments,
+        booking: draggedBooking ?? undefined,
+        slot: selectedSlot,
       },
       {
         onError: (error) => {
@@ -419,24 +435,25 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
                       {roomTables.map((table) => {
                         // Stato live dal hook (5 stati D24); fallback 'free' se tavolo non in mappa
                         const status = tableStatuses.get(table.id) ?? 'free'
-                        const activeAssignment = assignments.find(
-                          (a) =>
-                            a.table_id === table.id &&
-                            a.service_slot_id === selectedSlotId &&
-                            a.date === selectedDate &&
-                            a.checked_out_at === null,
-                        ) ?? null
+                        const activeAssignments = assignments
+                          .filter(
+                            (a) =>
+                              a.table_id === table.id &&
+                              a.service_slot_id === selectedSlotId &&
+                              a.date === selectedDate &&
+                              a.checked_out_at === null,
+                          )
+                          .sort((a, b) => a.turn_number - b.turn_number)
+                        const assignedBookings = activeAssignments
+                          .map((a) => bookingsById.get(a.booking_id) ?? null)
+                          .filter((booking): booking is BookingRequest => booking !== null)
 
                         return (
                           <DroppableTable
                             key={table.id}
                             table={table}
                             status={status}
-                            assignedBooking={
-                              activeAssignment
-                                ? bookingsById.get(activeAssignment.booking_id) ?? null
-                                : null
-                            }
+                            assignedBookings={assignedBookings}
                             isCheckingOut={checkoutTable.isPending}
                             onCheckout={() =>
                               checkoutTable.mutate({

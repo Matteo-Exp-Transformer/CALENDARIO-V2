@@ -287,6 +287,9 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
   gated da `slot_limit_enabled`. Nuovo blocco `OUT_OF_SLOT` (gated da `booking_reject_out_of_slot`) se
   l'orario non cade in nessuna fascia. Entrambi default OFF. Badge calendario `BookingCalendar`: % sulla
   SOMMA dei cap per-fascia del giorno solo se limiti ON e TUTTE le fasce hanno cap, altrimenti conteggio.
+  **Vista Giorno Pro (24-06-26 B0):** il digest per fascia mostra comunque la % occupazione rispetto
+  alla capienza fisica dei tavoli attivi anche se `slot_limit_enabled` è OFF; questa regola non cambia
+  il badge complessivo del mese, che resta legato ai limiti pubblici per-fascia.
   **Edge deployata su TEST `docnnernvp` (v21); PROD `rwuxgvld` NON deployata** (vedi FOLLOW_UP).
 
 ---
@@ -343,6 +346,8 @@ FILE LOCK CORE         → spiegazione preventiva obbligatoria, mods solo con FE
 FILE LOCK ASSOLUTO     → NON toccare senza esplicita richiesta utente con motivazione
 
 REGOLA INVALIDAZIONI   → aggiungere invalidateQueries di query keys di altre edition è OK (no-op)
+                        → `useBookingMutations` invalida anche `TABLE_ASSIGNMENTS_QUERY_KEY` per tenere
+                           Servizio fresco; in Classic resta no-op perché la query non è montata.
 REGOLA NUOVE FEATURE   → SEMPRE dietro FEATURES flag, mai hardcoded ON
 REGOLA PROP            → aggiungere prop ad AdminDashboard sempre OPTIONAL con default
 ```

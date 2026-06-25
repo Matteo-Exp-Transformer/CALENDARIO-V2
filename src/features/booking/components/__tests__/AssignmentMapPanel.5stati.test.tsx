@@ -28,6 +28,22 @@ const EXPECTED_LABELS: Record<TableLiveStatus, string> = {
 
 const mockState = vi.hoisted(() => ({
   tableStatuses: new Map<string, TableLiveStatus>([['table-1', 'free']]),
+  assignments: [] as Array<{
+    id: string
+    table_id: string
+    service_slot_id: string
+    date: string
+    booking_id: string
+    checked_out_at: string | null
+    turn_number: number
+  }>,
+  acceptedBookings: [] as Array<{
+    id: string
+    client_name: string
+    num_guests: number
+    desired_time: string
+    confirmed_start: string
+  }>,
 }))
 
 vi.mock('../../hooks/useTableStatuses', () => ({
@@ -36,9 +52,9 @@ vi.mock('../../hooks/useTableStatuses', () => ({
 }))
 
 vi.mock('../../hooks/useTableAssignments', () => ({
-  useTableAssignments: () => ({ data: [] }),
+  useTableAssignments: () => ({ data: mockState.assignments }),
   useUnassignedBookings: () => ({ data: [] }),
-  useAcceptedBookingsForDate: () => ({ data: [] }),
+  useAcceptedBookingsForDate: () => ({ data: mockState.acceptedBookings }),
   useAssignBookingToTable: () => ({ mutate: vi.fn() }),
   useCheckoutTable: () => ({ mutate: vi.fn(), isPending: false }),
 }))
@@ -128,9 +144,57 @@ describe('AssignmentMapPanel — 5 label stati live', () => {
   for (const status of statuses) {
     it(`mostra label "${EXPECTED_LABELS[status]}" per stato "${status}"`, async () => {
       mockState.tableStatuses = new Map([['table-1', status]])
+      mockState.assignments = []
+      mockState.acceptedBookings = []
       const { container } = renderPanel()
       await selectSlot(container)
       expect(screen.getByText(EXPECTED_LABELS[status])).toBeDefined()
     })
   }
+
+  it('renderizza due assegnazioni attive sullo stesso tavolo', async () => {
+    mockState.tableStatuses = new Map([['table-1', 'occupied']])
+    mockState.assignments = [
+      {
+        id: 'a1',
+        table_id: 'table-1',
+        service_slot_id: 'slot-1',
+        date: new Date().toISOString().slice(0, 10),
+        booking_id: 'booking-1',
+        checked_out_at: null,
+        turn_number: 1,
+      },
+      {
+        id: 'a2',
+        table_id: 'table-1',
+        service_slot_id: 'slot-1',
+        date: new Date().toISOString().slice(0, 10),
+        booking_id: 'booking-2',
+        checked_out_at: null,
+        turn_number: 2,
+      },
+    ]
+    mockState.acceptedBookings = [
+      {
+        id: 'booking-1',
+        client_name: 'Mario Rossi',
+        num_guests: 2,
+        desired_time: '20:00',
+        confirmed_start: '2026-06-24T20:00:00+00:00',
+      },
+      {
+        id: 'booking-2',
+        client_name: 'Luigi Bianchi',
+        num_guests: 4,
+        desired_time: '21:30',
+        confirmed_start: '2026-06-24T21:30:00+00:00',
+      },
+    ]
+
+    const { container } = renderPanel()
+    await selectSlot(container)
+
+    expect(screen.getByText(/Mario Rossi, 2/)).toBeInTheDocument()
+    expect(screen.getByText(/Luigi Bianchi, 4/)).toBeInTheDocument()
+  })
 })

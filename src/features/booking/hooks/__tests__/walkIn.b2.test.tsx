@@ -23,6 +23,7 @@ const modalState = vi.hoisted(() => ({
   tables: [] as { id: string; name: string; capacity: number; room_id: string | null; active: boolean }[],
   rooms: [] as { id: string; name: string }[],
   acceptedBookings: [] as Partial<BookingRequest>[],
+  assignments: [] as { table_id: string; service_slot_id: string; date: string; checked_out_at: string | null }[],
   maxGuests: 20,
   serviceSlots: [] as { id: string; name: string; start_time: string; end_time: string; min_duration: number | null; display_order: number; is_canonical: boolean; max_guests: number | null; max_turns: number | null; max_turns_resume: number | null; slot_color: string | null; turnover_buffer_minutes: number; arrival_step_minutes: number; tenant_id: string; created_at: string; updated_at: string }[],
   // Capienza check
@@ -50,6 +51,10 @@ vi.mock('@/features/booking/hooks/useRestaurantSetting', () => ({
 
 vi.mock('@/features/booking/hooks/useServiceSlots', () => ({
   useServiceSlots: () => ({ data: modalState.serviceSlots }),
+}))
+
+vi.mock('@/features/booking/hooks/useTableAssignments', () => ({
+  useTableAssignments: () => ({ data: modalState.assignments }),
 }))
 
 vi.mock('@/features/booking/hooks/useCapacityCheck', () => ({
@@ -87,6 +92,7 @@ describe('WP-B2 Walk-in coerente', () => {
     modalState.tables = []
     modalState.rooms = []
     modalState.acceptedBookings = []
+    modalState.assignments = []
     modalState.maxGuests = 20
     modalState.serviceSlots = []
     modalState.isAvailable = true
@@ -95,13 +101,30 @@ describe('WP-B2 Walk-in coerente', () => {
   // ──────────────────────────────────────────────────────────────────────────
   // TEST 1 — Bug #6: isBusy confronta per nome
   // ──────────────────────────────────────────────────────────────────────────
-  describe('Bug #6 — isBusy per nome placement', () => {
-    it('tavolo il cui NOME corrisponde a placement di un walk-in attivo → risulta occupato nel select', async () => {
+  describe('Walk-in su tavolo — occupazione da assignment attivo', () => {
+    it('tavolo con assignment attivo nella fascia corrente → visibile ma non selezionabile', async () => {
       const user = userEvent.setup()
 
       modalState.rooms = [{ id: 'room-1', name: 'Sala A' }]
       modalState.tables = [{ id: 'table-uuid-1', name: 'Tavolo 3', capacity: 4, room_id: 'room-1', active: true }]
-      // Walk-in accettato con placement = nome del tavolo (non id)
+      modalState.serviceSlots = [{
+        id: 'slot-1',
+        name: 'Sempre',
+        start_time: '00:00',
+        end_time: '23:59',
+        min_duration: null,
+        display_order: 0,
+        is_canonical: true,
+        max_guests: null,
+        max_turns: 2,
+        max_turns_resume: null,
+        slot_color: null,
+        turnover_buffer_minutes: 0,
+        arrival_step_minutes: 30,
+        tenant_id: 'tenant-1',
+        created_at: '',
+        updated_at: '',
+      }]
       modalState.acceptedBookings = [
         {
           id: 'b-walkin-1',
@@ -113,6 +136,9 @@ describe('WP-B2 Walk-in coerente', () => {
           no_show: false,
         } as Partial<BookingRequest>,
       ]
+      modalState.assignments = [
+        { table_id: 'table-uuid-1', service_slot_id: 'slot-1', date: new Date().toISOString().slice(0, 10), checked_out_at: null },
+      ]
 
       render(<WalkInModal isOpen onClose={() => {}} />)
 
@@ -120,11 +146,16 @@ describe('WP-B2 Walk-in coerente', () => {
       const roomSelect = screen.getByLabelText(/sala/i)
       await user.selectOptions(roomSelect, 'room-1')
 
-      // Il tavolo deve essere elencato con la dicitura "— occupato"
+      // Il tavolo deve essere elencato con la dicitura "— occupato" ma non assegnabile direttamente.
       expect(screen.getByText(/Tavolo 3.*occupato/i)).toBeInTheDocument()
+      const tableSelect = screen.getByLabelText(/tavolo/i)
+      const busyOption = Array.from(tableSelect.querySelectorAll('option')).find((o) =>
+        o.textContent?.includes('Tavolo 3'),
+      )
+      expect(busyOption?.hasAttribute('disabled')).toBe(true)
     })
 
-    it('tavolo con id diverso dal placement non risulta occupato', async () => {
+    it('tavolo senza assignment attivo resta selezionabile anche se esistono altre booking', async () => {
       const user = userEvent.setup()
 
       modalState.rooms = [{ id: 'room-1', name: 'Sala A' }]
@@ -132,7 +163,24 @@ describe('WP-B2 Walk-in coerente', () => {
         { id: 'table-uuid-1', name: 'Tavolo 1', capacity: 4, room_id: 'room-1', active: true },
         { id: 'table-uuid-2', name: 'Tavolo 2', capacity: 4, room_id: 'room-1', active: true },
       ]
-      // Walk-in su Tavolo 1 (per nome) — Tavolo 2 deve restare libero
+      modalState.serviceSlots = [{
+        id: 'slot-1',
+        name: 'Sempre',
+        start_time: '00:00',
+        end_time: '23:59',
+        min_duration: null,
+        display_order: 0,
+        is_canonical: true,
+        max_guests: null,
+        max_turns: 2,
+        max_turns_resume: null,
+        slot_color: null,
+        turnover_buffer_minutes: 0,
+        arrival_step_minutes: 30,
+        tenant_id: 'tenant-1',
+        created_at: '',
+        updated_at: '',
+      }]
       modalState.acceptedBookings = [
         {
           id: 'b-walkin-1',
@@ -143,6 +191,9 @@ describe('WP-B2 Walk-in coerente', () => {
           num_guests: 2,
           no_show: false,
         } as Partial<BookingRequest>,
+      ]
+      modalState.assignments = [
+        { table_id: 'table-uuid-1', service_slot_id: 'slot-1', date: new Date().toISOString().slice(0, 10), checked_out_at: null },
       ]
 
       render(<WalkInModal isOpen onClose={() => {}} />)
@@ -252,11 +303,29 @@ describe('WP-B2 Walk-in coerente', () => {
       expect(screen.getByTestId('capacity-warning')).toBeInTheDocument()
     })
 
-    it('tavolo occupato selezionato → avviso visibile, tavolo non è disabled', async () => {
+    it('tavolo occupato → opzione visibile ma disabled', async () => {
       const user = userEvent.setup()
 
       modalState.rooms = [{ id: 'room-1', name: 'Sala A' }]
       modalState.tables = [{ id: 'table-uuid-1', name: 'Tavolo Busy', capacity: 4, room_id: 'room-1', active: true }]
+      modalState.serviceSlots = [{
+        id: 'slot-1',
+        name: 'Sempre',
+        start_time: '00:00',
+        end_time: '23:59',
+        min_duration: null,
+        display_order: 0,
+        is_canonical: true,
+        max_guests: null,
+        max_turns: 2,
+        max_turns_resume: null,
+        slot_color: null,
+        turnover_buffer_minutes: 0,
+        arrival_step_minutes: 30,
+        tenant_id: 'tenant-1',
+        created_at: '',
+        updated_at: '',
+      }]
       modalState.acceptedBookings = [
         {
           id: 'b-busy',
@@ -268,26 +337,22 @@ describe('WP-B2 Walk-in coerente', () => {
           no_show: false,
         } as Partial<BookingRequest>,
       ]
+      modalState.assignments = [
+        { table_id: 'table-uuid-1', service_slot_id: 'slot-1', date: new Date().toISOString().slice(0, 10), checked_out_at: null },
+      ]
 
       render(<WalkInModal isOpen onClose={() => {}} />)
 
       const roomSelect = screen.getByLabelText(/sala/i)
       await user.selectOptions(roomSelect, 'room-1')
 
-      // Il tavolo occupato deve comparire nel select ma NON essere disabled (D25)
+      // Il tavolo occupato deve comparire nel select ma essere disabled (decisione Matteo A0).
       const tableSelect = screen.getByLabelText(/tavolo/i)
       const busyOption = Array.from(tableSelect.querySelectorAll('option')).find((o) =>
         o.textContent?.includes('Tavolo Busy'),
       )
       expect(busyOption).toBeDefined()
-      // D25: l'opzione NON è disabilitata (l'operatore può sempre selezionarla)
-      expect(busyOption?.hasAttribute('disabled')).toBe(false)
-
-      // Seleziona il tavolo occupato
-      await user.selectOptions(tableSelect, 'table-uuid-1')
-
-      // L'avviso tavolo occupato deve comparire
-      expect(screen.getByTestId('busy-table-warning')).toBeInTheDocument()
+      expect(busyOption?.hasAttribute('disabled')).toBe(true)
     })
   })
 

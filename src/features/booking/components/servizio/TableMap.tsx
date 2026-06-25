@@ -78,7 +78,11 @@ export const TableMap: FC<TableMapProps> = ({ room, tables, onEditTable, onAddTa
       </div>
 
       {/* Canvas mappa */}
-      <div className="overflow-auto rounded-xl border border-(--color-border) shadow-sm">
+      <div
+        className="box-content overflow-auto rounded-xl border border-(--color-border) shadow-sm"
+        style={{ width: room.width, maxWidth: '100%' }}
+        data-testid="table-map-viewport"
+      >
         <div
           style={{
             width: room.width,

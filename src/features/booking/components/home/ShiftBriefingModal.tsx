@@ -4,11 +4,10 @@ import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { Loader2, Printer, Download } from 'lucide-react'
 import { Modal, Button } from '@/components/ui'
-import { ShiftToggle } from '@/features/booking/components/analytics/ShiftToggle'
 import { useShiftBriefing } from '@/features/booking/hooks/useShiftBriefing'
 import type { BriefingBooking } from '@/features/booking/hooks/useShiftBriefing'
 import { generateBriefingPdf } from '@/lib/shiftBriefingPdf'
-import type { ShiftFilter } from '@/features/booking/hooks/useAnalytics'
+import { useServiceSlots } from '@/features/booking/hooks/useServiceSlots'
 
 /** Returns the table placement label for a booking row. */
 function getTablePlacement(booking: BriefingBooking, isMultiRoom: boolean): string {
@@ -28,7 +27,8 @@ export const ShiftBriefingModal: FC<ShiftBriefingModalProps> = ({
   onClose,
   businessHoursRaw,
 }) => {
-  const [shift, setShift] = useState<ShiftFilter>('all')
+  const [shift, setShift] = useState<string>('all')
+  const { data: serviceSlots = [] } = useServiceSlots()
   const { data, isLoading } = useShiftBriefing(shift, businessHoursRaw)
 
   function handlePrint() {
@@ -45,8 +45,22 @@ export const ShiftBriefingModal: FC<ShiftBriefingModalProps> = ({
       <div className="space-y-4">
         {/* Selettore turno */}
         <div className="flex items-center gap-3">
-          <span className="text-sm text-(--color-text-muted)">Turno:</span>
-          <ShiftToggle value={shift} onChange={setShift} />
+          <label htmlFor="briefing-shift" className="text-sm text-(--color-text-muted)">
+            Turno:
+          </label>
+          <select
+            id="briefing-shift"
+            value={shift}
+            onChange={(event) => setShift(event.target.value)}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="all">Tutti</option>
+            {serviceSlots.map((slot) => (
+              <option key={slot.id} value={slot.id}>
+                {slot.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         {isLoading ? (

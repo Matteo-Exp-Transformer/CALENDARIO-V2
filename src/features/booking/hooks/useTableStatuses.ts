@@ -13,7 +13,7 @@
  *   leaving  → now ≥ confirmed_end, attende checkout fisico (D22/D48)
  */
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { BookingTableAssignment } from '@/features/booking/hooks/useTableAssignments'
 import type { BookingRequest } from '@/types/booking'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
@@ -98,9 +98,19 @@ export function useTableStatuses({
   })
 
   const threshold = lateThreshold ?? DEFAULT_LATE_THRESHOLD_MINUTES
+  const [clockNow, setClockNow] = useState(() => nowOverride ?? new Date())
+
+  useEffect(() => {
+    if (nowOverride) {
+      setClockNow(nowOverride)
+      return
+    }
+    const id = window.setInterval(() => setClockNow(new Date()), 30_000)
+    return () => window.clearInterval(id)
+  }, [nowOverride])
 
   return useMemo(() => {
-    const now = nowOverride ?? new Date()
+    const now = nowOverride ?? clockNow
     const statusMap = new Map<string, TableLiveStatus>()
 
     // Raggruppa assignment per tavolo (solo slot+data correnti, solo attivi)
@@ -127,5 +137,5 @@ export function useTableStatuses({
     }
 
     return statusMap
-  }, [assignments, bookingsById, selectedSlotId, selectedDate, threshold, nowOverride])
+  }, [assignments, bookingsById, selectedSlotId, selectedDate, threshold, nowOverride, clockNow])
 }

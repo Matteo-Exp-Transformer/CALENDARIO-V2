@@ -126,4 +126,22 @@ describe('AdminDashboard routing tab', () => {
 
     await waitFor(() => expect(screen.getByTestId('tab-archive')).toBeInTheDocument())
   })
+
+  it('Form Pubblico apre una sola scheda anche con doppio click ravvicinato', async () => {
+    const user = userEvent.setup()
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null)
+
+    render(
+      <MemoryRouter initialEntries={['/admin/prenotazioni']}>
+        <AdminDashboard />
+      </MemoryRouter>,
+    )
+
+    await act(async () => {
+      await user.dblClick(screen.getByRole('button', { name: /Form Pubblico/i }))
+    })
+
+    expect(openSpy).toHaveBeenCalledTimes(1)
+    expect(openSpy).toHaveBeenCalledWith('/prenota/test', '_blank', 'noopener,noreferrer')
+  })
 })

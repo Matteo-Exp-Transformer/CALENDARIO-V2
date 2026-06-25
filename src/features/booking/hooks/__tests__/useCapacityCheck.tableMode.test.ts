@@ -15,6 +15,7 @@ const state = vi.hoisted(() => ({
   totalCovers: 0,
   slotCapacities: { 'slot-1': 20 } as Record<string, number | null>,
   timeSlotsEnabled: true as boolean,
+  tableModeRespectsSlotCap: false as boolean,
 }))
 
 const digestSlots = vi.hoisted(() => [
@@ -37,6 +38,7 @@ vi.mock('../useRestaurantSetting', () => ({
   useRestaurantSetting: (key: string) => {
     if (key === 'slot_guest_capacities') return { data: state.slotCapacities }
     if (key === 'booking_time_slots_enabled') return { data: state.timeSlotsEnabled }
+    if (key === 'table_mode_respects_slot_cap') return { data: state.tableModeRespectsSlotCap }
     return { data: null }
   },
 }))
@@ -81,6 +83,7 @@ describe('useCapacityCheck — modalità-tavoli (WP-B1 D46)', () => {
     state.totalCovers = 0
     state.slotCapacities = { 'slot-1': 20 }
     state.timeSlotsEnabled = true
+    state.tableModeRespectsSlotCap = false
   })
 
   // ─── Classic: zero regressioni ───────────────────────────────────────────
@@ -166,6 +169,29 @@ describe('useCapacityCheck — modalità-tavoli (WP-B1 D46)', () => {
         useCapacityCheck({ ...BASE_PARAMS, numGuests: 4, acceptedBookings: [booking({ num_guests: 8 })] }),
       )
       expect(result.current.isAvailable).toBe(true) // 8+4=12 === 12
+    })
+
+    it('D38 OFF: ignora il cap fascia anche se più basso della capienza tavoli', () => {
+      state.slotCapacities = { 'slot-1': 9 }
+      state.tableModeRespectsSlotCap = false
+      const { result } = renderHook(() =>
+        useCapacityCheck({ ...BASE_PARAMS, numGuests: 3, acceptedBookings: [booking({ num_guests: 8 })] }),
+      )
+      const slot = result.current.slotsStatus.find((s) => s.slot === 'slot-1')
+      expect(slot?.capacity).toBe(12)
+      expect(result.current.isAvailable).toBe(true)
+    })
+
+    it('D38 ON: applica anche il cap fascia e vince il primo limite raggiunto', () => {
+      state.slotCapacities = { 'slot-1': 9 }
+      state.tableModeRespectsSlotCap = true
+      const { result } = renderHook(() =>
+        useCapacityCheck({ ...BASE_PARAMS, numGuests: 3, acceptedBookings: [booking({ num_guests: 8 })] }),
+      )
+      const slot = result.current.slotsStatus.find((s) => s.slot === 'slot-1')
+      expect(slot?.capacity).toBe(9)
+      expect(result.current.isAvailable).toBe(false)
+      expect(result.current.exceededSlots?.[0]?.exceededBy).toBe(2)
     })
   })
 })

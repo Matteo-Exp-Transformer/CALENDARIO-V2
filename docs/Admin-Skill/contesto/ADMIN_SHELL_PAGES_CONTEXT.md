@@ -265,10 +265,29 @@ Query key: `[TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, date, slotId, 'unassigned']`
 - Solo **ora di inizio** nella fascia (non overlap con `confirmed_end`) — allineato a `getStartSlotForBooking` / capacity.
 - Orari fascia letti dalla riga `service_slots` caricata da `useServiceSlots()` — **non** da `resolveSlotOverride` (override turni/coperti del giorno: gap noto, vedi report 16-05-26).
 - `max_turns === 0` (servizio chiuso): assegnazione già bloccata in mutation; UI invariata.
-- **`Libera tavolo`** (`useCheckoutTable`): la prenotazione del turno liberato **torna** nell'elenco sinistro (non più in `assigned` con `checked_out_at` null). Se **non** c'è un turno successivo già assegnato e attivo sullo stesso tavolo → **DELETE** della riga in `booking_table_assignments` (tavolo verde «Libero»). Se c'è turno 2+ in attesa → **UPDATE** `checked_out_at` sul turno corrente (tavolo passa al turno successivo; prenotazione T1 torna in lista). Helper: `hasWaitingNextTurnOnTable` (`tableCheckout.ts`). Dopo successo: `refetchQueries` su assignments + unassigned.
-- **Card tavolo occupato** (`DroppableTable`): due righe senza etichette — `client_name, num_guests` e sotto orario `HH:mm` da `getAccurateStartTime` (`dateUtils`). Lookup: `useAcceptedBookingsForDate(date)` + mappa `booking_id` dagli assignment attivi.
+- Query Servizio con cache fresca: gli hook assignment/unassigned refetchano al mount e le mutation booking
+  condivise invalidano `TABLE_ASSIGNMENTS_QUERY_KEY`, così il ritorno da Calendario/Prenotazioni mostra le
+  booking appena accettate senza reload.
+- **`Libera tavolo`** (`useCheckoutTable`): la prenotazione del turno liberato **torna** nell'elenco sinistro
+  (non più in `assigned` con `checked_out_at` null). S4 è append-only: la riga in
+  `booking_table_assignments` viene timbrata con `checked_out_at`, mai cancellata fisicamente. Se c'è
+  turno 2+ in attesa, il tavolo passa al turno successivo; altrimenti torna verde «Libero». Helper:
+  `hasWaitingNextTurnOnTable` (`tableCheckout.ts`). Dopo successo: `refetchQueries` su assignments +
+  unassigned.
+- **Card tavolo occupato** (`DroppableTable`): renderizza tutte le assegnazioni attive del tavolo, ordinate per turno; ogni blocco mostra `client_name, num_guests` e sotto orario `HH:mm` da `getAccurateStartTime` (`dateUtils`). Lookup: `useAcceptedBookingsForDate(date)` + mappa `booking_id` dagli assignment attivi.
+- **Tavoli occupati:** visibili ma non assegnabili/droppable finché l'admin non usa la liberazione anticipata
+  separata. Nessuna sovrapposizione diretta da drag.
 - Filtro elenco estratto in `unassignedBookingsFilter.ts` (`filterUnassignedBookingsForSlot`, `activeAssignedBookingIds`).
 - Test: `serviceSlotBookingFilter.test.ts`, `unassignedBookingsFilter.test.ts`, `tableCheckout.test.ts`.
+
+**Walk-in da Home**
+
+- Se l'admin sceglie un tavolo libero nella fascia attiva, `useWalkInMutation` crea booking + riga
+  `booking_table_assignments` e invalida booking/assignment/unassigned.
+- Se non c'è fascia attiva, se il tavolo è occupato o se `max_turns` è già esaurito, non c'è sostituzione
+  diretta: il tavolo resta visibile ma non selezionabile; serve la liberazione anticipata separata.
+- Il fallback anti-parziale è logico: booking marcato `deleted` se l'insert assignment fallisce. Non esiste
+  ancora RPC transazionale dedicata.
 
 **Accesso rapido da Calendario**
 

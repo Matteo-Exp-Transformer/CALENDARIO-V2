@@ -14,7 +14,7 @@
 2. **Remoto (sola lettura per consultazione):** MCP `get_project_url` → deve rispondere TEST `docnnernvp` (sviluppo) o PROD `rwuxgvld` (sola lettura salvo conferma esplicita). Poi `list_migrations`. Se l'agente ha un canale TEST specifico, seguire le istruzioni dedicate dell'agente senza estenderle agli altri ambienti.
 3. **Schema colonne/tabelle:** `DB_SCHEMA_CONTEXT.md` — aggiornare dopo ogni migrazione che introduce colonne.
 
-Ultimo file in repo (verificato 24-06-26): **`063_rooms_soft_delete.sql`** (S4 Traccia A, solo TEST). Prossima nuova migrazione: prefisso **`064_`**.
+Ultimo file in repo (verificato 24-06-26): **`065_table_assignments_force.sql`** (S4, solo TEST). Prossima nuova migrazione: prefisso **`066_`**.
 
 ### Indice repo 040–048 (sintesi schema — non sostituisce i file SQL)
 
@@ -35,6 +35,8 @@ Ultimo file in repo (verificato 24-06-26): **`063_rooms_soft_delete.sql`** (S4 T
 | `061_rpc_get_public_slot_config.sql` | RPC anon ristretta: fasce + soglie operative (S3). **Solo TEST.** |
 | `062_update_service_slot_arrival_step.sql` | Estende PATCH RPC Pro senza cambiare firma (S3). **Solo TEST.** |
 | `063_rooms_soft_delete.sql` | S4 Traccia A / D50: `rooms.active boolean NOT NULL DEFAULT true` + indice parziale `rooms_tenant_active_idx`. Abilita l'eliminazione sala MORBIDA (`useDeleteRoom` soft-delete). **Solo TEST `docnnernvp`; PROD invariata.** |
+| `064_booking_occupancy_snapshot_force.sql` | S4 / D25+D37: snapshot finestra occupazione e audit overbooking su `booking_requests`. **Solo TEST; PROD invariata.** |
+| `065_table_assignments_force.sql` | S4 / D25: audit assegnazione forzata su `booking_table_assignments`. **Solo TEST; PROD invariata.** |
 
 ### Due ambienti Supabase — non confonderli
 
@@ -59,14 +61,21 @@ il dominio. PROD non toccata.
 > **Nota:** la `063` esiste ma è di un altro cantiere (S4 Traccia A, soft-delete sale — vedi voce
 > in tabella sotto), non il lock S3 qui scartato.
 
-### Snapshot S4 Traccia A TEST (24-06-26)
+### Snapshot S4 TEST (24-06-26)
 
 `063_rooms_soft_delete.sql` aggiunge `rooms.active boolean NOT NULL DEFAULT true` + indice parziale
 `rooms_tenant_active_idx` (filtro `active = true`). Applicata **solo a TEST** (`docnnernvp`), **non in
 PROD** (`rwuxgvld` invariata fino a rollout con Matteo). Solo aggiunta colonna su tabella esistente →
 nessun nuovo GRANT, RLS `admin_update_rooms` (mig. 008) già copre il soft-delete. Lato client:
 `useDeleteRoom` fa soft-delete (`active=false`), `useRooms` filtra `active=true`, nuovo
-`useRoomLiveBookings`. Branch `s4/track-a-strutturale`.
+`useRoomLiveBookings`.
+
+`064_booking_occupancy_snapshot_force.sql` aggiunge a `booking_requests` gli snapshot
+`occupancy_start`, `occupancy_end`, `turnover_buffer_minutes` e i campi audit
+`forced_by_admin`/`force_reason`. `065_table_assignments_force.sql` aggiunge gli stessi campi audit a
+`booking_table_assignments`. Tutte e tre risultano applicate su TEST con versioni remote timestamp
+(`20260624015417`, `20260624101337`, `20260624101344`): il nome logico registrato coincide coi file locali.
+Schema, default, indice e tipi TypeScript verificati; PROD non toccata.
 
 ### Anomalie storiche utili (permanenti)
 

@@ -358,6 +358,7 @@ export const ServizioPage: FC = () => {
         isOpen={modal.open}
         onClose={closeModal}
         rooms={rooms}
+        tables={tables}
         defaultRoomId={modal.defaultRoomId}
         initial={modal.initial}
       />

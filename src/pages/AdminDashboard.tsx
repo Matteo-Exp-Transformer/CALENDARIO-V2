@@ -182,6 +182,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>('all')
   const [archiveSortOrder, setArchiveSortOrder] = useState<SortOrder>('booking_date')
   const menuPricesTabRef = useRef<MenuPricesTabHandle>(null)
+  const publicFormOpenLockRef = useRef(false)
   const features = useFeatures()
   const { confirmNavigation, hasUnsavedChanges, hasBlockingOperations, registerUnsavedSource, clearUnsavedSource } =
     useUnsavedChangesGuard()
@@ -292,7 +293,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleOpenPublicForm = () => {
     if (!tenantSlug) return
+    if (publicFormOpenLockRef.current) return
+    publicFormOpenLockRef.current = true
     window.open(`/prenota/${tenantSlug}`, '_blank', 'noopener,noreferrer')
+    window.setTimeout(() => {
+      publicFormOpenLockRef.current = false
+    }, 1000)
   }
 
   const handleLogout = onLogout ?? logout

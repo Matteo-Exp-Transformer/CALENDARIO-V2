@@ -13,6 +13,7 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import { logger } from '@/lib/logger'
 import { extractTimeFromISO } from '@/features/booking/utils/dateUtils'
 import type { Json, TablesUpdate } from '@/types/database'
+import { TABLE_ASSIGNMENTS_QUERY_KEY } from './useTableAssignments'
 
 /**
  * Race guard: update con 0 righe (lo stato del record è cambiato sotto i piedi —
@@ -30,6 +31,7 @@ async function invalidateAllBookingQueries(
     queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'], refetchType: 'all' }),
     queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
     queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
+    queryClient.invalidateQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId], refetchType: 'all' }),
     queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
     queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId], refetchType: 'all' }),
   ])
@@ -342,6 +344,7 @@ export const useUpdateBooking = () => {
       await queryClient.invalidateQueries({ queryKey: ['bookings'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'] })
+      await queryClient.invalidateQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId] })
       await queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId] })
       await queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId] })
       toast.success('Prenotazione aggiornata con successo!')
@@ -431,6 +434,7 @@ export const useRestoreBooking = () => {
       await queryClient.invalidateQueries({ queryKey: ['bookings'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'] })
+      await queryClient.invalidateQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId] })
       await queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId] })
       await queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId] })
       toast.success('Prenotazione reinserita con successo!')
@@ -480,6 +484,7 @@ export const useRequeueRejectedBooking = () => {
         queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
       ])
       toast.success('Prenotazione riportata tra le richieste in attesa')
@@ -521,6 +526,7 @@ export const useMarkNoShow = () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['bookings'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId], refetchType: 'all' }),
       ])
@@ -579,6 +585,7 @@ export const useCancelBooking = () => {
       await queryClient.invalidateQueries({ queryKey: ['bookings'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'pending'] })
       await queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'] })
+      await queryClient.invalidateQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId] })
       await queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId] })
       await queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId] })
 

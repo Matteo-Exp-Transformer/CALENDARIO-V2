@@ -3,7 +3,9 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { AlertCircle } from 'lucide-react'
 import { Modal, Button, Input } from '@/components/ui'
 import { useCreateTable, useUpdateTable } from '@/features/booking/hooks/useServizioTables'
+import type { RestaurantTable } from '@/features/booking/hooks/useServizioTables'
 import type { Room } from '@/features/booking/hooks/useRooms'
+import { TABLE_NAME_MAX_LENGTH } from './TableShape'
 import { DiscardChangesConfirmModal } from '@/features/booking/components/settings/SettingsSaveUi'
 import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
 
@@ -13,6 +15,8 @@ export interface TableFormModalProps {
   isOpen: boolean
   onClose: () => void
   rooms: Room[]
+  /** Tutti i tavoli attivi del tenant, usati per l'unicità case-insensitive del nome. */
+  tables: RestaurantTable[]
   /** Sala preselezionata alla apertura in modalità "aggiungi" (id della sala). */
   defaultRoomId?: string
   initial?: { id: string; name: string; capacity: number; room_id: string } | null
@@ -26,10 +30,24 @@ function normalizeTableDraft(input: { name: string; capacity: string; roomId: st
   }
 }
 
+export function hasDuplicateTableName(
+  tables: Pick<RestaurantTable, 'id' | 'name'>[],
+  candidateName: string,
+  currentTableId?: string,
+): boolean {
+  const normalizedCandidate = candidateName.trim().toLocaleLowerCase('it')
+  return tables.some(
+    (table) =>
+      table.id !== currentTableId &&
+      table.name.trim().toLocaleLowerCase('it') === normalizedCandidate,
+  )
+}
+
 export const TableFormModal: FC<TableFormModalProps> = ({
   isOpen,
   onClose,
   rooms,
+  tables,
   defaultRoomId,
   initial,
 }) => {
@@ -38,11 +56,11 @@ export const TableFormModal: FC<TableFormModalProps> = ({
   const firstRoomId = rooms[0]?.id ?? ''
 
   const [name, setName] = useState(initial?.name ?? '')
-  const [capacity, setCapacity] = useState(String(initial?.capacity ?? ''))
+  const [capacity, setCapacity] = useState(String(initial?.capacity ?? 2))
   const [roomId, setRoomId] = useState(initial?.room_id ?? defaultRoomId ?? firstRoomId)
   const [validationError, setValidationError] = useState<string | null>(null)
   const [baseline, setBaseline] = useState(() =>
-    normalizeTableDraft({ name: '', capacity: '', roomId: '' }),
+    normalizeTableDraft({ name: '', capacity: '2', roomId: '' }),
   )
   const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
@@ -57,7 +75,7 @@ export const TableFormModal: FC<TableFormModalProps> = ({
     if (isOpen) {
       const next = normalizeTableDraft({
         name: initial?.name ?? '',
-        capacity: String(initial?.capacity ?? ''),
+        capacity: String(initial?.capacity ?? 2),
         roomId: initial?.room_id ?? defaultRoomId ?? rooms[0]?.id ?? '',
       })
       setName(next.name)
@@ -122,6 +140,10 @@ export const TableFormModal: FC<TableFormModalProps> = ({
 
   function validate(): string | null {
     if (!name.trim()) return 'Il nome del tavolo è obbligatorio.'
+    if (name.trim().length > TABLE_NAME_MAX_LENGTH)
+      return `Il nome del tavolo può contenere al massimo ${TABLE_NAME_MAX_LENGTH} caratteri.`
+    if (hasDuplicateTableName(tables, name, initial?.id))
+      return 'Esiste già un tavolo con questo nome. Scegli un nome diverso.'
     const cap = Number(capacity)
     if (!capacity || isNaN(cap) || cap <= 0 || !Number.isInteger(cap))
       return 'La capienza deve essere un intero maggiore di zero.'
@@ -182,6 +204,7 @@ export const TableFormModal: FC<TableFormModalProps> = ({
               id="table-name"
               type="text"
               placeholder="Es. Tavolo 1"
+              maxLength={TABLE_NAME_MAX_LENGTH}
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={isPending}

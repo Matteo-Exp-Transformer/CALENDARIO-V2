@@ -211,10 +211,11 @@ oggi conta solo `status='accepted'` con `no_show != true`).
 essere scritto nel resolver. Il resolver server-side (D2/D40) è l'unico autorizzato a sommare l'occupazione,
 e somma **solo** gli stati di questo elenco.
 
-### Decisioni intervista S4 (D44–D52) — design bloccato 24-06-26
+### Decisioni intervista S4 (D44–D52) — implementate su TEST 24-06-26
 > Intervista di sezione S4 condotta con Matteo (senior, 24-06-26) sulle 6 domande di design "materiale S4"
-> della lista C (`SERVIZIO_BASELINE_MAP.md`). Sblocca il **design** di S4; il build segue il plan dedicato
-> `docs/Sessioni di lavoro/24-06-26/S4_PLAN.md`. Nessun vincolo GTM "10-15 clienti" (vedi §9, nota).
+> della lista C (`SERVIZIO_BASELINE_MAP.md`). Build e integrazione concluse su `env/test` secondo
+> `docs/Sessioni di lavoro/24-06-26/S4_PLAN.md`; collaudo manuale e rollout PROD restano separati.
+> Nessun vincolo GTM "10-15 clienti" (vedi §9, nota).
 
 - **D44 (C1) — Forma tavolo.** Nessun selettore in UI (disciplina vendi-semplice): ogni tavolo nasce con
   **default = quadrato** (non più tondo). Il codice delle 3 forme (round/square/rect, già reso da
@@ -450,17 +451,35 @@ ad-hoc compila *funziona / riscrivere / può rompersi*.
 > - **Traccia B (motore disponibilità):** ✅ WP-B1→B4 — predicato modalità-tavoli + capienza somma-coperti
 >   (D49/D46) · walk-in coerente (D45/D25) · checkout append-only + 5 stati tavolo (D48/D24/D23) · finestre
 >   di occupazione + overbooking forzabile + Edge D43 (D37/D22/D39/D40). Mig. 064/065. `table_session` → S4-LIVE.
-> - **Residuo (step Matteo):** TEST collaudo manuale (checklist) → poi rollout PROD (mig. 063→065 + Edge +
+> - **Residuo (step Matteo):** TEST collaudo manuale (checklist; Edge TEST v29 attiva) → poi rollout PROD (mig. 063→065 + Edge +
 >   client insieme, §6). **Nessun freno GTM** (vedi §9 nota). Dettaglio: `ADMIN_SERVIZIO_CONTEXT.md` §9/§9.1.
 - **Decisioni di design (oltre a quelle sotto):** D44 forma=quadrato · D45 walk-in conta sempre + bug fix ·
   D46 capienza=somma coperti · D47 durata walk-in da console · D48 checkout append-only · D49 predicato
   "modalità-tavoli" (Pro E ≥1 tavolo) + stato-vuoto · D50 elimina-sala morbida con conferma · D51
   conservazione dati→Analytics (FU) · D52 briefing sala+tavolo condizionale.
-- **Da costruire:** generazione finestre (arrivo + durata + buffer D37); disponibilità auto a fine durata
-  (D22); `useTableStatuses` con 5 stati (D24); ritardo configurabile (D23); "prossimo orario libero";
+- **Implementato su TEST:** generazione finestre (arrivo + durata + buffer D37); disponibilità auto a fine
+  durata (D22); `useTableStatuses` con 5 stati (D24); ritardo configurabile (D23); prossimo orario libero;
   auto-turno dinamico (Q19); overbooking forzabile (D25); **multi-tavolo per prenotazione (D39)**.
 - **Invariante chiave (D22):** disponibilità = finestre programmate, indipendente dal checkout fisico.
 - **Può rompersi:** doppia verità (#4, arbitro D1); chiude i debiti tavoli (D10).
+
+#### QA manuale A2 Matteo — 25-06-26
+
+- ✅ Assegnazione base: le prenotazioni accettate compaiono in Servizio dopo navigazione interna; menu/card/
+  carosello non risultano più un blocco.
+- 🔴 Seconda prenotazione sullo stesso tavolo: non ancora assegnabile da UI perché il tavolo occupato è
+  disabilitato. Nuova decisione prodotto: serve **forzatura guidata** con alert, non solo liberazione
+  anticipata separata.
+- 🟡 Refresh: il refetch al mount funziona; una scheda già aperta su Assegnazione Tavoli non vede booking o
+  walk-in creati da una seconda scheda. Serve polling/realtime/cross-tab invalidation sul pannello operativo.
+- ✅ Walk-in su tavolo libero: booking + assignment visibili correttamente dopo refresh/arrivo pagina.
+- 🔴 Walk-in su tavolo occupato: Matteo vuole poter forzare l'inserimento con procedura esplicita che avvisi
+  che si sta sostituendo/liberando la prenotazione in corso. Il copy deve chiarire l'impatto prima della conferma.
+- 🟡 Feedback walk-in: dopo invio il form mostra un messaggio troppo rapido da leggere. Messaggio esatto
+  **non ancora identificato**: da riprodurre in UI prima di correggere copy/durata/posizione.
+- 🔴 Briefing: filtro fascia corretto, ma orari mostrati +2h rispetto all'orario inserito; probabile bug
+  timezone nel rendering del briefing (es. 03:00 → 05:00, 21:00 → 23:00).
+- 🟡 D38 da collaudare: verificare OFF=capienza fisica tavoli, ON=min(capienza tavoli, cap fascia).
 
 ### S4-LIVE — Console operativa di sala (tab "Live") *(Pro — Servizio)*
 - **Scopo:** schermata a focus massimo per ricezione/cassa sulla fascia corrente: tavoli per-turni,

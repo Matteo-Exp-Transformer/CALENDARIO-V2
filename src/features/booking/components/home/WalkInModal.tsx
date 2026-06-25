@@ -9,30 +9,12 @@ import { useAcceptedBookings } from '@/features/booking/hooks/useBookingQueries'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 import { useCapacityCheck } from '@/features/booking/hooks/useCapacityCheck'
 import { useServiceSlots } from '@/features/booking/hooks/useServiceSlots'
+import { useTableAssignments } from '@/features/booking/hooks/useTableAssignments'
+import { isTimeInsideSlot } from '@/features/booking/utils/bookingTimeSlots'
 
 interface WalkInModalProps {
   isOpen: boolean
   onClose: () => void
-}
-
-/**
- * Verifica se un tavolo è occupato ora: almeno una prenotazione accepted
- * con confirmed_start ≤ now < confirmed_end E placement uguale al NOME del tavolo.
- *
- * Perché il NOME e non l'id: booking_requests non ha colonna table_id —
- * il walk-in (e le prenotazioni manual) salvano placement = nome del tavolo.
- * L'identità per id arriverà con il modello assignment (B3/B4).
- */
-function isBusy(
-  tableName: string,
-  acceptedBookings: { placement?: string | null; confirmed_start?: string | null; confirmed_end?: string | null }[],
-): boolean {
-  const now = new Date()
-  return acceptedBookings.some((b) => {
-    if (b.placement !== tableName) return false
-    if (!b.confirmed_start || !b.confirmed_end) return false
-    return new Date(b.confirmed_start) <= now && now < new Date(b.confirmed_end)
-  })
 }
 
 export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
@@ -43,7 +25,6 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
   const [validationError, setValidationError] = useState<string | null>(null)
   // D25: flag per forzare l'inserimento nonostante avvisi morbidi
   const [forceOverCapacity, setForceOverCapacity] = useState(false)
-  const [forceBusyTable, setForceBusyTable] = useState(false)
 
   const walkIn = useWalkInMutation()
   const { data: tables = [] } = useTables()
@@ -56,8 +37,9 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
   const now = new Date()
   const nowHm = format(now, 'HH:mm')
   const todayDate = format(now, 'yyyy-MM-dd')
+  const { data: todayAssignments = [] } = useTableAssignments(todayDate)
   const activeSlot = useMemo(() => {
-    return serviceSlots.find((s) => s.start_time.slice(0, 5) <= nowHm && nowHm < s.end_time.slice(0, 5)) ?? null
+    return serviceSlots.find((s) => isTimeInsideSlot(nowHm, s.start_time.slice(0, 5), s.end_time.slice(0, 5))) ?? null
   }, [serviceSlots, nowHm])
 
   // Orario di fine stimato in base al resolver: lo calcoliamo qui per stimare la finestra
@@ -88,17 +70,25 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
   }, [tables, selectedRoomId])
 
   const tableOptions = useMemo(() => {
+    const busyTableIds = new Set(
+      todayAssignments
+        .filter(
+          (a) =>
+            a.checked_out_at === null &&
+            a.date === todayDate &&
+            (!activeSlot || a.service_slot_id === activeSlot.id),
+        )
+        .map((a) => a.table_id),
+    )
     return tablesInRoom.map((t) => ({
       ...t,
-      // Bug #6 fix: confronta per NOME perché placement = nome (non id) nel DB.
-      // Vedi commento su isBusy per il perché.
-      busy: isBusy(t.name, acceptedBookings),
+      busy: busyTableIds.has(t.id),
     }))
-  }, [tablesInRoom, acceptedBookings])
+  }, [activeSlot, tablesInRoom, todayAssignments, todayDate])
 
   const selectedTable = tables.find((t) => t.id === selectedTableId) ?? null
   // Tavolo selezionato risulta occupato?
-  const isSelectedTableBusy = selectedTable ? isBusy(selectedTable.name, acceptedBookings) : false
+  const isSelectedTableBusy = selectedTable ? tableOptions.some((t) => t.id === selectedTable.id && t.busy) : false
 
   function resetForm() {
     setClientName('')
@@ -107,7 +97,6 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
     setSelectedTableId('')
     setValidationError(null)
     setForceOverCapacity(false)
-    setForceBusyTable(false)
   }
 
   function validate(): string | null {
@@ -120,6 +109,9 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
     }
     if (selectedRoomId && tablesInRoom.length > 0 && !selectedTableId) {
       return 'Seleziona un tavolo.'
+    }
+    if (selectedTableId && !activeSlot) {
+      return 'Nessuna fascia attiva adesso: non posso assegnare il walk-in al tavolo.'
     }
     return null
   }
@@ -139,15 +131,15 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
       setForceOverCapacity(true)
       return
     }
-    if (isSelectedTableBusy && !forceBusyTable) {
-      setForceBusyTable(true)
-      return
-    }
+    if (isSelectedTableBusy) return
 
     walkIn.mutate(
       {
         client_name: clientName,
         num_guests: Number(numGuests),
+        table_id: selectedTable?.id ?? null,
+        service_slot_id: activeSlot?.id ?? null,
+        max_turns: activeSlot?.max_turns ?? null,
         placement: selectedTable?.name ?? undefined,
         slot_min_duration: slotMinDuration,
       },
@@ -218,7 +210,6 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
               onChange={(e) => {
                 setSelectedRoomId(e.target.value)
                 setSelectedTableId('')
-                setForceBusyTable(false)
               }}
               disabled={walkIn.isPending}
               className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500"
@@ -244,17 +235,13 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
               value={selectedTableId}
               onChange={(e) => {
                 setSelectedTableId(e.target.value)
-                // Resetta la forzatura tavolo occupato quando l'operatore cambia selezione
-                setForceBusyTable(false)
               }}
               disabled={walkIn.isPending}
               className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500"
             >
               <option value="">— Seleziona tavolo —</option>
               {tableOptions.map((t) => (
-                // D25: tavolo "occupato" non è più disabled — l'operatore può sempre selezionarlo.
-                // La segnalazione avviene via avviso forzabile sotto il select.
-                <option key={t.id} value={t.id}>
+                <option key={t.id} value={t.id} disabled={t.busy}>
                   {t.name} ({t.capacity} posti){t.busy ? ' — occupato' : ''}
                 </option>
               ))}
@@ -280,9 +267,7 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
         {/* D25 — Avviso morbido: tavolo occupato */}
         {isSelectedTableBusy && (
           <p className="text-sm text-amber-700 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2" role="alert" data-testid="busy-table-warning">
-            {forceBusyTable
-              ? 'Stai assegnando un tavolo già occupato. Premi "Aggiungi walk-in" per confermare.'
-              : 'Questo tavolo risulta già occupato. Puoi comunque procedere — premi di nuovo per confermare.'}
+            Questo tavolo risulta occupato: liberalo prima dalla Mappa servizio, poi potrai assegnare il walk-in.
           </p>
         )}
 

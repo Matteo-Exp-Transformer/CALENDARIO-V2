@@ -115,13 +115,12 @@
   mismatch walk-in `placement`/`table_id`, guard `features.tableAssignments` su `AssignmentMapPanel`,
   race condition `useUnassignedBookings`.
 
-## 9. S4 — decisioni intervista (24-06-26) — Traccia A IMPLEMENTATA, Traccia B design
+## 9. S4 — motore turni e coerenza strutturale — IMPLEMENTATO SU TEST
 
-> Intervista di sezione S4 (masterplan §3, D44–D52). Build su due tracce parallele
-> (`docs/Sessioni di lavoro/24-06-26/S4_PLAN.md`). **Traccia A (coerenza strutturale: D44, D50, D52)
-> IMPLEMENTATA** su branch `s4/track-a-strutturale` (TEST, mig. 063, validate verde) — in attesa di
-> integrazione+PROD con Matteo. **Traccia B (motore disponibilità: D45/D46/D47/D48/D49 + finestre)**
-> resta design finché la sua traccia non chiude.
+> Intervista e build S4 concluse secondo `docs/Sessioni di lavoro/24-06-26/S4_PLAN.md`. Le due tracce
+> sono integrate in `env/test`; i branch temporanei sono chiusi. Migrazioni 063–065 applicate su TEST,
+> tipi rigenerati e `create-booking` S4 deployata su TEST come v29. PROD resta invariata fino al rollout
+> con conferma esplicita di Matteo.
 
 - **✅ Forma tavolo (D44, Traccia A FATTO):** nessun selettore UI; default alla creazione = **quadrato**
   (`useCreateTable` insert `shape: input.shape ?? 'square'`). Codice 3 forme (`TableShape`) resta.
@@ -142,10 +141,10 @@
 - **Conservazione dati (D51):** S4 rende i dati *archiviabili* (append-only + snapshot); la potatura/
   migrazione in Analytics è follow-up `FU-SERV-ANALYTICS-RETENTION-1`.
 
-### 9.1 Stato implementazione — Traccia B (motore disponibilità) ✅ su `s4/track-b-motore` (24-06-26)
+### 9.1 Stato implementazione — Traccia B (motore disponibilità) ✅ integrata in `env/test`
 
-> Build su branch `s4/track-b-motore` (da env/test). Solo TEST (`docnnernvp`); integrazione + PROD = step
-> separato con Matteo (§6 del plan, edge+client insieme). `npm run validate` verde (137 file / 1152 test).
+> Build integrata in `env/test`. Solo TEST (`docnnernvp`); PROD resta uno step separato con Matteo
+> (migrazioni+Edge+client insieme). `npm run validate` verde dopo l'integrazione.
 
 - **WP-B1 (D49/D46/D1)** — `useTableMode()` (NUOVO): predicato unico modalità-tavoli = Pro **E** ≥1 tavolo
   attivo, cortocircuito Classic. Guard su `AssignmentMapPanel` + stato-vuoto invitante in `ServizioPage`.
@@ -164,5 +163,38 @@
   window-aware (`occupancy_end ?? confirmed_end`), D43 documentato; race tavolo = vincolo UNIQUE (D40,
   test di concorrenza). **Migrazioni 064/065 applicate SOLO su TEST** (occupancy snapshot + force fields).
 - **Note di scope:** `table_session` (D39) rimandata a **S4-LIVE** (proprietà §6 masterplan, nessun consumer
-  in S4). **Edge: deploy+smoke su TEST rimandati all'integrazione** (§6, edge+client insieme — mai edge-sola).
-  Blindatura congiunta delle 3 aree + integrazione tracce A↔B = step con Matteo.
+  in S4). Edge `create-booking` S4 deployata su TEST come **v29**, `verify_jwt=false`; smoke minimo verde
+  (`POST {}` → 400 controllato `tenantSlug è obbligatorio`). Collaudo manuale congiunto resta il gate prima
+  del rollout PROD.
+
+### 9.2 Fix post-QA A1 — CRUD e polish isolato
+
+- Il viewport della mappa segue la larghezza configurata della sala fino allo spazio disponibile; oltre
+  il viewport mantiene lo scroll interno, senza allargare la pagina.
+- Il nome tavolo è unico case-insensitive fra tutti i tavoli attivi del tenant; in modifica il record
+  corrente è escluso dal confronto. Limite UI coerente: **10 caratteri**.
+- Nuovo tavolo: coperti precompilati a **2**; nome e coperti nella sagoma hanno font più leggibile.
+- `Modifica sala` apre direttamente la sala selezionata: rimosso il picker sovrapposto alla mappa.
+- Durante la conferma elimina-sala restano soltanto `Sì`/`No`: `Annulla` e `Salva` del form sono nascosti.
+- Test di regressione: `servizioA1Fixes.test.tsx` (`@admin-blindatura: servizio-a1`). Nessuna modifica a
+  assegnazioni, finestre, walk-in, D25, DB o Edge.
+
+### 9.3 Fix post-QA A2 — coerenza dati e runtime
+
+- **Refresh Servizio:** `useAcceptedBookingsForDate`, `useTableAssignments` e `useUnassignedBookings`
+  refetchano sempre al mount; le mutation booking condivise invalidano anche `TABLE_ASSIGNMENTS_QUERY_KEY`
+  (no-op in Classic).
+- **Assegnabilità:** l'elenco da assegnare resta basato su booking `accepted` + data/fascia + assenza di
+  assignment attivo; tipologia, menu, card e carosello non filtrano mai.
+- **Multi-assignment:** la mappa rende tutte le assegnazioni attive dello stesso tavolo, ordinate per turno.
+  I tavoli occupati restano visibili ma non sono droppable: niente sovrapposizione diretta; serve la
+  liberazione anticipata separata.
+- **Walk-in con tavolo:** `useWalkInMutation` inserisce booking + assignment nella fascia attiva; se
+  l'insert assignment fallisce o supera `max_turns`, il booking viene marcato `deleted` con motivo tecnico
+  e le query booking/assignment vengono invalidate. Nessuna migrazione/RPC introdotta.
+- **Stati temporali:** `useTableStatuses` ha clock runtime ogni 30s; i test possono ancora iniettare
+  `nowOverride`.
+- **Briefing:** il filtro turno legge le `service_slots` reali, inclusi slot overnight; il modal mostra
+  `Tutti` + fasce tenant, non più pranzo/cena hardcoded.
+- **D38:** nuovo setting `table_mode_respects_slot_cap`, default `false`. In modalità tavoli OFF usa la
+  capienza fisica dei tavoli; ON usa il minore tra capienza fisica e cap fascia configurato.

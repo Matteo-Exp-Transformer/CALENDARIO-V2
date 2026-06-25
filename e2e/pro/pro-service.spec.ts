@@ -55,7 +55,8 @@ test.describe('Admin Pro — Servizio', () => {
       { width: 1280, height: 800 },
     ]) {
       await page.setViewportSize(viewport)
-      await page.getByRole('button', { name: /^Modifica /i }).first().click()
+      const slotsSection = page.getByRole('heading', { name: /^Fasce orarie$/i }).locator('../../..')
+      await slotsSection.getByRole('button', { name: /^Modifica /i }).first().click()
       const field = page.getByLabel('Intervallo di arrivo')
       await expect(field).toBeVisible()
       await expect(field).toHaveValue(/15|30|60|custom/)

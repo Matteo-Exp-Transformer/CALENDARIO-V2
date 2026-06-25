@@ -102,11 +102,13 @@ function setupMocks({
   assignments = [{ booking_id: 'b1', table_id: 'table-1' }],
   tables = [TABLE_1],
   rooms = [ROOM_A],
+  serviceSlots = [] as object[],
 }: {
   bookings?: object[]
   assignments?: object[]
   tables?: object[]
   rooms?: object[]
+  serviceSlots?: object[]
 } = {}) {
   mockFrom.mockImplementation((tableName: string) => {
     switch (tableName) {
@@ -118,6 +120,8 @@ function setupMocks({
         return makeQueryChain({ data: tables, error: null })
       case 'rooms':
         return makeQueryChain({ data: rooms, error: null })
+      case 'service_slots':
+        return makeQueryChain({ data: serviceSlots, error: null })
       default:
         return makeQueryChain({ data: [], error: null })
     }
@@ -278,6 +282,48 @@ describe('useShiftBriefing — table/room join', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(result.current.data!.isMultiRoom).toBe(false)
+  })
+
+  it('filters by real service slot, including overnight ranges', async () => {
+    setupMocks({
+      bookings: [
+        {
+          id: 'night-1',
+          client_name: 'Notte Uno',
+          num_guests: 2,
+          desired_date: '2026-06-24',
+          desired_time: '23:30',
+          confirmed_start: '2026-06-24T23:30:00.000Z',
+          confirmed_end: '2026-06-25T01:00:00.000Z',
+          special_requests: null,
+        },
+        {
+          id: 'day-1',
+          client_name: 'Giorno Uno',
+          num_guests: 3,
+          desired_date: '2026-06-24',
+          desired_time: '20:00',
+          confirmed_start: '2026-06-24T20:00:00.000Z',
+          confirmed_end: '2026-06-24T21:00:00.000Z',
+          special_requests: null,
+        },
+      ],
+      assignments: [],
+      tables: [],
+      rooms: [ROOM_A],
+      serviceSlots: [
+        { id: 'slot-night', name: 'Notturna', start_time: '23:00', end_time: '04:00' },
+        { id: 'slot-dinner', name: 'Cena', start_time: '19:00', end_time: '22:30' },
+      ],
+    })
+
+    const { result } = renderHook(() => useShiftBriefing('slot-night'), { wrapper: makeWrapper() })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+    expect(result.current.data!.shiftLabel).toBe('Notturna')
+    expect(result.current.data!.bookings).toHaveLength(1)
+    expect(result.current.data!.bookings[0].client_name).toBe('Notte Uno')
   })
 
   it('does not run query when tenantId is null', () => {

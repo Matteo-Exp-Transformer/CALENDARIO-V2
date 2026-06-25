@@ -28,6 +28,8 @@ const STATUS_COLORS: Record<TableLiveStatus, { fill: string; stroke: string; tex
   leaving:  { fill: '#e9d5ff', stroke: '#7c3aed', text: '#3b0764', cap: '#4c1d95' },
 }
 
+export const TABLE_NAME_MAX_LENGTH = 10
+
 const SHAPE_SIZE = 64
 const SHAPE_SIZE_RECT_W = 96
 
@@ -115,19 +117,20 @@ export const TableShape: FC<TableShapeProps> = ({ table, onEdit, dragDisabled = 
           y={h / 2 - 4}
           textAnchor="middle"
           dominantBaseline="middle"
-          fontSize={10}
-          fontWeight="600"
+          fontSize={12}
+          fontWeight="700"
           fill={colors.text}
           style={{ userSelect: 'none', pointerEvents: 'none' }}
         >
-          {table.name.length > 8 ? table.name.slice(0, 7) + '…' : table.name}
+          {table.name}
         </text>
         <text
           x={w / 2}
           y={h / 2 + 9}
           textAnchor="middle"
           dominantBaseline="middle"
-          fontSize={9}
+          fontSize={11}
+          fontWeight="600"
           fill={colors.cap}
           style={{ userSelect: 'none', pointerEvents: 'none' }}
         >

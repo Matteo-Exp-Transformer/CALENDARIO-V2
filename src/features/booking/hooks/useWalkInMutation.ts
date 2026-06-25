@@ -8,6 +8,7 @@ import { createBookingDateTime } from '@/features/booking/utils/dateUtils'
 import { resolveBookingDuration } from '@/features/booking/lib/resolveBookingDuration'
 import { ANALYTICS_QUERY_ROOT } from './useAnalytics'
 import { HOME_STATS_QUERY_KEY } from './useHomeStats'
+import { TABLE_ASSIGNMENTS_QUERY_KEY } from './useTableAssignments'
 
 export interface WalkInInput {
   client_name?: string
@@ -16,6 +17,8 @@ export interface WalkInInput {
    *  Il posizionamento avviene tramite `placement` (nome tavolo). Mantenuto per
    *  compatibilità con codice chiamante che potrebbe ancora passarlo. */
   table_id?: string | null
+  service_slot_id?: string | null
+  max_turns?: number | null
   placement?: string
   /**
    * Durata minima della fascia in cui cade il walk-in (service_slots.min_duration).
@@ -23,6 +26,15 @@ export interface WalkInInput {
    * Usata come pavimento dal resolver durata (gerarchia D35) — mai come valore unico.
    */
   slot_min_duration?: number
+}
+
+export function buildWalkInRollbackPatch(reason: string) {
+  return {
+    status: 'deleted',
+    cancellation_reason: reason,
+    cancelled_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
 }
 
 /**
@@ -109,12 +121,81 @@ export function useWalkInMutation() {
         throw new Error(error.message)
       }
 
-      return data
+      if (input.table_id) {
+        if (!input.service_slot_id) {
+          await supabase
+            .from('booking_requests')
+            .update(buildWalkInRollbackPatch('Rollback walk-in: fascia servizio mancante'))
+            .eq('id', data.id)
+            .eq('tenant_id', tenantId)
+          throw new Error('Fascia servizio mancante per assegnare il walk-in al tavolo.')
+        }
+
+        const { data: existingAssignments, error: existingError } = await supabase
+          .from('booking_table_assignments')
+          .select('turn_number')
+          .eq('tenant_id', tenantId)
+          .eq('date', desiredDate)
+          .eq('service_slot_id', input.service_slot_id)
+          .eq('table_id', input.table_id)
+
+        if (existingError) {
+          await supabase
+            .from('booking_requests')
+            .update(buildWalkInRollbackPatch('Rollback walk-in: controllo tavolo fallito'))
+            .eq('id', data.id)
+            .eq('tenant_id', tenantId)
+          throw new Error(existingError.message)
+        }
+
+        const turnNumbers = ((existingAssignments ?? []) as { turn_number: number | null }[])
+          .map((row) => row.turn_number ?? 0)
+        const turnNumber = turnNumbers.length > 0 ? Math.max(...turnNumbers) + 1 : 1
+
+        if (input.max_turns !== null && input.max_turns !== undefined && turnNumber > input.max_turns) {
+          await supabase
+            .from('booking_requests')
+            .update(buildWalkInRollbackPatch('Rollback walk-in: turni tavolo esauriti'))
+            .eq('id', data.id)
+            .eq('tenant_id', tenantId)
+          throw new Error('Turni esauriti per questo tavolo in questa fascia.')
+        }
+
+        const { error: assignmentError } = await supabase
+          .from('booking_table_assignments')
+          .insert({
+            tenant_id: tenantId,
+            booking_id: data.id,
+            table_id: input.table_id,
+            service_slot_id: input.service_slot_id,
+            turn_number: turnNumber,
+            date: desiredDate,
+            checked_out_at: null,
+          })
+
+        if (assignmentError) {
+          await supabase
+            .from('booking_requests')
+            .update(buildWalkInRollbackPatch('Rollback walk-in: assegnazione tavolo fallita'))
+            .eq('id', data.id)
+            .eq('tenant_id', tenantId)
+          throw new Error(assignmentError.message)
+        }
+      }
+
+      return { ...data, date: desiredDate, serviceSlotId: input.service_slot_id ?? null }
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['bookings'], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId], refetchType: 'all' }),
+        data.serviceSlotId
+          ? queryClient.invalidateQueries({
+              queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, data.date, data.serviceSlotId, 'unassigned'],
+              refetchType: 'all',
+            })
+          : Promise.resolve(),
         queryClient.invalidateQueries({ queryKey: [HOME_STATS_QUERY_KEY, tenantId], refetchType: 'all' }),
         queryClient.invalidateQueries({ queryKey: [ANALYTICS_QUERY_ROOT, tenantId], refetchType: 'all' }),
       ])

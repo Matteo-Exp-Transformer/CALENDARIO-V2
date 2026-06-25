@@ -57,21 +57,18 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
   const timeSlotsEnabledQuery = useRestaurantSetting('booking_time_slots_enabled', {
     authenticated: true,
   })
+  const tableModeRespectsSlotCapQuery = useRestaurantSetting('table_mode_respects_slot_cap', {
+    authenticated: true,
+  })
 
   const legacySlotCapacities = slotGuestCapacitiesQuery.data ?? DEFAULT_SLOT_GUEST_CAPACITIES
   const slots = digestSlots ?? []
   // In Pro le fasce sono sempre attive; in Classic rispetta il flag
   const timeSlotsEnabled = features.servizio ? true : (timeSlotsEnabledQuery.data ?? true)
+  const tableModeRespectsSlotCap = tableModeRespectsSlotCapQuery.data ?? false
 
   return useMemo(() => {
-    // Capacità per fascia.
-    // D46: in modalità-tavoli il tetto è totalCovers (capienza fisica sala = somma posti tavoli).
-    // In Classic/Pro-senza-tavoli: cascata override → service_slot.max_guests → slot_guest_capacities.
-    // Questo garantisce ZERO regressioni sul form pubblico (Classic) e per Pro senza tavoli.
-    const getSlotCap = (slot: SlotConfig): number | null => {
-      // Modalità-tavoli attiva: la sala comanda, non la configurazione della fascia
-      if (isTableMode) return totalCovers
-
+    const getConfiguredSlotCap = (slot: SlotConfig): number | null => {
       const svcSlot = serviceSlots.find((s) => s.id === slot.id)
       if (date && svcSlot) {
         const ov = resolveSlotOverride(slotOverrides, slot.id, date)
@@ -80,10 +77,25 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
       } else if (svcSlot?.max_guests != null) {
         return svcSlot.max_guests
       }
-      // Fallback a slot_guest_capacities: prima prova per id, poi per chiave legacy
       const byId = legacySlotCapacities[slot.id]
       if (byId !== undefined) return byId
       return null
+    }
+
+    // Capacità per fascia.
+    // D46: in modalità-tavoli il tetto è totalCovers (capienza fisica sala = somma posti tavoli).
+    // In Classic/Pro-senza-tavoli: cascata override → service_slot.max_guests → slot_guest_capacities.
+    // Questo garantisce ZERO regressioni sul form pubblico (Classic) e per Pro senza tavoli.
+    const getSlotCap = (slot: SlotConfig): number | null => {
+      // Modalità-tavoli attiva: la sala comanda, non la configurazione della fascia
+      if (isTableMode) {
+        if (!tableModeRespectsSlotCap) return totalCovers
+        const configuredCap = getConfiguredSlotCap(slot)
+        if (configuredCap == null) return totalCovers
+        return Math.min(totalCovers, configuredCap)
+      }
+
+      return getConfiguredSlotCap(slot)
     }
 
     // Prenotazioni del giorno (escluse quelle da escludere)
@@ -238,5 +250,6 @@ export function useCapacityCheck(params: UseCapacityCheckParams): AvailabilityCh
     features.servizio,
     isTableMode,
     totalCovers,
+    tableModeRespectsSlotCap,
   ])
 }

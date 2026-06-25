@@ -91,6 +91,8 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'late_arrival_allowed',
   /** S4/D23 — minuti di grazia dopo confirmed_start prima di marcare un tavolo "in ritardo" (default 15). */
   'table_late_threshold_minutes',
+  /** S4/D38 — in modalità tavoli applica anche il cap coperti della fascia oltre alla capienza fisica. Default false. */
+  'table_mode_respects_slot_cap',
 ] as const
 
 export type RestaurantSettingKeyV1 = (typeof RESTAURANT_SETTING_KEYS_V1)[number]
@@ -370,6 +372,8 @@ export type RestaurantSettingValueMap = {
   late_arrival_allowed: boolean
   /** S4/D23 — minuti di grazia prima di "in ritardo" (default 15). Console-tunable. */
   table_late_threshold_minutes: number
+  /** S4/D38 — se true, in modalità tavoli vince il primo limite raggiunto tra posti fisici e cap fascia. */
+  table_mode_respects_slot_cap: boolean
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -778,5 +782,11 @@ export const restaurantSettingRegistry: {
       if (!Number.isInteger(n) || n < 0 || n > 120) return 'Deve essere un intero tra 0 e 120 minuti'
       return null
     },
+  },
+  table_mode_respects_slot_cap: {
+    key: 'table_mode_respects_slot_cap',
+    parseFromDb: (raw) => parseBooleanSettingFromDb(raw, false),
+    serializeToDb: (value) => value as Json,
+    validate: (value) => (typeof value === 'boolean' ? null : 'Valore non valido'),
   },
 }

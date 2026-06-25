@@ -65,6 +65,11 @@ vi.mock('@/hooks/useBusinessHours', () => ({
   useBusinessHours: () => ({ data: null }),
 }))
 
+vi.mock('@/features/booking/hooks/useRestaurantSetting', () => ({
+  useRestaurantSetting: () => ({ data: false }),
+  useUpsertRestaurantSetting: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+
 vi.mock('react-toastify', () => ({
   toast: { error: vi.fn(), warn: vi.fn(), success: vi.fn() },
 }))

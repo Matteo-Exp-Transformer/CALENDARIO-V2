@@ -150,6 +150,9 @@ chiave gia registrata.
     in sidebar. Classic: stessi interruttori dentro **«Imposta Fasce Orarie»** (editor fasce inline);
     testo rifiuto fuori-fascia rimanda a quella sezione, non a Servizio. Salvataggio identico.
   - **Nessun limite di default** per nuove aziende: seed fasce con `max_guests` NULL, nessun seed limiti.
+  - **Calendario Giorno Pro (24-06-26 B0):** i limiti pubblici per fascia continuano a governare
+    solo blocchi/avvisi pubblici e badge complessivo Mese; nel digest Giorno Pro l'occupazione per
+    fascia usa la capienza fisica dei tavoli attivi anche con `slot_limit_enabled` OFF.
 - **`booking_window_days`**: chiave registry **orfana** (solo admin, nessuna UI consumer) — fuoriscope M4; implementazione Fase C **rimossa** su richiesta 15-06-26 (vedi report Fase C §Fuoriscope). **Non implementare senza nuova decisione esplicita di Matteo.**
 
 ### Timezone, tema, presentazione form

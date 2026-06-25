@@ -312,6 +312,11 @@ Trigger: `trg_tables_updated_at`, `trg_enforce_table_tenant`.
 > TEST):** `active boolean NOT NULL DEFAULT true` + indice parziale `rooms_tenant_active_idx`. Abilita il
 > soft-delete sala (`useDeleteRoom` → `active=false`, `useRooms` filtra `active=true`). Vedi DATABASE.md.
 
+> **Snapshot S4 (mig. 064–065, solo TEST):** `booking_requests` espone `occupancy_start`,
+> `occupancy_end`, `turnover_buffer_minutes`, `forced_by_admin NOT NULL DEFAULT false`, `force_reason`;
+> `booking_table_assignments` espone `forced_by_admin NOT NULL DEFAULT false`, `force_reason`. Le colonne
+> snapshot restano nullable per retrocompatibilità; i campi force conservano l'audit dell'override staff.
+
 ---
 
 ### `tenant_usage` — Contatori utilizzo

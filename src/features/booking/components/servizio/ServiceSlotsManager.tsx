@@ -32,6 +32,7 @@ import {
 import { useBusinessHours } from '@/hooks/useBusinessHours'
 import { DiscardChangesConfirmModal } from '@/features/booking/components/settings/SettingsSaveUi'
 import { useUnsavedChangesGuard } from '@/contexts/UnsavedChangesContext'
+import { useRestaurantSetting, useUpsertRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
 
 const SLOT_MODAL_UNSAVED_SOURCE_ID = 'servizio-slot-modal'
 
@@ -1305,6 +1306,10 @@ export const ServiceSlotsManager: FC = () => {
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<ServiceSlot | null>(null)
+  const { data: tableModeRespectsSlotCap = false } = useRestaurantSetting('table_mode_respects_slot_cap', {
+    authenticated: true,
+  })
+  const upsertSetting = useUpsertRestaurantSetting()
 
   function persistSlotOrder(reordered: ServiceSlot[]) {
     setIsMovingSlot(true)
@@ -1394,6 +1399,28 @@ export const ServiceSlotsManager: FC = () => {
           Impossibile caricare le fasce orarie.
         </div>
       )}
+
+      <label className="flex items-start gap-3 rounded-xl border border-(--color-border) bg-surface px-4 py-3 shadow-sm">
+        <input
+          type="checkbox"
+          checked={tableModeRespectsSlotCap}
+          disabled={upsertSetting.isPending}
+          onChange={(event) =>
+            upsertSetting.mutate([
+              { key: 'table_mode_respects_slot_cap', value: event.target.checked },
+            ])
+          }
+          className="mt-1 h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+        />
+        <span>
+          <span className="block text-sm font-semibold text-primary-900">
+            Mantieni anche il limite coperti della fascia
+          </span>
+          <span className="mt-0.5 block text-sm text-(--color-text-muted)">
+            Opzione avanzata: con i tavoli attivi, l'avviso usa il primo limite raggiunto tra posti dei tavoli e cap della fascia.
+          </span>
+        </span>
+      </label>
 
       {isLoading && !error && (
         <div className="flex h-24 items-center justify-center rounded-xl border border-(--color-border) bg-surface">

@@ -18,7 +18,9 @@ const {
   featuresState,
   restaurantSettings,
   serviceSlotsState,
+  digestSlotsState,
   tableAssignmentsState,
+  tablesState,
 } = vi.hoisted(() => ({
   fcPropsCapture: { current: null as Record<string, unknown> | null },
   calendarApiState: {
@@ -41,7 +43,9 @@ const {
     }>,
   },
   serviceSlotsState: { slots: [] as Array<{ id: string; name: string; start_time: string; end_time: string; max_guests?: number | null }> },
+  digestSlotsState: { slots: [] as Array<{ id: string; name: string; start_time: string; end_time: string; max_guests?: number | null }> },
   tableAssignmentsState: { data: [] as Array<{ booking_id: string; turn_number: number; checked_out_at: string | null }> },
+  tablesState: { data: [] as Array<{ id: string; name: string; capacity: number; room_id: string | null; active: boolean }> },
 }))
 
 vi.mock('@fullcalendar/react', () => ({
@@ -82,11 +86,15 @@ vi.mock('../../hooks/useRestaurantSetting', () => ({
 
 vi.mock('../../hooks/useServiceSlots', () => ({
   useServiceSlots: () => ({ data: serviceSlotsState.slots }),
-  useDigestSlotConfigs: () => ({ data: [] }),
+  useDigestSlotConfigs: () => ({ data: digestSlotsState.slots }),
 }))
 
 vi.mock('../../hooks/useTableAssignments', () => ({
   useTableAssignments: () => ({ data: tableAssignmentsState.data }),
+}))
+
+vi.mock('../../hooks/useServizioTables', () => ({
+  useTables: () => ({ data: tablesState.data, isLoading: false }),
 }))
 
 vi.mock('../AdminBookingForm', () => ({
@@ -252,6 +260,7 @@ describe('@admin-blindatura calendario — solo accettate in vista', () => {
     restaurantSettings.booking_public_form_config = null
     restaurantSettings.booking_custom_staff_presets = []
     serviceSlotsState.slots = []
+    digestSlotsState.slots = []
     tableAssignmentsState.data = []
     mockAcceptedBookingsState.data = []
     setupMatchMedia(true)
@@ -321,7 +330,9 @@ describe('@admin-blindatura calendario — badge % riempimento (dayCellDidMount)
     fcPropsCapture.current = null
     featuresState.servizio = false
     serviceSlotsState.slots = []
+    digestSlotsState.slots = []
     tableAssignmentsState.data = []
+    tablesState.data = []
     setupMatchMedia(true)
   })
 
@@ -331,6 +342,7 @@ describe('@admin-blindatura calendario — badge % riempimento (dayCellDidMount)
     serviceSlotsState.slots = [
       { id: SLOT_ID, name: 'Cena', start_time: '00:00', end_time: '23:59', max_guests: null },
     ]
+    digestSlotsState.slots = serviceSlotsState.slots
     restaurantSettings.slot_limit_enabled = limitOn
     restaurantSettings.slot_guest_capacities = { [SLOT_ID]: cap }
   }
@@ -366,6 +378,29 @@ describe('@admin-blindatura calendario — badge % riempimento (dayCellDidMount)
 
     expect(frame.textContent).toBe('18')
     expect(frame.innerHTML).not.toContain('%')
+  })
+
+  it('vista Giorno Pro mostra occupazione fascia da capienza tavoli anche con limiti pubblici spenti', async () => {
+    const user = userEvent.setup()
+    featuresState.servizio = true
+    serviceSlotsState.slots = [
+      { id: SLOT_ID, name: 'Cena', start_time: '00:00', end_time: '23:59', max_guests: null },
+    ]
+    digestSlotsState.slots = serviceSlotsState.slots
+    tablesState.data = [
+      { id: 'table-1', name: 'T1', capacity: 6, room_id: null, active: true },
+      { id: 'table-2', name: 'T2', capacity: 4, room_id: null, active: true },
+    ]
+    restaurantSettings.slot_limit_enabled = false
+    restaurantSettings.slot_guest_capacities = {}
+    const bookings = [acceptedBooking({ num_guests: 5, confirmed_start: '2026-06-12T20:00:00+00:00' })]
+
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+    const calendarViews = screen.getByRole('group', { name: 'Viste calendario' })
+    await clickAndFlush(user, within(calendarViews).getByRole('button', { name: 'Giorno' }))
+
+    expect(await screen.findByText('50%')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Cena[\s\S]*50%[\s\S]*Coperti[\s\S]*5\s*\/\s*10/i })).toBeInTheDocument()
   })
 
   it('limite per-fascia attivo con cap: percentuale sulla somma dei cap (niente N/Nmax)', async () => {
@@ -427,12 +462,14 @@ describe('@admin-blindatura calendario — gate tavolo Classic vs Pro', () => {
     restaurantSettings.slot_limit_enabled = false
     restaurantSettings.slot_guest_capacities = {}
     tableAssignmentsState.data = []
+    digestSlotsState.slots = []
     setupMatchMedia(true)
   })
 
   it('Classic (servizio off): nessun pallino assegna tavolo nel digest', () => {
     featuresState.servizio = false
     serviceSlotsState.slots = []
+    digestSlotsState.slots = []
     const bookings = [acceptedBooking({ client_name: 'Classic Cliente' })]
 
     renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
@@ -458,6 +495,7 @@ describe('@admin-blindatura calendario — gate tavolo Classic vs Pro', () => {
   it('Pro con servizio on ma slot vuoti: nessun pallino turno/tavolo nel digest', () => {
     featuresState.servizio = true
     serviceSlotsState.slots = []
+    digestSlotsState.slots = []
     const bookings = [acceptedBooking({ client_name: 'Pro Senza Slot' })]
 
     renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
@@ -578,6 +616,7 @@ describe('@admin-blindatura calendario — crea da giorno (dateClick + pulsante)
     restaurantSettings.slot_limit_enabled = false
     restaurantSettings.slot_guest_capacities = {}
     serviceSlotsState.slots = []
+    digestSlotsState.slots = []
     tableAssignmentsState.data = []
     setupMatchMedia(true)
   })
@@ -667,6 +706,7 @@ describe('@admin-blindatura calendario — selettore viste responsive', () => {
     restaurantSettings.slot_limit_enabled = false
     restaurantSettings.slot_guest_capacities = {}
     serviceSlotsState.slots = []
+    digestSlotsState.slots = []
     tableAssignmentsState.data = []
   })
 
@@ -774,6 +814,7 @@ describe('@admin-blindatura calendario — elimina solo da modale dettaglio', ()
     restaurantSettings.slot_limit_enabled = false
     restaurantSettings.slot_guest_capacities = {}
     serviceSlotsState.slots = []
+    digestSlotsState.slots = []
     tableAssignmentsState.data = []
     mockAcceptedBookingsState.data = []
     setupMatchMedia(true)

@@ -29,6 +29,7 @@ Fronti previsti:
 | `@admin-blindatura: menu-magazzino` | Tab Menu, categorie, ingredienti, sync |
 | `@admin-blindatura: menu-magazzino-sync` | Rename/delete categoria → sync QR + form (controtest parziale) |
 | `@admin-blindatura: servizio` | Sale, tavoli, slot, walk-in, briefing |
+| `@admin-blindatura: servizio-a1` | Fix A1 mappa, CRUD sale e validazione tavoli |
 | `@admin-blindatura: crm` | Clienti e booking collegate |
 | `@admin-blindatura: home-analytics` | Home, KPI e analytics |
 | `@admin-blindatura: fallback-prod-ready` | Fallback, mock, hardcoded, codice morto |
@@ -134,8 +135,26 @@ Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **120/120** (
 - `src/features/booking/utils/__tests__/unassignedBookingsFilter.test.ts`
 - `src/features/booking/utils/__tests__/tableCheckout.test.ts`
 - `src/features/booking/components/__tests__/servizioModalsGuard.adminBlindatura.test.tsx` (3) → **FU-023** guard discard modale sala (`RoomConfigModal`: dirty → Annulla → `DiscardChangesConfirmModal`; Resta qui / Annulla modifiche). Tavolo/slot/walk-in: stesso pattern codice + anti-regressione `m6ProdReadyPatterns` (12-06-26).
-- `e2e/pro/pro-service.spec.ts` → `@admin-blindatura: servizio` smoke browser Pro senza scritture DB (sidebar → Servizio, Lista/Mappa, Nuova sala, X ritorno dashboard).
+- `src/features/booking/components/__tests__/servizioA1Fixes.test.tsx` (7) → `@admin-blindatura: servizio-a1`: dimensione mappa, sala selezionata, default coperti, unicità case-insensitive, limite/leggibilità nome e conferma elimina-sala.
+- `e2e/pro/pro-service.spec.ts` → `@admin-blindatura: servizio` smoke browser Pro senza scritture DB (sidebar → Servizio, Lista/Mappa, Nuova sala, X ritorno dashboard) + fascia raggiungibile a 375/834/1280 con locator circoscritto alla sezione.
 - `src/components/ui/__tests__/Input.numberWheel.test.tsx` (4) → `@admin-blindatura: input-number-wheel`: sugli input numerici admin la rotella è bloccata solo con focus; testo, `onWheel` custom e scroll pagina senza focus restano invariati.
+
+### QA visuale Matteo S4 — 24-06-26
+
+Perimetro eseguito: **solo pagina Servizio da mobile**, su TEST. Non vale come QA responsive completa e
+non chiude ancora M5/Servizio. Fonte dettagliata e finding:
+[`Report-revisione-integrazione-S4-24-06-26.md`](../../Sessioni%20di%20lavoro/24-06-26/Report-revisione-integrazione-S4-24-06-26.md#10-checklist-click--collaudo-manuale-s4-su-test).
+
+| Flusso visuale | Esito Matteo | Copertura E2E attuale / gap |
+|---|---|---|
+| Apertura Servizio, stato vuoto, crea sala | provato mobile; finding dimensioni contenitore mappa | `pro-service.spec.ts` fa solo smoke senza scritture; scenario CRUD reale da aggiungere |
+| Crea/modifica tavolo | provato mobile; finding unicità nome, default coperti, leggibilità tavolo | unit presenti su forma; manca E2E CRUD/validazione |
+| Assegnazione e rilascio | assegnazione/rilascio provati; finding filtri booking, refresh, multi-assignment, feedback drag/click | manca E2E dati reali assegnazione |
+| Stati tavolo / finestre | non validato; stato osservato fermo su “In arrivo” | unit presenti; manca E2E con tempo/dati controllati |
+| Walk-in | finding: assegnazione non visibile e tavoli non liberi selezionabili | buco E2E già censito; da coprire dopo fix |
+| Soft-delete sala | provato mobile; finding UX modifica/conferma | unit soft-delete presente; manca E2E sala viva/scarica |
+| Briefing per fascia | “Tutti” funziona; filtro fascia vuoto | unit join presente; manca E2E fasce reali |
+| Responsive 834/1280, Classic, Calendario, Prenota | **non eseguito** | resta gate obbligatorio post-fix |
 
 ## 6. CRM
 

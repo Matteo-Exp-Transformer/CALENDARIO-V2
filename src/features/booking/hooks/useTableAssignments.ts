@@ -73,6 +73,7 @@ export function useAcceptedBookingsForDate(date: string) {
       return filterBookingsOnDate(bookings as unknown as BookingRequest[], date)
     },
     enabled: !!tenantId && !!date,
+    refetchOnMount: 'always',
   })
 }
 
@@ -92,6 +93,7 @@ export function useTableAssignments(date: string) {
       return data as BookingTableAssignment[]
     },
     enabled: !!tenantId && !!date,
+    refetchOnMount: 'always',
   })
 }
 
@@ -137,6 +139,7 @@ export function useUnassignedBookings(
       )
     },
     enabled: !!tenantId && !!date && !!slot?.id,
+    refetchOnMount: 'always',
   })
 }
 

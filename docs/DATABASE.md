@@ -10,7 +10,7 @@ I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati
 
 > **Fonte di verità (non questo riepilogo):** elenco file in `supabase/migrations/` + stato remoto via MCP `list_migrations` dopo `get_project_url` (TEST `docnnernvp`, PROD `rwuxgvld` sola lettura). Se l'agente ha un canale TEST specifico, seguire le sue istruzioni dedicate. Dettaglio workflow e anomalie storiche: `Database-Skill/DB_MIGRATIONS_CONTEXT.md`.
 
-Ultimo file in repo (verificato 24-06-26): `063_rooms_soft_delete.sql` (S4 Traccia A, solo TEST). La prossima migrazione deve usare il prefisso **`064_`**.
+Ultimo file in repo (verificato 24-06-26): `065_table_assignments_force.sql` (S4, solo TEST). La prossima migrazione deve usare il prefisso **`066_`**.
 
 | Versione | File | Note sintetiche |
 |----------|------|-----------------|
@@ -36,6 +36,8 @@ Ultimo file in repo (verificato 24-06-26): `063_rooms_soft_delete.sql` (S4 Tracc
 | 061 | `061_rpc_get_public_slot_config.sql` | RPC anon ristretta: fasce + sole soglie operative; TEST registrata |
 | 062 | `062_update_service_slot_arrival_step.sql` | estende PATCH RPC Pro senza cambiare firma; TEST registrata |
 | 063 | `063_rooms_soft_delete.sql` | S4 Traccia A / D50: `rooms.active boolean NOT NULL DEFAULT true` + indice parziale `rooms_tenant_active_idx`. Eliminazione sala MORBIDA (`useDeleteRoom` soft-delete, `useRooms` filtra `active=true`). Solo aggiunta colonna su tabella esistente → nessun nuovo GRANT, RLS 008 `admin_update_rooms` già copre. **Solo TEST `docnnernvp`; PROD `rwuxgvld` invariata fino a rollout** |
+| 064 | `064_booking_occupancy_snapshot_force.sql` | S4 / D25+D37: snapshot `occupancy_start/end`, `turnover_buffer_minutes` e audit overbooking `forced_by_admin/force_reason` su `booking_requests`. **Solo TEST; PROD invariata** |
+| 065 | `065_table_assignments_force.sql` | S4 / D25: audit assegnazione forzata `forced_by_admin/force_reason` su `booking_table_assignments`. **Solo TEST; PROD invariata** |
 
 > Promo menù (23-05-26): impostazioni solo su `restaurant_settings.setting_key = booking_menu_promos`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
 

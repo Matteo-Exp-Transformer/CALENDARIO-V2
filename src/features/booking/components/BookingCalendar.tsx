@@ -41,6 +41,7 @@ import { DayDigestSummaryPanel } from './dayDigest/DayDigestSummary'
 import { buildDayDigestModel } from '../utils/dayDigestModel'
 import { useServiceSlotOverrides, resolveSlotOverride } from '../hooks/useServiceSlotOverrides'
 import { useTableAssignments, type BookingTableAssignment } from '../hooks/useTableAssignments'
+import { useTableMode } from '../hooks/useTableMode'
 import { useFeatures } from '@/hooks/useFeatures'
 import { cn } from '@/lib/utils'
 
@@ -366,6 +367,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     setSelectedDate(date)
   }, [])
   const { data: tableAssignments = [] } = useTableAssignments(selectedDate)
+  const { isTableMode, totalCovers } = useTableMode()
   const [currentView, setCurrentView] = useState<FullCalendarViewId>(getDefaultCalendarViewForViewport)
   const [isCalendarNarrowViewport, setIsCalendarNarrowViewport] =
     useState(getInitialCalendarNarrowViewport)
@@ -459,18 +461,36 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
   // Logica pura in sumGuestsByDate (testata): solo accettate, non no-show, con orario confermato.
   const guestsByDate = useMemo(() => sumGuestsByDate(bookings), [bookings])
 
-  // Cap per-fascia risolto come nel client (useCapacityCheck): override(data) → service_slots.max_guests
-  // → slot_guest_capacities[slotId]. Considera SOLO fasce esistenti (no chiavi orfane "appese").
-  const resolveSlotCapacityForDate = useCallback(
+  // Cap configurato per-fascia: override(data) → service_slots.max_guests → slot_guest_capacities[slotId].
+  // Considera SOLO fasce esistenti (no chiavi orfane "appese").
+  const resolveConfiguredSlotCapacityForDate = useCallback(
     (slotId: string | null, cellDateStr: string): number | null => {
-      if (!slotId || !slotLimitEnabled || !timeSlotsEnabled) return null
+      if (!slotId || !timeSlotsEnabled) return null
       const slot = serviceSlots.find((item) => item.id === slotId)
       if (!slot) return null
       const ov = resolveSlotOverride(slotOverrides, slot.id, cellDateStr)
       const cap = ov ? ov.max_guests : (slot.max_guests ?? slotGuestCapacities[slot.id] ?? null)
       return typeof cap === 'number' && cap > 0 ? cap : null
     },
-    [slotLimitEnabled, timeSlotsEnabled, serviceSlots, slotOverrides, slotGuestCapacities],
+    [timeSlotsEnabled, serviceSlots, slotOverrides, slotGuestCapacities],
+  )
+
+  // Vista Giorno: in modalità-tavoli mostra sempre l'occupazione rispetto alla capienza fisica sala,
+  // anche se i limiti pubblici per fascia sono spenti. In Classic resta legata ai cap per-fascia.
+  const resolveSlotCapacityForDate = useCallback(
+    (slotId: string | null, cellDateStr: string): number | null => {
+      if (!slotId || !timeSlotsEnabled) return null
+      if (isTableMode && totalCovers > 0) return totalCovers
+      if (!slotLimitEnabled) return null
+      return resolveConfiguredSlotCapacityForDate(slotId, cellDateStr)
+    },
+    [
+      isTableMode,
+      resolveConfiguredSlotCapacityForDate,
+      slotLimitEnabled,
+      timeSlotsEnabled,
+      totalCovers,
+    ],
   )
 
   const resolveDayDenominator = useCallback(
@@ -479,14 +499,14 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
       if (serviceSlots.length === 0) return null
       let sum = 0
       for (const slot of serviceSlots) {
-        const cap = resolveSlotCapacityForDate(slot.id, cellDateStr)
+        const cap = resolveConfiguredSlotCapacityForDate(slot.id, cellDateStr)
         // Se anche una sola fascia del giorno è senza limite → niente %, solo conteggio.
         if (cap == null) return null
         sum += cap
       }
       return sum > 0 ? sum : null
     },
-    [slotLimitEnabled, timeSlotsEnabled, serviceSlots, resolveSlotCapacityForDate],
+    [slotLimitEnabled, timeSlotsEnabled, serviceSlots, resolveConfiguredSlotCapacityForDate],
   )
 
 

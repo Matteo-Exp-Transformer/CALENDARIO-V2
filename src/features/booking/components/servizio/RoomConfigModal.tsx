@@ -294,14 +294,16 @@ export const RoomConfigModal: FC<RoomConfigModalProps> = ({
                 </div>
               )}
             </div>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={requestClose} disabled={isPending}>
-                Annulla
-              </Button>
-              <Button type="submit" variant="primary" size="sm" disabled={isPending}>
-                {isPending ? 'Salvataggio…' : isEdit ? 'Salva' : 'Crea sala'}
-              </Button>
-            </div>
+            {!confirmDelete && (
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={requestClose} disabled={isPending}>
+                  Annulla
+                </Button>
+                <Button type="submit" variant="primary" size="sm" disabled={isPending}>
+                  {isPending ? 'Salvataggio…' : isEdit ? 'Salva' : 'Crea sala'}
+                </Button>
+              </div>
+            )}
           </div>
         </form>
       </Modal>

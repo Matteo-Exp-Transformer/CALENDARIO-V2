@@ -61,6 +61,10 @@ vi.mock('../../hooks/useTableAssignments', () => ({
   useTableAssignments: () => ({ data: [] }),
 }))
 
+vi.mock('../../hooks/useServizioTables', () => ({
+  useTables: () => ({ data: [], isLoading: false }),
+}))
+
 vi.mock('../QuickTableAssignModal', () => ({
   QuickTableAssignModal: () => null,
 }))

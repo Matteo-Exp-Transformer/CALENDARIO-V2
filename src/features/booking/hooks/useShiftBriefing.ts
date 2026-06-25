@@ -3,7 +3,7 @@ import { format, startOfDay } from 'date-fns'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabase } from '@/lib/supabase'
 import { logger } from '@/lib/logger'
-import { getShiftRanges, type ShiftFilter } from '@/features/booking/utils/shifts'
+import { bookingStartsInServiceSlot } from '@/features/booking/utils/serviceSlotBookingFilter'
 
 export interface BriefingBooking {
   id: string
@@ -24,7 +24,9 @@ export interface ShiftBriefingData {
   isMultiRoom: boolean
 }
 
-export function useShiftBriefing(shift: ShiftFilter = 'all', businessHoursRaw?: unknown) {
+export type BriefingShiftFilter = 'all' | string
+
+export function useShiftBriefing(shift: BriefingShiftFilter = 'all', _businessHoursRaw?: unknown) {
   const { tenantId } = useTenantContext()
 
   return useQuery<ShiftBriefingData>({
@@ -41,7 +43,7 @@ export function useShiftBriefing(shift: ShiftFilter = 'all', businessHoursRaw?: 
       // 1. Fetch bookings
       const { data, error } = await supabase
         .from('booking_requests')
-        .select('id, client_name, num_guests, confirmed_start, special_requests')
+        .select('id, client_name, num_guests, confirmed_start, confirmed_end, desired_date, desired_time, special_requests')
         .eq('tenant_id', tenantId)
         .eq('status', 'accepted')
         .eq('no_show', false)
@@ -52,6 +54,17 @@ export function useShiftBriefing(shift: ShiftFilter = 'all', businessHoursRaw?: 
       if (error) {
         logger.error('[useShiftBriefing] booking_requests', error)
         throw new Error(error.message)
+      }
+
+      const { data: slotsData, error: slotsError } = await supabase
+        .from('service_slots')
+        .select('id, name, start_time, end_time')
+        .eq('tenant_id', tenantId)
+        .order('display_order', { ascending: true })
+
+      if (slotsError) {
+        logger.error('[useShiftBriefing] service_slots', slotsError)
+        throw new Error(slotsError.message)
       }
 
       // 2. Fetch active table assignments for today
@@ -116,28 +129,31 @@ export function useShiftBriefing(shift: ShiftFilter = 'all', businessHoursRaw?: 
         assignmentsByBooking.get(rec.booking_id)!.push(rec.table_id)
       }
 
-      const shiftRanges = getShiftRanges(businessHoursRaw)
-      const shiftLabels: Record<ShiftFilter, string> = {
-        all: 'Giornata completa',
-        lunch: 'Pranzo',
-        dinner: 'Cena',
-      }
+      const slotMap = new Map(
+        ((slotsData ?? []) as { id: string; name: string; start_time: string; end_time: string }[])
+          .map((slot) => [slot.id, slot]),
+      )
+      const selectedSlot = shift === 'all' ? null : slotMap.get(shift) ?? null
 
       const raw = (data ?? []) as {
         id: string
         client_name: string
         num_guests: number | null
         confirmed_start: string
+        confirmed_end: string | null
+        desired_date: string | null
+        desired_time: string | null
         special_requests: string | null
       }[]
 
       const filtered = raw.filter((row) => {
         if (shift === 'all') return true
-        const hour = new Date(row.confirmed_start).getHours()
-        if (shift === 'lunch') {
-          return hour >= shiftRanges.lunch.startHour && hour < shiftRanges.lunch.endHour
-        }
-        return hour >= shiftRanges.dinner.startHour && hour < shiftRanges.dinner.endHour
+        if (!selectedSlot) return false
+        return bookingStartsInServiceSlot(
+          row as unknown as Parameters<typeof bookingStartsInServiceSlot>[0],
+          selectedSlot.start_time,
+          selectedSlot.end_time,
+        )
       })
 
       const bookings: BriefingBooking[] = filtered.map((row) => {
@@ -181,7 +197,7 @@ export function useShiftBriefing(shift: ShiftFilter = 'all', businessHoursRaw?: 
         totalBookings: bookings.length,
         totalCovers: bookings.reduce((s, b) => s + b.num_guests, 0),
         date: today,
-        shiftLabel: shiftLabels[shift],
+        shiftLabel: selectedSlot?.name ?? 'Giornata completa',
         isMultiRoom,
       }
     },
