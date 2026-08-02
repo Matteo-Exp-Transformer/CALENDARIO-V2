@@ -434,6 +434,42 @@ export function useAssignBookingToTables() {
   })
 }
 
+/**
+ * Esito scelto dallo staff per chi è già seduto sul tavolo conteso (S4-FIX-5):
+ * - `move`    → si sposta su un altro tavolo libero, non consuma un turno del tavolo conteso.
+ * - `archive` → il pasto è finito: si libera e si archivia (se non restano altri tavoli attivi).
+ * - `requeue` → torna tra le prenotazioni da assegnare, come il vecchio comportamento unico.
+ */
+export type ForceReplaceOutcome = 'move' | 'archive' | 'requeue'
+
+interface ForceReplaceInput extends AssignInput {
+  reason: string
+  outcome: ForceReplaceOutcome
+  /** Tavolo libero di destinazione — obbligatorio quando outcome === 'move'. */
+  targetTableId?: string
+  /** Nomi per il messaggio di successo differenziato per esito (best-effort, no toast generico). */
+  displacedBookingName?: string
+  newBookingName?: string
+  targetTableName?: string
+  contestedTableName?: string
+}
+
+function forceReplaceSuccessMessage(vars: ForceReplaceInput): string {
+  const { outcome, displacedBookingName, newBookingName, targetTableName, contestedTableName } = vars
+  if (outcome === 'move' && displacedBookingName && targetTableName) {
+    return contestedTableName && newBookingName
+      ? `${displacedBookingName} spostato su ${targetTableName}, ${contestedTableName} assegnato a ${newBookingName}`
+      : `${displacedBookingName} spostato su ${targetTableName}`
+  }
+  if (outcome === 'archive' && displacedBookingName) {
+    return `${displacedBookingName} archiviato, tavolo assegnato${newBookingName ? ` a ${newBookingName}` : ''}`
+  }
+  if (outcome === 'requeue' && displacedBookingName) {
+    return `${displacedBookingName} torna tra le prenotazioni da assegnare, tavolo assegnato${newBookingName ? ` a ${newBookingName}` : ''}`
+  }
+  return 'Tavolo liberato e prenotazione assegnata'
+}
+
 export function useForceReplaceBookingOnTable() {
   const queryClient = useQueryClient()
   const { tenantId } = useTenantContext()
@@ -448,7 +484,9 @@ export function useForceReplaceBookingOnTable() {
       reason,
       booking,
       slot,
-    }: AssignInput & { reason: string }) => {
+      outcome,
+      targetTableId,
+    }: ForceReplaceInput) => {
       const active = existingAssignments
         .filter(
           (a) =>
@@ -463,17 +501,68 @@ export function useForceReplaceBookingOnTable() {
         throw new Error('Nessuna prenotazione attiva da liberare su questo tavolo.')
       }
 
-      const checkedOutAt = new Date().toISOString()
-      const { error: releaseError } = await supabase
-        .from('booking_table_assignments')
-        .update({ checked_out_at: checkedOutAt })
-        .eq('id', active[0].id)
-        .eq('tenant_id', tenantId!)
+      const currentAssignment = active[0]
+      const displacedBookingId = currentAssignment.booking_id
+      const trimmedReason = reason.trim()
 
-      if (releaseError) throw releaseError
+      if (outcome === 'move') {
+        if (!targetTableId) {
+          throw new Error('Seleziona il tavolo su cui spostare la prenotazione in corso.')
+        }
 
-      // La prenotazione scavalcata NON viene archiviata (served_at resta null):
-      // deve tornare nel cassetto «da assegnare» (S4-REQ-3 caso 3).
+        // 1. la prenotazione scavalcata si sposta sul tavolo di destinazione: nuovo turno LÌ.
+        const moveTurnNumber = computeNextTurnNumber(existingAssignments, targetTableId, slotId, date)
+        const { error: moveError } = await supabase
+          .from('booking_table_assignments')
+          .insert({
+            tenant_id: tenantId!,
+            booking_id: displacedBookingId,
+            table_id: targetTableId,
+            service_slot_id: slotId,
+            turn_number: moveTurnNumber,
+            date,
+            checked_out_at: null,
+            forced_by_admin: true,
+            force_reason: trimmedReason || 'Forzatura guidata: spostato dal tavolo conteso',
+          })
+        if (moveError) throw moveError
+
+        // 2. la sua riga sul tavolo conteso sparisce: nessun turno consumato lì (regola 2, §3).
+        const { error: deleteError } = await supabase
+          .from('booking_table_assignments')
+          .delete()
+          .eq('id', currentAssignment.id)
+          .eq('tenant_id', tenantId!)
+        if (deleteError) throw deleteError
+      } else if (outcome === 'archive') {
+        const checkedOutAt = new Date().toISOString()
+        const { error: releaseError } = await supabase
+          .from('booking_table_assignments')
+          .update({ checked_out_at: checkedOutAt })
+          .eq('id', currentAssignment.id)
+          .eq('tenant_id', tenantId!)
+        if (releaseError) throw releaseError
+
+        // S4-REQ-3: archivia solo se non restano altri tavoli attivi sulla stessa prenotazione.
+        const remainingActiveForBooking = existingAssignments.filter(
+          (a) =>
+            a.booking_id === displacedBookingId &&
+            a.checked_out_at === null &&
+            a.id !== currentAssignment.id,
+        ).length
+        await markBookingServedIfFullyReleased(displacedBookingId, tenantId!, remainingActiveForBooking)
+      } else {
+        // requeue — stesso principio di useUndoTableAssignment: non è un turno servito,
+        // DELETE fisico invece del timbro checked_out_at (non consuma un posto nel conteggio).
+        const { error: deleteError } = await supabase
+          .from('booking_table_assignments')
+          .delete()
+          .eq('id', currentAssignment.id)
+          .eq('tenant_id', tenantId!)
+        if (deleteError) throw deleteError
+      }
+
+      // 3 (move) / passo unico (archive, requeue): la prenotazione nuova prende il tavolo conteso.
       const turnNumber = computeNextTurnNumber(existingAssignments, tableId, slotId, date)
 
       const { data, error } = await supabase
@@ -487,7 +576,7 @@ export function useForceReplaceBookingOnTable() {
           date,
           checked_out_at: null,
           forced_by_admin: true,
-          force_reason: reason.trim() || 'Forzatura guidata: tavolo liberato dallo staff',
+          force_reason: trimmedReason || 'Forzatura guidata: tavolo liberato dallo staff',
         })
         .select()
         .single()
@@ -506,7 +595,7 @@ export function useForceReplaceBookingOnTable() {
           queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date, vars.slotId, 'unassigned'],
         }),
       ])
-      toast.success('Tavolo liberato e prenotazione assegnata')
+      toast.success(forceReplaceSuccessMessage(vars))
     },
     onError: (error: Error) => {
       logger.error('[useForceReplaceBookingOnTable] error', error)

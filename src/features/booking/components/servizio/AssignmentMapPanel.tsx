@@ -26,6 +26,7 @@ import {
   useCheckoutTable,
   TurniEsauritiError,
   type BookingTableAssignment,
+  type ForceReplaceOutcome,
 } from '@/features/booking/hooks/useTableAssignments'
 import {
   activeAssignedBookingIds,
@@ -243,12 +244,18 @@ interface AssignmentMapPanelProps {
  * Stato del dialogo di forzatura overbooking (D25).
  * Appare quando un drop verrebbe rifiutato per turni esauriti — lo staff può
  * scegliere di procedere comunque con un motivo (audit trail).
+ *
+ * `kind: 'replace'` (tavolo occupato, S4-FIX-5): lo staff sceglie anche `outcome`
+ * per chi è già seduto — `null` finché non sceglie. `targetTableId` serve solo
+ * per `outcome: 'move'` (tavolo libero di destinazione).
  */
 interface ForceConfirmState {
   bookingId: string
   tableId: string
   reason: string
   kind: 'turns' | 'replace'
+  outcome: ForceReplaceOutcome | null
+  targetTableId: string | null
 }
 
 interface LastAssignmentState {
@@ -477,11 +484,21 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
     })
   }
 
-  function openForceConfirm(state: ForceConfirmState) {
+  function openForceConfirm(state: Omit<ForceConfirmState, 'outcome' | 'targetTableId'>) {
     // Chiude la modale «Assegna tavolo» prima: altrimenti il riquadro ambra
     // resta sotto e lo staff vede solo la console (S4-UX-8 / S4-BUG-2).
     closeQuickAssign()
-    setForceConfirm(state)
+    setForceConfirm({ ...state, outcome: null, targetTableId: null })
+  }
+
+  function setForceOutcome(outcome: ForceReplaceOutcome) {
+    setForceConfirm((prev) =>
+      prev ? { ...prev, outcome, targetTableId: outcome === 'move' ? prev.targetTableId : null } : prev,
+    )
+  }
+
+  function setForceTargetTable(tableId: string) {
+    setForceConfirm((prev) => (prev ? { ...prev, targetTableId: tableId } : prev))
   }
 
   function assignToFreeTable(bookingId: string, tableId: string) {
@@ -608,15 +625,24 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
   /** Esegue l'assegnazione forzata dopo conferma staff (D25/D27/D32). */
   function handleForceAssign() {
     if (!forceConfirm || !selectedSlot) return
-    const { bookingId, tableId, reason } = forceConfirm
-    setForceConfirm(null)
+    const { bookingId, tableId, reason, kind, outcome, targetTableId } = forceConfirm
     const booking = findBooking(bookingId) ?? undefined
     const onSuccess = (data: unknown) => {
       const assignment = data as { id?: string }
       if (assignment.id) rememberAssignment(bookingId, [tableId], [assignment.id])
     }
 
-    if (forceConfirm.kind === 'replace') {
+    if (kind === 'replace') {
+      // «Conferma» resta spento finché manca la scelta (vedi disabled del pulsante):
+      // questi guard sono una rete di sicurezza, non il percorso normale.
+      if (!outcome) return
+      if (outcome === 'move' && !targetTableId) return
+
+      const displacedBooking = (bookingsByTable.get(tableId) ?? [])[0] ?? null
+      const contestedTable = allTables.find((t) => t.id === tableId) ?? null
+      const targetTable = targetTableId ? allTables.find((t) => t.id === targetTableId) ?? null : null
+
+      setForceConfirm(null)
       forceReplaceBooking.mutate({
         bookingId,
         tableId,
@@ -627,10 +653,17 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
         booking,
         slot: selectedSlot,
         reason,
+        outcome,
+        targetTableId: targetTableId ?? undefined,
+        displacedBookingName: displacedBooking?.client_name,
+        newBookingName: booking?.client_name,
+        targetTableName: targetTable?.name,
+        contestedTableName: contestedTable?.name,
       }, { onSuccess })
       return
     }
 
+    setForceConfirm(null)
     assignBooking.mutate({
       bookingId,
       tableId,
@@ -684,6 +717,50 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
     return sum + (table?.capacity ?? 0)
   }, 0)
 
+  // Riquadro «tavolo occupato» (S4-FIX-5): chi c'è già, chi si sta assegnando, il tavolo conteso.
+  const forceReplaceDisplacedBooking =
+    forceConfirm && forceConfirm.kind === 'replace'
+      ? (bookingsByTable.get(forceConfirm.tableId) ?? [])[0] ?? null
+      : null
+  const forceReplaceIncomingBooking = forceConfirm ? findBooking(forceConfirm.bookingId) : null
+  const forceReplaceContestedTable = forceConfirm
+    ? allTables.find((t) => t.id === forceConfirm.tableId) ?? null
+    : null
+
+  // Tavoli su cui si può spostare chi è già seduto: liberi e con turni ancora disponibili.
+  const forceMoveTargetTables = useMemo(() => {
+    if (!forceConfirm || forceConfirm.kind !== 'replace' || !selectedSlot) return []
+    return allTables.filter((table) => {
+      if (table.id === forceConfirm.tableId) return false
+      if ((tableStatuses.get(table.id) ?? 'free') !== 'free') return false
+      if (isSlotClosed(selectedSlot.max_turns)) return false
+      const turnsUsed = countTurnsUsed(assignments, table.id, selectedSlotId, selectedDate)
+      return !isTurnsExhausted(selectedSlot.max_turns, turnsUsed)
+    })
+  }, [forceConfirm, selectedSlot, allTables, tableStatuses, assignments, selectedSlotId, selectedDate])
+
+  const forceConfirmConfirmDisabled = (() => {
+    if (!forceConfirm) return true
+    if (forceConfirm.kind === 'turns') return false
+    if (!forceConfirm.outcome) return true
+    if (forceConfirm.outcome === 'move' && !forceConfirm.targetTableId) return true
+    return false
+  })()
+
+  const forceConfirmButtonLabel = (() => {
+    if (!forceConfirm || forceConfirm.kind === 'turns') return 'Assegna comunque'
+    switch (forceConfirm.outcome) {
+      case 'move':
+        return 'Sposta e assegna'
+      case 'archive':
+        return 'Archivia e assegna'
+      case 'requeue':
+        return 'Rimetti in attesa e assegna'
+      default:
+        return 'Conferma'
+    }
+  })()
+
   const activeDragBooking = activeDragBookingId ? findBooking(activeDragBookingId) : null
   const planDetailTable = planDetailTableId
     ? allTables.find((t) => t.id === planDetailTableId) ?? null
@@ -733,18 +810,138 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden />
             <div className="flex-1 space-y-3">
-              <div>
-                <p className="text-sm font-semibold text-amber-900">
-                  {forceConfirm.kind === 'replace'
-                    ? 'Tavolo occupato: conferma la sostituzione'
-                    : 'Turni esauriti per questo tavolo'}
-                </p>
-                <p className="mt-0.5 text-xs text-amber-800">
-                  {forceConfirm.kind === 'replace'
-                    ? 'Stai liberando una prenotazione in corso e assegnando qui quella nuova. La prenotazione precedente resta nello storico e torna da gestire.'
-                    : 'Vuoi assegnare comunque la prenotazione? Questa azione verrà registrata per lo staff.'}
-                </p>
-              </div>
+              {forceConfirm.kind === 'replace' ? (
+                <>
+                  <div>
+                    <p className="text-sm font-semibold text-amber-900">
+                      {forceReplaceContestedTable?.name ?? 'Il tavolo'} è occupato da{' '}
+                      {forceReplaceDisplacedBooking?.client_name ?? 'un\'altra prenotazione'}
+                      {forceReplaceDisplacedBooking ? ` · ${forceReplaceDisplacedBooking.num_guests} coperti` : ''}
+                    </p>
+                    <p className="mt-0.5 text-xs text-amber-800">
+                      Stai assegnando: {forceReplaceIncomingBooking?.client_name ?? '—'}
+                      {forceReplaceIncomingBooking ? ` · ${forceReplaceIncomingBooking.num_guests} coperti` : ''}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-amber-900">
+                      Cosa fai di {forceReplaceDisplacedBooking?.client_name ?? 'chi è già seduto'}?
+                    </p>
+
+                    <label className="flex items-start gap-2 text-sm text-amber-900">
+                      <input
+                        type="radio"
+                        name="force-replace-outcome"
+                        className="mt-0.5"
+                        checked={forceConfirm.outcome === 'move'}
+                        disabled={forceMoveTargetTables.length === 0}
+                        onChange={() => setForceOutcome('move')}
+                      />
+                      <span>
+                        Sposta {forceReplaceDisplacedBooking?.client_name ?? ''} su un altro tavolo
+                        {forceMoveTargetTables.length === 0 && (
+                          <span className="block text-xs text-amber-700">
+                            Nessun tavolo libero in questa fascia: puoi archiviare o rimettere in attesa.
+                          </span>
+                        )}
+                      </span>
+                    </label>
+
+                    {forceConfirm.outcome === 'move' && forceMoveTargetTables.length > 0 && (
+                      <div className="ml-6 space-y-2 rounded-lg border border-amber-200 bg-white/60 p-2">
+                        {rooms.map((room) => {
+                          const roomTables = forceMoveTargetTables.filter((t) => t.room_id === room.id)
+                          if (roomTables.length === 0) return null
+                          return (
+                            <div key={room.id} className="space-y-1">
+                              <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+                                {room.name}
+                              </p>
+                              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                                {roomTables.map((table) => {
+                                  const turnsUsed = countTurnsUsed(
+                                    assignments,
+                                    table.id,
+                                    selectedSlotId,
+                                    selectedDate,
+                                  )
+                                  const remaining = getRemainingTurns(
+                                    selectedSlot?.max_turns ?? null,
+                                    turnsUsed,
+                                  )
+                                  const isSelected = forceConfirm.targetTableId === table.id
+                                  return (
+                                    <button
+                                      key={table.id}
+                                      type="button"
+                                      onClick={() => setForceTargetTable(table.id)}
+                                      className={`relative rounded-xl border-2 p-2 text-left transition-colors ${STATUS_CLASSES.free} ${isSelected ? 'ring-2 ring-primary-500 ring-offset-1' : ''}`}
+                                    >
+                                      {isSelected && (
+                                        <Check
+                                          className="absolute right-1.5 top-1.5 h-4 w-4 text-primary-700"
+                                          aria-hidden
+                                        />
+                                      )}
+                                      <span className="block truncate text-sm font-semibold text-primary-900">
+                                        {table.name}
+                                      </span>
+                                      <span className="block text-xs text-(--color-text-muted)">
+                                        {table.capacity} posti
+                                      </span>
+                                      {remaining !== null && (
+                                        <span className="mt-1 block text-xs text-(--color-text-muted)">
+                                          {remaining} {remaining === 1 ? 'turno residuo' : 'turni residui'}
+                                        </span>
+                                      )}
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                    <label className="flex items-start gap-2 text-sm text-amber-900">
+                      <input
+                        type="radio"
+                        name="force-replace-outcome"
+                        className="mt-0.5"
+                        checked={forceConfirm.outcome === 'archive'}
+                        onChange={() => setForceOutcome('archive')}
+                      />
+                      <span>
+                        {forceReplaceDisplacedBooking?.client_name ?? 'La prenotazione'} ha finito: libera
+                        il tavolo e archivia la prenotazione
+                      </span>
+                    </label>
+
+                    <label className="flex items-start gap-2 text-sm text-amber-900">
+                      <input
+                        type="radio"
+                        name="force-replace-outcome"
+                        className="mt-0.5"
+                        checked={forceConfirm.outcome === 'requeue'}
+                        onChange={() => setForceOutcome('requeue')}
+                      />
+                      <span>
+                        {forceReplaceDisplacedBooking?.client_name ?? 'La prenotazione'} torna tra le
+                        prenotazioni da assegnare
+                      </span>
+                    </label>
+                  </div>
+                </>
+              ) : (
+                <div>
+                  <p className="text-sm font-semibold text-amber-900">Turni esauriti per questo tavolo</p>
+                  <p className="mt-0.5 text-xs text-amber-800">
+                    Vuoi assegnare comunque la prenotazione? Questa azione verrà registrata per lo staff.
+                  </p>
+                </div>
+              )}
               <div className="space-y-1">
                 <label
                   htmlFor="force-reason"
@@ -769,9 +966,9 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
                   variant="primary"
                   size="sm"
                   onClick={handleForceAssign}
-                  disabled={isAssigning}
+                  disabled={isAssigning || forceConfirmConfirmDisabled}
                 >
-                  {forceConfirm.kind === 'replace' ? 'Libera e assegna' : 'Assegna comunque'}
+                  {forceConfirmButtonLabel}
                 </Button>
                 <Button
                   type="button"

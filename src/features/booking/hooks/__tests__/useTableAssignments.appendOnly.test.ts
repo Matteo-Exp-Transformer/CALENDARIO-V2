@@ -224,7 +224,10 @@ describe('useForceReplaceBookingOnTable — libera e assegna append-only (D25/D4
     dbCalls.updateError = null
   })
 
-  it('forzatura guidata → UPDATE del turno attivo + INSERT audit, mai DELETE', async () => {
+  // Con S4-FIX-5 la vecchia scelta unica "Libera e assegna" si è divisa in tre
+  // esiti (move/archive/requeue). Solo 'archive' timbra un turno realmente
+  // servito: è l'unico che resta append-only (D48) sul tavolo scavalcato.
+  it('forzatura guidata, esito archive → UPDATE del turno attivo + INSERT audit, mai DELETE', async () => {
     const hook = useForceReplaceBookingOnTable()
 
     await hook.mutateAsync({
@@ -235,6 +238,7 @@ describe('useForceReplaceBookingOnTable — libera e assegna append-only (D25/D4
       maxTurns: 1,
       existingAssignments: [makeAssignment({ id: 'a-old', booking_id: 'b-old' })],
       reason: 'Forzatura guidata test',
+      outcome: 'archive',
     })
 
     expect(dbCalls.deleteCount).toBe(0)

@@ -14,7 +14,7 @@ import {
   isServiceSlotClosed,
   type ServiceSlot,
 } from '@/features/booking/hooks/useServiceSlots'
-import { OVERNIGHT_TIME_END_HINT } from '@/features/booking/utils/bookingTimeSlots'
+import { OVERNIGHT_TIME_END_HINT, slotRangesOverlap } from '@/features/booking/utils/bookingTimeSlots'
 import {
   useServiceSlotOverrides,
   useCreateServiceSlotOverride,
@@ -380,6 +380,7 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
   const update = useUpdateServiceSlot()
   const createOverride = useCreateServiceSlotOverride()
   const { data: overrides = [] } = useServiceSlotOverrides()
+  const { data: existingSlots = [] } = useServiceSlots()
   const isPending = create.isPending || update.isPending || createOverride.isPending
 
   const isDirty = useMemo(
@@ -557,6 +558,18 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
     }
 
     // ── Modifica permanente (valore base) ────────────────────────
+    // Una fascia non deve accavallarsi su un'altra: si confronta con tutte le
+    // altre esistenti (mai con se stessa in modifica). Solo controllo lato app,
+    // niente vincolo DB (S4-FIX-6).
+    const overlapping = existingSlots.find((s) => {
+      if (isEdit && initial && s.id === initial.id) return false
+      return slotRangesOverlap(startTime, endTime, s.start_time.slice(0, 5), s.end_time.slice(0, 5))
+    })
+    if (overlapping) {
+      setValidationError(`Le fasce "${name.trim()}" e "${overlapping.name}" si sovrappongono`)
+      return
+    }
+
     const payload = {
       name: name.trim(),
       start_time: startTime,

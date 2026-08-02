@@ -202,7 +202,12 @@ describe('FIX-2 — archiviazione e undo', () => {
   })
 
   // ── Caso 3: force replace / release → NON archiviano ───────────────────
-  it('3a. Libera e assegna → NON marca served_at sulla prenotazione scavalcata', async () => {
+  it('3a. Libera e assegna (requeue) → NON marca served_at, riga scavalcata cancellata (S4-FIX-5)', async () => {
+    // Prima di S4-FIX-5 questa scelta timbrava checked_out_at (UPDATE) sulla riga
+    // scavalcata. Ora "torna in attesa" non ha servito un turno: la riga si
+    // cancella fisicamente, stesso principio di useUndoTableAssignment — non è
+    // più un UPDATE. served_at resta comunque a null: cambia la chiamata DB,
+    // non l'intento del test.
     const hook = useForceReplaceBookingOnTable()
     await hook.mutateAsync({
       bookingId: 'b-new',
@@ -212,9 +217,11 @@ describe('FIX-2 — archiviazione e undo', () => {
       maxTurns: 2,
       existingAssignments: [makeAssignment({ id: 'a-old', booking_id: 'b-old' })],
       reason: 'test',
+      outcome: 'requeue',
     })
 
-    // UPDATE solo sull'assignment (checked_out_at), non served_at su b-old
+    // DELETE fisico sulla riga scavalcata, non più UPDATE checked_out_at
+    expect(dbCalls.deleteCount).toBe(1)
     const bookingServed = updatesFor('booking_requests').filter(
       (u) => (u as { payload: { served_at?: string } }).payload.served_at,
     )
