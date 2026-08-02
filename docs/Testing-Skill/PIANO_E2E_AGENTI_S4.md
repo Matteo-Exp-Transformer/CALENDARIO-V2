@@ -497,7 +497,13 @@ Queste voci **non** vanno automatizzate. L'agente prepara il terreno, il giudizi
 
 - **Drag & drop:** dnd-kit spesso non si innesca dagli strumenti di automazione. Usa il pulsante
   «Assegna» (P6). Il fallimento del trascinamento **non** è un bug dell'app finché non lo prova una
-  mano umana.
+  mano umana. In più, **sotto 768px il trascinamento dei tavoli è disattivato di proposito**: per la
+  vista Modifica allarga a 1280px.
+- **Turni: il buco di copertura del giro 1.** La prova «turni esauriti» era finita su una fascia con
+  turni **«Illimitata»** (`max_turns = null`), dove il controllo non scatta mai — ed è proprio lì che
+  si nascondeva `S4-BUG-2`. Chi rifà quella prova **deve** usare una fascia propria con un numero di
+  turni **finito e basso** e **deve** includere la sequenza *assegno → libero il tavolo → riassegno lo
+  stesso tavolo*: è il caso reale, non l'assegnazione doppia a tavolo occupato.
 - **Orologio a 30 secondi:** i cambi di stato automatici non sono istantanei. Aspetta ≥40 secondi.
 - **Ora spostata di 2 ore:** era un bug reale, corretto. Se lo rivedi, è una **regressione seria** →
   segnalo con orario atteso e orario letto, e allega lo screenshot.
