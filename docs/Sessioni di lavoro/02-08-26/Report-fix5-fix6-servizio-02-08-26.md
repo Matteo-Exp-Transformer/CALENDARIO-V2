@@ -68,6 +68,13 @@
 | `docs/Admin-Skill/contesto/ADMIN_SHELL_PAGES_CONTEXT.md` | Sezione «Assegnazione tavoli»: sostituito il paragrafo «Libera e assegna» unico con i tre esiti (`move`/`archive`/`requeue`) e le regole su turni/`served_at`; sezione «Fasce orarie»: aggiunta riga sul divieto di accavallo | Documentava il comportamento pre-fix; § 7.2 APP_CONTEXT lo richiede esplicitamente per `AssignmentMapPanel`/`useTableAssignments` |
 | `docs/Admin-Skill/contesto/ADMIN_SERVIZIO_CONTEXT.md` | Nuovo §9.8, stesso stile di §9.5–9.7 | Skill area di prodotto per Servizio: registra i due fix appena fatti nello stesso posto degli altri giri |
 
+**Addendum post-commit (caso E-A, nudge dell'hook fine-sessione):** rileggendo per intero (non solo la
+sezione appena toccata) `ADMIN_SHELL_PAGES_CONTEXT.md` ho trovato una riga preesistente e sbagliata,
+non introdotta in questa sessione: «Undo = update append-only `checked_out_at`, non delete» (bullet
+«UX A3»), che contraddice sia il codice (`useUndoTableAssignment` fa un DELETE fisico) sia
+`ADMIN_SERVIZIO_CONTEXT.md` §9.6 («Undo = DELETE fisico»). Corretta con nota `(Corretto 02-08-26: …)`.
+Commit dedicato separato dai due già fatti, per non riscrivere storia in un commit già pushabile.
+
 **Non toccati in questa chiusura** (fuori scope, decisione esplicita): `docs/Testing-Skill/COLLAUDO_S4_CHECKLIST.md`
 (la voce §3 «Tavolo occupato» va riscritta per le tre scelte) e `docs/Testing-Skill/PROMPT_AGENTI_E2E_S4.md`
 (andrebbe aggiunto un prompt agente per il collaudo e2e di questo fix, come da piano §5/§8). Restano da fare

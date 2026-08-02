@@ -301,7 +301,10 @@ Query key: `[TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, date, slotId, 'unassigned']`
   aperte senza realtime/S4-LIVE.
 - **UX A3:** il select fascia mostra `N` prenotazioni da assegnare; la card prenotazione ha drag con anteprima
   nome+coperti e bottone `Assegna` per modal rapida sala/tavolo; dopo assegnazione compare undo/conferma.
-  Undo = update append-only `checked_out_at`, non delete.
+  Undo = **DELETE fisico** della riga appena creata (`useUndoTableAssignment`) — corregge un errore di
+  pochi secondi, non consuma un turno e non viola D48 (append-only sui turni realmente serviti).
+  *(Corretto 02-08-26: la riga precedente diceva erroneamente "update append-only, non delete" —
+  contraddiceva sia il codice sia `ADMIN_SERVIZIO_CONTEXT.md` §9.6.)*
 - Filtro elenco estratto in `unassignedBookingsFilter.ts` (`filterUnassignedBookingsForSlot`, `activeAssignedBookingIds`).
 - Test: `serviceSlotBookingFilter.test.ts`, `unassignedBookingsFilter.test.ts`, `tableCheckout.test.ts`.
 
