@@ -11,6 +11,16 @@ Qui atterrano i report degli agenti tester lanciati con
 | `CORSIA_C.md` | C — Tavolate su più tavoli + responsive | checklist §2.3, §9 |
 | `CORSIA_D.md` | D — Capienza, form pubblico, Classic | checklist §4, §8, §7 |
 
+Giro 2 (fix) e revisione:
+
+| File | Cosa contiene |
+|------|---------------|
+| `SINTESI.md` | Consolidamento del giro 1: 52 voci, difetti con ID (S4-BUG-1 … S4-NOTE-11) |
+| `FIX_1_OROLOGIO.md` | Stati live dei tavoli e ora di punta allineati all'orologio |
+| `FIX_2_ASSEGNAZIONI.md` | Turni residui, fascia chiusa, archiviazione al checkout, forzatura visibile |
+| `INDAGINE_APERTE.md` | Le cinque domande aperte: risposta + proposta + chi decide |
+| `REVISIONE_FIX.md` | **Revisione d'insieme del giro 2** + il blocco della migrazione 066 |
+
 Gli **screenshot** non stanno qui: vanno in `docs/_lavoro/e2e-s4/corsia-<X>/`, che è una cartella
 privata **non versionata**. I report la citano per percorso.
 

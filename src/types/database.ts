@@ -122,6 +122,7 @@ export type Database = {
           placement: string | null
           preset_menu: string | null
           rejection_reason: string | null
+          served_at: string | null
           source: string
           special_requests: string | null
           status: string
@@ -163,6 +164,7 @@ export type Database = {
           placement?: string | null
           preset_menu?: string | null
           rejection_reason?: string | null
+          served_at?: string | null
           source?: string
           force_reason?: string | null
           forced_by_admin?: boolean
@@ -209,6 +211,7 @@ export type Database = {
           placement?: string | null
           preset_menu?: string | null
           rejection_reason?: string | null
+          served_at?: string | null
           source?: string
           force_reason?: string | null
           forced_by_admin?: boolean

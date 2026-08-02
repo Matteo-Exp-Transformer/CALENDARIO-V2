@@ -8,15 +8,15 @@ export function activeAssignedBookingIds(
   return new Set(rows.map((r) => r.booking_id))
 }
 
-/** Prenotazioni accettate del giorno nella fascia, escluse quelle ancora assegnate a un tavolo. */
+/** Prenotazioni accettate del giorno nella fascia, escluse quelle ancora assegnate o già servite. */
 export function filterUnassignedBookingsForSlot(
   bookings: BookingRequest[],
   slotStart: string,
   slotEnd: string,
   assignedActiveIds: Set<string>,
 ): BookingRequest[] {
-  const inSlot = bookings.filter((b) =>
-    bookingStartsInServiceSlot(b, slotStart, slotEnd),
+  const inSlot = bookings.filter(
+    (b) => !b.served_at && bookingStartsInServiceSlot(b, slotStart, slotEnd),
   )
   return inSlot.filter((b) => !assignedActiveIds.has(b.id))
 }

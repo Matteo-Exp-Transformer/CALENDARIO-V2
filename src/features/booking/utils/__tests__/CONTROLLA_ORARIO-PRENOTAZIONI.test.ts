@@ -5,6 +5,8 @@ import {
   getAccurateStartTime,
   isWallClockStartBeforeNow,
   trimTimeToHHmm,
+  wallClockDateFromISO,
+  wallClockHourFromISO,
 } from '../dateUtils'
 import type { BookingRequest } from '@/types/booking'
 
@@ -277,5 +279,28 @@ describe('E) isWallClockStartBeforeNow — confronto locale (fake timers)', () =
 
   it('trimTimeToHHmm accetta HH:mm:ss', () => {
     expect(trimTimeToHHmm('14:30:59')).toBe('14:30')
+  })
+})
+
+// ─── F) Wall-clock da ISO finto-UTC (S4-BUG-1 / S4-BUG-12) ─────────────────
+
+describe('F) wallClock* — cifre a muro senza fuso (S4-BUG-1/12)', () => {
+  it('wallClockHourFromISO legge 14 da 14:50+00:00 (non 16 via getHours locale)', () => {
+    expect(wallClockHourFromISO('2026-08-02T14:50:00+00:00')).toBe(14)
+    // Controprova del bug: new Date(...).getHours() in CEST darebbe 16
+    const shifted = new Date('2026-08-02T14:50:00+00:00').getHours()
+    if (shifted !== 14) {
+      expect(wallClockHourFromISO('2026-08-02T14:50:00+00:00')).not.toBe(shifted)
+    }
+  })
+
+  it('wallClockDateFromISO costruisce Date locale dalle cifre', () => {
+    const d = wallClockDateFromISO('2026-08-02T14:50:00+00:00')
+    expect(d).not.toBeNull()
+    expect(d!.getFullYear()).toBe(2026)
+    expect(d!.getMonth()).toBe(7) // agosto
+    expect(d!.getDate()).toBe(2)
+    expect(d!.getHours()).toBe(14)
+    expect(d!.getMinutes()).toBe(50)
   })
 })

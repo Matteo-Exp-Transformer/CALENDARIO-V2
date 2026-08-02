@@ -11,6 +11,10 @@ import {
 import { hasWaitingNextTurnOnTable } from '@/features/booking/utils/tableCheckout'
 import type { BookingRequest } from '@/types/booking'
 import { computeOccupancyWindow } from '@/features/booking/lib/resolveOccupancy'
+import {
+  computeNextTurnNumber,
+  isSlotClosed,
+} from '@/features/booking/utils/tableTurnLimits'
 
 export interface BookingTableAssignment {
   id: string
@@ -187,6 +191,68 @@ export class TurniEsauritiError extends Error {
   }
 }
 
+/** Fascia chiusa (max_turns = 0): messaggio distinto dai turni esauriti. */
+export class FasciaChiusaError extends Error {
+  constructor() {
+    super('La fascia è chiusa: riaprila per assegnare i tavoli.')
+    this.name = 'FasciaChiusaError'
+  }
+}
+
+/** Blocca l'assegnazione se la fascia è chiusa o i turni sono finiti (salvo force). */
+function assertTurnAvailable(
+  tableId: string,
+  turnNumber: number,
+  maxTurns: number | null,
+  force?: { reason: string },
+) {
+  if (force) return
+  if (isSlotClosed(maxTurns)) {
+    throw new FasciaChiusaError()
+  }
+  if (maxTurns !== null && turnNumber > maxTurns) {
+    throw new TurniEsauritiError(tableId, turnNumber, maxTurns)
+  }
+}
+
+/** Azzera served_at: una riassegnazione riporta la prenotazione in servizio. */
+async function clearBookingServedAt(bookingId: string, tenantId: string) {
+  const { error } = await supabase
+    .from('booking_requests')
+    .update({ served_at: null })
+    .eq('id', bookingId)
+    .eq('tenant_id', tenantId)
+  if (error) {
+    logger.warn('[useTableAssignments] clear served_at fallito (non bloccante)', error)
+  }
+}
+
+/**
+ * Archivia la prenotazione solo se non restano assegnazioni attive (tavolata multi-tavolo).
+ * Usato SOLO dal checkout normale — mai da undo, force-replace o release.
+ *
+ * Non lancia: quando gira, il tavolo è GIÀ stato liberato nel DB. Un throw qui salterebbe
+ * l'invalidate delle query e lo staff vedrebbe il tavolo ancora occupato pur essendo libero.
+ * Restituisce false così il chiamante avvisa con un messaggio dedicato.
+ */
+async function markBookingServedIfFullyReleased(
+  bookingId: string,
+  tenantId: string,
+  remainingActiveForBooking: number,
+): Promise<boolean> {
+  if (remainingActiveForBooking > 0) return true
+  const { error } = await supabase
+    .from('booking_requests')
+    .update({ served_at: new Date().toISOString() })
+    .eq('id', bookingId)
+    .eq('tenant_id', tenantId)
+  if (error) {
+    logger.error('[useTableAssignments] archiviazione served_at fallita', error)
+    return false
+  }
+  return true
+}
+
 async function writeOccupancySnapshot({
   bookingId,
   tenantId,
@@ -231,15 +297,8 @@ export function useAssignBookingToTable() {
 
   return useMutation({
     mutationFn: async ({ bookingId, tableId, slotId, date, maxTurns, existingAssignments, force, booking, slot }: AssignInput) => {
-      const forThisTable = existingAssignments.filter(
-        (a) => a.table_id === tableId && a.service_slot_id === slotId && a.date === date,
-      )
-      const turnNumber = forThisTable.length > 0 ? Math.max(...forThisTable.map((a) => a.turn_number)) + 1 : 1
-
-      // Blocco turni esauriti — saltato se force presente (D25: overbooking consapevole)
-      if (!force && maxTurns !== null && turnNumber > maxTurns) {
-        throw new TurniEsauritiError(tableId, turnNumber, maxTurns)
-      }
+      const turnNumber = computeNextTurnNumber(existingAssignments, tableId, slotId, date)
+      assertTurnAvailable(tableId, turnNumber, maxTurns, force)
 
       // L'assignment è forzato dallo staff: traccio il motivo per audit (D25/D27/D32)
       const isForcedByAdmin = force !== undefined
@@ -263,6 +322,9 @@ export function useAssignBookingToTable() {
 
       if (error) throw error
 
+      // Riassegnazione dopo checkout: la prenotazione torna attiva (served_at → null)
+      await clearBookingServedAt(bookingId, tenantId!)
+
       // TASK 4 / D42 — snapshot finestra di occupazione sulla prenotazione.
       // PERCHÉ: valorizzare occupancy_start/end permette all'Edge e al calcolo capienza
       // di usare la finestra reale senza ricalcolarla ogni volta. Best-effort: qualsiasi
@@ -279,7 +341,7 @@ export function useAssignBookingToTable() {
     },
     onError: (error: Error) => {
       logger.error('[useAssignBookingToTable] error', error)
-      // TurniEsauritiError viene gestita dalla UI per offrire la forzatura — non mostriamo toast
+      // TurniEsauritiError → UI offre forzatura; FasciaChiusaError → toast col messaggio dedicato
       if (error instanceof TurniEsauritiError) return
       toast.error(error.message || 'Errore nell\'assegnazione')
     },
@@ -321,16 +383,8 @@ export function useAssignBookingToTables() {
       if (tableIds.length === 0) throw new Error('Seleziona almeno un tavolo.')
 
       const rows = tableIds.map((tableId) => {
-        const forThisTable = existingAssignments.filter(
-          (a) => a.table_id === tableId && a.service_slot_id === slotId && a.date === date,
-        )
-        const turnNumber =
-          forThisTable.length > 0 ? Math.max(...forThisTable.map((a) => a.turn_number)) + 1 : 1
-
-        // Blocco turni esauriti — saltato se force presente (D25: overbooking consapevole)
-        if (!force && maxTurns !== null && turnNumber > maxTurns) {
-          throw new TurniEsauritiError(tableId, turnNumber, maxTurns)
-        }
+        const turnNumber = computeNextTurnNumber(existingAssignments, tableId, slotId, date)
+        assertTurnAvailable(tableId, turnNumber, maxTurns, force)
 
         return {
           tenant_id: tenantId!,
@@ -352,6 +406,8 @@ export function useAssignBookingToTables() {
 
       if (error) throw error
 
+      await clearBookingServedAt(bookingId, tenantId!)
+
       // Snapshot finestra di occupazione: una sola volta per prenotazione (D42, best-effort)
       await writeOccupancySnapshot({ bookingId, tenantId: tenantId!, booking, slot })
 
@@ -372,7 +428,6 @@ export function useAssignBookingToTables() {
     },
     onError: (error: Error) => {
       logger.error('[useAssignBookingToTables] error', error)
-      // TurniEsauritiError viene gestita dalla UI per offrire la forzatura — non mostriamo toast
       if (error instanceof TurniEsauritiError) return
       toast.error(error.message || 'Errore nell\'assegnazione')
     },
@@ -417,10 +472,9 @@ export function useForceReplaceBookingOnTable() {
 
       if (releaseError) throw releaseError
 
-      const forThisTable = existingAssignments.filter(
-        (a) => a.table_id === tableId && a.service_slot_id === slotId && a.date === date,
-      )
-      const turnNumber = forThisTable.length > 0 ? Math.max(...forThisTable.map((a) => a.turn_number)) + 1 : 1
+      // La prenotazione scavalcata NON viene archiviata (served_at resta null):
+      // deve tornare nel cassetto «da assegnare» (S4-REQ-3 caso 3).
+      const turnNumber = computeNextTurnNumber(existingAssignments, tableId, slotId, date)
 
       const { data, error } = await supabase
         .from('booking_table_assignments')
@@ -440,6 +494,7 @@ export function useForceReplaceBookingOnTable() {
 
       if (error) throw error
 
+      await clearBookingServedAt(bookingId, tenantId!)
       await writeOccupancySnapshot({ bookingId, tenantId: tenantId!, booking, slot })
 
       return data as BookingTableAssignment
@@ -470,9 +525,12 @@ export function useUndoTableAssignment() {
       date: string
       slotId: string
     }) => {
+      // DELETE fisico: l'annullamento corregge un errore di pochi secondi, non è
+      // un turno servito. Non viola D48 (append-only sui turni realmente serviti)
+      // e non consuma un posto nel conteggio turni.
       const { error } = await supabase
         .from('booking_table_assignments')
-        .update({ checked_out_at: new Date().toISOString() })
+        .delete()
         .eq('id', input.assignmentId)
         .eq('tenant_id', tenantId!)
 
@@ -535,14 +593,35 @@ export function useCheckoutTable() {
         .eq('tenant_id', tenantId!)
 
       if (error) throw error
+
+      // S4-REQ-3: archivia solo se non restano altri tavoli attivi sulla stessa prenotazione
+      const remainingActiveForBooking = assignments.filter(
+        (a) =>
+          a.booking_id === current.booking_id &&
+          a.checked_out_at === null &&
+          a.id !== current.id,
+      ).length
+      const archived = await markBookingServedIfFullyReleased(
+        current.booking_id,
+        tenantId!,
+        remainingActiveForBooking,
+      )
+
+      return { archived }
     },
-    onSuccess: async (_data, vars) => {
+    onSuccess: async (result, vars) => {
       await Promise.all([
         queryClient.refetchQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date] }),
         queryClient.refetchQueries({
           queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date, vars.slotId, 'unassigned'],
         }),
       ])
+      if (result && result.archived === false) {
+        toast.warn(
+          'Tavolo liberato, ma la prenotazione non è stata archiviata: potrebbe ricomparire fra quelle da assegnare.',
+        )
+        return
+      }
       toast.success('Tavolo liberato')
     },
     onError: (error: Error) => {

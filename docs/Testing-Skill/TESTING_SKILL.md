@@ -23,6 +23,7 @@ description: >-
 | **Blindare una sezione** (quali test dopo la mappatura, quando il "rompi" è dovuto) | **[MANUALE_BLINDATURA.md](MANUALE_BLINDATURA.md)** |
 | **Collaudo a mano di S4 / Servizio** (cosa deve provare Matteo) | **[COLLAUDO_S4_CHECKLIST.md](COLLAUDO_S4_CHECKLIST.md)** |
 | **Far eseguire il collaudo S4 agli agenti** (Playwright MCP, 4 corsie in parallelo) | **[PIANO_E2E_AGENTI_S4.md](PIANO_E2E_AGENTI_S4.md)** + **[PROMPT_AGENTI_E2E_S4.md](PROMPT_AGENTI_E2E_S4.md)** |
+| **Riprendere il cantiere S4 da dove è rimasto** (stato, blocchi, decisioni chiuse, ordine di lavoro) | **[HANDOFF_S4_SENIOR.md](../Sessioni%20di%20lavoro/02-08-26/HANDOFF_S4_SENIOR.md)** |
 | Modificare il codice applicativo (non i test) | skill area (ADMIN_CLASSIC, ADMIN_SHELL, DB…) |
 | Modificare schema DB per far girare un test | **DB_SKILL** + TESTING_SKILL |
 

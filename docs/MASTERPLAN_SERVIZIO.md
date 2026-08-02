@@ -224,6 +224,10 @@ e somma **solo** gli stati di questo elenco.
   capienza: anche "solo coperti" senza tavoli toglie posti al pubblico (altrimenti sovrapprenotazione).
   (2) **Un unico predicato "modalità-tavoli"** decide a/b, condiviso con C5 (vedi D49). (3) Il bug
   nome-vs-`table_id` (#6) si chiude in S4.
+  > **Precisazione 02-08-26 (Matteo).** Il punto (1) resta vero come regola del **motore**: un walk-in
+  > senza tavolo conterebbe comunque. Ma in **UI** sala e tavolo restano **obbligatori** quando
+  > esistono sale con tavoli: chi entra senza prenotazione va messo subito a sedere. Il percorso
+  > "solo coperti" non è offerto allo staff. Voce §5-1 della checklist ritirata di conseguenza.
 - **D46 — Capienza sala = somma dei coperti dei tavoli.** In modalità-tavoli ogni gruppo sta su un tavolo;
   la sala da 20 può essere "10×2" o "1×20". L'utente carica i coperti per tavolo e la pienezza sala si
   deduce da sola. Conteggio fatto **col cliente in fase di onboarding**.

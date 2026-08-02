@@ -183,6 +183,59 @@ export function trimTimeToHHmm(time: string): string {
 }
 
 /**
+ * Costruisce un `Date` locale dalle cifre di data (YYYY-MM-DD) + ora a muro (HH:mm).
+ * Non interpreta offset/UTC: le cifre sono l'orologio del ristorante.
+ * Usato per confrontare prenotazioni (`confirmed_start` con `+00:00` finto) con «adesso».
+ */
+export function wallClockDateFromParts(
+  dateYmd: string,
+  timeHHmm: string,
+): Date | null {
+  const dateStr = String(dateYmd ?? '').trim()
+  const timeStr = trimTimeToHHmm(String(timeHHmm ?? '').trim())
+  const dm = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!dm) return null
+  const year = Number(dm[1])
+  const month = Number(dm[2])
+  const day = Number(dm[3])
+  const tm = timeStr.match(/^(\d{1,2}):(\d{2})$/)
+  if (!tm) return null
+  const hours = Number(tm[1])
+  const minutes = Number(tm[2])
+  if (![year, month, day, hours, minutes].every(Number.isFinite)) return null
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null
+
+  const wall = new Date(year, month - 1, day, hours, minutes, 0, 0)
+  return Number.isNaN(wall.getTime()) ? null : wall
+}
+
+/**
+ * Costruisce un `Date` locale dalle cifre letterali di una stringa ISO,
+ * ignorando l'offset. Necessario perché `confirmed_start`/`confirmed_end` sono
+ * salvati con `+00:00` ma le cifre rappresentano l'ora a muro (non UTC reale).
+ * `new Date(iso)` le interpreterebbe come UTC e le sposterebbe di +1/+2h.
+ */
+export function wallClockDateFromISO(iso: string | null | undefined): Date | null {
+  if (!iso) return null
+  const date = extractDateFromISO(iso)
+  const time = extractTimeFromISO(iso)
+  if (!date || !time) return null
+  return wallClockDateFromParts(date, time)
+}
+
+/**
+ * Ora (0–23) dalle cifre a muro di un ISO — senza `new Date(...).getHours()`,
+ * che applicherebbe il fuso del browser alle cifre finte-UTC.
+ */
+export function wallClockHourFromISO(iso: string | null | undefined): number | null {
+  const time = extractTimeFromISO(iso)
+  if (!time) return null
+  const hours = Number(time.split(':')[0])
+  return Number.isFinite(hours) ? hours : null
+}
+
+/**
  * True se data (calendario locale) + ora a muro sono **strettamente** prima di `Date.now()`.
  * Usa il fuso del browser (stesso orologio che vede il ristoratore in dashboard).
  * Input non validi → false (nessun alert: si lascia il flusso normale).
@@ -192,23 +245,7 @@ export function trimTimeToHHmm(time: string): string {
  * d’inizio (anche di 1 ms), restituisce true.
  */
 export function isWallClockStartBeforeNow(desiredDate: string, startTimeHHmm: string): boolean {
-  const dateStr = String(desiredDate ?? '').trim()
-  const timeStr = trimTimeToHHmm(String(startTimeHHmm ?? '').trim())
-  const dm = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-  if (!dm) return false
-  const year = Number(dm[1])
-  const month = Number(dm[2])
-  const day = Number(dm[3])
-  const tm = timeStr.match(/^(\d{1,2}):(\d{2})$/)
-  if (!tm) return false
-  const hours = Number(tm[1])
-  const minutes = Number(tm[2])
-  if (![year, month, day, hours, minutes].every(Number.isFinite)) return false
-  if (month < 1 || month > 12 || day < 1 || day > 31) return false
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return false
-
-  const wall = new Date(year, month - 1, day, hours, minutes, 0, 0)
-  if (Number.isNaN(wall.getTime())) return false
-
+  const wall = wallClockDateFromParts(desiredDate, startTimeHHmm)
+  if (!wall) return false
   return wall.getTime() < Date.now()
 }

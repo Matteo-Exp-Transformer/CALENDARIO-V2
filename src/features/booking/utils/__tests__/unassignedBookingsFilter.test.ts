@@ -45,7 +45,7 @@ describe('filterUnassignedBookingsForSlot', () => {
     expect(result).toHaveLength(0)
   })
 
-  it('include di nuovo prenotazione dopo checkout (nessun assignment attivo)', () => {
+  it('include di nuovo prenotazione dopo checkout solo se non servita (served_at null)', () => {
     const result = filterUnassignedBookingsForSlot(
       [inPranzo],
       PRANZO_START,
@@ -53,5 +53,20 @@ describe('filterUnassignedBookingsForSlot', () => {
       activeAssignedBookingIds([]),
     )
     expect(result.map((b) => b.id)).toEqual(['in-slot'])
+  })
+
+  it('esclude prenotazione con served_at (checkout archivia)', () => {
+    const served = makeBooking({
+      id: 'served',
+      confirmed_start: '2026-05-18T12:00:00+00:00',
+      served_at: '2026-05-18T14:00:00Z',
+    })
+    const result = filterUnassignedBookingsForSlot(
+      [served],
+      PRANZO_START,
+      PRANZO_END,
+      new Set(),
+    )
+    expect(result).toHaveLength(0)
   })
 })

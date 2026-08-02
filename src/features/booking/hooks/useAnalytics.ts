@@ -19,6 +19,7 @@ import { supabase } from '@/lib/supabase'
 import { logger } from '@/lib/logger'
 import { getShiftRanges, type ShiftFilter } from '@/features/booking/utils/shifts'
 import { parseBusinessHours, getDayOfWeek } from '@/lib/businessHours'
+import { wallClockHourFromISO } from '@/features/booking/utils/dateUtils'
 
 export type DateRange = 'week' | 'month' | 'year'
 export type { ShiftFilter }
@@ -157,7 +158,9 @@ function computeAnalytics(
     if (shift !== 'all') {
       // Senza confirmed_start non possiamo classificare il turno: escludiamo la prenotazione
       if (!r.confirmed_start) return false
-      const hour = new Date(r.confirmed_start).getHours()
+      // Cifre a muro (offset +00:00 finto): non usare new Date(...).getHours()
+      const hour = wallClockHourFromISO(r.confirmed_start)
+      if (hour === null) return false
       if (shift === 'lunch') {
         if (hour < shiftRanges.lunch.startHour || hour >= shiftRanges.lunch.endHour) return false
       } else if (shift === 'dinner') {

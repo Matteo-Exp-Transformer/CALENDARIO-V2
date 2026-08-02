@@ -388,7 +388,12 @@ export const ServizioPage: FC = () => {
                 Guard D49: pannello visibile solo se Pro con almeno un tavolo attivo. */}
             {mapMode === 'service' && (
               isTableMode ? (
-                <AssignmentMapPanel rooms={rooms} tables={tables} layout="plan" />
+                <AssignmentMapPanel
+                  rooms={rooms}
+                  tables={tables}
+                  layout="plan"
+                  selectedRoomId={selectedRoomId}
+                />
               ) : (
                 <div className="rounded-xl border border-(--color-border) bg-surface px-6 py-10 text-center shadow-sm">
                   <p className="text-title-section font-semibold text-primary-900">

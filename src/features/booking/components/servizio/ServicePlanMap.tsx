@@ -98,6 +98,12 @@ interface ServicePlanMapProps {
   /** Prenotazioni attive per tavolo nello slot+data correnti. */
   bookingsByTable: Map<string, BookingRequest[]>
   onSelectTable: (tableId: string) => void
+  /**
+   * Sala scelta nelle linguette sopra la mappa. Su schermi piccoli è l'UNICA
+   * mostrata: da telefono/tablet due piantine affiancate sono illeggibili e
+   * scrollare fra loro fa perdere il colpo d'occhio durante il servizio.
+   */
+  selectedRoomId?: string | null
 }
 
 export const ServicePlanMap: FC<ServicePlanMapProps> = ({
@@ -106,6 +112,7 @@ export const ServicePlanMap: FC<ServicePlanMapProps> = ({
   statuses,
   bookingsByTable,
   onSelectTable,
+  selectedRoomId = null,
 }) => {
   const roomsWithTables = rooms.filter((room) =>
     tables.some((table) => table.room_id === room.id),
@@ -118,6 +125,11 @@ export const ServicePlanMap: FC<ServicePlanMapProps> = ({
       </p>
     )
   }
+
+  // Se la sala delle linguette non ha tavoli (o non è ancora scelta) ripiega
+  // sulla prima con tavoli: su mobile il pannello non deve mai restare vuoto.
+  const visibleRoomId =
+    roomsWithTables.find((room) => room.id === selectedRoomId)?.id ?? roomsWithTables[0].id
 
   return (
     <div className="space-y-4">
@@ -133,41 +145,51 @@ export const ServicePlanMap: FC<ServicePlanMapProps> = ({
         ))}
       </div>
 
-      {roomsWithTables.map((room) => {
-        const roomTables = tables.filter((table) => table.room_id === room.id)
-        return (
-          <div key={room.id} className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
-              {room.name}
-            </p>
+      {/* Da lg in su le sale stanno affiancate a due a due; sotto resta una
+          colonna sola e si vede solo la sala scelta nelle linguette. */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {roomsWithTables.map((room) => {
+          const roomTables = tables.filter((table) => table.room_id === room.id)
+          const isVisibleOnSmall = room.id === visibleRoomId
+          return (
             <div
-              className="box-content overflow-auto rounded-xl border border-(--color-border) shadow-sm"
-              style={{ width: room.width, maxWidth: '100%' }}
-              data-testid={`service-plan-room-${room.id}`}
+              key={room.id}
+              // min-w-0: senza, la piantina a larghezza fissa sfonda la colonna della griglia
+              className={`min-w-0 space-y-2 ${isVisibleOnSmall ? '' : 'hidden lg:block'}`}
+              data-room-visibility={isVisibleOnSmall ? 'always' : 'desktop-only'}
             >
-              {/* Nessuna griglia di sfondo: questa è la sala confermata, non l'editor */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
+                {room.name}
+              </p>
               <div
-                style={{
-                  width: room.width,
-                  height: room.height,
-                  position: 'relative',
-                  backgroundColor: 'var(--color-surface)',
-                }}
+                className="box-content overflow-auto rounded-xl border border-(--color-border) shadow-sm"
+                style={{ width: room.width, maxWidth: '100%' }}
+                data-testid={`service-plan-room-${room.id}`}
               >
-                {roomTables.map((table) => (
-                  <PlanTable
-                    key={table.id}
-                    table={table}
-                    status={statuses.get(table.id) ?? 'free'}
-                    bookings={bookingsByTable.get(table.id) ?? []}
-                    onSelect={onSelectTable}
-                  />
-                ))}
+                {/* Nessuna griglia di sfondo: questa è la sala confermata, non l'editor */}
+                <div
+                  style={{
+                    width: room.width,
+                    height: room.height,
+                    position: 'relative',
+                    backgroundColor: 'var(--color-surface)',
+                  }}
+                >
+                  {roomTables.map((table) => (
+                    <PlanTable
+                      key={table.id}
+                      table={table}
+                      status={statuses.get(table.id) ?? 'free'}
+                      bookings={bookingsByTable.get(table.id) ?? []}
+                      onSelect={onSelectTable}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
     </div>
   )
 }

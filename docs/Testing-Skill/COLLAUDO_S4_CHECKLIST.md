@@ -152,15 +152,22 @@ Il 24-06 avevi annotato *"nessun blocco se supero limite fasce orarie"*. Il comp
 - [ ] Supera la capienza fisica dei tavoli assegnando più coperti dei posti: compare un **avviso**,
       mai un blocco. L'operazione si può completare.
       `→ esito:`
+> ⚠️ **Le tre voci D38 qui sotto valgono solo per l'ADMIN.** Decisione Matteo 02-08-26: il percorso
+> **pubblico** (orari sul form + invio prenotazione) oggi rispetta **solo il limite coperti della
+> fascia**, non i posti dei tavoli. L'allineamento a D1/D38 anche online è **deciso ma rimandato** a
+> dopo il collaudo, perché tocca RPC + Edge in produzione. Quindi: se dal form pubblico il 7° coperto
+> viene rifiutato con D38 spento, è il **comportamento atteso oggi**, non un KO.
+
 - [ ] **D38 OFF** (default): in Servizio → Fasce, l'interruttore *"mantieni anche il limite coperti
-      della fascia"* è **spento**. Con tavoli per 10 posti e cap fascia 6, il sistema usa **10**.
+      della fascia"* è **spento**. Con tavoli per 10 posti e cap fascia 6, **l'admin** usa **10**
+      (assegnazione e avvisi di capienza).
       `→ esito:`
-- [ ] **D38 ON**: accendi l'interruttore. Ora il sistema usa il **minore fra i due**, cioè **6**.
-      Una prenotazione pubblica per il 7° coperto viene **rifiutata** dal form pubblico.
+- [ ] **D38 ON**: accendi l'interruttore. Ora **l'admin** usa il **minore fra i due**, cioè **6**.
       `→ esito:`
-- [ ] Rimetti D38 su **OFF** e verifica che il 7° coperto torni ad essere accettato.
+- [ ] Rimetti D38 su **OFF**.
       `→ esito:`
-- [ ] 🟡 Il badge percentuale in Calendario riflette il limite attivo.
+- [ ] Il badge percentuale in Calendario mostra come totale i **posti di tutto il locale** (es.
+      «8 / 128»). ✅ Deciso il 02-08-26: è il comportamento voluto, non il limite della fascia.
       `→ esito:`
 
 ---
@@ -169,9 +176,10 @@ Il 24-06 avevi annotato *"nessun blocco se supero limite fasce orarie"*. Il comp
 
 Il 24-06 avevi scritto *"ho eseguito questo test, non so se è corretto"*. Ecco il criterio esatto.
 
-- [ ] **Walk-in senza tavolo** ("solo coperti"): crea un walk-in da 4 senza assegnare tavolo.
-      In Calendario, la fascia corrispondente conta **+4 coperti**. ✅ È questo il comportamento
-      corretto: il walk-in toglie sempre posti al pubblico anche senza tavolo.
+- [ ] **Sala e tavolo sono obbligatori** nel walk-in quando esistono sale con tavoli. ✅ Deciso il
+      02-08-26: chi entra senza prenotazione va messo subito su un tavolo. La vecchia voce
+      *"walk-in solo coperti senza tavolo"* è **ritirata** (il motore lo permetterebbe, la finestra
+      no: è voluto).
       `→ esito:`
 - [ ] **Walk-in con tavolo libero**: il tavolo diventa occupato e mostra il nome del walk-in.
       `→ esito:`
@@ -208,8 +216,11 @@ Da fare con un account **Classic** (senza Pro). Serve a garantire che S4 non abb
 che già pagano.
 
 - [ ] La voce **Servizio** non compare nel menu.
-- [ ] Il **Calendario** funziona come prima: vista Giorno, occupazione per fascia visibile anche
-      senza limite impostato.
+- [ ] Il **Calendario** funziona come prima: vista Giorno, e l'occupazione per fascia («N / M»)
+      compare sulle fasce **che hanno un limite impostato**. ✅ Deciso il 02-08-26: senza limite il
+      Classic non mostra percentuale — comportamento storico, identico a `main`, **non** una
+      regressione S4. Provalo su un giorno **con almeno una prenotazione accettata**: su un giorno
+      vuoto non esiste nessuna card fascia da giudicare.
       `→ esito:`
 - [ ] Il **form pubblico** accetta e rifiuta come prima (prova una prenotazione buona e una oltre il
       limite di fascia).

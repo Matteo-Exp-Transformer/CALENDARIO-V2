@@ -7,16 +7,26 @@
  *
  * Gerarchia stati:
  *   free     → nessun assignment attivo
- *   upcoming → assignment attivo ma now < confirmed_start
- *   occupied → start ≤ now < start + soglia (grazia)
- *   late     → start + soglia ≤ now < confirmed_end (D23: lo staff decide, nessuna liberazione cieca)
- *   leaving  → now ≥ confirmed_end, attende checkout fisico (D22/D48)
+ *   upcoming → assignment attivo ma now < arrivo a muro
+ *   occupied → arrivo ≤ now < arrivo + soglia (grazia)
+ *   late     → arrivo + soglia ≤ now < fine occupazione (pasto + buffer D37)
+ *   leaving  → now ≥ fine occupazione, attende checkout fisico (D22/D48)
+ *
+ * Orari: confirmed_start/end usano offset +00:00 finto (cifre = ora a muro).
+ * I confronti usano wallClockDateFromISO / getAccurate* — mai new Date(iso).
  */
 
 import { useEffect, useMemo, useState } from 'react'
 import type { BookingTableAssignment } from '@/features/booking/hooks/useTableAssignments'
 import type { BookingRequest } from '@/types/booking'
 import { useRestaurantSetting } from '@/features/booking/hooks/useRestaurantSetting'
+import {
+  extractDateFromISO,
+  getAccurateEndTime,
+  getAccurateStartTime,
+  wallClockDateFromISO,
+  wallClockDateFromParts,
+} from '@/features/booking/utils/dateUtils'
 
 /** 5 stati tavolo live (pre-Live; raffinabile quando arriverà flag "seduto"). */
 export type TableLiveStatus = 'free' | 'upcoming' | 'occupied' | 'late' | 'leaving'
@@ -24,15 +34,58 @@ export type TableLiveStatus = 'free' | 'upcoming' | 'occupied' | 'late' | 'leavi
 /** Soglia ritardo default in minuti (chiave JSONB senza migrazione). */
 export const DEFAULT_LATE_THRESHOLD_MINUTES = 15
 
+/** Campi opzionali di occupancy snapshot (mig. 064) — select('*') li restituisce. */
+type BookingWithOccupancy = BookingRequest & {
+  turnover_buffer_minutes?: number | null
+}
+
 interface ResolveArgs {
   /** Assignment attivo (checked_out_at === null) per questo tavolo nello slot+data, se esiste. */
   activeAssignment: BookingTableAssignment | null
   /** Prenotazione associata all'assignment attivo, se disponibile. */
-  booking: BookingRequest | null
-  /** Istante corrente. */
+  booking: BookingWithOccupancy | null
+  /** Istante corrente (orologio reale del browser). */
   now: Date
-  /** Minuti di grazia dopo confirmed_start prima di marcare 'late'. */
+  /** Minuti di grazia dopo l'arrivo a muro prima di marcare 'late'. */
   lateThresholdMinutes: number
+  /**
+   * Buffer di riassetto (D37), in minuti. Preferire lo snapshot sulla prenotazione;
+   * altrimenti il buffer della fascia corrente. Default 0.
+   */
+  turnoverBufferMinutes?: number
+}
+
+/**
+ * Fine occupazione a muro = fine pasto (confirmed_end) + buffer di riassetto (D37).
+ * La capienza si libera a questo istante; lo stato 'leaving' e l'avviso staff coincidono.
+ */
+function resolveOccupancyEndWall(
+  booking: BookingWithOccupancy,
+  turnoverBufferMinutes: number,
+): Date | null {
+  const endFromIso = wallClockDateFromISO(booking.confirmed_end)
+  if (!endFromIso) {
+    const startDate =
+      booking.desired_date || extractDateFromISO(booking.confirmed_start) || ''
+    const endTime = getAccurateEndTime(booking)
+    const fallback = wallClockDateFromParts(startDate, endTime)
+    if (!fallback) return null
+    const bufferMs = Math.max(0, turnoverBufferMinutes) * 60 * 1000
+    return new Date(fallback.getTime() + bufferMs)
+  }
+  const bufferMs = Math.max(0, turnoverBufferMinutes) * 60 * 1000
+  return new Date(endFromIso.getTime() + bufferMs)
+}
+
+function resolveArrivalWall(booking: BookingWithOccupancy): Date | null {
+  const startTime = getAccurateStartTime(booking)
+  const startDate =
+    booking.desired_date || extractDateFromISO(booking.confirmed_start) || ''
+  if (startTime && startDate) {
+    const fromParts = wallClockDateFromParts(startDate, startTime)
+    if (fromParts) return fromParts
+  }
+  return wallClockDateFromISO(booking.confirmed_start)
 }
 
 /**
@@ -46,22 +99,32 @@ export function resolveTableLiveStatus({
   booking,
   now,
   lateThresholdMinutes,
+  turnoverBufferMinutes = 0,
 }: ResolveArgs): TableLiveStatus {
   // Nessun turno attivo → tavolo libero
   if (!activeAssignment) return 'free'
 
-  // Senza prenotazione associata o senza finestra temporale confiramta, consideriamo occupato
+  // Senza prenotazione associata o senza finestra temporale confermata, consideriamo occupato
   // (assegnazione manuale senza orario confermato — caso estremo, non rompiamo il flusso)
   if (!booking || !booking.confirmed_start || !booking.confirmed_end) return 'occupied'
 
-  const start = new Date(booking.confirmed_start).getTime()
-  const end = new Date(booking.confirmed_end).getTime()
+  const bufferFromBooking =
+    typeof booking.turnover_buffer_minutes === 'number'
+      ? booking.turnover_buffer_minutes
+      : turnoverBufferMinutes
+
+  const start = resolveArrivalWall(booking)
+  const end = resolveOccupancyEndWall(booking, bufferFromBooking)
+  if (!start || !end) return 'occupied'
+
   const nowMs = now.getTime()
+  const startMs = start.getTime()
+  const endMs = end.getTime()
   const lateMs = lateThresholdMinutes * 60 * 1000
 
-  if (nowMs < start) return 'upcoming'
-  if (nowMs < start + lateMs) return 'occupied'
-  if (nowMs < end) return 'late'
+  if (nowMs < startMs) return 'upcoming'
+  if (nowMs < startMs + lateMs) return 'occupied'
+  if (nowMs < endMs) return 'late'
   return 'leaving'
 }
 
@@ -76,6 +139,11 @@ interface UseTableStatusesArgs {
   selectedDate: string
   /** Istante corrente (iniettabile nei test per riproducibilità). Default: new Date(). */
   now?: Date
+  /**
+   * Buffer di riassetto della fascia (D37). Usato se la prenotazione non ha
+   * ancora lo snapshot `turnover_buffer_minutes`.
+   */
+  turnoverBufferMinutes?: number
 }
 
 /**
@@ -91,6 +159,7 @@ export function useTableStatuses({
   selectedSlotId,
   selectedDate,
   now: nowOverride,
+  turnoverBufferMinutes = 0,
 }: UseTableStatusesArgs): Map<string, TableLiveStatus> {
   // Legge la soglia dal JSONB — nessuna migrazione richiesta, default gestito dal registry
   const { data: lateThreshold } = useRestaurantSetting('table_late_threshold_minutes', {
@@ -129,13 +198,28 @@ export function useTableStatuses({
 
     // Per ogni tavolo con assignment attivo, calcola lo stato
     for (const [tableId, activeAssignment] of byTable) {
-      const booking = bookingsById.get(activeAssignment.booking_id) ?? null
+      const booking = (bookingsById.get(activeAssignment.booking_id) as BookingWithOccupancy | undefined) ?? null
       statusMap.set(
         tableId,
-        resolveTableLiveStatus({ activeAssignment, booking, now, lateThresholdMinutes: threshold }),
+        resolveTableLiveStatus({
+          activeAssignment,
+          booking,
+          now,
+          lateThresholdMinutes: threshold,
+          turnoverBufferMinutes,
+        }),
       )
     }
 
     return statusMap
-  }, [assignments, bookingsById, selectedSlotId, selectedDate, threshold, nowOverride, clockNow])
+  }, [
+    assignments,
+    bookingsById,
+    selectedSlotId,
+    selectedDate,
+    threshold,
+    nowOverride,
+    clockNow,
+    turnoverBufferMinutes,
+  ])
 }

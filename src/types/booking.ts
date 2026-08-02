@@ -81,6 +81,12 @@ export interface BookingRequest {
   duration_minutes?: number
   duration_source?: string
   duration_rule_version?: number
+
+  /**
+   * Prenotazione servita: valorizzata al checkout dell'ultimo tavolo della
+   * tavolata. Esclude dal cassetto «da assegnare»; si azzera se riassegnata.
+   */
+  served_at?: string | null
 }
 
 export interface BookingRequestInput {

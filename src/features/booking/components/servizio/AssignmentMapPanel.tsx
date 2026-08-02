@@ -13,6 +13,7 @@ import {
   Check,
 } from 'lucide-react'
 import { Button, Modal } from '@/components/ui'
+import { toast } from 'react-toastify'
 import { useServiceSlots } from '@/features/booking/hooks/useServiceSlots'
 import {
   useTableAssignments,
@@ -30,6 +31,12 @@ import {
   activeAssignedBookingIds,
   filterUnassignedBookingsForSlot,
 } from '@/features/booking/utils/unassignedBookingsFilter'
+import {
+  countTurnsUsed,
+  getRemainingTurns,
+  isSlotClosed,
+  isTurnsExhausted,
+} from '@/features/booking/utils/tableTurnLimits'
 import {
   useTableStatuses,
   type TableLiveStatus,
@@ -228,6 +235,8 @@ interface AssignmentMapPanelProps {
   tables: RestaurantTable[]
   /** 'grid' = elenco a schede (default). 'plan' = piantina sala confermata. */
   layout?: AssignmentMapLayout
+  /** Sala scelta nelle linguette: su mobile/tablet è l'unica piantina mostrata. */
+  selectedRoomId?: string | null
 }
 
 /**
@@ -259,7 +268,12 @@ interface QuickAssignState {
   mode: 'assign' | 'add'
 }
 
-export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables, layout = 'grid' }) => {
+export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
+  rooms,
+  tables,
+  layout = 'grid',
+  selectedRoomId = null,
+}) => {
   const today = new Date().toISOString().slice(0, 10)
 
   const [selectedDate, setSelectedDate] = useState(today)
@@ -293,11 +307,13 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
   )
 
   // 5 stati live per tutti i tavoli nello slot+data correnti (D24)
+  // Buffer fascia (D37): fine «In uscita» = confirmed_end + turnover_buffer
   const tableStatuses = useTableStatuses({
     assignments,
     bookingsById,
     selectedSlotId,
     selectedDate,
+    turnoverBufferMinutes: selectedSlot?.turnover_buffer_minutes ?? 0,
   })
 
   const assignBooking = useAssignBookingToTable()
@@ -461,6 +477,13 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
     })
   }
 
+  function openForceConfirm(state: ForceConfirmState) {
+    // Chiude la modale «Assegna tavolo» prima: altrimenti il riquadro ambra
+    // resta sotto e lo staff vede solo la console (S4-UX-8 / S4-BUG-2).
+    closeQuickAssign()
+    setForceConfirm(state)
+  }
+
   function assignToFreeTable(bookingId: string, tableId: string) {
     if (!selectedSlot) return
     const draggedBooking = findBooking(bookingId)
@@ -484,13 +507,14 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
         },
         onError: (error) => {
           if (error instanceof TurniEsauritiError) {
-            setForceConfirm({
+            openForceConfirm({
               bookingId,
               tableId,
               reason: 'Forzato dallo staff',
               kind: 'turns',
             })
           }
+          // FasciaChiusaError: toast già emesso dalla mutation
         },
       },
     )
@@ -519,7 +543,7 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
         },
         onError: (error) => {
           if (error instanceof TurniEsauritiError) {
-            setForceConfirm({
+            openForceConfirm({
               bookingId,
               tableId: error.tableId,
               reason: 'Forzato dallo staff',
@@ -553,11 +577,27 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
     if (!selectedSlot) return
     const targetStatus = tableStatuses.get(tableId) ?? 'free'
     if (targetStatus !== 'free') {
-      setForceConfirm({
+      openForceConfirm({
         bookingId,
         tableId,
         reason: 'Forzatura guidata: tavolo occupato liberato dallo staff',
         kind: 'replace',
+      })
+      return
+    }
+
+    // Tavolo verde ma turni già consumati / fascia chiusa: avvisa PRIMA del fallimento muto
+    if (isSlotClosed(selectedSlot.max_turns)) {
+      toast.error('La fascia è chiusa: riaprila per assegnare i tavoli.')
+      return
+    }
+    const turnsUsed = countTurnsUsed(assignments, tableId, selectedSlotId, selectedDate)
+    if (isTurnsExhausted(selectedSlot.max_turns, turnsUsed)) {
+      openForceConfirm({
+        bookingId,
+        tableId,
+        reason: 'Forzato dallo staff',
+        kind: 'turns',
       })
       return
     }
@@ -652,6 +692,18 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
 
   const isAssigning =
     assignBooking.isPending || assignBookingToTables.isPending || forceReplaceBooking.isPending
+
+  /**
+   * Vista Servizio: l'elenco prenotazioni sta in TESTATA, non in colonna a sinistra.
+   * Una colonna da 1/3 rubava larghezza alla piantina e diventava altissima con poche
+   * prenotazioni; in striscia orizzontale la sala prende tutto lo spazio e le sale
+   * possono stare affiancate a due a due.
+   */
+  const listInHeader = layout === 'plan'
+  const shellClass = listInHeader ? 'flex flex-col gap-4' : 'flex flex-col gap-4 md:flex-row'
+  const listClass = listInHeader ? 'space-y-2' : 'space-y-2 md:w-1/3 md:shrink-0'
+  const cardsWrapClass = listInHeader ? 'flex gap-2 overflow-x-auto pb-1' : 'space-y-2'
+  const cardItemClass = listInHeader ? 'w-64 shrink-0' : ''
 
   return (
     <div className="space-y-4 rounded-xl border border-(--color-border) bg-surface p-4 shadow-sm">
@@ -759,6 +811,15 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
               </p>
             </div>
 
+            {selectedSlot && isSlotClosed(selectedSlot.max_turns) && (
+              <div
+                role="alert"
+                className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+              >
+                La fascia è chiusa: riaprila per assegnare i tavoli.
+              </div>
+            )}
+
             {rooms.map((room) => {
               const roomTables = allTables.filter((t) => t.room_id === room.id)
               if (roomTables.length === 0) return null
@@ -772,13 +833,42 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
                       const status = tableStatuses.get(table.id) ?? 'free'
                       const alreadyOnBooking = quickAssignExistingTableIds.includes(table.id)
                       const isSelected = quickAssignSelection.includes(table.id)
+                      const turnsUsed = countTurnsUsed(
+                        assignments,
+                        table.id,
+                        selectedSlotId,
+                        selectedDate,
+                      )
+                      const remaining = selectedSlot
+                        ? getRemainingTurns(selectedSlot.max_turns, turnsUsed)
+                        : null
+                      const slotClosed = !!selectedSlot && isSlotClosed(selectedSlot.max_turns)
+                      const turnsExhausted =
+                        !!selectedSlot && isTurnsExhausted(selectedSlot.max_turns, turnsUsed)
+                      const badgeLabel = alreadyOnBooking
+                        ? 'Già in tavolata'
+                        : slotClosed
+                          ? 'Fascia chiusa'
+                          : turnsExhausted
+                            ? 'Turni esauriti'
+                            : STATUS_LABEL[status]
                       return (
                         <button
                           key={table.id}
                           type="button"
-                          disabled={isAssigning || alreadyOnBooking}
+                          disabled={isAssigning || alreadyOnBooking || slotClosed}
                           onClick={() => {
-                            if (alreadyOnBooking) return
+                            if (alreadyOnBooking || slotClosed) return
+                            if (turnsExhausted) {
+                              // Come «Già in tavolata»: non entra in selezione, ma forzabile di proposito
+                              openForceConfirm({
+                                bookingId: quickAssignBooking.id,
+                                tableId: table.id,
+                                reason: 'Forzato dallo staff',
+                                kind: 'turns',
+                              })
+                              return
+                            }
                             if (status === 'free') {
                               // Tavolo libero → entra/esce dalla selezione multipla
                               setQuickAssignSelection((prev) =>
@@ -789,15 +879,14 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
                               return
                             }
                             // Tavolo occupato → non si somma a una tavolata: serve la forzatura
-                            closeQuickAssign()
-                            setForceConfirm({
+                            openForceConfirm({
                               bookingId: quickAssignBooking.id,
                               tableId: table.id,
                               reason: 'Forzatura guidata: tavolo occupato liberato dallo staff',
                               kind: 'replace',
                             })
                           }}
-                          className={`relative rounded-xl border-2 p-3 text-left transition-colors ${STATUS_CLASSES[status]} ${isSelected ? 'ring-2 ring-primary-500 ring-offset-1' : ''} ${alreadyOnBooking ? 'opacity-60' : ''}`}
+                          className={`relative rounded-xl border-2 p-3 text-left transition-colors ${STATUS_CLASSES[status]} ${isSelected ? 'ring-2 ring-primary-500 ring-offset-1' : ''} ${alreadyOnBooking || turnsExhausted || slotClosed ? 'opacity-60' : ''}`}
                         >
                           {isSelected && (
                             <Check
@@ -807,8 +896,15 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
                           )}
                           <span className="block truncate text-sm font-semibold text-primary-900">{table.name}</span>
                           <span className="block text-xs text-(--color-text-muted)">{table.capacity} posti</span>
+                          {remaining !== null && !alreadyOnBooking && (
+                            <span className="mt-1 block text-xs text-(--color-text-muted)">
+                              {remaining === 0
+                                ? '0 turni residui'
+                                : `${remaining} ${remaining === 1 ? 'turno residuo' : 'turni residui'}`}
+                            </span>
+                          )}
                           <span className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASSES[status]}`}>
-                            {alreadyOnBooking ? 'Già in tavolata' : STATUS_LABEL[status]}
+                            {badgeLabel}
                           </span>
                         </button>
                       )
@@ -825,7 +921,11 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
               <Button
                 type="button"
                 variant="primary"
-                disabled={quickAssignSelection.length === 0 || isAssigning}
+                disabled={
+                  quickAssignSelection.length === 0 ||
+                  isAssigning ||
+                  (!!selectedSlot && isSlotClosed(selectedSlot.max_turns))
+                }
                 onClick={() => assignToSelectedTables(quickAssignBooking.id, quickAssignSelection)}
               >
                 {quickAssignSelection.length > 1
@@ -932,9 +1032,10 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
 
       {selectedSlotId && (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="flex flex-col gap-4 md:flex-row">
-            {/* Panel sinistro: prenotazioni non assegnate + tavolate già assegnate */}
-            <div className="space-y-2 md:w-1/3 md:shrink-0">
+          <div className={shellClass}>
+            {/* Prenotazioni non assegnate + tavolate già assegnate:
+                in testata nella vista Servizio, in colonna nell'elenco a schede */}
+            <div className={listClass}>
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
                   Prenotazioni ({unassigned.length})
@@ -969,13 +1070,16 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
                   Nessuna prenotazione da assegnare.
                 </p>
               )}
-              {unassigned.map((b) => (
-                <DraggableBookingCard
-                  key={b.id}
-                  booking={b}
-                  onQuickAssign={() => openQuickAssign(b.id, 'assign')}
-                />
-              ))}
+              <div className={cardsWrapClass}>
+                {unassigned.map((b) => (
+                  <div key={b.id} className={cardItemClass}>
+                    <DraggableBookingCard
+                      booking={b}
+                      onQuickAssign={() => openQuickAssign(b.id, 'assign')}
+                    />
+                  </div>
+                ))}
+              </div>
 
               {/* Tavolate già assegnate: da qui si aggiungono altri tavoli (D39) */}
               {assignedGroups.length > 0 && (
@@ -983,40 +1087,42 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
                   <p className="text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
                     Assegnate ({assignedGroups.length})
                   </p>
-                  {assignedGroups.map((group) => (
-                    <div
-                      key={group.booking.id}
-                      className="rounded-lg border border-(--color-border) bg-surface px-3 py-2 shadow-sm"
-                    >
-                      <p className="truncate text-sm font-semibold text-primary-900">
-                        {group.booking.client_name}
-                      </p>
-                      <p className="text-xs text-(--color-text-muted)">
-                        {group.booking.num_guests} coperti ·{' '}
-                        {group.tables.map((t) => t.name).join(', ')} ({group.seats} posti)
-                      </p>
-                      {group.missingSeats > 0 && (
-                        <p className="mt-1 text-xs font-medium text-amber-700">
-                          Mancano {group.missingSeats} posti per questa tavolata.
-                        </p>
-                      )}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="mt-1 text-xs"
-                        onClick={() => openQuickAssign(group.booking.id, 'add')}
+                  <div className={cardsWrapClass}>
+                    {assignedGroups.map((group) => (
+                      <div
+                        key={group.booking.id}
+                        className={`rounded-lg border border-(--color-border) bg-surface px-3 py-2 shadow-sm ${cardItemClass}`}
                       >
-                        <Plus className="h-3.5 w-3.5" aria-hidden />
-                        Aggiungi tavolo
-                      </Button>
-                    </div>
-                  ))}
+                        <p className="truncate text-sm font-semibold text-primary-900">
+                          {group.booking.client_name}
+                        </p>
+                        <p className="text-xs text-(--color-text-muted)">
+                          {group.booking.num_guests} coperti ·{' '}
+                          {group.tables.map((t) => t.name).join(', ')} ({group.seats} posti)
+                        </p>
+                        {group.missingSeats > 0 && (
+                          <p className="mt-1 text-xs font-medium text-amber-700">
+                            Mancano {group.missingSeats} posti per questa tavolata.
+                          </p>
+                        )}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="mt-1 text-xs"
+                          onClick={() => openQuickAssign(group.booking.id, 'add')}
+                        >
+                          <Plus className="h-3.5 w-3.5" aria-hidden />
+                          Aggiungi tavolo
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Panel destro: mappa tavoli con drop-zone (elenco o piantina) */}
+            {/* Mappa tavoli con drop-zone (elenco o piantina) */}
             <div className="flex-1 space-y-3">
               {layout === 'plan' ? (
                 <ServicePlanMap
@@ -1025,6 +1131,7 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables,
                   statuses={tableStatuses}
                   bookingsByTable={bookingsByTable}
                   onSelectTable={setPlanDetailTableId}
+                  selectedRoomId={selectedRoomId}
                 />
               ) : (
                 rooms.map((room) => {

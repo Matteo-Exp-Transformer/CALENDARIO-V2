@@ -37,6 +37,7 @@ Ultimo file in repo (verificato 24-06-26): **`065_table_assignments_force.sql`**
 | `063_rooms_soft_delete.sql` | S4 Traccia A / D50: `rooms.active boolean NOT NULL DEFAULT true` + indice parziale `rooms_tenant_active_idx`. Abilita l'eliminazione sala MORBIDA (`useDeleteRoom` soft-delete). **Solo TEST `docnnernvp`; PROD invariata.** |
 | `064_booking_occupancy_snapshot_force.sql` | S4 / D25+D37: snapshot finestra occupazione e audit overbooking su `booking_requests`. **Solo TEST; PROD invariata.** |
 | `065_table_assignments_force.sql` | S4 / D25: audit assegnazione forzata su `booking_table_assignments`. **Solo TEST; PROD invariata.** |
+| `066_booking_requests_served_at.sql` | S4 FIX-2 / S4-REQ-3: `booking_requests.served_at` — archiviazione al checkout senza tabella archivio. ⚠️ **File in repo ma NON applicata su TEST** (MCP Supabase non autorizzato nelle sessioni 02-08). Sintomo a video: liberando l'ultimo tavolo di una tavolata → `PGRST204 Could not find the 'served_at' column of 'booking_requests' in the schema cache`. Da applicare a mano sul TEST `docnnernvp` prima di ricollaudare. **PROD invariata.** |
 
 ### Due ambienti Supabase — non confonderli
 

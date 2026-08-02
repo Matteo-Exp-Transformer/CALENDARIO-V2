@@ -205,11 +205,13 @@
   (`SERVICE_ASSIGNMENTS_REFETCH_INTERVAL_MS`), senza realtime/S4-LIVE.
 - **UX assegnazione:** select fascia mostra il conteggio prenotazioni da assegnare; drag con anteprima
   nome+coperti; ogni card ha azione `Assegna` per aprire modale rapida sala/tavolo; dopo assegnazione
-  compare undo/conferma, con undo append-only (`checked_out_at`), mai DELETE.
+  compare undo/conferma. **Undo (FIX-2):** DELETE fisico della riga appena creata — non consuma un
+  turno e non archivia la prenotazione; non viola D48 (append-only sui turni realmente serviti).
 - **Forzatura guidata:** tavolo occupato resta visibile ma non accetta drop silenzioso. Drop/click su tavolo
   occupato apre avviso esplicito `Libera e assegna`; la riga precedente viene timbrata `checked_out_at`, il
   nuovo assignment viene inserito con `forced_by_admin`/`force_reason`. Stesso schema per walk-in occupato
-  con conferma in due passaggi.
+  con conferma in due passaggi. **FIX-2:** la conferma ambra chiude prima la modale «Assegna tavolo»
+  (altrimenti restava sotto e sembrava un fallimento muto).
 - **Briefing timezone:** orari in modal/PDF usano `desired_time`/ora a muro (`getAccurateStartTime`), non
   `format(new Date(confirmed_start))`.
 - **Mobile:** editor/mappa configurazione nascosta sotto `md`; priorità alla lista/assegnazione operativa.
@@ -246,3 +248,45 @@
   usato da elenco, piantina e modale — prima erano duplicati in `AssignmentMapPanel`.
 - **Test:** `AssignmentMapPanel.fineTurnoMultiTavolo.test.tsx` (8) e `ServizioPage.dueViste.test.tsx`
   (4). `npm run validate` verde: 144 file / 1198 test.
+
+### 9.6 FIX-2 (02-08-26) — turni esauriti, archiviazione al checkout, forzatura visibile
+
+> S4-BUG-2 + S4-REQ-3 + S4-UX-8. Client + migrazione `066_booking_requests_served_at.sql`.
+
+- **Turni residui in UI (S4-BUG-2).** Il conteggio turni resta su **tutte** le righe (anche chiuse):
+  un turno concluso ha consumato. Cambia la UI: nella modale «Assegna tavolo» ogni tavolo mostra i
+  turni residui; a 0 compare badge **«Turni esauriti»** (non selezionabile in multi-select, ma
+  forzabile di proposito → riquadro ambra). Util: `tableTurnLimits.ts`.
+- **Fascia chiusa (`max_turns = 0`).** Errore distinto `FasciaChiusaError` («La fascia è chiusa:
+  riaprila…»), toast + banner in modale — non più confuso con «Turni esauriti».
+- **Undo = DELETE fisico.** Corregge un errore di pochi secondi: la riga sparisce e non conta come
+  turno. D48 resta per i turni realmente serviti (checkout append-only).
+- **Archiviazione al checkout (`served_at`, S4-REQ-3).** `booking_requests.served_at` valorizzato
+  solo da `useCheckoutTable` quando non restano assegnazioni attive sulla stessa prenotazione
+  (tavolata multi-tavolo: archivia all'ultimo tavolo). **Non** valorizzato da undo, «Libera e
+  assegna», né release da Calendario. Riassegnazione → `served_at = null`. Filtro
+  `filterUnassignedBookingsForSlot` esclude le servite.
+- **Forzatura raggiungibile (S4-UX-8).** `openForceConfirm` chiude la modale prima di mostrare il
+  riquadro ambra «Assegna comunque» / «Libera e assegna».
+- **L'archiviazione non fa fallire il checkout.** `markBookingServedIfFullyReleased` **non lancia**:
+  quando gira, `checked_out_at` è già scritto. Un throw salterebbe l'invalidate e la mappa mostrerebbe
+  il tavolo ancora occupato pur essendo libero nel DB (sintomo reale con la mig. 066 non applicata:
+  `PGRST204 … 'served_at' … schema cache`). Ritorna `{ archived: false }` → toast dedicato.
+- **Test:** `tableTurnLimits.test.ts`, `useTableAssignments.fix2.test.ts` (4 casi archiviazione +
+  undo + fascia chiusa + archiviazione fallita non bloccante), `AssignmentMapPanel.fix2.test.tsx`
+  (UI turni + forzatura + layout testata).
+
+### 9.7 Layout vista Servizio (02-08-26) — testata e sale a due colonne
+
+> Solo UI, nessuna scrittura DB. Richiesta diretta di Matteo: «le sale occupano spazio».
+
+- **Prenotazioni in testata, non in colonna.** In `layout="plan"` l'elenco «Prenotazioni (N)» e
+  «Assegnate (N)» diventa una **striscia orizzontale** sopra la mappa (card `w-64 shrink-0`,
+  `overflow-x-auto`). Prima era una colonna `md:w-1/3` che rubava un terzo di larghezza alla
+  piantina e diventava alta ~2000px con 4 prenotazioni. `layout="grid"` (solo test) resta com'era.
+- **Sale a due colonne.** `ServicePlanMap` mette le sale in `grid-cols-1 lg:grid-cols-2`.
+- **Una sola sala sotto `lg`.** Da telefono/tablet due piantine affiancate sono illeggibili: si
+  mostra **solo** la sala scelta nelle linguette (`RoomTabs`), le altre sono `hidden lg:block`.
+  `selectedRoomId` scende `ServizioPage → AssignmentMapPanel → ServicePlanMap`. Se la sala scelta
+  non ha tavoli si ripiega sulla prima con tavoli: il pannello non resta mai vuoto.
+- **Test:** `ServicePlanMap.griglia.test.tsx` (5).

@@ -19,6 +19,7 @@ const dbCalls = vi.hoisted(() => ({
   insertCount: 0,
   lastUpdatePayload: null as unknown,
   lastInsertPayload: null as unknown,
+  updatePayloads: [] as unknown[],
   updateError: null as null | Error,
 }))
 
@@ -34,6 +35,7 @@ vi.mock('@/lib/supabase', () => {
     chain.update = (payload: unknown) => {
       dbCalls.updateCount++
       dbCalls.lastUpdatePayload = payload
+      dbCalls.updatePayloads.push(payload)
       return chain
     }
     chain.delete = () => {
@@ -120,6 +122,7 @@ describe('useCheckoutTable — append-only (D48)', () => {
     dbCalls.insertCount = 0
     dbCalls.lastUpdatePayload = null
     dbCalls.lastInsertPayload = null
+    dbCalls.updatePayloads = []
     dbCalls.updateError = null
   })
 
@@ -136,7 +139,9 @@ describe('useCheckoutTable — append-only (D48)', () => {
 
     expect(dbCalls.deleteCount).toBe(0)
     expect(dbCalls.updateCount).toBeGreaterThanOrEqual(1)
-    expect(dbCalls.lastUpdatePayload).toMatchObject({ checked_out_at: expect.any(String) })
+    expect(dbCalls.updatePayloads.some((p) => p && typeof p === 'object' && 'checked_out_at' in p)).toBe(
+      true,
+    )
   })
 
   it('checkout con turno successivo in attesa → UPDATE checked_out_at, mai DELETE', async () => {
@@ -153,7 +158,9 @@ describe('useCheckoutTable — append-only (D48)', () => {
 
     expect(dbCalls.deleteCount).toBe(0)
     expect(dbCalls.updateCount).toBeGreaterThanOrEqual(1)
-    expect(dbCalls.lastUpdatePayload).toMatchObject({ checked_out_at: expect.any(String) })
+    expect(dbCalls.updatePayloads.some((p) => p && typeof p === 'object' && 'checked_out_at' in p)).toBe(
+      true,
+    )
   })
 })
 
@@ -166,6 +173,7 @@ describe('useReleaseBookingAssignment — append-only (D48)', () => {
     dbCalls.insertCount = 0
     dbCalls.lastUpdatePayload = null
     dbCalls.lastInsertPayload = null
+    dbCalls.updatePayloads = []
     dbCalls.updateError = null
   })
 
@@ -212,6 +220,7 @@ describe('useForceReplaceBookingOnTable — libera e assegna append-only (D25/D4
     dbCalls.insertCount = 0
     dbCalls.lastUpdatePayload = null
     dbCalls.lastInsertPayload = null
+    dbCalls.updatePayloads = []
     dbCalls.updateError = null
   })
 
@@ -231,7 +240,9 @@ describe('useForceReplaceBookingOnTable — libera e assegna append-only (D25/D4
     expect(dbCalls.deleteCount).toBe(0)
     expect(dbCalls.updateCount).toBeGreaterThanOrEqual(1)
     expect(dbCalls.insertCount).toBe(1)
-    expect(dbCalls.lastUpdatePayload).toMatchObject({ checked_out_at: expect.any(String) })
+    expect(dbCalls.updatePayloads.some((p) => p && typeof p === 'object' && 'checked_out_at' in p)).toBe(
+      true,
+    )
     expect(dbCalls.lastInsertPayload).toMatchObject({
       booking_id: 'b-new',
       table_id: 'table-1',

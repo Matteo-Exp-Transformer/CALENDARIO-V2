@@ -169,7 +169,21 @@ Matteo ha fatto a mano. Era un buco della copertura, non degli agenti.
    (`docs/_lavoro/e2e-s4/corsia-B/briefing-2026-08-02-giornata-completa.pdf`) e controllare gli orari.
 2. **Giudizio estetico** sugli screenshot responsive della corsia C (leggibilità, non overflow: quello
    è già misurato).
-3. **Decidere** su `S4-BUG-4`: il walk-in «solo coperti» è ancora un requisito?
-4. **Decidere** su `S4-BUG-6`: il denominatore del badge deve essere il locale intero o il limite
-   della fascia?
-5. Le tre decisioni della §10 della checklist: soglia di ritardo, buffer di riassetto, durata walk-in.
+3. Le tre decisioni della §10 della checklist: soglia di ritardo, buffer di riassetto, durata walk-in.
+
+---
+
+## 7. Decisioni prese da Matteo il 02-08-26 sera — chiuse
+
+| ID | Questione | Decisione | Effetto |
+|----|-----------|-----------|---------|
+| `S4-BUG-5` | Il percorso pubblico ignora i posti dei tavoli e D38 | **Allineare, ma dopo il collaudo** | Direzione confermata, cantiere separato (RPC + Edge, rischio PROD). Oggi non è un KO: online comanda solo il cap fascia. |
+| `S4-BUG-6` | Denominatore del badge % in Calendario | **Tutto il locale, com'è** | Nessun lavoro. Voce §4-5 della checklist riscritta. |
+| `S4-BUG-4` | Walk-in «solo coperti» senza tavolo | **Ritirato: sala e tavolo restano obbligatori** | Nessun lavoro. Voce §5-1 della checklist riscritta; D45 del masterplan da allineare. |
+| `S4-BUG-7` | Badge occupazione assenti sul Classic | **Va bene così** | Chiusa come non-difetto: FIX-3 ha dimostrato col confronto su `main` che non è una regressione S4. Lo screenshot della corsia D era su un giorno vuoto. |
+
+`S4-NOTE-11` (fascia AG-D senza orari pubblici) resta **operativa**: la corsia D va rieseguita su una
+fascia larga almeno 3 ore. `S4-DEBT-9` (spunta Privacy non cliccabile da automazione) resta un debito
+di collaudo, non un difetto per il cliente.
+
+Il seguito del lavoro è in [../HANDOFF_S4_SENIOR.md](../HANDOFF_S4_SENIOR.md).
