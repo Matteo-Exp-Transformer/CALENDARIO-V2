@@ -21,6 +21,8 @@ description: >-
 | Configurare staging Supabase | **TESTING_SKILL** (questo) |
 | Analizzare un test che fallisce | **TESTING_SKILL** (questo) |
 | **Blindare una sezione** (quali test dopo la mappatura, quando il "rompi" è dovuto) | **[MANUALE_BLINDATURA.md](MANUALE_BLINDATURA.md)** |
+| **Collaudo a mano di S4 / Servizio** (cosa deve provare Matteo) | **[COLLAUDO_S4_CHECKLIST.md](COLLAUDO_S4_CHECKLIST.md)** |
+| **Far eseguire il collaudo S4 agli agenti** (Playwright MCP, 4 corsie in parallelo) | **[PIANO_E2E_AGENTI_S4.md](PIANO_E2E_AGENTI_S4.md)** + **[PROMPT_AGENTI_E2E_S4.md](PROMPT_AGENTI_E2E_S4.md)** |
 | Modificare il codice applicativo (non i test) | skill area (ADMIN_CLASSIC, ADMIN_SHELL, DB…) |
 | Modificare schema DB per far girare un test | **DB_SKILL** + TESTING_SKILL |
 

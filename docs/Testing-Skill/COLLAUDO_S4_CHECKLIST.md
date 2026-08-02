@@ -6,6 +6,12 @@
 >
 > Aggiornato: **02-08-2026** · Ambiente: **TEST** (`docnnernvp`) · Branch: `env/test`
 > Stato codice: `npm run validate` verde — 144 file / 1198 test.
+>
+> **Non devi eseguirla a mano.** Le sezioni 2→9 sono state trasformate in un piano per agenti con
+> Playwright MCP: **[PIANO_E2E_AGENTI_S4.md](PIANO_E2E_AGENTI_S4.md)** (4 corsie in parallelo) con i
+> prompt pronti in **[PROMPT_AGENTI_E2E_S4.md](PROMPT_AGENTI_E2E_S4.md)**. Gli agenti eseguono e
+> raccolgono le prove; a te resta la **controverifica**. Restano comunque tuoi: le decisioni della
+> §10, l'apertura del **PDF** del briefing e i giudizi di leggibilità.
 
 ---
 
