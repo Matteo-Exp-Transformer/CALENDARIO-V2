@@ -1,22 +1,58 @@
 # Handoff S4 — per il prossimo agente senior (Opus)
 
-> Scritto il 02-08-2026 a fine sessione. Branch `env/test`. Nessuna scrittura su PROD.
-> Il tuo ruolo è **supervisione**: Matteo controverifica, non testa attivamente. Tu mandi avanti i
-> giri di lavoro, leggi i report degli agenti e ti fidi solo di quello che è dimostrato.
+> Scritto il 02-08-2026, **aggiornato la sera del 02-08-2026**. Branch `env/test`. Nessuna scrittura
+> su PROD. Il tuo ruolo è **supervisione**: Matteo controverifica, non testa attivamente. Tu mandi
+> avanti i giri di lavoro, leggi i report degli agenti e ti fidi solo di quello che è dimostrato.
 
 ---
 
-## 0. La prima cosa che fai all'avvio
+## 0. La prima cosa che fai all'avvio — **due revisioni, in quest'ordine**
 
-**Rimappa i prompt del giro 4 sul codice reale** con
-[PREPARA_PROMPT_SKILL.md](../../PREPARA_PROMPT_SKILL.md), poi aggiorna
-[PROMPT_AGENTI_E2E_S4.md](../../Testing-Skill/PROMPT_AGENTI_E2E_S4.md).
+Quando prendi in mano questa sessione, due lavori sono partiti in parallelo e **nessuno dei due è
+stato revisionato**. Non lanciare altro finché non li hai chiusi.
 
-I quattro prompt FIX-4A…4D sono stati scritti **a partire da quello che Matteo ha chiesto a voce**,
-non da una lettura riga per riga del codice. Sono una bozza buona ma non verificata: prima di
-lanciarli apri `AssignmentMapPanel.tsx` e `ServicePlanMap.tsx`, controlla che i nomi, i punti di
-aggancio e i vincoli citati corrispondano, e riscrivili dove serve. Non lanciare gli agenti sui
-prompt così come sono.
+### 0.1 — Revisiona i due fix della vista Servizio (FIX-5 e FIX-6)
+
+Piano approvato da Matteo: **[Piano-fix5-fix6-servizio-02-08-26.md](Piano-fix5-fix6-servizio-02-08-26.md)**.
+Lanciato in parallelo con gli agenti del giro 4 la sera del 02-08.
+
+- **FIX-5 — sostituzione guidata su tavolo occupato.** Al posto del pulsante unico «Libera e
+  assegna» il riquadro deve chiedere *cosa fai di chi è seduto?* con tre risposte: **spostalo** su un
+  altro tavolo (nuova, oggi non esiste), **ha finito** → libera e archivia, **torna in attesa**.
+- **FIX-6 — fasce di servizio accavallate.** Il salvataggio deve rifiutarle riusando
+  `validateSlotConfigs` (`src/features/booking/utils/bookingTimeSlots.ts`), che già esiste e già
+  funziona sull'altro editor di fasce.
+
+Cosa guardare con attenzione, perché è la parte che si rompe in silenzio:
+1. **Il conteggio dei turni.** Spostare o rimettere in attesa **non deve** consumare un turno del
+   tavolo conteso (riga cancellata); archiviare **sì** (riga timbrata). Provalo a video: dopo una
+   sostituzione i turni residui del tavolo devono calare di **uno solo**.
+2. **L'ordine delle tre scritture** nel caso «sposta»: prima si siede chi viene spostato sul tavolo
+   nuovo, poi si libera il vecchio, poi entra la prenotazione nuova. Non ci sono transazioni: con
+   l'ordine sbagliato un errore a metà lascia dei clienti senza tavolo.
+3. **Le tavolate su più tavoli**: si agisce solo sul tavolo conteso, gli altri restano.
+4. Il ramo **«Turni esauriti»** (tavolo libero ma turni finiti) non doveva essere toccato.
+5. FIX-6 non doveva toccare il database: solo controllo lato app.
+
+### 0.2 — Revisiona l'esecuzione del piano di allineamento migrazioni
+
+Report: **[Report-allineamento-migrazioni-supabase-test-02-08-26.md](Report-allineamento-migrazioni-supabase-test-02-08-26.md)**,
+commit `8a93882`. Foto del registro prima e dopo in `REGISTRO_PRIMA.json` / `REGISTRO_DOPO.json`.
+
+Da controllare:
+- `npx supabase migration list --linked` → ogni file locale ha la sua riga, nessuna riga data-ora
+  residua, nessuna riga senza file (tranne il doppio prefisso `003`, falso positivo noto).
+- `npx supabase db push --linked --dry-run` → **niente in attesa**.
+- La colonna `booking_requests.served_at` ha anche il suo **commento**: era il pezzo che mancava
+  dall'applicazione a mano della `066`, ed è la prova che la catena funziona davvero.
+- **I quattro file che non risultavano registrati** (`018`, `020`, `057`, `058`): l'agente doveva
+  dimostrare oggetto per oggetto che erano davvero già applicati, non archiviarli al buio. Se il
+  report non lo dimostra, quella è la cosa da rifare.
+- `npm run db:apply` con il progetto giusto funziona; simulando un altro ref si rifiuta.
+- `npm run validate` verde.
+
+> Nota: `.claude/hooks/guard-prod.mjs` è escluso da git (`.git/info/exclude`) e resta **solo locale**;
+> la copia versionata è `.cursor/hooks/guard-prod.mjs`. Non è una dimenticanza dell'agente.
 
 ---
 
@@ -28,10 +64,17 @@ prompt così come sono.
 |------|------|-------|
 | 1 | Collaudo e2e a 4 corsie (Playwright MCP) | ✅ fatto — 52 voci: 32 OK, 7 KO, 9 bloccate |
 | 2 | FIX-1 orologio · FIX-2 assegnazioni/archiviazione · FIX-3 indagine | ✅ fatto, revisionato |
-| — | Revisione d'insieme + layout vista Servizio | ✅ fatto (questa sessione) |
-| 3 | RIPROVA-B, RIPROVA-D | ⛔ **bloccato** dalla migrazione 066 |
-| 4 | Quattro rifiniture della vista Servizio | ⏳ prompt in bozza, da rimappare |
-| 5 | Consolidamento | ⏳ dopo il giro 3 e 4 |
+| — | Revisione d'insieme + layout vista Servizio | ✅ fatto |
+| 3 | RIPROVA-B, RIPROVA-D | ✅ eseguite 02-08 sera — report in `E2E-Report/` |
+| 4 | Quattro rifiniture della vista Servizio | 🔄 prompt rimappati sul codice, ondate lanciate |
+| — | **FIX-5** sostituzione guidata · **FIX-6** fasce accavallate | 🔄 lanciati 02-08 sera — **da revisionare (§0.1)** |
+| 5 | Consolidamento | ⏳ dopo il giro 4 e i due fix |
+
+**Cosa hanno detto le riprove del giro 3.** La corsia B conferma i fix del giro 2 su tutto ciò che ha
+potuto provare (orologio allineato, turni residui, «Fascia chiusa» distinta, annullamento che non
+brucia turni, `served_at` scritto). Quattro voci sono rimaste **bloccate dall'orario, non dal
+codice**: l'agente ha creato una fascia dalle 19 con durata pasto 3 ore, quindi «In uscita» non
+poteva scattare prima delle 22. La corsia D ha trovato **un buco vero** — vedi §3-bis.
 
 Tutti i report stanno in [E2E-Report/](E2E-Report/); l'indice è il `README.md` di quella cartella.
 La sintesi con gli ID dei difetti (S4-BUG-1 … S4-NOTE-11) è
@@ -40,25 +83,21 @@ La sintesi con gli ID dei difetti (S4-BUG-1 … S4-NOTE-11) è
 
 ---
 
-## 2. ⛔ Il blocco, prima di tutto il resto
+## 2. ✅ Il blocco è caduto — e con lui il problema che lo causava
 
-La migrazione `066_booking_requests_served_at.sql` è **nel repo ma non applicata sul TEST**
-(`docnnernvp`). Due sessioni di fila non hanno avuto il connettore MCP Supabase autorizzato.
+La migrazione `066_booking_requests_served_at.sql` è **applicata sul TEST** (`docnnernvp`): Matteo ha
+incollato l'`ALTER TABLE` a mano il 02-08, e il resto del file è passato dal canale nuovo.
 
-Sintomo a video: liberando l'**ultimo** tavolo di una tavolata →
-`PGRST204 Could not find the 'served_at' column of 'booking_requests' in the schema cache`.
+Soprattutto: **gli agenti ora possono scrivere sul database di test da soli.** Il registro migrazioni
+era annotato in due grafie diverse e non combaciava più con i file del repo — per questo `db push`
+era vietato in blocco. Riallineato il registro, la regola è cambiata:
 
-```sql
-ALTER TABLE public.booking_requests
-  ADD COLUMN IF NOT EXISTS served_at timestamptz;
-```
+> `supabase db push --include-all` **vietato per sempre** (doppio prefisso `003`).
+> `db push` normale **ammesso solo su TEST**, preferibilmente con **`npm run db:apply`**, che si
+> rifiuta di partire se il progetto collegato non è `docnnernvp`.
+> Su **PROD** nessun push: migrazioni a mano, con conferma esplicita di Matteo ogni volta.
 
-Prima di applicarla: `get_project_url` deve rispondere `docnnernvp`. Se risponde `rwuxgvld` è
-PRODUZIONE → fermati. Se il connettore non è autorizzato neanche per te, **chiedi a Matteo di
-incollarla nel pannello TEST**: senza, metà del giro 3 non vale.
-
-Il codice nel frattempo degrada in modo pulito: il tavolo si libera comunque, le liste si aggiornano
-e compare un avviso. Non è un motivo per rimandare la migrazione.
+Il lavoro è nel commit `8a93882` ed **è da revisionare** (§0.2).
 
 ---
 
@@ -70,10 +109,33 @@ e compare un avviso. Non è un motivo per rimandare la migrazione.
 | Denominatore del badge % in Calendario (S4-BUG-6) | **Tutto il locale, com'è** | Nessun lavoro. La voce §4-5 della checklist va **riscritta**, non segnata KO. |
 | Walk-in «solo coperti» (S4-BUG-4) | **No: sala e tavolo restano obbligatori** | Nessun lavoro. Va tolta la voce §5-1 dalla checklist e allineato il masterplan (D45 parlava di walk-in senza tavoli). |
 | Badge Classic senza limite (S4-BUG-7) | **Va bene così** | Chiusa come non-difetto: FIX-3 ha dimostrato col confronto su `main` che non è una regressione S4. |
+| Sostituzione su tavolo occupato | **Tre scelte, e la prima sposta chi è seduto** | FIX-5, §0.1. La scelta 1 riguarda chi è già a tavola, non la prenotazione trascinata. |
+| Turno bruciato dalla sostituzione | **No, se il cliente viene spostato o rimesso in attesa** | Vale anche per la scelta «torna in attesa», che oggi il turno lo consuma: è un cambio di comportamento esistente, voluto. Archiviare invece consuma il turno: lì il pasto c'è stato. |
+| Fasce di servizio accavallate | **È un difetto, va bloccato** | FIX-6, §0.1. Solo controllo lato app. |
 
 Restano **operative**, non decisioni: rieseguire la corsia D su una fascia larga (la prima volta era
 50 minuti in un buco di 59, quindi zero orari pubblici validi) e la spunta Privacy non cliccabile da
 automazione, che resta un debito di collaudo Classic.
+
+---
+
+## 3-bis. Il buco trovato dalla corsia D — **non toccarlo senza via libera**
+
+Chiudi una fascia dall'admin («Chiudi servizio»), vai sul form pubblico: **gli orari di quella fascia
+sono ancora lì e ancora cliccabili**, e il cliente prenota dentro un servizio che tu hai chiuso.
+Riproduzione e prova in [RIPROVA_D.md](E2E-Report/RIPROVA_D.md), bug 1.
+
+Verificato leggendo il codice: `max_turns` — il campo che si azzera quando chiudi — **non compare in
+nessuna Edge Function né in nessuna RPC pubblica**. Non è una regressione di S4: la chiusura fascia
+non è mai stata collegata al percorso del cliente.
+
+Sistemarlo tocca l'Edge `create-booking` e la generazione degli orari pubblici, cioè il pezzo che
+gira **già online per i clienti veri**. È un cantiere separato, con autorizzazione esplicita di
+Matteo, non una rifinitura da infilare nel giro 4.
+
+Sempre dalla corsia D, rimasto in sospeso: l'invio completo di una prenotazione Classic (oltre la
+spunta Privacy, altri campi obbligatori bloccano il submit da automazione) e la controprova
+«oltre il limite di coperti». Da fare a mano.
 
 ---
 
@@ -95,15 +157,54 @@ automazione, che resta un debito di collaudo Classic.
 
 ---
 
+## 4-bis. Quadro generale della pagina Servizio — cosa c'è, cosa si muove, cosa manca
+
+Questa è la mappa da avere in testa prima di toccare qualsiasi cosa. La pagina è **completa e viva su
+`env/test`, mai andata in produzione**: i ristoratori veri, oggi, la pagina Servizio non ce l'hanno.
+
+**Cosa fa già la pagina (S3 + S4, tutto su TEST):**
+
+| Pezzo | Stato |
+|---|---|
+| Sale e piantina dei tavoli (crea, sposta, ridimensiona, griglia 10px) | ✅ in piedi |
+| Due viste: elenco a schede e piantina della sala | ✅ in piedi |
+| Assegnazione trascinando la prenotazione sul tavolo | ✅ in piedi |
+| Tavolate su più tavoli (una prenotazione, due tavoli piccoli) | ✅ in piedi |
+| 5 stati del tavolo: libero, in arrivo, occupato, in ritardo, in uscita | ✅ in piedi, orologio corretto |
+| Turni per fascia, «turni residui», «turni esauriti», fascia chiusa | ✅ in piedi |
+| Forzatura con motivo registrato (chi ha forzato e perché) | ✅ in piedi |
+| Annulla assegnazione (non brucia turni) · Libera tavolo (archivia) | ✅ in piedi |
+| Avviso di fine turno che si apre da solo | ✅ in piedi, **collaudo mai completato** |
+| Walk-in (cliente senza prenotazione) | ✅ in piedi, sala e tavolo obbligatori |
+| Briefing PDF del servizio | ✅ in piedi |
+
+**Cosa si sta muovendo adesso (02-08 sera, tutto lanciato in parallelo):**
+FIX-4A card espandibile + lampeggio · FIX-4B striscia prenotazioni in testata · FIX-4C orario sulla
+card · FIX-4D tavoli più grandi in piantina · **FIX-5** sostituzione guidata · **FIX-6** fasce
+accavallate. Le prime quattro sono rifiniture di come si vede; le ultime due cambiano come si
+comporta. Ondate e proprietà dei file: §5.
+
+**Cosa manca ancora, in ordine di peso:**
+1. La chiusura di una fascia non arriva al cliente (§3-bis) — l'unico che tocca la produzione.
+2. La capienza pubblica non guarda i tavoli veri, guarda solo il tetto della fascia (decisione §3:
+   sì, ma dopo il collaudo).
+3. Voci di collaudo mai completate: avviso fine turno, tavolata liberata a metà, stato «in uscita»,
+   pulsanti a 375px. Sono bloccate dagli orari di prova, non da difetti.
+4. Debiti noti: e2e quasi assenti su questa pagina, walk-in non transazionale, nome tavolo unico solo
+   lato app.
+
+---
+
 ## 5. Ordine di lavoro consigliato
 
-1. Migrazione 066 su TEST (blocco).
-2. Rimappa i prompt del giro 4 con la skill prepara-prompt.
-3. Giro 3: RIPROVA-B e RIPROVA-D **in parallelo** (corsie e dati diversi, non si pestano).
-4. Giro 4: FIX-4A…4D **uno alla volta o tutti a un solo agente** — toccano gli stessi due file, in
-   parallelo si sovrascrivono.
-5. Consolidamento (da solo).
-6. Riscrivi le voci di checklist toccate dalle decisioni della §3.
+1. **Le due revisioni della §0**, prima di tutto: i due fix della vista Servizio, poi l'allineamento
+   migrazioni. Niente di nuovo finché non sono chiuse.
+2. Giro 4 — ondate per **proprietà dei file**, mai due agenti sullo stesso file:
+   ondata 1 = FIX-5 · FIX-4D · FIX-6 (file diversi, in parallelo) → ondata 2 = FIX-4B + 4C →
+   ondata 3 = FIX-4A → consolidamento.
+3. Ricollauda a mano quello che le riprove non hanno potuto provare (§4-bis, punto 3): serve una
+   fascia lunga o una durata pasto corta, non un fix.
+4. Riscrivi le voci di checklist toccate dalle decisioni della §3.
 
 ---
 
@@ -130,4 +231,8 @@ automazione, che resta un debito di collaudo Classic.
   un falso KO su un giorno vuoto, e il caso dei turni esauriti l'ha trovato Matteo a mano perché
   l'agente aveva (correttamente) scritto BLOCCATO invece di inventarsi un esito.
 - **Mai** commit o push senza richiesta esplicita. **Mai** scritture su PROD senza conferma chiesta
-  ogni singola volta. `supabase db push` vietato. Le migrazioni già applicate non si toccano.
+  ogni singola volta. Le migrazioni già applicate non si toccano.
+  Sul database: `db push --include-all` **vietato per sempre**; su TEST usa **`npm run db:apply`**
+  (§2); su PROD nessun push, mai.
+- ⚠️ **Il repo non ha prettier**: `npx prettier --write` riscrive tutto in doppi apici con punto e
+  virgola. Lo stile è single-quote / no-semi, garantito da ESLint.
