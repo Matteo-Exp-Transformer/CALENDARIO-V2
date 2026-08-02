@@ -48,6 +48,24 @@
 
 ## Sessioni registrate (append-only)
 
+### 02-08-26 — S4-FIX-5/FIX-6 Servizio: seconda occorrenza di E-A + conferma «commit ≠ push»
+- **Area:** Servizio — sostituzione guidata tavolo occupato + divieto fasce accavallate (codice + skill).
+- **E-A ricorrente (Dossier senior 04-06-26, D3 «si ripeterà»):** aggiornando solo la sezione toccata di
+  `ADMIN_SHELL_PAGES_CONTEXT.md` (§ Servizio → Assegnazione tavoli) avrei lasciato stale una riga
+  preesistente altrove nello stesso file («Undo = update append-only, non delete» — sbagliata, il codice
+  fa un DELETE fisico). Trovata solo perché il nudge dell'hook fine-sessione ha chiesto esplicitamente
+  «file correlati allineati? caso E-A» e ho riletto l'intero file, non solo la sezione nuova. **Seconda
+  occorrenza reale** dopo quella del 04-06-26: rafforza il caso per D3 (regola esplicita in
+  `CHIUSURA_SESSIONE.md` §5 — «rileggi tutto il file skill toccato» — o check nell'hook `stop`).
+  Non promosso a regola da questo agente (confine deliverable esecutore).
+- **Dato comunicazione — commit ≠ push, di nuovo:** Matteo ha detto «compila report finale lavoro e fai
+  commit», poi ha corretto a «fai solo report del tuo lavoro e commit» (bloccando l'agente mentre stava
+  per aggiornare `PROMPT_AGENTI_E2E_S4.md`/`COLLAUDO_S4_CHECKLIST.md`, fuori scope del suo lavoro
+  diretto). Conferma il pattern dell'11-06-26: **«commit» esplicito non implica push automatico**, anche
+  quando la frase di apertura richiamava «report finale» (che di vocabolario include push). Vince la
+  richiesta più recente e più precisa.
+- **Report:** `docs/Sessioni di lavoro/02-08-26/Report-fix5-fix6-servizio-02-08-26.md`.
+
 ### 21-06-26 — Ordine categorie Menu / dettaglio prenotazione (QA Matteo)
 - **Prompt di ripartenza:** profilo, area, causa, punto di modifica, test e branch già espliciti; nessuna domanda necessaria.
 - **QA:** Matteo ha controtestato il dettaglio prenotazione e confermato «funziona».
