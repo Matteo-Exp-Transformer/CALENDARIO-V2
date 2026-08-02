@@ -21,6 +21,16 @@ Giro 2 (fix) e revisione:
 | `INDAGINE_APERTE.md` | Le cinque domande aperte: risposta + proposta + chi decide |
 | `REVISIONE_FIX.md` | **Revisione d'insieme del giro 2** + il blocco della migrazione 066 |
 
+Giro 3 (riprove dopo i fix, eseguite il 02-08 sera):
+
+| File | Cosa contiene |
+|------|---------------|
+| `RIPROVA_B.md` | Servizio dal vivo: stati dei tavoli, turni, forzatura, archiviazione. Conferma FIX-1 e FIX-2. Quattro voci restano **bloccate dall'orario di prova**, non da difetti (fascia serale + durata pasto 3 ore → «In uscita» non poteva scattare). |
+| `RIPROVA_D.md` | Capienza, form pubblico, Classic. Trova il buco vero: **«Chiudi servizio» non spegne gli orari sul form pubblico** — cantiere separato, tocca la produzione. |
+
+Il piano dei due fix nati da questo giro (FIX-5 sostituzione guidata, FIX-6 fasce accavallate) sta un
+livello sopra: [Piano-fix5-fix6-servizio-02-08-26.md](../Piano-fix5-fix6-servizio-02-08-26.md).
+
 Gli **screenshot** non stanno qui: vanno in `docs/_lavoro/e2e-s4/corsia-<X>/`, che è una cartella
 privata **non versionata**. I report la citano per percorso.
 

@@ -165,6 +165,19 @@ Due upgrade *strutturali* approvati dal Meta senior (12-06-26) e portati in esec
 - **Anti-storia (§8 APP_CONTEXT + regola organizzativa).** Le skill vive tengono **stato + divieti + link**; la cronologia sta nei report. Conversione: potatura attiva sull'area più narrativa (Menu QR), on-touch sulle altre. Guardrail ammesso ≤3 righe con link al report. Verifica meccanica: `grep «Fino al / Storia, perché»` = 0 nell'area potata.
 - **Propagati nel template v.0** (gitignored): nuovo `_skill-system-v0/aree/_TEMPLATE_MINI.md` + rimando in `_TEMPLATE_AREA_SKILL.md` + regola 6 «Anti-storia» in `REGOLE_ORGANIZZATIVE.md`. *(Coerente col punto 5: a fine lavoro strutturale, propaga al v.0.)*
 
+**12. Agenti in parallelo: la proprietà dei FILE, non l'argomento del task (metodo, 02-08-26, S4 giro 4).**
+Per decidere se due lavori possono correre insieme non guardare **di cosa parlano**, guarda **quali
+file aprono**. Caso reale: un handoff dichiarava «i 4 fix non sono parallelizzabili» perché erano
+tutti «rifiniture della stessa vista»; letto il codice, due toccavano `AssignmentMapPanel.tsx` e due
+`ServicePlanMap.tsx`/`TableShape.tsx` → **zero file in comune**, quindi due ondate invece di quattro
+turni in fila. Schema operativo: (a) leggi i file veri prima di scrivere i prompt — l'argomento
+inganna, il diff no; (b) ogni prompt dichiara «File che POSSIEDI / File che NON devi toccare»;
+(c) clausola obbligatoria **«se `validate` fallisce su file che non possiedi, NON correggerli»**,
+altrimenti l'agente A ripara il lavoro a metà dell'agente B e si sovrascrivono.
+**Conseguenza sul commit del supervisore:** mentre gli agenti lavorano il working tree contiene il
+loro lavoro in corso → **mai `git add -A`**, solo i percorsi propri, altrimenti si committa codice
+non finito e mai revisionato. **Anti-pattern curato:** *parallelismo giudicato per argomento*.
+
 > 🛑 **PAUSA-RACCOLTA (decisa 29-05-26).** Lo skill system ha avuto molte aggiunte in pochi giorni.
 > **Stop a nuovi meccanismi/regole** finché non si accumulano ~5-10 sessioni di dati con gli
 > strumenti già esistenti (modalità, metriche successo chat, log idee). Il prossimo passo è
