@@ -323,12 +323,19 @@ export const ServizioPage: FC = () => {
             )}
 
             {selectedRoom && (
-              <TableMap
-                room={selectedRoom}
-                tables={tables}
-                onEditTable={openEdit}
-                onAddTable={() => openAdd(selectedRoom.id)}
-              />
+              <>
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 md:hidden">
+                  Da mobile la modifica della mappa è nascosta: usa l'assegnazione tavoli qui sotto.
+                </div>
+                <div className="hidden md:block">
+                  <TableMap
+                    room={selectedRoom}
+                    tables={tables}
+                    onEditTable={openEdit}
+                    onAddTable={() => openAdd(selectedRoom.id)}
+                  />
+                </div>
+              </>
             )}
 
             {/* Assignment prenotazioni → tavoli (DndContext separato dal riposizionamento).

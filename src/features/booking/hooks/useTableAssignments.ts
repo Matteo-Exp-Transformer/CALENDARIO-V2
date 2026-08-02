@@ -25,6 +25,7 @@ export interface BookingTableAssignment {
 }
 
 export const TABLE_ASSIGNMENTS_QUERY_KEY = 'table_assignments'
+export const SERVICE_ASSIGNMENTS_REFETCH_INTERVAL_MS = 15_000
 
 export type TableStatus = 'free' | 'assigned' | 'checked_out'
 
@@ -74,6 +75,7 @@ export function useAcceptedBookingsForDate(date: string) {
     },
     enabled: !!tenantId && !!date,
     refetchOnMount: 'always',
+    refetchInterval: SERVICE_ASSIGNMENTS_REFETCH_INTERVAL_MS,
   })
 }
 
@@ -94,6 +96,7 @@ export function useTableAssignments(date: string) {
     },
     enabled: !!tenantId && !!date,
     refetchOnMount: 'always',
+    refetchInterval: SERVICE_ASSIGNMENTS_REFETCH_INTERVAL_MS,
   })
 }
 
@@ -140,6 +143,7 @@ export function useUnassignedBookings(
     },
     enabled: !!tenantId && !!date && !!slot?.id,
     refetchOnMount: 'always',
+    refetchInterval: SERVICE_ASSIGNMENTS_REFETCH_INTERVAL_MS,
   })
 }
 
@@ -180,6 +184,44 @@ export class TurniEsauritiError extends Error {
     this.tableId = tableId
     this.turnNumber = turnNumber
     this.maxTurns = maxTurns
+  }
+}
+
+async function writeOccupancySnapshot({
+  bookingId,
+  tenantId,
+  booking,
+  slot,
+}: {
+  bookingId: string
+  tenantId: string
+  booking?: Pick<BookingRequest, 'confirmed_start' | 'confirmed_end'> & { occupancy_start?: string | null }
+  slot?: Pick<ServiceSlot, 'turnover_buffer_minutes'>
+}) {
+  try {
+    if (
+      booking?.confirmed_start &&
+      booking?.confirmed_end &&
+      !booking?.occupancy_start
+    ) {
+      const bufferMinutes = slot?.turnover_buffer_minutes ?? 0
+      const arrivalDate = new Date(booking.confirmed_start)
+      const endDate = new Date(booking.confirmed_end)
+      const durationMinutes = Math.max(0, (endDate.getTime() - arrivalDate.getTime()) / 60_000)
+      const window = computeOccupancyWindow({ arrival: arrivalDate, durationMinutes, bufferMinutes })
+
+      await supabase
+        .from('booking_requests')
+        .update({
+          occupancy_start: window.start.toISOString(),
+          occupancy_end: window.end.toISOString(),
+          turnover_buffer_minutes: bufferMinutes,
+        })
+        .eq('id', bookingId)
+        .eq('tenant_id', tenantId)
+    }
+  } catch (snapshotErr) {
+    logger.warn('[useTableAssignments] snapshot occupancy fallito (non bloccante)', snapshotErr)
   }
 }
 
@@ -226,32 +268,7 @@ export function useAssignBookingToTable() {
       // di usare la finestra reale senza ricalcolarla ogni volta. Best-effort: qualsiasi
       // dato mancante causa skip silenzioso (non blocca l'assegnazione, D42 degrado).
       // D15: non tocchiamo le righe già valorizzate (occupancy_start già presente → skip).
-      try {
-        if (
-          booking?.confirmed_start &&
-          booking?.confirmed_end &&
-          !booking?.occupancy_start // D15: non sovrascrivere snapshot già presente
-        ) {
-          const bufferMinutes = slot?.turnover_buffer_minutes ?? 0
-          const arrivalDate = new Date(booking.confirmed_start)
-          const endDate = new Date(booking.confirmed_end)
-          const durationMinutes = Math.max(0, (endDate.getTime() - arrivalDate.getTime()) / 60_000)
-          const window = computeOccupancyWindow({ arrival: arrivalDate, durationMinutes, bufferMinutes })
-
-          await supabase
-            .from('booking_requests')
-            .update({
-              occupancy_start: window.start.toISOString(),
-              occupancy_end: window.end.toISOString(),
-              turnover_buffer_minutes: bufferMinutes,
-            })
-            .eq('id', bookingId)
-            .eq('tenant_id', tenantId!)
-          // Errore non bloccante: loggato ma non rilanciato (D42)
-        }
-      } catch (snapshotErr) {
-        logger.warn('[useAssignBookingToTable] snapshot occupancy fallito (non bloccante)', snapshotErr)
-      }
+      await writeOccupancySnapshot({ bookingId, tenantId: tenantId!, booking, slot })
 
       return data
     },
@@ -265,6 +282,121 @@ export function useAssignBookingToTable() {
       // TurniEsauritiError viene gestita dalla UI per offrire la forzatura — non mostriamo toast
       if (error instanceof TurniEsauritiError) return
       toast.error(error.message || 'Errore nell\'assegnazione')
+    },
+  })
+}
+
+export function useForceReplaceBookingOnTable() {
+  const queryClient = useQueryClient()
+  const { tenantId } = useTenantContext()
+
+  return useMutation({
+    mutationFn: async ({
+      bookingId,
+      tableId,
+      slotId,
+      date,
+      existingAssignments,
+      reason,
+      booking,
+      slot,
+    }: AssignInput & { reason: string }) => {
+      const active = existingAssignments
+        .filter(
+          (a) =>
+            a.table_id === tableId &&
+            a.service_slot_id === slotId &&
+            a.date === date &&
+            a.checked_out_at === null,
+        )
+        .sort((a, b) => a.turn_number - b.turn_number)
+
+      if (active.length === 0) {
+        throw new Error('Nessuna prenotazione attiva da liberare su questo tavolo.')
+      }
+
+      const checkedOutAt = new Date().toISOString()
+      const { error: releaseError } = await supabase
+        .from('booking_table_assignments')
+        .update({ checked_out_at: checkedOutAt })
+        .eq('id', active[0].id)
+        .eq('tenant_id', tenantId!)
+
+      if (releaseError) throw releaseError
+
+      const forThisTable = existingAssignments.filter(
+        (a) => a.table_id === tableId && a.service_slot_id === slotId && a.date === date,
+      )
+      const turnNumber = forThisTable.length > 0 ? Math.max(...forThisTable.map((a) => a.turn_number)) + 1 : 1
+
+      const { data, error } = await supabase
+        .from('booking_table_assignments')
+        .insert({
+          tenant_id: tenantId!,
+          booking_id: bookingId,
+          table_id: tableId,
+          service_slot_id: slotId,
+          turn_number: turnNumber,
+          date,
+          checked_out_at: null,
+          forced_by_admin: true,
+          force_reason: reason.trim() || 'Forzatura guidata: tavolo liberato dallo staff',
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      await writeOccupancySnapshot({ bookingId, tenantId: tenantId!, booking, slot })
+
+      return data as BookingTableAssignment
+    },
+    onSuccess: async (_data, vars) => {
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date] }),
+        queryClient.refetchQueries({
+          queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date, vars.slotId, 'unassigned'],
+        }),
+      ])
+      toast.success('Tavolo liberato e prenotazione assegnata')
+    },
+    onError: (error: Error) => {
+      logger.error('[useForceReplaceBookingOnTable] error', error)
+      toast.error(error.message || 'Errore nella forzatura del tavolo')
+    },
+  })
+}
+
+export function useUndoTableAssignment() {
+  const queryClient = useQueryClient()
+  const { tenantId } = useTenantContext()
+
+  return useMutation({
+    mutationFn: async (input: {
+      assignmentId: string
+      date: string
+      slotId: string
+    }) => {
+      const { error } = await supabase
+        .from('booking_table_assignments')
+        .update({ checked_out_at: new Date().toISOString() })
+        .eq('id', input.assignmentId)
+        .eq('tenant_id', tenantId!)
+
+      if (error) throw error
+    },
+    onSuccess: async (_data, vars) => {
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date] }),
+        queryClient.refetchQueries({
+          queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date, vars.slotId, 'unassigned'],
+        }),
+      ])
+      toast.success('Assegnazione annullata')
+    },
+    onError: (error: Error) => {
+      logger.error('[useUndoTableAssignment] error', error)
+      toast.error(error.message || 'Errore nell\'annullamento')
     },
   })
 }

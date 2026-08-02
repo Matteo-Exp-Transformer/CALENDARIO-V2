@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable'
 import { format, parseISO } from 'date-fns'
 import { it } from 'date-fns/locale'
 import type { BriefingBooking } from '@/features/booking/hooks/useShiftBriefing'
+import { getAccurateStartTime, trimTimeToHHmm } from '@/features/booking/utils/dateUtils'
 
 /**
  * Genera un PDF briefing turno formato A4.
@@ -40,7 +41,7 @@ export function generateBriefingPdf(
     margin: { left: marginX, right: marginX },
     head: [['Orario', 'Cliente', 'Coperti', 'Note']],
     body: bookings.map((b) => [
-      format(new Date(b.confirmed_start), 'HH:mm'),
+      trimTimeToHHmm(getAccurateStartTime(b)),
       b.client_name,
       String(b.num_guests),
       b.special_requests ?? '',

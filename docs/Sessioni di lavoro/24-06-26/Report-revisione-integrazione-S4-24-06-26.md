@@ -198,6 +198,42 @@ Checklist D38 per Matteo:
    `min(10 tavoli, 6 fascia) = 6`.
 6. Controprova: se cap fascia è più alto dei tavoli, per esempio 20, il limite resta la capienza tavoli.
 
+## 9-quinquies. Esito residui S4 post-QA — 25-06-26
+
+Implementati su `env/test`, solo codice client/test/docs. Nessuna migrazione, RPC, Edge o PROD.
+
+- **Forzatura guidata tavolo occupato:** in Assegnazione Tavoli il tavolo occupato resta visibile; drag/click
+  apre un alert esplicito `Libera e assegna`. La prenotazione precedente viene timbrata con
+  `checked_out_at`, non cancellata; il nuovo assignment registra `forced_by_admin` e `force_reason`.
+- **Walk-in occupato:** identificato il messaggio rapido nel form walk-in. Ora il tavolo occupato è
+  selezionabile e il flusso è stabile in due passaggi: avviso di impatto, poi conferma che libera il tavolo
+  e assegna il nuovo walk-in.
+- **Aggiornamento fra schede:** polling leggero 15s su booking accettate, assignment e cassetto da assegnare;
+  niente realtime/S4-LIVE.
+- **UX A3:** dropdown fascia con conteggio `N`, drag con nome+coperti, assegnazione via bottone/modal rapida,
+  undo/conferma dell'ultima assegnazione senza divergenza DB/UI; su mobile editor/mappa configurazione nascosti.
+- **Briefing timezone:** tabella e PDF usano l'ora a muro (`desired_time`/`getAccurateStartTime`), non la
+  conversione `new Date(confirmed_start)`.
+- **D38:** test automatico OFF/ON già presente e mantenuto; checklist manuale sotto resta il collaudo Matteo.
+
+Test eseguiti in questa fase:
+
+| Comando | Esito |
+|---|---|
+| `npm run test -- src/features/booking/hooks/__tests__/walkIn.b2.test.tsx src/features/booking/hooks/__tests__/useTableAssignments.appendOnly.test.ts src/features/booking/hooks/__tests__/useShiftBriefing.test.tsx src/features/booking/components/__tests__/AssignmentMapPanel.5stati.test.tsx` | ✅ 4 file, 36 test verdi |
+| `npm run lint` | ✅ verde |
+| `npm run typecheck` | ✅ verde |
+| `npm run validate` | ✅ verde |
+| `npm run test:e2e -- e2e/pro/pro-service.spec.ts --workers=1` | ✅ 2/2 verdi |
+
+Rumore noto: `walkIn.b2.test.tsx` continua a stampare warning React `act(...)`, già coerenti con il rumore
+registrato nelle fasi A1/A2; i test sono verdi.
+
+Residui dopo questa fase:
+
+- Collaudo manuale Matteo 375/834/1280 su Servizio.
+- Ordine Data → Ospiti → Orario non toccato: serve conferma se riguarda form pubblico Prenota o form admin.
+
 ## 10. Checklist click — collaudo manuale S4 su TEST
 
 Eseguire con un'azienda **Pro** sul TEST, prima desktop 1280 px, poi ripetere i punti UI principali a

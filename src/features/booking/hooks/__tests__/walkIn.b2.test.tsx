@@ -28,6 +28,7 @@ const modalState = vi.hoisted(() => ({
   serviceSlots: [] as { id: string; name: string; start_time: string; end_time: string; min_duration: number | null; display_order: number; is_canonical: boolean; max_guests: number | null; max_turns: number | null; max_turns_resume: number | null; slot_color: string | null; turnover_buffer_minutes: number; arrival_step_minutes: number; tenant_id: string; created_at: string; updated_at: string }[],
   // Capienza check
   isAvailable: true as boolean,
+  walkInMutate: vi.fn(),
 }))
 
 vi.mock('@/features/booking/hooks/useServizioTables', () => ({
@@ -63,7 +64,7 @@ vi.mock('@/features/booking/hooks/useCapacityCheck', () => ({
 
 vi.mock('@/features/booking/hooks/useWalkInMutation', () => ({
   useWalkInMutation: () => ({
-    mutate: vi.fn(),
+    mutate: modalState.walkInMutate,
     isPending: false,
   }),
 }))
@@ -96,13 +97,14 @@ describe('WP-B2 Walk-in coerente', () => {
     modalState.maxGuests = 20
     modalState.serviceSlots = []
     modalState.isAvailable = true
+    modalState.walkInMutate.mockReset()
   })
 
   // ──────────────────────────────────────────────────────────────────────────
   // TEST 1 — Bug #6: isBusy confronta per nome
   // ──────────────────────────────────────────────────────────────────────────
   describe('Walk-in su tavolo — occupazione da assignment attivo', () => {
-    it('tavolo con assignment attivo nella fascia corrente → visibile ma non selezionabile', async () => {
+    it('tavolo con assignment attivo nella fascia corrente → visibile e forzabile con conferma', async () => {
       const user = userEvent.setup()
 
       modalState.rooms = [{ id: 'room-1', name: 'Sala A' }]
@@ -146,13 +148,14 @@ describe('WP-B2 Walk-in coerente', () => {
       const roomSelect = screen.getByLabelText(/sala/i)
       await user.selectOptions(roomSelect, 'room-1')
 
-      // Il tavolo deve essere elencato con la dicitura "— occupato" ma non assegnabile direttamente.
+      // Il tavolo deve essere elencato con la dicitura "— occupato" ma resta selezionabile:
+      // la forzatura richiede il doppio submit guidato.
       expect(screen.getByText(/Tavolo 3.*occupato/i)).toBeInTheDocument()
       const tableSelect = screen.getByLabelText(/tavolo/i)
       const busyOption = Array.from(tableSelect.querySelectorAll('option')).find((o) =>
         o.textContent?.includes('Tavolo 3'),
       )
-      expect(busyOption?.hasAttribute('disabled')).toBe(true)
+      expect(busyOption?.hasAttribute('disabled')).toBe(false)
     })
 
     it('tavolo senza assignment attivo resta selezionabile anche se esistono altre booking', async () => {
@@ -303,7 +306,7 @@ describe('WP-B2 Walk-in coerente', () => {
       expect(screen.getByTestId('capacity-warning')).toBeInTheDocument()
     })
 
-    it('tavolo occupato → opzione visibile ma disabled', async () => {
+    it('tavolo occupato → opzione visibile e conferma guidata prima della mutation', async () => {
       const user = userEvent.setup()
 
       modalState.rooms = [{ id: 'room-1', name: 'Sala A' }]
@@ -346,13 +349,34 @@ describe('WP-B2 Walk-in coerente', () => {
       const roomSelect = screen.getByLabelText(/sala/i)
       await user.selectOptions(roomSelect, 'room-1')
 
-      // Il tavolo occupato deve comparire nel select ma essere disabled (decisione Matteo A0).
+      // Il tavolo occupato compare nel select e si conferma in due passaggi.
       const tableSelect = screen.getByLabelText(/tavolo/i)
       const busyOption = Array.from(tableSelect.querySelectorAll('option')).find((o) =>
         o.textContent?.includes('Tavolo Busy'),
       )
       expect(busyOption).toBeDefined()
-      expect(busyOption?.hasAttribute('disabled')).toBe(true)
+      expect(busyOption?.hasAttribute('disabled')).toBe(false)
+
+      await user.selectOptions(tableSelect, 'table-uuid-1')
+      await user.type(screen.getByLabelText(/numero coperti/i), '2')
+
+      expect(screen.getByTestId('busy-table-warning')).toHaveTextContent(/puoi forzare la sostituzione/i)
+
+      const submitBtn = screen.getByRole('button', { name: /aggiungi walk-in/i })
+      await user.click(submitBtn)
+
+      expect(screen.getByTestId('busy-table-warning')).toHaveTextContent(/stai liberando il tavolo occupato/i)
+      expect(modalState.walkInMutate).not.toHaveBeenCalled()
+
+      await user.click(submitBtn)
+
+      expect(modalState.walkInMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          table_id: 'table-uuid-1',
+          force_replace_existing: true,
+        }),
+        expect.any(Object),
+      )
     })
   })
 

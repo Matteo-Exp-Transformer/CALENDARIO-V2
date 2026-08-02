@@ -198,3 +198,18 @@
   `Tutti` + fasce tenant, non più pranzo/cena hardcoded.
 - **D38:** nuovo setting `table_mode_respects_slot_cap`, default `false`. In modalità tavoli OFF usa la
   capienza fisica dei tavoli; ON usa il minore tra capienza fisica e cap fascia configurato.
+
+### 9.4 Fix post-QA A3/A2-QA — operatività assegnazione
+
+- **Assegnazione Tavoli fra schede:** query booking/assignment/unassigned in polling leggero ogni 15s
+  (`SERVICE_ASSIGNMENTS_REFETCH_INTERVAL_MS`), senza realtime/S4-LIVE.
+- **UX assegnazione:** select fascia mostra il conteggio prenotazioni da assegnare; drag con anteprima
+  nome+coperti; ogni card ha azione `Assegna` per aprire modale rapida sala/tavolo; dopo assegnazione
+  compare undo/conferma, con undo append-only (`checked_out_at`), mai DELETE.
+- **Forzatura guidata:** tavolo occupato resta visibile ma non accetta drop silenzioso. Drop/click su tavolo
+  occupato apre avviso esplicito `Libera e assegna`; la riga precedente viene timbrata `checked_out_at`, il
+  nuovo assignment viene inserito con `forced_by_admin`/`force_reason`. Stesso schema per walk-in occupato
+  con conferma in due passaggi.
+- **Briefing timezone:** orari in modal/PDF usano `desired_time`/ora a muro (`getAccurateStartTime`), non
+  `format(new Date(confirmed_start))`.
+- **Mobile:** editor/mappa configurazione nascosta sotto `md`; priorità alla lista/assegnazione operativa.

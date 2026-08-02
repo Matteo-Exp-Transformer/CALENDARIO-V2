@@ -276,7 +276,15 @@ Query key: `[TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, date, slotId, 'unassigned']`
   unassigned.
 - **Card tavolo occupato** (`DroppableTable`): renderizza tutte le assegnazioni attive del tavolo, ordinate per turno; ogni blocco mostra `client_name, num_guests` e sotto orario `HH:mm` da `getAccurateStartTime` (`dateUtils`). Lookup: `useAcceptedBookingsForDate(date)` + mappa `booking_id` dagli assignment attivi.
 - **Tavoli occupati:** visibili ma non assegnabili/droppable finché l'admin non usa la liberazione anticipata
-  separata. Nessuna sovrapposizione diretta da drag.
+  separata o la forzatura guidata. Nessuna sovrapposizione diretta da drag: drop/click su occupato apre
+  conferma `Libera e assegna`, timbra `checked_out_at` sulla riga attiva e inserisce il nuovo assignment
+  con `forced_by_admin`/`force_reason`.
+- **Aggiornamento operativo:** `useAcceptedBookingsForDate`, `useTableAssignments` e `useUnassignedBookings`
+  hanno polling leggero 15s (`SERVICE_ASSIGNMENTS_REFETCH_INTERVAL_MS`) per tenere allineate due schede
+  aperte senza realtime/S4-LIVE.
+- **UX A3:** il select fascia mostra `N` prenotazioni da assegnare; la card prenotazione ha drag con anteprima
+  nome+coperti e bottone `Assegna` per modal rapida sala/tavolo; dopo assegnazione compare undo/conferma.
+  Undo = update append-only `checked_out_at`, non delete.
 - Filtro elenco estratto in `unassignedBookingsFilter.ts` (`filterUnassignedBookingsForSlot`, `activeAssignedBookingIds`).
 - Test: `serviceSlotBookingFilter.test.ts`, `unassignedBookingsFilter.test.ts`, `tableCheckout.test.ts`.
 
@@ -284,8 +292,9 @@ Query key: `[TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, date, slotId, 'unassigned']`
 
 - Se l'admin sceglie un tavolo libero nella fascia attiva, `useWalkInMutation` crea booking + riga
   `booking_table_assignments` e invalida booking/assignment/unassigned.
-- Se non c'è fascia attiva, se il tavolo è occupato o se `max_turns` è già esaurito, non c'è sostituzione
-  diretta: il tavolo resta visibile ma non selezionabile; serve la liberazione anticipata separata.
+- Se non c'è fascia attiva o se `max_turns` è già esaurito senza conferma, non crea assignment parziale.
+  Se il tavolo è occupato, la option resta selezionabile ma richiede conferma guidata in due passaggi:
+  avviso stabile, poi release append-only della prenotazione in corso + nuovo assignment forzato.
 - Il fallback anti-parziale è logico: booking marcato `deleted` se l'insert assignment fallisce. Non esiste
   ancora RPC transazionale dedicata.
 

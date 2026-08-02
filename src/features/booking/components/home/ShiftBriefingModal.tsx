@@ -8,6 +8,7 @@ import { useShiftBriefing } from '@/features/booking/hooks/useShiftBriefing'
 import type { BriefingBooking } from '@/features/booking/hooks/useShiftBriefing'
 import { generateBriefingPdf } from '@/lib/shiftBriefingPdf'
 import { useServiceSlots } from '@/features/booking/hooks/useServiceSlots'
+import { getAccurateStartTime, trimTimeToHHmm } from '@/features/booking/utils/dateUtils'
 
 /** Returns the table placement label for a booking row. */
 function getTablePlacement(booking: BriefingBooking, isMultiRoom: boolean): string {
@@ -91,7 +92,7 @@ export const ShiftBriefingModal: FC<ShiftBriefingModalProps> = ({
                     {data.bookings.map((b) => (
                       <tr key={b.id} className="hover:bg-primary-50/50">
                         <td className="px-3 py-2 tabular-nums font-medium text-primary-900">
-                          {format(new Date(b.confirmed_start), 'HH:mm')}
+                          {trimTimeToHHmm(getAccurateStartTime(b))}
                         </td>
                         <td className="px-3 py-2 font-medium text-primary-900">{b.client_name}</td>
                         <td className="px-3 py-2 text-(--color-text-muted) tabular-nums">

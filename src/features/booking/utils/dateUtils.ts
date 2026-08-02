@@ -143,7 +143,12 @@ export function startTimeToMinutesSinceMidnight(time: string | null | undefined)
   return h * 60 + m
 }
 
-export function getAccurateStartTime(booking: BookingRequest): string {
+export function getAccurateStartTime(
+  booking: {
+    desired_time?: string | null
+    confirmed_start?: string | null
+  },
+): string {
   if (booking.desired_time) {
     return booking.desired_time.split(':').slice(0, 2).join(':')
   }
@@ -207,4 +212,3 @@ export function isWallClockStartBeforeNow(desiredDate: string, startTimeHHmm: st
 
   return wall.getTime() < Date.now()
 }
-

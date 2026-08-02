@@ -26,6 +26,8 @@ export interface WalkInInput {
    * Usata come pavimento dal resolver durata (gerarchia D35) — mai come valore unico.
    */
   slot_min_duration?: number
+  force_replace_existing?: boolean
+  force_reason?: string
 }
 
 export function buildWalkInRollbackPatch(reason: string) {
@@ -133,7 +135,7 @@ export function useWalkInMutation() {
 
         const { data: existingAssignments, error: existingError } = await supabase
           .from('booking_table_assignments')
-          .select('turn_number')
+          .select('id, turn_number, checked_out_at')
           .eq('tenant_id', tenantId)
           .eq('date', desiredDate)
           .eq('service_slot_id', input.service_slot_id)
@@ -148,11 +150,51 @@ export function useWalkInMutation() {
           throw new Error(existingError.message)
         }
 
-        const turnNumbers = ((existingAssignments ?? []) as { turn_number: number | null }[])
+        const assignmentRows = (existingAssignments ?? []) as {
+          id: string
+          turn_number: number | null
+          checked_out_at: string | null
+        }[]
+        const activeAssignments = assignmentRows
+          .filter((row) => row.checked_out_at === null)
+          .sort((a, b) => (a.turn_number ?? 0) - (b.turn_number ?? 0))
+
+        if (activeAssignments.length > 0 && !input.force_replace_existing) {
+          await supabase
+            .from('booking_requests')
+            .update(buildWalkInRollbackPatch('Rollback walk-in: tavolo occupato'))
+            .eq('id', data.id)
+            .eq('tenant_id', tenantId)
+          throw new Error('Questo tavolo risulta occupato: usa la conferma guidata per liberarlo e assegnare il walk-in.')
+        }
+
+        if (activeAssignments.length > 0 && input.force_replace_existing) {
+          const { error: releaseError } = await supabase
+            .from('booking_table_assignments')
+            .update({ checked_out_at: new Date().toISOString() })
+            .eq('id', activeAssignments[0].id)
+            .eq('tenant_id', tenantId)
+
+          if (releaseError) {
+            await supabase
+              .from('booking_requests')
+              .update(buildWalkInRollbackPatch('Rollback walk-in: liberazione tavolo occupato fallita'))
+              .eq('id', data.id)
+              .eq('tenant_id', tenantId)
+            throw new Error(releaseError.message)
+          }
+        }
+
+        const turnNumbers = assignmentRows
           .map((row) => row.turn_number ?? 0)
         const turnNumber = turnNumbers.length > 0 ? Math.max(...turnNumbers) + 1 : 1
 
-        if (input.max_turns !== null && input.max_turns !== undefined && turnNumber > input.max_turns) {
+        if (
+          !input.force_replace_existing &&
+          input.max_turns !== null &&
+          input.max_turns !== undefined &&
+          turnNumber > input.max_turns
+        ) {
           await supabase
             .from('booking_requests')
             .update(buildWalkInRollbackPatch('Rollback walk-in: turni tavolo esauriti'))
@@ -171,6 +213,10 @@ export function useWalkInMutation() {
             turn_number: turnNumber,
             date: desiredDate,
             checked_out_at: null,
+            forced_by_admin: input.force_replace_existing === true,
+            force_reason: input.force_replace_existing
+              ? (input.force_reason?.trim() || 'Forzatura guidata walk-in: tavolo liberato dallo staff')
+              : null,
           })
 
         if (assignmentError) {

@@ -56,6 +56,8 @@ vi.mock('../../hooks/useTableAssignments', () => ({
   useUnassignedBookings: () => ({ data: [] }),
   useAcceptedBookingsForDate: () => ({ data: mockState.acceptedBookings }),
   useAssignBookingToTable: () => ({ mutate: vi.fn() }),
+  useForceReplaceBookingOnTable: () => ({ mutate: vi.fn(), isPending: false }),
+  useUndoTableAssignment: () => ({ mutate: vi.fn(), isPending: false }),
   useCheckoutTable: () => ({ mutate: vi.fn(), isPending: false }),
 }))
 
@@ -71,6 +73,7 @@ vi.mock('@/contexts/TenantContext', () => ({
 
 vi.mock('@dnd-kit/core', () => ({
   DndContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  DragOverlay: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   PointerSensor: class {},
   useSensor: vi.fn(() => ({})),
   useSensors: vi.fn(() => []),
@@ -91,6 +94,9 @@ vi.mock('@dnd-kit/core', () => ({
 vi.mock('@/components/ui', () => ({
   Button: ({ children, onClick, disabled, type, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: string; size?: string }) => (
     <button type={type ?? 'button'} onClick={onClick} disabled={disabled} {...rest}>{children}</button>
+  ),
+  Modal: ({ children, isOpen, title }: { children: React.ReactNode; isOpen: boolean; title?: string }) => (
+    isOpen ? <div role="dialog" aria-label={title}>{children}</div> : null
   ),
 }))
 

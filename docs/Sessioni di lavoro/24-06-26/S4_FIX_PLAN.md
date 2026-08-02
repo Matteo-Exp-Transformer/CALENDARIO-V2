@@ -4,6 +4,22 @@
 > Stato QA: Matteo ha testato **solo Servizio mobile**. Il piano non autorizza PROD.
 > Obiettivo: chiudere S4 su TEST con il minor consumo di contesto, senza assorbire prematuramente S4-LIVE.
 
+## Stato aggiornato — 25-06-26
+
+**Plan non chiudibile integralmente.** A0, A1 e il batch A2 tecnico sono completati e pubblicati su
+`env/test` (`3450ca7 fix(servizio): allinea flussi S4 post QA`), ma il QA manuale Matteo del 25-06-26 ha
+riaperto residui bloccanti. S4 resta **aperta su TEST** finché questi punti non sono risolti o classificati
+esplicitamente come S4-LIVE/follow-up.
+
+| Area | Stato | Nota |
+|---|---|---|
+| A0 diagnosi | ✅ chiusa | Matrice cause completata. |
+| A1 CRUD/polish | ✅ chiusa | Test mirati, validate ed E2E Servizio verdi. |
+| A2 coerenza dati | 🟡 implementata, QA residuo | Funziona refresh al mount, walk-in libero, briefing per fascia; restano multi-assegnazione UI/forzatura, cross-tab refresh, timezone briefing, messaggio walk-in da identificare, D38 da collaudare. |
+| A3 UX operativa/mobile | 🔴 da fare | Va ripianificata includendo la nuova decisione Matteo sulla forzatura guidata. |
+| B0/B1 Calendario/Prenota | 🟡 parziale | Form pubblico doppio click e occupazione fascia Calendario implementati; ordine Data→Ospiti→Orario non chiuso. |
+| Finale | 🔴 non avviabile | Mancano A3, QA residui A2 e validazione finale integrata. |
+
 ## 0. Strategia agenti e consumo
 
 Usare **due sole sessioni esecutore**, entrambe Sonnet. Haiku non conviene: anche i fix apparentemente
@@ -162,6 +178,22 @@ fasce briefing reali e warning capienza. Non costruire la pagina Live.
 **Stato: implementato su `env/test` il 25-06-26.** Nessuna migrazione/RPC/deploy; PROD non toccata.
 `npm run validate` verde. Vedi report §9-ter per mini-design walk-in atomico, test A2 e checklist manuale.
 
+**QA Matteo 25-06-26: A2 non è chiudibile come fase prodotto.** Funzionano:
+
+- prenotazioni accettate visibili/assegnabili dopo navigazione interna;
+- refresh quando si torna nella pagina Servizio;
+- walk-in su tavolo libero con assignment coerente;
+- briefing filtrato sulla fascia reale.
+
+Residui aperti da portare in A3/A2-QA:
+
+- seconda prenotazione sullo stesso tavolo non assegnabile perché il tavolo occupato è disabilitato;
+- due schede aperte non si aggiornano: manca polling/realtime/cross-tab invalidation;
+- walk-in su tavolo occupato: Matteo vuole forzatura guidata con alert esplicito;
+- messaggio mostrato nel form walk-in troppo rapido: **messaggio esatto da identificare in UI**;
+- briefing mostra orari +2h: bug timezone nel rendering/parsing;
+- D38 implementato ma ancora da collaudare manualmente.
+
 ### A3 — UX operativa e mobile
 
 - conteggio `N` prenotazioni per fascia;
@@ -175,6 +207,43 @@ fasce briefing reali e warning capienza. Non costruire la pagina Live.
 La proposta “due viste modifica/operativa” non diventa una nuova pagina Live: A3 può separare modalità
 configurazione e assegnazione solo se riusa superfici S4 già esistenti.
 
+#### A3 aggiornato dopo QA Matteo — scope obbligatorio
+
+La vecchia regola “tavoli occupati disabilitati + solo liberazione separata” non basta più. Matteo ha
+deciso che il tavolo occupato deve poter essere **forzato** con procedura chiara. A3 deve quindi:
+
+1. mantenere il tavolo occupato visibile e non assegnabile con drag diretto silenzioso;
+2. offrire un percorso esplicito di forzatura/alert che spiega che si sta liberando o sostituendo una
+   prenotazione in corso;
+3. timbrare lo storico append-only, senza cancellare la prenotazione precedente;
+4. rendere subito selezionabile il tavolo per il nuovo walk-in/booking dopo la conferma;
+5. aggiornare l'altra scheda aperta tramite polling leggero o strategia equivalente, senza costruire
+   S4-LIVE;
+6. correggere il timezone del briefing;
+7. identificare il messaggio walk-in lampeggiante prima di modificarne copy/durata/posizione;
+8. completare il collaudo D38 OFF/ON.
+
+#### Esito esecuzione A3/A2-QA — 25-06-26
+
+Implementato su `env/test`, senza DB/Edge/PROD:
+
+- Assegnazione Tavoli: polling leggero ogni 15s su booking accettate, assignment e cassetto da assegnare;
+- dropdown fasce con conteggio `N` prenotazioni da assegnare per fascia;
+- drag con anteprima nome + coperti;
+- assegnazione via click con modale rapida sala/tavolo, utile anche mobile;
+- undo/conferma immediata dell'assegnazione appena fatta tramite timbro `checked_out_at` append-only;
+- tavolo occupato: niente drop silenzioso; compare conferma guidata "Libera e assegna", che timbra la
+  prenotazione in corso e inserisce il nuovo assignment con audit `forced_by_admin/force_reason`;
+- walk-in su tavolo occupato: il messaggio identificato era quello sul tavolo occupato nel form walk-in.
+  Ora il tavolo occupato resta selezionabile e richiede due passaggi: avviso stabile, poi conferma guidata;
+- briefing: orario renderizzato con `desired_time` / ora a muro, non con conversione `new Date(...)`;
+- mobile Servizio: editor/mappa configurazione nascosti sotto `md`; resta prioritaria l'assegnazione operativa.
+
+Test mirati verdi: `walkIn.b2`, `useTableAssignments.appendOnly`, `useShiftBriefing`,
+`AssignmentMapPanel.5stati`. `lint`, `typecheck`, `npm run validate` e E2E Servizio esistente verdi.
+D38 ha già copertura automatica OFF/ON in `useCapacityCheck.tableMode.test.ts`; resta consigliato il
+collaudo manuale con la checklist del report.
+
 ### B0/B1 — Calendario e Prenota
 
 - doppia apertura di “Form pubblico” dalla tab Prenotazioni;
@@ -182,6 +251,10 @@ configurazione e assegnazione solo se riusa superfici S4 già esistenti.
   del badge mensile complessivo;
 - ordine Data→Ospiti→Orario solo sulla superficie identificata da B0, rispettando i LOCK e la validazione;
 - test unit/component + Playwright mirati, senza modificare Edge/DB se la diagnosi non lo richiede.
+
+**Stato 25-06-26:** parziale. Doppia apertura Form Pubblico e occupazione fascia in Calendario sono state
+implementate e validate nel commit `3450ca7`. L'ordine Data→Ospiti→Orario non è stato chiuso perché la
+superficie esatta resta da confermare: form pubblico Prenota o form admin.
 
 ## 4. Prompt sequenziali
 
@@ -249,9 +322,9 @@ Modalità: deep
 Skill: riusa A0; rileggi `TESTING_SKILL.md` §E2E/QA e `UI_RESPONSIVE_SKILL.md`.
 Output attesi: UX A3 confermata, test unit/component, estensione mirata di `e2e/pro/pro-service.spec.ts`, cleanup dati TEST, validate + E2E mirati verdi, documentazione QA aggiornata; niente S4-LIVE o modifiche Calendario/Prenota; niente output in più senza chiedere Sì/No prima.
 
-Completa il flusso operativo: numero prenotazioni per fascia; feedback drag nome+coperti; assegna via click con modale rapido sala/tavolo e disponibilità live; annulla/conferma assegnazione senza divergenza DB/UI; su mobile mostra lista+assegnazione e nasconde editor/mappa configurazione. Mostra i tavoli occupati disabilitati e offri l'azione separata “Libera anticipatamente”; dopo il timbro append-only il tavolo diventa selezionabile per il nuovo walk-in/booking. Non cancellare né sostituire la prenotazione precedente.
+Completa il flusso operativo: numero prenotazioni per fascia; feedback drag nome+coperti; assegna via click con modale rapido sala/tavolo e disponibilità live; annulla/conferma assegnazione senza divergenza DB/UI; su mobile mostra lista+assegnazione e nasconde editor/mappa configurazione. Mostra i tavoli occupati in modo chiaro e implementa la nuova decisione Matteo: forzatura guidata con alert esplicito quando l'admin sceglie di liberare/sostituire una prenotazione in corso. Dopo la conferma append-only, il tavolo diventa selezionabile per il nuovo walk-in/booking. Non cancellare lo storico della prenotazione precedente.
 
-Non creare una nuova pagina Live. Se separi vista modifica/operativa, riusa le superfici S4 esistenti. Mappa adiacenze: cassetto, filtri fascia/data, tavoli, modali, legenda, scroll e bottoni mobile. Verifica 375/834/1280.
+Non creare una nuova pagina Live. Se separi vista modifica/operativa, riusa le superfici S4 esistenti. Mappa adiacenze: cassetto, filtri fascia/data, tavoli, modali, legenda, scroll, bottoni mobile, polling/cross-tab refresh e briefing timezone. Verifica 375/834/1280.
 
 Estendi l'E2E Servizio con seed/cleanup TEST e `--workers=1`: CRUD minimo sala/tavolo, assegnazione+undo, walk-in, soft-delete, briefing per fascia e responsive. Non rendere i test dipendenti dall'ora reale senza clock/dati controllati. Esegui validate e spec E2E mirata.
 
@@ -280,6 +353,17 @@ Per ogni fix: test rosso→verde, controtest doppio click/navigazione/limite ass
 **Review Codex:** approfondita perché coinvolge Admin Classic e potenzialmente il form pubblico LOCK.
 
 ## 5. Chiusura prevista
+
+**Bloccanti attuali per chiudere il plan:**
+
+- A3 eseguita lato Servizio ma non ancora collaudata manualmente da Matteo su 375/834/1280;
+- forzatura guidata su tavolo occupato implementata, da verificare in UI TEST;
+- aggiornamento fra due schede aperte implementato con polling leggero 15s, da verificare in UI TEST;
+- bug timezone briefing (+2h) corretto lato render/PDF, da verificare in UI TEST;
+- messaggio walk-in lampeggiante identificato e sostituito con avviso stabile + conferma guidata;
+- D38 coperto da test automatico OFF/ON; collaudo manuale ancora da eseguire;
+- ordine Data→Ospiti→Orario non chiuso;
+- validazione finale integrata verde dopo i residui.
 
 Dopo le review e il nuovo QA Matteo:
 

@@ -79,6 +79,7 @@ const BOOKING_1 = {
   client_name: 'Mario Rossi',
   num_guests: 2,
   confirmed_start: '2026-06-24T19:30:00.000Z',
+  desired_time: '19:30',
   special_requests: null,
 }
 
@@ -87,6 +88,7 @@ const BOOKING_2 = {
   client_name: 'Luigi Bianchi',
   num_guests: 4,
   confirmed_start: '2026-06-24T20:00:00.000Z',
+  desired_time: '20:00',
   special_requests: 'Vegan',
 }
 
@@ -263,6 +265,31 @@ describe('useShiftBriefing — table/room join', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(result.current.data!.date).toBe(TODAY)
+  })
+
+  it('preserves desired_time so the UI can render wall-clock time without timezone shift', async () => {
+    setupMocks({
+      bookings: [
+        {
+          id: 'b-timezone',
+          client_name: 'Orario Reale',
+          num_guests: 2,
+          desired_time: '03:00',
+          confirmed_start: '2026-06-24T03:00:00+00:00',
+          confirmed_end: '2026-06-24T04:00:00+00:00',
+          special_requests: null,
+        },
+      ],
+      assignments: [],
+      tables: [],
+      rooms: [ROOM_A],
+    })
+
+    const { result } = renderHook(() => useShiftBriefing('all'), { wrapper: makeWrapper() })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+    expect(result.current.data!.bookings[0].desired_time).toBe('03:00')
   })
 
   it('inactive room is not counted for isMultiRoom', async () => {

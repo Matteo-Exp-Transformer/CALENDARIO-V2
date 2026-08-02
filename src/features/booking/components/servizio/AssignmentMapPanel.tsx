@@ -1,19 +1,25 @@
 import type { FC } from 'react'
 import { useMemo, useState } from 'react'
-import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
-import type { DragEndEvent } from '@dnd-kit/core'
+import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
-import { Users, LogOut, GripVertical, AlertTriangle } from 'lucide-react'
-import { Button } from '@/components/ui'
+import { Users, LogOut, GripVertical, AlertTriangle, MousePointerClick } from 'lucide-react'
+import { Button, Modal } from '@/components/ui'
 import { useServiceSlots } from '@/features/booking/hooks/useServiceSlots'
 import {
   useTableAssignments,
   useUnassignedBookings,
   useAcceptedBookingsForDate,
   useAssignBookingToTable,
+  useForceReplaceBookingOnTable,
+  useUndoTableAssignment,
   useCheckoutTable,
   TurniEsauritiError,
 } from '@/features/booking/hooks/useTableAssignments'
+import {
+  activeAssignedBookingIds,
+  filterUnassignedBookingsForSlot,
+} from '@/features/booking/utils/unassignedBookingsFilter'
 import {
   useTableStatuses,
   type TableLiveStatus,
@@ -58,9 +64,10 @@ const STATUS_BADGE_CLASSES: Record<TableLiveStatus, string> = {
 
 interface DraggableBookingCardProps {
   booking: BookingRequest
+  onQuickAssign: () => void
 }
 
-const DraggableBookingCard: FC<DraggableBookingCardProps> = ({ booking }) => {
+const DraggableBookingCard: FC<DraggableBookingCardProps> = ({ booking, onQuickAssign }) => {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `booking-${booking.id}`,
     data: { bookingId: booking.id },
@@ -74,16 +81,43 @@ const DraggableBookingCard: FC<DraggableBookingCardProps> = ({ booking }) => {
       className={`flex cursor-grab items-center gap-2 rounded-lg border border-(--color-border) bg-surface px-3 py-2.5 shadow-sm active:cursor-grabbing ${isDragging ? 'opacity-50' : ''}`}
     >
       <GripVertical className="h-4 w-4 shrink-0 text-(--color-text-muted)" aria-hidden />
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-primary-900">{booking.client_name}</p>
         <p className="flex items-center gap-1 text-xs text-(--color-text-muted)">
           <Users className="h-3 w-3" aria-hidden />
           {booking.num_guests} coperti
         </p>
       </div>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="shrink-0 text-xs"
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation()
+          onQuickAssign()
+        }}
+      >
+        <MousePointerClick className="h-3.5 w-3.5" aria-hidden />
+        Assegna
+      </Button>
     </div>
   )
 }
+
+const DragBookingPreview: FC<{ booking: BookingRequest }> = ({ booking }) => (
+  <div className="flex items-center gap-2 rounded-lg border border-primary-300 bg-primary-50 px-3 py-2.5 shadow-lg">
+    <GripVertical className="h-4 w-4 shrink-0 text-primary-700" aria-hidden />
+    <div className="min-w-0">
+      <p className="truncate text-sm font-semibold text-primary-900">{booking.client_name}</p>
+      <p className="flex items-center gap-1 text-xs font-medium text-primary-700">
+        <Users className="h-3 w-3" aria-hidden />
+        {booking.num_guests} coperti
+      </p>
+    </div>
+  </div>
+)
 
 // ─────────────────────────────────────────────
 // DroppableTable
@@ -103,7 +137,6 @@ const DroppableTable: FC<DroppableTableProps> = ({ table, status, assignedBookin
   const { setNodeRef, isOver } = useDroppable({
     id: `table-${table.id}`,
     data: { tableId: table.id },
-    disabled: status !== 'free',
   })
 
   return (
@@ -206,6 +239,15 @@ interface ForceConfirmState {
   bookingId: string
   tableId: string
   reason: string
+  kind: 'turns' | 'replace'
+}
+
+interface LastAssignmentState {
+  assignmentId: string
+  bookingName: string
+  tableName: string
+  slotId: string
+  date: string
 }
 
 export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables }) => {
@@ -216,6 +258,9 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
 
   // Dialogo di forzatura: presente quando un drop è bloccato per turni esauriti
   const [forceConfirm, setForceConfirm] = useState<ForceConfirmState | null>(null)
+  const [quickAssignBookingId, setQuickAssignBookingId] = useState<string | null>(null)
+  const [activeDragBookingId, setActiveDragBookingId] = useState<string | null>(null)
+  const [lastAssignment, setLastAssignment] = useState<LastAssignmentState | null>(null)
 
   const { data: slots = [] } = useServiceSlots()
   const selectedSlot = slots.find((s) => s.id === selectedSlotId) ?? null
@@ -238,22 +283,55 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
   })
 
   const assignBooking = useAssignBookingToTable()
+  const forceReplaceBooking = useForceReplaceBookingOnTable()
+  const undoAssignment = useUndoTableAssignment()
   const checkoutTable = useCheckoutTable()
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   )
 
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    if (!over) return
+  const slotCounts = useMemo(() => {
+    return new Map(
+      slots.map((slot) => {
+        const assignedForSlot = assignments
+          .filter(
+            (a) =>
+              a.service_slot_id === slot.id &&
+              a.date === selectedDate &&
+              a.checked_out_at === null,
+          )
+          .map((a) => ({ booking_id: a.booking_id }))
+        const count = filterUnassignedBookingsForSlot(
+          acceptedOnDate,
+          slot.start_time,
+          slot.end_time,
+          activeAssignedBookingIds(assignedForSlot),
+        ).length
+        return [slot.id, count]
+      }),
+    )
+  }, [acceptedOnDate, assignments, selectedDate, slots])
 
-    const bookingId = String(active.id).replace('booking-', '')
-    const tableId = String(over.id).replace('table-', '')
+  function handleDragStart(event: DragStartEvent) {
+    setActiveDragBookingId(String(event.active.id).replace('booking-', ''))
+  }
 
+  function rememberAssignment(bookingId: string, tableId: string, assignmentId: string) {
+    const booking = unassigned.find((b) => b.id === bookingId)
+    const table = allTables.find((t) => t.id === tableId)
+    if (!booking || !table) return
+    setLastAssignment({
+      assignmentId,
+      bookingName: booking.client_name,
+      tableName: table.name,
+      slotId: selectedSlotId,
+      date: selectedDate,
+    })
+  }
+
+  function assignToFreeTable(bookingId: string, tableId: string) {
     if (!selectedSlot) return
-    const targetStatus = tableStatuses.get(tableId) ?? 'free'
-    if (targetStatus !== 'free') return
     const draggedBooking = unassigned.find((booking) => booking.id === bookingId) ?? null
 
     assignBooking.mutate(
@@ -268,19 +346,46 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
         slot: selectedSlot,
       },
       {
+        onSuccess: (data) => {
+          const assignment = data as { id?: string }
+          if (assignment.id) rememberAssignment(bookingId, tableId, assignment.id)
+          setQuickAssignBookingId(null)
+        },
         onError: (error) => {
-          // Turni esauriti: offriamo la forzatura invece di fallire silenziosamente (D25)
           if (error instanceof TurniEsauritiError) {
             setForceConfirm({
               bookingId,
               tableId,
               reason: 'Forzato dallo staff',
+              kind: 'turns',
             })
           }
-          // Gli altri errori vengono gestiti dall'onError globale della mutation
         },
       },
     )
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    setActiveDragBookingId(null)
+    const { active, over } = event
+    if (!over) return
+
+    const bookingId = String(active.id).replace('booking-', '')
+    const tableId = String(over.id).replace('table-', '')
+
+    if (!selectedSlot) return
+    const targetStatus = tableStatuses.get(tableId) ?? 'free'
+    if (targetStatus !== 'free') {
+      setForceConfirm({
+        bookingId,
+        tableId,
+        reason: 'Forzatura guidata: tavolo occupato liberato dallo staff',
+        kind: 'replace',
+      })
+      return
+    }
+
+    assignToFreeTable(bookingId, tableId)
   }
 
   /** Esegue l'assegnazione forzata dopo conferma staff (D25/D27/D32). */
@@ -288,6 +393,27 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
     if (!forceConfirm || !selectedSlot) return
     const { bookingId, tableId, reason } = forceConfirm
     setForceConfirm(null)
+    const booking = unassigned.find((b) => b.id === bookingId) ?? undefined
+    const onSuccess = (data: unknown) => {
+      const assignment = data as { id?: string }
+      if (assignment.id) rememberAssignment(bookingId, tableId, assignment.id)
+    }
+
+    if (forceConfirm.kind === 'replace') {
+      forceReplaceBooking.mutate({
+        bookingId,
+        tableId,
+        slotId: selectedSlotId,
+        date: selectedDate,
+        maxTurns: selectedSlot.max_turns,
+        existingAssignments: assignments,
+        booking,
+        slot: selectedSlot,
+        reason,
+      }, { onSuccess })
+      return
+    }
+
     assignBooking.mutate({
       bookingId,
       tableId,
@@ -296,10 +422,18 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
       maxTurns: selectedSlot.max_turns,
       existingAssignments: assignments,
       force: { reason },
-    })
+      booking,
+      slot: selectedSlot,
+    }, { onSuccess })
   }
 
   const allTables = tables
+  const quickAssignBooking = quickAssignBookingId
+    ? unassigned.find((booking) => booking.id === quickAssignBookingId) ?? null
+    : null
+  const activeDragBooking = activeDragBookingId
+    ? unassigned.find((booking) => booking.id === activeDragBookingId) ?? null
+    : null
 
   return (
     <div className="space-y-4 rounded-xl border border-(--color-border) bg-surface p-4 shadow-sm">
@@ -317,9 +451,15 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden />
             <div className="flex-1 space-y-3">
               <div>
-                <p className="text-sm font-semibold text-amber-900">Turni esauriti per questo tavolo</p>
+                <p className="text-sm font-semibold text-amber-900">
+                  {forceConfirm.kind === 'replace'
+                    ? 'Tavolo occupato: conferma la sostituzione'
+                    : 'Turni esauriti per questo tavolo'}
+                </p>
                 <p className="mt-0.5 text-xs text-amber-800">
-                  Vuoi assegnare comunque la prenotazione? Questa azione verrà registrata per lo staff.
+                  {forceConfirm.kind === 'replace'
+                    ? 'Stai liberando una prenotazione in corso e assegnando qui quella nuova. La prenotazione precedente resta nello storico e torna da gestire.'
+                    : 'Vuoi assegnare comunque la prenotazione? Questa azione verrà registrata per lo staff.'}
                 </p>
               </div>
               <div className="space-y-1">
@@ -346,9 +486,9 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
                   variant="primary"
                   size="sm"
                   onClick={handleForceAssign}
-                  disabled={assignBooking.isPending}
+                  disabled={assignBooking.isPending || forceReplaceBooking.isPending}
                 >
-                  Assegna comunque
+                  {forceConfirm.kind === 'replace' ? 'Libera e assegna' : 'Assegna comunque'}
                 </Button>
                 <Button
                   type="button"
@@ -362,6 +502,75 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
             </div>
           </div>
         </div>
+      )}
+
+      {quickAssignBooking && (
+        <Modal
+          isOpen
+          onClose={() => setQuickAssignBookingId(null)}
+          title="Assegna tavolo"
+          size="md"
+        >
+          <div className="space-y-4">
+            <div className="rounded-lg border border-primary-100 bg-primary-50 px-3 py-2">
+              <p className="text-sm font-semibold text-primary-900">{quickAssignBooking.client_name}</p>
+              <p className="flex items-center gap-1 text-xs text-primary-700">
+                <Users className="h-3 w-3" aria-hidden />
+                {quickAssignBooking.num_guests} coperti
+              </p>
+            </div>
+
+            {rooms.map((room) => {
+              const roomTables = allTables.filter((t) => t.room_id === room.id)
+              if (roomTables.length === 0) return null
+              return (
+                <div key={room.id} className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
+                    {room.name}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {roomTables.map((table) => {
+                      const status = tableStatuses.get(table.id) ?? 'free'
+                      return (
+                        <button
+                          key={table.id}
+                          type="button"
+                          disabled={assignBooking.isPending || forceReplaceBooking.isPending}
+                          onClick={() => {
+                            if (status === 'free') {
+                              assignToFreeTable(quickAssignBooking.id, table.id)
+                              return
+                            }
+                            setQuickAssignBookingId(null)
+                            setForceConfirm({
+                              bookingId: quickAssignBooking.id,
+                              tableId: table.id,
+                              reason: 'Forzatura guidata: tavolo occupato liberato dallo staff',
+                              kind: 'replace',
+                            })
+                          }}
+                          className={`rounded-xl border-2 p-3 text-left transition-colors ${STATUS_CLASSES[status]}`}
+                        >
+                          <span className="block truncate text-sm font-semibold text-primary-900">{table.name}</span>
+                          <span className="block text-xs text-(--color-text-muted)">{table.capacity} posti</span>
+                          <span className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASSES[status]}`}>
+                            {STATUS_LABEL[status]}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+
+            <div className="flex justify-end">
+              <Button type="button" variant="ghost" onClick={() => setQuickAssignBookingId(null)}>
+                Annulla
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {/* Selettore data + fascia */}
@@ -392,7 +601,7 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
             <option value="">— Seleziona fascia —</option>
             {slots.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.name} ({s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)})
+                {s.name} ({s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)}) - {slotCounts.get(s.id) ?? 0}
               </option>
             ))}
           </select>
@@ -404,20 +613,59 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
       )}
 
       {selectedSlotId && (
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-          <div className="flex gap-4">
+        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <div className="flex flex-col gap-4 md:flex-row">
             {/* Panel sinistro: prenotazioni non assegnate */}
-            <div className="w-1/3 shrink-0 space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
-                Prenotazioni ({unassigned.length})
-              </p>
+            <div className="space-y-2 md:w-1/3 md:shrink-0">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
+                  Prenotazioni ({unassigned.length})
+                </p>
+                {lastAssignment && (
+                  <div className="flex items-center gap-1 rounded-lg border border-primary-100 bg-primary-50 px-2 py-1 text-xs text-primary-900">
+                    <span className="hidden sm:inline">
+                      {lastAssignment.bookingName} su {lastAssignment.tableName}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={undoAssignment.isPending}
+                      onClick={() =>
+                        undoAssignment.mutate(
+                          {
+                            assignmentId: lastAssignment.assignmentId,
+                            date: lastAssignment.date,
+                            slotId: lastAssignment.slotId,
+                          },
+                          { onSuccess: () => setLastAssignment(null) },
+                        )
+                      }
+                    >
+                      Annulla
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      onClick={() => setLastAssignment(null)}
+                    >
+                      Conferma
+                    </Button>
+                  </div>
+                )}
+              </div>
               {unassigned.length === 0 && (
                 <p className="rounded-lg border border-dashed border-(--color-border) px-3 py-4 text-center text-xs text-(--color-text-muted)">
                   Nessuna prenotazione da assegnare.
                 </p>
               )}
               {unassigned.map((b) => (
-                <DraggableBookingCard key={b.id} booking={b} />
+                <DraggableBookingCard
+                  key={b.id}
+                  booking={b}
+                  onQuickAssign={() => setQuickAssignBookingId(b.id)}
+                />
               ))}
             </div>
 
@@ -476,6 +724,7 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
               )}
             </div>
           </div>
+          <DragOverlay>{activeDragBooking ? <DragBookingPreview booking={activeDragBooking} /> : null}</DragOverlay>
         </DndContext>
       )}
     </div>

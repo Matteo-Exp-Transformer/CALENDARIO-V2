@@ -10,6 +10,7 @@ export interface BriefingBooking {
   client_name: string
   num_guests: number
   confirmed_start: string
+  desired_time: string | null
   special_requests: string | null
   table_name: string | null
   room_name: string | null
@@ -165,6 +166,7 @@ export function useShiftBriefing(shift: BriefingShiftFilter = 'all', _businessHo
             client_name: row.client_name,
             num_guests: row.num_guests ?? 0,
             confirmed_start: row.confirmed_start,
+            desired_time: row.desired_time,
             special_requests: row.special_requests,
             table_name: null,
             room_name: null,
@@ -186,6 +188,7 @@ export function useShiftBriefing(shift: BriefingShiftFilter = 'all', _businessHo
           client_name: row.client_name,
           num_guests: row.num_guests ?? 0,
           confirmed_start: row.confirmed_start,
+          desired_time: row.desired_time,
           special_requests: row.special_requests,
           table_name: tableName,
           room_name: roomName,

@@ -16,7 +16,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const dbCalls = vi.hoisted(() => ({
   deleteCount: 0,
   updateCount: 0,
+  insertCount: 0,
   lastUpdatePayload: null as unknown,
+  lastInsertPayload: null as unknown,
   updateError: null as null | Error,
 }))
 
@@ -38,9 +40,14 @@ vi.mock('@/lib/supabase', () => {
       dbCalls.deleteCount++
       return chain
     }
+    chain.insert = (payload: unknown) => {
+      dbCalls.insertCount++
+      dbCalls.lastInsertPayload = payload
+      return chain
+    }
     chain.eq = () => chain
     chain.select = () => chain
-    chain.single = () => Promise.resolve({ data: null, ...result })
+    chain.single = () => Promise.resolve({ data: { id: 'forced-assignment' }, ...result })
     // Rende la catena awaitable (pattern senza .single())
     Object.defineProperty(chain, 'then', {
       get() {
@@ -80,7 +87,11 @@ vi.mock('react-toastify', () => ({
 }))
 
 // Import DOPO i mock
-import { useCheckoutTable, useReleaseBookingAssignment } from '../useTableAssignments'
+import {
+  useCheckoutTable,
+  useForceReplaceBookingOnTable,
+  useReleaseBookingAssignment,
+} from '../useTableAssignments'
 import type { BookingTableAssignment } from '../useTableAssignments'
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -106,7 +117,9 @@ describe('useCheckoutTable — append-only (D48)', () => {
   beforeEach(() => {
     dbCalls.deleteCount = 0
     dbCalls.updateCount = 0
+    dbCalls.insertCount = 0
     dbCalls.lastUpdatePayload = null
+    dbCalls.lastInsertPayload = null
     dbCalls.updateError = null
   })
 
@@ -150,7 +163,9 @@ describe('useReleaseBookingAssignment — append-only (D48)', () => {
   beforeEach(() => {
     dbCalls.deleteCount = 0
     dbCalls.updateCount = 0
+    dbCalls.insertCount = 0
     dbCalls.lastUpdatePayload = null
+    dbCalls.lastInsertPayload = null
     dbCalls.updateError = null
   })
 
@@ -185,5 +200,43 @@ describe('useReleaseBookingAssignment — append-only (D48)', () => {
     expect(result).toEqual({ blocked: 'waiting_next_turn' })
     expect(dbCalls.deleteCount).toBe(0)
     expect(dbCalls.updateCount).toBe(0)
+  })
+})
+
+// ─── useForceReplaceBookingOnTable — append-only ───────────────────────────
+
+describe('useForceReplaceBookingOnTable — libera e assegna append-only (D25/D48)', () => {
+  beforeEach(() => {
+    dbCalls.deleteCount = 0
+    dbCalls.updateCount = 0
+    dbCalls.insertCount = 0
+    dbCalls.lastUpdatePayload = null
+    dbCalls.lastInsertPayload = null
+    dbCalls.updateError = null
+  })
+
+  it('forzatura guidata → UPDATE del turno attivo + INSERT audit, mai DELETE', async () => {
+    const hook = useForceReplaceBookingOnTable()
+
+    await hook.mutateAsync({
+      bookingId: 'b-new',
+      tableId: 'table-1',
+      slotId: 'slot-1',
+      date: '2026-06-24',
+      maxTurns: 1,
+      existingAssignments: [makeAssignment({ id: 'a-old', booking_id: 'b-old' })],
+      reason: 'Forzatura guidata test',
+    })
+
+    expect(dbCalls.deleteCount).toBe(0)
+    expect(dbCalls.updateCount).toBeGreaterThanOrEqual(1)
+    expect(dbCalls.insertCount).toBe(1)
+    expect(dbCalls.lastUpdatePayload).toMatchObject({ checked_out_at: expect.any(String) })
+    expect(dbCalls.lastInsertPayload).toMatchObject({
+      booking_id: 'b-new',
+      table_id: 'table-1',
+      forced_by_admin: true,
+      force_reason: 'Forzatura guidata test',
+    })
   })
 })

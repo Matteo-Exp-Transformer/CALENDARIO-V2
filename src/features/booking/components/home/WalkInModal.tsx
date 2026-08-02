@@ -25,6 +25,7 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
   const [validationError, setValidationError] = useState<string | null>(null)
   // D25: flag per forzare l'inserimento nonostante avvisi morbidi
   const [forceOverCapacity, setForceOverCapacity] = useState(false)
+  const [forceOccupiedTable, setForceOccupiedTable] = useState(false)
 
   const walkIn = useWalkInMutation()
   const { data: tables = [] } = useTables()
@@ -97,6 +98,7 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
     setSelectedTableId('')
     setValidationError(null)
     setForceOverCapacity(false)
+    setForceOccupiedTable(false)
   }
 
   function validate(): string | null {
@@ -131,7 +133,10 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
       setForceOverCapacity(true)
       return
     }
-    if (isSelectedTableBusy) return
+    if (isSelectedTableBusy && !forceOccupiedTable) {
+      setForceOccupiedTable(true)
+      return
+    }
 
     walkIn.mutate(
       {
@@ -142,6 +147,10 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
         max_turns: activeSlot?.max_turns ?? null,
         placement: selectedTable?.name ?? undefined,
         slot_min_duration: slotMinDuration,
+        force_replace_existing: isSelectedTableBusy && forceOccupiedTable,
+        force_reason: isSelectedTableBusy
+          ? 'Forzatura guidata walk-in: tavolo occupato liberato dallo staff'
+          : undefined,
       },
       {
         onSuccess: () => {
@@ -210,6 +219,7 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
               onChange={(e) => {
                 setSelectedRoomId(e.target.value)
                 setSelectedTableId('')
+                setForceOccupiedTable(false)
               }}
               disabled={walkIn.isPending}
               className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500"
@@ -235,13 +245,14 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
               value={selectedTableId}
               onChange={(e) => {
                 setSelectedTableId(e.target.value)
+                setForceOccupiedTable(false)
               }}
               disabled={walkIn.isPending}
               className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500"
             >
               <option value="">— Seleziona tavolo —</option>
               {tableOptions.map((t) => (
-                <option key={t.id} value={t.id} disabled={t.busy}>
+                <option key={t.id} value={t.id}>
                   {t.name} ({t.capacity} posti){t.busy ? ' — occupato' : ''}
                 </option>
               ))}
@@ -267,7 +278,9 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
         {/* D25 — Avviso morbido: tavolo occupato */}
         {isSelectedTableBusy && (
           <p className="text-sm text-amber-700 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2" role="alert" data-testid="busy-table-warning">
-            Questo tavolo risulta occupato: liberalo prima dalla Mappa servizio, poi potrai assegnare il walk-in.
+            {forceOccupiedTable
+              ? 'Stai liberando il tavolo occupato e assegnando qui il nuovo walk-in. La prenotazione precedente resta nello storico e torna da gestire. Premi "Aggiungi walk-in" per confermare.'
+              : 'Questo tavolo risulta occupato. Puoi forzare la sostituzione: il sistema libera la prenotazione in corso senza cancellarla, poi assegna il nuovo walk-in.'}
           </p>
         )}
 

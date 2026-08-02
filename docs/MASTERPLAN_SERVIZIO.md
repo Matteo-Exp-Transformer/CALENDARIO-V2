@@ -467,18 +467,14 @@ ad-hoc compila *funziona / riscrivere / può rompersi*.
 
 - ✅ Assegnazione base: le prenotazioni accettate compaiono in Servizio dopo navigazione interna; menu/card/
   carosello non risultano più un blocco.
-- 🔴 Seconda prenotazione sullo stesso tavolo: non ancora assegnabile da UI perché il tavolo occupato è
-  disabilitato. Nuova decisione prodotto: serve **forzatura guidata** con alert, non solo liberazione
-  anticipata separata.
-- 🟡 Refresh: il refetch al mount funziona; una scheda già aperta su Assegnazione Tavoli non vede booking o
-  walk-in creati da una seconda scheda. Serve polling/realtime/cross-tab invalidation sul pannello operativo.
+- ✅ Seconda prenotazione sullo stesso tavolo: implementata **forzatura guidata** con alert esplicito. Il
+  tavolo occupato resta visibile; drop/click non sovrappone in silenzio ma chiede `Libera e assegna`.
+- ✅ Refresh fra schede: implementato polling leggero 15s sulle query operative Assegnazione Tavoli, senza
+  realtime/S4-LIVE.
 - ✅ Walk-in su tavolo libero: booking + assignment visibili correttamente dopo refresh/arrivo pagina.
-- 🔴 Walk-in su tavolo occupato: Matteo vuole poter forzare l'inserimento con procedura esplicita che avvisi
-  che si sta sostituendo/liberando la prenotazione in corso. Il copy deve chiarire l'impatto prima della conferma.
-- 🟡 Feedback walk-in: dopo invio il form mostra un messaggio troppo rapido da leggere. Messaggio esatto
-  **non ancora identificato**: da riprodurre in UI prima di correggere copy/durata/posizione.
-- 🔴 Briefing: filtro fascia corretto, ma orari mostrati +2h rispetto all'orario inserito; probabile bug
-  timezone nel rendering del briefing (es. 03:00 → 05:00, 21:00 → 23:00).
+- ✅ Walk-in su tavolo occupato: forzatura in due passaggi; il messaggio identificato nel form resta stabile
+  e spiega che la prenotazione precedente viene liberata senza essere cancellata.
+- ✅ Briefing: filtro fascia corretto e rendering orario corretto con ora a muro (`desired_time`), anche nel PDF.
 - 🟡 D38 da collaudare: verificare OFF=capienza fisica tavoli, ON=min(capienza tavoli, cap fascia).
 
 ### S4-LIVE — Console operativa di sala (tab "Live") *(Pro — Servizio)*
