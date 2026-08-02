@@ -213,3 +213,36 @@
 - **Briefing timezone:** orari in modal/PDF usano `desired_time`/ora a muro (`getAccurateStartTime`), non
   `format(new Date(confirmed_start))`.
 - **Mobile:** editor/mappa configurazione nascosta sotto `md`; priorità alla lista/assegnazione operativa.
+
+### 9.5 Post-QA 02-08-26 — fine turno, tavolate multi-tavolo, due viste mappa
+
+> Tre richieste dirette di Matteo alla ripresa del cantiere. Solo client + test: nessuna
+> migrazione, nessuna modifica all'Edge, nessuna scrittura DB nuova.
+
+- **Avviso di fine turno con conferma staff (D22/D23).** La capienza si libera già da sola a fine
+  finestra (`resolveOccupancy`): il tavolo però resta in stato `leaving` finché qualcuno conferma.
+  Nuovo `TableReleaseNoticeModal`: si apre da solo quando uno o più tavoli entrano in "In uscita",
+  elenca sala·tavolo, cliente, coperti e ora di fine turno (ora a muro via `getAccurateEndTime`,
+  mai `new Date(confirmed_end)`). Tre risposte: **Libero** → `useCheckoutTable` (append-only,
+  `checked_out_at`); **Ancora occupato** → nessuna scrittura, silenzia il tavolo; **Decido dopo** →
+  mette da parte il gruppo. Il riaffiorare è governato da una *firma* dei tavoli pendenti
+  (`pendingReleaseSignature`), non da un booleano: se entra in uscita un tavolo nuovo l'avviso
+  ritorna, i già gestiti no. Cambio fascia/data azzera tutto.
+- **Tavolate su più tavoli in UI (D39).** Nuovo `useAssignBookingToTables`: una prenotazione su N
+  tavoli in **un solo insert** (turn_number calcolato per-tavolo sullo stesso snapshot; N chiamate
+  sequenziali leggerebbero uno stato intermedio). La modale «Assegna tavolo» è a **selezione
+  multipla** con contatore "posti selezionati su richiesti". Nuova sezione **«Assegnate»** nella
+  colonna sinistra: una riga per prenotazione con tutti i suoi tavoli, posti totali, avviso
+  «Mancano N posti» e azione **Aggiungi tavolo** (modale in modalità `add`, i tavoli già in
+  tavolata risultano «Già in tavolata» e non riselezionabili). L'undo copre tutte le righe create.
+- **Due viste della mappa.** `ServizioPage` tab Mappa ha il toggle **Servizio | Modifica**
+  (default **Servizio**). *Servizio* = `AssignmentMapPanel layout="plan"` → nuovo `ServicePlanMap`:
+  sala confermata, **nessuna griglia**, tavoli alle coordinate decise dall'admin (stessa impronta
+  64px / 96px del `TableMap`, altrimenti lo staff non riconosce la sala), colore per stato,
+  occupante e coperti dentro la sagoma, legenda dei 5 stati; click sul tavolo → dettaglio con
+  «Libera tavolo». *Modifica* = `TableMap` di sempre (griglia, drag, CRUD). Le due viste **non
+  convivono più**: prima si vedevano due mappe sovrapposte nella stessa schermata.
+- **Stili stati condivisi:** `tableStatusStyles.ts` (STATUS_CLASSES / LABEL / BADGE / LEGEND_ORDER),
+  usato da elenco, piantina e modale — prima erano duplicati in `AssignmentMapPanel`.
+- **Test:** `AssignmentMapPanel.fineTurnoMultiTavolo.test.tsx` (8) e `ServizioPage.dueViste.test.tsx`
+  (4). `npm run validate` verde: 144 file / 1198 test.

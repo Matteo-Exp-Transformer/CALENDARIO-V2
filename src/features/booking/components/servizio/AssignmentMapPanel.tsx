@@ -1,9 +1,17 @@
 import type { FC } from 'react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
-import { Users, LogOut, GripVertical, AlertTriangle, MousePointerClick } from 'lucide-react'
+import {
+  Users,
+  LogOut,
+  GripVertical,
+  AlertTriangle,
+  MousePointerClick,
+  Plus,
+  Check,
+} from 'lucide-react'
 import { Button, Modal } from '@/components/ui'
 import { useServiceSlots } from '@/features/booking/hooks/useServiceSlots'
 import {
@@ -11,10 +19,12 @@ import {
   useUnassignedBookings,
   useAcceptedBookingsForDate,
   useAssignBookingToTable,
+  useAssignBookingToTables,
   useForceReplaceBookingOnTable,
   useUndoTableAssignment,
   useCheckoutTable,
   TurniEsauritiError,
+  type BookingTableAssignment,
 } from '@/features/booking/hooks/useTableAssignments'
 import {
   activeAssignedBookingIds,
@@ -24,39 +34,24 @@ import {
   useTableStatuses,
   type TableLiveStatus,
 } from '@/features/booking/hooks/useTableStatuses'
-import { getAccurateStartTime, trimTimeToHHmm } from '@/features/booking/utils/dateUtils'
+import {
+  getAccurateEndTime,
+  getAccurateStartTime,
+  trimTimeToHHmm,
+} from '@/features/booking/utils/dateUtils'
+import { ServicePlanMap } from '@/features/booking/components/servizio/ServicePlanMap'
+import {
+  TableReleaseNoticeModal,
+  type PendingTableRelease,
+} from '@/features/booking/components/servizio/TableReleaseNoticeModal'
+import {
+  STATUS_BADGE_CLASSES,
+  STATUS_CLASSES,
+  STATUS_LABEL,
+} from '@/features/booking/components/servizio/tableStatusStyles'
 import type { RestaurantTable } from '@/features/booking/hooks/useServizioTables'
 import type { Room } from '@/features/booking/hooks/useRooms'
 import type { BookingRequest } from '@/types/booking'
-
-// ─────────────────────────────────────────────
-// Colori e label per i 5 stati live (D24)
-// ─────────────────────────────────────────────
-
-const STATUS_CLASSES: Record<TableLiveStatus, string> = {
-  free:     'bg-emerald-100 border-emerald-300',
-  upcoming: 'bg-cyan-100 border-cyan-400',
-  occupied: 'bg-amber-100 border-amber-400',
-  late:     'bg-red-100 border-red-400',
-  leaving:  'bg-violet-100 border-violet-300',
-}
-
-const STATUS_LABEL: Record<TableLiveStatus, string> = {
-  free:     'Libero',
-  upcoming: 'In arrivo',
-  occupied: 'Occupato',
-  late:     'In ritardo',
-  leaving:  'In uscita',
-}
-
-/** Badge inline per ogni stato — colori coerenti con STATUS_CLASSES. */
-const STATUS_BADGE_CLASSES: Record<TableLiveStatus, string> = {
-  free:     'bg-emerald-200 text-emerald-800',
-  upcoming: 'bg-cyan-200 text-cyan-800',
-  occupied: 'bg-amber-200 text-amber-800',
-  late:     'bg-red-200 text-red-800',
-  leaving:  'bg-violet-200 text-violet-800',
-}
 
 // ─────────────────────────────────────────────
 // DraggableBookingCard
@@ -120,7 +115,7 @@ const DragBookingPreview: FC<{ booking: BookingRequest }> = ({ booking }) => (
 )
 
 // ─────────────────────────────────────────────
-// DroppableTable
+// DroppableTable (vista a elenco)
 // ─────────────────────────────────────────────
 
 interface DroppableTableProps {
@@ -225,9 +220,14 @@ const DroppableTable: FC<DroppableTableProps> = ({ table, status, assignedBookin
 // Componente principale
 // ─────────────────────────────────────────────
 
+/** Vista della mappa: elenco a schede oppure piantina della sala. */
+export type AssignmentMapLayout = 'grid' | 'plan'
+
 interface AssignmentMapPanelProps {
   rooms: Room[]
   tables: RestaurantTable[]
+  /** 'grid' = elenco a schede (default). 'plan' = piantina sala confermata. */
+  layout?: AssignmentMapLayout
 }
 
 /**
@@ -243,14 +243,23 @@ interface ForceConfirmState {
 }
 
 interface LastAssignmentState {
-  assignmentId: string
+  assignmentIds: string[]
   bookingName: string
-  tableName: string
+  tableLabel: string
   slotId: string
   date: string
 }
 
-export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables }) => {
+/**
+ * Modale di assegnazione rapida. `mode: 'add'` serve alle tavolate che crescono
+ * (D39): la prenotazione è già su un tavolo e se ne aggiunge un altro.
+ */
+interface QuickAssignState {
+  bookingId: string
+  mode: 'assign' | 'add'
+}
+
+export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables, layout = 'grid' }) => {
   const today = new Date().toISOString().slice(0, 10)
 
   const [selectedDate, setSelectedDate] = useState(today)
@@ -258,9 +267,18 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
 
   // Dialogo di forzatura: presente quando un drop è bloccato per turni esauriti
   const [forceConfirm, setForceConfirm] = useState<ForceConfirmState | null>(null)
-  const [quickAssignBookingId, setQuickAssignBookingId] = useState<string | null>(null)
+  const [quickAssign, setQuickAssign] = useState<QuickAssignState | null>(null)
+  const [quickAssignSelection, setQuickAssignSelection] = useState<string[]>([])
   const [activeDragBookingId, setActiveDragBookingId] = useState<string | null>(null)
   const [lastAssignment, setLastAssignment] = useState<LastAssignmentState | null>(null)
+  const [planDetailTableId, setPlanDetailTableId] = useState<string | null>(null)
+
+  // Tavoli a fine turno per cui lo staff ha già risposto: non li ri-notifichiamo
+  const [handledReleaseTableIds, setHandledReleaseTableIds] = useState<string[]>([])
+  // Firma dei tavoli per cui l'avviso è stato messo da parte con "Decido dopo".
+  // PERCHÉ una firma e non un booleano: se entra in uscita un tavolo NUOVO la
+  // firma cambia e l'avviso torna a farsi vedere, senza riproporre quelli già visti.
+  const [dismissedReleaseSignature, setDismissedReleaseSignature] = useState('')
 
   const { data: slots = [] } = useServiceSlots()
   const selectedSlot = slots.find((s) => s.id === selectedSlotId) ?? null
@@ -283,6 +301,7 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
   })
 
   const assignBooking = useAssignBookingToTable()
+  const assignBookingToTables = useAssignBookingToTables()
   const forceReplaceBooking = useForceReplaceBookingOnTable()
   const undoAssignment = useUndoTableAssignment()
   const checkoutTable = useCheckoutTable()
@@ -290,6 +309,15 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   )
+
+  const allTables = tables
+
+  /** Cambiare fascia o giorno azzera gli avvisi già gestiti: è un altro servizio. */
+  useEffect(() => {
+    setHandledReleaseTableIds([])
+    setDismissedReleaseSignature('')
+    setLastAssignment(null)
+  }, [selectedSlotId, selectedDate])
 
   const slotCounts = useMemo(() => {
     return new Map(
@@ -313,18 +341,121 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
     )
   }, [acceptedOnDate, assignments, selectedDate, slots])
 
+  /** Assignment attivi della fascia+data correnti, ordinati per turno. */
+  const activeAssignments = useMemo(
+    () =>
+      assignments
+        .filter(
+          (a) =>
+            a.service_slot_id === selectedSlotId &&
+            a.date === selectedDate &&
+            a.checked_out_at === null,
+        )
+        .sort((a, b) => a.turn_number - b.turn_number),
+    [assignments, selectedDate, selectedSlotId],
+  )
+
+  /** Prenotazioni attive per tavolo — usata da entrambe le viste. */
+  const bookingsByTable = useMemo(() => {
+    const map = new Map<string, BookingRequest[]>()
+    for (const assignment of activeAssignments) {
+      const booking = bookingsById.get(assignment.booking_id)
+      if (!booking) continue
+      const current = map.get(assignment.table_id) ?? []
+      current.push(booking)
+      map.set(assignment.table_id, current)
+    }
+    return map
+  }, [activeAssignments, bookingsById])
+
+  /**
+   * Prenotazioni già assegnate, raggruppate per prenotazione (D39).
+   * Serve per mostrare le tavolate su più tavoli e per aggiungerne altri:
+   * una tavolata da 10 su due tavoli da 5 è una riga sola con due tavoli.
+   */
+  const assignedGroups = useMemo(() => {
+    const byBooking = new Map<string, { booking: BookingRequest; assignments: BookingTableAssignment[] }>()
+    for (const assignment of activeAssignments) {
+      const booking = bookingsById.get(assignment.booking_id)
+      if (!booking) continue
+      const current = byBooking.get(assignment.booking_id)
+      if (current) {
+        current.assignments.push(assignment)
+      } else {
+        byBooking.set(assignment.booking_id, { booking, assignments: [assignment] })
+      }
+    }
+
+    return Array.from(byBooking.values()).map(({ booking, assignments: rows }) => {
+      const groupTables = rows
+        .map((row) => allTables.find((t) => t.id === row.table_id) ?? null)
+        .filter((table): table is RestaurantTable => table !== null)
+      const seats = groupTables.reduce((sum, table) => sum + table.capacity, 0)
+      return {
+        booking,
+        tables: groupTables,
+        seats,
+        // Coperti scoperti: guida l'admin a completare la tavolata
+        missingSeats: Math.max(0, (booking.num_guests ?? 0) - seats),
+      }
+    })
+  }, [activeAssignments, allTables, bookingsById])
+
+  /**
+   * Tavoli a fine turno che aspettano la conferma dello staff (D22/D23).
+   * La capienza si è già liberata da sola: qui si conferma solo lo stato fisico.
+   */
+  const pendingReleases = useMemo<PendingTableRelease[]>(() => {
+    const result: PendingTableRelease[] = []
+    for (const [tableId, status] of tableStatuses) {
+      if (status !== 'leaving') continue
+      if (handledReleaseTableIds.includes(tableId)) continue
+      const table = allTables.find((t) => t.id === tableId)
+      if (!table) continue
+      const booking = (bookingsByTable.get(tableId) ?? [])[0] ?? null
+      const room = rooms.find((r) => r.id === table.room_id) ?? null
+      result.push({
+        tableId,
+        tableName: table.name,
+        roomName: rooms.length > 1 ? room?.name ?? null : null,
+        bookingName: booking?.client_name ?? null,
+        guests: booking?.num_guests ?? null,
+        // Ora a muro: mai new Date(confirmed_end), che sposterebbe l'orario di fuso
+        endedAtLabel: booking ? trimTimeToHHmm(getAccurateEndTime(booking)) || null : null,
+      })
+    }
+    return result
+  }, [allTables, bookingsByTable, handledReleaseTableIds, rooms, tableStatuses])
+
+  /** Identifica il gruppo di tavoli attualmente in attesa di conferma. */
+  const pendingReleaseSignature = useMemo(
+    () => pendingReleases.map((r) => r.tableId).sort().join('|'),
+    [pendingReleases],
+  )
+
+  // Il fine turno è un evento: la finestra si apre da sola e resta finché lo
+  // staff non risponde per ogni tavolo o non la mette da parte.
+  const isReleaseNoticeOpen =
+    pendingReleases.length > 0 && dismissedReleaseSignature !== pendingReleaseSignature
+
+  function findBooking(bookingId: string): BookingRequest | null {
+    return unassigned.find((b) => b.id === bookingId) ?? bookingsById.get(bookingId) ?? null
+  }
+
   function handleDragStart(event: DragStartEvent) {
     setActiveDragBookingId(String(event.active.id).replace('booking-', ''))
   }
 
-  function rememberAssignment(bookingId: string, tableId: string, assignmentId: string) {
-    const booking = unassigned.find((b) => b.id === bookingId)
-    const table = allTables.find((t) => t.id === tableId)
-    if (!booking || !table) return
+  function rememberAssignment(bookingId: string, tableIds: string[], assignmentIds: string[]) {
+    const booking = findBooking(bookingId)
+    if (!booking || assignmentIds.length === 0) return
+    const names = tableIds
+      .map((id) => allTables.find((t) => t.id === id)?.name)
+      .filter((name): name is string => Boolean(name))
     setLastAssignment({
-      assignmentId,
+      assignmentIds,
       bookingName: booking.client_name,
-      tableName: table.name,
+      tableLabel: names.join(', '),
       slotId: selectedSlotId,
       date: selectedDate,
     })
@@ -332,7 +463,7 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
 
   function assignToFreeTable(bookingId: string, tableId: string) {
     if (!selectedSlot) return
-    const draggedBooking = unassigned.find((booking) => booking.id === bookingId) ?? null
+    const draggedBooking = findBooking(bookingId)
 
     assignBooking.mutate(
       {
@@ -348,8 +479,8 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
       {
         onSuccess: (data) => {
           const assignment = data as { id?: string }
-          if (assignment.id) rememberAssignment(bookingId, tableId, assignment.id)
-          setQuickAssignBookingId(null)
+          if (assignment.id) rememberAssignment(bookingId, [tableId], [assignment.id])
+          closeQuickAssign()
         },
         onError: (error) => {
           if (error instanceof TurniEsauritiError) {
@@ -365,13 +496,59 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
     )
   }
 
+  /** Assegna la stessa prenotazione a più tavoli in un colpo solo (D39). */
+  function assignToSelectedTables(bookingId: string, tableIds: string[]) {
+    if (!selectedSlot || tableIds.length === 0) return
+    const booking = findBooking(bookingId)
+
+    assignBookingToTables.mutate(
+      {
+        bookingId,
+        tableIds,
+        slotId: selectedSlotId,
+        date: selectedDate,
+        maxTurns: selectedSlot.max_turns,
+        existingAssignments: assignments,
+        booking: booking ?? undefined,
+        slot: selectedSlot,
+      },
+      {
+        onSuccess: (rows) => {
+          rememberAssignment(bookingId, tableIds, rows.map((row) => row.id))
+          closeQuickAssign()
+        },
+        onError: (error) => {
+          if (error instanceof TurniEsauritiError) {
+            setForceConfirm({
+              bookingId,
+              tableId: error.tableId,
+              reason: 'Forzato dallo staff',
+              kind: 'turns',
+            })
+          }
+        },
+      },
+    )
+  }
+
+  function closeQuickAssign() {
+    setQuickAssign(null)
+    setQuickAssignSelection([])
+  }
+
+  function openQuickAssign(bookingId: string, mode: QuickAssignState['mode']) {
+    setQuickAssign({ bookingId, mode })
+    setQuickAssignSelection([])
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     setActiveDragBookingId(null)
     const { active, over } = event
     if (!over) return
 
     const bookingId = String(active.id).replace('booking-', '')
-    const tableId = String(over.id).replace('table-', '')
+    // Le due viste usano prefissi diversi per lo stesso tavolo
+    const tableId = String(over.id).replace('plan-table-', '').replace('table-', '')
 
     if (!selectedSlot) return
     const targetStatus = tableStatuses.get(tableId) ?? 'free'
@@ -393,10 +570,10 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
     if (!forceConfirm || !selectedSlot) return
     const { bookingId, tableId, reason } = forceConfirm
     setForceConfirm(null)
-    const booking = unassigned.find((b) => b.id === bookingId) ?? undefined
+    const booking = findBooking(bookingId) ?? undefined
     const onSuccess = (data: unknown) => {
       const assignment = data as { id?: string }
-      if (assignment.id) rememberAssignment(bookingId, tableId, assignment.id)
+      if (assignment.id) rememberAssignment(bookingId, [tableId], [assignment.id])
     }
 
     if (forceConfirm.kind === 'replace') {
@@ -427,13 +604,54 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
     }, { onSuccess })
   }
 
-  const allTables = tables
-  const quickAssignBooking = quickAssignBookingId
-    ? unassigned.find((booking) => booking.id === quickAssignBookingId) ?? null
+  function handleCheckout(tableId: string) {
+    checkoutTable.mutate({
+      tableId,
+      slotId: selectedSlotId,
+      date: selectedDate,
+      assignments,
+    })
+  }
+
+  function markReleaseHandled(tableId: string) {
+    setHandledReleaseTableIds((prev) => (prev.includes(tableId) ? prev : [...prev, tableId]))
+  }
+
+  async function handleUndoLastAssignment() {
+    if (!lastAssignment) return
+    for (const assignmentId of lastAssignment.assignmentIds) {
+      await undoAssignment.mutateAsync({
+        assignmentId,
+        date: lastAssignment.date,
+        slotId: lastAssignment.slotId,
+      })
+    }
+    setLastAssignment(null)
+  }
+
+  const quickAssignBooking = quickAssign ? findBooking(quickAssign.bookingId) : null
+  const quickAssignExistingTableIds = quickAssign
+    ? activeAssignments
+        .filter((a) => a.booking_id === quickAssign.bookingId)
+        .map((a) => a.table_id)
+    : []
+  const quickAssignSelectedSeats = quickAssignSelection.reduce((sum, tableId) => {
+    const table = allTables.find((t) => t.id === tableId)
+    return sum + (table?.capacity ?? 0)
+  }, 0)
+  const quickAssignAlreadySeats = quickAssignExistingTableIds.reduce((sum, tableId) => {
+    const table = allTables.find((t) => t.id === tableId)
+    return sum + (table?.capacity ?? 0)
+  }, 0)
+
+  const activeDragBooking = activeDragBookingId ? findBooking(activeDragBookingId) : null
+  const planDetailTable = planDetailTableId
+    ? allTables.find((t) => t.id === planDetailTableId) ?? null
     : null
-  const activeDragBooking = activeDragBookingId
-    ? unassigned.find((booking) => booking.id === activeDragBookingId) ?? null
-    : null
+  const planDetailBookings = planDetailTableId ? bookingsByTable.get(planDetailTableId) ?? [] : []
+
+  const isAssigning =
+    assignBooking.isPending || assignBookingToTables.isPending || forceReplaceBooking.isPending
 
   return (
     <div className="space-y-4 rounded-xl border border-(--color-border) bg-surface p-4 shadow-sm">
@@ -443,6 +661,19 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
           Trascina una prenotazione su un tavolo per assegnarla.
         </p>
       </div>
+
+      {/* Avviso fine turno: la capienza si è già liberata, manca la conferma fisica (D22) */}
+      <TableReleaseNoticeModal
+        isOpen={isReleaseNoticeOpen}
+        releases={pendingReleases}
+        isConfirming={checkoutTable.isPending}
+        onConfirmFree={(tableId) => {
+          handleCheckout(tableId)
+          markReleaseHandled(tableId)
+        }}
+        onKeepOccupied={markReleaseHandled}
+        onClose={() => setDismissedReleaseSignature(pendingReleaseSignature)}
+      />
 
       {/* Dialogo forzatura overbooking (D25): appare quando i turni sono esauriti */}
       {forceConfirm && (
@@ -486,7 +717,7 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
                   variant="primary"
                   size="sm"
                   onClick={handleForceAssign}
-                  disabled={assignBooking.isPending || forceReplaceBooking.isPending}
+                  disabled={isAssigning}
                 >
                   {forceConfirm.kind === 'replace' ? 'Libera e assegna' : 'Assegna comunque'}
                 </Button>
@@ -504,11 +735,11 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
         </div>
       )}
 
-      {quickAssignBooking && (
+      {quickAssignBooking && quickAssign && (
         <Modal
           isOpen
-          onClose={() => setQuickAssignBookingId(null)}
-          title="Assegna tavolo"
+          onClose={closeQuickAssign}
+          title={quickAssign.mode === 'add' ? 'Aggiungi tavolo alla tavolata' : 'Assegna tavolo'}
           size="md"
         >
           <div className="space-y-4">
@@ -517,6 +748,14 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
               <p className="flex items-center gap-1 text-xs text-primary-700">
                 <Users className="h-3 w-3" aria-hidden />
                 {quickAssignBooking.num_guests} coperti
+              </p>
+              <p className="mt-1 text-xs text-primary-800">
+                Selezionati {quickAssignSelection.length} tavoli ·{' '}
+                {quickAssignAlreadySeats + quickAssignSelectedSeats} posti su{' '}
+                {quickAssignBooking.num_guests} richiesti
+              </p>
+              <p className="mt-1 text-xs text-(--color-text-muted)">
+                Puoi scegliere più tavoli: una tavolata grande può stare su due tavoli piccoli.
               </p>
             </div>
 
@@ -531,17 +770,26 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {roomTables.map((table) => {
                       const status = tableStatuses.get(table.id) ?? 'free'
+                      const alreadyOnBooking = quickAssignExistingTableIds.includes(table.id)
+                      const isSelected = quickAssignSelection.includes(table.id)
                       return (
                         <button
                           key={table.id}
                           type="button"
-                          disabled={assignBooking.isPending || forceReplaceBooking.isPending}
+                          disabled={isAssigning || alreadyOnBooking}
                           onClick={() => {
+                            if (alreadyOnBooking) return
                             if (status === 'free') {
-                              assignToFreeTable(quickAssignBooking.id, table.id)
+                              // Tavolo libero → entra/esce dalla selezione multipla
+                              setQuickAssignSelection((prev) =>
+                                prev.includes(table.id)
+                                  ? prev.filter((id) => id !== table.id)
+                                  : [...prev, table.id],
+                              )
                               return
                             }
-                            setQuickAssignBookingId(null)
+                            // Tavolo occupato → non si somma a una tavolata: serve la forzatura
+                            closeQuickAssign()
                             setForceConfirm({
                               bookingId: quickAssignBooking.id,
                               tableId: table.id,
@@ -549,12 +797,18 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
                               kind: 'replace',
                             })
                           }}
-                          className={`rounded-xl border-2 p-3 text-left transition-colors ${STATUS_CLASSES[status]}`}
+                          className={`relative rounded-xl border-2 p-3 text-left transition-colors ${STATUS_CLASSES[status]} ${isSelected ? 'ring-2 ring-primary-500 ring-offset-1' : ''} ${alreadyOnBooking ? 'opacity-60' : ''}`}
                         >
+                          {isSelected && (
+                            <Check
+                              className="absolute right-2 top-2 h-4 w-4 text-primary-700"
+                              aria-hidden
+                            />
+                          )}
                           <span className="block truncate text-sm font-semibold text-primary-900">{table.name}</span>
                           <span className="block text-xs text-(--color-text-muted)">{table.capacity} posti</span>
                           <span className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASSES[status]}`}>
-                            {STATUS_LABEL[status]}
+                            {alreadyOnBooking ? 'Già in tavolata' : STATUS_LABEL[status]}
                           </span>
                         </button>
                       )
@@ -564,10 +818,74 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
               )
             })}
 
-            <div className="flex justify-end">
-              <Button type="button" variant="ghost" onClick={() => setQuickAssignBookingId(null)}>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="ghost" onClick={closeQuickAssign}>
                 Annulla
               </Button>
+              <Button
+                type="button"
+                variant="primary"
+                disabled={quickAssignSelection.length === 0 || isAssigning}
+                onClick={() => assignToSelectedTables(quickAssignBooking.id, quickAssignSelection)}
+              >
+                {quickAssignSelection.length > 1
+                  ? `Assegna ${quickAssignSelection.length} tavoli`
+                  : 'Assegna tavolo'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Dettaglio tavolo dalla piantina: da qui si libera il tavolo */}
+      {planDetailTable && (
+        <Modal isOpen onClose={() => setPlanDetailTableId(null)} title={planDetailTable.name} size="sm">
+          <div className="space-y-3">
+            <p className="text-sm text-(--color-text-muted)">
+              {STATUS_LABEL[tableStatuses.get(planDetailTable.id) ?? 'free']} ·{' '}
+              {planDetailTable.capacity} posti
+            </p>
+
+            {planDetailBookings.length === 0 ? (
+              <p className="text-sm text-(--color-text-muted)">
+                Nessuna prenotazione su questo tavolo in questa fascia.
+              </p>
+            ) : (
+              <ul className="space-y-1">
+                {planDetailBookings.map((booking) => (
+                  <li key={booking.id} className="rounded-lg border border-(--color-border) px-3 py-2">
+                    <p className="text-sm font-medium text-primary-900">
+                      {booking.client_name}, {booking.num_guests} coperti
+                    </p>
+                    {trimTimeToHHmm(getAccurateStartTime(booking)) && (
+                      <p className="text-xs text-(--color-text-muted)">
+                        arrivo {trimTimeToHHmm(getAccurateStartTime(booking))}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="ghost" onClick={() => setPlanDetailTableId(null)}>
+                Chiudi
+              </Button>
+              {planDetailBookings.length > 0 && (
+                <Button
+                  type="button"
+                  variant="danger"
+                  disabled={checkoutTable.isPending}
+                  onClick={() => {
+                    handleCheckout(planDetailTable.id)
+                    markReleaseHandled(planDetailTable.id)
+                    setPlanDetailTableId(null)
+                  }}
+                >
+                  <LogOut className="h-4 w-4" aria-hidden />
+                  Libera tavolo
+                </Button>
+              )}
             </div>
           </div>
         </Modal>
@@ -615,7 +933,7 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
       {selectedSlotId && (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div className="flex flex-col gap-4 md:flex-row">
-            {/* Panel sinistro: prenotazioni non assegnate */}
+            {/* Panel sinistro: prenotazioni non assegnate + tavolate già assegnate */}
             <div className="space-y-2 md:w-1/3 md:shrink-0">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
@@ -624,23 +942,14 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
                 {lastAssignment && (
                   <div className="flex items-center gap-1 rounded-lg border border-primary-100 bg-primary-50 px-2 py-1 text-xs text-primary-900">
                     <span className="hidden sm:inline">
-                      {lastAssignment.bookingName} su {lastAssignment.tableName}
+                      {lastAssignment.bookingName} su {lastAssignment.tableLabel}
                     </span>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       disabled={undoAssignment.isPending}
-                      onClick={() =>
-                        undoAssignment.mutate(
-                          {
-                            assignmentId: lastAssignment.assignmentId,
-                            date: lastAssignment.date,
-                            slotId: lastAssignment.slotId,
-                          },
-                          { onSuccess: () => setLastAssignment(null) },
-                        )
-                      }
+                      onClick={handleUndoLastAssignment}
                     >
                       Annulla
                     </Button>
@@ -664,60 +973,93 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({ rooms, tables 
                 <DraggableBookingCard
                   key={b.id}
                   booking={b}
-                  onQuickAssign={() => setQuickAssignBookingId(b.id)}
+                  onQuickAssign={() => openQuickAssign(b.id, 'assign')}
                 />
               ))}
+
+              {/* Tavolate già assegnate: da qui si aggiungono altri tavoli (D39) */}
+              {assignedGroups.length > 0 && (
+                <div className="space-y-2 pt-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
+                    Assegnate ({assignedGroups.length})
+                  </p>
+                  {assignedGroups.map((group) => (
+                    <div
+                      key={group.booking.id}
+                      className="rounded-lg border border-(--color-border) bg-surface px-3 py-2 shadow-sm"
+                    >
+                      <p className="truncate text-sm font-semibold text-primary-900">
+                        {group.booking.client_name}
+                      </p>
+                      <p className="text-xs text-(--color-text-muted)">
+                        {group.booking.num_guests} coperti ·{' '}
+                        {group.tables.map((t) => t.name).join(', ')} ({group.seats} posti)
+                      </p>
+                      {group.missingSeats > 0 && (
+                        <p className="mt-1 text-xs font-medium text-amber-700">
+                          Mancano {group.missingSeats} posti per questa tavolata.
+                        </p>
+                      )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="mt-1 text-xs"
+                        onClick={() => openQuickAssign(group.booking.id, 'add')}
+                      >
+                        <Plus className="h-3.5 w-3.5" aria-hidden />
+                        Aggiungi tavolo
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Panel destro: mappa tavoli con drop-zone */}
+            {/* Panel destro: mappa tavoli con drop-zone (elenco o piantina) */}
             <div className="flex-1 space-y-3">
-              {rooms.map((room) => {
-                const roomTables = allTables.filter((t) => t.room_id === room.id)
-                if (roomTables.length === 0) return null
-                return (
-                  <div key={room.id}>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
-                      {room.name}
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                      {roomTables.map((table) => {
-                        // Stato live dal hook (5 stati D24); fallback 'free' se tavolo non in mappa
-                        const status = tableStatuses.get(table.id) ?? 'free'
-                        const activeAssignments = assignments
-                          .filter(
-                            (a) =>
-                              a.table_id === table.id &&
-                              a.service_slot_id === selectedSlotId &&
-                              a.date === selectedDate &&
-                              a.checked_out_at === null,
-                          )
-                          .sort((a, b) => a.turn_number - b.turn_number)
-                        const assignedBookings = activeAssignments
-                          .map((a) => bookingsById.get(a.booking_id) ?? null)
-                          .filter((booking): booking is BookingRequest => booking !== null)
+              {layout === 'plan' ? (
+                <ServicePlanMap
+                  rooms={rooms}
+                  tables={allTables}
+                  statuses={tableStatuses}
+                  bookingsByTable={bookingsByTable}
+                  onSelectTable={setPlanDetailTableId}
+                />
+              ) : (
+                rooms.map((room) => {
+                  const roomTables = allTables.filter((t) => t.room_id === room.id)
+                  if (roomTables.length === 0) return null
+                  return (
+                    <div key={room.id}>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
+                        {room.name}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        {roomTables.map((table) => {
+                          // Stato live dal hook (5 stati D24); fallback 'free' se tavolo non in mappa
+                          const status = tableStatuses.get(table.id) ?? 'free'
+                          const assignedBookings = bookingsByTable.get(table.id) ?? []
 
-                        return (
-                          <DroppableTable
-                            key={table.id}
-                            table={table}
-                            status={status}
-                            assignedBookings={assignedBookings}
-                            isCheckingOut={checkoutTable.isPending}
-                            onCheckout={() =>
-                              checkoutTable.mutate({
-                                tableId: table.id,
-                                slotId: selectedSlotId,
-                                date: selectedDate,
-                                assignments,
-                              })
-                            }
-                          />
-                        )
-                      })}
+                          return (
+                            <DroppableTable
+                              key={table.id}
+                              table={table}
+                              status={status}
+                              assignedBookings={assignedBookings}
+                              isCheckingOut={checkoutTable.isPending}
+                              onCheckout={() => {
+                                handleCheckout(table.id)
+                                markReleaseHandled(table.id)
+                              }}
+                            />
+                          )
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })
+              )}
 
               {rooms.length === 0 && (
                 <p className="text-sm text-(--color-text-muted)">Nessuna sala configurata.</p>

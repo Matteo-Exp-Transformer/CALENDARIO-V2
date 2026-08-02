@@ -286,6 +286,99 @@ export function useAssignBookingToTable() {
   })
 }
 
+export interface AssignManyInput extends Omit<AssignInput, 'tableId'> {
+  /** Tavoli su cui distribuire la stessa prenotazione (D39: tavolata su più tavoli). */
+  tableIds: string[]
+}
+
+/**
+ * Assegna UNA prenotazione a PIÙ tavoli in un solo insert (D39).
+ *
+ * PERCHÉ una mutation dedicata invece di N chiamate a useAssignBookingToTable:
+ * il turn_number è per-tavolo e va calcolato sullo stesso snapshot di
+ * `existingAssignments`; chiamate sequenziali leggerebbero uno stato intermedio.
+ * Un unico insert multi-riga mantiene anche coerente il vincolo UNIQUE (D40).
+ *
+ * Usato sia per l'assegnazione iniziale multi-tavolo sia per aggiungere un
+ * tavolo a una prenotazione già assegnata (tavolata che cresce).
+ */
+export function useAssignBookingToTables() {
+  const queryClient = useQueryClient()
+  const { tenantId } = useTenantContext()
+
+  return useMutation({
+    mutationFn: async ({
+      bookingId,
+      tableIds,
+      slotId,
+      date,
+      maxTurns,
+      existingAssignments,
+      force,
+      booking,
+      slot,
+    }: AssignManyInput) => {
+      if (tableIds.length === 0) throw new Error('Seleziona almeno un tavolo.')
+
+      const rows = tableIds.map((tableId) => {
+        const forThisTable = existingAssignments.filter(
+          (a) => a.table_id === tableId && a.service_slot_id === slotId && a.date === date,
+        )
+        const turnNumber =
+          forThisTable.length > 0 ? Math.max(...forThisTable.map((a) => a.turn_number)) + 1 : 1
+
+        // Blocco turni esauriti — saltato se force presente (D25: overbooking consapevole)
+        if (!force && maxTurns !== null && turnNumber > maxTurns) {
+          throw new TurniEsauritiError(tableId, turnNumber, maxTurns)
+        }
+
+        return {
+          tenant_id: tenantId!,
+          booking_id: bookingId,
+          table_id: tableId,
+          service_slot_id: slotId,
+          turn_number: turnNumber,
+          date,
+          checked_out_at: null,
+          forced_by_admin: force !== undefined,
+          force_reason: force?.reason ?? null,
+        }
+      })
+
+      const { data, error } = await supabase
+        .from('booking_table_assignments')
+        .insert(rows)
+        .select()
+
+      if (error) throw error
+
+      // Snapshot finestra di occupazione: una sola volta per prenotazione (D42, best-effort)
+      await writeOccupancySnapshot({ bookingId, tenantId: tenantId!, booking, slot })
+
+      return (data ?? []) as BookingTableAssignment[]
+    },
+    onSuccess: async (_data, vars) => {
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date] }),
+        queryClient.refetchQueries({
+          queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date, vars.slotId, 'unassigned'],
+        }),
+      ])
+      toast.success(
+        vars.tableIds.length > 1
+          ? `Prenotazione assegnata a ${vars.tableIds.length} tavoli`
+          : 'Prenotazione assegnata al tavolo',
+      )
+    },
+    onError: (error: Error) => {
+      logger.error('[useAssignBookingToTables] error', error)
+      // TurniEsauritiError viene gestita dalla UI per offrire la forzatura — non mostriamo toast
+      if (error instanceof TurniEsauritiError) return
+      toast.error(error.message || 'Errore nell\'assegnazione')
+    },
+  })
+}
+
 export function useForceReplaceBookingOnTable() {
   const queryClient = useQueryClient()
   const { tenantId } = useTenantContext()

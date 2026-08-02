@@ -17,6 +17,15 @@ import { cn } from '@/lib/utils'
 
 type ViewMode = 'list' | 'map'
 
+/**
+ * Le due viste della mappa.
+ *   'service' → sala confermata: nessuna griglia, stati live e occupanti, si assegna.
+ *   'edit'    → editor: griglia di allineamento, tavoli trascinabili, CRUD.
+ * Default 'service': chi apre la mappa a servizio aperto vuole vedere la sala,
+ * non l'editor; la disposizione si cambia molto più di rado.
+ */
+type MapMode = 'service' | 'edit'
+
 interface ModalState {
   open: boolean
   initial: { id: string; name: string; capacity: number; room_id: string } | null
@@ -106,6 +115,7 @@ export const ServizioPage: FC = () => {
   const { isTableMode } = useTableMode()
 
   const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [mapMode, setMapMode] = useState<MapMode>('service')
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
   const [modal, setModal] = useState<ModalState>({ open: false, initial: null })
   const [roomModal, setRoomModal] = useState<RoomModalState>({ open: false, initial: null })
@@ -305,6 +315,41 @@ export const ServizioPage: FC = () => {
         {/* ========================= TAB MAPPA ========================= */}
         {!isLoading && !error && viewMode === 'map' && (
           <div className="space-y-4">
+            {/* Toggle fra la sala a servizio e l'editor della disposizione */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex rounded-lg border border-(--color-border) bg-surface p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setMapMode('service')}
+                  className={cn(
+                    'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+                    mapMode === 'service'
+                      ? 'bg-primary-600 text-white'
+                      : 'text-(--color-text) hover:text-primary-600',
+                  )}
+                >
+                  Servizio
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMapMode('edit')}
+                  className={cn(
+                    'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+                    mapMode === 'edit'
+                      ? 'bg-primary-600 text-white'
+                      : 'text-(--color-text) hover:text-primary-600',
+                  )}
+                >
+                  Modifica
+                </button>
+              </div>
+              <p className="text-micro text-(--color-text-muted)">
+                {mapMode === 'service'
+                  ? 'Sala a servizio: stato dei tavoli e assegnazione delle prenotazioni.'
+                  : 'Modifica disposizione: sposta i tavoli sulla griglia e gestiscili.'}
+              </p>
+            </div>
+
             <RoomTabs
               rooms={rooms}
               selectedRoomId={selectedRoomId}
@@ -322,10 +367,11 @@ export const ServizioPage: FC = () => {
               </div>
             )}
 
-            {selectedRoom && (
+            {mapMode === 'edit' && selectedRoom && (
               <>
                 <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 md:hidden">
-                  Da mobile la modifica della mappa è nascosta: usa l'assegnazione tavoli qui sotto.
+                  Da mobile la modifica della sala è nascosta: passa alla vista Servizio per assegnare
+                  i tavoli.
                 </div>
                 <div className="hidden md:block">
                   <TableMap
@@ -338,19 +384,21 @@ export const ServizioPage: FC = () => {
               </>
             )}
 
-            {/* Assignment prenotazioni → tavoli (DndContext separato dal riposizionamento).
+            {/* Vista Servizio: sala confermata (piantina senza griglia) + assegnazioni.
                 Guard D49: pannello visibile solo se Pro con almeno un tavolo attivo. */}
-            {isTableMode ? (
-              <AssignmentMapPanel rooms={rooms} tables={tables} />
-            ) : (
-              <div className="rounded-xl border border-(--color-border) bg-surface px-6 py-10 text-center shadow-sm">
-                <p className="text-title-section font-semibold text-primary-900">
-                  Attiva la mappa delle assegnazioni
-                </p>
-                <p className="text-body mt-2 text-(--color-text-muted)">
-                  Crea la prima sala e i primi tavoli per assegnare le prenotazioni dal vivo.
-                </p>
-              </div>
+            {mapMode === 'service' && (
+              isTableMode ? (
+                <AssignmentMapPanel rooms={rooms} tables={tables} layout="plan" />
+              ) : (
+                <div className="rounded-xl border border-(--color-border) bg-surface px-6 py-10 text-center shadow-sm">
+                  <p className="text-title-section font-semibold text-primary-900">
+                    Attiva la mappa delle assegnazioni
+                  </p>
+                  <p className="text-body mt-2 text-(--color-text-muted)">
+                    Crea la prima sala e i primi tavoli per assegnare le prenotazioni dal vivo.
+                  </p>
+                </div>
+              )
             )}
 
             <div className="mt-8 border-t border-(--color-border) pt-6">

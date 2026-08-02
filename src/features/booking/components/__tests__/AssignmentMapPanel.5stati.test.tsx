@@ -55,9 +55,10 @@ vi.mock('../../hooks/useTableAssignments', () => ({
   useTableAssignments: () => ({ data: mockState.assignments }),
   useUnassignedBookings: () => ({ data: [] }),
   useAcceptedBookingsForDate: () => ({ data: mockState.acceptedBookings }),
-  useAssignBookingToTable: () => ({ mutate: vi.fn() }),
+  useAssignBookingToTable: () => ({ mutate: vi.fn(), isPending: false }),
+  useAssignBookingToTables: () => ({ mutate: vi.fn(), isPending: false }),
   useForceReplaceBookingOnTable: () => ({ mutate: vi.fn(), isPending: false }),
-  useUndoTableAssignment: () => ({ mutate: vi.fn(), isPending: false }),
+  useUndoTableAssignment: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
   useCheckoutTable: () => ({ mutate: vi.fn(), isPending: false }),
 }))
 
