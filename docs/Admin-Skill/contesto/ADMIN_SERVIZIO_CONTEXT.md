@@ -290,3 +290,33 @@
   `selectedRoomId` scende `ServizioPage → AssignmentMapPanel → ServicePlanMap`. Se la sala scelta
   non ha tavoli si ripiega sulla prima con tavoli: il pannello non resta mai vuoto.
 - **Test:** `ServicePlanMap.griglia.test.tsx` (5).
+
+### 9.8 S4-FIX-5 · S4-FIX-6 (02-08-26) — sostituzione guidata + divieto fasce accavallate
+
+> Client + test soltanto: nessuna migrazione, nessuna scrittura DB nuova.
+
+- **S4-FIX-5 — tavolo occupato, tre esiti invece di uno.** Il riquadro ambra su tavolo occupato non
+  offre più la sola «Libera e assegna»: chiede allo staff cosa fare di chi è già seduto, senza scelta
+  preselezionata. `useForceReplaceBookingOnTable` prende `outcome: 'move' | 'archive' | 'requeue'`
+  (+ `targetTableId` per `move`):
+  - **Sposta** — griglia dei tavoli liberi (riusa lo stile della modale «Assegna tavolo»); tre passi in
+    ordine (insert su destinazione → delete dal conteso → insert della nuova prenotazione) così un
+    fallimento a metà lascia comunque il trasferito assegnato da qualche parte. Il tavolo conteso non
+    conta un turno per la sosta scavalcata.
+  - **Archivia** — timbra `checked_out_at` (turno consumato) + `served_at` se non restano altri tavoli
+    attivi sulla stessa prenotazione (riusa `markBookingServedIfFullyReleased`, come `useCheckoutTable`).
+  - **In attesa** — **cambio di comportamento**: prima timbrava `checked_out_at` (consumava un turno);
+    ora **cancella la riga** (DELETE fisico, stesso principio di `useUndoTableAssignment`) e non consuma
+    un turno. È il comportamento pre-fix dell'unica scelta «Libera e assegna».
+  «Conferma» resta spento finché non si sceglie un esito (e per «Sposta» finché non si sceglie anche il
+  tavolo); senza tavoli liberi «Sposta» è spento con la spiegazione. Il ramo «Turni esauriti» (tavolo
+  verde con turni finiti) non è toccato. Test: `useTableAssignments.sostituzioneGuidata.test.ts`,
+  `AssignmentMapPanel.sostituzioneGuidata.test.tsx`; aggiornati `useTableAssignments.fix2.test.ts` e
+  `.appendOnly.test.ts` per il nuovo comportamento di «in attesa».
+- **S4-FIX-6 — una fascia non può accavallarsi su un'altra.** `ServiceSlotsManager` (editor fasce di
+  Servizio) non validava le sovrapposizioni — a differenza di Impostazioni → Imposta Fasce Orarie, che
+  le blocca da tempo con `validateSlotConfigs`. Il salvataggio del ramo «valore base» ora riusa
+  `slotRangesOverlap` per confrontarsi con le altre fasce esistenti (esclusa se stessa in modifica);
+  fasce adiacenti restano ammesse. Solo controllo app, nessun vincolo DB. Test:
+  `serviceSlots.sovrapposizione.test.tsx`.
+- **`npm run validate` verde: 151 file / 1247 test** (+3 file / +12 test rispetto a prima di questo fix).

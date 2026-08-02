@@ -233,6 +233,12 @@ Regole chiave:
 - Helper: `isServiceSlotClosed(slot)` → `max_turns === 0`.
 - **Orario notturno** (`end_time < start_time`, `slotCrossesMidnight`): copy unico `OVERNIGHT_TIME_END_HINT` in `bookingTimeSlots.ts`. Mostrato nel **modal** nuova/modifica fascia; **non** in lista righe (`SlotRow` mostra solo `HH:mm → HH:mm`, senza `(notturna +1)`). Edition Classic: stesso avviso anche in Impostazioni → «Imposta Fasce Orarie» (`RestaurantSettingsTab`, `!features.servizio`).
 - Migrazioni **022** e **023** applicate SOLO sul server di test (`docnnernvp`), non a produzione — vedi DB_SKILL / APP_CONTEXT_SKILL §1b.
+- **Divieto di fasce accavallate (S4-FIX-6, 02-08-26):** il salvataggio del ramo «valore base» in
+  `ServiceSlotsManager` confronta la fascia con tutte le altre esistenti (esclusa se stessa in modifica)
+  tramite `slotRangesOverlap` (`bookingTimeSlots.ts` — la stessa funzione già usata da Impostazioni →
+  Imposta Fasce Orarie via `validateSlotConfigs`, nessuna logica duplicata). Fasce adiacenti (fine
+  dell'una = inizio dell'altra) restano ammesse. Solo controllo lato app: nessuna migrazione, nessun
+  vincolo DB. Test: `serviceSlots.sovrapposizione.test.tsx`.
 
 ### Assegnazione tavoli (drag-and-drop)
 
@@ -275,10 +281,21 @@ Query key: `[TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, date, slotId, 'unassigned']`
   `hasWaitingNextTurnOnTable` (`tableCheckout.ts`). Dopo successo: `refetchQueries` su assignments +
   unassigned.
 - **Card tavolo occupato** (`DroppableTable`): renderizza tutte le assegnazioni attive del tavolo, ordinate per turno; ogni blocco mostra `client_name, num_guests` e sotto orario `HH:mm` da `getAccurateStartTime` (`dateUtils`). Lookup: `useAcceptedBookingsForDate(date)` + mappa `booking_id` dagli assignment attivi.
-- **Tavoli occupati:** visibili ma non assegnabili/droppable finché l'admin non usa la liberazione anticipata
-  separata o la forzatura guidata. Nessuna sovrapposizione diretta da drag: drop/click su occupato apre
-  conferma `Libera e assegna`, timbra `checked_out_at` sulla riga attiva e inserisce il nuovo assignment
-  con `forced_by_admin`/`force_reason`.
+- **Tavoli occupati — sostituzione guidata (S4-FIX-5, 02-08-26):** visibili ma non assegnabili/droppable
+  finché l'admin non sceglie cosa fare di chi c'è già. Nessuna sovrapposizione diretta da drag: drop/click
+  su occupato apre un riquadro con **tre esiti** per la prenotazione scavalcata (`useForceReplaceBookingOnTable`,
+  parametro `outcome: 'move' | 'archive' | 'requeue'`), scelti dallo staff — nessuno preselezionato:
+  - **`move`** — si sposta su un altro tavolo libero (scelto in una griglia che riusa lo stile della modale
+    «Assegna tavolo»): **insert** sul tavolo di destinazione → **delete** della riga sul tavolo conteso →
+    insert della prenotazione nuova. Il tavolo conteso non registra un turno per la sosta scavalcata;
+    `served_at` del trasferito non viene toccato.
+  - **`archive`** — il pasto è finito: `checked_out_at` sulla riga (turno consumato) + `served_at` se non
+    restano altri tavoli attivi sulla stessa prenotazione (tavolata multi-tavolo).
+  - **`requeue`** — torna tra le prenotazioni da assegnare: **DELETE** fisico della riga (stesso principio
+    di `useUndoTableAssignment`), non un `UPDATE checked_out_at` come prima di questo fix — non consuma un
+    turno. Comportamento pre-FIX-5 dell'unica scelta «Libera e assegna».
+  In tutti i casi la nuova prenotazione entra con `forced_by_admin`/`force_reason`. Test:
+  `useTableAssignments.sostituzioneGuidata.test.ts`, `AssignmentMapPanel.sostituzioneGuidata.test.tsx`.
 - **Aggiornamento operativo:** `useAcceptedBookingsForDate`, `useTableAssignments` e `useUnassignedBookings`
   hanno polling leggero 15s (`SERVICE_ASSIGNMENTS_REFETCH_INTERVAL_MS`) per tenere allineate due schede
   aperte senza realtime/S4-LIVE.
