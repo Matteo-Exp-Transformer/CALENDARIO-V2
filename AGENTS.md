@@ -32,10 +32,11 @@ generale per Claude/Cursor.
   - `npx supabase projects list -o json` mostra `id/ref = docnnernvpyrbwuzzach`, host
     `db.docnnernvpyrbwuzzach.supabase.co`, org `ytrppzjekipjubnygaos`, status `ACTIVE_HEALTHY`;
   - `npx supabase migration list --linked` si collega al remoto TEST.
-- Per applicare una migrazione su TEST via CLI: eseguire il file con
-  `npx supabase db query --linked -f supabase/migrations/NNN_nome.sql`, verificare gli oggetti DB,
-  poi aggiornare il registro con `npx supabase migration repair --status applied NNN --linked`.
-- `supabase db push` resta vietato.
+- Per applicare migrazioni su TEST via CLI: usare `npm run db:apply` dalla root. Il comando verifica
+  il ref TEST e lancia `db push` da una workdir temporanea che esclude il falso positivo
+  `003_menu_categories.sql`.
+- `supabase db push --include-all` resta vietato per sempre. `supabase db push` nudo non è il comando
+  di casa: usare `npm run db:apply`.
 - Mai usare la CLI per scrivere su PROD `rwuxgvldzrkabglkasym`; PROD resta MCP e solo con conferma
   esplicita di Matteo per scritture/migrazioni.
 

@@ -18,8 +18,8 @@ tocca il DB».
 1. **MAI modificare migrazioni già applicate** (`supabase/migrations/` è LOCK). Nuove migrazioni:
    naming numerico progressivo (`050_*`, mai timestamp).
 2. **Ambiente:** prima di `apply_migration`/`execute_sql`/`generate_types` → `get_project_url` deve
-   essere TEST `docnnernvp`. Se `rwuxgvld` (PROD) → FERMATI e chiedi conferma. `supabase db push`
-   vietato. I MCP non leggono `.env.local`.
+   essere TEST `docnnernvp`. Se `rwuxgvld` (PROD) → FERMATI e chiedi conferma. Migrazioni CLI TEST
+   via `npm run db:apply`; `db push --include-all` vietato. I MCP non leggono `.env.local`.
 3. **Ogni tabella dati:** `tenant_id UUID NOT NULL` + RLS `admin_*` + `USING (tenant_id =
    current_admin_tenant_id())` + trigger `enforce_*_tenant` + GRANT minimi espliciti (Data API 2026).
    Due client (`supabase` admin / `supabasePublic` anonimo) — non mischiare.

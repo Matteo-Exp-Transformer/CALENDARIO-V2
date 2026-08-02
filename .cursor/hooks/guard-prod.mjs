@@ -11,7 +11,8 @@
  *    (rwuxgvld); `mcp__claude_ai_Supabase_test__*` = TEST (docnnernvp). Non serve indovinare
  *    l'URL dal payload: il nome del tool è la fonte di verità. (Mappa in CLAUDE.md «Ambienti DB».)
  *  - Via shell: comandi `supabase db push` / `db reset` / `migration up` che applicano al remoto
- *    LINKATO. Il link locale punta a PROD (`.env.local`), quindi si chiede conferma per sicurezza.
+ *    LINKATO. Se il link locale è TEST (`docnnernvp`) passano; qualsiasi altro ref, o ref non
+ *    leggibile, chiede conferma.
  *
  * COSA È SCRITTURA (gli unici tool MCP che mutano dati/schema sul DB):
  *   execute_sql · apply_migration · deploy_edge_function · merge_branch · reset_branch ·
@@ -33,6 +34,8 @@
  */
 
 import process from 'node:process'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 
 /** Tool MCP che MUTANO dati o schema. Tutto il resto via MCP è lettura → passa. */
 const MCP_WRITE_TOOLS = new Set([
@@ -57,8 +60,11 @@ function sqlIsWrite(sql) {
   return !(head.startsWith('SELECT') || head.startsWith('EXPLAIN') || head.startsWith('SHOW') || head.startsWith('WITH'))
 }
 
+const TEST_PROJECT_REF = 'docnnernvpyrbwuzzach'
+
 /** Comandi shell che applicano al DB remoto linkato. */
 const SHELL_PROD_RE = /supabase\s+(db\s+(push|reset)|migration\s+up)/i
+const INCLUDE_ALL_RE = /--include-all(?:\s|=|$)/i
 
 function readStdin() {
   return new Promise((resolve) => {
@@ -88,6 +94,14 @@ function allow() {
   process.exit(0)
 }
 
+function readLinkedProjectRef() {
+  try {
+    return readFileSync(path.join(process.cwd(), 'supabase', '.temp', 'project-ref'), 'utf8').trim()
+  } catch {
+    return ''
+  }
+}
+
 async function main() {
   let p
   try {
@@ -100,11 +114,20 @@ async function main() {
   // --- Ramo SHELL (beforeShellExecution) ---
   if (typeof p.command === 'string' && !p.tool_name) {
     if (SHELL_PROD_RE.test(p.command)) {
+      if (INCLUDE_ALL_RE.test(p.command)) {
+        return ask(
+          '⛔ DB — `supabase db push --include-all` è vietato anche su TEST per il doppio prefisso 003.',
+          'GUARD DB: include-all fermato. Usa `npm run db:apply` su TEST.'
+        )
+      }
+      const linkedRef = readLinkedProjectRef()
+      if (linkedRef === TEST_PROJECT_REF) return allow()
       return ask(
         '⛔ PROD — questo comando applica migrazioni/reset al DB remoto LINKATO (può essere produzione rwuxgvld).\n' +
           `Comando: ${p.command}\n` +
-          'Conferma solo se vuoi davvero scrivere in PRODUZIONE. In dubbio, annulla e verifica `supabase migration list --linked`.',
-        'GUARD PROD: comando di scrittura sul DB remoto fermato. Conferma con Matteo che la destinazione è quella voluta (PROD vs TEST) prima di procedere.'
+          `Ref locale: ${linkedRef || 'non leggibile'}\n` +
+          'Conferma solo se vuoi davvero scrivere su questa destinazione. In dubbio, annulla e verifica `supabase/.temp/project-ref`.',
+        'GUARD PROD: comando di scrittura sul DB remoto fermato. Conferma con Matteo che la destinazione è quella voluta prima di procedere.'
       )
     }
     return allow()

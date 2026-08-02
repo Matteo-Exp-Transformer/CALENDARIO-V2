@@ -10,7 +10,7 @@ I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati
 
 > **Fonte di verità (non questo riepilogo):** elenco file in `supabase/migrations/` + stato remoto via MCP `list_migrations` dopo `get_project_url` (TEST `docnnernvp`, PROD `rwuxgvld` sola lettura). Se l'agente ha un canale TEST specifico, seguire le sue istruzioni dedicate. Dettaglio workflow e anomalie storiche: `Database-Skill/DB_MIGRATIONS_CONTEXT.md`.
 
-Ultimo file in repo (verificato 24-06-26): `065_table_assignments_force.sql` (S4, solo TEST). La prossima migrazione deve usare il prefisso **`066_`**.
+Ultimo file in repo (verificato 02-08-26): `066_booking_requests_served_at.sql` (S4 FIX-2, TEST). La prossima migrazione deve usare il prefisso **`067_`**.
 
 | Versione | File | Note sintetiche |
 |----------|------|-----------------|
@@ -38,6 +38,7 @@ Ultimo file in repo (verificato 24-06-26): `065_table_assignments_force.sql` (S4
 | 063 | `063_rooms_soft_delete.sql` | S4 Traccia A / D50: `rooms.active boolean NOT NULL DEFAULT true` + indice parziale `rooms_tenant_active_idx`. Eliminazione sala MORBIDA (`useDeleteRoom` soft-delete, `useRooms` filtra `active=true`). Solo aggiunta colonna su tabella esistente → nessun nuovo GRANT, RLS 008 `admin_update_rooms` già copre. **Solo TEST `docnnernvp`; PROD `rwuxgvld` invariata fino a rollout** |
 | 064 | `064_booking_occupancy_snapshot_force.sql` | S4 / D25+D37: snapshot `occupancy_start/end`, `turnover_buffer_minutes` e audit overbooking `forced_by_admin/force_reason` su `booking_requests`. **Solo TEST; PROD invariata** |
 | 065 | `065_table_assignments_force.sql` | S4 / D25: audit assegnazione forzata `forced_by_admin/force_reason` su `booking_table_assignments`. **Solo TEST; PROD invariata** |
+| 066 | `066_booking_requests_served_at.sql` | S4 FIX-2 / S4-REQ-3: `booking_requests.served_at` per archiviazione al checkout. Applicata e verificata su TEST il 02-08-26; **PROD invariata** |
 
 > Promo menù (23-05-26): impostazioni solo su `restaurant_settings.setting_key = booking_menu_promos`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
 
@@ -47,15 +48,20 @@ Ultimo file in repo (verificato 24-06-26): `065_table_assignments_force.sql` (S4
 
 > **Registro prod (verificato 2026-05-22)**: prod usa versioni timestamp (`20260513...`–`20260515183055`) per le 008–021, più versioni numeriche `001`–`007`. Le 022/023/024 **non sono nel registro prod**. Per applicarle usare `Supabase__apply_migration` (mai `supabase db push`).
 
-### Limite noto: `supabase db push` da CLI
+### Migrazioni CLI su TEST
 
-A partire dalla 013, la CLI `npx supabase db push` restituisce un errore di disallineamento tra versioni locali numeriche e registro remoto. Il push fallisce con:
-```
-Remote migration versions not found in local migrations directory.
-```
-**Workaround adottato**: applicare le migrazioni DDL tramite **MCP Supabase** (`apply_migration`) direttamente sul DB remoto, e creare il file `.sql` localmente solo come documentazione. Il file locale NON viene inserito nel registro `schema_migrations` dalla CLI.
+Il registro TEST è stato riallineato il 02-08-26 alle versioni numeriche locali `001`–`066`. Per
+applicare nuove migrazioni su TEST usare:
 
-Se si vuole riallineare la CLI: `npx supabase migration repair --status applied 013`.
+```bash
+npm run db:apply -- --dry-run
+npm run db:apply
+npm run db:types:linked
+```
+
+`npm run db:apply` verifica `supabase/.temp/project-ref = docnnernvpyrbwuzzach` e lancia `db push`
+da una workdir temporanea che esclude il falso positivo `003_menu_categories.sql`. Non usare la CLI
+per scrivere su PROD.
 
 ### Limite noto: doppio prefisso 003
 
@@ -65,4 +71,4 @@ Esistono due file con prefisso `003`:
 
 La tabella `schema_migrations` ha primary key su `version`, quindi può registrare una sola voce `003`. La seconda riga in `migration list --linked` mostra sempre `Remote` vuoto per `003_menu_categories.sql` — questo è atteso e non indica un problema funzionale. La tabella `menu_categories` esiste correttamente nel DB.
 
-`db push --dry-run` segnala `003_menu_categories.sql` come pendente — è un falso positivo dovuto al doppio prefisso. Non eseguire `db push --include-all` per questo file: il push fallisce sulla constraint `schema_migrations_pkey` (la versione `003` esiste già).
+`db push --dry-run` dalla root segnala `003_menu_categories.sql` come pendente — è un falso positivo dovuto al doppio prefisso. Non eseguire `db push --include-all` per questo file: il push fallisce sulla constraint `schema_migrations_pkey` (la versione `003` esiste già). Usare `npm run db:apply`.

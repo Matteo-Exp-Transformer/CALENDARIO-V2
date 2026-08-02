@@ -66,6 +66,7 @@ npm run test                 # npm run test deve essere verde (run mode)
 npm run test:watch           # Vitest in watch mode
 npm run test:e2e             # Playwright e2e (richiede staging Supabase)
 npm run validate             # lint + typecheck + test (pre-PR)
+npm run db:apply             # Applica migrazioni al TEST linkato (guard su ref + no include-all)
 npm run db:types:linked      # Rigenera src/types/database.ts dal DB remoto
 ```
 
@@ -115,7 +116,8 @@ Mappa estesa invarianti globali: **`docs/APP_CONTEXT_SKILL.md` §4**.
 Prima di ogni INSERT/UPDATE/DELETE/migrazione via MCP: `get_project_url` → `docnnernvp` = TEST ok;
 `rwuxgvld` = PROD → chiedi conferma esplicita. I MCP non leggono `.env.local`.
 Per operazioni CLI su TEST seguire la checklist di `APP_CONTEXT_SKILL.md` §1b; la CLI non va usata
-per scrivere PROD. `supabase db push` resta vietato.
+per scrivere PROD. Migrazioni TEST via `npm run db:apply`; `supabase db push --include-all` resta
+vietato per sempre.
 
 ### Variabili d'ambiente
 

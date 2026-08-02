@@ -9,6 +9,12 @@ description: >-
 
 > Controlli e lavori **rimandati** legati a un report → `docs/FOLLOW_UP.md` (non duplicare qui).
 
+## 2026-08
+
+| Data | Sessione | Report |
+|------|----------|--------|
+| 02-08-26 | **Allineamento registro migrazioni Supabase TEST** — registro TEST riallineato `001`–`066`, applicata `066 served_at` completa di commento, nuovo comando `npm run db:apply` con guard ref TEST e blocco `--include-all`; PROD non toccata. | [Report](Sessioni%20di%20lavoro/02-08-26/Report-allineamento-migrazioni-supabase-test-02-08-26.md) — `npm run validate` verde |
+
 ## 2026-06
 
 | Data | Sessione | Report |

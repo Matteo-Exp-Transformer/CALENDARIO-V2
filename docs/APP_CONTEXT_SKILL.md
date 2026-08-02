@@ -131,7 +131,10 @@ Non mischiare mai i due client. `supabase` è per operazioni admin autenticate; 
 
 - Prima di `apply_migration` / `execute_sql` / `generate_typescript_types`: chiamare `get_project_url` e **verificare che risponda `docnnernvp`**. Se risponde `rwuxgvld` è produzione → fermarsi.
 - Se l'ambiente agente non espone MCP TEST, fermarsi e seguire le istruzioni specifiche dell'agente (per Codex: `AGENTS.md`, sezione "Regola Codex per Supabase TEST"). Non trasformare scorciatoie locali in regola generale.
-- `supabase db push` resta vietato.
+- Migrazioni CLI su TEST: usare `npm run db:apply`, che verifica `supabase/.temp/project-ref` e
+  applica solo al TEST `docnnernvpyrbwuzzach`.
+- `supabase db push --include-all` resta vietato per sempre; `supabase db push` nudo non è il comando
+  di casa per questo repo.
 - I due DB si disallineano nella numerazione migrazioni. Allinearsi sempre allo stato del **test** con il canale TEST autorizzato nell'ambiente agente.
 - Il file in `supabase/migrations/` resta la fonte versionata; la migrazione va comunque scritta lì oltre che applicata sul test.
 
@@ -398,6 +401,7 @@ npm run lint          # ESLint — zero warning
 npm run test          # Vitest — npm run test deve essere verde
 npm run validate:docs # SOLO repo privata: link `.md` vivi (docs/ non esiste in PrenotaZen)
 npm run validate      # lint + typecheck + test (usare pre-PR)
+npm run db:apply      # applica migrazioni al TEST linkato (guard ref + no include-all)
 npm run release:prenotazen  # sync main → repo pubblica (vedi sotto)
 ```
 

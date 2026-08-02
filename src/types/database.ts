@@ -107,9 +107,6 @@ export type Database = {
           event_type: string | null
           force_reason: string | null
           forced_by_admin: boolean
-          occupancy_end: string | null
-          occupancy_start: string | null
-          turnover_buffer_minutes: number | null
           id: string
           marketing_consent: boolean
           menu: string | null
@@ -119,6 +116,8 @@ export type Database = {
           menu_total_per_person: number | null
           no_show: boolean
           num_guests: number | null
+          occupancy_end: string | null
+          occupancy_start: string | null
           placement: string | null
           preset_menu: string | null
           rejection_reason: string | null
@@ -127,6 +126,7 @@ export type Database = {
           special_requests: string | null
           status: string
           tenant_id: string
+          turnover_buffer_minutes: number | null
           updated_at: string
         }
         Insert: {
@@ -152,6 +152,8 @@ export type Database = {
           duration_rule_version?: number | null
           duration_source?: string | null
           event_type?: string | null
+          force_reason?: string | null
+          forced_by_admin?: boolean
           id?: string
           marketing_consent?: boolean
           menu?: string | null
@@ -161,19 +163,17 @@ export type Database = {
           menu_total_per_person?: number | null
           no_show?: boolean
           num_guests?: number | null
+          occupancy_end?: string | null
+          occupancy_start?: string | null
           placement?: string | null
           preset_menu?: string | null
           rejection_reason?: string | null
           served_at?: string | null
           source?: string
-          force_reason?: string | null
-          forced_by_admin?: boolean
-          occupancy_end?: string | null
-          occupancy_start?: string | null
-          turnover_buffer_minutes?: number | null
           special_requests?: string | null
           status?: string
           tenant_id: string
+          turnover_buffer_minutes?: number | null
           updated_at?: string
         }
         Update: {
@@ -199,6 +199,8 @@ export type Database = {
           duration_rule_version?: number | null
           duration_source?: string | null
           event_type?: string | null
+          force_reason?: string | null
+          forced_by_admin?: boolean
           id?: string
           marketing_consent?: boolean
           menu?: string | null
@@ -208,19 +210,17 @@ export type Database = {
           menu_total_per_person?: number | null
           no_show?: boolean
           num_guests?: number | null
+          occupancy_end?: string | null
+          occupancy_start?: string | null
           placement?: string | null
           preset_menu?: string | null
           rejection_reason?: string | null
           served_at?: string | null
           source?: string
-          force_reason?: string | null
-          forced_by_admin?: boolean
-          occupancy_end?: string | null
-          occupancy_start?: string | null
-          turnover_buffer_minutes?: number | null
           special_requests?: string | null
           status?: string
           tenant_id?: string
+          turnover_buffer_minutes?: number | null
           updated_at?: string
         }
         Relationships: [

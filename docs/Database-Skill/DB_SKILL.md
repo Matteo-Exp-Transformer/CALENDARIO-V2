@@ -38,7 +38,7 @@ Carica i file indicati **prima** di aprire qualsiasi file da modificare.
 2. **Leggi** le migrazioni esistenti rilevanti — mai modificare quelle già applicate
 3. **Crea** il file migrazione numerato progressivamente (`008_*.sql`, `009_*.sql`, …)
 4. **Verifica ambiente**: con MCP `get_project_url` deve essere TEST `docnnernvp`; se il tuo agente ha istruzioni specifiche per TEST, applicale senza toccare PROD
-5. **Applica** sul canale TEST autorizzato nell'ambiente agente; non usare mai `supabase db push`
+5. **Applica** sul canale TEST autorizzato nell'ambiente agente; via CLI usare `npm run db:apply`
 6. **Rigenera** tipi con MCP test / `npm run db:types:linked` solo se il link punta al DB test corretto
 7. **Valida**: `npm run typecheck && npm run lint && npm run test`
 
@@ -73,7 +73,7 @@ Due file hanno prefisso `003`:
 - `003_fix_tenant_usage_triggers_security_definer.sql`
 - `003_menu_categories.sql`
 
-`migration list --linked` mostra sempre una riga `003` con Remote vuoto — **falso positivo**, non un problema. Regola corrente del progetto: non usare `db push` né `db push --include-all`; applicare dal canale TEST autorizzato nell'ambiente agente.
+`migration list --linked` dalla root mostra una riga `003` con Remote vuoto — **falso positivo** dovuto al doppio file storico. Regola corrente: `db push --include-all` vietato per sempre; per applicare migrazioni su TEST usare `npm run db:apply`, che lancia `db push` da una workdir temporanea senza il duplicato.
 
 ---
 

@@ -39,7 +39,7 @@ Per orientarti nel progetto leggi i file in quest'ordine. Ognuno ha uno scopo pr
 
 - **Email non inviate:** la Edge Function `send-email` è referenziata in `src/lib/email.ts` ma non esiste. Le prenotazioni vengono salvate, ma il cliente non riceve email. Specifica in [docs/EDGE_FUNCTIONS.md](docs/EDGE_FUNCTIONS.md).
 - **Doppio prefisso `003_*`** sulle migrazioni: entrambe già applicate al remoto, nessun impatto. Documentato in [docs/DATABASE.md](docs/DATABASE.md).
-- **Disallineamento nomi migrazioni locale/remoto:** vedere sezione dedicata in [docs/DATABASE.md](docs/DATABASE.md) prima di eseguire `supabase db push`.
+- **Migrazioni Supabase TEST:** usare `npm run db:apply`; `supabase db push --include-all` è vietato per il doppio prefisso `003`. Dettaglio in [docs/DATABASE.md](docs/DATABASE.md).
 
 ## Comandi principali
 
@@ -51,5 +51,7 @@ npm run typecheck          # tsc --noEmit
 npm run test               # npm run test deve essere verde
 npm run test:e2e           # test Playwright (richiede staging Supabase)
 npm run validate           # lint + typecheck + test (pre-PR)
+npm run db:apply -- --dry-run # verifica migrazioni TEST pendenti
+npm run db:apply           # applica migrazioni al TEST linkato
 npm run db:types:linked    # rigenera src/types/database.ts dal DB remoto
 ```

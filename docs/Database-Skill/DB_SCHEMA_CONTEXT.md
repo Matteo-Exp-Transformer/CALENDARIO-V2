@@ -68,6 +68,7 @@ Vincolo: `UNIQUE(email, tenant_id)`.
 | `dietary_restrictions` | JSONB | |
 | `status` | TEXT CHECK | `pending \| accepted \| rejected \| deleted` |
 | `confirmed_start`, `confirmed_end` | TIMESTAMPTZ | Solo se `accepted` |
+| `served_at` | TIMESTAMPTZ | S4/FIX-2 TEST: checkout fine turno; NULL = ancora da assegnare o in corso |
 | `rejection_reason` | TEXT | Solo se `rejected` |
 | `cancellation_reason`, `cancelled_at` | — | Post-cancellazione |
 | `cancelled_by` | UUID | **UUID auth.users.id** — MAI email |

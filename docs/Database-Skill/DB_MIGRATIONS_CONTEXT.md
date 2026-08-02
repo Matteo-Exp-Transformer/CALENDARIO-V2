@@ -14,7 +14,7 @@
 2. **Remoto (sola lettura per consultazione):** MCP `get_project_url` → deve rispondere TEST `docnnernvp` (sviluppo) o PROD `rwuxgvld` (sola lettura salvo conferma esplicita). Poi `list_migrations`. Se l'agente ha un canale TEST specifico, seguire le istruzioni dedicate dell'agente senza estenderle agli altri ambienti.
 3. **Schema colonne/tabelle:** `DB_SCHEMA_CONTEXT.md` — aggiornare dopo ogni migrazione che introduce colonne.
 
-Ultimo file in repo (verificato 24-06-26): **`065_table_assignments_force.sql`** (S4, solo TEST). Prossima nuova migrazione: prefisso **`066_`**.
+Ultimo file in repo (verificato 02-08-26): **`066_booking_requests_served_at.sql`** (S4 FIX-2, TEST). Prossima nuova migrazione: prefisso **`067_`**.
 
 ### Indice repo 040–048 (sintesi schema — non sostituisce i file SQL)
 
@@ -37,7 +37,7 @@ Ultimo file in repo (verificato 24-06-26): **`065_table_assignments_force.sql`**
 | `063_rooms_soft_delete.sql` | S4 Traccia A / D50: `rooms.active boolean NOT NULL DEFAULT true` + indice parziale `rooms_tenant_active_idx`. Abilita l'eliminazione sala MORBIDA (`useDeleteRoom` soft-delete). **Solo TEST `docnnernvp`; PROD invariata.** |
 | `064_booking_occupancy_snapshot_force.sql` | S4 / D25+D37: snapshot finestra occupazione e audit overbooking su `booking_requests`. **Solo TEST; PROD invariata.** |
 | `065_table_assignments_force.sql` | S4 / D25: audit assegnazione forzata su `booking_table_assignments`. **Solo TEST; PROD invariata.** |
-| `066_booking_requests_served_at.sql` | S4 FIX-2 / S4-REQ-3: `booking_requests.served_at` — archiviazione al checkout senza tabella archivio. ⚠️ **File in repo ma NON applicata su TEST** (MCP Supabase non autorizzato nelle sessioni 02-08). Sintomo a video: liberando l'ultimo tavolo di una tavolata → `PGRST204 Could not find the 'served_at' column of 'booking_requests' in the schema cache`. Da applicare a mano sul TEST `docnnernvp` prima di ricollaudare. **PROD invariata.** |
+| `066_booking_requests_served_at.sql` | S4 FIX-2 / S4-REQ-3: `booking_requests.served_at` — archiviazione al checkout senza tabella archivio. Applicata su TEST `docnnernvp` il 02-08-26 via `db push` protetto; verificati colonna e commento. **PROD invariata.** |
 
 ### Due ambienti Supabase — non confonderli
 
@@ -82,7 +82,7 @@ Schema, default, indice e tipi TypeScript verificati; PROD non toccata.
 
 **Doppio prefisso 003:** due file locali `003_fix_tenant_usage_triggers_security_definer.sql` e `003_menu_categories.sql`. `schema_migrations` ha PK su `version` — una sola riga `003` in Remote. Riga Remote vuota per il secondo file in `migration list --linked` = falso positivo atteso. **NON** eseguire `db push --include-all` per questo warning.
 
-**CLI `db push` post-013:** da migrazione 013 applicata via MCP, `npx supabase db push` può fallire con `Remote migration versions not found in local migrations directory`. Workaround adottato: DDL via MCP `apply_migration` + file `.sql` locale come documentazione.
+**CLI `db push` post-013:** risolto su TEST il 02-08-26 riallineando `schema_migrations` alle versioni numeriche locali `001`–`066`. La CLI nuda dalla root resta disturbata dal doppio `003`; usare `npm run db:apply`, che crea una workdir temporanea senza `003_menu_categories.sql`.
 
 **PGRST202 / RPC service_slots:** risolto in `021_update_service_slot_jsonb.sql` con firma univoca `update_service_slot(payload jsonb)`. Storia overloading 018→020 documentata nei report 2026-05-15. Non reintrodurre RPC multi-param opzionali.
 
@@ -91,6 +91,15 @@ Schema, default, indice e tipi TypeScript verificati; PROD non toccata.
 **Allineamento TEST 019 (2026-05-22):** mancava solo 019 nel registro MCP; schema già coerente.
 
 **Registro prod versioni timestamp:** prod usa versioni timestamp (`20260513…`–`20260515183055`) per le 008–021, più numeriche `001`–`007`. Per applicare nuove migrazioni in prod: MCP `apply_migration`, non `supabase db push`.
+
+### Snapshot allineamento TEST (02-08-26)
+
+Registro remoto TEST riallineato alle versioni numeriche locali con `migration repair`, dopo fotografia
+integrale in `docs/Sessioni di lavoro/02-08-26/REGISTRO_PRIMA.json`. Rimossi dal registro solo
+timestamp/orfani storici; nessuno schema DDL toccato durante il repair. Poi applicata la `066` via
+`db push` protetto, verificando `booking_requests.served_at` e il commento colonna. Il comando di casa
+per le prossime migrazioni è `npm run db:apply`; `db push --include-all` resta vietato per il doppio
+`003`.
 
 ---
 
@@ -104,8 +113,7 @@ Schema, default, indice e tipi TypeScript verificati; PROD non toccata.
 # Il canale TEST autorizzato deve rispondere docnnernvp.
 
 # 3. Applica sul DB TEST dal canale autorizzato dell'agente
-# Non usare db push. Se il canale non aggiorna il registro, definire prima
-# strategia di verifica schema + repair della migration history.
+npm run db:apply
 
 # 4. Rigenera i tipi TypeScript dal DB test corretto
 npm run db:types:linked
@@ -126,15 +134,16 @@ Due file locali hanno prefisso `003`:
 - `003_menu_categories.sql` → riga Remote vuota (falso positivo permanente)
 
 **Causa:** `schema_migrations` ha PK su `version` — una sola riga per `003`.
-**Impatto:** nessuno. `db push` normale funziona correttamente. Solo `migration list --linked` mostra la riga senza Remote per il secondo file.
+**Impatto:** la CLI nuda dalla root segnala `003_menu_categories.sql` come pendente. Il comando
+protetto `npm run db:apply` aggira il falso positivo creando una workdir temporanea senza il duplicato.
 
 **NON eseguire** `db push --include-all` per risolvere questo warning — il push fallisce con `duplicate key on schema_migrations_pkey`.
 
 ---
 
-## 4. Limite noto — CLI `db push` e disallineamento post-013 (2026-05-14)
+## 4. Risolto su TEST — disallineamento registro post-013
 
-A partire dalla 013, la CLI `npx supabase db push` restituisce:
+A partire dalla 013, la CLI `npx supabase db push` restituiva:
 ```
 Remote migration versions not found in local migrations directory.
 Make sure your local git repo is up-to-date.
@@ -142,7 +151,8 @@ Make sure your local git repo is up-to-date.
 
 **Causa**: la 013 è stata applicata via MCP `apply_migration` senza passare dal registro CLI, lasciando le versioni remote non allineate con quelle locali.
 
-**Soluzione alternativa permanente**: continuare ad applicare DDL via MCP `apply_migration` + creare il file `.sql` localmente come documentazione.
+**Stato attuale TEST:** risolto il 02-08-26 con `migration repair`: il registro remoto ha `001`–`066`
+numeriche. Resta solo il falso positivo del doppio `003`; per questo si usa `npm run db:apply`.
 
 ---
 
@@ -166,11 +176,12 @@ Il registro remoto ora contiene le versioni numeriche 001–007 + versioni times
 # Verifica stato migrazioni
 npx supabase migration list --linked
 
-# Dry run storico/diagnostico: NON usare come via di applicazione in questo repo
-npx supabase db push --dry-run
+# Dry run/applicazione TEST protetti
+npm run db:apply -- --dry-run
+npm run db:apply
 
 # Vietato in questo repo
-# npx supabase db push
+# npx supabase db push --include-all
 
 # Marca una versione come applicata (senza eseguire SQL)
 npx supabase migration repair --status applied <version>
