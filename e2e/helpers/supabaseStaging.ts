@@ -392,6 +392,8 @@ export type ServiceSlotFullRow = {
   max_turns: number | null
   max_turns_resume: number | null
   slot_color: string | null
+  turnover_buffer_minutes?: number
+  arrival_step_minutes?: number
   created_at?: string
   updated_at?: string
 }
@@ -549,6 +551,202 @@ export async function getBookingStatus(bookingId: string): Promise<string | null
     `booking_requests?id=eq.${bookingId}&select=status&limit=1`,
   )
   return rows[0]?.status ?? null
+}
+
+// ─────────────────────────────────────────────
+// Rooms / Tables / Table assignments (Servizio — piantina, avviso fine turno)
+// ─────────────────────────────────────────────
+
+export const E2E_SERVIZIO_PREFIX = 'E2E-SRV-'
+
+export type RoomE2eRow = {
+  id: string
+  name: string
+  width: number
+  height: number
+}
+
+export async function insertRoom(input: {
+  tenantId: string
+  name: string
+  width?: number
+  height?: number
+  displayOrder?: number
+}): Promise<RoomE2eRow> {
+  const row = {
+    tenant_id: input.tenantId,
+    name: input.name,
+    width: input.width ?? 800,
+    height: input.height ?? 600,
+    display_order: input.displayOrder ?? 0,
+  }
+  const created = await rest<RoomE2eRow[]>('rooms', {
+    method: 'POST',
+    headers: restHeaders({ Prefer: 'return=representation' }),
+    body: JSON.stringify(row),
+  })
+  const room = created[0]
+  if (!room) throw new Error('insertRoom: nessuna riga restituita')
+  return room
+}
+
+export type TableE2eRow = {
+  id: string
+  name: string
+  capacity: number
+  room_id: string | null
+}
+
+export async function insertTable(input: {
+  tenantId: string
+  roomId: string
+  name: string
+  capacity: number
+  positionX?: number
+  positionY?: number
+  shape?: 'round' | 'square' | 'rect'
+}): Promise<TableE2eRow> {
+  const row = {
+    tenant_id: input.tenantId,
+    room_id: input.roomId,
+    name: input.name,
+    capacity: input.capacity,
+    position_x: input.positionX ?? 20,
+    position_y: input.positionY ?? 20,
+    shape: input.shape ?? 'square',
+  }
+  const created = await rest<TableE2eRow[]>('tables', {
+    method: 'POST',
+    headers: restHeaders({ Prefer: 'return=representation' }),
+    body: JSON.stringify(row),
+  })
+  const table = created[0]
+  if (!table) throw new Error('insertTable: nessuna riga restituita')
+  return table
+}
+
+export type TableAssignmentE2eRow = {
+  id: string
+  table_id: string
+  booking_id: string
+  service_slot_id: string
+  date: string
+  turn_number: number
+  checked_out_at: string | null
+}
+
+export async function insertTableAssignment(input: {
+  tenantId: string
+  bookingId: string
+  tableId: string
+  serviceSlotId: string
+  date: string
+  turnNumber?: number
+}): Promise<TableAssignmentE2eRow> {
+  const row = {
+    tenant_id: input.tenantId,
+    booking_id: input.bookingId,
+    table_id: input.tableId,
+    service_slot_id: input.serviceSlotId,
+    date: input.date,
+    turn_number: input.turnNumber ?? 1,
+  }
+  const created = await rest<TableAssignmentE2eRow[]>('booking_table_assignments', {
+    method: 'POST',
+    headers: restHeaders({ Prefer: 'return=representation' }),
+    body: JSON.stringify(row),
+  })
+  const assignment = created[0]
+  if (!assignment) throw new Error('insertTableAssignment: nessuna riga restituita')
+  return assignment
+}
+
+export async function getTableAssignmentsForBooking(
+  bookingId: string,
+): Promise<Array<{ id: string; table_id: string; checked_out_at: string | null }>> {
+  return rest(
+    `booking_table_assignments?booking_id=eq.${bookingId}&select=id,table_id,checked_out_at`,
+  )
+}
+
+export async function getBookingServedAt(bookingId: string): Promise<string | null> {
+  const rows = await rest<Array<{ served_at: string | null }>>(
+    `booking_requests?id=eq.${bookingId}&select=served_at&limit=1`,
+  )
+  return rows[0]?.served_at ?? null
+}
+
+/**
+ * Cleanup: le assignment hanno FK ON DELETE CASCADE su booking_id e table_id
+ * (mig. 011), quindi cancellare le prenotazioni e i tavoli seminati basta a far
+ * sparire anche le righe di booking_table_assignments — nessun DELETE separato
+ * necessario. rooms→tables è ON DELETE SET NULL (mig. 008): la sala si può
+ * cancellare in qualunque ordine rispetto ai tavoli.
+ */
+export async function deleteTablesByPrefix(
+  tenantId: string,
+  prefix = E2E_SERVIZIO_PREFIX,
+): Promise<void> {
+  await rest(`tables?tenant_id=eq.${tenantId}&name=like.${encodeURIComponent(prefix)}*`, {
+    method: 'DELETE',
+    headers: restHeaders({ Prefer: 'return=minimal' }),
+  })
+}
+
+export async function deleteRoomsByPrefix(
+  tenantId: string,
+  prefix = E2E_SERVIZIO_PREFIX,
+): Promise<void> {
+  await rest(`rooms?tenant_id=eq.${tenantId}&name=like.${encodeURIComponent(prefix)}*`, {
+    method: 'DELETE',
+    headers: restHeaders({ Prefer: 'return=minimal' }),
+  })
+}
+
+/**
+ * Fascia temporanea usa-e-getta: gli scenari sul ciclo di vita dei tavoli non
+ * dipendono dall'orario configurato della fascia (solo da confirmed_start/end
+ * della prenotazione, vedi commento di testata di pro-service-tables-lifecycle.spec.ts),
+ * quindi ogni test crea la propria invece di riusare una fascia reale del
+ * tenant (es. "Cena") — la finestra "Tavolo a fine turno" raggruppa per
+ * tenant+data+service_slot_id, e più test che condividono la stessa fascia
+ * sulla data di oggi si vedrebbero a vicenda i tavoli in uscita se eseguiti
+ * in parallelo (fullyParallel:true in playwright.config.ts). Una fascia per
+ * test elimina la collisione alla radice, senza bisogno di serializzare nulla.
+ */
+export async function insertServiceSlot(input: {
+  tenantId: string
+  name: string
+  startTime?: string
+  endTime?: string
+  displayOrder?: number
+}): Promise<{ id: string; name: string }> {
+  const row = {
+    tenant_id: input.tenantId,
+    name: input.name,
+    start_time: input.startTime ?? '00:00',
+    end_time: input.endTime ?? '23:59',
+    display_order: input.displayOrder ?? 9000,
+  }
+  const created = await rest<Array<{ id: string; name: string }>>('service_slots', {
+    method: 'POST',
+    headers: restHeaders({ Prefer: 'return=representation' }),
+    body: JSON.stringify(row),
+  })
+  const slot = created[0]
+  if (!slot) throw new Error('insertServiceSlot: nessuna riga restituita')
+  return slot
+}
+
+/** Cascade su booking_table_assignments.service_slot_id (mig. 011) — nessun ordine di cleanup richiesto. */
+export async function deleteServiceSlotsByPrefix(
+  tenantId: string,
+  prefix = E2E_SERVIZIO_PREFIX,
+): Promise<void> {
+  await rest(`service_slots?tenant_id=eq.${tenantId}&name=like.${encodeURIComponent(prefix)}*`, {
+    method: 'DELETE',
+    headers: restHeaders({ Prefer: 'return=minimal' }),
+  })
 }
 
 export function todayIsoDate(): string {

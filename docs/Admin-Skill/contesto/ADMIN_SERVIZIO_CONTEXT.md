@@ -464,3 +464,63 @@
   (asserzione sulla vecchia riga combinata).
 - **`npm run validate` verde: 155 file / 1275 test** (build su working tree con FIX-4A/4B/4C/4D non
   committati di un'altra corsia).
+
+### 9.12 Due debiti tecnici chiusi (03-08-26) — nome tavolo unico a livello DB + walk-in atomico
+
+> Handoff S4 §4-bis punto 4. Due debiti indipendenti su file diversi, nessuna sovrapposizione.
+> Migrazioni 068/069 applicate SOLO su TEST (`docnnernvp`); PROD non toccata.
+
+- **Nome tavolo unico anche a livello DB (mig. 068).** `hasDuplicateTableName()` in
+  `TableFormModal.tsx` bloccava già i duplicati lato client, ma senza vincolo DB una race fra due
+  admin o una scrittura diretta poteva creare due tavoli con lo stesso nome. Nuovo indice unico
+  parziale `tables_tenant_active_name_lower_idx` su `tables (tenant_id, lower(btrim(name)))
+  WHERE active = true` — stessa regola del client (case/spazi-insensitive), per tenant, solo fra i
+  tavoli attivi. Verifica preventiva su TEST: 0 duplicati trovati su 54 tavoli attivi. Se l'indice
+  viene violato (race, bypass), Postgres risponde `23505`: `useCreateTable`/`useUpdateTable`
+  (`useServizioTables.ts`) intercettano quel codice e sostituiscono il messaggio grezzo con
+  `Esiste già un tavolo con questo nome.` (stesso testo del check client). `useDeleteTable`/
+  `useUpdateTablePosition` non toccati (non riguardano il nome). Test:
+  `useServizioTables.duplicateName.test.tsx`.
+- **Walk-in con tavolo: scrittura atomica invece di rollback simulato (mig. 069).**
+  `useWalkInMutation.ts` faceva INSERT booking + controlli + INSERT assignment, con un "rollback"
+  manuale (`buildWalkInRollbackPatch`, rimossa) che marcava il booking `deleted` se un passo
+  falliva — non una vera transazione: se anche il rollback falliva restava un walk-in `accepted`
+  orfano, senza tavolo. Ora un'unica RPC `SECURITY DEFINER` `create_walk_in_with_assignment`
+  (stesso pattern `insert_service_slot`/`update_service_slot`, check tenant interno, mai `anon`)
+  replica l'intera sequenza (fascia mancante → errore, tavolo occupato → errore salvo forzatura,
+  turni esauriti → errore, insert assignment) dentro un unico corpo PL/pgSQL: qualunque
+  `RAISE EXCEPTION` annulla anche l'INSERT del booking, senza scritture compensative lato client.
+  La durata (`resolveBookingDuration`) resta client-side, invariata — la RPC riceve il risultato
+  già calcolato. Verificato end-to-end su TEST con un vero JWT admin (tenant `da-tommaso`): tavolo
+  libero → booking+assignment creati; tavolo occupato senza forzare → errore e **zero** righe
+  orfane in `booking_requests`; con `force_replace_existing` → vecchio assignment liberato, nuovo
+  creato con `forced_by_admin`; chiamata `anon` negata (REVOKE confermato). Test:
+  `useWalkInMutation.rpc.test.tsx`; rimosso `useWalkInMutation.atomic.test.ts` (copriva solo
+  `buildWalkInRollbackPatch`, non più esistente).
+
+### 9.13 E2E ciclo di vita tavoli (03-08-26) — voci QA mai collaudate + un bug reale trovato
+
+> Nuovo `e2e/pro/pro-service-tables-lifecycle.spec.ts` (7 test), copre `COLLAUDO_S4_CHECKLIST.md`
+> §2.2 (avviso fine turno), §2.3 (tavolata multi-tavolo + archiviazione S4-REQ-3), §3 (5 stati in
+> sequenza), §9 ultima riga (375px). Voci mai collaudate a mano perché legate al tempo reale.
+> Pilotate con `page.clock` di Playwright (install/fastForward): **l'istante iniziale dev'essere
+> vicino a "adesso" reale**, non una data lontana nel futuro — un clock finto lontano rompe il
+> refresh del JWT Supabase (calcolato con `Date.now()`, lato client) e le richieste ricadono
+> silenziosamente sul ruolo `anon`. Ogni scenario semina una **fascia temporanea propria**
+> (`insertServiceSlot`/`deleteServiceSlotsByPrefix`, `e2e/helpers/supabaseStaging.ts`) invece di
+> riusare una fascia reale del tenant: la finestra "Tavolo a fine turno" raggruppa per
+> tenant+data+fascia, quindi più test sulla data di oggi che condividessero la stessa fascia si
+> vedrebbero a vicenda i tavoli in uscita quando Playwright li esegue in parallelo
+> (`fullyParallel:true`) — verificato: causava 2 falsi fallimenti su 3 nel gruppo "Avviso di fine
+> turno", spariti dando a ciascun test la propria fascia (nessuna esecuzione seriale necessaria).
+>
+> **Bug reale confermato, non ancora corretto (fuori mandato di chi l'ha trovato):** "Ancora
+> occupato" chiude l'avviso ma non sopravvive a un reload della pagina — l'avviso ritorna per lo
+> stesso tavolo nella stessa fascia/data, contro l'atteso della checklist §2.2. Causa:
+> `handledReleaseTableIds` in `AssignmentMapPanel.tsx` è un `useState` locale, mai persistito (né
+> localStorage né DB), quindi si azzera a ogni remount. Riprodotto in isolamento totale
+> (`--workers=1 -g "si apre da solo"`, zero concorrenza) — non è un artefatto del test. Il test che
+> lo cattura resta **rosso di proposito**: `npx playwright test
+> e2e/pro/pro-service-tables-lifecycle.spec.ts` dà sempre **6 passed / 1 failed**, deterministico.
+> Decisione su come/se persistere la conferma "Ancora occupato" (localStorage per sessione? colonna
+> DB?) resta da prendere con Matteo — non è stata presa qui.
