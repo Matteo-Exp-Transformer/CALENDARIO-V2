@@ -1452,6 +1452,27 @@ export type Database = {
         Returns: Json
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
+      create_walk_in_with_assignment: {
+        Args: {
+          p_client_name: string
+          p_confirmed_end: string
+          p_confirmed_start: string
+          p_desired_date: string
+          p_desired_time: string
+          p_duration_minutes: number
+          p_duration_rule_version: number
+          p_duration_source: string
+          p_force_reason?: string
+          p_force_replace_existing?: boolean
+          p_max_turns?: number
+          p_num_guests: number
+          p_placement: string
+          p_service_slot_id: string
+          p_table_id: string
+          p_tenant_id: string
+        }
+        Returns: string
+      }
       current_admin_tenant_id: { Args: never; Returns: string }
       get_available_arrival_times: {
         Args: {

@@ -7,6 +7,20 @@ import { logger } from '@/lib/logger'
 
 export const TABLES_QUERY_KEY = 'servizio-tables'
 
+/**
+ * Messaggio amichevole per la violazione dell'indice unico case/spazi-insensitive
+ * (migrazione 068, `tables_tenant_active_name_lower_idx`) — seconda barriera dietro
+ * `hasDuplicateTableName()` (TableFormModal.tsx). Il check client-side normalmente intercetta
+ * prima, ma una race fra due admin o una scrittura diretta può arrivare fino al DB: qui si
+ * sostituisce il messaggio Postgres grezzo (`duplicate key value violates unique constraint...`)
+ * con lo stesso testo già usato dal controllo lato client.
+ */
+const DUPLICATE_TABLE_NAME_MESSAGE = 'Esiste già un tavolo con questo nome.'
+
+function isUniqueTableNameViolation(error: { code?: string }): boolean {
+  return error.code === '23505'
+}
+
 export interface RestaurantTable {
   id: string
   tenant_id: string
@@ -81,7 +95,7 @@ export function useCreateTable() {
 
       if (error) {
         logger.error('[useServizioTables] useCreateTable', error)
-        throw new Error(error.message)
+        throw new Error(isUniqueTableNameViolation(error) ? DUPLICATE_TABLE_NAME_MESSAGE : error.message)
       }
 
       return data
@@ -117,7 +131,7 @@ export function useUpdateTable() {
 
       if (error) {
         logger.error('[useServizioTables] useUpdateTable', error)
-        throw new Error(error.message)
+        throw new Error(isUniqueTableNameViolation(error) ? DUPLICATE_TABLE_NAME_MESSAGE : error.message)
       }
     },
     onSuccess: () => {
