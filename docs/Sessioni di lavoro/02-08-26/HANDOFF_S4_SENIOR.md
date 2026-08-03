@@ -11,6 +11,57 @@
 > `c299a65`** — Matteo ha testato a video i 7 punti del secondo round e confermato ok. §0.1/§0.2
 > restano sotto come **registro storico** di cosa è stato controllato; §1/§4-bis sono la fonte
 > aggiornata sullo stato attuale.
+>
+> **Aggiornamento 03-08-2026 sera — cantiere "tavoli e assegnazione" (punto 5 di §4-bis, di seguito):**
+> scoping fatto con Matteo (tre fronti scelti insieme, non uno solo) e portato a termine in tre wave,
+> ciascuna con un agente dedicato + revisione indipendente. **Tre commit su `env/test`, non ancora
+> pushati:** `3e9fa2c` (chiusura fascia → pubblico, **chiude il buco di §3-bis sotto**), `ae4e7ae`
+> (nome tavolo unico a DB + walk-in atomico via RPC, chiude i due debiti citati in §4-bis punto 4),
+> `5780717` (nuova copertura e2e sulle voci mai collaudate + **un bug reale trovato e non ancora
+> corretto**, vedi subito sotto). Report completo:
+> [Report-cantiere-tavoli-assegnazione-servizio-03-08-26.md](../03-08-26/Report-cantiere-tavoli-assegnazione-servizio-03-08-26.md).
+> Migrazioni **068** (nome tavolo) e **069** (RPC walk-in) applicate solo su TEST.
+>
+> **Bug nuovo, aperto:** l'avviso "Tavolo a fine turno" non sopravvive a un reload della pagina dopo
+> aver premuto "Ancora occupato" — l'avviso ritorna per lo stesso tavolo. Causa:
+> `handledReleaseTableIds` in `AssignmentMapPanel.tsx` è uno stato React locale, mai persistito.
+> Registrato come `FU-SERV-RELEASE-NOTICE-1` in `docs/FOLLOW_UP.md`. **Non corretto qui**: serve
+> prima una decisione di Matteo su come persistere la conferma (localStorage di sessione? colonna
+> DB?). Il test che lo cattura (`e2e/pro/pro-service-tables-lifecycle.spec.ts`) resta rosso di
+> proposito, deterministico (6 passed / 1 failed).
+>
+> ---
+>
+> ## ⛳ AGGIORNAMENTO 03-08-2026 (tarda sera) — **PARTI DA QUI**
+>
+> Il tuo punto d'ingresso non è più questo file, è
+> **[PIANO_SENIOR_TEST_E_SALUTE_CODICE.md](../03-08-26/PIANO_SENIOR_TEST_E_SALUTE_CODICE.md)**.
+> Questo handoff resta la mappa d'insieme della pagina Servizio (§4-bis) e il registro storico.
+>
+> **Cos'è successo:** audit di allineamento skill/codice con 5 agenti Sonnet su fronti disgiunti +
+> controverifica personale di ogni voce grave. Esito in
+> [Report-audit-allineamento-e-checklist-test-03-08-26.md](../03-08-26/Report-audit-allineamento-e-checklist-test-03-08-26.md),
+> che contiene **due checklist**: §5 le prove a mano che spettano a Matteo, §6 il lavoro per gli agenti e2e.
+>
+> **Trovato un bug BLOCCANTE mai visto prima:** elimini un tavolo **occupato** e la prenotazione resta
+> appesa — senza tavolo e **senza il pulsante «Togli tavolo»**, quindi senza uscita da interfaccia
+> (`useDeleteTable`, `useServizioTables.ts:148-175`, nessuna guardia in `ServizioPage.tsx:158`).
+> L'eliminazione **sala** fa invece la cosa giusta (`useRooms.ts:205-238`): è il modello da copiare.
+>
+> **Quattro decisioni di Matteo, tutte chiuse** — vedi §3-ter sotto. Sbloccano `FU-SERV-RELEASE-NOTICE-1`
+> e tre bug nuovi (`FU-SERV-DELETE-TABLE-1`, `FU-SERV-TURN-MOVE-1`, `FU-SERV-SLOT-VALIDATION-1`,
+> tutti in `docs/FOLLOW_UP.md`). Sono la **Fase 0** del piano: falli prima di toccare i test.
+>
+> **Due allarmi di questo handoff sono da considerare superati:**
+> 1. Il re-merge `main` → `env/test` per `f617077` **non è un cancello al rollout**: la fix è già dentro
+>    `env/test` per contenuto (`create-booking/index.ts:66` e `:534-545`, col suo test). Serve solo per
+>    igiene git. Il §6 qui sotto lo dà per bloccante: è un'informazione superata.
+> 2. La presunta contraddizione su FIX-6 (fasce accavallate ancora accettate) **è smentita**: il blocco
+>    esiste, `ServiceSlotsManager.tsx:561-570`. Le riprove erano anteriori al commit del fix.
+>
+> **Attenzione al metodo:** su 5 voci di agenti controverificate, 1 confermata con precisazione, 1
+> corretta in entrambe le direzioni, 1 smentita, 1 con errore di perimetro — e i due problemi più gravi
+> non li aveva visto nessun agente. **Non pubblicare una voce d'agente senza averla riaperta.**
 
 ---
 
@@ -78,7 +129,9 @@ andato in PROD.**
 | 4 | FIX-4A card assegnate · FIX-4B/4C testata · FIX-4D tavoli più grandi | ✅ fatto, committato `c299a65` (03-08) |
 | — | **S4-FIX-5** sostituzione guidata · **S4-FIX-6** fasce accavallate | ✅ revisionato e committato `432436c` (02-08) |
 | — | **Servizio-UI FIX-1..7** — collapse fasce, header sale, piantina senza fascia, badge tavolo su digest Home, strip Assegnate senza duplicati | ✅ testato da Matteo (7/7 ok), committato `c299a65` (03-08) — report `Report-7fix-servizio-ui-03-08-26.md` |
-| 5 | Consolidamento | ⏳ prossimo: push + eventuale re-merge `main`, poi nuovo cantiere tavoli/assegnazione (§6) |
+| 5 | **Cantiere "tavoli e assegnazione"** — chiusura fascia→pubblico, nome tavolo unico a DB, walk-in atomico via RPC, e2e su voci mai collaudate | ✅ fatto, committato `3e9fa2c`/`ae4e7ae`/`5780717` (03-08 sera), **non pushato** — report `Report-cantiere-tavoli-assegnazione-servizio-03-08-26.md` (cartella `03-08-26`). Trovato 1 bug nuovo (`FU-SERV-RELEASE-NOTICE-1`), non corretto |
+| 6 | **Audit allineamento skill/codice + due checklist di test** | ✅ fatto 03-08 tarda sera — 5 agenti su fronti disgiunti + controverifica. Trovato **1 bug bloccante** + ~15 divergenze skill/codice. Report e piano nella cartella `03-08-26` |
+| 7 | Consolidamento | ⏳ prossimo: **Fase 0 del piano** (i 4 fix decisi), poi Fase 1 (riparare i test che passano senza verificare nulla), poi Fase 2 (13 test nuovi). Push quando Matteo lo chiede |
 
 **Cosa hanno detto le riprove del giro 3.** La corsia B conferma i fix del giro 2 su tutto ciò che ha
 potuto provare (orologio allineato, turni residui, «Fascia chiusa» distinta, annullamento che non
@@ -127,21 +180,50 @@ Restano **operative**, non decisioni: rieseguire la corsia D su una fascia larga
 50 minuti in un buco di 59, quindi zero orari pubblici validi) e la spunta Privacy non cliccabile da
 automazione, che resta un debito di collaudo Classic.
 
+## 3-ter. Decisioni di Matteo del 03-08 — chiuse, non riaprirle
+
+| # | Questione | Decisione | Dove si esegue |
+|---|---|---|---|
+| **D-A** | Eliminare un tavolo **occupato** | Come l'eliminazione di una sala: **avvisare prima**, mai in silenzio. La liberazione **non brucia un turno** | Piano §0.1 |
+| **D-B** | Spostare un cliente consuma un turno? | **No, mai** — nemmeno dal percorso «Modifica tavolo» del Calendario. Archiviare invece **sì** | Piano §0.2 |
+| **D-C** | Validazioni dell'editor fasce | **Logica convalidata**, nessun conflitto di prodotto: far convergere i due editor su un'unica fonte, **nomi doppi bloccati in entrambi** | Piano §0.3 |
+| **D-D** | Avviso «Tavolo a fine turno» dopo «Ancora occupato» | Conferma **persistita sul record di assegnazione** (vale per tutti i dispositivi, resiste al reload) **+ l'avviso torna una volta** dopo un intervallo di richiamo — **30' proposti, non contestati**. Scartato localStorage: in servizio si lavora da più schermi | Piano §0.4 |
+
+> **Come chiedergli le cose:** la prima formulazione di D-D era tecnica («localStorage o colonna DB?») e
+> ha prodotto «non mi è chiaro cosa devo decidere». Riformulata in termini di sala — *cosa deve fare
+> l'app quando il cameriere preme «Ancora occupato»* — con le due domande nascoste separate e le opzioni
+> descritte per conseguenza, ha deciso subito **e ha scelto l'opzione più ricca, non la più semplice**.
+> Se Matteo non risponde, sospetta la lingua della domanda prima di segnarla «in attesa».
+
+**Manopole ancora da confermare (nessuna blocca il lavoro):** intervallo di richiamo 30' · soglia di
+ritardo 15' · buffer di riassetto 10' — questi due sono **default assunti da un agente a giugno e mai
+confermati**, già in uso · durata walk-in D47 · posizione del pulsante «Aggiungi tavolo». Sono tutte
+«ogni quanto tempo l'app fa una cosa»: chiedile **in blocco**, quando hai qualcosa da mostrare a video.
+
 ---
 
-## 3-bis. Il buco trovato dalla corsia D — **non toccarlo senza via libera**
+## 3-bis. Il buco trovato dalla corsia D — ✅ **RISOLTO SU TEST il 03-08-26 sera**
 
-Chiudi una fascia dall'admin («Chiudi servizio»), vai sul form pubblico: **gli orari di quella fascia
-sono ancora lì e ancora cliccabili**, e il cliente prenota dentro un servizio che tu hai chiuso.
-Riproduzione e prova in [RIPROVA_D.md](E2E-Report/RIPROVA_D.md), bug 1.
+> Chiuso nel cantiere "tavoli e assegnazione" (§4-bis punto 5, aggiornamento in cima al file).
+> Commit `3e9fa2c`, migrazione `067`, `create-booking` deployata come **v30 su TEST**. Il testo
+> sotto resta come registro storico del bug com'era.
 
-Verificato leggendo il codice: `max_turns` — il campo che si azzera quando chiudi — **non compare in
-nessuna Edge Function né in nessuna RPC pubblica**. Non è una regressione di S4: la chiusura fascia
-non è mai stata collegata al percorso del cliente.
+~~Chiudi una fascia dall'admin («Chiudi servizio»), vai sul form pubblico: **gli orari di quella
+fascia sono ancora lì e ancora cliccabili**, e il cliente prenota dentro un servizio che tu hai
+chiuso.~~ Riproduzione e prova originali in [RIPROVA_D.md](E2E-Report/RIPROVA_D.md), bug 1.
 
-Sistemarlo tocca l'Edge `create-booking` e la generazione degli orari pubblici, cioè il pezzo che
-gira **già online per i clienti veri**. È un cantiere separato, con autorizzazione esplicita di
-Matteo, non una rifinitura da infilare nel giro 4.
+Verificato leggendo il codice: `max_turns` — il campo che si azzera quando chiudi — non compariva in
+nessuna Edge Function né in nessuna RPC pubblica. Non era una regressione di S4: la chiusura fascia
+non era mai stata collegata al percorso del cliente.
+
+**Fix:** la migrazione `067` esclude le fasce chiuse (`max_turns=0`) da `get_public_slot_config` e
+`get_available_arrival_times` (le due RPC pubbliche che alimentano gli orari sul form); l'Edge
+`create-booking` aggiunge un controllo server-side in più (409 `SLOT_CLOSED`) come difesa in
+profondità, nel caso qualcuno bypassasse la RPC. Verificato su TEST con chiamate dirette: fascia
+chiusa sparisce dall'elenco pubblico e viene rifiutata se si prova comunque a prenotarci. **Solo
+TEST** — il deploy su PROD (dove gira ancora `create-booking` v21, senza questo fix, quindi lo stesso
+buco è presumibilmente **ancora aperto in produzione**) resta da fare con autorizzazione esplicita di
+Matteo, insieme al resto del rollout S4 (§6).
 
 Sempre dalla corsia D, rimasto in sospeso: l'invio completo di una prenotazione Classic (oltre la
 spunta Privacy, altri campi obbligatori bloccano il submit da automazione) e la controprova
@@ -184,53 +266,72 @@ Questa è la mappa da avere in testa prima di toccare qualsiasi cosa. La pagina 
 | Turni per fascia, «turni residui», «turni esauriti», fascia chiusa | ✅ in piedi |
 | Forzatura con motivo registrato (chi ha forzato e perché) | ✅ in piedi |
 | Annulla assegnazione (non brucia turni) · Libera tavolo (archivia) | ✅ in piedi |
-| Avviso di fine turno che si apre da solo | ✅ in piedi, **collaudo mai completato** |
+| Avviso di fine turno che si apre da solo | ✅ in piedi, **collaudato 03-08-26 sera** — trovato `FU-SERV-RELEASE-NOTICE-1` (non sopravvive a un reload) |
 | Walk-in (cliente senza prenotazione) | ✅ in piedi, sala e tavolo obbligatori |
 | Briefing PDF del servizio | ✅ in piedi |
 
-**Cosa si è mosso ed è ora chiuso (aggiornato 03-08-26, tutto committato in `c299a65`):**
+**Cosa si è mosso ed è ora chiuso (aggiornato 03-08-26 sera):**
 FIX-4A card espandibile + lampeggio · FIX-4B striscia prenotazioni in testata · FIX-4C orario sulla
 card · FIX-4D tavoli più grandi in piantina · S4-FIX-5 sostituzione guidata · S4-FIX-6 fasce
-accavallate (committato prima, `432436c`) · **Servizio-UI FIX-1..7** (round nuovo 03-08-26, testato
-da Matteo): fasce orarie chiuse di default, header con unica CTA "Aggiungi sala", walk-in sotto le
+accavallate (committato prima, `432436c`) · **Servizio-UI FIX-1..7** (testato da Matteo, committato
+in `c299a65`): fasce orarie chiuse di default, header con unica CTA "Aggiungi sala", walk-in sotto le
 fasce, piantina visibile senza fascia scelta, tavolo assegnato sul digest Home/Calendario, card
 "Assegnate" senza duplicazione tavolo/posti (note staff + intolleranze al loro posto). Dettaglio
-tecnico in `docs/Admin-Skill/contesto/ADMIN_SERVIZIO_CONTEXT.md` §9.9–§9.11.
+tecnico in `docs/Admin-Skill/contesto/ADMIN_SERVIZIO_CONTEXT.md` §9.9–§9.11. **Cantiere "tavoli e
+assegnazione" (tre commit `3e9fa2c`/`ae4e7ae`/`5780717`, non pushati):** chiusura fascia → pubblico
+(§3-bis, sopra), nome tavolo unico a DB, walk-in atomico via RPC, nuova copertura e2e sulle voci di
+collaudo mai completate. Dettaglio in `ADMIN_SERVIZIO_CONTEXT.md` §9.12–§9.13 e nel
+[report di sessione](../03-08-26/Report-cantiere-tavoli-assegnazione-servizio-03-08-26.md).
 
 **Cosa manca ancora, in ordine di peso:**
-1. La chiusura di una fascia non arriva al cliente (§3-bis) — l'unico che tocca la produzione.
+1. ~~La chiusura di una fascia non arriva al cliente~~ — ✅ risolto su TEST (§3-bis), **PROD non
+   ancora deployata** (v21 attuale non ha il fix — il buco è presumibilmente ancora aperto lì).
 2. La capienza pubblica non guarda i tavoli veri, guarda solo il tetto della fascia (decisione §3:
-   sì, ma dopo il collaudo).
-3. Voci di collaudo mai completate: avviso fine turno, tavolata liberata a metà, stato «in uscita»,
-   pulsanti a 375px. Sono bloccate dagli orari di prova, non da difetti.
-4. Debiti noti: e2e quasi assenti su questa pagina, walk-in non transazionale, nome tavolo unico solo
-   lato app.
+   sì, ma dopo il collaudo) — resta aperto, non toccato dal cantiere del 03-08-26 sera.
+3. ~~Voci di collaudo mai completate: avviso fine turno, tavolata liberata a metà, stato «in uscita»,
+   pulsanti a 375px~~ — ✅ collaudate 03-08-26 sera con test e2e deterministici (`page.clock`, niente
+   più bloccate dagli orari di prova). Tavolata a metà/stati/375px confermati corretti; **l'avviso di
+   fine turno ha invece un bug reale** (`FU-SERV-RELEASE-NOTICE-1`, sopra), non ancora corretto.
+4. ~~Debiti noti: e2e quasi assenti su questa pagina, walk-in non transazionale, nome tavolo unico
+   solo lato app~~ — walk-in e nome tavolo ✅ chiusi (§4-bis sopra); la copertura e2e resta parziale
+   (7 test nuovi sul ciclo di vita tavoli, non un'esaustività dell'intera pagina — es. mancano ancora
+   e2e sul flusso walk-in via UI e sull'assegnazione con conflitto di turno).
 5. **Nuovo cantiere annunciato da Matteo (03-08-26):** pagina Servizio → tavoli e assegnazione
-   prenotazioni — ancora da scoping, non iniziato (vedi §6).
+   prenotazioni — ✅ scoping fatto e portato a termine il 03-08-26 sera (punti 1, 3 parziale, 4 di
+   questa lista). Resta il bug trovato al punto 3 e la decisione su come correggerlo.
 
 ---
 
-## 5. Ordine di lavoro consigliato *(§0-2 chiuse il 03-08-26 — storico, sotto il prossimo passo reale)*
+## 5. Ordine di lavoro consigliato *(§0-2 e cantiere tavoli/assegnazione chiusi il 03-08-26 — storico, sotto il prossimo passo reale)*
 
 1. ~~Le due revisioni della §0~~ — **fatto**: FIX-5/FIX-6 committati `432436c`, allineamento
    migrazioni chiuso (registro riallineato, vedi §2).
 2. ~~Giro 4 per ondate~~ — **fatto**: FIX-4A/4B/4C/4D + Servizio-UI FIX-1..7 committati insieme in
    `c299a65` (03-08-26), Matteo ha testato il secondo round a video.
-3. **Prossimo passo reale:** push di `c299a65` su `origin/env/test` (non ancora fatto — chiedi
-   conferma a Matteo se non esplicita), poi il nuovo cantiere «tavoli e assegnazione prenotazioni»
-   che Matteo ha annunciato in chiusura del round Servizio-UI (§4-bis punto 5) — ancora da scoping.
-4. Resta in coda, non urgente: ricollauda a mano quello che le riprove non hanno potuto provare
-   (§4-bis, punto 3: serve una fascia lunga o una durata pasto corta, non un fix) e riscrivi le voci
-   di checklist toccate dalle decisioni della §3.
+3. ~~Cantiere «tavoli e assegnazione prenotazioni»~~ — **fatto** il 03-08-26 sera: scoping con
+   Matteo (tre fronti scelti insieme) + tre wave eseguite e revisionate, committate in
+   `3e9fa2c`/`ae4e7ae`/`5780717` (§4-bis, §3-bis, report dedicato).
+4. **Prossimo passo reale:** push dei tre commit su `origin/env/test` (non ancora fatto — chiedi
+   conferma a Matteo se non esplicita); poi decisione con Matteo su come correggere
+   `FU-SERV-RELEASE-NOTICE-1` (l'avviso di fine turno trovato rotto dopo reload).
+5. Resta in coda, non urgente: la copertura e2e sul resto della pagina Servizio (walk-in via UI,
+   assegnazione con conflitto di turno) e riscrivi le voci di checklist toccate dalle decisioni
+   della §3.
 
 ---
 
 ## 6. Dopo S4 — quello che resta in coda
 
-- **Re-merge `main` → `env/test`** per recuperare `f617077`: da fare **prima** di qualsiasi rollout.
-- **Rollout PROD**: migrazioni 063→066 + Edge `create-booking` + client **insieme**, con
-  autorizzazione esplicita di Matteo chiesta ogni volta. Lezione del 23-05: migrazione che restringe
-  permessi e fix client viaggiano insieme, mai separati.
+- **I 4 fix decisi (§3-ter)** — Fase 0 del piano. `FU-SERV-RELEASE-NOTICE-1` non è più bloccato:
+  la decisione D-D c'è.
+- ~~**Re-merge `main` → `env/test`** per recuperare `f617077`: da fare **prima** di qualsiasi rollout.~~
+  ⚠️ **Superato:** la fix è già dentro `env/test` per contenuto (verificato 03-08 tarda sera). Il
+  re-merge serve solo per igiene git, **non è un cancello al rollout**.
+- **Rollout PROD**: migrazioni 063→**069** (+ quella nuova di D-D) + Edge `create-booking` (**v30 su
+  TEST**, PROD ancora a v21 — include anche il fix chiusura fascia→pubblico di §3-bis) + client
+  **insieme**, con autorizzazione esplicita di Matteo chiesta ogni volta. Lezione del 23-05: migrazione
+  che restringe permessi e fix client viaggiano insieme, mai separati.
+  ⚠️ Finché non si fa, **in produzione la chiusura di una fascia non blocca il form pubblico**.
 - **Cantiere capienza pubblica / D38** (decisione §3, rimandata).
 - Poi il **cantiere Fable** — mandato in [STATO_APP_E_MANDATO_FABLE.md](STATO_APP_E_MANDATO_FABLE.md).
 
