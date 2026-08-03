@@ -22,7 +22,7 @@ import { useFeatures } from '@/hooks/useFeatures'
 import {
   OVERNIGHT_TIME_END_HINT,
   slotCrossesMidnight,
-  slotRangesOverlap,
+  validateSlotConfigs,
 } from '@/features/booking/utils/bookingTimeSlots'
 import {
   useServiceSlots,
@@ -91,25 +91,13 @@ type SettingsValidationIssue = {
   message: string
 }
 
-function validateEditingSlots(slots: EditingSlot[]): string | null {
-  const HH_MM = /^([01]\d|2[0-3]):[0-5]\d$/
-  for (const s of slots) {
-    if (!HH_MM.test(s.start_time) || !HH_MM.test(s.end_time)) {
-      return `Fascia "${s.name}": orari nel formato HH:mm richiesti`
-    }
-    if (s.start_time === s.end_time) {
-      return `Fascia "${s.name}": inizio e fine coincidono`
-    }
-  }
-  for (let i = 0; i < slots.length; i++) {
-    for (let j = i + 1; j < slots.length; j++) {
-      if (slotRangesOverlap(slots[i].start_time, slots[i].end_time, slots[j].start_time, slots[j].end_time)) {
-        return `Le fasce "${slots[i].name}" e "${slots[j].name}" si sovrappongono`
-      }
-    }
-  }
-  return null
-}
+// FIX C (03-08-26, D-C): la validazione delle fasce non vive più qui — unica fonte di
+// verità `validateSlotConfigs` (bookingTimeSlots.ts), condivisa con Servizio → Fasce
+// orarie (ServiceSlotsManager). Questo editor lavora già su tutto l'array `editingSlots`,
+// quindi lo passa direttamente: nessuna costruzione "come sarebbe dopo il salvataggio"
+// necessaria qui (quel passaggio serve solo all'editor di Servizio, che valida una
+// fascia alla volta). Aggiunge il controllo nome duplicato che questo editor non aveva
+// (bug B-5 dell'audit 03-08-26).
 
 const restaurantSettingsIntroCardClass =
   'admin-warm-surface w-full max-w-2xl mx-auto space-y-3 rounded-xl border p-4 md:p-5 shadow-md text-center flex flex-col items-center gap-2 sm:flex-row sm:justify-center'
@@ -941,8 +929,12 @@ export const RestaurantSettingsTab: React.FC = () => {
     if (businessHoursValidationError) {
       return { key: 'business_hours', message: businessHoursValidationError }
     }
-    if (!features.servizio && timeSlotsEnabled) {
-      const slotsValidationError = validateEditingSlots(editingSlots)
+    // editingSlots.length > 0: comportamento preesistente invariato — eliminare tutte le
+    // fasce e salvare resta permesso (equivalente a disattivare); validateSlotConfigs
+    // rifiuterebbe l'array vuoto ("Almeno una fascia oraria è richiesta"), regola nuova
+    // non richiesta da questo fix — fuori scope, non introdotta qui.
+    if (!features.servizio && timeSlotsEnabled && editingSlots.length > 0) {
+      const slotsValidationError = validateSlotConfigs(editingSlots)
       if (slotsValidationError) return { key: 'time_slots', message: slotsValidationError }
     }
     return null

@@ -27,6 +27,7 @@ import {
   useForceReplaceBookingOnTable,
   useUndoTableAssignment,
   useCheckoutTable,
+  useMarkReleaseNoticeHandled,
   TurniEsauritiError,
   type BookingTableAssignment,
   type ForceReplaceOutcome,
@@ -43,6 +44,7 @@ import {
 } from '@/features/booking/utils/tableTurnLimits'
 import {
   useTableStatuses,
+  useReleaseNoticeRecallMinutes,
   type TableLiveStatus,
 } from '@/features/booking/hooks/useTableStatuses'
 import {
@@ -65,6 +67,28 @@ import {
 import type { RestaurantTable } from '@/features/booking/hooks/useServizioTables'
 import type { Room } from '@/features/booking/hooks/useRooms'
 import type { BookingRequest } from '@/types/booking'
+
+/**
+ * FIX D (03-08-26, D-D) — l'avviso di fine turno resta silenziato finché non è
+ * trascorso l'intervallo di richiamo dall'ultima conferma "Ancora occupato"
+ * (`release_notice_handled_at`, mig. 070). Pura e testabile in isolamento: nessun
+ * accesso a Supabase/React, solo un confronto di date.
+ *
+ * @param handledAt istante dell'ultima conferma "Ancora occupato" sulla riga attiva del
+ *   tavolo (`null`/`undefined` = nessuna conferma: l'avviso non è mai silenziato).
+ * @param now istante corrente.
+ * @param recallMinutes intervallo di richiamo in minuti (S-5, default 30).
+ */
+export function isReleaseNoticeSilenced(
+  handledAt: string | null | undefined,
+  now: Date,
+  recallMinutes: number,
+): boolean {
+  if (!handledAt) return false
+  const handledMs = new Date(handledAt).getTime()
+  if (Number.isNaN(handledMs)) return false
+  return now.getTime() - handledMs < recallMinutes * 60 * 1000
+}
 
 // ─────────────────────────────────────────────
 // DraggableBookingCard
@@ -341,6 +365,11 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
   const forceReplaceBooking = useForceReplaceBookingOnTable()
   const undoAssignment = useUndoTableAssignment()
   const checkoutTable = useCheckoutTable()
+  const markReleaseNoticeHandled = useMarkReleaseNoticeHandled()
+  // FIX D (03-08-26, D-D/S-5) — manopola dell'intervallo di richiamo dell'avviso fine
+  // turno, stesso modello della soglia di ritardo (default 30 min, JSONB, nessuna
+  // migrazione per la manopola).
+  const releaseNoticeRecallMinutes = useReleaseNoticeRecallMinutes()
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -404,6 +433,22 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
     }
     return map
   }, [activeAssignments, bookingsById])
+
+  /**
+   * FIX D (03-08-26) — riga di assegnazione attiva per tavolo (turn_number più basso,
+   * stesso criterio di useTableStatuses/useCheckoutTable). Serve a leggere
+   * `release_notice_handled_at` per il filtro dell'avviso fine turno.
+   */
+  const activeAssignmentByTable = useMemo(() => {
+    const map = new Map<string, BookingTableAssignment>()
+    for (const assignment of activeAssignments) {
+      const existing = map.get(assignment.table_id)
+      if (!existing || assignment.turn_number < existing.turn_number) {
+        map.set(assignment.table_id, assignment)
+      }
+    }
+    return map
+  }, [activeAssignments])
 
   /**
    * Prenotazioni già assegnate, raggruppate per prenotazione (D39).
@@ -489,12 +534,24 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
   /**
    * Tavoli a fine turno che aspettano la conferma dello staff (D22/D23).
    * La capienza si è già liberata da sola: qui si conferma solo lo stato fisico.
+   *
+   * FIX D (03-08-26, D-D): due filtri distinti, non uno solo.
+   *   - `handledReleaseTableIds` — feedback immediato in questa sessione del browser,
+   *     prima che il refetch riporti il dato aggiornato dal DB (evita uno sfarfallio).
+   *   - `release_notice_handled_at` sulla riga attiva — la VERITÀ persistita: vale per
+   *     tutti i dispositivi e resiste al ricaricamento. Torna notificabile da sola una
+   *     volta passato l'intervallo di richiamo (`releaseNoticeRecallMinutes`, S-5).
    */
   const pendingReleases = useMemo<PendingTableRelease[]>(() => {
+    const now = new Date()
     const result: PendingTableRelease[] = []
     for (const [tableId, status] of tableStatuses) {
       if (status !== 'leaving') continue
       if (handledReleaseTableIds.includes(tableId)) continue
+      const activeRow = activeAssignmentByTable.get(tableId)
+      if (isReleaseNoticeSilenced(activeRow?.release_notice_handled_at, now, releaseNoticeRecallMinutes)) {
+        continue
+      }
       const table = allTables.find((t) => t.id === tableId)
       if (!table) continue
       const booking = (bookingsByTable.get(tableId) ?? [])[0] ?? null
@@ -510,7 +567,15 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
       })
     }
     return result
-  }, [allTables, bookingsByTable, handledReleaseTableIds, rooms, tableStatuses])
+  }, [
+    activeAssignmentByTable,
+    allTables,
+    bookingsByTable,
+    handledReleaseTableIds,
+    releaseNoticeRecallMinutes,
+    rooms,
+    tableStatuses,
+  ])
 
   /** Identifica il gruppo di tavoli attualmente in attesa di conferma. */
   const pendingReleaseSignature = useMemo(
@@ -748,8 +813,40 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
     })
   }
 
+  /**
+   * "Ancora occupato" (FIX D, 03-08-26, D-D). L'avviso si chiude (stato locale
+   * `handledReleaseTableIds`) SOLO dopo che la scrittura `release_notice_handled_at`
+   * è confermata dal server, non prima — deliberato, non un `await` di comodo.
+   *
+   * PERCHÉ: un ricaricamento immediato (tablet che si sveglia, F5 impaziente) può
+   * abortire una richiesta di rete ancora in volo, prima che raggiunga il server —
+   * verificato: con un `.mutate()` fire-and-forget seguito da un `page.reload()` a
+   * distanza di pochi millisecondi, la scrittura non arrivava mai e l'avviso
+   * ritornava, lo stesso identico sintomo del bug che questo fix doveva chiudere.
+   * Tenendo l'avviso visibile finché il server non conferma, un ricaricamento
+   * arriva sempre DOPO che la riga è già scritta: la persistenza è garantita per
+   * costruzione, non per fortuna di tempistica. Il costo è un istante di ritardo
+   * (una singola UPDATE) prima che l'avviso sparisca — impercettibile nell'uso
+   * reale, e i pulsanti restano disabilitati nel frattempo (isConfirming).
+   *
+   * FIX D, revisione senior: timbra la riga ESATTA notificata
+   * (`activeAssignmentByTable.get(tableId)`, turn_number più basso — la stessa che
+   * ha reso il tavolo "in uscita"), non tavolo+fascia+data. Un tavolo con un secondo
+   * turno già assegnato in coda (`hasWaitingNextTurnOnTable`) ha due righe attive:
+   * timbrarle entrambe farebbe ereditare al turno successivo una conferma che
+   * nessuno gli ha mai dato.
+   */
   function markReleaseHandled(tableId: string) {
-    setHandledReleaseTableIds((prev) => (prev.includes(tableId) ? prev : [...prev, tableId]))
+    const activeRow = activeAssignmentByTable.get(tableId)
+    if (!activeRow) return
+    markReleaseNoticeHandled.mutate(
+      { assignmentId: activeRow.id, date: selectedDate },
+      {
+        onSuccess: () => {
+          setHandledReleaseTableIds((prev) => (prev.includes(tableId) ? prev : [...prev, tableId]))
+        },
+      },
+    )
   }
 
   async function handleUndoLastAssignment() {
@@ -852,11 +949,14 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
         </p>
       </div>
 
-      {/* Avviso fine turno: la capienza si è già liberata, manca la conferma fisica (D22) */}
+      {/* Avviso fine turno: la capienza si è già liberata, manca la conferma fisica (D22).
+          isConfirming copre ANCHE markReleaseNoticeHandled (FIX D): i pulsanti restano
+          disabilitati finché "Ancora occupato" non è confermato dal server, evitando
+          doppio-click durante l'istante in cui la scrittura è in volo. */}
       <TableReleaseNoticeModal
         isOpen={isReleaseNoticeOpen}
         releases={pendingReleases}
-        isConfirming={checkoutTable.isPending}
+        isConfirming={checkoutTable.isPending || markReleaseNoticeHandled.isPending}
         onConfirmFree={(tableId) => {
           handleCheckout(tableId)
           markReleaseHandled(tableId)

@@ -34,6 +34,25 @@ export type TableLiveStatus = 'free' | 'upcoming' | 'occupied' | 'late' | 'leavi
 /** Soglia ritardo default in minuti (chiave JSONB senza migrazione). */
 export const DEFAULT_LATE_THRESHOLD_MINUTES = 15
 
+/**
+ * FIX D (03-08-26, D-D/S-5) — intervallo di richiamo default (minuti) dell'avviso
+ * "Tavolo a fine turno" dopo che lo staff preme "Ancora occupato". Stessa manopola
+ * JSONB senza migrazione della soglia di ritardo sopra: chiave
+ * `restaurant_settings.table_release_notice_recall_minutes`.
+ */
+export const DEFAULT_RELEASE_NOTICE_RECALL_MINUTES = 30
+
+/**
+ * Legge la manopola dell'intervallo di richiamo (S-5). Nessuna migrazione: default
+ * gestito dal registry (`restaurantSettingRegistry.ts`) se la chiave è assente.
+ */
+export function useReleaseNoticeRecallMinutes(): number {
+  const { data } = useRestaurantSetting('table_release_notice_recall_minutes', {
+    authenticated: true,
+  })
+  return data ?? DEFAULT_RELEASE_NOTICE_RECALL_MINUTES
+}
+
 /** Campi opzionali di occupancy snapshot (mig. 064) — select('*') li restituisce. */
 type BookingWithOccupancy = BookingRequest & {
   turnover_buffer_minutes?: number | null

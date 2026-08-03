@@ -14,7 +14,11 @@ import {
   isServiceSlotClosed,
   type ServiceSlot,
 } from '@/features/booking/hooks/useServiceSlots'
-import { OVERNIGHT_TIME_END_HINT, slotRangesOverlap } from '@/features/booking/utils/bookingTimeSlots'
+import {
+  OVERNIGHT_TIME_END_HINT,
+  validateSlotConfigs,
+  type SlotValidationInput,
+} from '@/features/booking/utils/bookingTimeSlots'
 import {
   useServiceSlotOverrides,
   useCreateServiceSlotOverride,
@@ -558,15 +562,27 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
     }
 
     // ── Modifica permanente (valore base) ────────────────────────
-    // Una fascia non deve accavallarsi su un'altra: si confronta con tutte le
-    // altre esistenti (mai con se stessa in modifica). Solo controllo lato app,
-    // niente vincolo DB (S4-FIX-6).
-    const overlapping = existingSlots.find((s) => {
-      if (isEdit && initial && s.id === initial.id) return false
-      return slotRangesOverlap(startTime, endTime, s.start_time.slice(0, 5), s.end_time.slice(0, 5))
-    })
-    if (overlapping) {
-      setValidationError(`Le fasce "${name.trim()}" e "${overlapping.name}" si sovrappongono`)
+    // FIX C (03-08-26, D-C): unica fonte di verità con Impostazioni → Imposta Fasce
+    // Orarie, `validateSlotConfigs` (bookingTimeSlots.ts) — formato HH:mm, inizio≠fine,
+    // nome duplicato (trim + case-insensitive) e sovrapposizioni (overnight-safe, S4-FIX-6).
+    // Questo editor lavora su UNA fascia alla volta: costruiamo l'array "come sarebbe dopo
+    // il salvataggio" — le fasce esistenti (mai quella in modifica: sostituita dalla
+    // bozza) più la fascia in corso — e lo passiamo a validateSlotConfigs. Nessuna
+    // duplicazione della logica di validazione qui dentro.
+    //
+    // `focusIndex: 0` (revisione senior 03-08-26): la bozza è sempre in testa all'array
+    // qui sotto. Senza focusIndex, una fascia legacy già a DB — invalida proprio perché
+    // fino a stasera Servizio non bloccava nome duplicato/inizio==fine — impedirebbe di
+    // salvare QUALSIASI altra fascia, con un errore che nomina una fascia non correggibile
+    // da questa modale. Con focusIndex: chi apre "Modifica" non è responsabile delle
+    // altre fasce, solo della propria e delle sue relazioni con le altre.
+    const draftSlot: SlotValidationInput = { name: name.trim(), start_time: startTime, end_time: endTime }
+    const otherSlots: SlotValidationInput[] = existingSlots
+      .filter((s) => !(isEdit && initial && s.id === initial.id))
+      .map((s) => ({ name: s.name, start_time: s.start_time.slice(0, 5), end_time: s.end_time.slice(0, 5) }))
+    const slotsError = validateSlotConfigs([draftSlot, ...otherSlots], { focusIndex: 0 })
+    if (slotsError) {
+      setValidationError(slotsError)
       return
     }
 

@@ -19,26 +19,93 @@ export function getSlotLabel(slot: Pick<SlotConfig, 'name' | 'start_time' | 'end
 }
 
 /**
- * Valida un array di SlotConfig: formato orari, nomi univoci, no inizio=fine, no sovrapposizioni.
- * Ritorna stringa di errore o null.
+ * Forma minima richiesta da validateSlotConfigs: solo i campi che la validazione usa
+ * davvero. Permette a un editor che lavora su un array più ricco (o più povero, purché
+ * abbia questi tre campi) di passarlo senza costruire un SlotConfig completo — es. la
+ * "fascia in bozza" di ServiceSlotsManager non ha ancora un id reale.
  */
-export function validateSlotConfigs(slots: SlotConfig[]): string | null {
+export type SlotValidationInput = Pick<SlotConfig, 'name' | 'start_time' | 'end_time'>
+
+export interface ValidateSlotConfigsOptions {
+  /**
+   * Indice della fascia "in bozza" nell'array (revisione senior FIX C, 03-08-26).
+   *
+   * Senza `focusIndex` (Impostazioni → Imposta Fasce Orarie): l'intero array è editabile
+   * nella stessa schermata, quindi TUTTE le fasce vengono validate — sia i controlli
+   * per-singola-fascia (formato, inizio≠fine) sia quelli fra coppie (nome duplicato,
+   * sovrapposizione). Un errore lì è sempre azionabile dall'utente.
+   *
+   * Con `focusIndex` (Servizio → Fasce orarie, un editor per fascia): chi apre "Modifica
+   * fascia" non è responsabile delle ALTRE fasce già a DB — che possono essere legacy e
+   * invalide proprio perché fino a stasera Servizio non le bloccava (nomi duplicati,
+   * inizio==fine: nessun editor li controllava prima del FIX C). Senza questo parametro,
+   * una fascia legacy rotta impedirebbe di salvare QUALSIASI altra fascia con un errore
+   * che nomina una fascia non modificabile da quella modale — sembrerebbe il fix rotto.
+   * Con `focusIndex`: i controlli per-singola-fascia valgono SOLO sulla bozza; i controlli
+   * fra coppie valgono SOLO per le coppie che coinvolgono la bozza. Le altre fasce
+   * dell'array non vengono validate per conto proprio.
+   */
+  focusIndex?: number
+}
+
+/**
+ * Valida un array di fasce: formato orari, nomi univoci, no inizio=fine, no sovrapposizioni.
+ * Ritorna stringa di errore o null.
+ *
+ * FIX C (03-08-26, D-C): unica fonte di verità per Impostazioni → Imposta Fasce Orarie
+ * (RestaurantSettingsTab) E Servizio → Fasce orarie (ServiceSlotsManager). Prima ognuno
+ * reimplementava un sottoinsieme diverso di questi controlli — Servizio non bloccava
+ * nome duplicato né inizio==fine. Chi valida una fascia sola (non un array intero, come
+ * l'editor di Servizio) costruisce "l'array come sarebbe dopo il salvataggio" e lo passa
+ * qui, con `options.focusIndex` — non duplicare questa logica nel componente.
+ */
+export function validateSlotConfigs(
+  slots: SlotValidationInput[],
+  options?: ValidateSlotConfigsOptions,
+): string | null {
   if (slots.length === 0) return 'Almeno una fascia oraria è richiesta'
   const HH_MM = /^([01]\d|2[0-3]):[0-5]\d$/
-  const names = new Set<string>()
-  for (const slot of slots) {
-    if (!HH_MM.test(slot.start_time)) return `Fascia "${slot.name}": orario inizio non valido`
-    if (!HH_MM.test(slot.end_time)) return `Fascia "${slot.name}": orario fine non valido`
-    if (slot.start_time === slot.end_time) return `Fascia "${slot.name}": inizio e fine coincidono`
-    const key = slot.name.trim().toLowerCase()
-    if (names.has(key)) return `Nome fascia duplicato: "${slot.name}"`
-    names.add(key)
-  }
-  for (let i = 0; i < slots.length; i++) {
-    for (let j = i + 1; j < slots.length; j++) {
-      if (slotRangesOverlap(slots[i].start_time, slots[i].end_time, slots[j].start_time, slots[j].end_time)) {
-        return `Le fasce "${slots[i].name}" e "${slots[j].name}" si sovrappongono`
+  const focusIndex = options?.focusIndex
+
+  if (focusIndex === undefined) {
+    // Modalità array intero (Impostazioni): invariata rispetto a prima del FIX C.
+    const names = new Set<string>()
+    for (const slot of slots) {
+      if (!HH_MM.test(slot.start_time)) return `Fascia "${slot.name}": orario inizio non valido`
+      if (!HH_MM.test(slot.end_time)) return `Fascia "${slot.name}": orario fine non valido`
+      if (slot.start_time === slot.end_time) return `Fascia "${slot.name}": inizio e fine coincidono`
+      const key = slot.name.trim().toLowerCase()
+      if (names.has(key)) return `Nome fascia duplicato: "${slot.name}"`
+      names.add(key)
+    }
+    for (let i = 0; i < slots.length; i++) {
+      for (let j = i + 1; j < slots.length; j++) {
+        if (slotRangesOverlap(slots[i].start_time, slots[i].end_time, slots[j].start_time, slots[j].end_time)) {
+          return `Le fasce "${slots[i].name}" e "${slots[j].name}" si sovrappongono`
+        }
       }
+    }
+    return null
+  }
+
+  // Modalità "bozza" (Servizio): valida SOLO la fascia a focusIndex e le sue coppie con
+  // le altre — mai le altre fasce fra loro (potrebbero essere dati legacy invalidi che
+  // questa schermata non può correggere).
+  const focus = slots[focusIndex]
+  if (!focus) return null
+  if (!HH_MM.test(focus.start_time)) return `Fascia "${focus.name}": orario inizio non valido`
+  if (!HH_MM.test(focus.end_time)) return `Fascia "${focus.name}": orario fine non valido`
+  if (focus.start_time === focus.end_time) return `Fascia "${focus.name}": inizio e fine coincidono`
+
+  const focusKey = focus.name.trim().toLowerCase()
+  for (let i = 0; i < slots.length; i++) {
+    if (i === focusIndex) continue
+    const other = slots[i]
+    if (other.name.trim().toLowerCase() === focusKey) {
+      return `Nome fascia duplicato: "${focus.name}"`
+    }
+    if (slotRangesOverlap(focus.start_time, focus.end_time, other.start_time, other.end_time)) {
+      return `Le fasce "${focus.name}" e "${other.name}" si sovrappongono`
     }
   }
   return null

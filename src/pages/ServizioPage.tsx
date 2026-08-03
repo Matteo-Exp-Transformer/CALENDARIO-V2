@@ -10,7 +10,12 @@ import { ServiceSlotsManager } from '@/features/booking/components/servizio/Serv
 import { WalkInLimitCard } from '@/features/booking/components/servizio/WalkInLimitCard'
 import { useFeatures } from '@/hooks/useFeatures'
 import { AssignmentMapPanel } from '@/features/booking/components/servizio/AssignmentMapPanel'
-import { useTables, useDeleteTable, type RestaurantTable } from '@/features/booking/hooks/useServizioTables'
+import {
+  useTables,
+  useDeleteTable,
+  useTableLiveBookings,
+  type RestaurantTable,
+} from '@/features/booking/hooks/useServizioTables'
 import { useRooms, type Room } from '@/features/booking/hooks/useRooms'
 import { useTableMode } from '@/features/booking/hooks/useTableMode'
 import { cn } from '@/lib/utils'
@@ -46,6 +51,18 @@ interface TableCardProps {
 
 const TableCard: FC<TableCardProps> = ({ table, onEdit, onDelete, isDeleting }) => {
   const [confirmDelete, setConfirmDelete] = useState(false)
+  // FIX B (03-08-26, D-A): la query parte solo quando lo staff apre la conferma su
+  // QUESTO tavolo (enabled = confirmDelete) — un tavolo libero non fa mai una richiesta
+  // in più, invariato rispetto a prima.
+  const { data: liveCount = 0, isLoading: isLiveLoading } = useTableLiveBookings(
+    confirmDelete ? table.id : null,
+  )
+
+  // Testo di conferma con impatto quantificato, stesso tono di RoomConfigModal (§4.2).
+  const liveImpactText =
+    confirmDelete && liveCount > 0
+      ? `Questo tavolo ha ${liveCount} prenotazion${liveCount === 1 ? 'e' : 'i'} assegnat${liveCount === 1 ? 'a' : 'e'}. Eliminandolo torner${liveCount === 1 ? 'à' : 'anno'} nel cassetto «da assegnare» e dovrai riassegnarl${liveCount === 1 ? 'a' : 'e'}.`
+      : null
 
   return (
     <div className="flex items-start justify-between gap-3 rounded-xl border border-(--color-border) bg-surface p-4 shadow-sm">
@@ -54,31 +71,36 @@ const TableCard: FC<TableCardProps> = ({ table, onEdit, onDelete, isDeleting }) 
         <p className="text-micro mt-0.5 text-(--color-text-muted)">{table.capacity} posti</p>
       </div>
 
-      <div className="flex shrink-0 items-center gap-1.5">
+      <div className="flex shrink-0 items-start gap-1.5">
         {confirmDelete ? (
-          <>
-            <span className="text-micro mr-1 text-red-600">Eliminare?</span>
-            <Button
-              type="button"
-              variant="danger"
-              size="sm"
-              disabled={isDeleting}
-              onClick={() => {
-                onDelete(table.id)
-                setConfirmDelete(false)
-              }}
-            >
-              Sì
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setConfirmDelete(false)}
-            >
-              No
-            </Button>
-          </>
+          <div className="flex flex-col items-end gap-1.5">
+            {liveImpactText && (
+              <p className="max-w-55 text-right text-micro text-amber-700">{liveImpactText}</p>
+            )}
+            <div className="flex items-center gap-1.5">
+              <span className="text-micro mr-1 text-red-600">Eliminare?</span>
+              <Button
+                type="button"
+                variant="danger"
+                size="sm"
+                disabled={isDeleting || isLiveLoading}
+                onClick={() => {
+                  onDelete(table.id)
+                  setConfirmDelete(false)
+                }}
+              >
+                {liveCount > 0 ? 'Sì, elimina' : 'Sì'}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setConfirmDelete(false)}
+              >
+                No
+              </Button>
+            </div>
+          </div>
         ) : (
           <>
             <Button

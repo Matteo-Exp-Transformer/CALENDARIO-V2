@@ -11,8 +11,10 @@ import { Button, Modal } from '@/components/ui'
  * orologio: solo lo staff sa se i clienti sono davvero usciti. Questa finestra
  * è il ponte fra i due mondi: notifica il fine turno e chiede la conferma.
  *
- * "Ancora occupato" NON scrive su DB: silenzia l'avviso per quel tavolo fino al
- * cambio di fascia/data. "Libero" esegue il checkout append-only (checked_out_at).
+ * FIX D (03-08-26, D-D): "Ancora occupato" timbra `release_notice_handled_at` sulla
+ * riga attiva del tavolo (persistito, vale per tutti i dispositivi) — l'avviso torna
+ * da solo dopo l'intervallo di richiamo se il tavolo è ancora occupato. "Libero"
+ * esegue il checkout append-only (checked_out_at).
  */
 
 export interface PendingTableRelease {
@@ -105,6 +107,7 @@ export const TableReleaseNoticeModal: FC<TableReleaseNoticeModalProps> = ({
                     type="button"
                     variant="ghost"
                     size="sm"
+                    disabled={isConfirming}
                     onClick={() => onKeepOccupied(release.tableId)}
                   >
                     Ancora occupato

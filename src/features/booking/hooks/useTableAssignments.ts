@@ -26,6 +26,17 @@ export interface BookingTableAssignment {
   checked_out_at: string | null
   date: string
   created_at: string
+  /**
+   * FIX D (03-08-26, mig. 070) — istante in cui lo staff ha premuto "Ancora occupato"
+   * sull'avviso di fine turno. NULL = nessuna conferma attiva.
+   *
+   * Campo OBBLIGATORIO nel tipo (revisione senior 03-08-26): tutte le query fanno
+   * `select('*')`, quindi a runtime il campo c'è sempre — renderlo obbligatorio protegge
+   * da una futura select che dimenticasse la colonna su questa fonte di verità. I 4 file
+   * di test che costruiscono `BookingTableAssignment` con `Partial<...>` sono stati
+   * aggiornati con un default esplicito.
+   */
+  release_notice_handled_at: string | null
 }
 
 export const TABLE_ASSIGNMENTS_QUERY_KEY = 'table_assignments'
@@ -751,17 +762,21 @@ export function useReleaseBookingAssignment() {
 
       if (!current) throw new Error('Nessun assignment attivo da liberare per questa prenotazione.')
 
-      // D48 append-only: non usiamo più DELETE fisico nemmeno per la riassegnazione rapida.
       // Se esiste un turno successivo in attesa sullo stesso tavolo, blocchiamo comunque
       // la release per evitare conflitti (la riassegnazione creerebbe un buco di turno).
       if (hasWaitingNextTurnOnTable(assignments, current)) {
         return { blocked: 'waiting_next_turn' }
       }
 
-      // Marca come checked-out — il prossimo assegnamento creerà una nuova riga (nuovo turno).
+      // D48 (riscritta 03-08, D-B/S-1): append-only vale sui turni REALMENTE serviti
+      // (checkout/archiviazione). Uno spostamento — «Modifica tavolo» da Calendario — non è
+      // un turno servito: il cliente si sposta, non se ne va. DELETE fisico della riga sul
+      // tavolo di partenza, stesso principio già in vigore per useUndoTableAssignment e per
+      // il ramo requeue/move di useForceReplaceBookingOnTable (S4-FIX-5). Così il conteggio
+      // turni residui del tavolo di partenza resta invariato, identico al percorso Servizio.
       const { error } = await supabase
         .from('booking_table_assignments')
-        .update({ checked_out_at: new Date().toISOString() })
+        .delete()
         .eq('id', current.id)
         .eq('tenant_id', tenantId!)
 
@@ -780,6 +795,52 @@ export function useReleaseBookingAssignment() {
     onError: (error: Error) => {
       logger.error('[useReleaseBookingAssignment] error', error)
       toast.error(error.message || 'Errore nel liberare l\'assegnazione')
+    },
+  })
+}
+
+interface MarkReleaseNoticeHandledInput {
+  /**
+   * FIX D, revisione senior (03-08-26): la riga ESATTA notificata (quella col
+   * turn_number più basso, la stessa che `useTableStatuses`/`activeAssignmentByTable`
+   * usano per decidere "in uscita"), non più tavolo+fascia+data. Un tavolo con un
+   * secondo turno già in coda (`hasWaitingNextTurnOnTable`) ha DUE righe attive: la
+   * versione precedente le timbrava entrambe, e quel secondo turno — quando arriverà il
+   * suo momento — poteva ereditare un timbro che nessuno ha confermato per lui, con
+   * l'avviso silenzioso senza che lo staff l'abbia mai visto.
+   */
+  assignmentId: string
+  date: string
+}
+
+/**
+ * FIX D (03-08-26, D-D, mig. 070) — timbra `release_notice_handled_at = now()` sulla
+ * riga di assegnazione ESATTA notificata quando lo staff preme "Ancora occupato"
+ * sull'avviso di fine turno. Persistito sul record: la conferma vale per tutti i
+ * dispositivi e resiste al ricaricamento. Non tocca `checked_out_at` (il tavolo resta
+ * occupato) né consuma un turno — è solo una traccia di "l'avviso è stato visto e
+ * respinto adesso", per QUELLA riga soltanto.
+ */
+export function useMarkReleaseNoticeHandled() {
+  const queryClient = useQueryClient()
+  const { tenantId } = useTenantContext()
+
+  return useMutation({
+    mutationFn: async ({ assignmentId }: MarkReleaseNoticeHandledInput) => {
+      const { error } = await supabase
+        .from('booking_table_assignments')
+        .update({ release_notice_handled_at: new Date().toISOString() })
+        .eq('id', assignmentId)
+        .eq('tenant_id', tenantId!)
+
+      if (error) throw error
+    },
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, vars.date] })
+    },
+    onError: (error: Error) => {
+      logger.error('[useMarkReleaseNoticeHandled] error', error)
+      toast.error(error.message || 'Errore nel confermare l\'avviso')
     },
   })
 }

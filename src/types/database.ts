@@ -249,6 +249,7 @@ export type Database = {
           force_reason: string | null
           forced_by_admin: boolean
           id: string
+          release_notice_handled_at: string | null
           service_slot_id: string
           table_id: string
           tenant_id: string
@@ -262,6 +263,7 @@ export type Database = {
           force_reason?: string | null
           forced_by_admin?: boolean
           id?: string
+          release_notice_handled_at?: string | null
           service_slot_id: string
           table_id: string
           tenant_id: string
@@ -275,6 +277,7 @@ export type Database = {
           force_reason?: string | null
           forced_by_admin?: boolean
           id?: string
+          release_notice_handled_at?: string | null
           service_slot_id?: string
           table_id?: string
           tenant_id?: string

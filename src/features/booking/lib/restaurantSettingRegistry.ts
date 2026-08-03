@@ -93,6 +93,8 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'table_late_threshold_minutes',
   /** S4/D38 — in modalità tavoli applica anche il cap coperti della fascia oltre alla capienza fisica. Default false. */
   'table_mode_respects_slot_cap',
+  /** FIX D (03-08-26, D-D/S-5) — minuti prima che l'avviso "Tavolo a fine turno" ritorni dopo "Ancora occupato" (default 30). */
+  'table_release_notice_recall_minutes',
 ] as const
 
 export type RestaurantSettingKeyV1 = (typeof RESTAURANT_SETTING_KEYS_V1)[number]
@@ -374,6 +376,8 @@ export type RestaurantSettingValueMap = {
   table_late_threshold_minutes: number
   /** S4/D38 — se true, in modalità tavoli vince il primo limite raggiunto tra posti fisici e cap fascia. */
   table_mode_respects_slot_cap: boolean
+  /** FIX D (03-08-26, D-D/S-5) — minuti di richiamo dell'avviso fine turno dopo "Ancora occupato" (default 30). */
+  table_release_notice_recall_minutes: number
 }
 
 export interface RestaurantSettingRegistryEntry<K extends RestaurantSettingKeyV1> {
@@ -788,5 +792,32 @@ export const restaurantSettingRegistry: {
     parseFromDb: (raw) => parseBooleanSettingFromDb(raw, false),
     serializeToDb: (value) => value as Json,
     validate: (value) => (typeof value === 'boolean' ? null : 'Valore non valido'),
+  },
+  table_release_notice_recall_minutes: {
+    key: 'table_release_notice_recall_minutes',
+    parseFromDb: (raw) => {
+      // Default 30 minuti se chiave assente o non valida (nessuna migrazione DB richiesta,
+      // stesso pattern di table_late_threshold_minutes — S-5).
+      //
+      // Allineato a `validate` sotto (revisione senior 03-08-26): il minimo accettato è
+      // **1**, non 0. Con 0 (o un negativo, sfuggito a `validate` da una scrittura diretta
+      // o da dati pre-esistenti), `isReleaseNoticeSilenced` farebbe `now - handledAt <
+      // 0 * 60000` → sempre falso: l'avviso tornerebbe SUBITO dopo "Ancora occupato",
+      // esattamente il bug che FIX D chiude, riaperto da questa manopola.
+      let n: number | null = null
+      if (typeof raw === 'number' && Number.isInteger(raw)) n = raw
+      else if (typeof raw === 'string') {
+        const parsed = parseInt(raw, 10)
+        if (!Number.isNaN(parsed)) n = parsed
+      }
+      if (n === null || n < 1 || n > 240) return 30
+      return n
+    },
+    serializeToDb: (value) => value as Json,
+    validate: (value) => {
+      const n = Number(value)
+      if (!Number.isInteger(n) || n < 1 || n > 240) return 'Deve essere un intero tra 1 e 240 minuti'
+      return null
+    },
   },
 }
