@@ -296,8 +296,10 @@ Aggiungere copertura sopra una base che mente non serve.
 - **Nessun test eseguito con Playwright** (tocca il database di staging), quindi il sospetto su
   `admin-calendar-blindatura.spec.ts` resta un **sospetto forte, non una conferma**: è la prima cosa da
   far girare.
-- **Nessun commit, nessun push, nessuna scrittura su TEST o PROD.** I 3 commit non pushati e l'handoff
-  non committato erano già così all'apertura della sessione.
+- **Nessuna scrittura su TEST o PROD, nessun push.** Il commit `7d8d5fe` (sola documentazione) è stato
+  fatto **su richiesta esplicita** a fine sessione, insieme all'aggiornamento dell'handoff; include
+  anche il report del cantiere precedente e il suo aggiornamento all'handoff, rimasti non committati.
+  Su `env/test` restano **4 commit non pushati**: il push non è stato chiesto.
 
 ---
 
@@ -409,8 +411,10 @@ divergenze documentali (vedi R3). (3) Non ho eseguito **nessun test Playwright**
 staging e non avevo mandato per scriverci, quindi il sospetto su `admin-calendar-blindatura.spec.ts`
 resta un sospetto forte e non una conferma — è dichiarato come tale sia in §6 B-0 sia in §7. (4) Non
 ho verificato personalmente riga per riga B-4 (sostituzione guidata non atomica) e B-7/B-8: sono
-riportati come voci d'agente e nel report è scritto esplicitamente. (5) Non ho fatto push né commit:
-mai richiesto, e la regola del repo lo vieta senza richiesta esplicita. (6) Non ho toccato la coda
+riportati come voci d'agente e nel report è scritto esplicitamente. (5) **Aggiornato a fine sessione:**
+Matteo ha poi chiesto «sistema handoff per prossima sessione e fai commit del tuo lavoro svolto» →
+commit `7d8d5fe`, 6 file di sola documentazione. **Push NON fatto**, non è stato chiesto: restano
+**4 commit non pushati** su `env/test` (i 3 della sessione precedente più questo). (6) Non ho toccato la coda
 operativa (rollout PROD, capienza D38, re-merge `main`): fuori dalla richiesta, che era analisi +
 checklist.
 
