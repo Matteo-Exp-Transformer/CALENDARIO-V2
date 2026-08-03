@@ -169,6 +169,12 @@ customer.email === searchTerm  // case-sensitive, manca trim
 **Sezione**: `section === 'servizio'` → `<ServizioPage />`  
 **Stato**: implementato — CRUD tavoli per sala + fasce orarie con modifiche a tempo (override) + assegnazione tavoli con filtro prenotazioni per fascia. Vedi sottosezioni dedicate sotto gli anti-pattern.
 
+> **Layout pagina (Servizio-UI FIX-1..7, 03-08-26):** header con **unica CTA "Aggiungi sala"**
+> (sempre visibile, Lista e Mappa — `RoomTabs` non ha più "Nuova sala"); "Fasce orarie" è una
+> `CollapsibleCard` chiusa di default in entrambe le viste, con `WalkInLimitCard` subito sotto
+> (non più in cima alla pagina). Dettaglio completo + piantina visibile senza fascia + badge tavolo
+> sul digest Home + note/intolleranze nella strip "Assegnate": `ADMIN_SERVIZIO_CONTEXT.md` §9.11.
+
 ### File chiave
 
 | File | Ruolo |
@@ -307,6 +313,23 @@ Query key: `[TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, date, slotId, 'unassigned']`
   contraddiceva sia il codice sia `ADMIN_SERVIZIO_CONTEXT.md` §9.6.)*
 - Filtro elenco estratto in `unassignedBookingsFilter.ts` (`filterUnassignedBookingsForSlot`, `activeAssignedBookingIds`).
 - Test: `serviceSlotBookingFilter.test.ts`, `unassignedBookingsFilter.test.ts`, `tableCheckout.test.ts`.
+- **Card "Assegnate" apribile + togli tavolo (FIX-4A, 02-08-26):** la riga della tavolata in testata
+  (`assignedGroups`, che porta ora `tableRows: {table, assignmentId}[]` invece dei soli tavoli) si
+  espande al click e mostra un tavolo per riga con un pulsante **"Togli"** — usa
+  `useUndoTableAssignment` (DELETE fisico, non consuma turno, non archivia; stesso hook di "Annulla"
+  e dell'esito `requeue` di S4-FIX-5), **mai** `useCheckoutTable`: togliere un tavolo dalla tavolata
+  corregge una composizione sbagliata, non chiude un turno servito. Se era l'ultimo tavolo, il
+  refetch già presente in `useUndoTableAssignment` fa ricomparire la prenotazione fra le non
+  assegnate. Al click, i tavoli della card aperta lampeggiano nella piantina `ServicePlanMap`
+  (`highlightedTableIds` → classe CSS `servizio-table-highlight`, fissa sotto
+  `prefers-reduced-motion: reduce`); una sola card aperta alla volta. Dettaglio:
+  `ADMIN_SERVIZIO_CONTEXT.md` §9.10. Test: `AssignmentMapPanel.fix4a.test.tsx`.
+- **Piantina senza fascia + strip "Assegnate" ripulita (Servizio-UI FIX-5/FIX-7, 03-08-26):** con
+  `layout="plan"` la piantina resta visibile anche senza fascia scelta (niente drag&drop né lista
+  prenotazioni finché non c'è una fascia). La riga di testata della card "Assegnate" non ripete più
+  tavolo/posti (già nel dettaglio espanso, ora con prefisso "Tavolo"): al loro posto, se presenti,
+  note staff (`admin_notes`) e intolleranze. Dettaglio: `ADMIN_SERVIZIO_CONTEXT.md` §9.11. Test:
+  `AssignmentMapPanel.piantinaSenzaFascia.test.tsx`, `AssignmentMapPanel.assegnateNoteTavolo.test.tsx`.
 
 **Walk-in da Home**
 
@@ -330,6 +353,12 @@ L'assegnazione/riassegnazione è raggiungibile dalla **pagina Calendario** trami
 - `QuickTableAssignModal` deriva `slotId` automaticamente da `bookingStartsInServiceSlot` — nessuna scelta fascia. Se l'orario non ricade in nessuna fascia, mostra avviso testuale.
 - File: `src/features/booking/components/QuickTableAssignModal.tsx`.
 - Query key condivisa: `TABLE_ASSIGNMENTS_QUERY_KEY` — dopo assegnazione/riassegnazione, anche `ServizioPage → AssignmentMapPanel` si aggiorna.
+- **Nome tavolo sulla card digest (Servizio-UI FIX-6, 03-08-26):** oltre al pallino, la card digest
+  (`BookingDigestCard`) mostra un badge `Tavolo {nomi}` quando la prenotazione è già assegnata —
+  prop `assignedTableNames?: string[]` (sostituisce la vecchia `assigned?: boolean`, mai usata).
+  `BookingCalendar.tsx` costruisce la mappa booking→nomi tavolo con `useTables()` (stessa query key
+  di `useTableMode`, nessun fetch aggiuntivo) incrociata con `tableAssignments` non ancora liberati
+  (`checked_out_at === null`). Dettaglio: `ADMIN_SERVIZIO_CONTEXT.md` §9.11.
 
 ---
 

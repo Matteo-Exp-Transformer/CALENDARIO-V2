@@ -290,6 +290,11 @@
   `selectedRoomId` scende `ServizioPage → AssignmentMapPanel → ServicePlanMap`. Se la sala scelta
   non ha tavoli si ripiega sulla prima con tavoli: il pannello non resta mai vuoto.
 - **Test:** `ServicePlanMap.griglia.test.tsx` (5).
+- **S4-FIX-4B/4C (02-08-26).** Le card della striscia mostrano l'ora di arrivo
+  (`getAccurateStartTime`+`trimTimeToHHmm`, mai vuota/`--:--`). Lo scorrimento orizzontale non usa più
+  la barra nativa: nuovo componente `BookingCardsStrip.tsx` (frecce solo se c'è overflow, disabilitate
+  singolarmente a inizio/fine, `mode="list"` in `layout="grid"` = comportamento invariato). Dettaglio:
+  [FIX_4BC_TESTATA.md](../../Sessioni%20di%20lavoro/02-08-26/E2E-Report/FIX_4BC_TESTATA.md).
 
 ### 9.8 S4-FIX-5 · S4-FIX-6 (02-08-26) — sostituzione guidata + divieto fasce accavallate
 
@@ -320,3 +325,142 @@
   fasce adiacenti restano ammesse. Solo controllo app, nessun vincolo DB. Test:
   `serviceSlots.sovrapposizione.test.tsx`.
 - **`npm run validate` verde: 151 file / 1247 test** (+3 file / +12 test rispetto a prima di questo fix).
+
+### 9.9 FIX-4D (02-08-26) — sagome tavolo più grandi + ora di arrivo
+
+> Solo UI, nessuna migrazione, nessuna scrittura DB. Richiesta diretta di Matteo: dentro la sagoma
+> ci stavano a fatica nome tavolo, nome prenotazione e coperti.
+
+- **Impronta condivisa in un modulo unico.** Le due costanti dimensione tavolo (prima duplicate
+  separatamente in `ServicePlanMap.tsx` e `TableShape.tsx`, stesso valore copiato a mano) ora vivono
+  in un solo file: `src/features/booking/components/servizio/tableShapeMetrics.ts` —
+  `TABLE_SHAPE_SIZE` (tondo/quadrato) e `TABLE_SHAPE_SIZE_RECT_W` (rettangolare). Entrambe le viste
+  (editor «Modifica» via `TableShape`, piantina «Servizio» via `ServicePlanMap`) importano da lì:
+  un disallineamento fra le due non è più possibile per costruzione. Stesso pattern già usato per
+  `tableStatusStyles.ts` in questa stessa cartella.
+- **Misure**: 64px → **80px** (tondo/quadrato), 96px → **120px** (rettangolare) — entrambe multiple
+  di 10px come lo snap di `TableMap.snapToGrid`, proporzione 2:3 invariata. Se l'admin ha disposto
+  tavoli molto vicini in una sala esistente, con l'impronta più grande possono ora toccarsi/
+  sovrapporsi leggermente — identico in entrambe le viste, quindi visibile e correggibile già
+  nell'editor «Modifica» trascinando un tavolo qualche passo più in là.
+- **Ora di arrivo nella sagoma.** Solo con un turno singolo attivo sul tavolo e orario noto:
+  `getAccurateStartTime` + `trimTimeToHHmm` (mai `new Date(confirmed_start)`, stesso principio del
+  resto dell'app — vedi §4b `CLAUDE.md`). Con più turni la sagoma mostra già «N turni» al posto del
+  nome: in quel caso niente ora (sarebbe ambigua). Orario mancante → nessuna riga, mai `--:--`.
+- **Test:** `ServicePlanMap.griglia.test.tsx` (+7: 2 sull'impronta condivisa fra le due viste, 3
+  sull'ora di arrivo, oltre ai 5 preesistenti su griglia/visibilità sale). `TableShape.status.test.tsx`
+  invariato (non dipendeva dalle misure).
+- **`npm run validate`**: typecheck verde, `npm run test` full run **151 file / 1252 test verdi**
+  (inclusi i test dell'altra corsia in corso su `AssignmentMapPanel.tsx`). `npm run lint` non verde
+  al momento della chiusura per un file non tracciato (`BookingCardsStrip.tsx`) dell'altra corsia in
+  scrittura in parallelo — non un difetto di questo fix (dettaglio in
+  `docs/Sessioni di lavoro/02-08-26/E2E-Report/FIX_4D_TAVOLI_PIU_GRANDI.md`).
+
+### 9.10 FIX-4A (02-08-26) — card "Assegnate" apribile, togli tavolo, lampeggio piantina
+
+> S4 giro 4, ondata 2 (ultima corsia). Solo client + test: nessuna migrazione, nessuna scrittura di
+> schema. Si cancellano solo righe di `booking_table_assignments` tramite l'hook esistente
+> `useUndoTableAssignment`, mai nuova logica di scrittura.
+
+- **Card "Assegnate" apribile (una alla volta).** Prima la card mostrava nome, ora, coperti e i nomi
+  dei tavoli in una riga di testo senza altra azione che "Aggiungi tavolo". Ora un click sulla card
+  la espande in luogo (non una modale) e mostra un tavolo per riga (`{sala ·} nome tavolo · posti` —
+  il prefisso sala solo se il tenant ha più di una sala, stessa convenzione del Briefing D52). Stato
+  `expandedGroupBookingId` in `AssignmentMapPanel`: un solo id, quindi una sola card aperta per
+  costruzione — aprirne una seconda chiude la precedente da sola.
+- **"Togli tavolo" — id di riga, non di tavolo.** Il memo `assignedGroups` ora porta, per ogni
+  tavolo della tavolata, anche l'id della riga di assegnazione (`tableRows: {table, assignmentId}[]`
+  al posto del vecchio `tables: RestaurantTable[]`). Se per lo stesso tavolo esistessero più righe
+  attive per la stessa prenotazione (caso limite, non atteso nel flusso normale) si tiene la più
+  recente per `created_at`.
+- **Togliere ≠ liberare (scelta deliberata).** "Togli tavolo" chiama **`useUndoTableAssignment`**
+  (DELETE fisico, non consuma turno, non archivia — stesso hook già usato da "Annulla" dopo
+  un'assegnazione e da S4-FIX-5 per l'esito "in attesa"), **mai** `useCheckoutTable` (che
+  timbrerebbe `checked_out_at`, consumerebbe un turno reale e potrebbe archiviare una prenotazione
+  non ancora consumata). Se il tavolo tolto era l'ultimo della tavolata, il refetch già presente in
+  `useUndoTableAssignment.onSuccess` (assignment + non-assegnate) fa ricomparire da solo la
+  prenotazione fra quelle da assegnare — verificato leggendo il codice e con un test component-level
+  che simula il dato post-refetch (nessun browser disponibile per una prova a video diretta).
+- **Lampeggio tavoli in piantina.** Nuova prop opzionale `highlightedTableIds` su `ServicePlanMap` →
+  `highlighted` su `PlanTable`, derivata (`useMemo`) dalla card aperta. Classe CSS statica
+  `.servizio-table-highlight` in `index.css` (stesso pattern già in uso per
+  `booking-public-field-attention-pulse`: animazione di default, contorno fisso sotto
+  `prefers-reduced-motion: reduce`), colore `--color-primary-500` — stesso significato del
+  `ring-2 ring-primary-500` già usato altrove nel pannello per "selezionato". Contorno sulla sagoma
+  stessa (outline/box-shadow), nessun riquadro sovrapposto: non ruba click né interferisce col drop
+  (`plan-table-<id>`). **Limite noto:** sotto 1024px si vede una sola sala per volta (§9.7); se la
+  tavolata aperta ha tavoli nell'altra sala, il lampeggio è nel DOM ma non visibile finché lo staff
+  non cambia linguetta — nessuna scorciatoia automatica di sala.
+- **Test:** `AssignmentMapPanel.fix4a.test.tsx` (9: apertura/chiusura, una sola card aperta,
+  rimozione con tavoli residui, rimozione dell'ultimo tavolo, annullamento-mai-checkout, lampeggio
+  acceso/spento). `npm run validate` verde: **153 file / 1268 test**.
+
+### 9.11 Servizio-UI FIX-1..FIX-7 (03-08-26) — layout pagina Servizio + tavolo su digest Home
+
+> Round di lavoro indipendente da S4-FIX/FIX-4A-D (numerazione propria "Servizio-UI FIX-N", per non
+> confondersi con S4-FIX-1..6 committati né con FIX-4A/4B/4C/4D di un'altra corsia). Solo client +
+> test: nessuna migrazione, nessuna scrittura DB nuova.
+
+- **FIX-1 — Fasce orarie chiusa di default.** `ServiceSlotsManager` (Lista e Mappa) è ora avvolto in
+  un `CollapsibleCard` (uso, non modifica: LOCKED) `defaultExpanded={false}`, titolo "Fasce orarie".
+  Le due viste sono rami JSX mutuamente esclusivi (mount/unmount al cambio vista): lo stato "chiuso"
+  riparte da solo ogni volta, nessuna persistenza aggiuntiva serve. **Nota:** `ServiceSlotsManager`
+  ha già una propria intestazione interna `<h2>Fasce orarie</h2>` + descrizione + "Aggiungi fascia"
+  (invariata, non toccata): a card espansa il titolo compare quindi due volte (header collassabile +
+  intestazione interna). Scelta deliberata per non toccare la logica/JSX interna del componente
+  (fuori scope, rischio inutile su un file complesso) — costo puramente cosmetico, nessun impatto
+  funzionale.
+- **FIX-2 — Header: "Aggiungi sala" sempre visibile.** Il vecchio pulsante header "Aggiungi tavolo"
+  (solo vista Lista, apriva `TableFormModal` senza sala) è sostituito da **"Aggiungi sala"** (apre
+  `RoomConfigModal` in creazione), visibile **sia** in Lista **sia** in Mappa. Deviazione dal piano
+  originale (gated `viewMode==='list'`): reso sempre visibile perché FIX-4 toglie "Nuova sala" da
+  `RoomTabs` (solo Mappa) — se l'header restasse Lista-only, la vista Mappa perderebbe ogni modo di
+  creare una sala. Vale il criterio guida "niente due CTA diverse per creare una sala".
+- **FIX-3 — Walk-in sotto le fasce.** `WalkInLimitCard` non è più in cima alla pagina (comune alle
+  due viste): ora c'è una copia sotto la `CollapsibleCard` "Fasce orarie" di Lista e una sotto quella
+  di Mappa (rami JSX separati, serviva una copia per vista). Nessun cambio alla logica/guard interna.
+- **FIX-4 — "Nuova sala" rimosso da `RoomTabs`.** Tolti pulsante e prop `onAddRoom` (interfaccia +
+  call-site in `ServizioPage.tsx` + test `servizioA1Fixes.test.tsx`); resta solo "Modifica sala". La
+  creazione sala passa solo dall'header (FIX-2). Testi residui "Nuova sala" aggiornati a "Aggiungi
+  sala" in: stato-vuoto Lista/Mappa di `ServizioPage.tsx`, avviso blocco di `TableFormModal.tsx`
+  ("crea prima una sala"), titolo modale `RoomConfigModal.tsx` in creazione (era "Nuova sala", ora
+  "Aggiungi sala" — stesso testo usato dal guard modifiche-non-salvate). Aggiornato anche
+  `e2e/pro/pro-service.spec.ts`.
+- **FIX-5 — Piantina "Servizio" visibile anche senza fascia scelta.** `AssignmentMapPanel` con
+  `layout="plan"` (usato da `ServizioPage` in mapMode `service`): prima, senza fascia selezionata,
+  spariva tutto dietro il messaggio "Seleziona una fascia...". Ora la piantina (`ServicePlanMap`)
+  resta **sempre visibile** quando c'è almeno una sala con tavoli (gestito già da `ServicePlanMap`
+  stesso, non toccato) — passa gli stessi `statuses`/`bookingsByTable` calcolati incondizionatamente
+  a monte (con `selectedSlotId===''` sono vuoti/tutto "libero", comportamento "spento" voluto, zero
+  lavoro aggiuntivo sugli hook). Senza fascia: **niente** `DndContext` (niente drag&drop), **niente**
+  striscia "Prenotazioni"/"Assegnate"; click su un tavolo apre comunque il dettaglio (mostra "Nessuna
+  prenotazione su questo tavolo in questa fascia", innocuo, modale già esistente e incondizionata).
+  Messaggio invariato nello spirito ma riformulato: "Seleziona una fascia per assegnare i tavoli e
+  vedere le prenotazioni" — non nasconde più la sala sotto. `layout="grid"` (solo test) resta gated
+  come prima, invariato. Fallback "sala senza tavoli → prima sala con tavoli" di `ServicePlanMap`
+  non toccato. Test: `AssignmentMapPanel.piantinaSenzaFascia.test.tsx`.
+- **FIX-6 — Digest Home/Calendario mostra il tavolo assegnato.** `BookingDigestCard` aveva una prop
+  `assigned?: boolean` dichiarata ma mai usata (morta) — sostituita da `assignedTableNames?: string[]`:
+  se presente e non vuota mostra un badge `Tavolo {nomi separati da ", "}` (variant `success`, sotto
+  il nome cliente). `BookingCalendar.tsx` ora fa anche `useTables()` (stessa query key/cache di
+  `useTableMode`, nessun fetch aggiuntivo) e costruisce `assignedTableNamesByBooking: Map<bookingId,
+  string[]>` accanto al `useMemo` esistente `assignedBookingIds`, solo assignment con
+  `checked_out_at === null`. Propagata attraverso i tre call-site che passavano `assigned={...}`:
+  `DayServiceGroupCard` (×2, nuova prop `assignedTableNames?: Map<string,string[]>`) e la chiamata
+  diretta a `BookingDigestCard` nel ramo "no fasce orarie". Se non assegnata: nessun badge (comportamento
+  "DA ASSEGNARE" invariato). Refetch dopo assegnazione in Servizio: automatico, stessa query key
+  `TABLE_ASSIGNMENTS_QUERY_KEY` già invalidata dalle mutation esistenti.
+- **FIX-7 — Strip "Assegnate": niente più tavolo/posti duplicati, note e intolleranze.** In
+  `AssignmentMapPanel.tsx`, riga sempre visibile della card (sotto il nome cliente): prima ripeteva
+  `{coperti} · {tavoli} ({posti})`, duplicando l'elenco tavoli già mostrato nel dettaglio espandibile
+  sotto. Ora mostra solo `{coperti} coperti`; se presenti, sotto: **note staff** (`booking.admin_notes`,
+  stesso campo usato da `BookingDetailsModal`, sola lettura) e **intolleranze**
+  (`dietaryRestrictionsToText(booking.dietary_restrictions)`, stesso helper già usato altrove — nessun
+  nuovo storage), ordine note-poi-intolleranze; se entrambe assenti, nessuno spazio vuoto. L'avviso
+  "Mancano N posti" (tavolata incompleta) resta invariato, non è la duplicazione rimossa. Nel dettaglio
+  per-tavolo espandibile la riga ora è `{sala ·} Tavolo {nome} · {posti} posti` (prefisso "Tavolo"
+  aggiunto prima del nome; prefisso sala solo se multi-sala, come già). Test:
+  `AssignmentMapPanel.assegnateNoteTavolo.test.tsx`; aggiornato `AssignmentMapPanel.fineTurnoMultiTavolo.test.tsx`
+  (asserzione sulla vecchia riga combinata).
+- **`npm run validate` verde: 155 file / 1275 test** (build su working tree con FIX-4A/4B/4C/4D non
+  committati di un'altra corsia).

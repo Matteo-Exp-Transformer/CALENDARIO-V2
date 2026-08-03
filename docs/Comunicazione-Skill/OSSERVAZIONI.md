@@ -48,7 +48,46 @@
 
 ## Sessioni registrate (append-only)
 
-### 02-08-26 — S4-FIX-5/FIX-6 Servizio: seconda occorrenza di E-A + conferma «commit ≠ push»
+### 03-08-26 — 7 fix UI Servizio + digest Home: subagente bloccato nello scrivere il proprio report
+- **Area:** Servizio — layout pagina (collapse fasce, header sale, piantina senza fascia) + digest
+  Home (badge tavolo assegnato) + strip "Assegnate" (note/intolleranze). Codice + skill.
+- **Cosa ho fatto:** revisionato il piano di Matteo contro il codice reale PRIMA di lanciare l'agente
+  esecutore (trovate 3 correzioni: gate di vista sbagliato su "Aggiungi sala" — avrebbe tolto alla
+  Mappa ogni modo di creare una sala —, file indicato sbagliato per il fix del badge tavolo, terza
+  numerazione "FIX-N" in conflitto coi due round precedenti sullo stesso cantiere), corretto il
+  prompt con le correzioni prima di girarlo, lanciato l'agente Sonnet in background. Al rientro
+  verificato di persona, non sulla parola dell'agente: riletto il diff reale, rieseguito
+  `npm run validate` (155 file / 1275 test verdi, combacia col report), riletto **per intero** (non
+  solo la sezione nuova) entrambi i file skill toccati — nessuna riga stale trovata (caso E-A pulito
+  questa volta, entrambi i file avevano già i rimandi incrociati corretti verso la sezione nuova).
+- **Osservazione — subagente non può scrivere il proprio file di report:** il tool Write ha rifiutato
+  la scrittura con un errore dell'harness («Subagents should return findings as text, not write
+  report files»), non previsto nel prompt dato all'agente. Gestito scrivendo io il file di report a
+  valle, sintetizzando (e verificando contro il diff, non copiando a memoria) il testo restituito
+  dall'agente. **Pattern generale:** quando si delega a un subagente (tool Agent) la scrittura di un
+  report/file di consegna, va dichiarato esplicitamente nel prompt «restituisci il report come testo,
+  non scriverlo su file» — altrimenti l'agente tenta la Write, fallisce, e il file va comunque scritto
+  dall'orchestratore a valle. Non promosso a regola da questo agente (dato, non codifica).
+- **Report:** `docs/Sessioni di lavoro/03-08-26/Report-7fix-servizio-ui-03-08-26.md`.
+
+### 02-08-26 (sera) — Revisione senior S4 giro 4: numeri di riga stale in un prompt multi-ondata
+- **Area:** orchestrazione S4 giro 4 — nessun codice app toccato da questo agente.
+- **Cosa ho fatto:** revisionato FIX-5/FIX-6 (riletto diff riga per riga contro il piano, verificato a
+  mano che spostare/rimettere-in-attesa non consumi un turno mentre archiviare sì, rilanciato
+  `npm run validate` di persona — 151/1247 verde, combacia col report) e l'allineamento migrazioni
+  (verificato di persona `migration list --linked`, il dry-run, il blocco `--include-all`, e le
+  colonne delle 4 migrazioni "sospette" presenti nei tipi rigenerati dal DB vero). Nessun problema in
+  nessuno dei due. Poi ho lanciato i due agenti dell'ondata 1 del giro 4 (FIX-4D, FIX-4B+4C).
+- **Osservazione — prompt "verificato" ≠ verificato adesso:** `PROMPT_AGENTI_E2E_S4.md` conteneva
+  prompt per il giro 4 esplicitamente marcati «rimappati sul codice reale, non più una bozza». Ma nel
+  frattempo S4-FIX-5/FIX-6 aveva aggiunto ~230 righe a `AssignmentMapPanel.tsx`, spostando di
+  165-195 righe tutti i riferimenti puntuali del prompt P2 (FIX-4B+4C) su quel file. Trovato SOLO
+  perché ho controllato i numeri citati contro il file reale prima di lanciare l'agente, invece di
+  fidarmi della dicitura "verificato" nel documento. Corretti i riferimenti nel documento prima del
+  lancio (per nome/ancora testuale, non solo numero di riga aggiornato). **Pattern generale:** un
+  prompt pre-scritto per un'ondata successiva va ri-controllato contro il file reale se un'ondata
+  precedente ha toccato lo stesso file nel frattempo — "verificato" ha una data di scadenza implicita.
+  Non promosso a regola da questo agente (confine ruolo: dato, non codifica).
 - **Area:** Servizio — sostituzione guidata tavolo occupato + divieto fasce accavallate (codice + skill).
 - **E-A ricorrente (Dossier senior 04-06-26, D3 «si ripeterà»):** aggiornando solo la sezione toccata di
   `ADMIN_SHELL_PAGES_CONTEXT.md` (§ Servizio → Assegnazione tavoli) avrei lasciato stale una riga

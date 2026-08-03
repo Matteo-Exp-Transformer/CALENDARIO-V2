@@ -1,12 +1,20 @@
 # Handoff S4 — per il prossimo agente senior (Opus)
 
-> Scritto il 02-08-2026, **aggiornato la sera del 02-08-2026**. Branch `env/test`. Nessuna scrittura
+> Scritto il 02-08-2026, **aggiornato il 03-08-2026 sera**. Branch `env/test`. Nessuna scrittura
 > su PROD. Il tuo ruolo è **supervisione**: Matteo controverifica, non testa attivamente. Tu mandi
 > avanti i giri di lavoro, leggi i report degli agenti e ti fidi solo di quello che è dimostrato.
+>
+> **Aggiornamento 03-08-2026:** le due revisioni di §0 sono **chiuse**. FIX-5/FIX-6 committati il
+> 02-08 (`432436c`, report `Report-fix5-fix6-servizio-02-08-26.md`). Il giro 4 (FIX-4A/4B/4C/4D,
+> restato uncommitted dopo §0.1) **e** un nuovo round di 7 fix layout ("Servizio-UI FIX-1..7", vedi
+> `Report-7fix-servizio-ui-03-08-26.md`) sono stati validati insieme e **committati il 03-08 in
+> `c299a65`** — Matteo ha testato a video i 7 punti del secondo round e confermato ok. §0.1/§0.2
+> restano sotto come **registro storico** di cosa è stato controllato; §1/§4-bis sono la fonte
+> aggiornata sullo stato attuale.
 
 ---
 
-## 0. La prima cosa che fai all'avvio — **due revisioni, in quest'ordine**
+## 0. La prima cosa che fai all'avvio — **due revisioni, in quest'ordine** *(chiuse il 02/03-08-26, storico)*
 
 Quando prendi in mano questa sessione, due lavori sono partiti in parallelo e **nessuno dei due è
 stato revisionato**. Non lanciare altro finché non li hai chiusi.
@@ -58,7 +66,8 @@ Da controllare:
 
 ## 1. Dove siamo
 
-**S4 Servizio è completo e pushato su `env/test`. Mai andato in PROD.**
+**S4 Servizio è completo e committato su `env/test` (non ancora pushato — vedi nota push sotto). Mai
+andato in PROD.**
 
 | Giro | Cosa | Stato |
 |------|------|-------|
@@ -66,9 +75,10 @@ Da controllare:
 | 2 | FIX-1 orologio · FIX-2 assegnazioni/archiviazione · FIX-3 indagine | ✅ fatto, revisionato |
 | — | Revisione d'insieme + layout vista Servizio | ✅ fatto |
 | 3 | RIPROVA-B, RIPROVA-D | ✅ eseguite 02-08 sera — report in `E2E-Report/` |
-| 4 | Quattro rifiniture della vista Servizio | 🔄 prompt rimappati sul codice, ondate lanciate |
-| — | **FIX-5** sostituzione guidata · **FIX-6** fasce accavallate | 🔄 lanciati 02-08 sera — **da revisionare (§0.1)** |
-| 5 | Consolidamento | ⏳ dopo il giro 4 e i due fix |
+| 4 | FIX-4A card assegnate · FIX-4B/4C testata · FIX-4D tavoli più grandi | ✅ fatto, committato `c299a65` (03-08) |
+| — | **S4-FIX-5** sostituzione guidata · **S4-FIX-6** fasce accavallate | ✅ revisionato e committato `432436c` (02-08) |
+| — | **Servizio-UI FIX-1..7** — collapse fasce, header sale, piantina senza fascia, badge tavolo su digest Home, strip Assegnate senza duplicati | ✅ testato da Matteo (7/7 ok), committato `c299a65` (03-08) — report `Report-7fix-servizio-ui-03-08-26.md` |
+| 5 | Consolidamento | ⏳ prossimo: push + eventuale re-merge `main`, poi nuovo cantiere tavoli/assegnazione (§6) |
 
 **Cosa hanno detto le riprove del giro 3.** La corsia B conferma i fix del giro 2 su tutto ciò che ha
 potuto provare (orologio allineato, turni residui, «Fascia chiusa» distinta, annullamento che non
@@ -178,11 +188,14 @@ Questa è la mappa da avere in testa prima di toccare qualsiasi cosa. La pagina 
 | Walk-in (cliente senza prenotazione) | ✅ in piedi, sala e tavolo obbligatori |
 | Briefing PDF del servizio | ✅ in piedi |
 
-**Cosa si sta muovendo adesso (02-08 sera, tutto lanciato in parallelo):**
+**Cosa si è mosso ed è ora chiuso (aggiornato 03-08-26, tutto committato in `c299a65`):**
 FIX-4A card espandibile + lampeggio · FIX-4B striscia prenotazioni in testata · FIX-4C orario sulla
-card · FIX-4D tavoli più grandi in piantina · **FIX-5** sostituzione guidata · **FIX-6** fasce
-accavallate. Le prime quattro sono rifiniture di come si vede; le ultime due cambiano come si
-comporta. Ondate e proprietà dei file: §5.
+card · FIX-4D tavoli più grandi in piantina · S4-FIX-5 sostituzione guidata · S4-FIX-6 fasce
+accavallate (committato prima, `432436c`) · **Servizio-UI FIX-1..7** (round nuovo 03-08-26, testato
+da Matteo): fasce orarie chiuse di default, header con unica CTA "Aggiungi sala", walk-in sotto le
+fasce, piantina visibile senza fascia scelta, tavolo assegnato sul digest Home/Calendario, card
+"Assegnate" senza duplicazione tavolo/posti (note staff + intolleranze al loro posto). Dettaglio
+tecnico in `docs/Admin-Skill/contesto/ADMIN_SERVIZIO_CONTEXT.md` §9.9–§9.11.
 
 **Cosa manca ancora, in ordine di peso:**
 1. La chiusura di una fascia non arriva al cliente (§3-bis) — l'unico che tocca la produzione.
@@ -192,19 +205,23 @@ comporta. Ondate e proprietà dei file: §5.
    pulsanti a 375px. Sono bloccate dagli orari di prova, non da difetti.
 4. Debiti noti: e2e quasi assenti su questa pagina, walk-in non transazionale, nome tavolo unico solo
    lato app.
+5. **Nuovo cantiere annunciato da Matteo (03-08-26):** pagina Servizio → tavoli e assegnazione
+   prenotazioni — ancora da scoping, non iniziato (vedi §6).
 
 ---
 
-## 5. Ordine di lavoro consigliato
+## 5. Ordine di lavoro consigliato *(§0-2 chiuse il 03-08-26 — storico, sotto il prossimo passo reale)*
 
-1. **Le due revisioni della §0**, prima di tutto: i due fix della vista Servizio, poi l'allineamento
-   migrazioni. Niente di nuovo finché non sono chiuse.
-2. Giro 4 — ondate per **proprietà dei file**, mai due agenti sullo stesso file:
-   ondata 1 = FIX-5 · FIX-4D · FIX-6 (file diversi, in parallelo) → ondata 2 = FIX-4B + 4C →
-   ondata 3 = FIX-4A → consolidamento.
-3. Ricollauda a mano quello che le riprove non hanno potuto provare (§4-bis, punto 3): serve una
-   fascia lunga o una durata pasto corta, non un fix.
-4. Riscrivi le voci di checklist toccate dalle decisioni della §3.
+1. ~~Le due revisioni della §0~~ — **fatto**: FIX-5/FIX-6 committati `432436c`, allineamento
+   migrazioni chiuso (registro riallineato, vedi §2).
+2. ~~Giro 4 per ondate~~ — **fatto**: FIX-4A/4B/4C/4D + Servizio-UI FIX-1..7 committati insieme in
+   `c299a65` (03-08-26), Matteo ha testato il secondo round a video.
+3. **Prossimo passo reale:** push di `c299a65` su `origin/env/test` (non ancora fatto — chiedi
+   conferma a Matteo se non esplicita), poi il nuovo cantiere «tavoli e assegnazione prenotazioni»
+   che Matteo ha annunciato in chiusura del round Servizio-UI (§4-bis punto 5) — ancora da scoping.
+4. Resta in coda, non urgente: ricollauda a mano quello che le riprove non hanno potuto provare
+   (§4-bis, punto 3: serve una fascia lunga o una durata pasto corta, non un fix) e riscrivi le voci
+   di checklist toccate dalle decisioni della §3.
 
 ---
 

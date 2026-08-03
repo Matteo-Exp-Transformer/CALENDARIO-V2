@@ -278,6 +278,9 @@ modulo condiviso, basta verificarlo su entrambe).
 
 CRITERIO DI FATTO: npm run validate verde. Se fallisce su AssignmentMapPanel.tsx o su un test di
 quel pannello NON correggerlo: è l'altra corsia che sta scrivendo. Scrivilo nel report.
+Se non hai un browser nel tuo toolset (nessun MCP Playwright disponibile), non inventare una prova a
+video: verifica lo scrollWidth/i multipli di 10px ragionando sul codice e sulle misure dichiarate, e
+scrivi esplicitamente nel report che il controllo a video resta da fare a mano da Matteo.
 NON lanciare prettier. Niente commit, niente push, nessuna scrittura sul database.
 
 CONSEGNA: report in docs/Sessioni di lavoro/02-08-26/E2E-Report/FIX_4D_TAVOLI_PIU_GRANDI.md con:
@@ -311,11 +314,14 @@ La modalità puoi solo ALZARLA, mai abbassarla.
 Sei un agente sviluppatore su questo repo, branch env/test. Pagina Servizio → Mappa → vista
 "Servizio", la striscia in testata sopra la piantina.
 
-CONTESTO VERIFICATO: dal 02-08 le prenotazioni non stanno più in colonna a sinistra. In
-AssignmentMapPanel.tsx la variabile listInHeader (riga 702) vale true solo quando layout === 'plan';
-in quel caso cardsWrapClass (riga 705) è "flex gap-2 overflow-x-auto pb-1" e le card sono w-64
-shrink-0. Lo stesso cardsWrapClass è usato DUE volte: riga 1073 (elenco "Prenotazioni (N)", card
-DraggableBookingCard) e riga 1090 (elenco "Assegnate (N)", le tavolate già a tavolo).
+CONTESTO VERIFICATO IL 02-08 SERA, DOPO S4-FIX-5/FIX-6 (che hanno aggiunto ~230 righe al file per il
+riquadro di sostituzione guidata): i numeri di riga sotto sono aggiornati a QUEL commit
+(`432436c`), ma se nel frattempo il file si è mosso ancora, non fidarti alla cieca — usa i nomi
+(listInHeader, cardsWrapClass, DraggableBookingCard, "Assegnate (") per ritrovare i punti esatti.
+In AssignmentMapPanel.tsx la variabile listInHeader (riga 779) vale true solo quando layout === 'plan';
+in quel caso cardsWrapClass (riga 782) è "flex gap-2 overflow-x-auto pb-1" e le card sono w-64
+shrink-0. Lo stesso cardsWrapClass è usato DUE volte: riga 1270 (elenco "Prenotazioni (N)", card
+DraggableBookingCard) e riga 1287 (elenco "Assegnate (N)", le tavolate già a tavolo).
 ATTENZIONE: in layout "grid" cardsWrapClass vale "space-y-2", cioè elenco verticale senza
 scorrimento. Lì le frecce NON devono comparire.
 
@@ -325,13 +331,14 @@ COSA MANCA: le card mostrano nome e coperti ma NON l'ora di arrivo. Chi sta a se
 se quella tavolata arriva fra dieci minuti o fra due ore. Serve su ENTRAMBE le strisce:
 "Prenotazioni (N)" (da assegnare) e "Assegnate (N)".
 
-DOVE: DraggableBookingCard (righe 72-109, blocco con nome + "N coperti") e la card delle tavolate
-assegnate (righe 1096-1102).
+DOVE: DraggableBookingCard (righe 73-109, blocco con nome + "N coperti") e la card delle tavolate
+assegnate (righe 1289-1315, dentro il map di assignedGroups).
 
 COME PRENDERE L'ORA — è la trappola storica di questo progetto: gli orari sono salvati con un fuso
 "+00:00" FINTO, le cifre sono l'ora del ristorante. NON usare new Date(confirmed_start). Usa
-getAccurateStartTime + trimTimeToHHmm, già importati in cima a questo file (righe 44-48) e già usati
-due volte qui dentro: riga 163 e riga 960. Copia quel modo di fare. Se sbagli, l'ora esce spostata di
+getAccurateStartTime + trimTimeToHHmm, già importati in cima a questo file (blocco di import da
+dateUtils, circa righe 41-49) e già usati altrove nel file (cerca `getAccurateStartTime(booking)`,
+compare più volte). Copia quel modo di fare. Se sbagli, l'ora esce spostata di
 due ore in estate e di una in inverno.
 
 DETTAGLI: se l'ora non è disponibile la card non deve mostrare una riga vuota o "--:--", semplicemente
@@ -346,7 +353,8 @@ PULSANTI CON FRECCIA, uno sul bordo sinistro e uno sul bordo destro, che fanno s
 
 COME FARLO SENZA ROMPERE NIENTE:
 - Estrai un componente dedicato (es. src/features/booking/components/servizio/BookingCardsStrip.tsx)
-  che riceve i figli e sostituisce i DUE <div className={cardsWrapClass}> di riga 1073 e 1090. Il
+  che riceve i figli e sostituisce i DUE <div className={cardsWrapClass}> di riga 1270 e 1287
+  (cerca `cardsWrapClass}` per ritrovarli se il file si è mosso ancora). Il
   componente deve accettare la modalità "elenco verticale" (layout grid) e in quel caso comportarsi
   ESATTAMENTE come oggi: nessuna freccia, nessuno scorrimento.
 - Le frecce compaiono SOLO se c'è davvero qualcosa da scorrere; quella di sinistra sparisce (o si
@@ -365,9 +373,9 @@ COME FARLO SENZA ROMPERE NIENTE:
   dichiarata nel report.
 - PUNTO DELICATO, non improvvisare: le card della striscia sono trascinabili (dnd-kit,
   useDraggable) e la piantina è la zona di rilascio. I pulsanti freccia devono fermare la
-  propagazione del puntatore come già fa il pulsante "Assegna" alla riga 98
-  (onPointerDown={(e) => e.stopPropagation()}), altrimenti premere la freccia inizia un
-  trascinamento. Dopo la modifica RIPROVA a trascinare una prenotazione su un tavolo.
+  propagazione del puntatore come già fa il pulsante "Assegna" dentro DraggableBookingCard
+  (onPointerDown={(event) => event.stopPropagation()}, circa riga 99), altrimenti premere la freccia
+  inizia un trascinamento. Dopo la modifica RIPROVA a trascinare una prenotazione su un tavolo.
 
 TEST: aggiungi un file di test dedicato al pannello. Copri almeno: (a) la card con orario mostra
 l'ora giusta e quella senza orario non mostra nulla; (b) le frecce non compaiono quando le card
@@ -378,6 +386,9 @@ entrano tutte; (c) compaiono quando non entrano e il click sposta la posizione d
 CRITERIO DI FATTO: npm run validate verde + comportamento verificato a 375, 834 e 1280px. Se
 validate fallisce su ServicePlanMap.tsx o TableShape.tsx NON correggerlo: è l'altra corsia che sta
 scrivendo. Scrivilo nel report.
+Se non hai un browser nel tuo toolset (nessun MCP Playwright disponibile), non inventare una prova a
+video: ragiona sul CSS/markup per dimostrare che le frecce compaiono/scompaiono correttamente e
+scrivi esplicitamente nel report che il controllo a video resta da fare a mano da Matteo.
 NON lanciare prettier. Niente commit, niente push, nessuna scrittura sul database.
 
 CONSEGNA: report unico in docs/Sessioni di lavoro/02-08-26/E2E-Report/FIX_4BC_TESTATA.md, con le due
@@ -411,15 +422,19 @@ vista "Servizio" (il pannello "Assegnazione tavoli").
 PRIMA DI TOCCARE IL CODICE: due agenti hanno appena modificato questi due file (frecce di
 scorrimento e ora di arrivo nella striscia in testata; sagome dei tavoli più grandi nella piantina).
 Leggi i due report in docs/Sessioni di lavoro/02-08-26/E2E-Report/ (FIX_4BC_TESTATA.md e
-FIX_4D_TAVOLI_PIU_GRANDI.md) e poi rileggi il codice: NON lavorare a memoria su come era prima.
+FIX_4D_TAVOLI_PIU_GRANDI.md) e poi rileggi il codice: NON lavorare a memoria su come era prima. I
+numeri di riga qui sotto sono stati riverificati DOPO che entrambi gli agenti hanno chiuso (quindi
+già aggiornati), ma se il file si muove ancora usa i nomi (assignedGroups, BookingCardsStrip,
+"Aggiungi tavolo", useCheckoutTable, useUndoTableAssignment) per ritrovare i punti esatti.
 Le loro modifiche devono restare tutte funzionanti — in particolare l'ora di arrivo deve continuare
-a vedersi sulla card ANCHE quando è chiusa.
+a vedersi sulla card ANCHE quando è chiusa, e la card "Assegnate" ora è dentro un
+`<BookingCardsStrip mode={listInHeader ? 'scroll' : 'list'}>` (non più un `<div>` semplice).
 
 COSA NON VA OGGI. Nella striscia in testata, sotto "Assegnate", ogni prenotazione già a tavolo è una
-card che dice nome, coperti e i nomi dei tavoli in una riga di testo (righe 1091-1119). Se una
-tavolata sta su tre tavoli, il ristoratore legge tre sigle e deve cercarsele a occhio nella piantina.
-E per togliere un tavolo dalla tavolata non c'è nessuna strada: si può solo aggiungerne
-(pulsante "Aggiungi tavolo", riga 1108).
+card che dice nome, ora di arrivo, coperti e i nomi dei tavoli in una riga di testo (righe 1293-1330,
+dentro il map di assignedGroups). Se una tavolata sta su tre tavoli, il ristoratore legge tre sigle e
+deve cercarsele a occhio nella piantina. E per togliere un tavolo dalla tavolata non c'è nessuna
+strada: si può solo aggiungerne (pulsante "Aggiungi tavolo", circa riga 1327).
 
 COSA DEVE SUCCEDERE.
 1. Cliccando la card, la card SI APRE (si espande in luogo, non una modale nuova) e mostra l'elenco
@@ -434,20 +449,24 @@ COSA DEVE SUCCEDERE.
 PUNTI DELICATI, verificati sul codice — non improvvisare:
 
 a) QUALE OPERAZIONE È "TOGLIERE UN TAVOLO". Non è "liberare il tavolo".
-   - useCheckoutTable (useTableAssignments.ts riga 555) timbra checked_out_at, lascia la riga in
-     archivio (D48 append-only), CONSUMA il turno e, se non restano altri tavoli attivi per quella
-     prenotazione, la ARCHIVIA scrivendo served_at.
-   - useUndoTableAssignment (riga 518) CANCELLA fisicamente la riga: non consuma il turno, non
-     archivia niente. È la correzione di un'assegnazione sbagliata.
+   - useCheckoutTable (useTableAssignments.ts, cerca `export function useCheckoutTable`, circa riga
+     644 — era 555 prima di S4-FIX-5/FIX-6, il file si è spostato) timbra checked_out_at, lascia la
+     riga in archivio (D48 append-only), CONSUMA il turno e, se non restano altri tavoli attivi per
+     quella prenotazione, la ARCHIVIA scrivendo served_at.
+   - useUndoTableAssignment (cerca `export function useUndoTableAssignment`, circa riga 607 — era 518)
+     CANCELLA fisicamente la riga: non consuma il turno, non archivia niente. È la correzione di
+     un'assegnazione sbagliata.
    → "Togli tavolo" deve usare useUndoTableAssignment. Se usi il checkout, bruci un turno e archivi
      una prenotazione che il cliente non ha ancora consumato: è il difetto peggiore che puoi
      introdurre qui.
 
 b) TI SERVE L'ID DELL'ASSEGNAZIONE, e oggi la card non ce l'ha. Il memo assignedGroups (righe
-   392-418) oggi restituisce { booking, tables, seats, missingSeats } e butta via le righe di
-   assegnazione: dentro il memo hai già `rows` (BookingTableAssignment[]). Portati dietro, per ogni
-   tavolo, anche l'id della sua riga di assegnazione. Se un tavolo ha più righe attive, agisci sulla
-   più recente e dichiaralo nel report.
+   405-431, invariato dalle due ondate precedenti) oggi restituisce
+   { booking, tables, seats, missingSeats } e butta via le righe di assegnazione: dentro il memo hai
+   già `rows` (BookingTableAssignment[], rinominato da `assignments` nella riga 418 dove fa
+   `.map(({ booking, assignments: rows }) => ...)`). Portati dietro, per ogni tavolo, anche l'id
+   della sua riga di assegnazione. Se un tavolo ha più righe attive, agisci sulla più recente e
+   dichiaralo nel report.
 
 c) SE TOGLI L'ULTIMO TAVOLO la prenotazione deve tornare fra quelle da assegnare. Non darlo per
    scontato dalla logica: PROVALO, e se non torna scrivi perché. useUndoTableAssignment fa già il
@@ -478,8 +497,14 @@ che "Togli tavolo" chiami l'annullamento e NON il checkout. Non rompere i test e
 pannello né quelli della piantina.
 
 CRITERIO DI FATTO: npm run validate verde + prova a video a 375, 834 e 1280px.
-NON lanciare prettier. Niente commit, niente push. Nessuna migrazione, nessuna scrittura di schema:
-qui si cancellano solo righe di assegnazione tramite l'hook esistente, sull'ambiente TEST.
+Se non hai un browser nel tuo toolset (verificalo prima di dichiarare qualcosa "provato a video"):
+non inventare una prova a video, ragiona su codice/markup e scrivi esplicitamente nel report che il
+controllo a video resta da fare a mano da Matteo — comprese le interazioni di apertura/chiusura
+card, lampeggio e click sui tavoli evidenziati.
+NON lanciare MAI prettier su questo repo. Niente commit, niente push. Nessuna migrazione, nessuna
+scrittura di schema: qui si cancellano solo righe di assegnazione tramite l'hook esistente,
+sull'ambiente TEST.
+Un esito non provato non si inventa mai: scrivi BLOCCATO o NON VERIFICABILE col motivo.
 
 CONSEGNA: report in docs/Sessioni di lavoro/02-08-26/E2E-Report/FIX_4A_CARD_ASSEGNATE.md, con cosa
 cambia per il ristoratore in parole semplici, i file toccati, la scelta fatta sul punto (b), il
