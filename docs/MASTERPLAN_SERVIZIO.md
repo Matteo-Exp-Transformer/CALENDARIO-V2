@@ -234,9 +234,22 @@ e somma **solo** gli stati di questo elenco.
 - **D47 — Durata di default del walk-in = manopola di console super-admin.** Da console Matteo vede le fasce
   del cliente e imposta il default-walk-in adatto a quell'azienda. La durata passa comunque dal risolutore
   di S2; solo il *valore di default* è deciso in console → alimenta `FU-SERV-ADMIN-PANEL-1`.
-- **D48 (C4) — Checkout sempre con timbro, mai cancellazione fisica.** Ogni occupazione lascia una riga in
-  archivio (timbro `checked_out_at`); il DELETE fisico dell'ultimo turno viene rimosso. Un solo percorso,
-  coerente con D27 (conto append-only) e D32 (statistiche).
+- **D48 (C4) — RISCRITTA 03-08-26 (S-1, Fase 0 senior). Append-only vale sui turni REALMENTE
+  serviti, non su ogni riga di assegnazione.** Formulazione originale (giugno) e vecchia qui sotto,
+  in barrato concettuale: diceva "checkout sempre con timbro, **mai** cancellazione fisica" — troppo
+  larga, collideva con la decisione D-B del 03-08 ("spostare un cliente non consuma un turno, da
+  nessuna schermata"). Il codice applicava già la regola corretta ovunque tranne un punto
+  (`useReleaseBookingAssignment`, sistemato in questo giro): **checkout e archiviazione timbrano
+  `checked_out_at`** (il turno è stato consumato per davvero); **annullamento, "torna in attesa",
+  spostamento e liberazione forzata cancellano fisicamente la riga** (nessun turno consumato — il
+  cliente non ha finito di mangiare, si è solo spostato o la riga era un errore).
+  Call-site che rispettano la regola riscritta: `useCheckoutTable` (timbra, D48) ·
+  `useForceReplaceBookingOnTable` ramo `archive` (timbra) · `useForceReplaceBookingOnTable` rami
+  `move`/`requeue` (DELETE) · `useUndoTableAssignment` (DELETE) · `useReleaseBookingAssignment`
+  (DELETE, FIX A 03-08-26 — **prima** timbrava sempre, era l'unica eccezione rimasta) ·
+  `useDeleteTable` (DELETE delle righe attive del tavolo eliminato, FIX B 03-08-26, S-2). Coerente
+  con D27 (conto append-only sui turni serviti) e D32 (statistiche). Dettaglio flussi:
+  `docs/Admin-Skill/contesto/ADMIN_SERVIZIO_CONTEXT.md` §9.14.
 - **D49 (C5) — Predicato unico "modalità-tavoli" = (edizione Pro) E (≥1 tavolo configurato).** Governa
   pannello assegnazioni, walk-in (D45) e calcolo capienza (D46). **Classic** non vede il motore tavoli;
   **Pro-senza-tavoli** → stato-vuoto invitante ("crea la prima sala…"), non una mappa rotta; **Pro-con-tavoli**

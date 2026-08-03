@@ -10,7 +10,7 @@ I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati
 
 > **Fonte di verità (non questo riepilogo):** elenco file in `supabase/migrations/` + stato remoto via MCP `list_migrations` dopo `get_project_url` (TEST `docnnernvp`, PROD `rwuxgvld` sola lettura). Se l'agente ha un canale TEST specifico, seguire le sue istruzioni dedicate. Dettaglio workflow e anomalie storiche: `Database-Skill/DB_MIGRATIONS_CONTEXT.md`.
 
-Ultimo file in repo (verificato 02-08-26): `066_booking_requests_served_at.sql` (S4 FIX-2, TEST). La prossima migrazione deve usare il prefisso **`067_`**.
+Ultimo file in repo (verificato 03-08-26): `070_booking_table_assignments_release_notice.sql` (Fase 0 FIX D, TEST). La prossima migrazione deve usare il prefisso **`071_`**.
 
 | Versione | File | Note sintetiche |
 |----------|------|-----------------|
@@ -39,6 +39,10 @@ Ultimo file in repo (verificato 02-08-26): `066_booking_requests_served_at.sql` 
 | 064 | `064_booking_occupancy_snapshot_force.sql` | S4 / D25+D37: snapshot `occupancy_start/end`, `turnover_buffer_minutes` e audit overbooking `forced_by_admin/force_reason` su `booking_requests`. **Solo TEST; PROD invariata** |
 | 065 | `065_table_assignments_force.sql` | S4 / D25: audit assegnazione forzata `forced_by_admin/force_reason` su `booking_table_assignments`. **Solo TEST; PROD invariata** |
 | 066 | `066_booking_requests_served_at.sql` | S4 FIX-2 / S4-REQ-3: `booking_requests.served_at` per archiviazione al checkout. Applicata e verificata su TEST il 02-08-26; **PROD invariata** |
+| 067 | `067_public_slot_config_excludes_closed.sql` | RPC pubblica `get_public_slot_config`: esclude le fasce con `max_turns = 0` (servizio chiuso) dall'elenco visto dal form pubblico. **Solo TEST; PROD invariata** |
+| 068 | `068_tables_unique_name_per_tenant.sql` | Debito "nome tavolo solo lato app" (handoff S4 §4-bis): indice unico parziale `tables_tenant_active_name_lower_idx` su `tables (tenant_id, lower(btrim(name)))` con `active = true` — seconda barriera dietro `hasDuplicateTableName()` client-side. Applicata e verificata su TEST il 03-08-26 (0 duplicati su 54 tavoli attivi); **PROD invariata** |
+| 069 | `069_create_walk_in_with_assignment_rpc.sql` | Debito "walk-in non transazionale" (handoff S4 §4-bis): RPC `SECURITY DEFINER` `create_walk_in_with_assignment` sostituisce insert+rollback-manuale con una scrittura atomica (booking + assignment in un solo corpo PL/pgSQL, `REVOKE` da `anon`). Applicata e verificata su TEST il 03-08-26 con JWT admin reale; **PROD invariata** |
+| 070 | `070_booking_table_assignments_release_notice.sql` | Fase 0 senior FIX D (FU-SERV-RELEASE-NOTICE-1, D-D): colonna `booking_table_assignments.release_notice_handled_at timestamptz NULL` — persiste la conferma "Ancora occupato" sull'avviso di fine turno, vale per tutti i dispositivi e resiste al reload. Nessun nuovo GRANT (RLS `admin_update_bta` di `011_booking_table_assignments.sql` già copre). Applicata su TEST il 03-08-26; **PROD invariata** |
 
 > Promo menù (23-05-26): impostazioni solo su `restaurant_settings.setting_key = booking_menu_promos`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
 
@@ -50,7 +54,8 @@ Ultimo file in repo (verificato 02-08-26): `066_booking_requests_served_at.sql` 
 
 ### Migrazioni CLI su TEST
 
-Il registro TEST è stato riallineato il 02-08-26 alle versioni numeriche locali `001`–`066`. Per
+Il registro TEST è stato riallineato il 02-08-26 alle versioni numeriche locali `001`–`066`, poi
+esteso fino a `070` il 03-08-26 (`068`/`069`/`070` applicate con `npm run db:apply`). Per
 applicare nuove migrazioni su TEST usare:
 
 ```bash

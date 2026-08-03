@@ -79,17 +79,25 @@ se sono le 15:00), così il tavolo entra in "In uscita".
       `→ esito:`
 - [ ] L'ora di fine turno mostrata è **quella giusta** (non spostata di 2 ore).
       `→ esito:`
-- [ ] Premi **"Ancora occupato"**: la finestra si chiude, il tavolo **resta occupato** sulla mappa,
+- [x] Premi **"Ancora occupato"**: la finestra si chiude, il tavolo **resta occupato** sulla mappa,
       e ricaricando la pagina l'avviso **non** ritorna per quel tavolo nella stessa fascia.
-      `→ esito:`
+      `→ esito: RISOLTO 03-08-26 (Fase 0 senior, FIX D — FU-SERV-RELEASE-NOTICE-1). Bug reale
+      confermato dall'audit: "Ancora occupato" non persisteva, era un useState locale. Fix: nuova
+      colonna booking_table_assignments.release_notice_handled_at (mig. 070) + useMarkReleaseNoticeHandled.
+      Dimostrato con un browser reale, non per deduzione: npx playwright test
+      e2e/pro/pro-service-tables-lifecycle.spec.ts → 7 passed / 0 failed (prima del fix: 6 passed /
+      1 failed, deterministico). La spec specifica per questa voce è alla riga :177 (asserzione :240).`
 - [ ] Rifai la prova e premi **"Libero"**: il tavolo diventa verde/libero e la prenotazione **non
       sparisce** dallo storico (append-only).
       `→ esito:`
 - [ ] Premi **"Decido dopo"**: la finestra si chiude. Se poi **un altro** tavolo arriva a fine turno,
       l'avviso **ritorna** con entrambi.
       `→ esito:`
-- [ ] Cambi fascia o giorno: gli avvisi già gestiti si azzerano (è un altro servizio).
-      `→ esito:`
+- [x] Cambi fascia o giorno: gli avvisi già gestiti si azzerano (è un altro servizio).
+      `→ esito: coperto 03-08-26 da un test nuovo — non era mai stato verificato prima (voce segnalata
+      come "mai verificata" nel piano senior). Test:
+      AssignmentMapPanel.fineTurnoMultiTavolo.test.tsx > "cambio fascia azzera gli avvisi già gestiti
+      localmente in questa sessione".`
 
 ### 2.3 Tavolata su più tavoli (la richiesta "10 persone su 2 tavoli da 5")
 

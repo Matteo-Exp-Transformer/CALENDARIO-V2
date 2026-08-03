@@ -311,9 +311,14 @@ collaudo mai completate. Dettaglio in `ADMIN_SERVIZIO_CONTEXT.md` §9.12–§9.1
 3. ~~Cantiere «tavoli e assegnazione prenotazioni»~~ — **fatto** il 03-08-26 sera: scoping con
    Matteo (tre fronti scelti insieme) + tre wave eseguite e revisionate, committate in
    `3e9fa2c`/`ae4e7ae`/`5780717` (§4-bis, §3-bis, report dedicato).
-4. **Prossimo passo reale:** push dei tre commit su `origin/env/test` (non ancora fatto — chiedi
-   conferma a Matteo se non esplicita); poi decisione con Matteo su come correggere
-   `FU-SERV-RELEASE-NOTICE-1` (l'avviso di fine turno trovato rotto dopo reload).
+4. ~~**Prossimo passo reale:** push dei tre commit su `origin/env/test`; poi decisione con Matteo su
+   come correggere `FU-SERV-RELEASE-NOTICE-1`.~~ ⛳ **SUPERATO il 03-08-26 notte:** la decisione c'è
+   (D-D, §3-ter) **ed è stata implementata** — `FU-SERV-RELEASE-NOTICE-1` è chiuso insieme agli altri
+   tre bug della Fase 0 (mig. **070**, report
+   [Report-fase0-quattro-fix-03-08-26.md](../03-08-26/Report-fase0-quattro-fix-03-08-26.md)). Il push
+   resta **non fatto e non chiesto**: ora sono **5** i commit locali, più il lavoro della Fase 0 nel
+   working tree. Il prossimo passo reale è la **Fase 1** del piano (riparare i test che passano senza
+   verificare nulla).
 5. Resta in coda, non urgente: la copertura e2e sul resto della pagina Servizio (walk-in via UI,
    assegnazione con conflitto di turno) e riscrivi le voci di checklist toccate dalle decisioni
    della §3.

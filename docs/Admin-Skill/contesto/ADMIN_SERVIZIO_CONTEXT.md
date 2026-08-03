@@ -514,6 +514,11 @@
 > (`fullyParallel:true`) — verificato: causava 2 falsi fallimenti su 3 nel gruppo "Avviso di fine
 > turno", spariti dando a ciascun test la propria fascia (nessuna esecuzione seriale necessaria).
 >
+> ⛳ **SUPERATO il 03-08-26 — leggi §9.14 prima di agire su quanto segue.** Il bug descritto qui
+> sotto è **corretto** (FIX D, mig. 070) e la decisione che risultava "da prendere con Matteo" è
+> stata presa (D-D: conferma persistita sul record di assegnazione + richiamo dopo 30'). Anche il
+> conteggio "6 passed / 1 failed" è superato. Il testo resta come registro storico del bug com'era.
+>
 > **Bug reale confermato, non ancora corretto (fuori mandato di chi l'ha trovato):** "Ancora
 > occupato" chiude l'avviso ma non sopravvive a un reload della pagina — l'avviso ritorna per lo
 > stesso tavolo nella stessa fascia/data, contro l'atteso della checklist §2.2. Causa:
@@ -524,3 +529,97 @@
 > e2e/pro/pro-service-tables-lifecycle.spec.ts` dà sempre **6 passed / 1 failed**, deterministico.
 > Decisione su come/se persistere la conferma "Ancora occupato" (localStorage per sessione? colonna
 > DB?) resta da prendere con Matteo — non è stata presa qui.
+
+## 9.14 FASE 0 (03-08-26) — quattro fix decisi: spostamento, eliminazione tavolo, fasce, avviso fine turno
+
+> Prompt: `docs/Sessioni di lavoro/03-08-26/PROMPT_FASE0_QUATTRO_FIX.md`. Decisioni D-A/D-B/D-C/D-D
+> di Matteo + S-1..S-5 del senior in `PIANO_SENIOR_TEST_E_SALUTE_CODICE.md` §1 e nel prompt §3.
+> Report: `docs/Sessioni di lavoro/03-08-26/Report-fase0-quattro-fix-03-08-26.md`.
+
+- **FIX A — lo spostamento non consuma un turno (D-B).** `useReleaseBookingAssignment`
+  (`useTableAssignments.ts`) faceva UPDATE `checked_out_at` (timbrava un turno) su ogni release, sia
+  che il cliente si spostasse sia che semplicemente si liberasse un tavolo. Ora fa **DELETE fisico**
+  della riga attiva, esattamente come il ramo `requeue`/`move` di `useForceReplaceBookingOnTable`
+  (S4-FIX-5). Effetto per lo staff: spostare un cliente dal Tavolo 1 al Tavolo 2, sia da **Calendario**
+  ("Modifica tavolo") sia da **Servizio** (sostituzione guidata "spostalo"), lascia invariati i turni
+  residui del Tavolo 1 — prima solo il percorso Servizio si comportava così. Il blocco
+  `hasWaitingNextTurnOnTable` (turno successivo già in coda) resta identico: blocca ancora la release.
+  Vedi **dottrina turni riscritta** sotto (S-1).
+- **FIX B — il tavolo che sparisce sotto il cliente, bloccante (D-A).** `useDeleteTable`
+  (`useServizioTables.ts`) faceva un soft-delete secco (`active:false`) senza controllare le
+  assegnazioni attive: eliminare un tavolo occupato lasciava la prenotazione appesa, senza tavolo e
+  senza il pulsante «Togli tavolo» — nessuna via d'uscita da interfaccia. Ora, stesso pattern di
+  `useDeleteRoom`/`useRoomLiveBookings` (D50) ma per un solo tavolo: nuovo `useTableLiveBookings(tableId)`
+  conta le prenotazioni distinte con assignment attivo su quel tavolo; in Servizio → Lista, il pulsante
+  «Elimina» sul tavolo occupato mostra un avviso quantificato ("Questo tavolo ha N prenotazioni
+  assegnate...") prima della conferma, stesso tono di `RoomConfigModal.tsx` (`liveImpactText`). Un
+  tavolo **libero** resta invariato: stesso click, nessun avviso in più. Dopo la conferma,
+  **`useDeleteTable` cancella FISICAMENTE** (non timbra) le righe attive di quel tavolo — S-2: la
+  liberazione forzata non deve consumare un turno, il cliente non ha finito di mangiare — poi
+  disattiva il tavolo. Su una tavolata su più tavoli, **solo** le righe del tavolo eliminato vengono
+  toccate: gli altri restano assegnati. Non si chiama `markBookingServedIfFullyReleased`: la
+  prenotazione non è stata servita, torna semplicemente nel cassetto «da assegnare».
+- **FIX C — un'unica validazione delle fasce (D-C).** Tre versioni divergenti (completa ma mai
+  chiamata `validateSlotConfigs`, Impostazioni senza nome-duplicato, Servizio con solo la
+  sovrapposizione) convergono ora su **`validateSlotConfigs`** (`bookingTimeSlots.ts`), unica fonte di
+  verità: formato HH:mm, inizio≠fine, nome duplicato (trim + case-insensitive), sovrapposizioni
+  (overnight-safe, invariato). L'editor di Servizio (`ServiceSlotsManager.tsx`, ramo "Modifica
+  permanente") lavora una fascia alla volta: costruisce l'array "come sarebbe dopo il salvataggio" (le
+  fasce esistenti + la fascia in corso, sostituita se in modifica) e lo passa a `validateSlotConfigs` —
+  nessuna logica di validazione duplicata nel componente. `validateSlotConfigs` accetta ora il tipo
+  minimo `SlotValidationInput` (solo `name`/`start_time`/`end_time`), non l'intero `SlotConfig`: sia
+  l'array completo di Impostazioni sia la fascia-in-bozza di Servizio (senza `id` reale) lo
+  soddisfano. **Nota:** l'editor di Impostazioni continua a permettere il salvataggio con **zero**
+  fasce (spegnere tutte le fasce non fa scattare "Almeno una fascia oraria è richiesta" — comportamento
+  preesistente invariato, la regola nuova sull'array vuoto non è stata introdotta lì per non rompere
+  un flusso già supportato).
+- **FIX D — l'avviso di fine turno sopravvive al reload (D-D, FU-SERV-RELEASE-NOTICE-1).** Nuova
+  colonna `booking_table_assignments.release_notice_handled_at timestamptz` (mig. **070**). "Ancora
+  occupato" timbra `now()` sulle righe attive del tavolo (tenant+tavolo+fascia+data,
+  `checked_out_at IS NULL`) tramite il nuovo `useMarkReleaseNoticeHandled`. Il calcolo dell'avviso in
+  `AssignmentMapPanel.tsx` (`pendingReleases`) esclude un tavolo "in uscita" se la sua riga attiva ha
+  `release_notice_handled_at` più recente di **`table_release_notice_recall_minutes`** minuti fa
+  (S-5: chiave JSONB `restaurant_settings`, nessuna migrazione per la manopola, default
+  **`DEFAULT_RELEASE_NOTICE_RECALL_MINUTES = 30`** esportata da `useTableStatuses.ts` accanto a
+  `DEFAULT_LATE_THRESHOLD_MINUTES`, letta tramite il nuovo hook `useReleaseNoticeRecallMinutes()`).
+  Oltre quella finestra il tavolo rientra fra i notificabili — l'avviso torna **una volta**; se lo
+  staff riconferma, il conto dei 30 minuti riparte da capo (stessa scrittura, nuovo timestamp).
+  Lo stato locale `handledReleaseTableIds` resta per il feedback immediato in questa sessione del
+  browser, ma **la chiusura della finestra ora aspetta la conferma del server** prima di aggiornarlo
+  (vedi commento `markReleaseHandled` in `AssignmentMapPanel.tsx`): un `.mutate()` fire-and-forget
+  seguito da un ricaricamento immediato può far abortire la scrittura di rete a metà — verificato con
+  l'e2e (`pro-service-tables-lifecycle.spec.ts:177`, `page.reload()` a distanza di pochi millisecondi
+  dal click) — quindi il pulsante resta disabilitato (`isConfirming`) per l'istante della UPDATE, poi
+  l'avviso si chiude: qualunque reload successivo legge sempre la riga già scritta. Cambio fascia o
+  giorno azzera comunque `handledReleaseTableIds` (comportamento preesistente, `:352-357` circa,
+  invariato — coperto da un test nuovo).
+
+### Dottrina turni riscritta (S-1) — D48 in `MASTERPLAN_SERVIZIO.md`
+
+**Append-only vale sui turni REALMENTE serviti, non su ogni riga di assegnazione.** Checkout e
+archiviazione timbrano `checked_out_at` (il turno è consumato per davvero). Annullamento, "torna in
+attesa", spostamento (FIX A) e liberazione forzata (FIX B) **cancellano fisicamente** la riga: non è
+un turno servito, non deve consumarne uno. Il codice applicava già questa regola quasi ovunque
+(`useUndoTableAssignment`, i rami `move`/`requeue` di `useForceReplaceBookingOnTable`, S4-FIX-5);
+`useReleaseBookingAssignment` era l'unica eccezione rimasta, sistemata da FIX A. Dettaglio + call-site
+completi: `docs/MASTERPLAN_SERVIZIO.md` D48.
+
+### S-4 — «Decido dopo» resta locale alla sessione del browser (deliberato, non un bug gemello)
+
+`dismissedReleaseSignature` (`AssignmentMapPanel.tsx`, accanto a `handledReleaseTableIds`) **non** è
+stato persistito su DB come `release_notice_handled_at` (FIX D), ed è una scelta di prodotto, non un
+debito dimenticato: "Decido dopo" è un "non adesso" sulla vista corrente dello staff che sta guardando
+lo schermo in quel momento, non una decisione presa e chiusa sul tavolo. È corretto che dopo un
+ricaricamento l'avviso si rifaccia vedere — un altro membro dello staff (o lo stesso, più tardi) deve
+poterlo rivalutare da capo. Non trattarlo come un secondo bug "gemello" di FU-SERV-RELEASE-NOTICE-1: è
+un comportamento voluto e diverso.
+
+### S-3 — divergenza fra eliminazione tavolo e eliminazione sala (voce per la Fase 3, non sanata qui)
+
+`useDeleteTable` (FIX B) cancella fisicamente le righe attive del tavolo eliminato; `useDeleteRoom`
+(D50) continua a **timbrare** `checked_out_at` sulle righe attive della sala eliminata. Le due
+operazioni sono ora concettualmente diverse — coerente con D-A/S-2 per il tavolo (il cliente non ha
+finito, gli si toglie il tavolo da sotto — non deve costargli un turno) — ma la sala, per la stessa
+identica situazione (il cliente non ha finito), timbra e quindi *consuma* un turno. Deliberatamente
+**non sanata in questo giro** (fuori perimetro, S-3 nel prompt Fase 0): va decisa e allineata nella
+Fase 3.
