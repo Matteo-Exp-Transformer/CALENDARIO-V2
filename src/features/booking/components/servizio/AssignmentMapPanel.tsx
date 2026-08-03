@@ -11,6 +11,9 @@ import {
   MousePointerClick,
   Plus,
   Check,
+  X,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import { Button, Modal } from '@/components/ui'
 import { toast } from 'react-toastify'
@@ -47,7 +50,9 @@ import {
   getAccurateStartTime,
   trimTimeToHHmm,
 } from '@/features/booking/utils/dateUtils'
+import { dietaryRestrictionsToText } from '@/features/booking/utils/dietaryRestrictionsText'
 import { ServicePlanMap } from '@/features/booking/components/servizio/ServicePlanMap'
+import { BookingCardsStrip } from '@/features/booking/components/servizio/BookingCardsStrip'
 import {
   TableReleaseNoticeModal,
   type PendingTableRelease,
@@ -76,6 +81,9 @@ const DraggableBookingCard: FC<DraggableBookingCardProps> = ({ booking, onQuickA
     data: { bookingId: booking.id },
   })
 
+  // Ora a muro (D-storico): mai new Date(confirmed_start), sposterebbe l'orario di fuso.
+  const arrivalTime = trimTimeToHHmm(getAccurateStartTime(booking)) || null
+
   return (
     <div
       ref={setNodeRef}
@@ -86,9 +94,11 @@ const DraggableBookingCard: FC<DraggableBookingCardProps> = ({ booking, onQuickA
       <GripVertical className="h-4 w-4 shrink-0 text-(--color-text-muted)" aria-hidden />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-primary-900">{booking.client_name}</p>
-        <p className="flex items-center gap-1 text-xs text-(--color-text-muted)">
-          <Users className="h-3 w-3" aria-hidden />
-          {booking.num_guests} coperti
+        <p className="flex min-w-0 items-center gap-1 text-xs text-(--color-text-muted)">
+          <Users className="h-3 w-3 shrink-0" aria-hidden />
+          <span className="truncate">
+            {booking.num_guests} coperti{arrivalTime ? ` · ${arrivalTime}` : ''}
+          </span>
         </p>
       </div>
       <Button
@@ -293,6 +303,9 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
   const [activeDragBookingId, setActiveDragBookingId] = useState<string | null>(null)
   const [lastAssignment, setLastAssignment] = useState<LastAssignmentState | null>(null)
   const [planDetailTableId, setPlanDetailTableId] = useState<string | null>(null)
+  // Card "Assegnate" aperta (FIX-4A): una sola alla volta, id della prenotazione.
+  // Guida anche il lampeggio nella piantina — chiusa/nessuna = niente evidenziato.
+  const [expandedGroupBookingId, setExpandedGroupBookingId] = useState<string | null>(null)
 
   // Tavoli a fine turno per cui lo staff ha già risposto: non li ri-notifichiamo
   const [handledReleaseTableIds, setHandledReleaseTableIds] = useState<string[]>([])
@@ -340,6 +353,7 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
     setHandledReleaseTableIds([])
     setDismissedReleaseSignature('')
     setLastAssignment(null)
+    setExpandedGroupBookingId(null)
   }, [selectedSlotId, selectedDate])
 
   const slotCounts = useMemo(() => {
@@ -395,6 +409,13 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
    * Prenotazioni già assegnate, raggruppate per prenotazione (D39).
    * Serve per mostrare le tavolate su più tavoli e per aggiungerne altri:
    * una tavolata da 10 su due tavoli da 5 è una riga sola con due tavoli.
+   *
+   * FIX-4A: ogni riga porta anche l'id della propria assegnazione
+   * (`assignmentId`), che serve a "Togli tavolo" (useUndoTableAssignment
+   * lavora per id di riga, non per tavolo). Se per lo stesso tavolo esistono
+   * più righe attive per la stessa prenotazione (caso limite, non dovrebbe
+   * capitare nel flusso normale a un solo assignment per turno), si tiene la
+   * più recente (`created_at` più alto) — coerente con "un tavolo, un'azione".
    */
   const assignedGroups = useMemo(() => {
     const byBooking = new Map<string, { booking: BookingRequest; assignments: BookingTableAssignment[] }>()
@@ -410,19 +431,60 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
     }
 
     return Array.from(byBooking.values()).map(({ booking, assignments: rows }) => {
-      const groupTables = rows
-        .map((row) => allTables.find((t) => t.id === row.table_id) ?? null)
-        .filter((table): table is RestaurantTable => table !== null)
-      const seats = groupTables.reduce((sum, table) => sum + table.capacity, 0)
+      const latestRowByTable = new Map<string, BookingTableAssignment>()
+      for (const row of rows) {
+        const existing = latestRowByTable.get(row.table_id)
+        if (!existing || row.created_at > existing.created_at) {
+          latestRowByTable.set(row.table_id, row)
+        }
+      }
+      const tableRows = Array.from(latestRowByTable.values())
+        .map((row) => {
+          const table = allTables.find((t) => t.id === row.table_id) ?? null
+          return table ? { table, assignmentId: row.id } : null
+        })
+        .filter((entry): entry is { table: RestaurantTable; assignmentId: string } => entry !== null)
+      const seats = tableRows.reduce((sum, entry) => sum + entry.table.capacity, 0)
       return {
         booking,
-        tables: groupTables,
+        tableRows,
         seats,
         // Coperti scoperti: guida l'admin a completare la tavolata
         missingSeats: Math.max(0, (booking.num_guests ?? 0) - seats),
       }
     })
   }, [activeAssignments, allTables, bookingsById])
+
+  /** Card "Assegnate" aperta in questo momento, se ancora fra le tavolate attive. */
+  const expandedGroup = expandedGroupBookingId
+    ? assignedGroups.find((group) => group.booking.id === expandedGroupBookingId) ?? null
+    : null
+
+  /** Tavoli da far lampeggiare nella piantina (FIX-4A): quelli della card aperta. */
+  const highlightedTableIds = useMemo(
+    () => (expandedGroup ? expandedGroup.tableRows.map((row) => row.table.id) : []),
+    [expandedGroup],
+  )
+
+  function toggleExpandedGroup(bookingId: string) {
+    setExpandedGroupBookingId((prev) => (prev === bookingId ? null : bookingId))
+  }
+
+  /**
+   * "Togli tavolo" (FIX-4A) — correzione di una tavolata, non un checkout.
+   * Usa useUndoTableAssignment (DELETE fisico, non consuma turno, non archivia):
+   * useCheckoutTable timbrerebbe checked_out_at, consumerebbe un turno e
+   * potrebbe archiviare la prenotazione che il cliente non ha ancora consumato.
+   * Se era l'ultimo tavolo, il refetch di useUndoTableAssignment aggiorna sia
+   * gli assignment sia le non-assegnate: la prenotazione torna da lì da sola.
+   */
+  function handleRemoveAssignedTable(assignmentId: string) {
+    undoAssignment.mutate({
+      assignmentId,
+      date: selectedDate,
+      slotId: selectedSlotId,
+    })
+  }
 
   /**
    * Tavoli a fine turno che aspettano la conferma dello staff (D22/D23).
@@ -779,7 +841,6 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
   const listInHeader = layout === 'plan'
   const shellClass = listInHeader ? 'flex flex-col gap-4' : 'flex flex-col gap-4 md:flex-row'
   const listClass = listInHeader ? 'space-y-2' : 'space-y-2 md:w-1/3 md:shrink-0'
-  const cardsWrapClass = listInHeader ? 'flex gap-2 overflow-x-auto pb-1' : 'space-y-2'
   const cardItemClass = listInHeader ? 'w-64 shrink-0' : ''
 
   return (
@@ -1223,7 +1284,27 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
         </div>
       </div>
 
-      {!selectedSlotId && (
+      {/* Vista Servizio (piantina): visibile SEMPRE, anche senza fascia scelta (FIX-5) — niente
+          drag&drop né lista prenotazioni finché non c'è una fascia, ma la sala si vede comunque
+          invece di sparire dietro un messaggio. */}
+      {layout === 'plan' && !selectedSlotId && (
+        <div className="space-y-3">
+          <p className="text-sm text-(--color-text-muted)">
+            Seleziona una fascia per assegnare i tavoli e vedere le prenotazioni.
+          </p>
+          <ServicePlanMap
+            rooms={rooms}
+            tables={allTables}
+            statuses={tableStatuses}
+            bookingsByTable={bookingsByTable}
+            onSelectTable={setPlanDetailTableId}
+            selectedRoomId={selectedRoomId}
+            highlightedTableIds={highlightedTableIds}
+          />
+        </div>
+      )}
+
+      {layout === 'grid' && !selectedSlotId && (
         <p className="text-sm text-(--color-text-muted)">Seleziona una fascia per vedere le prenotazioni e la mappa.</p>
       )}
 
@@ -1267,7 +1348,7 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
                   Nessuna prenotazione da assegnare.
                 </p>
               )}
-              <div className={cardsWrapClass}>
+              <BookingCardsStrip mode={listInHeader ? 'scroll' : 'list'}>
                 {unassigned.map((b) => (
                   <div key={b.id} className={cardItemClass}>
                     <DraggableBookingCard
@@ -1276,45 +1357,125 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
                     />
                   </div>
                 ))}
-              </div>
+              </BookingCardsStrip>
 
-              {/* Tavolate già assegnate: da qui si aggiungono altri tavoli (D39) */}
+              {/* Tavolate già assegnate: da qui si aggiungono/tolgono tavoli (D39, FIX-4A) */}
               {assignedGroups.length > 0 && (
                 <div className="space-y-2 pt-3">
                   <p className="text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
                     Assegnate ({assignedGroups.length})
                   </p>
-                  <div className={cardsWrapClass}>
-                    {assignedGroups.map((group) => (
-                      <div
-                        key={group.booking.id}
-                        className={`rounded-lg border border-(--color-border) bg-surface px-3 py-2 shadow-sm ${cardItemClass}`}
-                      >
-                        <p className="truncate text-sm font-semibold text-primary-900">
-                          {group.booking.client_name}
-                        </p>
-                        <p className="text-xs text-(--color-text-muted)">
-                          {group.booking.num_guests} coperti ·{' '}
-                          {group.tables.map((t) => t.name).join(', ')} ({group.seats} posti)
-                        </p>
-                        {group.missingSeats > 0 && (
-                          <p className="mt-1 text-xs font-medium text-amber-700">
-                            Mancano {group.missingSeats} posti per questa tavolata.
-                          </p>
-                        )}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="mt-1 text-xs"
-                          onClick={() => openQuickAssign(group.booking.id, 'add')}
+                  <BookingCardsStrip mode={listInHeader ? 'scroll' : 'list'}>
+                    {assignedGroups.map((group) => {
+                      const arrivalTime = trimTimeToHHmm(getAccurateStartTime(group.booking)) || null
+                      const isExpanded = expandedGroupBookingId === group.booking.id
+                      // Note staff + intolleranze (FIX-7): sostituiscono la riga tavolo/posti
+                      // duplicata — quei dati vivono già nel dettaglio per-tavolo espanso sotto.
+                      // Sola lettura, nessun nuovo storage: stessi campi di BookingDetailsModal.
+                      const staffNote = group.booking.admin_notes?.trim() || null
+                      const dietaryText = dietaryRestrictionsToText(group.booking.dietary_restrictions) || null
+                      return (
+                        <div
+                          key={group.booking.id}
+                          className={`rounded-lg border border-(--color-border) bg-surface px-3 py-2 shadow-sm ${cardItemClass}`}
                         >
-                          <Plus className="h-3.5 w-3.5" aria-hidden />
-                          Aggiungi tavolo
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+                          {/* Header cliccabile: apre/chiude l'elenco tavoli + lampeggio piantina */}
+                          <button
+                            type="button"
+                            className="w-full cursor-pointer text-left"
+                            aria-expanded={isExpanded}
+                            // NB: mai la parola "assegna*" nel nome accessibile — il pulsante
+                            // "Assegna" della card non assegnata è trovato altrove con /Assegna/i
+                            // e "assegnati"/"assegnata" ci finirebbe dentro come sottostringa.
+                            aria-label={`Tavoli di ${group.booking.client_name}`}
+                            onClick={() => toggleExpandedGroup(group.booking.id)}
+                          >
+                            {/* Contenuto interno: solo phrasing content (span), mai p/div — un
+                                <button> non può contenere flow content per spec HTML. */}
+                            <span className="flex items-center justify-between gap-2">
+                              <span className="truncate text-sm font-semibold text-primary-900">
+                                {group.booking.client_name}
+                              </span>
+                              <span className="flex shrink-0 items-center gap-1">
+                                {arrivalTime && (
+                                  <span className="text-xs font-medium text-primary-700">
+                                    {arrivalTime}
+                                  </span>
+                                )}
+                                {isExpanded ? (
+                                  <ChevronUp className="h-3.5 w-3.5 text-(--color-text-muted)" aria-hidden />
+                                ) : (
+                                  <ChevronDown className="h-3.5 w-3.5 text-(--color-text-muted)" aria-hidden />
+                                )}
+                              </span>
+                            </span>
+                            <span className="block text-xs text-(--color-text-muted)">
+                              {group.booking.num_guests} coperti
+                            </span>
+                            {/* Note staff + intolleranze al posto della vecchia riga tavolo/posti
+                                duplicata (FIX-7) — niente placeholder vuoto se entrambe assenti. */}
+                            {(staffNote || dietaryText) && (
+                              <span className="mt-0.5 block text-xs text-(--color-text-muted)">
+                                {staffNote && <span className="block truncate">{staffNote}</span>}
+                                {dietaryText && (
+                                  <span className="block truncate font-medium text-amber-700">
+                                    {dietaryText}
+                                  </span>
+                                )}
+                              </span>
+                            )}
+                            {group.missingSeats > 0 && (
+                              <span className="mt-1 block text-xs font-medium text-amber-700">
+                                Mancano {group.missingSeats} posti per questa tavolata.
+                              </span>
+                            )}
+                          </button>
+
+                          {/* Elenco tavoli, uno per riga: sala · nome tavolo · posti + "Togli" */}
+                          {isExpanded && (
+                            <div className="mt-2 space-y-1 border-t border-(--color-border) pt-2">
+                              {group.tableRows.map(({ table, assignmentId }) => {
+                                const room = rooms.find((r) => r.id === table.room_id) ?? null
+                                return (
+                                  <div
+                                    key={assignmentId}
+                                    className="flex items-center justify-between gap-2 rounded-lg bg-primary-50/60 px-2 py-1"
+                                  >
+                                    <span className="truncate text-xs text-primary-900">
+                                      {rooms.length > 1 && room ? `${room.name} · ` : ''}
+                                      Tavolo {table.name} · {table.capacity} posti
+                                    </span>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="shrink-0 text-xs text-red-700"
+                                      disabled={undoAssignment.isPending}
+                                      onClick={() => handleRemoveAssignedTable(assignmentId)}
+                                    >
+                                      <X className="h-3.5 w-3.5" aria-hidden />
+                                      Togli
+                                    </Button>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          )}
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="mt-1 text-xs"
+                            onClick={() => openQuickAssign(group.booking.id, 'add')}
+                          >
+                            <Plus className="h-3.5 w-3.5" aria-hidden />
+                            Aggiungi tavolo
+                          </Button>
+                        </div>
+                      )
+                    })}
+                  </BookingCardsStrip>
                 </div>
               )}
             </div>
@@ -1329,6 +1490,7 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
                   bookingsByTable={bookingsByTable}
                   onSelectTable={setPlanDetailTableId}
                   selectedRoomId={selectedRoomId}
+                  highlightedTableIds={highlightedTableIds}
                 />
               ) : (
                 rooms.map((room) => {

@@ -13,6 +13,8 @@ interface DayServiceGroupCardProps {
   group: DayServiceGroup
   isPro: boolean
   assignedBookingIds: Set<string>
+  /** Nomi tavolo per booking_id assegnato (FIX-6). Assente/vuota = nessun badge tavolo. */
+  assignedTableNames?: Map<string, string[]>
   filterByTurn: (list: BookingRequest[]) => BookingRequest[]
   bookingModes?: BookingMode[]
   customStaffPresets?: CustomStaffPreset[]
@@ -25,6 +27,7 @@ export function DayServiceGroupCard({
   group,
   isPro,
   assignedBookingIds,
+  assignedTableNames,
   filterByTurn,
   bookingModes = [],
   customStaffPresets = [],
@@ -149,7 +152,7 @@ export function DayServiceGroupCard({
                       onOpen={onOpenBooking}
                       showMenuPricing={digestBookingHasMenuContext(booking)}
                       unassigned={isPro && !assignedBookingIds.has(booking.id)}
-                      assigned={isPro && assignedBookingIds.has(booking.id)}
+                      assignedTableNames={isPro ? assignedTableNames?.get(booking.id) : undefined}
                       hasTurns={isPro}
                       bookingModes={bookingModes}
                       customStaffPresets={customStaffPresets}

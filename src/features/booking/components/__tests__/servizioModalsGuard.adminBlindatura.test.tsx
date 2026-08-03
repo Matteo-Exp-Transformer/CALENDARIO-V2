@@ -72,7 +72,7 @@ describe('Servizio modals — guard modifiche non salvate', () => {
     await user.click(screen.getByRole('button', { name: /resta qui/i }))
 
     expect(onClose).not.toHaveBeenCalled()
-    expect(screen.getByRole('dialog', { name: /nuova sala/i })).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: /aggiungi sala/i })).toBeInTheDocument()
     expect(screen.getByLabelText(/nome sala/i)).toHaveValue('Sala test')
   })
 })

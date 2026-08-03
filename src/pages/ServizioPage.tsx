@@ -1,7 +1,7 @@
 import type { FC } from 'react'
 import { useState, useEffect } from 'react'
 import { Loader2, Pencil, Trash2, Plus } from 'lucide-react'
-import { Button } from '@/components/ui'
+import { Button, CollapsibleCard } from '@/components/ui'
 import { TableFormModal } from '@/features/booking/components/servizio/TableFormModal'
 import { RoomTabs } from '@/features/booking/components/servizio/RoomTabs'
 import { RoomConfigModal } from '@/features/booking/components/servizio/RoomConfigModal'
@@ -202,16 +202,20 @@ export const ServizioPage: FC = () => {
                 Mappa
               </button>
             </div>
-            {viewMode === 'list' && (
-              <Button type="button" variant="primary" size="sm" onClick={() => openAdd()}>
-                <Plus className="h-4 w-4" aria-hidden />
-                Aggiungi tavolo
-              </Button>
-            )}
+            {/* Unica CTA di creazione sala: sempre visibile in Lista e Mappa (FIX-2).
+                Il "Nuova sala" duplicato dentro RoomTabs (solo vista Mappa) è stato tolto (FIX-4):
+                niente due pulsanti diversi per creare una sala. */}
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={() => setRoomModal({ open: true, initial: null })}
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              Aggiungi sala
+            </Button>
           </div>
         </div>
-
-        {features.walkIn && <WalkInLimitCard />}
 
         {/* Errore */}
         {error && (
@@ -240,7 +244,7 @@ export const ServizioPage: FC = () => {
               <div className="rounded-xl border border-(--color-border) bg-surface px-6 py-10 text-center shadow-sm">
                 <p className="text-title-section font-semibold text-primary-900">Nessuna sala configurata.</p>
                 <p className="text-body mt-2 text-(--color-text-muted)">
-                  Passa alla tab <strong>Mappa</strong> e crea la prima sala con il pulsante "Nuova sala".
+                  Crea la prima sala con il pulsante <strong>Aggiungi sala</strong> in alto.
                 </p>
               </div>
             ) : (
@@ -305,10 +309,13 @@ export const ServizioPage: FC = () => {
           </>
         )}
 
-        {/* Fasce orarie — visibili in entrambe le view */}
+        {/* Fasce orarie — chiusa di default (FIX-1); Walk-in subito sotto (FIX-3) */}
         {!isLoading && !error && viewMode === 'list' && (
-          <div className="border-t border-(--color-border) pt-6">
-            <ServiceSlotsManager />
+          <div className="space-y-4">
+            <CollapsibleCard title="Fasce orarie" defaultExpanded={false}>
+              <ServiceSlotsManager />
+            </CollapsibleCard>
+            {features.walkIn && <WalkInLimitCard />}
           </div>
         )}
 
@@ -354,7 +361,6 @@ export const ServizioPage: FC = () => {
               rooms={rooms}
               selectedRoomId={selectedRoomId}
               onSelectRoom={setSelectedRoomId}
-              onAddRoom={() => setRoomModal({ open: true, initial: null })}
               onConfigureRoom={(room) => setRoomModal({ open: true, initial: room })}
             />
 
@@ -362,7 +368,7 @@ export const ServizioPage: FC = () => {
               <div className="rounded-xl border border-(--color-border) bg-surface px-6 py-10 text-center shadow-sm">
                 <p className="text-title-section font-semibold text-primary-900">Nessuna sala creata.</p>
                 <p className="text-body mt-2 text-(--color-text-muted)">
-                  Usa il pulsante "Nuova sala" per creare la prima sala.
+                  Usa il pulsante <strong>Aggiungi sala</strong> in alto per creare la prima sala.
                 </p>
               </div>
             )}
@@ -406,8 +412,11 @@ export const ServizioPage: FC = () => {
               )
             )}
 
-            <div className="mt-8 border-t border-(--color-border) pt-6">
-              <ServiceSlotsManager />
+            <div className="mt-8 space-y-4">
+              <CollapsibleCard title="Fasce orarie" defaultExpanded={false}>
+                <ServiceSlotsManager />
+              </CollapsibleCard>
+              {features.walkIn && <WalkInLimitCard />}
             </div>
           </div>
         )}

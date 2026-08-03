@@ -49,6 +49,10 @@ test.describe('Admin Pro — Servizio', () => {
     await sidebarNav(page).getByRole('button', { name: /servizio/i }).click()
     await expect(page.getByRole('heading', { name: /^Fasce orarie$/i })).toBeVisible({ timeout: 10000 })
 
+    // La card "Fasce orarie" parte chiusa (layout FIX-1): va aperta prima di
+    // cercare i pulsanti "Modifica" delle singole fasce dentro.
+    await page.getByRole('button', { name: /^Fasce orarie$/i }).click()
+
     for (const viewport of [
       { width: 375, height: 812 },
       { width: 834, height: 1194 },
@@ -79,7 +83,7 @@ test.describe('Admin Pro — Servizio', () => {
     await expect(page.getByRole('button', { name: /^Mappa$/i })).toBeVisible({ timeout: 10000 })
 
     await page.getByRole('button', { name: /^Mappa$/i }).click()
-    await expect(page.getByRole('button', { name: /^Nuova sala$/i })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('button', { name: /^Aggiungi sala$/i })).toBeVisible({ timeout: 10000 })
 
     await page.getByRole('button', { name: /torna alla dashboard/i }).click()
     await expect(page).toHaveURL(/\/admin\/(calendario|prenotazioni)/, { timeout: 10000 })

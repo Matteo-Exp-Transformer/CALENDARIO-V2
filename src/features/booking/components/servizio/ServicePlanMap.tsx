@@ -4,12 +4,14 @@ import type { RestaurantTable } from '@/features/booking/hooks/useServizioTables
 import type { Room } from '@/features/booking/hooks/useRooms'
 import type { TableLiveStatus } from '@/features/booking/hooks/useTableStatuses'
 import type { BookingRequest } from '@/types/booking'
+import { getAccurateStartTime, trimTimeToHHmm } from '@/features/booking/utils/dateUtils'
 import {
   STATUS_BADGE_CLASSES,
   STATUS_CLASSES,
   STATUS_LABEL,
   STATUS_LEGEND_ORDER,
 } from './tableStatusStyles'
+import { TABLE_SHAPE_SIZE, TABLE_SHAPE_SIZE_RECT_W } from './tableShapeMetrics'
 
 /**
  * ServicePlanMap — vista "Servizio" della sala (piantina operativa).
@@ -20,39 +22,54 @@ import {
  * i tavoli tengono le posizioni decise dall'admin e mostrano lo stato live e
  * chi li occupa in questo momento.
  *
- * Le sagome hanno la stessa impronta del TableMap (64px, 96px per i
- * rettangolari): la piantina deve corrispondere esattamente a come l'admin ha
- * disposto la sala, altrimenti lo staff non la riconosce a colpo d'occhio.
+ * Le sagome hanno la STESSA impronta del TableMap — costanti condivise in
+ * `tableShapeMetrics.ts` (80px, 120px per i rettangolari, FIX-4D 02-08-26):
+ * la piantina deve corrispondere esattamente a come l'admin ha disposto la
+ * sala, altrimenti lo staff non la riconosce a colpo d'occhio.
  */
-
-const SHAPE_SIZE = 64
-const SHAPE_SIZE_RECT_W = 96
 
 interface PlanTableProps {
   table: RestaurantTable
   status: TableLiveStatus
   bookings: BookingRequest[]
   onSelect: (tableId: string) => void
+  /**
+   * Lampeggio (FIX-4A, 02-08-26): tavolo che appartiene alla tavolata aperta
+   * nella card "Assegnate" della testata. Contorno sulla sagoma stessa (ring),
+   * mai un riquadro sovrapposto — non deve rubare click né interferire col
+   * rilascio drag&drop (`plan-table-<id>`). Classe CSS statica in index.css
+   * (`.servizio-table-highlight`), con fallback fisso sotto
+   * prefers-reduced-motion (stesso pattern di `booking-public-field-attention`).
+   */
+  highlighted?: boolean
 }
 
-const PlanTable: FC<PlanTableProps> = ({ table, status, bookings, onSelect }) => {
+const PlanTable: FC<PlanTableProps> = ({ table, status, bookings, onSelect, highlighted = false }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: `plan-table-${table.id}`,
     data: { tableId: table.id },
   })
 
-  const width = table.shape === 'rect' ? SHAPE_SIZE_RECT_W : SHAPE_SIZE
+  const width = table.shape === 'rect' ? TABLE_SHAPE_SIZE_RECT_W : TABLE_SHAPE_SIZE
   const radius = table.shape === 'round' ? '9999px' : table.shape === 'square' ? '10px' : '6px'
 
+  // Un solo turno in corso → possiamo mostrare l'ora di arrivo (senza
+  // ambiguità). Con più turni sullo stesso tavolo "N turni" sostituisce già
+  // il nome: mostrare un'ora sola sarebbe fuorviante, quindi niente arrivo.
+  const singleBooking = bookings.length === 1 ? bookings[0] : null
   const occupantLabel = bookings.length > 1
     ? `${bookings.length} turni`
-    : bookings[0]
-      ? bookings[0].client_name
+    : singleBooking
+      ? singleBooking.client_name
       : null
   const guests = bookings.reduce((sum, booking) => sum + (booking.num_guests ?? 0), 0)
+  // Ora a muro: mai new Date(confirmed_start), che sposterebbe l'orario di fuso.
+  const arrivalTime = singleBooking
+    ? trimTimeToHHmm(getAccurateStartTime(singleBooking))
+    : ''
 
   const title = occupantLabel
-    ? `${table.name} — ${STATUS_LABEL[status]} — ${occupantLabel}, ${guests} coperti`
+    ? `${table.name} — ${STATUS_LABEL[status]} — ${occupantLabel}, ${guests} coperti${arrivalTime ? `, arrivo ${arrivalTime}` : ''}`
     : `${table.name} — ${STATUS_LABEL[status]} — ${table.capacity} posti`
 
   return (
@@ -67,10 +84,10 @@ const PlanTable: FC<PlanTableProps> = ({ table, status, bookings, onSelect }) =>
         left: table.position_x,
         top: table.position_y,
         width,
-        height: SHAPE_SIZE,
+        height: TABLE_SHAPE_SIZE,
         borderRadius: radius,
       }}
-      className={`flex flex-col items-center justify-center overflow-hidden border-2 px-1 text-center transition-shadow ${STATUS_CLASSES[status]} ${isOver ? 'ring-2 ring-primary-500 ring-offset-1' : ''}`}
+      className={`flex flex-col items-center justify-center overflow-hidden border-2 px-1 text-center transition-shadow ${STATUS_CLASSES[status]} ${isOver ? 'ring-2 ring-primary-500 ring-offset-1' : ''} ${highlighted ? 'servizio-table-highlight' : ''}`}
     >
       <span className="w-full truncate text-[11px] font-bold leading-tight text-primary-900">
         {table.name}
@@ -81,6 +98,13 @@ const PlanTable: FC<PlanTableProps> = ({ table, status, bookings, onSelect }) =>
             {occupantLabel}
           </span>
           <span className="text-[10px] leading-tight text-(--color-text-muted)">{guests} cop.</span>
+          {/* Ora di arrivo: solo un turno singolo e solo se conosciuta — mai
+              riga vuota o placeholder "--:--" (vedi getAccurateStartTime). */}
+          {arrivalTime && (
+            <span className="text-[10px] leading-tight text-(--color-text-muted)">
+              arrivo {arrivalTime}
+            </span>
+          )}
         </>
       ) : (
         <span className="text-[10px] leading-tight text-(--color-text-muted)">
@@ -104,6 +128,14 @@ interface ServicePlanMapProps {
    * scrollare fra loro fa perdere il colpo d'occhio durante il servizio.
    */
   selectedRoomId?: string | null
+  /**
+   * Tavoli da far lampeggiare (FIX-4A): la tavolata della card "Assegnate"
+   * aperta in questo momento nella testata. Vuoto/assente = nessun lampeggio.
+   * LIMITE NOTO: da sotto 1024px si vede una sola sala per volta (linguette);
+   * se i tavoli evidenziati stanno nell'altra sala, qui non si vedono finché
+   * l'admin non cambia linguetta — nessuna scorciatoia automatica di sala.
+   */
+  highlightedTableIds?: string[]
 }
 
 export const ServicePlanMap: FC<ServicePlanMapProps> = ({
@@ -113,10 +145,12 @@ export const ServicePlanMap: FC<ServicePlanMapProps> = ({
   bookingsByTable,
   onSelectTable,
   selectedRoomId = null,
+  highlightedTableIds,
 }) => {
   const roomsWithTables = rooms.filter((room) =>
     tables.some((table) => table.room_id === room.id),
   )
+  const highlightedSet = new Set(highlightedTableIds ?? [])
 
   if (roomsWithTables.length === 0) {
     return (
@@ -182,6 +216,7 @@ export const ServicePlanMap: FC<ServicePlanMapProps> = ({
                       status={statuses.get(table.id) ?? 'free'}
                       bookings={bookingsByTable.get(table.id) ?? []}
                       onSelect={onSelectTable}
+                      highlighted={highlightedSet.has(table.id)}
                     />
                   ))}
                 </div>

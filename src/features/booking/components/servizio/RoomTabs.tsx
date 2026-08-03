@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { Settings, Plus } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import type { Room } from '@/features/booking/hooks/useRooms'
@@ -8,7 +8,6 @@ interface RoomTabsProps {
   rooms: Room[]
   selectedRoomId: string | null
   onSelectRoom: (id: string) => void
-  onAddRoom: () => void
   onConfigureRoom: (room: Room) => void
 }
 
@@ -16,7 +15,6 @@ export const RoomTabs: FC<RoomTabsProps> = ({
   rooms,
   selectedRoomId,
   onSelectRoom,
-  onAddRoom,
   onConfigureRoom,
 }) => {
   const selectedRoom = rooms.find((room) => room.id === selectedRoomId) ?? null
@@ -39,19 +37,9 @@ export const RoomTabs: FC<RoomTabsProps> = ({
         </button>
       ))}
 
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={onAddRoom}
-        className="shrink-0"
-        title="Nuova sala"
-      >
-        <Plus className="h-4 w-4" />
-        Nuova sala
-      </Button>
-
-      {/* Modifica direttamente la sala selezionata: nessun picker sopra la mappa. */}
+      {/* La creazione sala passa solo dall'header ("Aggiungi sala", FIX-2/FIX-4):
+          niente CTA duplicata qui. Modifica direttamente la sala selezionata:
+          nessun picker sopra la mappa. */}
       {selectedRoom && (
         <Button
           type="button"

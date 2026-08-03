@@ -3,6 +3,7 @@ import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import type { RestaurantTable } from '@/features/booking/hooks/useServizioTables'
 import type { TableLiveStatus } from '@/features/booking/hooks/useTableStatuses'
+import { TABLE_SHAPE_SIZE, TABLE_SHAPE_SIZE_RECT_W } from './tableShapeMetrics'
 
 interface TableShapeProps {
   table: RestaurantTable
@@ -30,9 +31,6 @@ const STATUS_COLORS: Record<TableLiveStatus, { fill: string; stroke: string; tex
 
 export const TABLE_NAME_MAX_LENGTH = 10
 
-const SHAPE_SIZE = 64
-const SHAPE_SIZE_RECT_W = 96
-
 export const TableShape: FC<TableShapeProps> = ({ table, onEdit, dragDisabled = false, status }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: table.id,
@@ -49,8 +47,8 @@ export const TableShape: FC<TableShapeProps> = ({ table, onEdit, dragDisabled = 
     opacity: isDragging ? 0.8 : 1,
   }
 
-  const w = table.shape === 'rect' ? SHAPE_SIZE_RECT_W : SHAPE_SIZE
-  const h = SHAPE_SIZE
+  const w = table.shape === 'rect' ? TABLE_SHAPE_SIZE_RECT_W : TABLE_SHAPE_SIZE
+  const h = TABLE_SHAPE_SIZE
 
   // Deriva i colori dallo stato live. 'free' (o assenza di prop) coincide con i
   // colori verdi storici → zero regressioni per i chiamanti che non passano status.

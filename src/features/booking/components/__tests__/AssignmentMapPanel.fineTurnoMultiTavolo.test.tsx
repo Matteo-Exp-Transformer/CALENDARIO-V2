@@ -259,7 +259,10 @@ describe('AssignmentMapPanel — tavolata su più tavoli (D39)', () => {
     selectSlot(container)
 
     expect(screen.getByText(/Assegnate \(1\)/)).toBeInTheDocument()
-    expect(screen.getByText(/10 coperti · T1, T2 \(8 posti\)/)).toBeInTheDocument()
+    // FIX-7: la riga in testata non ripete più tavolo/posti (duplicato col dettaglio
+    // per-tavolo espandibile, che ora li mostra con prefisso "Tavolo").
+    expect(screen.getByText('10 coperti')).toBeInTheDocument()
+    expect(screen.queryByText(/T1, T2 \(8 posti\)/)).not.toBeInTheDocument()
   })
 
   it('segnala i coperti ancora scoperti della tavolata', () => {

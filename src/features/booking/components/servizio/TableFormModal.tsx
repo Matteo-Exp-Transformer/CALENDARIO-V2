@@ -189,8 +189,8 @@ export const TableFormModal: FC<TableFormModalProps> = ({
           <div className="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-800">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             <span>
-              Devi creare almeno una sala prima di aggiungere un tavolo. Vai nella tab <strong>Mappa</strong> e usa
-              &quot;Nuova sala&quot;.
+              Devi creare almeno una sala prima di aggiungere un tavolo. Usa il pulsante{' '}
+              <strong>Aggiungi sala</strong> in alto.
             </span>
           </div>
         )}

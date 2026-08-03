@@ -1638,6 +1638,38 @@ button.admin-nav-item.admin-nav-tab-active.archive-tab-filter-btn {
   }
 }
 
+/* Servizio — lampeggio sui tavoli della tavolata aperta nella card "Assegnate"
+   (stesso pattern di booking-public-field-attention-pulse sopra: contorno FISSO
+   invece che lampeggiante se prefers-reduced-motion è attivo). Colore primary-500,
+   coerente con l'anello "selezionato" già usato in AssignmentMapPanel (isSelected). */
+@keyframes servizio-table-highlight-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary-500) 55%, transparent);
+    outline-color: var(--color-primary-500);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary-500) 40%, transparent);
+    outline-color: color-mix(in srgb, var(--color-primary-500) 75%, white);
+  }
+}
+
+.servizio-table-highlight {
+  outline: 3px solid var(--color-primary-500);
+  outline-offset: 2px;
+  animation: servizio-table-highlight-pulse 0.95s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .servizio-table-highlight {
+    animation: none;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary-500) 42%, transparent);
+    outline: 3px solid var(--color-primary-500);
+    outline-offset: 2px;
+  }
+}
+
 /*
  * “Rifiuta” su superficie warm/gradient: alcuni browser o layer Tailwind lasciano sfondo grigio/neutro.
  * Colore pieno qui (nessun background-image) così il rosso resta sempre visibile.

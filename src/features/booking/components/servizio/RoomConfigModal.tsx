@@ -116,7 +116,7 @@ export const RoomConfigModal: FC<RoomConfigModalProps> = ({
       clearUnsavedSource(UNSAVED_SOURCE_ID)
       return
     }
-    registerUnsavedSource(UNSAVED_SOURCE_ID, isEdit ? 'Configura sala' : 'Nuova sala', true)
+    registerUnsavedSource(UNSAVED_SOURCE_ID, isEdit ? 'Configura sala' : 'Aggiungi sala', true)
     return () => clearUnsavedSource(UNSAVED_SOURCE_ID)
   }, [clearUnsavedSource, isDirty, isEdit, isOpen, registerUnsavedSource])
 
@@ -183,7 +183,7 @@ export const RoomConfigModal: FC<RoomConfigModalProps> = ({
       <Modal
         isOpen={isOpen}
         onClose={requestClose}
-        title={isEdit ? 'Configura sala' : 'Nuova sala'}
+        title={isEdit ? 'Configura sala' : 'Aggiungi sala'}
         size="sm"
         closeOnOverlayClick={!isPending}
         closeOnEscape={!isPending}

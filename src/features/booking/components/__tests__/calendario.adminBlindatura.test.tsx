@@ -44,7 +44,7 @@ const {
   },
   serviceSlotsState: { slots: [] as Array<{ id: string; name: string; start_time: string; end_time: string; max_guests?: number | null }> },
   digestSlotsState: { slots: [] as Array<{ id: string; name: string; start_time: string; end_time: string; max_guests?: number | null }> },
-  tableAssignmentsState: { data: [] as Array<{ booking_id: string; turn_number: number; checked_out_at: string | null }> },
+  tableAssignmentsState: { data: [] as Array<{ booking_id: string; table_id?: string; turn_number: number; checked_out_at: string | null }> },
   tablesState: { data: [] as Array<{ id: string; name: string; capacity: number; room_id: string | null; active: boolean }> },
 }))
 
@@ -462,6 +462,7 @@ describe('@admin-blindatura calendario — gate tavolo Classic vs Pro', () => {
     restaurantSettings.slot_limit_enabled = false
     restaurantSettings.slot_guest_capacities = {}
     tableAssignmentsState.data = []
+    tablesState.data = []
     digestSlotsState.slots = []
     setupMatchMedia(true)
   })
@@ -490,6 +491,26 @@ describe('@admin-blindatura calendario — gate tavolo Classic vs Pro', () => {
     renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
 
     expect(screen.getByLabelText('Assegna tavolo')).toBeInTheDocument()
+  })
+
+  it('Pro+servizio, prenotazione già assegnata: il digest mostra il nome del tavolo (FIX-6)', () => {
+    featuresState.servizio = true
+    serviceSlotsState.slots = [
+      { id: 'slot-1', name: 'Cena', start_time: '19:00', end_time: '23:00' },
+    ]
+    tablesState.data = [
+      { id: 'table-1', name: 'T7', capacity: 4, room_id: null, active: true },
+    ]
+    tableAssignmentsState.data = [
+      { booking_id: 'booking-1', table_id: 'table-1', turn_number: 1, checked_out_at: null },
+    ]
+    const bookings = [acceptedBooking({ id: 'booking-1', client_name: 'Pro Assegnato' })]
+
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+
+    expect(screen.getByText(/Tavolo T7/)).toBeInTheDocument()
+    // Non assegnata: niente badge "DA ASSEGNARE" per questa prenotazione
+    expect(screen.queryByLabelText('Assegna tavolo')).not.toBeInTheDocument()
   })
 
   it('Pro con servizio on ma slot vuoti: nessun pallino turno/tavolo nel digest', () => {

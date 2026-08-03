@@ -42,6 +42,7 @@ import { buildDayDigestModel } from '../utils/dayDigestModel'
 import { useServiceSlotOverrides, resolveSlotOverride } from '../hooks/useServiceSlotOverrides'
 import { useTableAssignments, type BookingTableAssignment } from '../hooks/useTableAssignments'
 import { useTableMode } from '../hooks/useTableMode'
+import { useTables } from '../hooks/useServizioTables'
 import { useFeatures } from '@/hooks/useFeatures'
 import { cn } from '@/lib/utils'
 
@@ -367,6 +368,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     setSelectedDate(date)
   }, [])
   const { data: tableAssignments = [] } = useTableAssignments(selectedDate)
+  // Tavoli del tenant, per risolvere i nomi mostrati nel digest (FIX-6). Stessa query key di
+  // useTableMode/Servizio (staleTime 5min): nessun fetch aggiuntivo, solo lettura dalla cache.
+  const { data: tables = [] } = useTables()
   const { isTableMode, totalCovers } = useTableMode()
   const [currentView, setCurrentView] = useState<FullCalendarViewId>(getDefaultCalendarViewForViewport)
   const [isCalendarNarrowViewport, setIsCalendarNarrowViewport] =
@@ -746,6 +750,22 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
     }
     return s
   }, [hasTurnsFeature, tableAssignments])
+
+  // Pro: nomi tavolo per booking_id, solo assegnazioni attive (checked_out_at null) — FIX-6.
+  const assignedTableNamesByBooking = useMemo<Map<string, string[]>>(() => {
+    if (!hasTurnsFeature) return new Map()
+    const tableNameById = new Map(tables.map((t) => [t.id, t.name]))
+    const map = new Map<string, string[]>()
+    for (const a of tableAssignments as BookingTableAssignment[]) {
+      if (a.checked_out_at !== null) continue
+      const name = tableNameById.get(a.table_id)
+      if (!name) continue
+      const names = map.get(a.booking_id) ?? []
+      names.push(name)
+      map.set(a.booking_id, names)
+    }
+    return map
+  }, [hasTurnsFeature, tableAssignments, tables])
 
   // View model giornaliero — usato per i gruppi orari nella vista-giorno
   const dayModel = useMemo(
@@ -1229,6 +1249,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         group={group}
                         isPro={hasTurnsFeature}
                         assignedBookingIds={assignedBookingIds}
+                        assignedTableNames={assignedTableNamesByBooking}
                         filterByTurn={filterByTurn}
                         occupancyCapacity={resolveSlotCapacityForDate(group.slotId, selectedDate)}
                         bookingModes={bookingFormConfig?.booking_modes ?? []}
@@ -1243,6 +1264,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         group={dayModel.outOfSlot}
                         isPro={hasTurnsFeature}
                         assignedBookingIds={assignedBookingIds}
+                        assignedTableNames={assignedTableNamesByBooking}
                         filterByTurn={filterByTurn}
                         occupancyCapacity={null}
                         bookingModes={bookingFormConfig?.booking_modes ?? []}
@@ -1261,7 +1283,9 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings, init
                         onOpen={openDigestBooking}
                         showMenuPricing={digestBookingHasMenuContext(booking)}
                         unassigned={hasTurnsFeature && !assignedBookingIds.has(booking.id)}
-                        assigned={hasTurnsFeature && assignedBookingIds.has(booking.id)}
+                        assignedTableNames={
+                          hasTurnsFeature ? assignedTableNamesByBooking.get(booking.id) : undefined
+                        }
                         hasTurns={hasTurnsFeature}
                         bookingModes={bookingFormConfig?.booking_modes ?? []}
                         customStaffPresets={customStaffPresets}

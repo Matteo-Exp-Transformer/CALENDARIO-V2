@@ -80,7 +80,6 @@ describe('Servizio A1 — sale e tavoli', () => {
         rooms={[ROOM_A, ROOM_B]}
         selectedRoomId="room-b"
         onSelectRoom={vi.fn()}
-        onAddRoom={vi.fn()}
         onConfigureRoom={onConfigureRoom}
       />,
     )

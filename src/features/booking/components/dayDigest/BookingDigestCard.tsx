@@ -25,8 +25,9 @@ interface BookingDigestCardProps {
   compactGrid?: boolean
   /** Pro: prenotazione accettata senza tavolo assegnato. */
   unassigned?: boolean
-  /** Pro: prenotazione con tavolo già assegnato. */
-  assigned?: boolean
+  /** Pro: nomi dei tavoli già assegnati (vuoto/assente = nessuno). Sostituisce
+   * la vecchia prop `assigned` (booleana, mai usata nel corpo del componente). */
+  assignedTableNames?: string[]
   /** Pro: mostrare lo stato tavolo. */
   hasTurns?: boolean
   bookingModes?: BookingMode[]
@@ -106,6 +107,7 @@ export function BookingDigestCard({
   showMenuPricing = false,
   compactGrid: _compactGrid,
   unassigned = false,
+  assignedTableNames = [],
   hasTurns = false,
   bookingModes = [],
   customStaffPresets = [],
@@ -177,6 +179,15 @@ export function BookingDigestCard({
           >
             {booking.client_name}
           </div>
+
+          {/* Tavolo assegnato (Pro, FIX-6): visibile solo se già assegnata */}
+          {hasTurns && assignedTableNames.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-1">
+              <Badge variant="success" className="text-label! font-normal">
+                Tavolo {assignedTableNames.join(', ')}
+              </Badge>
+            </div>
+          )}
 
           {/* Colonne statistiche: Ospiti · Orario · Prezzo/pers */}
           <div className="flex items-start justify-center gap-5">
