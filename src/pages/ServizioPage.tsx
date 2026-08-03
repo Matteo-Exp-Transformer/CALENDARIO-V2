@@ -172,7 +172,7 @@ export const ServizioPage: FC = () => {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <h1 className="text-title-page font-bold text-primary-900">Servizio</h1>
-            <p className="text-body mt-0.5 text-(--color-text-muted)">Gestisci i tavoli del ristorante per sala</p>
+            <p className="text-body mt-0.5 text-(--color-text-muted)">Organizza le sale e i tavoli del tuo locale</p>
           </div>
           <div className="flex items-center gap-2">
             {/* Toggle Lista / Mappa */}
