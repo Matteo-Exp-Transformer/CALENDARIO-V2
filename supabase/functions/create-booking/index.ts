@@ -445,7 +445,7 @@ Deno.serve(async (req: Request) => {
       if (timeSlotsEnabled) {
         const { data: slotsRows } = await supabaseAdmin
           .from("service_slots")
-          .select("id, name, start_time, end_time, max_guests, min_duration, arrival_step_minutes, display_order")
+          .select("id, name, start_time, end_time, max_guests, min_duration, arrival_step_minutes, display_order, max_turns")
           .eq("tenant_id", orgId)
           .order("display_order");
 
@@ -485,6 +485,17 @@ Deno.serve(async (req: Request) => {
           if (!matchedSlot) {
             return new Response(
               JSON.stringify({ error: "Spiacenti, l'orario scelto non rientra negli orari di servizio.", code: "OUT_OF_SLOT" }),
+              { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+
+          // Difesa in profondità server-side: la fascia chiusa dall'admin (max_turns = 0) non deve
+          // accettare prenotazioni pubbliche, anche se un client bypassasse la RPC get_public_slot_config
+          // (che dalla mig. 067 già non la elenca più). Stesso predicato di isServiceSlotClosed()
+          // in src/features/booking/hooks/useServiceSlots.ts (solo `=== 0` è chiuso, NULL = nessun limite).
+          if (matchedSlot.max_turns === 0) {
+            return new Response(
+              JSON.stringify({ error: `La fascia "${matchedSlot.name}" è momentaneamente chiusa.`, code: "SLOT_CLOSED" }),
               { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
           }

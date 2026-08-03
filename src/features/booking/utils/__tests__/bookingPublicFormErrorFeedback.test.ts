@@ -29,6 +29,13 @@ describe('mapCreateBookingError', () => {
     expect(mapped.toastMessage).toMatch(/fuori servizio/i)
   })
 
+  it('SLOT_CLOSED → desired_time con copy fascia chiusa', () => {
+    const mapped = mapCreateBookingError('fascia chiusa', 'SLOT_CLOSED')
+    expect(mapped.errorKey).toBe('desired_time')
+    expect(mapped.inlineMessage).toMatch(/chiusa/i)
+    expect(mapped.toastMessage).toMatch(/chiusa/i)
+  })
+
   it('consenso alimentari → dietaryConsent + riapri modale', () => {
     const mapped = mapCreateBookingError('Consenso per dati alimentari obbligatorio')
     expect(mapped.errorKey).toBe('dietaryConsent')

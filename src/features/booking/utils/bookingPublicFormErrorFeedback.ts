@@ -104,6 +104,14 @@ export function mapCreateBookingError(
         toastMessage:
           'Orario fuori servizio: scegli un orario disponibile.',
       }
+    case 'SLOT_CLOSED':
+      return {
+        errorKey: 'desired_time',
+        inlineMessage:
+          'Questa fascia è momentaneamente chiusa. Scegli un altro orario o un altro giorno.',
+        toastMessage:
+          'Fascia chiusa: prova un altro orario.',
+      }
     case 'INVALID_ARRIVAL_STEP':
       return {
         errorKey: 'desired_time',
