@@ -338,6 +338,54 @@ describe('settings-time-slots M4 — fasce Classic in RestaurantSettingsTab', ()
     expect(screen.getByRole('region', { name: /modifiche non salvate/i })).toBeInTheDocument()
   })
 
+  // ── FIX C (03-08-26, D-C) — nome duplicato, controllo che questo editor non aveva ──
+  // Prima di questo fix l'editor di Impostazioni bloccava formato/inizio==fine/overlap
+  // ma non il nome duplicato (bug B-5). Ora usa validateSlotConfigs, la stessa fonte di
+  // verità di Servizio → Fasce orarie.
+  it('nome fascia duplicato (case/spazi diversi da uno esistente) → il salvataggio si rifiuta', async () => {
+    const user = userEvent.setup()
+    renderSettingsTab()
+
+    await user.click(screen.getByRole('button', { name: /aggiungi fascia oraria/i }))
+    const secondSlotName = await screen.findByLabelText(/nome fascia 2/i)
+    await user.clear(secondSlotName)
+    await user.type(secondSlotName, '  pranzo  ')
+
+    await user.click(screen.getByRole('button', { name: /salva modifiche/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/nome fascia duplicato/i)).toBeInTheDocument()
+    })
+    expect(screen.queryByRole('dialog', { name: /salva modifiche pubbliche/i })).not.toBeInTheDocument()
+    expect(mutateAsyncSpy).not.toHaveBeenCalled()
+  })
+
+  // ── FIX C (03-08-26, D-C) — inizio==fine, mai coperto da un test per questo editor ──
+  it('fascia con inizio uguale alla fine → il salvataggio si rifiuta', async () => {
+    const user = userEvent.setup()
+    renderSettingsTab()
+
+    await user.click(screen.getByRole('button', { name: /aggiungi fascia oraria/i }))
+    await screen.findByLabelText(/nome fascia 2/i)
+
+    const startHour = document.getElementById('slot_start_1') as HTMLSelectElement
+    const startMinute = document.getElementById('slot_start_1-minute') as HTMLSelectElement
+    const endHour = document.getElementById('slot_end_1') as HTMLSelectElement
+    const endMinute = document.getElementById('slot_end_1-minute') as HTMLSelectElement
+    await user.selectOptions(startHour, '18')
+    await user.selectOptions(startMinute, '00')
+    await user.selectOptions(endHour, '18')
+    await user.selectOptions(endMinute, '00')
+
+    await user.click(screen.getByRole('button', { name: /salva modifiche/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/inizio e fine coincidono/i)).toBeInTheDocument()
+    })
+    expect(screen.queryByRole('dialog', { name: /salva modifiche pubbliche/i })).not.toBeInTheDocument()
+    expect(mutateAsyncSpy).not.toHaveBeenCalled()
+  })
+
   it('fascia overnight mostra avviso senza crash pagina', async () => {
     serviceSlotsState.slots = [
       {

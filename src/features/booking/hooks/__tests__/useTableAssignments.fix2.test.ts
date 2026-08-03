@@ -91,6 +91,7 @@ import {
 } from '../useTableAssignments'
 import type { BookingTableAssignment } from '../useTableAssignments'
 import { filterUnassignedBookingsForSlot } from '../../utils/unassignedBookingsFilter'
+import { countTurnsUsed } from '../../utils/tableTurnLimits'
 import type { BookingRequest } from '@/types/booking'
 
 function makeAssignment(overrides?: Partial<BookingTableAssignment>): BookingTableAssignment {
@@ -104,6 +105,7 @@ function makeAssignment(overrides?: Partial<BookingTableAssignment>): BookingTab
     checked_out_at: null,
     date: '2026-08-02',
     created_at: '',
+    release_notice_handled_at: null,
     ...overrides,
   }
 }
@@ -307,6 +309,68 @@ describe('FIX-2 — archiviazione e undo', () => {
     expect(caught).toBeInstanceOf(FasciaChiusaError)
     expect(caught).not.toBeInstanceOf(TurniEsauritiError)
     expect((caught as Error).message).toMatch(/fascia è chiusa/i)
+  })
+
+  // ── FIX A (03-08-26, D-B/S-1) ──────────────────────────────────────────
+  it('FIX A — spostamento da Calendario e "sposta" da Servizio lasciano lo stesso numero di turni residui sul tavolo di partenza', async () => {
+    const dateFixA = '2026-08-03'
+    const departingCalendario = makeAssignment({
+      id: 'a-cal',
+      table_id: 'table-1',
+      booking_id: 'b-cal',
+      turn_number: 1,
+      date: dateFixA,
+    })
+    const departingServizio = makeAssignment({
+      id: 'a-serv',
+      table_id: 'table-1',
+      booking_id: 'b-serv',
+      turn_number: 1,
+      date: dateFixA,
+    })
+
+    const turnsUsedBefore = countTurnsUsed([departingCalendario], 'table-1', 'slot-1', dateFixA)
+    expect(turnsUsedBefore).toBe(1) // il cliente è seduto: 1 riga attiva sul tavolo di partenza
+
+    // Percorso Calendario: "Modifica tavolo" → useReleaseBookingAssignment
+    const releaseHook = useReleaseBookingAssignment()
+    await releaseHook.mutateAsync({
+      bookingId: 'b-cal',
+      slotId: 'slot-1',
+      date: dateFixA,
+      assignments: [departingCalendario],
+    })
+    expect(dbCalls.deleteCount).toBe(1) // riga cancellata, non timbrata checked_out_at
+    expect(updatesFor('booking_table_assignments')).toHaveLength(0)
+    // Simula il refetch: la riga cancellata non torna più nello stato locale.
+    const turnsUsedAfterCalendario = countTurnsUsed([], 'table-1', 'slot-1', dateFixA)
+
+    dbCalls.deleteCount = 0
+    dbCalls.updateCount = 0
+    dbCalls.insertCount = 0
+    dbCalls.updatePayloads = []
+
+    // Percorso Servizio: sostituzione guidata su tavolo occupato → scelta "spostalo" (outcome 'move')
+    const forceHook = useForceReplaceBookingOnTable()
+    await forceHook.mutateAsync({
+      bookingId: 'b-nuovo-occupante',
+      tableId: 'table-1',
+      slotId: 'slot-1',
+      date: dateFixA,
+      maxTurns: 2,
+      existingAssignments: [departingServizio],
+      reason: 'test FIX A',
+      outcome: 'move',
+      targetTableId: 'table-2',
+    })
+    // La riga del cliente scavalcato sul tavolo di PARTENZA sparisce (DELETE): il nuovo
+    // occupante crea una riga nuova e distinta su table-1, qui irrilevante — il confronto
+    // riguarda solo il destino della riga del cliente spostato.
+    expect(dbCalls.deleteCount).toBe(1)
+    const turnsUsedAfterServizio = countTurnsUsed([], 'table-1', 'slot-1', dateFixA)
+
+    expect(turnsUsedAfterCalendario).toBe(turnsUsedAfterServizio)
+    expect(turnsUsedAfterCalendario).toBe(turnsUsedBefore - 1)
   })
 
   it('riassegna dopo checkout → azzera served_at', async () => {

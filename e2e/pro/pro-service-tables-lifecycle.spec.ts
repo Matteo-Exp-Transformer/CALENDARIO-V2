@@ -224,7 +224,9 @@ test.describe('Avviso di fine turno con conferma', () => {
       await expect(dialog).not.toBeVisible()
 
       // Il tavolo resta "non libero": lo stato interno è ancora 'leaving' (In
-      // uscita), "Ancora occupato" non scrive su DB — non lo fa sparire.
+      // uscita). FIX D (03-08-26): "Ancora occupato" ORA scrive su DB
+      // (release_notice_handled_at), ma solo per silenziare l'avviso — non tocca
+      // checked_out_at, quindi il tavolo non torna "Libero".
       const tableEl = tableButton(page, tableName)
       await expect(tableEl).toHaveAccessibleName(/— In uscita —/)
       await expect(tableEl).not.toHaveAccessibleName(/— Libero —/)

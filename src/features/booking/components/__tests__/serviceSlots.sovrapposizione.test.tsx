@@ -162,4 +162,86 @@ describe('S4-FIX-6 — fasce di Servizio non si accavallano', () => {
     await waitFor(() => expect(updateSlotSpy).toHaveBeenCalledTimes(1))
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
+
+  // ── FIX C (03-08-26, D-C) — validazioni che Servizio non aveva mai (bug B-5) ─────
+  // Prima di questo fix l'editor di Servizio bloccava SOLO la sovrapposizione (vedi
+  // sopra). Ora usa validateSlotConfigs, la stessa fonte di verità di Impostazioni →
+  // Imposta Fasce Orarie: nome duplicato e inizio==fine sono rifiutati anche qui.
+
+  it('nuova fascia con lo stesso nome di una esistente (trim + case-insensitive) → il salvataggio si rifiuta', async () => {
+    const user = userEvent.setup()
+    renderManager()
+
+    await user.click(screen.getByRole('button', { name: /aggiungi fascia/i }))
+    await user.type(screen.getByLabelText('Nome fascia'), '  cena  ')
+    // Orari non sovrapposti a "Cena" (19:00-22:00): isola l'errore sul nome duplicato,
+    // non sulla sovrapposizione.
+    await setTime(user, 'slot-start', '23:00')
+    await setTime(user, 'slot-end', '23:30')
+
+    await user.click(screen.getByRole('button', { name: /^aggiungi$/i }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/nome fascia duplicato/i)
+    expect(createSlotSpy).not.toHaveBeenCalled()
+  })
+
+  it('nuova fascia con inizio uguale alla fine → il salvataggio si rifiuta (Servizio la accettava prima del fix)', async () => {
+    const user = userEvent.setup()
+    renderManager()
+
+    await user.click(screen.getByRole('button', { name: /aggiungi fascia/i }))
+    await user.type(screen.getByLabelText('Nome fascia'), 'Aperitivo')
+    await setTime(user, 'slot-start', '18:00')
+    await setTime(user, 'slot-end', '18:00')
+
+    await user.click(screen.getByRole('button', { name: /^aggiungi$/i }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/inizio e fine coincidono/i)
+    expect(createSlotSpy).not.toHaveBeenCalled()
+  })
+})
+
+// ── FIX C, revisione senior (03-08-26): dati legacy invalidi non bloccano la modifica
+// di UN'ALTRA fascia. Scenario reale: Servizio non ha mai bloccato nome duplicato o
+// inizio==fine prima di stasera, quindi due fasce "Cena"/"cena" o una fascia 20:00-20:00
+// possono già esistere a DB (proprio la prova che la checklist A-3 dell'audit chiedeva a
+// Matteo di fare a mano). Senza focusIndex, aprire una fascia qualsiasi e salvare avrebbe
+// dato un errore che nomina fasce non correggibili da quella modale — sembrerebbe rotto.
+describe('S4-FIX-6 — dati legacy invalidi fra le altre fasce non bloccano il salvataggio della bozza', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    createSlotSpy.mockResolvedValue(undefined)
+    updateSlotSpy.mockResolvedValue(undefined)
+    slotsState.slots = [
+      makeSlot('slot-cena-1', 'Cena', '19:00:00', '22:00:00', 0),
+      makeSlot('slot-cena-2', 'cena', '12:00:00', '15:00:00', 1), // duplicato legacy
+      makeSlot('slot-pranzo', 'Pranzo', '09:00:00', '11:00:00', 2), // fascia terza, non coinvolta
+    ]
+  })
+
+  it('aggiungo una fascia nuova e valida: il salvataggio riesce nonostante il duplicato legacy fra le altre due', async () => {
+    const user = userEvent.setup()
+    renderManager()
+
+    await user.click(screen.getByRole('button', { name: /aggiungi fascia/i }))
+    await user.type(screen.getByLabelText('Nome fascia'), 'Aperitivo')
+    await setTime(user, 'slot-start', '17:00')
+    await setTime(user, 'slot-end', '18:30')
+
+    await user.click(screen.getByRole('button', { name: /^aggiungi$/i }))
+
+    await waitFor(() => expect(createSlotSpy).toHaveBeenCalledTimes(1))
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('modifico la fascia "Pranzo" (terza, estranea al duplicato) senza cambiare nulla: il salvataggio riesce', async () => {
+    const user = userEvent.setup()
+    renderManager()
+
+    await user.click(await screen.findByRole('button', { name: /modifica pranzo/i }))
+    await user.click(screen.getByRole('button', { name: /salva modifiche/i }))
+
+    await waitFor(() => expect(updateSlotSpy).toHaveBeenCalledTimes(1))
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
 })

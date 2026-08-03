@@ -32,6 +32,7 @@ vi.mock('@/features/booking/hooks/useTableMode', () => ({
 vi.mock('@/features/booking/hooks/useServizioTables', () => ({
   useTables: () => ({ data: state.tables, isLoading: false, error: null }),
   useDeleteTable: () => ({ mutate: vi.fn(), isPending: false }),
+  useTableLiveBookings: () => ({ data: 0, isLoading: false }),
 }))
 
 vi.mock('@/features/booking/hooks/useRooms', () => ({

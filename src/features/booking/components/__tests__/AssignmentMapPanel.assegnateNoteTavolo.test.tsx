@@ -35,6 +35,7 @@ const mockState = vi.hoisted(() => ({
 vi.mock('../../hooks/useTableStatuses', () => ({
   useTableStatuses: () => mockState.tableStatuses,
   DEFAULT_LATE_THRESHOLD_MINUTES: 15,
+  useReleaseNoticeRecallMinutes: () => 30,
 }))
 
 vi.mock('../../hooks/useTableAssignments', () => ({
@@ -46,6 +47,7 @@ vi.mock('../../hooks/useTableAssignments', () => ({
   useForceReplaceBookingOnTable: () => ({ mutate: vi.fn(), isPending: false }),
   useUndoTableAssignment: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
   useCheckoutTable: () => ({ mutate: vi.fn(), isPending: false }),
+  useMarkReleaseNoticeHandled: () => ({ mutate: vi.fn(), isPending: false }),
   TurniEsauritiError: class TurniEsauritiError extends Error {
     tableId: string
     constructor(tableId: string) {

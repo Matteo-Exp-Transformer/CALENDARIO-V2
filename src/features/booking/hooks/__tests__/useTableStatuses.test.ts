@@ -29,6 +29,7 @@ function makeAssignment(overrides?: Partial<BookingTableAssignment>): BookingTab
     checked_out_at: null,
     date: '2026-06-24',
     created_at: '',
+    release_notice_handled_at: null,
     ...overrides,
   }
 }

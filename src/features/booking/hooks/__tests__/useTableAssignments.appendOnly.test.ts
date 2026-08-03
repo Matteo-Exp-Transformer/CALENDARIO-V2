@@ -1,8 +1,13 @@
 /**
- * Test WP-B3 S4: checkout append-only (D48)
+ * Test WP-B3 S4: checkout append-only (D48) — riscritta 03-08-26 (FIX A, D-B/S-1).
  *
- * Verifica che useCheckoutTable e useReleaseBookingAssignment non eseguano
- * mai un DELETE fisico su booking_table_assignments, ma solo UPDATE checked_out_at.
+ * D48 vale sui turni REALMENTE serviti: useCheckoutTable resta append-only (UPDATE
+ * checked_out_at, mai DELETE). useReleaseBookingAssignment invece NON è più append-only
+ * da questa sessione — uno spostamento («Modifica tavolo» da Calendario) non consuma un
+ * turno, quindi ora fa DELETE fisico della riga, esattamente come già faceva il ramo
+ * requeue di useForceReplaceBookingOnTable (S4-FIX-5, sostituzione guidata «spostalo»).
+ * Il vecchio comportamento (UPDATE, mai DELETE) era la causa del bug B-2/FIX-A: lo stesso
+ * spostamento consumava un turno dal Calendario ma non da Servizio.
  *
  * Approccio: estraiamo e testiamo direttamente la mutationFn che contiene la logica
  * DB, senza dover montare un QueryClientProvider. I mock intercettano il client
@@ -109,6 +114,7 @@ function makeAssignment(overrides?: Partial<BookingTableAssignment>): BookingTab
     checked_out_at: null,
     date: '2026-06-24',
     created_at: '',
+    release_notice_handled_at: null,
     ...overrides,
   }
 }
@@ -164,9 +170,18 @@ describe('useCheckoutTable — append-only (D48)', () => {
   })
 })
 
-// ─── useReleaseBookingAssignment — append-only ─────────────────────────────
+// ─── useReleaseBookingAssignment — FIX A (03-08-26): ora DELETE fisico, non più append-only ──
+//
+// Riscritta di proposito (non "aggiustata per farla tornare verde"): prima di questa sessione
+// la release timbrava sempre checked_out_at (append-only, D48 vecchia formulazione). La
+// decisione di prodotto D-B (03-08) dice che spostare un cliente di tavolo — da nessuna
+// schermata — deve consumare un turno. Il codice aveva già la regola giusta nel percorso
+// Servizio (sostituzione guidata → requeue = DELETE); qui allineiamo il percorso Calendario.
+// D48 resta in vigore, ma riscritta: "append-only sui turni REALMENTE serviti" (vedi S-1 in
+// MASTERPLAN_SERVIZIO.md). Il blocco su turno successivo in attesa resta identico: non è
+// stato toccato da questo fix.
 
-describe('useReleaseBookingAssignment — append-only (D48)', () => {
+describe('useReleaseBookingAssignment — FIX A: DELETE fisico, non brucia un turno (D-B/S-1)', () => {
   beforeEach(() => {
     dbCalls.deleteCount = 0
     dbCalls.updateCount = 0
@@ -177,7 +192,7 @@ describe('useReleaseBookingAssignment — append-only (D48)', () => {
     dbCalls.updateError = null
   })
 
-  it('release senza turno successivo → UPDATE checked_out_at, mai DELETE', async () => {
+  it('release senza turno successivo → DELETE fisico, mai UPDATE checked_out_at', async () => {
     const hook = useReleaseBookingAssignment()
 
     const result = await hook.mutateAsync({
@@ -188,9 +203,8 @@ describe('useReleaseBookingAssignment — append-only (D48)', () => {
     })
 
     expect(result).toBeNull()
-    expect(dbCalls.deleteCount).toBe(0)
-    expect(dbCalls.updateCount).toBeGreaterThanOrEqual(1)
-    expect(dbCalls.lastUpdatePayload).toMatchObject({ checked_out_at: expect.any(String) })
+    expect(dbCalls.deleteCount).toBe(1)
+    expect(dbCalls.updateCount).toBe(0)
   })
 
   it('release con turno successivo → blocked: waiting_next_turn, nessuna operazione DB', async () => {

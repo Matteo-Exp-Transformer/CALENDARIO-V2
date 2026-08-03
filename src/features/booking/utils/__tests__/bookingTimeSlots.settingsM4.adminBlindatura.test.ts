@@ -58,4 +58,69 @@ describe('settings-time-slots M4 — helper bookingTimeSlots', () => {
     ]
     expect(validateSlotConfigs(slots)).toBeNull()
   })
+
+  // ── FIX C, revisione senior (03-08-26): modalità focusIndex ──────────────────────
+  // Senza focusIndex (default, Impostazioni): tutto l'array è responsabile di sé stesso.
+  // Con focusIndex (Servizio, un editor per fascia): solo la fascia a focusIndex e le sue
+  // relazioni con le altre contano — le altre fasce fra loro (dati legacy potenzialmente
+  // invalidi, mai bloccati da nessun editor prima di stasera) non vengono giudicate.
+  describe('validateSlotConfigs — focusIndex', () => {
+    it('fascia legacy con nome duplicato TRA le altre (non focus) non blocca il salvataggio della bozza', () => {
+      const slots = [
+        baseSlot({ id: 'legacy-1', name: 'Cena', start_time: '19:00', end_time: '22:00' }),
+        baseSlot({ id: 'legacy-2', name: 'cena', start_time: '12:00', end_time: '15:00' }),
+        baseSlot({ id: 'draft', name: 'Aperitivo', start_time: '18:00', end_time: '19:00' }),
+      ]
+      expect(validateSlotConfigs(slots, { focusIndex: 2 })).toBeNull()
+    })
+
+    it('fascia legacy con inizio==fine (non focus) non blocca il salvataggio della bozza', () => {
+      const slots = [
+        baseSlot({ id: 'legacy', name: 'Rotta', start_time: '20:00', end_time: '20:00' }),
+        baseSlot({ id: 'draft', name: 'Pranzo', start_time: '12:00', end_time: '15:00' }),
+      ]
+      expect(validateSlotConfigs(slots, { focusIndex: 1 })).toBeNull()
+    })
+
+    it('fasce legacy sovrapposte fra loro (non focus) non bloccano il salvataggio della bozza', () => {
+      const slots = [
+        baseSlot({ id: 'legacy-a', name: 'A', start_time: '10:00', end_time: '12:00' }),
+        baseSlot({ id: 'legacy-b', name: 'B', start_time: '11:00', end_time: '13:00' }),
+        baseSlot({ id: 'draft', name: 'C', start_time: '19:00', end_time: '22:00' }),
+      ]
+      expect(validateSlotConfigs(slots, { focusIndex: 2 })).toBeNull()
+    })
+
+    it('la bozza stessa con inizio==fine resta rifiutata anche in modalità focus', () => {
+      const slots = [
+        baseSlot({ id: 'other', name: 'Cena', start_time: '19:00', end_time: '22:00' }),
+        baseSlot({ id: 'draft', name: 'Rotta', start_time: '20:00', end_time: '20:00' }),
+      ]
+      expect(validateSlotConfigs(slots, { focusIndex: 1 })).toMatch(/coincidono/i)
+    })
+
+    it('un duplicato che coinvolge la bozza resta rifiutato', () => {
+      const slots = [
+        baseSlot({ id: 'other', name: 'Cena', start_time: '19:00', end_time: '22:00' }),
+        baseSlot({ id: 'draft', name: 'cena', start_time: '12:00', end_time: '15:00' }),
+      ]
+      expect(validateSlotConfigs(slots, { focusIndex: 1 })).toMatch(/duplicato/i)
+    })
+
+    it('una sovrapposizione che coinvolge la bozza resta rifiutata', () => {
+      const slots = [
+        baseSlot({ id: 'other', name: 'Cena', start_time: '19:00', end_time: '22:00' }),
+        baseSlot({ id: 'draft', name: 'Serale', start_time: '20:00', end_time: '23:00' }),
+      ]
+      expect(validateSlotConfigs(slots, { focusIndex: 1 })).toMatch(/sovrappongono/i)
+    })
+
+    it('senza focusIndex (Impostazioni) un duplicato ovunque nell\'array resta rifiutato: nessuna regressione', () => {
+      const slots = [
+        baseSlot({ id: 'a', name: 'Cena', start_time: '19:00', end_time: '22:00' }),
+        baseSlot({ id: 'b', name: 'cena', start_time: '12:00', end_time: '15:00' }),
+      ]
+      expect(validateSlotConfigs(slots)).toMatch(/duplicato/i)
+    })
+  })
 })
