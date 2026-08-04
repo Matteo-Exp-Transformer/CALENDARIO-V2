@@ -1,10 +1,12 @@
-# Prompt di avvio — prossimo agente senior (chiusura Fase 1 → Fase 2)
+# Prompt di avvio — prossimo agente senior (Fase 2, stato reale 04-08-26, post-commit)
 
-> Scritto il **04-08-2026** dal senior che ha fatto la Fase 1. Da incollare come primo messaggio
-> della prossima chat. Il testo dentro il blocco è il prompt; quello dopo è il perché delle scelte.
+> Aggiornato il **04-08-2026** dopo proseguimento Codex e commit locali. Da incollare come primo
+> messaggio della prossima chat. Il testo dentro il blocco è il prompt; quello dopo è il perché
+> delle scelte.
 >
 > ⛔ **Supera** `docs/Sessioni di lavoro/03-08-26/PROMPT_PROSSIMO_SENIOR_FASE1.md`: quello mandava a
-> fare la Fase 1, che ora è fatta al 98%. Non ripartire da lì.
+> fare la Fase 1. La ripresa Codex del 04-08-2026 ha chiuso i 3 rossi rimasti con test mirati; non
+> ripartire da lì.
 
 ---
 
@@ -15,56 +17,57 @@ ogni diff riga per riga. Matteo controverifica a campione, non testa attivamente
 
 LETTURE OBBLIGATORIE, IN QUEST'ORDINE:
 1. docs/Sessioni di lavoro/04-08-26/Report-fase1-base-test-04-08-26.md — è lo stato di oggi. Leggi
-   §3 (numeri veri), §4 (cosa NON è verificato) e §6 (le tre domande di prodotto aperte).
+   prima l'aggiornamento «ripresa Codex» in cima, poi §3, §4, §6, §7 e §10.
 2. docs/Sessioni di lavoro/03-08-26/PIANO_SENIOR_TEST_E_SALUTE_CODICE.md — il blocco ⛳ in cima dice
-   cosa è già fatto. Il tuo mandato è: chiudere i due rossi rimasti (§3 del report), poi la FASE 2
-   (§4 del piano), poi la Fase 3 (§5).
+   cosa è già fatto. Il tuo mandato è: eventuale run completa e2e `--workers=1`, decisione sul
+   parallelismo, poi FASE 2 (§4 del piano), poi Fase 3 (§5).
 3. docs/Testing-Skill/TESTING_SKILL.md §3 e §5 — aggiornati oggi con tre trappole che ti
    risparmiano ore: validate non guarda i test e2e, la batteria non regge 12 worker, il `finally`
    non sopravvive al timeout.
 4. docs/APP_CONTEXT_SKILL.md §0 → skill d'area del pezzo che tocchi.
 
 DA DOVE PARTI (misurato da me, un test alla volta, non riportato da un agente):
-- e2e: 99 test → 87 verdi, 3 rossi, 9 saltati. I 9 saltati sono TUTTI a cascata dai rossi
-  (`test.describe.configure({ mode: 'serial' })`): chiudi i rossi e gli skip spariscono da soli.
-  Stamattina, sullo stesso codice, erano 51 verdi / 31 rossi / 20 saltati.
-- unit/integration: 1344 test su 162 file, verdi.
-- Working tree SPORCO e NON committato: 17 file modificati + 3 nuovi. Nessun commit, nessun push:
-  Matteo non li ha autorizzati. Se te lo chiede, in §7 del report c'è come spezzare i commit.
+- e2e Fase 1: i 3 rossi rimasti sono chiusi e la batteria completa in seriale è stata rilanciata:
+  `npm run test:e2e -- --workers=1` → 100/100 verde.
+- Verifiche mirate verdi: `public-booking-fix9-compilable.spec.ts` 7/7, smoke card/carosello 1/1,
+  modali responsive Admin mobile 2/2 e tablet 2/2.
+- unit/integration mirata: `BookingRequestForm.flussoUtente.test.tsx` 7/7.
+- Fase 2 avviata: righe 1-2 coperte a browser dentro
+  `e2e/pro/pro-service-tables-lifecycle.spec.ts`; file completo 9/9 verde. Riga 2 = Mario chiude una
+  fascia da Servizio, Anna non la vede più nel picker orari del form pubblico.
+- Fase 2 riga 4 coperta a browser dentro `e2e/pro/pro-service.spec.ts`; file completo 3/3 verde.
+  La modale Servizio blocca nome duplicato, inizio=fine e sovrapposizione.
+- Le modifiche della ripresa/proseguimento Codex sono state committate localmente su `env/test`
+  (nessun push). Il branch resta avanti rispetto a `origin/env/test`.
 
-I TRE ROSSI RIMASTI — due nelle spec del form pubblico, uno intermittente:
-1. `public-booking-fix9-compilable.spec.ts:168` [mobile-375] — non trova
-   `booking-sub-tab-card-e2e-fix9-card-1`. ATTENZIONE, indizio forte già verificato da me altrove:
-   la striscia di card delle sotto-schede si monta SOLO da 2 sotto-schede in su
-   (`BookingRequestForm.tsx:1300`, `activeModeSubTabs.length > 1`). Se anche questo spec ne semina
-   una sola, è lo stesso identico difetto che ho appena chiuso in
-   `admin-menu-magazzino-blindatura.spec.ts` — guarda lì la soluzione prima di inventarne una.
-2. `public-booking-smoke.spec.ts:255` «card e carosello restano XOR e la card senza titolo non
-   appare» — 16.8s, rosso VERO ma **finora invisibile**: era saltato a cascata dietro il test della
-   privacy, che oggi è verde. Non è una regressione di stamattina: è il rosso successivo che emerge.
-   Non l'ho ancora diagnosticato: parti dallo screenshot in test-results/.
-3. `admin-booking-mgmt.spec.ts:248` [mobile-375] «Elimina — textarea piena, bottoni in viewport» —
-   ⚠️ **INTERMITTENTE, la voce più insidiosa delle tre.** Va in timeout aspettando il bottone della
-   prenotazione seminata (`E2E-FU043-Delete-mobile-375`), cioè la prenotazione non compare in lista.
-   Nelle mie run di oggi: rosso a 375 e 834, poi verde a 375 e rosso a 834, poi verde entrambi,
-   infine rosso a 375. Stesso codice. Non l'ho diagnosticato. Trattalo come un problema di
-   isolamento/seed, non di layout: il nome del test parla di viewport ma il timeout è sul dato.
-   Rilancialo 3-4 volte di fila PRIMA di toccarlo, così sai contro cosa stai lavorando.
+LE TRE CORREZIONI DI RIPRESA DA NON RIAPRIRE:
+1. `public-booking-fix9-compilable.spec.ts` — una sola card non mostra la striscia, ma si
+   auto-seleziona e applica il preset. La spec usa un UUID preset valido e locator responsive.
+2. `public-booking-smoke.spec.ts` — nel ramo card singola si asserisce la card auto-selezionata e
+   l'assenza della striscia.
+3. `admin-booking-mgmt.spec.ts` — in mobile/tablet l'entry calendario non è sempre un `button`; il
+   test clicca il testo evento, che apre i dettagli sia in lista sia in mese.
 
-DOPO QUESTI TRE, il gate della Fase 1 è chiuso e passi alla FASE 2 (§4 del piano, 13 flussi da
-coprire). Le prime 4 righe di quella tabella sono legate ai fix della Fase 0 e vengono per prime.
+PROSSIMO PASSO: continua la FASE 2 (§4 del piano): righe 1, 2 e 4 coperte, prossima priorità riga 3.
+Restano aperte la decisione sul parallelismo Playwright e la prova a cavallo della mezzanotte.
 
-DECISIONI DI PRODOTTO DA PORTARE A MATTEO — insieme, quando hai qualcosa da mostrare a video:
-a) Sotto-scheda singola «a card»: il preset collegato non viene MAI applicato, perché la striscia
-   che la selezionerebbe non si monta con una sola scheda e l'auto-selezione esiste solo per il
-   carosello (`BookingRequestForm.tsx:528-533`). Un locale che configura UNA sola tipologia a card
-   vede il menù intero invece del suo preset. Verificato leggendo il codice e a schermo; se sia un
-   bug o il comportamento voluto lo decide Matteo.
-b) Le tre manopole mai confermate: soglia di ritardo 15', buffer di riassetto 10', durata walk-in 90'.
-c) Il pulsante «Aggiungi tavolo» per sala è finito in una posizione diversa da quella del piano.
+COMMITS LOCALI GIA' PREPARATI DA NON RIFARE:
+1. `fix(e2e): chiudi rossi prenota e admin responsive` — le tre spec e2e di Fase 1.
+2. `test(e2e): copri flussi Servizio critici da browser` — helper REST + lifecycle/Servizio
+   (eliminazione tavolo occupato + fascia chiusa che sparisce dal form pubblico + validazioni editor
+   fasce).
+3. `docs(handoff): allinea Fase 2 e prossimo prompt` — skill Prenota/Servizio, report, piano e
+   prompt. Nessun push.
+
+DECISIONI DI PRODOTTO:
+a) Chiusa da Matteo: sotto-scheda singola «a card» = difetto. Deve auto-selezionarsi e applicare il
+   preset, senza mostrare la striscia.
+b) Ancora aperte: soglia di ritardo 15', buffer di riassetto 10', durata walk-in 90'.
+c) Ancora aperta: il pulsante «Aggiungi tavolo» per sala è in una posizione diversa dal piano.
 
 REGOLE NON NEGOZIABILI:
-- Mai commit o push senza richiesta esplicita di Matteo.
+- Mai commit o push senza richiesta esplicita di Matteo. Per la ripresa/proseguimento Codex Matteo ha
+  chiesto commit locale, ma **non** push.
 - Mai scritture su PROD. Su TEST le migrazioni SOLO con `npm run db:apply`; `supabase db push
   --include-all` vietato per sempre. Progetto TEST = docnnernvp, PROD = rwuxgvld.
 - Il repo NON ha prettier: mai `npx prettier --write`.
@@ -98,13 +101,11 @@ parliamone prima, poi lavora in autonomia.
 
 ## Perché è scritto così (note per il senior, non per l'agente)
 
-- **Parte dai due rossi rimasti, non dalla Fase 1 intera**: il rischio numero uno è che qualcuno
-  rilegga il piano di ieri e ricominci a sistemare spec già sistemate.
-- **Il primo rosso ha già l'indizio dentro**: è quasi certamente lo stesso difetto delle sotto-schede
-  che ho chiuso oggi altrove. Dare l'indizio costa due righe e può valere un'ora.
-- **Il secondo rosso è dichiarato come non diagnosticato.** È la cosa più onesta da scrivere e
-  impedisce che il prossimo lo tratti come «già capito, basta applicare».
+- **Parte dalla Fase 2, non dalla Fase 1 intera**: il rischio numero uno è che qualcuno rilegga il
+  piano di ieri e ricominci a sistemare spec già sistemate.
+- **I tre rossi restano descritti come correzioni chiuse**, così il prossimo può capire perché i test
+  sono cambiati senza riaprire la diagnosi.
 - **La riga sui subagent che non devono lanciare Playwright** è nuova: nella Fase 0 il problema non
   si era posto perché l'agente era uno solo. Con quattro in parallelo sarebbe stato un disastro.
-- **La domanda (a) su prodotto** è l'unica scoperta di oggi che riguarda ciò che vede un cliente
-  vero, non i test. Va portata a Matteo, non risolta da un agente.
+- **La domanda (a) su prodotto è chiusa**: Matteo ha confermato la deduzione, quindi ora è una regola
+  da preservare nei test.

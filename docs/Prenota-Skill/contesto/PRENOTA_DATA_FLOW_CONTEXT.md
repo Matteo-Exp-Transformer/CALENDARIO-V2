@@ -126,6 +126,14 @@ LOCK  Carosello = singolo, con N foto dentro
       presentazione e auto-seleziona l'unica sottotab carosello (`useEffect`).
       Renderizza direttamente `BookingSubTabCarousel`.
 
+LOCK  Card singola auto-selezionata
+      Per `sub_tabs_presentation === 'cards'`, se resta una sola sottotab valida,
+      `BookingRequestForm` la seleziona automaticamente e non renderizza
+      `BookingSubTabCards` (`activeModeSubTabs.length > 1`). Se la card ha
+      `preset_id`, il preset collegato viene applicato come se Anna l'avesse
+      cliccata: nessun fallback al menu intero. Decisione prodotto confermata
+      da Matteo il 04-08-26.
+
 LOCK  Parser/normalizer accoppiati
       Aggiungere un campo a `SubTab` richiede:
       1) tipo in `bookingPublicFormConfig.ts`

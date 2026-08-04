@@ -1,6 +1,8 @@
 # Report — FASE 1 del piano senior: riparare la base di test (04-08-2026)
 
-> Branch `env/test`. **Nessun commit, nessun push** — mai autorizzati.
+> Branch `env/test`. Stato dopo chiusura Codex: i 6 commit locali precedenti restano non pushati;
+> Matteo ha chiesto anche il commit del proseguimento, preparato in commit locali separati.
+> **Nessun push**.
 > **Nessuna migrazione**, nessuna scrittura di schema. Su TEST (`docnnernvp`) sono stati riscritti
 > tre valori di `restaurant_settings` del locale di prova `da-tommaso`, **su decisione esplicita di
 > Matteo** (§2.6). PROD non toccata in nessun modo.
@@ -12,6 +14,49 @@
 >
 > Piano di riferimento: [PIANO_SENIOR_TEST_E_SALUTE_CODICE.md](../03-08-26/PIANO_SENIOR_TEST_E_SALUTE_CODICE.md) §3 (Fase 1).
 > Prompt per chi continua: [PROMPT_PROSSIMO_SENIOR.md](PROMPT_PROSSIMO_SENIOR.md).
+
+## Aggiornamento ripresa Codex — 04-08-2026 18:38
+
+Matteo ha autorizzato le deduzioni prodotto emerse dalla discussione:
+
+- **Sotto-tipologia singola «a scheda» = difetto, non comportamento voluto.** Se esiste una sola
+  card, la card si auto-seleziona, la striscia non compare, ma il preset/menù collegato si applica
+  comunque. Il codice era già allineato; sono stati allineati test e skill Prenota.
+- **«Ancora occupato» timbra una sola riga assignment.** Vince il codice: si scrive sull'`assignmentId`
+  esatto, non su tutte le righe tavolo/data/fascia. La scheda Servizio è stata aggiornata per non
+  far ereditare l'avviso a un turno successivo in coda.
+- I **3 rossi di §3 sono stati chiusi con test mirati**, non con una run completa da 99 e2e. Verifiche:
+  `public-booking-fix9-compilable.spec.ts` 7/7, smoke card/carosello 1/1, modali responsive Admin
+  mobile 2/2 e tablet 2/2, più unit `BookingRequestForm.flussoUtente.test.tsx` 7/7.
+- **Fase 2 avviata:** coperta a browser la riga 1, «Eliminazione tavolo occupato». Verifica:
+  `e2e/pro/pro-service-tables-lifecycle.spec.ts` 8/8.
+- Resta aperta la scelta sul **parallelismo Playwright** (§6.4); la **Fase 2** è avviata e continua
+  dalle righe 2-4.
+
+## Aggiornamento proseguimento Codex — 04-08-2026
+
+- **Fase 1 consolidata numericamente:** run completa e2e in seriale `npm run test:e2e -- --workers=1`
+  → **100/100 verdi**.
+- **Fase 2 riga 2 coperta a browser:** Mario chiude una fascia da Servizio, Anna riapre il form
+  pubblico e quella fascia non compare più nel picker orari. Verifiche: scenario mirato 1/1 verde,
+  `e2e/pro/pro-service-tables-lifecycle.spec.ts` completo **9/9 verde**, typecheck e2e ad hoc verde.
+- **Gate app verde:** `npm run validate` verde. `validate:docs` resta rosso sui **14 path rotti già
+  noti** in `docs/Console-Skill/`, non introdotti da questo giro.
+- **Fase 2 riga 4 coperta a browser:** l'editor fasce di Servizio blocca nome duplicato
+  (trim/case-insensitive), inizio=fine e sovrapposizione dalla modale vera. Verifiche: scenario
+  mirato 1/1 verde, `e2e/pro/pro-service.spec.ts` completo **3/3 verde**, typecheck e2e ad hoc verde.
+- La Fase 2 ora continua dalla **riga 3** del piano. Restano aperti parallelismo Playwright e
+  prova a cavallo della mezzanotte.
+
+## Aggiornamento chiusura Codex — 04-08-2026
+
+- Preparato il prompt del prossimo agente senior in
+  `docs/Sessioni di lavoro/04-08-26/PROMPT_PROSSIMO_SENIOR.md`: parte dalla Fase 2 riga 3, non
+  riapre le righe 1, 2 e 4 già coperte.
+- Preparati commit locali separati per: rossi Fase 1 Prenota/Admin, flussi browser Servizio Fase 2,
+  handoff/report/skill. **Nessun push.**
+- Stato verifiche prima della chiusura: `npm run validate` verde; `git diff --check` pulito;
+  `validate:docs` ancora rosso solo sui 14 path storici in `docs/Console-Skill/`.
 
 ---
 
@@ -38,12 +83,14 @@ un punto **mentiva su una cosa importante**.
   rubrica del CRM (cercava una tabella dove ci sono schede), la riga della prenotazione da cliccare,
   il link della privacy (oggi è un pulsante che apre una finestra).
 
-**Dove siamo adesso:** su 99 controlli, **87 verdi, 3 rossi, 9 sospesi** — e i 9 sospesi sono tutti
-figli dei 3 rossi. Stamattina erano 51 verdi.
+**Dove eravamo alla chiusura del report originale:** su 99 controlli, **87 verdi, 3 rossi, 9
+sospesi** — e i 9 sospesi erano tutti figli dei 3 rossi. Stamattina erano 51 verdi. Dopo la ripresa e
+il proseguimento Codex la batteria completa in seriale è **100/100 verde**.
 
-**Serve una tua azione?** No per lavorare. Sì per **tre decisioni**, tutte in §6: la più concreta è
-che un locale che configura **una sola tipologia di prenotazione «a scheda»** non vede mai applicarsi
-il menù collegato — al cliente compare il menù intero. Va deciso se è un difetto o è voluto.
+**Serve una tua azione?** No per lavorare. La decisione più concreta, **sotto-tipologia singola «a
+scheda»**, è stata chiusa nella ripresa Codex: è un difetto e la card singola deve applicare il
+preset collegato anche senza mostrare la striscia. Restano aperte le tre manopole Servizio, la
+posizione del pulsante «Aggiungi tavolo» per sala e la scelta sul parallelismo Playwright (§6).
 
 ---
 
@@ -126,19 +173,20 @@ di test. Script con guardia che si rifiuta di partire se il progetto non è `doc
 | Stessa cosa **un test alla volta** | 71 | 12 | 19 | 102 |
 | Dopo il fix credenziali + i quattro agenti | 81 | 7 | 11 | 99 |
 | **Fine giornata** | **87** | **3** | **9** | **99** |
+| **Dopo ripresa/proseguimento Codex, seriale `--workers=1`** | **100** | **0** | **0** | **100** |
 
 - **Unit/integration:** da 1332 test su 161 file a **1344 su 162**, verdi (`npm run test`).
 - Il totale passa da 102 a 99 perché la suite legacy `menu-crud` (3 test permanentemente spenti) è
   stata cancellata.
 - I **9 saltati sono tutti a cascata** dai 3 rossi (`mode: 'serial'`): chiusi quelli, spariscono.
 
-### I 3 rossi rimasti
+### I 3 rossi chiusi nella ripresa Codex
 
 | Spec | Stato |
 |---|---|
-| `public-booking-fix9-compilable.spec.ts:168` [mobile-375] | Non trova la scheda seminata. Indizio forte: è probabilmente lo **stesso** difetto «striscia di schede solo da 2 in su» già chiuso altrove |
-| `public-booking-smoke.spec.ts:255` (card/carosello XOR) | Rosso **vero e finora invisibile**: era sospeso dietro il test della privacy, che ora è verde. Non diagnosticato |
-| `admin-booking-mgmt.spec.ts:248` [mobile-375] | **Intermittente**: in quattro run di oggi è stato rosso, verde, verde, rosso senza che il codice cambiasse. Va in timeout perché la prenotazione seminata non compare in lista. Non diagnosticato |
+| `public-booking-fix9-compilable.spec.ts:168` [mobile-375] | Chiuso. La spec seminava una sola card: oggi la card singola si auto-seleziona e la striscia non deve apparire. Corretto anche l'id preset E2E in UUID valido e i locator responsive. Verifica: 7/7 verdi |
+| `public-booking-smoke.spec.ts:255` (card/carosello XOR) | Chiuso. Nel ramo card singola si vede la card auto-selezionata, non la striscia. Verifica: 1/1 verde |
+| `admin-booking-mgmt.spec.ts:248` [mobile-375/tablet-834] | Chiuso come spec non allineata al markup responsive: il dato era presente, ma il test cercava un `button`; in lista mobile e mese tablet l'entry si apre cliccando il testo evento. Verifica: mobile 2/2 e tablet 2/2 verdi |
 
 ---
 
@@ -147,9 +195,10 @@ di test. Script con guardia che si rifiuta di partire se il progetto non è `doc
 - **La stabilità del fix a orologio non è provata col browser.** È provata da 12 test unitari sulla
   funzione di calcolo alle 23:50 e alle 00:30. La spec vera l'ho eseguita solo di giorno: **rilanciarla
   davvero a cavallo della mezzanotte resta da fare**, ed è l'unica prova definitiva.
-- **I 3 rossi rimasti non sono diagnosticati** (il primo ha un indizio forte, gli altri due no).
-- **L'intermittenza di `admin-booking-mgmt:248` non è capita.** È la voce più insidiosa: un test che
-  a volte passa è peggio di uno che fallisce sempre.
+- **La batteria e2e completa è stata rilanciata in seriale dopo la ripresa Codex:** 100/100 verde.
+  Dopo l'aggiunta delle righe Fase 2 2 e 4 non è stata rilanciata di nuovo tutta la batteria; sono
+  state rilanciate le suite interessate: `pro-service-tables-lifecycle` completa 9/9 verde e
+  `pro-service` completa 3/3 verde.
 - **Non ho verificato a video** nessuno dei quattro fix della Fase 0: Matteo ha risposto «non ancora»
   alla domanda sul collaudo, e la Fase 1 non li tocca.
 - **Il parallelismo non è stato deciso.** Ho misurato che 12 worker producono ~20 rossi finti, ma
@@ -183,22 +232,17 @@ repo) i tre insegnamenti strutturali: «un verde significa qualcosa solo se un r
 «verifica cosa copre davvero il gate prima di fidarti di lint/typecheck», più la nota sul rilanciare
 la spec da sola prima di indagare un rosso.
 
-**Non aggiornati, deliberatamente:** le ~15 divergenze skill/codice dell'audit (Fase 3) ·
-`ADMIN_SERVIZIO_CONTEXT.md` §9.14, che ha **un punto stantio trovato oggi**: dice che «Ancora
-occupato» timbra le righe di tenant+tavolo+fascia+data, mentre il codice
-(`useTableAssignments.ts:829-835`) scrive per **id della singola riga**. È la correzione chiesta in
-revisione ieri sera, non riportata nella scheda. Una riga, ma è area Servizio e non l'ho toccata in
-questo giro: **la lascio scritta qui perché non vada persa**.
+**Aggiornamento ripresa Codex:** `ADMIN_SERVIZIO_CONTEXT.md` §9.14 è stato allineato: «Ancora
+occupato» timbra l'`assignmentId` esatto, non tutte le righe tenant+tavolo+fascia+data. Restano fuori
+le ~15 divergenze skill/codice dell'audit (Fase 3).
 
 ---
 
 ## 6. Domande aperte per Matteo
 
-1. **Sotto-tipologia singola «a scheda»: il menù collegato non si applica mai.** La striscia che
-   permette di sceglierla si monta solo da due in su, e l'auto-selezione esiste **solo** per il
-   carosello. Un locale che configura una sola tipologia a scheda mostra al cliente il **menù intero**
-   invece del suo menù dedicato. Verificato leggendo il codice e osservato a schermo. Difetto o
-   comportamento voluto?
+1. **Chiusa nella ripresa Codex — sotto-tipologia singola «a scheda».** Decisione Matteo: è un
+   difetto. Una sola card non mostra la striscia, ma si auto-seleziona e applica il preset/menù
+   collegato.
 2. **Le tre manopole mai confermate**: soglia di ritardo 15', buffer di riassetto 10', durata walk-in 90'.
 3. **Il pulsante «Aggiungi tavolo» per sala** è in una posizione diversa da quella scritta nel piano.
 4. **Quanti controlli far girare insieme.** Con dodici in parallelo un terzo dei rossi è finto; uno
@@ -209,8 +253,27 @@ questo giro: **la lascio scritta qui perché non vada persa**.
 
 ## 7. Stato git e come spezzare i commit (se e quando li chiedi)
 
-**Niente è committato.** 16 file modificati (di cui 1 cancellato) + 3 nuovi. Suggerimento di
-suddivisione, il giorno che dirai di committare:
+**Storico prima della richiesta di commit.** Allora c'erano 16 file modificati (di cui 1 cancellato)
+più 3 nuovi. Matteo ha poi chiesto `fai commit, niente push`: sono stati creati 6 commit locali
+(`c74e3c9`, `b61df73`, `f32ba74`, `5edd3ad`, `60112b4`, `389b12c`). La ripresa Codex successiva ha
+avuto nuove modifiche, poi Matteo ha chiesto di preparare prompt/report e committarle localmente.
+
+**Stato reale dopo proseguimento Codex, prima dei commit chiesti da Matteo:** branch `env/test`
+avanti di 6 commit su `origin/env/test`, nessun push, 12 file modificati non committati:
+`ADMIN_SERVIZIO_CONTEXT.md`, i due contesti Prenota, questo report, il piano del 03-08, il prompt di
+handoff, tre spec e2e di Fase 1, `e2e/helpers/supabaseStaging.ts`,
+`e2e/pro/pro-service-tables-lifecycle.spec.ts`, `e2e/pro/pro-service.spec.ts`.
+
+**Split usato per i commit locali chiesti da Matteo:**
+
+1. `fix(e2e): chiudi rossi prenota e admin responsive` — `admin-booking-mgmt`,
+   `public-booking-fix9-compilable`, `public-booking-smoke`.
+2. `test(e2e): copri flussi Servizio critici da browser` — helper REST +
+   `pro-service-tables-lifecycle` + `pro-service` (eliminazione tavolo occupato, fascia chiusa che
+   sparisce dal form pubblico, validazioni editor fasce).
+3. `docs(handoff): allinea Fase 2 e prossimo prompt` — skill Prenota/Servizio, report, piano e prompt.
+
+Suggerimento originale di suddivisione già eseguito nei 6 commit locali:
 
 1. `fix(e2e): allinea le spec alle schermate di oggi` — le spec riscritte (Calendario, CRM, Classic,
    form pubblico, menu/magazzino) + `e2e/helpers/supabaseStaging.ts`.
@@ -267,11 +330,9 @@ esattamente il modo in cui una sessione perde il controllo. Il segnale che non �
 
 ## 10. Cosa resta per la prossima sessione
 
-1. I **3 rossi** di §3 → gate della Fase 1 chiuso.
-2. La **decisione sul parallelismo** (§6.4) e, di conseguenza, `playwright.config.ts`.
-3. La **prova a cavallo della mezzanotte** del fix a orologio (§4).
-4. La riga stantia in `ADMIN_SERVIZIO_CONTEXT.md` §9.14 (§5).
-5. Poi **Fase 2** (§4 del piano): 13 flussi da coprire, si parte dalle prime 4 righe.
+1. La **decisione sul parallelismo** (§6.4) e, di conseguenza, `playwright.config.ts`.
+2. La **prova a cavallo della mezzanotte** del fix a orologio (§4).
+3. **Fase 2** (§4 del piano): righe 1, 2 e 4 coperte; prossima riga prioritaria 3.
 
 ---
 
@@ -335,15 +396,17 @@ e `FOLLOW_UP.md` perché nessuna decisione di prodotto è stata presa o chiusa o
 `COLLAUDO_S4_CHECKLIST.md` perché nessuna voce di collaudo a mano è stata dimostrata da questi test.
 
 ❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato? (vietato «tutto ok» a vuoto: se davvero nulla, scrivilo e di' perché ne sei certo.)
-✅ R4: (1) **Il gate della Fase 1 non è chiuso**: restano 3 rossi e 9 sospesi a cascata. Due dei tre
-non li ho nemmeno diagnosticati. (2) **Non ho toccato `playwright.config.ts`**: so che 12 worker
-producono rossi finti, ma la scelta cambia la CI e va decisa, non subita. (3) **Non ho provato il fix
-a orologio a cavallo della mezzanotte** col browser: ho la prova unitaria, non quella vera.
-(4) **Non ho capito l'intermittenza** di `admin-booking-mgmt:248`, e un test che a volte passa è
-peggio di uno che fallisce sempre. (5) **Non ho aggiunto un `tsconfig` per `e2e/`**, che è la
-soluzione vera al fatto che nessuno controlla i tipi dei test. (6) **Non ho corretto la riga stantia**
-di `ADMIN_SERVIZIO_CONTEXT.md` §9.14. (7) **Nessun commit, nessun push** — mai autorizzati.
-(8) Non ho toccato rollout PROD, D38, merge su main, divergenze dell'audit: fuori perimetro.
+✅ R4: (1) **Storico del report originale:** il gate della Fase 1 non era chiuso: restavano 3 rossi e
+9 sospesi a cascata. Aggiornamento ripresa Codex: i 3 rossi sono chiusi con test mirati, ma non è
+stata rilanciata tutta la batteria da 99 e2e. (2) **Non ho toccato `playwright.config.ts`**:
+12 worker producono rossi finti, ma la scelta cambia la CI e va decisa, non subita. (3) **Non ho
+provato il fix a orologio a cavallo della mezzanotte** col browser: ho la prova unitaria, non quella
+vera. (4) L'intermittenza di `admin-booking-mgmt:248` è stata chiusa come spec non allineata al markup
+responsive. (5) **Non ho aggiunto un `tsconfig` per `e2e/`**, che è la soluzione vera al fatto che
+nessuno controlla i tipi dei test. (6) `ADMIN_SERVIZIO_CONTEXT.md` §9.14 è stato allineato nella
+ripresa. (7) Dopo autorizzazione di Matteo sono stati creati commit locali; nessun push. Le
+modifiche della ripresa/proseguimento Codex sono state incluse nello split documentato in §7. (8) Non
+ho toccato rollout PROD, D38, merge su main, divergenze dell'audit: fuori perimetro.
 
 ❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti? (critica + proposta nella stessa riga; se non hai avuto attriti, immagina quello più probabile.)
 ✅ R5: **Attrito 1 — «lint e typecheck verdi» è una frase che nel repo non significa niente per un
@@ -382,12 +445,13 @@ umano e nessuna è stata trattata come approvazione.
 2. **File correlati allineati:** sì per `TESTING_SKILL.md`, che era il file che *doveva* cambiare. La
    divergenza di `ADMIN_SERVIZIO_CONTEXT.md` §9.14 è dichiarata due volte (§5 e R3) invece di essere
    nascosta in un follow-up: è la cosa che, se non scritta, sparisce.
-3. **Q1-Q6 coerenti:** sì. R4 (nessun commit), R1 (nessuna autorizzazione) e §7 dicono la stessa cosa;
-   i tre rossi di §3, i «non verificati» di §4 e R4 elencano le stesse voci senza discrepanze.
+3. **Q1-Q6 coerenti:** sì per lo storico del report originale; l'aggiornamento ripresa Codex in cima
+   corregge esplicitamente stato commit, tre rossi e riga Servizio §9.14.
 4. **Tono utente:** §1 e §2 parlano per schermate e flussi (il cliente che invia il form, il locale
    che si chiama «QA 375», il click che preme il pulsante sbagliato); §3-§10 e §11-§12 sono dati
    interni. La distinzione è rispettata.
 5. **Cosa un revisore potrebbe contestarmi:** di aver allargato il perimetro oltre le 7 voci del
-   piano — è scritto in §8, con il motivo e con il segnale che tiene il rischio sotto controllo. E di
-   aver chiuso la giornata con **3 rossi ancora aperti** invece di portare il gate a zero: vero, e
-   preferisco consegnare tre rossi spiegati che un verde ottenuto ammorbidendo le asserzioni.
+   piano — è scritto in §8, con il motivo e con il segnale che tiene il rischio sotto controllo.
+   Storico del report originale: avevo chiuso la giornata con **3 rossi ancora aperti** invece di
+   portare il gate a zero. Aggiornamento ripresa Codex: quei tre rossi sono stati chiusi con test
+   mirati; resta non fatta la run completa da 99 e2e.

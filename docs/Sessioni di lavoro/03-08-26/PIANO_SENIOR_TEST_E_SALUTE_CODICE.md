@@ -67,11 +67,45 @@
 > - **§7 ha una domanda in più** (la sotto-tipologia singola «a scheda» il cui menù non si applica
 >   mai) e le altre tre restano aperte.
 
+> ## ⛳ AGGIORNAMENTO 04-08-2026 18:38 — **I 3 ROSSI SONO CHIUSI CON TEST MIRATI. PARTI DALLA FASE 2.**
+>
+> La ripresa Codex ha chiuso i tre rossi rimasti della Fase 1:
+> `public-booking-fix9-compilable.spec.ts` 7/7, smoke card/carosello 1/1, modali responsive Admin
+> mobile 2/2 e tablet 2/2. Unit mirata `BookingRequestForm.flussoUtente.test.tsx` 7/7.
+>
+> **Non è stata rilanciata tutta la batteria e2e da 99 test** dopo queste correzioni. Se vuoi
+> consolidare numericamente la Fase 1, falla con `--workers=1`.
+>
+> Decisioni chiuse: la singola sotto-tipologia «a card» deve auto-selezionarsi e applicare il preset
+> senza mostrare la striscia; «Ancora occupato» timbra solo l'`assignmentId` esatto. Restano aperti
+> parallelismo Playwright, prova a cavallo della mezzanotte e Fase 2 (§4) dalle righe 2-4: la riga 1
+> «Eliminazione tavolo occupato» è ora coperta a browser (`pro-service-tables-lifecycle` 8/8).
+>
+> Prompt corrente per proseguire: [PROMPT_PROSSIMO_SENIOR.md](../04-08-26/PROMPT_PROSSIMO_SENIOR.md)
+> aggiornato allo stato reale del codice e del worktree. Matteo ha poi chiesto commit locale:
+> lo split usato è indicato nel report Fase 1 §7. Nessun push.
+
+> ## ⛳ AGGIORNAMENTO 04-08-2026 — **FASE 1 CONSOLIDATA, FASE 2 RIGHE 1-2 COPERTE.**
+>
+> Run completa e2e in seriale: `npm run test:e2e -- --workers=1` → **100/100 verde**.
+> La Fase 2 ha ora anche la riga 2 coperta a browser: da Servizio Mario chiude una fascia,
+> poi sul form pubblico Anna non vede più quella fascia nel picker orari. Verifiche:
+> scenario mirato 1/1 verde, `pro-service-tables-lifecycle` completo **9/9 verde**,
+> typecheck e2e ad hoc verde.
+>
+> La Fase 2 ha ora anche la riga 4 coperta a browser in `pro-service.spec.ts`: dalla modale vera
+> di Servizio l'editor fasce blocca nome duplicato (trim/case-insensitive), inizio=fine e
+> sovrapposizione. Verifiche: scenario mirato 1/1 verde, `pro-service` completo **3/3 verde**,
+> typecheck e2e ad hoc verde.
+>
+> La Fase 2 continua dalla riga **3**. Restano aperti parallelismo Playwright e prova a cavallo
+> della mezzanotte.
+
 ## 0. Regole non negoziabili
 
-- **Mai commit o push senza richiesta esplicita di Matteo.** Oggi ci sono **3 commit non pushati**
-  (`3e9fa2c`, `ae4e7ae`, `5780717`) e l'aggiornamento dell'handoff non committato: non sono tuoi, non
-  toccarli finché Matteo non dice.
+- **Mai commit o push senza richiesta esplicita di Matteo.** Stato dopo chiusura Codex: i commit
+  locali sono stati preparati su richiesta di Matteo, ma **non pushati**. Non pushare finché Matteo
+  non dice.
 - **Mai scritture su PROD.** Prima di ogni operazione MCP: `get_project_url` → `docnnernvp` = TEST ok,
   `rwuxgvld` = PROD, fermati e chiedi. Su TEST le migrazioni si applicano con `npm run db:apply`.
   `supabase db push --include-all` **vietato per sempre**.
@@ -237,10 +271,10 @@ sullo stesso file si sovrascrivono.
 
 | # | Flusso da coprire | Da dove partire | Perché conta |
 |---|---|---|---|
-| 1 | **Eliminazione tavolo occupato** (dopo il fix 0.1) | nessuna base | Era bloccante, zero copertura |
-| 2 | **Chiusura fascia → lo slot sparisce dal form pubblico**, da browser | `pro-service-tables-lifecycle.spec.ts` (admin) + `public-booking-smoke.spec.ts` (cliente) | Decide se un cliente reale può prenotare; oggi verificato **solo via REST** |
+| 1 | ✅ **Eliminazione tavolo occupato** (dopo il fix 0.1) | `pro-service-tables-lifecycle.spec.ts` | Coperta a browser nella ripresa Codex: avviso, conferma, tavolo inattivo, assignment cancellato, booking non servita |
+| 2 | ✅ **Chiusura fascia → lo slot sparisce dal form pubblico**, da browser | `pro-service-tables-lifecycle.spec.ts` | Coperta a browser nel proseguimento Codex: fascia temporanea visibile nel picker pubblico, chiusa da Servizio, sparita al reload pubblico |
 | 3 | **«Modifica tavolo» non consuma turno** (dopo il fix 0.2) | `useTableAssignments.fix2.test.ts` | Copre una regola di prodotto esplicita |
-| 4 | **Editor fasce: nome duplicato, inizio == fine, sovrapposizione** (dopo 0.3) | `serviceSlots.sovrapposizione.test.tsx` (unit → portare a e2e) | Tre validazioni appena unificate |
+| 4 | ✅ **Editor fasce: nome duplicato, inizio == fine, sovrapposizione** (dopo 0.3) | `pro-service.spec.ts` + unit `serviceSlots.sovrapposizione.test.tsx` | Coperta a browser nel proseguimento Codex: tre salvataggi invalidi dalla modale Servizio, nessuna creazione DB |
 | 5 | **Walk-in end-to-end a browser** (doppio click su tavolo occupato, azzeramento al cambio sala) | solo unit oggi (`useWalkInMutation.rpc.test.tsx`) | L'operazione più frequente dello staff |
 | 6 | **Turni esauriti + «Assegna comunque»** a browser | `AssignmentMapPanel.fix2.test.tsx` (component) | Il riquadro ambra sotto la modale è già stato un bug |
 | 7 | **Avviso fine turno**: casi «Libero», «Decido dopo», cambio fascia azzera | `pro-service-tables-lifecycle.spec.ts` — pattern `page.clock` già stabilito | 4 voci di checklist mai verificate |

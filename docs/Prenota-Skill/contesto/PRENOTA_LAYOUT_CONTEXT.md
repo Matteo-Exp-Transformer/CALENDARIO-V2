@@ -205,6 +205,10 @@ viewport &lt;1256px (riepilogo sotto form + submit nel riepilogo, senza barra fi
    `sub_tabs[].courses_label` (max 12 char, `line-clamp-1`); a destra solo importo `X,XX€` se
    `price_per_person > 0` (nessuna riga «a persona» sotto l'importo). Non su carosello (`BookingSubTabCards` assente se
    presentazione carosello). Centratura titolo/icona: `justify-center` su flex interno card.
+   **Card singola (04-08-26, decisione Matteo):** se una modalita `cards` ha una sola sottotab valida,
+   la pagina la seleziona automaticamente e **non** mostra la strisciolina `BookingSubTabCards`
+   (`activeModeSubTabs.length > 1`). Il preset collegato viene comunque applicato: Anna vede il menu
+   della card, non il menu intero.
    **Allineamento riga card scrollabili (05-06-26):** wrapper **outer** `overflow-x-auto
    scrollbar-hide` + **inner** `flex flex-nowrap w-max` (`useBookingPublicScrollRowAlign`):
    se `inner.scrollWidth ≤ outer.clientWidth` → `mx-auto justify-center` (gruppo centrato);

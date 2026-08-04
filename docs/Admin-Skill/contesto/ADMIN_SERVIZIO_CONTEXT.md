@@ -500,9 +500,10 @@
 
 ### 9.13 E2E ciclo di vita tavoli (03-08-26) — voci QA mai collaudate + un bug reale trovato
 
-> Nuovo `e2e/pro/pro-service-tables-lifecycle.spec.ts` (7 test), copre `COLLAUDO_S4_CHECKLIST.md`
+> `e2e/pro/pro-service-tables-lifecycle.spec.ts` copre `COLLAUDO_S4_CHECKLIST.md`
 > §2.2 (avviso fine turno), §2.3 (tavolata multi-tavolo + archiviazione S4-REQ-3), §3 (5 stati in
-> sequenza), §9 ultima riga (375px). Voci mai collaudate a mano perché legate al tempo reale.
+> sequenza), §9 ultima riga (375px), eliminazione tavolo occupato e chiusura fascia → form pubblico.
+> Stato proseguimento 04-08: **9/9 verde**. Voci mai collaudate a mano perché legate al tempo reale.
 > Pilotate con `page.clock` di Playwright (install/fastForward): **l'istante iniziale dev'essere
 > vicino a "adesso" reale**, non una data lontana nel futuro — un clock finto lontano rompe il
 > refresh del JWT Supabase (calcolato con `Date.now()`, lato client) e le richieste ricadono
@@ -513,6 +514,9 @@
 > vedrebbero a vicenda i tavoli in uscita quando Playwright li esegue in parallelo
 > (`fullyParallel:true`) — verificato: causava 2 falsi fallimenti su 3 nel gruppo "Avviso di fine
 > turno", spariti dando a ciascun test la propria fascia (nessuna esecuzione seriale necessaria).
+> `e2e/pro/pro-service.spec.ts` copre anche la Fase 2 riga 4 del piano senior: dalla modale vera
+> "Nuova fascia oraria" l'editor blocca nome duplicato (trim/case-insensitive), inizio=fine e
+> sovrapposizione. Stato proseguimento 04-08: **3/3 verde**.
 >
 > ⛳ **SUPERATO il 03-08-26 — leggi §9.14 prima di agire su quanto segue.** Il bug descritto qui
 > sotto è **corretto** (FIX D, mig. 070) e la decisione che risultava "da prendere con Matteo" è
@@ -575,8 +579,9 @@
   un flusso già supportato).
 - **FIX D — l'avviso di fine turno sopravvive al reload (D-D, FU-SERV-RELEASE-NOTICE-1).** Nuova
   colonna `booking_table_assignments.release_notice_handled_at timestamptz` (mig. **070**). "Ancora
-  occupato" timbra `now()` sulle righe attive del tavolo (tenant+tavolo+fascia+data,
-  `checked_out_at IS NULL`) tramite il nuovo `useMarkReleaseNoticeHandled`. Il calcolo dell'avviso in
+  occupato" timbra `now()` sulla **riga di assegnazione esatta** che ha generato l'avviso
+  (`assignmentId`), non su tutte le righe attive del tavolo: se sullo stesso tavolo c'e gia un turno
+  successivo in coda, quel turno non deve ereditare una conferma che lo staff non ha dato. Il calcolo dell'avviso in
   `AssignmentMapPanel.tsx` (`pendingReleases`) esclude un tavolo "in uscita" se la sua riga attiva ha
   `release_notice_handled_at` più recente di **`table_release_notice_recall_minutes`** minuti fa
   (S-5: chiave JSONB `restaurant_settings`, nessuna migrazione per la manopola, default
