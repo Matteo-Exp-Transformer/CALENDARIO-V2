@@ -9,22 +9,31 @@
  * "In uscita"). Qui il tempo è pilotato con l'API clock di Playwright
  * (page.clock.install/fastForward): nessuna attesa reale.
  *
- * ⚠️ IMPORTANTE — perché NOW è "adesso reale" e non una data futura fissa:
- * installare page.clock su un istante lontano nel futuro (provato: 9 giorni
- * avanti) rompe silenziosamente l'autenticazione. Supabase-js calcola la
- * scadenza del JWT con `Date.now()`; con l'orologio finto piazzato lontano nel
- * futuro, il token (emesso con `expires_at` reale dal server) risulta "già
- * scaduto" fin da subito, l'SDK tenta un refresh continuo che non si stabilizza
- * mai e le richieste successive cadono sul ruolo anon → 401 "permission denied"
- * su `booking_requests`/`booking_table_assignments` (verificato con un test
+ * ⚠️ IMPORTANTE — perché NOW non è mai un istante avanti al tempo reale, e mai
+ * una data futura fissa: installare page.clock su un istante lontano nel
+ * futuro (provato: 9 giorni avanti) rompe silenziosamente l'autenticazione.
+ * Supabase-js calcola la scadenza del JWT con `Date.now()`; con l'orologio
+ * finto piazzato lontano nel futuro, il token (emesso con `expires_at` reale
+ * dal server) risulta "già scaduto" fin da subito, l'SDK tenta un refresh
+ * continuo che non si stabilizza mai e le richieste successive cadono sul
+ * ruolo anon → 401 "permission denied" su
+ * `booking_requests`/`booking_table_assignments` (verificato con un test
  * diagnostico usando `page.on('response')`: stesso schema di query, stesso
- * account, la sola differenza è la distanza dell'istante NOW dal reale). Con
- * NOW = `new Date()` (istante reale di partenza) + `fastForward` per avanzare
- * di pochi minuti/decine di minuti, il JWT resta valido per tutta la durata del
- * test (i token dei client hanno vita ~1h) e l'autenticazione non si rompe:
- * verificato con lo stesso identico test diagnostico. Ogni scenario qui sotto
- * quindi calcola gli orari delle prenotazioni RELATIVI all'istante reale in cui
- * il test parte, mai una data/ora fissa "nel futuro".
+ * account, la sola differenza è la distanza dell'istante NOW dal reale).
+ *
+ * NOW = `safeAnchorNow()` (../helpers/wallClockAnchor.ts) — mezzogiorno del
+ * giorno solare PRECEDENTE a quello reale, MAI l'istante reale letterale
+ * (fix 04-08-26). Prima NOW era `new Date()`: gli scenari sotto (scostamenti
+ * da -100' a +35') costruiscono l'ISO abbinando la data canonica alla sola
+ * ora dell'istante (`wallIsoAt`) — fra le ~23:25 e le ~01:40 lo scostamento
+ * scavalcava la mezzanotte e la data canonica restava sbagliata (dettaglio
+ * delle due finestre cieche nel commento di testata di wallClockAnchor.ts).
+ * Ancorare a mezzogiorno del giorno prima elimina il problema alla radice
+ * (mai a ridosso di mezzanotte per gli scostamenti usati qui) restando
+ * comunque SEMPRE nel passato rispetto al tempo reale — stesso vincolo di
+ * sicurezza sopra. `fastForward` avanza poi di pochi minuti/decine di minuti
+ * dall'ancora: il JWT resta valido per tutta la durata del test (i token dei
+ * client hanno vita ~1h) esattamente come quando NOW era il tempo reale.
  *
  * Richiede staging Supabase Pro (stesso account di pro-service.spec.ts):
  *   E2E_PRO_ADMIN_EMAIL / E2E_PRO_ADMIN_PASSWORD
@@ -66,6 +75,13 @@ import {
   offsetIsoDate,
   E2E_SERVIZIO_PREFIX,
 } from '../helpers/supabaseStaging'
+import {
+  addMinutes,
+  localDateStr,
+  localTimeStr,
+  wallIsoAt,
+  safeAnchorNow,
+} from '../helpers/wallClockAnchor'
 
 test.skip(
   !process.env.E2E_PRO_ADMIN_EMAIL,
@@ -102,37 +118,11 @@ async function selectDateAndSlot(page: Page, date: string, slotId: string) {
 }
 
 // ─────────────────────────────────────────────
-// Tempo relativo a "adesso reale" (vedi commento di testata del file)
+// Tempo per gli scenari: vedi ../helpers/wallClockAnchor.ts (addMinutes,
+// localDateStr, localTimeStr, wallIsoAt, safeAnchorNow) — estratte lì perché
+// vitest.config.ts esclude e2e/** dalla scoperta dei test, quindi il test
+// unitario che le copre vive in tests/ e importa lo stesso modulo.
 // ─────────────────────────────────────────────
-
-function addMinutes(d: Date, minutes: number): Date {
-  return new Date(d.getTime() + minutes * 60_000)
-}
-
-/** Data locale YYYY-MM-DD (fuso del processo/browser — Europe/Rome in questo ambiente). */
-function localDateStr(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
-/** Ora locale HH:mm. */
-function localTimeStr(d: Date): string {
-  const h = String(d.getHours()).padStart(2, '0')
-  const m = String(d.getMinutes()).padStart(2, '0')
-  return `${h}:${m}`
-}
-
-/**
- * ISO "cifre = ora a muro" con offset finto +00:00 (dateUtils.ts): la data è
- * sempre quella canonica dello scenario (evita che due prenotazioni vicine a
- * mezzanotte finiscano su bucket-giorno diversi), l'ora riflette l'istante
- * reale passato.
- */
-function wallIsoAt(canonicalDate: string, instant: Date): string {
-  return `${canonicalDate}T${localTimeStr(instant)}:00+00:00`
-}
 
 /** Bottone del tavolo in piantina: aria-label/title iniziano con "{nome} — {stato} — ...". */
 function tableButton(page: Page, tableName: string): Locator {
@@ -179,7 +169,7 @@ test.describe('Avviso di fine turno con conferma', () => {
   }) => {
     const tenantId = await getTenantId()
     const slot = await createTempSlot(tenantId, 'RelA')
-    const NOW = new Date()
+    const NOW = safeAnchorNow()
     const arrival = addMinutes(NOW, -90)
     const end = addMinutes(NOW, -5) // 5' prima di NOW → già "in uscita" al caricamento
     const DATE = localDateStr(NOW)
@@ -251,7 +241,7 @@ test.describe('Avviso di fine turno con conferma', () => {
   test('"Libero" esegue il checkout append-only (booking non sparisce)', async ({ page }) => {
     const tenantId = await getTenantId()
     const slot = await createTempSlot(tenantId, 'RelB')
-    const NOW = new Date()
+    const NOW = safeAnchorNow()
     const arrival = addMinutes(NOW, -100)
     const end = addMinutes(NOW, -10)
     const DATE = localDateStr(NOW)
@@ -312,7 +302,7 @@ test.describe('Avviso di fine turno con conferma', () => {
   }) => {
     const tenantId = await getTenantId()
     const slot = await createTempSlot(tenantId, 'RelC')
-    const NOW = new Date()
+    const NOW = safeAnchorNow()
     const DATE = localDateStr(NOW)
     const roomName = `${E2E_SERVIZIO_PREFIX}Rel-C-Room`
     const tablePrefix = `${E2E_SERVIZIO_PREFIX}RelC-T`
@@ -547,7 +537,7 @@ test.describe('Stati del tavolo in sequenza', () => {
     const tenantId = await getTenantId()
     const slot = await createTempSlot(tenantId, 'States')
     const lateThresholdMinutes = await getLateThresholdMinutes(tenantId)
-    const NOW = new Date()
+    const NOW = safeAnchorNow()
     const DATE = localDateStr(NOW)
     const arrival = addMinutes(NOW, 5)
     // Finestra "in ritardo" di 6' dopo la soglia, prima di finire il pasto.
@@ -615,7 +605,7 @@ test.describe('Stati del tavolo in sequenza', () => {
     // solo nei test component-level. Verificato qui a video, non solo a codice.
     const tenantId = await getTenantId()
     const slot = await createTempSlot(tenantId, 'States2')
-    const NOW = new Date()
+    const NOW = safeAnchorNow()
     const DATE = localDateStr(NOW)
     const arrival = addMinutes(NOW, 5)
     const end = addMinutes(arrival, 30)
@@ -666,7 +656,7 @@ test.describe('Responsive 375px', () => {
   test('i pulsanti Libero / Ancora occupato restano dentro lo schermo', async ({ page }) => {
     const tenantId = await getTenantId()
     const slot = await createTempSlot(tenantId, 'Resp')
-    const NOW = new Date()
+    const NOW = safeAnchorNow()
     const arrival = addMinutes(NOW, -90)
     const end = addMinutes(NOW, -5)
     const DATE = localDateStr(NOW)
