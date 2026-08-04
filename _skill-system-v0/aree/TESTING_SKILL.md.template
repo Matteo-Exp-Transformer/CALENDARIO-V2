@@ -23,6 +23,19 @@ description: >-
 
 - **Prima di scrivere un test nuovo, verifica se ne esiste già uno utile** ed estendilo.
 - **Nessun test tocca dati di produzione.** {{specifica ambiente test}}.
+- **Un verde significa qualcosa solo se un rosso era possibile.** Un test che asserisce su un
+  elemento generico dell'interfaccia (contenitori di stato, «toast», due rami alternativi in `or`)
+  può restare verde mentre l'azione che dichiara di provare non avviene. Quando il test dice
+  *crea / cancella / modifica*, l'asserzione finale legge il **dato**, non lo schermo.
+- **La pulizia non va in `finally` se il test può scadere.** Molti runner interrompono il corpo del
+  test allo scadere del timeout, `finally` compreso: le scritture di ripristino non partono. Se il
+  test sovrascrive stato **condiviso** (impostazioni di un tenant, dati di un account di prova), la
+  pulizia va in un hook di teardown con budget di tempo proprio. Altrimenti il primo timeout lascia
+  lo stato sporco e il test successivo lo fotografa credendolo l'originale: il danno diventa
+  permanente e silenzioso.
+- **Verifica cosa copre davvero il gate.** Prima di fidarti di «lint e typecheck verdi» su un file di
+  test, controlla che le cartelle dei test non siano escluse dalla configurazione di lint/compilatore:
+  è un caso frequente, e rende quella frase vera e inutile insieme.
 
 ## 2. Quando usare cosa
 
@@ -38,6 +51,11 @@ Simuli un utente clic   → {{E2E runner}}
 {{comando_e2e}}         # E2E
 {{comando_validate}}    # gate pre-PR
 ```
+
+> **Prima di indagare un rosso E2E, rilancia quella spec da sola, un test alla volta.** Se la
+> batteria gira in parallelo, una quota dei rossi è contesa (login concorrenti sullo stesso account,
+> spec che si sovrascrivono lo stesso stato) e non difetti. È il filtro più economico che esista: un
+> minuto di run contro ore di indagine su guasti inesistenti.
 
 ## 4. Profilo Verifica — QA manuale (se applicabile)
 
