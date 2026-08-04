@@ -181,21 +181,39 @@ test.describe('Pagina Prenota smoke', () => {
     await expect(page.locator('#client_name-error')).toHaveText('Nome obbligatorio')
   })
 
-  test('link privacy ritorna a /prenota/:slug', async ({ page }) => {
+  /**
+   * RISCRITTO 04-08-26. Prima questo test cercava un collegamento
+   * `<a href="/privacy?from=%2Fprenota%2F:slug">` e verificava andata e ritorno fra le
+   * due pagine. Sulla pagina Prenota di oggi quel collegamento non esiste più: «Privacy
+   * Policy» è un **pulsante** che apre una finestra sopra il form
+   * (`DietaryRestrictionsSection.tsx:286-295` → `PrivacyPolicyModal.tsx:26`), e il
+   * cliente non lascia mai la pagina. Il test era quindi rosso per un motivo che non
+   * riguardava un difetto: descriveva un'app precedente.
+   *
+   * La garanzia che conta oggi è la stessa di allora, detta sulla nuova interfaccia:
+   * il cliente può leggere la privacy **senza perdere quello che ha già compilato**.
+   */
+  test('la privacy si apre in una finestra e non fa perdere il form', async ({ page }) => {
     await page.goto(bookingUrl)
 
-    const privacyLink = page.getByRole('link', { name: /privacy policy/i })
-    await expect(privacyLink).toHaveAttribute('href', new RegExp(`/privacy\\?from=%2Fprenota%2F${tenantSlug}$`))
-    await expect(privacyLink).not.toHaveAttribute('target', '_blank')
+    const nameInput = page.locator('#client_name-control')
+    await expect(nameInput).toBeVisible({ timeout: 10000 })
+    await nameInput.fill('E2E Privacy Modale')
 
-    await privacyLink.click()
-    await expect(page).toHaveURL(new RegExp(`/privacy\\?from=%2Fprenota%2F${tenantSlug}$`))
+    const privacyButton = page.getByRole('button', { name: /privacy policy/i })
+    await expect(privacyButton).toBeVisible()
+    await privacyButton.click()
 
-    await page.getByRole('button', { name: /torna alla prenotazione/i }).click()
+    const privacyDialog = page.getByRole('dialog').filter({ hasText: /privacy policy/i })
+    await expect(privacyDialog).toBeVisible({ timeout: 10000 })
+    // Resta sulla pagina Prenota: nessuna navigazione, niente `/privacy`.
     await expect(page).toHaveURL(new RegExp(`/prenota/${tenantSlug}$`))
 
-    await page.goBack()
-    await expect(page).not.toHaveURL(new RegExp(`/prenota/${tenantSlug}$`))
+    await privacyDialog.getByRole('button', { name: /chiudi/i }).first().click()
+    await expect(privacyDialog).not.toBeVisible()
+    await expect(page).toHaveURL(new RegExp(`/prenota/${tenantSlug}$`))
+    // Il nome digitato prima di aprire la finestra è ancora lì.
+    await expect(nameInput).toHaveValue('E2E Privacy Modale')
   })
 
   // @prenota-blindatura: e2e-summary-total-label

@@ -546,6 +546,24 @@ export async function deleteBookingsByPrefix(tenantId: string, prefix = E2E_BOOK
   )
 }
 
+/**
+ * Prenotazioni di un tenant il cui nome cliente inizia col prefisso dato.
+ *
+ * Serve ai test del form pubblico per dimostrare che il submit ha davvero creato la
+ * riga: senza questa lettura l'unica prova disponibile è un elemento a schermo, e un
+ * locator generoso (`[role="status"]`, `[class*="toast"]`) diventa verde anche quando
+ * la prenotazione non è mai partita — è successo davvero su `public-booking.spec.ts`.
+ */
+export async function getBookingsByNamePrefix(
+  tenantId: string,
+  prefix: string,
+): Promise<Array<{ id: string; client_name: string; status: string; num_guests: number }>> {
+  return rest<Array<{ id: string; client_name: string; status: string; num_guests: number }>>(
+    `booking_requests?tenant_id=eq.${tenantId}&client_name=like.${encodeURIComponent(prefix)}*` +
+      `&select=id,client_name,status,num_guests&order=created_at.desc`,
+  )
+}
+
 export async function getBookingStatus(bookingId: string): Promise<string | null> {
   const rows = await rest<Array<{ status: string }>>(
     `booking_requests?id=eq.${bookingId}&select=status&limit=1`,

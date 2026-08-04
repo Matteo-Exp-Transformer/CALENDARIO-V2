@@ -10,19 +10,38 @@
  * - Cancella prenotazione (soft-delete) nel browser
  *
  * Richiede staging Supabase con:
- *   E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD → admin di un tenant classic
+ *   E2E_CLASSIC_ADMIN_EMAIL / E2E_CLASSIC_ADMIN_PASSWORD → admin di un tenant edition='classic'
+ *   E2E_CLASSIC_TENANT_SLUG → slug del tenant classic (default 'test-classic')
+ *   E2E_SUPABASE_SERVICE_KEY → per seminare/ripulire la prenotazione del test cancellazione
  * Configurare in .env.local.test (vedi playwright.config.ts).
+ *
+ * NOTA: prima leggeva E2E_ADMIN_EMAIL/E2E_ADMIN_PASSWORD, ma in .env.local.test quelle chiavi
+ * puntano a tomas@t.com sul tenant da-tommaso (edition='pro' — vedi commento righe 26-33 di
+ * .env.local.test). Con quell'account `loginAsClassicAdmin` aspettava "nessuna sidebar" su un
+ * tenant che la sidebar ce l'ha davvero, facendo fallire ogni test qui sotto per un motivo
+ * estraneo ai tab Classic. Allineato alle stesse credenziali di edition-classic.spec.ts /
+ * admin-shell-blindatura.spec.ts.
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
+import {
+  deleteBookingsByPrefix,
+  getBookingStatus,
+  getTenantIdBySlug,
+  insertBooking,
+  isoStartEnd,
+  todayIsoDate,
+} from './helpers/supabaseStaging'
 
 // SKIP: richiede staging Supabase configurato con tenant edition='classic'
-test.skip(!process.env.E2E_ADMIN_EMAIL, 'richiede staging Supabase (E2E_ADMIN_EMAIL non impostato)')
+test.skip(!process.env.E2E_CLASSIC_ADMIN_EMAIL, 'richiede staging Classic (E2E_CLASSIC_ADMIN_EMAIL non impostato)')
 
-const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? ''
-const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? ''
+const ADMIN_EMAIL = process.env.E2E_CLASSIC_ADMIN_EMAIL ?? ''
+const ADMIN_PASSWORD = process.env.E2E_CLASSIC_ADMIN_PASSWORD ?? ''
+const CLASSIC_TENANT_SLUG = process.env.E2E_CLASSIC_TENANT_SLUG ?? 'test-classic'
+const BOOKING_PREFIX = 'E2E-ADMCLS-'
 
-async function loginAsClassicAdmin(page: import('@playwright/test').Page) {
+async function loginAsClassicAdmin(page: Page) {
   await page.goto('/admin')
   await page.getByLabel(/email/i).fill(ADMIN_EMAIL)
   await page.getByLabel(/password/i).fill(ADMIN_PASSWORD)
@@ -38,8 +57,20 @@ async function loginAsClassicAdmin(page: import('@playwright/test').Page) {
  * Scende nel <nav> del header per evitare ambiguità con bottoni omonimi
  * presenti in altri tab (es. "Calendario" in ArchiveTab su mobile).
  */
-function dashboardNav(page: import('@playwright/test').Page) {
+function dashboardNav(page: Page) {
   return page.locator('header nav')
+}
+
+/**
+ * Locator reale per un evento prenotazione nel calendario FullCalendar (stesso aggancio usato
+ * in edition-classic.spec.ts): `.booking-calendar-fc` avvolge FullCalendar
+ * (src/features/booking/components/BookingCalendar.tsx:1115), `.fc-event` è la classe che la
+ * libreria FullCalendar applica a ogni evento renderizzato (BookingCalendar.tsx:888, :952-1039).
+ * Non esiste nel markup un `data-testid`/`role="row"` per la riga prenotazione — quelli usati
+ * prima (`tr[role="row"]`, `[data-testid="booking-row"]`) non hanno zero occorrenze in src/.
+ */
+function bookingEvent(page: Page, clientName: string) {
+  return page.locator('.booking-calendar-fc .fc-event').filter({ hasText: clientName })
 }
 
 test.describe('Admin Classic — Tab Archivio', () => {
@@ -87,48 +118,63 @@ test.describe('Admin Classic — Tab Impostazioni', () => {
 })
 
 test.describe('Admin Classic — Cancella prenotazione (soft-delete)', () => {
+  // Il bottone "Elimina" (soft-delete → status='deleted', useCancelBooking in
+  // useBookingMutations.ts:548-582) vive nel drawer BookingDetailsModal, che si apre solo
+  // cliccando l'evento di una prenotazione ACCETTATA nel Calendario — non nel tab Prenotazioni
+  // (quello mostra solo le richieste PENDING con Accetta/Rifiuta, mai un modal, vedi
+  // src/features/booking/components/PendingRequestsTab.tsx e BookingRequestCard.tsx). Semina
+  // quindi una prenotazione già accettata e passa dal Calendario.
   test('cancellazione prenotazione rimuove dalla lista attiva', async ({ page }) => {
-    await loginAsClassicAdmin(page)
-    // Vai al tab Prenotazioni
-    await dashboardNav(page).getByRole('button', { name: /prenotazioni/i }).click()
+    const tenantId = await getTenantIdBySlug(CLASSIC_TENANT_SLUG)
+    const clientName = `${BOOKING_PREFIX}Cancel-${Date.now()}`
+    const date = todayIsoDate()
+    const { start, end } = isoStartEnd(date, '19:00')
 
-    // Cerca una riga prenotazione cliccabile
-    const firstBookingRow = page
-      .locator('tr[role="row"], [data-testid="booking-row"]')
-      .first()
+    const bookingId = await insertBooking({
+      tenantId,
+      clientName,
+      status: 'accepted',
+      desiredDate: date,
+      desiredTime: '19:00',
+      numGuests: 2,
+      confirmedStart: start,
+      confirmedEnd: end,
+    })
 
-    if (!(await firstBookingRow.isVisible())) {
-      // Se non ci sono prenotazioni nel DB staging, il test è un no-op documentato
-      test.skip(true, 'nessuna prenotazione disponibile nel DB staging per testare la cancellazione')
-      return
+    try {
+      await loginAsClassicAdmin(page)
+      await dashboardNav(page).getByRole('button', { name: /calendario/i }).click()
+      // Vista "Giorno": timeline del giorno corrente, niente cap "+N altri" (dayMaxEvents è
+      // solo per la vista Mese) che nasconderebbe l'evento seminato dietro un "+più".
+      await page.getByRole('group', { name: 'Viste calendario' }).getByRole('button', { name: 'Giorno' }).click()
+
+      const event = bookingEvent(page, clientName)
+      await expect(event).toBeVisible({ timeout: 10000 })
+      await event.click()
+
+      // Il modal dettagli prenotazione (BookingDetailsModal) non ha role="dialog": si
+      // riconosce dall'heading "Dettagli Prenotazione" (BookingDetailsModal.tsx:952).
+      const modalHeading = page.getByRole('heading', { name: 'Dettagli Prenotazione' })
+      await expect(modalHeading).toBeVisible({ timeout: 5000 })
+
+      // Bottone "Elimina" nel footer del drawer (BookingDetailsModal.tsx:1110-1118).
+      await page.getByRole('button', { name: 'Elimina', exact: true }).click()
+
+      // Conferma: BookingDangerActionModal HA role="dialog" (BookingDangerActionModal.tsx:109).
+      const confirmDialog = page.getByRole('dialog').filter({ hasText: /Elimina Prenotazione Accettata/i })
+      await expect(confirmDialog).toBeVisible({ timeout: 5000 })
+      await confirmDialog.getByRole('button', { name: 'Elimina Prenotazione' }).click()
+
+      // Il drawer si chiude e la prenotazione sparisce dal calendario (lista attiva)
+      await expect(modalHeading).not.toBeVisible({ timeout: 5000 })
+      await expect(event).not.toBeVisible({ timeout: 5000 })
+
+      // Riprova oggettiva sul DB: soft-delete = status passato a 'deleted' (non una riga cancellata)
+      await expect
+        .poll(() => getBookingStatus(bookingId), { timeout: 10000 })
+        .toBe('deleted')
+    } finally {
+      await deleteBookingsByPrefix(tenantId, BOOKING_PREFIX).catch(() => {})
     }
-
-    await firstBookingRow.click()
-
-    // Il modal dettagli prenotazione deve aprirsi
-    const modal = page.locator('[role="dialog"]')
-    await expect(modal).toBeVisible({ timeout: 5000 })
-
-    // Cerca il bottone di cancellazione nel modal
-    const cancelBtn = modal.getByRole('button', { name: /cancell|annull|elimina|delete/i })
-    if (!(await cancelBtn.isVisible())) {
-      // Se il bottone non è nel modal prova a cercarlo fuori
-      const cancelBtnPage = page.getByRole('button', { name: /cancell|annull|elimina|delete/i }).first()
-      if (!(await cancelBtnPage.isVisible())) {
-        test.skip(true, 'bottone cancellazione non trovato — verifica il selettore con il layout corrente')
-        return
-      }
-      await cancelBtnPage.click()
-    } else {
-      await cancelBtn.click()
-    }
-
-    // Dopo la cancellazione il modal si chiude o appare un toast di conferma
-    await Promise.race([
-      expect(modal).not.toBeVisible({ timeout: 5000 }),
-      expect(page.getByRole('alert').or(page.locator('[class*="toast"]')).first()).toBeVisible({
-        timeout: 5000,
-      }),
-    ])
   })
 })

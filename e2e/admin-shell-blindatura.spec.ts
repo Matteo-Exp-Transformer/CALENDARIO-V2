@@ -27,11 +27,12 @@ async function loginAsClassicAdmin(page: Page) {
   await page.getByLabel(/email/i).fill(CLASSIC_EMAIL)
   await page.getByLabel(/password/i).fill(CLASSIC_PASSWORD)
   await page.getByRole('button', { name: /accedi|login/i }).click()
-  try {
-    await expect(page).toHaveURL(/\/admin/, { timeout: 5000 })
-  } catch {
-    test.skip(true, 'credenziali Classic presenti ma login non riuscito su questo staging')
-  }
+  // Fallimento reale (non skip): credenziali Classic presenti in .env.local.test ma il login
+  // non ha portato su /admin — l'errore Playwright mostra URL atteso vs reale.
+  await expect(
+    page,
+    'Login Classic fallito: E2E_CLASSIC_ADMIN_EMAIL/PASSWORD sono impostati ma non hanno autenticato su questo staging',
+  ).toHaveURL(/\/admin/, { timeout: 10000 })
   await expect(dashboardHeaderNav(page)).toBeVisible({ timeout: 15000 })
   await expect(sidebarNav(page)).not.toBeVisible()
 }

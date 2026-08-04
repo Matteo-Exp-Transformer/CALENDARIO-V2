@@ -32,6 +32,14 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? ''
 const SERVICE_KEY = process.env.E2E_SUPABASE_SERVICE_KEY ?? ''
 const TENANT_ID = process.env.E2E_CLASSIC_TENANT_ID ?? ''
 
+/**
+ * PostgREST con `Prefer: return=minimal` risponde 200 anche quando il filtro `id=eq.…` non
+ * combacia con nessuna riga (0 righe aggiornate) — è così che per mesi questo test è passato
+ * "verde" pur non aggiornando mai nulla, perché E2E_CLASSIC_TENANT_ID in .env.local.test
+ * puntava a un UUID inesistente su TEST. `return=representation` fa tornare le righe
+ * effettivamente aggiornate: se l'array è vuoto, l'update non ha toccato niente e l'helper
+ * deve rompersi invece di fingere successo.
+ */
 async function setTenantEdition(edition: 'classic' | 'pro') {
   const resp = await fetch(
     `${SUPABASE_URL}/rest/v1/organizations?id=eq.${TENANT_ID}`,
@@ -41,12 +49,18 @@ async function setTenantEdition(edition: 'classic' | 'pro') {
         apikey: SERVICE_KEY,
         Authorization: `Bearer ${SERVICE_KEY}`,
         'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
+        Prefer: 'return=representation',
       },
       body: JSON.stringify({ edition }),
     },
   )
   if (!resp.ok) throw new Error(`setTenantEdition failed: ${resp.status}`)
+  const rows = (await resp.json()) as Array<{ id: string; edition: string }>
+  if (rows.length === 0) {
+    throw new Error(
+      `setTenantEdition('${edition}') non ha aggiornato nessuna riga: E2E_CLASSIC_TENANT_ID (${TENANT_ID}) non corrisponde a nessun tenant su questo staging (VITE_SUPABASE_URL=${SUPABASE_URL})`,
+    )
+  }
 }
 
 test.describe('Edition Upgrade — Classic → Pro', () => {
@@ -64,11 +78,12 @@ test.describe('Edition Upgrade — Classic → Pro', () => {
     await page.getByLabel(/email/i).fill(ADMIN_EMAIL)
     await page.getByLabel(/password/i).fill(ADMIN_PASSWORD)
     await page.getByRole('button', { name: /accedi|login/i }).click()
-    try {
-      await expect(page).toHaveURL(/\/admin/, { timeout: 5000 })
-    } catch {
-      test.skip(true, 'credenziali Classic upgrade presenti ma login non riuscito su questo staging')
-    }
+    // Fallimento reale (non skip): credenziali presenti in .env.local.test ma il login non ha
+    // portato su /admin — l'errore Playwright mostra URL atteso vs reale.
+    await expect(
+      page,
+      'Login Classic upgrade fallito: E2E_CLASSIC_ADMIN_EMAIL/PASSWORD sono impostati ma non hanno autenticato su questo staging',
+    ).toHaveURL(/\/admin/, { timeout: 10000 })
 
     // Attende che la dashboard Classic sia pronta (sidebar assente = caricamento completato)
     await expect(page.getByRole('complementary', { name: /navigazione principale/i })).not.toBeVisible({
@@ -90,9 +105,16 @@ test.describe('Edition Upgrade — Classic → Pro', () => {
       timeout: 15000,
     })
 
-    // 7. Le sezioni Pro devono essere accessibili nella sidebar
-    await expect(page.getByRole('button', { name: /crm clienti/i })).toBeVisible()
-    await expect(page.getByRole('button', { name: /servizio/i })).toBeVisible()
-    await expect(page.getByRole('button', { name: /analytics/i })).toBeVisible()
+    // 7. Le sezioni Pro devono essere accessibili nella sidebar.
+    // Scope obbligato alla sidebar: getByRole('button', {name: /servizio/i}) su tutta la pagina
+    // risolve in strict-mode violation, perché la Home Pro ha ANCHE una card cliccabile
+    // "Servizio Gestione tavoli e…" (AdminShell.tsx:117 quick-nav Home) con lo stesso testo.
+    // La sidebar è l'unico <aside aria-label="Navigazione principale"> (AdminShell.tsx:274-285,
+    // ruolo implicito "complementary"); le sue voci hanno label letterali "Servizio"/"CRM
+    // Clienti"/"Analytics" (AdminShell.tsx:80-95, SIDEBAR_NAV_ITEMS).
+    const sidebar = page.getByRole('complementary', { name: /navigazione principale/i })
+    await expect(sidebar.getByRole('button', { name: /crm clienti/i })).toBeVisible()
+    await expect(sidebar.getByRole('button', { name: 'Servizio', exact: true })).toBeVisible()
+    await expect(sidebar.getByRole('button', { name: /analytics/i })).toBeVisible()
   })
 })

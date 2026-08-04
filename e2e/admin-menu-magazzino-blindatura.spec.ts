@@ -80,7 +80,13 @@ async function openCategory(page: Page, categoryLabel: string): Promise<Locator>
   const header = categoryHeader(page, categoryLabel)
   await expect(header).toBeVisible({ timeout: 15000 })
   if ((await header.getAttribute('aria-expanded')) !== 'true') {
-    await header.click()
+    // Si clicca il TITOLO, non l'intestazione intera: a 375px la riga è stretta e il
+    // centro dell'intestazione — dove Playwright clicca — cade su uno dei bottoni
+    // interni (sposta su/giù, «Nascondi in Prenota e Menu QR»). Nello snapshot di
+    // errore della run del 04-08-26 quel bottone risultava infatti premuto: il test
+    // non solo non apriva la categoria, le cambiava anche la visibilità sotto i piedi.
+    // Il click sul titolo risale all'onClick dell'intestazione e non tocca i comandi.
+    await header.getByRole('heading').click()
   }
   await expect(header).toHaveAttribute('aria-expanded', 'true')
   const content = await categoryContent(page, header)
@@ -161,7 +167,14 @@ async function selectPublicBookingMenuMode(page: Page, presetId: string, options
     .first()
   await expect(menuCard).toBeVisible({ timeout: 15000 })
   await menuCard.click()
-  await page.getByTestId(`booking-sub-tab-card-subtab-${presetId}`).click()
+
+  // Il seed monta due sotto-schede apposta (vedi `buildE2eBookingPublicFormConfig`):
+  // la striscia di card esiste solo da 2 in su, ed è l'unico modo per far applicare
+  // il preset collegato. Selezionarla è quindi parte dello scenario, non un dettaglio.
+  const subTabCard = page.getByTestId(`booking-sub-tab-card-subtab-${presetId}`)
+  await expect(subTabCard).toBeVisible({ timeout: 15000 })
+  await subTabCard.click()
+
   if (options?.expectGrid !== false) {
     await expect(page.getByTestId('booking-menu-compose-grid')).toBeVisible({ timeout: 15000 })
   }
@@ -219,11 +232,27 @@ function buildE2eBookingPublicFormConfig(presetId: string, label: string) {
         icon: 'bowl_food',
         sub_tabs_enabled: true,
         sub_tabs_presentation: 'cards',
+        // DUE sotto-schede, non una. La striscia di card che permette di sceglierle
+        // esiste solo da 2 in su (`BookingRequestForm.tsx:1300`,
+        // `activeModeSubTabs.length > 1`). Con una sola, `activeSubTabId` resta `null`,
+        // il preset collegato non viene mai applicato (`:459-462`) e la griglia mostra
+        // il menù intero del locale invece dei soli ingredienti del preset: il test
+        // cercava allora una card inesistente e restava appeso 2 minuti.
+        // ⚠️ Che con UNA sola sotto-scheda «a card» il preset non venga mai applicato
+        // è una domanda di prodotto aperta (per il carosello esiste l'auto-selezione,
+        // `:528-533`; per le card no) — annotata per Matteo, non decisa qui.
         sub_tabs: [
           {
             id: `subtab-${presetId}`,
             display: 'cards',
             label,
+            preset_id: presetId,
+            is_fixed_menu: false,
+          },
+          {
+            id: `subtab-alt-${presetId}`,
+            display: 'cards',
+            label: `${label} alt`.slice(0, 24),
             preset_id: presetId,
             is_fixed_menu: false,
           },
@@ -236,6 +265,62 @@ function buildE2eBookingPublicFormConfig(presetId: string, label: string) {
 test.describe('Admin Menu magazzino — QA browser M3', () => {
   test.describe.configure({ mode: 'serial' })
   test.skip(!hasE2eCreds, 'richiede credenziali staging in .env.local.test')
+
+  /**
+   * Stato da ripulire, tenuto FUORI dal corpo del test.
+   *
+   * Perché non basta un `finally` dentro il test (com'era fino al 04-08-26): quando
+   * Playwright fa scattare il timeout del test (`test.setTimeout(120000)`) interrompe il
+   * corpo **compreso il `finally`**, e le `await` di ripristino non arrivano mai al server.
+   * Risultato osservato sul DB TEST: `booking_public_form_config` di `da-tommaso` è rimasto
+   * la configurazione finta di questo test, e la variante di viewport successiva ne ha
+   * fatto lo snapshot credendolo l'originale — così il travestimento è diventato
+   * permanente (`restaurant_name` era «QA 375» dal 16-06-26).
+   * `afterEach` ha un budget di tempo suo, separato da quello del test: gira anche dopo
+   * un timeout ed è l'unico posto in cui il ripristino è garantito.
+   */
+  type PendingCleanup = {
+    tenantId: string
+    categoryKey: string
+    shortCode: string
+    categoryId: string
+    itemId: string
+    staffPresetsSnapshot: RestaurantSettingSnapshot | null
+    bookingConfigSnapshot: RestaurantSettingSnapshot | null
+  }
+
+  let pending: PendingCleanup | null = null
+
+  async function runPendingCleanup() {
+    if (!pending) return
+    const state = pending
+    pending = null
+    if (state.categoryId) {
+      await setMenuCategoryAvailability(state.tenantId, state.categoryId, true).catch(() => {})
+    }
+    if (state.itemId) {
+      await setMenuItemAvailability(state.tenantId, state.itemId, true).catch(() => {})
+    }
+    if (state.bookingConfigSnapshot) {
+      await restoreRestaurantSettingSnapshot(
+        state.tenantId,
+        'booking_public_form_config',
+        state.bookingConfigSnapshot,
+      ).catch(() => {})
+    }
+    if (state.staffPresetsSnapshot) {
+      await restoreRestaurantSettingSnapshot(
+        state.tenantId,
+        'booking_custom_staff_presets',
+        state.staffPresetsSnapshot,
+      ).catch(() => {})
+    }
+    await deleteMenuE2eData(state.tenantId, state.categoryKey, state.shortCode).catch(() => {})
+  }
+
+  // Rete di sicurezza: gira col proprio budget di tempo, quindi anche quando il test è
+  // stato interrotto dal timeout e il suo `finally` non ha fatto in tempo.
+  test.afterEach(runPendingCleanup)
 
   for (const viewport of VIEWPORTS) {
     test(`toggle disponibilità e propagazione QR (${viewport.label}) ${viewport.tag}`, async ({ page }) => {
@@ -254,6 +339,20 @@ test.describe('Admin Menu magazzino — QA browser M3', () => {
       let itemId = ''
       let staffPresetsSnapshot: RestaurantSettingSnapshot | null = null
       let bookingConfigSnapshot: RestaurantSettingSnapshot | null = null
+
+      // Registrato PRIMA di creare qualsiasi cosa: da qui in poi `afterEach` sa cosa
+      // ripulire anche se il test muore a metà. Gli id/snapshot vengono aggiornati per
+      // riferimento man mano che esistono.
+      const state: PendingCleanup = {
+        tenantId,
+        categoryKey,
+        shortCode,
+        categoryId,
+        itemId,
+        staffPresetsSnapshot,
+        bookingConfigSnapshot,
+      }
+      pending = state
 
       try {
         await deleteMenuE2eData(tenantId, categoryKey, shortCode)
@@ -277,6 +376,8 @@ test.describe('Admin Menu magazzino — QA browser M3', () => {
         })
         categoryId = category.id
         itemId = item.id
+        state.categoryId = categoryId
+        state.itemId = itemId
 
         const presetId = crypto.randomUUID()
         const presetLabel = `${E2E_MENU_PREFIX}Card ${viewport.label}`.slice(0, 24)
@@ -288,6 +389,11 @@ test.describe('Admin Menu magazzino — QA browser M3', () => {
           tenantId,
           'booking_public_form_config',
         )
+        // Gli snapshot vanno passati ad `afterEach` PRIMA di sovrascrivere le due chiavi:
+        // se il test muore fra la lettura e la scrittura, non c'è niente da ripristinare;
+        // se muore dopo, `afterEach` ha già in mano l'originale.
+        state.staffPresetsSnapshot = staffPresetsSnapshot
+        state.bookingConfigSnapshot = bookingConfigSnapshot
         await upsertRestaurantSettingValue(tenantId, 'booking_custom_staff_presets', [
           buildE2eStaffPreset(presetId, itemId, presetLabel),
         ])
@@ -368,23 +474,9 @@ test.describe('Admin Menu magazzino — QA browser M3', () => {
 
         expect(browserErrors, 'errori console/browser').toEqual([])
       } finally {
-        if (categoryId) await setMenuCategoryAvailability(tenantId, categoryId, true).catch(() => {})
-        if (itemId) await setMenuItemAvailability(tenantId, itemId, true).catch(() => {})
-        if (bookingConfigSnapshot) {
-          await restoreRestaurantSettingSnapshot(
-            tenantId,
-            'booking_public_form_config',
-            bookingConfigSnapshot,
-          ).catch(() => {})
-        }
-        if (staffPresetsSnapshot) {
-          await restoreRestaurantSettingSnapshot(
-            tenantId,
-            'booking_custom_staff_presets',
-            staffPresetsSnapshot,
-          ).catch(() => {})
-        }
-        await deleteMenuE2eData(tenantId, categoryKey, shortCode).catch(() => {})
+        // Percorso normale. Se il test viene interrotto dal timeout questo blocco non
+        // arriva in fondo: la stessa pulizia gira allora da `afterEach`.
+        await runPendingCleanup()
       }
     })
   }

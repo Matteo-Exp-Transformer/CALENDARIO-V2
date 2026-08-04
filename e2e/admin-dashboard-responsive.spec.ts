@@ -19,8 +19,10 @@ test.describe('Admin Dashboard Responsive Layout @viewport:mobile-375', () => {
   test('should display nav tabs vertically on mobile 375px with readable labels', async ({ page }) => {
     await loginAsClassicAdmin(page)
 
-    // Scatta screenshot del layout mobile con label leggibili
-    await page.screenshot({ path: 'admin-dashboard-mobile-375.png', fullPage: false })
+    // Screenshot di appoggio per l'ispezione a occhio: nessuna asserzione ci si basa sopra.
+    // Va in test-results/ (gitignored): prima finiva nella root del repo e ogni run e2e
+    // lasciava tre PNG non tracciati nel working tree.
+    await page.screenshot({ path: 'test-results/admin-dashboard-mobile-375.png', fullPage: false })
 
     // Verifica che i tab siano visibili
     const headerNav = page.locator('header nav')
@@ -48,7 +50,7 @@ test.describe('Admin Dashboard Responsive Layout @viewport:tablet-834', () => {
 
   test('should display nav tabs horizontally on tablet 900px', async ({ page }) => {
     await loginAsClassicAdmin(page)
-    await page.screenshot({ path: 'admin-dashboard-tablet-900.png', fullPage: false })
+    await page.screenshot({ path: 'test-results/admin-dashboard-tablet-900.png', fullPage: false })
 
     // Verifica che il nav sia visibile
     const headerNav = page.locator('header nav')
@@ -61,7 +63,7 @@ test.describe('Admin Dashboard Responsive Layout - Desktop', () => {
 
   test('should display nav tabs horizontally on desktop 1256px', async ({ page }) => {
     await loginAsClassicAdmin(page)
-    await page.screenshot({ path: 'admin-dashboard-desktop-1256.png', fullPage: false })
+    await page.screenshot({ path: 'test-results/admin-dashboard-desktop-1256.png', fullPage: false })
 
     // Verifica che il nav sia visibile
     const headerNav = page.locator('header nav')
