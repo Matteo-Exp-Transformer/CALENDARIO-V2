@@ -408,6 +408,14 @@ export async function getServiceSlots(tenantId: string): Promise<ServiceSlotRow[
   )
 }
 
+export async function getServiceSlotMaxTurns(slotId: string): Promise<number | null> {
+  const rows = await rest<Array<{ max_turns: number | null }>>(
+    `service_slots?id=eq.${slotId}&select=max_turns&limit=1`,
+  )
+  if (!rows[0]) throw new Error(`Service slot non trovata: ${slotId}`)
+  return rows[0].max_turns
+}
+
 export async function getServiceSlotsSnapshot(tenantId: string): Promise<ServiceSlotsSnapshot> {
   const slots = await rest<ServiceSlotFullRow[]>(
     `service_slots?tenant_id=eq.${tenantId}&select=*&order=display_order`,
@@ -692,6 +700,13 @@ export async function getBookingServedAt(bookingId: string): Promise<string | nu
     `booking_requests?id=eq.${bookingId}&select=served_at&limit=1`,
   )
   return rows[0]?.served_at ?? null
+}
+
+export async function getTableActive(tableId: string): Promise<boolean | null> {
+  const rows = await rest<Array<{ active: boolean }>>(
+    `tables?id=eq.${tableId}&select=active&limit=1`,
+  )
+  return rows[0]?.active ?? null
 }
 
 /**

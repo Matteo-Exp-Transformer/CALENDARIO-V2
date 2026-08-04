@@ -2,7 +2,8 @@
  * @admin-blindatura: servizio
  * Copre: COLLAUDO_S4_CHECKLIST.md §2.2 (avviso fine turno con conferma),
  * §2.3 (tavolata su più tavoli + archiviazione S4-REQ-3), §3 (5 stati tavolo in
- * sequenza), §9 ultima riga (responsive 375px, finestra fine turno).
+ * sequenza), §9 ultima riga (responsive 375px, finestra fine turno), e Fase 2
+ * piano senior §4 riga 2 (chiusura fascia → form pubblico).
  *
  * Queste voci non sono mai state collaudate a mano perché legate al tempo reale
  * (serve aspettare che i minuti passino davvero per vedere un tavolo passare a
@@ -60,18 +61,22 @@ import { test, expect, type Page, type Locator } from '@playwright/test'
 import {
   getTenantIdBySlug,
   getRestaurantSettingSnapshot,
+  getServiceSlotMaxTurns,
   insertRoom,
   insertTable,
   insertTableAssignment,
   insertBooking,
   insertServiceSlot,
+  restoreRestaurantSettingSnapshot,
   deleteServiceSlotsByPrefix,
   getTableAssignmentsForBooking,
   getBookingServedAt,
+  getTableActive,
   getBookingStatus,
   deleteBookingsByPrefix,
   deleteTablesByPrefix,
   deleteRoomsByPrefix,
+  upsertRestaurantSettingValue,
   offsetIsoDate,
   E2E_SERVIZIO_PREFIX,
 } from '../helpers/supabaseStaging'
@@ -112,9 +117,45 @@ async function openServizioMappa(page: Page) {
   await page.getByRole('button', { name: /^Mappa$/i }).click()
 }
 
+/** Login → Servizio → tab Lista (gestione sale/tavoli). */
+async function openServizioLista(page: Page) {
+  await loginAsProAdmin(page)
+  await sidebarNav(page).getByRole('button', { name: /servizio/i }).click()
+  await expect(page.getByRole('heading', { name: /^Servizio$/i })).toBeVisible({ timeout: 10000 })
+  await page.getByRole('button', { name: /^Lista$/i }).click()
+}
+
 async function selectDateAndSlot(page: Page, date: string, slotId: string) {
   await page.getByLabel('Data', { exact: true }).fill(date)
   await page.getByLabel('Fascia oraria', { exact: true }).selectOption(slotId)
+}
+
+function makeTavoloOnlyFormConfig() {
+  return {
+    page_title: 'Prenota E2E servizio',
+    page_description: 'Config temporanea per verificare le fasce chiuse.',
+    booking_modes: [
+      {
+        id: 'tavolo',
+        booking_type: 'tavolo',
+        enabled: true,
+        label: 'Tavolo',
+        description: 'Prenota un tavolo.',
+        icon: 'fork_knife',
+        sub_tabs_enabled: false,
+        sub_tabs_presentation: null,
+        sub_tabs: [],
+      },
+    ],
+  }
+}
+
+async function openPublicTimeDialog(page: Page) {
+  await expect(page.locator('#booking-request-form')).toBeVisible({ timeout: 15000 })
+  await page.locator('#desired_time-control').click()
+  const dialog = page.getByRole('dialog', { name: /scegli l'orario/i })
+  await expect(dialog).toBeVisible({ timeout: 10000 })
+  return dialog
 }
 
 // ─────────────────────────────────────────────
@@ -158,6 +199,144 @@ async function createTempSlot(tenantId: string, label: string): Promise<{ id: st
   const name = `${E2E_SERVIZIO_PREFIX}Slot-${label}-${Date.now()}-${tempSlotCounter}`
   return insertServiceSlot({ tenantId, name })
 }
+
+// ─────────────────────────────────────────────
+// 0. Fase 2 — Eliminazione tavolo occupato (FIX 0.1)
+// ─────────────────────────────────────────────
+
+test.describe('Eliminazione tavolo occupato', () => {
+  test('da Lista avvisa, rimuove il tavolo e riporta la prenotazione da assegnare senza servirla', async ({
+    page,
+  }) => {
+    const tenantId = await getTenantId()
+    const slot = await createTempSlot(tenantId, 'DelOcc')
+    const DATE = offsetIsoDate(120)
+    const roomName = `${E2E_SERVIZIO_PREFIX}DelOcc-Room`
+    const tableName = `${E2E_SERVIZIO_PREFIX}DelOcc-T1`
+    const clientName = `${E2E_SERVIZIO_PREFIX}DelOcc-Cliente`
+
+    const room = await insertRoom({ tenantId, name: roomName })
+    const table = await insertTable({ tenantId, roomId: room.id, name: tableName, capacity: 4 })
+    const bookingId = await insertBooking({
+      tenantId,
+      clientName,
+      status: 'accepted',
+      desiredDate: DATE,
+      desiredTime: '20:00',
+      numGuests: 4,
+      confirmedStart: wallIsoAt(DATE, new Date(`${DATE}T20:00:00`)),
+      confirmedEnd: wallIsoAt(DATE, new Date(`${DATE}T23:00:00`)),
+    })
+    await insertTableAssignment({
+      tenantId,
+      bookingId,
+      tableId: table.id,
+      serviceSlotId: slot.id,
+      date: DATE,
+    })
+
+    try {
+      await openServizioLista(page)
+
+      await expect(page.getByRole('heading', { name: roomName })).toBeVisible({ timeout: 10000 })
+      await expect(page.getByText(tableName, { exact: true })).toBeVisible()
+
+      await page.getByRole('button', { name: `Elimina ${tableName}`, exact: true }).click()
+      await expect(page.getByText(/questo tavolo ha 1 prenotazione assegnata/i)).toBeVisible({
+        timeout: 10000,
+      })
+      await page.getByRole('button', { name: /sì, elimina/i }).click()
+
+      await expect(
+        page.getByRole('button', { name: `Elimina ${tableName}`, exact: true }),
+      ).toHaveCount(0, { timeout: 10000 })
+
+      await expect.poll(() => getTableActive(table.id), { timeout: 10000 }).toBe(false)
+      await expect
+        .poll(
+          async () => {
+            const assignments = await getTableAssignmentsForBooking(bookingId)
+            return assignments.filter((assignment) => assignment.table_id === table.id).length
+          },
+          { timeout: 10000 },
+        )
+        .toBe(0)
+      await expect.poll(() => getBookingServedAt(bookingId), { timeout: 10000 }).toBeNull()
+      await expect.poll(() => getBookingStatus(bookingId), { timeout: 10000 }).toBe('accepted')
+    } finally {
+      await deleteBookingsByPrefix(tenantId, clientName)
+      await deleteTablesByPrefix(tenantId, tableName)
+      await deleteRoomsByPrefix(tenantId, roomName)
+      await deleteServiceSlotsByPrefix(tenantId, slot.name)
+    }
+  })
+})
+
+// ─────────────────────────────────────────────
+// 0-bis. Fase 2 — Chiusura fascia → form pubblico
+// ─────────────────────────────────────────────
+
+test.describe('Fascia chiusa e form pubblico', () => {
+  test('Mario chiude una fascia da Servizio e Anna non la vede più nel picker orari', async ({
+    page,
+  }) => {
+    test.setTimeout(120000)
+
+    const tenantId = await getTenantId()
+    const slot = await createTempSlot(tenantId, 'PublicClosed')
+    const formSnapshot = await getRestaurantSettingSnapshot(tenantId, 'booking_public_form_config')
+    const slotsEnabledSnapshot = await getRestaurantSettingSnapshot(
+      tenantId,
+      'booking_time_slots_enabled',
+    )
+
+    try {
+      await upsertRestaurantSettingValue(
+        tenantId,
+        'booking_public_form_config',
+        makeTavoloOnlyFormConfig(),
+      )
+      await upsertRestaurantSettingValue(tenantId, 'booking_time_slots_enabled', true)
+
+      await page.goto(`/prenota/${TENANT_SLUG}?e2e=slot-open-${Date.now()}`, {
+        waitUntil: 'domcontentloaded',
+      })
+      const openDialog = await openPublicTimeDialog(page)
+      await expect(openDialog.getByText(slot.name, { exact: true })).toBeVisible({
+        timeout: 15000,
+      })
+      await openDialog.getByRole('button', { name: 'Chiudi' }).click()
+      await expect(openDialog).not.toBeVisible()
+
+      await openServizioLista(page)
+      await page.getByRole('button', { name: /^Fasce orarie$/ }).click()
+      await expect(page.getByText(slot.name, { exact: true })).toBeVisible({ timeout: 10000 })
+      await page.getByRole('button', { name: `Chiudi servizio ${slot.name}`, exact: true }).click()
+
+      await expect
+        .poll(() => getServiceSlotMaxTurns(slot.id), { timeout: 15000 })
+        .toBe(0)
+
+      await page.goto(`/prenota/${TENANT_SLUG}?e2e=slot-closed-${Date.now()}`, {
+        waitUntil: 'domcontentloaded',
+      })
+      const closedDialog = await openPublicTimeDialog(page)
+      await expect(closedDialog.getByText(slot.name, { exact: true })).toHaveCount(0)
+    } finally {
+      await restoreRestaurantSettingSnapshot(
+        tenantId,
+        'booking_public_form_config',
+        formSnapshot,
+      ).catch(() => {})
+      await restoreRestaurantSettingSnapshot(
+        tenantId,
+        'booking_time_slots_enabled',
+        slotsEnabledSnapshot,
+      ).catch(() => {})
+      await deleteServiceSlotsByPrefix(tenantId, slot.name).catch(() => {})
+    }
+  })
+})
 
 // ─────────────────────────────────────────────
 // 1. Avviso di fine turno con conferma (checklist §2.2)
