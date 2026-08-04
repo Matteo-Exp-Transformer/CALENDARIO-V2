@@ -3,7 +3,7 @@
  * Copre: COLLAUDO_S4_CHECKLIST.md §2.2 (avviso fine turno con conferma),
  * §2.3 (tavolata su più tavoli + archiviazione S4-REQ-3), §3 (5 stati tavolo in
  * sequenza), §9 ultima riga (responsive 375px, finestra fine turno), e Fase 2
- * piano senior §4 riga 2 (chiusura fascia → form pubblico).
+ * piano senior §4 righe 2 e 5 (chiusura fascia → form pubblico; walk-in da browser).
  *
  * Queste voci non sono mai state collaudate a mano perché legate al tempo reale
  * (serve aspettare che i minuti passino davvero per vedere un tavolo passare a
@@ -73,11 +73,13 @@ import {
   getBookingServedAt,
   getTableActive,
   getBookingStatus,
+  getBookingsByNamePrefix,
   deleteBookingsByPrefix,
   deleteTablesByPrefix,
   deleteRoomsByPrefix,
   upsertRestaurantSettingValue,
   offsetIsoDate,
+  todayIsoDate,
   E2E_SERVIZIO_PREFIX,
 } from '../helpers/supabaseStaging'
 import {
@@ -334,6 +336,144 @@ test.describe('Fascia chiusa e form pubblico', () => {
         slotsEnabledSnapshot,
       ).catch(() => {})
       await deleteServiceSlotsByPrefix(tenantId, slot.name).catch(() => {})
+    }
+  })
+})
+
+// ─────────────────────────────────────────────
+// 0-ter. Fase 2 — Walk-in end-to-end a browser
+// ─────────────────────────────────────────────
+
+test.describe('Walk-in da browser', () => {
+  test('tavolo occupato: primo click avvisa, cambio sala resetta, secondo click forza e assegna', async ({
+    page,
+  }) => {
+    test.setTimeout(120000)
+
+    const tenantId = await getTenantId()
+    const runId = `${Date.now()}`
+    const slotName = `${E2E_SERVIZIO_PREFIX}WalkIn-Slot-${runId}`
+    const roomPrefix = `${E2E_SERVIZIO_PREFIX}WalkIn-Room-${runId}`
+    const tablePrefix = `${E2E_SERVIZIO_PREFIX}WalkIn-T-${runId}`
+    const oldClientName = `${E2E_SERVIZIO_PREFIX}WalkIn-Old-${runId}`
+    const newClientName = `${E2E_SERVIZIO_PREFIX}WalkIn-New-${runId}`
+    const today = todayIsoDate()
+
+    // Pulizia preventiva: se un run precedente va in timeout, Playwright può
+    // interrompere il finally. Una vecchia fascia WalkIn 00:00-23:59 con
+    // display_order basso farebbe scegliere al modale la fascia sbagliata.
+    await deleteBookingsByPrefix(tenantId, `${E2E_SERVIZIO_PREFIX}WalkIn-`).catch(() => {})
+    await deleteTablesByPrefix(tenantId, `${E2E_SERVIZIO_PREFIX}WalkIn-T-`).catch(() => {})
+    await deleteRoomsByPrefix(tenantId, `${E2E_SERVIZIO_PREFIX}WalkIn-Room-`).catch(() => {})
+    await deleteServiceSlotsByPrefix(tenantId, `${E2E_SERVIZIO_PREFIX}WalkIn-Slot-`).catch(() => {})
+
+    const slot = await insertServiceSlot({
+      tenantId,
+      name: slotName,
+      startTime: '00:00',
+      endTime: '23:59',
+      displayOrder: -10000,
+    })
+    const roomA = await insertRoom({ tenantId, name: `${roomPrefix}-A`, displayOrder: -10000 })
+    const roomB = await insertRoom({ tenantId, name: `${roomPrefix}-B`, displayOrder: -9999 })
+    const busyTable = await insertTable({
+      tenantId,
+      roomId: roomA.id,
+      name: `${tablePrefix}-Busy`,
+      capacity: 4,
+      positionX: 20,
+      positionY: 20,
+    })
+    const freeTable = await insertTable({
+      tenantId,
+      roomId: roomB.id,
+      name: `${tablePrefix}-Free`,
+      capacity: 4,
+      positionX: 20,
+      positionY: 20,
+    })
+    const oldBookingId = await insertBooking({
+      tenantId,
+      clientName: oldClientName,
+      status: 'accepted',
+      desiredDate: today,
+      desiredTime: '12:00',
+      numGuests: 2,
+      confirmedStart: `${today}T12:00:00+00:00`,
+      confirmedEnd: `${today}T15:00:00+00:00`,
+    })
+    await insertTableAssignment({
+      tenantId,
+      bookingId: oldBookingId,
+      tableId: busyTable.id,
+      serviceSlotId: slot.id,
+      date: today,
+    })
+
+    try {
+      await loginAsProAdmin(page)
+      await expect(page.getByRole('heading', { name: /^Home$/i })).toBeVisible({ timeout: 10000 })
+
+      await page.getByRole('button', { name: /Aggiungi walk-in/i }).click()
+      const dialog = page.getByRole('dialog', { name: /^Aggiungi walk-in$/ })
+      await expect(dialog).toBeVisible({ timeout: 10000 })
+
+      await dialog.getByLabel(/nome cliente/i).fill(newClientName)
+      await dialog.getByLabel(/numero coperti/i).fill('2')
+      await dialog.getByLabel(/^Sala/i).selectOption(roomA.id)
+      const tableSelect = dialog.getByLabel(/^Tavolo/i)
+      await expect(tableSelect.locator(`option[value="${busyTable.id}"]`)).toContainText(/occupato/i)
+      await tableSelect.selectOption(busyTable.id)
+
+      await expect(dialog.getByTestId('busy-table-warning')).toHaveText(/puoi forzare la sostituzione/i)
+
+      const submit = dialog.getByRole('button', { name: /^Aggiungi walk-in$/i })
+      await submit.click()
+      await expect(dialog.getByTestId('busy-table-warning')).toHaveText(/stai liberando il tavolo occupato/i)
+      await expect.poll(() => getBookingsByNamePrefix(tenantId, newClientName)).toHaveLength(0)
+
+      // Cambiare sala azzera il tavolo selezionato e la conferma di forzatura: non deve
+      // restare un "ok" nascosto mentre lo staff sceglie un'altra sala.
+      await dialog.getByLabel(/^Sala/i).selectOption(roomB.id)
+      await expect(dialog.getByLabel(/^Tavolo/i)).toHaveValue('')
+      await expect(dialog.getByTestId('busy-table-warning')).toHaveCount(0)
+      await dialog.getByLabel(/^Tavolo/i).selectOption(freeTable.id)
+      await expect(dialog.getByTestId('busy-table-warning')).toHaveCount(0)
+
+      // Torna sul tavolo occupato e conferma davvero con il secondo click.
+      await dialog.getByLabel(/^Sala/i).selectOption(roomA.id)
+      await dialog.getByLabel(/^Tavolo/i).selectOption(busyTable.id)
+      await submit.click()
+      await expect(dialog.getByTestId('busy-table-warning')).toHaveText(/stai liberando il tavolo occupato/i)
+      await submit.click()
+      await expect(dialog).not.toBeVisible({ timeout: 15000 })
+
+      await expect
+        .poll(() => getBookingsByNamePrefix(tenantId, newClientName), { timeout: 15000 })
+        .toHaveLength(1)
+      const newBookings = await getBookingsByNamePrefix(tenantId, newClientName)
+      expect(newBookings[0]).toMatchObject({
+        client_name: newClientName,
+        status: 'accepted',
+        num_guests: 2,
+      })
+
+      const oldAssignments = await getTableAssignmentsForBooking(oldBookingId)
+      expect(oldAssignments).toHaveLength(1)
+      expect(oldAssignments[0].checked_out_at).not.toBeNull()
+
+      const newAssignments = await getTableAssignmentsForBooking(newBookings[0].id)
+      expect(newAssignments).toHaveLength(1)
+      expect(newAssignments[0]).toMatchObject({
+        table_id: busyTable.id,
+        checked_out_at: null,
+      })
+    } finally {
+      await deleteBookingsByPrefix(tenantId, `${E2E_SERVIZIO_PREFIX}WalkIn-Old-${runId}`).catch(() => {})
+      await deleteBookingsByPrefix(tenantId, `${E2E_SERVIZIO_PREFIX}WalkIn-New-${runId}`).catch(() => {})
+      await deleteTablesByPrefix(tenantId, tablePrefix).catch(() => {})
+      await deleteRoomsByPrefix(tenantId, roomPrefix).catch(() => {})
+      await deleteServiceSlotsByPrefix(tenantId, slotName).catch(() => {})
     }
   })
 })
