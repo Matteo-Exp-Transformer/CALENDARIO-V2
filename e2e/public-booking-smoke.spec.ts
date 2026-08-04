@@ -277,8 +277,9 @@ test.describe('Pagina Prenota smoke', () => {
       )
       await page.goto(`${bookingUrl}?e2e=xor-cards`, { waitUntil: 'domcontentloaded' })
 
-      await expect(page.getByTestId('booking-sub-tab-cards')).toBeVisible({ timeout: 15000 })
-      await expect(page.getByTestId('booking-sub-tab-card-e2e-card-valida')).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Card valida E2E' })).toBeVisible({ timeout: 15000 })
+      await expect(page.getByTestId('booking-sub-tab-cards')).toHaveCount(0)
+      await expect(page.getByTestId('booking-sub-tab-card-e2e-card-valida')).toHaveCount(0)
       await expect(page.getByTestId('booking-sub-tab-card-e2e-card-senza-titolo')).toHaveCount(0)
       await expect(page.getByRole('heading', { name: 'Offerta Totale' })).toHaveCount(0)
     } finally {

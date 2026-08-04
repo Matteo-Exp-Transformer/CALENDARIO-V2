@@ -39,7 +39,7 @@ const HAS_STAGING_CONFIG = Boolean(process.env.VITE_SUPABASE_URL && process.env.
 // Chiavi categoria specifiche per questo spec (prefissate per evitare collisioni)
 const CAT_COMP_KEY = 'e2e-fix9-comp'
 const CAT_NONCOMP_KEY = 'e2e-fix9-non-comp'
-const PRESET_ID = 'e2e-fix9-preset-1'
+const PRESET_ID = '00000000-0000-4000-8000-000000000901'
 const CARD_ID = 'e2e-fix9-card-1'
 
 let tenantSlug = PREFERRED_TENANT_SLUG
@@ -88,7 +88,7 @@ function makeStaffPresets(itemIdComp: string, itemIdNonComp: string) {
 
 // Apre la card categoria ed aspetta il pannello espanso
 async function expandCategory(page: Page, categoryKey: string) {
-  const card = page.getByTestId(`booking-menu-category-card-${categoryKey}`)
+  const card = page.locator(`[data-testid="booking-menu-category-card-${categoryKey}"]:visible`).first()
   await expect(card).toBeVisible({ timeout: 10000 })
   await card.click()
   // Dopo click il portal appare con data-booking-menu-expanded="true"
@@ -176,12 +176,8 @@ test.describe('FIX 9 — compilable_category_keys pubblica', () => {
       await expect(modeCard).toBeVisible({ timeout: 10000 })
       await modeCard.click()
 
-      // Seleziona la card sottotab
-      const subTabCard = page.getByTestId(`booking-sub-tab-card-${CARD_ID}`)
-      await expect(subTabCard).toBeVisible({ timeout: 8000 })
-      await subTabCard.click()
-
-      // La griglia categorie deve apparire
+      // Una sola card "cards" viene auto-selezionata: la strisciolina non appare,
+      // ma il preset collegato deve comunque applicarsi e mostrare la griglia.
       await expect(page.getByTestId('booking-menu-compose-grid')).toBeVisible({ timeout: 10000 })
 
       // Categoria NON compilabile: apri la card
@@ -208,7 +204,6 @@ test.describe('FIX 9 — compilable_category_keys pubblica', () => {
 
       await expect(page.locator('#booking-request-form')).toBeVisible({ timeout: 15000 })
       await page.getByText('Rinfresco FIX9').first().click()
-      await page.getByTestId(`booking-sub-tab-card-${CARD_ID}`).click()
       await expect(page.getByTestId('booking-menu-compose-grid')).toBeVisible({ timeout: 10000 })
 
       // Categoria COMPILABILE: apri e verifica checkbox
@@ -228,7 +223,6 @@ test.describe('FIX 9 — compilable_category_keys pubblica', () => {
 
     await expect(page.locator('#booking-request-form')).toBeVisible({ timeout: 15000 })
     await page.getByText('Rinfresco FIX9').first().click()
-    await page.getByTestId(`booking-sub-tab-card-${CARD_ID}`).click()
     await expect(page.getByTestId('booking-menu-compose-grid')).toBeVisible({ timeout: 10000 })
 
     // Seleziona l'item compilabile
@@ -252,7 +246,6 @@ test.describe('FIX 9 — compilable_category_keys pubblica', () => {
 
     await expect(page.locator('#booking-request-form')).toBeVisible({ timeout: 15000 })
     await page.getByText('Rinfresco FIX9').first().click()
-    await page.getByTestId(`booking-sub-tab-card-${CARD_ID}`).click()
     await expect(page.getByTestId('booking-menu-compose-grid')).toBeVisible({ timeout: 10000 })
 
     // Seleziona item compilabile
@@ -268,9 +261,9 @@ test.describe('FIX 9 — compilable_category_keys pubblica', () => {
     { timeout: 20000 })
 
     // Compila i dati minimi necessari al submit
-    await page.fill('#client_name', 'E2E Fix9')
-    await page.fill('#client_email', 'e2e-fix9@test.it')
-    await page.fill('#client_phone', '3331234567')
+    await page.fill('#client_name-control', 'E2E Fix9')
+    await page.fill('#client_email-control', 'e2e-fix9@test.it')
+    await page.fill('#client_phone-control', '3331234567')
     await page.locator('#num_guests-control').fill('2')
     // Data: usa il picker o un campo diretto — click sul trigger Data
     const dateButton = page.locator('#date-trigger')
@@ -292,7 +285,7 @@ test.describe('FIX 9 — compilable_category_keys pubblica', () => {
     if (await privacyCheckbox.isVisible()) await privacyCheckbox.check()
 
     // Submit
-    const submitBtn = page.locator('#booking-request-form button.booking-cross-shine-btn[type="submit"]')
+    const submitBtn = page.locator('button[type="submit"]:visible').first()
     if (await submitBtn.isVisible()) await submitBtn.click()
 
     // Se il form non è completamente compilato la request potrebbe non partire:

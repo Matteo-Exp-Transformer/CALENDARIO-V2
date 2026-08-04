@@ -263,7 +263,9 @@ for (const vp of VIEWPORTS) {
       })
 
       await page.goto('/admin/calendario')
-      await page.getByRole('button', { name: new RegExp(deleteName, 'i') }).first().click()
+      const deleteCalendarEntry = page.getByText(deleteName, { exact: true }).first()
+      await expect(deleteCalendarEntry).toBeVisible({ timeout: 10000 })
+      await deleteCalendarEntry.click()
 
       await expect(page.getByRole('heading', { name: /dettagli prenotazione/i })).toBeVisible({
         timeout: 10000,
