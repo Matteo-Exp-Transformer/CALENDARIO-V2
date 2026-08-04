@@ -11,6 +11,62 @@
 
 ---
 
+> ## ⛳ AGGIORNAMENTO 04-08-2026 — **LA FASE 0 È FATTA. PARTI DALLA FASE 1 (§3).**
+>
+> I quattro fix decisi (§2: eliminazione tavolo occupato, spostamento che non consuma turno,
+> validazioni fasce unificate, avviso fine turno persistito) sono **implementati, testati, revisionati
+> e pushati** — commit `94dad6f` (fix) · `f174053` (test) · `5fe8a4c` (docs), tutti su
+> `origin/env/test`. Migrazione **070** applicata su TEST. **Non rifarli.**
+>
+> Report: [Report-fase0-quattro-fix-03-08-26.md](Report-fase0-quattro-fix-03-08-26.md) — leggi
+> **§4 (cosa NON è verificato)** e **§11 R2/R3** prima di fidarti di qualsiasi cosa qui sotto.
+> Prompt usato, riutilizzabile come modello: [PROMPT_FASE0_QUATTRO_FIX.md](PROMPT_FASE0_QUATTRO_FIX.md).
+>
+> **Cosa è cambiato nei presupposti di questo piano:**
+> - **§0.1-§0.4 sono storico**, non lavoro da fare. Restano utili per capire *perché* il codice è
+>   com'è (in particolare la riscrittura di D48).
+> - **§0.3 è superata in un punto:** `validateSlotConfigs` **non è più codice morto**, la usano
+>   entrambi gli editor. Servizio la chiama con `options.focusIndex`, aggiunto in revisione perché
+>   senza quello una fascia legacy invalida a DB bloccava il salvataggio di **qualsiasi altra** fascia.
+> - **§7 domanda 1 è chiusa:** intervallo di richiamo **30 minuti, confermato da Matteo**. Le altre
+>   tre restano aperte.
+> - **La Fase 1 ha una voce in più (la 7 in §3)**, trovata stanotte: un test che passa di giorno e
+>   fallisce a tarda notte.
+> - ⚠️ **Matteo non ha ancora collaudato a video** i quattro fix. Se ti dice che uno non funziona,
+>   quella informazione batte qualunque test verde citato nel report.
+
+> ## ⛳ AGGIORNAMENTO 04-08-2026 sera — **LA FASE 1 È FATTA AL 97%. RESTANO 3 ROSSI.**
+>
+> Report: [Report-fase1-base-test-04-08-26.md](../04-08-26/Report-fase1-base-test-04-08-26.md).
+> Prompt per chi continua: [PROMPT_PROSSIMO_SENIOR.md](../04-08-26/PROMPT_PROSSIMO_SENIOR.md)
+> — **supera** `PROMPT_PROSSIMO_SENIOR_FASE1.md` di questa cartella, che mandava a fare la Fase 1.
+>
+> **Numeri veri, misurati un test alla volta:** da **51 verdi / 31 rossi / 20 saltati** su 102 a
+> **87 verdi / 3 rossi / 9 saltati** su 99 (i 9 saltati sono tutti a cascata dai 3 rossi). Unit da
+> 1332 a **1344 test su 162 file**, verdi. Niente commit, niente push.
+>
+> **Cosa è cambiato nei presupposti di questa §3:**
+> - **Le voci 1-5 e 7 sono chiuse.** La 6 era già chiusa ieri.
+> - **La voce 1 era più grave di com'era scritta:** non «sostituisci un'impostazione morta», ma
+>   l'intera spec scritta contro una versione precedente del riepilogo di giornata (cercava una
+>   sezione che in `src/` **non esiste**). Riscritta.
+> - **La voce 2 aveva una causa diversa da quella supposta:** gli skip «dati mancanti» non erano
+>   staging vuoto, erano locator verso marcature (`tr[role="row"]`, `[data-testid="booking-row"]`)
+>   che in `src/` **non esistono**.
+> - **La trappola d'ambiente delle chiavi `E2E_CLASSIC_*` duplicate era vera**, e ce n'era una
+>   seconda accanto: `E2E_CLASSIC_TENANT_ID` puntava a un tenant **inesistente** su TEST, quindi il
+>   test di upgrade aggiornava 0 righe ricevendo 200. Entrambe corrette in `.env.local.test`
+>   (file locale, **non tracciato**: su un'altra macchina va rifatto).
+> - **Nove rossi che questo piano non citava affatto** sono emersi eseguendo: form pubblico (4),
+>   menu/magazzino (3), CRM (1), edition-upgrade (1). Il più grave: «submit con dati validi crea la
+>   prenotazione» era **verde senza creare nessuna prenotazione**.
+> - **Un terzo dei rossi era contesa fra test paralleli**, non difetti: 12 worker → 31 rossi,
+>   `--workers=1` → 12. La scelta su quanti worker tenere **non è stata fatta**: `playwright.config.ts`
+>   è invariato.
+> - **§4 (Fase 2) resta valida** ed è il prossimo mandato, dopo i 3 rossi.
+> - **§7 ha una domanda in più** (la sotto-tipologia singola «a scheda» il cui menù non si applica
+>   mai) e le altre tre restano aperte.
+
 ## 0. Regole non negoziabili
 
 - **Mai commit o push senza richiesta esplicita di Matteo.** Oggi ci sono **3 commit non pushati**
@@ -42,7 +98,7 @@
 
 ---
 
-## 2. FASE 0 — I due fix decisi (prima di ogni lavoro sui test)
+## 2. FASE 0 — ✅ **FATTA il 03/04-08-26** *(storico: sotto è il mandato com'era scritto)*
 
 Vanno per primi: sono bug di prodotto, e i test della Fase 2 devono nascere già sopra il
 comportamento corretto, non sopra quello rotto.
@@ -162,7 +218,8 @@ diversi test **passano senza verificare nulla**.
 | 3 | `e2e/public-booking.spec.ts:8` | Slug di default `'test'`, che `TESTING_SKILL.md` §8.3 dice di non usare più | Passare a `getExistingTenantSlug` come fa `public-booking-smoke.spec.ts` |
 | 4 | `e2e/menu-crud.spec.ts:29` | Intera suite in `test.skip(true, 'suite legacy…')`, non gira mai | Cancellarla: è sostituita dalle due spec magazzino |
 | 5 | `e2e/invite-flow.spec.ts:14,34,44` | 3 test su 4 dipendono da `E2E_VALID_INVITE_TOKEN`, un token che per natura si consuma | Generarlo nel `beforeAll` invece di leggerlo dall'ambiente |
-| 6 | `e2e/pro/pro-service-tables-lifecycle.spec.ts:177` | Rosso **di proposito** ma non marcato: in CI sembra una rottura vera | Marcarlo `test.fail()` finché `FU-SERV-RELEASE-NOTICE-1` è aperto, così il verde torna a significare «tutto a posto» |
+| 6 | ~~`e2e/pro/pro-service-tables-lifecycle.spec.ts:177`~~ | ~~Rosso di proposito ma non marcato~~ | ✅ **Chiuso**: il bug è stato corretto (FIX D), il test è verde, nessun `test.fail()` serviva |
+| **7** | `e2e/pro/pro-service-tables-lifecycle.spec.ts:133` (`wallIsoAt`) + `:550-554` | 🆕 **Trovato il 03-08 notte, verificato riga per riga.** `wallIsoAt(canonicalDate, instant)` incolla **solo l'ora** di `instant` sulla data canonica fissa. Il test «Stati del tavolo in sequenza» calcola `end = NOW + 26'`: eseguito verso le 23:50 la fine scavalca la mezzanotte e finisce **prima** dell'inizio sulla stessa data → il tavolo risulta già «in uscita» e il test è rosso. **Passa di giorno, fallisce di notte.** Non è un bug di produzione | Far calcolare a `wallIsoAt` anche il **giorno** dell'istante (o far scegliere allo scenario una base oraria che non scavalchi). Poi rilanciare la spec **a due ore del giorno diverse** e dimostrare che è stabile in entrambe |
 
 **Trappola d'ambiente:** in `.env.local.test` le chiavi `E2E_CLASSIC_*` sono **duplicate** e l'ultima
 vince → puntano a `test-pro`, non a `test-classic`. Controllalo prima di dare la colpa a un test.
@@ -267,7 +324,9 @@ corretto o smentito 3 voci su 5.
 Nessuna blocca il lavoro: sono tutte manopole con un valore di default già in uso. Raggruppale in
 **una sola domanda** quando avrai qualcosa da mostrargli a video, invece di chiedergliele una a una.
 
-1. **Intervallo di richiamo dell'avviso di fine turno**: proposto **30'** (D-D). Confermare o cambiare.
+1. ~~**Intervallo di richiamo dell'avviso di fine turno**: proposto **30'** (D-D).~~ ✅ **Chiuso
+   04-08: Matteo ha confermato 30 minuti.** Vive in `restaurant_settings.table_release_notice_recall_minutes`
+   (default `DEFAULT_RELEASE_NOTICE_RECALL_MINUTES` in `useTableStatuses.ts`), non è una costante sepolta.
 2. **Soglia di ritardo (15')** e **buffer di riassetto (10')**: sono default assunti da un agente a
    giugno, **mai confermati**. Vivono già in produzione come tali.
 3. **Durata del walk-in (D47, 90')**: dove si regola? Manopola in console o impostazione per locale?
@@ -281,7 +340,8 @@ posto dove stanno insieme, **proponi di crearlo** invece di sparpagliare l'ennes
 
 ## 8. Ordine consigliato
 
-1. Fase 0 (i tre fix decisi) → gate → report a Matteo, **fermati e fatti confermare a video**.
+1. ~~Fase 0 (i tre fix decisi) → gate → report a Matteo.~~ ✅ **Fatta e pushata il 03/04-08.** Il
+   «fermati e fatti confermare a video» è **ancora pendente**: Matteo ha detto «devo ancora testare».
 2. Fase 1 (riparare la base di test) → gate: una run e2e credibile, numeri scritti nel report.
 3. Fase 2 a ondate, dalle prime 4 righe della tabella (sono quelle legate ai fix appena fatti).
 4. Fase 3 (analisi di salute) come chiusura, confrontando i numeri con quelli di partenza.

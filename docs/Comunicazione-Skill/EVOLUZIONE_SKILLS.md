@@ -178,6 +178,24 @@ altrimenti l'agente A ripara il lavoro a metà dell'agente B e si sovrascrivono.
 loro lavoro in corso → **mai `git add -A`**, solo i percorsi propri, altrimenti si committa codice
 non finito e mai revisionato. **Anti-pattern curato:** *parallelismo giudicato per argomento*.
 
+**13. Misura prima di eseguire la lista che hai ereditato (metodo, 04-08-26, Fase 1 test).**
+Un piano scritto ieri descrive il mondo di ieri. Caso reale: il piano elencava **7 voci** da
+sistemare; eseguendo la batteria i rossi erano **31**, poi **12** rilanciandola un test alla volta, e
+**nove dei dodici non erano nel piano**. Cominciare dalla «voce 1» avrebbe consumato la giornata su
+un terzo del problema e prodotto un numero finale privo di significato. Schema operativo:
+(a) **prima esegui e conta**, poi decidi cosa fare e in che ordine; (b) **separa sempre il guasto
+dalla contesa** rilanciando la spec da sola — se la batteria gira in parallelo una quota dei rossi è
+interferenza fra test (misurato: 20 su 31), e indagarli è tempo buttato; (c) **guarda lo screenshot
+del fallimento prima del codice** — in tre casi su cinque la causa era visibile a occhio in dieci
+secondi (un pulsante sbagliato premuto, un locale «travestito» da un test precedente, un messaggio di
+validazione) e ha risparmiato mezz'ora di lettura ciascuna; (d) con più agenti in parallelo,
+**vieta loro di eseguire la batteria**: le run le fa solo il supervisore, in fila indiana, altrimenti
+si disturbano a vicenda e i report si riempiono di rossi finti.
+**Corollario sul verde:** quando un test che era rosso diventa verde *troppo in fretta*, quella
+velocità è un'informazione, non un successo — è il segnale che l'asserzione potrebbe non star più
+provando niente. Caso reale: un test è passato in 1,1s e a DB non era stata creata nessuna riga.
+**Anti-pattern curato:** *ereditare i numeri invece di rimisurarli*.
+
 > 🛑 **PAUSA-RACCOLTA (decisa 29-05-26).** Lo skill system ha avuto molte aggiunte in pochi giorni.
 > **Stop a nuovi meccanismi/regole** finché non si accumulano ~5-10 sessioni di dati con gli
 > strumenti già esistenti (modalità, metriche successo chat, log idee). Il prossimo passo è
