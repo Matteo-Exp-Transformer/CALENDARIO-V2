@@ -68,6 +68,20 @@ npm run validate                      # lint + typecheck + test (pre-PR)
 npx playwright install chromium       # Prima volta: installa il browser
 ```
 
+> ⚠️ **`npm run validate` NON guarda i test e2e.** ESLint ignora `e2e/**`, `tests/**` e
+> `**/__tests__/**` (`.eslintrc.cjs` `ignorePatterns`), e `tsc --noEmit` compila solo `src`
+> (`tsconfig.json` `"include": ["src"]`). Quindi «lint e typecheck verdi» dopo aver modificato una
+> spec Playwright **non dice niente su quella spec**: nessuno dei due l'ha letta. Finché non esiste
+> un `tsconfig` dedicato, per controllare i tipi di un file e2e serve un comando ad hoc, es.
+> `npx tsc --noEmit --strict --skipLibCheck --target es2022 --module esnext --moduleResolution bundler --types node e2e/<file>.spec.ts e2e/helpers/supabaseStaging.ts`
+> (verificato il 04-08-26; l'unico controllo vero su una spec resta eseguirla).
+
+> ⚠️ **La batteria e2e non regge `fullyParallel` a 12 worker.** Misura del 04-08-26 sullo stesso
+> commit: **51 verdi / 31 rossi** con i worker di default, **71 verdi / 12 rossi** con `--workers=1`.
+> Venti rossi su trentuno erano contesa (login simultanei sullo stesso account, spec diverse che si
+> scrivono addosso le impostazioni dello stesso tenant), non difetti. Prima di aprire un'indagine su
+> un rosso, **rilancia quella spec da sola con `--workers=1`**: è il primo filtro, costa un minuto.
+
 ---
 
 ## 4. Stack dettagliato
@@ -101,14 +115,28 @@ Usare questo schema per E2E su staging TEST. Serve a evitare test verdi solo sul
    seed minimo, assert, poi restore/cleanup in `finally` o `afterAll`. Esempi: `getRestaurantSettingSnapshot`,
    `restoreRestaurantSettingSnapshot`, `upsertRestaurantSettingValue`, `deleteBookingsByPrefix`,
    `deleteMenuE2eData`.
-4. **Assert oggettivi:** per visual checklist assertare DOM verificabile, non "sembra giusto":
+   > ⚠️ **Il `finally` NON basta se il test può andare in timeout.** Playwright interrompe il corpo
+   > del test allo scadere di `test.setTimeout(...)`, `finally` compreso: le `await` di ripristino
+   > non arrivano al server. Se lo spec sovrascrive impostazioni condivise del tenant, la pulizia va
+   > in **`afterEach`/`afterAll`**, che hanno un budget di tempo separato. Costo reale di questa
+   > lezione: `admin-menu-magazzino-blindatura.spec.ts` ha lasciato `da-tommaso` con nome
+   > «QA 375» e pagina Prenota «Configurazione temporanea Playwright» **dal 16-06-26 al 04-08-26**,
+   > perché ogni variante di viewport fotografava il travestimento della precedente credendolo
+   > l'originale e lo ri-scriveva a fine test.
+4. **Verità a DB, non solo a schermo:** quando il test dichiara che un'azione *crea/cancella/modifica*
+   qualcosa, l'asserzione finale deve leggere il dato, non un elemento generico dell'interfaccia.
+   `[role="status"]`, `[class*="toast"]`, `.or()` fra rami opposti rendono il test verde in mondi
+   diversi. Caso reale: «submit con dati validi crea la prenotazione» era verde da mesi **senza
+   creare nessuna prenotazione** — il locator generoso stava intercettando il messaggio d'errore che
+   diceva che il form era bloccato.
+5. **Assert oggettivi:** per visual checklist assertare DOM verificabile, non "sembra giusto":
    classi/ruoli/testo/assenza immagini, icona SVG specifica, `toHaveText`, `toHaveCount(0)`,
    niente emoji se il requisito è "mai emoji".
-5. **Locator strict:** se un testo appare in più punti responsive, circoscrivere il contenitore o usare
+6. **Locator strict:** se un testo appare in più punti responsive, circoscrivere il contenitore o usare
    `.first()` solo quando il requisito è "almeno un recapito visibile". Non lasciare locator ambigui.
-6. **Debug onesto:** se un comando è rosso per dati staging obsoleti, documentarlo e correggere lo spec
+7. **Debug onesto:** se un comando è rosso per dati staging obsoleti, documentarlo e correggere lo spec
    o l'ambiente. Non spuntare checklist finché il comando mirato non torna verde nello stato attuale.
-7. **Run:** dopo ogni modifica E2E rilanciare il comando mirato dichiarato nel report; se aggiorni docs
+8. **Run:** dopo ogni modifica E2E rilanciare il comando mirato dichiarato nel report; se aggiorni docs
    o checklist, controlla `git diff` e allinea il report allo stesso esito reale.
 
 ---

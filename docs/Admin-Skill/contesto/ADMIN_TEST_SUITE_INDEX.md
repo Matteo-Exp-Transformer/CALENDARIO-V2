@@ -57,7 +57,7 @@ Fronti previsti:
 | `e2e/edition-classic-data-protection.spec.ts` | protezione dati Classic |
 | `e2e/edition-upgrade.spec.ts` | upgrade edition/feature |
 | `e2e/public-booking.spec.ts` | collegamento admin/Prenota lato pubblico |
-| `e2e/menu-crud.spec.ts` | suite legacy saltata: sostituita da `admin-menu-magazzino-*` |
+| ~~menu-crud.spec.ts~~ (file rimosso) | **Cancellata il 04-08-26**: era interamente in `test.skip(true, …)` da mesi, copertura reale zero. La sostituiscono `admin-menu-magazzino-blindatura.spec.ts` e `admin-menu-magazzino-ct.spec.ts` — che però coprono **solo** il mostra/nascondi: creare una categoria, aggiungere e togliere un elemento **dall'interfaccia** oggi non è coperto da nessun test |
 
 ## 2. Unit/component per prenotazioni
 
