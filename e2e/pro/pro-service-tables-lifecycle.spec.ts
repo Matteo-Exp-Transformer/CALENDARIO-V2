@@ -3,7 +3,8 @@
  * Copre: COLLAUDO_S4_CHECKLIST.md §2.2 (avviso fine turno con conferma),
  * §2.3 (tavolata su più tavoli + archiviazione S4-REQ-3), §3 (5 stati tavolo in
  * sequenza), §9 ultima riga (responsive 375px, finestra fine turno), e Fase 2
- * piano senior §4 righe 2 e 5 (chiusura fascia → form pubblico; walk-in da browser).
+ * piano senior §4 righe 2, 5, 6 e 7 (chiusura fascia → form pubblico; walk-in da browser;
+ * turni esauriti → assegna comunque; avviso fine turno).
  *
  * Queste voci non sono mai state collaudate a mano perché legate al tempo reale
  * (serve aspettare che i minuti passino davvero per vedere un tavolo passare a
@@ -66,6 +67,7 @@ import {
   insertTable,
   insertTableAssignment,
   insertBooking,
+  patchBookingById,
   insertServiceSlot,
   restoreRestaurantSettingSnapshot,
   deleteServiceSlotsByPrefix,
@@ -479,6 +481,135 @@ test.describe('Walk-in da browser', () => {
 })
 
 // ─────────────────────────────────────────────
+// 0-quater. Fase 2 — Turni esauriti + assegna comunque a browser
+// ─────────────────────────────────────────────
+
+test.describe('Turni esauriti da browser', () => {
+  test('tavolo libero con turni finiti: mostra avviso e assegna comunque con audit', async ({
+    page,
+  }) => {
+    test.setTimeout(120000)
+
+    const tenantId = await getTenantId()
+    const runId = `${Date.now()}`
+    const slotName = `${E2E_SERVIZIO_PREFIX}Turns-Slot-${runId}`
+    const roomName = `${E2E_SERVIZIO_PREFIX}Turns-Room-${runId}`
+    const tableName = `${E2E_SERVIZIO_PREFIX}Turns-T1-${runId}`
+    const oldClientPrefix = `${E2E_SERVIZIO_PREFIX}Turns-Old-${runId}`
+    const newClientName = `${E2E_SERVIZIO_PREFIX}Turns-New-${runId}`
+    const DATE = offsetIsoDate(120)
+
+    const slot = await insertServiceSlot({
+      tenantId,
+      name: slotName,
+      startTime: '00:00',
+      endTime: '23:59',
+      maxTurns: 2,
+    })
+    const room = await insertRoom({ tenantId, name: roomName })
+    const table = await insertTable({
+      tenantId,
+      roomId: room.id,
+      name: tableName,
+      capacity: 4,
+      positionX: 20,
+      positionY: 20,
+    })
+
+    const oldBooking1Id = await insertBooking({
+      tenantId,
+      clientName: `${oldClientPrefix}-1`,
+      status: 'accepted',
+      desiredDate: DATE,
+      desiredTime: '11:00',
+      numGuests: 2,
+      confirmedStart: `${DATE}T11:00:00+00:00`,
+      confirmedEnd: `${DATE}T12:00:00+00:00`,
+    })
+    const oldBooking2Id = await insertBooking({
+      tenantId,
+      clientName: `${oldClientPrefix}-2`,
+      status: 'accepted',
+      desiredDate: DATE,
+      desiredTime: '12:30',
+      numGuests: 2,
+      confirmedStart: `${DATE}T12:30:00+00:00`,
+      confirmedEnd: `${DATE}T13:30:00+00:00`,
+    })
+    await insertTableAssignment({
+      tenantId,
+      bookingId: oldBooking1Id,
+      tableId: table.id,
+      serviceSlotId: slot.id,
+      date: DATE,
+      turnNumber: 1,
+      checkedOutAt: new Date().toISOString(),
+    })
+    await patchBookingById(oldBooking1Id, { served_at: new Date().toISOString() })
+    await insertTableAssignment({
+      tenantId,
+      bookingId: oldBooking2Id,
+      tableId: table.id,
+      serviceSlotId: slot.id,
+      date: DATE,
+      turnNumber: 2,
+      checkedOutAt: new Date().toISOString(),
+    })
+    await patchBookingById(oldBooking2Id, { served_at: new Date().toISOString() })
+
+    const newBookingId = await insertBooking({
+      tenantId,
+      clientName: newClientName,
+      status: 'accepted',
+      desiredDate: DATE,
+      desiredTime: '14:00',
+      numGuests: 2,
+      confirmedStart: `${DATE}T14:00:00+00:00`,
+      confirmedEnd: `${DATE}T15:30:00+00:00`,
+    })
+
+    try {
+      await openServizioMappa(page)
+      await selectDateAndSlot(page, DATE, slot.id)
+
+      await expect(page.getByText('Prenotazioni (1)', { exact: true })).toBeVisible({ timeout: 10000 })
+      await page.getByRole('button', { name: 'Assegna', exact: true }).click()
+
+      const assignDialog = page.getByRole('dialog', { name: /^Assegna tavolo$/ })
+      await expect(assignDialog).toBeVisible({ timeout: 10000 })
+      const tableChoice = assignDialog.locator('button', { hasText: tableName })
+      await expect(tableChoice).toContainText('0 turni residui')
+      await expect(tableChoice).toContainText('Turni esauriti')
+
+      await tableChoice.click()
+      await expect(assignDialog).not.toBeVisible()
+      await expect(page.getByText(/Turni esauriti per questo tavolo/i)).toBeVisible()
+      await page.getByRole('button', { name: /Assegna comunque/i }).click()
+
+      await expect(page.getByText('Assegnate (1)', { exact: true })).toBeVisible({ timeout: 15000 })
+      await expect
+        .poll(() => getTableAssignmentsForBooking(newBookingId), { timeout: 15000 })
+        .toHaveLength(1)
+
+      const assignments = await getTableAssignmentsForBooking(newBookingId)
+      expect(assignments[0]).toMatchObject({
+        table_id: table.id,
+        checked_out_at: null,
+        forced_by_admin: true,
+        force_reason: 'Forzato dallo staff',
+        turn_number: 3,
+      })
+    } finally {
+      await deleteBookingsByPrefix(tenantId, oldClientPrefix).catch(() => {})
+      await deleteBookingsByPrefix(tenantId, newClientName).catch(() => {})
+      await deleteTablesByPrefix(tenantId, tableName).catch(() => {})
+      await deleteRoomsByPrefix(tenantId, roomName).catch(() => {})
+      await deleteServiceSlotsByPrefix(tenantId, slot.name).catch(() => {})
+    }
+  })
+})
+
+// ─────────────────────────────────────────────
 // 1. Avviso di fine turno con conferma (checklist §2.2)
 // ─────────────────────────────────────────────
 
@@ -717,6 +848,68 @@ test.describe('Avviso di fine turno con conferma', () => {
       await deleteTablesByPrefix(tenantId, tablePrefix)
       await deleteRoomsByPrefix(tenantId, roomName)
       await deleteServiceSlotsByPrefix(tenantId, slot.name)
+    }
+  })
+
+  test('cambiare fascia azzera "Decido dopo": tornando alla fascia il tavolo in uscita riapre l\'avviso', async ({
+    page,
+  }) => {
+    const tenantId = await getTenantId()
+    const slotA = await createTempSlot(tenantId, 'RelD-A')
+    const slotB = await createTempSlot(tenantId, 'RelD-B')
+    const NOW = safeAnchorNow()
+    const arrival = addMinutes(NOW, -90)
+    const end = addMinutes(NOW, -5)
+    const DATE = localDateStr(NOW)
+    const runId = `${Date.now()}`
+    const roomName = `${E2E_SERVIZIO_PREFIX}Rel-D-Room-${runId}`
+    const tableName = `${E2E_SERVIZIO_PREFIX}RelD-T1-${runId}`
+    const clientName = `${E2E_SERVIZIO_PREFIX}RelD-Cliente-${runId}`
+
+    const room = await insertRoom({ tenantId, name: roomName })
+    const table = await insertTable({ tenantId, roomId: room.id, name: tableName, capacity: 2 })
+    const bookingId = await insertBooking({
+      tenantId,
+      clientName,
+      status: 'accepted',
+      desiredDate: DATE,
+      desiredTime: localTimeStr(arrival),
+      numGuests: 2,
+      confirmedStart: wallIsoAt(DATE, arrival),
+      confirmedEnd: wallIsoAt(DATE, end),
+    })
+    await insertTableAssignment({
+      tenantId,
+      bookingId,
+      tableId: table.id,
+      serviceSlotId: slotA.id,
+      date: DATE,
+    })
+
+    try {
+      await page.clock.install({ time: NOW })
+      await openServizioMappa(page)
+      await selectDateAndSlot(page, DATE, slotA.id)
+
+      const dialog = page.getByRole('dialog', { name: /fine turno/i })
+      await expect(dialog).toBeVisible({ timeout: 10000 })
+      await expect(dialog).toContainText(tableName)
+
+      await dialog.getByRole('button', { name: 'Decido dopo' }).click()
+      await expect(dialog).not.toBeVisible()
+
+      await page.getByLabel('Fascia oraria', { exact: true }).selectOption(slotB.id)
+      await expect(dialog).not.toBeVisible()
+
+      await page.getByLabel('Fascia oraria', { exact: true }).selectOption(slotA.id)
+      await expect(dialog).toBeVisible({ timeout: 10000 })
+      await expect(dialog).toContainText(tableName)
+    } finally {
+      await deleteBookingsByPrefix(tenantId, clientName)
+      await deleteTablesByPrefix(tenantId, tableName)
+      await deleteRoomsByPrefix(tenantId, roomName)
+      await deleteServiceSlotsByPrefix(tenantId, slotA.name)
+      await deleteServiceSlotsByPrefix(tenantId, slotB.name)
     }
   })
 })

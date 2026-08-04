@@ -117,6 +117,30 @@
 > ("Turni esauriti + Assegna comunque" a browser). Restano aperti parallelismo Playwright e prova a
 > cavallo della mezzanotte.
 
+> ## ⛳ AGGIORNAMENTO 04-08-2026 — **FASE 2 RIGA 6 COPERTA.**
+>
+> La riga 6 è ora coperta a browser in `e2e/pro/pro-service-tables-lifecycle.spec.ts`: Mario apre
+> Servizio → Mappa, trova un tavolo libero ma con tutti i turni già consumati, vede il badge
+> "Turni esauriti", clicca consapevolmente "Assegna comunque" e il DB registra la nuova assegnazione
+> forzata (`forced_by_admin=true`, motivo, `turn_number=3`). Verifiche: scenario mirato **1/1 verde**,
+> file completo `pro-service-tables-lifecycle` **11/11 verde**, typecheck e2e ad hoc verde.
+>
+> La Fase 2 ha ora coperte le righe **1, 2, 3, 4, 5 e 6**. Prossima priorità: riga **7**
+> (avviso fine turno: casi "Libero", "Decido dopo", cambio fascia azzera). Restano aperti
+> parallelismo Playwright e prova a cavallo della mezzanotte.
+
+> ## ⛳ AGGIORNAMENTO 04-08-2026 — **FASE 2 RIGA 7 COPERTA.**
+>
+> La riga 7 è ora coperta a browser in `e2e/pro/pro-service-tables-lifecycle.spec.ts`: l'avviso
+> fine turno copre "Libero" (checkout append-only), "Decido dopo" (chiude l'avviso locale), secondo
+> tavolo che fa riaprire la finestra e cambio fascia che azzera "Decido dopo" quando Mario torna alla
+> fascia originale. Verifiche: scenario cambio-fascia mirato **1/1 verde**, file completo
+> `pro-service-tables-lifecycle` **12/12 verde**, typecheck e2e ad hoc verde.
+>
+> La Fase 2 ha ora coperte le righe **1, 2, 3, 4, 5, 6 e 7**. Prossima priorità: riga **8**
+> (tavolata a 3+ tavoli, "Mancano N posti", annulla dopo assegnazione multipla). Restano aperti
+> parallelismo Playwright e prova a cavallo della mezzanotte.
+
 ## 0. Regole non negoziabili
 
 - **Mai commit o push senza richiesta esplicita di Matteo.** Stato dopo chiusura Codex: i commit
@@ -292,8 +316,8 @@ sullo stesso file si sovrascrivono.
 | 3 | ✅ **«Modifica tavolo» non consuma turno** (dopo il fix 0.2) | `useTableAssignments.fix2.test.ts` | Coperta da unit test mirato: Calendario e Servizio lasciano lo stesso numero di turni residui sul tavolo di partenza |
 | 4 | ✅ **Editor fasce: nome duplicato, inizio == fine, sovrapposizione** (dopo 0.3) | `pro-service.spec.ts` + unit `serviceSlots.sovrapposizione.test.tsx` | Coperta a browser nel proseguimento Codex: tre salvataggi invalidi dalla modale Servizio, nessuna creazione DB |
 | 5 | ✅ **Walk-in end-to-end a browser** (doppio click su tavolo occupato, azzeramento al cambio sala) | `pro-service-tables-lifecycle.spec.ts` + unit `useWalkInMutation.rpc.test.tsx` | Coperta a browser: avviso su tavolo occupato, reset al cambio sala, conferma forzata e verifica DB |
-| 6 | **Turni esauriti + «Assegna comunque»** a browser | `AssignmentMapPanel.fix2.test.tsx` (component) | Il riquadro ambra sotto la modale è già stato un bug |
-| 7 | **Avviso fine turno**: casi «Libero», «Decido dopo», cambio fascia azzera | `pro-service-tables-lifecycle.spec.ts` — pattern `page.clock` già stabilito | 4 voci di checklist mai verificate |
+| 6 | ✅ **Turni esauriti + «Assegna comunque»** a browser | `pro-service-tables-lifecycle.spec.ts` + component `AssignmentMapPanel.fix2.test.tsx` | Coperta a browser: tavolo libero ma senza turni residui, riquadro ambra, assegnazione forzata verificata a DB |
+| 7 | ✅ **Avviso fine turno**: casi «Libero», «Decido dopo», cambio fascia azzera | `pro-service-tables-lifecycle.spec.ts` — pattern `page.clock` già stabilito | Coperta a browser: checkout append-only, dismiss locale, riapertura con nuovo tavolo in uscita e reset al cambio fascia |
 | 8 | **Tavolata a 3+ tavoli**, «Mancano N posti», **Annulla dopo assegnazione multipla** | stesso file (oggi copre solo 2 tavoli) | Voci di checklist mai diventate test |
 | 9 | **Badge % Calendario**, unit isolato sui rami D38/tavoli/Classic | nessuna | Logica ramificata, zero test isolati |
 | 10 | **Impostazioni: Salva → reload → il dato persiste** | `admin-settings-blindatura.spec.ts` | Il giro completo non è mai stato verificato |

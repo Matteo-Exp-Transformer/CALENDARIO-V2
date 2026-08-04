@@ -502,9 +502,12 @@
 
 > `e2e/pro/pro-service-tables-lifecycle.spec.ts` copre `COLLAUDO_S4_CHECKLIST.md`
 > §2.2 (avviso fine turno), §2.3 (tavolata multi-tavolo + archiviazione S4-REQ-3), §3 (5 stati in
-> sequenza), §9 ultima riga (375px), eliminazione tavolo occupato, chiusura fascia → form pubblico e
+> sequenza), §9 ultima riga (375px), eliminazione tavolo occupato, chiusura fascia → form pubblico,
 > walk-in da browser su tavolo occupato (primo click avvisa, cambio sala resetta, secondo giro forza
-> e assegna con verifica DB). Stato proseguimento 04-08: **10/10 verde**.
+> e assegna con verifica DB), **turni esauriti → Assegna comunque** da browser (tavolo libero ma 0
+> turni residui, riquadro ambra, assegnazione forzata verificata a DB con audit) e avviso fine turno
+> Fase 2 riga 7 (Libero, Decido dopo, nuovo tavolo in uscita, cambio fascia azzera). Stato
+> proseguimento 04-08: **12/12 verde**.
 > Voci mai collaudate a mano perché legate al tempo reale.
 > Pilotate con `page.clock` di Playwright (install/fastForward): **l'istante iniziale dev'essere
 > vicino a "adesso" reale**, non una data lontana nel futuro — un clock finto lontano rompe il

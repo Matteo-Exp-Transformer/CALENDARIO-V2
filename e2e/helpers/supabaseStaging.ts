@@ -668,6 +668,7 @@ export async function insertTableAssignment(input: {
   serviceSlotId: string
   date: string
   turnNumber?: number
+  checkedOutAt?: string | null
 }): Promise<TableAssignmentE2eRow> {
   const row = {
     tenant_id: input.tenantId,
@@ -676,6 +677,7 @@ export async function insertTableAssignment(input: {
     service_slot_id: input.serviceSlotId,
     date: input.date,
     turn_number: input.turnNumber ?? 1,
+    checked_out_at: input.checkedOutAt ?? null,
   }
   const created = await rest<TableAssignmentE2eRow[]>('booking_table_assignments', {
     method: 'POST',
@@ -689,9 +691,16 @@ export async function insertTableAssignment(input: {
 
 export async function getTableAssignmentsForBooking(
   bookingId: string,
-): Promise<Array<{ id: string; table_id: string; checked_out_at: string | null }>> {
+): Promise<Array<{
+  id: string
+  table_id: string
+  checked_out_at: string | null
+  forced_by_admin?: boolean | null
+  force_reason?: string | null
+  turn_number?: number
+}>> {
   return rest(
-    `booking_table_assignments?booking_id=eq.${bookingId}&select=id,table_id,checked_out_at`,
+    `booking_table_assignments?booking_id=eq.${bookingId}&select=id,table_id,checked_out_at,forced_by_admin,force_reason,turn_number`,
   )
 }
 
@@ -753,6 +762,7 @@ export async function insertServiceSlot(input: {
   startTime?: string
   endTime?: string
   displayOrder?: number
+  maxTurns?: number | null
 }): Promise<{ id: string; name: string }> {
   const row = {
     tenant_id: input.tenantId,
@@ -760,6 +770,7 @@ export async function insertServiceSlot(input: {
     start_time: input.startTime ?? '00:00',
     end_time: input.endTime ?? '23:59',
     display_order: input.displayOrder ?? 9000,
+    max_turns: input.maxTurns ?? null,
   }
   const created = await rest<Array<{ id: string; name: string }>>('service_slots', {
     method: 'POST',

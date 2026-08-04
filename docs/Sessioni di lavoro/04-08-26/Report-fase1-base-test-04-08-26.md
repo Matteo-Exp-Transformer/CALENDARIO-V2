@@ -51,14 +51,23 @@ Matteo ha autorizzato le deduzioni prodotto emerse dalla discussione:
   occupato, il primo click mostra l'avviso, il cambio sala resetta tavolo/conferma, il secondo giro
   forza la sostituzione e crea il walk-in assegnato. Verifiche: scenario mirato **1/1 verde**,
   `e2e/pro/pro-service-tables-lifecycle.spec.ts` completo **10/10 verde**, typecheck e2e ad hoc verde.
-- La Fase 2 ora continua dalla **riga 6** del piano. Restano aperti parallelismo Playwright e
+- **Fase 2 riga 6 coperta a browser:** da Servizio → Mappa, Mario apre "Assegna tavolo" su una
+  prenotazione, vede un tavolo libero ma con **0 turni residui**, clicca "Assegna comunque" e il DB
+  registra la nuova assegnazione forzata con audit (`forced_by_admin`, motivo, turno 3). Verifiche:
+  scenario mirato **1/1 verde**, `e2e/pro/pro-service-tables-lifecycle.spec.ts` completo **11/11
+  verde**, typecheck e2e ad hoc verde.
+- **Fase 2 riga 7 coperta a browser:** l'avviso fine turno copre "Libero", "Decido dopo", la
+  riapertura quando entra in uscita un secondo tavolo e il cambio fascia che azzera "Decido dopo"
+  quando Mario torna alla fascia originale. Verifiche: scenario cambio-fascia **1/1 verde**,
+  `e2e/pro/pro-service-tables-lifecycle.spec.ts` completo **12/12 verde**, typecheck e2e ad hoc verde.
+- La Fase 2 ora continua dalla **riga 8** del piano. Restano aperti parallelismo Playwright e
   prova a cavallo della mezzanotte.
 
 ## Aggiornamento chiusura Codex — 04-08-2026
 
 - Preparato il prompt del prossimo agente senior in
-  `docs/Sessioni di lavoro/04-08-26/PROMPT_PROSSIMO_SENIOR.md`: aggiornato dopo il walk-in, parte
-  dalla Fase 2 riga 6, non riapre le righe 1-5 già coperte.
+  `docs/Sessioni di lavoro/04-08-26/PROMPT_PROSSIMO_SENIOR.md`: aggiornato dopo l'avviso fine turno,
+  parte dalla Fase 2 riga 8, non riapre le righe 1-7 già coperte.
 - Preparati commit locali separati per: rossi Fase 1 Prenota/Admin, flussi browser Servizio Fase 2,
   handoff/report/skill. **Nessun push.**
 - Stato verifiche prima della chiusura: `npm run validate` verde; `git diff --check` pulito;
@@ -202,9 +211,9 @@ di test. Script con guardia che si rifiuta di partire se il progetto non è `doc
   funzione di calcolo alle 23:50 e alle 00:30. La spec vera l'ho eseguita solo di giorno: **rilanciarla
   davvero a cavallo della mezzanotte resta da fare**, ed è l'unica prova definitiva.
 - **La batteria e2e completa è stata rilanciata in seriale dopo la ripresa Codex:** 100/100 verde.
-  Dopo l'aggiunta delle righe Fase 2 2, 4 e 5 non è stata rilanciata di nuovo tutta la batteria; sono
-  state rilanciate le suite interessate: `pro-service-tables-lifecycle` completa 10/10 verde e
-  `pro-service` completa 3/3 verde.
+  Dopo l'aggiunta delle righe Fase 2 2, 4, 5, 6 e 7 non è stata rilanciata di nuovo tutta la
+  batteria; sono state rilanciate le suite interessate: `pro-service-tables-lifecycle` completa
+  12/12 verde e `pro-service` completa 3/3 verde.
 - **Non ho verificato a video** nessuno dei quattro fix della Fase 0: Matteo ha risposto «non ancora»
   alla domanda sul collaudo, e la Fase 1 non li tocca.
 - **Il parallelismo non è stato deciso.** Ho misurato che 12 worker producono ~20 rossi finti, ma
@@ -264,11 +273,10 @@ più 3 nuovi. Matteo ha poi chiesto `fai commit, niente push`: sono stati creati
 (`c74e3c9`, `b61df73`, `f32ba74`, `5edd3ad`, `60112b4`, `389b12c`). La ripresa Codex successiva ha
 avuto nuove modifiche, poi Matteo ha chiesto di preparare prompt/report e committarle localmente.
 
-**Stato reale dopo proseguimento Codex, prima dei commit chiesti da Matteo:** branch `env/test`
-avanti di 6 commit su `origin/env/test`, nessun push, 12 file modificati non committati:
-`ADMIN_SERVIZIO_CONTEXT.md`, i due contesti Prenota, questo report, il piano del 03-08, il prompt di
-handoff, tre spec e2e di Fase 1, `e2e/helpers/supabaseStaging.ts`,
-`e2e/pro/pro-service-tables-lifecycle.spec.ts`, `e2e/pro/pro-service.spec.ts`.
+**Stato reale attuale dopo riga 7:** branch `env/test` avanti di **11 commit** su `origin/env/test`,
+nessun push, 6 file modificati non committati: `ADMIN_SERVIZIO_CONTEXT.md`, questo report, il piano
+del 03-08, il prompt di handoff, `e2e/helpers/supabaseStaging.ts`,
+`e2e/pro/pro-service-tables-lifecycle.spec.ts`.
 
 **Split usato per i commit locali chiesti da Matteo:**
 
@@ -279,11 +287,19 @@ handoff, tre spec e2e di Fase 1, `e2e/helpers/supabaseStaging.ts`,
    sparisce dal form pubblico, validazioni editor fasce).
 3. `docs(handoff): allinea Fase 2 e prossimo prompt` — skill Prenota/Servizio, report, piano e prompt.
 
-**Aggiornamento worktree 20:08, non committato:** aggiunta copertura browser della riga 5 in
-`e2e/pro/pro-service-tables-lifecycle.spec.ts` e aggiornati piano/report/prompt/contesto Servizio.
-Verifiche: walk-in mirato 1/1 verde, lifecycle completo 10/10 verde, typecheck e2e ad hoc verde.
-Se Matteo chiede commit, questo giro va in un commit separato tipo
-`test(e2e): copri walk-in occupato da browser` più eventuale commit docs se si vuole tenere lo split.
+**Aggiornamento riga 6, non committato:** aggiunta copertura browser della riga 6 in
+`e2e/pro/pro-service-tables-lifecycle.spec.ts` e estesi gli helper REST per seedare `max_turns`,
+assignment già chiusi e leggere i campi di audit della forzatura. Aggiornati piano/report/prompt/
+contesto Servizio. Verifiche: scenario "turni esauriti" mirato 1/1 verde, lifecycle completo 11/11
+verde, typecheck e2e ad hoc verde. Se Matteo chiede commit, questo giro va in un commit separato tipo
+`test(e2e): copri turni esauriti da browser` più eventuale commit docs se si vuole tenere lo split.
+
+**Aggiornamento riga 7, non committato:** aggiunta copertura browser del cambio fascia nell'avviso
+fine turno: dopo "Decido dopo", Mario passa a un'altra fascia e torna alla precedente; l'avviso si
+riapre per il tavolo ancora in uscita. Verifiche: scenario cambio-fascia mirato 1/1 verde,
+lifecycle completo 12/12 verde, typecheck e2e ad hoc verde, `npm run validate` verde. Se Matteo
+chiede commit, questo giro può stare nel commit test della riga 7 (`test(e2e): copri avviso fine
+turno da browser`) con docs separati.
 
 Suggerimento originale di suddivisione già eseguito nei 6 commit locali:
 
@@ -344,7 +360,7 @@ esattamente il modo in cui una sessione perde il controllo. Il segnale che non �
 
 1. La **decisione sul parallelismo** (§6.4) e, di conseguenza, `playwright.config.ts`.
 2. La **prova a cavallo della mezzanotte** del fix a orologio (§4).
-3. **Fase 2** (§4 del piano): righe 1, 2, 3, 4 e 5 coperte; prossima riga prioritaria 6.
+3. **Fase 2** (§4 del piano): righe 1, 2, 3, 4, 5, 6 e 7 coperte; prossima riga prioritaria 8.
 
 ---
 
