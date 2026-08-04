@@ -1,8 +1,8 @@
 # Report — FASE 1 del piano senior: riparare la base di test (04-08-2026)
 
-> Branch `env/test`. Stato dopo chiusura Codex: i 6 commit locali precedenti restano non pushati;
-> Matteo ha chiesto anche il commit del proseguimento, preparato in commit locali separati.
-> **Nessun push**.
+> Branch `env/test`. Stato aggiornato 04-08 20:08: i 9 commit locali precedenti restano non pushati;
+> il giro walk-in di questa ripresa è nel worktree e **non è committato** perché Matteo non ha chiesto
+> commit. **Nessun push**.
 > **Nessuna migrazione**, nessuna scrittura di schema. Su TEST (`docnnernvp`) sono stati riscritti
 > tre valori di `restaurant_settings` del locale di prova `da-tommaso`, **su decisione esplicita di
 > Matteo** (§2.6). PROD non toccata in nessun modo.
@@ -45,14 +45,20 @@ Matteo ha autorizzato le deduzioni prodotto emerse dalla discussione:
 - **Fase 2 riga 4 coperta a browser:** l'editor fasce di Servizio blocca nome duplicato
   (trim/case-insensitive), inizio=fine e sovrapposizione dalla modale vera. Verifiche: scenario
   mirato 1/1 verde, `e2e/pro/pro-service.spec.ts` completo **3/3 verde**, typecheck e2e ad hoc verde.
-- La Fase 2 ora continua dalla **riga 3** del piano. Restano aperti parallelismo Playwright e
+- **Fase 2 riga 3 verificata nel codice corrente:** "Modifica tavolo" non consuma turno era già
+  coperta dal test unitario `useTableAssignments.fix2.test.ts`; verifica mirata **12/12 verde**.
+- **Fase 2 riga 5 coperta a browser:** dalla Home, Mario apre "Aggiungi walk-in", sceglie un tavolo
+  occupato, il primo click mostra l'avviso, il cambio sala resetta tavolo/conferma, il secondo giro
+  forza la sostituzione e crea il walk-in assegnato. Verifiche: scenario mirato **1/1 verde**,
+  `e2e/pro/pro-service-tables-lifecycle.spec.ts` completo **10/10 verde**, typecheck e2e ad hoc verde.
+- La Fase 2 ora continua dalla **riga 6** del piano. Restano aperti parallelismo Playwright e
   prova a cavallo della mezzanotte.
 
 ## Aggiornamento chiusura Codex — 04-08-2026
 
 - Preparato il prompt del prossimo agente senior in
-  `docs/Sessioni di lavoro/04-08-26/PROMPT_PROSSIMO_SENIOR.md`: parte dalla Fase 2 riga 3, non
-  riapre le righe 1, 2 e 4 già coperte.
+  `docs/Sessioni di lavoro/04-08-26/PROMPT_PROSSIMO_SENIOR.md`: aggiornato dopo il walk-in, parte
+  dalla Fase 2 riga 6, non riapre le righe 1-5 già coperte.
 - Preparati commit locali separati per: rossi Fase 1 Prenota/Admin, flussi browser Servizio Fase 2,
   handoff/report/skill. **Nessun push.**
 - Stato verifiche prima della chiusura: `npm run validate` verde; `git diff --check` pulito;
@@ -196,8 +202,8 @@ di test. Script con guardia che si rifiuta di partire se il progetto non è `doc
   funzione di calcolo alle 23:50 e alle 00:30. La spec vera l'ho eseguita solo di giorno: **rilanciarla
   davvero a cavallo della mezzanotte resta da fare**, ed è l'unica prova definitiva.
 - **La batteria e2e completa è stata rilanciata in seriale dopo la ripresa Codex:** 100/100 verde.
-  Dopo l'aggiunta delle righe Fase 2 2 e 4 non è stata rilanciata di nuovo tutta la batteria; sono
-  state rilanciate le suite interessate: `pro-service-tables-lifecycle` completa 9/9 verde e
+  Dopo l'aggiunta delle righe Fase 2 2, 4 e 5 non è stata rilanciata di nuovo tutta la batteria; sono
+  state rilanciate le suite interessate: `pro-service-tables-lifecycle` completa 10/10 verde e
   `pro-service` completa 3/3 verde.
 - **Non ho verificato a video** nessuno dei quattro fix della Fase 0: Matteo ha risposto «non ancora»
   alla domanda sul collaudo, e la Fase 1 non li tocca.
@@ -273,6 +279,12 @@ handoff, tre spec e2e di Fase 1, `e2e/helpers/supabaseStaging.ts`,
    sparisce dal form pubblico, validazioni editor fasce).
 3. `docs(handoff): allinea Fase 2 e prossimo prompt` — skill Prenota/Servizio, report, piano e prompt.
 
+**Aggiornamento worktree 20:08, non committato:** aggiunta copertura browser della riga 5 in
+`e2e/pro/pro-service-tables-lifecycle.spec.ts` e aggiornati piano/report/prompt/contesto Servizio.
+Verifiche: walk-in mirato 1/1 verde, lifecycle completo 10/10 verde, typecheck e2e ad hoc verde.
+Se Matteo chiede commit, questo giro va in un commit separato tipo
+`test(e2e): copri walk-in occupato da browser` più eventuale commit docs se si vuole tenere lo split.
+
 Suggerimento originale di suddivisione già eseguito nei 6 commit locali:
 
 1. `fix(e2e): allinea le spec alle schermate di oggi` — le spec riscritte (Calendario, CRM, Classic,
@@ -332,7 +344,7 @@ esattamente il modo in cui una sessione perde il controllo. Il segnale che non �
 
 1. La **decisione sul parallelismo** (§6.4) e, di conseguenza, `playwright.config.ts`.
 2. La **prova a cavallo della mezzanotte** del fix a orologio (§4).
-3. **Fase 2** (§4 del piano): righe 1, 2 e 4 coperte; prossima riga prioritaria 3.
+3. **Fase 2** (§4 del piano): righe 1, 2, 3, 4 e 5 coperte; prossima riga prioritaria 6.
 
 ---
 

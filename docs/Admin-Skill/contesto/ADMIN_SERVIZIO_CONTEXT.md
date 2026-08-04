@@ -502,8 +502,10 @@
 
 > `e2e/pro/pro-service-tables-lifecycle.spec.ts` copre `COLLAUDO_S4_CHECKLIST.md`
 > §2.2 (avviso fine turno), §2.3 (tavolata multi-tavolo + archiviazione S4-REQ-3), §3 (5 stati in
-> sequenza), §9 ultima riga (375px), eliminazione tavolo occupato e chiusura fascia → form pubblico.
-> Stato proseguimento 04-08: **9/9 verde**. Voci mai collaudate a mano perché legate al tempo reale.
+> sequenza), §9 ultima riga (375px), eliminazione tavolo occupato, chiusura fascia → form pubblico e
+> walk-in da browser su tavolo occupato (primo click avvisa, cambio sala resetta, secondo giro forza
+> e assegna con verifica DB). Stato proseguimento 04-08: **10/10 verde**.
+> Voci mai collaudate a mano perché legate al tempo reale.
 > Pilotate con `page.clock` di Playwright (install/fastForward): **l'istante iniziale dev'essere
 > vicino a "adesso" reale**, non una data lontana nel futuro — un clock finto lontano rompe il
 > refresh del JWT Supabase (calcolato con `Date.now()`, lato client) e le richieste ricadono

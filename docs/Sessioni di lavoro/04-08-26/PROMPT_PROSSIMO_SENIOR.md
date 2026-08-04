@@ -1,6 +1,6 @@
-# Prompt di avvio — prossimo agente senior (Fase 2, stato reale 04-08-26, post-commit)
+# Prompt di avvio — prossimo agente senior (Fase 2, stato reale 04-08-26, post-walk-in)
 
-> Aggiornato il **04-08-2026** dopo proseguimento Codex e commit locali. Da incollare come primo
+> Aggiornato il **04-08-2026 20:08** dopo proseguimento Codex sul walk-in. Da incollare come primo
 > messaggio della prossima chat. Il testo dentro il blocco è il prompt; quello dopo è il perché
 > delle scelte.
 >
@@ -33,12 +33,20 @@ DA DOVE PARTI (misurato da me, un test alla volta, non riportato da un agente):
   modali responsive Admin mobile 2/2 e tablet 2/2.
 - unit/integration mirata: `BookingRequestForm.flussoUtente.test.tsx` 7/7.
 - Fase 2 avviata: righe 1-2 coperte a browser dentro
-  `e2e/pro/pro-service-tables-lifecycle.spec.ts`; file completo 9/9 verde. Riga 2 = Mario chiude una
-  fascia da Servizio, Anna non la vede più nel picker orari del form pubblico.
+  `e2e/pro/pro-service-tables-lifecycle.spec.ts`. Riga 2 = Mario chiude una fascia da Servizio, Anna
+  non la vede più nel picker orari del form pubblico.
+- Fase 2 riga 3 verificata nel codice corrente: `useTableAssignments.fix2.test.ts` copre che
+  "Modifica tavolo" da Calendario e "sposta" da Servizio non consumano turni sul tavolo di partenza;
+  file completo 12/12 verde.
 - Fase 2 riga 4 coperta a browser dentro `e2e/pro/pro-service.spec.ts`; file completo 3/3 verde.
   La modale Servizio blocca nome duplicato, inizio=fine e sovrapposizione.
-- Le modifiche della ripresa/proseguimento Codex sono state committate localmente su `env/test`
-  (nessun push). Il branch resta avanti rispetto a `origin/env/test`.
+- Fase 2 riga 5 coperta a browser dentro `e2e/pro/pro-service-tables-lifecycle.spec.ts`: dalla Home
+  Mario apre "Aggiungi walk-in", sceglie un tavolo occupato, il primo click mostra l'avviso, il cambio
+  sala azzera tavolo/conferma, il secondo giro forza la sostituzione e crea il walk-in assegnato.
+  Verifiche: scenario mirato 1/1 verde, file completo 10/10 verde, typecheck e2e ad hoc verde.
+- Le modifiche della ripresa/proseguimento Codex precedente sono state committate localmente su
+  `env/test` (nessun push). Il test walk-in e questi aggiornamenti handoff sono nel worktree finché
+  Matteo non chiede commit. Il branch resta avanti rispetto a `origin/env/test`.
 
 LE TRE CORREZIONI DI RIPRESA DA NON RIAPRIRE:
 1. `public-booking-fix9-compilable.spec.ts` — una sola card non mostra la striscia, ma si
@@ -48,7 +56,7 @@ LE TRE CORREZIONI DI RIPRESA DA NON RIAPRIRE:
 3. `admin-booking-mgmt.spec.ts` — in mobile/tablet l'entry calendario non è sempre un `button`; il
    test clicca il testo evento, che apre i dettagli sia in lista sia in mese.
 
-PROSSIMO PASSO: continua la FASE 2 (§4 del piano): righe 1, 2 e 4 coperte, prossima priorità riga 3.
+PROSSIMO PASSO: continua la FASE 2 (§4 del piano): righe 1, 2, 3, 4 e 5 coperte, prossima priorità riga 6.
 Restano aperte la decisione sul parallelismo Playwright e la prova a cavallo della mezzanotte.
 
 COMMITS LOCALI GIA' PREPARATI DA NON RIFARE:
@@ -101,8 +109,8 @@ parliamone prima, poi lavora in autonomia.
 
 ## Perché è scritto così (note per il senior, non per l'agente)
 
-- **Parte dalla Fase 2, non dalla Fase 1 intera**: il rischio numero uno è che qualcuno rilegga il
-  piano di ieri e ricominci a sistemare spec già sistemate.
+- **Parte dalla Fase 2 riga 6, non dalla Fase 1 o dalle righe 1-5**: il rischio numero uno è che
+  qualcuno rilegga il piano di ieri e ricominci a sistemare spec già sistemate.
 - **I tre rossi restano descritti come correzioni chiuse**, così il prossimo può capire perché i test
   sono cambiati senza riaprire la diagnosi.
 - **La riga sui subagent che non devono lanciare Playwright** è nuova: nella Fase 0 il problema non
