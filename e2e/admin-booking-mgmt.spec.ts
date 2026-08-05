@@ -166,8 +166,10 @@ test.describe('Gestione prenotazioni admin — warning accept (staging)', () => 
   })
 
   test('accept con orario passato mostra warning e procede (non blocca)', async ({ page }) => {
-    const date = todayIsoDate()
-    const pastTime = '07:30'
+    // Giorno precedente: resta deterministico anche quando la suite passa questo test
+    // subito dopo mezzanotte, quando un orario fisso di oggi sarebbe ancora futuro.
+    const date = offsetIsoDate(-1)
+    const pastTime = '20:00'
 
     const pendingId = await insertBooking({
       tenantId,

@@ -11,6 +11,9 @@ if (!process.env.E2E_SUPABASE_SERVICE_KEY && process.env.SUPABASE_SERVICE_ROLE_K
   process.env.E2E_SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 }
 
+const LOCAL_E2E_URL = 'http://127.0.0.1:4173'
+const EXTERNAL_E2E_URL = process.env.PLAYWRIGHT_BASE_URL
+
 /**
  * I test e2e richiedono un progetto Supabase staging separato.
  * Credenziali da impostare in .env.local.test (gitignored):
@@ -46,7 +49,7 @@ export default defineConfig({
   workers: Number(process.env.E2E_WORKERS) || 1,
   reporter: 'html',
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173',
+    baseURL: EXTERNAL_E2E_URL || LOCAL_E2E_URL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     // Fuso del BROWSER, normalmente quello della macchina (undefined = nessun override).
@@ -81,14 +84,19 @@ export default defineConfig({
       grep: /@viewport:tablet-834/,
     },
   ],
-  webServer: {
-    // Autosave OFF in E2E: il guard logout/dirty su anagrafica segue il comportamento prod (FU-004).
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 30000,
-    env: {
-      VITE_SETTINGS_AUTOSAVE: 'false',
-    },
-  },
+  // Un URL esterno esplicito e gia gestito dal chiamante. In locale Playwright avvia invece un
+  // server dedicato su 4173: non riusa mai il dev server di Matteo su 5173, che potrebbe avere
+  // variabili diverse (es. autosave ON) o essere partito prima degli ultimi commit.
+  webServer: EXTERNAL_E2E_URL
+    ? undefined
+    : {
+        // Autosave OFF in E2E: il guard logout/dirty segue il comportamento prod (FU-004).
+        command: 'npm run dev -- --host 127.0.0.1 --port 4173 --strictPort',
+        url: LOCAL_E2E_URL,
+        reuseExistingServer: false,
+        timeout: 30000,
+        env: {
+          VITE_SETTINGS_AUTOSAVE: 'false',
+        },
+      },
 })
