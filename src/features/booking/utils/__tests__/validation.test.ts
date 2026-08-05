@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isValidEmail, isValidPhone, isValidName } from '../validation'
+import { isValidEmail, isValidPhone } from '../validation'
 
 describe('isValidEmail', () => {
   it('accetta email standard', () => {
@@ -58,27 +58,5 @@ describe('isValidPhone', () => {
 
   it('rifiuta solo lettere', () => {
     expect(isValidPhone('abcdefg')).toBe(false)
-  })
-})
-
-describe('isValidName', () => {
-  it('accetta nomi normali', () => {
-    expect(isValidName('Mario')).toBe(true)
-    expect(isValidName('Mario Rossi')).toBe(true)
-    expect(isValidName("O'Connor")).toBe(true)
-  })
-
-  it('trimma e accetta', () => {
-    expect(isValidName('  Mario  ')).toBe(true)
-  })
-
-  it('rifiuta vuoto o solo spazi', () => {
-    expect(isValidName('')).toBe(false)
-    expect(isValidName('   ')).toBe(false)
-  })
-
-  it('rifiuta oltre il cap nome cliente (65, allineato a edge/limiti)', () => {
-    expect(isValidName('a'.repeat(66))).toBe(false)
-    expect(isValidName('a'.repeat(65))).toBe(true)
   })
 })

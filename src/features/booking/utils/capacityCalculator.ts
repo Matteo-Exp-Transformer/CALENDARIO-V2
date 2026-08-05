@@ -1,26 +1,10 @@
 import type { BookingRequest } from '@/types/booking'
 import { extractDateFromISO } from './dateUtils'
 import {
-  isTimeInsideSlot,
   parseHmToMinutes,
   slotRangesOverlap,
   type SlotConfig,
 } from './bookingTimeSlots'
-
-// Tipi nuovi per N slot -------------------------------------------------------
-
-export interface SlotCapacityEntry {
-  slotId: string
-  name: string
-  capacity: number | null
-  occupied: number
-  available: number | null
-}
-
-export interface DailyCapacityV2 {
-  date: string
-  slots: SlotCapacityEntry[]
-}
 
 // Helper interni --------------------------------------------------------------
 
@@ -59,62 +43,6 @@ export function getSlotsOccupiedByBookingV2(
 }
 
 /**
- * Ritorna l'id della fascia in cui cade l'orario di inizio della prenotazione.
- * Prende la prima fascia (per display_order) che contiene l'orario.
- * Se nessuna → fallback all'ultima fascia (comportamento legacy preservato).
- */
-export function getStartSlotForBookingV2(start: string, slots: SlotConfig[]): string {
-  if (slots.length === 0) return 'daily'
-  const startTime = extractTimeFromISO(start)
-  const sorted = [...slots].sort((a, b) => a.display_order - b.display_order)
-  for (const slot of sorted) {
-    if (isTimeInsideSlot(startTime, slot.start_time, slot.end_time)) return slot.id
-  }
-  return '__unassigned__'
-}
-
-/**
- * Calcola la capacity giornaliera per N fasce dinamiche.
- * `slotCapacities`: Record<slotId, number | null>
- */
-export function calculateDailyCapacityV2(
-  date: string,
-  bookings: BookingRequest[],
-  slots: SlotConfig[],
-  slotCapacities: Record<string, number | null> = {}
-): DailyCapacityV2 {
-  const counters: Record<string, number> = {}
-  for (const slot of slots) counters[slot.id] = 0
-
-  const dayBookings = bookings.filter((b) => {
-    if (!b.confirmed_start) return false
-    return extractDateFromISO(b.confirmed_start) === date
-  })
-
-  for (const booking of dayBookings) {
-    if (!booking.confirmed_start || !booking.confirmed_end) continue
-    const occupied = getSlotsOccupiedByBookingV2(booking.confirmed_start, booking.confirmed_end, slots)
-    for (const slotId of occupied) {
-      if (slotId in counters) counters[slotId] += booking.num_guests ?? 0
-    }
-  }
-
-  const entries: SlotCapacityEntry[] = slots.map((slot) => {
-    const cap = slotCapacities[slot.id] ?? null
-    const occ = counters[slot.id] ?? 0
-    return {
-      slotId: slot.id,
-      name: slot.name,
-      capacity: cap,
-      occupied: occ,
-      available: cap == null ? null : cap - occ,
-    }
-  })
-
-  return { date, slots: entries }
-}
-
-/**
  * Somma i coperti per data (YYYY-MM-DD) per il badge «% riempimento» del calendario.
  * Stesso criterio del blocco pubblico giornaliero (edge create-booking) e del digest:
  * conta SOLO le prenotazioni accettate, NON no-show, con confirmed_start E confirmed_end
@@ -130,4 +58,3 @@ export function sumGuestsByDate(bookings: BookingRequest[]): Record<string, numb
   }
   return acc
 }
-

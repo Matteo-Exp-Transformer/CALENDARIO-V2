@@ -9,9 +9,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
 import { ArchiveTab } from '../ArchiveTab'
 import { BookingDangerActionModal } from '../BookingDangerActionModal'
-import { calculateDailyCapacityV2 } from '../../utils/capacityCalculator'
-import type { SlotConfig } from '../../utils/bookingTimeSlots'
-import type { BookingRequest } from '@/types/booking'
 
 const confirmSpy = vi.spyOn(window, 'confirm')
 
@@ -362,45 +359,6 @@ describe('@admin-blindatura prenotazioni — LIMIT UI archivio', () => {
     expect(screen.getByText(/mostrando 200 prenotazioni/i)).toBeInTheDocument()
     expect(screen.getByText('Cliente 0')).toBeInTheDocument()
     expect(screen.getByText('Cliente 199')).toBeInTheDocument()
-  })
-})
-
-describe('@admin-blindatura prenotazioni — LIMIT capienza (calculateDailyCapacityV2)', () => {
-  const DATE = '2026-06-10'
-  const cena: SlotConfig = {
-    id: 'cena',
-    name: 'Cena',
-    start_time: '19:00',
-    end_time: '23:00',
-    display_order: 1,
-    is_canonical: true,
-  }
-
-  function acceptedBooking(id: string, guests: number): BookingRequest {
-    return {
-      id,
-      status: 'accepted',
-      confirmed_start: `${DATE}T20:00:00+00:00`,
-      confirmed_end: `${DATE}T22:00:00+00:00`,
-      num_guests: guests,
-    } as unknown as BookingRequest
-  }
-
-  it('L6: capienza al bordo esatto — available=0, nessun superamento', () => {
-    const bookings = [acceptedBooking('b1', 10)]
-    const result = calculateDailyCapacityV2(DATE, bookings, [cena], { cena: 10 })
-    const slot = result.slots[0]
-    expect(slot.occupied).toBe(10)
-    expect(slot.available).toBe(0)
-    expect((slot.available ?? 0) >= 0).toBe(true)
-  })
-
-  it('L7: capienza +1 oltre limite — available negativo (overbooking matematico)', () => {
-    const bookings = [acceptedBooking('b1', 11)]
-    const result = calculateDailyCapacityV2(DATE, bookings, [cena], { cena: 10 })
-    const slot = result.slots[0]
-    expect(slot.occupied).toBe(11)
-    expect(slot.available).toBe(-1)
   })
 })
 

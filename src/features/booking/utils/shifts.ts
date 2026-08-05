@@ -53,20 +53,6 @@ export function getShiftRanges(businessHoursRaw: unknown): {
 }
 
 /**
- * Dato un timestamp ISO e i range turno, restituisce a quale turno appartiene.
- * Usato per filtrare i KPI analytics.
- */
-export function getShiftForTimestamp(
-  isoTimestamp: string,
-  shiftRanges: { lunch: ShiftTimeRange; dinner: ShiftTimeRange },
-): ShiftFilter {
-  const hour = new Date(isoTimestamp).getHours()
-  if (hour >= shiftRanges.lunch.startHour && hour < shiftRanges.lunch.endHour) return 'lunch'
-  if (hour >= shiftRanges.dinner.startHour && hour < shiftRanges.dinner.endHour) return 'dinner'
-  return 'all'
-}
-
-/**
  * Dato un orario "HH:MM" in formato stringa, determina il turno.
  */
 export function getShiftForTimeString(
