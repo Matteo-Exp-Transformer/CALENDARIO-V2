@@ -397,6 +397,10 @@ catalogo ingredienti mostrato; questi item non vanno esclusi per mismatch con
 sulla card o ingrediente eliminato/modificato dal catalogo. La selezione preset da card scorrevole
 non mostra "Menu consigliato non disponibile" mentre `menu_items`/`booking_custom_staff_presets`
 caricano; `BookingRequestForm` mantiene il preset e lo riapplica a catalogo pronto.
+Il fallback vuoto di `booking_custom_staff_presets` durante il caricamento e una costante stabile di
+modulo: con due o piu card, una nuova `[]` a ogni render ricreava la sottotab selezionata e il
+riepilogo la rimandava al form in un ciclo. La regressione E2E trattiene apposta la risposta preset,
+seleziona e cambia rapidamente tipologia/card, e fallisce su `Maximum update depth`.
 
 ## 8. Config & tipi
 

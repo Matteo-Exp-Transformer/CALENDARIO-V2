@@ -1,6 +1,6 @@
 # Data Inventory — cosa raccoglie davvero CalendarBackup-v2
 
-> Aggiornato: 2026-06-12
+> Aggiornato: 2026-08-05
 > Fonte verità per Privacy Policy + Registro Trattamenti.
 > Ogni nuova migrazione che aggiunge PII deve aggiornare questo file.
 
@@ -27,10 +27,12 @@ giuridica, retention attesa vs reale, dove finiscono, chi li può vedere.
 | `special_requests` | testo libero | Media | "tavolo angolo" — può contenere PII inaspettata |
 | `desired_date` / `desired_time` / `num_guests` | metadati | Bassa | — |
 | `confirmed_start` / `confirmed_end` | metadati | Bassa | — |
+| `marketing_consent` | consenso a email promozionali | Media | `true` solo dopo scelta esplicita |
 
 ⚠️ **`dietary_restrictions` contiene potenzialmente dati di salute** (allergie, intolleranze, diete mediche). Sotto GDPR art. 9 sono "categorie particolari" → richiedono base giuridica rafforzata (consenso esplicito).
 
-**Base giuridica**: consenso (checkbox Privacy Policy) + esecuzione contratto (prenotazione).
+**Base giuridica**: esecuzione di misure precontrattuali/contrattuali (prenotazione); consenso
+esplicito separato per dati alimentari quando presenti; consenso separato e facoltativo per marketing.
 **Retention reale**: ∞ (nessun job di cleanup). **Va aggiunto** un cleanup a 24 mesi o dichiarare retention illimitata.
 **Visibilità**: solo admin del tenant (RLS).
 
@@ -43,7 +45,8 @@ giuridica, retention attesa vs reale, dove finiscono, chi li può vedere.
 | `notes` | testo libero | Note manuali admin sul cliente |
 | `source` | "synced" / manuale | — |
 
-**Base giuridica**: legittimo interesse (gestione clientela) — DEBOLE, valutare consenso esplicito a marketing in futuro.
+**Base giuridica**: gestione del rapporto con il cliente; le email promozionali sono selezionabili
+solo quando `marketing_consent = true` (consenso esplicito, art. 6.1.a GDPR).
 **Retention reale**: ∞.
 
 ### `admin_users` — Admin ristoranti
@@ -89,9 +92,24 @@ Gestita da Supabase. Retention secondo contratto.
 **Da dichiarare in Privacy Policy** sez. 2 (dati raccolti automaticamente) e sez. 3 (finalità sicurezza).
 
 ### `email_logs` — Log invii email
-Quando l'Edge Function `send-email` esisterà, conterrà log degli invii (destinatario, oggetto, esito).
-Oggi 1 riga di test.
-**Retention**: 12 mesi (proposta).
+Contiene destinatario, tipo di email, esito, timestamp, eventuale risposta/errore del provider e
+riferimento alla prenotazione. Gli invii passano dall'Edge `send-email` a Brevo per email
+transazionali e marketing.
+**Retention reale**: nessun job di cleanup individuato. Un periodo di conservazione non è ancora
+stato deciso né implementato.
+
+### `email_campaigns` — Campagne marketing
+Contiene nome, oggetto, corpo, link e lista di indirizzi destinatari (`recipient_emails`), oltre a
+stato e date della campagna. Ogni locale può crearne al massimo 5; l'invio è consentito soltanto
+per contatti con `marketing_consent = true`.
+**Base giuridica**: consenso esplicito e facoltativo (art. 6.1.a GDPR).
+**Retention reale**: nessun job di cleanup individuato.
+
+### `unsubscribe_tokens` — Disiscrizione dalle campagne
+Contiene un token opaco, email, locale e data d'uso per rendere effettiva la disiscrizione dalle
+email marketing. Il token è creato lato server, non è accessibile dal client e la relativa Edge
+imposta `marketing_consent = false`.
+**Retention reale**: nessun job di cleanup individuato.
 
 ---
 
@@ -99,8 +117,8 @@ Oggi 1 riga di test.
 
 ### Supabase Inc.
 - **Cosa contiene**: tutto il DB sopra + Auth + log applicativi
-- **Region**: ⚠️ DA VERIFICARE in dashboard
-- **DPA**: in corso firma (2026-05-23)
+- **Region**: West EU (Ireland), come registrato in `LEGAL_STATE_CONTEXT.md`
+- **DPA**: firmato (riferimento e copia locale in `LEGAL_STATE_CONTEXT.md`)
 
 ### Vercel Inc.
 - **Cosa contiene**: codice frontend statico + log accessi HTTP (IP + URL + user agent)
@@ -108,8 +126,14 @@ Oggi 1 riga di test.
 - **Retention log Vercel**: 30 giorni piano free / 7 giorni piano Pro free tier
 - **DPA**: standard nei ToS
 
-### Email provider (NON CONFIGURATO)
-Quando aggiunto, qui dichiarare: nome (Resend/SendGrid/Postmark/...), cosa gli inviamo, region, DPA.
+### Brevo (Sendinblue)
+- **Cosa riceve**: indirizzo del destinatario, oggetto, contenuto HTML dell'email, nome/indirizzo
+  del mittente e tipo dell'invio. Il contenuto può includere dati della prenotazione necessari alla
+  comunicazione.
+- **Finalità**: conferma/rifiuto e altre comunicazioni sulla prenotazione; campagne promozionali
+  solo per contatti con consenso marketing.
+- **DPA e localizzazione**: da verificare, archiviare e validare con l'avvocato prima di chiudere
+  l'informativa e la lista pubblica dei sub-responsabili.
 
 ---
 
@@ -133,11 +157,25 @@ Solo cookie tecnici di Supabase Auth. **Nessun cookie di profilazione** → bann
 ## Trasferimenti extra-UE
 
 Da verificare:
-- Region Supabase prod (potrebbe essere USA)
-- Region Vercel edge (sempre globale)
-- Region email provider futuro
+- Region Vercel edge (globale)
+- Localizzazione e sub-responsabili Brevo
 
 Se almeno uno è extra-UE → dichiarare in Privacy Policy + giustificare con SCC.
+
+## Lacuna da chiudere nella Privacy Policy visibile ai clienti
+
+`src/pages/privacy/PrivacyPolicyContent.tsx` descrive l'uso delle email e il consenso marketing,
+ma nella lista dei sub-responsabili indica solo Supabase e Vercel. Manca quindi il fornitore che
+riceve i dati per il recapito. Non modificare la pagina senza validazione legale. Proposta interna
+per la relativa sezione: «Brevo (Sendinblue) — invio delle comunicazioni relative alla prenotazione
+e, solo con consenso separato, delle comunicazioni promozionali via email.» Il legale deve
+confermare ruolo, dati elencati, localizzazione e garanzie per eventuali trasferimenti.
+
+Durante il confronto è emersa anche una seconda discrepanza, non modificata nella pagina: la sua
+sezione sulla conservazione indica fino a 12 mesi per IP e log di sicurezza, mentre il cleanup reale
+elimina `rate_limits` dopo 1 ora e le righe `ip_blacklist` scadute dopo 1 giorno. Per prenotazioni,
+CRM e dati email non esiste invece un cleanup. Il legale deve approvare un testo che separi questi
+casi e una policy di conservazione effettivamente applicabile.
 
 ---
 

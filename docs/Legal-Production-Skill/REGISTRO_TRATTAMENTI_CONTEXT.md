@@ -32,7 +32,9 @@ Per ogni finalità distinta (prenotazione, CRM, account admin, log) una sezione 
 2. **CRM clienti** — Titolare ristorante
 3. **Account admin SaaS** — Titolare Matteo
 4. **Sicurezza/anti-abuse (rate_limits, log)** — Titolare Matteo
-5. **Email transazionali** (quando attive) — Titolare ristorante, Resp Matteo
+5. **Email transazionali** — Titolare ristorante, Responsabile Matteo; inviate tramite Brevo
+6. **Campagne marketing via email** — Titolare ristorante, Responsabile Matteo; solo verso
+   destinatari con consenso marketing separato e con disiscrizione disponibile
 
 ---
 
@@ -45,5 +47,10 @@ Ogni volta che:
 - cambi tempi di conservazione
 
 → aggiornare il registro entro 30 giorni dal cambio.
+
+Per i trattamenti email indicare anche Brevo fra i destinatari/sub-responsabili, i dati inviati
+(indirizzo, oggetto e contenuto necessario all'invio), il consenso per il marketing e l'attuale
+assenza di una cancellazione automatica per log, campagne e token di disiscrizione. Localizzazione,
+garanzie di trasferimento e DPA Brevo restano da verificare con l'avvocato.
 
 Bump versione + data + nota in cambio in fondo al file.

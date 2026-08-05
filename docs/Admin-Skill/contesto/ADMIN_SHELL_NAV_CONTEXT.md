@@ -48,8 +48,11 @@ vista segue. Regressione bloccata da `src/components/layout/__tests__/adminShell
 - chiama `setTenantFromAdmin`;
 - su logout fa `supabase.auth.signOut`, reset tenant e navigate `/login`.
 
-Possibile rischio: `useAdminAuth` e chiamato in piu componenti (`ProtectedRoute`, `AdminShell`,
-`AdminDashboard`), quindi puo duplicare controlli/session check.
+`AdminAuthProvider` e unico e condivide lo stesso stato fra `ProtectedRoute`, shell e dashboard. Durante
+il ripristino della sessione, i controlli Supabase ritentano al massimo due volte solo gli errori
+temporanei (rete, timeout, limite richieste, servizi non disponibili). Un esito definitivo come admin
+revocato, organizzazione inattiva o RPC senza tenant non viene ritentato: resta attivo il logout sicuro
+con pulizia del tenant.
 
 Decisione Matteo: logout da sidebar e footer dashboard deve passare prima da
 `UnsavedChangesProvider.confirmNavigation`; se ci sono modifiche non salvate, l'utente deve salvare,
@@ -125,7 +128,7 @@ Header: se manca il nome ristorante, il fallback e `Sistema Gestionale Prenotazi
 - Logout con modifiche dirty deve mostrare il guard.
 - Home deve sparire se `features.home=false`.
 - Impostazioni raggiungibile solo come tab dashboard (`/admin/impostazioni`), non come sezione sidebar.
-- Doppio `useAdminAuth` e doppio theme effect.
+- ✅ Doppio `useAdminAuth` risolto con `AdminAuthProvider` unico (06-06-26).
 - ✅ **Flash cambio tab/sezione (risolto 06-06-26):** la schermata vecchia non deve riapparire per un
   istante al cambio. Causa era stato duplicato che si rincorreva con l'URL; fix = derivare da URL (§1).
   Coperto da `adminShellTabFlash.test.tsx`.

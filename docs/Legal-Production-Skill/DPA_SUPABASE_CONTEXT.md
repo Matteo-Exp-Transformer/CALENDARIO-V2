@@ -4,7 +4,8 @@
 
 DPA = Data Processing Agreement = contratto tra TE (Matteo) e Supabase in cui Supabase si impegna a trattare i dati per tuo conto rispettando il GDPR.
 
-Senza DPA con Supabase, non puoi legalmente vendere a clienti UE.
+Il DPA con Supabase è il contratto che disciplina il trattamento svolto da Supabase per tuo conto;
+va conservato e riesaminato periodicamente insieme al professionista.
 
 ---
 
@@ -54,6 +55,12 @@ Supabase a sua volta usa sub-processor (questi diventano i "sub-sub-processor" t
 URL aggiornata sub-processor Supabase: https://supabase.com/legal/subprocessors (VERIFICARE online).
 
 Non devi elencarli tutti nella tua Privacy Policy — basta dire "Supabase e i suoi sub-processor, lista aggiornata su supabase.com/legal/subprocessors".
+
+## Confine con Brevo
+
+Il DPA Supabase non copre Brevo: l'app usa Brevo separatamente per inviare email transazionali e
+marketing. Il relativo DPA, localizzazione e trasferimenti devono essere verificati a parte e poi
+riflessi nella Privacy Policy, nella lista pubblica dei sub-responsabili e nei DPA verso i ristoranti.
 
 ---
 

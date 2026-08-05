@@ -152,6 +152,13 @@ LOCK  Selezione preset pubblico e caricamento async
       il click su una card scorrevole deve mantenere il preset selezionato e riapplicarlo
       quando il catalogo e pronto. Mostrare "Menu consigliato non disponibile" solo
       quando il caricamento e finito e il preset non risolve davvero nessuna voce.
+      Anche il valore vuoto temporaneo deve avere identita stabile: `activeModeSubTabs`
+      dipende dai preset e propaga `activeSubTab` al riepilogo tramite un effect. Un fallback
+      inline `data: customStaffPresets = []` ricreato a ogni render, con due o piu card e una
+      card selezionata mentre la query e pendente, ricrea la sottotab e innesca il ciclo
+      form → riepilogo → form. Usare una costante vuota di modulo. Regressione browser:
+      `admin-menu-magazzino-blindatura.spec.ts` trattiene apposta la risposta preset fino
+      dopo tipologia + sottotab; regressione componente in `BookingRequestForm.flussoUtente.test.tsx`.
 
 LOCK  Card scorrevole senza preset
       Una `display='cards'` senza `preset_id` e una card compilata manualmente:

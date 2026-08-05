@@ -71,13 +71,16 @@ Se region EU → semplificato ma comunque dichiarare per trasparenza.
 
 ---
 
-## Email provider — quando configurerai `send-email`
+## Email provider — integrazione Brevo attiva
 
-Decisioni da prendere:
-- Provider: Resend (EU-friendly, semplice) / SendGrid / Postmark / Brevo
-- Region: scegliere EU se disponibile
-- DPA con provider: sempre obbligatorio
-- Aggiungere provider a:
+L'Edge `send-email` usa Brevo per email transazionali sulle prenotazioni e per campagne marketing.
+Le campagne richiedono consenso marketing e la funzione blocca l'invio se non riesce a generare il
+link di disiscrizione.
+
+Decisioni/verifiche ancora aperte con l'avvocato:
+- DPA Brevo: acquisire, verificare e conservare la versione applicabile all'account
+- Localizzazione dei dati, sub-responsabili e garanzie per eventuali trasferimenti extra-UE/SEE
+- Allineare e approvare i documenti indicati sotto:
   - `docs/legal/sub-processors.md`
   - Privacy Policy §6
   - DPA verso clienti §6

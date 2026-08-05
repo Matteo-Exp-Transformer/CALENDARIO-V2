@@ -20,7 +20,8 @@ contratto B2B» · «sub-processors» · «cose da fare per produzione» · «co
    raccogliamo (PII), dove va (edge/API/email), quanto teniamo (cleanup?), cookie/localStorage.
    Documento ≠ realtà codice → segnala discrepanze (`LEGAL_SKILL` §3).
 2. **Mai retention «X mesi» senza job cleanup reale**; mai nomi tenant hardcoded («Al Ritrovo»);
-   lista sub-processor sempre sincronizzata coi servizi esterni veri.
+   lista sub-responsabili sempre sincronizzata coi servizi esterni veri, incluso Brevo per le email
+   transazionali e marketing già attive.
 3. **File `docs/_lavoro/Per matteo/` MAI committati** (gitignored). `PrivacyPolicyPage.tsx` lo modifica
    **solo** questa skill. Utente non tecnico/legale → spiega il PERCHÉ con esempi concreti.
 

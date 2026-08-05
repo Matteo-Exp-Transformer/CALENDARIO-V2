@@ -44,16 +44,18 @@ Per fronte, i file sono elencati qui sotto: lancia `npx vitest run <path>` sul s
 
 ---
 
-## E2E Playwright smoke (2 file)
+## E2E Playwright smoke e regressioni asincrone (4 file)
 
 | File | Cosa protegge |
 |------|---------------|
 | `e2e/public-booking.spec.ts` | Submit completo su staging TEST: form valido → conferma invio reale. |
 | `e2e/public-booking-smoke.spec.ts` | Gap documentati ma automatizzabili: slug inesistente, submit invalido con alert sul primo campo, link Privacy + ritorno, submit raggiungibile a 375/834/1280; riepilogo con label `Totale` e non `Totale stimato`; XOR card/carosello e card senza titolo non renderizzata; visual checklist sfondo striscia/full-page/crema + footer Orari assente quando tutti i giorni sono chiusi; EmptyState con recapiti quando manca `booking_public_form_config`. |
 | `e2e/public-booking-fix9-compilable.spec.ts` | **FIX 9 fase pubblica** `compilable_category_keys`: categoria non compilabile visibile senza checkbox (caso 3) a 375/900/1256; categoria compilabile con checkbox (caso 3+); item non compilabile assente dal riepilogo (caso 4); submit non include item non compilabili (caso 5). Seed/cleanup su staging TEST. |
+| `e2e/admin-menu-magazzino-blindatura.spec.ts` | Regressione deterministica del giro a vuoto: seed con due sotto-schede, trattiene `booking_custom_staff_presets` fino a dopo la selezione, cambia rapidamente tipologia e card A→B→A, fallisce su `Maximum update depth`. Allega sequenza rete/azioni e console; nessun submit. Varianti diagnostiche: `E2E_PRENOTA_LOOP_VIEWPORT=mobile|tablet` e `E2E_PRENOTA_LOOP_RELOAD=true`. |
 
 ```bash
-npx playwright test e2e/public-booking.spec.ts e2e/public-booking-smoke.spec.ts --workers=1
+npx playwright test e2e/public-booking.spec.ts e2e/public-booking-smoke.spec.ts
+npx playwright test e2e/admin-menu-magazzino-blindatura.spec.ts --grep "Prenota non gira a vuoto"
 ```
 
 ---
@@ -72,7 +74,7 @@ npx playwright test e2e/public-booking.spec.ts e2e/public-booking-smoke.spec.ts 
 | File | Cosa protegge |
 |------|---------------|
 | `src/features/booking/utils/__tests__/bookingTotals.flussoUtente.test.ts` | Calcolo totali: menù componibile (somma piatti × ospiti), menù fisso (prezzo × ospiti), ospiti 0/negativi, prezzo preset 0. |
-| `src/features/booking/components/__tests__/BookingRequestForm.flussoUtente.test.tsx` | Submit a form vuoto → niente POST + attenzione primo campo; cambio tipologia → reset menù/preset/totali + reset intolleranze **per capacità**; cap testo cliente silenzioso. |
+| `src/features/booking/components/__tests__/BookingRequestForm.flussoUtente.test.tsx` | Submit a form vuoto → niente POST + attenzione primo campo; cambio tipologia → reset menù/preset/totali + reset intolleranze **per capacità**; cap testo cliente silenzioso; due sotto-schede selezionabili mentre i preset sono pendenti → propagazione finita al riepilogo, senza ciclo di render. |
 | `src/features/booking/components/__tests__/BookingSummarySidebar.capability.test.tsx` | Riepilogo mostra/nasconde i totali per **capacità** (`modeUsesMenu(activeMode)`), non per nome tipologia (FU-036 #1). **+1 test FIX 9:** esclusione automatica totale item non compilabili (mai in `menu_selection.items` → totale corretto senza logica aggiuntiva). |
 | `src/features/booking/components/__tests__/BookingSummarySidebar.clientPhone.adminBlindatura.test.tsx` | Riepilogo mostra `client_phone` digitato da Anna, non `contact_phone` del ristorante (17-06-26). |
 | `src/features/booking/components/__tests__/bookingPublicFieldLabelFocus.adminBlindatura.test.tsx` | Label interne caselle cliente (inset + data/ora) portano focus al controllo via `htmlFor` (17-06-26). |

@@ -13,6 +13,8 @@ description: >-
 
 | Data | Sessione | Report |
 |------|----------|--------|
+| 05-08-26 | **Chiusura quattro lavori senior** — recupero login con due retry (`651959c`), fotografia legale Brevo, quattro utility morte rimosse (`a9a7dd3`) e giro a vuoto Prenota chiuso (`3b4b287`); validate/build verdi, nessun DB/PROD o push. | [Handoff aggiornato](Sessioni%20di%20lavoro/05-08-26/Report-fix-logout-legale-codice-morto-handoff-prenota-05-08-26.md) |
+| 05-08-26 | **Pagina Prenota — giro a vuoto con due sotto-schede corretto** — riprodotto 5/5 trattenendo i preset, esclusa la pista slot, fix minimo sul fallback asincrono; regressione browser 10/10 + mobile/tablet, validate e build verdi; commit `3b4b287`, nessun DB/PROD o push. | [Report](Sessioni%20di%20lavoro/05-08-26/Report-fix-giro-vuoto-prenota-preset-async-05-08-26.md) |
 | 02-08-26 | **Allineamento registro migrazioni Supabase TEST** — registro TEST riallineato `001`–`066`, applicata `066 served_at` completa di commento, nuovo comando `npm run db:apply` con guard ref TEST e blocco `--include-all`; PROD non toccata. | [Report](Sessioni%20di%20lavoro/02-08-26/Report-allineamento-migrazioni-supabase-test-02-08-26.md) — `npm run validate` verde |
 
 ## 2026-06

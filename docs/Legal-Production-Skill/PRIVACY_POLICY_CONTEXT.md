@@ -11,7 +11,7 @@
 3. Tipi di dati raccolti (TUTTI quelli in `DATA_INVENTORY_CONTEXT.md`)
 4. Finalità di ciascun trattamento
 5. Base giuridica per ciascun trattamento (consenso, contratto, legittimo interesse, obbligo di legge)
-6. Sub-processor (Supabase, Vercel, email provider) + region
+6. Sub-responsabili (Supabase, Vercel e **Brevo**, se l'invio email è attivo) + region/garanzie verificate
 7. **Trasferimenti extra-UE** + base legale (SCC / DPF)
 8. Periodo di conservazione (per ogni categoria di dati)
 9. Diritti dell'interessato (accesso, rettifica, cancellazione, portabilità, opposizione, reclamo Garante)
@@ -39,6 +39,7 @@
 - ❌ Omettere i dati sensibili (dietary_restrictions = dato salute)
 - ❌ Omettere indirizzo IP (lo raccogli in rate_limits)
 - ❌ Omettere localStorage Supabase Auth
+- ❌ Omettere il fornitore che riceve indirizzo, oggetto e contenuto per inviare email
 - ❌ Dichiarare cookie banner "non necessario" se hai aggiunto Google Analytics
 
 ---
@@ -47,7 +48,8 @@
 
 1. Carica `DATA_INVENTORY_CONTEXT.md` — verifica realtà attuale
 2. Confronta con sezioni 3, 5, 6 della Policy esistente
-3. Se discrepanze → aggiorna Policy
+3. Se discrepanze → prepara la correzione; per Brevo, localizzazione o trasferimenti extra-UE
+   sottoponi prima testo e qualificazione al legale
 4. Bump versione + data nella sezione 13
 5. Aggiorna `LEGAL_STATE_CONTEXT.md` storia modifiche
 6. Commit `docs(legal): aggiorna privacy policy v<N>`

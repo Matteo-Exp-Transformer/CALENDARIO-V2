@@ -12,7 +12,8 @@ Speculare al DPA Supabase, ma dall'altro lato del rapporto.
 
 ## File template
 
-`docs/legal/DPA-template-clienti.md` — versione master, da personalizzare a ogni onboarding.
+`docs/_lavoro/Per matteo/Documenti Legali/DPA-template-clienti-ristoranti.md` — versione master
+locale da personalizzare a ogni onboarding; non va committata.
 
 Quando genera il template, l'agente deve includere:
 
@@ -21,13 +22,15 @@ Quando genera il template, l'agente deve includere:
 3. Durata: pari al contratto SaaS
 4. Categorie dati: come elencato in `DATA_INVENTORY_CONTEXT.md`
 5. Categorie interessati: clienti finali del ristorante
-6. Sub-processor: lista in `docs/legal/sub-processors.md` (link)
+6. Sub-responsabili: lista in `docs/legal/sub-processors.md` (link), inclusa Brevo quando invia
+   email per il ristorante
 7. Obblighi Matteo:
    - Misure tecniche (RLS, FORCE RLS, encryption transit/rest)
    - Notifica breach al ristorante entro 24h
    - Audit rights ragionevoli
    - Restituzione/cancellazione dati a fine contratto
-8. Trasferimenti extra-UE (se Supabase USA): SCC
+8. Trasferimenti extra-UE: solo quelli verificati nei contratti dei fornitori (incluso Brevo), con
+   relative garanzie
 9. Riservatezza
 10. Limitazione responsabilità (collegata al contratto SaaS principale)
 
@@ -54,3 +57,10 @@ Quando aggiorni template:
 1. Bump versione (v1.0 → v1.1)
 2. Inviare nuovo template a clienti esistenti per controfirma (NON è automatico — è un atto contrattuale)
 3. Aggiornare `LEGAL_STATE_CONTEXT.md`
+
+## Verifica aperta: Brevo
+
+L'app usa già Brevo per email sulle prenotazioni e campagne marketing. Prima di usare o aggiornare
+il template, l'avvocato deve verificare il DPA Brevo, il ruolo di Brevo come sub-responsabile, i dati
+trasmessi e gli eventuali trasferimenti fuori UE/SEE. Non presentare il template come completo
+finché questa verifica non è chiusa.

@@ -117,7 +117,8 @@ WHERE table_schema='public'
 
 - **Edge Functions**: `supabase/functions/*/index.ts` → cercare `fetch()` esterne
 - **External API calls** dal frontend: `grep -rn "fetch\|axios" src/`
-- **Email sender**: `src/lib/email.ts` — quale servizio usa?
+- **Email sender**: `src/lib/email.ts` e `supabase/functions/send-email/index.ts` — quale
+  fornitore riceve i dati, per quali tipi di email e con quali dati?
 - **Analytics**: cercare `gtag`, `posthog`, `mixpanel`, `analytics` in `src/` e `index.html`
 
 ### 3.3 Quanto li teniamo?
@@ -150,7 +151,7 @@ Quando l'utente (in altre sessioni) modifica il codice, alcuni cambiamenti
 | Nuovo cookie / localStorage write | Privacy Policy §7 + valutare se serve banner |
 | Aggiunta Google Analytics / pixel | Privacy Policy + Cookie banner OBBLIGATORIO |
 | Cambio hosting / region Supabase | Privacy Policy (trasferimento extra-UE) + DPA |
-| Aggiunta nuovo email provider (SendGrid, Resend, ecc.) | Lista sub-processors in DPA |
+| Aggiunta o attivazione di un email provider (es. Brevo) | Data Inventory + Privacy Policy + Registro + lista sub-responsabili + DPA verso clienti; verificare DPA e trasferimenti |
 
 **Quando l'utente apre una sessione di questa skill, il PRIMO check è:**
 ```

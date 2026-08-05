@@ -1,6 +1,6 @@
 # Stato compliance — CalendarBackup-v2
 
-> Aggiornato: **2026-06-12** (WP-F2 — intervista vendita Italia)
+> Aggiornato: **2026-08-05**
 > Single source of truth per "cosa è fatto / cosa manca" lato legale.
 > Aggiornare SEMPRE dopo ogni sessione di questa skill.
 
@@ -74,6 +74,7 @@ Mercato dichiarato: **solo Italia** per ora (vendita mista: diretta all'inizio, 
 - [~] **Contratto B2B / ToS abbonamento** — **bozza v0.1 creata 2026-06-15** (`docs/legal/ToS-B2B-abbonamento-template.md`, FU-LEGAL-1; recesso mensile sempre / annuale 30gg) → **revisione avvocato** prima del 1° cliente
 - [~] **Registro trattamenti art. 30 GDPR** — **bozza v0.1 creata 2026-06-15** (`docs/legal/registro-trattamenti.md`, FU-LEGAL-2) → passaggio professionista; aperta decisione retention T1/T2
 - [~] **Runbook data breach** — **bozza v0.1 creata 2026-06-15** (`docs/legal/runbook-data-breach.md`, FU-LEGAL-2) → validare ripartizione Titolare/Responsabile col professionista
+- [~] **Brevo per le email** — l'app invia già email transazionali e campagne marketing; restano da chiudere con l'avvocato il DPA Brevo, l'elenco pubblico dei fornitori e gli eventuali trasferimenti extra-UE
 - [ ] Email `privacy@<dominio>` — **rimandata**; temporaneo: matteo.sistemigestionali@gmail.com
 
 ### FASE 3 — Operativi e config
@@ -100,15 +101,29 @@ Mercato dichiarato: **solo Italia** per ora (vendita mista: diretta all'inizio, 
 | Active Campaign / Postmark | Sub-processor Supabase (email a Authorized Users) | USA | Coperto da DPA Supabase Schedule 3 |
 | Amazon Web Services Inc. | Sub-processor Supabase (hosting infrastructure) | Multi-region | Coperto da DPA Supabase Schedule 3 |
 | Vercel Inc. | Hosting frontend statico (sito Matteo) | Edge globale (USA-first) | Standard incluso nei ToS |
-| **Brevo (Sendinblue)** | Invio email transazionali e marketing ai clienti finali, via Edge `send-email` | **ATTIVO IN PROD dal 15-06-26** (Edge `send-email` v6 su `rwuxgvld`, secret `BREVO_API_KEY`/`BREVO_SENDER_EMAIL`) | ⚠️ **DA VERIFICARE**: DPA Brevo e riga nel file sub-processor pubblico |
+| **Brevo (Sendinblue)** | Invio delle email transazionali sulle prenotazioni e delle campagne marketing ai clienti finali, tramite Edge `send-email` | Da verificare nella documentazione contrattuale Brevo | ⚠️ DPA Brevo da acquisire/verificare; manca ancora la riga nella lista pubblica dei sub-responsabili |
 
-⚠️ **Correzione 05-08-26 — questa riga diceva «l'email provider `send-email` Edge Function non esiste
-ancora».** È falso da metà giugno: `send-email` è **deployata e attiva in produzione** (accetta,
-rifiuta e campagne marketing), e dal 19-06 c'è anche l'Edge pubblica `unsubscribe` v1 con la tabella
-`unsubscribe_tokens` (mig. `055`). **Conseguenza legale da chiudere, non un dettaglio di
-documentazione:** un sub-processor che tratta dati di clienti finali sta girando in produzione
-mentre questo registro lo dava per inesistente. Da fare: DPA con Brevo, riga nel file sub-processor
-pubblico, e allineamento della Privacy Policy.
+L'integrazione usa i secret server-side `BREVO_API_KEY` e `BREVO_SENDER_EMAIL`. Le campagne sono
+inviate solo a chi ha espresso il consenso marketing separato; ogni invio marketing genera un link
+individuale di disiscrizione e si interrompe se quel link non può essere creato. Le email
+transazionali comprendono almeno conferma e rifiuto della prenotazione.
+
+## Da decidere con l'avvocato
+
+- Verificare e conservare il **DPA con Brevo**, e definire se il DPA con ogni ristorante deve
+  nominare Brevo come sub-responsabile e con quali garanzie.
+- Chiudere la voce su Brevo nella **lista pubblica dei fornitori che trattano dati**, indicando in
+  modo comprensibile quali dati riceve per inviare le email.
+- Stabilire tempi di conservazione documentati e applicabili per prenotazioni, CRM, log email,
+  campagne e token di disiscrizione: oggi per questi ultimi dati non esiste una cancellazione
+  automatica.
+- Verificare nei documenti Brevo dove sono trattati i dati e se avvengono trasferimenti fuori da
+  Unione europea/SEE; se sì, scegliere e documentare le relative garanzie.
+- Approvare l'aggiornamento della Privacy Policy mostrata ai clienti: oggi nomina Supabase e Vercel,
+  ma non Brevo né il suo ruolo nell'invio di email. Proposta da sottoporre al legale: «Per inviare
+  comunicazioni sulla prenotazione e, solo con il tuo consenso, comunicazioni promozionali, il
+  ristorante utilizza Brevo (Sendinblue), che tratta l'indirizzo email, l'oggetto e il contenuto
+  necessario all'invio come sub-responsabile per conto della Piattaforma.»
 
 ---
 
@@ -147,6 +162,7 @@ Hosting primario in **UE** → dichiarare in Privacy Policy per trasparenza; nes
 
 | Data | Documento | Cambiamento | Skill session |
 |---|---|---|---|
+| 2026-08-05 | Context della skill legal-production | Allineati a Brevo, email transazionali/marketing e disiscrizione; decisioni legali rese esplicite | Manutenzione documentale |
 | 2026-06-15 | `docs/legal/ToS-B2B-abbonamento-template.md`, `registro-trattamenti.md`, `runbook-data-breach.md`, `sub-processors.md` | **Bozze v0.1 create** (FU-LEGAL-1 + FU-LEGAL-2) — testo only, da revisione avvocato/commercialista | Ciclo 9 Plan-Completamento |
 | 2026-06-12 | `LEGAL_STATE_CONTEXT.md` | WP-F2: vendita Italia, blocchi/consigli, region Ireland, PrenotaZen/marchio, budget | intervista Matteo |
 | 2026-05-23 | (creazione skill) | Skill `legal-production` inizializzata | — |

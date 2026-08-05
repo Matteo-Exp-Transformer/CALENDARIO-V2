@@ -331,6 +331,11 @@ Decisioni Matteo recepite nei test:
 Test marcati o creati:
 
 - `e2e/admin-login.spec.ts` -> `@admin-blindatura: shell-login`.
+- `src/features/booking/hooks/__tests__/useAdminAuth.test.tsx` -> `@admin-blindatura: shell-login`:
+  ripristino dopo un guasto di rete, logout dopo tre guasti temporanei e nessun retry per admin
+  revocato.
+- `src/contexts/__tests__/TenantContext.test.tsx` -> RPC tenant: recupero al secondo tentativo e
+  nessun retry per risposta negativa.
 - `e2e/admin-classic-tabs.spec.ts` -> `@admin-blindatura: shell-edition`.
 - `e2e/pro/pro-sidebar-nav.spec.ts` -> `@admin-blindatura: shell-sidebar`.
 - `src/components/layout/__tests__/adminShellRouting.test.ts`:

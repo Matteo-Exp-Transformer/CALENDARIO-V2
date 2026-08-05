@@ -82,6 +82,9 @@ Da distinguere:
 
 - **Auth residuo chiuso:** se una sessione Supabase esiste ma la riga `admin_users` non esiste più,
   `AdminAuthContext` esegue `signOut`, pulisce tenant su route admin e non ripristina l'utente.
+- **Auth recupero temporaneo (05-08-26):** sessione, riga admin, organizzazione e RPC tenant fanno
+  due tentativi di recupero prima del logout solo per guasti temporanei; revoche e risposte negative
+  restano immediate.
 - **Type safety (FU-TYPES-1 chiuso 12-06-26):** hook Supabase perimetro (settings, menu, QR, sync categorie, pagine pubbliche, storage foto) senza `as any`; unico residuo voluto `WalkInLimitCard.tsx` (Servizio / FU-023).
 - **Fallback prod (3° giro):** orari default tutti chiusi; sfondo Prenota crema neutra (no `full-01` demo).
 - **Fallback prod (4° giro):** form config — `parseFromDb` → `null` se assente; EmptyState pubblico; edge case config salvata con zero mode abilitate = header sì, form no (vedi `PRENOTA_FORM_CONFIG_CONTEXT.md`).
