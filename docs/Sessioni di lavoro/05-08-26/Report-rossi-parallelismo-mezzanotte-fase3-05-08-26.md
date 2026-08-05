@@ -425,7 +425,7 @@ si apre. Prima di toccarla voglio riprodurla in modo deterministico, non a tenta
 
 ```
 ❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.
-✅ R1: **Due messaggi**, entrambi verbatim.
+✅ R1: **Tre messaggi**, tutti verbatim.
 
 **Primo, all'apertura:**
 
@@ -457,6 +457,21 @@ Da questo secondo messaggio derivano: le tre risposte in §8, il file
 `PROMPT_FIX_LOOP_LOGOUT_LEGALE_CODICE_MORTO.md` (modalità **prepara**: solo il prompt, nessun codice
 eseguito) e i quattro commit. ⚠️ **«fai commit» ≠ «fai push»**: ho committato e **non** pushato, e
 l'ho detto esplicitamente in chat.
+
+**Terzo, a chiusura** (non ha cambiato niente nel repo: ha prodotto solo una risposta in chat, ma la
+riporto perché è da lì che nasce il testo con cui verrà avviata la prossima chat):
+
+«rispondimi solo cosa devo passare a prossim agente senior per fargli proseguire i lavori del plan.
+cosa mi consigli lancio agente senior dedicato per fix loop logout , o avvio una unica chat senior,
+prima fix loop e poi proseguo con il plan? dimmi come è meglio procedere dandomi testo da incolalre
+per avviare chat e i documenti da allegare.»
+
+Risposta data: **una sola chat**, ma con l'ordine invertito rispetto a quello proposto nella domanda
+— prima i lavori 3 e 4 a due Sonnet in parallelo (file disgiunti, rischio zero, non consumano
+contesto al senior), poi il **logout** fatto dal senior di persona (è l'unico difetto che colpisce
+oggi: il loop non è raggiungibile sui due locali di TEST), e **il loop per ultimo**, con la regola
+dura di riprodurlo a comando prima di correggerlo e di aprire una chat dedicata se non ci riesce,
+invece di tirare a indovinare. Documenti da allegare: solo il prompt del mandato e questo report.
 
 Nessun'altra istruzione umana. Gli altri messaggi ricevuti sono notifiche automatiche di fine task in
 background e scatti dell'hook di fine sessione: sono software, e li ho trattati come tali — in
