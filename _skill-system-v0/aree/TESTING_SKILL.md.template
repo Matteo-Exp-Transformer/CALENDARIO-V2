@@ -77,6 +77,59 @@ Simuli un utente clic   → {{E2E runner}}
 > solo» esclude *la contesa fra worker* solo se la batteria girava in parallelo: se era già
 > sequenziale, la causa è un'altra (stato condiviso che sopravvive fra spec — sessioni, account,
 > dati) e va cercata, non archiviata.
+>
+> ⛔ **«Verde da solo» NON assolve: conta le ripetizioni, non gli esiti.** È il completamento
+> necessario della regola sopra, e da solo vale più di tutto il resto del paragrafo. Un difetto
+> intermittente al ~10% **passa nove volte su dieci** quando rilanci la spec una volta: il rilancio
+> di controllo la assolve, e il difetto resta in produzione mentre la batteria continua a
+> lampeggiare. **Rilancia N volte (≥5, meglio N×varianti) e scrivi la frazione**, non l'esito:
+> «1 rosso su 9» è un dato, «rilanciata da sola, verde» non lo è. Corollario per gli handoff: quando
+> passi una **causa** a chi viene dopo, dichiara **con quante ripetizioni** l'hai stabilita — «verde
+> da solo, 1 esecuzione» e «verde da solo, 10 esecuzioni» oggi si scrivono uguali e valgono
+> l'opposto.
+>
+> ⚠️ **Le asserzioni «zero errori in console» sono reti a strascico.** `expect(errors).toEqual([])`
+> raccoglie qualunque cosa la pagina abbia loggato, quindi **lo stesso test fallisce per motivi
+> diversi in giorni diversi**. Tienile pure — trovano difetti veri che nessuno cercava — ma quando
+> sono rosse **leggi l'artefatto d'errore prima di formulare qualsiasi ipotesi**: il nome del test
+> non dice niente sulla causa, e due fallimenti dello stesso test possono essere due bug diversi.
+
+### Parallelismo della batteria: è una decisione, non un default
+
+Non lasciarlo al valore di fabbrica del runner. Prendi la decisione una volta, **scrivi le ragioni
+misurate nel file di configurazione** (non in un report che nessuno rileggerà) e definisci il
+**cancello per riaprirla**. I tre dati che la decidono:
+
+1. **Quanti rossi sono contesa** — misura la stessa batteria in parallelo e sequenziale, stesso
+   commit, e scrivi le due frazioni. È l'unico modo per sapere quanto stai pagando.
+2. **Quante spec condividono lo stesso stato** (stesso tenant/account/ambiente). Se sono la
+   maggioranza, il parallelismo non è «rischioso»: è **strutturalmente impossibile** finché non dai
+   a ogni spec una risorsa propria.
+3. ⛔ **Se l'app ha difese anti-abuso, il costo di sbagliare non è un rosso.** Un rate limit per IP
+   con blocco prolungato trasforma una run parallela sfortunata in **ore o giorni di macchina
+   ferma**. Attenzione al caso subdolo: un helper che «aspetta il proprio turno» leggendo un
+   contatore è un **controlla-poi-agisci**, e in parallelo due worker leggono «c'è posto» insieme e
+   agiscono insieme — la protezione esiste ma non protegge. Quando l'esito negativo di un
+   esperimento è una giornata persa, **non fare l'esperimento**: decidi sul ragionamento e dichiara
+   perché non l'hai misurato.
+
+### Provare il codice che dipende dall'ora del giorno
+
+Se il test calcola istanti a partire dall'ora **locale del processo**, non aspettare la notte per
+provare i casi a ridosso della mezzanotte: **sposta il fuso del processo**. Due avvertenze che
+rendono la prova onesta invece che decorativa:
+
+- **Il fuso del runner e quello del browser sono due cose diverse.** Su alcuni sistemi il browser
+  legge il fuso dal sistema operativo e ignora la variabile d'ambiente: se sposti solo il runner, i
+  due orologi divergono e il test fallisce (o passa) per il motivo sbagliato. Sposta **entrambi**, e
+  prevedi nel config una manopola per farlo.
+- **Dimostra prima che sei davvero nella finestra critica.** Ricalcola a mano cosa avrebbe prodotto
+  la versione **pre-fix** in quell'istante: se non produce l'anomalia che il fix elimina, la tua run
+  verde non sta provando niente.
+
+> **Regola generale, oltre il tempo:** un «non si può fare» scritto in un commento diventa vero per
+> chiunque lo legga dopo. Scrivi **«non l'ho fatto perché X»** — è quasi sempre l'affermazione vera,
+> ed è quella che lascia la porta aperta a chi arriva con un'idea in più.
 
 ## 4. Profilo Verifica — QA manuale (se applicabile)
 

@@ -184,8 +184,43 @@ live si rompe nella finestra tra i due. **Anti-pattern curato:** *restrizione a 
 che solo il pubblico legga dal canale pubblico). Schema: sub-agent mappa read-only → senior verifica la
 classificazione (è lì che un errore rompe le pagine) → sub-agent implementa.
 
-> §7-§10 sono **metodi generici** estratti dal progetto-madre (controtest, merge pubblico/privato, review
-> DB senior). I valori e i nomi specifici del progetto vivono nelle skill d'area, non qui.
+### §11 — Una premessa ereditata non è un fatto: riverificala prima di costruirci sopra
+
+**Promosso alla seconda occorrenza in tre sessioni sullo stesso progetto** (soglia ≥2 eseguite).
+
+Il modo più costoso di perdere una giornata non è sbagliare un'analisi: è **ereditarne una sbagliata
+e crederla**. Le due occorrenze, stesso schema:
+
+1. Un piano affermava che una funzione di validazione «è già usata dall'altro editor». Era falso. La
+   premessa è stata creduta, eseguita, **ricopiata nella memoria di progetto**, ed è sopravvissuta a
+   due sessioni finché qualcuno non ha aperto il file.
+2. Un report archiviava dei test rossi come «contesa fra spec, rilanciati da soli sono verdi». La
+   conclusione era finita in **tre documenti** come quasi-fatto. Rilanciando la stessa spec **nove
+   volte** è caduta **una volta su nove**: nessuna contesa, un difetto vero — e sotto ce n'erano due,
+   mai visti prima.
+
+**Le contromisure, in ordine di efficacia:**
+
+- **Riproduci prima di correggere.** È l'unica che ferma il danno alla radice: se avessi accettato la
+  diagnosi ereditata avresti «sistemato» un problema inesistente lasciando sotto quelli veri.
+- **Una diagnosi si misura in ripetizioni, non in esiti.** Un difetto intermittente al 10% passa
+  nove volte su dieci: il controllo «l'ho rilanciato ed era verde» lo **assolve**. Scrivi la
+  frazione (`1 rosso su 9`), mai l'esito.
+- **Negli handoff, dichiara la forza dell'evidenza accanto alla conclusione.** «Verde da solo, 1
+  esecuzione» e «verde da solo, 10 esecuzioni» oggi si scrivono uguali e valgono l'opposto. Una
+  causa senza il suo numero di ripetizioni è un'ipotesi vestita da fatto.
+- **Vale anche per gli script, non solo per gli umani e gli agenti.** Un censimento automatico di
+  «codice morto» ha prodotto 41 candidati; la verifica uno per uno li ha ridotti a 7 (contava come
+  non usate anche le funzioni chiamate dentro il proprio file). Un output grezzo pubblicato è una
+  premessa ereditata che ti sei fabbricato da solo.
+
+**Anti-pattern curato:** *premessa ereditata scambiata per fatto verificato* — e il suo aggravante,
+**la conclusione che si propaga per copia** in report → piano → prompt, guadagnando autorevolezza a
+ogni salto senza che nessuno la rimisuri.
+
+> §7-§11 sono **metodi generici** estratti dal progetto-madre (controtest, merge pubblico/privato,
+> review DB senior, premesse ereditate). I valori e i nomi specifici del progetto vivono nelle skill
+> d'area, non qui.
 
 ---
 
