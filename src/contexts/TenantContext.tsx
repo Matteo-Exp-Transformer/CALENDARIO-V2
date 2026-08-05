@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { supabasePublic } from '../lib/supabasePublic'
 import type { TenantEdition } from '@/types/edition'
 import { setDevHealth, printDevHealth } from '@/lib/devConsole'
+import { retryTransientSupabaseOperation } from '@/lib/supabaseRetry'
 
 function normalizeTenantEdition(value: string | null | undefined, fallback: TenantEdition): TenantEdition {
   return value === 'classic' || value === 'pro' || value === 'enterprise' ? value : fallback
@@ -80,7 +81,10 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const setTenantFromAdmin = useCallback(async (email: string): Promise<boolean> => {
     setIsLoading(true)
     try {
-      const { data: adminData, error } = await supabase.rpc('check_admin_email', { check_email: email })
+      const { data: adminData, error } = await retryTransientSupabaseOperation(
+        'checkSession: check_admin_email',
+        () => supabase.rpc('check_admin_email', { check_email: email }).retry(false),
+      )
 
       if (error || !adminData || adminData.length === 0) {
         setTenantId(null)

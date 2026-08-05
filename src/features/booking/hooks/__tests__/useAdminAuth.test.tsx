@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+// @admin-blindatura: shell-login
+// Copre: il controllo sessione ritenta solo guasti temporanei e non indebolisce FU-AUTH-3.
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import React from 'react'
@@ -59,7 +61,8 @@ function buildChain(result: { data: unknown; error: unknown }) {
   const chain: Record<string, unknown> = {}
   chain['select'] = vi.fn(() => chain)
   chain['eq'] = vi.fn(() => chain)
-  chain['single'] = vi.fn().mockResolvedValue(result)
+  chain['single'] = vi.fn(() => chain)
+  chain['retry'] = vi.fn().mockResolvedValue(result)
   return chain
 }
 
@@ -94,6 +97,10 @@ describe('useAdminAuth', () => {
     mockSignOut.mockResolvedValue({ error: null })
     // FU-AUTH-3: setTenantFromAdmin ritorna true = tenant risolto (default happy path).
     mockSetTenantFromAdmin.mockResolvedValue(true)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('user è null all\'avvio senza sessione attiva', async () => {
@@ -251,8 +258,58 @@ describe('useAdminAuth', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
     expect(mockSignOut).toHaveBeenCalledOnce()
+    expect(mockFrom).toHaveBeenCalledOnce()
     expect(mockClearTenant).toHaveBeenCalledOnce()
     expect(mockSetTenantFromAdmin).not.toHaveBeenCalled()
+    expect(result.current.user).toBeNull()
+  })
+
+  it('restore con un guasto di rete e risposta buona al secondo tentativo resta dentro', async () => {
+    vi.useFakeTimers()
+    mockGetSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'user-1', email: 'admin@test.it' } } },
+      error: null,
+    })
+    mockFrom.mockReturnValueOnce(
+      buildChain({ data: null, error: { status: 0, message: 'fetch failed' } })
+    )
+    mockFrom.mockReturnValueOnce(
+      buildChain({ data: { name: 'Admin Test', tenant_id: 'tenant-1' }, error: null })
+    )
+    mockFrom.mockReturnValueOnce(
+      buildChain({ data: { is_active: true }, error: null })
+    )
+
+    const { result } = renderHook(() => useAdminAuth(), { wrapper: createWrapper('/admin') })
+
+    await act(async () => {
+      await vi.runAllTimersAsync()
+    })
+
+    expect(mockFrom).toHaveBeenCalledTimes(3)
+    expect(mockSignOut).not.toHaveBeenCalled()
+    expect(result.current.user?.email).toBe('admin@test.it')
+  })
+
+  it('restore con guasto di rete su tutti e tre i tentativi esce in sicurezza', async () => {
+    vi.useFakeTimers()
+    mockGetSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'user-1', email: 'admin@test.it' } } },
+      error: null,
+    })
+    mockFrom.mockReturnValue(
+      buildChain({ data: null, error: { status: 503, message: 'service unavailable' } })
+    )
+
+    const { result } = renderHook(() => useAdminAuth(), { wrapper: createWrapper('/admin') })
+
+    await act(async () => {
+      await vi.runAllTimersAsync()
+    })
+
+    expect(mockFrom).toHaveBeenCalledTimes(3)
+    expect(mockSignOut).toHaveBeenCalledOnce()
+    expect(mockClearTenant).toHaveBeenCalledOnce()
     expect(result.current.user).toBeNull()
   })
 

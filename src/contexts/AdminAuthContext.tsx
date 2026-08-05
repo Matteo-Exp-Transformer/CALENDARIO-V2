@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase, handleSupabaseError, isInvalidStoredRefreshTokenError } from '@/lib/supabase'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { logger } from '@/lib/logger'
+import { isTransientSupabaseFailure, retryTransientSupabaseOperation } from '@/lib/supabaseRetry'
 import type { Tables } from '@/types/database'
 
 const AUTH_REVOKED_REASON_KEY = 'auth_revoked_reason'
@@ -47,11 +48,15 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return false
     }
 
-    const { data: organization, error } = await supabase
-      .from('organizations')
-      .select('is_active')
-      .eq('id', tenantId)
-      .single()
+    const { data: organization, error } = await retryTransientSupabaseOperation(
+      'checkSession: organizations',
+      () => supabase
+        .from('organizations')
+        .select('is_active')
+        .eq('id', tenantId)
+        .single()
+        .retry(false),
+    )
 
     if (error || !organization || !organization.is_active) {
       await supabase.auth.signOut()
@@ -66,13 +71,22 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     try {
       setIsLoading(true)
       const isPublicTenantRoute = isPublicTenantRoutePath(location.pathname)
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      const { data: { session }, error: sessionError } = await retryTransientSupabaseOperation(
+        'checkSession: sessione',
+        () => supabase.auth.getSession(),
+      )
 
       if (sessionError) {
         if (isInvalidStoredRefreshTokenError(sessionError)) {
           await supabase.auth.signOut({ scope: 'local' })
         } else {
           logger.error('Session check error:', sessionError)
+          if (isTransientSupabaseFailure(sessionError)) {
+            await supabase.auth.signOut()
+            if (!isPublicTenantRoute) {
+              clearTenant()
+            }
+          }
         }
         setUser(null)
         setIsLoading(false)
@@ -84,12 +98,17 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setIsLoading(false)
         return
       }
+      const sessionEmail = session.user.email
 
-      const { data: adminUser, error: adminError } = await supabase
-        .from('admin_users')
-        .select('name, tenant_id')
-        .eq('email', session.user.email)
-        .single<AdminUserAuthRow>()
+      const { data: adminUser, error: adminError } = await retryTransientSupabaseOperation(
+        'checkSession: admin_users',
+        () => supabase
+          .from('admin_users')
+          .select('name, tenant_id')
+          .eq('email', sessionEmail)
+          .single<AdminUserAuthRow>()
+          .retry(false),
+      )
 
       if (adminError || !adminUser) {
         await supabase.auth.signOut()
@@ -114,7 +133,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (!isPublicTenantRoute) {
         // FU-AUTH-3: se la RPC tenant fallisce, mai lasciare un admin loggato con
         // tenant nullo → signOut + pulizia, l'utente riprova il login.
-        const tenantResolved = await setTenantFromAdmin(session.user.email)
+        const tenantResolved = await setTenantFromAdmin(sessionEmail)
         if (!tenantResolved) {
           logger.error('[checkSession] risoluzione tenant admin fallita: signOut di sicurezza')
           await supabase.auth.signOut()
@@ -165,11 +184,15 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
       }
 
-      const { data: adminUser, error: adminError } = await supabase
-        .from('admin_users')
-        .select('name, tenant_id')
-        .eq('email', authData.user.email || '')
-        .single<AdminUserAuthRow>()
+      const { data: adminUser, error: adminError } = await retryTransientSupabaseOperation(
+        'login: admin_users',
+        () => supabase
+          .from('admin_users')
+          .select('name, tenant_id')
+          .eq('email', authData.user.email || '')
+          .single<AdminUserAuthRow>()
+          .retry(false),
+      )
 
       if (adminError || !adminUser) {
         await supabase.auth.signOut()

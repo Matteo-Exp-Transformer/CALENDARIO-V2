@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import React from 'react'
 import { TenantProvider, useTenantContext } from '../TenantContext'
@@ -14,7 +14,7 @@ const { mockSingle, mockFrom, mockRpc } = vi.hoisted(() => {
 vi.mock('@/lib/supabasePublic', () => ({
   supabasePublic: {
     from: mockFrom,
-    rpc: mockRpc,
+    rpc: (...args: unknown[]) => ({ retry: () => mockRpc(...args) }),
   },
 }))
 
@@ -23,7 +23,7 @@ vi.mock('@/lib/supabasePublic', () => ({
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     from: mockFrom,
-    rpc: mockRpc,
+    rpc: (...args: unknown[]) => ({ retry: () => mockRpc(...args) }),
   },
 }))
 
@@ -43,6 +43,10 @@ describe('TenantContext', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     mockFrom.mockReturnValue(buildChain())
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   describe('setTenantFromSlug', () => {
@@ -113,6 +117,7 @@ describe('TenantContext', () => {
       })
 
       expect(resolved).toBe(false)
+      expect(mockRpc).toHaveBeenCalledOnce()
       expect(result.current.tenantId).toBeNull()
     })
 
@@ -128,6 +133,29 @@ describe('TenantContext', () => {
 
       expect(resolved).toBe(false)
       expect(result.current.tenantId).toBeNull()
+    })
+
+    it('ritenta una RPC temporaneamente non disponibile e risolve al secondo tentativo', async () => {
+      vi.useFakeTimers()
+      mockRpc
+        .mockResolvedValueOnce({ data: null, error: { status: 503, message: 'service unavailable' } })
+        .mockResolvedValueOnce({
+          data: [{ tenant_id: 'tenant-xyz', slug: 'ristorante-test', org_name: 'Ristorante Test', edition: 'pro' }],
+          error: null,
+        })
+
+      const { result } = renderHook(() => useTenantContext(), { wrapper })
+      let resolved: boolean | undefined
+
+      await act(async () => {
+        const resolution = result.current.setTenantFromAdmin('admin@test.it')
+        await vi.runAllTimersAsync()
+        resolved = await resolution
+      })
+
+      expect(resolved).toBe(true)
+      expect(mockRpc).toHaveBeenCalledTimes(2)
+      expect(result.current.tenantId).toBe('tenant-xyz')
     })
   })
 
