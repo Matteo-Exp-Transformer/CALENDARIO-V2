@@ -137,12 +137,24 @@ Manager/POS) — la guerra è *zero commissioni, dati tuoi, prezzo fisso, te lo 
 - **D39 — Una prenotazione può occupare PIÙ tavoli (DB non vincola a 1).** Tavolata da 10 = due tavoli
   da 5. `booking_table_assignments` (join) regge già più righe; UI MVP può assegnare 1 tavolo, ma
   l'architettura/`table_session` non deve imporre 1-tavolo-per-prenotazione.
-- **D41 — `max_turns` non è la base del nuovo motore come *contatore turni*** — il motore si basa su
-  `arrival_step` + `duration` + `turnover_buffer` + finestre di occupazione. ⚠️ **MA `max_turns` NON è
-  morto:** oggi `max_turns = 0` = **servizio chiuso** ([`isServiceSlotClosed()`](../src/features/booking/hooks/useServiceSlots.ts),
-  con `max_turns_resume` per riaprire, mig. 023). Il nuovo motore deve **ignorarlo come contatore turni ma
-  preservare la semantica `0 = chiuso`** (o migrarla a un flag esplicito in S0/S4) — altrimenti si regredisce
-  il pulsante "chiudi servizio".
+- **D41 — `max_turns` fa DUE mestieri, ed è così che è stato rilasciato.** *(Riscritta il 05-08-26,
+  Fase 3 §5 punto 5: la stesura di giugno prescriveva l'opposto di quello che è poi stato costruito e
+  non era mai stata revisionata. Stesso trattamento dato a D48 in Fase 0 — la collisione va chiusa,
+  non lasciata al prossimo agente.)*
+  1. **`max_turns = 0` = servizio chiuso** ([`isSlotClosed()`](../src/features/booking/utils/tableTurnLimits.ts),
+     `isServiceSlotClosed()` in `useServiceSlots.ts`, `max_turns_resume` per riaprire, mig. 023).
+     Questa semantica era già prevista e regge.
+  2. **`max_turns > 0` = contatore turni per tavolo/fascia/data** — `countTurnsUsed()`,
+     `getRemainingTurns()`, `isTurnsExhausted()` (`tableTurnLimits.ts:40-66`). Da qui il badge
+     «Turni esauriti» e il pulsante **«Assegna comunque»** con audit (`forced_by_admin`, mig. 065),
+     coperti a browser dalla Fase 2 riga 6.
+  ⚠️ **La stesura di giugno diceva «il nuovo motore deve ignorarlo come contatore turni».** Non è
+  andata così: il contatore è funzione viva, rilasciata e coperta da test. Il motore di occupazione
+  (`arrival_step` + `duration` + `turnover_buffer`) e il contatore turni **coesistono** e rispondono
+  a due domande diverse — «a che ora entra e fino a quando sta» contro «quante volte questo tavolo
+  si può riempire in questa fascia».
+  📌 **Per Matteo, se vuoi decidere diversamente:** togliere il contatore significa togliere «Turni
+  esauriti / Assegna comunque» dalla piantina. Finché non lo dici, vale quanto rilasciato.
 - **Q19 confermato** — turno = **sequenza dinamica di occupazioni** del tavolo (`turn_number`), non
   turni fissi (quelli = S5 futuro). **Q17** — mostrare al cliente "tavolo disponibile fino alle ~X"
   **solo se la permanenza è attiva**.

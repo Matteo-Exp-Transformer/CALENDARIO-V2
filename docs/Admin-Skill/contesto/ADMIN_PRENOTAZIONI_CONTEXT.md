@@ -138,8 +138,12 @@ Senso: calendario **leggero come vista d'insieme** (dice solo quanto è pieno og
     giornaliero → mostra solo `NN%` (numero + simbolo `%` esplicito in `.booking-day-fill-sym`; oltre 100%
     reale, colore soglia ok/high/over); senza limite → solo il conteggio coperti `N` (senza `%`). **Niente
     `N/Nmax`.** Montato via `dayCellDidMount` come figlio del frame cella (non dentro il numero → niente
-    ammasso a destra); **`useEffect` aggiorna i badge** quando `daily_guest_limit` arriva da cache (il mount
-    iniziale può precedere il setting → altrimenti resta il solo conteggio coperti). `dayCellWillUnmount`
+    ammasso a destra); **`useEffect` aggiorna i badge** quando il cap arriva da cache (il mount
+    iniziale può precedere il setting → altrimenti resta il solo conteggio coperti). ⚠️ *Correzione
+    05-08-26: qui era scritto `daily_guest_limit`, **rimosso il 18-06-26**. Il cap oggi è
+    per-fascia — `BookingCalendar.tsx:457` legge `slot_guest_capacities`, con precedenza
+    override(data) → `service_slots.max_guests` → `slot_guest_capacities[slotId]`
+    (`BookingCalendar.tsx:468`).* `dayCellWillUnmount`
     rimuove il holder. **Richiesta esplicita Matteo 11-06 (post fix QA):** simbolo `%` visibile accanto al
     numero nel badge. Responsive: alto-sinistra desktop, **basso-sinistra su mobile ≤640px** per non
     sovrapporsi al numero del giorno.
@@ -165,9 +169,12 @@ Senso: calendario **leggero come vista d'insieme** (dice solo quanto è pieno og
     (es. 12/06 → 12/07), clampato all'ultimo giorno se il mese è più corto. Digest, evidenziazione
     `calendar-day-selected` e pulsante «Nuova prenotazione il GG/MM» restano coerenti col mese in griglia.
 
-17. **Avviso sforo giornaliero su crea admin** (C-D2, 11-06-26): `AdminBookingForm` (anche da
-    calendario) mostra `CapacityWarningModal` se `sumGuestsByDate + num_guests > daily_guest_limit`;
-    submit admin **sempre** consentito dopo conferma (come per-fascia).
+17. **Avviso sforo capienza su crea admin** (C-D2, 11-06-26): `AdminBookingForm` (anche da
+    calendario) mostra `CapacityWarningModal` quando i coperti sforano il cap; submit admin
+    **sempre** consentito dopo conferma. ⚠️ *Correzione 05-08-26: era descritto come sforo
+    **giornaliero** contro `daily_guest_limit`, **rimosso il 18-06-26**. Oggi il confronto è
+    **per-fascia** — la modale riceve `slotName`, `totalOccupied` e `capacity`
+    (`AdminBookingForm.tsx:976-979`), non un totale di giornata.*
 
 18. **Badge 100% = «pieno» (high), non over** (C-L1): classe `booking-day-fill--over` solo se
     `pct > 100`; esattamente 100% usa tono `high`.

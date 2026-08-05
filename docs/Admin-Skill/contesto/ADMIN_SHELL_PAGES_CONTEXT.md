@@ -186,9 +186,16 @@ customer.email === searchTerm  // case-sensitive, manca trim
 
 ### Architettura dati
 
-- **Sale**: lette da `restaurant_settings` tramite `useRestaurantSetting('booking_placement_areas')` — array di stringhe. Nessuna tabella separata.
+- **Sale**: tabella **`rooms`** (mig. `008_rooms_and_table_layout.sql`), letta da `useRooms.ts:42`;
+  soft delete dalla `063` (`rooms.active`). ⚠️ *Correzione 05-08-26: qui c'era scritto «lette da
+  `restaurant_settings` … nessuna tabella separata» — falso da giugno.* `booking_placement_areas`
+  sopravvive solo come impostazione legacy, non è la fonte delle sale.
 - **Tavoli**: tabella `tables` con `id, tenant_id, name, capacity, placement (text), active (bool), created_at, updated_at`.
-- **Soft delete**: `useDeleteTable()` imposta `active = false`; `useTables()` filtra solo `active = true`.
+  Nome unico per tenant garantito anche a DB dalla `068` (indice parziale su `lower(btrim(name))` con `active = true`).
+- **Soft delete**: `useDeleteTable()` (`useServizioTables.ts`) **prima cancella fisicamente le
+  assegnazioni attive su quel tavolo** — non le timbra: la prenotazione non è stata servita e non
+  deve consumare un turno (Fase 0 / D-A) — **poi** imposta `active = false`; `useTables()` filtra
+  solo `active = true`.
 - **Ordinamento**: per `placement` ASC poi `name` ASC.
 - **staleTime**: 5 minuti.
 
@@ -338,8 +345,10 @@ Query key: `[TABLE_ASSIGNMENTS_QUERY_KEY, tenantId, date, slotId, 'unassigned']`
 - Se non c'è fascia attiva o se `max_turns` è già esaurito senza conferma, non crea assignment parziale.
   Se il tavolo è occupato, la option resta selezionabile ma richiede conferma guidata in due passaggi:
   avviso stabile, poi release append-only della prenotazione in corso + nuovo assignment forzato.
-- Il fallback anti-parziale è logico: booking marcato `deleted` se l'insert assignment fallisce. Non esiste
-  ancora RPC transazionale dedicata.
+- ⚠️ *Correzione 05-08-26: qui c'era scritto «il fallback anti-parziale è logico … non esiste ancora
+  RPC transazionale dedicata» — superato dal 03-08.* La scrittura è **atomica a DB**: RPC
+  `SECURITY DEFINER` **`create_walk_in_with_assignment`** (mig. `069`), booking + assignment in un
+  solo corpo PL/pgSQL, `REVOKE` da `anon`. Niente più insert + rollback manuale lato client.
 
 **Accesso rapido da Calendario**
 

@@ -37,6 +37,26 @@ Fronti previsti:
 
 ## 1. E2E admin
 
+> ### ⚠️ Quale locale e quale account usa ogni spec (mappa 05-08-26)
+>
+> Ricavata leggendo le spec, non dedotta. È il dato che serve **prima** di ogni discussione su
+> parallelismo e isolamento, e finora andava ricalcolato ogni volta.
+>
+> Con `.env.local.test` di oggi: `E2E_ADMIN_EMAIL` = `E2E_PRO_ADMIN_EMAIL` = **`tomas@t.com`** e
+> `E2E_TENANT_SLUG` = **`da-tommaso`**. Quindi ⚠️ **`loginClassicAdmin()` in
+> `admin-settings-blindatura.spec.ts` entra in realtà con l'account PRO**: il nome inganna.
+>
+> | Locale / account | Spec |
+> |---|---|
+> | **`da-tommaso`** · `tomas@t.com` (Pro) — **17 spec** | `admin-booking-mgmt` · `admin-dashboard-responsive` · `admin-login` · `admin-menu-magazzino-blindatura` · `admin-menu-magazzino-ct` · `admin-settings-blindatura` · `edition-classic-data-protection` · tutte le 7 `pro/*` · `public-booking` · `public-booking-smoke` · `public-booking-fix9-compilable` · `public-menu-qr` |
+> | **`test-classic`** · `testc@c.com` (Classic) | `admin-classic-tabs` · `edition-classic` · `edition-upgrade` · `invite-flow` · `public-booking-classic` |
+> | **entrambi** | `admin-calendar-blindatura` · `admin-shell-blindatura` |
+>
+> **Conseguenza operativa:** 17 spec su 25 si scrivono addosso lo stesso tenant. È la ragione n. 2
+> per cui `playwright.config.ts` è fissato a **`workers: 1`** (le altre due — contesa misurata e
+> rischio blacklist IP — sono nel commento del config e in `TESTING_SKILL.md` §3). Chi vuole rialzare
+> i worker deve **prima** dare a ogni spec un locale suo.
+
 | File | Area |
 |---|---|
 | `e2e/admin-login.spec.ts` | login admin |

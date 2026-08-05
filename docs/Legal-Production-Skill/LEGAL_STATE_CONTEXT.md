@@ -100,9 +100,15 @@ Mercato dichiarato: **solo Italia** per ora (vendita mista: diretta all'inizio, 
 | Active Campaign / Postmark | Sub-processor Supabase (email a Authorized Users) | USA | Coperto da DPA Supabase Schedule 3 |
 | Amazon Web Services Inc. | Sub-processor Supabase (hosting infrastructure) | Multi-region | Coperto da DPA Supabase Schedule 3 |
 | Vercel Inc. | Hosting frontend statico (sito Matteo) | Edge globale (USA-first) | Standard incluso nei ToS |
-| (Email provider applicativo) | Invio email transazionali ai clienti finali | NON CONFIGURATO ANCORA | N/A — vedi `EDGE_FUNCTIONS.md` |
+| **Brevo (Sendinblue)** | Invio email transazionali e marketing ai clienti finali, via Edge `send-email` | **ATTIVO IN PROD dal 15-06-26** (Edge `send-email` v6 su `rwuxgvld`, secret `BREVO_API_KEY`/`BREVO_SENDER_EMAIL`) | ⚠️ **DA VERIFICARE**: DPA Brevo e riga nel file sub-processor pubblico |
 
-⚠️ **L'email provider `send-email` Edge Function non esiste ancora.** Quando verrà aggiunto (Resend? SendGrid? Postmark?), AGGIORNARE questa tabella + Privacy Policy + DPA verso clienti + file sub-processor pubblico.
+⚠️ **Correzione 05-08-26 — questa riga diceva «l'email provider `send-email` Edge Function non esiste
+ancora».** È falso da metà giugno: `send-email` è **deployata e attiva in produzione** (accetta,
+rifiuta e campagne marketing), e dal 19-06 c'è anche l'Edge pubblica `unsubscribe` v1 con la tabella
+`unsubscribe_tokens` (mig. `055`). **Conseguenza legale da chiudere, non un dettaglio di
+documentazione:** un sub-processor che tratta dati di clienti finali sta girando in produzione
+mentre questo registro lo dava per inesistente. Da fare: DPA con Brevo, riga nel file sub-processor
+pubblico, e allineamento della Privacy Policy.
 
 ---
 
