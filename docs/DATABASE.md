@@ -10,7 +10,7 @@ I 6 timestamp remoti orfani (20260504181204–20260513010545) sono stati marcati
 
 > **Fonte di verità (non questo riepilogo):** elenco file in `supabase/migrations/` + stato remoto via MCP `list_migrations` dopo `get_project_url` (TEST `docnnernvp`, PROD `rwuxgvld` sola lettura). Se l'agente ha un canale TEST specifico, seguire le sue istruzioni dedicate. Dettaglio workflow e anomalie storiche: `Database-Skill/DB_MIGRATIONS_CONTEXT.md`.
 
-Ultimo file in repo (verificato 03-08-26): `070_booking_table_assignments_release_notice.sql` (Fase 0 FIX D, TEST). La prossima migrazione deve usare il prefisso **`071_`**.
+Ultimo file in repo (verificato 05-08-26): `071_arrival_times_wall_clock_occupancy.sql` (fix conteggio coperti pubblico, TEST). La prossima migrazione deve usare il prefisso **`072_`**.
 
 | Versione | File | Note sintetiche |
 |----------|------|-----------------|
@@ -43,6 +43,7 @@ Ultimo file in repo (verificato 03-08-26): `070_booking_table_assignments_releas
 | 068 | `068_tables_unique_name_per_tenant.sql` | Debito "nome tavolo solo lato app" (handoff S4 §4-bis): indice unico parziale `tables_tenant_active_name_lower_idx` su `tables (tenant_id, lower(btrim(name)))` con `active = true` — seconda barriera dietro `hasDuplicateTableName()` client-side. Applicata e verificata su TEST il 03-08-26 (0 duplicati su 54 tavoli attivi); **PROD invariata** |
 | 069 | `069_create_walk_in_with_assignment_rpc.sql` | Debito "walk-in non transazionale" (handoff S4 §4-bis): RPC `SECURITY DEFINER` `create_walk_in_with_assignment` sostituisce insert+rollback-manuale con una scrittura atomica (booking + assignment in un solo corpo PL/pgSQL, `REVOKE` da `anon`). Applicata e verificata su TEST il 03-08-26 con JWT admin reale; **PROD invariata** |
 | 070 | `070_booking_table_assignments_release_notice.sql` | Fase 0 senior FIX D (FU-SERV-RELEASE-NOTICE-1, D-D): colonna `booking_table_assignments.release_notice_handled_at timestamptz NULL` — persiste la conferma "Ancora occupato" sull'avviso di fine turno, vale per tutti i dispositivi e resiste al reload. Nessun nuovo GRANT (RLS `admin_update_bta` di `011_booking_table_assignments.sql` già copre). Applicata su TEST il 03-08-26; **PROD invariata** |
+| 071 | `071_arrival_times_wall_clock_occupancy.sql` | Fix del conteggio coperti sul **form pubblico**: la RPC `get_available_arrival_times` leggeva `confirmed_start` con `AT TIME ZONE 'Europe/Rome'`, ma l'app salva quel campo con offset `+00:00` **finto** (le cifre sono l'ora a muro, `src/features/booking/utils/dateUtils.ts:53-59`) — l'occupazione finiva spostata di +2h d'estate, cioè nella fascia sbagliata. Misurato su TEST: 20 coperti alle 10:00 saturavano *Pranzo* invece di *Colazione*. Ora legge `AT TIME ZONE 'UTC'`, allineandosi all'Edge `create-booking` che già leggeva le cifre alla lettera. Solo la lettura cambia: nessuna colonna, nessun dato riscritto; il resto della funzione è identico alla `067`. Applicata e verificata su TEST il 05-08-26 (prova ripetuta prima/dopo + e2e `public-booking-classic` 4/4); **PROD invariata — entra nel treno del rollout** |
 
 > Promo menù (23-05-26): impostazioni solo su `restaurant_settings.setting_key = booking_menu_promos`. Report: `docs/Sessioni di lavoro/23-05-26/Report-refactor-promo-menu-rimozione-vol-au-vent.md`.
 
@@ -55,7 +56,8 @@ Ultimo file in repo (verificato 03-08-26): `070_booking_table_assignments_releas
 ### Migrazioni CLI su TEST
 
 Il registro TEST è stato riallineato il 02-08-26 alle versioni numeriche locali `001`–`066`, poi
-esteso fino a `070` il 03-08-26 (`068`/`069`/`070` applicate con `npm run db:apply`). Per
+esteso fino a `070` il 03-08-26 (`068`/`069`/`070` applicate con `npm run db:apply`) e a `071`
+il 05-08-26 (stessa procedura). Per
 applicare nuove migrazioni su TEST usare:
 
 ```bash
