@@ -1,5 +1,12 @@
 # Piano e2e S4 — istruzioni per gli agenti tester (Playwright MCP)
 
+> ⛔ **SUPERATO il 06-08-2026.** Le corsie manuali non sono più un mandato: il capitolo Servizio è
+> blindato tecnicamente su TEST e la suite Playwright finale è 118/118. Questo file resta come
+> storico del metodo usato; per lo stato e i lavori trasferiti usare la
+> [retrospettiva conclusiva](../Sessioni%20di%20lavoro/06-08-26/CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md).
+> Non riutilizzare l'istruzione storica di condividere il server 5173: gli E2E correnti usano il
+> server isolato 4173 configurato in `playwright.config.ts`.
+
 > **Chi legge questo file:** un agente automatico che guida un browser con **Playwright MCP** dentro
 > Cursor. Ogni agente esegue **una sola corsia** (A, B, C o D). Le quattro corsie girano **in parallelo**.
 >

@@ -23,7 +23,13 @@
 | [05-06-26](./05-06-26/README.md) | Capability-driven tipologie; card/carosello; merge main PROD; hook husky | [→](./05-06-26/README.md) | 10 |
 | [06-06-26](./06-06-26/) | Blindatura Prenota prod-ready; mappatura skill Menu QR | — | 2 |
 
-**Totale report indicizzati:** 156
+**Totale report indicizzati nella tabella storica sopra:** 156
+
+## Riprese successive indicizzate
+
+| Data | Tema sintetico | README | Report |
+|---|---|---|---|
+| [06-08-26](./06-08-26/README.md) | Chiusura strutturale Servizio: retrospettiva, stato codice e test | [→](./06-08-26/README.md) | 1 |
 
 ## Percorsi rapidi agente
 

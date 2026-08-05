@@ -4,6 +4,11 @@
 > Stato reale e mandato nuovo: [Report-rossi-parallelismo-mezzanotte-fase3-05-08-26.md](Report-rossi-parallelismo-mezzanotte-fase3-05-08-26.md)
 > — leggi §2.3 (i due difetti dell'app trovati sotto), §8 (tre domande a Matteo) e §9 (cosa resta).
 > Questo file resta come storico del giro precedente.
+>
+> ✅ **Chiusura finale 06-08-2026:** anche il mandato successivo è completato e la batteria finale è
+> **118/118**. Questo prompt non va più incollato a un nuovo senior. Ripartire dalla
+> [retrospettiva conclusiva](../06-08-26/CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md), scegliendo un
+> nuovo capitolo esplicito fra i lavori trasferiti.
 
 # Prompt di avvio — prossimo agente senior (Fase 2 chiusa, si parte dalla Fase 3)
 

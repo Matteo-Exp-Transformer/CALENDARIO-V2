@@ -159,7 +159,7 @@ Stato operativo aggiornato:
 | Prenotazioni operative | ✅ cancello M2 (11-06-26) | Vitest **32** + E2E FU-043 (warning accept + modali 375/834); residui U3/U9 non bloccanti |
 | Impostazioni / Personalizza Form | ✅ blindato M4 (16-06-26) | Vitest `settings-*` **120/120** (17 file); E2E settings **6/6** con QA anteprime 375/900/1256; FU-002 riscritto; FU-009 chiuso |
 | Menu admin / magazzino | ✅ blindato M3 (11-06-26) | Vitest **27** + E2E `@admin-blindatura: menu-magazzino`; QA Matteo; pronto merge production |
-| Servizio | ⬜ | Include walk-in, tavoli e briefing |
+| Servizio | ✅ blindato tecnicamente su TEST (06-08-26) | Fasi senior 0–3 concluse; E2E completo 118/118. Rollout PROD e accettazione manuale restano cancelli separati; fonte: [`CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md`](../Sessioni%20di%20lavoro/06-08-26/CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md) |
 | CRM | ⬜ | Include clienti e booking collegate |
 | Home / Analytics | ⬜ | Include KPI e finestre data |
 | Cross-area prod-ready | ⬜ | Fallback, hardcoded, codice morto, azioni pericolose |

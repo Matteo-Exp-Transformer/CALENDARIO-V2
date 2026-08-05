@@ -7,6 +7,18 @@ description: >-
 
 # Testing Context
 
+> ## Baseline corrente 06-08-2026
+>
+> - `npm run test:e2e`: **118/118** in 6,4 minuti, un worker, server dedicato
+>   `127.0.0.1:4173`, autosave OFF. La config non riusa più il server utente su 5173.
+> - Servizio: `pro-service-tables-lifecycle` **13/13** + `pro-service` **6/6**; fonte:
+>   [`CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md`](../Sessioni%20di%20lavoro/06-08-26/CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md).
+> - Migrazioni Servizio versionate in repo fino alla **071**. Non usare la vecchia riga “001→015”
+>   sotto come stato remoto: è inventario storico. Il 06-08 il controllo CLI remoto è stato
+>   impedito da `401 Unauthorized`; nessuna scrittura è stata tentata.
+> - Gli inventari numerici sotto sono fotografie storiche e non vanno usati per dichiarare la
+>   copertura totale corrente. Per il gate vivo eseguire `npm run validate` e `npm run test:e2e`.
+
 ## S3 — fronti aggiunti
 
 Marcatori `@s3-blindatura`: arrivi-slot, arrivi-hook-rpc, edge-arrival-validation e
@@ -38,7 +50,7 @@ server-side TEST; non dichiarare eseguito `deno test`.
 
 **Nota**: `serviceSlotBookingFilter.test.ts` va rieseguito dopo modifiche a `bookingStartsInServiceSlot`, `useUnassignedBookings` o a `isTimeInsideSlot` / `getAccurateStartTime` usati dal filtro.
 
-### Playwright E2E (13 spec file)
+### Playwright E2E — inventario storico iniziale
 
 | File | Flusso coperto | Stato |
 |------|---------------|-------|
@@ -81,7 +93,8 @@ MSW intercetta solo le chiamate che sfuggono al mock.
 
 Progetto: `docnnernvpyrbwuzzach` (separato da produzione `rwuxgvldzrkabglkasym`)
 
-**Migrazioni applicate**: 001 → 015 (tutte, incluso doppio 003)
+**Fotografia storica originaria:** migrazioni applicate 001 → 015 (tutte, incluso doppio 003).
+Per lo stato corrente usare `docs/DATABASE.md`; Servizio è versionato fino alla 071.
 
 **Tenant di test**:
 

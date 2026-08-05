@@ -2,6 +2,13 @@
 
 > Area Pro/Enterprise per gestione sale, tavoli, fasce, assegnazioni, walk-in e briefing turno.
 
+> **Stato vivo 06-08-2026:** capitolo Servizio/S4 **blindato tecnicamente su TEST**. Fasi senior
+> 0–3 concluse; `pro-service-tables-lifecycle` 13/13, `pro-service` 6/6 sui viewport 375/834/1280,
+> batteria applicazione 118/118. Fonte retrospettiva:
+> [`CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md`](../../Sessioni%20di%20lavoro/06-08-26/CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md).
+> Non equivale a rollout PROD: migrazioni 063–071, Edge e client viaggiano insieme solo con
+> autorizzazione. Checklist umana, atomicità cross-area e S4-LIVE sono capitoli trasferiti.
+
 ## 1. Flussi utente
 
 - Sidebar -> `Servizio`.
@@ -47,7 +54,9 @@
 ## 5. Vincoli
 
 - Sale/tavoli sono tenant-scoped.
-- Delete tavolo = soft delete `active=false`.
+- Delete tavolo = cancellazione fisica delle sole assegnazioni attive del tavolo, poi soft delete
+  `active=false`; così la liberazione forzata non consuma un turno. La sequenza è ancora client-side
+  e non atomica: vedi `FU-ALL-ATOMICITA-1`.
 - **Delete sala = soft delete `active=false` (D50, S4-A, mig. 063).** Non più DELETE fisico né
   soft-block: le query sale (`useRooms`) filtrano `active=true`; se la sala è "viva" (≥1 assignment
   attivo `checked_out_at IS NULL` sui suoi tavoli) la modale chiede conferma con impatto quantificato
@@ -88,13 +97,19 @@
   `assignment→tables→rooms`; il modale ha la colonna "Tavolo" e mostra "T12" mono-sala / "Sala · T12"
   multi-sala (campo `isMultiRoom`); non assegnate = "—". PDF briefing ancora senza colonna tavolo (FU).
 
-## 7. Test critici futuri
+## 7. Copertura critica e residui
 
-- Assegnazione tavolo con conflitto stesso turno.
-- Walk-in su tavolo occupato.
-- Slot chiuso/override specifico.
-- Mobile mappa read-only.
-- Briefing con e senza prenotazioni.
+| Flusso | Stato corrente |
+|---|---|
+| Ciclo tavolo, cinque stati, fine turno, multi-tavolo, turni esauriti | ✅ E2E reale in `pro-service-tables-lifecycle.spec.ts` (13 scenari) |
+| Walk-in su tavolo libero/occupato e reset conferma | ✅ E2E + RPC atomica 069 + unit hook |
+| Fascia chiusa e riflesso sul form pubblico | ✅ E2E; override specifico protetto da S0/Edge |
+| Modali sala/tavolo/walk-in/briefing/assegnazione | ✅ 375/834/1280 in `pro-service.spec.ts` (6 scenari) |
+| Mappa operativa e configurazione mobile | ✅ comportamento responsive automatico; checklist visiva umana resta separata |
+| Briefing con tavoli e fasce reali | ✅ modale; ⬜ PDF ancora senza colonna Tavolo |
+| Sostituzione guidata su tavolo occupato | ✅ comportamento coperto; ⬜ atomicità delle 5 scritture trasferita a `FU-ALL-ATOMICITA-1` |
+
+Baseline completa e confini: [chiusura 06-08](../../Sessioni%20di%20lavoro/06-08-26/CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md).
 
 ## 8. Baseline S0 — mappa AS-IS + pulizia (22-06-26)
 

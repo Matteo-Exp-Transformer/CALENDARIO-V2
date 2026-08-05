@@ -1,5 +1,9 @@
 # Prompt pronti — agenti S4 (collaudo e fix)
 
+> ⛔ **SUPERATO il 06-08-2026.** Non lanciare i giri descritti qui. Stato conclusivo, decisioni e
+> backlog trasferito sono nella
+> [retrospettiva Servizio](../Sessioni%20di%20lavoro/06-08-26/CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md).
+
 > **Stato al 02-08-2026 · prompt del giro 4 RIMAPPATI sul codice reale.**
 > **Giro 1** (quattro corsie di collaudo e2e) → **fatto**. Report in
 > [E2E-Report/](../Sessioni%20di%20lavoro/02-08-26/E2E-Report/), consolidati in

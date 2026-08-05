@@ -43,7 +43,7 @@
 | 2 | Prenotazioni operative | `ADMIN_PRENOTAZIONI_CONTEXT.md` | fatto (11-06-26) | Vitest 32 + E2E FU-043; accetta/rifiuta/cancella/ripristina/warning testati |
 | 3 | Impostazioni / Personalizza Form | `ADMIN_SETTINGS_CONTEXT.md` | ✅ **blindata** (16-06-26) | Vitest `settings-*` **120/120** (17 file); E2E settings **6/6** con QA anteprime 375/900/1256; FU-002 riscritto; FU-009 upload carosello chiuso; validate **758/758** |
 | 4 | Menu admin / magazzino | `ADMIN_MENU_MAGAZZINO_CONTEXT.md` | ✅ **blindato** (11-06-26) | Vitest 27 + E2E `@admin-blindatura: menu-magazzino`; QA Matteo; report finale M3 |
-| 5 | Servizio | `ADMIN_SERVIZIO_CONTEXT.md` | QA Matteo mobile parziale (24-06); fix plan aperto | sale/tavoli/slot/walk-in/briefing testati su 375/834/1280 + E2E staging |
+| 5 | Servizio | `ADMIN_SERVIZIO_CONTEXT.md` | ✅ **blindato tecnicamente su TEST (06-08-26)** | Fasi senior 0–3 complete; sale/tavoli/slot/walk-in/briefing testati su 375/834/1280; E2E completo 118/118. Rollout PROD e checklist umana separati |
 | 6 | CRM | `ADMIN_CRM_CONTEXT.md` | da fare | create/edit/delete cliente e booking collegate testati |
 | 7 | Home / Analytics | `ADMIN_ANALYTICS_HOME_CONTEXT.md` | da fare | KPI, finestre data, quick action e responsive testati |
 | 8 | Cross-area prod-ready | `ADMIN_CONFLICTS_AND_DEBTS.md` | da fare | fallback, hardcoded, codice morto e azioni pericolose chiusi o tracciati |
@@ -577,7 +577,7 @@ Aggiornare a fine area.
 | Tab Calendario (M2) | ✅ blindato + merged prod (11-06-26) | Batch A+B + Fase C + **C-U2** guard tab modale; validate **527**; QA badge §9 OK; C-U3 → FU-048 Pro |
 | Impostazioni / Personalizza Form | ✅ **BLINDATO** (16-06-26) | Report [`Report-finale-area3-impostazioni-15-06-26.md`](../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md); Vitest `settings-*` **120/120** (17 file); E2E settings **6/6** con QA anteprime 375/900/1256; FU-002 riscritto; FU-009 chiuso; validate **758/758**. Residui fuori cancello: FU-051 date mock + follow-up E2E calendario post-riordino fasce da valutare |
 | Menu admin / magazzino | ✅ **BLINDATO** (11-06-26) | Report [`Report-finale-m3-menu-blindato-11-06-26.md`](../Sessioni%20di%20lavoro/11-06-26/Report-finale-m3-menu-blindato-11-06-26.md); validate **554**; solo FU-M3-QA-CT extra fuori cancello |
-| Servizio | 🟨 QA mobile parziale (24-06-26) | Finding e prompt sequenziali in [`S4_FIX_PLAN.md`](../Sessioni%20di%20lavoro/24-06-26/S4_FIX_PLAN.md); restano fix + E2E + QA 834/1280/Classic/Prenota |
+| Servizio | ✅ **BLINDATO TECNICAMENTE SU TEST** (06-08-26) | [Retrospettiva conclusiva](../Sessioni%20di%20lavoro/06-08-26/CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md): piano senior 0–3 completo; lifecycle 13/13; modali 6/6 su 375/834/1280; batteria 118/118. `COLLAUDO_S4_CHECKLIST` resta accettazione manuale, rollout PROD separato |
 | CRM | ⬜ | Attenzione email normalizzata e delete multi-step |
 | Home / Analytics | ⬜ | Attenzione finestre data e KPI |
 | Cross-area prod-ready | ⬜ | Da eseguire a fine ciclo o incrementalmente |

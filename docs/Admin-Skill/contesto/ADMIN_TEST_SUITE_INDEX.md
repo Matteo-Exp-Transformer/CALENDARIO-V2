@@ -1,7 +1,8 @@
-# ADMIN — Test Suite Index iniziale
+# ADMIN — Test Suite Index
 
-> Inventario dei test esistenti collegati all'area admin. Non e ancora piano test completo:
-> la fase successiva dovra trasformare i flussi critici in scenari verificati.
+> Inventario vivo dei test collegati all'area admin. Stato Servizio aggiornato al 06-08-2026;
+> la retrospettiva canonica è
+> [`CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md`](../../Sessioni%20di%20lavoro/06-08-26/CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md).
 > Per il ciclo di blindatura usare `../PLAN_BLINDATURA_ADMIN.md`.
 
 ## 0. Marcatori blindatura Admin
@@ -72,6 +73,7 @@ Fronti previsti:
 | `e2e/pro/pro-home.spec.ts` | Home Pro |
 | `e2e/pro/pro-crm.spec.ts` | CRM Pro smoke (Rubrica, Personalizza email, stati vuoti) **+ campagne email (05-08-26)**: crea campagna verificata a DB, gruppo destinatari filtrato dal consenso marketing, «Invia ora» fermato alla modale di conferma con guardia di rete su `send-email` |
 | `e2e/pro/pro-service.spec.ts` | Servizio Pro smoke + modali responsive: apertura da sidebar, Lista/Mappa, ritorno dashboard, fasce e modali sala/tavolo/walk-in/briefing/assegna multi-tavolo |
+| `e2e/pro/pro-service-tables-lifecycle.spec.ts` | Servizio Pro lifecycle: 5 stati, fine turno/reload, checkout, multi-tavolo, walk-in occupato, turni esauriti, delete tavolo e fascia chiusa → pubblico |
 | `e2e/pro/pro-analytics.spec.ts` | Analytics Pro smoke: KPI/stati vuoti, periodi e filtro turno |
 | `e2e/edition-classic.spec.ts` | gating Classic |
 | `e2e/edition-classic-data-protection.spec.ts` | protezione dati Classic |
@@ -158,15 +160,26 @@ Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **120/120** (
 - `src/features/booking/components/__tests__/servizioModalsGuard.adminBlindatura.test.tsx` (3) → **FU-023** guard discard modale sala (`RoomConfigModal`: dirty → Annulla → `DiscardChangesConfirmModal`; Resta qui / Annulla modifiche). Tavolo/slot/walk-in: stesso pattern codice + anti-regressione `m6ProdReadyPatterns` (12-06-26).
 - `src/features/booking/components/__tests__/servizioA1Fixes.test.tsx` (7) → `@admin-blindatura: servizio-a1`: dimensione mappa, sala selezionata, default coperti, unicità case-insensitive, limite/leggibilità nome e conferma elimina-sala.
 - `e2e/pro/pro-service.spec.ts` → `@admin-blindatura: servizio` smoke browser Pro (sidebar → Servizio, Lista/Mappa, ritorno dashboard) + fascia raggiungibile a 375/834/1280 con locator circoscritto alla sezione + modali reali sala/tavolo/walk-in/briefing/assegna multi-tavolo a 375/834/1280 con seed/cleanup E2E.
+- `e2e/pro/pro-service-tables-lifecycle.spec.ts` → **13 scenari reali su TEST**: ciclo stati e
+  fine turno, persistenza “Ancora occupato”, checkout, tavolata 3+ tavoli e undo, walk-in su tavolo
+  occupato, turni esauriti con forzatura auditata, delete tavolo occupato e fascia chiusa riflessa
+  sul pubblico. Usa clock e fasce temporanee isolate.
 - `src/components/ui/__tests__/Input.numberWheel.test.tsx` (4) → `@admin-blindatura: input-number-wheel`: sugli input numerici admin la rotella è bloccata solo con focus; testo, `onWheel` custom e scroll pagina senza focus restano invariati.
+
+**Stato Servizio 06-08-26:** ✅ blindatura tecnica TEST chiusa. `pro-service-tables-lifecycle`
+**13/13**, `pro-service` **6/6**, batteria Playwright completa **118/118**. La checklist manuale
+4/62 è accettazione di prodotto separata e non va convertita in spunte automatiche.
 
 ### QA visuale Matteo S4 — 24-06-26
 
-Perimetro eseguito: **solo pagina Servizio da mobile**, su TEST. Non vale come QA responsive completa e
-non chiude ancora M5/Servizio. Fonte dettagliata e finding:
+> **Fotografia storica:** la tabella sotto descrive i gap al 24-06, non lo stato corrente. Le prove
+> automatiche aggiunte in agosto li hanno chiusi o trasferiti come indicato nello stato 06-08 sopra.
+
+Perimetro eseguito allora: **solo pagina Servizio da mobile**, su TEST. Non valeva come QA responsive
+completa e in quel momento non chiudeva M5/Servizio. Fonte dettagliata e finding:
 [`Report-revisione-integrazione-S4-24-06-26.md`](../../Sessioni%20di%20lavoro/24-06-26/Report-revisione-integrazione-S4-24-06-26.md#10-checklist-click--collaudo-manuale-s4-su-test).
 
-| Flusso visuale | Esito Matteo | Copertura E2E attuale / gap |
+| Flusso visuale | Esito Matteo | Copertura / gap al 24-06 |
 |---|---|---|
 | Apertura Servizio, stato vuoto, crea sala | provato mobile; finding dimensioni contenitore mappa | `pro-service.spec.ts` fa solo smoke senza scritture; scenario CRUD reale da aggiungere |
 | Crea/modifica tavolo | provato mobile; finding unicità nome, default coperti, leggibilità tavolo | unit presenti su forma; manca E2E CRUD/validazione |
@@ -191,7 +204,7 @@ non chiude ancora M5/Servizio. Fonte dettagliata e finding:
 
 ## 6-ter. Run E2E completo
 
-Run Codex 16-06-26:
+Baseline storica Codex 16-06-26:
 
 ```bash
 npx playwright test --workers=1
@@ -205,6 +218,15 @@ Addendum visual checklist (16-06-26): `public-booking-smoke.spec.ts` copre sfond
 crema + footer Orari assente + EmptyState form non configurato; `public-menu-qr.spec.ts` copre
 carosello, tema, ordine categorie, footer data/ora e icona default card senza foto con seed/cleanup
 su TEST. `admin-calendar-blindatura.spec.ts` esteso a badge senza limite e oltre 100% reale.
+
+### Baseline corrente — 06-08-26
+
+```bash
+npm run test:e2e
+```
+
+Esito su server E2E dedicato `127.0.0.1:4173`, autosave OFF e un worker: **118 passed, 0 failed,
+0 skipped** in **6,4 minuti**. Questa baseline supera il conteggio storico del 16-06.
 
 ## 7. Buchi iniziali da trasformare in test
 

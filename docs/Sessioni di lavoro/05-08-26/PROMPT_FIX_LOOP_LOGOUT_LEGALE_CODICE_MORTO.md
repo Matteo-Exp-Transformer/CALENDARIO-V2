@@ -1,5 +1,11 @@
 # Prompt — i 4 lavori decisi da Matteo il 05-08-26 sera
 
+> ✅ **ESEGUITO E CHIUSO il 05-08-2026.** I quattro lavori risultano completati nel
+> [report finale](Report-fix-logout-legale-codice-morto-handoff-prenota-05-08-26.md). La chiusura
+> strutturale dell'intero capitolo è nella
+> [retrospettiva del 06-08](../06-08-26/CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md). Non usare
+> questo testo come mandato per un nuovo agente.
+
 > Scritto in modalità **prepara**: qui c'è solo il prompt, nessun codice eseguito.
 > Nasce dalle risposte di Matteo alle tre domande di
 > [Report-rossi-parallelismo-mezzanotte-fase3-05-08-26.md](Report-rossi-parallelismo-mezzanotte-fase3-05-08-26.md) §8.

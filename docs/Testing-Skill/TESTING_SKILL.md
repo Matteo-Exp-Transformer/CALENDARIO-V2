@@ -99,6 +99,7 @@ npx playwright install chromium       # Prima volta: installa il browser
 > **controlla-poi-agisci**: in parallelo due worker leggono «c'è posto» insieme, inviano insieme, e
 > **6 richieste in 10 minuti mettono l'IP in blacklist per 24 ore**. Costo della serialità: **7,0
 > minuti per 117 test**. Per riaprire la discussione serve prima l'isolamento per-tenant delle spec.
+> Baseline conclusiva 06-08-26 su server dedicato: **118/118 in 6,4 minuti**.
 >
 > ⚠️ **«Da sola è verde» NON assolve una spec.** Era la regola precedente ed è **insufficiente**:
 > misura del 05-08-26 su `admin-menu-magazzino-blindatura.spec.ts`, che la sessione prima era stata
@@ -152,7 +153,10 @@ Esito: **13/13 verde in entrambe le finestre**.
 ### Playwright (E2E)
 - Config: `playwright.config.ts` — carica automaticamente `.env.local.test` se presente
 - Browser: solo Chromium (headless in CI, headed in debug)
-- Base URL: `http://localhost:5173` — dev server avviato automaticamente da webServer
+- Base URL locale E2E: `http://127.0.0.1:4173` — Playwright avvia un server dedicato con
+  `VITE_SETTINGS_AUTOSAVE=false` e `reuseExistingServer:false`. Non riusa il dev server personale
+  su 5173: potrebbe avere variabili o codice di avvio diversi. Per un server gestito dal chiamante
+  usare esplicitamente `PLAYWRIGHT_BASE_URL`.
 - Variabili: `E2E_ADMIN_EMAIL`, `E2E_ADMIN_PASSWORD`, `E2E_TENANT_SLUG`, `E2E_CLASSIC_TENANT_SLUG`, `E2E_SUPABASE_SERVICE_KEY`
 - File di credenziali: `.env.local.test` (gitignored) — vedi `tests/README.md` per ricreare
 

@@ -1,5 +1,12 @@
 # Collaudo S4 — Pagina Servizio · checklist unica
 
+> **Stato 06-08-2026:** il capitolo è **blindato tecnicamente su TEST** e la batteria automatica
+> completa è 118/118. Questa lista resta una checklist di **accettazione umana/prodotto**: mantiene
+> 4 spunte su 62 perché un E2E non va trasformato retroattivamente in “Matteo l'ha visto”. La mappa
+> esatta fra comportamenti protetti, decisioni e test è nella
+> [retrospettiva conclusiva](../Sessioni%20di%20lavoro/06-08-26/CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md).
+> Le voci aperte non tengono aperto il piano tecnico; diventano QA prodotto del rollout o backlog.
+
 > **Documento unico di collaudo.** Sostituisce la checklist §10 del
 > `Report-revisione-integrazione-S4-24-06-26.md` e le checklist sparse §9-ter / §9-quater.
 > Da qui in poi si spunta **solo qui**.
@@ -7,11 +14,10 @@
 > Aggiornato: **02-08-2026** · Ambiente: **TEST** (`docnnernvp`) · Branch: `env/test`
 > Stato codice: `npm run validate` verde — 144 file / 1198 test.
 >
-> **Non devi eseguirla a mano.** Le sezioni 2→9 sono state trasformate in un piano per agenti con
-> Playwright MCP: **[PIANO_E2E_AGENTI_S4.md](PIANO_E2E_AGENTI_S4.md)** (4 corsie in parallelo) con i
-> prompt pronti in **[PROMPT_AGENTI_E2E_S4.md](PROMPT_AGENTI_E2E_S4.md)**. Gli agenti eseguono e
-> raccolgono le prove; a te resta la **controverifica**. Restano comunque tuoi: le decisioni della
-> §10, l'apertura del **PDF** del briefing e i giudizi di leggibilità.
+> Il vecchio piano a quattro corsie e i relativi prompt restano storico: sono stati superati dalla
+> suite Playwright automatica conclusiva. Questa checklist si esegue solo se Matteo vuole
+> l'accettazione visiva/prodotto prima del rollout; restano comunque umani l'apertura del **PDF**,
+> i giudizi di leggibilità e le decisioni di §10.
 
 ---
 

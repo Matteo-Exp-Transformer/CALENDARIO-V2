@@ -9,6 +9,18 @@
 > 2. [HANDOFF_S4_SENIOR.md](../02-08-26/HANDOFF_S4_SENIOR.md) — quadro generale della pagina Servizio (§4-bis) e decisioni chiuse (§3).
 > 3. `docs/Testing-Skill/TESTING_SKILL.md` + `TESTING_PATTERNS.md` prima di scrivere qualsiasi test.
 
+> ## ✅ CHIUSURA DEFINITIVA 06-08-2026 — **PIANO COMPLETATO**
+>
+> Le Fasi **0, 1, 2 e 3 sono concluse**. La batteria completa finale, eseguita in seriale su un
+> server E2E dedicato con l'ambiente previsto, è **118/118 verde in 6,4 minuti**. I quattro lavori
+> successivi decisi il 05-08 (loop Prenota, retry auth, fotografia legale e codice morto) risultano
+> anch'essi chiusi. Questo file resta come piano storico: **non contiene più un mandato attivo**.
+>
+> Fonte di verità conclusiva, con cronologia, decisioni, regressioni protette, stato codice e
+> perimetro trasferito: [CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md](../06-08-26/CHIUSURA_CAPITOLO_SERVIZIO_RETROSPETTIVA.md).
+> Rollout PROD, collaudo manuale di accettazione, otto percorsi multi-write non atomici e S4-LIVE sono
+> capitoli separati: non tengono aperto questo piano.
+
 ---
 
 > ## ⛳ AGGIORNAMENTO 04-08-2026 — **LA FASE 0 È FATTA. PARTI DALLA FASE 1 (§3).**
@@ -260,7 +272,8 @@
 > - ⚠️ **Trovata fuori mandato, dentro il fronte 1: `LEGAL_STATE_CONTEXT.md` diceva che `send-email`
 >   «non esiste ancora».** Brevo manda email dalla **produzione dal 15-06**. Registro corretto, ma
 >   restano da fare **DPA Brevo + riga nel file sub-processor pubblico + Privacy Policy**.
-> - **Restano aperti:** i due difetti dell'app sopra · le 7 scritture non atomiche · e
+> - **Restano aperti:** i due difetti dell'app sopra · gli **8 percorsi** non atomici (conteggio
+>   corretto il 06-08 rileggendo tabella e codice; il report li chiamava 7 in una frase) · e
 >   **`COLLAUDO_S4_CHECKLIST.md` ancora a 4/62**, terza sessione di fila (§8 punto 5 di questo piano).
 > - ~~**Tre domande per Matteo** in §8 del report.~~ ✅ **RISPOSTE il 05-08 sera, tutte e tre:**
 >   allineare la documentazione legale al fatto che l'app manda email ai clienti (dev'essere pronta
