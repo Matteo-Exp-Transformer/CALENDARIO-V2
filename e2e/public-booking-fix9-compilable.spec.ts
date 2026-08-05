@@ -22,6 +22,7 @@
 
 import { test, expect, type Page } from '@playwright/test'
 import {
+  deleteBookingsByPrefix,
   deleteMenuE2eData,
   getExistingTenantSlug,
   getRestaurantSettingSnapshot,
@@ -30,6 +31,7 @@ import {
   upsertMenuCategory,
   upsertMenuItem,
   upsertRestaurantSettingValue,
+  waitForCreateBookingRateLimitWindow,
   type RestaurantSettingSnapshot,
 } from './helpers/supabaseStaging'
 
@@ -41,6 +43,8 @@ const CAT_COMP_KEY = 'e2e-fix9-comp'
 const CAT_NONCOMP_KEY = 'e2e-fix9-non-comp'
 const PRESET_ID = '00000000-0000-4000-8000-000000000901'
 const CARD_ID = 'e2e-fix9-card-1'
+/** Prefisso del cliente del caso 5: da quando quel submit parte davvero, crea una riga vera. */
+const SUBMIT_CLIENT_PREFIX = 'E2E-FIX9-'
 
 let tenantSlug = PREFERRED_TENANT_SLUG
 let bookingUrl = `/prenota/${tenantSlug}`
@@ -157,6 +161,9 @@ test.describe('FIX 9 — compilable_category_keys pubblica', () => {
     await restoreRestaurantSettingSnapshot(tenantId, 'booking_custom_staff_presets', staffPresetsSnapshot).catch(() => {})
     await deleteMenuE2eData(tenantId, CAT_COMP_KEY).catch(() => {})
     await deleteMenuE2eData(tenantId, CAT_NONCOMP_KEY).catch(() => {})
+    // Il caso 5 ora invia davvero: la prenotazione che crea va tolta, altrimenti resta a
+    // ingombrare il calendario del locale di prova (e la capienza della sua fascia).
+    await deleteBookingsByPrefix(tenantId, SUBMIT_CLIENT_PREFIX).catch(() => {})
   })
 
   // ── Caso 3: categoria NON compilabile visibile senza spunte ──────────────────
@@ -260,42 +267,64 @@ test.describe('FIX 9 — compilable_category_keys pubblica', () => {
       req.url().includes('create-booking') && req.method() === 'POST',
     { timeout: 20000 })
 
-    // Compila i dati minimi necessari al submit
-    await page.fill('#client_name-control', 'E2E Fix9')
+    // Compila i dati minimi necessari al submit.
+    //
+    // ⚠️ RISCRITTO IL 05-08-26. Prima questo blocco usava `#date-trigger`, `#time-trigger` e
+    // `#privacy-checkbox`: tre id che in `src/` NON esistono (i veri sono `#desired_date-control`,
+    // `#desired_time-control` e `#privacy-consent-dietary-input`). Erano tutti dentro un
+    // `if (await …isVisible())`, quindi data, ora e privacy non venivano mai compilate, la
+    // validazione bloccava il submit, nessuna richiesta partiva e l'unica asserzione del test
+    // viveva dentro `if (submitRequest)` — cioè non veniva mai eseguita. Il test era verde
+    // avendo verificato nulla. **Misurato**: eseguendolo, la tabella `rate_limits` non
+    // registrava nessuna chiamata a `create-booking`.
+    const clientName = `${SUBMIT_CLIENT_PREFIX}${Date.now()}`
+    await page.fill('#client_name-control', clientName)
     await page.fill('#client_email-control', 'e2e-fix9@test.it')
     await page.fill('#client_phone-control', '3331234567')
     await page.locator('#num_guests-control').fill('2')
-    // Data: usa il picker o un campo diretto — click sul trigger Data
-    const dateButton = page.locator('#date-trigger')
-    if (await dateButton.isVisible()) {
-      await dateButton.click()
-      // Seleziona il prossimo giorno disponibile (primo enabled nel calendario)
-      const firstEnabledDay = page.locator('[data-day]:not([aria-disabled="true"])').first()
-      await firstEnabledDay.click()
-    }
-    // Ora
-    const timeButton = page.locator('#time-trigger')
-    if (await timeButton.isVisible()) {
-      await timeButton.click()
-      const firstTimeOption = page.locator('[data-time-option]').first()
-      if (await firstTimeOption.isVisible()) await firstTimeOption.click()
-    }
-    // Checkbox privacy
-    const privacyCheckbox = page.locator('#privacy-checkbox')
-    if (await privacyCheckbox.isVisible()) await privacyCheckbox.check()
 
-    // Submit
-    const submitBtn = page.locator('button[type="submit"]:visible').first()
-    if (await submitBtn.isVisible()) await submitBtn.click()
+    // Data: pannello «Scegli la data», un mese avanti e giorno 15 — sempre esistente e sempre
+    // futuro, quindi mai disabilitato e mai a ridosso del cutoff di oggi.
+    await page.locator('#desired_date-control').click()
+    const dateDialog = page.getByRole('dialog', { name: /scegli la data/i })
+    await expect(dateDialog).toBeVisible({ timeout: 10000 })
+    await dateDialog.getByRole('button', { name: 'Mese successivo' }).click()
+    await dateDialog.getByRole('button', { name: '15', exact: true }).click()
+    await expect(dateDialog).not.toBeVisible()
 
-    // Se il form non è completamente compilato la request potrebbe non partire:
-    // verifica solo che il payload (se parte) non includa l'item non compilabile.
-    const submitRequest = await submitPromise.catch(() => null)
-    if (submitRequest) {
-      const body = await submitRequest.postDataJSON() as { menu_selection?: { items: { id: string }[] } } | undefined
-      const itemIds = (body?.menu_selection?.items ?? []).map((i) => i.id)
-      expect(itemIds).not.toContain(itemIdNonComp)
-    }
-    // Se il form non è abbastanza compilato per partire, il test vale comunque per i casi 3-4
+    // Ora: primo orario davvero offerto dal picker. Non si inventa un orario perché il form
+    // azzera quelli fuori fascia (BookingRequestForm.tsx:477-484) e la validazione li rifiuta.
+    await page.locator('#desired_time-control').click()
+    const timeDialog = page.getByRole('dialog', { name: /scegli l'orario/i })
+    await expect(timeDialog).toBeVisible({ timeout: 10000 })
+    const orari = timeDialog.getByRole('button', { name: /^\d{2}:\d{2}$/ })
+    await expect(orari.first()).toBeVisible({ timeout: 10000 })
+    await orari.first().click()
+
+    await page.locator('#privacy-consent-dietary-input').check()
+
+    // La finestra di rate limit dell'Edge è 3 richieste/minuto per IP: senza questa attesa,
+    // due spec del form pubblico lanciate di seguito si fanno respingere a vicenda (429).
+    await waitForCreateBookingRateLimitWindow()
+
+    const submitBtn = page.locator('button[type="submit"][form="booking-request-form"]:visible')
+    await submitBtn.scrollIntoViewIfNeeded()
+    await submitBtn.click()
+
+    // Ora la richiesta DEVE partire: se non parte il test fallisce qui, invece di dichiararsi
+    // verde per un submit mai avvenuto.
+    const submitRequest = await submitPromise
+    const body = submitRequest.postDataJSON() as { menu_selection?: { items: { id: string }[] } } | undefined
+    const itemIds = (body?.menu_selection?.items ?? []).map((i) => i.id)
+    expect(itemIds).toContain(itemIdComp)
+    expect(itemIds).not.toContain(itemIdNonComp)
+
+    // E la richiesta dev'essere anche ACCETTATA: senza questo controllo il test resterebbe
+    // verde anche se l'Edge respingesse il payload (fascia piena, orario fuori servizio,
+    // rate limit), cioè descrivendo un invio che nella realtà non è mai andato a buon fine.
+    const response = await submitRequest.response()
+    const status = response?.status()
+    const responseBody = response ? await response.text().catch(() => '') : '<nessuna risposta>'
+    expect(status, `create-booking ha risposto ${status}: ${responseBody.slice(0, 300)}`).toBe(201)
   })
 })

@@ -12,6 +12,7 @@ import {
   getTenantIdBySlug,
   restoreRestaurantSettingSnapshot,
   upsertRestaurantSettingValue,
+  waitForCreateBookingRateLimitWindow,
   type RestaurantSettingSnapshot,
 } from './helpers/supabaseStaging'
 
@@ -182,7 +183,12 @@ test.describe('Form prenotazione pubblica', () => {
   })
 
   test('submit con dati validi crea la prenotazione', async ({ page }) => {
-    test.setTimeout(60_000)
+    // 150s e non 60: prima di premere «Invia» si aspetta che ci sia posto nella finestra di
+    // rate limit dell'Edge (3 richieste/minuto per IP). Misurato il 05-08-26: con questa spec
+    // e `public-booking-classic.spec.ts` lanciate a poca distanza si arriva a quattro invii in
+    // 58 secondi, il quarto torna 429 e — poiché la mappatura di «Troppe richieste» non ha
+    // messaggio inline — il test fallisce come se il form fosse rotto.
+    test.setTimeout(150_000)
     // Nome unico per run: il repo gira fullyParallel, e serve a distinguere la riga
     // creata da questo test da qualunque altra.
     const clientName = `${CLIENT_PREFIX}${Date.now()}`
@@ -191,6 +197,7 @@ test.describe('Form prenotazione pubblica', () => {
       await page.goto(BOOKING_URL)
       await fillPublicBookingBasics(page, clientName)
       await scegliOrarioDisponibile(page)
+      await waitForCreateBookingRateLimitWindow()
       await clickInviaPrenotazione(page)
 
       // 1. Segnale a schermo, con un testo esplicito.

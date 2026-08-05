@@ -793,6 +793,53 @@ export async function deleteServiceSlotsByPrefix(
   })
 }
 
+/**
+ * Attende che ci sia spazio nella finestra di rate limit dell'Edge `create-booking`.
+ *
+ * L'Edge (supabase/functions/create-booking/index.ts:149-200) registra OGNI richiesta in
+ * `rate_limits` e risponde 429 quando quelle dell'ultimo minuto per lo stesso IP superano 3
+ * (la riga appena inserita è già contata). Peggio: se dopo lo sforamento l'IP totalizza 6+
+ * richieste in 10 minuti finisce in `ip_blacklist` per **24 ore**, e da lì in poi nessun test
+ * sul form pubblico può più girare da questa macchina.
+ *
+ * Misurato il 05-08-26: quattro invii reali in 58 secondi (due spec lanciate una dopo l'altra)
+ * bastano a far scattare il 429. E il 429 non si vede come errore inline — la mappatura di
+ * «Troppe richieste» ha `inlineMessage: ''` (bookingPublicFormErrorFeedback.ts:163-171),
+ * quindi il test fallisce cercando un elemento che non comparirà mai: un rosso che sembra un
+ * bug del form e invece è la batteria che si è pestata i piedi da sola.
+ *
+ * Chiamala PRIMA di ogni click su «Invia» che arriva davvero all'Edge.
+ */
+export async function waitForCreateBookingRateLimitWindow(maxWaitMs = 90_000): Promise<void> {
+  const deadline = Date.now() + maxWaitMs
+  // Finestra guardata di 75s invece dei 60s dell'Edge: 15 secondi di margine contro lo
+  // scarto fra orologio di questa macchina e orologio del DB. Sbagliare per eccesso costa
+  // qualche secondo di attesa; sbagliare per difetto costa 24 ore di IP in blacklist.
+  const guardWindowMs = 75_000
+  for (;;) {
+    const since = new Date(Date.now() - guardWindowMs).toISOString()
+    const recent = await rest<Array<{ requested_at: string }>>(
+      `rate_limits?endpoint=eq.create-booking&requested_at=gte.${encodeURIComponent(since)}` +
+        '&select=requested_at&order=requested_at.desc&limit=10',
+    )
+    // Con 2 righe nell'ultimo minuto la nostra diventa la terza: 3 non è «> 3», passa.
+    if (recent.length < 3) return
+
+    // La terza più recente esce dalla finestra guardata: aspetta fin lì.
+    const thirdNewest = new Date(recent[2].requested_at).getTime()
+    const waitMs = Math.max(1_000, thirdNewest + guardWindowMs + 1_000 - Date.now())
+    if (Date.now() + waitMs > deadline) {
+      throw new Error(
+        `Rate limit create-booking ancora pieno dopo ${Math.round(maxWaitMs / 1000)}s ` +
+          `(${recent.length} richieste nell'ultimo minuto). Qualcun altro sta lanciando spec ` +
+          'sul form pubblico: aspetta un minuto e rilancia, non insistere — 6 richieste in 10 ' +
+          "minuti mettono l'IP in blacklist per 24 ore.",
+      )
+    }
+    await new Promise((resolve) => setTimeout(resolve, Math.min(waitMs, 15_000)))
+  }
+}
+
 export function todayIsoDate(): string {
   const d = new Date()
   const y = d.getFullYear()
