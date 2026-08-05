@@ -1,3 +1,10 @@
+> ⛔ **SUPERATO il 05-08-2026 sera.** I quattro punti del mandato qui sotto **sono stati eseguiti** e
+> la Fase 3 è fatta. In particolare il **punto 1 è da non riaprire come è scritto**: l'ipotesi «spec
+> diverse che si invalidano la sessione a vicenda» è stata **smentita misurando**.
+> Stato reale e mandato nuovo: [Report-rossi-parallelismo-mezzanotte-fase3-05-08-26.md](Report-rossi-parallelismo-mezzanotte-fase3-05-08-26.md)
+> — leggi §2.3 (i due difetti dell'app trovati sotto), §8 (tre domande a Matteo) e §9 (cosa resta).
+> Questo file resta come storico del giro precedente.
+
 # Prompt di avvio — prossimo agente senior (Fase 2 chiusa, si parte dalla Fase 3)
 
 > Scritto il **05-08-2026** dopo la copertura delle righe **12 e 13**, che chiudono la tabella della

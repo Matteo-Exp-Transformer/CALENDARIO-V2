@@ -228,6 +228,50 @@
 > **condizionata** (`if (submitRequest)`) e tre delle cui interazioni puntavano a id inesistenti.
 > Ora l'invio deve partire, il server deve rispondere 201, e la prenotazione creata viene ripulita.
 
+> ## ⛳ AGGIORNAMENTO 05-08-2026 sera — **I QUATTRO DEBITI SONO CHIUSI. LA FASE 3 È FATTA.**
+>
+> Report: [Report-rossi-parallelismo-mezzanotte-fase3-05-08-26.md](../05-08-26/Report-rossi-parallelismo-mezzanotte-fase3-05-08-26.md).
+>
+> - **I «3 rossi» non erano interazione fra spec: quella diagnosi è SMENTITA.** Batteria completa
+>   oggi: **117 test, 116 verdi, 1 rosso, 7,0 min** (da 116/113/3). I due di `admin-settings` non si
+>   sono ripresentati; `admin-menu-magazzino-blindatura:326` è rosso di nuovo, a un viewport diverso.
+>   Rilanciato **da solo** 3 run × 3 viewport → **1 rosso su 9 (~11%)**. Con nessun altro test in
+>   esecuzione: non è contesa. **Regola nuova in `TESTING_SKILL.md`: «da sola è verde» NON assolve** —
+>   una spec che cade al 10% passa quasi sempre se la rilanci una volta.
+> - **Sotto ci sono DUE difetti dell'app, non dei test** (§2.3 del report): (a) un **giro di render
+>   infinito** su `/prenota/` quando si sceglie una **sotto-scheda** (`ArrivalSlotsBridge`,
+>   `BookingRequestForm.tsx:90`) — non visibile sui due locali TEST perché nessuno ha 2 sotto-schede;
+>   (b) **`checkSession` fa 4 round-trip a ogni cambio pagina e al primo che fallisce fa signOut,
+>   senza un solo tentativo di recupero** (`AdminAuthContext.tsx:119-124`). **Nessuno dei due è stato
+>   corretto**: il primo non è diagnosticato fino in fondo, il secondo tocca la sicurezza (FU-AUTH-3).
+> - **Parallelismo: DECISO E SCRITTO.** `playwright.config.ts` → `workers: 1` anche in locale, con le
+>   tre ragioni misurate nel commento. Quella che chiude la discussione: `waitForCreateBookingRateLimitWindow()`
+>   è un **controlla-poi-agisci**, in parallelo due worker inviano insieme e **6 richieste in 10
+>   minuti = IP in blacklist per 24 ore**. Per questo **non** ho misurato una run a 2-4 worker.
+> - **Mezzanotte: PROVATA COL BROWSER**, senza aspettare la notte — si sposta il fuso del processo
+>   (`TZ`) **e** del browser (nuovo `E2E_TIMEZONE` → `use.timezoneId`). `Asia/Kabul` (23:38) e
+>   `Asia/Karachi` (00:07): **13/13 verde in entrambe**. Ricetta in `TESTING_SKILL.md` §3.
+> - **FASE 3 (§5) fatta, sei fronti.** 6 divergenze skill/codice confermate e **sanate** (fra cui:
+>   `DATABASE.md` non citava `049`→`056`; le sale «senza tabella» quando `rooms` esiste dalla `008`;
+>   il walk-in «non transazionale» quando la `069` c'è). **3 funzioni vive solo nei loro test**
+>   (~27 asserzioni che non coprono niente, fra cui il calcolatore del cap **giornaliero** abolito il
+>   18-06) + 1 morta. **8 scritture non atomiche** censite. **D41 riscritta**: `max_turns` fa due
+>   mestieri e così è stato rilasciato.
+> - ⚠️ **Trovata fuori mandato, dentro il fronte 1: `LEGAL_STATE_CONTEXT.md` diceva che `send-email`
+>   «non esiste ancora».** Brevo manda email dalla **produzione dal 15-06**. Registro corretto, ma
+>   restano da fare **DPA Brevo + riga nel file sub-processor pubblico + Privacy Policy**.
+> - **Restano aperti:** i due difetti dell'app sopra · le 7 scritture non atomiche · e
+>   **`COLLAUDO_S4_CHECKLIST.md` ancora a 4/62**, terza sessione di fila (§8 punto 5 di questo piano).
+> - ~~**Tre domande per Matteo** in §8 del report.~~ ✅ **RISPOSTE il 05-08 sera, tutte e tre:**
+>   allineare la documentazione legale al fatto che l'app manda email ai clienti (dev'essere pronta
+>   per essere chiusa **con un avvocato**) · aggiungere **2 tentativi** di recupero prima del logout
+>   · **cancellare** il codice morto. Più: **correggere entrambi i difetti** trovati (giro a vuoto
+>   della pagina Prenota + logout).
+> - ➡️ **MANDATO CORRENTE:** [PROMPT_FIX_LOOP_LOGOUT_LEGALE_CODICE_MORTO.md](../05-08-26/PROMPT_FIX_LOOP_LOGOUT_LEGALE_CODICE_MORTO.md)
+>   — quattro lavori su file disgiunti. ⚠️ Il lavoro 1 (giro a vuoto) è l'unico **senza diagnosi**:
+>   va **riprodotto a comando prima** di essere corretto, altrimenti «risolto» significa solo che
+>   quella volta non è capitato.
+
 ## 0. Regole non negoziabili
 
 - **Mai commit o push senza richiesta esplicita di Matteo.** Stato dopo chiusura Codex: i commit
