@@ -91,11 +91,53 @@ npx playwright install chromium       # Prima volta: installa il browser
 > `waitForCreateBookingRateLimitWindow()` (`e2e/helpers/supabaseStaging.ts`), che legge `rate_limits`
 > e aspetta che ci sia posto. Un invio reale per test, mai due, mai un retry sul submit.
 >
-> ⚠️ **La batteria e2e non regge `fullyParallel` a 12 worker.** Misura del 04-08-26 sullo stesso
-> commit: **51 verdi / 31 rossi** con i worker di default, **71 verdi / 12 rossi** con `--workers=1`.
-> Venti rossi su trentuno erano contesa (login simultanei sullo stesso account, spec diverse che si
-> scrivono addosso le impostazioni dello stesso tenant), non difetti. Prima di aprire un'indagine su
-> un rosso, **rilancia quella spec da sola con `--workers=1`**: è il primo filtro, costa un minuto.
+> ⚠️ **La batteria e2e gira a UN worker, e la scelta è chiusa (05-08-26).** `playwright.config.ts`
+> ha ora `workers: Number(process.env.E2E_WORKERS) || 1` **anche in locale** (prima era `undefined`,
+> cioè ~12 worker). Le tre ragioni, tutte misurate, stanno nel commento sopra quella riga: contesa
+> (12 worker → 51/31, 1 worker → 71/12, stesso commit), 17 spec su 25 sullo **stesso tenant e stesso
+> account**, e soprattutto il fatto che `waitForCreateBookingRateLimitWindow()` è un
+> **controlla-poi-agisci**: in parallelo due worker leggono «c'è posto» insieme, inviano insieme, e
+> **6 richieste in 10 minuti mettono l'IP in blacklist per 24 ore**. Costo della serialità: **7,0
+> minuti per 117 test**. Per riaprire la discussione serve prima l'isolamento per-tenant delle spec.
+>
+> ⚠️ **«Da sola è verde» NON assolve una spec.** Era la regola precedente ed è **insufficiente**:
+> misura del 05-08-26 su `admin-menu-magazzino-blindatura.spec.ts`, che la sessione prima era stata
+> archiviata come «rosso da interazione fra spec» perché da sola passava. Rilanciata **da sola** 3
+> volte × 3 viewport → **1 rossa su 9**, e con **due errori di console diversi** nei due fallimenti
+> osservati (un loop di render React sul form pubblico, un `signOut` di sicurezza dopo una RPC
+> `check_admin_email` fallita). Un test intermittente al ~10% è verde da solo quasi sempre: se un
+> rosso non si riproduce al primo tentativo, **rilancia N volte e conta**, non concludere «era
+> contesa». E salva `test-results/` **prima** di rilanciare: Playwright la svuota a ogni run
+> (`--output=<cartella>` per tenerne una per giro).
+>
+> ⚠️ **Asserzioni «zero errori di console» → falliscono per motivi diversi ogni volta.**
+> `expect(browserErrors).toEqual([])` è una rete a strascico: prende qualunque cosa la pagina abbia
+> loggato, quindi lo stesso test fallisce oggi per un motivo e domani per un altro. Va benissimo
+> tenerla, ma quando è rossa **leggi `error-context.md` prima di ipotizzare**: il nome del test non
+> dice niente sulla causa.
+
+### Provare gli scenari a orologio a un'ora del giorno diversa
+
+`pro-service-tables-lifecycle.spec.ts` calcola i suoi istanti con `safeAnchorNow()`
+(`e2e/helpers/wallClockAnchor.ts`), che gira **in Node** e legge l'ora **locale del processo**. Per
+provarlo a ridosso della mezzanotte non serve aspettare la notte: si sposta il fuso.
+
+```powershell
+# Node E browser devono stare nello stesso fuso, altrimenti la prova non vale niente:
+# su Windows Chromium legge il fuso dal sistema operativo, non da TZ — da qui E2E_TIMEZONE
+# (playwright.config.ts → use.timezoneId), che lo forza via CDP.
+$env:TZ='Asia/Kabul'; $env:E2E_TIMEZONE='Asia/Kabul'    # ~23:37 locali → finestra pre-mezzanotte
+npx playwright test e2e/pro/pro-service-tables-lifecycle.spec.ts --workers=1
+$env:TZ='Asia/Karachi'; $env:E2E_TIMEZONE='Asia/Karachi' # ~00:07 locali → finestra post-mezzanotte
+npx playwright test e2e/pro/pro-service-tables-lifecycle.spec.ts --workers=1
+$env:TZ=$null; $env:E2E_TIMEZONE=$null
+```
+
+Il fuso giusto va **ricalcolato al momento** (l'ora scorre): serve una zona la cui ora locale cada
+fra le 23:25 e le 01:40. Prima di fidarti della run, verifica che la finestra sia davvero quella:
+con la vecchia ancora l'inizio doveva risultare **dopo** la fine. Misura del 05-08-26 a 23:38 Kabul —
+pre-fix `inizio 23:43` / `fine 00:04` (invertiti), post-fix `12:05` / `12:26` sul giorno prima.
+Esito: **13/13 verde in entrambe le finestre**.
 
 ---
 

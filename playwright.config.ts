@@ -27,12 +27,36 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // UN SOLO WORKER, SEMPRE — scelta misurata (05-08-26), non prudenza generica.
+  // Prima era `undefined` in locale, cioè ~12 worker sulla macchina di sviluppo.
+  //  1. Misura 04-08-26 sullo stesso commit: 12 worker → 51 verdi / 31 rossi;
+  //     `--workers=1` → 71 verdi / 12 rossi. Due terzi dei rossi erano CONTESA, non
+  //     difetti: tre sessioni di seguito hanno perso tempo a indagare rossi finti.
+  //  2. L'isolamento non esiste a livello di dati: 17 spec su 25 lavorano sullo STESSO
+  //     tenant TEST (`da-tommaso`) con lo STESSO account admin, e si scrivono addosso
+  //     `restaurant_settings`, menù e assegnazioni.
+  //  3. `waitForCreateBookingRateLimitWindow()` (e2e/helpers/supabaseStaging.ts) è un
+  //     controlla-poi-agisci: in parallelo due worker leggono "c'è posto" insieme e
+  //     inviano insieme → 429; e 6 richieste in 10 minuti mettono l'IP in `ip_blacklist`
+  //     per 24 ORE. Sbagliare qui costa una giornata di macchina ferma, non un rosso.
+  // Costo della serialità, misurato: 7,0 minuti per 117 test (05-08-26).
+  // Per rimettere in discussione la scelta serve PRIMA l'isolamento per-tenant delle
+  // spec; finché non c'è, alzare i worker riporta i rossi finti. `E2E_WORKERS` resta
+  // come manopola per esperimenti consapevoli (attenzione al punto 3).
+  workers: Number(process.env.E2E_WORKERS) || 1,
   reporter: 'html',
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    // Fuso del BROWSER, normalmente quello della macchina (undefined = nessun override).
+    // Serve per provare gli scenari a orologio (pro-service-tables-lifecycle) a un'ora
+    // del giorno diversa da quella reale: `safeAnchorNow()` gira in Node e legge l'ora
+    // LOCALE del processo, quindi per una prova onesta i due orologi devono coincidere.
+    //   $env:TZ='Asia/Kabul'; $env:E2E_TIMEZONE='Asia/Kabul'; npx playwright test ...
+    // (TZ sposta Node, E2E_TIMEZONE sposta il browser: su Windows Chromium legge il fuso
+    // dal sistema operativo, non da TZ, quindi senza questa riga i due divergono.)
+    timezoneId: process.env.E2E_TIMEZONE || undefined,
   },
   projects: [
     {
