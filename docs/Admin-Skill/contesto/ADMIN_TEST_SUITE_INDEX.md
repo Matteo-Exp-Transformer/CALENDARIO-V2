@@ -50,13 +50,14 @@ Fronti previsti:
 | `e2e/pro/pro-login.spec.ts` | login Pro |
 | `e2e/pro/pro-sidebar-nav.spec.ts` | sidebar Pro — `aside` con `role="complementary"` (non `navigation`); ritorno dashboard da CRM via pulsante X |
 | `e2e/pro/pro-home.spec.ts` | Home Pro |
-| `e2e/pro/pro-crm.spec.ts` | CRM Pro smoke: Rubrica, Personalizza email, stati vuoti stabili |
+| `e2e/pro/pro-crm.spec.ts` | CRM Pro smoke (Rubrica, Personalizza email, stati vuoti) **+ campagne email (05-08-26)**: crea campagna verificata a DB, gruppo destinatari filtrato dal consenso marketing, «Invia ora» fermato alla modale di conferma con guardia di rete su `send-email` |
 | `e2e/pro/pro-service.spec.ts` | Servizio Pro smoke + modali responsive: apertura da sidebar, Lista/Mappa, ritorno dashboard, fasce e modali sala/tavolo/walk-in/briefing/assegna multi-tavolo |
 | `e2e/pro/pro-analytics.spec.ts` | Analytics Pro smoke: KPI/stati vuoti, periodi e filtro turno |
 | `e2e/edition-classic.spec.ts` | gating Classic |
 | `e2e/edition-classic-data-protection.spec.ts` | protezione dati Classic |
 | `e2e/edition-upgrade.spec.ts` | upgrade edition/feature |
 | `e2e/public-booking.spec.ts` | collegamento admin/Prenota lato pubblico |
+| `e2e/public-booking-classic.spec.ts` | **Nuovo 05-08-26** — form pubblico del locale Classic: invio completo verificato a DB, fascia satura che sparisce dal picker orari, invio oltre il cap respinto senza creare righe. Legge le fasce vere di `test-classic`: **non eseguire in parallelo con `admin-calendar-blindatura.spec.ts`**, che le sostituisce temporaneamente |
 | ~~menu-crud.spec.ts~~ (file rimosso) | **Cancellata il 04-08-26**: era interamente in `test.skip(true, …)` da mesi, copertura reale zero. La sostituiscono `admin-menu-magazzino-blindatura.spec.ts` e `admin-menu-magazzino-ct.spec.ts` — che però coprono **solo** il mostra/nascondi: creare una categoria, aggiungere e togliere un elemento **dall'interfaccia** oggi non è coperto da nessun test |
 
 ## 2. Unit/component per prenotazioni

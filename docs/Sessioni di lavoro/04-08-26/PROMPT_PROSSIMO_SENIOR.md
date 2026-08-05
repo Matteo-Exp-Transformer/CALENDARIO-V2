@@ -1,5 +1,9 @@
 # Prompt di avvio — prossimo agente senior (Fase 2, stato reale 05-08-26, post-riga-11)
 
+> ⛔ **SUPERATO il 05-08-2026.** Le righe 12 e 13 sono state coperte e la Fase 2 è chiusa: usa
+> `docs/Sessioni di lavoro/05-08-26/PROMPT_PROSSIMO_SENIOR.md`, che parte dalla Fase 3. Questo file
+> resta solo come storico di come si era arrivati alla riga 11.
+
 > Aggiornato il **05-08-2026** dopo proseguimento Codex su tavolata a 3 tavoli, badge Calendario e
 > persistenza Impostazioni, poi modali responsive Servizio. Da incollare come primo messaggio della
 > prossima chat. Il testo dentro il blocco è il prompt; quello dopo è il perché delle scelte.

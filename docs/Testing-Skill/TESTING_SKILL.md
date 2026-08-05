@@ -76,6 +76,21 @@ npx playwright install chromium       # Prima volta: installa il browser
 > `npx tsc --noEmit --strict --skipLibCheck --target es2022 --module esnext --moduleResolution bundler --types node e2e/<file>.spec.ts e2e/helpers/supabaseStaging.ts`
 > (verificato il 04-08-26; l'unico controllo vero su una spec resta eseguirla).
 
+> ⚠️ **Il form pubblico ha un limite di frequenza per IP, e la batteria ci sbatte contro.**
+> `create-booking` (`supabase/functions/create-booking/index.ts:149-200`) registra in `rate_limits`
+> **ogni** richiesta che arriva all'endpoint — anche quelle poi respinte — e risponde **429** oltre
+> **3 richieste al minuto per IP**; se dopo lo sforamento l'IP totalizza **6+ richieste in 10
+> minuti** finisce in `ip_blacklist` per **24 ore**, e da quel momento nessun test sul form pubblico
+> gira più da quella macchina.
+> Il 429 è insidioso perché **non si vede come errore inline**: la mappatura di «Troppe richieste»
+> (`bookingPublicFormErrorFeedback.ts:163-171`) ha `inlineMessage: ''`, quindi il test fallisce
+> cercando un elemento che non comparirà mai e sembra un difetto del form. Successo davvero il
+> 05-08-26: quattro invii reali in 58 secondi fra `public-booking.spec.ts` e
+> `public-booking-classic.spec.ts`.
+> **Regola:** ogni spec che preme «Invia» sul form pubblico chiama prima
+> `waitForCreateBookingRateLimitWindow()` (`e2e/helpers/supabaseStaging.ts`), che legge `rate_limits`
+> e aspetta che ci sia posto. Un invio reale per test, mai due, mai un retry sul submit.
+>
 > ⚠️ **La batteria e2e non regge `fullyParallel` a 12 worker.** Misura del 04-08-26 sullo stesso
 > commit: **51 verdi / 31 rossi** con i worker di default, **71 verdi / 12 rossi** con `--workers=1`.
 > Venti rossi su trentuno erano contesa (login simultanei sullo stesso account, spec diverse che si
@@ -129,20 +144,28 @@ Usare questo schema per E2E su staging TEST. Serve a evitare test verdi solo sul
    diversi. Caso reale: «submit con dati validi crea la prenotazione» era verde da mesi **senza
    creare nessuna prenotazione** — il locator generoso stava intercettando il messaggio d'errore che
    diceva che il form era bloccato.
-5. **Date locali, non UTC, quando il codice usa "oggi" a muro:** se il componente calcola la data con
+5. **Nessuna asserzione dentro un `if`.** `if (request) { expect(...) }` o
+   `if (await x.isVisible()) await x.click()` rendono il test verde **anche quando il ramo non
+   viene mai eseguito**: il verde smette di significare «ho verificato» e significa «non ho
+   verificato». Caso reale 05-08-26: in `public-booking-fix9-compilable.spec.ts` il caso 5
+   compilava data, ora e privacy con tre id **inesistenti in `src/`** dentro altrettanti
+   `if (isVisible())` — muti — e l'unica asserzione viveva dentro `if (submitRequest)`. Se ti serve
+   un ramo condizionale, la condizione va **asserita prima** (`await expect(x).toBeVisible()`), non
+   usata per saltare in silenzio.
+6. **Date locali, non UTC, quando il codice usa "oggi" a muro:** se il componente calcola la data con
    `getFullYear()/getMonth()/getDate()` o `date-fns format(..., 'yyyy-MM-dd')`, il test non deve
    seedare con `new Date().toISOString().slice(0, 10)`. In Europa, dopo mezzanotte locale, UTC può
    essere ancora il giorno prima: caso reale 05-08-26, `walkIn.b2.test.tsx` non vedeva il tavolo
    occupato perché l'assignment era stato creato su "ieri" UTC mentre `WalkInModal` leggeva "oggi"
    locale.
-6. **Assert oggettivi:** per visual checklist assertare DOM verificabile, non "sembra giusto":
+7. **Assert oggettivi:** per visual checklist assertare DOM verificabile, non "sembra giusto":
    classi/ruoli/testo/assenza immagini, icona SVG specifica, `toHaveText`, `toHaveCount(0)`,
    niente emoji se il requisito è "mai emoji".
-7. **Locator strict:** se un testo appare in più punti responsive, circoscrivere il contenitore o usare
+8. **Locator strict:** se un testo appare in più punti responsive, circoscrivere il contenitore o usare
    `.first()` solo quando il requisito è "almeno un recapito visibile". Non lasciare locator ambigui.
-8. **Debug onesto:** se un comando è rosso per dati staging obsoleti, documentarlo e correggere lo spec
+9. **Debug onesto:** se un comando è rosso per dati staging obsoleti, documentarlo e correggere lo spec
    o l'ambiente. Non spuntare checklist finché il comando mirato non torna verde nello stato attuale.
-9. **Run:** dopo ogni modifica E2E rilanciare il comando mirato dichiarato nel report; se aggiorni docs
+10. **Run:** dopo ogni modifica E2E rilanciare il comando mirato dichiarato nel report; se aggiorni docs
    o checklist, controlla `git diff` e allinea il report allo stesso esito reale.
 
 ---

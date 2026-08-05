@@ -455,7 +455,7 @@ Tutte le modifiche **solo** sulla fascia `AG-D`.
 |----|-----------------|--------|
 | 7-1 | Menu laterale | La voce **Servizio** **non** compare. Se compare, sei sul tenant sbagliato → fermati. |
 | 7-2 | **Calendario** | Funziona come prima: vista Giorno, occupazione per fascia visibile **anche senza** limite impostato. |
-| 7-3 | **Form pubblico** del tenant Classic (`/prenota/test-classic`) | Accetta una prenotazione valida e **rifiuta** una oltre il limite di fascia. |
+| 7-3 | **Form pubblico** del tenant Classic (`/prenota/test-classic`) | Accetta una prenotazione valida e **rifiuta** una oltre il limite di fascia. ✅ **Chiusa in automatico il 05-08-26** da `e2e/public-booking-classic.spec.ts` (3/3 verde): invio completo verificato a DB, fascia satura assente dal picker, invio oltre il cap respinto senza creare righe. Non serve più rifarla a mano; la spunta Privacy **è** cliccabile da automazione (`#privacy-consent-dietary-input`), contrariamente a quanto teme `PROMPT_AGENTI_E2E_S4.md:187`. |
 | 7-4 | Console | **Nessun errore** durante la navigazione (P9). |
 
 Chiudi con P9 e P10.

@@ -190,6 +190,44 @@
 > riga **12** (Form Classic: invio completo + oltre-limite). Restano aperti parallelismo Playwright e
 > prova a cavallo della mezzanotte.
 
+> ## ⛳ AGGIORNAMENTO 05-08-2026 — **FASE 2 COMPLETA: RIGHE 12 E 13 COPERTE.**
+>
+> Report: [Report-fase2-righe-12-13-05-08-26.md](../05-08-26/Report-fase2-righe-12-13-05-08-26.md).
+>
+> - **Riga 12** coperta a browser nel nuovo `e2e/public-booking-classic.spec.ts`: sul locale Classic
+>   il cliente completa l'invio (riga verificata a DB), la fascia satura sparisce dal picker, e
+>   l'invio oltre il cap viene respinto senza creare nulla. File **3/3 verde**, due run consecutive.
+> - **Riga 13** coperta in `e2e/pro/pro-crm.spec.ts`: crea campagna → gruppo destinatari con solo chi
+>   ha il consenso marketing → «Invia ora» fino alla modale di conferma, poi **Annulla**, con guardia
+>   di rete che dimostra che nessuna richiesta raggiunge `send-email`. File **4/4 verde**.
+> - **La tabella §4 è ora tutta ✅.** Il prossimo mandato è la **Fase 3** (§5), più i due debiti
+>   ereditati: parallelismo Playwright e prova a cavallo della mezzanotte.
+> - **Run completa di chiusura, `--workers=1`: 116 test, 113 verdi, 3 rossi, 6,9 minuti.** I tre rossi
+>   (`admin-settings-blindatura:156` e `:184` tablet-900, `admin-menu-magazzino-blindatura:326`
+>   tablet-834) sono in spec non toccate da questo giro e **da soli sono verdi** (7/7 e 3/3): rossi da
+>   interazione fra spec, non difetti. **Non è contesa fra worker** (la batteria girava a un worker
+>   solo); ipotesi da verificare: sessioni admin condivise che si invalidano a vicenda
+>   (`[checkSession] risoluzione tenant admin fallita: signOut di sicurezza`). Primo punto del mandato
+>   del prossimo senior.
+>
+> **Due trappole trovate strada facendo, entrambe misurate:**
+> 1. **Limite di frequenza del form pubblico** — 3 richieste/minuto per IP, blacklist 24h oltre 6 in
+>    10 minuti, e il 429 **non produce errore inline** (sembra un difetto del form). Disinnescato con
+>    `waitForCreateBookingRateLimitWindow()` in `e2e/helpers/supabaseStaging.ts`, chiamato da tutte le
+>    spec che inviano. Regola in `TESTING_SKILL.md` §3.
+> 2. **Scarto d'orario nel conteggio posti del form pubblico** (§5 del report): la RPC
+>    `get_available_arrival_times` leggeva `confirmed_start` come UTC reale, l'Edge legge le cifre a
+>    muro → 2 ore di scarto d'estate. Prenotazione delle 10:00 saturava **Pranzo** invece di
+>    **Colazione** (misurato su TEST). **CORRETTO** su decisione di Matteo: migrazione
+>    **`071_arrival_times_wall_clock_occupancy.sql`**, applicata **solo su TEST**, misura ripetuta
+>    prima/dopo e test di non-regressione in `public-booking-classic.spec.ts` (file 4/4 verde).
+>    ⚠️ **PROD invariata**: la `071` si aggiunge al treno del rollout (`063`→`071` + Edge + client,
+>    tutto insieme e solo con autorizzazione esplicita).
+>
+> Inoltre riparato `public-booking-fix9-compilable.spec.ts` caso 5, la cui asserzione era
+> **condizionata** (`if (submitRequest)`) e tre delle cui interazioni puntavano a id inesistenti.
+> Ora l'invio deve partire, il server deve rispondere 201, e la prenotazione creata viene ripulita.
+
 ## 0. Regole non negoziabili
 
 - **Mai commit o push senza richiesta esplicita di Matteo.** Stato dopo chiusura Codex: i commit
@@ -371,8 +409,8 @@ sullo stesso file si sovrascrivono.
 | 9 | ✅ **Badge % Calendario**, unit isolato sui rami D38/tavoli/Classic | `calendario.adminBlindatura.test.tsx` | Coperta da unit/component test: Pro+tavoli in mese non usa capienza fisica con limiti pubblici OFF; Classic ignora tavoli in cache e usa cap per-fascia |
 | 10 | ✅ **Impostazioni: Salva → reload → il dato persiste** | `admin-settings-blindatura.spec.ts` | Coperta a browser: cambio nome ristorante, Salva con modale pubblica, reload, valore ancora visibile, snapshot DB ripristinato |
 | 11 | ✅ **Modali Servizio a 375/834/1280**: sala, tavolo, walk-in, briefing, assegna multi-tavolo | `pro-service.spec.ts` | Coperta a browser: cinque modali reali aperti sui tre viewport, pannello e azioni principali nel viewport, seed/cleanup E2E |
-| 12 | **Form Classic: invio completo + oltre-limite** | cliccare per **ruolo/label** invece che sull'icona (metodo iniziato in `RIPROVA_D`) | Debito di collaudo aperto da sempre |
-| 13 | **CRM: crea campagna → destinatari → invia** (fino al limite prima di Brevo) | `pro-crm.spec.ts` è smoke puro | Zero copertura su una feature **attiva in PROD** |
+| 12 | ✅ **Form Classic: invio completo + oltre-limite** | `public-booking-classic.spec.ts` (nuovo) | Coperta a browser il 05-08: invio completo verificato a DB, fascia satura che sparisce dal picker, invio oltre cap respinto senza creare nulla |
+| 13 | ✅ **CRM: crea campagna → destinatari → invia** (fino al limite prima di Brevo) | `pro-crm.spec.ts` (3 test nuovi) | Coperta il 05-08: campagna creata e verificata a DB, gruppo destinatari filtrato dal consenso marketing, invio fermato alla modale di conferma con guardia di rete su `send-email` |
 
 ### Due trappole da mettere in ogni prompt che scrivi
 

@@ -45,6 +45,7 @@ server-side TEST; non dichiarare eseguito `deno test`.
 | `e2e/admin-login.spec.ts` | Login, redirect, logout | attivo |
 | `e2e/admin-booking-mgmt.spec.ts` | Accetta/rifiuta prenotazione | attivo |
 | `e2e/public-booking.spec.ts` | Form prenotazione pubblica | attivo |
+| `e2e/public-booking-classic.spec.ts` | Form pubblico locale Classic: invio completo (riga verificata a DB), fascia satura assente dal picker, invio oltre cap respinto | aggiunto 05-08-26 — 3 test |
 | ~~menu-crud.spec.ts~~ (file rimosso) | CRUD voci menu | **cancellata 04-08-26** — era `test.skip(true, …)` da mesi (mai eseguita). Il CRUD del menù via interfaccia resta **scoperto**: le due spec magazzino coprono solo il mostra/nascondi |
 | `e2e/invite-flow.spec.ts` | Flusso invito nuovo admin | attivo |
 | `e2e/edition-classic.spec.ts` | Classic: no sidebar, 5 tab, no walk-in, no no-show (5 test) | ✅ 5 pass (fix B02: selettori scopati a `header nav`) |
@@ -53,7 +54,7 @@ server-side TEST; non dichiarare eseguito `deno test`.
 | `e2e/admin-classic-tabs.spec.ts` | Tab Archivio, Tab Impostazioni, cancella prenotazione (soft-delete) | aggiunto sessione 14-05-26 |
 | `e2e/pro/pro-login.spec.ts` | Login Pro, redirect con sidebar, credenziali errate | aggiunto sessione 14-05-26 |
 | `e2e/pro/pro-sidebar-nav.spec.ts` | Sidebar 5 bottoni, navigazione Home/CRM/Servizio/Analytics | aggiunto sessione 14-05-26 |
-| `e2e/pro/pro-crm.spec.ts` | CRM accessibile, lista ≥3 clienti nel DB staging | aggiunto sessione 14-05-26 |
+| `e2e/pro/pro-crm.spec.ts` | CRM accessibile + campagne email: crea campagna, gruppo destinatari con solo chi ha il consenso marketing, invio fermato alla conferma | 14-05-26; campagne aggiunte 05-08-26 (3 test, `serial`) |
 | `e2e/pro/pro-home.spec.ts` | Home default Pro, bodyOverride, navigazione sidebar stabile | aggiunto sessione 14-05-26 |
 
 ---
