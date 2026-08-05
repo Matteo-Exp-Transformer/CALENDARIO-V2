@@ -17,7 +17,7 @@ import { isValidBookingDateTime, getDayOfWeek, formatHours, buildClosedDayMessag
 import { toast } from 'react-toastify'
 import { cn } from '@/lib/utils'
 import { logger } from '@/lib/logger'
-import type { PresetMenuType } from '../constants/presetMenus'
+import type { CustomStaffPreset, PresetMenuType } from '../constants/presetMenus'
 import { customPresetStorageId } from '../constants/presetMenus'
 import { useMenuItems } from '../hooks/useMenuItems'
 import { useRestaurantSetting } from '../hooks/useRestaurantSetting'
@@ -97,6 +97,8 @@ interface ArrivalSlotsState {
   isLoading: boolean
   groups: Array<{ slotId: string; slotName: string; times: string[] }>
 }
+
+const EMPTY_CUSTOM_STAFF_PRESETS: CustomStaffPreset[] = []
 
 function ArrivalSlotsBridge({ tenantSlug, date, durationMinutes, numGuests, onChange }: {
   tenantSlug: string
@@ -411,7 +413,7 @@ export const BookingRequestForm: React.FC<BookingRequestFormProps> = ({
   }, [enabledBookingModes, formData.booking_type, initialBookingType])
 
   const {
-    data: customStaffPresets = [],
+    data: customStaffPresets = EMPTY_CUSTOM_STAFF_PRESETS,
     isLoading: customStaffPresetsLoading,
     isFetching: customStaffPresetsFetching,
   } = useRestaurantSetting('booking_custom_staff_presets')

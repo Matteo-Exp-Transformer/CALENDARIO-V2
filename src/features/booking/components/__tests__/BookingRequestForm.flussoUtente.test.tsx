@@ -9,6 +9,7 @@
 // così il test esercita la VERA logica di stato/validazione del form, non una replica.
 
 import '@testing-library/jest-dom/vitest'
+import { useCallback, useState } from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
@@ -18,7 +19,8 @@ const toastErrorSpy = vi.fn()
 const mockBookingData = vi.hoisted(() => ({
   menuItems: [] as unknown[],
   menuCategories: [] as unknown[],
-  customStaffPresets: [] as unknown[],
+  customStaffPresets: [] as unknown[] | undefined,
+  customStaffPresetsLoading: false,
 }))
 
 vi.mock('react-toastify', () => ({
@@ -45,7 +47,11 @@ vi.mock('@/features/booking/hooks/useMenuItems', () => ({
 vi.mock('@/features/booking/hooks/useRestaurantSetting', () => ({
   useRestaurantSetting: (key: string) => {
     if (key === 'booking_custom_staff_presets') {
-      return { data: mockBookingData.customStaffPresets, isLoading: false, isFetching: false }
+      return {
+        data: mockBookingData.customStaffPresets,
+        isLoading: mockBookingData.customStaffPresetsLoading,
+        isFetching: mockBookingData.customStaffPresetsLoading,
+      }
     }
     if (key === 'booking_staff_presets_visible') {
       return { data: true, isLoading: false, isFetching: false }
@@ -103,6 +109,7 @@ beforeEach(() => {
   mockBookingData.menuItems = []
   mockBookingData.menuCategories = []
   mockBookingData.customStaffPresets = []
+  mockBookingData.customStaffPresetsLoading = false
   global.ResizeObserver = class {
     observe() {}
     unobserve() {}
@@ -113,6 +120,57 @@ beforeEach(() => {
   } catch {
     /* jsdom: ignora */
   }
+})
+
+describe('BookingRequestForm — sotto-schede mentre i preset sono ancora in caricamento', () => {
+  it('propaga una selezione finita senza entrare in un giro di render', async () => {
+    mockBookingData.customStaffPresets = undefined
+    mockBookingData.customStaffPresetsLoading = true
+    let activeSubTabChangeCount = 0
+
+    const config = makeConfig([
+      makeMode({
+        id: 'menu',
+        booking_type: 'menu_prezzo_fisso',
+        label: 'Menu',
+        sub_tabs_enabled: true,
+        sub_tabs_presentation: 'cards',
+        sub_tabs: [
+          { id: 'card-a', display: 'cards', label: 'Card A', preset_id: 'preset-a' },
+          { id: 'card-b', display: 'cards', label: 'Card B', preset_id: 'preset-b' },
+        ],
+      }),
+    ])
+
+    function Harness() {
+      const [activeSubTab, setActiveSubTab] = useState<{ id: string } | null>(null)
+      const handleActiveSubTabChange = useCallback((subTab: { id: string } | null) => {
+        activeSubTabChangeCount += 1
+        if (activeSubTabChangeCount > 20) {
+          throw new Error('giro di render: onActiveSubTabChange chiamata oltre 20 volte')
+        }
+        setActiveSubTab(subTab)
+      }, [])
+
+      return (
+        <MemoryRouter>
+          <span data-testid="active-sub-tab-id">{activeSubTab?.id ?? 'nessuna'}</span>
+          <BookingRequestForm
+            formConfig={config}
+            onActiveSubTabChange={handleActiveSubTabChange}
+          />
+        </MemoryRouter>
+      )
+    }
+
+    render(<Harness />)
+    fireEvent.click(screen.getByTestId('booking-sub-tab-card-card-a'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('active-sub-tab-id')).toHaveTextContent('card-a')
+    })
+    expect(activeSubTabChangeCount).toBeLessThanOrEqual(3)
+  })
 })
 
 describe('BookingRequestForm — card categoria ingredienti (§5 card categoria ingredienti)', () => {

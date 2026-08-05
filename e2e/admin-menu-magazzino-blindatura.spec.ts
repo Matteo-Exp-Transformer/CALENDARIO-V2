@@ -217,12 +217,31 @@ function buildE2eStaffPreset(presetId: string, itemId: string, label: string) {
   }
 }
 
-function buildE2eBookingPublicFormConfig(presetId: string, label: string) {
+function buildE2eBookingPublicFormConfig(
+  presetId: string,
+  label: string,
+  options?: { includeAlternateMode?: boolean },
+) {
   return {
     page_title: 'Prenota QA E2E',
     page_description: 'Configurazione temporanea Playwright',
     header_styles: {},
     booking_modes: [
+      ...(options?.includeAlternateMode
+        ? [
+            {
+              id: 'tavolo',
+              booking_type: 'tavolo',
+              enabled: true,
+              label: 'Tavolo QA E2E',
+              description: 'Tipologia alternativa per cambio rapido',
+              icon: 'bowl_food',
+              sub_tabs_enabled: false,
+              sub_tabs_presentation: null,
+              sub_tabs: [],
+            },
+          ]
+        : []),
       {
         id: 'menu_prezzo_fisso',
         booking_type: 'menu_prezzo_fisso',
@@ -321,6 +340,214 @@ test.describe('Admin Menu magazzino — QA browser M3', () => {
   // Rete di sicurezza: gira col proprio budget di tempo, quindi anche quando il test è
   // stato interrotto dal timeout e il suo `finally` non ha fatto in tempo.
   test.afterEach(runPendingCleanup)
+
+  test('Prenota non gira a vuoto se i preset arrivano dopo la selezione sotto-scheda', async ({ page }, testInfo) => {
+    test.setTimeout(120000)
+    const probeViewport = process.env.E2E_PRENOTA_LOOP_VIEWPORT === 'mobile'
+      ? { label: 'mobile-375', width: 375, height: 812 }
+      : process.env.E2E_PRENOTA_LOOP_VIEWPORT === 'tablet'
+        ? { label: 'tablet-834', width: 834, height: 1194 }
+        : { label: 'desktop-1280', width: 1280, height: 800 }
+    await page.setViewportSize({ width: probeViewport.width, height: probeViewport.height })
+
+    const startedAt = Date.now()
+    const sequence: Array<Record<string, unknown>> = []
+    const consoleMessages: Array<{ type: string; text: string }> = []
+    const gateTarget = process.env.E2E_PRENOTA_LOOP_GATE === 'slot-config'
+      ? 'slot-config'
+      : 'staff-presets'
+    let maximumUpdateDepthCount = 0
+    let heldRequestCount = 0
+    let heldResponseCount = 0
+    let releaseHeldResponse!: () => void
+    const heldResponseGate = new Promise<void>((resolve) => {
+      releaseHeldResponse = resolve
+    })
+    const record = (event: string, details: Record<string, unknown> = {}) => {
+      sequence.push({ atMs: Date.now() - startedAt, event, ...details })
+    }
+    const isRelevantPublicRequest = (url: string) =>
+      /organizations_public|restaurant_settings|menu_items|rpc\/get_(public_slot_config|available_arrival_times)/.test(
+        url,
+      )
+    const isHeldRequest = (url: string) => {
+      if (gateTarget === 'slot-config') return /rpc\/get_public_slot_config/.test(url)
+      return decodeURIComponent(url).includes('setting_key=eq.booking_custom_staff_presets')
+    }
+
+    page.on('console', (message) => {
+      if (message.type() !== 'error' && message.type() !== 'warning') return
+      const text = message.text()
+      if (/Maximum update depth exceeded/i.test(text)) {
+        maximumUpdateDepthCount += 1
+      }
+      if (consoleMessages.length < 100) {
+        consoleMessages.push({ type: message.type(), text })
+      }
+    })
+    page.on('pageerror', (error) => {
+      if (consoleMessages.length < 100) {
+        consoleMessages.push({ type: 'pageerror', text: error.message })
+      }
+    })
+    page.on('request', (request) => {
+      if (!isRelevantPublicRequest(request.url())) return
+      record('request', { method: request.method(), url: request.url() })
+    })
+    page.on('response', (response) => {
+      if (!isRelevantPublicRequest(response.url())) return
+      if (isHeldRequest(response.url())) {
+        heldResponseCount += 1
+      }
+      record('response', { status: response.status(), url: response.url() })
+    })
+    page.on('requestfailed', (request) => {
+      if (!isRelevantPublicRequest(request.url())) return
+      record('requestfailed', {
+        failure: request.failure()?.errorText,
+        url: request.url(),
+      })
+    })
+
+    await page.route('**/rest/v1/**', async (route) => {
+      if (!isHeldRequest(route.request().url())) {
+        await route.continue()
+        return
+      }
+      heldRequestCount += 1
+      record('critical-response-held', { gateTarget, requestNumber: heldRequestCount })
+      await heldResponseGate
+      record('critical-response-released', { gateTarget, requestNumber: heldRequestCount })
+      await route.continue().catch(() => {})
+    })
+
+    const tenantId = await getTenantIdBySlug(TENANT_SLUG)
+    const repeatSuffix = String(testInfo.repeatEachIndex)
+    const categoryKey = `e2e_prenota_loop_${repeatSuffix}`
+    const categoryLabel = `${E2E_MENU_PREFIX}Loop ${repeatSuffix}`.slice(0, 24)
+    const itemName = `${E2E_MENU_PREFIX}Loop item ${repeatSuffix}`.slice(0, 24)
+    const shortCode = `e2eloop${repeatSuffix}`
+    let testFailure: unknown = null
+
+    try {
+      await deleteMenuE2eData(tenantId, categoryKey, shortCode)
+      const category = await upsertMenuCategory({
+        tenantId,
+        key: categoryKey,
+        label: categoryLabel,
+        isAvailable: true,
+      })
+      const item = await upsertMenuItem({
+        tenantId,
+        categoryKey,
+        name: itemName,
+        isAvailable: true,
+      })
+      const staffPresetsSnapshot = await getRestaurantSettingSnapshot(
+        tenantId,
+        'booking_custom_staff_presets',
+      )
+      const bookingConfigSnapshot = await getRestaurantSettingSnapshot(
+        tenantId,
+        'booking_public_form_config',
+      )
+      const state: PendingCleanup = {
+        tenantId,
+        categoryKey,
+        shortCode,
+        categoryId: category.id,
+        itemId: item.id,
+        staffPresetsSnapshot,
+        bookingConfigSnapshot,
+      }
+      pending = state
+
+      const presetId = crypto.randomUUID()
+      const presetLabel = `${E2E_MENU_PREFIX}Loop card ${repeatSuffix}`.slice(0, 24)
+      await upsertRestaurantSettingValue(tenantId, 'booking_custom_staff_presets', [
+        buildE2eStaffPreset(presetId, item.id, presetLabel),
+      ])
+      await upsertRestaurantSettingValue(
+        tenantId,
+        'booking_public_form_config',
+        buildE2eBookingPublicFormConfig(presetId, presetLabel, { includeAlternateMode: true }),
+      )
+      record('seed-ready', { presetId })
+
+      record('cold-navigation-start')
+      await page.goto(`/prenota/${TENANT_SLUG}`, { waitUntil: 'domcontentloaded' })
+      let menuCard = page
+        .locator(
+          '[data-testid="booking-mode-card-rinfresco_laurea"], [data-testid="booking-mode-card-menu_prezzo_fisso"]',
+        )
+        .first()
+      await expect(menuCard).toBeVisible({ timeout: 15000 })
+      await expect.poll(() => heldRequestCount, { timeout: 15000 }).toBeGreaterThanOrEqual(1)
+      record('booking-mode-visible-while-critical-response-held', {
+        gateTarget,
+        viewport: probeViewport.label,
+      })
+
+      if (process.env.E2E_PRENOTA_LOOP_RELOAD === 'true') {
+        record('full-reload-start')
+        await page.reload({ waitUntil: 'domcontentloaded' })
+        menuCard = page
+          .locator(
+            '[data-testid="booking-mode-card-rinfresco_laurea"], [data-testid="booking-mode-card-menu_prezzo_fisso"]',
+          )
+          .first()
+        await expect(menuCard).toBeVisible({ timeout: 15000 })
+        await expect.poll(() => heldRequestCount, { timeout: 15000 }).toBeGreaterThanOrEqual(2)
+        record('full-reload-complete-while-critical-response-held')
+      }
+
+      await menuCard.click()
+      record('booking-mode-clicked')
+      const subTabCard = page.getByTestId(`booking-sub-tab-card-subtab-${presetId}`)
+      await expect(subTabCard).toBeVisible({ timeout: 15000 })
+      await subTabCard.click()
+      record('booking-sub-tab-clicked')
+
+      const alternateSubTabCard = page.getByTestId(`booking-sub-tab-card-subtab-alt-${presetId}`)
+      const tableModeCard = page.getByTestId('booking-mode-card-tavolo')
+      await tableModeCard.click()
+      await menuCard.click()
+      await subTabCard.click()
+      await alternateSubTabCard.click()
+      await subTabCard.click()
+      record('booking-mode-and-sub-tabs-switched-rapidly')
+
+      await page.waitForTimeout(1500)
+      record('held-observation-complete', { maximumUpdateDepthCount })
+    } catch (error) {
+      testFailure = error
+      record('test-body-error', {
+        message: error instanceof Error ? error.message : String(error),
+      })
+    } finally {
+      releaseHeldResponse()
+      await expect.poll(() => heldResponseCount, { timeout: 15000 }).toBeGreaterThanOrEqual(1).catch(() => {})
+      await page.waitForTimeout(250).catch(() => {})
+      record('cleanup-start', {
+        gateTarget,
+        maximumUpdateDepthCount,
+        heldRequestCount,
+        heldResponseCount,
+      })
+      await testInfo.attach('prenota-loop-diagnostics', {
+        body: Buffer.from(JSON.stringify({ sequence, consoleMessages }, null, 2)),
+        contentType: 'application/json',
+      })
+      await runPendingCleanup()
+    }
+
+    if (testFailure) throw testFailure
+    expect(heldResponseCount, `risposta ${gateTarget} completata`).toBeGreaterThanOrEqual(1)
+    expect(
+      maximumUpdateDepthCount,
+      `warning Maximum update depth con risposta ${gateTarget} trattenuta`,
+    ).toBe(0)
+  })
 
   for (const viewport of VIEWPORTS) {
     test(`toggle disponibilità e propagazione QR (${viewport.label}) ${viewport.tag}`, async ({ page }) => {
