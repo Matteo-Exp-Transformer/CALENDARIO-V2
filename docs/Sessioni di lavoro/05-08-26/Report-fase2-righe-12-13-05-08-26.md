@@ -275,16 +275,22 @@ infatti non è stato fatto.
 ❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.
 ✅ R2: Sì, e in chiusura ho riaperto tutto invece di fidarmi della memoria.
 
-Riaperti/rieseguiti: `git diff --stat` (7 file modificati + 2 non tracciati, coerente con §7) ·
-`git diff e2e/helpers/supabaseStaging.ts` (la funzione è **solo aggiunta**, nessuna riga esistente
-toccata: 47 righe in più, zero in meno) · conteggio test reale nei due file (`3` in
-`public-booking-classic.spec.ts`, `4` in `pro-crm.spec.ts` = 1 preesistente + 3 nuovi, come scritto in
-§2 e §3) · le due righe 12 e 13 della tabella Fase 2 nel piano (righe 402-403, ora `✅`) ·
-`npm run validate:docs` → **14 path rotti, tutti in `docs/Console-Skill/`**, cioè il debito storico
-invariato: i documenti scritti oggi non ne hanno aggiunto nessuno.
+Riaperti/rieseguiti **due volte**, perché fra la prima stesura e la chiusura è arrivata la migrazione
+`071` e questa risposta era rimasta indietro. Stato finale, letto da `git show --stat` sui quattro
+commit reali:
+`2f0fb4e` = migrazione `071` (157 righe) + `DATABASE.md` · `fea2e35` = helper (**solo aggiunta**: 47
+righe in più, zero in meno) + `public-booking` + `fix9` · `07ae2a2` = `public-booking-classic.spec.ts`
+(411 righe, **4 test** — riconteggiati sul file, non a memoria) + `pro-crm.spec.ts` (345 righe in più,
+il test preesistente intatto) · `e28a1b4` = 10 file di documentazione.
+Verificato anche: il diff della `071` contro la `067` cambia **solo le 5 righe** del fuso (comando
+`diff` sui due corpi funzione) · le righe 12 e 13 della tabella Fase 2 nel piano, ora `✅` ·
+`npm run validate:docs` → **14 path rotti, tutti in `docs/Console-Skill/`**, il debito storico
+invariato · `npm run validate` verde, **1346 test unit su 162 file**.
 
-Numeri delle run: sono tutti miei, non riportati da un agente — 3/3 (due volte) sul file nuovo, 4/4
-sul CRM, 7/7 su fix9, 4/4 su `public-booking`, **25/25** sulle quattro spec del form pubblico in fila.
+Numeri delle run: sono tutti miei, non riportati da un agente — 3/3 (due volte) sul file nuovo e
+**4/4** dopo il test di non-regressione della `071`, 4/4 sul CRM, 7/7 su fix9, 4/4 su
+`public-booking`, **25/25** sulle quattro spec del form pubblico in fila (rilanciate **dopo** la
+migrazione), **116 test / 113 verdi / 3 rossi** sulla batteria completa.
 Sul DB TEST ho riletto: `rate_limits` (le 4 richieste in 58 secondi, con gli orari), `ip_blacklist`
 (vuota), residui `E2E-PUBCLS-*` / `E2E-FIX9-*` / `E2E-CRM-CAMP-*` (zero), fasce di `test-classic`
 (intatte), campagne di `da-tommaso` (resta solo «opzione», `last_sent_at` nullo).
@@ -295,7 +301,13 @@ misura buona — catturare la risposta della richiesta — dice 201. Il report �
 essere consegnato, non dopo.
 
 ❓ Q3 — File correlati allineati? Quali file erano collegati alla modifica (skill area, context, test, tipi) e hai verificato che siano aggiornati? Elencali (o «nessuno + perché»).
-✅ R3: Quattro allineati, due dei quali **solo dopo** essere andato a rileggerli in questa chiusura.
+✅ R3: Sette allineati, tre dei quali **solo dopo** essere andato a rileggerli in chiusura.
+
+- `docs/DATABASE.md` — riga della migrazione `071` nel registro, «ultimo file in repo» e prossimo
+  prefisso portati a `072`, nota che su PROD non c'è. È il file che *doveva* cambiare insieme alla
+  migrazione: senza, il prossimo che apre il registro crede che l'ultima sia la `070`.
+- `docs/Comunicazione-Skill/EVOLUZIONE_SKILLS.md` — voce di registro coi tre metodi imparati.
+- `_skill-system-v0/aree/TESTING_SKILL.md.template` — le stesse lezioni in forma generica.
 
 - `docs/Testing-Skill/TESTING_SKILL.md` — §3: la trappola del limite di frequenza con i numeri veri e
   la regola operativa; §5: nuova voce «nessuna asserzione dentro un `if`», nata dal caso 5 di fix9
@@ -312,7 +324,10 @@ essere consegnato, non dopo.
   una prova che ora è automatica.
 - Piano e handoff: blocco ⛳ nel piano, prompt nuovo del 05-08, ⛔ su quello del 04-08.
 
-Non toccati, con motivo: `src/types/database.ts` (nessuna modifica di schema) · `MASTERPLAN_SERVIZIO.md`
+Non toccati, con motivo: `src/types/database.ts` — **verificato apposta**, perché stavolta una
+migrazione c'è: la `071` ridefinisce il corpo della funzione ma **non la firma** (stessi parametri,
+stesso tipo di ritorno), quindi i tipi generati non possono cambiare; l'ultimo commit che tocca quel
+file resta `94dad6f` della Fase 0. Nessuna modifica di schema, nessuna colonna nuova · `MASTERPLAN_SERVIZIO.md`
 e `FOLLOW_UP.md` (nessuna decisione di prodotto presa o chiusa: lo scarto d'orario è **aperto** ed è
 scritto come domanda) · `docs/DATABASE.md` (nessuna migrazione).
 
@@ -368,10 +383,12 @@ due soli agenti su file disgiunti.
 1. **Dati = diff reale:** sì, e in chiusura ho riaperto `git diff`, i conteggi dei test, le righe della
    tabella del piano e l'esito di `validate:docs` invece di citarli a memoria (dettaglio in R2). L'unico
    numero non consolidato — la batteria completa — è dichiarato come tale in §8 e in R4, non nascosto.
-2. **File correlati allineati:** sì, ma **due li ho allineati solo dopo il rilancio dell'hook**
-   (`ADMIN_TEST_SUITE_INDEX.md`, `TESTING_CONTEXT.md`) e un terzo — la voce di collaudo **7-3** — l'ho
-   trovato ragionando su quale checklist rispondesse alla riga 12. È la cosa che, se non scritta,
-   sparisce: lo scrivo qui invece di lasciarla intendere.
+2. **File correlati allineati:** sì, ma tre li ho allineati **solo dopo il rilancio dell'hook**
+   (`ADMIN_TEST_SUITE_INDEX.md`, `TESTING_CONTEXT.md`, e la voce di collaudo **7-3**, che ho trovato
+   chiedendomi quale checklist rispondesse alla riga 12). Al secondo rilancio ho scoperto che **R2 e
+   R3 erano rimaste indietro rispetto alla migrazione `071`**, arrivata dopo la prima stesura: le ho
+   riscritte sui dati reali (`git show --stat` dei quattro commit) invece di lasciarle plausibili.
+   È il caso da manuale del perché il controllo a mente fredda esiste.
 3. **Q1-Q6 coerenti:** sì. R4 e §8 dicono le stesse cinque cose non fatte; R2 e §6 raccontano lo stesso
    errore di misura con lo stesso esito.
 4. **Tono utente:** §1 parla per schermate e flussi (il cliente che sceglie l'orario, la fascia che
