@@ -12,6 +12,14 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { BookingRequest } from '@/types/booking'
 
+function localTodayIso(): string {
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SEZIONE 1 — Bug #6: isBusy per nome
 // Testa la funzione isBusy direttamente tramite WalkInModal (black-box):
@@ -139,7 +147,7 @@ describe('WP-B2 Walk-in coerente', () => {
         } as Partial<BookingRequest>,
       ]
       modalState.assignments = [
-        { table_id: 'table-uuid-1', service_slot_id: 'slot-1', date: new Date().toISOString().slice(0, 10), checked_out_at: null },
+        { table_id: 'table-uuid-1', service_slot_id: 'slot-1', date: localTodayIso(), checked_out_at: null },
       ]
 
       render(<WalkInModal isOpen onClose={() => {}} />)
@@ -196,7 +204,7 @@ describe('WP-B2 Walk-in coerente', () => {
         } as Partial<BookingRequest>,
       ]
       modalState.assignments = [
-        { table_id: 'table-uuid-1', service_slot_id: 'slot-1', date: new Date().toISOString().slice(0, 10), checked_out_at: null },
+        { table_id: 'table-uuid-1', service_slot_id: 'slot-1', date: localTodayIso(), checked_out_at: null },
       ]
 
       render(<WalkInModal isOpen onClose={() => {}} />)
@@ -341,7 +349,7 @@ describe('WP-B2 Walk-in coerente', () => {
         } as Partial<BookingRequest>,
       ]
       modalState.assignments = [
-        { table_id: 'table-uuid-1', service_slot_id: 'slot-1', date: new Date().toISOString().slice(0, 10), checked_out_at: null },
+        { table_id: 'table-uuid-1', service_slot_id: 'slot-1', date: localTodayIso(), checked_out_at: null },
       ]
 
       render(<WalkInModal isOpen onClose={() => {}} />)

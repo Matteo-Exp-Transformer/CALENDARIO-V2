@@ -51,7 +51,7 @@ Fronti previsti:
 | `e2e/pro/pro-sidebar-nav.spec.ts` | sidebar Pro — `aside` con `role="complementary"` (non `navigation`); ritorno dashboard da CRM via pulsante X |
 | `e2e/pro/pro-home.spec.ts` | Home Pro |
 | `e2e/pro/pro-crm.spec.ts` | CRM Pro smoke: Rubrica, Personalizza email, stati vuoti stabili |
-| `e2e/pro/pro-service.spec.ts` | Servizio Pro smoke: apertura da sidebar, Lista/Mappa, ritorno dashboard |
+| `e2e/pro/pro-service.spec.ts` | Servizio Pro smoke + modali responsive: apertura da sidebar, Lista/Mappa, ritorno dashboard, fasce e modali sala/tavolo/walk-in/briefing/assegna multi-tavolo |
 | `e2e/pro/pro-analytics.spec.ts` | Analytics Pro smoke: KPI/stati vuoti, periodi e filtro turno |
 | `e2e/edition-classic.spec.ts` | gating Classic |
 | `e2e/edition-classic-data-protection.spec.ts` | protezione dati Classic |
@@ -81,7 +81,7 @@ Fronti previsti:
 ### E2E smoke settings / calendario
 
 - `e2e/admin-calendar-blindatura.spec.ts` -> smoke browser su badge mese con limite/>100%, badge senza limite, digest e `+ Nuova prenotazione`
-- `e2e/admin-settings-blindatura.spec.ts` -> smoke browser su anagrafica, footer, dirty guard tema e modali anteprima tema/sfondo 375/900/1256
+- `e2e/admin-settings-blindatura.spec.ts` -> smoke browser su anagrafica, footer, Salva → reload → dato persistito, dirty guard tema e modali anteprima tema/sfondo 375/900/1256
 
 ### 3-bis. M4 Impostazioni — `@admin-blindatura: settings-*` (15-06-26)
 
@@ -105,11 +105,11 @@ Gate Batch 1/2 (15-06-26, agg. §5A/§5B P2): run aggregato **35 test** verdi �
 
 Gate Area B2 (16-06-26): run aggregato **35 test** verdi — `settingsSaveGuard.settingsM4` 12/12, `settingsTimeSlots.settingsM4` 15/15, `settingsPromo.settingsM4` 8/8.
 
-**QA browser Area 3 / M4 (16-06-26):** Fase D rompi + viewport documentati; addendum finale `admin-settings-blindatura.spec.ts` **6/6** su **375 / 900 / 1256** copre footer/guard e modali anteprima tema + sfondo senza click intercettati, console pulita. **FU-009** upload foto carosello reale Supabase + overlay pubblico verificato su TEST (`Report-finale-area3-impostazioni-15-06-26.md`). **M4 Impostazioni = blindata** (16-06-26). Residuo infra: Playwright admin login headless locale intermittente — non blocca blindatura.
+**QA browser Area 3 / M4 (16-06-26, agg. 05-08-26):** Fase D rompi + viewport documentati; addendum finale `admin-settings-blindatura.spec.ts` **7/7** su **375 / 900 / 1256** copre footer/guard, Salva → reload → dato persistito e modali anteprima tema + sfondo senza click intercettati, console pulita. **FU-009** upload foto carosello reale Supabase + overlay pubblico verificato su TEST (`Report-finale-area3-impostazioni-15-06-26.md`). **M4 Impostazioni = blindata** (16-06-26). Residuo infra: Playwright admin login headless locale intermittente — non blocca blindatura.
 
 ## 3-ter. Area 3 — Impostazioni locale (M4) — blindato ✅ (16-06-26)
 
-Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **120/120** (17 file, gate Batch 1/2 **35/35** incluso); `npm run validate` **758/758** al 16-06-26; E2E smoke `admin-settings-blindatura.spec.ts` **6/6** copre anagrafica/footer/dirty guard e anteprime tema/sfondo su 375/900/1256; report finale [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md). Prompt sequenziali: [`Prompt-agenti-test-blindatura-admin-impostazioni.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Prompt-agenti-test-blindatura-admin-impostazioni.md). Residuo fuori cancello: **FU-051** date mock; ~~copertura E2E calendario post-riordino fasce~~ ✅ chiuso 17-06-26 (`admin-calendar-blindatura.spec.ts` scenario `display_order`).
+Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **120/120** (17 file, gate Batch 1/2 **35/35** incluso); `npm run validate` **758/758** al 16-06-26; E2E smoke `admin-settings-blindatura.spec.ts` **7/7** copre anagrafica/footer, Salva → reload → dato persistito, dirty guard e anteprime tema/sfondo su 375/900/1256; report finale [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md). Prompt sequenziali: [`Prompt-agenti-test-blindatura-admin-impostazioni.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Prompt-agenti-test-blindatura-admin-impostazioni.md). Residuo fuori cancello: **FU-051** date mock; ~~copertura E2E calendario post-riordino fasce~~ ✅ chiuso 17-06-26 (`admin-calendar-blindatura.spec.ts` scenario `display_order`).
 
 ## 4. Unit/component per menu magazzino/QR
 
@@ -136,7 +136,7 @@ Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **120/120** (
 - `src/features/booking/utils/__tests__/tableCheckout.test.ts`
 - `src/features/booking/components/__tests__/servizioModalsGuard.adminBlindatura.test.tsx` (3) → **FU-023** guard discard modale sala (`RoomConfigModal`: dirty → Annulla → `DiscardChangesConfirmModal`; Resta qui / Annulla modifiche). Tavolo/slot/walk-in: stesso pattern codice + anti-regressione `m6ProdReadyPatterns` (12-06-26).
 - `src/features/booking/components/__tests__/servizioA1Fixes.test.tsx` (7) → `@admin-blindatura: servizio-a1`: dimensione mappa, sala selezionata, default coperti, unicità case-insensitive, limite/leggibilità nome e conferma elimina-sala.
-- `e2e/pro/pro-service.spec.ts` → `@admin-blindatura: servizio` smoke browser Pro senza scritture DB (sidebar → Servizio, Lista/Mappa, Nuova sala, X ritorno dashboard) + fascia raggiungibile a 375/834/1280 con locator circoscritto alla sezione.
+- `e2e/pro/pro-service.spec.ts` → `@admin-blindatura: servizio` smoke browser Pro (sidebar → Servizio, Lista/Mappa, ritorno dashboard) + fascia raggiungibile a 375/834/1280 con locator circoscritto alla sezione + modali reali sala/tavolo/walk-in/briefing/assegna multi-tavolo a 375/834/1280 con seed/cleanup E2E.
 - `src/components/ui/__tests__/Input.numberWheel.test.tsx` (4) → `@admin-blindatura: input-number-wheel`: sugli input numerici admin la rotella è bloccata solo con focus; testo, `onWheel` custom e scroll pagina senza focus restano invariati.
 
 ### QA visuale Matteo S4 — 24-06-26
@@ -207,7 +207,7 @@ Stato: **blindatura Calendario attiva** — suite Vitest mirata + E2E smoke
 | # | Scenario | File / describe |
 |---|---|---|
 | 1 | Solo accettate (no-show/pending assenti; digest senza orario) | `sumGuestsByDate.adminBlindatura.test.ts` (pending/rejected/deleted/no-show) + `calendario.adminBlindatura.test.tsx` → events FC + digest (FU-REV-CAL-1) |
-| 2 | Badge capienza — senza limite conteggio; con limite solo %; 100%=high; >100% over | `calendario.adminBlindatura.test.tsx` → `dayCellDidMount` + capienza per fascia |
+| 2 | Badge capienza — senza limite conteggio; con limite solo %; 100%=high; >100% over; Pro+tavoli mese non usa capienza fisica; Classic non eredita tavoli in cache | `calendario.adminBlindatura.test.tsx` → `dayCellDidMount` + capienza per fascia |
 | 2-bis | Navigazione mese FC → `datesSet` sync `selectedDate` | `calendario.adminBlindatura.test.tsx` → handler `datesSet` |
 | 2-ter | Interruttori limiti per-fascia / fuori orario default OFF | `restaurantSettingRegistry.slotLimitToggles.adminBlindatura.test.ts` |
 | 2-quater | `sumGuestsByDate` / transform / `useCapacityCheck` allineati | `sumGuestsByDate`, `bookingEventTransform`, `useCapacityCheck` test dedicati |
@@ -220,7 +220,7 @@ Stato: **blindatura Calendario attiva** — suite Vitest mirata + E2E smoke
 
 - `src/features/booking/utils/__tests__/sumGuestsByDate.adminBlindatura.test.ts` (7) → conteggio coperti/giorno (stesso criterio blocco pubblico `DAILY_LIMIT`).
 - `src/features/booking/lib/__tests__/restaurantSettingRegistry.slotLimitToggles.adminBlindatura.test.ts` (10) → `slot_limit_enabled` / `booking_reject_out_of_slot`: assente o sporco = OFF, boolean round-trip stabile.
-- `src/features/booking/components/__tests__/calendario.adminBlindatura.test.tsx` (28) → UI `BookingCalendar`: badge, datesSet, gate tavolo (+ Pro slot vuoti), pending assenti, crea-da-giorno, no DnD, elimina da dettaglio e selettore viste responsive (375/834/1280, fallback a Mese, Mese↔Lista e ritorno desktop; render con `UnsavedChangesProvider`).
+- `src/features/booking/components/__tests__/calendario.adminBlindatura.test.tsx` (32) → UI `BookingCalendar`: badge, datesSet, gate tavolo (+ Pro slot vuoti), pending assenti, crea-da-giorno, no DnD, elimina da dettaglio e selettore viste responsive (375/834/1280, fallback a Mese, Mese↔Lista e ritorno desktop; render con `UnsavedChangesProvider`).
 - `src/features/booking/components/__tests__/bookingCalendarGuard.adminBlindatura.test.tsx` (4) → **C-U2** guard tab: dirty → modale Salva/Annulla/Resta; pulito → nessun guard; chiusura modale → guard stale assente.
 - `src/features/booking/components/__tests__/bookingCalendarTab.adminBlindatura.test.tsx` (1) → C-U4 Riprova su errore `useAcceptedBookings`.
 - `src/features/booking/utils/__tests__/bookingEventTransform.adminBlindatura.test.ts` (2) → no-show + confirmed_end in transform.

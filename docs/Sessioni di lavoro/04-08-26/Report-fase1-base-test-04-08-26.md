@@ -1,8 +1,8 @@
 # Report — FASE 1 del piano senior: riparare la base di test (04-08-2026)
 
-> Branch `env/test`. Stato aggiornato 04-08 20:08: i 9 commit locali precedenti restano non pushati;
-> il giro walk-in di questa ripresa è nel worktree e **non è committato** perché Matteo non ha chiesto
-> commit. **Nessun push**.
+> Branch `env/test`. Stato aggiornato 05-08-2026: i commit locali precedenti restano non pushati; in
+> questa ripresa Matteo ha chiesto prima il commit iniziale `2f1df20` e poi il commit locale del
+> lavoro righe 8-11 + handoff. **Nessun push**.
 > **Nessuna migrazione**, nessuna scrittura di schema. Su TEST (`docnnernvp`) sono stati riscritti
 > tre valori di `restaurant_settings` del locale di prova `da-tommaso`, **su decisione esplicita di
 > Matteo** (§2.6). PROD non toccata in nessun modo.
@@ -30,8 +30,8 @@ Matteo ha autorizzato le deduzioni prodotto emerse dalla discussione:
   mobile 2/2 e tablet 2/2, più unit `BookingRequestForm.flussoUtente.test.tsx` 7/7.
 - **Fase 2 avviata:** coperta a browser la riga 1, «Eliminazione tavolo occupato». Verifica:
   `e2e/pro/pro-service-tables-lifecycle.spec.ts` 8/8.
-- Resta aperta la scelta sul **parallelismo Playwright** (§6.4); la **Fase 2** è avviata e continua
-  dalle righe 2-4.
+- Resta aperta la scelta sul **parallelismo Playwright** (§6.4). Questo stato è storico: gli
+  aggiornamenti sotto portano la **Fase 2** fino alla riga 11, con prossima priorità riga 12.
 
 ## Aggiornamento proseguimento Codex — 04-08-2026
 
@@ -44,7 +44,8 @@ Matteo ha autorizzato le deduzioni prodotto emerse dalla discussione:
   noti** in `docs/Console-Skill/`, non introdotti da questo giro.
 - **Fase 2 riga 4 coperta a browser:** l'editor fasce di Servizio blocca nome duplicato
   (trim/case-insensitive), inizio=fine e sovrapposizione dalla modale vera. Verifiche: scenario
-  mirato 1/1 verde, `e2e/pro/pro-service.spec.ts` completo **3/3 verde**, typecheck e2e ad hoc verde.
+  mirato 1/1 verde; il file `e2e/pro/pro-service.spec.ts` oggi è completo **6/6 verde** perché
+  include anche la riga 11, typecheck e2e ad hoc verde.
 - **Fase 2 riga 3 verificata nel codice corrente:** "Modifica tavolo" non consuma turno era già
   coperta dal test unitario `useTableAssignments.fix2.test.ts`; verifica mirata **12/12 verde**.
 - **Fase 2 riga 5 coperta a browser:** dalla Home, Mario apre "Aggiungi walk-in", sceglie un tavolo
@@ -60,14 +61,39 @@ Matteo ha autorizzato le deduzioni prodotto emerse dalla discussione:
   riapertura quando entra in uscita un secondo tavolo e il cambio fascia che azzera "Decido dopo"
   quando Mario torna alla fascia originale. Verifiche: scenario cambio-fascia **1/1 verde**,
   `e2e/pro/pro-service-tables-lifecycle.spec.ts` completo **12/12 verde**, typecheck e2e ad hoc verde.
-- La Fase 2 ora continua dalla **riga 8** del piano. Restano aperti parallelismo Playwright e
-  prova a cavallo della mezzanotte.
+- **Fase 2 riga 8 coperta a browser (05-08):** Mario assegna una tavolata da 10 coperti a 3 tavoli
+  da 3 posti, vede "Mancano 1 posti per questa tavolata", poi usa "Annulla" sulla barra dell'ultima
+  assegnazione e il DB torna senza righe assignment per quella prenotazione. Verifiche: scenario
+  mirato **1/1 verde**, `e2e/pro/pro-service-tables-lifecycle.spec.ts` completo **13/13 verde**,
+  typecheck e2e ad hoc verde.
+- **Fase 2 riga 9 coperta con unit/component test (05-08):** nel Calendario mese, Pro con tavoli
+  attivi e limiti pubblici spenti mostra solo il conteggio coperti, non la % sulla capienza fisica;
+  in Classic eventuali tavoli presenti in cache non contaminano il badge, che usa il cap per-fascia.
+  Verifica: `calendario.adminBlindatura.test.tsx` **32/32 verde**.
+- **Fase 2 riga 10 coperta a browser (05-08):** in Impostazioni, Matteo cambia il nome ristorante,
+  salva dalla modale "Salva modifiche pubbliche?", ricarica `/admin/impostazioni` e rivede il valore
+  persistito. Il test prende snapshot del setting `restaurant_name` su TEST e lo ripristina in
+  `finally`. Verifiche: scenario mirato **1/1 verde**, `admin-settings-blindatura` completo **7/7
+  verde**, typecheck e2e ad hoc verde.
+- **Fase 2 riga 11 coperta a browser (05-08):** su 375, 834 e 1280 px Matteo apre Aggiungi sala,
+  Aggiungi tavolo, Assegna multi-tavolo, Aggiungi walk-in e Briefing pre-turno. Il test controlla
+  pannello e azioni principali nel viewport, con seed/cleanup E2E per sala, due tavoli, fascia e
+  prenotazione. Verifiche: scenario responsive **3/3 verde**, `pro-service` completo **6/6 verde**,
+  typecheck e2e ad hoc verde.
+- **Validate 05-08 inizialmente rosso, poi verde:** il rosso era in `walkIn.b2.test.tsx`, non nella
+  nuova spec e2e. Causa: il test seedava la data con UTC (`toISOString().slice(0, 10)`) mentre
+  `WalkInModal` calcola "oggi" in locale; dopo mezzanotte italiana l'assignment finiva su "ieri" UTC.
+  Corretto il test con data locale e aggiunta nota in `TESTING_SKILL.md` §5. Verifiche: file walk-in
+  **14/14 verde**, `npm run validate` verde.
+- La Fase 2 ora continua dalla **riga 12** del piano. Restano aperti parallelismo Playwright e prova
+  a cavallo della mezzanotte.
 
 ## Aggiornamento chiusura Codex — 04-08-2026
 
 - Preparato il prompt del prossimo agente senior in
-  `docs/Sessioni di lavoro/04-08-26/PROMPT_PROSSIMO_SENIOR.md`: aggiornato dopo l'avviso fine turno,
-  parte dalla Fase 2 riga 8, non riapre le righe 1-7 già coperte.
+  `docs/Sessioni di lavoro/04-08-26/PROMPT_PROSSIMO_SENIOR.md`: aggiornato dopo l'avviso fine turno
+  e poi riallineato dopo le righe 8-11; parte dalla Fase 2 riga 12, non riapre le righe 1-11 già
+  coperte.
 - Preparati commit locali separati per: rossi Fase 1 Prenota/Admin, flussi browser Servizio Fase 2,
   handoff/report/skill. **Nessun push.**
 - Stato verifiche prima della chiusura: `npm run validate` verde; `git diff --check` pulito;
@@ -211,9 +237,9 @@ di test. Script con guardia che si rifiuta di partire se il progetto non è `doc
   funzione di calcolo alle 23:50 e alle 00:30. La spec vera l'ho eseguita solo di giorno: **rilanciarla
   davvero a cavallo della mezzanotte resta da fare**, ed è l'unica prova definitiva.
 - **La batteria e2e completa è stata rilanciata in seriale dopo la ripresa Codex:** 100/100 verde.
-  Dopo l'aggiunta delle righe Fase 2 2, 4, 5, 6 e 7 non è stata rilanciata di nuovo tutta la
-  batteria; sono state rilanciate le suite interessate: `pro-service-tables-lifecycle` completa
-  12/12 verde e `pro-service` completa 3/3 verde.
+  Dopo l'aggiunta delle righe Fase 2 2, 4, 5, 6, 7, 8, 10 e 11 non è stata rilanciata di nuovo tutta
+  la batteria; sono state rilanciate le suite interessate: `pro-service-tables-lifecycle` completa
+  13/13 verde, `admin-settings-blindatura` completa 7/7 verde e `pro-service` completa 6/6 verde.
 - **Non ho verificato a video** nessuno dei quattro fix della Fase 0: Matteo ha risposto «non ancora»
   alla domanda sul collaudo, e la Fase 1 non li tocca.
 - **Il parallelismo non è stato deciso.** Ho misurato che 12 worker producono ~20 rossi finti, ma
@@ -266,17 +292,17 @@ le ~15 divergenze skill/codice dell'audit (Fase 3).
 
 ---
 
-## 7. Stato git e come spezzare i commit (se e quando li chiedi)
+## 7. Stato git e commit locali
 
 **Storico prima della richiesta di commit.** Allora c'erano 16 file modificati (di cui 1 cancellato)
 più 3 nuovi. Matteo ha poi chiesto `fai commit, niente push`: sono stati creati 6 commit locali
 (`c74e3c9`, `b61df73`, `f32ba74`, `5edd3ad`, `60112b4`, `389b12c`). La ripresa Codex successiva ha
 avuto nuove modifiche, poi Matteo ha chiesto di preparare prompt/report e committarle localmente.
 
-**Stato reale attuale dopo riga 7:** branch `env/test` avanti di **11 commit** su `origin/env/test`,
-nessun push, 6 file modificati non committati: `ADMIN_SERVIZIO_CONTEXT.md`, questo report, il piano
-del 03-08, il prompt di handoff, `e2e/helpers/supabaseStaging.ts`,
-`e2e/pro/pro-service-tables-lifecycle.spec.ts`.
+**Stato reale 05-08 dopo righe 8-11:** Matteo ha chiesto un commit iniziale e poi il commit del
+lavoro svolto. Il commit iniziale è `2f1df20 test(e2e): copri avviso fine turno da browser`.
+Il blocco successivo da chiudere localmente comprende righe 8-11, fix test walk-in su data locale,
+contesti, piano, report e prompt aggiornati. **Nessun push.**
 
 **Split usato per i commit locali chiesti da Matteo:**
 
@@ -287,19 +313,40 @@ del 03-08, il prompt di handoff, `e2e/helpers/supabaseStaging.ts`,
    sparisce dal form pubblico, validazioni editor fasce).
 3. `docs(handoff): allinea Fase 2 e prossimo prompt` — skill Prenota/Servizio, report, piano e prompt.
 
-**Aggiornamento riga 6, non committato:** aggiunta copertura browser della riga 6 in
+**Aggiornamento riga 6, committato localmente:** aggiunta copertura browser della riga 6 in
 `e2e/pro/pro-service-tables-lifecycle.spec.ts` e estesi gli helper REST per seedare `max_turns`,
 assignment già chiusi e leggere i campi di audit della forzatura. Aggiornati piano/report/prompt/
 contesto Servizio. Verifiche: scenario "turni esauriti" mirato 1/1 verde, lifecycle completo 11/11
-verde, typecheck e2e ad hoc verde. Se Matteo chiede commit, questo giro va in un commit separato tipo
-`test(e2e): copri turni esauriti da browser` più eventuale commit docs se si vuole tenere lo split.
+verde, typecheck e2e ad hoc verde.
 
-**Aggiornamento riga 7, non committato:** aggiunta copertura browser del cambio fascia nell'avviso
+**Aggiornamento riga 7, committato localmente:** aggiunta copertura browser del cambio fascia nell'avviso
 fine turno: dopo "Decido dopo", Mario passa a un'altra fascia e torna alla precedente; l'avviso si
 riapre per il tavolo ancora in uscita. Verifiche: scenario cambio-fascia mirato 1/1 verde,
-lifecycle completo 12/12 verde, typecheck e2e ad hoc verde, `npm run validate` verde. Se Matteo
-chiede commit, questo giro può stare nel commit test della riga 7 (`test(e2e): copri avviso fine
-turno da browser`) con docs separati.
+lifecycle completo 12/12 verde, typecheck e2e ad hoc verde, `npm run validate` verde. Commit
+iniziale di questa ripresa: `2f1df20 test(e2e): copri avviso fine turno da browser`.
+
+**Aggiornamento riga 8 + fix test walk-in, da chiudere nel commit righe 8-11:** aggiunta copertura browser per tavolata
+a 3 tavoli e undo multi-assegnazione. Durante `npm run validate` è emerso anche un rosso unitario
+walk-in a cavallo della mezzanotte locale: test corretto da data UTC a data locale, senza modifiche
+applicative. Verifiche: scenario "tavolata a 3 tavoli" mirato 1/1 verde,
+`pro-service-tables-lifecycle` completo 13/13 verde, typecheck e2e ad hoc verde,
+`walkIn.b2.test.tsx` 14/14 verde, `npm run validate` verde.
+
+**Aggiornamento riga 9, da chiudere nel commit righe 8-11:** aggiunti test isolati sul badge del Calendario mese: Pro
+con tavoli attivi e limiti pubblici spenti resta a conteggio semplice, mentre Classic ignora tavoli
+eventualmente presenti in cache e calcola la % sul cap per-fascia. Verifica:
+`calendario.adminBlindatura.test.tsx` 32/32 verde.
+
+**Aggiornamento riga 10, da chiudere nel commit righe 8-11:** aggiunto E2E Impostazioni "Salva → reload → dato
+persiste": cambio nome ristorante, conferma dalla modale pubblica, reload della pagina e valore
+ancora visibile; snapshot DB ripristinato in `finally`. Verifiche: scenario mirato 1/1 verde,
+`admin-settings-blindatura` completo 7/7 verde, typecheck e2e ad hoc verde.
+
+**Aggiornamento riga 11, da chiudere nel commit righe 8-11:** aggiunto E2E responsive Servizio per i modali sala,
+tavolo, walk-in, briefing e assegna multi-tavolo sui viewport 375/834/1280. Durante la prima prova il
+test mobile è andato in timeout e ha lasciato residui `E2E-SRV-Resp-*`; ripuliti manualmente su TEST
+con script Node/fetch e poi stabilizzato il locator Home. Verifiche: scenario responsive 3/3 verde,
+`pro-service` completo 6/6 verde, typecheck e2e ad hoc verde.
 
 Suggerimento originale di suddivisione già eseguito nei 6 commit locali:
 
@@ -336,7 +383,8 @@ Il rischio che ho corso e che segnalo: **ho allargato il perimetro**. Il mandato
 toccate 12 più il file delle credenziali più i dati di un locale su TEST. L'ho fatto perché ogni
 voce nuova era la causa diretta di un rosso che il gate della Fase 1 mi chiedeva di spiegare, ma è
 esattamente il modo in cui una sessione perde il controllo. Il segnale che non è successo: il numero
-è migliorato in modo verificabile a ogni passo, e nulla è stato committato.
+è migliorato in modo verificabile a ogni passo. In quella fase non era stato committato nulla; i
+commit locali sono arrivati solo dopo richiesta esplicita di Matteo.
 
 ---
 
@@ -360,7 +408,7 @@ esattamente il modo in cui una sessione perde il controllo. Il segnale che non �
 
 1. La **decisione sul parallelismo** (§6.4) e, di conseguenza, `playwright.config.ts`.
 2. La **prova a cavallo della mezzanotte** del fix a orologio (§4).
-3. **Fase 2** (§4 del piano): righe 1, 2, 3, 4, 5, 6 e 7 coperte; prossima riga prioritaria 8.
+3. **Fase 2** (§4 del piano): righe 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 e 11 coperte; prossima riga prioritaria 12.
 
 ---
 
@@ -383,7 +431,8 @@ Tre decisioni prese rispondendo a domande che ho posto io: (a) collaudo a video 
 Fase 0 → «Non ancora»; (b) correzione del file credenziali → «Sì, correggi»; (c) locale di prova
 travestito → «Rivestilo tu in modo sensato».
 
-Nessuna autorizzazione a committare o pushare è stata chiesta né data, e infatti non è stato fatto.
+In quel momento nessuna autorizzazione a committare o pushare era stata chiesta né data, e infatti
+non era stato fatto. Dopo, Matteo ha chiesto commit locali; il push resta non autorizzato e non fatto.
 
 ❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.
 ✅ R2: Sì. **Ogni numero di §3 viene da una run che ho lanciato io**, non da un agente: quattro run

@@ -77,12 +77,12 @@
 > consolidare numericamente la Fase 1, falla con `--workers=1`.
 >
 > Decisioni chiuse: la singola sotto-tipologia «a card» deve auto-selezionarsi e applicare il preset
-> senza mostrare la striscia; «Ancora occupato» timbra solo l'`assignmentId` esatto. Restano aperti
-> parallelismo Playwright, prova a cavallo della mezzanotte e Fase 2 (§4) dalle righe 2-4: la riga 1
-> «Eliminazione tavolo occupato» è ora coperta a browser (`pro-service-tables-lifecycle` 8/8).
+> senza mostrare la striscia; «Ancora occupato» timbra solo l'`assignmentId` esatto. Stato storico:
+> in quel momento restavano parallelismo Playwright, prova a cavallo della mezzanotte e Fase 2 (§4)
+> dalle righe 2-4; gli aggiornamenti sotto portano ora la Fase 2 alla riga 11.
 >
 > Prompt corrente per proseguire: [PROMPT_PROSSIMO_SENIOR.md](../04-08-26/PROMPT_PROSSIMO_SENIOR.md)
-> aggiornato allo stato reale del codice e del worktree. Matteo ha poi chiesto commit locale:
+> aggiornato allo stato reale del codice e dei commit locali. Matteo ha poi chiesto commit locale:
 > lo split usato è indicato nel report Fase 1 §7. Nessun push.
 
 > ## ⛳ AGGIORNAMENTO 04-08-2026 — **FASE 1 CONSOLIDATA, FASE 2 RIGHE 1-2 COPERTE.**
@@ -140,6 +140,55 @@
 > La Fase 2 ha ora coperte le righe **1, 2, 3, 4, 5, 6 e 7**. Prossima priorità: riga **8**
 > (tavolata a 3+ tavoli, "Mancano N posti", annulla dopo assegnazione multipla). Restano aperti
 > parallelismo Playwright e prova a cavallo della mezzanotte.
+
+> ## ⛳ AGGIORNAMENTO 05-08-2026 — **FASE 2 RIGA 8 COPERTA.**
+>
+> La riga 8 è ora coperta a browser in `e2e/pro/pro-service-tables-lifecycle.spec.ts`: Mario assegna
+> una tavolata da 10 coperti a 3 tavoli da 3 posti, vede l'avviso "Mancano 1 posti per questa
+> tavolata", poi usa "Annulla" sulla barra dell'ultima assegnazione e il DB torna senza righe
+> `booking_table_assignments` per quella prenotazione. Verifiche: scenario mirato **1/1 verde**,
+> file completo `pro-service-tables-lifecycle` **13/13 verde**, typecheck e2e ad hoc verde.
+>
+> La Fase 2 ha ora coperte le righe **1, 2, 3, 4, 5, 6, 7 e 8**. Prossima priorità: riga **9**
+> (badge % Calendario: unit isolato sui rami D38/tavoli/Classic). Restano aperti parallelismo
+> Playwright e prova a cavallo della mezzanotte.
+
+> ## ⛳ AGGIORNAMENTO 05-08-2026 — **FASE 2 RIGA 9 COPERTA.**
+>
+> La riga 9 è ora coperta con unit/component test isolati in
+> `src/features/booking/components/__tests__/calendario.adminBlindatura.test.tsx`: in vista mese Pro
+> con tavoli attivi e limiti pubblici spenti il badge resta un conteggio semplice, mentre in Classic
+> eventuali tavoli presenti in cache non contaminano il denominatore, che resta il cap per-fascia.
+> Verifica: file Calendario mirato **32/32 verde**.
+>
+> La Fase 2 ha ora coperte le righe **1, 2, 3, 4, 5, 6, 7, 8 e 9**. Prossima priorità: riga **10**
+> (Impostazioni: Salva → reload → il dato persiste). Restano aperti parallelismo Playwright e prova a
+> cavallo della mezzanotte.
+
+> ## ⛳ AGGIORNAMENTO 05-08-2026 — **FASE 2 RIGA 10 COPERTA.**
+>
+> La riga 10 è ora coperta a browser in `e2e/admin-settings-blindatura.spec.ts`: Matteo apre
+> Impostazioni, cambia il nome ristorante, salva dalla modale "Salva modifiche pubbliche?", ricarica
+> `/admin/impostazioni` e rivede il valore persistito. Il test prende snapshot del setting
+> `restaurant_name` su TEST e lo ripristina in `finally`. Verifiche: scenario mirato **1/1 verde**,
+> file completo `admin-settings-blindatura` **7/7 verde**, typecheck e2e ad hoc verde.
+>
+> La Fase 2 ha ora coperte le righe **1, 2, 3, 4, 5, 6, 7, 8, 9 e 10**. Prossima priorità: riga
+> **11** (modali Servizio a 375/834/1280). Restano aperti parallelismo Playwright e prova a cavallo
+> della mezzanotte.
+
+> ## ⛳ AGGIORNAMENTO 05-08-2026 — **FASE 2 RIGA 11 COPERTA.**
+>
+> La riga 11 è ora coperta a browser in `e2e/pro/pro-service.spec.ts`: su 375, 834 e 1280 px Matteo
+> apre i modali reali di Servizio per Aggiungi sala, Aggiungi tavolo, Assegna multi-tavolo,
+> Aggiungi walk-in e Briefing pre-turno; il test verifica pannello e azioni principali nel viewport.
+> I dati necessari (sala, 2 tavoli, fascia e prenotazione) sono E2E usa-e-getta e ripuliti a fine
+> test. Verifiche: scenario responsive mirato **3/3 verde**, file completo `pro-service` **6/6
+> verde**, typecheck e2e ad hoc verde.
+>
+> La Fase 2 ha ora coperte le righe **1, 2, 3, 4, 5, 6, 7, 8, 9, 10 e 11**. Prossima priorità:
+> riga **12** (Form Classic: invio completo + oltre-limite). Restano aperti parallelismo Playwright e
+> prova a cavallo della mezzanotte.
 
 ## 0. Regole non negoziabili
 
@@ -318,10 +367,10 @@ sullo stesso file si sovrascrivono.
 | 5 | ✅ **Walk-in end-to-end a browser** (doppio click su tavolo occupato, azzeramento al cambio sala) | `pro-service-tables-lifecycle.spec.ts` + unit `useWalkInMutation.rpc.test.tsx` | Coperta a browser: avviso su tavolo occupato, reset al cambio sala, conferma forzata e verifica DB |
 | 6 | ✅ **Turni esauriti + «Assegna comunque»** a browser | `pro-service-tables-lifecycle.spec.ts` + component `AssignmentMapPanel.fix2.test.tsx` | Coperta a browser: tavolo libero ma senza turni residui, riquadro ambra, assegnazione forzata verificata a DB |
 | 7 | ✅ **Avviso fine turno**: casi «Libero», «Decido dopo», cambio fascia azzera | `pro-service-tables-lifecycle.spec.ts` — pattern `page.clock` già stabilito | Coperta a browser: checkout append-only, dismiss locale, riapertura con nuovo tavolo in uscita e reset al cambio fascia |
-| 8 | **Tavolata a 3+ tavoli**, «Mancano N posti», **Annulla dopo assegnazione multipla** | stesso file (oggi copre solo 2 tavoli) | Voci di checklist mai diventate test |
-| 9 | **Badge % Calendario**, unit isolato sui rami D38/tavoli/Classic | nessuna | Logica ramificata, zero test isolati |
-| 10 | **Impostazioni: Salva → reload → il dato persiste** | `admin-settings-blindatura.spec.ts` | Il giro completo non è mai stato verificato |
-| 11 | **Modali Servizio a 375/834/1280**: sala, tavolo, walk-in, briefing, assegna multi-tavolo | solo la finestra fine turno è coperta | 6 voci su 7 mai automatizzate |
+| 8 | ✅ **Tavolata a 3+ tavoli**, «Mancano N posti», **Annulla dopo assegnazione multipla** | `pro-service-tables-lifecycle.spec.ts` | Coperta a browser: 3 tavoli piccoli, avviso posti mancanti, undo multiplo verificato a DB |
+| 9 | ✅ **Badge % Calendario**, unit isolato sui rami D38/tavoli/Classic | `calendario.adminBlindatura.test.tsx` | Coperta da unit/component test: Pro+tavoli in mese non usa capienza fisica con limiti pubblici OFF; Classic ignora tavoli in cache e usa cap per-fascia |
+| 10 | ✅ **Impostazioni: Salva → reload → il dato persiste** | `admin-settings-blindatura.spec.ts` | Coperta a browser: cambio nome ristorante, Salva con modale pubblica, reload, valore ancora visibile, snapshot DB ripristinato |
+| 11 | ✅ **Modali Servizio a 375/834/1280**: sala, tavolo, walk-in, briefing, assegna multi-tavolo | `pro-service.spec.ts` | Coperta a browser: cinque modali reali aperti sui tre viewport, pannello e azioni principali nel viewport, seed/cleanup E2E |
 | 12 | **Form Classic: invio completo + oltre-limite** | cliccare per **ruolo/label** invece che sull'icona (metodo iniziato in `RIPROVA_D`) | Debito di collaudo aperto da sempre |
 | 13 | **CRM: crea campagna → destinatari → invia** (fino al limite prima di Brevo) | `pro-crm.spec.ts` è smoke puro | Zero copertura su una feature **attiva in PROD** |
 

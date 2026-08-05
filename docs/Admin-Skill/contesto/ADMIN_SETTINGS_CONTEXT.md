@@ -2,7 +2,7 @@
 
 > Impostazioni ristorante e Personalizza Form. Questo dominio scrive soprattutto `restaurant_settings`.
 >
-> **Stato blindatura (M4):** intervista ✅ (15-06-26) · Fase C ✅ · test `@admin-blindatura: settings-*` **129/129** (18 file, incluso `settings-form-config-compilable` FIX 9 §3A 17-06-26) · QA Playwright 375/900/1256 su anteprima tema + sfondo ✅ · FU-002 riscritto ✅ · FU-009 chiuso ✅ · **blindato** ✅ (16-06-26). FIX 9 §3A/§3B aggiunto 17-06-26 senza riaprire il cancello M4. Report: [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md).
+> **Stato blindatura (M4):** intervista ✅ (15-06-26) · Fase C ✅ · test `@admin-blindatura: settings-*` **129/129** (18 file, incluso `settings-form-config-compilable` FIX 9 §3A 17-06-26) · QA Playwright 375/900/1256 su anteprima tema + sfondo + persistenza reload ✅ · FU-002 riscritto ✅ · FU-009 chiuso ✅ · **blindato** ✅ (16-06-26). FIX 9 §3A/§3B aggiunto 17-06-26 senza riaprire il cancello M4. Report: [`Report-finale-area3-impostazioni-15-06-26.md`](../../Sessioni%20di%20lavoro/15-06-26/Blindatura%20ADMIN/Report-finale-area3-impostazioni-15-06-26.md).
 
 ## 1. Scopo
 
@@ -189,7 +189,7 @@ chiave gia registrata.
 - Fase A+B **chiuse** (intervista + gap read-only). Fase C **chiusa** (15-06-26): gap G2–G9, G20 implementati; **G16 fuoriscope** (finestra prenotazione rimossa).
 - **Fronti test `@admin-blindatura: settings-*`:** tutti verdi in run aggregato (**120/120** su 17 file, gate Batch 1/2 incluso); `npm run validate` **813/813** (17-06-26).
 - **FU-009 (carosello admin):** chiuso — QA browser upload reale Supabase Storage + overlay su `/prenota/:slug` (`tomas@t.com`, tenant Trattoria Da Tommaso); Vitest `settings-carousel-crud` **12/12**.
-- **Fase D rompi + QA viewport:** eseguiti e documentati; addendum finale Playwright `admin-settings-blindatura.spec.ts` **6/6** su 375/900/1256 copre apertura modale anteprima tema e sfondo, footer/guard, console pulita e nessun click intercettato. `Modal.tsx` non modificato nel fix finale: `z-[10050]` e `createPortal` invariati.
+- **Fase D rompi + QA viewport:** eseguiti e documentati; addendum finale Playwright `admin-settings-blindatura.spec.ts` **7/7** su 375/900/1256 copre apertura modale anteprima tema e sfondo, footer/guard, Salva → reload → dato persistito, console pulita e nessun click intercettato. `Modal.tsx` non modificato nel fix finale: `z-[10050]` e `createPortal` invariati.
 
 ### Divieti (anti-regressione)
 

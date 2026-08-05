@@ -364,6 +364,33 @@ describe('@admin-blindatura calendario — badge % riempimento (dayCellDidMount)
     expect(frame.innerHTML).not.toContain('booking-day-fill-sym')
   })
 
+  it('vista mese Pro con tavoli e limiti pubblici OFF: solo conteggio, non capienza fisica', async () => {
+    featuresState.servizio = true
+    serviceSlotsState.slots = [
+      { id: SLOT_ID, name: 'Cena', start_time: '00:00', end_time: '23:59', max_guests: null },
+    ]
+    digestSlotsState.slots = serviceSlotsState.slots
+    tablesState.data = [
+      { id: 'table-1', name: 'T1', capacity: 6, room_id: null, active: true },
+      { id: 'table-2', name: 'T2', capacity: 4, room_id: null, active: true },
+    ]
+    restaurantSettings.slot_limit_enabled = false
+    restaurantSettings.slot_guest_capacities = {}
+    const bookings = [acceptedBooking({ num_guests: 5, confirmed_start: '2026-06-12T20:00:00+00:00' })]
+
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+    await waitFor(() => expect(fcPropsCapture.current?.dayCellDidMount).toBeTypeOf('function'))
+
+    const frame = mountDayBadge(
+      fcPropsCapture.current!.dayCellDidMount as (arg: { date: Date; view: { type: string }; el: HTMLElement }) => void,
+      '2026-06-12',
+    )
+
+    expect(frame.textContent).toBe('5')
+    expect(frame.innerHTML).not.toContain('%')
+    expect(frame.innerHTML).not.toContain('50')
+  })
+
   it('limite ON ma fascia senza cap: solo conteggio, niente %', async () => {
     setupCappedSlot(null, true)
     const bookings = [acceptedBooking({ num_guests: 18, confirmed_start: '2026-06-12T20:00:00+00:00' })]
@@ -378,6 +405,28 @@ describe('@admin-blindatura calendario — badge % riempimento (dayCellDidMount)
 
     expect(frame.textContent).toBe('18')
     expect(frame.innerHTML).not.toContain('%')
+  })
+
+  it('Classic ignora eventuali tavoli in cache: percentuale da cap per-fascia', async () => {
+    featuresState.servizio = false
+    tablesState.data = [
+      { id: 'table-1', name: 'T1', capacity: 6, room_id: null, active: true },
+      { id: 'table-2', name: 'T2', capacity: 4, room_id: null, active: true },
+    ]
+    setupCappedSlot(20, true)
+    const bookings = [acceptedBooking({ num_guests: 5, confirmed_start: '2026-06-12T20:00:00+00:00' })]
+
+    renderCalendar(<BookingCalendar bookings={bookings} initialDate="2026-06-12" />)
+    await waitFor(() => expect(fcPropsCapture.current?.dayCellDidMount).toBeTypeOf('function'))
+
+    const frame = mountDayBadge(
+      fcPropsCapture.current!.dayCellDidMount as (arg: { date: Date; view: { type: string }; el: HTMLElement }) => void,
+      '2026-06-12',
+    )
+
+    expect(frame.textContent).toContain('25')
+    expect(frame.textContent).toContain('%')
+    expect(frame.innerHTML).not.toContain('50')
   })
 
   it('vista Giorno Pro mostra occupazione fascia da capienza tavoli anche con limiti pubblici spenti', async () => {

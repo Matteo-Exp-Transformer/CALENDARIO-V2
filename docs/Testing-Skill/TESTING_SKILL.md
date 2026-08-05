@@ -129,14 +129,20 @@ Usare questo schema per E2E su staging TEST. Serve a evitare test verdi solo sul
    diversi. Caso reale: «submit con dati validi crea la prenotazione» era verde da mesi **senza
    creare nessuna prenotazione** — il locator generoso stava intercettando il messaggio d'errore che
    diceva che il form era bloccato.
-5. **Assert oggettivi:** per visual checklist assertare DOM verificabile, non "sembra giusto":
+5. **Date locali, non UTC, quando il codice usa "oggi" a muro:** se il componente calcola la data con
+   `getFullYear()/getMonth()/getDate()` o `date-fns format(..., 'yyyy-MM-dd')`, il test non deve
+   seedare con `new Date().toISOString().slice(0, 10)`. In Europa, dopo mezzanotte locale, UTC può
+   essere ancora il giorno prima: caso reale 05-08-26, `walkIn.b2.test.tsx` non vedeva il tavolo
+   occupato perché l'assignment era stato creato su "ieri" UTC mentre `WalkInModal` leggeva "oggi"
+   locale.
+6. **Assert oggettivi:** per visual checklist assertare DOM verificabile, non "sembra giusto":
    classi/ruoli/testo/assenza immagini, icona SVG specifica, `toHaveText`, `toHaveCount(0)`,
    niente emoji se il requisito è "mai emoji".
-6. **Locator strict:** se un testo appare in più punti responsive, circoscrivere il contenitore o usare
+7. **Locator strict:** se un testo appare in più punti responsive, circoscrivere il contenitore o usare
    `.first()` solo quando il requisito è "almeno un recapito visibile". Non lasciare locator ambigui.
-7. **Debug onesto:** se un comando è rosso per dati staging obsoleti, documentarlo e correggere lo spec
+8. **Debug onesto:** se un comando è rosso per dati staging obsoleti, documentarlo e correggere lo spec
    o l'ambiente. Non spuntare checklist finché il comando mirato non torna verde nello stato attuale.
-8. **Run:** dopo ogni modifica E2E rilanciare il comando mirato dichiarato nel report; se aggiorni docs
+9. **Run:** dopo ogni modifica E2E rilanciare il comando mirato dichiarato nel report; se aggiorni docs
    o checklist, controlla `git diff` e allinea il report allo stesso esito reale.
 
 ---

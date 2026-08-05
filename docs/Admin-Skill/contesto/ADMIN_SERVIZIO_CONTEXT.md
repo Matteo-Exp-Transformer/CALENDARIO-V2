@@ -506,8 +506,9 @@
 > walk-in da browser su tavolo occupato (primo click avvisa, cambio sala resetta, secondo giro forza
 > e assegna con verifica DB), **turni esauriti → Assegna comunque** da browser (tavolo libero ma 0
 > turni residui, riquadro ambra, assegnazione forzata verificata a DB con audit) e avviso fine turno
-> Fase 2 riga 7 (Libero, Decido dopo, nuovo tavolo in uscita, cambio fascia azzera). Stato
-> proseguimento 04-08: **12/12 verde**.
+> Fase 2 riga 7 (Libero, Decido dopo, nuovo tavolo in uscita, cambio fascia azzera) + Fase 2 riga 8
+> (tavolata a 3 tavoli, "Mancano N posti", Annulla dell'assegnazione multipla con verifica DB).
+> Stato proseguimento 05-08: **13/13 verde**.
 > Voci mai collaudate a mano perché legate al tempo reale.
 > Pilotate con `page.clock` di Playwright (install/fastForward): **l'istante iniziale dev'essere
 > vicino a "adesso" reale**, non una data lontana nel futuro — un clock finto lontano rompe il
@@ -521,7 +522,10 @@
 > turno", spariti dando a ciascun test la propria fascia (nessuna esecuzione seriale necessaria).
 > `e2e/pro/pro-service.spec.ts` copre anche la Fase 2 riga 4 del piano senior: dalla modale vera
 > "Nuova fascia oraria" l'editor blocca nome duplicato (trim/case-insensitive), inizio=fine e
-> sovrapposizione. Stato proseguimento 04-08: **3/3 verde**.
+> sovrapposizione. Aggiornamento 05-08: copre anche la Fase 2 riga 11, cioè i modali reali
+> Aggiungi sala, Aggiungi tavolo, Assegna multi-tavolo, Aggiungi walk-in e Briefing pre-turno sui
+> viewport 375/834/1280, con azioni principali nel viewport e seed/cleanup E2E. Stato proseguimento
+> 05-08: **6/6 verde**.
 >
 > ⛳ **SUPERATO il 03-08-26 — leggi §9.14 prima di agire su quanto segue.** Il bug descritto qui
 > sotto è **corretto** (FIX D, mig. 070) e la decisione che risultava "da prendere con Matteo" è

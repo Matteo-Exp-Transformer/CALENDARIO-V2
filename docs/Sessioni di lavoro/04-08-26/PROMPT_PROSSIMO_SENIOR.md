@@ -1,8 +1,8 @@
-# Prompt di avvio — prossimo agente senior (Fase 2, stato reale 04-08-26, post-avviso-fine-turno)
+# Prompt di avvio — prossimo agente senior (Fase 2, stato reale 05-08-26, post-riga-11)
 
-> Aggiornato il **04-08-2026** dopo proseguimento Codex sull'avviso fine turno. Da incollare come
-> primo messaggio della prossima chat. Il testo dentro il blocco è il prompt; quello dopo è il perché
-> delle scelte.
+> Aggiornato il **05-08-2026** dopo proseguimento Codex su tavolata a 3 tavoli, badge Calendario e
+> persistenza Impostazioni, poi modali responsive Servizio. Da incollare come primo messaggio della
+> prossima chat. Il testo dentro il blocco è il prompt; quello dopo è il perché delle scelte.
 >
 > ⛔ **Supera** `docs/Sessioni di lavoro/03-08-26/PROMPT_PROSSIMO_SENIOR_FASE1.md`: quello mandava a
 > fare la Fase 1. La ripresa Codex del 04-08-2026 ha chiuso i 3 rossi rimasti con test mirati; non
@@ -38,7 +38,8 @@ DA DOVE PARTI (misurato da me, un test alla volta, non riportato da un agente):
 - Fase 2 riga 3 verificata nel codice corrente: `useTableAssignments.fix2.test.ts` copre che
   "Modifica tavolo" da Calendario e "sposta" da Servizio non consumano turni sul tavolo di partenza;
   file completo 12/12 verde.
-- Fase 2 riga 4 coperta a browser dentro `e2e/pro/pro-service.spec.ts`; file completo 3/3 verde.
+- Fase 2 riga 4 coperta a browser dentro `e2e/pro/pro-service.spec.ts`; scenario editor fasce
+  verde. Il file oggi è completo **6/6 verde** perché include anche la riga 11.
   La modale Servizio blocca nome duplicato, inizio=fine e sovrapposizione.
 - Fase 2 riga 5 coperta a browser dentro `e2e/pro/pro-service-tables-lifecycle.spec.ts`: dalla Home
   Mario apre "Aggiungi walk-in", sceglie un tavolo occupato, il primo click mostra l'avviso, il cambio
@@ -53,10 +54,32 @@ DA DOVE PARTI (misurato da me, un test alla volta, non riportato da un agente):
   fine turno copre "Libero", "Decido dopo", riapertura quando entra in uscita un secondo tavolo e
   cambio fascia che azzera "Decido dopo" quando Mario torna alla fascia originale. Verifiche:
   scenario cambio-fascia 1/1 verde, file completo 12/12 verde, typecheck e2e ad hoc verde.
-- Le modifiche della ripresa/proseguimento Codex precedente sono state committate localmente su
-  `env/test` (nessun push). I test turni esauriti + avviso fine turno e questi aggiornamenti handoff
-  sono nel worktree finché Matteo non chiede commit. Il branch resta avanti rispetto a
-  `origin/env/test`.
+- Fase 2 riga 8 coperta a browser dentro `e2e/pro/pro-service-tables-lifecycle.spec.ts`: Mario
+  assegna una tavolata da 10 coperti a 3 tavoli da 3 posti, vede "Mancano 1 posti per questa
+  tavolata", poi usa "Annulla" sulla barra dell'ultima assegnazione e il DB torna senza assignment
+  per quella prenotazione. Verifiche: scenario mirato 1/1 verde, file completo 13/13 verde,
+  typecheck e2e ad hoc verde.
+- Fase 2 riga 9 coperta con unit/component test dentro
+  `src/features/booking/components/__tests__/calendario.adminBlindatura.test.tsx`: nel Calendario
+  mese, Pro con tavoli attivi e limiti pubblici spenti mostra solo conteggio coperti, non la %
+  sulla capienza fisica; Classic ignora eventuali tavoli presenti in cache e usa il cap per-fascia.
+  Verifica: file Calendario mirato 32/32 verde.
+- Fase 2 riga 10 coperta a browser dentro `e2e/admin-settings-blindatura.spec.ts`: Matteo apre
+  Impostazioni, cambia il nome ristorante, salva dalla modale "Salva modifiche pubbliche?", ricarica
+  `/admin/impostazioni` e rivede il valore persistito. Il test prende snapshot del setting
+  `restaurant_name` su TEST e lo ripristina in `finally`. Verifiche: scenario mirato 1/1 verde,
+  file completo 7/7 verde, typecheck e2e ad hoc verde.
+- Fase 2 riga 11 coperta a browser dentro `e2e/pro/pro-service.spec.ts`: su 375, 834 e 1280 px
+  Matteo apre Aggiungi sala, Aggiungi tavolo, Assegna multi-tavolo, Aggiungi walk-in e Briefing
+  pre-turno; il test verifica pannello e azioni principali nel viewport. Verifiche: scenario
+  responsive 3/3 verde, file completo 6/6 verde, typecheck e2e ad hoc verde.
+- `npm run validate` è verde dopo un fix test-only su `walkIn.b2.test.tsx`: gli assignment del test
+  ora usano la data locale, non `toISOString()` UTC, perché `WalkInModal` calcola "oggi" a muro.
+  Verifica mirata: `walkIn.b2.test.tsx` 14/14 verde.
+- Le modifiche della ripresa/proseguimento Codex sono state preparate su `env/test` con commit
+  locali e **nessun push**. Il commit iniziale richiesto in questa ripresa è `2f1df20` per l'avviso
+  fine turno; il giro successivo da committare localmente chiude righe 8, 9, 10, 11, fix test
+  walk-in su data locale e handoff aggiornato. Il branch resta avanti rispetto a `origin/env/test`.
 
 LE TRE CORREZIONI DI RIPRESA DA NON RIAPRIRE:
 1. `public-booking-fix9-compilable.spec.ts` — una sola card non mostra la striscia, ma si
@@ -66,7 +89,7 @@ LE TRE CORREZIONI DI RIPRESA DA NON RIAPRIRE:
 3. `admin-booking-mgmt.spec.ts` — in mobile/tablet l'entry calendario non è sempre un `button`; il
    test clicca il testo evento, che apre i dettagli sia in lista sia in mese.
 
-PROSSIMO PASSO: continua la FASE 2 (§4 del piano): righe 1, 2, 3, 4, 5, 6 e 7 coperte, prossima priorità riga 8.
+PROSSIMO PASSO: continua la FASE 2 (§4 del piano): righe 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 e 11 coperte, prossima priorità riga 12.
 Restano aperte la decisione sul parallelismo Playwright e la prova a cavallo della mezzanotte.
 
 COMMITS LOCALI GIA' PREPARATI DA NON RIFARE:
@@ -76,6 +99,9 @@ COMMITS LOCALI GIA' PREPARATI DA NON RIFARE:
    fasce).
 3. `docs(handoff): allinea Fase 2 e prossimo prompt` — skill Prenota/Servizio, report, piano e
    prompt. Nessun push.
+4. `test(fase2): copri righe 8-11 e handoff` — tavolata incompleta con undo, badge Calendario
+   Pro/Classic, persistenza Impostazioni dopo reload, modali Servizio responsive, fix test walk-in
+   su data locale e documenti aggiornati. Nessun push.
 
 DECISIONI DI PRODOTTO:
 a) Chiusa da Matteo: sotto-scheda singola «a card» = difetto. Deve auto-selezionarsi e applicare il
@@ -119,7 +145,7 @@ parliamone prima, poi lavora in autonomia.
 
 ## Perché è scritto così (note per il senior, non per l'agente)
 
-- **Parte dalla Fase 2 riga 8, non dalla Fase 1 o dalle righe 1-7**: il rischio numero uno è che
+- **Parte dalla Fase 2 riga 12, non dalla Fase 1 o dalle righe 1-11**: il rischio numero uno è che
   qualcuno rilegga il piano di ieri e ricominci a sistemare spec già sistemate.
 - **I tre rossi restano descritti come correzioni chiuse**, così il prossimo può capire perché i test
   sono cambiati senza riaprire la diagnosi.

@@ -1,16 +1,23 @@
 /**
  * @admin-blindatura: settings-e2e
  * Copre: Anagrafica Azienda / Personalizza Form, footer salvataggio, guard dirty tema e
- * reachability responsive 375/900/1256.
+ * reachability responsive 375/900/1256 e persistenza dopo reload.
  *
  * Pre-requisiti staging (.env.local.test):
  *   E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD, E2E_TENANT_SLUG, E2E_SUPABASE_SERVICE_KEY
  */
 import { expect, test, type Page } from '@playwright/test'
+import {
+  getRestaurantSettingSnapshot,
+  getTenantIdBySlug,
+  restoreRestaurantSettingSnapshot,
+} from './helpers/supabaseStaging'
 
 const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? process.env.E2E_CLASSIC_ADMIN_EMAIL ?? ''
 const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? process.env.E2E_CLASSIC_ADMIN_PASSWORD ?? ''
+const TENANT_SLUG = process.env.E2E_TENANT_SLUG ?? ''
 const hasE2eCreds = Boolean(ADMIN_EMAIL && ADMIN_PASSWORD)
+const hasSettingsPersistenceConfig = Boolean(hasE2eCreds && TENANT_SLUG && process.env.E2E_SUPABASE_SERVICE_KEY)
 
 const SMALL_VIEWPORTS = [
   { label: 'mobile-375', tag: '@viewport:mobile-375', width: 375, height: 812 },
@@ -99,6 +106,44 @@ test.describe('Admin Impostazioni - smoke desktop', () => {
 
     await expect(page.getByRole('dialog', { name: /Salva modifiche pubbliche/i })).toHaveCount(0)
     await expect(nameField).toBeInViewport()
+  })
+})
+
+test.describe('Admin Impostazioni - persistenza reload', () => {
+  test.skip(!hasSettingsPersistenceConfig, 'richiede credenziali staging + service key in .env.local.test')
+
+  // @admin-blindatura: settings-e2e
+  // Copre: Salva anagrafica → reload → valore persistito, con ripristino DB in finally.
+  test('nome ristorante salvato resta visibile dopo reload', async ({ page }) => {
+    await page.setViewportSize({ width: 1256, height: 800 })
+    const tenantId = await getTenantIdBySlug(TENANT_SLUG)
+    const nameSnapshot = await getRestaurantSettingSnapshot(tenantId, 'restaurant_name')
+    const uniqueName = `Da Tommaso E2E ${Date.now()}`
+
+    try {
+      await loginClassicAdmin(page)
+      await goToSettings(page)
+
+      const nameField = page.locator('#restaurant_name')
+      await expect(nameField).toBeVisible()
+      await nameField.fill(uniqueName)
+
+      const footer = saveFooter(page)
+      await expect(footer).toBeVisible()
+      await footer.getByRole('button', { name: /Salva modifiche/i }).click()
+
+      const confirmDialog = page.getByRole('dialog', { name: /Salva modifiche pubbliche/i })
+      await expect(confirmDialog).toBeVisible()
+      await confirmDialog.getByRole('button', { name: /^Salva$/i }).click()
+      await expect(confirmDialog).not.toBeVisible({ timeout: 15000 })
+      await expect(footer).not.toBeVisible({ timeout: 15000 })
+
+      await page.reload({ waitUntil: 'domcontentloaded' })
+      await expect(page).toHaveURL(/\/admin\/impostazioni/)
+      await expect(page.locator('#restaurant_name')).toHaveValue(uniqueName, { timeout: 15000 })
+    } finally {
+      await restoreRestaurantSettingSnapshot(tenantId, 'restaurant_name', nameSnapshot).catch(() => {})
+    }
   })
 })
 

@@ -290,6 +290,8 @@ Snapshot del comportamento **oggi** sui file LOCK (non changelog per sessione). 
   **Vista Giorno Pro (24-06-26 B0):** il digest per fascia mostra comunque la % occupazione rispetto
   alla capienza fisica dei tavoli attivi anche se `slot_limit_enabled` è OFF; questa regola non cambia
   il badge complessivo del mese, che resta legato ai limiti pubblici per-fascia.
+  Test regressione (05-08-26): `calendario.adminBlindatura.test.tsx` copre Pro+tavoli in mese con
+  limiti pubblici OFF e Classic con tavoli presenti in cache.
   **Edge deployata su TEST `docnnernvp` (v21); PROD `rwuxgvld` NON deployata** (vedi FOLLOW_UP).
 
 ---

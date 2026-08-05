@@ -3,8 +3,8 @@
  * Copre: COLLAUDO_S4_CHECKLIST.md §2.2 (avviso fine turno con conferma),
  * §2.3 (tavolata su più tavoli + archiviazione S4-REQ-3), §3 (5 stati tavolo in
  * sequenza), §9 ultima riga (responsive 375px, finestra fine turno), e Fase 2
- * piano senior §4 righe 2, 5, 6 e 7 (chiusura fascia → form pubblico; walk-in da browser;
- * turni esauriti → assegna comunque; avviso fine turno).
+ * piano senior §4 righe 2, 5, 6, 7 e 8 (chiusura fascia → form pubblico; walk-in da browser;
+ * turni esauriti → assegna comunque; avviso fine turno; tavolata 3+ tavoli + undo).
  *
  * Queste voci non sono mai state collaudate a mano perché legate al tempo reale
  * (serve aspettare che i minuti passino davvero per vedere un tavolo passare a
@@ -1031,6 +1031,111 @@ test.describe('Tavolata su più tavoli', () => {
       assignments = await getTableAssignmentsForBooking(bookingId)
       expect(assignments.every((a) => a.checked_out_at !== null)).toBe(true)
       expect(await getBookingServedAt(bookingId)).not.toBeNull()
+    } finally {
+      await deleteBookingsByPrefix(tenantId, clientName)
+      await deleteTablesByPrefix(tenantId, tablePrefix)
+      await deleteRoomsByPrefix(tenantId, roomName)
+      await deleteServiceSlotsByPrefix(tenantId, slot.name)
+    }
+  })
+
+  test('tavolata a 3 tavoli: segnala posti mancanti e Annulla rimuove tutta l\'assegnazione multipla', async ({
+    page,
+  }) => {
+    const tenantId = await getTenantId()
+    const slot = await createTempSlot(tenantId, 'Multi3')
+    const DATE = offsetIsoDate(121)
+    const runId = `${Date.now()}`
+    const roomName = `${E2E_SERVIZIO_PREFIX}Multi3-Room-${runId}`
+    const tablePrefix = `${E2E_SERVIZIO_PREFIX}Multi3-T-${runId}`
+    const table1Name = `${tablePrefix}-1`
+    const table2Name = `${tablePrefix}-2`
+    const table3Name = `${tablePrefix}-3`
+    const clientName = `${E2E_SERVIZIO_PREFIX}Multi3-Tavolata-${runId}`
+
+    const room = await insertRoom({ tenantId, name: roomName })
+    const table1 = await insertTable({
+      tenantId,
+      roomId: room.id,
+      name: table1Name,
+      capacity: 3,
+      positionX: 20,
+      positionY: 20,
+    })
+    const table2 = await insertTable({
+      tenantId,
+      roomId: room.id,
+      name: table2Name,
+      capacity: 3,
+      positionX: 150,
+      positionY: 20,
+    })
+    const table3 = await insertTable({
+      tenantId,
+      roomId: room.id,
+      name: table3Name,
+      capacity: 3,
+      positionX: 280,
+      positionY: 20,
+    })
+    const bookingId = await insertBooking({
+      tenantId,
+      clientName,
+      status: 'accepted',
+      desiredDate: DATE,
+      desiredTime: '20:00',
+      numGuests: 10,
+    })
+
+    try {
+      await openServizioMappa(page)
+      await selectDateAndSlot(page, DATE, slot.id)
+
+      await expect(page.getByText('Prenotazioni (1)', { exact: true })).toBeVisible({ timeout: 10000 })
+      await page.getByRole('button', { name: 'Assegna', exact: true }).click()
+
+      const assignDialog = page.getByRole('dialog', { name: /^Assegna tavolo$/ })
+      await expect(assignDialog).toBeVisible({ timeout: 10000 })
+      await assignDialog.locator('button', { hasText: table1Name }).click()
+      await assignDialog.locator('button', { hasText: table2Name }).click()
+      await assignDialog.locator('button', { hasText: table3Name }).click()
+      await expect(
+        assignDialog.getByText('Selezionati 3 tavoli · 9 posti su 10 richiesti', { exact: true }),
+      ).toBeVisible()
+
+      await assignDialog.getByRole('button', { name: 'Assegna 3 tavoli' }).click()
+      await expect(assignDialog).not.toBeVisible()
+
+      await expect(page.getByText('Prenotazioni (0)', { exact: true })).toBeVisible()
+      await expect(page.getByText('Assegnate (1)', { exact: true })).toBeVisible()
+      await expect(page.getByText('Mancano 1 posti per questa tavolata.', { exact: true })).toBeVisible()
+
+      await page.getByRole('button', { name: `Tavoli di ${clientName}` }).click()
+      await expect(
+        page.getByText(`${roomName} · Tavolo ${table1Name} · 3 posti`, { exact: true }),
+      ).toBeVisible()
+      await expect(
+        page.getByText(`${roomName} · Tavolo ${table2Name} · 3 posti`, { exact: true }),
+      ).toBeVisible()
+      await expect(
+        page.getByText(`${roomName} · Tavolo ${table3Name} · 3 posti`, { exact: true }),
+      ).toBeVisible()
+
+      await expect.poll(() => getTableAssignmentsForBooking(bookingId), { timeout: 10000 }).toHaveLength(3)
+
+      await page.getByRole('button', { name: 'Annulla', exact: true }).click()
+      await expect
+        .poll(
+          async () => {
+            const assignments = await getTableAssignmentsForBooking(bookingId)
+            return assignments.length
+          },
+          { timeout: 15000 },
+        )
+        .toBe(0)
+      await expect(page.getByText('Prenotazioni (1)', { exact: true })).toBeVisible({ timeout: 15000 })
+      await expect(page.getByText('Assegnate (1)', { exact: true })).toHaveCount(0)
+      await expect.poll(() => getBookingServedAt(bookingId), { timeout: 10000 }).toBeNull()
     } finally {
       await deleteBookingsByPrefix(tenantId, clientName)
       await deleteTablesByPrefix(tenantId, tablePrefix)
