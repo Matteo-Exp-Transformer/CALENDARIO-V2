@@ -77,16 +77,16 @@ decisione si classifica `APPROVATA`, non `ORIGINATA`.
 
 | Linea | Corpus | Path | Volume reale | Peso probatorio |
 |-------|--------|------|--------------|-----------------|
-| **A** | CB-v2 sessioni pubbliche | `docs/Sessioni di lavoro/` | **461 md** · 4,6 MB · 223 con schema Q1 · 2.846 occorrenze «Matteo» | 3 |
-| **M** | Meta / comunicazione CB-v2 | `docs/Comunicazione-Skill/` + `docs/Archivio/CONTESTO_PRODOTTO.md` + `_skill-system-v0/` | **13 md** · 2.543 righe | 3–4 |
+| **A** | CB-v2 sessioni pubbliche | `docs/Sessioni di lavoro/` | **458 md** · 4,6 MB · 220 con schema Q1 (ricontato da P0, 06-08-26) · 2.846 occorrenze «Matteo» | 3 |
+| **M** | Meta / comunicazione + **skill d'area attuali** CB-v2 | `docs/Comunicazione-Skill/` + `docs/Archivio/CONTESTO_PRODOTTO.md` + `_skill-system-v0/` + `docs/APP_CONTEXT_SKILL.md` (M1) · `docs/Console-Skill/` (M2) · `docs/Admin-Skill/`+`Dashboard-laterale-skill/`+`Servizio-Config/`+`Database-Skill/`+`Testing-Skill/` (M3) · `docs/Legal-Production-Skill/`+`legal/`+`Marketing-Skill/`+`per-ui-design-skill/`+`Prenota-Skill/`+`Menu-QR-Skill/`+ 14 file sciolti in root `docs/` (M4) | **183 md** (M1 36 · M2 46 · M3 41 · M4 60) — perimetro ampliato da P0 il 06-08-26: il piano originale contava solo 13 md, ignorando `_skill-system-v0/` e le 12 cartelle di skill d'area attualmente in uso (incl. `Console-Skill`, un intero prodotto — pannello super-admin gestione tenant — mai censito) | 3–4 |
 | **B** | BHM-Zen (HACCP recente) | `docs/Archives/docs/` | **228 md** (app-definition 138 · skill-system 42 · meta 42 · guide 3 · root 3) | 3 |
-| **C** | HACCP legacy | resto di `docs/Archives/` | **385 md** (cleanup 89 · Sessions_Old 67 · knowledge-legacy 60 · Tests 58 · Info_Complete 47 · Knowledge 25 · cursor-rules 24 · misc ~15) | 3 |
+| **C** | HACCP legacy | resto di `docs/Archives/` | **386 md** (cleanup 89 · Sessions_Old 67 · knowledge-legacy 60 · Tests 58 · Info_Complete 47 · Knowledge 25 · cursor-rules 24 · misc 16, corretto da P0: `2025-10-21` è un file senza estensione, non una cartella, e va incluso nel perimetro di C5) | 3 |
 | **D** | CalendarBackup vecchia | `docs/Archives/Calendarbackup-oldversion/` | **132 md** (docs 86 · Lavoro 26 · Sessioni 20) | 3 |
 | **E** | Trading agent v.0 | `docs/Archives/trading agent analyst-v.0/` | **128 md** (docs 97 · reports 30 · root 1) | 3 |
 | **F** | FREEDOM Trading | `docs/Archives/Trading agent analysy/` | **85 md** (docs 84 · root 1) | 3 |
-| **G** | Lavoro privato | `docs/_lavoro/` | **119 md** (Sessioni 56 · Per matteo 51 · Storico 8 · Supporto 3 · e2e-s4 2) | 3, con eccezione: PROFILO_SCOLASTICO è auto-dichiarazione → peso 1 per «cosa dice di sé», peso 4 per «cosa sa fare» |
+| **G** | Lavoro privato | `docs/_lavoro/` | **120 md** (Sessioni 56 · Per matteo 51 · Storico 8 · Supporto 3 · e2e-s4 2 — il piano sommava questi stessi 5 numeri a 119, refuso di addizione corretto da P0) | 3, con eccezione: PROFILO_SCOLASTICO è auto-dichiarazione → peso 1 per «cosa dice di sé», peso 4 per «cosa sa fare» (**trovata anche una seconda copia** in `docs/Archives/trading agent analyst-v.0/.../Didattica-agenti/PROFILO_SCOLASTICO.md`: G1 ed E1 vanno confrontate) |
 | **H** | Transcript Cursor | `C:\Users\matte.MIO\.cursor\projects\*\agent-transcripts\` | **CB-v2: 504 chat, 3.293 messaggi suoi**. Altri: MathBoy2 375 · Calendarbackup 98 · Trade-Analyst 96 · Game 92 · Trading-Platform 69 · BHM-v-2 52 · BHM-Zen 18 · Qwen-Test 2 → **totale ~4.095** | **1** |
-| **I** | Piani | `C:\Users\matte.MIO\.cursor\plans\` (144) + `C:\Users\matte.MIO\.claude\plans\` (2) | **146 file** · 2 MB · da gennaio a giugno 2026, su tutti i progetti | 2–3 |
+| **I** | Piani | `C:\Users\matte.MIO\.cursor\plans\` (144) + `C:\Users\matte.MIO\.claude\plans\` (2) | **146 file** · 2 MB · da gennaio a giugno 2026, su tutti i progetti — **split reale (P0, 06-08-26): 112 prenotazioni/HACCP vs 33 giochi/trading/altro**, non 90/56 come stimato: vedi assegnazione per-file in `report/P0_INVENTARIO_CORPUS.md` §9 | 2–3 |
 | **J** | Fatti oggettivi | `git log`, migrazioni, release, test | — | **2** |
 
 ### §2.1 — Limiti noti del materiale (dichiarati, non scoperti a metà lavoro)
@@ -138,9 +138,34 @@ L'estrazione P0-EX ha **smentito due assunzioni** del piano iniziale. Correzioni
 > data di ultima modifica della chat. Le date a livello di mese sono affidabili, quelle a livello di
 > giorno no. Non costruire ragionamenti su singole giornate usando la linea H da sola: incrociale con A.
 
+### §2.3 — Correzioni di P0 (06-08-26)
+
+L'ondata P0 ha ricontato le linee A–J sul disco (report completo:
+[`report/P0_INVENTARIO_CORPUS.md`](report/P0_INVENTARIO_CORPUS.md)). Tre correzioni cambiano il
+perimetro dell'indagine, le altre sono refusi minori già corretti in §2:
+
+1. **Linea M era sottostimata di 147 file.** Sotto `docs/` esistono 12 cartelle di skill d'area
+   attualmente in uso (Admin, Console, Prenota, Menu QR, Database, Testing, Legal, Marketing, UI…) più
+   15 file sciolti in root, mai censiti. Contengono, tra l'altro, un intero prodotto non censito —
+   `docs/Console-Skill/` (46 file, pannello super-admin gestione tenant, branch dedicato
+   `feature/console-super-admin` ancora attivo). **Decisione di Matteo (06-08-26): aggiungere.** Nuove
+   ondate **M2, M3, M4** in §4, prompt in `00_PROMPTS_SEQUENZA_TRACKING.md`.
+2. **`docs/Archives/` (linee B–F, 958 md) non è mai stato tracciato da git.** `git ls-files` restituisce
+   0 file. Non esiste quindi una data di commit per queste linee: la timeline deve appoggiarsi a nomi di
+   cartella/file o, in loro assenza, al filesystem — che per gran parte di `docs/Archives/2026-01-cleanup`,
+   `Sessions_Old`, `Tests`, `Info_Complete`, `Knowledge`, `cursor-rules-cleanup-2026-01` mostra **la
+   stessa data per tutti i file** (05-02-26): è la data di una copia in blocco, non del lavoro reale. Chi
+   esegue C1/C2/C4/C5 non deve usare il mtime per datare i contenuti.
+3. **Lo split I1(~90)/I2(~56) non regge al contenuto reale**: è 112 (prenotazioni/HACCP) vs 33
+   (giochi/trading/altro). Vedi riga linea I in §2 e dettaglio in `report/P0_INVENTARIO_CORPUS.md` §9.
+
+Corretti anche 3 refusi di somma/perimetro senza impatto sul totale ondate: linea A (461→458, la somma
+delle 11 ondate A1-A11 tornava già 458), linea G (119→120, somma aritmetica), linea C (385→386, un file
+senza estensione trattato erroneamente come cartella vuota).
+
 ---
 
-## §3 — Metodo (la parte che rende fondibili 43 report scritti da agenti diversi)
+## §3 — Metodo (la parte che rende fondibili 45 report scritti da agenti diversi)
 
 ### §3.1 — Schema dato obbligatorio
 
@@ -233,7 +258,7 @@ In entrambi i casi la sezione 5 dichiara i numeri: la copertura è **totale e mi
 
 ---
 
-## §4 — Le 44 ondate (di cui 1 già fatta)
+## §4 — Le 47 ondate (di cui 1 già fatta)
 
 Ondate tagliate sui **volumi reali**, non sul calendario: target ~40-50 file per ondata di scavo,
 ~80-100 per rastrello. Dipendenze minime, per massimizzare il parallelo.
@@ -249,7 +274,10 @@ Ondate tagliate sui **volumi reali**, non sul calendario: target ~40-50 file per
 
 | ID | Perimetro | File | Regime |
 |----|-----------|------|--------|
-| **M1** | `docs/Comunicazione-Skill/` (13) + CONTESTO_PRODOTTO + `_skill-system-v0/` | ~16 | scavo |
+| **M1** | `docs/Comunicazione-Skill/` (13) + CONTESTO_PRODOTTO (1) + `_skill-system-v0/` (21) + `APP_CONTEXT_SKILL.md` (1) | 36 | scavo |
+| **M2** | `docs/Console-Skill/` — pannello super-admin gestione tenant (masterplan, RLS, allowlist, sandbox DB, decision log); controllare anche il branch `feature/console-super-admin`, non solo `main`/`env/test` | 46 | scavo |
+| **M3** | `docs/Admin-Skill/` (18) + `Dashboard-laterale-skill/` (3) + `Servizio-Config/` (5) + `Database-Skill/` (5) + `Testing-Skill/` (10) | 41 | scavo |
+| **M4** | `docs/Legal-Production-Skill/` (11) + `docs/legal/` (4) + `Marketing-Skill/` (5) + `per-ui-design-skill/` (12) + `Prenota-Skill/` (7) + `Menu-QR-Skill/` (7) + 14 file sciolti in root `docs/` (esclude `APP_CONTEXT_SKILL.md`, già in M1) | 60 | scavo |
 | **A1** | Sessioni 23-05 → 26-05 | 42 | scavo |
 | **A2** | Sessioni 27-05 → 29-05 | 51 | scavo |
 | **A3** | Sessioni 30-05 → 01-06 | 46 | scavo |
@@ -262,13 +290,13 @@ Ondate tagliate sui **volumi reali**, non sul calendario: target ~40-50 file per
 | **A10** | Sessioni 20-06 → 24-06 | 36 | scavo |
 | **A11** | Sessioni 02-08 → 06-08 | 40 | scavo |
 | **B1** | `Archives/docs/` meta + skill-system + guide + root | 90 | scavo |
-| **B2** | `Archives/docs/app-definition/` parte 1 (A→M) | ~69 | rastrello |
-| **B3** | `Archives/docs/app-definition/` parte 2 (N→Z) | ~69 | rastrello |
+| **B2** | `Archives/docs/app-definition/` — primi 69 percorsi relativi in ordine alfabetico, fino e incluso `03_CONSERVATION\Lavoro\Gennaio-2026\15-01-2026\REVISIONE_LAVORO_AGENTI.md` (taglio esatto verificato da P0: ordinare sul percorso completo, non sul nome nudo — ci sono più `README.md` in sottocartelle diverse) | 69 | rastrello |
+| **B3** | `Archives/docs/app-definition/` — restanti 69, a partire da `03_CONSERVATION\Lavoro\Gennaio-2026\15-01-2026\SOLUZIONE_ERRORE_EXPORT.md` | 69 | rastrello |
 | **C1** | `Archives/Sessions_Old/` | 67 | rastrello |
 | **C2** | `Archives/2026-01-cleanup/` | 89 | rastrello |
 | **C3** | `Archives/knowledge-legacy/` + `Knowledge/` | 85 | rastrello |
 | **C4** | `Archives/Tests/` + `Info_Complete/` | 105 | rastrello |
-| **C5** | `cursor-rules-cleanup` + `References` + `2025-10-*` + `Reports` + `Archive` + `LEZIONI_APPRESE_AGENTE_1.md` | ~40 | scavo (alta densità lezioni) |
+| **C5** | `cursor-rules-cleanup` + `References` + `2025-10-20/` (cartella, 5 file) + `2025-10-21` (**file singolo senza estensione, non una cartella** — verificato da P0) + `Reports` + `Archive` + `LEZIONI_APPRESE_AGENTE_1.md` | 40 | scavo (alta densità lezioni) |
 | **D1** | `Calendarbackup-oldversion/docs/` | 86 | rastrello |
 | **D2** | `Calendarbackup-oldversion/Lavoro/` + `Sessioni di lavoro/` | 46 | scavo |
 | **E1** | `trading agent analyst-v.0/docs/` | 97 | rastrello |
@@ -282,8 +310,8 @@ Ondate tagliate sui **volumi reali**, non sul calendario: target ~40-50 file per
 | **H3** | Corpus CB-v2, 01-06 → 06-08 | 780 M-VOCE | scavo |
 | **H4** | Preistoria feb-mar: CB-old (+worktree), MathBoy2, Game, Qwen-Test | 634 msg | scavo |
 | **H5** | Parallelo e luglio: Trade-Analyst (mag-giu), Trading-Platform, BHM-v2, BHM-Zen (lug) | 233 msg | scavo |
-| **I1** | `.cursor/plans/` — piani CalendarBackup / BHM / prenotazioni | ~90 | rastrello |
-| **I2** | `.cursor/plans/` — piani giochi/trading/altro + `.claude/plans/` | ~56 | rastrello |
+| **I1** | `.cursor/plans/` — piani CalendarBackup / BHM / prenotazioni + i 2 file di `.claude/plans/` (entrambi CB) — lista file per-piano assegnata da P0 in `report/P0_INVENTARIO_CORPUS.md` §9 | 112 | rastrello |
+| **I2** | `.cursor/plans/` — piani giochi/trading/altro (incl. 2 mini-progetti isolati: "Condividimi" PRD e valutazione modelli AI locali) — lista in `report/P0_INVENTARIO_CORPUS.md` §9 | 33 | rastrello |
 | **J1** | Fatti oggettivi: `git log` completo, migrazioni, release, esiti test | — | scavo |
 
 ### Sintesi (sequenziali — ognuna legge solo i report, mai i file grezzi)
@@ -294,11 +322,12 @@ Ondate tagliate sui **volumi reali**, non sul calendario: target ~40-50 file per
 | **S2** | Agency e correzioni: fonde le sezioni 2, separa `DIRETTA`/`DEDOTTA`, traccia l'evoluzione nel tempo | S1 |
 | **S3** | Albero skill + timeline, con livelli L0–L4 e confronto dichiarate (G) vs esercitate (A–F, I) vs parlate (H) | S1, S2 |
 | **S4** | **Falsificazione**: per ogni skill L3/L4 cerca attivamente la contro-prova. Declassa quello che non regge | S3 |
-| **S5** | Ritratto metodologico: solo clustering di citazioni, con sezione «cosa i file NON dicono» | M1, G1, H1–H4, S2 |
+| **S5** | Ritratto metodologico: solo clustering di citazioni, con sezione «cosa i file NON dicono» | M1, M2, M3, M4, G1, H1–H4, S2 |
 | **S6** | Dossier finale + banca domande per l'interrogazione senior | S1–S5 |
 
-**Grafo delle dipendenze:** `P0 → {M1, A*, B*, C*, D*, E*, F*, G*, I*, J1}` · `P0-EX (fatta) → {H1..H5}`
-· `tutte → S1 → S2 → S3 → S4`, `{M1, G1, H*, S2} → S5`, `{S1..S5} → S6`.
+**Grafo delle dipendenze:** `P0 → {M1, M2, M3, M4, A*, B*, C*, D*, E*, F*, G*, I*, J1}` ·
+`P0-EX (fatta) → {H1..H5}` · `tutte → S1 → S2 → S3 → S4`, `{M1, M2, M3, M4, G1, H*, S2} → S5`,
+`{S1..S5} → S6`.
 
 > Le ondate **H1–H5 sono già sbloccate**: il corpus esiste. Puoi farle partire anche prima di P0.
 

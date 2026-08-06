@@ -11,10 +11,13 @@
 
 ## Come si lavora in parallelo
 
-1. **P0-EX è già fatta** (06-08-26): il corpus delle tue parole esiste, quindi **H1–H5 sono già
-   lanciabili subito**, anche prima di P0.
-2. Esegui **P0**. Serve alle ondate su file (A, B, C, D, E, F, G, I): dà a ognuna la sua lista file.
-3. Poi apri **3–8 chat in contemporanea** pescando dalle mining: sono indipendenti tra loro.
+1. **P0-EX e P0 sono già fatte** (06-08-26): il corpus delle tue parole esiste (H1–H5 già lanciabili) e
+   l'inventario dei file per ogni ondata è verificato — vedi `report/P0_INVENTARIO_CORPUS.md`. P0 ha
+   trovato 147 file di skill d'area attuali mai censiti (incl. un intero prodotto, `Console-Skill`):
+   aggiunte le ondate **M2, M3, M4** su tua decisione (06-08-26).
+2. Puoi partire direttamente dalle mining (M1-M4, A*, B*, C*, D*, E*, F*, G*, I*, J1): sono tutte
+   sbloccate.
+3. Apri **3–8 chat in contemporanea** pescando dalle mining: sono indipendenti tra loro.
    Non ci sono conflitti di scrittura: ogni ondata scrive due file suoi e basta.
 4. Le **S** vanno in fondo, in ordine: leggono i report, mai i file grezzi.
 
@@ -23,11 +26,14 @@
 ## Stato rapido
 
 ### Fondamenta
-- [ ] **P0** — Inventario e verifica conteggi A–J
+- [x] **P0** — Inventario e verifica conteggi A–J — **fatta 06-08-26** — `report/P0_INVENTARIO_CORPUS.md`
 - [x] **P0-EX** — Estrazione messaggi di Matteo — **fatta 06-08-26** — `report/P0EX_CORPUS_PAROLE_MATTEO.md` — 4.157 messaggi su 576 chat
 
 ### Mining — CalendarBackup-v2 (linee A, M)
-- [ ] **M1** — Meta / Comunicazione / skill system (~16 file)
+- [ ] **M1** — Meta / Comunicazione / skill system (36 file — perimetro corretto da P0, includeva anche `_skill-system-v0/` e `APP_CONTEXT_SKILL.md` non contati prima)
+- [ ] **M2** — Console-Skill: pannello super-admin gestione tenant (46 file — nuova, aggiunta 06-08-26 su decisione di Matteo dopo la scoperta P0)
+- [ ] **M3** — Admin/Dashboard/Servizio/Database/Testing-Skill (41 file — nuova, aggiunta 06-08-26)
+- [ ] **M4** — Legal/Marketing/UI/Prenota/Menu-QR-Skill + root docs (60 file — nuova, aggiunta 06-08-26)
 - [ ] **A1** — Sessioni 23-05 → 26-05 (42)
 - [ ] **A2** — Sessioni 27-05 → 29-05 (51)
 - [ ] **A3** — Sessioni 30-05 → 01-06 (46)
@@ -42,13 +48,13 @@
 
 ### Mining — Archivi (linee B, C, D, E, F)
 - [ ] **B1** — BHM-Zen meta + skill-system + guide (90)
-- [ ] **B2** — BHM-Zen app-definition parte 1 (~69)
-- [ ] **B3** — BHM-Zen app-definition parte 2 (~69)
+- [ ] **B2** — BHM-Zen app-definition parte 1 (69)
+- [ ] **B3** — BHM-Zen app-definition parte 2 (69)
 - [ ] **C1** — HACCP legacy Sessions_Old (67)
 - [ ] **C2** — HACCP legacy 2026-01-cleanup (89)
 - [ ] **C3** — HACCP legacy knowledge-legacy + Knowledge (85)
 - [ ] **C4** — HACCP legacy Tests + Info_Complete (105)
-- [ ] **C5** — HACCP legacy lezioni + rules + misc (~40)
+- [ ] **C5** — HACCP legacy lezioni + rules + misc (40)
 - [ ] **D1** — CalendarBackup vecchia, docs (86)
 - [ ] **D2** — CalendarBackup vecchia, Lavoro + Sessioni (46)
 - [ ] **E1** — Trading v.0 docs (97)
@@ -64,8 +70,8 @@
 - [ ] **H3** — Parole di Matteo, CB-v2, 01-06 → 06-08 (780 M-VOCE)
 - [ ] **H4** — Preistoria feb-mar: CB-old, MathBoy2, Game, Qwen (634 msg)
 - [ ] **H5** — Parallelo e luglio: Trade-Analyst, Trading-Platform, BHM (233 msg)
-- [ ] **I1** — Piani `.cursor/plans` — prenotazioni / HACCP (~90)
-- [ ] **I2** — Piani `.cursor/plans` — giochi / trading / altro + `.claude/plans` (~56)
+- [ ] **I1** — Piani `.cursor/plans` + `.claude/plans` — prenotazioni / HACCP (112)
+- [ ] **I2** — Piani `.cursor/plans` — giochi / trading / altro (33)
 - [ ] **J1** — Fatti oggettivi: git, migrazioni, release, test
 
 ### Sintesi (in ordine, in fondo)
@@ -97,7 +103,10 @@
 
 ## Fondamenta
 
-### P0 — Inventario e verifica conteggi A–J
+### P0 — Inventario e verifica conteggi A–J ✅ FATTA 06-08-26
+
+Non serve rilanciarla: report in `report/P0_INVENTARIO_CORPUS.md`. Ha corretto i conteggi di A, C, G,
+ha ampliato la linea M (+147 file, nuove ondate M2/M3/M4 sotto) e ha ridefinito lo split I1/I2 reale.
 
 ```
 Profilo: Verifica | Meta
@@ -106,8 +115,9 @@ Leggi prima: docs/Sessioni di lavoro/06-08-26/Indagine-Skill-Matteo/PIANO_INDAGI
 Non caricare: src/; nessuna skill d'area
 Output attesi: report/P0_INVENTARIO_CORPUS.md + _stato/P0.md — niente altro senza chiedere Sì/No
 
-Obiettivo: rendere eseguibili le 41 ondate successive, verificando che i perimetri del piano §4
-corrispondano al disco e producendo la lista file concreta di ogni ondata.
+Obiettivo: rendere eseguibili le 44 ondate successive (41 previste + M2/M3/M4 aggiunte da questa
+stessa ondata), verificando che i perimetri del piano §4 corrispondano al disco e producendo la lista
+file concreta di ogni ondata.
 
 Cosa fare:
 1. Ricontare ogni linea A–J con find/ls (path assoluti per _lavoro, transcript, piani) e confrontare
@@ -152,7 +162,8 @@ Profilo: Verifica | Meta
 Modalità: deep
 Leggi prima: PIANO_INDAGINE.md §3 (schema, attribuzione, scala skill)
 Perimetro (leggi TUTTO, regime scavo): docs/Comunicazione-Skill/ (13 file) + docs/Archivio/CONTESTO_PRODOTTO.md
- + _skill-system-v0/ + docs/APP_CONTEXT_SKILL.md §0
+ + _skill-system-v0/ (21 file) + docs/APP_CONTEXT_SKILL.md (file intero, non solo §0) — 36 file totali,
+ perimetro corretto da P0 il 06-08-26 (il piano originale non contava _skill-system-v0/ né APP_CONTEXT_SKILL.md)
 Non caricare: src/; Archives; _lavoro
 Output attesi: report/M1_META_COMUNICAZIONE.md + _stato/M1.md — niente altro senza chiedere Sì/No
 
@@ -167,9 +178,97 @@ Focus specifico:
 - ERRORI_PROCESSO: chi ha sbagliato, in ogni voce. Questa è la miniera principale di agency A→M.
 - EVOLUZIONE_SKILLS: il mandato «educare Matteo» e il playbook Meta senior — chi ha deciso cosa.
 - CONTROVERIFICA / REVISIONE: metodi di qualità che ha imposto lui agli agenti.
+- `_skill-system-v0/`: è il predecessore diretto di `Comunicazione-Skill/` — confronta cosa è
+  sopravvissuto nel passaggio e cosa è stato abbandonato, è materiale diretto per S3 (frecce di
+  trasferimento).
 
 Attenzione: questi file sono già una sintesi (peso 4). Non prenderli come prova di ciò che è successo:
 prendili come IPOTESI da confermare con A*, H*, J1. Marca le righe di conseguenza.
+```
+
+### M2 — Console-Skill: pannello super-admin gestione tenant
+
+```
+Profilo: Verifica | Meta
+Modalità: deep
+Leggi prima: PIANO_INDAGINE.md §3; report/P0_INVENTARIO_CORPUS.md §3 (perché questa linea è stata aggiunta)
+Perimetro (leggi TUTTO, regime scavo): docs/Console-Skill/ — 46 file (masterplan, collaborazione,
+ comunicazione, context, onboarding, plan-per-matteo, sessioni)
+Non caricare: src/; Archives; _lavoro
+Output attesi: report/M2_CONSOLE_SKILL.md + _stato/M2.md — niente altro senza chiedere Sì/No
+
+Obiettivo: `Console-Skill` è un prodotto separato — un pannello super-admin per gestire i tenant
+clienti (sandbox DB, allowlist auth, RLS, audit) — nato dentro questo stesso repo e mai censito dal
+piano iniziale. Nella cartella `plan-per-matteo/` ci sono piani DB (tenant-sandbox, allowlist-auth,
+edge-console-admin, rls-tenant-features, rls-admin-users, cascade-delete) presentati esplicitamente
+"per Matteo": è materiale diretto di decisione owner su sicurezza/architettura multi-tenant.
+
+Focus specifico:
+- `MASTERPLAN_CONSOLE.md` + `MASTERPLAN_CONSOLE_REQ-001-003.md`: chi ha originato lo scope della Console
+  e cosa è stato tagliato/allargato in corsa.
+- `collaborazione/REGISTRO_RICHIESTE.md` + `richieste/REQ-00*`: sono richieste con owner nominato?
+- `sessioni/DECISION_LOG.md` + `PHASE_AUDIT.md`: decisioni datate, materiale di prima scelta per S1.
+- `plan-per-matteo/PLAN-DB-00*`: decisioni di sicurezza multi-tenant (RLS, allowlist, cascade delete) —
+  confrontale col criterio di "sicurezza PROD" già visto nelle regole sempre attive del progetto.
+- Verifica anche il branch `feature/console-super-admin` (git log), non solo `main`/`env/test`: la
+  storia commit di questa cartella nella history principale copre solo 2 giorni (22-23 giugno).
+
+Contro-evidenze da cercare attivamente: la Console è un prodotto nato E abbandonato in fretta (finestra
+di 2 giorni sul branch principale)? Se sì, è materiale utile per S4 su "quanto scope inizia e non finisce".
+```
+
+### M3 — Admin / Dashboard laterale / Servizio / Database / Testing-Skill
+
+```
+Profilo: Verifica | Meta
+Modalità: deep
+Leggi prima: PIANO_INDAGINE.md §3
+Perimetro (leggi TUTTO, regime scavo): docs/Admin-Skill/ (18) + docs/Dashboard-laterale-skill/ (3) +
+ docs/Servizio-Config/ (5) + docs/Database-Skill/ (5) + docs/Testing-Skill/ (10) — 41 file totali
+Non caricare: src/; Archives; _lavoro
+Output attesi: report/M3_ADMIN_DB_TESTING_SKILL.md + _stato/M3.md — niente altro senza chiedere Sì/No
+
+Obiettivo: sono le skill d'area che descrivono come è organizzata l'amministrazione (AdminShell,
+sidebar), il capitolo "Servizio" (configurazione operativa), lo schema DB e la strategia di test
+attuali — la versione distillata e mantenuta nel tempo delle decisioni prese nelle sessioni (linea A).
+
+Focus specifico:
+- Confronta ogni regola scritta qui con la sessione A in cui probabilmente è nata (stesso nome di
+  area/feature): se la trovi, è una prova diretta di decisione-diventata-regola (L4).
+- `Testing-Skill/`: criteri di collaudo attuali — confrontali col taglio "62→16 prove" di A11 (agosto).
+- `Database-Skill/`: regole di sicurezza ambienti (TEST vs PROD) — confronta con le "salvaguardie
+  sempre attive" del progetto: chi le ha proposte per primo?
+```
+
+### M4 — Legal / Marketing / UI / Prenota / Menu-QR-Skill + root docs
+
+```
+Profilo: Verifica | Meta
+Modalità: deep
+Leggi prima: PIANO_INDAGINE.md §3
+Perimetro (leggi TUTTO, regime scavo): docs/Legal-Production-Skill/ (11) + docs/legal/ (4) +
+ docs/Marketing-Skill/ (5) + docs/per-ui-design-skill/ (12) + docs/Prenota-Skill/ (7) +
+ docs/Menu-QR-Skill/ (7) + 14 file sciolti in root docs/ (ADMIN_CLASSIC_SKILL.md,
+ COMUNICAZIONE_UTENTE_SKILL.md, DATA_FLOW_SKILL.md, DATABASE.md, FOLLOW_UP.md,
+ GUIDA_USO_QUERIES_CONTROVERIFICA.md, MASTERPLAN_ALLINEAMENTO.md, MASTERPLAN_BLINDATURA.md,
+ MASTERPLAN_SERVIZIO.md, Plan-Completamento.md, PREPARA_PROMPT_SKILL.md, PWA_CONTEXT.md,
+ SESSION_LOG.md, STATO_BLINDATURA_CHECKLIST.md) — 60 file totali, esclude APP_CONTEXT_SKILL.md (già in M1)
+Non caricare: src/; Archives; _lavoro
+Output attesi: report/M4_LEGAL_MARKETING_UI_PRENOTA_SKILL.md + _stato/M4.md — niente altro senza chiedere Sì/No
+
+Obiettivo: due famiglie diverse di decisioni nello stesso perimetro — compliance/vendita
+(Legal-Production-Skill, legal, Marketing-Skill) da un lato, prodotto pubblico (Prenota-Skill,
+Menu-QR-Skill, per-ui-design-skill) dall'altro. I 14 file sciolti in root sono i 3 masterplan
+principali del progetto (ALLINEAMENTO, BLINDATURA, SERVIZIO) più stato/follow-up correnti.
+
+Focus specifico:
+- Legal-Production-Skill + legal: decisioni GDPR/DPA/produzione — confronta con la skill dedicata di
+  questo stesso progetto (calendarbackup-legal-production) per capire se Matteo le ha originate o
+  ratificate.
+- MASTERPLAN_ALLINEAMENTO / MASTERPLAN_BLINDATURA / MASTERPLAN_SERVIZIO: tre piani di consolidamento
+  di fasi diverse del progetto — chi li ha originati, quanto sono stati seguiti fino in fondo.
+- Prenota-Skill / Menu-QR-Skill: confronta con Sessioni A dedicate (Pagina Prenota, Menu QR) — stessa
+  logica di M3, cercare decisione-diventata-regola.
 ```
 
 ### A1 — Sessioni 23-05 → 26-05 (42 file)
@@ -338,13 +437,16 @@ con quello di CB-v2 — cosa è stato copiato, cosa è stato migliorato. Segnala
 elemento che poi ricompare in CalendarBackup (serve a S3 per le frecce di trasferimento).
 ```
 
-### B2 — BHM-Zen: app-definition parte 1 (~69 file)
+### B2 — BHM-Zen: app-definition parte 1 (69 file)
 
 ```
 Profilo: Verifica | Meta
 Modalità: deep
 Leggi prima: PIANO_INDAGINE.md §3 e §3.5 (regime RASTRELLO)
-Perimetro: docs/Archives/docs/app-definition/ — prima metà in ordine alfabetico (dichiara il taglio)
+Perimetro: docs/Archives/docs/app-definition/ — primi 69 percorsi relativi in ordine alfabetico
+ (ordina sul percorso completo, non sul nome nudo: ci sono più README.md in sottocartelle diverse),
+ fino e incluso 03_CONSERVATION\Lavoro\Gennaio-2026\15-01-2026\REVISIONE_LAVORO_AGENTI.md
+ (taglio verificato da P0 il 06-08-26)
 Output attesi: report/B2_BHM_APPDEF_1.md + _stato/B2.md — niente altro senza chiedere Sì/No
 
 Regime rastrello: APRI ogni file, ma estrai solo (a) decisioni dove l'owner è nominato o la scelta è
@@ -355,12 +457,13 @@ Questa è documentazione di specifica: molta di essa è scritta DALL'AGENTE. Non
 solo perché esiste. Serve una traccia esplicita di una sua scelta.
 ```
 
-### B3 — BHM-Zen: app-definition parte 2 (~69 file)
+### B3 — BHM-Zen: app-definition parte 2 (69 file)
 
 ```
-Identico a B2, seconda metà alfabetica di docs/Archives/docs/app-definition/.
+Identico a B2. Perimetro: restanti 69 percorsi, a partire da
+03_CONSERVATION\Lavoro\Gennaio-2026\15-01-2026\SOLUZIONE_ERRORE_EXPORT.md (taglio verificato da P0,
+B2+B3 = 138 senza sovrapposizioni né buchi).
 Output: report/B3_BHM_APPDEF_2.md + _stato/B3.md
-Dichiara il taglio esatto in modo che B2+B3 = 138 file, senza sovrapposizioni né buchi.
 ```
 
 ### C1 — HACCP legacy: Sessions_Old (67 file)
@@ -375,6 +478,10 @@ Output attesi: report/C1_LEGACY_SESSIONS_OLD.md + _stato/C1.md — niente altro 
 Obiettivo: le origini. Qui c'è il Matteo che lavorava con gli agenti PRIMA di avere un metodo.
 Focus: come dava le istruzioni allora, quanto delegava, quanti errori di processo ci sono, quali
 lezioni sono state scritte. È il punto di partenza della curva di crescita (S3).
+
+Nota mtime (verificata da P0): il filesystem mostra la stessa data (05-02-26) per quasi tutti questi
+file — è la copia in blocco nell'archivio, non la data del lavoro reale. Cerca le date dentro i
+documenti stessi.
 ```
 
 ### C2 — HACCP legacy: 2026-01-cleanup (89 file)
@@ -386,6 +493,8 @@ Output: report/C2_LEGACY_CLEANUP.md + _stato/C2.md
 
 Focus: un cleanup racconta cosa era diventato ingestibile e chi ha deciso di tagliare. Cerca i criteri
 di taglio (sono decisioni di PROCESSO) e chi li ha fissati.
+
+Nota mtime: stessa data (05-02-26) per quasi tutti i file, è la copia in blocco non il lavoro reale.
 ```
 
 ### C3 — HACCP legacy: knowledge-legacy + Knowledge (85 file)
@@ -409,15 +518,24 @@ Output: report/C4_LEGACY_TESTS_INFO.md + _stato/C4.md
 Focus: la strategia di test più antica. Chi decideva cosa testare, e con quale criterio. Serve a
 misurare la distanza con il Matteo di agosto 2026 che taglia il collaudo da 62 a 16 prove (A11).
 Evita di dumpare json e screenshot: contali.
+
+Nota mtime: stessa data (05-02-26) per quasi tutti i file, è la copia in blocco non il lavoro reale.
 ```
 
 ### C5 — HACCP legacy: lezioni, regole, misc (~40 file)
 
 ```
 Come C1 ma regime SCAVO (alta densità).
-Perimetro: docs/Archives/cursor-rules-cleanup-2026-01/ (24) + References/ (5) + 2025-10-20/ +
- 2025-10-21/ + Reports/ (3) + Archive/ (1) + docs/Archives/LEZIONI_APPRESE_AGENTE_1.md
+Perimetro: docs/Archives/cursor-rules-cleanup-2026-01/ (24) + References/ (5) + 2025-10-20/ (cartella,
+ 5 file) + 2025-10-21 (**file singolo senza estensione, non una cartella** — aprilo come documento di
+ testo, inizia con "# TRACKING MODIFICHE POST-TEST") + Reports/ (3) + Archive/ (1) +
+ docs/Archives/LEZIONI_APPRESE_AGENTE_1.md — 40 file totali (verificato da P0)
 Output: report/C5_LEGACY_LEZIONI_E_REGOLE.md + _stato/C5.md
+
+Nota mtime: quasi tutti i file di C1/C2/C4/C5 (Sessions_Old, 2026-01-cleanup, Tests, Info_Complete,
+cursor-rules-cleanup) hanno la stessa data di ultima modifica sul filesystem (05-02-26): è la data di
+una copia in blocco nell'archivio, non la data reale del lavoro. Non usarla per datare i contenuti:
+cerca date scritte dentro i documenti, o dichiara "data sconosciuta".
 
 Focus: LEZIONI_APPRESE e le regole Cursor sono il punto in cui gli errori diventano regole. Per ogni
 lezione: chi ha pagato l'errore, chi ha scritto la regola, la regola è sopravvissuta fino a oggi?
@@ -647,14 +765,20 @@ Focus: come gestisce più progetti insieme; se il metodo costruito su CalendarBa
 o abbandonato quando cambia dominio; cosa lo ha fatto tornare su CalendarBackup ad agosto.
 ```
 
-### I1 — Piani `.cursor/plans`: prenotazioni / HACCP (~90 file)
+### I1 — Piani `.cursor/plans`: prenotazioni / HACCP (112 file)
 
 ```
 Profilo: Verifica | Meta
 Modalità: deep
-Leggi prima: PIANO_INDAGINE.md §3, §3.5 (rastrello); P0 per la spartizione I1/I2
-Perimetro (PATH ASSOLUTO): C:\Users\matte.MIO\.cursor\plans\ — i piani assegnati da P0 a
- CalendarBackup / prenotazioni / BHM-HACCP
+Leggi prima: PIANO_INDAGINE.md §3, §3.5 (rastrello); report/P0_INVENTARIO_CORPUS.md §9 per la
+ spartizione reale (112 vs 33, non 90 vs 56 come stimato all'inizio)
+Perimetro (PATH ASSOLUTO): C:\Users\matte.MIO\.cursor\plans\ — i piani CalendarBackup (52 + 2 in
+ .claude/plans) + HACCP-BHM (39) + i 19 ambigui che toccano entrambi i domini, più 2 dei 4 file
+ assegnati a mano da P0 (aggiungere_nome_utente_ai_log_attività→HACCP-BHM,
+ fix_calendar_settings_table_missing→CB, console_demo_2_branch→CB). Lista completa disponibile su
+ richiesta (generata da P0, non allegata per esteso al report per non duplicare 144 righe).
+ Se troppo pesante come ondata unica (112 file), valuta lo split CB (~54) / HACCP-BHM (~58) e
+ dichiaralo in sezione 5.
 Output attesi: report/I1_PIANI_PRENOTA_HACCP.md + _stato/I1.md — niente altro senza chiedere Sì/No
 
 Obiettivo: un piano dice cosa si VOLEVA fare; i report dicono cosa è stato fatto. La differenza tra i
@@ -665,15 +789,20 @@ possibile incrociando con A*) se è stato completato o abbandonato. I piani abba
 contro-evidenza preziosa per S4: elencali.
 ```
 
-### I2 — Piani `.cursor/plans`: giochi / trading / altro + `.claude/plans` (~56 file)
+### I2 — Piani `.cursor/plans`: giochi / trading / altro (33 file)
 
 ```
 Come I1, regime rastrello.
-Perimetro: i restanti piani in C:\Users\matte.MIO\.cursor\plans\ + i 2 in C:\Users\matte.MIO\.claude\plans\
+Perimetro: i piani Game/MathBoy2 (26) + Trading (3: 1 puro + 2 su tutor/vision benchmark, verifica il
+ testo — citano esplicitamente "Aware Trader") + 2 mini-progetti isolati assegnati a mano da P0
+ (prd_condividimi → PRD di una feature di condivisione mai vista altrove nel corpus; sessione_test_modelli
+ → valutazione modelli AI locali/OpenRouter, stesso filone di Qwen-Test/H4-H5) + i 2 file di
+ .claude/plans NON vanno qui: sono entrambi CB, assegnati a I1.
 Output: report/I2_PIANI_ALTRI.md + _stato/I2.md
 
 Focus: la pianificazione in domini non-lavorativi (giochi). Stesso schema, stessa domanda: pianifica
-allo stesso modo quando il progetto non è il suo business?
+allo stesso modo quando il progetto non è il suo business? In più: i 2 mini-progetti isolati sono
+scope aperto e mai chiuso, o semplicemente non tracciato altrove? Segnalalo per S4.
 ```
 
 ### J1 — Fatti oggettivi: git, migrazioni, release, test
@@ -811,7 +940,7 @@ ondata non sarebbe sopravvissuto all'interrogazione.
 ```
 Profilo: Verifica | Meta
 Modalità: deep
-Leggi prima: M1, G1, G3, H1–H4, S2; le sezioni «citazioni» di tutti i report
+Leggi prima: M1, M2, M3, M4, G1, G3, H1–H4, S2; le sezioni «citazioni» di tutti i report
 Output attesi: report/S5_RITRATTO_METODOLOGICO.md + _stato/S5.md — niente altro senza chiedere Sì/No
 
 Obiettivo: come lavora Matteo, detto SOLO con citazioni raggruppate. Nessuna diagnosi, nessun
