@@ -91,6 +91,13 @@ non risolto perché fuori dal mandato di questa sessione.
 | `docs/FOLLOW_UP.md` | 3 righe nuove | Registro vivo dei debiti; le decisioni prese vanno lì, non solo in un piano di sessione |
 | `docs/SESSION_LOG.md` | 1 riga | Cronologia globale |
 | `docs/Sessioni di lavoro/06-08-26/README.md` | Indice esteso | Navigazione della giornata |
+| `docs/Comunicazione-Skill/EVOLUZIONE_SKILLS.md` | 1 voce nel «Log idee» (append-only) | Due dati di metodo: la **terza** occorrenza di «premessa ereditata creduta senza riverificarla» (già segnata come da promuovere il 05-08, qui con una proposta operativa: l'hash del commit accanto a ogni riga di stato), e la gap-analysis checklist-contro-test alla prima occorrenza |
+
+**Propagazione al template `_skill-system-v0/`: nessuna, deliberata.** La cartella esiste ed è
+gitignored. Non ho propagato niente perché il metodo nuovo di questa sessione (la gap-analysis
+checklist-contro-test) è alla **prima occorrenza**, sotto la soglia ≥2 usata dal registro, e
+l'anti-pattern della premessa ereditata è già marcato «da promuovere» dal 05-08: la promozione a
+regola spetta a una sessione Meta, non a questa. Registrati entrambi come dati, non come modifiche.
 
 **Non ho toccato** `COLLAUDO_S4_CHECKLIST.md`, `ADMIN_SERVIZIO_CONTEXT.md`, `TESTING_SKILL.md`,
 `VOCABOLARIO.md` né `APP_CONTEXT_SKILL.md`. Motivo: non ho cambiato nessun comportamento
