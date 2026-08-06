@@ -59,3 +59,7 @@ pw-*.mjs
 # Pagine HTML salvate dal browser (es. export Supabase Dashboard)
 /*.html
 /*_files/
+
+# Artefatti Python (script di analisi in docs/)
+__pycache__/
+*.pyc
