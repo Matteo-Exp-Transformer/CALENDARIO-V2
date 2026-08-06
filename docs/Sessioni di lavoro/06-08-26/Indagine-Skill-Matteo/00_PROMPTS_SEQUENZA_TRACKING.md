@@ -1,6 +1,8 @@
 # Indagine Skill Matteo — Prompt in sequenza + tracking
 
 > **Piano (fonte di verità):** [PIANO_INDAGINE.md](PIANO_INDAGINE.md)
+> **Materiale d'ingresso delle sintesi:** [01_INPUT_SINTESI.md](01_INPUT_SINTESI.md) — numeri misurati
+> sui 39 report veri, trappole di lettura, scaffold. I prompt S1–S6 lo danno per letto.
 > **Uso:** copia il blocco del prossimo prompt `⬜` in una chat Agent nuova. I blocchi sono corti di
 > proposito: l'agente legge il metodo dal piano, così lo schema non si duplica e non va in deriva.
 > **A fine ondata l'agente scrive SOLO** il suo report in `report/` e il suo file `_stato/<ID>.md`.
@@ -9,17 +11,28 @@
 
 ---
 
-## Come si lavora in parallelo
+## Dove siamo (06-08-26, sera)
 
-1. **P0-EX e P0 sono già fatte** (06-08-26): il corpus delle tue parole esiste (H1–H5 già lanciabili) e
-   l'inventario dei file per ogni ondata è verificato — vedi `report/P0_INVENTARIO_CORPUS.md`. P0 ha
-   trovato 147 file di skill d'area attuali mai censiti (incl. un intero prodotto, `Console-Skill`):
-   aggiunte le ondate **M2, M3, M4** su tua decisione (06-08-26).
-2. Puoi partire direttamente dalle mining (M1-M4, A*, B*, C*, D*, E*, F*, G*, I*, J1): sono tutte
-   sbloccate.
-3. Apri **3–8 chat in contemporanea** pescando dalle mining: sono indipendenti tra loro.
-   Non ci sono conflitti di scrittura: ogni ondata scrive due file suoi e basta.
-4. Le **S** vanno in fondo, in ordine: leggono i report, mai i file grezzi.
+**Il mining è chiuso: 39 ondate su 39.** Restano solo le sei sintesi.
+
+| Cosa c'è già | Numero |
+|--------------|--------|
+| Report di mining in `report/` | **39** (+ P0 e P0-EX) |
+| Decisioni estratte | **1.826** righe, con fonte, zero collisioni di ID |
+| Agency estratte | **606** righe contate (608 dichiarate: tre report non tornano, vedi `01_INPUT_SINTESI.md` §3) |
+| Contro-evidenze | **≈352**, nessuna sezione vuota |
+| Corpus coperto | **≈1.866 file** `.md` + **4.157 messaggi** tuoi + 1.074 commit |
+| Sintesi eseguite | **0 su 6** |
+
+**Come si lavora adesso — non più in parallelo libero.** Le S hanno dipendenze vere:
+
+1. **S1 → S2 → S3 → S4 → S6** è una catena: ognuna legge l'output della precedente.
+2. **S5 può girare in parallelo** appena S2 è chiusa (le serve S2 + M* + G* + H*, non S3/S4).
+3. **Precondizione bloccante:** prima di lanciare un'ondata S, verifica che i suoi `report/S*.md` di
+   ingresso esistano davvero. Se mancano, **fermati e dillo** — non ripiegare in silenzio sui report
+   grezzi: produrresti numeri non deduplicati spacciati per finali.
+4. Le S sono **le ondate più pesanti del cantiere** (1.826 righe da 39 fonti). Ognuna dichiara i propri
+   numeri per famiglia di linea e li fa quadrare con i totali qui sopra.
 
 ---
 
@@ -29,69 +42,88 @@
 - [x] **P0** — Inventario e verifica conteggi A–J — **fatta 06-08-26** — `report/P0_INVENTARIO_CORPUS.md`
 - [x] **P0-EX** — Estrazione messaggi di Matteo — **fatta 06-08-26** — `report/P0EX_CORPUS_PAROLE_MATTEO.md` — 4.157 messaggi su 576 chat
 
-### Mining — CalendarBackup-v2 (linee A, M)
-- [ ] **M1** — Meta / Comunicazione / skill system (36 file — perimetro corretto da P0, includeva anche `_skill-system-v0/` e `APP_CONTEXT_SKILL.md` non contati prima)
-- [ ] **M2** — Console-Skill: pannello super-admin gestione tenant (46 file — nuova, aggiunta 06-08-26 su decisione di Matteo dopo la scoperta P0)
-- [ ] **M3** — Admin/Dashboard/Servizio/Database/Testing-Skill (41 file — nuova, aggiunta 06-08-26)
-- [ ] **M4** — Legal/Marketing/UI/Prenota/Menu-QR-Skill + root docs (60 file — nuova, aggiunta 06-08-26)
-- [ ] **A1** — Sessioni 23-05 → 26-05 (42)
-- [ ] **A2** — Sessioni 27-05 → 29-05 (51)
-- [ ] **A3** — Sessioni 30-05 → 01-06 (46)
-- [ ] **A4** — Sessioni 02-06 → 05-06 (40)
-- [ ] **A5** — Sessioni 06-06 → 10-06 (38)
-- [ ] **A6** — Sessioni 11-06 + 13-06 (29)
-- [ ] **A7** — Sessioni 12-06 (63 — giornata più densa del progetto)
-- [ ] **A8** — Sessioni 15-06 → 16-06 (41)
-- [ ] **A9** — Sessioni 17-06 → 19-06 (32)
-- [ ] **A10** — Sessioni 20-06 → 24-06 (36)
-- [ ] **A11** — Sessioni 02-08 → 06-08 (40)
+### Mining — CalendarBackup-v2 (linee A, M) — tutte fatte 06-08-26
 
-### Mining — Archivi (linee B, C, D, E, F)
-- [ ] **B1** — BHM-Zen meta + skill-system + guide (90)
-- [ ] **B2** — BHM-Zen app-definition parte 1 (69)
-- [ ] **B3** — BHM-Zen app-definition parte 2 (69)
-- [ ] **C1** — HACCP legacy Sessions_Old (67)
-- [ ] **C2** — HACCP legacy 2026-01-cleanup (89)
-- [ ] **C3** — HACCP legacy knowledge-legacy + Knowledge (85)
-- [ ] **C4** — HACCP legacy Tests + Info_Complete (105)
-- [ ] **C5** — HACCP legacy lezioni + rules + misc (40)
-- [ ] **D1** — CalendarBackup vecchia, docs (86)
-- [ ] **D2** — CalendarBackup vecchia, Lavoro + Sessioni (46)
-- [ ] **E1** — Trading v.0 docs (97)
-- [ ] **E2** — Trading v.0 reports (31)
-- [ ] **F1** — FREEDOM Trading (85)
+| | ID | Perimetro | Dec · Agency | Report |
+|---|----|-----------|--------------|--------|
+| ✅ | **M1** | Comunicazione + `_skill-system-v0` + APP_CONTEXT (36) | 80 · 42* | `M1_META_COMUNICAZIONE.md` |
+| ✅ | **M2** | Console-Skill, super-admin tenant (46) | 32 · 9 | `M2_CONSOLE_SKILL.md` |
+| ✅ | **M3** | Admin/Dashboard/Servizio/Database/Testing (41) | 55 · 12 | `M3_ADMIN_DB_TESTING_SKILL.md` |
+| ✅ | **M4** | Legal/Marketing/UI/Prenota/Menu-QR + root (60) | 60 · 13 | `M4_LEGAL_MARKETING_UI_PRENOTA_SKILL.md` |
+| ✅ | **A1** | Sessioni 23-05 → 26-05 (42) | 92 · 27 | `A1_SESSIONI_23-05_26-05.md` |
+| ✅ | **A2** | Sessioni 27-05 → 29-05 (51) | 65 · 21 | `A2_SESSIONI_27-05_29-05.md` |
+| ✅ | **A3** | Sessioni 30-05 → 01-06 (46) | 67 · 27 | `A3_SESSIONI_30-05_01-06.md` |
+| ✅ | **A4** | Sessioni 02-06 → 05-06 (40) | 58 · 20 | `A4_SESSIONI_02-06_05-06.md` |
+| ✅ | **A5** | Sessioni 06-06 → 10-06 (38) | 48 · 14 | `A5_SESSIONI_06-06_10-06.md` |
+| ✅ | **A6** | Sessioni 11-06 + 13-06 (29) | 52 · 24 | `A6_SESSIONI_11-06_13-06.md` |
+| ✅ | **A7** | Sessioni 12-06 (63, giornata più densa) | 66 · 24 | `A7_SESSIONI_12-06.md` |
+| ✅ | **A8** | Sessioni 15-06 → 16-06 (41) | 55 · 24 | `A8_SESSIONI_15-06_16-06.md` |
+| ✅ | **A9** | Sessioni 17-06 → 19-06 (32) | 54 · 14 | `A9_SESSIONI_17-06_19-06.md` |
+| ✅ | **A10** | Sessioni 20-06 → 24-06 (36) | 71 · 20 | `A10_SESSIONI_20-06_24-06.md` |
+| ✅ | **A11** | Sessioni 02-08 → 06-08 (41) | 55 · 20 | `A11_SESSIONI_02-08_06-08.md` |
 
-### Mining — Privato, dialoghi, piani, fatti (linee G, H, I, J)
-- [ ] **G1** — `_lavoro/Per matteo/` — Scuola, test, comandi, legale, prezzo (51)
-- [ ] **G2** — `_lavoro/Sessioni/` 12-05 → 22-05 (56)
-- [ ] **G3** — `_lavoro/` Storico + Supporto + e2e-s4 (13)
-- [ ] **H1** — Parole di Matteo, CB-v2, 27-04 → 15-05 (1.032 M-VOCE)
-- [ ] **H2** — Parole di Matteo, CB-v2, 16-05 → 31-05 (732 M-VOCE)
-- [ ] **H3** — Parole di Matteo, CB-v2, 01-06 → 06-08 (780 M-VOCE)
-- [ ] **H4** — Preistoria feb-mar: CB-old, MathBoy2, Game, Qwen (634 msg)
-- [ ] **H5** — Parallelo e luglio: Trade-Analyst, Trading-Platform, BHM (233 msg)
-- [ ] **I1** — Piani `.cursor/plans` + `.claude/plans` — prenotazioni / HACCP (112)
-- [ ] **I2** — Piani `.cursor/plans` — giochi / trading / altro (33)
-- [ ] **J1** — Fatti oggettivi: git, migrazioni, release, test
+\* M1 dichiara 42 agency ma la sua tabella ne ha 38 (M→A reale 22, non 26): errore aritmetico nella
+fonte, **non** correggerlo a mano nel report — va registrato da S2 come divergenza.
 
-### Sintesi (in ordine, in fondo)
-- [ ] **S1** — Catalogo decisioni cross
-- [ ] **S2** — Agency e correzioni
-- [ ] **S3** — Albero skill + timeline + livelli
-- [ ] **S4** — Falsificazione / contro-evidenze
-- [ ] **S5** — Ritratto metodologico
-- [ ] **S6** — Dossier finale + banca domande senior
+### Mining — Archivi (linee B, C, D, E, F) — tutte fatte 06-08-26
+
+| | ID | Perimetro | Dec · Agency | Report |
+|---|----|-----------|--------------|--------|
+| ✅ | **B1** | BHM-Zen meta + skill-system + guide (90) | 57 · 16 | `B1_BHM_META_E_SKILL.md` |
+| ✅ | **B2** | BHM-Zen app-definition 1 (69) | 10 · 5 | `B2_BHM_APPDEF_1.md` |
+| ✅ | **B3** | BHM-Zen app-definition 2 (69) | 22 · 8 | `B3_BHM_APPDEF_2.md` |
+| ✅ | **C1** | HACCP legacy Sessions_Old (69 su disco) | 23 · 9 | `C1_LEGACY_SESSIONS_OLD.md` |
+| ✅ | **C2** | HACCP legacy 2026-01-cleanup (89) | 23 · 8 | `C2_LEGACY_CLEANUP.md` |
+| ✅ | **C3** | HACCP legacy knowledge-legacy + Knowledge (85) | 30 · 12 | `C3_LEGACY_KNOWLEDGE.md` |
+| ✅ | **C4** | HACCP legacy Tests + Info_Complete (105) | 24 · 12 | `C4_LEGACY_TESTS_INFO.md` |
+| ✅ | **C5** | HACCP legacy lezioni + rules + misc (41) | 30 · 8 | `C5_LEGACY_LEZIONI_E_REGOLE.md` |
+| ✅ | **D1** | CalendarBackup vecchia, docs (86) | 32 · 10 | `D1_CB_OLD_DOCS.md` |
+| ✅ | **D2** | CalendarBackup vecchia, Lavoro + Sessioni (46) | 71 · 23 | `D2_CB_OLD_SESSIONI.md` |
+| ✅ | **E1** | Trading v.0 docs (97) | 40 · 8 | `E1_TRADING_V0_DOCS.md` |
+| ✅ | **E2** | Trading v.0 reports (31) | 32 · 5* | `E2_TRADING_V0_REPORTS.md` |
+| ✅ | **F1** | FREEDOM Trading (85) | 40 · 13 | `F1_FREEDOM_TRADING.md` |
+
+### Mining — Privato, dialoghi, piani, fatti (linee G, H, I, J) — tutte fatte 06-08-26
+
+| | ID | Perimetro | Dec · Agency | Report |
+|---|----|-----------|--------------|--------|
+| ✅ | **G1** | `_lavoro/Per matteo/` (51) | 53 · 14 | `G1_LAVORO_PER_MATTEO.md` |
+| ✅ | **G2** | `_lavoro/Sessioni/` 12-05 → 22-05 (56) | 53 · 20 | `G2_LAVORO_SESSIONI_MAGGIO.md` |
+| ✅ | **G3** | `_lavoro/` Storico + Supporto + e2e-s4 (13) | 39 · 10 | `G3_LAVORO_SUPPORTO_STORICO.md` |
+| ✅ | **H1** | Parole tue, CB-v2, 27-04 → 15-05 (1.032 M-VOCE) | 58 · 25 | `H1_PAROLE_MATTEO_CB_1.md` |
+| ✅ | **H2** | Parole tue, CB-v2, 16-05 → 31-05 (723 letti) | 52 · 16 | `H2_PAROLE_MATTEO_CB_2.md` |
+| ✅ | **H3** | Parole tue, CB-v2, 01-06 → 06-08 (768 letti) | 60 · 20 | `H3_PAROLE_MATTEO_CB_3.md` |
+| ✅ | **H4** | Preistoria feb-mar: CB-old, MathBoy2, Game, Qwen (634) | 47 · 16 | `H4_PREISTORIA_FEB_MAR.md` |
+| ✅ | **H5** | Parallelo e luglio: Trade-Analyst, Trading-Platform, BHM (233) | 42 · 11 | `H5_PARALLELO_E_LUGLIO.md` |
+| ✅ | **I1** | Piani prenotazioni / HACCP (113) | 35 · 12* | `I1_PIANI_PRENOTA_HACCP.md` |
+| ✅ | **I2** | Piani giochi / trading / altro (33) | 28 · 9 | `I2_PIANI_ALTRI.md` |
+| ✅ | **J1** | Fatti oggettivi: 1.074 commit, 72 migrazioni, 32 release | 15 · 7 | `J1_FATTI_OGGETTIVI.md` |
+
+\* E2 e I1 hanno in tabella una riga in più di quella dichiarata (una riga-sentinella e una `A→A`
+fuori schema): differenza voluta, non errore — vedi `01_INPUT_SINTESI.md` §3.
+
+### Sintesi (catena obbligata — S5 in parallelo dopo S2)
+- [ ] **S1** — Catalogo decisioni cross · *serve: i 39 report*
+- [ ] **S2** — Agency e correzioni · *serve: S1*
+- [ ] **S3** — Albero skill + timeline + livelli · *serve: S1, S2*
+- [ ] **S4** — Falsificazione / contro-evidenze · *serve: S3*
+- [ ] **S5** — Ritratto metodologico · *serve: S2* (parallelizzabile con S3/S4)
+- [ ] **S6** — Dossier finale + banca domande senior · *serve: S1–S5*
 
 ### Servizio
-- [ ] **AGG** — Allineamento checkbox da `_stato/` (ripetibile quando vuoi)
+- [x] **AGG** — Allineamento checkbox da `_stato/` — **fatto 06-08-26** (39/39 mining) — ripetibile
 
 ---
 
-## Regole comuni (valgono per ogni prompt, sintesi — il dettaglio è nel piano §5)
+## Regole comuni (valgono per ogni prompt — il dettaglio è nel piano §5)
+
+> Le sei ondate di **Sintesi** hanno in più le loro regole specifiche, nella sezione «Sintesi» in
+> fondo: leggile insieme a queste.
 
 - Profilo **Verifica / Meta**. Sola lettura. **Nessun file `src/`.** Nessuna modifica a Archives o `_lavoro`.
 - Report in `docs/Sessioni di lavoro/06-08-26/Indagine-Skill-Matteo/report/`. Stato in `_stato/`.
-- **Schema §3.1 del piano obbligatorio** — 7 sezioni, colonne esatte, ID prefissati con l'ID ondata.
+- **Schema §3.1 del piano obbligatorio** per le ondate di mining — 7 sezioni, colonne esatte, ID
+  prefissati con l'ID ondata. Le ondate S non lo ricalcano: vedi le loro regole comuni.
 - Ogni riga ha una **fonte**. Chi non è chiaro → `INCERTO`. Mai inventare tratti o motivazioni.
 - **Attribuzione §3.3**: parole sue (`M-VOCE`) ≠ prompt che ha incollato (`M-REGIA`). Mai sommarli.
 - **Sensibilità**: leggi tutto, ma nei report mai chiavi, `.env`, dati clienti, contratti. Path + sintesi.
@@ -836,53 +868,153 @@ commit NON è prova di skill di codice. È prova di data, sequenza ed esito. Scr
 
 ## Sintesi
 
+> **Riscritti il 06-08-26 dopo aver misurato i 39 report veri.** I blocchi originali erano stati scritti
+> prima che il mining esistesse e davano per scontate cose che il materiale ha smentito. Le dieci regole
+> qui sotto valgono per **tutte e sei** e non si ripetono nei singoli blocchi: chi lancia un'ondata S le
+> incolla insieme al prompt, oppure gli dice di leggerle qui.
+
+### Regole comuni delle ondate S
+
+1. **Precondizione bloccante.** Verifica che i `report/S*.md` d'ingresso della tua ondata esistano.
+   Se mancano, **fermati e dillo**: senza S1/S2 i numeri non sono deduplicati e non vanno presentati
+   come finali. Non ripiegare in silenzio sui report grezzi.
+2. **Cosa è una riga.** Conta **solo** le righe della tabella con header letteralmente
+   `ID | Data | Tipo | Oggetto | Chi | Autonomia | Fonte | Citazione | Skill` (Sez. 1) o
+   `ID | Direzione | Tipo prova | Cosa | Esito | Fonte` (Sez. 2). 15 report hanno tabelle satellite
+   dentro le stesse sezioni: si leggono, non si contano (`01_INPUT_SINTESI.md` §3).
+3. **Riconta, non fidarti dei totali dichiarati.** Tre report non tornano con il proprio `_stato/`
+   (M1 −4, E2 +1, I1 +1). Se il tuo conteggio diverge, **segnalalo**: è materiale per il §6 del piano.
+4. **Normalizza prima di aggregare.** 63 righe usano valori fuori vocabolario: applica la mappa di
+   `01_INPUT_SINTESI.md` §2 e dichiara quale hai applicato. Le righe `A→A` non sono agency di Matteo.
+5. **Due unità di copertura che non si sommano:** file (A/B/C/D/E/F/G/I/M), messaggi (H), fatti (J).
+   Righe separate nella tua sezione di copertura, mai un totale unico.
+6. **Citabile come parola sua solo ciò che sta dentro `«…»`.** Le Sezioni 4 e 7 dei report sono scritte
+   dall'agente di mining, anche quando danno del tu a Matteo: sono parafrasi, non voce.
+7. **Nomi ambigui, mai grep cieco:** «S4-sintesi» ≠ «Servizio-S4»; «M2-mining» ≠ «Calendario-M2»;
+   «M3-mining» ≠ «M3 menu/magazzino».
+8. **Volume.** Sono le ondate più pesanti del cantiere: lavora **per famiglia di linea**
+   (M → A → B-F → G → H → I → J) e scrivi un file di lavoro intermedio per famiglia. **Autorizzato
+   in anticipo:** gli intermedi vanno in `docs/_lavoro/Indagine-Corpus/` (fuori git) o negli scratch di
+   sessione, **mai** in `report/`. Non serve chiedere il permesso per quelli.
+9. **Output canonico:** un report in `report/` + un `_stato/<ID>.md`. Nient'altro senza chiedere Sì/No.
+   Nel file di stato, al posto di «Decisioni/Agency estratte» metti i numeri della tua ondata (righe
+   fuse, conflitti, skill classificate…): il criterio di accettazione §6 resta quello — se i numeri
+   non ci sono, l'ondata non è fatta.
+10. **Ogni report S chiude con tre sezioni fisse:** copertura dichiarata (numeri veri), lacune e
+    handoff, e tre righe verso Matteo in linguaggio semplice — schermate e flussi, non nomi di file.
+
+---
+
 ### S1 — Catalogo decisioni cross
 
 ```
 Profilo: Verifica | Meta
 Modalità: deep
-Leggi prima: PIANO_INDAGINE.md §3.1; TUTTI i report in report/ (sezioni 1)
+Leggi prima: PIANO_INDAGINE.md §1 e §3.1; 01_INPUT_SINTESI.md (tutto — è il tuo materiale d'ingresso);
+ le Regole comuni delle ondate S in 00_PROMPTS_SEQUENZA_TRACKING.md
+Fonti: le Sezioni 1 dei 39 report + i conflitti già verbalizzati elencati in 01_INPUT_SINTESI.md §5
 Non caricare: NESSUN file grezzo dei corpora. Se un dato non è in un report, non esiste: apri una
  lacuna, non riaprire il corpus.
-Output attesi: report/S1_CATALOGO_DECISIONI.md + _stato/S1.md — niente altro senza chiedere Sì/No
+Output attesi: report/S1_CATALOGO_DECISIONI.md + _stato/S1.md (+ intermedi di lavoro fuori da report/,
+ già autorizzati) — niente altro senza chiedere Sì/No
 
-Obiettivo: una tabella unica di tutte le decisioni, deduplicata.
+Obiettivo: una tabella unica di tutte le decisioni, deduplicata, che regga a un'interrogazione.
 
 Cosa fare:
-1. Concatenare le sezioni 1 di tutti i report mantenendo gli ID d'origine (A4-D07 resta A4-D07).
-2. Deduplicare: la stessa decisione compare in più linee (es. una decisione presa in chat, scritta in
-   un report e ripetuta in una skill). Una riga sola, con TUTTE le fonti elencate e il peso più alto.
-3. Risolvere i conflitti con la regola §1 del piano (vince la fonte di peso più alto) e tenere una
-   sezione «conflitti risolti» con la motivazione. Questa sezione è materiale d'oro per S4.
-4. Tabelle di sintesi: decisioni per tipo; per anno/mese; per livello di autonomia; per progetto.
-5. Top 30 decisioni più significative (criterio dichiarato: impatto + autonomia + tracciabilità).
+0. Lavora per famiglia. Target noto: 1.826 righe (M 227 · A 683 · B-F 434 · G 145 · H 259 · I 63 ·
+   J 15). Dichiara quante ne hai processate per famiglia: se non sommano, la sintesi non è finita.
+   Non arrotondare e non fermarti in silenzio quando il contesto si riempie: dichiara e proponi lo
+   split S1a/S1b.
+1. Concatenare mantenendo gli ID d'origine (A4-D07 resta A4-D07). Solo le righe della tabella canonica
+   (regola comune 2). Le tabelle «Rifiuti di Matteo» (M1 18 righe, B1 12, A3 10, B3 4) NON sono
+   decisioni: tienile in un indice a parte — i rifiuti valgono doppio ma hanno schema diverso.
+2. Normalizzare con la mappa di 01_INPUT_SINTESI.md §2 e dichiararla.
+3. Deduplicare per TEMA, non per testo: non esiste una chiave comune (la stessa decisione è scritta
+   con parole diverse in ogni linea). Parti dai 16 cluster già verificati (§4 dell'input), che sono un
+   pavimento e non un soffitto, e cercane altri usando come chiavi gli eventi-cardine del piano §2.2.
+   Una riga sola per decisione, con TUTTE le fonti elencate e il peso più alto.
+4. Conflitti: PRIMA importa quelli già verbalizzati da altre ondate (§5 dell'input: tabella divergenze
+   di H2, J1 §5.b, smentita della Console in M2, conflitto aperto sul prezzo carosello A2→H2→H3),
+   citando la fonte originale — non riscoprirli. POI aggiungi i tuoi. Applica la regola §1 del piano
+   con una sola eccezione dichiarata: su «autore git = lavoro suo» né git né i report bastano da soli,
+   serve H — non chiuderlo a favore di J1.
+5. Tabelle di sintesi: per tipo, per mese, per autonomia, per linea/progetto. Due avvertenze da
+   scrivere sotto le tabelle, non da nascondere: J1 va in riga separata (lì Chi=MATTEO è convenzione
+   da autore-commit, non decisione) e H ha Chi=MATTEO al 100% per costruzione del perimetro.
+6. Top 30 decisioni più significative, con il criterio dichiarato (impatto + autonomia + tracciabilità).
 
-Criterio di fatto: ogni riga ha almeno una fonte; il totale torna con la somma dei report; i conflitti
-sono elencati, non nascosti.
+Cosa NON fare: non correggere i report d'origine; non risolvere i conflitti lasciati aperti dalle
+ondate H (registrali come aperti, li eredita S4); non inventare una decisione per far quadrare un
+totale.
+
+Criterio di fatto: ogni riga ha almeno una fonte; i totali per famiglia sommano a 1.826; i cluster di
+dedup sono elencati con gli ID fusi; i conflitti sono elencati, non nascosti. Parti forte: sulle 2.432
+righe del corpus è già stato verificato che non c'è nemmeno una fonte mancante né una collisione di ID.
 ```
+
+**Regia consigliata per S1 (squadra di subagent).** È l'ondata più pesante del cantiere. Il taglio che
+regge è **per famiglia di linea**: i lotti sono indipendenti e ogni totale è verificabile da solo.
+
+| Lotto | Report | Righe attese |
+|-------|--------|--------------|
+| L1 | M1–M4 | 227 |
+| L2 | A1–A6 | 382 |
+| L3 | A7–A11 | 301 |
+| L4 | B1–B3, C1–C5, D1–D2, E1–E2, F1 | 434 |
+| L5 | G1–G3, I1–I2, J1 | 223 |
+| L6 | H1–H5 | 259 |
+
+Ogni subagent **estrae e normalizza il suo lotto e basta**: non deduplica (la dedup è cross-lotto) e
+non scrive in `report/`. Il senior fonde, deduplica sui 16 cluster + quelli nuovi, risolve i conflitti
+e firma il report. Se un lotto non torna col suo numero, si rifà quel lotto — non tutta l'ondata.
 
 ### S2 — Agency e correzioni
 
 ```
 Profilo: Verifica | Meta
 Modalità: deep
-Leggi prima: S1; le sezioni 2 di tutti i report; docs/Comunicazione-Skill/ERRORI_PROCESSO.md
+Precondizione: report/S1_CATALOGO_DECISIONI.md deve esistere. Se non c'è, fermati.
+Leggi prima: S1; 01_INPUT_SINTESI.md §1, §2, §3, §5, §9; le Regole comuni delle ondate S;
+ docs/Comunicazione-Skill/ERRORI_PROCESSO.md
+Fonti: le Sezioni 2 dei 39 report (606 righe reali) + gli handoff → S2 in 01_INPUT_SINTESI.md §9
 Output attesi: report/S2_AGENCY_E_CORREZIONI.md + _stato/S2.md — niente altro senza chiedere Sì/No
 
 Obiettivo: rispondere alle due domande centrali di Matteo — quando ha corretto lui, quando è stato
 corretto.
 
+DA SCRIVERE IN TESTA AL REPORT, prima di ogni numero: le correzioni A→M sono strutturalmente
+sotto-contate. Il testo degli agenti nei transcript è oscurato (19.198 righe su 22.862, piano §2.1):
+quando l'agente ha corretto Matteo, quella frase non è leggibile. 157 A→M contro 383 M→A NON significa
+che veniva corretto raramente: significa che le sue correzioni sono visibili e quelle degli agenti no.
+Chi legge il dossier deve saperlo prima di vedere il rapporto.
+
 Cosa fare:
-1. Tabella M→A (lui corregge): cosa, in che materia, con quale esito. Raggruppa per materia: correggere
-   sul prodotto e correggere sul codice sono skill diverse. Conta.
-2. Tabella A→M (lo correggono): SEPARANDO `DIRETTA` da `DEDOTTA`. Se le DEDOTTE sono la maggioranza,
-   scrivilo in testa al report: è un limite del materiale, non un dato su di lui.
-3. Tabella M↔M (cambia idea da solo): distingui «scoperta di prodotto» (nuova informazione) da
-   «errore corretto» (aveva sbagliato). Serve la citazione del motivo, altrimenti → INCERTO.
-4. Evoluzione nel tempo: la percentuale di decisioni ORIGINATE cresce nei mesi? Le correzioni A→M
-   calano? Grafico a parole con i numeri per periodo.
-5. La domanda scomoda, da rispondere esplicitamente: le correzioni M→A riguardano soprattutto il
-   MERITO (la scelta era sbagliata) o la FORMA (non hai seguito il processo)? Conta e dichiara.
+0. Target noto: 606 righe contate (M 72 · A 235 · B-F 138 · G 44 · H 88 · I 22 · J 7), 608 dichiarate.
+   Riconta: M1 dichiara 42 e ne ha 38 (M→A reale 22), E2 e I1 hanno una riga-sentinella in più.
+   Escludi le 3 righe `A→A` (non sono agency di Matteo) e dichiaralo: due report le trattano in modo
+   opposto fra loro.
+1. Tabella M→A (lui corregge): cosa, in che materia, con quale esito. Raggruppa per materia —
+   correggere sul prodotto e correggere sul codice sono skill diverse. Conta.
+2. Tabella A→M (lo correggono): SEPARA `DIRETTA` (492 nel corpus) da `DEDOTTA` (108) e non mescolarle
+   mai in un totale unico.
+3. Tabella M↔M (cambia idea da solo): distingui «scoperta di prodotto» (nuova informazione) da «errore
+   corretto» (aveva sbagliato). Serve la citazione del motivo, altrimenti → INCERTO. Caso di prova:
+   il limite coperti giornaliero costruito l'11-06 e rimosso il 18-06 è classificato dai report come
+   cambio di modello, non come errore — e nessuna citazione lo smentisce. Non forzarlo in nessuna
+   delle due direzioni: riporta cosa c'è scritto.
+4. Evoluzione nel tempo: la quota di ORIGINATE cresce nei mesi? Le A→M calano? Numeri per periodo, e
+   attenzione al confronto tra linee: su H (parole sue) ORIGINATA è il 71%, ma H è per costruzione solo
+   materiale suo — confronta H con H, A con A, non l'uno contro l'altro.
+5. La domanda scomoda, da rispondere esplicitamente con i numeri: le correzioni M→A riguardano il
+   MERITO (la scelta era sbagliata) o la FORMA (non hai seguito il processo)? Materiale già pronto: 9
+   report A su 11 hanno in coda alla Sezione 2 una tabella «Follow-up CORREGGONO vs ESTENDONO» — non
+   sono righe di agency (non contarle), ma sono esattamente la distinzione che ti serve qui.
+6. Handoff da onorare (§9): la peer-review anti-falso-positivo di C1 contro la «cerimonia LOCKED» di
+   C4, e la domanda aperta di J1 — perché il capitolo Servizio-S4 non è mai arrivato su `main`: scelta
+   esplicita o mai chiesto?
+
+Criterio di fatto: i totali per famiglia sommano a 606; DIRETTA e DEDOTTA restano separate ovunque; il
+limite del materiale (testo agenti oscurato) è dichiarato in testa e non solo in nota.
 ```
 
 ### S3 — Albero skill + timeline + livelli
@@ -890,23 +1022,51 @@ Cosa fare:
 ```
 Profilo: Verifica | Meta
 Modalità: deep
-Leggi prima: S1, S2; le sezioni 3 di tutti i report; PIANO_INDAGINE.md §3.4 (scala L0–L4)
+Precondizione: report/S1_CATALOGO_DECISIONI.md e report/S2_AGENCY_E_CORREZIONI.md devono esistere.
+Leggi prima: S1, S2; 01_INPUT_SINTESI.md §6, §7, §8, §9; PIANO_INDAGINE.md §3.4 (scala L0–L4) e §2.2
+ (cronologia vera); le Regole comuni delle ondate S
+Fonti: le Sezioni 3 dei 39 report (568 righe) + le Sezioni 3 di H1–H5 per la colonna PARLATA
 Output attesi: report/S3_ALBERO_SKILL_E_TIMELINE.md + _stato/S3.md — niente altro senza chiedere Sì/No
 
 Obiettivo: l'albero di skill, con un livello assegnato e provato per ogni ramo.
 
 Cosa fare:
-1. Raggruppare le skill signals in rami. Rami attesi (non vincolanti): direzione di agenti AI /
-   product ownership / strategia di testing e qualità / architettura dati e ambienti / UX e linguaggio
-   d'interfaccia / compliance e legale / vendita e posizionamento / auto-formazione e metodo.
+1. Rami: usa i 10 di 01_INPUT_SINTESI.md §6, ricavati dai dati veri. Il lessico è esploso — 1.313
+   etichette distinte su 1.826 decisioni, il 72% usate una volta sola — quindi senza quello scaffold
+   il lavoro non è riproducibile. Puoi cambiarlo, ma se lo fai dichiara perché. Ciò che non entra va
+   in «non classificato», mai forzato dentro un ramo né sistemato in un ramo nuovo silenzioso.
    L'albero PUÒ essere incoerente: è una richiesta esplicita di Matteo, non un difetto.
-2. Per ogni foglia: livello L0–L4 con l'evidenza che lo giustifica (ID decisione o ID agency).
-   Nessun livello senza ID. L3/L4 senza contro-evidenza cercata → declassa a L2 e annota.
-3. Tripla colonna obbligatoria: DICHIARATA (Scuola, G1) | ESERCITATA (A–F, I, J) | PARLATA (H).
+2. Normalizza la Sezione 3 prima di unire: nessun report ha ID propri lì, le colonne si chiamano in 6
+   modi diversi e M1/M4 ne hanno 5 invece di 4. Schema canonico: {skill, livello, evidenza_ID,
+   contro_evidenza}.
+3. Livelli: nessun livello senza ID di decisione o agency. Tre regole dure:
+   - i livelli ibridi («L2–L3», «L3→L4», «L4 cand.», «L4?») valgono **L2** finché non fai davvero il
+     cross-check che rimandano — non ri-rimandarlo;
+   - L3/L4 senza contro-evidenza cercata → declassa a L2. La lista delle 8-10 righe in questa
+     condizione è già pronta in §7 dell'input, ma **prima di declassare leggi il testo subito dopo la
+     tabella**: B1 ha una dichiarazione collettiva che potrebbe coprirle;
+   - separa **L4 di sistema** da **L4 di persona**: M1 e M4 producono 23 delle ~50 L4 del corpus
+     perché leggono documentazione di skill già scritta — la prova «è diventata regola» è il file
+     stesso, il che è circolare. M3 lo fa già («L1–L2 su Matteo / L4 di sistema»): fallo ovunque.
+4. Tripla colonna DICHIARATA (G1/Scuola) | ESERCITATA (A–F, I, J, M) | PARLATA (H). Attenzione: esiste
+   abbozzata solo in 9 report (A2–A10) e lì la colonna PARLATA è **sempre un placeholder mai risolto**
+   («da verificare in H3») — perché quando le ondate A sono state scritte, H non esisteva ancora.
+   Oggi H esiste: **compila PARLATA da zero leggendo H1–H5**, non ricopiare i placeholder.
+   Dichiara i rami dove una colonna resta legittimamente vuota (§7 dell'input ne indica tre).
    Le righe dove le tre colonne divergono sono le domande migliori per l'interrogazione: marcale.
-4. Timeline della crescita: HACCP legacy → BHM-Zen → CalendarBackup vecchia → CB-v2 → Trading →
-   giochi. Frecce di trasferimento del metodo (cosa è nato dove ed è stato portato altrove), con date.
-5. Sezione «cosa NON risulta»: skill che ci si aspetterebbe e che il corpus non mostra.
+5. Timeline: usa la sequenza VERA (§8 dell'input, piano §2.2) — giochi + CB-old (feb-mar) → CB-v2 dal
+   27-04 → trading IN PARALLELO (mag-giu) → BHM e Trading-Platform (lug) → ritorno a CB-v2 (ago).
+   La sequenza «HACCP → BHM → CB vecchia → CB-v2 → Trading → giochi» che stava qui è FALSA: era
+   nell'ipotesi iniziale ed è stata smentita dal corpus. Il buco 22-06 → 02-08 non è una pausa, è un
+   cambio di progetto. Le date delle linee B/C non si prendono dal filesystem (copia in blocco).
+6. Frecce di trasferimento del metodo: le sezioni dedicate esistono solo in B1, F1, M1 (+ H5 in prosa,
+   che è l'unica fonte sul buco estivo). C3 e C5 hanno solo note sparse: non cercare un'intestazione
+   che non c'è. Datale.
+7. Sezione «cosa NON risulta»: skill che ci si aspetterebbe e che il corpus non mostra.
+8. Consegna a S4, in una sezione dedicata, l'elenco delle skill che dichiari L3 o L4: è il suo input.
+
+Criterio di fatto: ogni foglia ha un livello con almeno un ID; nessun ibrido lasciato ibrido; PARLATA
+compilata con ID di H, non con rimandi; la timeline non contiene la sequenza smentita.
 ```
 
 ### S4 — Falsificazione / contro-evidenze
@@ -914,22 +1074,47 @@ Cosa fare:
 ```
 Profilo: Verifica | Meta — QUESTA ONDATA LAVORA CONTRO LE ALTRE
 Modalità: deep
-Leggi prima: S1, S2, S3; le sezioni 4 di tutti i report; J1 (divergenze report vs git)
+Precondizione: report/S3_ALBERO_SKILL_E_TIMELINE.md deve esistere (ti serve la sua lista di skill
+ L3/L4). Se non c'è, fermati.
+Leggi prima: S1, S2, S3; 01_INPUT_SINTESI.md §5, §7, §9; le Regole comuni delle ondate S
+Fonti: le Sezioni 4 dei 39 report (≈352 contro-evidenze) + gli handoff → S4 sparsi nelle Sezioni 6
+ (elencati in §9 dell'input) + J1_FATTI_OGGETTIVI.md §5.b (sottosezione fuori schema, facile da
+ saltare: sta dopo la Sezione 5)
 Output attesi: report/S4_CONTRO_EVIDENZE.md + _stato/S4.md — niente altro senza chiedere Sì/No
+Attenzione ai nomi: qui «S4» sei tu, l'ondata di falsificazione. «Servizio-S4» è una milestone di
+ prodotto e ricorre in A10, A11, M3, J1. Mai un grep cieco su "S4".
 
 Obiettivo: rendere il dossier difendibile. Tutte le ondate precedenti hanno cercato prove a favore.
 Questa cerca il contrario, e lo fa sul serio.
 
-Cosa fare, per ogni skill dichiarata L3 o L4 in S3:
-1. Cercare nei report almeno un caso in cui quella stessa skill è mancata: decisione delegata,
-   errore ripetuto, correzione A→M nella stessa materia, piano abbandonato (I1/I2), divergenza tra
-   dichiarato e git (J1).
+Cosa fare:
+0. Prima di analizzare, RACCOGLI il lavoro già fatto e non ancora usato — se salti questo passo, lo
+   perdi: la tabella «Divergenze esplicite vs A1/A2» di H2 (8 righe con verdetto già scritto), le 7
+   divergenze report↔git di J1 §5.b, i cataloghi dei piani abbandonati in I1 §4.1 (solo 23 completed
+   su 113) e I2 §4.1 (28 piani su 33 senza tracking), le tabelle contro-evidenze già pronte in M1, e
+   tutti gli altri handoff → S4 elencati in §9 dell'input.
+1. Per ogni skill dichiarata L3 o L4 da S3: cercare almeno un caso in cui quella stessa skill è
+   mancata — decisione delegata, errore ripetuto, correzione A→M nella stessa materia, piano
+   abbandonato, divergenza tra dichiarato e git.
 2. Verdetto per ogni skill: `REGGE` (contro-evidenza cercata, non trovata o marginale) ·
    `RIDIMENSIONATA` (declassata, con il nuovo livello) · `NON REGGE` (l'evidenza a favore era debole).
-3. Elenco delle «prove fragili»: righe basate su una sola fonte di peso 3 o 4, o su una deduzione.
-4. Elenco degli errori NON attribuibili a Matteo che qualche report potrebbe avergli attribuito
-   (attribuzione impropria) — e viceversa.
-5. Le 10 domande più scomode che un senior potrebbe fargli, con l'evidenza che le motiva.
+   Parti dalla lista già pronta in §7 dell'input: le righe L3/L4 senza contro-evidenza cercata (H1, H2,
+   H3, M1×2, M3, M4×2) sono candidate al declassamento — ma verifica prima se una dichiarazione
+   collettiva dopo la tabella le copre, come in B1.
+3. Il caso strutturale da trattare a parte: M1 e M4 producono metà delle L4 del corpus perché leggono
+   documentazione di skill. La prova «è diventata regola» è il file stesso: circolare. Dichiara quali
+   L4 reggono solo su quella circolarità.
+4. Elenco delle «prove fragili»: righe basate su una sola fonte di peso 3 o 4, o su una deduzione.
+5. Attribuzione impropria, nelle due direzioni: errori non suoi che un report gli ha attribuito, e
+   viceversa. Due casi già noti da verificare: l'attribuzione git (autore = Matteo su 1.048 commit non
+   prova che il codice sia suo; ci sono 25 commit di un'altra persona) e l'accettazione della Console
+   firmata da un altro «nei panni di Matteo».
+6. Correggi anche le ipotesi sbagliate del piano stesso, se il corpus le ha smentite: la Console NON è
+   stata «abbandonata in 2 giorni» (M2 lo dimostra: REQ accettate, sprint chiuso, poi silenzio).
+   Un'ondata di falsificazione che non falsifica anche il proprio committente è incompleta.
+7. Le 10 domande più scomode che un senior potrebbe fargli, con l'evidenza che le motiva.
+8. Lascia esplicitamente aperto ciò che resta aperto (es. il prezzo del carosello, mai chiuso da A2,
+   H2 né H3): un «non lo sappiamo» tracciato vale più di una chiusura inventata.
 
 Regola: qui non si è gentili e non si è cattivi. Si è precisi. Un dossier che non sopravvive a questa
 ondata non sarebbe sopravvissuto all'interrogazione.
@@ -940,26 +1125,52 @@ ondata non sarebbe sopravvissuto all'interrogazione.
 ```
 Profilo: Verifica | Meta
 Modalità: deep
-Leggi prima: M1, M2, M3, M4, G1, G3, H1–H4, S2; le sezioni «citazioni» di tutti i report
+Precondizione: report/S2_AGENCY_E_CORREZIONI.md deve esistere. S3 e S4 NON servono: puoi girare in
+ parallelo a loro.
+Leggi prima: S2; 01_INPUT_SINTESI.md §7 (citazioni e pesi) e §8; le Regole comuni delle ondate S
+Fonti: M1, M2, M3, M4, G1, G2, G3, H1, H2, H3, H4, **H5** e le tabelle «Numeri di ritmo» delle H
 Output attesi: report/S5_RITRATTO_METODOLOGICO.md + _stato/S5.md — niente altro senza chiedere Sì/No
 
 Obiettivo: come lavora Matteo, detto SOLO con citazioni raggruppate. Nessuna diagnosi, nessun
 aggettivo che non sia in una fonte.
 
-Assi (ognuno = un gruppo di citazioni con fonte):
-- come apre un lavoro e come lo chiude;
-- come gestisce l'ambiguità e lo scope (allarga? restringe? quando?);
+Regole di peso, da applicare prima di scrivere una riga:
+- **Citabile come parola sua solo ciò che sta dentro `«…»`.** Le Sezioni 4 e 7 dei report sono
+  scritte dall'agente di mining, anche quando danno del tu a Matteo. Non sono voce sua.
+- Il corpus ha 2.802 citazioni, ma solo **408 sono di peso 1** (H). Le 929 dei report A sono comunque
+  parole sue, ma **selezionate** da un agente: H dà densità e distribuzione, A dà il momento che
+  contava. Dichiara quale delle due stai usando, riga per riga.
+- **G3 è scritto in prima persona ma resta peso 3.** Solo PROFILO_SCOLASTICO (G1) ha la deroga del
+  piano §2. È l'errore più facile da fare in questa ondata.
+- **H5 è obbligatoria** (mancava dalla lista originale): è l'unica fonte sul buco 22-06 → 02-08 e
+  sull'esportazione del metodo verso gli altri progetti.
+
+Assi (ognuno = un gruppo di citazioni con fonte). Materiale verificato disponibile per tutti e sette:
+- come apre un lavoro e come lo chiude — nascita e consolidamento del vocabolario di comando (H2, H3);
+- come gestisce l'ambiguità e lo scope — `product-scoping` è l'etichetta più frequente del corpus,
+  e in G1 c'è la sua auto-osservazione sullo scope creep;
 - rapporto con il dettaglio tecnico: cosa vuole sapere e cosa delega esplicitamente;
-- controllo qualità: di cosa non si fida, cosa ricontrolla di persona;
-- come vuole che gli si parli (fonte primaria: Supporto/Metodo_spiegazioni, G3);
+- controllo qualità: di cosa non si fida, cosa ricontrolla di persona (G1: le sue checklist);
+- come vuole che gli si parli — fonte primaria `Supporto/Metodo_spiegazioni_agenti_coding` (G3-D01…D09),
+  da citare per esteso, **ma con il caveat**: è quasi una fonte sola. Non presentarlo come confermato
+  da fonti multiple quando non lo è;
 - come reagisce quando l'agente sbaglia, e quando sbaglia lui;
-- ritmo e continuità: sessioni lunghe/corte, pause, il buco 22-06 → 02-08.
+- ritmo e continuità: è l'asse meglio strumentato di tutto il corpus (le tabelle «Numeri di ritmo» di
+  H1–H5: lunghezza media e mediana, frequenza, datazione parola per parola). Il buco estivo va
+  raccontato come cambio di progetto, non come pausa.
 
 Due sezioni obbligatorie:
 - «Auto-descrizione vs comportamento»: cosa dice di sé (G1/Scuola) accanto a cosa mostrano i dialoghi
-  (H). Dove coincidono e dove no. Senza giudizio.
-- «Cosa i file NON dicono»: tutto ciò su cui il corpus non ha voce. Va scritto per esteso: è la parte
-  che protegge Matteo da un ritratto che sembra completo e non lo è.
+  (H). Dove coincidono e dove no. Senza giudizio. La tensione centrale è già individuata e lasciata
+  aperta da G1: si dichiara «principiante senza competenza tecnica formale» mentre lo stesso corpus
+  mostra collaudi multi-viewport, seed di database, verifiche RLS cross-tenant. Non risolverla
+  inventando un livello: mostrala.
+- «Cosa i file NON dicono», per esteso — è la parte che protegge Matteo da un ritratto che sembra
+  completo e non lo è. Almeno queste quattro assenze, già verificate: (a) il motivo del ritorno su
+  CalendarBackup ad agosto non è dichiarato da nessuna parte, né in H3 né in H5; (b) 19.198 righe su
+  22.862 di testo degli agenti sono oscurate, quindi metà dei dialoghi non è leggibile; (c) i file
+  con nomi di credenziali non sono mai stati aperti, per scelta; (d) quello che il corpus non contiene
+  affatto — vita fuori dal lavoro, contesto personale — non va dedotto.
 ```
 
 ### S6 — Dossier finale + banca domande senior
@@ -967,7 +1178,10 @@ Due sezioni obbligatorie:
 ```
 Profilo: Verifica | Meta
 Modalità: deep
-Leggi prima: S1–S5, P0, P0-EX; PIANO_INDAGINE.md §0 (prompt iniziale di Matteo, da riportare in testa)
+Precondizione: report/S1…S5 devono esistere TUTTI E CINQUE. Se ne manca anche uno, fermati e dillo:
+ un dossier costruito su somme non deduplicate è il modo più veloce per farsi smontare a voce.
+Leggi prima: S1–S5, P0, P0-EX; 01_INPUT_SINTESI.md §1 e §8; PIANO_INDAGINE.md §0 (prompt iniziale di
+ Matteo, da riportare in testa) e §2.1 (limiti noti)
 Non caricare: nessun mining nuovo
 Output attesi: report/S6_DOSSIER_PROFILO_MATTEO.md + _stato/S6.md — niente altro senza chiedere Sì/No
 
@@ -975,22 +1189,37 @@ Obiettivo: il documento con cui Matteo entrerà nella chat di interrogazione sen
 
 Struttura obbligatoria:
 1. Prompt iniziale di Matteo, verbatim.
-2. Metodo e limiti dell'indagine, onesti: cosa è stato letto, quanto, cosa non si poteva sapere
-   (testo agenti oscurato, buco 22-06→02-08, auto-dichiarazioni).
-3. Mappa dei corpora A–J con i numeri finali e la copertura raggiunta, ondata per ondata.
-4. Albero delle skill con i livelli DOPO S4 (i livelli restano PROVVISORI: si confermano a voce).
+2. Metodo e limiti dell'indagine, onesti. La frase sulla copertura NON è «letto tutto riga per riga»:
+   è «100% dei file del perimetro **aperti**, con profondità variabile per regime». Dichiara i casi
+   concreti (§8 dell'input): alcuni documenti da oltre 1 MB letti per sezioni mirate; tre file con
+   nomi di credenziali mai aperti per scelta; centinaia di file non-`.md` contati e non estratti.
+   Più i limiti veri: testo degli agenti oscurato, auto-dichiarazioni, date del filesystem inaffidabili
+   negli archivi. Il buco 22-06 → 02-08 va spiegato come cambio di progetto, non come pausa.
+3. Mappa dei corpora A–J con i numeri finali, ondata per ondata. **I numeri finali sono quelli
+   deduplicati di S1/S2, non le somme grezze** (1.826 decisioni e 606 agency sono somme pre-dedup:
+   se le usi, etichettale così). Tieni separate le tre unità: file, messaggi, fatti.
+   Una discrepanza da riportare, non da nascondere: P0-EX conta 3.412 messaggi di sua voce, la somma
+   dei letti dichiarati da H1–H5 ne fa 3.321. Parte è spiegabile (perimetro vs righe leggibili), il
+   resto no. Sul dato di peso 1 non si arrotonda: o lo riconcili o lo dichiari.
+4. Albero delle skill con i livelli DOPO S4 (restano PROVVISORI: si confermano a voce), distinguendo
+   L4 di sistema da L4 di persona.
 5. Le 20 decisioni che meglio rappresentano ciascun ramo, con fonte.
-6. Agency in numeri: quante ORIGINATE, quante APPROVATE, quante correzioni per direzione, nel tempo.
+6. Agency in numeri: ORIGINATE, APPROVATE, correzioni per direzione, nel tempo — con in testa
+   l'avvertenza che le correzioni degli agenti verso Matteo sono strutturalmente sotto-contate.
 7. Ritratto per citazioni (rimando a S5, non ricopiarlo).
-8. **Banca domande per l'interrogazione**, divisa in tre:
+8. **Banca domande per l'interrogazione.** Va scritta DA ZERO: nei 39 report non esiste una sola
+   domanda pre-formulata per il senior (verificato). La materia prima sono le contro-evidenze di S4,
+   le tensioni marcate «aperto»/INCERTO, e le divergenze tra fonti di peso diverso. Divisa in tre:
    a. domande che verificano una skill rivendicata («raccontami perché il 18-06 hai rimosso il limite
       giornaliero» — la risposta si confronta con la fonte);
    b. domande scomode da S4;
    c. domande aperte su ciò che i file non dicono.
    Ogni domanda porta con sé la fonte e la risposta attesa dal corpus, in modo che il senior possa
    valutare senza rileggere tutto.
-9. Nota privato vs pubblico basata su `git ls-files` (P0): cosa di questo dossier viene da materiale
-   che sta nella repo e cosa da materiale privato.
+9. Nota privato vs pubblico: dei 77 file di `docs/_lavoro` tracciati da git, 67 sono log tecnici di
+   sessione; `Per matteo/` resta privata all'88% e `Scuola/` al 100%. Quindi il dossier che finisce
+   sulla repo non contiene la parte più personale del materiale: dillo esplicitamente, perché cambia
+   cosa è opportuno citare per esteso e cosa va citato solo come path.
 
 Chiudi dichiarando che il capitolo mining è chiuso e che la validazione è una chat separata.
 ```
@@ -1012,6 +1241,10 @@ Cosa fare: per ogni _stato/<ID>.md presente, spuntare la riga corrispondente in 
 aggiungendo data e path del report. Se un file di stato è incompleto (mancano i numeri di copertura o
 il conteggio decisioni), NON spuntare: segnala l'ondata come «da completare» e scrivi cosa manca.
 Non modificare i blocchi prompt. Non riscrivere il file: modifica solo le righe di stato.
+
+Nota (06-08-26): le 39 righe di mining sono già allineate e sono passate da checkbox a tabella (con
+decisioni, agency e nome del report). Restano da spuntare solo S1–S6. In _stato/ ci sono anche file
+`_tmp_*` — sono scarti di lavoro delle ondate H, non file di stato: ignorali.
 ```
 
 ---
@@ -1029,10 +1262,15 @@ Agency estratte: 7 (M→A 4 | A→M 2 DEDOTTE | M↔M 1)
 Note: 2 file illeggibili (allegati binari), dichiarati in sezione 5
 ```
 
+**Per le ondate S** le due righe di conteggio cambiano nome ma non spariscono — sono il criterio di
+accettazione (§6 del piano). Esempio per S1: `Righe in ingresso: 1.826 (M 227 · A 683 · B-F 434 ·
+G 145 · H 259 · I 63 · J 15)` / `Righe dopo dedup: N (K cluster fusi, C conflitti aperti)`.
+
 ---
 
 ## Log spunte (append-only)
 
 | Quando | ID | Agente/modello | Report | Nota |
 |--------|----|----------------|--------|------|
-| — | — | — | — | — |
+| 06-08-26 | M1–J1 (39) | vari (ondate di mining) | `report/` | Mining completato: 1.826 decisioni, 606 agency, ≈352 contro-evidenze |
+| 06-08-26 | AGG | senior + 3 revisori Sonnet | — | Checkbox allineate da `_stato/`; blocco Sintesi S1–S6 riscritto sui report veri; creato `01_INPUT_SINTESI.md` |
