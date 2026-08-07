@@ -15,7 +15,10 @@ Puntatore stabile per Cursor. **Non duplica** regole/LOCK: vivono nei file versi
 1. Leggi il **mini-pack** (~1 schermata): `docs/Testing-Skill/TESTING_MINI.md`.
 2. Poi `docs/Testing-Skill/TESTING_SKILL.md` intero (incl. **§7 QA manuale**) + `MANUALE_BLINDATURA.md`
    se blindi una sezione.
-3. **Nessun test tocca PROD** (`rwuxgvld`): Vitest mock+MSW, Playwright solo staging `docnnernvp`.
+3. Se il task è **compilare/testare da terminale** (seed prenotazioni, giorni/fasce, comandi QA
+   Matteo) → `docs/Testing-Skill/MANUALE_COMPILAZIONE_TERMINALE.md`. Nuovo comando utile →
+   annotarlo lì.
+4. **Nessun test tocca PROD** (`rwuxgvld`): Vitest mock+MSW, Playwright solo staging `docnnernvp`.
    Profilo Verifica → `npm run validate` + QA su 375/834/1280 + tabella esiti.
 
 Routing ufficiale e profili: `docs/APP_CONTEXT_SKILL.md` §0 + §0.0b.

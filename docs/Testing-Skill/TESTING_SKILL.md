@@ -21,6 +21,7 @@ description: >-
 | Configurare staging Supabase | **TESTING_SKILL** (questo) |
 | Analizzare un test che fallisce | **TESTING_SKILL** (questo) |
 | **Blindare una sezione** (quali test dopo la mappatura, quando il "rompi" è dovuto) | **[MANUALE_BLINDATURA.md](MANUALE_BLINDATURA.md)** |
+| **Compilare l’app da terminale** (seed prenotazioni, giorni/fasce, comandi QA per Matteo) | **[MANUALE_COMPILAZIONE_TERMINALE.md](MANUALE_COMPILAZIONE_TERMINALE.md)** — se aggiungi uno script utile, annotarlo lì |
 | **Collaudo a mano di S4 / Servizio** (cosa deve provare Matteo) | **[COLLAUDO_S4_CHECKLIST.md](COLLAUDO_S4_CHECKLIST.md)** |
 | **Far eseguire il collaudo S4 agli agenti** (Playwright MCP, 4 corsie in parallelo) | **[PIANO_E2E_AGENTI_S4.md](PIANO_E2E_AGENTI_S4.md)** + **[PROMPT_AGENTI_E2E_S4.md](PROMPT_AGENTI_E2E_S4.md)** |
 | **Riprendere il cantiere S4 da dove è rimasto** (stato, blocchi, decisioni chiuse, ordine di lavoro) | **[HANDOFF_S4_SENIOR.md](../Sessioni%20di%20lavoro/02-08-26/HANDOFF_S4_SENIOR.md)** |
@@ -59,6 +60,10 @@ Se stai simulando un utente che clicca su qualcosa → Playwright
 
 ## 3. Comandi principali
 
+> **Manuale operativo Matteo (copia-incolla, seed multipli, giorni/fasce):**  
+> [`MANUALE_COMPILAZIONE_TERMINALE.md`](MANUALE_COMPILAZIONE_TERMINALE.md).  
+> Nuovo comando utile da terminale → annotarlo lì (non solo in `package.json`).
+
 ```bash
 npm run test                          # npm run test deve essere verde — veloci, nessun browser
 npm run test:watch                    # watch mode durante sviluppo
@@ -66,6 +71,8 @@ npm run test:e2e                      # Playwright completo
 npm run test:e2e -- --grep edition    # Solo test edition su staging — deve essere verde
 npm run validate                      # lint + typecheck + test (pre-PR)
 npx playwright install chromium       # Prima volta: installa il browser
+npm run seed:booking-table            # 1 prenotazione solo tavolo (slug da .env.local.test)
+npm run seed:booking-menu-full        # 1 prenotazione con menù casuale
 ```
 
 > ⚠️ **`npm run validate` NON guarda i test e2e.** ESLint ignora `e2e/**`, `tests/**` e
@@ -247,6 +254,7 @@ it("classic → nessuna feature Pro", () => {
 | File | Cosa contiene |
 |------|---------------|
 | `TESTING_SKILL.md` | Entry point — quando e come usare il sistema testing |
+| `MANUALE_COMPILAZIONE_TERMINALE.md` | **Manuale Matteo**: `.env.local.test`, seed prenotazioni (giorni/fasce/multipli), comandi test/QA da terminale. Aggiornare quando nasce uno script utile |
 | `MANUALE_BLINDATURA.md` | **Metodo di blindatura**: sequenza test dopo mappatura, quando il controtest "rompi" è dovuto, cancello "blindato". Referenziato dal masterplan |
 | `TESTING_CONTEXT.md` | Mappa completa test, setup MSW, come ricreare staging |
 | `TESTING_PATTERNS.md` | Template snippet pronti per Vitest, Playwright, edition |
@@ -285,7 +293,7 @@ Per ogni viewport ripetere **gli stessi passi funzionali** (es. cambio tipologia
 
 - **DB:** solo TEST (`docnnernvp`) — mai validare su produzione.
 - **Dev server:** `npm run dev` (legge `.env.local` = test).
-- **Credenziali QA:** `.env.local.test` → `MANUAL_ADMIN_EMAIL`, `MANUAL_ADMIN_PASSWORD`, `MANUAL_TENANT_SLUG` (gitignored). Riferimento: `docs/_lavoro/Per matteo/Comandi per terminale.md`.
+- **Credenziali QA:** `.env.local.test` → `MANUAL_ADMIN_EMAIL`, `MANUAL_ADMIN_PASSWORD`, `MANUAL_TENANT_SLUG` (gitignored). Riferimento operativo: [`MANUALE_COMPILAZIONE_TERMINALE.md`](MANUALE_COMPILAZIONE_TERMINALE.md) (sostituisce il vecchio `docs/_lavoro/Per matteo/Comandi per terminale.md`, rimosso).
 - **Pagina pubblica:** `/prenota/{MANUAL_TENANT_SLUG}`. Non usare più lo slug storico `test`: su TEST gli slug correnti sono `da-tommaso`, `test-classic`, `test-pro`. Per smoke pubblici preferire `da-tommaso` o seed temporaneo con snapshot/restore.
 
 Strumenti ammessi: **Playwright MCP** (browser), DevTools, o test E2E esistenti — l’agente deve **eseguire** i passi, non solo elencarli a Matteo.

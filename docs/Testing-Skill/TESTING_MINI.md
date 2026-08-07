@@ -10,6 +10,7 @@
 
 ## 2. Carica subito
 - **`TESTING_SKILL.md`** (intero) — Vitest vs Playwright, comandi, **§5 pattern E2E robusti**, **§8 protocollo QA manuale**.
+- `MANUALE_COMPILAZIONE_TERMINALE.md` se Matteo deve **compilare/testare da terminale** (seed, giorni/fasce) — e annotaci ogni nuovo comando utile.
 - `MANUALE_BLINDATURA.md` se stai **blindando** una sezione (quali test, quando il «rompi» è dovuto).
 - `TESTING_CONTEXT.md` / `TESTING_PATTERNS.md` per mappa test e snippet pronti.
 
@@ -25,6 +26,7 @@
 | Se il task tocca… | Apri |
 |---|---|
 | Quando/come usare il testing, comandi, E2E robusti, QA manuale §8 | `TESTING_SKILL.md` |
+| Compilare app da terminale (seed, giorni/fasce, comandi Matteo) | `MANUALE_COMPILAZIONE_TERMINALE.md` |
 | Blindare una sezione (sequenza test, cancello «blindato») | `MANUALE_BLINDATURA.md` |
 | Mappa completa test, setup MSW, ricreare staging | `TESTING_CONTEXT.md` |
 | Snippet pronti Vitest/Playwright/edition | `TESTING_PATTERNS.md` |

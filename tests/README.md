@@ -11,12 +11,17 @@
 
 ## Comandi
 
+> Manuale operativo Matteo (seed, più giorni/fasce, copia-incolla PowerShell):  
+> [`docs/Testing-Skill/MANUALE_COMPILAZIONE_TERMINALE.md`](../docs/Testing-Skill/MANUALE_COMPILAZIONE_TERMINALE.md).
+
 ```bash
 npm run test              # npm run test deve essere verde (veloci, nessun browser)
 npm run test:watch        # Vitest in watch mode durante sviluppo
 npm run test:e2e          # Playwright completo (tutti i file in e2e/)
 npm run test:e2e -- --grep edition   # Solo test edition su staging — deve essere verde
 npm run validate          # lint + typecheck + test (obbligatorio pre-PR)
+npm run seed:booking-table       # 1 prenotazione solo tavolo (slug da .env.local.test)
+npm run seed:booking-menu-full   # 1 prenotazione con menù casuale
 ```
 
 ---
