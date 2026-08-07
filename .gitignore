@@ -63,3 +63,8 @@ pw-*.mjs
 # Artefatti Python (script di analisi in docs/)
 __pycache__/
 *.pyc
+
+# Archivi storici — non sono MAI stati tracciati (PIANO_INDAGINE §2.3 p.2).
+# Contengono, fra l'altro, "Crescita professionale/": copia byte-identica di
+# Documents\Io-Claude\Crescita professionale con dati anagrafici + un .git annidato.
+docs/Archives/
