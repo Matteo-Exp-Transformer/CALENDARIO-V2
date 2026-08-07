@@ -6,6 +6,7 @@
 | ✅ | [Report finale della sessione](Report-finale-chiusura-capitolo-servizio-06-08-26.md) | Diff, test, skill aggiornate, dati comunicazione, errori, self-review e strategia di pubblicazione |
 | ✅ | [Piano multi-agente — lavori aperti](PIANO_MULTIAGENT_LAVORI_APERTI.md) | Decisioni D-1…D-8 dell'intervista, sette prompt eseguibili P1–P7 in tre onde, ownership file e cancello rollout |
 | ✅ | [Report — collaudo filtrato e piano](Report-collaudo-filtrato-e-piano-multiagente-06-08-26.md) | Gap-analysis 62→16 prove umane, voci obsolete, intervista, correzione dello stato ereditato |
+| ✅ | [Indagine Skill Matteo — cantiere chiuso](Indagine-Skill-Matteo/README.md) | 47 ondate (mining + sintesi + INT1): tracking, `_stato/`, report; deliverable personali fuori da git |
 
 Il collaudo manuale prodotto in questa giornata vive fuori dalla cartella di sessione, perché è
 materiale vivo di testing: [`docs/Testing-Skill/COLLAUDO_MANUALE_OBBLIGATORIO.md`](../../Testing-Skill/COLLAUDO_MANUALE_OBBLIGATORIO.md).

@@ -103,12 +103,15 @@ fonte, **non** correggerlo a mano nel report — va registrato da S2 come diverg
 fuori schema): differenza voluta, non errore — vedi `01_INPUT_SINTESI.md` §3.
 
 ### Sintesi (catena obbligata — S5 in parallelo dopo S2)
-- [ ] **S1** — Catalogo decisioni cross · *serve: i 39 report*
-- [ ] **S2** — Agency e correzioni · *serve: S1*
-- [ ] **S3** — Albero skill + timeline + livelli · *serve: S1, S2*
-- [ ] **S4** — Falsificazione / contro-evidenze · *serve: S3*
-- [ ] **S5** — Ritratto metodologico · *serve: S2* (parallelizzabile con S3/S4)
-- [ ] **S6** — Dossier finale + banca domande senior · *serve: S1–S5*
+- [x] **S1** — Catalogo decisioni cross · *serve: i 39 report* — **fatta 07-08-26** — `report/S1_CATALOGO_DECISIONI.md` — `_stato/S1.md`
+- [x] **S2** — Agency e correzioni · *serve: S1* — **fatta 07-08-26** — `report/S2_AGENCY_E_CORREZIONI.md` — `_stato/S2.md`
+- [x] **S3** — Albero skill + timeline + livelli · *serve: S1, S2* — **fatta 07-08-26** — `report/S3_ALBERO_SKILL_E_TIMELINE.md` — `_stato/S3.md`
+- [x] **S4** — Falsificazione / contro-evidenze · *serve: S3* — **fatta 07-08-26** — `report/S4_CONTRO_EVIDENZE.md` — `_stato/S4.md`
+- [x] **S5** — Ritratto metodologico · *serve: S2* (parallelizzabile con S3/S4) — **fatta 07-08-26** — `report/S5_RITRATTO_METODOLOGICO.md` — `_stato/S5.md`
+- [x] **S6** — Dossier finale + banca domande senior · *serve: S1–S5* — **fatta 07-08-26** (spezzata S6a+S6b) — `_stato/S6.md` (+ `_stato/S6a.md`, `_stato/S6b.md`) · deliverable privati fuori da `report/`
+
+### Interrogazione
+- [x] **INT1** — Fase 1 dell'interrogazione (incrocio + protocollo + profilo unificato) — **fatta 07-08-26** — `_stato/INT1.md` — report `Report-fase1-interrogazione-07-08-26.md`
 
 ### Servizio
 - [x] **AGG** — Allineamento checkbox da `_stato/` — **fatto 06-08-26** (39/39 mining) — ripetibile
@@ -1274,3 +1277,11 @@ G 145 · H 259 · I 63 · J 15)` / `Righe dopo dedup: N (K cluster fusi, C confl
 |--------|----|----------------|--------|------|
 | 06-08-26 | M1–J1 (39) | vari (ondate di mining) | `report/` | Mining completato: 1.826 decisioni, 606 agency, ≈352 contro-evidenze |
 | 06-08-26 | AGG | senior + 3 revisori Sonnet | — | Checkbox allineate da `_stato/`; blocco Sintesi S1–S6 riscritto sui report veri; creato `01_INPUT_SINTESI.md` |
+| 07-08-26 | S1 | Verifica \| Meta | `report/S1_CATALOGO_DECISIONI.md` | Checkbox allineata da `_stato/S1.md` (1.703 decisioni dopo dedup) |
+| 07-08-26 | S2 | Verifica \| Meta | `report/S2_AGENCY_E_CORREZIONI.md` | Checkbox allineata da `_stato/S2.md` |
+| 07-08-26 | S3 | Verifica \| Meta | `report/S3_ALBERO_SKILL_E_TIMELINE.md` | Checkbox allineata da `_stato/S3.md` |
+| 07-08-26 | S4 | Verifica \| Meta | `report/S4_CONTRO_EVIDENZE.md` | Checkbox allineata da `_stato/S4.md` |
+| 07-08-26 | S5 | Verifica \| Meta | `report/S5_RITRATTO_METODOLOGICO.md` | Checkbox allineata da `_stato/S5.md` |
+| 07-08-26 | S6 (S6a+S6b) | Verifica \| Meta | dossier + banca (privati in `_lavoro/`) | Checkbox allineata da `_stato/S6.md` (+ S6a/S6b) |
+| 07-08-26 | INT1 | Verifica \| Meta | `Report-fase1-interrogazione-07-08-26.md` | Fase 1 chiusa; checkbox da `_stato/INT1.md` |
+| 07-08-26 | AGG | Meta deep (pulizia) | — | Checkbox S1–S6 + INT1 allineate da `_stato/`; cantiere CHIUSO lato tracking |

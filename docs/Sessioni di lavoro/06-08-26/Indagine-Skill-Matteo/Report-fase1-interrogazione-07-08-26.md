@@ -71,7 +71,7 @@ perimetro; il tutoraggio girava su Claude Desktop, senza accesso al codice.
 | `…/INT_01_PROFILO_UNIFICATO_v0.md` | ~310 | L'incrocio: confermato ×2 · in conflitto · le zone bianche · l'albero com'è oggi · copertura e limiti |
 | `…/INT_02_INTERROGAZIONE.md` | ~505 | Le domande: 6 blocchi, ~77 in totale |
 | `…/INT_03_PROFILO_RECRUITER_v0.md` | ~190 | L'impalcatura mostrabile: ogni riga con la prova o non entra |
-| `…/INT_04_VALUTAZIONE_SESSIONI.md` | ~90 | La scheda a 7 criteri di questa sessione ⚠️ **da trasferire su `11_Valutazioni_Didattiche.md`** |
+| `…/Verbali/INT_04_VALUTAZIONE_SESSIONI.md` | ~90 | La scheda a 7 criteri di questa sessione ⚠️ **da trasferire su `11_Valutazioni_Didattiche.md`** |
 
 ### Il nodo di metodo sciolto — e va detto perché era un conflitto vero
 
