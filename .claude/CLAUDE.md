@@ -54,6 +54,12 @@ verifica l'ambiente con `get_project_url` — se è PROD `rwuxgvld` FERMATI e ch
 Convenzioni, comandi, file critici e zone delicate — qui per Claude Code e per gli agenti che leggono
 `AGENTS.md` (che rimanda a questo blocco).
 
+### Binario crescita/valutazione professionale — vive fuori da questo routing
+
+Se il task riguarda **interrogazione skill · profilo · valutazione · roadmap professionale · tutoraggio ·
+candidature**, ⛔ **non** usare `APP_CONTEXT_SKILL.md` §0: è un altro binario, con altre regole e un
+protocollo vincolante. Carica prima:
+`docs/_lavoro/Per matteo/Valutazione Personale/00_BUSSOLA_VALUTAZIONE.md` (privato, gitignored).
 ### Comandi principali
 
 ```bash

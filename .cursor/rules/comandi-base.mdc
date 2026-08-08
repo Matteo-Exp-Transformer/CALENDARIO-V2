@@ -19,6 +19,9 @@ Dettaglio completo: docs/Comunicazione-Skill/VOCABOLARIO.md (caricalo per le sfu
 - **«migliora/analizza/revisiona comunicazione»** → Meta revisore.
 - **«evolvi … senior» / «meta senior»** → Meta senior (EVOLUZIONE_SKILLS.md).
   «evolvi» SENZA «senior» → chiedi: senior o revisore?
+- Se il task riguarda **interrogazione / profilo / valutazione / roadmap professionale /
+  tutoraggio / candidature** → ⛔ non `APP_CONTEXT_SKILL.md`; carica
+  `docs/_lavoro/Per matteo/Valutazione Personale/00_BUSSOLA_VALUTAZIONE.md` (privato, gitignored).
 
 ## Comandi durante/fine chat
 - **«lavoro ok»** → task accettato + SCRIVI/AGGIORNA un report COMPLETO.

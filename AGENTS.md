@@ -15,6 +15,9 @@ una **skill d'area**. **Non navigare il codice a tappeto:** apri prima il routin
 2. Aree già mappate: Pagina Prenota → `docs/Prenota-Skill/PRENOTA_SKILL.md`; Menu QR →
    `docs/Menu-QR-Skill/MENU_QR_SKILL.md`; le altre nella §0.
 3. Leggi la skill d'area **intera**, poi apri **solo** il file di `contesto/` che ti serve.
+4. Se il task riguarda **interrogazione skill · profilo · valutazione · roadmap professionale ·
+   tutoraggio · candidature**, ⛔ **non** è `APP_CONTEXT_SKILL.md` §0: è il binario crescita/valutazione.
+   Carica prima `docs/_lavoro/Per matteo/Valutazione Personale/00_BUSSOLA_VALUTAZIONE.md`.
 
 ## Regola Codex per Supabase TEST
 
