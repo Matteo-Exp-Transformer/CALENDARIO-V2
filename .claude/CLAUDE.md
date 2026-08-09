@@ -14,6 +14,12 @@ una **skill d'area**. **Non navigare il codice a tappeto:** apri prima il routin
 2. Aree già mappate: Pagina Prenota → `docs/Prenota-Skill/PRENOTA_SKILL.md`; Menu QR →
    `docs/Menu-QR-Skill/MENU_QR_SKILL.md`; le altre nella §0.
 3. Leggi la skill d'area **intera**, poi apri **solo** il file di `contesto/` che ti serve.
+4. Se il task riguarda **interrogazione skill · profilo · valutazione · roadmap professionale ·
+   tutoraggio · candidature**, ⛔ **non** è `APP_CONTEXT_SKILL.md` §0: è il binario crescita/valutazione.
+   Carica prima `docs/_lavoro/Per matteo/Valutazione Personale/00_BUSSOLA_VALUTAZIONE.md`.
+5. Se il task riguarda **architettura · telemetria · criteri · ruoli/chiavi · validazione del
+   MetaSkillSystem**, carica `docs/MetaSkillSystem/METASKILL_SYSTEM_SKILL.md`. Se tratta anche dati o
+   valutazioni di Matteo, carica inoltre la Bussola del punto 4: i due contesti non si sostituiscono.
 
 > I valori (limiti, soglie) vivono nel **codice**; i file `.md` li specchiano. Dopo un edit aggiorna
 > il file di contesto mappato dalla skill d'area, non copie sparse.
@@ -54,12 +60,12 @@ verifica l'ambiente con `get_project_url` — se è PROD `rwuxgvld` FERMATI e ch
 Convenzioni, comandi, file critici e zone delicate — qui per Claude Code e per gli agenti che leggono
 `AGENTS.md` (che rimanda a questo blocco).
 
-### Binario crescita/valutazione professionale — vive fuori da questo routing
+### Binario crescita/valutazione e MetaSkillSystem
 
-Se il task riguarda **interrogazione skill · profilo · valutazione · roadmap professionale · tutoraggio ·
-candidature**, ⛔ **non** usare `APP_CONTEXT_SKILL.md` §0: è un altro binario, con altre regole e un
-protocollo vincolante. Carica prima:
-`docs/_lavoro/Per matteo/Valutazione Personale/00_BUSSOLA_VALUTAZIONE.md` (privato, gitignored).
+I punti 4 e 5 della sezione «instradati all'area giusta» sono la fonte unica di routing per il binario
+crescita/valutazione (Bussola, privato/gitignored) e per il MetaSkillSystem. Non duplicare qui lo
+stato dei cantieri: per `SYS-1` vedi `docs/MetaSkillSystem/PLAN_V0.md`.
+
 ### Comandi principali
 
 ```bash

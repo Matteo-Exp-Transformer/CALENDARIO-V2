@@ -18,7 +18,9 @@
 
 ## Quando scrivere un report (riepilogo — dettaglio in APP_CONTEXT §7.1)
 
-- **light** (fix piccolo, 1 zona, basso rischio): NIENTE file report → 1 riga in `docs/SESSION_LOG.md`.
+- **light** (fix piccolo, 1 zona, basso rischio): NIENTE file report → evento JSONL pilot-only
+  secondo il contratto MetaSkillSystem + 1 riga narrativa in `docs/SESSION_LOG.md` con `event_id` e
+  link. La capsula non viene compressa dentro la tabella Markdown.
 - **standard / deep**: file `Report-*.md` in `docs/Sessioni di lavoro/GG-MM-AA/` con le sezioni sotto.
 
 La modalità la assegna `PREPARA_PROMPT_SKILL.md` §1.A e la scrive nel prompt. Nel dubbio: standard.
@@ -58,6 +60,18 @@ APP_CONTEXT, Comunicazione-Skill/*, SESSION_LOG, report, .cursor/*).
 - Prompt di Matteo annotati (verbatim dove utile) — fase raccolta dati.
 - Cosa si può automatizzare con certezza vs cosa lasciare manuale.
 
+### 6-bis. «Capsula MetaSkillSystem» (obbligatoria per ogni sessione sostanziale)
+
+Compila il contratto in `../MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md`. Standard/deep: il
+bundle JSONL vive nel report o verbale. Light: vive nel file evento pilot-only collegato dalla riga
+di `SESSION_LOG.md`. Interruzione/compact: snapshot JSONL nel prompt di proseguimento o handoff prima
+di perdere il contesto.
+
+La capsula separa sempre tre delta: **Persona**, **Sistema**, **Output**. Per ciascun dato conserva
+attribuzione, provenienza, grado di assistenza ed eventuale contro-evidenza. Un documento non diventa
+automaticamente un prodotto: va classificato. Se un evento non è avvenuto, scrivi `non osservato`;
+se il delta è nullo, scrivi `nessuno`. ⛔ Mai completare un campo per plausibilità.
+
 ### 7. «Analisi flusso prompt, efficienza e statistiche» (sottosezione obbligatoria standard/deep)
 - N° prompt sostanziali di Matteo · correzioni dopo 1ª risposta · follow-up generati · modalità alzata sì/no.
 - Anatomia: cosa ha reso i prompt efficaci o ambigui. Cosa replicare/migliorare.
@@ -86,6 +100,24 @@ Per ognuno: cosa è successo, da cosa derivava, come si sarebbe evitato. I patte
 ### 10. Cosa resta per la prossima sessione
 Sincronizza con `docs/FOLLOW_UP.md` (nuove righe FU-NNN; stato `fatto` se chiusi).
 
+### 10-bis. Handoff al prossimo agente ⭐ (obbligatorio nelle sessioni deep e Meta)
+
+L'handoff non è un elenco di file e non è un riassunto cronologico. Deve permettere a un agente
+freddo di agire senza ricostruire il presente dalla storia. Apri con **«cosa è vero adesso»** e
+registra, in quest'ordine logico:
+
+- obiettivo corrente, stato esatto e prossimo task atomico con relativo gate di chiusura;
+- decisioni prese da Matteo, motivazione e fonte; decisioni chiuse che non vanno riaperte;
+- tentativi, fallimenti e correzioni che cambiano il modo corretto di proseguire;
+- proprietario di ogni stato dinamico e soli puntatori necessari per ripartire;
+- autorizzazioni, privacy, divieti e azioni che richiedono una nuova conferma;
+- per regole o componenti del sistema, maturità separata: **G** (scritta), **O** (osservata),
+  **E** (controllata automaticamente). Non chiamare «validato» ciò che è soltanto progettato.
+
+Il report conserva la storia; l'handoff conserva il bordo operativo. Collega report e capsula, ma
+non duplicare contatori o stati che hanno già un owner. Se non serve un agente successivo, scrivi
+esplicitamente perché il lavoro è terminale.
+
 ### 11. «Domande di chiusura» ⭐ (OBBLIGATORIA — l'hook la controlla riga per riga)
 > **Questa sezione è contabile dalla macchina.** L'hook `stop` cerca ogni `❓ Q` e verifica che la
 > riga `✅ R` corrispondente **non sia vuota** (né un placeholder tipo `...`, `-`, `TODO`, `_(…)_`).
@@ -95,7 +127,8 @@ Sincronizza con `docs/FOLLOW_UP.md` (nuove righe FU-NNN; stato `fatto` se chiusi
 >
 > **Formato esatto (rispettalo o l'hook non trova la risposta):** copia il blocco, scrivi dopo `R:`.
 > Vale per QUALSIASI report (esecutore, verifica, meta). Le risposte sono i DATI che fanno evolvere
-> il sistema — anche le critiche «a vuoto» sono utili: se non trovi un problema, inventane uno plausibile.
+> il sistema. Se non trovi un problema, scrivi `nessuna osservazione` e indica che cosa hai verificato:
+> inventare un dato invalida la raccolta.
 >
 > ⚠️ **Mai mettere i simboli `❓ Q` o `✅ R` a INIZIO riga dentro una risposta.** L'hook li conta come
 > struttura solo a inizio riga: se devi CITARE il formato dentro una tua risposta (es. «uso il formato
@@ -115,7 +148,7 @@ Sincronizza con `docs/FOLLOW_UP.md` (nuove righe FU-NNN; stato `fatto` se chiusi
 ❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato? (vietato «tutto ok» a vuoto: se davvero nulla, scrivilo e di' perché ne sei certo.)
 ✅ R4:
 
-❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti? (critica + proposta nella stessa riga; se non hai avuto attriti, immagina quello più probabile.)
+❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti? (critica + proposta nella stessa riga; se non hai avuto attriti, scrivi «nessuna osservazione» e cosa hai verificato.)
 ✅ R5:
 
 ❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuto ti sono stati utili o rumore?
@@ -129,7 +162,7 @@ Sincronizza con `docs/FOLLOW_UP.md` (nuove righe FU-NNN; stato `fatto` se chiusi
 > doppione delle domande Q1-Q6: lì *rispondi*, qui *ti correggi*. L'obiettivo è arrivare all'hook
 > con il report già pulito, così il suo rilancio (max 2) trova poco o niente da segnalare.
 
-Checklist (4 punti, veloce):
+Checklist (5 punti, veloce):
 1. **Dati = diff reale.** Apri il diff: i file, i numeri, i nomi citati nel report esistono davvero e
    sono quelli giusti? Niente copiato a memoria, niente sezione rimasta indietro rispetto a un fix
    successivo.
@@ -138,6 +171,8 @@ Checklist (4 punti, veloce):
 3. **Q1-Q6 coerenti.** Le risposte non si contraddicono tra loro né col lavoro svolto; ognuna ha
    sostanza (non «ok» a vuoto). Per Q2 e Q3 hai davvero riaperto i file.
 4. **Tono utente.** Le parti rivolte a Matteo parlano per flussi/schermate, non nomi-file isolati.
+5. **Handoff ricostruibile.** Un agente freddo sa cosa è vero, cosa non deve riaprire, cosa può
+   scrivere e qual è il prossimo gate senza dover inferire dai passaggi storici.
 
 Se un punto fallisce → **correggi ora** e annota in 1 riga cosa hai sistemato. Solo dopo dichiari il
 report pronto.

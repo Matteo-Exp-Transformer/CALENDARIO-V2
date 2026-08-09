@@ -96,9 +96,9 @@ classificazione interna: Matteo non deve dire nessuna parola — gliela comunich
 
 | Modalità | Quando | Cosa comporta a fine task (APP_CONTEXT § 7) |
 |----------|--------|---------------------------------------------|
-| **light** | fix piccolo, 1 file/zona, basso rischio, nessun trigger deep | niente checklist apertura; risposta breve; **no file report dedicato** → 1 riga in `SESSION_LOG.md`; niente sezione Dati comunicazione obbligatoria; § 7.2 solo se hai toccato una skill |
-| **standard** | feature o fix normale, una zona, qualche superficie UI | routing + contesto della zona; **report normale** con Dati comunicazione; § 7.2 delle aree toccate |
-| **deep** | vedi trigger sotto | protocollo completo: checklist apertura/chiusura, **report esaustivo** (Dati comunicazione + Derivazione errori), follow-up, § 7.2 |
+| **light** | fix piccolo, 1 file/zona, basso rischio, nessun trigger deep | niente checklist apertura; risposta breve; **no file report dedicato** → evento JSONL pilot-only + 1 riga/link con `event_id` in `SESSION_LOG.md`; niente sezione Dati comunicazione obbligatoria; § 7.2 solo se hai toccato una skill |
+| **standard** | feature o fix normale, una zona, qualche superficie UI | routing + contesto della zona; **report normale** con Dati comunicazione + capsula MetaSkillSystem; § 7.2 delle aree toccate |
+| **deep** | vedi trigger sotto | protocollo completo: checklist apertura/chiusura, **report esaustivo** (Dati comunicazione + capsula MetaSkillSystem + Derivazione errori), follow-up, § 7.2 |
 
 **Trigger DEEP obbligatori** (scatta deep a prescindere dalla dimensione apparente del task — basta uno):
 - **DB / migrazioni / produzione / RLS / policy** (un errore qui costa caro);
@@ -185,10 +185,12 @@ giri di chat e reinterpretazioni dell'agente esecutore.
   bloccanti)». Non fermano Matteo, ma le vede.
 
 **Chiusura nel prompt.** Includi sempre un blocco fine-sessione che richiama APP_CONTEXT § 7: a
-conferma di Matteo → report § 7.1 + **allineamento skill § 7.2** delle aree toccate + righe in
+conferma di Matteo → report/capsula § 7.1 + **allineamento skill § 7.2** delle aree toccate + righe in
 `docs/FOLLOW_UP.md` per controlli rimandati. È già obbligatorio: non presentarlo come opzione né
 escluderlo. Aggiungi anche la riga **«Chiusura verso Matteo»** (checklist semplice o spiegazione
-breve se una sola modifica — vedi bullet sopra in §1.B).
+breve se una sola modifica — vedi bullet sopra in §1.B). Nei prompt **deep o Meta**, richiedi anche
+l'handoff operativo di `CHIUSURA_SESSIONE.md` §10-bis: stato vero adesso, decisioni chiuse, autorità,
+owner e prossimo task con gate; non una lista di documenti.
 
 **Follow-up attivo (ruolo prepara-prompt).** Oltre a ciò che Matteo dice esplicitamente, **cerca**
 controlli o lavori che tendono a sfuggire:
@@ -388,7 +390,12 @@ Quando Matteo dice che l'agente esecutore ha finito:
    con i 4 conteggi (n° prompt di Matteo · correzioni dopo la 1ª risposta · follow-up generati ·
    modalità alzata sì/no). **Solo numeri, niente voto** — il senior interpreta. Non gonfiare: è un
    dato, non una pagella. Salta per le sessioni light.
-6. **Se il contesto è quasi esaurito** (specie durante un bug, prima di un compact) → dai un
+6. **Sempre — capsula MetaSkillSystem.** Prima della chiusura registra evento e annotazioni
+   Persona · Sistema · Output secondo `MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md`. Nelle
+   light usa il file JSONL pilot-only collegato dal log; prima di compact/interruzione salva il
+   bundle nel prompt di proseguimento. `Nessuno` e `non osservato` sono dati validi; non inferire né
+   inventare per riempire.
+7. **Se il contesto è quasi esaurito** (specie durante un bug, prima di un compact) → dai un
    **«prompt proseguimento»** invece di iniziare la revisione o il report.
 
 ### Chiusura verso Matteo (dopo procedure fine chat)
@@ -398,7 +405,8 @@ Quando hai completato revisione (se rapida), aggiornamento report e raccolta dat
 
 - **Ciclo task:** sì — può aprire un’altra chat; questa è **completa a livello tecnico e operativo**
   per il lavoro richiesto (codice/validate/checklist/report skill area).
-- **Dati skill system:** report sessione + «Dati comunicazione» (e OSSERVAZIONI/PROPOSTE se aggiornati);
+- **Dati skill system:** report/capsula MetaSkillSystem + «Dati comunicazione» nelle standard/deep
+  (e OSSERVAZIONI/PROPOSTE se aggiornati);
   la **sessione revisore vocabolario** è separata e **non** blocca la chiusura.
 - **Checklist flussi utente da testare (OBBLIGATORIO per il profilo Esecuzione):** se il lavoro
   **introduce o cambia un flusso che Matteo deve provare a video** (UI, comportamento utente, messaggi,

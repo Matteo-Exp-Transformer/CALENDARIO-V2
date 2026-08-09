@@ -18,6 +18,9 @@ una **skill d'area**. **Non navigare il codice a tappeto:** apri prima il routin
 4. Se il task riguarda **interrogazione skill · profilo · valutazione · roadmap professionale ·
    tutoraggio · candidature**, ⛔ **non** è `APP_CONTEXT_SKILL.md` §0: è il binario crescita/valutazione.
    Carica prima `docs/_lavoro/Per matteo/Valutazione Personale/00_BUSSOLA_VALUTAZIONE.md`.
+5. Se il task riguarda **architettura · telemetria · criteri · ruoli/chiavi · validazione del
+   MetaSkillSystem**, carica `docs/MetaSkillSystem/METASKILL_SYSTEM_SKILL.md`. Se tratta anche dati o
+   valutazioni di Matteo, carica inoltre la Bussola del punto 4: i due contesti non si sostituiscono.
 
 ## Regola Codex per Supabase TEST
 

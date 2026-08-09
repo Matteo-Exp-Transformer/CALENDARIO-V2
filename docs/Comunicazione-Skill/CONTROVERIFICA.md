@@ -101,8 +101,8 @@ Nota: <skill/vocabolario coinvolto, se c'è>
 - **Non promuovere/regredire voci** di VOCABOLARIO né cambiarne i livelli (è di `REVISIONE.md`, sessione
   Meta dedicata). Qui **segnali** una reinterpretazione come dato, non la sistemi.
 - **Non inventare problemi per «riempire»**: se è pulito, di' `✅ PULITO`. Un falso allarme costa
-  fiducia. (Diverso dalle Q1-Q6, dove «inventa una critica plausibile» serve a raccogliere dati: qui
-  il verdetto deve essere vero.)
+  fiducia. Vale anche per le Q1-Q6: `nessuna osservazione`, accompagnato da ciò che è stato
+  verificato, è un dato valido; una critica inventata contamina la raccolta.
 
 ---
 

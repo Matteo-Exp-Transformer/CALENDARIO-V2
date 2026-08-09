@@ -30,9 +30,9 @@ Prima di scendere alla tabella delle aree, capisci **che tipo di task** stai per
 |---------|--------------|----------------------------|--------|-------|
 | **Esecuzione** | nuove feature · piccoli fix · responsive design | «implementa» · «sistema» · «fai» · «nuova feature» · «aggiungi» · «crea» | skill dell'**area pertinente** (tabella § 0 sotto) + UI (`UI_EDIT` / `UI_RESPONSIVE` se tocca layout/stile) | Testing-Skill, debug, comunicazione-revisione |
 | **Verifica** | debug · testing · revisione piani · revisione esecuzione | «revisiona» · «controlla» · «verifica» · «debugga» · «trova il bug» · «non funziona» | `docs/Testing-Skill/TESTING_SKILL.md` (**§7 protocollo QA manuale obbligatorio**: `npm run validate` + stessi test funzionali su viewport **375 / 834 / 1280** + tabella esiti nel report) + skill **dell'area che stai revisionando** + `UI_RESPONSIVE_SKILL.md` se layout/breakpoint | comunicazione-revisione |
-| **Meta** | revisione/miglioramento sistema comunicazione | «migliora comunicazione» · «aggiorna comunicazione» | **solo** `docs/COMUNICAZIONE_UTENTE_SKILL.md` + `docs/Comunicazione-Skill/REVISIONE.md` | tutte le skill di area/codice/DB/UI |
+| **Meta** | revisione/evoluzione del sistema documentale, della comunicazione o del MetaSkillSystem | «migliora comunicazione» · «aggiorna comunicazione» · richiesta esplicita di evolvere lo skill system | per comunicazione: `docs/COMUNICAZIONE_UTENTE_SKILL.md` + `docs/Comunicazione-Skill/REVISIONE.md`; per architettura/telemetria/validazione: `docs/MetaSkillSystem/METASKILL_SYSTEM_SKILL.md` | skill di area/codice/DB/UI non pertinenti |
 
-I profili non si sovrappongono — il discriminante è **cosa produce il task**: Esecuzione produce/modifica codice di una feature; Verifica controlla codice o piani già prodotti (sempre con i test); Meta lavora sul sistema documentale e sulla comunicazione, non sul codice dell'app. Coerenza con i due ruoli di § 7.0: Esecuzione e Verifica sono **agente di lavoro**, Meta è **agente revisore** (sessione dedicata).
+I profili non si sovrappongono — il discriminante è **cosa produce il task**: Esecuzione produce/modifica codice di una feature; Verifica controlla codice o piani già prodotti (sempre con i test); Meta lavora sul sistema documentale, sulla comunicazione o sull'architettura dello skill system, non sul codice dell'app. Nel profilo Meta si carica **solo il ramo pertinente**: revisione della comunicazione e progettazione del MetaSkillSystem sono due pacchetti diversi. Coerenza con i ruoli di § 7.0: Esecuzione e Verifica sono **agente di lavoro**, Meta è **agente revisore/progettista** (sessione dedicata).
 
 **Identificato il profilo, scendi alla tabella § 0 e applica solo le righe pertinenti al profilo.** Non caricare skill fuori dal profilo.
 
@@ -75,11 +75,12 @@ Leggi il task ricevuto e applica questa tabella:
 | **Privacy Policy / GDPR / DPA / cookie / registro trattamenti / data breach / "cose da fare per produzione" / conformità legale / configurazioni compliance Supabase (PITR, SSL, MFA)** | `docs/Legal-Production-Skill/LEGAL_PRODUCTION_SKILL.md` |
 | **Come rispondere a Matteo / spiegazioni / report / fine sessione / vocabolario / "spiegamelo semplice"** | `docs/COMUNICAZIONE_UTENTE_SKILL.md` + supporto `docs/Comunicazione-Skill/` (VOCABOLARIO, OSSERVAZIONI, PROPOSTE). Agente di lavoro: applica vocabolario + raccoglie dati + report esaustivo. Caricala a inizio (se usi il vocabolario o fai domande) e a fine sessione. |
 | **Revisione skill comunicazione / promuovere-regredire voci / valutare i dati raccolti / riformare lo skill system comunicazione** | `docs/Comunicazione-Skill/REVISIONE.md` — **sessione dedicata** col revisore, non in una chat di lavoro |
+| **Architettura MetaSkillSystem / telemetria sessioni / crescita Persona-Sistema-Output / ruoli e chiavi / pacchetti / validazione o migrazione dello skill system** | `docs/MetaSkillSystem/METASKILL_SYSTEM_SKILL.md` — entry point Meta; apre solo parametri, contratto dati o piano necessari. Se entra la valutazione di Matteo, aggiungere la Bussola del binario crescita. |
 | **«report finale» / controverifica del lavoro complessivo / revisione imparziale di fine sessione** | `docs/Comunicazione-Skill/CONTROVERIFICA.md` — sub-agente imparziale (non ha eseguito il lavoro) che pesa report+diff vs prompt di Matteo e flusso dati/utente; emette verdetto + prompt grezzo per `prepara-prompt`. Profilo **Verifica**. |
 | **Visione prodotto / perché una scelta / modello commerciale / roadmap / decisioni strutturali / dove trovo cosa** | `docs/Archivio/CONTESTO_PRODOTTO.md` — fonte di verità riassuntiva (no dati sensibili) |
 | **Masterplan blindatura / masterplan allineamento / roadmap skill-codice / WP milestone AL-*** | `docs/MASTERPLAN_BLINDATURA.md` + `docs/MASTERPLAN_ALLINEAMENTO.md` — indice WP eseguibili; non sostituiscono le skill di area |
-| **Follow-up / debito post-sessione / controlli rimandati / FU-NNN** | `docs/FOLLOW_UP.md` — collegare al report in `docs/Sessioni di lavoro/`; aggiornare a fine sessione (§7.1). Debito trasversale **fallback prod** → **FU-ALL-FALLBACK** + §4c. **Milestone lontana skill agenti tier avanzato** → **FU-ALL-TIER** + §4d. Agente **prepara-prompt**: ruolo attivo nel trovare follow-up (`docs/PREPARA_PROMPT_SKILL.md`). |
-| **Skill system / agenti Cursor / Codex / contesto chat / entry point / tier modello** | `docs/FOLLOW_UP.md` **FU-ALL-TIER** + §4d (solo design, non implementare senza sessione Meta) |
+| **Follow-up / debito post-sessione / controlli rimandati / FU-NNN** | `docs/FOLLOW_UP.md` — collegare al report in `docs/Sessioni di lavoro/`; aggiornare a fine sessione (§7.1). Debito trasversale **fallback prod** → **FU-ALL-FALLBACK** + §4c. Per lo skill system a strati, **FU-ALL-TIER è chiuso ed è solo origine storica**: stato corrente → `SYS-1` + §4d. Agente **prepara-prompt**: ruolo attivo nel trovare follow-up (`docs/PREPARA_PROMPT_SKILL.md`). |
+| **Skill system / agenti Cursor / Codex / contesto chat / entry point / tier modello** | `docs/MetaSkillSystem/METASKILL_SYSTEM_SKILL.md` + §4d. `docs/FOLLOW_UP.md` **FU-ALL-TIER** resta il puntatore storico, non la specifica corrente. Implementare solo in una sessione Meta autorizzata. |
 | Non è chiaro di quale area si tratti | Leggi `CLAUDE.md`, poi usa questa tabella |
 
 Carica il skill indicato **prima** di aprire qualsiasi file da modificare.
@@ -247,7 +248,7 @@ Tab impostazioni attivo: `RestaurantSettingsTab.tsx` (LOCK strutturale in `ADMIN
 ```
 docs/
 ├── APP_CONTEXT_SKILL.md        ← Skill 0, indice/routing (questo file, resta in root)
-│                               ← futuro: eventuali entry tier avanzato → FU-ALL-TIER §4d (non ancora creati)
+│                               ← migrazione futura degli entry point governata da MetaSkillSystem/PLAN_V0.md
 ├── ADMIN_CLASSIC_SKILL.md      ┐ skill "radice" citate da molti file → restano in root
 ├── DATA_FLOW_SKILL.md          │
 ├── COMUNICAZIONE_UTENTE_SKILL.md ┘
@@ -255,6 +256,7 @@ docs/
 ├── Prenota-Skill/              ← area Pagina Prenota: PRENOTA_SKILL (entry: senso+mappa) + contesto/*_CONTEXT (layout, text-limits, form-config, data-flow)
 ├── <Area>-Skill/ ·  per-ui-design-skill/   ← una cartella per area, skill + *_CONTEXT
 ├── Comunicazione-Skill/        ← VOCABOLARIO, OSSERVAZIONI, PROPOSTE, REVISIONE
+├── MetaSkillSystem/            ← ingresso Meta + parametri + contratto eventi + piano v0
 ├── Archivio/                   ← CONTESTO_PRODOTTO.md (fonte di verità, versionata, no dati sensibili)
 ├── Sessioni di lavoro/GG-MM-AA/  ← report sessioni vive (versionati, dal 23-05-26)
 └── _lavoro/                    ← LOCALE e gitignored (MAI committare). Sottocartelle:
@@ -361,13 +363,15 @@ Obiettivo unico: **eliminare elementi hardcodati di test/demo** e sostituirli co
 | **Esecuzione** | Sessione dedicata o incrementale per area (profilo **Esecuzione** + skill della tabella § 0). Non confondere con FU-009 (mappatura impostazioni Prenota): **FU-ALL-FALLBACK** è l'**audit globale** sui fallback. |
 | **Registro** | `docs/FOLLOW_UP.md` riga **FU-ALL-FALLBACK**; aggiornare a fine sessione (§7.1). |
 
-### 4d. Milestone lontana — skill system per agenti più competenti (FU-ALL-TIER)
+### 4d. Cantiere aperto — MetaSkillSystem v0 (SYS-1; origine FU-ALL-TIER)
 
-> **Non è lavoro corrente.** Tenere traccia finché non si fa una sessione Meta dedicata al design.
-> Lo skill system attuale (Skill 0 + skill d’area + `PREPARA_PROMPT` + `.cursor/skills/` puntatori)
-> resta la **fonte unica** fino a decisione esplicita.
+> **Decisione esplicita 09-08-26:** Matteo ha aperto `SYS-1` scegliendo una v2 a strati e dando
+> priorità alla raccolta dati Persona · Sistema · Output. Specifica e gate vivono in
+> `docs/MetaSkillSystem/`. Lo skill system attuale (Skill 0 + skill d’area + `PREPARA_PROMPT` +
+> `.cursor/skills/` puntatori) resta operativo durante la modalità ombra: non viene migrato o
+> sostituito finché non passano i gate di `PLAN_V0.md`.
 
-**Problema da risolvere (futuro):** modelli e tool con capacità diverse (es. Cursor Auto vs thinking vs Claude Codex)
+**Problema da risolvere:** modelli e tool con capacità diverse (es. Cursor Auto vs thinking vs Claude Codex)
 beneficiano di **ingressi diversi**: agenti leggeri → meno token, solo routing + LOCK del task; agenti forti →
 pack più ricco senza ripetere tutto §4 ogni volta in forme ridondanti.
 
@@ -387,9 +391,10 @@ invece di un solo `APP_CONTEXT_SKILL.md` monolitico.
 in due versioni diverse; (3) agente forte riceve contesto sufficiente per task multi-area senza leggere tutto `docs/`;
 (4) agente leggero non carica Legal/DB se fa solo un fix UI.
 
-**Registro e trigger:** `docs/FOLLOW_UP.md` **FU-ALL-TIER** (stato `Milestone lontana`). Roadmap prodotto:
-`docs/Archivio/CONTESTO_PRODOTTO.md` §4. **Non** creare nuovi file `.cursor/skills/` in chat di lavoro
-normale — solo in sessione approvata che produce un mini-piano (anche 1 pagina in `docs/_lavoro/Supporto/` se serve).
+**Registro e trigger:** stato corrente in `docs/MetaSkillSystem/PLAN_V0.md` (`SYS-1`); `docs/FOLLOW_UP.md`
+**FU-ALL-TIER** conserva l'origine storica. Roadmap prodotto: `docs/Archivio/CONTESTO_PRODOTTO.md` §4.
+**Non** creare nuovi file `.cursor/skills/` in chat di lavoro normale: la migrazione degli ingressi è
+un WP del piano e richiede i gate precedenti.
 
 ---
 
@@ -465,18 +470,22 @@ di lavoro. Il report (§7.1) e l'allineamento skill (§7.2) sono parte del fluss
 > (la classifica `PREPARA_PROMPT_SKILL.md` § 1.A e la scrive nel prompt; se manca, deducila tu dai
 > trigger deep sotto). La modalità decide **quanto** di questo § 7 applichi:
 > - **light** (fix piccolo, 1 zona, basso rischio): **niente file report dedicato** → aggiungi **1
->   riga** in `docs/SESSION_LOG.md` con cosa hai fatto. Niente sezione Dati comunicazione. Applichi
->   § 7.2 solo se hai toccato un file di skill. Nessuna checklist.
-> - **standard** (feature/fix normale): report `Report-*.md` con le sezioni base + Dati comunicazione;
->   § 7.2 delle aree toccate.
-> - **deep** (vedi trigger): protocollo **completo** sotto, senza tagli (Dati comunicazione +
->   Derivazione errori + follow-up + § 7.2).
+>   riga narrativa** in `docs/SESSION_LOG.md` con cosa hai fatto, `event_id` e link al file JSONL
+>   pilot-only previsto da `docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md`. La capsula non
+>   vive dentro la tabella Markdown. Niente sezione Dati comunicazione.
+>   Applichi § 7.2 solo se hai toccato un file di skill. Nessuna checklist.
+> - **standard** (feature/fix normale): report `Report-*.md` con le sezioni base + Dati comunicazione
+>   + capsula MetaSkillSystem; § 7.2 delle aree toccate.
+> - **deep** (vedi trigger): protocollo **completo** sotto, senza tagli (Dati comunicazione + capsula
+>   MetaSkillSystem + Derivazione errori + follow-up + § 7.2).
 >
 > **Trigger DEEP obbligatori** (basta uno, a prescindere dalla dimensione): DB/migrazioni/prod/RLS ·
 > file LOCK (§ 4) · più di una view o nuovo componente · auth/login/pagamenti. **L'esecutore può solo
 > ALZARE la modalità in corsa, mai abbassarla** (se scopre un rischio, sale a deep e lo segnala).
 
-Per **standard** e **deep**, creare un file `Report-*.md` in `docs/Sessioni di lavoro/GG-MM-AA/` (creando la cartella se non esiste). Per **light**, basta la riga in `SESSION_LOG.md`.
+Per **standard** e **deep**, creare un file `Report-*.md` in `docs/Sessioni di lavoro/GG-MM-AA/`
+(creando la cartella se non esiste). Per **light**, creare soltanto l'evento JSONL e la riga/link in
+`SESSION_LOG.md`, senza report dedicato.
 
 > **Cappello obbligatorio del report (3 righe, sempre in cima — milestone M2).** Subito dopo
 > l'intestazione, prima di ogni altra sezione, scrivi 3 righe fisse perché Matteo decida se aprire il
