@@ -67,7 +67,7 @@ Non sostituisce:
   `docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-post-f4-reasoning-plan-h13-l5-10-08-26.md`
   (quadro generale **prima** della strategia; **non** esecuzione L5).
 - **Catena prove:** `033` ← `032` ← `031`/`030` ADEGUATO ← `028` F3 ← …
-- **Git:** `env/test` HEAD `2870f5d` (F4-doc) — push report finale; L5+rumore in **stash**
+- **Git:** `env/test` HEAD `3fd03ec` (F4-doc) — push report finale; L5+rumore in **stash**
   (messaggio: `wip: L5+rumore pre reasoning/plan H13` — `git stash list`).
 
 ### Quadro generale (per ripartenza senior — MSS)
