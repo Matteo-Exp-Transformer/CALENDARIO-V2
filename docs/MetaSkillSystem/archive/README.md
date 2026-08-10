@@ -50,7 +50,35 @@ Quando (e solo quando) una fase autorizzata crea uno stub al posto di un path sp
 2. **Rimozione:** dopo TTL **e** `rg` a zero hit sul path vecchio (repo + docs citati).
 3. Ogni stub dichiara: path nuovo, data creazione, TTL, criterio rimozione.
 
-F1/F2 **non** creano stub. F3 (move `REPORT_001`) resta **vietato** finché non è sanato B2-F01.
+F1/F2 **non** creano stub. **F3** (move `REPORT_001`) è **autorizzato** dal mandato Matteo `027`
+(prompt: `docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-f3-move-report001-10-08-26.md`) ma
+**non ancora eseguito** in questa tree finché la chat F3 non lo fa. **SEP-G5 non PASS**.
+
+---
+
+## Link pre-move `REPORT_001` (B2-F01 / SEP-D09 — sanato in inventario)
+
+Fonte completa:
+`docs/Sessioni di lavoro/10-08-26/SEP-10-archiviazione/Addendum-M03-link-REPORT_001-B2-F01-10-08-26.md`
+(supersede della sola cella `link_da_aggiornare` M03 di B1).
+
+| Classe | Path | Azione a F3 |
+|---|---|---|
+| L1 operativo | `METASKILL_SYSTEM_SKILL.md` | **update link** |
+| L2 operativo | `Senior-Eval-Pack/CATALOGO_SEDUTE_E_METODI_V0.md` | **update link** |
+| L3 citazione | `PLAN_V0.md` | **leave-as-history** — vedi policy sotto |
+| N* narrativa | MASTERPLAN / HANDOFF / questo README | update testo solo se i fatti cambiano |
+| H* storica | report SEP-10/11, A1–B2 | **leave-as-history** |
+
+### Policy `PLAN_V0` (citazione storica ≠ rewrite stato)
+
+- `PLAN_V0` resta owner di `SYS-1`. Una riga di changelog che cita `REPORT_001` **non** autorizza
+  a riscrivere gate/WP/stato «mentre» si fa F3.
+- A F3 preferire **leave-as-history** (o validità via stub al path vecchio).
+- Aggiornare il path dentro `PLAN_V0` richiede mandato **SYS-1** esplicito, distinto dal mandato F3.
+
+**Inventario documentale sanato ≠ autorizzazione F3.** F3 solo con nuovo mandato Matteo.
+**SEP-G5** resta non PASS.
 
 ---
 
@@ -89,4 +117,5 @@ Rollback F1/F2: eliminare i file creati sotto `archive/` (nessun reverse-move: n
 - Nessun rename/move/copy di storia in F1/F2.
 - Nessun claim `SEP-G5` PASS.
 - Nessun touch L5/L6 da fasi archive senza mandato dedicato.
-- F3 solo dopo remediation **B2-F01** + nuovo mandato Matteo.
+- F3: mandato `027` presente; esecuzione = chat col prompt F3; **SEP-G5 non PASS**.
+- Nessun rewrite di stato in `PLAN_V0` mascherato da link-fix.

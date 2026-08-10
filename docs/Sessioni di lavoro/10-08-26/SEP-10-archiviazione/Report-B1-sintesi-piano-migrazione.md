@@ -419,3 +419,16 @@ Nessuna di queste rende il piano **BLOCCATO**: sono vincoli di fase / decisioni,
 **Decisioni da scegliere (non eseguite):** D1 prima fase · D2 untracked · D3 dove vive archive · D4 freeze prove · D5 TTL redirect.
 
 **Sì/No:** avvio Prompt-B2 (revisore distinto) nella prossima chat?
+
+---
+
+## Rettifica append-only — M03 `link_da_aggiornare` (B2-F01 / SEP-D09)
+
+> **Data:** 10-08-2026 · **Sessione:** `SEP-SES-20260810-026` · Relazione: `supersedes_interpretation` sulla sola cella `link_da_aggiornare` di §5 riga **M03**.
+> La tabella M01–M11 sopra resta storia della sintesi B1; **non** è stata riscritta in-place.
+
+La cella originale elencava solo `METASKILL_SYSTEM_SKILL`. Controprova B2 + inventario `rg` `026`: superficie completa in
+[Addendum-M03-link-REPORT_001-B2-F01-10-08-26.md](./Addendum-M03-link-REPORT_001-B2-F01-10-08-26.md)
+(L1 skill · L2 CATALOGO · L3 PLAN_V0 leave-as-history + policy · N1–N3 narrativa).
+
+**F3 non autorizzato** da questa rettifica.

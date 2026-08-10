@@ -63,7 +63,7 @@ Questi stati valgono soltanto per i work package elencati qui e non aggiornano `
 | `SEP-8` | Primo confronto controllato | `BLOCCATO_DA_GATE` | richiede almeno due istanze comparabili; vietato anticipare ranking |
 | `SEP-9` | Consolidamento del routing | `BLOCCATO_DA_GATE` | richiede evidenza d'uso delle rotte; nessun secondo router senza mandato |
 | `SEP-10` | Analisi read-only dell'archiviazione | `CHIUSO_NEL_DISEGNO` | A1–A4 + B1 + B2 (`Report-B2-review-piano-migrazione.md`); B1 self-report «PRONTO PER DECISIONE»; B2 = **`ADEGUATO_CON_RISERVE`** (HIGH B2-F01 M03 link); **nessuna** migrazione; **SEP-G5 non PASS** |
-| `SEP-11` | Piano di migrazione controllata | `IN_CORSO` (F1+F2 **chiusi nel disegno**; F3+ bloccati) | F1+F2 create-only eseguiti (`025`): `archive/README` + `indices/MSS-REPORT-INDEX`; zero move; slice D2 staged (no commit); **F3+ bloccati** da B2-F01; **SEP-G5 non PASS** |
+| `SEP-11` | Piano di migrazione controllata | `IN_CORSO` (F1+F2+B2-F01 fatti; **F3 autorizzato**, non eseguito) | F1+F2 (`025`); D2 `6336c19`; B2-F01 inventario (`026`); go/no-go + mandato F3 (`027`); prompt F3 pronto; **SEP-G5 non PASS**; push no |
 | `SEP-12` | Promozione da sperimentale ad affidabile | `BLOCCATO_DA_GATE` | richiede review, uso prospettico, debiti accettati e decisione esplicita di Matteo |
 
 ### 4-bis. Registro append-only delle transizioni WP
@@ -80,6 +80,8 @@ Questi stati valgono soltanto per i work package elencati qui e non aggiornano `
 | 10-08-2026 | `SEP-10` (review B2) | `CHIUSO_NEL_DISEGNO` (invariato) + nota B2 | `Report-B2-review-piano-migrazione.md` | Verifica revisore `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-023`) | verdetto `ADEGUATO_CON_RISERVE`; HIGH B2-F01; **SEP-G5 non PASS**; zero rename/move; SEP-11 resta bloccato |
 | 10-08-2026 | `SEP-11` (decisioni) | `BLOCCATO_DA_GATE` → `NON_INIZIATO` con perimetro F1+F2 autorizzato | `Report-decisioni-d1-d5-perimetro-sep11-f1-f2-10-08-26.md` | Meta registrar `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-024`) | D1=b · D2=c · D3=a · D4=a · D5=a; F3 bloccato (B2-F01); zero rename/move in `024` |
 | 10-08-2026 | `SEP-11` (F1+F2) | `NON_INIZIATO` → `IN_CORSO` (F1+F2 chiusi; F3+ aperti solo dopo B2-F01) | `Report-sep-11-f1-f2-archive-shell-indice-10-08-26.md` | Meta writer `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-025`) | create-only archive shell + indice; zero move; D2 slice staged; SEP-G5 non PASS |
+| 10-08-2026 | `SEP-11` (B2-F01 / D09) | `IN_CORSO` invariato · debito D09 → inventario completo | `Addendum-M03-link-REPORT_001-B2-F01-10-08-26.md` + report remediation `026` | Meta writer `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-026`) | `rg` completo; M03 supersede; policy PLAN_V0 leave-as-history; **F3 non autorizzato**; SEP-G5 non PASS |
+| 10-08-2026 | `SEP-11` (go/no-go + mandato F3) | `IN_CORSO` · F3 **autorizzato** (non eseguito) | `Report-go-nogo-b2-f01-e-mandato-f3-10-08-26.md` + `Prompt-sep-11-f3-move-report001-10-08-26.md` | Meta go/no-go+prepara `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-027`) | review `026` ADEGUATO; commit remediation; no push; F3 solo in chat nuova col prompt |
 
 ## 5. Gate
 
@@ -122,17 +124,18 @@ conferma esplicita del perimetro di scrittura. Fino ad allora l'archivio resta i
 
 ## 6. Prossimo passo atomico
 
-**Immediato:** remediation documentale **B2-F01** (M03 `link_da_aggiornare`: skill + CATALOGO +
-policy citazioni PLAN_V0) **oppure** stop; **non** aprire F3 senza nuovo mandato dopo B2-F01.
-F1+F2 create-only = fatti (`025`): `docs/MetaSkillSystem/archive/README.md` +
-`archive/indices/MSS-REPORT-INDEX.md`. Slice D2: staged, **non** commit finché Matteo non dice
-«fai report finale».
+**Immediato:** eseguire **SEP-11 F3** (move `REPORT_001` + stub + update L1/L2) nella chat
+nuova col prompt
+`docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-f3-move-report001-10-08-26.md`.
+Mandato Matteo `027`: F3 **autorizzato**; **push no**; **SEP-G5 non PASS**.
 
-**Vietato senza nuovo mandato:** F3/move `REPORT_001`; touch L5; `_lavoro`; rewrite `PLAN_V0`;
-claim SEP-G5 PASS; sanatoria H-1.3; WP-1. **Pre-F3 obbligatorio:** B2-F01.
+Precondizioni soddisfatte: F1+F2 (`025`); D2 committed `6336c19`; B2-F01 inventario (`026`)
+committed con `027`; Addendum-M03 + policy PLAN leave-as-history.
 
-**Non automatico:** `SEP-5` (freeze prospettico) resta bloccato da decisioni Matteo su compito,
-criteri, ruoli e conseguenze — il `PASS_CON_RISERVE` **non** lo apre da solo.
+**Vietato senza nuovo mandato oltre F3:** altri move; touch L5; `_lavoro`; rewrite stato
+`PLAN_V0`; claim SEP-G5 PASS; sanatoria H-1.3; WP-1; SEP-5.
+
+**Non automatico:** `SEP-5` resta bloccato da decisioni freeze separate.
 
 **Decisione Matteo 10-08-2026 (CHIUSA — non riaprire senza nuova evidenza):**
 accetta `SEP-G1_PASS_CON_RISERVE` con convalida **Cursor-only** (nessun budget per altri modelli);
@@ -141,6 +144,9 @@ vuole proseguire oltre il blocco indipendenza. Fonte:
 
 **Decisione Matteo 10-08-2026 (CHIUSA — D1–D5):** D1=(b) F1+F2 · D2=(c) slice track pack+analisi ·
 D3=(a) `archive/` nuovo · D4=(a) freeze L5 · D5=(a) TTL 30gg + `rg` zero. Fonte: report `024`.
+
+**Decisione Matteo 10-08-2026 (CHIUSA — go/no-go F3):** no push; commit remediation `026`;
+**F3 autorizzato** per chat nuova col prompt file (`027`). Fonte: report `027`.
 
 **Storia (non rivivere come blocco):** rimando soft di `019` e bozza Ask BLOCKED erano contesto;
 il verdetto formale vive nel report `020`.
@@ -169,14 +175,14 @@ freeze/attribuzione soft.
 | `SEP-D05` | rischio di confondere CFG E1–E5 con una scala comparativa senior | mantenere domini distinti e nessun riuso senza nuovo protocollo |
 | `SEP-D06` | roadmap potrebbe diventare un secondo owner | aggiornare la vista solo dopo il masterplan e senza stati vivi |
 | `SEP-D07` | handoff attivo stale o trasformato in secondo masterplan | aggiornamento obbligatorio dopo report/verifiche; masterplan prevale su ogni divergenza |
-| `SEP-D09` | B2-F01: M03 `link_da_aggiornare` incompleto (CATALOGO + PLAN_V0) | **obbligatorio prima di F3**; non blocca F1+F2 create-only |
+| `SEP-D09` | B2-F01: M03 `link_da_aggiornare` incompleto (CATALOGO + PLAN_V0) | **inventario sanato** (`026`); mandato F3 dato in `027`; **esecuzione F3 ancora da fare** |
 
 ## 9. Decisioni aperte e condizioni operative
 
 Decisioni ancora appartenenti a Matteo:
 
-- se/quando sanare B2-F01 e autorizzare **F3** (F1+F2 già eseguiti in `025`);
-- commit/push dello slice D2 (solo su «fai report finale»);
+- esito post-F3 (stop / review breve / altro) — **dopo** esecuzione;
+- push dei commit locali (D2 `6336c19` + remediation/go-nogo) — **no** finché non lo chiede;
 - compito e configurazione della prima eval prospettica (`SEP-5`/`SEP-G2`);
 - criteri, conseguenze e tetto delle ripetizioni da congelare;
 - eventuale autorizzazione a nuovo enforcement (F02/F03) o remediation `SEP-D08`;
@@ -189,7 +195,8 @@ Decisioni ancora appartenenti a Matteo:
 `.cursor/plans/sep-10_archiviazione_mss_430c9c1d.plan.md` — **tenere**, non rifare);
 allineamento method_ref `015` → `SEP-MET-foundation-co-design-0.1` (remediation `018`);
 rimando soft `019` superato dalla formalizzazione `020`;
-**D1–D5** (`024`): F1+F2 · slice track · `archive/` · freeze L5 · TTL redirect 30gg.
+**D1–D5** (`024`): F1+F2 · slice track · `archive/` · freeze L5 · TTL redirect 30gg;
+**no push** (`027`); **F3 autorizzato** via prompt chat nuova (`027`).
 
 **Pausa:** fermarsi su conflitto di owner, mutazione post hoc del protocollo, fonte privata non
 autorizzata, finding HIGH, contaminazione della review o necessità di scrivere fuori perimetro.

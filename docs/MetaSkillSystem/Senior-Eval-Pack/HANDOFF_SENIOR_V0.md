@@ -52,67 +52,64 @@ Non sostituisce:
 > autonomamente alcuno stato. In caso di divergenza con `MASTERPLAN_V0.md`, vince il masterplan.
 
 - **Aggiornato il:** 10-08-2026.
-- **Sessione:** `SEP-SES-20260810-025` (SEP-11 F1+F2 create-only; correlazione `021`–`024`).
-- **Autore:** Cursor Grok 4.5, ruolo Meta writer (esecutore F1+F2).
+- **Sessione:** `SEP-SES-20260810-027` (go/no-go B2-F01 + mandato F3 + commit remediation; correlazione `021`–`026`).
+- **Autore:** Cursor Grok 4.5, ruolo Meta go/no-go + prepara prompt F3 (NON esecutore F3).
 - **Configurazione:** `SEP-AGC-xai-cursor-001`.
-- **Metodo:** create-only archive shell + indice puntatore; slice track D2; zero move.
-- **Tipo di evidenza:** file creati + report `025` + validate:mss.
-- **Verifica:** `validate:mss` sul report `025`; `git diff --check`; checklist no L5/`_lavoro` in write.
+- **Metodo:** revisione prove `026` → decisione Matteo → commit → prompt F3 + quadro owner.
+- **Tipo di evidenza:** report `027` + Addendum-M03 + commit remediation.
+- **Verifica:** spot-check `rg`/path; allineamento MASTERPLAN; validate:mss su `027`.
 - **Comparabilità:** `non_comparabile`.
-- **Masterplan letto:** `MASTERPLAN_V0.md` — gate **`SEP-G1_PASS_CON_RISERVE`**; `SEP-10` =
-  `CHIUSO_NEL_DISEGNO` + B2 `ADEGUATO_CON_RISERVE`; `SEP-11` = **`IN_CORSO`** (F1+F2 chiusi;
-  F3+ bloccati); **SEP-G5 non PASS**; `SEP-5` non automatico.
+- **Masterplan letto:** `MASTERPLAN_V0.md` — `SEP-G1_PASS_CON_RISERVE`; `SEP-10` chiuso nel disegno;
+  `SEP-11` = **`IN_CORSO`** con **F3 autorizzato non eseguito**; **SEP-G5 non PASS**.
 - **Ultimo report:**
-  `docs/Sessioni di lavoro/10-08-26/Report-sep-11-f1-f2-archive-shell-indice-10-08-26.md`.
-- **Catena prove:**
-  - F1+F2: report `025` + `archive/README.md` + `archive/indices/MSS-REPORT-INDEX.md`;
-  - decisioni: report `024`;
-  - B2: `SEP-10-archiviazione/Report-B2-review-piano-migrazione.md` (`023`);
-  - B1 / A1–A4 in `SEP-10-archiviazione/`;
-  - G1: `Report-accettazione-sep-g1-pass-con-riserve-cursor-only-10-08-26.md` (`020`).
-- **Git finale:** `env/test`; HEAD `bec82c39f9e821ef33ac99214dc2efada27dcf1a`; ahead 2;
-  slice D2 **staged** (pack + SEP-10 + report correlati + archive); L5 fixture/scripts **non** staged;
-  commit solo su mandato «fai report finale».
+  `docs/Sessioni di lavoro/10-08-26/Report-go-nogo-b2-f01-e-mandato-f3-10-08-26.md`.
+- **Prompt prossimo task:**
+  `docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-f3-move-report001-10-08-26.md`.
+- **Catena prove:** `027` ← `026` Addendum-M03 ← `025` F1+F2 ← `024` D1–D5 ← `023` B2 ← B1/A* ← `020` G1.
+- **Git:** `env/test`; D2 `6336c19`; remediation+go/no-go committed in chiusura `027`; **no push**; L5 fuori.
+
+### Quadro generale (per ripartenza senior — MSS)
+
+1. **Due owner:** pack → `MASTERPLAN_V0`; SYS-1 → `PLAN_V0` (stale vs H-1.3 FAIL = vincolo esterno, non sanare in F3).
+2. **Onda archivio:** analisi SEP-10 chiusa → SEP-11 a fasi: F1+F2 fatti → B2-F01 inventario fatto → **F3 = prossimo** (unica fase).
+3. **Freeze:** L5 path-coupled e L6 `_lavoro` intangibili; D4/D5 restano.
+4. **Link M03:** L1 skill + L2 CATALOGO = update a F3; L3 PLAN = leave-as-history; H* report = storia.
+5. **Assi capsula:** persona/sistema/output obbligatori in chiusura deep; `validate:mss`.
+6. **Gate:** G1 con riserve R1–R3; G5 **non** PASS anche dopo F3 riuscito.
+7. **Fuori corsia:** H-1.3, WP-1, SEP-5, ranking, Valutazione Personale.
 
 ### Fatto osservato
 
-Eseguiti **F1** (`archive/README.md` policy) e **F2** (`indices/MSS-REPORT-INDEX.md` puntatori).
-Zero rename/move/copy di storia. Slice D2 `git add` mirato eseguito (no commit). B2-F01 resta aperto.
+Review `026` = ADEGUATO. Matteo: no push; commit remediation; autorizza F3 via prompt nuova chat.
+F3 **non** eseguito in `027`.
 
 ### Effetto prodotto
 
-- shell archive + indice esistono;
-- SEP-11 = `IN_CORSO` con F1+F2 chiusi nel disegno;
-- prossimo = remediation B2-F01 **oppure** stop; F3 ancora vietato.
+- remediation versionata;
+- mandato F3 esplicito + prompt file;
+- handoff/masterplan con quadro per non perdere direzione.
 
 ### Problema strutturale corrente
 
-B2-F01 (link M03 incompleti) blocca F3. L5 path-coupled freeze (D4). H-1.3 FAIL / PLAN_V0 stale
-fuori corsia. Slice D2 staged ma non commitato.
+F3 ancora da eseguire. Push locale non fatto. H-1.3/PLAN stale fuori. Indipendenza soft.
 
 ### Cosa non è dimostrato
 
-- SEP-G5 / cutover / efficacia F3;
-- indipendenza forte;
-- H-1.3 / WP-1 / SEP-5.
+- efficacia move/stub/link post-F3; SEP-G5; H-1.3; SEP-5.
 
 ### Prossimo task atomico derivato
 
-**Remediation B2-F01** (espandere `link_da_aggiornare` M03) **oppure** stop. **STOP** su F3/move
-`REPORT_001` finché B2-F01 non è sanato e Matteo non dà nuovo mandato. Commit slice D2 solo su
-«fai report finale».
+**Eseguire F3** con il prompt file citato sopra. Poi stop o review breve. **STOP** su L5/PLAN rewrite stato/G5 PASS/push/altri move.
 
 ### Gate
 
-`SEP-G1` = `PASS_CON_RISERVE` (R1–R3).
-`SEP-G5` **non** PASS (F1+F2 ≠ cutover).
-`SEP-5`/`SEP-G2` richiedono decisioni freeze separate.
+`SEP-G1` = `PASS_CON_RISERVE`. `SEP-G5` **non** PASS. `SEP-5` bloccato.
 
 ### STOP e decisioni di Matteo
 
-- STOP: niente F3/move/L5/`_lavoro`/PLAN_V0 rewrite/SEP-G5 PASS/H-1.3/WP-1 senza nuovo mandato.
-- Decisioni chiuse: Cursor-only; D1–D5; plan SEP-10 tenuto; B2 ADEGUATO_CON_RISERVE; F1+F2 eseguiti.
-- Decisioni aperte: timing B2-F01 → F3; commit slice D2; corsia H-1.3.
+- STOP: L5, `_lavoro`, PLAN rewrite stato, G5 PASS, H-1.3, WP-1, push, move oltre M03.
+- Chiuse: Cursor-only; D1–D5; no push; F3 autorizzato (prompt).
+- Aperte: esito post-F3; quando push; corsia H-1.3.
 
 ## 4. Chiusura obbligatoria di ogni sessione senior
 
@@ -174,6 +171,8 @@ Non copiare nel handoff intere narrative, capsule o dati privati: usare puntator
 | `SEP-SES-20260810-023` | 10-08-2026 | Verifica revisore SEP-10 B2 · `SEP-AGC-xai-cursor-001` | Prompt-B2 review avversariale | `ADEGUATO_CON_RISERVE`; HIGH B2-F01; SEP-G5 non PASS; zero move | `validate:mss` OK + self_report capsula | `non_comparabile` | `SEP-10-archiviazione/Report-B2-review-piano-migrazione.md` |
 | `SEP-SES-20260810-024` | 10-08-2026 | Meta registrar decisioni · `SEP-AGC-xai-cursor-001` | registrazione D1–D5 + perimetro | D1=b D2=c D3=a D4=a D5=a; F1+F2 autorizzati; F3 bloccato; zero move | decisione Matteo + allineamento owner | `non_comparabile` | `Report-decisioni-d1-d5-perimetro-sep11-f1-f2-10-08-26.md` |
 | `SEP-SES-20260810-025` | 10-08-2026 | Meta writer F1+F2 · `SEP-AGC-xai-cursor-001` | create-only archive + indice | F1+F2 fatti; SEP-11 `IN_CORSO`; zero move; D2 staged; F3 bloccato | `validate:mss` + diff-check | `non_comparabile` | `Report-sep-11-f1-f2-archive-shell-indice-10-08-26.md` |
+| `SEP-SES-20260810-026` | 10-08-2026 | Meta writer B2-F01 · `SEP-AGC-xai-cursor-001` | inventario `rg` + Addendum-M03 + policy PLAN_V0 | SEP-D09 inventario sanato; F3 non autorizzato; zero move; SEP-G5 non PASS | `validate:mss` + diff-check | `non_comparabile` | `Report-remediation-b2-f01-link-report001-pre-f3-10-08-26.md` |
+| `SEP-SES-20260810-027` | 10-08-2026 | Meta go/no-go + prepara · `SEP-AGC-xai-cursor-001` | review 026 + commit + prompt F3 | 026 ADEGUATO; F3 autorizzato non eseguito; no push; quadro handoff | decisione Matteo + allineamento owner | `non_comparabile` | `Report-go-nogo-b2-f01-e-mandato-f3-10-08-26.md` |
 
 Il registro dimostra soltanto che il passaggio è stato dichiarato e documentato. La verifica si
 legge nel report collegato e nel successivo eventuale record di review.
