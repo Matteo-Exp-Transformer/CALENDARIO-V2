@@ -3,8 +3,11 @@
 > **Cantiere:** `SYS-1` · **Stato:** aperto · **Modalità:** ombra  
 > **Proprietà:** questo file è l'unica fonte di verità per stato, sequenza, progressi e gate del
 > MetaSkillSystem v0. Roadmap, handoff e report rimandano qui senza ricopiare lo stato.  
-> **Ultimo movimento:** 09-08-26 — `WP-0.1` chiuso nel disegno sul contratto
-> `mss.session/0.1.0`; protocollo e 14 fixture minime congelati; `H-1` è il pacchetto attivo.
+> **Ultimo movimento:** 10-08-26 — `H-1.1` chiuso nel disegno dopo 17 controprove inizialmente
+> rosse, confronto append-only `HEAD`/staged, semantica dei tre assi, modalità/versioni strette,
+> amendment storico delimitato e 14 frozen con fingerprint. 41 fixture + 19 gruppi verdi; salute
+> applicativa fuori Archives verde. `WP-1` resta non iniziato e richiede prima una revisione completa
+> esterna dedicata. Checkpoint WP-0.1 locale `7632443`. Nessun commit/push.
 
 ## 1. Scopo
 
@@ -58,8 +61,9 @@ lavoro del masterplan.
 | 0 | `WP-0` — parametri macro e prima capsula | `CHIUSO NEL DISEGNO` | efficacia da osservare nei piloti |
 | 1 | `MP-0` — report osservazioni + masterplan unico | `CHIUSO E OSSERVATO` 09-08-26 | roadmap generale ridotta a puntatore |
 | 2 | `WP-0.1` — hardening pre-pilota | `CHIUSO NEL DISEGNO` 09-08-26 | efficacia da osservare nel primo pilota |
-| 3 | `H-1` — validator + hook rapidi | **`APERTO` — ADESSO** | errori meccanici intercettati sulle superfici dichiarate |
-| 4 | `WP-1` — piloti reali in ombra | `BLOCCATO DA H-1` | ricostruzione fredda senza perdita/invenzione |
+| 3 | `H-1` — validator + hook rapidi | **chiusura invalidata dalla revisione H-1.1** | resta storia del primo hardening |
+| 3.1 | `H-1.1` — integrità append-only e semantica | **`CHIUSO NEL DISEGNO` 10-08-26** | revisione completa esterna prima di WP-1 |
+| 4 | `WP-1` — piloti reali in ombra | **`NON INIZIATO` — NON PRONTO PRIMA DELLA REVISIONE ESTERNA H-1.1** | ricostruzione fredda senza perdita/invenzione |
 | 5 | `WP-2` — mining storico normalizzato | `BLOCCATO DA PRIMO PILOTA` | eventi citano fonti e schema/versione |
 | 6 | `WP-3` — kernel, manifest, pacchetti e chiavi | `NON INIZIATO` | autorità e precedenze formalizzate |
 | 7 | `WP-4` — preflight, registro Output e viste | `NON INIZIATO` | conflitti/owner/scope rilevati prima delle azioni coperte |
@@ -90,9 +94,10 @@ anticipare il kernel completo di WP-3.
 
 ### Artefatti congelabili
 
-- `CONTRATTO_CAPSULA_SESSIONE_V0.md` possiede schema e semantica `mss.session/0.1.0`;
-- `PROTOCOLLO_PRIMO_PILOTA_V0_1.md` possiede oggetto, ruoli, denominatore, conseguenze e i 14 ID
-  minimi delle fixture H-1;
+- `CONTRATTO_CAPSULA_SESSIONE_V0.md` possiede schema e semantica vivi `mss.session/0.1.1`
+  (storia `0.1.0` nel checkpoint WP-0.1);
+- `PROTOCOLLO_PRIMO_PILOTA_V0_1.md` possiede oggetto, ruoli, denominatore, conseguenze, risultato
+  pilota strutturato e i 14 ID minimi delle fixture H-1 (versione viva `1.0.1`);
 - `fixtures/v0.1/FX-V02-*` dimostra con dati sintetici che link Markdown e JSONL restano separati e
   parsabili;
 - `PARAMETRI_MACRO_V0.md` resta owner dei cinque gate prodotto e dei parametri macro;
@@ -173,17 +178,50 @@ Per ogni controllo scrivere:
 
 ### Gate di chiusura
 
-H-1 chiude soltanto se:
+H-1 è **chiuso nel disegno** (non ancora osservato su piloti reali) perché:
 
-- un input valido passa allo stesso modo da comando e hook;
-- casi invalidi minimi sono respinti con messaggio azionabile;
+- un input valido passa allo stesso modo da comando e hook/adapter;
+- le cinque controprove della revisione fredda sono respinte con rule code stabile;
+- casi invalidi minimi sono respinti con messaggio azionabile (`rule_code` + file + field path);
 - light e standard/deep sono entrambi coperti;
-- il limite Cursor/Cloud e ogni fail-open sono dichiarati;
-- nessun hook viene classificato E3 se blocca soltanto il commit o la chiusura.
+- bundle finali hanno un solo evento logico, assi finali, verificatori separati e gate prodotto
+  completi; path assoluti/traversal/symlink escape e link light incoerenti sono respinti;
+- le fixture negative sono valutate dal manifest e non impediscono il commit degli artefatti di test;
+- la normale suite non riscrive le fixture e segnala drift rispetto al generatore;
+- stop e pre-commit sono provati in integrazione; Cloud/Codex/Claude senza hook, `--no-verify`,
+  unstaged, report non recenti o senza modalità restano bypass dichiarati nella matrice;
+- nessuna CI è dichiarata perché nessun workflow esegue H-1;
+- nessun hook è classificato E3: blocco solo a stop/pre-commit sulla pubblicazione staged.
 
-Numero e significato delle fixture minime sono congelati da `0.1-G`: **14 casi**
-`FX-V01…FX-V04` e `FX-I01…FX-I10`, definiti nel protocollo del primo pilota. H-1 crea i file
-eseguibili e può aggiungere casi senza cambiare questi ID.
+Numero e significato delle fixture minime restano congelati da `0.1-G`: **14 casi**
+`FX-V01…FX-V04` e `FX-I01…FX-I10`. H-1 ha creato i file eseguibili e casi supplementari senza
+cambiare questi ID. Il collaudo corrente esegue 32 casi dichiarati e 13 gruppi di contratto e
+integrazione. Maturità meccanica tipica: `G2/O1/E2`; il warning LOCK resta E1; nessun E3.
+
+La salute globale resta separata: `typecheck`, H-1, lint e Vitest fuori `docs/Archives` sono verdi;
+`npm run validate` e `npm test` globali falliscono perché ESLint/Vitest scoprono materiale storico
+in `docs/Archives`. È debito di discovery da pacchetto workspace separato, non regressione H-1.
+
+### H-1.1 — correzione della chiusura H-1
+
+La revisione indipendente successiva ha dimostrato che il verde H-1 non proteggeva ancora la
+promessa append-only e accettava assertion vuote, coppie versione incrociate e modalità esplicite
+invalide. H-1.1 non avvia WP-1 e non introduce store, retention o E3.
+
+Perimetro autorizzato:
+
+- confronto canonico `HEAD` → staged per record finalizzati, inclusi delete e rename;
+- entità Persona/Sistema/Output complete e controlli numerici coerenti;
+- coppie schema/revisione esatte e modalità report strette;
+- amendment verso storia Git delimitata, unica e finalizzata;
+- manifest legato a protocollo e 14 ID congelati, con `FX-V01-report` supplementare;
+- parità core/CLI/stop/pre-commit e suite senza scritture sul working tree.
+
+Stato finale locale: 41 casi fixture e 19 gruppi di contratto/integrazione verdi; 14/14 moduli
+controllati con `node --check`; typecheck, lint e 1346/1346 Vitest fuori Archives verdi. Il globale
+`npm run validate` resta rosso sul debito preesistente Archives; `git diff --check` globale resta
+rosso su una blank line estranea in Comunicazione, mentre il perimetro H-1.1 è pulito. H-1.1 è
+`CHIUSO NEL DISEGNO`, non osservato su piloti reali e non autorizza automaticamente WP-1.
 
 ## 7. `WP-1` — piloti reali in modalità ombra
 
@@ -330,6 +368,8 @@ Decisione rinviata finché H-1/WP-1 non mostrano:
 | `IDEA-MSS-06` | enforcement E3/write gateway | dopo matrice H-1 e dati WP-1 |
 | `IDEA-MSS-07` | dashboard e indici generati | WP-4, non prima degli owner strutturati |
 | `IDEA-MSS-08` | policy per documenti esterni/prompt injection | WP-3 trust boundary |
+| `IDEA-MSS-09` | **conservazione obbligatoria** del materiale self_report di qualità che definisce la persona (verbatim in `_lavoro`, non solo sintesi in report) — emerso S-C 09-08-26 (account biglietto) | formalizzare in CHIUSURA/contratto capsula / prompt Conduttore; decisione Matteo + Meta; prima che le sedute idiografiche ripetano la perdita |
+| `IDEA-MSS-10` | **studio delle risposte** fantasticazione + **meta-log dei metodi di studio** usati dagli agenti (pacchetto `studio-risposte-fantasticazione` v0) — bozza 10-08-26 · **primo caso studio S-G fatto** (valutazione conduttore C1–C12, passa con debito C7) · filtro Challenge conflitto puro promosso in TIPO/prompt | secondo caso-studio e/o riuso L6; espandere tag solo se ≥2 usi; non apre WP-1 |
 
 Nuove idee entrano qui con un ID e una condizione di riapertura. Non generano da sole un nuovo file
 o un nuovo cantiere.
@@ -379,13 +419,17 @@ necessario restano buchi governati dai pacchetti che raccolgono i dati.
 | 09-08-26 | Questo file diventa masterplan unico di `SYS-1`; aperto `WP-0.1` | decisione Matteo in chat |
 | 09-08-26 | Priorità enforcement: prima validator + hook rapidi, poi soluzioni superiori guidate dai dati | decisione Matteo in chat |
 | 09-08-26 | `WP-0.1` chiuso nel disegno: schema `0.1.0`, protocollo `1.0.0`, 20 target e 14 fixture minime congelati; aperto `H-1` | completamento del pacchetto autorizzato da Matteo |
+| 09-08-26 | Checkpoint locale WP-0.1 + bump vivo a `0.1.1` / freeze-2 / protocollo `1.0.1` per validator H-1; storia non riscritta | sessione H-1 |
+| 09-08-26 | Prima implementazione H-1 verde meccanicamente; la chiusura dichiarata è poi invalidata da cinque falsi positivi | revisione fredda H-1 |
+| 09-08-26 | H-1 richiuso nel disegno dopo hardening: 5/5 controprove respinte, 32 fixture, 13 gruppi integrativi, anti-drift e manifest pre-commit | `Report-hardening-h1-metaskillsystem-09-08-26.md` |
+| 10-08-26 | Chiusura H-1 invalidata; aperto H-1.1 dopo 17 controprove rosse. Fix mirato verde su 41 fixture e 19 gruppi; gate finali in corso | sessione H-1.1 |
+| 10-08-26 | H-1.1 chiuso nel disegno: append-only HEAD/staged, assi/versioni/modalità, storia e frozen protetti; gate locali verdi, limiti globali registrati | `Report-hardening-h1-1-metaskillsystem-10-08-26.md` |
 
 ## 15. Prossimo task atomico
 
-Eseguire `H-1` contro `mss.session/0.1.0`: completare le 14 fixture congelate, implementare un solo
-validator deterministico e collegarlo al comando manuale e agli hook locali dichiarando la matrice
-di copertura.
+Eseguire una revisione completa esterna dedicata di `H-1.1`. `WP-1` non è pronto né autorizzato
+prima di quel verdetto; solo dopo una conferma indipendente Matteo potrà decidere se aprirlo secondo
+`MSS-PILOT-001/1.0.1`.
 
-**Gate del prossimo task:** input valido coerente fra comando e hook; invalidi minimi respinti con
-messaggio azionabile; light e standard/deep coperti; limiti, fallback e bypass dichiarati senza
-attribuire E3 a un blocco che avviene soltanto alla chiusura o al commit.
+**Gate del prossimo task:** zero falsi positivi obbligatori, append-only HEAD/staged reale, suite
+senza rewrite, salute workspace registrata onestamente e nessuna sovradichiarazione E3/CI.

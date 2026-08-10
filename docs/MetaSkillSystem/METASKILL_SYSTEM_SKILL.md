@@ -23,6 +23,16 @@ description: >-
    crescita. Le regole di prova personali restano proprietarie di quel binario.
 6. Per capire l'origine di una revisione architetturale o verificare che una lacuna sia già stata
    registrata leggere `REPORT_001_OSSERVAZIONI_ARCHITETTURALI_09-08-26.md`. Non usarlo come stato.
+7. Se Matteo chiede di **preparare / condurre chat di fantasticazione o immaginazione** (input
+   immaginario → lui descrive come si comporterebbe), leggere
+   `TIPO_SEDUTA_FANTASTICAZIONE_V0.md`: intent del tipo, non stato di `SYS-1`.
+8. Se Matteo chiede di **studiare / analizzare / riusare** le risposte di quelle sedute (meta-studio
+   dei metodi di lettura), leggere `STUDIO_RISPOSTE_FANTASTICAZIONE_V0.md` e il pacchetto privato
+   owner collegato. Non apre `WP-1`. Non sostituisce la conduzione CFG.
+9. Se Matteo chiede di **catalogare sedute o architetture, progettare o valutare senior e metodi,
+   oppure confrontare metodi in modo controllato**, leggere
+   `Senior-Eval-Pack/SENIOR_EVAL_SKILL.md`. Il pacchetto è sperimentale e subordinato a `SYS-1`:
+   non è un nuovo kernel, una remediation H-1.3 o un'autorizzazione per `WP-1`/`WP-3`.
 
 ## I tre assi che non si fondono
 
