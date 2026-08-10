@@ -5,4 +5,4 @@ la capsula è JSONL parsabile nel file collegato.
 
 | Data | Sessione | Report/evento |
 |---|---|---|
-| 10-08-26 | Fixture light sintetica · `event:mss-evt-0198a5f4-7c10-7d24-8c31-1234567890ab` | [Evento light](FX-V02-light.jsonl) |
+| 10-08-26 | Fixture light sintetica · `event:mss-evt-0198b000-0001-7000-8000-000000000020` | [Evento light](FX-V02-light.jsonl) |

@@ -63,7 +63,8 @@ lavoro del masterplan.
 | 2 | `WP-0.1` — hardening pre-pilota | `CHIUSO NEL DISEGNO` 09-08-26 | efficacia da osservare nel primo pilota |
 | 3 | `H-1` — validator + hook rapidi | **chiusura invalidata dalla revisione H-1.1** | resta storia del primo hardening |
 | 3.1 | `H-1.1` — integrità append-only e semantica | **`CHIUSO NEL DISEGNO` 10-08-26** | revisione completa esterna prima di WP-1 |
-| 4 | `WP-1` — piloti reali in ombra | **`NON INIZIATO` — NON PRONTO PRIMA DELLA REVISIONE ESTERNA H-1.1** | ricostruzione fredda senza perdita/invenzione |
+| 3.2 | `H-1.3` — amendment / staged / parità superfici | **`PASS_CON_RISERVE` 10-08-26** (riserva H13-POST-L01; bypass E2 dichiarati) | track L5 in git; **non** apre WP-1; G5 non PASS |
+| 4 | `WP-1` — piloti reali in ombra | **`NON INIZIATO` — NO-GO** (H-1.3 con riserve ≠ via libera) | ricostruzione fredda senza perdita/invenzione |
 | 5 | `WP-2` — mining storico normalizzato | `BLOCCATO DA PRIMO PILOTA` | eventi citano fonti e schema/versione |
 | 6 | `WP-3` — kernel, manifest, pacchetti e chiavi | `NON INIZIATO` | autorità e precedenze formalizzate |
 | 7 | `WP-4` — preflight, registro Output e viste | `NON INIZIATO` | conflitti/owner/scope rilevati prima delle azioni coperte |
@@ -424,12 +425,13 @@ necessario restano buchi governati dai pacchetti che raccolgono i dati.
 | 09-08-26 | H-1 richiuso nel disegno dopo hardening: 5/5 controprove respinte, 32 fixture, 13 gruppi integrativi, anti-drift e manifest pre-commit | `Report-hardening-h1-metaskillsystem-09-08-26.md` |
 | 10-08-26 | Chiusura H-1 invalidata; aperto H-1.1 dopo 17 controprove rosse. Fix mirato verde su 41 fixture e 19 gruppi; gate finali in corso | sessione H-1.1 |
 | 10-08-26 | H-1.1 chiuso nel disegno: append-only HEAD/staged, assi/versioni/modalità, storia e frozen protetti; gate locali verdi, limiti globali registrati | `Report-hardening-h1-1-metaskillsystem-10-08-26.md` |
+| 10-08-26 | H-1.3 = **PASS_CON_RISERVE** (review post-remediation); WP-1 resta **NON INIZIATO / NO-GO**; track baseline L5+hook autorizzato (path invariati); G5 non PASS | `Report-revisione-indipendente-h13-post-remediation-10-08-26.md` · `Report-track-commit-h13-l5-pass-con-riserve-10-08-26.md` |
 
 ## 15. Prossimo task atomico
 
-Eseguire una revisione completa esterna dedicata di `H-1.1`. `WP-1` non è pronto né autorizzato
-prima di quel verdetto; solo dopo una conferma indipendente Matteo potrà decidere se aprirlo secondo
-`MSS-PILOT-001/1.0.1`.
+`WP-1` resta **NON INIZIATO** e **NO-GO** finché Matteo non lo apre in chat dedicata.
+H-1.3 è **PASS_CON_RISERVE** (non PASS pulito). Prossimo atomo operativo pack/SYS-1 sul fronte
+archiviazione: **plan directory/export/sandbox** (zero move), non pilota WP-1.
 
-**Gate del prossimo task:** zero falsi positivi obbligatori, append-only HEAD/staged reale, suite
-senza rewrite, salute workspace registrata onestamente e nessuna sovradichiarazione E3/CI.
+**Gate del prossimo task (directory plan):** zero path rewrite nella chat di plan; F5 solo dopo
+plan approvato; nessuna sovradichiarazione G5/WP-1.

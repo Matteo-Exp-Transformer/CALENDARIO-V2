@@ -2,7 +2,7 @@
 
 > **Vista derivata (F2 / M02).** Non sposta file. Non è catalogo SEP né SESSION_LOG né masterplan.
 > Base: A4 §2 + B1 M02/M04 · Decisioni D1=b D3=a.
-> Aggiornato: 10-08-2026 (SEP-11 F1+F2 + append catena F3–`033` F4-doc) · sessioni `025`–`033`.
+> Aggiornato: 10-08-2026 (SEP-11 F1+F2 + catena F3–`033` + H-1.3 remediation/review/track `034`–`035`) · sessioni `025`–`035`.
 
 ## Limiti dichiarati
 
@@ -36,7 +36,13 @@
 | Data cartella | Tipo | Path |
 |---|---|---|
 | 10-08-26 | H-1.1 | `docs/Sessioni di lavoro/10-08-26/Report-hardening-h1-1-metaskillsystem-10-08-26.md` |
-| 10-08-26 | H-1.3 review | `docs/Sessioni di lavoro/10-08-26/Report-revisione-indipendente-h1-3-metaskillsystem-10-08-26.md` |
+| 10-08-26 | H-1.3 review FAIL | `docs/Sessioni di lavoro/10-08-26/Report-revisione-indipendente-h1-3-metaskillsystem-10-08-26.md` |
+| 10-08-26 | H-1.3 remediation R01–R05 | `docs/Sessioni di lavoro/10-08-26/Report-remediation-h13-r01-r05-metaskillsystem-10-08-26.md` |
+| 10-08-26 | H-1.3 review post PASS_CON_RISERVE | `docs/Sessioni di lavoro/10-08-26/Report-revisione-indipendente-h13-post-remediation-10-08-26.md` |
+| 10-08-26 | H-1.3 track/commit L5 | `docs/Sessioni di lavoro/10-08-26/Report-track-commit-h13-l5-pass-con-riserve-10-08-26.md` |
+| 10-08-26 | prompt remediation H13 | `docs/Sessioni di lavoro/10-08-26/Prompt-h13-remediation-r01-r05-post-s1-s3-10-08-26.md` |
+| 10-08-26 | prompt review post-remediation | `docs/Sessioni di lavoro/10-08-26/Prompt-h13-review-indipendente-post-remediation-10-08-26.md` |
+| 10-08-26 | prompt track/commit L5 | `docs/Sessioni di lavoro/10-08-26/Prompt-h13-track-commit-l5-post-pass-con-riserve-10-08-26.md` |
 
 ## 10-08-26 — Senior Eval Pack / gate
 

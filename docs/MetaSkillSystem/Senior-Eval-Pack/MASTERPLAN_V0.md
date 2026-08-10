@@ -63,7 +63,7 @@ Questi stati valgono soltanto per i work package elencati qui e non aggiornano `
 | `SEP-8` | Primo confronto controllato | `BLOCCATO_DA_GATE` | richiede almeno due istanze comparabili; vietato anticipare ranking |
 | `SEP-9` | Consolidamento del routing | `BLOCCATO_DA_GATE` | richiede evidenza d'uso delle rotte; nessun secondo router senza mandato |
 | `SEP-10` | Analisi read-only dell'archiviazione | `CHIUSO_NEL_DISEGNO` | A1–A4 + B1 + B2 (`Report-B2-review-piano-migrazione.md`); B1 self-report «PRONTO PER DECISIONE»; B2 = **`ADEGUATO_CON_RISERVE`** (HIGH B2-F01 M03 link); **nessuna** migrazione; **SEP-G5 non PASS** |
-| `SEP-11` | Piano di migrazione controllata | `IN_CORSO` (F4-doc committed; prossimo = reasoning/plan H13-L5) | F1–F3+review ADEGUATO (`025`–`031`); pulizia (`032`); **F4-doc** (`033`) tracked+pushed; **SEP-G5 non PASS**; H-1.3 **non** sanato; L5 **non** trackato; prossimo = prompt reasoning/plan |
+| `SEP-11` | Piano di migrazione controllata | `IN_CORSO` (H-1.3 = **PASS_CON_RISERVE**; track L5 autorizzato; prossimo = plan directory) | F1–F4-doc; remediation R01–R05; review post = **PASS_CON_RISERVE** (H13-POST-L01); **SEP-G5 non PASS**; WP-1 **NO-GO**; path L5 invariati; F5/move vietati finché plan directory approvato |
 | `SEP-12` | Promozione da sperimentale ad affidabile | `BLOCCATO_DA_GATE` | richiede review, uso prospettico, debiti accettati e decisione esplicita di Matteo |
 
 ### 4-bis. Registro append-only delle transizioni WP
@@ -88,6 +88,8 @@ Questi stati valgono soltanto per i work package elencati qui e non aggiornano `
 | 10-08-2026 | `SEP-11` (post-review prepara+commit) | `IN_CORSO` · review **committed**; prossimo = go/no-go | `Report-prepara-post-f3-review-chiusura-commit-10-08-26.md` + `Prompt-sep-11-go-nogo-post-f3-review-10-08-26.md` | Meta prepara `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-031`) | commit review; prompt A/B/C/D; no push; no F4 exec; SEP-G5 non PASS |
 | 10-08-2026 | `SEP-11` (pulizia solidi + backlog dedicati) | `IN_CORSO` invariato · bordo pulito; prossimo = **F4-doc** | `Report-sep-11-pulizia-solidi-backlog-dedicati-10-08-26.md` | Meta writer `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-032`) | A/B/C=Sì; push ahead; go/no-go superseded; dedicati F4-doc · H-1.3/L5 · SEP-5; no F4 exec; G5 non PASS |
 | 10-08-2026 | `SEP-11` (F4-doc track Sessioni) | `IN_CORSO` · **F4-doc fatto**; prossimo = **H-1.3/F4-L5** | `Report-sep-11-f4-doc-track-sessioni-10-08-26.md` | Meta writer `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-033`) | whitelist 11 path tracked; slice A=`032` inclusa; zero path change; zero L5; G5 non PASS; H-1.3 non sanato |
+| 10-08-2026 | `SEP-11` (H-1.3 review post-remediation) | `IN_CORSO` · H-1.3 **PASS_CON_RISERVE**; WP-1 NO-GO | `Report-revisione-indipendente-h13-post-remediation-10-08-26.md` | Verifica senior indipendente `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-034`) | controprove R01–R03 tengono; riserva H13-POST-L01; G5 non PASS; zero fix |
+| 10-08-2026 | `SEP-11` (track/commit baseline L5) | `IN_CORSO` · track L5+hook+report; prossimo = **plan directory** | `Report-track-commit-h13-l5-pass-con-riserve-10-08-26.md` | Meta writer `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-035`) | path invariati; PASS_CON_RISERVE accettato; WP-1 non aperto; G5 non PASS; commit attende «lavoro ok» |
 
 ## 5. Gate
 
@@ -130,30 +132,33 @@ conferma esplicita del perimetro di scrittura. Fino ad allora l'archivio resta i
 
 ## 6. Prossimo passo atomico
 
-**Immediato:** sessione dedicata **reasoning + plan** (quadro generale → strategia) col prompt
-`docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-post-f4-reasoning-plan-h13-l5-10-08-26.md`.
-**Non** è ancora esecuzione track L5. Dopo le Sì/No di Matteo → corsia H-1.3 / F4-L5-track
-(`FU-SEP-11-H13-L5`); H-1.3 resta **FAIL** finché review dedicata; **vietato** fingere sanatoria.
+**Immediato (dopo commit track L5):** chat Meta **solo plan** — albero MSS scalabile +
+export + copia/sandbox ripristino. **Zero move** in quella chat. F5 exec solo dopo plan approvato.
 
-**Backlog dedicati (max 3 vivi):** (1) ~~F4-doc~~ **fatto** (`033`, committed+pushed in report
-finale) · (2) reasoning/plan → poi H-1.3/L5 · (3) SEP-5 freeze (solo dopo decisioni Matteo).
+**H-1.3 = `PASS_CON_RISERVE`** (review `034`; riserva H13-POST-L01). **Non** è PASS pulito.
+**WP-1 = NO-GO** (non aprire). **SEP-G5 non PASS**.
+
+**Backlog dedicati (max 3 vivi):** (1) ~~F4-doc~~ · (2) ~~remediation + review H-1.3~~ ·
+(3) **plan directory/export/sandbox** (dopo track/commit L5); SEP-5 resta bloccato.
 `SEP-D08` resta debito pack, **non** prossimo atomico.
 
-**Superseded:** prompt
-`Prompt-sep-11-go-nogo-post-f3-review-10-08-26.md` — sostituito da backlog dedicati
-(file resta; non cancellare). F4-doc prompt resta storia operativa.
+**Fatto in track `035`:** stage whitelist L5 + 2 hook MSS + report/prompt H-1.3 + allineo
+narrativo; path invariati; `test:mss` verde; commit attende «lavoro ok»/«fai report finale»;
+push solo con Sì. Stash intatto (rumore Comunicazione non importato).
+
+**Fatto in review `034`:** controprove R01–R03 indipendenti; verdetto **PASS_CON_RISERVE**;
+WP-1 NO-GO; zero fix.
+
+**Fatto in remediation H13:** restore whitelist L5 (no stash pop); fix R01–R05; 2 hook;
+suite 41+32 verde.
 
 **Fatto in `033`:** track whitelist Sessioni MSS (11 path) + slice A docs `032`/owner;
-append indice report F4; **zero** path change; **zero** L5 nello stage; **SEP-G5 non PASS**;
-H-1.3 **non** sanato. Report finale = commit+push slice F4; WT ripulito (L5/rumore in stash
-documentato in HANDOFF).
+**zero** L5 nello stage F4; G5 non PASS.
 
-**Fatto in `032`:** A/B/C = Sì; **push** ahead su `env/test`; solidi chiusi; go/no-go
-superseded; prompt F4-doc pronto. F4/F5 **non** eseguiti in `032`.
+**Fatto in `032`:** A/B/C = Sì; **push** ahead su `env/test`; solidi chiusi.
 
-**Vietato senza nuovo mandato:** touch/track L5 fuori piano approvato; path rewrite / F5;
-move; `_lavoro`; rewrite stato `PLAN_V0`; claim SEP-G5 PASS; sanatoria H-1.3;
-WP-1; SEP-5 auto.
+**Vietato senza nuovo mandato:** claim H-1.3 PASS *pulito* (senza riserve); path rewrite / F5;
+move; `_lavoro`; claim SEP-G5 PASS; WP-1; SEP-5 auto; stash drop senza Sì.
 
 **Non automatico:** `SEP-5` resta bloccato da decisioni freeze separate.
 

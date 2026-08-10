@@ -52,63 +52,61 @@ Non sostituisce:
 > autonomamente alcuno stato. In caso di divergenza con `MASTERPLAN_V0.md`, vince il masterplan.
 
 - **Aggiornato il:** 10-08-2026.
-- **Sessione:** `SEP-SES-20260810-033` (F4-doc track + report finale commit/push; correlazione `021`–`032`).
-- **Autore:** Cursor Grok 4.5, ruolo Meta (F4-doc; chiusura report finale; prepara reasoning/plan).
+- **Sessione:** `SEP-SES-20260810-035` (track/commit baseline H-1.3 L5+hook+report; correlazione `033`–`034`).
+- **Autore:** Cursor Grok 4.5, ruolo Meta (track/commit; allineo narrativo post PASS_CON_RISERVE).
 - **Configurazione:** `SEP-AGC-xai-cursor-001`.
-- **Metodo:** F0 → A=slice `032` → stage → allineo → report → report finale commit+push → stash WT → prompt reasoning/plan.
-- **Tipo di evidenza:** report `033` + commit F4-doc su `env/test` + prompt reasoning/plan.
-- **Verifica:** validate:mss OK; diff-check OK; G5 non PASS; L5 non in commit F4.
+- **Metodo:** F0 → inventario whitelist → `test:mss` → allineo FU/MASTERPLAN/HANDOFF → report → stage whitelist → attesa «lavoro ok».
+- **Tipo di evidenza:** report track `035` + review `034` PASS_CON_RISERVE + remediation.
+- **Verifica:** `test:mss` 41+32 verde; validate:mss su report nuovi; diff-check perimetro; zero path rewrite.
 - **Comparabilità:** `non_comparabile`.
 - **Masterplan letto:** `MASTERPLAN_V0.md` — `SEP-G1_PASS_CON_RISERVE`; `SEP-10` chiuso;
-  `SEP-11` = **`IN_CORSO`** F4-doc committed; prossimo = **reasoning/plan H13-L5**; **SEP-G5 non PASS**.
+  `SEP-11` = **`IN_CORSO`**; H-1.3 = **`PASS_CON_RISERVE`**; **prossimo = plan directory**; **SEP-G5 non PASS**; WP-1 **NO-GO**.
 - **Ultimo report:**
-  `docs/Sessioni di lavoro/10-08-26/Report-sep-11-f4-doc-track-sessioni-10-08-26.md`.
-- **Prompt prossimo task:**
-  `docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-post-f4-reasoning-plan-h13-l5-10-08-26.md`
-  (quadro generale **prima** della strategia; **non** esecuzione L5).
-- **Catena prove:** `033` ← `032` ← `031`/`030` ADEGUATO ← `028` F3 ← …
-- **Git:** `env/test` HEAD `3fd03ec` (F4-doc) — push report finale; L5+rumore in **stash**
-  (messaggio: `wip: L5+rumore pre reasoning/plan H13` — `git stash list`).
+  `docs/Sessioni di lavoro/10-08-26/Report-track-commit-h13-l5-pass-con-riserve-10-08-26.md`.
+- **Prompt prossimo task:** plan directory/export/sandbox (chat Meta nuova; zero move).
+- **Catena prove:** track `035` ← review PASS_CON_RISERVE `034` ← remediation ← review FAIL ← `033` F4-doc ← …
+- **Git:** `env/test` @ `ecaa74e` + WT staged whitelist; stash@{0} intatto (rumore); **nessun claim PASS pulito**.
 
 ### Quadro generale (per ripartenza senior — MSS)
 
-1. **Due owner:** pack → `MASTERPLAN_V0`; SYS-1 → `PLAN_V0` (non sanare H-1.3 qui).
-2. **Onda chiusa fino a F4-doc pushed:** SEP-10 → F1–F3+review → pulizia → F4-doc.
-3. **Freeze:** L5/L6; stub D5 attivo; L5 può essere in stash (non perso).
-4. **Link M03:** L1+L2 ok; PLAN leave-as-history.
-5. **Gate:** G1 con riserve; G5 **non** PASS; H-1.3 FAIL resta.
-6. **Dedicati vivi:** ~~F4-doc~~ → **reasoning/plan** (prompt) → poi H-1.3/L5 exec → SEP-5 (bloccato).
+1. **Due owner:** pack → `MASTERPLAN_V0`; SYS-1 → `PLAN_V0` (H-1.3 = PASS_CON_RISERVE, non PASS pulito).
+2. **Onda:** SEP-10 → F1–F4-doc → remediation H13 → review PASS_CON_RISERVE → **track L5** → plan directory.
+3. **Freeze:** L6; stub D5; F5 fuori finché plan; Comunicazione stash non auto-trackata.
+4. **Gate:** G1 con riserve; G5 **non** PASS; H-1.3 **PASS_CON_RISERVE** (H13-POST-L01); WP-1 **NO-GO**.
+5. **Dedicati vivi:** ~~remediation~~ · ~~review H-1.3~~ · **plan directory** (dopo commit track).
 
 ### Fatto osservato
 
-F4-doc: whitelist+slice A committed+pushed. Zero move. Zero L5 nel commit. Prompt reasoning/plan pronto. WT ripulito via stash.
+Review indipendente post-remediation: controprove R01–R03 tengono; suite 41+32 verde; verdetto PASS_CON_RISERVE. Track whitelist L5+2 hook+report autorizzato (path invariati).
 
 ### Effetto prodotto
 
-- disco≈git sui report Sessioni whitelist;
-- ripartenza = ragionare sul quadro, non `git add` cieco L5.
+- punto di ripristino git della baseline H-1.3 revisionata (dopo «lavoro ok»);
+- narrativa owner allineata: PASS_CON_RISERVE; WP-1 chiuso; prossimo = plan directory.
 
 ### Problema strutturale corrente
 
-L5 ancora fuori git (in stash). H-1.3 FAIL. G5 non PASS. Strategia post-F4 da decidere con Matteo.
+Riserva H13-POST-L01 (encoding hash `previous`); bypass E2/`--no-verify`/no-CI dichiarati; G5 non PASS; directory/export ancora da pianificare.
 
 ### Cosa non è dimostrato
 
-- L5 tracked; cutover/G5; H-1.3 sanato; SEP-5 freeze; piano H13 approvato.
+- H-1.3 PASS *pulito*; G5 PASS; WP-1; cutover; F5 relocate; continuità globale cattura.
 
 ### Prossimo task atomico derivato
 
-**Reasoning + plan** col prompt sopra. **STOP** su track L5 senza piano, F5, move, PLAN rewrite, G5 PASS, fingere H-1.3 sanato, due prossimi vivi.
+**Plan directory/export/sandbox** (chat Meta dedicata; zero move). Non WP-1.
 
 ### Gate
 
-`SEP-G1` = `PASS_CON_RISERVE`. `SEP-G5` **non** PASS.
+- STOP: claim PASS pulito; G5 PASS; WP-1; F5/move; `_lavoro`; stash pop/drop senza Sì; Comunicazione dallo stash.
+- Aperte: commit track (attende «lavoro ok»); push (attende Sì); poi plan directory.
+`SEP-G1` = `PASS_CON_RISERVE`. `SEP-G5` **non** PASS. H-1.3 = `PASS_CON_RISERVE`.
 
 ### STOP e decisioni di Matteo
 
-- STOP: esecuzione L5 senza piano approvato; F5; move; PLAN rewrite; G5 PASS; H-1.3 sanato; `_lavoro`.
-- Chiuse: F4-doc track+push (`033`); A=slice `032`.
-- Aperte: reasoning/plan → H-1.3/L5; SEP-5 solo con freeze; ripristino stash quando serve L5.
+- STOP: WP-1; F5; directory exec in questa chat; G5 PASS; stash drop senza Sì.
+- Chiuse: review H-1.3 accettata PASS_CON_RISERVE; track autorizzato; WP-1 esplicitamente chiuso per questa onda.
+- Aperte: «lavoro ok» → commit; Sì → push; chat plan directory; SEP-5 solo con freeze.
 
 ## 4. Chiusura obbligatoria di ogni sessione senior
 
@@ -178,6 +176,8 @@ Non copiare nel handoff intere narrative, capsule o dati privati: usare puntator
 | `SEP-SES-20260810-031` | 10-08-2026 | Meta prepara + commit · `SEP-AGC-xai-cursor-001` | prepara go/no-go + commit review | prompt A/B/C/D pronto; review committed; no push; no F4 exec | decisione Matteo + allineamento owner | `non_comparabile` | `Report-prepara-post-f3-review-chiusura-commit-10-08-26.md` |
 | `SEP-SES-20260810-032` | 10-08-2026 | Meta pulizia · `SEP-AGC-xai-cursor-001` | pulizia solidi + backlog dedicati | A/B/C=Sì; push; go/no-go superseded; prossimo=F4-doc; G5 non PASS | decisione Matteo + allineamento owner | `non_comparabile` | `Report-sep-11-pulizia-solidi-backlog-dedicati-10-08-26.md` |
 | `SEP-SES-20260810-033` | 10-08-2026 | Meta writer F4-doc · `SEP-AGC-xai-cursor-001` | track whitelist Sessioni + slice A | F4-doc fatto; 11 path + docs `032`; zero L5/move; prossimo=H-1.3/L5; G5 non PASS | `validate:mss` + diff-check | `non_comparabile` | `Report-sep-11-f4-doc-track-sessioni-10-08-26.md` |
+| `SEP-SES-20260810-034` | 10-08-2026 | Verifica senior indipendente H-1.3 · `SEP-AGC-xai-cursor-001` | review post-remediation | **PASS_CON_RISERVE**; H13-POST-L01; WP-1 NO-GO; G5 non PASS | controprove + `test:mss` | `non_comparabile` | `Report-revisione-indipendente-h13-post-remediation-10-08-26.md` |
+| `SEP-SES-20260810-035` | 10-08-2026 | Meta writer track L5 · `SEP-AGC-xai-cursor-001` | track/commit baseline H-1.3 | L5+2 hook+report staged; path invariati; prossimo=plan directory; G5 non PASS | `test:mss` + validate:mss + diff-check | `non_comparabile` | `Report-track-commit-h13-l5-pass-con-riserve-10-08-26.md` |
 
 Il registro dimostra soltanto che il passaggio è stato dichiarato e documentato. La verifica si
 legge nel report collegato e nel successivo eventuale record di review.

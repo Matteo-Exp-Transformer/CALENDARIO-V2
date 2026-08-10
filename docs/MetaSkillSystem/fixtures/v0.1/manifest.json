@@ -1,0 +1,388 @@
+{
+  "schema_version": "mss.session/0.1.1",
+  "system_revision": "mss-v0.1-wp0.1-freeze-2",
+  "protocol_id": "MSS-PILOT-001",
+  "protocol_version": "1.0.1",
+  "frozen": [
+    {
+      "id": "FX-V01",
+      "expect": "pass",
+      "file": "FX-V01-bundle.jsonl",
+      "kind": "jsonl",
+      "content_sha256": "d9192044ea1da2a5e61902b4bbf6d704aade50846d3fa9e6370705b7d3014e14"
+    },
+    {
+      "id": "FX-V02",
+      "expect": "pass",
+      "file": "FX-V02-session-log.md",
+      "kind": "session_log",
+      "content_sha256": "904ba7045f0f8fa91be13d6cf667826114c8f29bdcf93ff87fcb88c277f26554",
+      "support_files": [
+        {
+          "file": "FX-V02-light.jsonl",
+          "content_sha256": "2428cc0c895c7f3e96af96162e4a20aaea863e7097d0623edfdf33726ed16a39"
+        }
+      ]
+    },
+    {
+      "id": "FX-V03",
+      "expect": "pass",
+      "file": "FX-V03-amendment.jsonl",
+      "kind": "jsonl",
+      "content_sha256": "04c41c82b8e8334095d64b746358875989e0cb0050f1a3c10febf4557033b3fc"
+    },
+    {
+      "id": "FX-V04",
+      "expect": "pass",
+      "file": "FX-V04-compact-retry.jsonl",
+      "kind": "jsonl",
+      "content_sha256": "1b54c20f90b5c49faa54048b26bc9391e37cefe1c2e807527009ce997a93ed5e"
+    },
+    {
+      "id": "FX-I01",
+      "expect": "fail",
+      "codes": [
+        "MSS-SCHEMA-UNKNOWN",
+        "MSS-REVISION-UNKNOWN"
+      ],
+      "file": "FX-I01-schema.jsonl",
+      "kind": "jsonl",
+      "content_sha256": "89471a45763320c7aef2e084e6b8d92ea5724ffd066836355f80b30c3289306a"
+    },
+    {
+      "id": "FX-I02",
+      "expect": "fail",
+      "codes": [
+        "MSS-VITAL-MISSING",
+        "MSS-VITAL-PLACEHOLDER"
+      ],
+      "file": "FX-I02-vital.jsonl",
+      "kind": "jsonl",
+      "content_sha256": "f5e43e30540e9357e1d064fc68803949fa9e8b9b765801542619a684a3b18a72"
+    },
+    {
+      "id": "FX-I03",
+      "expect": "fail",
+      "codes": [
+        "MSS-EVENT-CONTAINS-AXIS"
+      ],
+      "file": "FX-I03-axis-in-event.jsonl",
+      "kind": "jsonl",
+      "content_sha256": "e9af2609ae86818295070551006e76b25b5ac613e369d20b325a92472c358a7b"
+    },
+    {
+      "id": "FX-I04",
+      "expect": "fail",
+      "codes": [
+        "MSS-CAPTURE-KEY-COLLISION",
+        "MSS-RECORD-ID-COLLISION"
+      ],
+      "file": "FX-I04-capture-collision.jsonl",
+      "kind": "jsonl",
+      "content_sha256": "d51f02a00fe305d594cebf9607081dbf7572da3e3dad56b88ee07aa73f2ee64f"
+    },
+    {
+      "id": "FX-I05",
+      "expect": "fail",
+      "codes": [
+        "MSS-REF-UNRESOLVABLE"
+      ],
+      "file": "FX-I05-ref.jsonl",
+      "kind": "jsonl",
+      "content_sha256": "743802bf26258494b930ab577c74200766b01610269e853b51bcc7cf97c7e2ab"
+    },
+    {
+      "id": "FX-I06",
+      "expect": "fail",
+      "codes": [
+        "MSS-PRODUCT-GATE"
+      ],
+      "file": "FX-I06-product-gate.jsonl",
+      "kind": "jsonl",
+      "content_sha256": "954ab7fd23fce337d3907422cea475ec9b63957f087ffc5dd10d1d01e3a16a96"
+    },
+    {
+      "id": "FX-I07",
+      "expect": "fail",
+      "codes": [
+        "MSS-REPORT-NO-CAPSULE"
+      ],
+      "file": "FX-I07-report-no-capsule.md",
+      "kind": "report",
+      "content_sha256": "4f452e1731c0b5a465880c0a44b6f939a579314fcdfb21934b020454612ae179"
+    },
+    {
+      "id": "FX-I08",
+      "expect": "fail",
+      "codes": [
+        "MSS-LIGHT-NO-EVENT"
+      ],
+      "file": "FX-I08-session-log-bad.md",
+      "kind": "session_log",
+      "content_sha256": "a7b7fe5057f51885559818dec8a265854e126c33879a3bfe662ab1ff7ee22621"
+    },
+    {
+      "id": "FX-I09",
+      "expect": "fail",
+      "codes": [
+        "MSS-VERIFIER-NOT-INDEPENDENT"
+      ],
+      "file": "FX-I09-verifier.jsonl",
+      "kind": "jsonl",
+      "content_sha256": "24cc8d55f0ec9ea580ed7e8b6b40539db7bd39678b38f8226d58a532494b190b"
+    },
+    {
+      "id": "FX-I10",
+      "expect": "warn",
+      "codes": [
+        "MSS-LOCK-UNAUTHORIZED"
+      ],
+      "file": "FX-I10-lock.jsonl",
+      "kind": "jsonl",
+      "content_sha256": "4aa2b595a94026ac6ac19a064b855fa6b2173812ef593c5236cedc9d529c7598"
+    }
+  ],
+  "supplemental": [
+    {
+      "id": "FX-V02-light",
+      "representation_of": "FX-V02",
+      "expect": "pass",
+      "file": "FX-V02-light.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-V01-report",
+      "representation_of": "FX-V01",
+      "expect": "pass",
+      "file": "FX-V01-report.md",
+      "kind": "report"
+    },
+    {
+      "id": "FX-S01",
+      "expect": "fail",
+      "codes": [
+        "MSS-FINAL-AXIS-MISSING"
+      ],
+      "file": "FX-S01-missing-axis.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S02",
+      "expect": "fail",
+      "codes": [
+        "MSS-PARSE-JSON"
+      ],
+      "file": "FX-S02-malformed.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S03",
+      "expect": "fail",
+      "codes": [
+        "MSS-ANNOTATION-ORPHAN"
+      ],
+      "file": "FX-S03-orphan-annotation.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S04",
+      "expect": "fail",
+      "codes": [
+        "MSS-SESSION-MISMATCH",
+        "MSS-CORRELATION-MISMATCH"
+      ],
+      "file": "FX-S04-session-correlation-mismatch.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S05",
+      "expect": "fail",
+      "codes": [
+        "MSS-AMENDMENT-ORPHAN"
+      ],
+      "file": "FX-S05-amendment-missing-target.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S06",
+      "expect": "fail",
+      "codes": [
+        "MSS-AMENDMENT-CYCLE",
+        "MSS-AMENDMENT-FIELD-PATH-INVALID"
+      ],
+      "file": "FX-S06-amendment-cycle.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S07",
+      "expect": "fail",
+      "codes": [
+        "MSS-NON-APPLICABILE-NO-REASON"
+      ],
+      "file": "FX-S07-non-applicabile-no-reason.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S08",
+      "expect": "fail",
+      "codes": [
+        "MSS-REF-TRAVERSAL"
+      ],
+      "file": "FX-S08-path-traversal.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S09",
+      "expect": "fail",
+      "codes": [
+        "MSS-PARSE-JSONL-AMBIGUOUS"
+      ],
+      "file": "FX-S09-ambiguous-jsonl.md",
+      "kind": "report"
+    },
+    {
+      "id": "FX-S10-staged",
+      "expect": "pass",
+      "file": "FX-S10-staged-valid.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S10-worktree",
+      "expect": "fail",
+      "codes": [
+        "MSS-SCHEMA-UNKNOWN"
+      ],
+      "file": "FX-S10-worktree-invalid.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S11",
+      "expect": "fail",
+      "codes": [
+        "MSS-STRUCTURE-INVALID",
+        "MSS-VITAL-MISSING"
+      ],
+      "file": "FX-S11-missing-packages.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S12",
+      "expect": "fail",
+      "codes": [
+        "MSS-FINAL-AXIS-NOT-FINAL",
+        "MSS-FINALIZATION-MISMATCH"
+      ],
+      "file": "FX-S12-draft-axes.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S13",
+      "expect": "fail",
+      "codes": [
+        "MSS-VERIFIER-NOT-INDEPENDENT"
+      ],
+      "file": "FX-S13-verifier-subject.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S14",
+      "expect": "fail",
+      "codes": [
+        "MSS-OUTPUT-ASSERTION",
+        "MSS-PRODUCT-GATE"
+      ],
+      "file": "FX-S14-output-without-product-candidate.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S15",
+      "expect": "fail",
+      "codes": [
+        "MSS-SESSION-EVENT-COUNT"
+      ],
+      "file": "FX-S15-two-session-events.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S16",
+      "expect": "fail",
+      "codes": [
+        "MSS-LIGHT-EVENT-MISMATCH"
+      ],
+      "file": "FX-S16-session-log-event-mismatch.md",
+      "kind": "session_log"
+    },
+    {
+      "id": "FX-S17",
+      "expect": "fail",
+      "codes": [
+        "MSS-PERSONA-ASSERTION"
+      ],
+      "file": "FX-S17-persona-empty.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S18",
+      "expect": "fail",
+      "codes": [
+        "MSS-SYSTEM-ASSERTION"
+      ],
+      "file": "FX-S18-system-empty.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S19",
+      "expect": "fail",
+      "codes": [
+        "MSS-OUTPUT-ASSERTION"
+      ],
+      "file": "FX-S19-output-product-only.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S20",
+      "expect": "fail",
+      "codes": [
+        "MSS-CONTROL-RATIO"
+      ],
+      "file": "FX-S20-control-denominator.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S21",
+      "expect": "fail",
+      "codes": [
+        "MSS-REF-ORPHAN"
+      ],
+      "file": "FX-S21-orphan-source-ref.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S22",
+      "expect": "fail",
+      "codes": [
+        "MSS-SCHEMA-REVISION-INCOMPATIBLE"
+      ],
+      "file": "FX-S22-schema-revision-crossed.jsonl",
+      "kind": "jsonl"
+    },
+    {
+      "id": "FX-S23",
+      "expect": "fail",
+      "codes": [
+        "MSS-REPORT-MODE-INVALID"
+      ],
+      "file": "FX-S23-mode-hybrid.md",
+      "kind": "report"
+    },
+    {
+      "id": "FX-S24",
+      "expect": "fail",
+      "codes": [
+        "MSS-REPORT-MODE-INVALID"
+      ],
+      "file": "FX-S24-mode-unknown.md",
+      "kind": "report"
+    }
+  ]
+}

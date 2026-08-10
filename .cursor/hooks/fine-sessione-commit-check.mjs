@@ -1,24 +1,22 @@
 #!/usr/bin/env node
 /**
- * Pre-commit fine-sessione.
+ * Pre-commit fine-sessione + validator MSS H-1 sullo staged.
  *
- * Scatta a ogni commit:
- * - report incompleto: blocca il commit finche Q/R non sono complete;
- * - report completo o assente dallo stage: chiede una sola volta il controllo "mente fredda" per
- *   la versione staged del commit.
- *
- * La memoria e locale e non versionata: `.fine-sessione-commit-state.json`.
+ * - report incompleto: blocca
+ * - artefatti MSS staged invalidi: blocca (deny)
+ * - mente fredda una volta per signature staged
  */
 
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { auditQuestions } from '../../scripts/mss/report-questions.mjs'
+import { validateStagedMssFiles } from '../../scripts/mss/adapter.mjs'
+import { collectGitHeadHistory, collectStagedMssEntries } from '../../scripts/mss/git-adapter.mjs'
+import { detectReportMode } from '../../scripts/mss/parse.mjs'
 
 const REPORT_RE = /^docs\/Sessioni di lavoro\/[^/]+\/Report-.*\.md$/i
-const QUESTION_RE = /^[\s>\-*]*❓\s*Q\s*(\d+)?/i
-const ANSWER_RE = /^[\s>\-*]*✅\s*R\s*(\d+)?\s*:?(.*)/i
-const PLACEHOLDER_RE = /^[\s\-–—_.·•]*$|^(todo|tbd|n\/?a|\.\.\.|_+)$/i
 
 function git(args, cwd = process.cwd()) {
   return execFileSync('git', args, {
@@ -34,48 +32,6 @@ function hash(txt) {
 
 function normalizePath(path) {
   return path.replace(/\\/g, '/')
-}
-
-function isSubstantive(txt) {
-  const alnum = (txt.match(/[\p{L}\p{N}]/gu) || []).length
-  return alnum >= 3
-}
-
-function auditQuestions(content) {
-  const lines = content.split(/\r?\n/)
-  const questions = []
-  for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(QUESTION_RE)
-    if (m) questions.push({ idx: i, num: m[1] || String(questions.length + 1) })
-  }
-  if (questions.length === 0) return { hasSection: false, unanswered: [] }
-
-  const unanswered = []
-  for (let q = 0; q < questions.length; q++) {
-    const start = questions[q].idx
-    const end = q + 1 < questions.length ? questions[q + 1].idx : lines.length
-    let answerText = null
-    for (let i = start; i < end; i++) {
-      const a = lines[i].match(ANSWER_RE)
-      if (!a) continue
-      let txt = (a[2] || '').trim()
-      if (!txt) {
-        for (let j = i + 1; j < end; j++) {
-          if (QUESTION_RE.test(lines[j]) || ANSWER_RE.test(lines[j])) break
-          if (lines[j].trim()) {
-            txt = lines[j].trim()
-            break
-          }
-        }
-      }
-      answerText = txt
-      break
-    }
-    if (answerText === null || PLACEHOLDER_RE.test(answerText) || !isSubstantive(answerText)) {
-      unanswered.push(`Q${questions[q].num}`)
-    }
-  }
-  return { hasSection: true, unanswered }
 }
 
 function readState(path) {
@@ -104,14 +60,17 @@ function main() {
     return
   }
 
-  const staged = git(['diff', '--cached', '--name-only', '--diff-filter=ACMR'], root)
+  const staged = git(['diff', '--cached', '--name-only', '--diff-filter=ACMRD'], root)
     .split(/\r?\n/)
     .map((p) => normalizePath(p.trim()))
     .filter(Boolean)
-  const stagedReports = staged.filter((p) => REPORT_RE.test(p))
 
   if (staged.length === 0) return
 
+  const stagedReports = git(['diff', '--cached', '--name-only', '--diff-filter=ACMR'], root)
+    .split(/\r?\n/)
+    .map((p) => normalizePath(p.trim()))
+    .filter((p) => p && REPORT_RE.test(p))
   const reports = stagedReports.map((path) => {
     let content = ''
     try {
@@ -119,11 +78,12 @@ function main() {
     } catch {
       fail(`PRE-COMMIT fine-sessione: non riesco a leggere il report staged: ${path}`)
     }
-    return { path, content, ...auditQuestions(content) }
+    return { path, content, mode: detectReportMode(content), ...auditQuestions(content) }
   })
 
-  const noSection = reports.filter((r) => !r.hasSection)
-  const missing = reports.filter((r) => r.hasSection && r.unanswered.length)
+  const closureReports = reports.filter((r) => r.mode.requiresCapsule || r.hasSection)
+  const noSection = closureReports.filter((r) => !r.hasSection)
+  const missing = closureReports.filter((r) => r.hasSection && r.unanswered.length)
 
   if (noSection.length || missing.length) {
     const lines = ['PRE-COMMIT fine-sessione: report incompleto, commit bloccato.', '']
@@ -138,6 +98,33 @@ function main() {
     lines.push('')
     lines.push('Completa il report, fai git add del file aggiornato e rilancia il commit.')
     fail(lines.join('\n'))
+  }
+
+  const mssEntries = collectStagedMssEntries(root)
+
+  if (mssEntries.length) {
+    const historicalSnapshots = collectGitHeadHistory(root)
+    const results = validateStagedMssFiles(root, mssEntries, { historicalSnapshots })
+    const denyLines = []
+    for (const { path, result } of results) {
+      const denies = result.diagnostics.filter((d) => d.severity === 'deny')
+      if (!denies.length) continue
+      denyLines.push(`- ${path}`)
+      for (const d of denies.slice(0, 12)) {
+        denyLines.push(`  [${d.rule}] ${d.fieldPath}`)
+      }
+    }
+    if (denyLines.length) {
+      fail(
+        [
+          'PRE-COMMIT MSS: artefatti MetaSkillSystem staged non validi (blocco pubblicazione, non edit).',
+          '',
+          ...denyLines,
+          '',
+          'Correggi, git add, rilancia. Motore: npm run validate:mss',
+        ].join('\n'),
+      )
+    }
   }
 
   const stagedSignature = git(['diff', '--cached', '--binary'], root)
