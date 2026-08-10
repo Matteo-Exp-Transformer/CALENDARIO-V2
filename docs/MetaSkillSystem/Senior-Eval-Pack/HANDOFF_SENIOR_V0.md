@@ -52,52 +52,53 @@ Non sostituisce:
 > autonomamente alcuno stato. In caso di divergenza con `MASTERPLAN_V0.md`, vince il masterplan.
 
 - **Aggiornato il:** 10-08-2026.
-- **Sessione:** `SEP-SES-20260810-031` (prepara go/no-go + chiusura + commit review; correlazione `021`–`030`).
-- **Autore:** Cursor Grok 4.5, ruolo Meta prepara + commit (NON esecutore F4).
+- **Sessione:** `SEP-SES-20260810-033` (F4-doc track + report finale commit/push; correlazione `021`–`032`).
+- **Autore:** Cursor Grok 4.5, ruolo Meta (F4-doc; chiusura report finale; prepara reasoning/plan).
 - **Configurazione:** `SEP-AGC-xai-cursor-001`.
-- **Metodo:** B1 F4 → prompt go/no-go A/B/C/D → allineo owner → commit slice review.
-- **Tipo di evidenza:** report `031` + prompt go/no-go + commit review `030`.
-- **Verifica:** stage senza L5; validate:mss; allineamento MASTERPLAN.
+- **Metodo:** F0 → A=slice `032` → stage → allineo → report → report finale commit+push → stash WT → prompt reasoning/plan.
+- **Tipo di evidenza:** report `033` + commit F4-doc su `env/test` + prompt reasoning/plan.
+- **Verifica:** validate:mss OK; diff-check OK; G5 non PASS; L5 non in commit F4.
 - **Comparabilità:** `non_comparabile`.
 - **Masterplan letto:** `MASTERPLAN_V0.md` — `SEP-G1_PASS_CON_RISERVE`; `SEP-10` chiuso;
-  `SEP-11` = **`IN_CORSO`** con review ADEGUATO committed; **SEP-G5 non PASS**.
+  `SEP-11` = **`IN_CORSO`** F4-doc committed; prossimo = **reasoning/plan H13-L5**; **SEP-G5 non PASS**.
 - **Ultimo report:**
-  `docs/Sessioni di lavoro/10-08-26/Report-prepara-post-f3-review-chiusura-commit-10-08-26.md`
-  (review: `Report-sep-11-post-f3-review-breve-10-08-26.md`).
+  `docs/Sessioni di lavoro/10-08-26/Report-sep-11-f4-doc-track-sessioni-10-08-26.md`.
 - **Prompt prossimo task:**
-  `docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-go-nogo-post-f3-review-10-08-26.md`.
-- **Catena prove:** `031` ← `030` review ADEGUATO ← `029`/`028` F3 ← …
-- **Git:** `env/test`; review+prepara committed in `031`; **no push**; L5 fuori.
+  `docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-post-f4-reasoning-plan-h13-l5-10-08-26.md`
+  (quadro generale **prima** della strategia; **non** esecuzione L5).
+- **Catena prove:** `033` ← `032` ← `031`/`030` ADEGUATO ← `028` F3 ← …
+- **Git:** `env/test` HEAD `2870f5d` (F4-doc) — push report finale; L5+rumore in **stash**
+  (messaggio: `wip: L5+rumore pre reasoning/plan H13` — `git stash list`).
 
 ### Quadro generale (per ripartenza senior — MSS)
 
 1. **Due owner:** pack → `MASTERPLAN_V0`; SYS-1 → `PLAN_V0` (non sanare H-1.3 qui).
-2. **Onda:** SEP-10 → F1+F2 → B2-F01 → F3 → review ADEGUATO → **commit+prompt go/no-go `031`**.
-3. **Freeze:** L5/L6; stub D5 attivo.
+2. **Onda chiusa fino a F4-doc pushed:** SEP-10 → F1–F3+review → pulizia → F4-doc.
+3. **Freeze:** L5/L6; stub D5 attivo; L5 può essere in stash (non perso).
 4. **Link M03:** L1+L2 ok; PLAN leave-as-history.
-5. **Gate:** G1 con riserve; G5 **non** PASS.
-6. **Fuori corsia:** H-1.3, WP-1, SEP-5, F5+, Valutazione Personale.
+5. **Gate:** G1 con riserve; G5 **non** PASS; H-1.3 FAIL resta.
+6. **Dedicati vivi:** ~~F4-doc~~ → **reasoning/plan** (prompt) → poi H-1.3/L5 exec → SEP-5 (bloccato).
 
 ### Fatto osservato
 
-Review `030` ADEGUATO committed. Prompt go/no-go pronto (A push · B F4-doc · C F4-L5-track · D stop). F4 non eseguito. Push no.
+F4-doc: whitelist+slice A committed+pushed. Zero move. Zero L5 nel commit. Prompt reasoning/plan pronto. WT ripulito via stash.
 
 ### Effetto prodotto
 
-- review in git;
-- ripartenza con decisione atomica senza auto-F4.
+- disco≈git sui report Sessioni whitelist;
+- ripartenza = ragionare sul quadro, non `git add` cieco L5.
 
 ### Problema strutturale corrente
 
-Go/no-go ancora da eseguire. Rumore L5 in WT. G5 non PASS.
+L5 ancora fuori git (in stash). H-1.3 FAIL. G5 non PASS. Strategia post-F4 da decidere con Matteo.
 
 ### Cosa non è dimostrato
 
-- push; F4; cutover/G5; H-1.3.
+- L5 tracked; cutover/G5; H-1.3 sanato; SEP-5 freeze; piano H13 approvato.
 
 ### Prossimo task atomico derivato
 
-**Go/no-go** col prompt sopra (o stop). **STOP** su F4 auto / L5 path-rewrite / PLAN rewrite / G5 PASS / H-1.3 sanato / push senza Sì.
+**Reasoning + plan** col prompt sopra. **STOP** su track L5 senza piano, F5, move, PLAN rewrite, G5 PASS, fingere H-1.3 sanato, due prossimi vivi.
 
 ### Gate
 
@@ -105,9 +106,9 @@ Go/no-go ancora da eseguire. Rumore L5 in WT. G5 non PASS.
 
 ### STOP e decisioni di Matteo
 
-- STOP: F4 auto, move, L5 path-rewrite, PLAN rewrite, G5 PASS, H-1.3 sanato, push senza Sì.
-- Chiuse: Cursor-only; D1–D5; F3+review ADEGUATO committed; no push (finora).
-- Aperte: A/B/C/D go/no-go.
+- STOP: esecuzione L5 senza piano approvato; F5; move; PLAN rewrite; G5 PASS; H-1.3 sanato; `_lavoro`.
+- Chiuse: F4-doc track+push (`033`); A=slice `032`.
+- Aperte: reasoning/plan → H-1.3/L5; SEP-5 solo con freeze; ripristino stash quando serve L5.
 
 ## 4. Chiusura obbligatoria di ogni sessione senior
 
@@ -175,6 +176,8 @@ Non copiare nel handoff intere narrative, capsule o dati privati: usare puntator
 | `SEP-SES-20260810-029` | 10-08-2026 | Meta prepara + commit · `SEP-AGC-xai-cursor-001` | prepara review + allineo + commit F3 | prompt review pronto; F3 committed; no push; G5 non PASS | decisione Matteo + allineamento owner | `non_comparabile` | `Report-prepara-post-f3-allineo-commit-10-08-26.md` |
 | `SEP-SES-20260810-030` | 10-08-2026 | Verifica revisore F3 · `SEP-AGC-xai-cursor-001` | review breve prove M03 | **ADEGUATO**; path/stub/L1-L2/PLAN ok; G5 non PASS; no F4 | `validate:mss` + diff-check + rg | `non_comparabile` | `Report-sep-11-post-f3-review-breve-10-08-26.md` |
 | `SEP-SES-20260810-031` | 10-08-2026 | Meta prepara + commit · `SEP-AGC-xai-cursor-001` | prepara go/no-go + commit review | prompt A/B/C/D pronto; review committed; no push; no F4 exec | decisione Matteo + allineamento owner | `non_comparabile` | `Report-prepara-post-f3-review-chiusura-commit-10-08-26.md` |
+| `SEP-SES-20260810-032` | 10-08-2026 | Meta pulizia · `SEP-AGC-xai-cursor-001` | pulizia solidi + backlog dedicati | A/B/C=Sì; push; go/no-go superseded; prossimo=F4-doc; G5 non PASS | decisione Matteo + allineamento owner | `non_comparabile` | `Report-sep-11-pulizia-solidi-backlog-dedicati-10-08-26.md` |
+| `SEP-SES-20260810-033` | 10-08-2026 | Meta writer F4-doc · `SEP-AGC-xai-cursor-001` | track whitelist Sessioni + slice A | F4-doc fatto; 11 path + docs `032`; zero L5/move; prossimo=H-1.3/L5; G5 non PASS | `validate:mss` + diff-check | `non_comparabile` | `Report-sep-11-f4-doc-track-sessioni-10-08-26.md` |
 
 Il registro dimostra soltanto che il passaggio è stato dichiarato e documentato. La verifica si
 legge nel report collegato e nel successivo eventuale record di review.

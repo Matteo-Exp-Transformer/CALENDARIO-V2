@@ -2,7 +2,7 @@
 
 > **Vista derivata (F2 / M02).** Non sposta file. Non è catalogo SEP né SESSION_LOG né masterplan.
 > Base: A4 §2 + B1 M02/M04 · Decisioni D1=b D3=a.
-> Aggiornato: 10-08-2026 (SEP-11 F1+F2) · sessione `SEP-SES-20260810-025`.
+> Aggiornato: 10-08-2026 (SEP-11 F1+F2 + append catena F3–`033` F4-doc) · sessioni `025`–`033`.
 
 ## Limiti dichiarati
 
@@ -50,6 +50,16 @@
 | 10-08-26 | accettazione G1 | `docs/Sessioni di lavoro/10-08-26/Report-accettazione-sep-g1-pass-con-riserve-cursor-only-10-08-26.md` |
 | 10-08-26 | decisioni D1–D5 | `docs/Sessioni di lavoro/10-08-26/Report-decisioni-d1-d5-perimetro-sep11-f1-f2-10-08-26.md` |
 | 10-08-26 | SEP-11 F1+F2 | `docs/Sessioni di lavoro/10-08-26/Report-sep-11-f1-f2-archive-shell-indice-10-08-26.md` |
+| 10-08-26 | B2-F01 remediation | `docs/Sessioni di lavoro/10-08-26/Report-remediation-b2-f01-link-report001-pre-f3-10-08-26.md` |
+| 10-08-26 | go/no-go F3 | `docs/Sessioni di lavoro/10-08-26/Report-go-nogo-b2-f01-e-mandato-f3-10-08-26.md` |
+| 10-08-26 | F3 M03 | `docs/Sessioni di lavoro/10-08-26/Report-sep-11-f3-move-report001-10-08-26.md` |
+| 10-08-26 | post-F3 prepara | `docs/Sessioni di lavoro/10-08-26/Report-prepara-post-f3-allineo-commit-10-08-26.md` |
+| 10-08-26 | post-F3 review | `docs/Sessioni di lavoro/10-08-26/Report-sep-11-post-f3-review-breve-10-08-26.md` |
+| 10-08-26 | post-review prepara | `docs/Sessioni di lavoro/10-08-26/Report-prepara-post-f3-review-chiusura-commit-10-08-26.md` |
+| 10-08-26 | pulizia solidi `032` | `docs/Sessioni di lavoro/10-08-26/Report-sep-11-pulizia-solidi-backlog-dedicati-10-08-26.md` |
+| 10-08-26 | prompt F4-doc | `docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-f4-doc-track-sessioni-10-08-26.md` |
+| 10-08-26 | F4-doc track `033` | `docs/Sessioni di lavoro/10-08-26/Report-sep-11-f4-doc-track-sessioni-10-08-26.md` |
+| 10-08-26 | prompt reasoning/plan H13 | `docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-post-f4-reasoning-plan-h13-l5-10-08-26.md` |
 
 ## 10-08-26 — Fantasticazione / Studio-Risposte
 

@@ -1,6 +1,11 @@
 # Prompt — SEP-11 post-F3-review · go/no-go (push / F4 / stop)
 
-> **Uso:** nuova chat Agent · profilo Meta · standard (alzabile a deep).
+> **SUPERSEDED 10-08-2026 (`SEP-SES-20260810-032`):** questo go/no-go generico è sostituito dal
+> backlog dedicati in `MASTERPLAN_V0.md` §6 / `HANDOFF_SENIOR_V0.md` (prossimo = **F4-doc**;
+> poi H-1.3/F4-L5; SEP-5 bloccato). **Non** usare come «prossimo passo» vivo. File conservato
+> come storia. Fonte: `Report-sep-11-pulizia-solidi-backlog-dedicati-10-08-26.md`.
+
+> **Uso (storico):** nuova chat Agent · profilo Meta · standard (alzabile a deep).
 > **Fonte stato:** `Report-sep-11-post-f3-review-breve-10-08-26.md` (`030` ADEGUATO) + HANDOFF + MASTERPLAN.
 > **Git atteso:** `env/test` · HEAD con commit review F3 · ahead N · **push solo se Matteo dice Sì in questa chat**.
 > **SEP-G5 non PASS**. F4 **non** auto-eseguito: al massimo inventario + prompt F4 se autorizzato.
