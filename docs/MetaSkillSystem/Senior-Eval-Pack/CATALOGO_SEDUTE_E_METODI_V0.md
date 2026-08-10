@@ -156,7 +156,7 @@
   alcune lacune di enforcement restano.
 - Evidenza: analisi source-derived; completezza `complete`; verifica `mixed`; comparabilità
   `non_comparabile`.
-- Fonte: `docs/MetaSkillSystem/REPORT_001_OSSERVAZIONI_ARCHITETTURALI_09-08-26.md`.
+- Fonte: `docs/MetaSkillSystem/archive/osservazioni/REPORT_001_OSSERVAZIONI_ARCHITETTURALI_09-08-26.md` (stub TTL al path storico root).
 
 ### `SEP-SES-20260809-003` — completamento `WP-0.1`
 

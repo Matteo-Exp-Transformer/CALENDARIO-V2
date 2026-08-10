@@ -1,9 +1,9 @@
 # SEP-10 — Indice ricognizione archiviazione MetaSkillSystem
 
 > Cartella artefatti del plan `.cursor/plans/sep-10_archiviazione_mss_430c9c1d.plan.md`.
-> **Analisi chiusa nel disegno.** F1+F2 fatti; B2-F01 inventario fatto; **F3 autorizzato** (`027`)
-> ma **non eseguito** (prompt in Sessioni). **Nessun** rename/move ancora. **SEP-G5 non PASS**. Push no.
-> A1–A4: `021` · B1: `022` · B2: `023` · D1–D5: `024` · F1+F2: `025` · B2-F01: `026` · go/no-go F3: `027`.
+> **Analisi chiusa nel disegno.** F1+F2 fatti; B2-F01 fatto; F3 eseguito+committed (`028`/`029`);
+> prompt **review breve** pronto. **SEP-G5 non PASS**. Push no.
+> A1–A4: `021` · … · F3: `028` · prepara+commit: `029`.
 
 ## Stato fasi
 
@@ -19,8 +19,11 @@
 | Decisioni D1–D5 | [../Report-decisioni-d1-d5-perimetro-sep11-f1-f2-10-08-26.md](../Report-decisioni-d1-d5-perimetro-sep11-f1-f2-10-08-26.md) | fatto |
 | SEP-11 F1+F2 | [../Report-sep-11-f1-f2-archive-shell-indice-10-08-26.md](../Report-sep-11-f1-f2-archive-shell-indice-10-08-26.md) | fatto · [archive/](../../../MetaSkillSystem/archive/) |
 | SEP-11 B2-F01 | [../Report-remediation-b2-f01-link-report001-pre-f3-10-08-26.md](../Report-remediation-b2-f01-link-report001-pre-f3-10-08-26.md) | fatto · committed |
-| Go/no-go + mandato F3 | [../Report-go-nogo-b2-f01-e-mandato-f3-10-08-26.md](../Report-go-nogo-b2-f01-e-mandato-f3-10-08-26.md) | fatto · F3 autorizzato non eseguito |
-| Prompt F3 | [../Prompt-sep-11-f3-move-report001-10-08-26.md](../Prompt-sep-11-f3-move-report001-10-08-26.md) | pronto · chat nuova |
+| Go/no-go + mandato F3 | [../Report-go-nogo-b2-f01-e-mandato-f3-10-08-26.md](../Report-go-nogo-b2-f01-e-mandato-f3-10-08-26.md) | fatto · F3 autorizzato |
+| Prompt F3 | [../Prompt-sep-11-f3-move-report001-10-08-26.md](../Prompt-sep-11-f3-move-report001-10-08-26.md) | eseguito in `028` |
+| SEP-11 F3 (M03) | [../Report-sep-11-f3-move-report001-10-08-26.md](../Report-sep-11-f3-move-report001-10-08-26.md) | fatto · move+stub; committed in `029` |
+| Prepara post-F3 + commit | [../Report-prepara-post-f3-allineo-commit-10-08-26.md](../Report-prepara-post-f3-allineo-commit-10-08-26.md) | fatto · allineo + commit |
+| Prompt review breve | [../Prompt-sep-11-post-f3-review-breve-10-08-26.md](../Prompt-sep-11-post-f3-review-breve-10-08-26.md) | pronto · chat nuova |
 
 ## Decisioni chiuse (riassunto)
 

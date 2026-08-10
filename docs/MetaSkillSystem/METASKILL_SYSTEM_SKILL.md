@@ -22,7 +22,9 @@ description: >-
 5. Se la seduta riguarda dati o valutazioni di Matteo, caricare anche la Bussola del binario
    crescita. Le regole di prova personali restano proprietarie di quel binario.
 6. Per capire l'origine di una revisione architetturale o verificare che una lacuna sia già stata
-   registrata leggere `REPORT_001_OSSERVAZIONI_ARCHITETTURALI_09-08-26.md`. Non usarlo come stato.
+   registrata leggere
+   `archive/osservazioni/REPORT_001_OSSERVAZIONI_ARCHITETTURALI_09-08-26.md`
+   (stub TTL al path storico root). Non usarlo come stato.
 7. Se Matteo chiede di **preparare / condurre chat di fantasticazione o immaginazione** (input
    immaginario → lui descrive come si comporterebbe), leggere
    `TIPO_SEDUTA_FANTASTICAZIONE_V0.md`: intent del tipo, non stato di `SYS-1`.
