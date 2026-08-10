@@ -52,65 +52,62 @@ Non sostituisce:
 > autonomamente alcuno stato. In caso di divergenza con `MASTERPLAN_V0.md`, vince il masterplan.
 
 - **Aggiornato il:** 10-08-2026.
-- **Sessione:** `SEP-SES-20260810-029` (prepara prompt post-F3 + allineo docs + commit F3; correlazione `021`–`028`).
-- **Autore:** Cursor Grok 4.5, ruolo Meta prepara + commit (NON esecutore review).
+- **Sessione:** `SEP-SES-20260810-031` (prepara go/no-go + chiusura + commit review; correlazione `021`–`030`).
+- **Autore:** Cursor Grok 4.5, ruolo Meta prepara + commit (NON esecutore F4).
 - **Configurazione:** `SEP-AGC-xai-cursor-001`.
-- **Metodo:** conferma stato `028` → prompt review breve → allineo owner → commit slice F3.
-- **Tipo di evidenza:** report `029` + prompt review + commit F3.
-- **Verifica:** stage senza L5; allineamento MASTERPLAN; path nuovo/stub già in `028`.
+- **Metodo:** B1 F4 → prompt go/no-go A/B/C/D → allineo owner → commit slice review.
+- **Tipo di evidenza:** report `031` + prompt go/no-go + commit review `030`.
+- **Verifica:** stage senza L5; validate:mss; allineamento MASTERPLAN.
 - **Comparabilità:** `non_comparabile`.
-- **Masterplan letto:** `MASTERPLAN_V0.md` — `SEP-G1_PASS_CON_RISERVE`; `SEP-10` chiuso nel disegno;
-  `SEP-11` = **`IN_CORSO`** con **F3 eseguito e committed**; **SEP-G5 non PASS**.
+- **Masterplan letto:** `MASTERPLAN_V0.md` — `SEP-G1_PASS_CON_RISERVE`; `SEP-10` chiuso;
+  `SEP-11` = **`IN_CORSO`** con review ADEGUATO committed; **SEP-G5 non PASS**.
 - **Ultimo report:**
-  `docs/Sessioni di lavoro/10-08-26/Report-prepara-post-f3-allineo-commit-10-08-26.md`
-  (F3 prove: `Report-sep-11-f3-move-report001-10-08-26.md`).
+  `docs/Sessioni di lavoro/10-08-26/Report-prepara-post-f3-review-chiusura-commit-10-08-26.md`
+  (review: `Report-sep-11-post-f3-review-breve-10-08-26.md`).
 - **Prompt prossimo task:**
-  `docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-post-f3-review-breve-10-08-26.md`.
-- **Catena prove:** `029` ← `028` F3 ← `027` mandato ← `026` Addendum ← …
-- **Git:** `env/test`; F3+allineo committed in `029`; **no push**; L5 fuori.
+  `docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-go-nogo-post-f3-review-10-08-26.md`.
+- **Catena prove:** `031` ← `030` review ADEGUATO ← `029`/`028` F3 ← …
+- **Git:** `env/test`; review+prepara committed in `031`; **no push**; L5 fuori.
 
 ### Quadro generale (per ripartenza senior — MSS)
 
-1. **Due owner:** pack → `MASTERPLAN_V0`; SYS-1 → `PLAN_V0` (stale vs H-1.3 FAIL = vincolo esterno, non sanare qui).
-2. **Onda archivio:** SEP-10 chiusa → F1+F2 → B2-F01 → mandato `027` → F3 `028` → **commit+prompt review `029`**.
-3. **Freeze:** L5 path-coupled e L6 `_lavoro` intangibili; stub D5 attivo (TTL 30gg da 10-08-2026).
-4. **Link M03:** L1+L2 → path nuovo; stub al path vecchio; PLAN leave-as-history.
-5. **Assi capsula:** persona/sistema/output in chiusura deep/standard pack; `validate:mss`.
-6. **Gate:** G1 con riserve R1–R3; G5 **non** PASS (F3 ≠ cutover).
-7. **Fuori corsia:** H-1.3, WP-1, SEP-5, ranking, Valutazione Personale.
+1. **Due owner:** pack → `MASTERPLAN_V0`; SYS-1 → `PLAN_V0` (non sanare H-1.3 qui).
+2. **Onda:** SEP-10 → F1+F2 → B2-F01 → F3 → review ADEGUATO → **commit+prompt go/no-go `031`**.
+3. **Freeze:** L5/L6; stub D5 attivo.
+4. **Link M03:** L1+L2 ok; PLAN leave-as-history.
+5. **Gate:** G1 con riserve; G5 **non** PASS.
+6. **Fuori corsia:** H-1.3, WP-1, SEP-5, F5+, Valutazione Personale.
 
 ### Fatto osservato
 
-F3 eseguito (`028`): REPORT_001 in `archive/osservazioni/`; stub D5; L1+L2 ok; PLAN intatto.
-`029`: docs allineate; prompt review pronto; commit locale F3; push no.
+Review `030` ADEGUATO committed. Prompt go/no-go pronto (A push · B F4-doc · C F4-L5-track · D stop). F4 non eseguito. Push no.
 
 ### Effetto prodotto
 
-- storia F3 versionata in git;
-- ripartenza senior con prompt review autocontenuto;
-- handoff/masterplan coerenti con i fatti.
+- review in git;
+- ripartenza con decisione atomica senza auto-F4.
 
 ### Problema strutturale corrente
 
-Review breve ancora da eseguire (o stop). Push non fatto. H-1.3/PLAN stale fuori. G5 non PASS.
+Go/no-go ancora da eseguire. Rumore L5 in WT. G5 non PASS.
 
 ### Cosa non è dimostrato
 
-- esito review F3; cutover/SEP-G5; H-1.3; SEP-5/12.
+- push; F4; cutover/G5; H-1.3.
 
 ### Prossimo task atomico derivato
 
-**Review breve F3** col prompt file sopra (oppure stop su decisione Matteo). **STOP** su L5/PLAN rewrite/G5 PASS/push/F4/altri move.
+**Go/no-go** col prompt sopra (o stop). **STOP** su F4 auto / L5 path-rewrite / PLAN rewrite / G5 PASS / H-1.3 sanato / push senza Sì.
 
 ### Gate
 
-`SEP-G1` = `PASS_CON_RISERVE`. `SEP-G5` **non** PASS. `SEP-5` bloccato.
+`SEP-G1` = `PASS_CON_RISERVE`. `SEP-G5` **non** PASS.
 
 ### STOP e decisioni di Matteo
 
-- STOP: L5, `_lavoro`, PLAN rewrite stato, G5 PASS, H-1.3, WP-1, push, F4, move oltre M03.
-- Chiuse: Cursor-only; D1–D5; F3 eseguito+committed; no push (finora).
-- Aperte: esito review/stop; quando push; corsia H-1.3.
+- STOP: F4 auto, move, L5 path-rewrite, PLAN rewrite, G5 PASS, H-1.3 sanato, push senza Sì.
+- Chiuse: Cursor-only; D1–D5; F3+review ADEGUATO committed; no push (finora).
+- Aperte: A/B/C/D go/no-go.
 
 ## 4. Chiusura obbligatoria di ogni sessione senior
 
@@ -176,6 +173,8 @@ Non copiare nel handoff intere narrative, capsule o dati privati: usare puntator
 | `SEP-SES-20260810-027` | 10-08-2026 | Meta go/no-go + prepara · `SEP-AGC-xai-cursor-001` | review 026 + commit + prompt F3 | 026 ADEGUATO; F3 autorizzato non eseguito; no push; quadro handoff | decisione Matteo + allineamento owner | `non_comparabile` | `Report-go-nogo-b2-f01-e-mandato-f3-10-08-26.md` |
 | `SEP-SES-20260810-028` | 10-08-2026 | Meta writer F3 · `SEP-AGC-xai-cursor-001` | F3 M03 move+stub+L1/L2 | REPORT_001 → archive/osservazioni; stub D5; PLAN leave-as-history; SEP-G5 non PASS | `validate:mss` + diff-check + rg | `non_comparabile` | `Report-sep-11-f3-move-report001-10-08-26.md` |
 | `SEP-SES-20260810-029` | 10-08-2026 | Meta prepara + commit · `SEP-AGC-xai-cursor-001` | prepara review + allineo + commit F3 | prompt review pronto; F3 committed; no push; G5 non PASS | decisione Matteo + allineamento owner | `non_comparabile` | `Report-prepara-post-f3-allineo-commit-10-08-26.md` |
+| `SEP-SES-20260810-030` | 10-08-2026 | Verifica revisore F3 · `SEP-AGC-xai-cursor-001` | review breve prove M03 | **ADEGUATO**; path/stub/L1-L2/PLAN ok; G5 non PASS; no F4 | `validate:mss` + diff-check + rg | `non_comparabile` | `Report-sep-11-post-f3-review-breve-10-08-26.md` |
+| `SEP-SES-20260810-031` | 10-08-2026 | Meta prepara + commit · `SEP-AGC-xai-cursor-001` | prepara go/no-go + commit review | prompt A/B/C/D pronto; review committed; no push; no F4 exec | decisione Matteo + allineamento owner | `non_comparabile` | `Report-prepara-post-f3-review-chiusura-commit-10-08-26.md` |
 
 Il registro dimostra soltanto che il passaggio è stato dichiarato e documentato. La verifica si
 legge nel report collegato e nel successivo eventuale record di review.

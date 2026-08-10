@@ -63,7 +63,7 @@ Questi stati valgono soltanto per i work package elencati qui e non aggiornano `
 | `SEP-8` | Primo confronto controllato | `BLOCCATO_DA_GATE` | richiede almeno due istanze comparabili; vietato anticipare ranking |
 | `SEP-9` | Consolidamento del routing | `BLOCCATO_DA_GATE` | richiede evidenza d'uso delle rotte; nessun secondo router senza mandato |
 | `SEP-10` | Analisi read-only dell'archiviazione | `CHIUSO_NEL_DISEGNO` | A1–A4 + B1 + B2 (`Report-B2-review-piano-migrazione.md`); B1 self-report «PRONTO PER DECISIONE»; B2 = **`ADEGUATO_CON_RISERVE`** (HIGH B2-F01 M03 link); **nessuna** migrazione; **SEP-G5 non PASS** |
-| `SEP-11` | Piano di migrazione controllata | `IN_CORSO` (F1+F2+B2-F01+**F3 eseguito+committed**; review breve aperta) | F1+F2 (`025`); D2 `6336c19`; B2-F01 (`026`); go/no-go (`027`); F3 M03 (`028`); prepara+commit (`029`); **SEP-G5 non PASS**; push no |
+| `SEP-11` | Piano di migrazione controllata | `IN_CORSO` (F3+review ADEGUATO **committed**; go/no-go aperto) | F1+F2 (`025`); D2 `6336c19`; B2-F01 (`026`); go/no-go F3 (`027`); F3 M03 (`028`); prepara+commit (`029`); review (`030` **ADEGUATO**); prepara+commit review (`031`); **SEP-G5 non PASS**; push no; F4 non eseguito |
 | `SEP-12` | Promozione da sperimentale ad affidabile | `BLOCCATO_DA_GATE` | richiede review, uso prospettico, debiti accettati e decisione esplicita di Matteo |
 
 ### 4-bis. Registro append-only delle transizioni WP
@@ -84,6 +84,8 @@ Questi stati valgono soltanto per i work package elencati qui e non aggiornano `
 | 10-08-2026 | `SEP-11` (go/no-go + mandato F3) | `IN_CORSO` · F3 **autorizzato** (non eseguito) | `Report-go-nogo-b2-f01-e-mandato-f3-10-08-26.md` + `Prompt-sep-11-f3-move-report001-10-08-26.md` | Meta go/no-go+prepara `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-027`) | review `026` ADEGUATO; commit remediation; no push; F3 solo in chat nuova col prompt |
 | 10-08-2026 | `SEP-11` (F3 / M03) | `IN_CORSO` · **F3 eseguito**; G5 non PASS | `Report-sep-11-f3-move-report001-10-08-26.md` | Meta writer F3 `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-028`) | `git mv` → `archive/osservazioni/`; stub D5 al path vecchio; L1+L2 update; PLAN leave-as-history; no push; no G5 PASS |
 | 10-08-2026 | `SEP-11` (post-F3 prepara+commit) | `IN_CORSO` · F3 **committed**; prossimo = review breve | `Report-prepara-post-f3-allineo-commit-10-08-26.md` + `Prompt-sep-11-post-f3-review-breve-10-08-26.md` | Meta prepara `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-029`) | allineo docs; prompt review; commit F3; no push; SEP-G5 non PASS |
+| 10-08-2026 | `SEP-11` (post-F3 review breve) | `IN_CORSO` · F3 **review ADEGUATO**; prossimo = stop/decisione Matteo | `Report-sep-11-post-f3-review-breve-10-08-26.md` | Verifica revisore `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-030`) | checklist path/stub/L1-L2/PLAN/rg; G5 non PASS; no push; no F4 |
+| 10-08-2026 | `SEP-11` (post-review prepara+commit) | `IN_CORSO` · review **committed**; prossimo = go/no-go | `Report-prepara-post-f3-review-chiusura-commit-10-08-26.md` + `Prompt-sep-11-go-nogo-post-f3-review-10-08-26.md` | Meta prepara `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-031`) | commit review; prompt A/B/C/D; no push; no F4 exec; SEP-G5 non PASS |
 
 ## 5. Gate
 
@@ -126,16 +128,15 @@ conferma esplicita del perimetro di scrittura. Fino ad allora l'archivio resta i
 
 ## 6. Prossimo passo atomico
 
-**Immediato:** **review breve F3** col prompt
-`docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-post-f3-review-breve-10-08-26.md`
-(oppure **stop** su decisione Matteo). **Non** aprire F4/L5/H-1.3 senza nuovo mandato.
-**SEP-G5 non PASS**. **Push no** finché Matteo non lo chiede.
+**Immediato:** **go/no-go** col prompt
+`docs/Sessioni di lavoro/10-08-26/Prompt-sep-11-go-nogo-post-f3-review-10-08-26.md`
+(oppure **stop**). Opzioni: (A) push · (B) F4-doc · (C) F4-L5-track · (D) stop.
+**Non** eseguire F4 in automatico. **SEP-G5 non PASS**. **Push no** finché Matteo non dice Sì.
 
-F3 (`028`) eseguito e committed (`029`): `REPORT_001` → `archive/osservazioni/`; stub D5;
-L1 skill + L2 CATALOGO aggiornati; `PLAN_V0` leave-as-history.
+F3 review (`030`) ADEGUATO e committed (`031`): path/stub/L1-L2/PLAN ok.
 
-**Vietato senza nuovo mandato oltre review:** altri move; touch L5; `_lavoro`; rewrite stato
-`PLAN_V0`; claim SEP-G5 PASS; sanatoria H-1.3; WP-1; SEP-5; F4.
+**Vietato senza nuovo mandato:** esecuzione F4; altri move; touch path L5; `_lavoro`;
+rewrite stato `PLAN_V0`; claim SEP-G5 PASS; sanatoria H-1.3; WP-1; SEP-5; F5+.
 
 **Non automatico:** `SEP-5` resta bloccato da decisioni freeze separate.
 
@@ -179,14 +180,14 @@ freeze/attribuzione soft.
 | `SEP-D05` | rischio di confondere CFG E1–E5 con una scala comparativa senior | mantenere domini distinti e nessun riuso senza nuovo protocollo |
 | `SEP-D06` | roadmap potrebbe diventare un secondo owner | aggiornare la vista solo dopo il masterplan e senza stati vivi |
 | `SEP-D07` | handoff attivo stale o trasformato in secondo masterplan | aggiornamento obbligatorio dopo report/verifiche; masterplan prevale su ogni divergenza |
-| `SEP-D09` | B2-F01: M03 `link_da_aggiornare` incompleto (CATALOGO + PLAN_V0) | **inventario sanato** (`026`); mandato F3 (`027`); **F3 eseguito** (`028`); stub D5 attivo; PLAN leave-as-history |
+| `SEP-D09` | B2-F01: M03 `link_da_aggiornare` incompleto (CATALOGO + PLAN_V0) | **inventario sanato** (`026`); mandato F3 (`027`); **F3 eseguito** (`028`); review **ADEGUATO** (`030`); stub D5 attivo; PLAN leave-as-history |
 
 ## 9. Decisioni aperte e condizioni operative
 
 Decisioni ancora appartenenti a Matteo:
 
-- esito post-F3 (stop / review breve / altro) — **review prompt pronto** (`029`); esecuzione ancora aperta;
-- push dei commit locali (D2 + remediation + **F3**) — **no** finché non lo chiede;
+- esito post-F3 — **review ADEGUATO** (`030`) + commit (`031`); resta go/no-go A/B/C/D;
+- push dei commit locali — **no** finché non lo chiede (prompt go/no-go);
 - compito e configurazione della prima eval prospettica (`SEP-5`/`SEP-G2`);
 - criteri, conseguenze e tetto delle ripetizioni da congelare;
 - eventuale autorizzazione a nuovo enforcement (F02/F03) o remediation `SEP-D08`;
@@ -200,8 +201,8 @@ Decisioni ancora appartenenti a Matteo:
 allineamento method_ref `015` → `SEP-MET-foundation-co-design-0.1` (remediation `018`);
 rimando soft `019` superato dalla formalizzazione `020`;
 **D1–D5** (`024`): F1+F2 · slice track · `archive/` · freeze L5 · TTL redirect 30gg;
-**no push** (`027`/`029`); **F3 autorizzato** (`027`), **eseguito** (`028`), **committed** (`029`);
-prompt review breve pronto.
+**no push** (`027`/`029`/`030`/`031`); **F3** eseguito+committed+**review ADEGUATO**;
+prompt **go/no-go** pronto (`031`).
 
 **Pausa:** fermarsi su conflitto di owner, mutazione post hoc del protocollo, fonte privata non
 autorizzata, finding HIGH, contaminazione della review o necessità di scrivere fuori perimetro.

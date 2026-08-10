@@ -24,8 +24,8 @@
    B2 = `ADEGUATO_CON_RISERVE`; D1–D5 registrate (`024`); lo stato vivo resta nel masterplan.
 9. **Preparare / avviare la migrazione documentale controllata** — matrice source→target, ordine,
    test, rollback e autorizzazione per fase (`SEP-11`, gate `SEP-G5`). *Vista:* F1+F2 fatti;
-   B2-F01 sanato; **F3 eseguito+committed** (`028`/`029`); prompt **review breve** pronto;
-   **SEP-G5 non PASS**; push no; prossimo = review o stop (no F4 automatico).
+   B2-F01 sanato; **F3+review ADEGUATO committed** (`028`–`031`); prompt **go/no-go** pronto;
+   **SEP-G5 non PASS**; push no; F4 non eseguito (no auto).
 10. **Passare da sperimentale ad affidabile** — solo dopo almeno un ciclo prospettico revisionato,
     debiti critici risolti o accettati e decisione esplicita di Matteo (`SEP-12`).
 
