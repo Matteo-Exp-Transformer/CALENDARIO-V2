@@ -41,7 +41,11 @@ const DOCS_ROOT = join(REPO_ROOT, 'docs')
 const ALLOWLIST_PATH = join(__dirname, 'doc-path-check-allowlist.json')
 
 // Cartelle (relative a docs/) da NON scansionare — vedi perimetro P1b del design.
-const EXCLUDED_DIRS = ['Sessioni di lavoro', '_lavoro', 'Archivio']
+// NOTA (SK-0, 21-08-26): qui c'era `Archivio` (italiano) ma NON `Archives` (inglese), e le due
+// cartelle coesistono. `docs/Archives/` conteneva 3868 dei 3886 path rotti — il 99,5% — e teneva
+// rosso questo controllo, che gira in CI. Stessa natura di `Archivio`: storico di progetti passati,
+// i cui link legacy non vanno corretti.
+const EXCLUDED_DIRS = ['Sessioni di lavoro', '_lavoro', 'Archivio', 'Archives']
 
 // --- util path: tutto a forward-slash, relativo alla root del repo ----------
 const toPosix = (p) => p.split('\\').join('/')

@@ -18,6 +18,10 @@ export default defineConfig({
       'supabase/functions/**',
       // Console super-admin: sotto-progetto isolato, ha la sua pipeline separata.
       'console/**',
+      // docs/Archives: 192 file di test di progetti passati, raccolti per errore da Vitest.
+      // Erano l'unica causa del rosso globale: senza, la suite e 163 file / 1346 test verdi.
+      // Aperto come SK-0 in docs/MetaSkillSystem/PLAN_V0.md §4-bis.
+      'docs/Archives/**',
     ],
     env: {
       VITE_SUPABASE_URL: 'https://test.supabase.co',

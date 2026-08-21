@@ -43,6 +43,11 @@ module.exports = {
     'agenti-locali/**',
     // Console super-admin: sotto-progetto isolato con il proprio ESLint.
     'console/**',
+    // docs/Archives: materiale storico di progetti passati, non codice di questa app.
+    // Erano l'origine del 100% dei problemi di lint (18 file su 18, 17 errori di parsing).
+    // `eslint src` era gia pulito: il rosso globale era tutto qui. Aperto come SK-0 in
+    // docs/MetaSkillSystem/PLAN_V0.md §4-bis.
+    'docs/Archives/**',
   ],
   overrides: [
     {
