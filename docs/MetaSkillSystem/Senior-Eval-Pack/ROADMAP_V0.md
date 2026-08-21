@@ -23,11 +23,11 @@
    sovrapposizioni e vincoli (`SEP-10`). *Vista 10-08-2026:* A1–A4 + B1 + B2 chiuse nel disegno;
    B2 = `ADEGUATO_CON_RISERVE`; D1–D5 registrate (`024`); lo stato vivo resta nel masterplan.
 9. **Preparare / avviare la migrazione documentale controllata** — matrice source→target, ordine,
-   test, rollback e autorizzazione per fase (`SEP-11`, gate `SEP-G5`). *Vista:* F1–F3+review
-   ADEGUATO committed; **push fatto** (`032`); go/no-go **superseded**; **F4-doc fatto e
-   pushed** (`033`); prossimo atomico = **reasoning + plan**
-   (`Prompt-sep-11-post-f4-reasoning-plan-h13-l5-10-08-26.md`) prima di track L5; SEP-5
-   bloccato; **SEP-G5 non PASS**; H-1.3 **non** sanato.
+   test, rollback e autorizzazione per fase (`SEP-11`, gate `SEP-G5`). *Vista 21-08-2026:*
+   F1–F3+review e F4-doc chiusi; baseline L5+hook committed e pushed in `ee0ab39`; H-1.3 =
+   **`PASS_CON_RISERVE`** (non PASS pulito); preparazione `036` chiusa documentalmente in `037`.
+   Prossimo atomico = **plan directory/export/sandbox** col prompt dedicato, **zero move**;
+   F5 solo dopo approvazione. SEP-5 bloccato; **SEP-G5 non PASS**; WP-1 **NO-GO**.
 10. **Passare da sperimentale ad affidabile** — solo dopo almeno un ciclo prospettico revisionato,
     debiti critici risolti o accettati e decisione esplicita di Matteo (`SEP-12`).
 

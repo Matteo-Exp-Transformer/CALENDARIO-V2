@@ -47,7 +47,7 @@ agenti, non sana H-1.3 e non apre `WP-1`.
 
 Questi stati valgono soltanto per i work package elencati qui e non aggiornano `SYS-1`.
 
-## 4. Stato corrente al 10-08-2026
+## 4. Stato corrente al 21-08-2026
 
 | ID | Work package | Stato corrente | Evidenza e limite |
 |---|---|---|---|
@@ -63,7 +63,7 @@ Questi stati valgono soltanto per i work package elencati qui e non aggiornano `
 | `SEP-8` | Primo confronto controllato | `BLOCCATO_DA_GATE` | richiede almeno due istanze comparabili; vietato anticipare ranking |
 | `SEP-9` | Consolidamento del routing | `BLOCCATO_DA_GATE` | richiede evidenza d'uso delle rotte; nessun secondo router senza mandato |
 | `SEP-10` | Analisi read-only dell'archiviazione | `CHIUSO_NEL_DISEGNO` | A1–A4 + B1 + B2 (`Report-B2-review-piano-migrazione.md`); B1 self-report «PRONTO PER DECISIONE»; B2 = **`ADEGUATO_CON_RISERVE`** (HIGH B2-F01 M03 link); **nessuna** migrazione; **SEP-G5 non PASS** |
-| `SEP-11` | Piano di migrazione controllata | `IN_CORSO` (H-1.3 = **PASS_CON_RISERVE**; track L5 autorizzato; prossimo = plan directory) | F1–F4-doc; remediation R01–R05; review post = **PASS_CON_RISERVE** (H13-POST-L01); **SEP-G5 non PASS**; WP-1 **NO-GO**; path L5 invariati; F5/move vietati finché plan directory approvato |
+| `SEP-11` | Piano di migrazione controllata | `IN_CORSO` (H-1.3 = **PASS_CON_RISERVE**; track L5 **committed+pushed** `ee0ab39`; prossimo = plan directory) | F1–F4-doc; remediation R01–R05; review post = **PASS_CON_RISERVE** (H13-POST-L01); **SEP-G5 non PASS**; WP-1 **NO-GO**; path L5 invariati; F5/move vietati finché plan directory approvato |
 | `SEP-12` | Promozione da sperimentale ad affidabile | `BLOCCATO_DA_GATE` | richiede review, uso prospettico, debiti accettati e decisione esplicita di Matteo |
 
 ### 4-bis. Registro append-only delle transizioni WP
@@ -89,7 +89,9 @@ Questi stati valgono soltanto per i work package elencati qui e non aggiornano `
 | 10-08-2026 | `SEP-11` (pulizia solidi + backlog dedicati) | `IN_CORSO` invariato · bordo pulito; prossimo = **F4-doc** | `Report-sep-11-pulizia-solidi-backlog-dedicati-10-08-26.md` | Meta writer `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-032`) | A/B/C=Sì; push ahead; go/no-go superseded; dedicati F4-doc · H-1.3/L5 · SEP-5; no F4 exec; G5 non PASS |
 | 10-08-2026 | `SEP-11` (F4-doc track Sessioni) | `IN_CORSO` · **F4-doc fatto**; prossimo = **H-1.3/F4-L5** | `Report-sep-11-f4-doc-track-sessioni-10-08-26.md` | Meta writer `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-033`) | whitelist 11 path tracked; slice A=`032` inclusa; zero path change; zero L5; G5 non PASS; H-1.3 non sanato |
 | 10-08-2026 | `SEP-11` (H-1.3 review post-remediation) | `IN_CORSO` · H-1.3 **PASS_CON_RISERVE**; WP-1 NO-GO | `Report-revisione-indipendente-h13-post-remediation-10-08-26.md` | Verifica senior indipendente `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-034`) | controprove R01–R03 tengono; riserva H13-POST-L01; G5 non PASS; zero fix |
-| 10-08-2026 | `SEP-11` (track/commit baseline L5) | `IN_CORSO` · track L5+hook+report; prossimo = **plan directory** | `Report-track-commit-h13-l5-pass-con-riserve-10-08-26.md` | Meta writer `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-035`) | path invariati; PASS_CON_RISERVE accettato; WP-1 non aperto; G5 non PASS; commit attende «lavoro ok» |
+| 10-08-2026 | `SEP-11` (track/commit baseline L5) | `IN_CORSO` · track L5+hook+report **pushed** `ee0ab39`; prossimo = **plan directory** | `Report-track-commit-h13-l5-pass-con-riserve-10-08-26.md` | Meta writer `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-035`) | path invariati; PASS_CON_RISERVE; WP-1 NO-GO; G5 non PASS; commit+push fatti |
+| 10-08-2026 | `SEP-11` (prepara plan directory) | `IN_CORSO` · prompt plan directory pronto; zero move | `Prompt-plan-directory-export-sandbox-mss-10-08-26.md` | Meta prepara `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-036`) | FU-SEP-11-DIR-PLAN aperto; F5 exec non avviato; WP-1 chiuso |
+| 21-08-2026 | `SEP-11` (chiusura documentale preparazione `036`) | `IN_CORSO` invariato · fonti vive allineate; prossimo = **plan directory** | `Report-chiusura-documentale-preparazione-036-21-08-26.md` | Meta documentation closure (`SEP-SES-20260821-037`) | corretti riferimenti superati; roadmap/handoff/prompt coerenti; zero F5/move/sandbox; pubblicazione docs non eseguita |
 
 ## 5. Gate
 
@@ -132,19 +134,26 @@ conferma esplicita del perimetro di scrittura. Fino ad allora l'archivio resta i
 
 ## 6. Prossimo passo atomico
 
-**Immediato (dopo commit track L5):** chat Meta **solo plan** — albero MSS scalabile +
-export + copia/sandbox ripristino. **Zero move** in quella chat. F5 exec solo dopo plan approvato.
+**Immediato:** chat Meta **solo plan** col prompt
+`docs/Sessioni di lavoro/10-08-26/Prompt-plan-directory-export-sandbox-mss-10-08-26.md`.
+Albero MSS + export + sandbox/ripristino. **Zero move**. F5 exec solo dopo plan approvato.
 
 **H-1.3 = `PASS_CON_RISERVE`** (review `034`; riserva H13-POST-L01). **Non** è PASS pulito.
 **WP-1 = NO-GO** (non aprire). **SEP-G5 non PASS**.
 
-**Backlog dedicati (max 3 vivi):** (1) ~~F4-doc~~ · (2) ~~remediation + review H-1.3~~ ·
-(3) **plan directory/export/sandbox** (dopo track/commit L5); SEP-5 resta bloccato.
+**Backlog dedicati (max 3 vivi):** (1) ~~F4-doc~~ · (2) ~~H-1.3 remediation+review+track `ee0ab39`~~ ·
+(3) **plan directory/export/sandbox** (prompt `036` pronto); SEP-5 resta bloccato.
 `SEP-D08` resta debito pack, **non** prossimo atomico.
 
-**Fatto in track `035`:** stage whitelist L5 + 2 hook MSS + report/prompt H-1.3 + allineo
-narrativo; path invariati; `test:mss` verde; commit attende «lavoro ok»/«fai report finale»;
-push solo con Sì. Stash intatto (rumore Comunicazione non importato).
+**Fatto in track `035`:** whitelist L5 + 2 hook + report/prompt H-1.3 **committed+pushed**
+(`ee0ab39`); path invariati; `test:mss` verde al track. Stash@{0} intatto (rumore Comunicazione).
+
+**Fatto in prepara `036`:** prompt plan directory scritto; FU-SEP-11-DIR-PLAN aperto; HANDOFF SHA
+allineato a `ee0ab39`.
+
+**Fatto in chiusura documentale `037`:** rimossi i riferimenti operativi superati, roadmap e
+handoff riallineati, report/capsula e indici aggiunti. Nessuna modifica allo stato di `SEP-11`,
+nessun F5 e nessuna sandbox creata.
 
 **Fatto in review `034`:** controprove R01–R03 indipendenti; verdetto **PASS_CON_RISERVE**;
 WP-1 NO-GO; zero fix.
@@ -208,7 +217,8 @@ freeze/attribuzione soft.
 
 Decisioni ancora appartenenti a Matteo:
 
-- avvio sessione **reasoning + plan** post-F4 (prompt dedicato) prima di track L5;
+- scelte sul **plan directory/export/sandbox**: albero target, contenuto export, forma della sandbox
+  e ordine delle eventuali fasi esecutive; nessun F5 prima dell'approvazione;
 - compito e configurazione della prima eval prospettica (`SEP-5`/`SEP-G2`);
 - criteri, conseguenze e tetto delle ripetizioni da congelare;
 - eventuale autorizzazione a nuovo enforcement (F02/F03) o remediation `SEP-D08`;

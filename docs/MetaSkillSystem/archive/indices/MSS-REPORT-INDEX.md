@@ -2,7 +2,7 @@
 
 > **Vista derivata (F2 / M02).** Non sposta file. Non è catalogo SEP né SESSION_LOG né masterplan.
 > Base: A4 §2 + B1 M02/M04 · Decisioni D1=b D3=a.
-> Aggiornato: 10-08-2026 (SEP-11 F1+F2 + catena F3–`033` + H-1.3 remediation/review/track `034`–`035`) · sessioni `025`–`035`.
+> Aggiornato: 21-08-2026 (SEP-11 F1+F2 + catena F3–`033` + H-1.3 `034`–`035` + preparazione/chiusura `036`–`037`) · sessioni `025`–`037`.
 
 ## Limiti dichiarati
 
@@ -43,6 +43,13 @@
 | 10-08-26 | prompt remediation H13 | `docs/Sessioni di lavoro/10-08-26/Prompt-h13-remediation-r01-r05-post-s1-s3-10-08-26.md` |
 | 10-08-26 | prompt review post-remediation | `docs/Sessioni di lavoro/10-08-26/Prompt-h13-review-indipendente-post-remediation-10-08-26.md` |
 | 10-08-26 | prompt track/commit L5 | `docs/Sessioni di lavoro/10-08-26/Prompt-h13-track-commit-l5-post-pass-con-riserve-10-08-26.md` |
+| 10-08-26 | prompt plan directory/export/sandbox `036` | `docs/Sessioni di lavoro/10-08-26/Prompt-plan-directory-export-sandbox-mss-10-08-26.md` |
+
+## 21-08-26 — continuità SEP-11
+
+| Data cartella | Tipo | Path |
+|---|---|---|
+| 21-08-26 | chiusura documentale preparazione `036` / sessione `037` | `docs/Sessioni di lavoro/21-08-26/Report-chiusura-documentale-preparazione-036-21-08-26.md` |
 
 ## 10-08-26 — Senior Eval Pack / gate
 

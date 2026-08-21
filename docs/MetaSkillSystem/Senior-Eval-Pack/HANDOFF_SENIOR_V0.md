@@ -51,21 +51,24 @@ Non sostituisce:
 > Questa sezione è una vista sostituibile. Deve riportare sempre fonte e revisione. Non promuove
 > autonomamente alcuno stato. In caso di divergenza con `MASTERPLAN_V0.md`, vince il masterplan.
 
-- **Aggiornato il:** 10-08-2026.
-- **Sessione:** `SEP-SES-20260810-035` (track/commit baseline H-1.3 L5+hook+report; correlazione `033`–`034`).
-- **Autore:** Cursor Grok 4.5, ruolo Meta (track/commit; allineo narrativo post PASS_CON_RISERVE).
-- **Configurazione:** `SEP-AGC-xai-cursor-001`.
-- **Metodo:** F0 → inventario whitelist → `test:mss` → allineo FU/MASTERPLAN/HANDOFF → report → stage whitelist → attesa «lavoro ok».
-- **Tipo di evidenza:** report track `035` + review `034` PASS_CON_RISERVE + remediation.
-- **Verifica:** `test:mss` 41+32 verde; validate:mss su report nuovi; diff-check perimetro; zero path rewrite.
+- **Aggiornato il:** 21-08-2026.
+- **Sessione:** `SEP-SES-20260821-037` (chiusura documentale append-only della preparazione `036`).
+- **Autore:** OpenAI Codex, ruolo Meta documentation closure.
+- **Configurazione:** sessione Codex corrente, non catalogata come configurazione eval.
+- **Metodo:** foto Git → confronto report/owner/viste → correzione riferimenti superati → report e capsula → validazione → handoff ultimo.
+- **Tipo di evidenza:** commit tecnico `ee0ab39` + report track `035` + prompt `036` + report chiusura `037`.
+- **Verifica:** `env/test` sync a F0; `validate:mss` OK su report/capsula e SESSION_LOG;
+  `git diff --check` OK; zero riferimenti operativi superati; zero codice/move/F5/sandbox.
 - **Comparabilità:** `non_comparabile`.
 - **Masterplan letto:** `MASTERPLAN_V0.md` — `SEP-G1_PASS_CON_RISERVE`; `SEP-10` chiuso;
   `SEP-11` = **`IN_CORSO`**; H-1.3 = **`PASS_CON_RISERVE`**; **prossimo = plan directory**; **SEP-G5 non PASS**; WP-1 **NO-GO**.
 - **Ultimo report:**
-  `docs/Sessioni di lavoro/10-08-26/Report-track-commit-h13-l5-pass-con-riserve-10-08-26.md`.
-- **Prompt prossimo task:** plan directory/export/sandbox (chat Meta nuova; zero move).
-- **Catena prove:** track `035` ← review PASS_CON_RISERVE `034` ← remediation ← review FAIL ← `033` F4-doc ← …
-- **Git:** `env/test` @ `ecaa74e` + WT staged whitelist; stash@{0} intatto (rumore); **nessun claim PASS pulito**.
+  `docs/Sessioni di lavoro/21-08-26/Report-chiusura-documentale-preparazione-036-21-08-26.md`.
+- **Prompt prossimo task:**
+  `docs/Sessioni di lavoro/10-08-26/Prompt-plan-directory-export-sandbox-mss-10-08-26.md`
+  (solo plan; zero move).
+- **Catena prove:** chiusura `037` ← prepara `036` ← track `035` @ `ee0ab39` ← review PASS_CON_RISERVE `034` ← remediation ← review FAIL ← `033` F4-doc ← …
+- **Git:** baseline tecnica `ee0ab39` su `env/test`; chiusura `037` preparata nel WT e non pubblicata; stash@{0} intatto; **nessun claim PASS pulito**.
 
 ### Quadro generale (per ripartenza senior — MSS)
 
@@ -73,7 +76,7 @@ Non sostituisce:
 2. **Onda:** SEP-10 → F1–F4-doc → remediation H13 → review PASS_CON_RISERVE → **track L5** → plan directory.
 3. **Freeze:** L6; stub D5; F5 fuori finché plan; Comunicazione stash non auto-trackata.
 4. **Gate:** G1 con riserve; G5 **non** PASS; H-1.3 **PASS_CON_RISERVE** (H13-POST-L01); WP-1 **NO-GO**.
-5. **Dedicati vivi:** ~~remediation~~ · ~~review H-1.3~~ · **plan directory** (dopo commit track).
+5. **Dedicati vivi:** ~~track L5 `ee0ab39`~~ → **plan directory** (prompt `036`) → F5 solo dopo approvazione.
 
 ### Fatto osservato
 
@@ -81,7 +84,7 @@ Review indipendente post-remediation: controprove R01–R03 tengono; suite 41+32
 
 ### Effetto prodotto
 
-- punto di ripristino git della baseline H-1.3 revisionata (dopo «lavoro ok»);
+- punto di ripristino Git della baseline H-1.3 revisionata e già pubblicata (`ee0ab39`);
 - narrativa owner allineata: PASS_CON_RISERVE; WP-1 chiuso; prossimo = plan directory.
 
 ### Problema strutturale corrente
@@ -99,14 +102,15 @@ Riserva H13-POST-L01 (encoding hash `previous`); bypass E2/`--no-verify`/no-CI d
 ### Gate
 
 - STOP: claim PASS pulito; G5 PASS; WP-1; F5/move; `_lavoro`; stash pop/drop senza Sì; Comunicazione dallo stash.
-- Aperte: commit track (attende «lavoro ok»); push (attende Sì); poi plan directory.
+- Aperte: pubblicazione della sola chiusura documentale con comando dedicato; poi plan directory.
 `SEP-G1` = `PASS_CON_RISERVE`. `SEP-G5` **non** PASS. H-1.3 = `PASS_CON_RISERVE`.
 
 ### STOP e decisioni di Matteo
 
 - STOP: WP-1; F5; directory exec in questa chat; G5 PASS; stash drop senza Sì.
 - Chiuse: review H-1.3 accettata PASS_CON_RISERVE; track autorizzato; WP-1 esplicitamente chiuso per questa onda.
-- Aperte: «lavoro ok» → commit; Sì → push; chat plan directory; SEP-5 solo con freeze.
+- Aperte: chat plan directory; pubblicazione della chiusura documentale solo con comando dedicato;
+  SEP-5 solo con freeze.
 
 ## 4. Chiusura obbligatoria di ogni sessione senior
 
@@ -178,6 +182,8 @@ Non copiare nel handoff intere narrative, capsule o dati privati: usare puntator
 | `SEP-SES-20260810-033` | 10-08-2026 | Meta writer F4-doc · `SEP-AGC-xai-cursor-001` | track whitelist Sessioni + slice A | F4-doc fatto; 11 path + docs `032`; zero L5/move; prossimo=H-1.3/L5; G5 non PASS | `validate:mss` + diff-check | `non_comparabile` | `Report-sep-11-f4-doc-track-sessioni-10-08-26.md` |
 | `SEP-SES-20260810-034` | 10-08-2026 | Verifica senior indipendente H-1.3 · `SEP-AGC-xai-cursor-001` | review post-remediation | **PASS_CON_RISERVE**; H13-POST-L01; WP-1 NO-GO; G5 non PASS | controprove + `test:mss` | `non_comparabile` | `Report-revisione-indipendente-h13-post-remediation-10-08-26.md` |
 | `SEP-SES-20260810-035` | 10-08-2026 | Meta writer track L5 · `SEP-AGC-xai-cursor-001` | track/commit baseline H-1.3 | L5+2 hook+report staged; path invariati; prossimo=plan directory; G5 non PASS | `test:mss` + validate:mss + diff-check | `non_comparabile` | `Report-track-commit-h13-l5-pass-con-riserve-10-08-26.md` |
+| `SEP-SES-20260810-036` | 10-08-2026 | Meta prepara · `SEP-AGC-xai-cursor-001` | prompt plan directory/export/sandbox | prompt pronto; zero move/F5; allineo parziale rimasto nel WT | fonte prompt + Git | `non_comparabile` | `Prompt-plan-directory-export-sandbox-mss-10-08-26.md` |
+| `SEP-SES-20260821-037` | 21-08-2026 | Meta documentation closure · Codex | chiusura append-only preparazione `036` | riferimenti superati corretti; roadmap/handoff allineati; prossimo=plan directory; zero F5/sandbox | validate:mss + diff-check + ricerca riferimenti | `non_comparabile` | `Report-chiusura-documentale-preparazione-036-21-08-26.md` |
 
 Il registro dimostra soltanto che il passaggio è stato dichiarato e documentato. La verifica si
 legge nel report collegato e nel successivo eventuale record di review.
