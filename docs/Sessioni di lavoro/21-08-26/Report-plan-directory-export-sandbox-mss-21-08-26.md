@@ -556,3 +556,49 @@ Non ho toccato `_skill-system-v0/` né `docs/Comunicazione-Skill/EVOLUZIONE_SKIL
 5. **Prossimo atomo:** far revisionare questo piano a un modello diverso, poi le tue risposte a D6–D10.
 
 **Sì/No aperti:** D6 ambizione albero · D7 contenuto export · D8 ripristino+sandbox · D9 chiusura `037` · D10 ordine review/esecuzione.
+
+---
+
+## Rettifica append-only — D9 decisa e `PLAN-F02` risolto
+
+> **Data:** 21-08-2026, stessa sessione `SEP-SES-20260821-038`, dopo la consegna del piano.
+> **Relazione:** `supersedes_interpretation` sulla sola **attualità** di `PLAN-F02` e sullo stato di **D9**.
+> Il corpo del report sopra **non è stato riscritto**: descrive la fotografia F0 ed è storia.
+
+**Che cosa è cambiato.** Matteo ha dato l'istruzione «pulisci worktree per proseguire nei lavori».
+Coincide con l'opzione (a) di **D9**, che risulta quindi **decisa**. Eseguito:
+
+| Commit | Perimetro | Autore del contenuto |
+|---|---|---|
+| `92dbb2d` | chiusura documentale `037`: 6 file owner/viste + prompt `036` + report `037` | sessione `037` (Codex) — pubblicata, non modificata |
+| `2b255d0` | plan `038`: questo report + prompt di review indipendente | sessione `038` |
+
+**Effetto sui contenuti sopra:**
+
+- `PLAN-F02` (MEDIUM) è **risolto**: la chiusura `037` non è più nel working tree. Resta valido come
+  *osservazione storica* — l'assunzione del prompt `036` era comunque falsa al momento della verifica.
+- §1 «Working tree: sporco su 6 path» e Q4 «non ho committato né pushato» descrivono lo stato **a F0
+  e alla consegna**, non lo stato attuale. Nessun push eseguito: i due commit sono **locali**.
+- Il conteggio L4 continua a crescere: 633 a F0 → 635 alla consegna → 636 dopo il prompt di consulenza.
+
+**Chi ri-fotografa troverà:** `HEAD = 2b255d0`, worktree pulito (o con il solo prompt di consulenza
+non committato), `origin/env/test` ancora a `ee0ab39` perché **non è stato fatto push**.
+
+**Non cambia nulla di:** `SEP-G5` non PASS · H-1.3 `PASS_CON_RISERVE` · `WP-1` NO-GO ·
+`PLAN-F01` HIGH · D6, D7, D8, D10 ancora **aperte**.
+
+### Debito registrato, non sanato — `HANDOFF_SENIOR_V0.md` stale
+
+Dopo questi commit la vista di continuità è **falsa su due punti**:
+
+| Riga | Dice | Realtà |
+|---|---|---|
+| ~64 | «prossimo = plan directory» | il plan directory è **fatto** (questo report) |
+| ~71 | «chiusura `037` preparata nel WT e non pubblicata» | è **pubblicata** in `92dbb2d` |
+
+**Non l'ho corretta**, per due ragioni dichiarate: (1) l'allineo degli owner non è nel perimetro di
+scrittura di questa sessione e spetta al ciclo che chiuderà dopo le decisioni; (2) è un'istanza viva
+del debito `SEP-D07` («handoff stale») ed è **materiale di prova** per la valutazione di coerenza
+affidata al consulente esterno — sanarla ora distruggerebbe l'osservazione.
+
+Se Matteo preferisce la vista corretta subito, è un'azione di una riga e va chiesta esplicitamente.

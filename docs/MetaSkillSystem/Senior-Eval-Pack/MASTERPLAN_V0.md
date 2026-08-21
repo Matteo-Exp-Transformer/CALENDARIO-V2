@@ -92,6 +92,8 @@ Questi stati valgono soltanto per i work package elencati qui e non aggiornano `
 | 10-08-2026 | `SEP-11` (track/commit baseline L5) | `IN_CORSO` · track L5+hook+report **pushed** `ee0ab39`; prossimo = **plan directory** | `Report-track-commit-h13-l5-pass-con-riserve-10-08-26.md` | Meta writer `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-035`) | path invariati; PASS_CON_RISERVE; WP-1 NO-GO; G5 non PASS; commit+push fatti |
 | 10-08-2026 | `SEP-11` (prepara plan directory) | `IN_CORSO` · prompt plan directory pronto; zero move | `Prompt-plan-directory-export-sandbox-mss-10-08-26.md` | Meta prepara `SEP-AGC-xai-cursor-001` (`SEP-SES-20260810-036`) | FU-SEP-11-DIR-PLAN aperto; F5 exec non avviato; WP-1 chiuso |
 | 21-08-2026 | `SEP-11` (chiusura documentale preparazione `036`) | `IN_CORSO` invariato · fonti vive allineate; prossimo = **plan directory** | `Report-chiusura-documentale-preparazione-036-21-08-26.md` | Meta documentation closure (`SEP-SES-20260821-037`) | corretti riferimenti superati; roadmap/handoff/prompt coerenti; zero F5/move/sandbox; pubblicazione docs non eseguita |
+| 21-08-2026 | `SEP-11` (plan directory) | `IN_CORSO` invariato · **plan prodotto**, zero move; D9 decisa ed eseguita | `Report-plan-directory-export-sandbox-mss-21-08-26.md` | Meta plan `SEP-AGC-anthropic-claudecode-001` (`SEP-SES-20260821-038`) | albero/export/sandbox progettati; `PLAN-F01` HIGH (accoppiamento per profondità); D6/D7/D8/D10 aperte; SEP-G5 non PASS |
+| 21-08-2026 | §7 (rettifica di coerenza) | nessun cambio di stato · **due righe rettificate** | `MAPPA-MSS-consulenza-esterna-21-08-26.md` §7 · `Report-consulenza-esterna-fable-mss-21-08-26.md` | Consulente esterno `SEP-AGC-anthropic-fable-001` (`SEP-SES-20260821-039`) | §7 dichiarava H-1.3 `FAIL` contro §4/§6/§4-bis dello stesso file, e accusava `PLAN_V0` di essere stale quando non lo era; rettifica **append**, testo originale barrato e conservato; nessun gate dichiarato |
 
 ## 5. Gate
 
@@ -193,9 +195,19 @@ freeze/attribuzione soft.
 ## 7. Dipendenze e vincoli esterni
 
 - `mss.session/0.1.1` è referenziato per la capsula, non posseduto.
-- Il verdetto corrente H-1.3 resta `FAIL`; remediation e nuova review sono fuori perimetro.
-- `../PLAN_V0.md` descrive ancora uno stato precedente a H-1.3. Questa divergenza è registrata come
-  vincolo esterno e non viene corretta senza mandato sullo stato globale.
+- ~~Il verdetto corrente H-1.3 resta `FAIL`; remediation e nuova review sono fuori perimetro.~~
+  **RETTIFICATO 21-08-26:** H-1.3 è `PASS_CON_RISERVE` dal 10-08-26 (review `034`, riserva
+  `H13-POST-L01`), come già dichiarato da §4 riga `SEP-11`, da §6 e dal registro §4-bis di **questo
+  stesso file**. La riga barrata era rimasta congelata a prima della review ed è stata segnalata dal
+  test a freddo della consulenza esterna: un agente che entrava dalla rotta «dipendenze» leggeva
+  `FAIL`, uno che entrava dalla tabella di stato leggeva `PASS_CON_RISERVE`. Resta vero che
+  remediation e nuova review sono fuori perimetro del pacchetto.
+- ~~`../PLAN_V0.md` descrive ancora uno stato precedente a H-1.3. Questa divergenza è registrata come
+  vincolo esterno e non viene corretta senza mandato sullo stato globale.~~
+  **RETTIFICATO 21-08-26:** la divergenza **non esiste più**. `../PLAN_V0.md` riporta `H-1.3` =
+  `PASS_CON_RISERVE` nella tabella §4 e nel log §14 dal 10-08-26. Questa nota di debito si era
+  auto-fossilizzata: descriveva un disallineamento già sanato e induceva a diffidare dell'owner
+  globale senza motivo.
 - `WP-1` resta non autorizzato; nessun record di questo pacchetto lo apre implicitamente.
 - Le fonti private restano nei loro owner: il catalogo conserva solo puntatori e limiti.
 

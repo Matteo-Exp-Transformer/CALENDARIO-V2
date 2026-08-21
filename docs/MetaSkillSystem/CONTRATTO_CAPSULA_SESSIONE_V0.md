@@ -1,7 +1,39 @@
 # Contratto della capsula di sessione — schema `mss.session/0.1.0`
 
+> 🔴 **AVVISO DI DISALLINEAMENTO — aggiunto 21-08-2026. Leggi prima di scrivere una capsula.**
+>
+> **La versione viva NON è quella nel titolo.** Il motore impone
+> **`mss.session/0.1.1`** + **`mss-v0.1-wp0.1-freeze-2`** — fonte autorevole:
+> `scripts/mss/rules.mjs` righe 3-6. Questo documento descrive ancora `0.1.0` / `freeze-1`,
+> incluso il blocco di identità del §3.
+>
+> **Perché è pericoloso e non solo impreciso.** Il validator accetta ancora la coppia legacy, e
+> con quella coppia il campo **`controls` non è più obbligatorio**. `controls` è il campo che
+> registra *che cosa è stato davvero verificato*, con criterio, numeratore, denominatore ed
+> esecutore. Conseguenza: **chi segue alla lettera questo contratto produce una capsula priva di
+> prove, e `npm run validate:mss` risponde OK.**
+>
+> Prova A/B/C eseguita il 21-08-2026, unica variabile le due stringhe di versione:
+>
+> | Variante | `controls` | Esito reale |
+> |---|---|---|
+> | `0.1.1` / `freeze-2` | presenti | `validate:mss OK` |
+> | `0.1.1` / `freeze-2` | **rimossi** | `FAIL` — `MSS-VITAL-MISSING :: event.controls` |
+> | **`0.1.0` / `freeze-1`** | **rimossi** | **`validate:mss OK`** ← la porta di servizio |
+>
+> **Che cosa fare adesso:** scrivi sempre `mss.session/0.1.1` e `mss-v0.1-wp0.1-freeze-2`, e includi
+> sempre `controls`. La coppia legacy esiste per **leggere** la storia `0.1.0` senza riscriverla, non
+> per produrre capsule nuove.
+>
+> **La correzione strutturale** — ri-versionare questo contratto e impedire al validator di accettare
+> la coppia legacy su record nuovi — è il pacchetto **`SK-4`** in `PLAN_V0.md` §4-bis, e richiede una
+> decisione di Matteo. Questo avviso non la anticipa: rende solo innocuo il pericolo nel frattempo.
+>
+> Fonte: `docs/Sessioni di lavoro/21-08-26/MAPPA-MSS-consulenza-esterna-21-08-26.md` §6.
+
 > **Stato:** congelabile per `WP-0.1`; efficacia non ancora osservata.
-> **System revision:** `mss-v0.1-wp0.1-freeze-1`.
+> **System revision:** `mss-v0.1-wp0.1-freeze-1` — ⚠️ *superata, vedi avviso sopra: la revisione viva
+> è `mss-v0.1-wp0.1-freeze-2`.*
 > **Funzione:** conservare l'evento minimo di ogni chat sostanziale. Il report racconta; i record
 > JSONL permettono di ricostruire. Questo contratto non sceglie l'event store definitivo.
 
@@ -48,9 +80,13 @@ alla normale riga narrativa di `SESSION_LOG.md`.
 
 Ogni `session_event`, `annotation` e `amendment` contiene:
 
+> ⚠️ **Le prime due righe del blocco sono superate.** Per una capsula **nuova** scrivi
+> `mss.session/0.1.1` e `mss-v0.1-wp0.1-freeze-2`. I valori `0.1.0` / `freeze-1` qui sotto valgono
+> solo per **leggere** i record storici. Vedi l'avviso in testa al file.
+
 ```text
-schema_version: mss.session/0.1.0
-system_revision: mss-v0.1-wp0.1-freeze-1
+schema_version: mss.session/0.1.0      # ⚠️ record NUOVI: mss.session/0.1.1
+system_revision: mss-v0.1-wp0.1-freeze-1   # ⚠️ record NUOVI: mss-v0.1-wp0.1-freeze-2
 record_type: session_event | annotation | amendment
 record_id: mss-rec-<UUIDv7>
 session_id: mss-ses-<UUIDv7>

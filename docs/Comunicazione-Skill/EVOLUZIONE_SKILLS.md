@@ -196,6 +196,32 @@ velocità è un'informazione, non un successo — è il segnale che l'asserzione
 provando niente. Caso reale: un test è passato in 1,1s e a DB non era stata creata nessuna riga.
 **Anti-pattern curato:** *ereditare i numeri invece di rimisurarli*.
 
+**Prima di classificare un debito come «architetturale», misura la correzione minima (21-08-26).**
+Un debito etichettato grosso non viene mai fatto; non essendo fatto, blocca tutto ciò che sta a valle.
+Caso reale: `PLAN_V0.md` §6 classificava il rosso di `npm run validate`/`npm test` come «debito di
+discovery da **pacchetto workspace separato**» — un lavoro architetturale. **Erano tre righe**:
+`.eslintrc.cjs` e `vitest.config.ts` non escludevano `docs/Archives/**`, e `check-doc-paths.mjs`
+escludeva `Archivio` (italiano) ma non `Archives` (inglese), mentre le due cartelle **coesistono**.
+Dopo la correzione: lint da 363 problemi a **exit 0**, test **1346/1346**, `npm run validate` verde
+per la prima volta, link rotti da **3 886 a 17**.
+**La mossa:** prima di scrivere «debito architetturale» in un piano, esegui il comando che fallisce e
+**ripartisci gli errori per cartella**. Se il 99% viene da un posto solo, non è architettura: è una
+riga di configurazione. **Anti-pattern curato:** *dimensionare un debito a impressione invece che
+misurandolo* — perché l'etichetta «grosso» è una condanna all'inazione.
+
+**Un controllo automatico su documenti di governance non può leggere la prosa (21-08-26).**
+Tentativo reale: un check che cercasse con espressioni regolari gli stati contraddittori fra due
+masterplan. Ha prodotto **2 falsi allarmi su 2**. Motivo: un documento di governance non solo
+**dichiara** gli stati, ne **parla** — la riga «vietato: claim `SEP-G5` PASS» è un *divieto*, ma al
+testo sembra un'*asserzione*. Ristretto alle sole **celle di tabella** i falsi positivi spariscono,
+ma il check non vede più le contraddizioni in prosa, che sono quelle vere.
+**La regola che ne deriva:** se vuoi che la coerenza degli stati sia imposta a macchina, gli stati
+vanno dichiarati in un **blocco strutturato leggibile a macchina**, e la prosa va generata da lì.
+Nessuna quantità di regex sostituisce un campo. **Corollario, più importante del check:** un
+controllo con falsi allarmi noti **non si spedisce** — «inventare un problema invalida la raccolta
+tanto quanto nasconderlo». Se lo spedisci lo stesso, deve **dichiarare nel proprio output ciò che non
+riesce a vedere**. **Anti-pattern curato:** *automazione che dà falsa sicurezza*.
+
 > 🛑 **PAUSA-RACCOLTA (decisa 29-05-26).** Lo skill system ha avuto molte aggiunte in pochi giorni.
 > **Stop a nuovi meccanismi/regole** finché non si accumulano ~5-10 sessioni di dati con gli
 > strumenti già esistenti (modalità, metriche successo chat, log idee). Il prossimo passo è
