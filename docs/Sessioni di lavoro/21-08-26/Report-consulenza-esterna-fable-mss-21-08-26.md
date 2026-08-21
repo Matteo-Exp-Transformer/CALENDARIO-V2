@@ -526,3 +526,59 @@ versionato e fuori dal mandato di questa consulenza. **Va in coda a `SK-4`.**
 | Q1-Q6 coerenti fra loro e col lavoro? | **Sì dopo questa rettifica**; prima no, per `R6` |
 | Upgrade strutturali nel template `_skill-system-v0/` | **Nessuno propagato, e con motivo**: il template **non contiene alcun riferimento** a MetaSkillSystem, capsula o `validate:mss` (`grep` a 0 occorrenze). Il MSS non fa parte del template, e portarcelo dentro è `SK-10`, non ancora aperto |
 | Playbook `EVOLUZIONE_SKILLS.md` | **Aggiornato**: due metodi nuovi — «prima di classificare un debito come architetturale, misura la correzione minima» e «un controllo automatico su documenti di governance non può leggere la prosa» |
+
+---
+
+## Rettifica append-only — lavoro pubblicato, e prompt di continuazione
+
+> **Data:** 21-08-2026, seduta `SEP-SES-20260821-039`, dopo la chiusura.
+> **Relazione:** `amends` sulle sole affermazioni relative a commit e push.
+> Il corpo sopra descrive lo stato **alla consegna** ed è storia: non è stato riscritto.
+
+**Che cosa è cambiato.** Matteo ha dato l'istruzione «fai commit lavoro svolto e push di tutto. poi
+prepara prompt per prossimo agente senior che proseguirà il lavoro». Eseguito.
+
+### Righe che questa rettifica supera
+
+| Riga | Diceva | Realtà |
+|---|---|---|
+| §1 | «perimetro dichiarato, tutto reversibile, **nessun push**» | pubblicato |
+| §1 | «Zero move, zero rename, zero delete, **zero push**, zero gate dichiarati» | move/rename/delete e gate restano **zero**; il push è stato fatto |
+| `R4` | «Non ho committato né pushato» | committato e pushato |
+| Rettifica precedente | «nessun commit, nessun push, nessun move» | **nessun move** resta vero; commit e push fatti |
+
+### Che cosa è stato pubblicato
+
+`origin/env/test` da `ee0ab39` a **`467023f`**. Working tree pulito, **8 stash intatti**.
+
+| Commit | Perimetro | Autore del contenuto |
+|---|---|---|
+| `92dbb2d` | chiusura documentale `037` | seduta `037` (Codex) — pubblicata, non modificata |
+| `2b255d0` | plan directory `038` | seduta `038` (Claude Opus 5) — pubblicata, non modificata |
+| `ad594a8` | **`SK-0`** — 3 file di configurazione | questa seduta |
+| `589822d` | consulenza: 3 deliverable, target §16, `SK-0..SK-10`, rettifiche append, `mss:status`, playbook | questa seduta |
+| `467023f` | prompt di continuazione `SK-6` | questa seduta |
+
+`SK-0` è stato tenuto in un commit **separato** dalla documentazione: se quelle tre righe dessero
+problemi, si annullano senza toccare nient'altro.
+
+### File aggiunto dopo la consegna
+
+`docs/Sessioni di lavoro/21-08-26/Prompt-sk6-mss-query-21-08-26.md` — mandato atomico per il prossimo
+agente senior: costruire `mss:query` sulle 41 capsule già esistenti. Contiene perimetro, prova di
+chiusura, rollback, divieti, chi decide che cosa, e il **backlog dichiarato fuori perimetro**
+(i tre bypass `SK-4`, i 17 link residui, la CI da estendere, il tag mancante, gli hook non portabili).
+
+### Osservazione registrata: il pre-commit in condizioni reali
+
+Il controllo «a mente fredda» è scattato su **tutti e tre** i commit, e il secondo tentativo identico
+è passato ogni volta. Conferma sul campo quanto scritto in `MAPPA…` §6.4: **è un dosso, non un
+cancello.** Corretto come disegno — costringe a rileggere — ma va chiamato col suo nome quando si
+misura `E`, perché non impedisce nulla a chi lancia due volte lo stesso comando.
+
+**Non cambia nulla di:** `SEP-G5` non PASS · `H-1.3` `PASS_CON_RISERVE` · `WP-1` NO-GO · riserva `R1`
+aperta · **zero move, zero rename, zero delete, zero contenuti `_lavoro`, zero gate dichiarati**.
+
+> **Nota di consistenza.** Questa rettifica è stata scritta **dopo** `467023f`, quindi non è in
+> quel commit: vive nel commit immediatamente successivo. Chi ri-fotografa troverà `HEAD` più avanti
+> di `467023f` con questo blocco incluso.
