@@ -20,6 +20,7 @@
     "validate:docs": "node scripts/check-doc-paths.mjs",
     "validate:mss": "node scripts/mss/cli.mjs",
     "mss:status": "node scripts/mss/status.mjs",
+    "mss:query": "node scripts/mss/query.mjs",
     "test:mss": "node docs/MetaSkillSystem/tests/h1/run.mjs",
     "generate:mss-fixtures": "node docs/MetaSkillSystem/tests/h1/build-fixtures.mjs",
     "validate": "npm run lint && npm run typecheck && npm run test",
