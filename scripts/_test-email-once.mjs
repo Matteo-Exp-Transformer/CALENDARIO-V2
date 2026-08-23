@@ -4,6 +4,9 @@
  * Elimina dopo il test.
  */
 import { createClient } from '@supabase/supabase-js'
+import { createCliLogger } from './_cliLog.mjs'
+
+const { log, ok, fail } = createCliLogger('_test-email-once')
 
 const SUPABASE_URL = 'https://docnnernvpyrbwuzzach.supabase.co'
 const ANON_KEY = 'sb_publishable_K2xia0LzCfG3tJFlFYL3Jg_gtqZmjtg'
@@ -15,28 +18,27 @@ const TEST_RECIPIENT_DEFAULT = 'matteo.cavallaro.work@gmail.com'
 const RECIPIENT_EMAIL = process.env.TEST_RECIPIENT_EMAIL || TEST_RECIPIENT_DEFAULT
 
 async function main() {
-  console.log('=== Test send-email edge function ===')
-  console.log('Target:', SUPABASE_URL)
-  console.log('Recipient:', RECIPIENT_EMAIL)
-  console.log('')
+  log('=== Test send-email edge function ===')
+  log('Target edge function', { url: SUPABASE_URL })
+  log('Recipient configurato', { email: RECIPIENT_EMAIL })
+  log('')
 
   const supabase = createClient(SUPABASE_URL, ANON_KEY)
 
   // 1. Login via SDK (gestisce sb_publishable_* correttamente)
-  console.log('1. Login come testc@c.com (test-classic)...')
+  log('1. Login account TEST (test-classic)...')
   const { data: loginData, error: loginErr } = await supabase.auth.signInWithPassword({
     email: ADMIN_EMAIL,
     password: ADMIN_PASSWORD,
   })
 
   if (loginErr || !loginData?.session?.access_token) {
-    console.error('Login fallito:', loginErr?.message ?? loginData)
-    process.exit(1)
+    fail('Login fallito', loginErr ?? loginData, 1)
   }
 
   const token = loginData.session.access_token
-  console.log('   ✅ Login OK — user:', loginData.user?.email)
-  console.log('')
+  ok('Login', { email: loginData.user?.email })
+  log('')
 
   const TEMPLATES = [
     {
@@ -54,7 +56,7 @@ async function main() {
   let allOk = true
 
   for (const tpl of TEMPLATES) {
-    console.log(`2. Invio template: ${tpl.label}`)
+    log(`2. Invio template: ${tpl.label}`)
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
@@ -73,40 +75,38 @@ async function main() {
       })
 
       const rawText = await res.text()
-      console.log(`   HTTP ${res.status} — raw: ${rawText.slice(0, 200)}`)
+      log('Risposta edge function', { status: res.status, body: rawText.slice(0, 200) })
 
       let data = {}
       try { data = JSON.parse(rawText) } catch { data = { parseError: rawText } }
 
       if (res.ok && data.success) {
-        console.log(`   ✅ OK — messageId: ${data.messageId ?? 'n/a'}`)
+        ok('Invio completato', { messageId: data.messageId ?? 'n/a' })
       } else {
-        console.error(`   ❌ FAIL:`, data)
+        fail('Invio fallito', { body: data })
         allOk = false
       }
     } catch (err) {
-      console.error(`   ❌ EXCEPTION:`, err.message)
+      fail('Eccezione durante l\'invio', err)
       allOk = false
     }
-    console.log('')
+    log('')
     // piccolo delay tra chiamate per evitare rate limiting Brevo
     await new Promise(r => setTimeout(r, 1000))
   }
 
-  console.log('=== Risultato ===')
+  log('=== Risultato ===')
   if (allOk) {
-    console.log('✅ Tutti e 2 i template inviati con successo (conferma + rifiuto).')
-    console.log('   Controlla la casella di posta:', RECIPIENT_EMAIL)
-    console.log('   Poi imposta VITE_ENABLE_SEND_EMAIL=false in .env.local')
+    ok('Tutti e 2 i template inviati con successo (conferma + rifiuto).')
+    log('Controlla la casella di posta configurata', { email: RECIPIENT_EMAIL })
+    log('Poi imposta VITE_ENABLE_SEND_EMAIL=false in .env.local')
   } else {
-    console.log('❌ Uno o più invii falliti. Controlla il log sopra.')
-    process.exit(1)
+    fail('Uno o più invii falliti. Controlla il log sopra.', 1)
   }
 
   await supabase.auth.signOut()
 }
 
 main().catch(err => {
-  console.error('Errore inatteso:', err)
-  process.exit(1)
+  fail('Errore inatteso', err, 1)
 })

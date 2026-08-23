@@ -10,7 +10,7 @@ import { validateAppendOnlyRecords, validateGlobalRecordView, validateMss } from
 import { collectBundlesFromInput } from './parse.mjs'
 import { PROTOCOL_ID, PROTOCOL_VERSION, REVISION_CURRENT, RULE, SCHEMA_CURRENT } from './rules.mjs'
 
-const REPORT_RE = /^docs\/Sessioni di lavoro\/[^/]+\/Report-.*\.md$/i
+export const REPORT_PATH_RE = /^docs\/Sessioni di lavoro\/.+\/(Report|Verbale)-.*\.md$/i
 const LIGHT_JSONL_RE = /eventi-light\/.+\.jsonl$/i
 const MSS_FIXTURE_RE = /^docs\/MetaSkillSystem\/fixtures\/v0\.1\/(.+\.(?:jsonl|md))$/i
 const MSS_MANIFEST = 'docs/MetaSkillSystem/fixtures/v0.1/manifest.json'
@@ -110,7 +110,7 @@ function resultFromDiagnostics(diagnostics, bundles = 0) {
 export function isMssRelevantPath(path) {
   const p = normalizePath(path)
   return (
-    REPORT_RE.test(p) ||
+    REPORT_PATH_RE.test(p) ||
     LIGHT_JSONL_RE.test(p) ||
     MSS_FIXTURE_RE.test(p) ||
     p === MSS_MANIFEST ||
@@ -127,6 +127,7 @@ export function validatePathContent({
   stagedContent,
   worktreeContent,
   requireCapsule = false,
+  headContent,
   historicalRecords = [],
   historicalSnapshots = [],
   validateGlobal = true,
@@ -148,6 +149,10 @@ export function validatePathContent({
   const externalHistory = historical.records.filter(
     (entry) => normalizePath(entry?.file || '') !== currentPath,
   )
+  const headSnapshot = historicalSnapshots.find(
+    (snapshot) => normalizePath(snapshot?.path || '') === currentPath,
+  )
+  const resolvedHeadContent = headContent ?? headSnapshot?.content ?? undefined
   const observed = validateMss(
     {
       kind: detected,
@@ -157,11 +162,13 @@ export function validatePathContent({
       requireCapsule,
       stagedContent,
       worktreeContent,
+      headContent: resolvedHeadContent,
     },
     {
       workspaceRoot,
       lockSeverity: 'warn',
       historicalRecords: externalHistory,
+      historicalSnapshots,
     },
   )
   if (!validateGlobal) {
@@ -329,7 +336,7 @@ function recordsFromSnapshots(workspaceRoot, snapshots) {
   for (const snapshot of snapshots || []) {
     if (snapshot?.content == null) continue
     const path = normalizePath(snapshot.path)
-    if (!REPORT_RE.test(path) && !LIGHT_JSONL_RE.test(path)) continue
+    if (!REPORT_PATH_RE.test(path) && !LIGHT_JSONL_RE.test(path)) continue
     const kind = path.endsWith('.jsonl') ? 'jsonl' : 'report'
     const collected = collectBundlesFromInput({ kind, file: path, content: snapshot.content, workspaceRoot })
     diagnostics.push(...collected.diagnostics.filter((diagnostic) => diagnostic.rule === RULE.UTF8_INVALID))
@@ -390,11 +397,11 @@ export function validateStagedMssFiles(workspaceRoot, stagedEntries, { historica
   const headMap = new Map()
   for (const snapshot of historicalSnapshots) {
     const path = normalizePath(snapshot.path)
-    if (REPORT_RE.test(path) || LIGHT_JSONL_RE.test(path)) headMap.set(path, { path, content: snapshot.content })
+    if (REPORT_PATH_RE.test(path) || LIGHT_JSONL_RE.test(path)) headMap.set(path, { path, content: snapshot.content })
   }
   for (const entry of normalized) {
     const previousPath = normalizePath(entry.previousPath || entry.path)
-    if (entry.headContent != null && (REPORT_RE.test(previousPath) || LIGHT_JSONL_RE.test(previousPath))) {
+    if (entry.headContent != null && (REPORT_PATH_RE.test(previousPath) || LIGHT_JSONL_RE.test(previousPath))) {
       if (!headMap.has(previousPath)) headMap.set(previousPath, { path: previousPath, content: entry.headContent })
     }
   }
@@ -402,7 +409,7 @@ export function validateStagedMssFiles(workspaceRoot, stagedEntries, { historica
   for (const entry of normalized) {
     const previousPath = entry.previousPath ? normalizePath(entry.previousPath) : null
     if (entry.status === 'R' || entry.status === 'D') stagedMap.delete(previousPath || entry.path)
-    if (entry.content != null && (REPORT_RE.test(entry.path) || LIGHT_JSONL_RE.test(entry.path))) {
+    if (entry.content != null && (REPORT_PATH_RE.test(entry.path) || LIGHT_JSONL_RE.test(entry.path))) {
       stagedMap.set(entry.path, { path: entry.path, content: entry.content })
     } else if (entry.content == null) {
       stagedMap.delete(entry.path)
@@ -457,7 +464,9 @@ export function validateStagedMssFiles(workspaceRoot, stagedEntries, { historica
       kind: declaration?.kind,
       stagedContent: entry.content,
       worktreeContent: entry.worktreeContent,
+      headContent: entry.headContent,
       historicalRecords,
+      historicalSnapshots,
       validateGlobal: false,
     })
 

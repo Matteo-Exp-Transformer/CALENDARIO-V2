@@ -12,31 +12,17 @@
  */
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { isMainModule, repoRootFromModule } from './runtime.mjs'
 
-// Radice cercata risalendo fino al package.json: robusta rispetto alla profondita della cartella.
-function findRepoRoot(start) {
-  let dir = start
-  for (let i = 0; i < 12; i++) {
-    if (existsSync(join(dir, 'package.json'))) return dir
-    const parent = dirname(dir)
-    if (parent === dir) break
-    dir = parent
-  }
-  return start
-}
-
-const ROOT = findRepoRoot(dirname(fileURLToPath(import.meta.url)))
-const PLAN = join(ROOT, 'docs/MetaSkillSystem/PLAN_V0.md')
-const PACK = join(ROOT, 'docs/MetaSkillSystem/Senior-Eval-Pack/MASTERPLAN_V0.md')
+const ROOT = repoRootFromModule(import.meta.url)
 
 const UNKNOWN = (owner) => `non ricostruibile — apri ${owner}`
 
-function git(args, fallback = null) {
+function git(args, fallback = null, root = ROOT) {
   try {
-    return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+    return execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
   } catch {
     return fallback
   }
@@ -71,22 +57,22 @@ function stripMd(s) {
 
 // ---------------------------------------------------------------- git
 
-function gitBlock() {
-  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD'], null)
-  const head = git(['rev-parse', '--short', 'HEAD'], null)
-  const upstream = branch ? git(['rev-parse', '--short', `origin/${branch}`], null) : null
+function gitBlock(root = ROOT) {
+  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD'], null, root)
+  const head = git(['rev-parse', '--short', 'HEAD'], null, root)
+  const upstream = branch ? git(['rev-parse', '--short', `origin/${branch}`], null, root) : null
   let ahead = null
   if (branch && upstream) {
-    const counts = git(['rev-list', '--left-right', '--count', `origin/${branch}...HEAD`], null)
+    const counts = git(['rev-list', '--left-right', '--count', `origin/${branch}...HEAD`], null, root)
     if (counts) {
       const [behind, forward] = counts.split(/\s+/)
       ahead = { behind: Number(behind), ahead: Number(forward) }
     }
   }
-  const dirty = (git(['status', '--porcelain', '-uall'], '') || '').split('\n').filter(Boolean)
-  const tags = (git(['tag', '-l', 'mss*'], '') || '').split('\n').filter(Boolean)
-  const stash = (git(['stash', 'list'], '') || '').split('\n').filter(Boolean).length
-  const worktrees = (git(['worktree', 'list'], '') || '').split('\n').filter(Boolean).length
+  const dirty = (git(['status', '--porcelain', '-uall'], '', root) || '').split('\n').filter(Boolean)
+  const tags = (git(['tag', '-l', 'mss*'], '', root) || '').split('\n').filter(Boolean)
+  const stash = (git(['stash', 'list'], '', root) || '').split('\n').filter(Boolean).length
+  const worktrees = (git(['worktree', 'list'], '', root) || '').split('\n').filter(Boolean).length
   return { branch, head, upstream, ahead, dirty, tags, stash, worktrees }
 }
 
@@ -170,14 +156,15 @@ function coherence(planTxt, packTxt) {
 
 // ---------------------------------------------------------------- output
 
-const C = process.stdout.isTTY
+const colors = (isTTY) => isTTY
   ? { r: '\x1b[31m', y: '\x1b[33m', g: '\x1b[32m', d: '\x1b[2m', b: '\x1b[1m', x: '\x1b[0m' }
   : { r: '', y: '', g: '', d: '', b: '', x: '' }
 
-const planText = read(PLAN)
-const packText = read(PACK)
-const g = gitBlock()
-
+export function buildStatusReport({ planText, packText, gitState, isTTY = false } = {}) {
+const C = colors(isTTY)
+const g = gitState || {
+  branch: null, head: null, upstream: null, ahead: null, dirty: [], tags: [], stash: 0, worktrees: 0,
+}
 const L = []
 L.push(`${C.b}MetaSkillSystem — dove siamo${C.x}  ${C.d}(derivato dagli owner, non memorizzato)${C.x}`)
 L.push('')
@@ -264,4 +251,24 @@ L.push('')
 L.push(`${C.d}Questo comando legge soltanto. Per lo stato autorevole apri gli owner citati sopra.${C.x}`)
 L.push(`${C.d}Prove: npm run test:mss · npm run validate:mss -- --mode file --file <report> --kind report --require-capsule${C.x}`)
 
-process.stdout.write(L.join('\n') + '\n')
+return L.join('\n') + '\n'
+}
+
+export function runStatus({ root = ROOT, isTTY = false } = {}) {
+  return {
+    exitCode: 0,
+    stdout: buildStatusReport({
+      planText: read(join(root, 'docs/MetaSkillSystem/PLAN_V0.md')),
+      packText: read(join(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/MASTERPLAN_V0.md')),
+      gitState: gitBlock(root),
+      isTTY,
+    }),
+    stderr: '',
+  }
+}
+
+if (isMainModule(import.meta.url)) {
+  const result = runStatus({ root: ROOT, isTTY: Boolean(process.stdout.isTTY) })
+  process.stdout.write(result.stdout)
+  process.exitCode = result.exitCode
+}

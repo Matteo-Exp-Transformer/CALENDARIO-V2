@@ -50,12 +50,12 @@
 > Vista, non owner. Lo stato vero è in `../PLAN_V0.md` §4-bis; in caso di divergenza vince quello.
 > Ordine dichiarato: **prima ciò che è gratis e sblocca, poi ciò che legge, poi ciò che scrive.**
 
-| # | Pacchetto | Stato al 22-08-2026 |
+| # | Pacchetto | Stato al 23-08-2026 |
 |---|---|---|
 | `SK-0` | sbloccare i cancelli globali | **CHIUSO E OSSERVATO** 21-08 — erano tre righe di configurazione; `npm run validate` **exit 0 per la prima volta** |
-| `SK-6` | `mss:query` — il **lettore** delle capsule | **esiste e funziona**; revisionato da una famiglia di modello diversa; **chiusura non decisa: decide Matteo** |
-| `SK-4` | chiusura dei tre bypass + allineo contratto | `NON INIZIATO` — **i tre bypass sono provati**, non ipotizzati |
-| `SK-11` | test sugli attrezzi `mss:*` | `NON INIZIATO` — oggi **nessun attrezzo ha un solo test** |
+| `SK-6` | `mss:query` — il **lettore** delle capsule | **CHIUSO 23-08-26 (D16)** — vista effettiva applicata; `query.mjs` delega `core.mjs::applyAmendmentsView()`. Report: `docs/Sessioni di lavoro/23-08-26/Report-vista-effettiva-mss-query-23-08-26.md` |
+| `SK-4` | chiusura dei tre bypass + allineo contratto | **`PROVATO` 23-08-26** — E1–E4 + R1 completati; chiusura formale solo Matteo. Owner: `PLAN_V0.md` §4-bis `S4` · report [`Report-ciclo-SK-4-23-08-26.md`](../../Sessioni%20di%20lavoro/23-08-26/Report-ciclo-SK-4-23-08-26.md) |
+| `SK-11` | test sugli attrezzi `mss:*` | **`A1–A4 IMPLEMENTATI` 23-08-26** — 9 test tools + lint script; **in attesa revisione A5**. Owner: `PLAN_V0.md` §4-bis `S11` |
 | `SK-5` | controlli MSS in CI | `NON INIZIATO` — la CI gira **solo su `main`** e non contiene nulla di MSS |
 | `SK-7` | `mss:capsule` — lo **scrittore** | `NON INIZIATO` — ha già un mandato pronto, ma vedi l'ordine qui sotto |
 | `SK-1`·`SK-2`·`SK-3`·`SK-8`·`SK-9`·`SK-10` | ripristino · path · `mss:review` · radice suite · `mss:move` · … | `NON INIZIATO` |
@@ -73,6 +73,11 @@ il contratto §6 prescrive. Dal 23-08 li applica: `--verifica`, `--fail`, riepil
 mostrano **grezzo ed effettivo affiancati** (la differenza fra i due è essa stessa un dato), e le
 catene che non si risolvono sono elencate, mai riparate. La logica **non è duplicata**: `query.mjs`
 delega a `core.mjs::applyAmendmentsView()`, la stessa funzione del validator.
+
+**Piani sessione 23-08-26 (vista, non owner):** esecuzione **completata** su `SK-4` (Cursor) e
+**A1–A4** su Codex `SK-11`+`SK-5` — registro e prossimo passo in
+`docs/Sessioni di lavoro/23-08-26/INDICE-SESSIONE-23-08-26.md` · owner in
+`PLAN-CURSOR-SK-4-23-08-26.md` e `PLAN-CODEX-SK-11-SK-5-23-08-26.md`.
 
 ## Lettura operativa
 

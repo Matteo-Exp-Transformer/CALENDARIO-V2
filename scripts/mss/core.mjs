@@ -9,6 +9,8 @@ import {
   PRODUCT_GATES,
   RULE,
   RFC3339_TZ_RE,
+  REVISION_LEGACY,
+  SCHEMA_LEGACY,
   SCHEMA_REVISION_PAIRS,
 } from './rules.mjs'
 import { canonicalJson, decodeUtf8 } from './canonical.mjs'
@@ -64,6 +66,79 @@ function walkStrings(value, path, fn) {
 
 function recordCanonical(entry) {
   return canonicalJson(entry.record)
+}
+
+function normalizeArtifactPath(workspaceRoot, file) {
+  const normalized = String(file || '').replace(/\\/g, '/')
+  const root = String(workspaceRoot || '').replace(/\\/g, '/').replace(/\/$/, '')
+  if (root && normalized.startsWith(`${root}/`)) return normalized.slice(root.length + 1)
+  return normalized.replace(/^\.\//, '')
+}
+
+function isLegacySchemaPair(record) {
+  return record?.schema_version === SCHEMA_LEGACY && record?.system_revision === REVISION_LEGACY
+}
+
+function buildCommittedById(historicalRecords = []) {
+  const committedById = new Map()
+  for (const historicalEntry of historicalRecords) {
+    const record = historicalEntry?.record || historicalEntry
+    if (!record?.record_id) continue
+    const canonical = canonicalJson(record)
+    const variants = committedById.get(record.record_id) || new Set()
+    variants.add(canonical)
+    committedById.set(record.record_id, variants)
+  }
+  return committedById
+}
+
+function isCommittedRecord(record, committedById) {
+  if (!record?.record_id) return false
+  return committedById.get(record.record_id)?.has(canonicalJson(record)) ?? false
+}
+
+function validateLegacyNewForbidden(record, file, out, committedById) {
+  if (!isLegacySchemaPair(record)) return
+  if (isCommittedRecord(record, committedById)) return
+  issue(out, {
+    rule: RULE.LEGACY_NEW_FORBIDDEN,
+    file,
+    fieldPath: 'schema_version+system_revision',
+    message: 'New records cannot use legacy schema pair; use mss.session/0.1.1 and mss-v0.1-wp0.1-freeze-2',
+  })
+}
+
+function recordsFromArtifactSnapshot(input, content, workspaceRoot) {
+  if (content == null) return []
+  const collected = collectBundlesFromInput({
+    kind: input.kind,
+    file: input.file,
+    content,
+    workspaceRoot,
+  })
+  const artifactPath = normalizeArtifactPath(workspaceRoot, input.file)
+  const records = []
+  for (const bundle of collected.bundles) {
+    for (const entry of bundle.records || []) {
+      records.push({ ...entry, file: artifactPath || input.file })
+    }
+  }
+  return records
+}
+
+function mergeArtifactHeadRecords(input, options = {}) {
+  const workspaceRoot = options.workspaceRoot || process.cwd()
+  const merged = [...(options.historicalRecords || [])]
+  merged.push(...recordsFromArtifactSnapshot(input, input.headContent, workspaceRoot))
+
+  const artifactPath = normalizeArtifactPath(workspaceRoot, input.file)
+  for (const snapshot of options.historicalSnapshots || []) {
+    const snapshotPath = String(snapshot?.path || '').replace(/\\/g, '/')
+    if (!artifactPath || snapshotPath !== artifactPath || snapshot.content == null) continue
+    merged.push(...recordsFromArtifactSnapshot(input, snapshot.content, workspaceRoot))
+    break
+  }
+  return merged
 }
 
 const EVENT_AXIS_KEYS = new Set([
@@ -888,6 +963,7 @@ function validateBundleRecords(entries, file, workspaceRoot, out, options) {
   const byCapture = new Map()
   const logicalEntries = []
   const historicalById = new Map()
+  const committedById = buildCommittedById(options.historicalRecords || [])
 
   for (const historicalEntry of options.historicalRecords || []) {
     const record = historicalEntry?.record || historicalEntry
@@ -941,6 +1017,7 @@ function validateBundleRecords(entries, file, workspaceRoot, out, options) {
     // proveniente dalla variante che il contratto vieta di considerare un record.
     if (!identityConflict) {
       validateVitalFields(record, loc, out)
+      validateLegacyNewForbidden(record, loc, out, committedById)
       validateRefs(record, loc, workspaceRoot, out)
       validateProductGates(record, loc, out)
       validateLockHints(record, loc, out, options)
@@ -1367,6 +1444,10 @@ export function validateGlobalRecordView(entries = []) {
 export function validateMss(input, options = {}) {
   const workspaceRoot = options.workspaceRoot || process.cwd()
   const diagnostics = []
+  const validationOptions = {
+    ...options,
+    historicalRecords: mergeArtifactHeadRecords(input, options),
+  }
 
   if (input.stagedContent != null && input.worktreeContent != null) {
     let differs = false
@@ -1396,7 +1477,7 @@ export function validateMss(input, options = {}) {
   for (const bundle of collected.bundles) {
     const file = bundle.path || input.file || '<bundle>'
     if (bundle.records?.length) {
-      validateBundleRecords(bundle.records, file, workspaceRoot, diagnostics, options)
+      validateBundleRecords(bundle.records, file, workspaceRoot, diagnostics, validationOptions)
     }
   }
 

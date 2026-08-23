@@ -1,39 +1,24 @@
-# Contratto della capsula di sessione — schema `mss.session/0.1.0`
+# Contratto della capsula di sessione — schema `mss.session/0.1.1`
 
-> 🔴 **AVVISO DI DISALLINEAMENTO — aggiunto 21-08-2026. Leggi prima di scrivere una capsula.**
+> 🟡 **AVVISO OPERATIVO — aggiornato 23-08-2026 (`SK-4` E3). Leggi prima di scrivere una capsula.**
 >
-> **La versione viva NON è quella nel titolo.** Il motore impone
-> **`mss.session/0.1.1`** + **`mss-v0.1-wp0.1-freeze-2`** — fonte autorevole:
-> `scripts/mss/rules.mjs` righe 3-6. Questo documento descrive ancora `0.1.0` / `freeze-1`,
-> incluso il blocco di identità del §3.
+> **Versione viva del contratto:** **`mss.session/0.1.1`** + **`mss-v0.1-wp0.1-freeze-2`**
+> — fonte autorevole del motore: `scripts/mss/rules.mjs` righe 3–6. Il corpo di questo file è
+> allineato a quella coppia.
 >
-> **Perché è pericoloso e non solo impreciso.** Il validator accetta ancora la coppia legacy, e
-> con quella coppia il campo **`controls` non è più obbligatorio**. `controls` è il campo che
-> registra *che cosa è stato davvero verificato*, con criterio, numeratore, denominatore ed
-> esecutore. Conseguenza: **chi segue alla lettera questo contratto produce una capsula priva di
-> prove, e `npm run validate:mss` risponde OK.**
+> **Enforcement validator attivo (wave 1 `SK-4` merge 23-08-26).** I tre bypass documentati in
+> `PLAN_V0.md` §4-bis (`S4`) sono chiusi nel motore: record **nuovi** con coppia legacy
+> `0.1.0` / `freeze-1` → `MSS-LEGACY-NEW-FORBIDDEN`; report/verbali in sotto-cartella e con
+> prefisso `Verbale-` entrano nel perimetro pre-commit. **Non usare la coppia legacy per produrre
+> capsule nuove:** scrivi sempre la coppia viva e includi `controls` (vedi §4).
 >
-> Prova A/B/C eseguita il 21-08-2026, unica variabile le due stringhe di versione:
+> **Coppia legacy — solo lettura.** `mss.session/0.1.0` + `mss-v0.1-wp0.1-freeze-1` serve a
+> **leggere** record storici già finalizzati, non a crearne di nuovi. Lo storico non va riscritto.
 >
-> | Variante | `controls` | Esito reale |
-> |---|---|---|
-> | `0.1.1` / `freeze-2` | presenti | `validate:mss OK` |
-> | `0.1.1` / `freeze-2` | **rimossi** | `FAIL` — `MSS-VITAL-MISSING :: event.controls` |
-> | **`0.1.0` / `freeze-1`** | **rimossi** | **`validate:mss OK`** ← la porta di servizio |
->
-> **Che cosa fare adesso:** scrivi sempre `mss.session/0.1.1` e `mss-v0.1-wp0.1-freeze-2`, e includi
-> sempre `controls`. La coppia legacy esiste per **leggere** la storia `0.1.0` senza riscriverla, non
-> per produrre capsule nuove.
->
-> **La correzione strutturale** — ri-versionare questo contratto e impedire al validator di accettare
-> la coppia legacy su record nuovi — è il pacchetto **`SK-4`** in `PLAN_V0.md` §4-bis, e richiede una
-> decisione di Matteo. Questo avviso non la anticipa: rende solo innocuo il pericolo nel frattempo.
->
-> Fonte: `docs/Sessioni di lavoro/21-08-26/MAPPA-MSS-consulenza-esterna-21-08-26.md` §6.
+> Fonte bypass e prova A/B/C: `docs/Sessioni di lavoro/21-08-26/MAPPA-MSS-consulenza-esterna-21-08-26.md` §6.
 
 > **Stato:** congelabile per `WP-0.1`; efficacia non ancora osservata.
-> **System revision:** `mss-v0.1-wp0.1-freeze-1` — ⚠️ *superata, vedi avviso sopra: la revisione viva
-> è `mss-v0.1-wp0.1-freeze-2`.*
+> **System revision:** `mss-v0.1-wp0.1-freeze-2`
 > **Funzione:** conservare l'evento minimo di ogni chat sostanziale. Il report racconta; i record
 > JSONL permettono di ricostruire. Questo contratto non sceglie l'event store definitivo.
 
@@ -58,19 +43,40 @@ non sono semantici. Il validator futuro deve parsare JSON, non confrontare testo
 
 ## 2. Dove vive
 
-- **Standard/deep:** sezione `Capsula MetaSkillSystem` del report o verbale proprietario, in un
-  unico blocco fenced `jsonl`. Prima riga `session_event`, righe successive annotazioni/rettifiche.
-- **Light:** file pilot-only
-  `docs/Sessioni di lavoro/GG-MM-AA/eventi-light/<record_id>.jsonl`, con una riga
+### Report e verbali (standard/deep)
+
+- Sezione `Capsula MetaSkillSystem` del report o verbale proprietario, in un unico blocco fenced
+  `jsonl`. Prima riga `session_event`, righe successive annotazioni/rettifiche.
+- **Path ammessi** sotto `docs/Sessioni di lavoro/`, con **profondità arbitraria** sotto la
+  cartella-data (es. `23-08-26/sub/Report-….md` è valido).
+- **Prefissi nome file ammessi:** `Report-` e `Verbale-` (estensione `.md`, case-insensitive sul
+  prefisso).
+- Perimetro validator/pre-commit (decisione `G1`+`G2`, `SK-4`):
+
+  ```text
+  /^docs\/Sessioni di lavoro\/.+\/(Report|Verbale)-.*\.md$/i
+  ```
+
+  Un file fuori da questo perimetro non entra nell'enforcement automatico su staged/modificati.
+
+### Light
+
+- File pilot-only `docs/Sessioni di lavoro/GG-MM-AA/eventi-light/<record_id>.jsonl`, con una riga
   `session_event` e le eventuali annotazioni sulle righe successive. La riga narrativa in
   `docs/SESSION_LOG.md` contiene soltanto il link al file e l'`event_id`; non contiene la capsula.
-- **Chat interrotta/compact:** blocco `jsonl` nel prompt di proseguimento o handoff. Il nuovo
-  segmento conserva `session_id` e `correlation_id`, incrementa `segment_no` e collega
-  `continues_record_id`; la seduta successiva ha un nuovo `session_id` ma conserva il
-  `correlation_id` e cita il record precedente in `causation_record_id`.
-- **Valutazione personale:** la capsula non crea un settimo owner. Vive nel verbale/evento primario;
-  gli altri proprietari ricevono soltanto le transizioni che già possiedono. Dati e prove privati
-  non vengono copiati in un evento git-tracked: si usa un riferimento stabile autorizzato.
+
+### Chat interrotta/compact
+
+- Blocco `jsonl` nel prompt di proseguimento o handoff. Il nuovo segmento conserva `session_id` e
+  `correlation_id`, incrementa `segment_no` e collega `continues_record_id`; la seduta successiva
+  ha un nuovo `session_id` ma conserva il `correlation_id` e cita il record precedente in
+  `causation_record_id`.
+
+### Valutazione personale
+
+- La capsula non crea un settimo owner. Vive nel verbale/evento primario; gli altri proprietari
+  ricevono soltanto le transizioni che già possiedono. Dati e prove privati non vengono copiati in
+  un evento git-tracked: si usa un riferimento stabile autorizzato.
 
 Il file light è un supporto temporaneo del pilota, non una decisione sullo store definitivo. Un file
 per evento evita collisioni fra writer; nessun indice/proiezione viene aggiornato dall'agente oltre
@@ -80,13 +86,9 @@ alla normale riga narrativa di `SESSION_LOG.md`.
 
 Ogni `session_event`, `annotation` e `amendment` contiene:
 
-> ⚠️ **Le prime due righe del blocco sono superate.** Per una capsula **nuova** scrivi
-> `mss.session/0.1.1` e `mss-v0.1-wp0.1-freeze-2`. I valori `0.1.0` / `freeze-1` qui sotto valgono
-> solo per **leggere** i record storici. Vedi l'avviso in testa al file.
-
 ```text
-schema_version: mss.session/0.1.0      # ⚠️ record NUOVI: mss.session/0.1.1
-system_revision: mss-v0.1-wp0.1-freeze-1   # ⚠️ record NUOVI: mss-v0.1-wp0.1-freeze-2
+schema_version: mss.session/0.1.1
+system_revision: mss-v0.1-wp0.1-freeze-2
 record_type: session_event | annotation | amendment
 record_id: mss-rec-<UUIDv7>
 session_id: mss-ses-<UUIDv7>
@@ -114,6 +116,19 @@ packages_loaded:
 `agent_runtime` vale `non_applicabile:<motivo>` per un autore umano. `packages_loaded` registra ciò
 che è stato realmente aperto, non ciò che il routing avrebbe voluto aprire. `recorded_by` è l'autore
 del record, distinto dagli attori descritti nel suo contenuto.
+
+### Coppia legacy — solo lettura (non produrre record nuovi)
+
+Per **leggere** capsule già finalizzate prima del passaggio a `0.1.1`/`freeze-2`:
+
+```text
+schema_version: mss.session/0.1.0
+system_revision: mss-v0.1-wp0.1-freeze-1
+```
+
+Su questa coppia il validator storico non richiede `controls`. **Vietato** usarla su record nuovi:
+con la coppia viva `controls` è obbligatorio (§4). Dopo `SK-4` E2 il motore rifiuterà la coppia
+legacy su record nuovi (`MSS-LEGACY-NEW-FORBIDDEN`).
 
 ### Regole ID, compact e retry
 
@@ -156,6 +171,7 @@ event:
     alternatives_or_conflicts: [] | nessuno
   observed_outcome:
   open_items: [] | nessuno
+  controls: [] | nessuno
   subject_runtime:
     actor_id:
     provider:
@@ -174,6 +190,33 @@ event:
   owner_refs: []
   source_refs: []
 ```
+
+### `controls` — prove delle verifiche (obbligatorio su record nuovi)
+
+Su ogni `session_event` a schema **`0.1.1`** / **`freeze-2`**, il campo `controls` è **vitale**:
+non può mancare. Valori ammessi:
+
+- **`nessuno`** — dichiarazione esplicita che nessun controllo misurabile è stato eseguito in seduta
+  (raro; va giustificato in `observed_outcome` o nelle annotazioni).
+- **Array di oggetti controllo** — una voce per ogni verifica eseguita con criterio e esito misurabile.
+
+Ogni oggetto controllo contiene:
+
+```text
+control_id:       identificatore stabile del controllo (es. nome gate o comando)
+criterio:         cosa si misura / quale condizione deve valere
+esito:            pass | fail | non_applicabile | non_noto
+numeratore:       intero >= 0 (quanto soddisfatto)
+denominatore:     intero > 0 (totale misurato; numeratore <= denominatore)
+esecutore:        chi ha eseguito il controllo (actor_id o ruolo)
+evidence_refs:    [] di ref risolvibili verso log, report, output del comando
+```
+
+`controls` registra *che cosa è stato davvero verificato*, con criterio, numeratore, denominatore ed
+esecutore — distinto dalle annotazioni degli assi, che interpretano Persona/Sistema/Output. Un record
+nuovo senza `controls` (o con array vuoto al posto di `nessuno` dichiarato) fallisce la validazione
+(`MSS-VITAL-MISSING :: event.controls`). Sulla coppia legacy §3 il campo resta opzionale solo per
+**lettura** dello storico.
 
 Ogni owner/fonte usa un riferimento risolvibile nel perimetro disponibile:
 
@@ -310,7 +353,7 @@ Si cattura soltanto ciò che serve a ricostruire contratto, evento, tre delta e 
 
 Classificazione, contenuti ammessi/vietati, redazioni, confine d'uscita e via di rettifica sono
 obbligatori nell'evento. La durata di conservazione resta deliberatamente
-`undecided_wp0.1`; prima di mining esteso deve essere decisa in `IDEA-MSS-01`. Fino ad allora non si
+`undecided_wp0.1`; prima di mining esterno deve essere decisa in `IDEA-MSS-01`. Fino ad allora non si
 duplica materiale privato e si applica minimizzazione.
 
 ## 8. Forma light canonica

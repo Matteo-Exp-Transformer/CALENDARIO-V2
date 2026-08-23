@@ -383,6 +383,15 @@
       ],
       "file": "FX-S24-mode-unknown.md",
       "kind": "report"
+    },
+    {
+      "id": "FX-I11",
+      "expect": "fail",
+      "codes": [
+        "MSS-LEGACY-NEW-FORBIDDEN"
+      ],
+      "file": "FX-I11-legacy-new.jsonl",
+      "kind": "jsonl"
     }
   ]
 }

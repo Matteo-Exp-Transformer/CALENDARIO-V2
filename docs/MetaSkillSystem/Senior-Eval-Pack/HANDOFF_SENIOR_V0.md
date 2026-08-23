@@ -66,10 +66,11 @@ Senior-Eval-Pack è **parcheggiato, non annullato**: `SEP-G5` **non** PASS, `WP-
 
 ### Istantanea
 
-- **Aggiornato il:** 22-08-2026 (sera).
+- **Aggiornato il:** 23-08-2026.
 - **Sedute coperte:** `mss-ses-01a0294a-aa53-7905-bd1c-e8583922a38e` (`SK-6` costruzione) ·
   `mss-ses-01a02b3b-20bd-7400-82d6-54e73e38192e` (fix post-revisione) ·
-  `mss-ses-01a02b3d-5028-76f9-bd88-82eae5366f7d` (revisione indipendente OpenAI).
+  `mss-ses-01a02b3d-5028-76f9-bd88-82eae5366f7d` (revisione indipendente OpenAI) ·
+  `mss-ses-01a02d5f-dcdf-71d3-bbda-a5292391b4bd` (vista effettiva + chiusura `SK-6`, D16).
 - **Autori:** Anthropic Claude Opus 5 (costruzione + supervisione) · Anthropic Claude Sonnet 5
   (esecuzione fix) · **OpenAI Codex** (revisione indipendente, famiglia di modello diversa).
 - **Metodo:** costruire il **lettore** prima dello scrittore; dichiarare in output il criterio usato,
@@ -78,8 +79,10 @@ Senior-Eval-Pack è **parcheggiato, non annullato**: `SEP-G5` **non** PASS, `WP-
 - **Tipo di evidenza:** comandi eseguiti con exit code reali + censimento indipendente riprodotto da
   un parser scritto fuori dal repository, che non importa `scripts/mss/query.mjs`.
 - **Comparabilità:** `non_comparabile`.
-- **Ultimi report:** `docs/Sessioni di lavoro/22-08-26/Report-sk6-mss-query-22-08-26.md` ·
-  `…/Report-fix-sk6-22-08-26.md` · `…/Report-revisione-indipendente-sk6-codex-22-08-26.md`.
+- **Ultimi report:** `docs/Sessioni di lavoro/23-08-26/INDICE-SESSIONE-23-08-26.md` (ingresso unico) ·
+  `…/Report-ciclo-SK-4-23-08-26.md` · `…/Report-sk4-revisione-indipendente-23-08-26.md` ·
+  `…/Report-ciclo-SK-11-SK-5-23-08-26.md` · `…/Report-senior-chiusura-sessione-23-08-26.md` ·
+  `…/Report-vista-effettiva-mss-query-23-08-26.md`.
 
 ### Fatto osservato
 
@@ -111,21 +114,22 @@ La revisione indipendente ha rimisurato sette affermazioni: **sei confermate, un
    catene non risolte sono mostrate, mai riparate. La regola vive in **un solo posto**
    (`core.mjs::applyAmendmentsView()`, delegata anche dal validator). Report:
    `docs/Sessioni di lavoro/23-08-26/Report-vista-effettiva-mss-query-23-08-26.md`.
-2. **Tre bypass dell'enforcement, provati** (→ `SK-4`): la coppia schema legacy rende **opzionale**
-   il campo `controls`; un report in **sotto-cartella** esce dal perimetro del pre-commit; basta
-   cambiare il **prefisso del nome**. Il secondo non è cosmetico: fra i 22 report esclusi c'è una
-   **seduta di revisione** — il buco nasconde proprio le prove che il sistema esiste per raccogliere.
-3. **Nessun attrezzo `mss:*` ha un solo test.** `npm run lint` gira su `--ext ts,tsx` e ignora
-   `scripts/`; `test:mss` esercita il validator, non il lettore. `npm run validate` verde **non dice
-   nulla** su questi file.
+2. ✅ **RISOLTO il 23-08-2026** — erano i tre bypass dell'enforcement (`SK-4`): legacy-new senza
+   `controls`, report in sotto-cartella, prefisso `Verbale-`. B1–B3 **respinti con comando**;
+   `REPORT_PATH_RE` condivisa in `adapter.mjs`; contratto allineato `0.1.1`/`freeze-2`. Stato owner
+   **`PROVATO`** in `PLAN_V0.md` §4-bis `S4`; chiusura formale riservata a Matteo. Report:
+   `docs/Sessioni di lavoro/23-08-26/Report-ciclo-SK-4-23-08-26.md` + revisione R1.
+3. **Copertura test attrezzi — parziale.** `SK-11` A1–A4 (23-08): `test:mss:tools` **9 test** su
+   `query`/`status`/`runtime`; lint script su `.mjs`. Restano A5 (controprova rossa) e `SK-5` (CI).
+   `test:mss` (42 fixture) copre il validator, non tutti i percorsi CLI degli attrezzi.
 4. `rule_id_version` è **testo libero**, non un identificatore: non esiste alcun campo strutturato
    per i **gate** né per i **file toccati**.
 5. Gli **hook** vivono in un file **escluso da git**: quell'enforcement non esiste per nessun altro.
 
 ### Cosa non è dimostrato
 
-- Che gli attrezzi `mss:*` siano corretti: **nessun test li copre**. Nella stessa giornata la
-  **stessa classe di difetto** (colonna di output troppo stretta) è comparsa **tre volte**.
+- Che gli attrezzi `mss:*` siano **pienamente** coperti: A1–A4 fanno la prima rete (9 test tools),
+  ma A5 e CI (`SK-5`) **non sono ancora chiusi**.
 - Che le capsule scritte a mano dicano il vero: durante la costruzione un generatore ha registrato
   `fail` su comandi che in realtà **passavano** (su Windows `npm` è `npm.cmd`). Un controllo falso
   invalida la raccolta quanto uno omesso.
@@ -133,19 +137,17 @@ La revisione indipendente ha rimisurato sette affermazioni: **sei confermate, un
 
 ### Prossimo task atomico derivato
 
-**Nessuno è autorizzato: apre Matteo.** La raccomandazione di chi scrive, con l'argomento:
+**Ciclo esecutivo 23-08-26 completato — non riaprire decisioni chiuse.**
 
-1. **Chiudere il divario «registra ma non rilegge»** — cioè `SK-4` insieme alla vista che applica
-   gli amendment. Sono lo **stesso** problema: il sistema accetta record che poi non sa mostrare.
-   Va per primo perché ogni seduta futura ci scrive dentro, e perché tre di quei bypass sono stati
-   **incontrati lavorando**, non trovati cercandoli.
-2. **`SK-11` + `SK-5`: test sugli attrezzi, poi CI.** Argomento empirico, non di principio: la
-   stessa classe di bug è ricomparsa tre volte in un giorno. **Il ripetersi di un difetto identico
-   misura l'assenza di test, non la disattenzione di chi scrive.**
-3. **`SK-7` (`mss:capsule`) dopo, non prima.** Un generatore che scrive in un archivio non
-   presidiato e non rileggibile **moltiplica** il problema invece di risolverlo. La sequenza `D12`
-   — prima il lettore, poi lo scrittore — ha già pagato: costruire il lettore per primo è ciò che ha
-   reso visibili tutti i difetti elencati qui sopra.
+1. **Matteo — chiusura `SK-4`:** R1 raccomanda **accetta**; B1–B3 respinti. Dichiarare `CHIUSO` in
+   `PLAN_V0.md` §4-bis se concordi; poi commit/push del working tree (grande diff non committato).
+2. **Codex — revisione A5 `SK-11`:** controprova rossa/ripristino; poi chiusura `SK-11` e avvio
+   **`SK-5`** (CI MSS su `env/test`). Piano: `…/PLAN-CODEX-SK-11-SK-5-23-08-26.md`.
+3. **Backlog non bloccante** (da R1 SK-4): hook `.cursor/hooks/fine-sessione-commit-check.mjs` ancora
+   con regex `[^/]+` per audit Q/R; `--require-capsule` non propagato su path staged CLI.
+4. **`SK-7` (`mss:capsule`) dopo `SK-5`**, non prima — sequenza `D12` invariata.
+
+Ingresso unico sessione: `docs/Sessioni di lavoro/23-08-26/INDICE-SESSIONE-23-08-26.md`.
 
 ### Dato nuovo per `D13` (indipendenza del revisore)
 
@@ -161,11 +163,13 @@ Invariati e **non toccati** da queste sedute: `SEP-G1` = `PASS_CON_RISERVE` · `
 
 ### STOP e decisioni di Matteo
 
-- **Aperte:** chiusura di `SK-6` (l'attrezzo esiste e i cancelli sono verdi, ma **chiude Matteo**) ·
-  quale pacchetto aprire dopo · se `mss:query` debba applicare le catene di amendment · se il
-  vincolo di cambio-famiglia di `PLAN_V0` §16.3 vada approvato o resti **proposta**.
-- **STOP invariati:** `WP-1` · `F5`/move · claim di PASS pulito · `docs/_lavoro/` · `stash drop`
-  senza sì esplicito · `adapter.mjs` (è `SK-4`).
+- **Chiuse (non riaprire):** `D16` `SK-6` CHIUSO · `D17` cambio-famiglia = avviso, non gate ·
+  `D18` snellire, non duplicare · `D19` push quando repo pulita · `G1`–`G6` SK-4 (piani lanciati
+  23-08-26).
+- **Aperte:** chiusura formale `SK-4` (Matteo, post-R1) · revisione A5 Codex `SK-11` · `SK-5` CI ·
+  commit/push working tree 23-08-26.
+- **STOP invariati:** `WP-1` **NO-GO** · `SEP-G5` **non** PASS · `F5`/move · claim di PASS pulito ·
+  `docs/_lavoro/` · `stash drop` senza sì esplicito · commit/push senza sì.
 
 ## 4. Chiusura obbligatoria di ogni sessione senior
 
@@ -243,6 +247,8 @@ Non copiare nel handoff intere narrative, capsule o dati privati: usare puntator
 | `mss-ses-01a0294a-…-e8583922a38e` | 22-08-2026 | esecutore `SK-6` · Anthropic Claude Opus 5 | costruire il **lettore** prima dello scrittore (`D12`) | `npm run mss:query` (sola lettura, 5 domande). Scoperto: `independently_verified` **mai** usato in 43 sedute e `verified_by` sempre vuoto, **ma le review erano state fatte davvero**. `SK-6` **non** dichiarato chiuso | `test:mss` exit 0 · `validate:mss` OK · tre affermazioni tracciate ai report d'origine | `non_comparabile` | `Report-sk6-mss-query-22-08-26.md` |
 | `mss-ses-01a02b3d-…-82eae5366f7d` | 22-08-2026 | **revisore indipendente · OpenAI Codex** (famiglia diversa) | censimento con parser scritto **fuori dal repo**, che non importa `query.mjs`; hash del bersaglio fotografato 3 volte | **6 affermazioni confermate su 7, 1 contraddetta** (conteggio revisori). Trovato difetto nuovo: `mss:query` **non applica gli amendment**. **Primo uso reale del meccanismo di rettifica** in tutta la storia del sistema | `validate:mss` OK sulla sua capsula; misure riprodotte in modo indipendente | `non_comparabile` | `Report-revisione-indipendente-sk6-codex-22-08-26.md` |
 | `mss-ses-01a02b3b-…-54e73e38192e` | 22-08-2026 | esecutore fix · Anthropic Claude Sonnet 5 | rettifica **append-only**, mai riscrittura di record `final` | criterio revisori da `controls[].esecutore` a `recorded_by.role` (soprainsieme stretto, **0 controlli persi**); capsula `SK-6` corretta con `amendment`; specchio `PLAN_V0` riallineato; limite «vista grezza, non effettiva» **dichiarato in output** | `test:mss` exit 0 · `validate:mss` OK su 2 report · `node --check` exit 0 · elenco attori ispezionato: **0 falsi positivi** | `non_comparabile` | `Report-fix-sk6-22-08-26.md` |
+| `mss-ses-01a02d5f-…-a5292391b4bd` | 23-08-2026 | esecutore vista effettiva · Anthropic Claude Sonnet 5 + revisione Opus | applicare catena amendment in `mss:query` (`D16`–`D19`) | vista effettiva in `--verifica`/`--json`; `applyAmendmentsView()` esportata da `core.mjs`; `SK-6` **CHIUSO** | `test:mss` exit 0 · `mss:query --verifica` exit 0 · commit `449cd70` | `non_comparabile` | `Report-vista-effettiva-mss-query-23-08-26.md` |
+| chiusura senior 23-08-26 | 23-08-2026 | Meta senior ripresa · Cursor Auto | chiusura ciclo pianificazione post-Stop-hook #2 | allineati ROADMAP riga `SK-6`, HANDOFF operativo, hook gitignore, template v.0 playbook | `mss:status` · `grep SK-6` · `git check-ignore` | `non_comparabile` | `Report-senior-chiusura-sessione-23-08-26.md` |
 
 Il registro dimostra soltanto che il passaggio è stato dichiarato e documentato. La verifica si
 legge nel report collegato e nel successivo eventuale record di review.

@@ -51,6 +51,14 @@ module.exports = {
   ],
   overrides: [
     {
+      files: ['scripts/**/*.mjs'],
+      env: { node: true, browser: false },
+      rules: {
+        // FU-LOG-1: gli script usano _cliLog; warn/error restano ammessi solo per CLI legacy.
+        'no-console': ['error', { allow: ['warn', 'error'] }],
+      },
+    },
+    {
       files: ['src/**/*.{ts,tsx}'],
       excludedFiles: [
         'src/lib/logger.ts',

@@ -223,7 +223,7 @@ async function main() {
     '  • Le risposte Q1-Q6 sono coerenti tra loro e col lavoro svolto?',
     '',
     'PRATICHE SENIOR (facili da dimenticare a fine chat lunga):',
-    '  • Propagati gli upgrade STRUTTURALI nel template v.0 `_skill-system-v0/`? (gitignored: NON committare, ma elenca nel report cosa hai toccato.)',
+    '  • Propagati gli upgrade STRUTTURALI nel template v.0 `_skill-system-v0/`? (template portabile in `_skill-system-v0/` — tracciato: elenca nel report cosa hai toccato, non assumere gitignore)',
     '  • Aggiornato il PLAYBOOK in EVOLUZIONE_SKILLS.md se hai imparato un metodo nuovo?',
     '',
     'Se hai già fatto tutto: confermalo punto per punto e chiudi.',

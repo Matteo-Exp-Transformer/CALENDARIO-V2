@@ -2,15 +2,18 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, env/test]
   pull_request:
-    branches: [main]
+    branches: [main, env/test]
 
 jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - uses: actions/setup-node@v4
         with:
@@ -22,6 +25,18 @@ jobs:
 
       - name: Validate doc paths
         run: npm run validate:docs
+
+      - name: Validate changed MSS reports
+        env:
+          MSS_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          MSS_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: npm run validate:mss:changed -- --base "$MSS_BASE_SHA" --head "$MSS_HEAD_SHA"
+
+      - name: MSS validator tests
+        run: npm run test:mss
+
+      - name: MSS tools tests
+        run: npm run test:mss:tools
 
       - name: Lint
         run: npm run lint

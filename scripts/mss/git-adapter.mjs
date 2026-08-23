@@ -110,11 +110,7 @@ export function collectGitHeadHistory(root) {
   const paths = raw
     .split('\0')
     .filter(Boolean)
-    .filter((path) =>
-      /^docs\/Sessioni di lavoro\/[^/]+\/Report-.*\.md$/i.test(path) ||
-      /\/eventi-light\/.+\.jsonl$/i.test(path) ||
-      /^docs\/MetaSkillSystem\/fixtures\/v0\.1\//i.test(path),
-    )
+    .filter((path) => isMssRelevantPath(path))
   const contents = batchShow(root, paths.map((path) => `HEAD:${path}`))
   return paths
     .map((path, index) => ({ path, content: contents[index] }))

@@ -11,53 +11,35 @@
  * capsule su 42»), mai completato a plausibilita. Un valore previsto dal contratto e mai usato
  * viene contato a zero E scritto a parole: e una risposta, non un buco (PARAMETRI_MACRO_V0.md §6).
  *
- * PERIMETRO DI LETTURA — differenza voluta rispetto a collectGitHeadHistory():
- * quella funzione filtra con `docs/Sessioni di lavoro/[^/]+/Report-*.md`, dove `[^/]+` vale un solo
- * livello di cartella: i report in sotto-cartella le sono invisibili (6 capsule su 42 a HEAD).
- * Qui il filtro accetta qualunque profondita, e il numero di file letti viene dichiarato in output.
- * NON si tocca scripts/mss/adapter.mjs: li lo stesso filtro governa il perimetro del pre-commit e
- * allargarlo e una decisione di Matteo (pacchetto SK-4).
+ * PERIMETRO DI LETTURA — SK-4 E1 (23-08-26): importa `REPORT_PATH_RE` da adapter.mjs (D18).
+ * Stessa costante di pre-commit e collectGitHeadHistory(): sotto-cartelle + prefisso Verbale-.
  */
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
-import { dirname, join, relative, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { join, relative } from 'node:path'
 
+import { REPORT_PATH_RE } from './adapter.mjs'
 import { extractCapsulesFromMarkdown, detectReportMode } from './parse.mjs'
 import { SCHEMA_CURRENT, SCHEMA_LEGACY, REVISION_CURRENT, REVISION_LEGACY, RULE } from './rules.mjs'
 import { applyAmendmentsView } from './core.mjs'
+import { isMainModule, repoRootFromModule } from './runtime.mjs'
 
-// Radice cercata risalendo fino al package.json: robusta rispetto alla profondita della cartella.
-// Stessa strategia di scripts/mss/status.mjs; non si importa da li perche quel modulo stampa
-// il proprio report gia al caricamento.
-function findRepoRoot(start) {
-  let dir = start
-  for (let i = 0; i < 12; i++) {
-    if (existsSync(join(dir, 'package.json'))) return dir
-    const parent = dirname(dir)
-    if (parent === dir) break
-    dir = parent
-  }
-  return start
-}
-
-const ROOT = findRepoRoot(dirname(fileURLToPath(import.meta.url)))
+const ROOT = repoRootFromModule(import.meta.url)
 const SESSIONI = 'docs/Sessioni di lavoro'
 
-// Un solo livello in piu rispetto a collectGitHeadHistory(): `.*` invece di `[^/]+`.
-const REPORT_RE = /^docs\/Sessioni di lavoro\/.*\/Report-.*\.md$/i
-
-const C = process.stdout.isTTY
+const colors = (isTTY) => isTTY
   ? { r: '\x1b[31m', y: '\x1b[33m', g: '\x1b[32m', d: '\x1b[2m', b: '\x1b[1m', x: '\x1b[0m' }
   : { r: '', y: '', g: '', d: '', b: '', x: '' }
 
+let C = colors(false)
+
 // ------------------------------------------------------------------ raccolta
 
-function git(args, fallback = null) {
+function git(args, fallback = null, root = ROOT) {
   try {
     return execFileSync('git', args, {
-      cwd: ROOT,
+      cwd: root,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
       maxBuffer: 128 * 1024 * 1024,
@@ -67,15 +49,15 @@ function git(args, fallback = null) {
   }
 }
 
-function headReportPaths() {
-  const raw = git(['ls-tree', '-r', '--name-only', '-z', 'HEAD', '--', SESSIONI], '') || ''
-  return raw.split('\0').filter(Boolean).filter((p) => REPORT_RE.test(p))
+function headReportPaths(root = ROOT) {
+  const raw = git(['ls-tree', '-r', '--name-only', '-z', 'HEAD', '--', SESSIONI], '', root) || ''
+  return raw.split('\0').filter(Boolean).filter((p) => REPORT_PATH_RE.test(p))
 }
 
-function headContent(path) {
+function headContent(path, root = ROOT) {
   try {
     return execFileSync('git', ['show', `HEAD:${path}`], {
-      cwd: ROOT,
+      cwd: root,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
       maxBuffer: 128 * 1024 * 1024,
@@ -85,8 +67,8 @@ function headContent(path) {
   }
 }
 
-function worktreeReportPaths() {
-  const base = join(ROOT, SESSIONI)
+function worktreeReportPaths(root = ROOT) {
+  const base = join(root, SESSIONI)
   if (!existsSync(base)) return []
   const out = []
   const walk = (dir) => {
@@ -100,8 +82,8 @@ function worktreeReportPaths() {
       const abs = join(dir, entry.name)
       if (entry.isDirectory()) walk(abs)
       else if (entry.isFile()) {
-        const rel = relative(ROOT, abs).replace(/\\/g, '/')
-        if (REPORT_RE.test(rel)) out.push(rel)
+        const rel = relative(root, abs).replace(/\\/g, '/')
+        if (REPORT_PATH_RE.test(rel)) out.push(rel)
       }
     }
   }
@@ -114,9 +96,9 @@ function worktreeReportPaths() {
  * Dove un file esiste in entrambi, vince il working tree: e lo stato corrente del repo.
  * L'origine di ogni file viene conservata e dichiarata in output.
  */
-function collect() {
-  const head = new Set(headReportPaths())
-  const work = new Set(worktreeReportPaths())
+function collect(root = ROOT) {
+  const head = new Set(headReportPaths(root))
+  const work = new Set(worktreeReportPaths(root))
   const paths = [...new Set([...head, ...work])].sort()
 
   const files = []
@@ -131,14 +113,14 @@ function collect() {
 
     if (inWork) {
       try {
-        content = readFileSync(join(ROOT, path), 'utf8')
+        content = readFileSync(join(root, path), 'utf8')
         origin = inHead ? 'head+worktree' : 'solo worktree'
       } catch {
         content = null
       }
     }
     if (content == null && inHead) {
-      content = headContent(path)
+      content = headContent(path, root)
       origin = 'solo HEAD'
     }
     if (content == null) continue
@@ -156,7 +138,7 @@ function collect() {
       // problema che non c'e invaliderebbe la raccolta tanto quanto nasconderne uno vero.
       let historical = false
       try {
-        historical = Boolean(detectReportMode(content, { file: path, workspaceRoot: ROOT }).historical)
+        historical = Boolean(detectReportMode(content, { file: path, workspaceRoot: root }).historical)
       } catch {
         historical = false
       }
@@ -216,7 +198,7 @@ function collect() {
  *
  * Non ripara nulla: una catena che non si risolve finisce in `nonRisolte`, mostrata per intero.
  */
-function buildVistaEffettiva(data) {
+export function buildVistaEffettiva(data) {
   const entries = data.records.map((rec) => ({ record: rec.r, file: rec.path, line: 0 }))
   const byId = new Map()
   for (const e of entries) {
@@ -645,13 +627,13 @@ function verificaModel(data) {
 }
 
 /** Anteprima troncata di un valore per una riga di terminale: il valore intero vive in --json. */
-function previewValore(v, n = 70) {
+export function previewValore(v, n = 70) {
   const s = typeof v === 'string' ? v : JSON.stringify(v)
   const t = s.replace(/\s+/g, ' ').trim()
   return t.length > n ? `${t.slice(0, n)}…` : t
 }
 
-function renderVerifica(data, vista) {
+export function renderVerifica(data, vista) {
   const m = verificaModel(data)
   const me = verificaModel(vista.dataEffettiva)
   const tot = m.conVerification.length
@@ -1068,25 +1050,46 @@ const DOMANDE = {
   '--costo': renderCosto,
 }
 
-const argv = process.argv.slice(2)
-const json = argv.includes('--json')
-const scelte = argv.filter((a) => a in DOMANDE)
-const ignoti = argv.filter((a) => a.startsWith('--') && a !== '--json' && !(a in DOMANDE))
+export function runQuery({ argv = [], root = ROOT, isTTY = false } = {}) {
+  C = colors(isTTY)
+  const json = argv.includes('--json')
+  const scelte = argv.filter((a) => a in DOMANDE)
+  const ignoti = argv.filter((a) => a.startsWith('--') && a !== '--json' && !(a in DOMANDE))
 
-if (ignoti.length) {
-  process.stderr.write(
-    `${C.r}opzione non riconosciuta: ${ignoti.join(' ')}${C.x}\n` +
-      `domande disponibili: ${Object.keys(DOMANDE).join(' ')} ${C.d}(oppure nessuna, per il riepilogo)${C.x}\n`,
-  )
-  process.exit(2)
+  if (ignoti.length) {
+    return {
+      exitCode: 2,
+      stdout: '',
+      stderr: `${C.r}opzione non riconosciuta: ${ignoti.join(' ')}${C.x}\n` +
+        `domande disponibili: ${Object.keys(DOMANDE).join(' ')} ${C.d}(oppure nessuna, per il riepilogo)${C.x}\n`,
+    }
+  }
+
+  const data = collect(root)
+  const vista = buildVistaEffettiva(data)
+
+  if (json) {
+    const payload = buildQueryPayload(data, vista)
+    return { exitCode: 0, stdout: `${JSON.stringify(payload, null, 2)}\n`, stderr: '' }
+  }
+
+  const out = []
+  if (scelte.length === 0) {
+    out.push(...renderRiepilogo(data, vista))
+  } else {
+    for (const [i, s] of scelte.entries()) {
+      if (i > 0) out.push('', `${C.d}${'─'.repeat(78)}${C.x}`, '')
+      out.push(...DOMANDE[s](data, vista))
+    }
+    out.push('')
+    out.push(...perimetro(data))
+  }
+  return { exitCode: 0, stdout: `${out.join('\n')}\n`, stderr: '' }
 }
 
-const data = collect()
-const vista = buildVistaEffettiva(data)
-
-if (json) {
+export function buildQueryPayload(data, vista) {
   const modelli = modelliModel(data)
-  const payload = {
+  return {
     perimetro: {
       file_con_intestazione: data.files.length,
       file_con_record: data.files.filter((f) => !f.empty).length,
@@ -1181,19 +1184,11 @@ if (json) {
       }
     })(),
   }
-  process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`)
-  process.exit(0)
 }
 
-const out = []
-if (scelte.length === 0) {
-  out.push(...renderRiepilogo(data, vista))
-} else {
-  for (const [i, s] of scelte.entries()) {
-    if (i > 0) out.push('', `${C.d}${'─'.repeat(78)}${C.x}`, '')
-    out.push(...DOMANDE[s](data, vista))
-  }
-  out.push('')
-  out.push(...perimetro(data))
+if (isMainModule(import.meta.url)) {
+  const result = runQuery({ argv: process.argv.slice(2), root: ROOT, isTTY: Boolean(process.stdout.isTTY) })
+  if (result.stdout) process.stdout.write(result.stdout)
+  if (result.stderr) process.stderr.write(result.stderr)
+  process.exitCode = result.exitCode
 }
-process.stdout.write(`${out.join('\n')}\n`)

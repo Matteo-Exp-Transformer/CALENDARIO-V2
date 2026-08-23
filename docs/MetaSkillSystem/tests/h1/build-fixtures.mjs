@@ -399,6 +399,20 @@ write(
 }
 write('FX-S23-mode-hybrid.md', declaredReportWithCapsule('FX-S23', 'light standard', toJsonl(validBundle())))
 write('FX-S24-mode-unknown.md', declaredReportWithCapsule('FX-S24', 'banana', toJsonl(validBundle())))
+{
+  const b = validBundle()
+  for (const record of b) {
+    record.schema_version = 'mss.session/0.1.0'
+    record.system_revision = 'mss-v0.1-wp0.1-freeze-1'
+    if (record.packages_loaded) {
+      record.packages_loaded.forEach((pkg) => {
+        if (pkg.package_id === 'metaskill-system') pkg.package_version_or_revision = 'mss-v0.1-wp0.1-freeze-1'
+      })
+    }
+  }
+  delete b[0].event.controls
+  write('FX-I11-legacy-new.jsonl', toJsonl(b))
+}
 
 const manifest = {
       schema_version: SCHEMA_CURRENT,
@@ -448,6 +462,7 @@ const manifest = {
         { id: 'FX-S22', expect: 'fail', codes: ['MSS-SCHEMA-REVISION-INCOMPATIBLE'], file: 'FX-S22-schema-revision-crossed.jsonl', kind: 'jsonl' },
         { id: 'FX-S23', expect: 'fail', codes: ['MSS-REPORT-MODE-INVALID'], file: 'FX-S23-mode-hybrid.md', kind: 'report' },
         { id: 'FX-S24', expect: 'fail', codes: ['MSS-REPORT-MODE-INVALID'], file: 'FX-S24-mode-unknown.md', kind: 'report' },
+        { id: 'FX-I11', expect: 'fail', codes: ['MSS-LEGACY-NEW-FORBIDDEN'], file: 'FX-I11-legacy-new.jsonl', kind: 'jsonl' },
       ],
     }
 
