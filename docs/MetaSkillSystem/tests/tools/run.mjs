@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -14,6 +14,17 @@ import {
 } from '../../../../scripts/mss/query.mjs'
 import { buildStatusReport } from '../../../../scripts/mss/status.mjs'
 import {
+  buildCapsuleBundle,
+  formatCapsuleBlock,
+  recordsToJsonl,
+  runCapsule,
+  runChecks,
+  collectGitContext,
+  buildSourceRefsFromGit,
+} from '../../../../scripts/mss/capsule.mjs'
+import { validateMss } from '../../../../scripts/mss/core.mjs'
+import { REVISION_CURRENT } from '../../../../scripts/mss/rules.mjs'
+import {
   IDS,
   amendment,
   validBundle,
@@ -22,6 +33,48 @@ import {
 const FIXED_PATH = 'docs/Sessioni di lavoro/10-08-26/Report-tools-synthetic.md'
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..')
 const CHANGED_REPORTS_CLI = join(REPO_ROOT, 'scripts/mss/validate-changed-reports.mjs')
+const FIXTURES_DIR = join(dirname(fileURLToPath(import.meta.url)), 'fixtures')
+const JUDGMENTS_MINIMAL = join(FIXTURES_DIR, 'judgments-sk7-minimal.json')
+const JUDGMENTS_MISSING_PERSONA = join(FIXTURES_DIR, 'judgments-sk7-missing-persona.json')
+
+const GOLDEN_TIMESTAMP = '2026-08-23T17:07:42+00:00'
+const GOLDEN_IDS = {
+  session: '0198b000-0001-7000-8000-000000000001',
+  correlation: '0198b000-0001-7000-8000-000000000002',
+  recordEvent: '0198b000-0001-7000-8000-000000000010',
+  recordPersona: '0198b000-0001-7000-8000-000000000011',
+  recordSistema: '0198b000-0001-7000-8000-000000000012',
+  recordOutput: '0198b000-0001-7000-8000-000000000013',
+  event: '0198b000-0001-7000-8000-000000000020',
+  annPersona: '0198b000-0001-7000-8000-000000000030',
+  annSistema: '0198b000-0001-7000-8000-000000000031',
+  annOutput: '0198b000-0001-7000-8000-000000000032',
+}
+
+function readJson(path) {
+  return JSON.parse(readFileSync(path, 'utf8'))
+}
+
+function goldenCapsuleOptions(overrides = {}) {
+  return {
+    judgments: readJson(JUDGMENTS_MINIMAL),
+    model: 'fixture-model',
+    role: 'test fixture SK-7',
+    actorId: 'cursor-fixture-model-sk7',
+    tools: ['filesystem'],
+    packages: [{
+      package_id: 'metaskill-system',
+      package_version_or_revision: REVISION_CURRENT,
+      source_ref: 'source-contract',
+    }],
+    checks: [],
+    timestamp: GOLDEN_TIMESTAMP,
+    ids: GOLDEN_IDS,
+    gitContext: { branch: 'fixture', head: 'abc1234', headShort: 'abc1234', changedFiles: [] },
+    env: { TERM_PROGRAM: 'cursor', CURSOR_AGENT: 'fixture-agent' },
+    ...overrides,
+  }
+}
 
 function runProcess(command, args, cwd) {
   const result = spawnSync(command, args, {
@@ -371,6 +424,134 @@ const tests = [
     assert.match(output, /HEAD\s+non ricostruibile/)
     assert.equal((output.match(/non ricostruibile — apri/g) || []).length, 2)
     assert.doesNotMatch(output, /env\/test|eee6cf7|SK-6\s+CHIUSO/)
+  }],
+  ['capsule: golden — input fisso produce bundle identico', () => {
+    const first = recordsToJsonl(buildCapsuleBundle(goldenCapsuleOptions()))
+    const second = recordsToJsonl(buildCapsuleBundle(goldenCapsuleOptions()))
+    assert.equal(first, second)
+    assert.match(first, /mss-ses-0198b000-0001-7000-8000-000000000001/)
+    assert.match(first, /"segment_no":1/)
+    assert.doesNotMatch(first, /2026-08-23T17:07:00/)
+  }],
+  ['capsule: giro completo — capsula generata passa validate:mss', () => {
+    withTempGitRepo(({ repo }) => {
+      const records = buildCapsuleBundle(goldenCapsuleOptions())
+      const jsonl = recordsToJsonl(records)
+      const reportPath = 'docs/Sessioni di lavoro/10-08-26/Report-capsule-tools-roundtrip.md'
+      const report = `# Report roundtrip capsule\n${formatCapsuleBlock(jsonl)}`
+      writeRepoFile(repo, reportPath, report)
+      const result = validateMss({
+        kind: 'report',
+        file: reportPath,
+        content: report,
+      }, { workspaceRoot: repo })
+      assert.equal(result.ok, true, JSON.stringify(result.diagnostics, null, 2))
+    })
+  }],
+  ['capsule: negativo — giudizio mancante esce rosso e non scrive report', () => {
+    const tempParent = resolve(tmpdir())
+    const repo = mkdtempSync(join(tempParent, 'calendarbackup-mss-capsule-neg-'))
+    try {
+      writeRepoFile(
+        repo,
+        'docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md',
+        '# Contratto sintetico\n',
+      )
+      const judgmentsRel = 'docs/MetaSkillSystem/tests/tools/fixtures/judgments-sk7-missing-persona.json'
+      writeRepoFile(repo, judgmentsRel, readFileSync(JUDGMENTS_MISSING_PERSONA, 'utf8'))
+      const reportRel = 'docs/Sessioni di lavoro/23-08-26/Report-capsule-negative.md'
+      const baseline = '# Report negativo\n\nContenuto iniziale.\n'
+      writeRepoFile(repo, reportRel, baseline)
+      const before = readFileSync(join(repo, ...reportRel.split('/')), 'utf8')
+      const result = runCapsule([
+        process.argv[0],
+        'capsule.mjs',
+        '--judgments', judgmentsRel,
+        '--model', 'fixture-model',
+        '--append-to', reportRel,
+      ], { root: repo, env: { TERM_PROGRAM: 'cursor' } })
+      assert.notEqual(result.exitCode, 0)
+      assert.match(result.stderr, /persona/)
+      const after = readFileSync(join(repo, ...reportRel.split('/')), 'utf8')
+      assert.equal(after, before)
+      assert.doesNotMatch(after, /Capsula MetaSkillSystem/)
+    } finally {
+      rmSync(repo, { recursive: true, force: true })
+    }
+  }],
+  ['capsule: controls — esiti veri nei due sensi, virgolette preservate', () => {
+    const [npmCheck, failCheck, quotedCheck] = runChecks([
+      // `npm` era il caso rotto su Windows: `npm.cmd` senza shell esce EINVAL,
+      // `status` torna null e il controllo finiva in capsula come `fail` pur passando.
+      { control_id: 'CTRL-NPM', command: 'npm --version' },
+      // Il verso opposto, ugualmente falso prima del fix: un comando che fallisce
+      // davvero veniva registrato `pass` perché le virgolette sparivano nello split.
+      { control_id: 'CTRL-FAIL', command: 'node -e "process.exit(3)"' },
+      // Un argomento con uno spazio dentro — la forma dei path di questo repo.
+      {
+        control_id: 'CTRL-QUOTE',
+        command: `node -e "process.exit(process.argv[1] === 'due parole' ? 0 : 4)" "due parole"`,
+      },
+    ], { cwd: REPO_ROOT })
+
+    assert.equal(npmCheck.esito, 'pass', npmCheck.esecutore)
+    assert.equal(npmCheck.numeratore, 1)
+    assert.match(npmCheck.esecutore, /\(exit 0\)$/)
+
+    assert.equal(failCheck.esito, 'fail', failCheck.esecutore)
+    assert.equal(failCheck.numeratore, 0)
+    assert.match(failCheck.esecutore, /\(exit 3\)$/)
+
+    assert.equal(quotedCheck.esito, 'pass', quotedCheck.esecutore)
+  }],
+  ['capsule: controls — comando non partito e non_noto, mai fail', () => {
+    const [check] = runChecks(
+      [{ control_id: 'CTRL-NORUN', command: 'node --version' }],
+      { cwd: join(REPO_ROOT, 'cartella-che-non-esiste-mss-tools') },
+    )
+
+    // `fail` affermerebbe che il criterio non e soddisfatto: qui non lo sappiamo.
+    assert.equal(check.esito, 'non_noto', check.esecutore)
+    assert.equal(check.numeratore, 0)
+    assert.equal(check.denominatore, 1)
+    assert.match(check.esecutore, /non eseguito/)
+  }],
+  ['capsule: git — la prima riga di porcelain non perde il primo carattere del path', () => {
+    withTempGitRepo(({ repo }) => {
+      // Un file che comincia con il punto e che ordina per primo: porcelain lo emette
+      // come ` M .aaa-config.json`, con lo spazio iniziale. Un trim sull'intero output
+      // se lo mangiava e `slice(3)` si portava via anche il punto.
+      writeRepoFile(repo, '.aaa-config.json', '{"v":1}\n')
+      runGit(repo, 'add', '--', '.aaa-config.json')
+      runGit(repo, 'commit', '-m', 'aggiunge config')
+      writeRepoFile(repo, '.aaa-config.json', '{"v":2}\n')
+
+      const context = collectGitContext(repo)
+      assert.ok(
+        context.changedFiles.includes('.aaa-config.json'),
+        `path corrotto: ${JSON.stringify(context.changedFiles)}`,
+      )
+      assert.equal(context.changedFiles.includes('aaa-config.json'), false)
+    })
+  }],
+  ['capsule: git — i file cancellati non diventano source_refs irrisolvibili', () => {
+    withTempGitRepo(({ repo }) => {
+      writeRepoFile(repo, 'docs/da-cancellare.md', '# temporaneo\n')
+      runGit(repo, 'add', '--', 'docs/da-cancellare.md')
+      runGit(repo, 'commit', '-m', 'aggiunge file')
+      rmSync(join(repo, 'docs', 'da-cancellare.md'))
+      writeRepoFile(repo, 'docs/resta.md', '# resta\n')
+
+      const context = collectGitContext(repo)
+      assert.ok(context.changedFiles.includes('docs/da-cancellare.md'), 'git deve vedere la cancellazione')
+
+      const refs = buildSourceRefsFromGit(context.changedFiles, context.headShort, { root: repo })
+      const paths = refs.map((r) => r.uri_or_path)
+      assert.equal(paths.includes('docs/da-cancellare.md'), false, 'il file cancellato non e referenziabile')
+      assert.ok(paths.includes('docs/resta.md'), 'il file presente resta referenziato')
+      // I ref_id restano una numerazione densa anche dopo lo scarto.
+      assert.deepEqual(refs.map((r) => r.ref_id), refs.map((_, i) => `source-git-${i + 1}`))
+    })
   }],
 ]
 

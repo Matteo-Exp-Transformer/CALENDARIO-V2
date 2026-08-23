@@ -2,29 +2,21 @@
 /**
  * Hook `stop` di Cursor — Nudge fine-sessione per lo skill system comunicazione.
  *
- * Controlla Q/R sul report più recente di oggi. Se presente una capsula MSS, invoca lo stesso
+ * Controlla Q/R sul report più recente di oggi (ricorsivo in sotto-cartelle, N1). Se presente una capsula MSS, invoca lo stesso
  * core H-1 usato dalla CLI (senza sostituire il comportamento Q/R).
  *
  * LIMITE NOTO: gli hook `stop` NON girano sui Cloud Agents (solo IDE locale).
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join, sep, relative } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { sep, relative } from 'node:path'
 import { auditQuestions } from '../../scripts/mss/report-questions.mjs'
 import { validateRecentReportFile } from '../../scripts/mss/adapter.mjs'
 import { collectGitHeadHistory } from '../../scripts/mss/git-adapter.mjs'
 import { detectReportMode } from '../../scripts/mss/parse.mjs'
+import { findRecentReportFiles } from '../../scripts/mss/report-paths.mjs'
 
-const RECENT_MINUTES = 20
 const EXCLUDE_REPORT = null
-
-function todayFolder() {
-  const d = new Date()
-  const dd = String(d.getDate()).padStart(2, '0')
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const yy = String(d.getFullYear()).slice(-2)
-  return `${dd}-${mm}-${yy}`
-}
 
 function readStdin() {
   return new Promise((resolve) => {
@@ -58,41 +50,12 @@ function resolveLoopCount(stdinRaw) {
 }
 
 function findRecentReports(root) {
-  const base = join(root, 'docs', 'Sessioni di lavoro')
-  const cutoff = Date.now() - RECENT_MINUTES * 60_000
-  const today = todayFolder()
-  const out = []
-  let dayDirs
-  try {
-    dayDirs = readdirSync(base, { withFileTypes: true })
-  } catch {
-    return out
-  }
-  for (const day of dayDirs) {
-    if (!day.isDirectory()) continue
-    if (day.name !== today) continue
-    const dayPath = join(base, day.name)
-    let files
-    try {
-      files = readdirSync(dayPath, { withFileTypes: true })
-    } catch {
-      continue
-    }
-    for (const f of files) {
-      if (!f.isFile() || !/^Report-.*\.md$/i.test(f.name)) continue
-      if (EXCLUDE_REPORT && EXCLUDE_REPORT.test(f.name)) continue
-      const full = join(dayPath, f.name)
-      try {
-        const mtimeMs = statSync(full).mtimeMs
-        if (mtimeMs >= cutoff) out.push({ full, mtimeMs })
-      } catch {
-        /* sparito */
-      }
-    }
-  }
-  if (out.length === 0) return []
-  out.sort((a, b) => b.mtimeMs - a.mtimeMs)
-  return [out[0].full]
+  const all = findRecentReportFiles(root)
+  if (all.length === 0 || !EXCLUDE_REPORT) return all
+  const path = all[0]
+  const name = path.split(/[/\\]/).pop() || ''
+  if (EXCLUDE_REPORT.test(name)) return []
+  return [path]
 }
 
 function send(obj) {

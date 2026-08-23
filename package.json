@@ -23,6 +23,7 @@
     "validate:mss:changed": "node scripts/mss/validate-changed-reports.mjs",
     "mss:status": "node scripts/mss/status.mjs",
     "mss:query": "node scripts/mss/query.mjs",
+    "mss:capsule": "node scripts/mss/capsule.mjs",
     "test:mss": "node docs/MetaSkillSystem/tests/h1/run.mjs",
     "test:mss:tools": "node docs/MetaSkillSystem/tests/tools/run.mjs",
     "generate:mss-fixtures": "node docs/MetaSkillSystem/tests/h1/build-fixtures.mjs",

@@ -1,0 +1,151 @@
+{
+  "session_event": {
+    "intent_user": "test golden mss:capsule",
+    "event_kind": "session_close",
+    "session_type": "standard",
+    "capsule_status": "completa",
+    "role_key": "test-fixture",
+    "area": "MetaSkillSystem / test tools",
+    "environment": "fixture sintetica test:mss:tools",
+    "authorization": {
+      "read": ["docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md"],
+      "write": ["scripts/mss/capsule.mjs"],
+      "forbid": ["src/**"]
+    },
+    "authorized_outputs": ["scripts/mss/capsule.mjs"],
+    "route": {
+      "chosen": "fixture golden SK-7",
+      "alternatives_or_conflicts": "nessuno"
+    },
+    "observed_outcome": "capsula generata da test automatico",
+    "open_items": "nessuno",
+    "subject_runtime": {
+      "actor_id": "non_applicabile: fixture",
+      "provider": "non_applicabile: fixture",
+      "model": "non_applicabile: fixture",
+      "runtime": "non_applicabile: fixture",
+      "surface": "non_applicabile: fixture"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": ["dati sintetici"],
+      "prohibited_content": ["dati personali"],
+      "redactions": "nessuno",
+      "external_release": "forbidden",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [{
+      "ref_id": "owner-contract",
+      "owner_id": "MSS",
+      "uri_or_path": "docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md",
+      "stable_anchor_or_event_id": "schema",
+      "revision_or_hash": "fixture",
+      "sensitivity": "internal"
+    }],
+    "source_refs": [{
+      "ref_id": "source-contract",
+      "owner_id": "MSS",
+      "uri_or_path": "docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md",
+      "stable_anchor_or_event_id": "fixture",
+      "revision_or_hash": "fixture",
+      "sensitivity": "internal"
+    }]
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [{
+        "signal": "fixture persona",
+        "actor": "test",
+        "assistance": "spontaneo",
+        "origin": "naturale",
+        "source_ref": "source-contract",
+        "effect": "nessuno",
+        "evidence_state": "not_applicable"
+      }],
+      "asserted_by": {
+        "actor_id": "fixture-agent",
+        "role": "test",
+        "basis": "self_report"
+      },
+      "verification": {
+        "status": "not_applicable",
+        "verified_by": [],
+        "verified_at": "non_applicabile:fixture",
+        "criterion_ref": "non_applicabile:fixture",
+        "evidence_refs": [],
+        "notes": "synthetic"
+      }
+    },
+    "sistema": {
+      "delta": "creato",
+      "assertions": [{
+        "rule_id_version": "SK-7@mss.session/0.1.1",
+        "trigger_event": "test golden",
+        "decision_or_output_changed": "none",
+        "G": 1,
+        "O": 1,
+        "E": 0
+      }],
+      "asserted_by": {
+        "actor_id": "fixture-agent",
+        "role": "test",
+        "basis": "self_report"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "non_applicabile:fixture",
+        "evidence_refs": [],
+        "notes": "synthetic"
+      }
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [{
+        "output_id": "mss-capsule-test",
+        "primary_type": "prova",
+        "canonical_version": "1.0.0",
+        "recipient": "validator H-1",
+        "problem_or_job": "test capsule generator",
+        "intended_use": "test",
+        "conceived_by": "fixture",
+        "decided_by": "fixture",
+        "directed_by": "fixture",
+        "authored_by": "fixture-agent",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "validate:mss OK",
+        "verification_or_use_evidence": "non_osservato",
+        "verification_status": "unverified",
+        "owner_ref": "owner-contract",
+        "privacy_release": "internal",
+        "support_files": [],
+        "relations_no_double_count": [],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "fail",
+          "result": "not_eligible"
+        }
+      }],
+      "asserted_by": {
+        "actor_id": "fixture-agent",
+        "role": "test",
+        "basis": "self_report"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "non_applicabile:fixture",
+        "evidence_refs": [],
+        "notes": "synthetic"
+      }
+    }
+  }
+}

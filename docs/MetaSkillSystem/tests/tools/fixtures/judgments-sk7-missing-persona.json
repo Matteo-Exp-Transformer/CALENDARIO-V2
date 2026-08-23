@@ -1,0 +1,96 @@
+{
+  "session_event": {
+    "intent_user": "test negativo — persona mancante",
+    "session_type": "standard",
+    "capsule_status": "completa",
+    "role_key": "test-fixture",
+    "area": "MetaSkillSystem / test tools",
+    "environment": "fixture negativa",
+    "authorization": { "read": [], "write": [], "forbid": [] },
+    "authorized_outputs": [],
+    "route": { "chosen": "test negativo", "alternatives_or_conflicts": "nessuno" },
+    "observed_outcome": "non deve essere emessa",
+    "open_items": "nessuno",
+    "subject_runtime": {
+      "actor_id": "non_applicabile: fixture",
+      "provider": "non_applicabile: fixture",
+      "model": "non_applicabile: fixture",
+      "runtime": "non_applicabile: fixture",
+      "surface": "non_applicabile: fixture"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": [],
+      "prohibited_content": [],
+      "redactions": "nessuno",
+      "external_release": "forbidden",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [],
+    "source_refs": []
+  },
+  "annotations": {
+    "sistema": {
+      "delta": "creato",
+      "assertions": [{
+        "rule_id_version": "SK-7@mss.session/0.1.1",
+        "trigger_event": "test",
+        "decision_or_output_changed": "none",
+        "G": 0,
+        "O": 0,
+        "E": 0
+      }],
+      "asserted_by": { "actor_id": "fixture", "role": "test", "basis": "self_report" },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "non_applicabile:fixture",
+        "evidence_refs": [],
+        "notes": ""
+      }
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [{
+        "output_id": "x",
+        "primary_type": "prova",
+        "canonical_version": "1",
+        "recipient": "x",
+        "problem_or_job": "x",
+        "intended_use": "x",
+        "conceived_by": "x",
+        "decided_by": "x",
+        "directed_by": "x",
+        "authored_by": "x",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "x",
+        "verification_or_use_evidence": "non_osservato",
+        "verification_status": "unverified",
+        "owner_ref": "owner-contract",
+        "privacy_release": "internal",
+        "support_files": [],
+        "relations_no_double_count": [],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "fail",
+          "result": "not_eligible"
+        }
+      }],
+      "asserted_by": { "actor_id": "fixture", "role": "test", "basis": "self_report" },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "non_applicabile:fixture",
+        "evidence_refs": [],
+        "notes": ""
+      }
+    }
+  }
+}

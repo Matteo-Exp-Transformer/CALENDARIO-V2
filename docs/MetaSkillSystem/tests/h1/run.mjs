@@ -11,6 +11,7 @@ import {
   readdirSync,
   rmSync,
   symlinkSync,
+  utimesSync,
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -24,6 +25,11 @@ import {
   validateMss,
 } from '../../../../scripts/mss/core.mjs'
 import { validatePathContent, validateStagedMssFiles } from '../../../../scripts/mss/adapter.mjs'
+import {
+  findRecentReportFiles,
+  isStopHookProbePath,
+  todaySessionFolder,
+} from '../../../../scripts/mss/report-paths.mjs'
 import { extractCapsulesFromMarkdown } from '../../../../scripts/mss/parse.mjs'
 import { canonicalJson } from '../../../../scripts/mss/canonical.mjs'
 import { resolveRef } from '../../../../scripts/mss/refs.mjs'
@@ -1391,9 +1397,15 @@ function testPrecommitIntegration() {
 function testStopHookIntegration() {
   const root = mkdtempSync(join(tmpdir(), 'mss-stop-'))
   try {
-    const d = new Date()
-    const day = `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getFullYear()).slice(-2)}`
-    writeTemp(root, `docs/Sessioni di lavoro/${day}/Report-stop-invalid.md`, `# Stop invalid\n\n**Modalità:** standard\n${reportQrs()}`)
+    const now = Date.now()
+    const day = todaySessionFolder(new Date(now))
+    const subPath = `docs/Sessioni di lavoro/${day}/sub/Report-stop-invalid.md`
+    writeTemp(root, subPath, `# Stop invalid\n\n**Modalità:** standard\n${reportQrs()}`)
+    utimesSync(join(root, subPath), new Date(now - 1000), new Date(now - 1000))
+    const discovered = findRecentReportFiles(root, { now })
+    if (!discovered.length || !discovered[0].replace(/\\/g, '/').includes('/sub/')) {
+      return [`findRecentReportFiles missed subfolder report: ${discovered.join(',')}`]
+    }
     const result = spawnSync(process.execPath, [stopHookPath], {
       cwd: root,
       encoding: 'utf8',
@@ -1404,6 +1416,138 @@ function testStopHookIntegration() {
     try { payload = JSON.parse(result.stdout || '{}') } catch { return ['stop hook returned invalid JSON'] }
     if (!payload.followup_message?.includes(RULE.REPORT_NO_CAPSULE)) {
       return ['stop hook did not intercept recent declared standard report without capsule']
+    }
+    return []
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
+function testFindRecentReportFilesRecursive() {
+  const root = mkdtempSync(join(tmpdir(), 'mss-report-paths-'))
+  try {
+    const now = Date.now()
+    const day = todaySessionFolder(new Date(now))
+    const flatRel = `docs/Sessioni di lavoro/${day}/Report-flat-old.md`
+    const deepRel = `docs/Sessioni di lavoro/${day}/nested/deep/Report-deep-recent.md`
+    writeTemp(root, flatRel, '# flat old — non chiusura\n')
+    writeTemp(root, deepRel, `# deep recent\n\n**Modalità:** standard\n${reportQrs()}`)
+    utimesSync(join(root, flatRel), new Date(now - 3_600_000), new Date(now - 3_600_000))
+    utimesSync(join(root, deepRel), new Date(now - 500), new Date(now - 500))
+    const found = findRecentReportFiles(root, { now })
+    const norm = (found[0] || '').replace(/\\/g, '/')
+    if (!norm.includes('nested/deep/Report-deep-recent.md')) {
+      return [`expected deepest recent closure report, got ${norm}`]
+    }
+    return []
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
+const FIXTURE_PROBE_MD = readFileSync(
+  join(repoRoot, 'docs/MetaSkillSystem/tests/fixtures/reports/Report-hook-cli-staged-probe.md'),
+  'utf8',
+)
+
+function testStopHookIgnoresNonClosureFixture() {
+  const root = mkdtempSync(join(tmpdir(), 'mss-stop-fixture-'))
+  try {
+    const now = Date.now()
+    const day = todaySessionFolder(new Date(now))
+    const probeRel = `docs/Sessioni di lavoro/${day}/sub/Report-test.md`
+    const realRel = `docs/Sessioni di lavoro/${day}/nested/Report-revisione.md`
+    writeTemp(root, probeRel, FIXTURE_PROBE_MD)
+    writeTemp(
+      root,
+      realRel,
+      `# Revisione\n\n**Modalità:** standard\n\n## Domande di chiusura\n\n❓ Q1 — Prompt?\n✅ R1:\n\n❓ Q2 — Dati?\n✅ R2: ok.\n`,
+    )
+    utimesSync(join(root, probeRel), new Date(now - 100), new Date(now - 100))
+    utimesSync(join(root, realRel), new Date(now - 5_000), new Date(now - 5_000))
+    const found = findRecentReportFiles(root, { now })
+    const norm = (found[0] || '').replace(/\\/g, '/')
+    if (!norm.includes('nested/Report-revisione.md')) {
+      return [`fixture probe must not shadow real closure report; got ${norm || '(empty)'}`]
+    }
+    const result = spawnSync(process.execPath, [stopHookPath], {
+      cwd: root,
+      encoding: 'utf8',
+      input: JSON.stringify({ workspace_root: root, loop_count: 0 }),
+    })
+    let payload
+    try { payload = JSON.parse(result.stdout || '{}') } catch { return ['stop hook invalid JSON on fixture shadow case'] }
+    if (!payload.followup_message?.includes('risposte vuote')) {
+      return ['stop hook should block incomplete real report despite newer fixture probe']
+    }
+    return []
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
+function testStopHookSilenceWhenOnlyFixtureProbe() {
+  const root = mkdtempSync(join(tmpdir(), 'mss-stop-fixture-only-'))
+  try {
+    const now = Date.now()
+    const day = todaySessionFolder(new Date(now))
+    const probeRel = `docs/Sessioni di lavoro/${day}/sub/Report-test.md`
+    writeTemp(root, probeRel, FIXTURE_PROBE_MD)
+    if (findRecentReportFiles(root, { now }).length) {
+      return ['non-closure fixture alone must not be discovered as session report']
+    }
+    const result = spawnSync(process.execPath, [stopHookPath], {
+      cwd: root,
+      encoding: 'utf8',
+      input: JSON.stringify({ workspace_root: root, loop_count: 0 }),
+    })
+    let payload
+    try { payload = JSON.parse(result.stdout || '{}') } catch { return ['stop hook invalid JSON on fixture-only case'] }
+    if (payload.followup_message) {
+      return ['stop hook must stay silent when only MSS/CLI fixture probe is recent']
+    }
+    return []
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
+function testStopHookIgnoresUnderscoreProbePath() {
+  const failures = []
+  const probeRel = 'docs/Sessioni di lavoro/23-08-26/_prova-sk4-r1/sub/Report-test-r1-b2.md'
+  if (!isStopHookProbePath(probeRel)) failures.push('_prova path not flagged as probe')
+  const root = mkdtempSync(join(tmpdir(), 'mss-stop-underscore-'))
+  try {
+    const now = Date.now()
+    const day = todaySessionFolder(new Date(now))
+    const underRel = `docs/Sessioni di lavoro/${day}/_prova/sub/Report-deep-no-qr.md`
+    writeTemp(root, underRel, `# probe deep\n\n**Modalità:** deep\n\nNo Q/R section.\n`)
+    if (findRecentReportFiles(root, { now }).length) {
+      failures.push('underscore probe path must be excluded even if deep mode')
+    }
+    return failures
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
+function testStopHookCompleteReportSilence() {
+  const root = createTempGitRepo()
+  try {
+    writeFixtureReferenceOwner(root)
+    const now = Date.now()
+    const day = todaySessionFolder(new Date(now))
+    const rel = `docs/Sessioni di lavoro/${day}/sub/Report-complete.md`
+    writeTemp(root, rel, reportWithBundle(validBundle()))
+    const result = spawnSync(process.execPath, [stopHookPath], {
+      cwd: root,
+      encoding: 'utf8',
+      input: JSON.stringify({ workspace_root: root, loop_count: 0 }),
+    })
+    let payload
+    try { payload = JSON.parse(result.stdout || '{}') } catch { return ['stop hook invalid JSON on complete report'] }
+    if (payload.followup_message) {
+      return [`stop hook should silence on complete Q/R+capsule report: ${payload.followup_message.slice(0, 120)}`]
     }
     return []
   } finally {
@@ -1645,6 +1789,11 @@ function main() {
     ['H-1.1 append-only integration', testH11AppendOnlyIntegration],
     ['H-1.1 manifest integrity', testH11ManifestIntegrity],
     ['stop hook integration', testStopHookIntegration],
+    ['findRecentReportFiles recursive N1', testFindRecentReportFilesRecursive],
+    ['stop hook ignores non-closure fixture probe', testStopHookIgnoresNonClosureFixture],
+    ['stop hook silence fixture-only probe', testStopHookSilenceWhenOnlyFixtureProbe],
+    ['stop hook ignores underscore probe paths', testStopHookIgnoresUnderscoreProbePath],
+    ['stop hook silence complete subfolder report', testStopHookCompleteReportSilence],
     ['H-1.3 core/CLI/stop/pre-commit parity', testH13SurfaceParity],
     ['H-1.3 staged CLI full-snapshot parity', testH13StagedCliParity],
     ['H-1.3 staged CLI require-capsule', testH13StagedRequireCapsule],
