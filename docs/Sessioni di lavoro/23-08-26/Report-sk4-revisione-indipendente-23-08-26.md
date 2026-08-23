@@ -17,7 +17,7 @@
 
 1. Letti mandato R1, `PLAN-CURSOR-SK-4-23-08-26.md`, `Report-ciclo-SK-4-23-08-26.md`, mini-report E1–E3 (non citati a memoria per le prove).
 2. Ispezionati `adapter.mjs`, `git-adapter.mjs`, `query.mjs`, `core.mjs`, `rules.mjs`, `CONTRATTO_CAPSULA_SESSIONE_V0.md`, `PLAN_V0.md` §4-bis S4.
-3. Eseguite controprove in shell **senza** modificare codice applicativo.
+3. Eseguite controprove in shell **senza** modificare codice applicativo (ultima riesecuzione autonoma: sessione chat 23-08-26 sera).
 4. Nessun commit/push; nessuna dichiarazione di chiusura `SK-4`.
 
 ---
@@ -90,10 +90,10 @@ Non dichiarare io `SK-4` chiuso. Dopo il tuo sì: commit autorizzato del diff SK
 ## Domande di chiusura
 
 ❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.
-✅ R1: «R1 Revisione indipendente @docs/Sessioni di lavoro/23-08-26/Prompt-sk4-revisione-indipendente-23-08-26.md leggi il file e il resto della documentazione necessaria per avere ben chiaro il contesto e come lavorare. poi procedi»
+✅ R1: «leggi " : Prompt-sk4-revisione-indipendente " e altri documenti necessari per svolgere il lavoro.»
 
 ❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.
-✅ R2: Riaperti `adapter.mjs` (`REPORT_PATH_RE`, wiring G3), `core.mjs` (`validateLegacyNewForbidden`), `rules.mjs` (`MSS-LEGACY-NEW-FORBIDDEN`), `CONTRATTO` §2–§3, `PLAN_V0.md` riga S4. Rieseguiti in sessione: `npm run test:mss` (42+32 exit 0), B1 via `FX-I11`, B2/B3 via `cli.mjs --mode staged`, `git diff HEAD` su Report/Verbale (vuoto), grep regex in `scripts/mss/`, `node --check` sui cinque `.mjs`.
+✅ R2: Riaperti `adapter.mjs` (`REPORT_PATH_RE`, wiring G3), `core.mjs` (`validateLegacyNewForbidden`), `rules.mjs` (`MSS-LEGACY-NEW-FORBIDDEN`), `CONTRATTO` §2–§3, `PLAN_V0.md` riga S4. Rieseguiti in sessione (sera 23-08-26): B1 `validateMss` su `FX-I11` → `ok:false`, deny `MSS-LEGACY-NEW-FORBIDDEN` ×4; B2/B3 `cli.mjs --mode staged` con `Modalità: deep` → exit 1 `[deny] MSS-REPORT-NO-CAPSULE`; `npm run test:mss` 42+32 exit 0; `git diff HEAD` Report/Verbale vuoto; unica `REPORT_PATH_RE` in `adapter.mjs`; `node --check` cinque `.mjs` exit 0.
 
 ❓ Q3 — File correlati allineati? Quali file erano collegati alla modifica (skill area, context, test, tipi) e hai verificato che siano aggiornati? Elencali (o «nessuno + perché»).
 ✅ R3: Solo output R1: `Report-sk4-revisione-indipendente-23-08-26.md` e riga §9 R1 in `PLAN-CURSOR-SK-4-23-08-26.md`. Nessuna skill area app. `METASKILL_SYSTEM_SKILL.md` non duplica schema — nessun edit richiesto per R1.
