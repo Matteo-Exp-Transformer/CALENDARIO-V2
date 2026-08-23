@@ -317,7 +317,7 @@ function intestazione(data) {
   L.push('')
   L.push(`${C.d}letto da: albero HEAD + working tree · schema corrente ${SCHEMA_CURRENT} / ${REVISION_CURRENT}${C.x}`)
   L.push(
-    `${C.d}file Report-*.md esaminati: ${data.files.length} con intestazione capsula ` +
+    `${C.d}file Report-*.md e Verbale-*.md esaminati: ${data.files.length} con intestazione capsula ` +
       `(${conCapsula} con righe JSONL, ${vuoti} senza) · record: ${data.records.length} · sedute: ${data.sessions.length}${C.x}`,
   )
   L.push('')
@@ -1007,7 +1007,7 @@ function perimetro(data) {
   const storici = vuoti.filter((f) => f.historical)
   const sospetti = vuoti.filter((f) => !f.historical)
   L.push(`${C.y}Perimetro di lettura — dichiarato, non assunto${C.x}`)
-  L.push(`  ${C.d}file Report-*.md con intestazione capsula: ${data.files.length} · con righe JSONL: ${data.files.length - vuoti.length}${C.x}`)
+  L.push(`  ${C.d}file Report-*.md e Verbale-*.md con intestazione capsula: ${data.files.length} · con righe JSONL: ${data.files.length - vuoti.length}${C.x}`)
   const perOrigine = tally(data.files, (f) => f.origin)
   L.push(`  ${C.d}origine: ${perOrigine.map(([k, v]) => `${k} ${v}`).join(' · ')}${C.x}`)
   if (storici.length) {
@@ -1031,7 +1031,7 @@ function perimetro(data) {
   L.push(`${C.y}Limiti noti di questa lettura${C.x}`)
   L.push(`  ${C.d}· Legge l'albero HEAD e il working tree, non la storia dei commit: un report cancellato${C.x}`)
   L.push(`  ${C.d}  o rinominato in passato non compare, e la sua capsula non e recuperabile da qui.${C.x}`)
-  L.push(`  ${C.d}· Legge solo file che si chiamano Report-*.md sotto docs/Sessioni di lavoro/. Una capsula${C.x}`)
+  L.push(`  ${C.d}· Legge solo file che si chiamano Report-*.md o Verbale-*.md sotto docs/Sessioni di lavoro/. Una capsula${C.x}`)
   L.push(`  ${C.d}  scritta altrove, o con un altro nome, e invisibile a questo comando.${C.x}`)
   L.push(`  ${C.d}· Ogni valore e dichiarato dall'agente che ha scritto la capsula. Questo comando conta${C.x}`)
   L.push(`  ${C.d}  le dichiarazioni; non ne verifica nessuna.${C.x}`)

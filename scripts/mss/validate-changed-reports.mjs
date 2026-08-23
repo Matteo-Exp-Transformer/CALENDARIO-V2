@@ -1,12 +1,13 @@
 #!/usr/bin/env node
-/** Coordina la validazione dei soli Report-*.md aggiunti/modificati fra due commit Git. */
+/** Coordina la validazione dei Report-*.md e Verbale-*.md aggiunti/modificati fra due commit Git. */
 import { spawnSync } from 'node:child_process'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { REPORT_PATH_RE } from './adapter.mjs'
+
 const EMPTY_TREE_SHA = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'
 const ZERO_SHA_RE = /^0+$/
-const REPORT_PATH_RE = /^docs\/Sessioni di lavoro\/.+\/Report-[^/]*\.md$/i
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const cliPath = join(scriptDir, 'cli.mjs')
 
@@ -99,11 +100,15 @@ function main() {
     const base = resolveBase(repoRoot, args.base, args.head)
     const reports = changedReports(repoRoot, base, args.head)
     if (!reports.length) {
-      process.stdout.write(`[mss-ci] OK: nessun Report-*.md aggiunto o modificato fra ${base} e ${args.head}\n`)
+      process.stdout.write(
+        `[mss-ci] OK: nessun Report-*.md o Verbale-*.md aggiunto o modificato fra ${base} e ${args.head}\n`,
+      )
       process.exit(0)
     }
 
-    process.stdout.write(`[mss-ci] ${reports.length} Report-*.md aggiunti/modificati fra ${base} e ${args.head}\n`)
+    process.stdout.write(
+      `[mss-ci] ${reports.length} Report-*.md o Verbale-*.md aggiunti/modificati fra ${base} e ${args.head}\n`,
+    )
     let failures = 0
     for (const report of reports) {
       if (validateReport(repoRoot, report) !== 0) failures++

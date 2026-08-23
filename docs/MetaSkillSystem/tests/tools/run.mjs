@@ -1,10 +1,16 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, isAbsolute, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import {
   buildQueryPayload,
   buildVistaEffettiva,
   renderVerifica,
+  runQuery,
 } from '../../../../scripts/mss/query.mjs'
 import { buildStatusReport } from '../../../../scripts/mss/status.mjs'
 import {
@@ -14,6 +20,84 @@ import {
 } from '../h1/fixture-factory.mjs'
 
 const FIXED_PATH = 'docs/Sessioni di lavoro/10-08-26/Report-tools-synthetic.md'
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..')
+const CHANGED_REPORTS_CLI = join(REPO_ROOT, 'scripts/mss/validate-changed-reports.mjs')
+
+function runProcess(command, args, cwd) {
+  const result = spawnSync(command, args, {
+    cwd,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  if (result.error) throw result.error
+  return { ...result, output: `${result.stdout || ''}${result.stderr || ''}` }
+}
+
+function runGit(repo, ...args) {
+  const result = runProcess('git', args, repo)
+  assert.equal(result.status, 0, result.output)
+  return result.stdout.trim()
+}
+
+function writeRepoFile(repo, path, content) {
+  const absolute = join(repo, ...path.split('/'))
+  mkdirSync(dirname(absolute), { recursive: true })
+  writeFileSync(absolute, content, 'utf8')
+}
+
+function commitFile(repo, path, content, message) {
+  writeRepoFile(repo, path, content)
+  runGit(repo, 'add', '--', path)
+  runGit(repo, 'commit', '-m', message)
+  return runGit(repo, 'rev-parse', 'HEAD')
+}
+
+function withTempGitRepo(test) {
+  const tempParent = resolve(tmpdir())
+  const repo = mkdtempSync(join(tempParent, 'calendarbackup-mss-tools-'))
+  assert.equal(isAbsolute(repo), true)
+  assert.equal(dirname(repo), tempParent)
+  try {
+    runGit(repo, 'init')
+    runGit(repo, 'config', 'user.email', 'mss-tools@example.invalid')
+    runGit(repo, 'config', 'user.name', 'MSS tools test')
+    writeRepoFile(repo, 'baseline.txt', 'baseline\n')
+    writeRepoFile(
+      repo,
+      'docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md',
+      '# Contratto sintetico per test\n',
+    )
+    writeRepoFile(
+      repo,
+      'docs/MetaSkillSystem/METASKILL_SYSTEM_SKILL.md',
+      '# Skill sintetica per test\n',
+    )
+    runGit(repo, 'add', '--', 'baseline.txt', 'docs/MetaSkillSystem')
+    runGit(repo, 'commit', '-m', 'baseline')
+    const base = runGit(repo, 'rev-parse', 'HEAD')
+    return test({ repo, base })
+  } finally {
+    assert.equal(dirname(resolve(repo)), tempParent)
+    rmSync(repo, { recursive: true, force: true })
+  }
+}
+
+function validReport(title) {
+  const jsonl = validBundle().map((record) => JSON.stringify(record)).join('\n')
+  return `# ${title}\n\n## Capsula MetaSkillSystem\n\n\`\`\`jsonl\n${jsonl}\n\`\`\`\n`
+}
+
+function invalidReport(title) {
+  return `# ${title}\n\n**Modalità:** deep.\n`
+}
+
+function validateChanged(repo, base, head) {
+  return runProcess(
+    process.execPath,
+    [CHANGED_REPORTS_CLI, '--base', base, '--head', head, '--repo', repo],
+    REPO_ROOT,
+  )
+}
 
 function queryData(records) {
   const wrapped = records.map((r) => ({ r, path: FIXED_PATH, origin: 'fixture sintetica' }))
@@ -70,6 +154,83 @@ function effectiveRecord(vista, recordId = IDS.recEvt) {
 }
 
 const tests = [
+  ['changed reports: Report valido in sottocartella viene selezionato e validato', () => {
+    withTempGitRepo(({ repo, base }) => {
+      const path = 'docs/Sessioni di lavoro/23-08-26/audit/deep/Report-valid.md'
+      const head = commitFile(repo, path, validReport('Report valido'), 'add valid report')
+      const result = validateChanged(repo, base, head)
+      assert.equal(result.status, 0, result.output)
+      assert.match(result.output, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+      assert.match(result.output, /OK: 1\/1 report MSS validi/)
+    })
+  }],
+  ['changed reports: Report invalido rende rosso, poi la correzione rende verde', () => {
+    withTempGitRepo(({ repo, base }) => {
+      const path = 'docs/Sessioni di lavoro/23-08-26/audit/deep/Report-invalid.md'
+      const head = commitFile(repo, path, invalidReport('Report invalido'), 'add invalid report')
+      const red = validateChanged(repo, base, head)
+      assert.equal(red.status, 1, red.output)
+      assert.match(red.output, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+      assert.match(red.output, /MSS-REPORT-NO-CAPSULE/)
+      const fixedHead = commitFile(repo, path, validReport('Report corretto'), 'fix report')
+      const green = validateChanged(repo, base, fixedHead)
+      assert.equal(green.status, 0, green.output)
+      assert.match(green.output, /OK: 1\/1 report MSS validi/)
+    })
+  }],
+  ['changed reports: Verbale valido in sottocartella viene selezionato e validato', () => {
+    withTempGitRepo(({ repo, base }) => {
+      const path = 'docs/Sessioni di lavoro/23-08-26/audit/deep/Verbale-valid.md'
+      const head = commitFile(repo, path, validReport('Verbale valido'), 'add valid verbale')
+      const result = validateChanged(repo, base, head)
+      assert.equal(result.status, 0, result.output)
+      assert.match(result.output, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+      assert.match(result.output, /OK: 1\/1 report MSS validi/)
+    })
+  }],
+  ['changed reports: Verbale invalido rende rosso, poi la correzione rende verde', () => {
+    withTempGitRepo(({ repo, base }) => {
+      const path = 'docs/Sessioni di lavoro/23-08-26/audit/deep/Verbale-invalid.md'
+      const head = commitFile(repo, path, invalidReport('Verbale invalido'), 'add invalid verbale')
+      const red = validateChanged(repo, base, head)
+      assert.equal(red.status, 1, red.output)
+      assert.match(red.output, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+      assert.match(red.output, /MSS-REPORT-NO-CAPSULE/)
+      const fixedHead = commitFile(repo, path, validReport('Verbale corretto'), 'fix verbale')
+      const green = validateChanged(repo, base, fixedHead)
+      assert.equal(green.status, 0, green.output)
+      assert.match(green.output, /OK: 1\/1 report MSS validi/)
+    })
+  }],
+  ['changed reports: diff vuoto termina verde con messaggio coerente', () => {
+    withTempGitRepo(({ repo, base }) => {
+      const result = validateChanged(repo, base, base)
+      assert.equal(result.status, 0, result.output)
+      assert.match(result.output, /nessun Report-\*\.md o Verbale-\*\.md aggiunto o modificato/)
+    })
+  }],
+  ['changed reports: file non pertinente viene ignorato', () => {
+    withTempGitRepo(({ repo, base }) => {
+      const path = 'docs/Sessioni di lavoro/23-08-26/audit/deep/Nota-non-pertinente.md'
+      const head = commitFile(repo, path, invalidReport('Nota non pertinente'), 'add unrelated note')
+      const result = validateChanged(repo, base, head)
+      assert.equal(result.status, 0, result.output)
+      assert.doesNotMatch(result.output, /valido docs\//)
+      assert.match(result.output, /nessun Report-\*\.md o Verbale-\*\.md aggiunto o modificato/)
+    })
+  }],
+  ['query: output dichiara HEAD, working tree e le due famiglie canoniche', () => {
+    const result = runQuery({ root: REPO_ROOT, isTTY: false })
+    assert.equal(result.exitCode, 0, result.stderr)
+    assert.match(result.stdout, /albero HEAD \+ working tree/)
+    assert.ok((result.stdout.match(/Verbale-\*\.md/g) || []).length >= 3)
+    assert.match(result.stdout, /Report-\*\.md e Verbale-\*\.md esaminati/)
+    assert.match(result.stdout, /Report-\*\.md e Verbale-\*\.md con intestazione capsula/)
+    assert.match(result.stdout, /Report-\*\.md o Verbale-\*\.md sotto docs\/Sessioni di lavoro\//)
+    assert.doesNotMatch(result.stdout, /file Report-\*\.md esaminati/)
+    assert.doesNotMatch(result.stdout, /file Report-\*\.md con intestazione capsula/)
+    assert.doesNotMatch(result.stdout, /si chiamano Report-\*\.md sotto/)
+  }],
   ['query: catena amends applicata conserva grezzo ed espone effettivo', () => {
     const records = validBundle()
     const first = syntheticAmendment({
