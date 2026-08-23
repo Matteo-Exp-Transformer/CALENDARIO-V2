@@ -66,11 +66,57 @@ Senior-Eval-Pack è **parcheggiato, non annullato**: `SEP-G5` **non** PASS, `WP-
 
 ### Istantanea
 
+- **Aggiornato il:** 23-08-2026 (Fase D documentale).
+- **HEAD committato storico (M1):** `d1598b64a545fc988b3f4db3c8650858a3de493d` · **`origin/env/test`:** `eee6cf7` (1 commit locale avanti, non pushato).
+- **Sedute coperte:** ciclo SK-4/SK-11/SK-5 23-08 · revisione indipendente doppia · Fasi B/C/D post-revisione.
+- **Autori:** esecutori B/C (OpenAI Codex, `self_report`) · writer Fase D (Cursor Auto) · revisori indipendenti precedenti (OpenAI Codex, xAI/Grok).
+- **Metodo:** fotografia HEAD reale; rettifiche append-only su claim falsi (D5 whitespace, D6 Unicode); pulizia whitespace candidato tracked; nessuna riscrittura record `final`.
+- **Tipo di evidenza:** comandi Git e MSS con exit code; hash JSONL pre/post; `REPORT_PATH_RE.test()` su path Unicode.
+- **Comparabilità:** `non_comparabile`.
+- **Ultimi report:** `…/INDICE-SESSIONE-23-08-26.md` · `…/Report-fase-d-docs-amendment-23-08-26.md` · `…/Report-fase-b-fix-regex-query-23-08-26.md` · `…/Report-fase-c-ci-d1-23-08-26.md` · report revisori originari · report ciclo SK-4/SK-11.
+
+### Fatto osservato (Fase D)
+
+Le tre viste (indice, roadmap, handoff) erano **stale** rispetto a `d1598b6` e alle Fasi B/C. D ha
+riallineato senza duplicare owner: stato formale resta in `PLAN_V0.md` §4-bis. B/C restano
+`self_report` fino a E. Nessuna GA remota osservata. Debito `validate:docs` 17/26 reso visibile.
+
+### Prossimo task atomico derivato
+
+**Unico gate = revisione integrata E** (`Prompt-fase-e-revisione-fix-23-08-26.md`).
+
+1. Revisore E verifica B/C/D con famiglia diversa raccomandata (D17, non blocco).
+2. Gate locale: `git diff --check origin/env/test` exit 0; test:mss; validate:docs baseline reale.
+3. Solo dopo E verde + decisione Matteo: commit documentale + commit tecnico B/C + push (M2).
+4. Prova GitHub Actions reale post-push.
+
+Ingresso unico: `docs/Sessioni di lavoro/23-08-26/INDICE-SESSIONE-23-08-26.md`.
+
+### Cosa non è dimostrato
+
+- Che B/C siano **independently_verified** (restano `self_report`).
+- Che la CI remota GitHub Actions sia verde (non osservata).
+- Che `validate:docs` sia verde (17 workspace / 26 checkout pulito — debito noto).
+- Che `SEP-G5`, `WP-1`, `H-1.3` pulito o cutover siano avanzati: **non lo sono**.
+
+### Gate
+
+Invariati: `SEP-G1` = `PASS_CON_RISERVE` · `SEP-G5` **non** PASS · `H-1.3` = `PASS_CON_RISERVE` · `WP-1` **NO-GO**.
+
+### STOP e decisioni di Matteo
+
+- **Chiuse (non riaprire):** `M1`–`M3` · `D16`–`D19` · `D1-A` · `G1`–`G6` SK-4.
+- **Aperte:** revisione integrata E · commit/push dopo E (M2).
+- **STOP invariati:** `WP-1` **NO-GO** · `SEP-G5` **non** PASS · claim `CHIUSO` con riserve · commit/push senza sì.
+
+---
+
+### ⚠️ Snapshot storico — sezione precedente (pre-Fase D, 23-08-26 mattina)
+
+> La sezione sotto è **congelata** come testimonianza del handoff prima della catena post-revisione B/C/D. In caso di divergenza con l'istantanea sopra, vince l'istantanea Fase D.
+
 - **Aggiornato il:** 23-08-2026.
-- **Sedute coperte:** `mss-ses-01a0294a-aa53-7905-bd1c-e8583922a38e` (`SK-6` costruzione) ·
-  `mss-ses-01a02b3b-20bd-7400-82d6-54e73e38192e` (fix post-revisione) ·
-  `mss-ses-01a02b3d-5028-76f9-bd88-82eae5366f7d` (revisione indipendente OpenAI) ·
-  `mss-ses-01a02d5f-dcdf-71d3-bbda-a5292391b4bd` (vista effettiva + chiusura `SK-6`, D16).
+- **Sedute coperte:** `mss-ses-01a0294a-…` (`SK-6`) · fix post-revisione · revisione OpenAI · vista effettiva D16.
 - **Autori:** Anthropic Claude Opus 5 (costruzione + supervisione) · Anthropic Claude Sonnet 5
   (esecuzione fix) · **OpenAI Codex** (revisione indipendente, famiglia di modello diversa).
 - **Metodo:** costruire il **lettore** prima dello scrittore; dichiarare in output il criterio usato,

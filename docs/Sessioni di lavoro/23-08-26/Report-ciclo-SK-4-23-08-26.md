@@ -1,6 +1,6 @@
 # Report ciclo `SK-4` — integrazione wave E1+E2+E3
 
-> Slot: **E4** · Wave 2 · Data: 23-08-26 · Branch: `env/test`  
+> Slot: **E4** · Wave 2 · Data: 23-08-26 · Branch: `env/test`
 > Mandato: `Prompt-sk4-e4-integrazione-23-08-26.md`
 
 ---

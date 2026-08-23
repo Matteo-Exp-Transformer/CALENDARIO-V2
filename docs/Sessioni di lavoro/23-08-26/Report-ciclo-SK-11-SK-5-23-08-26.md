@@ -1,7 +1,7 @@
 # Report ciclo `SK-11` → `SK-5`
 
-**Modalità:** deep  
-**Ambiente:** workspace locale, branch `env/test`  
+**Modalità:** deep
+**Ambiente:** workspace locale, branch `env/test`
 **Stato:** gate tecnico `SK-11` certificato; `SK-5` implementata e dimostrata; chiusura finale
 riservata a Matteo.
 
@@ -327,6 +327,21 @@ ancora `eee6cf7`; directory temporanee `.tmp-sk5*`: `0`.
 - Attrito osservato: un cantiere parallelo ha modificato `query.mjs` durante A1. Il lavoro è stato
   fermato fino al rilascio del file e poi integrato preservando `REPORT_PATH_RE`.
 
+## Rettifica append-only — claim `git diff --check` (Fase D, 23-08-26)
+
+Le frasi storiche alle righe 138, 262 e 301 («`git diff --check` → exit `0`») restano testimonianza
+del worktree al momento della redazione: il comando **senza range** misurava solo il diff tracciato
+non staged e usciva `0` perché i file tecnici del ciclo erano puliti.
+
+Il controllo significativo per il commit storico `d1598b6` è invece
+`git diff --check origin/env/test..HEAD`, che alla revisione integrata del 23-08-26 usciva **`2`**
+(trailing whitespace sui documenti del ciclo 23-08-26 inclusi in quel commit).
+
+Criterio futuro: ogni prova whitespace deve dichiarare **base e head espliciti**; `git diff --check`
+senza range non è prova del commit. La pulizia documentale Fase D rende il candidato tracked corrente
+pulito (`git diff --check origin/env/test` → `0`), ma **non rende vera retroattivamente** la prova
+storica citata nelle righe sopra.
+
 ## Capsula MetaSkillSystem
 
 ```jsonl
@@ -335,11 +350,12 @@ ancora `eee6cf7`; directory temporanee `.tmp-sk5*`: `0`.
 {"schema_version":"mss.session/0.1.1","system_revision":"mss-v0.1-wp0.1-freeze-2","record_type":"annotation","record_id":"mss-rec-0198e500-0006-7000-8000-000000000003","session_id":"mss-ses-0198e500-0006-7000-8000-000000000010","correlation_id":"mss-cor-0198e500-0006-7000-8000-000000000020","segment_no":1,"capture_key":"mss-ses-0198e500-0006-7000-8000-000000000010/1/annotation/2","created_at":"2026-08-23T11:04:12+02:00","finalization":"final","recorded_by":{"actor_id":"codex-coordinator-sk11-sk5","actor_type":"agente","role":"coordinatore ciclo SK-11/SK-5","agent_runtime":{"provider":"OpenAI","model":"GPT-5","runtime":"Codex","surface":"workspace"},"tools_used":["apply_patch"]},"packages_loaded":[{"package_id":"metaskill-system","package_version_or_revision":"mss-v0.1-wp0.1-freeze-2","source_ref":"docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md"}],"annotation":{"annotation_id":"mss-ann-0198e500-0006-7000-8000-000000000050","axis":"output","subject_record_ids":["mss-rec-0198e500-0006-7000-8000-000000000001"],"delta":"creato","assertions":[{"output_id":"report-ciclo-sk11-sk5-23-08-26","primary_type":"registro","canonical_version":"23-08-26-working-tree","recipient":"Matteo","problem_or_job":"certificare il gate SK-11 e dimostrare la validazione CI SK-5","intended_use":"decisione finale di chiusura e successiva autorizzazione commit push","conceived_by":"PLAN-CODEX-SK-11-SK-5","decided_by":"Matteo con G1-G4","directed_by":"Prompt-avvio-CODEX-SK-11-SK-5","authored_by":"Codex multi-agente","verified_by":"revisore SK-11 e prove locali SK-5","acceptance_criterion":"gate SK-11 completo, CI rossa-verde SK-5, report MSS valido","verification_or_use_evidence":"sezioni prove SK-11 e SK-5 del report","verification_status":"self_report","owner_ref":"owner-plan","privacy_release":"requires_confirmation","support_files":["PLAN-CODEX-SK-11-SK-5-23-08-26.md","HANDOFF-CODEX-SK-11-SK-5-23-08-26.md"],"relations_no_double_count":["sezioni esecutore e revisore nello stesso report"],"product_candidate":{"recipient":"pass","problem_or_job":"pass","canonical_version":"pass","fixed_acceptance_criterion":"pass","verification_or_use_evidence":"fail","result":"not_eligible"}}],"asserted_by":{"actor_id":"codex-coordinator-sk11-sk5","role":"coordinatore","basis":"direct_observation"},"verification":{"status":"self_report","verified_by":[],"verified_at":"non_applicabile:self_report","criterion_ref":"source-mandato","evidence_refs":["source-report"],"notes":"chiusura e verifica indipendente esterna non ancora attribuite"}}}
 {"schema_version":"mss.session/0.1.1","system_revision":"mss-v0.1-wp0.1-freeze-2","record_type":"annotation","record_id":"mss-rec-0198e500-0006-7000-8000-000000000004","session_id":"mss-ses-0198e500-0006-7000-8000-000000000010","correlation_id":"mss-cor-0198e500-0006-7000-8000-000000000020","segment_no":1,"capture_key":"mss-ses-0198e500-0006-7000-8000-000000000010/1/annotation/3","created_at":"2026-08-23T11:04:13+02:00","finalization":"final","recorded_by":{"actor_id":"codex-coordinator-sk11-sk5","actor_type":"agente","role":"coordinatore ciclo SK-11/SK-5","agent_runtime":{"provider":"OpenAI","model":"GPT-5","runtime":"Codex","surface":"workspace"},"tools_used":["Read"]},"packages_loaded":[{"package_id":"mandato-sk11-sk5","package_version_or_revision":"23-08-26","source_ref":"docs/Sessioni di lavoro/23-08-26/Prompt-avvio-CODEX-SK-11-SK-5-23-08-26.md"}],"annotation":{"annotation_id":"mss-ann-0198e500-0006-7000-8000-000000000060","axis":"persona","subject_record_ids":["mss-rec-0198e500-0006-7000-8000-000000000001"],"delta":"nessuno","assertions":[{"signal":"Matteo ha autorizzato G1-G4 e imposto il gate SK-11 prima di SK-5","actor":"Matteo","assistance":"guidato","origin":"naturale","source_ref":"source-mandato","effect":"sequenza multi-agente vincolata e nessun avvio anticipato di SK-5","evidence_state":"observed"}],"asserted_by":{"actor_id":"codex-coordinator-sk11-sk5","role":"coordinatore","basis":"direct_observation"},"verification":{"status":"unverified","verified_by":[],"verified_at":"non_applicabile:nessuna valutazione Persona","criterion_ref":"source-mandato","evidence_refs":["source-mandato"],"notes":"segnale operativo della singola sessione; nessuna inferenza professionale"}}}
 {"schema_version":"mss.session/0.1.1","system_revision":"mss-v0.1-wp0.1-freeze-2","record_type":"amendment","record_id":"mss-rec-0198e500-0006-7000-8000-000000000005","session_id":"mss-ses-0198e500-0006-7000-8000-000000000010","correlation_id":"mss-cor-0198e500-0006-7000-8000-000000000020","segment_no":1,"capture_key":"mss-ses-0198e500-0006-7000-8000-000000000010/1/amendment/1","created_at":"2026-08-23T11:16:25+02:00","finalization":"final","recorded_by":{"actor_id":"codex-coordinator-sk11-sk5","actor_type":"agente","role":"coordinatore ciclo SK-11/SK-5","agent_runtime":{"provider":"OpenAI","model":"GPT-5","runtime":"Codex","surface":"workspace"},"tools_used":["Read","apply_patch","subagents","node","npm","git"]},"packages_loaded":[{"package_id":"metaskill-system","package_version_or_revision":"mss-v0.1-wp0.1-freeze-2","source_ref":"docs/MetaSkillSystem/METASKILL_SYSTEM_SKILL.md"},{"package_id":"testing-skill","package_version_or_revision":"workspace 23-08-26","source_ref":"docs/Testing-Skill/TESTING_SKILL.md"}],"amendment":{"amendment_id":"mss-amd-0198e500-0006-7000-8000-000000000070","target_record_id":"mss-rec-0198e500-0006-7000-8000-000000000001","relation":"amends","reason":"la revisione finale Fase C è terminata dopo l'emissione del record final iniziale","changes":[{"field_path":"event.observed_outcome","previous_value_or_hash":"SK-11 certificato con rosso-verde e ripristino; SK-5 implementata con CI locale rossa su capsula invalida e verde dopo rimozione","corrected_value":"SK-11 certificato; SK-5 implementata; revisore finale approva con prove dopo seconda CI isolata rosso-verde, senza difetti bloccanti"},{"field_path":"event.open_items","previous_value_or_hash":["revisione finale della Fase C","decisione di chiusura Matteo","eventuali commit e push con nuova autorizzazione"],"corrected_value":["decisione di chiusura Matteo","eventuali commit e push con nuova autorizzazione"]}],"evidence_refs":["source-report"],"effective_at":"2026-08-23T11:16:25+02:00"}}
+{"schema_version":"mss.session/0.1.1","system_revision":"mss-v0.1-wp0.1-freeze-2","record_type":"amendment","record_id":"mss-rec-0198f300-0001-7000-8000-000000000006","session_id":"mss-ses-0198e500-0006-7000-8000-000000000010","correlation_id":"mss-cor-0198e500-0006-7000-8000-000000000020","segment_no":1,"capture_key":"mss-ses-0198e500-0006-7000-8000-000000000010/1/amendment/2","created_at":"2026-08-23T17:45:00+02:00","finalization":"final","recorded_by":{"actor_id":"cursor-auto-phase-d","actor_type":"agente","role":"writer documentale Fase D D5","agent_runtime":{"provider":"Cursor","model":"Auto","runtime":"Cursor Agent","surface":"IDE chat"},"tools_used":["Read","Shell","Write","StrReplace","node","git"]},"packages_loaded":[{"package_id":"metaskill-system","package_version_or_revision":"mss-v0.1-wp0.1-freeze-2","source_ref":"docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md"}],"amendment":{"amendment_id":"mss-amd-0198f300-0001-7000-8000-000000000071","target_record_id":"mss-rec-0198e500-0006-7000-8000-000000000001","relation":"amends","reason":"rettifica claim storico git diff --check exit 0 in prosa §138/262/301: il range origin/env/test..HEAD su d1598b6 usciva 2 per trailing whitespace documentale","changes":[{"field_path":"event.open_items","previous_value_or_hash":["decisione di chiusura Matteo","eventuali commit e push con nuova autorizzazione"],"corrected_value":["decisione di chiusura Matteo","eventuali commit e push con nuova autorizzazione","rettifica D5: claim git diff --check senza range non misurava commit d1598b6; gate futuro richiede base/head espliciti"]}],"evidence_refs":["source-report"],"effective_at":"2026-08-23T17:45:00+02:00"}}
 ```
 
 ## Domande di chiusura
 
-❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.  
+❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.
 ✅ R1:
 
 ```text
@@ -353,26 +369,26 @@ Usa come fonti operative:
 G1, G2, G3 e G4 sono già autorizzate. Inizia dalla Fase 0 e completa SK-11. Non avviare SK-5 finché il revisore non certifica con prove il gate SK-11.
 ```
 
-❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.  
+❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.
 ✅ R2: Sì per il perimetro attribuito. Sono stati riaperti `.eslintrc.cjs`, `package.json`, i sei
 `.mjs` SK-11, il runner da 9 test, il workflow, l'helper CI, `PLAN_V0.md`, il piano, l'handoff e il
 report. Diff e stato Git sono stati distinti dalle modifiche concorrenti SK-4/Senior.
 
-❓ Q3 — File correlati allineati? Quali file erano collegati alla modifica (skill area, context, test, tipi) e hai verificato che siano aggiornati? Elencali (o «nessuno + perché»).  
+❓ Q3 — File correlati allineati? Quali file erano collegati alla modifica (skill area, context, test, tipi) e hai verificato che siano aggiornati? Elencali (o «nessuno + perché»).
 ✅ R3: Allineati `PLAN_V0.md` §4-bis, piano operativo, handoff vivo, report unico, package scripts,
 suite H-1, suite tools e workflow CI. Nessun tipo applicativo o schema DB era coinvolto. Skill e
 contratto sono stati letti come fonti; non richiedevano aggiornamenti per SK-11/SK-5.
 
-❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato? (vietato «tutto ok» a vuoto: se davvero nulla, scrivilo e di' perché ne sei certo.)  
+❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato? (vietato «tutto ok» a vuoto: se davvero nulla, scrivilo e di' perché ne sei certo.)
 ✅ R4: Non sono stati eseguiti commit, push, CI remota, scritture DB/Supabase o chiusure al posto di
 Matteo. Tutte le fasi tecniche richieste, inclusa la revisione finale, sono state eseguite; ne sono
 certo perché il registro del piano è completo e il revisore ha ripetuto i dieci gate della Fase C.
 
-❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti? (critica + proposta nella stessa riga; se non hai avuto attriti, scrivi «nessuna osservazione» e cosa hai verificato.)  
+❓ Q5 — Attrito + miglioria: che difficoltà hai avuto nel workflow con lo skill system, e come lo miglioreresti? (critica + proposta nella stessa riga; se non hai avuto attriti, scrivi «nessuna osservazione» e cosa hai verificato.)
 ✅ R5: Attrito: proprietà concorrente di `query.mjs` tra SK-11 e SK-4; miglioria: registrare nel
 piano condiviso un lock esplicito per path critico con proprietario e momento di rilascio.
 
-❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuto ti sono stati utili o rumore?  
+❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuto ti sono stati utili o rumore?
 ✅ R6: Contesto giusto per architettura, test e governance, anche se corposo; gli hook sono stati
 utili per proteggere perimetro e provenienza, mentre le modifiche concorrenti nel worktree hanno
 richiesto separazione manuale.

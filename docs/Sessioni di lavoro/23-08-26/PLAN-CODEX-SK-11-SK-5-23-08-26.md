@@ -1,8 +1,8 @@
 # Piano condiviso CODEX — `SK-11` test attrezzi → `SK-5` CI `env/test`
 
-> Data: 23-08-2026  
-> Stato del documento: **CICLO TECNICO COMPLETATO CON PROVE — chiusura SK-11/SK-5 riservata a Matteo**  
-> Branch di lavoro osservato durante la pianificazione: `env/test`  
+> Data: 23-08-2026
+> Stato del documento: **CICLO TECNICO COMPLETATO CON PROVE — chiusura SK-11/SK-5 riservata a Matteo**
+> Branch di lavoro osservato durante la pianificazione: `env/test`
 > Owner operativo del ciclo: questo file. Gli agenti esecutori lo leggono, ma lo aggiorna soltanto
 > il coordinatore per evitare stati concorrenti.
 

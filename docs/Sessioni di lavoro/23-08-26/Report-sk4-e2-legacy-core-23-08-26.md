@@ -1,6 +1,6 @@
 # Mini-report E2 — legacy schema B1 (`SK-4`)
 
-> Slot: **E2** · Wave 1 · Data: 23-08-26 · Branch: `env/test`  
+> Slot: **E2** · Wave 1 · Data: 23-08-26 · Branch: `env/test`
 > File in proprietà: `scripts/mss/core.mjs`, `scripts/mss/rules.mjs`, fixture `FX-I11` (G5)
 
 ## 1. Obiettivo

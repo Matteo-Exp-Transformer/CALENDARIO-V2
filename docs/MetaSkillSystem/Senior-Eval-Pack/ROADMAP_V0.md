@@ -55,9 +55,9 @@
 | `SK-0` | sbloccare i cancelli globali | **CHIUSO E OSSERVATO** 21-08 — erano tre righe di configurazione; `npm run validate` **exit 0 per la prima volta** |
 | `SK-6` | `mss:query` — il **lettore** delle capsule | **CHIUSO 23-08-26 (D16)** — vista effettiva applicata; `query.mjs` delega `core.mjs::applyAmendmentsView()`. Report: `docs/Sessioni di lavoro/23-08-26/Report-vista-effettiva-mss-query-23-08-26.md` |
 | `SK-4` | chiusura dei tre bypass + allineo contratto | **`PROVATO` 23-08-26** — E1–E4 + R1 completati; chiusura formale solo Matteo. Owner: `PLAN_V0.md` §4-bis `S4` · report [`Report-ciclo-SK-4-23-08-26.md`](../../Sessioni%20di%20lavoro/23-08-26/Report-ciclo-SK-4-23-08-26.md) |
-| `SK-11` | test sugli attrezzi `mss:*` | **`A1–A4 IMPLEMENTATI` 23-08-26** — 9 test tools + lint script; **in attesa revisione A5**. Owner: `PLAN_V0.md` §4-bis `S11` |
-| `SK-5` | controlli MSS in CI | `NON INIZIATO` — la CI gira **solo su `main`** e non contiene nulla di MSS |
-| `SK-7` | `mss:capsule` — lo **scrittore** | `NON INIZIATO` — ha già un mandato pronto, ma vedi l'ordine qui sotto |
+| `SK-11` | test sugli attrezzi `mss:*` | **`A1–A4 IMPLEMENTATI` 23-08-26** — suite tools estesa (16 post-Fase B); **in attesa revisione integrata E**. Owner: `PLAN_V0.md` §4-bis `S11` |
+| `SK-5` / D1-A | controlli MSS in CI | **`implementazione self_report` (Fase C)** — job `mss` separato da `ci`; simulazione locale verde; **GA remota non osservata**; revisione E |
+| `SK-7` | `mss:capsule` — lo **scrittore** | `NON INIZIATO` — **non** prossimo passo immediato (dopo E + push, non prima) |
 | `SK-1`·`SK-2`·`SK-3`·`SK-8`·`SK-9`·`SK-10` | ripristino · path · `mss:review` · radice suite · `mss:move` · … | `NON INIZIATO` |
 
 **Perché questo ordine, in una riga ciascuno.** `SK-4` per primo perché il 22-08 tre dei suoi
@@ -74,10 +74,14 @@ mostrano **grezzo ed effettivo affiancati** (la differenza fra i due è essa ste
 catene che non si risolvono sono elencate, mai riparate. La logica **non è duplicata**: `query.mjs`
 delega a `core.mjs::applyAmendmentsView()`, la stessa funzione del validator.
 
-**Piani sessione 23-08-26 (vista, non owner):** esecuzione **completata** su `SK-4` (Cursor) e
-**A1–A4** su Codex `SK-11`+`SK-5` — registro e prossimo passo in
-`docs/Sessioni di lavoro/23-08-26/INDICE-SESSIONE-23-08-26.md` · owner in
-`PLAN-CURSOR-SK-4-23-08-26.md` e `PLAN-CODEX-SK-11-SK-5-23-08-26.md`.
+**Piani sessione 23-08-26 (vista, non owner):** esecuzione **completata** su `SK-4` (Cursor),
+**A1–A4** Codex `SK-11`, **Fasi B/C** post-revisione (`self_report`), **Fase D** documentale
+(rettifiche append-only + igiene whitespace). Commit storico locale **`d1598b6`** (M1, no rewrite).
+Modifiche B/C tracked non committate oltre quel commit. Registro:
+`docs/Sessioni di lavoro/23-08-26/INDICE-SESSIONE-23-08-26.md` · owner in `PLAN_V0.md` §4-bis.
+
+**Prossimo passo autorizzato:** revisione integrata **E**, poi gate locale e decisione push (M2).
+Nessuna GitHub Actions reale osservata. `validate:docs`: 17 workspace / 26 checkout pulito.
 
 ## Lettura operativa
 

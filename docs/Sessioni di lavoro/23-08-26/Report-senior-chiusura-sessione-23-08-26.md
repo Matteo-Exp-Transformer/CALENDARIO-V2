@@ -1,7 +1,7 @@
 # Report senior — chiusura ciclo pianificazione MSS (23-08-26)
 
-**Data:** 23-08-26 · **Profilo:** Meta senior · **Modalità:** deep  
-**Branch:** `env/test` · **HEAD:** `eee6cf7` (allineato con origin)  
+**Data:** 23-08-26 · **Profilo:** Meta senior · **Modalità:** deep
+**Branch:** `env/test` · **HEAD:** `eee6cf7` (allineato con origin)
 **Mandato:** `Prompt-senior-chiusura-sessione-23-08-26.md` — ripresa sessione senior interrotta per token
 
 ---

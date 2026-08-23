@@ -1,10 +1,10 @@
 # Piano condiviso CURSOR — `SK-4` chiusura tre bypass enforcement
 
-> Data: 23-08-2026  
-> Stato del documento: **PIANO OPERATIVO — pronto per lancio parallelo**  
-> Branch di lavoro: `env/test`  
+> Data: 23-08-2026
+> Stato del documento: **PIANO OPERATIVO — pronto per lancio parallelo**
+> Branch di lavoro: `env/test`
 > Owner operativo del ciclo: questo file. Gli agenti esecutori lo leggono; lo aggiorna solo il
-> coordinatore (senior / prepara-prompt) per evitare stati concorrenti.  
+> coordinatore (senior / prepara-prompt) per evitare stati concorrenti.
 > **Gemello parallelo (Codex):** `PLAN-CODEX-SK-11-SK-5-23-08-26.md` — **nessuna sovrapposizione**
 > su test attrezzi, lint `.mjs`, CI. Codex **non** tocca `adapter.mjs`.
 

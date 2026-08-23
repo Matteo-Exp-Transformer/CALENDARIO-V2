@@ -1,6 +1,6 @@
 # Report R1 — revisione indipendente `SK-4`
 
-> Slot: **R1** · Wave 3 · Data: 23-08-26 · Branch: `env/test`  
+> Slot: **R1** · Wave 3 · Data: 23-08-26 · Branch: `env/test`
 > Mandato: `Prompt-sk4-revisione-indipendente-23-08-26.md`
 
 ---

@@ -1,8 +1,8 @@
 # Handoff vivo — CODEX `SK-11` → `SK-5`
 
-> Tipo della prossima chat: **scrittura/modifica MetaSkillSystem**  
-> Modalità: **deep**  
-> Stato: **ciclo tecnico SK-11 → SK-5 completato e approvato con prove; chiusura riservata a Matteo**  
+> Tipo della prossima chat: **scrittura/modifica MetaSkillSystem**
+> Modalità: **deep**
+> Stato: **ciclo tecnico SK-11 → SK-5 completato e approvato con prove; chiusura riservata a Matteo**
 > Branch: `env/test`
 
 ## Riepilogo per Matteo
@@ -97,26 +97,26 @@ restano solo stato, autorità e prossimo passo.
 
 ## Ultimo passaggio
 
-Data/ora: 23-08-26, Fase 0  
-Agente/fase: Codex esecutore SK-11 / baseline  
-File posseduti e poi rilasciati: nessuno modificato nella baseline  
-Comandi eseguiti con exit: `npm run lint` 0; lint `.mjs` 1 con 20 problemi attesi; `npm run test:mss` 0 a worktree stabile; `mss:query -- --verifica` 0; `mss:status` 0  
-Difetti o deviazioni trovati: prima run H-1 invalidata dalla comparsa concorrente di un nuovo file sessione non tracciato; ripetuta correttamente a stato stabile  
-Stato vero adesso: A1–A4 in esecuzione, SK-5 bloccata  
+Data/ora: 23-08-26, Fase 0
+Agente/fase: Codex esecutore SK-11 / baseline
+File posseduti e poi rilasciati: nessuno modificato nella baseline
+Comandi eseguiti con exit: `npm run lint` 0; lint `.mjs` 1 con 20 problemi attesi; `npm run test:mss` 0 a worktree stabile; `mss:query -- --verifica` 0; `mss:status` 0
+Difetti o deviazioni trovati: prima run H-1 invalidata dalla comparsa concorrente di un nuovo file sessione non tracciato; ripetuta correttamente a stato stabile
+Stato vero adesso: A1–A4 in esecuzione, SK-5 bloccata
 Prossimo agente e suo unico gate: esecutore SK-11 → consegna tutti i verdi tecnici; poi revisore A5
 
-Data/ora: 23-08-26, handoff A1–A4 → A5  
-Agente/fase: Codex esecutore SK-11 / implementazione  
-File posseduti e poi rilasciati: configurazione lint e package scripts; due CLI MSS; utility runtime; suite tools; due script autorizzati; riga S11; sezione esecutore report  
-Comandi eseguiti con exit: `node --check` 6/6 exit 0; `npm run lint` 0; `npm run test:mss` 0 (`42 + 32`); `npm run test:mss:tools` 0 (`9`); `npm run validate` 0  
-Difetti o deviazioni trovati: collisione temporanea con SK-4 E1 su query, fermata e risolta preservando il filtro condiviso; nessuna mutazione residua  
-Stato vero adesso: implementazione rilasciata, A5 in corso, SK-5 bloccata  
+Data/ora: 23-08-26, handoff A1–A4 → A5
+Agente/fase: Codex esecutore SK-11 / implementazione
+File posseduti e poi rilasciati: configurazione lint e package scripts; due CLI MSS; utility runtime; suite tools; due script autorizzati; riga S11; sezione esecutore report
+Comandi eseguiti con exit: `node --check` 6/6 exit 0; `npm run lint` 0; `npm run test:mss` 0 (`42 + 32`); `npm run test:mss:tools` 0 (`9`); `npm run validate` 0
+Difetti o deviazioni trovati: collisione temporanea con SK-4 E1 su query, fermata e risolta preservando il filtro condiviso; nessuna mutazione residua
+Stato vero adesso: implementazione rilasciata, A5 in corso, SK-5 bloccata
 Prossimo agente e suo unico gate: revisore SK-11 → revisione critica + rosso exit 1 + ripristino verde exit 0 + diff invariato
 
-Data/ora: 23-08-26, chiusura tecnica Fase C  
-Agente/fase: Codex revisore finale + coordinatore  
-File posseduti e poi rilasciati: sezione revisore del report; righe owner `SK-11`/`SK-5`; piano e handoff  
-Comandi eseguiti con exit: check 7/7 exit 0; lint 0; H-1 0 (`42 + 32`); tools 0 (`9/9`); validate 0; validate:docs 1 baseline 17; CI isolata rosso 1 e verde 0; validate:mss report 0  
-Difetti o deviazioni trovati: nessun difetto bloccante; provenienza stessa famiglia OpenAI = `self_report`; temp rimosso  
-Stato vero adesso: ciclo tecnico completo con prove; nessun commit/push; nessuna skill dichiarata `CHIUSA`  
+Data/ora: 23-08-26, chiusura tecnica Fase C
+Agente/fase: Codex revisore finale + coordinatore
+File posseduti e poi rilasciati: sezione revisore del report; righe owner `SK-11`/`SK-5`; piano e handoff
+Comandi eseguiti con exit: check 7/7 exit 0; lint 0; H-1 0 (`42 + 32`); tools 0 (`9/9`); validate 0; validate:docs 1 baseline 17; CI isolata rosso 1 e verde 0; validate:mss report 0
+Difetti o deviazioni trovati: nessun difetto bloccante; provenienza stessa famiglia OpenAI = `self_report`; temp rimosso
+Stato vero adesso: ciclo tecnico completo con prove; nessun commit/push; nessuna skill dichiarata `CHIUSA`
 Prossimo agente e suo unico gate: nessuno; decisione di Matteo su chiusura e futura autorizzazione commit/push

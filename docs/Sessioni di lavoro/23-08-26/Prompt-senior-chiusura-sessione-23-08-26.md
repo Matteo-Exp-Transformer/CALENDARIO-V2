@@ -8,7 +8,7 @@ Non caricare: APP_CONTEXT_SKILL.md intero · docs/_lavoro/ · src/ (fuori cantie
 Output attesi: Report-senior-chiusura-sessione-23-08-26.md con conferma punto-per-punto Stop-hook #2; aggiornamento HANDOFF_SENIOR_V0.md § handoff operativo; aggiornamento ROADMAP_V0.md riga SK-6 (CHIUSO D16); verifica/propagazione template _skill-system-v0/; eventuale fix testo hook fine-sessione-senior.mjs se il falso «gitignored» è confermato; nessun codice SK-4; nessun commit/push senza sì Matteo; niente output in più senza chiedere Sì/No prima
 ```
 
-> **Data:** 23-08-26 · **Branch:** `env/test` · **HEAD atteso:** `eee6cf7` o successivo  
+> **Data:** 23-08-26 · **Branch:** `env/test` · **HEAD atteso:** `eee6cf7` o successivo
 > **Ripresa** della sessione senior interrotta per token. **Non** eseguire SK-4: i mandati esecutori
 > sono già pronti e lanciati in parallelo (`PLAN-CURSOR-SK-4-23-08-26.md`).
 
@@ -131,12 +131,12 @@ Se **non** è gitignored (31 file tracciati — caso atteso):
 
 Sezioni minime:
 
-1. Contesto ripresa sessione senior  
-2. **Conferma Stop-hook #2** (tabella §3)  
-3. Allineamenti ROADMAP / HANDOFF  
-4. `_skill-system-v0` e hook  
-5. Stato mandati paralleli (SK-4 Wave 1, Codex SK-11) — puntatore, non esecuzione  
-6. Handoff §10-bis al prossimo agente  
+1. Contesto ripresa sessione senior
+2. **Conferma Stop-hook #2** (tabella §3)
+3. Allineamenti ROADMAP / HANDOFF
+4. `_skill-system-v0` e hook
+5. Stato mandati paralleli (SK-4 Wave 1, Codex SK-11) — puntatore, non esecuzione
+6. Handoff §10-bis al prossimo agente
 7. Capsula JSONL + **Q1–Q6 verbatim** (`CHIUSURA_SESSIONE.md` §11)
 
 Schema/revision da `rules.mjs` righe 3–6 · UUIDv7 · `segment_no: 1` · `self_report`.
@@ -145,10 +145,10 @@ Schema/revision da `rules.mjs` righe 3–6 · UUIDv7 · `segment_no: 1` · `self
 
 ## 8. Prove di chiusura
 
-1. `grep SK-6` su ROADMAP → non più «decide Matteo» per chiusura  
-2. HANDOFF §3/ handoff operativo riflette D16 e piani 23-08  
-3. Sezione «Conferma Stop-hook #2» completa nel report  
-4. `git diff --stat` solo file ammessi §6  
+1. `grep SK-6` su ROADMAP → non più «decide Matteo» per chiusura
+2. HANDOFF §3/ handoff operativo riflette D16 e piani 23-08
+3. Sezione «Conferma Stop-hook #2» completa nel report
+4. `git diff --stat` solo file ammessi §6
 
 ---
 

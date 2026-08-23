@@ -1,6 +1,6 @@
 # Mini-report E3 — allineo contratto capsula (`SK-4`)
 
-> Slot: **E3** · Wave 1 · Data: 23-08-26 · Branch: `env/test`  
+> Slot: **E3** · Wave 1 · Data: 23-08-26 · Branch: `env/test`
 > File in proprietà: `docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md`
 
 ## 1. Obiettivo
