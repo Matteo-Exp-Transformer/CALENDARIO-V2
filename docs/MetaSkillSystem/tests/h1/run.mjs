@@ -1447,6 +1447,59 @@ function testH13SurfaceParity() {
   }
 }
 
+function testH13StagedRequireCapsule() {
+  const root = createTempGitRepo()
+  const reportRel = 'docs/Sessioni di lavoro/23-08-26/sub/Report-test.md'
+  const noModeNoCapsule = `# Report test\n\nNo capsule, no mode.\n${reportQrs()}`
+  const deepNoCapsule = `# Report test\n\n**Modalità:** deep\n\nNo capsule.\n${reportQrs()}`
+  try {
+    writeFixtureReferenceOwner(root)
+    writeTemp(root, reportRel, noModeNoCapsule)
+    runGit(root, ['add', reportRel])
+
+    const withoutFlag = spawnSync(
+      process.execPath,
+      [join(repoRoot, 'scripts/mss/cli.mjs'), '--mode', 'staged', '--file', join(root, reportRel), '--json'],
+      { cwd: root, encoding: 'utf8' },
+    )
+    let withoutFlagResult
+    try { withoutFlagResult = JSON.parse(withoutFlag.stdout || '{}') } catch { withoutFlagResult = {} }
+    if (withoutFlag.status !== 0 || !withoutFlagResult.ok) {
+      return [`staged CLI without --require-capsule should pass undeclared report: exit=${withoutFlag.status}; codes=${(withoutFlagResult.denyCodes || []).join(',')}`]
+    }
+
+    const withFlag = spawnSync(
+      process.execPath,
+      [
+        join(repoRoot, 'scripts/mss/cli.mjs'),
+        '--mode', 'staged', '--file', join(root, reportRel), '--require-capsule', '--json',
+      ],
+      { cwd: root, encoding: 'utf8' },
+    )
+    let withFlagResult
+    try { withFlagResult = JSON.parse(withFlag.stdout || '{}') } catch { withFlagResult = {} }
+    if (withFlag.status !== 1 || withFlagResult.ok || !withFlagResult.denyCodes?.includes(RULE.REPORT_NO_CAPSULE)) {
+      return [`staged CLI --require-capsule must deny undeclared report: exit=${withFlag.status}; codes=${(withFlagResult.denyCodes || []).join(',')}`]
+    }
+
+    writeTemp(root, reportRel, deepNoCapsule)
+    runGit(root, ['add', reportRel])
+    const deep = spawnSync(
+      process.execPath,
+      [join(repoRoot, 'scripts/mss/cli.mjs'), '--mode', 'staged', '--file', join(root, reportRel), '--json'],
+      { cwd: root, encoding: 'utf8' },
+    )
+    let deepResult
+    try { deepResult = JSON.parse(deep.stdout || '{}') } catch { deepResult = {} }
+    if (deep.status !== 1 || deepResult.ok || !deepResult.denyCodes?.includes(RULE.REPORT_NO_CAPSULE)) {
+      return [`staged CLI must deny deep report without capsule: exit=${deep.status}; codes=${(deepResult.denyCodes || []).join(',')}`]
+    }
+    return []
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
 function testH13StagedCliParity() {
   const root = createTempGitRepo()
   try {
@@ -1594,6 +1647,7 @@ function main() {
     ['stop hook integration', testStopHookIntegration],
     ['H-1.3 core/CLI/stop/pre-commit parity', testH13SurfaceParity],
     ['H-1.3 staged CLI full-snapshot parity', testH13StagedCliParity],
+    ['H-1.3 staged CLI require-capsule', testH13StagedRequireCapsule],
     ['H-1.2 finalized report compatibility', testH12FinalizedReportCompatibility],
     ['H-1.2 cross-file identity', testH12CrossFileIdentity],
     ['H-1.2 final amendment target', testH12FinalAmendmentTargetsFinal],

@@ -95,7 +95,10 @@ function main() {
   if (args.mode === 'staged') {
     // Snapshot staged completo (parità pre-commit): non filtrare la vista al solo --file.
     const entries = collectStagedMssEntries(workspaceRoot)
-    const results = validateStagedMssFiles(workspaceRoot, entries, { historicalSnapshots })
+    const results = validateStagedMssFiles(workspaceRoot, entries, {
+      historicalSnapshots,
+      requireCapsule: args.requireCapsule,
+    })
     const focused = results.filter(
       (entry) => entry.path === rel || entry.previousPath === rel,
     )

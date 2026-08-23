@@ -347,7 +347,7 @@ function recordsFromSnapshots(workspaceRoot, snapshots) {
   return { records, diagnostics }
 }
 
-export function validateStagedMssFiles(workspaceRoot, stagedEntries, { historicalSnapshots = [] } = {}) {
+export function validateStagedMssFiles(workspaceRoot, stagedEntries, { historicalSnapshots = [], requireCapsule = false } = {}) {
   /** stagedEntries: [{ path, previousPath?, status?, content?, headContent?, worktreeContent? }] */
   const normalized = stagedEntries.map((entry) => ({ ...entry, path: normalizePath(entry.path) }))
   const manifestEntry = normalized.find((entry) =>
@@ -465,6 +465,7 @@ export function validateStagedMssFiles(workspaceRoot, stagedEntries, { historica
       stagedContent: entry.content,
       worktreeContent: entry.worktreeContent,
       headContent: entry.headContent,
+      requireCapsule,
       historicalRecords,
       historicalSnapshots,
       validateGlobal: false,

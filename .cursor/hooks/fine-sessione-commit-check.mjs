@@ -12,11 +12,9 @@ import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { auditQuestions } from '../../scripts/mss/report-questions.mjs'
-import { validateStagedMssFiles } from '../../scripts/mss/adapter.mjs'
+import { validateStagedMssFiles, isMssRelevantPath, REPORT_PATH_RE } from '../../scripts/mss/adapter.mjs'
 import { collectGitHeadHistory, collectStagedMssEntries } from '../../scripts/mss/git-adapter.mjs'
 import { detectReportMode } from '../../scripts/mss/parse.mjs'
-
-const REPORT_RE = /^docs\/Sessioni di lavoro\/[^/]+\/Report-.*\.md$/i
 
 function git(args, cwd = process.cwd()) {
   return execFileSync('git', args, {
@@ -70,7 +68,7 @@ function main() {
   const stagedReports = git(['diff', '--cached', '--name-only', '--diff-filter=ACMR'], root)
     .split(/\r?\n/)
     .map((p) => normalizePath(p.trim()))
-    .filter((p) => p && REPORT_RE.test(p))
+    .filter((p) => p && isMssRelevantPath(p) && REPORT_PATH_RE.test(p))
   const reports = stagedReports.map((path) => {
     let content = ''
     try {
