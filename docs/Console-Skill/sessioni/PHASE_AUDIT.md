@@ -28,7 +28,7 @@
 **Esecutore**
 - Prompt usato: `MASTERPLAN_CONSOLE.md` §F1 (prompt esecutore)
 - Sintesi: creato sotto-progetto `console/` (Vite+React+TS+`@supabase/supabase-js`), client Supabase con sola anon key da `import.meta.env`, placeholder login (rimanda a F3), app shell vuota. Isolamento root via exclude.
-- File toccati: nuovi sotto `console/` (package.json, vite.config.ts, tsconfig.json, tsconfig.node.json, .eslintrc.cjs, .gitignore, .env.example, postcss.config.js, index.html, src/App.tsx, src/main.tsx, src/vite-env.d.ts, src/lib/supabaseClient.ts, src/components/LoginPlaceholder.tsx, src/components/AppShell.tsx, src/styles/global.css). Root (solo esclusioni minime): `tsconfig.json`, `.eslintrc.cjs`, `vitest.config.ts`.
+- File toccati: nuovi sotto `console/` (package.json, vite.config.ts, tsconfig.json, tsconfig.node.json, .eslintrc.cjs, .gitignore, .env.example, postcss.config.js, index.html, console/src/App.tsx, console/src/main.tsx, console/src/vite-env.d.ts, console/src/lib/supabaseClient.ts, console/src/components/LoginPlaceholder.tsx, console/src/components/AppShell.tsx, console/src/styles/global.css). Root (solo esclusioni minime): `tsconfig.json`, `.eslintrc.cjs`, `vitest.config.ts`.
 - Decisioni autonome prese: DEC-016 (porta 5174, alias `@console/`, postcss locale vuoto, `isAuthenticated=false` transitorio, `robots noindex`).
 - Scritture DB: nessuna.
 - Plan per Matteo generati: nessuno.

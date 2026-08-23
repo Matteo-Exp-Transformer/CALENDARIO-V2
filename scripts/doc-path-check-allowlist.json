@@ -103,5 +103,30 @@
     "path": "docs/CLAUDE.md",
     "reason": "Riferimento storico/narrativo — citato a parole come esempio di link rotto passato (corretto in .claude/CLAUDE.md) in PROSEGUIMENTO_MAPPATURA_SKILL",
     "tipo": "storico"
+  },
+  {
+    "path": "docs/_lavoro/Per matteo/Test e2e/CHECKLIST_FLUSSI_DA_TESTARE.md",
+    "reason": "Checklist QA visivo privata di Matteo — cartella docs/_lavoro gitignored per design; il bersaglio non deve entrare in git né in CI",
+    "tipo": "privato"
+  },
+  {
+    "path": ".cursor/hooks/.fine-sessione-commit-state.json",
+    "reason": "File di stato generato a runtime dall'hook fine-sessione pre-commit — gitignored, non versionabile",
+    "tipo": "privato"
+  },
+  {
+    "path": "docs/_lavoro/seed-fu-020-import-preset-qa.sql",
+    "reason": "Script seed QA Menu QR privato — gitignored per design (FU-020), citato come riferimento operativo locale",
+    "tipo": "privato"
+  },
+  {
+    "path": ".cursor/plans/sep-10_archiviazione_mss_430c9c1d.plan.md",
+    "reason": "Piano Cursor archiviato SEP-10 — gitignored (.cursor/plans/), tenuto come riferimento storico del lavoro MSS",
+    "tipo": "privato"
+  },
+  {
+    "path": "docs/_lavoro/Per matteo/Metaskillsystem-Owner-Matteo/Tipo di sedute/Prompt-Seduta-Immaginazione.md",
+    "reason": "Prompt operativo seduta fantasticazione — owner privato Matteo in docs/_lavoro gitignored",
+    "tipo": "privato"
   }
 ]

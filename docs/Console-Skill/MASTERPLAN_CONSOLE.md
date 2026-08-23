@@ -364,8 +364,9 @@ Esito: VERDE o ROSSO con correzioni puntuali. NON toccare il codice; NON committ
   2. Si usano **solo** le chiavi del registro `restaurantSettingRegistry` (`RESTAURANT_SETTING_KEYS_V1`); nessuna chiave inventata.
   3. Scrittura via Edge (F4), con validazione coerente con il registro; solo sandbox; `get_project_url`=docnnernvp.
   4. Aggiungere una chiave nuova = `plan-per-matteo` (richiede codice app), non scrittura diretta.
-- **Note:** il set di chiavi valide è specchio del file `src/.../restaurantSettingRegistry.ts` (sola
-  lettura come riferimento); la Console **ricrea** l'elenco/validatori che le servono.
+- **Note:** il set di chiavi valide è specchio del file
+  `src/features/booking/lib/restaurantSettingRegistry.ts` (sola lettura come riferimento); la Console
+  **ricrea** l'elenco/validatori che le servono.
 
 **Prompt ESECUTORE (F7):**
 ```

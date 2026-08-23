@@ -10,8 +10,8 @@
 | File | Cos'è |
 |------|-------|
 | [HANDOFF-prossima-chat.md](HANDOFF-prossima-chat.md) | **Prompt pronto** da incollare nella prossima sessione + contesto sintetico e prossime mosse |
-| [tracciabilita/MASTERPLAN_CONSOLE.md](tracciabilita/MASTERPLAN_CONSOLE.md) | Master-plan a 7 fasi con prompt esecutore/revisore e done-criteria |
-| [tracciabilita/PHASE_AUDIT.md](tracciabilita/PHASE_AUDIT.md) | Audit trail per fase (esecutore, revisore, verdetto, commit) |
+| [../../MASTERPLAN_CONSOLE.md](../../MASTERPLAN_CONSOLE.md) | Master-plan a 7 fasi (copia viva; snapshot tracciabilita rimosso D18) |
+| [../PHASE_AUDIT.md](../PHASE_AUDIT.md) | Audit trail per fase (copia viva; snapshot tracciabilita rimosso D18) |
 | [tracciabilita/DECISION_LOG.md](tracciabilita/DECISION_LOG.md) | Registro decisioni DEC-001→031 |
 | [tracciabilita/FOLLOW_UP.md](tracciabilita/FOLLOW_UP.md) | Debiti differiti FU-CONSOLE-* |
 | [tracciabilita/SESSION_LOG.md](tracciabilita/SESSION_LOG.md) | Indice cronologico sessioni |

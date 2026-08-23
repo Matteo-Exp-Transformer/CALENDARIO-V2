@@ -1,8 +1,9 @@
 # Tipo di seduta — fantasticazione / immaginazione (v0)
 
 > **Stato:** dichiarazione viva per prepara-prompt e conduttori · **non** apre `WP-1` · **non** è prova.
-> **Owner:** questo file (intento del tipo). Metodi dettagliati e spunti restano in
-> `docs/_lavoro/.../Analisi/REGISTRO_METODI_ELICITATION_IDIOgrafica.md` e negli spunti privati.
+> **Owner:** questo file (intento del tipo). Metodi dettagliati e spunti restano nel registro metodi di
+> elicitation (cartella privata `_lavoro`, file REGISTRO_METODI_ELICITATION_IDIOgrafica) e negli spunti
+> privati.
 > **Aggiornato:** 10-08-26 — prompt riusabile leggero · mandato verbatim-fonte · evals E1–E5 (S-E).
 
 ## A cosa serve
@@ -39,8 +40,8 @@ Checklist di intento (per il prepara-prompt):
     di proporre scenario/innesco.
 11. **Verbatim = fonte primaria** — **mandato Matteo 10-08-26:** conservare in `_lavoro` **tutti** gli
     account verbatim di queste sedute (non solo i pezzi «che definiscono»). Altri agenti li trattano
-    come materiale diretto di Matteo. Sintesi/ipotesi agente restano separate. Indice di lettura:
-    `docs/_lavoro/.../Analisi/ANALISI_Riferimento-fantasticazione-fonte-verbatim-10-08-26.md`.
+    come materiale diretto di Matteo. Sintesi/ipotesi agente restano separate. Indice di lettura: analisi
+    «fantasticazione-fonte-verbatim» (privata, cartella `_lavoro`).
 12. **Additività cross-seduta MSS** — queste sedute **aggiungono** segnali utili a capire decisioni di
     Matteo, origine delle idee (conceived_by / decided_by) e competenze di **processo in chat**,
     riusabili da altre sedute MetaSkillSystem. ⛔ Non sottraggono e non sostituiscono verbali di
