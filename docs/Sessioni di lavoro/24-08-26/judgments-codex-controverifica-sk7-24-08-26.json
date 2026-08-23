@@ -1,0 +1,149 @@
+{
+  "session_event": {
+    "intent_user": "Produrre il report completo del lavoro svolto da Codex: analisi del mandato SK-7, controverifiche indipendenti, individuazione dei difetti residui, decisione M3, commit e push.",
+    "event_kind": "session_close",
+    "session_type": "deep",
+    "capsule_status": "completa",
+    "role_key": "agente controverificatore MetaSkillSystem",
+    "area": "MetaSkillSystem / SK-7 mss:capsule",
+    "environment": "repo locale Windows, branch env/test; SK-7 pubblicato nel commit 43feca8; working tree con due modifiche esterne lasciate fuori",
+    "authorization": {
+      "read": [
+        "docs/MetaSkillSystem/**",
+        "scripts/mss/capsule.mjs",
+        "docs/Sessioni di lavoro/23-08-26/**",
+        "git history e output dei gate"
+      ],
+      "write": [
+        "docs/Sessioni di lavoro/24-08-26/Report-codex-controverifica-chiusura-sk7-24-08-26.md",
+        "docs/Sessioni di lavoro/24-08-26/judgments-codex-controverifica-sk7-24-08-26.json"
+      ],
+      "forbid": [
+        "src/**",
+        "Supabase",
+        "riscrittura record final",
+        "modifiche esterne nel working tree",
+        "nuovo commit o push per questo solo report"
+      ]
+    },
+    "authorized_outputs": [
+      "report completo Codex",
+      "capsula di sessione generata"
+    ],
+    "route": {
+      "chosen": "MetaSkillSystem deep: revisione indipendente e chiusura SK-7, poi report richiesto dall'utente",
+      "alternatives_or_conflicts": "nessuno"
+    },
+    "observed_outcome": "SK-7 chiuso con decisione M3 dell'utente dopo tre cicli di controverifica: D2/D3, privacy append-only, sintassi con arrow function e source_refs pubblicabili sono coperti; commit 43feca8 è pushato su origin/env/test.",
+    "open_items": [
+      "modifiche esterne nel working tree, non appartenenti a SK-7"
+    ],
+    "subject_runtime": {
+      "actor_id": "Matteo",
+      "provider": "non_applicabile: soggetto umano",
+      "model": "non_applicabile: soggetto umano",
+      "runtime": "non_applicabile: soggetto umano",
+      "surface": "chat Codex"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": [
+        "stato Git",
+        "esiti di test aggregati",
+        "path del repository",
+        "hash commit"
+      ],
+      "prohibited_content": [
+        "materiale privato non registrabile",
+        "segreti",
+        "token di autenticazione"
+      ],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [
+      {
+        "ref_id": "owner-plan",
+        "owner_id": "SYS-1",
+        "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md",
+        "stable_anchor_or_event_id": "sezione 4-bis S7",
+        "revision_or_hash": "43feca8",
+        "sensitivity": "internal"
+      }
+    ],
+    "source_refs": [
+      {
+        "ref_id": "source-fix-report",
+        "owner_id": "SK-7",
+        "uri_or_path": "docs/Sessioni di lavoro/23-08-26/Report-fix-sk7-timbri-23-08-26.md",
+        "stable_anchor_or_event_id": "report completo",
+        "revision_or_hash": "43feca8",
+        "sensitivity": "internal"
+      }
+    ]
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [
+        {
+          "signal": "Matteo ha richiesto controverifiche iterative e ha autorizzato la chiusura solo dopo la prova finale.",
+          "actor": "Matteo",
+          "assistance": "guidato",
+          "origin": "naturale",
+          "source_ref": "owner-plan",
+          "effect": "la decisione M3 è stata presa su gate rieseguiti, non su dichiarazioni dell'esecutore",
+          "evidence_state": "observed"
+        }
+      ],
+      "asserted_by": { "actor_id": "openai-codex-reviewer", "role": "agente controverificatore", "basis": "direct_observation" },
+      "verification": { "status": "unverified", "verified_by": [], "verified_at": "non_applicabile:nessuna valutazione Persona", "criterion_ref": "owner-plan", "evidence_refs": [], "notes": "nessuna inferenza di competenza o livello" }
+    },
+    "sistema": {
+      "delta": "verificato",
+      "assertions": [
+        {
+          "rule_id_version": "SK-7@M3",
+          "trigger_event": "tre controverifiche hanno trovato e fatto correggere difetti reali prima della chiusura",
+          "decision_or_output_changed": "D2/D3, parsing con arrow function e source_refs di untracked sono ora controllati da test; la chiusura usa solo stage selettivo e validator staged",
+          "G": 2,
+          "O": 2,
+          "E": 2
+        }
+      ],
+      "asserted_by": { "actor_id": "openai-codex-reviewer", "role": "agente controverificatore", "basis": "direct_observation" },
+      "verification": { "status": "self_report", "verified_by": [], "verified_at": "non_applicabile:self_report", "criterion_ref": "owner-plan", "evidence_refs": ["source-fix-report"], "notes": "gate tecnici rieseguiti nella chat" }
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "output_id": "report-codex-controverifica-sk7-24-08-26",
+          "primary_type": "registro",
+          "canonical_version": "report in docs/Sessioni di lavoro/24-08-26",
+          "recipient": "Matteo",
+          "problem_or_job": "rendere ricostruibile la controverifica e la chiusura di SK-7",
+          "intended_use": "audit e continuità del MetaSkillSystem",
+          "conceived_by": "richiesta utente",
+          "decided_by": "Matteo",
+          "directed_by": "chat corrente",
+          "authored_by": "openai-codex-reviewer",
+          "verified_by": "validate:mss sul report",
+          "acceptance_criterion": "report completo con capsula valida, Q1-Q6 e handoff",
+          "verification_or_use_evidence": "validator MSS da eseguire dopo la scrittura",
+          "verification_status": "self_report",
+          "owner_ref": "owner-plan",
+          "privacy_release": "internal",
+          "support_files": ["docs/MetaSkillSystem/PLAN_V0.md"],
+          "relations_no_double_count": ["registro della revisione; non è un prodotto SK-7"],
+          "product_candidate": { "recipient": "fail", "problem_or_job": "fail", "canonical_version": "pass", "fixed_acceptance_criterion": "pass", "verification_or_use_evidence": "fail", "result": "not_eligible" }
+        }
+      ],
+      "asserted_by": { "actor_id": "openai-codex-reviewer", "role": "agente controverificatore", "basis": "direct_observation" },
+      "verification": { "status": "self_report", "verified_by": [], "verified_at": "non_applicabile:self_report", "criterion_ref": "owner-plan", "evidence_refs": [], "notes": "registro, non deliverable prodotto" }
+    }
+  }
+}
