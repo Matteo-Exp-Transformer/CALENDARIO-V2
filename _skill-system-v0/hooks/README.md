@@ -8,9 +8,9 @@
 
 | File | Evento | Cosa fa |
 |------|--------|---------|
-| `fine-sessione-nudge.mjs` | `stop` (Cursor) | A fine chat legge i `Report-*.md` freschi e verifica la sezione 11 «Domande di chiusura»: per ogni `❓ Q` controlla che la `✅ R` non sia vuota/placeholder. Risposte mancanti → **blocca e insiste**; tutte presenti → silenzio. Il cold-check «mente fredda» va messo al pre-commit, non nello `stop`, per evitare rilanci ripetuti a fine risposta. |
+| `fine-sessione-nudge.mjs` | `stop` (Cursor) | Q/R §11 su report fresco (**ricorsivo**, `report-paths.mjs`); validatore MSS; silenzio se tutto verde. Cold-check al pre-commit. |
 | `guard-prod.mjs` | `beforeMCPExecution` + `beforeShellExecution` (Cursor) | Ferma le **scritture sul DB di PRODUZIONE** (via MCP o shell) e chiede conferma (`permission: "ask"`). Letture e operazioni su TEST passano lisce. Riconosce PROD dal **nome del server MCP**, non dall'URL. |
-| `fine-sessione-senior.mjs` | `Stop` (Claude Code) | **AVANZATO/OPZIONALE.** Gemello del nudge per chi adotta il ruolo «Meta senior»: stessa logica §11 + 2 promemoria senior (propagazione template v.0 + Playbook). Sintassi Claude Code (`stop_hook_active`, `decision:block`). Installa solo se usi il ruolo senior. |
+| `fine-sessione-senior.mjs` | `Stop` (Claude Code) | **AVANZATO/OPZIONALE.** Gemello del nudge (v6, 23-08-26): Q/R §11 + validatore MSS; silenzio se entrambi verdi. Richiede `scripts/mss/` nel repo. Sintassi Claude Code (`stop_hook_active`, `decision:block`). |
 | `hooks.json` | — | Registra gli hook Cursor: `stop` (loop_limit 3) + `beforeMCPExecution`/`beforeShellExecution` (guard-prod). |
 
 ## Perché v4 (da «titolo» a «risposta»)

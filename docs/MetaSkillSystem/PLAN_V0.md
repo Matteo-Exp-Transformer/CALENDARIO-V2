@@ -5,11 +5,13 @@
 > MetaSkillSystem v0. Roadmap, handoff e report rimandano qui senza ricopiare lo stato.  
 > **Nord del cantiere:** vedi **§16 — Target dello scheletro**, dettato da Matteo il 21-08-2026.
 > È la direzione che governa l'ordine dei prossimi pacchetti.  
-> **Ultimo movimento:** 21-08-26 — consulenza esterna indipendente (prima famiglia di modello
-> diversa da Cursor/Codex). Target dello scheletro acquisito in §16; aperti `SK-0`…`SK-5` in §4.
-> Stato tecnico: baseline `ee0ab39` **pushata** su `origin/env/test`; `HEAD` locale `2b255d0`
-> (2 commit documentali non pubblicati); `npm run test:mss` **verde** 41 fixture + 32 gruppi;
-> nessun tag di ripristino esistente. `H-1.3` resta `PASS_CON_RISERVE`. `WP-1` resta `NO-GO`.
+> **Ultimo movimento:** 23-08-26 — Matteo ha dichiarato chiusi `SK-4`, `SK-5`, `SK-6` e `SK-11`.
+> `SK-7` — report proprietario consegnato ma **non approvabile nella forma attuale**: la revisione
+> Codex ha rilevato una citazione privata vietata e conteggi interni incoerenti; la rettifica mirata è
+> preparata, mentre **chiusura `M3` spetta a Matteo**. Il rosso documentale è azzerato in locale e la
+> pubblicazione del working tree è stata autorizzata il 23-08-26. I conteggi Git mobili
+> vivono nel report della seduta, non in questa intestazione. `H-1.3` resta `PASS_CON_RISERVE` e
+> `WP-1` resta `NO-GO`.
 >
 > **Rettifica 21-08-26 (append, non riscrittura):** l'intestazione precedente si era fermata al
 > movimento `H-1.1` del 10-08-26 e dichiarava «Checkpoint WP-0.1 locale `7632443`. Nessun commit/push»,
@@ -96,7 +98,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ B1 capsula legacy-new senza `controls` → `MSS-LEGACY-NEW-FORBIDDEN` · ✅ B2 `_prova-sk4/sub/Report-*.md` staged → deny (`MSS-REPORT-NO-CAPSULE`) · ✅ B3 `Verbale-*.md` in sotto-cartella staged → deny · ✅ `REPORT_PATH_RE` condivisa (`adapter`/`git-adapter`/`query`) · ✅ contratto `0.1.1`/`freeze-2` · ✅ `npm run test:mss` **42 fixture + 32 gruppi exit 0** · ✅ `validate:docs` **17** path rotti (baseline) · ✅ `mss:query --verifica` exit 0 · report ciclo [`Report-ciclo-SK-4-23-08-26.md`](../Sessioni%20di%20lavoro/23-08-26/Report-ciclo-SK-4-23-08-26.md) |
 | S5 | `SK-5` — controlli MSS in CI su `env/test` | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ workflow su push/PR `main` + `env/test` · ✅ report `Report-*.md` aggiunti/modificati validati dal CLI canonico con capsula obbligatoria · ✅ H-1 42 fixture + 32 gruppi e tools 9/9 · ✅ due prove isolate CI rosso exit 1 (`MSS-VITAL-MISSING` + path) → verde exit 0 dopo rimozione sicura · ✅ `npm run validate` exit 0 · ✅ report ciclo `validate:mss OK` · revisione stessa famiglia OpenAI registrata `self_report`, non `independently_verified` · ✅ **gate F2 superato 23-08-26:** push su `env/test` (`7e96fb1`) e **run reale GitHub Actions `32652259771`** — job `mss` **verde** (changed-reports + H-1 + tools); job `ci` rosso al solo passo `validate:docs` con **26** path rotti in clone pulito (17 in locale: i 9 di differenza puntano a `docs/_lavoro/` e `.cursor/`, gitignored). Rosso documentale noto e separato per disegno `D1-A`, **non** tocca i cancelli MSS |
 | S6 | `SK-6` — `mss:query` (sola lettura) | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ `npm run mss:query -- --regole/--modelli/--verifica` rispondono, provate a campione risalendo ai report d'origine · ✅ `npm run test:mss` **exit 0** (41 fixture + 32 gruppi) · ✅ `node --check scripts/mss/query.mjs` **exit 0** · ⚠️ nessun test automatico copre `mss:query`: ESLint gira `--ext ts,tsx` e ignora `scripts/`, `test:mss` esercita il validator non il lettore · rettificato 22-08-26: capsula `SK-6` corretta con `amendment` (non riscritta) per il secondo segmento della seduta; criterio revisori spostato da `controls[].esecutore` a `recorded_by.role` (fatto stabile — non decade). Il conteggio che ne esce **cresce a ogni seduta di revisione registrata**: misurato **19/5** alle 22:44 del 22-08-26, **24/6** poco dopo (è atterrata la seduta del revisore Codex). Non è un numero da fissare qui: per il valore di oggi lancia `npm run mss:query -- --verifica` · ⚠️ **22-08-26, seconda tornata:** `mss:query` non applica la catena degli `amendment` (contratto §6) — legge stati grezzi, non la vista effettiva; dichiara ora il limite in output (conta gli `amendment` nel corpus e quelli che correggono `verification.status`) invece di affermare `independently_verified`/`contradicted` «mai usato» quando un `amendment` valido li usa già altrove · ✅ **23-08-26, terza tornata (vista effettiva):** il limite sopra è chiuso. `mss:query` applica la catena degli `amendment` su tutto il corpus **delegando a `core.mjs::applyAmendmentsView()`** — la stessa funzione del validator, ora esportata: **una sola implementazione della regola nel repo**, nessuna duplicazione. Grezzo ed effettivo convivono in `--verifica`/`--fail`/`--json`, mai l'uno al posto dell'altro; le catene non risolte sono mostrate, mai riparate. Misurato quel giorno: 6 `amendment`, **13 campi applicati, 0 catene non risolte** — numero mobile, per il valore di oggi lancia il comando. Con questo **Matteo ha dichiarato `SK-6` CHIUSO** |
-| S7 | `SK-7` — `mss:capsule` (generazione) | `NON INIZIATO` | capsula con secondi reali e `controls` con codici di uscita veri |
+| S7 | `SK-7` — `mss:capsule` (generazione) | **`APERTO` — report consegnato, rettifica richiesta; nessuna chiusura `M3`** | ✅ `npm run mss:capsule` registrato · ✅ `scripts/mss/capsule.mjs` + `uuid.mjs` · ✅ `test:mss:tools` **23/23** (golden, giro completo, negativo, controls, git) · ✅ `controls` con exit code veri + fail voluti LEGACY/NEG · ✅ capsula generata dall attrezzo in [`Report-sk7-mss-capsule-23-08-26.md`](../Sessioni%20di%20lavoro/23-08-26/Report-sk7-mss-capsule-23-08-26.md) · ✅ `validate:mss OK` su quel report · ⚠️ revisione Codex: citazione privata vietata nel template/record e conteggi `test:mss`/`validate:docs` incoerenti; fix preparato in [`Prompt-fix-mirato-sk7-report-privacy-23-08-26.md`](../Sessioni%20di%20lavoro/23-08-26/Prompt-fix-mirato-sk7-report-privacy-23-08-26.md) · integrazione fix revisione finale (shell, `non_noto`, git trim, source_refs esistenti) · ⛔ dichiarazione **CHIUSO** solo Matteo (`M3`) |
 | S8 | `SK-8` — radice robusta della suite | `NON INIZIATO` | `npm run test:mss` verde da una profondità di cartelle diversa |
 | S9 | `SK-9` — `mss:move` | `NON INIZIATO` | file spostato, riferimenti vivi, suite verde, costo misurato contro le 1 741 righe di riferimento |
 | S10 | `SK-10` — manuale utente + intervista di bootstrap | `NON INIZIATO` | un agente completa il bootstrap in una repo nuova senza intervento |
@@ -503,10 +505,10 @@ H-1.3 è **PASS_CON_RISERVE** (non PASS pulito). `SEP-G5` **non** è PASS.
 - ~~decisione di Matteo su `SK-0`~~ → **presa ed eseguita** il 21-08-26. `SK-0` è `CHIUSO E
   OSSERVATO`: erano tre righe di configurazione, e `npm run validate` è andato **exit 0 per la
   prima volta**.
-- ~~`SK-6` (`mss:query`)~~ → **costruito e revisionato** il 22-08-26, da due famiglie di modello
-  diverse. **Non dichiarato chiuso: la chiusura è di Matteo** (vedi decisione 1 qui sotto).
+- ~~`SK-6` (`mss:query`)~~ → **costruito e revisionato** il 22-08-26, da due famiglie di modello,
+  poi dichiarato **CHIUSO** da Matteo con `D16` il 23-08-26.
 
-### Decisioni di Matteo — 23-08-2026 (`D16`–`D19`, CHIUSE)
+### Decisioni di Matteo — 23-08-2026 (`D16`–`D24`, CHIUSE)
 
 | ID | Decisione | Scelta | Conseguenza operativa |
 |---|---|---|---|
@@ -516,19 +518,21 @@ H-1.3 è **PASS_CON_RISERVE** (non PASS pulito). `SEP-G5` **non** è PASS.
 | `D19` | Pubblicazione del lavoro | **push, repo pulita** | i commit locali di `SK-6` e la vista effettiva vanno su `env/test` |
 | `D20` | Chiusura del ciclo 23-08 | **push eseguito, `SK-4`+`SK-5`+`SK-11` CHIUSI** | i tre commit (`d1598b6`, `88aa5a1`, `7e96fb1`) sono su `origin/env/test`; la run reale `32652259771` ha il job `mss` **verde** — è il gate `F2`, non più una simulazione locale. Con quello Matteo ha dichiarato chiusi i tre pacchetti |
 | `D21` | Il rosso documentale del job `ci` | **si azzera, non si tollera** | `validate:docs` esce 1 con **26** path rotti in CI (17 in locale). Una spia rossa permanente non è più una spia. Mandato dedicato: [`Prompt-fix-17-path-docs-23-08-26.md`](../Sessioni%20di%20lavoro/23-08-26/Prompt-fix-17-path-docs-23-08-26.md). Vietato azzerare il contatore ammorbidendo il controllo |
+| `D22` | Fix della regex dell'hook di pre-commit | **accettato** | il controllo usa la regex report condivisa e non perde i report in sotto-cartella; il fix era già nel commit `7436def`. Fonte: [`Report-revisione-skill-chiusura-e-hook-23-08-26.md` §7](../Sessioni%20di%20lavoro/23-08-26/Report-revisione-skill-chiusura-e-hook-23-08-26.md#7-decisioni-matteo-23-08-26-sera--implementate) |
+| `D23` | Contenuto di `Q1` alla chiusura | **path del mandato + revisione/hash + delta della chat** | il mandato già salvato non viene ricopiato; il verbatim resta obbligatorio solo per i messaggi di Matteo che non esistono in alcun file. Effetto: meno duplicazione senza perdere la provenienza. Fonte: stesso report §7 + `CHIUSURA_SESSIONE.md` §11 |
+| `D24` | Comportamento dell'hook senior a controlli verdi | **silenzio condizionato** | con domande complete e validatore MSS verde l'hook tace; parla soltanto se una risposta manca o la capsula è davvero rossa. Effetto: niente turno «mente fredda» duplicato. Fonte: stesso report §7 + `.claude/hooks/fine-sessione-senior.mjs` v6 |
 
 **Principio `D18`, da applicare a tutti i pacchetti `SK-*`:** un attrezzo che ha bisogno di una regola
 già scritta **la importa**. Se non è esportata, si esporta. Due implementazioni della stessa regola
 sono un difetto peggiore di quello che la regola governa — anche quando il perimetro di un mandato
 sembra imporle: in quel caso il mandato va allargato, non aggirato con una copia.
 
-### Prossimo pacchetto — raccomandazione, non decisione
+### Stato della raccomandazione precedente
 
-| Ordine | Pacchetto | Perché proprio questo, proprio adesso |
-|---|---|---|
-| 1° | **`SK-4`** — chiusura dei tre bypass | I tre bypass sono stati **incontrati lavorando** il 22-08, non trovati cercandoli; e uno di essi — il report in sotto-cartella — nasconde una **seduta di revisione**, cioè copre proprio le prove che il sistema esiste per raccogliere |
-| 2° | **`SK-11`** (test sugli attrezzi) poi **`SK-5`** (CI) | Argomento empirico: il 22-08 la **stessa classe di difetto** — una colonna di output troppo stretta — è comparsa **tre volte in un giorno**, su tre file, scritta da agenti diversi. Un difetto identico che si ripete misura l'**assenza di test**. Oggi `npm run lint` gira `--ext ts,tsx` e ignora `scripts/`: `validate` verde **non dice nulla** su questi file |
-| 3° | **`SK-7`** (`mss:capsule`) | Ha già un mandato pronto, e va **comunque dopo**. Un generatore che scrive in un archivio non presidiato **moltiplica** il problema. Che la sequenza «prima il lettore, poi lo scrittore» (`D12`) sia giusta è ormai **misurato**: costruire il lettore per primo è ciò che ha reso visibili tutti i difetti elencati qui sopra |
+La sequenza raccomandata è stata consumata: `SK-4`, `SK-11` e `SK-5` sono chiusi; `SK-7` è stato
+costruito dopo il lettore, come impone `D12`, e il report proprietario è arrivato, ma resta aperto
+per la rettifica documentale mirata e la decisione `M3`. Questa seduta **non apre né raccomanda un
+nuovo pacchetto**: prima vengono pubblicazione autorizzata e verifica della CI reale.
 
 ### Un dato nuovo da mettere agli atti (non una richiesta di riaprire `D13`)
 
@@ -537,9 +541,10 @@ Anthropic e **ha trovato difetti che l'autore non aveva visto**, incluso quello 
 punto 3. Su cinque review condotte prima di quella, **una sola** aveva davvero cambiato famiglia.
 È la prima misura reale di quanto vale il vincolo che `D13` ha lasciato come avviso.
 
-**Gate del prossimo task, invariati:** nessun move · nessun path rewrite · nessuna
-sovradichiarazione `SEP-G5`/`WP-1`/`H-1.3` pulito · nessun push senza sì esplicito ·
-`scripts/mss/adapter.mjs` non si tocca fuori da `SK-4`.
+**Gate del prossimo task:** nessun move · nessun path rewrite · nessuna sovradichiarazione
+`SEP-G5`/`WP-1`/`H-1.3` pulito · nessun nuovo pacchetto senza decisione di Matteo · nessun push
+senza sì esplicito. `REPORT_PATH_RE` resta una fonte condivisa con cinque consumatori: ogni sua
+modifica futura deve dichiarare prima l'intero elenco.
 
 ---
 

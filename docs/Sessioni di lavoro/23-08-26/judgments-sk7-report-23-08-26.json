@@ -1,0 +1,240 @@
+{
+  "session_event": {
+    "intent_user": "costruire mss:capsule (generatore di capsule MSS), chiudere SK-7 con report e prove allineate al contratto e al delta del 23-08",
+    "event_kind": "session_close",
+    "session_type": "deep",
+    "capsule_status": "completa",
+    "role_key": "agente-esecutore-sk7",
+    "area": "MetaSkillSystem / attrezzo mss:capsule",
+    "environment": "workspace locale, branch env/test, Windows 11; working tree con lavoro parallelo di altri agenti",
+    "authorization": {
+      "read": [
+        "docs/Sessioni di lavoro/22-08-26/Prompt-sk7-mss-capsule-22-08-26.md",
+        "docs/Sessioni di lavoro/23-08-26/Mandato-SK-7-mss-capsule-DA-ASSEGNARE-23-08-26.md",
+        "docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md",
+        "scripts/mss/core.mjs",
+        "scripts/mss/rules.mjs",
+        "scripts/mss/canonical.mjs"
+      ],
+      "write": [
+        "scripts/mss/capsule.mjs",
+        "scripts/mss/uuid.mjs",
+        "package.json",
+        "docs/MetaSkillSystem/tests/tools/run.mjs",
+        "docs/MetaSkillSystem/tests/tools/fixtures/",
+        "docs/Sessioni di lavoro/23-08-26/Report-sk7-mss-capsule-23-08-26.md"
+      ],
+      "forbid": [
+        "scripts/mss/query.mjs",
+        "src/**",
+        "supabase/**",
+        "scripts/doc-path-check-allowlist.json",
+        "scripts/check-doc-paths.mjs",
+        "modificare REPORT_PATH_RE in adapter.mjs",
+        "capsule storiche",
+        "push senza si esplicito"
+      ]
+    },
+    "authorized_outputs": [
+      "scripts/mss/capsule.mjs",
+      "scripts/mss/uuid.mjs",
+      "npm run mss:capsule",
+      "test:mss:tools +3 test capsule",
+      "Report-sk7-mss-capsule-23-08-26.md"
+    ],
+    "route": {
+      "chosen": "mandato 22-08 + delta 23-08; interfaccia --judgments JSON + --template; fix successivi integrati dal report revisione finale (shell, git trim, source_refs)",
+      "alternatives_or_conflicts": [
+        "scartata: prompt interattivo (C) - agenti non-interattivi",
+        "scartata: flag per prosa Livello 3 - quoting hell su Windows",
+        "integrato: revisione finale ha corretto spawnCheckCommand e git/source_refs senza riaprire SK-6 (D16)"
+      ]
+    },
+    "observed_outcome": "mss:capsule registrato; genera bundle session_event + 3 annotazioni obbligatorie; controls con exit code reali; 23 test in test:mss:tools; capsula di questo report generata dall attrezzo su working tree reale; validate:mss OK",
+    "open_items": [
+      "chiusura SK-7 (M3) spetta a Matteo, non all agente",
+      "PLAN_V0 riga S7 va aggiornata a report consegnato, non CHIUSO",
+      "revisione indipendente famiglia diversa consigliata (D17) non eseguita",
+      "mss:capsule --append-to scrive in fondo al file - capsula ordinata a mano nel report",
+      "G/O/E nel contratto ancora non definiti - numeri scelti conservativamente"
+    ],
+    "subject_runtime": {
+      "actor_id": "Matteo",
+      "provider": "non_applicabile: soggetto umano",
+      "model": "non_applicabile: soggetto umano",
+      "runtime": "non_applicabile: soggetto umano",
+      "surface": "Cursor chat"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": [
+        "path del repo",
+        "esiti comandi",
+        "metriche aggregate capsule",
+        "SHA commit prompt"
+      ],
+      "prohibited_content": [
+        "docs/_lavoro/",
+        "segreti",
+        "CLAUDE_CODE_MESSAGING_TOKEN"
+      ],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [
+      {
+        "ref_id": "owner-plan",
+        "owner_id": "SYS-1",
+        "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md",
+        "stable_anchor_or_event_id": "sezione 4-bis S7",
+        "revision_or_hash": "working tree",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "owner-contratto",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md",
+        "stable_anchor_or_event_id": "controls + bundle",
+        "revision_or_hash": "mss-v0.1-wp0.1-freeze-2",
+        "sensitivity": "internal"
+      }
+    ],
+    "source_refs": [
+      {
+        "ref_id": "source-prompt-22",
+        "owner_id": "SK-7",
+        "uri_or_path": "docs/Sessioni di lavoro/22-08-26/Prompt-sk7-mss-capsule-22-08-26.md",
+        "stable_anchor_or_event_id": "sezioni 1-12",
+        "revision_or_hash": "669c48e4ba8f5a8bdca09e8cd26b95b08af44c9b",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "source-delta-23",
+        "owner_id": "SK-7",
+        "uri_or_path": "docs/Sessioni di lavoro/23-08-26/Mandato-SK-7-mss-capsule-DA-ASSEGNARE-23-08-26.md",
+        "stable_anchor_or_event_id": "decisioni D16-D18",
+        "revision_or_hash": "b4aa19c7beb20b2251b72824a8c37fe9a3a71fba",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "source-revisione-fix",
+        "owner_id": "revisione-finale",
+        "uri_or_path": "docs/Sessioni di lavoro/23-08-26/Report-revisione-finale-capsula-controlli-23-08-26.md",
+        "stable_anchor_or_event_id": "fix spawnCheckCommand git source_refs",
+        "revision_or_hash": "working tree",
+        "sensitivity": "internal"
+      }
+    ]
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [
+        {
+          "signal": "Matteo ha risposto punto per punto alle cinque domande di chiusura del mandato SK-7 prima di autorizzare l implementazione; ha scelto JSON per i giudizi e test obbligatori in test:mss:tools",
+          "actor": "Matteo",
+          "assistance": "guidato",
+          "origin": "naturale",
+          "source_ref": "source-delta-23",
+          "effect": "interfaccia definita senza prompt interattivo; perimetro esplicito su file altrui da non toccare",
+          "evidence_state": "observed"
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "cursor-composer-sk7",
+        "role": "agente esecutore SK-7",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "unverified",
+        "verified_by": [],
+        "verified_at": "non_applicabile:nessuna valutazione Persona",
+        "criterion_ref": "source-prompt-22",
+        "evidence_refs": ["source-delta-23"],
+        "notes": "singola seduta, non alza livelli"
+      }
+    },
+    "sistema": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "rule_id_version": "SK-7@mss.session/0.1.1 + D18",
+          "trigger_event": "mandato SK-7: primo attrezzo MSS che scrive capsule JSONL",
+          "decision_or_output_changed": "creati scripts/mss/capsule.mjs e uuid.mjs; npm run mss:capsule; --judgments JSON + --template + --check con exit code veri; import da rules/adapter senza duplicare validator; integrati fix revisione (shell, non_noto, git trim, source_refs esistenti)",
+          "G": 2,
+          "O": 2,
+          "E": 2
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "cursor-composer-sk7",
+        "role": "agente esecutore SK-7",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-contratto",
+        "evidence_refs": ["source-prompt-22", "source-revisione-fix"],
+        "notes": "test:mss:tools 23/23; revisione finale ha verificato controls invertiti prima del fix"
+      }
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "output_id": "mss-capsule-v0",
+          "primary_type": "prodotto",
+          "canonical_version": "scripts/mss/capsule.mjs prima versione consegnata",
+          "recipient": "agenti che chiudono sedute MSS e Matteo",
+          "problem_or_job": "capsule scritte a mano con orari arrotondati e controls dichiarati non misurati",
+          "intended_use": "generare bundle JSONL valido con tre assi e controls guadagnati",
+          "conceived_by": "STRATEGIA 21-08 sezione 3.4 + mandato SK-7",
+          "decided_by": "Matteo",
+          "directed_by": "mandato SK-7 22-08 + delta 23-08",
+          "authored_by": "cursor-composer-sk7 con integrazione fix revisione finale",
+          "verified_by": "test:mss:tools + validate:mss su report proprietario",
+          "acceptance_criterion": "capsula generata passa validate:mss --require-capsule; controls pass/fail da exit code; bundle incompleto rifiutato; legacy rifiutata; 23 test tools verdi",
+          "verification_or_use_evidence": "npm run test:mss:tools 23/23; validate:mss OK su questo report; PROVA-ROTTA fail exit 3 e PROVA-DOCS pass documentati in seduta revisione; capsula negativa persona mancante exit 2 senza scrivere file",
+          "verification_status": "self_report",
+          "owner_ref": "owner-plan",
+          "privacy_release": "internal",
+          "support_files": [
+            "scripts/mss/uuid.mjs",
+            "docs/MetaSkillSystem/tests/tools/fixtures/judgments-sk7-minimal.json",
+            "package.json"
+          ],
+          "relations_no_double_count": [
+            "complementa mss:query (SK-6 chiuso D16)",
+            "fix comportamentale condiviso con Report-revisione-finale-capsula-controlli"
+          ],
+          "product_candidate": {
+            "recipient": "pass",
+            "problem_or_job": "pass",
+            "canonical_version": "pass",
+            "fixed_acceptance_criterion": "pass",
+            "verification_or_use_evidence": "fail",
+            "result": "not_eligible"
+          }
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "cursor-composer-sk7",
+        "role": "agente esecutore SK-7",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-contratto",
+        "evidence_refs": ["source-prompt-22"],
+        "notes": "quinto gate fail di proposito: nessun revisore indipendente (D17 avviso)"
+      }
+    }
+  }
+}

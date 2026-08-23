@@ -26,13 +26,13 @@
 | `scripts/mss/adapter.mjs` | opzione `requireCapsule` in `validateStagedMssFiles` |
 | `scripts/mss/cli.mjs` | inoltro flag in `--mode staged` |
 | `docs/MetaSkillSystem/tests/h1/run.mjs` | regressione staged + require-capsule |
-| `docs/Sessioni di lavoro/23-08-26/sub/Report-test.md` | fixture prove manuali (tabella scenari) |
+| `docs/MetaSkillSystem/tests/fixtures/reports/Report-hook-cli-staged-probe.md` | template fixture prove manuali (copiare sotto `Sessioni di lavoro/<day>/` per staged) |
 
 ## Prove obbligatorie
 
 ### 1. Staged senza capsula, senza dichiarazione modalità — deny solo con `--require-capsule`
 
-File: `docs/Sessioni di lavoro/23-08-26/sub/Report-test.md` (staged, contenuto senza capsula né riga modalità contrattuale).
+File: copia di `docs/MetaSkillSystem/tests/fixtures/reports/Report-hook-cli-staged-probe.md` sotto `docs/Sessioni di lavoro/<day>/sub/Report-test.md` (staged, senza capsula né modalità).
 
 ```
 === senza flag ===

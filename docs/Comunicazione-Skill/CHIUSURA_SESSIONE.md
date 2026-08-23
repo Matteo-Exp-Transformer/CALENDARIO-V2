@@ -41,7 +41,9 @@ In ordine cronologico, in **linguaggio utente** (non «ho modificato X» ma «or
 Tabella o elenco: file + perché. Compresi i file dello skill system se li hai toccati.
 
 ### 4. Test eseguiti e risultato
-`npm run validate` (o cosa hai lanciato) + esito.
+Comandi lanciati + esito. Minimo sessioni standard/deep con capsula:
+`npm run validate:mss -- --mode file --file "<questo report>" --kind report --require-capsule` (exit 0);
+se tocca codice anche `npm run test:mss` e/o `npm run validate`. Registra ogni gate in `controls[]` della capsula §6-bis.
 
 ### 5. «File di skill aggiornati» (tabella obbligatoria, anche «nessuno»)
 Colonne: **file · modifica · perché**. Elenca TUTTI i file skill toccati (skill area, COMUNICAZIONE,
@@ -136,13 +138,13 @@ esplicitamente perché il lavoro è terminale.
 > domanda/risposta e sballerebbero il conteggio (falso «risposta mancante»). Bug visto e corretto 04-06-26.
 
 ```
-❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.
+❓ Q1 — Prompt ricevuti: per ogni mandato/file-prompt usato indica **path** e **revisione o hash** al momento della lettura (es. `git rev-parse HEAD:<path>` o SHA — stesso dato di `source_refs[].revision_or_hash` in capsula). Per i messaggi di Matteo **non** contenuti in un file del repo, riportali verbatim.
 ✅ R1:
 
-❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.
+❓ Q2 — Dati = diff reale? Confermi che §4, §6-bis (`controls[]`) e i numeri del report coincidono con diff/git/comandi rieseguiti? Una riga + evidenza (output `validate:mss` o comando equivalente).
 ✅ R2:
 
-❓ Q3 — File correlati allineati? Quali file erano collegati alla modifica (skill area, context, test, tipi) e hai verificato che siano aggiornati? Elencali (o «nessuno + perché»).
+❓ Q3 — File correlati: la tabella §5 «File di skill aggiornati» è completa e verificata? Se no, cosa manca (o «nessuno — motivo» come in §5).
 ✅ R3:
 
 ❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato? (vietato «tutto ok» a vuoto: se davvero nulla, scrivilo e di' perché ne sei certo.)
@@ -163,11 +165,8 @@ esplicitamente perché il lavoro è terminale.
 > con il report già pulito, così il suo rilancio (max 2) trova poco o niente da segnalare.
 
 Checklist (5 punti, veloce):
-1. **Dati = diff reale.** Apri il diff: i file, i numeri, i nomi citati nel report esistono davvero e
-   sono quelli giusti? Niente copiato a memoria, niente sezione rimasta indietro rispetto a un fix
-   successivo.
-2. **File correlati allineati.** Se hai cambiato un comportamento documentato in una skill area /
-   context / test / tipi → quel file è aggiornato *in questa chiusura*? (vedi §5 — non è un follow-up.)
+1. **`npm run validate:mss` verde** sul report (capsula coerente col diff).
+2. **§5 tabella skill** allineata (non rimandata).
 3. **Q1-Q6 coerenti.** Le risposte non si contraddicono tra loro né col lavoro svolto; ognuna ha
    sostanza (non «ok» a vuoto). Per Q2 e Q3 hai davvero riaperto i file.
 4. **Tono utente.** Le parti rivolte a Matteo parlano per flussi/schermate, non nomi-file isolati.
@@ -221,6 +220,10 @@ A fine chat un hook Cursor (`stop`) legge **il `Report-*.md` più recente** che 
 - **Meno falsi «risposta mancante».** Una risposta breve fra parentesi (es. «nessuno (nessuna skill
   copre il componente)») ora è accettata. Conta come vuota solo il vero vuoto / placeholder secco
   (`...`, `TODO`, `-`).
+- Validatore MSS allo stop (23-08-26). Con Q/R complete, l'hook lancia lo stesso motore di
+  `npm run validate:mss` sul report fresco (**ricorsivo** in sotto-cartelle — `report-paths.mjs`).
+  Se la capsula nega → rilancio con field path. Se Q/R ok e validatore verde → **silenzio**
+  (niente blocco «mente fredda» duplicato: resta §12 + pre-commit).
 - **Cold-check al commit.** Il pre-commit scatta su ogni commit con file staged, anche quando nello
   stage non c'è un report: chiede una revisione a mente fredda una volta per versione staged. Se nello
   stage c'è un report incompleto, blocca finché Q1-Q6 non sono compilate.

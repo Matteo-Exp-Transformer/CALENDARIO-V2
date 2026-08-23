@@ -192,6 +192,17 @@ breve se una sola modifica — vedi bullet sopra in §1.B). Nei prompt **deep o 
 l'handoff operativo di `CHIUSURA_SESSIONE.md` §10-bis: stato vero adesso, decisioni chiuse, autorità,
 owner e prossimo task con gate; non una lista di documenti.
 
+**Domande di chiusura nei mandati esecutore/revisore (obbligatorio standard/deep/Meta).**
+Nei prompt che prevedono un `Report-*.md`, **incolla verbatim** il blocco delle sei domande da
+`docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md` §11 (formato canonico Q1–Q6 con risposte R1–R6).
+⛔ **Vietato citare** «vedi CHIUSURA §11» al posto del blocco — l'agente inventa domande diverse e
+l'hook rifiuta la chiusura (pagato 13-06-26 e 23-08-26). Il puntatore al file resta ammesso solo per
+*contesto da leggere*, non per *formato da produrre* (playbook EVOLUZIONE 23-08-26).
+
+**Validazione capsula.** Dopo la capsula JSONL, il mandato deve richiedere:
+`npm run validate:mss -- --mode file --file "<path report>" --kind report --require-capsule` → exit 0
+prima di «lavoro ok». Per seduta light: evento JSONL + stesso comando su `--kind light`.
+
 **Follow-up attivo (ruolo prepara-prompt).** Oltre a ciò che Matteo dice esplicitamente, **cerca**
 controlli o lavori che tendono a sfuggire:
 - **A monte:** superfici adiacenti non citate (sticky bar, modal calendario, form admin vs pubblico,
@@ -394,7 +405,11 @@ Quando Matteo dice che l'agente esecutore ha finito:
    Persona · Sistema · Output secondo `MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md`. Nelle
    light usa il file JSONL pilot-only collegato dal log; prima di compact/interruzione salva il
    bundle nel prompt di proseguimento. `Nessuno` e `non osservato` sono dati validi; non inferire né
-   inventare per riempire.
+   inventare per riempire. Validazione meccanica:
+   `npm run validate:mss -- --mode file --file "<report>" --kind report --require-capsule`.
+   I gate misurabili (`test:mss`, `validate:docs`, …) vanno in `controls[]` della capsula, non solo in prosa Q2.
+   In Q1 del report: path del mandato + revisione/hash (come `source_refs[].revision_or_hash`), verbatim
+   solo per messaggi chat non già in un file repo.
 7. **Se il contesto è quasi esaurito** (specie durante un bug, prima di un compact) → dai un
    **«prompt proseguimento»** invece di iniziare la revisione o il report.
 
