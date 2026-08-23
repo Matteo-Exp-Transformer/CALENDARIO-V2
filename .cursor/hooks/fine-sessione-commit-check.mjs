@@ -102,7 +102,7 @@ function main() {
 
   if (mssEntries.length) {
     const historicalSnapshots = collectGitHeadHistory(root)
-    const results = validateStagedMssFiles(root, mssEntries, { historicalSnapshots })
+    const results = validateStagedMssFiles(root, mssEntries, { historicalSnapshots, requireCapsule: true })
     const denyLines = []
     for (const { path, result } of results) {
       const denies = result.diagnostics.filter((d) => d.severity === 'deny')

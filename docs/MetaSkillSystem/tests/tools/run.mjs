@@ -10,9 +10,10 @@ import {
   buildQueryPayload,
   buildVistaEffettiva,
   renderVerifica,
+  renderFail,
   runQuery,
 } from '../../../../scripts/mss/query.mjs'
-import { buildStatusReport } from '../../../../scripts/mss/status.mjs'
+import { buildStatusReport, runStatus } from '../../../../scripts/mss/status.mjs'
 import {
   buildCapsuleBundle,
   formatCapsuleBlock,
@@ -174,6 +175,25 @@ function queryData(records) {
     headCount: 0,
     workCount: 1,
   }
+}
+
+function syntheticCorpus({ sessionCount, absentControls }) {
+  const records = []
+  for (let index = 0; index < sessionCount; index++) {
+    const bundle = validBundle()
+    const sessionId = `mss-ses-synthetic-${String(index).padStart(2, '0')}`
+    for (const [recordIndex, record] of bundle.entries()) {
+      record.session_id = sessionId
+      record.correlation_id = `mss-cor-synthetic-${String(index).padStart(2, '0')}`
+      record.record_id = `mss-rec-synthetic-${String(index).padStart(2, '0')}-${String(recordIndex).padStart(2, '0')}`
+      record.capture_key = `${sessionId}/1/${record.record_type}/${recordIndex || recordIndex + 1}`
+      if (record.record_type === 'session_event' && index < absentControls) {
+        delete record.event.controls
+      }
+      records.push(record)
+    }
+  }
+  return queryData(records)
 }
 
 function syntheticAmendment({
@@ -392,6 +412,27 @@ const tests = [
     assert.match(human, /le due anteprime coincidono/)
     assert.equal(applied.precedente, `${prefix}A-finale-grezzo`)
     assert.equal(applied.corretto, `${prefix}B-finale-effettivo`)
+  }],
+  ['query: --fail usa denominatore calcolato, non literal storico 42', () => {
+    const data = syntheticCorpus({ sessionCount: 7, absentControls: 3 })
+    assert.equal(data.sessions.length, 7)
+    const vista = buildVistaEffettiva(data)
+    const output = renderFail(data, vista).join('\n')
+    assert.match(output, /3 sedute su 7/)
+    assert.doesNotMatch(output, /10 sedute su 42/)
+    assert.doesNotMatch(output, /su 42 non ne dichiarano/)
+  }],
+  ['status: owner PLAN non espone 32 gruppi o 9\/9 tools come dati correnti', () => {
+    const planPath = join(REPO_ROOT, 'docs/MetaSkillSystem/PLAN_V0.md')
+    const planText = readFileSync(planPath, 'utf8')
+    const skBlock = planText.slice(planText.indexOf('### 4-bis.'))
+    assert.doesNotMatch(skBlock, /32 gruppi/)
+    assert.doesNotMatch(skBlock, /tools 9\/9/)
+    assert.doesNotMatch(skBlock, /\(9\/9\)/)
+    const status = runStatus({ root: REPO_ROOT, isTTY: false })
+    assert.equal(status.exitCode, 0, status.stderr)
+    assert.doesNotMatch(status.stdout, /32 gruppi/)
+    assert.doesNotMatch(status.stdout, /9\/9/)
   }],
   ['status: owner e Git sintetici producono stato nominale senza divergenze', () => {
     const planText = `\n## 4. Quadro corrente\n\n| Ordine | Pacchetto | Stato |\n|---|---|---|\n| 1 | \`WP-1\` | \`NON INIZIATO — NO-GO\` |\n\n### 4-bis. Pacchetti\n\n| Ordine | Pacchetto | Stato | Prova |\n|---|---|---|---|\n| S11 | \`SK-11\` — tools | \`IN CORSO\` | suite sintetica |\n`

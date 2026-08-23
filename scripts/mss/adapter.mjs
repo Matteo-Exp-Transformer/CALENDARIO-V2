@@ -465,7 +465,7 @@ export function validateStagedMssFiles(workspaceRoot, stagedEntries, { historica
       stagedContent: entry.content,
       worktreeContent: entry.worktreeContent,
       headContent: entry.headContent,
-      requireCapsule,
+      requireCapsule: fixtureMatch ? false : requireCapsule,
       historicalRecords,
       historicalSnapshots,
       validateGlobal: false,

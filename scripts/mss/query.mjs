@@ -7,8 +7,9 @@
  * memoria. Questo comando le usa per rispondere a domande.
  *
  * REGOLA NON NEGOZIABILE: questo file NON e un owner di stato, non scrive, non ripara i dati e
- * non inventa nulla. Un campo assente viene contato come assente e dichiarato («presente in 32
- * capsule su 42»), mai completato a plausibilita. Un valore previsto dal contratto e mai usato
+ * non inventa nulla. Un campo assente viene contato come assente e dichiarato con il totale
+ * calcolato dal corpus (mai un denominatore storico cablato), mai completato a plausibilita.
+ * Un valore previsto dal contratto e mai usato
  * viene contato a zero E scritto a parole: e una risposta, non un buco (PARAMETRI_MACRO_V0.md §6).
  *
  * PERIMETRO DI LETTURA — SK-4 E1 (23-08-26): importa `REPORT_PATH_RE` da adapter.mjs (D18).
@@ -805,9 +806,10 @@ function failModel(data) {
   return { controlli, esiti, falliti, parziali, capsuleStatus, eventKind, contradicted, outNotEligible }
 }
 
-function renderFail(data, vista) {
+export function renderFail(data, vista) {
   const m = failModel(data)
   const me = failModel(vista.dataEffettiva)
+  const co = costoModel(data)
   const L = intestazione(data)
   L.push(`${C.b}--fail${C.x}  gli esiti negativi: il sistema promette di conservarli`)
   L.push('')
@@ -863,7 +865,7 @@ function renderFail(data, vista) {
   L.push(`    ${C.d}E un difetto dello SCHEMA, da valutare nel pacchetto SK-4.${C.x}`)
   L.push('')
   L.push(...nonVede([
-    'Un controllo assente non e un controllo superato: 10 sedute su 42 non ne dichiarano (vedi --costo).',
+    `Un controllo assente non e un controllo superato: ${co.assenti.length} sedute su ${data.sessions.length} non ne dichiarano (vedi --costo).`,
     'L\'esito e dichiarato da chi scrive; solo per alcuni controlli l\'esecutore e un comando reale.',
   ]))
   return L

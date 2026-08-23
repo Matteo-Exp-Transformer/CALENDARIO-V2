@@ -1369,13 +1369,26 @@ function testPrecommitIntegration() {
       const result = runPrecommit(root)
       if (result.status === 0 || !result.stderr.includes('PRE-COMMIT MSS')) failures.push('operational invalid precommit did not block')
     }
-    // 3. Report standard/deep invalido.
+    // 3. Report standard/deep invalido (senza capsula).
     {
       const root = createTempGitRepo(); repos.push(root)
       writeTemp(root, 'docs/Sessioni di lavoro/10-08-26/Report-invalid.md', `# Invalid\n\n**Modalità:** deep\n${reportQrs()}`)
       runGit(root, ['add', '.'])
       const result = runPrecommit(root)
       if (result.status === 0 || !result.stderr.includes(RULE.REPORT_NO_CAPSULE)) failures.push('standard/deep invalid report precommit did not block')
+    }
+    // 3-bis. D1 — stesso report senza capsula negato al 1°, 2° e 3° giro identico (parità cold-check).
+    {
+      const root = createTempGitRepo(); repos.push(root)
+      const path = 'docs/Sessioni di lavoro/23-08-26/deep/Report-d1-no-capsule.md'
+      writeTemp(root, path, `# D1 probe\n\n**Modalità:** deep\n${reportQrs()}`)
+      runGit(root, ['add', '.'])
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        const result = runPrecommit(root)
+        if (result.status === 0 || !result.stderr.includes(RULE.REPORT_NO_CAPSULE)) {
+          failures.push(`D1 precommit attempt ${attempt}/3 did not deny report without capsule`)
+        }
+      }
     }
     // 4. Mismatch staged/worktree.
     {
